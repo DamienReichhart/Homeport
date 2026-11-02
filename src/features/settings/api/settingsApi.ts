@@ -1,7 +1,6 @@
-import { invokeCommand } from '@/shared/api';
-import type { Settings } from '../types';
+import { commands, type Settings_Deserialize } from '@/shared/api';
 
 export const settingsApi = {
-  get: () => invokeCommand<Settings>('get_settings'),
-  update: (settings: Settings) => invokeCommand<Settings>('update_settings', { settings }),
+  get: () => commands.getSettings(),
+  update: (settings: Settings_Deserialize) => commands.updateSettings(settings),
 };

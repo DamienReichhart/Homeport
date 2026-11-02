@@ -28,6 +28,21 @@ impl AppError {
     }
 }
 
+/// Wire shape of [`AppError`]; mirrors `AppErrorPayload` in `src/shared/api/errors.ts`.
+#[derive(Serialize, specta::Type)]
+#[serde(rename = "AppError")]
+#[allow(dead_code)]
+struct AppErrorPayload {
+    code: String,
+    message: String,
+}
+
+impl specta::Type for AppError {
+    fn definition(types: &mut specta::Types) -> specta::datatype::DataType {
+        AppErrorPayload::definition(types)
+    }
+}
+
 impl Serialize for AppError {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         let mut s = serializer.serialize_struct("AppError", 2)?;

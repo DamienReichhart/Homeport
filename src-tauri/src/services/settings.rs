@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::AppResult;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "lowercase")]
 pub enum Theme {
     #[default]
@@ -14,7 +14,7 @@ pub enum Theme {
 }
 
 /// Mirrors `Settings` in `src/features/settings/types.ts`.
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, specta::Type)]
 #[serde(default)]
 pub struct Settings {
     pub theme: Theme,

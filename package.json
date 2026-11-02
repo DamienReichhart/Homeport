@@ -24,7 +24,8 @@
     "rust:fmt": "cargo fmt --all",
     "rust:lint": "cargo clippy --workspace --all-targets -- -D warnings",
     "rust:test": "cargo test --workspace",
-    "check": "bun run typecheck && bun run lint && bun run format:check && bun run test"
+    "check": "bun run typecheck && bun run lint && bun run format:check && bun run test",
+    "bindings": "cd src-tauri && UPDATE_BINDINGS=1 cargo test --lib bindings_are_up_to_date"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",

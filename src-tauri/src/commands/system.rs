@@ -2,7 +2,7 @@ use serde::Serialize;
 use tauri::AppHandle;
 
 /// Mirrors `AppInfo` in `src/features/home/types.ts`.
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, specta::Type)]
 pub struct AppInfo {
     name: String,
     version: String,
@@ -11,6 +11,7 @@ pub struct AppInfo {
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn get_app_info(app: AppHandle) -> AppInfo {
     let info = app.package_info();
     AppInfo {
