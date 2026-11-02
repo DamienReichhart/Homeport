@@ -17,7 +17,6 @@ export type AppError = {
 	message: string,
 };
 
-/**  Mirrors `AppInfo` in `src/features/home/types.ts`. */
 export type AppInfo = {
 	name: string,
 	version: string,
@@ -25,15 +24,12 @@ export type AppInfo = {
 	arch: string,
 };
 
-/**  Mirrors `Settings` in `src/features/settings/types.ts`. */
 export type Settings = Settings_Serialize | Settings_Deserialize;
 
-/**  Mirrors `Settings` in `src/features/settings/types.ts`. */
 export type Settings_Deserialize = {
 	theme?: Theme,
 };
 
-/**  Mirrors `Settings` in `src/features/settings/types.ts`. */
 export type Settings_Serialize = {
 	theme: Theme,
 };

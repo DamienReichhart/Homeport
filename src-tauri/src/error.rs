@@ -7,11 +7,17 @@ pub type AppResult<T> = Result<T, AppError>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum AppError {
-    #[error("settings I/O error: {0}")]
-    SettingsIo(#[from] std::io::Error),
+    #[error("I/O error: {0}")]
+    Io(#[from] std::io::Error),
 
-    #[error("settings are malformed: {0}")]
-    SettingsFormat(#[from] serde_json::Error),
+    #[error("malformed JSON: {0}")]
+    Json(#[from] serde_json::Error),
+
+    #[error("database error: {0}")]
+    Db(#[from] rusqlite::Error),
+
+    #[error("database migration failed: {0}")]
+    Migration(#[from] rusqlite_migration::Error),
 
     #[error("{0}")]
     Tauri(#[from] tauri::Error),
@@ -21,8 +27,10 @@ impl AppError {
     /// Stable machine-readable identifier consumed by the frontend.
     pub fn code(&self) -> &'static str {
         match self {
-            Self::SettingsIo(_) => "settings_io",
-            Self::SettingsFormat(_) => "settings_format",
+            Self::Io(_) => "io",
+            Self::Json(_) => "json",
+            Self::Db(_) => "db",
+            Self::Migration(_) => "db_migration",
             Self::Tauri(_) => "tauri",
         }
     }
@@ -58,9 +66,9 @@ mod tests {
 
     #[test]
     fn serializes_code_and_message() {
-        let err = AppError::SettingsIo(std::io::Error::other("disk full"));
+        let err = AppError::Io(std::io::Error::other("disk full"));
         let json = serde_json::to_value(&err).unwrap();
-        assert_eq!(json["code"], "settings_io");
+        assert_eq!(json["code"], "io");
         assert!(json["message"].as_str().unwrap().contains("disk full"));
     }
 }

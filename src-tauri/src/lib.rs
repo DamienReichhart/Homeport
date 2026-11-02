@@ -5,7 +5,12 @@ mod state;
 
 use tauri::Manager;
 
-use crate::{services::settings::SettingsService, state::AppState};
+use std::sync::Arc;
+
+use crate::{
+    services::{db::Db, settings::SettingsService},
+    state::AppState,
+};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -20,8 +25,9 @@ pub fn run() {
         .setup(move |app| {
             specta.mount_events(app);
             let config_dir = app.path().app_config_dir()?;
-            let settings = SettingsService::load(config_dir.join("settings.json"))?;
-            app.manage(AppState { settings });
+            let db = Arc::new(Db::open(&app.path().app_data_dir()?.join("homeport.db"))?);
+            let settings = SettingsService::new(db.clone(), &config_dir.join("settings.json"))?;
+            app.manage(AppState { db, settings });
             Ok(())
         })
         .invoke_handler(invoke_handler)

@@ -1,8 +1,11 @@
-use std::{fs, path::PathBuf, sync::RwLock};
+use std::{fs, path::Path, sync::Arc};
 
+use rusqlite::OptionalExtension;
 use serde::{Deserialize, Serialize};
 
-use crate::error::AppResult;
+use crate::{error::AppResult, services::db::Db};
+
+const SETTINGS_KEY: &str = "settings";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "lowercase")]
@@ -13,47 +16,68 @@ pub enum Theme {
     Dark,
 }
 
-/// Mirrors `Settings` in `src/features/settings/types.ts`.
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, specta::Type)]
 #[serde(default)]
 pub struct Settings {
     pub theme: Theme,
 }
 
-/// Loads/persists [`Settings`] as JSON and caches them in memory.
+/// Reads and writes [`Settings`] as one JSON document in the `settings` table.
 pub struct SettingsService {
-    path: PathBuf,
-    current: RwLock<Settings>,
+    db: Arc<Db>,
 }
 
 impl SettingsService {
-    /// Loads settings from `path`; a missing file yields defaults.
-    pub fn load(path: PathBuf) -> AppResult<Self> {
-        let current = match fs::read_to_string(&path) {
-            Ok(raw) => serde_json::from_str(&raw)?,
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Settings::default(),
-            Err(e) => return Err(e.into()),
-        };
-        Ok(Self {
-            path,
-            current: RwLock::new(current),
+    /// Wraps `db`, importing a pre-SQLite `settings.json` at `legacy_json` once.
+    /// The imported file is renamed to `*.imported` so it is never read again.
+    pub fn new(db: Arc<Db>, legacy_json: &Path) -> AppResult<Self> {
+        let service = Self { db };
+        service.import_legacy(legacy_json)?;
+        Ok(service)
+    }
+
+    pub fn get(&self) -> AppResult<Settings> {
+        let raw: Option<String> = self.db.with(|c| {
+            c.query_row(
+                "SELECT value FROM settings WHERE key = ?1",
+                [SETTINGS_KEY],
+                |r| r.get(0),
+            )
+            .optional()
+        })?;
+        Ok(match raw {
+            Some(raw) => serde_json::from_str(&raw)?,
+            None => Settings::default(),
         })
     }
 
-    pub fn get(&self) -> Settings {
-        self.current.read().expect("settings lock poisoned").clone()
+    pub fn update(&self, settings: Settings) -> AppResult<Settings> {
+        let raw = serde_json::to_string(&settings)?;
+        self.db.with(|c| {
+            c.execute(
+                "INSERT INTO settings (key, value) VALUES (?1, ?2)
+                 ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+                (SETTINGS_KEY, raw),
+            )
+        })?;
+        Ok(settings)
     }
 
-    pub fn update(&self, settings: Settings) -> AppResult<Settings> {
-        if let Some(parent) = self.path.parent() {
-            fs::create_dir_all(parent)?;
+    fn import_legacy(&self, path: &Path) -> AppResult<()> {
+        let Ok(raw) = fs::read_to_string(path) else {
+            return Ok(());
+        };
+        match serde_json::from_str::<Settings>(&raw) {
+            Ok(settings) => {
+                self.update(settings)?;
+                fs::rename(path, path.with_extension("json.imported"))?;
+            }
+            Err(e) => log::warn!(
+                "ignoring unreadable legacy settings {}: {e}",
+                path.display()
+            ),
         }
-        // Write-then-rename so a crash never leaves a truncated file.
-        let tmp = self.path.with_extension("json.tmp");
-        fs::write(&tmp, serde_json::to_vec_pretty(&settings)?)?;
-        fs::rename(&tmp, &self.path)?;
-        *self.current.write().expect("settings lock poisoned") = settings.clone();
-        Ok(settings)
+        Ok(())
     }
 }
 
@@ -61,29 +85,52 @@ impl SettingsService {
 mod tests {
     use super::*;
 
-    #[test]
-    fn missing_file_yields_defaults() {
-        let dir = tempfile::tempdir().unwrap();
-        let svc = SettingsService::load(dir.path().join("settings.json")).unwrap();
-        assert_eq!(svc.get(), Settings::default());
+    fn service(dir: &Path) -> SettingsService {
+        SettingsService::new(
+            Arc::new(Db::open_in_memory().unwrap()),
+            &dir.join("settings.json"),
+        )
+        .unwrap()
     }
 
     #[test]
-    fn update_persists_and_reloads() {
+    fn empty_store_yields_defaults() {
         let dir = tempfile::tempdir().unwrap();
-        let path = dir.path().join("nested").join("settings.json");
-        let svc = SettingsService::load(path.clone()).unwrap();
+        assert_eq!(service(dir.path()).get().unwrap(), Settings::default());
+    }
+
+    #[test]
+    fn update_is_read_back() {
+        let dir = tempfile::tempdir().unwrap();
+        let svc = service(dir.path());
         svc.update(Settings { theme: Theme::Dark }).unwrap();
-
-        let reloaded = SettingsService::load(path).unwrap();
-        assert_eq!(reloaded.get().theme, Theme::Dark);
+        assert_eq!(svc.get().unwrap().theme, Theme::Dark);
     }
 
     #[test]
-    fn corrupt_file_is_an_error() {
+    fn legacy_json_is_imported_once() {
         let dir = tempfile::tempdir().unwrap();
-        let path = dir.path().join("settings.json");
-        fs::write(&path, "{ not json").unwrap();
-        assert!(SettingsService::load(path).is_err());
+        let legacy = dir.path().join("settings.json");
+        fs::write(&legacy, r#"{ "theme": "light" }"#).unwrap();
+        let db = Arc::new(Db::open_in_memory().unwrap());
+
+        let svc = SettingsService::new(db.clone(), &legacy).unwrap();
+        assert_eq!(svc.get().unwrap().theme, Theme::Light);
+        assert!(!legacy.exists());
+        assert!(dir.path().join("settings.json.imported").exists());
+
+        svc.update(Settings { theme: Theme::Dark }).unwrap();
+        let again = SettingsService::new(db, &legacy).unwrap();
+        assert_eq!(again.get().unwrap().theme, Theme::Dark);
+    }
+
+    #[test]
+    fn unreadable_legacy_json_is_left_alone() {
+        let dir = tempfile::tempdir().unwrap();
+        let legacy = dir.path().join("settings.json");
+        fs::write(&legacy, "{ not json").unwrap();
+        let svc = SettingsService::new(Arc::new(Db::open_in_memory().unwrap()), &legacy).unwrap();
+        assert_eq!(svc.get().unwrap(), Settings::default());
+        assert!(legacy.exists());
     }
 }

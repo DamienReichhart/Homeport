@@ -1,7 +1,6 @@
 use serde::Serialize;
 use tauri::AppHandle;
 
-/// Mirrors `AppInfo` in `src/features/home/types.ts`.
 #[derive(Debug, Serialize, specta::Type)]
 pub struct AppInfo {
     name: String,
