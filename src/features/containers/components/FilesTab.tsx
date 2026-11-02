@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { commands, toAppError, type FileEntry } from '@/shared/api';
+import { commands, keys, toAppError, type FileEntry } from '@/shared/api';
 import { formatBytes, formatDateTime, pickFiles, pickSavePath } from '@/shared/lib';
 import { Button } from '@/shared/ui/button';
 import { DataTable, ErrorMessage, type ColumnDef } from '@/shared/ui';
@@ -36,7 +36,7 @@ export function FilesTab({
 }) {
   const [path, setPath] = useState('/');
   const listing = useQuery({
-    queryKey: ['files', hostId, containerId, path],
+    queryKey: keys.files(hostId, containerId, path),
     queryFn: () => commands.filesList(hostId, containerId, path),
     enabled: running,
   });

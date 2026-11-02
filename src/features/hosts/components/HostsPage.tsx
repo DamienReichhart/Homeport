@@ -5,7 +5,7 @@ import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { DataTable, PageHeader, type ColumnDef } from '@/shared/ui';
 import { useHosts } from '../api';
-import { connectionLabel, describeEndpoint } from '../status';
+import { connectionLabel, describeAddress } from '../status';
 import { HostStatusBadge } from './HostStatusBadge';
 
 const columns: ColumnDef<HostView, unknown>[] = [
@@ -24,9 +24,9 @@ const columns: ColumnDef<HostView, unknown>[] = [
     ),
   },
   {
-    id: 'endpoint',
-    header: 'Endpoint',
-    accessorFn: (v) => describeEndpoint(v.host.connection),
+    id: 'address',
+    header: 'Address',
+    accessorFn: (v) => describeAddress(v.host.connection),
     cell: ({ getValue }) => <span className="font-mono text-xs">{String(getValue())}</span>,
   },
   {

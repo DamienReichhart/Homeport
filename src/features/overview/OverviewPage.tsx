@@ -2,16 +2,17 @@ import { useQuery } from '@tanstack/react-query';
 import { BrushCleaningIcon, CpuIcon, MemoryStickIcon, PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useUsage } from '@/features/containers';
 import {
   HostGate,
   HostStatusBadge,
   connectionLabel,
-  describeEndpoint,
+  describeAddress,
   useHostSelection,
   useHosts,
 } from '@/features/hosts';
 import { commands, keys, type HostView } from '@/shared/api';
-import { cn, formatBytes, formatRelative } from '@/shared/lib';
+import { cn, formatBytes, formatPercent, formatRelative } from '@/shared/lib';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import {
@@ -25,6 +26,23 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import { KeyValue, PageHeader } from '@/shared/ui';
 import { PruneDialog } from './PruneDialog';
+
+/** Live CPU and memory use of a Host's running containers against its capacity. */
+function HostUsage({ hostId, cpus, memory }: { hostId: string; cpus: number; memory: number }) {
+  const usage = [...useUsage(hostId).values()];
+  const cpu = usage.reduce((sum, u) => sum + (u.cpuPercent ?? 0), 0);
+  const used = usage.reduce((sum, u) => sum + u.memoryUsage, 0);
+  return (
+    <>
+      <span className="flex items-center gap-1" title="Container CPU use, 100% per CPU">
+        <CpuIcon className="size-3.5" /> {formatPercent(cpu)} of {cpus} CPUs
+      </span>
+      <span className="flex items-center gap-1" title="Container memory use">
+        <MemoryStickIcon className="size-3.5" /> {formatBytes(used)} / {formatBytes(memory)}
+      </span>
+    </>
+  );
+}
 
 function HostCard({ view, selected }: { view: HostView; selected: boolean }) {
   const { select } = useHostSelection();
@@ -49,7 +67,7 @@ function HostCard({ view, selected }: { view: HostView; selected: boolean }) {
       <CardHeader>
         <CardTitle className="truncate">{view.host.name}</CardTitle>
         <CardDescription className="truncate font-mono text-xs">
-          {describeEndpoint(view.host.connection)}
+          {describeAddress(view.host.connection)}
         </CardDescription>
         <CardAction>
           <Badge variant="outline">{connectionLabel(view.host.connection.kind)}</Badge>
@@ -64,12 +82,7 @@ function HostCard({ view, selected }: { view: HostView; selected: boolean }) {
               {info.data.containers} running
             </span>
             <span>{info.data.images} images</span>
-            <span className="flex items-center gap-1">
-              <CpuIcon className="size-3.5" /> {info.data.cpus} CPUs
-            </span>
-            <span className="flex items-center gap-1">
-              <MemoryStickIcon className="size-3.5" /> {formatBytes(info.data.memory)}
-            </span>
+            <HostUsage hostId={view.host.id} cpus={info.data.cpus} memory={info.data.memory} />
           </div>
         )}
       </CardContent>

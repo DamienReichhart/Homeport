@@ -20,7 +20,7 @@ export function SettingsPage() {
     queryKey: keys.capabilities,
     queryFn: () => commands.getCapabilities(),
   });
-  const info = useQuery({ queryKey: ['app-info'], queryFn: () => commands.getAppInfo() });
+  const info = useQuery({ queryKey: keys.appInfo, queryFn: () => commands.getAppInfo() });
   const save = useMutation({
     mutationFn: (next: Settings) => settingsApi.update(next),
     onSuccess: (saved) => {

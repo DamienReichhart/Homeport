@@ -4,6 +4,8 @@
  */
 export const keys = {
   capabilities: ['capabilities'] as const,
+  appInfo: ['app-info'] as const,
+  localEngines: ['local-engines'] as const,
   settings: ['settings'] as const,
   hosts: ['hosts'] as const,
   sshSetup: (hostId: string) => ['hosts', hostId, 'ssh-setup'] as const,
@@ -16,5 +18,9 @@ export const keys = {
   stacks: (hostId: string) => ['host', hostId, 'stacks'] as const,
   system: (hostId: string) => ['host', hostId, 'system'] as const,
   events: (hostId: string) => ['host', hostId, 'events'] as const,
+  files: (hostId: string, containerId: string, path: string) =>
+    ['host', hostId, 'containers', containerId, 'files', path] as const,
+  processes: (hostId: string, containerId: string) =>
+    ['host', hostId, 'containers', containerId, 'processes'] as const,
   managedStack: (id: string) => ['managed-stack', id] as const,
 };

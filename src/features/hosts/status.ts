@@ -54,7 +54,7 @@ export function connectionLabel(kind: string): string {
 }
 
 /** Where a Host lives, in one line: a socket path, an address or user@server. */
-export function describeEndpoint(c: HostConnection): string {
+export function describeAddress(c: HostConnection): string {
   switch (c.kind) {
     case 'local':
       return c.socketPath;

@@ -1,13 +1,14 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { RefreshCwIcon, ServerIcon, ServerOffIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { commands } from '@/shared/api';
+import { commands, keys, type HostInput } from '@/shared/api';
 import { Button } from '@/shared/ui/button';
 import { EmptyState, Spinner } from '@/shared/ui';
 import { useHosts } from '../api';
 import { useHostSelection } from '../context';
 import { describeStatus } from '../status';
+import { LocalEngines } from './LocalEngines';
 
 /**
  * Renders `children` with the selected Host's id once it is connected, and
@@ -15,8 +16,16 @@ import { describeStatus } from '../status';
  */
 export function HostGate({ children }: { children: (hostId: string) => ReactNode }) {
   const hosts = useHosts();
-  const { host } = useHostSelection();
+  const { host, select } = useHostSelection();
+  const client = useQueryClient();
   const reconnect = useMutation({ mutationFn: (id: string) => commands.hostsReconnect(id) });
+  const add = useMutation({
+    mutationFn: (input: HostInput) => commands.hostsCreate(input),
+    onSuccess: async (view) => {
+      await client.invalidateQueries({ queryKey: keys.hosts });
+      select(view.host.id);
+    },
+  });
 
   if (hosts.isPending) return <Spinner />;
   if (!host) {
@@ -26,9 +35,12 @@ export function HostGate({ children }: { children: (hostId: string) => ReactNode
         title="No host yet"
         description="Add a Docker Engine — this machine's, or a remote one over SSH or TLS."
         action={
-          <Button asChild>
-            <Link to="/hosts/new">Add host</Link>
-          </Button>
+          <div className="grid max-w-xl justify-items-center gap-4">
+            <LocalEngines onAdd={(input) => add.mutate(input)} pending={add.isPending} />
+            <Button asChild>
+              <Link to="/hosts/new">Add another host</Link>
+            </Button>
+          </div>
         }
       />
     );

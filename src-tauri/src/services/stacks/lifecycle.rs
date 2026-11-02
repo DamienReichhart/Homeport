@@ -62,8 +62,8 @@ pub async fn act(docker: &Docker, name: &str, action: StackAction) -> AppResult<
     Ok(())
 }
 
-/// Removes the Stack's containers and the networks Compose created for it.
-/// Volumes are kept.
+/// Removes the Stack's containers and the networks Compose created for it
+/// that nothing else uses. Volumes are kept.
 pub async fn remove(docker: &Docker, name: &str) -> AppResult<()> {
     for c in containers_of(docker, name).await? {
         containers::remove(docker, &c.id, true, false).await?;
@@ -72,8 +72,11 @@ pub async fn remove(docker: &Docker, name: &str) -> AppResult<()> {
         .filters(&project_filter(name))
         .build();
     for network in docker.list_networks(Some(options)).await? {
+        // Best effort: a network another container still uses stays behind.
         if let Some(id) = network.id {
-            docker.remove_network(&id).await?;
+            if let Err(e) = docker.remove_network(&id).await {
+                log::warn!("kept network {id} of stack {name}: {e}");
+            }
         }
     }
     Ok(())

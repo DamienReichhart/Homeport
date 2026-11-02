@@ -32,13 +32,15 @@ describe('app', () => {
         return { images: line, containers: line, volumes: line, buildCache: line };
       },
       hosts_events: () => [],
+      usage_subscribe: () => 1,
+      stream_cancel: () => null,
     }),
   );
 
   it('shows each host with its live numbers on the overview', async () => {
     renderApp('/');
     expect(await screen.findByText('2')).toBeInTheDocument();
-    expect(screen.getByText('8 CPUs')).toBeInTheDocument();
+    expect(screen.getByText(/of 8 CPUs/)).toBeInTheDocument();
     expect(screen.getAllByText('Connected').length).toBeGreaterThan(0);
   });
 
@@ -50,5 +52,21 @@ describe('app', () => {
     });
     renderApp('/settings');
     expect(await screen.findByRole('alert')).toHaveTextContent(/No OS keychain/);
+  });
+});
+
+describe('first launch', () => {
+  it('offers the engines found on this machine', async () => {
+    mockCommands({
+      get_settings: () => ({ theme: 'system', lastHostId: null }),
+      get_capabilities: () => ({ keychain: true, compose: null }),
+      hosts_list: () => [],
+      hosts_detect_local: () => [
+        { label: 'Docker Engine', socketPath: '/var/run/docker.sock', engineVersion: '29.1' },
+      ],
+    });
+    renderApp('/containers');
+    expect(await screen.findByText('Found on this machine')).toBeInTheDocument();
+    expect(screen.getByText('/var/run/docker.sock')).toBeInTheDocument();
   });
 });

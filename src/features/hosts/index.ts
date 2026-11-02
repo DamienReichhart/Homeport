@@ -1,7 +1,7 @@
 // Public API of the hosts feature. Import from "@/features/hosts" only.
 export { useCapabilities, useHosts, useHostStatusUpdates } from './api';
 export { HostProvider, useHostSelection } from './context';
-export { connectionLabel, describeEndpoint, describeStatus, hostAddress } from './status';
+export { connectionLabel, describeAddress, describeStatus, hostAddress } from './status';
 export { AddHostPage } from './components/AddHostPage';
 export { HostDetailPage } from './components/HostDetailPage';
 export { HostGate } from './components/HostGate';
