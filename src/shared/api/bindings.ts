@@ -7,21 +7,21 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 /** Commands */
 export const commands = {
 	getAppInfo: () => __TAURI_INVOKE<AppInfo>("get_app_info"),
-	getCapabilities: () => __TAURI_INVOKE<Capabilities_Serialize>("get_capabilities"),
-	getSettings: () => __TAURI_INVOKE<Settings_Serialize>("get_settings"),
-	updateSettings: (settings: Settings_Deserialize) => __TAURI_INVOKE<Settings_Serialize>("update_settings", { settings }),
-	hostsList: () => __TAURI_INVOKE<HostView_Serialize[]>("hosts_list"),
+	getCapabilities: () => __TAURI_INVOKE<Capabilities>("get_capabilities"),
+	getSettings: () => __TAURI_INVOKE<Settings>("get_settings"),
+	updateSettings: (settings: Settings) => __TAURI_INVOKE<Settings>("update_settings", { settings }),
+	hostsList: () => __TAURI_INVOKE<HostView[]>("hosts_list"),
 	hostsDetectLocal: () => __TAURI_INVOKE<DetectedEngine[]>("hosts_detect_local"),
-	hostsCreate: (input: HostInput_Deserialize) => __TAURI_INVOKE<HostView_Serialize>("hosts_create", { input }),
-	hostsUpdate: (id: string, input: HostInput_Deserialize) => __TAURI_INVOKE<HostView_Serialize>("hosts_update", { id, input }),
+	hostsCreate: (input: HostInput) => __TAURI_INVOKE<HostView>("hosts_create", { input }),
+	hostsUpdate: (id: string, input: HostInput) => __TAURI_INVOKE<HostView>("hosts_update", { id, input }),
 	hostsDelete: (id: string) => __TAURI_INVOKE<null>("hosts_delete", { id }),
-	hostsSetEnabled: (id: string, enabled: boolean) => __TAURI_INVOKE<HostView_Serialize>("hosts_set_enabled", { id, enabled }),
-	hostsTrustKey: (id: string, key: string) => __TAURI_INVOKE<HostView_Serialize>("hosts_trust_key", { id, key }),
-	hostsReconnect: (id: string) => __TAURI_INVOKE<HostView_Serialize>("hosts_reconnect", { id }),
-	hostsRegenerateKey: (id: string) => __TAURI_INVOKE<HostView_Serialize>("hosts_regenerate_key", { id }),
+	hostsSetEnabled: (id: string, enabled: boolean) => __TAURI_INVOKE<HostView>("hosts_set_enabled", { id, enabled }),
+	hostsTrustKey: (id: string, key: string) => __TAURI_INVOKE<HostView>("hosts_trust_key", { id, key }),
+	hostsReconnect: (id: string) => __TAURI_INVOKE<HostView>("hosts_reconnect", { id }),
+	hostsRegenerateKey: (id: string) => __TAURI_INVOKE<HostView>("hosts_regenerate_key", { id }),
 	hostsSshSetup: (id: string) => __TAURI_INVOKE<SshSetup>("hosts_ssh_setup", { id }),
 	hostsEvents: (id: string) => __TAURI_INVOKE<EngineEvent[]>("hosts_events", { id }),
-	containersList: (hostId: string) => __TAURI_INVOKE<Container_Serialize[]>("containers_list", { hostId }),
+	containersList: (hostId: string) => __TAURI_INVOKE<Container[]>("containers_list", { hostId }),
 	containersInspect: (hostId: string, id: string) => __TAURI_INVOKE<Value>("containers_inspect", { hostId, id }),
 	containersAct: (hostId: string, id: string, action: ContainerAction) => __TAURI_INVOKE<null>("containers_act", { hostId, id, action }),
 	containersRemove: (hostId: string, id: string, force: boolean, volumes: boolean) => __TAURI_INVOKE<null>("containers_remove", { hostId, id, force, volumes }),
@@ -36,12 +36,12 @@ export const commands = {
 	filesUpload: (hostId: string, containerId: string, directory: string, sources: string[]) => __TAURI_INVOKE<null>("files_upload", { hostId, containerId, directory, sources }),
 	/**  Stops a stream started by any `*_subscribe` command. */
 	streamCancel: (id: number) => __TAURI_INVOKE<void>("stream_cancel", { id }),
-	logsSubscribe: (hostId: string, sources: LogSource_Deserialize[], options: LogOptions_Deserialize, onEvent: Channel<LogEvent_Deserialize>) => __TAURI_INVOKE<number>("logs_subscribe", { hostId, sources, options, onEvent }),
+	logsSubscribe: (hostId: string, sources: LogSource[], options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("logs_subscribe", { hostId, sources, options, onEvent }),
 	statsSubscribe: (hostId: string, containerId: string, onSample: Channel<StatsSample>) => __TAURI_INVOKE<number>("stats_subscribe", { hostId, containerId, onSample }),
 	/**  Usage of every running container on a Host, refreshed every two seconds. */
 	usageSubscribe: (hostId: string, onUsage: Channel<ContainerUsage[]>) => __TAURI_INVOKE<number>("usage_subscribe", { hostId, onUsage }),
-	imagesPullSubscribe: (hostId: string, reference: string, onEvent: Channel<PullEvent_Deserialize>) => __TAURI_INVOKE<number>("images_pull_subscribe", { hostId, reference, onEvent }),
-	execStart: (hostId: string, containerId: string, options: ExecOptions_Deserialize, onEvent: Channel<ExecEvent_Deserialize>) => __TAURI_INVOKE<number>("exec_start", { hostId, containerId, options, onEvent }),
+	imagesPullSubscribe: (hostId: string, reference: string, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("images_pull_subscribe", { hostId, reference, onEvent }),
+	execStart: (hostId: string, containerId: string, options: ExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("exec_start", { hostId, containerId, options, onEvent }),
 	execInput: (session: number, data: string) => __TAURI_INVOKE<null>("exec_input", { session, data }),
 	execResize: (session: number, cols: number, rows: number) => __TAURI_INVOKE<null>("exec_resize", { session, cols, rows }),
 	execClose: (session: number) => __TAURI_INVOKE<void>("exec_close", { session }),
@@ -51,14 +51,14 @@ export const commands = {
 	imagesTag: (hostId: string, id: string, target: string) => __TAURI_INVOKE<null>("images_tag", { hostId, id, target }),
 	imagesRemove: (hostId: string, id: string, force: boolean) => __TAURI_INVOKE<string[]>("images_remove", { hostId, id, force }),
 	imagesPrune: (hostId: string, all: boolean) => __TAURI_INVOKE<PruneReport>("images_prune", { hostId, all }),
-	volumesList: (hostId: string) => __TAURI_INVOKE<VolumeView_Serialize[]>("volumes_list", { hostId }),
+	volumesList: (hostId: string) => __TAURI_INVOKE<VolumeView[]>("volumes_list", { hostId }),
 	volumesInspect: (hostId: string, name: string) => __TAURI_INVOKE<Value>("volumes_inspect", { hostId, name }),
-	volumesCreate: (hostId: string, input: VolumeInput_Deserialize) => __TAURI_INVOKE<string>("volumes_create", { hostId, input }),
+	volumesCreate: (hostId: string, input: VolumeInput) => __TAURI_INVOKE<string>("volumes_create", { hostId, input }),
 	volumesRemove: (hostId: string, name: string, force: boolean) => __TAURI_INVOKE<null>("volumes_remove", { hostId, name, force }),
 	volumesPrune: (hostId: string, all: boolean) => __TAURI_INVOKE<PruneReport>("volumes_prune", { hostId, all }),
-	networksList: (hostId: string) => __TAURI_INVOKE<NetworkView_Serialize[]>("networks_list", { hostId }),
+	networksList: (hostId: string) => __TAURI_INVOKE<NetworkView[]>("networks_list", { hostId }),
 	networksInspect: (hostId: string, id: string) => __TAURI_INVOKE<Value>("networks_inspect", { hostId, id }),
-	networksCreate: (hostId: string, input: NetworkInput_Deserialize) => __TAURI_INVOKE<string>("networks_create", { hostId, input }),
+	networksCreate: (hostId: string, input: NetworkInput) => __TAURI_INVOKE<string>("networks_create", { hostId, input }),
 	networksRemove: (hostId: string, id: string) => __TAURI_INVOKE<null>("networks_remove", { hostId, id }),
 	networksConnect: (hostId: string, network: string, container: string) => __TAURI_INVOKE<null>("networks_connect", { hostId, network, container }),
 	networksDisconnect: (hostId: string, network: string, container: string, force: boolean) => __TAURI_INVOKE<null>("networks_disconnect", { hostId, network, container, force }),
@@ -67,9 +67,9 @@ export const commands = {
 	systemDiskUsage: (hostId: string) => __TAURI_INVOKE<DiskUsage>("system_disk_usage", { hostId }),
 	systemPrune: (hostId: string, selection: PruneSelection) => __TAURI_INVOKE<SystemPruneReport>("system_prune", { hostId, selection }),
 	/**  Creates and starts a container; returns its id. */
-	containersRun: (hostId: string, spec: RunSpec_Deserialize) => __TAURI_INVOKE<string>("containers_run", { hostId, spec }),
+	containersRun: (hostId: string, spec: RunSpec) => __TAURI_INVOKE<string>("containers_run", { hostId, spec }),
 	/**  Every Stack on a Host: those running there plus undeployed Managed Stacks. */
-	stacksList: (hostId: string) => __TAURI_INVOKE<Stack_Serialize[]>("stacks_list", { hostId }),
+	stacksList: (hostId: string) => __TAURI_INVOKE<Stack[]>("stacks_list", { hostId }),
 	stacksGet: (id: string) => __TAURI_INVOKE<ManagedStack>("stacks_get", { id }),
 	/**  The decrypted environment of a Managed Stack, for editing. */
 	stacksGetEnv: (id: string) => __TAURI_INVOKE<string>("stacks_get_env", { id }),
@@ -86,7 +86,7 @@ export const commands = {
 	/**  Removes a Stack's containers and networks through the Engine API. */
 	stacksRemove: (hostId: string, name: string) => __TAURI_INVOKE<null>("stacks_remove", { hostId, name }),
 	/**  Runs a compose command for a Managed Stack, streaming its output. */
-	stacksComposeSubscribe: (id: string, action: ComposeAction, onEvent: Channel<ComposeEvent_Deserialize>) => __TAURI_INVOKE<number>("stacks_compose_subscribe", { id, action, onEvent }),
+	stacksComposeSubscribe: (id: string, action: ComposeAction, onEvent: Channel<ComposeEvent>) => __TAURI_INVOKE<number>("stacks_compose_subscribe", { id, action, onEvent }),
 };
 
 /** Events */
@@ -110,18 +110,7 @@ export type AppInfo = {
 };
 
 /**  What this machine can do; features degrade gracefully when something is missing. */
-export type Capabilities = Capabilities_Serialize | Capabilities_Deserialize;
-
-/**  What this machine can do; features degrade gracefully when something is missing. */
-export type Capabilities_Deserialize = {
-	/**  An OS keychain is reachable, so SSH, TLS and stack `.env` secrets can be stored. */
-	keychain: boolean,
-	/**  The compose CLI used to deploy Managed Stacks, if installed. */
-	compose?: ComposeCli | null,
-};
-
-/**  What this machine can do; features degrade gracefully when something is missing. */
-export type Capabilities_Serialize = {
+export type Capabilities = {
 	/**  An OS keychain is reachable, so SSH, TLS and stack `.env` secrets can be stored. */
 	keychain: boolean,
 	/**  The compose CLI used to deploy Managed Stacks, if installed. */
@@ -151,44 +140,9 @@ export type ComposeCli = {
 	version: string,
 };
 
-export type ComposeEvent = ComposeEvent_Serialize | ComposeEvent_Deserialize;
+export type ComposeEvent = { type: "line"; text: string } | { type: "exit"; success: boolean; code: number | null } | { type: "error"; message: string };
 
-export type ComposeEvent_Deserialize = { type: "line"; text: string } | { type: "exit"; success: boolean; code?: number | null } | { type: "error"; message: string };
-
-export type ComposeEvent_Serialize = { type: "line"; text: string } | { type: "exit"; success: boolean; code: number | null } | { type: "error"; message: string };
-
-export type Container = Container_Serialize | Container_Deserialize;
-
-export type ContainerAction = "start" | "stop" | "restart" | "pause" | "unpause" | "kill";
-
-export type ContainerUsage = {
-	id: string,
-	cpuPercent: number | null,
-	memoryUsage: number,
-	memoryLimit: number,
-};
-
-export type Container_Deserialize = {
-	id: string,
-	name: string,
-	image: string,
-	imageId: string,
-	command: string,
-	/**  Unix time in seconds. */
-	created: number,
-	/**  `created`, `running`, `paused`, `restarting`, `exited`, `removing` or `dead`. */
-	state: string,
-	/**  Human status from the Engine, e.g. "Up 3 hours (healthy)". */
-	status: string,
-	health?: string | null,
-	ports: PortBinding_Deserialize[],
-	labels: { [key in string]: string },
-	stack?: string | null,
-	service?: string | null,
-	networks: string[],
-};
-
-export type Container_Serialize = {
+export type Container = {
 	id: string,
 	name: string,
 	image: string,
@@ -201,21 +155,24 @@ export type Container_Serialize = {
 	/**  Human status from the Engine, e.g. "Up 3 hours (healthy)". */
 	status: string,
 	health: string | null,
-	ports: PortBinding_Serialize[],
+	ports: PortBinding[],
 	labels: { [key in string]: string },
 	stack: string | null,
 	service: string | null,
 	networks: string[],
 };
 
-/**  Credentials typed by the user. Absent on update means "keep the stored ones". */
-export type CredentialsInput = CredentialsInput_Serialize | CredentialsInput_Deserialize;
+export type ContainerAction = "start" | "stop" | "restart" | "pause" | "unpause" | "kill";
+
+export type ContainerUsage = {
+	id: string,
+	cpuPercent: number | null,
+	memoryUsage: number,
+	memoryLimit: number,
+};
 
 /**  Credentials typed by the user. Absent on update means "keep the stored ones". */
-export type CredentialsInput_Deserialize = { kind: "tls"; caPem: string; certPem: string; keyPem: string } | { kind: "sshKey"; privateKey: string; passphrase?: string | null };
-
-/**  Credentials typed by the user. Absent on update means "keep the stored ones". */
-export type CredentialsInput_Serialize = { kind: "tls"; caPem: string; certPem: string; keyPem: string } | { kind: "sshKey"; privateKey: string; passphrase: string | null };
+export type CredentialsInput = { kind: "tls"; caPem: string; certPem: string; keyPem: string } | { kind: "sshKey"; privateKey: string; passphrase: string | null };
 
 export type DetectedEngine = {
 	/**  The product that usually owns this socket, e.g. "Colima". */
@@ -264,24 +221,9 @@ export type EngineInfo = {
 	images: number,
 };
 
-export type ExecEvent = ExecEvent_Serialize | ExecEvent_Deserialize;
+export type ExecEvent = { type: "output"; data: string } | { type: "exit"; code: number | null } | { type: "error"; message: string };
 
-export type ExecEvent_Deserialize = { type: "output"; data: string } | { type: "exit"; code?: number | null } | { type: "error"; message: string };
-
-export type ExecEvent_Serialize = { type: "output"; data: string } | { type: "exit"; code: number | null } | { type: "error"; message: string };
-
-export type ExecOptions = ExecOptions_Serialize | ExecOptions_Deserialize;
-
-export type ExecOptions_Deserialize = {
-	/**  The command to run, parsed with shell quoting; the default picks a shell. */
-	command?: string | null,
-	user?: string | null,
-	workingDir?: string | null,
-	cols: number,
-	rows: number,
-};
-
-export type ExecOptions_Serialize = {
+export type ExecOptions = {
 	/**  The command to run, parsed with shell quoting; the default picks a shell. */
 	command: string | null,
 	user: string | null,
@@ -303,26 +245,18 @@ export type FileEntry = {
 
 export type FileKind = "directory" | "file" | "symlink" | "other";
 
-export type Host = Host_Serialize | Host_Deserialize;
+export type Host = {
+	id: string,
+	name: string,
+	connection: HostConnection,
+	enabled: boolean,
+	/**  The SSH server key trusted on first use, in OpenSSH format. */
+	hostKey: string | null,
+	createdAt: string,
+};
 
 /**  How to reach a Host. Never contains secret material; that lives in [`HostSecrets`]. */
-export type HostConnection = HostConnection_Serialize | HostConnection_Deserialize;
-
-/**  How to reach a Host. Never contains secret material; that lives in [`HostSecrets`]. */
-export type HostConnection_Deserialize = 
-/**  A Unix socket or Windows named pipe on this machine. */
-{ kind: "local"; socketPath: string } | 
-/**  Plain, unauthenticated TCP (`host:port`). */
-{ kind: "tcp"; address: string } | 
-/**  TCP with mutual TLS (`host:port`); certificates are in [`HostSecrets::Tls`]. */
-{ kind: "tls"; address: string } | 
-/**  The remote Engine socket, reached through SSH. */
-{ kind: "ssh"; host: string; port: number; user: string; socketPath: string; auth: SshAuth; 
-/**  OpenSSH public key for `generated` and `imported` auth, shown to the user. */
-publicKey?: string | null };
-
-/**  How to reach a Host. Never contains secret material; that lives in [`HostSecrets`]. */
-export type HostConnection_Serialize = 
+export type HostConnection = 
 /**  A Unix socket or Windows named pipe on this machine. */
 { kind: "local"; socketPath: string } | 
 /**  Plain, unauthenticated TCP (`host:port`). */
@@ -334,18 +268,10 @@ export type HostConnection_Serialize =
 /**  OpenSSH public key for `generated` and `imported` auth, shown to the user. */
 publicKey: string | null };
 
-export type HostInput = HostInput_Serialize | HostInput_Deserialize;
-
-export type HostInput_Deserialize = {
+export type HostInput = {
 	name: string,
-	connection: HostConnection_Deserialize,
-	credentials?: CredentialsInput_Deserialize | null,
-};
-
-export type HostInput_Serialize = {
-	name: string,
-	connection: HostConnection_Serialize,
-	credentials: CredentialsInput_Serialize | null,
+	connection: HostConnection,
+	credentials: CredentialsInput | null,
 };
 
 export type HostStatus = { state: "disabled" } | { state: "connecting" } | { state: "connected"; engineVersion: string; apiVersion: string; os: string; arch: string } | { state: "unreachable"; message: string; retryInSecs: number } | { state: "unauthorized"; message: string } | { state: "hostKeyUntrusted"; key: string; fingerprint: string } | { state: "hostKeyMismatch"; key: string; fingerprint: string; expectedFingerprint: string } | { state: "credentialsLost" } | { state: "keychainUnavailable"; message: string } | { state: "invalid"; message: string };
@@ -355,36 +281,9 @@ export type HostStatusChanged = {
 	status: HostStatus,
 };
 
-export type HostView = HostView_Serialize | HostView_Deserialize;
-
-export type HostView_Deserialize = {
-	host: Host_Deserialize,
+export type HostView = {
+	host: Host,
 	status: HostStatus,
-};
-
-export type HostView_Serialize = {
-	host: Host_Serialize,
-	status: HostStatus,
-};
-
-export type Host_Deserialize = {
-	id: string,
-	name: string,
-	connection: HostConnection_Deserialize,
-	enabled: boolean,
-	/**  The SSH server key trusted on first use, in OpenSSH format. */
-	hostKey?: string | null,
-	createdAt: string,
-};
-
-export type Host_Serialize = {
-	id: string,
-	name: string,
-	connection: HostConnection_Serialize,
-	enabled: boolean,
-	/**  The SSH server key trusted on first use, in OpenSSH format. */
-	hostKey: string | null,
-	createdAt: string,
 };
 
 export type Image = {
@@ -409,42 +308,16 @@ export type ImageLayer = {
 	tags: string[],
 };
 
-export type LogEvent = LogEvent_Serialize | LogEvent_Deserialize;
+export type LogEvent = { type: "lines"; lines: LogLine[] } | { type: "error"; message: string } | { type: "end" };
 
-export type LogEvent_Deserialize = { type: "lines"; lines: LogLine_Deserialize[] } | { type: "error"; message: string } | { type: "end" };
-
-export type LogEvent_Serialize = { type: "lines"; lines: LogLine_Serialize[] } | { type: "error"; message: string } | { type: "end" };
-
-export type LogLine = LogLine_Serialize | LogLine_Deserialize;
-
-export type LogLine_Deserialize = {
-	source?: string | null,
-	/**  `stdout`, `stderr` or `console` (TTY containers). */
-	stream: string,
-	text: string,
-};
-
-export type LogLine_Serialize = {
+export type LogLine = {
 	source: string | null,
 	/**  `stdout`, `stderr` or `console` (TTY containers). */
 	stream: string,
 	text: string,
 };
 
-export type LogOptions = LogOptions_Serialize | LogOptions_Deserialize;
-
-export type LogOptions_Deserialize = {
-	/**  Lines of history to start with; `None` for all of it. */
-	tail?: number | null,
-	timestamps: boolean,
-	/**  Only lines newer than this Unix time (seconds). */
-	since?: number | null,
-	stdout: boolean,
-	stderr: boolean,
-	follow: boolean,
-};
-
-export type LogOptions_Serialize = {
+export type LogOptions = {
 	/**  Lines of history to start with; `None` for all of it. */
 	tail: number | null,
 	timestamps: boolean,
@@ -455,15 +328,7 @@ export type LogOptions_Serialize = {
 	follow: boolean,
 };
 
-export type LogSource = LogSource_Serialize | LogSource_Deserialize;
-
-export type LogSource_Deserialize = {
-	containerId: string,
-	/**  Shown in front of each line when several sources share a stream. */
-	label?: string | null,
-};
-
-export type LogSource_Serialize = {
+export type LogSource = {
 	containerId: string,
 	/**  Shown in front of each line when several sources share a stream. */
 	label: string | null,
@@ -486,19 +351,7 @@ export type MountSpec = {
 	readOnly: boolean,
 };
 
-export type NetworkInput = NetworkInput_Serialize | NetworkInput_Deserialize;
-
-export type NetworkInput_Deserialize = {
-	name: string,
-	/**  Defaults to `bridge`. */
-	driver?: string | null,
-	subnet?: string | null,
-	gateway?: string | null,
-	internal: boolean,
-	attachable: boolean,
-};
-
-export type NetworkInput_Serialize = {
+export type NetworkInput = {
 	name: string,
 	/**  Defaults to `bridge`. */
 	driver: string | null,
@@ -508,25 +361,7 @@ export type NetworkInput_Serialize = {
 	attachable: boolean,
 };
 
-export type NetworkView = NetworkView_Serialize | NetworkView_Deserialize;
-
-export type NetworkView_Deserialize = {
-	id: string,
-	name: string,
-	driver: string,
-	scope: string,
-	internal: boolean,
-	attachable: boolean,
-	subnets: string[],
-	created?: string | null,
-	labels: { [key in string]: string },
-	stack?: string | null,
-	builtIn: boolean,
-	/**  Names of attached containers. */
-	containers: string[],
-};
-
-export type NetworkView_Serialize = {
+export type NetworkView = {
 	id: string,
 	name: string,
 	driver: string,
@@ -542,34 +377,14 @@ export type NetworkView_Serialize = {
 	containers: string[],
 };
 
-export type PortBinding = PortBinding_Serialize | PortBinding_Deserialize;
-
-export type PortBinding_Deserialize = {
-	ip?: string | null,
-	privatePort: number,
-	publicPort?: number | null,
-	protocol: string,
-};
-
-export type PortBinding_Serialize = {
+export type PortBinding = {
 	ip: string | null,
 	privatePort: number,
 	publicPort: number | null,
 	protocol: string,
 };
 
-export type PortSpec = PortSpec_Serialize | PortSpec_Deserialize;
-
-export type PortSpec_Deserialize = {
-	hostIp?: string | null,
-	/**  `None` lets the Engine pick a free port. */
-	hostPort?: number | null,
-	containerPort: number,
-	/**  `tcp` or `udp`. */
-	protocol: string,
-};
-
-export type PortSpec_Serialize = {
+export type PortSpec = {
 	hostIp: string | null,
 	/**  `None` lets the Engine pick a free port. */
 	hostPort: number | null,
@@ -599,43 +414,20 @@ export type PruneSelection = {
 	buildCache: boolean,
 };
 
-export type PullEvent = PullEvent_Serialize | PullEvent_Deserialize;
-
-export type PullEvent_Deserialize = 
-/**  Progress of one layer (or a general status when `id` is absent). */
-{ type: "progress"; id?: string | null; status: string; current?: number | null; total?: number | null } | { type: "done" } | { type: "error"; message: string };
-
-export type PullEvent_Serialize = 
+export type PullEvent = 
 /**  Progress of one layer (or a general status when `id` is absent). */
 { type: "progress"; id: string | null; status: string; current: number | null; total: number | null } | { type: "done" } | { type: "error"; message: string };
 
 export type RestartPolicy = "no" | "always" | "unless-stopped" | "on-failure";
 
-export type RunSpec = RunSpec_Serialize | RunSpec_Deserialize;
-
-export type RunSpec_Deserialize = {
-	image: string,
-	name?: string | null,
-	/**  Overrides the image command; parsed with shell quoting rules. */
-	command?: string | null,
-	/**  `KEY=value` entries. */
-	env: string[],
-	ports: PortSpec_Deserialize[],
-	mounts: MountSpec[],
-	network?: string | null,
-	restart: RestartPolicy,
-	/**  Remove the container when it exits (`--rm`). */
-	autoRemove: boolean,
-};
-
-export type RunSpec_Serialize = {
+export type RunSpec = {
 	image: string,
 	name: string | null,
 	/**  Overrides the image command; parsed with shell quoting rules. */
 	command: string | null,
 	/**  `KEY=value` entries. */
 	env: string[],
-	ports: PortSpec_Serialize[],
+	ports: PortSpec[],
 	mounts: MountSpec[],
 	network: string | null,
 	restart: RestartPolicy,
@@ -643,14 +435,10 @@ export type RunSpec_Serialize = {
 	autoRemove: boolean,
 };
 
-export type Settings = Settings_Serialize | Settings_Deserialize;
-
-export type Settings_Deserialize = {
+export type Settings = {
 	theme?: Theme,
-};
-
-export type Settings_Serialize = {
-	theme: Theme,
+	/**  The Host selected when the app was last closed. */
+	lastHostId?: string | null,
 };
 
 export type SshAuth = 
@@ -671,7 +459,18 @@ export type SshSetup = {
 	dockerGroupCommand: string,
 };
 
-export type Stack = Stack_Serialize | Stack_Deserialize;
+export type Stack = {
+	name: string,
+	kind: StackKind,
+	/**  Present for Managed Stacks. */
+	managedId: string | null,
+	state: StackState,
+	services: StackService[],
+	running: number,
+	total: number,
+	/**  Where the compose files lived for whoever deployed it (on that machine). */
+	configFiles: string | null,
+};
 
 export type StackAction = "start" | "stop" | "restart";
 
@@ -692,32 +491,6 @@ export type StackState =
 "stopped" | 
 /**  A Managed Stack with no containers yet. */
 "notDeployed";
-
-export type Stack_Deserialize = {
-	name: string,
-	kind: StackKind,
-	/**  Present for Managed Stacks. */
-	managedId?: string | null,
-	state: StackState,
-	services: StackService[],
-	running: number,
-	total: number,
-	/**  Where the compose files lived for whoever deployed it (on that machine). */
-	configFiles?: string | null,
-};
-
-export type Stack_Serialize = {
-	name: string,
-	kind: StackKind,
-	/**  Present for Managed Stacks. */
-	managedId: string | null,
-	state: StackState,
-	services: StackService[],
-	running: number,
-	total: number,
-	/**  Where the compose files lived for whoever deployed it (on that machine). */
-	configFiles: string | null,
-};
 
 export type StatsSample = {
 	/**  Percent of one CPU; 200 means two CPUs fully used. */
@@ -751,36 +524,14 @@ export type UsageLine = {
 
 export type Value = null | boolean | number | string | Value[] | { [key in string]: Value };
 
-export type VolumeInput = VolumeInput_Serialize | VolumeInput_Deserialize;
-
-export type VolumeInput_Deserialize = {
-	name: string,
-	/**  Defaults to `local`. */
-	driver?: string | null,
-	labels: { [key in string]: string },
-};
-
-export type VolumeInput_Serialize = {
+export type VolumeInput = {
 	name: string,
 	/**  Defaults to `local`. */
 	driver: string | null,
 	labels: { [key in string]: string },
 };
 
-export type VolumeView = VolumeView_Serialize | VolumeView_Deserialize;
-
-export type VolumeView_Deserialize = {
-	name: string,
-	driver: string,
-	mountpoint: string,
-	createdAt?: string | null,
-	labels: { [key in string]: string },
-	stack?: string | null,
-	/**  Names of containers mounting this volume. */
-	usedBy: string[],
-};
-
-export type VolumeView_Serialize = {
+export type VolumeView = {
 	name: string,
 	driver: string,
 	mountpoint: string,

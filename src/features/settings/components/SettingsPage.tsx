@@ -17,8 +17,8 @@ export function SettingsPage() {
   async function onThemeChange(theme: Theme) {
     setSaveError(null);
     try {
-      const saved = await settingsApi.update({ theme });
-      applyTheme(saved.theme);
+      const saved = await settingsApi.update({ ...settings.data, theme });
+      applyTheme(saved.theme ?? 'system');
       settings.reload();
     } catch (error) {
       setSaveError(toAppError(error));
@@ -31,7 +31,7 @@ export function SettingsPage() {
       <label>
         Theme{' '}
         <select
-          value={settings.data.theme}
+          value={settings.data.theme ?? 'system'}
           onChange={(e) => void onThemeChange(e.target.value as Theme)}
         >
           {THEMES.map((t) => (

@@ -7,7 +7,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
   useEffect(() => {
     settingsApi
       .get()
-      .then((s) => applyTheme(s.theme))
+      .then((s) => applyTheme(s.theme ?? 'system'))
       .catch(() => applyTheme('system'));
   }, []);
 

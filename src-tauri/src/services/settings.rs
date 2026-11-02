@@ -17,9 +17,11 @@ pub enum Theme {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, specta::Type)]
-#[serde(default)]
+#[serde(default, rename_all = "camelCase")]
 pub struct Settings {
     pub theme: Theme,
+    /// The Host selected when the app was last closed.
+    pub last_host_id: Option<String>,
 }
 
 /// Reads and writes [`Settings`] as one JSON document in the `settings` table.
@@ -103,7 +105,11 @@ mod tests {
     fn update_is_read_back() {
         let dir = tempfile::tempdir().unwrap();
         let svc = service(dir.path());
-        svc.update(Settings { theme: Theme::Dark }).unwrap();
+        svc.update(Settings {
+            theme: Theme::Dark,
+            ..Default::default()
+        })
+        .unwrap();
         assert_eq!(svc.get().unwrap().theme, Theme::Dark);
     }
 
@@ -119,7 +125,11 @@ mod tests {
         assert!(!legacy.exists());
         assert!(dir.path().join("settings.json.imported").exists());
 
-        svc.update(Settings { theme: Theme::Dark }).unwrap();
+        svc.update(Settings {
+            theme: Theme::Dark,
+            ..Default::default()
+        })
+        .unwrap();
         let again = SettingsService::new(db, &legacy).unwrap();
         assert_eq!(again.get().unwrap().theme, Theme::Dark);
     }

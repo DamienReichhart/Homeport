@@ -22,6 +22,8 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
     tauri_specta::Builder::<tauri::Wry>::new()
         .error_handling(ErrorHandlingMode::Throw)
         .dangerously_cast_bigints_to_number()
+        // One TS type per Rust type; commands and channels only flow one way each.
+        .disable_serde_phases()
         .commands(collect_commands![
             system::get_app_info,
             system::get_capabilities,

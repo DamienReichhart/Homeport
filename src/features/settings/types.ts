@@ -1,1 +1,1 @@
-export type { Settings_Serialize as Settings } from '@/shared/api';
+export type { Settings } from '@/shared/api';
