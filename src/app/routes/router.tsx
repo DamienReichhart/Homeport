@@ -1,5 +1,6 @@
 import { createMemoryRouter, type RouteObject } from 'react-router-dom';
 import { ContainerDetailPage, ContainersPage } from '@/features/containers';
+import { EventsPage } from '@/features/events';
 import { AddHostPage, HostDetailPage, HostsPage } from '@/features/hosts';
 import { ImagesPage } from '@/features/images';
 import { NetworksPage } from '@/features/networks';
@@ -26,6 +27,7 @@ export const routes: RouteObject[] = [
       { path: 'stacks', element: <StacksPage /> },
       { path: 'stacks/new', element: <NewStackPage /> },
       { path: 'stacks/:name', element: <StackDetailPage /> },
+      { path: 'events', element: <EventsPage /> },
       { path: 'settings', element: <SettingsPage /> },
     ],
   },

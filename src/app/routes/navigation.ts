@@ -1,4 +1,5 @@
 import {
+  ActivityIcon,
   BoxIcon,
   BoxesIcon,
   HardDriveIcon,
@@ -23,5 +24,6 @@ export const navItems: NavItem[] = [
   { path: '/volumes', label: 'Volumes', icon: HardDriveIcon },
   { path: '/networks', label: 'Networks', icon: NetworkIcon },
   { path: '/stacks', label: 'Stacks', icon: BoxesIcon },
+  { path: '/events', label: 'Events', icon: ActivityIcon },
   { path: '/settings', label: 'Settings', icon: SettingsIcon },
 ];
