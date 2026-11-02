@@ -174,7 +174,6 @@ impl HostRegistry {
     }
 
     /// The Engine client of a connected Host.
-    #[allow(dead_code)] // used by the resource services
     pub fn docker(&self, id: &str) -> AppResult<Docker> {
         self.connected(id).map(|c| c.docker)
     }
@@ -192,7 +191,6 @@ impl HostRegistry {
             .unwrap_or_default()
     }
 
-    #[allow(dead_code)]
     fn connected(&self, id: &str) -> AppResult<Connected> {
         self.lock()
             .get(id)

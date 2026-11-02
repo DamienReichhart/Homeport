@@ -3,6 +3,7 @@
 
 pub mod crypto;
 pub mod db;
+pub mod docker;
 pub mod hosts;
 pub mod settings;
 pub mod transport;

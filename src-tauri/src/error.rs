@@ -25,9 +25,11 @@ pub enum AppError {
     #[error("{0}")]
     Validation(String),
 
-    #[allow(dead_code)] // raised once resource commands use the registry
     #[error("host {0} is not connected")]
     HostNotConnected(String),
+
+    #[error("{0}")]
+    Docker(String),
 
     #[error("the OS keychain is unavailable, so secrets can't be stored: {0}")]
     KeychainUnavailable(String),
@@ -37,6 +39,12 @@ pub enum AppError {
 
     #[error("{0}")]
     Tauri(#[from] tauri::Error),
+}
+
+impl From<bollard::errors::Error> for AppError {
+    fn from(e: bollard::errors::Error) -> Self {
+        Self::Docker(crate::services::transport::describe_docker_error(&e))
+    }
 }
 
 impl AppError {
@@ -50,6 +58,7 @@ impl AppError {
             Self::NotFound(_) => "not_found",
             Self::Validation(_) => "validation",
             Self::HostNotConnected(_) => "host_not_connected",
+            Self::Docker(_) => "docker",
             Self::KeychainUnavailable(_) => "keychain_unavailable",
             Self::CredentialsLost => "credentials_lost",
             Self::Tauri(_) => "tauri",

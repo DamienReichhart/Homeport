@@ -21,6 +21,12 @@ export const commands = {
 	hostsRegenerateKey: (id: string) => __TAURI_INVOKE<HostView_Serialize>("hosts_regenerate_key", { id }),
 	hostsSshSetup: (id: string) => __TAURI_INVOKE<SshSetup>("hosts_ssh_setup", { id }),
 	hostsEvents: (id: string) => __TAURI_INVOKE<EngineEvent[]>("hosts_events", { id }),
+	containersList: (hostId: string) => __TAURI_INVOKE<Container_Serialize[]>("containers_list", { hostId }),
+	containersInspect: (hostId: string, id: string) => __TAURI_INVOKE<Value>("containers_inspect", { hostId, id }),
+	containersAct: (hostId: string, id: string, action: ContainerAction) => __TAURI_INVOKE<null>("containers_act", { hostId, id, action }),
+	containersRemove: (hostId: string, id: string, force: boolean, volumes: boolean) => __TAURI_INVOKE<null>("containers_remove", { hostId, id, force, volumes }),
+	containersRename: (hostId: string, id: string, name: string) => __TAURI_INVOKE<null>("containers_rename", { hostId, id, name }),
+	containersProcesses: (hostId: string, id: string) => __TAURI_INVOKE<Processes>("containers_processes", { hostId, id }),
 };
 
 /** Events */
@@ -47,6 +53,50 @@ export type AppInfo = {
 export type Capabilities = {
 	/**  An OS keychain is reachable, so SSH, TLS and stack `.env` secrets can be stored. */
 	keychain: boolean,
+};
+
+export type Container = Container_Serialize | Container_Deserialize;
+
+export type ContainerAction = "start" | "stop" | "restart" | "pause" | "unpause" | "kill";
+
+export type Container_Deserialize = {
+	id: string,
+	name: string,
+	image: string,
+	imageId: string,
+	command: string,
+	/**  Unix time in seconds. */
+	created: number,
+	/**  `created`, `running`, `paused`, `restarting`, `exited`, `removing` or `dead`. */
+	state: string,
+	/**  Human status from the Engine, e.g. "Up 3 hours (healthy)". */
+	status: string,
+	health?: string | null,
+	ports: PortBinding_Deserialize[],
+	labels: { [key in string]: string },
+	stack?: string | null,
+	service?: string | null,
+	networks: string[],
+};
+
+export type Container_Serialize = {
+	id: string,
+	name: string,
+	image: string,
+	imageId: string,
+	command: string,
+	/**  Unix time in seconds. */
+	created: number,
+	/**  `created`, `running`, `paused`, `restarting`, `exited`, `removing` or `dead`. */
+	state: string,
+	/**  Human status from the Engine, e.g. "Up 3 hours (healthy)". */
+	status: string,
+	health: string | null,
+	ports: PortBinding_Serialize[],
+	labels: { [key in string]: string },
+	stack: string | null,
+	service: string | null,
+	networks: string[],
 };
 
 /**  Credentials typed by the user. Absent on update means "keep the stored ones". */
@@ -165,6 +215,27 @@ export type Host_Serialize = {
 	createdAt: string,
 };
 
+export type PortBinding = PortBinding_Serialize | PortBinding_Deserialize;
+
+export type PortBinding_Deserialize = {
+	ip?: string | null,
+	privatePort: number,
+	publicPort?: number | null,
+	protocol: string,
+};
+
+export type PortBinding_Serialize = {
+	ip: string | null,
+	privatePort: number,
+	publicPort: number | null,
+	protocol: string,
+};
+
+export type Processes = {
+	titles: string[],
+	processes: string[][],
+};
+
 export type Settings = Settings_Serialize | Settings_Deserialize;
 
 export type Settings_Deserialize = {
@@ -194,6 +265,8 @@ export type SshSetup = {
 };
 
 export type Theme = "system" | "light" | "dark";
+
+export type Value = null | boolean | number | string | Value[] | { [key in string]: Value };
 
 /* Tauri Specta runtime */
 type EventEmit<T> = [T] extends [null] ? () => Promise<void> : (payload: T) => Promise<void>;

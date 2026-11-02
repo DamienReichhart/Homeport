@@ -6,6 +6,7 @@ use tauri_specta::{collect_commands, collect_events, ErrorHandlingMode};
 
 use crate::events;
 
+pub mod containers;
 pub mod hosts;
 pub mod settings;
 pub mod system;
@@ -33,6 +34,12 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             hosts::hosts_regenerate_key,
             hosts::hosts_ssh_setup,
             hosts::hosts_events,
+            containers::containers_list,
+            containers::containers_inspect,
+            containers::containers_act,
+            containers::containers_remove,
+            containers::containers_rename,
+            containers::containers_processes,
         ])
         .events(collect_events![
             events::HostStatusChanged,
