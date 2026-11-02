@@ -9,6 +9,7 @@ use crate::events;
 pub mod containers;
 pub mod hosts;
 pub mod settings;
+pub mod streams;
 pub mod system;
 
 /// Path of the generated bindings, relative to the `src-tauri` crate root.
@@ -40,6 +41,8 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             containers::containers_remove,
             containers::containers_rename,
             containers::containers_processes,
+            streams::stream_cancel,
+            streams::logs_subscribe,
         ])
         .events(collect_events![
             events::HostStatusChanged,

@@ -3,6 +3,7 @@
 //! shaped for the frontend.
 
 pub mod containers;
+pub mod logs;
 
 #[cfg(test)]
 pub mod testing;

@@ -5,6 +5,7 @@ use std::sync::Arc;
 
 use crate::services::{
     crypto::SecretBox, db::Db, hosts::service::HostService, settings::SettingsService,
+    streams::Streams,
 };
 
 pub struct AppState {
@@ -13,4 +14,5 @@ pub struct AppState {
     pub db: Arc<Db>,
     pub settings: SettingsService,
     pub hosts: HostService,
+    pub streams: Streams,
 }

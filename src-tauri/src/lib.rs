@@ -58,6 +58,7 @@ pub fn run() {
                 db,
                 settings,
                 hosts: HostService { store, registry },
+                streams: Default::default(),
             });
             Ok(())
         })
