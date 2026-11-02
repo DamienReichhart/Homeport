@@ -40,10 +40,34 @@ export const commands = {
 	statsSubscribe: (hostId: string, containerId: string, onSample: Channel<StatsSample>) => __TAURI_INVOKE<number>("stats_subscribe", { hostId, containerId, onSample }),
 	/**  Usage of every running container on a Host, refreshed every two seconds. */
 	usageSubscribe: (hostId: string, onUsage: Channel<ContainerUsage[]>) => __TAURI_INVOKE<number>("usage_subscribe", { hostId, onUsage }),
+	imagesPullSubscribe: (hostId: string, reference: string, onEvent: Channel<PullEvent_Deserialize>) => __TAURI_INVOKE<number>("images_pull_subscribe", { hostId, reference, onEvent }),
 	execStart: (hostId: string, containerId: string, options: ExecOptions_Deserialize, onEvent: Channel<ExecEvent_Deserialize>) => __TAURI_INVOKE<number>("exec_start", { hostId, containerId, options, onEvent }),
 	execInput: (session: number, data: string) => __TAURI_INVOKE<null>("exec_input", { session, data }),
 	execResize: (session: number, cols: number, rows: number) => __TAURI_INVOKE<null>("exec_resize", { session, cols, rows }),
 	execClose: (session: number) => __TAURI_INVOKE<void>("exec_close", { session }),
+	imagesList: (hostId: string) => __TAURI_INVOKE<Image[]>("images_list", { hostId }),
+	imagesInspect: (hostId: string, id: string) => __TAURI_INVOKE<Value>("images_inspect", { hostId, id }),
+	imagesHistory: (hostId: string, id: string) => __TAURI_INVOKE<ImageLayer[]>("images_history", { hostId, id }),
+	imagesTag: (hostId: string, id: string, target: string) => __TAURI_INVOKE<null>("images_tag", { hostId, id, target }),
+	imagesRemove: (hostId: string, id: string, force: boolean) => __TAURI_INVOKE<string[]>("images_remove", { hostId, id, force }),
+	imagesPrune: (hostId: string, all: boolean) => __TAURI_INVOKE<PruneReport>("images_prune", { hostId, all }),
+	volumesList: (hostId: string) => __TAURI_INVOKE<VolumeView_Serialize[]>("volumes_list", { hostId }),
+	volumesInspect: (hostId: string, name: string) => __TAURI_INVOKE<Value>("volumes_inspect", { hostId, name }),
+	volumesCreate: (hostId: string, input: VolumeInput_Deserialize) => __TAURI_INVOKE<string>("volumes_create", { hostId, input }),
+	volumesRemove: (hostId: string, name: string, force: boolean) => __TAURI_INVOKE<null>("volumes_remove", { hostId, name, force }),
+	volumesPrune: (hostId: string, all: boolean) => __TAURI_INVOKE<PruneReport>("volumes_prune", { hostId, all }),
+	networksList: (hostId: string) => __TAURI_INVOKE<NetworkView_Serialize[]>("networks_list", { hostId }),
+	networksInspect: (hostId: string, id: string) => __TAURI_INVOKE<Value>("networks_inspect", { hostId, id }),
+	networksCreate: (hostId: string, input: NetworkInput_Deserialize) => __TAURI_INVOKE<string>("networks_create", { hostId, input }),
+	networksRemove: (hostId: string, id: string) => __TAURI_INVOKE<null>("networks_remove", { hostId, id }),
+	networksConnect: (hostId: string, network: string, container: string) => __TAURI_INVOKE<null>("networks_connect", { hostId, network, container }),
+	networksDisconnect: (hostId: string, network: string, container: string, force: boolean) => __TAURI_INVOKE<null>("networks_disconnect", { hostId, network, container, force }),
+	networksPrune: (hostId: string) => __TAURI_INVOKE<PruneReport>("networks_prune", { hostId }),
+	systemInfo: (hostId: string) => __TAURI_INVOKE<EngineInfo>("system_info", { hostId }),
+	systemDiskUsage: (hostId: string) => __TAURI_INVOKE<DiskUsage>("system_disk_usage", { hostId }),
+	systemPrune: (hostId: string, selection: PruneSelection) => __TAURI_INVOKE<SystemPruneReport>("system_prune", { hostId, selection }),
+	/**  Creates and starts a container; returns its id. */
+	containersRun: (hostId: string, spec: RunSpec_Deserialize) => __TAURI_INVOKE<string>("containers_run", { hostId, spec }),
 };
 
 /** Events */
@@ -139,6 +163,13 @@ export type DetectedEngine = {
 	engineVersion: string,
 };
 
+export type DiskUsage = {
+	images: UsageLine,
+	containers: UsageLine,
+	volumes: UsageLine,
+	buildCache: UsageLine,
+};
+
 /**  One entry of a Host's Engine event stream. */
 export type EngineEvent = {
 	/**  Unix time in seconds. */
@@ -155,6 +186,23 @@ export type EngineEventReceived = {
 	event: EngineEvent,
 };
 
+export type EngineInfo = {
+	name: string,
+	serverVersion: string,
+	operatingSystem: string,
+	kernelVersion: string,
+	architecture: string,
+	cpus: number,
+	memory: number,
+	rootDir: string,
+	storageDriver: string,
+	containers: number,
+	running: number,
+	paused: number,
+	stopped: number,
+	images: number,
+};
+
 export type ExecEvent = ExecEvent_Serialize | ExecEvent_Deserialize;
 
 export type ExecEvent_Deserialize = { type: "output"; data: string } | { type: "exit"; code?: number | null } | { type: "error"; message: string };
@@ -164,7 +212,7 @@ export type ExecEvent_Serialize = { type: "output"; data: string } | { type: "ex
 export type ExecOptions = ExecOptions_Serialize | ExecOptions_Deserialize;
 
 export type ExecOptions_Deserialize = {
-	/**  The command to run, split on whitespace; the default picks a shell. */
+	/**  The command to run, parsed with shell quoting; the default picks a shell. */
 	command?: string | null,
 	user?: string | null,
 	workingDir?: string | null,
@@ -173,7 +221,7 @@ export type ExecOptions_Deserialize = {
 };
 
 export type ExecOptions_Serialize = {
-	/**  The command to run, split on whitespace; the default picks a shell. */
+	/**  The command to run, parsed with shell quoting; the default picks a shell. */
 	command: string | null,
 	user: string | null,
 	workingDir: string | null,
@@ -278,6 +326,28 @@ export type Host_Serialize = {
 	createdAt: string,
 };
 
+export type Image = {
+	id: string,
+	/**  `repo:tag` names; empty for dangling images. */
+	tags: string[],
+	digests: string[],
+	/**  Unix time in seconds. */
+	created: number,
+	size: number,
+	/**  Containers (running or not) created from this image. */
+	containers: number,
+	labels: { [key in string]: string },
+};
+
+export type ImageLayer = {
+	id: string,
+	created: number,
+	createdBy: string,
+	size: number,
+	comment: string,
+	tags: string[],
+};
+
 export type LogEvent = LogEvent_Serialize | LogEvent_Deserialize;
 
 export type LogEvent_Deserialize = { type: "lines"; lines: LogLine_Deserialize[] } | { type: "error"; message: string } | { type: "end" };
@@ -338,6 +408,69 @@ export type LogSource_Serialize = {
 	label: string | null,
 };
 
+export type MountSpec = {
+	/**  An absolute path on the Host (bind mount) or a volume name. */
+	source: string,
+	target: string,
+	readOnly: boolean,
+};
+
+export type NetworkInput = NetworkInput_Serialize | NetworkInput_Deserialize;
+
+export type NetworkInput_Deserialize = {
+	name: string,
+	/**  Defaults to `bridge`. */
+	driver?: string | null,
+	subnet?: string | null,
+	gateway?: string | null,
+	internal: boolean,
+	attachable: boolean,
+};
+
+export type NetworkInput_Serialize = {
+	name: string,
+	/**  Defaults to `bridge`. */
+	driver: string | null,
+	subnet: string | null,
+	gateway: string | null,
+	internal: boolean,
+	attachable: boolean,
+};
+
+export type NetworkView = NetworkView_Serialize | NetworkView_Deserialize;
+
+export type NetworkView_Deserialize = {
+	id: string,
+	name: string,
+	driver: string,
+	scope: string,
+	internal: boolean,
+	attachable: boolean,
+	subnets: string[],
+	created?: string | null,
+	labels: { [key in string]: string },
+	stack?: string | null,
+	builtIn: boolean,
+	/**  Names of attached containers. */
+	containers: string[],
+};
+
+export type NetworkView_Serialize = {
+	id: string,
+	name: string,
+	driver: string,
+	scope: string,
+	internal: boolean,
+	attachable: boolean,
+	subnets: string[],
+	created: string | null,
+	labels: { [key in string]: string },
+	stack: string | null,
+	builtIn: boolean,
+	/**  Names of attached containers. */
+	containers: string[],
+};
+
 export type PortBinding = PortBinding_Serialize | PortBinding_Deserialize;
 
 export type PortBinding_Deserialize = {
@@ -354,9 +487,89 @@ export type PortBinding_Serialize = {
 	protocol: string,
 };
 
+export type PortSpec = PortSpec_Serialize | PortSpec_Deserialize;
+
+export type PortSpec_Deserialize = {
+	hostIp?: string | null,
+	/**  `None` lets the Engine pick a free port. */
+	hostPort?: number | null,
+	containerPort: number,
+	/**  `tcp` or `udp`. */
+	protocol: string,
+};
+
+export type PortSpec_Serialize = {
+	hostIp: string | null,
+	/**  `None` lets the Engine pick a free port. */
+	hostPort: number | null,
+	containerPort: number,
+	/**  `tcp` or `udp`. */
+	protocol: string,
+};
+
 export type Processes = {
 	titles: string[],
 	processes: string[][],
+};
+
+export type PruneReport = {
+	removed: string[],
+	spaceReclaimed: number,
+};
+
+export type PruneSelection = {
+	containers: boolean,
+	/**  Dangling images, or every unused image with `all_images`. */
+	images: boolean,
+	allImages: boolean,
+	networks: boolean,
+	/**  Unused volumes, named ones included. Destroys data. */
+	volumes: boolean,
+	buildCache: boolean,
+};
+
+export type PullEvent = PullEvent_Serialize | PullEvent_Deserialize;
+
+export type PullEvent_Deserialize = 
+/**  Progress of one layer (or a general status when `id` is absent). */
+{ type: "progress"; id?: string | null; status: string; current?: number | null; total?: number | null } | { type: "done" } | { type: "error"; message: string };
+
+export type PullEvent_Serialize = 
+/**  Progress of one layer (or a general status when `id` is absent). */
+{ type: "progress"; id: string | null; status: string; current: number | null; total: number | null } | { type: "done" } | { type: "error"; message: string };
+
+export type RestartPolicy = "no" | "always" | "unless-stopped" | "on-failure";
+
+export type RunSpec = RunSpec_Serialize | RunSpec_Deserialize;
+
+export type RunSpec_Deserialize = {
+	image: string,
+	name?: string | null,
+	/**  Overrides the image command; parsed with shell quoting rules. */
+	command?: string | null,
+	/**  `KEY=value` entries. */
+	env: string[],
+	ports: PortSpec_Deserialize[],
+	mounts: MountSpec[],
+	network?: string | null,
+	restart: RestartPolicy,
+	/**  Remove the container when it exits (`--rm`). */
+	autoRemove: boolean,
+};
+
+export type RunSpec_Serialize = {
+	image: string,
+	name: string | null,
+	/**  Overrides the image command; parsed with shell quoting rules. */
+	command: string | null,
+	/**  `KEY=value` entries. */
+	env: string[],
+	ports: PortSpec_Serialize[],
+	mounts: MountSpec[],
+	network: string | null,
+	restart: RestartPolicy,
+	/**  Remove the container when it exits (`--rm`). */
+	autoRemove: boolean,
 };
 
 export type Settings = Settings_Serialize | Settings_Deserialize;
@@ -400,9 +613,64 @@ export type StatsSample = {
 	pids: number,
 };
 
+export type SystemPruneReport = {
+	containers: number,
+	images: number,
+	networks: number,
+	volumes: number,
+	spaceReclaimed: number,
+};
+
 export type Theme = "system" | "light" | "dark";
 
+export type UsageLine = {
+	total: number,
+	active: number,
+	size: number,
+	reclaimable: number,
+};
+
 export type Value = null | boolean | number | string | Value[] | { [key in string]: Value };
+
+export type VolumeInput = VolumeInput_Serialize | VolumeInput_Deserialize;
+
+export type VolumeInput_Deserialize = {
+	name: string,
+	/**  Defaults to `local`. */
+	driver?: string | null,
+	labels: { [key in string]: string },
+};
+
+export type VolumeInput_Serialize = {
+	name: string,
+	/**  Defaults to `local`. */
+	driver: string | null,
+	labels: { [key in string]: string },
+};
+
+export type VolumeView = VolumeView_Serialize | VolumeView_Deserialize;
+
+export type VolumeView_Deserialize = {
+	name: string,
+	driver: string,
+	mountpoint: string,
+	createdAt?: string | null,
+	labels: { [key in string]: string },
+	stack?: string | null,
+	/**  Names of containers mounting this volume. */
+	usedBy: string[],
+};
+
+export type VolumeView_Serialize = {
+	name: string,
+	driver: string,
+	mountpoint: string,
+	createdAt: string | null,
+	labels: { [key in string]: string },
+	stack: string | null,
+	/**  Names of containers mounting this volume. */
+	usedBy: string[],
+};
 
 /* Tauri Specta runtime */
 type EventEmit<T> = [T] extends [null] ? () => Promise<void> : (payload: T) => Promise<void>;

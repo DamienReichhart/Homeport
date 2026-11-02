@@ -4,6 +4,7 @@ use crate::{
     error::AppResult,
     services::{
         docker::{
+            images::{self, PullEvent},
             logs::{self, LogEvent, LogOptions, LogSource},
             stats::{self, ContainerUsage, StatsSample},
         },
@@ -64,4 +65,20 @@ pub fn usage_subscribe(
     Ok(state
         .streams
         .spawn(stats::overview(docker, move |u| on_usage.send(u).is_ok())))
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn images_pull_subscribe(
+    state: State<'_, AppState>,
+    host_id: String,
+    reference: String,
+    on_event: Channel<PullEvent>,
+) -> AppResult<StreamId> {
+    let docker = state.hosts.registry.docker(&host_id)?;
+    Ok(state
+        .streams
+        .spawn(images::pull(docker, reference, move |e| {
+            on_event.send(e).is_ok()
+        })))
 }

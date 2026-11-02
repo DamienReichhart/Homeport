@@ -7,6 +7,7 @@ use tauri_specta::{collect_commands, collect_events, ErrorHandlingMode};
 use crate::events;
 
 pub mod containers;
+pub mod engine;
 pub mod exec;
 pub mod hosts;
 pub mod settings;
@@ -49,10 +50,33 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             streams::logs_subscribe,
             streams::stats_subscribe,
             streams::usage_subscribe,
+            streams::images_pull_subscribe,
             exec::exec_start,
             exec::exec_input,
             exec::exec_resize,
             exec::exec_close,
+            engine::images_list,
+            engine::images_inspect,
+            engine::images_history,
+            engine::images_tag,
+            engine::images_remove,
+            engine::images_prune,
+            engine::volumes_list,
+            engine::volumes_inspect,
+            engine::volumes_create,
+            engine::volumes_remove,
+            engine::volumes_prune,
+            engine::networks_list,
+            engine::networks_inspect,
+            engine::networks_create,
+            engine::networks_remove,
+            engine::networks_connect,
+            engine::networks_disconnect,
+            engine::networks_prune,
+            engine::system_info,
+            engine::system_disk_usage,
+            engine::system_prune,
+            engine::containers_run,
         ])
         .events(collect_events![
             events::HostStatusChanged,

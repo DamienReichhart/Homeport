@@ -5,8 +5,13 @@
 pub mod containers;
 pub mod exec;
 pub mod files;
+pub mod images;
 pub mod logs;
+pub mod networks;
+pub mod run;
 pub mod stats;
+pub mod system;
+pub mod volumes;
 
 #[cfg(test)]
 pub mod testing;

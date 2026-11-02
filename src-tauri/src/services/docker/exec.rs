@@ -31,7 +31,7 @@ const DEFAULT_SHELL: &str = "if [ -x /bin/bash ]; then exec /bin/bash; else exec
 #[derive(Debug, Clone, Default, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct ExecOptions {
-    /// The command to run, split on whitespace; the default picks a shell.
+    /// The command to run, parsed with shell quoting; the default picks a shell.
     pub command: Option<String>,
     pub user: Option<String>,
     pub working_dir: Option<String>,
@@ -116,7 +116,8 @@ pub async fn start(
     options: ExecOptions,
 ) -> AppResult<(Arc<ExecSession>, Output)> {
     let cmd = match options.command.as_deref().map(str::trim) {
-        Some(c) if !c.is_empty() => c.split_whitespace().map(str::to_owned).collect(),
+        Some(c) if !c.is_empty() => shell_words::split(c)
+            .map_err(|_| AppError::Validation("The command has an unclosed quote.".into()))?,
         _ => vec!["sh".into(), "-c".into(), DEFAULT_SHELL.into()],
     };
     let non_empty = |s: Option<String>| s.filter(|s| !s.trim().is_empty());
