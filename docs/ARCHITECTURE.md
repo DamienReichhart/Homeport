@@ -25,6 +25,13 @@ Backend:
 
 When a service grows large, promote it to a workspace crate under `crates/` (the root `Cargo.toml` is already a workspace).
 
+## Building blocks
+
+- **UI**: shadcn/ui components (Tailwind v4) live in `src/shared/ui`; add more with `bunx shadcn add <name>`.
+- **Server state**: TanStack Query. Query keys are centralised in `src/shared/api/keys.ts` so `app/providers/LiveUpdates.tsx` can invalidate them from pushed Engine events instead of polling.
+- **Streams**: logs, stats, exec, pulls and compose output use Tauri channels. Start one with `subscribe()` from `@/shared/api`; the returned function cancels it on the backend.
+- **Storage**: SQLite (`homeport.db` in the app data dir) via `services/db.rs`, migrated on open. Secrets are sealed with `services/crypto.rs` (ADR 0002).
+
 ## Deliberately not included (add when needed)
 
-- Global state library (Zustand/Redux), data-fetching cache (TanStack Query), i18n, a UI kit, a database layer, auto-updater, code signing. None are needed for the base; each fits cleanly into `app/providers` or `shared/`.
+- Global state library (Zustand/Redux), i18n, auto-updater, code signing.

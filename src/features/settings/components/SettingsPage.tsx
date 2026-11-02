@@ -1,47 +1,100 @@
-import { useState } from 'react';
-import { toAppError } from '@/shared/api';
-import { useAsync } from '@/shared/hooks';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { commands, keys, toAppError, type Settings } from '@/shared/api';
 import { applyTheme, type Theme } from '@/shared/lib';
-import { ErrorMessage, Spinner } from '@/shared/ui';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Label } from '@/shared/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
+import { ErrorMessage, KeyValue, PageHeader, Spinner, StatusDot } from '@/shared/ui';
 import { settingsApi } from '../api/settingsApi';
 
-const THEMES: Theme[] = ['system', 'light', 'dark'];
+const THEMES: { value: Theme; label: string }[] = [
+  { value: 'system', label: 'Match the system' },
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+];
 
 export function SettingsPage() {
-  const settings = useAsync(settingsApi.get);
-  const [saveError, setSaveError] = useState<Error | null>(null);
-
-  if (settings.status === 'loading') return <Spinner />;
-  if (settings.status === 'error') return <ErrorMessage error={settings.error} />;
-
-  async function onThemeChange(theme: Theme) {
-    setSaveError(null);
-    try {
-      const saved = await settingsApi.update({ ...settings.data, theme });
+  const client = useQueryClient();
+  const settings = useQuery({ queryKey: keys.settings, queryFn: settingsApi.get });
+  const capabilities = useQuery({
+    queryKey: keys.capabilities,
+    queryFn: () => commands.getCapabilities(),
+  });
+  const info = useQuery({ queryKey: ['app-info'], queryFn: () => commands.getAppInfo() });
+  const save = useMutation({
+    mutationFn: (next: Settings) => settingsApi.update(next),
+    onSuccess: (saved) => {
       applyTheme(saved.theme ?? 'system');
-      settings.reload();
-    } catch (error) {
-      setSaveError(toAppError(error));
-    }
-  }
+      client.setQueryData(keys.settings, saved);
+    },
+  });
+
+  if (settings.isPending) return <Spinner />;
+  if (settings.error) return <ErrorMessage error={toAppError(settings.error)} />;
 
   return (
-    <section>
-      <h1>Settings</h1>
-      <label>
-        Theme{' '}
-        <select
-          value={settings.data.theme ?? 'system'}
-          onChange={(e) => void onThemeChange(e.target.value as Theme)}
-        >
-          {THEMES.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
-      </label>
-      {saveError && <ErrorMessage error={saveError} />}
-    </section>
+    <div className="grid max-w-2xl gap-4">
+      <PageHeader title="Settings" />
+      <Card>
+        <CardHeader>
+          <CardTitle>Appearance</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-1.5">
+          <Label htmlFor="theme">Theme</Label>
+          <Select
+            value={settings.data.theme ?? 'system'}
+            onValueChange={(theme) => save.mutate({ ...settings.data, theme: theme as Theme })}
+          >
+            <SelectTrigger id="theme" className="w-56" aria-label="Theme">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {THEMES.map((t) => (
+                <SelectItem key={t.value} value={t.value}>
+                  {t.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {save.error && <ErrorMessage error={toAppError(save.error)} />}
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>This machine</CardTitle>
+          <CardDescription>What Homeport can use here.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {capabilities.data && (
+            <KeyValue
+              items={[
+                [
+                  'OS keychain',
+                  <span className="inline-flex items-center gap-1.5">
+                    <StatusDot tone={capabilities.data.keychain ? 'success' : 'danger'} />
+                    {capabilities.data.keychain
+                      ? 'Available — SSH keys, certificates and stack environments are stored encrypted.'
+                      : 'Unavailable — SSH keys, TLS certificates and stack environments can’t be stored.'}
+                  </span>,
+                ],
+                [
+                  'Compose CLI',
+                  <span className="inline-flex items-center gap-1.5">
+                    <StatusDot tone={capabilities.data.compose ? 'success' : 'warning'} />
+                    {capabilities.data.compose
+                      ? `${capabilities.data.compose.program} ${capabilities.data.compose.prefix.join(' ')} ${capabilities.data.compose.version}`
+                      : 'Not found — Stacks can be started and stopped, but not deployed.'}
+                  </span>,
+                ],
+                [
+                  'Homeport',
+                  info.data ? `v${info.data.version} on ${info.data.os}/${info.data.arch}` : '…',
+                ],
+              ]}
+            />
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

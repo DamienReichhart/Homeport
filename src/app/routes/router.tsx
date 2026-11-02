@@ -1,5 +1,6 @@
 import { createMemoryRouter, type RouteObject } from 'react-router-dom';
-import { HomePage } from '@/features/home';
+import { AddHostPage, HostDetailPage, HostsPage } from '@/features/hosts';
+import { OverviewPage } from '@/features/overview';
 import { SettingsPage } from '@/features/settings';
 import { AppLayout } from '../AppLayout';
 
@@ -8,7 +9,10 @@ export const routes: RouteObject[] = [
   {
     element: <AppLayout />,
     children: [
-      { index: true, element: <HomePage /> },
+      { index: true, element: <OverviewPage /> },
+      { path: 'hosts', element: <HostsPage /> },
+      { path: 'hosts/new', element: <AddHostPage /> },
+      { path: 'hosts/:hostId', element: <HostDetailPage /> },
       { path: 'settings', element: <SettingsPage /> },
     ],
   },
