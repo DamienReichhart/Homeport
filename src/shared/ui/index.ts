@@ -10,3 +10,4 @@ export { PageHeader } from './PageHeader';
 export { SearchInput } from './SearchInput';
 export { StatusDot, containerTone, type Tone } from './StatusDot';
 export { XTerm, type XTermHandle } from './XTerm';
+export { TimeChart, type ChartSeries } from './TimeChart';

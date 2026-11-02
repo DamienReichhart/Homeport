@@ -1,34 +1,7 @@
-import { render, screen } from '@testing-library/react';
-import { RouterProvider } from 'react-router-dom';
+import { screen } from '@testing-library/react';
+import { connectedHost } from '@/test/fixtures';
 import { mockCommands } from '@/test/ipc';
-import { AppProviders, createQueryClient } from './providers/AppProviders';
-import { createAppRouter } from './routes/router';
-
-const connected = {
-  host: {
-    id: 'h1',
-    name: 'local',
-    enabled: true,
-    hostKey: null,
-    createdAt: '',
-    connection: { kind: 'local', socketPath: '/var/run/docker.sock' },
-  },
-  status: {
-    state: 'connected',
-    engineVersion: '29.1',
-    apiVersion: '1.52',
-    os: 'linux',
-    arch: 'amd64',
-  },
-};
-
-function renderAt(path: string) {
-  render(
-    <AppProviders client={createQueryClient()}>
-      <RouterProvider router={createAppRouter([path])} />
-    </AppProviders>,
-  );
-}
+import { renderApp } from '@/test/render';
 
 describe('app', () => {
   beforeEach(() =>
@@ -37,7 +10,7 @@ describe('app', () => {
       update_settings: ({ settings }) => settings,
       get_capabilities: () => ({ keychain: true, compose: null }),
       get_app_info: () => ({ name: 'Homeport', version: '0.1.0', os: 'linux', arch: 'x86_64' }),
-      hosts_list: () => [connected],
+      hosts_list: () => [connectedHost],
       system_info: () => ({
         name: 'box',
         serverVersion: '29.1',
@@ -63,7 +36,7 @@ describe('app', () => {
   );
 
   it('shows each host with its live numbers on the overview', async () => {
-    renderAt('/');
+    renderApp('/');
     expect(await screen.findByText('2')).toBeInTheDocument();
     expect(screen.getByText('8 CPUs')).toBeInTheDocument();
     expect(screen.getAllByText('Connected').length).toBeGreaterThan(0);
@@ -75,7 +48,7 @@ describe('app', () => {
       get_capabilities: () => ({ keychain: false, compose: null }),
       hosts_list: () => [],
     });
-    renderAt('/settings');
+    renderApp('/settings');
     expect(await screen.findByRole('alert')).toHaveTextContent(/No OS keychain/);
   });
 });

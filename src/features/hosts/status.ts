@@ -65,3 +65,16 @@ export function describeEndpoint(c: HostConnection): string {
       return `${c.user}@${c.host}${c.port === 22 ? '' : `:${c.port}`}`;
   }
 }
+
+/** The address published container ports are reachable on, for links. */
+export function hostAddress(c: HostConnection): string {
+  switch (c.kind) {
+    case 'local':
+      return 'localhost';
+    case 'tcp':
+    case 'tls':
+      return c.address.replace(/:\d+$/, '').replace(/^\[|\]$/g, '');
+    case 'ssh':
+      return c.host;
+  }
+}
