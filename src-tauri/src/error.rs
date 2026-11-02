@@ -19,11 +19,15 @@ pub enum AppError {
     #[error("database migration failed: {0}")]
     Migration(#[from] rusqlite_migration::Error),
 
-    #[allow(dead_code)] // raised by the host and stack stores
+    #[error("{0} not found")]
+    NotFound(String),
+
+    #[error("{0}")]
+    Validation(String),
+
     #[error("the OS keychain is unavailable, so secrets can't be stored: {0}")]
     KeychainUnavailable(String),
 
-    #[allow(dead_code)]
     #[error("stored credentials can't be decrypted; re-enter them or regenerate the key")]
     CredentialsLost,
 
@@ -39,6 +43,8 @@ impl AppError {
             Self::Json(_) => "json",
             Self::Db(_) => "db",
             Self::Migration(_) => "db_migration",
+            Self::NotFound(_) => "not_found",
+            Self::Validation(_) => "validation",
             Self::KeychainUnavailable(_) => "keychain_unavailable",
             Self::CredentialsLost => "credentials_lost",
             Self::Tauri(_) => "tauri",

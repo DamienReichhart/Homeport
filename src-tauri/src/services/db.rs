@@ -8,7 +8,10 @@ use rusqlite_migration::{Migrations, M};
 
 use crate::error::AppResult;
 
-const MIGRATION_SLICE: &[M<'static>] = &[M::up(include_str!("db_migrations/0001_settings.sql"))];
+const MIGRATION_SLICE: &[M<'static>] = &[
+    M::up(include_str!("db_migrations/0001_settings.sql")),
+    M::up(include_str!("db_migrations/0002_hosts.sql")),
+];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_SLICE);
 
 pub struct Db {
