@@ -8,6 +8,10 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 export const commands = {
 	getAppInfo: () => __TAURI_INVOKE<AppInfo>("get_app_info"),
 	getCapabilities: () => __TAURI_INVOKE<Capabilities>("get_capabilities"),
+	/**  Reads a file the user picked in an open dialog (certificates, keys, compose files). */
+	readTextFile: (path: string) => __TAURI_INVOKE<string>("read_text_file", { path }),
+	/**  Writes text to a path the user picked in a save dialog (e.g. downloaded logs). */
+	writeTextFile: (path: string, contents: string) => __TAURI_INVOKE<null>("write_text_file", { path, contents }),
 	getSettings: () => __TAURI_INVOKE<Settings>("get_settings"),
 	updateSettings: (settings: Settings) => __TAURI_INVOKE<Settings>("update_settings", { settings }),
 	hostsList: () => __TAURI_INVOKE<HostView[]>("hosts_list"),
