@@ -1,4 +1,10 @@
-import { BoxIcon, LayoutDashboardIcon, SettingsIcon, type LucideIcon } from 'lucide-react';
+import {
+  BoxIcon,
+  LayersIcon,
+  LayoutDashboardIcon,
+  SettingsIcon,
+  type LucideIcon,
+} from 'lucide-react';
 
 export interface NavItem {
   path: string;
@@ -10,5 +16,6 @@ export interface NavItem {
 export const navItems: NavItem[] = [
   { path: '/', label: 'Overview', icon: LayoutDashboardIcon },
   { path: '/containers', label: 'Containers', icon: BoxIcon },
+  { path: '/images', label: 'Images', icon: LayersIcon },
   { path: '/settings', label: 'Settings', icon: SettingsIcon },
 ];

@@ -1,6 +1,7 @@
 import { createMemoryRouter, type RouteObject } from 'react-router-dom';
 import { ContainerDetailPage, ContainersPage } from '@/features/containers';
 import { AddHostPage, HostDetailPage, HostsPage } from '@/features/hosts';
+import { ImagesPage } from '@/features/images';
 import { OverviewPage } from '@/features/overview';
 import { SettingsPage } from '@/features/settings';
 import { AppLayout } from '../AppLayout';
@@ -16,6 +17,7 @@ export const routes: RouteObject[] = [
       { path: 'hosts/:hostId', element: <HostDetailPage /> },
       { path: 'containers', element: <ContainersPage /> },
       { path: 'containers/:id/:tab?', element: <ContainerDetailPage /> },
+      { path: 'images', element: <ImagesPage /> },
       { path: 'settings', element: <SettingsPage /> },
     ],
   },
