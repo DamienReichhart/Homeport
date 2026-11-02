@@ -2,8 +2,10 @@ import { createMemoryRouter, type RouteObject } from 'react-router-dom';
 import { ContainerDetailPage, ContainersPage } from '@/features/containers';
 import { AddHostPage, HostDetailPage, HostsPage } from '@/features/hosts';
 import { ImagesPage } from '@/features/images';
+import { NetworksPage } from '@/features/networks';
 import { OverviewPage } from '@/features/overview';
 import { SettingsPage } from '@/features/settings';
+import { VolumesPage } from '@/features/volumes';
 import { AppLayout } from '../AppLayout';
 
 /** Route table. One entry per feature page; keep logic out of here. */
@@ -18,6 +20,8 @@ export const routes: RouteObject[] = [
       { path: 'containers', element: <ContainersPage /> },
       { path: 'containers/:id/:tab?', element: <ContainerDetailPage /> },
       { path: 'images', element: <ImagesPage /> },
+      { path: 'volumes', element: <VolumesPage /> },
+      { path: 'networks', element: <NetworksPage /> },
       { path: 'settings', element: <SettingsPage /> },
     ],
   },

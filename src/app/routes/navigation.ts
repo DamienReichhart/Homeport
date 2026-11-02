@@ -1,7 +1,9 @@
 import {
   BoxIcon,
+  HardDriveIcon,
   LayersIcon,
   LayoutDashboardIcon,
+  NetworkIcon,
   SettingsIcon,
   type LucideIcon,
 } from 'lucide-react';
@@ -17,5 +19,7 @@ export const navItems: NavItem[] = [
   { path: '/', label: 'Overview', icon: LayoutDashboardIcon },
   { path: '/containers', label: 'Containers', icon: BoxIcon },
   { path: '/images', label: 'Images', icon: LayersIcon },
+  { path: '/volumes', label: 'Volumes', icon: HardDriveIcon },
+  { path: '/networks', label: 'Networks', icon: NetworkIcon },
   { path: '/settings', label: 'Settings', icon: SettingsIcon },
 ];
