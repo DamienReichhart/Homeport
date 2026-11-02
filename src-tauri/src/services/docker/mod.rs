@@ -4,6 +4,7 @@
 
 pub mod containers;
 pub mod exec;
+pub mod files;
 pub mod logs;
 pub mod stats;
 

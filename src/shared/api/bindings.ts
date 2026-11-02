@@ -27,6 +27,13 @@ export const commands = {
 	containersRemove: (hostId: string, id: string, force: boolean, volumes: boolean) => __TAURI_INVOKE<null>("containers_remove", { hostId, id, force, volumes }),
 	containersRename: (hostId: string, id: string, name: string) => __TAURI_INVOKE<null>("containers_rename", { hostId, id, name }),
 	containersProcesses: (hostId: string, id: string) => __TAURI_INVOKE<Processes>("containers_processes", { hostId, id }),
+	filesList: (hostId: string, containerId: string, path: string) => __TAURI_INVOKE<FileEntry[]>("files_list", { hostId, containerId, path }),
+	/**
+	 *  Saves a container path to `destination`; returns `true` when it was a
+	 *  directory saved as a `.tar` archive.
+	 */
+	filesDownload: (hostId: string, containerId: string, path: string, destination: string) => __TAURI_INVOKE<boolean>("files_download", { hostId, containerId, path, destination }),
+	filesUpload: (hostId: string, containerId: string, directory: string, sources: string[]) => __TAURI_INVOKE<null>("files_upload", { hostId, containerId, directory, sources }),
 	/**  Stops a stream started by any `*_subscribe` command. */
 	streamCancel: (id: number) => __TAURI_INVOKE<void>("stream_cancel", { id }),
 	logsSubscribe: (hostId: string, sources: LogSource_Deserialize[], options: LogOptions_Deserialize, onEvent: Channel<LogEvent_Deserialize>) => __TAURI_INVOKE<number>("logs_subscribe", { hostId, sources, options, onEvent }),
@@ -173,6 +180,19 @@ export type ExecOptions_Serialize = {
 	cols: number,
 	rows: number,
 };
+
+export type FileEntry = {
+	name: string,
+	path: string,
+	kind: FileKind,
+	size: number,
+	/**  Unix time in seconds. */
+	modified: number,
+	/**  `ls`-style permissions, e.g. `-rw-r--r--`. */
+	mode: string,
+};
+
+export type FileKind = "directory" | "file" | "symlink" | "other";
 
 export type Host = Host_Serialize | Host_Deserialize;
 
