@@ -28,7 +28,15 @@ pub fn run() {
     commands::export_bindings(commands::BINDINGS_PATH);
 
     tauri::Builder::default()
-        .plugin(tauri_plugin_log::Builder::default().build())
+        .plugin(
+            tauri_plugin_log::Builder::default()
+                .level(log::LevelFilter::Info)
+                // bollard and hyper log every request at debug/trace level.
+                .level_for("bollard", log::LevelFilter::Warn)
+                .level_for("hyper_util", log::LevelFilter::Warn)
+                .level_for("russh", log::LevelFilter::Warn)
+                .build(),
+        )
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .setup(move |app| {
