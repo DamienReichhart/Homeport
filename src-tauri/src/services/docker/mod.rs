@@ -3,6 +3,7 @@
 //! shaped for the frontend.
 
 pub mod containers;
+pub mod exec;
 pub mod logs;
 pub mod stats;
 

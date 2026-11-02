@@ -33,6 +33,10 @@ export const commands = {
 	statsSubscribe: (hostId: string, containerId: string, onSample: Channel<StatsSample>) => __TAURI_INVOKE<number>("stats_subscribe", { hostId, containerId, onSample }),
 	/**  Usage of every running container on a Host, refreshed every two seconds. */
 	usageSubscribe: (hostId: string, onUsage: Channel<ContainerUsage[]>) => __TAURI_INVOKE<number>("usage_subscribe", { hostId, onUsage }),
+	execStart: (hostId: string, containerId: string, options: ExecOptions_Deserialize, onEvent: Channel<ExecEvent_Deserialize>) => __TAURI_INVOKE<number>("exec_start", { hostId, containerId, options, onEvent }),
+	execInput: (session: number, data: string) => __TAURI_INVOKE<null>("exec_input", { session, data }),
+	execResize: (session: number, cols: number, rows: number) => __TAURI_INVOKE<null>("exec_resize", { session, cols, rows }),
+	execClose: (session: number) => __TAURI_INVOKE<void>("exec_close", { session }),
 };
 
 /** Events */
@@ -142,6 +146,32 @@ export type EngineEvent = {
 export type EngineEventReceived = {
 	hostId: string,
 	event: EngineEvent,
+};
+
+export type ExecEvent = ExecEvent_Serialize | ExecEvent_Deserialize;
+
+export type ExecEvent_Deserialize = { type: "output"; data: string } | { type: "exit"; code?: number | null } | { type: "error"; message: string };
+
+export type ExecEvent_Serialize = { type: "output"; data: string } | { type: "exit"; code: number | null } | { type: "error"; message: string };
+
+export type ExecOptions = ExecOptions_Serialize | ExecOptions_Deserialize;
+
+export type ExecOptions_Deserialize = {
+	/**  The command to run, split on whitespace; the default picks a shell. */
+	command?: string | null,
+	user?: string | null,
+	workingDir?: string | null,
+	cols: number,
+	rows: number,
+};
+
+export type ExecOptions_Serialize = {
+	/**  The command to run, split on whitespace; the default picks a shell. */
+	command: string | null,
+	user: string | null,
+	workingDir: string | null,
+	cols: number,
+	rows: number,
 };
 
 export type Host = Host_Serialize | Host_Deserialize;

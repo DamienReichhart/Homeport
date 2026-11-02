@@ -131,7 +131,7 @@ pub async fn connect(
 /// A bollard client whose requests travel over streams from `dialer`.
 /// Each request gets its own HTTP/1.1 connection, which also carries the
 /// upgraded streams used by exec and attach.
-fn docker_over(dialer: Arc<dyn Dialer>) -> Docker {
+pub(crate) fn docker_over(dialer: Arc<dyn Dialer>) -> Docker {
     let transport = move |mut req: BollardRequest| {
         let dialer = dialer.clone();
         async move {
@@ -180,21 +180,7 @@ pub fn describe_docker_error(e: &bollard::errors::Error) -> String {
 #[cfg(all(test, unix))]
 mod tests {
     use super::*;
-
-    /// Dials the local Engine socket, standing in for the TLS and SSH dialers.
-    struct UnixDialer;
-
-    impl Dialer for UnixDialer {
-        fn connect(&self) -> BoxFuture<'_, Result<(), ConnectError>> {
-            Box::pin(async { Ok(()) })
-        }
-        fn dial(&self) -> BoxFuture<'_, io::Result<BoxStream>> {
-            Box::pin(async {
-                let s = tokio::net::UnixStream::connect("/var/run/docker.sock").await?;
-                Ok(Box::new(s) as BoxStream)
-            })
-        }
-    }
+    use crate::services::docker::testing::UnixDialer;
 
     #[tokio::test]
     #[ignore = "needs a local Docker Engine"]

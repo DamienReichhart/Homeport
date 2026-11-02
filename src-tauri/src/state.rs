@@ -4,8 +4,8 @@
 use std::sync::Arc;
 
 use crate::services::{
-    crypto::SecretBox, db::Db, hosts::service::HostService, settings::SettingsService,
-    streams::Streams,
+    crypto::SecretBox, db::Db, docker::exec::ExecSessions, hosts::service::HostService,
+    settings::SettingsService, streams::Streams,
 };
 
 pub struct AppState {
@@ -15,4 +15,5 @@ pub struct AppState {
     pub settings: SettingsService,
     pub hosts: HostService,
     pub streams: Streams,
+    pub exec: ExecSessions,
 }

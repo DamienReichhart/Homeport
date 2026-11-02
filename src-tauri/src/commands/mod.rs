@@ -7,6 +7,7 @@ use tauri_specta::{collect_commands, collect_events, ErrorHandlingMode};
 use crate::events;
 
 pub mod containers;
+pub mod exec;
 pub mod hosts;
 pub mod settings;
 pub mod streams;
@@ -45,6 +46,10 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             streams::logs_subscribe,
             streams::stats_subscribe,
             streams::usage_subscribe,
+            exec::exec_start,
+            exec::exec_input,
+            exec::exec_resize,
+            exec::exec_close,
         ])
         .events(collect_events![
             events::HostStatusChanged,
