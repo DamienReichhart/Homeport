@@ -5,6 +5,7 @@ import { ImagesPage } from '@/features/images';
 import { NetworksPage } from '@/features/networks';
 import { OverviewPage } from '@/features/overview';
 import { SettingsPage } from '@/features/settings';
+import { NewStackPage, StackDetailPage, StacksPage } from '@/features/stacks';
 import { VolumesPage } from '@/features/volumes';
 import { AppLayout } from '../AppLayout';
 
@@ -22,6 +23,9 @@ export const routes: RouteObject[] = [
       { path: 'images', element: <ImagesPage /> },
       { path: 'volumes', element: <VolumesPage /> },
       { path: 'networks', element: <NetworksPage /> },
+      { path: 'stacks', element: <StacksPage /> },
+      { path: 'stacks/new', element: <NewStackPage /> },
+      { path: 'stacks/:name', element: <StackDetailPage /> },
       { path: 'settings', element: <SettingsPage /> },
     ],
   },
