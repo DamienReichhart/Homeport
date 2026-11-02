@@ -1,5 +1,7 @@
 use serde::Serialize;
-use tauri::AppHandle;
+use tauri::{AppHandle, State};
+
+use crate::state::AppState;
 
 #[derive(Debug, Serialize, specta::Type)]
 pub struct AppInfo {
@@ -18,5 +20,20 @@ pub fn get_app_info(app: AppHandle) -> AppInfo {
         version: info.version.to_string(),
         os: std::env::consts::OS,
         arch: std::env::consts::ARCH,
+    }
+}
+
+/// What this machine can do; features degrade gracefully when something is missing.
+#[derive(Debug, Serialize, specta::Type)]
+pub struct Capabilities {
+    /// An OS keychain is reachable, so SSH, TLS and stack `.env` secrets can be stored.
+    keychain: bool,
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn get_capabilities(state: State<'_, AppState>) -> Capabilities {
+    Capabilities {
+        keychain: state.secrets.is_available(),
     }
 }

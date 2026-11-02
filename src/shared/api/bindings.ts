@@ -6,6 +6,7 @@ import { invoke as __TAURI_INVOKE } from "@tauri-apps/api/core";
 /** Commands */
 export const commands = {
 	getAppInfo: () => __TAURI_INVOKE<AppInfo>("get_app_info"),
+	getCapabilities: () => __TAURI_INVOKE<Capabilities>("get_capabilities"),
 	getSettings: () => __TAURI_INVOKE<Settings_Serialize>("get_settings"),
 	updateSettings: (settings: Settings_Deserialize) => __TAURI_INVOKE<Settings_Serialize>("update_settings", { settings }),
 };
@@ -22,6 +23,12 @@ export type AppInfo = {
 	version: string,
 	os: string,
 	arch: string,
+};
+
+/**  What this machine can do; features degrade gracefully when something is missing. */
+export type Capabilities = {
+	/**  An OS keychain is reachable, so SSH, TLS and stack `.env` secrets can be stored. */
+	keychain: boolean,
 };
 
 export type Settings = Settings_Serialize | Settings_Deserialize;

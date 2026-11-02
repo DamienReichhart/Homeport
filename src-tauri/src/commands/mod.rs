@@ -16,6 +16,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
         .dangerously_cast_bigints_to_number()
         .commands(collect_commands![
             system::get_app_info,
+            system::get_capabilities,
             settings::get_settings,
             settings::update_settings,
         ])
