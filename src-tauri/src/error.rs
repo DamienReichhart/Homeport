@@ -25,6 +25,10 @@ pub enum AppError {
     #[error("{0}")]
     Validation(String),
 
+    #[allow(dead_code)] // raised once resource commands use the registry
+    #[error("host {0} is not connected")]
+    HostNotConnected(String),
+
     #[error("the OS keychain is unavailable, so secrets can't be stored: {0}")]
     KeychainUnavailable(String),
 
@@ -45,6 +49,7 @@ impl AppError {
             Self::Migration(_) => "db_migration",
             Self::NotFound(_) => "not_found",
             Self::Validation(_) => "validation",
+            Self::HostNotConnected(_) => "host_not_connected",
             Self::KeychainUnavailable(_) => "keychain_unavailable",
             Self::CredentialsLost => "credentials_lost",
             Self::Tauri(_) => "tauri",

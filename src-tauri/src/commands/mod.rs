@@ -2,8 +2,11 @@
 //! Register each new command in [`builder`]; the TypeScript bindings in
 //! `src/shared/api/bindings.ts` are generated from it.
 
-use tauri_specta::{collect_commands, ErrorHandlingMode};
+use tauri_specta::{collect_commands, collect_events, ErrorHandlingMode};
 
+use crate::events;
+
+pub mod hosts;
 pub mod settings;
 pub mod system;
 
@@ -19,6 +22,21 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             system::get_capabilities,
             settings::get_settings,
             settings::update_settings,
+            hosts::hosts_list,
+            hosts::hosts_detect_local,
+            hosts::hosts_create,
+            hosts::hosts_update,
+            hosts::hosts_delete,
+            hosts::hosts_set_enabled,
+            hosts::hosts_trust_key,
+            hosts::hosts_reconnect,
+            hosts::hosts_regenerate_key,
+            hosts::hosts_ssh_setup,
+            hosts::hosts_events,
+        ])
+        .events(collect_events![
+            events::HostStatusChanged,
+            events::EngineEventReceived,
         ])
 }
 

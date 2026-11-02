@@ -1,5 +1,6 @@
 mod commands;
 mod error;
+mod events;
 mod services;
 mod state;
 
@@ -8,9 +9,11 @@ use tauri::Manager;
 use std::sync::Arc;
 
 use crate::{
+    events::TauriNotifier,
     services::{
         crypto::{Keychain, SecretBox},
         db::Db,
+        hosts::{registry::HostRegistry, service::HostService, store::HostStore},
         settings::SettingsService,
     },
     state::AppState,
@@ -40,10 +43,21 @@ pub fn run() {
             })
             .join()
             .expect("keychain thread panicked");
+            let secrets = Arc::new(secrets);
+            let store = Arc::new(HostStore::new(db.clone(), secrets.clone()));
+            let registry =
+                HostRegistry::new(store.clone(), Arc::new(TauriNotifier(app.handle().clone())));
+            let start = registry.clone();
+            tauri::async_runtime::spawn(async move {
+                if let Err(e) = start.start_all() {
+                    log::error!("failed to start host connections: {e}");
+                }
+            });
             app.manage(AppState {
-                secrets: Arc::new(secrets),
+                secrets,
                 db,
                 settings,
+                hosts: HostService { store, registry },
             });
             Ok(())
         })

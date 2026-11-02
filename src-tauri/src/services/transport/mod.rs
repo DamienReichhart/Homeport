@@ -50,10 +50,6 @@ pub enum ConnectError {
         fingerprint: String,
         expected_fingerprint: String,
     },
-    #[error("stored credentials can't be decrypted")]
-    CredentialsLost,
-    #[error("the OS keychain is unavailable: {0}")]
-    KeychainUnavailable(String),
     #[error("{0}")]
     Invalid(String),
 }
@@ -63,6 +59,7 @@ pub enum ConnectError {
 pub struct Connected {
     pub docker: Docker,
     /// Present for TLS and SSH Hosts; the compose proxy forwards through it.
+    #[allow(dead_code)] // read by the compose proxy
     pub dialer: Option<Arc<dyn Dialer>>,
 }
 

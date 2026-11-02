@@ -3,8 +3,6 @@
 
 pub mod crypto;
 pub mod db;
-#[allow(dead_code)] // wired to commands with the host registry
 pub mod hosts;
 pub mod settings;
-#[allow(dead_code)] // wired to commands with the host registry
 pub mod transport;

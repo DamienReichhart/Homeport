@@ -3,11 +3,14 @@
 
 use std::sync::Arc;
 
-use crate::services::{crypto::SecretBox, db::Db, settings::SettingsService};
+use crate::services::{
+    crypto::SecretBox, db::Db, hosts::service::HostService, settings::SettingsService,
+};
 
 pub struct AppState {
     pub secrets: Arc<SecretBox>,
-    #[allow(dead_code)] // read by the host and stack services
+    #[allow(dead_code)] // read by the stack service
     pub db: Arc<Db>,
     pub settings: SettingsService,
+    pub hosts: HostService,
 }
