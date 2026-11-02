@@ -11,6 +11,7 @@ pub mod engine;
 pub mod exec;
 pub mod hosts;
 pub mod settings;
+pub mod stacks;
 pub mod streams;
 pub mod system;
 
@@ -77,6 +78,16 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             engine::system_disk_usage,
             engine::system_prune,
             engine::containers_run,
+            stacks::stacks_list,
+            stacks::stacks_get,
+            stacks::stacks_get_env,
+            stacks::stacks_check,
+            stacks::stacks_create,
+            stacks::stacks_update,
+            stacks::stacks_forget,
+            stacks::stacks_act,
+            stacks::stacks_remove,
+            stacks::stacks_compose_subscribe,
         ])
         .events(collect_events![
             events::HostStatusChanged,

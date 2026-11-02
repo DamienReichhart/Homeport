@@ -1,0 +1,349 @@
+//! Deploying Managed Stacks with the local `docker compose` CLI (ADR 0001).
+//!
+//! The YAML goes in on stdin and the environment as process variables, so
+//! nothing secret is written to disk. TLS and SSH Hosts are reached through
+//! a [`proxy`] that exists only while the command runs.
+
+use std::{process::Stdio, sync::Arc};
+
+use serde::{Deserialize, Serialize};
+use tokio::{
+    io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
+    process::Command,
+};
+
+use super::definition;
+use crate::{
+    error::{AppError, AppResult},
+    services::{
+        hosts::HostConnection,
+        transport::{proxy, Dialer},
+    },
+};
+
+/// How to invoke Compose on this machine.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct ComposeCli {
+    pub program: String,
+    /// `["compose"]` for the Docker CLI plugin, empty for standalone `docker-compose`.
+    pub prefix: Vec<String>,
+    pub version: String,
+}
+
+/// Finds `docker compose`, falling back to a standalone `docker-compose` v2.
+pub async fn detect() -> Option<ComposeCli> {
+    for (program, prefix) in [("docker", vec!["compose"]), ("docker-compose", vec![])] {
+        let output = Command::new(program)
+            .args(&prefix)
+            .args(["version", "--short"])
+            .stdin(Stdio::null())
+            .output()
+            .await;
+        if let Ok(out) = output {
+            let version = String::from_utf8_lossy(&out.stdout).trim().to_owned();
+            if out.status.success() && !version.is_empty() {
+                return Some(ComposeCli {
+                    program: program.into(),
+                    prefix: prefix.into_iter().map(Into::into).collect(),
+                    version,
+                });
+            }
+        }
+    }
+    None
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub enum ComposeAction {
+    /// `up -d --remove-orphans`: deploy or redeploy.
+    Up,
+    Pull,
+    /// `down --remove-orphans`, keeping volumes.
+    Down,
+    /// `down -v --remove-orphans`: also deletes the Stack's volumes.
+    DownWithVolumes,
+}
+
+impl ComposeAction {
+    fn args(self) -> &'static [&'static str] {
+        match self {
+            Self::Up => &["up", "--detach", "--remove-orphans"],
+            Self::Pull => &["pull"],
+            Self::Down => &["down", "--remove-orphans"],
+            Self::DownWithVolumes => &["down", "--volumes", "--remove-orphans"],
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
+#[serde(tag = "type", rename_all = "camelCase")]
+pub enum ComposeEvent {
+    Line { text: String },
+    Exit { success: bool, code: Option<i32> },
+    Error { message: String },
+}
+
+/// The `DOCKER_HOST` for hosts the CLI can reach directly; `None` for TLS
+/// and SSH, which need the proxy.
+pub fn direct_docker_host(connection: &HostConnection) -> Option<String> {
+    match connection {
+        HostConnection::Local { socket_path } if cfg!(windows) => {
+            Some(format!("npipe://{}", socket_path.replace('\\', "/")))
+        }
+        HostConnection::Local { socket_path } => Some(format!("unix://{socket_path}")),
+        HostConnection::Tcp { address } => Some(format!("tcp://{address}")),
+        HostConnection::Tls { .. } | HostConnection::Ssh { .. } => None,
+    }
+}
+
+pub struct ComposeRun {
+    pub cli: ComposeCli,
+    pub connection: HostConnection,
+    pub dialer: Option<Arc<dyn Dialer>>,
+    pub project: String,
+    pub compose: String,
+    pub env: String,
+    pub action: ComposeAction,
+}
+
+/// Runs one compose command, streaming its output lines to `sink`.
+pub async fn run(job: ComposeRun, sink: impl Fn(ComposeEvent) -> bool) {
+    if let Err(e) = execute(job, &sink).await {
+        sink(ComposeEvent::Error {
+            message: e.to_string(),
+        });
+    }
+}
+
+async fn execute(job: ComposeRun, sink: &impl Fn(ComposeEvent) -> bool) -> AppResult<()> {
+    definition::validate_name(&job.project).map_err(AppError::Validation)?;
+    if job.action != ComposeAction::Down && job.action != ComposeAction::DownWithVolumes {
+        let check = definition::check(&job.compose);
+        if !check.is_deployable() {
+            return Err(AppError::Validation(check.errors.join(" ")));
+        }
+    }
+    let vars = definition::parse_env(&job.env).map_err(AppError::Validation)?;
+
+    // Keep the proxy alive until the CLI exits.
+    let (docker_host, _proxy) = match direct_docker_host(&job.connection) {
+        Some(host) => (host, None),
+        None => {
+            let dialer = job.dialer.ok_or_else(|| {
+                AppError::Validation("Connect to the host before deploying.".into())
+            })?;
+            let proxy = proxy::open(dialer)?;
+            (proxy.docker_host.clone(), Some(proxy))
+        }
+    };
+    // An empty working directory so nothing on this machine is picked up as project files.
+    let workdir = tempfile::tempdir()?;
+
+    let mut child = Command::new(&job.cli.program)
+        .args(&job.cli.prefix)
+        .args([
+            "--project-name",
+            &job.project,
+            "--file",
+            "-",
+            "--progress",
+            "plain",
+        ])
+        .args(job.action.args())
+        .current_dir(workdir.path())
+        .env_remove("DOCKER_CONTEXT")
+        .env_remove("COMPOSE_FILE")
+        .env_remove("COMPOSE_PROJECT_NAME")
+        .env("DOCKER_HOST", &docker_host)
+        .envs(vars)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .kill_on_drop(true)
+        .spawn()
+        .map_err(|e| AppError::Validation(format!("Couldn't start {}: {e}", job.cli.program)))?;
+
+    let mut stdin = child.stdin.take().expect("stdin is piped");
+    stdin.write_all(job.compose.as_bytes()).await?;
+    drop(stdin);
+
+    let mut stdout = BufReader::new(child.stdout.take().expect("stdout is piped")).lines();
+    let mut stderr = BufReader::new(child.stderr.take().expect("stderr is piped")).lines();
+    let (mut out_done, mut err_done) = (false, false);
+    while !(out_done && err_done) {
+        let line = tokio::select! {
+            l = stdout.next_line(), if !out_done => l?.or_else(|| { out_done = true; None }),
+            l = stderr.next_line(), if !err_done => l?.or_else(|| { err_done = true; None }),
+        };
+        if let Some(text) = line {
+            if !sink(ComposeEvent::Line { text }) {
+                return Ok(());
+            }
+        }
+    }
+    let status = child.wait().await?;
+    sink(ComposeEvent::Exit {
+        success: status.success(),
+        code: status.code(),
+    });
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::services::{docker::testing, stacks::lifecycle};
+
+    #[test]
+    fn direct_hosts_are_passed_to_the_cli() {
+        if cfg!(unix) {
+            assert_eq!(
+                direct_docker_host(&HostConnection::Local {
+                    socket_path: "/var/run/docker.sock".into()
+                }),
+                Some("unix:///var/run/docker.sock".into())
+            );
+        }
+        assert_eq!(
+            direct_docker_host(&HostConnection::Tcp {
+                address: "10.0.0.1:2375".into()
+            }),
+            Some("tcp://10.0.0.1:2375".into())
+        );
+        assert_eq!(
+            direct_docker_host(&HostConnection::Tls {
+                address: "h:2376".into()
+            }),
+            None
+        );
+    }
+
+    async fn compose(
+        project: &str,
+        action: ComposeAction,
+        dialer: Option<Arc<dyn Dialer>>,
+        connection: HostConnection,
+    ) -> Vec<ComposeEvent> {
+        let cli = detect().await.expect("docker compose is installed");
+        let events = std::sync::Mutex::new(Vec::new());
+        run(
+            ComposeRun {
+                cli,
+                connection,
+                dialer,
+                project: project.into(),
+                compose: format!(
+                    "services:\n  app:\n    image: {}\n    command: [\"sleep\", \"60\"]\n    environment:\n      GREETING: ${{GREETING}}\n",
+                    testing::IMAGE
+                ),
+                env: "GREETING=hello".into(),
+                action,
+            },
+            |e| {
+                events.lock().unwrap().push(e);
+                true
+            },
+        )
+        .await;
+        events.into_inner().unwrap()
+    }
+
+    async fn deploys_and_tears_down(dialer: Option<Arc<dyn Dialer>>, connection: HostConnection) {
+        let docker = testing::docker();
+        testing::ensure_image(&docker).await;
+        let project = testing::unique("stack");
+
+        let up = compose(
+            &project,
+            ComposeAction::Up,
+            dialer.clone(),
+            connection.clone(),
+        )
+        .await;
+        assert!(
+            matches!(up.last(), Some(ComposeEvent::Exit { success: true, .. })),
+            "{up:?}"
+        );
+        let running = lifecycle::containers_of(&docker, &project).await.unwrap();
+        assert_eq!(running.len(), 1);
+        let env = &testing::docker()
+            .inspect_container(&running[0].id, None)
+            .await
+            .unwrap()
+            .config
+            .unwrap()
+            .env
+            .unwrap();
+        assert!(env.contains(&"GREETING=hello".to_string()));
+
+        let down = compose(&project, ComposeAction::Down, dialer, connection).await;
+        assert!(
+            matches!(down.last(), Some(ComposeEvent::Exit { success: true, .. })),
+            "{down:?}"
+        );
+        assert!(lifecycle::containers_of(&docker, &project)
+            .await
+            .unwrap()
+            .is_empty());
+    }
+
+    #[tokio::test]
+    #[ignore = "needs a local Docker Engine and the compose CLI"]
+    async fn managed_stacks_deploy_on_local_hosts() {
+        deploys_and_tears_down(
+            None,
+            HostConnection::Local {
+                socket_path: "/var/run/docker.sock".into(),
+            },
+        )
+        .await;
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    #[ignore = "needs a local Docker Engine and the compose CLI"]
+    async fn managed_stacks_deploy_through_the_proxy() {
+        // TLS hosts always go through the proxy; the dialer stands in for the real one.
+        deploys_and_tears_down(
+            Some(Arc::new(testing::UnixDialer)),
+            HostConnection::Tls {
+                address: "unused:2376".into(),
+            },
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    #[ignore = "needs a local Docker Engine"]
+    async fn external_stacks_can_be_stopped_and_removed_without_compose_files() {
+        let docker = testing::docker();
+        testing::ensure_image(&docker).await;
+        let project = testing::unique("ext");
+        let up = compose(
+            &project,
+            ComposeAction::Up,
+            None,
+            HostConnection::Local {
+                socket_path: "/var/run/docker.sock".into(),
+            },
+        )
+        .await;
+        assert!(matches!(
+            up.last(),
+            Some(ComposeEvent::Exit { success: true, .. })
+        ));
+
+        lifecycle::act(&docker, &project, lifecycle::StackAction::Stop)
+            .await
+            .unwrap();
+        let stopped = lifecycle::containers_of(&docker, &project).await.unwrap();
+        assert!(stopped.iter().all(|c| c.state == "exited"));
+        lifecycle::remove(&docker, &project).await.unwrap();
+        assert!(lifecycle::containers_of(&docker, &project)
+            .await
+            .unwrap()
+            .is_empty());
+    }
+}

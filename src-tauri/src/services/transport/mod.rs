@@ -5,6 +5,7 @@
 //! with secrets that never leave memory (ADR 0002). The same dialer backs the
 //! compose CLI proxy (ADR 0001).
 
+pub mod proxy;
 pub mod ssh;
 pub mod tls;
 

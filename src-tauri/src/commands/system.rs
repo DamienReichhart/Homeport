@@ -1,7 +1,10 @@
 use serde::Serialize;
 use tauri::{AppHandle, State};
 
-use crate::state::AppState;
+use crate::{
+    services::stacks::compose::{self, ComposeCli},
+    state::AppState,
+};
 
 #[derive(Debug, Serialize, specta::Type)]
 pub struct AppInfo {
@@ -28,12 +31,15 @@ pub fn get_app_info(app: AppHandle) -> AppInfo {
 pub struct Capabilities {
     /// An OS keychain is reachable, so SSH, TLS and stack `.env` secrets can be stored.
     keychain: bool,
+    /// The compose CLI used to deploy Managed Stacks, if installed.
+    compose: Option<ComposeCli>,
 }
 
 #[tauri::command]
 #[specta::specta]
-pub fn get_capabilities(state: State<'_, AppState>) -> Capabilities {
-    Capabilities {
+pub async fn get_capabilities(state: State<'_, AppState>) -> Result<Capabilities, ()> {
+    Ok(Capabilities {
         keychain: state.secrets.is_available(),
-    }
+        compose: compose::detect().await,
+    })
 }

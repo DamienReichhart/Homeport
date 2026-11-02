@@ -15,6 +15,7 @@ use crate::{
         db::Db,
         hosts::{registry::HostRegistry, service::HostService, store::HostStore},
         settings::SettingsService,
+        stacks::store::StackStore,
     },
     state::AppState,
 };
@@ -54,8 +55,8 @@ pub fn run() {
                 }
             });
             app.manage(AppState {
+                stacks: StackStore::new(db.clone(), secrets.clone()),
                 secrets,
-                db,
                 settings,
                 hosts: HostService { store, registry },
                 streams: Default::default(),

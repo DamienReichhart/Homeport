@@ -7,7 +7,7 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 /** Commands */
 export const commands = {
 	getAppInfo: () => __TAURI_INVOKE<AppInfo>("get_app_info"),
-	getCapabilities: () => __TAURI_INVOKE<Capabilities>("get_capabilities"),
+	getCapabilities: () => __TAURI_INVOKE<Capabilities_Serialize>("get_capabilities"),
 	getSettings: () => __TAURI_INVOKE<Settings_Serialize>("get_settings"),
 	updateSettings: (settings: Settings_Deserialize) => __TAURI_INVOKE<Settings_Serialize>("update_settings", { settings }),
 	hostsList: () => __TAURI_INVOKE<HostView_Serialize[]>("hosts_list"),
@@ -68,6 +68,25 @@ export const commands = {
 	systemPrune: (hostId: string, selection: PruneSelection) => __TAURI_INVOKE<SystemPruneReport>("system_prune", { hostId, selection }),
 	/**  Creates and starts a container; returns its id. */
 	containersRun: (hostId: string, spec: RunSpec_Deserialize) => __TAURI_INVOKE<string>("containers_run", { hostId, spec }),
+	/**  Every Stack on a Host: those running there plus undeployed Managed Stacks. */
+	stacksList: (hostId: string) => __TAURI_INVOKE<Stack_Serialize[]>("stacks_list", { hostId }),
+	stacksGet: (id: string) => __TAURI_INVOKE<ManagedStack>("stacks_get", { id }),
+	/**  The decrypted environment of a Managed Stack, for editing. */
+	stacksGetEnv: (id: string) => __TAURI_INVOKE<string>("stacks_get_env", { id }),
+	stacksCheck: (compose: string) => __TAURI_INVOKE<ComposeCheck>("stacks_check", { compose }),
+	/**  Creates a Managed Stack. Using the name of an External Stack adopts it. */
+	stacksCreate: (hostId: string, name: string, compose: string, env: string) => __TAURI_INVOKE<ManagedStack>("stacks_create", { hostId, name, compose, env }),
+	stacksUpdate: (id: string, compose: string, env: string) => __TAURI_INVOKE<ManagedStack>("stacks_update", { id, compose, env }),
+	/**
+	 *  Forgets a Managed Stack's definition; its containers keep running and it
+	 *  becomes an External Stack.
+	 */
+	stacksForget: (id: string) => __TAURI_INVOKE<null>("stacks_forget", { id }),
+	stacksAct: (hostId: string, name: string, action: StackAction) => __TAURI_INVOKE<null>("stacks_act", { hostId, name, action }),
+	/**  Removes a Stack's containers and networks through the Engine API. */
+	stacksRemove: (hostId: string, name: string) => __TAURI_INVOKE<null>("stacks_remove", { hostId, name }),
+	/**  Runs a compose command for a Managed Stack, streaming its output. */
+	stacksComposeSubscribe: (id: string, action: ComposeAction, onEvent: Channel<ComposeEvent_Deserialize>) => __TAURI_INVOKE<number>("stacks_compose_subscribe", { id, action, onEvent }),
 };
 
 /** Events */
@@ -91,10 +110,52 @@ export type AppInfo = {
 };
 
 /**  What this machine can do; features degrade gracefully when something is missing. */
-export type Capabilities = {
+export type Capabilities = Capabilities_Serialize | Capabilities_Deserialize;
+
+/**  What this machine can do; features degrade gracefully when something is missing. */
+export type Capabilities_Deserialize = {
 	/**  An OS keychain is reachable, so SSH, TLS and stack `.env` secrets can be stored. */
 	keychain: boolean,
+	/**  The compose CLI used to deploy Managed Stacks, if installed. */
+	compose?: ComposeCli | null,
 };
+
+/**  What this machine can do; features degrade gracefully when something is missing. */
+export type Capabilities_Serialize = {
+	/**  An OS keychain is reachable, so SSH, TLS and stack `.env` secrets can be stored. */
+	keychain: boolean,
+	/**  The compose CLI used to deploy Managed Stacks, if installed. */
+	compose: ComposeCli | null,
+};
+
+export type ComposeAction = 
+/**  `up -d --remove-orphans`: deploy or redeploy. */
+"up" | "pull" | 
+/**  `down --remove-orphans`, keeping volumes. */
+"down" | 
+/**  `down -v --remove-orphans`: also deletes the Stack's volumes. */
+"downWithVolumes";
+
+export type ComposeCheck = {
+	/**  Problems that block deploying. */
+	errors: string[],
+	/**  Things that will probably not do what the author expects. */
+	warnings: string[],
+};
+
+/**  How to invoke Compose on this machine. */
+export type ComposeCli = {
+	program: string,
+	/**  `["compose"]` for the Docker CLI plugin, empty for standalone `docker-compose`. */
+	prefix: string[],
+	version: string,
+};
+
+export type ComposeEvent = ComposeEvent_Serialize | ComposeEvent_Deserialize;
+
+export type ComposeEvent_Deserialize = { type: "line"; text: string } | { type: "exit"; success: boolean; code?: number | null } | { type: "error"; message: string };
+
+export type ComposeEvent_Serialize = { type: "line"; text: string } | { type: "exit"; success: boolean; code: number | null } | { type: "error"; message: string };
 
 export type Container = Container_Serialize | Container_Deserialize;
 
@@ -408,6 +469,16 @@ export type LogSource_Serialize = {
 	label: string | null,
 };
 
+export type ManagedStack = {
+	id: string,
+	hostId: string,
+	name: string,
+	compose: string,
+	hasEnv: boolean,
+	createdAt: string,
+	updatedAt: string,
+};
+
 export type MountSpec = {
 	/**  An absolute path on the Host (bind mount) or a volume name. */
 	source: string,
@@ -598,6 +669,54 @@ export type SshSetup = {
 	installCommand: string,
 	/**  Lets the SSH user reach the Docker socket, run on the server. */
 	dockerGroupCommand: string,
+};
+
+export type Stack = Stack_Serialize | Stack_Deserialize;
+
+export type StackAction = "start" | "stop" | "restart";
+
+export type StackKind = "managed" | "external";
+
+export type StackService = {
+	name: string,
+	containerIds: string[],
+	running: number,
+};
+
+export type StackState = 
+/**  Every container is running. */
+"running" | 
+/**  Some containers are running. */
+"partial" | 
+/**  Containers exist but none is running. */
+"stopped" | 
+/**  A Managed Stack with no containers yet. */
+"notDeployed";
+
+export type Stack_Deserialize = {
+	name: string,
+	kind: StackKind,
+	/**  Present for Managed Stacks. */
+	managedId?: string | null,
+	state: StackState,
+	services: StackService[],
+	running: number,
+	total: number,
+	/**  Where the compose files lived for whoever deployed it (on that machine). */
+	configFiles?: string | null,
+};
+
+export type Stack_Serialize = {
+	name: string,
+	kind: StackKind,
+	/**  Present for Managed Stacks. */
+	managedId: string | null,
+	state: StackState,
+	services: StackService[],
+	running: number,
+	total: number,
+	/**  Where the compose files lived for whoever deployed it (on that machine). */
+	configFiles: string | null,
 };
 
 export type StatsSample = {
