@@ -3,7 +3,10 @@ use tauri::{ipc::Channel, State};
 use crate::{
     error::AppResult,
     services::{
-        docker::logs::{self, LogEvent, LogOptions, LogSource},
+        docker::{
+            logs::{self, LogEvent, LogOptions, LogSource},
+            stats::{self, ContainerUsage, StatsSample},
+        },
         streams::StreamId,
     },
     state::AppState,
@@ -31,4 +34,34 @@ pub fn logs_subscribe(
         .spawn(logs::stream(docker, sources, options, move |e| {
             on_event.send(e).is_ok()
         })))
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn stats_subscribe(
+    state: State<'_, AppState>,
+    host_id: String,
+    container_id: String,
+    on_sample: Channel<StatsSample>,
+) -> AppResult<StreamId> {
+    let docker = state.hosts.registry.docker(&host_id)?;
+    Ok(state
+        .streams
+        .spawn(stats::stream(docker, container_id, move |s| {
+            on_sample.send(s).is_ok()
+        })))
+}
+
+/// Usage of every running container on a Host, refreshed every two seconds.
+#[tauri::command]
+#[specta::specta]
+pub fn usage_subscribe(
+    state: State<'_, AppState>,
+    host_id: String,
+    on_usage: Channel<Vec<ContainerUsage>>,
+) -> AppResult<StreamId> {
+    let docker = state.hosts.registry.docker(&host_id)?;
+    Ok(state
+        .streams
+        .spawn(stats::overview(docker, move |u| on_usage.send(u).is_ok())))
 }

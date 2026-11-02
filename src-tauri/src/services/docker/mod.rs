@@ -4,6 +4,7 @@
 
 pub mod containers;
 pub mod logs;
+pub mod stats;
 
 #[cfg(test)]
 pub mod testing;

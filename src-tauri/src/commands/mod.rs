@@ -43,6 +43,8 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             containers::containers_processes,
             streams::stream_cancel,
             streams::logs_subscribe,
+            streams::stats_subscribe,
+            streams::usage_subscribe,
         ])
         .events(collect_events![
             events::HostStatusChanged,

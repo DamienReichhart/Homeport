@@ -30,6 +30,9 @@ export const commands = {
 	/**  Stops a stream started by any `*_subscribe` command. */
 	streamCancel: (id: number) => __TAURI_INVOKE<void>("stream_cancel", { id }),
 	logsSubscribe: (hostId: string, sources: LogSource_Deserialize[], options: LogOptions_Deserialize, onEvent: Channel<LogEvent_Deserialize>) => __TAURI_INVOKE<number>("logs_subscribe", { hostId, sources, options, onEvent }),
+	statsSubscribe: (hostId: string, containerId: string, onSample: Channel<StatsSample>) => __TAURI_INVOKE<number>("stats_subscribe", { hostId, containerId, onSample }),
+	/**  Usage of every running container on a Host, refreshed every two seconds. */
+	usageSubscribe: (hostId: string, onUsage: Channel<ContainerUsage[]>) => __TAURI_INVOKE<number>("usage_subscribe", { hostId, onUsage }),
 };
 
 /** Events */
@@ -61,6 +64,13 @@ export type Capabilities = {
 export type Container = Container_Serialize | Container_Deserialize;
 
 export type ContainerAction = "start" | "stop" | "restart" | "pause" | "unpause" | "kill";
+
+export type ContainerUsage = {
+	id: string,
+	cpuPercent: number | null,
+	memoryUsage: number,
+	memoryLimit: number,
+};
 
 export type Container_Deserialize = {
 	id: string,
@@ -325,6 +335,19 @@ export type SshSetup = {
 	installCommand: string,
 	/**  Lets the SSH user reach the Docker socket, run on the server. */
 	dockerGroupCommand: string,
+};
+
+export type StatsSample = {
+	/**  Percent of one CPU; 200 means two CPUs fully used. */
+	cpuPercent: number | null,
+	/**  Bytes in use, excluding reclaimable page cache. */
+	memoryUsage: number,
+	memoryLimit: number,
+	netRx: number,
+	netTx: number,
+	blockRead: number,
+	blockWrite: number,
+	pids: number,
 };
 
 export type Theme = "system" | "light" | "dark";
