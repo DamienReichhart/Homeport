@@ -11,7 +11,7 @@ export function HomePage() {
       {info.status === 'loading' && <Spinner />}
       {info.status === 'error' && <ErrorMessage error={info.error} />}
       {info.status === 'success' && (
-        <p className="muted">
+        <p className="text-muted-foreground">
           {info.data.name} v{info.data.version} on {info.data.os}/{info.data.arch}
         </p>
       )}

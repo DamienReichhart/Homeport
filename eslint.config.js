@@ -46,4 +46,9 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    // Vendored shadcn/ui components co-export their cva variants.
+    files: ['src/shared/ui/**/*.{ts,tsx}'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
 );
