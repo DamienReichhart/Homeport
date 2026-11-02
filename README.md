@@ -4,21 +4,21 @@ Cross-platform desktop app built with [Tauri 2](https://tauri.app), React 19, Ty
 
 ## Prerequisites
 
-- Node.js ≥ 20 and [pnpm](https://pnpm.io) 10
+- [Bun](https://bun.sh) ≥ 1.4
 - Rust (stable; `rust-toolchain.toml` pins components)
 - Tauri system dependencies: <https://tauri.app/start/prerequisites/>
   (Linux: `libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev librsvg2-dev libayatana-appindicator3-dev libssl-dev`)
 
 ## Commands
 
-| Command            | What it does                                     |
-| ------------------ | ------------------------------------------------ |
-| `pnpm install`     | Install JS dependencies                          |
-| `pnpm tauri:dev`   | Run the desktop app with hot reload              |
-| `pnpm tauri:build` | Produce an installer/bundle                      |
-| `pnpm check`       | Typecheck + lint + format check + frontend tests |
-| `pnpm rust:lint`   | `cargo clippy` with warnings as errors           |
-| `pnpm rust:test`   | Rust unit tests                                  |
+| Command               | What it does                                     |
+| --------------------- | ------------------------------------------------ |
+| `bun install`         | Install JS dependencies                          |
+| `bun run tauri:dev`   | Run the desktop app with hot reload              |
+| `bun run tauri:build` | Produce an installer/bundle                      |
+| `bun run check`       | Typecheck + lint + format check + frontend tests |
+| `bun run rust:lint`   | `cargo clippy` with warnings as errors           |
+| `bun run rust:test`   | Rust unit tests                                  |
 
 ## Layout
 

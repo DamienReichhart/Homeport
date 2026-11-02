@@ -3,4 +3,4 @@ dist
 target
 src-tauri/gen
 src-tauri/icons
-pnpm-lock.yaml
+bun.lock
