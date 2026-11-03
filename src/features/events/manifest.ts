@@ -1,6 +1,6 @@
 import { ActivityIcon } from 'lucide-react';
 import { defineFeature } from '@/core/feature';
-import { EventsPage } from './EventsPage';
+import { EventsPage } from './ui/EventsPage';
 
 export const eventsFeature = defineFeature({
   routes: [{ path: 'events', Component: EventsPage }],
