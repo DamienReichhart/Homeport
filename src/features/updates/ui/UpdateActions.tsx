@@ -1,7 +1,8 @@
 import { openUrl } from '@tauri-apps/plugin-opener';
 import type { UpdateCheck } from '@/shared/api';
 import { Button, CopyButton, ErrorMessage, toastError } from '@/shared/ui';
-import { describeProgress, useInstallUpdate, WEBSITE_URL } from '../api';
+import { useInstallUpdate } from '../api/mutations';
+import { describeProgress, WEBSITE_URL } from '../model/updates';
 
 /**
  * What the user can do about an available update, depending on how this copy

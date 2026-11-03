@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ArrowUpCircleIcon, XIcon } from 'lucide-react';
 import { Button } from '@/shared/ui';
-import { useUpdateCheck } from '../api';
+import { useUpdateCheck } from '../api/queries';
 import { UpdateActions } from './UpdateActions';
 
 /** A bar above every page while a newer version is available, until dismissed. */

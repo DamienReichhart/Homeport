@@ -6,12 +6,13 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  ErrorMessage,
   Label,
   Switch,
 } from '@/shared/ui';
-import { describeMethod, useUpdateCheck } from '../api';
+import { useUpdateCheck } from '../api/queries';
+import { describeMethod } from '../model/updates';
 import { UpdateActions } from './UpdateActions';
+import { UpdateStatus } from './UpdateStatus';
 
 /** The Updates card in Settings: automatic checks, "Check now", and the result. */
 export function UpdatesCard({
@@ -57,19 +58,5 @@ export function UpdatesCard({
         {check.data?.available && <UpdateActions check={check.data} />}
       </CardContent>
     </Card>
-  );
-}
-
-function UpdateStatus({ check }: { check: ReturnType<typeof useUpdateCheck> }) {
-  if (check.isFetching) return null;
-  if (check.error) return <ErrorMessage error={check.error} className="basis-full" />;
-  if (!check.data) return null;
-  const { available, currentVersion } = check.data;
-  return (
-    <span className="text-muted-foreground text-sm">
-      {available
-        ? `Homeport ${available.version} is available (you have ${currentVersion}).`
-        : `Homeport ${currentVersion} is the latest version.`}
-    </span>
   );
 }
