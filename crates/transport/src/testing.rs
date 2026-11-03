@@ -29,5 +29,5 @@ impl Dialer for UnixDialer {
 /// A client whose requests go through [`UnixDialer`], like TLS and SSH Hosts.
 #[cfg(unix)]
 pub fn dialed_docker() -> Docker {
-    crate::docker_over(Arc::new(UnixDialer))
+    crate::connect::docker_over(Arc::new(UnixDialer))
 }
