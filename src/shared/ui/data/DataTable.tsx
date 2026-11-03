@@ -69,6 +69,9 @@ export function DataTable<T>({
       ]
     : columns;
 
+  // The table instance changes in place, so the React Compiler must skip this
+  // component, which is what this rule reports.
+  // eslint-disable-next-line react-hooks/incompatible-library -- skipping is the intent
   const table = useReactTable({
     data,
     columns: allColumns,
