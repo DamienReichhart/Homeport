@@ -1,33 +1,11 @@
 import { yaml } from '@codemirror/lang-yaml';
 import CodeMirror from '@uiw/react-codemirror';
 import { CircleXIcon, TriangleAlertIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { commands, type ComposeCheck } from '@/shared/api';
+import { useEffect } from 'react';
+import type { ComposeCheck } from '@/shared/api';
 import { useResolvedTheme } from '@/shared/lib';
 import { editorTheme, Label, Textarea } from '@/shared/ui';
-
-export const STARTER = `services:
-  web:
-    image: nginx:alpine
-    ports:
-      - "8080:80"
-    restart: unless-stopped
-`;
-
-/** Re-checks the definition shortly after the user stops typing. */
-function useCheck(compose: string): ComposeCheck | null {
-  const [check, setCheck] = useState<ComposeCheck | null>(null);
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      commands
-        .stacksCheck(compose)
-        .then(setCheck)
-        .catch(() => setCheck(null));
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [compose]);
-  return check;
-}
+import { useComposeCheck } from '../api/useComposeCheck';
 
 /** The compose definition and environment of a Managed Stack, with live checks. */
 export function StackEditor({
@@ -46,7 +24,7 @@ export function StackEditor({
   onCheck?: (check: ComposeCheck | null) => void;
 }) {
   const theme = useResolvedTheme();
-  const check = useCheck(compose);
+  const check = useComposeCheck(compose);
   useEffect(() => onCheck?.(check), [check, onCheck]);
 
   return (

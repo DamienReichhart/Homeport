@@ -1,14 +1,5 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import {
-  commands,
-  keys,
-  subscribe,
-  toAppError,
-  type AppError,
-  type ComposeAction,
-  type ComposeEvent,
-} from '@/shared/api';
+import { toAppError, type AppError } from '@/shared/api';
 import {
   Button,
   Dialog,
@@ -19,19 +10,8 @@ import {
   ErrorMessage,
   XTerm,
 } from '@/shared/ui';
-
-const TITLES: Record<ComposeAction, string> = {
-  up: 'Deploying',
-  pull: 'Pulling images for',
-  down: 'Taking down',
-  downWithVolumes: 'Taking down (with volumes)',
-};
-
-export interface ComposeJob {
-  stackId: string;
-  name: string;
-  action: ComposeAction;
-}
+import { useComposeRun } from '../../api/streams';
+import { COMPOSE_TITLES, type ComposeJob } from '../../model/composeJob';
 
 /** Runs one compose command for a Managed Stack and shows its output live. */
 export function ComposeRunDialog({
@@ -43,7 +23,7 @@ export function ComposeRunDialog({
   job: ComposeJob | null;
   onClose: () => void;
 }) {
-  const client = useQueryClient();
+  const run = useComposeRun(hostId);
   const [result, setResult] = useState<'running' | 'ok' | 'failed'>('running');
   const [failure, setFailure] = useState<AppError | null>(null);
   const fail = (error: unknown) => {
@@ -56,7 +36,7 @@ export function ComposeRunDialog({
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>
-            {TITLES[job.action]} {job.name}
+            {COMPOSE_TITLES[job.action]} {job.name}
           </DialogTitle>
         </DialogHeader>
         {failure && <ErrorMessage error={failure} />}
@@ -65,8 +45,8 @@ export function ComposeRunDialog({
             readOnly
             className="h-full"
             onReady={({ terminal }) =>
-              subscribe<ComposeEvent>(
-                (ch) => commands.stacksComposeSubscribe(job.stackId, job.action, ch),
+              run(
+                job,
                 (e) => {
                   if (e.type === 'line') terminal.writeln(e.text);
                   else if (e.type === 'error') {
@@ -80,7 +60,6 @@ export function ComposeRunDialog({
                     );
                     if (e.error) fail(e.error);
                     else setResult(e.success ? 'ok' : 'failed');
-                    void client.invalidateQueries({ queryKey: keys.host(hostId) });
                   }
                 },
                 (error) => {

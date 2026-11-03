@@ -1,8 +1,8 @@
 import { BoxesIcon } from 'lucide-react';
 import { defineFeature } from '@/core/feature';
-import { NewStackPage } from './NewStackPage';
-import { StackDetailPage } from './StackDetailPage';
-import { StacksPage } from './StacksPage';
+import { StackDetailPage } from './ui/detail/StackDetailPage';
+import { NewStackPage } from './ui/NewStackPage';
+import { StacksPage } from './ui/StacksPage';
 
 export const stacksFeature = defineFeature({
   routes: [

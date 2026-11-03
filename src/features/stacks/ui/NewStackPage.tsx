@@ -1,8 +1,7 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { HostGate } from '@/core/host';
-import { commands, type ComposeCheck, keys, useCapabilities } from '@/shared/api';
+import { type ComposeCheck, useCapabilities } from '@/shared/api';
 import {
   Alert,
   AlertDescription,
@@ -13,14 +12,16 @@ import {
   Label,
   PageHeader,
 } from '@/shared/ui';
-import { ComposeRunDialog, type ComposeJob } from './ComposeRunDialog';
-import { STARTER, StackEditor } from './StackEditor';
+import { useCreateStack } from '../api/mutations';
+import type { ComposeJob } from '../model/composeJob';
+import { STARTER } from '../model/starter';
+import { ComposeRunDialog } from './dialogs/ComposeRunDialog';
+import { StackEditor } from './StackEditor';
 
 function NewStack({ hostId }: { hostId: string }) {
   const [params] = useSearchParams();
   const adopting = params.get('adopt');
   const navigate = useNavigate();
-  const client = useQueryClient();
   const capabilities = useCapabilities();
   const [name, setName] = useState(adopting ?? '');
   const [compose, setCompose] = useState(adopting ? '' : STARTER);
@@ -28,14 +29,9 @@ function NewStack({ hostId }: { hostId: string }) {
   const [check, setCheck] = useState<ComposeCheck | null>(null);
   const [job, setJob] = useState<ComposeJob | null>(null);
 
-  const save = useMutation({
-    meta: { silent: true },
-    mutationFn: () => commands.stacksCreate(hostId, name, compose, env),
-    onSuccess: async (stack, deploy: boolean) => {
-      await client.invalidateQueries({ queryKey: keys.stacks(hostId) });
-      if (deploy) setJob({ stackId: stack.id, name: stack.name, action: 'up' });
-      else navigate(`/stacks/${encodeURIComponent(stack.name)}`);
-    },
+  const save = useCreateStack(hostId, (stack, deploy) => {
+    if (deploy) setJob({ stackId: stack.id, name: stack.name, action: 'up' });
+    else navigate(`/stacks/${encodeURIComponent(stack.name)}`);
   });
   const canDeploy =
     capabilities.data?.compose.state === 'available' && check !== null && check.errors.length === 0;
@@ -79,13 +75,16 @@ function NewStack({ hostId }: { hostId: string }) {
       />
       {save.error && <ErrorMessage error={save.error} />}
       <div className="flex gap-2">
-        <Button disabled={save.isPending || !canDeploy || !name} onClick={() => save.mutate(true)}>
+        <Button
+          disabled={save.isPending || !canDeploy || !name}
+          onClick={() => save.mutate({ name, compose, env, deploy: true })}
+        >
           Save and deploy
         </Button>
         <Button
           variant="outline"
           disabled={save.isPending || !name}
-          onClick={() => save.mutate(false)}
+          onClick={() => save.mutate({ name, compose, env, deploy: false })}
         >
           Save
         </Button>

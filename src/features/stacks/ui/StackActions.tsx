@@ -1,4 +1,3 @@
-import { useCapabilities } from '@/shared/api';
 import {
   CloudDownloadIcon,
   EllipsisVerticalIcon,
@@ -9,7 +8,7 @@ import {
   Trash2Icon,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import type { Stack } from '@/shared/api';
+import { useCapabilities, type Stack } from '@/shared/api';
 import {
   Button,
   DropdownMenu,
@@ -17,10 +16,10 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  type ConfirmOptions,
 } from '@/shared/ui';
-import type { ConfirmOptions } from '@/shared/ui';
-import { useStackMutations } from './api';
-import type { ComposeJob } from './ComposeRunDialog';
+import { useStackMutations } from '../api/mutations';
+import type { ComposeJob } from '../model/composeJob';
 
 /**
  * The actions of a Stack. Lifecycle works for every Stack; deploying needs
