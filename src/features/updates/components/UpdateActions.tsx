@@ -1,7 +1,7 @@
 import { openUrl } from '@tauri-apps/plugin-opener';
 import type { UpdateCheck } from '@/shared/api';
 import { Button } from '@/shared/ui/button';
-import { CopyButton, ErrorMessage } from '@/shared/ui';
+import { CopyButton, ErrorMessage, toastError } from '@/shared/ui';
 import { describeProgress, useInstallUpdate, WEBSITE_URL } from '../api';
 
 /**
@@ -21,7 +21,11 @@ export function UpdateActions({ check }: { check: UpdateCheck }) {
           <CopyButton text={method.command} label="Copy command" />
         </>
       )}
-      <Button variant="outline" size="sm" onClick={() => void openUrl(`${WEBSITE_URL}/changelog/`)}>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => openUrl(`${WEBSITE_URL}/changelog/`).catch(toastError)}
+      >
         What’s new
       </Button>
       {method.kind === 'inApp' && (
@@ -30,7 +34,7 @@ export function UpdateActions({ check }: { check: UpdateCheck }) {
         </Button>
       )}
       {method.kind === 'manual' && (
-        <Button size="sm" onClick={() => void openUrl(`${WEBSITE_URL}/download/`)}>
+        <Button size="sm" onClick={() => openUrl(`${WEBSITE_URL}/download/`).catch(toastError)}>
           Download
         </Button>
       )}

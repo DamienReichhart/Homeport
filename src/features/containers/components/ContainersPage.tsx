@@ -28,6 +28,7 @@ import {
   Spinner,
   StatusDot,
   containerTone,
+  toastError,
   useConfirm,
 } from '@/shared/ui';
 import { useContainerMutations, useContainers, useUsage } from '../api';
@@ -125,7 +126,7 @@ function ContainersList({ hostId }: { hostId: string }) {
                     key={p.label}
                     type="button"
                     className="text-primary font-mono text-xs hover:underline"
-                    onClick={() => void openUrl(`http://${address}:${p.publicPort}`)}
+                    onClick={() => openUrl(`http://${address}:${p.publicPort}`).catch(toastError)}
                   >
                     {p.label}
                   </button>
