@@ -36,6 +36,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             system::get_licenses,
             system::read_text_file,
             system::write_text_file,
+            system::open_log_folder,
             settings::get_settings,
             settings::update_settings,
             updates::updates_check,

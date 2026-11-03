@@ -13,6 +13,8 @@ export const commands = {
 	readTextFile: (path: string) => __TAURI_INVOKE<string>("read_text_file", { path }),
 	/**  Writes text to a path the user picked in a save dialog (e.g. downloaded logs). */
 	writeTextFile: (path: string, contents: string) => __TAURI_INVOKE<null>("write_text_file", { path, contents }),
+	/**  Opens the folder holding Homeport's log files in the file manager. */
+	openLogFolder: () => __TAURI_INVOKE<null>("open_log_folder"),
 	getSettings: () => __TAURI_INVOKE<Settings>("get_settings"),
 	updateSettings: (settings: Settings) => __TAURI_INVOKE<Settings>("update_settings", { settings }),
 	/**  Asks the update server for a newer version and remembers it for [`updates_install`]. */

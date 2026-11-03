@@ -2,7 +2,7 @@ use serde::Serialize;
 use tauri::{AppHandle, Manager, State};
 
 use crate::{
-    error::{AppError, AppResult},
+    error::{AppError, AppResult, ErrorCode},
     services::stacks::compose::{self, ComposeCli},
     state::AppState,
 };
@@ -83,6 +83,22 @@ pub fn read_text_file(path: String) -> AppResult<String> {
         return Err(AppError::validation("That file is too large."));
     }
     Ok(std::fs::read_to_string(path)?)
+}
+
+/// Opens the folder holding Homeport's log files in the file manager.
+#[tauri::command]
+#[specta::specta]
+pub fn open_log_folder(app: AppHandle) -> AppResult<()> {
+    use tauri_plugin_opener::OpenerExt;
+    let dir = app.path().app_log_dir()?;
+    std::fs::create_dir_all(&dir)?;
+    app.opener()
+        .open_path(dir.to_string_lossy(), None::<&str>)
+        .map_err(|e| {
+            AppError::new(ErrorCode::Io, "The log folder can't be opened.")
+                .with_hint(format!("Open {} in your file manager.", dir.display()))
+                .with_cause(&e)
+        })
 }
 
 /// Writes text to a path the user picked in a save dialog (e.g. downloaded logs).

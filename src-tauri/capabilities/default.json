@@ -3,5 +3,11 @@
   "identifier": "default",
   "description": "Permissions for the main window. Grant the minimum; add per feature.",
   "windows": ["main"],
-  "permissions": ["core:default", "opener:default", "dialog:allow-open", "dialog:allow-save"]
+  "permissions": [
+    "core:default",
+    "log:default",
+    "opener:default",
+    "dialog:allow-open",
+    "dialog:allow-save"
+  ]
 }
