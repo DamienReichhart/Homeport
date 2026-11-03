@@ -22,7 +22,7 @@ pub fn stream_cancel(state: State<'_, AppState>, id: StreamId) {
 
 #[tauri::command]
 #[specta::specta]
-pub fn logs_subscribe(
+pub async fn logs_subscribe(
     state: State<'_, AppState>,
     host_id: String,
     sources: Vec<LogSource>,
@@ -39,7 +39,7 @@ pub fn logs_subscribe(
 
 #[tauri::command]
 #[specta::specta]
-pub fn stats_subscribe(
+pub async fn stats_subscribe(
     state: State<'_, AppState>,
     host_id: String,
     container_id: String,
@@ -56,7 +56,7 @@ pub fn stats_subscribe(
 /// Usage of every running container on a Host, refreshed every two seconds.
 #[tauri::command]
 #[specta::specta]
-pub fn usage_subscribe(
+pub async fn usage_subscribe(
     state: State<'_, AppState>,
     host_id: String,
     on_usage: Channel<Vec<ContainerUsage>>,
@@ -69,7 +69,7 @@ pub fn usage_subscribe(
 
 #[tauri::command]
 #[specta::specta]
-pub fn images_pull_subscribe(
+pub async fn images_pull_subscribe(
     state: State<'_, AppState>,
     host_id: String,
     reference: String,

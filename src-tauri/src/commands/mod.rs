@@ -1,6 +1,10 @@
 //! IPC surface. Commands are thin: validate input, call a service, map the result.
 //! Register each new command in [`builder`]; the TypeScript bindings in
 //! `src/shared/api/bindings.ts` are generated from it.
+//!
+//! Tauri runs non-`async` commands on the main thread, outside the Tokio
+//! runtime, so any command that reaches `tokio::spawn` (streams, Host
+//! supervisors) must be `async`.
 
 use tauri_specta::{collect_commands, collect_events, ErrorHandlingMode};
 

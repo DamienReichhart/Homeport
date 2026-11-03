@@ -24,13 +24,13 @@ pub async fn hosts_detect_local() -> Vec<DetectedEngine> {
 
 #[tauri::command]
 #[specta::specta]
-pub fn hosts_create(state: State<'_, AppState>, input: HostInput) -> AppResult<HostView> {
+pub async fn hosts_create(state: State<'_, AppState>, input: HostInput) -> AppResult<HostView> {
     state.hosts.create(input)
 }
 
 #[tauri::command]
 #[specta::specta]
-pub fn hosts_update(
+pub async fn hosts_update(
     state: State<'_, AppState>,
     id: String,
     input: HostInput,
@@ -46,7 +46,7 @@ pub fn hosts_delete(state: State<'_, AppState>, id: String) -> AppResult<()> {
 
 #[tauri::command]
 #[specta::specta]
-pub fn hosts_set_enabled(
+pub async fn hosts_set_enabled(
     state: State<'_, AppState>,
     id: String,
     enabled: bool,
@@ -56,19 +56,23 @@ pub fn hosts_set_enabled(
 
 #[tauri::command]
 #[specta::specta]
-pub fn hosts_trust_key(state: State<'_, AppState>, id: String, key: String) -> AppResult<HostView> {
+pub async fn hosts_trust_key(
+    state: State<'_, AppState>,
+    id: String,
+    key: String,
+) -> AppResult<HostView> {
     state.hosts.trust_host_key(&id, &key)
 }
 
 #[tauri::command]
 #[specta::specta]
-pub fn hosts_reconnect(state: State<'_, AppState>, id: String) -> AppResult<HostView> {
+pub async fn hosts_reconnect(state: State<'_, AppState>, id: String) -> AppResult<HostView> {
     state.hosts.reconnect(&id)
 }
 
 #[tauri::command]
 #[specta::specta]
-pub fn hosts_regenerate_key(state: State<'_, AppState>, id: String) -> AppResult<HostView> {
+pub async fn hosts_regenerate_key(state: State<'_, AppState>, id: String) -> AppResult<HostView> {
     state.hosts.regenerate_ssh_key(&id)
 }
 
