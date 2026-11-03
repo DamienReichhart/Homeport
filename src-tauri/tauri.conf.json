@@ -6,7 +6,7 @@
   "build": {
     "beforeDevCommand": "bun run dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "bun run build",
+    "beforeBuildCommand": "bun run licenses && bun run build",
     "frontendDist": "../dist"
   },
   "app": {
@@ -31,6 +31,8 @@
     "longDescription": "A desktop app for managing Docker Engines anywhere: this machine's, or remote ones over SSH, TLS or TCP.",
     "publisher": "Damien Reichhart",
     "copyright": "Copyright (c) 2026 Damien Reichhart",
+    "license": "MIT",
+    "licenseFile": "../LICENSE",
     "homepage": "https://github.com/DamienReichhart/Homeport",
     "icon": [
       "icons/32x32.png",
@@ -40,6 +42,24 @@
       "icons/icon.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "resources": {
+      "../LICENSE": "licenses/LICENSE",
+      "licenses/": "licenses/"
+    },
+    "linux": {
+      "deb": {
+        "files": {
+          "/usr/share/doc/homeport/copyright": "../LICENSE",
+          "/usr/share/doc/homeport/THIRD_PARTY_LICENSES.txt": "licenses/THIRD_PARTY_LICENSES.txt"
+        }
+      },
+      "rpm": {
+        "files": {
+          "/usr/share/licenses/homeport/LICENSE": "../LICENSE",
+          "/usr/share/licenses/homeport/THIRD_PARTY_LICENSES.txt": "licenses/THIRD_PARTY_LICENSES.txt"
+        }
+      }
+    }
   }
 }
