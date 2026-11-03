@@ -326,7 +326,7 @@ export interface MockOptions {
 }
 
 export function installMocks({ theme, hostId }: MockOptions) {
-  let settings: Settings = { theme, lastHostId: hostId };
+  let settings: Settings = { theme, lastHostId: hostId, checkForUpdates: true };
   mockWindows('main');
 
   const handlers: Record<string, (args: Record<string, unknown>) => unknown> = {
@@ -336,6 +336,8 @@ export function installMocks({ theme, hostId }: MockOptions) {
       compose: { program: 'docker', prefix: ['compose'], version: '2.31.0' },
     }),
     get_licenses: () => ({ app: 'MIT License', third_party: null }),
+    // Up to date, so no update bar shows in the screenshots.
+    updates_check: () => ({ currentVersion: '0.2.0', available: null, method: { kind: 'inApp' } }),
     get_settings: () => settings,
     update_settings: (a) => {
       settings = a.settings as Settings;

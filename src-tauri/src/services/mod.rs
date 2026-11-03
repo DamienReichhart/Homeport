@@ -9,3 +9,4 @@ pub mod settings;
 pub mod stacks;
 pub mod streams;
 pub mod transport;
+pub mod updates;

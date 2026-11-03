@@ -18,6 +18,7 @@ pub mod settings;
 pub mod stacks;
 pub mod streams;
 pub mod system;
+pub mod updates;
 
 /// Path of the generated bindings, relative to the `src-tauri` crate root.
 #[cfg(any(debug_assertions, test))]
@@ -37,6 +38,8 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             system::write_text_file,
             settings::get_settings,
             settings::update_settings,
+            updates::updates_check,
+            updates::updates_install,
             hosts::hosts_list,
             hosts::hosts_detect_local,
             hosts::hosts_create,

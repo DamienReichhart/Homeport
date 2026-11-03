@@ -15,6 +15,14 @@ export const commands = {
 	writeTextFile: (path: string, contents: string) => __TAURI_INVOKE<null>("write_text_file", { path, contents }),
 	getSettings: () => __TAURI_INVOKE<Settings>("get_settings"),
 	updateSettings: (settings: Settings) => __TAURI_INVOKE<Settings>("update_settings", { settings }),
+	/**  Asks the update server for a newer version and remembers it for [`updates_install`]. */
+	updatesCheck: () => __TAURI_INVOKE<UpdateCheck>("updates_check"),
+	/**
+	 *  Downloads the update found by the last [`updates_check`], verifies its
+	 *  signature, installs it and restarts Homeport. Only for installs Homeport can
+	 *  update itself; package-managed installs are refused.
+	 */
+	updatesInstall: (onProgress: Channel<UpdateProgress>) => __TAURI_INVOKE<null>("updates_install", { onProgress }),
 	hostsList: () => __TAURI_INVOKE<HostView[]>("hosts_list"),
 	hostsDetectLocal: () => __TAURI_INVOKE<DetectedEngine[]>("hosts_detect_local"),
 	hostsCreate: (input: HostInput) => __TAURI_INVOKE<HostView>("hosts_create", { input }),
@@ -112,6 +120,14 @@ export type AppInfo = {
 	version: string,
 	os: string,
 	arch: string,
+};
+
+export type AvailableUpdate = {
+	version: string,
+	/**  Markdown release notes. */
+	notes: string | null,
+	/**  RFC 3339 publication date. */
+	date: string | null,
 };
 
 /**  What this machine can do; features degrade gracefully when something is missing. */
@@ -392,6 +408,8 @@ export type NetworkView = {
 	containers: string[],
 };
 
+export type PackageManager = "apt" | "dnf" | "zypper";
+
 export type PortBinding = {
 	ip: string | null,
 	privatePort: number,
@@ -454,6 +472,8 @@ export type Settings = {
 	theme?: Theme,
 	/**  The Host selected when the app was last closed. */
 	lastHostId?: string | null,
+	/**  Look for a new version at launch and every few hours. */
+	checkForUpdates?: boolean,
 };
 
 export type SshAuth = 
@@ -529,6 +549,27 @@ export type SystemPruneReport = {
 };
 
 export type Theme = "system" | "light" | "dark";
+
+export type UpdateCheck = {
+	currentVersion: string,
+	/**  The newer version, if there is one. */
+	available: AvailableUpdate | null,
+	method: UpdateMethod,
+};
+
+export type UpdateMethod = 
+/**  Homeport downloads the update, checks its signature, installs it and restarts. */
+{ kind: "inApp" } | 
+/**  The package manager installs it; `command` is what the user runs. */
+{ kind: "packageManager"; manager: PackageManager; command: string } | 
+/**  No installer to update (a development build): download it from the website. */
+{ kind: "manual" };
+
+export type UpdateProgress = {
+	downloaded: number,
+	/**  Total size, when the server sends it. */
+	total: number | null,
+};
 
 export type UsageLine = {
 	total: number,

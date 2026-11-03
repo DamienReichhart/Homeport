@@ -1,6 +1,7 @@
 import { TriangleAlertIcon } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { HostSwitcher, useCapabilities } from '@/features/hosts';
+import { UpdateNotice } from '@/features/updates';
 import { cn } from '@/shared/lib';
 import { Logo } from '@/shared/ui';
 import { navItems } from './routes/navigation';
@@ -37,6 +38,7 @@ export function AppLayout() {
         ))}
       </nav>
       <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <UpdateNotice />
         {capabilities.data && !capabilities.data.keychain && (
           <div
             role="alert"
