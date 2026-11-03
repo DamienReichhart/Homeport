@@ -8,6 +8,7 @@ import { EmptyState, LogoMark, Spinner } from '@/shared/ui';
 import { useHosts } from '../api';
 import { useHostSelection } from '../context';
 import { describeStatus } from '../status';
+import { HostProblem } from './HostProblem';
 import { LocalEngines } from './LocalEngines';
 
 /**
@@ -54,7 +55,12 @@ export function HostGate({ children }: { children: (hostId: string) => ReactNode
     <EmptyState
       icon={ServerOffIcon}
       title={`${host.host.name}: ${label}`}
-      description={detail}
+      description={
+        <div className="grid gap-3">
+          <p>{detail}</p>
+          <HostProblem status={host.status} />
+        </div>
+      }
       action={
         <div className="flex gap-2">
           {host.status.state !== 'disabled' && (

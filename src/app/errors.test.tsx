@@ -89,12 +89,34 @@ describe('error handling', () => {
     renderApp('/containers');
 
     await user.click(await screen.findByRole('button', { name: /Retry now/ }));
-    expect(await screen.findByText('Homeport’s database is busy.')).toBeInTheDocument();
-    expect(screen.getByText('Another Homeport may be running.')).toBeInTheDocument();
+    const message = await screen.findByText('Homeport’s database is busy.');
+    const toast = message.closest<HTMLElement>('[data-sonner-toast]')!;
+    expect(within(toast).getByText('Another Homeport may be running.')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Details' }));
+    await user.click(within(toast).getByRole('button', { name: 'Details' }));
     const details = await screen.findByRole('dialog');
     expect(within(details).getByText('db_locked')).toBeInTheDocument();
     expect(within(details).getByText('hostsReconnect')).toBeInTheDocument();
+  });
+
+  it('says why a host is down and what to do about it', async () => {
+    mockCommands({
+      ...baseCommands,
+      get_app_info: appInfo,
+      hosts_list: () => [
+        { ...connectedHost, status: { state: 'unauthorized', error: accessRefused } },
+      ],
+    });
+    const user = userEvent.setup();
+    renderApp('/containers');
+
+    expect(await screen.findByText('local: Access refused')).toBeInTheDocument();
+    expect(screen.getByText(accessRefused.message)).toBeInTheDocument();
+    expect(screen.getByText(accessRefused.hint.text)).toBeInTheDocument();
+    expect(screen.getByText('sudo usermod -aG docker "$USER"')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Details' }));
+    const details = await screen.findByRole('dialog');
+    expect(within(details).getByText('Permission denied (os error 13)')).toBeInTheDocument();
   });
 });

@@ -1,10 +1,23 @@
-import type { HostConnection, HostStatus } from '@/shared/api';
+import type { AppErrorPayload, HostConnection, HostStatus } from '@/shared/api';
 import type { Tone } from '@/shared/ui';
 
 export interface StatusSummary {
   label: string;
   tone: Tone;
   detail?: string;
+}
+
+/** The classified cause of a status that needs the user, with its hint and detail. */
+export function statusError(status: HostStatus): AppErrorPayload | null {
+  switch (status.state) {
+    case 'unreachable':
+    case 'unauthorized':
+    case 'keychainUnavailable':
+    case 'invalid':
+      return status.error;
+    default:
+      return null;
+  }
 }
 
 /** A short label, a colour and the reason, for showing a Host's status. */

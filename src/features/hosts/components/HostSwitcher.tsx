@@ -1,3 +1,4 @@
+import type { HostStatus } from '@/shared/api';
 import { PlusIcon, ServerCogIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -12,6 +13,12 @@ import { StatusDot } from '@/shared/ui';
 import { useHosts } from '../api';
 import { useHostSelection } from '../context';
 import { describeStatus } from '../status';
+
+/** The status and its reason, shown when hovering a host in the list. */
+function statusTitle(status: HostStatus): string {
+  const { label, detail } = describeStatus(status);
+  return detail ? `${label}: ${detail}` : label;
+}
 
 const ADD = '__add__';
 const MANAGE = '__manage__';
@@ -36,7 +43,7 @@ export function HostSwitcher() {
       </SelectTrigger>
       <SelectContent>
         {hosts.data?.map(({ host, status }) => (
-          <SelectItem key={host.id} value={host.id}>
+          <SelectItem key={host.id} value={host.id} title={statusTitle(status)}>
             <StatusDot tone={describeStatus(status).tone} />
             <span className="truncate">{host.name}</span>
           </SelectItem>

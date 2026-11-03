@@ -13,8 +13,9 @@ import { Switch } from '@/shared/ui/switch';
 import { CopyButton, ErrorMessage, PageHeader, Spinner, useConfirm } from '@/shared/ui';
 import { useCapabilities, useHosts } from '../api';
 import { formFromHost, toHostInput, type HostFormState } from '../form';
-import { connectionLabel, describeStatus } from '../status';
+import { connectionLabel, describeStatus, statusError } from '../status';
 import { HostForm } from './HostForm';
+import { HostProblem } from './HostProblem';
 import { HostStatusBadge } from './HostStatusBadge';
 
 function CommandBlock({ label, command }: { label: string; command: string }) {
@@ -201,7 +202,9 @@ function HostDetail({ view }: { view: HostView }) {
         description={
           <span className="flex items-center gap-2">
             <HostStatusBadge status={view.status} />
-            {detail && <span className="text-muted-foreground">· {detail}</span>}
+            {detail && !statusError(view.status) && (
+              <span className="text-muted-foreground">· {detail}</span>
+            )}
           </span>
         }
         actions={
@@ -225,6 +228,14 @@ function HostDetail({ view }: { view: HostView }) {
         }
       />
       <TrustPrompt view={view} />
+      {statusError(view.status) && (
+        <Alert variant="destructive">
+          <AlertTitle>{detail}</AlertTitle>
+          <AlertDescription>
+            <HostProblem status={view.status} />
+          </AlertDescription>
+        </Alert>
+      )}
       {view.host.connection.kind === 'ssh' && view.host.connection.publicKey && (
         <SshSetupCard view={view} />
       )}
