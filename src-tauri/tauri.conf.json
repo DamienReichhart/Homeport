@@ -1,0 +1,68 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Homeport",
+  "version": "0.1.0",
+  "identifier": "com.homeport.app",
+  "build": {
+    "beforeDevCommand": "bun run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "bun run licenses && bun run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Homeport",
+        "width": 1100,
+        "height": 720,
+        "minWidth": 800,
+        "minHeight": 520
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src 'self' ipc: http://ipc.localhost; img-src 'self' data:; style-src 'self' 'unsafe-inline'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "category": "DeveloperTool",
+    "shortDescription": "Every Docker Engine, docked in one place.",
+    "longDescription": "A desktop app for managing Docker Engines anywhere: this machine's, or remote ones over SSH, TLS or TCP.",
+    "publisher": "Damien Reichhart",
+    "copyright": "Copyright (c) 2026 Damien Reichhart",
+    "license": "MIT",
+    "licenseFile": "../LICENSE",
+    "homepage": "https://github.com/DamienReichhart/Homeport",
+    "icon": [
+      "icons/32x32.png",
+      "icons/64x64.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "resources": {
+      "../LICENSE": "licenses/LICENSE",
+      "licenses/": "licenses/"
+    },
+    "macOS": {
+      "signingIdentity": "-"
+    },
+    "linux": {
+      "deb": {
+        "files": {
+          "/usr/share/doc/homeport/copyright": "../LICENSE",
+          "/usr/share/doc/homeport/THIRD_PARTY_LICENSES.txt": "licenses/THIRD_PARTY_LICENSES.txt"
+        }
+      },
+      "rpm": {
+        "files": {
+          "/usr/share/licenses/homeport/LICENSE": "../LICENSE",
+          "/usr/share/licenses/homeport/THIRD_PARTY_LICENSES.txt": "licenses/THIRD_PARTY_LICENSES.txt"
+        }
+      }
+    }
+  }
+}
