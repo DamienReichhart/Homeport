@@ -1,0 +1,5 @@
+Types: deb
+URIs: https://damienreichhart.github.io/Homeport/apt
+Suites: stable
+Components: main
+Signed-By: /etc/apt/keyrings/homeport.asc

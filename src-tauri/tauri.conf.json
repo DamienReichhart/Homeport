@@ -54,14 +54,22 @@
       "deb": {
         "files": {
           "/usr/share/doc/homeport/copyright": "../LICENSE",
-          "/usr/share/doc/homeport/THIRD_PARTY_LICENSES.txt": "licenses/THIRD_PARTY_LICENSES.txt"
-        }
+          "/usr/share/doc/homeport/THIRD_PARTY_LICENSES.txt": "licenses/THIRD_PARTY_LICENSES.txt",
+          "/usr/share/homeport/homeport.asc": "../packaging/linux/homeport.asc",
+          "/usr/share/homeport/homeport.sources": "../packaging/linux/homeport.sources"
+        },
+        "postInstallScript": "../packaging/linux/deb-postinst.sh",
+        "postRemoveScript": "../packaging/linux/deb-postrm.sh"
       },
       "rpm": {
         "files": {
           "/usr/share/licenses/homeport/LICENSE": "../LICENSE",
-          "/usr/share/licenses/homeport/THIRD_PARTY_LICENSES.txt": "licenses/THIRD_PARTY_LICENSES.txt"
-        }
+          "/usr/share/licenses/homeport/THIRD_PARTY_LICENSES.txt": "licenses/THIRD_PARTY_LICENSES.txt",
+          "/usr/share/homeport/homeport.asc": "../packaging/linux/homeport.asc",
+          "/usr/share/homeport/homeport.repo": "../packaging/linux/homeport.repo"
+        },
+        "postInstallScript": "../packaging/linux/rpm-post.sh",
+        "postRemoveScript": "../packaging/linux/rpm-postun.sh"
       }
     }
   },
