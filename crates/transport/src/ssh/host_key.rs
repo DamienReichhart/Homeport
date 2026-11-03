@@ -45,7 +45,7 @@ fn fingerprint_of_trusted(trusted: &str) -> Option<String> {
 
 /// Accepts only the trusted server key, remembering what was presented so a
 /// rejection can be reported as "untrusted" or "changed".
-pub struct ServerKeyCheck {
+pub(crate) struct ServerKeyCheck {
     pub(super) trusted: Option<String>,
     pub(super) presented: Arc<Mutex<Option<PublicKey>>>,
 }

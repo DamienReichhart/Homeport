@@ -7,6 +7,9 @@ rust-version.workspace = true
 description = "Homeport's shared kernel: the error model every crate reports with, and helpers for this computer"
 publish = false
 
+[lints]
+workspace = true
+
 [features]
 # Classifies the Engine's answers (`From<bollard::errors::Error> for AppError`).
 bollard = ["dep:bollard"]

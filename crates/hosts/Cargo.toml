@@ -7,6 +7,9 @@ rust-version.workspace = true
 description = "Homeport's Hosts: storing them, keeping a supervised connection to each, and the use cases around them"
 publish = false
 
+[lints]
+workspace = true
+
 [dependencies]
 homeport-core = { workspace = true, features = ["bollard"] }
 homeport-storage.workspace = true

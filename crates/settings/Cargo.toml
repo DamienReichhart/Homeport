@@ -7,6 +7,9 @@ rust-version.workspace = true
 description = "The user's Homeport preferences, stored in the database"
 publish = false
 
+[lints]
+workspace = true
+
 [dependencies]
 homeport-core.workspace = true
 homeport-storage.workspace = true

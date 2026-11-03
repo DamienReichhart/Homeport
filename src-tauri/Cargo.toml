@@ -6,6 +6,9 @@ license.workspace = true
 rust-version.workspace = true
 description = "Homeport desktop application"
 
+[lints]
+workspace = true
+
 [lib]
 name = "homeport_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]

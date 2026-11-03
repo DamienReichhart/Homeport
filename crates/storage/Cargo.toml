@@ -7,6 +7,9 @@ rust-version.workspace = true
 description = "Homeport's SQLite database and the encryption of the secrets kept in it"
 publish = false
 
+[lints]
+workspace = true
+
 [dependencies]
 homeport-core.workspace = true
 serde.workspace = true

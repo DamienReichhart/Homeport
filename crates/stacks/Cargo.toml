@@ -7,6 +7,9 @@ rust-version.workspace = true
 description = "Homeport's Stacks: Compose projects found on a Host, and the Managed Stacks deployed with the compose CLI"
 publish = false
 
+[lints]
+workspace = true
+
 [dependencies]
 homeport-core = { workspace = true, features = ["bollard"] }
 homeport-storage.workspace = true

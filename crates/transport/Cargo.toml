@@ -7,6 +7,9 @@ rust-version.workspace = true
 description = "How Homeport reaches a Host's Engine API: local sockets, TCP, TLS and SSH (ADR 0001, 0002)"
 publish = false
 
+[lints]
+workspace = true
+
 [features]
 # Test doubles (a dialer over the local Engine socket) for other crates' tests.
 test-support = []

@@ -7,6 +7,9 @@ rust-version.workspace = true
 description = "The resources of a Docker Engine (containers, images, volumes, networks…) as plain functions over a bollard client"
 publish = false
 
+[lints]
+workspace = true
+
 [features]
 # Helpers that create (and clean up) throwaway resources on the local Engine.
 test-support = ["dep:uuid"]

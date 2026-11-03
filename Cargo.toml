@@ -8,6 +8,11 @@ edition = "2021"
 license = "MIT"
 rust-version = "1.88"
 
+# Lints every crate opts into with `[lints] workspace = true`.
+[workspace.lints.rust]
+unsafe_code = "forbid"
+unreachable_pub = "warn"
+
 # One version of each dependency for the whole workspace; crates opt in with
 # `name.workspace = true` and add the features they need.
 [workspace.dependencies]

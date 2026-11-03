@@ -5,7 +5,7 @@ use homeport_core::error::{engine, AppError, ErrorCode};
 
 /// Why no usable compose CLI was found, given what `version --short` printed
 /// for the Docker CLI plugin and the standalone `docker-compose`, if anything.
-pub fn missing(docker_cli_installed: bool, standalone_version: Option<&str>) -> AppError {
+pub(super) fn missing(docker_cli_installed: bool, standalone_version: Option<&str>) -> AppError {
     if let Some(version) = standalone_version {
         return AppError::new(
             ErrorCode::ComposeOutdated,
@@ -50,7 +50,7 @@ fn install_command(docker_cli_installed: bool) -> &'static str {
 }
 
 /// The CLI couldn't even be started.
-pub fn spawn_failed(program: &str, error: &std::io::Error) -> AppError {
+pub(super) fn spawn_failed(program: &str, error: &std::io::Error) -> AppError {
     AppError::new(
         ErrorCode::ComposeSpawnFailed,
         format!("Homeport couldn't start {program}."),
@@ -68,7 +68,12 @@ pub fn spawn_failed(program: &str, error: &std::io::Error) -> AppError {
 }
 
 /// Why compose exited with `code` while working on `host`, from the end of its stderr.
-pub fn exit_failure(host: &str, verb: &str, code: Option<i32>, stderr: &[String]) -> AppError {
+pub(super) fn exit_failure(
+    host: &str,
+    verb: &str,
+    code: Option<i32>,
+    stderr: &[String],
+) -> AppError {
     let text = stderr.join("\n");
     let lower = text.to_lowercase();
     let exit = code.map_or("was stopped".to_owned(), |c| {

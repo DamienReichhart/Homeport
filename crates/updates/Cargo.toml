@@ -7,6 +7,9 @@ rust-version.workspace = true
 description = "How a copy of Homeport gets its updates, decided from how it was installed"
 publish = false
 
+[lints]
+workspace = true
+
 [dependencies]
 serde.workspace = true
 specta.workspace = true
