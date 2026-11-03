@@ -47,6 +47,9 @@
       "../LICENSE": "licenses/LICENSE",
       "licenses/": "licenses/"
     },
+    "macOS": {
+      "signingIdentity": "-"
+    },
     "linux": {
       "deb": {
         "files": {
