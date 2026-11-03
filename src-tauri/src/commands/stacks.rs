@@ -1,5 +1,7 @@
 //! Stacks on a Host, and deploying Managed Stacks.
 
+use tauri::{ipc::Channel, State};
+
 use homeport_core::streams::StreamId;
 use homeport_engine::containers;
 use homeport_stacks::{
@@ -10,7 +12,6 @@ use homeport_stacks::{
     store::ManagedStack,
     Stack,
 };
-use tauri::{ipc::Channel, State};
 
 use crate::{app::AppState, error::AppResult};
 

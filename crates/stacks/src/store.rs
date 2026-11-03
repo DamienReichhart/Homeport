@@ -2,11 +2,11 @@
 
 use std::sync::Arc;
 
-use homeport_storage::{Db, SecretBox};
 use rusqlite::{OptionalExtension, Row};
 use serde::Serialize;
 
 use homeport_core::error::{AppError, AppResult, ErrorCode};
+use homeport_storage::{Db, SecretBox};
 
 use crate::definition;
 

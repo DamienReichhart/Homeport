@@ -1,5 +1,7 @@
 //! Containers on a Host: their lifecycle, and what runs inside one.
 
+use tauri::{ipc::Channel, State};
+
 use homeport_core::streams::StreamId;
 use homeport_engine::containers::{
     self,
@@ -8,7 +10,6 @@ use homeport_engine::containers::{
     stats::{self, StatsSample},
     Container, ContainerAction, Processes,
 };
-use tauri::{ipc::Channel, State};
 
 use crate::{app::AppState, error::AppResult};
 

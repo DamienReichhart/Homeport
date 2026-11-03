@@ -4,8 +4,9 @@ use std::{path::Path, time::Duration};
 
 use serde::Serialize;
 
-use crate::HostConnection;
 use homeport_transport as transport;
+
+use crate::HostConnection;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]

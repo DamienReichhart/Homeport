@@ -14,8 +14,9 @@ use bollard::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{images::PruneReport, COMPOSE_PROJECT};
 use homeport_core::error::{AppError, AppResult};
+
+use crate::{images::PruneReport, COMPOSE_PROJECT};
 
 /// Networks every Engine creates; they can't be removed.
 pub const BUILT_IN: [&str; 3] = ["bridge", "host", "none"];

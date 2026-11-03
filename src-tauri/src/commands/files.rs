@@ -2,8 +2,9 @@
 
 use std::path::{Path, PathBuf};
 
-use homeport_engine::containers::files::{self, FileEntry};
 use tauri::State;
+
+use homeport_engine::containers::files::{self, FileEntry};
 
 use crate::{app::AppState, error::AppResult};
 

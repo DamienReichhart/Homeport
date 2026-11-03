@@ -1,7 +1,8 @@
 //! The streams every `*_subscribe` command starts.
 
-use homeport_core::streams::StreamId;
 use tauri::State;
+
+use homeport_core::streams::StreamId;
 
 use crate::app::AppState;
 

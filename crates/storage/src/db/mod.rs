@@ -3,14 +3,14 @@
 
 mod error;
 
-pub use self::error::sqlite_error;
-
 use std::{path::Path, sync::Mutex};
 
 use rusqlite::Connection;
 use rusqlite_migration::{Migrations, M};
 
 use homeport_core::error::AppResult;
+
+pub use self::error::sqlite_error;
 
 use self::error::migration_error;
 

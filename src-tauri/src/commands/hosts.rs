@@ -1,11 +1,12 @@
 //! Hosts: adding, editing and connecting to them.
 
+use tauri::State;
+
 use homeport_hosts::{
     detect::{self, DetectedEngine},
     registry::EngineEvent,
     service::{HostInput, HostView, SshSetup},
 };
-use tauri::State;
 
 use crate::{app::AppState, error::AppResult};
 

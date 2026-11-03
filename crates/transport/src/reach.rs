@@ -3,11 +3,12 @@
 
 use std::{error::Error as StdError, io};
 
-pub use homeport_core::error::reach::{classified_cause, connection_lost, io_cause};
 use homeport_core::{
     error::{chain, reach::as_io, AppError, ErrorCode},
     programs,
 };
+
+pub use homeport_core::error::reach::{classified_cause, connection_lost, io_cause};
 
 /// The software that usually provides a local Engine socket.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

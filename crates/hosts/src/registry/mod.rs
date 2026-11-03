@@ -19,12 +19,13 @@ use tokio::task::JoinHandle;
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 use homeport_transport::{Connected, Dialer};
 
-use self::supervisor::supervise;
 pub use self::{
     notifier::{EngineEvent, Notifier},
     status::HostStatus,
     supervisor::next_backoff,
 };
+
+use self::supervisor::supervise;
 use crate::{store::HostStore, HostId};
 
 /// How many Engine events each Host keeps for the Events page.

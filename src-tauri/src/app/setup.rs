@@ -3,11 +3,12 @@
 
 use std::{error::Error, sync::Arc};
 
+use tauri::{App, Manager};
+
 use homeport_hosts::{registry::HostRegistry, service::HostService, store::HostStore};
 use homeport_settings::SettingsService;
 use homeport_stacks::store::StackStore;
 use homeport_storage::{Db, Keychain, SecretBox};
-use tauri::{App, Manager};
 
 use super::{events::TauriNotifier, AppState};
 

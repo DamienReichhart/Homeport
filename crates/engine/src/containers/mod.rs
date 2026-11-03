@@ -20,8 +20,9 @@ use bollard::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{COMPOSE_PROJECT, COMPOSE_SERVICE};
 use homeport_core::error::{AppError, AppResult, ErrorCode};
+
+use crate::{COMPOSE_PROJECT, COMPOSE_SERVICE};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]

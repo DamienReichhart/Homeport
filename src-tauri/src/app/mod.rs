@@ -11,6 +11,7 @@ mod state;
 use tauri::Manager;
 
 pub use self::state::AppState;
+
 use crate::commands;
 
 pub fn run() {

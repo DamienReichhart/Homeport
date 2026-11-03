@@ -3,10 +3,11 @@
 
 use std::path::Path;
 
-use homeport_core::local_files;
-use homeport_stacks::compose::{self, ComposeCli};
 use serde::Serialize;
 use tauri::{AppHandle, Manager, State};
+
+use homeport_core::local_files;
+use homeport_stacks::compose::{self, ComposeCli};
 
 use crate::{
     app::AppState,

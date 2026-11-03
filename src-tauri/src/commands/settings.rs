@@ -1,7 +1,8 @@
 //! The user's preferences.
 
-use homeport_settings::Settings;
 use tauri::State;
+
+use homeport_settings::Settings;
 
 use crate::{app::AppState, error::AppResult};
 

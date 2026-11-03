@@ -2,11 +2,12 @@
 
 use std::sync::Arc;
 
-use homeport_storage::{Db, SecretBox};
 use rusqlite::{OptionalExtension, Row};
 
-use crate::{Host, HostConnection, HostId, HostSecrets};
 use homeport_core::error::{AppError, AppResult, ErrorCode, Hint};
+use homeport_storage::{Db, SecretBox};
+
+use crate::{Host, HostConnection, HostId, HostSecrets};
 
 const COLUMNS: &str = "id, name, connection, enabled, host_key, created_at";
 

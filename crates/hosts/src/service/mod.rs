@@ -10,14 +10,14 @@ use serde::{Deserialize, Serialize};
 use homeport_core::error::{AppError, AppResult};
 use homeport_transport as transport;
 
+pub use self::credentials::CredentialsInput;
+
+use self::credentials::{key_comment, prepare};
 use crate::{
     registry::{HostRegistry, HostStatus},
     store::{HostDraft, HostStore},
     Host, HostConnection, HostSecrets, SshAuth,
 };
-
-pub use self::credentials::CredentialsInput;
-use self::credentials::{key_comment, prepare};
 
 #[derive(Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]

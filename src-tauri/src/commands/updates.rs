@@ -2,10 +2,11 @@
 //! (`updates/latest.json` on the website) and the public key that every update
 //! must be signed with are set in `tauri.conf.json > plugins > updater`.
 
-use homeport_updates::{update_method, Bundle, UpdateMethod};
 use serde::Serialize;
 use tauri::{ipc::Channel, AppHandle, State};
 use tauri_plugin_updater::UpdaterExt;
+
+use homeport_updates::{update_method, Bundle, UpdateMethod};
 
 use crate::{
     app::AppState,

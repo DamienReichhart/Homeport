@@ -14,10 +14,9 @@ use tokio::{
     process::Command,
 };
 
+use homeport_core::error::{AppError, AppResult, ErrorCode};
 use homeport_core::{host::HostConnection, programs};
 use homeport_transport::{proxy, Dialer};
-
-use homeport_core::error::{AppError, AppResult, ErrorCode};
 
 use self::error as errors;
 use crate::definition;
