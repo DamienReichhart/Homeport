@@ -1,3 +1,5 @@
+//! Hosts: adding, editing and connecting to them.
+
 use homeport_hosts::{
     detect::{self, DetectedEngine},
     registry::EngineEvent,

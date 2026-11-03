@@ -1,4 +1,5 @@
-//! IPC surface. Commands are thin: validate input, call a service, map the result.
+//! IPC surface, one module per feature. Commands are thin: validate input,
+//! call into a crate, map the result.
 //! Register each new command in [`builder`]; the TypeScript bindings in
 //! `src/shared/api/bindings.ts` are generated from it.
 //!
@@ -10,15 +11,19 @@ use tauri_specta::{collect_commands, collect_events, ErrorHandlingMode};
 
 use crate::events;
 
+pub mod app;
 pub mod containers;
-pub mod engine;
 pub mod exec;
+pub mod files;
 pub mod hosts;
+pub mod images;
+pub mod networks;
 pub mod settings;
 pub mod stacks;
 pub mod streams;
 pub mod system;
 pub mod updates;
+pub mod volumes;
 
 /// Path of the generated bindings, relative to the `src-tauri` crate root.
 #[cfg(any(debug_assertions, test))]
@@ -31,12 +36,12 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
         // One TS type per Rust type; commands and channels only flow one way each.
         .disable_serde_phases()
         .commands(collect_commands![
-            system::get_app_info,
-            system::get_capabilities,
-            system::get_licenses,
-            system::read_text_file,
-            system::write_text_file,
-            system::open_log_folder,
+            app::get_app_info,
+            app::get_capabilities,
+            app::get_licenses,
+            app::read_text_file,
+            app::write_text_file,
+            app::open_log_folder,
             settings::get_settings,
             settings::update_settings,
             updates::updates_check,
@@ -58,40 +63,40 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             containers::containers_remove,
             containers::containers_rename,
             containers::containers_processes,
-            containers::files_list,
-            containers::files_download,
-            containers::files_upload,
+            files::files_list,
+            files::files_download,
+            files::files_upload,
             streams::stream_cancel,
-            streams::logs_subscribe,
-            streams::stats_subscribe,
-            streams::usage_subscribe,
-            streams::images_pull_subscribe,
+            containers::logs_subscribe,
+            containers::stats_subscribe,
+            system::usage_subscribe,
+            images::images_pull_subscribe,
             exec::exec_start,
             exec::exec_input,
             exec::exec_resize,
             exec::exec_close,
-            engine::images_list,
-            engine::images_inspect,
-            engine::images_history,
-            engine::images_tag,
-            engine::images_remove,
-            engine::images_prune,
-            engine::volumes_list,
-            engine::volumes_inspect,
-            engine::volumes_create,
-            engine::volumes_remove,
-            engine::volumes_prune,
-            engine::networks_list,
-            engine::networks_inspect,
-            engine::networks_create,
-            engine::networks_remove,
-            engine::networks_connect,
-            engine::networks_disconnect,
-            engine::networks_prune,
-            engine::system_info,
-            engine::system_disk_usage,
-            engine::system_prune,
-            engine::containers_run,
+            images::images_list,
+            images::images_inspect,
+            images::images_history,
+            images::images_tag,
+            images::images_remove,
+            images::images_prune,
+            volumes::volumes_list,
+            volumes::volumes_inspect,
+            volumes::volumes_create,
+            volumes::volumes_remove,
+            volumes::volumes_prune,
+            networks::networks_list,
+            networks::networks_inspect,
+            networks::networks_create,
+            networks::networks_remove,
+            networks::networks_connect,
+            networks::networks_disconnect,
+            networks::networks_prune,
+            system::system_info,
+            system::system_disk_usage,
+            system::system_prune,
+            containers::containers_run,
             stacks::stacks_list,
             stacks::stacks_get,
             stacks::stacks_get_env,

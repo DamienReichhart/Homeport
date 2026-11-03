@@ -1,3 +1,5 @@
+//! Interactive shells inside a container.
+
 use tauri::{ipc::Channel, State};
 
 use homeport_engine::containers::exec::{self, ExecEvent, ExecOptions, SessionId};

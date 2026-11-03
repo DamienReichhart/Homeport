@@ -1,3 +1,5 @@
+//! The user's preferences.
+
 use homeport_settings::Settings;
 use tauri::State;
 

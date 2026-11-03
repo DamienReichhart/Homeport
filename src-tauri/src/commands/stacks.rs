@@ -1,3 +1,5 @@
+//! Stacks on a Host, and deploying Managed Stacks.
+
 use homeport_core::streams::StreamId;
 use homeport_engine::containers;
 use homeport_stacks::{
