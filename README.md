@@ -23,7 +23,17 @@ Secrets (SSH keys, TLS material, stack environments) are encrypted in SQLite wit
 
 ## Download
 
-Installers for Windows, macOS and Linux (x64 and ARM) are on the [download page](https://damienreichhart.github.io/Homeport/download/) and the [releases page](https://github.com/DamienReichhart/Homeport/releases/latest). Pushing a new version to `main` publishes it; see [docs/RELEASING.md](docs/RELEASING.md).
+On Debian, Ubuntu, Fedora, RHEL and openSUSE, install it from the Homeport package repository, so `apt`, `dnf` or `zypper` keeps it up to date:
+
+```sh
+curl -fsSL https://damienreichhart.github.io/Homeport/install.sh | sh
+```
+
+The [installation guide](https://damienreichhart.github.io/Homeport/docs/installation/#manual-setup) shows the same setup step by step, without the script.
+
+Installers for Windows, macOS and Linux (x64 and ARM) are on the [download page](https://damienreichhart.github.io/Homeport/download/) and the [releases page](https://github.com/DamienReichhart/Homeport/releases/latest). Windows, macOS and AppImage installs update themselves from inside Homeport. Homebrew, winget, Scoop, the AUR, Flathub and Snap are planned ([issues #5 to #10](https://github.com/DamienReichhart/Homeport/issues?q=is%3Aissue+label%3Aenhancement)).
+
+Pushing a new version to `main` publishes it; see [docs/RELEASING.md](docs/RELEASING.md).
 
 ## Prerequisites
 
@@ -59,7 +69,7 @@ Every bundle ships `LICENSE` and the notices in its resources (`licenses/`), and
 
 ## Website
 
-The website and user documentation live in [`website/`](website), built with [Astro](https://astro.build) and [Starlight](https://starlight.astro.build) and published to GitHub Pages by `.github/workflows/pages.yml`: on every push to `main` that touches it, and after every release, so the download page always lists the latest installers.
+The website and user documentation live in [`website/`](website), built with [Astro](https://astro.build) and [Starlight](https://starlight.astro.build) and published to GitHub Pages by `.github/workflows/pages.yml`: on every push to `main` that touches it, and after every release, so the download page always lists the latest installers. The same deploy publishes the APT and RPM repositories, the install script and the in-app updater's manifest next to the site (`bun scripts/repositories.ts`, see [docs/RELEASING.md](docs/RELEASING.md#package-repositories-and-updates)).
 
 ```sh
 cd website
@@ -85,6 +95,11 @@ src-tauri/           Rust backend
   src/state.rs       managed app state
   src/error.rs       AppError -> { code, message } for the frontend
   capabilities/      Tauri permission sets
+packaging/linux/     repository definitions, signing key, install script and
+                     .deb/.rpm maintainer scripts
+scripts/             release planning, repository builder, signing-key wizard,
+                     license notices, screenshots
+website/             the website and user documentation
 ```
 
 ## License
