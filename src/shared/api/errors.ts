@@ -56,14 +56,22 @@ function isAppErrorPayload(value: unknown): value is AppErrorPayload {
 export function toAppError(error: unknown): AppError {
   if (error instanceof AppError) return error;
   if (isAppErrorPayload(error)) return new AppError(error);
-  if (error instanceof Error)
+  // Anything else is a bug or an unclassified plugin failure: its raw text
+  // goes to the details, not the message.
+  if (error instanceof Error) {
+    const stack = error.stack ?? '';
+    const head = `${error.name}: ${error.message}`;
     return new AppError({
       code: 'unknown',
-      message: error.message || 'Something went wrong.',
-      detail: error.stack ?? null,
+      message: UNEXPECTED,
+      detail: stack.startsWith(head) ? stack : `${head}\n${stack}`.trim(),
     });
-  return new AppError({ code: 'unknown', message: String(error) });
+  }
+  return new AppError({ code: 'unknown', message: UNEXPECTED, detail: String(error) });
 }
+
+/** The message of a failure Homeport didn't expect; the details say more. */
+export const UNEXPECTED = 'Something unexpected went wrong.';
 
 /**
  * Everything known about a failure as plain text, ready to paste into a bug

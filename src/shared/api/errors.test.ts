@@ -1,4 +1,4 @@
-import { AppError, toAppError } from './errors';
+import { AppError, toAppError, UNEXPECTED } from './errors';
 
 describe('toAppError', () => {
   it('passes AppError through', () => {
@@ -26,8 +26,14 @@ describe('toAppError', () => {
     expect(e.detail).toBeNull();
   });
 
-  it('wraps unknown values', () => {
-    expect(toAppError('nope').code).toBe('unknown');
-    expect(toAppError(new Error('bad')).message).toBe('bad');
+  it('keeps raw text of unexpected failures out of the message', () => {
+    const fromString = toAppError('command not found');
+    expect(fromString.code).toBe('unknown');
+    expect(fromString.message).toBe(UNEXPECTED);
+    expect(fromString.detail).toBe('command not found');
+
+    const crash = toAppError(new TypeError("Cannot read properties of null (reading 'filter')"));
+    expect(crash.message).toBe(UNEXPECTED);
+    expect(crash.detail).toContain("TypeError: Cannot read properties of null (reading 'filter')");
   });
 });
