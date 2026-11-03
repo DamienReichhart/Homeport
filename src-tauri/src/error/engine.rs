@@ -112,6 +112,11 @@ pub fn from_message(status: Option<u16>, message: &str) -> AppError {
         )
         .with_hint("Check the server's internet access, DNS and proxy settings.");
     }
+    if has("invalid reference format") {
+        return AppError::new(ErrorCode::BadRequest, "That image name isn't valid.").with_hint(
+            "Use a name like nginx:1.27 or registry.example.com/team/app:tag, in lower case.",
+        );
+    }
     if has("client sent an http request to an https server") {
         return AppError::new(
             ErrorCode::TlsRequired,
@@ -192,23 +197,28 @@ pub fn from_message(status: Option<u16>, message: &str) -> AppError {
         return AppError::not_found("This network no longer exists.");
     }
 
-    let said = sentence(message);
+    // Unrecognised answers: the Engine's own words stay in the detail.
+    let details = "The Docker Engine's exact answer is in Details.";
     match status {
         Some(400) => AppError::new(
             ErrorCode::BadRequest,
-            format!("The Docker Engine rejected the request: {said}"),
-        ),
+            "The Docker Engine rejected the request as invalid.",
+        )
+        .with_hint(details),
         Some(401 | 403) => AppError::new(
             ErrorCode::Forbidden,
-            format!("The Docker Engine refused: {said}"),
+            "The Docker Engine refused to do this.",
         )
-        .with_hint("An authorization plugin or a rootless Engine may forbid this."),
-        Some(404) => AppError::not_found(said),
-        Some(409) => AppError::new(ErrorCode::Conflict, said),
-        _ => AppError::new(
-            ErrorCode::EngineError,
-            format!("The Docker Engine failed: {said}"),
-        ),
+        .with_hint("An authorisation plugin or a rootless Docker Engine may forbid it. The exact answer is in Details."),
+        Some(404) => AppError::not_found("This no longer exists on the Docker Engine.")
+            .with_hint("It was probably removed elsewhere. The lists refresh on their own."),
+        Some(409) => AppError::new(
+            ErrorCode::Conflict,
+            "This clashes with the current state of the Docker Engine.",
+        )
+        .with_hint(details),
+        _ => AppError::new(ErrorCode::EngineError, "The Docker Engine failed to do this.")
+            .with_hint(details),
     }
 }
 
@@ -227,16 +237,6 @@ fn port_in(message: &str) -> Option<u16> {
         let address = rest.split([' ', ',']).next()?.trim_end_matches(':');
         address.rsplit(':').next()?.parse().ok()
     })
-}
-
-/// The Engine's text as a sentence: capitalized and ending with a period.
-fn sentence(message: &str) -> String {
-    let trimmed = message.trim().trim_end_matches('.');
-    let mut chars = trimmed.chars();
-    match chars.next() {
-        Some(first) => format!("{}{}.", first.to_uppercase(), chars.as_str()),
-        None => "No reason given.".to_owned(),
-    }
 }
 
 #[cfg(test)]
@@ -293,12 +293,19 @@ mod tests {
     }
 
     #[test]
-    fn unknown_messages_are_quoted_as_a_sentence() {
+    fn unknown_answers_keep_the_engines_words_out_of_the_message() {
+        for status in [400, 403, 404, 409, 500] {
+            let e = engine(status, "some internal reason xyz");
+            assert!(!e.message.contains("xyz"), "{status}: {}", e.message);
+            assert!(e.detail.unwrap().contains("some internal reason xyz"));
+            assert!(e.hint.is_some(), "{status}");
+        }
+    }
+
+    #[test]
+    fn invalid_image_names_say_how_to_write_one() {
         let e = engine(400, "invalid reference format");
-        assert_eq!(
-            e.message,
-            "The Docker Engine rejected the request: Invalid reference format."
-        );
+        assert_eq!(e.message, "That image name isn't valid.");
     }
 
     #[test]
