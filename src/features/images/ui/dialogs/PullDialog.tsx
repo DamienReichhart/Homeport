@@ -1,7 +1,5 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useReducer, useRef, useState } from 'react';
-import { toast } from 'sonner';
-import { commands, keys, subscribe, type PullEvent } from '@/shared/api';
+import type { PullEvent } from '@/shared/api';
 import { formatBytes } from '@/shared/lib';
 import {
   Button,
@@ -15,8 +13,10 @@ import {
   Input,
   Progress,
 } from '@/shared/ui';
-import { initialPull, reducePull, type PullState } from './pull';
+import { usePullImage } from '../../api/streams';
+import { initialPull, reducePull, type PullState } from '../../model/pull';
 
+/** Pulls an image by reference and shows each layer's progress. */
 export function PullDialog({
   hostId,
   open,
@@ -26,7 +26,7 @@ export function PullDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const client = useQueryClient();
+  const pull = usePullImage(hostId);
   const [reference, setReference] = useState('');
   const [pulling, setPulling] = useState<string | null>(null);
   const [state, dispatch] = useReducer(
@@ -38,20 +38,10 @@ export function PullDialog({
   useEffect(() => {
     if (!pulling) return;
     dispatch('reset');
-    const cancel = subscribe<PullEvent>(
-      (ch) => commands.imagesPullSubscribe(hostId, pulling, ch),
-      (e) => {
-        dispatch(e);
-        if (e.type === 'done') {
-          toast.success(`Pulled ${pulling}`);
-          void client.invalidateQueries({ queryKey: keys.images(hostId) });
-        }
-      },
-      (error) => dispatch({ type: 'error', error }),
-    );
+    const cancel = pull(pulling, dispatch, (error) => dispatch({ type: 'error', error }));
     stop.current = cancel;
     return cancel;
-  }, [hostId, pulling, client]);
+  }, [pulling, pull]);
 
   const busy = pulling !== null && !state.done && !state.error;
   const close = (next: boolean) => {
