@@ -77,9 +77,13 @@ pub struct Capabilities {
     rename_all_fields = "camelCase"
 )]
 pub enum ComposeSupport {
-    Available { cli: ComposeCli },
+    Available {
+        cli: ComposeCli,
+    },
     /// `problem` says what's missing and how to install it.
-    Unavailable { problem: AppError },
+    Unavailable {
+        problem: AppError,
+    },
 }
 
 #[tauri::command]
