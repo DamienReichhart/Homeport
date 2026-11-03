@@ -1,0 +1,53 @@
+/* Touches on top of Starlight for the docs. */
+
+:root {
+  --sl-text-h1: 2.25rem;
+  --sl-content-width: 48rem;
+}
+
+.site-title img {
+  height: 1.75rem;
+  width: auto;
+}
+
+.sl-markdown-content :is(h1, h2, h3, h4) {
+  letter-spacing: -0.02em;
+}
+
+/* Screenshots follow the theme: Screenshot.astro renders a light and a dark variant. */
+:root[data-theme='light'] .only-dark,
+:root:not([data-theme='light']) .only-light {
+  display: none;
+}
+
+/* Screenshots in the docs get a frame so they read as the app's window. */
+figure.screenshot {
+  margin-block: 1.5rem;
+}
+figure.screenshot .window {
+  overflow: hidden;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.75rem;
+  box-shadow: 0 16px 40px -24px rgb(0 0 0 / 0.5);
+}
+figure.screenshot img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+figure.screenshot figcaption {
+  color: var(--sl-color-gray-3);
+  font-size: var(--sl-text-sm);
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+/* Keyboard keys and UI labels. */
+.sl-markdown-content kbd {
+  border: 1px solid var(--sl-color-gray-5);
+  border-bottom-width: 2px;
+  border-radius: 0.3rem;
+  font-family: var(--sl-font-mono);
+  font-size: 0.85em;
+  padding: 0.05rem 0.35rem;
+}
