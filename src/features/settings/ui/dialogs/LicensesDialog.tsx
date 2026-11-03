@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { commands, keys } from '@/shared/api';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +13,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/shared/ui';
+import { licensesQuery } from '../../api/queries';
 
 const TEXT = 'bg-muted h-[60vh] overflow-auto rounded-md p-3 font-mono text-xs whitespace-pre-wrap';
 
@@ -25,12 +25,7 @@ export function LicensesDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const licenses = useQuery({
-    queryKey: keys.licenses,
-    queryFn: () => commands.getLicenses(),
-    enabled: open,
-    staleTime: Infinity,
-  });
+  const licenses = useQuery({ ...licensesQuery(), enabled: open });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -1,6 +1,6 @@
 import { SettingsIcon } from 'lucide-react';
 import { defineFeature } from '@/core/feature';
-import { SettingsPage } from './components/SettingsPage';
+import { SettingsPage } from './ui/SettingsPage';
 
 export const settingsFeature = defineFeature({
   routes: [{ path: 'settings', Component: SettingsPage }],
