@@ -140,6 +140,8 @@ export type Capabilities = {
 	keychain: boolean,
 	/**  The compose CLI used to deploy Managed Stacks, if installed. */
 	compose: ComposeCli | null,
+	/**  Why there is no usable compose CLI, and how to install one. */
+	compose_problem: AppError | null,
 };
 
 export type ComposeAction = 
@@ -165,7 +167,9 @@ export type ComposeCli = {
 	version: string,
 };
 
-export type ComposeEvent = { type: "line"; text: string } | { type: "exit"; success: boolean; code: number | null } | { type: "error"; error: AppError };
+export type ComposeEvent = { type: "line"; text: string } | 
+/**  `error` explains a failed exit, from the end of stderr. */
+{ type: "exit"; success: boolean; code: number | null; error: AppError | null } | { type: "error"; error: AppError };
 
 export type Container = {
 	id: string,

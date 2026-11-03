@@ -9,6 +9,7 @@
 //! - `detail` keeps the raw cause (error chain, Engine response, stderr) for the
 //!   Details dialog and bug reports.
 
+pub mod compose;
 pub mod engine;
 pub mod reach;
 

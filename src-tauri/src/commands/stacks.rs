@@ -1,7 +1,7 @@
 use tauri::{ipc::Channel, State};
 
 use crate::{
-    error::{AppError, AppResult},
+    error::AppResult,
     services::{
         docker::containers,
         stacks::{
@@ -118,9 +118,7 @@ pub async fn stacks_compose_subscribe(
     let stack = state.stacks.get(&id)?;
     let host = state.hosts.store.get(&stack.host_id)?;
     let dialer = state.hosts.registry.dialer(&stack.host_id)?;
-    let cli = compose::detect().await.ok_or_else(|| {
-        AppError::validation("The docker compose CLI isn't installed on this machine.")
-    })?;
+    let cli = compose::detect().await?;
     let job = ComposeRun {
         cli,
         connection: host.connection,

@@ -4,7 +4,7 @@
 //! nothing secret is written to disk. TLS and SSH Hosts are reached through
 //! a [`proxy`] that exists only while the command runs.
 
-use std::{process::Stdio, sync::Arc};
+use std::{collections::VecDeque, process::Stdio, sync::Arc};
 
 use serde::{Deserialize, Serialize};
 use tokio::{
@@ -14,12 +14,15 @@ use tokio::{
 
 use super::definition;
 use crate::{
-    error::{AppError, AppResult},
+    error::{compose as errors, reach, AppError, AppResult, ErrorCode},
     services::{
         hosts::HostConnection,
         transport::{proxy, Dialer},
     },
 };
+
+/// Lines of stderr kept to explain a failed run.
+const STDERR_TAIL: usize = 40;
 
 /// How to invoke Compose on this machine.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
@@ -31,27 +34,41 @@ pub struct ComposeCli {
     pub version: String,
 }
 
-/// Finds `docker compose`, falling back to a standalone `docker-compose` v2.
-pub async fn detect() -> Option<ComposeCli> {
-    for (program, prefix) in [("docker", vec!["compose"]), ("docker-compose", vec![])] {
-        let output = Command::new(program)
-            .args(&prefix)
-            .args(["version", "--short"])
-            .stdin(Stdio::null())
-            .output()
-            .await;
-        if let Ok(out) = output {
-            let version = String::from_utf8_lossy(&out.stdout).trim().to_owned();
-            if out.status.success() && !version.is_empty() {
-                return Some(ComposeCli {
-                    program: program.into(),
-                    prefix: prefix.into_iter().map(Into::into).collect(),
-                    version,
-                });
-            }
-        }
+/// Finds `docker compose`, falling back to a standalone `docker-compose` v2,
+/// and says what to install when neither is usable.
+pub async fn detect() -> AppResult<ComposeCli> {
+    if let Some(version) = version_of("docker", &["compose"]).await {
+        return Ok(ComposeCli {
+            program: "docker".into(),
+            prefix: vec!["compose".into()],
+            version,
+        });
     }
-    None
+    match version_of("docker-compose", &[]).await {
+        Some(version) if !is_v1(&version) => Ok(ComposeCli {
+            program: "docker-compose".into(),
+            prefix: vec![],
+            version,
+        }),
+        old => Err(errors::missing(reach::on_path("docker"), old.as_deref())),
+    }
+}
+
+fn is_v1(version: &str) -> bool {
+    version.trim_start_matches('v').starts_with("1.")
+}
+
+/// What `program … version --short` prints, if it runs and succeeds.
+async fn version_of(program: &str, prefix: &[&str]) -> Option<String> {
+    let out = Command::new(program)
+        .args(prefix)
+        .args(["version", "--short"])
+        .stdin(Stdio::null())
+        .output()
+        .await
+        .ok()?;
+    let version = String::from_utf8_lossy(&out.stdout).trim().to_owned();
+    (out.status.success() && !version.is_empty()).then_some(version)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, specta::Type)]
@@ -67,6 +84,11 @@ pub enum ComposeAction {
 }
 
 impl ComposeAction {
+    /// The compose subcommand, for messages.
+    fn verb(self) -> &'static str {
+        self.args()[0]
+    }
+
     fn args(self) -> &'static [&'static str] {
         match self {
             Self::Up => &["up", "--detach", "--remove-orphans"],
@@ -80,9 +102,18 @@ impl ComposeAction {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum ComposeEvent {
-    Line { text: String },
-    Exit { success: bool, code: Option<i32> },
-    Error { error: AppError },
+    Line {
+        text: String,
+    },
+    /// `error` explains a failed exit, from the end of stderr.
+    Exit {
+        success: bool,
+        code: Option<i32>,
+        error: Option<AppError>,
+    },
+    Error {
+        error: AppError,
+    },
 }
 
 /// The `DOCKER_HOST` for hosts the CLI can reach directly; `None` for TLS
@@ -131,10 +162,17 @@ async fn execute(job: ComposeRun, sink: &impl Fn(ComposeEvent) -> bool) -> AppRe
     let (docker_host, _proxy) = match direct_docker_host(&job.connection) {
         Some(host) => (host, None),
         None => {
-            let dialer = job
-                .dialer
-                .ok_or_else(|| AppError::validation("Connect to the host before deploying."))?;
-            let proxy = proxy::open(dialer)?;
+            let dialer = job.dialer.ok_or_else(|| {
+                AppError::new(ErrorCode::HostNotConnected, "The host isn't connected.")
+                    .with_hint("Wait for it to connect, then try again.")
+            })?;
+            let proxy = proxy::open(dialer).map_err(|e| {
+                AppError::new(
+                    ErrorCode::Io,
+                    "Homeport couldn't open the private connection compose uses to reach the host.",
+                )
+                .with_cause(&e)
+            })?;
             (proxy.docker_host.clone(), Some(proxy))
         }
     };
@@ -163,7 +201,7 @@ async fn execute(job: ComposeRun, sink: &impl Fn(ComposeEvent) -> bool) -> AppRe
         .stderr(Stdio::piped())
         .kill_on_drop(true)
         .spawn()
-        .map_err(|e| AppError::validation(format!("Couldn't start {}: {e}", job.cli.program)))?;
+        .map_err(|e| errors::spawn_failed(&job.cli.program, &e))?;
 
     let mut stdin = child.stdin.take().expect("stdin is piped");
     stdin.write_all(job.compose.as_bytes()).await?;
@@ -172,10 +210,17 @@ async fn execute(job: ComposeRun, sink: &impl Fn(ComposeEvent) -> bool) -> AppRe
     let mut stdout = BufReader::new(child.stdout.take().expect("stdout is piped")).lines();
     let mut stderr = BufReader::new(child.stderr.take().expect("stderr is piped")).lines();
     let (mut out_done, mut err_done) = (false, false);
+    // The end of stderr explains a failure.
+    let mut tail = VecDeque::with_capacity(STDERR_TAIL);
     while !(out_done && err_done) {
         let line = tokio::select! {
             l = stdout.next_line(), if !out_done => l?.or_else(|| { out_done = true; None }),
-            l = stderr.next_line(), if !err_done => l?.or_else(|| { err_done = true; None }),
+            l = stderr.next_line(), if !err_done => l?.inspect(|text| {
+                if tail.len() == STDERR_TAIL {
+                    tail.pop_front();
+                }
+                tail.push_back(text.clone());
+            }).or_else(|| { err_done = true; None }),
         };
         if let Some(text) = line {
             if !sink(ComposeEvent::Line { text }) {
@@ -184,9 +229,14 @@ async fn execute(job: ComposeRun, sink: &impl Fn(ComposeEvent) -> bool) -> AppRe
         }
     }
     let status = child.wait().await?;
+    let error = (!status.success()).then(|| {
+        errors::exit_failure(job.action.verb(), status.code(), tail.make_contiguous())
+            .logged("compose run")
+    });
     sink(ComposeEvent::Exit {
         success: status.success(),
         code: status.code(),
+        error,
     });
     Ok(())
 }

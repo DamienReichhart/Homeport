@@ -61,14 +61,21 @@ pub struct Capabilities {
     keychain: bool,
     /// The compose CLI used to deploy Managed Stacks, if installed.
     compose: Option<ComposeCli>,
+    /// Why there is no usable compose CLI, and how to install one.
+    compose_problem: Option<AppError>,
 }
 
 #[tauri::command]
 #[specta::specta]
 pub async fn get_capabilities(state: State<'_, AppState>) -> Result<Capabilities, ()> {
+    let (compose, compose_problem) = match compose::detect().await {
+        Ok(cli) => (Some(cli), None),
+        Err(problem) => (None, Some(problem)),
+    };
     Ok(Capabilities {
         keychain: state.secrets.is_available(),
-        compose: compose::detect().await,
+        compose,
+        compose_problem,
     })
 }
 
