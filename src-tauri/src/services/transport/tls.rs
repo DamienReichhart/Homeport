@@ -113,7 +113,12 @@ impl Dialer for TlsDialer {
     }
 
     fn dial(&self) -> BoxFuture<'_, io::Result<BoxStream>> {
-        Box::pin(self.open())
+        Box::pin(async move {
+            // Keep the classification for whoever reads the failed request.
+            self.open()
+                .await
+                .map_err(|e| io::Error::new(e.kind(), reach::tls(&self.label, &self.address, &e)))
+        })
     }
 }
 

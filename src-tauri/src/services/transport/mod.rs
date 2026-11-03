@@ -214,6 +214,13 @@ pub async fn connect(
             HostConnection::Tcp { address } if io_failure(&e) => {
                 ConnectError::from(reach::network(&label(address), &e))
             }
+            // TLS 1.3 servers reject a client certificate after the handshake,
+            // so the refusal arrives with the first request.
+            HostConnection::Tls { address }
+                if io_failure(&e) && reach::classified_cause(&e).is_none() =>
+            {
+                ConnectError::from(reach::tls(&label(address), address, &e))
+            }
             _ => ConnectError::from(AppError::from(e)),
         })?;
     Ok(Connected { docker, dialer })

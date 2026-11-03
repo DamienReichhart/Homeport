@@ -202,7 +202,7 @@ impl SshDialer {
                     .map_err(|e| ConnectError::from(reach::ssh(&t.label, &e)))?
                     .success()
             }
-            Credentials::Agent => authenticate_with_agent(&mut session, &t.user).await?,
+            Credentials::Agent => authenticate_with_agent(&mut session, &t.user, &t.label).await?,
         };
         if !authenticated {
             return Err(ConnectError::Unauthorized(auth_refused(t)));
@@ -234,7 +234,8 @@ impl Dialer for SshDialer {
         Box::pin(async move {
             self.open_channel()
                 .await
-                .map_err(|e| io::Error::new(io::ErrorKind::ConnectionRefused, e.to_string()))
+                // Keep the classification for whoever reads the failed request.
+                .map_err(|e| io::Error::new(io::ErrorKind::ConnectionRefused, AppError::from(e)))
         })
     }
 }
@@ -342,28 +343,31 @@ fn fingerprint_of_trusted(trusted: &str) -> Option<String> {
 async fn authenticate_with_agent(
     session: &mut Handle<ServerKeyCheck>,
     user: &str,
+    label: &str,
 ) -> Result<bool, ConnectError> {
     let agent = russh::keys::agent::client::AgentClient::connect_env()
         .await
         .map_err(|e| ConnectError::Unauthorized(agent_unavailable(&e)))?;
-    try_agent_identities(session, user, agent).await
+    try_agent_identities(session, user, label, agent).await
 }
 
 #[cfg(windows)]
 async fn authenticate_with_agent(
     session: &mut Handle<ServerKeyCheck>,
     user: &str,
+    label: &str,
 ) -> Result<bool, ConnectError> {
     let agent =
         russh::keys::agent::client::AgentClient::connect_named_pipe(r"\\.\pipe\openssh-ssh-agent")
             .await
             .map_err(|e| ConnectError::Unauthorized(agent_unavailable(&e)))?;
-    try_agent_identities(session, user, agent).await
+    try_agent_identities(session, user, label, agent).await
 }
 
 async fn try_agent_identities<S>(
     session: &mut Handle<ServerKeyCheck>,
     user: &str,
+    label: &str,
     mut agent: russh::keys::agent::client::AgentClient<S>,
 ) -> Result<bool, ConnectError>
 where
@@ -376,7 +380,7 @@ where
     let hash = session
         .best_supported_rsa_hash()
         .await
-        .map_err(|e| ConnectError::from(reach::ssh("the SSH server", &e)))?
+        .map_err(|e| ConnectError::from(reach::ssh(label, &e)))?
         .flatten();
     for identity in identities {
         let key = identity.public_key().into_owned();

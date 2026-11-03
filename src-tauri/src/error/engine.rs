@@ -8,6 +8,10 @@ use super::{reach, AppError, ErrorCode};
 /// Turns a bollard failure into something the user can act on.
 pub fn from_bollard(error: &bollard::errors::Error) -> AppError {
     use bollard::errors::Error;
+    // TLS and SSH dialers classify their own failures.
+    if let Some(classified) = reach::classified_cause(error) {
+        return classified.clone();
+    }
     match error {
         Error::DockerResponseServerError {
             status_code,
@@ -308,6 +312,18 @@ mod tests {
     fn invalid_image_names_say_how_to_write_one() {
         let e = engine(400, "invalid reference format");
         assert_eq!(e.message, "That image name isn't valid.");
+    }
+
+    #[test]
+    fn errors_classified_by_a_dialer_survive_bollard() {
+        let classified = AppError::new(
+            ErrorCode::SshAuthFailed,
+            "The SSH server refused to let me@prod log in.",
+        );
+        let e = bollard::errors::Error::IOError {
+            err: std::io::Error::new(std::io::ErrorKind::ConnectionRefused, classified.clone()),
+        };
+        assert_eq!(from_bollard(&e), classified);
     }
 
     #[test]

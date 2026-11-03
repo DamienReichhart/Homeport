@@ -5,25 +5,37 @@ use std::{error::Error as StdError, io, path::Path};
 
 use super::{AppError, ErrorCode};
 
-/// The first `io::Error` in `error`'s chain, looking through bollard's
-/// transparent wrappers.
-pub fn io_cause<'a>(error: &'a (dyn StdError + 'static)) -> Option<&'a io::Error> {
-    let mut current = Some(error);
-    while let Some(e) = current {
-        if let Some(io) = e.downcast_ref::<io::Error>() {
-            return Some(io);
-        }
-        if let Some(bollard::errors::Error::IOError { err }) =
-            e.downcast_ref::<bollard::errors::Error>()
-        {
-            return Some(err);
-        }
-        if let Some(russh::Error::IO(err)) = e.downcast_ref::<russh::Error>() {
-            return Some(err);
-        }
-        current = e.source();
+/// `error` as an `io::Error`, looking through the transparent wrappers of
+/// bollard and russh (whose `source()` skips the io::Error itself).
+fn as_io<'a>(error: &'a (dyn StdError + 'static)) -> Option<&'a io::Error> {
+    if let Some(io) = error.downcast_ref::<io::Error>() {
+        return Some(io);
+    }
+    if let Some(bollard::errors::Error::IOError { err }) =
+        error.downcast_ref::<bollard::errors::Error>()
+    {
+        return Some(err);
+    }
+    if let Some(russh::Error::IO(err)) = error.downcast_ref::<russh::Error>() {
+        return Some(err);
     }
     None
+}
+
+/// Every `io::Error` in `error`'s chain, outermost first.
+fn io_errors<'a>(error: &'a (dyn StdError + 'static)) -> impl Iterator<Item = &'a io::Error> {
+    std::iter::successors(Some(error), |&e| e.source()).filter_map(as_io)
+}
+
+/// The first `io::Error` in `error`'s chain.
+pub fn io_cause<'a>(error: &'a (dyn StdError + 'static)) -> Option<&'a io::Error> {
+    io_errors(error).next()
+}
+
+/// An error a dialer already classified, carried inside an `io::Error`
+/// through hyper and bollard.
+pub fn classified_cause<'a>(error: &'a (dyn StdError + 'static)) -> Option<&'a AppError> {
+    io_errors(error).find_map(|io| io.get_ref()?.downcast_ref::<AppError>())
 }
 
 /// The software that usually provides a local Engine socket.
@@ -248,21 +260,10 @@ fn is_dns_failure(text: &str) -> bool {
 
 /// The first rustls error in `error`'s chain; rustls reports through `io::Error`.
 fn rustls_cause<'a>(error: &'a (dyn StdError + 'static)) -> Option<&'a rustls::Error> {
-    let mut current = Some(error);
-    while let Some(e) = current {
-        if let Some(tls) = e.downcast_ref::<rustls::Error>() {
-            return Some(tls);
-        }
-        if let Some(tls) = e
-            .downcast_ref::<io::Error>()
-            .and_then(io::Error::get_ref)
-            .and_then(|inner| inner.downcast_ref::<rustls::Error>())
-        {
-            return Some(tls);
-        }
-        current = e.source();
-    }
-    None
+    std::iter::successors(Some(error), |&e| e.source()).find_map(|e| {
+        e.downcast_ref::<rustls::Error>()
+            .or_else(|| as_io(e)?.get_ref()?.downcast_ref::<rustls::Error>())
+    })
 }
 
 /// Why the TLS connection to `address` failed; network failures fall back to
@@ -523,6 +524,17 @@ mod tests {
             rustls::CertificateError::NotValidForName,
         ));
         assert!(e.message.contains("isn't made for prod.example."), "{e:?}");
+    }
+
+    #[test]
+    fn a_client_certificate_refused_after_the_handshake_is_still_a_rejection() {
+        // TLS 1.3 servers send this alert on the first read, inside bollard's request.
+        let alert = rustls::Error::AlertReceived(rustls::AlertDescription::CertificateRequired);
+        let e = bollard::errors::Error::IOError {
+            err: io::Error::new(io::ErrorKind::InvalidData, alert),
+        };
+        let e = tls("prod (prod.example:2376)", "prod.example:2376", &e);
+        assert_eq!(e.code, ErrorCode::TlsClientRejected);
     }
 
     #[test]
