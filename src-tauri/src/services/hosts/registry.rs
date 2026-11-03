@@ -398,12 +398,10 @@ async fn watch(registry: &Weak<HostRegistry>, id: &str, docker: Docker) {
 
 #[cfg(test)]
 mod tests {
+    use homeport_storage::{Db, SecretBox};
+
     use super::*;
-    use crate::services::{
-        crypto::SecretBox,
-        db::Db,
-        hosts::{store::HostDraft, HostConnection},
-    };
+    use crate::services::hosts::{store::HostDraft, HostConnection};
 
     #[derive(Default)]
     struct Recorder(Mutex<Vec<HostStatus>>);

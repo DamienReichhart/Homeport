@@ -1,17 +1,23 @@
 //! The SQLite store: a single connection behind a mutex, migrated on open.
 //! Docker state is never cached here; the daemon is the source of truth.
 
+mod error;
+
+pub use self::error::sqlite_error;
+
 use std::{path::Path, sync::Mutex};
 
 use rusqlite::Connection;
 use rusqlite_migration::{Migrations, M};
 
-use crate::error::{AppError, AppResult, ErrorCode};
+use homeport_core::error::AppResult;
+
+use self::error::migration_error;
 
 const MIGRATION_SLICE: &[M<'static>] = &[
-    M::up(include_str!("db_migrations/0001_settings.sql")),
-    M::up(include_str!("db_migrations/0002_hosts.sql")),
-    M::up(include_str!("db_migrations/0003_stacks.sql")),
+    M::up(include_str!("migrations/0001_settings.sql")),
+    M::up(include_str!("migrations/0002_hosts.sql")),
+    M::up(include_str!("migrations/0003_stacks.sql")),
 ];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_SLICE);
 
@@ -30,7 +36,7 @@ impl Db {
         Self::init(conn)
     }
 
-    #[cfg(test)]
+    /// A database that lives as long as the value, for tests and throwaway stores.
     pub fn open_in_memory() -> AppResult<Self> {
         Self::init(Connection::open_in_memory().map_err(sqlite_error)?)
     }
@@ -49,47 +55,6 @@ impl Db {
         let mut conn = self.conn.lock().expect("db lock poisoned");
         f(&mut conn).map_err(sqlite_error)
     }
-}
-
-/// SQLite failed; the cases the user can act on get their own code.
-pub fn sqlite_error(e: rusqlite::Error) -> AppError {
-    use rusqlite::ffi;
-    let sqlite = match &e {
-        rusqlite::Error::SqliteFailure(f, _) => Some(f.extended_code),
-        _ => None,
-    };
-    let error = match sqlite {
-            // Callers replace these with a message naming what clashed.
-            Some(ffi::SQLITE_CONSTRAINT_UNIQUE) => {
-                AppError::new(ErrorCode::NameInUse, "That name is already used.")
-            }
-            Some(ffi::SQLITE_CONSTRAINT_FOREIGNKEY) => {
-                AppError::not_found("Something this refers to no longer exists.")
-            }
-            Some(code) if matches!(code & 0xff, ffi::SQLITE_BUSY | ffi::SQLITE_LOCKED) => {
-                AppError::new(ErrorCode::DbLocked, "Homeport's database is busy.")
-                    .with_hint("Another Homeport may be running. Close it and try again.")
-            }
-            Some(code) if matches!(code & 0xff, ffi::SQLITE_CORRUPT | ffi::SQLITE_NOTADB) => {
-                AppError::new(ErrorCode::DbCorrupt, "Homeport's database is damaged.").with_hint(
-                    "Quit Homeport, move homeport.db out of its data folder and start again. Hosts and stacks will need to be added again.",
-                )
-            }
-            Some(code) if code & 0xff == ffi::SQLITE_FULL => {
-                AppError::new(ErrorCode::DiskFull, "The disk is full, so Homeport can't save.")
-                    .with_hint("Free some disk space and try again.")
-            }
-            _ => AppError::new(ErrorCode::Db, "Homeport's database failed."),
-        };
-    error.with_cause(&e)
-}
-
-fn migration_error(e: rusqlite_migration::Error) -> AppError {
-    AppError::new(
-        ErrorCode::DbMigration,
-        "Homeport couldn't upgrade its database.",
-    )
-    .with_cause(&e)
 }
 
 #[cfg(test)]

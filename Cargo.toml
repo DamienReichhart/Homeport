@@ -53,6 +53,7 @@ tauri-plugin-dialog = "2"
 tauri-plugin-updater = "2"
 # Homeport's own crates, from the bottom of the dependency graph up.
 homeport-core = { path = "crates/core" }
+homeport-storage = { path = "crates/storage" }
 
 [profile.release]
 codegen-units = 1

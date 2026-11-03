@@ -4,10 +4,11 @@
 use std::sync::{Arc, Mutex};
 
 use homeport_core::streams::Streams;
+use homeport_storage::SecretBox;
 
 use crate::services::{
-    crypto::SecretBox, docker::exec::ExecSessions, hosts::service::HostService,
-    settings::SettingsService, stacks::store::StackStore,
+    docker::exec::ExecSessions, hosts::service::HostService, settings::SettingsService,
+    stacks::store::StackStore,
 };
 
 pub struct AppState {

@@ -3,7 +3,9 @@ use std::{fs, path::Path, sync::Arc};
 use rusqlite::OptionalExtension;
 use serde::{Deserialize, Serialize};
 
-use crate::{error::AppResult, services::db::Db};
+use homeport_storage::Db;
+
+use crate::error::AppResult;
 
 const SETTINGS_KEY: &str = "settings";
 

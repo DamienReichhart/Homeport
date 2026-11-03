@@ -308,13 +308,11 @@ fn prepare(
 
 #[cfg(test)]
 mod tests {
+    use homeport_storage::{Db, SecretBox};
+
     use super::*;
     use crate::error::ErrorCode;
-    use crate::services::{
-        crypto::SecretBox,
-        db::Db,
-        hosts::registry::{EngineEvent, Notifier},
-    };
+    use crate::services::hosts::registry::{EngineEvent, Notifier};
 
     struct Silent;
     impl Notifier for Silent {

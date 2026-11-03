@@ -2,14 +2,12 @@
 
 use std::sync::Arc;
 
+use homeport_storage::{Db, SecretBox};
 use rusqlite::{OptionalExtension, Row};
 use serde::Serialize;
 
 use super::definition;
-use crate::{
-    error::{AppError, AppResult, ErrorCode},
-    services::{crypto::SecretBox, db::Db},
-};
+use crate::error::{AppError, AppResult, ErrorCode};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -151,13 +149,12 @@ fn read_row(row: &Row<'_>) -> rusqlite::Result<ManagedStack> {
 
 #[cfg(test)]
 mod tests {
+    use homeport_storage::KeyStore;
+
     use super::*;
-    use crate::services::{
-        crypto::KeyStore,
-        hosts::{
-            store::{HostDraft, HostStore},
-            HostConnection,
-        },
+    use crate::services::hosts::{
+        store::{HostDraft, HostStore},
+        HostConnection,
     };
 
     const COMPOSE: &str = "services:\n  web:\n    image: nginx\n";
@@ -225,7 +222,7 @@ mod tests {
     fn env_needs_the_keychain_but_empty_env_does_not() {
         struct NoKeychain;
         impl KeyStore for NoKeychain {
-            fn load_or_create(&self) -> Result<crate::services::crypto::Key, String> {
+            fn load_or_create(&self) -> Result<homeport_storage::crypto::Key, String> {
                 Err("none".into())
             }
         }

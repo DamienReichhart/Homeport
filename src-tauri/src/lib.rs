@@ -6,6 +6,7 @@ mod events;
 mod services;
 mod state;
 
+use homeport_storage::{Db, Keychain, SecretBox};
 use tauri::Manager;
 
 use std::sync::Arc;
@@ -13,8 +14,6 @@ use std::sync::Arc;
 use crate::{
     events::TauriNotifier,
     services::{
-        crypto::{Keychain, SecretBox},
-        db::Db,
         hosts::{registry::HostRegistry, service::HostService, store::HostStore},
         settings::SettingsService,
         stacks::store::StackStore,
