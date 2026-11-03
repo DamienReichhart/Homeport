@@ -1,7 +1,7 @@
 import { BoxIcon } from 'lucide-react';
 import { defineFeature } from '@/core/feature';
-import { ContainerDetailPage } from './components/ContainerDetailPage';
-import { ContainersPage } from './components/ContainersPage';
+import { ContainerDetailPage } from './ui/detail/ContainerDetailPage';
+import { ContainersPage } from './ui/list/ContainersPage';
 
 export const containersFeature = defineFeature({
   routes: [

@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/ui';
-import { containerQueries } from '../api/queries';
+import { containerQueries } from '../../../api/queries';
 
 export function ProcessesTab({
   hostId,

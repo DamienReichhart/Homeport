@@ -1,8 +1,8 @@
 import type { AlignedData } from 'uplot';
 import { formatBytes, formatPercent } from '@/shared/lib';
 import { Card, CardContent, CardHeader, CardTitle, TimeChart } from '@/shared/ui';
-import { useStats } from '../api/streams';
-import { rates } from '../model/stats';
+import { useStats } from '../../../api/streams';
+import { rates } from '../../../model/stats';
 
 export function StatsTab({
   hostId,

@@ -10,7 +10,7 @@ import {
   ErrorMessage,
   Input,
 } from '@/shared/ui';
-import { useRenameContainer } from '../api/mutations';
+import { useRenameContainer } from '../../api/mutations';
 
 export function RenameDialog({
   hostId,

@@ -1,12 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { PlusIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { resourceQueries } from '@/core/host';
 import type { RestartPolicy } from '@/shared/api';
 import {
   Button,
-  Checkbox,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -24,8 +22,10 @@ import {
   Switch,
   Textarea,
 } from '@/shared/ui';
-import { useRunContainer } from '../api/mutations';
-import { emptyRunForm, type RunForm } from '../model/runForm';
+import { useRunContainer } from '../../api/mutations';
+import { emptyRunForm, type RunForm } from '../../model/runForm';
+import { MountsField } from './run/MountsField';
+import { PortsField } from './run/PortsField';
 
 const RESTART: { value: RestartPolicy; label: string }[] = [
   { value: 'no', label: 'Never' },
@@ -115,150 +115,8 @@ export function RunContainerDialog({
             />
           </div>
 
-          <div className="grid gap-1.5">
-            <Label>Ports</Label>
-            {form.ports.map((p, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <Input
-                  aria-label="Host port"
-                  placeholder="Host port (any)"
-                  value={p.hostPort}
-                  inputMode="numeric"
-                  onChange={(e) =>
-                    set(
-                      'ports',
-                      form.ports.map((x, j) => (j === i ? { ...x, hostPort: e.target.value } : x)),
-                    )
-                  }
-                />
-                <span className="text-muted-foreground">→</span>
-                <Input
-                  aria-label="Container port"
-                  placeholder="Container port"
-                  value={p.containerPort}
-                  inputMode="numeric"
-                  onChange={(e) =>
-                    set(
-                      'ports',
-                      form.ports.map((x, j) =>
-                        j === i ? { ...x, containerPort: e.target.value } : x,
-                      ),
-                    )
-                  }
-                />
-                <Select
-                  value={p.protocol}
-                  onValueChange={(v) =>
-                    set(
-                      'ports',
-                      form.ports.map((x, j) => (j === i ? { ...x, protocol: v } : x)),
-                    )
-                  }
-                >
-                  <SelectTrigger className="w-24" aria-label="Protocol">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="tcp">tcp</SelectItem>
-                    <SelectItem value="udp">udp</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Remove port"
-                  onClick={() =>
-                    set(
-                      'ports',
-                      form.ports.filter((_, j) => j !== i),
-                    )
-                  }
-                >
-                  <XIcon />
-                </Button>
-              </div>
-            ))}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="justify-self-start"
-              onClick={() =>
-                set('ports', [...form.ports, { hostPort: '', containerPort: '', protocol: 'tcp' }])
-              }
-            >
-              <PlusIcon /> Add port
-            </Button>
-          </div>
-
-          <div className="grid gap-1.5">
-            <Label>Volumes</Label>
-            {form.mounts.map((m, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <Input
-                  aria-label="Source"
-                  placeholder="Volume name or /host/path"
-                  value={m.source}
-                  onChange={(e) =>
-                    set(
-                      'mounts',
-                      form.mounts.map((x, j) => (j === i ? { ...x, source: e.target.value } : x)),
-                    )
-                  }
-                />
-                <span className="text-muted-foreground">→</span>
-                <Input
-                  aria-label="Container path"
-                  placeholder="/container/path"
-                  value={m.target}
-                  onChange={(e) =>
-                    set(
-                      'mounts',
-                      form.mounts.map((x, j) => (j === i ? { ...x, target: e.target.value } : x)),
-                    )
-                  }
-                />
-                <label className="flex items-center gap-1 text-sm whitespace-nowrap">
-                  <Checkbox
-                    checked={m.readOnly}
-                    onCheckedChange={(v) =>
-                      set(
-                        'mounts',
-                        form.mounts.map((x, j) => (j === i ? { ...x, readOnly: v === true } : x)),
-                      )
-                    }
-                  />
-                  read-only
-                </label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Remove volume"
-                  onClick={() =>
-                    set(
-                      'mounts',
-                      form.mounts.filter((_, j) => j !== i),
-                    )
-                  }
-                >
-                  <XIcon />
-                </Button>
-              </div>
-            ))}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="justify-self-start"
-              onClick={() =>
-                set('mounts', [...form.mounts, { source: '', target: '', readOnly: false }])
-              }
-            >
-              <PlusIcon /> Add volume
-            </Button>
-          </div>
+          <PortsField ports={form.ports} onChange={(ports) => set('ports', ports)} />
+          <MountsField mounts={form.mounts} onChange={(mounts) => set('mounts', mounts)} />
 
           <div className="grid gap-1.5">
             <Label htmlFor="run-env">Environment</Label>

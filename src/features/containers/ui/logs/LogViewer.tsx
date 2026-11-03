@@ -22,9 +22,9 @@ import {
   XTerm,
   type XTermHandle,
 } from '@/shared/ui';
-import { useSaveLogs } from '../api/mutations';
-import { streamLogs } from '../api/streams';
-import { MAX_KEPT_LINES, renderLine, SINCE, TAILS } from '../model/logs';
+import { useSaveLogs } from '../../api/mutations';
+import { streamLogs } from '../../api/streams';
+import { MAX_KEPT_LINES, renderLine, SINCE, TAILS } from '../../model/logs';
 
 /**
  * Live logs of one or more containers. Several sources are interleaved with

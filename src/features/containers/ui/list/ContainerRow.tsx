@@ -1,0 +1,109 @@
+import { openUrl } from '@tauri-apps/plugin-opener';
+import { useNavigate } from 'react-router-dom';
+import type { Container, ContainerUsage } from '@/shared/api';
+import { formatBytes, formatPercent, formatRelative, shortId } from '@/shared/lib';
+import {
+  Badge,
+  Checkbox,
+  type ConfirmOptions,
+  StatusDot,
+  TableCell,
+  TableRow,
+  toastError,
+} from '@/shared/ui';
+import { containerTone } from '../../model/containerTone';
+import { portLabels } from '../../model/grouping';
+import { ContainerMenu } from '../ContainerMenu';
+
+/** One container in the list; `nested` rows sit under their Stack and show the service. */
+export function ContainerRow({
+  hostId,
+  container: c,
+  nested,
+  usage,
+  address,
+  selected,
+  onSelect,
+  onRename,
+  confirm,
+}: {
+  hostId: string;
+  container: Container;
+  nested: boolean;
+  usage?: ContainerUsage;
+  /** Where published ports are reachable, for links. */
+  address: string;
+  selected: boolean;
+  onSelect: (on: boolean) => void;
+  onRename: (c: Container) => void;
+  confirm: (options: ConfirmOptions) => void;
+}) {
+  const navigate = useNavigate();
+  return (
+    <TableRow
+      className="cursor-pointer"
+      data-state={selected ? 'selected' : undefined}
+      onClick={() => navigate(`/containers/${c.id}/logs`)}
+    >
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        <Checkbox
+          aria-label={`Select ${c.name}`}
+          checked={selected}
+          onCheckedChange={(v) => onSelect(v === true)}
+        />
+      </TableCell>
+      <TableCell className={nested ? 'pl-8' : undefined}>
+        <div className="flex items-center gap-2">
+          <StatusDot tone={containerTone(c.state, c.health)} />
+          <div className="min-w-0">
+            <p className="truncate font-medium">{nested && c.service ? c.service : c.name}</p>
+            <p className="text-muted-foreground font-mono text-xs">{shortId(c.id)}</p>
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="max-w-56 truncate">{c.image}</TableCell>
+      <TableCell>
+        <span className="text-sm">{c.status || c.state}</span>
+        {c.health && (
+          <Badge variant={c.health === 'unhealthy' ? 'destructive' : 'outline'} className="ml-1.5">
+            {c.health}
+          </Badge>
+        )}
+      </TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        <div className="flex max-w-48 flex-wrap gap-1">
+          {portLabels(c)
+            .slice(0, 3)
+            .map((p) =>
+              p.publicPort ? (
+                <button
+                  key={p.label}
+                  type="button"
+                  className="text-primary font-mono text-xs hover:underline"
+                  onClick={() => openUrl(`http://${address}:${p.publicPort}`).catch(toastError)}
+                >
+                  {p.label}
+                </button>
+              ) : (
+                <span key={p.label} className="text-muted-foreground font-mono text-xs">
+                  {p.label}
+                </span>
+              ),
+            )}
+        </div>
+      </TableCell>
+      <TableCell className="text-right tabular-nums">
+        {usage ? formatPercent(usage.cpuPercent ?? 0) : '—'}
+      </TableCell>
+      <TableCell className="text-right tabular-nums">
+        {usage ? formatBytes(usage.memoryUsage) : '—'}
+      </TableCell>
+      <TableCell className="text-muted-foreground whitespace-nowrap">
+        {formatRelative(c.created)}
+      </TableCell>
+      <TableCell>
+        <ContainerMenu hostId={hostId} container={c} onRename={onRename} confirm={confirm} />
+      </TableCell>
+    </TableRow>
+  );
+}

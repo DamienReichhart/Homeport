@@ -11,9 +11,9 @@ import { useState } from 'react';
 import type { FileEntry } from '@/shared/api';
 import { formatBytes, formatDateTime, pickFiles, pickSavePath } from '@/shared/lib';
 import { Button, type ColumnDef, DataTable, ErrorMessage } from '@/shared/ui';
-import { useFileTransfers } from '../api/mutations';
-import { containerQueries } from '../api/queries';
-import { crumbs } from '../model/files';
+import { useFileTransfers } from '../../../api/mutations';
+import { containerQueries } from '../../../api/queries';
+import { crumbs } from '../../../model/files';
 
 const ICONS = { directory: FolderIcon, file: FileIcon, symlink: LinkIcon, other: FileIcon };
 

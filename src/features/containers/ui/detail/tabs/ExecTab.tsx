@@ -11,7 +11,7 @@ import {
   terminalError,
   XTerm,
 } from '@/shared/ui';
-import { startExec } from '../api/streams';
+import { startExec } from '../../../api/streams';
 
 interface SessionSpec {
   key: number;

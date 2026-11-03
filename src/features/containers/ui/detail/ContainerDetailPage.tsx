@@ -1,17 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import {
-  ArrowLeftIcon,
-  PauseIcon,
-  PlayIcon,
-  RotateCwIcon,
-  SquareIcon,
-  Trash2Icon,
-} from 'lucide-react';
+import { ArrowLeftIcon } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { HostGate, useContainers } from '@/core/host';
-import { containerTone } from '../model/containerTone';
-import { useContainerMutations } from '../api/mutations';
-import { containerQueries } from '../api/queries';
 import {
   Badge,
   Button,
@@ -25,13 +15,15 @@ import {
   TabsTrigger,
   useConfirm,
 } from '@/shared/ui';
-import { removeConfirmation } from './ContainerMenu';
-import { ExecTab } from './ExecTab';
-import { FilesTab } from './FilesTab';
-import { InspectTab } from './InspectTab';
-import { LogViewer } from './LogViewer';
-import { ProcessesTab } from './ProcessesTab';
-import { StatsTab } from './StatsTab';
+import { containerQueries } from '../../api/queries';
+import { containerTone } from '../../model/containerTone';
+import { LogViewer } from '../logs/LogViewer';
+import { ContainerActions } from './ContainerActions';
+import { ExecTab } from './tabs/ExecTab';
+import { FilesTab } from './tabs/FilesTab';
+import { InspectTab } from './tabs/InspectTab';
+import { ProcessesTab } from './tabs/ProcessesTab';
+import { StatsTab } from './tabs/StatsTab';
 
 const TABS = ['logs', 'inspect', 'exec', 'files', 'stats', 'processes'] as const;
 const TAB_LABELS: Record<(typeof TABS)[number], string> = {
@@ -47,7 +39,6 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
   const { tab = 'logs' } = useParams();
   const navigate = useNavigate();
   const containers = useContainers(hostId);
-  const { act, remove, refresh } = useContainerMutations(hostId);
   const [dialog, confirm] = useConfirm();
   const container = containers.data?.find((c) => c.id === id || c.id.startsWith(id));
   const inspect = useQuery({
@@ -71,8 +62,6 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
     );
   }
   const running = container.state === 'running';
-  const paused = container.state === 'paused';
-  const ids = [container.id];
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -93,47 +82,7 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
           </span>
         }
         description={`${container.image} · ${container.status || container.state}`}
-        actions={
-          <>
-            {running || paused ? (
-              <Button variant="outline" onClick={() => act.mutate({ ids, action: 'stop' })}>
-                <SquareIcon /> Stop
-              </Button>
-            ) : (
-              <Button variant="outline" onClick={() => act.mutate({ ids, action: 'start' })}>
-                <PlayIcon /> Start
-              </Button>
-            )}
-            <Button
-              variant="outline"
-              disabled={!running && !paused}
-              onClick={() => act.mutate({ ids, action: 'restart' })}
-            >
-              <RotateCwIcon /> Restart
-            </Button>
-            <Button
-              variant="outline"
-              disabled={!running && !paused}
-              onClick={() => act.mutate({ ids, action: paused ? 'unpause' : 'pause' })}
-            >
-              {paused ? <PlayIcon /> : <PauseIcon />} {paused ? 'Resume' : 'Pause'}
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() =>
-                confirm(
-                  removeConfirmation([container], async () => {
-                    await remove.mutateAsync({ ids, volumes: true });
-                    await refresh();
-                    navigate('/containers');
-                  }),
-                )
-              }
-            >
-              <Trash2Icon /> Remove
-            </Button>
-          </>
-        }
+        actions={<ContainerActions hostId={hostId} container={container} confirm={confirm} />}
       />
       <Tabs
         value={tab}
