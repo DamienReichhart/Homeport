@@ -4,7 +4,7 @@ use tauri::{ipc::Channel, State};
 
 use homeport_engine::containers::exec::{self, ExecEvent, ExecOptions, SessionId};
 
-use crate::{error::AppResult, state::AppState};
+use crate::{app::AppState, error::AppResult};
 
 #[tauri::command]
 #[specta::specta]

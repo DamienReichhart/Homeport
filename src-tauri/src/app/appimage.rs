@@ -8,7 +8,7 @@ use std::{fs, io, path::Path};
 /// so a user-level entry never shadows a system-wide install.
 const ENTRY_NAME: &str = "homeport-appimage.desktop";
 const ICON_NAME: &str = "homeport";
-const ICON: &[u8] = include_bytes!("../icons/128x128@2x.png");
+const ICON: &[u8] = include_bytes!("../../icons/128x128@2x.png");
 
 /// Writes the desktop entry and icon into `data_dir` (usually `~/.local/share`)
 /// when running from an AppImage. Does nothing otherwise.

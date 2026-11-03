@@ -3,7 +3,7 @@
 use homeport_core::streams::StreamId;
 use tauri::State;
 
-use crate::state::AppState;
+use crate::app::AppState;
 
 /// Stops a stream started by any `*_subscribe` command.
 #[tauri::command]

@@ -3,7 +3,7 @@
 use homeport_settings::Settings;
 use tauri::State;
 
-use crate::{error::AppResult, state::AppState};
+use crate::{app::AppState, error::AppResult};
 
 #[tauri::command]
 #[specta::specta]

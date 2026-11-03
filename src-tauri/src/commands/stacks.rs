@@ -12,7 +12,7 @@ use homeport_stacks::{
 };
 use tauri::{ipc::Channel, State};
 
-use crate::{error::AppResult, state::AppState};
+use crate::{app::AppState, error::AppResult};
 
 /// Every Stack on a Host: those running there plus undeployed Managed Stacks.
 #[tauri::command]

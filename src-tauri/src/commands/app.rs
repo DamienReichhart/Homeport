@@ -9,8 +9,8 @@ use serde::Serialize;
 use tauri::{AppHandle, Manager, State};
 
 use crate::{
+    app::AppState,
     error::{self, AppError, AppResult},
-    state::AppState,
 };
 
 #[derive(Debug, Serialize, specta::Type)]

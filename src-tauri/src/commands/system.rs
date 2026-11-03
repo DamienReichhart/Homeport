@@ -7,7 +7,7 @@ use homeport_engine::{
 };
 use tauri::{ipc::Channel, State};
 
-use crate::{error::AppResult, state::AppState};
+use crate::{app::AppState, error::AppResult};
 
 #[tauri::command]
 #[specta::specta]

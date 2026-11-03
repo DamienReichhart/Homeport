@@ -4,7 +4,7 @@ use homeport_core::streams::StreamId;
 use homeport_engine::images::{self, Image, ImageLayer, PruneReport, PullEvent};
 use tauri::{ipc::Channel, State};
 
-use crate::{error::AppResult, state::AppState};
+use crate::{app::AppState, error::AppResult};
 
 #[tauri::command]
 #[specta::specta]

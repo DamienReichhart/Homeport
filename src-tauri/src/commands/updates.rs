@@ -8,8 +8,8 @@ use tauri::{ipc::Channel, AppHandle, State};
 use tauri_plugin_updater::UpdaterExt;
 
 use crate::{
+    app::AppState,
     error::{self, AppError, AppResult},
-    state::AppState,
 };
 
 #[derive(Debug, Serialize, specta::Type)]

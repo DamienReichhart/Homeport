@@ -9,7 +9,7 @@
 
 use tauri_specta::{collect_commands, collect_events, ErrorHandlingMode};
 
-use crate::events;
+use crate::app::events;
 
 pub mod app;
 pub mod containers;
