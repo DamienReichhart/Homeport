@@ -4,123 +4,31 @@
 //! every 15 s. Transient failures retry with backoff (1 s doubling to 60 s);
 //! failures that need the user (refused key, untrusted server key, lost
 //! credentials) stop until [`HostRegistry::restart`] is called.
+mod notifier;
+mod status;
+mod supervisor;
 
 use std::{
     collections::{HashMap, VecDeque},
     sync::{Arc, Mutex, Weak},
-    time::Duration,
 };
 
-use bollard::{query_parameters::EventsOptions, Docker};
-use futures_util::StreamExt;
-use homeport_transport::{self as transport, ConnectError, Connected, Dialer};
-use serde::Serialize;
+use bollard::Docker;
 use tokio::task::JoinHandle;
 
-use crate::{store::HostStore, HostId};
 use homeport_core::error::{AppError, AppResult, ErrorCode};
+use homeport_transport::{Connected, Dialer};
 
-const PING_INTERVAL: Duration = Duration::from_secs(15);
-const MAX_BACKOFF_SECS: u32 = 60;
+use self::supervisor::supervise;
+pub use self::{
+    notifier::{EngineEvent, Notifier},
+    status::HostStatus,
+    supervisor::next_backoff,
+};
+use crate::{store::HostStore, HostId};
+
 /// How many Engine events each Host keeps for the Events page.
 const EVENT_HISTORY: usize = 500;
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
-#[serde(
-    tag = "state",
-    rename_all = "camelCase",
-    rename_all_fields = "camelCase"
-)]
-pub enum HostStatus {
-    Disabled,
-    Connecting,
-    Connected {
-        engine_version: String,
-        api_version: String,
-        os: String,
-        arch: String,
-    },
-    Unreachable {
-        error: AppError,
-        retry_in_secs: u32,
-    },
-    Unauthorized {
-        error: AppError,
-    },
-    HostKeyUntrusted {
-        key: String,
-        fingerprint: String,
-    },
-    HostKeyMismatch {
-        key: String,
-        fingerprint: String,
-        expected_fingerprint: String,
-    },
-    CredentialsLost,
-    KeychainUnavailable {
-        error: AppError,
-    },
-    Invalid {
-        error: AppError,
-    },
-}
-
-impl HostStatus {
-    /// The classified cause of a status that needs the user, if it has one.
-    pub fn error(&self) -> Option<&AppError> {
-        match self {
-            Self::Unreachable { error, .. }
-            | Self::Unauthorized { error }
-            | Self::KeychainUnavailable { error }
-            | Self::Invalid { error } => Some(error),
-            _ => None,
-        }
-    }
-}
-
-impl From<ConnectError> for HostStatus {
-    fn from(e: ConnectError) -> Self {
-        match e {
-            ConnectError::Unreachable(error) => Self::Unreachable {
-                error,
-                retry_in_secs: 0,
-            },
-            ConnectError::Unauthorized(error) => Self::Unauthorized { error },
-            ConnectError::HostKeyUntrusted { key, fingerprint } => {
-                Self::HostKeyUntrusted { key, fingerprint }
-            }
-            ConnectError::HostKeyMismatch {
-                key,
-                fingerprint,
-                expected_fingerprint,
-            } => Self::HostKeyMismatch {
-                key,
-                fingerprint,
-                expected_fingerprint,
-            },
-            ConnectError::Invalid(error) => Self::Invalid { error },
-        }
-    }
-}
-
-/// One entry of a Host's Engine event stream.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
-#[serde(rename_all = "camelCase")]
-pub struct EngineEvent {
-    /// Unix time in seconds.
-    pub time: i64,
-    /// `container`, `image`, `volume`, `network`, …
-    pub kind: String,
-    pub action: String,
-    pub actor_id: String,
-    pub attributes: HashMap<String, String>,
-}
-
-/// Receives what the registry observes; the app forwards it to the frontend.
-pub trait Notifier: Send + Sync + 'static {
-    fn host_status(&self, host_id: &str, status: &HostStatus);
-    fn engine_event(&self, host_id: &str, event: &EngineEvent);
-}
 
 struct Entry {
     status: HostStatus,
@@ -269,133 +177,10 @@ impl HostRegistry {
     }
 }
 
-/// The next wait after `current` seconds: doubling from 1 up to 60.
-pub fn next_backoff(current: u32) -> u32 {
-    (current.max(1) * 2).min(MAX_BACKOFF_SECS)
-}
-
-async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
-    let mut backoff = 1;
-    loop {
-        let Some(reg) = registry.upgrade() else {
-            return;
-        };
-        let host = match reg.store.get(&id) {
-            Ok(host) => host,
-            Err(_) => return reg.remove(&id),
-        };
-        if !host.enabled {
-            return reg.set_status(&id, HostStatus::Disabled, None);
-        }
-        reg.set_status(&id, HostStatus::Connecting, None);
-
-        let secrets = if host.connection.needs_secrets() {
-            match reg.store.secrets(&id) {
-                Ok(secrets) => secrets,
-                Err(e) if e.is(ErrorCode::CredentialsLost) => {
-                    return reg.set_status(&id, HostStatus::CredentialsLost, None)
-                }
-                Err(error) if error.is(ErrorCode::KeychainUnavailable) => {
-                    return reg.set_status(&id, HostStatus::KeychainUnavailable { error }, None)
-                }
-                Err(error) => return reg.set_status(&id, HostStatus::Invalid { error }, None),
-            }
-        } else {
-            None
-        };
-
-        let error = match transport::connect(
-            &host.name,
-            &host.connection,
-            secrets,
-            host.host_key.as_deref(),
-        )
-        .await
-        {
-            Ok(connected) => match describe(&connected.docker).await {
-                Ok(status) => {
-                    backoff = 1;
-                    let docker = connected.docker.clone();
-                    reg.set_status(&id, status, Some(connected));
-                    drop(reg);
-                    watch(&registry, &id, docker).await;
-                    AppError::new(
-                            ErrorCode::ConnectionLost,
-                            format!("Homeport lost the connection to {}.", host.name),
-                        )
-                        .with_hint("The Docker Engine or the network may have restarted. Homeport keeps retrying.")
-                }
-                Err(error) => error,
-            },
-            Err(ConnectError::Unreachable(error)) => error,
-            Err(other) => return reg.set_status(&id, other.into(), None),
-        };
-
-        let Some(reg) = registry.upgrade() else {
-            return;
-        };
-        reg.set_status(
-            &id,
-            HostStatus::Unreachable {
-                error,
-                retry_in_secs: backoff,
-            },
-            None,
-        );
-        drop(reg);
-        tokio::time::sleep(Duration::from_secs(backoff.into())).await;
-        backoff = next_backoff(backoff);
-    }
-}
-
-async fn describe(docker: &Docker) -> Result<HostStatus, AppError> {
-    let v = docker.version().await?;
-    Ok(HostStatus::Connected {
-        engine_version: v.version.unwrap_or_default(),
-        api_version: v.api_version.unwrap_or_default(),
-        os: v.os.unwrap_or_default(),
-        arch: v.arch.unwrap_or_default(),
-    })
-}
-
-/// Forwards Engine events until the stream breaks or a ping fails.
-async fn watch(registry: &Weak<HostRegistry>, id: &str, docker: Docker) {
-    let events = async {
-        let mut stream = docker.events(None::<EventsOptions>);
-        while let Some(Ok(msg)) = stream.next().await {
-            let Some(reg) = registry.upgrade() else {
-                return;
-            };
-            let actor = msg.actor.unwrap_or_default();
-            reg.record_event(
-                id,
-                EngineEvent {
-                    time: msg.time.unwrap_or_default(),
-                    kind: msg.typ.map(|t| t.to_string()).unwrap_or_default(),
-                    action: msg.action.unwrap_or_default(),
-                    actor_id: actor.id.unwrap_or_default(),
-                    attributes: actor.attributes.unwrap_or_default(),
-                },
-            );
-        }
-    };
-    let pings = async {
-        loop {
-            tokio::time::sleep(PING_INTERVAL).await;
-            match tokio::time::timeout(transport::CONNECT_TIMEOUT, docker.ping()).await {
-                Ok(Ok(_)) => {}
-                _ => return,
-            }
-        }
-    };
-    tokio::select! {
-        _ = events => {}
-        _ = pings => {}
-    }
-}
-
 #[cfg(test)]
 mod tests {
+    use std::time::Duration;
+
     use homeport_storage::{Db, SecretBox};
 
     use super::*;
@@ -438,14 +223,6 @@ mod tests {
             tokio::time::sleep(Duration::from_millis(25)).await;
         }
         panic!("status never matched, last: {:?}", reg.status(id));
-    }
-
-    #[test]
-    fn backoff_doubles_up_to_a_minute() {
-        let waits: Vec<_> = std::iter::successors(Some(1), |&b| Some(next_backoff(b)))
-            .take(8)
-            .collect();
-        assert_eq!(waits, [1, 2, 4, 8, 16, 32, 60, 60]);
     }
 
     #[tokio::test]
