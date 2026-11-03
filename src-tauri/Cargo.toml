@@ -13,48 +13,27 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 [build-dependencies]
 tauri-build.workspace = true
 
+# The app shell only wires the crates below to Tauri; their own
+# dependencies (bollard, russh, SQLite…) stay theirs.
 [dependencies]
-tauri.workspace = true
-tauri-plugin-opener.workspace = true
-serde.workspace = true
-serde_json.workspace = true
-thiserror.workspace = true
-log.workspace = true
-tauri-plugin-log.workspace = true
-tauri-specta.workspace = true
-specta.workspace = true
-specta-typescript.workspace = true
-rusqlite.workspace = true
-rusqlite_migration.workspace = true
-chacha20poly1305.workspace = true
-getrandom.workspace = true
-keyring.workspace = true
-uuid.workspace = true
-russh.workspace = true
-bollard.workspace = true
-tokio.workspace = true
-hyper.workspace = true
-hyper-util.workspace = true
-futures-util.workspace = true
-rustls.workspace = true
-tokio-rustls.workspace = true
-rustls-pki-types.workspace = true
-gethostname.workspace = true
-tar.workspace = true
-shell-words.workspace = true
-serde_yaml_ng.workspace = true
-tempfile.workspace = true
-tauri-plugin-dialog.workspace = true
-tauri-plugin-updater.workspace = true
-homeport-core = { workspace = true, features = ["bollard", "russh"] }
+homeport-core.workspace = true
 homeport-storage.workspace = true
-homeport-transport.workspace = true
 homeport-engine.workspace = true
 homeport-hosts.workspace = true
 homeport-stacks.workspace = true
 homeport-settings.workspace = true
 homeport-updates.workspace = true
+tauri.workspace = true
+tauri-plugin-opener.workspace = true
+tauri-plugin-log.workspace = true
+tauri-plugin-dialog.workspace = true
+tauri-plugin-updater.workspace = true
+tauri-specta.workspace = true
+specta.workspace = true
+specta-typescript.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+log.workspace = true
 
 [dev-dependencies]
-homeport-engine = { workspace = true, features = ["test-support"] }
-homeport-transport = { workspace = true, features = ["test-support"] }
+tempfile.workspace = true
