@@ -29,7 +29,7 @@ shasum -a 256 --ignore-missing -c SHA256SUMS.txt
 <TabItem label="Windows">
 
 ```powershell
-(Get-FileHash .\Homeport_0.1.0_x64-setup.exe -Algorithm SHA256).Hash.ToLower()
+(Get-FileHash .\Homeport_0.2.0_x64-setup.exe -Algorithm SHA256).Hash.ToLower()
 ```
 
 Compare the result with the installer's line in `SHA256SUMS.txt`.
@@ -46,7 +46,7 @@ A checksum proves the file wasn't damaged or swapped after the checksum was publ
 With the [GitHub CLI](https://cli.github.com) installed:
 
 ```sh
-gh attestation verify Homeport_0.1.0_x64-setup.exe --repo DamienReichhart/Homeport
+gh attestation verify Homeport_0.2.0_x64-setup.exe --repo DamienReichhart/Homeport
 ```
 
 A successful check prints the workflow and commit the file was built from.

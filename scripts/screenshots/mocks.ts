@@ -330,7 +330,7 @@ export function installMocks({ theme, hostId }: MockOptions) {
   mockWindows('main');
 
   const handlers: Record<string, (args: Record<string, unknown>) => unknown> = {
-    get_app_info: () => ({ name: 'Homeport', version: '0.1.0', os: 'macos', arch: 'aarch64' }),
+    get_app_info: () => ({ name: 'Homeport', version: '0.2.0', os: 'macos', arch: 'aarch64' }),
     get_capabilities: () => ({
       keychain: true,
       compose: { program: 'docker', prefix: ['compose'], version: '2.31.0' },

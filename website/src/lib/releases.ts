@@ -72,7 +72,7 @@ export function archLabel(os: Os, arch: Arch): string {
   return arch === 'arm64' ? 'ARM64' : 'x64';
 }
 
-/** Recognises a Tauri bundle file name, e.g. `Homeport_0.1.0_aarch64.dmg`. */
+/** Recognises a Tauri bundle file name, e.g. `Homeport_0.2.0_aarch64.dmg`. */
 export function classify(name: string): Pick<Installer, 'os' | 'arch' | 'format'> | undefined {
   const arm = /(aarch64|arm64)/i.test(name);
   const arch: Arch = arm ? 'arm64' : 'x64';

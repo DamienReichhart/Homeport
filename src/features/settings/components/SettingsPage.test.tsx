@@ -4,7 +4,7 @@ import { baseCommands } from '@/test/fixtures';
 import { mockCommands } from '@/test/ipc';
 import { renderApp } from '@/test/render';
 
-const appInfo = () => ({ name: 'homeport', version: '0.1.0', os: 'linux', arch: 'x86_64' });
+const appInfo = () => ({ name: 'homeport', version: '0.2.0', os: 'linux', arch: 'x86_64' });
 
 describe('settings licenses', () => {
   it('shows Homeport’s license and the bundled third-party notices', async () => {
