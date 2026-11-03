@@ -21,6 +21,21 @@ jobs:
       - run: bun run check
       - run: bun run build
 
+  # Release builds generate the notices; catch an unaccepted license before then.
+  licenses:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-about@0.9.3
+      - run: bun run licenses
+
   backend:
     runs-on: ubuntu-latest
     steps:
