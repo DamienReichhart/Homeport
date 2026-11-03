@@ -9,15 +9,7 @@ export interface StatusSummary {
 
 /** The classified cause of a status that needs the user, with its hint and detail. */
 export function statusError(status: HostStatus): AppErrorPayload | null {
-  switch (status.state) {
-    case 'unreachable':
-    case 'unauthorized':
-    case 'keychainUnavailable':
-    case 'invalid':
-      return status.error;
-    default:
-      return null;
-  }
+  return 'error' in status ? status.error : null;
 }
 
 /** A short label, a colour and the reason, for showing a Host's status. */

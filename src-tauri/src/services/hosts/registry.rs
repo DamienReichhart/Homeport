@@ -67,6 +67,19 @@ pub enum HostStatus {
     },
 }
 
+impl HostStatus {
+    /// The classified cause of a status that needs the user, if it has one.
+    pub fn error(&self) -> Option<&AppError> {
+        match self {
+            Self::Unreachable { error, .. }
+            | Self::Unauthorized { error }
+            | Self::KeychainUnavailable { error }
+            | Self::Invalid { error } => Some(error),
+            _ => None,
+        }
+    }
+}
+
 impl From<ConnectError> for HostStatus {
     fn from(e: ConnectError) -> Self {
         match e {
@@ -216,18 +229,17 @@ impl HostRegistry {
             ErrorCode::HostNotConnected,
             format!("{name} isn't connected."),
         );
-        match status {
-            HostStatus::Unreachable { error: cause, .. }
-            | HostStatus::Unauthorized { error: cause }
-            | HostStatus::KeychainUnavailable { error: cause }
-            | HostStatus::Invalid { error: cause } => AppError {
+        if let Some(cause) = status.error() {
+            return AppError {
                 hint: cause.hint.clone(),
                 detail: Some(match &cause.detail {
                     Some(detail) => format!("{}\n{detail}", cause.message),
                     None => cause.message.clone(),
                 }),
                 ..error
-            },
+            };
+        }
+        match status {
             HostStatus::Disabled => error.with_hint("Enable the host on its page to use it."),
             HostStatus::Connecting => {
                 error.with_hint("Homeport is still connecting; try again in a moment.")
