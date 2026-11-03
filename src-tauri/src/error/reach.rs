@@ -144,7 +144,7 @@ fn not_running(socket_path: &str) -> AppError {
 fn not_installed(socket_path: &str) -> AppError {
     let error = AppError::new(
         ErrorCode::EngineNotInstalled,
-        format!("Docker doesn't seem to be installed: nothing exists at {socket_path}."),
+        format!("The Docker Engine doesn't seem to be installed: nothing exists at {socket_path}."),
     );
     if cfg!(target_os = "linux") {
         error
@@ -187,7 +187,7 @@ pub fn network(address: &str, error: &(dyn StdError + 'static)) -> AppError {
     let classified = if is_dns_failure(&text) {
         AppError::new(
             ErrorCode::DnsFailed,
-            format!("The server name in {address} can't be found."),
+            format!("The name of {address} can't be found."),
         )
         .with_hint("Check the address for typos, and that this computer's network and DNS work.")
     } else {
@@ -201,13 +201,13 @@ pub fn network(address: &str, error: &(dyn StdError + 'static)) -> AppError {
                 ErrorCode::Timeout,
                 format!("{address} didn't answer in time."),
             )
-            .with_hint("Check the address, that the server is on, and that no firewall drops the connection."),
+            .with_hint("Check the address, that the machine is on, and that no firewall drops the connection."),
             Some(io::ErrorKind::HostUnreachable | io::ErrorKind::NetworkUnreachable) => {
                 AppError::new(
                     ErrorCode::NetworkUnreachable,
                     format!("{address} can't be reached from this network."),
                 )
-                .with_hint("Check your network connection, or connect the VPN the server is behind.")
+                .with_hint("Check your network connection, or connect the VPN it's behind.")
             }
             Some(
                 io::ErrorKind::ConnectionReset
@@ -230,7 +230,7 @@ pub fn connection_lost(address: &str) -> AppError {
         ErrorCode::ConnectionLost,
         format!("The connection to {address} was cut."),
     )
-    .with_hint("The server or the network may have restarted. Homeport keeps retrying.")
+    .with_hint("The machine or the network may have restarted. Homeport keeps retrying.")
 }
 
 fn is_dns_failure(text: &str) -> bool {
@@ -289,7 +289,7 @@ pub fn tls(label: &str, address: &str, error: &(dyn StdError + 'static)) -> AppE
             ErrorCode::TlsCertificateExpired,
             format!("The certificate of {label} has expired."),
         )
-        .with_hint("Renew the Engine's TLS certificate on the server, then reconnect."),
+        .with_hint("Renew the Docker Engine's TLS certificate, then reconnect."),
         Tls::InvalidCertificate(Cert::NotValidYet | Cert::NotValidYetContext { .. }) => {
             AppError::new(
                 ErrorCode::TlsCertificateNotYetValid,
@@ -346,7 +346,7 @@ pub fn ssh(address: &str, error: &russh::Error) -> AppError {
             ErrorCode::Timeout,
             format!("The SSH server at {address} stopped answering."),
         )
-        .with_hint("Check that the server is on and reachable. Homeport keeps retrying.")
+        .with_hint("Check that the machine is on and reachable. Homeport keeps retrying.")
         .with_cause(error),
         russh::Error::Disconnect | russh::Error::HUP => {
             connection_lost(address).with_cause(error)
@@ -356,7 +356,7 @@ pub fn ssh(address: &str, error: &russh::Error) -> AppError {
                 ErrorCode::SshFailed,
                 format!("Homeport and the SSH server at {address} share no encryption method."),
             )
-            .with_hint("Update the server's OpenSSH, or allow modern algorithms such as ed25519 and curve25519 in its sshd_config.")
+            .with_hint("Update OpenSSH on that machine, or allow modern algorithms such as ed25519 and curve25519 in its sshd_config.")
             .with_cause(error)
         }
         _ => AppError::new(

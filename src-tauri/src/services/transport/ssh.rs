@@ -277,16 +277,17 @@ fn auth_refused(t: &SshTarget) -> AppError {
         Credentials::Key(key) => match key.public_key().to_openssh() {
             Ok(public_key) => error
                 .with_hint(format!(
-                    "Authorize Homeport's key for {} by running this on the server:",
-                    t.user
+                    "Authorise Homeport's key for {} by running this on {}:",
+                    t.user, t.host
                 ))
                 .with_command(authorized_keys_command(&public_key)),
-            Err(_) => {
-                error.with_hint("Add this host's public key to the server's authorized_keys.")
-            }
+            Err(_) => error.with_hint(format!(
+                "Add this host's public key to authorized_keys on {}.",
+                t.host
+            )),
         },
         Credentials::Agent => error
-            .with_hint("Load a key the server accepts into your ssh-agent, then reconnect.")
+            .with_hint("Load a key the SSH server accepts into your ssh-agent, then reconnect.")
             .with_command("ssh-add"),
     }
 }
@@ -320,12 +321,12 @@ fn remote_socket_unavailable(t: &SshTarget, e: &russh::Error) -> AppError {
     AppError::new(
         ErrorCode::RemoteEngineUnavailable,
         format!(
-            "{} can't open the Docker Engine socket at {} on the server.",
-            t.user, t.socket_path
+            "{} can't open the Docker Engine socket at {} on {}.",
+            t.user, t.socket_path, t.host
         ),
     )
     .with_hint(format!(
-        "Check that the Docker Engine runs on {} and that {} may use it. On the server, run:",
+        "Check that the Docker Engine runs on {0} and that {1} may use it. On {0}, run:",
         t.host, t.user
     ))
     .with_command("sudo systemctl enable --now docker")

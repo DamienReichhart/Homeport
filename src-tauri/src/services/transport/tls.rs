@@ -69,7 +69,7 @@ impl TlsDialer {
             .trim_start_matches('[')
             .trim_end_matches(']');
         let server_name =
-            ServerName::try_from(host.to_owned()).map_err(|e| invalid("server address", &e))?;
+            ServerName::try_from(host.to_owned()).map_err(|e| invalid("address", &e))?;
 
         Ok(Self {
             label: label.to_owned(),

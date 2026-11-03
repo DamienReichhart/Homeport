@@ -227,7 +227,7 @@ impl From<rusqlite::Error> for AppError {
             }
             Some(code) if matches!(code & 0xff, ffi::SQLITE_CORRUPT | ffi::SQLITE_NOTADB) => {
                 Self::new(ErrorCode::DbCorrupt, "Homeport's database is damaged.").with_hint(
-                    "Quit Homeport, move homeport.db out of its data folder and start again. Hosts and Stacks will need to be added again.",
+                    "Quit Homeport, move homeport.db out of its data folder and start again. Hosts and stacks will need to be added again.",
                 )
             }
             Some(code) if code & 0xff == ffi::SQLITE_FULL => {

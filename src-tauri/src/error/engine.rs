@@ -87,7 +87,7 @@ pub fn from_message(status: Option<u16>, message: &str) -> AppError {
             ErrorCode::RegistryAuthRequired,
             "The image doesn't exist, or it's private.",
         )
-        .with_hint("Check the image name. Homeport can't use registry logins yet, so pull private images from a terminal on the server:")
+        .with_hint("Check the image name. Homeport can't use registry logins yet, so pull private images from a terminal on the machine running the Docker Engine:")
         .with_command("docker login <registry>\ndocker pull <image>");
     }
     if has("manifest unknown") || (has("manifest for") && has("not found")) {

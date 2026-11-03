@@ -100,7 +100,7 @@ impl From<ConnectError> for AppError {
                 ErrorCode::HostKeyChanged,
                 "The SSH server's key changed since it was trusted.",
             )
-            .with_hint("If the server was reinstalled, trust the new key on the host page. Otherwise someone may be intercepting the connection.")
+            .with_hint("If the machine was reinstalled, trust the new key on the host page. Otherwise someone may be intercepting the connection.")
             .with_detail(format!("expected {expected_fingerprint}, got {fingerprint}")),
         }
     }
