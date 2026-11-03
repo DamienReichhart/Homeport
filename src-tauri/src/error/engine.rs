@@ -180,11 +180,7 @@ pub fn from_message(status: Option<u16>, message: &str) -> AppError {
         );
     }
     if has("executable file not found") {
-        return AppError::new(
-            ErrorCode::NoShell,
-            "That command doesn't exist in the container.",
-        )
-        .with_hint("Minimal images may have no shell or tools. Try /bin/sh, or another command.");
+        return command_not_found();
     }
     if has("could not find the file") || has("no such file or directory") {
         return AppError::new(
@@ -226,6 +222,16 @@ pub fn from_message(status: Option<u16>, message: &str) -> AppError {
         _ => AppError::new(ErrorCode::EngineError, "The Docker Engine failed to do this.")
             .with_hint(details),
     }
+}
+
+/// A command that doesn't exist in the container, often a shell missing from
+/// a minimal image.
+pub fn command_not_found() -> AppError {
+    AppError::new(
+        ErrorCode::NoShell,
+        "That command doesn't exist in the container.",
+    )
+    .with_hint("Minimal images may have no shell or tools. Try /bin/sh, or another command.")
 }
 
 /// The host port in "Bind for 0.0.0.0:8080 failed" or "listen tcp4 0.0.0.0:80: bind…".

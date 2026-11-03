@@ -9,14 +9,6 @@ import { Label } from '@/shared/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover';
 import { XTerm, terminalError } from '@/shared/ui';
 
-const NOT_RUNNABLE = {
-  message: 'The command wasn’t found or can’t run in this container.',
-  hint: {
-    text: 'Minimal images may have no shell or tools. Try /bin/sh, or open a session with another command.',
-    commands: [],
-  },
-};
-
 interface SessionSpec {
   key: number;
   title: string;
@@ -49,9 +41,7 @@ function ExecTerminal({
             terminal.write(
               `\r\n\x1b[2m[process exited${event.code === null ? '' : ` with code ${event.code}`}]\x1b[22m\r\n`,
             );
-            // 126: found but not runnable; 127: not found (often no shell in minimal images).
-            if (event.code === 126 || event.code === 127)
-              terminal.write(terminalError(NOT_RUNNABLE));
+            if (event.error) terminal.write(terminalError(event.error));
           } else terminal.write(`\r\n${terminalError(event.error)}`);
         };
         commands

@@ -42,9 +42,17 @@ pub struct ExecOptions {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum ExecEvent {
-    Output { data: String },
-    Exit { code: Option<i64> },
-    Error { error: AppError },
+    Output {
+        data: String,
+    },
+    /// `error` explains an exit that means the command couldn't run.
+    Exit {
+        code: Option<i64>,
+        error: Option<AppError>,
+    },
+    Error {
+        error: AppError,
+    },
 }
 
 /// Decodes a byte stream as UTF-8, holding back a character split across chunks.
@@ -185,7 +193,16 @@ pub async fn pump(session: Arc<ExecSession>, mut output: Output, sink: impl Fn(E
         .await
         .ok()
         .and_then(|i| i.exit_code);
-    sink(ExecEvent::Exit { code });
+    sink(ExecEvent::Exit {
+        code,
+        error: exit_error(code),
+    });
+}
+
+/// Shells answer 127 for a command they can't find and 126 for one they
+/// can't run; in a container that usually means a minimal image.
+fn exit_error(code: Option<i64>) -> Option<AppError> {
+    matches!(code, Some(126 | 127)).then(crate::error::engine::command_not_found)
 }
 
 pub type SessionId = u32;
@@ -244,6 +261,15 @@ mod tests {
     use crate::services::docker::{containers, testing};
 
     #[test]
+    fn exits_that_mean_the_command_couldnt_run_are_explained() {
+        use crate::error::ErrorCode;
+        assert_eq!(exit_error(Some(127)).unwrap().code, ErrorCode::NoShell);
+        assert_eq!(exit_error(Some(126)).unwrap().code, ErrorCode::NoShell);
+        assert!(exit_error(Some(1)).is_none());
+        assert!(exit_error(None).is_none());
+    }
+
+    #[test]
     fn utf8_split_across_chunks_is_reassembled() {
         let mut d = Utf8Decoder::default();
         let bytes = "héllo ✓".as_bytes();
@@ -289,7 +315,7 @@ mod tests {
             loop {
                 match rx.recv().await.unwrap() {
                     ExecEvent::Output { data } => output.push_str(&data),
-                    ExecEvent::Exit { code } => return code,
+                    ExecEvent::Exit { code, .. } => return code,
                     ExecEvent::Error { error } => panic!("{error}"),
                 }
             }

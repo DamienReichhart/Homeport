@@ -255,7 +255,9 @@ export type ErrorCode =
 /**  A failure that started in the frontend, outside any command. */
 "unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | "host_not_connected" | "engine_not_installed" | "engine_not_running" | "permission_denied" | "dns_failed" | "connection_refused" | "timeout" | "network_unreachable" | "connection_lost" | "tls_required" | "tls_not_supported" | "tls_certificate_expired" | "tls_certificate_not_yet_valid" | "tls_unknown_ca" | "tls_name_mismatch" | "tls_client_rejected" | "tls_handshake_failed" | "tls_material_invalid" | "ssh_auth_failed" | "ssh_agent_unavailable" | "ssh_key_invalid" | "ssh_failed" | "remote_engine_unavailable" | "host_key_untrusted" | "host_key_changed" | "engine_error" | "bad_request" | "forbidden" | "conflict" | "name_in_use" | "in_use" | "container_running" | "container_not_running" | "already_done" | "port_in_use" | "disk_full" | "image_not_found" | "registry_auth_required" | "registry_rate_limited" | "registry_unreachable" | "api_version_unsupported" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
 
-export type ExecEvent = { type: "output"; data: string } | { type: "exit"; code: number | null } | { type: "error"; error: AppError };
+export type ExecEvent = { type: "output"; data: string } | 
+/**  `error` explains an exit that means the command couldn't run. */
+{ type: "exit"; code: number | null; error: AppError | null } | { type: "error"; error: AppError };
 
 export type ExecOptions = {
 	/**  The command to run, parsed with shell quoting; the default picks a shell. */
