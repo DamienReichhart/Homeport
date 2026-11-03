@@ -2,7 +2,7 @@ use serde::Serialize;
 use tauri::{AppHandle, Manager, State};
 
 use crate::{
-    error::{AppError, AppResult, ErrorCode},
+    error::{local_file, AppError, AppResult, ErrorCode},
     services::stacks::compose::{self, ComposeCli},
     state::AppState,
 };
@@ -86,10 +86,21 @@ const MAX_TEXT_FILE: u64 = 1024 * 1024;
 #[tauri::command]
 #[specta::specta]
 pub fn read_text_file(path: String) -> AppResult<String> {
-    if std::fs::metadata(&path)?.len() > MAX_TEXT_FILE {
-        return Err(AppError::validation("That file is too large."));
+    let path = std::path::Path::new(&path);
+    let size = std::fs::metadata(path)
+        .map_err(|e| local_file(path, e))?
+        .len();
+    if size > MAX_TEXT_FILE {
+        return Err(AppError::new(
+            ErrorCode::FileTooLarge,
+            format!(
+                "{} is too large to be a key, certificate or compose file.",
+                path.display()
+            ),
+        )
+        .with_hint("Pick a file under 1 MB."));
     }
-    Ok(std::fs::read_to_string(path)?)
+    std::fs::read_to_string(path).map_err(|e| local_file(path, e))
 }
 
 /// Opens the folder holding Homeport's log files in the file manager.
@@ -112,5 +123,6 @@ pub fn open_log_folder(app: AppHandle) -> AppResult<()> {
 #[tauri::command]
 #[specta::specta]
 pub fn write_text_file(path: String, contents: String) -> AppResult<()> {
-    Ok(std::fs::write(path, contents)?)
+    let path = std::path::Path::new(&path);
+    std::fs::write(path, contents).map_err(|e| local_file(path, e))
 }

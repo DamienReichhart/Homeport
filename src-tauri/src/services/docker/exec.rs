@@ -147,7 +147,7 @@ pub async fn start(
     let StartExecResults::Attached { output, input } = started else {
         return Err(AppError::new(
             ErrorCode::EngineError,
-            "the exec session did not attach",
+            "The Docker Engine didn't open the terminal session.",
         ));
     };
     Ok((

@@ -22,9 +22,9 @@ pub type AppResult<T> = Result<T, AppError>;
 /// Stable machine-readable identifier of a failure, one per case the user can act on.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, specta::Type)]
 #[serde(rename_all = "snake_case")]
-#[allow(dead_code)] // the classifiers that produce every code land one domain at a time
 pub enum ErrorCode {
     /// A failure that started in the frontend, outside any command.
+    #[allow(dead_code)] // only the frontend produces it
     Unknown,
     // The app itself.
     Io,
@@ -290,8 +290,70 @@ impl From<bollard::errors::Error> for AppError {
 
 impl From<tauri_plugin_updater::Error> for AppError {
     fn from(e: tauri_plugin_updater::Error) -> Self {
-        Self::new(ErrorCode::UpdateFailed, "The update failed.").with_cause(&e)
+        use tauri_plugin_updater::Error as U;
+        let error = match &e {
+            U::Reqwest(_) | U::Network(_) | U::Http(_) => Self::new(
+                ErrorCode::UpdateNetwork,
+                "Homeport couldn't download the update.",
+            )
+            .with_hint("Check your internet connection, then try again."),
+            U::ReleaseNotFound | U::TargetNotFound(_) | U::TargetsNotFound(_) => Self::new(
+                ErrorCode::UpdateFailed,
+                "No update is published for this system yet.",
+            )
+            .with_hint("Try again later, or download Homeport from its website."),
+            U::Minisign(_) | U::SignedVersionMismatch { .. } => Self::new(
+                ErrorCode::UpdateSignatureInvalid,
+                "The update's signature doesn't match, so it wasn't installed.",
+            )
+            .with_hint("Download the new version from Homeport's website instead."),
+            U::AuthenticationFailed => Self::new(
+                ErrorCode::UpdatePermissionDenied,
+                "Installing the update needs an administrator's approval, which was refused or cancelled.",
+            )
+            .with_hint("Try again and enter an administrator password when asked."),
+            U::Io(io) if io.kind() == std::io::ErrorKind::PermissionDenied => Self::new(
+                ErrorCode::UpdatePermissionDenied,
+                "Homeport isn't allowed to replace its own files.",
+            )
+            .with_hint("Move the AppImage to a folder you own, or install Homeport from its package repository."),
+            U::TempDirNotOnSameMountPoint => Self::new(
+                ErrorCode::UpdatePermissionDenied,
+                "Homeport can't replace itself where it's installed.",
+            )
+            .with_hint("Move Homeport to a folder on your main disk, or install it from its package repository."),
+            _ => Self::new(ErrorCode::UpdateFailed, "The update failed."),
+        };
+        error.with_cause(&e)
     }
+}
+
+/// A file on this computer that the user picked (keys, compose files, downloads).
+pub fn local_file(path: &std::path::Path, e: std::io::Error) -> AppError {
+    let path = path.display();
+    let error = match e.kind() {
+        std::io::ErrorKind::NotFound => {
+            AppError::new(ErrorCode::Io, format!("{path} doesn't exist."))
+        }
+        std::io::ErrorKind::PermissionDenied => AppError::new(
+            ErrorCode::PermissionDenied,
+            format!("Homeport isn't allowed to access {path}."),
+        )
+        .with_hint("Check the file's permissions, or pick another location."),
+        std::io::ErrorKind::StorageFull => AppError::new(
+            ErrorCode::DiskFull,
+            format!("There's no space left to write {path}."),
+        )
+        .with_hint("Free some disk space, or pick another drive."),
+        std::io::ErrorKind::IsADirectory => {
+            AppError::validation(format!("{path} is a folder, not a file."))
+        }
+        std::io::ErrorKind::InvalidData => {
+            AppError::validation(format!("{path} isn't a text file."))
+        }
+        _ => AppError::new(ErrorCode::Io, format!("Homeport couldn't access {path}.")),
+    };
+    error.with_cause(&e)
 }
 
 #[cfg(test)]
@@ -332,6 +394,22 @@ mod tests {
         assert_eq!(err.code, ErrorCode::Io);
         assert!(!err.message.contains("disk full"));
         assert_eq!(err.detail.as_deref(), Some("disk full"));
+    }
+
+    #[test]
+    fn local_files_name_the_path_and_the_problem() {
+        let path = std::path::Path::new("/home/me/key.pem");
+        let e = local_file(
+            path,
+            std::io::Error::from(std::io::ErrorKind::PermissionDenied),
+        );
+        assert_eq!(e.code, ErrorCode::PermissionDenied);
+        assert_eq!(
+            e.message,
+            "Homeport isn't allowed to access /home/me/key.pem."
+        );
+        let e = local_file(path, std::io::Error::from(std::io::ErrorKind::NotFound));
+        assert_eq!(e.message, "/home/me/key.pem doesn't exist.");
     }
 
     #[test]

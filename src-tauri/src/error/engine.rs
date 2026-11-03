@@ -168,6 +168,13 @@ pub fn from_message(status: Option<u16>, message: &str) -> AppError {
             "The container is already in that state.",
         );
     }
+    if has("executable file not found") {
+        return AppError::new(
+            ErrorCode::NoShell,
+            "That command doesn't exist in the container.",
+        )
+        .with_hint("Minimal images may have no shell or tools. Try /bin/sh, or another command.");
+    }
     if has("could not find the file") || has("no such file or directory") {
         return AppError::new(
             ErrorCode::PathNotFound,
@@ -262,6 +269,7 @@ mod tests {
             (500, "write /var/lib/docker/tmp/x: no space left on device", ErrorCode::DiskFull),
             (400, "Client sent an HTTP request to an HTTPS server.", ErrorCode::TlsRequired),
             (403, "authorization denied by plugin opa", ErrorCode::Forbidden),
+            (500, "OCI runtime exec failed: exec failed: unable to start container process: exec: \"bash\": executable file not found in $PATH: unknown", ErrorCode::NoShell),
             (500, "something odd", ErrorCode::EngineError),
         ] {
             let e = engine(status, message);
