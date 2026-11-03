@@ -1,8 +1,6 @@
 //! The app shell's view of errors: everything from [`homeport_core::error`],
 //! plus the failures of Tauri itself, which only the shell sees.
 
-pub mod compose;
-
 pub use homeport_core::error::*;
 
 /// The webview, a window or an app path failed.

@@ -1,7 +1,7 @@
 //! Classifies failures of the `docker compose` CLI: missing or outdated,
 //! unable to start, or exiting with an error described on stderr.
 
-use super::{engine, AppError, ErrorCode};
+use homeport_core::error::{engine, AppError, ErrorCode};
 
 /// Why no usable compose CLI was found, given what `version --short` printed
 /// for the Docker CLI plugin and the standalone `docker-compose`, if anything.

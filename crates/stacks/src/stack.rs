@@ -1,13 +1,4 @@
-//! Stacks: Compose projects on a Host (see GLOSSARY.md and ADR 0001).
-//!
-//! Every Stack is found through the `com.docker.compose.project` label. A
-//! Managed Stack also has its compose definition stored here; an External
-//! Stack only has its running containers until it is Adopted.
-
-pub mod compose;
-pub mod definition;
-pub mod lifecycle;
-pub mod store;
+//! What a Stack is, and finding every Stack of a Host from its containers.
 
 use std::collections::BTreeMap;
 

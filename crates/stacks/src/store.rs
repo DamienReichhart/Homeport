@@ -6,8 +6,9 @@ use homeport_storage::{Db, SecretBox};
 use rusqlite::{OptionalExtension, Row};
 use serde::Serialize;
 
-use super::definition;
-use crate::error::{AppError, AppResult, ErrorCode};
+use homeport_core::error::{AppError, AppResult, ErrorCode};
+
+use crate::definition;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]

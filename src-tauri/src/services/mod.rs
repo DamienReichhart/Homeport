@@ -2,5 +2,4 @@
 //! are unit-testable without a running webview. Commands call into services.
 
 pub mod settings;
-pub mod stacks;
 pub mod updates;

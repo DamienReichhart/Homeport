@@ -14,7 +14,7 @@ use homeport_engine::{
     COMPOSE_PROJECT,
 };
 
-use crate::error::AppResult;
+use homeport_core::error::AppResult;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]

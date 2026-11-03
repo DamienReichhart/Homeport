@@ -4,6 +4,8 @@
 //! nothing secret is written to disk. TLS and SSH Hosts are reached through
 //! a [`proxy`] that exists only while the command runs.
 
+mod error;
+
 use std::{collections::VecDeque, process::Stdio, sync::Arc};
 
 use serde::{Deserialize, Serialize};
@@ -15,8 +17,10 @@ use tokio::{
 use homeport_core::{host::HostConnection, programs};
 use homeport_transport::{proxy, Dialer};
 
-use super::definition;
-use crate::error::{compose as errors, AppError, AppResult, ErrorCode};
+use homeport_core::error::{AppError, AppResult, ErrorCode};
+
+use self::error as errors;
+use crate::definition;
 
 /// Lines of stderr kept to explain a failed run.
 const STDERR_TAIL: usize = 40;
@@ -268,7 +272,7 @@ mod tests {
     use homeport_engine::testing;
     use homeport_transport::testing::UnixDialer;
 
-    use crate::services::stacks::lifecycle;
+    use crate::lifecycle;
 
     #[test]
     fn direct_hosts_are_passed_to_the_cli() {

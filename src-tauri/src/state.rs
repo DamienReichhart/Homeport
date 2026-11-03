@@ -6,9 +6,10 @@ use std::sync::{Arc, Mutex};
 use homeport_core::streams::Streams;
 use homeport_engine::containers::exec::ExecSessions;
 use homeport_hosts::service::HostService;
+use homeport_stacks::store::StackStore;
 use homeport_storage::SecretBox;
 
-use crate::services::{settings::SettingsService, stacks::store::StackStore};
+use crate::services::settings::SettingsService;
 
 pub struct AppState {
     pub secrets: Arc<SecretBox>,

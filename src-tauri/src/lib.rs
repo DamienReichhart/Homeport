@@ -7,16 +7,13 @@ mod services;
 mod state;
 
 use homeport_hosts::{registry::HostRegistry, service::HostService, store::HostStore};
+use homeport_stacks::store::StackStore;
 use homeport_storage::{Db, Keychain, SecretBox};
 use tauri::Manager;
 
 use std::sync::Arc;
 
-use crate::{
-    events::TauriNotifier,
-    services::{settings::SettingsService, stacks::store::StackStore},
-    state::AppState,
-};
+use crate::{events::TauriNotifier, services::settings::SettingsService, state::AppState};
 
 /// Size at which the log file is rotated.
 const LOG_FILE_BYTES: u128 = 5 * 1024 * 1024;

@@ -57,6 +57,7 @@ homeport-storage = { path = "crates/storage" }
 homeport-transport = { path = "crates/transport" }
 homeport-engine = { path = "crates/engine" }
 homeport-hosts = { path = "crates/hosts" }
+homeport-stacks = { path = "crates/stacks" }
 
 [profile.release]
 codegen-units = 1

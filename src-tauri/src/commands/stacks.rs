@@ -1,19 +1,16 @@
 use homeport_core::streams::StreamId;
 use homeport_engine::containers;
+use homeport_stacks::{
+    self as stacks,
+    compose::{self, ComposeAction, ComposeEvent, ComposeRun},
+    definition::{self, ComposeCheck},
+    lifecycle::{self, StackAction},
+    store::ManagedStack,
+    Stack,
+};
 use tauri::{ipc::Channel, State};
 
-use crate::{
-    error::AppResult,
-    services::stacks::{
-        self,
-        compose::{self, ComposeAction, ComposeEvent, ComposeRun},
-        definition::{self, ComposeCheck},
-        lifecycle::{self, StackAction},
-        store::ManagedStack,
-        Stack,
-    },
-    state::AppState,
-};
+use crate::{error::AppResult, state::AppState};
 
 /// Every Stack on a Host: those running there plus undeployed Managed Stacks.
 #[tauri::command]

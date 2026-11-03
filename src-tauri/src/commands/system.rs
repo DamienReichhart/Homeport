@@ -1,12 +1,12 @@
 use std::path::Path;
 
 use homeport_core::local_files;
+use homeport_stacks::compose::{self, ComposeCli};
 use serde::Serialize;
 use tauri::{AppHandle, Manager, State};
 
 use crate::{
     error::{self, AppError, AppResult},
-    services::stacks::compose::{self, ComposeCli},
     state::AppState,
 };
 

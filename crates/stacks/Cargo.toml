@@ -1,0 +1,29 @@
+[package]
+name = "homeport-stacks"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Homeport's Stacks: Compose projects found on a Host, and the Managed Stacks deployed with the compose CLI"
+publish = false
+
+[dependencies]
+homeport-core = { workspace = true, features = ["bollard"] }
+homeport-storage.workspace = true
+homeport-transport.workspace = true
+homeport-engine.workspace = true
+bollard.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_yaml_ng.workspace = true
+specta.workspace = true
+rusqlite.workspace = true
+uuid.workspace = true
+tempfile.workspace = true
+log.workspace = true
+
+[dev-dependencies]
+homeport-hosts.workspace = true
+homeport-engine = { workspace = true, features = ["test-support"] }
+homeport-transport = { workspace = true, features = ["test-support"] }
+serde_json.workspace = true

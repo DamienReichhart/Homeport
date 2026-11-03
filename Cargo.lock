@@ -2139,6 +2139,7 @@ dependencies = [
  "homeport-core",
  "homeport-engine",
  "homeport-hosts",
+ "homeport-stacks",
  "homeport-storage",
  "homeport-transport",
  "hyper",
@@ -2218,6 +2219,27 @@ dependencies = [
  "serde",
  "serde_json",
  "specta",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "homeport-stacks"
+version = "0.4.0"
+dependencies = [
+ "bollard",
+ "homeport-core",
+ "homeport-engine",
+ "homeport-hosts",
+ "homeport-storage",
+ "homeport-transport",
+ "log",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "serde_yaml_ng",
+ "specta",
+ "tempfile",
  "tokio",
  "uuid",
 ]
