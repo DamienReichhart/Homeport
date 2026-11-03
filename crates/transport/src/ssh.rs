@@ -17,10 +17,12 @@ use russh::{
 use tokio::sync::Mutex;
 
 use super::{BoxFuture, BoxStream, ConnectError, Dialer, CONNECT_TIMEOUT};
-use crate::{
-    error::{reach, AppError, ErrorCode},
-    services::hosts::{HostSecrets, SshAuth},
+use homeport_core::{
+    error::{AppError, ErrorCode},
+    host::{HostSecrets, SshAuth},
 };
+
+use crate::reach;
 
 /// A freshly generated Ed25519 keypair in OpenSSH formats.
 pub struct GeneratedKey {
@@ -536,7 +538,6 @@ impl client::Handler for ServerKeyCheck {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::error::ErrorCode;
 
     fn target() -> SshTarget {
         SshTarget {

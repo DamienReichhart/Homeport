@@ -2138,6 +2138,7 @@ dependencies = [
  "getrandom 0.3.4",
  "homeport-core",
  "homeport-storage",
+ "homeport-transport",
  "hyper",
  "hyper-util",
  "keyring",
@@ -2197,6 +2198,26 @@ dependencies = [
  "serde",
  "serde_json",
  "tempfile",
+]
+
+[[package]]
+name = "homeport-transport"
+version = "0.4.0"
+dependencies = [
+ "bollard",
+ "getrandom 0.3.4",
+ "homeport-core",
+ "hyper",
+ "hyper-util",
+ "log",
+ "russh",
+ "rustls",
+ "rustls-pki-types",
+ "tempfile",
+ "thiserror 2.0.21",
+ "tokio",
+ "tokio-rustls",
+ "uuid",
 ]
 
 [[package]]

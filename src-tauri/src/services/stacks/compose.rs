@@ -13,14 +13,12 @@ use tokio::{
 };
 
 use homeport_core::programs;
+use homeport_transport::{proxy, Dialer};
 
 use super::definition;
 use crate::{
     error::{compose as errors, AppError, AppResult, ErrorCode},
-    services::{
-        hosts::HostConnection,
-        transport::{proxy, Dialer},
-    },
+    services::hosts::HostConnection,
 };
 
 /// Lines of stderr kept to explain a failed run.

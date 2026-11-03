@@ -8,7 +8,9 @@ use tokio::net::TcpStream;
 use tokio_rustls::TlsConnector;
 
 use super::{BoxFuture, BoxStream, ConnectError, Dialer, CONNECT_TIMEOUT};
-use crate::error::{reach, AppError, ErrorCode};
+use homeport_core::error::{AppError, ErrorCode};
+
+use crate::reach;
 
 pub struct TlsDialer {
     /// The Host's name and address, for messages.

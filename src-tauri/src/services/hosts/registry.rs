@@ -13,14 +13,12 @@ use std::{
 
 use bollard::{query_parameters::EventsOptions, Docker};
 use futures_util::StreamExt;
+use homeport_transport::{self as transport, ConnectError, Connected, Dialer};
 use serde::Serialize;
 use tokio::task::JoinHandle;
 
 use super::{store::HostStore, HostId};
-use crate::{
-    error::{AppError, AppResult, ErrorCode},
-    services::transport::{self, ConnectError, Connected, Dialer},
-};
+use crate::error::{AppError, AppResult, ErrorCode};
 
 const PING_INTERVAL: Duration = Duration::from_secs(15);
 const MAX_BACKOFF_SECS: u32 = 60;

@@ -5,5 +5,4 @@ pub mod docker;
 pub mod hosts;
 pub mod settings;
 pub mod stacks;
-pub mod transport;
 pub mod updates;

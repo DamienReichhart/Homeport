@@ -3,9 +3,9 @@
 
 use std::{error::Error as StdError, io};
 
-pub use homeport_core::error::reach::{as_io, classified_cause, connection_lost, io_cause};
+pub use homeport_core::error::reach::{classified_cause, connection_lost, io_cause};
 use homeport_core::{
-    error::{chain, AppError, ErrorCode},
+    error::{chain, reach::as_io, AppError, ErrorCode},
     programs,
 };
 

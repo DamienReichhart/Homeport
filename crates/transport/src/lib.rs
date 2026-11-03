@@ -6,7 +6,10 @@
 //! compose CLI proxy (ADR 0001).
 
 pub mod proxy;
+pub mod reach;
 pub mod ssh;
+#[cfg(any(test, feature = "test-support"))]
+pub mod testing;
 pub mod tls;
 
 use std::{future::Future, io, pin::Pin, sync::Arc, time::Duration};
@@ -15,9 +18,9 @@ use bollard::{BollardRequest, Docker, API_DEFAULT_VERSION};
 use hyper_util::rt::TokioIo;
 use tokio::io::{AsyncRead, AsyncWrite};
 
-use crate::{
-    error::{reach, AppError, ErrorCode},
-    services::hosts::{HostConnection, HostSecrets},
+use homeport_core::{
+    error::{AppError, ErrorCode},
+    host::{HostConnection, HostSecrets},
 };
 
 /// Seconds bollard waits for a response before giving up.
@@ -267,7 +270,7 @@ pub(crate) fn docker_over(dialer: Arc<dyn Dialer>) -> Docker {
 #[cfg(all(test, unix))]
 mod tests {
     use super::*;
-    use crate::services::docker::testing::UnixDialer;
+    use crate::testing::UnixDialer;
 
     #[tokio::test]
     #[ignore = "needs a local Docker Engine"]

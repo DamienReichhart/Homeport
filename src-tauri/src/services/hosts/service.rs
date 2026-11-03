@@ -3,6 +3,7 @@
 
 use std::sync::Arc;
 
+use homeport_transport::{self as transport, ConnectError};
 use serde::{Deserialize, Serialize};
 
 use super::{
@@ -10,10 +11,7 @@ use super::{
     store::{HostDraft, HostStore},
     Host, HostConnection, HostSecrets, SshAuth,
 };
-use crate::{
-    error::{AppError, AppResult},
-    services::transport::{self, ConnectError},
-};
+use crate::error::{AppError, AppResult};
 
 /// Credentials typed by the user. Absent on update means "keep the stored ones".
 #[derive(Deserialize, specta::Type)]

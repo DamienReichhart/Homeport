@@ -96,7 +96,7 @@ pub fn open(dialer: Arc<dyn Dialer>) -> io::Result<Proxy> {
 #[cfg(all(test, unix))]
 mod tests {
     use super::*;
-    use crate::services::docker::testing::UnixDialer;
+    use crate::testing::UnixDialer;
 
     #[tokio::test]
     #[ignore = "needs a local Docker Engine"]

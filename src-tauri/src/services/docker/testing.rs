@@ -12,38 +12,8 @@ use futures_util::TryStreamExt;
 
 pub const IMAGE: &str = "alpine:3.22";
 
-/// Dials the local Engine socket, standing in for the TLS and SSH dialers.
 #[cfg(unix)]
-pub struct UnixDialer;
-
-#[cfg(unix)]
-impl crate::services::transport::Dialer for UnixDialer {
-    fn connect(
-        &self,
-    ) -> crate::services::transport::BoxFuture<
-        '_,
-        Result<(), crate::services::transport::ConnectError>,
-    > {
-        Box::pin(async { Ok(()) })
-    }
-    fn dial(
-        &self,
-    ) -> crate::services::transport::BoxFuture<
-        '_,
-        std::io::Result<crate::services::transport::BoxStream>,
-    > {
-        Box::pin(async {
-            let s = tokio::net::UnixStream::connect("/var/run/docker.sock").await?;
-            Ok(Box::new(s) as crate::services::transport::BoxStream)
-        })
-    }
-}
-
-/// A client whose requests go through [`UnixDialer`], like TLS and SSH Hosts.
-#[cfg(unix)]
-pub fn dialed_docker() -> Docker {
-    crate::services::transport::docker_over(std::sync::Arc::new(UnixDialer))
-}
+pub use homeport_transport::testing::{dialed_docker, UnixDialer};
 
 pub fn docker() -> Docker {
     Docker::connect_with_local_defaults().expect("local Engine socket")

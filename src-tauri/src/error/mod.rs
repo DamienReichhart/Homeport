@@ -2,7 +2,6 @@
 //! plus the failures of Tauri itself, which only the shell sees.
 
 pub mod compose;
-pub mod reach;
 
 pub use homeport_core::error::*;
 
