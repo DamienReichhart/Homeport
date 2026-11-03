@@ -164,4 +164,42 @@ describe('error handling', () => {
     expect(within(details).getByText(accessRefused.hint.text)).toBeInTheDocument();
     expect(within(details).getByText('permission_denied')).toBeInTheDocument();
   });
+
+  it('explains a host list that failed to load', async () => {
+    mockCommands({
+      ...baseCommands,
+      get_app_info: appInfo,
+      hosts_list: () => {
+        throw {
+          code: 'db_corrupt',
+          message: 'Homeport’s database is damaged.',
+          hint: null,
+          detail: 'file is not a database',
+        };
+      },
+    });
+    renderApp('/hosts');
+    const alert = await screen.findByRole('alert', {}, { timeout: 4000 });
+    expect(within(alert).getByText('Homeport’s database is damaged.')).toBeInTheDocument();
+    expect(within(alert).getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+  });
+
+  it('explains an event history that failed to load', async () => {
+    mockCommands({
+      ...baseCommands,
+      get_app_info: appInfo,
+      hosts_events: () => {
+        throw {
+          code: 'host_not_connected',
+          message: 'local isn’t connected.',
+          hint: null,
+          detail: null,
+        };
+      },
+    });
+    renderApp('/events');
+    const alert = await screen.findByRole('alert', {}, { timeout: 4000 });
+    expect(within(alert).getByText('local isn’t connected.')).toBeInTheDocument();
+    expect(within(alert).getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+  });
 });

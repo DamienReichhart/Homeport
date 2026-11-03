@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import type { HostView } from '@/shared/api';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
-import { DataTable, PageHeader, type ColumnDef } from '@/shared/ui';
+import { DataTable, ErrorMessage, PageHeader, type ColumnDef } from '@/shared/ui';
 import { useHosts } from '../api';
 import { connectionLabel, describeAddress } from '../status';
 import { HostStatusBadge } from './HostStatusBadge';
@@ -53,13 +53,17 @@ export function HostsPage() {
           </Button>
         }
       />
-      <DataTable
-        columns={columns}
-        data={hosts.data ?? []}
-        getRowId={(v) => v.host.id}
-        onRowClick={(v) => navigate(`/hosts/${v.host.id}`)}
-        empty="No hosts yet."
-      />
+      {hosts.error ? (
+        <ErrorMessage error={hosts.error} onRetry={() => void hosts.refetch()} />
+      ) : (
+        <DataTable
+          columns={columns}
+          data={hosts.data ?? []}
+          getRowId={(v) => v.host.id}
+          onRowClick={(v) => navigate(`/hosts/${v.host.id}`)}
+          empty="No hosts yet."
+        />
+      )}
     </div>
   );
 }
