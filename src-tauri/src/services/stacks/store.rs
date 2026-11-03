@@ -152,7 +152,7 @@ mod tests {
     use homeport_storage::KeyStore;
 
     use super::*;
-    use crate::services::hosts::{
+    use homeport_hosts::{
         store::{HostDraft, HostStore},
         HostConnection,
     };

@@ -6,6 +6,7 @@ mod events;
 mod services;
 mod state;
 
+use homeport_hosts::{registry::HostRegistry, service::HostService, store::HostStore};
 use homeport_storage::{Db, Keychain, SecretBox};
 use tauri::Manager;
 
@@ -13,11 +14,7 @@ use std::sync::Arc;
 
 use crate::{
     events::TauriNotifier,
-    services::{
-        hosts::{registry::HostRegistry, service::HostService, store::HostStore},
-        settings::SettingsService,
-        stacks::store::StackStore,
-    },
+    services::{settings::SettingsService, stacks::store::StackStore},
     state::AppState,
 };
 

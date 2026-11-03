@@ -6,12 +6,12 @@ use std::sync::Arc;
 use homeport_transport::{self as transport, ConnectError};
 use serde::{Deserialize, Serialize};
 
-use super::{
+use crate::{
     registry::{HostRegistry, HostStatus},
     store::{HostDraft, HostStore},
     Host, HostConnection, HostSecrets, SshAuth,
 };
-use crate::error::{AppError, AppResult};
+use homeport_core::error::{AppError, AppResult};
 
 /// Credentials typed by the user. Absent on update means "keep the stored ones".
 #[derive(Deserialize, specta::Type)]
@@ -309,8 +309,9 @@ mod tests {
     use homeport_storage::{Db, SecretBox};
 
     use super::*;
-    use crate::error::ErrorCode;
-    use crate::services::hosts::registry::{EngineEvent, Notifier};
+    use homeport_core::error::ErrorCode;
+
+    use crate::registry::{EngineEvent, Notifier};
 
     struct Silent;
     impl Notifier for Silent {

@@ -17,8 +17,8 @@ use homeport_transport::{self as transport, ConnectError, Connected, Dialer};
 use serde::Serialize;
 use tokio::task::JoinHandle;
 
-use super::{store::HostStore, HostId};
-use crate::error::{AppError, AppResult, ErrorCode};
+use crate::{store::HostStore, HostId};
+use homeport_core::error::{AppError, AppResult, ErrorCode};
 
 const PING_INTERVAL: Duration = Duration::from_secs(15);
 const MAX_BACKOFF_SECS: u32 = 60;
@@ -399,7 +399,7 @@ mod tests {
     use homeport_storage::{Db, SecretBox};
 
     use super::*;
-    use crate::services::hosts::{store::HostDraft, HostConnection};
+    use crate::{store::HostDraft, HostConnection};
 
     #[derive(Default)]
     struct Recorder(Mutex<Vec<HostStatus>>);

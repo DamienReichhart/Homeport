@@ -2138,6 +2138,7 @@ dependencies = [
  "getrandom 0.3.4",
  "homeport-core",
  "homeport-engine",
+ "homeport-hosts",
  "homeport-storage",
  "homeport-transport",
  "hyper",
@@ -2199,6 +2200,24 @@ dependencies = [
  "specta",
  "tar",
  "tempfile",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "homeport-hosts"
+version = "0.4.0"
+dependencies = [
+ "bollard",
+ "futures-util",
+ "gethostname",
+ "homeport-core",
+ "homeport-storage",
+ "homeport-transport",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "specta",
  "tokio",
  "uuid",
 ]

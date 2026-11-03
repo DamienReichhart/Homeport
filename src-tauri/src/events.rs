@@ -4,7 +4,7 @@ use serde::Serialize;
 use tauri::AppHandle;
 use tauri_specta::Event;
 
-use crate::services::hosts::registry::{EngineEvent, HostStatus, Notifier};
+use homeport_hosts::registry::{EngineEvent, HostStatus, Notifier};
 
 #[derive(Debug, Clone, Serialize, specta::Type, tauri_specta::Event)]
 #[serde(rename_all = "camelCase")]

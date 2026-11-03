@@ -50,6 +50,7 @@ homeport-core = { workspace = true, features = ["bollard", "russh"] }
 homeport-storage.workspace = true
 homeport-transport.workspace = true
 homeport-engine.workspace = true
+homeport-hosts.workspace = true
 
 [dev-dependencies]
 homeport-engine = { workspace = true, features = ["test-support"] }

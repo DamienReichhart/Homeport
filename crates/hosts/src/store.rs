@@ -5,8 +5,8 @@ use std::sync::Arc;
 use homeport_storage::{Db, SecretBox};
 use rusqlite::{OptionalExtension, Row};
 
-use super::{Host, HostConnection, HostId, HostSecrets};
-use crate::error::{AppError, AppResult, ErrorCode, Hint};
+use crate::{Host, HostConnection, HostId, HostSecrets};
+use homeport_core::error::{AppError, AppResult, ErrorCode, Hint};
 
 const COLUMNS: &str = "id, name, connection, enabled, host_key, created_at";
 
@@ -214,7 +214,7 @@ fn same_ssh_server(a: &HostConnection, b: &HostConnection) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::services::hosts::SshAuth;
+    use crate::SshAuth;
 
     fn store() -> HostStore {
         HostStore::new(

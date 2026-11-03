@@ -4,7 +4,7 @@ use std::{path::Path, time::Duration};
 
 use serde::Serialize;
 
-use super::HostConnection;
+use crate::HostConnection;
 use homeport_transport as transport;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]

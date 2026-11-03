@@ -12,14 +12,11 @@ use tokio::{
     process::Command,
 };
 
-use homeport_core::programs;
+use homeport_core::{host::HostConnection, programs};
 use homeport_transport::{proxy, Dialer};
 
 use super::definition;
-use crate::{
-    error::{compose as errors, AppError, AppResult, ErrorCode},
-    services::hosts::HostConnection,
-};
+use crate::error::{compose as errors, AppError, AppResult, ErrorCode};
 
 /// Lines of stderr kept to explain a failed run.
 const STDERR_TAIL: usize = 40;
