@@ -1,4 +1,4 @@
-import type { Hint } from '@/shared/api';
+import { commandLines, type Hint } from '@/shared/api';
 import { FitAddon } from '@xterm/addon-fit';
 import { SearchAddon } from '@xterm/addon-search';
 import { Terminal, type ITheme } from '@xterm/xterm';
@@ -173,8 +173,7 @@ export function terminalError(error: { message: string; hint: Hint | null }): st
   const lines = [`\x1b[31m${error.message}\x1b[39m`];
   if (error.hint) {
     lines.push(`\x1b[2m${error.hint.text}\x1b[22m`);
-    for (const command of error.hint.commands)
-      lines.push(...command.split('\n').map((l) => `\x1b[2m  $ ${l}\x1b[22m`));
+    lines.push(...commandLines(error.hint).map((l) => `\x1b[2m${l}\x1b[22m`));
   }
   return `${lines.join('\r\n')}\r\n`;
 }

@@ -40,7 +40,7 @@ export function ComposeRunDialog({
   const [result, setResult] = useState<'running' | 'ok' | 'failed'>('running');
   const [failure, setFailure] = useState<AppError | null>(null);
   const fail = (error: unknown) => {
-    setFailure(toAppError(error).withContext({ command: 'stacksComposeSubscribe' }));
+    setFailure(toAppError(error));
     setResult('failed');
   };
   if (!job) return null;

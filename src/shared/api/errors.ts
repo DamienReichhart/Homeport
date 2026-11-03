@@ -4,9 +4,8 @@ export type { AppErrorPayload };
 
 /** Where a failure happened, for the Details dialog and bug reports. */
 export interface ErrorContext {
-  /** The backend command that failed, e.g. `containers_act`. */
+  /** The backend command that failed, as named in `commands`, e.g. `containersAct`. */
   command?: string;
-  hostId?: string;
   at: Date;
 }
 
@@ -73,6 +72,11 @@ export function toAppError(error: unknown): AppError {
 /** The message of a failure Homeport didn't expect; the details say more. */
 export const UNEXPECTED = 'Something unexpected went wrong.';
 
+/** The hint's commands as shell prompt lines (`  $ …`), one per line of each command. */
+export function commandLines(hint: Hint): string[] {
+  return hint.commands.flatMap((command) => command.split('\n').map((l) => `  $ ${l}`));
+}
+
 /**
  * Everything known about a failure as plain text, ready to paste into a bug
  * report. `app` adds the version and platform when known.
@@ -88,8 +92,7 @@ export function errorReport(error: AppError, app?: AppInfo): string {
   ];
   if (error.hint) {
     lines.push('', `What to do: ${error.hint.text}`);
-    for (const command of error.hint.commands)
-      lines.push(...command.split('\n').map((l) => `  $ ${l}`));
+    lines.push(...commandLines(error.hint));
   }
   if (error.detail) lines.push('', 'Detail:', error.detail);
   return lines.join('\n');

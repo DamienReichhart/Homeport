@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
-import { logFailure, toAppError } from './shared/api';
+import { logFailure, toAppError } from '@/shared/api';
 import './shared/styles/global.css';
 
 // Anything that escapes React and the command wrapper still reaches the log.

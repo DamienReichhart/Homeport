@@ -43,7 +43,7 @@ export function ErrorDetailsHost() {
 
 function ErrorDetailsDialog({ error, onClose }: { error: AppError; onClose: () => void }) {
   const app = useQuery({ queryKey: keys.appInfo, queryFn: () => commands.getAppInfo() });
-  const [logFailure, setLogFailure] = useState<AppError | null>(null);
+  const [openLogError, setOpenLogError] = useState<AppError | null>(null);
   const facts: [string, string][] = [
     ['Code', error.code],
     ...(error.context.command ? [['Command', error.context.command] as [string, string]] : []),
@@ -82,7 +82,7 @@ function ErrorDetailsDialog({ error, onClose }: { error: AppError; onClose: () =
               </pre>
             </div>
           )}
-          {logFailure && <p className="text-destructive text-sm">{logFailure.message}</p>}
+          {openLogError && <p className="text-destructive text-sm">{openLogError.message}</p>}
         </div>
         <DialogFooter>
           <Button
@@ -90,8 +90,8 @@ function ErrorDetailsDialog({ error, onClose }: { error: AppError; onClose: () =
             onClick={() =>
               commands
                 .openLogFolder()
-                .then(() => setLogFailure(null))
-                .catch((e: unknown) => setLogFailure(toAppError(e)))
+                .then(() => setOpenLogError(null))
+                .catch((e: unknown) => setOpenLogError(toAppError(e)))
             }
           >
             <FolderOpenIcon />
