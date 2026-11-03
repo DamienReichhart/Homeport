@@ -1,18 +1,16 @@
 use homeport_core::streams::StreamId;
+use homeport_engine::containers;
 use tauri::{ipc::Channel, State};
 
 use crate::{
     error::AppResult,
-    services::{
-        docker::containers,
-        stacks::{
-            self,
-            compose::{self, ComposeAction, ComposeEvent, ComposeRun},
-            definition::{self, ComposeCheck},
-            lifecycle::{self, StackAction},
-            store::ManagedStack,
-            Stack,
-        },
+    services::stacks::{
+        self,
+        compose::{self, ComposeAction, ComposeEvent, ComposeRun},
+        definition::{self, ComposeCheck},
+        lifecycle::{self, StackAction},
+        store::ManagedStack,
+        Stack,
     },
     state::AppState,
 };

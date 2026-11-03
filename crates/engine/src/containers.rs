@@ -13,8 +13,8 @@ use bollard::{
 };
 use serde::{Deserialize, Serialize};
 
-use super::{COMPOSE_PROJECT, COMPOSE_SERVICE};
-use crate::error::{AppError, AppResult, ErrorCode};
+use crate::{COMPOSE_PROJECT, COMPOSE_SERVICE};
+use homeport_core::error::{AppError, AppResult, ErrorCode};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -205,7 +205,7 @@ mod tests {
     use bollard::models::{ContainerSummaryStateEnum, PortSummary};
 
     use super::*;
-    use crate::services::docker::testing;
+    use crate::testing;
 
     #[test]
     fn summaries_are_flattened_for_display() {

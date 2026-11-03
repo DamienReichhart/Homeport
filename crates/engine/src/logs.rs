@@ -43,8 +43,12 @@ pub struct LogLine {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum LogEvent {
-    Lines { lines: Vec<LogLine> },
-    Error { error: crate::error::AppError },
+    Lines {
+        lines: Vec<LogLine>,
+    },
+    Error {
+        error: homeport_core::error::AppError,
+    },
     End,
 }
 
@@ -133,7 +137,7 @@ pub async fn stream(
                     }
                 }
                 Some((_, Err(e))) => {
-                    sink(LogEvent::Error { error: crate::error::AppError::from(e).logged("log stream") });
+                    sink(LogEvent::Error { error: homeport_core::error::AppError::from(e).logged("log stream") });
                     break;
                 }
                 None => break,
@@ -165,7 +169,7 @@ mod tests {
     use std::sync::{Arc, Mutex};
 
     use super::*;
-    use crate::services::docker::{containers, testing};
+    use crate::{containers, testing};
 
     #[test]
     fn lines_survive_arbitrary_chunking() {

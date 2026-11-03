@@ -55,6 +55,7 @@ tauri-plugin-updater = "2"
 homeport-core = { path = "crates/core" }
 homeport-storage = { path = "crates/storage" }
 homeport-transport = { path = "crates/transport" }
+homeport-engine = { path = "crates/engine" }
 
 [profile.release]
 codegen-units = 1

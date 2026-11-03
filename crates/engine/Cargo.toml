@@ -1,0 +1,29 @@
+[package]
+name = "homeport-engine"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "The resources of a Docker Engine (containers, images, volumes, networks…) as plain functions over a bollard client"
+publish = false
+
+[features]
+# Helpers that create (and clean up) throwaway resources on the local Engine.
+test-support = ["dep:uuid"]
+
+[dependencies]
+homeport-core = { workspace = true, features = ["bollard"] }
+bollard.workspace = true
+tokio.workspace = true
+futures-util.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+specta.workspace = true
+tar.workspace = true
+shell-words.workspace = true
+uuid = { workspace = true, optional = true }
+
+[dev-dependencies]
+homeport-transport = { workspace = true, features = ["test-support"] }
+uuid.workspace = true
+tempfile.workspace = true

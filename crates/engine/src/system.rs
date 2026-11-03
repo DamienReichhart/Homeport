@@ -6,8 +6,8 @@ use bollard::{
 };
 use serde::{Deserialize, Serialize};
 
-use super::{images, networks, volumes};
-use crate::error::AppResult;
+use crate::{images, networks, volumes};
+use homeport_core::error::AppResult;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -156,7 +156,7 @@ pub async fn prune(docker: &Docker, selection: PruneSelection) -> AppResult<Syst
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::services::docker::testing;
+    use crate::testing;
 
     #[tokio::test]
     #[ignore = "needs a local Docker Engine"]

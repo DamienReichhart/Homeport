@@ -12,8 +12,8 @@ use bollard::{
 };
 use serde::{Deserialize, Serialize};
 
-use super::{images::PruneReport, COMPOSE_PROJECT};
-use crate::error::{AppError, AppResult};
+use crate::{images::PruneReport, COMPOSE_PROJECT};
+use homeport_core::error::{AppError, AppResult};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -129,7 +129,7 @@ mod tests {
     };
 
     use super::*;
-    use crate::services::docker::testing;
+    use crate::testing;
 
     #[tokio::test]
     #[ignore = "needs a local Docker Engine"]

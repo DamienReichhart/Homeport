@@ -23,7 +23,7 @@ use tokio::{
     task::AbortHandle,
 };
 
-use crate::error::{AppError, AppResult, ErrorCode};
+use homeport_core::error::{AppError, AppResult, ErrorCode};
 
 /// Starts bash when the image has it, sh otherwise.
 const DEFAULT_SHELL: &str = "if [ -x /bin/bash ]; then exec /bin/bash; else exec /bin/sh; fi";
@@ -202,7 +202,7 @@ pub async fn pump(session: Arc<ExecSession>, mut output: Output, sink: impl Fn(E
 /// Shells answer 127 for a command they can't find and 126 for one they
 /// can't run; in a container that usually means a minimal image.
 fn exit_error(code: Option<i64>) -> Option<AppError> {
-    matches!(code, Some(126 | 127)).then(crate::error::engine::command_not_found)
+    matches!(code, Some(126 | 127)).then(homeport_core::error::engine::command_not_found)
 }
 
 pub type SessionId = u32;
@@ -258,11 +258,11 @@ mod tests {
     use std::time::Duration;
 
     use super::*;
-    use crate::services::docker::{containers, testing};
+    use crate::{containers, testing};
 
     #[test]
     fn exits_that_mean_the_command_couldnt_run_are_explained() {
-        use crate::error::ErrorCode;
+        use homeport_core::error::ErrorCode;
         assert_eq!(exit_error(Some(127)).unwrap().code, ErrorCode::NoShell);
         assert_eq!(exit_error(Some(126)).unwrap().code, ErrorCode::NoShell);
         assert!(exit_error(Some(1)).is_none());
@@ -336,6 +336,6 @@ mod tests {
     #[tokio::test]
     #[ignore = "needs a local Docker Engine"]
     async fn shells_run_interactively_over_dialed_streams() {
-        run_shell(testing::dialed_docker()).await;
+        run_shell(homeport_transport::testing::dialed_docker()).await;
     }
 }

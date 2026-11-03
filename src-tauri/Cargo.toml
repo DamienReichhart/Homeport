@@ -49,6 +49,8 @@ tauri-plugin-updater.workspace = true
 homeport-core = { workspace = true, features = ["bollard", "russh"] }
 homeport-storage.workspace = true
 homeport-transport.workspace = true
+homeport-engine.workspace = true
 
 [dev-dependencies]
+homeport-engine = { workspace = true, features = ["test-support"] }
 homeport-transport = { workspace = true, features = ["test-support"] }

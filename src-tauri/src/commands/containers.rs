@@ -2,14 +2,12 @@ use std::path::{Path, PathBuf};
 
 use tauri::State;
 
-use crate::{
-    error::AppResult,
-    services::docker::{
-        containers::{self, Container, ContainerAction, Processes},
-        files::{self, FileEntry},
-    },
-    state::AppState,
+use homeport_engine::{
+    containers::{self, Container, ContainerAction, Processes},
+    files::{self, FileEntry},
 };
+
+use crate::{error::AppResult, state::AppState};
 
 #[tauri::command]
 #[specta::specta]

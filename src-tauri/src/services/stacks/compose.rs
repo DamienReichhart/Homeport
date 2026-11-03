@@ -268,7 +268,10 @@ async fn execute(job: ComposeRun, sink: &impl Fn(ComposeEvent) -> bool) -> AppRe
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::services::{docker::testing, stacks::lifecycle};
+    use homeport_engine::testing;
+    use homeport_transport::testing::UnixDialer;
+
+    use crate::services::stacks::lifecycle;
 
     #[test]
     fn direct_hosts_are_passed_to_the_cli() {
@@ -382,7 +385,7 @@ mod tests {
     async fn managed_stacks_deploy_through_the_proxy() {
         // TLS hosts always go through the proxy; the dialer stands in for the real one.
         deploys_and_tears_down(
-            Some(Arc::new(testing::UnixDialer)),
+            Some(Arc::new(UnixDialer)),
             HostConnection::Tls {
                 address: "unused:2376".into(),
             },

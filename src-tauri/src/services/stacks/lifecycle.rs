@@ -9,13 +9,12 @@ use bollard::{
 };
 use serde::Deserialize;
 
-use crate::{
-    error::AppResult,
-    services::docker::{
-        containers::{self, Container, ContainerAction},
-        COMPOSE_PROJECT,
-    },
+use homeport_engine::{
+    containers::{self, Container, ContainerAction},
+    COMPOSE_PROJECT,
 };
+
+use crate::error::AppResult;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]

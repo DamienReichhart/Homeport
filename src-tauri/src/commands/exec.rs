@@ -1,10 +1,8 @@
 use tauri::{ipc::Channel, State};
 
-use crate::{
-    error::AppResult,
-    services::docker::exec::{self, ExecEvent, ExecOptions, SessionId},
-    state::AppState,
-};
+use homeport_engine::exec::{self, ExecEvent, ExecOptions, SessionId};
+
+use crate::{error::AppResult, state::AppState};
 
 #[tauri::command]
 #[specta::specta]

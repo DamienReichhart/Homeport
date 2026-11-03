@@ -1,15 +1,13 @@
 use homeport_core::streams::StreamId;
 use tauri::{ipc::Channel, State};
 
-use crate::{
-    error::AppResult,
-    services::docker::{
-        images::{self, PullEvent},
-        logs::{self, LogEvent, LogOptions, LogSource},
-        stats::{self, ContainerUsage, StatsSample},
-    },
-    state::AppState,
+use homeport_engine::{
+    images::{self, PullEvent},
+    logs::{self, LogEvent, LogOptions, LogSource},
+    stats::{self, ContainerUsage, StatsSample},
 };
+
+use crate::{error::AppResult, state::AppState};
 
 /// Stops a stream started by any `*_subscribe` command.
 #[tauri::command]

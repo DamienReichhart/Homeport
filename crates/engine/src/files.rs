@@ -18,7 +18,7 @@ use bollard::{
 use futures_util::StreamExt;
 use serde::Serialize;
 
-use crate::error::{local_file, AppError, AppResult, ErrorCode};
+use homeport_core::error::{local_file, AppError, AppResult, ErrorCode};
 
 /// Go's `os.ModeDir`, as reported by the archive stat endpoint.
 const GO_MODE_DIR: u32 = 1 << 31;
@@ -274,7 +274,7 @@ mod tests {
         let e = listing_failure("/root", "find: '/root': Permission denied");
         assert_eq!(e.code, ErrorCode::ContainerPermissionDenied);
     }
-    use crate::services::docker::{containers, testing};
+    use crate::{containers, testing};
 
     #[test]
     fn listings_put_directories_first() {

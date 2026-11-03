@@ -12,9 +12,6 @@ use futures_util::TryStreamExt;
 
 pub const IMAGE: &str = "alpine:3.22";
 
-#[cfg(unix)]
-pub use homeport_transport::testing::{dialed_docker, UnixDialer};
-
 pub fn docker() -> Docker {
     Docker::connect_with_local_defaults().expect("local Engine socket")
 }

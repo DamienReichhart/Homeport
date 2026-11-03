@@ -212,7 +212,7 @@ mod tests {
     };
 
     use super::*;
-    use crate::services::docker::{containers, testing};
+    use crate::{containers, testing};
 
     fn cpu(total: u64, system: u64) -> ContainerCpuStats {
         ContainerCpuStats {

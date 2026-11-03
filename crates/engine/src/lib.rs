@@ -13,7 +13,7 @@ pub mod stats;
 pub mod system;
 pub mod volumes;
 
-#[cfg(test)]
+#[cfg(any(test, feature = "test-support"))]
 pub mod testing;
 
 /// Compose labels that tie a container to its Stack.

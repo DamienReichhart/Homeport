@@ -14,8 +14,8 @@ use bollard::{
 };
 use serde::{Deserialize, Serialize};
 
-use super::{images::PruneReport, COMPOSE_PROJECT};
-use crate::error::{AppError, AppResult};
+use crate::{images::PruneReport, COMPOSE_PROJECT};
+use homeport_core::error::{AppError, AppResult};
 
 /// Networks every Engine creates; they can't be removed.
 pub const BUILT_IN: [&str; 3] = ["bridge", "host", "none"];
@@ -189,7 +189,7 @@ pub async fn prune(docker: &Docker) -> AppResult<PruneReport> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::services::docker::testing;
+    use crate::testing;
 
     #[tokio::test]
     #[ignore = "needs a local Docker Engine"]

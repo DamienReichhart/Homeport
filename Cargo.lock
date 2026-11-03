@@ -2137,6 +2137,7 @@ dependencies = [
  "gethostname",
  "getrandom 0.3.4",
  "homeport-core",
+ "homeport-engine",
  "homeport-storage",
  "homeport-transport",
  "hyper",
@@ -2182,6 +2183,24 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.21",
  "tokio",
+]
+
+[[package]]
+name = "homeport-engine"
+version = "0.4.0"
+dependencies = [
+ "bollard",
+ "futures-util",
+ "homeport-core",
+ "homeport-transport",
+ "serde",
+ "serde_json",
+ "shell-words",
+ "specta",
+ "tar",
+ "tempfile",
+ "tokio",
+ "uuid",
 ]
 
 [[package]]

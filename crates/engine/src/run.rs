@@ -12,8 +12,8 @@ use bollard::{
 };
 use serde::Deserialize;
 
-use super::{containers, images};
-use crate::error::{AppError, AppResult};
+use crate::{containers, images};
+use homeport_core::error::{AppError, AppResult};
 
 #[derive(Debug, Clone, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -182,8 +182,8 @@ pub async fn run(docker: &Docker, spec: RunSpec) -> AppResult<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::error::ErrorCode;
-    use crate::services::docker::testing;
+    use crate::testing;
+    use homeport_core::error::ErrorCode;
 
     fn spec() -> RunSpec {
         RunSpec {

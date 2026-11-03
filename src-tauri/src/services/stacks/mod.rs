@@ -13,7 +13,7 @@ use std::collections::BTreeMap;
 
 use serde::Serialize;
 
-use crate::services::docker::containers::Container;
+use homeport_engine::containers::Container;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "lowercase")]
