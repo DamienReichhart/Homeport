@@ -1,6 +1,7 @@
+use homeport_settings::Settings;
 use tauri::State;
 
-use crate::{error::AppResult, services::settings::Settings, state::AppState};
+use crate::{error::AppResult, state::AppState};
 
 #[tauri::command]
 #[specta::specta]

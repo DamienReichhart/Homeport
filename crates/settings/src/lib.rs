@@ -1,11 +1,13 @@
+//! The user's preferences (theme, last Host, update checks), kept as one JSON
+//! document in the database.
+
 use std::{fs, path::Path, sync::Arc};
 
 use rusqlite::OptionalExtension;
 use serde::{Deserialize, Serialize};
 
+use homeport_core::error::AppResult;
 use homeport_storage::Db;
-
-use crate::error::AppResult;
 
 const SETTINGS_KEY: &str = "settings";
 

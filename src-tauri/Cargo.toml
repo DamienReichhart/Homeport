@@ -52,6 +52,7 @@ homeport-transport.workspace = true
 homeport-engine.workspace = true
 homeport-hosts.workspace = true
 homeport-stacks.workspace = true
+homeport-settings.workspace = true
 
 [dev-dependencies]
 homeport-engine = { workspace = true, features = ["test-support"] }
