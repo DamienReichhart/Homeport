@@ -1,4 +1,4 @@
-export { AppError, toAppError } from './errors';
+export { AppError, errorReport, toAppError } from './errors';
 export type { AppErrorPayload, ErrorContext } from './errors';
 export { logFailure } from './log';
 export { commands } from './invoke';

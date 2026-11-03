@@ -3,6 +3,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { HostProvider } from '@/features/hosts';
 import { settingsApi } from '@/features/settings';
 import { applyTheme } from '@/shared/lib';
+import { ErrorDetailsHost } from '@/shared/ui';
 import { Toaster } from '@/shared/ui/sonner';
 import { TooltipProvider } from '@/shared/ui/tooltip';
 import { LiveUpdates } from './LiveUpdates';
@@ -34,6 +35,7 @@ export function AppProviders({ children, client }: { children: ReactNode; client
           {children}
         </HostProvider>
         <Toaster richColors />
+        <ErrorDetailsHost />
       </TooltipProvider>
     </QueryClientProvider>
   );

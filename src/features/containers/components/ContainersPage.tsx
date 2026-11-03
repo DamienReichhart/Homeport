@@ -30,7 +30,6 @@ import {
   containerTone,
   useConfirm,
 } from '@/shared/ui';
-import { toAppError } from '@/shared/api';
 import { useContainerMutations, useContainers, useUsage } from '../api';
 import { groupByStack, portLabels } from '../grouping';
 import { ContainerMenu, removeConfirmation } from './ContainerMenu';
@@ -65,7 +64,8 @@ function ContainersList({ hostId }: { hostId: string }) {
   const [running, setRunning] = useState(false);
 
   if (containers.isPending) return <Spinner />;
-  if (containers.error) return <ErrorMessage error={toAppError(containers.error)} />;
+  if (containers.error)
+    return <ErrorMessage error={containers.error} onRetry={() => void containers.refetch()} />;
 
   const all = containers.data;
   const { groups, standalone } = groupByStack(all, query, onlyRunning);

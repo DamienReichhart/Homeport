@@ -1,4 +1,4 @@
-import type { AppError as AppErrorPayload, ErrorCode, Hint } from './bindings';
+import type { AppError as AppErrorPayload, AppInfo, ErrorCode, Hint } from './bindings';
 
 export type { AppErrorPayload };
 
@@ -63,4 +63,26 @@ export function toAppError(error: unknown): AppError {
       detail: error.stack ?? null,
     });
   return new AppError({ code: 'unknown', message: String(error) });
+}
+
+/**
+ * Everything known about a failure as plain text, ready to paste into a bug
+ * report. `app` adds the version and platform when known.
+ */
+export function errorReport(error: AppError, app?: AppInfo): string {
+  const lines = [
+    app ? `${app.name} ${app.version} on ${app.os} ${app.arch}` : 'Homeport',
+    `When: ${error.context.at.toISOString()}`,
+    ...(error.context.command ? [`Command: ${error.context.command}`] : []),
+    `Code: ${error.code}`,
+    '',
+    error.message,
+  ];
+  if (error.hint) {
+    lines.push('', `What to do: ${error.hint.text}`);
+    for (const command of error.hint.commands)
+      lines.push(...command.split('\n').map((l) => `  $ ${l}`));
+  }
+  if (error.detail) lines.push('', 'Detail:', error.detail);
+  return lines.join('\n');
 }
