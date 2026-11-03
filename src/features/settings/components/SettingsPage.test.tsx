@@ -43,15 +43,17 @@ describe('settings diagnostics', () => {
       get_app_info: appInfo,
       get_capabilities: () => ({
         keychain: true,
-        compose: null,
-        composeProblem: {
-          code: 'compose_missing',
-          message: 'The Docker CLI is installed without its compose plugin.',
-          hint: {
-            text: 'Install the compose plugin.',
-            commands: ['sudo apt-get install docker-compose-plugin'],
+        compose: {
+          state: 'unavailable',
+          problem: {
+            code: 'compose_missing',
+            message: 'The Docker CLI is installed without its compose plugin.',
+            hint: {
+              text: 'Install the compose plugin.',
+              commands: ['sudo apt-get install docker-compose-plugin'],
+            },
+            detail: null,
           },
-          detail: null,
         },
       }),
       open_log_folder: () => {

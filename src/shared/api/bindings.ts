@@ -138,10 +138,8 @@ export type AvailableUpdate = {
 export type Capabilities = {
 	/**  An OS keychain is reachable, so SSH, TLS and stack `.env` secrets can be stored. */
 	keychain: boolean,
-	/**  The compose CLI used to deploy Managed Stacks, if installed. */
-	compose: ComposeCli | null,
-	/**  Why there is no usable compose CLI, and how to install one. */
-	composeProblem: AppError | null,
+	/**  Whether Managed Stacks can be deployed here. */
+	compose: ComposeSupport,
 };
 
 export type ComposeAction = 
@@ -170,6 +168,11 @@ export type ComposeCli = {
 export type ComposeEvent = { type: "line"; text: string } | 
 /**  `error` explains a failed exit, from the end of stderr. */
 { type: "exit"; success: boolean; code: number | null; error: AppError | null } | { type: "error"; error: AppError };
+
+/**  The compose CLI used to deploy Managed Stacks, or why there's none. */
+export type ComposeSupport = { state: "available"; cli: ComposeCli } | 
+/**  `problem` says what's missing and how to install it. */
+{ state: "unavailable"; problem: AppError };
 
 export type Container = {
 	id: string,

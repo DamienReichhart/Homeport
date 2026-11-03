@@ -8,7 +8,18 @@ describe('app', () => {
     mockCommands({
       get_settings: () => ({ theme: 'system', lastHostId: null }),
       update_settings: ({ settings }) => settings,
-      get_capabilities: () => ({ keychain: true, compose: null }),
+      get_capabilities: () => ({
+        keychain: true,
+        compose: {
+          state: 'unavailable',
+          problem: {
+            code: 'compose_missing',
+            message: 'No compose CLI.',
+            hint: null,
+            detail: null,
+          },
+        },
+      }),
       get_app_info: () => ({ name: 'Homeport', version: '0.2.0', os: 'linux', arch: 'x86_64' }),
       hosts_list: () => [connectedHost],
       system_info: () => ({
@@ -47,7 +58,18 @@ describe('app', () => {
   it('warns when no keychain is available', async () => {
     mockCommands({
       get_settings: () => ({ theme: 'system', lastHostId: null }),
-      get_capabilities: () => ({ keychain: false, compose: null }),
+      get_capabilities: () => ({
+        keychain: false,
+        compose: {
+          state: 'unavailable',
+          problem: {
+            code: 'compose_missing',
+            message: 'No compose CLI.',
+            hint: null,
+            detail: null,
+          },
+        },
+      }),
       hosts_list: () => [],
     });
     renderApp('/settings');
@@ -59,7 +81,18 @@ describe('first launch', () => {
   it('offers the engines found on this machine', async () => {
     mockCommands({
       get_settings: () => ({ theme: 'system', lastHostId: null }),
-      get_capabilities: () => ({ keychain: true, compose: null }),
+      get_capabilities: () => ({
+        keychain: true,
+        compose: {
+          state: 'unavailable',
+          problem: {
+            code: 'compose_missing',
+            message: 'No compose CLI.',
+            hint: null,
+            detail: null,
+          },
+        },
+      }),
       hosts_list: () => [],
       hosts_detect_local: () => [
         { label: 'Docker Engine', socketPath: '/var/run/docker.sock', engineVersion: '29.1' },

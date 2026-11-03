@@ -32,7 +32,8 @@ function NewStack({ hostId }: { hostId: string }) {
       else navigate(`/stacks/${encodeURIComponent(stack.name)}`);
     },
   });
-  const canDeploy = !!capabilities.data?.compose && check !== null && check.errors.length === 0;
+  const canDeploy =
+    capabilities.data?.compose.state === 'available' && check !== null && check.errors.length === 0;
 
   return (
     <div className="grid gap-4">
@@ -87,8 +88,8 @@ function NewStack({ hostId }: { hostId: string }) {
           Cancel
         </Button>
       </div>
-      {capabilities.data?.composeProblem && (
-        <ErrorMessage error={capabilities.data.composeProblem} />
+      {capabilities.data?.compose.state === 'unavailable' && (
+        <ErrorMessage error={capabilities.data.compose.problem} />
       )}
       <ComposeRunDialog
         hostId={hostId}

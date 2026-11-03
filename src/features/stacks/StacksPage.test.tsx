@@ -9,7 +9,10 @@ describe('stacks page', () => {
       ...baseCommands,
       get_capabilities: () => ({
         keychain: true,
-        compose: { program: 'docker', prefix: ['compose'], version: '5.6.1' },
+        compose: {
+          state: 'available',
+          cli: { program: 'docker', prefix: ['compose'], version: '5.6.1' },
+        },
       }),
       stacks_list: () => [
         {

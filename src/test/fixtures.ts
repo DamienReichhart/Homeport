@@ -41,7 +41,18 @@ export function container(name: string, stack: string | null, state = 'running')
 export const baseCommands = {
   get_settings: () => ({ theme: 'system', lastHostId: 'h1', checkForUpdates: true }),
   update_settings: ({ settings }: Record<string, unknown>) => settings,
-  get_capabilities: () => ({ keychain: true, compose: null, composeProblem: null }),
+  get_capabilities: () => ({
+    keychain: true,
+    compose: {
+      state: 'unavailable',
+      problem: {
+        code: 'compose_missing',
+        message: 'The docker compose CLI isn’t installed on this computer.',
+        hint: null,
+        detail: null,
+      },
+    },
+  }),
   hosts_list: () => [connectedHost],
   stream_cancel: () => null,
   updates_check: () => ({ currentVersion: '0.3.0', available: null, method: { kind: 'inApp' } }),

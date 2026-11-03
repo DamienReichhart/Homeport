@@ -65,23 +65,32 @@ pub fn get_licenses(app: AppHandle) -> AppResult<Licenses> {
 pub struct Capabilities {
     /// An OS keychain is reachable, so SSH, TLS and stack `.env` secrets can be stored.
     keychain: bool,
-    /// The compose CLI used to deploy Managed Stacks, if installed.
-    compose: Option<ComposeCli>,
-    /// Why there is no usable compose CLI, and how to install one.
-    compose_problem: Option<AppError>,
+    /// Whether Managed Stacks can be deployed here.
+    compose: ComposeSupport,
+}
+
+/// The compose CLI used to deploy Managed Stacks, or why there's none.
+#[derive(Debug, Serialize, specta::Type)]
+#[serde(
+    tag = "state",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase"
+)]
+pub enum ComposeSupport {
+    Available { cli: ComposeCli },
+    /// `problem` says what's missing and how to install it.
+    Unavailable { problem: AppError },
 }
 
 #[tauri::command]
 #[specta::specta]
 pub async fn get_capabilities(state: State<'_, AppState>) -> Result<Capabilities, ()> {
-    let (compose, compose_problem) = match compose::detect().await {
-        Ok(cli) => (Some(cli), None),
-        Err(problem) => (None, Some(problem)),
-    };
     Ok(Capabilities {
         keychain: state.secrets.is_available(),
-        compose,
-        compose_problem,
+        compose: match compose::detect().await {
+            Ok(cli) => ComposeSupport::Available { cli },
+            Err(problem) => ComposeSupport::Unavailable { problem },
+        },
     })
 }
 

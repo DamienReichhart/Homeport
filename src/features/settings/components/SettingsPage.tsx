@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UpdatesCard } from '@/features/updates';
-import { commands, keys, type Settings } from '@/shared/api';
+import { commands, keys, type ComposeSupport, type Settings } from '@/shared/api';
 import { applyTheme, type Theme } from '@/shared/lib';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
@@ -95,25 +95,7 @@ export function SettingsPage() {
                       : 'Unavailable — SSH keys, TLS certificates and stack environments can’t be stored.'}
                   </span>,
                 ],
-                [
-                  'Compose CLI',
-                  <div className="grid gap-2">
-                    <span className="inline-flex items-center gap-1.5">
-                      <StatusDot tone={capabilities.data.compose ? 'success' : 'warning'} />
-                      {capabilities.data.compose
-                        ? `${capabilities.data.compose.program} ${capabilities.data.compose.prefix.join(' ')} ${capabilities.data.compose.version}`
-                        : (capabilities.data.composeProblem?.message ?? 'Not found.')}
-                    </span>
-                    {!capabilities.data.compose && (
-                      <span className="text-muted-foreground">
-                        Stacks can be started and stopped, but not deployed.
-                      </span>
-                    )}
-                    {capabilities.data.composeProblem?.hint && (
-                      <HintView hint={capabilities.data.composeProblem.hint} />
-                    )}
-                  </div>,
-                ],
+                ['Compose CLI', <ComposeStatus compose={capabilities.data.compose} />],
               ]}
             />
           )}
@@ -145,6 +127,31 @@ export function SettingsPage() {
         </CardContent>
       </Card>
       <LicensesDialog open={licensesOpen} onOpenChange={setLicensesOpen} />
+    </div>
+  );
+}
+
+/** The compose CLI found, or what's missing and how to install it. */
+function ComposeStatus({ compose }: { compose: ComposeSupport }) {
+  if (compose.state === 'available') {
+    const { program, prefix, version } = compose.cli;
+    return (
+      <span className="inline-flex items-center gap-1.5">
+        <StatusDot tone="success" />
+        {`${program} ${prefix.join(' ')} ${version}`}
+      </span>
+    );
+  }
+  return (
+    <div className="grid gap-2">
+      <span className="inline-flex items-center gap-1.5">
+        <StatusDot tone="warning" />
+        {compose.problem.message}
+      </span>
+      <span className="text-muted-foreground">
+        Stacks can be started and stopped, but not deployed.
+      </span>
+      {compose.problem.hint && <HintView hint={compose.problem.hint} />}
     </div>
   );
 }

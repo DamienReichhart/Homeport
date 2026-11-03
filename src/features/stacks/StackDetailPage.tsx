@@ -97,7 +97,8 @@ function ManagedDefinition({
       if (deploy) onDeploy({ stackId: saved.id, name: saved.name, action: 'up' });
     },
   });
-  const canDeploy = !!capabilities.data?.compose && check !== null && check.errors.length === 0;
+  const canDeploy =
+    capabilities.data?.compose.state === 'available' && check !== null && check.errors.length === 0;
   return (
     <div className="grid gap-4">
       <StackEditor
