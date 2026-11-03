@@ -11,7 +11,13 @@ import {
   type Installer,
   type Os,
 } from '../lib/releases';
-import { href, RELEASES_URL, REPO, REPO_URL } from '../lib/site';
+import {
+  COMING_LATER,
+  INSTALL_COMMAND,
+  INSTALL_SCRIPT_URL,
+  MANUAL_SETUP,
+} from '../lib/repository';
+import { href, ISSUES_URL, RELEASES_URL, REPO, REPO_URL } from '../lib/site';
 
 const release = await getLatestRelease();
 const prerelease = (await getReleases()).find(
@@ -47,7 +53,7 @@ function formatsFor(os: Os): { format: Installer['format']; files: Installer[] }
 
 <SiteLayout
   title="Download Homeport"
-  description="Download Homeport for Windows, macOS and Linux — x64 and ARM installers, with checksums and build provenance."
+  description="Download Homeport for Windows, macOS and Linux — x64 and ARM installers and Linux package repositories, with checksums and build provenance."
 >
   <section class="download-hero">
     <div class="container">
@@ -96,6 +102,54 @@ function formatsFor(os: Os): { format: Installer['format']; files: Installer[] }
                 Your system
               </span>
             </header>
+            {platform.os === 'linux' && (
+              <div class="repo">
+                <div class="repo__intro">
+                  <strong>Quick install</strong>
+                  <span>
+                    Adds the Homeport package repository and installs Homeport, so apt, dnf or
+                    zypper keeps it up to date.
+                  </span>
+                </div>
+                <div class="command">
+                  <pre class="code-block"><code>{INSTALL_COMMAND}</code></pre>
+                  <button
+                    type="button"
+                    class="button button--secondary button--small"
+                    data-copy={INSTALL_COMMAND}
+                  >
+                    Copy
+                  </button>
+                </div>
+                <p class="repo__note">
+                  <a href={INSTALL_SCRIPT_URL}>Read the script</a> first if you like, or set the
+                  repository up yourself:
+                </p>
+                <details class="repo__manual">
+                  <summary>Manual setup</summary>
+                  {MANUAL_SETUP.map((setup) => (
+                    <div class="repo__distro">
+                      <strong>{setup.label}</strong>
+                      <span>{setup.distributions}</span>
+                      <div class="command">
+                        <pre class="code-block"><code>{setup.commands}</code></pre>
+                        <button
+                          type="button"
+                          class="button button--secondary button--small"
+                          data-copy={setup.commands}
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </details>
+                <p class="repo__note">
+                  Or download a package below. The <code>.deb</code> and <code>.rpm</code> add the
+                  repository too, so they get updates as well.
+                </p>
+              </div>
+            )}
             {formatsFor(platform.os).length > 0 ? (
               <ul class="files">
                 {formatsFor(platform.os).map(({ format, files }) => (
@@ -194,6 +248,21 @@ function formatsFor(os: Os): { format: Installer['format']; files: Installer[] }
       </section>
 
       <section class="card info prose">
+        <h2>Staying up to date</h2>
+        <p>
+          On Windows, macOS and with the AppImage, Homeport tells you when a new version is out and
+          installs it when you choose. Every update is signed and checked before it's installed.
+        </p>
+        <p>
+          The <code>.deb</code> and <code>.rpm</code> packages update with the rest of your system,
+          from the Homeport package repository.
+        </p>
+        <p>
+          <a href={href('/docs/reference/updating/')}>How updates work</a>
+        </p>
+      </section>
+
+      <section class="card info prose">
         <h2>Verify your download</h2>
         <p>
           Every release is built by GitHub Actions from the public source, with a SHA-256 checksum
@@ -229,6 +298,17 @@ function formatsFor(os: Os): { format: Installer['format']; files: Installer[] }
           <span>MIT licensed, on GitHub.</span>
         </a>
       </div>
+      <h3 class="more__later">Coming later</h3>
+      <ul class="later">
+        {
+          COMING_LATER.map((channel) => (
+            <li>
+              <a href={`${ISSUES_URL}/${channel.issue}`}>{channel.name}</a>
+              <span>{channel.what}</span>
+            </li>
+          ))
+        }
+      </ul>
     </section>
   </div>
 </SiteLayout>
@@ -237,6 +317,15 @@ function formatsFor(os: Os): { format: Installer['format']; files: Installer[] }
   import { detectPlatform } from '../lib/platform';
 
   const NAMES: Record<string, string> = { windows: 'Windows', macos: 'macOS', linux: 'Linux' };
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy]')) {
+    button.addEventListener('click', () => {
+      void navigator.clipboard.writeText(button.dataset.copy ?? '').then(() => {
+        button.textContent = 'Copied';
+        setTimeout(() => (button.textContent = 'Copy'), 1500);
+      });
+    });
+  }
 
   void detectPlatform().then(({ os, arch }) => {
     if (os === 'other') return;
@@ -444,7 +533,7 @@ function formatsFor(os: Os): { format: Installer['format']; files: Installer[] }
   .info-grid {
     display: grid;
     gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
     margin-top: 3rem;
   }
   .info {
@@ -464,8 +553,78 @@ function formatsFor(os: Os): { format: Installer['format']; files: Installer[] }
     word-break: break-word;
   }
 
+  .repo {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 1px solid color-mix(in srgb, var(--hp-primary) 45%, transparent);
+    border-radius: var(--hp-radius);
+    background: color-mix(in srgb, var(--hp-primary) 5%, var(--hp-bg-raised));
+  }
+  .repo__intro {
+    display: grid;
+    gap: 0.15rem;
+  }
+  .repo__intro span,
+  .repo__note,
+  .repo__distro > span {
+    color: var(--hp-text-muted);
+    font-size: 0.825rem;
+    line-height: 1.45;
+  }
+  .repo__note code {
+    font-size: 0.75rem;
+  }
+  .command {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem;
+    align-items: start;
+  }
+  .command .code-block {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    white-space: pre;
+  }
+  .repo__manual summary {
+    width: fit-content;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .repo__distro {
+    display: grid;
+    gap: 0.3rem;
+    margin-top: 0.85rem;
+  }
+  .repo__distro strong {
+    font-size: 0.875rem;
+  }
+
   .more {
     margin-top: 4rem;
+  }
+  .more__later {
+    margin: 2rem 0 0.75rem;
+    font-size: 1.05rem;
+  }
+  .later {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .later li {
+    display: grid;
+    gap: 0.1rem;
+    font-size: 0.9rem;
+  }
+  .later span {
+    color: var(--hp-text-muted);
+    font-size: 0.8rem;
   }
   .more h2 {
     margin-bottom: 1.25rem;
