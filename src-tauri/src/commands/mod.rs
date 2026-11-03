@@ -20,6 +20,7 @@ pub mod streams;
 pub mod system;
 
 /// Path of the generated bindings, relative to the `src-tauri` crate root.
+#[cfg(any(debug_assertions, test))]
 pub const BINDINGS_PATH: &str = "../src/shared/api/bindings.ts";
 
 pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
@@ -103,6 +104,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
         ])
 }
 
+#[cfg(any(debug_assertions, test))]
 pub fn export_bindings(path: impl AsRef<std::path::Path>) {
     builder()
         .export(
