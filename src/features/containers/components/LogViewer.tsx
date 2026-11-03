@@ -20,7 +20,7 @@ import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { Toggle } from '@/shared/ui/toggle';
-import { XTerm, type XTermHandle } from '@/shared/ui';
+import { SEARCH_DECORATIONS, XTerm, type XTermHandle } from '@/shared/ui';
 
 const TAILS = [
   { value: '100', label: 'Last 100' },
@@ -128,14 +128,7 @@ export function LogViewer({ hostId, sources }: { hostId: string; sources: LogSou
   const find = (forward: boolean) => {
     const search = handle.current?.search;
     if (!search || !query) return;
-    const options = {
-      decorations: {
-        matchOverviewRuler: '#888',
-        activeMatchColorOverviewRuler: '#f59e0b',
-        matchBackground: '#f59e0b55',
-        activeMatchBackground: '#f59e0b',
-      },
-    };
+    const options = { decorations: SEARCH_DECORATIONS };
     if (forward) search.findNext(query, options);
     else search.findPrevious(query, options);
   };

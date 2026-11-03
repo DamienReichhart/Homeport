@@ -6,18 +6,66 @@ import { useEffect, useRef } from 'react';
 import { useResolvedTheme } from '@/shared/lib/theme';
 import { cn } from '@/shared/lib/utils';
 
+// Homeport's terminal palettes, derived from the brand hues (docs/BRAND.md).
+// xterm.js needs hex, so these mirror the CSS tokens rather than reading them.
 const LIGHT: ITheme = {
   background: '#ffffff',
-  foreground: '#1f2328',
-  cursor: '#1f2328',
-  selectionBackground: '#b6d3ff',
+  foreground: '#0f1926',
+  cursor: '#006aa5',
+  cursorAccent: '#ffffff',
+  selectionBackground: '#c3e3f9',
+  black: '#0f1926',
+  red: '#c2272d',
+  green: '#007e46',
+  yellow: '#a06604',
+  blue: '#0062a6',
+  magenta: '#8c399e',
+  cyan: '#00778d',
+  white: '#989fa8',
+  brightBlack: '#545f6c',
+  brightRed: '#de3b3d',
+  brightGreen: '#0e9254',
+  brightYellow: '#b77610',
+  brightBlue: '#0077c2',
+  brightMagenta: '#a44bb8',
+  brightCyan: '#008aa3',
+  brightWhite: '#b9bec4',
 };
 const DARK: ITheme = {
-  background: '#0d1117',
-  foreground: '#e6edf3',
-  cursor: '#e6edf3',
-  selectionBackground: '#264f78',
+  background: '#080e16',
+  foreground: '#e2e9ee',
+  cursor: '#f8842d',
+  cursorAccent: '#080e16',
+  selectionBackground: '#1f405b',
+  black: '#212935',
+  red: '#f66c6d',
+  green: '#54cc8e',
+  yellow: '#eec05b',
+  blue: '#55aee8',
+  magenta: '#c889d7',
+  cyan: '#66cfe1',
+  white: '#d2d8dd',
+  brightBlack: '#677380',
+  brightRed: '#ff8d8b',
+  brightGreen: '#7ae4aa',
+  brightYellow: '#fddb7c',
+  brightBlue: '#80c7f8',
+  brightMagenta: '#dda7ea',
+  brightCyan: '#94e3f1',
+  brightWhite: '#f6f9fb',
 };
+
+/** Search highlights in Beacon orange, for `SearchAddon.findNext`/`findPrevious`. */
+export const SEARCH_DECORATIONS = {
+  matchOverviewRuler: '#989fa8',
+  activeMatchColorOverviewRuler: '#f8842d',
+  matchBackground: '#f8842d55',
+  activeMatchBackground: '#f8842d',
+};
+
+const FONT_SIZE = 12;
+const MONO = "'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+const MONO_FALLBACK = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
 
 export interface XTermHandle {
   terminal: Terminal;
@@ -52,12 +100,15 @@ export function XTerm({
   useEffect(() => {
     const el = host.current;
     if (!el) return;
+    // xterm measures its cells once, so start on the fallback until Geist Mono is in.
+    const fonts = typeof document.fonts === 'undefined' ? undefined : document.fonts;
+    const fontReady = fonts?.check(`${FONT_SIZE}px 'Geist Mono Variable'`) ?? true;
     const term = new Terminal({
       convertEol: readOnly,
       cursorBlink: !readOnly,
       disableStdin: readOnly,
-      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-      fontSize: 12,
+      fontFamily: fontReady ? MONO : MONO_FALLBACK,
+      fontSize: FONT_SIZE,
       scrollback: 50_000,
       allowProposedApi: true,
     });
@@ -75,6 +126,13 @@ export function XTerm({
       }
     };
     doFit();
+    if (!fontReady) {
+      void fonts?.load(`${FONT_SIZE}px 'Geist Mono Variable'`).then(() => {
+        if (terminal.current !== term) return;
+        term.options.fontFamily = MONO;
+        doFit();
+      });
+    }
     const resize = term.onResize(({ cols, rows }) => callbacks.current.onResize?.(cols, rows));
     const observer = new ResizeObserver(doFit);
     observer.observe(el);
@@ -97,7 +155,7 @@ export function XTerm({
     <div
       className={cn(
         'h-full min-h-0 overflow-hidden rounded-md border p-2',
-        resolved === 'dark' ? 'bg-[#0d1117]' : 'bg-white',
+        resolved === 'dark' ? 'bg-[#080e16]' : 'bg-white',
         className,
       )}
     >
