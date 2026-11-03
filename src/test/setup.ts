@@ -15,6 +15,11 @@ window.matchMedia ??= (query: string) =>
     dispatchEvent: () => false,
   }) as MediaQueryList;
 
+// jsdom has no pointer capture; sonner's swipe handling calls it on toast clicks.
+Element.prototype.setPointerCapture ??= () => {};
+Element.prototype.releasePointerCapture ??= () => {};
+Element.prototype.hasPointerCapture ??= () => false;
+
 afterEach(async () => {
   cleanup();
   // Event listeners unregister asynchronously on unmount; let them finish first.

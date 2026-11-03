@@ -2,7 +2,7 @@ import { BoxesIcon, PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { HostGate } from '@/features/hosts';
-import { toAppError, type Stack } from '@/shared/api';
+import { type Stack } from '@/shared/api';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import {
@@ -87,7 +87,8 @@ function StacksList({ hostId }: { hostId: string }) {
   ];
 
   if (stacks.isPending) return <Spinner />;
-  if (stacks.error) return <ErrorMessage error={toAppError(stacks.error)} />;
+  if (stacks.error)
+    return <ErrorMessage error={stacks.error} onRetry={() => void stacks.refetch()} />;
   return (
     <div>
       <PageHeader

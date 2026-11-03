@@ -5,14 +5,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { LogViewer, useContainers } from '@/features/containers';
 import { HostGate, useCapabilities } from '@/features/hosts';
-import {
-  commands,
-  keys,
-  toAppError,
-  type ComposeCheck,
-  type ManagedStack,
-  type Stack,
-} from '@/shared/api';
+import { commands, keys, type ComposeCheck, type ManagedStack, type Stack } from '@/shared/api';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
@@ -96,6 +89,7 @@ function ManagedDefinition({
   const [check, setCheck] = useState<ComposeCheck | null>(null);
   const dirty = compose !== managed.compose || env !== initialEnv;
   const save = useMutation({
+    meta: { silent: true },
     mutationFn: () => commands.stacksUpdate(managed.id, compose, env),
     onSuccess: async (saved, deploy: boolean) => {
       await client.invalidateQueries({ queryKey: keys.managedStack(managed.id) });
@@ -114,7 +108,7 @@ function ManagedDefinition({
         keychain={capabilities.data?.keychain ?? true}
         onCheck={setCheck}
       />
-      {save.error && <ErrorMessage error={toAppError(save.error)} />}
+      {save.error && <ErrorMessage error={save.error} />}
       <div className="flex flex-wrap gap-2">
         <Button disabled={save.isPending || !canDeploy} onClick={() => save.mutate(true)}>
           Save and redeploy
@@ -197,8 +191,9 @@ function Definition({
       </Card>
     );
   }
-  if (managed.error) return <ErrorMessage error={toAppError(managed.error)} />;
-  if (env.error) return <ErrorMessage error={toAppError(env.error)} />;
+  if (managed.error)
+    return <ErrorMessage error={managed.error} onRetry={() => void managed.refetch()} />;
+  if (env.error) return <ErrorMessage error={env.error} onRetry={() => void env.refetch()} />;
   if (!managed.data || env.data === undefined) return <Spinner />;
   return (
     <ManagedDefinition
@@ -220,7 +215,11 @@ function StackDetail({ hostId, name }: { hostId: string; name: string }) {
 
   if (stacks.isPending) return <Spinner />;
   if (!stack)
-    return <ErrorMessage error={new Error(`There is no stack named ${name} on this host.`)} />;
+    return (
+      <ErrorMessage
+        error={{ code: 'not_found', message: `There is no stack named ${name} on this host.` }}
+      />
+    );
   const sources = stack.services.flatMap((s) =>
     s.containerIds.map((containerId) => ({ containerId, label: s.name })),
   );

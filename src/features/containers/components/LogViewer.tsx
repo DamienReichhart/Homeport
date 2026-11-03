@@ -7,20 +7,13 @@ import {
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import {
-  commands,
-  subscribe,
-  toAppError,
-  type LogEvent,
-  type LogLine,
-  type LogSource,
-} from '@/shared/api';
+import { commands, subscribe, type LogEvent, type LogLine, type LogSource } from '@/shared/api';
 import { pickSavePath } from '@/shared/lib';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { Toggle } from '@/shared/ui/toggle';
-import { SEARCH_DECORATIONS, XTerm, type XTermHandle } from '@/shared/ui';
+import { SEARCH_DECORATIONS, XTerm, type XTermHandle, toastError } from '@/shared/ui';
 
 const TAILS = [
   { value: '100', label: 'Last 100' },
@@ -220,7 +213,7 @@ export function LogViewer({ hostId, sources }: { hostId: string; sources: LogSou
                 await commands.writeTextFile(path, `${kept.current.join('\n')}\n`);
                 toast.success('Logs saved');
               } catch (e) {
-                toast.error(toAppError(e).message);
+                toastError(e);
               }
             }}
           >

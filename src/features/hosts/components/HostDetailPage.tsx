@@ -3,7 +3,7 @@ import { RefreshCwIcon, ShieldAlertIcon, ShieldQuestionIcon, TrashIcon } from 'l
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { commands, keys, toAppError, type HostView } from '@/shared/api';
+import { commands, keys, type HostView } from '@/shared/api';
 import { Alert, AlertDescription, AlertTitle } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
@@ -155,7 +155,8 @@ export function HostDetailPage() {
   const hosts = useHosts();
   const view = hosts.data?.find((h) => h.host.id === hostId);
   if (hosts.isPending) return <Spinner />;
-  if (!view) return <ErrorMessage error={new Error('This host no longer exists.')} />;
+  if (!view)
+    return <ErrorMessage error={{ code: 'not_found', message: 'This host no longer exists.' }} />;
   // Keyed so the form starts from this host's saved settings.
   return <HostDetail key={hostId} view={view} />;
 }
@@ -170,6 +171,7 @@ function HostDetail({ view }: { view: HostView }) {
 
   const refresh = () => client.invalidateQueries({ queryKey: keys.hosts });
   const save = useMutation({
+    meta: { silent: true },
     mutationFn: (f: HostFormState) => commands.hostsUpdate(hostId, toHostInput(f, true)),
     onSuccess: async () => {
       await refresh();
@@ -239,7 +241,7 @@ function HostDetail({ view }: { view: HostView }) {
               keychain={capabilities.data?.keychain ?? true}
             />
           )}
-          {save.error && <ErrorMessage error={toAppError(save.error)} />}
+          {save.error && <ErrorMessage error={save.error} />}
           <Button
             className="justify-self-start"
             disabled={!form || save.isPending}

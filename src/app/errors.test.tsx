@@ -1,6 +1,6 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { baseCommands, container } from '@/test/fixtures';
+import { baseCommands, connectedHost, container } from '@/test/fixtures';
 import { mockCommands } from '@/test/ipc';
 import { renderApp } from '@/test/render';
 
@@ -55,5 +55,46 @@ describe('error handling', () => {
     await user.keyboard('{Escape}');
     await user.click(within(alert).getByRole('button', { name: 'Retry' }));
     expect(await screen.findByText('redis')).toBeInTheDocument();
+  });
+
+  it('turns a failure nobody handles into a toast with details', async () => {
+    mockCommands({
+      ...baseCommands,
+      get_app_info: appInfo,
+      hosts_list: () => [
+        {
+          ...connectedHost,
+          status: {
+            state: 'unreachable',
+            retryInSecs: 30,
+            error: {
+              code: 'connection_refused',
+              message: 'prod.example:2375 refused the connection.',
+              hint: null,
+              detail: 'Connection refused (os error 111)',
+            },
+          },
+        },
+      ],
+      hosts_reconnect: () => {
+        throw {
+          code: 'db_locked',
+          message: 'Homeport’s database is busy.',
+          hint: { text: 'Another Homeport may be running.', commands: [] },
+          detail: 'database is locked',
+        };
+      },
+    });
+    const user = userEvent.setup();
+    renderApp('/containers');
+
+    await user.click(await screen.findByRole('button', { name: /Retry now/ }));
+    expect(await screen.findByText('Homeport’s database is busy.')).toBeInTheDocument();
+    expect(screen.getByText('Another Homeport may be running.')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Details' }));
+    const details = await screen.findByRole('dialog');
+    expect(within(details).getByText('db_locked')).toBeInTheDocument();
+    expect(within(details).getByText('hostsReconnect')).toBeInTheDocument();
   });
 });

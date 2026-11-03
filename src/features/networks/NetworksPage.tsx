@@ -11,7 +11,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { useContainers } from '@/features/containers';
 import { HostGate } from '@/features/hosts';
-import { commands, keys, toAppError, type NetworkInput, type NetworkView } from '@/shared/api';
+import { commands, keys, type NetworkInput, type NetworkView } from '@/shared/api';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
@@ -30,6 +30,7 @@ import {
   Spinner,
   useConfirm,
   type ColumnDef,
+  toastError,
 } from '@/shared/ui';
 
 const emptyNetwork: NetworkInput = {
@@ -53,6 +54,7 @@ function CreateNetworkDialog({
   const client = useQueryClient();
   const [input, setInput] = useState<NetworkInput>(emptyNetwork);
   const create = useMutation({
+    meta: { silent: true },
     mutationFn: () => commands.networksCreate(hostId, input),
     onSuccess: async () => {
       await client.invalidateQueries({ queryKey: keys.networks(hostId) });
@@ -127,7 +129,7 @@ function CreateNetworkDialog({
             />
             <Label htmlFor="net-attachable">Attachable</Label>
           </div>
-          {create.error && <ErrorMessage error={toAppError(create.error)} />}
+          {create.error && <ErrorMessage error={create.error} />}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancel
@@ -167,7 +169,7 @@ function NetworkDialog({
       onClose();
       toast.success('Connected');
     },
-    onError: (e) => toast.error(toAppError(e).message),
+    onError: (e) => toastError(e),
   });
   const disconnect = useMutation({
     mutationFn: (container: string) =>
@@ -177,7 +179,7 @@ function NetworkDialog({
       onClose();
       toast.success('Disconnected');
     },
-    onError: (e) => toast.error(toAppError(e).message),
+    onError: (e) => toastError(e),
   });
   const candidates = containers.data?.filter((c) => !network.containers.includes(c.name)) ?? [];
 
@@ -271,7 +273,7 @@ function NetworksList({ hostId }: { hostId: string }) {
           await commands.networksRemove(hostId, n.id);
           toast.success(`Removed ${n.name}`);
         } catch (e) {
-          toast.error(toAppError(e).message);
+          toastError(e);
         }
         await refresh();
       },
@@ -337,7 +339,8 @@ function NetworksList({ hostId }: { hostId: string }) {
   ];
 
   if (networks.isPending) return <Spinner />;
-  if (networks.error) return <ErrorMessage error={toAppError(networks.error)} />;
+  if (networks.error)
+    return <ErrorMessage error={networks.error} onRetry={() => void networks.refetch()} />;
   return (
     <div>
       <PageHeader

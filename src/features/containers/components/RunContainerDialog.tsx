@@ -3,7 +3,7 @@ import { PlusIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { commands, keys, toAppError, type RestartPolicy } from '@/shared/api';
+import { commands, keys, type RestartPolicy } from '@/shared/api';
 import { Button } from '@/shared/ui/button';
 import { Checkbox } from '@/shared/ui/checkbox';
 import {
@@ -56,6 +56,7 @@ export function RunContainerDialog({
     enabled: open,
   });
   const run = useMutation({
+    meta: { silent: true },
     mutationFn: () => commands.containersRun(hostId, toRunSpec(form)),
     onSuccess: async (id) => {
       toast.success('Container started');
@@ -334,7 +335,7 @@ export function RunContainerDialog({
             <Label htmlFor="run-rm">Remove the container when it exits</Label>
           </div>
 
-          {run.error && <ErrorMessage error={toAppError(run.error)} />}
+          {run.error && <ErrorMessage error={run.error} />}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancel

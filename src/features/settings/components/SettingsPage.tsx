@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UpdatesCard } from '@/features/updates';
-import { commands, keys, toAppError, type Settings } from '@/shared/api';
+import { commands, keys, type Settings } from '@/shared/api';
 import { applyTheme, type Theme } from '@/shared/lib';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
@@ -27,6 +27,7 @@ export function SettingsPage() {
   const info = useQuery({ queryKey: keys.appInfo, queryFn: () => commands.getAppInfo() });
   const [licensesOpen, setLicensesOpen] = useState(false);
   const save = useMutation({
+    meta: { silent: true },
     mutationFn: (next: Settings) => settingsApi.update(next),
     onSuccess: (saved) => {
       applyTheme(saved.theme ?? 'system');
@@ -35,7 +36,8 @@ export function SettingsPage() {
   });
 
   if (settings.isPending) return <Spinner />;
-  if (settings.error) return <ErrorMessage error={toAppError(settings.error)} />;
+  if (settings.error)
+    return <ErrorMessage error={settings.error} onRetry={() => void settings.refetch()} />;
 
   return (
     <div className="grid max-w-2xl gap-4">
@@ -61,7 +63,7 @@ export function SettingsPage() {
               ))}
             </SelectContent>
           </Select>
-          {save.error && <ErrorMessage error={toAppError(save.error)} />}
+          {save.error && <ErrorMessage error={save.error} />}
         </CardContent>
       </Card>
       <UpdatesCard settings={settings.data} onChange={(next) => save.mutate(next)} />

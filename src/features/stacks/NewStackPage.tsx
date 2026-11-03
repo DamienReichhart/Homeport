@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { HostGate, useCapabilities } from '@/features/hosts';
-import { commands, keys, toAppError, type ComposeCheck } from '@/shared/api';
+import { commands, keys, type ComposeCheck } from '@/shared/api';
 import { Alert, AlertDescription, AlertTitle } from '@/shared/ui/alert';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -24,6 +24,7 @@ function NewStack({ hostId }: { hostId: string }) {
   const [job, setJob] = useState<ComposeJob | null>(null);
 
   const save = useMutation({
+    meta: { silent: true },
     mutationFn: () => commands.stacksCreate(hostId, name, compose, env),
     onSuccess: async (stack, deploy: boolean) => {
       await client.invalidateQueries({ queryKey: keys.stacks(hostId) });
@@ -70,7 +71,7 @@ function NewStack({ hostId }: { hostId: string }) {
         keychain={capabilities.data?.keychain ?? true}
         onCheck={setCheck}
       />
-      {save.error && <ErrorMessage error={toAppError(save.error)} />}
+      {save.error && <ErrorMessage error={save.error} />}
       <div className="flex gap-2">
         <Button disabled={save.isPending || !canDeploy || !name} onClick={() => save.mutate(true)}>
           Save and deploy

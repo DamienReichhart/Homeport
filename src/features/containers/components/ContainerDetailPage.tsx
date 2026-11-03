@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { HostGate } from '@/features/hosts';
-import { commands, keys, toAppError } from '@/shared/api';
+import { commands, keys } from '@/shared/api';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
@@ -60,7 +60,7 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
   if (!container) {
     return (
       <div className="grid gap-3">
-        <ErrorMessage error={new Error('This container no longer exists.')} />
+        <ErrorMessage error={{ code: 'not_found', message: 'This container no longer exists.' }} />
         <Button
           variant="outline"
           className="justify-self-start"
@@ -155,7 +155,7 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
           {inspect.data ? (
             <InspectTab inspect={inspect.data} />
           ) : inspect.error ? (
-            <ErrorMessage error={toAppError(inspect.error)} />
+            <ErrorMessage error={inspect.error} onRetry={() => void inspect.refetch()} />
           ) : (
             <Spinner />
           )}

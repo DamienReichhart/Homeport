@@ -1,6 +1,7 @@
 export { ErrorMessage } from './ErrorMessage';
 export { ErrorDetailsHost, showErrorDetails } from './ErrorDetails';
 export { HintView } from './HintView';
+export { toastError } from './toastError';
 export { Spinner } from './Spinner';
 export { ConfirmDialog, useConfirm, type ConfirmOptions } from './ConfirmDialog';
 export { CopyButton } from './CopyButton';
