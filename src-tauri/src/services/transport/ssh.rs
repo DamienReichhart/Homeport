@@ -131,13 +131,9 @@ impl Credentials {
     }
 }
 
-impl SshTarget {
-    fn address(&self) -> String {
-        format!("{}:{}", self.host, self.port)
-    }
-}
-
 pub struct SshTarget {
+    /// The Host's name and SSH address, for messages.
+    pub label: String,
     pub host: String,
     pub port: u16,
     pub user: String,
@@ -178,7 +174,7 @@ impl SshDialer {
             .map_err(|_| {
                 ConnectError::Unreachable(AppError::new(
                     ErrorCode::Timeout,
-                    format!("{}:{} didn't answer in time.", t.host, t.port),
+                    format!("{} didn't answer in time.", t.label),
                 ))
             })?;
 
@@ -188,7 +184,7 @@ impl SshDialer {
                 let presented = presented.lock().expect("lock poisoned").take();
                 return Err(match presented {
                     Some(key) => host_key_error(t.trusted_host_key.as_deref(), &key),
-                    None => ConnectError::from(reach::ssh(&t.address(), &e)),
+                    None => ConnectError::from(reach::ssh(&t.label, &e)),
                 });
             }
         };
@@ -198,12 +194,12 @@ impl SshDialer {
                 let hash = session
                     .best_supported_rsa_hash()
                     .await
-                    .map_err(|e| ConnectError::from(reach::ssh(&t.address(), &e)))?
+                    .map_err(|e| ConnectError::from(reach::ssh(&t.label, &e)))?
                     .flatten();
                 session
                     .authenticate_publickey(&t.user, PrivateKeyWithHashAlg::new(key.clone(), hash))
                     .await
-                    .map_err(|e| ConnectError::from(reach::ssh(&t.address(), &e)))?
+                    .map_err(|e| ConnectError::from(reach::ssh(&t.label, &e)))?
                     .success()
             }
             Credentials::Agent => authenticate_with_agent(&mut session, &t.user).await?,

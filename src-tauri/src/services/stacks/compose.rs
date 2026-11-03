@@ -131,6 +131,8 @@ pub fn direct_docker_host(connection: &HostConnection) -> Option<String> {
 
 pub struct ComposeRun {
     pub cli: ComposeCli,
+    /// The Host's name, for messages.
+    pub host_name: String,
     pub connection: HostConnection,
     pub dialer: Option<Arc<dyn Dialer>>,
     pub project: String,
@@ -163,13 +165,19 @@ async fn execute(job: ComposeRun, sink: &impl Fn(ComposeEvent) -> bool) -> AppRe
         Some(host) => (host, None),
         None => {
             let dialer = job.dialer.ok_or_else(|| {
-                AppError::new(ErrorCode::HostNotConnected, "The host isn't connected.")
-                    .with_hint("Wait for it to connect, then try again.")
+                AppError::new(
+                    ErrorCode::HostNotConnected,
+                    format!("{} isn't connected.", job.host_name),
+                )
+                .with_hint("Wait for it to connect, then try again.")
             })?;
             let proxy = proxy::open(dialer).map_err(|e| {
                 AppError::new(
                     ErrorCode::Io,
-                    "Homeport couldn't open the private connection compose uses to reach the host.",
+                    format!(
+                        "Homeport couldn't open the private connection compose uses to reach {}.",
+                        job.host_name
+                    ),
                 )
                 .with_cause(&e)
             })?;
@@ -230,8 +238,13 @@ async fn execute(job: ComposeRun, sink: &impl Fn(ComposeEvent) -> bool) -> AppRe
     }
     let status = child.wait().await?;
     let error = (!status.success()).then(|| {
-        errors::exit_failure(job.action.verb(), status.code(), tail.make_contiguous())
-            .logged("compose run")
+        errors::exit_failure(
+            &job.host_name,
+            job.action.verb(),
+            status.code(),
+            tail.make_contiguous(),
+        )
+        .logged("compose run")
     });
     sink(ComposeEvent::Exit {
         success: status.success(),
@@ -281,6 +294,7 @@ mod tests {
         run(
             ComposeRun {
                 cli,
+                host_name: "local".into(),
                 connection,
                 dialer,
                 project: project.into(),

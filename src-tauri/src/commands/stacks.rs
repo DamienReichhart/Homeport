@@ -121,6 +121,7 @@ pub async fn stacks_compose_subscribe(
     let cli = compose::detect().await?;
     let job = ComposeRun {
         cli,
+        host_name: host.name,
         connection: host.connection,
         dialer,
         project: stack.name,

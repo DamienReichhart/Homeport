@@ -11,6 +11,8 @@ use super::{BoxFuture, BoxStream, ConnectError, Dialer, CONNECT_TIMEOUT};
 use crate::error::{reach, AppError, ErrorCode};
 
 pub struct TlsDialer {
+    /// The Host's name and address, for messages.
+    label: String,
     address: String,
     server_name: ServerName<'static>,
     connector: TlsConnector,
@@ -20,6 +22,7 @@ impl TlsDialer {
     /// Builds a dialer from PEM text; fails with a user-facing message when
     /// the certificates or key can't be used.
     pub fn new(
+        label: &str,
         address: &str,
         ca_pem: &str,
         cert_pem: &str,
@@ -69,6 +72,7 @@ impl TlsDialer {
             ServerName::try_from(host.to_owned()).map_err(|e| invalid("server address", &e))?;
 
         Ok(Self {
+            label: label.to_owned(),
             address: address.to_owned(),
             server_name,
             connector: TlsConnector::from(Arc::new(config)),
@@ -99,7 +103,11 @@ impl Dialer for TlsDialer {
         Box::pin(async move {
             match self.open().await {
                 Ok(_) => Ok(()),
-                Err(e) => Err(ConnectError::from(reach::tls(&self.address, &e))),
+                Err(e) => Err(ConnectError::from(reach::tls(
+                    &self.label,
+                    &self.address,
+                    &e,
+                ))),
             }
         })
     }
@@ -115,7 +123,7 @@ mod tests {
 
     #[test]
     fn rejects_text_that_is_not_a_certificate() {
-        let err = TlsDialer::new("host:2376", "nope", "nope", "nope")
+        let err = TlsDialer::new("prod (host:2376)", "host:2376", "nope", "nope", "nope")
             .err()
             .unwrap();
         assert!(matches!(err, ConnectError::Invalid(e) if e.message.contains("CA certificate")));

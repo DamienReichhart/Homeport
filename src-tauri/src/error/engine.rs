@@ -58,16 +58,16 @@ pub fn from_message(status: Option<u16>, message: &str) -> AppError {
 
     if has("port is already allocated") || has("address already in use") {
         let what = match port_in(message) {
-            Some(port) => format!("Port {port} is already used on the host."),
-            None => "A published port is already used on the host.".to_owned(),
+            Some(port) => format!("Port {port} is already in use."),
+            None => "A published port is already in use.".to_owned(),
         };
         return AppError::new(ErrorCode::PortInUse, what).with_hint(
-            "Stop the container or program that uses it, or publish this one on another port.",
+            "Stop the container or program that uses it, or publish this container on another port.",
         );
     }
     if has("no space left on device") {
-        return AppError::new(ErrorCode::DiskFull, "The host is out of disk space.").with_hint(
-            "Remove unused images, containers and volumes (Prune on the Overview page), or free space on the server.",
+        return AppError::new(ErrorCode::DiskFull, "The Docker Engine is out of disk space.").with_hint(
+            "Remove unused images, containers and volumes (Prune on the Overview page), or free space on the machine it runs on.",
         );
     }
     if has("toomanyrequests") || has("pull rate limit") {
@@ -97,7 +97,7 @@ pub fn from_message(status: Option<u16>, message: &str) -> AppError {
     if has("no such image") {
         return AppError::new(
             ErrorCode::ImageNotFound,
-            "This image isn't on the host anymore.",
+            "This image no longer exists on the Docker Engine.",
         );
     }
     if (has("dial tcp")
@@ -108,9 +108,9 @@ pub fn from_message(status: Option<u16>, message: &str) -> AppError {
     {
         return AppError::new(
             ErrorCode::RegistryUnreachable,
-            "The host can't reach the image registry.",
+            "The Docker Engine can't reach the image registry.",
         )
-        .with_hint("Check the server's internet access, DNS and proxy settings.");
+        .with_hint("Check the internet access, DNS and proxy settings of the machine it runs on.");
     }
     if has("invalid reference format") {
         return AppError::new(ErrorCode::BadRequest, "That image name isn't valid.").with_hint(
@@ -122,7 +122,9 @@ pub fn from_message(status: Option<u16>, message: &str) -> AppError {
             ErrorCode::TlsRequired,
             "This Docker Engine only accepts TLS connections.",
         )
-        .with_hint("Change the host's connection to TLS and add its certificates.");
+        .with_hint(
+            "Change the connection to TLS on the host page and add the Engine's certificates.",
+        );
     }
     if has("client version") && (has("too new") || has("too old"))
         || has("minimum supported api version")
@@ -131,7 +133,7 @@ pub fn from_message(status: Option<u16>, message: &str) -> AppError {
             ErrorCode::ApiVersionUnsupported,
             "This Docker Engine's API version isn't supported.",
         )
-        .with_hint("Update the Docker Engine on the host.");
+        .with_hint("Update the Docker Engine.");
     }
     if has("is already in use by container") || has("conflict. the container name") {
         return AppError::new(ErrorCode::NameInUse, "That container name is already used.")
@@ -287,9 +289,9 @@ mod tests {
             500,
             "Bind for 0.0.0.0:8080 failed: port is already allocated",
         );
-        assert_eq!(e.message, "Port 8080 is already used on the host.");
+        assert_eq!(e.message, "Port 8080 is already in use.");
         let e = engine(500, "listen tcp4 0.0.0.0:80: bind: address already in use");
-        assert_eq!(e.message, "Port 80 is already used on the host.");
+        assert_eq!(e.message, "Port 80 is already in use.");
     }
 
     #[test]

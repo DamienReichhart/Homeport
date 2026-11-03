@@ -124,12 +124,15 @@ fn io_failure(e: &bollard::errors::Error) -> bool {
     ) || reach::io_cause(e).is_some()
 }
 
-/// Builds a client for `connection` and checks the Engine answers.
+/// Builds a client for `connection` and checks the Engine answers. `name`
+/// is the Host's name, for messages about remote Hosts.
 pub async fn connect(
+    name: &str,
     connection: &HostConnection,
     secrets: Option<HostSecrets>,
     trusted_host_key: Option<&str>,
 ) -> Result<Connected, ConnectError> {
+    let label = |address: &str| format!("{name} ({address})");
     let (docker, dialer) = match connection {
         HostConnection::Local { socket_path } => (
             // A missing socket usually means the Engine isn't running.
@@ -163,8 +166,13 @@ pub async fn connect(
             else {
                 return Err(ConnectError::Invalid(AppError::new(ErrorCode::TlsMaterialInvalid, "The TLS certificates are missing.").with_hint("Add the CA certificate, client certificate and client key on the host page.")));
             };
-            let dialer: Arc<dyn Dialer> =
-                Arc::new(tls::TlsDialer::new(address, &ca_pem, &cert_pem, &key_pem)?);
+            let dialer: Arc<dyn Dialer> = Arc::new(tls::TlsDialer::new(
+                &label(address),
+                address,
+                &ca_pem,
+                &cert_pem,
+                &key_pem,
+            )?);
             (docker_over(dialer.clone()), Some(dialer))
         }
         HostConnection::Ssh {
@@ -177,6 +185,7 @@ pub async fn connect(
         } => {
             let credentials = ssh::Credentials::from_secrets(*auth, secrets)?;
             let dialer: Arc<dyn Dialer> = Arc::new(ssh::SshDialer::new(ssh::SshTarget {
+                label: label(&format!("{user}@{host}:{port}")),
                 host: host.clone(),
                 port: *port,
                 user: user.clone(),
@@ -203,7 +212,7 @@ pub async fn connect(
                 ConnectError::from(reach::local_socket(socket_path, &e))
             }
             HostConnection::Tcp { address } if io_failure(&e) => {
-                ConnectError::from(reach::network(address, &e))
+                ConnectError::from(reach::network(&label(address), &e))
             }
             _ => ConnectError::from(AppError::from(e)),
         })?;
@@ -265,6 +274,7 @@ mod tests {
     #[ignore = "needs a local Docker Engine"]
     async fn local_socket_hosts_connect() {
         let connected = connect(
+            "local",
             &HostConnection::Local {
                 socket_path: "/var/run/docker.sock".into(),
             },
@@ -279,6 +289,7 @@ mod tests {
 
     async fn connect_local(socket_path: &str) -> ConnectError {
         connect(
+            "local",
             &HostConnection::Local {
                 socket_path: socket_path.into(),
             },
@@ -299,6 +310,7 @@ mod tests {
             .port();
         let address = format!("127.0.0.1:{port}");
         let err = connect(
+            "prod",
             &HostConnection::Tcp {
                 address: address.clone(),
             },
@@ -312,7 +324,7 @@ mod tests {
             panic!("expected unreachable, got {err:?}");
         };
         assert_eq!(e.code, ErrorCode::ConnectionRefused, "{e:?}");
-        assert!(e.message.contains(&address), "{e:?}");
+        assert!(e.message.contains(&format!("prod ({address})")), "{e:?}");
     }
 
     #[tokio::test]

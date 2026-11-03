@@ -294,25 +294,32 @@ async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
             None
         };
 
-        let error =
-            match transport::connect(&host.connection, secrets, host.host_key.as_deref()).await {
-                Ok(connected) => match describe(&connected.docker).await {
-                    Ok(status) => {
-                        backoff = 1;
-                        let docker = connected.docker.clone();
-                        reg.set_status(&id, status, Some(connected));
-                        drop(reg);
-                        watch(&registry, &id, docker).await;
-                        AppError::new(
+        let error = match transport::connect(
+            &host.name,
+            &host.connection,
+            secrets,
+            host.host_key.as_deref(),
+        )
+        .await
+        {
+            Ok(connected) => match describe(&connected.docker).await {
+                Ok(status) => {
+                    backoff = 1;
+                    let docker = connected.docker.clone();
+                    reg.set_status(&id, status, Some(connected));
+                    drop(reg);
+                    watch(&registry, &id, docker).await;
+                    AppError::new(
                             ErrorCode::ConnectionLost,
-                            "Homeport lost the connection to the Docker Engine.",
+                            format!("Homeport lost the connection to {}.", host.name),
                         )
-                    }
-                    Err(error) => error,
-                },
-                Err(ConnectError::Unreachable(error)) => error,
-                Err(other) => return reg.set_status(&id, other.into(), None),
-            };
+                        .with_hint("The Docker Engine or the network may have restarted. Homeport keeps retrying.")
+                }
+                Err(error) => error,
+            },
+            Err(ConnectError::Unreachable(error)) => error,
+            Err(other) => return reg.set_status(&id, other.into(), None),
+        };
 
         let Some(reg) = registry.upgrade() else {
             return;

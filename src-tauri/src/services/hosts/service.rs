@@ -225,8 +225,10 @@ fn prepare(
                     cert_pem,
                     key_pem,
                 }) => {
-                    transport::tls::TlsDialer::new(&address, &ca_pem, &cert_pem, &key_pem)
-                        .map_err(invalid)?;
+                    transport::tls::TlsDialer::new(
+                        &address, &address, &ca_pem, &cert_pem, &key_pem,
+                    )
+                    .map_err(invalid)?;
                     Some(HostSecrets::Tls {
                         ca_pem,
                         cert_pem,

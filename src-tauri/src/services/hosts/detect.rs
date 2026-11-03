@@ -67,7 +67,9 @@ pub async fn detect() -> Vec<DetectedEngine> {
             socket_path: socket_path.clone(),
         };
         let probe = async {
-            let connected = transport::connect(&connection, None, None).await.ok()?;
+            let connected = transport::connect(label, &connection, None, None)
+                .await
+                .ok()?;
             connected.docker.version().await.ok()?.version
         };
         if let Ok(Some(engine_version)) = tokio::time::timeout(Duration::from_secs(3), probe).await

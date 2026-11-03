@@ -265,11 +265,12 @@ fn rustls_cause<'a>(error: &'a (dyn StdError + 'static)) -> Option<&'a rustls::E
     None
 }
 
-/// Why the TLS connection to `address` failed; network failures fall back to [`network`].
-pub fn tls(address: &str, error: &(dyn StdError + 'static)) -> AppError {
+/// Why the TLS connection to `address` failed; network failures fall back to
+/// [`network`]. `label` names the Host in messages.
+pub fn tls(label: &str, address: &str, error: &(dyn StdError + 'static)) -> AppError {
     use rustls::{AlertDescription as Alert, CertificateError as Cert, Error as Tls};
     let Some(tls) = rustls_cause(error) else {
-        return network(address, error);
+        return network(label, error);
     };
     let host = address
         .rsplit_once(':')
@@ -279,32 +280,32 @@ pub fn tls(address: &str, error: &(dyn StdError + 'static)) -> AppError {
     let client_rejected = || {
         AppError::new(
             ErrorCode::TlsClientRejected,
-            format!("{address} rejected Homeport's client certificate."),
+            format!("{label} rejected Homeport's client certificate."),
         )
         .with_hint("Use a client certificate (cert.pem and key.pem) signed by the CA the Engine trusts, its --tlscacert.")
     };
     let classified = match tls {
         Tls::InvalidCertificate(Cert::Expired | Cert::ExpiredContext { .. }) => AppError::new(
             ErrorCode::TlsCertificateExpired,
-            format!("The certificate of {address} has expired."),
+            format!("The certificate of {label} has expired."),
         )
         .with_hint("Renew the Engine's TLS certificate on the server, then reconnect."),
         Tls::InvalidCertificate(Cert::NotValidYet | Cert::NotValidYetContext { .. }) => {
             AppError::new(
                 ErrorCode::TlsCertificateNotYetValid,
-                format!("The certificate of {address} isn't valid yet."),
+                format!("The certificate of {label} isn't valid yet."),
             )
             .with_hint("Check that this computer's date and time are right.")
         }
         Tls::InvalidCertificate(Cert::UnknownIssuer) => AppError::new(
             ErrorCode::TlsUnknownCa,
-            format!("The certificate of {address} isn't signed by the CA certificate on the host page."),
+            format!("The certificate of {label} isn't signed by the CA certificate on the host page."),
         )
         .with_hint("Paste the ca.pem that signed the Engine's certificate."),
         Tls::InvalidCertificate(Cert::NotValidForName | Cert::NotValidForNameContext { .. }) => {
             AppError::new(
                 ErrorCode::TlsNameMismatch,
-                format!("The certificate of {address} isn't made for {host}."),
+                format!("The certificate of {label} isn't made for {host}."),
             )
             .with_hint("Connect with a name or IP address listed in the certificate, or reissue it to include this one.")
         }
@@ -323,12 +324,12 @@ pub fn tls(address: &str, error: &(dyn StdError + 'static)) -> AppError {
         ) => client_rejected(),
         Tls::InvalidMessage(_) | Tls::InappropriateMessage { .. } => AppError::new(
             ErrorCode::TlsNotSupported,
-            format!("{address} doesn't speak TLS."),
+            format!("{label} doesn't speak TLS."),
         )
         .with_hint("Use a TCP connection for this address, or the Engine's TLS port (usually 2376)."),
         _ => AppError::new(
             ErrorCode::TlsHandshakeFailed,
-            format!("The secure connection to {address} failed."),
+            format!("The secure connection to {label} failed."),
         )
         .with_hint("Check the certificates on the host page against the ones the Engine uses."),
     };
@@ -470,6 +471,7 @@ mod tests {
 
     fn tls_failure(error: rustls::Error) -> AppError {
         tls(
+            "prod (prod.example:2376)",
             "prod.example:2376",
             &io::Error::new(io::ErrorKind::InvalidData, error),
         )
@@ -526,6 +528,7 @@ mod tests {
     #[test]
     fn tls_falls_back_to_network_failures() {
         let e = tls(
+            "prod (prod.example:2376)",
             "prod.example:2376",
             &io::Error::from(io::ErrorKind::ConnectionRefused),
         );

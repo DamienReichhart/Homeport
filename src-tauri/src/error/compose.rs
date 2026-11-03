@@ -67,8 +67,8 @@ pub fn spawn_failed(program: &str, error: &std::io::Error) -> AppError {
     .with_cause(error)
 }
 
-/// Why compose exited with `code`, from the end of its stderr.
-pub fn exit_failure(verb: &str, code: Option<i32>, stderr: &[String]) -> AppError {
+/// Why compose exited with `code` while working on `host`, from the end of its stderr.
+pub fn exit_failure(host: &str, verb: &str, code: Option<i32>, stderr: &[String]) -> AppError {
     let text = stderr.join("\n");
     let lower = text.to_lowercase();
     let exit = code.map_or("was stopped".to_owned(), |c| {
@@ -105,9 +105,9 @@ pub fn exit_failure(verb: &str, code: Option<i32>, stderr: &[String]) -> AppErro
     {
         AppError::new(
             ErrorCode::ConnectionLost,
-            "Compose couldn't reach the host's Docker Engine.",
+            format!("Compose couldn't reach the Docker Engine of {host}."),
         )
-        .with_hint("Check that the host is connected, then try again.")
+        .with_hint(format!("Check that {host} is connected, then try again."))
     } else {
         let from_engine = engine::from_message(None, &text);
         if is_specific(from_engine.code) {
@@ -183,7 +183,7 @@ mod tests {
             ("Cannot connect to the Docker daemon at unix:///x.sock. Is the docker daemon running?", ErrorCode::ConnectionLost),
             ("something unexpected", ErrorCode::ComposeFailed),
         ] {
-            let e = exit_failure("up", Some(1), &lines(stderr));
+            let e = exit_failure("prod", "up", Some(1), &lines(stderr));
             assert_eq!(e.code, code, "{stderr}");
             assert_eq!(e.detail.as_deref(), Some(stderr));
         }
@@ -192,6 +192,7 @@ mod tests {
     #[test]
     fn missing_variables_are_named() {
         let e = exit_failure(
+            "prod",
             "up",
             Some(1),
             &lines("required variable DB_PASSWORD is missing a value: set it"),
@@ -201,7 +202,7 @@ mod tests {
 
     #[test]
     fn unexplained_failures_give_the_exit_code() {
-        let e = exit_failure("down", Some(17), &[]);
+        let e = exit_failure("prod", "down", Some(17), &[]);
         assert_eq!(e.message, "docker compose down exited with code 17.");
     }
 }
