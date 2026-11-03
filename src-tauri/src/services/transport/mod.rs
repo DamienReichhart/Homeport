@@ -16,7 +16,7 @@ use hyper_util::rt::TokioIo;
 use tokio::io::{AsyncRead, AsyncWrite};
 
 use crate::{
-    error::{AppError, ErrorCode},
+    error::{reach, AppError, ErrorCode},
     services::hosts::{HostConnection, HostSecrets},
 };
 
@@ -61,6 +61,28 @@ pub enum ConnectError {
     Invalid(AppError),
 }
 
+/// Sorts a classified failure into the Host status it leads to.
+impl From<AppError> for ConnectError {
+    fn from(e: AppError) -> Self {
+        use ErrorCode::*;
+        match e.code {
+            PermissionDenied
+            | SshAuthFailed
+            | SshAgentUnavailable
+            | TlsClientRejected
+            | TlsCertificateExpired
+            | TlsCertificateNotYetValid
+            | TlsUnknownCa
+            | TlsNameMismatch
+            | TlsHandshakeFailed => Self::Unauthorized(e),
+            Validation | TlsMaterialInvalid | TlsRequired | TlsNotSupported | SshKeyInvalid => {
+                Self::Invalid(e)
+            }
+            _ => Self::Unreachable(e),
+        }
+    }
+}
+
 impl From<ConnectError> for AppError {
     fn from(e: ConnectError) -> Self {
         match e {
@@ -103,14 +125,10 @@ pub async fn connect(
         HostConnection::Local { socket_path } => (
             // A missing socket usually means the Engine isn't running.
             Docker::connect_with_socket(socket_path, REQUEST_TIMEOUT_SECS, API_DEFAULT_VERSION)
+                // bollard checks that the socket exists before connecting.
                 .map_err(|e| {
-                    ConnectError::Unreachable(
-                        AppError::new(
-                            ErrorCode::EngineNotRunning,
-                            "The Docker Engine socket can't be opened.",
-                        )
-                        .with_cause(&e),
-                    )
+                    let missing = io::Error::new(io::ErrorKind::NotFound, e.to_string());
+                    ConnectError::from(reach::local_socket(socket_path, &missing))
                 })?,
             None,
         ),
@@ -171,7 +189,12 @@ pub async fn connect(
                 "The Docker Engine didn't answer in time.",
             ))
         })?
-        .map_err(|e| ConnectError::Unreachable(e.into()))?;
+        .map_err(|e| match connection {
+            HostConnection::Local { socket_path } => {
+                ConnectError::from(reach::local_socket(socket_path, &e))
+            }
+            _ => ConnectError::from(AppError::from(e)),
+        })?;
     Ok(Connected { docker, dialer })
 }
 
@@ -253,18 +276,64 @@ mod tests {
         connected.docker.ping().await.unwrap();
     }
 
-    #[tokio::test]
-    async fn unreachable_hosts_are_classified() {
-        let err = connect(
+    async fn connect_local(socket_path: &str) -> ConnectError {
+        connect(
             &HostConnection::Local {
-                socket_path: "/nonexistent/docker.sock".into(),
+                socket_path: socket_path.into(),
             },
             None,
             None,
         )
         .await
         .err()
-        .unwrap();
-        assert!(matches!(err, ConnectError::Unreachable(_)), "{err:?}");
+        .expect("nothing should answer")
+    }
+
+    #[tokio::test]
+    async fn a_missing_socket_means_no_engine_is_running_there() {
+        let err = connect_local("/nonexistent/docker.sock").await;
+        let ConnectError::Unreachable(e) = err else {
+            panic!("expected unreachable, got {err:?}");
+        };
+        assert!(
+            matches!(
+                e.code,
+                ErrorCode::EngineNotRunning | ErrorCode::EngineNotInstalled
+            ),
+            "{e:?}"
+        );
+        assert!(e.message.contains("/nonexistent/docker.sock"), "{e:?}");
+        assert!(e.hint.is_some_and(|h| !h.text.is_empty()));
+        assert!(e.detail.is_some());
+    }
+
+    #[tokio::test]
+    async fn a_socket_nobody_listens_on_means_the_engine_is_stopped() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("docker.sock");
+        drop(std::os::unix::net::UnixListener::bind(&path).unwrap());
+        let err = connect_local(path.to_str().unwrap()).await;
+        let ConnectError::Unreachable(e) = err else {
+            panic!("expected unreachable, got {err:?}");
+        };
+        assert_eq!(e.code, ErrorCode::EngineNotRunning, "{e:?}");
+    }
+
+    #[tokio::test]
+    async fn a_socket_without_permission_refuses_access() {
+        use std::os::unix::fs::{MetadataExt, PermissionsExt};
+        if std::fs::metadata("/proc/self").is_ok_and(|m| m.uid() == 0) {
+            return; // root ignores file permissions
+        }
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("docker.sock");
+        let _listener = std::os::unix::net::UnixListener::bind(&path).unwrap();
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o000)).unwrap();
+        let err = connect_local(path.to_str().unwrap()).await;
+        let ConnectError::Unauthorized(e) = err else {
+            panic!("expected unauthorized, got {err:?}");
+        };
+        assert_eq!(e.code, ErrorCode::PermissionDenied, "{e:?}");
+        assert!(e.message.contains(path.to_str().unwrap()), "{e:?}");
     }
 }

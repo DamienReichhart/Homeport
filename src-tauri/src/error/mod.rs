@@ -9,6 +9,8 @@
 //! - `detail` keeps the raw cause (error chain, Engine response, stderr) for the
 //!   Details dialog and bug reports.
 
+pub mod reach;
+
 use std::{error::Error as StdError, fmt::Display};
 
 use serde::Serialize;
