@@ -119,4 +119,28 @@ describe('error handling', () => {
     const details = await screen.findByRole('dialog');
     expect(within(details).getByText('Permission denied (os error 13)')).toBeInTheDocument();
   });
+
+  it('replaces a page that crashed with a way out', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    mockCommands({
+      ...baseCommands,
+      get_app_info: appInfo,
+      usage_subscribe: () => 1,
+      // Malformed data makes the page throw while rendering.
+      containers_list: () => null,
+    });
+    const user = userEvent.setup();
+    renderApp('/containers');
+
+    expect(await screen.findByText('Something went wrong')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Reload' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Details' }));
+    const details = await screen.findByRole('dialog');
+    expect(within(details).getByText('unknown')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+
+    // The sidebar survives, so the rest of the app stays usable.
+    expect(screen.getByRole('link', { name: /Overview/ })).toBeInTheDocument();
+    consoleError.mockRestore();
+  });
 });
