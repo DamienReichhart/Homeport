@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { saveSettings, settingsQuery } from '@/core/settings';
 import { UpdatesCard } from '@/features/updates';
 import { commands, keys, type ComposeSupport, type Settings } from '@/shared/api';
 import { applyTheme, type Theme } from '@/shared/lib';
@@ -26,7 +27,6 @@ import {
   toastError,
 } from '@/shared/ui';
 import { FolderOpenIcon } from 'lucide-react';
-import { settingsApi } from '../api/settingsApi';
 import { LicensesDialog } from './LicensesDialog';
 
 const THEMES: { value: Theme; label: string }[] = [
@@ -37,7 +37,7 @@ const THEMES: { value: Theme; label: string }[] = [
 
 export function SettingsPage() {
   const client = useQueryClient();
-  const settings = useQuery({ queryKey: keys.settings, queryFn: settingsApi.get });
+  const settings = useQuery(settingsQuery());
   const capabilities = useQuery({
     queryKey: keys.capabilities,
     queryFn: () => commands.getCapabilities(),
@@ -46,11 +46,8 @@ export function SettingsPage() {
   const [licensesOpen, setLicensesOpen] = useState(false);
   const save = useMutation({
     meta: { silent: true },
-    mutationFn: (next: Settings) => settingsApi.update(next),
-    onSuccess: (saved) => {
-      applyTheme(saved.theme ?? 'system');
-      client.setQueryData(keys.settings, saved);
-    },
+    mutationFn: (next: Settings) => saveSettings(client, next),
+    onSuccess: (saved) => applyTheme(saved.theme ?? 'system'),
   });
 
   if (settings.isPending) return <Spinner />;

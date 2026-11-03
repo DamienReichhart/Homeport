@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import { AppProviders, createQueryClient } from '@/app/providers/AppProviders';
+import { AppProviders } from '@/app/providers/AppProviders';
+import { createQueryClient } from '@/app/providers/queryClient';
 import { baseCommands } from '@/test/fixtures';
 import { mockCommands, sendToChannel } from '@/test/ipc';
 import { ComposeRunDialog } from './ComposeRunDialog';
