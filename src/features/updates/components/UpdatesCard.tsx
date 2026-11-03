@@ -1,4 +1,5 @@
-import { toAppError, type Settings } from '@/shared/api';
+import type { Settings } from '@/shared/api';
+import { ErrorMessage } from '@/shared/ui';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Label } from '@/shared/ui/label';
@@ -55,12 +56,7 @@ export function UpdatesCard({
 
 function UpdateStatus({ check }: { check: ReturnType<typeof useUpdateCheck> }) {
   if (check.isFetching) return null;
-  if (check.error)
-    return (
-      <span role="alert" className="text-destructive text-sm">
-        Couldn’t check for updates: {toAppError(check.error).message}
-      </span>
-    );
+  if (check.error) return <ErrorMessage error={check.error} className="basis-full" />;
   if (!check.data) return null;
   const { available, currentVersion } = check.data;
   return (

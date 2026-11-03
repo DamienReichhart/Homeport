@@ -1,7 +1,7 @@
 import { openUrl } from '@tauri-apps/plugin-opener';
 import type { UpdateCheck } from '@/shared/api';
 import { Button } from '@/shared/ui/button';
-import { CopyButton } from '@/shared/ui';
+import { CopyButton, ErrorMessage } from '@/shared/ui';
 import { describeProgress, useInstallUpdate, WEBSITE_URL } from '../api';
 
 /**
@@ -34,11 +34,7 @@ export function UpdateActions({ check }: { check: UpdateCheck }) {
           Download
         </Button>
       )}
-      {state.step === 'failed' && (
-        <span role="alert" className="text-destructive text-xs">
-          {state.error.message}
-        </span>
-      )}
+      {state.step === 'failed' && <ErrorMessage error={state.error} className="basis-full" />}
     </div>
   );
 }
