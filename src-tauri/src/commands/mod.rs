@@ -32,6 +32,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
         .commands(collect_commands![
             system::get_app_info,
             system::get_capabilities,
+            system::get_licenses,
             system::read_text_file,
             system::write_text_file,
             settings::get_settings,

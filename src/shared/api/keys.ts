@@ -5,6 +5,7 @@
 export const keys = {
   capabilities: ['capabilities'] as const,
   appInfo: ['app-info'] as const,
+  licenses: ['licenses'] as const,
   localEngines: ['local-engines'] as const,
   settings: ['settings'] as const,
   hosts: ['hosts'] as const,

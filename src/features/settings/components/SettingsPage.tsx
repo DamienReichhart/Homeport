@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { commands, keys, toAppError, type Settings } from '@/shared/api';
 import { applyTheme, type Theme } from '@/shared/lib';
+import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Label } from '@/shared/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { ErrorMessage, KeyValue, LogoMark, PageHeader, Spinner, StatusDot } from '@/shared/ui';
 import { settingsApi } from '../api/settingsApi';
+import { LicensesDialog } from './LicensesDialog';
 
 const THEMES: { value: Theme; label: string }[] = [
   { value: 'system', label: 'Match the system' },
@@ -21,6 +24,7 @@ export function SettingsPage() {
     queryFn: () => commands.getCapabilities(),
   });
   const info = useQuery({ queryKey: keys.appInfo, queryFn: () => commands.getAppInfo() });
+  const [licensesOpen, setLicensesOpen] = useState(false);
   const save = useMutation({
     mutationFn: (next: Settings) => settingsApi.update(next),
     onSuccess: (saved) => {
@@ -103,8 +107,17 @@ export function SettingsPage() {
               {info.data ? `v${info.data.version} · ${info.data.os}/${info.data.arch}` : '…'}
             </p>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="ml-auto"
+            onClick={() => setLicensesOpen(true)}
+          >
+            Licenses
+          </Button>
         </CardContent>
       </Card>
+      <LicensesDialog open={licensesOpen} onOpenChange={setLicensesOpen} />
     </div>
   );
 }
