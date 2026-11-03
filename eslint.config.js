@@ -96,7 +96,7 @@ export default tseslint.config(
         [
           {
             name: '@/shared/api',
-            importNames: ['commands', 'keys', 'subscribe'],
+            importNames: ['commands', 'subscribe'],
             message: 'Call the backend from the feature’s api/ folder, not from components.',
           },
         ],
