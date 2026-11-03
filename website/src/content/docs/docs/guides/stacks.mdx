@@ -1,0 +1,156 @@
+---
+title: Stacks
+description: Deploy Compose Stacks to any Host, keep their environment encrypted, and adopt Stacks deployed elsewhere.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import DocScreenshot from '../../../../components/DocScreenshot.astro';
+
+A **Stack** is a Compose project running on a Host. Homeport finds every Stack on the selected Host from the labels Compose puts on its containers, however it was deployed.
+
+<DocScreenshot
+  name="stacks"
+  alt="The Stacks page, listing Managed and External Stacks with their state and services."
+/>
+
+## Managed and External Stacks
+
+- A **Managed Stack** is one whose compose file and environment Homeport keeps. You can edit it, deploy it and take it down from Homeport.
+- An **External Stack** was deployed some other way — `docker compose up` on the server, a CI job, another tool. Homeport can start, stop, restart and remove its containers, but has no compose file to redeploy it from. You can [adopt](#adopting-an-external-stack) it to make it Managed.
+
+Each Stack shows one of these states:
+
+| State              | Meaning                                 |
+| ------------------ | --------------------------------------- |
+| **Running**        | All of its containers are running.      |
+| **Partly running** | Some are.                               |
+| **Stopped**        | None are.                               |
+| **Not deployed**   | A Managed Stack with no containers yet. |
+
+Managed Stacks belong to one Host. To run the same compose file on two Hosts, create a Stack on each.
+
+## What deploying needs
+
+Homeport deploys Managed Stacks with the `docker compose` command on **this** computer, pointed at the Host. Install the Docker CLI with the Compose plugin, or standalone `docker-compose` v2; **Settings → This machine** shows whether Homeport found it.
+
+The command runs with the compose file on its standard input, the Stack's environment as variables, and an empty working folder, so nothing is written to disk. For SSH and TLS Hosts, Homeport routes the command through its own connection to the Host, so Compose never sees your keys.
+
+Without the Compose CLI you can still start, stop and remove Stacks; only **Deploy**, **Pull images** and **Take down** need it.
+
+## Creating a Managed Stack
+
+<Steps>
+
+1. Open **Stacks** and choose **New stack**.
+
+2. Enter a **Name**: lowercase letters, digits, `-` and `_`, starting with a letter or digit. It becomes the Compose project name and can't be changed later.
+
+3. Write the compose file in the **compose.yaml** editor. It starts with a small example to replace.
+
+4. Put variables in **Environment**, one `KEY=value` per line, like a `.env` file. Compose substitutes them for `${KEY}` in the file.
+
+5. Choose **Save and deploy** — or **Save** to deploy later.
+
+</Steps>
+
+<DocScreenshot
+  name="stack-editor"
+  alt="The Stack editor with a compose file, its environment and the checks below it."
+/>
+
+### Checks as you type
+
+Homeport checks the definition as you type and lists problems under the editor.
+
+**Errors** stop a deploy:
+
+- The YAML can't be parsed, or has no `services:`.
+- A service has no `image:`, or uses `build:`. The Host would build from files on _this_ computer, so use an image you've pushed to a registry instead.
+
+**Warnings** let you deploy, but point at things that probably won't do what you expect, because Compose reads them from this computer rather than the Host:
+
+- A bind mount with a relative path such as `./data:/data`. Use an absolute path on the Host or a named volume.
+- `env_file:`, or `configs` and `secrets` read from a `file:`. Put variables in the Stack's environment instead.
+
+### The environment
+
+The environment is stored encrypted and passed straight to Compose, never written to disk — the right place for passwords and tokens. The compose file itself is stored as plain text, so keep secrets out of it:
+
+```yaml
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+```
+
+```ini
+DB_PASSWORD=correct-horse-battery-staple
+```
+
+Blank lines, `# comments` and `export` prefixes are allowed. Values may be quoted; in double quotes, `\n` is a new line.
+
+<Aside>
+  Storing an environment needs an [OS keychain](/docs/requirements/#optional-an-os-keychain).
+  Without one, the field is disabled and Stacks deploy without it.
+</Aside>
+
+## Deploying and redeploying
+
+**Deploy** — or **Redeploy** once the Stack is running — runs `docker compose up --detach --remove-orphans`. A window shows Compose's output as it runs and ends with **✓ Done** or the exit code it failed with.
+
+<Aside type="caution">
+  Closing the output window while Compose is running stops it, which can leave a deploy half done.
+  Redeploy to finish it.
+</Aside>
+
+To change a Managed Stack, open it, edit its **Definition** and choose **Save and redeploy**. Compose recreates only the services that changed, and removes services you've deleted from the file.
+
+## A Stack's page
+
+- **Services** lists each service with its container, image and status. Select a container to open it.
+- **Logs** shows every container's logs together, each line labelled with its service.
+
+<DocScreenshot
+  name="stack-logs"
+  alt="A Stack's Logs tab, with every service's output interleaved and labelled."
+/>
+
+- **Definition** holds the editor for a Managed Stack, or explains where an External Stack came from.
+
+## Stack actions
+
+| Action                     | Stacks   | What it does                                                                              |
+| -------------------------- | -------- | ----------------------------------------------------------------------------------------- |
+| **Deploy** / **Redeploy**  | Managed  | `docker compose up` with the stored definition.                                           |
+| **Start** / **Stop**       | Any      | Starts the stopped containers, or stops the running ones.                                 |
+| **Restart**                | Any      | Restarts every container.                                                                 |
+| **Pull images**            | Managed  | `docker compose pull`, to fetch newer images before redeploying.                          |
+| **Take down**              | Managed  | `docker compose down`: removes containers and networks, keeps volumes and the definition. |
+| **Take down with volumes** | Managed  | Also deletes the Stack's volumes **and their data**.                                      |
+| **Remove containers**      | External | Removes its containers and networks. Volumes are kept.                                    |
+| **Adopt**                  | External | Gives Homeport the compose file, making it Managed.                                       |
+
+**Forget definition**, in a Managed Stack's **Definition** tab, deletes the compose file and environment from Homeport but leaves the containers running; the Stack becomes External.
+
+## Adopting an External Stack
+
+<Steps>
+
+1. Open the External Stack and choose **Adopt**.
+
+2. Paste the compose file it was deployed with. The name is filled in and locked.
+
+3. Add its environment variables, if it used any.
+
+4. Choose **Save** to take it over without touching the running containers, or **Save and deploy** to redeploy it now.
+
+</Steps>
+
+<Aside type="caution" title="Use the same definition">
+  Redeploying with a different file recreates containers to match it, and removes services that are
+  no longer listed. Paths that were relative on the machine that first deployed it may resolve
+  differently now.
+</Aside>
+
+Creating a new Stack with the same name as an External one adopts it too.

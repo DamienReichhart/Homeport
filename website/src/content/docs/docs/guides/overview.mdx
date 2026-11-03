@@ -1,0 +1,75 @@
+---
+title: Overview and events
+description: See every Host at once, check disk usage, clean up, and follow the Engine's live events.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import DocScreenshot from '../../../../components/DocScreenshot.astro';
+
+## Overview
+
+The **Overview** is the only page that shows every Host together. It opens when Homeport starts.
+
+<DocScreenshot
+  name="overview"
+  alt="The Overview page with host cards, the Engine card, disk usage and recent events."
+/>
+
+### Host cards
+
+Each Host has a card with its name, address, type and status. For a connected Host it also shows:
+
+- running and total containers, and the number of images;
+- live CPU use of its containers, as a percentage of one CPU — `250%` on an 8-CPU Host means two and a half CPUs are busy;
+- memory used by its containers, out of the Host's total.
+
+Select a card to switch to that Host. If it's connected, Homeport opens its **Containers**.
+
+### The selected Host
+
+Below the cards, a section for the selected Host shows:
+
+- **Engine** — name, version, operating system, kernel, architecture, CPUs and memory, storage driver and root directory.
+- **Disk usage** — how much space images, containers, volumes and the build cache take, how much is in use, and how much could be reclaimed.
+- **Recent events** — the last few things the Engine reported. **All events** opens the Events page.
+
+### Cleaning up
+
+**Clean up…** in the Disk usage card removes what nothing uses, on the selected Host only. Pick what to remove:
+
+| Option                 | Default | Removes                                                    |
+| ---------------------- | :-----: | ---------------------------------------------------------- |
+| **Stopped containers** |   On    | Every container that isn't running.                        |
+| **Dangling images**    |   On    | Untagged layers left behind by builds and pulls.           |
+| **All unused images**  |   Off   | Tagged images no container uses, as well as dangling ones. |
+| **Unused networks**    |   On    | Custom networks no container is attached to.               |
+| **Build cache**        |   On    | Cached build layers.                                       |
+| **Unused volumes**     |   Off   | Every volume no container uses, **including its data**.    |
+
+Containers go first, so the images, networks and volumes they held count as unused. Homeport then tells you how much space was reclaimed.
+
+<Aside type="danger">
+  **Unused volumes** deletes data, named volumes included, and can't be undone. When it's ticked,
+  the button reads **Delete, including volume data** as a last reminder.
+</Aside>
+
+## Events
+
+The **Events** page lists what the selected Host's Engine reported since Homeport connected to it, newest first: containers starting and stopping, images pulled, volumes created, networks connected, and so on.
+
+| Column     | Shows                                      |
+| ---------- | ------------------------------------------ |
+| **Time**   | When it happened, in your local time.      |
+| **Type**   | `container`, `image`, `volume`, `network`… |
+| **Action** | `start`, `die`, `pull`, `create`…          |
+| **Object** | The name of what it happened to.           |
+| **Stack**  | The Stack it belongs to, if any.           |
+
+Search by action or object name, or filter by type. The list updates live.
+
+<DocScreenshot
+  name="events"
+  alt="The Events page, listing the Engine's recent events with their type, action, object and Stack."
+/>
+
+Homeport keeps the last 500 events per Host, in memory only. They're kept across reconnections but cleared when Homeport quits, and events from before Homeport connected aren't shown.

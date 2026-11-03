@@ -1,0 +1,138 @@
+---
+title: SSH Hosts
+description: Connect to a Docker Engine on a server over SSH, with a key Homeport creates, your own key or ssh-agent.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import DocScreenshot from '../../../../components/DocScreenshot.astro';
+
+SSH is the recommended way to reach a Docker Engine on a server. Nothing needs to be exposed beyond the SSH port, and the Engine's socket stays private to the server.
+
+## How it works
+
+Homeport has its own SSH client. It logs in to the server and forwards a channel to the Engine's Unix socket — the same thing `docker -H ssh://…` does, without needing the `ssh` program or `docker` on your machine.
+
+- Keys are decrypted only in memory and never written to disk, so it works the same on Windows, macOS and Linux.
+- Homeport doesn't read `~/.ssh/config` or `~/.ssh/known_hosts`. Host aliases, `ProxyJump` and the like aren't used; enter the real server address.
+- The server must allow forwarding to Unix sockets. OpenSSH does by default (`AllowStreamLocalForwarding yes`).
+
+## Adding an SSH Host
+
+<Steps>
+
+1. Choose **Add host…** in the Host switcher and keep **SSH** selected.
+
+2. Fill in the connection:
+
+   | Field                  | What to enter                                                                                                                                                          |
+   | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+   | **Name**               | A name you'll recognise, such as `production`.                                                                                                                         |
+   | **Server**             | The server's host name or IP address.                                                                                                                                  |
+   | **Port**               | The SSH port; `22` by default.                                                                                                                                         |
+   | **User**               | The account to log in as. It needs access to the Docker socket, usually through the `docker` group.                                                                    |
+   | **Remote socket path** | Where the Engine listens on the server: `/var/run/docker.sock` by default, `/run/user/<uid>/docker.sock` for rootless Docker, or `/run/podman/podman.sock` for Podman. |
+
+3. Choose how to sign in under **Authentication** (see below).
+
+4. Choose **Add host**. Homeport opens the Host's page and connects.
+
+</Steps>
+
+<DocScreenshot name="add-host-ssh" alt="The Add host form with SSH selected." />
+
+## Authentication
+
+### New key for this host (recommended)
+
+Homeport creates an Ed25519 key just for this Host, stores it encrypted, and shows you the command that authorises it on the server. One key per Host means you can revoke Homeport's access to one server without touching anything else. The key's comment names this computer and the Host, for example `homeport@laptop-production`, so you can tell it apart in `authorized_keys`.
+
+### Existing key
+
+Paste a private key, or choose **Load from file…**, and enter its **Passphrase** if it has one. Homeport reads OpenSSH keys (`BEGIN OPENSSH PRIVATE KEY`), PKCS#8 and PEM keys, and PuTTY `.ppk` files, with Ed25519, ECDSA or RSA keys. The key and its passphrase are stored encrypted, so you're not asked again.
+
+### ssh-agent
+
+Homeport asks your running SSH agent for keys, and stores nothing. It uses the agent at `$SSH_AUTH_SOCK` on macOS and Linux, and the Windows OpenSSH agent on Windows.
+
+<Aside>
+  ssh-agent is the only SSH option that works without an [OS
+  keychain](/docs/requirements/#optional-an-os-keychain). If Homeport was started from a desktop
+  menu, make sure your session's agent is available to it.
+</Aside>
+
+## First connection
+
+The first time Homeport connects, the Host's page walks you through two steps.
+
+### Trust the server's key
+
+The status shows **Server key not trusted**, and the page asks **Is this the right server?** with the server's key fingerprint, such as `SHA256:Kx8f…`.
+
+Compare it with the fingerprint on the server:
+
+```sh
+ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
+```
+
+If they match, choose **Trust this key**. Homeport remembers it and connects. This is the same trust-on-first-use check `ssh` does, with the key stored in Homeport rather than `~/.ssh/known_hosts`.
+
+### Authorise Homeport's key
+
+For a key created by Homeport, or one you imported, the card **Authorize Homeport on the server** shows two commands, each with a **Copy** button. Run them on the server as the SSH user:
+
+<DocScreenshot
+  name="host-ssh"
+  alt="An SSH Host's page, with the commands that authorise Homeport's key on the server."
+/>
+
+<Steps>
+
+1. **Add the public key** to the user's `authorized_keys`:
+
+   ```sh
+   mkdir -p ~/.ssh && chmod 700 ~/.ssh && echo 'ssh-ed25519 AAAAC3Nza… homeport@laptop-production' >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys
+   ```
+
+2. **Let the user reach Docker**, if it can't already:
+
+   ```sh
+   sudo usermod -aG docker deploy
+   ```
+
+3. Back in Homeport, choose **Reconnect**.
+
+</Steps>
+
+Until the key is authorised, the Host shows **Access refused**: _The server refused the key for deploy@server. Add the public key to its authorized_keys._ It waits for you rather than retrying.
+
+## When the server's key changes
+
+If the server later presents a different key, Homeport stops and shows **Server key changed**, with the expected and presented fingerprints.
+
+<Aside type="caution">
+  A changed key is expected after reinstalling the server or regenerating its host keys. It can also
+  mean someone is intercepting the connection. Only trust the new key if you know why it changed.
+</Aside>
+
+When you're sure, choose **Trust the new key** and confirm.
+
+Editing a Host to point at a different server or port forgets the trusted key, and you'll be asked to trust the new one. Renaming the Host or changing the user or socket path keeps it.
+
+## Regenerating a key
+
+For a key Homeport created, **Regenerate key** on the Host's page replaces it. The old key stops working, so run the new **Add the public key** command on the server, and remove the old line from `~/.ssh/authorized_keys`.
+
+## Removing an SSH Host
+
+Removing the Host deletes its key from Homeport, but not from the server. Delete its line from the user's `~/.ssh/authorized_keys` — the comment starting with `homeport@` identifies it.
+
+## Common problems
+
+| Message                                                                                         | What to do                                                                                  |
+| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| _The server refused the key for …_                                                              | Run the **Add the public key** command on the server, then **Reconnect**.                   |
+| _The SSH server couldn't open /var/run/docker.sock … Check the path and that … can use Docker._ | Check the **Remote socket path**, and add the user to the `docker` group.                   |
+| _SSH connection timed out_                                                                      | Check the server name, port and any firewall between you.                                   |
+| _No ssh-agent is reachable_                                                                     | Start your agent, add a key with `ssh-add`, and make sure Homeport can see `SSH_AUTH_SOCK`. |
+
+More in [Troubleshooting](/docs/reference/troubleshooting/).

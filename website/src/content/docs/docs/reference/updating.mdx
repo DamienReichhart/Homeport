@@ -1,0 +1,74 @@
+---
+title: Updating and uninstalling
+description: Install a new version of Homeport, or remove it and its data completely.
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Updating
+
+Homeport doesn't update itself or check for updates. To update, download the new version from the [download page](/download/) and install it over the old one, the same way you installed it. Your Hosts, Stacks and settings are kept.
+
+To hear about new versions, watch the repository on GitHub (**Watch → Custom → Releases**), or follow the [releases feed](https://github.com/DamienReichhart/Homeport/releases.atom). The [changelog](/changelog/) lists what changed in each version.
+
+<Tabs syncKey="os">
+<TabItem label="Windows">Run the new installer. It replaces the installed version.</TabItem>
+<TabItem label="macOS">
+Quit Homeport, open the new `.dmg` and drag Homeport into Applications, choosing **Replace**.
+</TabItem>
+<TabItem label="Linux">
+
+Install the new package over the old one:
+
+```sh
+sudo apt install ./Homeport_<version>_amd64.deb      # Debian, Ubuntu
+sudo dnf install ./Homeport-<version>-1.x86_64.rpm   # Fedora, RHEL
+```
+
+For the AppImage, delete the old file and use the new one.
+
+</TabItem>
+</Tabs>
+
+## Uninstalling
+
+<Tabs syncKey="os">
+<TabItem label="Windows">
+Open **Settings → Apps → Installed apps**, find **Homeport**, and choose **Uninstall**.
+</TabItem>
+<TabItem label="macOS">Quit Homeport and drag it from Applications to the Bin.</TabItem>
+<TabItem label="Linux">
+
+```sh
+sudo apt remove homeport   # Debian, Ubuntu
+sudo dnf remove homeport   # Fedora, RHEL
+```
+
+For the AppImage, delete the file. Its menu entry disappears with it.
+
+</TabItem>
+</Tabs>
+
+Uninstalling leaves your data in place, so reinstalling brings everything back.
+
+## Removing your data
+
+<Aside type="caution">
+  This deletes your Hosts, their stored keys and certificates, and your Managed Stack definitions.
+  Nothing on your Hosts is touched.
+</Aside>
+
+1. Delete Homeport's data and log folders:
+
+   | System  | Folders                                                                               |
+   | ------- | ------------------------------------------------------------------------------------- |
+   | Linux   | `~/.local/share/com.homeport.app/`, `~/.config/com.homeport.app/`                     |
+   | macOS   | `~/Library/Application Support/com.homeport.app/`, `~/Library/Logs/com.homeport.app/` |
+   | Windows | `%APPDATA%\com.homeport.app\`, `%LOCALAPPDATA%\com.homeport.app\`                     |
+
+2. Delete the encryption key from your keychain — the entry for `com.homeport.app`:
+   - **macOS** — in **Keychain Access**, search for `com.homeport.app` and delete it.
+   - **Windows** — in **Credential Manager → Windows Credentials**, remove the entry containing `com.homeport.app`.
+   - **Linux** — in **Passwords and Keys** (Seahorse) or KWallet, delete the entry for `com.homeport.app`.
+
+3. On your servers, remove Homeport's public keys from `~/.ssh/authorized_keys` — their comments start with `homeport@`.

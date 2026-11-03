@@ -9,7 +9,7 @@ describe('app', () => {
       get_settings: () => ({ theme: 'system', lastHostId: null }),
       update_settings: ({ settings }) => settings,
       get_capabilities: () => ({ keychain: true, compose: null }),
-      get_app_info: () => ({ name: 'Homeport', version: '0.1.0', os: 'linux', arch: 'x86_64' }),
+      get_app_info: () => ({ name: 'Homeport', version: '0.2.0', os: 'linux', arch: 'x86_64' }),
       hosts_list: () => [connectedHost],
       system_info: () => ({
         name: 'box',

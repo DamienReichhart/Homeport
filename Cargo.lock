@@ -2119,7 +2119,7 @@ dependencies = [
 
 [[package]]
 name = "homeport"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "bollard",
  "chacha20poly1305",

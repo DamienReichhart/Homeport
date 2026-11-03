@@ -6,6 +6,8 @@ Every push to `main` runs the **Release** workflow (`.github/workflows/release.y
 2. **CI and Build**, in parallel: the whole of `ci.yml` (frontend checks, licenses, Rust fmt/clippy/tests), and a native build for each platform.
 3. **Publish**, once CI and every build passed: records a [build provenance attestation](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) for each installer, then creates the release with every installer and `SHA256SUMS.txt`. That creates the tag on the commit that was built.
 
+Once the release is out, the **Pages** workflow rebuilds the [website](https://damienreichhart.github.io/Homeport/) so its download page and changelog list the new version.
+
 Nothing is published unless every job succeeds. To retry, re-run the failed jobs, run the workflow from the Actions tab, or push a fix.
 
 ## Releasing a new version

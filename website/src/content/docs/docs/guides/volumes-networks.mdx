@@ -1,0 +1,80 @@
+---
+title: Volumes and networks
+description: See which containers use which volumes and networks, create them, and remove them safely.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import DocScreenshot from '../../../../components/DocScreenshot.astro';
+
+## Volumes
+
+The **Volumes** page lists the selected Host's volumes and how many are unused.
+
+<DocScreenshot
+  name="volumes"
+  alt="The Volumes page, showing each volume's Stack, driver and the containers that use it."
+/>
+
+| Column      | Shows                                               |
+| ----------- | --------------------------------------------------- |
+| **Name**    | The volume's name; a long ID for anonymous volumes. |
+| **Stack**   | The Stack that created it, if any.                  |
+| **Driver**  | Usually `local`.                                    |
+| **Used by** | The containers that mount it, or **Unused**.        |
+| **Created** | When it was created.                                |
+
+A volume counts as used when any container mounts it, running or stopped. Select a volume to see which containers use it and its full details, including where its data lives on the Host (`Mountpoint`).
+
+### Creating a volume
+
+**Create volume** asks for a **Name** and an optional **Driver** (`local` when empty).
+
+### Deleting volumes
+
+<Aside type="danger">Deleting a volume permanently deletes the data in it.</Aside>
+
+The delete button on each row asks for confirmation and names the containers that still mount the volume. The Engine refuses to delete a volume any container uses, even a stopped one — remove those containers first.
+
+**Clean up** removes several at once:
+
+- **Unused anonymous volumes** — unnamed volumes no container uses.
+- **All unused volumes** — every volume no container uses, named ones included.
+
+## Networks
+
+The **Networks** page lists the selected Host's networks, the built-in `bridge`, `host` and `none` first.
+
+<DocScreenshot
+  name="networks"
+  alt="The Networks page, with built-in and Stack networks, their subnets and container counts."
+/>
+
+| Column         | Shows                                                       |
+| -------------- | ----------------------------------------------------------- |
+| **Name**       | With a **built-in** or **internal** badge where it applies. |
+| **Stack**      | The Stack that created it, if any.                          |
+| **Driver**     | `bridge`, `overlay`, `macvlan`…                             |
+| **Subnet**     | Its IP range.                                               |
+| **Containers** | How many containers are attached, running or stopped.       |
+
+### Connecting containers
+
+Select a network to see its attached containers. On networks you created:
+
+- **Disconnect** detaches a container.
+- **Connect a container…** lists the containers not yet attached; pick one and choose **Connect**.
+
+The built-in networks can't be changed here.
+
+### Creating a network
+
+**Create network** takes a **Name**, a **Driver** (`bridge` when empty), and optionally a **Subnet** and **Gateway** — leave them empty to let the Engine choose. Two switches:
+
+- **Internal** — containers on the network can't reach outside networks.
+- **Attachable** — standalone containers can join an `overlay` network.
+
+### Removing networks
+
+Built-in networks can't be removed. For other networks, the confirmation says how many containers are still attached; the Engine refuses to remove a network with running containers on it. Containers that refer to a removed network by name won't start until it exists again.
+
+**Clean up** removes every custom network no container is attached to.

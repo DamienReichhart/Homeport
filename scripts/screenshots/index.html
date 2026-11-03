@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Homeport screenshots</title>
+    <style>
+      html {
+        background: #ffffff;
+      }
+      /* The app leaves native scrollbars to the webview; draw them dark in dark shots. */
+      html.dark {
+        background: #0b121b;
+        color-scheme: dark;
+      }
+      html.dark * {
+        scrollbar-color: #2b3646 transparent;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>

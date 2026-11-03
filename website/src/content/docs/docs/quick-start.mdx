@@ -1,0 +1,96 @@
+---
+title: Quick start
+description: Connect your first Host and find your way around Homeport in five minutes.
+---
+
+import { Aside, LinkCard, Steps } from '@astrojs/starlight/components';
+import DocScreenshot from '../../../components/DocScreenshot.astro';
+
+This guide takes you from a fresh install to running a container on your first Host.
+
+## 1. Add a Host
+
+The first time you open Homeport, it shows **Welcome to Homeport**.
+
+If a Docker Engine is running on this machine, it appears under **Found on this machine** with its version, for example `Docker Desktop · Engine 27.3.1`. Choose **Add** next to it and you're connected — skip to [step 2](#2-look-around).
+
+To connect to a remote Engine instead, choose **Add another host**:
+
+<Steps>
+
+1. Pick how to connect: **SSH**, **TLS**, **TCP** or **Local socket**. SSH is the usual choice for a server.
+
+2. Give the Host a **Name** you'll recognise, such as `production`.
+
+3. Fill in the connection details. For SSH that's the **Server**, **Port**, **User** and, if Docker isn't at the default place, the **Remote socket path**.
+
+4. Choose **Add host**. Homeport opens the Host's page and starts connecting.
+
+</Steps>
+
+<DocScreenshot
+  name="add-host-ssh"
+  alt="The Add host page with SSH selected."
+  caption="Adding an SSH Host. Homeport creates a key just for it."
+/>
+
+An SSH Host needs two more things the first time. [SSH Hosts](/docs/hosts/ssh/) walks through them:
+
+- **Trust the server's key.** Homeport shows the server's fingerprint; compare it and choose **Trust this key**.
+- **Authorise Homeport's key.** Copy the command under **Authorize Homeport on the server**, run it on the server, then choose **Reconnect**.
+
+When the status turns **Connected**, you're done.
+
+## 2. Look around
+
+The sidebar has a page for each kind of resource, and they all show the Host picked in the **Host switcher** at the top of the sidebar:
+
+| Page           | What it shows                                                            |
+| -------------- | ------------------------------------------------------------------------ |
+| **Overview**   | A card for every Host, the selected Host's engine, disk usage and events |
+| **Containers** | Every container, grouped by Stack, with live CPU and memory              |
+| **Images**     | Local images, what uses them, pulling and cleaning up                    |
+| **Volumes**    | Volumes and the containers that use them                                 |
+| **Networks**   | Networks, their subnets and attached containers                          |
+| **Stacks**     | Compose projects, Managed and External                                   |
+| **Events**     | What the Engine reported since Homeport connected                        |
+| **Settings**   | Theme, what this machine supports, and licences                          |
+
+Homeport refreshes as the Engine reports changes, so you never need a refresh button — start a container in a terminal and it appears straight away.
+
+## 3. Run a container
+
+<Steps>
+
+1. Open **Containers** and choose **Run container**.
+
+2. Enter an **Image**, such as `nginx:alpine`. Homeport pulls it first if the Host doesn't have it.
+
+3. Under **Ports**, choose **Add port** and map host port `8080` to container port `80`.
+
+4. Choose **Run**. Homeport opens the new container on its **Logs** tab.
+
+</Steps>
+
+Back on the Containers page, the port `8080:80/tcp` is a link: select it to open the site in your browser.
+
+## 4. Add more Hosts
+
+Add as many Hosts as you like with **Add host…** in the Host switcher. The Overview shows them all together; select a card to switch to that Host.
+
+<Aside type="tip">
+  Homeport remembers the Host you had selected, and reconnects to every Host when it starts.
+</Aside>
+
+## Where next
+
+<LinkCard
+  title="Hosts and connections"
+  description="Statuses, reconnection, and each kind of connection in detail."
+  href="/docs/hosts/"
+/>
+<LinkCard
+  title="Stacks"
+  description="Deploy compose files to any Host, and adopt Stacks deployed elsewhere."
+  href="/docs/guides/stacks/"
+/>

@@ -1,0 +1,56 @@
+---
+title: Verifying downloads
+description: Check a Homeport installer against its SHA-256 checksum and build provenance attestation.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Every Homeport release is built by GitHub Actions from the public repository. You can check that the file you downloaded is the one that was built, in two ways.
+
+## Checksums
+
+Each release includes `SHA256SUMS.txt`, with a SHA-256 checksum for every file. The [download page](/download/) also shows each file's checksum. Download `SHA256SUMS.txt` into the same folder as the installer, then:
+
+<Tabs syncKey="os">
+<TabItem label="Linux">
+
+```sh
+sha256sum --ignore-missing -c SHA256SUMS.txt
+```
+
+</TabItem>
+<TabItem label="macOS">
+
+```sh
+shasum -a 256 --ignore-missing -c SHA256SUMS.txt
+```
+
+</TabItem>
+<TabItem label="Windows">
+
+```powershell
+(Get-FileHash .\Homeport_0.2.0_x64-setup.exe -Algorithm SHA256).Hash.ToLower()
+```
+
+Compare the result with the installer's line in `SHA256SUMS.txt`.
+
+</TabItem>
+</Tabs>
+
+`OK` next to the file name means it matches.
+
+## Build provenance
+
+A checksum proves the file wasn't damaged or swapped after the checksum was published. A [build provenance attestation](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) goes further: it's signed by GitHub and records the repository, commit and workflow that produced the file.
+
+With the [GitHub CLI](https://cli.github.com) installed:
+
+```sh
+gh attestation verify Homeport_0.2.0_x64-setup.exe --repo DamienReichhart/Homeport
+```
+
+A successful check prints the workflow and commit the file was built from.
+
+## Code signing
+
+The macOS app is ad-hoc signed and Windows installers aren't signed with a commercial certificate yet, so macOS and Windows ask you to confirm the first launch. [Installation](/docs/installation/) shows how. Linux packages aren't signed; use the checks above.

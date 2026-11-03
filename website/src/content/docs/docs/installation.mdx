@@ -1,0 +1,129 @@
+---
+title: Installation
+description: Install Homeport on Windows, macOS or Linux.
+---
+
+import { Aside, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Homeport has installers for Windows, macOS and Linux, each for x64 and ARM. Get them from the [download page](/download/), which points you at the right file for your system, or from the [latest GitHub release](https://github.com/DamienReichhart/Homeport/releases/latest).
+
+<Aside>
+  Homeport manages Docker Engines but doesn't include one. If you want containers on this machine,
+  install Docker Engine, Docker Desktop, Colima, OrbStack, Rancher Desktop or Podman too — or
+  connect Homeport to a remote server instead. See the [system requirements](/docs/requirements/).
+</Aside>
+
+## Windows
+
+| File                                 | Use it for                                       |
+| ------------------------------------ | ------------------------------------------------ |
+| `Homeport_<version>_x64-setup.exe`   | Most PCs. Installs for the current user.         |
+| `Homeport_<version>_arm64-setup.exe` | Windows on ARM (Snapdragon and other ARM64 PCs). |
+| `Homeport_<version>_x64_en-US.msi`   | Managed and silent installs on x64.              |
+
+<Steps>
+
+1. Download the installer for your PC and open it.
+
+2. Windows SmartScreen may say **Windows protected your PC**, because the installer isn't signed with a paid certificate yet. Choose **More info**, then **Run anyway**.
+
+3. Follow the installer. Homeport is added to the Start menu.
+
+</Steps>
+
+For a silent install with the MSI package:
+
+```powershell
+msiexec /i Homeport_<version>_x64_en-US.msi /quiet
+```
+
+## macOS
+
+| File                             | Use it for                              |
+| -------------------------------- | --------------------------------------- |
+| `Homeport_<version>_aarch64.dmg` | Macs with Apple silicon (M1 and later). |
+| `Homeport_<version>_x64.dmg`     | Macs with an Intel processor.           |
+
+Not sure which you have? Open the Apple menu → **About This Mac**: a **Chip** line means Apple silicon, a **Processor** line naming Intel means Intel.
+
+<Steps>
+
+1. Open the `.dmg` and drag **Homeport** into **Applications**.
+
+2. Open Homeport from Applications or Launchpad.
+
+3. Homeport isn't notarised by Apple yet, so macOS may say it **can't be opened** or **can't check it for malicious software**. Choose **Done** (or **OK**), open **System Settings → Privacy & Security**, scroll to Security and choose **Open Anyway** next to Homeport. Confirm, and macOS remembers your choice.
+
+</Steps>
+
+<Aside type="tip" title="From the terminal">
+  You can also clear the quarantine flag macOS puts on downloaded apps:
+
+```sh
+xattr -dr com.apple.quarantine /Applications/Homeport.app
+```
+
+</Aside>
+
+## Linux
+
+Homeport for Linux needs glibc 2.35 or later — Ubuntu 22.04, Debian 12, Fedora 36 or anything newer. Pick the format for your distribution:
+
+<Tabs syncKey="linux-format">
+<TabItem label="Debian, Ubuntu">
+
+Download the `.deb` (`amd64` for x64, `arm64` for ARM) and install it with `apt`, which pulls in its dependencies:
+
+```sh
+sudo apt install ./Homeport_<version>_amd64.deb
+```
+
+</TabItem>
+<TabItem label="Fedora, RHEL, openSUSE">
+
+Download the `.rpm` (`x86_64` or `aarch64`) and install it:
+
+```sh
+# Fedora, RHEL, Rocky, AlmaLinux
+sudo dnf install ./Homeport-<version>-1.x86_64.rpm
+
+# openSUSE
+sudo zypper install ./Homeport-<version>-1.x86_64.rpm
+```
+
+</TabItem>
+<TabItem label="AppImage">
+
+The AppImage runs on most distributions without installing anything. Make it executable and run it:
+
+```sh
+chmod +x Homeport_<version>_amd64.AppImage
+./Homeport_<version>_amd64.AppImage
+```
+
+Each time it runs, it adds Homeport to your application menu. If it doesn't start and mentions FUSE, install `libfuse2` (`libfuse2t64` on Ubuntu 24.04 and later).
+
+</TabItem>
+</Tabs>
+
+The `.deb` and `.rpm` packages add Homeport to your application menu and install its licence notices in `/usr/share/doc/homeport/` or `/usr/share/licenses/homeport/`.
+
+<Aside type="caution" title="Using Docker on this machine?">
+  To reach the local Docker socket without root, your user must be in the `docker` group:
+
+```sh
+sudo usermod -aG docker $USER
+```
+
+Log out and back in for it to take effect. Without it, a local Host shows as **Unreachable** with
+_Permission denied_.
+
+</Aside>
+
+## Check your download
+
+Every release lists a SHA-256 checksum for each file and a signed build provenance attestation. [Verifying downloads](/docs/reference/verifying/) shows how to check them.
+
+## Next
+
+Open Homeport and follow the [quick start](/docs/quick-start/) to connect your first Host.

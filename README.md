@@ -7,6 +7,8 @@
 
 **Every Docker Engine, docked in one place.**
 
+[Website](https://damienreichhart.github.io/Homeport/) · [Documentation](https://damienreichhart.github.io/Homeport/docs/) · [Download](https://damienreichhart.github.io/Homeport/download/)
+
 A desktop app for managing Docker Engines anywhere — this machine's, or remote ones over SSH, TLS or TCP — in the spirit of Docker Desktop. Built with [Tauri 2](https://tauri.app), React 19, TypeScript and Rust ([bollard](https://github.com/fussybeaver/bollard) for the Engine API, SQLite for its own data).
 
 ## Features
@@ -21,7 +23,7 @@ Secrets (SSH keys, TLS material, stack environments) are encrypted in SQLite wit
 
 ## Download
 
-Installers for Windows, macOS and Linux (x64 and ARM) are on the [releases page](https://github.com/DamienReichhart/Homeport/releases/latest). Pushing a new version to `main` publishes it; see [docs/RELEASING.md](docs/RELEASING.md).
+Installers for Windows, macOS and Linux (x64 and ARM) are on the [download page](https://damienreichhart.github.io/Homeport/download/) and the [releases page](https://github.com/DamienReichhart/Homeport/releases/latest). Pushing a new version to `main` publishes it; see [docs/RELEASING.md](docs/RELEASING.md).
 
 ## Prerequisites
 
@@ -54,6 +56,19 @@ Integration tests talk to the local Docker Engine (and the compose CLI). They on
 `bun run licenses` writes `src-tauri/licenses/THIRD_PARTY_LICENSES.txt` (gitignored): every Rust crate (via `cargo about`) and npm production dependency compiled into Homeport, with its license text. It fails when a dependency's license isn't in `about.toml > accepted`, so review a new license before adding it there. `tauri build` runs it first (`beforeBuildCommand`), and a release build without the file stops with an error.
 
 Every bundle ships `LICENSE` and the notices in its resources (`licenses/`), and Settings shows both under **Licenses**. The `.deb` also installs them in `/usr/share/doc/homeport/`, the `.rpm` in `/usr/share/licenses/homeport/`, and the MSI/NSIS installers show `LICENSE`.
+
+## Website
+
+The website and user documentation live in [`website/`](website), built with [Astro](https://astro.build) and [Starlight](https://starlight.astro.build) and published to GitHub Pages by `.github/workflows/pages.yml`: on every push to `main` that touches it, and after every release, so the download page always lists the latest installers.
+
+```sh
+cd website
+bun install
+bun run dev     # http://localhost:4321/Homeport/
+bun run build   # type-checks, validates links and builds into website/dist/
+```
+
+User docs are Markdown in `website/src/content/docs/docs/`. The app screenshots in `website/src/assets/screenshots/` come from the real UI with demo data: `bun run screenshots` (at the repo root, needs Firefox) retakes them, and `bun scripts/brand-images.ts` (in `website/`) regenerates the social card and icons.
 
 ## Layout
 
