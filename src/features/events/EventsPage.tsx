@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { ActivityIcon } from 'lucide-react';
 import { useState } from 'react';
-import { HostGate } from '@/features/hosts';
+import { HostGate } from '@/core/host';
 import { commands, keys, type EngineEvent } from '@/shared/api';
 import { formatDateTime } from '@/shared/lib';
 import {

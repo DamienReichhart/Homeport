@@ -1,6 +1,6 @@
 import type { HostStatus } from '@/shared/api';
 import { StatusDot } from '@/shared/ui';
-import { describeStatus } from '../status';
+import { describeStatus } from '../model/status';
 
 export function HostStatusBadge({ status }: { status: HostStatus }) {
   const { label, tone } = describeStatus(status);

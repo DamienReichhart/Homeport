@@ -1,12 +1,11 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { RefreshCwIcon, ServerOffIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { commands, keys, type HostInput } from '@/shared/api';
 import { Button, EmptyState, ErrorMessage, LogoMark, Spinner } from '@/shared/ui';
-import { useHosts } from '../api';
-import { useHostSelection } from '../context';
-import { describeStatus, statusError } from '../status';
+import { useCreateHost, useReconnectHost } from '../api/mutations';
+import { useHosts } from '../api/queries';
+import { describeStatus, statusError } from '../model/status';
+import { useHostSelection } from '../selection/context';
 import { LocalEngines } from './LocalEngines';
 
 /**
@@ -16,15 +15,8 @@ import { LocalEngines } from './LocalEngines';
 export function HostGate({ children }: { children: (hostId: string) => ReactNode }) {
   const hosts = useHosts();
   const { host, select } = useHostSelection();
-  const client = useQueryClient();
-  const reconnect = useMutation({ mutationFn: (id: string) => commands.hostsReconnect(id) });
-  const add = useMutation({
-    mutationFn: (input: HostInput) => commands.hostsCreate(input),
-    onSuccess: async (view) => {
-      await client.invalidateQueries({ queryKey: keys.hosts });
-      select(view.host.id);
-    },
-  });
+  const reconnect = useReconnectHost();
+  const add = useCreateHost((view) => select(view.host.id));
 
   if (hosts.isPending) return <Spinner />;
   if (!host) {

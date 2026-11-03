@@ -3,7 +3,7 @@ import { RefreshCwIcon, ShieldAlertIcon, ShieldQuestionIcon, TrashIcon } from 'l
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { commands, keys, type HostView } from '@/shared/api';
+import { commands, type HostView, keys, useCapabilities } from '@/shared/api';
 import {
   Alert,
   AlertDescription,
@@ -23,11 +23,15 @@ import {
   Switch,
   useConfirm,
 } from '@/shared/ui';
-import { useCapabilities, useHosts } from '../api';
+import {
+  connectionLabel,
+  describeStatus,
+  HostStatusBadge,
+  statusError,
+  useHosts,
+} from '@/core/host';
 import { formFromHost, toHostInput, type HostFormState } from '../form';
-import { connectionLabel, describeStatus, statusError } from '../status';
 import { HostForm } from './HostForm';
-import { HostStatusBadge } from './HostStatusBadge';
 
 function CommandBlock({ label, command }: { label: string; command: string }) {
   return (

@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { MonitorIcon, PlusIcon } from 'lucide-react';
-import { commands, keys, type HostInput } from '@/shared/api';
+import type { HostInput } from '@/shared/api';
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui';
-import { useHosts } from '../api';
+import { hostQueries, useHosts } from '../api/queries';
 
 /** Engines answering on this machine's sockets that aren't Hosts yet, one click to add. */
 export function LocalEngines({
@@ -13,10 +13,7 @@ export function LocalEngines({
   pending: boolean;
 }) {
   const hosts = useHosts();
-  const detected = useQuery({
-    queryKey: keys.localEngines,
-    queryFn: () => commands.hostsDetectLocal(),
-  });
+  const detected = useQuery(hostQueries.localEngines());
   const added = new Set(
     hosts.data?.flatMap(({ host }) =>
       host.connection.kind === 'local' ? [host.connection.socketPath] : [],

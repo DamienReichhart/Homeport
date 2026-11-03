@@ -8,7 +8,8 @@ import {
   Trash2Icon,
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { HostGate } from '@/features/hosts';
+import { HostGate, useContainers } from '@/core/host';
+import { useContainerMutations } from '../api';
 import { commands, keys } from '@/shared/api';
 import {
   Badge,
@@ -24,7 +25,6 @@ import {
   TabsTrigger,
   useConfirm,
 } from '@/shared/ui';
-import { useContainerMutations, useContainers } from '../api';
 import type { ContainerInspect } from '../types';
 import { removeConfirmation } from './ContainerMenu';
 import { ExecTab } from './ExecTab';

@@ -1,7 +1,7 @@
 import { BoxesIcon, PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { HostGate } from '@/features/hosts';
+import { HostGate } from '@/core/host';
 import { type Stack } from '@/shared/api';
 import {
   Badge,

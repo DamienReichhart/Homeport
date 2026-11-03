@@ -12,7 +12,7 @@ import {
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { RunContainerDialog } from '@/features/containers';
-import { HostGate } from '@/features/hosts';
+import { HostGate } from '@/core/host';
 import { commands, keys, type Image } from '@/shared/api';
 import { formatBytes, formatRelative, shortId } from '@/shared/lib';
 import {

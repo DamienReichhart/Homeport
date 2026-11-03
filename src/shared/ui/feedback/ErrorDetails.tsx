@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { FolderOpenIcon } from 'lucide-react';
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import { commands, errorReport, keys, toAppError, type AppError } from '@/shared/api';
+import { appQueries, commands, errorReport, toAppError, type AppError } from '@/shared/api';
 import { Button } from '../primitives/button';
 import { CopyButton } from '../data/CopyButton';
 import {
@@ -42,7 +42,7 @@ export function ErrorDetailsHost() {
 }
 
 function ErrorDetailsDialog({ error, onClose }: { error: AppError; onClose: () => void }) {
-  const app = useQuery({ queryKey: keys.appInfo, queryFn: () => commands.getAppInfo() });
+  const app = useQuery(appQueries.info());
   const [openLogError, setOpenLogError] = useState<AppError | null>(null);
   const facts: [string, string][] = [
     ['Code', error.code],

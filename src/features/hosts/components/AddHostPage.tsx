@@ -1,13 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { commands, keys, type HostInput } from '@/shared/api';
+import { commands, type HostInput, keys, useCapabilities } from '@/shared/api';
 import { Button, Card, CardContent, ErrorMessage, PageHeader } from '@/shared/ui';
-import { useCapabilities } from '../api';
-import { useHostSelection } from '../context';
+import { LocalEngines, useHostSelection } from '@/core/host';
 import { emptyForm, toHostInput } from '../form';
 import { HostForm } from './HostForm';
-import { LocalEngines } from './LocalEngines';
 
 export function AddHostPage() {
   const navigate = useNavigate();

@@ -1,3 +1,4 @@
+import { useCapabilities } from '@/shared/api';
 import {
   CloudDownloadIcon,
   EllipsisVerticalIcon,
@@ -8,7 +9,6 @@ import {
   Trash2Icon,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useCapabilities } from '@/features/hosts';
 import type { Stack } from '@/shared/api';
 import {
   Button,

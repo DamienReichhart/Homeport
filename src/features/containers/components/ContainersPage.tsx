@@ -11,7 +11,8 @@ import {
 } from 'lucide-react';
 import { Fragment, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { HostGate, hostAddress, useHostSelection } from '@/features/hosts';
+import { hostAddress, HostGate, useContainers, useHostSelection } from '@/core/host';
+import { useContainerMutations, useUsage } from '../api';
 import type { Container, ContainerUsage } from '@/shared/api';
 import { formatBytes, formatPercent, formatRelative, shortId } from '@/shared/lib';
 import {
@@ -36,7 +37,6 @@ import {
   toastError,
   useConfirm,
 } from '@/shared/ui';
-import { useContainerMutations, useContainers, useUsage } from '../api';
 import { groupByStack, portLabels } from '../grouping';
 import { ContainerMenu, removeConfirmation } from './ContainerMenu';
 import { RenameDialog } from './RenameDialog';

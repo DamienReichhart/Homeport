@@ -12,9 +12,7 @@ import {
   showErrorDetails,
   StatusDot,
 } from '@/shared/ui';
-import { useHosts } from '../api';
-import { useHostSelection } from '../context';
-import { describeStatus, statusError } from '../status';
+import { describeStatus, statusError, useHosts, useHostSelection } from '@/core/host';
 
 /** The status and its reason, shown when hovering a host in the list. */
 function statusTitle(status: HostStatus): string {

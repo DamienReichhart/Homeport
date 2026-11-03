@@ -3,9 +3,16 @@ import { ArrowLeftIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { LogViewer, useContainers } from '@/features/containers';
-import { HostGate, useCapabilities } from '@/features/hosts';
-import { commands, keys, type ComposeCheck, type ManagedStack, type Stack } from '@/shared/api';
+import { LogViewer } from '@/features/containers';
+import { HostGate, useContainers } from '@/core/host';
+import {
+  commands,
+  type ComposeCheck,
+  keys,
+  type ManagedStack,
+  type Stack,
+  useCapabilities,
+} from '@/shared/api';
 import {
   Badge,
   Button,

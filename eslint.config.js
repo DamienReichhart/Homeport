@@ -36,6 +36,10 @@ export default tseslint.config(
               message: 'Import a feature through its public API (@/features/<name>) only.',
             },
             {
+              group: ['@/core/*/*'],
+              message: 'Import a core module through its public API (@/core/<name>) only.',
+            },
+            {
               group: ['@/shared/ui/*'],
               message: 'Import UI components from the kit (@/shared/ui) only.',
             },
@@ -52,8 +56,32 @@ export default tseslint.config(
         {
           patterns: [
             {
+              group: ['@/features/*', '@/core/*', '@/app/*'],
+              message: 'shared/ must not depend on features/, core/ or app/.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/core/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
               group: ['@/features/*', '@/app/*'],
-              message: 'shared/ must not depend on features/ or app/.',
+              message: 'core/ must not depend on features/ or app/.',
+            },
+            {
+              group: ['@/core/*/*'],
+              message: 'Import a core module through its public API (@/core/<name>) only.',
+            },
+            {
+              group: ['@/shared/ui/*'],
+              message: 'Import UI components from the kit (@/shared/ui) only.',
             },
           ],
         },

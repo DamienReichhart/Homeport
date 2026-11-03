@@ -1,23 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react';
-import { commands, keys, type HostView, type Settings } from '@/shared/api';
-import { useHosts } from './api';
-
-interface Selection {
-  hostId: string | null;
-  host: HostView | null;
-  select: (hostId: string) => void;
-}
-
-const SelectionContext = createContext<Selection | null>(null);
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { patchSettings, settingsQuery } from '@/core/settings';
+import { useHosts } from '../api/queries';
+import { HostSelectionContext, type HostSelection } from './context';
 
 /** Tracks the Host the resource pages show, remembered across launches. */
 export function HostProvider({ children }: { children: ReactNode }) {
@@ -26,11 +11,11 @@ export function HostProvider({ children }: { children: ReactNode }) {
   const [hostId, setHostId] = useState<string | null>(null);
 
   useEffect(() => {
-    commands
-      .getSettings()
+    client
+      .fetchQuery(settingsQuery())
       .then((s) => setHostId((current) => current ?? s.lastHostId ?? null))
       .catch(() => {});
-  }, []);
+  }, [client]);
 
   const list = hosts.data;
   // Fall back to the first Host when the remembered one is gone.
@@ -42,16 +27,12 @@ export function HostProvider({ children }: { children: ReactNode }) {
   const select = useCallback(
     (id: string) => {
       setHostId(id);
-      void commands
-        .getSettings()
-        .then((s) => commands.updateSettings({ ...s, lastHostId: id }))
-        .then((s) => client.setQueryData<Settings>(keys.settings, s))
-        .catch(() => {});
+      void patchSettings(client, { lastHostId: id }).catch(() => {});
     },
     [client],
   );
 
-  const value = useMemo<Selection>(
+  const value = useMemo<HostSelection>(
     () => ({
       hostId: effectiveId,
       host: list?.find((h) => h.host.id === effectiveId) ?? null,
@@ -59,11 +40,5 @@ export function HostProvider({ children }: { children: ReactNode }) {
     }),
     [effectiveId, list, select],
   );
-  return <SelectionContext.Provider value={value}>{children}</SelectionContext.Provider>;
-}
-
-export function useHostSelection(): Selection {
-  const value = useContext(SelectionContext);
-  if (!value) throw new Error('useHostSelection needs a HostProvider');
-  return value;
+  return <HostSelectionContext.Provider value={value}>{children}</HostSelectionContext.Provider>;
 }

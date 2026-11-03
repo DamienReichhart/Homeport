@@ -1,15 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { commands, keys, subscribe, type ContainerAction, type ContainerUsage } from '@/shared/api';
 import { toastError } from '@/shared/ui';
-
-export function useContainers(hostId: string) {
-  return useQuery({
-    queryKey: keys.containers(hostId),
-    queryFn: () => commands.containersList(hostId),
-  });
-}
 
 /** Live CPU and memory of every running container, keyed by id. */
 export function useUsage(hostId: string): Map<string, ContainerUsage> {

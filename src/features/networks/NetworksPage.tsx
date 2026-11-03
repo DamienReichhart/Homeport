@@ -9,8 +9,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { useContainers } from '@/features/containers';
-import { HostGate } from '@/features/hosts';
+import { HostGate, useContainers } from '@/core/host';
 import { commands, keys, type NetworkInput, type NetworkView } from '@/shared/api';
 import {
   Badge,

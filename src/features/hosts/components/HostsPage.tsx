@@ -2,9 +2,7 @@ import { PlusIcon } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { HostView } from '@/shared/api';
 import { Badge, Button, type ColumnDef, DataTable, ErrorMessage, PageHeader } from '@/shared/ui';
-import { useHosts } from '../api';
-import { connectionLabel, describeAddress } from '../status';
-import { HostStatusBadge } from './HostStatusBadge';
+import { connectionLabel, describeAddress, HostStatusBadge, useHosts } from '@/core/host';
 
 const columns: ColumnDef<HostView, unknown>[] = [
   {

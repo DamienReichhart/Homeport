@@ -1,7 +1,7 @@
 import { MutationCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, useState, type ReactNode } from 'react';
-import { HostProvider } from '@/features/hosts';
-import { settingsApi } from '@/features/settings';
+import { HostProvider } from '@/core/host';
+import { settingsQuery } from '@/core/settings';
 import { applyTheme } from '@/shared/lib';
 import { ErrorDetailsHost, Toaster, toastError, TooltipProvider } from '@/shared/ui';
 import { LiveUpdates } from './LiveUpdates';
@@ -27,11 +27,11 @@ export function createQueryClient() {
 export function AppProviders({ children, client }: { children: ReactNode; client?: QueryClient }) {
   const [queryClient] = useState(() => client ?? createQueryClient());
   useEffect(() => {
-    settingsApi
-      .get()
+    queryClient
+      .fetchQuery(settingsQuery())
       .then((s) => applyTheme(s.theme ?? 'system'))
       .catch(() => applyTheme('system'));
-  }, []);
+  }, [queryClient]);
 
   return (
     <QueryClientProvider client={queryClient}>

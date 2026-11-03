@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { HostGate, useCapabilities } from '@/features/hosts';
-import { commands, keys, type ComposeCheck } from '@/shared/api';
+import { HostGate } from '@/core/host';
+import { commands, type ComposeCheck, keys, useCapabilities } from '@/shared/api';
 import {
   Alert,
   AlertDescription,

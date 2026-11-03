@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { BrushCleaningIcon, HardDriveIcon, InfoIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { HostGate } from '@/features/hosts';
+import { HostGate } from '@/core/host';
 import { commands, keys, type VolumeView } from '@/shared/api';
 import { formatBytes } from '@/shared/lib';
 import {

@@ -1,6 +1,7 @@
 import { TriangleAlertIcon } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { HostSwitcher, useCapabilities } from '@/features/hosts';
+import { HostSwitcher } from '@/features/hosts';
+import { useCapabilities } from '@/shared/api';
 import { UpdateNotice } from '@/features/updates';
 import { cn } from '@/shared/lib';
 import { Logo } from '@/shared/ui';

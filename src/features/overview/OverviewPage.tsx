@@ -4,13 +4,13 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUsage } from '@/features/containers';
 import {
-  HostGate,
-  HostStatusBadge,
   connectionLabel,
   describeAddress,
-  useHostSelection,
+  HostGate,
+  HostStatusBadge,
   useHosts,
-} from '@/features/hosts';
+  useHostSelection,
+} from '@/core/host';
 import { commands, keys, type HostView } from '@/shared/api';
 import { cn, formatBytes, formatPercent, formatRelative } from '@/shared/lib';
 import {
