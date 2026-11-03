@@ -15,7 +15,6 @@ import { useCapabilities, useHosts } from '../api';
 import { formFromHost, toHostInput, type HostFormState } from '../form';
 import { connectionLabel, describeStatus, statusError } from '../status';
 import { HostForm } from './HostForm';
-import { HostProblem } from './HostProblem';
 import { HostStatusBadge } from './HostStatusBadge';
 
 function CommandBlock({ label, command }: { label: string; command: string }) {
@@ -229,12 +228,7 @@ function HostDetail({ view }: { view: HostView }) {
       />
       <TrustPrompt view={view} />
       {statusError(view.status) && (
-        <Alert variant="destructive">
-          <AlertTitle>{detail}</AlertTitle>
-          <AlertDescription>
-            <HostProblem status={view.status} />
-          </AlertDescription>
-        </Alert>
+        <ErrorMessage error={statusError(view.status)} onRetry={() => reconnect.mutate()} />
       )}
       {view.host.connection.kind === 'ssh' && view.host.connection.publicKey && (
         <SshSetupCard view={view} />

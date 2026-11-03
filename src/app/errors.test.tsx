@@ -88,7 +88,11 @@ describe('error handling', () => {
     const user = userEvent.setup();
     renderApp('/containers');
 
-    await user.click(await screen.findByRole('button', { name: /Retry now/ }));
+    expect(
+      await screen.findByText('prod.example:2375 refused the connection.'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Homeport tries again on its own in 30s.')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Retry' }));
     const message = await screen.findByText('Homeport’s database is busy.');
     const toast = message.closest<HTMLElement>('[data-sonner-toast]')!;
     expect(within(toast).getByText('Another Homeport may be running.')).toBeInTheDocument();
@@ -142,5 +146,22 @@ describe('error handling', () => {
     // The sidebar survives, so the rest of the app stays usable.
     expect(screen.getByRole('link', { name: /Overview/ })).toBeInTheDocument();
     consoleError.mockRestore();
+  });
+
+  it('explains a host that can’t be used from the host switcher', async () => {
+    mockCommands({
+      ...baseCommands,
+      get_app_info: appInfo,
+      hosts_list: () => [
+        { ...connectedHost, status: { state: 'unauthorized', error: accessRefused } },
+      ],
+    });
+    const user = userEvent.setup();
+    renderApp('/settings');
+
+    await user.click(await screen.findByRole('button', { name: 'Why local can’t be used' }));
+    const details = await screen.findByRole('dialog');
+    expect(within(details).getByText(accessRefused.hint.text)).toBeInTheDocument();
+    expect(within(details).getByText('permission_denied')).toBeInTheDocument();
   });
 });
