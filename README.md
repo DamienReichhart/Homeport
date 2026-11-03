@@ -1,4 +1,11 @@
-# Homeport
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/lockup-dark.svg" />
+    <img src="assets/brand/lockup-light.svg" alt="Homeport" height="64" />
+  </picture>
+</h1>
+
+**Every Docker Engine, docked in one place.**
 
 A desktop app for managing Docker Engines anywhere — this machine's, or remote ones over SSH, TLS or TCP — in the spirit of Docker Desktop. Built with [Tauri 2](https://tauri.app), React 19, TypeScript and Rust ([bollard](https://github.com/fussybeaver/bollard) for the Engine API, SQLite for its own data).
 

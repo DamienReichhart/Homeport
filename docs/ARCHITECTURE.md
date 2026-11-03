@@ -28,6 +28,7 @@ When a service grows large, promote it to a workspace crate under `crates/` (the
 ## Building blocks
 
 - **UI**: shadcn/ui components (Tailwind v4) live in `src/shared/ui`; add more with `bunx shadcn add <name>`.
+- **Brand**: colours, type and the logo are tokens in `src/shared/styles/global.css` and `<Logo />`/`<LogoMark />` in `src/shared/ui`; see [BRAND.md](BRAND.md). Use the tokens (`bg-success`, `text-warning`, `--chart-n`), not Tailwind's palette.
 - **Server state**: TanStack Query. Query keys are centralised in `src/shared/api/keys.ts` so `app/providers/LiveUpdates.tsx` can invalidate them from pushed Engine events instead of polling.
 - **Streams**: logs, stats, exec, pulls and compose output use Tauri channels. Start one with `subscribe()` from `@/shared/api`; the returned function cancels it on the backend.
 - **Storage**: SQLite (`homeport.db` in the app data dir) via `services/db.rs`, migrated on open. Secrets are sealed with `services/crypto.rs` (ADR 0002).
