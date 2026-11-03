@@ -11,39 +11,38 @@ name = "homeport_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2", features = [] }
+tauri-build.workspace = true
 
 [dependencies]
-tauri = { version = "2", features = [] }
-tauri-plugin-opener = "2"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-thiserror = "2"
-log = "0.4"
-tauri-plugin-log = "2"
-tauri-specta = { version = "=2.0.0-rc.26", features = ["derive", "typescript"] }
-specta = { version = "=2.0.0-rc.26", features = ["derive", "serde_json"] }
-specta-typescript = "=0.0.13"
-rusqlite = { version = "0.40", features = ["bundled"] }
-rusqlite_migration = "2.6"
-chacha20poly1305 = "0.10"
-getrandom = "0.3"
-keyring = "4"
-uuid = { version = "1", features = ["v4"] }
-russh = { version = "0.65", default-features = false, features = ["ring", "flate2", "rsa"] }
-bollard = "0.21"
-tokio = { version = "1", features = ["full"] }
-hyper = { version = "1", features = ["client", "http1"] }
-hyper-util = { version = "0.1", features = ["tokio"] }
-futures-util = "0.3"
-rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12", "logging"] }
-tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12", "logging"] }
-rustls-pki-types = { version = "1", features = ["std"] }
-gethostname = "1"
-tar = "0.4"
-shell-words = "1"
-serde_yaml_ng = "0.10"
-tempfile = "3"
-tauri-plugin-dialog = "2"
-tauri-plugin-updater = "2"
-
+tauri.workspace = true
+tauri-plugin-opener.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+log.workspace = true
+tauri-plugin-log.workspace = true
+tauri-specta.workspace = true
+specta.workspace = true
+specta-typescript.workspace = true
+rusqlite.workspace = true
+rusqlite_migration.workspace = true
+chacha20poly1305.workspace = true
+getrandom.workspace = true
+keyring.workspace = true
+uuid.workspace = true
+russh.workspace = true
+bollard.workspace = true
+tokio.workspace = true
+hyper.workspace = true
+hyper-util.workspace = true
+futures-util.workspace = true
+rustls.workspace = true
+tokio-rustls.workspace = true
+rustls-pki-types.workspace = true
+gethostname.workspace = true
+tar.workspace = true
+shell-words.workspace = true
+serde_yaml_ng.workspace = true
+tempfile.workspace = true
+tauri-plugin-dialog.workspace = true
+tauri-plugin-updater.workspace = true
