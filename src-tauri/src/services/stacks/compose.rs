@@ -12,12 +12,13 @@ use tokio::{
     process::Command,
 };
 
+use homeport_core::programs;
+
 use super::definition;
 use crate::{
     error::{compose as errors, AppError, AppResult, ErrorCode},
     services::{
         hosts::HostConnection,
-        programs,
         transport::{proxy, Dialer},
     },
 };

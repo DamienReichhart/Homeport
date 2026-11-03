@@ -1,14 +1,12 @@
+use homeport_core::streams::StreamId;
 use tauri::{ipc::Channel, State};
 
 use crate::{
     error::AppResult,
-    services::{
-        docker::{
-            images::{self, PullEvent},
-            logs::{self, LogEvent, LogOptions, LogSource},
-            stats::{self, ContainerUsage, StatsSample},
-        },
-        streams::StreamId,
+    services::docker::{
+        images::{self, PullEvent},
+        logs::{self, LogEvent, LogOptions, LogSource},
+        stats::{self, ContainerUsage, StatsSample},
     },
     state::AppState,
 };

@@ -1,14 +1,12 @@
 use std::path::Path;
 
+use homeport_core::local_files;
 use serde::Serialize;
 use tauri::{AppHandle, Manager, State};
 
 use crate::{
-    error::{AppError, AppResult},
-    services::{
-        local_files,
-        stacks::compose::{self, ComposeCli},
-    },
+    error::{self, AppError, AppResult},
+    services::stacks::compose::{self, ComposeCli},
     state::AppState,
 };
 
@@ -46,7 +44,8 @@ pub struct Licenses {
 pub fn get_licenses(app: AppHandle) -> AppResult<Licenses> {
     let path = app
         .path()
-        .resource_dir()?
+        .resource_dir()
+        .map_err(error::window)?
         .join("licenses/THIRD_PARTY_LICENSES.txt");
     let third_party = match std::fs::read_to_string(path) {
         Ok(text) => Some(text),
@@ -110,7 +109,7 @@ pub fn read_text_file(path: String) -> AppResult<String> {
 #[specta::specta]
 pub fn open_log_folder(app: AppHandle) -> AppResult<()> {
     use tauri_plugin_opener::OpenerExt;
-    let dir = app.path().app_log_dir()?;
+    let dir = app.path().app_log_dir().map_err(error::window)?;
     local_files::ensure_folder(&dir)?;
     app.opener()
         .open_path(dir.to_string_lossy(), None::<&str>)

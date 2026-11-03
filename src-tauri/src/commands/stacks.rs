@@ -1,3 +1,4 @@
+use homeport_core::streams::StreamId;
 use tauri::{ipc::Channel, State};
 
 use crate::{
@@ -12,7 +13,6 @@ use crate::{
             store::ManagedStack,
             Stack,
         },
-        streams::StreamId,
     },
     state::AppState,
 };

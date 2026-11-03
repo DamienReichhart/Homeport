@@ -2136,6 +2136,7 @@ dependencies = [
  "futures-util",
  "gethostname",
  "getrandom 0.3.4",
+ "homeport-core",
  "hyper",
  "hyper-util",
  "keyring",
@@ -2164,6 +2165,21 @@ dependencies = [
  "tokio",
  "tokio-rustls",
  "uuid",
+]
+
+[[package]]
+name = "homeport-core"
+version = "0.4.0"
+dependencies = [
+ "bollard",
+ "log",
+ "russh",
+ "serde",
+ "serde_json",
+ "specta",
+ "tempfile",
+ "thiserror 2.0.21",
+ "tokio",
 ]
 
 [[package]]

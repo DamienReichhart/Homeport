@@ -46,3 +46,4 @@ serde_yaml_ng.workspace = true
 tempfile.workspace = true
 tauri-plugin-dialog.workspace = true
 tauri-plugin-updater.workspace = true
+homeport-core = { workspace = true, features = ["bollard", "russh"] }

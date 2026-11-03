@@ -5,6 +5,12 @@
 
 use super::{reach, AppError, ErrorCode};
 
+impl From<bollard::errors::Error> for AppError {
+    fn from(e: bollard::errors::Error) -> Self {
+        from_bollard(&e)
+    }
+}
+
 /// Turns a bollard failure into something the user can act on.
 pub fn from_bollard(error: &bollard::errors::Error) -> AppError {
     use bollard::errors::Error;

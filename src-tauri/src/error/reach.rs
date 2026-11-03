@@ -3,41 +3,11 @@
 
 use std::{error::Error as StdError, io};
 
-use super::{AppError, ErrorCode};
-use crate::services::programs;
-
-/// `error` as an `io::Error`, looking through the transparent wrappers of
-/// bollard and russh (whose `source()` skips the io::Error itself).
-fn as_io<'a>(error: &'a (dyn StdError + 'static)) -> Option<&'a io::Error> {
-    if let Some(io) = error.downcast_ref::<io::Error>() {
-        return Some(io);
-    }
-    if let Some(bollard::errors::Error::IOError { err }) =
-        error.downcast_ref::<bollard::errors::Error>()
-    {
-        return Some(err);
-    }
-    if let Some(russh::Error::IO(err)) = error.downcast_ref::<russh::Error>() {
-        return Some(err);
-    }
-    None
-}
-
-/// Every `io::Error` in `error`'s chain, outermost first.
-fn io_errors<'a>(error: &'a (dyn StdError + 'static)) -> impl Iterator<Item = &'a io::Error> {
-    std::iter::successors(Some(error), |&e| e.source()).filter_map(as_io)
-}
-
-/// The first `io::Error` in `error`'s chain.
-pub fn io_cause<'a>(error: &'a (dyn StdError + 'static)) -> Option<&'a io::Error> {
-    io_errors(error).next()
-}
-
-/// An error a dialer already classified, carried inside an `io::Error`
-/// through hyper and bollard.
-pub fn classified_cause<'a>(error: &'a (dyn StdError + 'static)) -> Option<&'a AppError> {
-    io_errors(error).find_map(|io| io.get_ref()?.downcast_ref::<AppError>())
-}
+pub use homeport_core::error::reach::{as_io, classified_cause, connection_lost, io_cause};
+use homeport_core::{
+    error::{chain, AppError, ErrorCode},
+    programs,
+};
 
 /// The software that usually provides a local Engine socket.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -198,7 +168,7 @@ fn permission_denied(socket_path: &str) -> AppError {
 /// Why `address` (a TCP or TLS Engine, or an SSH server) couldn't be reached
 /// over the network.
 pub fn network(address: &str, error: &(dyn StdError + 'static)) -> AppError {
-    let text = super::chain(error);
+    let text = chain(error);
     let classified = if is_dns_failure(&text) {
         AppError::new(
             ErrorCode::DnsFailed,
@@ -238,14 +208,6 @@ pub fn network(address: &str, error: &(dyn StdError + 'static)) -> AppError {
         }
     };
     classified.with_cause(error)
-}
-
-pub fn connection_lost(address: &str) -> AppError {
-    AppError::new(
-        ErrorCode::ConnectionLost,
-        format!("The connection to {address} was cut."),
-    )
-    .with_hint("The machine or the network may have restarted. Homeport keeps retrying.")
 }
 
 fn is_dns_failure(text: &str) -> bool {
