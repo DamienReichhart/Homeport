@@ -184,7 +184,9 @@ mod tests {
     fn stacks_keep_their_definition_and_sealed_env() {
         let (store, _, host) = setup(SecretBox::from_key(&[4; 32]));
         // The secret must not be hex, or it could turn up inside the random id.
-        let s = store.create(&host, "shop", COMPOSE, "TOKEN=hunter2\n").unwrap();
+        let s = store
+            .create(&host, "shop", COMPOSE, "TOKEN=hunter2\n")
+            .unwrap();
         assert!(s.has_env);
         assert_eq!(store.env(&s.id).unwrap(), "TOKEN=hunter2\n");
         assert!(!serde_json::to_string(&s).unwrap().contains("hunter2"));
