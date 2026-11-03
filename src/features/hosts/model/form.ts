@@ -104,3 +104,11 @@ export function toHostInput(form: HostFormState, editing: boolean): HostInput {
     }
   }
 }
+
+/** The kinds of Host the form offers, in the order it shows them. */
+export const HOST_KINDS: { kind: HostKind; label: string }[] = [
+  { kind: 'ssh', label: 'SSH' },
+  { kind: 'tls', label: 'TLS' },
+  { kind: 'tcp', label: 'TCP' },
+  { kind: 'local', label: 'Local socket' },
+];

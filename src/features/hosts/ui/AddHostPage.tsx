@@ -1,28 +1,21 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { commands, type HostInput, keys, useCapabilities } from '@/shared/api';
+import { LocalEngines, useCreateHost, useHostSelection } from '@/core/host';
+import { useCapabilities } from '@/shared/api';
 import { Button, Card, CardContent, ErrorMessage, PageHeader } from '@/shared/ui';
-import { LocalEngines, useHostSelection } from '@/core/host';
-import { emptyForm, toHostInput } from '../form';
-import { HostForm } from './HostForm';
+import { emptyForm, toHostInput } from '../model/form';
+import { HostForm } from './form/HostForm';
 
 export function AddHostPage() {
   const navigate = useNavigate();
-  const client = useQueryClient();
   const { select } = useHostSelection();
   const capabilities = useCapabilities();
   const [form, setForm] = useState(emptyForm('ssh'));
-
-  const create = useMutation({
-    meta: { silent: true },
-    mutationFn: (input: HostInput) => commands.hostsCreate(input),
-    onSuccess: async (view) => {
-      await client.invalidateQueries({ queryKey: keys.hosts });
-      select(view.host.id);
-      navigate(`/hosts/${view.host.id}`);
-    },
-  });
+  // The page shows a failure in place.
+  const create = useCreateHost((view) => {
+    select(view.host.id);
+    navigate(`/hosts/${view.host.id}`);
+  }, true);
 
   return (
     <div className="max-w-2xl">

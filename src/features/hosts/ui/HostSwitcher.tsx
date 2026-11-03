@@ -1,4 +1,4 @@
-import { toAppError, type HostStatus } from '@/shared/api';
+import { toAppError } from '@/shared/api';
 import { PlusIcon, ServerCogIcon, TriangleAlertIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -13,12 +13,7 @@ import {
   StatusDot,
 } from '@/shared/ui';
 import { describeStatus, statusError, useHosts, useHostSelection } from '@/core/host';
-
-/** The status and its reason, shown when hovering a host in the list. */
-function statusTitle(status: HostStatus): string {
-  const { label, detail } = describeStatus(status);
-  return detail ? `${label}: ${detail}` : label;
-}
+import { statusTitle } from '../model/statusTitle';
 
 const ADD = '__add__';
 const MANAGE = '__manage__';
