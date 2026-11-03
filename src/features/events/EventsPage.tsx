@@ -7,7 +7,7 @@ import { formatDateTime } from '@/shared/lib';
 import { Badge } from '@/shared/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
-import { EmptyState, PageHeader, SearchInput, Spinner } from '@/shared/ui';
+import { EmptyState, ErrorMessage, PageHeader, SearchInput, Spinner } from '@/shared/ui';
 
 const ALL = 'all';
 
@@ -35,7 +35,9 @@ function EventsList({ hostId }: { hostId: string }) {
   const [kind, setKind] = useState(ALL);
   const [query, setQuery] = useState('');
   if (events.isPending) return <Spinner />;
-  const all = events.data ?? [];
+  if (events.error)
+    return <ErrorMessage error={events.error} onRetry={() => void events.refetch()} />;
+  const all = events.data;
   const kinds = [...new Set(all.map((e) => e.kind))].sort();
   const shown = filterEvents(all, kind, query).reverse();
 

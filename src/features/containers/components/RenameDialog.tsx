@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { commands, keys, toAppError, type Container } from '@/shared/api';
+import { commands, keys, type Container } from '@/shared/api';
 import { Button } from '@/shared/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
 import { Input } from '@/shared/ui/input';
@@ -18,6 +18,7 @@ export function RenameDialog({
   const client = useQueryClient();
   const [name, setName] = useState(container?.name ?? '');
   const rename = useMutation({
+    meta: { silent: true },
     mutationFn: () => commands.containersRename(hostId, container?.id ?? '', name),
     onSuccess: async () => {
       await client.invalidateQueries({ queryKey: keys.containers(hostId) });
@@ -43,7 +44,7 @@ export function RenameDialog({
             autoFocus
             aria-label="New name"
           />
-          {rename.error && <ErrorMessage error={toAppError(rename.error)} />}
+          {rename.error && <ErrorMessage error={rename.error} />}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={onClose}>
               Cancel

@@ -1,9 +1,14 @@
+use std::path::Path;
+
 use serde::Serialize;
 use tauri::{AppHandle, Manager, State};
 
 use crate::{
     error::{AppError, AppResult},
-    services::stacks::compose::{self, ComposeCli},
+    services::{
+        local_files,
+        stacks::compose::{self, ComposeCli},
+    },
     state::AppState,
 };
 
@@ -56,11 +61,29 @@ pub fn get_licenses(app: AppHandle) -> AppResult<Licenses> {
 
 /// What this machine can do; features degrade gracefully when something is missing.
 #[derive(Debug, Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
 pub struct Capabilities {
     /// An OS keychain is reachable, so SSH, TLS and stack `.env` secrets can be stored.
     keychain: bool,
-    /// The compose CLI used to deploy Managed Stacks, if installed.
-    compose: Option<ComposeCli>,
+    /// Whether Managed Stacks can be deployed here.
+    compose: ComposeSupport,
+}
+
+/// The compose CLI used to deploy Managed Stacks, or why there's none.
+#[derive(Debug, Serialize, specta::Type)]
+#[serde(
+    tag = "state",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase"
+)]
+pub enum ComposeSupport {
+    Available {
+        cli: ComposeCli,
+    },
+    /// `problem` says what's missing and how to install it.
+    Unavailable {
+        problem: AppError,
+    },
 }
 
 #[tauri::command]
@@ -68,26 +91,35 @@ pub struct Capabilities {
 pub async fn get_capabilities(state: State<'_, AppState>) -> Result<Capabilities, ()> {
     Ok(Capabilities {
         keychain: state.secrets.is_available(),
-        compose: compose::detect().await,
+        compose: match compose::detect().await {
+            Ok(cli) => ComposeSupport::Available { cli },
+            Err(problem) => ComposeSupport::Unavailable { problem },
+        },
     })
 }
-
-/// Largest file `read_text_file` accepts; certificates and keys are far smaller.
-const MAX_TEXT_FILE: u64 = 1024 * 1024;
 
 /// Reads a file the user picked in an open dialog (certificates, keys, compose files).
 #[tauri::command]
 #[specta::specta]
 pub fn read_text_file(path: String) -> AppResult<String> {
-    if std::fs::metadata(&path)?.len() > MAX_TEXT_FILE {
-        return Err(AppError::Validation("That file is too large.".into()));
-    }
-    Ok(std::fs::read_to_string(path)?)
+    local_files::read_text(Path::new(&path))
+}
+
+/// Opens the folder holding Homeport's log files in the file manager.
+#[tauri::command]
+#[specta::specta]
+pub fn open_log_folder(app: AppHandle) -> AppResult<()> {
+    use tauri_plugin_opener::OpenerExt;
+    let dir = app.path().app_log_dir()?;
+    local_files::ensure_folder(&dir)?;
+    app.opener()
+        .open_path(dir.to_string_lossy(), None::<&str>)
+        .map_err(|e| local_files::folder_not_opened(&dir, &e))
 }
 
 /// Writes text to a path the user picked in a save dialog (e.g. downloaded logs).
 #[tauri::command]
 #[specta::specta]
 pub fn write_text_file(path: String, contents: String) -> AppResult<()> {
-    Ok(std::fs::write(path, contents)?)
+    local_files::write_text(Path::new(&path), &contents)
 }

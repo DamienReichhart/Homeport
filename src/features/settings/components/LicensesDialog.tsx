@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { commands, keys, toAppError } from '@/shared/api';
+import { commands, keys } from '@/shared/api';
 import { EmptyState, ErrorMessage, Spinner } from '@/shared/ui';
 import {
   Dialog,
@@ -38,7 +38,9 @@ export function LicensesDialog({
           </DialogDescription>
         </DialogHeader>
         {licenses.isPending && <Spinner />}
-        {licenses.error && <ErrorMessage error={toAppError(licenses.error)} />}
+        {licenses.error && (
+          <ErrorMessage error={licenses.error} onRetry={() => void licenses.refetch()} />
+        )}
         {licenses.data && (
           <Tabs defaultValue="app" className="min-w-0">
             <TabsList>

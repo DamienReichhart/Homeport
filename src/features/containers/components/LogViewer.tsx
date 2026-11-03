@@ -7,20 +7,19 @@ import {
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import {
-  commands,
-  subscribe,
-  toAppError,
-  type LogEvent,
-  type LogLine,
-  type LogSource,
-} from '@/shared/api';
+import { commands, subscribe, type LogEvent, type LogLine, type LogSource } from '@/shared/api';
 import { pickSavePath } from '@/shared/lib';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { Toggle } from '@/shared/ui/toggle';
-import { SEARCH_DECORATIONS, XTerm, type XTermHandle } from '@/shared/ui';
+import {
+  SEARCH_DECORATIONS,
+  XTerm,
+  terminalError,
+  type XTermHandle,
+  toastError,
+} from '@/shared/ui';
 
 const TAILS = [
   { value: '100', label: 'Last 100' },
@@ -116,12 +115,12 @@ export function LogViewer({ hostId, sources }: { hostId: string; sources: LogSou
             kept.current.splice(0, kept.current.length - MAX_KEPT_LINES);
           if (followRef.current) term.scrollToBottom();
         } else if (event.type === 'error') {
-          term.write(`\r\n\x1b[31m${event.message}\x1b[39m\r\n`);
+          term.write(`\r\n${terminalError(event.error)}`);
         } else {
           term.write('\r\n\x1b[2m— end of logs —\x1b[22m\r\n');
         }
       },
-      (error) => term.write(`\x1b[31m${error.message}\x1b[39m\r\n`),
+      (error) => term.write(terminalError(error)),
     );
   }, [ready, hostId, sourcesKey, tail, since, timestamps, stdout, stderr]);
 
@@ -220,7 +219,7 @@ export function LogViewer({ hostId, sources }: { hostId: string; sources: LogSou
                 await commands.writeTextFile(path, `${kept.current.join('\n')}\n`);
                 toast.success('Logs saved');
               } catch (e) {
-                toast.error(toAppError(e).message);
+                toastError(e);
               }
             }}
           >

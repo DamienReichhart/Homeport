@@ -6,7 +6,7 @@ use rusqlite::{OptionalExtension, Row};
 
 use super::{Host, HostConnection, HostId, HostSecrets};
 use crate::{
-    error::{AppError, AppResult},
+    error::{AppError, AppResult, ErrorCode, Hint},
     services::{crypto::SecretBox, db::Db},
 };
 
@@ -50,7 +50,7 @@ impl HostStore {
                 )
                 .optional()
             })?
-            .ok_or_else(|| AppError::NotFound(format!("host {id}")))?
+            .ok_or_else(|| AppError::not_found("This host no longer exists."))?
     }
 
     pub fn create(&self, draft: HostDraft) -> AppResult<Host> {
@@ -117,7 +117,7 @@ impl HostStore {
             .db
             .with(|c| c.execute("DELETE FROM hosts WHERE id = ?1", [id]))?;
         if n == 0 {
-            return Err(AppError::NotFound(format!("host {id}")));
+            return Err(AppError::not_found("This host no longer exists."));
         }
         Ok(())
     }
@@ -137,7 +137,7 @@ impl HostStore {
                 })
                 .optional()
             })?
-            .ok_or_else(|| AppError::NotFound(format!("host {id}")))
+            .ok_or_else(|| AppError::not_found("This host no longer exists."))
     }
 
     fn seal(
@@ -147,9 +147,7 @@ impl HostStore {
     ) -> AppResult<Option<Vec<u8>>> {
         match (connection.needs_secrets(), secrets) {
             (true, Some(s)) => Ok(Some(self.secrets.seal_json(s)?)),
-            (true, None) => Err(AppError::Validation(
-                "This connection needs credentials.".into(),
-            )),
+            (true, None) => Err(AppError::validation("This connection needs credentials.")),
             (false, _) => Ok(None),
         }
     }
@@ -157,7 +155,7 @@ impl HostStore {
     fn exec(&self, id: &str, sql: &str, value: impl rusqlite::ToSql) -> AppResult<Host> {
         let n = self.db.with(|c| c.execute(sql, (id, value)))?;
         if n == 0 {
-            return Err(AppError::NotFound(format!("host {id}")));
+            return Err(AppError::not_found("This host no longer exists."));
         }
         self.get(id)
     }
@@ -181,19 +179,23 @@ fn read_row(row: &Row<'_>) -> rusqlite::Result<AppResult<Host>> {
 fn validated_name(name: &str) -> AppResult<String> {
     let name = name.trim();
     if name.is_empty() {
-        return Err(AppError::Validation("Give the host a name.".into()));
+        return Err(AppError::validation("Give the host a name."));
     }
     Ok(name.to_string())
 }
 
 fn unique_name_error(e: AppError, name: &str) -> AppError {
-    match e {
-        AppError::Db(rusqlite::Error::SqliteFailure(f, _))
-            if f.extended_code == rusqlite::ffi::SQLITE_CONSTRAINT_UNIQUE =>
-        {
-            AppError::Validation(format!("A host named \"{name}\" already exists."))
+    if e.is(ErrorCode::NameInUse) {
+        AppError {
+            message: format!("A host named \"{name}\" already exists."),
+            hint: Some(Hint {
+                text: "Pick another name.".into(),
+                commands: vec![],
+            }),
+            ..e
         }
-        e => e,
+    } else {
+        e
     }
 }
 
@@ -267,7 +269,7 @@ mod tests {
         let s = store();
         s.create(local("prod")).unwrap();
         let err = s.create(local("PROD")).unwrap_err();
-        assert!(matches!(err, AppError::Validation(m) if m.contains("already exists")));
+        assert!(err.message.contains("already exists"));
     }
 
     #[test]
@@ -290,7 +292,7 @@ mod tests {
         draft.secrets = None;
         assert!(matches!(
             store().create(draft),
-            Err(AppError::Validation(_))
+            Err(ref e) if e.is(ErrorCode::Validation)
         ));
     }
 
@@ -302,7 +304,7 @@ mod tests {
         let after = HostStore::new(db, Arc::new(SecretBox::from_key(&[2; 32])));
         assert!(matches!(
             after.secrets(&host.id),
-            Err(AppError::CredentialsLost)
+            Err(ref e) if e.is(ErrorCode::CredentialsLost)
         ));
     }
 
@@ -331,7 +333,7 @@ mod tests {
         let host = s.create(local("local")).unwrap();
         assert!(!s.set_enabled(&host.id, false).unwrap().enabled);
         s.delete(&host.id).unwrap();
-        assert!(matches!(s.get(&host.id), Err(AppError::NotFound(_))));
-        assert!(matches!(s.delete(&host.id), Err(AppError::NotFound(_))));
+        assert!(matches!(s.get(&host.id), Err(ref e) if e.is(ErrorCode::NotFound)));
+        assert!(matches!(s.delete(&host.id), Err(ref e) if e.is(ErrorCode::NotFound)));
     }
 }

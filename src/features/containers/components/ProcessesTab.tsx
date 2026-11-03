@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { commands, keys, toAppError } from '@/shared/api';
+import { commands, keys } from '@/shared/api';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import { ErrorMessage, Spinner } from '@/shared/ui';
 
@@ -21,7 +21,7 @@ export function ProcessesTab({
   if (!running)
     return <p className="text-muted-foreground text-sm">The container isn&apos;t running.</p>;
   if (top.isPending) return <Spinner />;
-  if (top.error) return <ErrorMessage error={toAppError(top.error)} />;
+  if (top.error) return <ErrorMessage error={top.error} onRetry={() => void top.refetch()} />;
   return (
     <div className="rounded-md border">
       <Table>

@@ -84,12 +84,12 @@ pub async fn updates_install(
     on_progress: Channel<UpdateProgress>,
 ) -> AppResult<()> {
     if method() != UpdateMethod::InApp {
-        return Err(AppError::Validation(
-            "This copy of Homeport is updated by your package manager.".into(),
+        return Err(AppError::validation(
+            "This copy of Homeport is updated by your package manager.",
         ));
     }
     let Some(update) = state.update.lock().unwrap().clone() else {
-        return Err(AppError::NotFound("update".into()));
+        return Err(AppError::not_found("No update is waiting to be installed."));
     };
     let mut downloaded = 0u64;
     update

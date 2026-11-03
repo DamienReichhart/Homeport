@@ -13,6 +13,8 @@ export const commands = {
 	readTextFile: (path: string) => __TAURI_INVOKE<string>("read_text_file", { path }),
 	/**  Writes text to a path the user picked in a save dialog (e.g. downloaded logs). */
 	writeTextFile: (path: string, contents: string) => __TAURI_INVOKE<null>("write_text_file", { path, contents }),
+	/**  Opens the folder holding Homeport's log files in the file manager. */
+	openLogFolder: () => __TAURI_INVOKE<null>("open_log_folder"),
 	getSettings: () => __TAURI_INVOKE<Settings>("get_settings"),
 	updateSettings: (settings: Settings) => __TAURI_INVOKE<Settings>("update_settings", { settings }),
 	/**  Asks the update server for a newer version and remembers it for [`updates_install`]. */
@@ -109,10 +111,12 @@ export const events = {
 };
 
 /* Types */
-/**  Wire shape of [`AppError`]; mirrors `AppErrorPayload` in `src/shared/api/errors.ts`. */
 export type AppError = {
-	code: string,
+	code: ErrorCode,
 	message: string,
+	hint: Hint | null,
+	/**  The raw cause, for the Details dialog. */
+	detail: string | null,
 };
 
 export type AppInfo = {
@@ -134,8 +138,8 @@ export type AvailableUpdate = {
 export type Capabilities = {
 	/**  An OS keychain is reachable, so SSH, TLS and stack `.env` secrets can be stored. */
 	keychain: boolean,
-	/**  The compose CLI used to deploy Managed Stacks, if installed. */
-	compose: ComposeCli | null,
+	/**  Whether Managed Stacks can be deployed here. */
+	compose: ComposeSupport,
 };
 
 export type ComposeAction = 
@@ -161,7 +165,14 @@ export type ComposeCli = {
 	version: string,
 };
 
-export type ComposeEvent = { type: "line"; text: string } | { type: "exit"; success: boolean; code: number | null } | { type: "error"; message: string };
+export type ComposeEvent = { type: "line"; text: string } | 
+/**  `error` explains a failed exit, from the end of stderr. */
+{ type: "exit"; success: boolean; code: number | null; error: AppError | null } | { type: "error"; error: AppError };
+
+/**  The compose CLI used to deploy Managed Stacks, or why there's none. */
+export type ComposeSupport = { state: "available"; cli: ComposeCli } | 
+/**  `problem` says what's missing and how to install it. */
+{ state: "unavailable"; problem: AppError };
 
 export type Container = {
 	id: string,
@@ -242,7 +253,14 @@ export type EngineInfo = {
 	images: number,
 };
 
-export type ExecEvent = { type: "output"; data: string } | { type: "exit"; code: number | null } | { type: "error"; message: string };
+/**  Stable machine-readable identifier of a failure, one per case the user can act on. */
+export type ErrorCode = 
+/**  A failure that started in the frontend, outside any command. */
+"unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | "host_not_connected" | "engine_not_installed" | "engine_not_running" | "permission_denied" | "dns_failed" | "connection_refused" | "timeout" | "network_unreachable" | "connection_lost" | "tls_required" | "tls_not_supported" | "tls_certificate_expired" | "tls_certificate_not_yet_valid" | "tls_unknown_ca" | "tls_name_mismatch" | "tls_client_rejected" | "tls_handshake_failed" | "tls_material_invalid" | "ssh_auth_failed" | "ssh_agent_unavailable" | "ssh_key_invalid" | "ssh_failed" | "remote_engine_unavailable" | "host_key_untrusted" | "host_key_changed" | "engine_error" | "bad_request" | "forbidden" | "conflict" | "name_in_use" | "in_use" | "container_running" | "container_not_running" | "already_done" | "port_in_use" | "disk_full" | "image_not_found" | "registry_auth_required" | "registry_rate_limited" | "registry_unreachable" | "api_version_unsupported" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
+
+export type ExecEvent = { type: "output"; data: string } | 
+/**  `error` explains an exit that means the command couldn't run. */
+{ type: "exit"; code: number | null; error: AppError | null } | { type: "error"; error: AppError };
 
 export type ExecOptions = {
 	/**  The command to run, parsed with shell quoting; the default picks a shell. */
@@ -265,6 +283,13 @@ export type FileEntry = {
 };
 
 export type FileKind = "directory" | "file" | "symlink" | "other";
+
+/**  What the user can do about a failure. */
+export type Hint = {
+	text: string,
+	/**  Commands to run, each possibly spanning several lines. May be empty. */
+	commands: string[],
+};
 
 export type Host = {
 	id: string,
@@ -295,7 +320,7 @@ export type HostInput = {
 	credentials: CredentialsInput | null,
 };
 
-export type HostStatus = { state: "disabled" } | { state: "connecting" } | { state: "connected"; engineVersion: string; apiVersion: string; os: string; arch: string } | { state: "unreachable"; message: string; retryInSecs: number } | { state: "unauthorized"; message: string } | { state: "hostKeyUntrusted"; key: string; fingerprint: string } | { state: "hostKeyMismatch"; key: string; fingerprint: string; expectedFingerprint: string } | { state: "credentialsLost" } | { state: "keychainUnavailable"; message: string } | { state: "invalid"; message: string };
+export type HostStatus = { state: "disabled" } | { state: "connecting" } | { state: "connected"; engineVersion: string; apiVersion: string; os: string; arch: string } | { state: "unreachable"; error: AppError; retryInSecs: number } | { state: "unauthorized"; error: AppError } | { state: "hostKeyUntrusted"; key: string; fingerprint: string } | { state: "hostKeyMismatch"; key: string; fingerprint: string; expectedFingerprint: string } | { state: "credentialsLost" } | { state: "keychainUnavailable"; error: AppError } | { state: "invalid"; error: AppError };
 
 export type HostStatusChanged = {
 	hostId: string,
@@ -339,7 +364,7 @@ export type Licenses = {
 	third_party: string | null,
 };
 
-export type LogEvent = { type: "lines"; lines: LogLine[] } | { type: "error"; message: string } | { type: "end" };
+export type LogEvent = { type: "lines"; lines: LogLine[] } | { type: "error"; error: AppError } | { type: "end" };
 
 export type LogLine = {
 	source: string | null,
@@ -449,7 +474,7 @@ export type PruneSelection = {
 
 export type PullEvent = 
 /**  Progress of one layer (or a general status when `id` is absent). */
-{ type: "progress"; id: string | null; status: string; current: number | null; total: number | null } | { type: "done" } | { type: "error"; message: string };
+{ type: "progress"; id: string | null; status: string; current: number | null; total: number | null } | { type: "done" } | { type: "error"; error: AppError };
 
 export type RestartPolicy = "no" | "always" | "unless-stopped" | "on-failure";
 

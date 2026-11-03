@@ -42,7 +42,8 @@ export function StackActions({
   const navigate = useNavigate();
   const capabilities = useCapabilities();
   const { act, remove } = useStackMutations(hostId);
-  const canCompose = stack.managedId !== null && !!capabilities.data?.compose;
+  const support = capabilities.data?.compose;
+  const canCompose = stack.managedId !== null && support?.state === 'available';
   const compose = (action: ComposeJob['action']) => {
     if (stack.managedId) onCompose({ stackId: stack.managedId, name: stack.name, action });
   };
@@ -55,7 +56,13 @@ export function StackActions({
         <Button
           size={size}
           disabled={!canCompose}
-          title={canCompose ? undefined : 'The docker compose CLI is not installed'}
+          title={
+            canCompose
+              ? undefined
+              : support?.state === 'unavailable'
+                ? support.problem.message
+                : 'Checking for the docker compose CLI…'
+          }
           onClick={() => compose('up')}
         >
           <RocketIcon /> {deployed ? 'Redeploy' : 'Deploy'}

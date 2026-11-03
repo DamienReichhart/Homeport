@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { commands, keys, toAppError, type StackAction, type StackState } from '@/shared/api';
+import { commands, keys, type StackAction, type StackState } from '@/shared/api';
 import type { Tone } from '@/shared/ui';
+import { toastError } from '@/shared/ui';
 
 export function useStacks(hostId: string) {
   return useQuery({ queryKey: keys.stacks(hostId), queryFn: () => commands.stacksList(hostId) });
@@ -33,7 +34,7 @@ export function useStackMutations(hostId: string) {
     mutationFn: ({ name, action }: { name: string; action: StackAction }) =>
       commands.stacksAct(hostId, name, action),
     onSuccess: refresh,
-    onError: (e) => toast.error(toAppError(e).message),
+    onError: (e) => toastError(e),
   });
   const remove = useMutation({
     mutationFn: (name: string) => commands.stacksRemove(hostId, name),
@@ -41,7 +42,7 @@ export function useStackMutations(hostId: string) {
       toast.success(`Removed the containers of ${name}`);
       await refresh();
     },
-    onError: (e) => toast.error(toAppError(e).message),
+    onError: (e) => toastError(e),
   });
   return { act, remove };
 }

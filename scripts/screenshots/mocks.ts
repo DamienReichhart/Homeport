@@ -333,7 +333,10 @@ export function installMocks({ theme, hostId }: MockOptions) {
     get_app_info: () => ({ name: 'Homeport', version: '0.2.0', os: 'macos', arch: 'aarch64' }),
     get_capabilities: () => ({
       keychain: true,
-      compose: { program: 'docker', prefix: ['compose'], version: '2.31.0' },
+      compose: {
+        state: 'available',
+        cli: { program: 'docker', prefix: ['compose'], version: '2.31.0' },
+      },
     }),
     get_licenses: () => ({ app: 'MIT License', third_party: null }),
     // Up to date, so no update bar shows in the screenshots.
@@ -437,7 +440,7 @@ export function installMocks({ theme, hostId }: MockOptions) {
       return stream((n) => {
         if (n < lines.length) send(a.onEvent, { type: 'line', text: lines[n] });
         else {
-          send(a.onEvent, { type: 'exit', success: true, code: 0 });
+          send(a.onEvent, { type: 'exit', success: true, code: 0, error: null });
           return false;
         }
       }, 60);

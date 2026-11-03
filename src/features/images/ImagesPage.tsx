@@ -13,7 +13,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { RunContainerDialog } from '@/features/containers';
 import { HostGate } from '@/features/hosts';
-import { commands, keys, toAppError, type Image } from '@/shared/api';
+import { commands, keys, type Image } from '@/shared/api';
 import { formatBytes, formatRelative, shortId } from '@/shared/lib';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
@@ -38,6 +38,7 @@ import {
   Spinner,
   useConfirm,
   type ColumnDef,
+  toastError,
 } from '@/shared/ui';
 import { PullDialog } from './PullDialog';
 
@@ -55,6 +56,7 @@ function TagDialog({
   const client = useQueryClient();
   const [target, setTarget] = useState('');
   const tag = useMutation({
+    meta: { silent: true },
     mutationFn: () => commands.imagesTag(hostId, image.id, target),
     onSuccess: async () => {
       await client.invalidateQueries({ queryKey: keys.images(hostId) });
@@ -81,7 +83,7 @@ function TagDialog({
             autoFocus
             aria-label="New name"
           />
-          {tag.error && <ErrorMessage error={toAppError(tag.error)} />}
+          {tag.error && <ErrorMessage error={tag.error} />}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={onClose}>
               Cancel
@@ -191,7 +193,7 @@ function ImagesList({ hostId }: { hostId: string }) {
           await commands.imagesRemove(hostId, image.id, image.tags.length > 1);
           toast.success(`Removed ${imageName(image)}`);
         } catch (e) {
-          toast.error(toAppError(e).message);
+          toastError(e);
         }
         await refresh();
       },
@@ -298,7 +300,8 @@ function ImagesList({ hostId }: { hostId: string }) {
   ];
 
   if (images.isPending) return <Spinner />;
-  if (images.error) return <ErrorMessage error={toAppError(images.error)} />;
+  if (images.error)
+    return <ErrorMessage error={images.error} onRetry={() => void images.refetch()} />;
   const total = images.data.reduce((s, i) => s + i.size, 0);
 
   return (

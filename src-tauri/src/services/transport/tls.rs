@@ -8,8 +8,11 @@ use tokio::net::TcpStream;
 use tokio_rustls::TlsConnector;
 
 use super::{BoxFuture, BoxStream, ConnectError, Dialer, CONNECT_TIMEOUT};
+use crate::error::{reach, AppError, ErrorCode};
 
 pub struct TlsDialer {
+    /// The Host's name and address, for messages.
+    label: String,
     address: String,
     server_name: ServerName<'static>,
     connector: TlsConnector,
@@ -19,13 +22,16 @@ impl TlsDialer {
     /// Builds a dialer from PEM text; fails with a user-facing message when
     /// the certificates or key can't be used.
     pub fn new(
+        label: &str,
         address: &str,
         ca_pem: &str,
         cert_pem: &str,
         key_pem: &str,
     ) -> Result<Self, ConnectError> {
         let invalid = |what: &str, e: &dyn std::fmt::Display| {
-            ConnectError::Invalid(format!("The {what} can't be used: {e}"))
+            ConnectError::Invalid(
+                material_invalid(format!("The {what} can't be used.")).with_detail(e),
+            )
         };
 
         let mut roots = RootCertStore::empty();
@@ -34,17 +40,17 @@ impl TlsDialer {
             roots.add(cert).map_err(|e| invalid("CA certificate", &e))?;
         }
         if roots.is_empty() {
-            return Err(ConnectError::Invalid(
-                "The CA certificate contains no certificate.".into(),
-            ));
+            return Err(ConnectError::Invalid(material_invalid(
+                "The CA certificate contains no certificate.",
+            )));
         }
         let chain = CertificateDer::pem_slice_iter(cert_pem.as_bytes())
             .collect::<Result<Vec<_>, _>>()
             .map_err(|e| invalid("client certificate", &e))?;
         if chain.is_empty() {
-            return Err(ConnectError::Invalid(
-                "The client certificate contains no certificate.".into(),
-            ));
+            return Err(ConnectError::Invalid(material_invalid(
+                "The client certificate contains no certificate.",
+            )));
         }
         let key = PrivateKeyDer::from_pem_slice(key_pem.as_bytes())
             .map_err(|e| invalid("client key", &e))?;
@@ -63,9 +69,10 @@ impl TlsDialer {
             .trim_start_matches('[')
             .trim_end_matches(']');
         let server_name =
-            ServerName::try_from(host.to_owned()).map_err(|e| invalid("server address", &e))?;
+            ServerName::try_from(host.to_owned()).map_err(|e| invalid("address", &e))?;
 
         Ok(Self {
+            label: label.to_owned(),
             address: address.to_owned(),
             server_name,
             connector: TlsConnector::from(Arc::new(config)),
@@ -85,22 +92,33 @@ impl TlsDialer {
     }
 }
 
+fn material_invalid(message: impl Into<String>) -> AppError {
+    AppError::new(ErrorCode::TlsMaterialInvalid, message).with_hint(
+        "Paste PEM files (ca.pem, cert.pem, key.pem) made for this Engine on the host page.",
+    )
+}
+
 impl Dialer for TlsDialer {
     fn connect(&self) -> BoxFuture<'_, Result<(), ConnectError>> {
         Box::pin(async move {
             match self.open().await {
                 Ok(_) => Ok(()),
-                // rustls reports handshake and certificate failures as InvalidData.
-                Err(e) if e.kind() == io::ErrorKind::InvalidData => Err(
-                    ConnectError::Unauthorized(format!("TLS handshake failed: {e}")),
-                ),
-                Err(e) => Err(ConnectError::Unreachable(e.to_string())),
+                Err(e) => Err(ConnectError::from(reach::tls(
+                    &self.label,
+                    &self.address,
+                    &e,
+                ))),
             }
         })
     }
 
     fn dial(&self) -> BoxFuture<'_, io::Result<BoxStream>> {
-        Box::pin(self.open())
+        Box::pin(async move {
+            // Keep the classification for whoever reads the failed request.
+            self.open()
+                .await
+                .map_err(|e| io::Error::new(e.kind(), reach::tls(&self.label, &self.address, &e)))
+        })
     }
 }
 
@@ -110,9 +128,9 @@ mod tests {
 
     #[test]
     fn rejects_text_that_is_not_a_certificate() {
-        let err = TlsDialer::new("host:2376", "nope", "nope", "nope")
+        let err = TlsDialer::new("prod (host:2376)", "host:2376", "nope", "nope", "nope")
             .err()
             .unwrap();
-        assert!(matches!(err, ConnectError::Invalid(m) if m.contains("CA certificate")));
+        assert!(matches!(err, ConnectError::Invalid(e) if e.message.contains("CA certificate")));
     }
 }

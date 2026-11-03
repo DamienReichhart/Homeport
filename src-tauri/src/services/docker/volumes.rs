@@ -83,7 +83,7 @@ pub async fn inspect(docker: &Docker, name: &str) -> AppResult<serde_json::Value
 pub async fn create(docker: &Docker, input: VolumeInput) -> AppResult<String> {
     let name = input.name.trim();
     if name.is_empty() {
-        return Err(AppError::Validation("Enter a volume name.".into()));
+        return Err(AppError::validation("Enter a volume name."));
     }
     let created = docker
         .create_volume(VolumeCreateRequest {

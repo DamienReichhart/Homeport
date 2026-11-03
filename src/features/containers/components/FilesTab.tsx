@@ -9,10 +9,10 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { commands, keys, toAppError, type FileEntry } from '@/shared/api';
+import { commands, keys, type FileEntry } from '@/shared/api';
 import { formatBytes, formatDateTime, pickFiles, pickSavePath } from '@/shared/lib';
 import { Button } from '@/shared/ui/button';
-import { DataTable, ErrorMessage, type ColumnDef } from '@/shared/ui';
+import { DataTable, ErrorMessage, type ColumnDef, toastError } from '@/shared/ui';
 
 /** `/a/b/c` → `[['/', '/'], ['a', '/a'], ['b', '/a/b'], ['c', '/a/b/c']]`. */
 export function crumbs(path: string): [string, string][] {
@@ -49,7 +49,7 @@ export function FilesTab({
       const archived = await commands.filesDownload(hostId, containerId, entry.path, target);
       toast.success(archived ? `Saved ${entry.name} as a .tar archive` : `Saved ${entry.name}`);
     } catch (e) {
-      toast.error(toAppError(e).message);
+      toastError(e);
     }
   };
 
@@ -145,7 +145,7 @@ export function FilesTab({
                 );
                 void listing.refetch();
               } catch (e) {
-                toast.error(toAppError(e).message);
+                toastError(e);
               }
             }}
           >
@@ -154,7 +154,7 @@ export function FilesTab({
         </div>
       </div>
       {listing.error ? (
-        <ErrorMessage error={toAppError(listing.error)} />
+        <ErrorMessage error={listing.error} onRetry={() => void listing.refetch()} />
       ) : (
         <DataTable
           columns={columns}

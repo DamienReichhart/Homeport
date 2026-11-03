@@ -1,10 +1,15 @@
-import type { HostConnection, HostStatus } from '@/shared/api';
+import type { AppErrorPayload, HostConnection, HostStatus } from '@/shared/api';
 import type { Tone } from '@/shared/ui';
 
 export interface StatusSummary {
   label: string;
   tone: Tone;
   detail?: string;
+}
+
+/** The classified cause of a status that needs the user, with its hint and detail. */
+export function statusError(status: HostStatus): AppErrorPayload | null {
+  return 'error' in status ? status.error : null;
 }
 
 /** A short label, a colour and the reason, for showing a Host's status. */
@@ -20,10 +25,10 @@ export function describeStatus(status: HostStatus): StatusSummary {
       return {
         label: 'Unreachable',
         tone: 'danger',
-        detail: `${status.message} — retrying in ${status.retryInSecs}s`,
+        detail: `${status.error.message} — retrying in ${status.retryInSecs}s`,
       };
     case 'unauthorized':
-      return { label: 'Access refused', tone: 'danger', detail: status.message };
+      return { label: 'Access refused', tone: 'danger', detail: status.error.message };
     case 'hostKeyUntrusted':
       return {
         label: 'Server key not trusted',
@@ -43,9 +48,9 @@ export function describeStatus(status: HostStatus): StatusSummary {
         detail: 'The stored credentials can’t be decrypted. Re-enter them or regenerate the key.',
       };
     case 'keychainUnavailable':
-      return { label: 'Keychain unavailable', tone: 'danger', detail: status.message };
+      return { label: 'Keychain unavailable', tone: 'danger', detail: status.error.message };
     case 'invalid':
-      return { label: 'Misconfigured', tone: 'danger', detail: status.message };
+      return { label: 'Misconfigured', tone: 'danger', detail: status.error.message };
   }
 }
 

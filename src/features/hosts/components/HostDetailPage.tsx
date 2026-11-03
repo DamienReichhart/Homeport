@@ -3,7 +3,7 @@ import { RefreshCwIcon, ShieldAlertIcon, ShieldQuestionIcon, TrashIcon } from 'l
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { commands, keys, toAppError, type HostView } from '@/shared/api';
+import { commands, keys, type HostView } from '@/shared/api';
 import { Alert, AlertDescription, AlertTitle } from '@/shared/ui/alert';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
@@ -13,7 +13,7 @@ import { Switch } from '@/shared/ui/switch';
 import { CopyButton, ErrorMessage, PageHeader, Spinner, useConfirm } from '@/shared/ui';
 import { useCapabilities, useHosts } from '../api';
 import { formFromHost, toHostInput, type HostFormState } from '../form';
-import { connectionLabel, describeStatus } from '../status';
+import { connectionLabel, describeStatus, statusError } from '../status';
 import { HostForm } from './HostForm';
 import { HostStatusBadge } from './HostStatusBadge';
 
@@ -155,7 +155,8 @@ export function HostDetailPage() {
   const hosts = useHosts();
   const view = hosts.data?.find((h) => h.host.id === hostId);
   if (hosts.isPending) return <Spinner />;
-  if (!view) return <ErrorMessage error={new Error('This host no longer exists.')} />;
+  if (!view)
+    return <ErrorMessage error={{ code: 'not_found', message: 'This host no longer exists.' }} />;
   // Keyed so the form starts from this host's saved settings.
   return <HostDetail key={hostId} view={view} />;
 }
@@ -170,6 +171,7 @@ function HostDetail({ view }: { view: HostView }) {
 
   const refresh = () => client.invalidateQueries({ queryKey: keys.hosts });
   const save = useMutation({
+    meta: { silent: true },
     mutationFn: (f: HostFormState) => commands.hostsUpdate(hostId, toHostInput(f, true)),
     onSuccess: async () => {
       await refresh();
@@ -199,7 +201,9 @@ function HostDetail({ view }: { view: HostView }) {
         description={
           <span className="flex items-center gap-2">
             <HostStatusBadge status={view.status} />
-            {detail && <span className="text-muted-foreground">· {detail}</span>}
+            {detail && !statusError(view.status) && (
+              <span className="text-muted-foreground">· {detail}</span>
+            )}
           </span>
         }
         actions={
@@ -223,6 +227,9 @@ function HostDetail({ view }: { view: HostView }) {
         }
       />
       <TrustPrompt view={view} />
+      {statusError(view.status) && (
+        <ErrorMessage error={statusError(view.status)} onRetry={() => reconnect.mutate()} />
+      )}
       {view.host.connection.kind === 'ssh' && view.host.connection.publicKey && (
         <SshSetupCard view={view} />
       )}
@@ -239,7 +246,7 @@ function HostDetail({ view }: { view: HostView }) {
               keychain={capabilities.data?.keychain ?? true}
             />
           )}
-          {save.error && <ErrorMessage error={toAppError(save.error)} />}
+          {save.error && <ErrorMessage error={save.error} />}
           <Button
             className="justify-self-start"
             disabled={!form || save.isPending}

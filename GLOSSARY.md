@@ -5,8 +5,12 @@ A desktop app for managing Docker Engines, wherever they run, from one place.
 ## Language
 
 **Host**:
-A Docker Engine that Homeport connects to, defined by a name and how to reach it (local socket, TCP, TLS or SSH). Every container, image, volume, network and Stack belongs to exactly one Host.
+An Engine that Homeport connects to, defined by a name and how to reach it (local socket, TCP, TLS or SSH). Every container, image, volume, network and Stack belongs to exactly one Host. Messages refer to a Host by its name.
 _Avoid_: Instance, endpoint, engine, context, server
+
+**Engine**:
+The Docker-compatible daemon a Host points to (Docker Engine, Docker Desktop, Podman, Colima, OrbStack…): the software that gets installed, started and stopped. Not a synonym for Host: "Start the Docker Engine" talks about the Engine, "Homeport can't reach prod-server" talks about the Host.
+_Avoid_: Daemon, server, backend
 
 **Stack**:
 A Compose project running on a Host, identified by its project name. Every Stack is either Managed or External.

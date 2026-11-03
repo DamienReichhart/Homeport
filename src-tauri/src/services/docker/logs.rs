@@ -44,7 +44,7 @@ pub struct LogLine {
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum LogEvent {
     Lines { lines: Vec<LogLine> },
-    Error { message: String },
+    Error { error: crate::error::AppError },
     End,
 }
 
@@ -133,7 +133,7 @@ pub async fn stream(
                     }
                 }
                 Some((_, Err(e))) => {
-                    sink(LogEvent::Error { message: crate::services::transport::describe_docker_error(&e) });
+                    sink(LogEvent::Error { error: crate::error::AppError::from(e).logged("log stream") });
                     break;
                 }
                 None => break,

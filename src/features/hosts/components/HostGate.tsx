@@ -4,10 +4,10 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { commands, keys, type HostInput } from '@/shared/api';
 import { Button } from '@/shared/ui/button';
-import { EmptyState, LogoMark, Spinner } from '@/shared/ui';
+import { EmptyState, ErrorMessage, LogoMark, Spinner } from '@/shared/ui';
 import { useHosts } from '../api';
 import { useHostSelection } from '../context';
-import { describeStatus } from '../status';
+import { describeStatus, statusError } from '../status';
 import { LocalEngines } from './LocalEngines';
 
 /**
@@ -50,19 +50,28 @@ export function HostGate({ children }: { children: (hostId: string) => ReactNode
     return <Spinner label={`Connecting to ${host.host.name}…`} />;
 
   const { label, detail } = describeStatus(host.status);
+  const error = statusError(host.status);
+  const retry = () => reconnect.mutate(host.host.id);
   return (
     <EmptyState
       icon={ServerOffIcon}
       title={`${host.host.name}: ${label}`}
-      description={detail}
+      description={
+        error ? (
+          <div className="grid gap-2">
+            <ErrorMessage error={error} onRetry={retry} />
+            {host.status.state === 'unreachable' && (
+              <p>Homeport tries again on its own in {host.status.retryInSecs}s.</p>
+            )}
+          </div>
+        ) : (
+          detail
+        )
+      }
       action={
         <div className="flex gap-2">
-          {host.status.state !== 'disabled' && (
-            <Button
-              variant="outline"
-              disabled={reconnect.isPending}
-              onClick={() => reconnect.mutate(host.host.id)}
-            >
+          {!error && host.status.state !== 'disabled' && (
+            <Button variant="outline" disabled={reconnect.isPending} onClick={retry}>
               <RefreshCwIcon /> Retry now
             </Button>
           )}

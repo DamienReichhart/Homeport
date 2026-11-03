@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { commands, keys, toAppError, type HostInput } from '@/shared/api';
+import { commands, keys, type HostInput } from '@/shared/api';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent } from '@/shared/ui/card';
 import { ErrorMessage, PageHeader } from '@/shared/ui';
@@ -19,6 +19,7 @@ export function AddHostPage() {
   const [form, setForm] = useState(emptyForm('ssh'));
 
   const create = useMutation({
+    meta: { silent: true },
     mutationFn: (input: HostInput) => commands.hostsCreate(input),
     onSuccess: async (view) => {
       await client.invalidateQueries({ queryKey: keys.hosts });
@@ -41,7 +42,7 @@ export function AddHostPage() {
             editing={false}
             keychain={capabilities.data?.keychain ?? true}
           />
-          {create.error && <ErrorMessage error={toAppError(create.error)} />}
+          {create.error && <ErrorMessage error={create.error} />}
           <div className="flex gap-2">
             <Button
               disabled={create.isPending}

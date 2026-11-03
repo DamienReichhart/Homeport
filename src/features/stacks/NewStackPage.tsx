@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { HostGate, useCapabilities } from '@/features/hosts';
-import { commands, keys, toAppError, type ComposeCheck } from '@/shared/api';
+import { commands, keys, type ComposeCheck } from '@/shared/api';
 import { Alert, AlertDescription, AlertTitle } from '@/shared/ui/alert';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -24,6 +24,7 @@ function NewStack({ hostId }: { hostId: string }) {
   const [job, setJob] = useState<ComposeJob | null>(null);
 
   const save = useMutation({
+    meta: { silent: true },
     mutationFn: () => commands.stacksCreate(hostId, name, compose, env),
     onSuccess: async (stack, deploy: boolean) => {
       await client.invalidateQueries({ queryKey: keys.stacks(hostId) });
@@ -31,7 +32,8 @@ function NewStack({ hostId }: { hostId: string }) {
       else navigate(`/stacks/${encodeURIComponent(stack.name)}`);
     },
   });
-  const canDeploy = !!capabilities.data?.compose && check !== null && check.errors.length === 0;
+  const canDeploy =
+    capabilities.data?.compose.state === 'available' && check !== null && check.errors.length === 0;
 
   return (
     <div className="grid gap-4">
@@ -70,7 +72,7 @@ function NewStack({ hostId }: { hostId: string }) {
         keychain={capabilities.data?.keychain ?? true}
         onCheck={setCheck}
       />
-      {save.error && <ErrorMessage error={toAppError(save.error)} />}
+      {save.error && <ErrorMessage error={save.error} />}
       <div className="flex gap-2">
         <Button disabled={save.isPending || !canDeploy || !name} onClick={() => save.mutate(true)}>
           Save and deploy
@@ -85,12 +87,10 @@ function NewStack({ hostId }: { hostId: string }) {
         <Button variant="ghost" onClick={() => navigate(-1)}>
           Cancel
         </Button>
-        {!capabilities.data?.compose && (
-          <span className="text-muted-foreground self-center text-sm">
-            Install the docker compose CLI to deploy.
-          </span>
-        )}
       </div>
+      {capabilities.data?.compose.state === 'unavailable' && (
+        <ErrorMessage error={capabilities.data.compose.problem} />
+      )}
       <ComposeRunDialog
         hostId={hostId}
         job={job}

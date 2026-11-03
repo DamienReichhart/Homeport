@@ -4,7 +4,7 @@
 
 1. **Vertical slices.** A feature owns its UI, API calls, and types. Deleting a feature = deleting a folder + 2 registration lines.
 2. **Dependencies point inward.** `app` → `features` → `shared`. `shared` never imports from `features` or `app`; features import other features only through their `index.ts`. ESLint enforces this (`eslint.config.js`).
-3. **One IPC gateway.** Frontend code calls Rust only via `commands` from `@/shared/api`: the generated bindings with every rejection normalized to `AppError { code, message }`. Tests mock IPC with `mockCommands` (`src/test/ipc.ts`).
+3. **One IPC gateway.** Frontend code calls Rust only via `commands` from `@/shared/api`: the generated bindings with every rejection normalized to `AppError { code, message, hint, detail }`, tagged with the command and written to the app log. Show a failure with `<ErrorMessage>` (in place, with Details and Retry) or `toastError` (transient); both open the shared Details dialog. Writing errors is covered in `src-tauri/src/error/mod.rs`. Tests mock IPC with `mockCommands` (`src/test/ipc.ts`).
 4. **Thin commands, fat services.** Rust `commands/*` parse input and delegate; logic lives in `services/*` with no Tauri types so it is unit-tested with plain `cargo test`.
 5. **Least privilege.** Every plugin/API the frontend may use is listed in `src-tauri/capabilities/`. Add permissions per feature, never wildcard.
 6. **Generated contract.** Commands and their types are exported to `src/shared/api/bindings.ts` by `tauri-specta` (on every debug run, or `bun run bindings`). Never edit that file; a Rust test fails when it is stale.

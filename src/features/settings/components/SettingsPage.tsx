@@ -1,13 +1,23 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UpdatesCard } from '@/features/updates';
-import { commands, keys, toAppError, type Settings } from '@/shared/api';
+import { commands, keys, type ComposeSupport, type Settings } from '@/shared/api';
 import { applyTheme, type Theme } from '@/shared/lib';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Label } from '@/shared/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
-import { ErrorMessage, KeyValue, LogoMark, PageHeader, Spinner, StatusDot } from '@/shared/ui';
+import { FolderOpenIcon } from 'lucide-react';
+import {
+  ErrorMessage,
+  HintView,
+  KeyValue,
+  LogoMark,
+  PageHeader,
+  Spinner,
+  StatusDot,
+  toastError,
+} from '@/shared/ui';
 import { settingsApi } from '../api/settingsApi';
 import { LicensesDialog } from './LicensesDialog';
 
@@ -27,6 +37,7 @@ export function SettingsPage() {
   const info = useQuery({ queryKey: keys.appInfo, queryFn: () => commands.getAppInfo() });
   const [licensesOpen, setLicensesOpen] = useState(false);
   const save = useMutation({
+    meta: { silent: true },
     mutationFn: (next: Settings) => settingsApi.update(next),
     onSuccess: (saved) => {
       applyTheme(saved.theme ?? 'system');
@@ -35,7 +46,8 @@ export function SettingsPage() {
   });
 
   if (settings.isPending) return <Spinner />;
-  if (settings.error) return <ErrorMessage error={toAppError(settings.error)} />;
+  if (settings.error)
+    return <ErrorMessage error={settings.error} onRetry={() => void settings.refetch()} />;
 
   return (
     <div className="grid max-w-2xl gap-4">
@@ -61,7 +73,7 @@ export function SettingsPage() {
               ))}
             </SelectContent>
           </Select>
-          {save.error && <ErrorMessage error={toAppError(save.error)} />}
+          {save.error && <ErrorMessage error={save.error} />}
         </CardContent>
       </Card>
       <UpdatesCard settings={settings.data} onChange={(next) => save.mutate(next)} />
@@ -83,15 +95,7 @@ export function SettingsPage() {
                       : 'Unavailable — SSH keys, TLS certificates and stack environments can’t be stored.'}
                   </span>,
                 ],
-                [
-                  'Compose CLI',
-                  <span className="inline-flex items-center gap-1.5">
-                    <StatusDot tone={capabilities.data.compose ? 'success' : 'warning'} />
-                    {capabilities.data.compose
-                      ? `${capabilities.data.compose.program} ${capabilities.data.compose.prefix.join(' ')} ${capabilities.data.compose.version}`
-                      : 'Not found — Stacks can be started and stopped, but not deployed.'}
-                  </span>,
-                ],
+                ['Compose CLI', <ComposeStatus compose={capabilities.data.compose} />],
               ]}
             />
           )}
@@ -113,13 +117,41 @@ export function SettingsPage() {
             variant="outline"
             size="sm"
             className="ml-auto"
-            onClick={() => setLicensesOpen(true)}
+            onClick={() => commands.openLogFolder().catch(toastError)}
           >
+            <FolderOpenIcon /> Open log folder
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setLicensesOpen(true)}>
             Licenses
           </Button>
         </CardContent>
       </Card>
       <LicensesDialog open={licensesOpen} onOpenChange={setLicensesOpen} />
+    </div>
+  );
+}
+
+/** The compose CLI found, or what's missing and how to install it. */
+function ComposeStatus({ compose }: { compose: ComposeSupport }) {
+  if (compose.state === 'available') {
+    const { program, prefix, version } = compose.cli;
+    return (
+      <span className="inline-flex items-center gap-1.5">
+        <StatusDot tone="success" />
+        {`${program} ${prefix.join(' ')} ${version}`}
+      </span>
+    );
+  }
+  return (
+    <div className="grid gap-2">
+      <span className="inline-flex items-center gap-1.5">
+        <StatusDot tone="warning" />
+        {compose.problem.message}
+      </span>
+      <span className="text-muted-foreground">
+        Stacks can be started and stopped, but not deployed.
+      </span>
+      {compose.problem.hint && <HintView hint={compose.problem.hint} />}
     </div>
   );
 }

@@ -56,7 +56,7 @@ pub enum PullEvent {
     },
     Done,
     Error {
-        message: String,
+        error: AppError,
     },
 }
 
@@ -159,7 +159,11 @@ pub async fn pull(docker: Docker, reference: String, sink: impl Fn(PullEvent) ->
         let event = match item {
             Ok(info) => match info.error_detail.and_then(|e| e.message) {
                 Some(message) => {
-                    sink(PullEvent::Error { message });
+                    sink(PullEvent::Error {
+                        error: crate::error::engine::from_message(None, &message)
+                            .with_detail(&message)
+                            .logged("image pull"),
+                    });
                     return;
                 }
                 None => PullEvent::Progress {
@@ -171,7 +175,7 @@ pub async fn pull(docker: Docker, reference: String, sink: impl Fn(PullEvent) ->
             },
             Err(e) => {
                 sink(PullEvent::Error {
-                    message: crate::services::transport::describe_docker_error(&e),
+                    error: AppError::from(e).logged("image pull"),
                 });
                 return;
             }
@@ -187,7 +191,7 @@ pub async fn pull(docker: Docker, reference: String, sink: impl Fn(PullEvent) ->
 pub async fn tag(docker: &Docker, id: &str, target: &str) -> AppResult<()> {
     let (repo, tag) = split_reference(target);
     if repo.is_empty() || repo.contains('@') {
-        return Err(AppError::Validation("Enter a name like repo:tag.".into()));
+        return Err(AppError::validation("Enter a name like repo:tag."));
     }
     let options = TagImageOptionsBuilder::default()
         .repo(&repo)

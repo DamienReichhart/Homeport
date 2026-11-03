@@ -23,7 +23,7 @@ use tokio::{
     task::AbortHandle,
 };
 
-use crate::error::{AppError, AppResult};
+use crate::error::{AppError, AppResult, ErrorCode};
 
 /// Starts bash when the image has it, sh otherwise.
 const DEFAULT_SHELL: &str = "if [ -x /bin/bash ]; then exec /bin/bash; else exec /bin/sh; fi";
@@ -42,9 +42,17 @@ pub struct ExecOptions {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum ExecEvent {
-    Output { data: String },
-    Exit { code: Option<i64> },
-    Error { message: String },
+    Output {
+        data: String,
+    },
+    /// `error` explains an exit that means the command couldn't run.
+    Exit {
+        code: Option<i64>,
+        error: Option<AppError>,
+    },
+    Error {
+        error: AppError,
+    },
 }
 
 /// Decodes a byte stream as UTF-8, holding back a character split across chunks.
@@ -117,7 +125,7 @@ pub async fn start(
 ) -> AppResult<(Arc<ExecSession>, Output)> {
     let cmd = match options.command.as_deref().map(str::trim) {
         Some(c) if !c.is_empty() => shell_words::split(c)
-            .map_err(|_| AppError::Validation("The command has an unclosed quote.".into()))?,
+            .map_err(|_| AppError::validation("The command has an unclosed quote."))?,
         _ => vec!["sh".into(), "-c".into(), DEFAULT_SHELL.into()],
     };
     let non_empty = |s: Option<String>| s.filter(|s| !s.trim().is_empty());
@@ -145,7 +153,10 @@ pub async fn start(
         )
         .await?;
     let StartExecResults::Attached { output, input } = started else {
-        return Err(AppError::Docker("the exec session did not attach".into()));
+        return Err(AppError::new(
+            ErrorCode::EngineError,
+            "The Docker Engine didn't open the terminal session.",
+        ));
     };
     Ok((
         Arc::new(ExecSession {
@@ -170,7 +181,7 @@ pub async fn pump(session: Arc<ExecSession>, mut output: Output, sink: impl Fn(E
             }
             Err(e) => {
                 sink(ExecEvent::Error {
-                    message: crate::services::transport::describe_docker_error(&e),
+                    error: AppError::from(e).logged("exec session"),
                 });
                 return;
             }
@@ -182,7 +193,16 @@ pub async fn pump(session: Arc<ExecSession>, mut output: Output, sink: impl Fn(E
         .await
         .ok()
         .and_then(|i| i.exit_code);
-    sink(ExecEvent::Exit { code });
+    sink(ExecEvent::Exit {
+        code,
+        error: exit_error(code),
+    });
+}
+
+/// Shells answer 127 for a command they can't find and 126 for one they
+/// can't run; in a container that usually means a minimal image.
+fn exit_error(code: Option<i64>) -> Option<AppError> {
+    matches!(code, Some(126 | 127)).then(crate::error::engine::command_not_found)
 }
 
 pub type SessionId = u32;
@@ -223,7 +243,7 @@ impl ExecSessions {
             .expect("exec lock poisoned")
             .get(&id)
             .map(|(s, _)| s.clone())
-            .ok_or_else(|| AppError::NotFound(format!("exec session {id}")))
+            .ok_or_else(|| AppError::not_found("This terminal session has ended."))
     }
 
     pub fn close(&self, id: SessionId) {
@@ -239,6 +259,15 @@ mod tests {
 
     use super::*;
     use crate::services::docker::{containers, testing};
+
+    #[test]
+    fn exits_that_mean_the_command_couldnt_run_are_explained() {
+        use crate::error::ErrorCode;
+        assert_eq!(exit_error(Some(127)).unwrap().code, ErrorCode::NoShell);
+        assert_eq!(exit_error(Some(126)).unwrap().code, ErrorCode::NoShell);
+        assert!(exit_error(Some(1)).is_none());
+        assert!(exit_error(None).is_none());
+    }
 
     #[test]
     fn utf8_split_across_chunks_is_reassembled() {
@@ -286,8 +315,8 @@ mod tests {
             loop {
                 match rx.recv().await.unwrap() {
                     ExecEvent::Output { data } => output.push_str(&data),
-                    ExecEvent::Exit { code } => return code,
-                    ExecEvent::Error { message } => panic!("{message}"),
+                    ExecEvent::Exit { code, .. } => return code,
+                    ExecEvent::Error { error } => panic!("{error}"),
                 }
             }
         })

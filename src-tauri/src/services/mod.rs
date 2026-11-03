@@ -5,6 +5,8 @@ pub mod crypto;
 pub mod db;
 pub mod docker;
 pub mod hosts;
+pub mod local_files;
+pub mod programs;
 pub mod settings;
 pub mod stacks;
 pub mod streams;

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { commands, keys, toAppError, type PruneSelection } from '@/shared/api';
+import { commands, keys, type PruneSelection } from '@/shared/api';
 import { formatBytes } from '@/shared/lib';
 import { Button } from '@/shared/ui/button';
 import { Checkbox } from '@/shared/ui/checkbox';
@@ -71,6 +71,7 @@ export function PruneDialog({
     buildCache: true,
   });
   const prune = useMutation({
+    meta: { silent: true },
     mutationFn: () =>
       commands.systemPrune(hostId, {
         ...selection,
@@ -117,7 +118,7 @@ export function PruneDialog({
             </div>
           ))}
         </div>
-        {prune.error && <ErrorMessage error={toAppError(prune.error)} />}
+        {prune.error && <ErrorMessage error={prune.error} />}
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Cancel

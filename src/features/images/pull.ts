@@ -1,4 +1,4 @@
-import type { PullEvent } from '@/shared/api';
+import { toAppError, type AppError, type PullEvent } from '@/shared/api';
 
 export interface LayerProgress {
   id: string;
@@ -12,7 +12,7 @@ export interface PullState {
   /** Status lines not tied to a layer ("Pulling from library/nginx", digests). */
   messages: string[];
   done: boolean;
-  error: string | null;
+  error: AppError | null;
 }
 
 export const initialPull: PullState = { layers: [], messages: [], done: false, error: null };
@@ -23,7 +23,7 @@ export function reducePull(state: PullState, event: PullEvent): PullState {
     case 'done':
       return { ...state, done: true };
     case 'error':
-      return { ...state, error: event.message };
+      return { ...state, error: toAppError(event.error) };
     case 'progress': {
       // Image-level lines carry the reference as their id; layers are short hex ids.
       if (!event.id || !/^[0-9a-f]{12}$/.test(event.id)) {

@@ -17,7 +17,10 @@ use russh::{
 use tokio::sync::Mutex;
 
 use super::{BoxFuture, BoxStream, ConnectError, Dialer, CONNECT_TIMEOUT};
-use crate::services::hosts::{HostSecrets, SshAuth};
+use crate::{
+    error::{reach, AppError, ErrorCode},
+    services::hosts::{HostSecrets, SshAuth},
+};
 
 /// A freshly generated Ed25519 keypair in OpenSSH formats.
 pub struct GeneratedKey {
@@ -59,11 +62,16 @@ pub fn generate_key(comment: &str) -> GeneratedKey {
 
 /// Reads a user-supplied private key and returns its public half in OpenSSH format.
 pub fn public_key_of(private_key: &str, passphrase: Option<&str>) -> Result<String, ConnectError> {
-    let key = decode_secret_key(private_key, passphrase)
-        .map_err(|e| ConnectError::Invalid(format!("The private key can't be read: {e}")))?;
-    key.public_key()
-        .to_openssh()
-        .map_err(|e| ConnectError::Invalid(e.to_string()))
+    let key = decode_secret_key(private_key, passphrase).map_err(key_unreadable)?;
+    key.public_key().to_openssh().map_err(|e| {
+        ConnectError::Invalid(
+            AppError::new(
+                ErrorCode::SshKeyInvalid,
+                "The private key's public half can't be encoded.",
+            )
+            .with_cause(&e),
+        )
+    })
 }
 
 /// The one-liner a user pastes on the server to authorize `public_key`.
@@ -114,15 +122,18 @@ impl Credentials {
                 }),
             ) => decode_secret_key(&private_key, passphrase.as_deref())
                 .map(|k| Self::Key(Arc::new(k)))
-                .map_err(|e| ConnectError::Invalid(format!("The private key can't be read: {e}"))),
+                .map_err(key_unreadable),
             _ => Err(ConnectError::Invalid(
-                "The SSH private key is missing.".into(),
+                AppError::new(ErrorCode::SshKeyInvalid, "The SSH private key is missing.")
+                    .with_hint("Add a private key on the host page, or generate one."),
             )),
         }
     }
 }
 
 pub struct SshTarget {
+    /// The Host's name and SSH address, for messages.
+    pub label: String,
     pub host: String,
     pub port: u16,
     pub user: String,
@@ -160,7 +171,12 @@ impl SshDialer {
         let connecting = client::connect(config, (t.host.as_str(), t.port), handler);
         let result = tokio::time::timeout(CONNECT_TIMEOUT, connecting)
             .await
-            .map_err(|_| ConnectError::Unreachable("SSH connection timed out".into()))?;
+            .map_err(|_| {
+                ConnectError::Unreachable(AppError::new(
+                    ErrorCode::Timeout,
+                    format!("{} didn't answer in time.", t.label),
+                ))
+            })?;
 
         let mut session = match result {
             Ok(session) => session,
@@ -168,7 +184,7 @@ impl SshDialer {
                 let presented = presented.lock().expect("lock poisoned").take();
                 return Err(match presented {
                     Some(key) => host_key_error(t.trusted_host_key.as_deref(), &key),
-                    None => ConnectError::Unreachable(e.to_string()),
+                    None => ConnectError::from(reach::ssh(&t.label, &e)),
                 });
             }
         };
@@ -178,21 +194,18 @@ impl SshDialer {
                 let hash = session
                     .best_supported_rsa_hash()
                     .await
-                    .map_err(|e| ConnectError::Unreachable(e.to_string()))?
+                    .map_err(|e| ConnectError::from(reach::ssh(&t.label, &e)))?
                     .flatten();
                 session
                     .authenticate_publickey(&t.user, PrivateKeyWithHashAlg::new(key.clone(), hash))
                     .await
-                    .map_err(|e| ConnectError::Unreachable(e.to_string()))?
+                    .map_err(|e| ConnectError::from(reach::ssh(&t.label, &e)))?
                     .success()
             }
-            Credentials::Agent => authenticate_with_agent(&mut session, &t.user).await?,
+            Credentials::Agent => authenticate_with_agent(&mut session, &t.user, &t.label).await?,
         };
         if !authenticated {
-            return Err(ConnectError::Unauthorized(format!(
-                "The server refused the key for {}@{}. Add the public key to its authorized_keys.",
-                t.user, t.host
-            )));
+            return Err(ConnectError::Unauthorized(auth_refused(t)));
         }
         Ok(session)
     }
@@ -202,18 +215,22 @@ impl SshDialer {
         if session.as_ref().is_none_or(|s| s.is_closed()) {
             *session = Some(self.open_session().await?);
         }
-        let channel = session
-            .as_ref()
-            .expect("session was just opened")
+        let session = session.as_ref().expect("session was just opened");
+        match session
             .channel_open_direct_streamlocal(self.target.socket_path.as_str())
             .await
-            .map_err(|e| {
-                ConnectError::Unreachable(format!(
-                    "The SSH server couldn't open {}: {e}. Check the path and that {} can use Docker.",
-                    self.target.socket_path, self.target.user
-                ))
-            })?;
-        Ok(Box::new(channel.into_stream()))
+        {
+            Ok(channel) => Ok(Box::new(channel.into_stream())),
+            Err(e) => {
+                // The refusal doesn't say why, so ask the server.
+                let probe = probe_socket(session, &self.target.socket_path).await;
+                Err(ConnectError::from(socket_unavailable(
+                    &self.target,
+                    probe,
+                    &e,
+                )))
+            }
+        }
     }
 }
 
@@ -226,7 +243,8 @@ impl Dialer for SshDialer {
         Box::pin(async move {
             self.open_channel()
                 .await
-                .map_err(|e| io::Error::new(io::ErrorKind::ConnectionRefused, e.to_string()))
+                // Keep the classification for whoever reads the failed request.
+                .map_err(|e| io::Error::new(io::ErrorKind::ConnectionRefused, AppError::from(e)))
         })
     }
 }
@@ -244,6 +262,189 @@ fn host_key_error(trusted: Option<&str>, presented: &PublicKey) -> ConnectError 
     }
 }
 
+fn key_unreadable(e: russh::keys::Error) -> ConnectError {
+    ConnectError::Invalid(
+        AppError::new(
+            ErrorCode::SshKeyInvalid,
+            "The SSH private key can't be read.",
+        )
+        .with_hint(
+            "Check that it's an OpenSSH or PEM private key and that the passphrase is right.",
+        )
+        .with_cause(&e),
+    )
+}
+
+fn auth_refused(t: &SshTarget) -> AppError {
+    let error = AppError::new(
+        ErrorCode::SshAuthFailed,
+        format!(
+            "The SSH server refused to let {}@{} log in.",
+            t.user, t.host
+        ),
+    );
+    match &t.credentials {
+        Credentials::Key(key) => match key.public_key().to_openssh() {
+            Ok(public_key) => error
+                .with_hint(format!(
+                    "Authorise Homeport's key for {} by running this on {}:",
+                    t.user, t.host
+                ))
+                .with_command(authorized_keys_command(&public_key)),
+            Err(_) => error.with_hint(format!(
+                "Add this host's public key to authorized_keys on {}.",
+                t.host
+            )),
+        },
+        Credentials::Agent => error
+            .with_hint("Load a key the SSH server accepts into your ssh-agent, then reconnect.")
+            .with_command("ssh-add"),
+    }
+}
+
+fn agent_unavailable(e: &(dyn std::error::Error + 'static)) -> AppError {
+    let error = AppError::new(ErrorCode::SshAgentUnavailable, "No ssh-agent is running.");
+    let error = if cfg!(windows) {
+        error
+            .with_hint("Start the OpenSSH Authentication Agent service in an administrator PowerShell, then add your key:")
+            .with_command("Get-Service ssh-agent | Set-Service -StartupType Automatic\nStart-Service ssh-agent")
+            .with_command("ssh-add")
+    } else {
+        error
+            .with_hint("Start an agent and add your key in the terminal Homeport is launched from, or pick another authentication method:")
+            .with_command("eval \"$(ssh-agent -s)\"\nssh-add")
+    };
+    error.with_cause(e)
+}
+
+fn agent_failed(e: &(dyn std::error::Error + 'static)) -> AppError {
+    AppError::new(
+        ErrorCode::SshAgentUnavailable,
+        "The ssh-agent failed to sign in.",
+    )
+    .with_hint("Check that the agent holds your key with `ssh-add -l`.")
+    .with_cause(e)
+}
+
+/// How long the server may take to describe its Engine socket.
+const PROBE_TIMEOUT: Duration = Duration::from_secs(5);
+
+/// What the server says about its Engine socket after refusing to open it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum RemoteSocket {
+    /// Readable and writable: sshd itself refused the forward.
+    Usable,
+    /// There, but the user may not use it.
+    Denied,
+    /// No socket, but a Docker-compatible Engine is installed.
+    Stopped,
+    /// No socket and no Engine installed.
+    Missing,
+}
+
+impl RemoteSocket {
+    fn parse(output: &str) -> Option<Self> {
+        match output.trim() {
+            "usable" => Some(Self::Usable),
+            "denied" => Some(Self::Denied),
+            "stopped" => Some(Self::Stopped),
+            "missing" => Some(Self::Missing),
+            _ => None,
+        }
+    }
+}
+
+/// A POSIX shell check of `socket`, printing one of [`RemoteSocket`]'s answers.
+fn probe_script(socket: &str) -> String {
+    let q = format!("'{}'", socket.replace('\'', r"'\''"));
+    format!(
+        "if [ -S {q} ]; then if [ -r {q} ] && [ -w {q} ]; then echo usable; else echo denied; fi; \
+         elif command -v dockerd >/dev/null 2>&1 || command -v docker >/dev/null 2>&1 || command -v podman >/dev/null 2>&1; \
+         then echo stopped; else echo missing; fi"
+    )
+}
+
+/// Runs [`probe_script`] on the server; `None` when it can't run or answers oddly.
+async fn probe_socket(session: &Handle<ServerKeyCheck>, socket: &str) -> Option<RemoteSocket> {
+    let run = async {
+        let mut channel = session.channel_open_session().await.ok()?;
+        channel.exec(true, probe_script(socket)).await.ok()?;
+        let mut output = Vec::new();
+        while let Some(message) = channel.wait().await {
+            match message {
+                russh::ChannelMsg::Data { data } => output.extend_from_slice(&data),
+                russh::ChannelMsg::Eof | russh::ChannelMsg::Close => break,
+                _ => {}
+            }
+        }
+        RemoteSocket::parse(&String::from_utf8_lossy(&output))
+    };
+    tokio::time::timeout(PROBE_TIMEOUT, run)
+        .await
+        .ok()
+        .flatten()
+}
+
+/// The server accepted the login but wouldn't open the Engine socket; `probe`
+/// is what it said about the socket, if it could be asked.
+fn socket_unavailable(t: &SshTarget, probe: Option<RemoteSocket>, e: &russh::Error) -> AppError {
+    let (host, user, socket) = (&t.host, &t.user, &t.socket_path);
+    let prohibited = matches!(
+        e,
+        russh::Error::ChannelOpenFailure(russh::ChannelOpenFailure::AdministrativelyProhibited)
+    );
+    let error = match probe {
+        _ if prohibited => forwarding_disabled(host),
+        Some(RemoteSocket::Usable) => forwarding_disabled(host),
+        Some(RemoteSocket::Missing) => AppError::new(
+            ErrorCode::EngineNotInstalled,
+            format!("The Docker Engine isn't installed on {host}."),
+        )
+        .with_hint(format!(
+            "Install it on {host}, for example with Docker's install script, then let {user} use it:"
+        ))
+        .with_command("curl -fsSL https://get.docker.com | sh\nsudo systemctl enable --now docker")
+        .with_command(format!("sudo usermod -aG docker {user}")),
+        Some(RemoteSocket::Stopped) => AppError::new(
+            ErrorCode::EngineNotRunning,
+            format!("The Docker Engine isn't running on {host}: nothing listens at {socket}."),
+        )
+        .with_hint(format!("Start it on {host}, and have it start with the machine:"))
+        .with_command("sudo systemctl enable --now docker"),
+        Some(RemoteSocket::Denied) => AppError::new(
+            ErrorCode::PermissionDenied,
+            format!("{user} isn't allowed to use the Docker Engine on {host}."),
+        )
+        .with_hint(format!(
+            "On {host}, add {user} to the docker group. It applies to new logins, so reconnect afterwards:"
+        ))
+        .with_command(format!("sudo usermod -aG docker {user}")),
+        None => AppError::new(
+            ErrorCode::RemoteEngineUnavailable,
+            format!("{user} can't open the Docker Engine socket at {socket} on {host}."),
+        )
+        .with_hint(format!(
+            "Check that the Docker Engine runs on {host} and that {user} may use it. On {host}, run:"
+        ))
+        .with_command("sudo systemctl enable --now docker")
+        .with_command(format!("sudo usermod -aG docker {user}")),
+    };
+    error.with_cause(e)
+}
+
+fn forwarding_disabled(host: &str) -> AppError {
+    AppError::new(
+        ErrorCode::RemoteEngineUnavailable,
+        format!("The SSH server on {host} doesn't allow forwarding to the Docker Engine socket."),
+    )
+    .with_hint(format!(
+        "Allow it in sshd's configuration on {host}, then restart sshd (the service is \"sshd\" on some systems):"
+    ))
+    .with_command(
+        "echo 'AllowStreamLocalForwarding yes' | sudo tee /etc/ssh/sshd_config.d/homeport.conf\nsudo systemctl restart ssh",
+    )
+}
+
 fn fingerprint_of_trusted(trusted: &str) -> Option<String> {
     fingerprint(trusted)
 }
@@ -252,28 +453,31 @@ fn fingerprint_of_trusted(trusted: &str) -> Option<String> {
 async fn authenticate_with_agent(
     session: &mut Handle<ServerKeyCheck>,
     user: &str,
+    label: &str,
 ) -> Result<bool, ConnectError> {
     let agent = russh::keys::agent::client::AgentClient::connect_env()
         .await
-        .map_err(|e| ConnectError::Unauthorized(format!("No ssh-agent is reachable: {e}")))?;
-    try_agent_identities(session, user, agent).await
+        .map_err(|e| ConnectError::Unauthorized(agent_unavailable(&e)))?;
+    try_agent_identities(session, user, label, agent).await
 }
 
 #[cfg(windows)]
 async fn authenticate_with_agent(
     session: &mut Handle<ServerKeyCheck>,
     user: &str,
+    label: &str,
 ) -> Result<bool, ConnectError> {
     let agent =
         russh::keys::agent::client::AgentClient::connect_named_pipe(r"\\.\pipe\openssh-ssh-agent")
             .await
-            .map_err(|e| ConnectError::Unauthorized(format!("No ssh-agent is reachable: {e}")))?;
-    try_agent_identities(session, user, agent).await
+            .map_err(|e| ConnectError::Unauthorized(agent_unavailable(&e)))?;
+    try_agent_identities(session, user, label, agent).await
 }
 
 async fn try_agent_identities<S>(
     session: &mut Handle<ServerKeyCheck>,
     user: &str,
+    label: &str,
     mut agent: russh::keys::agent::client::AgentClient<S>,
 ) -> Result<bool, ConnectError>
 where
@@ -282,18 +486,18 @@ where
     let identities = agent
         .request_identities()
         .await
-        .map_err(|e| ConnectError::Unauthorized(format!("ssh-agent failed: {e}")))?;
+        .map_err(|e| ConnectError::Unauthorized(agent_failed(&e)))?;
     let hash = session
         .best_supported_rsa_hash()
         .await
-        .map_err(|e| ConnectError::Unreachable(e.to_string()))?
+        .map_err(|e| ConnectError::from(reach::ssh(label, &e)))?
         .flatten();
     for identity in identities {
         let key = identity.public_key().into_owned();
         let result = session
             .authenticate_publickey_with(user, key, hash, &mut agent)
             .await
-            .map_err(|e| ConnectError::Unauthorized(format!("ssh-agent failed: {e}")))?;
+            .map_err(|e| ConnectError::Unauthorized(agent_failed(&e)))?;
         if result.success() {
             return Ok(true);
         }
@@ -332,6 +536,80 @@ impl client::Handler for ServerKeyCheck {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::error::ErrorCode;
+
+    fn target() -> SshTarget {
+        SshTarget {
+            label: "prod (deploy@prod.example:22)".into(),
+            host: "prod.example".into(),
+            port: 22,
+            user: "deploy".into(),
+            socket_path: "/var/run/docker.sock".into(),
+            credentials: Credentials::Agent,
+            trusted_host_key: None,
+        }
+    }
+
+    fn refused() -> russh::Error {
+        russh::Error::ChannelOpenFailure(russh::ChannelOpenFailure::ConnectFailed)
+    }
+
+    #[test]
+    fn the_probe_tells_why_the_remote_socket_cant_be_opened() {
+        for (probe, code, command) in [
+            (
+                Some(RemoteSocket::Missing),
+                ErrorCode::EngineNotInstalled,
+                "get.docker.com",
+            ),
+            (
+                Some(RemoteSocket::Stopped),
+                ErrorCode::EngineNotRunning,
+                "systemctl enable --now docker",
+            ),
+            (
+                Some(RemoteSocket::Denied),
+                ErrorCode::PermissionDenied,
+                "usermod -aG docker deploy",
+            ),
+            (
+                Some(RemoteSocket::Usable),
+                ErrorCode::RemoteEngineUnavailable,
+                "AllowStreamLocalForwarding yes",
+            ),
+            (
+                None,
+                ErrorCode::RemoteEngineUnavailable,
+                "usermod -aG docker deploy",
+            ),
+        ] {
+            let e = socket_unavailable(&target(), probe, &refused());
+            assert_eq!(e.code, code, "{probe:?}");
+            assert!(e.message.contains("prod.example"), "{e:?}");
+            let commands = e.hint.unwrap().commands.join("\n");
+            assert!(commands.contains(command), "{probe:?}: {commands}");
+        }
+    }
+
+    #[test]
+    fn a_prohibited_forward_means_sshd_forbids_it() {
+        let e = socket_unavailable(
+            &target(),
+            None,
+            &russh::Error::ChannelOpenFailure(
+                russh::ChannelOpenFailure::AdministrativelyProhibited,
+            ),
+        );
+        assert!(e.hint.unwrap().commands[0].contains("AllowStreamLocalForwarding yes"));
+    }
+
+    #[test]
+    fn the_probe_quotes_the_socket_path_and_reads_its_answer() {
+        let script = probe_script("/tmp/it's.sock");
+        assert!(script.contains(r"'/tmp/it'\''s.sock'"), "{script}");
+        assert_eq!(RemoteSocket::parse("denied\n"), Some(RemoteSocket::Denied));
+        assert_eq!(RemoteSocket::parse("bash: syntax error"), None);
+    }
 
     #[test]
     fn generated_keys_are_ed25519_with_a_safe_comment() {

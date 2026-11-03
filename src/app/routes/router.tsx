@@ -9,26 +9,34 @@ import { SettingsPage } from '@/features/settings';
 import { NewStackPage, StackDetailPage, StacksPage } from '@/features/stacks';
 import { VolumesPage } from '@/features/volumes';
 import { AppLayout } from '../AppLayout';
+import { CrashPage } from './CrashPage';
 
 /** Route table. One entry per feature page; keep logic out of here. */
 export const routes: RouteObject[] = [
   {
     element: <AppLayout />,
+    errorElement: <CrashPage />,
     children: [
-      { index: true, element: <OverviewPage /> },
-      { path: 'hosts', element: <HostsPage /> },
-      { path: 'hosts/new', element: <AddHostPage /> },
-      { path: 'hosts/:hostId', element: <HostDetailPage /> },
-      { path: 'containers', element: <ContainersPage /> },
-      { path: 'containers/:id/:tab?', element: <ContainerDetailPage /> },
-      { path: 'images', element: <ImagesPage /> },
-      { path: 'volumes', element: <VolumesPage /> },
-      { path: 'networks', element: <NetworksPage /> },
-      { path: 'stacks', element: <StacksPage /> },
-      { path: 'stacks/new', element: <NewStackPage /> },
-      { path: 'stacks/:name', element: <StackDetailPage /> },
-      { path: 'events', element: <EventsPage /> },
-      { path: 'settings', element: <SettingsPage /> },
+      {
+        // Pages crash inside the layout, so the sidebar stays usable.
+        errorElement: <CrashPage />,
+        children: [
+          { index: true, element: <OverviewPage /> },
+          { path: 'hosts', element: <HostsPage /> },
+          { path: 'hosts/new', element: <AddHostPage /> },
+          { path: 'hosts/:hostId', element: <HostDetailPage /> },
+          { path: 'containers', element: <ContainersPage /> },
+          { path: 'containers/:id/:tab?', element: <ContainerDetailPage /> },
+          { path: 'images', element: <ImagesPage /> },
+          { path: 'volumes', element: <VolumesPage /> },
+          { path: 'networks', element: <NetworksPage /> },
+          { path: 'stacks', element: <StacksPage /> },
+          { path: 'stacks/new', element: <NewStackPage /> },
+          { path: 'stacks/:name', element: <StackDetailPage /> },
+          { path: 'events', element: <EventsPage /> },
+          { path: 'settings', element: <SettingsPage /> },
+        ],
+      },
     ],
   },
 ];

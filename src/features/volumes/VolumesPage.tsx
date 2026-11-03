@@ -3,7 +3,7 @@ import { BrushCleaningIcon, HardDriveIcon, InfoIcon, PlusIcon, Trash2Icon } from
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { HostGate } from '@/features/hosts';
-import { commands, keys, toAppError, type VolumeView } from '@/shared/api';
+import { commands, keys, type VolumeView } from '@/shared/api';
 import { formatBytes } from '@/shared/lib';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
@@ -26,6 +26,7 @@ import {
   Spinner,
   useConfirm,
   type ColumnDef,
+  toastError,
 } from '@/shared/ui';
 
 function CreateVolumeDialog({
@@ -41,6 +42,7 @@ function CreateVolumeDialog({
   const [name, setName] = useState('');
   const [driver, setDriver] = useState('');
   const create = useMutation({
+    meta: { silent: true },
     mutationFn: () => commands.volumesCreate(hostId, { name, driver: driver || null, labels: {} }),
     onSuccess: async () => {
       await client.invalidateQueries({ queryKey: keys.volumes(hostId) });
@@ -74,7 +76,7 @@ function CreateVolumeDialog({
               placeholder="local"
             />
           </div>
-          {create.error && <ErrorMessage error={toAppError(create.error)} />}
+          {create.error && <ErrorMessage error={create.error} />}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancel
@@ -148,7 +150,7 @@ function VolumesList({ hostId }: { hostId: string }) {
           await commands.volumesRemove(hostId, v.name, false);
           toast.success(`Deleted ${v.name}`);
         } catch (e) {
-          toast.error(toAppError(e).message);
+          toastError(e);
         }
         await refresh();
       },
@@ -236,7 +238,8 @@ function VolumesList({ hostId }: { hostId: string }) {
   ];
 
   if (volumes.isPending) return <Spinner />;
-  if (volumes.error) return <ErrorMessage error={toAppError(volumes.error)} />;
+  if (volumes.error)
+    return <ErrorMessage error={volumes.error} onRetry={() => void volumes.refetch()} />;
   return (
     <div>
       <PageHeader

@@ -81,9 +81,7 @@ impl SecretBox {
     }
 
     fn cipher(&self) -> AppResult<&XChaCha20Poly1305> {
-        self.cipher
-            .as_ref()
-            .map_err(|reason| AppError::KeychainUnavailable(reason.clone()))
+        self.cipher.as_ref().map_err(AppError::keychain_unavailable)
     }
 
     pub fn seal(&self, plaintext: &[u8]) -> AppResult<Vec<u8>> {
@@ -109,9 +107,9 @@ impl SecretBox {
                 let (nonce, ciphertext) = rest.split_at(NONCE_LEN);
                 cipher
                     .decrypt(XNonce::from_slice(nonce), ciphertext)
-                    .map_err(|_| AppError::CredentialsLost)
+                    .map_err(|_| AppError::credentials_lost())
             }
-            _ => Err(AppError::CredentialsLost),
+            _ => Err(AppError::credentials_lost()),
         }
     }
 
@@ -127,6 +125,7 @@ impl SecretBox {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::error::ErrorCode;
 
     struct Unavailable;
     impl KeyStore for Unavailable {
@@ -159,8 +158,8 @@ mod tests {
         let sb = SecretBox::from_key(&[7; 32]);
         let mut sealed = sb.seal(b"secret").unwrap();
         *sealed.last_mut().unwrap() ^= 1;
-        assert!(matches!(sb.open(&sealed), Err(AppError::CredentialsLost)));
-        assert!(matches!(sb.open(b""), Err(AppError::CredentialsLost)));
+        assert!(matches!(sb.open(&sealed), Err(ref e) if e.is(ErrorCode::CredentialsLost)));
+        assert!(matches!(sb.open(b""), Err(ref e) if e.is(ErrorCode::CredentialsLost)));
     }
 
     #[test]
@@ -169,7 +168,7 @@ mod tests {
         let other = SecretBox::from_key(&[2; 32]);
         assert!(matches!(
             other.open(&sealed),
-            Err(AppError::CredentialsLost)
+            Err(ref e) if e.is(ErrorCode::CredentialsLost)
         ));
     }
 
@@ -179,7 +178,7 @@ mod tests {
         assert!(!sb.is_available());
         assert!(matches!(
             sb.seal(b"x"),
-            Err(AppError::KeychainUnavailable(_))
+            Err(ref e) if e.is(ErrorCode::KeychainUnavailable)
         ));
     }
 
