@@ -26,10 +26,18 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "category": "DeveloperTool",
+    "shortDescription": "Every Docker Engine, docked in one place.",
+    "longDescription": "A desktop app for managing Docker Engines anywhere: this machine's, or remote ones over SSH, TLS or TCP.",
+    "publisher": "Damien Reichhart",
+    "copyright": "Copyright (c) 2026 Damien Reichhart",
+    "homepage": "https://github.com/DamienReichhart/Homeport",
     "icon": [
       "icons/32x32.png",
+      "icons/64x64.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
+      "icons/icon.png",
       "icons/icon.icns",
       "icons/icon.ico"
     ]

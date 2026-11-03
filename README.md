@@ -39,6 +39,8 @@ Secrets (SSH keys, TLS material, stack environments) are encrypted in SQLite wit
 | `bun run rust:test`   | Rust unit tests                                  |
 | `bun run bindings`    | Regenerate `src/shared/api/bindings.ts`          |
 
+`tauri:build` writes installers to `target/release/bundle/`. Each one adds Homeport to the app menu: `.deb`/`.rpm` install a desktop entry, `.msi`/NSIS add a Start Menu shortcut, and the `.app` shows in Launchpad once it is in Applications. An AppImage has no install step, so it adds its own entry to `~/.local/share/applications` each time it runs, and the entry disappears from the menu once the file is deleted.
+
 Integration tests talk to the local Docker Engine (and the compose CLI). They only create resources named `homeport-test-*` and remove them afterwards; run them with `cargo test --workspace -- --ignored`.
 
 ## Layout

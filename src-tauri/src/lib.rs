@@ -1,3 +1,5 @@
+#[cfg(target_os = "linux")]
+mod appimage;
 mod commands;
 mod error;
 mod events;
@@ -41,6 +43,10 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .setup(move |app| {
             specta.mount_events(app);
+            #[cfg(target_os = "linux")]
+            if let Err(e) = appimage::integrate(&app.path().data_dir()?) {
+                log::warn!("failed to add the AppImage to the app menu: {e}");
+            }
             let config_dir = app.path().app_config_dir()?;
             let db = Arc::new(Db::open(&app.path().app_data_dir()?.join("homeport.db"))?);
             let settings = SettingsService::new(db.clone(), &config_dir.join("settings.json"))?;
