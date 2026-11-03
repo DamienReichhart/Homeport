@@ -18,6 +18,10 @@ export interface ConfirmOptions {
   confirmLabel: string;
   /** Red emphasis for actions that destroy data. */
   destructive?: boolean;
+  /**
+   * Runs the action. If it rejects, the dialog stays open so the user can try
+   * again; reporting the failure is the action's job (a mutation toasts it).
+   */
   onConfirm: () => Promise<unknown> | void;
 }
 
@@ -58,6 +62,8 @@ export function ConfirmDialog({
               try {
                 await options.onConfirm();
                 onClose();
+              } catch {
+                // Already reported by the action; stay open for a retry.
               } finally {
                 setBusy(false);
               }

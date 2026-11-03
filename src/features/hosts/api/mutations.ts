@@ -45,21 +45,19 @@ export function useTrustHostKey(hostId: string) {
   });
 }
 
-/** Replaces a Host's generated SSH key; the confirmation handles a failure. */
+/** Replaces a Host's generated SSH key. */
 export function useRegenerateKey(hostId: string) {
   const refresh = useRefreshHosts();
   return useMutation({
-    meta: { silent: true },
     mutationFn: () => commands.hostsRegenerateKey(hostId),
     onSuccess: refresh,
   });
 }
 
-/** Forgets a Host; the confirmation handles a failure. */
+/** Forgets a Host. */
 export function useDeleteHost(hostId: string) {
   const refresh = useRefreshHosts();
   return useMutation({
-    meta: { silent: true },
     mutationFn: () => commands.hostsDelete(hostId),
     onSuccess: refresh,
   });

@@ -85,7 +85,6 @@ export function useSaveDefinition(
 export function useForgetDefinition(hostId: string, managedId: string) {
   const client = useQueryClient();
   return useMutation({
-    meta: { silent: true },
     mutationFn: () => commands.stacksForget(managedId),
     onSuccess: () => client.invalidateQueries({ queryKey: hostKeys.stacks(hostId) }),
   });

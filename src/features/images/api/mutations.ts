@@ -39,7 +39,6 @@ export function useRemoveImage(hostId: string) {
 export function usePruneImages(hostId: string) {
   const refresh = useRefreshImages(hostId);
   return useMutation({
-    meta: { silent: true },
     mutationFn: (all: boolean) => commands.imagesPrune(hostId, all),
     onSuccess: async (result) => {
       toast.success(
