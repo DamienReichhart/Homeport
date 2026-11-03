@@ -3,7 +3,6 @@ mod appimage;
 mod commands;
 mod error;
 mod events;
-mod services;
 mod state;
 
 use homeport_hosts::{registry::HostRegistry, service::HostService, store::HostStore};

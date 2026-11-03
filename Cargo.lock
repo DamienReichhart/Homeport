@@ -2143,6 +2143,7 @@ dependencies = [
  "homeport-stacks",
  "homeport-storage",
  "homeport-transport",
+ "homeport-updates",
  "hyper",
  "hyper-util",
  "keyring",
@@ -2293,6 +2294,14 @@ dependencies = [
  "tokio",
  "tokio-rustls",
  "uuid",
+]
+
+[[package]]
+name = "homeport-updates"
+version = "0.4.0"
+dependencies = [
+ "serde",
+ "specta",
 ]
 
 [[package]]
