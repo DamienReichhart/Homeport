@@ -1,0 +1,132 @@
+---
+title: Containers
+description: List, run and manage containers — logs, terminals, files, stats and processes.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import DocScreenshot from '../../../../components/DocScreenshot.astro';
+
+The **Containers** page lists every container on the selected Host, running or not.
+
+<DocScreenshot
+  name="containers"
+  alt="The Containers page, with containers grouped under their Stacks and live CPU and memory."
+/>
+
+## The list
+
+Containers that belong to a [Stack](/docs/guides/stacks/) are grouped under it; standalone containers follow. A Stack's row shows how many of its containers are running and their combined CPU and memory. Select it to fold the group, or **Open stack** to go to the Stack.
+
+| Column      | Shows                                                                                                 |
+| ----------- | ----------------------------------------------------------------------------------------------------- |
+| **Name**    | A status dot, the name (the service name inside a Stack) and the short ID.                            |
+| **Image**   | The image it was created from.                                                                        |
+| **Status**  | As the Engine reports it, e.g. _Up 3 hours (healthy)_, with a health badge if there's a health check. |
+| **Ports**   | Up to three ports, published ones first. A published port is a link that opens it in your browser.    |
+| **CPU**     | Live, as a percentage of one CPU: `200%` means two CPUs fully used.                                   |
+| **Memory**  | Live, not counting page cache the kernel can reclaim.                                                 |
+| **Created** | How long ago.                                                                                         |
+
+CPU and memory update every two seconds. **Search containers** matches names, images, Stacks, services and ID prefixes; **Only running** hides the rest.
+
+Select a container to open it.
+
+### Actions
+
+The button at the end of each row starts or stops the container. The **⋮** menu has the rest: **Logs**, **Open terminal**, **Restart**, **Pause** or **Resume**, **Kill**, **Rename** and **Remove**.
+
+Tick containers to act on several at once with **Start**, **Stop**, **Restart** or **Remove**. The tick box on a Stack's row selects all of its containers.
+
+<Aside type="caution" title="What Remove deletes">
+  Removing a container deletes it, its writable layer and its anonymous volumes. Named volumes are
+  kept. A running container is stopped immediately, without waiting for it to shut down cleanly.
+</Aside>
+
+**Kill** sends `SIGKILL` straight away, so the process gets no chance to clean up. **Stop** gives it the container's stop timeout first.
+
+## A container's page
+
+The header shows the image and status, with **Start** or **Stop**, **Restart**, **Pause** or **Resume**, and **Remove**. The tabs below hold everything else.
+
+<Aside>
+  Leaving a tab closes what it was doing: terminals close when you leave **Exec**, charts start
+  again when you return to **Stats**, and **Logs** reload.
+</Aside>
+
+### Logs
+
+<DocScreenshot
+  name="container-logs"
+  alt="A container's Logs tab, with history, timestamps, stream filters and search."
+/>
+
+Logs stream as the container writes them. The toolbar controls what you see:
+
+- **History** — how many past lines to load: the last 100, 1 000 (the default) or 10 000, or everything.
+- **Since** — any time, or the last 5 minutes, hour or 24 hours.
+- **Timestamps** — show the Engine's timestamp before each line.
+- **stdout** and **stderr** — show or hide either stream.
+- **Follow** — keep scrolling to the newest line. New lines keep arriving even when it's off.
+- **Find in logs** — highlights matches. Press <kbd>Enter</kbd> for the next match and <kbd>Shift</kbd>+<kbd>Enter</kbd> for the previous one.
+- **Clear** empties the view; **Download logs** saves what you've loaded as a text file, up to the last 100 000 lines.
+
+When the container stops, the log ends with _— end of logs —_.
+
+### Inspect
+
+**Details** summarises the container in cards: state and exit code, command, restart policy, health checks, environment, mounts, ports, networks and labels. **Raw JSON** shows the Engine's full inspect document.
+
+<Aside type="caution">
+  Environment variables are shown in clear text, as the Engine stores them. Keep this in mind before
+  sharing your screen.
+</Aside>
+
+### Exec
+
+<DocScreenshot name="container-terminal" alt="An interactive terminal in a container's Exec tab." />
+
+An interactive terminal in the running container. The first one, **Shell**, opens on its own and runs `bash`, or `sh` when the image has no bash.
+
+**New terminal** opens another with your own **Command**, **User** and **Directory**, for example `psql -U postgres` as user `postgres`. Several can be open at once; close one with its **×**. Terminals resize with the window.
+
+Images without a shell — `scratch` or distroless images — can't open the default terminal.
+
+### Files
+
+Browse the container's file system from `/`. Select a folder to open it, or use the path at the top to go back up.
+
+- **Download** a file, or a whole folder as a `.tar` archive, with the button at the end of its row.
+- **Upload here** copies files from your computer into the folder you're in, replacing files with the same name.
+
+Listing files runs `find` and `stat` inside the container, so minimal images without them can't be browsed. Transfers are held in memory, so very large files are better copied with `docker cp`.
+
+### Stats
+
+Live charts of the last five minutes, updated every second: **CPU**, **Memory** (against the container's limit), **Network** received and sent, and **Disk I/O** read and written, with the number of processes.
+
+<DocScreenshot
+  name="container-stats"
+  alt="A container's Stats tab, with CPU, memory, network and disk I/O charts."
+/>
+
+### Processes
+
+The processes running in the container, as `ps aux` shows them, refreshed every five seconds.
+
+## Running a container
+
+**Run container** on the Containers page — or the ▶ button next to an image — opens **Run a container**:
+
+| Field                                  | Notes                                                                                                                                                       |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Image**                              | Required. Suggests the Host's images. Pulled first if the Host doesn't have it.                                                                             |
+| **Name**                               | Optional; the Engine generates one if empty.                                                                                                                |
+| **Command**                            | Replaces the image's default command (not its entrypoint). Quote arguments as in a shell.                                                                   |
+| **Ports**                              | **Host port** → **Container port**, `tcp` or `udp`. Leave the host port empty to let the Engine pick a free one. Ports are published on every interface.    |
+| **Volumes**                            | A volume name or an absolute `/host/path`, mounted at an absolute container path, optionally **read-only**. A name that doesn't exist yet creates a volume. |
+| **Environment**                        | One `KEY=value` per line. Blank lines and lines starting with `#` are ignored.                                                                              |
+| **Network**                            | **Default (bridge)**, or any network on the Host.                                                                                                           |
+| **Restart**                            | **Never**, **On failure**, **Unless stopped** or **Always**.                                                                                                |
+| **Remove the container when it exits** | Like `docker run --rm`. A container removed on exit can't also restart.                                                                                     |
+
+Choose **Run**: Homeport creates and starts the container, then opens its logs.

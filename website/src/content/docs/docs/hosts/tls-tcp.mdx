@@ -1,0 +1,49 @@
+---
+title: TLS and TCP Hosts
+description: Connect to a Docker Engine exposed over the network, with mutual TLS or plain TCP.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Docker Engines can listen on a TCP port as well as their socket. Homeport connects to them with mutual TLS — the setup Docker calls `--tlsverify` — or, on a network you trust completely, with plain TCP.
+
+## TLS
+
+With mutual TLS, Homeport checks the server's certificate against your CA, and the server checks Homeport's client certificate. It's the safe way to expose an Engine on a network.
+
+### What you need
+
+The three files from your Docker TLS setup, in PEM format:
+
+| Field                  | Usually called | Contains                                                                                          |
+| ---------------------- | -------------- | ------------------------------------------------------------------------------------------------- |
+| **CA certificate**     | `ca.pem`       | The certificate authority that signed the server's certificate. It may hold several certificates. |
+| **Client certificate** | `cert.pem`     | Homeport's certificate, signed by a CA the server trusts.                                         |
+| **Client key**         | `key.pem`      | The private key for the client certificate, unencrypted.                                          |
+
+Docker's guide [Protect the Docker daemon socket](https://docs.docker.com/engine/security/protect-access/) explains how to create them.
+
+### Adding a TLS Host
+
+1. Choose **Add host…** in the Host switcher and select **TLS**.
+2. Enter a **Name** and the **Address** as `host:port`, for example `docker.example.com:2376`.
+3. For each certificate and the key, paste the PEM text or choose **Load from file…**.
+4. Choose **Add host**.
+
+The server's certificate must name the host you enter — its DNS name or IP address must be in the certificate's subject alternative names — or the connection fails with _TLS handshake failed_.
+
+The certificates and key are stored encrypted, which needs an [OS keychain](/docs/requirements/#optional-an-os-keychain). When editing the Host, leave a field blank to keep what's stored.
+
+## TCP
+
+A **TCP** Host connects to `tcp://host:port` with no encryption and no authentication.
+
+<Aside type="danger" title="Unencrypted and unauthenticated">
+  Anyone who can reach the port controls the Engine — and through it, the machine. Only use plain
+  TCP on a network you trust completely, such as a local VM. Outside one, use
+  [SSH](/docs/hosts/ssh/) or TLS.
+</Aside>
+
+1. Choose **Add host…** and select **TCP**.
+2. Enter a **Name** and the **Address** as `host:port`, for example `192.168.1.10:2375`. IPv6 addresses go in brackets: `[fd00::10]:2375`.
+3. Choose **Add host**.

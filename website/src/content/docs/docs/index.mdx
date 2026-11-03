@@ -1,0 +1,59 @@
+---
+title: Introduction
+description: What Homeport is, what it does, and how these docs are organised.
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import DocScreenshot from '../../../components/DocScreenshot.astro';
+
+**Homeport** is a desktop app for managing Docker Engines anywhere — this machine's, or remote ones over SSH, TLS or TCP — in the spirit of Docker Desktop. It runs on Windows, macOS and Linux, is free, and is open source under the MIT licence.
+
+Homeport doesn't run containers itself. It connects to the Docker Engines you already have, called **Hosts**, and gives you one window for everything on them: containers, images, volumes, networks and Compose **Stacks**.
+
+<DocScreenshot
+  name="overview"
+  alt="Homeport's Overview page, with a card for each Host and the selected Host's engine details and disk usage."
+  caption="The Overview shows every Host at once."
+/>
+
+## What you can do
+
+<CardGrid>
+  <Card title="Connect to any Engine" icon="laptop">
+    Local engines are detected for you. Remote ones join over SSH, mutual TLS or TCP, and reconnect
+    on their own.
+  </Card>
+  <Card title="Work with containers" icon="seti:docker">
+    Live CPU and memory, logs, interactive terminals, a file browser, stats charts, processes and a
+    Run dialog.
+  </Card>
+  <Card title="Deploy Compose Stacks" icon="rocket">
+    Keep a compose file and its encrypted environment in Homeport, and deploy it to any Host.
+  </Card>
+  <Card title="Keep things tidy" icon="seti:folder">
+    Images, volumes and networks with usage at a glance, and a clean-up dialog that says what it
+    will remove.
+  </Card>
+</CardGrid>
+
+## How these docs are organised
+
+- **Getting started** — [install Homeport](/docs/installation/), then follow the [quick start](/docs/quick-start/) to connect your first Host.
+- **Hosts** — how each kind of connection works: [local engines](/docs/hosts/local/), [SSH](/docs/hosts/ssh/), and [TLS and TCP](/docs/hosts/tls-tcp/).
+- **Using Homeport** — a guide to each page of the app.
+- **Reference** — [security](/docs/reference/security/), [troubleshooting](/docs/reference/troubleshooting/), the [FAQ](/docs/reference/faq/) and the [glossary](/docs/reference/glossary/).
+
+## Words we use
+
+Homeport names things precisely, and the docs follow it:
+
+- A **Host** is a Docker Engine Homeport connects to. Every container, image, volume, network and Stack belongs to exactly one Host.
+- A **Stack** is a Compose project running on a Host. A **Managed Stack** is one whose compose file Homeport keeps; an **External Stack** was deployed some other way. You can **adopt** an External Stack to manage it.
+
+The [glossary](/docs/reference/glossary/) has the full list.
+
+<LinkCard
+  title="Install Homeport"
+  description="Installers for Windows, macOS and Linux, on x64 and ARM."
+  href="/docs/installation/"
+/>

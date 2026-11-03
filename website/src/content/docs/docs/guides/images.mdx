@@ -1,0 +1,52 @@
+---
+title: Images
+description: Pull, tag, inspect, run and remove images, and clean up what nothing uses.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import DocScreenshot from '../../../../components/DocScreenshot.astro';
+
+The **Images** page lists the images stored on the selected Host, with their total size.
+
+<DocScreenshot
+  name="images"
+  alt="The Images page, listing images with their size and whether they're in use."
+/>
+
+| Column      | Shows                                                                    |
+| ----------- | ------------------------------------------------------------------------ |
+| **Name**    | The first tag, and how many more it has; `<none>` for untagged images.   |
+| **ID**      | The short image ID.                                                      |
+| **Created** | How long ago the image was built.                                        |
+| **Size**    | Its size on disk.                                                        |
+| **Status**  | **In use** with the number of containers created from it, or **Unused**. |
+
+Stopped containers count as using an image. Select a column header to sort, and search with **Search images**.
+
+## Pulling an image
+
+Choose **Pull image** and enter a reference: `nginx` (which means `nginx:latest`), `nginx:1.27`, `ghcr.io/org/app:v2`, `registry.example.com:5000/app`, or a digest such as `app@sha256:…`.
+
+Homeport shows the pull's progress layer by layer, and says **Done.** when it's complete. **Cancel** stops following the pull.
+
+<Aside>
+  Pulls are anonymous, so they work for public images. Homeport doesn't log in to registries yet;
+  for private images, pull them on the Host with `docker login` and `docker pull`, or deploy them in
+  a [Managed Stack](/docs/guides/stacks/), which uses your local Docker credentials.
+</Aside>
+
+## Working with an image
+
+- **▶ Run** opens the [Run dialog](/docs/guides/containers/#running-a-container) with the image filled in.
+- **Inspect** — or selecting the row — shows **Layers**, the instructions that built each layer and their sizes, and **Raw JSON**.
+- **Tag** adds another name, such as `registry.example.com/app:v2`. It doesn't push anything.
+- **Remove** deletes the image and the layers no other image uses. An image with several tags loses all of them. The Engine refuses to remove an image a container still uses; remove the container first.
+
+## Cleaning up
+
+**Clean up** offers two levels:
+
+- **Dangling images** — untagged images left behind by builds and pulls. Safe to remove.
+- **All unused images** — every image no container uses, tagged ones included. They can be pulled again, but that takes time and bandwidth.
+
+Homeport tells you how many were removed and how much space came back. The [Overview's clean-up](/docs/guides/overview/#cleaning-up) can also remove stopped containers, networks, build cache and volumes in one go.
