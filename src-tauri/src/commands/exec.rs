@@ -1,6 +1,6 @@
 use tauri::{ipc::Channel, State};
 
-use homeport_engine::exec::{self, ExecEvent, ExecOptions, SessionId};
+use homeport_engine::containers::exec::{self, ExecEvent, ExecOptions, SessionId};
 
 use crate::{error::AppResult, state::AppState};
 

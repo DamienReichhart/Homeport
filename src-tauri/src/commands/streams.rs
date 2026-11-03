@@ -2,9 +2,11 @@ use homeport_core::streams::StreamId;
 use tauri::{ipc::Channel, State};
 
 use homeport_engine::{
+    containers::{
+        logs::{self, LogEvent, LogOptions, LogSource},
+        stats::{self, ContainerUsage, StatsSample},
+    },
     images::{self, PullEvent},
-    logs::{self, LogEvent, LogOptions, LogSource},
-    stats::{self, ContainerUsage, StatsSample},
 };
 
 use crate::{error::AppResult, state::AppState};

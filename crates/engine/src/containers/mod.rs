@@ -1,4 +1,11 @@
-//! Containers: listing, inspection and lifecycle.
+//! Containers: listing, inspection and lifecycle here; what runs inside one
+//! (exec, files, logs, stats) and creating one (`run`) in submodules.
+
+pub mod exec;
+pub mod files;
+pub mod logs;
+pub mod run;
+pub mod stats;
 
 use std::collections::HashMap;
 
