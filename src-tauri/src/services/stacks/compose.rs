@@ -14,9 +14,10 @@ use tokio::{
 
 use super::definition;
 use crate::{
-    error::{compose as errors, reach, AppError, AppResult, ErrorCode},
+    error::{compose as errors, AppError, AppResult, ErrorCode},
     services::{
         hosts::HostConnection,
+        programs,
         transport::{proxy, Dialer},
     },
 };
@@ -37,20 +38,28 @@ pub struct ComposeCli {
 /// Finds `docker compose`, falling back to a standalone `docker-compose` v2,
 /// and says what to install when neither is usable.
 pub async fn detect() -> AppResult<ComposeCli> {
-    if let Some(version) = version_of("docker", &["compose"]).await {
-        return Ok(ComposeCli {
-            program: "docker".into(),
-            prefix: vec!["compose".into()],
-            version,
-        });
+    let docker = programs::find("docker");
+    if let Some(docker) = &docker {
+        if let Some(version) = version_of(docker, &["compose"]).await {
+            return Ok(ComposeCli {
+                program: docker.to_string_lossy().into_owned(),
+                prefix: vec!["compose".into()],
+                version,
+            });
+        }
     }
-    match version_of("docker-compose", &[]).await {
-        Some(version) if !is_v1(&version) => Ok(ComposeCli {
-            program: "docker-compose".into(),
+    let standalone = programs::find("docker-compose");
+    let version = match &standalone {
+        Some(program) => version_of(program, &[]).await,
+        None => None,
+    };
+    match (standalone, version) {
+        (Some(program), Some(version)) if !is_v1(&version) => Ok(ComposeCli {
+            program: program.to_string_lossy().into_owned(),
             prefix: vec![],
             version,
         }),
-        old => Err(errors::missing(reach::on_path("docker"), old.as_deref())),
+        (_, old) => Err(errors::missing(docker.is_some(), old.as_deref())),
     }
 }
 
@@ -59,8 +68,9 @@ fn is_v1(version: &str) -> bool {
 }
 
 /// What `program … version --short` prints, if it runs and succeeds.
-async fn version_of(program: &str, prefix: &[&str]) -> Option<String> {
+async fn version_of(program: &std::path::Path, prefix: &[&str]) -> Option<String> {
     let out = Command::new(program)
+        .env("PATH", programs::search_path())
         .args(prefix)
         .args(["version", "--short"])
         .stdin(Stdio::null())
@@ -203,6 +213,8 @@ async fn execute(job: ComposeRun, sink: &impl Fn(ComposeEvent) -> bool) -> AppRe
         .env_remove("COMPOSE_FILE")
         .env_remove("COMPOSE_PROJECT_NAME")
         .env("DOCKER_HOST", &docker_host)
+        // Lets the CLI find its plugins and credential helpers from a GUI launch.
+        .env("PATH", programs::search_path())
         .envs(vars)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())

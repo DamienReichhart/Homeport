@@ -1,9 +1,10 @@
 //! Classifies failures to reach an Engine: local sockets and named pipes,
 //! then (for remote Hosts) the network, TLS and SSH layers.
 
-use std::{error::Error as StdError, io, path::Path};
+use std::{error::Error as StdError, io};
 
 use super::{AppError, ErrorCode};
+use crate::services::programs;
 
 /// `error` as an `io::Error`, looking through the transparent wrappers of
 /// bollard and russh (whose `source()` skips the io::Error itself).
@@ -97,7 +98,9 @@ pub fn local_socket(socket_path: &str, error: &(dyn StdError + 'static)) -> AppE
     let kind = io_cause(error).map(io::Error::kind);
     let classified = match kind {
         Some(io::ErrorKind::PermissionDenied) => permission_denied(socket_path),
-        Some(io::ErrorKind::NotFound) if !any_engine_cli_installed() => not_installed(socket_path),
+        Some(io::ErrorKind::NotFound) if !programs::engine_installed() => {
+            not_installed(socket_path)
+        }
         Some(io::ErrorKind::NotFound | io::ErrorKind::ConnectionRefused) => {
             not_running(socket_path)
         }
@@ -366,30 +369,6 @@ pub fn ssh(address: &str, error: &russh::Error) -> AppError {
         )
         .with_cause(error),
     }
-}
-
-/// Whether a Docker-compatible CLI is on the PATH, i.e. something is installed
-/// even though its Engine isn't running.
-fn any_engine_cli_installed() -> bool {
-    ["docker", "podman", "colima", "orb"]
-        .iter()
-        .any(|program| on_path(program))
-}
-
-pub fn on_path(program: &str) -> bool {
-    let Some(paths) = std::env::var_os("PATH") else {
-        return false;
-    };
-    let names: Vec<String> = if cfg!(windows) {
-        vec![format!("{program}.exe"), format!("{program}.cmd")]
-    } else {
-        vec![program.to_owned()]
-    };
-    std::env::split_paths(&paths).any(|dir| names.iter().any(|n| is_file(&dir.join(n))))
-}
-
-fn is_file(path: &Path) -> bool {
-    path.metadata().is_ok_and(|m| m.is_file())
 }
 
 #[cfg(test)]
