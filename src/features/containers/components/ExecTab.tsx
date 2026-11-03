@@ -7,7 +7,15 @@ import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover';
-import { XTerm } from '@/shared/ui';
+import { XTerm, terminalError } from '@/shared/ui';
+
+const NOT_RUNNABLE = {
+  message: 'The command wasn’t found or can’t run in this container.',
+  hint: {
+    text: 'Minimal images may have no shell or tools. Try /bin/sh, or open a session with another command.',
+    commands: [],
+  },
+};
 
 interface SessionSpec {
   key: number;
@@ -37,11 +45,14 @@ function ExecTerminal({
         const channel = new Channel<ExecEvent>();
         channel.onmessage = (event) => {
           if (event.type === 'output') terminal.write(event.data);
-          else if (event.type === 'exit')
+          else if (event.type === 'exit') {
             terminal.write(
               `\r\n\x1b[2m[process exited${event.code === null ? '' : ` with code ${event.code}`}]\x1b[22m\r\n`,
             );
-          else terminal.write(`\r\n\x1b[31m${event.error.message}\x1b[39m\r\n`);
+            // 126: found but not runnable; 127: not found (often no shell in minimal images).
+            if (event.code === 126 || event.code === 127)
+              terminal.write(terminalError(NOT_RUNNABLE));
+          } else terminal.write(`\r\n${terminalError(event.error)}`);
         };
         commands
           .execStart(
@@ -65,7 +76,7 @@ function ExecTerminal({
             void commands.execResize(id, size.cols, size.rows);
             terminal.focus();
           })
-          .catch((e: unknown) => terminal.write(`\x1b[31m${toAppError(e).message}\x1b[39m\r\n`));
+          .catch((e: unknown) => terminal.write(terminalError(toAppError(e))));
         const input = terminal.onData((data) => {
           if (session !== null) void commands.execInput(session, data);
         });

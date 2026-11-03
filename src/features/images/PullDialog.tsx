@@ -3,6 +3,7 @@ import { useEffect, useReducer, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { commands, keys, subscribe, type PullEvent } from '@/shared/api';
 import { formatBytes } from '@/shared/lib';
+import { ErrorMessage } from '@/shared/ui';
 import { Button } from '@/shared/ui/button';
 import {
   Dialog,
@@ -118,11 +119,7 @@ export function PullDialog({
                 />
               </div>
             ))}
-            {state.error && (
-              <p role="alert" className="text-destructive text-sm">
-                {state.error.message}
-              </p>
-            )}
+            {state.error && <ErrorMessage error={state.error} />}
             {state.done && <p className="text-success text-sm">Done.</p>}
           </div>
         )}
