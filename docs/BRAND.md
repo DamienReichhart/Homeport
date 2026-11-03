@@ -53,7 +53,7 @@ Beacon is an accent, not an action colour: keep it to the mark and small signals
 
 Status tones are tokens too — `--success`, `--warning`, `--info`, `--destructive` — chosen to pass WCAG AA as text on the background in both themes. Use them (`bg-success`, `text-warning`, `StatusDot`) rather than Tailwind's palette, so a status reads the same everywhere. Chart series are `--chart-1` … `--chart-5`: Harbour, Beacon, sea green, violet, coral.
 
-Libraries that can't read CSS variables (xterm.js, CodeMirror syntax) carry hex copies of the same hues: `src/shared/ui/XTerm.tsx` and `src/shared/ui/editorTheme.ts`.
+Libraries that can't read CSS variables (xterm.js, CodeMirror syntax) carry hex copies of the same hues: `src/shared/ui/terminal/XTerm.tsx` and `src/shared/ui/editor/editorTheme.ts`.
 
 ## Type
 
