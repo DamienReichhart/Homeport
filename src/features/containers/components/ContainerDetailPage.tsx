@@ -9,12 +9,12 @@ import {
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { HostGate, useContainers } from '@/core/host';
+import { containerTone } from '../model/containerTone';
 import { useContainerMutations } from '../api';
 import { commands, keys } from '@/shared/api';
 import {
   Badge,
   Button,
-  containerTone,
   ErrorMessage,
   PageHeader,
   Spinner,

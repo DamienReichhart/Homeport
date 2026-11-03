@@ -3,7 +3,7 @@ import { ArrowLeftIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { LogViewer } from '@/features/containers';
+import { containerTone, LogViewer } from '@/features/containers';
 import { HostGate, useContainers } from '@/core/host';
 import {
   commands,
@@ -21,7 +21,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  containerTone,
   ErrorMessage,
   PageHeader,
   Spinner,

@@ -113,7 +113,7 @@ export { ErrorDetailsHost, showErrorDetails } from './feedback/ErrorDetails';
 export { ErrorMessage } from './feedback/ErrorMessage';
 export { HintView } from './feedback/HintView';
 export { Spinner } from './feedback/Spinner';
-export { StatusDot, containerTone, type Tone } from './feedback/StatusDot';
+export { StatusDot, type Tone } from './feedback/StatusDot';
 export { toastError } from './feedback/toastError';
 
 // data
