@@ -89,12 +89,17 @@ src/                 React frontend
   app/               shell: providers, router, layout (composes features)
   features/<name>/   self-contained vertical slices, public API via index.ts
   shared/            feature-agnostic api / ui / hooks / lib / styles
-src-tauri/           Rust backend
-  src/commands/      thin IPC handlers
-  src/services/      business logic (no Tauri types, unit-testable)
-  src/state.rs       managed app state
-  src/error.rs       AppError -> { code, message } for the frontend
+src-tauri/           Rust app shell (Tauri)
+  src/app/           bootstrap, managed state, events pushed to the webview
+  src/commands/      thin IPC handlers, one module per feature
   capabilities/      Tauri permission sets
+crates/              Rust backend logic, one crate per layer (no Tauri types)
+  core/              AppError, the Host model, helpers for this computer
+  storage/           SQLite database and sealed secrets
+  transport/         reaching a Host: local, TCP, TLS, SSH, compose proxy
+  engine/            containers, images, volumes, networks… over bollard
+  hosts/  stacks/    the two domains: Hosts and Stacks
+  settings/ updates/ preferences, and how Homeport updates itself
 packaging/linux/     repository definitions, signing key, install script and
                      .deb/.rpm maintainer scripts
 scripts/             release planning, repository builder, signing-key wizard,
