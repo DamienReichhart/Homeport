@@ -63,7 +63,7 @@ pub enum RestartPolicy {
 
 /// Translates a [`RunSpec`] into the Engine's create request.
 pub fn create_body(spec: &RunSpec) -> AppResult<ContainerCreateBody> {
-    let invalid = |m: &str| AppError::Validation(m.to_owned());
+    let invalid = |m: &str| AppError::validation(m.to_owned());
     let image = spec.image.trim();
     if image.is_empty() {
         return Err(invalid("Choose an image."));
@@ -76,7 +76,7 @@ pub fn create_body(spec: &RunSpec) -> AppResult<ContainerCreateBody> {
     };
     for entry in &spec.env {
         if !entry.contains('=') || entry.starts_with('=') {
-            return Err(AppError::Validation(format!(
+            return Err(AppError::validation(format!(
                 "\"{entry}\" isn't a KEY=value environment variable."
             )));
         }
@@ -152,14 +152,14 @@ pub async fn run(docker: &Docker, spec: RunSpec) -> AppResult<String> {
     if docker.inspect_image(spec.image.trim()).await.is_err() {
         let failure = std::sync::Mutex::new(None);
         images::pull(docker.clone(), spec.image.trim().to_owned(), |e| {
-            if let images::PullEvent::Error { message } = e {
-                *failure.lock().expect("lock poisoned") = Some(message);
+            if let images::PullEvent::Error { error } = e {
+                *failure.lock().expect("lock poisoned") = Some(error);
             }
             true
         })
         .await;
-        if let Some(message) = failure.into_inner().expect("lock poisoned") {
-            return Err(AppError::Docker(message));
+        if let Some(error) = failure.into_inner().expect("lock poisoned") {
+            return Err(error);
         }
     }
     let mut options = CreateContainerOptionsBuilder::default();
@@ -182,6 +182,7 @@ pub async fn run(docker: &Docker, spec: RunSpec) -> AppResult<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::error::ErrorCode;
     use crate::services::docker::testing;
 
     fn spec() -> RunSpec {
@@ -287,7 +288,7 @@ mod tests {
         ];
         for s in bad {
             assert!(
-                matches!(create_body(&s), Err(AppError::Validation(_))),
+                matches!(create_body(&s), Err(ref e) if e.is(ErrorCode::Validation)),
                 "{s:?}"
             );
         }

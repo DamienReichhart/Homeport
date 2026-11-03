@@ -41,7 +41,7 @@ function ExecTerminal({
             terminal.write(
               `\r\n\x1b[2m[process exited${event.code === null ? '' : ` with code ${event.code}`}]\x1b[22m\r\n`,
             );
-          else terminal.write(`\r\n\x1b[31m${event.message}\x1b[39m\r\n`);
+          else terminal.write(`\r\n\x1b[31m${event.error.message}\x1b[39m\r\n`);
         };
         commands
           .execStart(

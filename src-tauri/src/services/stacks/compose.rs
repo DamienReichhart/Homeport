@@ -82,7 +82,7 @@ impl ComposeAction {
 pub enum ComposeEvent {
     Line { text: String },
     Exit { success: bool, code: Option<i32> },
-    Error { message: String },
+    Error { error: AppError },
 }
 
 /// The `DOCKER_HOST` for hosts the CLI can reach directly; `None` for TLS
@@ -112,28 +112,28 @@ pub struct ComposeRun {
 pub async fn run(job: ComposeRun, sink: impl Fn(ComposeEvent) -> bool) {
     if let Err(e) = execute(job, &sink).await {
         sink(ComposeEvent::Error {
-            message: e.to_string(),
+            error: e.logged("compose run"),
         });
     }
 }
 
 async fn execute(job: ComposeRun, sink: &impl Fn(ComposeEvent) -> bool) -> AppResult<()> {
-    definition::validate_name(&job.project).map_err(AppError::Validation)?;
+    definition::validate_name(&job.project).map_err(AppError::validation)?;
     if job.action != ComposeAction::Down && job.action != ComposeAction::DownWithVolumes {
         let check = definition::check(&job.compose);
         if !check.is_deployable() {
-            return Err(AppError::Validation(check.errors.join(" ")));
+            return Err(AppError::validation(check.errors.join(" ")));
         }
     }
-    let vars = definition::parse_env(&job.env).map_err(AppError::Validation)?;
+    let vars = definition::parse_env(&job.env).map_err(AppError::validation)?;
 
     // Keep the proxy alive until the CLI exits.
     let (docker_host, _proxy) = match direct_docker_host(&job.connection) {
         Some(host) => (host, None),
         None => {
-            let dialer = job.dialer.ok_or_else(|| {
-                AppError::Validation("Connect to the host before deploying.".into())
-            })?;
+            let dialer = job
+                .dialer
+                .ok_or_else(|| AppError::validation("Connect to the host before deploying."))?;
             let proxy = proxy::open(dialer)?;
             (proxy.docker_host.clone(), Some(proxy))
         }
@@ -163,7 +163,7 @@ async fn execute(job: ComposeRun, sink: &impl Fn(ComposeEvent) -> bool) -> AppRe
         .stderr(Stdio::piped())
         .kill_on_drop(true)
         .spawn()
-        .map_err(|e| AppError::Validation(format!("Couldn't start {}: {e}", job.cli.program)))?;
+        .map_err(|e| AppError::validation(format!("Couldn't start {}: {e}", job.cli.program)))?;
 
     let mut stdin = child.stdin.take().expect("stdin is piped");
     stdin.write_all(job.compose.as_bytes()).await?;

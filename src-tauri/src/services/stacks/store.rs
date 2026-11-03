@@ -7,7 +7,7 @@ use serde::Serialize;
 
 use super::definition;
 use crate::{
-    error::{AppError, AppResult},
+    error::{AppError, AppResult, ErrorCode},
     services::{crypto::SecretBox, db::Db},
 };
 
@@ -55,7 +55,7 @@ impl StackStore {
                 )
                 .optional()
             })?
-            .ok_or_else(|| AppError::NotFound(format!("stack {id}")))
+            .ok_or_else(|| AppError::not_found("This stack no longer exists."))
     }
 
     pub fn create(
@@ -66,7 +66,7 @@ impl StackStore {
         env: &str,
     ) -> AppResult<ManagedStack> {
         let name = name.trim();
-        definition::validate_name(name).map_err(AppError::Validation)?;
+        definition::validate_name(name).map_err(AppError::validation)?;
         let env = self.seal_env(env)?;
         let id = uuid::Uuid::new_v4().to_string();
         self.db
@@ -76,18 +76,16 @@ impl StackStore {
                     (&id, host_id, name, compose, &env),
                 )
             })
-            .map_err(|e| match e {
-                AppError::Db(rusqlite::Error::SqliteFailure(f, _))
-                    if f.extended_code == rusqlite::ffi::SQLITE_CONSTRAINT_UNIQUE =>
-                {
-                    AppError::Validation(format!("This host already has a stack named \"{name}\"."))
-                }
-                AppError::Db(rusqlite::Error::SqliteFailure(f, _))
-                    if f.extended_code == rusqlite::ffi::SQLITE_CONSTRAINT_FOREIGNKEY =>
-                {
-                    AppError::NotFound(format!("host {host_id}"))
-                }
-                e => e,
+            .map_err(|e| match e.code {
+                ErrorCode::NameInUse => AppError {
+                    message: format!("This host already has a stack named \"{name}\"."),
+                    ..e
+                },
+                ErrorCode::NotFound => AppError {
+                    message: "This host no longer exists.".into(),
+                    ..e
+                },
+                _ => e,
             })?;
         self.get(&id)
     }
@@ -103,7 +101,7 @@ impl StackStore {
             )
         })?;
         if n == 0 {
-            return Err(AppError::NotFound(format!("stack {id}")));
+            return Err(AppError::not_found("This stack no longer exists."));
         }
         self.get(id)
     }
@@ -122,7 +120,7 @@ impl StackStore {
                 c.query_row("SELECT env FROM stacks WHERE id = ?1", [id], |r| r.get(0))
                     .optional()
             })?
-            .ok_or_else(|| AppError::NotFound(format!("stack {id}")))?;
+            .ok_or_else(|| AppError::not_found("This stack no longer exists."))?;
         match sealed {
             Some(sealed) => Ok(String::from_utf8_lossy(&self.secrets.open(&sealed)?).into_owned()),
             None => Ok(String::new()),
@@ -134,7 +132,7 @@ impl StackStore {
         if env.trim().is_empty() {
             return Ok(None);
         }
-        definition::parse_env(env).map_err(AppError::Validation)?;
+        definition::parse_env(env).map_err(AppError::validation)?;
         Ok(Some(self.secrets.seal(env.as_bytes())?))
     }
 }
@@ -203,15 +201,15 @@ mod tests {
         store.create(&host, "shop", COMPOSE, "").unwrap();
         assert!(matches!(
             store.create(&host, "shop", COMPOSE, ""),
-            Err(AppError::Validation(_))
+            Err(ref e) if e.is(ErrorCode::NameInUse) && e.message.contains("\"shop\"")
         ));
         assert!(matches!(
             store.create(&host, "Shop!", COMPOSE, ""),
-            Err(AppError::Validation(_))
+            Err(ref e) if e.is(ErrorCode::Validation)
         ));
         assert!(matches!(
             store.create("nope", "x", COMPOSE, ""),
-            Err(AppError::NotFound(_))
+            Err(ref e) if e.is(ErrorCode::NotFound)
         ));
     }
 
@@ -220,7 +218,7 @@ mod tests {
         let (store, hosts, host) = setup(SecretBox::from_key(&[4; 32]));
         let s = store.create(&host, "shop", COMPOSE, "").unwrap();
         hosts.delete(&host).unwrap();
-        assert!(matches!(store.get(&s.id), Err(AppError::NotFound(_))));
+        assert!(matches!(store.get(&s.id), Err(ref e) if e.is(ErrorCode::NotFound)));
     }
 
     #[test]
@@ -235,7 +233,7 @@ mod tests {
         assert!(store.create(&host, "plain", COMPOSE, "  \n").is_ok());
         assert!(matches!(
             store.create(&host, "secret", COMPOSE, "A=1"),
-            Err(AppError::KeychainUnavailable(_))
+            Err(ref e) if e.is(ErrorCode::KeychainUnavailable)
         ));
     }
 }

@@ -177,7 +177,7 @@ pub async fn remove(docker: &Docker, id: &str, force: bool, volumes: bool) -> Ap
 pub async fn rename(docker: &Docker, id: &str, name: &str) -> AppResult<()> {
     let name = name.trim().trim_start_matches('/');
     if name.is_empty() {
-        return Err(AppError::Validation("Enter a name.".into()));
+        return Err(AppError::validation("Enter a name."));
     }
     let options = RenameContainerOptionsBuilder::default().name(name).build();
     Ok(docker.rename_container(id, options).await?)

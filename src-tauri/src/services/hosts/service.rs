@@ -126,7 +126,7 @@ impl HostService {
     /// Trusts the SSH server key the user just confirmed, then reconnects.
     pub fn trust_host_key(&self, id: &str, key: &str) -> AppResult<HostView> {
         if transport::ssh::fingerprint(key).is_none() {
-            return Err(AppError::Validation("That isn't an SSH public key.".into()));
+            return Err(AppError::validation("That isn't an SSH public key."));
         }
         self.store.set_host_key(id, Some(key.trim()))?;
         self.registry.restart(id);
@@ -150,7 +150,7 @@ impl HostService {
             ..
         } = current.connection
         else {
-            return Err(AppError::Validation("Only SSH hosts use keys.".into()));
+            return Err(AppError::validation("Only SSH hosts use keys."));
         };
         let key = transport::ssh::generate_key(&key_comment(&current.name));
         self.store.update(
@@ -183,8 +183,8 @@ impl HostService {
             ..
         } = host.connection
         else {
-            return Err(AppError::Validation(
-                "This host doesn't use a Homeport-managed SSH key.".into(),
+            return Err(AppError::validation(
+                "This host doesn't use a Homeport-managed SSH key.",
             ));
         };
         Ok(SshSetup {
@@ -216,7 +216,7 @@ fn prepare(
     credentials: Option<CredentialsInput>,
     current: Option<&HostConnection>,
 ) -> AppResult<(HostConnection, Option<HostSecrets>)> {
-    let invalid = |e: ConnectError| AppError::Validation(e.to_string());
+    let invalid = |e: ConnectError| AppError::validation(e.to_string());
     match connection {
         HostConnection::Tls { address } => {
             let secrets = match credentials {
@@ -233,7 +233,7 @@ fn prepare(
                         key_pem,
                     })
                 }
-                Some(_) => return Err(AppError::Validation("TLS hosts need certificates.".into())),
+                Some(_) => return Err(AppError::validation("TLS hosts need certificates.")),
                 None => None,
             };
             Ok((HostConnection::Tls { address }, secrets))
@@ -286,9 +286,7 @@ fn prepare(
                     )
                 }
                 (_, None) => (kept_public_key, None),
-                (_, Some(_)) => {
-                    return Err(AppError::Validation("SSH hosts need a private key.".into()))
-                }
+                (_, Some(_)) => return Err(AppError::validation("SSH hosts need a private key.")),
             };
             Ok((
                 HostConnection::Ssh {
@@ -309,6 +307,7 @@ fn prepare(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::error::ErrorCode;
     use crate::services::{
         crypto::SecretBox,
         db::Db,
@@ -426,7 +425,7 @@ mod tests {
                 passphrase: None,
             }),
         );
-        assert!(matches!(svc.create(bad_key), Err(AppError::Validation(_))));
+        assert!(matches!(svc.create(bad_key), Err(ref e) if e.is(ErrorCode::Validation)));
 
         let bad_tls = HostInput {
             name: "tls".into(),
@@ -439,7 +438,7 @@ mod tests {
                 key_pem: "x".into(),
             }),
         };
-        assert!(matches!(svc.create(bad_tls), Err(AppError::Validation(_))));
+        assert!(matches!(svc.create(bad_tls), Err(ref e) if e.is(ErrorCode::Validation)));
     }
 
     #[tokio::test]

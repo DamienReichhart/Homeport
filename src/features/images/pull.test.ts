@@ -38,9 +38,13 @@ describe('pull progress', () => {
     expect(s.done).toBe(true);
   });
 
-  it('keeps the failure message', () => {
-    expect(reducePull(initialPull, { type: 'error', message: 'manifest unknown' }).error).toBe(
-      'manifest unknown',
-    );
+  it('keeps the failure', () => {
+    const error = {
+      code: 'image_not_found',
+      message: 'manifest unknown',
+      hint: null,
+      detail: null,
+    } as const;
+    expect(reducePull(initialPull, { type: 'error', error }).error).toMatchObject(error);
   });
 });

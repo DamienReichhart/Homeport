@@ -18,7 +18,7 @@ use tokio::task::JoinHandle;
 
 use super::{store::HostStore, HostId};
 use crate::{
-    error::{AppError, AppResult},
+    error::{AppError, AppResult, ErrorCode},
     services::transport::{self, ConnectError, Connected, Dialer},
 };
 
@@ -43,11 +43,11 @@ pub enum HostStatus {
         arch: String,
     },
     Unreachable {
-        message: String,
+        error: AppError,
         retry_in_secs: u32,
     },
     Unauthorized {
-        message: String,
+        error: AppError,
     },
     HostKeyUntrusted {
         key: String,
@@ -60,21 +60,21 @@ pub enum HostStatus {
     },
     CredentialsLost,
     KeychainUnavailable {
-        message: String,
+        error: AppError,
     },
     Invalid {
-        message: String,
+        error: AppError,
     },
 }
 
 impl From<ConnectError> for HostStatus {
     fn from(e: ConnectError) -> Self {
         match e {
-            ConnectError::Unreachable(message) => Self::Unreachable {
-                message,
+            ConnectError::Unreachable(error) => Self::Unreachable {
+                error,
                 retry_in_secs: 0,
             },
-            ConnectError::Unauthorized(message) => Self::Unauthorized { message },
+            ConnectError::Unauthorized(error) => Self::Unauthorized { error },
             ConnectError::HostKeyUntrusted { key, fingerprint } => {
                 Self::HostKeyUntrusted { key, fingerprint }
             }
@@ -87,7 +87,7 @@ impl From<ConnectError> for HostStatus {
                 fingerprint,
                 expected_fingerprint,
             },
-            ConnectError::Invalid(message) => Self::Invalid { message },
+            ConnectError::Invalid(error) => Self::Invalid { error },
         }
     }
 }
@@ -192,10 +192,48 @@ impl HostRegistry {
     }
 
     fn connected(&self, id: &str) -> AppResult<Connected> {
-        self.lock()
+        let status = {
+            let entries = self.lock();
+            match entries.get(id) {
+                Some(Entry {
+                    client: Some(client),
+                    ..
+                }) => return Ok(client.clone()),
+                Some(entry) => entry.status.clone(),
+                None => HostStatus::Connecting,
+            }
+        };
+        Err(self.not_connected(id, &status))
+    }
+
+    /// Why a command can't reach the Host right now, carrying the cause from its status.
+    fn not_connected(&self, id: &str, status: &HostStatus) -> AppError {
+        let name = self
+            .store
             .get(id)
-            .and_then(|e| e.client.clone())
-            .ok_or_else(|| AppError::HostNotConnected(id.to_owned()))
+            .map_or_else(|_| "This host".to_owned(), |h| h.name);
+        let error = AppError::new(
+            ErrorCode::HostNotConnected,
+            format!("{name} isn't connected."),
+        );
+        match status {
+            HostStatus::Unreachable { error: cause, .. }
+            | HostStatus::Unauthorized { error: cause }
+            | HostStatus::KeychainUnavailable { error: cause }
+            | HostStatus::Invalid { error: cause } => AppError {
+                hint: cause.hint.clone(),
+                detail: Some(match &cause.detail {
+                    Some(detail) => format!("{}\n{detail}", cause.message),
+                    None => cause.message.clone(),
+                }),
+                ..error
+            },
+            HostStatus::Disabled => error.with_hint("Enable the host on its page to use it."),
+            HostStatus::Connecting => {
+                error.with_hint("Homeport is still connecting; try again in a moment.")
+            }
+            _ => error.with_hint("Open the host's page to see why and fix it."),
+        }
     }
 
     fn lock(&self) -> std::sync::MutexGuard<'_, HashMap<HostId, Entry>> {
@@ -244,16 +282,13 @@ async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
         let secrets = if host.connection.needs_secrets() {
             match reg.store.secrets(&id) {
                 Ok(secrets) => secrets,
-                Err(AppError::CredentialsLost) => {
+                Err(e) if e.is(ErrorCode::CredentialsLost) => {
                     return reg.set_status(&id, HostStatus::CredentialsLost, None)
                 }
-                Err(AppError::KeychainUnavailable(message)) => {
-                    return reg.set_status(&id, HostStatus::KeychainUnavailable { message }, None)
+                Err(error) if error.is(ErrorCode::KeychainUnavailable) => {
+                    return reg.set_status(&id, HostStatus::KeychainUnavailable { error }, None)
                 }
-                Err(e) => {
-                    let message = e.to_string();
-                    return reg.set_status(&id, HostStatus::Invalid { message }, None);
-                }
+                Err(error) => return reg.set_status(&id, HostStatus::Invalid { error }, None),
             }
         } else {
             None
@@ -268,11 +303,14 @@ async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
                         reg.set_status(&id, status, Some(connected));
                         drop(reg);
                         watch(&registry, &id, docker).await;
-                        "lost the connection to the Engine".to_string()
+                        AppError::new(
+                            ErrorCode::ConnectionLost,
+                            "Homeport lost the connection to the Docker Engine.",
+                        )
                     }
-                    Err(message) => message,
+                    Err(error) => error,
                 },
-                Err(ConnectError::Unreachable(message)) => message,
+                Err(ConnectError::Unreachable(error)) => error,
                 Err(other) => return reg.set_status(&id, other.into(), None),
             };
 
@@ -282,7 +320,7 @@ async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
         reg.set_status(
             &id,
             HostStatus::Unreachable {
-                message: error,
+                error,
                 retry_in_secs: backoff,
             },
             None,
@@ -293,11 +331,8 @@ async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
     }
 }
 
-async fn describe(docker: &Docker) -> Result<HostStatus, String> {
-    let v = docker
-        .version()
-        .await
-        .map_err(|e| transport::describe_docker_error(&e))?;
+async fn describe(docker: &Docker) -> Result<HostStatus, AppError> {
+    let v = docker.version().await?;
     Ok(HostStatus::Connected {
         engine_version: v.version.unwrap_or_default(),
         api_version: v.api_version.unwrap_or_default(),
@@ -406,7 +441,7 @@ mod tests {
         assert_eq!(recorder.0.lock().unwrap()[0], HostStatus::Connecting);
         assert!(matches!(
             reg.docker(&id),
-            Err(AppError::HostNotConnected(_))
+            Err(e) if e.is(ErrorCode::HostNotConnected)
         ));
     }
 

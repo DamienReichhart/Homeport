@@ -49,7 +49,7 @@ export function ComposeRunDialog({
                 (e) => {
                   if (e.type === 'line') terminal.writeln(e.text);
                   else if (e.type === 'error') {
-                    terminal.writeln(`\x1b[31m${e.message}\x1b[39m`);
+                    terminal.writeln(`\x1b[31m${e.error.message}\x1b[39m`);
                     setResult('failed');
                   } else {
                     terminal.writeln(

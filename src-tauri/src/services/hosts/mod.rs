@@ -84,7 +84,7 @@ pub struct Host {
 impl HostConnection {
     /// Rejects settings that can never connect, with a message fit for the user.
     pub fn validate(&self) -> AppResult<()> {
-        let invalid = |msg: &str| Err(AppError::Validation(msg.to_string()));
+        let invalid = |msg: &str| Err(AppError::validation(msg.to_string()));
         match self {
             Self::Local { socket_path } if socket_path.trim().is_empty() => {
                 invalid("Enter the socket path.")
@@ -122,6 +122,7 @@ fn is_host_port(address: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::error::ErrorCode;
 
     fn ssh(host: &str, user: &str, port: u16, socket_path: &str) -> HostConnection {
         HostConnection::Ssh {
@@ -170,7 +171,7 @@ mod tests {
             ssh("server", "deploy", 22, "docker.sock"),
         ] {
             assert!(
-                matches!(c.validate(), Err(AppError::Validation(_))),
+                matches!(c.validate(), Err(ref e) if e.is(ErrorCode::Validation)),
                 "{c:?}"
             );
         }

@@ -15,7 +15,10 @@ use bollard::{BollardRequest, Docker, API_DEFAULT_VERSION};
 use hyper_util::rt::TokioIo;
 use tokio::io::{AsyncRead, AsyncWrite};
 
-use crate::services::hosts::{HostConnection, HostSecrets};
+use crate::{
+    error::{AppError, ErrorCode},
+    services::hosts::{HostConnection, HostSecrets},
+};
 
 /// Seconds bollard waits for a response before giving up.
 const REQUEST_TIMEOUT_SECS: u64 = 120;
@@ -39,10 +42,12 @@ pub trait Dialer: Send + Sync + 'static {
 /// Why a Host can't be reached. Each case maps to a Host status the user can act on.
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum ConnectError {
+    /// Worth retrying: the Engine or the network may come back.
     #[error("{0}")]
-    Unreachable(String),
+    Unreachable(AppError),
+    /// The Host answered but refused Homeport; retrying won't help.
     #[error("{0}")]
-    Unauthorized(String),
+    Unauthorized(AppError),
     #[error("the SSH server's key isn't trusted yet ({fingerprint})")]
     HostKeyUntrusted { key: String, fingerprint: String },
     #[error("the SSH server's key changed: expected {expected_fingerprint}, got {fingerprint}")]
@@ -51,8 +56,32 @@ pub enum ConnectError {
         fingerprint: String,
         expected_fingerprint: String,
     },
+    /// The Host's settings can't work as entered.
     #[error("{0}")]
-    Invalid(String),
+    Invalid(AppError),
+}
+
+impl From<ConnectError> for AppError {
+    fn from(e: ConnectError) -> Self {
+        match e {
+            ConnectError::Unreachable(e) | ConnectError::Unauthorized(e) | ConnectError::Invalid(e) => e,
+            ConnectError::HostKeyUntrusted { fingerprint, .. } => AppError::new(
+                ErrorCode::HostKeyUntrusted,
+                format!("The SSH server's key isn't trusted yet ({fingerprint})."),
+            )
+            .with_hint("Check the fingerprint, then trust the key on the host page."),
+            ConnectError::HostKeyMismatch {
+                fingerprint,
+                expected_fingerprint,
+                ..
+            } => AppError::new(
+                ErrorCode::HostKeyChanged,
+                "The SSH server's key changed since it was trusted.",
+            )
+            .with_hint("If the server was reinstalled, trust the new key on the host page. Otherwise someone may be intercepting the connection.")
+            .with_detail(format!("expected {expected_fingerprint}, got {fingerprint}")),
+        }
+    }
 }
 
 /// A live client for one Host.
@@ -74,7 +103,15 @@ pub async fn connect(
         HostConnection::Local { socket_path } => (
             // A missing socket usually means the Engine isn't running.
             Docker::connect_with_socket(socket_path, REQUEST_TIMEOUT_SECS, API_DEFAULT_VERSION)
-                .map_err(|e| ConnectError::Unreachable(e.to_string()))?,
+                .map_err(|e| {
+                    ConnectError::Unreachable(
+                        AppError::new(
+                            ErrorCode::EngineNotRunning,
+                            "The Docker Engine socket can't be opened.",
+                        )
+                        .with_cause(&e),
+                    )
+                })?,
             None,
         ),
         HostConnection::Tcp { address } => (
@@ -83,7 +120,11 @@ pub async fn connect(
                 REQUEST_TIMEOUT_SECS,
                 API_DEFAULT_VERSION,
             )
-            .map_err(|e| ConnectError::Invalid(e.to_string()))?,
+            .map_err(|e| {
+                ConnectError::Invalid(
+                    AppError::validation("The TCP address isn't valid.").with_cause(&e),
+                )
+            })?,
             None,
         ),
         HostConnection::Tls { address } => {
@@ -93,7 +134,7 @@ pub async fn connect(
                 key_pem,
             }) = secrets
             else {
-                return Err(ConnectError::Invalid("TLS certificates are missing".into()));
+                return Err(ConnectError::Invalid(AppError::new(ErrorCode::TlsMaterialInvalid, "The TLS certificates are missing.").with_hint("Add the CA certificate, client certificate and client key on the host page.")));
             };
             let dialer: Arc<dyn Dialer> =
                 Arc::new(tls::TlsDialer::new(address, &ca_pem, &cert_pem, &key_pem)?);
@@ -124,8 +165,13 @@ pub async fn connect(
     }
     let docker = tokio::time::timeout(CONNECT_TIMEOUT, docker.negotiate_version())
         .await
-        .map_err(|_| ConnectError::Unreachable("the Engine did not answer in time".into()))?
-        .map_err(|e| ConnectError::Unreachable(describe_docker_error(&e)))?;
+        .map_err(|_| {
+            ConnectError::Unreachable(AppError::new(
+                ErrorCode::Timeout,
+                "The Docker Engine didn't answer in time.",
+            ))
+        })?
+        .map_err(|e| ConnectError::Unreachable(e.into()))?;
     Ok(Connected { docker, dialer })
 }
 

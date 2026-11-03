@@ -17,7 +17,10 @@ use russh::{
 use tokio::sync::Mutex;
 
 use super::{BoxFuture, BoxStream, ConnectError, Dialer, CONNECT_TIMEOUT};
-use crate::services::hosts::{HostSecrets, SshAuth};
+use crate::{
+    error::{AppError, ErrorCode},
+    services::hosts::{HostSecrets, SshAuth},
+};
 
 /// A freshly generated Ed25519 keypair in OpenSSH formats.
 pub struct GeneratedKey {
@@ -59,11 +62,16 @@ pub fn generate_key(comment: &str) -> GeneratedKey {
 
 /// Reads a user-supplied private key and returns its public half in OpenSSH format.
 pub fn public_key_of(private_key: &str, passphrase: Option<&str>) -> Result<String, ConnectError> {
-    let key = decode_secret_key(private_key, passphrase)
-        .map_err(|e| ConnectError::Invalid(format!("The private key can't be read: {e}")))?;
-    key.public_key()
-        .to_openssh()
-        .map_err(|e| ConnectError::Invalid(e.to_string()))
+    let key = decode_secret_key(private_key, passphrase).map_err(key_unreadable)?;
+    key.public_key().to_openssh().map_err(|e| {
+        ConnectError::Invalid(
+            AppError::new(
+                ErrorCode::SshKeyInvalid,
+                "The private key's public half can't be encoded.",
+            )
+            .with_cause(&e),
+        )
+    })
 }
 
 /// The one-liner a user pastes on the server to authorize `public_key`.
@@ -114,9 +122,10 @@ impl Credentials {
                 }),
             ) => decode_secret_key(&private_key, passphrase.as_deref())
                 .map(|k| Self::Key(Arc::new(k)))
-                .map_err(|e| ConnectError::Invalid(format!("The private key can't be read: {e}"))),
+                .map_err(key_unreadable),
             _ => Err(ConnectError::Invalid(
-                "The SSH private key is missing.".into(),
+                AppError::new(ErrorCode::SshKeyInvalid, "The SSH private key is missing.")
+                    .with_hint("Add a private key on the host page, or generate one."),
             )),
         }
     }
@@ -160,7 +169,12 @@ impl SshDialer {
         let connecting = client::connect(config, (t.host.as_str(), t.port), handler);
         let result = tokio::time::timeout(CONNECT_TIMEOUT, connecting)
             .await
-            .map_err(|_| ConnectError::Unreachable("SSH connection timed out".into()))?;
+            .map_err(|_| {
+                ConnectError::Unreachable(AppError::new(
+                    ErrorCode::Timeout,
+                    format!("{}:{} didn't answer in time.", t.host, t.port),
+                ))
+            })?;
 
         let mut session = match result {
             Ok(session) => session,
@@ -168,7 +182,7 @@ impl SshDialer {
                 let presented = presented.lock().expect("lock poisoned").take();
                 return Err(match presented {
                     Some(key) => host_key_error(t.trusted_host_key.as_deref(), &key),
-                    None => ConnectError::Unreachable(e.to_string()),
+                    None => ConnectError::Unreachable(ssh_failure(&e)),
                 });
             }
         };
@@ -178,21 +192,18 @@ impl SshDialer {
                 let hash = session
                     .best_supported_rsa_hash()
                     .await
-                    .map_err(|e| ConnectError::Unreachable(e.to_string()))?
+                    .map_err(|e| ConnectError::Unreachable(ssh_failure(&e)))?
                     .flatten();
                 session
                     .authenticate_publickey(&t.user, PrivateKeyWithHashAlg::new(key.clone(), hash))
                     .await
-                    .map_err(|e| ConnectError::Unreachable(e.to_string()))?
+                    .map_err(|e| ConnectError::Unreachable(ssh_failure(&e)))?
                     .success()
             }
             Credentials::Agent => authenticate_with_agent(&mut session, &t.user).await?,
         };
         if !authenticated {
-            return Err(ConnectError::Unauthorized(format!(
-                "The server refused the key for {}@{}. Add the public key to its authorized_keys.",
-                t.user, t.host
-            )));
+            return Err(ConnectError::Unauthorized(auth_refused(t)));
         }
         Ok(session)
     }
@@ -207,12 +218,7 @@ impl SshDialer {
             .expect("session was just opened")
             .channel_open_direct_streamlocal(self.target.socket_path.as_str())
             .await
-            .map_err(|e| {
-                ConnectError::Unreachable(format!(
-                    "The SSH server couldn't open {}: {e}. Check the path and that {} can use Docker.",
-                    self.target.socket_path, self.target.user
-                ))
-            })?;
+            .map_err(|e| ConnectError::Unreachable(remote_socket_unavailable(&self.target, &e)))?;
         Ok(Box::new(channel.into_stream()))
     }
 }
@@ -244,6 +250,92 @@ fn host_key_error(trusted: Option<&str>, presented: &PublicKey) -> ConnectError 
     }
 }
 
+fn key_unreadable(e: russh::keys::Error) -> ConnectError {
+    ConnectError::Invalid(
+        AppError::new(
+            ErrorCode::SshKeyInvalid,
+            "The SSH private key can't be read.",
+        )
+        .with_hint(
+            "Check that it's an OpenSSH or PEM private key and that the passphrase is right.",
+        )
+        .with_cause(&e),
+    )
+}
+
+/// A failure of the SSH session itself, after the network was reached.
+fn ssh_failure(e: &russh::Error) -> AppError {
+    AppError::new(ErrorCode::SshFailed, "The SSH connection failed.").with_cause(e)
+}
+
+fn auth_refused(t: &SshTarget) -> AppError {
+    let error = AppError::new(
+        ErrorCode::SshAuthFailed,
+        format!(
+            "The SSH server refused to let {}@{} log in.",
+            t.user, t.host
+        ),
+    );
+    match &t.credentials {
+        Credentials::Key(key) => match key.public_key().to_openssh() {
+            Ok(public_key) => error
+                .with_hint(format!(
+                    "Authorize Homeport's key for {} by running this on the server:",
+                    t.user
+                ))
+                .with_command(authorized_keys_command(&public_key)),
+            Err(_) => {
+                error.with_hint("Add this host's public key to the server's authorized_keys.")
+            }
+        },
+        Credentials::Agent => error
+            .with_hint("Load a key the server accepts into your ssh-agent, then reconnect.")
+            .with_command("ssh-add"),
+    }
+}
+
+fn agent_unavailable(e: &(dyn std::error::Error + 'static)) -> AppError {
+    let error = AppError::new(ErrorCode::SshAgentUnavailable, "No ssh-agent is running.");
+    let error = if cfg!(windows) {
+        error
+            .with_hint("Start the OpenSSH Authentication Agent service in an administrator PowerShell, then add your key:")
+            .with_command("Get-Service ssh-agent | Set-Service -StartupType Automatic\nStart-Service ssh-agent")
+            .with_command("ssh-add")
+    } else {
+        error
+            .with_hint("Start an agent and add your key in the terminal Homeport is launched from, or pick another authentication method:")
+            .with_command("eval \"$(ssh-agent -s)\"\nssh-add")
+    };
+    error.with_cause(e)
+}
+
+fn agent_failed(e: &(dyn std::error::Error + 'static)) -> AppError {
+    AppError::new(
+        ErrorCode::SshAgentUnavailable,
+        "The ssh-agent failed to sign in.",
+    )
+    .with_hint("Check that the agent holds your key with `ssh-add -l`.")
+    .with_cause(e)
+}
+
+/// The server accepted the login but couldn't connect to the Engine socket.
+fn remote_socket_unavailable(t: &SshTarget, e: &russh::Error) -> AppError {
+    AppError::new(
+        ErrorCode::RemoteEngineUnavailable,
+        format!(
+            "{} can't open the Docker Engine socket at {} on the server.",
+            t.user, t.socket_path
+        ),
+    )
+    .with_hint(format!(
+        "Check that the Docker Engine runs on {} and that {} may use it. On the server, run:",
+        t.host, t.user
+    ))
+    .with_command("sudo systemctl enable --now docker")
+    .with_command(format!("sudo usermod -aG docker {}", t.user))
+    .with_cause(e)
+}
+
 fn fingerprint_of_trusted(trusted: &str) -> Option<String> {
     fingerprint(trusted)
 }
@@ -255,7 +347,7 @@ async fn authenticate_with_agent(
 ) -> Result<bool, ConnectError> {
     let agent = russh::keys::agent::client::AgentClient::connect_env()
         .await
-        .map_err(|e| ConnectError::Unauthorized(format!("No ssh-agent is reachable: {e}")))?;
+        .map_err(|e| ConnectError::Unauthorized(agent_unavailable(&e)))?;
     try_agent_identities(session, user, agent).await
 }
 
@@ -267,7 +359,7 @@ async fn authenticate_with_agent(
     let agent =
         russh::keys::agent::client::AgentClient::connect_named_pipe(r"\\.\pipe\openssh-ssh-agent")
             .await
-            .map_err(|e| ConnectError::Unauthorized(format!("No ssh-agent is reachable: {e}")))?;
+            .map_err(|e| ConnectError::Unauthorized(agent_unavailable(&e)))?;
     try_agent_identities(session, user, agent).await
 }
 
@@ -282,18 +374,18 @@ where
     let identities = agent
         .request_identities()
         .await
-        .map_err(|e| ConnectError::Unauthorized(format!("ssh-agent failed: {e}")))?;
+        .map_err(|e| ConnectError::Unauthorized(agent_failed(&e)))?;
     let hash = session
         .best_supported_rsa_hash()
         .await
-        .map_err(|e| ConnectError::Unreachable(e.to_string()))?
+        .map_err(|e| ConnectError::Unreachable(ssh_failure(&e)))?
         .flatten();
     for identity in identities {
         let key = identity.public_key().into_owned();
         let result = session
             .authenticate_publickey_with(user, key, hash, &mut agent)
             .await
-            .map_err(|e| ConnectError::Unauthorized(format!("ssh-agent failed: {e}")))?;
+            .map_err(|e| ConnectError::Unauthorized(agent_failed(&e)))?;
         if result.success() {
             return Ok(true);
         }

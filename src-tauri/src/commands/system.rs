@@ -80,7 +80,7 @@ const MAX_TEXT_FILE: u64 = 1024 * 1024;
 #[specta::specta]
 pub fn read_text_file(path: String) -> AppResult<String> {
     if std::fs::metadata(&path)?.len() > MAX_TEXT_FILE {
-        return Err(AppError::Validation("That file is too large.".into()));
+        return Err(AppError::validation("That file is too large."));
     }
     Ok(std::fs::read_to_string(path)?)
 }

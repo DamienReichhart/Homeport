@@ -116,7 +116,7 @@ export function LogViewer({ hostId, sources }: { hostId: string; sources: LogSou
             kept.current.splice(0, kept.current.length - MAX_KEPT_LINES);
           if (followRef.current) term.scrollToBottom();
         } else if (event.type === 'error') {
-          term.write(`\r\n\x1b[31m${event.message}\x1b[39m\r\n`);
+          term.write(`\r\n\x1b[31m${event.error.message}\x1b[39m\r\n`);
         } else {
           term.write('\r\n\x1b[2m— end of logs —\x1b[22m\r\n');
         }

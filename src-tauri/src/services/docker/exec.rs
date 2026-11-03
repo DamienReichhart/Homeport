@@ -23,7 +23,7 @@ use tokio::{
     task::AbortHandle,
 };
 
-use crate::error::{AppError, AppResult};
+use crate::error::{AppError, AppResult, ErrorCode};
 
 /// Starts bash when the image has it, sh otherwise.
 const DEFAULT_SHELL: &str = "if [ -x /bin/bash ]; then exec /bin/bash; else exec /bin/sh; fi";
@@ -44,7 +44,7 @@ pub struct ExecOptions {
 pub enum ExecEvent {
     Output { data: String },
     Exit { code: Option<i64> },
-    Error { message: String },
+    Error { error: AppError },
 }
 
 /// Decodes a byte stream as UTF-8, holding back a character split across chunks.
@@ -117,7 +117,7 @@ pub async fn start(
 ) -> AppResult<(Arc<ExecSession>, Output)> {
     let cmd = match options.command.as_deref().map(str::trim) {
         Some(c) if !c.is_empty() => shell_words::split(c)
-            .map_err(|_| AppError::Validation("The command has an unclosed quote.".into()))?,
+            .map_err(|_| AppError::validation("The command has an unclosed quote."))?,
         _ => vec!["sh".into(), "-c".into(), DEFAULT_SHELL.into()],
     };
     let non_empty = |s: Option<String>| s.filter(|s| !s.trim().is_empty());
@@ -145,7 +145,10 @@ pub async fn start(
         )
         .await?;
     let StartExecResults::Attached { output, input } = started else {
-        return Err(AppError::Docker("the exec session did not attach".into()));
+        return Err(AppError::new(
+            ErrorCode::EngineError,
+            "the exec session did not attach",
+        ));
     };
     Ok((
         Arc::new(ExecSession {
@@ -170,7 +173,7 @@ pub async fn pump(session: Arc<ExecSession>, mut output: Output, sink: impl Fn(E
             }
             Err(e) => {
                 sink(ExecEvent::Error {
-                    message: crate::services::transport::describe_docker_error(&e),
+                    error: AppError::from(e).logged("exec session"),
                 });
                 return;
             }
@@ -223,7 +226,7 @@ impl ExecSessions {
             .expect("exec lock poisoned")
             .get(&id)
             .map(|(s, _)| s.clone())
-            .ok_or_else(|| AppError::NotFound(format!("exec session {id}")))
+            .ok_or_else(|| AppError::not_found("This terminal session has ended."))
     }
 
     pub fn close(&self, id: SessionId) {
@@ -287,7 +290,7 @@ mod tests {
                 match rx.recv().await.unwrap() {
                     ExecEvent::Output { data } => output.push_str(&data),
                     ExecEvent::Exit { code } => return code,
-                    ExecEvent::Error { message } => panic!("{message}"),
+                    ExecEvent::Error { error } => panic!("{error}"),
                 }
             }
         })

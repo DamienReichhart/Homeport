@@ -16,7 +16,12 @@ describe('describeStatus', () => {
   it('explains why a host is unreachable and when it retries', () => {
     const s = describeStatus({
       state: 'unreachable',
-      message: 'connection refused',
+      error: {
+        code: 'connection_refused',
+        message: 'connection refused',
+        hint: null,
+        detail: null,
+      },
       retryInSecs: 8,
     });
     expect(s.tone).toBe('danger');

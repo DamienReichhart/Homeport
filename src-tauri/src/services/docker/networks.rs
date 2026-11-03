@@ -118,7 +118,7 @@ pub async fn inspect(docker: &Docker, id: &str) -> AppResult<serde_json::Value> 
 pub async fn create(docker: &Docker, input: NetworkInput) -> AppResult<String> {
     let name = input.name.trim();
     if name.is_empty() {
-        return Err(AppError::Validation("Enter a network name.".into()));
+        return Err(AppError::validation("Enter a network name."));
     }
     let non_empty = |s: Option<String>| s.map(|s| s.trim().to_owned()).filter(|s| !s.is_empty());
     let subnet = non_empty(input.subnet);

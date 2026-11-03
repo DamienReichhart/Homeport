@@ -18,7 +18,7 @@ use bollard::{
 use futures_util::StreamExt;
 use serde::Serialize;
 
-use crate::error::{AppError, AppResult};
+use crate::error::{AppError, AppResult, ErrorCode};
 
 /// Go's `os.ModeDir`, as reported by the archive stat endpoint.
 const GO_MODE_DIR: u32 = 1 << 31;
@@ -81,7 +81,7 @@ pub fn parse_listing(output: &str) -> Vec<FileEntry> {
 fn absolute(path: &str) -> AppResult<&str> {
     let path = path.trim();
     if !path.starts_with('/') {
-        return Err(AppError::Validation("Paths must start with /.".into()));
+        return Err(AppError::validation("Paths must start with /."));
     }
     Ok(path)
 }
@@ -107,10 +107,13 @@ pub async fn list(docker: &Docker, container_id: &str, path: &str) -> AppResult<
     match code {
         Some(0) => Ok(parse_listing(&stdout)),
         // find/stat missing (distroless images): exec itself fails with 126/127.
-        Some(126 | 127) | None => Err(AppError::Validation(
-            "This container has no find/stat tools, so its files can't be listed.".into(),
+        Some(126 | 127) | None => Err(AppError::validation(
+            "This container has no find/stat tools, so its files can't be listed.",
         )),
-        Some(_) => Err(AppError::Docker(stderr.trim().to_owned())),
+        Some(_) => Err(AppError::new(
+            ErrorCode::EngineError,
+            stderr.trim().to_owned(),
+        )),
     }
 }
 
@@ -131,7 +134,10 @@ async fn run(
         .start_exec(&exec_id, None::<StartExecOptions>)
         .await?
     else {
-        return Err(AppError::Docker("the exec session did not attach".into()));
+        return Err(AppError::new(
+            ErrorCode::EngineError,
+            "the exec session did not attach",
+        ));
     };
     let (mut stdout, mut stderr) = (Vec::new(), Vec::new());
     while let Some(chunk) = output.next().await {
@@ -186,10 +192,12 @@ pub async fn download(
         return Ok(true);
     }
     let mut tar = tar::Archive::new(archive.as_slice());
-    let mut entry = tar
-        .entries()?
-        .next()
-        .ok_or_else(|| AppError::Docker("the Engine returned an empty archive".into()))??;
+    let mut entry = tar.entries()?.next().ok_or_else(|| {
+        AppError::new(
+            ErrorCode::EngineError,
+            "the Engine returned an empty archive",
+        )
+    })??;
     let mut contents = Vec::new();
     entry.read_to_end(&mut contents)?;
     std::fs::write(destination, contents)?;
@@ -208,7 +216,7 @@ pub async fn upload(
     for source in sources {
         let name = source
             .file_name()
-            .ok_or_else(|| AppError::Validation(format!("{} is not a file", source.display())))?;
+            .ok_or_else(|| AppError::validation(format!("{} is not a file", source.display())))?;
         if source.is_dir() {
             builder.append_dir_all(name, source)?;
         } else {

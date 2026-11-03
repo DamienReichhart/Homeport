@@ -20,10 +20,10 @@ export function describeStatus(status: HostStatus): StatusSummary {
       return {
         label: 'Unreachable',
         tone: 'danger',
-        detail: `${status.message} — retrying in ${status.retryInSecs}s`,
+        detail: `${status.error.message} — retrying in ${status.retryInSecs}s`,
       };
     case 'unauthorized':
-      return { label: 'Access refused', tone: 'danger', detail: status.message };
+      return { label: 'Access refused', tone: 'danger', detail: status.error.message };
     case 'hostKeyUntrusted':
       return {
         label: 'Server key not trusted',
@@ -43,9 +43,9 @@ export function describeStatus(status: HostStatus): StatusSummary {
         detail: 'The stored credentials can’t be decrypted. Re-enter them or regenerate the key.',
       };
     case 'keychainUnavailable':
-      return { label: 'Keychain unavailable', tone: 'danger', detail: status.message };
+      return { label: 'Keychain unavailable', tone: 'danger', detail: status.error.message };
     case 'invalid':
-      return { label: 'Misconfigured', tone: 'danger', detail: status.message };
+      return { label: 'Misconfigured', tone: 'danger', detail: status.error.message };
   }
 }
 

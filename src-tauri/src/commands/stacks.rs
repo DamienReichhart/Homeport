@@ -119,7 +119,7 @@ pub async fn stacks_compose_subscribe(
     let host = state.hosts.store.get(&stack.host_id)?;
     let dialer = state.hosts.registry.dialer(&stack.host_id)?;
     let cli = compose::detect().await.ok_or_else(|| {
-        AppError::Validation("The docker compose CLI isn't installed on this machine.".into())
+        AppError::validation("The docker compose CLI isn't installed on this machine.")
     })?;
     let job = ComposeRun {
         cli,

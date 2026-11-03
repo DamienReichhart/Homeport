@@ -46,7 +46,7 @@ export function PullDialog({
           void client.invalidateQueries({ queryKey: keys.images(hostId) });
         }
       },
-      (error) => dispatch({ type: 'error', message: error.message }),
+      (error) => dispatch({ type: 'error', error }),
     );
     stop.current = cancel;
     return cancel;
@@ -120,7 +120,7 @@ export function PullDialog({
             ))}
             {state.error && (
               <p role="alert" className="text-destructive text-sm">
-                {state.error}
+                {state.error.message}
               </p>
             )}
             {state.done && <p className="text-success text-sm">Done.</p>}
