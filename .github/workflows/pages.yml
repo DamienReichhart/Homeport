@@ -1,0 +1,73 @@
+name: Pages
+
+# Builds the website (website/) and deploys it to GitHub Pages.
+# - Pull requests that touch it: build only, as a check (types, links, pages).
+# - Pushes to main that touch it: build and deploy.
+# - After every successful Release run: rebuild, so the download page and
+#   changelog list the new version. (A release published with GITHUB_TOKEN
+#   doesn't trigger `release` events, so this listens for the workflow instead.)
+on:
+  push:
+    branches: [main]
+    paths: [website/**, assets/brand/**, .github/workflows/pages.yml]
+  pull_request:
+    paths: [website/**, assets/brand/**, .github/workflows/pages.yml]
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deployment at a time and never cancelled halfway; pull requests only
+# cancel their own older runs.
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('pages-pr-{0}', github.ref) || 'pages-deploy' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: website
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      # The origin and base path of the Pages site, so a custom domain needs no code change.
+      - id: pages
+        if: github.event_name != 'pull_request'
+        uses: actions/configure-pages@v5
+      - run: bun install --frozen-lockfile
+      - name: Build
+        env:
+          SITE_URL: ${{ steps.pages.outputs.origin }}
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          # Read the releases with the workflow's token (higher rate limit), and fail
+          # rather than deploy a download page without files if they can't be read.
+          GITHUB_TOKEN: ${{ github.token }}
+          RELEASES_REQUIRED: ${{ github.event_name != 'pull_request' && '1' || '' }}
+          ASTRO_TELEMETRY_DISABLED: '1'
+        run: bun run build
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: website/dist
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
