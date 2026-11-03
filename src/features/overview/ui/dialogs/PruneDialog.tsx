@@ -1,8 +1,5 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { toast } from 'sonner';
-import { commands, keys, type PruneSelection } from '@/shared/api';
-import { formatBytes } from '@/shared/lib';
+import type { PruneSelection } from '@/shared/api';
 import {
   Button,
   Checkbox,
@@ -15,41 +12,8 @@ import {
   ErrorMessage,
   Label,
 } from '@/shared/ui';
-
-const OPTIONS: {
-  key: keyof PruneSelection;
-  label: string;
-  detail: string;
-  destructive?: boolean;
-}[] = [
-  {
-    key: 'containers',
-    label: 'Stopped containers',
-    detail: 'Removes every container that is not running.',
-  },
-  {
-    key: 'images',
-    label: 'Dangling images',
-    detail: 'Untagged layers left behind by builds and pulls.',
-  },
-  {
-    key: 'allImages',
-    label: 'All unused images',
-    detail: 'Also removes tagged images no container uses.',
-  },
-  {
-    key: 'networks',
-    label: 'Unused networks',
-    detail: 'Custom networks no container is attached to.',
-  },
-  { key: 'buildCache', label: 'Build cache', detail: 'Cached build layers.' },
-  {
-    key: 'volumes',
-    label: 'Unused volumes',
-    detail: 'Deletes the data in every volume no container uses, named volumes included.',
-    destructive: true,
-  },
-];
+import { usePruneHost } from '../../api/mutations';
+import { defaultPruneSelection, PRUNE_OPTIONS } from '../../model/prune';
 
 /** Global prune for one Host, with an explicit choice of what goes. */
 export function PruneDialog({
@@ -61,30 +25,8 @@ export function PruneDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const client = useQueryClient();
-  const [selection, setSelection] = useState<PruneSelection>({
-    containers: true,
-    images: true,
-    allImages: false,
-    networks: true,
-    volumes: false,
-    buildCache: true,
-  });
-  const prune = useMutation({
-    meta: { silent: true },
-    mutationFn: () =>
-      commands.systemPrune(hostId, {
-        ...selection,
-        images: selection.images || selection.allImages,
-      }),
-    onSuccess: async (r) => {
-      toast.success(
-        `Removed ${r.containers} containers, ${r.images} images, ${r.networks} networks and ${r.volumes} volumes — ${formatBytes(r.spaceReclaimed)} reclaimed.`,
-      );
-      await client.invalidateQueries({ queryKey: keys.host(hostId) });
-      onOpenChange(false);
-    },
-  });
+  const [selection, setSelection] = useState<PruneSelection>(defaultPruneSelection);
+  const prune = usePruneHost(hostId, () => onOpenChange(false));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -96,7 +38,7 @@ export function PruneDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3">
-          {OPTIONS.map((o) => (
+          {PRUNE_OPTIONS.map((o) => (
             <div key={o.key} className="flex items-start gap-3">
               <Checkbox
                 id={o.key}
@@ -129,7 +71,7 @@ export function PruneDialog({
               selection.volumes ? 'bg-destructive text-white hover:bg-destructive/90' : undefined
             }
             disabled={prune.isPending || !Object.values(selection).some(Boolean)}
-            onClick={() => prune.mutate()}
+            onClick={() => prune.mutate(selection)}
           >
             {selection.volumes ? 'Delete, including volume data' : 'Clean up'}
           </Button>

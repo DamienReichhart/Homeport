@@ -1,6 +1,6 @@
 import { LayoutDashboardIcon } from 'lucide-react';
 import { defineFeature } from '@/core/feature';
-import { OverviewPage } from './OverviewPage';
+import { OverviewPage } from './ui/OverviewPage';
 
 export const overviewFeature = defineFeature({
   routes: [{ index: true, Component: OverviewPage }],
