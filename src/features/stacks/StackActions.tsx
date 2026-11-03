@@ -55,7 +55,12 @@ export function StackActions({
         <Button
           size={size}
           disabled={!canCompose}
-          title={canCompose ? undefined : 'The docker compose CLI is not installed'}
+          title={
+            canCompose
+              ? undefined
+              : (capabilities.data?.composeProblem?.message ??
+                'The docker compose CLI is not installed')
+          }
           onClick={() => compose('up')}
         >
           <RocketIcon /> {deployed ? 'Redeploy' : 'Deploy'}

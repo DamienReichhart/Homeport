@@ -34,3 +34,39 @@ describe('settings licenses', () => {
     expect(await screen.findByText('Not included in this build')).toBeInTheDocument();
   });
 });
+
+describe('settings diagnostics', () => {
+  it('explains a missing compose CLI and opens the log folder', async () => {
+    let opened = 0;
+    mockCommands({
+      ...baseCommands,
+      get_app_info: appInfo,
+      get_capabilities: () => ({
+        keychain: true,
+        compose: null,
+        composeProblem: {
+          code: 'compose_missing',
+          message: 'The Docker CLI is installed without its compose plugin.',
+          hint: {
+            text: 'Install the compose plugin.',
+            commands: ['sudo apt-get install docker-compose-plugin'],
+          },
+          detail: null,
+        },
+      }),
+      open_log_folder: () => {
+        opened += 1;
+        return null;
+      },
+    });
+    const user = userEvent.setup();
+    renderApp('/settings');
+    expect(
+      await screen.findByText('The Docker CLI is installed without its compose plugin.'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('sudo apt-get install docker-compose-plugin')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Open log folder' }));
+    expect(opened).toBe(1);
+  });
+});

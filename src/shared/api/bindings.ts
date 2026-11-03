@@ -141,7 +141,7 @@ export type Capabilities = {
 	/**  The compose CLI used to deploy Managed Stacks, if installed. */
 	compose: ComposeCli | null,
 	/**  Why there is no usable compose CLI, and how to install one. */
-	compose_problem: AppError | null,
+	composeProblem: AppError | null,
 };
 
 export type ComposeAction = 

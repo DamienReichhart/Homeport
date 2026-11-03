@@ -56,6 +56,7 @@ pub fn get_licenses(app: AppHandle) -> AppResult<Licenses> {
 
 /// What this machine can do; features degrade gracefully when something is missing.
 #[derive(Debug, Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
 pub struct Capabilities {
     /// An OS keychain is reachable, so SSH, TLS and stack `.env` secrets can be stored.
     keychain: bool,

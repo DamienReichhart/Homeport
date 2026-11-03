@@ -86,12 +86,10 @@ function NewStack({ hostId }: { hostId: string }) {
         <Button variant="ghost" onClick={() => navigate(-1)}>
           Cancel
         </Button>
-        {!capabilities.data?.compose && (
-          <span className="text-muted-foreground self-center text-sm">
-            Install the docker compose CLI to deploy.
-          </span>
-        )}
       </div>
+      {capabilities.data?.composeProblem && (
+        <ErrorMessage error={capabilities.data.composeProblem} />
+      )}
       <ComposeRunDialog
         hostId={hostId}
         job={job}

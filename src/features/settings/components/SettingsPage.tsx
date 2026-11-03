@@ -7,7 +7,17 @@ import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Label } from '@/shared/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
-import { ErrorMessage, KeyValue, LogoMark, PageHeader, Spinner, StatusDot } from '@/shared/ui';
+import { FolderOpenIcon } from 'lucide-react';
+import {
+  ErrorMessage,
+  HintView,
+  KeyValue,
+  LogoMark,
+  PageHeader,
+  Spinner,
+  StatusDot,
+  toastError,
+} from '@/shared/ui';
 import { settingsApi } from '../api/settingsApi';
 import { LicensesDialog } from './LicensesDialog';
 
@@ -87,12 +97,22 @@ export function SettingsPage() {
                 ],
                 [
                   'Compose CLI',
-                  <span className="inline-flex items-center gap-1.5">
-                    <StatusDot tone={capabilities.data.compose ? 'success' : 'warning'} />
-                    {capabilities.data.compose
-                      ? `${capabilities.data.compose.program} ${capabilities.data.compose.prefix.join(' ')} ${capabilities.data.compose.version}`
-                      : 'Not found — Stacks can be started and stopped, but not deployed.'}
-                  </span>,
+                  <div className="grid gap-2">
+                    <span className="inline-flex items-center gap-1.5">
+                      <StatusDot tone={capabilities.data.compose ? 'success' : 'warning'} />
+                      {capabilities.data.compose
+                        ? `${capabilities.data.compose.program} ${capabilities.data.compose.prefix.join(' ')} ${capabilities.data.compose.version}`
+                        : (capabilities.data.composeProblem?.message ?? 'Not found.')}
+                    </span>
+                    {!capabilities.data.compose && (
+                      <span className="text-muted-foreground">
+                        Stacks can be started and stopped, but not deployed.
+                      </span>
+                    )}
+                    {capabilities.data.composeProblem?.hint && (
+                      <HintView hint={capabilities.data.composeProblem.hint} />
+                    )}
+                  </div>,
                 ],
               ]}
             />
@@ -115,8 +135,11 @@ export function SettingsPage() {
             variant="outline"
             size="sm"
             className="ml-auto"
-            onClick={() => setLicensesOpen(true)}
+            onClick={() => commands.openLogFolder().catch(toastError)}
           >
+            <FolderOpenIcon /> Open log folder
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setLicensesOpen(true)}>
             Licenses
           </Button>
         </CardContent>
