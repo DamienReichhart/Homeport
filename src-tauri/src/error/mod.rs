@@ -9,6 +9,7 @@
 //! - `detail` keeps the raw cause (error chain, Engine response, stderr) for the
 //!   Details dialog and bug reports.
 
+pub mod engine;
 pub mod reach;
 
 use std::{error::Error as StdError, fmt::Display};
@@ -282,11 +283,7 @@ impl From<tauri::Error> for AppError {
 
 impl From<bollard::errors::Error> for AppError {
     fn from(e: bollard::errors::Error) -> Self {
-        Self::new(
-            ErrorCode::EngineError,
-            crate::services::transport::describe_docker_error(&e),
-        )
-        .with_cause(&e)
+        engine::from_bollard(&e)
     }
 }
 

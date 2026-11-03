@@ -14,7 +14,7 @@ use bollard::{
 use serde::{Deserialize, Serialize};
 
 use super::{COMPOSE_PROJECT, COMPOSE_SERVICE};
-use crate::error::{AppError, AppResult};
+use crate::error::{AppError, AppResult, ErrorCode};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -137,32 +137,36 @@ pub async fn inspect(docker: &Docker, id: &str) -> AppResult<serde_json::Value> 
     )?)
 }
 
+/// Already being in the requested state (Engine status 304) counts as success.
 pub async fn act(docker: &Docker, id: &str, action: ContainerAction) -> AppResult<()> {
-    match action {
+    let result = match action {
         ContainerAction::Start => {
             docker
                 .start_container(id, None::<StartContainerOptions>)
-                .await?
+                .await
         }
         ContainerAction::Stop => {
             docker
                 .stop_container(id, None::<StopContainerOptions>)
-                .await?
+                .await
         }
         ContainerAction::Restart => {
             docker
                 .restart_container(id, None::<RestartContainerOptions>)
-                .await?
+                .await
         }
-        ContainerAction::Pause => docker.pause_container(id).await?,
-        ContainerAction::Unpause => docker.unpause_container(id).await?,
+        ContainerAction::Pause => docker.pause_container(id).await,
+        ContainerAction::Unpause => docker.unpause_container(id).await,
         ContainerAction::Kill => {
             docker
                 .kill_container(id, None::<KillContainerOptions>)
-                .await?
+                .await
         }
+    };
+    match result.map_err(AppError::from) {
+        Err(e) if e.is(ErrorCode::AlreadyDone) => Ok(()),
+        other => other,
     }
-    Ok(())
 }
 
 /// Removes a container; `volumes` also removes its anonymous volumes.

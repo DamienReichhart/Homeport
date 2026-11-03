@@ -248,17 +248,6 @@ pub(crate) fn docker_over(dialer: Arc<dyn Dialer>) -> Docker {
     .expect("custom transports always construct")
 }
 
-/// A short, user-facing description of a bollard failure.
-pub fn describe_docker_error(e: &bollard::errors::Error) -> String {
-    use bollard::errors::Error;
-    match e {
-        Error::DockerResponseServerError { message, .. } => message.clone(),
-        Error::IOError { err } => err.to_string(),
-        Error::RequestTimeoutError => "the Engine did not answer in time".into(),
-        other => other.to_string(),
-    }
-}
-
 #[cfg(all(test, unix))]
 mod tests {
     use super::*;

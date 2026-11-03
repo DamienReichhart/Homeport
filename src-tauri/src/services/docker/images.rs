@@ -12,7 +12,7 @@ use bollard::{
 use futures_util::StreamExt;
 use serde::Serialize;
 
-use crate::error::{AppError, AppResult, ErrorCode};
+use crate::error::{AppError, AppResult};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -160,7 +160,9 @@ pub async fn pull(docker: Docker, reference: String, sink: impl Fn(PullEvent) ->
             Ok(info) => match info.error_detail.and_then(|e| e.message) {
                 Some(message) => {
                     sink(PullEvent::Error {
-                        error: AppError::new(ErrorCode::EngineError, message).logged("image pull"),
+                        error: crate::error::engine::from_message(None, &message)
+                            .with_detail(&message)
+                            .logged("image pull"),
                     });
                     return;
                 }
