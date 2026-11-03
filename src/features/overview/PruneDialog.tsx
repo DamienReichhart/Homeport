@@ -3,18 +3,18 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { commands, keys, type PruneSelection } from '@/shared/api';
 import { formatBytes } from '@/shared/lib';
-import { Button } from '@/shared/ui/button';
-import { Checkbox } from '@/shared/ui/checkbox';
 import {
+  Button,
+  Checkbox,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/ui/dialog';
-import { Label } from '@/shared/ui/label';
-import { ErrorMessage } from '@/shared/ui';
+  ErrorMessage,
+  Label,
+} from '@/shared/ui';
 
 const OPTIONS: {
   key: keyof PruneSelection;

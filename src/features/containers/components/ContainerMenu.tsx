@@ -12,15 +12,17 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Container } from '@/shared/api';
-import { Button } from '@/shared/ui/button';
 import {
+  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/shared/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip';
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/shared/ui';
 import type { ConfirmOptions } from '@/shared/ui';
 import { useContainerMutations } from '../api';
 

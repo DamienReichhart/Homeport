@@ -4,9 +4,7 @@ import { CircleXIcon, TriangleAlertIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { commands, type ComposeCheck } from '@/shared/api';
 import { useResolvedTheme } from '@/shared/lib';
-import { editorTheme } from '@/shared/ui/editorTheme';
-import { Label } from '@/shared/ui/label';
-import { Textarea } from '@/shared/ui/textarea';
+import { editorTheme, Label, Textarea } from '@/shared/ui';
 
 export const STARTER = `services:
   web:

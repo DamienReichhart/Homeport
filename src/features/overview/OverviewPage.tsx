@@ -13,18 +13,24 @@ import {
 } from '@/features/hosts';
 import { commands, keys, type HostView } from '@/shared/api';
 import { cn, formatBytes, formatPercent, formatRelative } from '@/shared/lib';
-import { Badge } from '@/shared/ui/badge';
-import { Button } from '@/shared/ui/button';
 import {
+  Badge,
+  Button,
   Card,
   CardAction,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/shared/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
-import { KeyValue, PageHeader } from '@/shared/ui';
+  KeyValue,
+  PageHeader,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/shared/ui';
 import { PruneDialog } from './PruneDialog';
 
 /** Live CPU and memory use of a Host's running containers against its capacity. */

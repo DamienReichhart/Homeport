@@ -9,16 +9,20 @@ import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { commands, subscribe, type LogEvent, type LogLine, type LogSource } from '@/shared/api';
 import { pickSavePath } from '@/shared/lib';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
-import { Toggle } from '@/shared/ui/toggle';
 import {
+  Button,
+  Input,
   SEARCH_DECORATIONS,
-  XTerm,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   terminalError,
-  type XTermHandle,
   toastError,
+  Toggle,
+  XTerm,
+  type XTermHandle,
 } from '@/shared/ui';
 
 const TAILS = [

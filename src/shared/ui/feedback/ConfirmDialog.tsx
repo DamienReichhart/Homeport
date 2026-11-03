@@ -7,8 +7,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from './alert-dialog';
-import { Button } from './button';
+} from '../primitives/alert-dialog';
+import { Button } from '../primitives/button';
 import { cn } from '@/shared/lib/utils';
 
 export interface ConfirmOptions {

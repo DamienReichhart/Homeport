@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { HostGate } from '@/features/hosts';
 import { type Stack } from '@/shared/api';
-import { Badge } from '@/shared/ui/badge';
-import { Button } from '@/shared/ui/button';
 import {
+  Badge,
+  Button,
+  type ColumnDef,
   DataTable,
   EmptyState,
   ErrorMessage,
@@ -14,7 +15,6 @@ import {
   Spinner,
   StatusDot,
   useConfirm,
-  type ColumnDef,
 } from '@/shared/ui';
 import { STATE_LABEL, STATE_TONE, useStacks } from './api';
 import { ComposeRunDialog, type ComposeJob } from './ComposeRunDialog';

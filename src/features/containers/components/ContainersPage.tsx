@@ -14,20 +14,25 @@ import { useNavigate } from 'react-router-dom';
 import { HostGate, hostAddress, useHostSelection } from '@/features/hosts';
 import type { Container, ContainerUsage } from '@/shared/api';
 import { formatBytes, formatPercent, formatRelative, shortId } from '@/shared/lib';
-import { Badge } from '@/shared/ui/badge';
-import { Button } from '@/shared/ui/button';
-import { Checkbox } from '@/shared/ui/checkbox';
-import { Label } from '@/shared/ui/label';
-import { Switch } from '@/shared/ui/switch';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import {
+  Badge,
+  Button,
+  Checkbox,
+  containerTone,
   EmptyState,
   ErrorMessage,
+  Label,
   PageHeader,
   SearchInput,
   Spinner,
   StatusDot,
-  containerTone,
+  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
   toastError,
   useConfirm,
 } from '@/shared/ui';

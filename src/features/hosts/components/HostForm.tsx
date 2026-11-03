@@ -2,14 +2,19 @@ import { FileUpIcon, KeyRoundIcon, TriangleAlertIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { commands } from '@/shared/api';
 import { pickFile } from '@/shared/lib';
-import { Alert, AlertDescription, AlertTitle } from '@/shared/ui/alert';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Label } from '@/shared/ui/label';
-import { Textarea } from '@/shared/ui/textarea';
-import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/toggle-group';
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+  Button,
+  Input,
+  Label,
+  Textarea,
+  toastError,
+  ToggleGroup,
+  ToggleGroupItem,
+} from '@/shared/ui';
 import type { HostFormState, HostKind } from '../form';
-import { toastError } from '@/shared/ui';
 
 function Field({
   label,

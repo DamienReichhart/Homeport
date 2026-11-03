@@ -1,5 +1,5 @@
 import type { Hint } from '@/shared/api';
-import { CopyButton } from './CopyButton';
+import { CopyButton } from '../data/CopyButton';
 
 /** What to do about a failure: the advice, then each command ready to copy. */
 export function HintView({ hint }: { hint: Hint }) {

@@ -1,14 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 import { commands, keys } from '@/shared/api';
-import { EmptyState, ErrorMessage, Spinner } from '@/shared/ui';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/shared/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
+  EmptyState,
+  ErrorMessage,
+  Spinner,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/shared/ui';
 
 const TEXT = 'bg-muted h-[60vh] overflow-auto rounded-md p-3 font-mono text-xs whitespace-pre-wrap';
 

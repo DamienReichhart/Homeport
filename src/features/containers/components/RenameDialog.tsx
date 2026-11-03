@@ -1,10 +1,16 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { commands, keys, type Container } from '@/shared/api';
-import { Button } from '@/shared/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
-import { Input } from '@/shared/ui/input';
-import { ErrorMessage } from '@/shared/ui';
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  ErrorMessage,
+  Input,
+} from '@/shared/ui';
 
 export function RenameDialog({
   hostId,

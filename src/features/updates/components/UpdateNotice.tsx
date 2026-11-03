@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ArrowUpCircleIcon, XIcon } from 'lucide-react';
-import { Button } from '@/shared/ui/button';
+import { Button } from '@/shared/ui';
 import { useUpdateCheck } from '../api';
 import { UpdateActions } from './UpdateActions';
 

@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { MonitorIcon, PlusIcon } from 'lucide-react';
 import { commands, keys, type HostInput } from '@/shared/api';
-import { Button } from '@/shared/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui';
 import { useHosts } from '../api';
 
 /** Engines answering on this machine's sockets that aren't Hosts yet, one click to add. */

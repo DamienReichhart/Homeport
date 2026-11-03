@@ -10,15 +10,18 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import { HostGate } from '@/features/hosts';
 import { commands, keys } from '@/shared/api';
-import { Badge } from '@/shared/ui/badge';
-import { Button } from '@/shared/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import {
+  Badge,
+  Button,
+  containerTone,
   ErrorMessage,
   PageHeader,
   Spinner,
   StatusDot,
-  containerTone,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
   useConfirm,
 } from '@/shared/ui';
 import { useContainerMutations, useContainers } from '../api';

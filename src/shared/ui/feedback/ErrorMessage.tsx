@@ -1,8 +1,8 @@
 import { CircleAlertIcon, RotateCwIcon } from 'lucide-react';
 import { toAppError } from '@/shared/api';
 import { cn } from 'cn';
-import { Alert, AlertDescription, AlertTitle } from './alert';
-import { Button } from './button';
+import { Alert, AlertDescription, AlertTitle } from '../primitives/alert';
+import { Button } from '../primitives/button';
 import { showErrorDetails } from './ErrorDetails';
 import { HintView } from './HintView';
 

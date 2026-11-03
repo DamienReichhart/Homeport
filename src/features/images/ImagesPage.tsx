@@ -15,30 +15,40 @@ import { RunContainerDialog } from '@/features/containers';
 import { HostGate } from '@/features/hosts';
 import { commands, keys, type Image } from '@/shared/api';
 import { formatBytes, formatRelative, shortId } from '@/shared/lib';
-import { Badge } from '@/shared/ui/badge';
-import { Button } from '@/shared/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
 import {
+  Badge,
+  Button,
+  type ColumnDef,
+  DataTable,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/shared/ui/dropdown-menu';
-import { Input } from '@/shared/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
-import {
-  DataTable,
   EmptyState,
   ErrorMessage,
+  Input,
   JsonView,
   PageHeader,
   SearchInput,
   Spinner,
-  useConfirm,
-  type ColumnDef,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
   toastError,
+  useConfirm,
 } from '@/shared/ui';
 import { PullDialog } from './PullDialog';
 

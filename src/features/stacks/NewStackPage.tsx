@@ -3,11 +3,16 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { HostGate, useCapabilities } from '@/features/hosts';
 import { commands, keys, type ComposeCheck } from '@/shared/api';
-import { Alert, AlertDescription, AlertTitle } from '@/shared/ui/alert';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Label } from '@/shared/ui/label';
-import { ErrorMessage, PageHeader } from '@/shared/ui';
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+  Button,
+  ErrorMessage,
+  Input,
+  Label,
+  PageHeader,
+} from '@/shared/ui';
 import { ComposeRunDialog, type ComposeJob } from './ComposeRunDialog';
 import { STARTER, StackEditor } from './StackEditor';
 

@@ -2,15 +2,16 @@ import { toAppError, type HostStatus } from '@/shared/api';
 import { PlusIcon, ServerCogIcon, TriangleAlertIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
+  Button,
   Select,
   SelectContent,
   SelectItem,
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-} from '@/shared/ui/select';
-import { showErrorDetails, StatusDot } from '@/shared/ui';
-import { Button } from '@/shared/ui/button';
+  showErrorDetails,
+  StatusDot,
+} from '@/shared/ui';
 import { useHosts } from '../api';
 import { useHostSelection } from '../context';
 import { describeStatus, statusError } from '../status';

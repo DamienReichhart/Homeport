@@ -9,9 +9,16 @@ import {
   type ComposeAction,
   type ComposeEvent,
 } from '@/shared/api';
-import { Button } from '@/shared/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
-import { ErrorMessage, XTerm } from '@/shared/ui';
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  ErrorMessage,
+  XTerm,
+} from '@/shared/ui';
 
 const TITLES: Record<ComposeAction, string> = {
   up: 'Deploying',

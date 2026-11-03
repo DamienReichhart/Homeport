@@ -1,9 +1,7 @@
 import { PlusIcon } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { HostView } from '@/shared/api';
-import { Badge } from '@/shared/ui/badge';
-import { Button } from '@/shared/ui/button';
-import { DataTable, ErrorMessage, PageHeader, type ColumnDef } from '@/shared/ui';
+import { Badge, Button, type ColumnDef, DataTable, ErrorMessage, PageHeader } from '@/shared/ui';
 import { useHosts } from '../api';
 import { connectionLabel, describeAddress } from '../status';
 import { HostStatusBadge } from './HostStatusBadge';

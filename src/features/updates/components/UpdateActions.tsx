@@ -1,7 +1,6 @@
 import { openUrl } from '@tauri-apps/plugin-opener';
 import type { UpdateCheck } from '@/shared/api';
-import { Button } from '@/shared/ui/button';
-import { CopyButton, ErrorMessage, toastError } from '@/shared/ui';
+import { Button, CopyButton, ErrorMessage, toastError } from '@/shared/ui';
 import { describeProgress, useInstallUpdate, WEBSITE_URL } from '../api';
 
 /**

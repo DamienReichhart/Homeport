@@ -10,14 +10,14 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useCapabilities } from '@/features/hosts';
 import type { Stack } from '@/shared/api';
-import { Button } from '@/shared/ui/button';
 import {
+  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/shared/ui/dropdown-menu';
+} from '@/shared/ui';
 import type { ConfirmOptions } from '@/shared/ui';
 import { useStackMutations } from './api';
 import type { ComposeJob } from './ComposeRunDialog';

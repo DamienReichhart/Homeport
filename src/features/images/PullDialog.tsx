@@ -3,18 +3,18 @@ import { useEffect, useReducer, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { commands, keys, subscribe, type PullEvent } from '@/shared/api';
 import { formatBytes } from '@/shared/lib';
-import { ErrorMessage } from '@/shared/ui';
-import { Button } from '@/shared/ui/button';
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/ui/dialog';
-import { Input } from '@/shared/ui/input';
-import { Progress } from '@/shared/ui/progress';
+  ErrorMessage,
+  Input,
+  Progress,
+} from '@/shared/ui';
 import { initialPull, reducePull, type PullState } from './pull';
 
 export function PullDialog({

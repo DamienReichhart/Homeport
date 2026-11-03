@@ -4,22 +4,26 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { commands, keys, type RestartPolicy } from '@/shared/api';
-import { Button } from '@/shared/ui/button';
-import { Checkbox } from '@/shared/ui/checkbox';
 import {
+  Button,
+  Checkbox,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/ui/dialog';
-import { Input } from '@/shared/ui/input';
-import { Label } from '@/shared/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
-import { Switch } from '@/shared/ui/switch';
-import { Textarea } from '@/shared/ui/textarea';
-import { ErrorMessage } from '@/shared/ui';
+  ErrorMessage,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Switch,
+  Textarea,
+} from '@/shared/ui';
 import { emptyRunForm, toRunSpec, type RunForm } from '../runForm';
 
 const RESTART: { value: RestartPolicy; label: string }[] = [

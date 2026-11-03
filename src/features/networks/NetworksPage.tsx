@@ -12,25 +12,36 @@ import { toast } from 'sonner';
 import { useContainers } from '@/features/containers';
 import { HostGate } from '@/features/hosts';
 import { commands, keys, type NetworkInput, type NetworkView } from '@/shared/api';
-import { Badge } from '@/shared/ui/badge';
-import { Button } from '@/shared/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
-import { Input } from '@/shared/ui/input';
-import { Label } from '@/shared/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
-import { Switch } from '@/shared/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import {
+  Badge,
+  Button,
+  type ColumnDef,
   DataTable,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   EmptyState,
   ErrorMessage,
+  Input,
   JsonView,
+  Label,
   PageHeader,
   SearchInput,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Spinner,
-  useConfirm,
-  type ColumnDef,
+  Switch,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
   toastError,
+  useConfirm,
 } from '@/shared/ui';
 
 const emptyNetwork: NetworkInput = {

@@ -3,21 +3,29 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UpdatesCard } from '@/features/updates';
 import { commands, keys, type ComposeSupport, type Settings } from '@/shared/api';
 import { applyTheme, type Theme } from '@/shared/lib';
-import { Button } from '@/shared/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Label } from '@/shared/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
-import { FolderOpenIcon } from 'lucide-react';
 import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
   ErrorMessage,
   HintView,
   KeyValue,
+  Label,
   LogoMark,
   PageHeader,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Spinner,
   StatusDot,
   toastError,
 } from '@/shared/ui';
+import { FolderOpenIcon } from 'lucide-react';
 import { settingsApi } from '../api/settingsApi';
 import { LicensesDialog } from './LicensesDialog';
 

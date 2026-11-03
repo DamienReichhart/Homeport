@@ -10,8 +10,8 @@ import {
 } from '@tanstack/react-table';
 import { ArrowDownIcon, ArrowUpIcon } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
-import { Checkbox } from './checkbox';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './table';
+import { Checkbox } from '../primitives/checkbox';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../primitives/table';
 import { cn } from '@/shared/lib/utils';
 
 export type { ColumnDef } from '@tanstack/react-table';

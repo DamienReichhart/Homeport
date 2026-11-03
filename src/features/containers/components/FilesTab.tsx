@@ -11,8 +11,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { commands, keys, type FileEntry } from '@/shared/api';
 import { formatBytes, formatDateTime, pickFiles, pickSavePath } from '@/shared/lib';
-import { Button } from '@/shared/ui/button';
-import { DataTable, ErrorMessage, type ColumnDef, toastError } from '@/shared/ui';
+import { Button, type ColumnDef, DataTable, ErrorMessage, toastError } from '@/shared/ui';
 
 /** `/a/b/c` → `[['/', '/'], ['a', '/a'], ['b', '/a/b'], ['c', '/a/b/c']]`. */
 export function crumbs(path: string): [string, string][] {

@@ -1,7 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { commands, keys } from '@/shared/api';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
-import { ErrorMessage, Spinner } from '@/shared/ui';
+import {
+  ErrorMessage,
+  Spinner,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/shared/ui';
 
 export function ProcessesTab({
   hostId,

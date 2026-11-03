@@ -2,8 +2,7 @@ import { RotateCwIcon, TriangleAlertIcon } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { useNavigate, useRouteError } from 'react-router-dom';
 import { logFailure, toAppError } from '@/shared/api';
-import { EmptyState, ErrorMessage } from '@/shared/ui';
-import { Button } from '@/shared/ui/button';
+import { Button, EmptyState, ErrorMessage } from '@/shared/ui';
 
 /**
  * Shown instead of a page that threw while rendering. Logs the crash and

@@ -3,9 +3,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { HostProvider } from '@/features/hosts';
 import { settingsApi } from '@/features/settings';
 import { applyTheme } from '@/shared/lib';
-import { ErrorDetailsHost, toastError } from '@/shared/ui';
-import { Toaster } from '@/shared/ui/sonner';
-import { TooltipProvider } from '@/shared/ui/tooltip';
+import { ErrorDetailsHost, Toaster, toastError, TooltipProvider } from '@/shared/ui';
 import { LiveUpdates } from './LiveUpdates';
 
 export function createQueryClient() {

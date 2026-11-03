@@ -5,28 +5,30 @@ import { toast } from 'sonner';
 import { HostGate } from '@/features/hosts';
 import { commands, keys, type VolumeView } from '@/shared/api';
 import { formatBytes } from '@/shared/lib';
-import { Badge } from '@/shared/ui/badge';
-import { Button } from '@/shared/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
 import {
+  Badge,
+  Button,
+  type ColumnDef,
+  DataTable,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/shared/ui/dropdown-menu';
-import { Input } from '@/shared/ui/input';
-import { Label } from '@/shared/ui/label';
-import {
-  DataTable,
   EmptyState,
   ErrorMessage,
+  Input,
   JsonView,
+  Label,
   PageHeader,
   SearchInput,
   Spinner,
-  useConfirm,
-  type ColumnDef,
   toastError,
+  useConfirm,
 } from '@/shared/ui';
 
 function CreateVolumeDialog({

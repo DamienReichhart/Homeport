@@ -1,9 +1,15 @@
 import type { Settings } from '@/shared/api';
-import { ErrorMessage } from '@/shared/ui';
-import { Button } from '@/shared/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Label } from '@/shared/ui/label';
-import { Switch } from '@/shared/ui/switch';
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  ErrorMessage,
+  Label,
+  Switch,
+} from '@/shared/ui';
 import { describeMethod, useUpdateCheck } from '../api';
 import { UpdateActions } from './UpdateActions';
 

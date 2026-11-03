@@ -1,5 +1,5 @@
 import { SearchIcon } from 'lucide-react';
-import { Input } from './input';
+import { Input } from '../primitives/input';
 
 export function SearchInput({
   value,

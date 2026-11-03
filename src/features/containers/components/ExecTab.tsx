@@ -3,11 +3,16 @@ import { PlusIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
 import { commands, toAppError, type ExecEvent } from '@/shared/api';
 import { cn } from '@/shared/lib';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Label } from '@/shared/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover';
-import { XTerm, terminalError } from '@/shared/ui';
+import {
+  Button,
+  Input,
+  Label,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  terminalError,
+  XTerm,
+} from '@/shared/ui';
 
 interface SessionSpec {
   key: number;

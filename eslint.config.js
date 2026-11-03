@@ -35,6 +35,10 @@ export default tseslint.config(
               group: ['@/features/*/*'],
               message: 'Import a feature through its public API (@/features/<name>) only.',
             },
+            {
+              group: ['@/shared/ui/*'],
+              message: 'Import UI components from the kit (@/shared/ui) only.',
+            },
           ],
         },
       ],

@@ -4,13 +4,25 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { commands, keys, type HostView } from '@/shared/api';
-import { Alert, AlertDescription, AlertTitle } from '@/shared/ui/alert';
-import { Badge } from '@/shared/ui/badge';
-import { Button } from '@/shared/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Label } from '@/shared/ui/label';
-import { Switch } from '@/shared/ui/switch';
-import { CopyButton, ErrorMessage, PageHeader, Spinner, useConfirm } from '@/shared/ui';
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CopyButton,
+  ErrorMessage,
+  Label,
+  PageHeader,
+  Spinner,
+  Switch,
+  useConfirm,
+} from '@/shared/ui';
 import { useCapabilities, useHosts } from '../api';
 import { formFromHost, toHostInput, type HostFormState } from '../form';
 import { connectionLabel, describeStatus, statusError } from '../status';

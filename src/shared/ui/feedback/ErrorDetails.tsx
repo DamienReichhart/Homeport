@@ -2,8 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { FolderOpenIcon } from 'lucide-react';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { commands, errorReport, keys, toAppError, type AppError } from '@/shared/api';
-import { Button } from './button';
-import { CopyButton } from './CopyButton';
+import { Button } from '../primitives/button';
+import { CopyButton } from '../data/CopyButton';
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from './dialog';
+} from '../primitives/dialog';
 import { HintView } from './HintView';
 
 let shown: AppError | null = null;

@@ -6,17 +6,29 @@ import { toast } from 'sonner';
 import { LogViewer, useContainers } from '@/features/containers';
 import { HostGate, useCapabilities } from '@/features/hosts';
 import { commands, keys, type ComposeCheck, type ManagedStack, type Stack } from '@/shared/api';
-import { Badge } from '@/shared/ui/badge';
-import { Button } from '@/shared/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  containerTone,
   ErrorMessage,
   PageHeader,
   Spinner,
   StatusDot,
-  containerTone,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
   useConfirm,
 } from '@/shared/ui';
 import { STATE_LABEL, STATE_TONE, useStacks } from './api';

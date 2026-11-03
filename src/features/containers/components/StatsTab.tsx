@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import type { AlignedData } from 'uplot';
 import { commands, subscribe, type StatsSample } from '@/shared/api';
 import { formatBytes, formatPercent } from '@/shared/lib';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { TimeChart } from '@/shared/ui';
+import { Card, CardContent, CardHeader, CardTitle, TimeChart } from '@/shared/ui';
 
 /** Five minutes of samples at about one per second. */
 const WINDOW = 300;
