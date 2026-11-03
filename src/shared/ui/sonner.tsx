@@ -8,6 +8,13 @@ import {
   Loader2Icon,
 } from 'lucide-react';
 
+/** Sonner's `richColors` variables for one tone, tinted from a theme token. */
+const tone = (name: string, colour: string) => ({
+  [`--${name}-bg`]: `color-mix(in oklch, ${colour} 10%, var(--popover))`,
+  [`--${name}-border`]: `color-mix(in oklch, ${colour} 30%, var(--popover))`,
+  [`--${name}-text`]: colour,
+});
+
 const Toaster = ({ ...props }: ToasterProps) => {
   const theme = useResolvedTheme();
 
@@ -28,6 +35,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
           '--normal-text': 'var(--popover-foreground)',
           '--normal-border': 'var(--border)',
           '--border-radius': 'var(--radius)',
+          ...tone('success', 'var(--success)'),
+          ...tone('info', 'var(--info)'),
+          ...tone('warning', 'var(--warning)'),
+          ...tone('error', 'var(--destructive)'),
         } as React.CSSProperties
       }
       toastOptions={{

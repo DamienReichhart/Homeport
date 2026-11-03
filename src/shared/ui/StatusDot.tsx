@@ -3,11 +3,11 @@ import { cn } from '@/shared/lib/utils';
 export type Tone = 'success' | 'warning' | 'danger' | 'muted' | 'info';
 
 const TONES: Record<Tone, string> = {
-  success: 'bg-emerald-500',
-  warning: 'bg-amber-500',
-  danger: 'bg-red-500',
+  success: 'bg-success',
+  warning: 'bg-warning',
+  danger: 'bg-destructive',
   muted: 'bg-muted-foreground/50',
-  info: 'bg-sky-500',
+  info: 'bg-info',
 };
 
 export function StatusDot({ tone, pulse }: { tone: Tone; pulse?: boolean }) {

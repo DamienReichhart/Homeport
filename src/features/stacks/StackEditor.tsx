@@ -92,7 +92,7 @@ export function StackEditor({
               </li>
             ))}
             {check.warnings.map((w) => (
-              <li key={w} className="flex gap-2 text-amber-600 dark:text-amber-500">
+              <li key={w} className="text-warning flex gap-2">
                 <TriangleAlertIcon className="mt-0.5 size-4 shrink-0" /> {w}
               </li>
             ))}

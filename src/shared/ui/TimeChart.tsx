@@ -43,8 +43,8 @@ export function TimeChart({
   useEffect(() => {
     const el = host.current;
     if (!el) return;
-    const axis = theme === 'dark' ? '#9ca3af' : '#6b7280';
-    const grid = theme === 'dark' ? '#ffffff14' : '#0000000f';
+    const axis = resolveColour('var(--muted-foreground)');
+    const grid = resolveColour('var(--border)');
     const parsed = JSON.parse(seriesKey) as ChartSeries[];
     const options: Options = {
       width: el.clientWidth || 400,

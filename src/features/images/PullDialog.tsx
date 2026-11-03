@@ -123,7 +123,7 @@ export function PullDialog({
                 {state.error}
               </p>
             )}
-            {state.done && <p className="text-sm text-emerald-600">Done.</p>}
+            {state.done && <p className="text-success text-sm">Done.</p>}
           </div>
         )}
         <DialogFooter>
