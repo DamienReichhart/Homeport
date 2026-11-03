@@ -41,6 +41,8 @@ bun run tauri:build
 
 Installers for your platform are written to `target/release/bundle/`. The build generates the licence notices first, and stops if a dependency's licence hasn't been reviewed in `about.toml`.
 
+Local builds aren't signed for the in-app updater and leave the `.rpm` unsigned; only the [release workflow](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md) has the signing keys. A copy you build yourself still checks for updates, but its **Install and restart** only installs versions signed by the release workflow.
+
 ## Useful commands
 
 | Command               | What it does                                     |

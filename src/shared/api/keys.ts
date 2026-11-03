@@ -8,6 +8,7 @@ export const keys = {
   licenses: ['licenses'] as const,
   localEngines: ['local-engines'] as const,
   settings: ['settings'] as const,
+  updates: ['updates'] as const,
   hosts: ['hosts'] as const,
   sshSetup: (hostId: string) => ['hosts', hostId, 'ssh-setup'] as const,
   host: (hostId: string) => ['host', hostId] as const,

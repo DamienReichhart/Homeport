@@ -1,0 +1,9 @@
+[homeport]
+name=Homeport
+baseurl=https://damienreichhart.github.io/Homeport/rpm
+type=rpm-md
+enabled=1
+autorefresh=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://damienreichhart.github.io/Homeport/homeport.asc

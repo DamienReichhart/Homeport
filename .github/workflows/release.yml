@@ -113,6 +113,13 @@ jobs:
       - run: bun install --frozen-lockfile
       - name: Build
         env:
+          # Signs each installer for the in-app updater; the app only installs
+          # updates signed with this key (tauri.conf.json > plugins > updater).
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          # Signs the .rpm with the package repositories' key (packaging/linux/homeport.asc).
+          TAURI_SIGNING_RPM_KEY: ${{ runner.os == 'Linux' && secrets.PACKAGES_GPG_PRIVATE_KEY || '' }}
+          TAURI_SIGNING_RPM_KEY_PASSPHRASE: ${{ runner.os == 'Linux' && secrets.PACKAGES_GPG_PASSPHRASE || '' }}
           # macOS signing and notarization, used when the secrets are set. Without
           # them the app is ad-hoc signed (tauri.conf.json > bundle > macOS).
           APPLE_CERTIFICATE: ${{ runner.os == 'macOS' && secrets.APPLE_CERTIFICATE || '' }}
@@ -123,13 +130,21 @@ jobs:
           APPLE_TEAM_ID: ${{ runner.os == 'macOS' && secrets.APPLE_TEAM_ID || '' }}
         run: |
           # Tauri treats a set-but-empty variable as configured, so drop the unset secrets.
-          for name in APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID; do
+          for name in APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID \
+            TAURI_SIGNING_RPM_KEY TAURI_SIGNING_RPM_KEY_PASSPHRASE TAURI_SIGNING_PRIVATE_KEY_PASSWORD; do
             [ -n "${!name}" ] || unset "$name"
           done
+          if [ "$RUNNER_OS" = Linux ] && [ -z "$TAURI_SIGNING_RPM_KEY" ]; then
+            echo "::error::PACKAGES_GPG_PRIVATE_KEY is not set: run scripts/setup-signing.sh"; exit 1
+          fi
           # WiX only takes numeric prerelease identifiers, so prereleases ship no MSI.
           [ "$PRERELEASE" = true ] && BUNDLES="${BUNDLES/msi,/}"
-          bun tauri build --ci --target "$TARGET" --bundles "$BUNDLES"
+          # Updater files only in release builds, so local builds need no signing key.
+          bun tauri build --ci --target "$TARGET" --bundles "$BUNDLES" \
+            --config '{"bundle":{"createUpdaterArtifacts":true}}'
       - name: Collect the installers
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
         run: |
           bundle="target/$TARGET/release/bundle"
           shopt -s nullglob
@@ -138,6 +153,17 @@ jobs:
           [ ${#files[@]} -gt 0 ] || { echo "::error::No installers in $bundle"; exit 1; }
           mkdir -p installers
           cp "${files[@]}" installers/
+          # The updater's signature of each installer it can apply.
+          for file in "${files[@]}"; do
+            [ ! -f "$file.sig" ] || cp "$file.sig" installers/
+          done
+          # macOS updates from the zipped app, named the same for both architectures: name it like the .dmg.
+          app="$bundle/macos/Homeport.app.tar.gz"
+          if [ -f "$app" ]; then
+            [[ "$TARGET" == aarch64-* ]] && arch=aarch64 || arch=x64
+            cp "$app" "installers/Homeport_${VERSION}_${arch}.app.tar.gz"
+            cp "$app.sig" "installers/Homeport_${VERSION}_${arch}.app.tar.gz.sig"
+          fi
           ls -l installers
       - uses: actions/upload-artifact@v4
         with:

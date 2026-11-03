@@ -5,13 +5,15 @@
  *
  * Reads the version from tauri.conf.json, package.json, Cargo.toml and
  * Cargo.lock and fails unless they agree and that version has no `v*` tag yet
- * (see `release-plan.ts`). Prints `version`, `tag` and `prerelease` as
+ * (see `release-plan.ts`), or while the public signing keys aren't committed.
+ * Prints `version`, `tag` and `prerelease` as
  * `key=value` lines, also appended to `$GITHUB_OUTPUT` when set. `--notes`
  * writes the release notes, from the commits since the previous release.
  */
-import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
+  checkSigningSetup,
   type Commit,
   planRelease,
   readCargoLockVersion,
@@ -61,6 +63,13 @@ function plan(args: string[]) {
       'Cargo.lock': readCargoLockVersion(read('Cargo.lock')),
     },
     tags: git('tag', '--list').out.split('\n'),
+  });
+  const tauri = JSON.parse(read('src-tauri/tauri.conf.json')) as {
+    plugins?: { updater?: { pubkey?: string } };
+  };
+  checkSigningSetup({
+    updaterPubkey: tauri.plugins?.updater?.pubkey,
+    packageKey: existsSync(join(ROOT, 'packaging/linux/homeport.asc')),
   });
 
   const outputs = { version: result.version, tag: result.tag, prerelease: result.prerelease };

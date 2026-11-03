@@ -32,7 +32,8 @@ When a service grows large, promote it to a workspace crate under `crates/` (the
 - **Server state**: TanStack Query. Query keys are centralised in `src/shared/api/keys.ts` so `app/providers/LiveUpdates.tsx` can invalidate them from pushed Engine events instead of polling.
 - **Streams**: logs, stats, exec, pulls and compose output use Tauri channels. Start one with `subscribe()` from `@/shared/api`; the returned function cancels it on the backend.
 - **Storage**: SQLite (`homeport.db` in the app data dir) via `services/db.rs`, migrated on open. Secrets are sealed with `services/crypto.rs` (ADR 0002).
+- **Updates**: `tauri-plugin-updater`, driven from Rust (`commands/updates.rs`), never from the frontend. `services/updates.rs` decides from the bundle type whether Homeport installs an update itself (NSIS, MSI, `.app`, AppImage) or leaves it to the package manager (`.deb`, `.rpm`). The manifest and the package repositories are built from the releases and served by the website (ADR 0003, [RELEASING.md](RELEASING.md#package-repositories-and-updates)); the `.deb`/`.rpm` maintainer scripts and the install script live in `packaging/linux/`.
 
 ## Deliberately not included (add when needed)
 
-- Global state library (Zustand/Redux), i18n, auto-updater, code signing.
+- Global state library (Zustand/Redux), i18n, Windows and macOS code signing (see [RELEASING.md](RELEASING.md#code-signing)).

@@ -1,6 +1,6 @@
 ---
 title: Settings
-description: Theme, what this machine supports, version and licences.
+description: Theme, updates, what this machine supports, version and licences.
 ---
 
 **Settings** is the last item in the sidebar.
@@ -8,6 +8,18 @@ description: Theme, what this machine supports, version and licences.
 ## Appearance
 
 **Theme** is **Match the system** by default, following your operating system's light or dark mode as it changes. Choose **Light** or **Dark** to fix it.
+
+## Updates
+
+- **Check for updates automatically** — on by default: Homeport looks for a new version when it starts and every 6 hours, and shows a bar at the top of the window when there is one.
+- **Check now** — checks straight away, even with automatic checks off, and says whether you have the latest version.
+
+When an update is available, the card shows what you can do, which depends on how you installed Homeport:
+
+- **Windows, macOS and the AppImage** — **Install and restart** downloads the update, checks its signature, installs it and reopens Homeport.
+- **`.deb` and `.rpm` packages** — your package manager installs updates, so the card shows the command to run, with a **Copy command** button.
+
+**What's new** opens the [changelog](/changelog/). See [updating](/docs/reference/updating/) for more.
 
 ## This machine
 

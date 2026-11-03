@@ -37,11 +37,15 @@ There's no export yet. Copying `homeport.db` moves Host and Stack definitions, b
 
 ### Does Homeport collect data about me?
 
-No. There's no account, telemetry, analytics or update check. See [security and your data](/docs/reference/security/).
+No. There's no account, telemetry or analytics. The only request Homeport makes on its own is the update check, which downloads a small file from this website and sends nothing about you; you can turn it off in **Settings → Updates**. See [security and your data](/docs/reference/security/#what-homeport-connects-to).
 
 ### How do I update?
 
-Install the new version over the old one. See [updating](/docs/reference/updating/).
+On Windows, macOS and with the AppImage, Homeport tells you when a new version is out: choose **Install and restart**. On Linux, the `.deb` and `.rpm` packages update with the rest of your system from the Homeport package repository. See [updating](/docs/reference/updating/).
+
+### Is Homeport on Homebrew, winget, Flathub or the AUR?
+
+Not yet. They're planned; the [installation page](/docs/installation/#coming-later) links to each one's issue.
 
 ### Is there a command-line interface?
 

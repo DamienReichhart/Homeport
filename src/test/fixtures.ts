@@ -39,9 +39,10 @@ export function container(name: string, stack: string | null, state = 'running')
 
 /** Commands every rendered app needs, regardless of the page. */
 export const baseCommands = {
-  get_settings: () => ({ theme: 'system', lastHostId: 'h1' }),
+  get_settings: () => ({ theme: 'system', lastHostId: 'h1', checkForUpdates: true }),
   update_settings: ({ settings }: Record<string, unknown>) => settings,
   get_capabilities: () => ({ keychain: true, compose: null }),
   hosts_list: () => [connectedHost],
   stream_cancel: () => null,
+  updates_check: () => ({ currentVersion: '0.3.0', available: null, method: { kind: 'inApp' } }),
 };

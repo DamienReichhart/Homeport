@@ -1,0 +1,8 @@
+---
+/** The package signing key's fingerprint, computed from the key the packages ship. */
+import { signingKeyFingerprint } from '../lib/repository';
+
+const fingerprint = signingKeyFingerprint();
+---
+
+{fingerprint ? <code>{fingerprint}</code> : <em>published with the first signed release</em>}

@@ -39,11 +39,20 @@ pub enum AppError {
 
     #[error("{0}")]
     Tauri(#[from] tauri::Error),
+
+    #[error("update failed: {0}")]
+    Update(String),
 }
 
 impl From<bollard::errors::Error> for AppError {
     fn from(e: bollard::errors::Error) -> Self {
         Self::Docker(crate::services::transport::describe_docker_error(&e))
+    }
+}
+
+impl From<tauri_plugin_updater::Error> for AppError {
+    fn from(e: tauri_plugin_updater::Error) -> Self {
+        Self::Update(e.to_string())
     }
 }
 
@@ -62,6 +71,7 @@ impl AppError {
             Self::KeychainUnavailable(_) => "keychain_unavailable",
             Self::CredentialsLost => "credentials_lost",
             Self::Tauri(_) => "tauri",
+            Self::Update(_) => "update",
         }
     }
 }

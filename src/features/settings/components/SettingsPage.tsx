@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { UpdatesCard } from '@/features/updates';
 import { commands, keys, toAppError, type Settings } from '@/shared/api';
 import { applyTheme, type Theme } from '@/shared/lib';
 import { Button } from '@/shared/ui/button';
@@ -63,6 +64,7 @@ export function SettingsPage() {
           {save.error && <ErrorMessage error={toAppError(save.error)} />}
         </CardContent>
       </Card>
+      <UpdatesCard settings={settings.data} onChange={(next) => save.mutate(next)} />
       <Card>
         <CardHeader>
           <CardTitle>This machine</CardTitle>

@@ -41,6 +41,7 @@ pub fn run() {
         )
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(move |app| {
             specta.mount_events(app);
             #[cfg(target_os = "linux")]
@@ -76,6 +77,7 @@ pub fn run() {
                 hosts: HostService { store, registry },
                 streams: Default::default(),
                 exec: Default::default(),
+                update: Default::default(),
             });
             Ok(())
         })

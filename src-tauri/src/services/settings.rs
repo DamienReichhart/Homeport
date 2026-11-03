@@ -16,12 +16,24 @@ pub enum Theme {
     Dark,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, specta::Type)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
 #[serde(default, rename_all = "camelCase")]
 pub struct Settings {
     pub theme: Theme,
     /// The Host selected when the app was last closed.
     pub last_host_id: Option<String>,
+    /// Look for a new version at launch and every few hours.
+    pub check_for_updates: bool,
+}
+
+impl Default for Settings {
+    fn default() -> Self {
+        Self {
+            theme: Theme::default(),
+            last_host_id: None,
+            check_for_updates: true,
+        }
+    }
 }
 
 /// Reads and writes [`Settings`] as one JSON document in the `settings` table.
@@ -99,6 +111,22 @@ mod tests {
     fn empty_store_yields_defaults() {
         let dir = tempfile::tempdir().unwrap();
         assert_eq!(service(dir.path()).get().unwrap(), Settings::default());
+    }
+
+    #[test]
+    fn update_checks_are_on_unless_turned_off() {
+        let dir = tempfile::tempdir().unwrap();
+        let svc = service(dir.path());
+        assert!(svc.get().unwrap().check_for_updates);
+        // Settings saved before the option existed keep update checks on.
+        let saved: Settings = serde_json::from_str(r#"{ "theme": "dark" }"#).unwrap();
+        assert!(saved.check_for_updates);
+        svc.update(Settings {
+            check_for_updates: false,
+            ..Default::default()
+        })
+        .unwrap();
+        assert!(!svc.get().unwrap().check_for_updates);
     }
 
     #[test]
