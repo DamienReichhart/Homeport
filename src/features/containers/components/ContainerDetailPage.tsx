@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import {
   ArrowLeftIcon,
   PauseIcon,
@@ -10,8 +10,8 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import { HostGate, useContainers } from '@/core/host';
 import { containerTone } from '../model/containerTone';
-import { useContainerMutations } from '../api';
-import { commands, keys } from '@/shared/api';
+import { useContainerMutations } from '../api/mutations';
+import { containerQueries } from '../api/queries';
 import {
   Badge,
   Button,
@@ -25,7 +25,6 @@ import {
   TabsTrigger,
   useConfirm,
 } from '@/shared/ui';
-import type { ContainerInspect } from '../model/types';
 import { removeConfirmation } from './ContainerMenu';
 import { ExecTab } from './ExecTab';
 import { FilesTab } from './FilesTab';
@@ -47,15 +46,12 @@ const TAB_LABELS: Record<(typeof TABS)[number], string> = {
 function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
   const { tab = 'logs' } = useParams();
   const navigate = useNavigate();
-  const client = useQueryClient();
   const containers = useContainers(hostId);
-  const { act, remove } = useContainerMutations(hostId);
+  const { act, remove, refresh } = useContainerMutations(hostId);
   const [dialog, confirm] = useConfirm();
   const container = containers.data?.find((c) => c.id === id || c.id.startsWith(id));
   const inspect = useQuery({
-    queryKey: [...keys.container(hostId, id), 'inspect', container?.state],
-    queryFn: () =>
-      commands.containersInspect(hostId, id) as Promise<unknown> as Promise<ContainerInspect>,
+    ...containerQueries.inspect(hostId, id, container?.state),
     enabled: !!container,
   });
 
@@ -128,7 +124,7 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
                 confirm(
                   removeConfirmation([container], async () => {
                     await remove.mutateAsync({ ids, volumes: true });
-                    await client.invalidateQueries({ queryKey: keys.containers(hostId) });
+                    await refresh();
                     navigate('/containers');
                   }),
                 )

@@ -24,7 +24,7 @@ import {
   TooltipTrigger,
 } from '@/shared/ui';
 import type { ConfirmOptions } from '@/shared/ui';
-import { useContainerMutations } from '../api';
+import { useContainerMutations } from '../api/mutations';
 
 /** Confirmation for removing containers, naming what goes with them. */
 export function removeConfirmation(

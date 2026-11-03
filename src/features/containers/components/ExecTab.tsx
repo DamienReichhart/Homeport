@@ -1,7 +1,5 @@
-import { Channel } from '@tauri-apps/api/core';
 import { PlusIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
-import { commands, toAppError, type ExecEvent } from '@/shared/api';
 import { cn } from '@/shared/lib';
 import {
   Button,
@@ -13,6 +11,7 @@ import {
   terminalError,
   XTerm,
 } from '@/shared/ui';
+import { startExec } from '../api/streams';
 
 interface SessionSpec {
   key: number;
@@ -36,55 +35,30 @@ function ExecTerminal({
     <XTerm
       className="h-full"
       onReady={({ terminal }) => {
-        let session: number | null = null;
-        let disposed = false;
-        let size = { cols: terminal.cols, rows: terminal.rows };
-        const channel = new Channel<ExecEvent>();
-        channel.onmessage = (event) => {
-          if (event.type === 'output') terminal.write(event.data);
-          else if (event.type === 'exit') {
-            terminal.write(
-              `\r\n\x1b[2m[process exited${event.code === null ? '' : ` with code ${event.code}`}]\x1b[22m\r\n`,
-            );
-            if (event.error) terminal.write(terminalError(event.error));
-          } else terminal.write(`\r\n${terminalError(event.error)}`);
-        };
-        commands
-          .execStart(
-            hostId,
-            containerId,
-            {
-              command: spec.command || null,
-              user: spec.user || null,
-              workingDir: spec.workingDir || null,
-              cols: size.cols,
-              rows: size.rows,
+        const session = startExec(
+          hostId,
+          containerId,
+          { ...spec, cols: terminal.cols, rows: terminal.rows },
+          {
+            onEvent: (event) => {
+              if (event.type === 'output') terminal.write(event.data);
+              else if (event.type === 'exit') {
+                terminal.write(
+                  `\r\n\x1b[2m[process exited${event.code === null ? '' : ` with code ${event.code}`}]\x1b[22m\r\n`,
+                );
+                if (event.error) terminal.write(terminalError(event.error));
+              } else terminal.write(`\r\n${terminalError(event.error)}`);
             },
-            channel,
-          )
-          .then((id) => {
-            if (disposed) {
-              void commands.execClose(id);
-              return;
-            }
-            session = id;
-            void commands.execResize(id, size.cols, size.rows);
-            terminal.focus();
-          })
-          .catch((e: unknown) => terminal.write(terminalError(toAppError(e))));
-        const input = terminal.onData((data) => {
-          if (session !== null) void commands.execInput(session, data);
-        });
-        const resize = terminal.onResize(({ cols, rows }) => {
-          size = { cols, rows };
-          if (session !== null) void commands.execResize(session, cols, rows);
-        });
+            onOpen: () => terminal.focus(),
+            onError: (error) => terminal.write(terminalError(error)),
+          },
+        );
+        const input = terminal.onData((data) => session.input(data));
+        const resize = terminal.onResize(({ cols, rows }) => session.resize(cols, rows));
         return () => {
-          disposed = true;
           input.dispose();
           resize.dispose();
-          channel.onmessage = () => {};
-          if (session !== null) void commands.execClose(session);
+          session.close();
         };
       }}
     />

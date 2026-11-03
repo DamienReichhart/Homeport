@@ -8,10 +8,11 @@ import {
   UploadIcon,
 } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'sonner';
-import { commands, keys, type FileEntry } from '@/shared/api';
+import type { FileEntry } from '@/shared/api';
 import { formatBytes, formatDateTime, pickFiles, pickSavePath } from '@/shared/lib';
-import { Button, type ColumnDef, DataTable, ErrorMessage, toastError } from '@/shared/ui';
+import { Button, type ColumnDef, DataTable, ErrorMessage } from '@/shared/ui';
+import { useFileTransfers } from '../api/mutations';
+import { containerQueries } from '../api/queries';
 import { crumbs } from '../model/files';
 
 const ICONS = { directory: FolderIcon, file: FileIcon, symlink: LinkIcon, other: FileIcon };
@@ -27,21 +28,20 @@ export function FilesTab({
 }) {
   const [path, setPath] = useState('/');
   const listing = useQuery({
-    queryKey: keys.files(hostId, containerId, path),
-    queryFn: () => commands.filesList(hostId, containerId, path),
+    ...containerQueries.files(hostId, containerId, path),
     enabled: running,
   });
+  const { download: save, upload } = useFileTransfers(
+    hostId,
+    containerId,
+    () => void listing.refetch(),
+  );
 
   const download = async (entry: FileEntry) => {
     const dir = entry.kind === 'directory';
     const target = await pickSavePath(`Save ${entry.name}`, dir ? `${entry.name}.tar` : entry.name);
     if (!target) return;
-    try {
-      const archived = await commands.filesDownload(hostId, containerId, entry.path, target);
-      toast.success(archived ? `Saved ${entry.name} as a .tar archive` : `Saved ${entry.name}`);
-    } catch (e) {
-      toastError(e);
-    }
+    save.mutate({ entry, target });
   };
 
   const columns: ColumnDef<FileEntry, unknown>[] = [
@@ -129,15 +129,7 @@ export function FilesTab({
             onClick={async () => {
               const sources = await pickFiles(`Upload to ${path}`);
               if (sources.length === 0) return;
-              try {
-                await commands.filesUpload(hostId, containerId, path, sources);
-                toast.success(
-                  `Uploaded ${sources.length} file${sources.length === 1 ? '' : 's'} to ${path}`,
-                );
-                void listing.refetch();
-              } catch (e) {
-                toastError(e);
-              }
+              upload.mutate({ path, sources });
             }}
           >
             <UploadIcon /> Upload here

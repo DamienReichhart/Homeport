@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { commands, keys } from '@/shared/api';
 import {
   ErrorMessage,
   Spinner,
@@ -10,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/ui';
+import { containerQueries } from '../api/queries';
 
 export function ProcessesTab({
   hostId,
@@ -21,8 +21,7 @@ export function ProcessesTab({
   running: boolean;
 }) {
   const top = useQuery({
-    queryKey: keys.processes(hostId, containerId),
-    queryFn: () => commands.containersProcesses(hostId, containerId),
+    ...containerQueries.processes(hostId, containerId),
     enabled: running,
     refetchInterval: 5000,
   });

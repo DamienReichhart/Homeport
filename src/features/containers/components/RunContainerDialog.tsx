@@ -1,9 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { PlusIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
-import { commands, keys, type RestartPolicy } from '@/shared/api';
+import { resourceQueries } from '@/core/host';
+import type { RestartPolicy } from '@/shared/api';
 import {
   Button,
   Checkbox,
@@ -24,7 +24,8 @@ import {
   Switch,
   Textarea,
 } from '@/shared/ui';
-import { emptyRunForm, toRunSpec, type RunForm } from '../model/runForm';
+import { useRunContainer } from '../api/mutations';
+import { emptyRunForm, type RunForm } from '../model/runForm';
 
 const RESTART: { value: RestartPolicy; label: string }[] = [
   { value: 'no', label: 'Never' },
@@ -47,28 +48,13 @@ export function RunContainerDialog({
   image?: string;
 }) {
   const navigate = useNavigate();
-  const client = useQueryClient();
   const [form, setForm] = useState<RunForm>(() => emptyRunForm(image));
-  const images = useQuery({
-    queryKey: keys.images(hostId),
-    queryFn: () => commands.imagesList(hostId),
-    enabled: open,
-  });
-  const networks = useQuery({
-    queryKey: keys.networks(hostId),
-    queryFn: () => commands.networksList(hostId),
-    enabled: open,
-  });
-  const run = useMutation({
-    meta: { silent: true },
-    mutationFn: () => commands.containersRun(hostId, toRunSpec(form)),
-    onSuccess: async (id) => {
-      toast.success('Container started');
-      await client.invalidateQueries({ queryKey: keys.containers(hostId) });
-      onOpenChange(false);
-      setForm(emptyRunForm());
-      navigate(`/containers/${id}/logs`);
-    },
+  const images = useQuery({ ...resourceQueries.images(hostId), enabled: open });
+  const networks = useQuery({ ...resourceQueries.networks(hostId), enabled: open });
+  const run = useRunContainer(hostId, (id) => {
+    onOpenChange(false);
+    setForm(emptyRunForm());
+    navigate(`/containers/${id}/logs`);
   });
   const set = <K extends keyof RunForm>(key: K, value: RunForm[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
@@ -86,7 +72,7 @@ export function RunContainerDialog({
           className="grid gap-4"
           onSubmit={(e) => {
             e.preventDefault();
-            run.mutate();
+            run.mutate(form);
           }}
         >
           <div className="grid grid-cols-2 gap-3">

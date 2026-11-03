@@ -1,6 +1,5 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { commands, keys, type Container } from '@/shared/api';
+import type { Container } from '@/shared/api';
 import {
   Button,
   Dialog,
@@ -11,6 +10,7 @@ import {
   ErrorMessage,
   Input,
 } from '@/shared/ui';
+import { useRenameContainer } from '../api/mutations';
 
 export function RenameDialog({
   hostId,
@@ -21,16 +21,8 @@ export function RenameDialog({
   container: Container | null;
   onClose: () => void;
 }) {
-  const client = useQueryClient();
   const [name, setName] = useState(container?.name ?? '');
-  const rename = useMutation({
-    meta: { silent: true },
-    mutationFn: () => commands.containersRename(hostId, container?.id ?? '', name),
-    onSuccess: async () => {
-      await client.invalidateQueries({ queryKey: keys.containers(hostId) });
-      onClose();
-    },
-  });
+  const rename = useRenameContainer(hostId, container?.id ?? '', onClose);
   return (
     <Dialog open={container !== null} onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
@@ -41,7 +33,7 @@ export function RenameDialog({
           className="grid gap-3"
           onSubmit={(e) => {
             e.preventDefault();
-            rename.mutate();
+            rename.mutate(name);
           }}
         >
           <Input

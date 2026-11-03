@@ -6,8 +6,7 @@ import {
   EraserIcon,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
-import { commands, subscribe, type LogEvent, type LogSource } from '@/shared/api';
+import type { LogSource } from '@/shared/api';
 import { pickSavePath } from '@/shared/lib';
 import {
   Button,
@@ -19,11 +18,12 @@ import {
   SelectTrigger,
   SelectValue,
   terminalError,
-  toastError,
   Toggle,
   XTerm,
   type XTermHandle,
 } from '@/shared/ui';
+import { useSaveLogs } from '../api/mutations';
+import { streamLogs } from '../api/streams';
 import { MAX_KEPT_LINES, renderLine, SINCE, TAILS } from '../model/logs';
 
 /**
@@ -41,6 +41,7 @@ export function LogViewer({ hostId, sources }: { hostId: string; sources: LogSou
   const [stderr, setStderr] = useState(true);
   const [follow, setFollow] = useState(true);
   const [query, setQuery] = useState('');
+  const saveLogs = useSaveLogs();
   const followRef = useRef(follow);
   const sourcesKey = JSON.stringify(sources);
 
@@ -56,21 +57,17 @@ export function LogViewer({ hostId, sources }: { hostId: string; sources: LogSou
     kept.current = [];
     const parsed = JSON.parse(sourcesKey) as LogSource[];
     const labels = parsed.flatMap((s) => (s.label ? [s.label] : []));
-    return subscribe<LogEvent>(
-      (ch) =>
-        commands.logsSubscribe(
-          hostId,
-          parsed,
-          {
-            tail: tail === 'all' ? null : Number(tail),
-            since: since === 'all' ? null : Math.floor(Date.now() / 1000) - Number(since),
-            timestamps,
-            stdout,
-            stderr,
-            follow: true,
-          },
-          ch,
-        ),
+    return streamLogs(
+      hostId,
+      parsed,
+      {
+        tail: tail === 'all' ? null : Number(tail),
+        since: since === 'all' ? null : Math.floor(Date.now() / 1000) - Number(since),
+        timestamps,
+        stdout,
+        stderr,
+        follow: true,
+      },
       (event) => {
         if (event.type === 'lines') {
           const rendered = event.lines.map((l) => renderLine(l, labels, timestamps));
@@ -182,12 +179,7 @@ export function LogViewer({ hostId, sources }: { hostId: string; sources: LogSou
             onClick={async () => {
               const path = await pickSavePath('Save logs', 'logs.txt');
               if (!path) return;
-              try {
-                await commands.writeTextFile(path, `${kept.current.join('\n')}\n`);
-                toast.success('Logs saved');
-              } catch (e) {
-                toastError(e);
-              }
+              saveLogs.mutate({ path, lines: [...kept.current] });
             }}
           >
             <DownloadIcon />

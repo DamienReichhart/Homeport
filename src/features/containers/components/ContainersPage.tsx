@@ -13,7 +13,8 @@ import { Fragment, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { hostAddress, HostGate, useContainers, useHostSelection } from '@/core/host';
 import { containerTone } from '../model/containerTone';
-import { useContainerMutations, useUsage } from '../api';
+import { useContainerMutations } from '../api/mutations';
+import { useUsage } from '../api/streams';
 import type { Container, ContainerUsage } from '@/shared/api';
 import { formatBytes, formatPercent, formatRelative, shortId } from '@/shared/lib';
 import {

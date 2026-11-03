@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
 import type { AlignedData } from 'uplot';
-import { commands, subscribe, type StatsSample } from '@/shared/api';
 import { formatBytes, formatPercent } from '@/shared/lib';
 import { Card, CardContent, CardHeader, CardTitle, TimeChart } from '@/shared/ui';
-import { rates, STATS_WINDOW, type StatsPoint } from '../model/stats';
+import { useStats } from '../api/streams';
+import { rates } from '../model/stats';
 
 export function StatsTab({
   hostId,
@@ -14,19 +13,7 @@ export function StatsTab({
   containerId: string;
   running: boolean;
 }) {
-  const [points, setPoints] = useState<StatsPoint[]>([]);
-
-  useEffect(() => {
-    if (!running) return;
-    return subscribe<StatsSample>(
-      (ch) => commands.statsSubscribe(hostId, containerId, ch),
-      (sample) =>
-        setPoints((list) => [
-          ...list.slice(-(STATS_WINDOW - 1)),
-          { time: Date.now() / 1000, sample },
-        ]),
-    );
-  }, [hostId, containerId, running]);
+  const points = useStats(hostId, containerId, running);
 
   if (!running)
     return (
