@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 import { clearMocks } from '@tauri-apps/api/mocks';
 import { cleanup } from '@testing-library/react';
+import { toast } from 'sonner';
 
 // jsdom has no matchMedia; uPlot and the theme store read it at import time.
 window.matchMedia ??= (query: string) =>
@@ -21,6 +22,8 @@ Element.prototype.releasePointerCapture ??= () => {};
 Element.prototype.hasPointerCapture ??= () => false;
 
 afterEach(async () => {
+  // Toasts live in sonner's module state, so they would outlive the test.
+  toast.dismiss();
   cleanup();
   // Event listeners unregister asynchronously on unmount; let them finish first.
   await new Promise((resolve) => setTimeout(resolve, 0));

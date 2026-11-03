@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { FolderOpenIcon } from 'lucide-react';
-import { useState, useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { commands, errorReport, keys, toAppError, type AppError } from '@/shared/api';
 import { Button } from './button';
 import { CopyButton } from './CopyButton';
@@ -36,6 +36,8 @@ export function ErrorDetailsHost() {
     },
     () => shown,
   );
+  // Close when the host goes away, so a remounted app starts without a stale dialog.
+  useEffect(() => () => setShown(null), []);
   return error && <ErrorDetailsDialog error={error} onClose={() => setShown(null)} />;
 }
 
