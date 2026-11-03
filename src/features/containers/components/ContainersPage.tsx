@@ -37,7 +37,7 @@ import {
   toastError,
   useConfirm,
 } from '@/shared/ui';
-import { groupByStack, portLabels } from '../grouping';
+import { groupByStack, portLabels } from '../model/grouping';
 import { ContainerMenu, removeConfirmation } from './ContainerMenu';
 import { RenameDialog } from './RenameDialog';
 import { RunContainerDialog } from './RunContainerDialog';

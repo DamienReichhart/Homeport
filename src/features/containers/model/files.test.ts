@@ -1,4 +1,4 @@
-import { crumbs } from './FilesTab';
+import { crumbs } from './files';
 
 describe('crumbs', () => {
   it('splits a path into clickable parents', () => {

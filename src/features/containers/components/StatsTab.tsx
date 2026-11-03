@@ -3,25 +3,7 @@ import type { AlignedData } from 'uplot';
 import { commands, subscribe, type StatsSample } from '@/shared/api';
 import { formatBytes, formatPercent } from '@/shared/lib';
 import { Card, CardContent, CardHeader, CardTitle, TimeChart } from '@/shared/ui';
-
-/** Five minutes of samples at about one per second. */
-const WINDOW = 300;
-
-interface Point {
-  time: number;
-  sample: StatsSample;
-}
-
-/** Turns cumulative byte counters into per-second rates between samples. */
-export function rates(points: Point[], pick: (s: StatsSample) => number): (number | null)[] {
-  return points.map((p, i) => {
-    const prev = points[i - 1];
-    if (!prev) return null;
-    const dt = p.time - prev.time;
-    const delta = pick(p.sample) - pick(prev.sample);
-    return dt > 0 && delta >= 0 ? delta / dt : null;
-  });
-}
+import { rates, STATS_WINDOW, type StatsPoint } from '../model/stats';
 
 export function StatsTab({
   hostId,
@@ -32,14 +14,17 @@ export function StatsTab({
   containerId: string;
   running: boolean;
 }) {
-  const [points, setPoints] = useState<Point[]>([]);
+  const [points, setPoints] = useState<StatsPoint[]>([]);
 
   useEffect(() => {
     if (!running) return;
     return subscribe<StatsSample>(
       (ch) => commands.statsSubscribe(hostId, containerId, ch),
       (sample) =>
-        setPoints((list) => [...list.slice(-(WINDOW - 1)), { time: Date.now() / 1000, sample }]),
+        setPoints((list) => [
+          ...list.slice(-(STATS_WINDOW - 1)),
+          { time: Date.now() / 1000, sample },
+        ]),
     );
   }, [hostId, containerId, running]);
 

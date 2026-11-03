@@ -24,7 +24,7 @@ import {
   Switch,
   Textarea,
 } from '@/shared/ui';
-import { emptyRunForm, toRunSpec, type RunForm } from '../runForm';
+import { emptyRunForm, toRunSpec, type RunForm } from '../model/runForm';
 
 const RESTART: { value: RestartPolicy; label: string }[] = [
   { value: 'no', label: 'Never' },

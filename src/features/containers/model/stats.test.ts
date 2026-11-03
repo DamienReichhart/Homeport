@@ -1,5 +1,5 @@
 import type { StatsSample } from '@/shared/api';
-import { rates } from './StatsTab';
+import { rates } from './stats';
 
 const sample = (netRx: number): StatsSample => ({
   cpuPercent: 0,

@@ -18,7 +18,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/shared/ui';
-import type { ContainerInspect } from '../types';
+import type { ContainerInspect } from '../model/types';
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (

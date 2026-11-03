@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { commands, subscribe, type LogEvent, type LogLine, type LogSource } from '@/shared/api';
+import { commands, subscribe, type LogEvent, type LogSource } from '@/shared/api';
 import { pickSavePath } from '@/shared/lib';
 import {
   Button,
@@ -24,44 +24,7 @@ import {
   XTerm,
   type XTermHandle,
 } from '@/shared/ui';
-
-const TAILS = [
-  { value: '100', label: 'Last 100' },
-  { value: '1000', label: 'Last 1 000' },
-  { value: '10000', label: 'Last 10 000' },
-  { value: 'all', label: 'Everything' },
-];
-const SINCE = [
-  { value: 'all', label: 'Any time' },
-  { value: '300', label: 'Last 5 min' },
-  { value: '3600', label: 'Last hour' },
-  { value: '86400', label: 'Last 24 h' },
-];
-/** ANSI colours cycled across sources in a multi-container stream. */
-const SOURCE_COLOURS = [36, 35, 33, 32, 34, 31];
-const MAX_KEPT_LINES = 100_000;
-
-function colourFor(label: string, labels: string[]): number {
-  return SOURCE_COLOURS[labels.indexOf(label) % SOURCE_COLOURS.length] ?? 36;
-}
-
-/** Puts a dimmed timestamp and a coloured source label in front of a line. */
-function render(line: LogLine, labels: string[], timestamps: boolean): string {
-  let text = line.text;
-  let prefix = '';
-  if (timestamps) {
-    const space = text.indexOf(' ');
-    if (space > 0) {
-      prefix += `\x1b[2m${text.slice(0, space)}\x1b[22m `;
-      text = text.slice(space + 1);
-    }
-  }
-  if (line.source) {
-    const width = Math.max(...labels.map((l) => l.length));
-    prefix += `\x1b[${colourFor(line.source, labels)}m${line.source.padEnd(width)} |\x1b[39m `;
-  }
-  return prefix + text;
-}
+import { MAX_KEPT_LINES, renderLine, SINCE, TAILS } from '../model/logs';
 
 /**
  * Live logs of one or more containers. Several sources are interleaved with
@@ -110,7 +73,7 @@ export function LogViewer({ hostId, sources }: { hostId: string; sources: LogSou
         ),
       (event) => {
         if (event.type === 'lines') {
-          const rendered = event.lines.map((l) => render(l, labels, timestamps));
+          const rendered = event.lines.map((l) => renderLine(l, labels, timestamps));
           term.write(`${rendered.join('\r\n')}\r\n`);
           kept.current.push(
             ...event.lines.map((l) => (l.source ? `${l.source} | ${l.text}` : l.text)),

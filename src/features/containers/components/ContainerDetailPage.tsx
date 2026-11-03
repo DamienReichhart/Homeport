@@ -25,7 +25,7 @@ import {
   TabsTrigger,
   useConfirm,
 } from '@/shared/ui';
-import type { ContainerInspect } from '../types';
+import type { ContainerInspect } from '../model/types';
 import { removeConfirmation } from './ContainerMenu';
 import { ExecTab } from './ExecTab';
 import { FilesTab } from './FilesTab';
