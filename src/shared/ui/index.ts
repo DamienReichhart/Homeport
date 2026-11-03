@@ -6,6 +6,7 @@ export { DataTable, type ColumnDef } from './DataTable';
 export { EmptyState } from './EmptyState';
 export { JsonView } from './JsonView';
 export { KeyValue } from './KeyValue';
+export { Logo, LogoMark } from './Logo';
 export { PageHeader } from './PageHeader';
 export { SearchInput } from './SearchInput';
 export { StatusDot, containerTone, type Tone } from './StatusDot';

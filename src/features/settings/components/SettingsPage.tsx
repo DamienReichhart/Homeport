@@ -4,7 +4,7 @@ import { applyTheme, type Theme } from '@/shared/lib';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Label } from '@/shared/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
-import { ErrorMessage, KeyValue, PageHeader, Spinner, StatusDot } from '@/shared/ui';
+import { ErrorMessage, KeyValue, LogoMark, PageHeader, Spinner, StatusDot } from '@/shared/ui';
 import { settingsApi } from '../api/settingsApi';
 
 const THEMES: { value: Theme; label: string }[] = [
@@ -86,13 +86,23 @@ export function SettingsPage() {
                       : 'Not found — Stacks can be started and stopped, but not deployed.'}
                   </span>,
                 ],
-                [
-                  'Homeport',
-                  info.data ? `v${info.data.version} on ${info.data.os}/${info.data.arch}` : '…',
-                ],
               ]}
             />
           )}
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="flex items-center gap-4">
+          <LogoMark className="size-12" />
+          <div className="min-w-0">
+            <p className="font-semibold tracking-tight">Homeport</p>
+            <p className="text-muted-foreground text-sm">
+              Every Docker Engine, docked in one place.
+            </p>
+            <p className="text-muted-foreground font-mono text-xs">
+              {info.data ? `v${info.data.version} · ${info.data.os}/${info.data.arch}` : '…'}
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>

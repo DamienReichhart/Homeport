@@ -1,17 +1,19 @@
-import { AnchorIcon, TriangleAlertIcon } from 'lucide-react';
+import { TriangleAlertIcon } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { HostSwitcher, useCapabilities } from '@/features/hosts';
 import { cn } from '@/shared/lib';
+import { Logo } from '@/shared/ui';
 import { navItems } from './routes/navigation';
 
 export function AppLayout() {
   const capabilities = useCapabilities();
   return (
     <div className="flex h-screen overflow-hidden">
-      <nav aria-label="Main" className="bg-sidebar flex w-56 shrink-0 flex-col gap-1 border-r p-3">
-        <div className="mb-2 flex items-center gap-2 px-2 py-1 font-semibold">
-          <AnchorIcon className="text-primary size-5" /> Homeport
-        </div>
+      <nav
+        aria-label="Main"
+        className="bg-sidebar text-sidebar-foreground border-sidebar-border flex w-56 shrink-0 flex-col gap-0.5 border-r p-3"
+      >
+        <Logo className="mb-3 px-1.5 pt-1" />
         <div className="mb-3">
           <HostSwitcher />
         </div>
@@ -22,12 +24,14 @@ export function AppLayout() {
             end={path === '/'}
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-2 rounded-md px-3 py-1.5 text-sm',
-                isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-sidebar-accent',
+                'group flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm transition-colors',
+                isActive
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+                  : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
               )
             }
           >
-            <Icon className="size-4" />
+            <Icon className="text-muted-foreground group-aria-[current=page]:text-sidebar-primary size-4" />
             {label}
           </NavLink>
         ))}

@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { RefreshCwIcon, ServerIcon, ServerOffIcon } from 'lucide-react';
+import { RefreshCwIcon, ServerOffIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { commands, keys, type HostInput } from '@/shared/api';
 import { Button } from '@/shared/ui/button';
-import { EmptyState, Spinner } from '@/shared/ui';
+import { EmptyState, LogoMark, Spinner } from '@/shared/ui';
 import { useHosts } from '../api';
 import { useHostSelection } from '../context';
 import { describeStatus } from '../status';
@@ -31,9 +31,9 @@ export function HostGate({ children }: { children: (hostId: string) => ReactNode
   if (!host) {
     return (
       <EmptyState
-        icon={ServerIcon}
-        title="No host yet"
-        description="Add a Docker Engine — this machine's, or a remote one over SSH or TLS."
+        media={<LogoMark className="mb-2 size-14" />}
+        title="Welcome to Homeport"
+        description="Bring in a Docker Engine to get started — this machine's, or a remote one over SSH or TLS."
         action={
           <div className="grid max-w-xl justify-items-center gap-4">
             <LocalEngines onAdd={(input) => add.mutate(input)} pending={add.isPending} />
