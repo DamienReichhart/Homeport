@@ -1,0 +1,185 @@
+name: Release
+
+# Every push to main releases the version set in the repo files
+# (tauri.conf.json, package.json, Cargo.toml, Cargo.lock). The run fails at once
+# if they disagree or that version was already released: bump it to release again.
+# Each platform builds natively while CI runs; the release is published only
+# once CI and every build succeeded.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # retry a failed release without pushing
+
+# One release at a time, never cancelled halfway; a newer push waits its turn.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  prepare:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
+      tag: ${{ steps.plan.outputs.tag }}
+      prerelease: ${{ steps.plan.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # every tag, and the history since the previous release for the notes
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - id: plan
+        run: bun scripts/release.ts plan --notes "$RUNNER_TEMP/notes.md"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: ${{ runner.temp }}/notes.md
+          retention-days: 7
+      - name: Summary
+        env:
+          TAG: ${{ steps.plan.outputs.tag }}
+        run: |
+          { echo "# Releasing $TAG"; echo; cat "$RUNNER_TEMP/notes.md"; } >> "$GITHUB_STEP_SUMMARY"
+
+  build:
+    name: build (${{ matrix.name }})
+    needs: prepare
+    strategy:
+      fail-fast: false # finish the other platforms, so only the failed one needs a re-run
+      matrix:
+        include:
+          # Ubuntu 22.04's glibc 2.35 keeps the Linux builds running on older distributions.
+          - name: linux-x64
+            runner: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            bundles: deb,rpm,appimage
+          - name: linux-arm64
+            runner: ubuntu-22.04-arm
+            target: aarch64-unknown-linux-gnu
+            bundles: deb,rpm,appimage
+          - name: windows-x64
+            runner: windows-latest
+            target: x86_64-pc-windows-msvc
+            bundles: msi,nsis
+          # Cross-compiled; WiX can't build ARM64 MSIs.
+          - name: windows-arm64
+            runner: windows-latest
+            target: aarch64-pc-windows-msvc
+            bundles: nsis
+          - name: macos-arm64
+            runner: macos-latest
+            target: aarch64-apple-darwin
+            bundles: app,dmg
+          - name: macos-x64
+            runner: macos-latest
+            target: x86_64-apple-darwin
+            bundles: app,dmg
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    env:
+      TARGET: ${{ matrix.target }}
+      BUNDLES: ${{ matrix.bundles }}
+      PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - name: Install Tauri system deps
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev librsvg2-dev libayatana-appindicator3-dev libssl-dev patchelf file xdg-utils
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-about@0.9.3
+      - run: bun install --frozen-lockfile
+      - name: Build
+        env:
+          # macOS signing and notarization, used when the secrets are set. Without
+          # them the app is ad-hoc signed (tauri.conf.json > bundle > macOS).
+          APPLE_CERTIFICATE: ${{ runner.os == 'macOS' && secrets.APPLE_CERTIFICATE || '' }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ runner.os == 'macOS' && secrets.APPLE_CERTIFICATE_PASSWORD || '' }}
+          APPLE_SIGNING_IDENTITY: ${{ runner.os == 'macOS' && secrets.APPLE_SIGNING_IDENTITY || '' }}
+          APPLE_ID: ${{ runner.os == 'macOS' && secrets.APPLE_ID || '' }}
+          APPLE_PASSWORD: ${{ runner.os == 'macOS' && secrets.APPLE_PASSWORD || '' }}
+          APPLE_TEAM_ID: ${{ runner.os == 'macOS' && secrets.APPLE_TEAM_ID || '' }}
+        run: |
+          # Tauri treats a set-but-empty variable as configured, so drop the unset secrets.
+          for name in APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID; do
+            [ -n "${!name}" ] || unset "$name"
+          done
+          # WiX only takes numeric prerelease identifiers, so prereleases ship no MSI.
+          [ "$PRERELEASE" = true ] && BUNDLES="${BUNDLES/msi,/}"
+          bun tauri build --ci --target "$TARGET" --bundles "$BUNDLES"
+      - name: Collect the installers
+        run: |
+          bundle="target/$TARGET/release/bundle"
+          shopt -s nullglob
+          files=("$bundle"/deb/*.deb "$bundle"/rpm/*.rpm "$bundle"/appimage/*.AppImage \
+            "$bundle"/msi/*.msi "$bundle"/nsis/*-setup.exe "$bundle"/dmg/*.dmg)
+          [ ${#files[@]} -gt 0 ] || { echo "::error::No installers in $bundle"; exit 1; }
+          mkdir -p installers
+          cp "${files[@]}" installers/
+          ls -l installers
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installers-${{ matrix.name }}
+          path: installers/*
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0 # installers are already compressed
+
+  publish:
+    needs: [ci, prepare, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: ${{ needs.prepare.outputs.tag }}
+      PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: installers-*
+          path: installers
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-notes
+          path: ${{ runner.temp }}
+      - name: Checksums
+        working-directory: installers
+        run: sha256sum -- * | tee "$RUNNER_TEMP/SHA256SUMS.txt"
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: installers/*
+      - name: Publish
+        run: |
+          flags=()
+          [ "$PRERELEASE" = true ] && flags+=(--prerelease --latest=false)
+          # Creates the tag on the commit that was built, and publishes once every file is uploaded.
+          gh release create "$TAG" installers/* "$RUNNER_TEMP/SHA256SUMS.txt" \
+            --target "$GITHUB_SHA" --title "Homeport $TAG" --notes-file "$RUNNER_TEMP/notes.md" "${flags[@]}"
+          echo "Published [$TAG]($(gh release view "$TAG" --json url --jq .url))" >> "$GITHUB_STEP_SUMMARY"

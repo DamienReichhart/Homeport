@@ -2,11 +2,13 @@ name: CI
 
 on:
   push:
-    branches: [main, dev]
+    branches: [dev] # main runs these checks inside the Release workflow
   pull_request:
+  workflow_call:
 
 concurrency:
-  group: ci-${{ github.ref }}
+  # github.workflow is the caller's name when called, so a release never cancels a CI run.
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
