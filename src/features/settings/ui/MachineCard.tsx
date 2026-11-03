@@ -1,4 +1,4 @@
-import { useCapabilities } from '@/shared/api';
+import { useQuery } from '@tanstack/react-query';
 import {
   Card,
   CardContent,
@@ -8,11 +8,12 @@ import {
   KeyValue,
   StatusDot,
 } from '@/shared/ui';
+import { machineQuery } from '../api/queries';
 import { ComposeStatus } from './ComposeStatus';
 
 /** What Homeport can use on this machine: the OS keychain and the compose CLI. */
 export function MachineCard() {
-  const capabilities = useCapabilities();
+  const capabilities = useQuery(machineQuery());
   return (
     <Card>
       <CardHeader>

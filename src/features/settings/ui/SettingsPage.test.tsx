@@ -71,4 +71,39 @@ describe('settings diagnostics', () => {
     await user.click(screen.getByRole('button', { name: 'Open log folder' }));
     expect(opened).toBe(1);
   });
+
+  it('checks the machine again each time Settings opens', async () => {
+    let installed = false;
+    mockCommands({
+      ...baseCommands,
+      get_app_info: appInfo,
+      get_capabilities: () => ({
+        keychain: true,
+        compose: installed
+          ? {
+              state: 'available',
+              cli: { program: 'docker', prefix: ['compose'], version: '2.40.0' },
+            }
+          : {
+              state: 'unavailable',
+              problem: {
+                code: 'compose_missing',
+                message: 'The docker compose CLI isn’t installed on this computer.',
+                hint: null,
+                detail: null,
+              },
+            },
+      }),
+    });
+    const user = userEvent.setup();
+    renderApp('/settings');
+    expect(
+      await screen.findByText('The docker compose CLI isn’t installed on this computer.'),
+    ).toBeInTheDocument();
+
+    installed = true;
+    await user.click(screen.getByRole('link', { name: 'Overview' }));
+    await user.click(screen.getByRole('link', { name: 'Settings' }));
+    expect(await screen.findByText('docker compose 2.40.0')).toBeInTheDocument();
+  });
 });
