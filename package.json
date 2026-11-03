@@ -2,6 +2,7 @@
   "name": "homeport",
   "private": true,
   "version": "0.1.0",
+  "license": "MIT",
   "type": "module",
   "packageManager": "bun@1.4.4",
   "engines": {
@@ -25,7 +26,8 @@
     "rust:lint": "cargo clippy --workspace --all-targets -- -D warnings",
     "rust:test": "cargo test --workspace",
     "check": "bun run typecheck && bun run lint && bun run format:check && bun run test",
-    "bindings": "cd src-tauri && UPDATE_BINDINGS=1 cargo test --lib bindings_are_up_to_date"
+    "bindings": "cd src-tauri && UPDATE_BINDINGS=1 cargo test --lib bindings_are_up_to_date",
+    "licenses": "bun scripts/licenses.ts"
   },
   "dependencies": {
     "@codemirror/lang-yaml": "^6.1.3",
@@ -76,6 +78,7 @@
     "jsdom": "^30.1.3",
     "prettier": "^3.9.10",
     "shadcn": "^4.23.0",
+    "spdx-license-list": "^6.12.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.1",

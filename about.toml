@@ -1,0 +1,32 @@
+# Licenses Homeport may ship, most preferred first: for a dual-licensed
+# dependency, the first accepted license is the one listed. `bun run licenses`
+# fails on anything else, so review a new license before adding it here.
+accepted = [
+    "MIT",
+    "MIT-0",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "0BSD",
+    "BSL-1.0",
+    "Unlicense",
+    "CC0-1.0",
+    "Unicode-3.0",
+    "OFL-1.1",   # fonts (Geist); bundled with the app, never sold on their own
+    "MPL-2.0",   # used unmodified; sources are on crates.io
+]
+# Every platform Homeport is released for; dependencies of other targets are left out.
+targets = [
+    "x86_64-unknown-linux-gnu",
+    "aarch64-unknown-linux-gnu",
+    "x86_64-pc-windows-msvc",
+    "aarch64-pc-windows-msvc",
+    "x86_64-apple-darwin",
+    "aarch64-apple-darwin",
+]
+# Build and dev dependencies are not compiled into the app.
+ignore-build-dependencies = true
+ignore-dev-dependencies = true
