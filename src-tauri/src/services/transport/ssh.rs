@@ -18,7 +18,7 @@ use tokio::sync::Mutex;
 
 use super::{BoxFuture, BoxStream, ConnectError, Dialer, CONNECT_TIMEOUT};
 use crate::{
-    error::{AppError, ErrorCode},
+    error::{reach, AppError, ErrorCode},
     services::hosts::{HostSecrets, SshAuth},
 };
 
@@ -131,6 +131,12 @@ impl Credentials {
     }
 }
 
+impl SshTarget {
+    fn address(&self) -> String {
+        format!("{}:{}", self.host, self.port)
+    }
+}
+
 pub struct SshTarget {
     pub host: String,
     pub port: u16,
@@ -182,7 +188,7 @@ impl SshDialer {
                 let presented = presented.lock().expect("lock poisoned").take();
                 return Err(match presented {
                     Some(key) => host_key_error(t.trusted_host_key.as_deref(), &key),
-                    None => ConnectError::Unreachable(ssh_failure(&e)),
+                    None => ConnectError::from(reach::ssh(&t.address(), &e)),
                 });
             }
         };
@@ -192,12 +198,12 @@ impl SshDialer {
                 let hash = session
                     .best_supported_rsa_hash()
                     .await
-                    .map_err(|e| ConnectError::Unreachable(ssh_failure(&e)))?
+                    .map_err(|e| ConnectError::from(reach::ssh(&t.address(), &e)))?
                     .flatten();
                 session
                     .authenticate_publickey(&t.user, PrivateKeyWithHashAlg::new(key.clone(), hash))
                     .await
-                    .map_err(|e| ConnectError::Unreachable(ssh_failure(&e)))?
+                    .map_err(|e| ConnectError::from(reach::ssh(&t.address(), &e)))?
                     .success()
             }
             Credentials::Agent => authenticate_with_agent(&mut session, &t.user).await?,
@@ -261,11 +267,6 @@ fn key_unreadable(e: russh::keys::Error) -> ConnectError {
         )
         .with_cause(&e),
     )
-}
-
-/// A failure of the SSH session itself, after the network was reached.
-fn ssh_failure(e: &russh::Error) -> AppError {
-    AppError::new(ErrorCode::SshFailed, "The SSH connection failed.").with_cause(e)
 }
 
 fn auth_refused(t: &SshTarget) -> AppError {
@@ -378,7 +379,7 @@ where
     let hash = session
         .best_supported_rsa_hash()
         .await
-        .map_err(|e| ConnectError::Unreachable(ssh_failure(&e)))?
+        .map_err(|e| ConnectError::from(reach::ssh("the SSH server", &e)))?
         .flatten();
     for identity in identities {
         let key = identity.public_key().into_owned();

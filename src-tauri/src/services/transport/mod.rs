@@ -115,6 +115,15 @@ pub struct Connected {
     pub dialer: Option<Arc<dyn Dialer>>,
 }
 
+/// Whether bollard failed below HTTP, i.e. the network didn't carry the request.
+fn io_failure(e: &bollard::errors::Error) -> bool {
+    use bollard::errors::Error;
+    matches!(
+        e,
+        Error::IOError { .. } | Error::HyperResponseError { .. } | Error::HttpClientError { .. }
+    ) || reach::io_cause(e).is_some()
+}
+
 /// Builds a client for `connection` and checks the Engine answers.
 pub async fn connect(
     connection: &HostConnection,
@@ -192,6 +201,9 @@ pub async fn connect(
         .map_err(|e| match connection {
             HostConnection::Local { socket_path } => {
                 ConnectError::from(reach::local_socket(socket_path, &e))
+            }
+            HostConnection::Tcp { address } if io_failure(&e) => {
+                ConnectError::from(reach::network(address, &e))
             }
             _ => ConnectError::from(AppError::from(e)),
         })?;
@@ -287,6 +299,31 @@ mod tests {
         .await
         .err()
         .expect("nothing should answer")
+    }
+
+    #[tokio::test]
+    async fn a_closed_tcp_port_refuses_the_connection() {
+        let port = std::net::TcpListener::bind("127.0.0.1:0")
+            .unwrap()
+            .local_addr()
+            .unwrap()
+            .port();
+        let address = format!("127.0.0.1:{port}");
+        let err = connect(
+            &HostConnection::Tcp {
+                address: address.clone(),
+            },
+            None,
+            None,
+        )
+        .await
+        .err()
+        .expect("the port is closed");
+        let ConnectError::Unreachable(e) = err else {
+            panic!("expected unreachable, got {err:?}");
+        };
+        assert_eq!(e.code, ErrorCode::ConnectionRefused, "{e:?}");
+        assert!(e.message.contains(&address), "{e:?}");
     }
 
     #[tokio::test]

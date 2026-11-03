@@ -18,6 +18,9 @@ pub fn io_cause<'a>(error: &'a (dyn StdError + 'static)) -> Option<&'a io::Error
         {
             return Some(err);
         }
+        if let Some(russh::Error::IO(err)) = e.downcast_ref::<russh::Error>() {
+            return Some(err);
+        }
         current = e.source();
     }
     None
@@ -177,6 +180,192 @@ fn permission_denied(socket_path: &str) -> AppError {
     }
 }
 
+/// Why `address` (a TCP or TLS Engine, or an SSH server) couldn't be reached
+/// over the network.
+pub fn network(address: &str, error: &(dyn StdError + 'static)) -> AppError {
+    let text = super::chain(error);
+    let classified = if is_dns_failure(&text) {
+        AppError::new(
+            ErrorCode::DnsFailed,
+            format!("The server name in {address} can't be found."),
+        )
+        .with_hint("Check the address for typos, and that this computer's network and DNS work.")
+    } else {
+        match io_cause(error).map(io::Error::kind) {
+            Some(io::ErrorKind::ConnectionRefused) => AppError::new(
+                ErrorCode::ConnectionRefused,
+                format!("{address} refused the connection."),
+            )
+            .with_hint("Check the port, that the service listens on it, and that no firewall blocks it."),
+            Some(io::ErrorKind::TimedOut) => AppError::new(
+                ErrorCode::Timeout,
+                format!("{address} didn't answer in time."),
+            )
+            .with_hint("Check the address, that the server is on, and that no firewall drops the connection."),
+            Some(io::ErrorKind::HostUnreachable | io::ErrorKind::NetworkUnreachable) => {
+                AppError::new(
+                    ErrorCode::NetworkUnreachable,
+                    format!("{address} can't be reached from this network."),
+                )
+                .with_hint("Check your network connection, or connect the VPN the server is behind.")
+            }
+            Some(
+                io::ErrorKind::ConnectionReset
+                | io::ErrorKind::ConnectionAborted
+                | io::ErrorKind::BrokenPipe
+                | io::ErrorKind::UnexpectedEof,
+            ) => connection_lost(address),
+            _ => AppError::new(
+                ErrorCode::ConnectionRefused,
+                format!("Homeport can't reach {address}."),
+            )
+            .with_hint("Check the address and your network, then reconnect."),
+        }
+    };
+    classified.with_cause(error)
+}
+
+pub fn connection_lost(address: &str) -> AppError {
+    AppError::new(
+        ErrorCode::ConnectionLost,
+        format!("The connection to {address} was cut."),
+    )
+    .with_hint("The server or the network may have restarted. Homeport keeps retrying.")
+}
+
+fn is_dns_failure(text: &str) -> bool {
+    [
+        "failed to lookup address",
+        "dns error",
+        "Name or service not known",
+        "nodename nor servname",
+        "No such host is known",
+        "Temporary failure in name resolution",
+    ]
+    .iter()
+    .any(|needle| text.contains(needle))
+}
+
+/// The first rustls error in `error`'s chain; rustls reports through `io::Error`.
+fn rustls_cause<'a>(error: &'a (dyn StdError + 'static)) -> Option<&'a rustls::Error> {
+    let mut current = Some(error);
+    while let Some(e) = current {
+        if let Some(tls) = e.downcast_ref::<rustls::Error>() {
+            return Some(tls);
+        }
+        if let Some(tls) = e
+            .downcast_ref::<io::Error>()
+            .and_then(io::Error::get_ref)
+            .and_then(|inner| inner.downcast_ref::<rustls::Error>())
+        {
+            return Some(tls);
+        }
+        current = e.source();
+    }
+    None
+}
+
+/// Why the TLS connection to `address` failed; network failures fall back to [`network`].
+pub fn tls(address: &str, error: &(dyn StdError + 'static)) -> AppError {
+    use rustls::{AlertDescription as Alert, CertificateError as Cert, Error as Tls};
+    let Some(tls) = rustls_cause(error) else {
+        return network(address, error);
+    };
+    let host = address
+        .rsplit_once(':')
+        .map_or(address, |(host, _)| host)
+        .trim_start_matches('[')
+        .trim_end_matches(']');
+    let client_rejected = || {
+        AppError::new(
+            ErrorCode::TlsClientRejected,
+            format!("{address} rejected Homeport's client certificate."),
+        )
+        .with_hint("Use a client certificate (cert.pem and key.pem) signed by the CA the Engine trusts, its --tlscacert.")
+    };
+    let classified = match tls {
+        Tls::InvalidCertificate(Cert::Expired | Cert::ExpiredContext { .. }) => AppError::new(
+            ErrorCode::TlsCertificateExpired,
+            format!("The certificate of {address} has expired."),
+        )
+        .with_hint("Renew the Engine's TLS certificate on the server, then reconnect."),
+        Tls::InvalidCertificate(Cert::NotValidYet | Cert::NotValidYetContext { .. }) => {
+            AppError::new(
+                ErrorCode::TlsCertificateNotYetValid,
+                format!("The certificate of {address} isn't valid yet."),
+            )
+            .with_hint("Check that this computer's date and time are right.")
+        }
+        Tls::InvalidCertificate(Cert::UnknownIssuer) => AppError::new(
+            ErrorCode::TlsUnknownCa,
+            format!("The certificate of {address} isn't signed by the CA certificate on the host page."),
+        )
+        .with_hint("Paste the ca.pem that signed the Engine's certificate."),
+        Tls::InvalidCertificate(Cert::NotValidForName | Cert::NotValidForNameContext { .. }) => {
+            AppError::new(
+                ErrorCode::TlsNameMismatch,
+                format!("The certificate of {address} isn't made for {host}."),
+            )
+            .with_hint("Connect with a name or IP address listed in the certificate, or reissue it to include this one.")
+        }
+        Tls::AlertReceived(Alert::CertificateExpired) => AppError::new(
+            ErrorCode::TlsCertificateExpired,
+            "Homeport's client certificate has expired.",
+        )
+        .with_hint("Make a new client certificate signed by the Engine's CA and paste it on the host page."),
+        Tls::AlertReceived(
+            Alert::BadCertificate
+            | Alert::UnknownCA
+            | Alert::CertificateRequired
+            | Alert::CertificateUnknown
+            | Alert::AccessDenied
+            | Alert::DecryptError,
+        ) => client_rejected(),
+        Tls::InvalidMessage(_) | Tls::InappropriateMessage { .. } => AppError::new(
+            ErrorCode::TlsNotSupported,
+            format!("{address} doesn't speak TLS."),
+        )
+        .with_hint("Use a TCP connection for this address, or the Engine's TLS port (usually 2376)."),
+        _ => AppError::new(
+            ErrorCode::TlsHandshakeFailed,
+            format!("The secure connection to {address} failed."),
+        )
+        .with_hint("Check the certificates on the host page against the ones the Engine uses."),
+    };
+    classified.with_cause(error)
+}
+
+/// Why an SSH session to `address` failed before or while logging in.
+pub fn ssh(address: &str, error: &russh::Error) -> AppError {
+    match error {
+        russh::Error::IO(_) => network(address, error),
+        russh::Error::ConnectionTimeout
+        | russh::Error::KeepaliveTimeout
+        | russh::Error::InactivityTimeout => AppError::new(
+            ErrorCode::Timeout,
+            format!("The SSH server at {address} stopped answering."),
+        )
+        .with_hint("Check that the server is on and reachable. Homeport keeps retrying.")
+        .with_cause(error),
+        russh::Error::Disconnect | russh::Error::HUP => {
+            connection_lost(address).with_cause(error)
+        }
+        russh::Error::NoCommonAlgo { .. } | russh::Error::KexInit | russh::Error::Kex => {
+            AppError::new(
+                ErrorCode::SshFailed,
+                format!("Homeport and the SSH server at {address} share no encryption method."),
+            )
+            .with_hint("Update the server's OpenSSH, or allow modern algorithms such as ed25519 and curve25519 in its sshd_config.")
+            .with_cause(error)
+        }
+        _ => AppError::new(
+            ErrorCode::SshFailed,
+            format!("The SSH connection to {address} failed."),
+        )
+        .with_cause(error),
+    }
+}
+
 /// Whether a Docker-compatible CLI is on the PATH, i.e. something is installed
 /// even though its Engine isn't running.
 fn any_engine_cli_installed() -> bool {
@@ -243,6 +432,113 @@ mod tests {
         assert!(hint.text.contains("docker group"));
         assert_eq!(hint.commands, ["sudo usermod -aG docker \"$USER\""]);
         assert!(e.detail.unwrap().contains("ermission denied"));
+    }
+
+    #[test]
+    fn network_failures_are_told_apart() {
+        for (kind, code) in [
+            (
+                io::ErrorKind::ConnectionRefused,
+                ErrorCode::ConnectionRefused,
+            ),
+            (io::ErrorKind::TimedOut, ErrorCode::Timeout),
+            (
+                io::ErrorKind::NetworkUnreachable,
+                ErrorCode::NetworkUnreachable,
+            ),
+            (
+                io::ErrorKind::HostUnreachable,
+                ErrorCode::NetworkUnreachable,
+            ),
+            (io::ErrorKind::ConnectionReset, ErrorCode::ConnectionLost),
+        ] {
+            let e = network("prod.example:2375", &io::Error::from(kind));
+            assert_eq!(e.code, code, "{kind:?}");
+            assert!(e.message.contains("prod.example:2375"), "{e:?}");
+            assert!(e.hint.is_some(), "{kind:?}");
+        }
+    }
+
+    #[test]
+    fn unknown_server_names_are_dns_failures() {
+        let e = network(
+            "prod.example:2375",
+            &io::Error::other("failed to lookup address information: Name or service not known"),
+        );
+        assert_eq!(e.code, ErrorCode::DnsFailed);
+    }
+
+    fn tls_failure(error: rustls::Error) -> AppError {
+        tls(
+            "prod.example:2376",
+            &io::Error::new(io::ErrorKind::InvalidData, error),
+        )
+    }
+
+    #[test]
+    fn certificate_problems_are_told_apart() {
+        use rustls::{AlertDescription as Alert, CertificateError as Cert, Error as Tls};
+        for (error, code) in [
+            (
+                Tls::InvalidCertificate(Cert::Expired),
+                ErrorCode::TlsCertificateExpired,
+            ),
+            (
+                Tls::InvalidCertificate(Cert::NotValidYet),
+                ErrorCode::TlsCertificateNotYetValid,
+            ),
+            (
+                Tls::InvalidCertificate(Cert::UnknownIssuer),
+                ErrorCode::TlsUnknownCa,
+            ),
+            (
+                Tls::InvalidCertificate(Cert::NotValidForName),
+                ErrorCode::TlsNameMismatch,
+            ),
+            (
+                Tls::AlertReceived(Alert::BadCertificate),
+                ErrorCode::TlsClientRejected,
+            ),
+            (
+                Tls::AlertReceived(Alert::CertificateExpired),
+                ErrorCode::TlsCertificateExpired,
+            ),
+            (
+                Tls::InvalidMessage(rustls::InvalidMessage::InvalidContentType),
+                ErrorCode::TlsNotSupported,
+            ),
+        ] {
+            let text = error.to_string();
+            let e = tls_failure(error);
+            assert_eq!(e.code, code, "{text}");
+            assert!(e.hint.is_some(), "{text}");
+        }
+    }
+
+    #[test]
+    fn name_mismatches_name_the_host() {
+        let e = tls_failure(rustls::Error::InvalidCertificate(
+            rustls::CertificateError::NotValidForName,
+        ));
+        assert!(e.message.contains("isn't made for prod.example."), "{e:?}");
+    }
+
+    #[test]
+    fn tls_falls_back_to_network_failures() {
+        let e = tls(
+            "prod.example:2376",
+            &io::Error::from(io::ErrorKind::ConnectionRefused),
+        );
+        assert_eq!(e.code, ErrorCode::ConnectionRefused);
+    }
+
+    #[test]
+    fn ssh_network_failures_are_network_failures() {
+        let e = ssh(
+            "prod.example:22",
+            &russh::Error::IO(io::Error::from(io::ErrorKind::TimedOut)),
+        );
+        assert_eq!(e.code, ErrorCode::Timeout);
     }
 
     #[test]

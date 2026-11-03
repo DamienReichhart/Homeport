@@ -8,7 +8,7 @@ use tokio::net::TcpStream;
 use tokio_rustls::TlsConnector;
 
 use super::{BoxFuture, BoxStream, ConnectError, Dialer, CONNECT_TIMEOUT};
-use crate::error::{AppError, ErrorCode};
+use crate::error::{reach, AppError, ErrorCode};
 
 pub struct TlsDialer {
     address: String,
@@ -99,20 +99,7 @@ impl Dialer for TlsDialer {
         Box::pin(async move {
             match self.open().await {
                 Ok(_) => Ok(()),
-                // rustls reports handshake and certificate failures as InvalidData.
-                Err(e) if e.kind() == io::ErrorKind::InvalidData => {
-                    Err(ConnectError::Unauthorized(
-                        AppError::new(ErrorCode::TlsHandshakeFailed, "The TLS handshake failed.")
-                            .with_cause(&e),
-                    ))
-                }
-                Err(e) => Err(ConnectError::Unreachable(
-                    AppError::new(
-                        ErrorCode::ConnectionRefused,
-                        format!("{} can't be reached.", self.address),
-                    )
-                    .with_cause(&e),
-                )),
+                Err(e) => Err(ConnectError::from(reach::tls(&self.address, &e))),
             }
         })
     }
