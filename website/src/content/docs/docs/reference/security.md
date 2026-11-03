@@ -55,11 +55,16 @@ When `docker compose` deploys a Stack to an SSH or TLS Host, Homeport opens a sh
 
 The first time Homeport connects to an SSH server, it asks you to confirm the server's key fingerprint, and it refuses to connect if that key later changes until you confirm again. TLS Hosts verify the server's certificate against your CA and the server's name. See [SSH Hosts](/docs/hosts/ssh/#first-connection).
 
+## What Homeport connects to
+
+- **The Hosts you add.** When you pull an image, the Engine contacts the registry, not Homeport.
+- **This website, to check for updates**: at launch and every 6 hours, Homeport downloads `updates/latest.json`, a small file listing the latest version. The request carries nothing about you, your Hosts or your containers, but like any web request it reaches GitHub Pages, which hosts this site, from your IP address. Turn it off in **Settings → Updates**. Updates themselves download from GitHub Releases, and Homeport installs one only if it's signed with Homeport's update key. See [updating](/docs/reference/updating/).
+
 ## What Homeport never does
 
 - **No account.** There is nothing to sign up for.
 - **No telemetry, analytics or crash reporting.**
-- **No update checks** or other calls home. Homeport connects only to the Hosts you add — and when you pull an image, the Engine contacts the registry.
+- **No silent installs.** An update is installed only when you choose **Install and restart**; Linux packages are only ever updated by your package manager.
 
 ## Logs
 

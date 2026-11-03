@@ -27,6 +27,32 @@ If it mentions FUSE, install `libfuse2` (`libfuse2t64` on Ubuntu 24.04 and later
 
 Homeport couldn't reach your keychain. On Linux this usually means no Secret Service is running — common on minimal desktops and window managers. Install and start GNOME Keyring (`gnome-keyring`) or enable KWallet's Secret Service, then restart Homeport. Until then, use local socket, TCP or ssh-agent Hosts.
 
+## Updates and the package repository
+
+### "Couldn't check for updates"
+
+Homeport couldn't download the update information from this website: you may be offline, or behind a proxy or firewall that blocks `damienreichhart.github.io`. Homeport keeps working; it checks again later, or choose **Settings → Updates → Check now**. You can always download the latest version from the [download page](/download/).
+
+### An update fails to install
+
+Homeport only installs an update whose signature matches its update key, and stops if the download is incomplete or altered. Try again later; if it keeps failing, download the new version from the [download page](/download/) and install it over the old one.
+
+### apt says "NO_PUBKEY" or "The repository is not signed"
+
+The Homeport key is missing from `/etc/apt/keyrings/homeport.asc`. Run the [quick install](/docs/installation/#quick-install) again, or the first two commands of the [manual setup](/docs/installation/#manual-setup).
+
+### dnf or zypper asks whether to import a key
+
+That's the Homeport package key, the first time your package manager uses the repository. Check that the fingerprint it shows matches the one on [verifying downloads](/docs/reference/verifying/#package-signatures), then accept.
+
+### apt says "Hash Sum mismatch" right after a release
+
+The repository was being updated while apt read it. Run `sudo apt update` again a few minutes later.
+
+### My package manager doesn't see the new version
+
+Check the repository is still set up: `/etc/apt/sources.list.d/homeport.sources`, `/etc/yum.repos.d/homeport.repo` or `/etc/zypp/repos.d/homeport.repo`. If you deleted it, run the [quick install](/docs/installation/#quick-install) to add it again. If you installed 0.2.0 or earlier from a downloaded file, the repository was never added: see [updating from 0.2.0](/docs/reference/updating/#updating-from-020-or-earlier).
+
 ## Connecting
 
 ### Unreachable: Permission denied

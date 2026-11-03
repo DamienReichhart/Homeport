@@ -1,11 +1,13 @@
 ---
 title: Verifying downloads
-description: Check a Homeport installer against its SHA-256 checksum and build provenance attestation.
+description: Check a Homeport installer against its checksum, build provenance and signatures, and how updates and Linux packages are verified.
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import SigningKeyFingerprint from '../../../../components/SigningKeyFingerprint.astro';
+import { KEY_URL } from '../../../../lib/repository';
 
-Every Homeport release is built by GitHub Actions from the public repository. You can check that the file you downloaded is the one that was built, in two ways.
+Every Homeport release is built by GitHub Actions from the public repository. You can check that the file you downloaded is the one that was built, in two ways. Linux packages and updates are also signed, and checked for you.
 
 ## Checksums
 
@@ -51,6 +53,27 @@ gh attestation verify Homeport_0.2.0_x64-setup.exe --repo DamienReichhart/Homepo
 
 A successful check prints the workflow and commit the file was built from.
 
+## Package signatures
+
+The Homeport package repository and every `.rpm` are signed with the Homeport package key (RSA 4096):
+
+**Fingerprint:** <SigningKeyFingerprint />
+
+`apt`, `dnf` and `zypper` check these signatures on every update, and refuse packages and repository data that don't match. To check the key you downloaded, or a `.rpm` file:
+
+<Code code={`curl -fsSL ${KEY_URL} | gpg --show-keys --with-fingerprint`} lang="sh" />
+
+```sh
+sudo rpm --import homeport.asc   # once
+rpm -K Homeport-<version>-1.x86_64.rpm
+```
+
+`rpm -K` prints `digests signatures OK` for a signed package. A `.deb` file isn't signed itself: the repository's signed index covers it, and a downloaded one is covered by its checksum and attestation.
+
+## Update signatures
+
+Every update the in-app updater installs is signed with a separate Homeport update key, whose public half is built into Homeport. Before installing, Homeport checks the signature and that it was made for the version announced, and refuses anything else, even when it comes from the right address.
+
 ## Code signing
 
-The macOS app is ad-hoc signed and Windows installers aren't signed with a commercial certificate yet, so macOS and Windows ask you to confirm the first launch. [Installation](/docs/installation/) shows how. Linux packages aren't signed; use the checks above.
+The macOS app is ad-hoc signed and Windows installers aren't signed with a commercial certificate yet, so macOS and Windows ask you to confirm the first launch. [Installation](/docs/installation/) shows how. Updates installed from inside Homeport don't ask again.

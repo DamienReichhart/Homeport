@@ -1,34 +1,46 @@
 ---
 title: Updating and uninstalling
-description: Install a new version of Homeport, or remove it and its data completely.
+description: How Homeport updates on each system, and how to remove it and its data completely.
 ---
 
-import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Aside, Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import { MANUAL_SETUP, UPDATE_COMMANDS } from '../../../../lib/repository';
 
 ## Updating
 
-Homeport doesn't update itself or check for updates. To update, download the new version from the [download page](/download/) and install it over the old one, the same way you installed it. Your Hosts, Stacks and settings are kept.
+How Homeport updates depends on how you installed it.
 
-To hear about new versions, watch the repository on GitHub (**Watch → Custom → Releases**), or follow the [releases feed](https://github.com/DamienReichhart/Homeport/releases.atom). The [changelog](/changelog/) lists what changed in each version.
+### Windows, macOS and the AppImage
 
-<Tabs syncKey="os">
-<TabItem label="Windows">Run the new installer. It replaces the installed version.</TabItem>
-<TabItem label="macOS">
-Quit Homeport, open the new `.dmg` and drag Homeport into Applications, choosing **Replace**.
-</TabItem>
-<TabItem label="Linux">
+Homeport checks for a new version when it starts and every 6 hours. When one is out, a bar at the top of the window says so: choose **What's new** to read the [changelog](/changelog/), or **Install and restart**. Homeport downloads the update, checks its signature, installs it and opens again. Nothing is installed until you choose to, and your Hosts, Stacks and settings are kept.
 
-Install the new package over the old one:
+You can also check now from **Settings → Updates → Check now**.
 
-```sh
-sudo apt install ./Homeport_<version>_amd64.deb      # Debian, Ubuntu
-sudo dnf install ./Homeport-<version>-1.x86_64.rpm   # Fedora, RHEL
-```
+### Linux packages
 
-For the AppImage, delete the old file and use the new one.
+The `.deb` and `.rpm` packages, whether installed with the [quick install](/docs/installation/#quick-install), the [manual setup](/docs/installation/#manual-setup) or a downloaded file, update from the Homeport package repository with the rest of your system: your usual software updates include Homeport. To update only Homeport:
 
-</TabItem>
+<Tabs syncKey="linux-format">
+  {MANUAL_SETUP.map((setup) => (
+    <TabItem label={setup.label}>
+      <Code code={UPDATE_COMMANDS[setup.id]} lang="sh" />
+    </TabItem>
+  ))}
 </Tabs>
+
+Homeport tells you when a new version is out and shows the command for your system, but leaves installing it to your package manager.
+
+If you removed the Homeport repository, your package manager can't see new versions. Set it up again with the [quick install](/docs/installation/#quick-install), or download the new package and install it over the old one.
+
+### Turning update checks off
+
+Turn off **Settings → Updates → Check for updates automatically**. **Check now** still works. A check downloads one small file from this website and sends nothing about you or your Hosts. See [security and your data](/docs/reference/security/#what-homeport-connects-to).
+
+### Updating from 0.2.0 or earlier
+
+Versions before 0.3.0 don't update themselves, and their Linux packages don't add the repository. Install 0.3.0 or later once, the same way you installed Homeport: from the [download page](/download/), or on Linux with the [quick install](/docs/installation/#quick-install). After that, updates come by themselves.
+
+To hear about new versions anyway, watch the repository on GitHub (**Watch → Custom → Releases**), or follow the [releases feed](https://github.com/DamienReichhart/Homeport/releases.atom).
 
 ## Uninstalling
 
@@ -40,9 +52,12 @@ Open **Settings → Apps → Installed apps**, find **Homeport**, and choose **U
 <TabItem label="Linux">
 
 ```sh
-sudo apt remove homeport   # Debian, Ubuntu
-sudo dnf remove homeport   # Fedora, RHEL
+sudo apt purge homeport       # Debian, Ubuntu
+sudo dnf remove homeport      # Fedora, RHEL
+sudo zypper remove homeport   # openSUSE
 ```
+
+This also removes the Homeport repository. On Debian and Ubuntu, `apt remove` keeps it, along with the rest of the package's configuration, and `apt purge` removes it with its key. On Fedora and openSUSE the key stays in rpm's keyring; `rpm -q gpg-pubkey --qf '%{NAME}-%{VERSION}-%{RELEASE} %{SUMMARY}\n'` lists the keys, and `sudo rpm -e gpg-pubkey-<version>-<release>` removes Homeport's.
 
 For the AppImage, delete the file. Its menu entry disappears with it.
 
