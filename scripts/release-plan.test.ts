@@ -1,4 +1,5 @@
 import {
+  checkSigningSetup,
   type Commit,
   isPrerelease,
   parseCommit,
@@ -97,6 +98,23 @@ describe('planRelease', () => {
   });
 });
 
+describe('checkSigningSetup', () => {
+  it('passes once both public keys are committed', () => {
+    expect(() =>
+      checkSigningSetup({ updaterPubkey: 'dW50cnVzdGVk', packageKey: true }),
+    ).not.toThrow();
+  });
+
+  it('names each missing key and how to create them', () => {
+    expect(() => checkSigningSetup({ updaterPubkey: '', packageKey: false })).toThrow(
+      /updater public key.*and the package signing key.*setup-signing\.sh/,
+    );
+    expect(() => checkSigningSetup({ updaterPubkey: undefined, packageKey: true })).toThrow(
+      /^Missing the updater public key/,
+    );
+  });
+});
+
 describe('reading versions', () => {
   it('reads the top-level JSON version only', () => {
     expect(readJsonVersion('{ "deps": { "x": { "version": "1" } }, "version": "0.3.0" }')).toBe(
@@ -159,6 +177,7 @@ describe('releaseNotes', () => {
     expect(notes).toContain('`Homeport_0.3.0_aarch64.dmg`');
     expect(notes).toContain('`Homeport-0.3.0-1.x86_64.rpm`');
     expect(notes).toContain('`Homeport_0.3.0_x64_en-US.msi`');
+    expect(notes).toContain('[Homeport package repository]');
   });
 
   it('offers no MSI for a prerelease', () => {

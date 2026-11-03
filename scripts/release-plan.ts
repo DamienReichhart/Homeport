@@ -105,6 +105,34 @@ export function planRelease({ versions, tags }: PlanInput): Plan {
   return { version, tag, prerelease };
 }
 
+// --- Signing keys ------------------------------------------------------------
+
+export interface SigningSetup {
+  /** `plugins.updater.pubkey` in tauri.conf.json: the key every installed copy checks updates against. */
+  updaterPubkey: string | undefined;
+  /** Whether `packaging/linux/homeport.asc`, the repositories' public key, is committed. */
+  packageKey: boolean;
+}
+
+/**
+ * Fails until both public keys are committed: without them the packages can't
+ * register the repository and installed copies can't verify updates. The
+ * matching private keys are repository secrets (see docs/RELEASING.md).
+ */
+export function checkSigningSetup({ updaterPubkey, packageKey }: SigningSetup): void {
+  const missing = [
+    ...(updaterPubkey?.trim()
+      ? []
+      : ['the updater public key (tauri.conf.json > plugins > updater > pubkey)']),
+    ...(packageKey ? [] : ['the package signing key (packaging/linux/homeport.asc)']),
+  ];
+  if (missing.length) {
+    throw new ReleaseError(
+      `Missing ${missing.join(' and ')}. Run scripts/setup-signing.sh, commit the public keys and set the secrets it lists.`,
+    );
+  }
+}
+
 // --- Notes ---------------------------------------------------------------------
 
 /** Commit types the notes list. The rest (docs, ci, chore, test, style) don't change what users get. */
@@ -165,6 +193,8 @@ export function releaseNotes({ version, previous, commits, repository }: NotesIn
     `| Debian, Ubuntu (x64 / ARM) | \`Homeport_${v}_amd64.deb\` / \`Homeport_${v}_arm64.deb\` |`,
     `| Fedora, RHEL, openSUSE (x64 / ARM) | \`Homeport-${v}-1.x86_64.rpm\` / \`Homeport-${v}-1.aarch64.rpm\` |`,
     `| Any Linux (x64 / ARM) | \`Homeport_${v}_amd64.AppImage\` / \`Homeport_${v}_aarch64.AppImage\` |`,
+    '',
+    'On Debian, Ubuntu, Fedora and openSUSE, the [Homeport package repository](https://damienreichhart.github.io/Homeport/docs/installation/#linux) installs it and keeps it up to date. Windows, macOS and AppImage installs update from the app.',
     '',
     'Check a download against `SHA256SUMS.txt`, or verify where it was built with',
     `\`gh attestation verify <file> --repo ${repository ?? '<owner>/<repo>'}\`.`,
