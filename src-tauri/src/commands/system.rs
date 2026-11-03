@@ -1,9 +1,14 @@
+use std::path::Path;
+
 use serde::Serialize;
 use tauri::{AppHandle, Manager, State};
 
 use crate::{
-    error::{local_file, AppError, AppResult, ErrorCode},
-    services::stacks::compose::{self, ComposeCli},
+    error::{AppError, AppResult},
+    services::{
+        local_files,
+        stacks::compose::{self, ComposeCli},
+    },
     state::AppState,
 };
 
@@ -80,28 +85,11 @@ pub async fn get_capabilities(state: State<'_, AppState>) -> Result<Capabilities
     })
 }
 
-/// Largest file `read_text_file` accepts; certificates and keys are far smaller.
-const MAX_TEXT_FILE: u64 = 1024 * 1024;
-
 /// Reads a file the user picked in an open dialog (certificates, keys, compose files).
 #[tauri::command]
 #[specta::specta]
 pub fn read_text_file(path: String) -> AppResult<String> {
-    let path = std::path::Path::new(&path);
-    let size = std::fs::metadata(path)
-        .map_err(|e| local_file(path, e))?
-        .len();
-    if size > MAX_TEXT_FILE {
-        return Err(AppError::new(
-            ErrorCode::FileTooLarge,
-            format!(
-                "{} is too large to be a key, certificate or compose file.",
-                path.display()
-            ),
-        )
-        .with_hint("Pick a file under 1 MB."));
-    }
-    std::fs::read_to_string(path).map_err(|e| local_file(path, e))
+    local_files::read_text(Path::new(&path))
 }
 
 /// Opens the folder holding Homeport's log files in the file manager.
@@ -110,20 +98,15 @@ pub fn read_text_file(path: String) -> AppResult<String> {
 pub fn open_log_folder(app: AppHandle) -> AppResult<()> {
     use tauri_plugin_opener::OpenerExt;
     let dir = app.path().app_log_dir()?;
-    std::fs::create_dir_all(&dir)?;
+    local_files::ensure_folder(&dir)?;
     app.opener()
         .open_path(dir.to_string_lossy(), None::<&str>)
-        .map_err(|e| {
-            AppError::new(ErrorCode::Io, "The log folder can't be opened.")
-                .with_hint(format!("Open {} in your file manager.", dir.display()))
-                .with_cause(&e)
-        })
+        .map_err(|e| local_files::folder_not_opened(&dir, &e))
 }
 
 /// Writes text to a path the user picked in a save dialog (e.g. downloaded logs).
 #[tauri::command]
 #[specta::specta]
 pub fn write_text_file(path: String, contents: String) -> AppResult<()> {
-    let path = std::path::Path::new(&path);
-    std::fs::write(path, contents).map_err(|e| local_file(path, e))
+    local_files::write_text(Path::new(&path), &contents)
 }
