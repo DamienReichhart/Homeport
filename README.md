@@ -19,6 +19,10 @@ A desktop app for managing Docker Engines anywhere — this machine's, or remote
 
 Secrets (SSH keys, TLS material, stack environments) are encrypted in SQLite with a key kept in the OS keychain. See [GLOSSARY.md](GLOSSARY.md) and [docs/adr](docs/adr) for the vocabulary and the main decisions.
 
+## Download
+
+Installers for Windows, macOS and Linux (x64 and ARM) are on the [releases page](https://github.com/DamienReichhart/Homeport/releases/latest). Pushing a new version to `main` publishes it; see [docs/RELEASING.md](docs/RELEASING.md).
+
 ## Prerequisites
 
 - [Bun](https://bun.sh) ≥ 1.4
