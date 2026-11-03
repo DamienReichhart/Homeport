@@ -23,6 +23,7 @@ Secrets (SSH keys, TLS material, stack environments) are encrypted in SQLite wit
 
 - [Bun](https://bun.sh) ≥ 1.4
 - Rust (stable; `rust-toolchain.toml` pins components)
+- [cargo-about](https://github.com/EmbarkStudios/cargo-about) for release builds: `cargo install cargo-about --locked --features cli`
 - Tauri system dependencies: <https://tauri.app/start/prerequisites/>
   (Linux: `libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev librsvg2-dev libayatana-appindicator3-dev libssl-dev`)
 - At runtime: an OS keychain (macOS Keychain, Windows Credential Manager or a Secret Service such as GNOME Keyring) for SSH/TLS/stack secrets, and the `docker compose` CLI to deploy Managed Stacks. Both are optional; the app says what is unavailable without them.
@@ -38,10 +39,17 @@ Secrets (SSH keys, TLS material, stack environments) are encrypted in SQLite wit
 | `bun run rust:lint`   | `cargo clippy` with warnings as errors           |
 | `bun run rust:test`   | Rust unit tests                                  |
 | `bun run bindings`    | Regenerate `src/shared/api/bindings.ts`          |
+| `bun run licenses`    | Generate the third-party license notices         |
 
 `tauri:build` writes installers to `target/release/bundle/`. Each one adds Homeport to the app menu: `.deb`/`.rpm` install a desktop entry, `.msi`/NSIS add a Start Menu shortcut, and the `.app` shows in Launchpad once it is in Applications. An AppImage has no install step, so it adds its own entry to `~/.local/share/applications` each time it runs, and the entry disappears from the menu once the file is deleted.
 
 Integration tests talk to the local Docker Engine (and the compose CLI). They only create resources named `homeport-test-*` and remove them afterwards; run them with `cargo test --workspace -- --ignored`.
+
+## Licenses
+
+`bun run licenses` writes `src-tauri/licenses/THIRD_PARTY_LICENSES.txt` (gitignored): every Rust crate (via `cargo about`) and npm production dependency compiled into Homeport, with its license text. It fails when a dependency's license isn't in `about.toml > accepted`, so review a new license before adding it there. `tauri build` runs it first (`beforeBuildCommand`), and a release build without the file stops with an error.
+
+Every bundle ships `LICENSE` and the notices in its resources (`licenses/`), and Settings shows both under **Licenses**. The `.deb` also installs them in `/usr/share/doc/homeport/`, the `.rpm` in `/usr/share/licenses/homeport/`, and the MSI/NSIS installers show `LICENSE`.
 
 ## Layout
 
@@ -59,3 +67,7 @@ src-tauri/           Rust backend
   src/error.rs       AppError -> { code, message } for the frontend
   capabilities/      Tauri permission sets
 ```
+
+## License
+
+[MIT](LICENSE) © Damien Reichhart. Third-party software is listed in the generated notices described above.
