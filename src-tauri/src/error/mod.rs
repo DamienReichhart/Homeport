@@ -3,11 +3,16 @@
 //! way: what happened, what to do about it, and the raw details on demand.
 //!
 //! Writing an error:
-//! - `message` says what happened in one sentence, without raw OS or library text.
-//!   A Host is named by its name; "Docker Engine" means the software (see `GLOSSARY.md`).
-//! - `hint` says what to do, with copyable `commands` for the machine concerned.
+//! - `message` says what happened in one sentence, without raw OS, library or
+//!   Engine text. A Host is named by its name (remote ones as "prod (address)");
+//!   "Docker Engine" means the software, and the machine is never "the server"
+//!   (see `GLOSSARY.md`). British spelling, as `docs/BRAND.md` asks.
+//! - `hint` says what to do, with copyable `commands` for the machine concerned;
+//!   when there's nothing better, point to Details.
 //! - `detail` keeps the raw cause (error chain, Engine response, stderr) for the
 //!   Details dialog and bug reports.
+//! - Classify in the backend: the frontend only displays errors. Failures from a
+//!   transport travel inside `io::Error` and are recovered by `reach::classified_cause`.
 
 pub mod compose;
 pub mod engine;
