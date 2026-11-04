@@ -8,6 +8,7 @@ pub mod containers;
 pub mod images;
 pub mod networks;
 pub mod system;
+pub mod transfer;
 pub mod volumes;
 
 #[cfg(any(test, feature = "test-support"))]
