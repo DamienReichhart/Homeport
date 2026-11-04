@@ -1,6 +1,6 @@
 ---
 title: Images
-description: Pull, tag, inspect, run and remove images, and clean up what nothing uses.
+description: Pull, push, tag, inspect, run and remove images, and clean up what nothing uses.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -42,11 +42,19 @@ If the registry refuses the pull, the message says what to do: add a login for t
   read `docker login` credentials from `~/.docker/config.json`.
 </Aside>
 
+## Pushing an image
+
+Choose **Push** in an image's **⋮** menu. **Name to push** starts as the image's first name; pick another of its names, or type a new one such as `ghcr.io/org/app:v2` — the image is given that name first, as **Tag** does. The name's first part says which registry it goes to: `ghcr.io/org/app` goes to GHCR, `org/app` to Docker Hub.
+
+Homeport pushes through the Host's Engine with the [registry login](/docs/guides/settings/#registries) stored for that registry, and says which one under the name (**Pushed as alice on ghcr.io**). With no login stored, the dialog warns before you start, since most registries refuse anonymous pushes. While it runs, the dialog counts the layers pushed and those the registry already had, and shows the upload in progress; **Cancel** stops the push.
+
+If the registry refuses, the message says whether to add a login or to check that the stored one may push to that repository.
+
 ## Working with an image
 
 - **▶ Run** opens the [Run dialog](/docs/guides/containers/#running-a-container) with the image filled in.
 - **Inspect** — or selecting the row — shows **Layers**, the instructions that built each layer and their sizes, and **Raw JSON**.
-- **Tag** adds another name, such as `registry.example.com/app:v2`. It doesn't push anything.
+- **Tag** adds another name, such as `registry.example.com/app:v2`. It doesn't push anything; **Push** does.
 - **Remove** deletes the image and the layers no other image uses. An image with several tags loses all of them. The Engine refuses to remove an image a container still uses; remove the container first.
 
 ## Cleaning up
