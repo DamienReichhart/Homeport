@@ -19,6 +19,7 @@ unreachable_pub = "warn"
 # Async runtime and I/O.
 tokio = { version = "1", features = ["full"] }
 futures-util = "0.3"
+bytes = "1"
 hyper = { version = "1", features = ["client", "http1"] }
 hyper-util = { version = "0.1", features = ["tokio"] }
 # Serialization and the TypeScript contract.

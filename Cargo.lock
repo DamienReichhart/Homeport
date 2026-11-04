@@ -2174,9 +2174,11 @@ name = "homeport-engine"
 version = "0.6.0"
 dependencies = [
  "bollard",
+ "bytes",
  "futures-util",
  "homeport-core",
  "homeport-transport",
+ "log",
  "serde",
  "serde_json",
  "shell-words",

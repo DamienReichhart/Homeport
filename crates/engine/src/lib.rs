@@ -3,6 +3,7 @@
 //! shaped for the frontend.
 
 pub mod auth;
+pub mod build;
 pub mod containers;
 pub mod images;
 pub mod networks;

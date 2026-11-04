@@ -19,6 +19,8 @@ homeport-core = { workspace = true, features = ["bollard"] }
 bollard.workspace = true
 tokio.workspace = true
 futures-util.workspace = true
+bytes.workspace = true
+log.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 specta.workspace = true

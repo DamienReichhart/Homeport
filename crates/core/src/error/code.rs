@@ -68,6 +68,7 @@ pub enum ErrorCode {
     RegistryUnreachable,
     RegistryLoginFailed,
     ApiVersionUnsupported,
+    BuildFailed,
     // Compose.
     ComposeMissing,
     ComposeOutdated,

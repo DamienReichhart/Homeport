@@ -1,7 +1,7 @@
 //! Registry logins as the Engine takes them. The shell finds the login in
 //! the registries crate and hands it here; this crate never stores one.
 
-use std::fmt;
+use std::{collections::HashMap, fmt};
 
 use bollard::auth::DockerCredentials;
 
@@ -47,6 +47,14 @@ impl RegistryAuth {
             ..Default::default()
         }
     }
+}
+
+/// The `X-Registry-Config` of a build: every login, keyed by server address.
+pub(crate) fn config(logins: &[RegistryAuth]) -> HashMap<String, DockerCredentials> {
+    logins
+        .iter()
+        .map(|l| (l.server_address(), l.to_docker()))
+        .collect()
 }
 
 /// Every stored login, and how to tell which one an image reference needs.
@@ -110,6 +118,14 @@ mod tests {
             login("docker.io").to_docker().serveraddress.as_deref(),
             Some("https://index.docker.io/v1/")
         );
+    }
+
+    #[test]
+    fn build_configs_hold_every_login() {
+        let config = config(&[login("ghcr.io"), login("docker.io")]);
+        assert_eq!(config.len(), 2);
+        assert!(config.contains_key("https://index.docker.io/v1/"));
+        assert!(config.contains_key("ghcr.io"));
     }
 
     #[test]
