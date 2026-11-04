@@ -15,5 +15,5 @@ The website now has the layers the app's frontend has (ADR 0004), under `website
 - Imports use `@/` for `website/src/`, so docs can import components without `../../../../`.
 - Features import each other, and core modules are imported, only through their `index.ts`. Client scripts import a feature's `model/` files directly, since an `index.ts` that re-exports `.astro` components can't be bundled for the browser.
 - ESLint (`website/eslint.config.js`) enforces the direction of imports and warns past 300 lines in a file, as it does for the app.
-- The global stylesheet stays global and keeps its order (`app/styles/index.css` imports its parts). A section's own styles live in its component.
+- The global stylesheet stays global and keeps its order (`app/styles/site/index.css` imports its parts). A section's own styles live in its component.
 - Vite doesn't keep the global stylesheet ahead of a page's CSS: their order follows the module graph and changes when files move. A component rule that overrides a global one must outrank it (`.cta.card`, not `.cta` against `.card`) instead of relying on coming later. A cascade layer for the global styles was rejected: it would also let a component beat the global rules that are meant to win, such as the scroll reveal.
