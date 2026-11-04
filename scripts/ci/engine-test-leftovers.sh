@@ -4,7 +4,9 @@
 set -euo pipefail
 
 containers=$(docker ps --all --quiet --filter name=homeport-test-)
-images=$(docker image ls --format '{{.Repository}}:{{.Tag}}' | grep -E '(^|/)homeport-test-' || true)
+# A name, or a digest reference (repo@sha256:…) when the Engine lists the tag as <none>.
+images=$(docker image ls --digests --format '{{.Repository}} {{.Tag}} {{.Digest}}' |
+  awk '$1 ~ /(^|\/)homeport-test-/ { print ($2 == "<none>" ? $1 "@" $3 : $1 ":" $2) }' || true)
 volumes=$(docker volume ls --quiet --filter name=homeport-test-)
 networks=$(docker network ls --quiet --filter name=homeport-test-)
 

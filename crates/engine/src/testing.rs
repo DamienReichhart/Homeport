@@ -211,7 +211,9 @@ pub async fn registry(docker: &Docker, auth: bool) -> Registry {
     }
 }
 
-/// Removes the image name `0` when dropped, even if the test panics first.
+/// Removes the image name `0` when dropped, even if the test panics first,
+/// and the digest references of its repository that a push or pull left
+/// (the classic image store lists them as `repo:<none>`).
 pub struct ImageName(pub Docker, pub String);
 
 impl Drop for ImageName {
@@ -222,13 +224,24 @@ impl Drop for ImageName {
             tokio::runtime::Runtime::new()
                 .unwrap()
                 .block_on(async move {
-                    let _ = docker
-                        .remove_image(
-                            &name,
-                            None::<bollard::query_parameters::RemoveImageOptions>,
-                            None,
-                        )
-                        .await;
+                    let (repo, _) = crate::images::split_reference(&name);
+                    let digests: Vec<String> = docker
+                        .list_images(None::<bollard::query_parameters::ListImagesOptions>)
+                        .await
+                        .unwrap_or_default()
+                        .into_iter()
+                        .flat_map(|i| i.repo_digests)
+                        .filter(|d| d.split_once('@').is_some_and(|(r, _)| r == repo))
+                        .collect();
+                    for reference in std::iter::once(name).chain(digests) {
+                        let _ = docker
+                            .remove_image(
+                                &reference,
+                                None::<bollard::query_parameters::RemoveImageOptions>,
+                                None,
+                            )
+                            .await;
+                    }
                 })
         })
         .join()
