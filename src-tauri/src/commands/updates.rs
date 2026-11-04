@@ -102,6 +102,7 @@ pub async fn updates_install(
         .download_and_install(
             |chunk, total| {
                 downloaded += chunk as u64;
+                // A closed window stops listening; the install carries on regardless.
                 let _ = on_progress.send(UpdateProgress { downloaded, total });
             },
             || {},
