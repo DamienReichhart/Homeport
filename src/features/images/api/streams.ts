@@ -9,6 +9,7 @@ import {
   type BuildEvent,
   type BuildSpec,
   type PullEvent,
+  type TransferEvent,
 } from '@/shared/api';
 
 /**
@@ -68,6 +69,51 @@ export function useBuildImage(hostId: string) {
           onEvent(event);
           if (event.type === 'done') {
             toast.success(event.tags.length ? `Built ${event.tags[0]}` : 'Built the image');
+            void client.invalidateQueries({ queryKey: hostKeys.images(hostId) });
+          }
+        },
+        onError,
+      ),
+    [client, hostId],
+  );
+}
+
+/** Saves images into one tar on this machine; returns the stream's canceller. */
+export function useSaveImages(hostId: string) {
+  return useCallback(
+    (
+      names: string[],
+      destination: string,
+      onEvent: (event: TransferEvent) => void,
+      onError: (error: AppError) => void,
+    ) =>
+      subscribe<TransferEvent>(
+        (ch) => commands.imagesSaveSubscribe(hostId, names, destination, ch),
+        (event) => {
+          onEvent(event);
+          if (event.type === 'done') toast.success(`Saved ${destination}`);
+        },
+        onError,
+      ),
+    [hostId],
+  );
+}
+
+/** Loads the images in a tar on this machine into a Host; refreshes the list when done. */
+export function useLoadImages(hostId: string) {
+  const client = useQueryClient();
+  return useCallback(
+    (source: string, onEvent: (event: TransferEvent) => void, onError: (error: AppError) => void) =>
+      subscribe<TransferEvent>(
+        (ch) => commands.imagesLoadSubscribe(hostId, source, ch),
+        (event) => {
+          onEvent(event);
+          if (event.type === 'done') {
+            toast.success(
+              event.images.length === 1
+                ? `Loaded ${event.images[0]}`
+                : `Loaded ${event.images.length} images`,
+            );
             void client.invalidateQueries({ queryKey: hostKeys.images(hostId) });
           }
         },

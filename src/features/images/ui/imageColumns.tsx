@@ -2,6 +2,7 @@ import {
   EllipsisVerticalIcon,
   InfoIcon,
   PlayIcon,
+  SaveIcon,
   TagIcon,
   Trash2Icon,
   UploadIcon,
@@ -26,12 +27,14 @@ export function imageColumns({
   onInspect,
   onTag,
   onPush,
+  onSave,
   onRemove,
 }: {
   onRun: (image: Image) => void;
   onInspect: (image: Image) => void;
   onTag: (image: Image) => void;
   onPush: (image: Image) => void;
+  onSave: (image: Image) => void;
   onRemove: (image: Image) => void;
 }): ColumnDef<Image, unknown>[] {
   return [
@@ -108,6 +111,9 @@ export function imageColumns({
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => onPush(row.original)}>
                 <UploadIcon /> Push
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onSave(row.original)}>
+                <SaveIcon /> Save…
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive" onSelect={() => onRemove(row.original)}>
