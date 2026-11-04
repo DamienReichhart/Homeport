@@ -314,7 +314,7 @@ function formatsFor(os: Os): { format: Installer['format']; files: Installer[] }
 </SiteLayout>
 
 <script>
-  import { detectPlatform } from '../lib/platform';
+  import { detectPlatform } from '@/features/download/model/platform';
 
   const NAMES: Record<string, string> = { windows: 'Windows', macos: 'macOS', linux: 'Linux' };
 
