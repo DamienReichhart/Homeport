@@ -1,6 +1,6 @@
 ---
 title: Images
-description: Pull, push, tag, inspect, run and remove images, and clean up what nothing uses.
+description: Pull, build, push, tag, inspect, run and remove images, and clean up what nothing uses.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -40,6 +40,26 @@ If the registry refuses the pull, the message says what to do: add a login for t
 <Aside>
   The login travels to the Engine with the request and isn't stored on the Host. Homeport doesn't
   read `docker login` credentials from `~/.docker/config.json`.
+</Aside>
+
+## Building an image
+
+Choose **Build** and pick a **Folder** on this computer that holds a Dockerfile — the build context. Homeport packs the folder, leaves out everything its `.dockerignore` excludes (with Docker's rules: `*`, `**`, `!` exceptions, the last matching line wins), and streams it to the selected Host, whose Engine builds it. The same build works on a remote Host over SSH or TLS, with nothing installed there.
+
+| Field                         | What it does                                                                                             |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------- |
+| **Dockerfile**                | Its path inside the folder; `Dockerfile` by default. It's always sent, even if `.dockerignore` lists it. |
+| **Target stage**              | The stage of a multi-stage Dockerfile to stop at (`--target`).                                           |
+| **Names**                     | One or more names for the result, such as `app:1.0, ghcr.io/me/app:1.0`.                                 |
+| **Build arguments**           | `NAME=value`, one per line, for the Dockerfile's `ARG`s.                                                 |
+| **Don't use the build cache** | Runs every step again (`--no-cache`).                                                                    |
+| **Pull newer base images**    | Pulls the `FROM` images even if the Host has them (`--pull`).                                            |
+
+The build's output streams live; **Cancel** stops it. When it finishes, the names appear on the Images page. If a step fails, the message names it (**The build failed at step 3/5 (RUN make)**) and **Details** holds the end of the output. Private `FROM` images pull with the [registry logins](/docs/guides/settings/#registries) you stored.
+
+<Aside>
+  Homeport uses the Engine's classic builder, the one its API offers. BuildKit features such as `RUN
+  --mount` and build secrets aren't available; build those from a terminal.
 </Aside>
 
 ## Pushing an image
