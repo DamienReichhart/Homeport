@@ -539,7 +539,10 @@ mod tests {
             "{events:?}"
         );
         assert!(
-            matches!(events.last(), Some(ComposeEvent::Exit { success: true, .. })),
+            matches!(
+                events.last(),
+                Some(ComposeEvent::Exit { success: true, .. })
+            ),
             "{events:?}"
         );
     }
