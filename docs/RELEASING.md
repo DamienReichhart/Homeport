@@ -87,11 +87,23 @@ bun scripts/repositories.ts --out /tmp/site --packages target/release/bundle/deb
 
 `--packages` treats the files in a folder as the only release, instead of downloading releases. `HOMEPORT_REPO_URL=http://… sh install.sh` points the install script at such a copy.
 
+## winget
+
+[#6](https://github.com/DamienReichhart/Homeport/issues/6). Every stable release's **channels** job (below) also renders winget's three manifests for `DamienReichhart.Homeport` into `winget/` of the `channels` artifact: both NSIS installers (per user, x64 and ARM64) and the MSI (per machine, x64), with their checksums. The **winget** job then runs `wingetcreate submit` on Windows, which forks [`microsoft/winget-pkgs`](https://github.com/microsoft/winget-pkgs) and opens the pull request; winget's moderators and validation pipeline merge it, usually within a few days. Without the `WINGET_TOKEN` secret the job skips with a notice.
+
+Setting it up, once:
+
+1. Create a classic personal access token with the **public_repo** scope (wingetcreate needs to fork `microsoft/winget-pkgs` and push a branch to the fork) and add it to this repository's Actions secrets as `WINGET_TOKEN`.
+2. Re-run the last stable release's **winget** job (or wait for the next release). The first pull request adds the package; reviewers may ask questions on it, which the account owning the token answers. Unsigned installers are accepted, though SmartScreen reputation and review go smoother with [code signing](#code-signing).
+3. Once `winget install DamienReichhart.Homeport` works, move winget out of `COMING_LATER` in `website/src/core/packages/repositories.ts` and document it on the installation page.
+
+A winget install is an ordinary NSIS or MSI install, so Homeport keeps updating itself; `winget upgrade` works too, since winget reads the installed version from Windows.
+
 ## Scoop and the AUR
 
 **Deferred until after 1.0** ([#7](https://github.com/DamienReichhart/Homeport/issues/7), [#8](https://github.com/DamienReichhart/Homeport/issues/8), milestone _Later_). Everything below is in place but dormant: no secret is set, so each release skips both channels with a notice, and the website lists them under **Coming later**. Shipping either is only the one-time setup below.
 
-After a stable release is published, the **channels** job of the Release workflow renders, from the release's `SHA256SUMS.txt`, the Scoop manifest (`scoop/homeport.json`, both NSIS installers) and the AUR package (`aur/PKGBUILD` and `aur/.SRCINFO`, `homeport-bin` repackaging both `.deb` files) with `bun scripts/channels.ts`, and keeps them as the run's `channels` artifact. Then it updates each channel whose secret is set, and skips the others with a notice. Prereleases skip the job.
+After a stable release is published, the **channels** job of the Release workflow renders, from the release's `SHA256SUMS.txt`, the winget manifests (see above), the Scoop manifest (`scoop/homeport.json`, both NSIS installers) and the AUR package (`aur/PKGBUILD` and `aur/.SRCINFO`, `homeport-bin` repackaging both `.deb` files) with `bun scripts/channels.ts`, and keeps them as the run's `channels` artifact. Then it updates each channel whose secret is set, and skips the others with a notice. Prereleases skip the job.
 
 | Channel | Repository                                                  | Secret                                                                                          |
 | ------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
