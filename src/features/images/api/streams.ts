@@ -27,3 +27,22 @@ export function usePullImage(hostId: string) {
     [client, hostId],
   );
 }
+
+/**
+ * Pushes an image name to its registry and streams the progress. A finished
+ * push is announced. The returned function starts a push and returns its canceller.
+ */
+export function usePushImage(hostId: string) {
+  return useCallback(
+    (reference: string, onEvent: (event: PullEvent) => void, onError: (error: AppError) => void) =>
+      subscribe<PullEvent>(
+        (ch) => commands.imagesPushSubscribe(hostId, reference, ch),
+        (event) => {
+          onEvent(event);
+          if (event.type === 'done') toast.success(`Pushed ${reference}`);
+        },
+        onError,
+      ),
+    [hostId],
+  );
+}

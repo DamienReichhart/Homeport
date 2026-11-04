@@ -1,4 +1,11 @@
-import { EllipsisVerticalIcon, InfoIcon, PlayIcon, TagIcon, Trash2Icon } from 'lucide-react';
+import {
+  EllipsisVerticalIcon,
+  InfoIcon,
+  PlayIcon,
+  TagIcon,
+  Trash2Icon,
+  UploadIcon,
+} from 'lucide-react';
 import type { Image } from '@/shared/api';
 import { formatBytes, formatRelative, shortId } from '@/shared/lib';
 import {
@@ -18,11 +25,13 @@ export function imageColumns({
   onRun,
   onInspect,
   onTag,
+  onPush,
   onRemove,
 }: {
   onRun: (image: Image) => void;
   onInspect: (image: Image) => void;
   onTag: (image: Image) => void;
+  onPush: (image: Image) => void;
   onRemove: (image: Image) => void;
 }): ColumnDef<Image, unknown>[] {
   return [
@@ -96,6 +105,9 @@ export function imageColumns({
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => onTag(row.original)}>
                 <TagIcon /> Tag
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onPush(row.original)}>
+                <UploadIcon /> Push
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive" onSelect={() => onRemove(row.original)}>

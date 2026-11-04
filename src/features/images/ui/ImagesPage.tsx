@@ -23,6 +23,7 @@ import { usePruneImages, useRemoveImage } from '../api/mutations';
 import { imageName } from '../model/imageName';
 import { InspectDialog } from './dialogs/InspectDialog';
 import { PullDialog } from './dialogs/PullDialog';
+import { PushDialog } from './dialogs/PushDialog';
 import { TagDialog } from './dialogs/TagDialog';
 import { imageColumns } from './imageColumns';
 
@@ -35,6 +36,7 @@ function ImagesList({ hostId }: { hostId: string }) {
   const [pulling, setPulling] = useState(false);
   const [running, setRunning] = useState<Image | null>(null);
   const [tagging, setTagging] = useState<Image | null>(null);
+  const [pushingImage, setPushingImage] = useState<Image | null>(null);
   const [inspecting, setInspecting] = useState<Image | null>(null);
 
   const remove = (image: Image) =>
@@ -107,6 +109,7 @@ function ImagesList({ hostId }: { hostId: string }) {
             onRun: setRunning,
             onInspect: setInspecting,
             onTag: setTagging,
+            onPush: setPushingImage,
             onRemove: remove,
           })}
           data={images.data}
@@ -126,6 +129,14 @@ function ImagesList({ hostId }: { hostId: string }) {
         />
       )}
       {tagging && <TagDialog hostId={hostId} image={tagging} onClose={() => setTagging(null)} />}
+      {pushingImage && (
+        <PushDialog
+          key={pushingImage.id}
+          hostId={hostId}
+          image={pushingImage}
+          onClose={() => setPushingImage(null)}
+        />
+      )}
       {inspecting && (
         <InspectDialog hostId={hostId} image={inspecting} onClose={() => setInspecting(null)} />
       )}
