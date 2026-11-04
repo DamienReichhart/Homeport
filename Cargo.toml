@@ -63,6 +63,7 @@ homeport-transport = { path = "crates/transport" }
 homeport-engine = { path = "crates/engine" }
 homeport-hosts = { path = "crates/hosts" }
 homeport-stacks = { path = "crates/stacks" }
+homeport-registries = { path = "crates/registries" }
 homeport-settings = { path = "crates/settings" }
 homeport-updates = { path = "crates/updates" }
 

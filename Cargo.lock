@@ -2134,6 +2134,7 @@ dependencies = [
  "homeport-core",
  "homeport-engine",
  "homeport-hosts",
+ "homeport-registries",
  "homeport-settings",
  "homeport-stacks",
  "homeport-storage",
@@ -2201,6 +2202,20 @@ dependencies = [
  "serde_json",
  "specta",
  "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "homeport-registries"
+version = "0.6.0"
+dependencies = [
+ "homeport-core",
+ "homeport-storage",
+ "log",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "specta",
  "uuid",
 ]
 
