@@ -30,7 +30,7 @@ const restrict = (patterns, paths = []) => [
 ];
 
 export default tseslint.config(
-  // website/ is its own Astro project, checked by `astro check` in its build.
+  // website/ is its own Astro project, with its own eslint.config.js.
   {
     ignores: [
       'dist',
