@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { baseCommands } from '@/test/fixtures';
 import { mockCommands } from '@/test/ipc';
@@ -84,5 +84,48 @@ describe('images page', () => {
     expect(
       await screen.findByRole('img', { name: 'A newer nginx:1.27 was published' }),
     ).toBeInTheDocument();
+  });
+
+  it('keeps the removal open when the image is in use, and retries it', async () => {
+    let attempts = 0;
+    const image = {
+      id: 'sha256:aaaaaaaaaaaaaaaa',
+      tags: ['nginx:1.27'],
+      digests: [],
+      created: 1_700_000_000,
+      size: 1024,
+      containers: 1,
+      labels: {},
+    };
+    mockCommands({
+      ...baseCommands,
+      images_list: () => [image],
+      images_remove: () => {
+        attempts += 1;
+        if (attempts === 1)
+          throw {
+            code: 'conflict',
+            message: 'nginx:1.27 is used by a container.',
+            hint: null,
+            detail: null,
+          };
+        return null;
+      },
+    });
+    const user = userEvent.setup();
+    renderApp('/images');
+    await user.click(await screen.findByRole('button', { name: 'More actions' }));
+    await user.click(await screen.findByRole('menuitem', { name: /Remove/ }));
+    const confirmation = await screen.findByRole('alertdialog');
+    const remove = within(confirmation).getByRole('button', { name: 'Remove' });
+    await user.click(remove);
+
+    expect(await screen.findByText('nginx:1.27 is used by a container.')).toBeInTheDocument();
+    await waitFor(() => expect(remove).toBeEnabled());
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+
+    await user.click(remove);
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    expect(attempts).toBe(2);
   });
 });

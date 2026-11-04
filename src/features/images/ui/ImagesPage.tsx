@@ -24,12 +24,12 @@ import {
   PageHeader,
   SearchInput,
   Spinner,
-  useConfirm,
+  useConfirmedAction,
 } from '@/shared/ui';
 import { chooseArchiveToLoad, chooseArchiveToSave } from '../api/files';
 import { usePruneImages, useRemoveImage } from '../api/mutations';
-import { imageName } from '../model/imageName';
 import { archiveName, saveNames } from '../model/transfer';
+import { pruneImagesConfirmation, removeImageConfirmation } from './confirmations';
 import { BuildDialog } from './dialogs/BuildDialog';
 import { InspectDialog } from './dialogs/InspectDialog';
 import { PullDialog } from './dialogs/PullDialog';
@@ -43,7 +43,7 @@ function ImagesList({ hostId }: { hostId: string }) {
   const freshness = indexFreshness(useQuery(resourceQueries.freshness(hostId)).data);
   const removeImage = useRemoveImage(hostId);
   const pruneImages = usePruneImages(hostId);
-  const [dialog, confirm] = useConfirm();
+  const [dialog, confirm] = useConfirmedAction();
   const [query, setQuery] = useState('');
   const [pulling, setPulling] = useState(false);
   const [building, setBuilding] = useState(false);
@@ -64,27 +64,9 @@ function ImagesList({ hostId }: { hostId: string }) {
   const [inspecting, setInspecting] = useState<Image | null>(null);
 
   const remove = (image: Image) =>
-    confirm({
-      title: `Remove ${imageName(image)}?`,
-      description:
-        image.tags.length > 1
-          ? `This removes every name of the image (${image.tags.join(', ')}) and its layers that nothing else uses.`
-          : 'The image and the layers no other image uses are deleted. It can be pulled again later.',
-      confirmLabel: 'Remove',
-      destructive: true,
-      onConfirm: () => removeImage.mutateAsync(image).catch(() => {}),
-    });
-
+    confirm(removeImageConfirmation(image, () => removeImage.mutateAsync(image)));
   const prune = (all: boolean) =>
-    confirm({
-      title: all ? 'Remove all unused images?' : 'Remove dangling images?',
-      description: all
-        ? 'Every image no container uses is deleted, tagged ones included.'
-        : 'Untagged images left behind by builds and pulls are deleted.',
-      confirmLabel: 'Clean up',
-      destructive: true,
-      onConfirm: () => pruneImages.mutateAsync(all),
-    });
+    confirm(pruneImagesConfirmation(all, () => pruneImages.mutateAsync(all)));
 
   if (images.isPending) return <Spinner />;
   if (images.error)

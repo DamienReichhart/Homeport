@@ -15,9 +15,10 @@ import {
   PageHeader,
   SearchInput,
   Spinner,
-  useConfirm,
+  useConfirmedAction,
 } from '@/shared/ui';
 import { usePruneVolumes, useRemoveVolume } from '../api/mutations';
+import { pruneVolumesConfirmation, removeVolumeConfirmation } from './confirmations';
 import { CreateVolumeDialog } from './dialogs/CreateVolumeDialog';
 import { InspectVolumeDialog } from './dialogs/InspectVolumeDialog';
 import { volumeColumns } from './volumeColumns';
@@ -26,40 +27,15 @@ function VolumesList({ hostId }: { hostId: string }) {
   const volumes = useQuery(resourceQueries.volumes(hostId));
   const removeVolume = useRemoveVolume(hostId);
   const pruneVolumes = usePruneVolumes(hostId);
-  const [dialog, confirm] = useConfirm();
+  const [dialog, confirm] = useConfirmedAction();
   const [query, setQuery] = useState('');
   const [creating, setCreating] = useState(false);
   const [inspecting, setInspecting] = useState<VolumeView | null>(null);
 
   const remove = (v: VolumeView) =>
-    confirm({
-      title: `Delete volume ${v.name}?`,
-      description: (
-        <>
-          <strong>All data in this volume is permanently deleted.</strong>
-          {v.usedBy.length > 0 &&
-            ` It is mounted by ${v.usedBy.join(', ')}; remove those containers first.`}
-        </>
-      ),
-      confirmLabel: 'Delete volume and data',
-      destructive: true,
-      onConfirm: () => removeVolume.mutateAsync(v).catch(() => {}),
-    });
-
+    confirm(removeVolumeConfirmation(v, () => removeVolume.mutateAsync(v)));
   const prune = (all: boolean) =>
-    confirm({
-      title: all ? 'Delete every unused volume?' : 'Delete unused anonymous volumes?',
-      description: (
-        <strong>
-          {all
-            ? 'The data in every volume no container uses is permanently deleted, named volumes included.'
-            : 'The data in unnamed volumes no container uses is permanently deleted.'}
-        </strong>
-      ),
-      confirmLabel: 'Delete volumes and data',
-      destructive: true,
-      onConfirm: () => pruneVolumes.mutateAsync(all),
-    });
+    confirm(pruneVolumesConfirmation(all, () => pruneVolumes.mutateAsync(all)));
 
   if (volumes.isPending) return <Spinner />;
   if (volumes.error)
