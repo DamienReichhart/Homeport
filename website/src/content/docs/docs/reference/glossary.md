@@ -25,6 +25,10 @@ A Stack found running on a Host whose compose definition Homeport doesn't have. 
 
 To turn an External Stack into a Managed Stack by supplying its compose definition.
 
+### Registry login
+
+The user name and password or access token Homeport keeps for one container registry, such as Docker Hub or GHCR, and uses on every Host to pull, push and build. See [Settings](/docs/guides/settings/#registries).
+
 ### Engine
 
 The Docker Engine (`dockerd`), or a compatible one such as Podman, that runs containers on a machine. Homeport talks to it through the Docker Engine API.
