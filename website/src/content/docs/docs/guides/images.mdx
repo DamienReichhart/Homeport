@@ -91,7 +91,18 @@ To move images to a Host that can't reach a registry — an air-gapped server, a
 
 The file travels between this computer and the Host over the Host's own connection, so this works for remote Hosts too. Progress shows the bytes written or sent; **Cancel** stops it, and a cancelled or failed save leaves no partial file behind. Homeport never holds the whole archive in memory, so images of several gigabytes are fine.
 
-An image archive keeps an image's layers, history and names, ready to run. It isn't the same as exporting a container's filesystem, which flattens one container's files into a plain tar with no history.
+### Importing a filesystem
+
+**Import from tar…** at the top of the page turns a tar of a root filesystem into an image, like `docker import`: one made by a container's [**Export filesystem…**](/docs/guides/containers/#exporting-a-containers-filesystem) or `docker export`, a `debootstrap` or Buildroot output, or a vendor appliance. Choose the file (plain or compressed with gzip, xz or bzip2), give the image a **name** — it starts from the file name — and optionally **Changes**: Dockerfile instructions such as `CMD ["/bin/sh"]` or `ENV LANG=C.UTF-8`, since an imported image has no command of its own. Progress shows the bytes sent; the image then appears in the list.
+
+### Save and load, or export and import?
+
+|             | **Save** / **Load**                                  | **Export filesystem** / **Import from tar**                      |
+| ----------- | ---------------------------------------------------- | ---------------------------------------------------------------- |
+| Starts from | One or more images                                   | One container's files, as they are now                           |
+| Keeps       | Every layer, the history, the names and the settings | The files only, flattened into one layer                         |
+| Loses       | Nothing                                              | History, names, and settings such as the command and environment |
+| Use it to   | Move images to a Host without a registry             | Back up or inspect a container's files, or start from a rootfs   |
 
 ## Working with an image
 
