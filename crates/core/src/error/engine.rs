@@ -85,8 +85,14 @@ pub fn from_message(status: Option<u16>, message: &str) -> AppError {
             ErrorCode::RegistryRateLimited,
             "The registry's pull limit was reached.",
         )
-        .with_hint("Docker Hub limits anonymous pulls. Wait for the limit to reset (up to 6 hours), or pull while logged in from a terminal:")
-        .with_command("docker login");
+        .with_hint("Docker Hub limits anonymous pulls. Wait for the limit to reset (up to 6 hours), or add a Docker Hub login in Settings → Registries, which raises the limit.");
+    }
+    if has("incorrect username or password") {
+        return AppError::new(
+            ErrorCode::RegistryLoginFailed,
+            "The registry refused the stored user name and password.",
+        )
+        .with_hint("Check the login for this registry in Settings → Registries.");
     }
     if has("pull access denied")
         || has("requested access to the resource is denied")
@@ -97,8 +103,7 @@ pub fn from_message(status: Option<u16>, message: &str) -> AppError {
             ErrorCode::RegistryAuthRequired,
             "The image doesn't exist, or it's private.",
         )
-        .with_hint("Check the image name. Homeport can't use registry logins yet, so pull private images from a terminal on the machine running the Docker Engine:")
-        .with_command("docker login <registry>\ndocker pull <image>");
+        .with_hint("Check the image name. If it's private, add a login for its registry in Settings → Registries.");
     }
     if has("manifest unknown") || (has("manifest for") && has("not found")) {
         return AppError::new(ErrorCode::ImageNotFound, "This image or tag doesn't exist.")
@@ -283,6 +288,7 @@ mod tests {
             (404, "pull access denied for nope/nope, repository does not exist or may require 'docker login': denied: requested access to the resource is denied", ErrorCode::RegistryAuthRequired),
             (404, "manifest for alpine:nope not found: manifest unknown: manifest unknown", ErrorCode::ImageNotFound),
             (500, "toomanyrequests: You have reached your pull rate limit.", ErrorCode::RegistryRateLimited),
+            (500, "Head \"https://registry-1.docker.io/v2/library/nginx/manifests/latest\": unauthorized: incorrect username or password", ErrorCode::RegistryLoginFailed),
             (500, "Get \"https://registry-1.docker.io/v2/\": dial tcp: lookup registry-1.docker.io: no such host", ErrorCode::RegistryUnreachable),
             (500, "write /var/lib/docker/tmp/x: no space left on device", ErrorCode::DiskFull),
             (400, "Client sent an HTTP request to an HTTPS server.", ErrorCode::TlsRequired),
