@@ -27,11 +27,21 @@ export const HOST = {
   privacy: 'https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement',
 };
 
-/** The provider of the contact mailbox (from the domain's MX records). */
-export const MAIL_PROVIDER = {
+/**
+ * Mail to the contact address: Hostinger receives it for the domain and forwards
+ * it without keeping a copy; it is stored in a Gmail mailbox.
+ */
+export const MAIL_RELAY = {
   name: 'Hostinger International Ltd.',
   country: 'Cyprus (European Union)',
   privacy: 'https://www.hostinger.com/legal/privacy-policy',
+};
+
+export const MAIL_STORE = {
+  name: 'Google Ireland Limited',
+  service: 'Gmail',
+  address: 'Gordon House, Barrow Street, Dublin 4, Ireland',
+  privacy: 'https://policies.google.com/privacy',
 };
 
 export const CNIL = {

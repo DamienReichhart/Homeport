@@ -2,7 +2,7 @@
 /** The privacy policy the GDPR requires. */
 import { REPO_URL } from '@/core/site';
 import { href } from '@/shared/lib/href';
-import { CNIL, HOST, MAIL_PROVIDER, PUBLISHER } from '../../data/facts';
+import { CNIL, HOST, MAIL_RELAY, MAIL_STORE, PUBLISHER } from '../../data/facts';
 import LegalDocument from '../LegalDocument.astro';
 
 const mail = `mailto:${PUBLISHER.email}`;
@@ -132,8 +132,13 @@ const mail = `mailto:${PUBLISHER.email}`;
       source code and the releases.
     </li>
     <li>
-      <strong>{MAIL_PROVIDER.name}</strong>, {MAIL_PROVIDER.country}, which hosts the contact
-      mailbox (<a href={MAIL_PROVIDER.privacy}>privacy policy</a>).
+      <strong>{MAIL_RELAY.name}</strong>, {MAIL_RELAY.country}, which receives mail for the contact
+      address and forwards it without keeping a copy (
+      <a href={MAIL_RELAY.privacy}>privacy policy</a>).
+    </li>
+    <li>
+      <strong>{MAIL_STORE.name}</strong> ({MAIL_STORE.address}), whose {MAIL_STORE.service} service
+      stores the forwarded mail (<a href={MAIL_STORE.privacy}>privacy policy</a>).
     </li>
   </ul>
   <p>It may also be disclosed to an authority that is legally entitled to request it.</p>
@@ -144,8 +149,14 @@ const mail = `mailto:${PUBLISHER.email}`;
     update check is transferred there. GitHub, Inc. is certified under the EU–U.S. Data Privacy
     Framework, which the European Commission found to provide an adequate level of protection
     (adequacy decision of 10 July 2023), and also relies on the Commission’s standard contractual
-    clauses. Details are in GitHub’s <a href={HOST.privacy}>privacy statement</a>. The mailbox
-    provider, {MAIL_PROVIDER.name}, is established in the European Union.
+    clauses. Details are in GitHub’s <a href={HOST.privacy}>privacy statement</a>.
+  </p>
+  <p>
+    Emails go through {MAIL_RELAY.name} and are stored by {MAIL_STORE.name}, both established in the
+    European Union. Google may store and process them on servers outside the European Union,
+    including in the United States; its parent company, Google LLC, is certified under the same Data
+    Privacy Framework and also relies on standard contractual clauses. Details are in Google’s{' '}
+    <a href={MAIL_STORE.privacy}>privacy policy</a>.
   </p>
 
   <h2 id="rights">Your rights</h2>
