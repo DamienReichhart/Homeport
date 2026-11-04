@@ -8,6 +8,8 @@ use bollard::Docker;
 use serde::Deserialize;
 
 use homeport_core::error::{AppError, AppResult};
+
+use crate::messages as msg;
 use homeport_engine::{
     auth::Logins,
     images::{self, PullEvent},
@@ -125,15 +127,18 @@ pub(super) async fn pull(
         })
         .await;
         if let Some(error) = failure.into_inner().expect("lock poisoned") {
-            return Err(AppError {
-                message: format!(
-                    "Homeport couldn't pull {} for {}: {}",
-                    image.image,
-                    image.services.join(", "),
-                    lowercase_first(&error.message)
-                ),
-                ..error
-            });
+            // The reason, already a sentence of its own, moves to the detail.
+            let detail = match &error.detail {
+                Some(detail) => format!("{}\n{detail}", error.message),
+                None => error.message.clone(),
+            };
+            return Err(error
+                .with_message(
+                    msg::PULL_FAILED
+                        .with("image", &image.image)
+                        .with("services", image.services.join(", ")),
+                )
+                .with_detail(detail));
         }
         if !open.into_inner() {
             return Ok(false);
@@ -149,14 +154,6 @@ fn line(sink: &impl Fn(ComposeEvent) -> bool, text: String) -> bool {
 /// Layer events carry a 12-digit hex id; image-level ones carry the reference.
 fn is_layer(id: Option<&str>) -> bool {
     id.is_some_and(|id| id.len() == 12 && id.chars().all(|c| c.is_ascii_hexdigit()))
-}
-
-fn lowercase_first(text: &str) -> String {
-    let mut chars = text.chars();
-    match chars.next() {
-        Some(first) => first.to_lowercase().chain(chars).collect(),
-        None => String::new(),
-    }
 }
 
 #[cfg(test)]
@@ -210,13 +207,5 @@ mod tests {
         assert!(is_layer(Some("0123456789ab")));
         assert!(!is_layer(Some("nginx:1.27")));
         assert!(!is_layer(None));
-    }
-
-    #[test]
-    fn failures_name_the_image_and_its_services() {
-        assert_eq!(
-            lowercase_first("The image is private."),
-            "the image is private."
-        );
     }
 }

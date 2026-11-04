@@ -19,6 +19,8 @@ use tokio::{
 };
 
 use homeport_core::error::{AppError, AppResult, ErrorCode};
+
+use crate::messages as msg;
 use homeport_core::{host::HostConnection, programs};
 use homeport_engine::auth::Logins;
 use homeport_transport::{proxy, Dialer};
@@ -170,14 +172,13 @@ pub async fn run(job: ComposeRun, sink: impl Fn(ComposeEvent) -> bool) {
 }
 
 async fn execute(job: ComposeRun, sink: &impl Fn(ComposeEvent) -> bool) -> AppResult<()> {
-    definition::validate_name(&job.project).map_err(AppError::validation)?;
+    definition::validate_name(&job.project)?;
     if job.action != ComposeAction::Down && job.action != ComposeAction::DownWithVolumes {
-        let check = definition::check(&job.compose);
-        if !check.is_deployable() {
-            return Err(AppError::validation(check.errors.join(" ")));
+        if let Some(blocker) = definition::blocker(&job.compose) {
+            return Err(blocker);
         }
     }
-    let vars = definition::parse_env(&job.env).map_err(AppError::validation)?;
+    let vars = definition::parse_env(&job.env)?;
 
     // Keep the proxy alive until the CLI exits.
     let (docker_host, _proxy) = match direct_docker_host(&job.connection) {
@@ -186,17 +187,14 @@ async fn execute(job: ComposeRun, sink: &impl Fn(ComposeEvent) -> bool) -> AppRe
             let dialer = job.dialer.clone().ok_or_else(|| {
                 AppError::new(
                     ErrorCode::HostNotConnected,
-                    format!("{} isn't connected.", job.host_name),
+                    msg::HOST_NOT_CONNECTED.with("name", &job.host_name),
                 )
-                .with_hint("Wait for it to connect, then try again.")
+                .with_hint(msg::HOST_NOT_CONNECTED_HINT)
             })?;
             let proxy = proxy::open(dialer).map_err(|e| {
                 AppError::new(
                     ErrorCode::Io,
-                    format!(
-                        "Homeport couldn't open the private connection compose uses to reach {}.",
-                        job.host_name
-                    ),
+                    msg::PROXY_FAILED.with("name", &job.host_name),
                 )
                 .with_cause(&e)
             })?;

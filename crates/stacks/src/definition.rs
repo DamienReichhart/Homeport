@@ -7,6 +7,10 @@
 use serde::Serialize;
 use serde_yaml_ng::Value;
 
+use homeport_core::error::{AppError, AppResult};
+
+use crate::messages as msg;
+
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct ComposeCheck {
@@ -24,7 +28,7 @@ impl ComposeCheck {
 
 /// Compose project names: lowercase letters, digits, `-` and `_`, starting
 /// with a letter or digit.
-pub fn validate_name(name: &str) -> Result<(), String> {
+pub fn validate_name(name: &str) -> AppResult<()> {
     let mut chars = name.chars();
     let valid_start = chars
         .next()
@@ -34,43 +38,73 @@ pub fn validate_name(name: &str) -> Result<(), String> {
     {
         Ok(())
     } else {
-        Err(
-            "Stack names use lowercase letters, digits, - and _, and start with a letter or digit."
-                .into(),
-        )
+        Err(AppError::validation(msg::STACK_NAME))
     }
 }
 
+/// What can be found wrong with a definition: the problems that block
+/// deploying it, as errors, and the warnings as the editor shows them.
+#[derive(Default)]
+struct Review {
+    blockers: Vec<AppError>,
+    warnings: Vec<String>,
+}
+
 pub fn check(yaml: &str) -> ComposeCheck {
-    let mut check = ComposeCheck::default();
+    let review = review(yaml);
+    ComposeCheck {
+        // The editor lists each blocker with its raw cause, if any.
+        errors: review
+            .blockers
+            .into_iter()
+            .map(|e| match e.detail {
+                Some(detail) => format!("{} {detail}", e.message),
+                None => e.message,
+            })
+            .collect(),
+        warnings: review.warnings,
+    }
+}
+
+/// The first problem that blocks deploying `yaml`, if any.
+pub fn blocker(yaml: &str) -> Option<AppError> {
+    review(yaml).blockers.into_iter().next()
+}
+
+fn review(yaml: &str) -> Review {
+    let mut check = Review::default();
     let doc: Value = match serde_yaml_ng::from_str(yaml) {
         Ok(doc) => doc,
         Err(e) => {
-            check.errors.push(format!("The YAML can't be parsed: {e}"));
+            check
+                .blockers
+                .push(AppError::validation(msg::COMPOSE_UNPARSABLE).with_detail(e));
             return check;
         }
     };
     let Some(services) = doc.get("services").and_then(Value::as_mapping) else {
         check
-            .errors
-            .push("The file needs a services: section.".into());
+            .blockers
+            .push(AppError::validation(msg::COMPOSE_NO_SERVICES_SECTION));
         return check;
     };
     if services.is_empty() {
-        check.errors.push("Define at least one service.".into());
+        check
+            .blockers
+            .push(AppError::validation(msg::COMPOSE_NO_SERVICE));
     }
 
     for (name, service) in services {
         let name = name.as_str().unwrap_or("?");
         if service.get("build").is_some() {
-            check.errors.push(format!(
-                "Service \"{name}\" uses build:, which would build from files on this machine. Use a pushed image instead."
+            check.blockers.push(AppError::validation(
+                msg::COMPOSE_BUILD.with("service", name),
             ));
         }
         if service.get("image").is_none() && service.get("build").is_none() {
-            check
-                .errors
-                .push(format!("Service \"{name}\" needs an image."));
+            check.blockers.push(AppError::validation(
+                msg::COMPOSE_NO_IMAGE.with("service", name),
+            ));
         }
         if service.get("env_file").is_some() {
             check.warnings.push(format!(
@@ -131,7 +165,7 @@ fn is_relative(path: &str) -> bool {
 
 /// Parses `.env` text into variables for the compose process. Supports
 /// comments, `export` prefixes and single or double quotes.
-pub fn parse_env(text: &str) -> Result<Vec<(String, String)>, String> {
+pub fn parse_env(text: &str) -> AppResult<Vec<(String, String)>> {
     let mut vars = Vec::new();
     for (n, line) in text.lines().enumerate() {
         let line = line.trim();
@@ -140,11 +174,13 @@ pub fn parse_env(text: &str) -> Result<Vec<(String, String)>, String> {
         }
         let line = line.strip_prefix("export ").unwrap_or(line);
         let Some((key, value)) = line.split_once('=') else {
-            return Err(format!("Line {} isn't KEY=value.", n + 1));
+            return Err(AppError::validation(
+                msg::ENV_NOT_KEY_VALUE.with("line", n + 1),
+            ));
         };
         let key = key.trim();
         if key.is_empty() || !key.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
-            return Err(format!("Line {} has an invalid variable name.", n + 1));
+            return Err(AppError::validation(msg::ENV_BAD_NAME.with("line", n + 1)));
         }
         let value = value.trim();
         let value = if let Some(inner) = value.strip_prefix('"').and_then(|v| v.strip_suffix('"')) {
