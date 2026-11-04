@@ -87,6 +87,31 @@ bun scripts/repositories.ts --out /tmp/site --packages target/release/bundle/deb
 
 `--packages` treats the files in a folder as the only release, instead of downloading releases. `HOMEPORT_REPO_URL=http://… sh install.sh` points the install script at such a copy.
 
+## Scoop and the AUR
+
+After a stable release is published, the **channels** job of the Release workflow renders, from the release's `SHA256SUMS.txt`, the Scoop manifest (`scoop/homeport.json`, both NSIS installers) and the AUR package (`aur/PKGBUILD` and `aur/.SRCINFO`, `homeport-bin` repackaging both `.deb` files) with `bun scripts/channels.ts`, and keeps them as the run's `channels` artifact. Then it updates each channel whose secret is set, and skips the others with a notice. Prereleases skip the job.
+
+| Channel | Repository                                                  | Secret                                                                                          |
+| ------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Scoop   | `DamienReichhart/scoop-bucket`, file `bucket/homeport.json` | `SCOOP_BUCKET_TOKEN`: a fine-grained token with **Contents: read and write** on that repository |
+| AUR     | `ssh://aur@aur.archlinux.org/homeport-bin.git`              | `AUR_SSH_PRIVATE_KEY`: a private key whose public half is on the AUR account                    |
+
+Setting them up, once:
+
+1. **Scoop**: create the public repository `DamienReichhart/scoop-bucket` with an empty `bucket/` folder (a README saying `scoop bucket add homeport https://github.com/DamienReichhart/scoop-bucket` helps), create the token, and add it to this repository's Actions secrets.
+2. **AUR**: create an account on aur.archlinux.org, add an SSH public key to it, and add the private key as `AUR_SSH_PRIVATE_KEY`. The first push creates `homeport-bin`.
+3. Re-run the last release's **channels** job (or wait for the next release), then check `scoop install homeport/homeport` on Windows and `yay -S homeport-bin` on Arch.
+4. Move Scoop and the AUR out of `COMING_LATER` in `website/src/core/packages/repositories.ts` and document them on the installation page.
+
+Homeport knows these installs: on a Scoop install (an NSIS installer under `scoop\apps`) and on Arch (the `.deb` repackaged), the in-app updater shows `scoop update homeport` or `yay -Syu homeport-bin` instead of installing updates itself (`crates/updates`).
+
+To render the files locally from a published release:
+
+```sh
+gh release download v0.7.0 --pattern SHA256SUMS.txt --dir /tmp
+bun scripts/channels.ts --version 0.7.0 --sums /tmp/SHA256SUMS.txt --out /tmp/channels
+```
+
 ## Code signing
 
 ### macOS
