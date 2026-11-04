@@ -4,6 +4,7 @@ import {
   loginFormOf,
   missingField,
   registryLabel,
+  registryOf,
   toDraft,
 } from './login';
 
@@ -46,5 +47,15 @@ describe('registry login form', () => {
     expect(describeLogin(null)).toBe('anonymously');
     expect(registryLabel('docker.io')).toBe('Docker Hub (docker.io)');
     expect(registryLabel('ghcr.io')).toBe('ghcr.io');
+  });
+});
+
+describe('registry of a reference', () => {
+  it('follows Docker’s rule', () => {
+    expect(registryOf('nginx')).toBe('docker.io');
+    expect(registryOf('bitnami/redis:7')).toBe('docker.io');
+    expect(registryOf('ghcr.io/org/app:1')).toBe('ghcr.io');
+    expect(registryOf('localhost:5000/app')).toBe('localhost:5000');
+    expect(registryOf('index.docker.io/library/nginx')).toBe('docker.io');
   });
 });

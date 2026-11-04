@@ -39,3 +39,17 @@ export function describeLogin(login: Registry | null | undefined): string {
 /** Docker Hub's logins are stored as docker.io; say what that is. */
 export const registryLabel = (address: string) =>
   address === 'docker.io' ? 'Docker Hub (docker.io)' : address;
+
+/**
+ * The registry an image reference is pulled from or pushed to, by Docker's
+ * rule (the same as the backend's): a first path component with a dot, a
+ * port or `localhost` names it, otherwise Docker Hub.
+ */
+export function registryOf(reference: string): string {
+  const [first, ...rest] = reference.trim().split('/');
+  if (rest.length > 0 && first && (/[.:]/.test(first) || first === 'localhost')) {
+    const host = first.toLowerCase();
+    return ['index.docker.io', 'registry-1.docker.io'].includes(host) ? 'docker.io' : host;
+  }
+  return 'docker.io';
+}
