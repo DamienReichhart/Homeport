@@ -1,0 +1,35 @@
+---
+/** Every release, newest first, or a link to GitHub when the releases couldn't be read. */
+import { getReleases } from '@/core/release';
+import { RELEASES_URL } from '@/core/site';
+import ReleaseEntry from '../ReleaseEntry.astro';
+
+const releases = await getReleases();
+---
+
+{
+  releases.length === 0 ? (
+    <p class="empty">
+      The release history is on <a href={RELEASES_URL}>GitHub</a>.
+    </p>
+  ) : (
+    <ol class="timeline">
+      {releases.map((release, index) => (
+        <ReleaseEntry release={release} latest={index === 0} />
+      ))}
+    </ol>
+  )
+}
+
+<style>
+  .empty {
+    color: var(--hp-text-muted);
+  }
+
+  .timeline {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 0;
+    list-style: none;
+  }
+</style>

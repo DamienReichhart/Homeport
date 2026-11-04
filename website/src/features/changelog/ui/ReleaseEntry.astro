@@ -1,0 +1,120 @@
+---
+/** One release: its version and date, then its notes and links. */
+import type { Release } from '@/core/release';
+import { formatDate } from '@/shared/lib/format';
+import { href } from '@/shared/lib/href';
+import { releaseNotes } from '../model/notes';
+
+interface Props {
+  release: Release;
+  /** Whether this is the newest release. */
+  latest: boolean;
+}
+
+const { release, latest } = Astro.props;
+---
+
+<li class="entry" id={release.tag}>
+  <div class="entry__meta">
+    <a class="entry__version" href={`#${release.tag}`}>
+      {release.version}
+    </a>
+    <time datetime={release.publishedAt}>{formatDate(release.publishedAt)}</time>
+    {latest && !release.prerelease && <span class="tag tag--latest">Latest</span>}
+    {release.prerelease && <span class="tag">Prerelease</span>}
+  </div>
+  <article class="entry__body prose">
+    <h2>{release.name}</h2>
+    <Fragment set:html={releaseNotes(release.body)} />
+    <p class="entry__links">
+      <a href={release.url}>Release on GitHub</a>
+      {release.installers.length > 0 && (
+        <>
+          {' · '}
+          <a href={href('/download/')}>Download</a>
+        </>
+      )}
+    </p>
+  </article>
+</li>
+
+<style>
+  .entry {
+    display: grid;
+    gap: 1rem;
+    padding: 2.5rem 0;
+    border-top: 1px solid var(--hp-border);
+    scroll-margin-top: 5rem;
+  }
+  @media (min-width: 48rem) {
+    .entry {
+      grid-template-columns: 10rem 1fr;
+      gap: 2.5rem;
+    }
+    .entry__meta {
+      position: sticky;
+      top: 5.5rem;
+      align-self: start;
+    }
+  }
+  .entry__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.75rem;
+    align-items: center;
+  }
+  @media (min-width: 48rem) {
+    .entry__meta {
+      display: grid;
+      justify-items: start;
+    }
+  }
+  .entry__version {
+    color: var(--hp-text);
+    font-family: var(--sl-font-mono);
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .entry__meta time {
+    color: var(--hp-text-faint);
+    font-size: 0.875rem;
+  }
+  .tag {
+    padding: 0.1rem 0.55rem;
+    border: 1px solid var(--hp-border-strong);
+    border-radius: 999px;
+    color: var(--hp-text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .tag--latest {
+    border-color: transparent;
+    background: color-mix(in srgb, var(--hp-primary) 15%, transparent);
+    color: var(--hp-primary);
+  }
+  /* .prose comes from the global stylesheet: outrank it rather than rely on the order of the CSS chunks. */
+  .entry__body.prose {
+    max-width: none;
+  }
+  .entry__body.prose h2 {
+    margin-top: 0;
+  }
+  .entry__body :global(h3) {
+    color: var(--hp-text);
+  }
+  .entry__body :global(ul) {
+    padding-left: 1.2rem;
+  }
+  .entry__body :global(li a) {
+    color: var(--hp-text-faint);
+    font-family: var(--sl-font-mono);
+    font-size: 0.8em;
+    font-weight: 400;
+    text-decoration: none;
+  }
+  .entry__links {
+    margin-top: 1.5rem !important;
+    font-size: 0.9rem;
+  }
+</style>
