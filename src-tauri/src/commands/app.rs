@@ -66,7 +66,7 @@ pub fn get_licenses(app: AppHandle) -> AppResult<Licenses> {
 #[derive(Debug, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct Capabilities {
-    /// An OS keychain is reachable, so SSH, TLS and stack `.env` secrets can be stored.
+    /// An OS keychain is reachable, so SSH, TLS, stack `.env` and registry secrets can be stored.
     keychain: bool,
     /// Whether Managed Stacks can be deployed here.
     compose: ComposeSupport,

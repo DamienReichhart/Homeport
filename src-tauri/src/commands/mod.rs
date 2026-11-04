@@ -18,6 +18,7 @@ pub mod files;
 pub mod hosts;
 pub mod images;
 pub mod networks;
+pub mod registries;
 pub mod settings;
 pub mod stacks;
 pub mod streams;
@@ -44,6 +45,11 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             app::open_log_folder,
             settings::get_settings,
             settings::update_settings,
+            registries::registries_list,
+            registries::registries_save,
+            registries::registries_remove,
+            registries::registries_check,
+            registries::registries_login_for,
             updates::updates_check,
             updates::updates_install,
             hosts::hosts_list,

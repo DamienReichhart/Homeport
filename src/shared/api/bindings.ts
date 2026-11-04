@@ -17,6 +17,15 @@ export const commands = {
 	openLogFolder: () => __TAURI_INVOKE<null>("open_log_folder"),
 	getSettings: () => __TAURI_INVOKE<Settings>("get_settings"),
 	updateSettings: (settings: Settings) => __TAURI_INVOKE<Settings>("update_settings", { settings }),
+	/**  Every stored login, never with its secret. */
+	registriesList: () => __TAURI_INVOKE<Registry[]>("registries_list"),
+	/**  Adds a login (`id: null`) or changes one; `draft.secret: null` keeps the stored one. */
+	registriesSave: (id: string | null, draft: RegistryDraft) => __TAURI_INVOKE<Registry>("registries_save", { id, draft }),
+	registriesRemove: (id: string) => __TAURI_INVOKE<null>("registries_remove", { id }),
+	/**  Checks a login from this machine before or after it's saved. */
+	registriesCheck: (id: string | null, draft: RegistryDraft) => __TAURI_INVOKE<null>("registries_check", { id, draft }),
+	/**  The stored login an image reference would be pulled or pushed with, if any. */
+	registriesLoginFor: (reference: string) => __TAURI_INVOKE<Registry | null>("registries_login_for", { reference }),
 	/**  Asks the update server for a newer version and remembers it for [`updates_install`]. */
 	updatesCheck: () => __TAURI_INVOKE<UpdateCheck>("updates_check"),
 	/**
@@ -136,7 +145,7 @@ export type AvailableUpdate = {
 
 /**  What this machine can do; features degrade gracefully when something is missing. */
 export type Capabilities = {
-	/**  An OS keychain is reachable, so SSH, TLS and stack `.env` secrets can be stored. */
+	/**  An OS keychain is reachable, so SSH, TLS, stack `.env` and registry secrets can be stored. */
 	keychain: boolean,
 	/**  Whether Managed Stacks can be deployed here. */
 	compose: ComposeSupport,
@@ -256,7 +265,7 @@ export type EngineInfo = {
 /**  Stable machine-readable identifier of a failure, one per case the user can act on. */
 export type ErrorCode = 
 /**  A failure that started in the frontend, outside any command. */
-"unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | "host_not_connected" | "engine_not_installed" | "engine_not_running" | "permission_denied" | "dns_failed" | "connection_refused" | "timeout" | "network_unreachable" | "connection_lost" | "tls_required" | "tls_not_supported" | "tls_certificate_expired" | "tls_certificate_not_yet_valid" | "tls_unknown_ca" | "tls_name_mismatch" | "tls_client_rejected" | "tls_handshake_failed" | "tls_material_invalid" | "ssh_auth_failed" | "ssh_agent_unavailable" | "ssh_key_invalid" | "ssh_failed" | "remote_engine_unavailable" | "host_key_untrusted" | "host_key_changed" | "engine_error" | "bad_request" | "forbidden" | "conflict" | "name_in_use" | "in_use" | "container_running" | "container_not_running" | "already_done" | "port_in_use" | "disk_full" | "image_not_found" | "registry_auth_required" | "registry_rate_limited" | "registry_unreachable" | "api_version_unsupported" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
+"unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | "host_not_connected" | "engine_not_installed" | "engine_not_running" | "permission_denied" | "dns_failed" | "connection_refused" | "timeout" | "network_unreachable" | "connection_lost" | "tls_required" | "tls_not_supported" | "tls_certificate_expired" | "tls_certificate_not_yet_valid" | "tls_unknown_ca" | "tls_name_mismatch" | "tls_client_rejected" | "tls_handshake_failed" | "tls_material_invalid" | "ssh_auth_failed" | "ssh_agent_unavailable" | "ssh_key_invalid" | "ssh_failed" | "remote_engine_unavailable" | "host_key_untrusted" | "host_key_changed" | "engine_error" | "bad_request" | "forbidden" | "conflict" | "name_in_use" | "in_use" | "container_running" | "container_not_running" | "already_done" | "port_in_use" | "disk_full" | "image_not_found" | "registry_auth_required" | "registry_rate_limited" | "registry_unreachable" | "registry_login_failed" | "api_version_unsupported" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
 
 export type ExecEvent = { type: "output"; data: string } | 
 /**  `error` explains an exit that means the command couldn't run. */
@@ -475,6 +484,26 @@ export type PruneSelection = {
 export type PullEvent = 
 /**  Progress of one layer (or a general status when `id` is absent). */
 { type: "progress"; id: string | null; status: string; current: number | null; total: number | null } | { type: "done" } | { type: "error"; error: AppError };
+
+/**  A stored login, as the frontend sees it: never the secret. */
+export type Registry = {
+	id: string,
+	/**  Normalised, e.g. `docker.io`, `ghcr.io`, `registry.local:5000`. */
+	address: string,
+	username: string,
+	createdAt: string,
+	updatedAt: string,
+};
+
+/**
+ *  What the user typed to add or change a login. `secret: None` keeps the
+ *  stored one when editing.
+ */
+export type RegistryDraft = {
+	address: string,
+	username: string,
+	secret: string | null,
+};
 
 export type RestartPolicy = "no" | "always" | "unless-stopped" | "on-failure";
 
