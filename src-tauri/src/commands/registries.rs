@@ -4,7 +4,11 @@ use tauri::State;
 
 use homeport_core::error::AppError;
 use homeport_engine::auth::{Logins, RegistryAuth};
-use homeport_registries::{hints, login, Credentials, Registry, RegistryDraft};
+use homeport_registries::{
+    hints,
+    hub::{self, HubTagPage},
+    login, Credentials, Registry, RegistryDraft,
+};
 
 use crate::{app::AppState, error::AppResult};
 
@@ -42,6 +46,26 @@ pub async fn registries_check(
 ) -> AppResult<()> {
     let credentials = state.registries.resolve(id.as_deref(), draft)?;
     login::check(&credentials).await
+}
+
+/// A page of a Docker Hub repository's tags, newest first, with the stored
+/// Docker Hub login when there is one.
+#[tauri::command]
+#[specta::specta]
+pub async fn registries_hub_tags(
+    state: State<'_, AppState>,
+    repository: String,
+    page: u32,
+    filter: String,
+) -> AppResult<HubTagPage> {
+    let login = state
+        .registries
+        .credentials(homeport_registries::DOCKER_HUB)
+        .unwrap_or_else(|e| {
+            e.logged("Docker Hub login for listing tags");
+            None
+        });
+    hub::tags(&repository, page, &filter, login.as_ref()).await
 }
 
 /// The stored login an image reference would be pulled or pushed with, if any.

@@ -5,7 +5,7 @@ use tauri::{ipc::Channel, State};
 use homeport_core::{error::AppError, streams::StreamId};
 use homeport_engine::{
     build::{self, BuildEvent, BuildSpec},
-    images::{self, Image, ImageLayer, PruneReport, PullEvent},
+    images::{self, Image, ImageLayer, PruneReport, PullEvent, SearchResult},
     transfer::{self, TransferEvent},
 };
 
@@ -35,6 +35,17 @@ pub async fn images_history(
     id: String,
 ) -> AppResult<Vec<ImageLayer>> {
     images::history(&state.hosts.registry.docker(&host_id)?, &id).await
+}
+
+/// Searches Docker Hub from the Host, as its pulls would reach it.
+#[tauri::command]
+#[specta::specta]
+pub async fn images_search(
+    state: State<'_, AppState>,
+    host_id: String,
+    term: String,
+) -> AppResult<Vec<SearchResult>> {
+    images::search(&state.hosts.registry.docker(&host_id)?, &term, 25).await
 }
 
 #[tauri::command]

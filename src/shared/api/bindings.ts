@@ -26,6 +26,11 @@ export const commands = {
 	registriesCheck: (id: string | null, draft: RegistryDraft) => __TAURI_INVOKE<null>("registries_check", { id, draft }),
 	/**  The stored login an image reference would be pulled or pushed with, if any. */
 	registriesLoginFor: (reference: string) => __TAURI_INVOKE<Registry | null>("registries_login_for", { reference }),
+	/**
+	 *  A page of a Docker Hub repository's tags, newest first, with the stored
+	 *  Docker Hub login when there is one.
+	 */
+	registriesHubTags: (repository: string, page: number, filter: string) => __TAURI_INVOKE<HubTagPage>("registries_hub_tags", { repository, page, filter }),
 	/**  Asks the update server for a newer version and remembers it for [`updates_install`]. */
 	updatesCheck: () => __TAURI_INVOKE<UpdateCheck>("updates_check"),
 	/**
@@ -83,6 +88,8 @@ export const commands = {
 	imagesList: (hostId: string) => __TAURI_INVOKE<Image[]>("images_list", { hostId }),
 	imagesInspect: (hostId: string, id: string) => __TAURI_INVOKE<Value>("images_inspect", { hostId, id }),
 	imagesHistory: (hostId: string, id: string) => __TAURI_INVOKE<ImageLayer[]>("images_history", { hostId, id }),
+	/**  Searches Docker Hub from the Host, as its pulls would reach it. */
+	imagesSearch: (hostId: string, term: string) => __TAURI_INVOKE<SearchResult[]>("images_search", { hostId, term }),
 	imagesTag: (hostId: string, id: string, target: string) => __TAURI_INVOKE<null>("images_tag", { hostId, id, target }),
 	imagesRemove: (hostId: string, id: string, force: boolean) => __TAURI_INVOKE<string[]>("images_remove", { hostId, id, force }),
 	imagesPrune: (hostId: string, all: boolean) => __TAURI_INVOKE<PruneReport>("images_prune", { hostId, all }),
@@ -383,6 +390,24 @@ export type HostView = {
 	status: HostStatus,
 };
 
+/**  One tag of a Docker Hub repository. */
+export type HubTag = {
+	name: string,
+	/**  Compressed size of the image for one platform, in bytes. */
+	size: number | null,
+	/**  ISO 8601, when the tag was last pushed. */
+	lastPushed: string | null,
+};
+
+/**  A page of tags, newest first. */
+export type HubTagPage = {
+	tags: HubTag[],
+	/**  The number of tags matching, across every page. */
+	count: number,
+	/**  The page to ask for next, if any. */
+	nextPage: number | null,
+};
+
 export type Image = {
 	id: string,
 	/**  `repo:tag` names; empty for dangling images. */
@@ -566,6 +591,15 @@ export type RunSpec = {
 	restart: RestartPolicy,
 	/**  Remove the container when it exits (`--rm`). */
 	autoRemove: boolean,
+};
+
+/**  A Docker Hub repository found by a search. */
+export type SearchResult = {
+	/**  `postgres` for official images, `bitnami/redis` otherwise. */
+	name: string,
+	description: string,
+	stars: number,
+	official: boolean,
 };
 
 export type Settings = {
