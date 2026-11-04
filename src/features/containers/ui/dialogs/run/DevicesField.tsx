@@ -12,13 +12,14 @@ import {
 import type { AdvancedErrors, DeviceRow, SecurityForm } from '../../../model/runAdvanced';
 import { describedBy } from './describedBy';
 import { Field } from './Field';
+import { t, type MessageKey } from '@/shared/i18n';
 
 type Gpus = SecurityForm['gpus'];
-const GPU_MODES: { value: Gpus['mode']; label: string }[] = [
-  { value: 'none', label: 'None' },
-  { value: 'all', label: 'All GPUs' },
-  { value: 'count', label: 'A number of GPUs' },
-  { value: 'ids', label: 'Chosen GPUs' },
+const GPU_MODES: { value: Gpus['mode']; label: MessageKey }[] = [
+  { value: 'none', label: 'containers.advanced.none' },
+  { value: 'all', label: 'containers.advanced.gpus.all' },
+  { value: 'count', label: 'containers.advanced.gpus.count' },
+  { value: 'ids', label: 'containers.advanced.gpus.ids' },
 ];
 
 /** Host devices (`--device`) and GPU requests (`--gpus`). */
@@ -41,11 +42,11 @@ export function DevicesField({
   return (
     <div className="grid gap-3">
       <div className="grid gap-1.5">
-        <Label>Devices</Label>
+        <Label>{t('containers.advanced.devices')}</Label>
         {devices.map((d, i) => (
           <div key={i} className="flex items-center gap-2">
             <Input
-              aria-label="Host device"
+              aria-label={t('containers.advanced.hostDevice')}
               placeholder="/dev/dri"
               value={d.hostPath}
               className="font-mono"
@@ -53,14 +54,14 @@ export function DevicesField({
             />
             <span className="text-muted-foreground">→</span>
             <Input
-              aria-label="Container device"
-              placeholder="Same path"
+              aria-label={t('containers.advanced.containerDevice')}
+              placeholder={t('containers.advanced.samePath')}
               value={d.containerPath}
               className="font-mono"
               onChange={(e) => update(i, { containerPath: e.target.value })}
             />
             <Input
-              aria-label="Permissions"
+              aria-label={t('containers.advanced.permissions')}
               placeholder="rwm"
               value={d.permissions}
               className="w-20 font-mono"
@@ -70,7 +71,7 @@ export function DevicesField({
               type="button"
               variant="ghost"
               size="icon-sm"
-              aria-label="Remove device"
+              aria-label={t('containers.advanced.removeDevice')}
               onClick={() => setDevices(devices.filter((_, j) => j !== i))}
             >
               <XIcon />
@@ -86,33 +87,37 @@ export function DevicesField({
             setDevices([...devices, { hostPath: '', containerPath: '', permissions: 'rwm' }])
           }
         >
-          <PlusIcon /> Add device
+          <PlusIcon /> {t('containers.advanced.addDevice')}
         </Button>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <Field
           id="run-gpus"
-          label="GPUs"
-          hint="Needs the GPU vendor's container toolkit installed on the host."
+          label={t('containers.advanced.gpus')}
+          hint={t('containers.advanced.gpusHint')}
         >
           <Select
             value={gpus.mode}
             onValueChange={(mode) => setGpus({ mode: mode as Gpus['mode'] })}
           >
-            <SelectTrigger id="run-gpus" aria-label="GPUs">
+            <SelectTrigger id="run-gpus" aria-label={t('containers.advanced.gpus')}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {GPU_MODES.map((m) => (
                 <SelectItem key={m.value} value={m.value}>
-                  {m.label}
+                  {t(m.label)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </Field>
         {gpus.mode === 'count' && (
-          <Field id="run-gpu-count" label="How many" error={errors.gpuCount}>
+          <Field
+            id="run-gpu-count"
+            label={t('containers.advanced.gpuCount')}
+            error={errors.gpuCount}
+          >
             <Input
               id="run-gpu-count"
               inputMode="numeric"
@@ -123,7 +128,11 @@ export function DevicesField({
           </Field>
         )}
         {gpus.mode === 'ids' && (
-          <Field id="run-gpu-ids" label="GPU indexes or UUIDs" hint="Separated by commas.">
+          <Field
+            id="run-gpu-ids"
+            label={t('containers.advanced.gpuIds')}
+            hint={t('containers.advanced.gpuIdsHint')}
+          >
             <Input
               id="run-gpu-ids"
               placeholder="0, 1"

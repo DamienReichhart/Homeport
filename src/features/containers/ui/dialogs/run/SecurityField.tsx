@@ -3,6 +3,7 @@ import { CAPABILITIES, normaliseCapability } from '../../../model/capabilities';
 import type { SecurityForm } from '../../../model/runAdvanced';
 import { Field } from './Field';
 import { TokenInput } from './TokenInput';
+import { t } from '@/shared/i18n';
 
 /** Capabilities and privileged mode. */
 export function SecurityField({
@@ -15,7 +16,11 @@ export function SecurityField({
   return (
     <div className="grid gap-3">
       <div className="grid gap-3 sm:grid-cols-2">
-        <Field id="run-cap-add" label="Add capabilities" hint="Like NET_ADMIN for a VPN.">
+        <Field
+          id="run-cap-add"
+          label={t('containers.advanced.capAdd')}
+          hint={t('containers.advanced.capAddHint')}
+        >
           <TokenInput
             id="run-cap-add"
             values={value.capAdd}
@@ -25,7 +30,11 @@ export function SecurityField({
             onChange={(capAdd) => onChange({ ...value, capAdd })}
           />
         </Field>
-        <Field id="run-cap-drop" label="Drop capabilities" hint="ALL drops every one.">
+        <Field
+          id="run-cap-drop"
+          label={t('containers.advanced.capDrop')}
+          hint={t('containers.advanced.capDropHint')}
+        >
           <TokenInput
             id="run-cap-drop"
             values={value.capDrop}
@@ -42,15 +51,12 @@ export function SecurityField({
           checked={value.privileged}
           onCheckedChange={(privileged) => onChange({ ...value, privileged })}
         />
-        <Label htmlFor="run-privileged">Privileged</Label>
+        <Label htmlFor="run-privileged">{t('containers.advanced.privileged')}</Label>
       </div>
       {value.privileged && (
         <Alert variant="destructive">
-          <AlertTitle>The container gets full access to the host</AlertTitle>
-          <AlertDescription>
-            It can use every device and capability, and anything running in it can take over the
-            host. Prefer adding the capabilities and devices it needs.
-          </AlertDescription>
+          <AlertTitle>{t('containers.advanced.privilegedTitle')}</AlertTitle>
+          <AlertDescription>{t('containers.advanced.privilegedWarning')}</AlertDescription>
         </Alert>
       )}
     </div>

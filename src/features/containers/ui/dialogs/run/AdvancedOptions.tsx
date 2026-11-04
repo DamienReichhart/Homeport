@@ -18,24 +18,25 @@ import { LoggingField } from './LoggingField';
 import { NetworkIdentityField } from './NetworkIdentityField';
 import { ResourcesField } from './ResourcesField';
 import { SecurityField } from './SecurityField';
+import { t, type MessageKey } from '@/shared/i18n';
 
 const SECTIONS = [
   {
     value: 'resources',
-    label: 'Resources',
+    label: 'containers.advanced.resources',
     fields: ['cpus', 'cpuShares', 'memory', 'memoryReservation', 'memorySwap'],
   },
-  { value: 'labels', label: 'Labels', fields: [] },
-  { value: 'security', label: 'Security', fields: [] },
-  { value: 'devices', label: 'Devices', fields: ['gpuCount'] },
+  { value: 'labels', label: 'containers.advanced.labels', fields: [] },
+  { value: 'security', label: 'containers.advanced.security', fields: [] },
+  { value: 'devices', label: 'containers.advanced.devices', fields: ['gpuCount'] },
   {
     value: 'health',
-    label: 'Healthcheck',
+    label: 'containers.advanced.healthcheck',
     fields: ['interval', 'timeout', 'retries', 'startPeriod'],
   },
-  { value: 'network', label: 'Network identity', fields: [] },
-  { value: 'logging', label: 'Logging', fields: [] },
-] as const satisfies { value: string; label: string; fields: AdvancedField[] }[];
+  { value: 'network', label: 'containers.advanced.network', fields: [] },
+  { value: 'logging', label: 'containers.advanced.logging', fields: [] },
+] as const satisfies { value: string; label: MessageKey; fields: AdvancedField[] }[];
 
 /**
  * The Run dialog's less common options, collapsed by default so the usual
@@ -65,16 +66,19 @@ export function AdvancedOptions({
         <ChevronRightIcon
           className={cn('size-4 transition-transform', (open || failing) && 'rotate-90')}
         />
-        Advanced options
+        {t('containers.advanced.title')}
       </CollapsibleTrigger>
       <CollapsibleContent>
         <Tabs defaultValue="resources" className="gap-3">
           <TabsList className="h-auto flex-wrap justify-start">
             {SECTIONS.map((s) => (
               <TabsTrigger key={s.value} value={s.value} className="flex-none">
-                {s.label}
+                {t(s.label)}
                 {s.fields.some((f: AdvancedField) => errors[f]) && (
-                  <span className="bg-destructive size-1.5 rounded-full" aria-label="Has errors" />
+                  <span
+                    className="bg-destructive size-1.5 rounded-full"
+                    aria-label={t('containers.advanced.hasErrors')}
+                  />
                 )}
               </TabsTrigger>
             ))}

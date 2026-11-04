@@ -18,12 +18,13 @@ import type { RunForm, RunFormErrors } from '../../../model/runForm';
 import { AdvancedOptions } from './AdvancedOptions';
 import { MountsField } from './MountsField';
 import { PortsField } from './PortsField';
+import { t, type MessageKey } from '@/shared/i18n';
 
-const RESTART: { value: RestartPolicy; label: string }[] = [
-  { value: 'no', label: 'Never' },
-  { value: 'on-failure', label: 'On failure' },
-  { value: 'unless-stopped', label: 'Unless stopped' },
-  { value: 'always', label: 'Always' },
+const RESTART: { value: RestartPolicy; label: MessageKey }[] = [
+  { value: 'no', label: 'containers.run.restart.no' },
+  { value: 'on-failure', label: 'containers.run.restart.onFailure' },
+  { value: 'unless-stopped', label: 'containers.run.restart.unlessStopped' },
+  { value: 'always', label: 'containers.run.restart.always' },
 ];
 const DEFAULT_NETWORK = '__default__';
 
@@ -56,7 +57,7 @@ export function RunFormFields({
     <>
       <div className="grid grid-cols-2 gap-3">
         <div className="grid gap-1.5">
-          <Label htmlFor="run-image">Image</Label>
+          <Label htmlFor="run-image">{t('containers.run.image')}</Label>
           <Input
             id="run-image"
             list="run-images"
@@ -68,35 +69,35 @@ export function RunFormFields({
           <datalist id="run-images">
             {images.data
               ?.flatMap((i) => i.tags)
-              .map((t) => (
-                <option key={t} value={t} />
+              .map((tag) => (
+                <option key={tag} value={tag} />
               ))}
           </datalist>
           {images.data && !images.data.some((i) => i.tags.includes(form.image.trim())) && (
-            <RegistryLogin reference={form.image} verb="Pulled" />
+            <RegistryLogin reference={form.image} verb={t('containers.run.pulled')} />
           )}
         </div>
         <div className="grid gap-1.5">
-          <Label htmlFor="run-name">Name</Label>
+          <Label htmlFor="run-name">{t('containers.run.name')}</Label>
           <Input
             id="run-name"
             value={form.name}
             onChange={(e) => set('name', e.target.value)}
-            placeholder="Generated if empty"
+            placeholder={t('containers.run.namePlaceholder')}
             disabled={lockName}
           />
           {lockName && (
-            <p className="text-muted-foreground text-xs">Kept. Use Rename to change it.</p>
+            <p className="text-muted-foreground text-xs">{t('containers.run.nameKept')}</p>
           )}
         </div>
       </div>
       <div className="grid gap-1.5">
-        <Label htmlFor="run-cmd">Command</Label>
+        <Label htmlFor="run-cmd">{t('containers.run.command')}</Label>
         <Input
           id="run-cmd"
           value={form.command}
           onChange={(e) => set('command', e.target.value)}
-          placeholder="The image's default"
+          placeholder={t('containers.run.commandPlaceholder')}
           className="font-mono"
         />
       </div>
@@ -105,11 +106,12 @@ export function RunFormFields({
       <MountsField mounts={form.mounts} onChange={(mounts) => set('mounts', mounts)} />
 
       <div className="grid gap-1.5">
-        <Label htmlFor="run-env">Environment</Label>
+        <Label htmlFor="run-env">{t('containers.run.environment')}</Label>
         <Textarea
           id="run-env"
           value={form.env}
           onChange={(e) => set('env', e.target.value)}
+          // eslint-disable-next-line homeport/no-literal-ui-string -- sample variables
           placeholder={'KEY=value\nOTHER=value'}
           className="h-20 font-mono text-xs"
           spellCheck={false}
@@ -118,16 +120,16 @@ export function RunFormFields({
 
       <div className="grid grid-cols-2 gap-3">
         <div className="grid gap-1.5">
-          <Label>Network</Label>
+          <Label>{t('containers.run.network')}</Label>
           <Select
             value={form.network || DEFAULT_NETWORK}
             onValueChange={(v) => set('network', v === DEFAULT_NETWORK ? '' : v)}
           >
-            <SelectTrigger aria-label="Network">
+            <SelectTrigger aria-label={t('containers.run.network')}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={DEFAULT_NETWORK}>Default (bridge)</SelectItem>
+              <SelectItem value={DEFAULT_NETWORK}>{t('containers.run.defaultNetwork')}</SelectItem>
               {networkNames.map((n) => (
                 <SelectItem key={n} value={n}>
                   {n}
@@ -137,19 +139,19 @@ export function RunFormFields({
           </Select>
         </div>
         <div className="grid gap-1.5">
-          <Label>Restart</Label>
+          <Label>{t('containers.run.restart')}</Label>
           <Select
             value={form.restart}
             onValueChange={(v) => set('restart', v as RestartPolicy)}
             disabled={form.autoRemove}
           >
-            <SelectTrigger aria-label="Restart policy">
+            <SelectTrigger aria-label={t('containers.run.restartPolicy')}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {RESTART.map((r) => (
                 <SelectItem key={r.value} value={r.value}>
-                  {r.label}
+                  {t(r.label)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -164,7 +166,7 @@ export function RunFormFields({
             setForm((f) => ({ ...f, autoRemove: v, restart: v ? 'no' : f.restart }))
           }
         />
-        <Label htmlFor="run-rm">Remove the container when it exits</Label>
+        <Label htmlFor="run-rm">{t('containers.run.autoRemove')}</Label>
       </div>
 
       <AdvancedOptions

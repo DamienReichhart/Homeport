@@ -14,6 +14,7 @@ import { useRunContainer } from '../../api/mutations';
 import { hasAdvanced } from '../../model/fromRunSpec';
 import { emptyRunForm, runFormErrors, type RunForm } from '../../model/runForm';
 import { RunFormFields } from './run/RunFormFields';
+import { t } from '@/shared/i18n';
 
 /**
  * The Run dialog: create and start a container, pulling the image if needed.
@@ -25,7 +26,7 @@ export function RunContainerDialog({
   onOpenChange,
   image = '',
   initial,
-  title = 'Run a container',
+  title = t('containers.run.title'),
   notice,
 }: {
   hostId: string;
@@ -51,9 +52,7 @@ export function RunContainerDialog({
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>
-            The image is pulled first if this host doesn&apos;t have it.
-          </DialogDescription>
+          <DialogDescription>{t('containers.run.description')}</DialogDescription>
         </DialogHeader>
         <form
           className="grid gap-4"
@@ -75,10 +74,10 @@ export function RunContainerDialog({
           {run.error && <ErrorMessage error={run.error} />}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={run.isPending || !form.image.trim() || invalid}>
-              {run.isPending ? 'Starting…' : 'Run'}
+              {run.isPending ? t('containers.run.starting') : t('containers.run.submit')}
             </Button>
           </DialogFooter>
         </form>

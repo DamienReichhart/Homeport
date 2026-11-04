@@ -1,5 +1,6 @@
 import type { GpuSpec, HealthcheckSpec, LogSpec, RunSpec } from '@/shared/api';
 import { parseDuration, parsePositive, parseSize } from './parse';
+import { t } from '@/shared/i18n';
 
 /** The Advanced area of the Run dialog, one object per section. */
 export interface ResourcesForm {
@@ -114,25 +115,25 @@ export function advancedErrors(form: AdvancedForm): AdvancedErrors {
     if (value === undefined) errors[field] = message;
   };
   const r = form.resources;
-  const size = 'Write a size like 512m or 2g.';
-  check('cpus', parsePositive(r.cpus), 'Write a number of CPUs like 0.5 or 2.');
-  check('cpuShares', parsePositive(r.cpuShares, true), 'Write a whole number like 512.');
+  const size = t('containers.run.error.size');
+  check('cpus', parsePositive(r.cpus), t('containers.run.error.cpus'));
+  check('cpuShares', parsePositive(r.cpuShares, true), t('containers.run.error.cpuShares'));
   check('memory', parseSize(r.memory), size);
   check('memoryReservation', parseSize(r.memoryReservation), size);
-  check('memorySwap', swap(r.memorySwap), 'Write a size like 1g, or -1 for unlimited swap.');
+  check('memorySwap', swap(r.memorySwap), t('containers.run.error.memorySwap'));
   if (form.security.gpus.mode === 'count')
     check(
       'gpuCount',
       parsePositive(form.security.gpus.count, true),
-      'Write how many GPUs, like 1.',
+      t('containers.run.error.gpuCount'),
     );
   const h = form.healthcheck;
   if (h.mode === 'custom') {
-    const duration = 'Write a duration like 30s or 1m30s.';
+    const duration = t('containers.run.error.duration');
     check('interval', parseDuration(h.interval), duration);
     check('timeout', parseDuration(h.timeout), duration);
     check('startPeriod', parseDuration(h.startPeriod), duration);
-    check('retries', parsePositive(h.retries, true), 'Write a whole number like 3.');
+    check('retries', parsePositive(h.retries, true), t('containers.run.error.retries'));
   }
   return errors;
 }

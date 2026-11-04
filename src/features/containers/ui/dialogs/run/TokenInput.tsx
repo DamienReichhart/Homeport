@@ -1,6 +1,7 @@
 import { XIcon } from 'lucide-react';
 import { useId, useState } from 'react';
 import { Badge, Input } from '@/shared/ui';
+import { t } from '@/shared/i18n';
 
 /**
  * A list of short values typed one at a time, with suggestions; Enter or a
@@ -37,7 +38,7 @@ export function TokenInput({
               {v}
               <button
                 type="button"
-                aria-label={`Remove ${v}`}
+                aria-label={t('containers.run.removeValue', { value: v })}
                 onClick={() => onChange(values.filter((x) => x !== v))}
               >
                 <XIcon className="size-3" />

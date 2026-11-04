@@ -2,6 +2,7 @@ import { Input } from '@/shared/ui';
 import type { AdvancedErrors, ResourcesForm } from '../../../model/runAdvanced';
 import { describedBy } from './describedBy';
 import { Field } from './Field';
+import { t } from '@/shared/i18n';
 
 /** CPU and memory limits (`--cpus`, `--cpu-shares`, `--memory…`). */
 export function ResourcesField({
@@ -24,35 +25,45 @@ export function ResourcesField({
   );
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      <Field id="run-cpus" label="CPU limit" error={errors.cpus} hint="CPUs, like 0.5 or 2.">
-        {input('cpus', 'run-cpus', 'Every CPU')}
+      <Field
+        id="run-cpus"
+        label={t('containers.advanced.cpus')}
+        error={errors.cpus}
+        hint={t('containers.advanced.cpusHint')}
+      >
+        {input('cpus', 'run-cpus', t('containers.advanced.cpusPlaceholder'))}
       </Field>
       <Field
         id="run-cpu-shares"
-        label="CPU shares"
+        label={t('containers.advanced.cpuShares')}
         error={errors.cpuShares}
-        hint="Weight against other containers; 1024 is the default."
+        hint={t('containers.advanced.cpuSharesHint')}
       >
         {input('cpuShares', 'run-cpu-shares', '1024')}
       </Field>
-      <Field id="run-memory" label="Memory limit" error={errors.memory} hint="Like 512m or 2g.">
-        {input('memory', 'run-memory', 'No limit')}
+      <Field
+        id="run-memory"
+        label={t('containers.advanced.memory')}
+        error={errors.memory}
+        hint={t('containers.advanced.memoryHint')}
+      >
+        {input('memory', 'run-memory', t('containers.advanced.memoryPlaceholder'))}
       </Field>
       <Field
         id="run-memory-reservation"
-        label="Memory reservation"
+        label={t('containers.advanced.memoryReservation')}
         error={errors.memoryReservation}
-        hint="A soft limit, kept when the host runs short."
+        hint={t('containers.advanced.memoryReservationHint')}
       >
-        {input('memoryReservation', 'run-memory-reservation', 'None')}
+        {input('memoryReservation', 'run-memory-reservation', t('containers.advanced.none'))}
       </Field>
       <Field
         id="run-memory-swap"
-        label="Memory and swap limit"
+        label={t('containers.advanced.memorySwap')}
         error={errors.memorySwap}
-        hint="Memory plus swap; -1 for unlimited swap."
+        hint={t('containers.advanced.memorySwapHint')}
       >
-        {input('memorySwap', 'run-memory-swap', 'Twice the memory limit')}
+        {input('memorySwap', 'run-memory-swap', t('containers.advanced.memorySwapPlaceholder'))}
       </Field>
     </div>
   );
