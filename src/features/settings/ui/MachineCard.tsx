@@ -29,8 +29,8 @@ export function MachineCard() {
                 <span className="inline-flex items-center gap-1.5">
                   <StatusDot tone={capabilities.data.keychain ? 'success' : 'danger'} />
                   {capabilities.data.keychain
-                    ? 'Available — SSH keys, certificates and stack environments are stored encrypted.'
-                    : 'Unavailable — SSH keys, TLS certificates and stack environments can’t be stored.'}
+                    ? 'Available — SSH keys, certificates, stack environments and registry logins are stored encrypted.'
+                    : 'Unavailable — SSH keys, TLS certificates, stack environments and registry logins can’t be stored.'}
                 </span>,
               ],
               ['Compose CLI', <ComposeStatus compose={capabilities.data.compose} />],
