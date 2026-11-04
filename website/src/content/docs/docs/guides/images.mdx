@@ -29,6 +29,12 @@ Choose **Pull image** and enter a reference: `nginx` (which means `nginx:latest`
 
 Homeport shows the pull's progress layer by layer, and says **Done.** when it's complete. **Cancel** stops following the pull.
 
+### Searching Docker Hub
+
+Typing a bare name such as `postg` searches Docker Hub as you type, and lists the matching repositories with their description, stars and an **Official** mark. Choose one to see its tags, newest first, with their size and when they were pushed; **Filter tags** narrows the list (`alpine`), and **More tags** loads the next page. Choosing a tag fills in the reference, such as `postgres:17-alpine`, ready to **Pull**.
+
+The search runs on the selected Host, so it reaches Docker Hub through the Host's network as the pull will. Tags are read from Docker Hub by this computer; a stored Docker Hub [login](/docs/guides/settings/#registries) raises its rate limits. Typing a tag, a digest or another registry (`ghcr.io/…`) skips the search, and if Docker Hub can't be reached the dialog says so and still pulls what you type. Other registries can't be searched yet.
+
 ### Private images
 
 When a login for the image's registry is stored in [**Settings → Registries**](/docs/guides/settings/#registries), Homeport hands it to the Engine with the pull, so private images pull on any Host — local, TCP, TLS or SSH — with nothing configured there. Under the reference, the dialog says how the image will be pulled: **Pulled as alice on ghcr.io**, or **Pulled anonymously** when no login matches.

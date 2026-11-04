@@ -54,7 +54,7 @@ Local builds aren't signed for the in-app updater and leave the `.rpm` unsigned;
 | `bun run licenses`    | Generate the third-party licence notices         |
 | `bun run screenshots` | Recapture the screenshots used on this website   |
 
-Integration tests talk to the local Docker Engine and the Compose CLI. They are marked `#[ignore = "needs a local Docker Engine"]` (or `"… and the compose CLI"`), create only resources named `homeport-test-*` and remove them afterwards. Run them with an Engine and the compose plugin on this machine:
+Integration tests talk to the local Docker Engine and the Compose CLI. They are marked `#[ignore = "needs a local Docker Engine"]` (or `"… and the compose CLI"`, and a few `"… access to Docker Hub"`), create only resources named `homeport-test-*` and remove them afterwards. Run them with an Engine and the compose plugin on this machine:
 
 ```sh
 cargo test --workspace --exclude homeport -- --ignored
