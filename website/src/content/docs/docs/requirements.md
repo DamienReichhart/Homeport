@@ -24,13 +24,13 @@ Any Engine that speaks the Docker Engine API works, including Podman's Docker-co
 
 ## Optional: an OS keychain
 
-Homeport encrypts SSH keys, TLS certificates and Stack environments with a key it keeps in your operating system's keychain:
+Homeport encrypts SSH keys, TLS certificates, Stack environments and registry logins with a key it keeps in your operating system's keychain:
 
 - **macOS** — Keychain
 - **Windows** — Credential Manager
 - **Linux** — a Secret Service provider, such as GNOME Keyring or KWallet
 
-Without one, Homeport shows a banner and still works with local sockets, plain TCP and SSH through **ssh-agent**. TLS Hosts, SSH Hosts with stored keys and Stack environments need the keychain. See [security and your data](/docs/reference/security/).
+Without one, Homeport shows a banner and still works with local sockets, plain TCP and SSH through **ssh-agent**. TLS Hosts, SSH Hosts with stored keys, Stack environments and registry logins need the keychain; without one, images are pulled anonymously. See [security and your data](/docs/reference/security/).
 
 ## Optional: Docker Compose
 
@@ -50,3 +50,5 @@ Without it, Stacks still appear and can be started, stopped and removed; only de
 | Starting, stopping, removing Stacks       |    —     |      —      |
 | Deploying Managed Stacks                  |    —     |     Yes     |
 | A Managed Stack's environment             |   Yes    |      —      |
+| Registry logins (private images, pushes)  |   Yes    |      —      |
+| Building an image from a folder           |    —     |      —      |
