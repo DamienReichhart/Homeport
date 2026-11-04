@@ -75,6 +75,7 @@ The website and user documentation live in [`website/`](website), built with [As
 cd website
 bun install
 bun run dev     # http://localhost:4321/Homeport/
+bun run lint    # checks the layers (docs/ARCHITECTURE.md#website-layout) and file sizes
 bun run build   # type-checks, validates links and builds into website/dist/
 ```
 

@@ -65,6 +65,30 @@ Rules:
 - **Shared test helpers** sit behind a crate's `test-support` feature (`homeport-transport`'s dialer over the local socket, `homeport-engine`'s throwaway resources) and are only enabled as dev-dependencies.
 - **One version per dependency and one set of lints**, declared in the root `Cargo.toml` (`[workspace.dependencies]`, `[workspace.lints]`).
 
+## Website layout
+
+The website (`website/`, Astro and Starlight) has the frontend's layers (ADR 0006), enforced by `website/eslint.config.js`:
+
+```
+website/src/
+├── app/            the shell: layouts/SiteLayout, chrome/ (header, footer, theme toggle),
+│                   starlight/ (component overrides), config/sidebar.ts, markdown/ plugins,
+│                   styles/ (theme.css for both, docs.css, site/ for the marketing pages)
+├── features/       one folder per page, plus docs/ for the components MDX uses:
+│   └── <name>/
+│       ├── ui/           components; sections/ for the page's sections
+│       ├── model/        logic, and what client scripts import
+│       ├── data/         lists that more than one component reads
+│       └── index.ts      the public API
+├── core/           what several features share about Homeport: site (the project's facts),
+│                   release (GitHub releases), packages (the Linux package repositories)
+├── shared/         no domain knowledge: ui/ (Icon, Screenshot, TextLink, ScrollReveal), lib/
+├── pages/          routes: a layout and a feature's sections, nothing else
+└── content/docs/   the user docs (Markdown and MDX)
+```
+
+A component's styles live in the component. One that overrides a global rule must outrank it (`.cta.card`), because Vite doesn't keep the global stylesheet ahead of a page's CSS.
+
 ## Adding a feature (example: `notes`)
 
 Frontend:
@@ -78,6 +102,11 @@ Backend:
 2. `src-tauri/src/commands/notes.rs` (+ `pub mod notes;` in `commands/mod.rs`), thin `#[tauri::command]` functions.
 3. Annotate commands with `#[specta::specta]`, register them in `commands::builder()`, run `bun run bindings`; add the crate's service to `AppState` (`src-tauri/src/app/state.rs`) and build it in `app/setup.rs`.
 4. Add a variant to `ErrorCode` (`crates/core/src/error/code.rs`) if new failure modes are needed, and classify them in the crate that meets them.
+
+Website page (example: `compare`):
+
+1. `website/src/features/compare/ui/sections/*.astro`, one per section, and an `index.ts` that exports them.
+2. `website/src/pages/compare.astro`: `SiteLayout` and the sections, in order.
 
 ## Building blocks
 
