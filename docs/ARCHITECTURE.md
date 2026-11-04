@@ -113,6 +113,7 @@ Website page (example: `compare`):
 
 - **UI**: shadcn/ui components (Tailwind v4) live in `src/shared/ui/primitives`; add more with `bunx shadcn add <name>` and export them from `src/shared/ui/index.ts`. Import every component from `@/shared/ui`.
 - **Brand**: colours, type and the logo are tokens in `src/shared/styles/global.css` and `<Logo />`/`<LogoMark />` in `src/shared/ui`; see [BRAND.md](BRAND.md). Use the tokens (`bg-success`, `text-warning`, `--chart-n`), not Tailwind's palette.
+- **Text**: every user-facing string comes from the catalogue in `src/shared/i18n/en/` through `t('feature.key', { param })` from `@/shared/i18n` (FormatJS, ICU MessageFormat). Errors carry a `key` and `params` that the frontend renders from the same catalogue; Rust declares each error's key and English template in its crate's `messages!` block and `bun run bindings` generates `errors.json` (ADR 0011).
 - **Server state**: TanStack Query, with `queryOptions` factories in each `api/queries.ts`. Engine resource lists are refreshed from pushed Engine events instead of polling (see Query keys above).
 - **Streams**: logs, stats, exec, pulls, pushes, builds, image saves and loads, and compose output use Tauri channels. Start one with `subscribe()` from `@/shared/api` in the feature's `api/streams.ts`; the returned function cancels it on the backend.
 - **Storage**: SQLite (`homeport.db` in the app data dir) via `homeport_storage::Db`, migrated on open from `crates/storage/src/db/migrations/`. Secrets are sealed with `homeport_storage::SecretBox` (ADR 0002).
@@ -120,4 +121,4 @@ Website page (example: `compare`):
 
 ## Deliberately not included (add when needed)
 
-- Global state library (Zustand/Redux), i18n, Windows and macOS code signing (see [RELEASING.md](RELEASING.md#code-signing)).
+- Global state library (Zustand/Redux), Windows and macOS code signing (see [RELEASING.md](RELEASING.md#code-signing)).
