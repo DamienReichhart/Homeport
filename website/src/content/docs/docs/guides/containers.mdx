@@ -136,3 +136,44 @@ The processes running in the container, as `ps aux` shows them, refreshed every 
 | **Remove the container when it exits** | Like `docker run --rm`. A container removed on exit can't also restart.                                                                                     |
 
 Choose **Run**: Homeport creates and starts the container, then opens its logs.
+
+If the container can't start — a port already in use, say — Homeport removes it again and the dialog stays open with the reason, so you can fix the field and run it under the same name.
+
+### Advanced options
+
+**Advanced options**, below the restart policy, opens the settings people reach for less often, one tab each. A value Homeport can't read is explained under its field, and **Run** waits until it's fixed. Everything set here shows in the container's **Inspect** tab.
+
+**Resources**
+
+| Field                     | Notes                                                                                           |
+| ------------------------- | ----------------------------------------------------------------------------------------------- |
+| **CPU limit**             | How many CPUs it may use, like `0.5` or `2` (`--cpus`). Empty uses every CPU.                   |
+| **CPU shares**            | Its weight against other containers when CPUs are busy; `1024` is the default (`--cpu-shares`). |
+| **Memory limit**          | Like `512m` or `2g` (`--memory`). Sizes count in powers of 1024, as Docker does. At least `6m`. |
+| **Memory reservation**    | A soft limit the Engine enforces only when the Host runs short of memory; at most the limit.    |
+| **Memory and swap limit** | Memory plus swap, so at least the memory limit; `-1` for unlimited swap. Needs a memory limit.  |
+
+**Labels** — one `key=value` per line, as reverse proxies such as Traefik and Caddy and backup tools read them. Keys starting with `com.docker.compose.` are refused: they belong to Docker Compose, and Homeport would show the container as part of a Stack.
+
+**Security** — capabilities to add and to drop, typed one at a time with suggestions (`NET_ADMIN` and `CAP_NET_ADMIN` are the same; `ALL` means every one), and **Privileged**.
+
+<Aside type="danger" title="Privileged mode">
+  A privileged container can use every device and capability of the Host, and anything running in it
+  can take the Host over. Add only the capabilities and devices it needs instead, when you can.
+</Aside>
+
+**Devices** — Host devices to pass in, like `/dev/dri` for hardware transcoding or `/dev/ttyUSB0` for a Zigbee stick, with the path inside the container (the same when empty) and permissions: some of `r`ead, `w`rite and `m`ake device files. **GPUs** asks for all of them, a number of them, or chosen ones by index or UUID, like `docker run --gpus`.
+
+<Aside type="note" title="GPUs need the vendor's toolkit">
+  The Host must have its GPU vendor's container toolkit installed — for NVIDIA, the [NVIDIA
+  Container
+  Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+  — and the Docker Engine restarted after. Homeport doesn't install it. Without it, the run fails
+  with _This host can't give containers a GPU._
+</Aside>
+
+**Healthcheck** — keep **the image's own**, define **a command** run with `/bin/sh -c` (exit code 0 means healthy), or turn the image's off with **None**. **Interval**, **Timeout** and **Start period** take durations like `30s` or `1m30s`; **Retries** is how many failures in a row make it unhealthy. The status then shows in the list as _healthy_ or _unhealthy_.
+
+**Network identity** — the container's **Hostname** and **Domain name**, its **DNS servers** (addresses) and **search domains**, and **Extra hosts**: `name:address` lines added to its `/etc/hosts`, for names your network's DNS doesn't know. `host-gateway` stands for the Host's own address, so `host.docker.internal:host-gateway` reaches services on the Host.
+
+**Logging** — the **Log driver**: `json-file`, `local`, `journald`, `syslog`, `none`, or any other the Engine has; empty uses the Engine's default. **Driver options** are `key=value` lines; for `json-file`, `max-size=10m` and `max-file=3` keep logs from filling a small Host's disk. With `journald`, `syslog` or `none`, the **Logs** tab may stay empty.
