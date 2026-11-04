@@ -3,6 +3,7 @@ import { formatBytes, formatPercent } from '@/shared/lib';
 import { Card, CardContent, CardHeader, CardTitle, TimeChart } from '@/shared/ui';
 import { useStats } from '../../../api/streams';
 import { rates } from '../../../model/stats';
+import { t } from '@/shared/i18n';
 
 export function StatsTab({
   hostId,
@@ -16,11 +17,7 @@ export function StatsTab({
   const points = useStats(hostId, containerId, running);
 
   if (!running)
-    return (
-      <p className="text-muted-foreground text-sm">
-        Start the container to see its resource usage.
-      </p>
-    );
+    return <p className="text-muted-foreground text-sm">{t('containers.stats.startFirst')}</p>;
   const last = points.at(-1)?.sample;
   const times = points.map((p) => p.time);
   const cpu: AlignedData = [times, points.map((p) => p.sample.cpuPercent ?? 0)];
@@ -41,7 +38,7 @@ export function StatsTab({
       <Card>
         <CardHeader>
           <CardTitle>
-            CPU{' '}
+            {t('containers.stats.cpu')}{' '}
             {last && (
               <span className="text-muted-foreground font-normal">
                 · {formatPercent(last.cpuPercent ?? 0)}
@@ -52,7 +49,7 @@ export function StatsTab({
         <CardContent>
           <TimeChart
             data={cpu}
-            series={[{ label: 'CPU', colour: 'var(--chart-1)' }]}
+            series={[{ label: t('containers.stats.cpu'), colour: 'var(--chart-1)' }]}
             format={formatPercent}
           />
         </CardContent>
@@ -60,10 +57,13 @@ export function StatsTab({
       <Card>
         <CardHeader>
           <CardTitle>
-            Memory{' '}
+            {t('containers.stats.memory')}{' '}
             {last && (
               <span className="text-muted-foreground font-normal">
-                · {formatBytes(last.memoryUsage)} of {formatBytes(last.memoryLimit)}
+                {t('containers.stats.memoryNow', {
+                  used: formatBytes(last.memoryUsage),
+                  limit: formatBytes(last.memoryLimit),
+                })}
               </span>
             )}
           </CardTitle>
@@ -71,7 +71,7 @@ export function StatsTab({
         <CardContent>
           <TimeChart
             data={memory}
-            series={[{ label: 'Used', colour: 'var(--chart-2)' }]}
+            series={[{ label: t('containers.stats.used'), colour: 'var(--chart-2)' }]}
             format={(v) => formatBytes(v)}
           />
         </CardContent>
@@ -79,10 +79,13 @@ export function StatsTab({
       <Card>
         <CardHeader>
           <CardTitle>
-            Network{' '}
+            {t('containers.stats.network')}{' '}
             {last && (
               <span className="text-muted-foreground font-normal">
-                · {formatBytes(last.netRx)} in, {formatBytes(last.netTx)} out
+                {t('containers.stats.networkNow', {
+                  received: formatBytes(last.netRx),
+                  sent: formatBytes(last.netTx),
+                })}
               </span>
             )}
           </CardTitle>
@@ -91,8 +94,8 @@ export function StatsTab({
           <TimeChart
             data={network}
             series={[
-              { label: 'Received', colour: 'var(--chart-3)' },
-              { label: 'Sent', colour: 'var(--chart-4)', dashed: true },
+              { label: t('containers.stats.received'), colour: 'var(--chart-3)' },
+              { label: t('containers.stats.sent'), colour: 'var(--chart-4)', dashed: true },
             ]}
             format={(v) => `${formatBytes(v)}/s`}
           />
@@ -101,9 +104,11 @@ export function StatsTab({
       <Card>
         <CardHeader>
           <CardTitle>
-            Disk I/O{' '}
+            {t('containers.stats.disk')}{' '}
             {last && (
-              <span className="text-muted-foreground font-normal">· {last.pids} processes</span>
+              <span className="text-muted-foreground font-normal">
+                {t('containers.stats.processes', { count: last.pids })}
+              </span>
             )}
           </CardTitle>
         </CardHeader>
@@ -111,8 +116,8 @@ export function StatsTab({
           <TimeChart
             data={disk}
             series={[
-              { label: 'Read', colour: 'var(--chart-5)', dashed: true },
-              { label: 'Written', colour: 'var(--chart-1)' },
+              { label: t('containers.stats.read'), colour: 'var(--chart-5)', dashed: true },
+              { label: t('containers.stats.written'), colour: 'var(--chart-1)' },
             ]}
             format={(v) => `${formatBytes(v)}/s`}
           />

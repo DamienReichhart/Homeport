@@ -1,5 +1,6 @@
 import type { HealthConfig } from '@/shared/api';
 import { formatDuration } from './parse';
+import { t } from '@/shared/i18n';
 
 /** The Engine's defaults for a healthcheck setting left unset. */
 const DEFAULTS = { intervalS: 30, timeoutS: 30, retries: 3, startPeriodS: 0 };
@@ -10,7 +11,12 @@ export function healthTiming(config: HealthConfig): string {
   const timeout = config.timeoutS ?? DEFAULTS.timeoutS;
   const retries = config.retries ?? DEFAULTS.retries;
   const start = config.startPeriodS ?? DEFAULTS.startPeriodS;
-  return `every ${formatDuration(interval)}, timeout ${formatDuration(timeout)}, ${retries} ${retries === 1 ? 'retry' : 'retries'}, start period ${formatDuration(start)}`;
+  return t('containers.health.timing', {
+    interval: formatDuration(interval),
+    timeout: formatDuration(timeout),
+    retries,
+    start: formatDuration(start),
+  });
 }
 
 /** How long a check took, from its RFC 3339 start and end. */

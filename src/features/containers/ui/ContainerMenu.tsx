@@ -31,6 +31,7 @@ import type { ConfirmOptions } from '@/shared/ui';
 import { useContainerMutations } from '../api/mutations';
 import type { ContainerDialogRequest } from './dialogs/ContainerDialogs';
 import { removeConfirmation } from './removeConfirmation';
+import { t } from '@/shared/i18n';
 
 /** Start/stop toggle plus the overflow menu of a container row. */
 export function ContainerMenu({
@@ -57,79 +58,82 @@ export function ContainerMenu({
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label={running || paused ? 'Stop' : 'Start'}
+            aria-label={
+              running || paused ? t('containers.action.stop') : t('containers.action.start')
+            }
             disabled={act.isPending}
             onClick={() => act.mutate({ ids, action: running || paused ? 'stop' : 'start' })}
           >
             {running || paused ? <SquareIcon /> : <PlayIcon />}
           </Button>
         </TooltipTrigger>
-        <TooltipContent>{running || paused ? 'Stop' : 'Start'}</TooltipContent>
+        <TooltipContent>
+          {running || paused ? t('containers.action.stop') : t('containers.action.start')}
+        </TooltipContent>
       </Tooltip>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon-sm" aria-label="More actions">
+          <Button variant="ghost" size="icon-sm" aria-label={t('common.moreActions')}>
             <EllipsisVerticalIcon />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onSelect={() => navigate(`/containers/${container.id}/logs`)}>
-            <ScrollTextIcon /> Logs
+            <ScrollTextIcon /> {t('containers.action.logs')}
           </DropdownMenuItem>
           <DropdownMenuItem
             disabled={!running}
             onSelect={() => navigate(`/containers/${container.id}/exec`)}
           >
-            <SquareTerminalIcon /> Open terminal
+            <SquareTerminalIcon /> {t('containers.action.terminal')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             disabled={!running && !paused}
             onSelect={() => act.mutate({ ids, action: 'restart' })}
           >
-            <RotateCwIcon /> Restart
+            <RotateCwIcon /> {t('containers.action.restart')}
           </DropdownMenuItem>
           {paused ? (
             <DropdownMenuItem onSelect={() => act.mutate({ ids, action: 'unpause' })}>
-              <PlayIcon /> Resume
+              <PlayIcon /> {t('containers.action.resume')}
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem
               disabled={!running}
               onSelect={() => act.mutate({ ids, action: 'pause' })}
             >
-              <PauseIcon /> Pause
+              <PauseIcon /> {t('containers.action.pause')}
             </DropdownMenuItem>
           )}
           <DropdownMenuItem
             disabled={!running}
             onSelect={() =>
               confirm({
-                title: `Kill ${container.name}?`,
-                description:
-                  'The main process gets SIGKILL immediately, without a chance to shut down cleanly.',
-                confirmLabel: 'Kill',
+                title: t('containers.kill.title', { name: container.name }),
+                description: t('containers.kill.description'),
+                confirmLabel: t('containers.action.kill'),
                 destructive: true,
                 onConfirm: () => act.mutateAsync({ ids, action: 'kill' }),
               })
             }
           >
-            <SkullIcon /> Kill
+            <SkullIcon /> {t('containers.action.kill')}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'rename', container })}>
-            <PencilIcon /> Rename
+            <PencilIcon /> {t('containers.action.rename')}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'edit', container })}>
-            <SlidersHorizontalIcon /> Edit
+            <SlidersHorizontalIcon /> {t('containers.action.edit')}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'duplicate', container })}>
-            <CopyIcon /> Duplicate
+            <CopyIcon /> {t('containers.action.duplicate')}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'commit', container })}>
-            <ImageDownIcon /> Commit to image…
+            <ImageDownIcon /> {t('containers.action.commit')}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'export', container })}>
-            <FileArchiveIcon /> Export filesystem…
+            <FileArchiveIcon /> {t('containers.action.export')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -140,7 +144,7 @@ export function ContainerMenu({
               )
             }
           >
-            <Trash2Icon /> Remove
+            <Trash2Icon /> {t('common.remove')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

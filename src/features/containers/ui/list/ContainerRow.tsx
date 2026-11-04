@@ -16,6 +16,7 @@ import { containerTone } from '../../model/containerTone';
 import { portLabels } from '../../model/grouping';
 import { ContainerMenu } from '../ContainerMenu';
 import type { ContainerDialogRequest } from '../dialogs/ContainerDialogs';
+import { t } from '@/shared/i18n';
 
 /** One container in the list; `nested` rows sit under their Stack and show the service. */
 export function ContainerRow({
@@ -52,7 +53,7 @@ export function ContainerRow({
     >
       <TableCell onClick={(e) => e.stopPropagation()}>
         <Checkbox
-          aria-label={`Select ${c.name}`}
+          aria-label={t('containers.selectOne', { name: c.name })}
           checked={selected}
           onCheckedChange={(v) => onSelect(v === true)}
         />

@@ -34,16 +34,17 @@ import { HealthTab } from './tabs/HealthTab';
 import { InspectTab } from './tabs/InspectTab';
 import { ProcessesTab } from './tabs/ProcessesTab';
 import { StatsTab } from './tabs/StatsTab';
+import { t, type MessageKey } from '@/shared/i18n';
 
 const TABS = ['logs', 'inspect', 'health', 'exec', 'files', 'stats', 'processes'] as const;
-const TAB_LABELS: Record<(typeof TABS)[number], string> = {
-  logs: 'Logs',
-  health: 'Health',
-  inspect: 'Inspect',
-  exec: 'Exec',
-  files: 'Files',
-  stats: 'Stats',
-  processes: 'Processes',
+const TAB_LABELS: Record<(typeof TABS)[number], MessageKey> = {
+  logs: 'containers.tab.logs',
+  health: 'containers.tab.health',
+  inspect: 'containers.tab.inspect',
+  exec: 'containers.tab.exec',
+  files: 'containers.tab.files',
+  stats: 'containers.tab.stats',
+  processes: 'containers.tab.processes',
 };
 
 function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
@@ -63,13 +64,13 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
   if (!container) {
     return (
       <div className="grid gap-3">
-        <ErrorMessage error={{ code: 'not_found', message: 'This container no longer exists.' }} />
+        <ErrorMessage error={{ code: 'not_found', message: t('containers.detail.gone') }} />
         <Button
           variant="outline"
           className="justify-self-start"
           onClick={() => navigate('/containers')}
         >
-          Back to containers
+          {t('containers.detail.backToList')}
         </Button>
       </div>
     );
@@ -84,7 +85,7 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label="Back"
+              aria-label={t('common.back')}
               onClick={() => navigate('/containers')}
             >
               <ArrowLeftIcon />
@@ -114,13 +115,13 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
       />
       <Tabs
         value={tab}
-        onValueChange={(t) => navigate(`/containers/${container.id}/${t}`, { replace: true })}
+        onValueChange={(next) => navigate(`/containers/${container.id}/${next}`, { replace: true })}
         className="flex min-h-0 flex-1 flex-col"
       >
         <TabsList>
-          {TABS.filter((t) => t !== 'health' || container.health !== null).map((t) => (
-            <TabsTrigger key={t} value={t}>
-              {TAB_LABELS[t]}
+          {TABS.filter((value) => value !== 'health' || container.health !== null).map((value) => (
+            <TabsTrigger key={value} value={value}>
+              {t(TAB_LABELS[value])}
             </TabsTrigger>
           ))}
         </TabsList>

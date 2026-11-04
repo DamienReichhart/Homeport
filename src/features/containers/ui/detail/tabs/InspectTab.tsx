@@ -19,6 +19,7 @@ import {
   TabsTrigger,
 } from '@/shared/ui';
 import type { ContainerInspect } from '../../../model/types';
+import { t } from '@/shared/i18n';
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -32,7 +33,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 }
 
 function SimpleTable({ head, rows }: { head: string[]; rows: ReactNode[][] }) {
-  if (rows.length === 0) return <p className="text-muted-foreground text-sm">None.</p>;
+  if (rows.length === 0) return <p className="text-muted-foreground text-sm">{t('common.none')}</p>;
   return (
     <Table>
       <TableHeader>
@@ -68,54 +69,65 @@ export function InspectTab({ inspect }: { inspect: ContainerInspect }) {
   const ports = Object.entries(inspect.NetworkSettings.Ports ?? {}).flatMap(([port, bindings]) =>
     bindings?.length
       ? bindings.map((b) => [mono(port), mono(`${b.HostIp || '*'}:${b.HostPort}`)])
-      : [[mono(port), 'not published']],
+      : [[mono(port), t('containers.inspect.notPublished')]],
   );
   const networks = Object.entries(inspect.NetworkSettings.Networks ?? {});
   const labels = Object.entries(inspect.Config.Labels ?? {}).sort(([a], [b]) => a.localeCompare(b));
   const health = inspect.State.Health;
   const restart = inspect.HostConfig.RestartPolicy;
+  const { Status: status, ExitCode: code } = inspect.State;
+  const state = inspect.State.Running ? status : t('containers.inspect.exited', { status, code });
+  const restarted = (policy: string, max: number) =>
+    max
+      ? t('containers.inspect.restartedMax', { policy, max, count: inspect.RestartCount })
+      : t('containers.inspect.restarted', { policy, count: inspect.RestartCount });
 
   return (
     <Tabs defaultValue="details">
       <TabsList>
-        <TabsTrigger value="details">Details</TabsTrigger>
-        <TabsTrigger value="raw">Raw JSON</TabsTrigger>
+        <TabsTrigger value="details">{t('common.details')}</TabsTrigger>
+        <TabsTrigger value="raw">{t('containers.inspect.raw')}</TabsTrigger>
       </TabsList>
       <TabsContent value="details" className="grid gap-4 lg:grid-cols-2">
-        <Section title="Container">
+        <Section title={t('containers.inspect.container')}>
           <KeyValue
             items={[
-              ['ID', mono(inspect.Id)],
-              ['Image', inspect.Config.Image],
-              ['Created', new Date(inspect.Created).toLocaleString()],
+              [t('containers.inspect.id'), mono(inspect.Id)],
+              [t('containers.inspect.image'), inspect.Config.Image],
+              [t('containers.inspect.created'), new Date(inspect.Created).toLocaleString()],
               [
-                'State',
-                `${inspect.State.Status}${inspect.State.Running ? '' : ` (exit ${inspect.State.ExitCode})`}${inspect.State.OOMKilled ? ', out of memory' : ''}`,
+                t('containers.inspect.state'),
+                inspect.State.OOMKilled ? t('containers.inspect.outOfMemory', { state }) : state,
               ],
               [
-                'Started',
+                t('containers.inspect.started'),
                 inspect.State.StartedAt.startsWith('0001')
                   ? '—'
                   : new Date(inspect.State.StartedAt).toLocaleString(),
               ],
               [
-                'Entrypoint',
+                t('containers.inspect.entrypoint'),
                 inspect.Config.Entrypoint ? mono(inspect.Config.Entrypoint.join(' ')) : '—',
               ],
-              ['Command', inspect.Config.Cmd ? mono(inspect.Config.Cmd.join(' ')) : '—'],
-              ['Working dir', inspect.Config.WorkingDir || '—'],
-              ['User', inspect.Config.User || 'image default'],
               [
-                'Restart policy',
-                restart?.Name
-                  ? `${restart.Name}${restart.MaximumRetryCount ? ` (max ${restart.MaximumRetryCount})` : ''} · restarted ${inspect.RestartCount}×`
-                  : 'no',
+                t('containers.inspect.command'),
+                inspect.Config.Cmd ? mono(inspect.Config.Cmd.join(' ')) : '—',
               ],
-              ['Network mode', inspect.HostConfig.NetworkMode],
+              [t('containers.inspect.workingDir'), inspect.Config.WorkingDir || '—'],
+              [
+                t('containers.inspect.user'),
+                inspect.Config.User || t('containers.inspect.imageDefault'),
+              ],
+              [
+                t('containers.inspect.restartPolicy'),
+                // `no` is the Engine's name for the policy, not a word.
+                restart?.Name ? restarted(restart.Name, restart.MaximumRetryCount) : 'no',
+              ],
+              [t('containers.inspect.networkMode'), inspect.HostConfig.NetworkMode],
             ]}
           />
         </Section>
-        <Section title="Health">
+        <Section title={t('containers.inspect.health')}>
           {health ? (
             <div className="grid gap-2">
               <span>
@@ -123,11 +135,15 @@ export function InspectTab({ inspect }: { inspect: ContainerInspect }) {
                   {health.Status}
                 </Badge>{' '}
                 <span className="text-muted-foreground text-sm">
-                  {health.FailingStreak} failing in a row
+                  {t('containers.inspect.failingStreak', { count: health.FailingStreak })}
                 </span>
               </span>
               <SimpleTable
-                head={['Started', 'Exit', 'Output']}
+                head={[
+                  t('containers.inspect.column.started'),
+                  t('containers.inspect.column.exit'),
+                  t('containers.inspect.column.output'),
+                ]}
                 rows={(health.Log ?? [])
                   .slice(-5)
                   .reverse()
@@ -139,32 +155,48 @@ export function InspectTab({ inspect }: { inspect: ContainerInspect }) {
               />
             </div>
           ) : (
-            <p className="text-muted-foreground text-sm">The image defines no health check.</p>
+            <p className="text-muted-foreground text-sm">{t('containers.inspect.noHealthcheck')}</p>
           )}
         </Section>
-        <Section title="Environment">
+        <Section title={t('containers.inspect.environment')}>
           <SimpleTable
-            head={['Variable', 'Value']}
+            head={[t('containers.inspect.column.variable'), t('containers.inspect.column.value')]}
             rows={env.map(([k, v]) => [mono(k ?? ''), mono(v ?? '')])}
           />
         </Section>
-        <Section title="Mounts">
+        <Section title={t('containers.inspect.mounts')}>
           <SimpleTable
-            head={['Type', 'Source', 'Destination', 'Mode']}
+            head={[
+              t('containers.inspect.column.type'),
+              t('containers.inspect.column.source'),
+              t('containers.inspect.column.destination'),
+              t('containers.inspect.column.mode'),
+            ]}
             rows={inspect.Mounts.map((m) => [
               m.Type,
               mono(m.Name ?? m.Source),
               mono(m.Destination),
-              m.RW ? 'read-write' : 'read-only',
+              m.RW ? t('containers.inspect.readWrite') : t('containers.inspect.readOnly'),
             ])}
           />
         </Section>
-        <Section title="Ports">
-          <SimpleTable head={['Container', 'Published on']} rows={ports} />
-        </Section>
-        <Section title="Networks">
+        <Section title={t('containers.inspect.ports')}>
           <SimpleTable
-            head={['Network', 'IP', 'Gateway', 'Aliases']}
+            head={[
+              t('containers.inspect.column.container'),
+              t('containers.inspect.column.publishedOn'),
+            ]}
+            rows={ports}
+          />
+        </Section>
+        <Section title={t('containers.inspect.networks')}>
+          <SimpleTable
+            head={[
+              t('containers.inspect.column.network'),
+              t('containers.inspect.column.ip'),
+              t('containers.inspect.column.gateway'),
+              t('containers.inspect.column.aliases'),
+            ]}
             rows={networks.map(([name, n]) => [
               name,
               mono(n.IPAddress || '—'),
@@ -174,9 +206,9 @@ export function InspectTab({ inspect }: { inspect: ContainerInspect }) {
           />
         </Section>
         <div className="lg:col-span-2">
-          <Section title="Labels">
+          <Section title={t('containers.inspect.labels')}>
             <SimpleTable
-              head={['Label', 'Value']}
+              head={[t('containers.inspect.column.label'), t('containers.inspect.column.value')]}
               rows={labels.map(([k, v]) => [mono(k), mono(v)])}
             />
           </Section>

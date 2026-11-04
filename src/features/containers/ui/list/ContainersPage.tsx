@@ -36,6 +36,7 @@ import { RunContainerDialog } from '../dialogs/RunContainerDialog';
 import { ContainerRow } from './ContainerRow';
 import { SelectionActions } from './SelectionActions';
 import { StackGroupRows } from './StackGroupRows';
+import { t } from '@/shared/i18n';
 
 function ContainersList({ hostId }: { hostId: string }) {
   const { host } = useHostSelection();
@@ -91,22 +92,25 @@ function ContainersList({ hostId }: { hostId: string }) {
   return (
     <div>
       <PageHeader
-        title="Containers"
-        description={`${all.filter((c) => c.state === 'running').length} running of ${all.length}`}
+        title={t('containers.title')}
+        description={t('containers.summary', {
+          running: all.filter((c) => c.state === 'running').length,
+          count: all.length,
+        })}
         actions={
           <>
             <CheckNewerImages hostId={hostId} />
             <Button onClick={() => setRunning(true)}>
-              <PlusIcon /> Run container
+              <PlusIcon /> {t('containers.runContainer')}
             </Button>
           </>
         }
       />
       <div className="mb-3 flex flex-wrap items-center gap-3">
-        <SearchInput value={query} onChange={setQuery} placeholder="Search containers" />
+        <SearchInput value={query} onChange={setQuery} placeholder={t('containers.search')} />
         <div className="flex items-center gap-2">
           <Switch id="only-running" checked={onlyRunning} onCheckedChange={setOnlyRunning} />
-          <Label htmlFor="only-running">Only running</Label>
+          <Label htmlFor="only-running">{t('containers.onlyRunning')}</Label>
         </div>
         {selectedContainers.length > 0 && (
           <SelectionActions
@@ -122,9 +126,9 @@ function ContainersList({ hostId }: { hostId: string }) {
       {all.length === 0 ? (
         <EmptyState
           icon={BoxIcon}
-          title="No containers"
-          description="Run one from an image, or deploy a Stack."
-          action={<Button onClick={() => setRunning(true)}>Run container</Button>}
+          title={t('containers.empty.title')}
+          description={t('containers.empty.description')}
+          action={<Button onClick={() => setRunning(true)}>{t('containers.runContainer')}</Button>}
         />
       ) : (
         <div className="rounded-md border">
@@ -132,13 +136,13 @@ function ContainersList({ hostId }: { hostId: string }) {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-8" />
-                <TableHead>Name</TableHead>
-                <TableHead>Image</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Ports</TableHead>
-                <TableHead className="text-right">CPU</TableHead>
-                <TableHead className="text-right">Memory</TableHead>
-                <TableHead>Created</TableHead>
+                <TableHead>{t('containers.column.name')}</TableHead>
+                <TableHead>{t('containers.column.image')}</TableHead>
+                <TableHead>{t('containers.column.status')}</TableHead>
+                <TableHead>{t('containers.column.ports')}</TableHead>
+                <TableHead className="text-right">{t('containers.column.cpu')}</TableHead>
+                <TableHead className="text-right">{t('containers.column.memory')}</TableHead>
+                <TableHead>{t('containers.column.created')}</TableHead>
                 <TableHead className="w-20" />
               </TableRow>
             </TableHeader>
@@ -163,7 +167,7 @@ function ContainersList({ hostId }: { hostId: string }) {
               {groups.length === 0 && standalone.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={9} className="text-muted-foreground h-20 text-center">
-                    No containers match.
+                    {t('containers.noMatch')}
                   </TableCell>
                 </TableRow>
               )}

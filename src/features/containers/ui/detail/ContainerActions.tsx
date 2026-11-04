@@ -24,6 +24,7 @@ import {
 import { useContainerMutations } from '../../api/mutations';
 import type { ContainerDialogRequest } from '../dialogs/ContainerDialogs';
 import { removeConfirmation } from '../removeConfirmation';
+import { t } from '@/shared/i18n';
 
 /** The lifecycle buttons in a container page's header. */
 export function ContainerActions({
@@ -47,11 +48,11 @@ export function ContainerActions({
     <>
       {running || paused ? (
         <Button variant="outline" onClick={() => act.mutate({ ids, action: 'stop' })}>
-          <SquareIcon /> Stop
+          <SquareIcon /> {t('containers.action.stop')}
         </Button>
       ) : (
         <Button variant="outline" onClick={() => act.mutate({ ids, action: 'start' })}>
-          <PlayIcon /> Start
+          <PlayIcon /> {t('containers.action.start')}
         </Button>
       )}
       <Button
@@ -59,14 +60,15 @@ export function ContainerActions({
         disabled={!running && !paused}
         onClick={() => act.mutate({ ids, action: 'restart' })}
       >
-        <RotateCwIcon /> Restart
+        <RotateCwIcon /> {t('containers.action.restart')}
       </Button>
       <Button
         variant="outline"
         disabled={!running && !paused}
         onClick={() => act.mutate({ ids, action: paused ? 'unpause' : 'pause' })}
       >
-        {paused ? <PlayIcon /> : <PauseIcon />} {paused ? 'Resume' : 'Pause'}
+        {paused ? <PlayIcon /> : <PauseIcon />}{' '}
+        {paused ? t('containers.action.resume') : t('containers.action.pause')}
       </Button>
       <Button
         variant="destructive"
@@ -80,29 +82,29 @@ export function ContainerActions({
           )
         }
       >
-        <Trash2Icon /> Remove
+        <Trash2Icon /> {t('common.remove')}
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon" aria-label="More actions">
+          <Button variant="outline" size="icon" aria-label={t('common.moreActions')}>
             <EllipsisVerticalIcon />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'rename', container })}>
-            <PencilIcon /> Rename
+            <PencilIcon /> {t('containers.action.rename')}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'edit', container })}>
-            <SlidersHorizontalIcon /> Edit
+            <SlidersHorizontalIcon /> {t('containers.action.edit')}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'duplicate', container })}>
-            <CopyIcon /> Duplicate
+            <CopyIcon /> {t('containers.action.duplicate')}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'commit', container })}>
-            <ImageDownIcon /> Commit to image…
+            <ImageDownIcon /> {t('containers.action.commit')}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'export', container })}>
-            <FileArchiveIcon /> Export filesystem…
+            <FileArchiveIcon /> {t('containers.action.export')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

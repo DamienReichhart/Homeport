@@ -4,14 +4,16 @@ import { hostKeys } from '@/core/host';
 import { commands, type CommitSpec, type ContainerAction, type FileEntry } from '@/shared/api';
 import { toastError } from '@/shared/ui';
 import { toRunSpec, type RunForm } from '../model/runForm';
+import { t, type MessageKey } from '@/shared/i18n';
 
-const PAST: Record<ContainerAction, string> = {
-  start: 'Started',
-  stop: 'Stopped',
-  restart: 'Restarted',
-  pause: 'Paused',
-  unpause: 'Resumed',
-  kill: 'Killed',
+/** The toast after an action, by action; each message takes the number of containers. */
+const DONE: Record<ContainerAction, MessageKey> = {
+  start: 'containers.done.start',
+  stop: 'containers.done.stop',
+  restart: 'containers.done.restart',
+  pause: 'containers.done.pause',
+  unpause: 'containers.done.unpause',
+  kill: 'containers.done.kill',
 };
 
 function useRefreshContainers(hostId: string) {
@@ -28,9 +30,7 @@ export function useContainerMutations(hostId: string) {
       return { ids, action };
     },
     onSuccess: ({ ids, action }) => {
-      toast.success(
-        `${PAST[action]} ${ids.length === 1 ? 'container' : `${ids.length} containers`}`,
-      );
+      toast.success(t(DONE[action], { count: ids.length }));
       void refresh();
     },
     onError: (e) => toastError(e),
@@ -41,7 +41,7 @@ export function useContainerMutations(hostId: string) {
       return ids;
     },
     onSuccess: (ids) => {
-      toast.success(`Removed ${ids.length === 1 ? 'container' : `${ids.length} containers`}`);
+      toast.success(t('containers.done.remove', { count: ids.length }));
       void refresh();
     },
     onError: (e) => toastError(e),
@@ -69,7 +69,7 @@ export function useRunContainer(hostId: string, onStarted: (id: string) => void)
     meta: { silent: true },
     mutationFn: (form: RunForm) => commands.containersRun(hostId, toRunSpec(form)),
     onSuccess: async (id) => {
-      toast.success('Container started');
+      toast.success(t('containers.run.started'));
       await refresh();
       onStarted(id);
     },
@@ -88,7 +88,7 @@ export function useRecreateContainer(
     mutationFn: (form: RunForm) =>
       commands.containersRecreate(hostId, containerId, toRunSpec(form)),
     onSuccess: async (id) => {
-      toast.success('Container recreated');
+      toast.success(t('containers.edit.recreated'));
       await refresh();
       onDone(id);
     },
@@ -110,8 +110,8 @@ export function useCommitContainer(
     meta: { silent: true },
     mutationFn: (spec: CommitSpec) => commands.containersCommit(hostId, containerId, spec),
     onSuccess: async (_, spec) => {
-      toast.success(`Committed to ${spec.reference}`, {
-        action: { label: 'Open images', onClick: openImages },
+      toast.success(t('containers.commit.done', { reference: spec.reference }), {
+        action: { label: t('containers.commit.openImages'), onClick: openImages },
       });
       await client.invalidateQueries({ queryKey: hostKeys.images(hostId) });
       onDone();
@@ -125,14 +125,18 @@ export function useFileTransfers(hostId: string, containerId: string, onUploaded
     mutationFn: async ({ entry, target }: { entry: FileEntry; target: string }) =>
       commands.filesDownload(hostId, containerId, entry.path, target),
     onSuccess: (archived, { entry }) =>
-      toast.success(archived ? `Saved ${entry.name} as a .tar archive` : `Saved ${entry.name}`),
+      toast.success(
+        archived
+          ? t('containers.files.savedArchive', { name: entry.name })
+          : t('containers.files.saved', { name: entry.name }),
+      ),
     onError: (e) => toastError(e),
   });
   const upload = useMutation({
     mutationFn: async ({ path, sources }: { path: string; sources: string[] }) =>
       commands.filesUpload(hostId, containerId, path, sources),
     onSuccess: (_, { path, sources }) => {
-      toast.success(`Uploaded ${sources.length} file${sources.length === 1 ? '' : 's'} to ${path}`);
+      toast.success(t('containers.files.uploaded', { count: sources.length, path }));
       onUploaded();
     },
     onError: (e) => toastError(e),
@@ -145,7 +149,7 @@ export function useSaveLogs() {
   return useMutation({
     mutationFn: ({ path, lines }: { path: string; lines: string[] }) =>
       commands.writeTextFile(path, `${lines.join('\n')}\n`),
-    onSuccess: () => toast.success('Logs saved'),
+    onSuccess: () => toast.success(t('containers.logs.saved')),
     onError: (e) => toastError(e),
   });
 }

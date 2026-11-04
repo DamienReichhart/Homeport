@@ -1,17 +1,20 @@
 import type { LogLine } from '@/shared/api';
+import type { MessageKey } from '@/shared/i18n';
 
-export const TAILS = [
-  { value: '100', label: 'Last 100' },
-  { value: '1000', label: 'Last 1 000' },
-  { value: '10000', label: 'Last 10 000' },
-  { value: 'all', label: 'Everything' },
+/** How many lines to show, with the key of each choice's label. */
+export const TAILS: { value: string; label: MessageKey }[] = [
+  { value: '100', label: 'containers.logs.tail.100' },
+  { value: '1000', label: 'containers.logs.tail.1000' },
+  { value: '10000', label: 'containers.logs.tail.10000' },
+  { value: 'all', label: 'containers.logs.tail.all' },
 ];
 
-export const SINCE = [
-  { value: 'all', label: 'Any time' },
-  { value: '300', label: 'Last 5 min' },
-  { value: '3600', label: 'Last hour' },
-  { value: '86400', label: 'Last 24 h' },
+/** How far back to show lines, in seconds, with the key of each choice's label. */
+export const SINCE: { value: string; label: MessageKey }[] = [
+  { value: 'all', label: 'containers.logs.since.all' },
+  { value: '300', label: 'containers.logs.since.300' },
+  { value: '3600', label: 'containers.logs.since.3600' },
+  { value: '86400', label: 'containers.logs.since.86400' },
 ];
 
 /** How many lines a viewer keeps for downloading. */

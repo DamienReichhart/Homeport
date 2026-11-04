@@ -15,12 +15,14 @@ import {
 } from '@/shared/ui';
 import { containerQueries } from '../../../api/queries';
 import { checkDuration, healthTiming, OUTPUT_LINES } from '../../../model/health';
+import { t } from '@/shared/i18n';
 
 function Output({ text }: { text: string }) {
   const [open, setOpen] = useState(false);
   const lines = text.trimEnd().split('\n');
   const long = lines.length > OUTPUT_LINES;
-  if (text.trim() === '') return <p className="text-muted-foreground text-xs">No output.</p>;
+  if (text.trim() === '')
+    return <p className="text-muted-foreground text-xs">{t('containers.health.noOutput')}</p>;
   return (
     <div className="grid gap-1">
       <pre className="bg-muted overflow-x-auto rounded-md p-2 font-mono text-xs whitespace-pre-wrap">
@@ -33,7 +35,9 @@ function Output({ text }: { text: string }) {
           className="justify-self-start"
           onClick={() => setOpen(!open)}
         >
-          {open ? 'Show less' : `Show ${lines.length - OUTPUT_LINES} more lines`}
+          {open
+            ? t('containers.health.showLess')
+            : t('containers.health.showMore', { count: lines.length - OUTPUT_LINES })}
         </Button>
       )}
     </div>
@@ -50,10 +54,14 @@ function Result({ result }: { result: HealthResult }) {
           variant="outline"
           className={cn(passed ? 'text-success' : 'border-destructive text-destructive')}
         >
-          exit {result.exitCode}
+          {t('containers.health.exit', { code: result.exitCode })}
         </Badge>
         <span>{formatDateTime(Date.parse(result.start) / 1000)}</span>
-        {took && <span className="text-muted-foreground">· took {took}</span>}
+        {took && (
+          <span className="text-muted-foreground">
+            {t('containers.health.took', { duration: took })}
+          </span>
+        )}
       </div>
       <Output text={result.output} />
     </li>
@@ -76,7 +84,7 @@ export function HealthTab({
   if (health.error)
     return <ErrorMessage error={health.error} onRetry={() => void health.refetch()} />;
   if (!health.data)
-    return <p className="text-muted-foreground text-sm">This container has no healthcheck.</p>;
+    return <p className="text-muted-foreground text-sm">{t('containers.health.none')}</p>;
   const { config, log } = health.data;
   const unhealthy = health.data.status === 'unhealthy';
 
@@ -85,7 +93,7 @@ export function HealthTab({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            Healthcheck
+            {t('containers.health.title')}
             <Badge
               variant={unhealthy ? 'destructive' : 'outline'}
               className={cn(health.data.status === 'healthy' && 'text-success')}
@@ -97,20 +105,23 @@ export function HealthTab({
         <CardContent>
           <KeyValue
             items={[
-              ['Command', <span className="font-mono text-xs break-all">{config.command}</span>],
-              ['Timing', healthTiming(config)],
-              ['Failing in a row', String(health.data.failingStreak)],
+              [
+                t('containers.health.command'),
+                <span className="font-mono text-xs break-all">{config.command}</span>,
+              ],
+              [t('containers.health.timingLabel'), healthTiming(config)],
+              [t('containers.health.failingStreak'), String(health.data.failingStreak)],
             ]}
           />
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Last results</CardTitle>
+          <CardTitle>{t('containers.health.lastResults')}</CardTitle>
         </CardHeader>
         <CardContent>
           {log.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No check has run yet.</p>
+            <p className="text-muted-foreground text-sm">{t('containers.health.noRuns')}</p>
           ) : (
             <ol className="grid gap-3">
               {log.map((result) => (

@@ -15,6 +15,7 @@ import {
   type TransferEvent,
 } from '@/shared/api';
 import { STATS_WINDOW, type StatsPoint } from '../model/stats';
+import { t } from '@/shared/i18n';
 
 /** Live CPU and memory of every running container, keyed by id. */
 export function useUsage(hostId: string): Map<string, ContainerUsage> {
@@ -147,7 +148,7 @@ export function exportContainer(
     (ch) => commands.containersExportSubscribe(hostId, containerId, destination, ch),
     (event) => {
       onEvent(event);
-      if (event.type === 'done') toast.success(`Exported to ${destination}`);
+      if (event.type === 'done') toast.success(t('containers.export.done', { destination }));
     },
     onError,
   );

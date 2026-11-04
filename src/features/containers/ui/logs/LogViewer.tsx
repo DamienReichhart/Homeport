@@ -25,6 +25,7 @@ import {
 import { useSaveLogs } from '../../api/mutations';
 import { streamLogs } from '../../api/streams';
 import { MAX_KEPT_LINES, renderLine, SINCE, TAILS } from '../../model/logs';
+import { t } from '@/shared/i18n';
 
 /**
  * Live logs of one or more containers. Several sources are interleaved with
@@ -81,7 +82,7 @@ export function LogViewer({ hostId, sources }: { hostId: string; sources: LogSou
         } else if (event.type === 'error') {
           term.write(`\r\n${terminalError(event.error)}`);
         } else {
-          term.write('\r\n\x1b[2m— end of logs —\x1b[22m\r\n');
+          term.write(`\r\n\x1b[2m${t('containers.logs.end')}\x1b[22m\r\n`);
         }
       },
       (error) => term.write(terminalError(error)),
@@ -100,31 +101,31 @@ export function LogViewer({ hostId, sources }: { hostId: string; sources: LogSou
     <div className="flex h-full min-h-0 flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
         <Select value={tail} onValueChange={setTail}>
-          <SelectTrigger className="w-32" size="sm" aria-label="History">
+          <SelectTrigger className="w-32" size="sm" aria-label={t('containers.logs.history')}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {TAILS.map((t) => (
-              <SelectItem key={t.value} value={t.value}>
-                {t.label}
+            {TAILS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {t(option.label)}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Select value={since} onValueChange={setSince}>
-          <SelectTrigger className="w-32" size="sm" aria-label="Since">
+          <SelectTrigger className="w-32" size="sm" aria-label={t('containers.logs.sinceLabel')}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {SINCE.map((s) => (
               <SelectItem key={s.value} value={s.value}>
-                {s.label}
+                {t(s.label)}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Toggle size="sm" variant="outline" pressed={timestamps} onPressedChange={setTimestamps}>
-          Timestamps
+          {t('containers.logs.timestamps')}
         </Toggle>
         <Toggle size="sm" variant="outline" pressed={stdout} onPressedChange={setStdout}>
           stdout
@@ -137,34 +138,39 @@ export function LogViewer({ hostId, sources }: { hostId: string; sources: LogSou
           variant="outline"
           pressed={follow}
           onPressedChange={setFollow}
-          aria-label="Follow"
+          aria-label={t('containers.logs.follow')}
         >
-          <ArrowDownToLineIcon /> Follow
+          <ArrowDownToLineIcon /> {t('containers.logs.follow')}
         </Toggle>
         <div className="ml-auto flex items-center gap-1">
           <Input
             className="h-7 w-44"
-            placeholder="Find in logs"
+            placeholder={t('containers.logs.find')}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && find(!e.shiftKey)}
-            aria-label="Find in logs"
+            aria-label={t('containers.logs.find')}
           />
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="Previous match"
+            aria-label={t('containers.logs.previous')}
             onClick={() => find(false)}
           >
             <ChevronUpIcon />
           </Button>
-          <Button variant="ghost" size="icon-sm" aria-label="Next match" onClick={() => find(true)}>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={t('containers.logs.next')}
+            onClick={() => find(true)}
+          >
             <ChevronDownIcon />
           </Button>
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="Clear"
+            aria-label={t('containers.logs.clear')}
             onClick={() => {
               handle.current?.terminal.clear();
               kept.current = [];
@@ -175,9 +181,9 @@ export function LogViewer({ hostId, sources }: { hostId: string; sources: LogSou
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label="Download logs"
+            aria-label={t('containers.logs.download')}
             onClick={async () => {
-              const path = await pickSavePath('Save logs', 'logs.txt');
+              const path = await pickSavePath(t('containers.logs.saveTitle'), 'logs.txt');
               if (!path) return;
               saveLogs.mutate({ path, lines: [...kept.current] });
             }}
