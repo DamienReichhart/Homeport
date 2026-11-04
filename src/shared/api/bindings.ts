@@ -90,6 +90,12 @@ export const commands = {
 	imagesHistory: (hostId: string, id: string) => __TAURI_INVOKE<ImageLayer[]>("images_history", { hostId, id }),
 	/**  Searches Docker Hub from the Host, as its pulls would reach it. */
 	imagesSearch: (hostId: string, term: string) => __TAURI_INVOKE<SearchResult[]>("images_search", { hostId, term }),
+	/**
+	 *  Whether a newer image is published for each container's image and each
+	 *  tagged image on a Host. Registry answers are cached (`force` skips the
+	 *  cache); a registry that can't be asked leaves its images `unknown`.
+	 */
+	imagesFreshness: (hostId: string, force: boolean) => __TAURI_INVOKE<FreshnessResult[]>("images_freshness", { hostId, force }),
 	imagesTag: (hostId: string, id: string, target: string) => __TAURI_INVOKE<null>("images_tag", { hostId, id, target }),
 	imagesRemove: (hostId: string, id: string, force: boolean) => __TAURI_INVOKE<string[]>("images_remove", { hostId, id, force }),
 	imagesPrune: (hostId: string, all: boolean) => __TAURI_INVOKE<PruneReport>("images_prune", { hostId, all }),
@@ -341,6 +347,18 @@ export type FileEntry = {
 };
 
 export type FileKind = "directory" | "file" | "symlink" | "other";
+
+export type Freshness = "upToDate" | 
+/**  The registry has a different image under this tag. */
+"newer" | 
+/**  No answer: built locally, pulled by digest, or the registry couldn't be asked. */
+"unknown";
+
+export type FreshnessResult = {
+	reference: string,
+	imageId: string,
+	freshness: Freshness,
+};
 
 /**  What the user can do about a failure. */
 export type Hint = {

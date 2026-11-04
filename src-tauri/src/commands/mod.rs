@@ -90,6 +90,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             images::images_inspect,
             images::images_history,
             images::images_search,
+            images::images_freshness,
             images::images_tag,
             images::images_remove,
             images::images_prune,

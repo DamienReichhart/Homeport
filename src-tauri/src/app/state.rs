@@ -4,7 +4,7 @@
 use std::sync::{Arc, Mutex};
 
 use homeport_core::streams::Streams;
-use homeport_engine::containers::exec::ExecSessions;
+use homeport_engine::{containers::exec::ExecSessions, freshness::FreshnessCache};
 use homeport_hosts::service::HostService;
 use homeport_registries::RegistryStore;
 use homeport_settings::SettingsService;
@@ -19,6 +19,8 @@ pub struct AppState {
     pub registries: RegistryStore,
     pub streams: Streams,
     pub exec: ExecSessions,
+    /// Registry digests, for telling when a newer image is published.
+    pub freshness: FreshnessCache,
     /// The update found by the last check, kept for installing it.
     pub update: Mutex<Option<tauri_plugin_updater::Update>>,
 }

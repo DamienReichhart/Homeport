@@ -5,6 +5,8 @@ use tauri::{ipc::Channel, State};
 use homeport_core::{error::AppError, streams::StreamId};
 use homeport_engine::{
     build::{self, BuildEvent, BuildSpec},
+    containers,
+    freshness::{FreshnessResult, FreshnessTarget},
     images::{self, Image, ImageLayer, PruneReport, PullEvent, SearchResult},
     transfer::{self, TransferEvent},
 };
@@ -181,4 +183,38 @@ pub async fn images_load_subscribe(
         .spawn(transfer::load(docker, source.into(), move |e| {
             on_event.send(e).is_ok()
         })))
+}
+
+/// Whether a newer image is published for each container's image and each
+/// tagged image on a Host. Registry answers are cached (`force` skips the
+/// cache); a registry that can't be asked leaves its images `unknown`.
+#[tauri::command]
+#[specta::specta]
+pub async fn images_freshness(
+    state: State<'_, AppState>,
+    host_id: String,
+    force: bool,
+) -> AppResult<Vec<FreshnessResult>> {
+    let docker = state.hosts.registry.docker(&host_id)?;
+    let mut targets: Vec<FreshnessTarget> = containers::list(&docker)
+        .await?
+        .into_iter()
+        .map(|c| FreshnessTarget {
+            reference: c.image,
+            image_id: c.image_id,
+        })
+        .collect();
+    for image in images::list(&docker).await? {
+        targets.extend(image.tags.into_iter().map(|reference| FreshnessTarget {
+            reference,
+            image_id: image.id.clone(),
+        }));
+    }
+    targets.sort_by(|a, b| (&a.reference, &a.image_id).cmp(&(&b.reference, &b.image_id)));
+    targets.dedup();
+    let logins = registries::logins(&state)?;
+    Ok(state
+        .freshness
+        .check(&docker, &host_id, targets, &logins, force)
+        .await)
 }
