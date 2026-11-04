@@ -44,6 +44,20 @@ export default tseslint.config(
   },
   ...astro.configs.recommended,
   {
+    // Follow imports into .astro files from .astro files, or a cycle through
+    // components goes unseen; it is reported on the cycle's components. Not
+    // through import-x/parsers, which require()s the parser (astro-eslint-parser
+    // is ESM only): with no entry there, import-x parses an imported .astro file
+    // with the linting file's parser, which only an .astro file has.
+    files: ['**/*.astro'],
+    settings: {
+      'import-x/extensions': [
+        ...importX.flatConfigs.typescript.settings['import-x/extensions'],
+        '.astro',
+      ],
+    },
+  },
+  {
     // Past 300 lines a file usually holds more than one thing: split it.
     files: [`src/${sources}`],
     rules: { 'max-lines': ['warn', { max: 300, skipBlankLines: true, skipComments: true }] },
