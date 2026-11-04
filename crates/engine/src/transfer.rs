@@ -339,13 +339,12 @@ mod tests {
         images::remove(&docker, &name, false).await.unwrap();
         let (sink, events) = recorder();
         load(docker.clone(), path, sink).await;
-        let events = events.lock().unwrap();
+        let last = events.lock().unwrap().last().cloned();
         assert_eq!(
-            events.last(),
-            Some(&TransferEvent::Done {
+            last,
+            Some(TransferEvent::Done {
                 images: vec![name.clone()]
-            }),
-            "{events:?}"
+            })
         );
         assert!(docker.inspect_image(&name).await.is_ok());
     }
