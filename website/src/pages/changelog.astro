@@ -153,10 +153,11 @@ function notes(body: string): string {
     background: color-mix(in srgb, var(--hp-primary) 15%, transparent);
     color: var(--hp-primary);
   }
-  .entry__body {
+  /* .prose comes from the global stylesheet: outrank it rather than rely on the order of the CSS chunks. */
+  .entry__body.prose {
     max-width: none;
   }
-  .entry__body h2 {
+  .entry__body.prose h2 {
     margin-top: 0;
   }
   .entry__body :global(h3) {
