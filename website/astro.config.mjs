@@ -4,7 +4,7 @@ import sitemap from '@astrojs/sitemap';
 import starlight from '@astrojs/starlight';
 import { defineConfig } from 'astro/config';
 import starlightLinksValidator from 'starlight-links-validator';
-import baseLinks from './src/lib/base-links.mjs';
+import baseLinks from './src/app/markdown/base-links.mjs';
 import { sidebar } from './src/app/config/sidebar.ts';
 import { REPO_URL } from './src/core/site/index.ts';
 
@@ -44,11 +44,11 @@ export default defineConfig({
       customCss: [
         '@fontsource-variable/geist',
         '@fontsource-variable/geist-mono',
-        './src/styles/theme.css',
-        './src/styles/docs.css',
+        './src/app/styles/theme.css',
+        './src/app/styles/docs.css',
       ],
       components: {
-        Header: './src/components/starlight/Header.astro',
+        Header: './src/app/starlight/Header.astro',
       },
       head: [
         { tag: 'meta', attrs: { property: 'og:image', content: `${site}${root}/og.png` } },

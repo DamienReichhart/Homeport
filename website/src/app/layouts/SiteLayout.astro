@@ -1,15 +1,15 @@
 ---
 /*
  * Layout for the marketing pages (home, download, changelog). The docs use
- * Starlight's own layout; both share the palette in styles/theme.css and the
+ * Starlight's own layout; both share the palette in app/styles/theme.css and the
  * theme the visitor picked (localStorage `starlight-theme`).
  */
 import '@fontsource-variable/geist';
 import '@fontsource-variable/geist-mono';
-import '../styles/theme.css';
-import '../styles/site.css';
-import SiteFooter from '../components/SiteFooter.astro';
-import SiteHeader from '../components/SiteHeader.astro';
+import '@/app/styles/theme.css';
+import '@/app/styles/site.css';
+import SiteFooter from '@/app/chrome/SiteFooter.astro';
+import SiteHeader from '@/app/chrome/SiteHeader.astro';
 import { DESCRIPTION, REPO_URL } from '@/core/site';
 
 interface Props {
