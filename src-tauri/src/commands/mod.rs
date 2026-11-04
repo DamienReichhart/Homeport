@@ -77,6 +77,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             containers::stats_subscribe,
             system::usage_subscribe,
             images::images_pull_subscribe,
+            images::images_push_subscribe,
             exec::exec_start,
             exec::exec_input,
             exec::exec_resize,

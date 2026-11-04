@@ -79,6 +79,16 @@ pub(crate) fn explain(state: &AppState, reference: &str, error: AppError) -> App
     explainer(state, reference)(error)
 }
 
+/// [`explainer`] for a push.
+pub(crate) fn push_explainer(
+    state: &AppState,
+    reference: &str,
+) -> impl Fn(AppError) -> AppError + Send + Sync + 'static {
+    let login = state.registries.login_for(reference).ok().flatten();
+    let reference = reference.to_owned();
+    move |error| hints::explain_push(error, &reference, login.as_ref())
+}
+
 /// [`explain`] for a stream that outlives the command, which can't keep `state`.
 pub(crate) fn explainer(
     state: &AppState,

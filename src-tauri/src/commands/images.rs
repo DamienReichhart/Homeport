@@ -2,7 +2,7 @@
 
 use tauri::{ipc::Channel, State};
 
-use homeport_core::streams::StreamId;
+use homeport_core::{error::AppError, streams::StreamId};
 use homeport_engine::images::{self, Image, ImageLayer, PruneReport, PullEvent};
 
 use crate::{app::AppState, commands::registries, error::AppResult};
@@ -79,12 +79,35 @@ pub async fn images_pull_subscribe(
     Ok(state
         .streams
         .spawn(images::pull(docker, reference, auth, move |e| {
-            let e = match e {
-                PullEvent::Error { error } => PullEvent::Error {
-                    error: explained(error),
-                },
-                e => e,
-            };
-            on_event.send(e).is_ok()
+            on_event.send(explain_event(&explained, e)).is_ok()
         })))
+}
+
+/// Pushes an image name to its registry with the stored login, streaming progress.
+#[tauri::command]
+#[specta::specta]
+pub async fn images_push_subscribe(
+    state: State<'_, AppState>,
+    host_id: String,
+    reference: String,
+    on_event: Channel<PullEvent>,
+) -> AppResult<StreamId> {
+    let docker = state.hosts.registry.docker(&host_id)?;
+    let auth = registries::auth_for(&state, &reference)?;
+    let explained = registries::push_explainer(&state, &reference);
+    Ok(state
+        .streams
+        .spawn(images::push(docker, reference, auth, move |e| {
+            on_event.send(explain_event(&explained, e)).is_ok()
+        })))
+}
+
+/// Applies a registry hint to a pull or push failure.
+fn explain_event(explain: &impl Fn(AppError) -> AppError, event: PullEvent) -> PullEvent {
+    match event {
+        PullEvent::Error { error } => PullEvent::Error {
+            error: explain(error),
+        },
+        e => e,
+    }
 }

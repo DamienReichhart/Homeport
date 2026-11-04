@@ -65,6 +65,8 @@ export const commands = {
 	/**  Usage of every running container on a Host, refreshed every two seconds. */
 	usageSubscribe: (hostId: string, onUsage: Channel<ContainerUsage[]>) => __TAURI_INVOKE<number>("usage_subscribe", { hostId, onUsage }),
 	imagesPullSubscribe: (hostId: string, reference: string, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("images_pull_subscribe", { hostId, reference, onEvent }),
+	/**  Pushes an image name to its registry with the stored login, streaming progress. */
+	imagesPushSubscribe: (hostId: string, reference: string, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("images_push_subscribe", { hostId, reference, onEvent }),
 	execStart: (hostId: string, containerId: string, options: ExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("exec_start", { hostId, containerId, options, onEvent }),
 	execInput: (session: number, data: string) => __TAURI_INVOKE<null>("exec_input", { session, data }),
 	execResize: (session: number, cols: number, rows: number) => __TAURI_INVOKE<null>("exec_resize", { session, cols, rows }),
@@ -152,8 +154,13 @@ export type Capabilities = {
 };
 
 export type ComposeAction = 
-/**  `up -d --remove-orphans`: deploy or redeploy. */
-"up" | "pull" | 
+/**
+ *  `up -d --remove-orphans`: deploy or redeploy, after pulling the
+ *  images the Host lacks through the Engine API.
+ */
+"up" | 
+/**  Pulls every service's image through the Engine API; compose isn't run. */
+"pull" | 
 /**  `down --remove-orphans`, keeping volumes. */
 "down" | 
 /**  `down -v --remove-orphans`: also deletes the Stack's volumes. */
@@ -481,8 +488,12 @@ export type PruneSelection = {
 	buildCache: boolean,
 };
 
+/**  Progress of a pull or a push. */
 export type PullEvent = 
-/**  Progress of one layer (or a general status when `id` is absent). */
+/**
+ *  Progress of one layer (or a general status when `id` is absent).
+ *  Pushes never name the layer: the Engine API client drops its id.
+ */
 { type: "progress"; id: string | null; status: string; current: number | null; total: number | null } | { type: "done" } | { type: "error"; error: AppError };
 
 /**  A stored login, as the frontend sees it: never the secret. */
