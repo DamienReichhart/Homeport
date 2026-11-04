@@ -547,12 +547,31 @@ mod tests {
         );
     }
 
+    /// Removes a Stack's containers and networks when dropped, even if the test panics.
+    struct RemoveStack(String);
+
+    impl Drop for RemoveStack {
+        fn drop(&mut self) {
+            let project = self.0.clone();
+            std::thread::spawn(move || {
+                tokio::runtime::Runtime::new()
+                    .unwrap()
+                    .block_on(async move {
+                        let _ = lifecycle::remove(&testing::docker(), &project).await;
+                    })
+            })
+            .join()
+            .ok();
+        }
+    }
+
     #[tokio::test]
     #[ignore = "needs a local Docker Engine"]
     async fn external_stacks_can_be_stopped_and_removed_without_compose_files() {
         let docker = testing::docker();
         testing::ensure_image(&docker).await;
         let project = testing::unique("ext");
+        let _cleanup = RemoveStack(project.clone());
         let up = compose(
             &project,
             ComposeAction::Up,
@@ -570,8 +589,23 @@ mod tests {
         lifecycle::act(&docker, &project, lifecycle::StackAction::Stop)
             .await
             .unwrap();
-        let stopped = lifecycle::containers_of(&docker, &project).await.unwrap();
-        assert!(stopped.iter().all(|c| c.state == "exited"));
+        // The Engine may list a container a moment before it reports it exited.
+        let mut stopped = Vec::new();
+        for _ in 0..50 {
+            stopped = lifecycle::containers_of(&docker, &project).await.unwrap();
+            if stopped.iter().all(|c| c.state == "exited") {
+                break;
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+        }
+        let states: Vec<(&str, &str)> = stopped
+            .iter()
+            .map(|c| (c.name.as_str(), c.state.as_str()))
+            .collect();
+        assert!(
+            !stopped.is_empty() && stopped.iter().all(|c| c.state == "exited"),
+            "{states:?}"
+        );
         lifecycle::remove(&docker, &project).await.unwrap();
         assert!(lifecycle::containers_of(&docker, &project)
             .await
