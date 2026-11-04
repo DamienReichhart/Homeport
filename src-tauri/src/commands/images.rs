@@ -6,6 +6,7 @@ use homeport_core::{error::AppError, streams::StreamId};
 use homeport_engine::{
     build::{self, BuildEvent, BuildSpec},
     images::{self, Image, ImageLayer, PruneReport, PullEvent},
+    transfer::{self, TransferEvent},
 };
 
 use crate::{app::AppState, commands::registries, error::AppResult};
@@ -131,6 +132,42 @@ pub async fn images_build_subscribe(
     Ok(state
         .streams
         .spawn(build::build(docker, spec, logins, move |e| {
+            on_event.send(e).is_ok()
+        })))
+}
+
+/// Saves images into one tar file on this machine, streaming progress.
+#[tauri::command]
+#[specta::specta]
+pub async fn images_save_subscribe(
+    state: State<'_, AppState>,
+    host_id: String,
+    names: Vec<String>,
+    destination: String,
+    on_event: Channel<TransferEvent>,
+) -> AppResult<StreamId> {
+    let docker = state.hosts.registry.docker(&host_id)?;
+    Ok(state.streams.spawn(transfer::save(
+        docker,
+        names,
+        destination.into(),
+        move |e| on_event.send(e).is_ok(),
+    )))
+}
+
+/// Loads the images in a tar file on this machine into a Host, streaming progress.
+#[tauri::command]
+#[specta::specta]
+pub async fn images_load_subscribe(
+    state: State<'_, AppState>,
+    host_id: String,
+    source: String,
+    on_event: Channel<TransferEvent>,
+) -> AppResult<StreamId> {
+    let docker = state.hosts.registry.docker(&host_id)?;
+    Ok(state
+        .streams
+        .spawn(transfer::load(docker, source.into(), move |e| {
             on_event.send(e).is_ok()
         })))
 }

@@ -72,6 +72,10 @@ export const commands = {
 	 *  output. Every stored login is sent, for private `FROM` images.
 	 */
 	imagesBuildSubscribe: (hostId: string, spec: BuildSpec, onEvent: Channel<BuildEvent>) => __TAURI_INVOKE<number>("images_build_subscribe", { hostId, spec, onEvent }),
+	/**  Saves images into one tar file on this machine, streaming progress. */
+	imagesSaveSubscribe: (hostId: string, names: string[], destination: string, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("images_save_subscribe", { hostId, names, destination, onEvent }),
+	/**  Loads the images in a tar file on this machine into a Host, streaming progress. */
+	imagesLoadSubscribe: (hostId: string, source: string, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("images_load_subscribe", { hostId, source, onEvent }),
 	execStart: (hostId: string, containerId: string, options: ExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("exec_start", { hostId, containerId, options, onEvent }),
 	execInput: (session: number, data: string) => __TAURI_INVOKE<null>("exec_input", { session, data }),
 	execResize: (session: number, cols: number, rows: number) => __TAURI_INVOKE<null>("exec_resize", { session, cols, rows }),
@@ -645,6 +649,14 @@ export type SystemPruneReport = {
 };
 
 export type Theme = "system" | "light" | "dark";
+
+export type TransferEvent = 
+/**  Bytes written to the file (save) or sent to the Engine (load) so far. */
+{ type: "progress"; bytes: number; total: number | null } | 
+/**  A line from the Engine, such as `Loaded image: nginx:1.27`. */
+{ type: "line"; text: string } | 
+/**  Finished; `images` are the names saved or loaded. */
+{ type: "done"; images: string[] } | { type: "error"; error: AppError };
 
 export type UpdateCheck = {
 	currentVersion: string,
