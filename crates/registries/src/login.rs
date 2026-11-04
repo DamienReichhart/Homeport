@@ -195,6 +195,22 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore = "needs a local Docker Engine"]
+    async fn logins_are_checked_against_a_real_registry() {
+        use homeport_engine::testing;
+        let docker = testing::docker();
+        let registry = testing::registry(&docker, true).await;
+        let login = |secret: &str| Credentials {
+            address: registry.address.clone(),
+            username: testing::REGISTRY_USER.into(),
+            secret: secret.into(),
+        };
+        check(&login(testing::REGISTRY_PASSWORD)).await.unwrap();
+        let err = check(&login("wrong")).await.unwrap_err();
+        assert!(err.is(ErrorCode::RegistryLoginFailed), "{err:?}");
+    }
+
+    #[tokio::test]
     async fn unreachable_registries_are_reported_as_such() {
         let err = check(&Credentials {
             address: "127.0.0.1:1".into(),

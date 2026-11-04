@@ -2210,6 +2210,7 @@ name = "homeport-registries"
 version = "0.6.0"
 dependencies = [
  "homeport-core",
+ "homeport-engine",
  "homeport-storage",
  "log",
  "reqwest",

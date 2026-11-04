@@ -24,3 +24,4 @@ rustls.workspace = true
 
 [dev-dependencies]
 tokio.workspace = true
+homeport-engine = { workspace = true, features = ["test-support"] }
