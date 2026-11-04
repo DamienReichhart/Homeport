@@ -49,6 +49,45 @@ impl RegistryAuth {
     }
 }
 
+/// Every stored login, and how to tell which one an image reference needs.
+/// The registries crate owns that rule; the shell passes it in, so this
+/// crate and the ones above it never depend on the registries crate.
+#[derive(Clone)]
+pub struct Logins {
+    logins: Vec<RegistryAuth>,
+    registry_of: fn(&str) -> String,
+}
+
+impl fmt::Debug for Logins {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_list().entries(&self.logins).finish()
+    }
+}
+
+impl Logins {
+    pub fn new(logins: Vec<RegistryAuth>, registry_of: fn(&str) -> String) -> Self {
+        Self {
+            logins,
+            registry_of,
+        }
+    }
+
+    /// No logins: every pull is anonymous.
+    pub fn none() -> Self {
+        Self::new(Vec::new(), |_| String::new())
+    }
+
+    /// The login for the registry `reference` is pulled from or pushed to.
+    pub fn for_reference(&self, reference: &str) -> Option<&RegistryAuth> {
+        let registry = (self.registry_of)(reference);
+        self.logins.iter().find(|l| l.address == registry)
+    }
+
+    pub fn all(&self) -> &[RegistryAuth] {
+        &self.logins
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -76,5 +115,21 @@ mod tests {
     #[test]
     fn secrets_stay_out_of_debug_output() {
         assert!(!format!("{:?}", login("ghcr.io")).contains("s3cret"));
+        let logins = Logins::new(vec![login("ghcr.io")], |_| String::new());
+        assert!(!format!("{logins:?}").contains("s3cret"));
+    }
+
+    #[test]
+    fn logins_are_picked_by_the_reference_registry() {
+        let registry_of = |r: &str| r.split('/').next().unwrap_or_default().to_owned();
+        let logins = Logins::new(vec![login("ghcr.io")], registry_of);
+        assert_eq!(
+            logins
+                .for_reference("ghcr.io/org/app")
+                .map(|l| l.address.as_str()),
+            Some("ghcr.io")
+        );
+        assert!(logins.for_reference("quay.io/org/app").is_none());
+        assert!(Logins::none().for_reference("ghcr.io/x").is_none());
     }
 }
