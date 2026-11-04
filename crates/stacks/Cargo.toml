@@ -19,6 +19,7 @@ bollard.workspace = true
 tokio.workspace = true
 serde.workspace = true
 serde_yaml_ng.workspace = true
+serde_json.workspace = true
 specta.workspace = true
 rusqlite.workspace = true
 uuid.workspace = true
@@ -29,4 +30,3 @@ log.workspace = true
 homeport-hosts.workspace = true
 homeport-engine = { workspace = true, features = ["test-support"] }
 homeport-transport = { workspace = true, features = ["test-support"] }
-serde_json.workspace = true

@@ -2,12 +2,16 @@
 //!
 //! The YAML goes in on stdin and the environment as process variables, so
 //! nothing secret is written to disk. TLS and SSH Hosts are reached through
-//! a [`proxy`] that exists only while the command runs.
+//! a [`proxy`] that exists only while the command runs. Images are pulled
+//! through the Engine API with the stored registry logins first, so the CLI
+//! never needs one (ADR 0010).
 
 mod error;
+mod images;
 
 use std::{collections::VecDeque, process::Stdio, sync::Arc};
 
+use bollard::Docker;
 use serde::{Deserialize, Serialize};
 use tokio::{
     io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
@@ -16,6 +20,7 @@ use tokio::{
 
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 use homeport_core::{host::HostConnection, programs};
+use homeport_engine::auth::Logins;
 use homeport_transport::{proxy, Dialer};
 
 use self::error as errors;
@@ -83,8 +88,10 @@ async fn version_of(program: &std::path::Path, prefix: &[&str]) -> Option<String
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub enum ComposeAction {
-    /// `up -d --remove-orphans`: deploy or redeploy.
+    /// `up -d --remove-orphans`: deploy or redeploy, after pulling the
+    /// images the Host lacks through the Engine API.
     Up,
+    /// Pulls every service's image through the Engine API; compose isn't run.
     Pull,
     /// `down --remove-orphans`, keeping volumes.
     Down,
@@ -144,6 +151,9 @@ pub struct ComposeRun {
     pub host_name: String,
     pub connection: HostConnection,
     pub dialer: Option<Arc<dyn Dialer>>,
+    /// The Host's Engine, for pulling images with `logins`.
+    pub docker: Docker,
+    pub logins: Logins,
     pub project: String,
     pub compose: String,
     pub env: String,
@@ -173,7 +183,7 @@ async fn execute(job: ComposeRun, sink: &impl Fn(ComposeEvent) -> bool) -> AppRe
     let (docker_host, _proxy) = match direct_docker_host(&job.connection) {
         Some(host) => (host, None),
         None => {
-            let dialer = job.dialer.ok_or_else(|| {
+            let dialer = job.dialer.clone().ok_or_else(|| {
                 AppError::new(
                     ErrorCode::HostNotConnected,
                     format!("{} isn't connected.", job.host_name),
@@ -195,30 +205,30 @@ async fn execute(job: ComposeRun, sink: &impl Fn(ComposeEvent) -> bool) -> AppRe
     };
     // An empty working directory so nothing on this machine is picked up as project files.
     let workdir = tempfile::tempdir()?;
+    let cli = |args: &[&str]| cli_command(&job, &vars, &docker_host, workdir.path(), args);
 
-    let mut child = Command::new(&job.cli.program)
-        .args(&job.cli.prefix)
-        .args([
-            "--project-name",
-            &job.project,
-            "--file",
-            "-",
-            "--progress",
-            "plain",
-        ])
-        .args(job.action.args())
-        .current_dir(workdir.path())
-        .env_remove("DOCKER_CONTEXT")
-        .env_remove("COMPOSE_FILE")
-        .env_remove("COMPOSE_PROJECT_NAME")
-        .env("DOCKER_HOST", &docker_host)
-        // Lets the CLI find its plugins and credential helpers from a GUI launch.
-        .env("PATH", programs::search_path())
-        .envs(vars)
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .kill_on_drop(true)
+    let mut args: Vec<&str> = job.action.args().to_vec();
+    if matches!(job.action, ComposeAction::Up | ComposeAction::Pull) {
+        let config = config_json(&job, cli(&["config", "--format", "json"])).await?;
+        let wanted = images::needed(&job.docker, images::from_config(&config)?, job.action).await;
+        if !images::pull(&job.docker, &wanted, &job.logins, sink).await? {
+            return Ok(());
+        }
+        if job.action == ComposeAction::Pull {
+            sink(ComposeEvent::Exit {
+                success: true,
+                code: Some(0),
+                error: None,
+            });
+            return Ok(());
+        }
+        // Pulled above; compose mustn't pull them again with no login.
+        if wanted.iter().any(|i| i.always) {
+            args.extend(["--pull", "never"]);
+        }
+    }
+
+    let mut child = cli(&args)
         .spawn()
         .map_err(|e| errors::spawn_failed(&job.cli.program, &e))?;
 
@@ -265,9 +275,73 @@ async fn execute(job: ComposeRun, sink: &impl Fn(ComposeEvent) -> bool) -> AppRe
     Ok(())
 }
 
+/// One run of the CLI for `job`. Its environment is the Host's address, the
+/// `PATH` and the Stack's own variables: never a registry login.
+fn cli_command(
+    job: &ComposeRun,
+    vars: &[(String, String)],
+    docker_host: &str,
+    workdir: &std::path::Path,
+    args: &[&str],
+) -> Command {
+    let mut command = Command::new(&job.cli.program);
+    command
+        .args(&job.cli.prefix)
+        .args([
+            "--project-name",
+            &job.project,
+            "--file",
+            "-",
+            "--progress",
+            "plain",
+        ])
+        .args(args)
+        .current_dir(workdir)
+        .env_remove("DOCKER_CONTEXT")
+        .env_remove("COMPOSE_FILE")
+        .env_remove("COMPOSE_PROJECT_NAME")
+        .env("DOCKER_HOST", docker_host)
+        // Lets the CLI find its plugins and credential helpers from a GUI launch.
+        .env("PATH", programs::search_path())
+        .envs(vars.iter().cloned())
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .kill_on_drop(true);
+    command
+}
+
+/// The Stack's resolved model from `config --format json`: variables
+/// substituted, defaults filled in. Runs on this machine only.
+async fn config_json(job: &ComposeRun, mut command: Command) -> AppResult<String> {
+    let mut child = command
+        .spawn()
+        .map_err(|e| errors::spawn_failed(&job.cli.program, &e))?;
+    let mut stdin = child.stdin.take().expect("stdin is piped");
+    stdin.write_all(job.compose.as_bytes()).await?;
+    drop(stdin);
+    let out = child.wait_with_output().await?;
+    if !out.status.success() {
+        let stderr: Vec<String> = String::from_utf8_lossy(&out.stderr)
+            .lines()
+            .map(str::to_owned)
+            .collect();
+        let tail = &stderr[stderr.len().saturating_sub(STDERR_TAIL)..];
+        return Err(errors::exit_failure(
+            &job.host_name,
+            "config",
+            out.status.code(),
+            tail,
+        ));
+    }
+    Ok(String::from_utf8_lossy(&out.stdout).into_owned())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::path::Path;
+
     use homeport_engine::testing;
     use homeport_transport::testing::UnixDialer;
 
@@ -297,6 +371,51 @@ mod tests {
         );
     }
 
+    #[test]
+    fn the_clis_environment_holds_no_registry_login() {
+        let job = ComposeRun {
+            cli: ComposeCli {
+                program: "docker".into(),
+                prefix: vec!["compose".into()],
+                version: "2.29.0".into(),
+            },
+            host_name: "local".into(),
+            connection: HostConnection::Tcp {
+                address: "h:2375".into(),
+            },
+            dialer: None,
+            docker: testing::docker(),
+            logins: Logins::new(
+                vec![homeport_engine::auth::RegistryAuth {
+                    address: "ghcr.io".into(),
+                    username: "alice".into(),
+                    secret: "ghp_TOPSECRET".into(),
+                }],
+                |_| "ghcr.io".into(),
+            ),
+            project: "shop".into(),
+            compose: String::new(),
+            env: String::new(),
+            action: ComposeAction::Up,
+        };
+        let vars = vec![("GREETING".to_owned(), "hello".to_owned())];
+        let command = cli_command(&job, &vars, "tcp://h:2375", Path::new("/tmp"), &["up"]);
+        let std = command.as_std();
+        let everything: Vec<String> = std
+            .get_envs()
+            .filter_map(|(k, v)| Some(format!("{}={}", k.to_str()?, v?.to_str()?)))
+            .chain(std.get_args().filter_map(|a| a.to_str().map(str::to_owned)))
+            .collect();
+        assert!(everything.contains(&"DOCKER_HOST=tcp://h:2375".to_owned()));
+        assert!(everything.contains(&"GREETING=hello".to_owned()));
+        assert!(
+            !everything
+                .iter()
+                .any(|e| e.contains("ghp_TOPSECRET") || e.contains("DOCKER_CONFIG")),
+            "{everything:?}"
+        );
+    }
+
     async fn compose(
         project: &str,
         action: ComposeAction,
@@ -311,6 +430,8 @@ mod tests {
                 host_name: "local".into(),
                 connection,
                 dialer,
+                docker: testing::docker(),
+                logins: Logins::none(),
                 project: project.into(),
                 compose: format!(
                     "services:\n  app:\n    image: {}\n    command: [\"sleep\", \"60\"]\n    environment:\n      GREETING: ${{GREETING}}\n",
@@ -391,6 +512,36 @@ mod tests {
             },
         )
         .await;
+    }
+
+    #[tokio::test]
+    #[ignore = "needs a local Docker Engine and the compose CLI"]
+    async fn managed_stack_pulls_go_through_the_engine_api() {
+        let events = compose(
+            &testing::unique("pull"),
+            ComposeAction::Pull,
+            None,
+            HostConnection::Local {
+                socket_path: "/var/run/docker.sock".into(),
+            },
+        )
+        .await;
+        let lines: Vec<&str> = events
+            .iter()
+            .filter_map(|e| match e {
+                ComposeEvent::Line { text } => Some(text.as_str()),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(
+            lines.first().copied(),
+            Some(format!("Pulling {} anonymously", testing::IMAGE).as_str()),
+            "{events:?}"
+        );
+        assert!(
+            matches!(events.last(), Some(ComposeEvent::Exit { success: true, .. })),
+            "{events:?}"
+        );
     }
 
     #[tokio::test]
