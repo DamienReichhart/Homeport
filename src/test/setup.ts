@@ -27,6 +27,8 @@ globalThis.ResizeObserver ??= class {
 Element.prototype.setPointerCapture ??= () => {};
 Element.prototype.releasePointerCapture ??= () => {};
 Element.prototype.hasPointerCapture ??= () => false;
+// jsdom has no scrollIntoView; Radix selects scroll the chosen option into view.
+Element.prototype.scrollIntoView ??= () => {};
 
 afterEach(async () => {
   // Toasts live in sonner's module state, so they would outlive the test.

@@ -28,6 +28,7 @@ export {
   CardContent,
 } from './primitives/card';
 export { Checkbox } from './primitives/checkbox';
+export { Collapsible, CollapsibleContent, CollapsibleTrigger } from './primitives/collapsible';
 export {
   Dialog,
   DialogClose,
