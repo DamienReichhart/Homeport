@@ -17,3 +17,9 @@ export async function pickFiles(title: string): Promise<string[]> {
 export async function pickSavePath(title: string, defaultPath?: string): Promise<string | null> {
   return save({ title, defaultPath });
 }
+
+/** Asks for a folder; `null` when cancelled. */
+export async function pickFolder(title: string): Promise<string | null> {
+  const picked = await open({ title, multiple: false, directory: true });
+  return typeof picked === 'string' ? picked : null;
+}
