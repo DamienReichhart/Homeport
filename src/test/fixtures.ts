@@ -54,6 +54,7 @@ export const baseCommands = {
     },
   }),
   hosts_list: () => [connectedHost],
+  registries_list: () => [],
   stream_cancel: () => null,
   updates_check: () => ({ currentVersion: '0.3.0', available: null, method: { kind: 'inApp' } }),
 };
