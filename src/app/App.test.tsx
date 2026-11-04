@@ -40,7 +40,7 @@ describe('app', () => {
       }),
       system_disk_usage: () => {
         const line = { total: 1, active: 1, size: 1024, reclaimable: 0 };
-        return { images: line, containers: line, volumes: line, buildCache: line };
+        return { images: line, containers: line, volumes: line, buildCache: line, partial: false };
       },
       hosts_events: () => [],
       usage_subscribe: () => 1,

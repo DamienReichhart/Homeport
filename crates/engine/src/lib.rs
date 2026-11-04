@@ -2,10 +2,14 @@
 //! functions over a connected [`bollard::Docker`] client, returning DTOs
 //! shaped for the frontend.
 
+pub mod auth;
+pub mod build;
 pub mod containers;
+pub mod freshness;
 pub mod images;
 pub mod networks;
 pub mod system;
+pub mod transfer;
 pub mod volumes;
 
 #[cfg(any(test, feature = "test-support"))]

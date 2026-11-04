@@ -1,6 +1,6 @@
 ---
 title: Images
-description: Pull, tag, inspect, run and remove images, and clean up what nothing uses.
+description: Pull, build, push, save, load, tag, inspect, run and remove images, and clean up what nothing uses.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -23,23 +23,77 @@ The **Images** page lists the images stored on the selected Host, with their tot
 
 Stopped containers count as using an image. Select a column header to sort, and search with **Search images**.
 
+A ⬆ next to the name means one of the image's tags points to a newer image in its registry; hover it to see which. Pull the tag to fetch it. **Check for newer images** asks the registries again instead of using the answers kept for 6 hours. See [newer images](/docs/guides/containers/#newer-images) for how the check works.
+
 ## Pulling an image
 
 Choose **Pull image** and enter a reference: `nginx` (which means `nginx:latest`), `nginx:1.27`, `ghcr.io/org/app:v2`, `registry.example.com:5000/app`, or a digest such as `app@sha256:…`.
 
 Homeport shows the pull's progress layer by layer, and says **Done.** when it's complete. **Cancel** stops following the pull.
 
+### Searching Docker Hub
+
+Typing a bare name such as `postg` searches Docker Hub as you type, and lists the matching repositories with their description, stars and an **Official** mark. Choose one to see its tags, newest first, with their size and when they were pushed; **Filter tags** narrows the list (`alpine`), and **More tags** loads the next page. Choosing a tag fills in the reference, such as `postgres:17-alpine`, ready to **Pull**.
+
+The search runs on the selected Host, so it reaches Docker Hub through the Host's network as the pull will. Tags are read from Docker Hub by this computer; a stored Docker Hub [login](/docs/guides/settings/#registries) raises its rate limits. Typing a tag, a digest or another registry (`ghcr.io/…`) skips the search, and if Docker Hub can't be reached the dialog says so and still pulls what you type. Other registries can't be searched yet.
+
+### Private images
+
+When a login for the image's registry is stored in [**Settings → Registries**](/docs/guides/settings/#registries), Homeport hands it to the Engine with the pull, so private images pull on any Host — local, TCP, TLS or SSH — with nothing configured there. Under the reference, the dialog says how the image will be pulled: **Pulled as alice on ghcr.io**, or **Pulled anonymously** when no login matches.
+
+An image without a registry in its name (`nginx`, `bitnami/redis`) uses the Docker Hub login. A Docker Hub login also raises Docker Hub's pull limit.
+
+If the registry refuses the pull, the message says what to do: add a login for that registry when none was stored, or check the stored one.
+
 <Aside>
-  Pulls are anonymous, so they work for public images. Homeport doesn't log in to registries yet;
-  for private images, pull them on the Host with `docker login` and `docker pull`, or deploy them in
-  a [Managed Stack](/docs/guides/stacks/), which uses your local Docker credentials.
+  The login travels to the Engine with the request and isn't stored on the Host. Homeport doesn't
+  read `docker login` credentials from `~/.docker/config.json`.
 </Aside>
+
+## Building an image
+
+Choose **Build** and pick a **Folder** on this computer that holds a Dockerfile — the build context. Homeport packs the folder, leaves out everything its `.dockerignore` excludes (with Docker's rules: `*`, `**`, `!` exceptions, the last matching line wins), and streams it to the selected Host, whose Engine builds it. The same build works on a remote Host over SSH or TLS, with nothing installed there.
+
+| Field                         | What it does                                                                                             |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------- |
+| **Dockerfile**                | Its path inside the folder; `Dockerfile` by default. It's always sent, even if `.dockerignore` lists it. |
+| **Target stage**              | The stage of a multi-stage Dockerfile to stop at (`--target`).                                           |
+| **Names**                     | One or more names for the result, such as `app:1.0, ghcr.io/me/app:1.0`.                                 |
+| **Build arguments**           | `NAME=value`, one per line, for the Dockerfile's `ARG`s.                                                 |
+| **Don't use the build cache** | Runs every step again (`--no-cache`).                                                                    |
+| **Pull newer base images**    | Pulls the `FROM` images even if the Host has them (`--pull`).                                            |
+
+The build's output streams live; **Cancel** stops it. When it finishes, the names appear on the Images page. If a step fails, the message names it (**The build failed at step 3/5 (RUN make)**) and **Details** holds the end of the output. Private `FROM` images pull with the [registry logins](/docs/guides/settings/#registries) you stored.
+
+<Aside>
+  Homeport uses the Engine's classic builder, the one its API offers. BuildKit features such as `RUN
+  --mount` and build secrets aren't available; build those from a terminal.
+</Aside>
+
+## Pushing an image
+
+Choose **Push** in an image's **⋮** menu. **Name to push** starts as the image's first name; pick another of its names, or type a new one such as `ghcr.io/org/app:v2` — the image is given that name first, as **Tag** does. The name's first part says which registry it goes to: `ghcr.io/org/app` goes to GHCR, `org/app` to Docker Hub.
+
+Homeport pushes through the Host's Engine with the [registry login](/docs/guides/settings/#registries) stored for that registry, and says which one under the name (**Pushed as alice on ghcr.io**). With no login stored, the dialog warns before you start, since most registries refuse anonymous pushes. While it runs, the dialog counts the layers pushed and those the registry already had, and shows the upload in progress; **Cancel** stops the push.
+
+If the registry refuses, the message says whether to add a login or to check that the stored one may push to that repository.
+
+## Saving and loading images
+
+To move images to a Host that can't reach a registry — an air-gapped server, a Raspberry Pi on a home network — save them to a file on this computer and load the file into the other Host.
+
+- **Save…** in an image's **⋮** menu writes it, with all its names, to one `.tar` file you choose. To save several at once, tick them in the list and choose **Save N images…** at the top of the page.
+- **Load…** at the top of the page reads a `.tar` made by **Save…** or `docker save` — compressed `.tar.gz` too — into the selected Host. When it's done, the dialog names the images it loaded, with their tags.
+
+The file travels between this computer and the Host over the Host's own connection, so this works for remote Hosts too. Progress shows the bytes written or sent; **Cancel** stops it, and a cancelled or failed save leaves no partial file behind. Homeport never holds the whole archive in memory, so images of several gigabytes are fine.
+
+An image archive keeps an image's layers, history and names, ready to run. It isn't the same as exporting a container's filesystem, which flattens one container's files into a plain tar with no history.
 
 ## Working with an image
 
 - **▶ Run** opens the [Run dialog](/docs/guides/containers/#running-a-container) with the image filled in.
 - **Inspect** — or selecting the row — shows **Layers**, the instructions that built each layer and their sizes, and **Raw JSON**.
-- **Tag** adds another name, such as `registry.example.com/app:v2`. It doesn't push anything.
+- **Tag** adds another name, such as `registry.example.com/app:v2`. It doesn't push anything; **Push** does.
 - **Remove** deletes the image and the layers no other image uses. An image with several tags loses all of them. The Engine refuses to remove an image a container still uses; remove the container first.
 
 ## Cleaning up

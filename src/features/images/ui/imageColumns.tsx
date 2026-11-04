@@ -1,4 +1,13 @@
-import { EllipsisVerticalIcon, InfoIcon, PlayIcon, TagIcon, Trash2Icon } from 'lucide-react';
+import {
+  EllipsisVerticalIcon,
+  InfoIcon,
+  PlayIcon,
+  SaveIcon,
+  TagIcon,
+  Trash2Icon,
+  UploadIcon,
+} from 'lucide-react';
+import { NewerImage, newerLabel, newerTags, type FreshnessIndex } from '@/core/host';
 import type { Image } from '@/shared/api';
 import { formatBytes, formatRelative, shortId } from '@/shared/lib';
 import {
@@ -18,12 +27,18 @@ export function imageColumns({
   onRun,
   onInspect,
   onTag,
+  onPush,
+  onSave,
   onRemove,
+  freshness,
 }: {
   onRun: (image: Image) => void;
   onInspect: (image: Image) => void;
   onTag: (image: Image) => void;
+  onPush: (image: Image) => void;
+  onSave: (image: Image) => void;
   onRemove: (image: Image) => void;
+  freshness: FreshnessIndex;
 }): ColumnDef<Image, unknown>[] {
   return [
     {
@@ -32,7 +47,12 @@ export function imageColumns({
       accessorFn: (i) => i.tags.join(' ') || '<none>',
       cell: ({ row }) => (
         <div className="min-w-0">
-          <p className="truncate font-medium">{imageName(row.original)}</p>
+          <p className="flex items-center gap-1.5 font-medium">
+            <span className="truncate">{imageName(row.original)}</span>
+            {newerTags(freshness, row.original).length > 0 && (
+              <NewerImage label={newerLabel(newerTags(freshness, row.original))} />
+            )}
+          </p>
           {row.original.tags.length > 1 && (
             <p className="text-muted-foreground text-xs">
               +{row.original.tags.length - 1} more tags
@@ -96,6 +116,12 @@ export function imageColumns({
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => onTag(row.original)}>
                 <TagIcon /> Tag
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onPush(row.original)}>
+                <UploadIcon /> Push
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onSave(row.original)}>
+                <SaveIcon /> Save…
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive" onSelect={() => onRemove(row.original)}>

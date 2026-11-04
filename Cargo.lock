@@ -2129,11 +2129,12 @@ dependencies = [
 
 [[package]]
 name = "homeport"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "homeport-core",
  "homeport-engine",
  "homeport-hosts",
+ "homeport-registries",
  "homeport-settings",
  "homeport-stacks",
  "homeport-storage",
@@ -2155,7 +2156,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-core"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "bollard",
  "log",
@@ -2170,12 +2171,14 @@ dependencies = [
 
 [[package]]
 name = "homeport-engine"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "bollard",
+ "bytes",
  "futures-util",
  "homeport-core",
  "homeport-transport",
+ "log",
  "serde",
  "serde_json",
  "shell-words",
@@ -2188,7 +2191,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-hosts"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "bollard",
  "futures-util",
@@ -2205,8 +2208,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "homeport-registries"
+version = "0.7.0"
+dependencies = [
+ "homeport-core",
+ "homeport-engine",
+ "homeport-storage",
+ "log",
+ "reqwest",
+ "rusqlite",
+ "rustls",
+ "serde",
+ "serde_json",
+ "specta",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
 name = "homeport-settings"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "homeport-core",
  "homeport-storage",
@@ -2220,7 +2241,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-stacks"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "bollard",
  "homeport-core",
@@ -2241,7 +2262,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-storage"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "chacha20poly1305",
  "getrandom 0.3.4",
@@ -2257,7 +2278,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-transport"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "bollard",
  "getrandom 0.3.4",
@@ -2277,7 +2298,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-updates"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "serde",
  "specta",
@@ -4190,6 +4211,7 @@ dependencies = [
  "rustls-platform-verifier",
  "serde",
  "serde_json",
+ "serde_urlencoded",
  "sync_wrapper",
  "tokio",
  "tokio-rustls",

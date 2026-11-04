@@ -18,6 +18,7 @@ const MIGRATION_SLICE: &[M<'static>] = &[
     M::up(include_str!("migrations/0001_settings.sql")),
     M::up(include_str!("migrations/0002_hosts.sql")),
     M::up(include_str!("migrations/0003_stacks.sql")),
+    M::up(include_str!("migrations/0004_registries.sql")),
 ];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_SLICE);
 

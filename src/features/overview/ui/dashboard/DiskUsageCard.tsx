@@ -23,12 +23,14 @@ import { PruneDialog } from '../dialogs/PruneDialog';
 export function DiskUsageCard({ hostId }: { hostId: string }) {
   const [pruning, setPruning] = useState(false);
   const usage = useQuery(resourceQueries.diskUsage(hostId));
+  const partial = usage.data?.partial ?? false;
+  // With an older Engine, volume and build cache sizes are unknown, not zero.
   const rows = usage.data
     ? ([
-        ['Images', usage.data.images],
-        ['Containers', usage.data.containers],
-        ['Volumes', usage.data.volumes],
-        ['Build cache', usage.data.buildCache],
+        ['Images', usage.data.images, true],
+        ['Containers', usage.data.containers, true],
+        ['Volumes', usage.data.volumes, !partial],
+        ['Build cache', usage.data.buildCache, !partial],
       ] as const)
     : [];
 
@@ -55,17 +57,27 @@ export function DiskUsageCard({ hostId }: { hostId: string }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map(([label, line]) => (
+              {rows.map(([label, line, sized]) => (
                 <TableRow key={label}>
                   <TableCell>{label}</TableCell>
                   <TableCell className="text-right">{line.total}</TableCell>
                   <TableCell className="text-right">{line.active}</TableCell>
-                  <TableCell className="text-right">{formatBytes(line.size)}</TableCell>
-                  <TableCell className="text-right">{formatBytes(line.reclaimable)}</TableCell>
+                  <TableCell className="text-right">
+                    {sized ? formatBytes(line.size) : '—'}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {sized ? formatBytes(line.reclaimable) : '—'}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+          {partial && (
+            <p className="text-muted-foreground mt-2 text-xs">
+              This Docker Engine is older than version 29 and reports less: image sizes are
+              estimated, and volume and build cache sizes aren’t available.
+            </p>
+          )}
         </CardContent>
       </Card>
       <PruneDialog hostId={hostId} open={pruning} onOpenChange={setPruning} />

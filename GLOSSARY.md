@@ -27,3 +27,7 @@ _Avoid_: Unmanaged stack, foreign stack, discovered stack
 **Adopt**:
 To turn an External Stack into a Managed Stack by supplying its compose definition.
 _Avoid_: Import, claim
+
+**Registry login**:
+The user name and password or access token Homeport keeps for one container registry address (Docker Hub, GHCR, a private registry), app-wide rather than per Host, and hands to the Engine when it pulls, pushes or builds. Docker Hub is always stored as `docker.io`.
+_Avoid_: Registry credential (in the UI), account, auth

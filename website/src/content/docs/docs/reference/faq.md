@@ -39,6 +39,14 @@ There's no export yet. Copying `homeport.db` moves Host and Stack definitions, b
 
 No. There's no account, telemetry or analytics. The only request Homeport makes on its own is the update check, which downloads a small file from this website and sends nothing about you; you can turn it off in **Settings → Updates**. See [security and your data](/docs/reference/security/#what-homeport-connects-to).
 
+### Can Homeport use my private registries?
+
+Yes. Add a login for each registry in **Settings → Registries** — Docker Hub, GHCR or your own. Homeport hands it to the Engine to pull, push and build on any Host, and pulls a Managed Stack's images with it before deploying. Passwords and tokens are encrypted with your OS keychain. Homeport doesn't read the logins of `docker login` on this computer.
+
+### How does Homeport know a newer image exists?
+
+It asks the image's registry, through the Host's Engine, which digest the tag points to now, and compares it with the one the Host pulled. Nothing is downloaded, but Docker Hub counts each question against its pull rate limit, like a `docker pull` that finds nothing new. So Homeport keeps each answer for 6 hours, asks at most four registries at once, and only asks again sooner when you choose **Check for newer images**. A Docker Hub login in **Settings → Registries** raises the limit. If a registry can't be reached or is rate-limiting, Homeport shows no mark for its images and writes a line to its log.
+
 ### How do I update?
 
 On Windows, macOS and with the AppImage, Homeport tells you when a new version is out: choose **Install and restart**. On Linux, the `.deb` and `.rpm` packages update with the rest of your system from the Homeport package repository. See [updating](/docs/reference/updating/).

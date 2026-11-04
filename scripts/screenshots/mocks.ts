@@ -347,6 +347,13 @@ export function installMocks({ theme, hostId }: MockOptions) {
       return settings;
     },
     hosts_list: () => hosts,
+    registries_list: () => [
+      { id: 'r1', address: 'docker.io', username: 'acme', createdAt: '', updatedAt: '' },
+      { id: 'r2', address: 'ghcr.io', username: 'acme-ci', createdAt: '', updatedAt: '' },
+    ],
+    registries_login_for: () => null,
+    // Nothing outdated, so no newer-image marks show in the screenshots.
+    images_freshness: () => [],
     hosts_detect_local: () => [
       { label: 'Docker Desktop', socketPath: '/var/run/docker.sock', engineVersion: '28.5.1' },
       {

@@ -28,10 +28,26 @@ where
 {
     match dialer.dial().await {
         Ok(mut upstream) => {
-            let _ = tokio::io::copy_bidirectional(&mut client, &mut upstream).await;
+            if let Err(e) = tokio::io::copy_bidirectional(&mut client, &mut upstream).await {
+                // Only the error is logged, never what the connection carried.
+                if is_hang_up(&e) {
+                    log::debug!("compose proxy connection closed: {e}");
+                } else {
+                    log::warn!("compose proxy connection failed: {e}");
+                }
+            }
         }
         Err(e) => log::warn!("compose proxy could not reach the host: {e}"),
     }
+}
+
+/// Whether a proxied connection ended because one side hung up, which
+/// happens whenever compose or the Engine closes a connection early.
+fn is_hang_up(error: &io::Error) -> bool {
+    matches!(
+        error.kind(),
+        io::ErrorKind::BrokenPipe | io::ErrorKind::ConnectionReset | io::ErrorKind::UnexpectedEof
+    )
 }
 
 /// Opens a Unix socket inside a fresh directory only this user can enter.
@@ -74,14 +90,19 @@ pub fn open(dialer: Arc<dyn Dialer>) -> io::Result<Proxy> {
     let pipe = name.clone();
     let accept = tokio::spawn(async move {
         loop {
-            if server.connect().await.is_err() {
+            if let Err(e) = server.connect().await {
+                log::warn!("compose proxy stopped accepting connections: {e}");
                 return;
             }
-            let Ok(next) = ServerOptions::new()
+            let next = match ServerOptions::new()
                 .reject_remote_clients(true)
                 .create(&pipe)
-            else {
-                return;
+            {
+                Ok(next) => next,
+                Err(e) => {
+                    log::warn!("compose proxy couldn't open its next pipe instance: {e}");
+                    return;
+                }
             };
             let client = std::mem::replace(&mut server, next);
             tokio::spawn(forward(client, dialer.clone()));
@@ -91,6 +112,25 @@ pub fn open(dialer: Arc<dyn Dialer>) -> io::Result<Proxy> {
         docker_host: format!("npipe://{}", name.replace('\\', "/")),
         accept,
     })
+}
+
+#[cfg(test)]
+mod hang_up_tests {
+    use super::*;
+
+    #[test]
+    fn hang_ups_are_told_apart_from_failures() {
+        for kind in [
+            io::ErrorKind::BrokenPipe,
+            io::ErrorKind::ConnectionReset,
+            io::ErrorKind::UnexpectedEof,
+        ] {
+            assert!(is_hang_up(&io::Error::from(kind)), "{kind:?}");
+        }
+        for kind in [io::ErrorKind::TimedOut, io::ErrorKind::PermissionDenied] {
+            assert!(!is_hang_up(&io::Error::from(kind)), "{kind:?}");
+        }
+    }
 }
 
 #[cfg(all(test, unix))]

@@ -14,7 +14,7 @@ use serde::Deserialize;
 
 use homeport_core::error::{AppError, AppResult};
 
-use crate::{containers, images};
+use crate::{auth::RegistryAuth, containers, images};
 
 #[derive(Debug, Clone, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -148,11 +148,13 @@ pub fn create_body(spec: &RunSpec) -> AppResult<ContainerCreateBody> {
 }
 
 /// Pulls the image if it's missing, then creates and starts the container.
-pub async fn run(docker: &Docker, spec: RunSpec) -> AppResult<String> {
+/// Creates and starts the container, pulling its image first (with `auth`
+/// when given) if the Engine doesn't have it.
+pub async fn run(docker: &Docker, spec: RunSpec, auth: Option<RegistryAuth>) -> AppResult<String> {
     let body = create_body(&spec)?;
     if docker.inspect_image(spec.image.trim()).await.is_err() {
         let failure = std::sync::Mutex::new(None);
-        images::pull(docker.clone(), spec.image.trim().to_owned(), |e| {
+        images::pull(docker.clone(), spec.image.trim().to_owned(), auth, |e| {
             if let images::PullEvent::Error { error } = e {
                 *failure.lock().expect("lock poisoned") = Some(error);
             }
@@ -310,6 +312,7 @@ mod tests {
                 env: vec!["A=1".into()],
                 ..spec()
             },
+            None,
         )
         .await
         .unwrap();

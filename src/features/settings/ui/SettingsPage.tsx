@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { settingsQuery } from '@/core/settings';
+import { RegistriesCard } from '@/features/registries';
 import { UpdatesCard } from '@/features/updates';
 import { ErrorMessage, PageHeader, Spinner } from '@/shared/ui';
 import { useSaveSettings } from '../api/mutations';
@@ -24,6 +25,7 @@ export function SettingsPage() {
         error={save.error}
       />
       <UpdatesCard settings={settings.data} onChange={(next) => save.mutate(next)} />
+      <RegistriesCard />
       <MachineCard />
       <AboutCard />
     </div>

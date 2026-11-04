@@ -1,6 +1,16 @@
 import { BoxIcon, PlusIcon } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { hostAddress, HostGate, useContainers, useHostSelection } from '@/core/host';
+import {
+  CheckNewerImages,
+  containerFreshness,
+  hostAddress,
+  HostGate,
+  indexFreshness,
+  resourceQueries,
+  useContainers,
+  useHostSelection,
+} from '@/core/host';
 import type { Container } from '@/shared/api';
 import {
   Button,
@@ -31,6 +41,7 @@ function ContainersList({ hostId }: { hostId: string }) {
   const { host } = useHostSelection();
   const containers = useContainers(hostId);
   const usage = useUsage(hostId);
+  const freshness = indexFreshness(useQuery(resourceQueries.freshness(hostId)).data);
   const [dialog, confirm] = useConfirm();
   const [query, setQuery] = useState('');
   const [onlyRunning, setOnlyRunning] = useState(false);
@@ -68,6 +79,7 @@ function ContainersList({ hostId }: { hostId: string }) {
       container={c}
       nested={nested}
       usage={usage.get(c.id)}
+      newer={containerFreshness(freshness, c) === 'newer'}
       address={address}
       selected={selected.has(c.id)}
       onSelect={(on) => toggle([c.id], on)}
@@ -82,9 +94,12 @@ function ContainersList({ hostId }: { hostId: string }) {
         title="Containers"
         description={`${all.filter((c) => c.state === 'running').length} running of ${all.length}`}
         actions={
-          <Button onClick={() => setRunning(true)}>
-            <PlusIcon /> Run container
-          </Button>
+          <>
+            <CheckNewerImages hostId={hostId} />
+            <Button onClick={() => setRunning(true)}>
+              <PlusIcon /> Run container
+            </Button>
+          </>
         }
       />
       <div className="mb-3 flex flex-wrap items-center gap-3">

@@ -18,6 +18,7 @@ pub mod files;
 pub mod hosts;
 pub mod images;
 pub mod networks;
+pub mod registries;
 pub mod settings;
 pub mod stacks;
 pub mod streams;
@@ -44,6 +45,12 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             app::open_log_folder,
             settings::get_settings,
             settings::update_settings,
+            registries::registries_list,
+            registries::registries_save,
+            registries::registries_remove,
+            registries::registries_check,
+            registries::registries_login_for,
+            registries::registries_hub_tags,
             updates::updates_check,
             updates::updates_install,
             hosts::hosts_list,
@@ -71,6 +78,10 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             containers::stats_subscribe,
             system::usage_subscribe,
             images::images_pull_subscribe,
+            images::images_push_subscribe,
+            images::images_build_subscribe,
+            images::images_save_subscribe,
+            images::images_load_subscribe,
             exec::exec_start,
             exec::exec_input,
             exec::exec_resize,
@@ -78,6 +89,8 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             images::images_list,
             images::images_inspect,
             images::images_history,
+            images::images_search,
+            images::images_freshness,
             images::images_tag,
             images::images_remove,
             images::images_prune,

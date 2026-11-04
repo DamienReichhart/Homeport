@@ -1,11 +1,12 @@
-//! Images: listing, history, pulling with progress, tagging and removal.
+//! Images: listing, history, pulling and pushing with progress, tagging and removal.
 
 use std::collections::HashMap;
 
 use bollard::{
     query_parameters::{
         CreateImageOptionsBuilder, ListContainersOptionsBuilder, ListImagesOptionsBuilder,
-        PruneImagesOptionsBuilder, RemoveImageOptionsBuilder, TagImageOptionsBuilder,
+        PruneImagesOptionsBuilder, PushImageOptionsBuilder, RemoveImageOptionsBuilder,
+        SearchImagesOptionsBuilder, TagImageOptionsBuilder,
     },
     Docker,
 };
@@ -13,6 +14,8 @@ use futures_util::StreamExt;
 use serde::Serialize;
 
 use homeport_core::error::{AppError, AppResult};
+
+use crate::auth::RegistryAuth;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -40,6 +43,7 @@ pub struct ImageLayer {
     pub tags: Vec<String>,
 }
 
+/// Progress of a pull or a push.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(
     tag = "type",
@@ -48,6 +52,7 @@ pub struct ImageLayer {
 )]
 pub enum PullEvent {
     /// Progress of one layer (or a general status when `id` is absent).
+    /// Pushes never name the layer: the Engine API client drops its id.
     Progress {
         id: Option<String>,
         status: String,
@@ -65,6 +70,17 @@ pub enum PullEvent {
 pub struct PruneReport {
     pub removed: Vec<String>,
     pub space_reclaimed: i64,
+}
+
+/// A Docker Hub repository found by a search.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct SearchResult {
+    /// `postgres` for official images, `bitnami/redis` otherwise.
+    pub name: String,
+    pub description: String,
+    pub stars: i64,
+    pub official: bool,
 }
 
 /// Splits `name[:tag]` into the image and tag the Engine's pull expects,
@@ -147,14 +163,21 @@ pub async fn history(docker: &Docker, id: &str) -> AppResult<Vec<ImageLayer>> {
         .collect())
 }
 
-/// Pulls `reference`, reporting per-layer progress until done.
-pub async fn pull(docker: Docker, reference: String, sink: impl Fn(PullEvent) -> bool) {
+/// Pulls `reference` with the registry login when there is one, reporting
+/// per-layer progress until done.
+pub async fn pull(
+    docker: Docker,
+    reference: String,
+    auth: Option<RegistryAuth>,
+    sink: impl Fn(PullEvent) -> bool,
+) {
     let (image, tag) = split_reference(&reference);
     let mut options = CreateImageOptionsBuilder::default().from_image(&image);
     if let Some(tag) = &tag {
         options = options.tag(tag);
     }
-    let mut stream = docker.create_image(Some(options.build()), None, None);
+    let credentials = auth.as_ref().map(RegistryAuth::to_docker);
+    let mut stream = docker.create_image(Some(options.build()), None, credentials);
     while let Some(item) = stream.next().await {
         let event = match item {
             Ok(info) => match info.error_detail.and_then(|e| e.message) {
@@ -185,6 +208,103 @@ pub async fn pull(docker: Docker, reference: String, sink: impl Fn(PullEvent) ->
         }
     }
     sink(PullEvent::Done);
+}
+
+/// Pushes `reference` (`registry/repo:tag`) with the registry login when
+/// there is one, reporting progress until done.
+pub async fn push(
+    docker: Docker,
+    reference: String,
+    auth: Option<RegistryAuth>,
+    sink: impl Fn(PullEvent) -> bool,
+) {
+    let (repo, tag) = split_reference(&reference);
+    if repo.is_empty() || repo.contains('@') {
+        sink(PullEvent::Error {
+            error: AppError::validation("Enter a name like registry.example.com/team/app:tag."),
+        });
+        return;
+    }
+    let options = PushImageOptionsBuilder::default()
+        .tag(tag.as_deref().unwrap_or("latest"))
+        .build();
+    let credentials = auth.as_ref().map(RegistryAuth::to_docker);
+    let mut stream = docker.push_image(&repo, Some(options), credentials);
+    while let Some(item) = stream.next().await {
+        let event = match item {
+            Ok(info) => match info.error_detail.and_then(|e| e.message) {
+                Some(message) => {
+                    sink(PullEvent::Error {
+                        error: push_error(&message).logged("image push"),
+                    });
+                    return;
+                }
+                None => PullEvent::Progress {
+                    id: None,
+                    status: info.status.unwrap_or_default(),
+                    current: info.progress_detail.as_ref().and_then(|p| p.current),
+                    total: info.progress_detail.as_ref().and_then(|p| p.total),
+                },
+            },
+            Err(e) => {
+                sink(PullEvent::Error {
+                    error: AppError::from(e).logged("image push"),
+                });
+                return;
+            }
+        };
+        if !sink(event) {
+            return;
+        }
+    }
+    sink(PullEvent::Done);
+}
+
+/// A push the registry refused reads as a refusal to push, not as a
+/// missing image; everything else is classified like any Engine message.
+fn push_error(message: &str) -> AppError {
+    let error = homeport_core::error::engine::from_message(None, message).with_detail(message);
+    if error.is(homeport_core::error::ErrorCode::RegistryAuthRequired) {
+        AppError {
+            message: "The registry refused the push.".into(),
+            hint: Some(homeport_core::error::Hint {
+                text: "Add a login that may push to this repository in Settings → Registries."
+                    .into(),
+                commands: vec![],
+            }),
+            ..error
+        }
+    } else {
+        error
+    }
+}
+
+/// Searches Docker Hub through the Engine, so the search follows the Host's
+/// network as the pull will. Official images come first, then by stars.
+pub async fn search(docker: &Docker, term: &str, limit: u32) -> AppResult<Vec<SearchResult>> {
+    let term = term.trim();
+    if term.is_empty() {
+        return Ok(Vec::new());
+    }
+    let options = SearchImagesOptionsBuilder::default()
+        .term(term)
+        .limit(limit.clamp(1, 100) as i32)
+        .build();
+    let mut results: Vec<SearchResult> = docker
+        .search_images(options)
+        .await?
+        .into_iter()
+        .filter_map(|r| {
+            Some(SearchResult {
+                name: r.name?,
+                description: r.description.unwrap_or_default(),
+                stars: r.star_count.unwrap_or(0),
+                official: r.is_official.unwrap_or(false),
+            })
+        })
+        .collect();
+    results.sort_by(|a, b| b.official.cmp(&a.official).then(b.stars.cmp(&a.stars)));
+    Ok(results)
 }
 
 /// Adds the name `target` (`repo[:tag]`) to an image.
@@ -255,6 +375,76 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore = "needs a local Docker Engine and access to Docker Hub"]
+    async fn searches_find_official_images_first() {
+        let results = search(&testing::docker(), "postg", 10).await.unwrap();
+        let first = results.first().expect("some results");
+        assert!(first.official, "{results:?}");
+        assert_eq!(first.name, "postgres");
+    }
+
+    #[test]
+    fn refused_pushes_say_so() {
+        let e = push_error("denied: requested access to the resource is denied");
+        assert!(e.is(homeport_core::error::ErrorCode::RegistryAuthRequired));
+        assert_eq!(e.message, "The registry refused the push.");
+        assert!(e.hint.unwrap().text.contains("Settings → Registries"));
+        assert_eq!(
+            push_error("no space left on device").code,
+            homeport_core::error::ErrorCode::DiskFull
+        );
+    }
+
+    fn collect<F, Fut>(run: F) -> impl std::future::Future<Output = Vec<PullEvent>>
+    where
+        F: FnOnce(Box<dyn Fn(PullEvent) -> bool + Send>) -> Fut,
+        Fut: std::future::Future<Output = ()>,
+    {
+        let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
+        let fut = run(Box::new(move |e| tx.send(e).is_ok()));
+        async move {
+            fut.await;
+            let mut events = Vec::new();
+            while let Ok(e) = rx.try_recv() {
+                events.push(e);
+            }
+            events
+        }
+    }
+
+    #[tokio::test]
+    #[ignore = "needs a local Docker Engine"]
+    async fn images_push_to_a_registry_with_a_login_and_pull_back() {
+        let docker = testing::docker();
+        testing::ensure_image(&docker).await;
+        let registry = testing::registry(&docker, true).await;
+        let name = format!("{}/{}:v1", registry.address, testing::unique("push"));
+        tag(&docker, testing::IMAGE, &name).await.unwrap();
+        let _cleanup = testing::ImageName(docker.clone(), name.clone());
+        let login = RegistryAuth {
+            address: registry.address.clone(),
+            username: testing::REGISTRY_USER.into(),
+            secret: testing::REGISTRY_PASSWORD.into(),
+        };
+
+        // Without the login the registry refuses.
+        let refused = collect(|sink| push(docker.clone(), name.clone(), None, sink)).await;
+        assert!(
+            matches!(refused.last(), Some(PullEvent::Error { error }) if error.is(homeport_core::error::ErrorCode::RegistryAuthRequired)),
+            "{refused:?}"
+        );
+
+        let pushed =
+            collect(|sink| push(docker.clone(), name.clone(), Some(login.clone()), sink)).await;
+        assert_eq!(pushed.last(), Some(&PullEvent::Done), "{pushed:?}");
+        assert!(!format!("{pushed:?}").contains(testing::REGISTRY_PASSWORD));
+
+        remove(&docker, &name, false).await.unwrap();
+        let pulled = collect(|sink| pull(docker.clone(), name.clone(), Some(login), sink)).await;
+        assert_eq!(pulled.last(), Some(&PullEvent::Done), "{pulled:?}");
+    }
+
+    #[tokio::test]
     #[ignore = "needs a local Docker Engine"]
     async fn images_can_be_tagged_listed_and_untagged() {
         let docker = testing::docker();
@@ -275,7 +465,8 @@ mod tests {
     #[ignore = "needs a local Docker Engine"]
     async fn pulls_report_progress_and_completion() {
         let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
-        pull(testing::docker(), testing::IMAGE.into(), move |e| {
+        // Anonymous, as with no login stored.
+        pull(testing::docker(), testing::IMAGE.into(), None, move |e| {
             tx.send(e).is_ok()
         })
         .await;

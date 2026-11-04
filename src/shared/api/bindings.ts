@@ -17,6 +17,20 @@ export const commands = {
 	openLogFolder: () => __TAURI_INVOKE<null>("open_log_folder"),
 	getSettings: () => __TAURI_INVOKE<Settings>("get_settings"),
 	updateSettings: (settings: Settings) => __TAURI_INVOKE<Settings>("update_settings", { settings }),
+	/**  Every stored login, never with its secret. */
+	registriesList: () => __TAURI_INVOKE<Registry[]>("registries_list"),
+	/**  Adds a login (`id: null`) or changes one; `draft.secret: null` keeps the stored one. */
+	registriesSave: (id: string | null, draft: RegistryDraft) => __TAURI_INVOKE<Registry>("registries_save", { id, draft }),
+	registriesRemove: (id: string) => __TAURI_INVOKE<null>("registries_remove", { id }),
+	/**  Checks a login from this machine before or after it's saved. */
+	registriesCheck: (id: string | null, draft: RegistryDraft) => __TAURI_INVOKE<null>("registries_check", { id, draft }),
+	/**  The stored login an image reference would be pulled or pushed with, if any. */
+	registriesLoginFor: (reference: string) => __TAURI_INVOKE<Registry | null>("registries_login_for", { reference }),
+	/**
+	 *  A page of a Docker Hub repository's tags, newest first, with the stored
+	 *  Docker Hub login when there is one.
+	 */
+	registriesHubTags: (repository: string, page: number, filter: string) => __TAURI_INVOKE<HubTagPage>("registries_hub_tags", { repository, page, filter }),
 	/**  Asks the update server for a newer version and remembers it for [`updates_install`]. */
 	updatesCheck: () => __TAURI_INVOKE<UpdateCheck>("updates_check"),
 	/**
@@ -56,6 +70,17 @@ export const commands = {
 	/**  Usage of every running container on a Host, refreshed every two seconds. */
 	usageSubscribe: (hostId: string, onUsage: Channel<ContainerUsage[]>) => __TAURI_INVOKE<number>("usage_subscribe", { hostId, onUsage }),
 	imagesPullSubscribe: (hostId: string, reference: string, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("images_pull_subscribe", { hostId, reference, onEvent }),
+	/**  Pushes an image name to its registry with the stored login, streaming progress. */
+	imagesPushSubscribe: (hostId: string, reference: string, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("images_push_subscribe", { hostId, reference, onEvent }),
+	/**
+	 *  Builds an image on a Host from a folder on this machine, streaming the
+	 *  output. Every stored login is sent, for private `FROM` images.
+	 */
+	imagesBuildSubscribe: (hostId: string, spec: BuildSpec, onEvent: Channel<BuildEvent>) => __TAURI_INVOKE<number>("images_build_subscribe", { hostId, spec, onEvent }),
+	/**  Saves images into one tar file on this machine, streaming progress. */
+	imagesSaveSubscribe: (hostId: string, names: string[], destination: string, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("images_save_subscribe", { hostId, names, destination, onEvent }),
+	/**  Loads the images in a tar file on this machine into a Host, streaming progress. */
+	imagesLoadSubscribe: (hostId: string, source: string, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("images_load_subscribe", { hostId, source, onEvent }),
 	execStart: (hostId: string, containerId: string, options: ExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("exec_start", { hostId, containerId, options, onEvent }),
 	execInput: (session: number, data: string) => __TAURI_INVOKE<null>("exec_input", { session, data }),
 	execResize: (session: number, cols: number, rows: number) => __TAURI_INVOKE<null>("exec_resize", { session, cols, rows }),
@@ -63,6 +88,14 @@ export const commands = {
 	imagesList: (hostId: string) => __TAURI_INVOKE<Image[]>("images_list", { hostId }),
 	imagesInspect: (hostId: string, id: string) => __TAURI_INVOKE<Value>("images_inspect", { hostId, id }),
 	imagesHistory: (hostId: string, id: string) => __TAURI_INVOKE<ImageLayer[]>("images_history", { hostId, id }),
+	/**  Searches Docker Hub from the Host, as its pulls would reach it. */
+	imagesSearch: (hostId: string, term: string) => __TAURI_INVOKE<SearchResult[]>("images_search", { hostId, term }),
+	/**
+	 *  Whether a newer image is published for each container's image and each
+	 *  tagged image on a Host. Registry answers are cached (`force` skips the
+	 *  cache); a registry that can't be asked leaves its images `unknown`.
+	 */
+	imagesFreshness: (hostId: string, force: boolean) => __TAURI_INVOKE<FreshnessResult[]>("images_freshness", { hostId, force }),
 	imagesTag: (hostId: string, id: string, target: string) => __TAURI_INVOKE<null>("images_tag", { hostId, id, target }),
 	imagesRemove: (hostId: string, id: string, force: boolean) => __TAURI_INVOKE<string[]>("images_remove", { hostId, id, force }),
 	imagesPrune: (hostId: string, all: boolean) => __TAURI_INVOKE<PruneReport>("images_prune", { hostId, all }),
@@ -134,17 +167,48 @@ export type AvailableUpdate = {
 	date: string | null,
 };
 
+export type BuildArg = {
+	name: string,
+	value: string,
+};
+
+export type BuildEvent = 
+/**  A line of the build's output. */
+{ type: "line"; text: string } | 
+/**  The image was built and named. */
+{ type: "done"; imageId: string | null; tags: string[] } | { type: "error"; error: AppError };
+
+export type BuildSpec = {
+	/**  The build context: a folder on this machine. */
+	context: string,
+	/**  Relative to the context; `Dockerfile` when empty. */
+	dockerfile: string,
+	buildArgs: BuildArg[],
+	/**  The stage to stop at, for multi-stage Dockerfiles. */
+	target: string | null,
+	/**  `repo:tag` names for the result; the first is applied by the build. */
+	tags: string[],
+	noCache: boolean,
+	/**  Pull newer versions of the `FROM` images even if the Host has them. */
+	pull: boolean,
+};
+
 /**  What this machine can do; features degrade gracefully when something is missing. */
 export type Capabilities = {
-	/**  An OS keychain is reachable, so SSH, TLS and stack `.env` secrets can be stored. */
+	/**  An OS keychain is reachable, so SSH, TLS, stack `.env` and registry secrets can be stored. */
 	keychain: boolean,
 	/**  Whether Managed Stacks can be deployed here. */
 	compose: ComposeSupport,
 };
 
 export type ComposeAction = 
-/**  `up -d --remove-orphans`: deploy or redeploy. */
-"up" | "pull" | 
+/**
+ *  `up -d --remove-orphans`: deploy or redeploy, after pulling the
+ *  images the Host lacks through the Engine API.
+ */
+"up" | 
+/**  Pulls every service's image through the Engine API; compose isn't run. */
+"pull" | 
 /**  `down --remove-orphans`, keeping volumes. */
 "down" | 
 /**  `down -v --remove-orphans`: also deletes the Stack's volumes. */
@@ -218,6 +282,12 @@ export type DiskUsage = {
 	containers: UsageLine,
 	volumes: UsageLine,
 	buildCache: UsageLine,
+	/**
+	 *  The Engine predates per-type disk usage (API 1.52, Docker 29), so the
+	 *  numbers come from its lists: image sizes are approximate, and volume
+	 *  and build cache sizes are unknown (0).
+	 */
+	partial: boolean,
 };
 
 /**  One entry of a Host's Engine event stream. */
@@ -256,7 +326,7 @@ export type EngineInfo = {
 /**  Stable machine-readable identifier of a failure, one per case the user can act on. */
 export type ErrorCode = 
 /**  A failure that started in the frontend, outside any command. */
-"unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | "host_not_connected" | "engine_not_installed" | "engine_not_running" | "permission_denied" | "dns_failed" | "connection_refused" | "timeout" | "network_unreachable" | "connection_lost" | "tls_required" | "tls_not_supported" | "tls_certificate_expired" | "tls_certificate_not_yet_valid" | "tls_unknown_ca" | "tls_name_mismatch" | "tls_client_rejected" | "tls_handshake_failed" | "tls_material_invalid" | "ssh_auth_failed" | "ssh_agent_unavailable" | "ssh_key_invalid" | "ssh_failed" | "remote_engine_unavailable" | "host_key_untrusted" | "host_key_changed" | "engine_error" | "bad_request" | "forbidden" | "conflict" | "name_in_use" | "in_use" | "container_running" | "container_not_running" | "already_done" | "port_in_use" | "disk_full" | "image_not_found" | "registry_auth_required" | "registry_rate_limited" | "registry_unreachable" | "api_version_unsupported" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
+"unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | "host_not_connected" | "engine_not_installed" | "engine_not_running" | "permission_denied" | "dns_failed" | "connection_refused" | "timeout" | "network_unreachable" | "connection_lost" | "tls_required" | "tls_not_supported" | "tls_certificate_expired" | "tls_certificate_not_yet_valid" | "tls_unknown_ca" | "tls_name_mismatch" | "tls_client_rejected" | "tls_handshake_failed" | "tls_material_invalid" | "ssh_auth_failed" | "ssh_agent_unavailable" | "ssh_key_invalid" | "ssh_failed" | "remote_engine_unavailable" | "host_key_untrusted" | "host_key_changed" | "engine_error" | "bad_request" | "forbidden" | "conflict" | "name_in_use" | "in_use" | "container_running" | "container_not_running" | "already_done" | "port_in_use" | "disk_full" | "image_not_found" | "registry_auth_required" | "registry_rate_limited" | "registry_unreachable" | "registry_login_failed" | "api_version_unsupported" | "build_failed" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
 
 export type ExecEvent = { type: "output"; data: string } | 
 /**  `error` explains an exit that means the command couldn't run. */
@@ -283,6 +353,18 @@ export type FileEntry = {
 };
 
 export type FileKind = "directory" | "file" | "symlink" | "other";
+
+export type Freshness = "upToDate" | 
+/**  The registry has a different image under this tag. */
+"newer" | 
+/**  No answer: built locally, pulled by digest, or the registry couldn't be asked. */
+"unknown";
+
+export type FreshnessResult = {
+	reference: string,
+	imageId: string,
+	freshness: Freshness,
+};
 
 /**  What the user can do about a failure. */
 export type Hint = {
@@ -330,6 +412,24 @@ export type HostStatusChanged = {
 export type HostView = {
 	host: Host,
 	status: HostStatus,
+};
+
+/**  One tag of a Docker Hub repository. */
+export type HubTag = {
+	name: string,
+	/**  Compressed size of the image for one platform, in bytes. */
+	size: number | null,
+	/**  ISO 8601, when the tag was last pushed. */
+	lastPushed: string | null,
+};
+
+/**  A page of tags, newest first. */
+export type HubTagPage = {
+	tags: HubTag[],
+	/**  The number of tags matching, across every page. */
+	count: number,
+	/**  The page to ask for next, if any. */
+	nextPage: number | null,
 };
 
 export type Image = {
@@ -433,7 +533,7 @@ export type NetworkView = {
 	containers: string[],
 };
 
-export type PackageManager = "apt" | "dnf" | "zypper";
+export type PackageManager = "apt" | "dnf" | "zypper" | "scoop" | "aur";
 
 export type PortBinding = {
 	ip: string | null,
@@ -472,9 +572,33 @@ export type PruneSelection = {
 	buildCache: boolean,
 };
 
+/**  Progress of a pull or a push. */
 export type PullEvent = 
-/**  Progress of one layer (or a general status when `id` is absent). */
+/**
+ *  Progress of one layer (or a general status when `id` is absent).
+ *  Pushes never name the layer: the Engine API client drops its id.
+ */
 { type: "progress"; id: string | null; status: string; current: number | null; total: number | null } | { type: "done" } | { type: "error"; error: AppError };
+
+/**  A stored login, as the frontend sees it: never the secret. */
+export type Registry = {
+	id: string,
+	/**  Normalised, e.g. `docker.io`, `ghcr.io`, `registry.local:5000`. */
+	address: string,
+	username: string,
+	createdAt: string,
+	updatedAt: string,
+};
+
+/**
+ *  What the user typed to add or change a login. `secret: None` keeps the
+ *  stored one when editing.
+ */
+export type RegistryDraft = {
+	address: string,
+	username: string,
+	secret: string | null,
+};
 
 export type RestartPolicy = "no" | "always" | "unless-stopped" | "on-failure";
 
@@ -491,6 +615,15 @@ export type RunSpec = {
 	restart: RestartPolicy,
 	/**  Remove the container when it exits (`--rm`). */
 	autoRemove: boolean,
+};
+
+/**  A Docker Hub repository found by a search. */
+export type SearchResult = {
+	/**  `postgres` for official images, `bitnami/redis` otherwise. */
+	name: string,
+	description: string,
+	stars: number,
+	official: boolean,
 };
 
 export type Settings = {
@@ -574,6 +707,14 @@ export type SystemPruneReport = {
 };
 
 export type Theme = "system" | "light" | "dark";
+
+export type TransferEvent = 
+/**  Bytes written to the file (save) or sent to the Engine (load) so far. */
+{ type: "progress"; bytes: number; total: number | null } | 
+/**  A line from the Engine, such as `Loaded image: nginx:1.27`. */
+{ type: "line"; text: string } | 
+/**  Finished; `images` are the names saved or loaded. */
+{ type: "done"; images: string[] } | { type: "error"; error: AppError };
 
 export type UpdateCheck = {
 	currentVersion: string,

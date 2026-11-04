@@ -25,6 +25,8 @@ It contains:
 | TLS CA certificates, client certificates and keys | **Encrypted** |
 | Managed Stack compose files                       | Plain text    |
 | Managed Stack environments                        | **Encrypted** |
+| Registry addresses and user names                 | Plain text    |
+| Registry passwords and access tokens              | **Encrypted** |
 | Your theme and last selected Host                 | Plain text    |
 
 Homeport doesn't copy anything from your Engines: containers, images and logs are read live and never saved, except when you download logs or files yourself.
@@ -35,7 +37,7 @@ Homeport doesn't copy anything from your Engines: containers, images and logs ar
 - The 256-bit key is random, created on first launch, and kept in your **OS keychain** — macOS Keychain, Windows Credential Manager, or the Secret Service on Linux — under the service `com.homeport.app`. It's never stored next to the data.
 - There's no master password: the keychain already ties the key to your user account.
 
-Someone with a copy of `homeport.db` alone can read Host names and addresses, but not your keys, certificates or Stack environments.
+Someone with a copy of `homeport.db` alone can read Host names and addresses, but not your keys, certificates, Stack environments or registry passwords.
 
 ### Without a keychain
 
@@ -51,13 +53,16 @@ Homeport has its own SSH client, so it never writes a private key to a file for 
 
 When `docker compose` deploys a Stack to an SSH or TLS Host, Homeport opens a short-lived private socket on this computer — readable only by your user, or a named pipe that refuses remote clients on Windows — and forwards it over its own connection, for that one command.
 
+Registry logins never reach `docker compose` either: Homeport pulls a Stack's images itself, through the Engine API, before running `docker compose up`, so the command's environment and the files it's given hold no password or token.
+
 ## Trusting servers
 
 The first time Homeport connects to an SSH server, it asks you to confirm the server's key fingerprint, and it refuses to connect if that key later changes until you confirm again. TLS Hosts verify the server's certificate against your CA and the server's name. See [SSH Hosts](/docs/hosts/ssh/#first-connection).
 
 ## What Homeport connects to
 
-- **The Hosts you add.** When you pull an image, the Engine contacts the registry, not Homeport.
+- **The Hosts you add.** When you pull, push or build an image, the Engine contacts the registry, not Homeport. Homeport hands it the stored login for that registry with the request, over the Host's connection; the Engine doesn't keep it.
+- **A registry, when you check its login** in **Settings → Registries**: Homeport asks the registry's `/v2/` endpoint, and its token service, from this computer, sending the user name and password or token over HTTPS (plain HTTP only for a registry on this computer, such as `localhost:5000`).
 - **This website, to check for updates**: at launch and every 6 hours, Homeport downloads `updates/latest.json`, a small file listing the latest version. The request carries nothing about you, your Hosts or your containers, but like any web request it reaches GitHub Pages, which hosts this site, from your IP address. Turn it off in **Settings → Updates**. Updates themselves download from GitHub Releases, and Homeport installs one only if it's signed with Homeport's update key. See [updating](/docs/reference/updating/).
 
 ## What Homeport never does

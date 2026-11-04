@@ -1,7 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeftIcon } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { HostGate, useContainers } from '@/core/host';
+import {
+  containerFreshness,
+  HostGate,
+  indexFreshness,
+  NewerImage,
+  newerLabel,
+  resourceQueries,
+  useContainers,
+} from '@/core/host';
 import {
   Badge,
   Button,
@@ -40,6 +48,7 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
   const navigate = useNavigate();
   const containers = useContainers(hostId);
   const [dialog, confirm] = useConfirm();
+  const freshness = indexFreshness(useQuery(resourceQueries.freshness(hostId)).data);
   const container = containers.data?.find((c) => c.id === id || c.id.startsWith(id));
   const inspect = useQuery({
     ...containerQueries.inspect(hostId, id, container?.state),
@@ -81,7 +90,15 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
             {container.stack && <Badge variant="outline">{container.stack}</Badge>}
           </span>
         }
-        description={`${container.image} · ${container.status || container.state}`}
+        description={
+          <span className="inline-flex items-center gap-1.5">
+            {container.image}
+            {containerFreshness(freshness, container) === 'newer' && (
+              <NewerImage label={newerLabel([container.image])} />
+            )}
+            <span>· {container.status || container.state}</span>
+          </span>
+        }
         actions={<ContainerActions hostId={hostId} container={container} confirm={confirm} />}
       />
       <Tabs

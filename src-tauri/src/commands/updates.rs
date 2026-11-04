@@ -53,7 +53,8 @@ fn method() -> UpdateMethod {
         _ => Bundle::Unknown,
     };
     let os_release = std::fs::read_to_string("/etc/os-release").ok();
-    update_method(bundle, os_release.as_deref())
+    let exe = std::env::current_exe().ok();
+    update_method(bundle, os_release.as_deref(), exe.as_deref())
 }
 
 /// Asks the update server for a newer version and remembers it for [`updates_install`].
@@ -102,6 +103,7 @@ pub async fn updates_install(
         .download_and_install(
             |chunk, total| {
                 downloaded += chunk as u64;
+                // A closed window stops listening; the install carries on regardless.
                 let _ = on_progress.send(UpdateProgress { downloaded, total });
             },
             || {},

@@ -1,6 +1,8 @@
+import { NewerImage } from '@/core/host';
 import type { Stack } from '@/shared/api';
 import { Badge, type ColumnDef, type ConfirmOptions, StatusDot } from '@/shared/ui';
 import type { ComposeJob } from '../model/composeJob';
+import { newerServicesLabel, type ServiceFreshness } from '../model/freshness';
 import { STATE_LABEL, STATE_TONE } from '../model/stackState';
 import { StackActions } from './StackActions';
 
@@ -9,10 +11,13 @@ export function stackColumns({
   hostId,
   confirm,
   onCompose,
+  newerServices,
 }: {
   hostId: string;
   confirm: (o: ConfirmOptions) => void;
   onCompose: (job: ComposeJob) => void;
+  /** The services of each Stack, by name, that run an outdated image. */
+  newerServices: (stack: Stack) => ServiceFreshness[];
 }): ColumnDef<Stack, unknown>[] {
   return [
     {
@@ -43,6 +48,9 @@ export function stackColumns({
             <span className="text-muted-foreground">
               · {row.original.running}/{row.original.total}
             </span>
+          )}
+          {newerServices(row.original).length > 0 && (
+            <NewerImage label={newerServicesLabel(newerServices(row.original))} />
           )}
         </span>
       ),

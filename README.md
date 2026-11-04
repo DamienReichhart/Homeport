@@ -14,12 +14,12 @@ A desktop app for managing Docker Engines anywhere — this machine's, or remote
 ## Features
 
 - **Hosts**: add local sockets (auto-detected: Docker Engine, Docker Desktop, Colima, OrbStack, Rancher Desktop, Podman), TCP, mutual TLS and SSH. SSH Hosts get their own Ed25519 key with a copy-paste command to authorize it; server keys are trusted on first use. Status, reconnection with backoff and a live event stream per Host.
-- **Containers**: grouped by Stack, live CPU/memory, lifecycle and bulk actions, logs (follow, search, download), inspect, interactive terminals, file browser with upload/download, stats charts, processes, and a Run dialog.
-- **Images, Volumes, Networks**: pull with progress, tag, run, history, prune; volume and network usage, create, connect/disconnect, guarded deletion.
+- **Containers**: grouped by Stack, marked when a newer image is published, live CPU/memory, lifecycle and bulk actions, logs (follow, search, download), inspect, interactive terminals, file browser with upload/download, stats charts, processes, and a Run dialog.
+- **Images, Volumes, Networks**: search Docker Hub and its tags, pull and push with progress and stored registry logins, build from a folder on this machine, save to and load from a tar file, tag, run, history, prune; volume and network usage, create, connect/disconnect, guarded deletion.
 - **Stacks**: every Compose project on a Host. Managed Stacks keep their YAML and encrypted environment in Homeport and deploy through the `docker compose` CLI; External Stacks can be started, stopped, removed or adopted.
 - **Overview**: per-host cards, engine details, disk usage and clean-up, recent events.
 
-Secrets (SSH keys, TLS material, stack environments) are encrypted in SQLite with a key kept in the OS keychain. See [GLOSSARY.md](GLOSSARY.md) and [docs/adr](docs/adr) for the vocabulary and the main decisions.
+Secrets (SSH keys, TLS material, stack environments, registry passwords and tokens) are encrypted in SQLite with a key kept in the OS keychain. See [GLOSSARY.md](GLOSSARY.md) and [docs/adr](docs/adr) for the vocabulary and the main decisions.
 
 ## Download
 
@@ -31,7 +31,7 @@ curl -fsSL https://damienreichhart.github.io/Homeport/install.sh | sh
 
 The [installation guide](https://damienreichhart.github.io/Homeport/docs/installation/#manual-setup) shows the same setup step by step, without the script.
 
-Installers for Windows, macOS and Linux (x64 and ARM) are on the [download page](https://damienreichhart.github.io/Homeport/download/) and the [releases page](https://github.com/DamienReichhart/Homeport/releases/latest). Windows, macOS and AppImage installs update themselves from inside Homeport. Homebrew, winget, Scoop, the AUR, Flathub and Snap are planned ([issues #5 to #10](https://github.com/DamienReichhart/Homeport/issues?q=is%3Aissue+label%3Aenhancement)).
+Installers for Windows, macOS and Linux (x64 and ARM) are on the [download page](https://damienreichhart.github.io/Homeport/download/) and the [releases page](https://github.com/DamienReichhart/Homeport/releases/latest). Windows, macOS and AppImage installs update themselves from inside Homeport. winget ([#6](https://github.com/DamienReichhart/Homeport/issues/6)) and Homebrew ([#5](https://github.com/DamienReichhart/Homeport/issues/5)) are planned before 1.0; Scoop, the AUR, Flathub and Snap after it ([#7 to #10](https://github.com/DamienReichhart/Homeport/milestone/18)).
 
 Pushing a new version to `main` publishes it; see [docs/RELEASING.md](docs/RELEASING.md).
 

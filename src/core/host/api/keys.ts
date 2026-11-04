@@ -9,6 +9,8 @@ export const hostKeys = {
   scope: (hostId: string) => ['host', hostId] as const,
   containers: (hostId: string) => ['host', hostId, 'containers'] as const,
   images: (hostId: string) => ['host', hostId, 'images'] as const,
+  /** Under images, so a pull or removal refreshes it (from the backend's cache). */
+  freshness: (hostId: string) => ['host', hostId, 'images', 'freshness'] as const,
   volumes: (hostId: string) => ['host', hostId, 'volumes'] as const,
   networks: (hostId: string) => ['host', hostId, 'networks'] as const,
   stacks: (hostId: string) => ['host', hostId, 'stacks'] as const,

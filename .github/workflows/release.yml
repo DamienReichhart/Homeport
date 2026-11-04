@@ -30,7 +30,7 @@ jobs:
       tag: ${{ steps.plan.outputs.tag }}
       prerelease: ${{ steps.plan.outputs.prerelease }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # every tag, and the history since the previous release for the notes
       - uses: oven-sh/setup-bun@v2
@@ -38,7 +38,7 @@ jobs:
           bun-version-file: package.json
       - id: plan
         run: bun scripts/release.ts plan --notes "$RUNNER_TEMP/notes.md"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: release-notes
           path: ${{ runner.temp }}/notes.md
@@ -92,7 +92,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
@@ -165,7 +165,7 @@ jobs:
             cp "$app.sig" "installers/Homeport_${VERSION}_${arch}.app.tar.gz.sig"
           fi
           ls -l installers
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: installers-${{ matrix.name }}
           path: installers/*
@@ -186,19 +186,19 @@ jobs:
       TAG: ${{ needs.prepare.outputs.tag }}
       PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: installers-*
           path: installers
           merge-multiple: true
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: release-notes
           path: ${{ runner.temp }}
       - name: Checksums
         working-directory: installers
         run: sha256sum -- * | tee "$RUNNER_TEMP/SHA256SUMS.txt"
-      - uses: actions/attest-build-provenance@v2
+      - uses: actions/attest-build-provenance@v4
         with:
           subject-path: installers/*
       - name: Publish
@@ -209,3 +209,71 @@ jobs:
           gh release create "$TAG" installers/* "$RUNNER_TEMP/SHA256SUMS.txt" \
             --target "$GITHUB_SHA" --title "Homeport $TAG" --notes-file "$RUNNER_TEMP/notes.md" "${flags[@]}"
           echo "Published [$TAG]($(gh release view "$TAG" --json url --jq .url))" >> "$GITHUB_STEP_SUMMARY"
+
+  # Scoop and the AUR (issues #7 and #8) live outside GitHub Pages. Their files
+  # are rendered from the published checksums and always kept as an artifact;
+  # each channel is updated only once its secret is set (docs/RELEASING.md).
+  channels:
+    needs: [prepare, publish]
+    if: needs.prepare.outputs.prerelease != 'true'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: ${{ needs.prepare.outputs.tag }}
+      VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - name: Render the Scoop manifest and the AUR package
+        run: |
+          gh release download "$TAG" --pattern SHA256SUMS.txt --dir "$RUNNER_TEMP"
+          bun scripts/channels.ts --version "$VERSION" --sums "$RUNNER_TEMP/SHA256SUMS.txt" --out "$RUNNER_TEMP/channels"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: channels
+          path: ${{ runner.temp }}/channels
+          include-hidden-files: true # .SRCINFO
+          retention-days: 30
+      - name: Update the Scoop bucket
+        env:
+          TOKEN: ${{ secrets.SCOOP_BUCKET_TOKEN }}
+          BUCKET: DamienReichhart/scoop-bucket
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::notice::SCOOP_BUCKET_TOKEN isn't set; skipping the Scoop bucket."
+            exit 0
+          fi
+          git clone --depth 1 "https://x-access-token:$TOKEN@github.com/$BUCKET.git" "$RUNNER_TEMP/bucket"
+          cd "$RUNNER_TEMP/bucket"
+          mkdir -p bucket
+          cp "$RUNNER_TEMP/channels/scoop/homeport.json" bucket/homeport.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add bucket/homeport.json
+          git diff --cached --quiet && { echo "Already at $VERSION."; exit 0; }
+          git commit -m "homeport: update to $VERSION"
+          git push
+      - name: Update the AUR package
+        env:
+          AUR_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+        run: |
+          if [ -z "$AUR_KEY" ]; then
+            echo "::notice::AUR_SSH_PRIVATE_KEY isn't set; skipping the AUR."
+            exit 0
+          fi
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$AUR_KEY" > ~/.ssh/aur && chmod 600 ~/.ssh/aur
+          ssh-keyscan -t ed25519 aur.archlinux.org >> ~/.ssh/known_hosts
+          export GIT_SSH_COMMAND="ssh -i ~/.ssh/aur -o IdentitiesOnly=yes"
+          git clone ssh://aur@aur.archlinux.org/homeport-bin.git "$RUNNER_TEMP/aur"
+          cd "$RUNNER_TEMP/aur"
+          cp "$RUNNER_TEMP/channels/aur/PKGBUILD" "$RUNNER_TEMP/channels/aur/.SRCINFO" .
+          git config user.name "Homeport release"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add PKGBUILD .SRCINFO
+          git diff --cached --quiet && { echo "Already at $VERSION."; exit 0; }
+          git commit -m "Update to $VERSION"
+          git push origin HEAD:master

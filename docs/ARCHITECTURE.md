@@ -46,16 +46,17 @@ Tests sit next to the code they test. A file past 300 lines gets an ESLint warni
 
 Each crate depends only on crates below it in this list, so the graph has one direction and Cargo refuses a cycle:
 
-| Crate (folder)                             | Holds                                                                                                            |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| `homeport` (`src-tauri/`)                  | The Tauri shell: `app/` (bootstrap, state, events), `commands/` (one module per feature), `error.rs`             |
-| `homeport-hosts` (`crates/hosts/`)         | Hosts: their store, a supervised connection to each (`registry/`), the use cases (`service/`)                    |
-| `homeport-stacks` (`crates/stacks/`)       | Stacks: telling them apart, Managed Stacks' store, lifecycle, the compose CLI (ADR 0001)                         |
-| `homeport-settings`, `homeport-updates`    | The user's preferences; how this copy of Homeport is updated                                                     |
-| `homeport-engine` (`crates/engine/`)       | The Engine's resources as functions over a bollard client; what runs in a container under `containers/`          |
-| `homeport-transport` (`crates/transport/`) | Reaching a Host: local, TCP, TLS, SSH (ADR 0002), the compose proxy, classifying failures to reach it (`reach/`) |
-| `homeport-storage` (`crates/storage/`)     | The SQLite database, its migrations, and the secrets sealed in it (ADR 0002)                                     |
-| `homeport-core` (`crates/core/`)           | `AppError` and `ErrorCode`, the Host model, helpers for this computer                                            |
+| Crate (folder)                               | Holds                                                                                                            |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `homeport` (`src-tauri/`)                    | The Tauri shell: `app/` (bootstrap, state, events), `commands/` (one module per feature), `error.rs`             |
+| `homeport-hosts` (`crates/hosts/`)           | Hosts: their store, a supervised connection to each (`registry/`), the use cases (`service/`)                    |
+| `homeport-stacks` (`crates/stacks/`)         | Stacks: telling them apart, Managed Stacks' store, lifecycle, the compose CLI (ADR 0001)                         |
+| `homeport-registries` (`crates/registries/`) | Registry logins: their store, matching them to image references, the login check and Docker Hub (HTTP)           |
+| `homeport-settings`, `homeport-updates`      | The user's preferences; how this copy of Homeport is updated                                                     |
+| `homeport-engine` (`crates/engine/`)         | The Engine's resources as functions over a bollard client; what runs in a container under `containers/`          |
+| `homeport-transport` (`crates/transport/`)   | Reaching a Host: local, TCP, TLS, SSH (ADR 0002), the compose proxy, classifying failures to reach it (`reach/`) |
+| `homeport-storage` (`crates/storage/`)       | The SQLite database, its migrations, and the secrets sealed in it (ADR 0002)                                     |
+| `homeport-core` (`crates/core/`)             | `AppError` and `ErrorCode`, the Host model, helpers for this computer                                            |
 
 Rules:
 

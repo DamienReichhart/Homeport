@@ -1,4 +1,5 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
+import { RegistryLogin } from '@/features/registries';
 import type { PullEvent } from '@/shared/api';
 import { formatBytes } from '@/shared/lib';
 import {
@@ -14,7 +15,10 @@ import {
   Progress,
 } from '@/shared/ui';
 import { usePullImage } from '../../api/streams';
+import { searchTerm } from '../../model/hub';
 import { initialPull, reducePull, type PullState } from '../../model/pull';
+import { HubSearch } from './HubSearch';
+import { HubTags } from './HubTags';
 
 /** Pulls an image by reference and shows each layer's progress. */
 export function PullDialog({
@@ -29,6 +33,8 @@ export function PullDialog({
   const pull = usePullImage(hostId);
   const [reference, setReference] = useState('');
   const [pulling, setPulling] = useState<string | null>(null);
+  /** The Docker Hub repository whose tags are listed, once one is chosen. */
+  const [repository, setRepository] = useState<string | null>(null);
   const [state, dispatch] = useReducer(
     (s: PullState, e: PullEvent | 'reset') => (e === 'reset' ? initialPull : reducePull(s, e)),
     initialPull,
@@ -48,6 +54,7 @@ export function PullDialog({
     if (!next) {
       stop.current?.();
       setPulling(null);
+      setRepository(null);
       dispatch('reset');
     }
     onOpenChange(next);
@@ -59,7 +66,7 @@ export function PullDialog({
         <DialogHeader>
           <DialogTitle>Pull an image</DialogTitle>
           <DialogDescription>
-            From Docker Hub or any registry the host can reach, e.g. nginx:1.27 or
+            Search Docker Hub by name, or type any reference the host can reach, e.g. nginx:1.27 or
             ghcr.io/org/app:v2.
           </DialogDescription>
         </DialogHeader>
@@ -72,8 +79,15 @@ export function PullDialog({
         >
           <Input
             value={reference}
-            onChange={(e) => setReference(e.target.value)}
-            placeholder="nginx:latest"
+            onChange={(e) => {
+              setReference(e.target.value);
+              setRepository(null);
+              if (pulling) {
+                setPulling(null);
+                dispatch('reset');
+              }
+            }}
+            placeholder="postgres, or nginx:1.27"
             autoFocus
             disabled={busy}
             aria-label="Image reference"
@@ -82,6 +96,27 @@ export function PullDialog({
             Pull
           </Button>
         </form>
+        <RegistryLogin reference={reference} verb="Pulled" />
+        {!pulling && repository && (
+          <HubTags
+            repository={repository}
+            onChoose={(tag) => setReference(`${repository}:${tag}`)}
+            onBack={() => {
+              setReference(repository);
+              setRepository(null);
+            }}
+          />
+        )}
+        {!pulling && !repository && searchTerm(reference) && (
+          <HubSearch
+            hostId={hostId}
+            term={searchTerm(reference)!}
+            onChoose={(repo) => {
+              setReference(repo);
+              setRepository(repo);
+            }}
+          />
+        )}
         {pulling && (
           <div className="grid max-h-80 gap-2 overflow-y-auto">
             {state.messages.map((m, i) => (

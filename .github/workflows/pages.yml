@@ -40,14 +40,14 @@ jobs:
       run:
         working-directory: website
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
       # The origin and base path of the Pages site, so a custom domain needs no code change.
       - id: pages
         if: github.event_name != 'pull_request'
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - run: bun install --frozen-lockfile
       - name: Lint
         run: bun run lint
@@ -94,7 +94,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: bun scripts/repositories.ts --out website/dist --public-key "$PUBLIC_KEY"
       - if: github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: website/dist
 
@@ -110,4 +110,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

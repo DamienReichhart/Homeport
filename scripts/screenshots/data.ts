@@ -510,6 +510,7 @@ export const diskUsage: DiskUsage = {
   containers: { total: 13, active: 11, size: 182 * MB, reclaimable: 3.4 * MB },
   volumes: { total: 9, active: 7, size: 6.81 * GB, reclaimable: 1.18 * GB },
   buildCache: { total: 24, active: 0, size: 1.06 * GB, reclaimable: 1.06 * GB },
+  partial: false,
 };
 
 const imageSpecs: [string[], number, number, number][] = [

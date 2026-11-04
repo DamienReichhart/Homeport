@@ -61,4 +61,28 @@ describe('images page', () => {
     expect(message.closest('[data-sonner-toast]')).not.toBeNull();
     expect(screen.getByRole('alertdialog')).toBeInTheDocument();
   });
+
+  it('marks an image whose tag has a newer version', async () => {
+    mockCommands({
+      ...baseCommands,
+      images_list: () => [
+        {
+          id: 'sha256:aaaa',
+          tags: ['nginx:1.27'],
+          digests: ['nginx@sha256:old'],
+          created: 1_700_000_000,
+          size: 1024,
+          containers: 1,
+          labels: {},
+        },
+      ],
+      images_freshness: () => [
+        { reference: 'nginx:1.27', imageId: 'sha256:aaaa', freshness: 'newer' },
+      ],
+    });
+    renderApp('/images');
+    expect(
+      await screen.findByRole('img', { name: 'A newer nginx:1.27 was published' }),
+    ).toBeInTheDocument();
+  });
 });
