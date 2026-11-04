@@ -6,3 +6,4 @@ export { events } from './bindings';
 export type * from './bindings';
 export { appQueries, useCapabilities } from './queries';
 export { subscribe } from './streams';
+export { initialTransfer, reduceTransfer, type TransferState } from './transfer';

@@ -1,5 +1,5 @@
 import { pickFile, pickSavePath } from '@/shared/lib';
-import { LOAD_FILTERS, SAVE_FILTERS } from '../model/transfer';
+import { IMPORT_FILTERS, LOAD_FILTERS, SAVE_FILTERS } from '../model/transfer';
 
 /** Asks where to save an image archive; `null` when cancelled. */
 export const chooseArchiveToSave = (defaultName: string) =>
@@ -7,3 +7,6 @@ export const chooseArchiveToSave = (defaultName: string) =>
 
 /** Asks for an image archive to load; `null` when cancelled. */
 export const chooseArchiveToLoad = () => pickFile('Load images from', LOAD_FILTERS);
+
+/** Asks for a root filesystem tar to import; `null` when cancelled. */
+export const chooseFilesystemToImport = () => pickFile('Import a filesystem from', IMPORT_FILTERS);

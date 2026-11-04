@@ -122,3 +122,29 @@ export function useLoadImages(hostId: string) {
     [client, hostId],
   );
 }
+
+/** Creates an image from a root filesystem tar on this machine; refreshes the list when done. */
+export function useImportImage(hostId: string) {
+  const client = useQueryClient();
+  return useCallback(
+    (
+      source: string,
+      reference: string,
+      changes: string[],
+      onEvent: (event: TransferEvent) => void,
+      onError: (error: AppError) => void,
+    ) =>
+      subscribe<TransferEvent>(
+        (ch) => commands.imagesImportSubscribe(hostId, source, { reference, changes }, ch),
+        (event) => {
+          onEvent(event);
+          if (event.type === 'done') {
+            toast.success(`Imported ${event.images[0] ?? reference}`);
+            void client.invalidateQueries({ queryKey: hostKeys.images(hostId) });
+          }
+        },
+        onError,
+      ),
+    [client, hostId],
+  );
+}

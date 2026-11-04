@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   BrushCleaningIcon,
   DownloadIcon,
+  FileArchiveIcon,
   FileUpIcon,
   HammerIcon,
   LayersIcon,
@@ -26,11 +27,12 @@ import {
   Spinner,
   useConfirmedAction,
 } from '@/shared/ui';
-import { chooseArchiveToLoad, chooseArchiveToSave } from '../api/files';
+import { chooseArchiveToLoad, chooseArchiveToSave, chooseFilesystemToImport } from '../api/files';
 import { usePruneImages, useRemoveImage } from '../api/mutations';
 import { archiveName, saveNames } from '../model/transfer';
 import { pruneImagesConfirmation, removeImageConfirmation } from './confirmations';
 import { BuildDialog } from './dialogs/BuildDialog';
+import { ImportDialog } from './dialogs/ImportDialog';
 import { InspectDialog } from './dialogs/InspectDialog';
 import { PullDialog } from './dialogs/PullDialog';
 import { PushDialog } from './dialogs/PushDialog';
@@ -60,6 +62,11 @@ function ImagesList({ hostId }: { hostId: string }) {
   const loadImages = async () => {
     const path = await chooseArchiveToLoad();
     if (path) setTransfer({ kind: 'load', path });
+  };
+  const [importing, setImporting] = useState<string | null>(null);
+  const importFilesystem = async () => {
+    const path = await chooseFilesystemToImport();
+    if (path) setImporting(path);
   };
   const [inspecting, setInspecting] = useState<Image | null>(null);
 
@@ -102,6 +109,9 @@ function ImagesList({ hostId }: { hostId: string }) {
             <Button variant="outline" onClick={() => void loadImages()}>
               <FileUpIcon /> Load…
             </Button>
+            <Button variant="outline" onClick={() => void importFilesystem()}>
+              <FileArchiveIcon /> Import from tar…
+            </Button>
             <Button variant="outline" onClick={() => setBuilding(true)}>
               <HammerIcon /> Build
             </Button>
@@ -141,6 +151,16 @@ function ImagesList({ hostId }: { hostId: string }) {
       )}
       <PullDialog hostId={hostId} open={pulling} onOpenChange={setPulling} />
       {building && <BuildDialog hostId={hostId} onClose={() => setBuilding(false)} />}
+      {importing && (
+        <ImportDialog
+          path={importing}
+          onClose={() => setImporting(null)}
+          onImport={(reference, changes) => {
+            setImporting(null);
+            setTransfer({ kind: 'import', path: importing, reference, changes });
+          }}
+        />
+      )}
       {transfer && (
         <TransferDialog hostId={hostId} transfer={transfer} onClose={() => setTransfer(null)} />
       )}
