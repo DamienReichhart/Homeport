@@ -2,4 +2,5 @@
 export const LEGAL_DOCUMENTS = [
   { label: 'Legal notice', path: '/legal-notice/' },
   { label: 'Privacy', path: '/privacy/' },
+  { label: 'Terms', path: '/terms/' },
 ] as const;
