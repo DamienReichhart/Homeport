@@ -1,8 +1,10 @@
-import { open, save } from '@tauri-apps/plugin-dialog';
+import { open, save, type DialogFilter } from '@tauri-apps/plugin-dialog';
+
+export type { DialogFilter };
 
 /** Asks for one file to open; `null` when cancelled. */
-export async function pickFile(title: string): Promise<string | null> {
-  const picked = await open({ title, multiple: false, directory: false });
+export async function pickFile(title: string, filters?: DialogFilter[]): Promise<string | null> {
+  const picked = await open({ title, multiple: false, directory: false, filters });
   return typeof picked === 'string' ? picked : null;
 }
 
@@ -14,8 +16,12 @@ export async function pickFiles(title: string): Promise<string[]> {
 }
 
 /** Asks where to save a file; `null` when cancelled. */
-export async function pickSavePath(title: string, defaultPath?: string): Promise<string | null> {
-  return save({ title, defaultPath });
+export async function pickSavePath(
+  title: string,
+  defaultPath?: string,
+  filters?: DialogFilter[],
+): Promise<string | null> {
+  return save({ title, defaultPath, filters });
 }
 
 /** Asks for a folder; `null` when cancelled. */
