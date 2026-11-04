@@ -6,7 +6,7 @@ use bollard::{
     query_parameters::{
         CreateImageOptionsBuilder, ListContainersOptionsBuilder, ListImagesOptionsBuilder,
         PruneImagesOptionsBuilder, PushImageOptionsBuilder, RemoveImageOptionsBuilder,
-        TagImageOptionsBuilder,
+        SearchImagesOptionsBuilder, TagImageOptionsBuilder,
     },
     Docker,
 };
@@ -70,6 +70,17 @@ pub enum PullEvent {
 pub struct PruneReport {
     pub removed: Vec<String>,
     pub space_reclaimed: i64,
+}
+
+/// A Docker Hub repository found by a search.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct SearchResult {
+    /// `postgres` for official images, `bitnami/redis` otherwise.
+    pub name: String,
+    pub description: String,
+    pub stars: i64,
+    pub official: bool,
 }
 
 /// Splits `name[:tag]` into the image and tag the Engine's pull expects,
@@ -268,6 +279,34 @@ fn push_error(message: &str) -> AppError {
     }
 }
 
+/// Searches Docker Hub through the Engine, so the search follows the Host's
+/// network as the pull will. Official images come first, then by stars.
+pub async fn search(docker: &Docker, term: &str, limit: u32) -> AppResult<Vec<SearchResult>> {
+    let term = term.trim();
+    if term.is_empty() {
+        return Ok(Vec::new());
+    }
+    let options = SearchImagesOptionsBuilder::default()
+        .term(term)
+        .limit(limit.clamp(1, 100) as i32)
+        .build();
+    let mut results: Vec<SearchResult> = docker
+        .search_images(options)
+        .await?
+        .into_iter()
+        .filter_map(|r| {
+            Some(SearchResult {
+                name: r.name?,
+                description: r.description.unwrap_or_default(),
+                stars: r.star_count.unwrap_or(0),
+                official: r.is_official.unwrap_or(false),
+            })
+        })
+        .collect();
+    results.sort_by(|a, b| b.official.cmp(&a.official).then(b.stars.cmp(&a.stars)));
+    Ok(results)
+}
+
 /// Adds the name `target` (`repo[:tag]`) to an image.
 pub async fn tag(docker: &Docker, id: &str, target: &str) -> AppResult<()> {
     let (repo, tag) = split_reference(target);
@@ -333,6 +372,15 @@ mod tests {
             ("registry.local:5000/team/app".into(), Some("v2".into()))
         );
         assert_eq!(split("app@sha256:abc"), ("app@sha256:abc".into(), None));
+    }
+
+    #[tokio::test]
+    #[ignore = "needs a local Docker Engine and access to Docker Hub"]
+    async fn searches_find_official_images_first() {
+        let results = search(&testing::docker(), "postg", 10).await.unwrap();
+        let first = results.first().expect("some results");
+        assert!(first.official, "{results:?}");
+        assert_eq!(first.name, "postgres");
     }
 
     #[test]
