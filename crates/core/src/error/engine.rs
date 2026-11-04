@@ -95,6 +95,8 @@ pub fn from_message(status: Option<u16>, message: &str) -> AppError {
         .with_hint("Check the login for this registry in Settings → Registries.");
     }
     if has("pull access denied")
+        || has("push access denied")
+        || has("no basic auth credentials")
         || has("requested access to the resource is denied")
         || has("authentication required")
         || has("unauthorized: ")
@@ -287,6 +289,7 @@ mod tests {
             (404, "No such container: abc", ErrorCode::NotFound),
             (404, "pull access denied for nope/nope, repository does not exist or may require 'docker login': denied: requested access to the resource is denied", ErrorCode::RegistryAuthRequired),
             (404, "manifest for alpine:nope not found: manifest unknown: manifest unknown", ErrorCode::ImageNotFound),
+            (500, "push access denied, repository does not exist or may require authorization: authorization failed: no basic auth credentials", ErrorCode::RegistryAuthRequired),
             (500, "toomanyrequests: You have reached your pull rate limit.", ErrorCode::RegistryRateLimited),
             (500, "Head \"https://registry-1.docker.io/v2/library/nginx/manifests/latest\": unauthorized: incorrect username or password", ErrorCode::RegistryLoginFailed),
             (500, "Get \"https://registry-1.docker.io/v2/\": dial tcp: lookup registry-1.docker.io: no such host", ErrorCode::RegistryUnreachable),
