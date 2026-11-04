@@ -5,7 +5,7 @@ use tauri::{ipc::Channel, State};
 use homeport_core::streams::StreamId;
 use homeport_engine::images::{self, Image, ImageLayer, PruneReport, PullEvent};
 
-use crate::{app::AppState, error::AppResult};
+use crate::{app::AppState, commands::registries, error::AppResult};
 
 #[tauri::command]
 #[specta::specta]
@@ -74,9 +74,17 @@ pub async fn images_pull_subscribe(
     on_event: Channel<PullEvent>,
 ) -> AppResult<StreamId> {
     let docker = state.hosts.registry.docker(&host_id)?;
+    let auth = registries::auth_for(&state, &reference)?;
+    let explained = registries::explainer(&state, &reference);
     Ok(state
         .streams
-        .spawn(images::pull(docker, reference, move |e| {
+        .spawn(images::pull(docker, reference, auth, move |e| {
+            let e = match e {
+                PullEvent::Error { error } => PullEvent::Error {
+                    error: explained(error),
+                },
+                e => e,
+            };
             on_event.send(e).is_ok()
         })))
 }

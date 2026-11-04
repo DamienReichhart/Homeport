@@ -11,7 +11,7 @@ use homeport_engine::containers::{
     Container, ContainerAction, Processes,
 };
 
-use crate::{app::AppState, error::AppResult};
+use crate::{app::AppState, commands::registries, error::AppResult};
 
 #[tauri::command]
 #[specta::specta]
@@ -84,7 +84,12 @@ pub async fn containers_run(
     host_id: String,
     spec: RunSpec,
 ) -> AppResult<String> {
-    run::run(&state.hosts.registry.docker(&host_id)?, spec).await
+    let docker = state.hosts.registry.docker(&host_id)?;
+    let image = spec.image.trim().to_owned();
+    let auth = registries::auth_for(&state, &image)?;
+    run::run(&docker, spec, auth)
+        .await
+        .map_err(|e| registries::explain(&state, &image, e))
 }
 
 #[tauri::command]

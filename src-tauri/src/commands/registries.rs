@@ -2,7 +2,9 @@
 
 use tauri::State;
 
-use homeport_registries::{login, Registry, RegistryDraft};
+use homeport_core::error::AppError;
+use homeport_engine::auth::RegistryAuth;
+use homeport_registries::{hints, login, Credentials, Registry, RegistryDraft};
 
 use crate::{app::AppState, error::AppResult};
 
@@ -50,4 +52,33 @@ pub fn registries_login_for(
     reference: String,
 ) -> AppResult<Option<Registry>> {
     state.registries.login_for(&reference)
+}
+
+/// The stored login for the registry of `reference`, as the Engine takes it.
+pub(crate) fn auth_for(state: &AppState, reference: &str) -> AppResult<Option<RegistryAuth>> {
+    Ok(state.registries.credentials_for(reference)?.map(to_auth))
+}
+
+/// Rewrites a registry refusal for `reference` to point at the login that
+/// would fix it.
+pub(crate) fn explain(state: &AppState, reference: &str, error: AppError) -> AppError {
+    explainer(state, reference)(error)
+}
+
+/// [`explain`] for a stream that outlives the command, which can't keep `state`.
+pub(crate) fn explainer(
+    state: &AppState,
+    reference: &str,
+) -> impl Fn(AppError) -> AppError + Send + Sync + 'static {
+    let login = state.registries.login_for(reference).ok().flatten();
+    let reference = reference.to_owned();
+    move |error| hints::explain(error, &reference, login.as_ref())
+}
+
+fn to_auth(c: Credentials) -> RegistryAuth {
+    RegistryAuth {
+        address: c.address,
+        username: c.username,
+        secret: c.secret,
+    }
 }
