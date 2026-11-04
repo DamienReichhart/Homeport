@@ -1,4 +1,5 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
+import { RegistryLogin } from '@/features/registries';
 import type { PullEvent } from '@/shared/api';
 import { formatBytes } from '@/shared/lib';
 import {
@@ -82,6 +83,7 @@ export function PullDialog({
             Pull
           </Button>
         </form>
+        <RegistryLogin reference={reference} verb="Pulled" />
         {pulling && (
           <div className="grid max-h-80 gap-2 overflow-y-auto">
             {state.messages.map((m, i) => (

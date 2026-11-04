@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { resourceQueries } from '@/core/host';
+import { RegistryLogin } from '@/features/registries';
 import type { RestartPolicy } from '@/shared/api';
 import {
   Button,
@@ -93,6 +94,9 @@ export function RunContainerDialog({
                     <option key={t} value={t} />
                   ))}
               </datalist>
+              {images.data && !images.data.some((i) => i.tags.includes(form.image.trim())) && (
+                <RegistryLogin reference={form.image} verb="Pulled" />
+              )}
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="run-name">Name</Label>
