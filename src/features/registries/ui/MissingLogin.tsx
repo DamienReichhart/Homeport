@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { Alert, AlertDescription, AlertTitle } from '@/shared/ui';
 import { registryQueries } from '../api/queries';
 import { registryOf } from '../model/login';
+import { t, tRich } from '@/shared/i18n';
 
 /**
  * Warns before a push that no login is stored for the target's registry,
@@ -18,14 +19,16 @@ export function MissingLogin({ reference }: { reference: string }) {
   return (
     <Alert>
       <KeyRoundIcon />
-      <AlertTitle>No login for {registry}</AlertTitle>
+      <AlertTitle>{t('registries.noLogin.title', { registry })}</AlertTitle>
       <AlertDescription>
         <p>
-          Most registries refuse anonymous pushes.{' '}
-          <Link to="/settings" className="underline underline-offset-2">
-            Add a login in Settings → Registries
-          </Link>{' '}
-          first.
+          {tRich('registries.noLogin.description', {
+            link: (chunks) => (
+              <Link to="/settings" className="underline underline-offset-2">
+                {chunks}
+              </Link>
+            ),
+          })}
         </p>
       </AlertDescription>
     </Alert>

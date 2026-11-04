@@ -15,6 +15,7 @@ import {
 } from '@/shared/ui';
 import { useCheckRegistry, useSaveRegistry } from '../api/mutations';
 import { emptyLogin, loginFormOf, missingField, toDraft, type LoginForm } from '../model/login';
+import { t } from '@/shared/i18n';
 
 /** Adds a registry login, or edits one (`registry` set), with a login check. */
 export function RegistryDialog({
@@ -39,12 +40,11 @@ export function RegistryDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {editing ? `Edit the login for ${registry.address}` : 'Add a registry login'}
+            {editing
+              ? t('registries.dialog.editTitle', { registry: registry.address })
+              : t('registries.dialog.addTitle')}
           </DialogTitle>
-          <DialogDescription>
-            Used to pull, push and build on every Host. The password or token is encrypted on this
-            computer and never shown again.
-          </DialogDescription>
+          <DialogDescription>{t('registries.dialog.description')}</DialogDescription>
         </DialogHeader>
         <form
           className="grid gap-3"
@@ -54,18 +54,19 @@ export function RegistryDialog({
           }}
         >
           <div className="grid gap-1.5">
-            <Label htmlFor="registry-address">Registry</Label>
+            <Label htmlFor="registry-address">{t('registries.dialog.address')}</Label>
             <Input
               id="registry-address"
               value={form.address}
               onChange={(e) => set({ address: e.target.value })}
+              // eslint-disable-next-line homeport/no-literal-ui-string -- example registry addresses
               placeholder="docker.io, ghcr.io, registry.example.com:5000"
               autoFocus
               spellCheck={false}
             />
           </div>
           <div className="grid gap-1.5">
-            <Label htmlFor="registry-username">User name</Label>
+            <Label htmlFor="registry-username">{t('registries.dialog.username')}</Label>
             <Input
               id="registry-username"
               value={form.username}
@@ -75,26 +76,27 @@ export function RegistryDialog({
             />
           </div>
           <div className="grid gap-1.5">
-            <Label htmlFor="registry-secret">Password or access token</Label>
+            <Label htmlFor="registry-secret">{t('registries.dialog.secret')}</Label>
             <Input
               id="registry-secret"
               type="password"
               value={form.secret}
               onChange={(e) => set({ secret: e.target.value })}
-              placeholder={editing ? 'Leave empty to keep the stored one' : undefined}
+              placeholder={editing ? t('registries.dialog.keepSecret') : undefined}
               autoComplete="new-password"
             />
           </div>
           {check.isSuccess && (
             <p className="text-success inline-flex items-center gap-1.5 text-sm">
-              <CircleCheckIcon className="size-4" /> {form.address.trim()} accepted this login.
+              <CircleCheckIcon className="size-4" />{' '}
+              {t('registries.dialog.accepted', { registry: form.address.trim() })}
             </p>
           )}
           {check.error && <ErrorMessage error={check.error} />}
           {save.error && <ErrorMessage error={save.error} />}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={onClose}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               type="button"
@@ -102,10 +104,10 @@ export function RegistryDialog({
               disabled={missing !== null || check.isPending}
               onClick={() => check.mutate(toDraft(form))}
             >
-              {check.isPending ? 'Checking…' : 'Check login'}
+              {check.isPending ? t('registries.dialog.checking') : t('registries.dialog.check')}
             </Button>
             <Button type="submit" disabled={missing !== null || save.isPending}>
-              Save
+              {t('common.save')}
             </Button>
           </DialogFooter>
         </form>

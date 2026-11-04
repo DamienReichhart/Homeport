@@ -1,4 +1,5 @@
 import type { Registry, RegistryDraft } from '@/shared/api';
+import { t } from '@/shared/i18n';
 
 /** What the add/edit dialog holds. An empty secret keeps the stored one when editing. */
 export interface LoginForm {
@@ -18,9 +19,9 @@ export const loginFormOf = (registry: Registry): LoginForm => ({
 
 /** What's still missing before the form can be checked or saved; `null` when complete. */
 export function missingField(form: LoginForm, editing: boolean): string | null {
-  if (!form.address.trim()) return 'Enter the registry’s address.';
-  if (!form.username.trim()) return 'Enter the user name.';
-  if (!editing && !form.secret) return 'Enter the password or access token.';
+  if (!form.address.trim()) return t('registries.missing.address');
+  if (!form.username.trim()) return t('registries.missing.username');
+  if (!editing && !form.secret) return t('registries.missing.secret');
   return null;
 }
 
@@ -33,7 +34,9 @@ export const toDraft = (form: LoginForm): RegistryDraft => ({
 
 /** How an image is pulled or pushed: "as alice on ghcr.io", or anonymously. */
 export function describeLogin(login: Registry | null | undefined): string {
-  return login ? `as ${login.username} on ${login.address}` : 'anonymously';
+  return login
+    ? t('registries.login.as', { username: login.username, registry: login.address })
+    : t('registries.login.anonymously');
 }
 
 /** Docker Hub's logins are stored as docker.io; say what that is. */
