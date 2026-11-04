@@ -13,6 +13,7 @@ import {
   Security,
   softwareApplication,
   Stacks,
+  Visits,
 } from '@/features/home';
 import { ScrollReveal } from '@/shared/ui';
 
@@ -22,6 +23,7 @@ const jsonLd = softwareApplication(Astro.site, await getLatestRelease());
 <SiteLayout title={`Homeport — ${TAGLINE}`} jsonLd={jsonLd}>
   <Hero />
   <Runtimes />
+  <Visits />
   <Features />
   <Hosts />
   <Containers />

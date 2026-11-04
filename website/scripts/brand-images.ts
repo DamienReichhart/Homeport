@@ -2,13 +2,14 @@
  * Generates the site's raster brand images into public/:
  *
  *   og.png                 1200×630 social card (rendered by headless Firefox, so it
- *                          uses Geist and the real app screenshot)
+ *                          uses Host Grotesk and Fragment Mono): the headline and a
+ *                          departure board of Hosts, as on the home page
  *   apple-touch-icon.png   180×180, and icon-192.png / icon-512.png for the manifest
  *
  *   bun scripts/brand-images.ts        (from website/)
  *
- * Run it again after changing the mark or the overview screenshot. Set FIREFOX
- * to use a Firefox other than the one on PATH.
+ * Run it again after changing the mark or the tagline. Set FIREFOX to use a
+ * Firefox other than the one on PATH, or CHROMIUM to use Chrome or Chromium.
  */
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
@@ -20,6 +21,7 @@ const REPO = join(SITE, '..');
 const PUBLIC = join(SITE, 'public');
 const MARK = join(REPO, 'assets/brand/mark.svg');
 const FIREFOX = process.env.FIREFOX ?? 'firefox';
+const CHROMIUM = process.env.CHROMIUM;
 
 async function icons() {
   for (const [file, size] of [
@@ -34,54 +36,50 @@ async function icons() {
   console.log('✓ favicon.svg');
 }
 
+const BOARD = [
+  ['laptop', 'socket', 'All running', false],
+  ['homelab', 'ssh', 'All running', false],
+  ['vps-fra-1', 'tls', '1 Stack needs you', true],
+  ['client-prod', 'ssh', 'All running', false],
+] as const;
+
 const CARD = /* html */ `<!doctype html>
 <html>
 <head>
 <meta charset="utf-8" />
 <style>
-  @font-face { font-family: Geist; src: url(geist.woff2) format('woff2'); font-weight: 100 900; }
+  @font-face { font-family: 'Host Grotesk'; src: url(host-grotesk.woff2) format('woff2'); font-weight: 300 800; }
+  @font-face { font-family: 'Fragment Mono'; src: url(fragment-mono.woff2) format('woff2'); }
   * { margin: 0; box-sizing: border-box; }
   html, body { width: 1200px; height: 630px; overflow: hidden; }
-  body {
-    position: relative;
-    font-family: Geist, sans-serif;
-    color: #edf3f7;
-    background:
-      radial-gradient(700px 420px at 15% -10%, rgb(0 106 165 / 0.45), transparent 70%),
-      radial-gradient(500px 300px at 100% 100%, rgb(248 132 45 / 0.14), transparent 70%),
-      linear-gradient(180deg, #0d1c2e, #0b121b);
-  }
-  .grid {
-    position: absolute; inset: 0;
-    background-image:
-      linear-gradient(rgb(190 214 235 / 0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgb(190 214 235 / 0.06) 1px, transparent 1px);
-    background-size: 48px 48px;
-    mask-image: linear-gradient(90deg, #000 30%, transparent 75%);
-  }
-  .text { position: absolute; left: 72px; top: 72px; width: 560px; }
-  .lockup { height: 56px; display: block; }
-  h1 { margin-top: 64px; font-size: 60px; font-weight: 650; line-height: 1.04; letter-spacing: -0.035em; }
-  h1 span { color: #6cc1ea; }
-  p { margin-top: 28px; font-size: 24px; line-height: 1.4; color: #a3b3c2; }
-  .meta { position: absolute; left: 72px; bottom: 64px; font-size: 20px; color: #73879a; letter-spacing: 0.01em; }
-  .meta b { color: #edf3f7; font-weight: 600; }
-  .shot {
-    position: absolute; left: 690px; top: 96px; width: 900px;
-    border-radius: 18px; border: 1px solid rgb(190 214 235 / 0.18);
-    box-shadow: 0 40px 100px -30px rgb(0 0 0 / 0.8), 0 0 0 8px rgb(190 214 235 / 0.04);
-  }
+  body { position: relative; font-family: 'Host Grotesk', sans-serif; color: #141414; background: #f7f7f4; }
+  .lockup { position: absolute; left: 72px; top: 72px; height: 34px; }
+  h1 { position: absolute; left: 72px; top: 168px; width: 520px; font-size: 68px; font-weight: 700; line-height: 1; letter-spacing: -0.035em; }
+  p { position: absolute; left: 72px; top: 410px; width: 480px; font-size: 24px; line-height: 1.35; color: #4a4a46; }
+  .meta { position: absolute; left: 72px; bottom: 64px; font-family: 'Fragment Mono', monospace; font-size: 17px; color: #5c5c57; letter-spacing: 0.02em; }
+  table { position: absolute; left: 640px; top: 150px; width: 488px; border-collapse: collapse; background: #141414; color: #f7f7f4; border-radius: 6px; overflow: hidden; font-size: 22px; }
+  th, td { padding: 22px 24px; border-bottom: 1px solid rgb(247 247 244 / 0.12); text-align: left; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  th { padding-block: 16px; font-family: 'Fragment Mono', monospace; font-weight: 400; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: #a6a6a0; }
+  td.host { font-weight: 600; }
+  td.via { font-family: 'Fragment Mono', monospace; font-size: 18px; color: #a6a6a0; }
+  td.status span { display: inline-flex; align-items: center; gap: 12px; }
+  td.status i { width: 11px; height: 11px; border-radius: 50%; background: currentColor; }
+  tr.signal td.status { color: #ff5c5c; }
 </style>
 </head>
 <body>
-  <div class="grid"></div>
-  <div class="text">
-    <img class="lockup" src="lockup-dark.svg" alt="" />
-    <h1>Every Docker Engine, <span>docked in one place.</span></h1>
-    <p>A desktop app for your local and remote Docker Engines — over SSH, TLS or TCP.</p>
-  </div>
-  <div class="meta"><b>Free &amp; open source</b> · Windows · macOS · Linux</div>
-  <img class="shot" src="overview-dark.png" alt="" />
+  <img class="lockup" src="lockup-light.svg" alt="" />
+  <h1>Every Docker Engine, on one board.</h1>
+  <p>Your local and remote Engines over SSH, TLS or TCP. No agent on the server.</p>
+  <div class="meta">Free · MIT · Windows · macOS · Linux</div>
+  <table>
+    <tr><th>Host</th><th>Via</th><th>Status</th></tr>
+    ${BOARD.map(
+      ([host, via, status, signal]) =>
+        `<tr class="${signal ? 'signal' : ''}"><td class="host">${host}</td><td class="via">${via}</td><td class="status"><span><i></i>${status}</span></td></tr>`,
+    ).join('')}
+  </table>
 </body>
 </html>`;
 
@@ -94,36 +92,46 @@ function workDir(): string {
 async function socialCard() {
   const work = workDir();
   try {
+    const fonts = join(SITE, 'node_modules/@fontsource');
     copyFileSync(
-      join(SITE, 'node_modules/@fontsource-variable/geist/files/geist-latin-wght-normal.woff2'),
-      join(work, 'geist.woff2'),
+      join(fonts + '-variable', 'host-grotesk/files/host-grotesk-latin-wght-normal.woff2'),
+      join(work, 'host-grotesk.woff2'),
     );
-    copyFileSync(join(REPO, 'assets/brand/lockup-dark.svg'), join(work, 'lockup-dark.svg'));
     copyFileSync(
-      join(SITE, 'src/assets/screenshots/overview-dark.png'),
-      join(work, 'overview-dark.png'),
+      join(fonts, 'fragment-mono/files/fragment-mono-latin-400-normal.woff2'),
+      join(work, 'fragment-mono.woff2'),
     );
+    copyFileSync(join(REPO, 'assets/brand/lockup-light.svg'), join(work, 'lockup-light.svg'));
     writeFileSync(join(work, 'card.html'), CARD);
     const profile = join(work, 'profile');
     mkdirSync(profile);
 
     const out = join(work, 'og.png');
-    const proc = Bun.spawn(
-      [
-        FIREFOX,
-        '--headless',
-        '--no-remote',
-        '-profile',
-        profile,
-        '--screenshot',
-        out,
-        '--window-size=1200,630',
-        `file://${join(work, 'card.html')}`,
-      ],
-      { stdout: 'ignore', stderr: 'ignore' },
-    );
+    const page = `file://${join(work, 'card.html')}`;
+    const command = CHROMIUM
+      ? [
+          CHROMIUM,
+          '--headless',
+          '--no-sandbox',
+          '--hide-scrollbars',
+          `--screenshot=${out}`,
+          '--window-size=1200,630',
+          page,
+        ]
+      : [
+          FIREFOX,
+          '--headless',
+          '--no-remote',
+          '-profile',
+          profile,
+          '--screenshot',
+          out,
+          '--window-size=1200,630',
+          page,
+        ];
+    const proc = Bun.spawn(command, { stdout: 'ignore', stderr: 'ignore' });
     await proc.exited;
-    if (!existsSync(out)) throw new Error('Firefox produced no screenshot');
+    if (!existsSync(out)) throw new Error('The browser produced no screenshot');
     // Recompress: social cards are fetched by every link preview.
     await sharp(out).png({ compressionLevel: 9, palette: false }).toFile(join(PUBLIC, 'og.png'));
     console.log('✓ og.png');

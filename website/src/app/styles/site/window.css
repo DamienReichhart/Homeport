@@ -1,11 +1,10 @@
-/* The app's window: screenshots sit in a frame with a soft glow. */
+/* The app's window: screenshots sit in a plain hairline frame. */
 .window {
   position: relative;
   overflow: hidden;
   border: 1px solid var(--hp-border-strong);
-  border-radius: 0.9rem;
+  border-radius: var(--hp-radius-lg);
   background: var(--hp-surface);
-  box-shadow: var(--hp-shadow);
 }
 .window img {
   width: 100%;

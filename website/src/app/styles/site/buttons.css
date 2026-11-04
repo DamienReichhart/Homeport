@@ -8,7 +8,7 @@
   min-height: 2.75rem;
   padding: 0.65rem 1.15rem;
   border: 1px solid transparent;
-  border-radius: 0.65rem;
+  border-radius: var(--hp-radius);
   font: inherit;
   font-weight: 600;
   font-size: 0.95rem;
@@ -19,16 +19,11 @@
     background-color 0.15s ease,
     border-color 0.15s ease,
     color 0.15s ease,
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
-}
-.button:active {
-  transform: translateY(1px);
+    color 0.15s ease;
 }
 .button--primary {
   background: var(--hp-primary);
   color: var(--hp-on-primary);
-  box-shadow: 0 8px 24px -10px var(--hp-glow);
 }
 .button--primary:hover {
   background: var(--hp-primary-strong);
@@ -40,7 +35,7 @@
   color: var(--hp-text);
 }
 .button--secondary:hover {
-  border-color: var(--hp-primary);
+  border-color: var(--hp-text);
   color: var(--hp-text);
 }
 .button--small {
@@ -60,7 +55,7 @@
   width: 2.25rem;
   height: 2.25rem;
   border: 0;
-  border-radius: 0.55rem;
+  border-radius: var(--hp-radius);
   background: transparent;
   color: var(--hp-text-muted);
   cursor: pointer;

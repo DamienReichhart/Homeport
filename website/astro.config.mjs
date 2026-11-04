@@ -42,8 +42,9 @@ export default defineConfig({
       lastUpdated: true,
       credits: false,
       customCss: [
-        '@fontsource-variable/geist',
-        '@fontsource-variable/geist-mono',
+        '@fontsource-variable/host-grotesk',
+        '@fontsource/fragment-mono/400.css',
+        '@fontsource/fragment-mono/400-italic.css',
         './src/app/styles/theme.css',
         './src/app/styles/docs.css',
       ],

@@ -3,89 +3,96 @@
  * Starlight docs. Starlight's `data-theme` attribute drives both, so the theme a
  * visitor picks follows them across the whole site.
  *
- *   Harbour #006aa5  actions, links, focus
- *   Beacon  #f8842d  the brand's own moments (sparingly)
- *   Tide    #6eccec  water; the dark theme's primary is its sibling
- *   Ink     #0f1926  text and dark surfaces; neutrals are Ink-tinted
- *   Foam    #edf3f7  text on dark
+ *   Ink     #141414  text, primary buttons, the board
+ *   Paper   #f7f7f4  surfaces, text on dark
+ *   Signal  #c8102e  one meaning only: this needs you (#ff5c5c on dark)
+ *
+ * Nothing else is coloured. No gradients, no glows, no blur: flat surfaces,
+ * hairline borders and small radii.
  */
 
 :root {
-  --sl-font: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --sl-font:
+    'Host Grotesk Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --sl-font-mono:
-    'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono',
-    monospace;
+    'Fragment Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
 
-  --hp-harbour: #006aa5;
-  --hp-beacon: #f8842d;
-  --hp-tide: #6eccec;
-  --hp-ink: #0f1926;
-  --hp-foam: #edf3f7;
-  --hp-tile-top: #004c76;
-  --hp-tile-bottom: #091a34;
-  --hp-radius: 0.75rem;
-  --hp-radius-lg: 1.25rem;
+  --hp-ink: #141414;
+  --hp-paper: #f7f7f4;
+  --hp-radius: 0.25rem;
+  --hp-radius-lg: 0.375rem;
   --hp-max: 72rem;
 }
 
 /* Dark is Starlight's default theme (no attribute, or data-theme="dark"). */
 :root,
 ::backdrop {
-  --sl-color-accent-low: #0b2a40;
-  --sl-color-accent: #3b9ad0;
-  --sl-color-accent-high: #b4e1f5;
-  --sl-color-white: #edf3f7;
-  --sl-color-gray-1: #d6e0e9;
-  --sl-color-gray-2: #aebdcb;
-  --sl-color-gray-3: #7d91a4;
-  --sl-color-gray-4: #4e6174;
-  --sl-color-gray-5: #2c3a49;
-  --sl-color-gray-6: #18222f;
-  --sl-color-black: #0b121b;
+  --sl-color-accent-low: #2a2a28;
+  --sl-color-accent: #bdbdb7;
+  --sl-color-accent-high: #f7f7f4;
+  --sl-color-white: #f7f7f4;
+  --sl-color-gray-1: #e6e6e0;
+  --sl-color-gray-2: #c8c8c2;
+  --sl-color-gray-3: #a6a6a0;
+  --sl-color-gray-4: #6e6e69;
+  --sl-color-gray-5: #3a3a37;
+  --sl-color-gray-6: #232322;
+  --sl-color-black: #141414;
 
-  --hp-bg: #0b121b;
-  --hp-bg-raised: #111b27;
-  --hp-surface: #152130;
-  --hp-border: rgb(190 214 235 / 0.1);
-  --hp-border-strong: rgb(190 214 235 / 0.18);
-  --hp-text: #edf3f7;
-  --hp-text-muted: #a3b3c2;
-  --hp-text-faint: #73879a;
-  --hp-primary: #6cc1ea;
-  --hp-primary-strong: #8fd3f2;
-  --hp-on-primary: #08182a;
-  --hp-glow: rgb(59 154 208 / 0.28);
-  --hp-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 20px 50px -20px rgb(0 0 0 / 0.7);
-  --hp-code-bg: #0f1926;
+  --hp-bg: #141414;
+  --hp-bg-raised: #1a1a19;
+  --hp-surface: #1c1c1b;
+  --hp-border: rgb(247 247 244 / 0.1);
+  --hp-border-strong: rgb(247 247 244 / 0.2);
+  --hp-text: #f7f7f4;
+  --hp-text-muted: #bdbdb7;
+  --hp-text-faint: #a6a6a0;
+  --hp-primary: #f7f7f4;
+  --hp-primary-strong: #ffffff;
+  --hp-on-primary: #141414;
+  --hp-signal: #ff5c5c;
+  --hp-board: #0f0f0f;
+  --hp-board-text: #f7f7f4;
+  --hp-board-muted: #a6a6a0;
+  --hp-board-rule: rgb(247 247 244 / 0.12);
+  --hp-board-signal: #ff5c5c;
+  --hp-board-edge: rgb(247 247 244 / 0.14);
+  --hp-code-bg: #1c1c1b;
 }
 
 :root[data-theme='light'],
 [data-theme='light'] ::backdrop {
-  --sl-color-accent-low: #d4ebf8;
-  --sl-color-accent: #006aa5;
-  --sl-color-accent-high: #003c61;
-  --sl-color-white: #0f1926;
-  --sl-color-gray-1: #1b2735;
-  --sl-color-gray-2: #2f3e4e;
-  --sl-color-gray-3: #4f6274;
-  --sl-color-gray-4: #7f93a6;
-  --sl-color-gray-5: #c5d1dc;
-  --sl-color-gray-6: #e8eef3;
-  --sl-color-gray-7: #f4f7fa;
-  --sl-color-black: #ffffff;
+  --sl-color-accent-low: #e6e6e0;
+  --sl-color-accent: #141414;
+  --sl-color-accent-high: #141414;
+  --sl-color-white: #141414;
+  --sl-color-gray-1: #232322;
+  --sl-color-gray-2: #3a3a37;
+  --sl-color-gray-3: #5c5c57;
+  --sl-color-gray-4: #8c8c86;
+  --sl-color-gray-5: #cacac2;
+  --sl-color-gray-6: #ebebe6;
+  --sl-color-gray-7: #f2f2ee;
+  --sl-color-black: #f7f7f4;
 
-  --hp-bg: #ffffff;
-  --hp-bg-raised: #f6f9fb;
+  --hp-bg: #f7f7f4;
+  --hp-bg-raised: #efefea;
   --hp-surface: #ffffff;
-  --hp-border: #e2e9ef;
-  --hp-border-strong: #cfdae3;
-  --hp-text: #0f1926;
-  --hp-text-muted: #4a5c6e;
-  --hp-text-faint: #6b7d8f;
-  --hp-primary: #006aa5;
-  --hp-primary-strong: #005687;
-  --hp-on-primary: #ffffff;
-  --hp-glow: rgb(0 106 165 / 0.16);
-  --hp-shadow: 0 1px 2px rgb(15 25 38 / 0.06), 0 24px 48px -24px rgb(15 25 38 / 0.22);
-  --hp-code-bg: #f4f7fa;
+  --hp-border: #dadad3;
+  --hp-border-strong: #c2c2ba;
+  --hp-text: #141414;
+  --hp-text-muted: #4a4a46;
+  --hp-text-faint: #5c5c57;
+  --hp-primary: #141414;
+  --hp-primary-strong: #000000;
+  --hp-on-primary: #f7f7f4;
+  --hp-signal: #c8102e;
+  /* The board stays dark in both themes, like the real thing on a platform. */
+  --hp-board: #141414;
+  --hp-board-text: #f7f7f4;
+  --hp-board-muted: #a6a6a0;
+  --hp-board-rule: rgb(247 247 244 / 0.12);
+  --hp-board-signal: #ff5c5c;
+  --hp-board-edge: transparent;
+  --hp-code-bg: #efefea;
 }

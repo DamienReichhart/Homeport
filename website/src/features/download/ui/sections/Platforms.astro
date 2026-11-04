@@ -48,9 +48,10 @@ const prerelease = newerPrerelease(await getReleases(), release);
   .notice {
     margin-bottom: 1.5rem;
     padding: 0.9rem 1.15rem;
-    border: 1px solid color-mix(in srgb, var(--hp-beacon) 45%, transparent);
+    border: 1px solid var(--hp-border-strong);
+    border-left: 3px solid var(--hp-text);
     border-radius: var(--hp-radius);
-    background: color-mix(in srgb, var(--hp-beacon) 8%, transparent);
+    background: var(--hp-bg-raised);
   }
 
   .platforms {

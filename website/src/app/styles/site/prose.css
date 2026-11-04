@@ -22,7 +22,7 @@
 }
 .prose code {
   padding: 0.1rem 0.35rem;
-  border-radius: 0.3rem;
+  border-radius: 2px;
   background: var(--hp-code-bg);
   color: var(--hp-text);
 }
