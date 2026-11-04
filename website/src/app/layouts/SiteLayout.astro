@@ -60,7 +60,9 @@ const ogImage = new URL(`${base}/og.png`, Astro.site);
         let stored = '';
         try {
           stored = localStorage.getItem('starlight-theme') || '';
-        } catch {}
+        } catch {
+          // Storage can be unavailable (private mode): follow the system.
+        }
         const light = matchMedia('(prefers-color-scheme: light)').matches;
         document.documentElement.dataset.theme = stored || (light ? 'light' : 'dark');
       })();

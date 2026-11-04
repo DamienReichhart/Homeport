@@ -49,6 +49,8 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v5
       - run: bun install --frozen-lockfile
+      - name: Lint
+        run: bun run lint
       - name: Build
         env:
           SITE_URL: ${{ steps.pages.outputs.origin }}
