@@ -24,7 +24,8 @@ import {
   Textarea,
 } from '@/shared/ui';
 import { useRunContainer } from '../../api/mutations';
-import { emptyRunForm, type RunForm } from '../../model/runForm';
+import { emptyRunForm, runFormErrors, type RunForm } from '../../model/runForm';
+import { AdvancedOptions } from './run/AdvancedOptions';
 import { MountsField } from './run/MountsField';
 import { PortsField } from './run/PortsField';
 
@@ -59,6 +60,8 @@ export function RunContainerDialog({
   });
   const set = <K extends keyof RunForm>(key: K, value: RunForm[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
+  const errors = runFormErrors(form);
+  const invalid = Object.keys(errors).length > 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -73,7 +76,7 @@ export function RunContainerDialog({
           className="grid gap-4"
           onSubmit={(e) => {
             e.preventDefault();
-            run.mutate(form);
+            if (!invalid) run.mutate(form);
           }}
         >
           <div className="grid grid-cols-2 gap-3">
@@ -187,12 +190,18 @@ export function RunContainerDialog({
             <Label htmlFor="run-rm">Remove the container when it exits</Label>
           </div>
 
+          <AdvancedOptions
+            value={form.advanced}
+            errors={errors}
+            onChange={(advanced) => set('advanced', advanced)}
+          />
+
           {run.error && <ErrorMessage error={run.error} />}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={run.isPending || !form.image.trim()}>
+            <Button type="submit" disabled={run.isPending || !form.image.trim() || invalid}>
               {run.isPending ? 'Starting…' : 'Run'}
             </Button>
           </DialogFooter>
