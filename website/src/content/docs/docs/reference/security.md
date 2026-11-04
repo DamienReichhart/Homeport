@@ -53,6 +53,8 @@ Homeport has its own SSH client, so it never writes a private key to a file for 
 
 When `docker compose` deploys a Stack to an SSH or TLS Host, Homeport opens a short-lived private socket on this computer — readable only by your user, or a named pipe that refuses remote clients on Windows — and forwards it over its own connection, for that one command.
 
+Registry logins never reach `docker compose` either: Homeport pulls a Stack's images itself, through the Engine API, before running `docker compose up`, so the command's environment and the files it's given hold no password or token.
+
 ## Trusting servers
 
 The first time Homeport connects to an SSH server, it asks you to confirm the server's key fingerprint, and it refuses to connect if that key later changes until you confirm again. TLS Hosts verify the server's certificate against your CA and the server's name. See [SSH Hosts](/docs/hosts/ssh/#first-connection).

@@ -37,6 +37,12 @@ The command runs with the compose file on its standard input, the Stack's enviro
 
 Without the Compose CLI you can still start, stop and remove Stacks; only **Deploy**, **Pull images** and **Take down** need it.
 
+### Private images
+
+Before `docker compose up`, Homeport pulls the images the Host doesn't have yet through its own connection to the Host, with the [registry login](/docs/guides/settings/#registries) stored for each image's registry, so private images deploy on any Host without `docker login` on this computer. The deploy output shows each pull and the login it uses — **Pulling ghcr.io/org/app:1 as alice on ghcr.io**, or **anonymously** — never the password. A service with `pull_policy: always` is pulled every time; `never` and `build` are left alone.
+
+Compose itself is never given a login: no file Homeport creates for the run, and none of the command's environment variables, holds one. Your own `docker login` on this computer doesn't apply to these pulls; add the login in **Settings → Registries** instead. If a registry refuses an image, the deploy stops before Compose runs, and the message says to add or check the login.
+
 ## Creating a Managed Stack
 
 <Steps>
@@ -120,16 +126,16 @@ To change a Managed Stack, open it, edit its **Definition** and choose **Save an
 
 ## Stack actions
 
-| Action                     | Stacks   | What it does                                                                              |
-| -------------------------- | -------- | ----------------------------------------------------------------------------------------- |
-| **Deploy** / **Redeploy**  | Managed  | `docker compose up` with the stored definition.                                           |
-| **Start** / **Stop**       | Any      | Starts the stopped containers, or stops the running ones.                                 |
-| **Restart**                | Any      | Restarts every container.                                                                 |
-| **Pull images**            | Managed  | `docker compose pull`, to fetch newer images before redeploying.                          |
-| **Take down**              | Managed  | `docker compose down`: removes containers and networks, keeps volumes and the definition. |
-| **Take down with volumes** | Managed  | Also deletes the Stack's volumes **and their data**.                                      |
-| **Remove containers**      | External | Removes its containers and networks. Volumes are kept.                                    |
-| **Adopt**                  | External | Gives Homeport the compose file, making it Managed.                                       |
+| Action                     | Stacks   | What it does                                                                                |
+| -------------------------- | -------- | ------------------------------------------------------------------------------------------- |
+| **Deploy** / **Redeploy**  | Managed  | `docker compose up` with the stored definition.                                             |
+| **Start** / **Stop**       | Any      | Starts the stopped containers, or stops the running ones.                                   |
+| **Restart**                | Any      | Restarts every container.                                                                   |
+| **Pull images**            | Managed  | Pulls every service's image with the stored logins, to fetch newer ones before redeploying. |
+| **Take down**              | Managed  | `docker compose down`: removes containers and networks, keeps volumes and the definition.   |
+| **Take down with volumes** | Managed  | Also deletes the Stack's volumes **and their data**.                                        |
+| **Remove containers**      | External | Removes its containers and networks. Volumes are kept.                                      |
+| **Adopt**                  | External | Gives Homeport the compose file, making it Managed.                                         |
 
 **Forget definition**, in a Managed Stack's **Definition** tab, deletes the compose file and environment from Homeport but leaves the containers running; the Stack becomes External.
 
