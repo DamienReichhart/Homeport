@@ -83,15 +83,17 @@ const { release, latest } = Astro.props;
   .tag {
     padding: 0.1rem 0.55rem;
     border: 1px solid var(--hp-border-strong);
-    border-radius: 999px;
+    border-radius: 2px;
     color: var(--hp-text-muted);
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-family: var(--sl-font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
   .tag--latest {
     border-color: transparent;
-    background: color-mix(in srgb, var(--hp-primary) 15%, transparent);
-    color: var(--hp-primary);
+    background: var(--hp-primary);
+    color: var(--hp-on-primary);
   }
   /* .prose comes from the global stylesheet: outrank it rather than rely on the order of the CSS chunks. */
   .entry__body.prose {

@@ -1,0 +1,125 @@
+---
+/** The terms of service for the website (the app is governed by its licence). */
+import { REPO_URL } from '@/core/site';
+import { href } from '@/shared/lib/href';
+import { PUBLISHER } from '../../data/facts';
+import LegalDocument from '../LegalDocument.astro';
+
+const mail = `mailto:${PUBLISHER.email}`;
+const license = `${REPO_URL}/blob/main/LICENSE`;
+---
+
+<LegalDocument
+  title="Terms of service"
+  subtitle="Conditions générales d’utilisation"
+  updated="2026-11-04"
+>
+  <h2 id="purpose">1. Purpose</h2>
+  <p>
+    These terms govern your use of this website, which presents Homeport, hosts its documentation,
+    and offers it for download. They are published by {PUBLISHER.name} (see the{' '}
+    <a href={href('/legal-notice/')}>legal notice</a>). By using the site, you accept them.
+  </p>
+  <p>
+    <strong>The Homeport app itself is governed by its licence, not by these terms.</strong> It is
+    open-source software released under the <a href={license}>MIT licence</a>, which sets out what
+    you may do with it. Where these terms and the licence differ about the software, the licence
+    applies.
+  </p>
+
+  <h2 id="access">2. Access</h2>
+  <p>
+    The site is free and open to everyone, with no account. You need an internet connection and a
+    browser; their cost is yours. The publisher tries to keep the site available but does not
+    guarantee it: it may be interrupted, for example for maintenance or because of the hosting
+    provider, and may be changed or closed at any time, without notice or compensation.
+  </p>
+
+  <h2 id="obligations">3. Your obligations</h2>
+  <p>When using the site, you agree not to:</p>
+  <ul>
+    <li>use it for any purpose that breaks the law or the rights of others;</li>
+    <li>
+      try to disrupt it, overload it, or get into parts of it or of its hosting that are not meant
+      to be public;
+    </li>
+    <li>
+      redistribute a modified Homeport in a way that suggests it is the official one, or pass off
+      your work as endorsed by the project (see <a href="#ip">section 4</a>).
+    </li>
+  </ul>
+  <p>
+    Downloaded files are signed and come with checksums: check them as described in{' '}
+    <a href={href('/docs/reference/verifying/')}>Verifying downloads</a> before you install,
+    especially if you got them from somewhere other than this site or the project’s GitHub releases.
+  </p>
+
+  <h2 id="ip">4. Intellectual property</h2>
+  <p>
+    The source code of Homeport and of this website, including the documentation, is ©{' '}
+    {PUBLISHER.name} and the project’s contributors, and is published under the{' '}
+    <a href={license}>MIT licence</a>: you may use, copy, modify and redistribute it under that
+    licence’s conditions, which include keeping its copyright and permission notice.
+  </p>
+  <p>
+    The MIT licence covers the code, not the identity of the project. The{' '}
+    <strong>Homeport name, mark and logo</strong> identify the official project. You may use them to
+    refer to it (in an article, a tutorial, or a link to this site), but not as the name or logo of
+    a fork or another product, or in a way that suggests the publisher endorses you, without written
+    permission.
+  </p>
+  <p>
+    Docker is a trademark of Docker, Inc. Other product names are the trademarks of their owners.
+    Homeport is an independent project, not affiliated with or endorsed by Docker, Inc. or by them.
+  </p>
+
+  <h2 id="liability">5. Liability</h2>
+  <p>
+    The site’s content is provided for information. The publisher takes care to keep it accurate and
+    current but cannot guarantee that it is complete, error-free or suited to your situation. Check
+    what a command will do before running it, especially on a production server.
+  </p>
+  <p>
+    As its licence states, the Homeport software is provided{' '}
+    <strong>“as is”, without warranty of any kind</strong>. It is a tool that acts on Docker Engines
+    you control: you are responsible for the Hosts you connect, the actions you take on them, and
+    for keeping backups of your data.
+  </p>
+  <p>
+    Links to other sites (GitHub, Docker’s documentation, package repositories…) are provided for
+    convenience; the publisher has no control over them and is not responsible for their content.
+  </p>
+  <p>
+    Within the limits allowed by law, the publisher is not liable for indirect damage arising from
+    the use of the site or the impossibility to use it, such as loss of data, business or profit.
+    Nothing in these terms limits liability for intentional misconduct or gross negligence, for
+    death or personal injury, or rights that the law gives you as a consumer and that cannot be set
+    aside by contract.
+  </p>
+
+  <h2 id="data">6. Personal data and cookies</h2>
+  <p>
+    How personal data is processed is explained in the{' '}
+    <a href={href('/privacy/')}>privacy policy</a>, and what the site stores in your browser in the{' '}
+    <a href={href('/cookies/')}>cookie policy</a>.
+  </p>
+
+  <h2 id="changes">7. Changes</h2>
+  <p>
+    These terms may change, for example when the site or the law does. The new version applies from
+    the date shown at the top of this page; using the site after that means you accept it. Every
+    earlier version is in the{' '}
+    <a href={`${REPO_URL}/commits/main/website/src/pages/terms.astro`}>project’s history</a>.
+  </p>
+
+  <h2 id="law">8. Governing law and disputes</h2>
+  <p>
+    These terms are governed by <strong>French law</strong>. Before going to court, please write to{' '}
+    <a href={mail}>{PUBLISHER.email}</a> so that a solution can be sought amicably.
+  </p>
+  <p>
+    Failing that, any dispute goes to the competent French courts. If you are a consumer, this does
+    not take away the protection of the mandatory rules of the country where you live, nor your
+    right to bring proceedings before the courts of that country.
+  </p>
+</LegalDocument>

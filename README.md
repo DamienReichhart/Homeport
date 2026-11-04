@@ -5,7 +5,7 @@
   </picture>
 </h1>
 
-**Every Docker Engine, docked in one place.**
+**Every Docker Engine, on one board.**
 
 [Website](https://damienreichhart.github.io/Homeport/) · [Documentation](https://damienreichhart.github.io/Homeport/docs/) · [Download](https://damienreichhart.github.io/Homeport/download/)
 

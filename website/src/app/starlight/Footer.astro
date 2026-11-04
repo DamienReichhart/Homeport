@@ -1,0 +1,34 @@
+---
+/*
+ * Starlight's footer, plus the links to the legal pages, which every page of the
+ * site must show.
+ */
+import Default from '@astrojs/starlight/components/Footer.astro';
+import { legalLinks } from '@/features/legal';
+---
+
+<Default />
+<nav class="legal-links print:hidden" aria-label="Legal">
+  {legalLinks().map((link) => (
+    <a href={link.url}>{link.label}</a>
+  ))}
+</nav>
+
+<style>
+  .legal-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.25rem;
+    margin-top: 2.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--sl-color-hairline);
+    font-size: var(--sl-text-sm);
+  }
+  .legal-links a {
+    color: var(--sl-color-gray-3);
+    text-decoration: none;
+  }
+  .legal-links a:hover {
+    color: var(--sl-color-white);
+  }
+</style>

@@ -1,0 +1,98 @@
+---
+/** The legal notice (mentions légales) the LCEN requires. */
+import { REPO_URL } from '@/core/site';
+import { href } from '@/shared/lib/href';
+import { HOST, PUBLISHER } from '../../data/facts';
+import LegalDocument from '../LegalDocument.astro';
+---
+
+<LegalDocument title="Legal notice" subtitle="Mentions légales" updated="2026-11-04">
+  <p>
+    This notice is given under the French law n° 2004-575 of 21 June 2004 on confidence in the
+    digital economy (<em>loi pour la confiance dans l’économie numérique</em>, LCEN). It covers this
+    website and the files it serves, including the update manifest that the Homeport app downloads.
+  </p>
+
+  <h2 id="publisher">Publisher</h2>
+  <dl>
+    <dt>Publisher</dt>
+    <dd>{PUBLISHER.name}</dd>
+    {PUBLISHER.address ? (
+      <>
+        <dt>Address</dt>
+        <dd>{PUBLISHER.address}</dd>
+      </>
+    ) : (
+      <>
+        <dt>Status</dt>
+        <dd>
+          Private individual, publishing Homeport on a non-professional basis. Homeport is free,
+          open-source software; nothing on this site is sold.
+        </dd>
+      </>
+    )}
+    {PUBLISHER.phone && (
+      <>
+        <dt>Phone</dt>
+        <dd>{PUBLISHER.phone}</dd>
+      </>
+    )}
+    {PUBLISHER.siret && (
+      <>
+        <dt>SIRET</dt>
+        <dd>{PUBLISHER.siret}</dd>
+      </>
+    )}
+    <dt>Email</dt>
+    <dd>
+      <a href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a>
+    </dd>
+  </dl>
+
+  <h2 id="director">Publication director</h2>
+  <p>
+    {PUBLISHER.name} (<a href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a>).
+  </p>
+
+  <h2 id="host">Hosting provider</h2>
+  <dl>
+    <dt>Host</dt>
+    <dd>
+      {HOST.name}, through its {HOST.service} service
+    </dd>
+    <dt>Address</dt>
+    <dd>{HOST.address}</dd>
+    <dt>Phone</dt>
+    <dd>{HOST.phone}</dd>
+    <dt>Website</dt>
+    <dd>
+      <a href={HOST.url}>{HOST.url.replace('https://', '')}</a>
+    </dd>
+  </dl>
+  <p>
+    The source code, the issue tracker and the release files are also hosted by {HOST.name}, on{' '}
+    <a href={REPO_URL}>GitHub</a>.
+  </p>
+
+  <h2 id="contact">Contact and reporting content</h2>
+  <p>
+    To ask a question, exercise your rights over your personal data, or report content you believe
+    is unlawful, write to <a href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a>. Security
+    problems in the app should be reported privately through{' '}
+    <a href={`${REPO_URL}/security/advisories/new`}>GitHub’s private vulnerability reporting</a>{' '}
+    instead.
+  </p>
+
+  <h2 id="more">Related documents</h2>
+  <ul>
+    <li>
+      <a href={href('/privacy/')}>Privacy policy</a>: what personal data is processed and why.
+    </li>
+    <li>
+      <a href={href('/terms/')}>Terms of service</a>: the rules for using this site.
+    </li>
+    <li>
+      <a href={href('/cookies/')}>Cookie policy</a>: everything this site stores in your browser.
+    </li>
+  </ul>
+</LegalDocument>

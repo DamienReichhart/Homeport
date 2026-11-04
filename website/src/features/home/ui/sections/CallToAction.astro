@@ -9,10 +9,10 @@ import { Icon } from '@/shared/ui';
   <div class="container">
     <div class="cta card" data-reveal>
       <div class="cta__text">
-        <h2>Bring your engines home.</h2>
+        <h2>Nothing to install on your servers.</h2>
         <p>
-          Homeport is free, open source under the MIT licence, and built in the open on GitHub.
-          Issues, ideas and pull requests are welcome.
+          Download Homeport on the machine you work from and add your Hosts. It’s free, open source
+          under the MIT licence, and built in the open on GitHub.
         </p>
       </div>
       <div class="cta__actions">
@@ -34,8 +34,8 @@ import { Icon } from '@/shared/ui';
     gap: 2rem;
     align-items: center;
     padding: clamp(2rem, 1rem + 4vw, 4rem);
-    background:
-      radial-gradient(40rem 20rem at 100% 0%, var(--hp-glow), transparent 70%), var(--hp-surface);
+    border-top: 2px solid var(--hp-text);
+    background: var(--hp-surface);
   }
   @media (min-width: 64rem) {
     .cta {

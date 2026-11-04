@@ -27,7 +27,7 @@
     "active": true,
     "targets": "all",
     "category": "DeveloperTool",
-    "shortDescription": "Every Docker Engine, docked in one place.",
+    "shortDescription": "Every Docker Engine, on one board.",
     "longDescription": "A desktop app for managing Docker Engines anywhere: this machine's, or remote ones over SSH, TLS or TCP.",
     "publisher": "Damien Reichhart",
     "copyright": "Copyright (c) 2026 Damien Reichhart",

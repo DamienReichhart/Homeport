@@ -6,7 +6,7 @@ const features: { icon: IconName; title: string; body: string }[] = [
   {
     icon: 'server',
     title: 'Hosts, near and far',
-    body: 'Local engines are found for you. Remote ones join over SSH, mutual TLS or TCP, and each Host reconnects on its own when the network blinks.',
+    body: 'Local Engines are found for you. Remote ones join over SSH, mutual TLS or TCP, and each Host reconnects on its own when the network blinks.',
   },
   {
     icon: 'box',
@@ -40,7 +40,7 @@ const features: { icon: IconName; title: string; body: string }[] = [
   <div class="container">
     <div class="section-heading section-heading--center" data-reveal>
       <span class="eyebrow">Features</span>
-      <h2>Everything your engines run, in one window</h2>
+      <h2>Everything your Engines run, in one window</h2>
       <p>
         The day-to-day of Docker — what is running, what it says, what it costs — without
         remembering which server it lives on.
@@ -71,13 +71,10 @@ const features: { icon: IconName; title: string; body: string }[] = [
     align-content: start;
     gap: 0.75rem;
     padding: 1.75rem;
-    transition:
-      border-color 0.2s ease,
-      transform 0.2s ease;
+    transition: border-color 0.2s ease;
   }
   .feature:hover {
     border-color: var(--hp-border-strong);
-    transform: translateY(-2px);
   }
   .feature h3 {
     margin-top: 0.5rem;

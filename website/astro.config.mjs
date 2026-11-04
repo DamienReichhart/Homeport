@@ -42,13 +42,15 @@ export default defineConfig({
       lastUpdated: true,
       credits: false,
       customCss: [
-        '@fontsource-variable/geist',
-        '@fontsource-variable/geist-mono',
+        '@fontsource-variable/host-grotesk',
+        '@fontsource/fragment-mono/400.css',
+        '@fontsource/fragment-mono/400-italic.css',
         './src/app/styles/theme.css',
         './src/app/styles/docs.css',
       ],
       components: {
         Header: './src/app/starlight/Header.astro',
+        Footer: './src/app/starlight/Footer.astro',
       },
       head: [
         { tag: 'meta', attrs: { property: 'og:image', content: `${site}${root}/og.png` } },
@@ -62,7 +64,15 @@ export default defineConfig({
       plugins: [
         // The marketing pages aren't Starlight pages, so the validator can't check links to them.
         starlightLinksValidator({
-          exclude: [`${root}/`, `${root}/download/**`, `${root}/changelog/**`],
+          exclude: [
+            `${root}/`,
+            `${root}/download/**`,
+            `${root}/changelog/**`,
+            `${root}/legal-notice/**`,
+            `${root}/privacy/**`,
+            `${root}/terms/**`,
+            `${root}/cookies/**`,
+          ],
         }),
       ],
     }),

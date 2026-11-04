@@ -15,7 +15,7 @@ accepted = [
     "Unlicense",
     "CC0-1.0",
     "Unicode-3.0",
-    "OFL-1.1",   # fonts (Geist); bundled with the app, never sold on their own
+    "OFL-1.1",   # fonts (Host Grotesk, Fragment Mono); bundled with the app, never sold on their own
     "MPL-2.0",   # used unmodified; sources are on crates.io
 ]
 # Every platform Homeport is released for; dependencies of other targets are left out.

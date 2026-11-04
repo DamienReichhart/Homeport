@@ -92,7 +92,7 @@ export function StatsTab({
             data={network}
             series={[
               { label: 'Received', colour: 'var(--chart-3)' },
-              { label: 'Sent', colour: 'var(--chart-4)' },
+              { label: 'Sent', colour: 'var(--chart-4)', dashed: true },
             ]}
             format={(v) => `${formatBytes(v)}/s`}
           />
@@ -111,7 +111,7 @@ export function StatsTab({
           <TimeChart
             data={disk}
             series={[
-              { label: 'Read', colour: 'var(--chart-5)' },
+              { label: 'Read', colour: 'var(--chart-5)', dashed: true },
               { label: 'Written', colour: 'var(--chart-1)' },
             ]}
             format={(v) => `${formatBytes(v)}/s`}

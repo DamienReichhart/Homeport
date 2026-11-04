@@ -1,0 +1,228 @@
+---
+/** The privacy policy the GDPR requires. */
+import { REPO_URL } from '@/core/site';
+import { href } from '@/shared/lib/href';
+import { CNIL, HOST, MAIL_RELAY, MAIL_STORE, PUBLISHER } from '../../data/facts';
+import LegalDocument from '../LegalDocument.astro';
+
+const mail = `mailto:${PUBLISHER.email}`;
+---
+
+<LegalDocument title="Privacy policy" subtitle="Politique de confidentialité" updated="2026-11-04">
+  <p>
+    <strong>In short:</strong> Homeport has no accounts, no analytics, no advertising and no
+    telemetry, and this site sets no cookies. The only personal data involved is what any web
+    request reveals to the host (your IP address and browser details), and whatever you choose to
+    send by email. This policy explains each case, as the General Data Protection Regulation (EU
+    2016/679, GDPR) and the French <em>loi Informatique et Libertés</em> require.
+  </p>
+
+  <h2 id="controller">Data controller</h2>
+  <p>
+    {PUBLISHER.name}, publisher of Homeport, is the controller of the processing described here. To
+    reach the publisher: <a href={mail}>{PUBLISHER.email}</a>. No data protection officer has been
+    appointed, as none is required for a processing of this size.
+  </p>
+
+  <h2 id="data">What is processed, why, and on what basis</h2>
+
+  <h3 id="visits">Visiting this website</h3>
+  <p>
+    The site is hosted by {HOST.name} ({HOST.service}). When your browser requests a page,{' '}
+    {HOST.name} receives, like any web server, your <strong>IP address</strong>, the{' '}
+    <strong>page requested</strong>, the <strong>date and time</strong>, and the{' '}
+    <strong>browser and system details</strong>
+    your browser sends (its user agent). GitHub logs IP addresses to keep its service secure and
+    working.
+  </p>
+  <ul>
+    <li>
+      <strong>Purpose:</strong> delivering the pages and protecting the site against abuse.
+    </li>
+    <li>
+      <strong>Legal basis:</strong> legitimate interest (GDPR, art. 6(1)(f)) in running a website
+      that works and stays secure.
+    </li>
+    <li>
+      <strong>Retention:</strong> set by GitHub, under its{' '}
+      <a href={HOST.privacy}>privacy statement</a>. The publisher has no access to these logs and
+      receives no visitor statistics.
+    </li>
+  </ul>
+  <p>
+    Nothing else is collected. There is no contact form, no newsletter, no comments, no analytics
+    and no advertising. Fonts and images are served from this site itself, and search runs in your
+    browser from an index on this site, so your searches go nowhere. The few items the site keeps in
+    your browser (your theme, for example) never leave it: see the{' '}
+    <a href={href('/cookies/')}>cookie policy</a>.
+  </p>
+
+  <h3 id="downloads">Downloading Homeport</h3>
+  <p>
+    Installers and packages are downloaded from GitHub Releases and from this site. The same
+    technical data as above reaches {HOST.name}, for the same purpose, on the same basis. The
+    download page guesses your operating system to suggest the right file; it does so in your
+    browser and sends nothing.
+  </p>
+
+  <h3 id="app">Using the Homeport app</h3>
+  <p>
+    Homeport stores your Hosts, keys, certificates and Stacks <strong>only on your computer</strong>
+    ; none of it is sent to the publisher or anyone else. See{' '}
+    <a href={href('/docs/reference/security/')}>Security and your data</a> for exactly what it keeps
+    and how secrets are encrypted. The app has no account, telemetry or crash reporting.
+  </p>
+  <p>
+    The one request it makes on its own is the <strong>update check</strong>: at launch and every 6
+    hours it downloads a small file from this site listing the latest version. The request carries
+    nothing about you, your Hosts or your containers, but it reaches {HOST.name} from your IP
+    address, as any download does.
+  </p>
+  <ul>
+    <li>
+      <strong>Purpose:</strong> telling you when a new version, including security fixes, is out.
+    </li>
+    <li>
+      <strong>Legal basis:</strong> legitimate interest (GDPR, art. 6(1)(f)) in keeping the software
+      you use up to date and secure.
+    </li>
+    <li>
+      <strong>Your choice:</strong> turn it off at any time in <strong>Settings → Updates</strong>.
+    </li>
+  </ul>
+
+  <h3 id="email">Writing to the publisher</h3>
+  <p>
+    If you email <a href={mail}>{PUBLISHER.email}</a>, your <strong>email address</strong>, your
+    <strong>name</strong> if you give it, and the <strong>content of your message</strong> are used
+    to answer you.
+  </p>
+  <ul>
+    <li>
+      <strong>Purpose:</strong> replying to your question or request.
+    </li>
+    <li>
+      <strong>Legal basis:</strong> legitimate interest (GDPR, art. 6(1)(f)) in answering the people
+      who write in; for a request about your rights, the legal obligation to answer it (art.
+      6(1)(c)).
+    </li>
+    <li>
+      <strong>Retention:</strong> up to 3 years after the last exchange, then deleted. A request
+      about your rights is kept for the time needed to prove it was handled.
+    </li>
+  </ul>
+
+  <h3 id="github">Issues, discussions and contributions</h3>
+  <p>
+    The issue tracker and the source code are on <a href={REPO_URL}>GitHub</a>. What you post there
+    (your GitHub username, your messages, your commits) is public and handled by GitHub under its
+    own terms and <a href={HOST.privacy}>privacy statement</a>. A contribution that has been merged
+    stays in the project’s history, which is published under the MIT licence; the publisher can
+    remove or edit issues and comments in the repository on request.
+  </p>
+
+  <h2 id="recipients">Recipients and processors</h2>
+  <p>
+    Your data is never sold, rented or shared for marketing. Apart from the publisher, it is handled
+    only by:
+  </p>
+  <ul>
+    <li>
+      <strong>{HOST.name}</strong> ({HOST.address}), which hosts the website, the update file, the
+      source code and the releases.
+    </li>
+    <li>
+      <strong>{MAIL_RELAY.name}</strong>, {MAIL_RELAY.country}, which receives mail for the contact
+      address and forwards it without keeping a copy (
+      <a href={MAIL_RELAY.privacy}>privacy policy</a>).
+    </li>
+    <li>
+      <strong>{MAIL_STORE.name}</strong> ({MAIL_STORE.address}), whose {MAIL_STORE.service} service
+      stores the forwarded mail (<a href={MAIL_STORE.privacy}>privacy policy</a>).
+    </li>
+  </ul>
+  <p>It may also be disclosed to an authority that is legally entitled to request it.</p>
+
+  <h2 id="transfers">Transfers outside the European Union</h2>
+  <p>
+    {HOST.name} is based in the United States, so the technical data of a visit, a download or an
+    update check is transferred there. GitHub, Inc. is certified under the EU–U.S. Data Privacy
+    Framework, which the European Commission found to provide an adequate level of protection
+    (adequacy decision of 10 July 2023), and also relies on the Commission’s standard contractual
+    clauses. Details are in GitHub’s <a href={HOST.privacy}>privacy statement</a>.
+  </p>
+  <p>
+    Emails go through {MAIL_RELAY.name} and are stored by {MAIL_STORE.name}, both established in the
+    European Union. Google may store and process them on servers outside the European Union,
+    including in the United States; its parent company, Google LLC, is certified under the same Data
+    Privacy Framework and also relies on standard contractual clauses. Details are in Google’s{' '}
+    <a href={MAIL_STORE.privacy}>privacy policy</a>.
+  </p>
+
+  <h2 id="rights">Your rights</h2>
+  <p>
+    Under the GDPR and the <em>loi Informatique et Libertés</em>, you have the right to:
+  </p>
+  <ul>
+    <li>
+      <strong>access</strong> the data held about you and get a copy of it (art. 15);
+    </li>
+    <li>
+      <strong>rectify</strong> it if it is inaccurate or incomplete (art. 16);
+    </li>
+    <li>
+      <strong>erase</strong> it (art. 17);
+    </li>
+    <li>
+      <strong>restrict</strong> its processing (art. 18);
+    </li>
+    <li>
+      <strong>object</strong> at any time to processing based on legitimate interest, on grounds
+      relating to your situation (art. 21);
+    </li>
+    <li>
+      receive the data you provided in a structured, machine-readable format and have it sent to
+      someone else (<strong>portability</strong>, art. 20), where the processing is automated and
+      based on your consent or a contract;
+    </li>
+    <li>
+      give <strong>instructions about what happens to your data after your death</strong> (
+      <em>loi Informatique et Libertés</em>, art. 85).
+    </li>
+  </ul>
+  <p>No decision about you is made by automated means, and no profile of you is built.</p>
+
+  <h3 id="exercise">How to exercise them</h3>
+  <p>
+    Write to <a href={mail}>{PUBLISHER.email}</a>, saying which right you want to exercise. You will
+    get an answer within one month; this can be extended by two months for a complex request, and
+    you would be told why. Proof of identity is asked for only if there is a reasonable doubt about
+    who is making the request.
+  </p>
+  <p>
+    The publisher holds no copy of GitHub’s logs. For data GitHub holds about you, including those
+    logs and anything linked to your GitHub account, contact GitHub as described in its{' '}
+    <a href={HOST.privacy}>privacy statement</a>.
+  </p>
+
+  <h3 id="complaint">Complaining to the CNIL</h3>
+  <p>
+    If you think your rights have not been respected, you can lodge a complaint with the {CNIL.name}
+    ,{CNIL.address}, or online at{' '}
+    <a href={CNIL.complaints}>{CNIL.complaints.replace('https://', '')}</a>. You can also complain
+    to the data protection authority of the EU country where you live or work.
+  </p>
+
+  <h2 id="security">Security</h2>
+  <p>
+    The site is served only over HTTPS, and nothing it stores in your browser is sent anywhere. The
+    app encrypts the secrets it stores and keeps the key in your operating system’s keychain.
+  </p>
+
+  <h2 id="changes">Changes to this policy</h2>
+  <p>
+    This policy changes when what is processed changes. The date at the top shows the latest
+    version, and every earlier version is in the{' '}
+    <a href={`${REPO_URL}/commits/main/website/src/pages/privacy.astro`}>project’s history</a>.
+  </p>
+</LegalDocument>

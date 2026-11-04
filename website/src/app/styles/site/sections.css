@@ -34,11 +34,21 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--hp-primary);
+  color: var(--hp-text-faint);
+  font-family: var(--sl-font-mono);
   font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+/* A short rule before each eyebrow, like a line on a platform sign. */
+.eyebrow::before {
+  content: '';
+  width: 1.5rem;
+  height: 1px;
+  background: currentColor;
+}
+.section-heading--center .eyebrow::before {
+  display: none;
 }
 
 .pill {
@@ -47,7 +57,7 @@
   gap: 0.5rem;
   padding: 0.3rem 0.8rem 0.3rem 0.4rem;
   border: 1px solid var(--hp-border-strong);
-  border-radius: 999px;
+  border-radius: var(--hp-radius);
   background: var(--hp-surface);
   color: var(--hp-text-muted);
   font-size: 0.85rem;
@@ -55,15 +65,17 @@
 }
 .pill:hover {
   color: var(--hp-text);
-  border-color: var(--hp-primary);
+  border-color: var(--hp-text);
 }
 .pill__tag {
-  padding: 0.1rem 0.5rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--hp-beacon) 18%, transparent);
-  color: var(--hp-beacon);
-  font-weight: 600;
-  font-size: 0.75rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 2px;
+  background: var(--hp-primary);
+  color: var(--hp-on-primary);
+  font-family: var(--sl-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .card {
@@ -77,7 +89,7 @@
   place-items: center;
   width: 2.5rem;
   height: 2.5rem;
-  border-radius: 0.65rem;
-  background: color-mix(in srgb, var(--hp-primary) 14%, transparent);
-  color: var(--hp-primary);
+  border: 1px solid var(--hp-border-strong);
+  border-radius: var(--hp-radius);
+  color: var(--hp-text);
 }

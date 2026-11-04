@@ -1,0 +1,179 @@
+---
+/**
+ * The frame of a legal document: its title, the date it last changed, links to
+ * the other documents, then the text.
+ */
+import { formatDate } from '@/shared/lib/format';
+import { href } from '@/shared/lib/href';
+import { LEGAL_DOCUMENTS } from '../data/documents';
+
+interface Props {
+  title: string;
+  /** The document's French name. */
+  subtitle: string;
+  /** When the document's content last changed, as `YYYY-MM-DD`. */
+  updated: string;
+}
+
+const { title, subtitle, updated } = Astro.props;
+const current = Astro.url.pathname;
+---
+
+<section class="legal-hero">
+  <div class="container">
+    <span class="eyebrow">Legal</span>
+    <h1>{title}</h1>
+    <p class="legal-hero__subtitle" lang="fr">
+      {subtitle}
+    </p>
+    <p class="legal-hero__updated">
+      Last updated: <time datetime={updated}>{formatDate(updated)}</time>
+    </p>
+    <nav class="legal-nav" aria-label="Legal documents">
+      {LEGAL_DOCUMENTS.map((document) => (
+        <a
+          href={href(document.path)}
+          aria-current={current === href(document.path) ? 'page' : undefined}
+        >
+          {document.label}
+        </a>
+      ))}
+    </nav>
+  </div>
+</section>
+
+<div class="container">
+  <article class="prose legal">
+    <slot />
+  </article>
+</div>
+
+<style>
+  .legal-hero {
+    padding: 4.5rem 0 2rem;
+  }
+  .legal-hero .container {
+    display: grid;
+    gap: 0.75rem;
+    max-width: 52rem;
+  }
+  .legal-hero h1 {
+    font-size: clamp(2.25rem, 1.5rem + 3vw, 3.25rem);
+  }
+  .legal-hero__subtitle {
+    color: var(--hp-text-muted);
+    font-size: 1.1rem;
+  }
+  .legal-hero__updated {
+    color: var(--hp-text-faint);
+    font-size: 0.9rem;
+  }
+  .legal-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+  .legal-nav a {
+    padding: 0.3rem 0.75rem;
+    border: 1px solid var(--hp-border-strong);
+    border-radius: var(--hp-radius);
+    color: var(--hp-text-muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .legal-nav a:hover {
+    color: var(--hp-text);
+  }
+  .legal-nav a[aria-current='page'] {
+    border-color: var(--hp-primary);
+    background: var(--hp-primary);
+    color: var(--hp-on-primary);
+  }
+
+  .legal.prose {
+    max-width: 52rem;
+    margin-inline: auto;
+    /* Long addresses and URLs must wrap on narrow screens. */
+    overflow-wrap: anywhere;
+  }
+  .legal :global(h2) {
+    scroll-margin-top: 5rem;
+  }
+  .legal :global(ul) {
+    padding-left: 1.2rem;
+  }
+  .legal :global(strong) {
+    color: var(--hp-text);
+  }
+  .legal :global(dl) {
+    display: grid;
+    gap: 0.35rem 1.5rem;
+    margin: 0 0 1.5rem;
+    color: var(--hp-text-muted);
+  }
+  .legal :global(dt) {
+    color: var(--hp-text);
+    font-weight: 600;
+  }
+  .legal :global(dd) {
+    margin: 0 0 0.5rem;
+  }
+  @media (min-width: 40rem) {
+    .legal :global(dl) {
+      grid-template-columns: 12rem 1fr;
+    }
+    .legal :global(dd) {
+      margin: 0;
+    }
+  }
+
+  /* Tables turn into one card per row on narrow screens. */
+  .legal :global(table) {
+    width: 100%;
+    margin: 0 0 1.5rem;
+    border-collapse: collapse;
+    color: var(--hp-text-muted);
+    font-size: 0.925rem;
+  }
+  .legal :global(th),
+  .legal :global(td) {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--hp-border);
+    text-align: left;
+    vertical-align: top;
+  }
+  .legal :global(th) {
+    color: var(--hp-text);
+    font-weight: 600;
+  }
+  @media (max-width: 47.99rem) {
+    .legal :global(thead) {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+    .legal :global(tr) {
+      display: block;
+      margin-bottom: 1rem;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--hp-border-strong);
+      border-radius: var(--hp-radius);
+    }
+    .legal :global(td) {
+      display: grid;
+      grid-template-columns: 7rem 1fr;
+      gap: 0.75rem;
+      padding: 0.35rem 0;
+      border: 0;
+    }
+    .legal :global(td::before) {
+      content: attr(data-label);
+      color: var(--hp-text);
+      font-weight: 600;
+    }
+  }
+</style>

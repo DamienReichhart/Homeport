@@ -1,5 +1,5 @@
 ---
-/** Connecting to remote engines, and the ways Homeport reaches them. */
+/** Connecting to remote Engines, and the ways Homeport reaches them. */
 import { href } from '@/shared/lib/href';
 import { Screenshot, TextLink } from '@/shared/ui';
 import Showcase from '../Showcase.astro';
@@ -22,16 +22,16 @@ const connections = [
   },
   {
     name: 'TCP',
-    detail: 'Plain TCP, for engines on a network you trust.',
+    detail: 'Plain, unencrypted TCP, only for an Engine on a network you trust.',
     code: '192.168.1.10:2375',
   },
 ];
 ---
 
-<Showcase eyebrow="Hosts" title="Remote engines without the ceremony" raised>
+<Showcase eyebrow="Hosts" title="Remote Engines without the ceremony" raised>
   <p>
-    Add a server once and it stays docked. For SSH, Homeport makes a key just for that Host and
-    hands you the one command that authorises it. It checks the server's fingerprint on first
+    Add a server once and it stays on the board. For SSH, Homeport makes a key just for that Host
+    and hands you the one command that authorises it. It checks the server's fingerprint on first
     contact, and warns you if it ever changes.
   </p>
   <ul class="connection-list">

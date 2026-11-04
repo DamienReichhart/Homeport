@@ -69,3 +69,17 @@
 .site-footer__legal a {
   color: inherit;
 }
+.site-footer__legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.25rem;
+  margin-bottom: 0.5rem;
+}
+.site-footer__legal .site-footer__legal-links a {
+  color: var(--hp-text-muted);
+  font-weight: 500;
+  text-decoration: none;
+}
+.site-footer__legal .site-footer__legal-links a:hover {
+  color: var(--hp-text);
+}

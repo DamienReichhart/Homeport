@@ -7,65 +7,67 @@ import { useEffect, useRef } from 'react';
 import { useResolvedTheme } from '@/shared/lib/theme';
 import { cn } from '@/shared/lib/utils';
 
-// Homeport's terminal palettes, derived from the brand hues (docs/BRAND.md).
+// Homeport's terminal palettes (docs/BRAND.md): Ink on white, Paper on near-black.
+// The 16 ANSI colours belong to the programs that print them, so they stay
+// distinct, tuned to the warm-grey neutrals; red is the brand's Signal red.
 // xterm.js needs hex, so these mirror the CSS tokens rather than reading them.
 const LIGHT: ITheme = {
   background: '#ffffff',
-  foreground: '#0f1926',
-  cursor: '#006aa5',
+  foreground: '#141414',
+  cursor: '#141414',
   cursorAccent: '#ffffff',
-  selectionBackground: '#c3e3f9',
-  black: '#0f1926',
-  red: '#c2272d',
-  green: '#007e46',
-  yellow: '#a06604',
-  blue: '#0062a6',
-  magenta: '#8c399e',
-  cyan: '#00778d',
-  white: '#989fa8',
-  brightBlack: '#545f6c',
-  brightRed: '#de3b3d',
-  brightGreen: '#0e9254',
-  brightYellow: '#b77610',
-  brightBlue: '#0077c2',
-  brightMagenta: '#a44bb8',
-  brightCyan: '#008aa3',
-  brightWhite: '#b9bec4',
+  selectionBackground: '#d9d9d2',
+  black: '#141414',
+  red: '#c8102e',
+  green: '#2f7a3a',
+  yellow: '#8f5a00',
+  blue: '#1f5a96',
+  magenta: '#8a3a8f',
+  cyan: '#1f7380',
+  white: '#8c8c86',
+  brightBlack: '#5c5c57',
+  brightRed: '#e1001a',
+  brightGreen: '#3a8f47',
+  brightYellow: '#a86b00',
+  brightBlue: '#2b6cb0',
+  brightMagenta: '#a34ba8',
+  brightCyan: '#278a99',
+  brightWhite: '#b5b5ae',
 };
 const DARK: ITheme = {
-  background: '#080e16',
-  foreground: '#e2e9ee',
-  cursor: '#f8842d',
-  cursorAccent: '#080e16',
-  selectionBackground: '#1f405b',
-  black: '#212935',
-  red: '#f66c6d',
-  green: '#54cc8e',
-  yellow: '#eec05b',
-  blue: '#55aee8',
-  magenta: '#c889d7',
-  cyan: '#66cfe1',
-  white: '#d2d8dd',
-  brightBlack: '#677380',
-  brightRed: '#ff8d8b',
-  brightGreen: '#7ae4aa',
-  brightYellow: '#fddb7c',
-  brightBlue: '#80c7f8',
-  brightMagenta: '#dda7ea',
-  brightCyan: '#94e3f1',
-  brightWhite: '#f6f9fb',
+  background: '#0f0f0f',
+  foreground: '#f7f7f4',
+  cursor: '#f7f7f4',
+  cursorAccent: '#0f0f0f',
+  selectionBackground: '#3a3a37',
+  black: '#262624',
+  red: '#ff5c5c',
+  green: '#6cc77d',
+  yellow: '#f2a93b',
+  blue: '#7aa7e0',
+  magenta: '#cf8fd6',
+  cyan: '#6cc4cf',
+  white: '#d6d6d0',
+  brightBlack: '#6e6e69',
+  brightRed: '#ff8080',
+  brightGreen: '#8fdc9d',
+  brightYellow: '#ffc46b',
+  brightBlue: '#9dc0ee',
+  brightMagenta: '#e0aee6',
+  brightCyan: '#93d9e2',
+  brightWhite: '#ffffff',
 };
 
-/** Search highlights in Beacon orange, for `SearchAddon.findNext`/`findPrevious`. */
+/** Search highlights, for `SearchAddon.findNext`/`findPrevious`: grey matches, the current one amber. */
 export const SEARCH_DECORATIONS = {
-  matchOverviewRuler: '#989fa8',
-  activeMatchColorOverviewRuler: '#f8842d',
-  matchBackground: '#f8842d55',
-  activeMatchBackground: '#f8842d',
+  matchOverviewRuler: '#8c8c86',
+  activeMatchColorOverviewRuler: '#f2a93b',
+  matchBackground: '#8c8c8666',
+  activeMatchBackground: '#f2a93b',
 };
 
 const FONT_SIZE = 12;
-const MONO = "'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+const MONO = "'Fragment Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
 const MONO_FALLBACK = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
 
 export interface XTermHandle {
@@ -101,15 +103,17 @@ export function XTerm({
   useEffect(() => {
     const el = host.current;
     if (!el) return;
-    // xterm measures its cells once, so start on the fallback until Geist Mono is in.
+    // xterm measures its cells once, so start on the fallback until Fragment Mono is in.
     const fonts = typeof document.fonts === 'undefined' ? undefined : document.fonts;
-    const fontReady = fonts?.check(`${FONT_SIZE}px 'Geist Mono Variable'`) ?? true;
+    const fontReady = fonts?.check(`${FONT_SIZE}px 'Fragment Mono'`) ?? true;
     const term = new Terminal({
       convertEol: readOnly,
       cursorBlink: !readOnly,
       disableStdin: readOnly,
       fontFamily: fontReady ? MONO : MONO_FALLBACK,
       fontSize: FONT_SIZE,
+      // Fragment Mono has one weight; bold text shows in the bright colours instead of a faked bold.
+      fontWeightBold: 'normal',
       scrollback: 50_000,
       allowProposedApi: true,
     });
@@ -128,7 +132,7 @@ export function XTerm({
     };
     doFit();
     if (!fontReady) {
-      void fonts?.load(`${FONT_SIZE}px 'Geist Mono Variable'`).then(() => {
+      void fonts?.load(`${FONT_SIZE}px 'Fragment Mono'`).then(() => {
         if (terminal.current !== term) return;
         term.options.fontFamily = MONO;
         doFit();
@@ -156,7 +160,7 @@ export function XTerm({
     <div
       className={cn(
         'h-full min-h-0 overflow-hidden rounded-md border p-2',
-        resolved === 'dark' ? 'bg-[#080e16]' : 'bg-white',
+        resolved === 'dark' ? 'bg-[#0f0f0f]' : 'bg-white',
         className,
       )}
     >

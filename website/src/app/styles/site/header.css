@@ -5,9 +5,7 @@
   top: 0;
   z-index: 50;
   border-bottom: 1px solid var(--hp-border);
-  background: color-mix(in srgb, var(--hp-bg) 82%, transparent);
-  backdrop-filter: saturate(1.4) blur(14px);
-  -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  background: var(--hp-bg);
 }
 .site-header__inner {
   display: flex;
@@ -24,7 +22,7 @@
   }
 }
 .site-header__brand img {
-  height: 1.75rem;
+  height: 1.375rem;
   width: auto;
 }
 .site-header__nav {
@@ -63,11 +61,10 @@
   border: 1px solid var(--hp-border-strong);
   border-radius: var(--hp-radius);
   background: var(--hp-surface);
-  box-shadow: var(--hp-shadow);
 }
 .site-header__sheet a {
   padding: 0.6rem 0.75rem;
-  border-radius: 0.5rem;
+  border-radius: var(--hp-radius);
   color: var(--hp-text);
   text-decoration: none;
 }

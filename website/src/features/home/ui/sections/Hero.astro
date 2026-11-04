@@ -1,15 +1,49 @@
 ---
-/** The headline, the download button and a screenshot of the Overview. */
+/**
+ * The headline, the download button and a departure board of Hosts. The board
+ * is typeset, not a screenshot: every Engine on one board, healthy rows plain,
+ * and one red signal where something needs you.
+ */
+import { REPO_URL } from '@/core/site';
 import { getLatestRelease } from '@/core/release';
 import { DownloadButton, DownloadMeta } from '@/features/download';
 import { href } from '@/shared/lib/href';
-import { Icon, Screenshot } from '@/shared/ui';
+import { Icon } from '@/shared/ui';
 
 const release = await getLatestRelease();
+
+interface Row {
+  host: string;
+  engine: string;
+  via: string;
+  stacks: number;
+  status: string;
+  needsYou?: boolean;
+}
+
+const rows: Row[] = [
+  { host: 'laptop', engine: 'OrbStack', via: 'socket', stacks: 4, status: 'All running' },
+  { host: 'homelab', engine: 'Docker Engine 28.5', via: 'ssh', stacks: 9, status: 'All running' },
+  { host: 'nas', engine: 'Podman 5.2', via: 'ssh', stacks: 2, status: 'All running' },
+  {
+    host: 'vps-fra-1',
+    engine: 'Docker Engine 27.3',
+    via: 'tls',
+    stacks: 3,
+    status: '1 Stack needs you',
+    needsYou: true,
+  },
+  {
+    host: 'client-prod',
+    engine: 'Docker Engine 28.1',
+    via: 'ssh',
+    stacks: 6,
+    status: 'All running',
+  },
+];
 ---
 
 <section class="hero">
-  <div class="hero__backdrop" aria-hidden="true"></div>
   <div class="container hero__inner">
     {release && (
       <a class="pill" href={href('/changelog/')}>
@@ -18,105 +52,86 @@ const release = await getLatestRelease();
         <Icon name="arrowRight" size={14} />
       </a>
     )}
-    <h1>
-      Every Docker Engine,
-      <br />
-      <span>docked in one place.</span>
-    </h1>
+    <h1>Every Docker Engine, on one board.</h1>
     <p class="hero__lead">
-      Homeport is a desktop app for the Docker Engines you run — on this machine, or on servers you
-      reach over SSH, TLS or TCP. Containers, images, volumes, networks and Compose Stacks, side by
-      side, without a terminal open for every Host.
+      Homeport runs on your machine and reaches your Hosts over SSH, TLS or TCP. No agent on the
+      server. Free, MIT, Windows, macOS, Linux.
     </p>
     <div class="hero__actions">
       <DownloadButton />
-      <a class="button button--secondary button--large" href={href('/docs/')}>
-        <Icon name="book" />
-        Read the docs
+      <a class="button button--secondary button--large" href={REPO_URL}>
+        <Icon name="github" />
+        Read the source
       </a>
     </div>
     <DownloadMeta />
-    <p class="hero__facts">
-      <span>
-        <Icon name="check" size={16} /> Free and open source
-      </span>
-      <span>
-        <Icon name="check" size={16} /> No account
-      </span>
-      <span>
-        <Icon name="check" size={16} /> Windows, macOS and Linux
-      </span>
-    </p>
   </div>
-  <div class="container hero__shot" data-reveal>
-    <Screenshot
-      name="overview"
-      alt="Homeport's Overview: a card for each Host with its containers, CPU and memory, the Engine's details and disk usage."
-      eager
-    />
+
+  <div class="container" data-reveal>
+    <figure class="board">
+      <table>
+        <caption class="visually-hidden">
+          An example board: five Hosts, their Engines and how Homeport reaches them. One needs
+          attention.
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Host</th>
+            <th scope="col" class="board__engine">
+              Engine
+            </th>
+            <th scope="col">Via</th>
+            <th scope="col" class="board__num">
+              Stacks
+            </th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr class:list={[row.needsYou && 'is-signal']}>
+              <th scope="row">{row.host}</th>
+              <td class="board__engine">{row.engine}</td>
+              <td class="board__via">{row.via}</td>
+              <td class="board__num">{row.stacks}</td>
+              <td class="board__status">
+                <span>
+                  <span class="board__dot" aria-hidden="true" />
+                  {row.status}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <figcaption>Healthy is plain. Only what needs you turns red.</figcaption>
+    </figure>
   </div>
 </section>
 
 <style>
   .hero {
-    position: relative;
-    overflow: hidden;
     padding-top: 4.5rem;
   }
   @media (min-width: 64rem) {
     .hero {
-      padding-top: 6rem;
+      padding-top: 6.5rem;
     }
-  }
-  .hero__backdrop {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background:
-      radial-gradient(60rem 30rem at 50% -8rem, var(--hp-glow), transparent 70%),
-      radial-gradient(
-        30rem 20rem at 85% 10rem,
-        color-mix(in srgb, var(--hp-beacon) 9%, transparent),
-        transparent 70%
-      );
-  }
-  .hero__backdrop::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(var(--hp-border) 1px, transparent 1px),
-      linear-gradient(90deg, var(--hp-border) 1px, transparent 1px);
-    background-size: 56px 56px;
-    mask-image: radial-gradient(ellipse 70% 55% at 50% 0%, #000 30%, transparent 75%);
-    opacity: 0.6;
   }
   .hero__inner {
     display: grid;
-    justify-items: center;
+    justify-items: start;
     gap: 1.5rem;
-    text-align: center;
   }
   .hero h1 {
-    max-width: 18ch;
-    font-size: clamp(2.6rem, 1.4rem + 5vw, 4.75rem);
+    max-width: 14ch;
+    font-size: clamp(2.6rem, 1.3rem + 5.4vw, 5rem);
     font-weight: 700;
-    letter-spacing: -0.04em;
-    line-height: 1.02;
-  }
-  .hero h1 span {
-    background: linear-gradient(90deg, var(--hp-primary), var(--hp-tide) 60%, var(--hp-primary));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  [data-theme='light'] .hero h1 span {
-    background: linear-gradient(90deg, #00578a, var(--hp-harbour) 50%, #1a8bc7);
-    -webkit-background-clip: text;
-    background-clip: text;
+    letter-spacing: -0.035em;
+    line-height: 1;
   }
   .hero__lead {
-    max-width: 40rem;
+    max-width: 36rem;
     color: var(--hp-text-muted);
     font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem);
   }
@@ -124,37 +139,91 @@ const release = await getLatestRelease();
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
-    justify-content: center;
     gap: 0.75rem;
     margin-top: 0.5rem;
   }
-  .hero__facts {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.5rem 1.5rem;
-    color: var(--hp-text-muted);
-    font-size: 0.9rem;
+
+  /* The board. .container comes from the global stylesheet; outrank it. */
+  .board {
+    margin: 4rem 0 0;
   }
-  .hero__facts span {
+  .board table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: var(--hp-radius-lg);
+    background: var(--hp-board);
+    box-shadow: 0 0 0 1px var(--hp-board-edge);
+    color: var(--hp-board-text);
+    font-size: clamp(0.95rem, 0.85rem + 0.5vw, 1.25rem);
+    overflow: hidden;
+  }
+  .board th,
+  .board td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--hp-board-rule);
+    text-align: left;
+    white-space: nowrap;
+  }
+  .board tbody tr:last-child > * {
+    border-bottom: 0;
+  }
+  .board thead th {
+    padding-block: 0.85rem;
+    color: var(--hp-board-muted);
+    font-family: var(--sl-font-mono);
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .board tbody th {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .board__engine {
+    color: var(--hp-board-muted);
+  }
+  .board__via {
+    font-family: var(--sl-font-mono);
+    font-size: 0.85em;
+  }
+  .board__num {
+    text-align: right !important;
+    font-variant-numeric: tabular-nums;
+  }
+  .board__status > span {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.6rem;
   }
-  .hero__facts :global(svg) {
-    color: var(--hp-primary);
+  .board__dot {
+    flex: none;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: currentColor;
   }
-  /* .container and .card come from the global stylesheet, and Vite doesn't keep
-     it ahead of the page's CSS: outrank them rather than tie. */
-  .hero__shot.container {
-    margin-top: 3.5rem;
-    max-width: 76rem;
+  .board .is-signal .board__status {
+    color: var(--hp-board-signal);
   }
-  .hero__shot :global(.window) {
-    border-radius: 1rem;
-    box-shadow:
-      0 0 0 1px var(--hp-border),
-      0 30px 80px -30px var(--hp-glow),
-      var(--hp-shadow);
+  .board figcaption {
+    margin-top: 0.85rem;
+    color: var(--hp-text-faint);
+    font-family: var(--sl-font-mono);
+    font-size: 0.8rem;
+  }
+  @media (max-width: 48rem) {
+    .board__engine {
+      display: none;
+    }
+    .board th,
+    .board td {
+      padding: 0.85rem 0.75rem;
+    }
+  }
+  @media (max-width: 26rem) {
+    .board__num {
+      display: none;
+    }
   }
 </style>
