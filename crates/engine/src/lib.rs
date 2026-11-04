@@ -2,6 +2,7 @@
 //! functions over a connected [`bollard::Docker`] client, returning DTOs
 //! shaped for the frontend.
 
+pub mod auth;
 pub mod containers;
 pub mod images;
 pub mod networks;

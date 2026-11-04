@@ -14,6 +14,8 @@ use serde::Serialize;
 
 use homeport_core::error::{AppError, AppResult};
 
+use crate::auth::RegistryAuth;
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct Image {
@@ -147,14 +149,21 @@ pub async fn history(docker: &Docker, id: &str) -> AppResult<Vec<ImageLayer>> {
         .collect())
 }
 
-/// Pulls `reference`, reporting per-layer progress until done.
-pub async fn pull(docker: Docker, reference: String, sink: impl Fn(PullEvent) -> bool) {
+/// Pulls `reference` with the registry login when there is one, reporting
+/// per-layer progress until done.
+pub async fn pull(
+    docker: Docker,
+    reference: String,
+    auth: Option<RegistryAuth>,
+    sink: impl Fn(PullEvent) -> bool,
+) {
     let (image, tag) = split_reference(&reference);
     let mut options = CreateImageOptionsBuilder::default().from_image(&image);
     if let Some(tag) = &tag {
         options = options.tag(tag);
     }
-    let mut stream = docker.create_image(Some(options.build()), None, None);
+    let credentials = auth.as_ref().map(RegistryAuth::to_docker);
+    let mut stream = docker.create_image(Some(options.build()), None, credentials);
     while let Some(item) = stream.next().await {
         let event = match item {
             Ok(info) => match info.error_detail.and_then(|e| e.message) {
@@ -275,7 +284,8 @@ mod tests {
     #[ignore = "needs a local Docker Engine"]
     async fn pulls_report_progress_and_completion() {
         let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
-        pull(testing::docker(), testing::IMAGE.into(), move |e| {
+        // Anonymous, as with no login stored.
+        pull(testing::docker(), testing::IMAGE.into(), None, move |e| {
             tx.send(e).is_ok()
         })
         .await;
