@@ -102,7 +102,7 @@ Backend:
 1. Put the logic in the crate that owns its domain, with unit tests. A new domain (its own store and use cases), or code that needs a heavy dependency the other crates shouldn't carry, gets a new crate instead: `crates/notes/` named `homeport-notes`, with `publish = false` and `[lints] workspace = true`, listed in the root `[workspace.dependencies]`.
 2. `src-tauri/src/commands/notes.rs` (+ `pub mod notes;` in `commands/mod.rs`), thin `#[tauri::command]` functions.
 3. Annotate commands with `#[specta::specta]`, register them in `commands::builder()`, run `bun run bindings`; add the crate's service to `AppState` (`src-tauri/src/app/state.rs`) and build it in `app/setup.rs`.
-4. Add a variant to `ErrorCode` (`crates/core/src/error/code.rs`) if new failure modes are needed, and classify them in the crate that meets them.
+4. Add a variant to `ErrorCode` (`crates/core/src/error/code.rs`) if new failure modes are needed, and classify them in the crate that meets them. Declare each error's text in the crate's `messages.rs` (`messages!`: key and English template) and run `bun run bindings`, which regenerates `src/shared/i18n/en/errors.json` (ADR 0011; the guide at the top of `crates/core/src/error/mod.rs`).
 
 Website page (example: `compare`):
 
