@@ -5,6 +5,7 @@ import { Alert, AlertDescription, AlertTitle } from '../primitives/alert';
 import { Button } from '../primitives/button';
 import { showErrorDetails } from './ErrorDetails';
 import { HintView } from './HintView';
+import { t } from '@/shared/i18n';
 
 /**
  * A failure shown in place: what happened, what to do, and buttons for the
@@ -33,12 +34,12 @@ export function ErrorMessage({
             size="sm"
             onClick={() => showErrorDetails(failure)}
           >
-            Details
+            {t('common.details')}
           </Button>
           {onRetry && (
             <Button type="button" variant="outline" size="sm" onClick={onRetry}>
               <RotateCwIcon />
-              Retry
+              {t('common.retry')}
             </Button>
           )}
         </div>

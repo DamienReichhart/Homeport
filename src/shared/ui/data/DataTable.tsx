@@ -13,6 +13,7 @@ import { useState, type ReactNode } from 'react';
 import { Checkbox } from '../primitives/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../primitives/table';
 import { cn } from '@/shared/lib/utils';
+import { t } from '@/shared/i18n';
 
 export type { ColumnDef } from '@tanstack/react-table';
 
@@ -49,7 +50,7 @@ export function DataTable<T>({
           enableSorting: false,
           header: ({ table }) => (
             <Checkbox
-              aria-label="Select all"
+              aria-label={t('ui.table.selectAll')}
               checked={
                 table.getIsAllRowsSelected() || (table.getIsSomeRowsSelected() && 'indeterminate')
               }
@@ -58,7 +59,7 @@ export function DataTable<T>({
           ),
           cell: ({ row }) => (
             <Checkbox
-              aria-label="Select row"
+              aria-label={t('ui.table.selectRow')}
               checked={row.getIsSelected()}
               onClick={(e) => e.stopPropagation()}
               onCheckedChange={(v) => row.toggleSelected(v === true)}
@@ -124,7 +125,7 @@ export function DataTable<T>({
                 colSpan={allColumns.length}
                 className="text-muted-foreground h-24 text-center"
               >
-                {empty ?? 'Nothing here.'}
+                {empty ?? t('ui.table.empty')}
               </TableCell>
             </TableRow>
           ) : (

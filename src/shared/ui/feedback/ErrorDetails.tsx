@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from '../primitives/dialog';
 import { HintView } from './HintView';
+import { t } from '@/shared/i18n';
 
 let shown: AppError | null = null;
 const listeners = new Set<() => void>();
@@ -45,15 +46,17 @@ function ErrorDetailsDialog({ error, onClose }: { error: AppError; onClose: () =
   const app = useQuery(appQueries.info());
   const [openLogError, setOpenLogError] = useState<AppError | null>(null);
   const facts: [string, string][] = [
-    ['Code', error.code],
-    ...(error.context.command ? [['Command', error.context.command] as [string, string]] : []),
-    ['When', error.context.at.toLocaleString()],
+    [t('ui.errorDetails.code'), error.code],
+    ...(error.context.command
+      ? [[t('ui.errorDetails.command'), error.context.command] as [string, string]]
+      : []),
+    [t('ui.errorDetails.when'), error.context.at.toLocaleString()],
     ...(app.data
       ? [
-          ['App', `${app.data.name} ${app.data.version} · ${app.data.os} ${app.data.arch}`] as [
-            string,
-            string,
-          ],
+          [
+            t('ui.errorDetails.app'),
+            `${app.data.name} ${app.data.version} · ${app.data.os} ${app.data.arch}`,
+          ] as [string, string],
         ]
       : []),
   ];
@@ -61,7 +64,7 @@ function ErrorDetailsDialog({ error, onClose }: { error: AppError; onClose: () =
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Error details</DialogTitle>
+          <DialogTitle>{t('ui.errorDetails.title')}</DialogTitle>
           <DialogDescription className="text-foreground">{error.message}</DialogDescription>
         </DialogHeader>
         <div className="flex min-w-0 flex-col gap-4">
@@ -76,7 +79,7 @@ function ErrorDetailsDialog({ error, onClose }: { error: AppError; onClose: () =
           </dl>
           {error.detail && (
             <div className="flex flex-col gap-1">
-              <p className="text-muted-foreground text-sm">Raw detail</p>
+              <p className="text-muted-foreground text-sm">{t('ui.errorDetails.rawDetail')}</p>
               <pre className="bg-muted max-h-64 overflow-auto rounded-md p-3 font-mono text-xs whitespace-pre-wrap">
                 {error.detail}
               </pre>
@@ -95,9 +98,9 @@ function ErrorDetailsDialog({ error, onClose }: { error: AppError; onClose: () =
             }
           >
             <FolderOpenIcon />
-            Open log folder
+            {t('ui.errorDetails.openLogFolder')}
           </Button>
-          <CopyButton text={errorReport(error, app.data)} label="Copy report" />
+          <CopyButton text={errorReport(error, app.data)} label={t('ui.errorDetails.copyReport')} />
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -10,6 +10,7 @@ import {
 } from '../primitives/alert-dialog';
 import { Button } from '../primitives/button';
 import { cn } from '@/shared/lib/utils';
+import { t } from '@/shared/i18n';
 
 export interface ConfirmOptions {
   title: string;
@@ -49,7 +50,7 @@ export function ConfirmDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={busy}>{t('common.cancel')}</AlertDialogCancel>
           <Button
             variant={options?.destructive ? 'destructive' : 'default'}
             className={cn(

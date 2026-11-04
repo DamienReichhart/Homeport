@@ -1,10 +1,11 @@
 import { SearchIcon } from 'lucide-react';
 import { Input } from '../primitives/input';
+import { t } from '@/shared/i18n';
 
 export function SearchInput({
   value,
   onChange,
-  placeholder = 'Search',
+  placeholder = t('ui.search'),
 }: {
   value: string;
   onChange: (value: string) => void;

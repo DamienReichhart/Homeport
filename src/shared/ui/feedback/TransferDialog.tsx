@@ -18,6 +18,7 @@ import {
 } from '../primitives/dialog';
 import { Progress } from '../primitives/progress';
 import { ErrorMessage } from './ErrorMessage';
+import { t } from '@/shared/i18n';
 
 /**
  * Runs one file transfer between this machine and a Host — a save, load,
@@ -29,7 +30,7 @@ export function TransferDialog({
   description,
   counted,
   start,
-  done = () => 'Done.',
+  done = () => t('ui.transfer.done'),
   onClose,
 }: {
   title: string;
@@ -94,7 +95,7 @@ export function TransferDialog({
         </div>
         <DialogFooter>
           <Button variant={busy ? 'ghost' : 'default'} onClick={close}>
-            {busy ? 'Cancel' : 'Close'}
+            {busy ? t('common.cancel') : t('common.close')}
           </Button>
         </DialogFooter>
       </DialogContent>
