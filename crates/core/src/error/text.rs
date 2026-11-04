@@ -88,14 +88,7 @@ pub type Params = BTreeMap<String, Param>;
 pub struct Text {
     pub key: String,
     pub params: Params,
-    template: Template,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-enum Template {
-    Icu(&'static str),
-    /// Text not yet in a `messages!` block, shown as it is.
-    Plain(String),
+    template: &'static str,
 }
 
 impl Message {
@@ -115,10 +108,7 @@ impl Text {
 
     /// The text in English, for the app log and as the frontend's fallback.
     pub fn english(&self) -> String {
-        match &self.template {
-            Template::Icu(template) => render(template, &self.params),
-            Template::Plain(text) => text.clone(),
-        }
+        render(self.template, &self.params)
     }
 }
 
@@ -127,25 +117,7 @@ impl From<Message> for Text {
         Self {
             key: m.key.to_owned(),
             params: Params::new(),
-            template: Template::Icu(m.en),
-        }
-    }
-}
-
-// Unkeyed text, while the crates move to `messages!`; it reaches the
-// frontend with an empty key, which falls back to the English message.
-impl From<&str> for Text {
-    fn from(text: &str) -> Self {
-        Self::from(text.to_owned())
-    }
-}
-
-impl From<String> for Text {
-    fn from(text: String) -> Self {
-        Self {
-            key: String::new(),
-            params: Params::new(),
-            template: Template::Plain(text),
+            template: m.en,
         }
     }
 }
