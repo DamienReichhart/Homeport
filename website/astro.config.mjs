@@ -50,6 +50,7 @@ export default defineConfig({
       ],
       components: {
         Header: './src/app/starlight/Header.astro',
+        Footer: './src/app/starlight/Footer.astro',
       },
       head: [
         { tag: 'meta', attrs: { property: 'og:image', content: `${site}${root}/og.png` } },
@@ -63,7 +64,15 @@ export default defineConfig({
       plugins: [
         // The marketing pages aren't Starlight pages, so the validator can't check links to them.
         starlightLinksValidator({
-          exclude: [`${root}/`, `${root}/download/**`, `${root}/changelog/**`],
+          exclude: [
+            `${root}/`,
+            `${root}/download/**`,
+            `${root}/changelog/**`,
+            `${root}/legal-notice/**`,
+            `${root}/privacy/**`,
+            `${root}/terms/**`,
+            `${root}/cookies/**`,
+          ],
         }),
       ],
     }),

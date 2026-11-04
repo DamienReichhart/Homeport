@@ -1,6 +1,7 @@
 ---
 import mark from '@brand/mark.svg';
 import { ISSUES_URL, RELEASES_URL, REPO_URL, TAGLINE } from '@/core/site';
+import { legalLinks } from '@/features/legal';
 import { href } from '@/shared/lib/href';
 
 const year = new Date().getFullYear();
@@ -60,6 +61,11 @@ const columns = [
     ))}
   </div>
   <div class="site-footer__legal">
+    <nav class="site-footer__legal-links" aria-label="Legal">
+      {legalLinks().map((link) => (
+        <a href={link.url}>{link.label}</a>
+      ))}
+    </nav>
     <p>
       © {year} Damien Reichhart. Homeport is open source under the{' '}
       <a href={`${REPO_URL}/blob/main/LICENSE`}>MIT licence</a>.
