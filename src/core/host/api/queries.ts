@@ -43,6 +43,17 @@ export const resourceQueries = {
       queryKey: [...hostKeys.system(hostId), 'df'],
       queryFn: () => commands.systemDiskUsage(hostId),
     }),
+  /**
+   * Whether a newer image is published for each container's image and each
+   * tag. The backend caches registry answers, so this is cheap to refetch.
+   */
+  freshness: (hostId: string) =>
+    queryOptions({
+      queryKey: hostKeys.freshness(hostId),
+      queryFn: () => commands.imagesFreshness(hostId, false),
+      staleTime: 5 * 60_000,
+      retry: false,
+    }),
   events: (hostId: string) =>
     queryOptions({
       queryKey: hostKeys.events(hostId),
