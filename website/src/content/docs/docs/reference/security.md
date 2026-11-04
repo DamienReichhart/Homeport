@@ -66,6 +66,8 @@ The first time Homeport connects to an SSH server, it asks you to confirm the se
 - **No telemetry, analytics or crash reporting.**
 - **No silent installs.** An update is installed only when you choose **Install and restart**; Linux packages are only ever updated by your package manager.
 
+The [privacy policy](/privacy/) sets out what this means in law: who is responsible for your data, on what basis, and how to exercise your rights.
+
 ## Logs
 
 Homeport writes a small log file — a few dozen kilobytes, replaced when full — for diagnosing problems. It contains connection events and errors, not your credentials or container output.
