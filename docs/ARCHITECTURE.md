@@ -87,7 +87,7 @@ website/src/
 └── content/docs/   the user docs (Markdown and MDX)
 ```
 
-A component's styles live in the component. One that overrides a global rule must outrank it (`.cta.card`), because Vite doesn't keep the global stylesheet ahead of a page's CSS.
+A component's styles live in the component. One that overrides a global rule must outrank it (`.cta.card`), because Vite doesn't keep the global stylesheet ahead of a page's CSS. Logic goes in `model/` (or `core/`, `shared/lib/`) so it can be tested: `bun test`, with the tests next to the code.
 
 ## Adding a feature (example: `notes`)
 

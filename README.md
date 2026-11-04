@@ -76,6 +76,7 @@ cd website
 bun install
 bun run dev     # http://localhost:4321/Homeport/
 bun run lint    # checks the layers (docs/ARCHITECTURE.md#website-layout) and file sizes
+bun run test    # unit tests (bun test), next to the code they test
 bun run build   # type-checks, validates links and builds into website/dist/
 ```
 
