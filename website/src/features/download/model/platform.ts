@@ -7,6 +7,12 @@
 export type DetectedOs = 'windows' | 'macos' | 'linux' | 'other';
 export type DetectedArch = 'x64' | 'arm64' | undefined;
 
+export const OS_NAMES: Record<Exclude<DetectedOs, 'other'>, string> = {
+  windows: 'Windows',
+  macos: 'macOS',
+  linux: 'Linux',
+};
+
 interface UADataValues {
   platform?: string;
   architecture?: string;

@@ -1,0 +1,81 @@
+---
+/** The download page's title, the version on offer, and a note on the visitor's system. */
+import { getLatestRelease } from '@/core/release';
+import { RELEASES_URL } from '@/core/site';
+import { formatDate } from '@/shared/lib/format';
+import { href } from '@/shared/lib/href';
+import { Icon } from '@/shared/ui';
+
+const release = await getLatestRelease();
+---
+
+<section class="download-hero">
+  <div class="container">
+    <span class="eyebrow">Download</span>
+    <h1>Get Homeport</h1>
+    {
+      release ? (
+        <p class="lead">
+          Version <strong>{release.version}</strong>, released {formatDate(release.publishedAt)}.{' '}
+          <a href={href('/changelog/')}>What's new</a>
+        </p>
+      ) : (
+        <p class="lead">
+          Installers for every platform are on the{' '}
+          <a href={`${RELEASES_URL}/latest`}>GitHub releases page</a>.
+        </p>
+      )
+    }
+    <p class="recommend" data-recommend hidden>
+      <Icon name="check" size={16} /> <span></span>
+    </p>
+  </div>
+</section>
+
+<script>
+  import { detectPlatform } from '../../model/platform';
+  import { recommendation } from '../../model/recommendation';
+
+  void detectPlatform().then(({ os, arch }) => {
+    if (os === 'other') return;
+    const note = document.querySelector<HTMLElement>('[data-recommend]');
+    const text = note?.querySelector('span');
+    if (note && text) {
+      text.textContent = recommendation(os, arch);
+      note.hidden = false;
+    }
+  });
+</script>
+
+<style>
+  .download-hero {
+    padding: 4.5rem 0 2.5rem;
+    background: radial-gradient(50rem 20rem at 50% -6rem, var(--hp-glow), transparent 70%);
+  }
+  .download-hero .container {
+    display: grid;
+    gap: 0.85rem;
+    justify-items: center;
+    text-align: center;
+  }
+  .download-hero h1 {
+    font-size: clamp(2.25rem, 1.5rem + 3vw, 3.5rem);
+  }
+  .lead {
+    color: var(--hp-text-muted);
+    font-size: 1.15rem;
+  }
+  .recommend {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--hp-text-muted);
+    font-size: 0.9rem;
+  }
+  .recommend[hidden] {
+    display: none;
+  }
+  .recommend :global(svg) {
+    color: var(--hp-primary);
+  }
+</style>

@@ -39,9 +39,7 @@ const downloadPage = href('/download/');
 </a>
 
 <script>
-  import { detectPlatform } from '../model/platform';
-
-  const NAMES = { windows: 'Windows', macos: 'macOS', linux: 'Linux' } as const;
+  import { detectPlatform, OS_NAMES } from '../model/platform';
 
   async function enhance() {
     const { os, arch } = await detectPlatform();
@@ -57,7 +55,7 @@ const downloadPage = href('/download/');
     for (const link of document.querySelectorAll<HTMLAnchorElement>('[data-download-link]')) {
       const targets = JSON.parse(link.dataset.targets ?? '{}') as Record<string, string>;
       const label = link.querySelector('[data-download-label]');
-      if (label) label.textContent = `Download for ${NAMES[os]}`;
+      if (label) label.textContent = `Download for ${OS_NAMES[os]}`;
       // Go to the platform's section unless one file is clearly right.
       link.href = `${link.dataset.page}#${os}`;
       const direct =

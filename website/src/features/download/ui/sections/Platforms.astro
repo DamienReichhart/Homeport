@@ -1,0 +1,61 @@
+---
+/** A card per platform with its installers, the visitor's first, and a note on any newer prerelease. */
+import { getLatestRelease, getReleases } from '@/core/release';
+import { PLATFORMS } from '../../data/platforms';
+import { newerPrerelease } from '../../model/prerelease';
+import PlatformCard from '../platform/PlatformCard.astro';
+
+const release = await getLatestRelease();
+const prerelease = newerPrerelease(await getReleases(), release);
+---
+
+{
+  prerelease && (
+    <aside class="notice">
+      <strong>Preview available:</strong> {prerelease.name} is a prerelease for testing.{' '}
+      <a href={prerelease.url}>Download it from GitHub</a>.
+    </aside>
+  )
+}
+
+<div class="platforms">
+  {PLATFORMS.map((platform) => <PlatformCard platform={platform} release={release} />)}
+</div>
+
+<script>
+  import { detectPlatform } from '../../model/platform';
+
+  void detectPlatform().then(({ os, arch }) => {
+    if (os === 'other') return;
+    const card = document.querySelector<HTMLElement>(`.platform[data-os="${os}"]`);
+    if (!card) return;
+    card.classList.add('is-current');
+    card.querySelector<HTMLElement>('.platform__badge')?.removeAttribute('hidden');
+    // Put the visitor's platform first.
+    card.parentElement?.prepend(card);
+
+    // Highlight the visitor's architecture, and the first format for it.
+    if (arch) {
+      const buttons = card.querySelectorAll<HTMLElement>(`.files__buttons [data-arch="${arch}"]`);
+      buttons.forEach((b) => b.classList.add('is-arch'));
+      buttons[0]?.classList.replace('button--secondary', 'button--primary');
+      buttons[0]?.closest('li')?.classList.add('is-best');
+    }
+  });
+</script>
+
+<style>
+  .notice {
+    margin-bottom: 1.5rem;
+    padding: 0.9rem 1.15rem;
+    border: 1px solid color-mix(in srgb, var(--hp-beacon) 45%, transparent);
+    border-radius: var(--hp-radius);
+    background: color-mix(in srgb, var(--hp-beacon) 8%, transparent);
+  }
+
+  .platforms {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+    align-items: start;
+</style>

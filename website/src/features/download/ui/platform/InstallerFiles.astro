@@ -1,0 +1,136 @@
+---
+/** A platform's installers: a row per format, a button per architecture, and their checksums. */
+import { archLabel, FORMATS, type Os, type Release } from '@/core/release';
+import { RELEASES_URL } from '@/core/site';
+import { formatSize } from '@/shared/lib/format';
+import { Icon } from '@/shared/ui';
+import { formatsFor } from '../../model/installers';
+
+interface Props {
+  os: Os;
+  release: Release | undefined;
+}
+
+const { os, release } = Astro.props;
+const rows = formatsFor(release, os);
+---
+
+{
+  rows.length > 0 ? (
+    <ul class="files">
+      {rows.map(({ format, files }) => (
+        <li data-format={format}>
+          <div class="files__info">
+            <strong>
+              {FORMATS[format].label} <code>{FORMATS[format].ext}</code>
+            </strong>
+            <span>
+              {FORMATS[format].hint} · {formatSize(files[0]!.size)}
+            </span>
+          </div>
+          <div class="files__buttons">
+            {files.map((file) => (
+              <a
+                class="button button--secondary button--small"
+                href={file.url}
+                data-arch={file.arch}
+                title={file.name}
+              >
+                <Icon name="download" size={16} />
+                {archLabel(file.os, file.arch)}
+                <span class="visually-hidden">{FORMATS[format].label} ({file.name})</span>
+              </a>
+            ))}
+          </div>
+          {files.some((f) => f.sha256) && (
+            <details class="files__sum">
+              <summary>SHA-256 checksums</summary>
+              {files.map((file) => (
+                <p>
+                  <span>{archLabel(file.os, file.arch)}</span>
+                  <code>{file.sha256}</code>
+                </p>
+              ))}
+            </details>
+          )}
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p class="files__empty">
+      See the <a href={`${RELEASES_URL}/latest`}>latest release on GitHub</a>.
+    </p>
+  )
+}
+
+<style>
+  .files {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .files li {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.6rem 1rem;
+    align-items: center;
+    padding: 0.85rem 0.95rem;
+    border: 1px solid var(--hp-border);
+    border-radius: var(--hp-radius);
+    background: var(--hp-bg-raised);
+  }
+  .files li.is-best {
+    border-color: color-mix(in srgb, var(--hp-primary) 60%, transparent);
+  }
+  .files__info {
+    display: grid;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+  .files__info strong {
+    font-size: 0.95rem;
+  }
+  .files__info code {
+    color: var(--hp-text-faint);
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  .files__info > span {
+    color: var(--hp-text-muted);
+    font-size: 0.825rem;
+    line-height: 1.45;
+  }
+  .files__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .files__buttons .button {
+    white-space: nowrap;
+  }
+  .files__sum summary {
+    width: fit-content;
+    color: var(--hp-text-faint);
+    font-size: 0.75rem;
+    cursor: pointer;
+  }
+  .files__sum p {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr;
+    gap: 0.5rem;
+    margin-top: 0.35rem;
+    font-size: 0.7rem;
+  }
+  .files__sum span {
+    color: var(--hp-text-faint);
+  }
+  .files__sum code {
+    color: var(--hp-text-muted);
+    word-break: break-all;
+  }
+  .files__empty {
+    color: var(--hp-text-muted);
+  }
+</style>

@@ -1,0 +1,85 @@
+---
+/** One platform: its requirements, the Linux repository, its installers and a link to the guide. */
+import type { Release } from '@/core/release';
+import { href } from '@/shared/lib/href';
+import { Icon } from '@/shared/ui';
+import type { PlatformInfo } from '../../data/platforms';
+import InstallerFiles from './InstallerFiles.astro';
+import LinuxRepository from './LinuxRepository.astro';
+
+interface Props {
+  platform: PlatformInfo;
+  release: Release | undefined;
+}
+
+const { platform, release } = Astro.props;
+---
+
+<section class="card platform" id={platform.os} data-os={platform.os}>
+  <header>
+    <Icon name={platform.icon} size={28} />
+    <div>
+      <h2>{platform.title}</h2>
+      <p>{platform.requirement}</p>
+    </div>
+    <span class="platform__badge" hidden>
+      Your system
+    </span>
+  </header>
+  {platform.os === 'linux' && <LinuxRepository />}
+  <InstallerFiles os={platform.os} release={release} />
+  <a class="platform__guide" href={href(`/docs/installation/#${platform.os}`)}>
+    Installation guide for {platform.title} <Icon name="arrowRight" size={14} />
+  </a>
+</section>
+
+<style>
+  .platform {
+    display: grid;
+    gap: 1.25rem;
+    padding: 1.5rem;
+    scroll-margin-top: 5.5rem;
+  }
+  .platform.is-current {
+    border-color: var(--hp-primary);
+    box-shadow: 0 0 0 1px var(--hp-primary), 0 20px 50px -30px var(--hp-glow);
+  }
+  .platform header {
+    display: flex;
+    gap: 0.9rem;
+    align-items: flex-start;
+  }
+  .platform header > :global(svg) {
+    flex: none;
+    margin-top: 0.15rem;
+  }
+  .platform h2 {
+    font-size: 1.35rem;
+  }
+  .platform header p {
+    color: var(--hp-text-faint);
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+  .platform__badge {
+    margin-left: auto;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--hp-primary) 15%, transparent);
+    color: var(--hp-primary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .platform__badge[hidden] {
+    display: none;
+  }
+  .platform__guide {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+  }
+</style>

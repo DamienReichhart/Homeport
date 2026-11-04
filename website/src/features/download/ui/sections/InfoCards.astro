@@ -1,0 +1,113 @@
+---
+/** What to know around the install: requirements, first launch, updates and verifying. */
+import { getLatestRelease } from '@/core/release';
+import { REPO } from '@/core/site';
+import { href } from '@/shared/lib/href';
+
+const release = await getLatestRelease();
+---
+
+<div class="info-grid">
+  <section class="card info prose">
+    <h2>Before you install</h2>
+    <p>
+      Homeport manages Docker Engines — it doesn't include one. Run it next to Docker Engine,
+      Docker Desktop, Colima, OrbStack, Rancher Desktop or Podman, or point it at a remote
+      server over SSH, TLS or TCP.
+    </p>
+    <ul>
+      <li>
+        <strong>OS keychain</strong> (macOS Keychain, Windows Credential Manager, or a Secret
+        Service such as GNOME Keyring) to store SSH keys, TLS certificates and Stack environments.
+      </li>
+      <li>
+        <strong><code>docker compose</code></strong> on this machine to deploy Managed Stacks.
+      </li>
+    </ul>
+    <p>
+      Both are optional: Homeport tells you what is unavailable without them. See the{' '}
+      <a href={href('/docs/requirements/')}>system requirements</a>.
+    </p>
+  </section>
+
+  <section class="card info prose">
+    <h2>First launch</h2>
+    <p>
+      The installers are not yet signed with a paid certificate, so your system may ask for
+      confirmation once:
+    </p>
+    <ul>
+      <li>
+        <strong>Windows</strong>: SmartScreen shows “Windows protected your PC”. Choose{' '}
+        <em>More info</em>, then <em>Run anyway</em>.
+      </li>
+      <li>
+        <strong>macOS</strong>: if Homeport “can't be opened”, allow it in{' '}
+        <em>System Settings → Privacy &amp; Security</em> and choose <em>Open Anyway</em>.
+      </li>
+    </ul>
+    <p>
+      <a href={href('/docs/installation/')}>Step-by-step instructions</a>
+    </p>
+  </section>
+
+  <section class="card info prose">
+    <h2>Staying up to date</h2>
+    <p>
+      On Windows, macOS and with the AppImage, Homeport tells you when a new version is out and
+      installs it when you choose. Every update is signed and checked before it's installed.
+    </p>
+    <p>
+      The <code>.deb</code> and <code>.rpm</code> packages update with the rest of your system,
+      from the Homeport package repository.
+    </p>
+    <p>
+      <a href={href('/docs/reference/updating/')}>How updates work</a>
+    </p>
+  </section>
+
+  <section class="card info prose">
+    <h2>Verify your download</h2>
+    <p>
+      Every release is built by GitHub Actions from the public source, with a SHA-256 checksum
+      and a signed build provenance attestation for each file.
+    </p>
+    <pre class="code-block"><code>gh attestation verify &lt;file&gt; --repo {REPO}</code></pre>
+    <p>
+      {
+        release?.checksumsUrl ? (
+          <a href={release.checksumsUrl}>SHA256SUMS.txt</a>
+        ) : (
+          <span>SHA256SUMS.txt</span>
+        )
+      }{' '}
+      · <a href={href('/docs/reference/verifying/')}>How to verify</a>
+    </p>
+  </section>
+</div>
+
+<style>
+  .info-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
+    margin-top: 3rem;
+  }
+  /* Outrank .prose from the global stylesheet rather than tie with it. */
+  .info.prose {
+    padding: 1.5rem 1.75rem;
+    max-width: none;
+  }
+  .info.prose h2 {
+    margin-top: 0;
+    font-size: 1.2rem;
+  }
+  .info ul {
+    padding-left: 1.1rem;
+  }
+  .info .code-block {
+    margin-bottom: 1rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+</style>
