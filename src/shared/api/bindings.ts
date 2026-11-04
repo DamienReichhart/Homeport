@@ -122,6 +122,8 @@ export const commands = {
 	containersEditLosses: (hostId: string, id: string) => __TAURI_INVOKE<Loss[]>("containers_edit_losses", { hostId, id }),
 	/**  Recreates a container from `spec` under the same name (Edit); returns the new id. */
 	containersRecreate: (hostId: string, id: string, spec: RunSpec) => __TAURI_INVOKE<string>("containers_recreate", { hostId, id, spec }),
+	/**  Commits a container to a new image; returns the image's id. */
+	containersCommit: (hostId: string, id: string, spec: CommitSpec) => __TAURI_INVOKE<string>("containers_commit", { hostId, id, spec }),
 	/**  Every Stack on a Host: those running there plus undeployed Managed Stacks. */
 	stacksList: (hostId: string) => __TAURI_INVOKE<Stack[]>("stacks_list", { hostId }),
 	stacksGet: (id: string) => __TAURI_INVOKE<ManagedStack>("stacks_get", { id }),
@@ -205,6 +207,18 @@ export type Capabilities = {
 	keychain: boolean,
 	/**  Whether Managed Stacks can be deployed here. */
 	compose: ComposeSupport,
+};
+
+export type CommitSpec = {
+	/**  The new image's name, `repo[:tag]`; an existing tag moves to it. */
+	reference: string,
+	/**  The commit message, shown in the image's history. */
+	comment: string | null,
+	author: string | null,
+	/**  Pause the container while committing, so its files are consistent. */
+	pause: boolean,
+	/**  Dockerfile instructions applied to the image, one per entry, like `ENV MODE=prod`. */
+	changes: string[],
 };
 
 export type ComposeAction = 

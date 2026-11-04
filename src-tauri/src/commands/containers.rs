@@ -5,6 +5,7 @@ use tauri::{ipc::Channel, State};
 use homeport_core::streams::StreamId;
 use homeport_engine::containers::{
     self,
+    commit::{self, CommitSpec},
     logs::{self, LogEvent, LogOptions, LogSource},
     recreate::{self, Loss},
     run::{self, RunSpec},
@@ -102,6 +103,18 @@ pub async fn containers_run_spec(
     id: String,
 ) -> AppResult<RunSpec> {
     run::spec_for(&state.hosts.registry.docker(&host_id)?, &id).await
+}
+
+/// Commits a container to a new image; returns the image's id.
+#[tauri::command]
+#[specta::specta]
+pub async fn containers_commit(
+    state: State<'_, AppState>,
+    host_id: String,
+    id: String,
+    spec: CommitSpec,
+) -> AppResult<String> {
+    commit::commit(&state.hosts.registry.docker(&host_id)?, &id, spec).await
 }
 
 /// What recreating a container with a changed configuration loses, for Edit's confirmation.

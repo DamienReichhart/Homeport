@@ -1,6 +1,7 @@
 //! Containers: listing, inspection and lifecycle here; what runs inside one
 //! (exec, files, logs, stats) and creating one (`run`) in submodules.
 
+pub mod commit;
 pub mod exec;
 pub mod files;
 pub mod logs;

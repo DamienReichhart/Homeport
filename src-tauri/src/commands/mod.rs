@@ -113,6 +113,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             containers::containers_run_spec,
             containers::containers_edit_losses,
             containers::containers_recreate,
+            containers::containers_commit,
             stacks::stacks_list,
             stacks::stacks_get,
             stacks::stacks_get_env,
