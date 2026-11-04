@@ -282,6 +282,12 @@ export type DiskUsage = {
 	containers: UsageLine,
 	volumes: UsageLine,
 	buildCache: UsageLine,
+	/**
+	 *  The Engine predates per-type disk usage (API 1.52, Docker 29), so the
+	 *  numbers come from its lists: image sizes are approximate, and volume
+	 *  and build cache sizes are unknown (0).
+	 */
+	partial: boolean,
 };
 
 /**  One entry of a Host's Engine event stream. */

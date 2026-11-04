@@ -1,7 +1,12 @@
 //! Engine-wide information: host details, disk usage and pruning.
 
+use std::collections::HashSet;
+
 use bollard::{
-    query_parameters::{DataUsageOptions, PruneBuildOptionsBuilder, PruneContainersOptions},
+    query_parameters::{
+        DataUsageOptions, ListContainersOptionsBuilder, ListImagesOptionsBuilder,
+        ListVolumesOptions, PruneBuildOptionsBuilder, PruneContainersOptions,
+    },
     Docker,
 };
 use serde::{Deserialize, Serialize};
@@ -45,6 +50,10 @@ pub struct DiskUsage {
     pub containers: UsageLine,
     pub volumes: UsageLine,
     pub build_cache: UsageLine,
+    /// The Engine predates per-type disk usage (API 1.52, Docker 29), so the
+    /// numbers come from its lists: image sizes are approximate, and volume
+    /// and build cache sizes are unknown (0).
+    pub partial: bool,
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, specta::Type)]
@@ -92,6 +101,10 @@ pub async fn info(docker: &Docker) -> AppResult<EngineInfo> {
 
 pub async fn disk_usage(docker: &Docker) -> AppResult<DiskUsage> {
     let df = docker.df(None::<DataUsageOptions>).await?;
+    let Some(image_usage) = df.image_usage else {
+        // Older Engines answer with fields bollard doesn't read.
+        return disk_usage_from_lists(docker).await;
+    };
     let line = |total: Option<i64>,
                 active: Option<i64>,
                 size: Option<i64>,
@@ -102,10 +115,12 @@ pub async fn disk_usage(docker: &Docker) -> AppResult<DiskUsage> {
         reclaimable: reclaimable.unwrap_or(0),
     };
     Ok(DiskUsage {
-        images: df
-            .image_usage
-            .map(|u| line(u.total_count, u.active_count, u.total_size, u.reclaimable))
-            .unwrap_or_default(),
+        images: line(
+            image_usage.total_count,
+            image_usage.active_count,
+            image_usage.total_size,
+            image_usage.reclaimable,
+        ),
         containers: df
             .container_usage
             .map(|u| line(u.total_count, u.active_count, u.total_size, u.reclaimable))
@@ -118,6 +133,87 @@ pub async fn disk_usage(docker: &Docker) -> AppResult<DiskUsage> {
             .build_cache_usage
             .map(|u| line(u.total_count, u.active_count, u.total_size, u.reclaimable))
             .unwrap_or_default(),
+        partial: false,
+    })
+}
+
+/// An image as the fallback needs it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct ImageSize {
+    size: i64,
+    /// Bytes shared with other images, `-1` when the Engine didn't say.
+    shared: i64,
+    in_use: bool,
+}
+
+/// Images' usage from their list: each image's own layers once, plus the
+/// largest shared part once, which is a fair estimate of the layers on disk.
+fn image_line(images: &[ImageSize]) -> UsageLine {
+    let own = |i: &ImageSize| i.size - i.shared.max(0);
+    let shared = images.iter().map(|i| i.shared.max(0)).max().unwrap_or(0);
+    let unused_own: i64 = images.iter().filter(|i| !i.in_use).map(own).sum();
+    UsageLine {
+        total: images.len() as i64,
+        active: images.iter().filter(|i| i.in_use).count() as i64,
+        size: images.iter().map(own).sum::<i64>() + shared,
+        reclaimable: unused_own,
+    }
+}
+
+async fn disk_usage_from_lists(docker: &Docker) -> AppResult<DiskUsage> {
+    let containers = docker
+        .list_containers(Some(
+            ListContainersOptionsBuilder::default()
+                .all(true)
+                .size(true)
+                .build(),
+        ))
+        .await?;
+    let used: HashSet<&str> = containers
+        .iter()
+        .filter_map(|c| c.image_id.as_deref())
+        .collect();
+    let images: Vec<ImageSize> = docker
+        .list_images(Some(
+            ListImagesOptionsBuilder::default()
+                .shared_size(true)
+                .build(),
+        ))
+        .await?
+        .iter()
+        .map(|i| ImageSize {
+            size: i.size,
+            shared: i.shared_size,
+            in_use: used.contains(i.id.as_str()),
+        })
+        .collect();
+    let running = |c: &&bollard::models::ContainerSummary| {
+        c.state.as_ref().is_some_and(|s| s.to_string() == "running")
+    };
+    let writable = |c: &bollard::models::ContainerSummary| c.size_rw.unwrap_or(0);
+    let volumes = docker
+        .list_volumes(None::<ListVolumesOptions>)
+        .await?
+        .volumes
+        .unwrap_or_default();
+    Ok(DiskUsage {
+        images: image_line(&images),
+        containers: UsageLine {
+            total: containers.len() as i64,
+            active: containers.iter().filter(running).count() as i64,
+            size: containers.iter().map(writable).sum(),
+            reclaimable: containers
+                .iter()
+                .filter(|c| !running(c))
+                .map(writable)
+                .sum(),
+        },
+        volumes: UsageLine {
+            total: volumes.len() as i64,
+            ..Default::default()
+        },
+        build_cache: UsageLine::default(),
+        partial: true,
     })
 }
 
@@ -168,6 +264,47 @@ mod tests {
         assert!(info.cpus > 0 && info.memory > 0);
         assert!(!info.server_version.is_empty());
         let usage = disk_usage(&docker).await.unwrap();
-        assert!(usage.images.total >= 1 && usage.images.size > 0);
+        assert!(
+            usage.images.total >= 1 && usage.images.size > 0,
+            "{usage:?}"
+        );
+        // What an Engine older than API 1.52 gives.
+        let lists = disk_usage_from_lists(&docker).await.unwrap();
+        assert!(lists.partial);
+        assert!(
+            lists.images.total >= 1 && lists.images.size > 0,
+            "{lists:?}"
+        );
+    }
+
+    #[test]
+    fn image_sizes_count_shared_layers_once() {
+        let images = [
+            ImageSize {
+                size: 100,
+                shared: 60,
+                in_use: true,
+            },
+            ImageSize {
+                size: 80,
+                shared: 60,
+                in_use: false,
+            },
+            ImageSize {
+                size: 10,
+                shared: -1,
+                in_use: false,
+            },
+        ];
+        assert_eq!(
+            image_line(&images),
+            UsageLine {
+                total: 3,
+                active: 1,
+                size: 40 + 20 + 10 + 60,
+                reclaimable: 30,
+            }
+        );
+        assert_eq!(image_line(&[]), UsageLine::default());
     }
 }
