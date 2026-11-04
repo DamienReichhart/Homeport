@@ -5,6 +5,7 @@ import { commands, type Image } from '@/shared/api';
 import { formatBytes } from '@/shared/lib';
 import { toastError } from '@/shared/ui';
 import { imageName } from '../model/imageName';
+import { t } from '@/shared/i18n';
 
 function useRefreshImages(hostId: string) {
   const client = useQueryClient();
@@ -29,7 +30,7 @@ export function useRemoveImage(hostId: string) {
   const refresh = useRefreshImages(hostId);
   return useMutation({
     mutationFn: (image: Image) => commands.imagesRemove(hostId, image.id, image.tags.length > 1),
-    onSuccess: (_, image) => toast.success(`Removed ${imageName(image)}`),
+    onSuccess: (_, image) => toast.success(t('images.removed', { name: imageName(image) })),
     onError: (e) => toastError(e),
     onSettled: () => refresh(),
   });
@@ -42,7 +43,10 @@ export function usePruneImages(hostId: string) {
     mutationFn: (all: boolean) => commands.imagesPrune(hostId, all),
     onSuccess: async (result) => {
       toast.success(
-        `Removed ${result.removed.length} images, ${formatBytes(result.spaceReclaimed)} reclaimed`,
+        t('images.pruned', {
+          count: result.removed.length,
+          space: formatBytes(result.spaceReclaimed),
+        }),
       );
       await refresh();
     },

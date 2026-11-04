@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui';
 import { imageName } from '../model/imageName';
+import { t } from '@/shared/i18n';
 
 /** The images table's columns; the last one holds the row's actions. */
 export function imageColumns({
@@ -43,7 +44,7 @@ export function imageColumns({
   return [
     {
       id: 'name',
-      header: 'Name',
+      header: t('images.column.name'),
       accessorFn: (i) => i.tags.join(' ') || '<none>',
       cell: ({ row }) => (
         <div className="min-w-0">
@@ -55,7 +56,7 @@ export function imageColumns({
           </p>
           {row.original.tags.length > 1 && (
             <p className="text-muted-foreground text-xs">
-              +{row.original.tags.length - 1} more tags
+              {t('images.moreTags', { count: row.original.tags.length - 1 })}
             </p>
           )}
         </div>
@@ -63,31 +64,31 @@ export function imageColumns({
     },
     {
       id: 'id',
-      header: 'ID',
+      header: t('images.column.id'),
       accessorFn: (i) => i.id,
       cell: ({ row }) => <span className="font-mono text-xs">{shortId(row.original.id)}</span>,
     },
     {
       id: 'created',
-      header: 'Created',
+      header: t('images.column.created'),
       accessorFn: (i) => i.created,
       cell: ({ row }) => formatRelative(row.original.created),
     },
     {
       id: 'size',
-      header: 'Size',
+      header: t('images.column.size'),
       accessorFn: (i) => i.size,
       cell: ({ row }) => formatBytes(row.original.size),
     },
     {
       id: 'usage',
-      header: 'Status',
+      header: t('images.column.status'),
       accessorFn: (i) => i.containers,
       cell: ({ row }) =>
         row.original.containers > 0 ? (
-          <Badge>In use · {row.original.containers}</Badge>
+          <Badge>{t('images.inUse', { count: row.original.containers })}</Badge>
         ) : (
-          <Badge variant="outline">Unused</Badge>
+          <Badge variant="outline">{t('images.unused')}</Badge>
         ),
     },
     {
@@ -99,33 +100,33 @@ export function imageColumns({
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label={`Run ${imageName(row.original)}`}
+            aria-label={t('images.runOne', { name: imageName(row.original) })}
             onClick={() => onRun(row.original)}
           >
             <PlayIcon />
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon-sm" aria-label="More actions">
+              <Button variant="ghost" size="icon-sm" aria-label={t('common.moreActions')}>
                 <EllipsisVerticalIcon />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onSelect={() => onInspect(row.original)}>
-                <InfoIcon /> Inspect
+                <InfoIcon /> {t('images.action.inspect')}
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => onTag(row.original)}>
-                <TagIcon /> Tag
+                <TagIcon /> {t('images.action.tag')}
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => onPush(row.original)}>
-                <UploadIcon /> Push
+                <UploadIcon /> {t('images.action.push')}
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => onSave(row.original)}>
-                <SaveIcon /> Save…
+                <SaveIcon /> {t('images.action.save')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive" onSelect={() => onRemove(row.original)}>
-                <Trash2Icon /> Remove
+                <Trash2Icon /> {t('common.remove')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -5,6 +5,7 @@ import { hubTagsQuery } from '@/features/registries';
 import { useDebounced } from '@/shared/hooks';
 import { formatBytes, formatRelative } from '@/shared/lib';
 import { Button, ErrorMessage, SearchInput, Spinner } from '@/shared/ui';
+import { t } from '@/shared/i18n';
 
 /** A Docker Hub repository's tags, newest first, to pick one to pull. */
 export function HubTags({
@@ -25,33 +26,38 @@ export function HubTags({
     <div className="grid gap-2">
       <div className="flex items-center gap-2">
         <Button type="button" variant="ghost" size="sm" onClick={onBack}>
-          <ArrowLeftIcon /> Search
+          <ArrowLeftIcon /> {t('images.hub.backToSearch')}
         </Button>
         <span className="text-sm font-medium">{repository}</span>
         {tags.data && (
-          <span className="text-muted-foreground text-xs">{tags.data.pages[0]?.count} tags</span>
+          <span className="text-muted-foreground text-xs">
+            {t('images.hub.tagCount', { count: tags.data.pages[0]?.count ?? 0 })}
+          </span>
         )}
       </div>
-      <SearchInput value={filter} onChange={setFilter} placeholder="Filter tags" />
+      <SearchInput value={filter} onChange={setFilter} placeholder={t('images.hub.filterTags')} />
       {tags.isPending && <Spinner />}
       {tags.error && <ErrorMessage error={tags.error} onRetry={() => void tags.refetch()} />}
       {list.length > 0 && (
-        <ul className="divide-border grid max-h-64 divide-y overflow-y-auto" aria-label="Tags">
-          {list.map((t) => (
-            <li key={t.name}>
+        <ul
+          className="divide-border grid max-h-64 divide-y overflow-y-auto"
+          aria-label={t('images.hub.tags')}
+        >
+          {list.map((tag) => (
+            <li key={tag.name}>
               <button
                 type="button"
                 className="hover:bg-muted flex w-full items-center gap-3 px-2 py-1.5 text-left"
-                aria-label={t.name}
-                onClick={() => onChoose(t.name)}
+                aria-label={tag.name}
+                onClick={() => onChoose(tag.name)}
               >
-                <span className="min-w-0 flex-1 truncate font-mono text-xs">{t.name}</span>
-                {t.size !== null && (
-                  <span className="text-muted-foreground text-xs">{formatBytes(t.size)}</span>
+                <span className="min-w-0 flex-1 truncate font-mono text-xs">{tag.name}</span>
+                {tag.size !== null && (
+                  <span className="text-muted-foreground text-xs">{formatBytes(tag.size)}</span>
                 )}
-                {t.lastPushed && (
+                {tag.lastPushed && (
                   <span className="text-muted-foreground w-24 text-right text-xs">
-                    {formatRelative(Date.parse(t.lastPushed) / 1000)}
+                    {formatRelative(Date.parse(tag.lastPushed) / 1000)}
                   </span>
                 )}
               </button>
@@ -60,7 +66,9 @@ export function HubTags({
         </ul>
       )}
       {tags.data && list.length === 0 && (
-        <p className="text-muted-foreground text-xs">No tag matches “{debounced}”.</p>
+        <p className="text-muted-foreground text-xs">
+          {t('images.hub.noTagMatch', { filter: debounced })}
+        </p>
       )}
       {tags.hasNextPage && (
         <Button
@@ -71,7 +79,7 @@ export function HubTags({
           disabled={tags.isFetchingNextPage}
           onClick={() => void tags.fetchNextPage()}
         >
-          {tags.isFetchingNextPage ? 'Loading…' : 'More tags'}
+          {tags.isFetchingNextPage ? t('common.loading') : t('images.hub.moreTags')}
         </Button>
       )}
     </div>

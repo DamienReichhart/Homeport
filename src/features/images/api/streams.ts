@@ -11,6 +11,7 @@ import {
   type PullEvent,
   type TransferEvent,
 } from '@/shared/api';
+import { t } from '@/shared/i18n';
 
 /**
  * Pulls images onto a Host and streams their progress. A finished pull is
@@ -26,7 +27,7 @@ export function usePullImage(hostId: string) {
         (event) => {
           onEvent(event);
           if (event.type === 'done') {
-            toast.success(`Pulled ${reference}`);
+            toast.success(t('images.pulled', { reference }));
             void client.invalidateQueries({ queryKey: hostKeys.images(hostId) });
           }
         },
@@ -47,7 +48,7 @@ export function usePushImage(hostId: string) {
         (ch) => commands.imagesPushSubscribe(hostId, reference, ch),
         (event) => {
           onEvent(event);
-          if (event.type === 'done') toast.success(`Pushed ${reference}`);
+          if (event.type === 'done') toast.success(t('images.pushed', { reference }));
         },
         onError,
       ),
@@ -68,7 +69,9 @@ export function useBuildImage(hostId: string) {
         (event) => {
           onEvent(event);
           if (event.type === 'done') {
-            toast.success(event.tags.length ? `Built ${event.tags[0]}` : 'Built the image');
+            toast.success(
+              event.tags[0] ? t('images.built', { name: event.tags[0] }) : t('images.builtUnnamed'),
+            );
             void client.invalidateQueries({ queryKey: hostKeys.images(hostId) });
           }
         },
@@ -91,7 +94,7 @@ export function useSaveImages(hostId: string) {
         (ch) => commands.imagesSaveSubscribe(hostId, names, destination, ch),
         (event) => {
           onEvent(event);
-          if (event.type === 'done') toast.success(`Saved ${destination}`);
+          if (event.type === 'done') toast.success(t('images.saved', { path: destination }));
         },
         onError,
       ),
@@ -111,8 +114,8 @@ export function useLoadImages(hostId: string) {
           if (event.type === 'done') {
             toast.success(
               event.images.length === 1
-                ? `Loaded ${event.images[0]}`
-                : `Loaded ${event.images.length} images`,
+                ? t('images.loadedOne', { name: event.images[0] })
+                : t('images.loaded', { count: event.images.length }),
             );
             void client.invalidateQueries({ queryKey: hostKeys.images(hostId) });
           }
@@ -139,7 +142,7 @@ export function useImportImage(hostId: string) {
         (event) => {
           onEvent(event);
           if (event.type === 'done') {
-            toast.success(`Imported ${event.images[0] ?? reference}`);
+            toast.success(t('images.imported', { name: event.images[0] ?? reference }));
             void client.invalidateQueries({ queryKey: hostKeys.images(hostId) });
           }
         },

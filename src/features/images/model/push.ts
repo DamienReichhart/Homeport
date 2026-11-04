@@ -1,4 +1,5 @@
 import { toAppError, type AppError, type PullEvent } from '@/shared/api';
+import { t } from '@/shared/i18n';
 
 /**
  * A push as the dialog shows it. The Engine API client drops the layer each
@@ -60,8 +61,7 @@ export function reducePush(state: PushState, event: PullEvent): PushState {
 
 /** "3 layers pushed, 2 already in the registry". */
 export function describePush(state: PushState): string {
-  const plural = (n: number) => (n === 1 ? 'layer' : 'layers');
-  const parts = [`${state.pushed} ${plural(state.pushed)} pushed`];
-  if (state.existing > 0) parts.push(`${state.existing} already in the registry`);
-  return parts.join(', ');
+  return state.existing > 0
+    ? t('images.push.pushedAndExisting', { pushed: state.pushed, existing: state.existing })
+    : t('images.push.pushed', { pushed: state.pushed });
 }

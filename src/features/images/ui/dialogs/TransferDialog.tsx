@@ -1,5 +1,6 @@
 import { TransferDialog as Progress } from '@/shared/ui';
 import { useImportImage, useLoadImages, useSaveImages } from '../../api/streams';
+import { t } from '@/shared/i18n';
 
 /** A save of `names` to `path`, a load from `path`, or an import of the root filesystem at `path`. */
 export type Transfer =
@@ -24,9 +25,13 @@ export function TransferDialog({
     case 'save':
       return (
         <Progress
-          title={`Saving ${transfer.names.length === 1 ? transfer.names[0] : `${transfer.names.length} images`}`}
-          description={`To ${transfer.path}`}
-          counted="Written"
+          title={
+            transfer.names.length === 1
+              ? t('images.transfer.savingOne', { name: transfer.names[0] })
+              : t('images.transfer.saving', { count: transfer.names.length })
+          }
+          description={t('images.transfer.to', { path: transfer.path })}
+          counted={t('images.transfer.written')}
           start={(onEvent, onError) => save(transfer.names, transfer.path, onEvent, onError)}
           onClose={onClose}
         />
@@ -34,24 +39,28 @@ export function TransferDialog({
     case 'load':
       return (
         <Progress
-          title="Loading images"
-          description={`From ${transfer.path}`}
-          counted="Sent"
+          title={t('images.transfer.loading')}
+          description={t('images.transfer.from', { path: transfer.path })}
+          counted={t('images.transfer.sent')}
           start={(onEvent, onError) => load(transfer.path, onEvent, onError)}
-          done={(s) => (s.images.length > 0 ? `Done: ${s.images.join(', ')}` : 'Done.')}
+          done={(s) =>
+            s.images.length > 0
+              ? t('images.transfer.doneWith', { images: s.images.join(', ') })
+              : t('images.done')
+          }
           onClose={onClose}
         />
       );
     case 'import':
       return (
         <Progress
-          title={`Importing ${transfer.reference}`}
-          description={`From ${transfer.path}`}
-          counted="Sent"
+          title={t('images.transfer.importing', { reference: transfer.reference })}
+          description={t('images.transfer.from', { path: transfer.path })}
+          counted={t('images.transfer.sent')}
           start={(onEvent, onError) =>
             importImage(transfer.path, transfer.reference, transfer.changes, onEvent, onError)
           }
-          done={(s) => `Done: ${s.images.join(', ')}`}
+          done={(s) => t('images.transfer.doneWith', { images: s.images.join(', ') })}
           onClose={onClose}
         />
       );

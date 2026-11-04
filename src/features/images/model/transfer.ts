@@ -1,4 +1,5 @@
 import type { Image } from '@/shared/api';
+import { t } from '@/shared/i18n';
 
 /** The names `docker save` should write for a selection: tags, or IDs for untagged images. */
 export const saveNames = (images: Image[]) =>
@@ -13,13 +14,15 @@ export function archiveName(images: Image[]): string {
 }
 
 /** Archive files the Engine loads: plain and compressed tars. */
-export const LOAD_FILTERS = [{ name: 'Image archives', extensions: ['tar', 'gz', 'tgz'] }];
+export const loadFilters = () => [
+  { name: t('images.files.imageArchives'), extensions: ['tar', 'gz', 'tgz'] },
+];
 /** What `docker save` writes. */
-export const SAVE_FILTERS = [{ name: 'Image archive', extensions: ['tar'] }];
+export const saveFilters = () => [{ name: t('images.files.imageArchive'), extensions: ['tar'] }];
 
 /** Tars `docker import` reads: plain and compressed. */
-export const IMPORT_FILTERS = [
-  { name: 'Filesystem archives', extensions: ['tar', 'gz', 'tgz', 'xz', 'bz2'] },
+export const importFilters = () => [
+  { name: t('images.files.filesystemArchives'), extensions: ['tar', 'gz', 'tgz', 'xz', 'bz2'] },
 ];
 
 /** `debian-rootfs:latest` for `/home/me/Debian RootFS.tar.gz`. */

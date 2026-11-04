@@ -39,6 +39,7 @@ import { PushDialog } from './dialogs/PushDialog';
 import { TagDialog } from './dialogs/TagDialog';
 import { TransferDialog, type Transfer } from './dialogs/TransferDialog';
 import { imageColumns } from './imageColumns';
+import { t } from '@/shared/i18n';
 
 function ImagesList({ hostId }: { hostId: string }) {
   const images = useQuery(resourceQueries.images(hostId));
@@ -83,53 +84,55 @@ function ImagesList({ hostId }: { hostId: string }) {
   return (
     <div>
       <PageHeader
-        title="Images"
-        description={`${images.data.length} images · ${formatBytes(total)}`}
+        title={t('images.title')}
+        description={t('images.summary', { count: images.data.length, size: formatBytes(total) })}
         actions={
           <>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
-                  <BrushCleaningIcon /> Clean up
+                  <BrushCleaningIcon /> {t('images.cleanUp')}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onSelect={() => prune(false)}>Dangling images</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => prune(false)}>
+                  {t('images.cleanUp.dangling')}
+                </DropdownMenuItem>
                 <DropdownMenuItem variant="destructive" onSelect={() => prune(true)}>
-                  All unused images
+                  {t('images.cleanUp.all')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             {selected.length > 0 && (
               <Button variant="outline" onClick={() => void saveImages(selected)}>
-                <SaveIcon /> Save {selected.length === 1 ? 'image' : `${selected.length} images`}…
+                <SaveIcon /> {t('images.saveSelected', { count: selected.length })}
               </Button>
             )}
             <CheckNewerImages hostId={hostId} />
             <Button variant="outline" onClick={() => void loadImages()}>
-              <FileUpIcon /> Load…
+              <FileUpIcon /> {t('images.load')}
             </Button>
             <Button variant="outline" onClick={() => void importFilesystem()}>
-              <FileArchiveIcon /> Import from tar…
+              <FileArchiveIcon /> {t('images.importTar')}
             </Button>
             <Button variant="outline" onClick={() => setBuilding(true)}>
-              <HammerIcon /> Build
+              <HammerIcon /> {t('images.build')}
             </Button>
             <Button onClick={() => setPulling(true)}>
-              <DownloadIcon /> Pull image
+              <DownloadIcon /> {t('images.pull')}
             </Button>
           </>
         }
       />
       <div className="mb-3">
-        <SearchInput value={query} onChange={setQuery} placeholder="Search images" />
+        <SearchInput value={query} onChange={setQuery} placeholder={t('images.search')} />
       </div>
       {images.data.length === 0 ? (
         <EmptyState
           icon={LayersIcon}
-          title="No images"
-          description="Pull one from a registry to get started."
-          action={<Button onClick={() => setPulling(true)}>Pull image</Button>}
+          title={t('images.empty.title')}
+          description={t('images.empty.description')}
+          action={<Button onClick={() => setPulling(true)}>{t('images.pull')}</Button>}
         />
       ) : (
         <DataTable

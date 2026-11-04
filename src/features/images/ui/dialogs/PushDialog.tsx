@@ -19,6 +19,7 @@ import { useTagImage } from '../../api/mutations';
 import { usePushImage } from '../../api/streams';
 import { imageName } from '../../model/imageName';
 import { describePush, initialPush, reducePush, type PushState } from '../../model/push';
+import { t } from '@/shared/i18n';
 
 /**
  * Pushes an image to a registry under one of its names, or under a new one
@@ -69,11 +70,8 @@ export function PushDialog({
     <Dialog open onOpenChange={(open) => !open && close()}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Push {imageName(image)}</DialogTitle>
-          <DialogDescription>
-            To the registry its name starts with, e.g. ghcr.io/org/app:v2, or Docker Hub for names
-            like org/app:v2.
-          </DialogDescription>
+          <DialogTitle>{t('images.pushDialog.title', { name: imageName(image) })}</DialogTitle>
+          <DialogDescription>{t('images.pushDialog.description')}</DialogDescription>
         </DialogHeader>
         <form
           className="grid gap-3"
@@ -83,7 +81,7 @@ export function PushDialog({
           }}
         >
           <div className="grid gap-1.5">
-            <Label htmlFor="push-target">Name to push</Label>
+            <Label htmlFor="push-target">{t('images.pushDialog.target')}</Label>
             <div className="flex gap-2">
               <Input
                 id="push-target"
@@ -96,20 +94,18 @@ export function PushDialog({
                 spellCheck={false}
               />
               <datalist id="push-names">
-                {image.tags.map((t) => (
-                  <option key={t} value={t} />
+                {image.tags.map((existing) => (
+                  <option key={existing} value={existing} />
                 ))}
               </datalist>
               <Button type="submit" disabled={busy || !name}>
-                Push
+                {t('images.pushDialog.push')}
               </Button>
             </div>
             {isNew && (
-              <p className="text-muted-foreground text-xs">
-                The image is given this name first, as Tag does.
-              </p>
+              <p className="text-muted-foreground text-xs">{t('images.pushDialog.tagsFirst')}</p>
             )}
-            <RegistryLogin reference={name} verb="Pushed" />
+            <RegistryLogin reference={name} verb="push" />
           </div>
           {!pushing && <MissingLogin reference={name} />}
         </form>
@@ -125,18 +121,21 @@ export function PushDialog({
             {state.total ? (
               <div className="grid gap-1">
                 <span className="text-muted-foreground font-mono text-xs">
-                  Uploading {formatBytes(state.current ?? 0)} / {formatBytes(state.total)}
+                  {t('images.pushDialog.uploading', {
+                    current: formatBytes(state.current ?? 0),
+                    total: formatBytes(state.total),
+                  })}
                 </span>
                 <Progress value={((state.current ?? 0) / state.total) * 100} />
               </div>
             ) : null}
             {state.error && <ErrorMessage error={state.error} />}
-            {state.done && <p className="text-success text-sm">Done.</p>}
+            {state.done && <p className="text-success text-sm">{t('images.done')}</p>}
           </div>
         )}
         <DialogFooter>
           <Button variant="ghost" onClick={close}>
-            {busy ? 'Cancel' : 'Close'}
+            {busy ? t('common.cancel') : t('common.close')}
           </Button>
         </DialogFooter>
       </DialogContent>

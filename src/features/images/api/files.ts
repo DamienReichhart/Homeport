@@ -1,12 +1,13 @@
 import { pickFile, pickSavePath } from '@/shared/lib';
-import { IMPORT_FILTERS, LOAD_FILTERS, SAVE_FILTERS } from '../model/transfer';
+import { importFilters, loadFilters, saveFilters } from '../model/transfer';
+import { t } from '@/shared/i18n';
 
 /** Asks where to save an image archive; `null` when cancelled. */
 export const chooseArchiveToSave = (defaultName: string) =>
-  pickSavePath('Save images as', defaultName, SAVE_FILTERS);
+  pickSavePath(t('images.files.save'), defaultName, saveFilters());
 
 /** Asks for an image archive to load; `null` when cancelled. */
-export const chooseArchiveToLoad = () => pickFile('Load images from', LOAD_FILTERS);
+export const chooseArchiveToLoad = () => pickFile(t('images.files.load'), loadFilters());
 
 /** Asks for a root filesystem tar to import; `null` when cancelled. */
-export const chooseFilesystemToImport = () => pickFile('Import a filesystem from', IMPORT_FILTERS);
+export const chooseFilesystemToImport = () => pickFile(t('images.files.import'), importFilters());

@@ -12,6 +12,7 @@ import {
   Textarea,
 } from '@/shared/ui';
 import { importName } from '../../model/transfer';
+import { t } from '@/shared/i18n';
 
 /** Names the image a root filesystem tar becomes, before importing it. */
 export function ImportDialog({
@@ -29,10 +30,9 @@ export function ImportDialog({
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Import a filesystem as an image</DialogTitle>
+          <DialogTitle>{t('images.importDialog.title')}</DialogTitle>
           <DialogDescription className="break-all">
-            {path} becomes a one-layer image with no history or settings of its own; give it a
-            command below to make it runnable.
+            {t('images.importDialog.description', { path })}
           </DialogDescription>
         </DialogHeader>
         <form
@@ -49,7 +49,7 @@ export function ImportDialog({
           }}
         >
           <div className="grid gap-1.5">
-            <Label htmlFor="import-name">Image name</Label>
+            <Label htmlFor="import-name">{t('images.importDialog.name')}</Label>
             <Input
               id="import-name"
               value={reference}
@@ -59,26 +59,24 @@ export function ImportDialog({
             />
           </div>
           <div className="grid gap-1.5">
-            <Label htmlFor="import-changes">Changes</Label>
+            <Label htmlFor="import-changes">{t('images.importDialog.changes')}</Label>
             <Textarea
               id="import-changes"
               value={changes}
               onChange={(e) => setChanges(e.target.value)}
+              // eslint-disable-next-line homeport/no-literal-ui-string -- Dockerfile instructions
               placeholder={'CMD ["/bin/sh"]\nENV LANG=C.UTF-8'}
               className="h-20 font-mono text-xs"
               spellCheck={false}
             />
-            <p className="text-muted-foreground text-xs">
-              Dockerfile instructions, one per line: CMD, ENTRYPOINT, ENV, EXPOSE, LABEL, ONBUILD,
-              USER, VOLUME or WORKDIR.
-            </p>
+            <p className="text-muted-foreground text-xs">{t('images.importDialog.changesHint')}</p>
           </div>
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={onClose}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={!reference.trim()}>
-              Import
+              {t('images.importDialog.import')}
             </Button>
           </DialogFooter>
         </form>
