@@ -108,6 +108,7 @@ export { PageHeader } from './layout/PageHeader';
 
 // feedback
 export { ConfirmDialog, useConfirm, type ConfirmOptions } from './feedback/ConfirmDialog';
+export { useConfirmedAction, type ConfirmedAction } from './feedback/useConfirmedAction';
 export { EmptyState } from './feedback/EmptyState';
 export { ErrorDetailsHost, showErrorDetails } from './feedback/ErrorDetails';
 export { ErrorMessage } from './feedback/ErrorMessage';
