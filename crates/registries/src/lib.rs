@@ -6,6 +6,8 @@
 //! - [`login`] checks a login from this machine, as `docker login` does.
 
 pub mod address;
+mod http;
+pub mod login;
 pub mod store;
 
 pub use self::address::{normalise, registry_of, DOCKER_HUB};

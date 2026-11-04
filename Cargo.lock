@@ -2212,10 +2212,13 @@ dependencies = [
  "homeport-core",
  "homeport-storage",
  "log",
+ "reqwest",
  "rusqlite",
+ "rustls",
  "serde",
  "serde_json",
  "specta",
+ "tokio",
  "uuid",
 ]
 
@@ -4205,6 +4208,7 @@ dependencies = [
  "rustls-platform-verifier",
  "serde",
  "serde_json",
+ "serde_urlencoded",
  "sync_wrapper",
  "tokio",
  "tokio-rustls",

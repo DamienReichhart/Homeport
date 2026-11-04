@@ -4,7 +4,7 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
-description = "Homeport's registry credentials: storing them sealed and matching them to image references"
+description = "Homeport's registry credentials: storing them sealed, matching them to image references, checking a login and reading Docker Hub"
 publish = false
 
 [lints]
@@ -19,4 +19,8 @@ specta.workspace = true
 rusqlite.workspace = true
 uuid.workspace = true
 log.workspace = true
+reqwest.workspace = true
+rustls.workspace = true
 
+[dev-dependencies]
+tokio.workspace = true
