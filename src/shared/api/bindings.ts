@@ -277,6 +277,16 @@ export type DetectedEngine = {
 	engineVersion: string,
 };
 
+/**  A device of the Host made available inside the container (`--device`). */
+export type DeviceSpec = {
+	/**  An absolute path under the Host's `/dev`. */
+	hostPath: string,
+	/**  Where it appears in the container; the same path when empty. */
+	containerPath: string | null,
+	/**  Some of `r`, `w` and `m`. */
+	permissions: string,
+};
+
 export type DiskUsage = {
 	images: UsageLine,
 	containers: UsageLine,
@@ -326,7 +336,11 @@ export type EngineInfo = {
 /**  Stable machine-readable identifier of a failure, one per case the user can act on. */
 export type ErrorCode = 
 /**  A failure that started in the frontend, outside any command. */
-"unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | "host_not_connected" | "engine_not_installed" | "engine_not_running" | "permission_denied" | "dns_failed" | "connection_refused" | "timeout" | "network_unreachable" | "connection_lost" | "tls_required" | "tls_not_supported" | "tls_certificate_expired" | "tls_certificate_not_yet_valid" | "tls_unknown_ca" | "tls_name_mismatch" | "tls_client_rejected" | "tls_handshake_failed" | "tls_material_invalid" | "ssh_auth_failed" | "ssh_agent_unavailable" | "ssh_key_invalid" | "ssh_failed" | "remote_engine_unavailable" | "host_key_untrusted" | "host_key_changed" | "engine_error" | "bad_request" | "forbidden" | "conflict" | "name_in_use" | "in_use" | "container_running" | "container_not_running" | "already_done" | "port_in_use" | "disk_full" | "image_not_found" | "registry_auth_required" | "registry_rate_limited" | "registry_unreachable" | "registry_login_failed" | "api_version_unsupported" | "build_failed" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
+"unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | "host_not_connected" | "engine_not_installed" | "engine_not_running" | "permission_denied" | "dns_failed" | "connection_refused" | "timeout" | "network_unreachable" | "connection_lost" | "tls_required" | "tls_not_supported" | "tls_certificate_expired" | "tls_certificate_not_yet_valid" | "tls_unknown_ca" | "tls_name_mismatch" | "tls_client_rejected" | "tls_handshake_failed" | "tls_material_invalid" | "ssh_auth_failed" | "ssh_agent_unavailable" | "ssh_key_invalid" | "ssh_failed" | "remote_engine_unavailable" | "host_key_untrusted" | "host_key_changed" | "engine_error" | "bad_request" | "forbidden" | "conflict" | "name_in_use" | "in_use" | "container_running" | "container_not_running" | "already_done" | "port_in_use" | "disk_full" | "image_not_found" | "registry_auth_required" | "registry_rate_limited" | "registry_unreachable" | "registry_login_failed" | "api_version_unsupported" | "build_failed" | 
+/**  A GPU was requested from a Host without the vendor's container toolkit. */
+"gpu_unavailable" | 
+/**  Recreating a container failed, and so did putting the original back. */
+"recreate_rolled_back" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
 
 export type ExecEvent = { type: "output"; data: string } | 
 /**  `error` explains an exit that means the command couldn't run. */
@@ -364,6 +378,21 @@ export type FreshnessResult = {
 	reference: string,
 	imageId: string,
 	freshness: Freshness,
+};
+
+/**  GPUs requested from the vendor's container toolkit (`--gpus`). */
+export type GpuSpec = { kind: "all" } | { kind: "count"; count: number } | { kind: "ids"; ids: string[] };
+
+/**  A healthcheck run in the container's shell (`--health-cmd` and friends). */
+export type HealthcheckSpec = {
+	/**  Run with `/bin/sh -c`; ignored when `disabled`. */
+	command: string,
+	intervalS: number | null,
+	timeoutS: number | null,
+	retries: number | null,
+	startPeriodS: number | null,
+	/**  Turns off the image's own healthcheck (`--no-healthcheck`). */
+	disabled: boolean,
 };
 
 /**  What the user can do about a failure. */
@@ -488,6 +517,13 @@ export type LogSource = {
 	containerId: string,
 	/**  Shown in front of each line when several sources share a stream. */
 	label: string | null,
+};
+
+/**  Where the container's output goes (`--log-driver`, `--log-opt`). */
+export type LogSpec = {
+	driver: string,
+	/**  `key=value` driver options, such as `max-size=10m`. */
+	options: string[],
 };
 
 export type ManagedStack = {
@@ -615,6 +651,34 @@ export type RunSpec = {
 	restart: RestartPolicy,
 	/**  Remove the container when it exits (`--rm`). */
 	autoRemove: boolean,
+	/**  CPUs the container may use, such as `0.5` (`--cpus`). */
+	cpus: number | null,
+	/**  Relative CPU weight against other containers; 1024 is the default (`--cpu-shares`). */
+	cpuShares: number | null,
+	/**  Memory limit in bytes (`--memory`). */
+	memory: number | null,
+	/**  Soft memory limit in bytes (`--memory-reservation`). */
+	memoryReservation: number | null,
+	/**  Memory plus swap in bytes, `-1` for unlimited swap (`--memory-swap`). */
+	memorySwap: number | null,
+	/**  `key=value` entries. */
+	labels: string[],
+	/**  Capabilities, with or without their `CAP_` prefix, or `ALL`. */
+	capAdd: string[],
+	capDrop: string[],
+	/**  Gives the container full access to the Host (`--privileged`). */
+	privileged: boolean,
+	devices: DeviceSpec[],
+	gpus: GpuSpec | null,
+	healthcheck: HealthcheckSpec | null,
+	hostname: string | null,
+	domainname: string | null,
+	/**  DNS server addresses. */
+	dns: string[],
+	dnsSearch: string[],
+	/**  `name:address` entries for `/etc/hosts`; `host-gateway` is the Host's address. */
+	extraHosts: string[],
+	log: LogSpec | null,
 };
 
 /**  A Docker Hub repository found by a search. */

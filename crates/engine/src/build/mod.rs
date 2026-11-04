@@ -396,12 +396,7 @@ mod tests {
                     "sh -c 'test ! -e /extra && grep -q hello /greeting && test -e /kept.txt && test ! -e /ignored.txt'"
                         .into(),
                 ),
-                env: vec![],
-                ports: vec![],
-                mounts: vec![],
-                network: None,
-                restart: crate::containers::run::RestartPolicy::No,
-                auto_remove: false,
+                ..Default::default()
             },
             None,
         )
