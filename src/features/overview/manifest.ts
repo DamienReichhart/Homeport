@@ -4,5 +4,5 @@ import { OverviewPage } from './ui/OverviewPage';
 
 export const overviewFeature = defineFeature({
   routes: [{ index: true, Component: OverviewPage }],
-  nav: { path: '/', label: 'Overview', icon: LayoutDashboardIcon },
+  nav: { path: '/', label: 'overview.nav', icon: LayoutDashboardIcon },
 });

@@ -4,5 +4,5 @@ import { ImagesPage } from './ui/ImagesPage';
 
 export const imagesFeature = defineFeature({
   routes: [{ path: 'images', Component: ImagesPage }],
-  nav: { path: '/images', label: 'Images', icon: LayersIcon },
+  nav: { path: '/images', label: 'images.nav', icon: LayersIcon },
 });

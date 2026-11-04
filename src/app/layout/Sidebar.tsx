@@ -3,11 +3,12 @@ import { HostSwitcher } from '@/features/hosts';
 import { cn } from '@/shared/lib';
 import { Logo } from '@/shared/ui';
 import { navEntries } from '../router/features';
+import { t } from '@/shared/i18n';
 
 export function Sidebar() {
   return (
     <nav
-      aria-label="Main"
+      aria-label={t('app.nav.main')}
       className="bg-sidebar text-sidebar-foreground border-sidebar-border flex w-56 shrink-0 flex-col gap-0.5 border-r p-3"
     >
       <Logo className="mb-3 px-1.5 pt-1" />
@@ -29,7 +30,7 @@ export function Sidebar() {
           }
         >
           <Icon className="text-muted-foreground group-aria-[current=page]:text-sidebar-primary size-4" />
-          {label}
+          {t(label)}
         </NavLink>
       ))}
     </nav>

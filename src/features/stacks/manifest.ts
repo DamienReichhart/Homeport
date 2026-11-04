@@ -10,5 +10,5 @@ export const stacksFeature = defineFeature({
     { path: 'stacks/new', Component: NewStackPage },
     { path: 'stacks/:name', Component: StackDetailPage },
   ],
-  nav: { path: '/stacks', label: 'Stacks', icon: BoxesIcon },
+  nav: { path: '/stacks', label: 'stacks.nav', icon: BoxesIcon },
 });
