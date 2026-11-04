@@ -11,9 +11,9 @@ const release = await getLatestRelease();
   <section class="card info prose">
     <h2>Before you install</h2>
     <p>
-      Homeport manages Docker Engines — it doesn't include one. Run it next to Docker Engine,
-      Docker Desktop, Colima, OrbStack, Rancher Desktop or Podman, or point it at a remote
-      server over SSH, TLS or TCP.
+      Homeport manages Docker Engines — it doesn't include one. Run it next to Docker Engine, Docker
+      Desktop, Colima, OrbStack, Rancher Desktop or Podman, or point it at a remote server over SSH,
+      TLS or TCP.
     </p>
     <ul>
       <li>
@@ -21,7 +21,10 @@ const release = await getLatestRelease();
         Service such as GNOME Keyring) to store SSH keys, TLS certificates and Stack environments.
       </li>
       <li>
-        <strong><code>docker compose</code></strong> on this machine to deploy Managed Stacks.
+        <strong>
+          <code>docker compose</code>
+        </strong>{' '}
+        on this machine to deploy Managed Stacks.
       </li>
     </ul>
     <p>
@@ -58,8 +61,8 @@ const release = await getLatestRelease();
       installs it when you choose. Every update is signed and checked before it's installed.
     </p>
     <p>
-      The <code>.deb</code> and <code>.rpm</code> packages update with the rest of your system,
-      from the Homeport package repository.
+      The <code>.deb</code> and <code>.rpm</code> packages update with the rest of your system, from
+      the Homeport package repository.
     </p>
     <p>
       <a href={href('/docs/reference/updating/')}>How updates work</a>
@@ -69,18 +72,16 @@ const release = await getLatestRelease();
   <section class="card info prose">
     <h2>Verify your download</h2>
     <p>
-      Every release is built by GitHub Actions from the public source, with a SHA-256 checksum
-      and a signed build provenance attestation for each file.
+      Every release is built by GitHub Actions from the public source, with a SHA-256 checksum and a
+      signed build provenance attestation for each file.
     </p>
     <pre class="code-block"><code>gh attestation verify &lt;file&gt; --repo {REPO}</code></pre>
     <p>
-      {
-        release?.checksumsUrl ? (
-          <a href={release.checksumsUrl}>SHA256SUMS.txt</a>
-        ) : (
-          <span>SHA256SUMS.txt</span>
-        )
-      }{' '}
+      {release?.checksumsUrl ? (
+        <a href={release.checksumsUrl}>SHA256SUMS.txt</a>
+      ) : (
+        <span>SHA256SUMS.txt</span>
+      )}{' '}
       · <a href={href('/docs/reference/verifying/')}>How to verify</a>
     </p>
   </section>

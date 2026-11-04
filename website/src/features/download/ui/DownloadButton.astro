@@ -46,9 +46,15 @@ const downloadPage = href('/download/');
     if (os === 'other') return;
 
     let note: string;
-    if (os === 'windows') note = arch === 'arm64' ? 'Windows on ARM installer' : 'Windows x64 installer';
+    if (os === 'windows')
+      note = arch === 'arm64' ? 'Windows on ARM installer' : 'Windows x64 installer';
     else if (os === 'macos')
-      note = arch === 'arm64' ? 'For Apple silicon Macs' : arch === 'x64' ? 'For Intel Macs' : 'Apple silicon and Intel';
+      note =
+        arch === 'arm64'
+          ? 'For Apple silicon Macs'
+          : arch === 'x64'
+            ? 'For Intel Macs'
+            : 'Apple silicon and Intel';
     else note = '.deb, .rpm and AppImage';
     document.querySelectorAll('[data-download-note]').forEach((el) => (el.textContent = note));
 
@@ -59,7 +65,11 @@ const downloadPage = href('/download/');
       // Go to the platform's section unless one file is clearly right.
       link.href = `${link.dataset.page}#${os}`;
       const direct =
-        os === 'windows' ? targets[`windows-${arch ?? 'x64'}`] : os === 'macos' && arch ? targets[`macos-${arch}`] : '';
+        os === 'windows'
+          ? targets[`windows-${arch ?? 'x64'}`]
+          : os === 'macos' && arch
+            ? targets[`macos-${arch}`]
+            : '';
       if (direct) link.href = direct;
     }
   }

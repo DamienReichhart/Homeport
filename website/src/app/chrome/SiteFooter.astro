@@ -40,28 +40,29 @@ const columns = [
   <div class="site-footer__inner">
     <div class="site-footer__brand">
       <img src={mark.src} alt="" width="36" height="36" />
-      <p><strong>Homeport</strong><br />{TAGLINE}</p>
+      <p>
+        <strong>Homeport</strong>
+        <br />
+        {TAGLINE}
+      </p>
     </div>
-    {
-      columns.map((column) => (
-        <div class="site-footer__column">
-          <h2>{column.title}</h2>
-          <ul>
-            {column.links.map((link) => (
-              <li>
-                <a href={link.url}>{link.label}</a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))
-    }
+    {columns.map((column) => (
+      <div class="site-footer__column">
+        <h2>{column.title}</h2>
+        <ul>
+          {column.links.map((link) => (
+            <li>
+              <a href={link.url}>{link.label}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
   </div>
   <div class="site-footer__legal">
     <p>
-      © {year} Damien Reichhart. Homeport is open source under the <a href={`${REPO_URL}/blob/main/LICENSE`}
-        >MIT licence</a
-      >.
+      © {year} Damien Reichhart. Homeport is open source under the{' '}
+      <a href={`${REPO_URL}/blob/main/LICENSE`}>MIT licence</a>.
     </p>
     <p>
       Docker is a trademark of Docker, Inc. Homeport is an independent project, not affiliated with

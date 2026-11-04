@@ -23,14 +23,12 @@ import { href } from '@/shared/lib/href';
   </div>
   <h3 class="more__later">Coming later</h3>
   <ul class="later">
-    {
-      COMING_LATER.map((channel) => (
-        <li>
-          <a href={`${ISSUES_URL}/${channel.issue}`}>{channel.name}</a>
-          <span>{channel.what}</span>
-        </li>
-      ))
-    }
+    {COMING_LATER.map((channel) => (
+      <li>
+        <a href={`${ISSUES_URL}/${channel.issue}`}>{channel.name}</a>
+        <span>{channel.what}</span>
+      </li>
+    ))}
   </ul>
 </section>
 

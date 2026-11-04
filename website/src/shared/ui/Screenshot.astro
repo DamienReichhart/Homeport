@@ -18,13 +18,7 @@ interface Props {
   crop?: string;
 }
 
-const {
-  name,
-  alt,
-  sizes = '(min-width: 72rem) 1100px, 100vw',
-  eager = false,
-  crop,
-} = Astro.props;
+const { name, alt, sizes = '(min-width: 72rem) 1100px, 100vw', eager = false, crop } = Astro.props;
 const cropStyle = crop
   ? `aspect-ratio: ${crop}; object-fit: cover; object-position: left top;`
   : undefined;
@@ -44,26 +38,26 @@ const variants: { image: ImageMetadata; theme: string }[] =
         { image: dark, theme: 'only-dark' },
         { image: light, theme: 'only-light' },
       ]
-    : [plain ?? dark ?? light].filter((i) => i !== undefined).map((image) => ({ image, theme: '' }));
+    : [plain ?? dark ?? light]
+        .filter((i) => i !== undefined)
+        .map((image) => ({ image, theme: '' }));
 
 if (variants.length === 0) console.warn(`[screenshot] missing src/assets/screenshots/${name}*.png`);
 ---
 
 <div class:list={['window', Astro.props.class]}>
-  {
-    variants.map(({ image, theme }) => (
-      <Picture
-        src={image}
-        alt={alt}
-        class={theme || undefined}
-        formats={['avif', 'webp']}
-        widths={[640, 960, 1440, 2160].filter((w) => w <= image.width)}
-        sizes={sizes}
-        loading={eager ? 'eager' : 'lazy'}
-        fetchpriority={eager ? 'high' : undefined}
-        decoding="async"
-        style={cropStyle}
-      />
-    ))
-  }
+  {variants.map(({ image, theme }) => (
+    <Picture
+      src={image}
+      alt={alt}
+      class={theme || undefined}
+      formats={['avif', 'webp']}
+      widths={[640, 960, 1440, 2160].filter((w) => w <= image.width)}
+      sizes={sizes}
+      loading={eager ? 'eager' : 'lazy'}
+      fetchpriority={eager ? 'high' : undefined}
+      decoding="async"
+      style={cropStyle}
+    />
+  ))}
 </div>

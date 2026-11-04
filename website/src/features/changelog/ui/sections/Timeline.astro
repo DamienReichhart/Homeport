@@ -7,19 +7,17 @@ import ReleaseEntry from '../ReleaseEntry.astro';
 const releases = await getReleases();
 ---
 
-{
-  releases.length === 0 ? (
-    <p class="empty">
-      The release history is on <a href={RELEASES_URL}>GitHub</a>.
-    </p>
-  ) : (
-    <ol class="timeline">
-      {releases.map((release, index) => (
-        <ReleaseEntry release={release} latest={index === 0} />
-      ))}
-    </ol>
-  )
-}
+{releases.length === 0 ? (
+  <p class="empty">
+    The release history is on <a href={RELEASES_URL}>GitHub</a>.
+  </p>
+) : (
+  <ol class="timeline">
+    {releases.map((release, index) => (
+      <ReleaseEntry release={release} latest={index === 0} />
+    ))}
+  </ol>
+)}
 
 <style>
   .empty {

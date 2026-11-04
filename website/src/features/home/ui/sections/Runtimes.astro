@@ -13,7 +13,11 @@ const runtimes = [
 <section class="runtimes" aria-label="Works with">
   <div class="container runtimes__inner">
     <p>Works with the engine you already run</p>
-    <ul>{runtimes.map((name) => <li>{name}</li>)}</ul>
+    <ul>
+      {runtimes.map((name) => (
+        <li>{name}</li>
+      ))}
+    </ul>
   </div>
 </section>
 

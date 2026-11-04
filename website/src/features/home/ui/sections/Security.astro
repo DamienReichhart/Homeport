@@ -9,25 +9,23 @@ import { Icon, TextLink } from '@/shared/ui';
     <div class="section-heading section-heading--center" data-reveal>
       <span class="eyebrow">Security</span>
       <h2>Your keys stay sealed</h2>
-      <p>
-        Homeport handles the credentials that open your servers, so it treats them that way.
-      </p>
+      <p>Homeport handles the credentials that open your servers, so it treats them that way.</p>
     </div>
     <div class="security-grid">
       <article class="card security" data-reveal>
         <Icon name="lock" />
         <h3>Encrypted at rest</h3>
         <p>
-          SSH keys, TLS certificates and Stack environments are sealed with XChaCha20-Poly1305.
-          The key lives in your OS keychain, not next to the data.
+          SSH keys, TLS certificates and Stack environments are sealed with XChaCha20-Poly1305. The
+          key lives in your OS keychain, not next to the data.
         </p>
       </article>
       <article class="card security" data-reveal>
         <Icon name="key" />
         <h3>Never on disk in clear</h3>
         <p>
-          Homeport speaks SSH itself, so decrypted keys stay in memory. No key files, no changes
-          to your <code>~/.ssh</code>.
+          Homeport speaks SSH itself, so decrypted keys stay in memory. No key files, no changes to
+          your <code>~/.ssh</code>.
         </p>
       </article>
       <article class="card security" data-reveal>

@@ -14,22 +14,20 @@ const containerTools: { icon: IconName; title: string; body: string }[] = [
 
 <Showcase eyebrow="Containers" title="Everything about a container, one click away" reverse>
   <p>
-    Open a container and its logs are already streaming. Switch tabs for an interactive
-    terminal, its files, live charts, processes and the full inspect document — on a Host
-    across the world as easily as on your laptop.
+    Open a container and its logs are already streaming. Switch tabs for an interactive terminal,
+    its files, live charts, processes and the full inspect document — on a Host across the world as
+    easily as on your laptop.
   </p>
   <ul class="tool-grid">
-    {
-      containerTools.map((tool) => (
-        <li>
-          <Icon name={tool.icon} />
-          <div>
-            <strong>{tool.title}</strong>
-            <span>{tool.body}</span>
-          </div>
-        </li>
-      ))
-    }
+    {containerTools.map((tool) => (
+      <li>
+        <Icon name={tool.icon} />
+        <div>
+          <strong>{tool.title}</strong>
+          <span>{tool.body}</span>
+        </div>
+      </li>
+    ))}
   </ul>
   <TextLink href={href('/docs/guides/containers/')}>Working with containers</TextLink>
   <Screenshot

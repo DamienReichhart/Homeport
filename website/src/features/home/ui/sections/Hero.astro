@@ -11,22 +11,22 @@ const release = await getLatestRelease();
 <section class="hero">
   <div class="hero__backdrop" aria-hidden="true"></div>
   <div class="container hero__inner">
-    {
-      release && (
-        <a class="pill" href={href('/changelog/')}>
-          <span class="pill__tag">New</span>
-          Homeport {release.version} is out
-          <Icon name="arrowRight" size={14} />
-        </a>
-      )
-    }
+    {release && (
+      <a class="pill" href={href('/changelog/')}>
+        <span class="pill__tag">New</span>
+        Homeport {release.version} is out
+        <Icon name="arrowRight" size={14} />
+      </a>
+    )}
     <h1>
-      Every Docker Engine,<br /><span>docked in one place.</span>
+      Every Docker Engine,
+      <br />
+      <span>docked in one place.</span>
     </h1>
     <p class="hero__lead">
-      Homeport is a desktop app for the Docker Engines you run — on this machine, or on servers
-      you reach over SSH, TLS or TCP. Containers, images, volumes, networks and Compose Stacks,
-      side by side, without a terminal open for every Host.
+      Homeport is a desktop app for the Docker Engines you run — on this machine, or on servers you
+      reach over SSH, TLS or TCP. Containers, images, volumes, networks and Compose Stacks, side by
+      side, without a terminal open for every Host.
     </p>
     <div class="hero__actions">
       <DownloadButton />
@@ -37,9 +37,15 @@ const release = await getLatestRelease();
     </div>
     <DownloadMeta />
     <p class="hero__facts">
-      <span><Icon name="check" size={16} /> Free and open source</span>
-      <span><Icon name="check" size={16} /> No account</span>
-      <span><Icon name="check" size={16} /> Windows, macOS and Linux</span>
+      <span>
+        <Icon name="check" size={16} /> Free and open source
+      </span>
+      <span>
+        <Icon name="check" size={16} /> No account
+      </span>
+      <span>
+        <Icon name="check" size={16} /> Windows, macOS and Linux
+      </span>
     </p>
   </div>
   <div class="container hero__shot" data-reveal>
@@ -68,7 +74,11 @@ const release = await getLatestRelease();
     z-index: -1;
     background:
       radial-gradient(60rem 30rem at 50% -8rem, var(--hp-glow), transparent 70%),
-      radial-gradient(30rem 20rem at 85% 10rem, color-mix(in srgb, var(--hp-beacon) 9%, transparent), transparent 70%);
+      radial-gradient(
+        30rem 20rem at 85% 10rem,
+        color-mix(in srgb, var(--hp-beacon) 9%, transparent),
+        transparent 70%
+      );
   }
   .hero__backdrop::after {
     content: '';

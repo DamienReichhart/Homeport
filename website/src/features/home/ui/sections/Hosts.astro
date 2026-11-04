@@ -30,20 +30,18 @@ const connections = [
 
 <Showcase eyebrow="Hosts" title="Remote engines without the ceremony" raised>
   <p>
-    Add a server once and it stays docked. For SSH, Homeport makes a key just for that Host
-    and hands you the one command that authorises it. It checks the server's fingerprint on
-    first contact, and warns you if it ever changes.
+    Add a server once and it stays docked. For SSH, Homeport makes a key just for that Host and
+    hands you the one command that authorises it. It checks the server's fingerprint on first
+    contact, and warns you if it ever changes.
   </p>
   <ul class="connection-list">
-    {
-      connections.map((c) => (
-        <li>
-          <strong>{c.name}</strong>
-          <span>{c.detail}</span>
-          <code>{c.code}</code>
-        </li>
-      ))
-    }
+    {connections.map((c) => (
+      <li>
+        <strong>{c.name}</strong>
+        <span>{c.detail}</span>
+        <code>{c.code}</code>
+      </li>
+    ))}
   </ul>
   <TextLink href={href('/docs/hosts/')}>How connections work</TextLink>
   <Screenshot

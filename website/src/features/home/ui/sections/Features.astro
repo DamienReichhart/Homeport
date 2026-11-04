@@ -47,17 +47,15 @@ const features: { icon: IconName; title: string; body: string }[] = [
       </p>
     </div>
     <div class="feature-grid">
-      {
-        features.map((feature) => (
-          <article class="card feature" data-reveal>
-            <span class="feature-icon">
-              <Icon name={feature.icon} />
-            </span>
-            <h3>{feature.title}</h3>
-            <p>{feature.body}</p>
-          </article>
-        ))
-      }
+      {features.map((feature) => (
+        <article class="card feature" data-reveal>
+          <span class="feature-icon">
+            <Icon name={feature.icon} />
+          </span>
+          <h3>{feature.title}</h3>
+          <p>{feature.body}</p>
+        </article>
+      ))}
     </div>
   </div>
 </section>

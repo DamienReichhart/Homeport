@@ -15,53 +15,53 @@ const { os, release } = Astro.props;
 const rows = formatsFor(release, os);
 ---
 
-{
-  rows.length > 0 ? (
-    <ul class="files">
-      {rows.map(({ format, files }) => (
-        <li data-format={format}>
-          <div class="files__info">
-            <strong>
-              {FORMATS[format].label} <code>{FORMATS[format].ext}</code>
-            </strong>
-            <span>
-              {FORMATS[format].hint} · {formatSize(files[0]!.size)}
-            </span>
-          </div>
-          <div class="files__buttons">
+{rows.length > 0 ? (
+  <ul class="files">
+    {rows.map(({ format, files }) => (
+      <li data-format={format}>
+        <div class="files__info">
+          <strong>
+            {FORMATS[format].label} <code>{FORMATS[format].ext}</code>
+          </strong>
+          <span>
+            {FORMATS[format].hint} · {formatSize(files[0]!.size)}
+          </span>
+        </div>
+        <div class="files__buttons">
+          {files.map((file) => (
+            <a
+              class="button button--secondary button--small"
+              href={file.url}
+              data-arch={file.arch}
+              title={file.name}
+            >
+              <Icon name="download" size={16} />
+              {archLabel(file.os, file.arch)}
+              <span class="visually-hidden">
+                {FORMATS[format].label} ({file.name})
+              </span>
+            </a>
+          ))}
+        </div>
+        {files.some((f) => f.sha256) && (
+          <details class="files__sum">
+            <summary>SHA-256 checksums</summary>
             {files.map((file) => (
-              <a
-                class="button button--secondary button--small"
-                href={file.url}
-                data-arch={file.arch}
-                title={file.name}
-              >
-                <Icon name="download" size={16} />
-                {archLabel(file.os, file.arch)}
-                <span class="visually-hidden">{FORMATS[format].label} ({file.name})</span>
-              </a>
+              <p>
+                <span>{archLabel(file.os, file.arch)}</span>
+                <code>{file.sha256}</code>
+              </p>
             ))}
-          </div>
-          {files.some((f) => f.sha256) && (
-            <details class="files__sum">
-              <summary>SHA-256 checksums</summary>
-              {files.map((file) => (
-                <p>
-                  <span>{archLabel(file.os, file.arch)}</span>
-                  <code>{file.sha256}</code>
-                </p>
-              ))}
-            </details>
-          )}
-        </li>
-      ))}
-    </ul>
-  ) : (
-    <p class="files__empty">
-      See the <a href={`${RELEASES_URL}/latest`}>latest release on GitHub</a>.
-    </p>
-  )
-}
+          </details>
+        )}
+      </li>
+    ))}
+  </ul>
+) : (
+  <p class="files__empty">
+    See the <a href={`${RELEASES_URL}/latest`}>latest release on GitHub</a>.
+  </p>
+)}
 
 <style>
   .files {

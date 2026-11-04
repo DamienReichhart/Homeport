@@ -13,19 +13,17 @@ const release = await getLatestRelease();
   <div class="container">
     <span class="eyebrow">Download</span>
     <h1>Get Homeport</h1>
-    {
-      release ? (
-        <p class="lead">
-          Version <strong>{release.version}</strong>, released {formatDate(release.publishedAt)}.{' '}
-          <a href={href('/changelog/')}>What's new</a>
-        </p>
-      ) : (
-        <p class="lead">
-          Installers for every platform are on the{' '}
-          <a href={`${RELEASES_URL}/latest`}>GitHub releases page</a>.
-        </p>
-      )
-    }
+    {release ? (
+      <p class="lead">
+        Version <strong>{release.version}</strong>, released {formatDate(release.publishedAt)}.{' '}
+        <a href={href('/changelog/')}>What's new</a>
+      </p>
+    ) : (
+      <p class="lead">
+        Installers for every platform are on the{' '}
+        <a href={`${RELEASES_URL}/latest`}>GitHub releases page</a>.
+      </p>
+    )}
     <p class="recommend" data-recommend hidden>
       <Icon name="check" size={16} /> <span></span>
     </p>

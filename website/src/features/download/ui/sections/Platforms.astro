@@ -9,17 +9,17 @@ const release = await getLatestRelease();
 const prerelease = newerPrerelease(await getReleases(), release);
 ---
 
-{
-  prerelease && (
-    <aside class="notice">
-      <strong>Preview available:</strong> {prerelease.name} is a prerelease for testing.{' '}
-      <a href={prerelease.url}>Download it from GitHub</a>.
-    </aside>
-  )
-}
+{prerelease && (
+  <aside class="notice">
+    <strong>Preview available:</strong> {prerelease.name} is a prerelease for testing.{' '}
+    <a href={prerelease.url}>Download it from GitHub</a>.
+  </aside>
+)}
 
 <div class="platforms">
-  {PLATFORMS.map((platform) => <PlatformCard platform={platform} release={release} />)}
+  {PLATFORMS.map((platform) => (
+    <PlatformCard platform={platform} release={release} />
+  ))}
 </div>
 
 <script>
