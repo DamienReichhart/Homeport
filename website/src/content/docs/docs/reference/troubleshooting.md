@@ -121,7 +121,7 @@ The Host would build from files on this computer. Build and push the image to a 
 
 ### Pulling a private image fails
 
-Homeport's **Pull image** doesn't log in to registries yet. Log in and pull on the Host, or use the image in a Managed Stack: Compose uses the Docker credentials on this computer.
+Add a login for the image's registry in **Settings → Registries**, and use **Check login** to confirm the registry accepts it. GHCR, and Docker Hub accounts with two-factor authentication, need an access token rather than the password. The pull dialog says which login it will use; if it says **anonymously**, the image's registry doesn't match a stored login — `ghcr.io/org/app` needs a login for `ghcr.io`, and `org/app` one for Docker Hub.
 
 ### The Files tab says the container has no find/stat tools
 

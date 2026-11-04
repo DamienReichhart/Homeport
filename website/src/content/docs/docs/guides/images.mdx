@@ -29,10 +29,17 @@ Choose **Pull image** and enter a reference: `nginx` (which means `nginx:latest`
 
 Homeport shows the pull's progress layer by layer, and says **Done.** when it's complete. **Cancel** stops following the pull.
 
+### Private images
+
+When a login for the image's registry is stored in [**Settings → Registries**](/docs/guides/settings/#registries), Homeport hands it to the Engine with the pull, so private images pull on any Host — local, TCP, TLS or SSH — with nothing configured there. Under the reference, the dialog says how the image will be pulled: **Pulled as alice on ghcr.io**, or **Pulled anonymously** when no login matches.
+
+An image without a registry in its name (`nginx`, `bitnami/redis`) uses the Docker Hub login. A Docker Hub login also raises Docker Hub's pull limit.
+
+If the registry refuses the pull, the message says what to do: add a login for that registry when none was stored, or check the stored one.
+
 <Aside>
-  Pulls are anonymous, so they work for public images. Homeport doesn't log in to registries yet;
-  for private images, pull them on the Host with `docker login` and `docker pull`, or deploy them in
-  a [Managed Stack](/docs/guides/stacks/), which uses your local Docker credentials.
+  The login travels to the Engine with the request and isn't stored on the Host. Homeport doesn't
+  read `docker login` credentials from `~/.docker/config.json`.
 </Aside>
 
 ## Working with an image
