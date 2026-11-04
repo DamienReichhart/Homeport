@@ -11,6 +11,7 @@ import {
   Label,
 } from '@/shared/ui';
 import { useCreateVolume } from '../../api/mutations';
+import { t } from '@/shared/i18n';
 
 export function CreateVolumeDialog({
   hostId,
@@ -31,7 +32,7 @@ export function CreateVolumeDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create a volume</DialogTitle>
+          <DialogTitle>{t('volumes.createDialog.title')}</DialogTitle>
         </DialogHeader>
         <form
           className="grid gap-3"
@@ -41,11 +42,11 @@ export function CreateVolumeDialog({
           }}
         >
           <div className="grid gap-1.5">
-            <Label htmlFor="vol-name">Name</Label>
+            <Label htmlFor="vol-name">{t('volumes.createDialog.name')}</Label>
             <Input id="vol-name" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
           </div>
           <div className="grid gap-1.5">
-            <Label htmlFor="vol-driver">Driver</Label>
+            <Label htmlFor="vol-driver">{t('volumes.createDialog.driver')}</Label>
             <Input
               id="vol-driver"
               value={driver}
@@ -56,10 +57,10 @@ export function CreateVolumeDialog({
           {create.error && <ErrorMessage error={create.error} />}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={create.isPending || !name.trim()}>
-              Create
+              {t('common.create')}
             </Button>
           </DialogFooter>
         </form>

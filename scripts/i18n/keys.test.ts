@@ -8,7 +8,7 @@ const catalogue = [
 describe('i18n key check', () => {
   it('passes when the code and the catalogue agree', () => {
     const sources = [
-      { path: 'a.tsx', text: "t('common.cancel'); t(\"images.remove.title\", { name })" },
+      { path: 'a.tsx', text: 't(\'common.cancel\'); t("images.remove.title", { name })' },
       { path: 'b.ts', text: "const DONE: MessageKey = 'images.pull.done';" },
     ];
     expect(checkKeys(catalogue, sources)).toEqual([]);

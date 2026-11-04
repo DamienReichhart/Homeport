@@ -22,6 +22,7 @@ import { pruneVolumesConfirmation, removeVolumeConfirmation } from './confirmati
 import { CreateVolumeDialog } from './dialogs/CreateVolumeDialog';
 import { InspectVolumeDialog } from './dialogs/InspectVolumeDialog';
 import { volumeColumns } from './volumeColumns';
+import { t } from '@/shared/i18n';
 
 function VolumesList({ hostId }: { hostId: string }) {
   const volumes = useQuery(resourceQueries.volumes(hostId));
@@ -43,39 +44,42 @@ function VolumesList({ hostId }: { hostId: string }) {
   return (
     <div>
       <PageHeader
-        title="Volumes"
-        description={`${volumes.data.length} volumes · ${volumes.data.filter((v) => v.usedBy.length === 0).length} unused`}
+        title={t('volumes.title')}
+        description={t('volumes.summary', {
+          count: volumes.data.length,
+          unused: volumes.data.filter((v) => v.usedBy.length === 0).length,
+        })}
         actions={
           <>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
-                  <BrushCleaningIcon /> Clean up
+                  <BrushCleaningIcon /> {t('volumes.cleanUp')}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem variant="destructive" onSelect={() => prune(false)}>
-                  Unused anonymous volumes
+                  {t('volumes.cleanUp.anonymous')}
                 </DropdownMenuItem>
                 <DropdownMenuItem variant="destructive" onSelect={() => prune(true)}>
-                  All unused volumes
+                  {t('volumes.cleanUp.all')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <Button onClick={() => setCreating(true)}>
-              <PlusIcon /> Create volume
+              <PlusIcon /> {t('volumes.create')}
             </Button>
           </>
         }
       />
       <div className="mb-3">
-        <SearchInput value={query} onChange={setQuery} placeholder="Search volumes" />
+        <SearchInput value={query} onChange={setQuery} placeholder={t('volumes.search')} />
       </div>
       {volumes.data.length === 0 ? (
         <EmptyState
           icon={HardDriveIcon}
-          title="No volumes"
-          description="Volumes keep container data across restarts and re-creations."
+          title={t('volumes.empty.title')}
+          description={t('volumes.empty.description')}
         />
       ) : (
         <DataTable

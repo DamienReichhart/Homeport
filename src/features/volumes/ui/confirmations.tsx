@@ -1,5 +1,6 @@
 import type { VolumeView } from '@/shared/api';
 import type { ConfirmedAction } from '@/shared/ui';
+import { t, tRich } from '@/shared/i18n';
 
 /** Deleting a volume, which destroys its data. */
 export function removeVolumeConfirmation(
@@ -7,15 +8,15 @@ export function removeVolumeConfirmation(
   action: () => Promise<unknown>,
 ): ConfirmedAction {
   return {
-    title: `Delete volume ${volume.name}?`,
+    title: t('volumes.remove.title', { name: volume.name }),
     description: (
       <>
-        <strong>All data in this volume is permanently deleted.</strong>
+        {tRich('volumes.remove.warning', { strong: (chunks) => <strong>{chunks}</strong> })}
         {volume.usedBy.length > 0 &&
-          ` It is mounted by ${volume.usedBy.join(', ')}; remove those containers first.`}
+          t('volumes.remove.mounted', { containers: volume.usedBy.join(', ') })}
       </>
     ),
-    confirmLabel: 'Delete volume and data',
+    confirmLabel: t('volumes.remove.confirm'),
     destructive: true,
     action,
   };
@@ -27,15 +28,11 @@ export function pruneVolumesConfirmation(
   action: () => Promise<unknown>,
 ): ConfirmedAction {
   return {
-    title: all ? 'Delete every unused volume?' : 'Delete unused anonymous volumes?',
+    title: all ? t('volumes.prune.allTitle') : t('volumes.prune.anonymousTitle'),
     description: (
-      <strong>
-        {all
-          ? 'The data in every volume no container uses is permanently deleted, named volumes included.'
-          : 'The data in unnamed volumes no container uses is permanently deleted.'}
-      </strong>
+      <strong>{all ? t('volumes.prune.allWarning') : t('volumes.prune.anonymousWarning')}</strong>
     ),
-    confirmLabel: 'Delete volumes and data',
+    confirmLabel: t('volumes.prune.confirm'),
     destructive: true,
     action,
   };

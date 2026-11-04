@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import type { VolumeView } from '@/shared/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, JsonView, Spinner } from '@/shared/ui';
 import { volumeQueries } from '../../api/queries';
+import { t } from '@/shared/i18n';
 
 export function InspectVolumeDialog({
   hostId,
@@ -21,8 +22,8 @@ export function InspectVolumeDialog({
         </DialogHeader>
         <p className="text-sm">
           {volume.usedBy.length
-            ? `Used by ${volume.usedBy.join(', ')}.`
-            : 'No container uses this volume.'}
+            ? t('volumes.usedBy', { containers: volume.usedBy.join(', ') })
+            : t('volumes.notUsed')}
         </p>
         {inspect.data ? <JsonView value={inspect.data} /> : <Spinner />}
       </DialogContent>

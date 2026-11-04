@@ -4,6 +4,7 @@ import { hostKeys } from '@/core/host';
 import { commands, type VolumeView } from '@/shared/api';
 import { formatBytes } from '@/shared/lib';
 import { toastError } from '@/shared/ui';
+import { t } from '@/shared/i18n';
 
 function useRefreshVolumes(hostId: string) {
   const client = useQueryClient();
@@ -28,7 +29,7 @@ export function useRemoveVolume(hostId: string) {
   const refresh = useRefreshVolumes(hostId);
   return useMutation({
     mutationFn: (volume: VolumeView) => commands.volumesRemove(hostId, volume.name, false),
-    onSuccess: (_, volume) => toast.success(`Deleted ${volume.name}`),
+    onSuccess: (_, volume) => toast.success(t('volumes.deleted', { name: volume.name })),
     onError: (e) => toastError(e),
     onSettled: () => refresh(),
   });
@@ -41,7 +42,7 @@ export function usePruneVolumes(hostId: string) {
     mutationFn: (all: boolean) => commands.volumesPrune(hostId, all),
     onSuccess: async (r) => {
       toast.success(
-        `Deleted ${r.removed.length} volumes, ${formatBytes(r.spaceReclaimed)} reclaimed`,
+        t('volumes.pruned', { count: r.removed.length, space: formatBytes(r.spaceReclaimed) }),
       );
       await refresh();
     },
