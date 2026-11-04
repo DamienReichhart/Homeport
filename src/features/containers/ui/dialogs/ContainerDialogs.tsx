@@ -1,10 +1,11 @@
 import { useState, type ReactNode } from 'react';
 import type { Container } from '@/shared/api';
 import { DuplicateDialog } from './DuplicateDialog';
+import { EditDialog } from './EditDialog';
 import { RenameDialog } from './RenameDialog';
 
 /** The dialogs a container's menu opens. */
-export type ContainerDialog = 'rename' | 'duplicate';
+export type ContainerDialog = 'rename' | 'duplicate' | 'edit';
 
 export interface ContainerDialogRequest {
   kind: ContainerDialog;
@@ -23,6 +24,11 @@ export function useContainerDialogs(
     case 'rename':
       dialog = (
         <RenameDialog key={key} hostId={hostId} container={request.container} onClose={close} />
+      );
+      break;
+    case 'edit':
+      dialog = (
+        <EditDialog key={key} hostId={hostId} container={request.container} onClose={close} />
       );
       break;
     case 'duplicate':

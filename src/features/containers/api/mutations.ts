@@ -76,6 +76,25 @@ export function useRunContainer(hostId: string, onStarted: (id: string) => void)
   });
 }
 
+/** Recreates a container from an edited form (Edit); `onDone` gets the new id. */
+export function useRecreateContainer(
+  hostId: string,
+  containerId: string,
+  onDone: (id: string) => void,
+) {
+  const refresh = useRefreshContainers(hostId);
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: (form: RunForm) =>
+      commands.containersRecreate(hostId, containerId, toRunSpec(form)),
+    onSuccess: async (id) => {
+      toast.success('Container recreated');
+      await refresh();
+      onDone(id);
+    },
+  });
+}
+
 /** Copies files between this machine and a container, reporting the outcome as a toast. */
 export function useFileTransfers(hostId: string, containerId: string, onUploaded: () => void) {
   const download = useMutation({

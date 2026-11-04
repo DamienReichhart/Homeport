@@ -5,6 +5,7 @@ import {
   PencilIcon,
   PlayIcon,
   RotateCwIcon,
+  SlidersHorizontalIcon,
   SquareIcon,
   Trash2Icon,
 } from 'lucide-react';
@@ -88,6 +89,9 @@ export function ContainerActions({
         <DropdownMenuContent align="end">
           <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'rename', container })}>
             <PencilIcon /> Rename
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'edit', container })}>
+            <SlidersHorizontalIcon /> Edit
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'duplicate', container })}>
             <CopyIcon /> Duplicate

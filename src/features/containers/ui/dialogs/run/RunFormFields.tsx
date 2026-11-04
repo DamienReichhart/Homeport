@@ -34,12 +34,15 @@ export function RunFormFields({
   setForm,
   errors,
   advancedOpen = false,
+  lockName = false,
 }: {
   hostId: string;
   form: RunForm;
   setForm: Dispatch<SetStateAction<RunForm>>;
   errors: RunFormErrors;
   advancedOpen?: boolean;
+  /** Edit keeps the name; Rename changes it. */
+  lockName?: boolean;
 }) {
   const images = useQuery(resourceQueries.images(hostId));
   const networks = useQuery(resourceQueries.networks(hostId));
@@ -80,7 +83,11 @@ export function RunFormFields({
             value={form.name}
             onChange={(e) => set('name', e.target.value)}
             placeholder="Generated if empty"
+            disabled={lockName}
           />
+          {lockName && (
+            <p className="text-muted-foreground text-xs">Kept. Use Rename to change it.</p>
+          )}
         </div>
       </div>
       <div className="grid gap-1.5">

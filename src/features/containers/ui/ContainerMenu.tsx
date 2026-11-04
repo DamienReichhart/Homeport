@@ -6,6 +6,7 @@ import {
   PlayIcon,
   RotateCwIcon,
   ScrollTextIcon,
+  SlidersHorizontalIcon,
   SkullIcon,
   SquareIcon,
   SquareTerminalIcon,
@@ -115,6 +116,9 @@ export function ContainerMenu({
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'rename', container })}>
             <PencilIcon /> Rename
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'edit', container })}>
+            <SlidersHorizontalIcon /> Edit
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'duplicate', container })}>
             <CopyIcon /> Duplicate

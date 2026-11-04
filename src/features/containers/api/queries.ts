@@ -30,6 +30,14 @@ export const containerQueries = {
       staleTime: 0,
       gcTime: 0,
     }),
+  /** What recreating this container would lose, for Edit's confirmation. */
+  editLosses: (hostId: string, containerId: string) =>
+    queryOptions({
+      queryKey: [...containerKey(hostId, containerId), 'edit-losses'],
+      queryFn: () => commands.containersEditLosses(hostId, containerId),
+      staleTime: 0,
+      gcTime: 0,
+    }),
   processes: (hostId: string, containerId: string) =>
     queryOptions({
       queryKey: [...containerKey(hostId, containerId), 'processes'],
