@@ -2138,6 +2138,7 @@ dependencies = [
  "homeport-settings",
  "homeport-stacks",
  "homeport-storage",
+ "homeport-transport",
  "homeport-updates",
  "log",
  "serde",

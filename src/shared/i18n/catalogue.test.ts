@@ -1,9 +1,12 @@
+import type { ReactNode } from 'react';
 import { createIntl } from 'react-intl';
 import { en, errorMessages } from './en';
 
 /** The arguments a message names, given a sample value each. */
-function samples(message: string): Record<string, string | number | ((c: unknown) => unknown)> {
-  const values: Record<string, string | number | ((c: unknown) => unknown)> = {};
+type Sample = string | number | ((chunks: ReactNode[]) => ReactNode);
+
+function samples(message: string): Record<string, Sample> {
+  const values: Record<string, Sample> = {};
   for (const [, name, kind] of message.matchAll(/\{\s*(\w+)\s*(?:,\s*(\w+))?/g)) {
     if (name) values[name] = kind === 'plural' || kind === 'selectordinal' ? 2 : 'x';
   }
