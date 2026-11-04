@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { BrushCleaningIcon, DownloadIcon, LayersIcon } from 'lucide-react';
+import { BrushCleaningIcon, DownloadIcon, HammerIcon, LayersIcon } from 'lucide-react';
 import { useState } from 'react';
 import { HostGate, resourceQueries } from '@/core/host';
 import { RunContainerDialog } from '@/features/containers';
@@ -21,6 +21,7 @@ import {
 } from '@/shared/ui';
 import { usePruneImages, useRemoveImage } from '../api/mutations';
 import { imageName } from '../model/imageName';
+import { BuildDialog } from './dialogs/BuildDialog';
 import { InspectDialog } from './dialogs/InspectDialog';
 import { PullDialog } from './dialogs/PullDialog';
 import { PushDialog } from './dialogs/PushDialog';
@@ -34,6 +35,7 @@ function ImagesList({ hostId }: { hostId: string }) {
   const [dialog, confirm] = useConfirm();
   const [query, setQuery] = useState('');
   const [pulling, setPulling] = useState(false);
+  const [building, setBuilding] = useState(false);
   const [running, setRunning] = useState<Image | null>(null);
   const [tagging, setTagging] = useState<Image | null>(null);
   const [pushingImage, setPushingImage] = useState<Image | null>(null);
@@ -87,6 +89,9 @@ function ImagesList({ hostId }: { hostId: string }) {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <Button variant="outline" onClick={() => setBuilding(true)}>
+              <HammerIcon /> Build
+            </Button>
             <Button onClick={() => setPulling(true)}>
               <DownloadIcon /> Pull image
             </Button>
@@ -119,6 +124,7 @@ function ImagesList({ hostId }: { hostId: string }) {
         />
       )}
       <PullDialog hostId={hostId} open={pulling} onOpenChange={setPulling} />
+      {building && <BuildDialog hostId={hostId} onClose={() => setBuilding(false)} />}
       {running && (
         <RunContainerDialog
           key={running.id}

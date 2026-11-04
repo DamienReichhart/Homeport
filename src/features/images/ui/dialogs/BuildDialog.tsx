@@ -1,0 +1,192 @@
+import { FolderOpenIcon } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { toAppError, type AppError, type BuildSpec } from '@/shared/api';
+import { pickFolder } from '@/shared/lib';
+import {
+  Button,
+  Checkbox,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  ErrorMessage,
+  Input,
+  Label,
+  Textarea,
+  XTerm,
+} from '@/shared/ui';
+import { useBuildImage } from '../../api/streams';
+import { emptyBuild, toBuildSpec, type BuildForm } from '../../model/build';
+
+/**
+ * Builds an image on the Host from a folder on this machine: the form, then
+ * the build's output live.
+ */
+export function BuildDialog({ hostId, onClose }: { hostId: string; onClose: () => void }) {
+  const [form, setForm] = useState<BuildForm>(emptyBuild);
+  const [running, setRunning] = useState<BuildSpec | null>(null);
+  const [result, setResult] = useState<'running' | 'ok' | 'failed'>('running');
+  const [failure, setFailure] = useState<AppError | null>(null);
+  const stop = useRef<(() => void) | null>(null);
+  const build = useBuildImage(hostId);
+  const checked = toBuildSpec(form);
+  const set = <K extends keyof BuildForm>(key: K, value: BuildForm[K]) =>
+    setForm((f) => ({ ...f, [key]: value }));
+  const close = () => {
+    stop.current?.();
+    onClose();
+  };
+  const fail = (error: unknown) => {
+    setFailure(toAppError(error));
+    setResult('failed');
+  };
+
+  return (
+    <Dialog open onOpenChange={(open) => !open && close()}>
+      <DialogContent className="sm:max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Build an image</DialogTitle>
+          <DialogDescription>
+            From a folder on this computer. Homeport sends it to the Host, leaving out what its
+            .dockerignore excludes, and the Host’s Engine builds it.
+          </DialogDescription>
+        </DialogHeader>
+        {running ? (
+          <>
+            {failure && <ErrorMessage error={failure} />}
+            <div className="h-80">
+              <XTerm
+                readOnly
+                className="h-full"
+                onReady={({ terminal }) => {
+                  stop.current = build(
+                    running,
+                    (e) => {
+                      if (e.type === 'line') terminal.writeln(e.text);
+                      else if (e.type === 'error') {
+                        terminal.writeln(`\x1b[31m${e.error.message}\x1b[39m`);
+                        fail(e.error);
+                      } else {
+                        terminal.writeln('\x1b[32m✓ Built\x1b[39m');
+                        setResult('ok');
+                      }
+                    },
+                    fail,
+                  );
+                }}
+              />
+            </div>
+          </>
+        ) : (
+          <form
+            id="build-form"
+            className="grid gap-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if ('spec' in checked) setRunning(checked.spec);
+            }}
+          >
+            <div className="grid gap-1.5">
+              <Label htmlFor="build-context">Folder</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="build-context"
+                  value={form.context}
+                  onChange={(e) => set('context', e.target.value)}
+                  placeholder="/home/me/projects/app"
+                  spellCheck={false}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={async () => {
+                    const folder = await pickFolder('Choose the folder to build');
+                    if (folder) set('context', folder);
+                  }}
+                >
+                  <FolderOpenIcon /> Choose…
+                </Button>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-1.5">
+                <Label htmlFor="build-dockerfile">Dockerfile</Label>
+                <Input
+                  id="build-dockerfile"
+                  value={form.dockerfile}
+                  onChange={(e) => set('dockerfile', e.target.value)}
+                  spellCheck={false}
+                />
+              </div>
+              <div className="grid gap-1.5">
+                <Label htmlFor="build-target">Target stage</Label>
+                <Input
+                  id="build-target"
+                  value={form.target}
+                  onChange={(e) => set('target', e.target.value)}
+                  placeholder="The last stage"
+                  spellCheck={false}
+                />
+              </div>
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="build-tags">Names</Label>
+              <Input
+                id="build-tags"
+                value={form.tags}
+                onChange={(e) => set('tags', e.target.value)}
+                placeholder="app:1.0, ghcr.io/me/app:1.0"
+                spellCheck={false}
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="build-args">Build arguments</Label>
+              <Textarea
+                id="build-args"
+                value={form.buildArgs}
+                onChange={(e) => set('buildArgs', e.target.value)}
+                placeholder="VERSION=1.0, one per line"
+                className="h-20 font-mono text-xs"
+                spellCheck={false}
+              />
+            </div>
+            <div className="flex flex-wrap gap-4">
+              <Label className="inline-flex items-center gap-2 font-normal">
+                <Checkbox
+                  checked={form.noCache}
+                  onCheckedChange={(v) => set('noCache', v === true)}
+                />
+                Don’t use the build cache
+              </Label>
+              <Label className="inline-flex items-center gap-2 font-normal">
+                <Checkbox checked={form.pull} onCheckedChange={(v) => set('pull', v === true)} />
+                Pull newer base images
+              </Label>
+            </div>
+            {'problem' in checked && form.context && (
+              <p className="text-muted-foreground text-xs">{checked.problem}</p>
+            )}
+          </form>
+        )}
+        <DialogFooter>
+          {running ? (
+            <Button variant={result === 'running' ? 'ghost' : 'default'} onClick={close}>
+              {result === 'running' ? 'Cancel' : 'Close'}
+            </Button>
+          ) : (
+            <>
+              <Button variant="ghost" onClick={close}>
+                Cancel
+              </Button>
+              <Button type="submit" form="build-form" disabled={!('spec' in checked)}>
+                Build
+              </Button>
+            </>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

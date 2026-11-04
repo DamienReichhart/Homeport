@@ -2,7 +2,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { hostKeys } from '@/core/host';
-import { commands, subscribe, type AppError, type PullEvent } from '@/shared/api';
+import {
+  commands,
+  subscribe,
+  type AppError,
+  type BuildEvent,
+  type BuildSpec,
+  type PullEvent,
+} from '@/shared/api';
 
 /**
  * Pulls images onto a Host and streams their progress. A finished pull is
@@ -44,5 +51,28 @@ export function usePushImage(hostId: string) {
         onError,
       ),
     [hostId],
+  );
+}
+
+/**
+ * Builds an image on a Host from a folder on this machine and streams the
+ * output. A finished build is announced and refreshes the image list.
+ */
+export function useBuildImage(hostId: string) {
+  const client = useQueryClient();
+  return useCallback(
+    (spec: BuildSpec, onEvent: (event: BuildEvent) => void, onError: (error: AppError) => void) =>
+      subscribe<BuildEvent>(
+        (ch) => commands.imagesBuildSubscribe(hostId, spec, ch),
+        (event) => {
+          onEvent(event);
+          if (event.type === 'done') {
+            toast.success(event.tags.length ? `Built ${event.tags[0]}` : 'Built the image');
+            void client.invalidateQueries({ queryKey: hostKeys.images(hostId) });
+          }
+        },
+        onError,
+      ),
+    [client, hostId],
   );
 }
