@@ -89,6 +89,8 @@ bun scripts/repositories.ts --out /tmp/site --packages target/release/bundle/deb
 
 ## Scoop and the AUR
 
+**Deferred until after 1.0** ([#7](https://github.com/DamienReichhart/Homeport/issues/7), [#8](https://github.com/DamienReichhart/Homeport/issues/8), milestone _Later_). Everything below is in place but dormant: no secret is set, so each release skips both channels with a notice, and the website lists them under **Coming later**. Shipping either is only the one-time setup below.
+
 After a stable release is published, the **channels** job of the Release workflow renders, from the release's `SHA256SUMS.txt`, the Scoop manifest (`scoop/homeport.json`, both NSIS installers) and the AUR package (`aur/PKGBUILD` and `aur/.SRCINFO`, `homeport-bin` repackaging both `.deb` files) with `bun scripts/channels.ts`, and keeps them as the run's `channels` artifact. Then it updates each channel whose secret is set, and skips the others with a notice. Prereleases skip the job.
 
 | Channel | Repository                                                  | Secret                                                                                          |

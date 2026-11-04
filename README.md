@@ -31,7 +31,7 @@ curl -fsSL https://damienreichhart.github.io/Homeport/install.sh | sh
 
 The [installation guide](https://damienreichhart.github.io/Homeport/docs/installation/#manual-setup) shows the same setup step by step, without the script.
 
-Installers for Windows, macOS and Linux (x64 and ARM) are on the [download page](https://damienreichhart.github.io/Homeport/download/) and the [releases page](https://github.com/DamienReichhart/Homeport/releases/latest). Windows, macOS and AppImage installs update themselves from inside Homeport. Homebrew, winget, Scoop, the AUR, Flathub and Snap are planned ([issues #5 to #10](https://github.com/DamienReichhart/Homeport/issues?q=is%3Aissue+label%3Aenhancement)).
+Installers for Windows, macOS and Linux (x64 and ARM) are on the [download page](https://damienreichhart.github.io/Homeport/download/) and the [releases page](https://github.com/DamienReichhart/Homeport/releases/latest). Windows, macOS and AppImage installs update themselves from inside Homeport. winget ([#6](https://github.com/DamienReichhart/Homeport/issues/6)) and Homebrew ([#5](https://github.com/DamienReichhart/Homeport/issues/5)) are planned before 1.0; Scoop, the AUR, Flathub and Snap after it ([#7 to #10](https://github.com/DamienReichhart/Homeport/milestone/18)).
 
 Pushing a new version to `main` publishes it; see [docs/RELEASING.md](docs/RELEASING.md).
 
