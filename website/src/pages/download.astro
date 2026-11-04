@@ -17,7 +17,8 @@ import {
   INSTALL_SCRIPT_URL,
   MANUAL_SETUP,
 } from '../lib/repository';
-import { href, ISSUES_URL, RELEASES_URL, REPO, REPO_URL } from '../lib/site';
+import { ISSUES_URL, RELEASES_URL, REPO, REPO_URL } from '@/core/site';
+import { href } from '@/shared/lib/href';
 
 const release = await getLatestRelease();
 const prerelease = (await getReleases()).find(

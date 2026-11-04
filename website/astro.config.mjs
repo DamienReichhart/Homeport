@@ -5,6 +5,7 @@ import starlight from '@astrojs/starlight';
 import { defineConfig } from 'astro/config';
 import starlightLinksValidator from 'starlight-links-validator';
 import baseLinks from './src/lib/base-links.mjs';
+import { REPO_URL } from './src/core/site/index.ts';
 
 /*
  * The site is served from GitHub Pages. The Pages workflow passes the origin and
@@ -16,8 +17,6 @@ const site = process.env.SITE_URL || 'https://damienreichhart.github.io';
 const base = process.env.SITE_URL ? process.env.BASE_PATH || '/' : '/Homeport';
 /** The base without a trailing slash, for building paths: `/Homeport` or ``. */
 const root = base.replace(/\/$/, '');
-
-const repo = 'https://github.com/DamienReichhart/Homeport';
 
 export default defineConfig({
   site,
@@ -37,8 +36,8 @@ export default defineConfig({
         replacesTitle: true,
       },
       favicon: '/favicon.svg',
-      social: [{ icon: 'github', label: 'GitHub', href: repo }],
-      editLink: { baseUrl: `${repo}/edit/main/website/` },
+      social: [{ icon: 'github', label: 'GitHub', href: REPO_URL }],
+      editLink: { baseUrl: `${REPO_URL}/edit/main/website/` },
       lastUpdated: true,
       credits: false,
       customCss: [

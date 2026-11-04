@@ -5,7 +5,8 @@ import Icon, { type IconName } from '../components/Icon.astro';
 import Screenshot from '../components/Screenshot.astro';
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { getLatestRelease } from '../lib/releases';
-import { DESCRIPTION, href, REPO_URL, TAGLINE } from '../lib/site';
+import { DESCRIPTION, REPO_URL, TAGLINE } from '@/core/site';
+import { href } from '@/shared/lib/href';
 
 const release = await getLatestRelease();
 

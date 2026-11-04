@@ -6,7 +6,7 @@
  * avoid the anonymous rate limit, and RELEASES_REQUIRED=1 to fail the build
  * (rather than deploy a page without download links) when the API can't be read.
  */
-import { REPO } from './site';
+import { REPO } from '@/core/site';
 
 export type Os = 'windows' | 'macos' | 'linux';
 export type Arch = 'x64' | 'arm64';
