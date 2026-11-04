@@ -111,6 +111,8 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             system::system_prune,
             containers::containers_run,
             containers::containers_run_spec,
+            containers::containers_edit_losses,
+            containers::containers_recreate,
             stacks::stacks_list,
             stacks::stacks_get,
             stacks::stacks_get_env,

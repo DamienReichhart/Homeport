@@ -137,23 +137,38 @@ fn ports(host: &HostConfig) -> Vec<PortSpec> {
     ports
 }
 
-/// Bind mounts and named volumes. Anonymous volumes (named by a 64-digit
-/// hex ID and not given by the user) are left for a fresh one to be made.
-fn mounts(container: &ContainerInspectResponse, host: &HostConfig) -> Vec<MountSpec> {
-    let given_by_user = |name: &str| {
-        host.binds
+/// Whether volume `name` is anonymous: named by a 64-digit hex ID, and not
+/// one the user gave by that name.
+fn is_anonymous(name: &str, host: &HostConfig) -> bool {
+    let given_by_user = host
+        .binds
+        .iter()
+        .flatten()
+        .any(|b| b.split(':').next() == Some(name))
+        || host
+            .mounts
             .iter()
             .flatten()
-            .any(|b| b.split(':').next() == Some(name))
-            || host
-                .mounts
-                .iter()
-                .flatten()
-                .any(|m| m.source.as_deref() == Some(name))
-    };
-    let anonymous = |name: &str| {
-        name.len() == 64 && name.bytes().all(|b| b.is_ascii_hexdigit()) && !given_by_user(name)
-    };
+            .any(|m| m.source.as_deref() == Some(name));
+    name.len() == 64 && name.bytes().all(|b| b.is_ascii_hexdigit()) && !given_by_user
+}
+
+/// Where the container's anonymous volumes are mounted.
+pub(crate) fn anonymous_volumes(container: &ContainerInspectResponse) -> Vec<String> {
+    let host = container.host_config.clone().unwrap_or_default();
+    container
+        .mounts
+        .iter()
+        .flatten()
+        .filter(|m| m.typ.as_deref() == Some("volume"))
+        .filter(|m| m.name.as_deref().is_some_and(|n| is_anonymous(n, &host)))
+        .filter_map(|m| m.destination.clone())
+        .collect()
+}
+
+/// Bind mounts and named volumes; anonymous volumes are left for a fresh
+/// one to be made.
+fn mounts(container: &ContainerInspectResponse, host: &HostConfig) -> Vec<MountSpec> {
     container
         .mounts
         .iter()
@@ -163,7 +178,7 @@ fn mounts(container: &ContainerInspectResponse, host: &HostConfig) -> Vec<MountS
                 Some("bind") => m.source.clone()?,
                 Some("volume") => {
                     let name = m.name.clone()?;
-                    if anonymous(&name) {
+                    if is_anonymous(&name, host) {
                         return None;
                     }
                     name

@@ -6,6 +6,7 @@ use homeport_core::streams::StreamId;
 use homeport_engine::containers::{
     self,
     logs::{self, LogEvent, LogOptions, LogSource},
+    recreate::{self, Loss},
     run::{self, RunSpec},
     stats::{self, StatsSample},
     Container, ContainerAction, Processes,
@@ -101,6 +102,34 @@ pub async fn containers_run_spec(
     id: String,
 ) -> AppResult<RunSpec> {
     run::spec_for(&state.hosts.registry.docker(&host_id)?, &id).await
+}
+
+/// What recreating a container with a changed configuration loses, for Edit's confirmation.
+#[tauri::command]
+#[specta::specta]
+pub async fn containers_edit_losses(
+    state: State<'_, AppState>,
+    host_id: String,
+    id: String,
+) -> AppResult<Vec<Loss>> {
+    recreate::losses(&state.hosts.registry.docker(&host_id)?, &id).await
+}
+
+/// Recreates a container from `spec` under the same name (Edit); returns the new id.
+#[tauri::command]
+#[specta::specta]
+pub async fn containers_recreate(
+    state: State<'_, AppState>,
+    host_id: String,
+    id: String,
+    spec: RunSpec,
+) -> AppResult<String> {
+    let docker = state.hosts.registry.docker(&host_id)?;
+    let image = spec.image.trim().to_owned();
+    let auth = registries::auth_for(&state, &image)?;
+    recreate::recreate(&docker, &id, spec, auth)
+        .await
+        .map_err(|e| registries::explain(&state, &image, e))
 }
 
 #[tauri::command]

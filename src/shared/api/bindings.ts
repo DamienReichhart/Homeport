@@ -118,6 +118,10 @@ export const commands = {
 	containersRun: (hostId: string, spec: RunSpec) => __TAURI_INVOKE<string>("containers_run", { hostId, spec }),
 	/**  The Run dialog's form for an existing container, for Duplicate and Edit. */
 	containersRunSpec: (hostId: string, id: string) => __TAURI_INVOKE<RunSpec>("containers_run_spec", { hostId, id }),
+	/**  What recreating a container with a changed configuration loses, for Edit's confirmation. */
+	containersEditLosses: (hostId: string, id: string) => __TAURI_INVOKE<Loss[]>("containers_edit_losses", { hostId, id }),
+	/**  Recreates a container from `spec` under the same name (Edit); returns the new id. */
+	containersRecreate: (hostId: string, id: string, spec: RunSpec) => __TAURI_INVOKE<string>("containers_recreate", { hostId, id, spec }),
 	/**  Every Stack on a Host: those running there plus undeployed Managed Stacks. */
 	stacksList: (hostId: string) => __TAURI_INVOKE<Stack[]>("stacks_list", { hostId }),
 	stacksGet: (id: string) => __TAURI_INVOKE<ManagedStack>("stacks_get", { id }),
@@ -527,6 +531,17 @@ export type LogSpec = {
 	/**  `key=value` driver options, such as `max-size=10m`. */
 	options: string[],
 };
+
+/**  Something the recreated container won't have, for the confirmation. */
+export type Loss = 
+/**  An anonymous volume: the new container gets an empty one at `path`. */
+{ kind: "anonymousVolume"; path: string } | 
+/**  Files changed inside the container since it was created. */
+{ kind: "filesystemChanges"; count: number } | 
+/**  It runs now, so it stops for as long as the swap takes. */
+{ kind: "downtime" } | 
+/**  It belongs to a Stack, whose next deploy recreates it from compose. */
+{ kind: "stackRedeploy"; stack: string };
 
 export type ManagedStack = {
 	id: string,

@@ -21,6 +21,7 @@ use crate::{auth::RegistryAuth, containers, images};
 
 pub use body::{create_body, Base};
 pub use checks::CAPABILITIES;
+pub(crate) use from_inspect::anonymous_volumes;
 pub use from_inspect::spec_from_inspect;
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, specta::Type)]
