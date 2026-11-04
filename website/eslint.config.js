@@ -1,7 +1,9 @@
 import js from '@eslint/js';
 import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
+import { defineConfig } from 'eslint/config';
 import astro from 'eslint-plugin-astro';
 import importX from 'eslint-plugin-import-x';
+import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 // Architecture guards (ADR 0006, the app's layers from ADR 0004). Imports point
@@ -26,7 +28,7 @@ const restrict = (patterns) => ['error', { patterns: [...publicApiOnly, ...patte
 
 const sources = '**/*.{js,mjs,ts,astro}';
 
-export default tseslint.config(
+export default defineConfig(
   { ignores: ['dist', '.astro', 'node_modules'] },
   {
     files: [sources],
@@ -41,6 +43,11 @@ export default tseslint.config(
       'import-x/no-cycle': 'error',
       'no-restricted-imports': restrict([]),
     },
+  },
+  {
+    // Build-time code (configs, scripts) runs on Node or Bun.
+    files: ['*.{js,mjs,ts}', 'scripts/**'],
+    languageOptions: { globals: globals.node },
   },
   ...astro.configs.recommended,
   {
