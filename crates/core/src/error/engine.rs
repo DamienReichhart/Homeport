@@ -152,6 +152,21 @@ pub fn from_message(status: Option<u16>, message: &str) -> AppError {
         )
         .with_hint("Update the Docker Engine.");
     }
+    if has("could not select device driver") {
+        return AppError::new(
+            ErrorCode::GpuUnavailable,
+            "This host can't give containers a GPU.",
+        )
+        .with_hint("Install the GPU vendor's container toolkit on the host (for NVIDIA, the NVIDIA Container Toolkit) and restart the Docker Engine, or run the container without a GPU.");
+    }
+    if has("range of cpus is from") {
+        let what = match cpus_in(message) {
+            Some(cpus) => format!("This host has only {cpus} CPUs to give a container."),
+            None => "This host has fewer CPUs than the limit asks for.".to_owned(),
+        };
+        return AppError::new(ErrorCode::BadRequest, what)
+            .with_hint("Lower the CPU limit, or leave it empty to use every CPU.");
+    }
     if has("is already in use by container") || has("conflict. the container name") {
         return AppError::new(ErrorCode::NameInUse, "That container name is already used.")
             .with_hint("Pick another name, or remove or rename the other container first.");
@@ -247,6 +262,12 @@ pub fn command_not_found() -> AppError {
     .with_hint("Minimal images may have no shell or tools. Try /bin/sh, or another command.")
 }
 
+/// The CPU count in "Range of CPUs is from 0.01 to 4.00, as there are only 4 CPUs available".
+fn cpus_in(message: &str) -> Option<u32> {
+    let rest = &message[message.find("only ")? + "only ".len()..];
+    rest.split(' ').next()?.parse().ok()
+}
+
 /// The host port in "Bind for 0.0.0.0:8080 failed" or "listen tcp4 0.0.0.0:80: bind…".
 fn port_in(message: &str) -> Option<u16> {
     [
@@ -298,6 +319,8 @@ mod tests {
             (400, "Client sent an HTTP request to an HTTPS server.", ErrorCode::TlsRequired),
             (403, "authorization denied by plugin opa", ErrorCode::Forbidden),
             (500, "OCI runtime exec failed: exec failed: unable to start container process: exec: \"bash\": executable file not found in $PATH: unknown", ErrorCode::NoShell),
+            (500, "could not select device driver \"\" with capabilities: [[gpu]]", ErrorCode::GpuUnavailable),
+            (400, "Range of CPUs is from 0.01 to 4.00, as there are only 4 CPUs available", ErrorCode::BadRequest),
             (500, "something odd", ErrorCode::EngineError),
         ] {
             let e = engine(status, message);
@@ -328,6 +351,15 @@ mod tests {
             assert!(e.detail.unwrap().contains("some internal reason xyz"));
             assert!(e.hint.is_some(), "{status}");
         }
+    }
+
+    #[test]
+    fn too_many_cpus_names_the_hosts_count() {
+        let e = engine(
+            400,
+            "Range of CPUs is from 0.01 to 4.00, as there are only 4 CPUs available",
+        );
+        assert_eq!(e.message, "This host has only 4 CPUs to give a container.");
     }
 
     #[test]

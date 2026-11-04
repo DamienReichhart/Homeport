@@ -69,6 +69,10 @@ pub enum ErrorCode {
     RegistryLoginFailed,
     ApiVersionUnsupported,
     BuildFailed,
+    /// A GPU was requested from a Host without the vendor's container toolkit.
+    GpuUnavailable,
+    /// Recreating a container failed, and so did putting the original back.
+    RecreateRolledBack,
     // Compose.
     ComposeMissing,
     ComposeOutdated,
