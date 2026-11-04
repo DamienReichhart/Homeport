@@ -13,7 +13,7 @@ use homeport_stacks::{
     Stack,
 };
 
-use crate::{app::AppState, error::AppResult};
+use crate::{app::AppState, commands::registries, error::AppResult};
 
 /// Every Stack on a Host: those running there plus undeployed Managed Stacks.
 #[tauri::command]
@@ -116,12 +116,15 @@ pub async fn stacks_compose_subscribe(
     let stack = state.stacks.get(&id)?;
     let host = state.hosts.store.get(&stack.host_id)?;
     let dialer = state.hosts.registry.dialer(&stack.host_id)?;
+    let docker = state.hosts.registry.docker(&stack.host_id)?;
     let cli = compose::detect().await?;
     let job = ComposeRun {
         cli,
         host_name: host.name,
         connection: host.connection,
         dialer,
+        docker,
+        logins: registries::logins(&state)?,
         project: stack.name,
         env: state.stacks.env(&id)?,
         compose: stack.compose,

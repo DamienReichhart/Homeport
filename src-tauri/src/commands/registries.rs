@@ -3,7 +3,7 @@
 use tauri::State;
 
 use homeport_core::error::AppError;
-use homeport_engine::auth::RegistryAuth;
+use homeport_engine::auth::{Logins, RegistryAuth};
 use homeport_registries::{hints, login, Credentials, Registry, RegistryDraft};
 
 use crate::{app::AppState, error::AppResult};
@@ -57,6 +57,20 @@ pub fn registries_login_for(
 /// The stored login for the registry of `reference`, as the Engine takes it.
 pub(crate) fn auth_for(state: &AppState, reference: &str) -> AppResult<Option<RegistryAuth>> {
     Ok(state.registries.credentials_for(reference)?.map(to_auth))
+}
+
+/// Every stored login, and the rule that matches them to image references,
+/// for runs that pull several images (Stack deploys, builds).
+pub(crate) fn logins(state: &AppState) -> AppResult<Logins> {
+    Ok(Logins::new(
+        state
+            .registries
+            .all_credentials()?
+            .into_iter()
+            .map(to_auth)
+            .collect(),
+        homeport_registries::registry_of,
+    ))
 }
 
 /// Rewrites a registry refusal for `reference` to point at the login that
