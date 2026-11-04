@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import type { Container } from '@/shared/api';
-import { ConfirmDialog, ErrorMessage, Spinner } from '@/shared/ui';
+import { Button, ConfirmDialog, ErrorMessage, Spinner } from '@/shared/ui';
 import { containerQueries } from '../../api/queries';
 import { lossText } from '../../model/losses';
 
@@ -10,11 +10,13 @@ export function EditConfirmation({
   container,
   onConfirm,
   onClose,
+  onCommitFirst,
 }: {
   hostId: string;
   container: Container;
   onConfirm: () => Promise<unknown>;
   onClose: () => void;
+  onCommitFirst: () => void;
 }) {
   const losses = useQuery(containerQueries.editLosses(hostId, container.id));
   return (
@@ -35,6 +37,16 @@ export function EditConfirmation({
                 <li key={JSON.stringify(loss)}>{lossText(loss)}</li>
               ))}
             </ul>
+            {losses.data.some((l) => l.kind === 'filesystemChanges') && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="justify-self-start"
+                onClick={onCommitFirst}
+              >
+                Commit to an image first…
+              </Button>
+            )}
           </div>
         ),
         confirmLabel: 'Recreate',

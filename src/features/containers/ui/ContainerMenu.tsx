@@ -1,6 +1,7 @@
 import {
   CopyIcon,
   EllipsisVerticalIcon,
+  ImageDownIcon,
   PauseIcon,
   PencilIcon,
   PlayIcon,
@@ -122,6 +123,9 @@ export function ContainerMenu({
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'duplicate', container })}>
             <CopyIcon /> Duplicate
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'commit', container })}>
+            <ImageDownIcon /> Commit to image…
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem

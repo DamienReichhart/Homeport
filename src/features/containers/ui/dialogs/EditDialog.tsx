@@ -24,11 +24,13 @@ function EditForm({
   container,
   spec,
   onClose,
+  onCommitFirst,
 }: {
   hostId: string;
   container: Container;
   spec: RunSpec;
   onClose: () => void;
+  onCommitFirst: () => void;
 }) {
   const navigate = useNavigate();
   const [initial] = useState(() => ({ ...fromRunSpec(spec), name: container.name }));
@@ -88,6 +90,7 @@ function EditForm({
               )
             }
             onClose={() => setConfirming(false)}
+            onCommitFirst={onCommitFirst}
           />
         )}
       </DialogContent>
@@ -100,10 +103,13 @@ export function EditDialog({
   hostId,
   container,
   onClose,
+  onCommitFirst,
 }: {
   hostId: string;
   container: Container;
   onClose: () => void;
+  /** Leaves Edit for Commit, to keep files changed inside the container. */
+  onCommitFirst: () => void;
 }) {
   return (
     <LoadingDialog
@@ -111,7 +117,15 @@ export function EditDialog({
       query={containerQueries.runSpec(hostId, container.id)}
       onClose={onClose}
     >
-      {(spec) => <EditForm hostId={hostId} container={container} spec={spec} onClose={onClose} />}
+      {(spec) => (
+        <EditForm
+          hostId={hostId}
+          container={container}
+          spec={spec}
+          onClose={onClose}
+          onCommitFirst={onCommitFirst}
+        />
+      )}
     </LoadingDialog>
   );
 }

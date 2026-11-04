@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { hostKeys } from '@/core/host';
-import { commands, type ContainerAction, type FileEntry } from '@/shared/api';
+import { commands, type CommitSpec, type ContainerAction, type FileEntry } from '@/shared/api';
 import { toastError } from '@/shared/ui';
 import { toRunSpec, type RunForm } from '../model/runForm';
 
@@ -91,6 +91,30 @@ export function useRecreateContainer(
       toast.success('Container recreated');
       await refresh();
       onDone(id);
+    },
+  });
+}
+
+/**
+ * Commits a container to an image, refreshing the images list; the dialog
+ * shows a failure in place. The toast links to the Images page.
+ */
+export function useCommitContainer(
+  hostId: string,
+  containerId: string,
+  onDone: () => void,
+  openImages: () => void,
+) {
+  const client = useQueryClient();
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: (spec: CommitSpec) => commands.containersCommit(hostId, containerId, spec),
+    onSuccess: async (_, spec) => {
+      toast.success(`Committed to ${spec.reference}`, {
+        action: { label: 'Open images', onClick: openImages },
+      });
+      await client.invalidateQueries({ queryKey: hostKeys.images(hostId) });
+      onDone();
     },
   });
 }
