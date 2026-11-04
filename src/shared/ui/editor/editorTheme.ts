@@ -4,23 +4,25 @@ import { tags as t } from '@lezer/highlight';
 import type { Extension } from '@codemirror/state';
 import type { ResolvedTheme } from '@/shared/lib/theme';
 
-// Syntax colours derived from the brand hues (docs/BRAND.md); chrome uses the CSS tokens.
+// Syntax colours (docs/BRAND.md): keys in the text colour, so the structure reads
+// as plain type; values in two quiet hues; comments in Fragment Mono's italic.
+// Red, amber and green are kept for status and never mean syntax.
 const SYNTAX = {
   light: {
-    key: '#0062a6',
-    string: '#007e46',
-    number: '#b65500',
-    atom: '#8c399e',
-    comment: '#69737d',
-    punctuation: '#5b646f',
+    key: '#141414',
+    string: '#1f5a96',
+    number: '#8a3a8f',
+    atom: '#8a3a8f',
+    comment: '#6e6e68',
+    punctuation: '#6e6e68',
   },
   dark: {
-    key: '#60bdeb',
-    string: '#6cd79d',
-    number: '#ffa659',
-    atom: '#d398e0',
-    comment: '#7c8795',
-    punctuation: '#9099a5',
+    key: '#f7f7f4',
+    string: '#9dc0ee',
+    number: '#e0aee6',
+    atom: '#e0aee6',
+    comment: '#8c8c86',
+    punctuation: '#8c8c86',
   },
 };
 
@@ -31,8 +33,11 @@ function build(theme: ResolvedTheme): Extension {
       {
         '&': { backgroundColor: 'var(--card)', color: 'var(--card-foreground)' },
         '.cm-scroller': { fontFamily: 'var(--font-mono)', fontSize: '0.75rem', lineHeight: '1.6' },
-        '.cm-content': { caretColor: 'var(--beacon)' },
-        '.cm-cursor, .cm-dropCursor': { borderLeftColor: 'var(--beacon)', borderLeftWidth: '2px' },
+        '.cm-content': { caretColor: 'var(--foreground)' },
+        '.cm-cursor, .cm-dropCursor': {
+          borderLeftColor: 'var(--foreground)',
+          borderLeftWidth: '2px',
+        },
         '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection': {
           backgroundColor: 'color-mix(in oklch, var(--primary) 22%, transparent) !important',
         },
@@ -49,7 +54,7 @@ function build(theme: ResolvedTheme): Extension {
           color: 'var(--foreground)',
         },
         '.cm-matchingBracket, &.cm-focused .cm-matchingBracket': {
-          backgroundColor: 'color-mix(in oklch, var(--beacon) 25%, transparent)',
+          backgroundColor: 'color-mix(in oklch, var(--foreground) 16%, transparent)',
         },
         '.cm-foldPlaceholder': {
           backgroundColor: 'var(--muted)',

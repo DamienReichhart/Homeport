@@ -17,9 +17,7 @@ export function AboutCard() {
           <LogoMark className="size-12" />
           <div className="min-w-0">
             <p className="font-semibold tracking-tight">Homeport</p>
-            <p className="text-muted-foreground text-sm">
-              Every Docker Engine, docked in one place.
-            </p>
+            <p className="text-muted-foreground text-sm">Every Docker Engine, on one board.</p>
             <p className="text-muted-foreground font-mono text-xs">
               {info.data ? `v${info.data.version} · ${info.data.os}/${info.data.arch}` : '…'}
             </p>

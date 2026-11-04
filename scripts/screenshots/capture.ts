@@ -6,7 +6,8 @@
  * Builds `scripts/screenshots/` (the app's frontend with mocked IPC and demo
  * data), serves it, and photographs each shot with headless Firefox at
  * 1440×900 into `website/src/assets/screenshots/<name>.png`. Pass shot names
- * to capture only those. Set FIREFOX to use another Firefox binary.
+ * to capture only those. Set FIREFOX to use another Firefox binary, or CHROMIUM
+ * to a Chrome or Chromium binary to use that instead.
  */
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
@@ -18,6 +19,34 @@ const HERE = import.meta.dir;
 const ROOT = join(HERE, '..', '..');
 const OUT = join(ROOT, 'website', 'src', 'assets', 'screenshots');
 const FIREFOX = process.env.FIREFOX ?? 'firefox';
+const CHROMIUM = process.env.CHROMIUM;
+
+/** The command that photographs `url` into `png` at 1440×900, with reduced motion. */
+function screenshotCommand(profile: string, png: string, url: string): string[] {
+  if (CHROMIUM) {
+    return [
+      CHROMIUM,
+      '--headless',
+      '--no-sandbox',
+      '--hide-scrollbars',
+      '--force-prefers-reduced-motion',
+      `--screenshot=${png}`,
+      '--window-size=1440,900',
+      url,
+    ];
+  }
+  return [
+    FIREFOX,
+    '--headless',
+    '--no-remote',
+    '-profile',
+    profile,
+    '--screenshot',
+    png,
+    '--window-size=1440,900',
+    url,
+  ];
+}
 
 interface Shot {
   name: string;
@@ -150,26 +179,16 @@ async function main() {
       });
       if (shot.fastClock) query.set('clock', 'fast');
       for (const step of shot.steps ?? []) query.append('step', step);
-      const url = `http://localhost:${server.port}/scripts/screenshots/index.html?${query}`;
+      const url = `http://127.0.0.1:${server.port}/scripts/screenshots/index.html?${query}`;
       const png = join(work, `${shot.name}.png`);
-      const proc = Bun.spawn(
-        [
-          FIREFOX,
-          '--headless',
-          '--no-remote',
-          '-profile',
-          profile,
-          '--screenshot',
-          png,
-          '--window-size=1440,900',
-          url,
-        ],
-        { stdout: 'ignore', stderr: 'ignore' },
-      );
+      const proc = Bun.spawn(screenshotCommand(profile, png, url), {
+        stdout: 'ignore',
+        stderr: process.env.DEBUG_SHOTS ? 'inherit' : 'ignore',
+      });
       const timer = setTimeout(() => proc.kill(), 90_000);
       await proc.exited;
       clearTimeout(timer);
-      if (!existsSync(png)) throw new Error(`Firefox produced no screenshot for ${shot.name}`);
+      if (!existsSync(png)) throw new Error(`The browser produced no screenshot for ${shot.name}`);
       copyFileSync(png, join(OUT, `${shot.name}.png`));
       console.log(`✓ ${shot.name}`);
     }

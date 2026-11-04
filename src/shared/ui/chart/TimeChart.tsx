@@ -7,6 +7,8 @@ export interface ChartSeries {
   label: string;
   /** A CSS colour; theme tokens like `var(--chart-1)` are resolved. */
   colour: string;
+  /** Draw the line dashed, to tell a second series apart without another colour. */
+  dashed?: boolean;
 }
 
 function resolveColour(colour: string): string {
@@ -68,6 +70,7 @@ export function TimeChart({
           label: s.label,
           stroke: resolveColour(s.colour),
           width: 1.5,
+          ...(s.dashed ? { dash: [5, 3] } : {}),
           points: { show: false },
           value: (_u: uPlot, v: number | null) => (v === null ? '—' : formatRef.current(v)),
         })),
