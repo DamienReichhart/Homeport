@@ -20,7 +20,7 @@ describe('the English catalogue', () => {
     const intl = createIntl({ locale: 'en', messages: en, onError: (e) => errors.push(e.message) });
     for (const [key, message] of Object.entries(en)) {
       const text = intl.formatMessage({ id: key }, samples(message));
-      if (typeof text === 'string' && text.includes('{')) errors.push(`${key} left an argument`);
+      if (String(text).includes('{')) errors.push(`${key} left an argument`);
     }
     expect(errors).toEqual([]);
   });
