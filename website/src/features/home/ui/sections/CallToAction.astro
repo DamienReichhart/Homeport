@@ -1,61 +1,103 @@
 ---
-/** The closing call to download or contribute. */
+/**
+ * The close, as one row of the board cut from a longer one: a picture running
+ * off the left edge, the action tile, and a flat tile running off the right.
+ */
 import { REPO_URL } from '@/core/site';
 import { DownloadButton } from '@/features/download';
-import { Icon } from '@/shared/ui';
+import { href } from '@/shared/lib/href';
+import { Screenshot } from '@/shared/ui';
 ---
 
-<section class="section">
-  <div class="container">
-    <div class="cta card" data-reveal>
-      <div class="cta__text">
-        <h2>Nothing to install on your servers.</h2>
-        <p>
-          Download Homeport on the machine you work from and add your Hosts. It’s free, open source
-          under the MIT licence, and built in the open on GitHub.
-        </p>
-      </div>
-      <div class="cta__actions">
-        <DownloadButton />
-        <a class="button button--secondary button--large" href={REPO_URL}>
-          <Icon name="github" />
-          View on GitHub
-        </a>
-      </div>
+<section class="board-section cta" aria-labelledby="cta-title">
+  <figure class="tile cta__flank cta__flank--left" data-reveal>
+    <Screenshot
+      name="stack-logs"
+      alt="A Stack's logs, each line marked with the service that wrote it."
+      tile={{ zoom: 3, x: 40, y: 40 }}
+      sizes="300px"
+    />
+  </figure>
+
+  <div class="tile tile--strong cta__main" data-reveal style="--reveal-delay: 80ms">
+    <h2 id="cta-title">Add your first Host</h2>
+    <p>
+      Download Homeport for the machine you work from. Windows 10 and 11, macOS on Apple silicon and
+      Intel, and Linux as .deb, .rpm, AppImage or from the apt, dnf and zypper repositories.
+    </p>
+    <div class="cta__actions">
+      <DownloadButton tone="inverse" />
+      <a href={href('/download/')}>Every platform</a>
+      <a href={REPO_URL}>Read the source</a>
     </div>
   </div>
+
+  <div class="tile tile--figure cta__flank cta__flank--right" aria-hidden="true" data-reveal></div>
 </section>
 
 <style>
-  .cta.card {
-    position: relative;
-    overflow: hidden;
+  .cta {
     display: grid;
-    gap: 2rem;
-    align-items: center;
-    padding: clamp(2rem, 1rem + 4vw, 4rem);
-    border-top: 2px solid var(--hp-text);
-    background: var(--hp-surface);
+    grid-template-columns: 1fr;
+    gap: var(--hp-gap);
+    padding-inline: var(--hp-m);
   }
-  @media (min-width: 64rem) {
-    .cta {
-      grid-template-columns: 1fr auto;
-    }
-  }
-  .cta__text {
+  .cta__main {
     display: grid;
-    gap: 0.75rem;
-    max-width: 36rem;
+    gap: 1.25rem;
+    align-content: center;
+    min-height: 19rem;
+    padding: calc(var(--hp-pad) * 1.5);
   }
-  .cta h2 {
-    font-size: clamp(1.75rem, 1.3rem + 1.6vw, 2.5rem);
+  .cta__main h2 {
+    font-size: var(--hp-step-heading);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.02;
   }
-  .cta p {
-    color: var(--hp-text-muted);
+  .cta__main p {
+    max-width: 44rem;
+    font-size: var(--hp-step-body);
+    line-height: 1.5;
   }
   .cta__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
+    margin-top: 0.5rem;
+  }
+  .cta__actions a:not(.button) {
+    color: inherit;
+    font-weight: 600;
+  }
+  .cta__flank {
+    margin: 0;
+    min-height: 7.5rem;
+  }
+  @media (max-width: 47.99rem) {
+    .cta {
+      grid-template-columns: 1fr 1fr;
+    }
+    .cta__main {
+      grid-column: 1 / -1;
+      order: -1;
+    }
+  }
+  /* Wide: the flanks run off the page's edges, as if cropped from a longer row. */
+  @media (min-width: 48rem) {
+    .cta {
+      grid-template-columns: 1fr 4fr 1fr;
+      padding-inline: 0;
+    }
+    .cta__main {
+      min-height: 22.5rem;
+    }
+    .cta__flank--left {
+      border-radius: 0 var(--hp-radius) var(--hp-radius) 0;
+    }
+    .cta__flank--right {
+      border-radius: var(--hp-radius) 0 0 var(--hp-radius);
+    }
   }
 </style>

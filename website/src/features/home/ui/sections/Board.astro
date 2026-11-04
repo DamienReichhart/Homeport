@@ -1,0 +1,282 @@
+---
+/**
+ * The departure board: every Host on one row, set like the board on a station
+ * platform. It is the page's live thing. Pick a row to open it and read what
+ * Homeport knows about that Host; while the board is in view, a row changes its
+ * status the way a real one does. Healthy rows are plain; only what needs you
+ * turns red (docs/BRAND.md, Status).
+ */
+import { boardRows, openRow } from '../../data/board';
+
+const marks = { success: '●', warning: '◆', danger: '●' } as const;
+---
+
+<section class="board-section board" aria-labelledby="board-title">
+  <div class="board-heading board-heading--split" data-reveal>
+    <h2 id="board-title">The board</h2>
+    <p>
+      Every Host you add takes a row: its Engine, how Homeport reaches it, its Stacks and whether
+      anything needs you. Pick a row to open it.
+    </p>
+  </div>
+
+  <div class="board__frame" data-ui data-board>
+    <div class="board__row board__row--ghost board__row--top" aria-hidden="true">
+      <span class="board__line">
+        <span class="board__host">backup-01</span>
+        <span class="board__engine">Docker Engine 28.2</span>
+        <span class="board__via">SSH</span>
+        <span class="board__stacks">2 Stacks</span>
+        <span class="board__status">● All running</span>
+      </span>
+    </div>
+    <ul class="board__rows">
+      {boardRows.map((row, i) => (
+        <li
+          class:list={['board__row', i === openRow && 'is-open']}
+          data-row
+          data-flip={row.flips ? JSON.stringify(row.flips) : undefined}
+          data-status={row.status}
+          data-tone={row.tone}
+        >
+          <button
+            type="button"
+            class="board__line"
+            aria-expanded={i === openRow ? 'true' : 'false'}
+            aria-controls={`host-${row.host}`}
+          >
+            <span class="board__host">{row.host}</span>
+            <span class="board__engine">{row.engine}</span>
+            <span class="board__via">{row.via.toUpperCase()}</span>
+            <span class="board__stacks">
+              {row.stacks} {row.stacks === 1 ? 'Stack' : 'Stacks'}
+            </span>
+            <span class="board__status" data-tone={row.tone}>
+              <span class="board__mark" aria-hidden="true" data-mark>
+                {marks[row.tone]}
+              </span>
+              <span data-status-text>{row.status}</span>
+            </span>
+          </button>
+          <div class="board__detail" id={`host-${row.host}`}>
+            <p>{row.detail}</p>
+            <p class="board__facts">
+              {row.engine} · {row.stacks} {row.stacks === 1 ? 'Stack' : 'Stacks'}, {row.containers}{' '}
+              containers · <code>{row.address}</code>
+            </p>
+          </div>
+        </li>
+      ))}
+    </ul>
+    <div class="board__row board__row--ghost board__row--bottom" aria-hidden="true">
+      <span class="board__line">
+        <span class="board__host">ci-runner</span>
+        <span class="board__engine">Docker Engine 28.5</span>
+        <span class="board__via">SSH</span>
+        <span class="board__stacks">1 Stack</span>
+        <span class="board__status">● All running</span>
+      </span>
+    </div>
+  </div>
+
+  <p class="board__legend" data-reveal>
+    Healthy is plain. <span class="board__legend-warn">◆ Amber</span> is worth a look.{' '}
+    <span class="board__legend-red">● Red</span> needs you, and nothing else is red.
+  </p>
+</section>
+
+<script>
+  import { enhanceBoards } from '../../model/board';
+
+  enhanceBoards();
+</script>
+
+<style>
+  /* The board stays dark in both themes, like the real thing on a platform. */
+  .board__frame {
+    position: relative;
+    display: grid;
+    gap: 4px;
+    margin-inline: var(--hp-m);
+    padding-inline: 4px;
+    overflow: hidden;
+    border-radius: var(--hp-radius);
+    background: var(--hp-board);
+    color: var(--hp-board-text);
+  }
+  .board__rows {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .board__row {
+    background: var(--hp-board-row);
+    transition: background-color 0.3s ease;
+  }
+  /* The edges cut a row in half, so the list seems to run on past them. */
+  .board__row--ghost {
+    display: flex;
+    height: 2rem;
+    overflow: hidden;
+  }
+  .board__row--top {
+    align-items: flex-end;
+  }
+  .board__row--bottom {
+    align-items: flex-start;
+  }
+  .board__row--ghost .board__line {
+    flex: none;
+    cursor: default;
+  }
+  .board__line {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    min-height: 4rem;
+    padding: 0 1rem;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 1.25rem;
+    font-variant-numeric: tabular-nums;
+    text-align: left;
+    cursor: pointer;
+  }
+  .board__line:hover .board__host {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+    text-decoration-thickness: 2px;
+  }
+  .board__line:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: -4px;
+  }
+  .board__host {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .board__engine,
+  .board__via,
+  .board__stacks {
+    display: none;
+    color: var(--hp-board-muted);
+  }
+  .board__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.5rem;
+    padding: 0 0.85rem;
+    border-radius: var(--hp-radius);
+    background: var(--hp-board-chip);
+    font-size: var(--hp-step-body);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .board__status[data-tone='warning'] {
+    background: var(--hp-amber);
+    color: #141414;
+  }
+  .board__status[data-tone='danger'] {
+    background: #c8102e;
+    color: #ffffff;
+  }
+  .board__status.is-changing {
+    animation: flap 0.45s ease;
+  }
+  @keyframes flap {
+    from {
+      opacity: 0;
+    }
+  }
+  .board__mark {
+    font-size: 0.75em;
+  }
+  .board__detail {
+    display: none;
+    padding: 0 1rem 1.25rem;
+    font-size: var(--hp-step-body);
+    line-height: 1.5;
+  }
+  .board__detail p {
+    max-width: 52rem;
+  }
+  .board__facts {
+    margin-top: 0.35rem;
+    overflow-wrap: anywhere;
+  }
+  .board__facts code {
+    font-size: 0.95em;
+  }
+
+  /* The open row: Paper on the dark board, its detail under its line. */
+  .board__row.is-open {
+    background: var(--hp-paper);
+    color: var(--hp-ink);
+  }
+  .board__row.is-open .board__engine,
+  .board__row.is-open .board__via,
+  .board__row.is-open .board__stacks {
+    color: #4a4a46;
+  }
+  .board__row.is-open .board__status[data-tone='success'] {
+    background: #dcdcd5;
+  }
+  .board__row.is-open .board__detail {
+    display: block;
+  }
+  .board__row.is-open .board__detail {
+    animation: flap 0.4s ease;
+  }
+
+  .board__legend {
+    margin-top: 1.25rem;
+    padding-inline: calc(var(--hp-m) + var(--hp-pad));
+    font-size: var(--hp-step-body);
+  }
+  .board__legend-warn,
+  .board__legend-red {
+    font-weight: 600;
+  }
+  .board__legend-red {
+    color: var(--hp-signal);
+  }
+
+  @media (min-width: 48rem) {
+    .board__line {
+      grid-template-columns: 4fr 3fr 1.5fr 1.5fr 2fr;
+      min-height: 4.5rem;
+      padding: 0 1.25rem;
+      font-size: var(--hp-step-lead);
+    }
+    .board__engine,
+    .board__via,
+    .board__stacks {
+      display: block;
+    }
+    .board__status {
+      justify-self: end;
+    }
+    .board__row.is-open .board__line {
+      min-height: 5.5rem;
+    }
+    .board__row.is-open .board__host {
+      font-size: var(--hp-step-heading);
+      letter-spacing: -0.03em;
+    }
+    .board__detail {
+      padding: 0 1.25rem 1.75rem;
+      font-size: var(--hp-step-lead);
+      line-height: 1.35;
+    }
+    .board__facts {
+      font-size: var(--hp-step-body);
+    }
+  }
+</style>

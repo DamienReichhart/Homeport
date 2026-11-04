@@ -11,9 +11,11 @@ import { Icon } from '@/shared/ui';
 
 interface Props {
   size?: 'large' | 'default';
+  /** `inverse` for a button on the loud tile (Ink on light, Paper on dark). */
+  tone?: 'primary' | 'inverse';
 }
 
-const { size = 'large' } = Astro.props;
+const { size = 'large', tone = 'primary' } = Astro.props;
 const release = await getLatestRelease();
 const pick = (os: string, arch: string, format: string) =>
   release?.installers.find((i) => i.os === os && i.arch === arch && i.format === format)?.url ?? '';
@@ -28,7 +30,7 @@ const downloadPage = href('/download/');
 ---
 
 <a
-  class:list={['button button--primary', size === 'large' && 'button--large']}
+  class:list={['button', `button--${tone}`, size === 'large' && 'button--large']}
   href={downloadPage}
   data-download-link
   data-targets={JSON.stringify(targets)}

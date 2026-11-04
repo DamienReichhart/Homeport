@@ -13,3 +13,6 @@ coverage/
 .idea/
 src-tauri/licenses/
 .astro/
+
+# taste-skill working files (inspector screenshots, direction sheet)
+.taste-skill/

@@ -1,0 +1,66 @@
+/*
+ * The home page's board: tiles fitted edge to edge on a 12-column grid with
+ * narrow gaps. A tile is a flat filled rectangle, one tone step from the page,
+ * never outlined and never shadowed. Text in a tile sits top- or bottom-left on
+ * the tile's padding, so it shares one left edge with every other tile's text.
+ */
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--hp-gap);
+  padding-inline: var(--hp-m);
+}
+.tile {
+  position: relative;
+  overflow: hidden;
+  padding: var(--hp-pad);
+  border-radius: var(--hp-radius);
+  background: var(--hp-tile);
+  color: var(--hp-text);
+}
+.tile--strong {
+  background: var(--hp-strong);
+  color: var(--hp-on-strong);
+}
+.tile--figure {
+  background: var(--hp-tile-2);
+}
+/* A tile that is a picture: the picture covers it edge to edge. */
+figure.tile,
+.tile--picture {
+  padding: 0;
+}
+
+/* A section of the board that opens with its own heading, on the text's edge. */
+.board-section {
+  margin-top: var(--hp-section-gap);
+}
+.board-heading {
+  display: grid;
+  gap: 1rem 2rem;
+  padding-inline: calc(var(--hp-m) + var(--hp-pad));
+  margin-bottom: clamp(2.5rem, 2rem + 2vw, 4rem);
+}
+.board-heading h2 {
+  max-width: 18ch;
+  font-size: var(--hp-step-heading);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+}
+.board-heading p {
+  max-width: 40rem;
+  font-size: var(--hp-step-body);
+}
+@media (min-width: 64rem) {
+  .board-heading--split {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: end;
+  }
+  .board-heading--split h2 {
+    grid-column: 1 / 6;
+  }
+  .board-heading--split p {
+    grid-column: 7 / 12;
+  }
+}

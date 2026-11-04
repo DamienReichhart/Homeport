@@ -4,8 +4,12 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  border-bottom: 1px solid var(--hp-border);
   background: var(--hp-bg);
+}
+/* On the home page the header spans the board, its contents on the text's edge. */
+.is-wide .site-header__inner {
+  max-width: none;
+  padding-inline: calc(var(--hp-m) + var(--hp-pad));
 }
 .site-header__inner {
   display: flex;
@@ -58,18 +62,18 @@
   display: grid;
   min-width: 12rem;
   padding: 0.5rem;
-  border: 1px solid var(--hp-border-strong);
   border-radius: var(--hp-radius);
-  background: var(--hp-surface);
+  /* Flat, and set apart from the page by being its inverse. */
+  background: var(--hp-strong);
 }
 .site-header__sheet a {
   padding: 0.6rem 0.75rem;
   border-radius: var(--hp-radius);
-  color: var(--hp-text);
+  color: var(--hp-on-strong);
   text-decoration: none;
 }
 .site-header__sheet a:hover {
-  background: var(--hp-bg-raised);
+  text-decoration: underline;
 }
 @media (max-width: 30rem) {
   .site-header__actions > .button {

@@ -1,229 +1,261 @@
 ---
 /**
- * The headline, the download button and a departure board of Hosts. The board
- * is typeset, not a screenshot: every Engine on one board, healthy rows plain,
- * and one red signal where something needs you.
+ * The first screen, as the first rows of the board: the name, built large with
+ * the glyph; what Homeport is and the download; two screens of the app; and the
+ * one number that sets it apart (nothing runs on the server).
  */
-import { REPO_URL } from '@/core/site';
 import { getLatestRelease } from '@/core/release';
-import { DownloadButton, DownloadMeta } from '@/features/download';
+import { DownloadButton } from '@/features/download';
 import { href } from '@/shared/lib/href';
-import { Icon } from '@/shared/ui';
+import { Screenshot } from '@/shared/ui';
 
 const release = await getLatestRelease();
-
-interface Row {
-  host: string;
-  engine: string;
-  via: string;
-  stacks: number;
-  status: string;
-  needsYou?: boolean;
-}
-
-const rows: Row[] = [
-  { host: 'laptop', engine: 'OrbStack', via: 'socket', stacks: 4, status: 'All running' },
-  { host: 'homelab', engine: 'Docker Engine 28.5', via: 'ssh', stacks: 9, status: 'All running' },
-  { host: 'nas', engine: 'Podman 5.2', via: 'ssh', stacks: 2, status: 'All running' },
-  {
-    host: 'vps-fra-1',
-    engine: 'Docker Engine 27.3',
-    via: 'tls',
-    stacks: 3,
-    status: '1 Stack needs you',
-    needsYou: true,
-  },
-  {
-    host: 'client-prod',
-    engine: 'Docker Engine 28.1',
-    via: 'ssh',
-    stacks: 6,
-    status: 'All running',
-  },
-];
 ---
 
-<section class="hero">
-  <div class="container hero__inner">
-    {release && (
-      <a class="pill" href={href('/changelog/')}>
-        <span class="pill__tag">New</span>
-        Homeport {release.version} is out
-        <Icon name="arrowRight" size={14} />
-      </a>
-    )}
-    <h1>Every Docker Engine, on one board.</h1>
-    <p class="hero__lead">
-      Homeport runs on your machine and reaches your Hosts over SSH, TLS or TCP. No agent on the
-      server. Free, MIT, Windows, macOS, Linux.
-    </p>
-    <div class="hero__actions">
-      <DownloadButton />
-      <a class="button button--secondary button--large" href={REPO_URL}>
-        <Icon name="github" />
-        Read the source
-      </a>
+<section class="hero board-grid" aria-labelledby="hero-title">
+  <div class="tile hero__name">
+    <div class="hero__key">
+      <svg class="hero__glyph" viewBox="162 376 700 272" aria-hidden="true">
+        <rect x="162" y="412" width="200" height="200" fill="currentColor"></rect>
+        <rect x="356" y="476" width="240" height="72" fill="currentColor"></rect>
+        <circle cx="726" cy="512" r="100" fill="none" stroke="#e1001a" stroke-width="72"></circle>
+      </svg>
+      <p>
+        This machine, the connection, and a Host, drawn hollow because nothing is installed on it.
+      </p>
     </div>
-    <DownloadMeta />
+    <p class="hero__wordmark">Homeport</p>
   </div>
 
-  <div class="container" data-reveal>
-    <figure class="board">
-      <table>
-        <caption class="visually-hidden">
-          An example board: five Hosts, their Engines and how Homeport reaches them. One needs
-          attention.
-        </caption>
-        <thead>
-          <tr>
-            <th scope="col">Host</th>
-            <th scope="col" class="board__engine">
-              Engine
-            </th>
-            <th scope="col">Via</th>
-            <th scope="col" class="board__num">
-              Stacks
-            </th>
-            <th scope="col">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr class:list={[row.needsYou && 'is-signal']}>
-              <th scope="row">{row.host}</th>
-              <td class="board__engine">{row.engine}</td>
-              <td class="board__via">{row.via}</td>
-              <td class="board__num">{row.stacks}</td>
-              <td class="board__status">
-                <span>
-                  <span class="board__dot" aria-hidden="true" />
-                  {row.status}
-                </span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <figcaption>Healthy is plain. Only what needs you turns red.</figcaption>
-    </figure>
+  <div class="tile tile--strong hero__pitch">
+    <h1 id="hero-title">Every Docker Engine, on one board.</h1>
+    <p class="hero__lead">
+      A free desktop app for the Docker Engines you run, on this machine or on your servers over
+      SSH, TLS or TCP. Nothing is installed on the servers.
+    </p>
+    <div class="hero__actions">
+      <DownloadButton tone="inverse" />
+      <a href={href('/download/')}>All downloads</a>
+    </div>
+    <p class="hero__meta">
+      {release ? `Version ${release.version}` : 'Latest version'} for Windows, macOS and Linux · MIT
+      licence · <a href={href('/changelog/')}>What’s new</a>
+    </p>
   </div>
+
+  <div class="tile tile--figure hero__zero">
+    <p class="hero__figure" aria-hidden="true">
+      0
+    </p>
+    <p class="hero__figure-text">
+      <span class="visually-hidden">Zero</span>
+      agents on your servers. Homeport talks to the Engine that is already there.
+    </p>
+  </div>
+
+  <figure class="tile hero__shot hero__shot--overview">
+    <Screenshot
+      name="overview"
+      alt="Homeport's Overview: three Hosts side by side, prod-eu-1 over SSH, this Mac over its local socket and staging over TLS, each with its containers, images and CPU."
+      tile={{ zoom: 1.4, x: 55, y: 6 }}
+      sizes="(min-width: 48rem) 800px, 100vw"
+      eager
+    />
+  </figure>
+
+  <figure class="tile hero__shot">
+    <Screenshot
+      name="containers"
+      alt="The Containers page: containers grouped by Stack, with their image, status, ports, CPU and memory."
+      tile={{ zoom: 1.6, x: 45, y: 30 }}
+      sizes="(min-width: 48rem) 700px, 100vw"
+      eager
+    />
+  </figure>
 </section>
 
 <style>
   .hero {
-    padding-top: 4.5rem;
+    grid-template-rows: auto;
   }
-  @media (min-width: 64rem) {
-    .hero {
-      padding-top: 6.5rem;
-    }
+  .hero__name {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 3rem;
+    min-height: 34svh;
   }
-  .hero__inner {
-    display: grid;
-    justify-items: start;
-    gap: 1.5rem;
+  .hero__key {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.5rem;
+  }
+  .hero__key p {
+    max-width: 26ch;
+    font-size: var(--hp-step-small);
+    line-height: 1.4;
+  }
+  .hero__glyph {
+    flex: none;
+    width: clamp(4.5rem, 3rem + 4vw, 7.5rem);
+    height: auto;
+    color: var(--hp-text);
+  }
+  .hero__wordmark {
+    margin: 0 0 -0.12em -0.04em;
+    font-size: var(--hp-step-display);
+    font-weight: 700;
+    letter-spacing: -0.045em;
+    line-height: 0.9;
+  }
+  .hero__pitch {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 1.25rem;
   }
   .hero h1 {
-    max-width: 14ch;
-    font-size: clamp(2.6rem, 1.3rem + 5.4vw, 5rem);
+    max-width: 15ch;
+    font-size: var(--hp-step-heading);
     font-weight: 700;
-    letter-spacing: -0.035em;
-    line-height: 1;
+    letter-spacing: -0.03em;
+    line-height: 1.02;
   }
   .hero__lead {
-    max-width: 36rem;
-    color: var(--hp-text-muted);
-    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem);
+    max-width: 34rem;
+    font-size: var(--hp-step-body);
+    line-height: 1.5;
   }
   .hero__actions {
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 0.75rem;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
     margin-top: 0.5rem;
   }
+  .hero__actions a:not(.button),
+  .hero__meta a {
+    color: inherit;
+  }
+  .hero__meta {
+    color: var(--hp-on-strong-muted);
+    font-size: var(--hp-step-small);
+  }
+  .hero__shot {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 0;
+    min-height: 16rem;
+  }
+  .hero__shot--overview :global(img) {
+    clip-path: inset(0 0 0 0);
+  }
+  .hero__zero {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .hero__figure {
+    font-size: var(--hp-step-display);
+    font-weight: 700;
+    letter-spacing: -0.05em;
+    line-height: 0.8;
+  }
+  .hero__figure-text {
+    max-width: 22ch;
+    font-size: var(--hp-step-body);
+    line-height: 1.45;
+  }
 
-  /* The board. .container comes from the global stylesheet; outrank it. */
-  .board {
-    margin: 4rem 0 0;
-  }
-  .board table {
-    width: 100%;
-    border-collapse: collapse;
-    border-radius: var(--hp-radius-lg);
-    background: var(--hp-board);
-    box-shadow: 0 0 0 1px var(--hp-board-edge);
-    color: var(--hp-board-text);
-    font-size: clamp(0.95rem, 0.85rem + 0.5vw, 1.25rem);
-    overflow: hidden;
-  }
-  .board th,
-  .board td {
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--hp-board-rule);
-    text-align: left;
-    white-space: nowrap;
-  }
-  .board tbody tr:last-child > * {
-    border-bottom: 0;
-  }
-  .board thead th {
-    padding-block: 0.85rem;
-    color: var(--hp-board-muted);
-    font-family: var(--sl-font-mono);
-    font-size: 0.75rem;
-    font-weight: 400;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-  .board tbody th {
-    font-weight: 600;
-    letter-spacing: -0.01em;
-  }
-  .board__engine {
-    color: var(--hp-board-muted);
-  }
-  .board__via {
-    font-family: var(--sl-font-mono);
-    font-size: 0.85em;
-  }
-  .board__num {
-    text-align: right !important;
-    font-variant-numeric: tabular-nums;
-  }
-  .board__status > span {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-  }
-  .board__dot {
-    flex: none;
-    width: 0.6rem;
-    height: 0.6rem;
-    border-radius: 50%;
-    background: currentColor;
-  }
-  .board .is-signal .board__status {
-    color: var(--hp-board-signal);
-  }
-  .board figcaption {
-    margin-top: 0.85rem;
-    color: var(--hp-text-faint);
-    font-family: var(--sl-font-mono);
-    font-size: 0.8rem;
-  }
-  @media (max-width: 48rem) {
-    .board__engine {
-      display: none;
+  @media (min-width: 48rem) {
+    .hero__zero {
+      grid-column: 1 / 5;
     }
-    .board th,
-    .board td {
-      padding: 0.85rem 0.75rem;
+    .hero__shot--overview {
+      grid-column: 5 / -1;
+      min-height: 20rem;
+    }
+    .hero__shot:last-child {
+      grid-column: 1 / -1;
+      min-height: 20rem;
     }
   }
-  @media (max-width: 26rem) {
-    .board__num {
-      display: none;
+  @media (min-width: 64rem) {
+    .hero {
+      grid-template-rows: minmax(26rem, calc(58svh - 4rem)) minmax(18rem, 38svh);
+    }
+    .hero__name {
+      grid-column: 1 / 7;
+      min-height: 0;
+    }
+    .hero__pitch {
+      grid-column: 7 / -1;
+    }
+    .hero__zero {
+      grid-column: 1 / 4;
+    }
+    .hero__shot--overview {
+      grid-column: 4 / 9;
+    }
+    .hero__shot:last-child {
+      grid-column: 9 / -1;
+    }
+    .hero__shot,
+    .hero__shot--overview,
+    .hero__shot:last-child {
+      min-height: 0;
+    }
+  }
+  @media (max-width: 47.99rem) {
+    .hero__zero,
+    .hero__shot:last-child {
+      grid-column: span 6;
+      order: 1;
+    }
+  }
+
+  /* The signature move: the first screen of the app opens from its top edge, once. */
+  @media (prefers-reduced-motion: no-preference) {
+    .hero__shot--overview :global(img) {
+      animation: shutter 1.1s cubic-bezier(0.7, 0, 0.2, 1) 0.15s both;
+    }
+    .hero__pitch > *,
+    .hero__name > *,
+    .hero__zero > * {
+      animation: arrive 0.7s ease both;
+    }
+    .hero__pitch > :nth-child(2) {
+      animation-delay: 80ms;
+    }
+    .hero__pitch > :nth-child(3) {
+      animation-delay: 160ms;
+    }
+    .hero__pitch > :nth-child(4) {
+      animation-delay: 240ms;
+    }
+    .hero__zero > * {
+      animation-delay: 400ms;
+    }
+  }
+  @keyframes shutter {
+    from {
+      clip-path: inset(0 0 100% 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+  @keyframes arrive {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
     }
   }
 </style>

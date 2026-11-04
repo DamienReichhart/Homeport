@@ -1,0 +1,287 @@
+---
+/**
+ * The four ways Homeport reaches an Engine, as a row of panels from dark to
+ * light. Each says what it asks of the server, port by port (docs/BRAND.md,
+ * Claims: "no extra open port" is true only over SSH). One panel is open; the
+ * others are slivers that open on a click. Without script, all four are open.
+ */
+import { Screenshot } from '@/shared/ui';
+
+interface Way {
+  id: string;
+  name: string;
+  body: string;
+  needs: string;
+  address: string;
+  shot?: { name: string; alt: string; x: number; y: number; zoom: number };
+  port?: string;
+}
+
+const ways: Way[] = [
+  {
+    id: 'socket',
+    name: 'Local socket',
+    body: 'Engines on this machine are found for you, from Docker Desktop to Podman, over Unix sockets and Windows named pipes.',
+    needs: 'Needs nothing: the Engine is already here.',
+    address: '/var/run/docker.sock',
+    shot: {
+      name: 'add-host-ssh',
+      alt: 'Add host, Found on this machine: a Colima Engine on its local socket, with an Add button.',
+      x: 20,
+      y: 10,
+      zoom: 2,
+    },
+  },
+  {
+    id: 'ssh',
+    name: 'SSH',
+    body: 'Homeport makes an Ed25519 key for this Host, or uses yours or ssh-agent, and checks the server’s fingerprint on first contact.',
+    needs: 'Needs the SSH port you already have open, and one line in authorized_keys.',
+    address: 'deploy@server.example.com',
+    shot: {
+      name: 'host-ssh',
+      alt: 'An SSH Host’s page with the command that adds Homeport’s public key to authorized_keys.',
+      x: 30,
+      y: 16,
+      zoom: 1.9,
+    },
+  },
+  {
+    id: 'tls',
+    name: 'TLS',
+    body: 'Mutual TLS with your certificate authority, a client certificate and its key.',
+    needs: 'Needs the Engine’s API port, which you expose yourself.',
+    address: 'docker.example.com:2376',
+    port: '2376',
+  },
+  {
+    id: 'tcp',
+    name: 'TCP',
+    body: 'Plain, unencrypted TCP to the Engine’s API. Only for an Engine on a network you trust.',
+    needs: 'Needs the Engine’s API port, open to your network.',
+    address: '192.168.1.10:2375',
+    port: '2375',
+  },
+];
+const openId = 'ssh';
+---
+
+<section class="board-section connections" aria-labelledby="connections-title">
+  <div class="board-heading board-heading--split" data-reveal>
+    <h2 id="connections-title">Four ways in</h2>
+    <p>
+      Add a server once and it stays on the board, reconnecting on its own when the network blinks.
+      Choose how Homeport reaches its Engine; each asks something different of the server.
+    </p>
+  </div>
+
+  <div class="ways" data-ways>
+    {ways.map((way, i) => (
+      <div class:list={['way', `way--${i + 1}`, way.id === openId && 'is-open']} data-way>
+        <h3 class="way__name">
+          <button
+            type="button"
+            aria-expanded={way.id === openId ? 'true' : 'false'}
+            aria-controls={`way-${way.id}`}
+          >
+            <span class="way__label">{way.name}</span>
+          </button>
+        </h3>
+        <div class="way__body" id={`way-${way.id}`}>
+          <div class="way__text">
+            <p>{way.body}</p>
+            <p class="way__needs">{way.needs}</p>
+            <p>
+              <code>{way.address}</code>
+            </p>
+          </div>
+          <div class="way__picture">
+            {way.shot ? (
+              <Screenshot
+                name={way.shot.name}
+                alt={way.shot.alt}
+                tile={{ zoom: way.shot.zoom, x: way.shot.x, y: way.shot.y }}
+                sizes="(min-width: 64rem) 420px, 100vw"
+              />
+            ) : (
+              <p class="way__port">
+                <span class="visually-hidden">Usual port:</span>
+                {way.port}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+
+<script>
+  for (const group of document.querySelectorAll<HTMLElement>('[data-ways]')) {
+    const ways = [...group.querySelectorAll<HTMLElement>('[data-way]')];
+    for (const way of ways) {
+      way.querySelector('button')?.addEventListener('click', () => {
+        for (const other of ways) {
+          const open = other === way;
+          other.classList.toggle('is-open', open);
+          other.querySelector('button')?.setAttribute('aria-expanded', String(open));
+        }
+      });
+    }
+  }
+</script>
+
+<style>
+  .ways {
+    display: grid;
+    gap: var(--hp-gap);
+    padding-inline: var(--hp-m);
+  }
+  .way {
+    overflow: hidden;
+    border-radius: var(--hp-radius);
+    color: #f7f7f4;
+  }
+  /* Order is carried by tone: darkest first, each later stage a lighter flat grey. */
+  .way--1 {
+    background: #141414;
+  }
+  .way--2 {
+    background: #3a3a37;
+  }
+  .way--3 {
+    background: #8c8c86;
+    color: #141414;
+  }
+  .way--4 {
+    background: #d4d4cc;
+    color: #141414;
+  }
+  :global([data-theme='dark']) .way--1 {
+    background: #0b0b0b;
+  }
+  .way__name button {
+    display: block;
+    width: 100%;
+    min-height: 4rem;
+    padding: var(--hp-pad);
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: var(--hp-step-lead);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-align: left;
+    cursor: pointer;
+  }
+  .way__name button:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+  .way__name button:focus-visible {
+    outline-color: currentColor;
+    outline-offset: -4px;
+  }
+  .way__body {
+    display: grid;
+    gap: var(--hp-pad);
+    padding: 0 var(--hp-pad) var(--hp-pad);
+  }
+  .way__text {
+    display: grid;
+    gap: 0.75rem;
+    align-content: end;
+    max-width: 36ch;
+    font-size: var(--hp-step-body);
+    line-height: 1.5;
+  }
+  .way__needs {
+    font-weight: 600;
+  }
+  .way__text code {
+    font-size: var(--hp-step-small);
+    overflow-wrap: anywhere;
+  }
+  .way__picture {
+    min-height: 14rem;
+    overflow: hidden;
+    border-radius: var(--hp-radius);
+  }
+  .way__port {
+    display: flex;
+    align-items: flex-end;
+    height: 100%;
+    font-size: var(--hp-step-display);
+    font-weight: 700;
+    letter-spacing: -0.05em;
+    line-height: 0.8;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* With script: one panel open, the rest closed to their names. */
+  :global(.js) .way:not(.is-open) .way__body {
+    display: none;
+  }
+
+  /* Wide screens: a row of panels, the open one taking most of the width. */
+  @media (min-width: 64rem) {
+    :global(.js) .ways {
+      display: flex;
+      gap: 0;
+      height: 32.5rem;
+    }
+    :global(.js) .way {
+      position: relative;
+      flex: 0 0 5.5rem;
+      border-radius: 0;
+      transition: flex-basis 0.45s cubic-bezier(0.6, 0, 0.2, 1);
+    }
+    :global(.js) .way:first-child {
+      border-radius: var(--hp-radius) 0 0 var(--hp-radius);
+    }
+    :global(.js) .way:last-child {
+      border-radius: 0 var(--hp-radius) var(--hp-radius) 0;
+    }
+    :global(.js) .way.is-open {
+      flex: 1 1 auto;
+    }
+    /* A closed panel is all button, its name turned on its side, reading upward. */
+    :global(.js) .way:not(.is-open) .way__name button {
+      position: absolute;
+      inset: 0;
+    }
+    :global(.js) .way:not(.is-open) .way__label {
+      position: absolute;
+      left: var(--hp-pad);
+      bottom: var(--hp-pad);
+      writing-mode: vertical-rl;
+      rotate: 180deg;
+      white-space: nowrap;
+    }
+    :global(.js) .way.is-open {
+      display: flex;
+      flex-direction: column;
+    }
+    :global(.js) .way.is-open .way__name button {
+      font-size: var(--hp-step-heading);
+      line-height: 1;
+      cursor: default;
+      text-decoration: none;
+    }
+    :global(.js) .way.is-open .way__body {
+      flex: 1;
+      grid-template-columns: 1fr 1fr;
+      min-height: 0;
+      animation: way-in 0.5s ease 0.2s both;
+    }
+    :global(.js) .way__picture {
+      min-height: 0;
+    }
+  }
+  @keyframes way-in {
+    from {
+      opacity: 0;
+    }
+  }
+</style>

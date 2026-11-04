@@ -3,33 +3,27 @@ import SiteLayout from '@/app/layouts/SiteLayout.astro';
 import { getLatestRelease } from '@/core/release';
 import { TAGLINE } from '@/core/site';
 import {
+  Board,
   CallToAction,
-  Containers,
-  Desktops,
-  Features,
+  Connections,
   Hero,
-  Hosts,
-  Runtimes,
-  Security,
+  Inside,
+  Intro,
+  Safeguards,
   softwareApplication,
-  Stacks,
-  Visits,
 } from '@/features/home';
 import { ScrollReveal } from '@/shared/ui';
 
 const jsonLd = softwareApplication(Astro.site, await getLatestRelease());
 ---
 
-<SiteLayout title={`Homeport — ${TAGLINE}`} jsonLd={jsonLd}>
+<SiteLayout title={`Homeport — ${TAGLINE}`} jsonLd={jsonLd} wide>
   <Hero />
-  <Runtimes />
-  <Visits />
-  <Features />
-  <Hosts />
-  <Containers />
-  <Stacks />
-  <Security />
-  <Desktops />
+  <Intro />
+  <Connections />
+  <Board />
+  <Inside />
+  <Safeguards />
   <CallToAction />
   <ScrollReveal />
 </SiteLayout>

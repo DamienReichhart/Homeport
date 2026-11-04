@@ -1,0 +1,182 @@
+---
+/**
+ * What Homeport does on each Host: six cells, each a short text and a real
+ * piece of the app docked to the cell's opposite edge and cropped by it. Across
+ * a row the pieces alternate top and bottom, so they form a checkerboard.
+ */
+import { href } from '@/shared/lib/href';
+import { Screenshot } from '@/shared/ui';
+
+interface Cell {
+  title: string;
+  body: string;
+  shot: string;
+  alt: string;
+  x: number;
+  y: number;
+  zoom: number;
+}
+
+const cells: Cell[] = [
+  {
+    title: 'Containers',
+    body: 'Grouped by Stack, with live CPU and memory. Start, stop, restart, pause or remove one container or twenty.',
+    shot: 'containers',
+    alt: 'Containers grouped under the Stacks monitoring and shop, each with its status, ports, CPU and memory.',
+    x: 40,
+    y: 35,
+    zoom: 1.7,
+  },
+  {
+    title: 'Logs',
+    body: 'Already streaming when you open a container. Search, filter by stream and time, and download.',
+    shot: 'container-logs',
+    alt: 'A container’s logs streaming, with timestamps, levels and request paths.',
+    x: 15,
+    y: 30,
+    zoom: 2,
+  },
+  {
+    title: 'Terminal',
+    body: 'Shells inside the container, as many as you need, beside its files, processes and inspect document.',
+    shot: 'container-terminal',
+    alt: 'A psql session in a Postgres container’s terminal, listing tables and counting orders by status.',
+    x: 15,
+    y: 28,
+    zoom: 2.1,
+  },
+  {
+    title: 'Compose Stacks',
+    body: 'Write a compose file, keep its variables encrypted and deploy it to any Host. Stacks started by hand show up too, ready to adopt.',
+    shot: 'stack-editor',
+    alt: 'The shop Stack’s compose.yaml in the editor, with its environment beside it.',
+    x: 18,
+    y: 30,
+    zoom: 1.9,
+  },
+  {
+    title: 'Images',
+    body: 'Pull with progress for each layer, tag, read the history, run straight from the list and clear out what nothing uses.',
+    shot: 'images',
+    alt: 'The Images page: each image with its ID, age, size and whether a container uses it.',
+    x: 40,
+    y: 25,
+    zoom: 1.7,
+  },
+  {
+    title: 'Stats',
+    body: 'CPU, memory, network and disk charts for a container, as it runs, on a Host across the world or under your desk.',
+    shot: 'container-stats',
+    alt: 'A container’s CPU, memory, network and disk I/O charts.',
+    x: 25,
+    y: 35,
+    zoom: 1.6,
+  },
+];
+---
+
+<section class="board-section inside" id="features" aria-labelledby="inside-title">
+  <div class="board-heading" data-reveal>
+    <h2 id="inside-title">Inside every Host</h2>
+  </div>
+
+  <div class="inside__grid board-grid">
+    {cells.map((cell, i) => (
+      <article
+        class:list={['tile', 'cell', (i % 3 === 1) !== i >= 3 && 'cell--flip']}
+        data-reveal
+        style={`--reveal-delay: ${(i % 3) * 80}ms`}
+      >
+        <div class="cell__text">
+          <h3>{cell.title}</h3>
+          <p>{cell.body}</p>
+        </div>
+        <div class="cell__piece">
+          <Screenshot
+            name={cell.shot}
+            alt={cell.alt}
+            tile={{ zoom: cell.zoom, x: cell.x, y: cell.y }}
+            sizes="(min-width: 64rem) 480px, 100vw"
+          />
+        </div>
+      </article>
+    ))}
+  </div>
+
+  <p class="inside__more" data-reveal>
+    Also on every Host: volumes and networks with what uses them, the Engine’s live events, and disk
+    usage with a clean-up in one dialog.
+    <a href={href('/docs/guides/containers/')}>Read the guides</a>
+  </p>
+</section>
+
+<style>
+  .cell {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-rows: auto 15rem;
+    gap: var(--hp-pad);
+    padding: 0;
+  }
+  .cell__text {
+    display: grid;
+    gap: 0.5rem;
+    padding: var(--hp-pad) var(--hp-pad) 0;
+  }
+  .cell h3 {
+    font-size: var(--hp-step-lead);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  .cell p {
+    max-width: 34ch;
+    font-size: var(--hp-step-body);
+    line-height: 1.5;
+  }
+  /* The piece of the app runs to the cell's edges and is cropped by them. */
+  .cell__piece {
+    min-height: 0;
+    margin-left: var(--hp-pad);
+    overflow: hidden;
+    border-radius: var(--hp-radius) 0 0 0;
+  }
+  .cell:nth-child(even) .cell__piece {
+    margin: 0 var(--hp-pad) 0 0;
+    border-radius: 0 var(--hp-radius) 0 0;
+  }
+  .inside__more {
+    max-width: 52rem;
+    margin-top: 2rem;
+    padding-inline: calc(var(--hp-m) + var(--hp-pad));
+    font-size: var(--hp-step-body);
+  }
+  .inside__more a {
+    margin-left: 0.35rem;
+    font-weight: 600;
+  }
+
+  @media (min-width: 64rem) {
+    .cell {
+      grid-column: span 4;
+      grid-template-rows: auto 1fr;
+      height: 28rem;
+    }
+    /* Text on top, piece below; the flipped cells run the other way. */
+    .cell--flip {
+      grid-template-rows: 1fr auto;
+    }
+    .cell--flip .cell__text {
+      order: 2;
+      padding: 0 var(--hp-pad) var(--hp-pad);
+    }
+    .cell .cell__piece,
+    .cell:nth-child(even) .cell__piece {
+      margin: 0 var(--hp-pad);
+      border-radius: var(--hp-radius) var(--hp-radius) 0 0;
+    }
+    .cell--flip .cell__piece,
+    .cell--flip:nth-child(even) .cell__piece {
+      border-radius: 0 0 var(--hp-radius) var(--hp-radius);
+    }
+  }
+</style>

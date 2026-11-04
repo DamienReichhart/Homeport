@@ -1,0 +1,161 @@
+---
+/**
+ * The position, as statement tiles: Homeport stays on your machine and visits
+ * your servers. The slogan is the heading; the long tile says what that means on
+ * the server and for the keys Homeport holds.
+ */
+import { href } from '@/shared/lib/href';
+import { Screenshot } from '@/shared/ui';
+
+const runtimes = [
+  'Docker Engine',
+  'Docker Desktop',
+  'OrbStack',
+  'Colima',
+  'Rancher Desktop',
+  'Podman',
+];
+---
+
+<section class="intro board-grid" aria-labelledby="intro-title">
+  <div class="tile tile--strong intro__slogan" data-reveal>
+    <h2 id="intro-title">It never moves&nbsp;in.</h2>
+  </div>
+
+  <div class="tile tile--figure intro__word" data-reveal style="--reveal-delay: 80ms">
+    <p class="intro__word-big">Free</p>
+    <p class="intro__word-note">MIT licence. No account, no telemetry.</p>
+  </div>
+
+  <figure class="tile intro__shot" data-reveal style="--reveal-delay: 160ms">
+    <Screenshot
+      name="host-ssh"
+      alt="An SSH Host's page: the two commands that authorise Homeport on the server, the public key to add to authorized_keys, and the key's fingerprint."
+      tile={{ zoom: 1.9, x: 30, y: 14 }}
+      sizes="(min-width: 48rem) 560px, 100vw"
+    />
+  </figure>
+
+  <div class="intro__runtimes" data-reveal>
+    <p>
+      Works with the Engine you already run:{' '}
+      {runtimes.map((name, i) => (
+        <>
+          {i > 0 && (i === runtimes.length - 1 ? ' and ' : ', ')}
+          <strong>{name}</strong>
+        </>
+      ))}
+      .
+    </p>
+  </div>
+
+  <div class="intro__text" data-reveal style="--reveal-delay: 80ms">
+    <p>
+      Homeport runs on the machine you work from. It reaches each Host’s Docker Engine the way you
+      choose and leaves nothing running there: no agent to update, no web panel with a login page
+      waiting to be found, no account to sign in to. Over SSH it needs only the port you already
+      have open and one line in <code>authorized_keys</code>, for a key it makes for that Host
+      alone. It is a small native app, built with Tauri and Rust, for Windows, macOS and Linux.
+    </p>
+    <a href={href('/docs/hosts/')}>How connections work</a>
+  </div>
+</section>
+
+<style>
+  .intro {
+    margin-top: var(--hp-gap);
+  }
+  .intro__slogan {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: flex-end;
+    min-height: 46svh;
+  }
+  .intro__slogan h2 {
+    font-size: var(--hp-step-display);
+    font-weight: 700;
+    letter-spacing: -0.045em;
+    line-height: 0.88;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+  .intro__word,
+  .intro__shot {
+    grid-column: span 6;
+    aspect-ratio: 1;
+  }
+  .intro__word {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .intro__word-note {
+    max-width: 16ch;
+    font-size: var(--hp-step-small);
+    line-height: 1.4;
+  }
+  .intro__word-big {
+    font-size: var(--hp-step-display);
+    font-weight: 700;
+    letter-spacing: -0.045em;
+    line-height: 0.8;
+  }
+  .intro__shot {
+    margin: 0;
+  }
+  .intro__runtimes,
+  .intro__text {
+    grid-column: 1 / -1;
+    padding: calc(var(--hp-pad) * 1.5) var(--hp-pad) 0;
+  }
+  .intro__runtimes p {
+    max-width: 22ch;
+    font-size: var(--hp-step-lead);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+  .intro__runtimes strong {
+    font-weight: 600;
+  }
+  .intro__text {
+    display: grid;
+    gap: 1.5rem;
+    justify-items: start;
+  }
+  .intro__text p {
+    font-size: var(--hp-step-lead);
+    line-height: 1.38;
+    letter-spacing: -0.01em;
+  }
+  .intro__text a {
+    font-size: var(--hp-step-body);
+    font-weight: 600;
+  }
+
+  @media (min-width: 48rem) {
+    .intro {
+      grid-template-rows: 38svh 38svh auto;
+    }
+    .intro__slogan {
+      grid-column: 1 / 9;
+      grid-row: 1 / 3;
+      min-height: 0;
+    }
+    .intro__word,
+    .intro__shot {
+      grid-column: 9 / -1;
+      aspect-ratio: auto;
+    }
+    .intro__shot {
+      grid-row: 2;
+    }
+    .intro__runtimes {
+      grid-column: 1 / 6;
+      padding-top: 2.5rem;
+    }
+    .intro__text {
+      grid-column: 7 / -1;
+      padding: 2.5rem var(--hp-pad) 0 0;
+    }
+  }
+</style>

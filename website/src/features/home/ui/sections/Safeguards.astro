@@ -1,0 +1,282 @@
+---
+/**
+ * How Homeport keeps the credentials that open your servers, as a deck of
+ * cards. On wide screens the deck holds still for two screens of scrolling:
+ * each step brings the next card in and folds the earlier ones into spines at
+ * the left, which bring their card back when clicked. Elsewhere, and without
+ * script or with reduced motion, the cards simply stack.
+ */
+import { href } from '@/shared/lib/href';
+
+const cards = [
+  {
+    title: 'Encrypted at rest',
+    body: 'SSH keys, TLS certificates and Stack variables are sealed with XChaCha20-Poly1305. The key lives in your OS keychain, not next to the data.',
+    fact: 'OS keychain',
+  },
+  {
+    title: 'Never on disk in clear',
+    body: 'Homeport speaks SSH itself, so decrypted keys stay in memory. No key files, and no changes to your ~/.ssh.',
+    fact: 'In memory only',
+  },
+  {
+    title: 'A key for each Host',
+    body: 'For an SSH Host, Homeport makes an Ed25519 key for that Host alone, or uses your own key or ssh-agent.',
+    fact: 'Ed25519',
+  },
+  {
+    title: 'Fingerprints checked',
+    body: 'On first contact Homeport records the server’s fingerprint, and warns you if it ever changes.',
+    fact: 'On every connection',
+  },
+  {
+    title: 'Nothing phones home',
+    body: 'No account, no telemetry, no tracking. Homeport talks to your Engines and to nothing else.',
+    fact: 'No telemetry',
+  },
+  {
+    title: 'Built in the open',
+    body: 'Every release is built on GitHub from the public source, with checksums, build provenance and signed packages and updates.',
+    fact: 'MIT licence',
+  },
+];
+---
+
+<section class="board-section safe" aria-labelledby="safe-title" data-safe>
+  <div class="safe__track">
+    <div class="safe__stage">
+      <div class="board-heading" data-reveal>
+        <h2 id="safe-title">Your keys stay sealed</h2>
+      </div>
+      <ol class="safe__deck" data-deck>
+        {cards.map((card, i) => (
+          <li class="safe__card" style={`--tone: var(--hp-tile${['', '-2', '-3'][i % 3]})`}>
+            <div class="safe__body">
+              <h3>
+                {/* Folded into a spine, the title is what shows, and brings its card back. */}
+                <button type="button" class="safe__spine" tabindex="-1">
+                  {card.title}
+                </button>
+              </h3>
+              <p>{card.body}</p>
+              <p class="safe__fact">{card.fact}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+      <p class="safe__more">
+        Six safeguards, on from the first Host you add.
+        <a href={href('/docs/reference/security/')}>Security and your data</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+  const wide = matchMedia('(min-width: 64rem)');
+  const still = matchMedia('(prefers-reduced-motion: reduce)');
+
+  for (const section of document.querySelectorAll<HTMLElement>('[data-safe]')) {
+    const track = section.querySelector<HTMLElement>('.safe__track');
+    const cards = [...section.querySelectorAll<HTMLElement>('.safe__card')];
+    if (!track || cards.length === 0) continue;
+
+    let active = -1;
+    const show = (index: number) => {
+      if (index === active) return;
+      active = index;
+      cards.forEach((card, i) => {
+        card.classList.toggle('is-spine', i < index);
+        card.classList.toggle('is-current', i === index);
+        card.classList.remove('is-next');
+      });
+      // The next card shows its title too, when the whole title fits on the stage.
+      const next = cards[index + 1];
+      const deck = next?.parentElement;
+      const title = next?.querySelector('.safe__spine');
+      if (!next || !deck || !title) return;
+      const style = getComputedStyle(deck);
+      const gap = parseFloat(style.columnGap) || 0;
+      const spine = parseFloat(getComputedStyle(cards[0]!).getPropertyValue('--spine')) || 0;
+      const card = cards[index]!.querySelector<HTMLElement>('.safe__body')?.offsetWidth ?? 0;
+      const pad = parseFloat(getComputedStyle(next.querySelector('.safe__body')!).paddingLeft);
+      const left = index * (spine + gap) + card + gap + pad;
+      if (left + title.getBoundingClientRect().width <= deck.clientWidth - 24) {
+        next.classList.add('is-next');
+      }
+    };
+
+    const update = () => {
+      if (!section.classList.contains('is-pinned')) return;
+      const box = track.getBoundingClientRect();
+      const travel = box.height - window.innerHeight;
+      const progress = Math.min(1, Math.max(0, -box.top / Math.max(1, travel)));
+      show(Math.min(cards.length - 1, Math.floor(progress * cards.length)));
+    };
+
+    const setUp = () => {
+      const pin = wide.matches && !still.matches;
+      section.classList.toggle('is-pinned', pin);
+      if (!pin) cards.forEach((card) => card.classList.remove('is-spine', 'is-current'));
+      active = -1;
+      update();
+    };
+
+    // A spine brings its card back by scrolling to the step that shows it.
+    cards.forEach((card, i) => {
+      card.querySelector('.safe__spine')?.addEventListener('click', () => {
+        const box = track.getBoundingClientRect();
+        const travel = box.height - window.innerHeight;
+        const top = window.scrollY + box.top + (travel * (i + 0.5)) / cards.length;
+        window.scrollTo({ top, behavior: 'smooth' });
+      });
+    });
+
+    wide.addEventListener('change', setUp);
+    still.addEventListener('change', setUp);
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    setUp();
+  }
+</script>
+
+<style>
+  .safe__deck {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0 var(--hp-m);
+    list-style: none;
+  }
+  .safe__card {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--hp-radius);
+    background: var(--tone);
+  }
+  .safe__spine {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    pointer-events: none;
+  }
+  .safe__body {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 0.75rem;
+    min-height: 15rem;
+    padding: calc(var(--hp-pad) * 1.25);
+  }
+  .safe__body h3 {
+    font-size: var(--hp-step-lead);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.1;
+  }
+  .safe__body p {
+    max-width: 38ch;
+    font-size: var(--hp-step-body);
+    line-height: 1.5;
+  }
+  .safe__fact {
+    align-self: end;
+    font-weight: 600;
+  }
+  .safe__more {
+    margin-top: 2rem;
+    padding-inline: calc(var(--hp-m) + var(--hp-pad));
+    font-size: var(--hp-step-body);
+  }
+  .safe__more a {
+    margin-left: 0.35rem;
+    font-weight: 600;
+  }
+
+  /* Pinned: the stage holds for two screens while the deck folds. */
+  .safe.is-pinned .safe__track {
+    height: 220svh;
+  }
+  .safe.is-pinned .safe__stage {
+    position: sticky;
+    top: 4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: calc(100svh - 4rem);
+  }
+  .safe.is-pinned .safe__deck {
+    display: flex;
+    gap: var(--hp-gap);
+    height: 22.5rem;
+    overflow: hidden;
+  }
+  .safe.is-pinned .safe__card {
+    flex: 0 0 38.75rem;
+    transition: flex-basis 0.6s cubic-bezier(0.6, 0, 0.2, 1);
+  }
+  /* A spine's width in px (6.5rem), for the script that checks what fits. */
+  .safe.is-pinned .safe__card {
+    --spine: 104;
+  }
+  .safe.is-pinned .safe__card.is-spine {
+    flex-basis: 6.5rem;
+  }
+  .safe.is-pinned .safe__body {
+    width: 38.75rem;
+    height: 100%;
+  }
+  .safe.is-pinned .safe__body > * {
+    transition: opacity 0.25s ease;
+  }
+  .safe.is-pinned .safe__body h3 {
+    font-size: 1.875rem;
+  }
+  .safe.is-pinned .safe__card {
+    position: relative;
+  }
+  .safe.is-pinned .safe__body {
+    position: relative;
+  }
+  /* A spine: the card's own title, clipped by the narrow card, and a way back to it. */
+  .safe.is-pinned .safe__card:not(.is-current) .safe__body > :not(h3) {
+    opacity: 0;
+  }
+  .safe.is-pinned .safe__card:not(.is-current, .is-spine, .is-next) .safe__body h3 {
+    opacity: 0;
+  }
+  /* Like a book's spine, the title runs up the sliver, whole. */
+  .safe.is-pinned .is-spine .safe__body h3 {
+    position: absolute;
+    left: calc(var(--hp-pad) * 1.25);
+    bottom: calc(var(--hp-pad) * 1.25);
+    font-size: 1.5rem;
+    white-space: nowrap;
+    writing-mode: vertical-rl;
+    rotate: 180deg;
+    /* Turned only once the card's own text has faded, so the two never overlap. */
+    animation: spine-in 0.3s ease 0.3s both;
+  }
+  @keyframes spine-in {
+    from {
+      opacity: 0;
+    }
+  }
+  .safe.is-pinned .is-spine .safe__spine {
+    pointer-events: auto;
+    cursor: pointer;
+  }
+  .safe.is-pinned .is-spine .safe__spine:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+  .safe.is-pinned .safe__deck {
+    margin-inline: var(--hp-m);
+    padding: 0;
+  }
+  .safe.is-pinned .safe__more {
+    margin-top: 3rem;
+  }
+</style>

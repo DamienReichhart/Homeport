@@ -1,5 +1,4 @@
 ---
-import mark from '@brand/mark.svg';
 import { ISSUES_URL, RELEASES_URL, REPO_URL, TAGLINE } from '@/core/site';
 import { legalLinks } from '@/features/legal';
 import { href } from '@/shared/lib/href';
@@ -39,40 +38,57 @@ const columns = [
 
 <footer class="site-footer">
   <div class="site-footer__inner">
-    <div class="site-footer__brand">
-      <img src={mark.src} alt="" width="36" height="36" />
-      <p>
-        <strong>Homeport</strong>
-        <br />
-        {TAGLINE}
-      </p>
-    </div>
-    {columns.map((column) => (
-      <div class="site-footer__column">
-        <h2>{column.title}</h2>
+    {/* The mark, built large: this machine, the line, and a Host that stays hollow. */}
+    <a class="site-footer__mark" href={href('/')} aria-label="Homeport home">
+      <svg viewBox="162 376 700 272" aria-hidden="true">
+        <rect x="162" y="412" width="200" height="200" fill="currentColor"></rect>
+        <rect x="356" y="476" width="240" height="72" fill="currentColor"></rect>
+        <circle cx="726" cy="512" r="100" fill="none" stroke="#e1001a" stroke-width="72"></circle>
+      </svg>
+      <span>Homeport. {TAGLINE}</span>
+    </a>
+
+    <div class="site-footer__columns">
+      {columns.map((column) => (
+        <div class="site-footer__column">
+          <h2>{column.title}</h2>
+          <ul>
+            {column.links.map((link) => (
+              <li>
+                <a href={link.url}>{link.label}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+      <nav class="site-footer__column" aria-label="Legal">
+        <h2>Legal</h2>
         <ul>
-          {column.links.map((link) => (
+          {legalLinks().map((link) => (
             <li>
               <a href={link.url}>{link.label}</a>
             </li>
           ))}
         </ul>
-      </div>
-    ))}
-  </div>
-  <div class="site-footer__legal">
-    <nav class="site-footer__legal-links" aria-label="Legal">
-      {legalLinks().map((link) => (
-        <a href={link.url}>{link.label}</a>
-      ))}
-    </nav>
-    <p>
-      © {year} Damien Reichhart. Homeport is open source under the{' '}
-      <a href={`${REPO_URL}/blob/main/LICENSE`}>MIT licence</a>.
-    </p>
-    <p>
-      Docker is a trademark of Docker, Inc. Homeport is an independent project, not affiliated with
-      or endorsed by Docker, Inc.
-    </p>
+      </nav>
+    </div>
+
+    <div class="site-footer__notes">
+      <p>
+        Homeport is open source under the <a href={`${REPO_URL}/blob/main/LICENSE`}>MIT licence</a>,
+        with no account and no telemetry.
+      </p>
+      <p>
+        Docker is a trademark of Docker, Inc. Homeport is an independent project, not affiliated
+        with or endorsed by Docker, Inc.
+      </p>
+    </div>
+
+    <div class="site-footer__last">
+      <p>© {year} Damien Reichhart</p>
+      <a class="button button--primary button--small" href={href('/download/')}>
+        Download
+      </a>
+    </div>
   </div>
 </footer>

@@ -1,5 +1,28 @@
 /* Base: resets, type, theme visibility helpers and the page container. */
 
+/*
+ * The home page's board: one 12-column grid, 8px gaps, tight outer margins, and
+ * five type steps. Text inside a tile starts at the tile's padding, so the page
+ * has two left edges: the tiles' (--hp-m) and the text's (--hp-m + --hp-pad).
+ */
+:root {
+  --hp-m: 0.5rem;
+  --hp-gap: 0.5rem;
+  --hp-pad: 1.25rem;
+  --hp-step-display: clamp(3.75rem, 0.5rem + 10vw, 10rem);
+  --hp-step-heading: clamp(2.25rem, 1.6rem + 1.9vw, 3.25rem);
+  --hp-step-lead: clamp(1.25rem, 0.95rem + 0.85vw, 1.625rem);
+  --hp-step-body: 1.0625rem;
+  --hp-step-small: 0.9375rem;
+  --hp-section-gap: clamp(6rem, 3rem + 7vw, 10rem);
+}
+@media (min-width: 48rem) {
+  :root {
+    --hp-m: 0.75rem;
+    --hp-pad: 1.5rem;
+  }
+}
+
 *,
 *::before,
 *::after {

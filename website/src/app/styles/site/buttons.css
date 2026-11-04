@@ -29,6 +29,20 @@
   background: var(--hp-primary-strong);
   color: var(--hp-on-primary);
 }
+/* On the loud tile (Ink on light, Paper on dark) the button takes the page's colours. */
+.button--inverse {
+  background: var(--hp-on-strong);
+  color: var(--hp-strong);
+}
+.button--inverse:hover {
+  background: var(--hp-on-strong);
+  color: var(--hp-strong);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.button:active {
+  opacity: 0.85;
+}
 .button--secondary {
   background: var(--hp-surface);
   border-color: var(--hp-border-strong);

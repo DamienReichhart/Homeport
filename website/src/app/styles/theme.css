@@ -58,6 +58,18 @@
   --hp-board-signal: #ff5c5c;
   --hp-board-edge: rgb(247 247 244 / 0.14);
   --hp-code-bg: #1c1c1b;
+
+  /* Tiles of the home page's board: one tone step from the page each, never a line. */
+  --hp-tile: #1e1e1d;
+  --hp-tile-2: #282826;
+  --hp-tile-3: #323230;
+  /* The loud tile: Paper on dark, Ink on light, like the primary button. */
+  --hp-strong: #f7f7f4;
+  --hp-on-strong: #141414;
+  --hp-on-strong-muted: #3a3a37;
+  --hp-board-row: #1c1c1b;
+  --hp-board-chip: #2e2e2c;
+  --hp-amber: #f2a93b;
 }
 
 :root[data-theme='light'],
@@ -95,4 +107,14 @@
   --hp-board-signal: #ff5c5c;
   --hp-board-edge: transparent;
   --hp-code-bg: #efefea;
+
+  --hp-tile: #ebebe5;
+  --hp-tile-2: #e0e0d9;
+  --hp-tile-3: #d4d4cc;
+  --hp-strong: #141414;
+  --hp-on-strong: #f7f7f4;
+  --hp-on-strong-muted: #c8c8c2;
+  --hp-board-row: #1f1f1e;
+  --hp-board-chip: #333331;
+  --hp-amber: #f2a93b;
 }
