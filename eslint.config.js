@@ -108,4 +108,9 @@ export default tseslint.config(
     files: ['src/shared/ui/**/*.{ts,tsx}'],
     rules: { 'react-refresh/only-export-components': 'off' },
   },
+  {
+    // Test helpers are never hot-reloaded.
+    files: ['src/test/**/*.{ts,tsx}'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
 );
