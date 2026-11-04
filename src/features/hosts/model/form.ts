@@ -1,4 +1,5 @@
 import type { Host, HostInput, SshAuth } from '@/shared/api';
+import type { MessageKey } from '@/shared/i18n';
 
 export type HostKind = 'local' | 'tcp' | 'tls' | 'ssh';
 
@@ -106,9 +107,9 @@ export function toHostInput(form: HostFormState, editing: boolean): HostInput {
 }
 
 /** The kinds of Host the form offers, in the order it shows them. */
-export const HOST_KINDS: { kind: HostKind; label: string }[] = [
-  { kind: 'ssh', label: 'SSH' },
-  { kind: 'tls', label: 'TLS' },
-  { kind: 'tcp', label: 'TCP' },
-  { kind: 'local', label: 'Local socket' },
+export const HOST_KINDS: { kind: HostKind; label: MessageKey }[] = [
+  { kind: 'ssh', label: 'hosts.kind.ssh' },
+  { kind: 'tls', label: 'hosts.kind.tls' },
+  { kind: 'tcp', label: 'hosts.kind.tcp' },
+  { kind: 'local', label: 'hosts.kind.local' },
 ];

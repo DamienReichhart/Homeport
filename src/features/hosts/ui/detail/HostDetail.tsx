@@ -7,6 +7,7 @@ import { ConnectionCard } from './ConnectionCard';
 import { RemoveHostCard } from './RemoveHostCard';
 import { SshSetupCard } from './SshSetupCard';
 import { TrustPrompt } from './TrustPrompt';
+import { t } from '@/shared/i18n';
 
 /** A Host's status, connection settings and removal. */
 export function HostDetail({ view }: { view: HostView }) {
@@ -38,14 +39,14 @@ export function HostDetail({ view }: { view: HostView }) {
                 checked={view.host.enabled}
                 onCheckedChange={(v) => enable.mutate(v)}
               />
-              <Label htmlFor="enabled">Enabled</Label>
+              <Label htmlFor="enabled">{t('hosts.detail.enabled')}</Label>
             </div>
             <Button
               variant="outline"
               disabled={reconnect.isPending}
               onClick={() => reconnect.mutate()}
             >
-              <RefreshCwIcon /> Reconnect
+              <RefreshCwIcon /> {t('hosts.detail.reconnect')}
             </Button>
           </>
         }

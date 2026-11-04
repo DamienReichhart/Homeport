@@ -11,6 +11,7 @@ import { HOST_KINDS, type HostFormState, type HostKind } from '../../model/form'
 import { Field } from './Field';
 import { SshFields } from './SshFields';
 import { TlsFields } from './TlsFields';
+import { t } from '@/shared/i18n';
 
 /**
  * Fields for defining a Host. `editing` relaxes credentials (blank keeps the
@@ -29,7 +30,7 @@ export function HostForm({
 }) {
   const set = <K extends keyof HostFormState>(key: K, value: HostFormState[K]) =>
     onChange({ ...form, [key]: value });
-  const keepHint = editing ? 'Leave blank to keep the stored value.' : undefined;
+  const keepHint = editing ? t('hosts.form.keepHint') : undefined;
 
   return (
     <div className="grid gap-4">
@@ -42,13 +43,13 @@ export function HostForm({
         >
           {HOST_KINDS.map(({ kind, label }) => (
             <ToggleGroupItem key={kind} value={kind}>
-              {label}
+              {t(label)}
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
       )}
 
-      <Field label="Name">
+      <Field label={t('hosts.form.name')}>
         <Input
           value={form.name}
           onChange={(e) => set('name', e.target.value)}
@@ -58,15 +59,18 @@ export function HostForm({
 
       {form.kind === 'local' && (
         <Field
-          label="Socket path"
-          hint="A Unix socket, or a named pipe like //./pipe/docker_engine on Windows."
+          label={t('hosts.form.socketPath')}
+          hint={t('hosts.form.socketPathHint', { pipe: '//./pipe/docker_engine' })}
         >
           <Input value={form.socketPath} onChange={(e) => set('socketPath', e.target.value)} />
         </Field>
       )}
 
       {(form.kind === 'tcp' || form.kind === 'tls') && (
-        <Field label="Address" hint="host:port, for example 192.168.1.10:2376.">
+        <Field
+          label={t('hosts.form.address')}
+          hint={t('hosts.form.addressHint', { example: '192.168.1.10:2376' })}
+        >
           <Input
             value={form.address}
             onChange={(e) => set('address', e.target.value)}
@@ -78,11 +82,8 @@ export function HostForm({
       {form.kind === 'tcp' && (
         <Alert>
           <TriangleAlertIcon />
-          <AlertTitle>Unencrypted and unauthenticated</AlertTitle>
-          <AlertDescription>
-            Anyone who can reach this port controls the Engine. Prefer SSH or TLS outside a trusted
-            network.
-          </AlertDescription>
+          <AlertTitle>{t('hosts.form.tcpWarning.title')}</AlertTitle>
+          <AlertDescription>{t('hosts.form.tcpWarning.description')}</AlertDescription>
         </Alert>
       )}
 

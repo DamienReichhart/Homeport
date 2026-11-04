@@ -14,6 +14,7 @@ import {
 } from '@/shared/ui';
 import { describeStatus, statusError, useHosts, useHostSelection } from '@/core/host';
 import { statusTitle } from '../model/statusTitle';
+import { t } from '@/shared/i18n';
 
 const ADD = '__add__';
 const MANAGE = '__manage__';
@@ -36,8 +37,8 @@ export function HostSwitcher() {
           else select(value);
         }}
       >
-        <SelectTrigger className="w-full" aria-label="Host">
-          <SelectValue placeholder="No host" />
+        <SelectTrigger className="w-full" aria-label={t('hosts.switcher.label')}>
+          <SelectValue placeholder={t('hosts.switcher.placeholder')} />
         </SelectTrigger>
         <SelectContent>
           {hosts.data?.map(({ host, status }) => (
@@ -48,10 +49,10 @@ export function HostSwitcher() {
           ))}
           {hosts.data?.length ? <SelectSeparator /> : null}
           <SelectItem value={ADD}>
-            <PlusIcon /> Add host…
+            <PlusIcon /> {t('hosts.switcher.add')}
           </SelectItem>
           <SelectItem value={MANAGE}>
-            <ServerCogIcon /> Manage hosts
+            <ServerCogIcon /> {t('hosts.switcher.manage')}
           </SelectItem>
         </SelectContent>
       </Select>
@@ -60,8 +61,11 @@ export function HostSwitcher() {
           variant="ghost"
           size="icon"
           className="text-destructive shrink-0"
-          aria-label={`Why ${selected.host.name} can’t be used`}
-          title={`${describeStatus(selected.status).label}: ${error.message}`}
+          aria-label={t('hosts.switcher.whyUnusable', { name: selected.host.name })}
+          title={t('hosts.statusTitle', {
+            label: describeStatus(selected.status).label,
+            detail: error.message,
+          })}
           onClick={() => showErrorDetails(toAppError(error))}
         >
           <TriangleAlertIcon />

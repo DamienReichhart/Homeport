@@ -11,6 +11,7 @@ import {
   useConfirm,
 } from '@/shared/ui';
 import { useDeleteHost } from '../../api/mutations';
+import { t } from '@/shared/i18n';
 
 /** Forgets a Host after confirmation; nothing on the Host itself changes. */
 export function RemoveHostCard({ view }: { view: HostView }) {
@@ -20,21 +21,17 @@ export function RemoveHostCard({ view }: { view: HostView }) {
   return (
     <Card className="border-destructive/40">
       <CardHeader>
-        <CardTitle className="text-destructive">Remove host</CardTitle>
-        <CardDescription>
-          Homeport forgets this host, its credentials and its Managed Stack definitions. Nothing
-          running on the host is touched.
-        </CardDescription>
+        <CardTitle className="text-destructive">{t('hosts.remove.title')}</CardTitle>
+        <CardDescription>{t('hosts.remove.description')}</CardDescription>
       </CardHeader>
       <CardContent>
         <Button
           variant="destructive"
           onClick={() =>
             confirm({
-              title: `Remove ${view.host.name}?`,
-              description:
-                'Deletes the stored connection, SSH key or certificates, and the compose definitions of its Managed Stacks. Containers, images and volumes on the host stay as they are.',
-              confirmLabel: 'Remove host',
+              title: t('hosts.remove.confirmTitle', { name: view.host.name }),
+              description: t('hosts.remove.confirmDescription'),
+              confirmLabel: t('hosts.remove.title'),
               destructive: true,
               onConfirm: async () => {
                 await remove.mutateAsync();
@@ -43,7 +40,7 @@ export function RemoveHostCard({ view }: { view: HostView }) {
             })
           }
         >
-          <TrashIcon /> Remove host
+          <TrashIcon /> {t('hosts.remove.title')}
         </Button>
       </CardContent>
       {dialog}
