@@ -536,7 +536,8 @@ function formatsFor(os: Os): { format: Installer['format']; files: Installer[] }
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
     margin-top: 3rem;
   }
-  .info {
+  /* Outrank .prose from the global stylesheet rather than tie with it. */
+  .info.prose {
     padding: 1.5rem 1.75rem;
     max-width: none;
   }
