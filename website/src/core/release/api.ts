@@ -22,7 +22,8 @@ async function request(url: string): Promise<Response> {
   return response;
 }
 
-async function load(): Promise<Release[]> {
+/** Reads every published release from GitHub, with the latest's checksums. Not cached. */
+export async function loadReleases(): Promise<Release[]> {
   try {
     const response = await request(`https://api.github.com/repos/${REPO}/releases?per_page=50`);
     const raw = (await response.json()) as GitHubRelease[];
@@ -50,7 +51,7 @@ let cache: Promise<Release[]> | undefined;
 
 /** Every published release, newest first. Fetched once per build. */
 export function getReleases(): Promise<Release[]> {
-  cache ??= load();
+  cache ??= loadReleases();
   return cache;
 }
 
