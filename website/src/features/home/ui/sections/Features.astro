@@ -1,0 +1,91 @@
+---
+/** What Homeport does, a card per area. */
+import { Icon, type IconName } from '@/shared/ui';
+
+const features: { icon: IconName; title: string; body: string }[] = [
+  {
+    icon: 'server',
+    title: 'Hosts, near and far',
+    body: 'Local engines are found for you. Remote ones join over SSH, mutual TLS or TCP, and each Host reconnects on its own when the network blinks.',
+  },
+  {
+    icon: 'box',
+    title: 'Containers at a glance',
+    body: 'Grouped by Stack, with live CPU and memory. Start, stop, restart, pause or remove one container or twenty at once.',
+  },
+  {
+    icon: 'boxes',
+    title: 'Compose Stacks',
+    body: 'Write a compose file, keep its environment encrypted and deploy it to any Host. Stacks deployed elsewhere show up too, ready to adopt.',
+  },
+  {
+    icon: 'layers',
+    title: 'Images',
+    body: 'Pull with per-layer progress, tag, inspect the layer history, run straight from the list, and clear out what nothing uses.',
+  },
+  {
+    icon: 'hardDrive',
+    title: 'Volumes and networks',
+    body: 'See which containers use what. Create, connect and disconnect, with deletion that tells you exactly what you are about to lose.',
+  },
+  {
+    icon: 'activity',
+    title: 'Overview and events',
+    body: 'Every Host on one page: engine details, disk usage with a one-dialog clean-up, and a live stream of what the Engine is doing.',
+  },
+];
+---
+
+<section class="section" id="features">
+  <div class="container">
+    <div class="section-heading section-heading--center" data-reveal>
+      <span class="eyebrow">Features</span>
+      <h2>Everything your engines run, in one window</h2>
+      <p>
+        The day-to-day of Docker — what is running, what it says, what it costs — without
+        remembering which server it lives on.
+      </p>
+    </div>
+    <div class="feature-grid">
+      {
+        features.map((feature) => (
+          <article class="card feature" data-reveal>
+            <span class="feature-icon">
+              <Icon name={feature.icon} />
+            </span>
+            <h3>{feature.title}</h3>
+            <p>{feature.body}</p>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .feature-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  }
+  .feature {
+    display: grid;
+    align-content: start;
+    gap: 0.75rem;
+    padding: 1.75rem;
+    transition:
+      border-color 0.2s ease,
+      transform 0.2s ease;
+  }
+  .feature:hover {
+    border-color: var(--hp-border-strong);
+    transform: translateY(-2px);
+  }
+  .feature h3 {
+    margin-top: 0.5rem;
+    font-size: 1.15rem;
+  }
+  .feature p {
+    color: var(--hp-text-muted);
+  }
+</style>
