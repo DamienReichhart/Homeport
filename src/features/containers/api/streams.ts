@@ -1,4 +1,5 @@
 import { Channel } from '@tauri-apps/api/core';
+import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 import {
   commands,
@@ -11,6 +12,7 @@ import {
   type LogOptions,
   type LogSource,
   type StatsSample,
+  type TransferEvent,
 } from '@/shared/api';
 import { STATS_WINDOW, type StatsPoint } from '../model/stats';
 
@@ -131,4 +133,22 @@ export function startExec(
       if (session !== null) void commands.execClose(session);
     },
   };
+}
+
+/** Exports a container's filesystem to a tar on this machine; returns the canceller. */
+export function exportContainer(
+  hostId: string,
+  containerId: string,
+  destination: string,
+  onEvent: (event: TransferEvent) => void,
+  onError: (error: AppError) => void,
+): () => void {
+  return subscribe<TransferEvent>(
+    (ch) => commands.containersExportSubscribe(hostId, containerId, destination, ch),
+    (event) => {
+      onEvent(event);
+      if (event.type === 'done') toast.success(`Exported to ${destination}`);
+    },
+    onError,
+  );
 }

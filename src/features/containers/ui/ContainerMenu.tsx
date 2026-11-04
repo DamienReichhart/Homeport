@@ -1,6 +1,7 @@
 import {
   CopyIcon,
   EllipsisVerticalIcon,
+  FileArchiveIcon,
   ImageDownIcon,
   PauseIcon,
   PencilIcon,
@@ -126,6 +127,9 @@ export function ContainerMenu({
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'commit', container })}>
             <ImageDownIcon /> Commit to image…
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'export', container })}>
+            <FileArchiveIcon /> Export filesystem…
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem

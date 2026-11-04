@@ -3,10 +3,11 @@ import type { Container } from '@/shared/api';
 import { CommitDialog } from './CommitDialog';
 import { DuplicateDialog } from './DuplicateDialog';
 import { EditDialog } from './EditDialog';
+import { ExportDialog } from './ExportDialog';
 import { RenameDialog } from './RenameDialog';
 
 /** The dialogs a container's menu opens. */
-export type ContainerDialog = 'rename' | 'duplicate' | 'edit' | 'commit';
+export type ContainerDialog = 'rename' | 'duplicate' | 'edit' | 'commit' | 'export';
 
 export interface ContainerDialogRequest {
   kind: ContainerDialog;
@@ -41,6 +42,11 @@ export function useContainerDialogs(
     case 'commit':
       dialog = (
         <CommitDialog key={key} hostId={hostId} container={request.container} onClose={close} />
+      );
+      break;
+    case 'export':
+      dialog = (
+        <ExportDialog key={key} hostId={hostId} container={request.container} onClose={close} />
       );
       break;
     case 'duplicate':
