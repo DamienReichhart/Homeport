@@ -80,7 +80,7 @@ pub fn from_message(status: Option<u16>, message: &str) -> AppError {
             "Remove unused images, containers and volumes (Prune on the Overview page), or free space on the machine it runs on.",
         );
     }
-    if has("toomanyrequests") || has("pull rate limit") {
+    if has("toomanyrequests") || has("pull rate limit") || has("429 too many requests") {
         return AppError::new(
             ErrorCode::RegistryRateLimited,
             "The registry's pull limit was reached.",
@@ -291,6 +291,7 @@ mod tests {
             (404, "manifest for alpine:nope not found: manifest unknown: manifest unknown", ErrorCode::ImageNotFound),
             (500, "push access denied, repository does not exist or may require authorization: authorization failed: no basic auth credentials", ErrorCode::RegistryAuthRequired),
             (500, "toomanyrequests: You have reached your pull rate limit.", ErrorCode::RegistryRateLimited),
+            (500, "unknown: failed to resolve reference \"docker.io/library/alpine:3.22\": unexpected status from HEAD request to https://registry-1.docker.io/v2/library/alpine/manifests/3.22: 429 Too Many Requests", ErrorCode::RegistryRateLimited),
             (500, "Head \"https://registry-1.docker.io/v2/library/nginx/manifests/latest\": unauthorized: incorrect username or password", ErrorCode::RegistryLoginFailed),
             (500, "Get \"https://registry-1.docker.io/v2/\": dial tcp: lookup registry-1.docker.io: no such host", ErrorCode::RegistryUnreachable),
             (500, "write /var/lib/docker/tmp/x: no space left on device", ErrorCode::DiskFull),
