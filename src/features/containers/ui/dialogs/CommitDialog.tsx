@@ -22,6 +22,7 @@ import {
 import { useCommitContainer } from '../../api/mutations';
 import { emptyCommitForm, imageNamed, toCommitSpec, type CommitForm } from '../../model/commit';
 import { Field } from './run/Field';
+import { t } from '@/shared/i18n';
 
 /** Commits a container's files and settings to a new image. */
 export function CommitDialog({
@@ -45,11 +46,8 @@ export function CommitDialog({
     <Dialog open onOpenChange={(open) => !open && !commit.isPending && onClose()}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Commit {container.name} to an image</DialogTitle>
-          <DialogDescription>
-            The new image holds the container&apos;s files as they are now, including changes made
-            inside it, and its settings. Volumes aren&apos;t included.
-          </DialogDescription>
+          <DialogTitle>{t('containers.commit.title', { name: container.name })}</DialogTitle>
+          <DialogDescription>{t('containers.commit.description')}</DialogDescription>
         </DialogHeader>
         <form
           className="grid gap-3"
@@ -58,7 +56,11 @@ export function CommitDialog({
             commit.mutate(toCommitSpec(form));
           }}
         >
-          <Field id="commit-name" label="Image name" hint="Like repo:tag.">
+          <Field
+            id="commit-name"
+            label={t('containers.commit.imageName')}
+            hint={t('containers.commit.imageNameHint')}
+          >
             <Input
               id="commit-name"
               value={form.reference}
@@ -70,38 +72,38 @@ export function CommitDialog({
           {existing && (
             <Alert>
               <AlertDescription>
-                An image is already named {form.reference.trim()}. The name moves to the new image;
-                the old one keeps its other names, or becomes untagged.
+                {t('containers.commit.nameTaken', { name: form.reference.trim() })}
               </AlertDescription>
             </Alert>
           )}
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field id="commit-comment" label="Message">
+            <Field id="commit-comment" label={t('containers.commit.message')}>
               <Input
                 id="commit-comment"
                 value={form.comment}
                 onChange={(e) => set('comment', e.target.value)}
-                placeholder="Before the upgrade"
+                placeholder={t('containers.commit.messagePlaceholder')}
               />
             </Field>
-            <Field id="commit-author" label="Author">
+            <Field id="commit-author" label={t('containers.commit.author')}>
               <Input
                 id="commit-author"
                 value={form.author}
                 onChange={(e) => set('author', e.target.value)}
-                placeholder="Optional"
+                placeholder={t('common.optional')}
               />
             </Field>
           </div>
           <Field
             id="commit-changes"
-            label="Changes"
-            hint="Dockerfile instructions, one per line: CMD, ENTRYPOINT, ENV, EXPOSE, LABEL, ONBUILD, USER, VOLUME or WORKDIR."
+            label={t('containers.commit.changes')}
+            hint={t('containers.commit.changesHint')}
           >
             <Textarea
               id="commit-changes"
               value={form.changes}
               onChange={(e) => set('changes', e.target.value)}
+              // eslint-disable-next-line homeport/no-literal-ui-string -- Dockerfile instructions
               placeholder={'ENV MODE=prod\nCMD ["nginx", "-g", "daemon off;"]'}
               className="h-20 font-mono text-xs"
               spellCheck={false}
@@ -114,21 +116,19 @@ export function CommitDialog({
                 checked={form.pause}
                 onCheckedChange={(pause) => set('pause', pause)}
               />
-              <Label htmlFor="commit-pause">Pause the container while committing</Label>
+              <Label htmlFor="commit-pause">{t('containers.commit.pause')}</Label>
             </div>
             <p className="text-muted-foreground text-xs">
-              {form.pause
-                ? 'Its processes are frozen for the few seconds the commit takes, so files being written are consistent.'
-                : 'It keeps running, so files being written may be caught half-way.'}
+              {form.pause ? t('containers.commit.pauseOn') : t('containers.commit.pauseOff')}
             </p>
           </div>
           {commit.error && <ErrorMessage error={commit.error} />}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={onClose} disabled={commit.isPending}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={commit.isPending || !form.reference.trim()}>
-              {commit.isPending ? 'Committing…' : 'Commit'}
+              {commit.isPending ? t('containers.commit.committing') : t('containers.commit.submit')}
             </Button>
           </DialogFooter>
         </form>

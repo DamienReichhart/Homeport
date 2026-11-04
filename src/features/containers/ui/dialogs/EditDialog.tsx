@@ -18,6 +18,7 @@ import { runFormErrors, type RunForm } from '../../model/runForm';
 import { EditConfirmation } from './EditConfirmation';
 import { LoadingDialog } from './LoadingDialog';
 import { RunFormFields } from './run/RunFormFields';
+import { t } from '@/shared/i18n';
 
 function EditForm({
   hostId,
@@ -47,11 +48,8 @@ function EditForm({
     <Dialog open onOpenChange={(open) => !open && !recreate.isPending && onClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Edit {container.name}</DialogTitle>
-          <DialogDescription>
-            Applying recreates the container with these settings, keeping its name, networks and
-            named volumes.
-          </DialogDescription>
+          <DialogTitle>{t('containers.edit.title', { name: container.name })}</DialogTitle>
+          <DialogDescription>{t('containers.edit.description')}</DialogDescription>
         </DialogHeader>
         <form
           className="grid gap-4"
@@ -71,10 +69,10 @@ function EditForm({
           {recreate.error && <ErrorMessage error={recreate.error} />}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={onClose} disabled={recreate.isPending}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={recreate.isPending || !form.image.trim() || invalid}>
-              {recreate.isPending ? 'Recreating…' : 'Apply'}
+              {recreate.isPending ? t('containers.edit.recreating') : t('containers.edit.apply')}
             </Button>
           </DialogFooter>
         </form>
@@ -113,7 +111,7 @@ export function EditDialog({
 }) {
   return (
     <LoadingDialog
-      title={`Edit ${container.name}`}
+      title={t('containers.edit.title', { name: container.name })}
       query={containerQueries.runSpec(hostId, container.id)}
       onClose={onClose}
     >

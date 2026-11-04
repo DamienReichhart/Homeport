@@ -3,6 +3,7 @@ import type { Container } from '@/shared/api';
 import { Button, ConfirmDialog, ErrorMessage, Spinner } from '@/shared/ui';
 import { containerQueries } from '../../api/queries';
 import { lossText } from '../../model/losses';
+import { t } from '@/shared/i18n';
 
 /** Says what recreating `container` loses before Edit applies. */
 export function EditConfirmation({
@@ -22,16 +23,16 @@ export function EditConfirmation({
   return (
     <ConfirmDialog
       options={{
-        title: `Recreate ${container.name}?`,
+        title: t('containers.edit.confirmTitle', { name: container.name }),
         description: losses.error ? (
           <ErrorMessage error={losses.error} onRetry={() => void losses.refetch()} />
         ) : !losses.data ? (
           <Spinner />
         ) : losses.data.length === 0 ? (
-          'Nothing else is lost: its name, networks and named volumes are kept.'
+          t('containers.edit.nothingLost')
         ) : (
           <div className="grid gap-2">
-            <p>Its name, networks and named volumes are kept, but not:</p>
+            <p>{t('containers.edit.keptBut')}</p>
             <ul className="list-disc space-y-1 pl-5">
               {losses.data.map((loss) => (
                 <li key={JSON.stringify(loss)}>{lossText(loss)}</li>
@@ -44,12 +45,12 @@ export function EditConfirmation({
                 className="justify-self-start"
                 onClick={onCommitFirst}
               >
-                Commit to an image first…
+                {t('containers.edit.commitFirst')}
               </Button>
             )}
           </div>
         ),
-        confirmLabel: 'Recreate',
+        confirmLabel: t('containers.edit.recreate'),
         destructive: losses.data?.some((l) => l.kind !== 'downtime') ?? false,
         onConfirm,
       }}

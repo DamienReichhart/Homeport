@@ -320,10 +320,60 @@ export default {
     'One key=value per line; max-size and max-file rotate json-file logs.',
 
   // Rename, Duplicate and Edit
+  'containers.rename.title': 'Rename {name}',
+  'containers.rename.newName': 'New name',
+  'containers.duplicate.title': 'Duplicate {name}',
+  'containers.duplicate.sharedPorts':
+    '{name} already publishes {count, plural, one {host port} other {host ports}} {ports}.',
+  'containers.duplicate.sharedPortsFix':
+    "{count, plural, one {The copy can't start while both use it} other {The copy can't start while both use them}}: change the host port, or leave it empty to let the Engine pick one.",
+  'containers.edit.title': 'Edit {name}',
+  'containers.edit.description':
+    'Applying recreates the container with these settings, keeping its name, networks and named volumes.',
+  'containers.edit.apply': 'Apply',
+  'containers.edit.recreating': 'Recreating…',
   'containers.edit.recreated': 'Container recreated',
+  'containers.edit.confirmTitle': 'Recreate {name}?',
+  'containers.edit.nothingLost':
+    'Nothing else is lost: its name, networks and named volumes are kept.',
+  'containers.edit.keptBut': 'Its name, networks and named volumes are kept, but not:',
+  'containers.edit.commitFirst': 'Commit to an image first…',
+  'containers.edit.recreate': 'Recreate',
+  'containers.loss.anonymousVolume':
+    'The anonymous volume at {path}: the new container starts with an empty one. The old one is kept as an unused volume.',
+  'containers.loss.filesystemChanges':
+    '{count, plural, one {# file} other {# files}} changed inside the container since it was created. Commit it to an image first to keep them.',
+  'containers.loss.downtime': 'It stops while the two are swapped, usually for a few seconds.',
+  'containers.loss.stackRedeploy':
+    "It belongs to the {stack} Stack: the Stack's next deploy recreates it from its compose file, without this edit.",
 
   // Commit and export
+  'containers.commit.title': 'Commit {name} to an image',
+  'containers.commit.description':
+    "The new image holds the container's files as they are now, including changes made inside it, and its settings. Volumes aren't included.",
+  'containers.commit.imageName': 'Image name',
+  'containers.commit.imageNameHint': 'Like repo:tag.',
+  'containers.commit.nameTaken':
+    'An image is already named {name}. The name moves to the new image; the old one keeps its other names, or becomes untagged.',
+  'containers.commit.message': 'Message',
+  'containers.commit.messagePlaceholder': 'Before the upgrade',
+  'containers.commit.author': 'Author',
+  'containers.commit.changes': 'Changes',
+  'containers.commit.changesHint':
+    'Dockerfile instructions, one per line: CMD, ENTRYPOINT, ENV, EXPOSE, LABEL, ONBUILD, USER, VOLUME or WORKDIR.',
+  'containers.commit.pause': 'Pause the container while committing',
+  'containers.commit.pauseOn':
+    'Its processes are frozen for the few seconds the commit takes, so files being written are consistent.',
+  'containers.commit.pauseOff': 'It keeps running, so files being written may be caught half-way.',
+  'containers.commit.submit': 'Commit',
+  'containers.commit.committing': 'Committing…',
   'containers.commit.done': 'Committed to {reference}',
   'containers.commit.openImages': 'Open images',
+  'containers.export.tarArchive': 'Tar archive',
+  'containers.export.pick': 'Export the filesystem of {name}',
+  'containers.export.title': 'Exporting {name}',
+  'containers.export.to': 'To {path}',
+  'containers.export.written': 'Written',
+  'containers.export.finished': 'Done. Import it on the Images page, or with docker import.',
   'containers.export.done': 'Exported to {destination}',
 } as const;

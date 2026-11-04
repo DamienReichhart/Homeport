@@ -6,6 +6,7 @@ import { copyName, sharedHostPorts } from '../../model/duplicate';
 import { fromRunSpec } from '../../model/fromRunSpec';
 import { LoadingDialog } from './LoadingDialog';
 import { RunContainerDialog } from './RunContainerDialog';
+import { t } from '@/shared/i18n';
 
 /** The Run dialog filled in from a container, to run a copy of it. */
 export function DuplicateDialog({
@@ -18,7 +19,7 @@ export function DuplicateDialog({
   onClose: () => void;
 }) {
   const taken = (useContainers(hostId).data ?? []).map((c) => c.name);
-  const title = `Duplicate ${container.name}`;
+  const title = t('containers.duplicate.title', { name: container.name });
   return (
     <LoadingDialog
       title={title}
@@ -40,10 +41,12 @@ export function DuplicateDialog({
               return (
                 <Alert>
                   <AlertDescription>
-                    {container.name} already publishes host port{shared.length > 1 ? 's' : ''}{' '}
-                    {shared.join(', ')}. The copy can&apos;t start while both use{' '}
-                    {shared.length > 1 ? 'them' : 'it'}: change the host port, or leave it empty to
-                    let the Engine pick one.
+                    {t('containers.duplicate.sharedPorts', {
+                      name: container.name,
+                      count: shared.length,
+                      ports: shared.join(', '),
+                    })}{' '}
+                    {t('containers.duplicate.sharedPortsFix', { count: shared.length })}
                   </AlertDescription>
                 </Alert>
               );

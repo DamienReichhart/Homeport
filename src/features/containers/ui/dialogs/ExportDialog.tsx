@@ -3,8 +3,7 @@ import type { Container } from '@/shared/api';
 import { pickSavePath } from '@/shared/lib';
 import { TransferDialog } from '@/shared/ui';
 import { exportContainer } from '../../api/streams';
-
-const TAR = [{ name: 'Tar archive', extensions: ['tar'] }];
+import { t } from '@/shared/i18n';
 
 /** Asks where to save a container's filesystem, then exports it there with progress. */
 export function ExportDialog({
@@ -22,19 +21,19 @@ export function ExportDialog({
     if (asked.current) return;
     asked.current = true;
     void pickSavePath(
-      `Export the filesystem of ${container.name}`,
+      t('containers.export.pick', { name: container.name }),
       `${container.name}.tar`,
-      TAR,
+      [{ name: t('containers.export.tarArchive'), extensions: ['tar'] }],
     ).then((picked) => (picked ? setPath(picked) : onClose()));
   }, [container.name, onClose]);
   if (!path) return null;
   return (
     <TransferDialog
-      title={`Exporting ${container.name}`}
-      description={`To ${path}`}
-      counted="Written"
+      title={t('containers.export.title', { name: container.name })}
+      description={t('containers.export.to', { path })}
+      counted={t('containers.export.written')}
       start={(onEvent, onError) => exportContainer(hostId, container.id, path, onEvent, onError)}
-      done={() => 'Done. Import it on the Images page, or with docker import.'}
+      done={() => t('containers.export.finished')}
       onClose={onClose}
     />
   );

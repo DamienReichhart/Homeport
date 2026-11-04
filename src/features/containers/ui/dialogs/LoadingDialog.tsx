@@ -10,6 +10,7 @@ import {
   ErrorMessage,
   Spinner,
 } from '@/shared/ui';
+import { t } from '@/shared/i18n';
 
 /**
  * Loads what a dialog needs first, in a dialog of its own: a spinner, or the
@@ -41,7 +42,7 @@ export function LoadingDialog<T, K extends QueryKey>({
         )}
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>
-            Cancel
+            {t('common.cancel')}
           </Button>
         </DialogFooter>
       </DialogContent>
