@@ -17,6 +17,16 @@ export const containerQueries = {
           containerId,
         ) as Promise<unknown> as Promise<ContainerInspect>,
     }),
+  /**
+   * The healthcheck and its last results, refetched when the status in the
+   * list changes and, while shown, once per check interval.
+   */
+  health: (hostId: string, containerId: string, status: string | null) =>
+    queryOptions({
+      queryKey: [...containerKey(hostId, containerId), 'health', status],
+      queryFn: () => commands.containersHealth(hostId, containerId),
+      refetchInterval: (query) => (query.state.data?.config.intervalS ?? 30) * 1000,
+    }),
   files: (hostId: string, containerId: string, path: string) =>
     queryOptions({
       queryKey: [...containerKey(hostId, containerId), 'files', path],

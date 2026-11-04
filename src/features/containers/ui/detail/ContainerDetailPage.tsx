@@ -30,13 +30,15 @@ import { useContainerDialogs } from '../dialogs/ContainerDialogs';
 import { ContainerActions } from './ContainerActions';
 import { ExecTab } from './tabs/ExecTab';
 import { FilesTab } from './tabs/FilesTab';
+import { HealthTab } from './tabs/HealthTab';
 import { InspectTab } from './tabs/InspectTab';
 import { ProcessesTab } from './tabs/ProcessesTab';
 import { StatsTab } from './tabs/StatsTab';
 
-const TABS = ['logs', 'inspect', 'exec', 'files', 'stats', 'processes'] as const;
+const TABS = ['logs', 'inspect', 'health', 'exec', 'files', 'stats', 'processes'] as const;
 const TAB_LABELS: Record<(typeof TABS)[number], string> = {
   logs: 'Logs',
+  health: 'Health',
   inspect: 'Inspect',
   exec: 'Exec',
   files: 'Files',
@@ -116,7 +118,7 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
         className="flex min-h-0 flex-1 flex-col"
       >
         <TabsList>
-          {TABS.map((t) => (
+          {TABS.filter((t) => t !== 'health' || container.health !== null).map((t) => (
             <TabsTrigger key={t} value={t}>
               {TAB_LABELS[t]}
             </TabsTrigger>
@@ -133,6 +135,9 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
           ) : (
             <Spinner />
           )}
+        </TabsContent>
+        <TabsContent value="health" className="overflow-auto">
+          <HealthTab hostId={hostId} containerId={container.id} status={container.health} />
         </TabsContent>
         <TabsContent value="exec" className="min-h-[24rem] flex-1">
           <ExecTab hostId={hostId} containerId={container.id} running={running} />
