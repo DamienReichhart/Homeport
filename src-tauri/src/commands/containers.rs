@@ -92,6 +92,17 @@ pub async fn containers_run(
         .map_err(|e| registries::explain(&state, &image, e))
 }
 
+/// The Run dialog's form for an existing container, for Duplicate and Edit.
+#[tauri::command]
+#[specta::specta]
+pub async fn containers_run_spec(
+    state: State<'_, AppState>,
+    host_id: String,
+    id: String,
+) -> AppResult<RunSpec> {
+    run::spec_for(&state.hosts.registry.docker(&host_id)?, &id).await
+}
+
 #[tauri::command]
 #[specta::specta]
 pub async fn logs_subscribe(

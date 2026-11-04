@@ -1,20 +1,27 @@
-//! The Run dialog: create and start a container from an image.
+//! The Run dialog: create and start a container from an image, or from
+//! another container's configuration (Duplicate and Edit).
 //!
 //! [`RunSpec`] is what the dialog shows; [`create_body`] turns it into the
-//! Engine's request.
+//! Engine's request and [`spec_from_inspect`] reads one back from a container.
 
 mod body;
 mod checks;
+mod from_inspect;
 
-use bollard::{query_parameters::CreateContainerOptionsBuilder, Docker};
+use bollard::{
+    models::{ContainerInspectResponse, EndpointSettings, ImageInspect, NetworkConnectRequest},
+    query_parameters::CreateContainerOptionsBuilder,
+    Docker,
+};
 use serde::{Deserialize, Serialize};
 
 use homeport_core::error::AppResult;
 
 use crate::{auth::RegistryAuth, containers, images};
 
-pub use body::create_body;
+pub use body::{create_body, Base};
 pub use checks::CAPABILITIES;
+pub use from_inspect::spec_from_inspect;
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -59,6 +66,10 @@ pub struct RunSpec {
     /// `name:address` entries for `/etc/hosts`; `host-gateway` is the Host's address.
     pub extra_hosts: Vec<String>,
     pub log: Option<LogSpec>,
+    /// Start from this container's full configuration and apply the spec on
+    /// top, so settings the dialog doesn't show (ulimits, sysctls, security
+    /// options, tmpfs, other networks…) are kept.
+    pub based_on: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
@@ -139,29 +150,99 @@ pub struct LogSpec {
 /// when given) if the Engine doesn't have it. A container that can't start is
 /// removed again, so the dialog can be retried with the same name.
 pub async fn run(docker: &Docker, spec: RunSpec, auth: Option<RegistryAuth>) -> AppResult<String> {
-    let body = create_body(&spec)?;
+    let original = match &spec.based_on {
+        Some(id) => Some(Original::inspect(docker, id).await?),
+        None => None,
+    };
+    let name = spec
+        .name
+        .as_deref()
+        .map(str::trim)
+        .filter(|n| !n.is_empty());
+    let base = original.as_ref().map(|o| o.base(false));
+    let id = create(docker, &spec, base.as_ref(), name, auth).await?;
+    if let Err(e) = containers::act(docker, &id, containers::ContainerAction::Start).await {
+        let _ = containers::remove(docker, &id, true, true).await;
+        return Err(e);
+    }
+    Ok(id)
+}
+
+/// A container's inspect document and its image's, read once.
+pub(crate) struct Original {
+    pub container: ContainerInspectResponse,
+    pub image: Option<ImageInspect>,
+}
+
+impl Original {
+    pub(crate) async fn inspect(docker: &Docker, id: &str) -> AppResult<Self> {
+        let container = docker.inspect_container(id, None).await?;
+        let image = match container.image.as_deref() {
+            Some(image) => docker.inspect_image(image).await.ok(),
+            None => None,
+        };
+        Ok(Self { container, image })
+    }
+
+    pub(crate) fn base(&self, same_identity: bool) -> Base<'_> {
+        Base {
+            inspect: &self.container,
+            image: self.image.as_ref(),
+            same_identity,
+        }
+    }
+}
+
+/// Creates the container without starting it, pulling the image if needed,
+/// and connects it to the base container's other networks.
+pub(crate) async fn create(
+    docker: &Docker,
+    spec: &RunSpec,
+    base: Option<&Base<'_>>,
+    name: Option<&str>,
+    auth: Option<RegistryAuth>,
+) -> AppResult<String> {
+    let body = create_body(spec, base)?;
     let image = spec.image.trim();
     if docker.inspect_image(image).await.is_err() {
         pull(docker, image, auth).await?;
     }
     let mut options = CreateContainerOptionsBuilder::default();
-    if let Some(name) = spec
-        .name
-        .as_deref()
-        .map(str::trim)
-        .filter(|n| !n.is_empty())
-    {
+    if let Some(name) = name {
         options = options.name(name);
     }
     let id = docker
         .create_container(Some(options.build()), body)
         .await?
         .id;
-    if let Err(e) = containers::act(docker, &id, containers::ContainerAction::Start).await {
-        let _ = containers::remove(docker, &id, true, true).await;
-        return Err(e);
+    for (network, aliases) in base.map(|b| b.other_networks(spec)).unwrap_or_default() {
+        let connected = docker
+            .connect_network(
+                &network,
+                NetworkConnectRequest {
+                    container: id.clone(),
+                    endpoint_config: Some(EndpointSettings {
+                        aliases: (!aliases.is_empty()).then_some(aliases),
+                        ..Default::default()
+                    }),
+                },
+            )
+            .await;
+        if let Err(e) = connected {
+            let _ = containers::remove(docker, &id, true, true).await;
+            return Err(e.into());
+        }
     }
     Ok(id)
+}
+
+/// The Run dialog's form for an existing container.
+pub async fn spec_for(docker: &Docker, id: &str) -> AppResult<RunSpec> {
+    let original = Original::inspect(docker, id).await?;
+    Ok(spec_from_inspect(
+        &original.container,
+        original.image.as_ref(),
+    ))
 }
 
 async fn pull(docker: &Docker, image: &str, auth: Option<RegistryAuth>) -> AppResult<()> {
@@ -298,5 +379,54 @@ mod tests {
         let inspected = containers::inspect(&docker, &id).await.unwrap();
         assert_eq!(inspected["Config"]["Hostname"], "homeport-test");
         containers::remove(&docker, &id, true, true).await.unwrap();
+    }
+
+    #[tokio::test]
+    #[ignore = "needs a local Docker Engine"]
+    async fn duplicates_a_container() {
+        let docker = testing::docker();
+        testing::ensure_image(&docker).await;
+        let name = testing::unique("dup");
+        let original = run(
+            &docker,
+            RunSpec {
+                image: testing::IMAGE.into(),
+                name: Some(name.clone()),
+                command: Some("sleep 60".into()),
+                env: vec!["A=1".into()],
+                labels: vec!["team=web".into()],
+                memory: Some(64 * 1024 * 1024),
+                extra_hosts: vec!["nas:192.168.1.10".into()],
+                ..Default::default()
+            },
+            None,
+        )
+        .await
+        .unwrap();
+        let mut spec = spec_for(&docker, &original).await.unwrap();
+        assert_eq!(spec.based_on.as_deref(), Some(original.as_str()));
+        spec.name = Some(format!("{name}-copy"));
+        let copy = run(&docker, spec, None).await.unwrap();
+
+        let a = containers::inspect(&docker, &original).await.unwrap();
+        let b = containers::inspect(&docker, &copy).await.unwrap();
+        for pointer in [
+            "/Config/Env",
+            "/Config/Cmd",
+            "/Config/Labels",
+            "/HostConfig/Memory",
+            "/HostConfig/ExtraHosts",
+            "/HostConfig/RestartPolicy",
+        ] {
+            assert_eq!(a.pointer(pointer), b.pointer(pointer), "{pointer}");
+        }
+        assert_ne!(a["Config"]["Hostname"], b["Config"]["Hostname"]);
+        assert_eq!(b["Name"], format!("/{name}-copy"));
+        containers::remove(&docker, &copy, true, true)
+            .await
+            .unwrap();
+        containers::remove(&docker, &original, true, true)
+            .await
+            .unwrap();
     }
 }

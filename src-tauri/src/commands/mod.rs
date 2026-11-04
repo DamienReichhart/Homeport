@@ -110,6 +110,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             system::system_disk_usage,
             system::system_prune,
             containers::containers_run,
+            containers::containers_run_spec,
             stacks::stacks_list,
             stacks::stacks_get,
             stacks::stacks_get_env,

@@ -171,7 +171,16 @@ function log(form: LoggingForm): LogSpec | null {
 
 type AdvancedSpec = Omit<
   RunSpec,
-  'image' | 'name' | 'command' | 'env' | 'ports' | 'mounts' | 'network' | 'restart' | 'autoRemove'
+  | 'image'
+  | 'name'
+  | 'command'
+  | 'env'
+  | 'ports'
+  | 'mounts'
+  | 'network'
+  | 'restart'
+  | 'autoRemove'
+  | 'basedOn'
 >;
 
 /** The Run request's advanced fields; call once `advancedErrors` is empty. */

@@ -116,6 +116,8 @@ export const commands = {
 	systemPrune: (hostId: string, selection: PruneSelection) => __TAURI_INVOKE<SystemPruneReport>("system_prune", { hostId, selection }),
 	/**  Creates and starts a container; returns its id. */
 	containersRun: (hostId: string, spec: RunSpec) => __TAURI_INVOKE<string>("containers_run", { hostId, spec }),
+	/**  The Run dialog's form for an existing container, for Duplicate and Edit. */
+	containersRunSpec: (hostId: string, id: string) => __TAURI_INVOKE<RunSpec>("containers_run_spec", { hostId, id }),
 	/**  Every Stack on a Host: those running there plus undeployed Managed Stacks. */
 	stacksList: (hostId: string) => __TAURI_INVOKE<Stack[]>("stacks_list", { hostId }),
 	stacksGet: (id: string) => __TAURI_INVOKE<ManagedStack>("stacks_get", { id }),
@@ -679,6 +681,12 @@ export type RunSpec = {
 	/**  `name:address` entries for `/etc/hosts`; `host-gateway` is the Host's address. */
 	extraHosts: string[],
 	log: LogSpec | null,
+	/**
+	 *  Start from this container's full configuration and apply the spec on
+	 *  top, so settings the dialog doesn't show (ulimits, sysctls, security
+	 *  options, tmpfs, other networks…) are kept.
+	 */
+	basedOn: string | null,
 };
 
 /**  A Docker Hub repository found by a search. */

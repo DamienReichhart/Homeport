@@ -3,13 +3,15 @@
 use std::collections::HashMap;
 
 use bollard::models::{
-    ContainerCreateBody, DeviceMapping, DeviceRequest, HealthConfig, HostConfig,
-    HostConfigLogConfig, PortBinding, RestartPolicy as EnginePolicy, RestartPolicyNameEnum,
+    ContainerCreateBody, ContainerInspectResponse, DeviceMapping, DeviceRequest, EndpointSettings,
+    HealthConfig, HostConfig, HostConfigLogConfig, ImageInspect, MountType, NetworkingConfig,
+    PortBinding, RestartPolicy as EnginePolicy, RestartPolicyNameEnum,
 };
 
 use homeport_core::error::{AppError, AppResult};
 
-use super::{checks, GpuSpec, HealthcheckSpec, LogSpec, RestartPolicy, RunSpec};
+use super::{checks, from_inspect, GpuSpec, HealthcheckSpec, LogSpec, RestartPolicy, RunSpec};
+use crate::COMPOSE_SERVICE;
 
 const NANOS_PER_SECOND: i64 = 1_000_000_000;
 
@@ -17,8 +19,128 @@ fn invalid(message: impl Into<String>) -> AppError {
     AppError::validation(message)
 }
 
-/// Translates a [`RunSpec`] into the Engine's create request.
-pub fn create_body(spec: &RunSpec) -> AppResult<ContainerCreateBody> {
+/// The container a spec is based on, for Duplicate and Edit
+/// ([`RunSpec::based_on`]).
+pub struct Base<'a> {
+    pub inspect: &'a ContainerInspectResponse,
+    /// Its image, to tell the container's own settings from inherited ones.
+    pub image: Option<&'a ImageInspect>,
+    /// The new container takes this one's place (Edit): it keeps its Stack
+    /// labels and the network aliases that name it. A copy drops them.
+    pub same_identity: bool,
+}
+
+impl Base<'_> {
+    fn id(&self) -> &str {
+        self.inspect.id.as_deref().unwrap_or_default()
+    }
+
+    fn name(&self) -> &str {
+        self.inspect
+            .name
+            .as_deref()
+            .unwrap_or_default()
+            .trim_start_matches('/')
+    }
+
+    fn primary_network(&self) -> &str {
+        let host = self.inspect.host_config.as_ref();
+        match host.and_then(|h| h.network_mode.as_deref()) {
+            None | Some("" | "default") => "bridge",
+            Some(mode) => mode,
+        }
+    }
+
+    /// Aliases on `network` worth keeping: never the Engine's own (the short
+    /// ID), and for a copy not those naming the original or its service.
+    fn aliases(&self, network: &str) -> Vec<String> {
+        let id = self.id();
+        let service = self
+            .inspect
+            .config
+            .as_ref()
+            .and_then(|c| c.labels.as_ref())
+            .and_then(|l| l.get(COMPOSE_SERVICE));
+        self.inspect
+            .network_settings
+            .as_ref()
+            .and_then(|n| n.networks.as_ref())
+            .and_then(|n| n.get(network))
+            .and_then(|e| e.aliases.clone())
+            .unwrap_or_default()
+            .into_iter()
+            .filter(|a| !a.is_empty() && !id.starts_with(a.as_str()))
+            .filter(|a| self.same_identity || (a != self.name() && Some(a) != service))
+            .collect()
+    }
+
+    /// The original's networks besides its primary one and the spec's, with
+    /// their aliases, to connect the new container to after creating it.
+    pub(crate) fn other_networks(&self, spec: &RunSpec) -> Vec<(String, Vec<String>)> {
+        let primary = optional(&spec.network).unwrap_or("bridge");
+        if !user_defined(primary) && primary != "bridge" {
+            return vec![];
+        }
+        let mut networks: Vec<(String, Vec<String>)> = self
+            .inspect
+            .network_settings
+            .as_ref()
+            .and_then(|n| n.networks.as_ref())
+            .into_iter()
+            .flatten()
+            .map(|(name, _)| name)
+            .filter(|name| *name != primary && *name != self.primary_network())
+            .map(|name| (name.clone(), self.aliases(name)))
+            .collect();
+        networks.sort();
+        networks
+    }
+}
+
+/// Networks a container can join by name, with aliases; not the default
+/// bridge, `host`, `none` or another container's stack.
+fn user_defined(network: &str) -> bool {
+    !matches!(network, "bridge" | "host" | "none" | "default") && !network.starts_with("container:")
+}
+
+/// Starts from the base container's settings the dialog doesn't show.
+fn from_base(base: &Base) -> (ContainerCreateBody, HostConfig) {
+    let config =
+        from_inspect::unshown(&base.inspect.config.clone().unwrap_or_default(), base.image);
+    let body = ContainerCreateBody {
+        user: config.user,
+        working_dir: config.working_dir,
+        entrypoint: config.entrypoint,
+        shell: config.shell,
+        stop_signal: config.stop_signal,
+        stop_timeout: config.stop_timeout,
+        volumes: config.volumes.filter(|v| !v.is_empty()),
+        tty: config.tty,
+        open_stdin: config.open_stdin,
+        stdin_once: config.stdin_once,
+        attach_stdin: config.attach_stdin,
+        attach_stdout: config.attach_stdout,
+        attach_stderr: config.attach_stderr,
+        network_disabled: config.network_disabled,
+        ..Default::default()
+    };
+    let mut host = base.inspect.host_config.clone().unwrap_or_default();
+    // Binds and volumes come back from the spec; only tmpfs mounts stay.
+    host.mounts = host
+        .mounts
+        .map(|m| {
+            m.into_iter()
+                .filter(|m| m.typ == Some(MountType::TMPFS))
+                .collect::<Vec<_>>()
+        })
+        .filter(|m| !m.is_empty());
+    host.container_id_file = None;
+    (body, host)
+}
+
+/// Translates a [`RunSpec`] into the Engine's create request, on top of
+/// `base`'s settings when it has one.
+pub fn create_body(spec: &RunSpec, base: Option<&Base>) -> AppResult<ContainerCreateBody> {
     let image = spec.image.trim();
     if image.is_empty() {
         return Err(invalid("Choose an image."));
@@ -62,34 +184,55 @@ pub fn create_body(spec: &RunSpec) -> AppResult<ContainerCreateBody> {
         return Err(invalid("Containers removed on exit can't also restart."));
     }
 
-    let mut host = HostConfig {
-        port_bindings: (!bindings.is_empty()).then_some(bindings),
-        binds: (!binds.is_empty()).then_some(binds),
-        network_mode: optional(&spec.network).map(str::to_owned),
-        restart_policy: Some(EnginePolicy {
-            name: Some(restart),
-            maximum_retry_count: None,
-        }),
-        auto_remove: Some(spec.auto_remove),
-        ..Default::default()
-    };
+    let (mut body, mut host) = base.map(from_base).unwrap_or_default();
+    host.port_bindings = (!bindings.is_empty()).then_some(bindings);
+    host.binds = (!binds.is_empty()).then_some(binds);
+    host.network_mode = optional(&spec.network).map(str::to_owned);
+    host.restart_policy = Some(EnginePolicy {
+        name: Some(restart),
+        maximum_retry_count: None,
+    });
+    host.auto_remove = Some(spec.auto_remove);
     resources(spec, &mut host)?;
     security(spec, &mut host)?;
     network_identity(spec, &mut host)?;
     host.log_config = spec.log.as_ref().map(log_config).transpose()?;
 
-    Ok(ContainerCreateBody {
-        image: Some(image.to_owned()),
-        cmd,
-        env: (!spec.env.is_empty()).then(|| spec.env.clone()),
-        exposed_ports: (!exposed.is_empty()).then_some(exposed),
-        labels: (!labels.is_empty()).then_some(labels),
-        healthcheck: spec.healthcheck.as_ref().map(healthcheck).transpose()?,
-        hostname: hostname.map(str::to_owned),
-        domainname: domainname.map(str::to_owned),
-        host_config: Some(host),
-        ..Default::default()
-    })
+    let mut labels = labels;
+    if let Some(base) = base.filter(|b| b.same_identity) {
+        let stack = base.inspect.config.as_ref().and_then(|c| c.labels.as_ref());
+        for (k, v) in stack.into_iter().flatten() {
+            if k.starts_with(checks::COMPOSE_LABEL_PREFIX) {
+                labels.insert(k.clone(), v.clone());
+            }
+        }
+    }
+    if let Some(base) = base {
+        let network = optional(&spec.network).unwrap_or("bridge");
+        let aliases = base.aliases(base.primary_network());
+        if user_defined(network) && network == base.primary_network() && !aliases.is_empty() {
+            body.networking_config = Some(NetworkingConfig {
+                endpoints_config: Some(HashMap::from([(
+                    network.to_owned(),
+                    EndpointSettings {
+                        aliases: Some(aliases),
+                        ..Default::default()
+                    },
+                )])),
+            });
+        }
+    }
+
+    body.image = Some(image.to_owned());
+    body.cmd = cmd;
+    body.env = (!spec.env.is_empty()).then(|| spec.env.clone());
+    body.exposed_ports = (!exposed.is_empty()).then_some(exposed);
+    body.labels = (!labels.is_empty()).then_some(labels);
+    body.healthcheck = spec.healthcheck.as_ref().map(healthcheck).transpose()?;
+    body.hostname = hostname.map(str::to_owned);
+    body.domainname = domainname.map(str::to_owned);
+    body.host_config = Some(host);
+    Ok(body)
 }
 
 fn optional(value: &Option<String>) -> Option<&str> {
@@ -349,43 +492,46 @@ mod tests {
     }
 
     fn host(spec: RunSpec) -> HostConfig {
-        create_body(&spec).unwrap().host_config.unwrap()
+        create_body(&spec, None).unwrap().host_config.unwrap()
     }
 
     #[test]
     fn run_options_map_to_the_engine_request() {
-        let body = create_body(&RunSpec {
-            command: Some(r#"sh -c "echo 'hi there'""#.into()),
-            env: vec!["MODE=prod".into()],
-            ports: vec![
-                PortSpec {
-                    host_ip: None,
-                    host_port: Some(8080),
-                    container_port: 80,
-                    protocol: "tcp".into(),
-                },
-                PortSpec {
-                    host_ip: Some("127.0.0.1".into()),
-                    host_port: None,
-                    container_port: 53,
-                    protocol: "udp".into(),
-                },
-            ],
-            mounts: vec![
-                MountSpec {
-                    source: "/srv/site".into(),
-                    target: "/usr/share/nginx/html".into(),
-                    read_only: true,
-                },
-                MountSpec {
-                    source: "cache".into(),
-                    target: "/cache".into(),
-                    read_only: false,
-                },
-            ],
-            restart: RestartPolicy::UnlessStopped,
-            ..spec()
-        })
+        let body = create_body(
+            &RunSpec {
+                command: Some(r#"sh -c "echo 'hi there'""#.into()),
+                env: vec!["MODE=prod".into()],
+                ports: vec![
+                    PortSpec {
+                        host_ip: None,
+                        host_port: Some(8080),
+                        container_port: 80,
+                        protocol: "tcp".into(),
+                    },
+                    PortSpec {
+                        host_ip: Some("127.0.0.1".into()),
+                        host_port: None,
+                        container_port: 53,
+                        protocol: "udp".into(),
+                    },
+                ],
+                mounts: vec![
+                    MountSpec {
+                        source: "/srv/site".into(),
+                        target: "/usr/share/nginx/html".into(),
+                        read_only: true,
+                    },
+                    MountSpec {
+                        source: "cache".into(),
+                        target: "/cache".into(),
+                        read_only: false,
+                    },
+                ],
+                restart: RestartPolicy::UnlessStopped,
+                ..spec()
+            },
+            None,
+        )
         .unwrap();
         assert_eq!(body.cmd.unwrap(), ["sh", "-c", "echo 'hi there'"]);
         assert_eq!(body.env.unwrap(), ["MODE=prod"]);
@@ -412,15 +558,18 @@ mod tests {
 
     #[test]
     fn limits_and_labels_map_to_the_engine_request() {
-        let body = create_body(&RunSpec {
-            cpus: Some(0.5),
-            cpu_shares: Some(512),
-            memory: Some(512 * 1024 * 1024),
-            memory_reservation: Some(256 * 1024 * 1024),
-            memory_swap: Some(-1),
-            labels: vec!["traefik.enable=true".into(), "team=web".into()],
-            ..spec()
-        })
+        let body = create_body(
+            &RunSpec {
+                cpus: Some(0.5),
+                cpu_shares: Some(512),
+                memory: Some(512 * 1024 * 1024),
+                memory_reservation: Some(256 * 1024 * 1024),
+                memory_swap: Some(-1),
+                labels: vec!["traefik.enable=true".into(), "team=web".into()],
+                ..spec()
+            },
+            None,
+        )
         .unwrap();
         let labels = body.labels.unwrap();
         assert_eq!(labels["traefik.enable"], "true");
@@ -490,26 +639,29 @@ mod tests {
 
     #[test]
     fn healthchecks_network_identity_and_logging_map_to_the_engine_request() {
-        let body = create_body(&RunSpec {
-            healthcheck: Some(HealthcheckSpec {
-                command: "wget -qO- localhost || exit 1".into(),
-                interval_s: Some(30),
-                timeout_s: Some(5),
-                retries: Some(3),
-                start_period_s: Some(90),
-                disabled: false,
-            }),
-            hostname: Some("web".into()),
-            domainname: Some("home.arpa".into()),
-            dns: vec!["1.1.1.1".into(), "".into()],
-            dns_search: vec!["home.arpa".into()],
-            extra_hosts: vec!["nas:192.168.1.10".into(), "gw:host-gateway".into()],
-            log: Some(LogSpec {
-                driver: "json-file".into(),
-                options: vec!["max-size=10m".into(), "max-file=3".into()],
-            }),
-            ..spec()
-        })
+        let body = create_body(
+            &RunSpec {
+                healthcheck: Some(HealthcheckSpec {
+                    command: "wget -qO- localhost || exit 1".into(),
+                    interval_s: Some(30),
+                    timeout_s: Some(5),
+                    retries: Some(3),
+                    start_period_s: Some(90),
+                    disabled: false,
+                }),
+                hostname: Some("web".into()),
+                domainname: Some("home.arpa".into()),
+                dns: vec!["1.1.1.1".into(), "".into()],
+                dns_search: vec!["home.arpa".into()],
+                extra_hosts: vec!["nas:192.168.1.10".into(), "gw:host-gateway".into()],
+                log: Some(LogSpec {
+                    driver: "json-file".into(),
+                    options: vec!["max-size=10m".into(), "max-file=3".into()],
+                }),
+                ..spec()
+            },
+            None,
+        )
         .unwrap();
         let health = body.healthcheck.unwrap();
         assert_eq!(
@@ -536,20 +688,23 @@ mod tests {
 
     #[test]
     fn disabling_the_healthcheck_sends_none() {
-        let body = create_body(&RunSpec {
-            healthcheck: Some(HealthcheckSpec {
-                disabled: true,
-                ..Default::default()
-            }),
-            ..spec()
-        })
+        let body = create_body(
+            &RunSpec {
+                healthcheck: Some(HealthcheckSpec {
+                    disabled: true,
+                    ..Default::default()
+                }),
+                ..spec()
+            },
+            None,
+        )
         .unwrap();
         assert_eq!(body.healthcheck.unwrap().test.unwrap(), ["NONE"]);
     }
 
     #[test]
     fn unset_options_leave_the_engine_defaults() {
-        let body = create_body(&spec()).unwrap();
+        let body = create_body(&spec(), None).unwrap();
         assert_eq!(body.labels, None);
         assert_eq!(body.healthcheck, None);
         let host = body.host_config.unwrap();
@@ -705,7 +860,7 @@ mod tests {
         ];
         for s in bad {
             assert!(
-                matches!(create_body(&s), Err(ref e) if e.is(ErrorCode::Validation)),
+                matches!(create_body(&s, None), Err(ref e) if e.is(ErrorCode::Validation)),
                 "{s:?}"
             );
         }

@@ -20,6 +20,7 @@ const unset = {
   dnsSearch: [],
   extraHosts: [],
   log: null,
+  basedOn: null,
 };
 
 const withAdvanced = (patch: (a: RunForm['advanced']) => void): RunForm => {

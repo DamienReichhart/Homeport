@@ -32,6 +32,8 @@ export interface RunForm {
   restart: RestartPolicy;
   autoRemove: boolean;
   advanced: AdvancedForm;
+  /** The container this form was read from (Duplicate, Edit), whose other settings are kept. */
+  basedOn: string | null;
 }
 
 export const emptyRunForm = (image = ''): RunForm => ({
@@ -45,6 +47,7 @@ export const emptyRunForm = (image = ''): RunForm => ({
   restart: 'no',
   autoRemove: false,
   advanced: emptyAdvanced(),
+  basedOn: null,
 });
 
 /** What can't be read in the form, by field; empty when it can be sent. */
@@ -79,5 +82,6 @@ export function toRunSpec(form: RunForm): RunSpec {
     restart: form.restart,
     autoRemove: form.autoRemove,
     ...advancedToSpec(form.advanced),
+    basedOn: form.basedOn,
   };
 }
