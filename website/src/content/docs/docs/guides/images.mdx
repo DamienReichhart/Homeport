@@ -23,6 +23,8 @@ The **Images** page lists the images stored on the selected Host, with their tot
 
 Stopped containers count as using an image. Select a column header to sort, and search with **Search images**.
 
+A ⬆ next to the name means one of the image's tags points to a newer image in its registry; hover it to see which. Pull the tag to fetch it. **Check for newer images** asks the registries again instead of using the answers kept for 6 hours. See [newer images](/docs/guides/containers/#newer-images) for how the check works.
+
 ## Pulling an image
 
 Choose **Pull image** and enter a reference: `nginx` (which means `nginx:latest`), `nginx:1.27`, `ghcr.io/org/app:v2`, `registry.example.com:5000/app`, or a digest such as `app@sha256:…`.

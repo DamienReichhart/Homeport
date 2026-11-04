@@ -124,6 +124,10 @@ To change a Managed Stack, open it, edit its **Definition** and choose **Save an
 
 - **Definition** holds the editor for a Managed Stack, or explains where an External Stack came from.
 
+## Newer images
+
+A ⬆ in a Stack's **State** means one of its services runs an image whose tag has a newer version in its registry; hover it to see which services. On the Stack's page, **Services** names them and marks each outdated image. For a Managed Stack, **Pull images**, then **Redeploy**, to update; an External Stack only shows the mark. **Check for newer images** at the top of the Stacks page asks the registries again. The check is the one the Containers page uses — see [newer images](/docs/guides/containers/#newer-images) — so opening Stacks right after Containers asks the registries nothing more.
+
 ## Stack actions
 
 | Action                     | Stacks   | What it does                                                                                |

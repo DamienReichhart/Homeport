@@ -20,7 +20,7 @@ Containers that belong to a [Stack](/docs/guides/stacks/) are grouped under it; 
 | Column      | Shows                                                                                                 |
 | ----------- | ----------------------------------------------------------------------------------------------------- |
 | **Name**    | A status dot, the name (the service name inside a Stack) and the short ID.                            |
-| **Image**   | The image it was created from.                                                                        |
+| **Image**   | The image it was created from, with a ⬆ mark when a [newer image](#newer-images) is published.        |
 | **Status**  | As the Engine reports it, e.g. _Up 3 hours (healthy)_, with a health badge if there's a health check. |
 | **Ports**   | Up to three ports, published ones first. A published port is a link that opens it in your browser.    |
 | **CPU**     | Live, as a percentage of one CPU: `200%` means two CPUs fully used.                                   |
@@ -30,6 +30,12 @@ Containers that belong to a [Stack](/docs/guides/stacks/) are grouped under it; 
 CPU and memory update every two seconds. **Search containers** matches names, images, Stacks, services and ID prefixes; **Only running** hides the rest.
 
 Select a container to open it.
+
+### Newer images
+
+A ⬆ next to the image means its registry now has a different image under the tag the container was created from: `nginx:1.27` moved on since it was pulled, or a newer one was pulled but the container wasn't recreated. Hover it to see which. To update, pull the image and recreate the container — for a Stack, **Pull images** then **Redeploy**.
+
+Homeport asks the registry through the Host's Engine, which compares digests without pulling anything, using your stored [registry logins](/docs/guides/settings/#registries) for private images. Answers are kept for 6 hours, so opening the list again asks nothing; **Check for newer images**, at the top of the page, asks every registry again now. Images built locally, pulled by digest (`app@sha256:…`) or whose registry can't be reached show nothing rather than a false alarm. The container's page shows the same mark next to its image.
 
 ### Actions
 
