@@ -178,27 +178,30 @@ impl FreshnessCache {
             .map(|t| t.reference.as_str())
             .filter(|r| is_checkable(r))
             .collect();
-        let missing: Vec<&str> = references
+        let missing: Vec<(String, Option<crate::auth::RegistryAuth>)> = references
             .into_iter()
             .filter(|r| force || self.get(host, r, now).is_none())
+            .map(|r| (r.to_owned(), logins.for_reference(r).cloned()))
             .collect();
-        let looked_up: Vec<(&str, Option<String>)> = stream::iter(missing)
-            .map(|reference| async move {
-                let auth = logins.for_reference(reference).cloned();
-                let digest = match registry_digest(docker, reference, auth).await {
-                    Ok(digest) => Some(digest),
-                    Err(e) => {
-                        e.logged(&format!("newer image check for {reference}"));
-                        None
-                    }
-                };
-                (reference, digest)
+        let looked_up: Vec<(String, Option<String>)> = stream::iter(missing)
+            .map(|(reference, auth)| {
+                let docker = docker.clone();
+                async move {
+                    let digest = match registry_digest(&docker, &reference, auth).await {
+                        Ok(digest) => Some(digest),
+                        Err(e) => {
+                            e.logged(&format!("newer image check for {reference}"));
+                            None
+                        }
+                    };
+                    (reference, digest)
+                }
             })
             .buffer_unordered(CONCURRENCY)
             .collect()
             .await;
         for (reference, digest) in looked_up {
-            self.put(host, reference, digest, now);
+            self.put(host, &reference, digest, now);
         }
 
         let manifests = manifests(docker).await;
