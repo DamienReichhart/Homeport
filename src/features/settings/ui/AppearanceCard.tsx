@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/shared/ui';
 import { THEMES } from '../model/themes';
+import { t } from '@/shared/i18n';
 
 export function AppearanceCard({
   settings,
@@ -28,21 +29,21 @@ export function AppearanceCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Appearance</CardTitle>
+        <CardTitle>{t('settings.appearance.title')}</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-1.5">
-        <Label htmlFor="theme">Theme</Label>
+        <Label htmlFor="theme">{t('settings.appearance.theme')}</Label>
         <Select
           value={settings.theme ?? 'system'}
           onValueChange={(theme) => onChange({ ...settings, theme: theme as Theme })}
         >
-          <SelectTrigger id="theme" className="w-56" aria-label="Theme">
+          <SelectTrigger id="theme" className="w-56" aria-label={t('settings.appearance.theme')}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {THEMES.map((t) => (
-              <SelectItem key={t.value} value={t.value}>
-                {t.label}
+            {THEMES.map((theme) => (
+              <SelectItem key={theme.value} value={theme.value}>
+                {t(theme.label)}
               </SelectItem>
             ))}
           </SelectContent>

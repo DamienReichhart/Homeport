@@ -1,5 +1,6 @@
 import type { ComposeSupport } from '@/shared/api';
 import { HintView, StatusDot } from '@/shared/ui';
+import { t } from '@/shared/i18n';
 
 /** The compose CLI found, or what's missing and how to install it. */
 export function ComposeStatus({ compose }: { compose: ComposeSupport }) {
@@ -18,9 +19,7 @@ export function ComposeStatus({ compose }: { compose: ComposeSupport }) {
         <StatusDot tone="warning" />
         {compose.problem.message}
       </span>
-      <span className="text-muted-foreground">
-        Stacks can be started and stopped, but not deployed.
-      </span>
+      <span className="text-muted-foreground">{t('settings.machine.composeMissing')}</span>
       {compose.problem.hint && <HintView hint={compose.problem.hint} />}
     </div>
   );

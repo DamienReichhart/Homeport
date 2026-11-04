@@ -14,6 +14,7 @@ import {
   TabsTrigger,
 } from '@/shared/ui';
 import { licensesQuery } from '../../api/queries';
+import { t, tRich } from '@/shared/i18n';
 
 const TEXT = 'bg-muted h-[60vh] overflow-auto rounded-md p-3 font-mono text-xs whitespace-pre-wrap';
 
@@ -31,11 +32,8 @@ export function LicensesDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Licenses</DialogTitle>
-          <DialogDescription>
-            Homeport is free software under the MIT License, built on the open-source packages
-            below.
-          </DialogDescription>
+          <DialogTitle>{t('settings.licenses.title')}</DialogTitle>
+          <DialogDescription>{t('settings.licenses.description')}</DialogDescription>
         </DialogHeader>
         {licenses.isPending && <Spinner />}
         {licenses.error && (
@@ -45,7 +43,7 @@ export function LicensesDialog({
           <Tabs defaultValue="app" className="min-w-0">
             <TabsList>
               <TabsTrigger value="app">Homeport</TabsTrigger>
-              <TabsTrigger value="third-party">Third-party software</TabsTrigger>
+              <TabsTrigger value="third-party">{t('settings.licenses.thirdParty')}</TabsTrigger>
             </TabsList>
             <TabsContent value="app">
               <pre className={TEXT}>{licenses.data.app}</pre>
@@ -55,13 +53,11 @@ export function LicensesDialog({
                 <pre className={TEXT}>{licenses.data.third_party}</pre>
               ) : (
                 <EmptyState
-                  title="Not included in this build"
-                  description={
-                    <>
-                      Release builds bundle them; run <code>bun run licenses</code> to generate them
-                      for a development build.
-                    </>
-                  }
+                  title={t('settings.licenses.missing.title')}
+                  description={tRich('settings.licenses.missing.description', {
+                    command: 'bun run licenses',
+                    code: (chunks) => <code>{chunks}</code>,
+                  })}
                 />
               )}
             </TabsContent>

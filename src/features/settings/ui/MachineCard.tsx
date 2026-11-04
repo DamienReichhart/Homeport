@@ -10,6 +10,7 @@ import {
 } from '@/shared/ui';
 import { machineQuery } from '../api/queries';
 import { ComposeStatus } from './ComposeStatus';
+import { t } from '@/shared/i18n';
 
 /** What Homeport can use on this machine: the OS keychain and the compose CLI. */
 export function MachineCard() {
@@ -17,23 +18,26 @@ export function MachineCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>This machine</CardTitle>
-        <CardDescription>What Homeport can use here.</CardDescription>
+        <CardTitle>{t('settings.machine.title')}</CardTitle>
+        <CardDescription>{t('settings.machine.description')}</CardDescription>
       </CardHeader>
       <CardContent>
         {capabilities.data && (
           <KeyValue
             items={[
               [
-                'OS keychain',
+                t('settings.machine.keychain'),
                 <span className="inline-flex items-center gap-1.5">
                   <StatusDot tone={capabilities.data.keychain ? 'success' : 'danger'} />
                   {capabilities.data.keychain
-                    ? 'Available — SSH keys, certificates, stack environments and registry logins are stored encrypted.'
-                    : 'Unavailable — SSH keys, TLS certificates, stack environments and registry logins can’t be stored.'}
+                    ? t('settings.machine.keychainAvailable')
+                    : t('settings.machine.keychainUnavailable')}
                 </span>,
               ],
-              ['Compose CLI', <ComposeStatus compose={capabilities.data.compose} />],
+              [
+                t('settings.machine.compose'),
+                <ComposeStatus compose={capabilities.data.compose} />,
+              ],
             ]}
           />
         )}
