@@ -5,7 +5,7 @@ description: Check a Homeport installer against its checksum, build provenance a
 
 import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
 import SigningKeyFingerprint from '../../../../components/SigningKeyFingerprint.astro';
-import { KEY_URL } from '../../../../lib/repository';
+import { KEY_URL } from '@/core/packages';
 
 Every Homeport release is built by GitHub Actions from the public repository. You can check that the file you downloaded is the one that was built, in two ways. Linux packages and updates are also signed, and checked for you.
 
