@@ -39,7 +39,7 @@ Homeport asks the registry through the Host's Engine, which compares digests wit
 
 ### Actions
 
-The button at the end of each row starts or stops the container. The **⋮** menu has the rest: **Logs**, **Open terminal**, **Restart**, **Pause** or **Resume**, **Kill**, **Rename**, [**Edit**](#editing-a-container), [**Duplicate**](#duplicating-a-container) and **Remove**.
+The button at the end of each row starts or stops the container. The **⋮** menu has the rest: **Logs**, **Open terminal**, **Restart**, **Pause** or **Resume**, **Kill**, **Rename**, [**Edit**](#editing-a-container), [**Duplicate**](#duplicating-a-container), [**Commit to image…**](#committing-a-container) and **Remove**.
 
 Tick containers to act on several at once with **Start**, **Stop**, **Restart** or **Remove**. The tick box on a Stack's row selects all of its containers.
 
@@ -52,7 +52,7 @@ Tick containers to act on several at once with **Start**, **Stop**, **Restart** 
 
 ## A container's page
 
-The header shows the image and status, with **Start** or **Stop**, **Restart**, **Pause** or **Resume**, and **Remove**; its **⋮** menu has **Rename**, **Edit** and **Duplicate**. The tabs below hold everything else.
+The header shows the image and status, with **Start** or **Stop**, **Restart**, **Pause** or **Resume**, and **Remove**; its **⋮** menu has **Rename**, **Edit**, **Duplicate** and **Commit to image…**. The tabs below hold everything else.
 
 <Aside>
   Leaving a tab closes what it was doing: terminals close when you leave **Exec**, charts start
@@ -193,7 +193,7 @@ The Docker Engine can't change most settings of an existing container, so **Edit
 Before anything happens, Homeport lists what the new container won't have:
 
 - **Anonymous volumes** — the new container starts with empty ones. The old ones aren't deleted: they're kept as unused volumes you can still open or [clean up](/docs/guides/volumes-networks/).
-- **Files changed inside the container** since it was created, such as installed packages or edited configuration. To keep them, commit the container to an image first and edit it to use that image.
+- **Files changed inside the container** since it was created, such as installed packages or edited configuration. To keep them, [commit the container to an image](#committing-a-container) first — the confirmation has a button for it — and edit the container to use that image.
 - **Downtime** — a running container stops while the two are swapped, usually for a few seconds.
 - **A Stack's next deploy** — for a container in a Stack, the Stack's next deploy recreates it from its compose file, without your edit. Change the compose file to make it last.
 
@@ -206,3 +206,17 @@ What's kept: the name, the networks with their aliases, named volumes and bind m
   In the rare case putting it back fails too, the message names where the original is, such as
   `web-old-1a2b3c4d`, so you can rename it back and start it.
 </Aside>
+
+## Committing a container
+
+**Commit to image…** saves the container's files as they are now — including everything changed inside it since it was created — and its settings as a new image on the Host, like `docker commit`.
+
+| Field                                    | Notes                                                                                                                                                                             |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Image name**                           | `repo:tag`, starting as the container's name and today's date, such as `web:2026-11-04`. If an image already has that name, the dialog says so: the name moves to the new image.  |
+| **Message**                              | Shown in the image's history (**Inspect** → **Layers**).                                                                                                                          |
+| **Author**                               | Optional.                                                                                                                                                                         |
+| **Changes**                              | Dockerfile instructions applied to the new image, one per line: `CMD`, `ENTRYPOINT`, `ENV`, `EXPOSE`, `LABEL`, `ONBUILD`, `USER`, `VOLUME` or `WORKDIR`, such as `ENV MODE=prod`. |
+| **Pause the container while committing** | On by default: its processes are frozen for the few seconds it takes, so files being written are consistent. The container carries on afterwards.                                 |
+
+The new image shows up on the [Images page](/docs/guides/images/) straight away. Volumes, named or anonymous, aren't part of it: back them up separately. To make an image you can rebuild, prefer [building one from a Dockerfile](/docs/guides/images/#building-an-image).

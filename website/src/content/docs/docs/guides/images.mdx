@@ -70,6 +70,10 @@ The build's output streams live; **Cancel** stops it. When it finishes, the name
   --mount` and build secrets aren't available; build those from a terminal.
 </Aside>
 
+### Committing a container instead
+
+An image can also come from a container: **Commit to image…**, in a container's **⋮** menu, saves its files and settings as they are now — see [Committing a container](/docs/guides/containers/#committing-a-container). That's the quick way to keep what someone installed or changed inside a running container. A build is the lasting way: its Dockerfile says how the image is made, so it can be rebuilt, reviewed and updated when the base image moves on. A committed image can't.
+
 ## Pushing an image
 
 Choose **Push** in an image's **⋮** menu. **Name to push** starts as the image's first name; pick another of its names, or type a new one such as `ghcr.io/org/app:v2` — the image is given that name first, as **Tag** does. The name's first part says which registry it goes to: `ghcr.io/org/app` goes to GHCR, `org/app` to Docker Hub.
