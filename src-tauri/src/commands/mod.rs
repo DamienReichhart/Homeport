@@ -70,6 +70,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             containers::containers_remove,
             containers::containers_rename,
             containers::containers_processes,
+            containers::containers_health,
             files::files_list,
             files::files_download,
             files::files_upload,

@@ -4,6 +4,7 @@
 pub mod commit;
 pub mod exec;
 pub mod files;
+pub mod health;
 pub mod logs;
 pub mod recreate;
 pub mod run;

@@ -6,6 +6,7 @@ use homeport_core::streams::StreamId;
 use homeport_engine::containers::{
     self,
     commit::{self, CommitSpec},
+    health::{self, Health},
     logs::{self, LogEvent, LogOptions, LogSource},
     recreate::{self, Loss},
     run::{self, RunSpec},
@@ -103,6 +104,17 @@ pub async fn containers_run_spec(
     id: String,
 ) -> AppResult<RunSpec> {
     run::spec_for(&state.hosts.registry.docker(&host_id)?, &id).await
+}
+
+/// A container's healthcheck, status and last results; `None` without one.
+#[tauri::command]
+#[specta::specta]
+pub async fn containers_health(
+    state: State<'_, AppState>,
+    host_id: String,
+    id: String,
+) -> AppResult<Option<Health>> {
+    health::health(&state.hosts.registry.docker(&host_id)?, &id).await
 }
 
 /// Commits a container to a new image; returns the image's id.

@@ -56,6 +56,8 @@ export const commands = {
 	containersRemove: (hostId: string, id: string, force: boolean, volumes: boolean) => __TAURI_INVOKE<null>("containers_remove", { hostId, id, force, volumes }),
 	containersRename: (hostId: string, id: string, name: string) => __TAURI_INVOKE<null>("containers_rename", { hostId, id, name }),
 	containersProcesses: (hostId: string, id: string) => __TAURI_INVOKE<Processes>("containers_processes", { hostId, id }),
+	/**  A container's healthcheck, status and last results; `None` without one. */
+	containersHealth: (hostId: string, id: string) => __TAURI_INVOKE<Health | null>("containers_health", { hostId, id }),
 	filesList: (hostId: string, containerId: string, path: string) => __TAURI_INVOKE<FileEntry[]>("files_list", { hostId, containerId, path }),
 	/**
 	 *  Saves a container path to `destination`; returns `true` when it was a
@@ -406,6 +408,37 @@ export type FreshnessResult = {
 
 /**  GPUs requested from the vendor's container toolkit (`--gpus`). */
 export type GpuSpec = { kind: "all" } | { kind: "count"; count: number } | { kind: "ids"; ids: string[] };
+
+export type Health = {
+	/**  `starting`, `healthy` or `unhealthy`. */
+	status: string,
+	/**  Failed checks in a row. */
+	failingStreak: number,
+	config: HealthConfig,
+	/**  The last results the Engine keeps (up to five), newest first. */
+	log: HealthResult[],
+};
+
+export type HealthConfig = {
+	/**
+	 *  The check as it would be typed: the shell command for `CMD-SHELL`, the
+	 *  arguments quoted for `CMD`.
+	 */
+	command: string,
+	/**  `None` where the Engine's default applies (30 s, 30 s, 3, 0 s). */
+	intervalS: number | null,
+	timeoutS: number | null,
+	retries: number | null,
+	startPeriodS: number | null,
+};
+
+export type HealthResult = {
+	/**  RFC 3339 times. */
+	start: string,
+	end: string,
+	exitCode: number,
+	output: string,
+};
 
 /**  A healthcheck run in the container's shell (`--health-cmd` and friends). */
 export type HealthcheckSpec = {
