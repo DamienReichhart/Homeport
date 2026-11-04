@@ -25,7 +25,14 @@ export function describeMethod(check: UpdateCheck): string {
     case 'inApp':
       return 'Updates are downloaded, checked against Homeport’s signing key and installed when you choose.';
     case 'packageManager':
-      return `Installed with ${check.method.manager}: updates come from the Homeport package repository.`;
+      switch (check.method.manager) {
+        case 'scoop':
+          return 'Installed with Scoop: updates come from the Homeport bucket.';
+        case 'aur':
+          return 'Installed from the AUR (homeport-bin): your AUR helper installs updates.';
+        default:
+          return `Installed with ${check.method.manager}: updates come from the Homeport package repository.`;
+      }
     case 'manual':
       return 'This is a development build: download new versions from the website.';
   }

@@ -527,7 +527,7 @@ export type NetworkView = {
 	containers: string[],
 };
 
-export type PackageManager = "apt" | "dnf" | "zypper";
+export type PackageManager = "apt" | "dnf" | "zypper" | "scoop" | "aur";
 
 export type PortBinding = {
 	ip: string | null,
