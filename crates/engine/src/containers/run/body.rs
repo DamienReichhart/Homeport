@@ -15,7 +15,7 @@ use crate::COMPOSE_SERVICE;
 
 const NANOS_PER_SECOND: i64 = 1_000_000_000;
 
-fn invalid(message: impl Into<String>) -> AppError {
+fn invalid(message: impl Into<homeport_core::error::Text>) -> AppError {
     AppError::validation(message)
 }
 

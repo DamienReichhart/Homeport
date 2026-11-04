@@ -145,10 +145,11 @@ impl RegistryStore {
         let id = result.map_err(|e| match e.code {
             ErrorCode::NameInUse => AppError {
                 message: format!("A login for {address} is already stored."),
-                hint: Some(homeport_core::error::Hint {
+                hint: Some(Box::new(homeport_core::error::Hint {
                     text: "Edit that login instead.".into(),
                     commands: vec![],
-                }),
+                    ..Default::default()
+                })),
                 ..e
             },
             _ => e,

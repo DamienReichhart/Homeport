@@ -5,7 +5,7 @@ import type { AppError } from './errors';
 export function logLine(error: AppError): string {
   const where = error.context.command ?? 'frontend';
   const detail = error.detail ? ` (${error.detail.replace(/\s+/g, ' ').trim()})` : '';
-  return `${where}: [${error.code}] ${error.message}${detail}`;
+  return `${where}: [${error.code}] ${error.english}${detail}`;
 }
 
 /**

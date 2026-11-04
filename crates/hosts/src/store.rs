@@ -187,10 +187,11 @@ fn unique_name_error(e: AppError, name: &str) -> AppError {
     if e.is(ErrorCode::NameInUse) {
         AppError {
             message: format!("A host named \"{name}\" already exists."),
-            hint: Some(Hint {
+            hint: Some(Box::new(Hint {
                 text: "Pick another name.".into(),
                 commands: vec![],
-            }),
+                ..Default::default()
+            })),
             ..e
         }
     } else {

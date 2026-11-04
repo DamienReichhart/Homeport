@@ -255,10 +255,11 @@ fn not_a_filesystem(error: AppError, source: &Path) -> AppError {
         AppError {
             code: ErrorCode::BadRequest,
             message: format!("{} isn't a tar archive the Docker Engine can import.", source.display()),
-            hint: Some(homeport_core::error::Hint {
+            hint: Some(Box::new(homeport_core::error::Hint {
                 text: "Choose a .tar of a root filesystem, such as one made by Export filesystem or docker export. Image archives made by Save go through Load instead.".into(),
                 commands: vec![],
-            }),
+                ..Default::default()
+            })),
             ..error
         }
     } else {
@@ -347,10 +348,11 @@ fn invalid_archive(error: AppError, source: &Path) -> AppError {
         AppError {
             code: ErrorCode::BadRequest,
             message: format!("{} isn't an image archive the Docker Engine can load.", source.display()),
-            hint: Some(homeport_core::error::Hint {
+            hint: Some(Box::new(homeport_core::error::Hint {
                 text: "Choose a .tar made by docker save or by Save in Homeport, or a compressed one (.tar.gz).".into(),
                 commands: vec![],
-            }),
+                ..Default::default()
+            })),
             ..error
         }
     } else {

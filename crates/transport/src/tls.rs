@@ -94,7 +94,7 @@ impl TlsDialer {
     }
 }
 
-fn material_invalid(message: impl Into<String>) -> AppError {
+fn material_invalid(message: impl Into<homeport_core::error::Text>) -> AppError {
     AppError::new(ErrorCode::TlsMaterialInvalid, message).with_hint(
         "Paste PEM files (ca.pem, cert.pem, key.pem) made for this Engine on the host page.",
     )

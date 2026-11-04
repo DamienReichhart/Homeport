@@ -31,10 +31,11 @@ pub fn explain(error: AppError, reference: &str, login: Option<&Registry>) -> Ap
     };
     AppError {
         message,
-        hint: Some(Hint {
+        hint: Some(Box::new(Hint {
             text: hint,
             commands: vec![],
-        }),
+            ..Default::default()
+        })),
         ..error
     }
 }
@@ -57,10 +58,11 @@ pub fn explain_push(error: AppError, reference: &str, login: Option<&Registry>) 
     };
     AppError {
         message,
-        hint: Some(Hint {
+        hint: Some(Box::new(Hint {
             text: hint,
             commands: vec![],
-        }),
+            ..Default::default()
+        })),
         ..error
     }
 }

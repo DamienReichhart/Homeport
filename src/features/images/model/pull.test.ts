@@ -41,6 +41,8 @@ describe('pull progress', () => {
   it('keeps the failure', () => {
     const error = {
       code: 'image_not_found',
+      key: '',
+      params: {},
       message: 'manifest unknown',
       hint: null,
       detail: null,

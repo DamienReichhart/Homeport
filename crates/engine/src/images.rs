@@ -267,11 +267,12 @@ fn push_error(message: &str) -> AppError {
     if error.is(homeport_core::error::ErrorCode::RegistryAuthRequired) {
         AppError {
             message: "The registry refused the push.".into(),
-            hint: Some(homeport_core::error::Hint {
+            hint: Some(Box::new(homeport_core::error::Hint {
                 text: "Add a login that may push to this repository in Settings → Registries."
                     .into(),
                 commands: vec![],
-            }),
+                ..Default::default()
+            })),
             ..error
         }
     } else {

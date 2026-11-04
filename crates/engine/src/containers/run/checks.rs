@@ -56,7 +56,7 @@ pub(super) const COMPOSE_LABEL_PREFIX: &str = "com.docker.compose.";
 /// The smallest memory limit the Engine accepts.
 pub(super) const MIN_MEMORY: i64 = 6 * 1024 * 1024;
 
-fn invalid(message: impl Into<String>) -> AppError {
+fn invalid(message: impl Into<homeport_core::error::Text>) -> AppError {
     AppError::validation(message)
 }
 

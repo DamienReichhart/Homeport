@@ -26,6 +26,8 @@ describe('push progress', () => {
   it('keeps the failure', () => {
     const error = {
       code: 'registry_auth_required',
+      key: '',
+      params: {},
       message: 'ghcr.io refused the push.',
       hint: null,
       detail: null,

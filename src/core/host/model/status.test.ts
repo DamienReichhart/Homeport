@@ -18,6 +18,8 @@ describe('describeStatus', () => {
       state: 'unreachable',
       error: {
         code: 'connection_refused',
+        key: '',
+        params: {},
         message: 'connection refused',
         hint: null,
         detail: null,

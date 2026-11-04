@@ -159,10 +159,19 @@ export const events = {
 
 /* Types */
 export type AppError = {
+	/**  What failed, for logic: `e.is(ErrorCode::PortInUse)`. */
 	code: ErrorCode,
+	/**
+	 *  The catalogue key of `message` (`errors.*`), which the frontend
+	 *  renders with `params`; empty for text not in the catalogue.
+	 */
+	key: string,
+	params: { [key in string]: Param },
+	/**  In English, for the app log and when the key is unknown. */
 	message: string,
+	/**  Boxed to keep `AppResult` small. */
 	hint: Hint | null,
-	/**  The raw cause, for the Details dialog. */
+	/**  The raw cause, for the Details dialog. Never translated. */
 	detail: string | null,
 };
 
@@ -454,8 +463,15 @@ export type HealthcheckSpec = {
 
 /**  What the user can do about a failure. */
 export type Hint = {
+	/**  The catalogue key of `text`; empty for text not in the catalogue. */
+	key: string,
+	params: { [key in string]: Param },
+	/**  In English, for the log and when the key is unknown. */
 	text: string,
-	/**  Commands to run, each possibly spanning several lines. May be empty. */
+	/**
+	 *  Commands to run, each possibly spanning several lines. May be empty.
+	 *  Never translated.
+	 */
 	commands: string[],
 };
 
@@ -646,6 +662,9 @@ export type NetworkView = {
 };
 
 export type PackageManager = "apt" | "dnf" | "zypper" | "scoop" | "aur";
+
+/**  A parameter of a message: text such as a Host's name, or a number. */
+export type Param = string | number;
 
 export type PortBinding = {
 	ip: string | null,

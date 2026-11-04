@@ -8,6 +8,7 @@
 mod connect;
 mod dialer;
 mod error;
+pub mod messages;
 pub mod proxy;
 pub mod reach;
 pub mod ssh;

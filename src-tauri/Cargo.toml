@@ -21,6 +21,7 @@ tauri-build.workspace = true
 [dependencies]
 homeport-core.workspace = true
 homeport-storage.workspace = true
+homeport-transport.workspace = true
 homeport-engine.workspace = true
 homeport-hosts.workspace = true
 homeport-stacks.workspace = true
