@@ -81,6 +81,10 @@ export const commands = {
 	imagesSaveSubscribe: (hostId: string, names: string[], destination: string, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("images_save_subscribe", { hostId, names, destination, onEvent }),
 	/**  Loads the images in a tar file on this machine into a Host, streaming progress. */
 	imagesLoadSubscribe: (hostId: string, source: string, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("images_load_subscribe", { hostId, source, onEvent }),
+	/**  Creates an image from a root filesystem tar on this machine (`docker import`), streaming progress. */
+	imagesImportSubscribe: (hostId: string, source: string, spec: ImportSpec, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("images_import_subscribe", { hostId, source, spec, onEvent }),
+	/**  Saves a container's filesystem to a tar on this machine (`docker export`), streaming progress. */
+	containersExportSubscribe: (hostId: string, id: string, destination: string, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("containers_export_subscribe", { hostId, id, destination, onEvent }),
 	execStart: (hostId: string, containerId: string, options: ExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("exec_start", { hostId, containerId, options, onEvent }),
 	execInput: (session: number, data: string) => __TAURI_INVOKE<null>("exec_input", { session, data }),
 	execResize: (session: number, cols: number, rows: number) => __TAURI_INVOKE<null>("exec_resize", { session, cols, rows }),
@@ -503,6 +507,14 @@ export type ImageLayer = {
 	tags: string[],
 };
 
+/**  What [`import`] makes: the image's name and Dockerfile changes. */
+export type ImportSpec = {
+	/**  `repo[:tag]` for the new image. */
+	reference: string,
+	/**  Dockerfile instructions, one per entry, like `CMD ["/bin/sh"]`. */
+	changes: string[],
+};
+
 export type Licenses = {
 	/**  Homeport's own license (`LICENSE`). */
 	app: string,
@@ -814,7 +826,7 @@ export type TransferEvent =
 { type: "progress"; bytes: number; total: number | null } | 
 /**  A line from the Engine, such as `Loaded image: nginx:1.27`. */
 { type: "line"; text: string } | 
-/**  Finished; `images` are the names saved or loaded. */
+/**  Finished; `images` are the names saved, loaded or imported (none for an export). */
 { type: "done"; images: string[] } | { type: "error"; error: AppError };
 
 export type UpdateCheck = {

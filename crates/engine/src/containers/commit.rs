@@ -44,8 +44,14 @@ fn validate(spec: &CommitSpec) -> AppResult<(String, String, Vec<String>)> {
             "Name the image like repo:tag, such as web-backup:2026-11-04.",
         ));
     }
-    let changes = spec
-        .changes
+    let changes = changes(&spec.changes)?;
+    Ok((repo, tag.unwrap_or_else(|| "latest".into()), changes))
+}
+
+/// Dockerfile changes for a commit or an import: blank and `#` lines
+/// dropped, each starting with an instruction they accept.
+pub(crate) fn changes(lines: &[String]) -> AppResult<Vec<String>> {
+    lines
         .iter()
         .map(|c| c.trim())
         .filter(|c| !c.is_empty() && !c.starts_with('#'))
@@ -54,7 +60,7 @@ fn validate(spec: &CommitSpec) -> AppResult<(String, String, Vec<String>)> {
             let instruction = instruction.to_ascii_uppercase();
             if !COMMIT_INSTRUCTIONS.contains(&instruction.as_str()) {
                 return Err(AppError::validation(format!(
-                    "\"{c}\" isn't a change a commit can make. Start each line with one of {}.",
+                    "\"{c}\" isn't an instruction Homeport can apply to an image. Start each line with one of {}.",
                     COMMIT_INSTRUCTIONS.join(", ")
                 )));
             }
@@ -66,8 +72,7 @@ fn validate(spec: &CommitSpec) -> AppResult<(String, String, Vec<String>)> {
             }
             Ok(format!("{instruction} {}", argument.trim()))
         })
-        .collect::<AppResult<Vec<_>>>()?;
-    Ok((repo, tag.unwrap_or_else(|| "latest".into()), changes))
+        .collect()
 }
 
 fn example(instruction: &str) -> &'static str {
