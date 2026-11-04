@@ -30,7 +30,7 @@ jobs:
       tag: ${{ steps.plan.outputs.tag }}
       prerelease: ${{ steps.plan.outputs.prerelease }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # every tag, and the history since the previous release for the notes
       - uses: oven-sh/setup-bun@v2
@@ -38,7 +38,7 @@ jobs:
           bun-version-file: package.json
       - id: plan
         run: bun scripts/release.ts plan --notes "$RUNNER_TEMP/notes.md"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: release-notes
           path: ${{ runner.temp }}/notes.md
@@ -92,7 +92,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
@@ -165,7 +165,7 @@ jobs:
             cp "$app.sig" "installers/Homeport_${VERSION}_${arch}.app.tar.gz.sig"
           fi
           ls -l installers
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: installers-${{ matrix.name }}
           path: installers/*
@@ -186,19 +186,19 @@ jobs:
       TAG: ${{ needs.prepare.outputs.tag }}
       PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: installers-*
           path: installers
           merge-multiple: true
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: release-notes
           path: ${{ runner.temp }}
       - name: Checksums
         working-directory: installers
         run: sha256sum -- * | tee "$RUNNER_TEMP/SHA256SUMS.txt"
-      - uses: actions/attest-build-provenance@v2
+      - uses: actions/attest-build-provenance@v4
         with:
           subject-path: installers/*
       - name: Publish
