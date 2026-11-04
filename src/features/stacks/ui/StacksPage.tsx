@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { BoxesIcon, PlusIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { HostGate, resourceQueries } from '@/core/host';
+import { CheckNewerImages, HostGate, indexFreshness, resourceQueries } from '@/core/host';
 import {
   Button,
   DataTable,
@@ -14,11 +14,15 @@ import {
   useConfirm,
 } from '@/shared/ui';
 import type { ComposeJob } from '../model/composeJob';
+import { serviceFreshness, stackFreshness } from '../model/freshness';
 import { ComposeRunDialog } from './dialogs/ComposeRunDialog';
 import { stackColumns } from './stackColumns';
 
 function StacksList({ hostId }: { hostId: string }) {
   const stacks = useQuery(resourceQueries.stacks(hostId));
+  const containers = useQuery(resourceQueries.containers(hostId));
+  const freshness = indexFreshness(useQuery(resourceQueries.freshness(hostId)).data);
+  const byId = new Map(containers.data?.map((c) => [c.id, c]));
   const navigate = useNavigate();
   const [dialog, confirm] = useConfirm();
   const [query, setQuery] = useState('');
@@ -33,11 +37,14 @@ function StacksList({ hostId }: { hostId: string }) {
         title="Stacks"
         description="Compose projects on this host. Managed Stacks keep their definition in Homeport; External ones were deployed elsewhere."
         actions={
-          <Button asChild>
-            <Link to="/stacks/new">
-              <PlusIcon /> New stack
-            </Link>
-          </Button>
+          <>
+            <CheckNewerImages hostId={hostId} />
+            <Button asChild>
+              <Link to="/stacks/new">
+                <PlusIcon /> New stack
+              </Link>
+            </Button>
+          </>
         }
       />
       <div className="mb-3">
@@ -56,7 +63,13 @@ function StacksList({ hostId }: { hostId: string }) {
         />
       ) : (
         <DataTable
-          columns={stackColumns({ hostId, confirm, onCompose: setJob })}
+          columns={stackColumns({
+            hostId,
+            confirm,
+            onCompose: setJob,
+            newerServices: (stack) =>
+              stackFreshness(serviceFreshness(stack, byId, freshness)).newer,
+          })}
           data={stacks.data}
           getRowId={(s) => s.name}
           filter={query}
