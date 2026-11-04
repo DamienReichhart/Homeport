@@ -20,6 +20,7 @@ import {
 } from '@/shared/ui';
 import { useStackMutations } from '../api/mutations';
 import type { ComposeJob } from '../model/composeJob';
+import { t } from '@/shared/i18n';
 
 /**
  * The actions of a Stack. Lifecycle works for every Stack; deploying needs
@@ -60,11 +61,11 @@ export function StackActions({
               ? undefined
               : support?.state === 'unavailable'
                 ? support.problem.message
-                : 'Checking for the docker compose CLI…'
+                : t('stacks.action.checkingCompose')
           }
           onClick={() => compose('up')}
         >
-          <RocketIcon /> {deployed ? 'Redeploy' : 'Deploy'}
+          <RocketIcon /> {deployed ? t('stacks.action.redeploy') : t('stacks.action.deploy')}
         </Button>
       ) : (
         <Button
@@ -72,7 +73,7 @@ export function StackActions({
           variant="outline"
           onClick={() => navigate(`/stacks/new?adopt=${encodeURIComponent(stack.name)}`)}
         >
-          Adopt
+          {t('stacks.action.adopt')}
         </Button>
       )}
       {deployed &&
@@ -82,7 +83,7 @@ export function StackActions({
             variant="outline"
             onClick={() => act.mutate({ name: stack.name, action: 'stop' })}
           >
-            <SquareIcon /> Stop
+            <SquareIcon /> {t('stacks.action.stop')}
           </Button>
         ) : (
           <Button
@@ -90,7 +91,7 @@ export function StackActions({
             variant="outline"
             onClick={() => act.mutate({ name: stack.name, action: 'start' })}
           >
-            <PlayIcon /> Start
+            <PlayIcon /> {t('stacks.action.start')}
           </Button>
         ))}
       <DropdownMenu>
@@ -98,7 +99,7 @@ export function StackActions({
           <Button
             variant="ghost"
             size={compact ? 'icon-sm' : 'icon'}
-            aria-label="More stack actions"
+            aria-label={t('stacks.action.more')}
           >
             <EllipsisVerticalIcon />
           </Button>
@@ -108,11 +109,11 @@ export function StackActions({
             disabled={!deployed}
             onSelect={() => act.mutate({ name: stack.name, action: 'restart' })}
           >
-            <RotateCwIcon /> Restart
+            <RotateCwIcon /> {t('stacks.action.restart')}
           </DropdownMenuItem>
           {stack.managedId && (
             <DropdownMenuItem disabled={!canCompose} onSelect={() => compose('pull')}>
-              <CloudDownloadIcon /> Pull images
+              <CloudDownloadIcon /> {t('stacks.action.pull')}
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
@@ -123,36 +124,30 @@ export function StackActions({
                 disabled={!canCompose || !deployed}
                 onSelect={() =>
                   confirm({
-                    title: `Take down ${stack.name}?`,
-                    description:
-                      'Its containers and networks are removed. Volumes and the stored definition are kept, so you can deploy again.',
-                    confirmLabel: 'Take down',
+                    title: t('stacks.down.title', { name: stack.name }),
+                    description: t('stacks.down.description'),
+                    confirmLabel: t('stacks.down.confirm'),
                     destructive: true,
                     onConfirm: () => compose('down'),
                   })
                 }
               >
-                <SquareIcon /> Take down
+                <SquareIcon /> {t('stacks.down.confirm')}
               </DropdownMenuItem>
               <DropdownMenuItem
                 variant="destructive"
                 disabled={!canCompose || !deployed}
                 onSelect={() =>
                   confirm({
-                    title: `Take down ${stack.name} and delete its volumes?`,
-                    description: (
-                      <strong>
-                        Containers, networks and every volume of this Stack are deleted, with all
-                        their data.
-                      </strong>
-                    ),
-                    confirmLabel: 'Delete with volumes',
+                    title: t('stacks.downWithVolumes.title', { name: stack.name }),
+                    description: <strong>{t('stacks.downWithVolumes.warning')}</strong>,
+                    confirmLabel: t('stacks.downWithVolumes.confirm'),
                     destructive: true,
                     onConfirm: () => compose('downWithVolumes'),
                   })
                 }
               >
-                <Trash2Icon /> Take down with volumes
+                <Trash2Icon /> {t('stacks.downWithVolumes.action')}
               </DropdownMenuItem>
             </>
           ) : (
@@ -160,15 +155,15 @@ export function StackActions({
               variant="destructive"
               onSelect={() =>
                 confirm({
-                  title: `Remove ${stack.name}?`,
-                  description: `Its ${stack.total} container(s) and networks are removed. Volumes are kept. Homeport has no compose file for this Stack, so it can't be redeployed from here.`,
-                  confirmLabel: 'Remove',
+                  title: t('stacks.remove.title', { name: stack.name }),
+                  description: t('stacks.remove.description', { count: stack.total }),
+                  confirmLabel: t('common.remove'),
                   destructive: true,
                   onConfirm: () => remove.mutateAsync(stack.name),
                 })
               }
             >
-              <Trash2Icon /> Remove containers
+              <Trash2Icon /> {t('stacks.remove.action')}
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>

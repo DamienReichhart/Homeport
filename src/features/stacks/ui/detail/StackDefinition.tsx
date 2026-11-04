@@ -14,6 +14,7 @@ import {
 import { stackQueries } from '../../api/queries';
 import type { ComposeJob } from '../../model/composeJob';
 import { ManagedDefinition } from './ManagedDefinition';
+import { t, tRich } from '@/shared/i18n';
 
 /** A Managed Stack's editable definition, or how to adopt an External one. */
 export function StackDefinition({
@@ -32,22 +33,21 @@ export function StackDefinition({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>External Stack</CardTitle>
+          <CardTitle>{t('stacks.external.title')}</CardTitle>
           <CardDescription>
-            It was deployed outside Homeport
-            {stack.configFiles ? (
-              <>
-                {' '}
-                from <span className="font-mono">{stack.configFiles}</span> on that machine
-              </>
-            ) : null}
-            . You can start, stop and remove it; adopt it with its compose file to edit and
-            redeploy.
+            {stack.configFiles
+              ? tRich('stacks.external.descriptionFrom', {
+                  files: stack.configFiles,
+                  mono: (chunks) => <span className="font-mono">{chunks}</span>,
+                })
+              : t('stacks.external.description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Button asChild>
-            <Link to={`/stacks/new?adopt=${encodeURIComponent(stack.name)}`}>Adopt</Link>
+            <Link to={`/stacks/new?adopt=${encodeURIComponent(stack.name)}`}>
+              {t('stacks.action.adopt')}
+            </Link>
           </Button>
         </CardContent>
       </Card>

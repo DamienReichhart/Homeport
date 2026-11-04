@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { hostKeys } from '@/core/host';
 import { commands, type ManagedStack, type StackAction } from '@/shared/api';
 import { toastError } from '@/shared/ui';
+import { t } from '@/shared/i18n';
 import { stackKeys } from './queries';
 
 /** Start, stop, restart and remove for any Stack, through the Engine API. */
@@ -22,7 +23,7 @@ export function useStackMutations(hostId: string) {
   const remove = useMutation({
     mutationFn: (name: string) => commands.stacksRemove(hostId, name),
     onSuccess: async (_, name) => {
-      toast.success(`Removed the containers of ${name}`);
+      toast.success(t('stacks.removed', { name }));
       await refresh();
     },
     onError: (e) => toastError(e),
@@ -75,7 +76,7 @@ export function useSaveDefinition(
     mutationFn: ({ compose, env }: Definition) => commands.stacksUpdate(managedId, compose, env),
     onSuccess: async (saved, { deploy }) => {
       await client.invalidateQueries({ queryKey: stackKeys.managed(managedId) });
-      toast.success('Definition saved');
+      toast.success(t('stacks.definitionSaved'));
       onSaved(saved, deploy);
     },
   });

@@ -17,6 +17,7 @@ import type { ComposeJob } from '../model/composeJob';
 import { serviceFreshness, stackFreshness } from '../model/freshness';
 import { ComposeRunDialog } from './dialogs/ComposeRunDialog';
 import { stackColumns } from './stackColumns';
+import { t } from '@/shared/i18n';
 
 function StacksList({ hostId }: { hostId: string }) {
   const stacks = useQuery(resourceQueries.stacks(hostId));
@@ -34,30 +35,30 @@ function StacksList({ hostId }: { hostId: string }) {
   return (
     <div>
       <PageHeader
-        title="Stacks"
-        description="Compose projects on this host. Managed Stacks keep their definition in Homeport; External ones were deployed elsewhere."
+        title={t('stacks.title')}
+        description={t('stacks.description')}
         actions={
           <>
             <CheckNewerImages hostId={hostId} />
             <Button asChild>
               <Link to="/stacks/new">
-                <PlusIcon /> New stack
+                <PlusIcon /> {t('stacks.new')}
               </Link>
             </Button>
           </>
         }
       />
       <div className="mb-3">
-        <SearchInput value={query} onChange={setQuery} placeholder="Search stacks" />
+        <SearchInput value={query} onChange={setQuery} placeholder={t('stacks.search')} />
       </div>
       {stacks.data.length === 0 ? (
         <EmptyState
           icon={BoxesIcon}
-          title="No stacks"
-          description="Write a compose definition and deploy it to this host."
+          title={t('stacks.empty.title')}
+          description={t('stacks.empty.description')}
           action={
             <Button asChild>
-              <Link to="/stacks/new">New stack</Link>
+              <Link to="/stacks/new">{t('stacks.new')}</Link>
             </Button>
           }
         />

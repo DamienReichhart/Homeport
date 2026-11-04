@@ -11,6 +11,7 @@ import {
 import { containerTone } from '@/features/containers';
 import type { Stack } from '@/shared/api';
 import { serviceFreshness, stackFreshness } from '../../model/freshness';
+import { t } from '@/shared/i18n';
 import {
   StatusDot,
   Table,
@@ -27,17 +28,18 @@ export function StackServices({ hostId, stack }: { hostId: string; stack: Stack 
   const freshness = indexFreshness(useQuery(resourceQueries.freshness(hostId)).data);
   const byId = new Map(containers.data?.map((c) => [c.id, c]));
   if (stack.services.length === 0)
-    return <p className="text-muted-foreground text-sm">Not deployed yet.</p>;
+    return <p className="text-muted-foreground text-sm">{t('stacks.services.notDeployed')}</p>;
   const { newer } = stackFreshness(serviceFreshness(stack, byId, freshness));
   return (
     <div className="grid gap-3">
       {newer.length > 0 && (
         <p className="text-sm">
-          {newer.length === 1
-            ? `${newer[0]!.service} runs an outdated image.`
-            : `${newer.map((s) => s.service).join(', ')} run outdated images.`}{' '}
+          {t('stacks.services.outdated', {
+            count: newer.length,
+            services: newer.map((s) => s.service).join(', '),
+          })}{' '}
           {stack.kind === 'managed' && (
-            <span className="text-muted-foreground">Pull images, then Redeploy to update.</span>
+            <span className="text-muted-foreground">{t('stacks.services.howToUpdate')}</span>
           )}
         </p>
       )}
@@ -45,10 +47,10 @@ export function StackServices({ hostId, stack }: { hostId: string; stack: Stack 
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Service</TableHead>
-              <TableHead>Container</TableHead>
-              <TableHead>Image</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>{t('stacks.services.column.service')}</TableHead>
+              <TableHead>{t('stacks.services.column.container')}</TableHead>
+              <TableHead>{t('stacks.services.column.image')}</TableHead>
+              <TableHead>{t('stacks.services.column.status')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

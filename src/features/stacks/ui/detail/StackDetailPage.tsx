@@ -23,6 +23,7 @@ import { ComposeRunDialog } from '../dialogs/ComposeRunDialog';
 import { StackActions } from '../StackActions';
 import { StackDefinition } from './StackDefinition';
 import { StackServices } from './StackServices';
+import { t } from '@/shared/i18n';
 
 function StackDetail({ hostId, name }: { hostId: string; name: string }) {
   const stacks = useQuery(resourceQueries.stacks(hostId));
@@ -33,11 +34,7 @@ function StackDetail({ hostId, name }: { hostId: string; name: string }) {
 
   if (stacks.isPending) return <Spinner />;
   if (!stack)
-    return (
-      <ErrorMessage
-        error={{ code: 'not_found', message: `There is no stack named ${name} on this host.` }}
-      />
-    );
+    return <ErrorMessage error={{ code: 'not_found', message: t('stacks.notFound', { name }) }} />;
   const sources = stack.services.flatMap((s) =>
     s.containerIds.map((containerId) => ({ containerId, label: s.name })),
   );
@@ -50,21 +47,22 @@ function StackDetail({ hostId, name }: { hostId: string; name: string }) {
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label="Back"
+              aria-label={t('common.back')}
               onClick={() => navigate('/stacks')}
             >
               <ArrowLeftIcon />
             </Button>
             {stack.name}
             <Badge variant={stack.kind === 'managed' ? 'default' : 'outline'}>
-              {stack.kind === 'managed' ? 'Managed' : 'External'}
+              {stack.kind === 'managed' ? t('stacks.kind.managed') : t('stacks.kind.external')}
             </Badge>
           </span>
         }
         description={
           <span className="flex items-center gap-1.5">
-            <StatusDot tone={STATE_TONE[stack.state]} /> {STATE_LABEL[stack.state]}
-            {stack.total > 0 && ` · ${stack.running} of ${stack.total} containers running`}
+            <StatusDot tone={STATE_TONE[stack.state]} /> {t(STATE_LABEL[stack.state])}
+            {stack.total > 0 &&
+              ` · ${t('stacks.detail.running', { running: stack.running, total: stack.total })}`}
           </span>
         }
         actions={
@@ -76,11 +74,11 @@ function StackDetail({ hostId, name }: { hostId: string; name: string }) {
         className="flex min-h-0 flex-1 flex-col"
       >
         <TabsList>
-          <TabsTrigger value="services">Services</TabsTrigger>
+          <TabsTrigger value="services">{t('stacks.tab.services')}</TabsTrigger>
           <TabsTrigger value="logs" disabled={sources.length === 0}>
-            Logs
+            {t('stacks.tab.logs')}
           </TabsTrigger>
-          <TabsTrigger value="definition">Definition</TabsTrigger>
+          <TabsTrigger value="definition">{t('stacks.tab.definition')}</TabsTrigger>
         </TabsList>
         <TabsContent value="services" className="overflow-auto">
           <StackServices hostId={hostId} stack={stack} />

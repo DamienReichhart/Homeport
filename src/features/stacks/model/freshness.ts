@@ -1,5 +1,6 @@
 import { aggregateFreshness, containerFreshness, type FreshnessIndex } from '@/core/host';
 import type { Container, Freshness, Stack } from '@/shared/api';
+import { t } from '@/shared/i18n';
 
 export interface ServiceFreshness {
   service: string;
@@ -37,4 +38,4 @@ export function stackFreshness(services: ServiceFreshness[]): {
 
 /** "Newer images for web, worker". */
 export const newerServicesLabel = (newer: ServiceFreshness[]) =>
-  `Newer images for ${newer.map((s) => s.service).join(', ')}`;
+  t('stacks.newerImagesFor', { services: newer.map((s) => s.service).join(', ') });

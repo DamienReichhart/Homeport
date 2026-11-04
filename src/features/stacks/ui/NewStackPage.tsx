@@ -17,6 +17,7 @@ import type { ComposeJob } from '../model/composeJob';
 import { STARTER } from '../model/starter';
 import { ComposeRunDialog } from './dialogs/ComposeRunDialog';
 import { StackEditor } from './StackEditor';
+import { t } from '@/shared/i18n';
 
 function NewStack({ hostId }: { hostId: string }) {
   const [params] = useSearchParams();
@@ -39,24 +40,19 @@ function NewStack({ hostId }: { hostId: string }) {
   return (
     <div className="grid gap-4">
       <PageHeader
-        title={adopting ? `Adopt ${adopting}` : 'New stack'}
+        title={adopting ? t('stacks.newPage.adoptTitle', { name: adopting }) : t('stacks.new')}
         description={
-          adopting
-            ? 'Paste the compose file this Stack was deployed with. Homeport then manages it: you can edit and redeploy it from here.'
-            : 'A compose definition Homeport keeps and deploys to this host.'
+          adopting ? t('stacks.newPage.adoptDescription') : t('stacks.newPage.description')
         }
       />
       {adopting && (
         <Alert>
-          <AlertTitle>Use the same definition</AlertTitle>
-          <AlertDescription>
-            Redeploying with a different file recreates the containers to match it, and removes
-            services that are no longer listed.
-          </AlertDescription>
+          <AlertTitle>{t('stacks.newPage.sameDefinition.title')}</AlertTitle>
+          <AlertDescription>{t('stacks.newPage.sameDefinition.description')}</AlertDescription>
         </Alert>
       )}
       <div className="grid max-w-sm gap-1.5">
-        <Label htmlFor="stack-name">Name</Label>
+        <Label htmlFor="stack-name">{t('stacks.newPage.name')}</Label>
         <Input
           id="stack-name"
           value={name}
@@ -79,17 +75,17 @@ function NewStack({ hostId }: { hostId: string }) {
           disabled={save.isPending || !canDeploy || !name}
           onClick={() => save.mutate({ name, compose, env, deploy: true })}
         >
-          Save and deploy
+          {t('stacks.newPage.saveAndDeploy')}
         </Button>
         <Button
           variant="outline"
           disabled={save.isPending || !name}
           onClick={() => save.mutate({ name, compose, env, deploy: false })}
         >
-          Save
+          {t('common.save')}
         </Button>
         <Button variant="ghost" onClick={() => navigate(-1)}>
-          Cancel
+          {t('common.cancel')}
         </Button>
       </div>
       {capabilities.data?.compose.state === 'unavailable' && (

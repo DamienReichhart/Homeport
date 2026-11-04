@@ -5,6 +5,7 @@ import type { ComposeJob } from '../model/composeJob';
 import { newerServicesLabel, type ServiceFreshness } from '../model/freshness';
 import { STATE_LABEL, STATE_TONE } from '../model/stackState';
 import { StackActions } from './StackActions';
+import { t } from '@/shared/i18n';
 
 /** The Stacks table's columns; the last one holds the row's actions. */
 export function stackColumns({
@@ -22,28 +23,28 @@ export function stackColumns({
   return [
     {
       id: 'name',
-      header: 'Name',
+      header: t('stacks.column.name'),
       accessorFn: (s) => s.name,
       cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
     },
     {
       id: 'kind',
-      header: 'Kind',
+      header: t('stacks.column.kind'),
       accessorFn: (s) => s.kind,
       cell: ({ row }) => (
         <Badge variant={row.original.kind === 'managed' ? 'default' : 'outline'}>
-          {row.original.kind === 'managed' ? 'Managed' : 'External'}
+          {row.original.kind === 'managed' ? t('stacks.kind.managed') : t('stacks.kind.external')}
         </Badge>
       ),
     },
     {
       id: 'state',
-      header: 'State',
+      header: t('stacks.column.state'),
       accessorFn: (s) => s.state,
       cell: ({ row }) => (
         <span className="flex items-center gap-1.5 text-sm">
           <StatusDot tone={STATE_TONE[row.original.state]} />
-          {STATE_LABEL[row.original.state]}
+          {t(STATE_LABEL[row.original.state])}
           {row.original.total > 0 && (
             <span className="text-muted-foreground">
               · {row.original.running}/{row.original.total}
@@ -57,7 +58,7 @@ export function stackColumns({
     },
     {
       id: 'services',
-      header: 'Services',
+      header: t('stacks.column.services'),
       accessorFn: (s) => s.services.map((x) => x.name).join(', '),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-sm">

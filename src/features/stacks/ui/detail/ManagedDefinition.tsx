@@ -5,6 +5,7 @@ import { Button, ErrorMessage, useConfirm } from '@/shared/ui';
 import { useForgetDefinition, useSaveDefinition } from '../../api/mutations';
 import type { ComposeJob } from '../../model/composeJob';
 import { StackEditor } from '../StackEditor';
+import { t } from '@/shared/i18n';
 
 /** Edits, saves, redeploys or forgets the stored definition of a Managed Stack. */
 export function ManagedDefinition({
@@ -47,24 +48,23 @@ export function ManagedDefinition({
           disabled={save.isPending || !canDeploy}
           onClick={() => save.mutate({ compose, env, deploy: true })}
         >
-          Save and redeploy
+          {t('stacks.managed.saveAndRedeploy')}
         </Button>
         <Button
           variant="outline"
           disabled={save.isPending || !dirty}
           onClick={() => save.mutate({ compose, env, deploy: false })}
         >
-          Save
+          {t('common.save')}
         </Button>
         <Button
           variant="ghost"
           className="ml-auto"
           onClick={() =>
             confirm({
-              title: `Forget the definition of ${managed.name}?`,
-              description:
-                'Homeport deletes its stored compose file and environment. Running containers are left alone and the Stack becomes External.',
-              confirmLabel: 'Forget definition',
+              title: t('stacks.forget.title', { name: managed.name }),
+              description: t('stacks.forget.description'),
+              confirmLabel: t('stacks.forget.confirm'),
               destructive: true,
               onConfirm: async () => {
                 await forget.mutateAsync();
@@ -73,7 +73,7 @@ export function ManagedDefinition({
             })
           }
         >
-          Forget definition
+          {t('stacks.forget.confirm')}
         </Button>
       </div>
       {dialog}

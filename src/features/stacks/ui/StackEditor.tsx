@@ -6,6 +6,10 @@ import type { ComposeCheck } from '@/shared/api';
 import { useResolvedTheme } from '@/shared/lib';
 import { editorTheme, Label, Textarea } from '@/shared/ui';
 import { useComposeCheck } from '../api/useComposeCheck';
+import { t } from '@/shared/i18n';
+
+/** An example environment, written as a .env file. */
+const ENV_EXAMPLE = 'DB_PASSWORD=…\nTAG=1.4';
 
 /** The compose definition and environment of a Managed Stack, with live checks. */
 export function StackEditor({
@@ -39,30 +43,30 @@ export function StackEditor({
             theme={editorTheme(theme)}
             height="28rem"
             basicSetup={{ foldGutter: true, highlightActiveLine: true }}
-            aria-label="Compose definition"
+            aria-label={t('stacks.editor.compose')}
           />
         </div>
       </div>
       <div className="grid content-start gap-4">
         <div className="grid gap-1.5">
-          <Label htmlFor="stack-env">Environment</Label>
+          <Label htmlFor="stack-env">{t('stacks.editor.environment')}</Label>
           <Textarea
             id="stack-env"
             value={env}
             onChange={(e) => onEnvChange(e.target.value)}
             disabled={!keychain}
-            placeholder={keychain ? 'DB_PASSWORD=…\nTAG=1.4' : 'Needs an OS keychain'}
+            placeholder={keychain ? ENV_EXAMPLE : t('stacks.editor.envNoKeychain')}
             className="h-40 font-mono text-xs"
             spellCheck={false}
           />
           <p className="text-muted-foreground text-xs">
             {keychain
-              ? 'Like a .env file: stored encrypted, passed to compose for ${VAR} substitution, never written to disk.'
-              : 'No OS keychain is available, so a Stack environment can’t be stored.'}
+              ? t('stacks.editor.envHint', { variable: '${VAR}' })
+              : t('stacks.editor.envHintNoKeychain')}
           </p>
         </div>
         {check && (check.errors.length > 0 || check.warnings.length > 0) && (
-          <ul className="grid gap-2 text-sm" aria-label="Problems">
+          <ul className="grid gap-2 text-sm" aria-label={t('stacks.editor.problems')}>
             {check.errors.map((e) => (
               <li key={e} className="text-destructive flex gap-2">
                 <CircleXIcon className="mt-0.5 size-4 shrink-0" /> {e}
