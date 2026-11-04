@@ -1,12 +1,11 @@
 ---
 import DownloadButton from '../components/DownloadButton.astro';
 import DownloadMeta from '../components/DownloadMeta.astro';
-import Icon, { type IconName } from '../components/Icon.astro';
-import Screenshot from '../components/Screenshot.astro';
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { getLatestRelease } from '../lib/releases';
 import { DESCRIPTION, REPO_URL, TAGLINE } from '@/core/site';
 import { href } from '@/shared/lib/href';
+import { Icon, type IconName, Screenshot } from '@/shared/ui';
 
 const release = await getLatestRelease();
 

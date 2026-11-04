@@ -29,10 +29,10 @@ const cropStyle = crop
   ? `aspect-ratio: ${crop}; object-fit: cover; object-position: left top;`
   : undefined;
 
-const shots = import.meta.glob<{ default: ImageMetadata }>('../assets/screenshots/*.png', {
+const shots = import.meta.glob<{ default: ImageMetadata }>('/src/assets/screenshots/*.png', {
   eager: true,
 });
-const find = (file: string) => shots[`../assets/screenshots/${file}.png`]?.default;
+const find = (file: string) => shots[`/src/assets/screenshots/${file}.png`]?.default;
 
 // A plain `<name>.png` is the light variant when a `-dark` one exists, and vice versa.
 const plain = find(name);
