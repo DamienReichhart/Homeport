@@ -6,6 +6,7 @@ use std::error::Error as StdError;
 use homeport_core::error::{reach::as_io, AppError, ErrorCode};
 
 use super::network;
+use crate::messages as msg;
 
 /// The first rustls error in `error`'s chain; rustls reports through `io::Error`.
 fn rustls_cause<'a>(error: &'a (dyn StdError + 'static)) -> Option<&'a rustls::Error> {
@@ -30,40 +31,42 @@ pub fn tls(label: &str, address: &str, error: &(dyn StdError + 'static)) -> AppE
     let client_rejected = || {
         AppError::new(
             ErrorCode::TlsClientRejected,
-            format!("{label} rejected Homeport's client certificate."),
+            msg::TLS_CLIENT_REJECTED.with("host", label),
         )
-        .with_hint("Use a client certificate (cert.pem and key.pem) signed by the CA the Engine trusts, its --tlscacert.")
+        .with_hint(msg::TLS_CLIENT_REJECTED_HINT)
     };
     let classified = match tls {
         Tls::InvalidCertificate(Cert::Expired | Cert::ExpiredContext { .. }) => AppError::new(
             ErrorCode::TlsCertificateExpired,
-            format!("The certificate of {label} has expired."),
+            msg::TLS_CERT_EXPIRED.with("host", label),
         )
-        .with_hint("Renew the Docker Engine's TLS certificate, then reconnect."),
+        .with_hint(msg::TLS_CERT_EXPIRED_HINT),
         Tls::InvalidCertificate(Cert::NotValidYet | Cert::NotValidYetContext { .. }) => {
             AppError::new(
                 ErrorCode::TlsCertificateNotYetValid,
-                format!("The certificate of {label} isn't valid yet."),
+                msg::TLS_CERT_NOT_YET_VALID.with("host", label),
             )
-            .with_hint("Check that this computer's date and time are right.")
+            .with_hint(msg::TLS_CERT_NOT_YET_VALID_HINT)
         }
         Tls::InvalidCertificate(Cert::UnknownIssuer) => AppError::new(
             ErrorCode::TlsUnknownCa,
-            format!("The certificate of {label} isn't signed by the CA certificate on the host page."),
+            msg::TLS_UNKNOWN_CA.with("host", label),
         )
-        .with_hint("Paste the ca.pem that signed the Engine's certificate."),
+        .with_hint(msg::TLS_UNKNOWN_CA_HINT),
         Tls::InvalidCertificate(Cert::NotValidForName | Cert::NotValidForNameContext { .. }) => {
             AppError::new(
                 ErrorCode::TlsNameMismatch,
-                format!("The certificate of {label} isn't made for {host}."),
+                msg::TLS_NAME_MISMATCH
+                    .with("host", label)
+                    .with("name", host),
             )
-            .with_hint("Connect with a name or IP address listed in the certificate, or reissue it to include this one.")
+            .with_hint(msg::TLS_NAME_MISMATCH_HINT)
         }
         Tls::AlertReceived(Alert::CertificateExpired) => AppError::new(
             ErrorCode::TlsCertificateExpired,
-            "Homeport's client certificate has expired.",
+            msg::TLS_CLIENT_CERT_EXPIRED,
         )
-        .with_hint("Make a new client certificate signed by the Engine's CA and paste it on the host page."),
+        .with_hint(msg::TLS_CLIENT_CERT_EXPIRED_HINT),
         Tls::AlertReceived(
             Alert::BadCertificate
             | Alert::UnknownCA
@@ -74,14 +77,14 @@ pub fn tls(label: &str, address: &str, error: &(dyn StdError + 'static)) -> AppE
         ) => client_rejected(),
         Tls::InvalidMessage(_) | Tls::InappropriateMessage { .. } => AppError::new(
             ErrorCode::TlsNotSupported,
-            format!("{label} doesn't speak TLS."),
+            msg::TLS_NOT_SUPPORTED.with("host", label),
         )
-        .with_hint("Use a TCP connection for this address, or the Engine's TLS port (usually 2376)."),
+        .with_hint(msg::TLS_NOT_SUPPORTED_HINT),
         _ => AppError::new(
             ErrorCode::TlsHandshakeFailed,
-            format!("The secure connection to {label} failed."),
+            msg::TLS_HANDSHAKE_FAILED.with("host", label),
         )
-        .with_hint("Check the certificates on the host page against the ones the Engine uses."),
+        .with_hint(msg::TLS_HANDSHAKE_FAILED_HINT),
     };
     classified.with_cause(error)
 }

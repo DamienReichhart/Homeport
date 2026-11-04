@@ -16,7 +16,7 @@ use super::{
     host_key::{host_key_error, ServerKeyCheck},
     socket::{probe_socket, socket_unavailable},
 };
-use crate::{reach, BoxFuture, BoxStream, ConnectError, Dialer, CONNECT_TIMEOUT};
+use crate::{messages as msg, reach, BoxFuture, BoxStream, ConnectError, Dialer, CONNECT_TIMEOUT};
 
 pub struct SshTarget {
     /// The Host's name and SSH address, for messages.
@@ -61,7 +61,7 @@ impl SshDialer {
             .map_err(|_| {
                 ConnectError::Unreachable(AppError::new(
                     ErrorCode::Timeout,
-                    format!("{} didn't answer in time.", t.label),
+                    msg::NETWORK_TIMEOUT.with("host", &t.label),
                 ))
             })?;
 

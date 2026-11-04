@@ -17,7 +17,7 @@ use super::{
     host_key::ServerKeyCheck,
     keys::{authorized_keys_command, key_unreadable},
 };
-use crate::{reach, ConnectError};
+use crate::{messages as msg, reach, ConnectError};
 
 pub enum Credentials {
     Key(Arc<PrivateKey>),
@@ -38,8 +38,8 @@ impl Credentials {
                 .map(|k| Self::Key(Arc::new(k)))
                 .map_err(key_unreadable),
             _ => Err(ConnectError::Invalid(
-                AppError::new(ErrorCode::SshKeyInvalid, "The SSH private key is missing.")
-                    .with_hint("Add a private key on the host page, or generate one."),
+                AppError::new(ErrorCode::SshKeyInvalid, msg::SSH_KEY_MISSING)
+                    .with_hint(msg::SSH_KEY_MISSING_HINT),
             )),
         }
     }
@@ -48,52 +48,46 @@ impl Credentials {
 pub(super) fn auth_refused(t: &SshTarget) -> AppError {
     let error = AppError::new(
         ErrorCode::SshAuthFailed,
-        format!(
-            "The SSH server refused to let {}@{} log in.",
-            t.user, t.host
-        ),
+        msg::SSH_AUTH_REFUSED
+            .with("user", &t.user)
+            .with("host", &t.host),
     );
     match &t.credentials {
         Credentials::Key(key) => match key.public_key().to_openssh() {
             Ok(public_key) => error
-                .with_hint(format!(
-                    "Authorise Homeport's key for {} by running this on {}:",
-                    t.user, t.host
-                ))
+                .with_hint(
+                    msg::SSH_AUTH_REFUSED_KEY_HINT
+                        .with("user", &t.user)
+                        .with("host", &t.host),
+                )
                 .with_command(authorized_keys_command(&public_key)),
-            Err(_) => error.with_hint(format!(
-                "Add this host's public key to authorized_keys on {}.",
-                t.host
-            )),
+            Err(_) => error.with_hint(msg::SSH_AUTH_REFUSED_PUBLIC_KEY_HINT.with("host", &t.host)),
         },
         Credentials::Agent => error
-            .with_hint("Load a key the SSH server accepts into your ssh-agent, then reconnect.")
+            .with_hint(msg::SSH_AUTH_REFUSED_AGENT_HINT)
             .with_command("ssh-add"),
     }
 }
 
 fn agent_unavailable(e: &(dyn std::error::Error + 'static)) -> AppError {
-    let error = AppError::new(ErrorCode::SshAgentUnavailable, "No ssh-agent is running.");
+    let error = AppError::new(ErrorCode::SshAgentUnavailable, msg::SSH_AGENT_UNAVAILABLE);
     let error = if cfg!(windows) {
         error
-            .with_hint("Start the OpenSSH Authentication Agent service in an administrator PowerShell, then add your key:")
+            .with_hint(msg::SSH_AGENT_UNAVAILABLE_WINDOWS_HINT)
             .with_command("Get-Service ssh-agent | Set-Service -StartupType Automatic\nStart-Service ssh-agent")
             .with_command("ssh-add")
     } else {
         error
-            .with_hint("Start an agent and add your key in the terminal Homeport is launched from, or pick another authentication method:")
+            .with_hint(msg::SSH_AGENT_UNAVAILABLE_UNIX_HINT)
             .with_command("eval \"$(ssh-agent -s)\"\nssh-add")
     };
     error.with_cause(e)
 }
 
 fn agent_failed(e: &(dyn std::error::Error + 'static)) -> AppError {
-    AppError::new(
-        ErrorCode::SshAgentUnavailable,
-        "The ssh-agent failed to sign in.",
-    )
-    .with_hint("Check that the agent holds your key with `ssh-add -l`.")
-    .with_cause(e)
+    AppError::new(ErrorCode::SshAgentUnavailable, msg::SSH_AGENT_FAILED)
+        .with_hint(msg::SSH_AGENT_FAILED_HINT)
+        .with_cause(e)
 }
 
 #[cfg(unix)]

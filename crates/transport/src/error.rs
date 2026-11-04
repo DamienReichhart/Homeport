@@ -2,6 +2,8 @@
 
 use homeport_core::error::{AppError, ErrorCode};
 
+use crate::messages as msg;
+
 /// Why a Host can't be reached. Each case maps to a Host status the user can act on.
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum ConnectError {
@@ -49,22 +51,23 @@ impl From<AppError> for ConnectError {
 impl From<ConnectError> for AppError {
     fn from(e: ConnectError) -> Self {
         match e {
-            ConnectError::Unreachable(e) | ConnectError::Unauthorized(e) | ConnectError::Invalid(e) => e,
+            ConnectError::Unreachable(e)
+            | ConnectError::Unauthorized(e)
+            | ConnectError::Invalid(e) => e,
             ConnectError::HostKeyUntrusted { fingerprint, .. } => AppError::new(
                 ErrorCode::HostKeyUntrusted,
-                format!("The SSH server's key isn't trusted yet ({fingerprint})."),
+                msg::SSH_HOST_KEY_UNTRUSTED.with("fingerprint", fingerprint),
             )
-            .with_hint("Check the fingerprint, then trust the key on the host page."),
+            .with_hint(msg::SSH_HOST_KEY_UNTRUSTED_HINT),
             ConnectError::HostKeyMismatch {
                 fingerprint,
                 expected_fingerprint,
                 ..
-            } => AppError::new(
-                ErrorCode::HostKeyChanged,
-                "The SSH server's key changed since it was trusted.",
-            )
-            .with_hint("If the machine was reinstalled, trust the new key on the host page. Otherwise someone may be intercepting the connection.")
-            .with_detail(format!("expected {expected_fingerprint}, got {fingerprint}")),
+            } => AppError::new(ErrorCode::HostKeyChanged, msg::SSH_HOST_KEY_CHANGED)
+                .with_hint(msg::SSH_HOST_KEY_CHANGED_HINT)
+                .with_detail(format!(
+                    "expected {expected_fingerprint}, got {fingerprint}"
+                )),
         }
     }
 }
