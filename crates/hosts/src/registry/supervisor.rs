@@ -6,6 +6,8 @@ use bollard::{query_parameters::EventsOptions, Docker};
 use futures_util::StreamExt;
 
 use homeport_core::error::{AppError, ErrorCode};
+
+use crate::messages as msg;
 use homeport_transport::{self as transport, ConnectError};
 
 use super::{EngineEvent, HostRegistry, HostStatus};
@@ -65,10 +67,10 @@ pub(super) async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
                     drop(reg);
                     watch(&registry, &id, docker).await;
                     AppError::new(
-                            ErrorCode::ConnectionLost,
-                            format!("Homeport lost the connection to {}.", host.name),
-                        )
-                        .with_hint("The Docker Engine or the network may have restarted. Homeport keeps retrying.")
+                        ErrorCode::ConnectionLost,
+                        msg::CONNECTION_LOST.with("name", &host.name),
+                    )
+                    .with_hint(msg::CONNECTION_LOST_HINT)
                 }
                 Err(error) => error,
             },

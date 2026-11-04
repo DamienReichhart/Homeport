@@ -17,6 +17,8 @@ use bollard::Docker;
 use tokio::task::JoinHandle;
 
 use homeport_core::error::{AppError, AppResult, ErrorCode};
+
+use crate::messages as msg;
 use homeport_transport::{Connected, Dialer};
 
 pub use self::{
@@ -128,14 +130,11 @@ impl HostRegistry {
 
     /// Why a command can't reach the Host right now, carrying the cause from its status.
     fn not_connected(&self, id: &str, status: &HostStatus) -> AppError {
-        let name = self
-            .store
-            .get(id)
-            .map_or_else(|_| "This host".to_owned(), |h| h.name);
-        let error = AppError::new(
-            ErrorCode::HostNotConnected,
-            format!("{name} isn't connected."),
-        );
+        let message = match self.store.get(id) {
+            Ok(host) => msg::NOT_CONNECTED.with("name", host.name),
+            Err(_) => msg::NOT_CONNECTED_UNKNOWN.into(),
+        };
+        let error = AppError::new(ErrorCode::HostNotConnected, message);
         if let Some(cause) = status.error() {
             return AppError {
                 hint: cause.hint.clone(),
@@ -147,11 +146,9 @@ impl HostRegistry {
             };
         }
         match status {
-            HostStatus::Disabled => error.with_hint("Enable the host on its page to use it."),
-            HostStatus::Connecting => {
-                error.with_hint("Homeport is still connecting; try again in a moment.")
-            }
-            _ => error.with_hint("Open the host's page to see why and fix it."),
+            HostStatus::Disabled => error.with_hint(msg::NOT_CONNECTED_DISABLED_HINT),
+            HostStatus::Connecting => error.with_hint(msg::NOT_CONNECTED_CONNECTING_HINT),
+            _ => error.with_hint(msg::NOT_CONNECTED_HINT),
         }
     }
 
