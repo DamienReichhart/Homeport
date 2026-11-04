@@ -26,6 +26,8 @@ use std::{error::Error as StdError, fmt::Display};
 
 use serde::Serialize;
 
+use crate::messages as msg;
+
 pub use code::ErrorCode;
 pub use local_file::local_file;
 pub use text::{arguments, render, Message, Param, Params, Text};
@@ -157,13 +159,13 @@ pub fn chain(error: &(dyn StdError + 'static)) -> String {
 
 impl From<std::io::Error> for AppError {
     fn from(e: std::io::Error) -> Self {
-        Self::new(ErrorCode::Io, "A file or system operation failed.").with_cause(&e)
+        Self::new(ErrorCode::Io, msg::IO_FAILED).with_cause(&e)
     }
 }
 
 impl From<serde_json::Error> for AppError {
     fn from(e: serde_json::Error) -> Self {
-        Self::new(ErrorCode::Json, "Homeport received data it couldn't read.").with_cause(&e)
+        Self::new(ErrorCode::Json, msg::UNREADABLE_DATA).with_cause(&e)
     }
 }
 
@@ -173,19 +175,20 @@ mod tests {
 
     #[test]
     fn serializes_code_message_hint_and_detail() {
-        let err = AppError::new(ErrorCode::PermissionDenied, "Access refused.")
-            .with_hint("Add your user to the docker group.")
+        use sample::{ADD_TO_GROUP, REFUSED};
+        let err = AppError::new(ErrorCode::PermissionDenied, REFUSED)
+            .with_hint(ADD_TO_GROUP)
             .with_command("sudo usermod -aG docker \"$USER\"")
             .with_detail("Permission denied (os error 13)");
         assert_eq!(
             serde_json::to_value(&err).unwrap(),
             serde_json::json!({
                 "code": "permission_denied",
-                "key": "",
+                "key": "errors.test.refused",
                 "params": {},
                 "message": "Access refused.",
                 "hint": {
-                    "key": "",
+                    "key": "errors.test.refused.hint",
                     "params": {},
                     "text": "Add your user to the docker group.",
                     "commands": ["sudo usermod -aG docker \"$USER\""],
@@ -200,6 +203,9 @@ mod tests {
         crate::messages! {
             BUSY = "errors.test.busy" => "Port {port} is busy.";
             STOP = "errors.test.stop" => "Stop what uses {port}.";
+            REFUSED = "errors.test.refused" => "Access refused.";
+            ADD_TO_GROUP = "errors.test.refused.hint" => "Add your user to the docker group.";
+            ENTER_NAME = "errors.test.enterName" => "Enter a name.";
         }
     }
 
@@ -214,12 +220,12 @@ mod tests {
         assert_eq!(json["message"], "Port 80 is busy.");
         assert_eq!(json["hint"]["key"], "errors.test.stop");
         assert_eq!(json["hint"]["text"], "Stop what uses 80.");
-        assert_eq!(ALL.len(), 2);
+        assert_eq!(ALL.len(), 5);
     }
 
     #[test]
     fn serializes_missing_hint_and_detail_as_null() {
-        let json = serde_json::to_value(AppError::validation("Enter a name.")).unwrap();
+        let json = serde_json::to_value(AppError::validation(sample::ENTER_NAME)).unwrap();
         assert_eq!(json["code"], "validation");
         assert_eq!(json["hint"], serde_json::Value::Null);
         assert_eq!(json["detail"], serde_json::Value::Null);

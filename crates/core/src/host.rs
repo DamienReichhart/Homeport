@@ -3,7 +3,8 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::error::{AppError, AppResult};
+use crate::error::{AppError, AppResult, Message};
+use crate::messages as msg;
 
 pub type HostId = String;
 
@@ -80,19 +81,19 @@ pub struct Host {
 impl HostConnection {
     /// Rejects settings that can never connect, with a message fit for the user.
     pub fn validate(&self) -> AppResult<()> {
-        let invalid = |msg: &str| Err(AppError::validation(msg.to_string()));
+        let invalid = |message: Message| Err(AppError::validation(message));
         match self {
             Self::Local { socket_path } if socket_path.trim().is_empty() => {
-                invalid("Enter the socket path.")
+                invalid(msg::SOCKET_PATH_MISSING)
             }
             Self::Tcp { address } | Self::Tls { address } if !is_host_port(address) => {
-                invalid("Enter the address as host:port, for example 192.168.1.10:2376.")
+                invalid(msg::ADDRESS_INVALID)
             }
-            Self::Ssh { host, .. } if host.trim().is_empty() => invalid("Enter the SSH host."),
-            Self::Ssh { user, .. } if user.trim().is_empty() => invalid("Enter the SSH user."),
-            Self::Ssh { port: 0, .. } => invalid("The SSH port must be between 1 and 65535."),
+            Self::Ssh { host, .. } if host.trim().is_empty() => invalid(msg::SSH_HOST_MISSING),
+            Self::Ssh { user, .. } if user.trim().is_empty() => invalid(msg::SSH_USER_MISSING),
+            Self::Ssh { port: 0, .. } => invalid(msg::SSH_PORT_INVALID),
             Self::Ssh { socket_path, .. } if !socket_path.starts_with('/') => {
-                invalid("The remote socket path must be absolute, like /var/run/docker.sock.")
+                invalid(msg::REMOTE_SOCKET_NOT_ABSOLUTE)
             }
             _ => Ok(()),
         }

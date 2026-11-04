@@ -1,31 +1,30 @@
 //! Failures of files on this computer.
 
 use super::{AppError, ErrorCode};
+use crate::messages as msg;
 
 /// A file on this computer that the user picked (keys, compose files, downloads).
 pub fn local_file(path: &std::path::Path, e: std::io::Error) -> AppError {
-    let path = path.display();
     let error = match e.kind() {
         std::io::ErrorKind::NotFound => {
-            AppError::new(ErrorCode::Io, format!("{path} doesn't exist."))
+            AppError::new(ErrorCode::Io, msg::FILE_MISSING.with("path", path))
         }
         std::io::ErrorKind::PermissionDenied => AppError::new(
             ErrorCode::PermissionDenied,
-            format!("Homeport isn't allowed to access {path}."),
+            msg::FILE_FORBIDDEN.with("path", path),
         )
-        .with_hint("Check the file's permissions, or pick another location."),
-        std::io::ErrorKind::StorageFull => AppError::new(
-            ErrorCode::DiskFull,
-            format!("There's no space left to write {path}."),
-        )
-        .with_hint("Free some disk space, or pick another drive."),
+        .with_hint(msg::FILE_FORBIDDEN_HINT),
+        std::io::ErrorKind::StorageFull => {
+            AppError::new(ErrorCode::DiskFull, msg::FILE_DISK_FULL.with("path", path))
+                .with_hint(msg::FILE_DISK_FULL_HINT)
+        }
         std::io::ErrorKind::IsADirectory => {
-            AppError::validation(format!("{path} is a folder, not a file."))
+            AppError::validation(msg::FILE_IS_FOLDER.with("path", path))
         }
         std::io::ErrorKind::InvalidData => {
-            AppError::validation(format!("{path} isn't a text file."))
+            AppError::validation(msg::FILE_NOT_TEXT.with("path", path))
         }
-        _ => AppError::new(ErrorCode::Io, format!("Homeport couldn't access {path}.")),
+        _ => AppError::new(ErrorCode::Io, msg::FILE_INACCESSIBLE.with("path", path)),
     };
     error.with_cause(&e)
 }

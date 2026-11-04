@@ -4,7 +4,8 @@
 
 use std::{error::Error as StdError, io};
 
-use super::{AppError, ErrorCode};
+use super::{AppError, ErrorCode, Text};
+use crate::messages as msg;
 
 /// `error` as an `io::Error`, looking through the transparent wrappers of
 /// bollard and russh (whose `source()` skips the io::Error itself).
@@ -41,11 +42,17 @@ pub fn classified_cause<'a>(error: &'a (dyn StdError + 'static)) -> Option<&'a A
     io_errors(error).find_map(|io| io.get_ref()?.downcast_ref::<AppError>())
 }
 
-/// The connection to `address` (a Host's label, or "the Docker Engine") broke.
+/// The connection to `address`, a Host's label, broke.
 pub fn connection_lost(address: &str) -> AppError {
-    AppError::new(
-        ErrorCode::ConnectionLost,
-        format!("The connection to {address} was cut."),
-    )
-    .with_hint("The machine or the network may have restarted. Homeport keeps retrying.")
+    lost(msg::CONNECTION_LOST.with("address", address))
+}
+
+/// The connection to the Docker Engine broke.
+#[cfg(feature = "bollard")]
+pub(crate) fn engine_connection_lost() -> AppError {
+    lost(msg::ENGINE_CONNECTION_LOST.into())
+}
+
+fn lost(message: Text) -> AppError {
+    AppError::new(ErrorCode::ConnectionLost, message).with_hint(msg::CONNECTION_LOST_HINT)
 }
