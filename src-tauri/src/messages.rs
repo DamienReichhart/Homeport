@@ -7,7 +7,26 @@ use std::collections::BTreeMap;
 #[cfg(test)]
 use homeport_core::error::{arguments, Message};
 
-homeport_core::messages! {}
+homeport_core::messages! {
+    /// The webview or a Tauri plugin failed.
+    WINDOW_FAILED = "errors.shell.windowFailed" => "The app window failed.";
+    UPDATE_DOWNLOAD = "errors.updates.download" => "Homeport couldn't download the update.";
+    UPDATE_DOWNLOAD_HINT = "errors.updates.download.hint" => "Check your internet connection, then try again.";
+    UPDATE_NONE_PUBLISHED = "errors.updates.nonePublished" => "No update is published for this system yet.";
+    UPDATE_NONE_PUBLISHED_HINT = "errors.updates.nonePublished.hint" => "Try again later, or download Homeport from its website.";
+    UPDATE_SIGNATURE = "errors.updates.signature" => "The update's signature doesn't match, so it wasn't installed.";
+    UPDATE_SIGNATURE_HINT = "errors.updates.signature.hint" => "Download the new version from Homeport's website instead.";
+    UPDATE_ADMIN_REFUSED = "errors.updates.adminRefused" => "Installing the update needs an administrator's approval, which was refused or cancelled.";
+    UPDATE_ADMIN_REFUSED_HINT = "errors.updates.adminRefused.hint" => "Try again and enter an administrator password when asked.";
+    UPDATE_NOT_ALLOWED = "errors.updates.notAllowed" => "Homeport isn't allowed to replace its own files.";
+    UPDATE_NOT_ALLOWED_HINT = "errors.updates.notAllowed.hint" => "Move the AppImage to a folder you own, or install Homeport from its package repository.";
+    UPDATE_WRONG_DISK = "errors.updates.wrongDisk" => "Homeport can't replace itself where it's installed.";
+    UPDATE_WRONG_DISK_HINT = "errors.updates.wrongDisk.hint" => "Move Homeport to a folder on your main disk, or install it from its package repository.";
+    UPDATE_FAILED = "errors.updates.failed" => "The update failed.";
+    /// Installing from the app when a package manager owns the install.
+    UPDATE_BY_PACKAGE_MANAGER = "errors.updates.byPackageManager" => "This copy of Homeport is updated by your package manager.";
+    UPDATE_NOTHING_WAITING = "errors.updates.nothingWaiting" => "No update is waiting to be installed.";
+}
 
 /// Where `bun run bindings` writes the English error catalogue.
 #[cfg(test)]

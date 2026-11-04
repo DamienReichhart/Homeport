@@ -169,7 +169,6 @@ export type AppError = {
 	params: { [key in string]: Param },
 	/**  In English, for the app log and when the key is unknown. */
 	message: string,
-	/**  Boxed to keep `AppResult` small. */
 	hint: Hint | null,
 	/**  The raw cause, for the Details dialog. Never translated. */
 	detail: string | null,
