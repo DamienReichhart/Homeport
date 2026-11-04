@@ -74,7 +74,7 @@ export function RunFormFields({
               ))}
           </datalist>
           {images.data && !images.data.some((i) => i.tags.includes(form.image.trim())) && (
-            <RegistryLogin reference={form.image} verb={t('containers.run.pulled')} />
+            <RegistryLogin reference={form.image} verb="pull" />
           )}
         </div>
         <div className="grid gap-1.5">

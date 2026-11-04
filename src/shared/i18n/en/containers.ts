@@ -206,7 +206,6 @@ export default {
   'containers.run.starting': 'Starting…',
   'containers.run.started': 'Container started',
   'containers.run.image': 'Image',
-  'containers.run.pulled': 'Pulled',
   'containers.run.name': 'Name',
   'containers.run.namePlaceholder': 'Generated if empty',
   'containers.run.nameKept': 'Kept. Use Rename to change it.',
