@@ -1,5 +1,6 @@
 import { TriangleAlertIcon } from 'lucide-react';
 import { useCapabilities } from '@/shared/api';
+import { t } from '@/shared/i18n';
 
 /** Says what can't be stored when the machine has no OS keychain. */
 export function KeychainWarning() {
@@ -11,8 +12,7 @@ export function KeychainWarning() {
       className="bg-destructive/10 text-destructive flex items-center gap-2 border-b px-6 py-2 text-sm"
     >
       <TriangleAlertIcon className="size-4" />
-      No OS keychain is available, so SSH keys, TLS certificates and stack environments can’t be
-      stored. Local, TCP and ssh-agent hosts still work.
+      {t('app.keychainMissing')}
     </div>
   );
 }
