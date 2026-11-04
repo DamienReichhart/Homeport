@@ -2,7 +2,7 @@
 import DownloadButton from '../components/DownloadButton.astro';
 import DownloadMeta from '../components/DownloadMeta.astro';
 import SiteLayout from '@/app/layouts/SiteLayout.astro';
-import { getLatestRelease } from '../lib/releases';
+import { getLatestRelease } from '@/core/release';
 import { DESCRIPTION, REPO_URL, TAGLINE } from '@/core/site';
 import { href } from '@/shared/lib/href';
 import { Icon, type IconName, Screenshot } from '@/shared/ui';

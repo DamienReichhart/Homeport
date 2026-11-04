@@ -1,22 +1,21 @@
 ---
 import SiteLayout from '@/app/layouts/SiteLayout.astro';
 import {
-  archLabel,
-  FORMATS,
-  formatDate,
-  formatSize,
-  getLatestRelease,
-  getReleases,
-  type Installer,
-  type Os,
-} from '../lib/releases';
-import {
   COMING_LATER,
   INSTALL_COMMAND,
   INSTALL_SCRIPT_URL,
   MANUAL_SETUP,
 } from '../lib/repository';
+import {
+  archLabel,
+  FORMATS,
+  getLatestRelease,
+  getReleases,
+  type Installer,
+  type Os,
+} from '@/core/release';
 import { ISSUES_URL, RELEASES_URL, REPO, REPO_URL } from '@/core/site';
+import { formatDate, formatSize } from '@/shared/lib/format';
 import { href } from '@/shared/lib/href';
 import { Icon } from '@/shared/ui';
 
