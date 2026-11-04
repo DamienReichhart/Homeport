@@ -40,6 +40,8 @@ export default tseslint.config(
       'node_modules',
       'src/shared/api/bindings.ts',
       'website',
+      // Claude Code's local worktrees and settings.
+      '.claude',
     ],
   },
   {
@@ -62,7 +64,8 @@ export default tseslint.config(
   {
     // Past 300 lines a file usually holds more than one thing: split it.
     files: ['src/**/*.{ts,tsx}'],
-    ignores: ['**/*.test.{ts,tsx}'],
+    // Catalogues are data: one line per message, however many there are.
+    ignores: ['**/*.test.{ts,tsx}', 'src/shared/i18n/en/**'],
     rules: { 'max-lines': ['warn', { max: 300, skipBlankLines: true, skipComments: true }] },
   },
   {

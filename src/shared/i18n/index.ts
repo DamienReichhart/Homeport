@@ -18,7 +18,7 @@ export type RichValues = Record<
 export const DEFAULT_LOCALE = 'en';
 
 const cache = createIntlCache();
-let current: IntlShape = createIntl(
+const current: IntlShape = createIntl(
   {
     locale: DEFAULT_LOCALE,
     defaultLocale: DEFAULT_LOCALE,
