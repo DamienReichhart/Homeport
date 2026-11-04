@@ -3,6 +3,9 @@
  * Fades in the elements marked `data-reveal` as they scroll into view. Their
  * styles are global (app/styles/site/motion.css), since the marked elements are in
  * every section. Without JS, or with reduced motion, they're simply visible.
+ *
+ * Once an element has faded in it drops its marker, so its own transform and
+ * transitions (a card's lift on hover) apply again instead of the reveal's.
  */
 ---
 
@@ -13,8 +16,15 @@
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-            observer.unobserve(entry.target);
+            const element = entry.target;
+            element.addEventListener('transitionend', function revealed(event) {
+              if (event.target !== element) return;
+              element.removeEventListener('transitionend', revealed);
+              element.removeAttribute('data-reveal');
+              element.classList.remove('is-visible');
+            });
+            element.classList.add('is-visible');
+            observer.unobserve(element);
           }
         }
       },

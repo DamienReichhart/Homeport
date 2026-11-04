@@ -1,4 +1,7 @@
-/* Fade sections in as they scroll into view (only when JS and motion allow). */
+/*
+ * Fade sections in as they scroll into view (only when JS and motion allow).
+ * shared/ui/ScrollReveal.astro removes data-reveal once the fade has ended.
+ */
 .reveal-ready [data-reveal] {
   opacity: 0;
   transform: translateY(16px);
