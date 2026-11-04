@@ -201,6 +201,16 @@ mod tests {
         assert_eq!(r("bad name"), None);
     }
 
+    #[tokio::test]
+    #[ignore = "needs access to Docker Hub"]
+    async fn official_repositories_list_their_tags() {
+        let page = tags("postgres", 1, "alpine", None).await.unwrap();
+        assert!(page.count > 0);
+        assert!(page.tags.iter().all(|t| t.name.contains("alpine")), "{page:?}");
+        let missing = tags("homeport-no-such-repo-x", 1, "", None).await.unwrap_err();
+        assert!(missing.is(homeport_core::error::ErrorCode::NotFound), "{missing:?}");
+    }
+
     #[test]
     fn hub_pages_parse_from_a_fixture() {
         let raw: RawPage = serde_json::from_str(
