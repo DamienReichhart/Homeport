@@ -24,6 +24,7 @@ import {
 } from '@/shared/ui';
 import { useNetworkMembership } from '../../api/mutations';
 import { networkQueries } from '../../api/queries';
+import { t } from '@/shared/i18n';
 
 /** A network's containers, with connect and disconnect, and its raw JSON. */
 export function NetworkDialog({
@@ -52,12 +53,12 @@ export function NetworkDialog({
         </DialogHeader>
         <Tabs defaultValue="containers">
           <TabsList>
-            <TabsTrigger value="containers">Containers</TabsTrigger>
-            <TabsTrigger value="raw">Raw JSON</TabsTrigger>
+            <TabsTrigger value="containers">{t('networks.dialog.containers')}</TabsTrigger>
+            <TabsTrigger value="raw">{t('networks.dialog.raw')}</TabsTrigger>
           </TabsList>
           <TabsContent value="containers" className="grid gap-3">
             {network.containers.length === 0 && (
-              <p className="text-muted-foreground text-sm">No container is attached.</p>
+              <p className="text-muted-foreground text-sm">{t('networks.dialog.noContainer')}</p>
             )}
             {network.containers.map((name) => (
               <div
@@ -67,7 +68,7 @@ export function NetworkDialog({
                 <span className="text-sm">{name}</span>
                 {!network.builtIn && (
                   <Button variant="ghost" size="sm" onClick={() => disconnect.mutate(name)}>
-                    <UnplugIcon /> Disconnect
+                    <UnplugIcon /> {t('networks.dialog.disconnect')}
                   </Button>
                 )}
               </div>
@@ -75,8 +76,11 @@ export function NetworkDialog({
             {!network.builtIn && network.name !== 'host' && (
               <div className="flex gap-2">
                 <Select value={joining} onValueChange={setJoining}>
-                  <SelectTrigger className="w-72" aria-label="Container to connect">
-                    <SelectValue placeholder="Connect a container…" />
+                  <SelectTrigger
+                    className="w-72"
+                    aria-label={t('networks.dialog.containerToConnect')}
+                  >
+                    <SelectValue placeholder={t('networks.dialog.connectPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {candidates.map((c) => (
@@ -90,7 +94,7 @@ export function NetworkDialog({
                   disabled={!joining || connect.isPending}
                   onClick={() => connect.mutate(joining)}
                 >
-                  Connect
+                  {t('networks.dialog.connect')}
                 </Button>
               </div>
             )}
@@ -101,7 +105,7 @@ export function NetworkDialog({
         </Tabs>
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>
-            Close
+            {t('common.close')}
           </Button>
         </DialogFooter>
       </DialogContent>

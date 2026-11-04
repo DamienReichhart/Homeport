@@ -1,5 +1,6 @@
 import type { NetworkView } from '@/shared/api';
 import type { ConfirmedAction } from '@/shared/ui';
+import { t } from '@/shared/i18n';
 
 /** Removing a network, warning about the containers still attached. */
 export function removeNetworkConfirmation(
@@ -7,11 +8,11 @@ export function removeNetworkConfirmation(
   action: () => Promise<unknown>,
 ): ConfirmedAction {
   return {
-    title: `Remove network ${network.name}?`,
+    title: t('networks.remove.title', { name: network.name }),
     description: network.containers.length
-      ? `It still has ${network.containers.length} attached container(s); disconnect them first.`
-      : 'No container uses it. Containers that reference it by name will fail to start.',
-    confirmLabel: 'Remove',
+      ? t('networks.remove.attached', { count: network.containers.length })
+      : t('networks.remove.unused'),
+    confirmLabel: t('common.remove'),
     destructive: true,
     action,
   };
@@ -20,9 +21,9 @@ export function removeNetworkConfirmation(
 /** Removing every custom network no container is attached to. */
 export function pruneNetworksConfirmation(action: () => Promise<unknown>): ConfirmedAction {
   return {
-    title: 'Remove unused networks?',
-    description: 'Every custom network no container is attached to is removed.',
-    confirmLabel: 'Clean up',
+    title: t('networks.prune.title'),
+    description: t('networks.prune.description'),
+    confirmLabel: t('networks.cleanUp'),
     destructive: true,
     action,
   };

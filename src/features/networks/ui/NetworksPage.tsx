@@ -18,6 +18,7 @@ import { pruneNetworksConfirmation, removeNetworkConfirmation } from './confirma
 import { CreateNetworkDialog } from './dialogs/CreateNetworkDialog';
 import { NetworkDialog } from './dialogs/NetworkDialog';
 import { networkColumns } from './networkColumns';
+import { t } from '@/shared/i18n';
 
 function NetworksList({ hostId }: { hostId: string }) {
   const networks = useQuery(resourceQueries.networks(hostId));
@@ -37,27 +38,27 @@ function NetworksList({ hostId }: { hostId: string }) {
   return (
     <div>
       <PageHeader
-        title="Networks"
-        description={`${networks.data.length} networks`}
+        title={t('networks.title')}
+        description={t('networks.summary', { count: networks.data.length })}
         actions={
           <>
             <Button
               variant="outline"
               onClick={() => confirm(pruneNetworksConfirmation(() => prune.mutateAsync()))}
             >
-              <BrushCleaningIcon /> Clean up
+              <BrushCleaningIcon /> {t('networks.cleanUp')}
             </Button>
             <Button onClick={() => setCreating(true)}>
-              <PlusIcon /> Create network
+              <PlusIcon /> {t('networks.create')}
             </Button>
           </>
         }
       />
       <div className="mb-3">
-        <SearchInput value={query} onChange={setQuery} placeholder="Search networks" />
+        <SearchInput value={query} onChange={setQuery} placeholder={t('networks.search')} />
       </div>
       {networks.data.length === 0 ? (
-        <EmptyState icon={NetworkIcon} title="No networks" />
+        <EmptyState icon={NetworkIcon} title={t('networks.empty')} />
       ) : (
         <DataTable
           columns={networkColumns({ onInspect: setOpen, onRemove: remove })}

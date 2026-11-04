@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { hostKeys } from '@/core/host';
 import { commands, type NetworkInput, type NetworkView } from '@/shared/api';
 import { toastError } from '@/shared/ui';
+import { t } from '@/shared/i18n';
 
 function useRefreshNetworks(hostId: string) {
   const client = useQueryClient();
@@ -30,7 +31,7 @@ export function useNetworkMembership(hostId: string, networkId: string, onDone: 
     onSuccess: () => {
       void refresh();
       onDone();
-      toast.success('Connected');
+      toast.success(t('networks.connected'));
     },
     onError: (e) => toastError(e),
   });
@@ -40,7 +41,7 @@ export function useNetworkMembership(hostId: string, networkId: string, onDone: 
     onSuccess: () => {
       void refresh();
       onDone();
-      toast.success('Disconnected');
+      toast.success(t('networks.disconnected'));
     },
     onError: (e) => toastError(e),
   });
@@ -51,7 +52,7 @@ export function useRemoveNetwork(hostId: string) {
   const refresh = useRefreshNetworks(hostId);
   return useMutation({
     mutationFn: (network: NetworkView) => commands.networksRemove(hostId, network.id),
-    onSuccess: (_, network) => toast.success(`Removed ${network.name}`),
+    onSuccess: (_, network) => toast.success(t('networks.removed', { name: network.name })),
     onError: (e) => toastError(e),
     onSettled: () => refresh(),
   });
@@ -63,7 +64,7 @@ export function usePruneNetworks(hostId: string) {
   return useMutation({
     mutationFn: () => commands.networksPrune(hostId),
     onSuccess: async (result) => {
-      toast.success(`Removed ${result.removed.length} networks`);
+      toast.success(t('networks.pruned', { count: result.removed.length }));
       await refresh();
     },
   });
