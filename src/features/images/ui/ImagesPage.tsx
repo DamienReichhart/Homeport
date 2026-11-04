@@ -8,7 +8,7 @@ import {
   SaveIcon,
 } from 'lucide-react';
 import { useState } from 'react';
-import { HostGate, resourceQueries } from '@/core/host';
+import { CheckNewerImages, HostGate, indexFreshness, resourceQueries } from '@/core/host';
 import { RunContainerDialog } from '@/features/containers';
 import type { Image } from '@/shared/api';
 import { formatBytes } from '@/shared/lib';
@@ -40,6 +40,7 @@ import { imageColumns } from './imageColumns';
 
 function ImagesList({ hostId }: { hostId: string }) {
   const images = useQuery(resourceQueries.images(hostId));
+  const freshness = indexFreshness(useQuery(resourceQueries.freshness(hostId)).data);
   const removeImage = useRemoveImage(hostId);
   const pruneImages = usePruneImages(hostId);
   const [dialog, confirm] = useConfirm();
@@ -115,6 +116,7 @@ function ImagesList({ hostId }: { hostId: string }) {
                 <SaveIcon /> Save {selected.length === 1 ? 'image' : `${selected.length} images`}…
               </Button>
             )}
+            <CheckNewerImages hostId={hostId} />
             <Button variant="outline" onClick={() => void loadImages()}>
               <FileUpIcon /> Load…
             </Button>
@@ -146,6 +148,7 @@ function ImagesList({ hostId }: { hostId: string }) {
             onPush: setPushingImage,
             onSave: (image) => void saveImages([image]),
             onRemove: remove,
+            freshness,
           })}
           data={images.data}
           getRowId={(i) => i.id}

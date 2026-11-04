@@ -1,5 +1,6 @@
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { useNavigate } from 'react-router-dom';
+import { NewerImage, newerLabel } from '@/core/host';
 import type { Container, ContainerUsage } from '@/shared/api';
 import { formatBytes, formatPercent, formatRelative, shortId } from '@/shared/lib';
 import {
@@ -21,6 +22,7 @@ export function ContainerRow({
   container: c,
   nested,
   usage,
+  newer,
   address,
   selected,
   onSelect,
@@ -31,6 +33,8 @@ export function ContainerRow({
   container: Container;
   nested: boolean;
   usage?: ContainerUsage;
+  /** The registry has a newer image under the tag it was created from. */
+  newer?: boolean;
   /** Where published ports are reachable, for links. */
   address: string;
   selected: boolean;
@@ -61,7 +65,12 @@ export function ContainerRow({
           </div>
         </div>
       </TableCell>
-      <TableCell className="max-w-56 truncate">{c.image}</TableCell>
+      <TableCell className="max-w-56">
+        <span className="flex items-center gap-1.5">
+          <span className="truncate">{c.image}</span>
+          {newer && <NewerImage label={newerLabel([c.image])} />}
+        </span>
+      </TableCell>
       <TableCell>
         <span className="text-sm">{c.status || c.state}</span>
         {c.health && (

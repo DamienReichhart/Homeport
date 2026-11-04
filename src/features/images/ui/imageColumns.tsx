@@ -7,6 +7,7 @@ import {
   Trash2Icon,
   UploadIcon,
 } from 'lucide-react';
+import { NewerImage, newerLabel, newerTags, type FreshnessIndex } from '@/core/host';
 import type { Image } from '@/shared/api';
 import { formatBytes, formatRelative, shortId } from '@/shared/lib';
 import {
@@ -29,6 +30,7 @@ export function imageColumns({
   onPush,
   onSave,
   onRemove,
+  freshness,
 }: {
   onRun: (image: Image) => void;
   onInspect: (image: Image) => void;
@@ -36,6 +38,7 @@ export function imageColumns({
   onPush: (image: Image) => void;
   onSave: (image: Image) => void;
   onRemove: (image: Image) => void;
+  freshness: FreshnessIndex;
 }): ColumnDef<Image, unknown>[] {
   return [
     {
@@ -44,7 +47,12 @@ export function imageColumns({
       accessorFn: (i) => i.tags.join(' ') || '<none>',
       cell: ({ row }) => (
         <div className="min-w-0">
-          <p className="truncate font-medium">{imageName(row.original)}</p>
+          <p className="flex items-center gap-1.5 font-medium">
+            <span className="truncate">{imageName(row.original)}</span>
+            {newerTags(freshness, row.original).length > 0 && (
+              <NewerImage label={newerLabel(newerTags(freshness, row.original))} />
+            )}
+          </p>
           {row.original.tags.length > 1 && (
             <p className="text-muted-foreground text-xs">
               +{row.original.tags.length - 1} more tags
