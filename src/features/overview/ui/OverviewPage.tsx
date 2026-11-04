@@ -4,6 +4,7 @@ import { HostGate, useHosts, useHostSelection } from '@/core/host';
 import { Button, PageHeader } from '@/shared/ui';
 import { HostDashboard } from './dashboard/HostDashboard';
 import { HostCard } from './hosts/HostCard';
+import { t } from '@/shared/i18n';
 
 export function OverviewPage() {
   const hosts = useHosts();
@@ -11,11 +12,11 @@ export function OverviewPage() {
   return (
     <div className="grid gap-6">
       <PageHeader
-        title="Overview"
+        title={t('overview.title')}
         actions={
           <Button asChild variant="outline">
             <Link to="/hosts/new">
-              <PlusIcon /> Add host
+              <PlusIcon /> {t('overview.addHost')}
             </Link>
           </Button>
         }

@@ -18,6 +18,7 @@ import {
   TableRow,
 } from '@/shared/ui';
 import { PruneDialog } from '../dialogs/PruneDialog';
+import { t } from '@/shared/i18n';
 
 /** What takes space on a Host's disk, and the clean-up. */
 export function DiskUsageCard({ hostId }: { hostId: string }) {
@@ -27,10 +28,10 @@ export function DiskUsageCard({ hostId }: { hostId: string }) {
   // With an older Engine, volume and build cache sizes are unknown, not zero.
   const rows = usage.data
     ? ([
-        ['Images', usage.data.images, true],
-        ['Containers', usage.data.containers, true],
-        ['Volumes', usage.data.volumes, !partial],
-        ['Build cache', usage.data.buildCache, !partial],
+        [t('overview.disk.images'), usage.data.images, true],
+        [t('overview.disk.containers'), usage.data.containers, true],
+        [t('overview.disk.volumes'), usage.data.volumes, !partial],
+        [t('overview.disk.buildCache'), usage.data.buildCache, !partial],
       ] as const)
     : [];
 
@@ -38,10 +39,10 @@ export function DiskUsageCard({ hostId }: { hostId: string }) {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Disk usage</CardTitle>
+          <CardTitle>{t('overview.disk.title')}</CardTitle>
           <CardAction>
             <Button variant="outline" size="sm" onClick={() => setPruning(true)}>
-              <BrushCleaningIcon /> Clean up…
+              <BrushCleaningIcon /> {t('overview.disk.cleanUp')}
             </Button>
           </CardAction>
         </CardHeader>
@@ -49,11 +50,13 @@ export function DiskUsageCard({ hostId }: { hostId: string }) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Type</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead className="text-right">In use</TableHead>
-                <TableHead className="text-right">Size</TableHead>
-                <TableHead className="text-right">Reclaimable</TableHead>
+                <TableHead>{t('overview.disk.column.type')}</TableHead>
+                <TableHead className="text-right">{t('overview.disk.column.total')}</TableHead>
+                <TableHead className="text-right">{t('overview.disk.column.active')}</TableHead>
+                <TableHead className="text-right">{t('overview.disk.column.size')}</TableHead>
+                <TableHead className="text-right">
+                  {t('overview.disk.column.reclaimable')}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -73,10 +76,7 @@ export function DiskUsageCard({ hostId }: { hostId: string }) {
             </TableBody>
           </Table>
           {partial && (
-            <p className="text-muted-foreground mt-2 text-xs">
-              This Docker Engine is older than version 29 and reports less: image sizes are
-              estimated, and volume and build cache sizes aren’t available.
-            </p>
+            <p className="text-muted-foreground mt-2 text-xs">{t('overview.disk.partial')}</p>
           )}
         </CardContent>
       </Card>

@@ -1,39 +1,44 @@
 import type { PruneSelection, SystemPruneReport } from '@/shared/api';
 import { formatBytes } from '@/shared/lib';
+import { t, type MessageKey } from '@/shared/i18n';
 
 export interface PruneOption {
   key: keyof PruneSelection;
-  label: string;
-  detail: string;
+  label: MessageKey;
+  detail: MessageKey;
   destructive?: boolean;
 }
 
 export const PRUNE_OPTIONS: PruneOption[] = [
   {
     key: 'containers',
-    label: 'Stopped containers',
-    detail: 'Removes every container that is not running.',
+    label: 'overview.prune.containers',
+    detail: 'overview.prune.containers.detail',
   },
   {
     key: 'images',
-    label: 'Dangling images',
-    detail: 'Untagged layers left behind by builds and pulls.',
+    label: 'overview.prune.images',
+    detail: 'overview.prune.images.detail',
   },
   {
     key: 'allImages',
-    label: 'All unused images',
-    detail: 'Also removes tagged images no container uses.',
+    label: 'overview.prune.allImages',
+    detail: 'overview.prune.allImages.detail',
   },
   {
     key: 'networks',
-    label: 'Unused networks',
-    detail: 'Custom networks no container is attached to.',
+    label: 'overview.prune.networks',
+    detail: 'overview.prune.networks.detail',
   },
-  { key: 'buildCache', label: 'Build cache', detail: 'Cached build layers.' },
+  {
+    key: 'buildCache',
+    label: 'overview.prune.buildCache',
+    detail: 'overview.prune.buildCache.detail',
+  },
   {
     key: 'volumes',
-    label: 'Unused volumes',
-    detail: 'Deletes the data in every volume no container uses, named volumes included.',
+    label: 'overview.prune.volumes',
+    detail: 'overview.prune.volumes.detail',
     destructive: true,
   },
 ];
@@ -55,5 +60,11 @@ export function toPruneRequest(selection: PruneSelection): PruneSelection {
 
 /** One line on what a clean-up removed. */
 export function describePruneReport(r: SystemPruneReport): string {
-  return `Removed ${r.containers} containers, ${r.images} images, ${r.networks} networks and ${r.volumes} volumes — ${formatBytes(r.spaceReclaimed)} reclaimed.`;
+  return t('overview.pruned', {
+    containers: r.containers,
+    images: r.images,
+    networks: r.networks,
+    volumes: r.volumes,
+    space: formatBytes(r.spaceReclaimed),
+  });
 }

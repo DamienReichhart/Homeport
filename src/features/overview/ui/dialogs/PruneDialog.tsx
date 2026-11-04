@@ -14,6 +14,7 @@ import {
 } from '@/shared/ui';
 import { usePruneHost } from '../../api/mutations';
 import { defaultPruneSelection, PRUNE_OPTIONS } from '../../model/prune';
+import { t } from '@/shared/i18n';
 
 /** Global prune for one Host, with an explicit choice of what goes. */
 export function PruneDialog({
@@ -32,10 +33,8 @@ export function PruneDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Clean up</DialogTitle>
-          <DialogDescription>
-            Choose what to remove from this host. This can&apos;t be undone.
-          </DialogDescription>
+          <DialogTitle>{t('overview.prune.title')}</DialogTitle>
+          <DialogDescription>{t('overview.prune.description')}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-3">
           {PRUNE_OPTIONS.map((o) => (
@@ -47,14 +46,14 @@ export function PruneDialog({
               />
               <Label htmlFor={o.key} className="grid gap-0.5 font-normal">
                 <span className={o.destructive ? 'text-destructive font-medium' : 'font-medium'}>
-                  {o.label}
+                  {t(o.label)}
                 </span>
                 <span
                   className={
                     o.destructive ? 'text-destructive text-xs' : 'text-muted-foreground text-xs'
                   }
                 >
-                  {o.detail}
+                  {t(o.detail)}
                 </span>
               </Label>
             </div>
@@ -63,7 +62,7 @@ export function PruneDialog({
         {prune.error && <ErrorMessage error={prune.error} />}
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             variant="destructive"
@@ -73,7 +72,9 @@ export function PruneDialog({
             disabled={prune.isPending || !Object.values(selection).some(Boolean)}
             onClick={() => prune.mutate(selection)}
           >
-            {selection.volumes ? 'Delete, including volume data' : 'Clean up'}
+            {selection.volumes
+              ? t('overview.prune.confirmWithVolumes')
+              : t('overview.prune.confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>

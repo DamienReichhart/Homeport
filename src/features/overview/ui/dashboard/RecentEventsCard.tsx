@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { resourceQueries } from '@/core/host';
 import { formatRelative } from '@/shared/lib';
 import { Button, Card, CardAction, CardContent, CardHeader, CardTitle } from '@/shared/ui';
+import { t } from '@/shared/i18n';
 
 /** The last few Engine events of a Host, newest first. */
 export function RecentEventsCard({ hostId }: { hostId: string }) {
@@ -10,10 +11,10 @@ export function RecentEventsCard({ hostId }: { hostId: string }) {
   return (
     <Card className="lg:col-span-2">
       <CardHeader>
-        <CardTitle>Recent events</CardTitle>
+        <CardTitle>{t('overview.events.title')}</CardTitle>
         <CardAction>
           <Button variant="ghost" size="sm" asChild>
-            <Link to="/events">All events</Link>
+            <Link to="/events">{t('overview.events.all')}</Link>
           </Button>
         </CardAction>
       </CardHeader>
@@ -37,9 +38,7 @@ export function RecentEventsCard({ hostId }: { hostId: string }) {
               ))}
           </ul>
         ) : (
-          <p className="text-muted-foreground text-sm">
-            Nothing has happened since Homeport connected.
-          </p>
+          <p className="text-muted-foreground text-sm">{t('overview.events.empty')}</p>
         )}
       </CardContent>
     </Card>
