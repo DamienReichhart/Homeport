@@ -39,6 +39,32 @@ pub fn explain(error: AppError, reference: &str, login: Option<&Registry>) -> Ap
     }
 }
 
+/// [`explain`] for a push: the registry refusing means the login is missing
+/// or may not push to that repository, not that the image is missing.
+pub fn explain_push(error: AppError, reference: &str, login: Option<&Registry>) -> AppError {
+    let registry = address::registry_of(reference);
+    let (message, hint) = match (error.code, login) {
+        (ErrorCode::RegistryAuthRequired, None) => (
+            format!("{registry} refused the push."),
+            format!("Add a login for {registry} in Settings → Registries."),
+        ),
+        (ErrorCode::RegistryAuthRequired, Some(login)) => (
+            format!("{registry} refused the push from {}.", login.username),
+            "Check that this login may push to the repository, in Settings → Registries."
+                .to_owned(),
+        ),
+        _ => return explain(error, reference, login),
+    };
+    AppError {
+        message,
+        hint: Some(Hint {
+            text: hint,
+            commands: vec![],
+        }),
+        ..error
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -83,6 +109,15 @@ mod tests {
     fn docker_hub_images_name_docker_io() {
         let e = explain(denied(), "someone/private", None);
         assert!(e.hint.unwrap().text.contains("docker.io"));
+    }
+
+    #[test]
+    fn refused_pushes_name_the_login() {
+        let e = explain_push(denied(), "ghcr.io/org/app:1", None);
+        assert_eq!(e.message, "ghcr.io refused the push.");
+        assert!(e.hint.unwrap().text.contains("Add a login for ghcr.io"));
+        let e = explain_push(denied(), "ghcr.io/org/app:1", Some(&login()));
+        assert!(e.message.contains("from alice"));
     }
 
     #[test]
