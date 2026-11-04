@@ -2,6 +2,7 @@ import type { EngineEvent } from '@/shared/api';
 import { formatDateTime } from '@/shared/lib';
 import { Badge, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui';
 import { actorName } from '../model/filterEvents';
+import { t } from '@/shared/i18n';
 
 export function EventsTable({ events }: { events: EngineEvent[] }) {
   return (
@@ -9,11 +10,11 @@ export function EventsTable({ events }: { events: EngineEvent[] }) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Time</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Action</TableHead>
-            <TableHead>Object</TableHead>
-            <TableHead>Stack</TableHead>
+            <TableHead>{t('events.column.time')}</TableHead>
+            <TableHead>{t('events.column.type')}</TableHead>
+            <TableHead>{t('events.column.action')}</TableHead>
+            <TableHead>{t('events.column.object')}</TableHead>
+            <TableHead>{t('events.column.stack')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
