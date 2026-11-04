@@ -1,0 +1,95 @@
+---
+/** The cookie policy: everything the site stores in the browser. */
+import { href } from '@/shared/lib/href';
+import { PUBLISHER } from '../../data/facts';
+import { STORED_ITEMS } from '../../data/storage';
+import LegalDocument from '../LegalDocument.astro';
+---
+
+<LegalDocument title="Cookie policy" subtitle="Politique de cookies" updated="2026-11-04">
+  <p>
+    <strong>This site sets no cookies and uses no trackers</strong>: no analytics, no advertising,
+    no social media buttons, and no content loaded from other sites. It does keep a few preferences
+    in your browser’s storage so the pages look and behave the way you left them. They are listed
+    below in full.
+  </p>
+
+  <h2 id="rules">The rules</h2>
+  <p>
+    Under article 82 of the French <em>loi Informatique et Libertés</em>, which transposes the
+    ePrivacy Directive, storing or reading information on your device needs your prior consent,
+    unless it is strictly necessary for a service you asked for. The CNIL counts among these
+    exceptions items that only remember choices you made about how a site is displayed. Everything
+    this site stores falls in that category, so it asks for no consent and shows no banner. If a
+    non-essential cookie or tracker is ever added, it will only be set after you accept it, with an
+    option to refuse that is as easy as accepting, and a way to change your mind later.
+  </p>
+
+  <h2 id="inventory">What is stored</h2>
+  <p>
+    All items are <strong>first-party</strong> (written and read only by this site) and{' '}
+    <strong>essential</strong>. None of them identifies you, and none is ever sent to a server: they
+    stay in your browser.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Type</th>
+        <th scope="col">Purpose</th>
+        <th scope="col">Set</th>
+        <th scope="col">Duration</th>
+        <th scope="col">Party</th>
+        <th scope="col">Category</th>
+      </tr>
+    </thead>
+    <tbody>
+      {STORED_ITEMS.map((item) => (
+        <tr>
+          <td data-label="Name">
+            <code>{item.name}</code>
+          </td>
+          <td data-label="Type">{item.storage}</td>
+          <td data-label="Purpose">{item.purpose}</td>
+          <td data-label="Set">{item.set}</td>
+          <td data-label="Duration">{item.duration}</td>
+          <td data-label="Party">First-party</td>
+          <td data-label="Category">Essential</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+  <p>The site uses no cookies, IndexedDB databases, service workers or offline caches.</p>
+
+  <h2 id="read">Information read from your device</h2>
+  <p>
+    The home and download pages read your browser’s description of your system (its user agent and,
+    in Chromium-based browsers, its platform and processor architecture) to suggest the right
+    installer. This happens only in your browser: nothing is stored or sent, and the page still
+    lists every file if it can’t tell.
+  </p>
+  <p>
+    Like any website, this one is served by a hosting provider that receives your IP address and
+    browser details with each request. That isn’t a cookie, and the{' '}
+    <a href={href('/privacy/')}>privacy policy</a> explains it.
+  </p>
+
+  <h2 id="links">Links to other sites</h2>
+  <p>
+    Links to GitHub and other sites load nothing until you follow them. Once you do, that site’s own
+    cookie policy applies.
+  </p>
+
+  <h2 id="control">Seeing and clearing what is stored</h2>
+  <p>
+    You can check this list yourself in your browser’s developer tools (<strong>Application</strong>
+    → <strong>Storage</strong> in Chrome and Edge, <strong>Storage</strong> in Firefox and Safari).
+    To remove the items, clear this site’s data in your browser settings, or browse in a private
+    window. The site works the same without them; it just forgets your choices.
+  </p>
+
+  <h2 id="contact">Questions</h2>
+  <p>
+    Write to <a href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a>.
+  </p>
+</LegalDocument>
