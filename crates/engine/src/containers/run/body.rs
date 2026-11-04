@@ -8,14 +8,16 @@ use bollard::models::{
     PortBinding, RestartPolicy as EnginePolicy, RestartPolicyNameEnum,
 };
 
-use homeport_core::error::{AppError, AppResult};
+use homeport_core::error::{AppError, AppResult, Message, Text};
+
+use crate::messages as msg;
 
 use super::{checks, from_inspect, GpuSpec, HealthcheckSpec, LogSpec, RestartPolicy, RunSpec};
 use crate::COMPOSE_SERVICE;
 
 const NANOS_PER_SECOND: i64 = 1_000_000_000;
 
-fn invalid(message: impl Into<homeport_core::error::Text>) -> AppError {
+fn invalid(message: impl Into<Text>) -> AppError {
     AppError::validation(message)
 }
 
@@ -143,19 +145,17 @@ fn from_base(base: &Base) -> (ContainerCreateBody, HostConfig) {
 pub fn create_body(spec: &RunSpec, base: Option<&Base>) -> AppResult<ContainerCreateBody> {
     let image = spec.image.trim();
     if image.is_empty() {
-        return Err(invalid("Choose an image."));
+        return Err(invalid(msg::RUN_IMAGE));
     }
     let cmd = match spec.command.as_deref().map(str::trim) {
         Some(c) if !c.is_empty() => {
-            Some(shell_words::split(c).map_err(|_| invalid("The command has an unclosed quote."))?)
+            Some(shell_words::split(c).map_err(|_| invalid(msg::COMMAND_UNCLOSED_QUOTE))?)
         }
         _ => None,
     };
     for entry in &spec.env {
         if !entry.contains('=') || entry.starts_with('=') {
-            return Err(AppError::validation(format!(
-                "\"{entry}\" isn't a KEY=value environment variable."
-            )));
+            return Err(invalid(msg::RUN_ENV.with("entry", entry)));
         }
     }
     let (exposed, bindings) = ports(spec)?;
@@ -167,11 +167,11 @@ pub fn create_body(spec: &RunSpec, base: Option<&Base>) -> AppResult<ContainerCr
         .collect::<AppResult<HashMap<_, _>>>()?;
     let hostname = optional(&spec.hostname);
     if let Some(name) = hostname {
-        checks::host_name(name, "hostname")?;
+        checks::host_name(name, msg::RUN_HOSTNAME)?;
     }
     let domainname = optional(&spec.domainname);
     if let Some(name) = domainname {
-        checks::host_name(name, "domain name")?;
+        checks::host_name(name, msg::RUN_DOMAIN_NAME)?;
     }
 
     let restart = match spec.restart {
@@ -181,7 +181,7 @@ pub fn create_body(spec: &RunSpec, base: Option<&Base>) -> AppResult<ContainerCr
         RestartPolicy::OnFailure => RestartPolicyNameEnum::ON_FAILURE,
     };
     if spec.auto_remove && spec.restart != RestartPolicy::No {
-        return Err(invalid("Containers removed on exit can't also restart."));
+        return Err(invalid(msg::RUN_AUTO_REMOVE_RESTART));
     }
 
     let (mut body, mut host) = base.map(from_base).unwrap_or_default();
@@ -247,7 +247,7 @@ fn ports(spec: &RunSpec) -> AppResult<(Vec<String>, Bindings)> {
     for p in &spec.ports {
         let protocol = match p.protocol.as_str() {
             "tcp" | "udp" | "sctp" => p.protocol.as_str(),
-            _ => return Err(invalid("Port protocols are tcp, udp or sctp.")),
+            _ => return Err(invalid(msg::RUN_PORT_PROTOCOL)),
         };
         let key = format!("{}/{protocol}", p.container_port);
         if !exposed.contains(&key) {
@@ -270,9 +270,7 @@ fn binds(spec: &RunSpec) -> AppResult<Vec<String>> {
         .iter()
         .map(|m| {
             if m.source.trim().is_empty() || !m.target.starts_with('/') {
-                return Err(invalid(
-                    "Mounts need a source and an absolute container path.",
-                ));
+                return Err(invalid(msg::RUN_MOUNT));
             }
             let mode = if m.read_only { ":ro" } else { "" };
             Ok(format!("{}:{}{mode}", m.source.trim(), m.target))
@@ -284,45 +282,40 @@ fn binds(spec: &RunSpec) -> AppResult<Vec<String>> {
 fn resources(spec: &RunSpec, host: &mut HostConfig) -> AppResult<()> {
     if let Some(cpus) = spec.cpus {
         if !cpus.is_finite() || cpus <= 0.0 {
-            return Err(invalid(
-                "The CPU limit must be a number above 0, like 0.5 or 2.",
-            ));
+            return Err(invalid(msg::RUN_CPUS));
         }
         host.nano_cpus = Some((cpus * NANOS_PER_SECOND as f64).round() as i64);
     }
     if let Some(shares) = spec.cpu_shares {
         if shares < 2 {
-            return Err(invalid(
-                "CPU shares must be 2 or more; 1024 is the default weight.",
-            ));
+            return Err(invalid(msg::RUN_CPU_SHARES));
         }
         host.cpu_shares = Some(shares);
     }
-    let positive = |value: Option<i64>, what: &str| match value {
-        Some(v) if v <= 0 => Err(invalid(format!("The {what} must be above 0."))),
+    let positive = |value: Option<i64>, not_positive: Message| match value {
+        Some(v) if v <= 0 => Err(invalid(not_positive)),
         other => Ok(other),
     };
-    let memory = positive(spec.memory, "memory limit")?;
-    let reservation = positive(spec.memory_reservation, "memory reservation")?;
+    let memory = positive(spec.memory, msg::RUN_MEMORY_ABOVE_ZERO)?;
+    let reservation = positive(
+        spec.memory_reservation,
+        msg::RUN_MEMORY_RESERVATION_ABOVE_ZERO,
+    )?;
     if memory.is_some_and(|m| m < checks::MIN_MEMORY) {
-        return Err(invalid("The memory limit must be at least 6 MB."));
+        return Err(invalid(msg::RUN_MEMORY_MINIMUM));
     }
     if let (Some(memory), Some(reservation)) = (memory, reservation) {
         if reservation > memory {
-            return Err(invalid(
-                "The memory reservation can't be above the memory limit.",
-            ));
+            return Err(invalid(msg::RUN_RESERVATION_ABOVE_LIMIT));
         }
     }
     match (spec.memory_swap, memory) {
         (None | Some(-1), _) => {}
         (Some(_), None) => {
-            return Err(invalid("Set a memory limit before limiting swap."));
+            return Err(invalid(msg::RUN_SWAP_WITHOUT_MEMORY));
         }
         (Some(swap), Some(memory)) if swap < memory => {
-            return Err(invalid(
-                "The memory and swap limit counts memory too, so it can't be below the memory limit. Use -1 for unlimited swap.",
-            ));
+            return Err(invalid(msg::RUN_SWAP_BELOW_MEMORY));
         }
         _ => {}
     }
@@ -354,9 +347,7 @@ fn security(spec: &RunSpec, host: &mut HostConfig) -> AppResult<()> {
             let host_path = d.host_path.trim();
             let container_path = optional(&d.container_path).unwrap_or(host_path);
             if !host_path.starts_with('/') || !container_path.starts_with('/') {
-                return Err(invalid(
-                    "Device paths must be absolute, like /dev/dri or /dev/ttyUSB0.",
-                ));
+                return Err(invalid(msg::RUN_DEVICE_PATH));
             }
             let permissions = d.permissions.trim();
             checks::device_permissions(permissions)?;
@@ -376,7 +367,7 @@ fn security(spec: &RunSpec, host: &mut HostConfig) -> AppResult<()> {
             let (count, device_ids) = match gpus {
                 GpuSpec::All => (Some(-1), None),
                 GpuSpec::Count { count: 0 } => {
-                    return Err(invalid("Request at least one GPU."));
+                    return Err(invalid(msg::RUN_GPU_COUNT));
                 }
                 GpuSpec::Count { count } => (Some(i64::from(*count)), None),
                 GpuSpec::Ids { ids } => {
@@ -386,7 +377,7 @@ fn security(spec: &RunSpec, host: &mut HostConfig) -> AppResult<()> {
                         .filter(|i| !i.is_empty())
                         .collect();
                     if ids.is_empty() {
-                        return Err(invalid("List the GPUs to use, by index or UUID."));
+                        return Err(invalid(msg::RUN_GPU_IDS));
                     }
                     (None, Some(ids))
                 }
@@ -416,7 +407,7 @@ fn network_identity(spec: &RunSpec, host: &mut HostConfig) -> AppResult<()> {
     }
     let search = trimmed(&spec.dns_search);
     for domain in &search {
-        checks::host_name(domain, "search domain")?;
+        checks::host_name(domain, msg::RUN_SEARCH_DOMAIN)?;
     }
     let extra_hosts = trimmed(&spec.extra_hosts)
         .iter()
@@ -437,20 +428,16 @@ fn healthcheck(spec: &HealthcheckSpec) -> AppResult<HealthConfig> {
     }
     let command = spec.command.trim();
     if command.is_empty() {
-        return Err(invalid(
-            "Enter the healthcheck's command, or turn off the image's healthcheck.",
-        ));
+        return Err(invalid(msg::RUN_HEALTHCHECK_COMMAND));
     }
-    let nanos = |seconds: Option<u32>, what: &str| match seconds {
-        Some(0) => Err(invalid(format!(
-            "The healthcheck's {what} must be above 0."
-        ))),
+    let nanos = |seconds: Option<u32>, zero: Message| match seconds {
+        Some(0) => Err(invalid(zero)),
         other => Ok(other.map(|s| i64::from(s) * NANOS_PER_SECOND)),
     };
     Ok(HealthConfig {
         test: Some(vec!["CMD-SHELL".to_owned(), command.to_owned()]),
-        interval: nanos(spec.interval_s, "interval")?,
-        timeout: nanos(spec.timeout_s, "timeout")?,
+        interval: nanos(spec.interval_s, msg::RUN_HEALTHCHECK_INTERVAL)?,
+        timeout: nanos(spec.timeout_s, msg::RUN_HEALTHCHECK_TIMEOUT)?,
         retries: spec.retries.map(i64::from),
         // A start period of 0 is the Engine's default, so it's allowed.
         start_period: spec.start_period_s.map(|s| i64::from(s) * NANOS_PER_SECOND),
@@ -461,14 +448,15 @@ fn healthcheck(spec: &HealthcheckSpec) -> AppResult<HealthConfig> {
 fn log_config(spec: &LogSpec) -> AppResult<HostConfigLogConfig> {
     let driver = spec.driver.trim();
     if driver.is_empty() || driver.contains(char::is_whitespace) {
-        return Err(invalid("Choose a log driver, like json-file or local."));
+        return Err(invalid(msg::RUN_LOG_DRIVER));
     }
     let options = spec
         .options
         .iter()
         .filter(|o| !o.trim().is_empty())
         .map(|o| {
-            checks::key_value(o.trim(), "log option").map(|(k, v)| (k.to_owned(), v.to_owned()))
+            checks::key_value(o.trim(), msg::RUN_LOG_OPTION)
+                .map(|(k, v)| (k.to_owned(), v.to_owned()))
         })
         .collect::<AppResult<HashMap<_, _>>>()?;
     Ok(HostConfigLogConfig {

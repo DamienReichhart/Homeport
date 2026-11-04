@@ -15,7 +15,9 @@ use bollard::{
 use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
 
-use homeport_core::error::{engine, AppError, AppResult, ErrorCode};
+use homeport_core::error::{engine, AppError, AppResult, ErrorCode, Text};
+
+use crate::messages as msg;
 
 use self::context::Context;
 use crate::{
@@ -76,16 +78,12 @@ pub fn validate(spec: &BuildSpec) -> AppResult<()> {
     for tag in &spec.tags {
         let (repo, _) = split_reference(tag);
         if repo.is_empty() || repo.contains('@') || tag.chars().any(char::is_whitespace) {
-            return Err(AppError::validation(format!(
-                "\"{tag}\" isn't a valid name. Use a name like app:1.0 or registry.example.com/team/app:tag."
-            )));
+            return Err(AppError::validation(msg::BUILD_TAG.with("tag", tag)));
         }
     }
     for arg in &spec.build_args {
         if arg.name.trim().is_empty() || arg.name.contains('=') {
-            return Err(AppError::validation(
-                "Each build argument needs a name without \"=\".",
-            ));
+            return Err(AppError::validation(msg::BUILD_ARG_NAME));
         }
     }
     Ok(())
@@ -221,23 +219,25 @@ fn failed(message: &str, step: Option<&str>, tail: &VecDeque<String>) -> AppErro
         AppError::new(
             ErrorCode::BuildFailed,
             match step {
-                Some(step) => format!("The build failed at {}.", step_name(step)),
-                None => "The build failed.".to_owned(),
+                Some(step) => failed_at(step),
+                None => msg::BUILD_FAILED.into(),
             },
         )
-        .with_hint("The end of the build's output is in Details.")
+        .with_hint(msg::BUILD_FAILED_HINT)
     } else {
         classified
     };
     with_tail(error, tail).with_detail_prefix(message)
 }
 
-/// `Step 3/5 : RUN make` → `step 3/5 (RUN make)`.
-fn step_name(step: &str) -> String {
+/// `Step 3/5 : RUN make` → "The build failed at step 3/5 (RUN make)."
+fn failed_at(step: &str) -> Text {
     let rest = step.trim_start_matches("Step ");
     match rest.split_once(" : ") {
-        Some((n, instruction)) => format!("step {n} ({instruction})"),
-        None => format!("step {rest}"),
+        Some((n, instruction)) => msg::BUILD_FAILED_AT_STEP
+            .with("step", n)
+            .with("instruction", instruction),
+        None => msg::BUILD_FAILED_AT.with("step", rest),
     }
 }
 

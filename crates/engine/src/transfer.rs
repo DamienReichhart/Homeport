@@ -20,6 +20,8 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 use homeport_core::error::{engine, local_file, AppError, AppResult, ErrorCode};
 
+use crate::messages as msg;
+
 use crate::{containers::commit, images::split_reference};
 
 /// Progress is reported at most once per this many bytes.
@@ -70,7 +72,7 @@ async fn save_to(
     sink: &impl Fn(TransferEvent) -> bool,
 ) -> AppResult<()> {
     if names.is_empty() {
-        return Err(AppError::validation("Choose at least one image to save."));
+        return Err(AppError::validation(msg::TRANSFER_NOTHING_TO_SAVE));
     }
     let refs: Vec<&str> = names.iter().map(String::as_str).collect();
     write_file(docker.export_images(&refs), destination, sink).await
@@ -115,7 +117,7 @@ async fn write_file(
     if written == 0 {
         return Err(AppError::new(
             ErrorCode::EngineError,
-            "The Docker Engine sent an empty archive.",
+            msg::TRANSFER_EMPTY_ARCHIVE,
         ));
     }
     sink(TransferEvent::Progress {
@@ -198,9 +200,7 @@ async fn import_from(
 ) -> AppResult<Vec<String>> {
     let (repo, tag) = split_reference(&spec.reference);
     if repo.is_empty() || repo.contains('@') {
-        return Err(AppError::validation(
-            "Name the image like repo:tag, such as debian-rootfs:12.",
-        ));
+        return Err(AppError::validation(msg::TRANSFER_IMPORT_NAME));
     }
     let tag = tag.unwrap_or_else(|| "latest".into());
     let changes = commit::changes(&spec.changes)?;
@@ -254,14 +254,10 @@ fn not_a_filesystem(error: AppError, source: &Path) -> AppError {
     {
         AppError {
             code: ErrorCode::BadRequest,
-            message: format!("{} isn't a tar archive the Docker Engine can import.", source.display()),
-            hint: Some(Box::new(homeport_core::error::Hint {
-                text: "Choose a .tar of a root filesystem, such as one made by Export filesystem or docker export. Image archives made by Save go through Load instead.".into(),
-                commands: vec![],
-                ..Default::default()
-            })),
             ..error
         }
+        .with_message(msg::TRANSFER_NOT_A_FILESYSTEM.with("path", source))
+        .with_hint(msg::TRANSFER_NOT_A_FILESYSTEM_HINT)
     } else {
         error
     }
@@ -347,14 +343,10 @@ fn invalid_archive(error: AppError, source: &Path) -> AppError {
     if unreadable && !error.is(ErrorCode::DiskFull) {
         AppError {
             code: ErrorCode::BadRequest,
-            message: format!("{} isn't an image archive the Docker Engine can load.", source.display()),
-            hint: Some(Box::new(homeport_core::error::Hint {
-                text: "Choose a .tar made by docker save or by Save in Homeport, or a compressed one (.tar.gz).".into(),
-                commands: vec![],
-                ..Default::default()
-            })),
             ..error
         }
+        .with_message(msg::TRANSFER_NOT_AN_IMAGE_ARCHIVE.with("path", source))
+        .with_hint(msg::TRANSFER_NOT_AN_IMAGE_ARCHIVE_HINT)
     } else {
         error
     }
@@ -431,14 +423,14 @@ mod tests {
     #[test]
     fn unreadable_archives_are_explained() {
         let e = invalid_archive(
-            AppError::new(ErrorCode::EngineError, "x")
+            AppError::new(ErrorCode::EngineError, msg::TRANSFER_EMPTY_ARCHIVE)
                 .with_detail("archive/tar: invalid tar header"),
             Path::new("/tmp/x.tar"),
         );
         assert_eq!(e.code, ErrorCode::BadRequest);
         assert!(e.message.contains("/tmp/x.tar"));
-        let other =
-            AppError::new(ErrorCode::DiskFull, "full").with_detail("no space left on device");
+        let other = AppError::new(ErrorCode::DiskFull, msg::TRANSFER_EMPTY_ARCHIVE)
+            .with_detail("no space left on device");
         assert_eq!(invalid_archive(other.clone(), Path::new("x")), other);
     }
 

@@ -15,6 +15,8 @@ use serde::Serialize;
 
 use homeport_core::error::{AppError, AppResult};
 
+use crate::messages as msg;
+
 use crate::auth::RegistryAuth;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
@@ -221,7 +223,7 @@ pub async fn push(
     let (repo, tag) = split_reference(&reference);
     if repo.is_empty() || repo.contains('@') {
         sink(PullEvent::Error {
-            error: AppError::validation("Enter a name like registry.example.com/team/app:tag."),
+            error: AppError::validation(msg::PUSH_NAME),
         });
         return;
     }
@@ -265,16 +267,9 @@ pub async fn push(
 fn push_error(message: &str) -> AppError {
     let error = homeport_core::error::engine::from_message(None, message).with_detail(message);
     if error.is(homeport_core::error::ErrorCode::RegistryAuthRequired) {
-        AppError {
-            message: "The registry refused the push.".into(),
-            hint: Some(Box::new(homeport_core::error::Hint {
-                text: "Add a login that may push to this repository in Settings → Registries."
-                    .into(),
-                commands: vec![],
-                ..Default::default()
-            })),
-            ..error
-        }
+        error
+            .with_message(msg::PUSH_REFUSED)
+            .with_hint(msg::PUSH_REFUSED_HINT)
     } else {
         error
     }
@@ -312,7 +307,7 @@ pub async fn search(docker: &Docker, term: &str, limit: u32) -> AppResult<Vec<Se
 pub async fn tag(docker: &Docker, id: &str, target: &str) -> AppResult<()> {
     let (repo, tag) = split_reference(target);
     if repo.is_empty() || repo.contains('@') {
-        return Err(AppError::validation("Enter a name like repo:tag."));
+        return Err(AppError::validation(msg::TAG_NAME));
     }
     let options = TagImageOptionsBuilder::default()
         .repo(&repo)

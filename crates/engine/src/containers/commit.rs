@@ -6,6 +6,8 @@ use serde::Deserialize;
 
 use homeport_core::error::{AppError, AppResult};
 
+use crate::messages as msg;
+
 use crate::images::split_reference;
 
 /// The Dockerfile instructions `docker commit --change` accepts.
@@ -40,9 +42,7 @@ pub struct CommitSpec {
 fn validate(spec: &CommitSpec) -> AppResult<(String, String, Vec<String>)> {
     let (repo, tag) = split_reference(&spec.reference);
     if repo.is_empty() || repo.contains('@') {
-        return Err(AppError::validation(
-            "Name the image like repo:tag, such as web-backup:2026-11-04.",
-        ));
+        return Err(AppError::validation(msg::COMMIT_NAME));
     }
     let changes = changes(&spec.changes)?;
     Ok((repo, tag.unwrap_or_else(|| "latest".into()), changes))
@@ -59,16 +59,18 @@ pub(crate) fn changes(lines: &[String]) -> AppResult<Vec<String>> {
             let (instruction, argument) = c.split_once(char::is_whitespace).unwrap_or((c, ""));
             let instruction = instruction.to_ascii_uppercase();
             if !COMMIT_INSTRUCTIONS.contains(&instruction.as_str()) {
-                return Err(AppError::validation(format!(
-                    "\"{c}\" isn't an instruction Homeport can apply to an image. Start each line with one of {}.",
-                    COMMIT_INSTRUCTIONS.join(", ")
-                )));
+                return Err(AppError::validation(
+                    msg::COMMIT_UNKNOWN_INSTRUCTION
+                        .with("line", c)
+                        .with("instructions", COMMIT_INSTRUCTIONS.join(", ")),
+                ));
             }
             if argument.trim().is_empty() {
-                return Err(AppError::validation(format!(
-                    "{instruction} needs a value, like {}.",
-                    example(&instruction)
-                )));
+                return Err(AppError::validation(
+                    msg::COMMIT_NEEDS_VALUE
+                        .with("instruction", instruction.as_str())
+                        .with("example", example(&instruction)),
+                ));
             }
             Ok(format!("{instruction} {}", argument.trim()))
         })

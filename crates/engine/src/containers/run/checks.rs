@@ -3,7 +3,9 @@
 
 use std::net::IpAddr;
 
-use homeport_core::error::{AppError, AppResult};
+use homeport_core::error::{AppError, AppResult, Message, Text};
+
+use crate::messages as msg;
 
 /// Linux capabilities without their `CAP_` prefix, as `docker run --cap-add` takes them.
 pub const CAPABILITIES: &[&str] = &[
@@ -56,7 +58,7 @@ pub(super) const COMPOSE_LABEL_PREFIX: &str = "com.docker.compose.";
 /// The smallest memory limit the Engine accepts.
 pub(super) const MIN_MEMORY: i64 = 6 * 1024 * 1024;
 
-fn invalid(message: impl Into<homeport_core::error::Text>) -> AppError {
+fn invalid(message: impl Into<Text>) -> AppError {
     AppError::validation(message)
 }
 
@@ -71,68 +73,64 @@ pub(super) fn capability(name: &str) -> AppResult<String> {
     if CAPABILITIES.contains(&bare) {
         Ok(format!("CAP_{bare}"))
     } else {
-        Err(invalid(format!(
-            "\"{}\" isn't a Linux capability. Use a name like NET_ADMIN or SYS_TIME, or ALL.",
-            name.trim()
-        )))
+        Err(invalid(msg::RUN_CAPABILITY.with("name", name.trim())))
     }
 }
 
-/// `KEY=value` with a non-empty key; `what` names the list in the message.
-pub(super) fn key_value<'a>(entry: &'a str, what: &str) -> AppResult<(&'a str, &'a str)> {
+/// `KEY=value` with a non-empty key; `not_key_value` says which list it's
+/// in, with the entry as `{entry}`.
+pub(super) fn key_value(entry: &str, not_key_value: Message) -> AppResult<(&str, &str)> {
     match entry.split_once('=') {
         Some((key, value)) if !key.trim().is_empty() => Ok((key.trim(), value)),
-        _ => Err(invalid(format!("\"{entry}\" isn't a key=value {what}."))),
+        _ => Err(invalid(not_key_value.with("entry", entry))),
     }
 }
 
 /// A user label, refusing Compose's own keys.
 pub(super) fn label(entry: &str) -> AppResult<(&str, &str)> {
-    let (key, value) = key_value(entry, "label")?;
+    let (key, value) = key_value(entry, msg::RUN_LABEL)?;
     if key.starts_with(COMPOSE_LABEL_PREFIX) {
-        return Err(invalid(format!(
-            "Labels starting with {COMPOSE_LABEL_PREFIX} belong to Docker Compose; Homeport would show the container as part of a Stack. Choose another key."
-        )));
+        return Err(invalid(
+            msg::RUN_COMPOSE_LABEL.with("prefix", COMPOSE_LABEL_PREFIX),
+        ));
     }
     Ok((key, value))
 }
 
-/// A host or domain name: dot-separated labels of letters, digits and hyphens.
-pub(super) fn host_name(name: &str, what: &str) -> AppResult<()> {
+/// A host or domain name: dot-separated labels of letters, digits and
+/// hyphens. `not_valid` says which field it's in, with the name as `{name}`.
+pub(super) fn host_name(name: &str, not_valid: Message) -> AppResult<()> {
+    if is_host_name(name) {
+        Ok(())
+    } else {
+        Err(invalid(not_valid.with("name", name)))
+    }
+}
+
+fn is_host_name(name: &str) -> bool {
     let valid_label = |l: &str| {
         (1..=63).contains(&l.len())
             && l.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')
             && !l.starts_with('-')
             && !l.ends_with('-')
     };
-    if name.len() <= 253 && name.split('.').all(valid_label) {
-        Ok(())
-    } else {
-        Err(invalid(format!(
-            "\"{name}\" isn't a valid {what}. Use letters, digits and hyphens, with dots between parts."
-        )))
-    }
+    name.len() <= 253 && name.split('.').all(valid_label)
 }
 
 /// A DNS server's IP address.
 pub(super) fn dns_server(address: &str) -> AppResult<()> {
-    address.parse::<IpAddr>().map(|_| ()).map_err(|_| {
-        invalid(format!(
-            "\"{address}\" isn't an IP address. DNS servers are given by address, like 1.1.1.1."
-        ))
-    })
+    address
+        .parse::<IpAddr>()
+        .map(|_| ())
+        .map_err(|_| invalid(msg::RUN_DNS_SERVER.with("address", address)))
 }
 
 /// `name:ip` for `/etc/hosts`, where `ip` may be IPv6 or `host-gateway`.
 pub(super) fn extra_host(entry: &str) -> AppResult<String> {
-    let bad = || {
-        invalid(format!(
-            "\"{entry}\" isn't a name:address host entry, like nas.home:192.168.1.10 or host.docker.internal:host-gateway."
-        ))
-    };
+    let bad = || invalid(msg::RUN_EXTRA_HOST.with("entry", entry));
     let (name, address) = entry.split_once(':').ok_or_else(bad)?;
     let address = address.trim_start_matches('[').trim_end_matches(']');
-    if host_name(name, "host name").is_err() {
+    if !is_host_name(name) {
         return Err(bad());
     }
     if address != "host-gateway" && address.parse::<IpAddr>().is_err() {
@@ -157,9 +155,7 @@ pub(super) fn device_permissions(permissions: &str) -> AppResult<()> {
 }
 
 fn bad_permissions() -> AppError {
-    invalid(
-        "Device permissions are some of r (read), w (write) and m (create device files), like rwm.",
-    )
+    invalid(msg::RUN_DEVICE_PERMISSIONS)
 }
 
 #[cfg(test)]
@@ -188,10 +184,10 @@ mod tests {
 
     #[test]
     fn host_names_are_dns_names() {
-        assert!(host_name("web", "hostname").is_ok());
-        assert!(host_name("web-1.home.arpa", "hostname").is_ok());
+        assert!(host_name("web", msg::RUN_HOSTNAME).is_ok());
+        assert!(host_name("web-1.home.arpa", msg::RUN_HOSTNAME).is_ok());
         for bad in ["", "-web", "web-", "we_b", "a..b", &"a".repeat(64)] {
-            assert!(host_name(bad, "hostname").is_err(), "{bad}");
+            assert!(host_name(bad, msg::RUN_HOSTNAME).is_err(), "{bad}");
         }
     }
 

@@ -7,6 +7,8 @@ use serde::Serialize;
 
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 
+use crate::messages as msg;
+
 use crate::{
     auth::RegistryAuth,
     containers::{
@@ -226,16 +228,17 @@ async fn sequence(steps: &impl Steps, old: &Old<'_>, suffix: &str) -> AppResult<
         Ok(()) => Err(error),
         Err(rollback_error) => Err(AppError::new(
             ErrorCode::RecreateRolledBack,
-            format!(
-                "Recreating {} failed, and Homeport couldn't put the original back.",
-                old.name
-            ),
+            msg::RECREATE_ROLLBACK_FAILED.with("name", old.name),
         )
-        .with_hint(format!(
-            "The original container may still be named {old_name}{}. Rename it back to {} and start it, or remove it once you've checked nothing in it is needed.",
-            if old.running { ", stopped" } else { "" },
-            old.name
-        ))
+        .with_hint(
+            if old.running {
+                msg::RECREATE_ROLLBACK_FAILED_STOPPED_HINT
+            } else {
+                msg::RECREATE_ROLLBACK_FAILED_HINT
+            }
+            .with("asideName", old_name.as_str())
+            .with("name", old.name),
+        )
         .with_detail(format!(
             "{}; then, putting it back: {}",
             error.message, rollback_error.message
@@ -248,6 +251,13 @@ mod tests {
     use std::sync::Mutex;
 
     use super::*;
+
+    #[allow(unreachable_pub)]
+    mod sample {
+        homeport_core::messages! {
+            PORT_IN_USE = "errors.test.portInUse" => "Port 8080 is already in use.";
+        }
+    }
 
     /// Records the steps and fails the one named in `fail`.
     struct Fake {
@@ -267,10 +277,7 @@ mod tests {
             let failed = self.fail.iter().any(|f| step.starts_with(f));
             self.log.lock().unwrap().push(step);
             if failed {
-                Err(AppError::new(
-                    ErrorCode::PortInUse,
-                    "Port 8080 is already in use.",
-                ))
+                Err(AppError::new(ErrorCode::PortInUse, sample::PORT_IN_USE))
             } else {
                 Ok(())
             }

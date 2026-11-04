@@ -13,6 +13,8 @@ use tokio::sync::mpsc;
 
 use homeport_core::error::{local_file, AppError, AppResult};
 
+use crate::messages as msg;
+
 use super::ignore::DockerIgnore;
 
 /// Size of the chunks sent to the Engine.
@@ -31,19 +33,18 @@ impl Context {
     /// Checks that `root` is a folder holding `dockerfile`, and reads its `.dockerignore`.
     pub(super) fn open(root: &Path, dockerfile: &str) -> AppResult<Self> {
         if !root.is_dir() {
-            return Err(AppError::validation(format!(
-                "{} isn't a folder on this computer.",
-                root.display()
-            )));
+            return Err(AppError::validation(
+                msg::BUILD_NOT_A_FOLDER.with("path", root),
+            ));
         }
-        let dockerfile = relative(dockerfile).ok_or_else(|| {
-            AppError::validation("The Dockerfile must be a path inside the build folder.")
-        })?;
+        let dockerfile = relative(dockerfile)
+            .ok_or_else(|| AppError::validation(msg::BUILD_DOCKERFILE_OUTSIDE))?;
         if !root.join(&dockerfile).is_file() {
-            return Err(AppError::validation(format!(
-                "There's no {dockerfile} in {}.",
-                root.display()
-            )));
+            return Err(AppError::validation(
+                msg::BUILD_NO_DOCKERFILE
+                    .with("dockerfile", &dockerfile)
+                    .with("folder", root),
+            ));
         }
         let ignore = match fs::read_to_string(root.join(".dockerignore")) {
             Ok(text) => DockerIgnore::parse(&text),

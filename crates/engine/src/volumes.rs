@@ -14,6 +14,8 @@ use serde::{Deserialize, Serialize};
 
 use homeport_core::error::{AppError, AppResult};
 
+use crate::messages as msg;
+
 use crate::{images::PruneReport, COMPOSE_PROJECT};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
@@ -84,7 +86,7 @@ pub async fn inspect(docker: &Docker, name: &str) -> AppResult<serde_json::Value
 pub async fn create(docker: &Docker, input: VolumeInput) -> AppResult<String> {
     let name = input.name.trim();
     if name.is_empty() {
-        return Err(AppError::validation("Enter a volume name."));
+        return Err(AppError::validation(msg::VOLUME_NAME));
     }
     let created = docker
         .create_volume(VolumeCreateRequest {
