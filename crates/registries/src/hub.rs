@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 
 use homeport_core::error::{AppError, AppResult};
 
+use crate::messages as msg;
+
 use crate::{http, Credentials, DOCKER_HUB};
 
 const HUB: &str = "https://hub.docker.com";
@@ -85,9 +87,8 @@ pub async fn tags(
     filter: &str,
     login: Option<&Credentials>,
 ) -> AppResult<HubTagPage> {
-    let (namespace, repo) = repository(reference).ok_or_else(|| {
-        AppError::validation("Tags can only be listed for Docker Hub repositories.")
-    })?;
+    let (namespace, repo) =
+        repository(reference).ok_or_else(|| AppError::validation(msg::TAGS_ONLY_ON_HUB))?;
     let client = http::client()?;
     let mut request = client
         .get(format!(
@@ -119,9 +120,9 @@ pub async fn tags(
             } else {
                 format!("{namespace}/{repo}")
             };
-            return Err(AppError::not_found(format!(
-                "Docker Hub has no repository named {shown}."
-            )));
+            return Err(AppError::not_found(
+                msg::HUB_NO_REPOSITORY.with("repository", shown),
+            ));
         }
         StatusCode::TOO_MANY_REQUESTS => return Err(http::rate_limited("Docker Hub")),
         s => return Err(http::unexpected("Docker Hub", s)),
