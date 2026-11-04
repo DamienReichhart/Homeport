@@ -3,6 +3,7 @@ import { MonitorIcon, PlusIcon } from 'lucide-react';
 import type { HostInput } from '@/shared/api';
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui';
 import { hostQueries, useHosts } from '../api/queries';
+import { t } from '@/shared/i18n';
 
 /** Engines answering on this machine's sockets that aren't Hosts yet, one click to add. */
 export function LocalEngines({
@@ -25,8 +26,8 @@ export function LocalEngines({
   return (
     <Card className="w-full text-left">
       <CardHeader>
-        <CardTitle>Found on this machine</CardTitle>
-        <CardDescription>Engines answering on local sockets.</CardDescription>
+        <CardTitle>{t('core.localEngines.title')}</CardTitle>
+        <CardDescription>{t('core.localEngines.description')}</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-2">
         {local.map((engine) => (
@@ -36,7 +37,9 @@ export function LocalEngines({
               <div className="min-w-0">
                 <p className="text-sm font-medium">
                   {engine.label}{' '}
-                  <span className="text-muted-foreground">· Engine {engine.engineVersion}</span>
+                  <span className="text-muted-foreground">
+                    · {t('core.host.engineVersion', { version: engine.engineVersion })}
+                  </span>
                 </p>
                 <p className="text-muted-foreground truncate font-mono text-xs">
                   {engine.socketPath}
@@ -54,7 +57,7 @@ export function LocalEngines({
                 })
               }
             >
-              <PlusIcon /> Add
+              <PlusIcon /> {t('core.localEngines.add')}
             </Button>
           </div>
         ))}

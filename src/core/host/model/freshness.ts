@@ -1,4 +1,5 @@
 import type { Container, Freshness, FreshnessResult, Image } from '@/shared/api';
+import { t } from '@/shared/i18n';
 
 /** The freshness of each reference and image pair, for quick lookups. */
 export type FreshnessIndex = Map<string, Freshness>;
@@ -15,7 +16,7 @@ export const containerFreshness = (index: FreshnessIndex, c: Container): Freshne
 
 /** The tags of an image that have a newer version in their registry. */
 export const newerTags = (index: FreshnessIndex, image: Image): string[] =>
-  image.tags.filter((t) => index.get(key(t, image.id)) === 'newer');
+  image.tags.filter((tag) => index.get(key(tag, image.id)) === 'newer');
 
 /**
  * One result for several (a Stack's services): newer if any is newer,
@@ -29,6 +30,6 @@ export function aggregateFreshness(all: Freshness[]): Freshness {
 
 /** The sentence for one or more references that have a newer image. */
 export function newerLabel(references: string[]): string {
-  if (references.length === 1) return `A newer ${references[0]} was published`;
-  return `Newer images were published: ${references.join(', ')}`;
+  if (references.length === 1) return t('core.freshness.newerOne', { reference: references[0] });
+  return t('core.freshness.newerMany', { references: references.join(', ') });
 }

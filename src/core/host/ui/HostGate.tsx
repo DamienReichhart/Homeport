@@ -7,6 +7,7 @@ import { useHosts } from '../api/queries';
 import { describeStatus, statusError } from '../model/status';
 import { useHostSelection } from '../selection/context';
 import { LocalEngines } from './LocalEngines';
+import { t } from '@/shared/i18n';
 
 /**
  * Renders `children` with the selected Host's id once it is connected, and
@@ -23,13 +24,13 @@ export function HostGate({ children }: { children: (hostId: string) => ReactNode
     return (
       <EmptyState
         media={<LogoMark className="mb-2 size-14" />}
-        title="Welcome to Homeport"
-        description="Bring in a Docker Engine to get started — this machine's, or a remote one over SSH or TLS."
+        title={t('core.gate.welcome.title')}
+        description={t('core.gate.welcome.description')}
         action={
           <div className="grid max-w-xl justify-items-center gap-4">
             <LocalEngines onAdd={(input) => add.mutate(input)} pending={add.isPending} />
             <Button asChild>
-              <Link to="/hosts/new">Add another host</Link>
+              <Link to="/hosts/new">{t('core.gate.addAnother')}</Link>
             </Button>
           </div>
         }
@@ -38,7 +39,7 @@ export function HostGate({ children }: { children: (hostId: string) => ReactNode
   }
   if (host.status.state === 'connected') return <>{children(host.host.id)}</>;
   if (host.status.state === 'connecting')
-    return <Spinner label={`Connecting to ${host.host.name}…`} />;
+    return <Spinner label={t('core.gate.connecting', { name: host.host.name })} />;
 
   const { label, detail } = describeStatus(host.status);
   const error = statusError(host.status);
@@ -46,13 +47,13 @@ export function HostGate({ children }: { children: (hostId: string) => ReactNode
   return (
     <EmptyState
       icon={ServerOffIcon}
-      title={`${host.host.name}: ${label}`}
+      title={t('core.gate.statusTitle', { name: host.host.name, status: label })}
       description={
         error ? (
           <div className="grid gap-2">
             <ErrorMessage error={error} onRetry={retry} />
             {host.status.state === 'unreachable' && (
-              <p>Homeport tries again on its own in {host.status.retryInSecs}s.</p>
+              <p>{t('core.gate.retryingOnItsOwn', { secs: host.status.retryInSecs })}</p>
             )}
           </div>
         ) : (
@@ -63,11 +64,11 @@ export function HostGate({ children }: { children: (hostId: string) => ReactNode
         <div className="flex gap-2">
           {!error && host.status.state !== 'disabled' && (
             <Button variant="outline" disabled={reconnect.isPending} onClick={retry}>
-              <RefreshCwIcon /> Retry now
+              <RefreshCwIcon /> {t('core.gate.retryNow')}
             </Button>
           )}
           <Button asChild>
-            <Link to={`/hosts/${host.host.id}`}>Open host settings</Link>
+            <Link to={`/hosts/${host.host.id}`}>{t('core.gate.openSettings')}</Link>
           </Button>
         </div>
       }

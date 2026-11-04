@@ -1,2 +1,41 @@
 /** English text of the `core` namespace; every key starts with `core.`. */
-export default {} as const;
+export default {
+  'core.host.engineVersion': 'Engine {version}',
+  'core.host.rememberFailed': 'Homeport couldn’t remember the selected Host',
+  'core.connection.local': 'Local',
+  'core.status.connected': 'Connected',
+  'core.status.connecting': 'Connecting',
+  'core.status.disabled': 'Disabled',
+  'core.status.unreachable': 'Unreachable',
+  'core.status.unreachableDetail': '{message} — retrying in {secs}s',
+  'core.status.unauthorized': 'Access refused',
+  'core.status.hostKeyUntrusted': 'Server key not trusted',
+  'core.status.hostKeyUntrustedDetail':
+    'Check the fingerprint {fingerprint} and trust it to connect.',
+  'core.status.hostKeyMismatch': 'Server key changed',
+  'core.status.hostKeyMismatchDetail': 'Expected {expected}, got {actual}.',
+  'core.status.credentialsLost': 'Credentials lost',
+  'core.status.credentialsLostDetail':
+    'The stored credentials can’t be decrypted. Re-enter them or regenerate the key.',
+  'core.status.keychainUnavailable': 'Keychain unavailable',
+  'core.status.invalid': 'Misconfigured',
+  'core.gate.welcome.title': 'Welcome to Homeport',
+  'core.gate.welcome.description':
+    "Bring in a Docker Engine to get started — this machine's, or a remote one over SSH or TLS.",
+  'core.gate.addAnother': 'Add another host',
+  'core.gate.connecting': 'Connecting to {name}…',
+  'core.gate.statusTitle': '{name}: {status}',
+  'core.gate.retryingOnItsOwn': 'Homeport tries again on its own in {secs}s.',
+  'core.gate.retryNow': 'Retry now',
+  'core.gate.openSettings': 'Open host settings',
+  'core.localEngines.title': 'Found on this machine',
+  'core.localEngines.description': 'Engines answering on local sockets.',
+  'core.localEngines.add': 'Add',
+  'core.freshness.check': 'Check for newer images',
+  'core.freshness.checking': 'Checking…',
+  'core.freshness.allUpToDate': 'Every image is up to date',
+  'core.freshness.newerCount':
+    '{count, plural, one {# image has} other {# images have}} a newer version',
+  'core.freshness.newerOne': 'A newer {reference} was published',
+  'core.freshness.newerMany': 'Newer images were published: {references}',
+} as const;
