@@ -1,8 +1,9 @@
 /**
- * The files the Scoop bucket and the AUR need for a release (issues #7 and
- * #8): a Scoop manifest for the NSIS installers, and a PKGBUILD with its
- * .SRCINFO that repackages the `.deb`. Pure functions only; `channels.ts`
- * reads the release's checksums and writes them.
+ * The files winget, the Scoop bucket and the AUR need for a release (issues
+ * #6, #7 and #8): winget's three manifests for the NSIS and MSI installers, a
+ * Scoop manifest for the NSIS installers, and a PKGBUILD with its .SRCINFO
+ * that repackages the `.deb`. Pure functions only; `channels.ts` reads the
+ * release's checksums and writes them.
  */
 
 export const REPO = 'DamienReichhart/Homeport';
@@ -14,6 +15,7 @@ const DOWNLOAD = `https://github.com/${REPO}/releases/download`;
 export const files = (version: string) => ({
   windowsX64: `Homeport_${version}_x64-setup.exe`,
   windowsArm64: `Homeport_${version}_arm64-setup.exe`,
+  msiX64: `Homeport_${version}_x64_en-US.msi`,
   debAmd64: `Homeport_${version}_amd64.deb`,
   debArm64: `Homeport_${version}_arm64.deb`,
 });
@@ -38,7 +40,72 @@ function hashOf(sums: Map<string, string>, file: string): string {
 
 function checkVersion(version: string) {
   if (!/^\d+\.\d+\.\d+$/.test(version))
-    throw new ChannelError(`${version} isn't a stable version; prereleases skip Scoop and the AUR`);
+    throw new ChannelError(
+      `${version} isn't a stable version; prereleases skip winget, Scoop and the AUR`,
+    );
+}
+
+/** winget's package identifier: `winget install DamienReichhart.Homeport`. */
+export const WINGET_ID = 'DamienReichhart.Homeport';
+const WINGET_SCHEMA = '1.9.0';
+
+/**
+ * The three manifests a `microsoft/winget-pkgs` pull request adds under
+ * `manifests/d/DamienReichhart/Homeport/<version>/`: the version, the
+ * installers (NSIS per user on x64 and ARM64, the MSI per machine on x64)
+ * and the English description.
+ */
+export function wingetManifests(
+  version: string,
+  sums: Map<string, string>,
+): { version: string; installer: string; locale: string } {
+  checkVersion(version);
+  const f = files(version);
+  const url = (file: string) => `${DOWNLOAD}/v${version}/${file}`;
+  const header = (type: string) =>
+    `# yaml-language-server: $schema=https://aka.ms/winget-manifest.${type}.${WINGET_SCHEMA}.schema.json\n`;
+  const footer = (type: string) => `ManifestType: ${type}\nManifestVersion: ${WINGET_SCHEMA}\n`;
+  const installer = (arch: string, type: string, scope: string, file: string) =>
+    [
+      `- Architecture: ${arch}`,
+      `  InstallerType: ${type}`,
+      `  Scope: ${scope}`,
+      `  InstallerUrl: ${url(file)}`,
+      `  InstallerSha256: ${hashOf(sums, file).toUpperCase()}`,
+    ].join('\n');
+  return {
+    version: `${header('version')}PackageIdentifier: ${WINGET_ID}\nPackageVersion: ${version}\nDefaultLocale: en-US\n${footer('version')}`,
+    installer: [
+      header('installer') + `PackageIdentifier: ${WINGET_ID}`,
+      `PackageVersion: ${version}`,
+      'UpgradeBehavior: install',
+      'ReleaseDate: ' + new Date().toISOString().slice(0, 10),
+      'Installers:',
+      installer('x64', 'nullsoft', 'user', f.windowsX64),
+      installer('arm64', 'nullsoft', 'user', f.windowsArm64),
+      installer('x64', 'wix', 'machine', f.msiX64),
+      footer('installer'),
+    ].join('\n'),
+    locale: [
+      header('defaultLocale') + `PackageIdentifier: ${WINGET_ID}`,
+      `PackageVersion: ${version}`,
+      'PackageLocale: en-US',
+      'Publisher: Damien Reichhart',
+      `PublisherUrl: https://github.com/DamienReichhart`,
+      `PackageName: Homeport`,
+      `PackageUrl: ${HOMEPAGE}`,
+      'License: MIT',
+      `LicenseUrl: https://github.com/${REPO}/blob/main/LICENSE`,
+      `ShortDescription: ${DESCRIPTION}`,
+      `ReleaseNotesUrl: https://github.com/${REPO}/releases/tag/v${version}`,
+      'Tags:',
+      '- docker',
+      '- containers',
+      '- podman',
+      '- ssh',
+      footer('defaultLocale'),
+    ].join('\n'),
+  };
 }
 
 /**

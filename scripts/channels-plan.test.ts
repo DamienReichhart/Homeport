@@ -1,4 +1,11 @@
-import { aurPackage, ChannelError, files, parseSums, scoopManifest } from './channels-plan';
+import {
+  aurPackage,
+  ChannelError,
+  files,
+  parseSums,
+  scoopManifest,
+  wingetManifests,
+} from './channels-plan';
 
 const hash = (c: string) => c.repeat(64);
 const f = files('0.7.0');
@@ -9,14 +16,35 @@ const sums = parseSums(
     `${hash('c')} *${f.debAmd64}`,
     `${hash('d')}  ${f.debArm64}`,
     `${hash('e')}  Homeport_0.7.0_x64.dmg`,
+    `${hash('f')}  ${f.msiX64}`,
     'not a sum line',
   ].join('\n'),
 );
 
-describe('Scoop and AUR files', () => {
+describe('winget, Scoop and AUR files', () => {
+  it('writes winget manifests for the NSIS installers and the MSI', () => {
+    const m = wingetManifests('0.7.0', sums);
+    expect(m.version).toContain(
+      'PackageIdentifier: DamienReichhart.Homeport\nPackageVersion: 0.7.0',
+    );
+    expect(m.version).toContain('ManifestType: version');
+    expect(m.installer).toContain(
+      `InstallerUrl: https://github.com/DamienReichhart/Homeport/releases/download/v0.7.0/${f.windowsArm64}`,
+    );
+    expect(m.installer).toContain(`InstallerSha256: ${hash('a').toUpperCase()}`);
+    expect(m.installer).toContain('InstallerType: wix\n  Scope: machine');
+    expect(m.locale).toContain('License: MIT');
+    for (const file of [m.version, m.installer, m.locale]) expect(file.endsWith('\n')).toBe(true);
+  });
+
+  it('needs the MSI in the checksums for winget', () => {
+    const noMsi = new Map([...sums].filter(([file]) => !file.endsWith('.msi')));
+    expect(() => wingetManifests('0.7.0', noMsi)).toThrow(ChannelError);
+  });
+
   it('reads SHA256SUMS.txt', () => {
     expect(sums.get(f.debAmd64)).toBe(hash('c'));
-    expect(sums.size).toBe(5);
+    expect(sums.size).toBe(6);
   });
 
   it('writes a Scoop manifest for both NSIS installers', () => {
