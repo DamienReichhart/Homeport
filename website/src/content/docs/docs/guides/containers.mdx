@@ -39,7 +39,7 @@ Homeport asks the registry through the Host's Engine, which compares digests wit
 
 ### Actions
 
-The button at the end of each row starts or stops the container. The **⋮** menu has the rest: **Logs**, **Open terminal**, **Restart**, **Pause** or **Resume**, **Kill**, **Rename** and **Remove**.
+The button at the end of each row starts or stops the container. The **⋮** menu has the rest: **Logs**, **Open terminal**, **Restart**, **Pause** or **Resume**, **Kill**, **Rename**, [**Edit**](#editing-a-container), [**Duplicate**](#duplicating-a-container) and **Remove**.
 
 Tick containers to act on several at once with **Start**, **Stop**, **Restart** or **Remove**. The tick box on a Stack's row selects all of its containers.
 
@@ -52,7 +52,7 @@ Tick containers to act on several at once with **Start**, **Stop**, **Restart** 
 
 ## A container's page
 
-The header shows the image and status, with **Start** or **Stop**, **Restart**, **Pause** or **Resume**, and **Remove**. The tabs below hold everything else.
+The header shows the image and status, with **Start** or **Stop**, **Restart**, **Pause** or **Resume**, and **Remove**; its **⋮** menu has **Rename**, **Edit** and **Duplicate**. The tabs below hold everything else.
 
 <Aside>
   Leaving a tab closes what it was doing: terminals close when you leave **Exec**, charts start
@@ -177,3 +177,32 @@ If the container can't start — a port already in use, say — Homeport removes
 **Network identity** — the container's **Hostname** and **Domain name**, its **DNS servers** (addresses) and **search domains**, and **Extra hosts**: `name:address` lines added to its `/etc/hosts`, for names your network's DNS doesn't know. `host-gateway` stands for the Host's own address, so `host.docker.internal:host-gateway` reaches services on the Host.
 
 **Logging** — the **Log driver**: `json-file`, `local`, `journald`, `syslog`, `none`, or any other the Engine has; empty uses the Engine's default. **Driver options** are `key=value` lines; for `json-file`, `max-size=10m` and `max-file=3` keep logs from filling a small Host's disk. With `journald`, `syslog` or `none`, the **Logs** tab may stay empty.
+
+## Duplicating a container
+
+**Duplicate** opens the Run dialog filled in from the container — image, command, environment, ports, volumes, network, restart policy and every advanced option — under the name `<name>-copy`. Change what you need and choose **Run**.
+
+Settings the dialog doesn't show, such as ulimits, sysctls, security options, tmpfs mounts and the other networks the container is on (with their aliases), are copied as they are. Only what you only got from the image is left out of the form, so a newer tag of the image brings its own defaults.
+
+The copy doesn't take what identifies the original: it gets its own hostname (unless you set one), MAC address and fresh anonymous volumes, and a container from a [Stack](/docs/guides/stacks/) loses its Stack labels and service aliases, so the copy doesn't join the Stack or answer to its service name. If the original publishes a fixed host port, the dialog says so: two containers can't both use it while they run, so change it or leave it empty to let the Engine pick one.
+
+## Editing a container
+
+The Docker Engine can't change most settings of an existing container, so **Edit** recreates it: it opens the Run dialog filled in from the container, and **Apply** replaces it with one created from your changes. The name stays (use **Rename** to change it).
+
+Before anything happens, Homeport lists what the new container won't have:
+
+- **Anonymous volumes** — the new container starts with empty ones. The old ones aren't deleted: they're kept as unused volumes you can still open or [clean up](/docs/guides/volumes-networks/).
+- **Files changed inside the container** since it was created, such as installed packages or edited configuration. To keep them, commit the container to an image first and edit it to use that image.
+- **Downtime** — a running container stops while the two are swapped, usually for a few seconds.
+- **A Stack's next deploy** — for a container in a Stack, the Stack's next deploy recreates it from its compose file, without your edit. Change the compose file to make it last.
+
+What's kept: the name, the networks with their aliases, named volumes and bind mounts, and every setting the dialog doesn't show. The container runs afterwards if it was running.
+
+<Aside type="note" title="If something goes wrong">
+  Homeport creates the new container before touching the original, and removes the original only
+  once the new one is running. If any step fails — the new port is taken, say — the new container is
+  removed and the original put back as it was, running if it was running, and the dialog shows why.
+  In the rare case putting it back fails too, the message names where the original is, such as
+  `web-old-1a2b3c4d`, so you can rename it back and start it.
+</Aside>
