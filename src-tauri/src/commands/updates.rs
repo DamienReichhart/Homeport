@@ -6,10 +6,11 @@ use serde::Serialize;
 use tauri::{ipc::Channel, AppHandle, State};
 use tauri_plugin_updater::UpdaterExt;
 
+use homeport_updates::{update_method, Bundle, UpdateMethod};
+
 use crate::{
-    error::{AppError, AppResult},
-    services::updates::{update_method, Bundle, UpdateMethod},
-    state::AppState,
+    app::AppState,
+    error::{self, AppError, AppResult},
 };
 
 #[derive(Debug, Serialize, specta::Type)]
@@ -59,7 +60,12 @@ fn method() -> UpdateMethod {
 #[tauri::command]
 #[specta::specta]
 pub async fn updates_check(app: AppHandle, state: State<'_, AppState>) -> AppResult<UpdateCheck> {
-    let update = app.updater()?.check().await?;
+    let update = app
+        .updater()
+        .map_err(error::update)?
+        .check()
+        .await
+        .map_err(error::update)?;
     let available = update.as_ref().map(|u| AvailableUpdate {
         version: u.version.clone(),
         notes: u.body.clone(),
@@ -100,7 +106,8 @@ pub async fn updates_install(
             },
             || {},
         )
-        .await?;
+        .await
+        .map_err(error::update)?;
     log::info!("installed Homeport {}, restarting", update.version);
     app.restart()
 }

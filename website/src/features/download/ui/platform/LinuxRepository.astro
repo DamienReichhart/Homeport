@@ -1,0 +1,113 @@
+---
+/** The one-line install that adds the package repository, and the manual setup per distribution. */
+import { INSTALL_COMMAND, INSTALL_SCRIPT_URL, MANUAL_SETUP } from '@/core/packages';
+---
+
+<div class="repo">
+  <div class="repo__intro">
+    <strong>Quick install</strong>
+    <span>
+      Adds the Homeport package repository and installs Homeport, so apt, dnf or zypper keeps it up
+      to date.
+    </span>
+  </div>
+  <div class="command">
+    <pre class="code-block"><code>{INSTALL_COMMAND}</code></pre>
+    <button
+      type="button"
+      class="button button--secondary button--small"
+      data-copy={INSTALL_COMMAND}
+    >
+      Copy
+    </button>
+  </div>
+  <p class="repo__note">
+    <a href={INSTALL_SCRIPT_URL}>Read the script</a> first if you like, or set the repository up
+    yourself:
+  </p>
+  <details class="repo__manual">
+    <summary>Manual setup</summary>
+    {MANUAL_SETUP.map((setup) => (
+      <div class="repo__distro">
+        <strong>{setup.label}</strong>
+        <span>{setup.distributions}</span>
+        <div class="command">
+          <pre class="code-block"><code>{setup.commands}</code></pre>
+          <button
+            type="button"
+            class="button button--secondary button--small"
+            data-copy={setup.commands}
+          >
+            Copy
+          </button>
+        </div>
+      </div>
+    ))}
+  </details>
+  <p class="repo__note">
+    Or download a package below. The <code>.deb</code> and <code>.rpm</code> add the repository too,
+    so they get updates as well.
+  </p>
+</div>
+
+<script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy]')) {
+    button.addEventListener('click', () => {
+      void navigator.clipboard.writeText(button.dataset.copy ?? '').then(() => {
+        button.textContent = 'Copied';
+        setTimeout(() => (button.textContent = 'Copy'), 1500);
+      });
+    });
+  }
+</script>
+
+<style>
+  .repo {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 1px solid color-mix(in srgb, var(--hp-primary) 45%, transparent);
+    border-radius: var(--hp-radius);
+    background: color-mix(in srgb, var(--hp-primary) 5%, var(--hp-bg-raised));
+  }
+  .repo__intro {
+    display: grid;
+    gap: 0.15rem;
+  }
+  .repo__intro span,
+  .repo__note,
+  .repo__distro > span {
+    color: var(--hp-text-muted);
+    font-size: 0.825rem;
+    line-height: 1.45;
+  }
+  .repo__note code {
+    font-size: 0.75rem;
+  }
+  .command {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem;
+    align-items: start;
+  }
+  .command .code-block {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    white-space: pre;
+  }
+  .repo__manual summary {
+    width: fit-content;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .repo__distro {
+    display: grid;
+    gap: 0.3rem;
+    margin-top: 0.85rem;
+  }
+  .repo__distro strong {
+    font-size: 0.875rem;
+  }
+</style>

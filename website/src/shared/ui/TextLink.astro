@@ -1,0 +1,31 @@
+---
+/** A link set in bold with an arrow that nudges forward on hover. */
+import Icon from './Icon.astro';
+
+interface Props {
+  href: string;
+}
+
+const { href } = Astro.props;
+---
+
+<a class="text-link" href={href}>
+  <slot /> <Icon name="arrowRight" size={16} />
+</a>
+
+<style>
+  .text-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    width: fit-content;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .text-link :global(svg) {
+    transition: transform 0.15s ease;
+  }
+  .text-link:hover :global(svg) {
+    transform: translateX(3px);
+  }
+</style>

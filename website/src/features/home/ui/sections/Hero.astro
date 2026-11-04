@@ -1,0 +1,160 @@
+---
+/** The headline, the download button and a screenshot of the Overview. */
+import { getLatestRelease } from '@/core/release';
+import { DownloadButton, DownloadMeta } from '@/features/download';
+import { href } from '@/shared/lib/href';
+import { Icon, Screenshot } from '@/shared/ui';
+
+const release = await getLatestRelease();
+---
+
+<section class="hero">
+  <div class="hero__backdrop" aria-hidden="true"></div>
+  <div class="container hero__inner">
+    {release && (
+      <a class="pill" href={href('/changelog/')}>
+        <span class="pill__tag">New</span>
+        Homeport {release.version} is out
+        <Icon name="arrowRight" size={14} />
+      </a>
+    )}
+    <h1>
+      Every Docker Engine,
+      <br />
+      <span>docked in one place.</span>
+    </h1>
+    <p class="hero__lead">
+      Homeport is a desktop app for the Docker Engines you run — on this machine, or on servers you
+      reach over SSH, TLS or TCP. Containers, images, volumes, networks and Compose Stacks, side by
+      side, without a terminal open for every Host.
+    </p>
+    <div class="hero__actions">
+      <DownloadButton />
+      <a class="button button--secondary button--large" href={href('/docs/')}>
+        <Icon name="book" />
+        Read the docs
+      </a>
+    </div>
+    <DownloadMeta />
+    <p class="hero__facts">
+      <span>
+        <Icon name="check" size={16} /> Free and open source
+      </span>
+      <span>
+        <Icon name="check" size={16} /> No account
+      </span>
+      <span>
+        <Icon name="check" size={16} /> Windows, macOS and Linux
+      </span>
+    </p>
+  </div>
+  <div class="container hero__shot" data-reveal>
+    <Screenshot
+      name="overview"
+      alt="Homeport's Overview: a card for each Host with its containers, CPU and memory, the Engine's details and disk usage."
+      eager
+    />
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding-top: 4.5rem;
+  }
+  @media (min-width: 64rem) {
+    .hero {
+      padding-top: 6rem;
+    }
+  }
+  .hero__backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(60rem 30rem at 50% -8rem, var(--hp-glow), transparent 70%),
+      radial-gradient(
+        30rem 20rem at 85% 10rem,
+        color-mix(in srgb, var(--hp-beacon) 9%, transparent),
+        transparent 70%
+      );
+  }
+  .hero__backdrop::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--hp-border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--hp-border) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 70% 55% at 50% 0%, #000 30%, transparent 75%);
+    opacity: 0.6;
+  }
+  .hero__inner {
+    display: grid;
+    justify-items: center;
+    gap: 1.5rem;
+    text-align: center;
+  }
+  .hero h1 {
+    max-width: 18ch;
+    font-size: clamp(2.6rem, 1.4rem + 5vw, 4.75rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1.02;
+  }
+  .hero h1 span {
+    background: linear-gradient(90deg, var(--hp-primary), var(--hp-tide) 60%, var(--hp-primary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  [data-theme='light'] .hero h1 span {
+    background: linear-gradient(90deg, #00578a, var(--hp-harbour) 50%, #1a8bc7);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+  .hero__lead {
+    max-width: 40rem;
+    color: var(--hp-text-muted);
+    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem);
+  }
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+  .hero__facts {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 1.5rem;
+    color: var(--hp-text-muted);
+    font-size: 0.9rem;
+  }
+  .hero__facts span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .hero__facts :global(svg) {
+    color: var(--hp-primary);
+  }
+  /* .container and .card come from the global stylesheet, and Vite doesn't keep
+     it ahead of the page's CSS: outrank them rather than tie. */
+  .hero__shot.container {
+    margin-top: 3.5rem;
+    max-width: 76rem;
+  }
+  .hero__shot :global(.window) {
+    border-radius: 1rem;
+    box-shadow:
+      0 0 0 1px var(--hp-border),
+      0 30px 80px -30px var(--hp-glow),
+      var(--hp-shadow);
+  }
+</style>

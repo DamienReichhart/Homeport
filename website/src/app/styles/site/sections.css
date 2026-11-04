@@ -1,0 +1,83 @@
+/* Pieces the pages' sections share: spacing, headings, eyebrows, pills, cards. */
+
+.section {
+  padding-block: 5rem;
+}
+@media (min-width: 64rem) {
+  .section {
+    padding-block: 7rem;
+  }
+}
+.section--raised {
+  border-block: 1px solid var(--hp-border);
+  background: var(--hp-bg-raised);
+}
+.section-heading {
+  display: grid;
+  gap: 1rem;
+  max-width: 44rem;
+  margin-bottom: 3rem;
+}
+.section-heading--center {
+  margin-inline: auto;
+  text-align: center;
+  justify-items: center;
+}
+.section-heading h2 {
+  font-size: clamp(1.85rem, 1.3rem + 2vw, 2.75rem);
+}
+.section-heading p {
+  color: var(--hp-text-muted);
+  font-size: 1.1rem;
+}
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--hp-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.8rem 0.3rem 0.4rem;
+  border: 1px solid var(--hp-border-strong);
+  border-radius: 999px;
+  background: var(--hp-surface);
+  color: var(--hp-text-muted);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+.pill:hover {
+  color: var(--hp-text);
+  border-color: var(--hp-primary);
+}
+.pill__tag {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--hp-beacon) 18%, transparent);
+  color: var(--hp-beacon);
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.card {
+  border: 1px solid var(--hp-border);
+  border-radius: var(--hp-radius-lg);
+  background: var(--hp-surface);
+}
+
+.feature-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.65rem;
+  background: color-mix(in srgb, var(--hp-primary) 14%, transparent);
+  color: var(--hp-primary);
+}

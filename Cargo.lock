@@ -2129,29 +2129,20 @@ dependencies = [
 
 [[package]]
 name = "homeport"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
- "bollard",
- "chacha20poly1305",
- "futures-util",
- "gethostname",
- "getrandom 0.3.4",
- "hyper",
- "hyper-util",
- "keyring",
+ "homeport-core",
+ "homeport-engine",
+ "homeport-hosts",
+ "homeport-settings",
+ "homeport-stacks",
+ "homeport-storage",
+ "homeport-updates",
  "log",
- "rusqlite",
- "rusqlite_migration",
- "russh",
- "rustls",
- "rustls-pki-types",
  "serde",
  "serde_json",
- "serde_yaml_ng",
- "shell-words",
  "specta",
  "specta-typescript",
- "tar",
  "tauri",
  "tauri-build",
  "tauri-plugin-dialog",
@@ -2160,10 +2151,136 @@ dependencies = [
  "tauri-plugin-updater",
  "tauri-specta",
  "tempfile",
+]
+
+[[package]]
+name = "homeport-core"
+version = "0.5.0"
+dependencies = [
+ "bollard",
+ "log",
+ "russh",
+ "serde",
+ "serde_json",
+ "specta",
+ "tempfile",
+ "thiserror 2.0.21",
+ "tokio",
+]
+
+[[package]]
+name = "homeport-engine"
+version = "0.5.0"
+dependencies = [
+ "bollard",
+ "futures-util",
+ "homeport-core",
+ "homeport-transport",
+ "serde",
+ "serde_json",
+ "shell-words",
+ "specta",
+ "tar",
+ "tempfile",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "homeport-hosts"
+version = "0.5.0"
+dependencies = [
+ "bollard",
+ "futures-util",
+ "gethostname",
+ "homeport-core",
+ "homeport-storage",
+ "homeport-transport",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "specta",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "homeport-settings"
+version = "0.5.0"
+dependencies = [
+ "homeport-core",
+ "homeport-storage",
+ "log",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "specta",
+ "tempfile",
+]
+
+[[package]]
+name = "homeport-stacks"
+version = "0.5.0"
+dependencies = [
+ "bollard",
+ "homeport-core",
+ "homeport-engine",
+ "homeport-hosts",
+ "homeport-storage",
+ "homeport-transport",
+ "log",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "serde_yaml_ng",
+ "specta",
+ "tempfile",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "homeport-storage"
+version = "0.5.0"
+dependencies = [
+ "chacha20poly1305",
+ "getrandom 0.3.4",
+ "homeport-core",
+ "keyring",
+ "log",
+ "rusqlite",
+ "rusqlite_migration",
+ "serde",
+ "serde_json",
+ "tempfile",
+]
+
+[[package]]
+name = "homeport-transport"
+version = "0.5.0"
+dependencies = [
+ "bollard",
+ "getrandom 0.3.4",
+ "homeport-core",
+ "hyper",
+ "hyper-util",
+ "log",
+ "russh",
+ "rustls",
+ "rustls-pki-types",
+ "tempfile",
  "thiserror 2.0.21",
  "tokio",
  "tokio-rustls",
  "uuid",
+]
+
+[[package]]
+name = "homeport-updates"
+version = "0.5.0"
+dependencies = [
+ "serde",
+ "specta",
 ]
 
 [[package]]

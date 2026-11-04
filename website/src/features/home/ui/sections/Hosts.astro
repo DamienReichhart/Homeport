@@ -1,0 +1,92 @@
+---
+/** Connecting to remote engines, and the ways Homeport reaches them. */
+import { href } from '@/shared/lib/href';
+import { Screenshot, TextLink } from '@/shared/ui';
+import Showcase from '../Showcase.astro';
+
+const connections = [
+  {
+    name: 'Local socket',
+    detail: 'Unix sockets and Windows named pipes, detected automatically.',
+    code: '/var/run/docker.sock',
+  },
+  {
+    name: 'SSH',
+    detail: 'A dedicated Ed25519 key per Host, or your own key or ssh-agent.',
+    code: 'deploy@server.example.com',
+  },
+  {
+    name: 'TLS',
+    detail: 'Mutual TLS with your CA, client certificate and key.',
+    code: 'docker.example.com:2376',
+  },
+  {
+    name: 'TCP',
+    detail: 'Plain TCP, for engines on a network you trust.',
+    code: '192.168.1.10:2375',
+  },
+];
+---
+
+<Showcase eyebrow="Hosts" title="Remote engines without the ceremony" raised>
+  <p>
+    Add a server once and it stays docked. For SSH, Homeport makes a key just for that Host and
+    hands you the one command that authorises it. It checks the server's fingerprint on first
+    contact, and warns you if it ever changes.
+  </p>
+  <ul class="connection-list">
+    {connections.map((c) => (
+      <li>
+        <strong>{c.name}</strong>
+        <span>{c.detail}</span>
+        <code>{c.code}</code>
+      </li>
+    ))}
+  </ul>
+  <TextLink href={href('/docs/hosts/')}>How connections work</TextLink>
+  <Screenshot
+    slot="media"
+    name="add-host-ssh"
+    alt="The Add host page with SSH selected: server, port, user, remote socket path and a new key for this Host."
+    crop="960 / 820"
+    sizes="(min-width: 64rem) 760px, 100vw"
+  />
+</Showcase>
+
+<style>
+  .connection-list {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0.5rem 0;
+    padding: 0;
+    list-style: none;
+  }
+  .connection-list li {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr;
+    gap: 0.15rem 1rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--hp-border);
+    border-radius: var(--hp-radius);
+    background: var(--hp-surface);
+  }
+  .connection-list strong {
+    grid-row: span 2;
+  }
+  .connection-list span {
+    color: var(--hp-text-muted);
+    font-size: 0.925rem;
+  }
+  .connection-list code {
+    color: var(--hp-text-faint);
+    font-size: 0.8rem;
+  }
+  @media (max-width: 30rem) {
+    .connection-list li {
+      grid-template-columns: 1fr;
+    }
+    .connection-list strong {
+      grid-row: auto;
+    }
+  }
+</style>

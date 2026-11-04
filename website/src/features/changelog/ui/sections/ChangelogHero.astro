@@ -1,0 +1,32 @@
+---
+import { href } from '@/shared/lib/href';
+---
+
+<section class="changelog-hero">
+  <div class="container">
+    <span class="eyebrow">Changelog</span>
+    <h1>What's new in Homeport</h1>
+    <p>
+      Every release, newest first. Notes are generated from the project's commits; the files are on
+      the <a href={href('/download/')}>download page</a>.
+    </p>
+  </div>
+</section>
+
+<style>
+  .changelog-hero {
+    padding: 4.5rem 0 3rem;
+  }
+  .changelog-hero .container {
+    display: grid;
+    gap: 0.85rem;
+    max-width: 52rem;
+  }
+  .changelog-hero h1 {
+    font-size: clamp(2.25rem, 1.5rem + 3vw, 3.5rem);
+  }
+  .changelog-hero p {
+    color: var(--hp-text-muted);
+    font-size: 1.1rem;
+  }
+</style>

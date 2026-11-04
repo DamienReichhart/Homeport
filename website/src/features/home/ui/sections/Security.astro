@@ -1,0 +1,77 @@
+---
+/** How Homeport keeps the credentials it holds. */
+import { href } from '@/shared/lib/href';
+import { Icon, TextLink } from '@/shared/ui';
+---
+
+<section class="section">
+  <div class="container">
+    <div class="section-heading section-heading--center" data-reveal>
+      <span class="eyebrow">Security</span>
+      <h2>Your keys stay sealed</h2>
+      <p>Homeport handles the credentials that open your servers, so it treats them that way.</p>
+    </div>
+    <div class="security-grid">
+      <article class="card security" data-reveal>
+        <Icon name="lock" />
+        <h3>Encrypted at rest</h3>
+        <p>
+          SSH keys, TLS certificates and Stack environments are sealed with XChaCha20-Poly1305. The
+          key lives in your OS keychain, not next to the data.
+        </p>
+      </article>
+      <article class="card security" data-reveal>
+        <Icon name="key" />
+        <h3>Never on disk in clear</h3>
+        <p>
+          Homeport speaks SSH itself, so decrypted keys stay in memory. No key files, no changes to
+          your <code>~/.ssh</code>.
+        </p>
+      </article>
+      <article class="card security" data-reveal>
+        <Icon name="shield" />
+        <h3>Nothing phones home</h3>
+        <p>
+          No account, no telemetry, no tracking. Homeport talks to your engines and nothing else.
+          Every release is built in the open, with checksums and build provenance.
+        </p>
+      </article>
+    </div>
+    <p class="center-link">
+      <TextLink href={href('/docs/reference/security/')}>Security and your data</TextLink>
+    </p>
+  </div>
+</section>
+
+<style>
+  .center-link {
+    margin-top: 2rem;
+    text-align: center;
+  }
+  .center-link :global(.text-link) {
+    margin-inline: auto;
+  }
+  .security-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  }
+  .security {
+    display: grid;
+    gap: 0.75rem;
+    align-content: start;
+    padding: 1.75rem;
+  }
+  .security > :global(svg) {
+    color: var(--hp-beacon);
+  }
+  .security h3 {
+    font-size: 1.15rem;
+  }
+  .security p {
+    color: var(--hp-text-muted);
+  }
+  .security code {
+    font-size: 0.85em;
+  }
+</style>

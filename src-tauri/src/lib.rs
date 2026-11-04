@@ -1,96 +1,16 @@
-#[cfg(target_os = "linux")]
-mod appimage;
+//! Homeport's app shell. The backend's logic lives in the crates under
+//! `crates/`; this crate only exposes it to the webview: the Tauri app
+//! ([`app`]), its IPC commands and the errors only Tauri produces.
+
+// Nothing depends on the shell, so `pub` inside it only means "visible to the
+// rest of the shell"; the library crates keep the lint.
+#![allow(unreachable_pub)]
+
+mod app;
 mod commands;
 mod error;
-mod events;
-mod services;
-mod state;
-
-use tauri::Manager;
-
-use std::sync::Arc;
-
-use crate::{
-    events::TauriNotifier,
-    services::{
-        crypto::{Keychain, SecretBox},
-        db::Db,
-        hosts::{registry::HostRegistry, service::HostService, store::HostStore},
-        settings::SettingsService,
-        stacks::store::StackStore,
-    },
-    state::AppState,
-};
-
-/// Size at which the log file is rotated.
-const LOG_FILE_BYTES: u128 = 5 * 1024 * 1024;
-/// Rotated log files kept next to the current one.
-const LOG_FILES_KEPT: usize = 5;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let specta = commands::builder();
-    let invoke_handler = specta.invoke_handler();
-    #[cfg(debug_assertions)]
-    commands::export_bindings(commands::BINDINGS_PATH);
-
-    tauri::Builder::default()
-        .plugin(
-            tauri_plugin_log::Builder::default()
-                .level(log::LevelFilter::Info)
-                // Keep up to 5 files of 5 MB each, named by local time.
-                .max_file_size(LOG_FILE_BYTES)
-                .rotation_strategy(tauri_plugin_log::RotationStrategy::KeepSome(LOG_FILES_KEPT))
-                .timezone_strategy(tauri_plugin_log::TimezoneStrategy::UseLocal)
-                // bollard and hyper log every request at debug/trace level.
-                .level_for("bollard", log::LevelFilter::Warn)
-                .level_for("hyper_util", log::LevelFilter::Warn)
-                .level_for("russh", log::LevelFilter::Warn)
-                .build(),
-        )
-        .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_updater::Builder::new().build())
-        .setup(move |app| {
-            specta.mount_events(app);
-            #[cfg(target_os = "linux")]
-            if let Err(e) = appimage::integrate(&app.path().data_dir()?) {
-                log::warn!("failed to add the AppImage to the app menu: {e}");
-            }
-            let config_dir = app.path().app_config_dir()?;
-            let db = Arc::new(Db::open(&app.path().app_data_dir()?.join("homeport.db"))?);
-            let settings = SettingsService::new(db.clone(), &config_dir.join("settings.json"))?;
-            // Keychain backends may block on D-Bus; keep that off the async runtime.
-            let secrets = std::thread::spawn(|| {
-                SecretBox::from_store(&Keychain {
-                    service: "com.homeport.app",
-                    account: "secrets-key",
-                })
-            })
-            .join()
-            .expect("keychain thread panicked");
-            let secrets = Arc::new(secrets);
-            let store = Arc::new(HostStore::new(db.clone(), secrets.clone()));
-            let registry =
-                HostRegistry::new(store.clone(), Arc::new(TauriNotifier(app.handle().clone())));
-            let start = registry.clone();
-            tauri::async_runtime::spawn(async move {
-                if let Err(e) = start.start_all() {
-                    log::error!("failed to start host connections: {e}");
-                }
-            });
-            app.manage(AppState {
-                stacks: StackStore::new(db.clone(), secrets.clone()),
-                secrets,
-                settings,
-                hosts: HostService { store, registry },
-                streams: Default::default(),
-                exec: Default::default(),
-                update: Default::default(),
-            });
-            Ok(())
-        })
-        .invoke_handler(invoke_handler)
-        .run(tauri::generate_context!())
-        .expect("error while running Homeport");
+    app::run()
 }

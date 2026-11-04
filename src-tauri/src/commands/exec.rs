@@ -1,10 +1,10 @@
+//! Interactive shells inside a container.
+
 use tauri::{ipc::Channel, State};
 
-use crate::{
-    error::AppResult,
-    services::docker::exec::{self, ExecEvent, ExecOptions, SessionId},
-    state::AppState,
-};
+use homeport_engine::containers::exec::{self, ExecEvent, ExecOptions, SessionId};
+
+use crate::{app::AppState, error::AppResult};
 
 #[tauri::command]
 #[specta::specta]

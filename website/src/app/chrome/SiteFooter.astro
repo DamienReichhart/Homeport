@@ -1,0 +1,72 @@
+---
+import mark from '@brand/mark.svg';
+import { ISSUES_URL, RELEASES_URL, REPO_URL, TAGLINE } from '@/core/site';
+import { href } from '@/shared/lib/href';
+
+const year = new Date().getFullYear();
+
+const columns = [
+  {
+    title: 'Product',
+    links: [
+      { label: 'Features', url: href('/#features') },
+      { label: 'Download', url: href('/download/') },
+      { label: 'Changelog', url: href('/changelog/') },
+      { label: 'All releases', url: RELEASES_URL },
+    ],
+  },
+  {
+    title: 'Documentation',
+    links: [
+      { label: 'Introduction', url: href('/docs/') },
+      { label: 'Installation', url: href('/docs/installation/') },
+      { label: 'Connecting Hosts', url: href('/docs/hosts/') },
+      { label: 'Troubleshooting', url: href('/docs/reference/troubleshooting/') },
+    ],
+  },
+  {
+    title: 'Project',
+    links: [
+      { label: 'Source code', url: REPO_URL },
+      { label: 'Report an issue', url: ISSUES_URL },
+      { label: 'Contributing', url: href('/docs/project/contributing/') },
+      { label: 'Security', url: href('/docs/reference/security/') },
+    ],
+  },
+];
+---
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <img src={mark.src} alt="" width="36" height="36" />
+      <p>
+        <strong>Homeport</strong>
+        <br />
+        {TAGLINE}
+      </p>
+    </div>
+    {columns.map((column) => (
+      <div class="site-footer__column">
+        <h2>{column.title}</h2>
+        <ul>
+          {column.links.map((link) => (
+            <li>
+              <a href={link.url}>{link.label}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </div>
+  <div class="site-footer__legal">
+    <p>
+      © {year} Damien Reichhart. Homeport is open source under the{' '}
+      <a href={`${REPO_URL}/blob/main/LICENSE`}>MIT licence</a>.
+    </p>
+    <p>
+      Docker is a trademark of Docker, Inc. Homeport is an independent project, not affiliated with
+      or endorsed by Docker, Inc.
+    </p>
+  </div>
+</footer>

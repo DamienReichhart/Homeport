@@ -1,0 +1,44 @@
+/* Running text (.prose) and copyable commands (.code-block). */
+
+.prose {
+  max-width: 46rem;
+}
+.prose h2 {
+  margin: 2.5rem 0 0.75rem;
+  font-size: 1.5rem;
+}
+.prose h3 {
+  margin: 2rem 0 0.5rem;
+  font-size: 1.15rem;
+}
+.prose p,
+.prose ul,
+.prose ol {
+  margin: 0 0 1rem;
+  color: var(--hp-text-muted);
+}
+.prose li + li {
+  margin-top: 0.3rem;
+}
+.prose code {
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.3rem;
+  background: var(--hp-code-bg);
+  color: var(--hp-text);
+}
+.prose a {
+  font-weight: 500;
+}
+
+.code-block {
+  position: relative;
+  overflow-x: auto;
+  margin: 0;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--hp-border);
+  border-radius: var(--hp-radius);
+  background: var(--hp-code-bg);
+  color: var(--hp-text);
+  font-size: 0.85rem;
+  line-height: 1.7;
+}

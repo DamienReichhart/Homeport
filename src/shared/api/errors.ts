@@ -11,7 +11,7 @@ export interface ErrorContext {
 
 /**
  * A failure as the user sees it: what happened (`message`), what to do
- * (`hint`) and the raw cause (`detail`). Mirrors `src-tauri/src/error/mod.rs`.
+ * (`hint`) and the raw cause (`detail`). Mirrors `crates/core/src/error/mod.rs`.
  */
 export class AppError extends Error {
   readonly code: ErrorCode;

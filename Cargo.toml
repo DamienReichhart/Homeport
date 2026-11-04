@@ -1,12 +1,70 @@
 [workspace]
-members = ["src-tauri"]
+members = ["src-tauri", "crates/*"]
 resolver = "2"
 
 [workspace.package]
-version = "0.4.0"
+version = "0.5.0"
 edition = "2021"
 license = "MIT"
 rust-version = "1.88"
+
+# Lints every crate opts into with `[lints] workspace = true`.
+[workspace.lints.rust]
+unsafe_code = "forbid"
+unreachable_pub = "warn"
+
+# One version of each dependency for the whole workspace; crates opt in with
+# `name.workspace = true` and add the features they need.
+[workspace.dependencies]
+# Async runtime and I/O.
+tokio = { version = "1", features = ["full"] }
+futures-util = "0.3"
+hyper = { version = "1", features = ["client", "http1"] }
+hyper-util = { version = "0.1", features = ["tokio"] }
+# Serialization and the TypeScript contract.
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml_ng = "0.10"
+specta = { version = "=2.0.0-rc.26", features = ["derive", "serde_json"] }
+specta-typescript = "=0.0.13"
+tauri-specta = { version = "=2.0.0-rc.26", features = ["derive", "typescript"] }
+# Errors and logging.
+thiserror = "2"
+log = "0.4"
+# The Engine API and how Homeport reaches it.
+bollard = "0.21"
+russh = { version = "0.65", default-features = false, features = ["ring", "flate2", "rsa"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12", "logging"] }
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12", "logging"] }
+rustls-pki-types = { version = "1", features = ["std"] }
+# Storage and secrets.
+rusqlite = { version = "0.40", features = ["bundled"] }
+rusqlite_migration = "2.6"
+chacha20poly1305 = "0.10"
+getrandom = "0.3"
+keyring = "4"
+# Small utilities.
+uuid = { version = "1", features = ["v4"] }
+gethostname = "1"
+tar = "0.4"
+shell-words = "1"
+tempfile = "3"
+# The desktop shell.
+tauri = { version = "2", features = [] }
+tauri-build = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+tauri-plugin-log = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-updater = "2"
+# Homeport's own crates, from the bottom of the dependency graph up.
+homeport-core = { path = "crates/core" }
+homeport-storage = { path = "crates/storage" }
+homeport-transport = { path = "crates/transport" }
+homeport-engine = { path = "crates/engine" }
+homeport-hosts = { path = "crates/hosts" }
+homeport-stacks = { path = "crates/stacks" }
+homeport-settings = { path = "crates/settings" }
+homeport-updates = { path = "crates/updates" }
 
 [profile.release]
 codegen-units = 1

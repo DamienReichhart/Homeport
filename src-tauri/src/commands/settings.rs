@@ -1,6 +1,10 @@
+//! The user's preferences.
+
 use tauri::State;
 
-use crate::{error::AppResult, services::settings::Settings, state::AppState};
+use homeport_settings::Settings;
+
+use crate::{app::AppState, error::AppResult};
 
 #[tauri::command]
 #[specta::specta]

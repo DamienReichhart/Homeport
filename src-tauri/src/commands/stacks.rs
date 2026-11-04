@@ -1,21 +1,19 @@
+//! Stacks on a Host, and deploying Managed Stacks.
+
 use tauri::{ipc::Channel, State};
 
-use crate::{
-    error::AppResult,
-    services::{
-        docker::containers,
-        stacks::{
-            self,
-            compose::{self, ComposeAction, ComposeEvent, ComposeRun},
-            definition::{self, ComposeCheck},
-            lifecycle::{self, StackAction},
-            store::ManagedStack,
-            Stack,
-        },
-        streams::StreamId,
-    },
-    state::AppState,
+use homeport_core::streams::StreamId;
+use homeport_engine::containers;
+use homeport_stacks::{
+    self as stacks,
+    compose::{self, ComposeAction, ComposeEvent, ComposeRun},
+    definition::{self, ComposeCheck},
+    lifecycle::{self, StackAction},
+    store::ManagedStack,
+    Stack,
 };
+
+use crate::{app::AppState, error::AppResult};
 
 /// Every Stack on a Host: those running there plus undeployed Managed Stacks.
 #[tauri::command]

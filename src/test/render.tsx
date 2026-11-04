@@ -1,7 +1,8 @@
 import { render } from '@testing-library/react';
 import { RouterProvider } from 'react-router-dom';
-import { AppProviders, createQueryClient } from '@/app/providers/AppProviders';
-import { createAppRouter } from '@/app/routes/router';
+import { AppProviders } from '@/app/providers/AppProviders';
+import { createQueryClient } from '@/app/providers/queryClient';
+import { createAppRouter } from '@/app/router/router';
 
 /** Renders the whole app at `path`, as the desktop window would. */
 export function renderApp(path: string) {

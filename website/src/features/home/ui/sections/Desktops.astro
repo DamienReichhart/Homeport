@@ -1,0 +1,76 @@
+---
+/** A card per desktop platform, each linking to its downloads. */
+import { href } from '@/shared/lib/href';
+import { Icon } from '@/shared/ui';
+---
+
+<section class="section section--raised">
+  <div class="container">
+    <div class="section-heading section-heading--center" data-reveal>
+      <span class="eyebrow">Download</span>
+      <h2>Native on every desktop</h2>
+      <p>
+        A small, fast app built with Tauri and Rust — not a browser tab in disguise. Installers for
+        x64 and ARM that keep Homeport up to date.
+      </p>
+    </div>
+    <div class="platform-grid">
+      <a class="card platform" href={href('/download/#windows')} data-reveal>
+        <Icon name="windows" size={32} />
+        <h3>Windows</h3>
+        <p>10 and 11 · x64 and ARM64</p>
+        <span>Installer (.exe) · MSI</span>
+      </a>
+      <a class="card platform" href={href('/download/#macos')} data-reveal>
+        <Icon name="apple" size={32} />
+        <h3>macOS</h3>
+        <p>Apple silicon and Intel</p>
+        <span>Disk image (.dmg)</span>
+      </a>
+      <a class="card platform" href={href('/download/#linux')} data-reveal>
+        <Icon name="linux" size={32} />
+        <h3>Linux</h3>
+        <p>x64 and ARM64</p>
+        <span>apt · dnf · zypper · AppImage</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .platform-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  }
+  .platform {
+    display: grid;
+    gap: 0.4rem;
+    justify-items: center;
+    padding: 2rem 1.5rem;
+    color: var(--hp-text);
+    text-align: center;
+    text-decoration: none;
+    transition:
+      border-color 0.2s ease,
+      transform 0.2s ease;
+  }
+  .platform:hover {
+    border-color: var(--hp-primary);
+    color: var(--hp-text);
+    transform: translateY(-2px);
+  }
+  .platform > :global(svg) {
+    margin-bottom: 0.5rem;
+  }
+  .platform h3 {
+    font-size: 1.25rem;
+  }
+  .platform p {
+    color: var(--hp-text-muted);
+  }
+  .platform span {
+    color: var(--hp-text-faint);
+    font-size: 0.875rem;
+  }
+</style>

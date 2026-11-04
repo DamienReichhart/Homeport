@@ -3,6 +3,10 @@
   "include": [".astro/types.d.ts", "**/*"],
   "exclude": ["dist"],
   "compilerOptions": {
-    "types": ["bun"]
+    "types": ["bun"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@brand/*": ["../assets/brand/*"]
+    }
   }
 }

@@ -1,0 +1,23 @@
+[package]
+name = "homeport-settings"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "The user's Homeport preferences, stored in the database"
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+homeport-core.workspace = true
+homeport-storage.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+specta.workspace = true
+rusqlite.workspace = true
+log.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

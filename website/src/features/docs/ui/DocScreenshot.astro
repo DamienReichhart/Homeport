@@ -1,0 +1,17 @@
+---
+/** A screenshot in the docs, with a caption. See shared/ui/Screenshot.astro for where shots live. */
+import { Screenshot } from '@/shared/ui';
+
+interface Props {
+  name: string;
+  alt: string;
+  caption?: string;
+}
+
+const { name, alt, caption } = Astro.props;
+---
+
+<figure class="screenshot not-content">
+  <Screenshot name={name} alt={alt} sizes="(min-width: 50rem) 768px, 100vw" />
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>

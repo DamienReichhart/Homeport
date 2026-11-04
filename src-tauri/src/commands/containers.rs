@@ -1,15 +1,17 @@
-use std::path::{Path, PathBuf};
+//! Containers on a Host: their lifecycle, and what runs inside one.
 
-use tauri::State;
+use tauri::{ipc::Channel, State};
 
-use crate::{
-    error::AppResult,
-    services::docker::{
-        containers::{self, Container, ContainerAction, Processes},
-        files::{self, FileEntry},
-    },
-    state::AppState,
+use homeport_core::streams::StreamId;
+use homeport_engine::containers::{
+    self,
+    logs::{self, LogEvent, LogOptions, LogSource},
+    run::{self, RunSpec},
+    stats::{self, StatsSample},
+    Container, ContainerAction, Processes,
 };
+
+use crate::{app::AppState, error::AppResult};
 
 #[tauri::command]
 #[specta::specta]
@@ -74,47 +76,46 @@ pub async fn containers_processes(
     containers::processes(&state.hosts.registry.docker(&host_id)?, &id).await
 }
 
+/// Creates and starts a container; returns its id.
 #[tauri::command]
 #[specta::specta]
-pub async fn files_list(
+pub async fn containers_run(
     state: State<'_, AppState>,
     host_id: String,
-    container_id: String,
-    path: String,
-) -> AppResult<Vec<FileEntry>> {
-    files::list(
-        &state.hosts.registry.docker(&host_id)?,
-        &container_id,
-        &path,
-    )
-    .await
-}
-
-/// Saves a container path to `destination`; returns `true` when it was a
-/// directory saved as a `.tar` archive.
-#[tauri::command]
-#[specta::specta]
-pub async fn files_download(
-    state: State<'_, AppState>,
-    host_id: String,
-    container_id: String,
-    path: String,
-    destination: String,
-) -> AppResult<bool> {
-    let docker = state.hosts.registry.docker(&host_id)?;
-    files::download(&docker, &container_id, &path, Path::new(&destination)).await
+    spec: RunSpec,
+) -> AppResult<String> {
+    run::run(&state.hosts.registry.docker(&host_id)?, spec).await
 }
 
 #[tauri::command]
 #[specta::specta]
-pub async fn files_upload(
+pub async fn logs_subscribe(
+    state: State<'_, AppState>,
+    host_id: String,
+    sources: Vec<LogSource>,
+    options: LogOptions,
+    on_event: Channel<LogEvent>,
+) -> AppResult<StreamId> {
+    let docker = state.hosts.registry.docker(&host_id)?;
+    Ok(state
+        .streams
+        .spawn(logs::stream(docker, sources, options, move |e| {
+            on_event.send(e).is_ok()
+        })))
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn stats_subscribe(
     state: State<'_, AppState>,
     host_id: String,
     container_id: String,
-    directory: String,
-    sources: Vec<String>,
-) -> AppResult<()> {
+    on_sample: Channel<StatsSample>,
+) -> AppResult<StreamId> {
     let docker = state.hosts.registry.docker(&host_id)?;
-    let sources: Vec<PathBuf> = sources.into_iter().map(PathBuf::from).collect();
-    files::upload(&docker, &container_id, &directory, &sources).await
+    Ok(state
+        .streams
+        .spawn(stats::stream(docker, container_id, move |s| {
+            on_sample.send(s).is_ok()
+        })))
 }

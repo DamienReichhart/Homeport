@@ -1,0 +1,64 @@
+---
+import lockupDark from '@brand/lockup-dark.svg';
+import lockupLight from '@brand/lockup-light.svg';
+import { REPO_URL } from '@/core/site';
+import { href } from '@/shared/lib/href';
+import { Icon } from '@/shared/ui';
+import ThemeToggle from './ThemeToggle.astro';
+
+const links = [
+  { label: 'Features', path: '/#features' },
+  { label: 'Docs', path: '/docs/' },
+  { label: 'Changelog', path: '/changelog/' },
+];
+const current = Astro.url.pathname;
+---
+
+<header class="site-header">
+  <div class="site-header__inner">
+    <a class="site-header__brand" href={href('/')} aria-label="Homeport home">
+      <img class="only-light" src={lockupLight.src} alt="Homeport" width="127" height="32" />
+      <img class="only-dark" src={lockupDark.src} alt="Homeport" width="127" height="32" />
+    </a>
+
+    <nav class="site-header__nav" aria-label="Main">
+      {links.map((link) => (
+        <a href={href(link.path)} aria-current={current === href(link.path) ? 'page' : undefined}>
+          {link.label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="site-header__actions">
+      <a class="icon-button" href={REPO_URL} aria-label="Homeport on GitHub">
+        <Icon name="github" />
+      </a>
+      <ThemeToggle />
+      <a class="button button--primary button--small" href={href('/download/')}>
+        Download
+      </a>
+
+      <details class="site-header__menu">
+        <summary class="icon-button" aria-label="Menu">
+          <Icon name="menu" />
+        </summary>
+        <div class="site-header__sheet">
+          {links.map((link) => (
+            <a href={href(link.path)}>{link.label}</a>
+          ))}
+          <a href={href('/download/')}>Download</a>
+          <a href={REPO_URL}>GitHub</a>
+        </div>
+      </details>
+    </div>
+  </div>
+</header>
+
+<script>
+  // Close the mobile menu after following an in-page link.
+  for (const menu of document.querySelectorAll<HTMLDetailsElement>('.site-header__menu')) {
+    menu.addEventListener('click', (event) => {
+      if ((event.target as HTMLElement).closest('a')) menu.open = false;
+    });
+  }
+</script>

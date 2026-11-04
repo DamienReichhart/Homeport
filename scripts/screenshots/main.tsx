@@ -34,7 +34,7 @@ const [{ StrictMode }, { createRoot }, { RouterProvider }, providers, router, mo
     import('react-dom/client'),
     import('react-router-dom'),
     import('@/app/providers/AppProviders'),
-    import('@/app/routes/router'),
+    import('@/app/router/router'),
     import('./mocks'),
     import('./data'),
   ]);

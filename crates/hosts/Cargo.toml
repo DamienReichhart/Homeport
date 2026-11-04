@@ -1,0 +1,25 @@
+[package]
+name = "homeport-hosts"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Homeport's Hosts: storing them, keeping a supervised connection to each, and the use cases around them"
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+homeport-core = { workspace = true, features = ["bollard"] }
+homeport-storage.workspace = true
+homeport-transport.workspace = true
+bollard.workspace = true
+tokio.workspace = true
+futures-util.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+specta.workspace = true
+rusqlite.workspace = true
+uuid.workspace = true
+gethostname.workspace = true

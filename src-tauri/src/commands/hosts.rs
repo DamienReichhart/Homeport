@@ -1,14 +1,14 @@
+//! Hosts: adding, editing and connecting to them.
+
 use tauri::State;
 
-use crate::{
-    error::AppResult,
-    services::hosts::{
-        detect::{self, DetectedEngine},
-        registry::EngineEvent,
-        service::{HostInput, HostView, SshSetup},
-    },
-    state::AppState,
+use homeport_hosts::{
+    detect::{self, DetectedEngine},
+    registry::EngineEvent,
+    service::{HostInput, HostView, SshSetup},
 };
+
+use crate::{app::AppState, error::AppResult};
 
 #[tauri::command]
 #[specta::specta]

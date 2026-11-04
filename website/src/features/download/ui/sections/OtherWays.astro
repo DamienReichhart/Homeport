@@ -1,0 +1,84 @@
+---
+/** Previous versions, building from source, and the installers planned for later. */
+import { COMING_LATER } from '@/core/packages';
+import { ISSUES_URL, RELEASES_URL, REPO_URL } from '@/core/site';
+import { href } from '@/shared/lib/href';
+---
+
+<section class="more">
+  <h2>Other ways to get Homeport</h2>
+  <div class="more__grid">
+    <a class="card more__item" href={RELEASES_URL}>
+      <strong>Previous versions</strong>
+      <span>Every release, with notes and files, on GitHub.</span>
+    </a>
+    <a class="card more__item" href={href('/docs/project/building/')}>
+      <strong>Build from source</strong>
+      <span>Bun, Rust and the Tauri prerequisites.</span>
+    </a>
+    <a class="card more__item" href={REPO_URL}>
+      <strong>Source code</strong>
+      <span>MIT licensed, on GitHub.</span>
+    </a>
+  </div>
+  <h3 class="more__later">Coming later</h3>
+  <ul class="later">
+    {COMING_LATER.map((channel) => (
+      <li>
+        <a href={`${ISSUES_URL}/${channel.issue}`}>{channel.name}</a>
+        <span>{channel.what}</span>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .more {
+    margin-top: 4rem;
+  }
+  .more__later {
+    margin: 2rem 0 0.75rem;
+    font-size: 1.05rem;
+  }
+  .later {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .later li {
+    display: grid;
+    gap: 0.1rem;
+    font-size: 0.9rem;
+  }
+  .later span {
+    color: var(--hp-text-muted);
+    font-size: 0.8rem;
+  }
+  .more h2 {
+    margin-bottom: 1.25rem;
+    font-size: 1.35rem;
+  }
+  .more__grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  }
+  .more__item {
+    display: grid;
+    gap: 0.25rem;
+    padding: 1.25rem 1.5rem;
+    color: var(--hp-text);
+    text-decoration: none;
+  }
+  .more__item:hover {
+    border-color: var(--hp-primary);
+    color: var(--hp-text);
+  }
+  .more__item span {
+    color: var(--hp-text-muted);
+    font-size: 0.9rem;
+  }
+</style>
