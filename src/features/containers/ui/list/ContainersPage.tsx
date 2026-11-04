@@ -31,7 +31,7 @@ import {
 } from '@/shared/ui';
 import { useUsage } from '../../api/streams';
 import { groupByStack } from '../../model/grouping';
-import { RenameDialog } from '../dialogs/RenameDialog';
+import { useContainerDialogs } from '../dialogs/ContainerDialogs';
 import { RunContainerDialog } from '../dialogs/RunContainerDialog';
 import { ContainerRow } from './ContainerRow';
 import { SelectionActions } from './SelectionActions';
@@ -47,7 +47,7 @@ function ContainersList({ hostId }: { hostId: string }) {
   const [onlyRunning, setOnlyRunning] = useState(false);
   const [collapsed, setCollapsed] = useState(new Set<string>());
   const [selected, setSelected] = useState(new Set<string>());
-  const [renaming, setRenaming] = useState<Container | null>(null);
+  const [containerDialogs, openDialog] = useContainerDialogs(hostId);
   const [running, setRunning] = useState(false);
 
   if (containers.isPending) return <Spinner />;
@@ -83,7 +83,7 @@ function ContainersList({ hostId }: { hostId: string }) {
       address={address}
       selected={selected.has(c.id)}
       onSelect={(on) => toggle([c.id], on)}
-      onRename={setRenaming}
+      onOpenDialog={openDialog}
       confirm={confirm}
     />
   );
@@ -171,9 +171,7 @@ function ContainersList({ hostId }: { hostId: string }) {
           </Table>
         </div>
       )}
-      {renaming && (
-        <RenameDialog hostId={hostId} container={renaming} onClose={() => setRenaming(null)} />
-      )}
+      {containerDialogs}
       <RunContainerDialog hostId={hostId} open={running} onOpenChange={setRunning} />
       {dialog}
     </div>

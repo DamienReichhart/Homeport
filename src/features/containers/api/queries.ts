@@ -22,6 +22,14 @@ export const containerQueries = {
       queryKey: [...containerKey(hostId, containerId), 'files', path],
       queryFn: () => commands.filesList(hostId, containerId, path),
     }),
+  /** The Run dialog's form for this container, for Duplicate and Edit. */
+  runSpec: (hostId: string, containerId: string) =>
+    queryOptions({
+      queryKey: [...containerKey(hostId, containerId), 'run-spec'],
+      queryFn: () => commands.containersRunSpec(hostId, containerId),
+      staleTime: 0,
+      gcTime: 0,
+    }),
   processes: (hostId: string, containerId: string) =>
     queryOptions({
       queryKey: [...containerKey(hostId, containerId), 'processes'],

@@ -26,6 +26,7 @@ import {
 import { containerQueries } from '../../api/queries';
 import { containerTone } from '../../model/containerTone';
 import { LogViewer } from '../logs/LogViewer';
+import { useContainerDialogs } from '../dialogs/ContainerDialogs';
 import { ContainerActions } from './ContainerActions';
 import { ExecTab } from './tabs/ExecTab';
 import { FilesTab } from './tabs/FilesTab';
@@ -48,6 +49,7 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
   const navigate = useNavigate();
   const containers = useContainers(hostId);
   const [dialog, confirm] = useConfirm();
+  const [containerDialogs, openDialog] = useContainerDialogs(hostId);
   const freshness = indexFreshness(useQuery(resourceQueries.freshness(hostId)).data);
   const container = containers.data?.find((c) => c.id === id || c.id.startsWith(id));
   const inspect = useQuery({
@@ -99,7 +101,14 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
             <span>· {container.status || container.state}</span>
           </span>
         }
-        actions={<ContainerActions hostId={hostId} container={container} confirm={confirm} />}
+        actions={
+          <ContainerActions
+            hostId={hostId}
+            container={container}
+            confirm={confirm}
+            onOpenDialog={openDialog}
+          />
+        }
       />
       <Tabs
         value={tab}
@@ -139,6 +148,7 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
         </TabsContent>
       </Tabs>
       {dialog}
+      {containerDialogs}
     </div>
   );
 }

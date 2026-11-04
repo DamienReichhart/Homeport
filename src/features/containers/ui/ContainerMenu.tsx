@@ -1,4 +1,5 @@
 import {
+  CopyIcon,
   EllipsisVerticalIcon,
   PauseIcon,
   PencilIcon,
@@ -25,18 +26,19 @@ import {
 } from '@/shared/ui';
 import type { ConfirmOptions } from '@/shared/ui';
 import { useContainerMutations } from '../api/mutations';
+import type { ContainerDialogRequest } from './dialogs/ContainerDialogs';
 import { removeConfirmation } from './removeConfirmation';
 
 /** Start/stop toggle plus the overflow menu of a container row. */
 export function ContainerMenu({
   hostId,
   container,
-  onRename,
+  onOpenDialog,
   confirm,
 }: {
   hostId: string;
   container: Container;
-  onRename: (c: Container) => void;
+  onOpenDialog: (request: ContainerDialogRequest) => void;
   confirm: (options: ConfirmOptions) => void;
 }) {
   const navigate = useNavigate();
@@ -111,8 +113,11 @@ export function ContainerMenu({
           >
             <SkullIcon /> Kill
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => onRename(container)}>
+          <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'rename', container })}>
             <PencilIcon /> Rename
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => onOpenDialog({ kind: 'duplicate', container })}>
+            <CopyIcon /> Duplicate
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
