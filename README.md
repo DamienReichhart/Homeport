@@ -15,7 +15,7 @@ A desktop app for managing Docker Engines anywhere — this machine's, or remote
 
 - **Hosts**: add local sockets (auto-detected: Docker Engine, Docker Desktop, Colima, OrbStack, Rancher Desktop, Podman), TCP, mutual TLS and SSH. SSH Hosts get their own Ed25519 key with a copy-paste command to authorize it; server keys are trusted on first use. Status, reconnection with backoff and a live event stream per Host.
 - **Containers**: grouped by Stack, live CPU/memory, lifecycle and bulk actions, logs (follow, search, download), inspect, interactive terminals, file browser with upload/download, stats charts, processes, and a Run dialog.
-- **Images, Volumes, Networks**: pull and push with progress and stored registry logins, build from a folder on this machine, tag, run, history, prune; volume and network usage, create, connect/disconnect, guarded deletion.
+- **Images, Volumes, Networks**: pull and push with progress and stored registry logins, build from a folder on this machine, save to and load from a tar file, tag, run, history, prune; volume and network usage, create, connect/disconnect, guarded deletion.
 - **Stacks**: every Compose project on a Host. Managed Stacks keep their YAML and encrypted environment in Homeport and deploy through the `docker compose` CLI; External Stacks can be started, stopped, removed or adopted.
 - **Overview**: per-host cards, engine details, disk usage and clean-up, recent events.
 

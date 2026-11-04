@@ -1,6 +1,6 @@
 ---
 title: Images
-description: Pull, build, push, tag, inspect, run and remove images, and clean up what nothing uses.
+description: Pull, build, push, save, load, tag, inspect, run and remove images, and clean up what nothing uses.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -69,6 +69,17 @@ Choose **Push** in an image's **⋮** menu. **Name to push** starts as the image
 Homeport pushes through the Host's Engine with the [registry login](/docs/guides/settings/#registries) stored for that registry, and says which one under the name (**Pushed as alice on ghcr.io**). With no login stored, the dialog warns before you start, since most registries refuse anonymous pushes. While it runs, the dialog counts the layers pushed and those the registry already had, and shows the upload in progress; **Cancel** stops the push.
 
 If the registry refuses, the message says whether to add a login or to check that the stored one may push to that repository.
+
+## Saving and loading images
+
+To move images to a Host that can't reach a registry — an air-gapped server, a Raspberry Pi on a home network — save them to a file on this computer and load the file into the other Host.
+
+- **Save…** in an image's **⋮** menu writes it, with all its names, to one `.tar` file you choose. To save several at once, tick them in the list and choose **Save N images…** at the top of the page.
+- **Load…** at the top of the page reads a `.tar` made by **Save…** or `docker save` — compressed `.tar.gz` too — into the selected Host. When it's done, the dialog names the images it loaded, with their tags.
+
+The file travels between this computer and the Host over the Host's own connection, so this works for remote Hosts too. Progress shows the bytes written or sent; **Cancel** stops it, and a cancelled or failed save leaves no partial file behind. Homeport never holds the whole archive in memory, so images of several gigabytes are fine.
+
+An image archive keeps an image's layers, history and names, ready to run. It isn't the same as exporting a container's filesystem, which flattens one container's files into a plain tar with no history.
 
 ## Working with an image
 
