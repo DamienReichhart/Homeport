@@ -1,0 +1,13 @@
+/*
+ * The marketing pages' global styles (home, download, changelog), in cascade
+ * order: a later file wins a tie with an earlier one. Tokens come from theme.css;
+ * a section's own styles live in its component.
+ */
+@import './base.css';
+@import './buttons.css';
+@import './header.css';
+@import './footer.css';
+@import './sections.css';
+@import './window.css';
+@import './prose.css';
+@import './motion.css';
