@@ -67,6 +67,11 @@ export const commands = {
 	imagesPullSubscribe: (hostId: string, reference: string, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("images_pull_subscribe", { hostId, reference, onEvent }),
 	/**  Pushes an image name to its registry with the stored login, streaming progress. */
 	imagesPushSubscribe: (hostId: string, reference: string, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("images_push_subscribe", { hostId, reference, onEvent }),
+	/**
+	 *  Builds an image on a Host from a folder on this machine, streaming the
+	 *  output. Every stored login is sent, for private `FROM` images.
+	 */
+	imagesBuildSubscribe: (hostId: string, spec: BuildSpec, onEvent: Channel<BuildEvent>) => __TAURI_INVOKE<number>("images_build_subscribe", { hostId, spec, onEvent }),
 	execStart: (hostId: string, containerId: string, options: ExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("exec_start", { hostId, containerId, options, onEvent }),
 	execInput: (session: number, data: string) => __TAURI_INVOKE<null>("exec_input", { session, data }),
 	execResize: (session: number, cols: number, rows: number) => __TAURI_INVOKE<null>("exec_resize", { session, cols, rows }),
@@ -143,6 +148,32 @@ export type AvailableUpdate = {
 	notes: string | null,
 	/**  RFC 3339 publication date. */
 	date: string | null,
+};
+
+export type BuildArg = {
+	name: string,
+	value: string,
+};
+
+export type BuildEvent = 
+/**  A line of the build's output. */
+{ type: "line"; text: string } | 
+/**  The image was built and named. */
+{ type: "done"; imageId: string | null; tags: string[] } | { type: "error"; error: AppError };
+
+export type BuildSpec = {
+	/**  The build context: a folder on this machine. */
+	context: string,
+	/**  Relative to the context; `Dockerfile` when empty. */
+	dockerfile: string,
+	buildArgs: BuildArg[],
+	/**  The stage to stop at, for multi-stage Dockerfiles. */
+	target: string | null,
+	/**  `repo:tag` names for the result; the first is applied by the build. */
+	tags: string[],
+	noCache: boolean,
+	/**  Pull newer versions of the `FROM` images even if the Host has them. */
+	pull: boolean,
 };
 
 /**  What this machine can do; features degrade gracefully when something is missing. */
@@ -272,7 +303,7 @@ export type EngineInfo = {
 /**  Stable machine-readable identifier of a failure, one per case the user can act on. */
 export type ErrorCode = 
 /**  A failure that started in the frontend, outside any command. */
-"unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | "host_not_connected" | "engine_not_installed" | "engine_not_running" | "permission_denied" | "dns_failed" | "connection_refused" | "timeout" | "network_unreachable" | "connection_lost" | "tls_required" | "tls_not_supported" | "tls_certificate_expired" | "tls_certificate_not_yet_valid" | "tls_unknown_ca" | "tls_name_mismatch" | "tls_client_rejected" | "tls_handshake_failed" | "tls_material_invalid" | "ssh_auth_failed" | "ssh_agent_unavailable" | "ssh_key_invalid" | "ssh_failed" | "remote_engine_unavailable" | "host_key_untrusted" | "host_key_changed" | "engine_error" | "bad_request" | "forbidden" | "conflict" | "name_in_use" | "in_use" | "container_running" | "container_not_running" | "already_done" | "port_in_use" | "disk_full" | "image_not_found" | "registry_auth_required" | "registry_rate_limited" | "registry_unreachable" | "registry_login_failed" | "api_version_unsupported" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
+"unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | "host_not_connected" | "engine_not_installed" | "engine_not_running" | "permission_denied" | "dns_failed" | "connection_refused" | "timeout" | "network_unreachable" | "connection_lost" | "tls_required" | "tls_not_supported" | "tls_certificate_expired" | "tls_certificate_not_yet_valid" | "tls_unknown_ca" | "tls_name_mismatch" | "tls_client_rejected" | "tls_handshake_failed" | "tls_material_invalid" | "ssh_auth_failed" | "ssh_agent_unavailable" | "ssh_key_invalid" | "ssh_failed" | "remote_engine_unavailable" | "host_key_untrusted" | "host_key_changed" | "engine_error" | "bad_request" | "forbidden" | "conflict" | "name_in_use" | "in_use" | "container_running" | "container_not_running" | "already_done" | "port_in_use" | "disk_full" | "image_not_found" | "registry_auth_required" | "registry_rate_limited" | "registry_unreachable" | "registry_login_failed" | "api_version_unsupported" | "build_failed" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
 
 export type ExecEvent = { type: "output"; data: string } | 
 /**  `error` explains an exit that means the command couldn't run. */

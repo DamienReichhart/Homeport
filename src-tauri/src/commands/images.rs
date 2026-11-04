@@ -3,7 +3,10 @@
 use tauri::{ipc::Channel, State};
 
 use homeport_core::{error::AppError, streams::StreamId};
-use homeport_engine::images::{self, Image, ImageLayer, PruneReport, PullEvent};
+use homeport_engine::{
+    build::{self, BuildEvent, BuildSpec},
+    images::{self, Image, ImageLayer, PruneReport, PullEvent},
+};
 
 use crate::{app::AppState, commands::registries, error::AppResult};
 
@@ -110,4 +113,24 @@ fn explain_event(explain: &impl Fn(AppError) -> AppError, event: PullEvent) -> P
         },
         e => e,
     }
+}
+
+/// Builds an image on a Host from a folder on this machine, streaming the
+/// output. Every stored login is sent, for private `FROM` images.
+#[tauri::command]
+#[specta::specta]
+pub async fn images_build_subscribe(
+    state: State<'_, AppState>,
+    host_id: String,
+    spec: BuildSpec,
+    on_event: Channel<BuildEvent>,
+) -> AppResult<StreamId> {
+    build::validate(&spec)?;
+    let docker = state.hosts.registry.docker(&host_id)?;
+    let logins = registries::logins(&state)?.all().to_vec();
+    Ok(state
+        .streams
+        .spawn(build::build(docker, spec, logins, move |e| {
+            on_event.send(e).is_ok()
+        })))
 }
