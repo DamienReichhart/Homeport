@@ -383,7 +383,7 @@ mod tests {
                 address: "h:2375".into(),
             },
             dialer: None,
-            docker: testing::docker(),
+            docker: testing::offline(),
             logins: Logins::new(
                 vec![homeport_engine::auth::RegistryAuth {
                     address: "ghcr.io".into(),
