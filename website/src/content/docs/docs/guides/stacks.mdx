@@ -13,30 +13,32 @@ A **Stack** is a Compose project running on a Host. Homeport finds every Stack o
   alt="The Stacks page, listing Managed and External Stacks with their state and services."
 />
 
-## Managed, Linked and External Stacks
+## Managed, Linked, Synced and External Stacks
 
-Every Stack is one of three kinds:
+Every Stack is one of four kinds:
 
 | Kind         | Where its compose file is                         | Edit | Deploy | Build | Start, stop, remove |
 | ------------ | ------------------------------------------------- | ---- | ------ | ----- | ------------------- |
 | **Managed**  | In Homeport, with its environment encrypted       | ✓    | ✓      | —     | ✓                   |
 | **Linked**   | In its project folder on **this** computer        | ✓    | ✓      | ✓     | ✓                   |
+| **Synced**   | In a git repository Homeport clones and follows   | git  | ✓      | ✓     | ✓                   |
 | **External** | Nowhere Homeport can see: deployed some other way | —    | —      | —     | ✓                   |
 
 - A **Managed Stack** is one whose compose file and environment Homeport keeps. You can edit it, deploy it and take it down from Homeport.
 - A **Linked Stack** is one whose compose files are a folder on this computer, where you keep editing them. Homeport remembers where the folder is, works on the files there and deploys from it. See [Linked Stacks](#linked-stacks).
+- A **Synced Stack** is one whose compose file comes from a git repository. Homeport fetches its branch or tag, shows what changed, and deploys the new commit; it's edited through git, never in Homeport. See [Synced Stacks](/docs/guides/synced-stacks/).
 - An **External Stack** was deployed some other way — `docker compose up` on the server, a CI job, another tool, or from a folder on another computer. Homeport can start, stop, restart and remove its containers, but has no compose file to redeploy it from. You can [adopt](#adopting-an-external-stack) it to make it Managed.
 
 Each Stack shows one of these states:
 
-| State              | Meaning                                           |
-| ------------------ | ------------------------------------------------- |
-| **Running**        | All of its containers are running.                |
-| **Partly running** | Some are.                                         |
-| **Stopped**        | None are.                                         |
-| **Not deployed**   | A Managed or Linked Stack with no containers yet. |
+| State              | Meaning                                                   |
+| ------------------ | --------------------------------------------------------- |
+| **Running**        | All of its containers are running.                        |
+| **Partly running** | Some are.                                                 |
+| **Stopped**        | None are.                                                 |
+| **Not deployed**   | A Managed, Linked or Synced Stack with no containers yet. |
 
-Managed and Linked Stacks belong to one Host. To run the same compose file on two Hosts, create a Stack on each.
+Managed, Linked and Synced Stacks belong to one Host. To run the same compose file on two Hosts, create a Stack on each.
 
 ## Linked Stacks
 

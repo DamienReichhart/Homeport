@@ -53,3 +53,27 @@ Paste the repository's `https://` URL, choose **Token**, then enter the user nam
 </Aside>
 
 Removing a repository deletes its key or token and its clone on this computer. It's refused while a Synced Stack uses it.
+
+## Creating a Synced Stack
+
+<Steps>
+
+1. Open **Stacks** on the Host to deploy to, choose **New stack**, then **Use a git repository**.
+
+2. Pick the **Repository**, or **Add repository** to add one there.
+
+3. Choose a **Branch** or a **Tag**. Homeport lists them from the repository's server, its default branch first.
+
+4. Enter the path of the **Compose file**, relative to the repository's root: `compose.yaml`, or `deploy/prod/compose.yaml`. Its folder is the project folder, so `build:`, `env_file:` and relative paths in it work as they would in a clone of your own.
+
+5. Check the **Name** (it comes from the repository's name), and add an **Environment** for what doesn't belong in git, such as passwords: `KEY=value` lines, encrypted on this computer and given to Compose as variables when it deploys.
+
+6. Choose **Save and deploy** — or **Save** to deploy later.
+
+</Steps>
+
+Homeport fetches the branch or tag and reads the compose file before it stores anything, so a wrong path, branch or tag, or a file Compose couldn't deploy, is reported right away. The Stack is listed as **Synced** and **Not deployed** until its first deploy; its **Definition** tab shows its repository, branch or tag, compose file, and the commit it deployed.
+
+The repository is cloned once on this computer, in a `repositories` folder next to Homeport's database, and shared by every Synced Stack made from it. Each Synced Stack deploys from its own checkout of the commit, in a `synced-stacks` folder there, which stays in place between deploys: files your containers write through relative bind mounts stay where they were. Symbolic links in the repository are checked out as plain files, so a compose file can't point Compose at a file elsewhere on this computer.
+
+**Forget** stops Homeport following the repository. Its containers keep running and it becomes an External Stack; its checkout is deleted unless containers wrote files into it, and the repository's clone goes once no Synced Stack uses it. The repository stays in **Settings → Repositories**.
