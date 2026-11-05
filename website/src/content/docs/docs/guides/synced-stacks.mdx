@@ -92,3 +92,20 @@ Choose **Deploy** to deploy that exact commit: Homeport checks it out in the Sta
 - If the fetch fails (the deploy key was removed, the server can't be reached) or the deploy fails, Homeport shows why and what to do, and the Stack keeps its deployed commit.
 
 **Redeploy** deploys the commit that's deployed now again, after showing what changed in its environment or profiles. **Deploy** on a Stack that was never deployed deploys the commit fetched when it was created. A Synced Stack can't be rolled back from Homeport: revert the change in its repository, or point the Stack at an earlier tag, then sync.
+
+## Polling and auto-deploy
+
+<Aside type="caution" title="Only while Homeport is open">
+  Homeport checks your repositories only while it's open. **Nothing syncs while it's closed**:
+  there's no agent on your servers and no webhook, since Homeport installs nothing there. When you
+  open it again, it waits one interval before its first check.
+</Aside>
+
+While Homeport is open, it fetches each Synced Stack's branch or tag on an interval — every 5 minutes by default, set in **Settings → Synced Stacks** (at least 1 minute). Each repository is fetched once per round, whatever number of Stacks use it, and one that keeps failing is tried less and less often, up to once an hour.
+
+When a new commit changes the compose file's folder, the Stack shows **Update available** in the list and on its page. **Sync** shows what changed and deploys it. The Stack's **Definition** tab says when it was **last checked**, and why the last check failed if it did.
+
+Two switches on the **Definition** tab control this, per Stack:
+
+- **Check for new commits**, on by default. Turn it off to sync only when you choose **Sync**.
+- **Deploy new commits automatically**, off by default. When on, Homeport deploys each new commit as soon as it sees it, **without showing you what changed first**, through the same steps as **Sync**; the deploy is recorded in the **History** as automatic, and a notification says when it's done. It waits while the Host can't be reached. If it fails, Homeport shows why and doesn't try that commit again: the next commit, or a **Sync** you deploy yourself, does.
