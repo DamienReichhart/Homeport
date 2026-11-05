@@ -78,5 +78,7 @@ describe('stacks page', () => {
     // Only the External Stack Homeport has no record of can be adopted.
     expect(screen.getAllByRole('button', { name: 'Adopt' })).toHaveLength(1);
     expect(screen.getByRole('button', { name: /Deploy/ })).toBeEnabled();
+    // The running Linked Stack redeploys from its folder.
+    expect(screen.getByRole('button', { name: /Redeploy/ })).toBeEnabled();
   });
 });

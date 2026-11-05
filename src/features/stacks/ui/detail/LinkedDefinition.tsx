@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { type ReactNode, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toAppError, type LinkedFiles, type Stack } from '@/shared/api';
+import { toAppError, useCapabilities, type LinkedFiles, type Stack } from '@/shared/api';
 import {
   Alert,
   AlertDescription,
@@ -22,6 +22,7 @@ import {
 import { useForgetLinked, useReloadLinked, useWriteLinked } from '../../api/mutations';
 import { stackQueries } from '../../api/queries';
 import { useComposeCheck } from '../../api/useComposeCheck';
+import type { ComposeJob } from '../../model/composeJob';
 import { changedOutside, dirtyFiles, fileName, textOf, type Drafts } from '../../model/linkedEdit';
 import { ComposeChecks } from '../ComposeChecks';
 import { YamlEditor } from '../YamlEditor';
@@ -37,10 +38,12 @@ export function LinkedDefinition({
   hostId,
   stack,
   linkedId,
+  onDeploy,
 }: {
   hostId: string;
   stack: Stack;
   linkedId: string;
+  onDeploy: (job: ComposeJob) => void;
 }) {
   const missing = stack.problem === 'filesMissing';
   const files = useQuery({ ...stackQueries.linked(linkedId), enabled: !missing });
@@ -75,6 +78,9 @@ export function LinkedDefinition({
       opened={files.data}
       current={files.data}
       onRestart={() => setVersion((v) => v + 1)}
+      onDeploy={() =>
+        onDeploy({ kind: 'linked', stackId: linkedId, name: stack.name, action: 'up' })
+      }
       forget={forget}
     />
   );
@@ -86,14 +92,17 @@ function LinkedEditor({
   opened,
   current,
   onRestart,
+  onDeploy,
   forget,
 }: {
   linkedId: string;
   opened: LinkedFiles;
   current: LinkedFiles;
   onRestart: () => void;
+  onDeploy: () => void;
   forget: ReactNode;
 }) {
+  const capabilities = useCapabilities();
   const [base] = useState(opened);
   const [drafts, setDrafts] = useState<Drafts>({});
   const [active, setActive] = useState(base.files[0]?.path ?? '');
@@ -102,19 +111,27 @@ function LinkedEditor({
     'linked',
   );
   const reload = useReloadLinked(linkedId, onRestart);
-  const write = useWriteLinked(linkedId, onRestart);
+  const write = useWriteLinked(linkedId, (_, deploy) => {
+    onRestart();
+    if (deploy) onDeploy();
+  });
   const dirty = dirtyFiles(base, drafts);
   const outside = changedOutside(base, current);
   const conflict = write.error && toAppError(write.error).code === 'stack_files_changed';
-  const save = (overwrite: boolean) =>
+  const canDeploy =
+    capabilities.data?.compose.state === 'available' && check !== null && check.errors.length === 0;
+  const save = (overwrite: boolean, deploy: boolean) => {
+    // Nothing to write: redeploy what's in the folder.
+    if (dirty.length === 0) return deploy && onDeploy();
     write.mutate({
       files: dirty.map((f) => ({
         path: f.path,
         content: textOf(f, drafts),
         expected: overwrite ? null : f.fingerprint,
       })),
-      deploy: false,
+      deploy,
     });
+  };
   const file = base.files.find((f) => f.path === active) ?? base.files[0];
 
   return (
@@ -168,11 +185,22 @@ function LinkedEditor({
       </div>
       {write.error && <ErrorMessage error={write.error} />}
       <div className="flex flex-wrap gap-2">
-        <Button disabled={write.isPending || dirty.length === 0} onClick={() => save(false)}>
+        <Button disabled={write.isPending || !canDeploy} onClick={() => save(false, true)}>
+          {t('stacks.linked.saveAndRedeploy')}
+        </Button>
+        <Button
+          variant="outline"
+          disabled={write.isPending || dirty.length === 0}
+          onClick={() => save(false, false)}
+        >
           {t('common.save')}
         </Button>
         {conflict && (
-          <Button variant="destructive" disabled={write.isPending} onClick={() => save(true)}>
+          <Button
+            variant="destructive"
+            disabled={write.isPending}
+            onClick={() => save(true, false)}
+          >
             {t('stacks.linked.overwrite')}
           </Button>
         )}

@@ -201,6 +201,29 @@ fn review(files: &[&str], kind: SourceKind) -> Review {
     check
 }
 
+/// The bind mounts of `files` (merged) whose source is a relative path, by
+/// service.
+pub fn relative_binds(files: &[&str]) -> Vec<(String, String)> {
+    let docs: Vec<Value> = files
+        .iter()
+        .filter_map(|f| serde_yaml_ng::from_str(f).ok())
+        .collect();
+    let mut binds = Vec::new();
+    for (name, service) in merge(&docs).services.unwrap_or_default() {
+        for volume in service
+            .get("volumes")
+            .and_then(Value::as_sequence)
+            .into_iter()
+            .flatten()
+        {
+            if let Some(source) = bind_source(volume).filter(|s| is_relative(s)) {
+                binds.push((name.clone(), source));
+            }
+        }
+    }
+    binds
+}
+
 /// The host side of a service volume, when it's a path rather than a named volume.
 fn bind_source(volume: &Value) -> Option<String> {
     match volume {
@@ -329,6 +352,15 @@ mod tests {
         assert_eq!(
             check(&[base, "volumes:\n  data: {}\n"], SourceKind::Managed),
             ComposeCheck::default()
+        );
+    }
+
+    #[test]
+    fn relative_binds_are_listed_by_service() {
+        let base = "services:\n  app:\n    image: x\n    volumes:\n      - ./data:/data\n      - /srv/abs:/abs\n      - named:/named\n";
+        assert_eq!(
+            relative_binds(&[base]),
+            [("app".to_owned(), "./data".to_owned())]
         );
     }
 

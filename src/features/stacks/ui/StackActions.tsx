@@ -1,4 +1,5 @@
 import {
+  HammerIcon,
   CloudDownloadIcon,
   EllipsisVerticalIcon,
   PlayIcon,
@@ -24,7 +25,7 @@ import { t } from '@/shared/i18n';
 
 /**
  * The actions of a Stack. Lifecycle works for every Stack; deploying needs
- * a Managed Stack and the compose CLI.
+ * a Managed or Linked Stack and the compose CLI.
  */
 export function StackActions({
   hostId,
@@ -43,18 +44,20 @@ export function StackActions({
   const capabilities = useCapabilities();
   const { act, remove } = useStackMutations(hostId);
   const support = capabilities.data?.compose;
-  // Only Managed Stacks deploy for now.
-  const managedId = stack.kind === 'managed' ? stack.id : null;
-  const canCompose = managedId !== null && support?.state === 'available';
+  // Managed and Linked Stacks have a definition to deploy; External ones don't.
+  const source = stack.kind === 'external' ? null : stack.kind;
+  const deployable = source !== null && stack.id !== null;
+  const canCompose = deployable && support?.state === 'available';
   const compose = (action: ComposeJob['action']) => {
-    if (managedId) onCompose({ stackId: managedId, name: stack.name, action });
+    if (source && stack.id)
+      onCompose({ kind: source, stackId: stack.id, name: stack.name, action });
   };
   const deployed = stack.state !== 'notDeployed';
   const size = compact ? 'sm' : 'default';
 
   return (
     <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
-      {managedId ? (
+      {deployable ? (
         <Button
           size={size}
           disabled={!canCompose}
@@ -113,13 +116,18 @@ export function StackActions({
           >
             <RotateCwIcon /> {t('stacks.action.restart')}
           </DropdownMenuItem>
-          {managedId && (
+          {source === 'linked' && (
+            <DropdownMenuItem disabled={!canCompose} onSelect={() => compose('rebuild')}>
+              <HammerIcon /> {t('stacks.action.rebuild')}
+            </DropdownMenuItem>
+          )}
+          {deployable && (
             <DropdownMenuItem disabled={!canCompose} onSelect={() => compose('pull')}>
               <CloudDownloadIcon /> {t('stacks.action.pull')}
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
-          {managedId ? (
+          {deployable ? (
             <>
               <DropdownMenuItem
                 variant="destructive"

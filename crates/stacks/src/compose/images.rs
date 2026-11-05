@@ -38,15 +38,20 @@ struct Config {
 struct Service {
     image: Option<String>,
     pull_policy: Option<String>,
+    /// Built from local files; its `image:` names the result, not something to pull.
+    build: Option<serde_json::Value>,
 }
 
 /// The images to pull, from `docker compose config --format json`. Services
-/// with `pull_policy: never` or `build` are left to compose; several services
-/// running one image pull it once.
+/// with `build:`, or with `pull_policy: never` or `build`, are left to
+/// compose; several services running one image pull it once.
 pub(super) fn from_config(json: &str) -> AppResult<Vec<StackImage>> {
     let config: Config = serde_json::from_str(json)?;
     let mut images: Vec<StackImage> = Vec::new();
     for (name, service) in config.services {
+        if service.build.is_some() {
+            continue;
+        }
         let Some(image) = service.image.filter(|i| !i.trim().is_empty()) else {
             continue;
         };
@@ -81,7 +86,9 @@ pub(super) async fn needed(
     for image in images {
         let wanted = match action {
             ComposeAction::Pull => true,
-            ComposeAction::Up => image.always || docker.inspect_image(&image.image).await.is_err(),
+            ComposeAction::Up | ComposeAction::Rebuild => {
+                image.always || docker.inspect_image(&image.image).await.is_err()
+            }
             ComposeAction::Down | ComposeAction::DownWithVolumes => false,
         };
         if wanted {
@@ -170,6 +177,7 @@ mod tests {
                 "api": { "image": "ghcr.io/org/app:1" },
                 "cache": { "image": "redis:7", "pull_policy": "never" },
                 "local": { "image": "built", "pull_policy": "build" },
+                "app": { "image": "shop-app", "build": { "context": "/srv/shop" } },
                 "nightly": { "image": "app:nightly", "pull_policy": "daily" },
                 "noimage": { "command": ["true"] }
             }

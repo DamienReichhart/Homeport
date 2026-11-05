@@ -5,7 +5,7 @@ import { commands, subscribe, type AppError, type ComposeEvent } from '@/shared/
 import type { ComposeJob } from '../model/composeJob';
 
 /**
- * Runs compose jobs for a Managed Stack and streams their output. When a run
+ * Runs compose jobs for a Managed or Linked Stack and streams their output. When a run
  * ends, everything cached about the Host is refreshed, since compose can
  * touch any of it. The returned function starts a run and returns its
  * canceller.
@@ -15,7 +15,7 @@ export function useComposeRun(hostId: string) {
   return useCallback(
     (job: ComposeJob, onEvent: (event: ComposeEvent) => void, onError: (error: AppError) => void) =>
       subscribe<ComposeEvent>(
-        (ch) => commands.stacksComposeSubscribe(job.stackId, job.action, ch),
+        (ch) => commands.stacksComposeSubscribe(job.kind, job.stackId, job.action, ch),
         (event) => {
           onEvent(event);
           if (event.type === 'exit')

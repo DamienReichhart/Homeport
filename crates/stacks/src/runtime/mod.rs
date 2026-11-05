@@ -25,7 +25,7 @@ use crate::{
     lifecycle::{self, StackAction},
 };
 
-pub(crate) use self::source::Prepared;
+pub(crate) use self::source::{Prepared, WorkDir};
 
 /// Where a Stack's compose definition comes from. External Stacks have none.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -33,6 +33,13 @@ pub enum StackSource {
     /// A definition Homeport holds: sent to compose on stdin, with its
     /// environment as process variables, so nothing is written to disk.
     Managed { compose: String, env: String },
+    /// Compose files in a folder on this machine (ADR 0008): compose runs in
+    /// the folder, so `build:`, `env_file:` and relative paths work.
+    Linked {
+        working_dir: std::path::PathBuf,
+        /// Absolute paths, in the order compose merges them.
+        config_files: Vec<String>,
+    },
 }
 
 /// The kinds of source, for the rules a definition is checked against.
@@ -47,6 +54,7 @@ impl StackSource {
     pub fn kind(&self) -> SourceKind {
         match self {
             Self::Managed { .. } => SourceKind::Managed,
+            Self::Linked { .. } => SourceKind::Linked,
         }
     }
 }
@@ -71,6 +79,14 @@ impl StackTarget {
     pub fn docker(&self) -> &Docker {
         match self {
             Self::Host { docker, .. } => docker,
+        }
+    }
+
+    /// Whether the target is this machine, where a path here means the same
+    /// file to the Engine.
+    pub fn is_local(&self) -> bool {
+        match self {
+            Self::Host { connection, .. } => matches!(connection, HostConnection::Local { .. }),
         }
     }
 

@@ -156,30 +156,55 @@ pub async fn stacks_remove(
     runtime::remove(&target(&state, &host_id)?, &name).await
 }
 
-/// Runs a compose command for a Managed Stack, streaming its output.
+/// Runs a compose command for the Managed or Linked Stack `id`, streaming
+/// its output.
 #[tauri::command]
 #[specta::specta]
 pub async fn stacks_compose_subscribe(
     state: State<'_, AppState>,
+    kind: SourceKind,
     id: String,
     action: ComposeAction,
     on_event: Channel<ComposeEvent>,
 ) -> AppResult<StreamId> {
-    let stack = state.stacks.get(&id)?;
+    let (host_id, project, source) = source(&state, kind, &id)?;
     let job = ComposeJob {
         cli: compose::detect().await?,
-        source: StackSource::Managed {
-            env: state.stacks.env(&id)?,
-            compose: stack.compose,
-        },
-        target: target(&state, &stack.host_id)?,
+        source,
+        target: target(&state, &host_id)?,
         logins: registries::logins(&state)?,
-        project: stack.name,
+        project,
         action,
     };
     Ok(state
         .streams
         .spawn(runtime::run(job, move |e| on_event.send(e).is_ok())))
+}
+
+/// The Host, name and source of the Managed or Linked Stack `id`.
+fn source(
+    state: &AppState,
+    kind: SourceKind,
+    id: &str,
+) -> AppResult<(String, String, StackSource)> {
+    Ok(match kind {
+        SourceKind::Managed => {
+            let stack = state.stacks.get(id)?;
+            let source = StackSource::Managed {
+                env: state.stacks.env(id)?,
+                compose: stack.compose,
+            };
+            (stack.host_id, stack.name, source)
+        }
+        SourceKind::Linked => {
+            let stack = state.linked.get(id)?;
+            let source = StackSource::Linked {
+                working_dir: stack.working_dir.into(),
+                config_files: stack.config_files,
+            };
+            (stack.host_id, stack.name, source)
+        }
+    })
 }
 
 /// Where the Stacks of `host_id` run: its Compose projects.

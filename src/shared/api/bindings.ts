@@ -179,8 +179,11 @@ export const commands = {
 	stacksAct: (hostId: string, name: string, action: StackAction) => __TAURI_INVOKE<null>("stacks_act", { hostId, name, action }),
 	/**  Removes a Stack's containers and networks through the Engine API. */
 	stacksRemove: (hostId: string, name: string) => __TAURI_INVOKE<null>("stacks_remove", { hostId, name }),
-	/**  Runs a compose command for a Managed Stack, streaming its output. */
-	stacksComposeSubscribe: (id: string, action: ComposeAction, onEvent: Channel<ComposeEvent>) => __TAURI_INVOKE<number>("stacks_compose_subscribe", { id, action, onEvent }),
+	/**
+	 *  Runs a compose command for the Managed or Linked Stack `id`, streaming
+	 *  its output.
+	 */
+	stacksComposeSubscribe: (kind: SourceKind, id: string, action: ComposeAction, onEvent: Channel<ComposeEvent>) => __TAURI_INVOKE<number>("stacks_compose_subscribe", { kind, id, action, onEvent }),
 };
 
 /** Events */
@@ -321,9 +324,15 @@ export type CommitSpec = {
 export type ComposeAction = 
 /**
  *  `up -d --remove-orphans`: deploy or redeploy, after pulling the
- *  images the Host lacks through the Engine API.
+ *  images the Host lacks through the Engine API. Builds what has no
+ *  image yet.
  */
 "up" | 
+/**
+ *  `up -d --remove-orphans --build`: also rebuilds every service with
+ *  `build:` first.
+ */
+"rebuild" | 
 /**  Pulls every service's image through the Engine API; compose isn't run. */
 "pull" | 
 /**  `down --remove-orphans`, keeping volumes. */

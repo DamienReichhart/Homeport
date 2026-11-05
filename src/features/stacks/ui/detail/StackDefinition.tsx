@@ -29,7 +29,9 @@ export function StackDefinition({
 }) {
   // A Linked Stack, or one shown as External while its files are missing.
   if (stack.id && (stack.kind === 'linked' || stack.problem === 'filesMissing'))
-    return <LinkedDefinition hostId={hostId} stack={stack} linkedId={stack.id} />;
+    return (
+      <LinkedDefinition hostId={hostId} stack={stack} linkedId={stack.id} onDeploy={onDeploy} />
+    );
   return <OwnDefinition hostId={hostId} stack={stack} onDeploy={onDeploy} />;
 }
 

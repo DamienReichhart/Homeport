@@ -28,7 +28,7 @@ use homeport_transport::proxy;
 use self::error as errors;
 use crate::{
     definition,
-    runtime::{ComposeJob, Prepared, StackTarget},
+    runtime::{ComposeJob, Prepared, StackTarget, WorkDir},
 };
 
 /// Lines of stderr kept to explain a failed run.
@@ -94,8 +94,12 @@ async fn version_of(program: &std::path::Path, prefix: &[&str]) -> Option<String
 #[serde(rename_all = "camelCase")]
 pub enum ComposeAction {
     /// `up -d --remove-orphans`: deploy or redeploy, after pulling the
-    /// images the Host lacks through the Engine API.
+    /// images the Host lacks through the Engine API. Builds what has no
+    /// image yet.
     Up,
+    /// `up -d --remove-orphans --build`: also rebuilds every service with
+    /// `build:` first.
+    Rebuild,
     /// Pulls every service's image through the Engine API; compose isn't run.
     Pull,
     /// `down --remove-orphans`, keeping volumes.
@@ -108,7 +112,7 @@ impl ComposeAction {
     /// Whether the action needs a definition that can be deployed; taking a
     /// Stack down only needs its project name and files.
     pub fn reads_definition(self) -> bool {
-        matches!(self, Self::Up | Self::Pull)
+        matches!(self, Self::Up | Self::Rebuild | Self::Pull)
     }
 
     /// The compose subcommand, for messages.
@@ -119,6 +123,7 @@ impl ComposeAction {
     fn args(self) -> &'static [&'static str] {
         match self {
             Self::Up => &["up", "--detach", "--remove-orphans"],
+            Self::Rebuild => &["up", "--detach", "--remove-orphans", "--build"],
             Self::Pull => &["pull"],
             Self::Down => &["down", "--remove-orphans"],
             Self::DownWithVolumes => &["down", "--volumes", "--remove-orphans"],
@@ -197,6 +202,13 @@ async fn execute(job: ComposeJob, sink: &impl Fn(ComposeEvent) -> bool) -> AppRe
     let (docker_host, _proxy) = docker_host(&job.target)?;
     let cli = |args: &[&str]| cli_command(&job, &prepared, &docker_host, args);
     let docker = job.target.docker();
+    if !job.target.is_local() {
+        for warning in remote_path_warnings(&prepared, &job) {
+            if !sink(ComposeEvent::Line { text: warning }) {
+                return Ok(());
+            }
+        }
+    }
 
     let mut args: Vec<&str> = job.action.args().to_vec();
     if job.action.reads_definition() {
@@ -261,6 +273,31 @@ async fn execute(job: ComposeJob, sink: &impl Fn(ComposeEvent) -> bool) -> AppRe
         error,
     });
     Ok(())
+}
+
+/// For a Linked Stack deployed to another machine: the relative bind mounts,
+/// which resolve to this machine's folder, a path the Host may not have.
+fn remote_path_warnings(prepared: &Prepared, job: &ComposeJob) -> Vec<String> {
+    let WorkDir::Folder(folder) = &prepared.workdir else {
+        return vec![];
+    };
+    let yaml: Vec<&str> = prepared
+        .definition
+        .iter()
+        .map(|(_, t)| t.as_str())
+        .collect();
+    definition::relative_binds(&yaml)
+        .into_iter()
+        .filter(|(_, source)| source.starts_with('.'))
+        .map(|(service, source)| {
+            let resolved = folder.join(source.trim_start_matches("./"));
+            format!(
+                "Warning: service \"{service}\" mounts \"{source}\", which is {} on this computer. {} may not have that path.",
+                resolved.display(),
+                job.target.name()
+            )
+        })
+        .collect()
 }
 
 /// Hands the source's stdin to the CLI, if it has one, and closes it.
@@ -628,6 +665,114 @@ mod tests {
             ),
             "{events:?}"
         );
+    }
+
+    /// Deploys a folder with a build, an env_file and a relative bind mount
+    /// as a Linked Stack, checks all three reached the container, then takes
+    /// it down.
+    async fn linked_folder_deploys(dialer: Option<Arc<dyn Dialer>>, connection: HostConnection) {
+        let docker = testing::docker();
+        testing::ensure_image(&docker).await;
+        let project = testing::unique("linked");
+        let _cleanup = RemoveStack(project.clone());
+        let dir = tempfile::tempdir().unwrap();
+        let write = |name: &str, text: String| std::fs::write(dir.path().join(name), text).unwrap();
+        write(
+            "Dockerfile",
+            format!("FROM {}\nCMD [\"sleep\", \"60\"]\n", testing::IMAGE),
+        );
+        write(".env", "GREETING=hello\n".into());
+        std::fs::create_dir(dir.path().join("data")).unwrap();
+        write(
+            "compose.yaml",
+            "services:\n  app:\n    build: .\n    env_file: .env\n    volumes:\n      - ./data:/data\n".into(),
+        );
+        let source = StackSource::Linked {
+            working_dir: dir.path().to_owned(),
+            config_files: vec![dir
+                .path()
+                .join("compose.yaml")
+                .to_string_lossy()
+                .into_owned()],
+        };
+        let run = |action| {
+            let mut job = job(
+                source.clone(),
+                connection.clone(),
+                dialer.clone(),
+                testing::docker(),
+                Logins::none(),
+                &project,
+                action,
+            );
+            async move {
+                job.cli = detect().await.expect("docker compose is installed");
+                let events = std::sync::Mutex::new(Vec::new());
+                crate::runtime::run(job, |e| {
+                    events.lock().unwrap().push(e);
+                    true
+                })
+                .await;
+                events.into_inner().unwrap()
+            }
+        };
+
+        let up = run(ComposeAction::Up).await;
+        assert!(
+            matches!(up.last(), Some(ComposeEvent::Exit { success: true, .. })),
+            "{up:?}"
+        );
+        let running = lifecycle::containers_of(&docker, &project).await.unwrap();
+        assert_eq!(running.len(), 1);
+        let inspect = docker
+            .inspect_container(&running[0].id, None)
+            .await
+            .unwrap();
+        let env = inspect.config.unwrap().env.unwrap();
+        assert!(env.contains(&"GREETING=hello".to_string()), "{env:?}");
+        let mount = inspect.mounts.unwrap()[0].source.clone().unwrap();
+        assert_eq!(
+            std::fs::canonicalize(mount).unwrap(),
+            std::fs::canonicalize(dir.path().join("data")).unwrap()
+        );
+
+        let down = run(ComposeAction::Down).await;
+        assert!(
+            matches!(down.last(), Some(ComposeEvent::Exit { success: true, .. })),
+            "{down:?}"
+        );
+        let _ = docker
+            .remove_image(
+                &format!("{project}-app"),
+                None::<bollard::query_parameters::RemoveImageOptions>,
+                None,
+            )
+            .await;
+    }
+
+    #[tokio::test]
+    #[ignore = "needs a local Docker Engine and the compose CLI"]
+    async fn linked_stacks_build_and_deploy_from_their_folder() {
+        linked_folder_deploys(
+            None,
+            HostConnection::Local {
+                socket_path: "/var/run/docker.sock".into(),
+            },
+        )
+        .await;
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    #[ignore = "needs a local Docker Engine and the compose CLI"]
+    async fn linked_stacks_build_and_deploy_through_the_proxy() {
+        linked_folder_deploys(
+            Some(Arc::new(UnixDialer)),
+            HostConnection::Tls {
+                address: "unused:2376".into(),
+            },
+        )
+        .await;
     }
 
     /// Removes a Stack's containers and networks when dropped, even if the test panics.

@@ -59,6 +59,24 @@ If you save a file that was changed on disk since you opened it, Homeport refuse
 
 If the folder is gone, or a file can't be read, the tab says which and what to do instead of the editor.
 
+### Deploying and building a Linked Stack
+
+**Deploy**, **Redeploy**, **Pull images** and **Take down** work for Linked Stacks too. Homeport runs `docker compose` in the Stack's folder, with `--project-directory` set to it and one `--file` for each of its compose files, in order — the same as running it there yourself — still through its own connection for SSH and TLS Hosts. So `build:`, `env_file:`, `./relative` paths and the folder's `.env` all work.
+
+A service with `build:` is built when it has no image yet. To rebuild after changing its code, choose **Rebuild and deploy** in the Stack's **⋮** menu (`up --build`). The build runs on the **Host's** Engine, with the build context sent from this computer. Services with `build:` are never pulled; their base images are pulled by the build itself, with your own `docker login`.
+
+**Save and redeploy** in the **Definition** tab writes the files you edited, then deploys.
+
+<Aside type="caution" title="Relative paths on a remote Host">
+  A bind mount such as `./data:/data` resolves to the folder on **this** computer, for example
+  `/home/me/site/data`. On a remote Host that path may not exist, and the Engine creates an empty
+  folder there instead. When you deploy a Linked Stack to a Host that isn't this computer, the
+  output starts with a warning for each such mount. Use a named volume or an absolute path on the
+  Host for data that must live there.
+</Aside>
+
+If the folder is gone, deploying stops with **The folder … is no longer on this computer**. Without the Compose CLI, Linked Stacks can still be started, stopped and removed.
+
 ### When the folder moves or disappears
 
 If a Linked Stack's compose files are no longer there — the folder was moved, renamed or deleted — the Stack is shown as **External**, with ⚠ **Its compose files are no longer on this computer**. Nothing is deleted from Homeport or the Host: put the files back and it's Linked again at the next refresh. To stop linking it, open its **Definition** tab and choose **Forget**; that only drops Homeport's note of the folder, never the folder or the containers.

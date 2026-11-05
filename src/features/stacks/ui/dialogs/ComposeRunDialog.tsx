@@ -14,7 +14,7 @@ import { useComposeRun } from '../../api/streams';
 import { COMPOSE_TITLES, type ComposeJob } from '../../model/composeJob';
 import { t } from '@/shared/i18n';
 
-/** Runs one compose command for a Managed Stack and shows its output live. */
+/** Runs one compose command for a Managed or Linked Stack and shows its output live. */
 export function ComposeRunDialog({
   hostId,
   job,

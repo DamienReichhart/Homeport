@@ -31,7 +31,7 @@ function NewStack({ hostId }: { hostId: string }) {
   const [job, setJob] = useState<ComposeJob | null>(null);
 
   const save = useCreateStack(hostId, (stack, deploy) => {
-    if (deploy) setJob({ stackId: stack.id, name: stack.name, action: 'up' });
+    if (deploy) setJob({ kind: 'managed', stackId: stack.id, name: stack.name, action: 'up' });
     else navigate(`/stacks/${encodeURIComponent(stack.name)}`);
   });
   const canDeploy =

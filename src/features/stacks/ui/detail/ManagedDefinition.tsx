@@ -27,7 +27,7 @@ export function ManagedDefinition({
   const [check, setCheck] = useState<ComposeCheck | null>(null);
   const dirty = compose !== managed.compose || env !== initialEnv;
   const save = useSaveDefinition(managed.id, (saved, deploy) => {
-    if (deploy) onDeploy({ stackId: saved.id, name: saved.name, action: 'up' });
+    if (deploy) onDeploy({ kind: 'managed', stackId: saved.id, name: saved.name, action: 'up' });
   });
   const forget = useForgetDefinition(hostId, managed.id);
   const canDeploy =

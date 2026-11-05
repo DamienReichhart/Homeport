@@ -45,9 +45,10 @@ export default {
   'stacks.action.more': 'More stack actions',
   'stacks.action.restart': 'Restart',
   'stacks.action.pull': 'Pull images',
+  'stacks.action.rebuild': 'Rebuild and deploy',
   'stacks.down.title': 'Take down {name}?',
   'stacks.down.description':
-    'Its containers and networks are removed. Volumes and the stored definition are kept, so you can deploy again.',
+    'Its containers and networks are removed. Volumes and the definition are kept, so you can deploy again.',
   'stacks.down.confirm': 'Take down',
   'stacks.downWithVolumes.title': 'Take down {name} and delete its volumes?',
   'stacks.downWithVolumes.warning':
@@ -59,6 +60,7 @@ export default {
     "Its {count, plural, one {# container} other {# containers}} and networks are removed. Volumes are kept. Homeport has no compose file for this Stack, so it can't be redeployed from here.",
   'stacks.remove.action': 'Remove containers',
   'stacks.compose.up': 'Deploying {name}',
+  'stacks.compose.rebuild': 'Rebuilding and deploying {name}',
   'stacks.compose.pull': 'Pulling images for {name}',
   'stacks.compose.down': 'Taking down {name}',
   'stacks.compose.downWithVolumes': 'Taking down (with volumes) {name}',
@@ -98,6 +100,7 @@ export default {
   'stacks.linked.reload': 'Reload',
   'stacks.linked.overwrite': 'Overwrite',
   'stacks.linked.saved': 'Compose files saved',
+  'stacks.linked.saveAndRedeploy': 'Save and redeploy',
   'stacks.linked.envNote':
     'Compose reads the folder’s .env when it runs. Homeport doesn’t show or change it.',
   'stacks.linked.files': 'Compose files',
