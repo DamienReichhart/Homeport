@@ -5,8 +5,10 @@
 //!   status and Engine events through a [`registry::Notifier`].
 //! - [`service`] holds the use cases the app exposes, keeping both in step.
 //! - [`detect`] finds the Engines running on this computer.
+//! - [`import`] reads the Hosts `~/.ssh/config` and Docker contexts describe.
 
 pub mod detect;
+pub mod import;
 pub mod messages;
 pub mod registry;
 pub mod service;
