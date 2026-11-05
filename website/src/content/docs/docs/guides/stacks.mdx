@@ -129,17 +129,36 @@ Compose itself is never given a login: no file Homeport creates for the run, and
 
 <Steps>
 
-1. Open **Stacks** and choose **New stack**.
+1. Open **Stacks** and choose **New stack**. **Write a compose file** is selected.
 
-2. Enter a **Name**: lowercase letters, digits, `-` and `_`, starting with a letter or digit. It becomes the Compose project name and can't be changed later.
+2. Pick a [template](#starting-from-a-template) — or **Empty** to start from scratch.
 
-3. Write the compose file in the **compose.yaml** editor. It starts with a small example to replace.
+3. Enter a **Name**: lowercase letters, digits, `-` and `_`, starting with a letter or digit. The template suggests one. It becomes the Compose project name and can't be changed later.
 
-4. Put variables in **Environment**, one `KEY=value` per line, like a `.env` file. Compose substitutes them for `${KEY}` in the file.
+4. Adjust the compose file in the editor.
 
-5. Choose **Save and deploy** — or **Save** to deploy later.
+5. Put variables in **Environment**, one `KEY=value` per line, like a `.env` file. Compose substitutes them for `${KEY}` in the file. Fill in the passwords a template leaves empty.
+
+6. Choose **Save and deploy** — or **Save** to deploy later.
 
 </Steps>
+
+### Starting from a template
+
+The New stack page opens on a gallery of templates. Each is a compose file and an environment that follow good practice: image tags pinned to a version, data in named volumes, and secrets in the environment rather than the file. Use **Tab** to move between cards and **Enter** to pick one; **Choose another template** goes back.
+
+| Template                   | What it runs                                                         |
+| -------------------------- | -------------------------------------------------------------------- |
+| **Static site**            | nginx serving the files of a named volume, on port `HTTP_PORT`.      |
+| **PostgreSQL and Adminer** | PostgreSQL, and Adminer on `ADMINER_PORT` to browse it.              |
+| **MariaDB**                | MariaDB with a database and an app user.                             |
+| **Redis**                  | Redis with a password, saving its data to disk.                      |
+| **Reverse proxy (Caddy)**  | Caddy forwarding `SITE_ADDRESS` to `UPSTREAM`, with automatic HTTPS. |
+| **Uptime Kuma**            | Uptime Kuma, to watch sites and services, on `HTTP_PORT`.            |
+| **WordPress**              | WordPress with its own MariaDB database.                             |
+| **Empty**                  | A `services:` section to fill in yourself.                           |
+
+Passwords are left empty, with a comment saying what goes there: fill them in before you deploy. Adopting an External Stack skips the gallery and opens an empty editor.
 
 <DocScreenshot
   name="stack-editor"

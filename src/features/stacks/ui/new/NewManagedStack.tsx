@@ -4,20 +4,46 @@ import { type ComposeCheck, type ComposeFile, useCapabilities } from '@/shared/a
 import { Button, ErrorMessage, Input, Label } from '@/shared/ui';
 import { useCreateStack } from '../../api/mutations';
 import type { ComposeJob } from '../../model/composeJob';
-import { STARTER } from '../../model/starter';
+import { TEMPLATES, type StackTemplate } from '../../model/templates';
 import { ComposeRunDialog } from '../dialogs/ComposeRunDialog';
 import { StackEditor } from '../StackEditor';
+import { TemplateGallery } from './TemplateGallery';
 import { t } from '@/shared/i18n';
 
-/** Creates a Managed Stack, or adopts the External Stack named `adopting`. */
+/**
+ * Creates a Managed Stack from a template picked first, or adopts the
+ * External Stack named `adopting` from an empty editor.
+ */
 export function NewManagedStack({ hostId, adopting }: { hostId: string; adopting: string | null }) {
+  const [template, setTemplate] = useState<StackTemplate | null>(null);
+  if (adopting) return <ManagedForm key="adopt" hostId={hostId} adopting={adopting} />;
+  if (!template) return <TemplateGallery templates={TEMPLATES} onPick={setTemplate} />;
+  return (
+    <div className="grid gap-4">
+      <Button variant="link" className="justify-self-start px-0" onClick={() => setTemplate(null)}>
+        {t('stacks.newPage.otherTemplate')}
+      </Button>
+      <ManagedForm key={template.id} hostId={hostId} adopting={null} template={template} />
+    </div>
+  );
+}
+
+function ManagedForm({
+  hostId,
+  adopting,
+  template,
+}: {
+  hostId: string;
+  adopting: string | null;
+  template?: StackTemplate;
+}) {
   const navigate = useNavigate();
   const capabilities = useCapabilities();
-  const [name, setName] = useState(adopting ?? '');
+  const [name, setName] = useState(adopting ?? template?.name ?? '');
   const [files, setFiles] = useState<ComposeFile[]>([
-    { name: 'compose.yaml', content: adopting ? '' : STARTER },
+    { name: 'compose.yaml', content: template?.compose ?? '' },
   ]);
-  const [env, setEnv] = useState('');
+  const [env, setEnv] = useState(template?.env ?? '');
   const [check, setCheck] = useState<ComposeCheck | null>(null);
   const [job, setJob] = useState<ComposeJob | null>(null);
 
