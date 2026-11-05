@@ -45,7 +45,18 @@ Homeport shows a banner and won't store secrets. Local socket, TCP and ssh-agent
 
 ### If the keychain key is lost
 
-Resetting the keychain, or moving `homeport.db` to another computer or user, leaves secrets that can't be decrypted. Homeport doesn't delete anything: affected Hosts show **Credentials lost** until you re-enter their credentials. See [troubleshooting](/docs/reference/troubleshooting/#credentials-lost).
+Resetting the keychain, or moving `homeport.db` to another computer or user, leaves secrets that can't be decrypted. Homeport doesn't delete anything: affected Hosts show **Credentials lost** until you re-enter their credentials. See [troubleshooting](/docs/reference/troubleshooting/#credentials-lost). To move Hosts, export them instead.
+
+### Moving to another computer
+
+**Export** on the Hosts page writes the Hosts you pick to one file, with their keys, certificates and trusted server keys, encrypted with a passphrase you choose:
+
+- The whole file is encrypted (XChaCha20-Poly1305, with the key derived from the passphrase by Argon2id), so without the passphrase it reveals nothing — not even Host names or addresses. Any change to the file makes it unreadable.
+- The passphrase needs at least 12 characters. Homeport never stores or logs it; if you lose it, the file can't be opened.
+- **Import** on the other computer asks for the passphrase, then stores each Host's secrets encrypted under that computer's own keychain key, like any other.
+- A Host whose credentials are already lost on this computer is exported without them, and the export says which.
+
+Treat the file like the keys it holds: delete it once imported. The format is described in [ADR 0013](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md).
 
 ## Keys never touch the disk in clear
 

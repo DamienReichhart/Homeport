@@ -33,7 +33,9 @@ Each person runs their own Homeport with their own Hosts and keys. With a Homepo
 
 ### Can I move my Hosts to another computer?
 
-There's no export yet. Copying `homeport.db` moves Host and Stack definitions, but encrypted keys, certificates and environments can't be decrypted without the original keychain entry, and show as **Credentials lost** until re-entered.
+Yes. On the **Hosts** page, choose **Export**, pick the Hosts and a passphrase of at least 12 characters, and save the file. On the other computer, choose **Import** on the same page, open the file with the passphrase and pick what to add. Keys, certificates and trusted server keys come along, so the Hosts connect without asking you anything; see [moving to another computer](/docs/reference/security/#moving-to-another-computer).
+
+Copying `homeport.db` doesn't work for secrets: they're encrypted with a key kept in this computer's keychain, and show as **Credentials lost** elsewhere. Stacks aren't exported yet.
 
 ### Does Homeport collect data about me?
 

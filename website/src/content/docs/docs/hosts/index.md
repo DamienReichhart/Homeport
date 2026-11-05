@@ -55,6 +55,10 @@ The built-in `default` context isn't offered: [local detection](/docs/hosts/loca
 
 A context whose name is already a Host's is offered as `name (2)`.
 
+## Moving to another computer
+
+**Export** on the Hosts page saves the Hosts you pick to a file protected by a passphrase; **Import** on the other computer's Hosts page opens it and adds the Hosts you pick, ready to connect. A Host whose name is taken there is proposed as `name (2)`, and you can rename or skip it. See [moving to another computer](/docs/reference/security/#moving-to-another-computer) for how the file is protected.
+
 ## Selecting a Host
 
 Every resource page — Containers, Images, Volumes, Networks, Stacks and Events — shows the Host selected in the **Host switcher**. Switch Host there, or select a Host's card on the [Overview](/docs/guides/overview/). Homeport remembers your choice between launches.

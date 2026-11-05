@@ -99,7 +99,7 @@ The SSH server presented a different key from the one you trusted. If you reinst
 
 ### Credentials lost
 
-The key that encrypts your secrets is missing from the keychain or has changed — after a keychain reset, a new user profile, or copying Homeport's data to another computer. Homeport keeps the Host; re-enter its credentials on the Host's page:
+The key that encrypts your secrets is missing from the keychain or has changed — after a keychain reset, a new user profile, or copying Homeport's data to another computer (use [Export and Import](/docs/reference/security/#moving-to-another-computer) for that). Homeport keeps the Host; re-enter its credentials on the Host's page:
 
 - **TLS** — load the three certificate files again and choose **Save**.
 - **SSH with an imported key** — paste the private key and passphrase again and choose **Save**.
