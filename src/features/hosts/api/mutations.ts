@@ -37,11 +37,12 @@ export function useHostConnection(hostId: string) {
   return { reconnect, enable };
 }
 
-/** Trusts the key an SSH server presented. */
+/** Trusts the key an SSH server presented: the Host's, or the bastion's at `bastion`. */
 export function useTrustHostKey(hostId: string) {
   const refresh = useRefreshHosts();
   return useMutation({
-    mutationFn: (key: string) => commands.hostsTrustKey(hostId, key),
+    mutationFn: ({ key, bastion }: { key: string; bastion: string | null }) =>
+      commands.hostsTrustKey(hostId, key, bastion),
     onSuccess: refresh,
   });
 }

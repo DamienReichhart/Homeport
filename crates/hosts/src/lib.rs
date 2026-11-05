@@ -12,4 +12,6 @@ pub mod registry;
 pub mod service;
 pub mod store;
 
-pub use homeport_core::host::{Host, HostConnection, HostId, HostSecrets, SshAuth};
+pub use homeport_core::host::{
+    Bastion, BastionAuth, Host, HostConnection, HostId, HostSecrets, SshAuth, SshKeySecret,
+};

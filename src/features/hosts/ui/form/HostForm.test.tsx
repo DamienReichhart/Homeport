@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { emptyForm, type HostFormState } from '../../model/form';
@@ -101,5 +101,34 @@ describe('host form', () => {
     await user.click(screen.getByRole('radio', { name: 'TLS' }));
     expect(screen.getByText('No OS keychain')).toBeInTheDocument();
     expect(screen.queryByText('CA certificate')).toBeNull();
+  });
+
+  it('adds, reorders and removes bastions', async () => {
+    const changes: HostFormState[] = [];
+    const user = userEvent.setup();
+    renderWithProviders(<Harness onChange={(f) => changes.push(f)} />);
+    const add = screen.getByRole('button', { name: 'Add bastion' });
+    await user.click(add);
+    await user.click(add);
+    await user.type(screen.getByLabelText('Server of bastion 1'), 'outer');
+    await user.type(screen.getByLabelText('Server of bastion 2'), 'inner');
+    expect(screen.getByLabelText('Move bastion 1 up')).toBeDisabled();
+    expect(screen.getByLabelText('Move bastion 2 down')).toBeDisabled();
+
+    await user.click(screen.getByLabelText('Move bastion 2 up'));
+    expect(changes.at(-1)?.bastions.map((b) => b.host)).toEqual(['inner', 'outer']);
+
+    await user.click(screen.getByLabelText('Remove bastion 1'));
+    expect(changes.at(-1)?.bastions.map((b) => b.host)).toEqual(['outer']);
+  });
+
+  it('asks for a bastion’s own key only when it uses one', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<Harness />);
+    await user.click(screen.getByRole('button', { name: 'Add bastion' }));
+    const bastion = screen.getByRole('group', { name: 'Bastion 1' });
+    expect(within(bastion).queryByText('Private key')).toBeNull();
+    await user.click(within(bastion).getByRole('radio', { name: 'Its own key' }));
+    expect(within(bastion).getByText('Private key')).toBeInTheDocument();
   });
 });

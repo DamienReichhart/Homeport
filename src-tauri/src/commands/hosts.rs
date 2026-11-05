@@ -60,8 +60,9 @@ pub async fn hosts_trust_key(
     state: State<'_, AppState>,
     id: String,
     key: String,
+    bastion: Option<String>,
 ) -> AppResult<HostView> {
-    state.hosts.trust_host_key(&id, &key)
+    state.hosts.trust_host_key(&id, &key, bastion.as_deref())
 }
 
 #[tauri::command]

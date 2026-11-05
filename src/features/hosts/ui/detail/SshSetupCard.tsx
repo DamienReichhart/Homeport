@@ -28,13 +28,25 @@ export function SshSetupCard({ view }: { view: HostView }) {
       <CardHeader>
         <CardTitle>{t('hosts.sshSetup.title')}</CardTitle>
         <CardDescription>
-          {tRich('hosts.sshSetup.description', {
-            server: view.host.connection.kind === 'ssh' ? view.host.connection.host : '',
-            mono,
-          })}
+          {setup.data.servers.length > 1
+            ? t('hosts.sshSetup.descriptionBastions')
+            : tRich('hosts.sshSetup.description', {
+                server: view.host.connection.kind === 'ssh' ? view.host.connection.host : '',
+                mono,
+              })}
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
+        {setup.data.servers.length > 1 && (
+          <div className="grid gap-1 text-sm">
+            <span>{t('hosts.sshSetup.servers')}</span>
+            <ul className="list-inside list-disc font-mono text-xs">
+              {setup.data.servers.map((server) => (
+                <li key={server}>{server}</li>
+              ))}
+            </ul>
+          </div>
+        )}
         <CommandBlock label={t('hosts.sshSetup.addKey')} command={setup.data.installCommand} />
         <CommandBlock
           label={t('hosts.sshSetup.dockerGroup')}

@@ -29,6 +29,9 @@ export default {
   'hosts.sshSetup.title': 'Authorize Homeport on the server',
   'hosts.sshSetup.description':
     'Run these on <mono>{server}</mono> as the SSH user, then reconnect.',
+  'hosts.sshSetup.descriptionBastions':
+    'Homeport logs in to each of these with the same key. Add it on every one, as its SSH user, then reconnect.',
+  'hosts.sshSetup.servers': 'Add it on:',
   'hosts.sshSetup.addKey': '1. Add the public key',
   'hosts.sshSetup.dockerGroup': '2. Let the user reach Docker (if needed)',
   'hosts.sshSetup.fingerprint': 'Key fingerprint <mono>{fingerprint}</mono>',
@@ -41,6 +44,10 @@ export default {
   'hosts.trust.untrusted.description':
     'First connection. The server identifies itself with key fingerprint <mono>{fingerprint}</mono>. Compare it with <mono>{command}</mono> on the server.',
   'hosts.trust.untrusted.button': 'Trust this key',
+  'hosts.trust.untrusted.bastionTitle': 'Is this the right bastion?',
+  'hosts.trust.untrusted.bastionDescription':
+    'First connection to bastion <mono>{bastion}</mono>. It identifies itself with key fingerprint <mono>{fingerprint}</mono>. Compare it with <mono>{command}</mono> on the bastion.',
+  'hosts.trust.mismatch.bastionTitle': "Bastion {bastion}'s key changed",
   'hosts.trust.mismatch.title': "The server's key changed",
   'hosts.trust.mismatch.description':
     'Expected <mono>{expected}</mono> but the server presented <mono>{fingerprint}</mono>. This happens after reinstalling the server, but can also mean someone is intercepting the connection.',
@@ -82,6 +89,20 @@ export default {
   'hosts.ssh.privateKey.choose': 'Choose the private key',
   'hosts.ssh.privateKeyHint': 'Stored encrypted; it never leaves this machine.',
   'hosts.ssh.passphrase': 'Passphrase',
+  'hosts.bastions.title': 'Bastions',
+  'hosts.bastions.description':
+    'Servers Homeport logs in to first, in order, when this one only accepts SSH from them (ProxyJump).',
+  'hosts.bastions.add': 'Add bastion',
+  'hosts.bastions.one': 'Bastion {n}',
+  'hosts.bastions.server': 'Server of bastion {n}',
+  'hosts.bastions.port': 'Port of bastion {n}',
+  'hosts.bastions.user': 'User of bastion {n}',
+  'hosts.bastions.moveUp': 'Move bastion {n} up',
+  'hosts.bastions.moveDown': 'Move bastion {n} down',
+  'hosts.bastions.remove': 'Remove bastion {n}',
+  'hosts.bastions.auth.sameAsHost': 'Same as the host',
+  'hosts.bastions.auth.imported': 'Its own key',
+  'hosts.bastions.auth.agent': 'ssh-agent',
   'hosts.tls.ca': 'CA certificate',
   'hosts.tls.ca.choose': 'Choose the CA certificate',
   'hosts.tls.cert': 'Client certificate',

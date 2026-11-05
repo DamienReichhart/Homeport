@@ -25,6 +25,10 @@ homeport_core::messages! {
     KEYS_ONLY_FOR_SSH = "errors.hosts.keysOnlyForSsh" => "Only SSH hosts use keys.";
     /// Asking for the setup of a key Homeport didn't generate.
     NO_MANAGED_KEY = "errors.hosts.noManagedKey" => "This host doesn't use a Homeport-managed SSH key.";
+    /// A bastion set to use its own key, without one.
+    BASTION_NEEDS_KEY = "errors.hosts.bastionNeedsKey" => "Bastion {n} needs its private key.";
+    /// Trusting a key for a bastion the Host no longer goes through.
+    NO_SUCH_BASTION = "errors.hosts.noSuchBastion" => "This host doesn't go through {address}.";
     /// A Host removed while it was in use.
     GONE = "errors.hosts.gone" => "This host no longer exists.";
     /// Saving a connection that needs credentials without them.

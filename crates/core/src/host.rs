@@ -1,6 +1,8 @@
 //! What a Host is: an Engine Homeport connects to, and how to reach it (see
 //! `GLOSSARY.md`). Shared by the crates that store, reach and supervise Hosts.
 
+use std::collections::BTreeMap;
+
 use serde::{Deserialize, Serialize};
 
 use crate::error::{AppError, AppResult, Message};
@@ -31,7 +33,65 @@ pub enum HostConnection {
         auth: SshAuth,
         /// OpenSSH public key for `generated` and `imported` auth, shown to the user.
         public_key: Option<String>,
+        /// The servers to go through first, in order (ADR 0012). Empty for a
+        /// direct connection; migration 0005 added it to stored Hosts.
+        bastions: Vec<Bastion>,
     },
+}
+
+/// An SSH server an SSH Host is reached through (`ProxyJump`, ADR 0012).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct Bastion {
+    pub host: String,
+    pub port: u16,
+    pub user: String,
+    pub auth: BastionAuth,
+    /// OpenSSH public key of an `imported` key, shown to the user.
+    pub public_key: Option<String>,
+    /// The bastion's server key, trusted on first use. Kept by Homeport:
+    /// whatever the frontend sends here is replaced by the stored one.
+    pub host_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub enum BastionAuth {
+    /// The Host's own key or agent.
+    SameAsHost,
+    /// A private key of its own, sealed with the Host's secrets.
+    Imported,
+    /// Keys offered by the running ssh-agent.
+    Agent,
+}
+
+impl Bastion {
+    /// `host:port`, which tells the bastions of a Host apart.
+    pub fn address(&self) -> String {
+        ssh_address(&self.host, self.port)
+    }
+}
+
+/// `host:port` of an SSH server, with IPv6 addresses in brackets.
+pub fn ssh_address(host: &str, port: u16) -> String {
+    if host.contains(':') {
+        format!("[{host}]:{port}")
+    } else {
+        format!("{host}:{port}")
+    }
+}
+
+/// A private key and its passphrase, as typed or imported.
+#[derive(Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SshKeySecret {
+    pub private_key: String,
+    pub passphrase: Option<String>,
+}
+
+impl std::fmt::Debug for SshKeySecret {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("SshKeySecret(..)")
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
@@ -55,9 +115,25 @@ pub enum HostSecrets {
         key_pem: String,
     },
     Ssh {
-        private_key: String,
+        /// The Host's own key; `None` when it uses ssh-agent and only its
+        /// bastions have keys.
+        private_key: Option<String>,
         passphrase: Option<String>,
+        /// The keys of `imported` bastions, by [`Bastion::address`].
+        #[serde(default)]
+        bastions: BTreeMap<String, SshKeySecret>,
     },
+}
+
+impl HostSecrets {
+    /// SSH secrets holding only the Host's own key.
+    pub fn ssh_key(private_key: String, passphrase: Option<String>) -> Self {
+        Self::Ssh {
+            private_key: Some(private_key),
+            passphrase,
+            bastions: BTreeMap::new(),
+        }
+    }
 }
 
 impl std::fmt::Debug for HostSecrets {
@@ -95,6 +171,12 @@ impl HostConnection {
             Self::Ssh { socket_path, .. } if !socket_path.starts_with('/') => {
                 invalid(msg::REMOTE_SOCKET_NOT_ABSOLUTE)
             }
+            Self::Ssh {
+                host,
+                port,
+                bastions,
+                ..
+            } => validate_bastions(&ssh_address(host, *port), bastions),
             _ => Ok(()),
         }
     }
@@ -103,10 +185,37 @@ impl HostConnection {
     pub fn needs_secrets(&self) -> bool {
         match self {
             Self::Tls { .. } => true,
-            Self::Ssh { auth, .. } => *auth != SshAuth::Agent,
+            Self::Ssh { auth, bastions, .. } => {
+                *auth != SshAuth::Agent || bastions.iter().any(|b| b.auth == BastionAuth::Imported)
+            }
             Self::Local { .. } | Self::Tcp { .. } => false,
         }
     }
+}
+
+/// Each bastion needs a server and a user, and no two hops may share an
+/// address: trusted keys and bastion keys are found by it.
+fn validate_bastions(host_address: &str, bastions: &[Bastion]) -> AppResult<()> {
+    let mut seen = std::collections::HashSet::from([host_address.to_owned()]);
+    for (i, b) in bastions.iter().enumerate() {
+        let n = i + 1;
+        let invalid = |message: Message| Err(AppError::validation(message.with("n", n)));
+        if b.host.trim().is_empty() {
+            return invalid(msg::BASTION_HOST_MISSING);
+        }
+        if b.user.trim().is_empty() {
+            return invalid(msg::BASTION_USER_MISSING);
+        }
+        if b.port == 0 {
+            return invalid(msg::BASTION_PORT_INVALID);
+        }
+        if !seen.insert(b.address()) {
+            return Err(AppError::validation(
+                msg::BASTION_REPEATED.with("address", b.address()),
+            ));
+        }
+    }
+    Ok(())
 }
 
 fn is_host_port(address: &str) -> bool {
@@ -129,6 +238,42 @@ mod tests {
             socket_path: socket_path.into(),
             auth: SshAuth::Generated,
             public_key: None,
+            bastions: vec![],
+        }
+    }
+
+    fn bastion(host: &str, port: u16, user: &str, auth: BastionAuth) -> Bastion {
+        Bastion {
+            host: host.into(),
+            port,
+            user: user.into(),
+            auth,
+            public_key: None,
+            host_key: None,
+        }
+    }
+
+    fn behind(bastions: Vec<Bastion>) -> HostConnection {
+        let HostConnection::Ssh {
+            host,
+            port,
+            user,
+            socket_path,
+            auth,
+            public_key,
+            ..
+        } = ssh("server", "deploy", 22, "/var/run/docker.sock")
+        else {
+            unreachable!()
+        };
+        HostConnection::Ssh {
+            host,
+            port,
+            user,
+            socket_path,
+            auth,
+            public_key,
+            bastions,
         }
     }
 
@@ -172,6 +317,80 @@ mod tests {
                 "{c:?}"
             );
         }
+    }
+
+    #[test]
+    fn bastions_need_a_server_a_user_a_port_and_their_own_address() {
+        let ok = behind(vec![
+            bastion("jump", 22, "me", BastionAuth::SameAsHost),
+            bastion("inner", 2222, "me", BastionAuth::Agent),
+        ]);
+        assert!(ok.validate().is_ok());
+        for (bastions, n) in [
+            (vec![bastion(" ", 22, "me", BastionAuth::Agent)], "1"),
+            (
+                vec![
+                    bastion("jump", 22, "me", BastionAuth::Agent),
+                    bastion("inner", 22, "", BastionAuth::Agent),
+                ],
+                "2",
+            ),
+            (vec![bastion("jump", 0, "me", BastionAuth::Agent)], "1"),
+        ] {
+            let err = behind(bastions).validate().unwrap_err();
+            assert!(err.is(ErrorCode::Validation));
+            assert_eq!(err.params.get("n").map(|p| p.to_string()), Some(n.into()));
+        }
+        // The same server twice, or the Host itself as a bastion.
+        for bastions in [
+            vec![
+                bastion("jump", 22, "a", BastionAuth::Agent),
+                bastion("jump", 22, "b", BastionAuth::Agent),
+            ],
+            vec![bastion("server", 22, "a", BastionAuth::Agent)],
+        ] {
+            assert!(behind(bastions).validate().is_err());
+        }
+    }
+
+    #[test]
+    fn bastions_with_their_own_key_need_secrets_even_with_ssh_agent() {
+        let HostConnection::Ssh {
+            host,
+            port,
+            user,
+            socket_path,
+            public_key,
+            ..
+        } = ssh("server", "deploy", 22, "/var/run/docker.sock")
+        else {
+            unreachable!()
+        };
+        let agent = |bastions| HostConnection::Ssh {
+            host: host.clone(),
+            port,
+            user: user.clone(),
+            socket_path: socket_path.clone(),
+            auth: SshAuth::Agent,
+            public_key: public_key.clone(),
+            bastions,
+        };
+        assert!(!agent(vec![]).needs_secrets());
+        assert!(!agent(vec![bastion("jump", 22, "me", BastionAuth::SameAsHost)]).needs_secrets());
+        assert!(agent(vec![bastion("jump", 22, "me", BastionAuth::Imported)]).needs_secrets());
+    }
+
+    #[test]
+    fn secrets_stored_before_bastions_read_with_none() {
+        let stored = r#"{"kind":"ssh","private_key":"KEY","passphrase":null}"#;
+        let s: HostSecrets = serde_json::from_str(stored).unwrap();
+        assert!(s == HostSecrets::ssh_key("KEY".into(), None));
+    }
+
+    #[test]
+    fn ipv6_addresses_are_bracketed() {
+        assert_eq!(ssh_address("10.0.0.1", 22), "10.0.0.1:22");
+        assert_eq!(ssh_address("fd00::1", 2222), "[fd00::1]:2222");
     }
 
     #[test]

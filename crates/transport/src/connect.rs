@@ -96,9 +96,30 @@ pub async fn connect(
             user,
             socket_path,
             auth,
+            bastions,
             ..
         } => {
-            let credentials = ssh::Credentials::from_secrets(*auth, secrets)?;
+            let credentials = ssh::Credentials::from_secrets(*auth, secrets.as_ref())?;
+            let hops = bastions
+                .iter()
+                .enumerate()
+                .map(|(i, b)| {
+                    let address = b.address();
+                    Ok(ssh::SshHop {
+                        label: format!("{address} (bastion {} of {name})", i + 1),
+                        credentials: ssh::Credentials::for_bastion(
+                            b.auth,
+                            &address,
+                            &credentials,
+                            secrets.as_ref(),
+                        )?,
+                        host: b.host.clone(),
+                        port: b.port,
+                        user: b.user.clone(),
+                        trusted_host_key: b.host_key.clone(),
+                    })
+                })
+                .collect::<Result<Vec<_>, ConnectError>>()?;
             let dialer: Arc<dyn Dialer> = Arc::new(ssh::SshDialer::new(ssh::SshTarget {
                 label: label(&format!("{user}@{host}:{port}")),
                 host: host.clone(),
@@ -107,6 +128,7 @@ pub async fn connect(
                 socket_path: socket_path.clone(),
                 credentials,
                 trusted_host_key: trusted_host_key.map(str::to_owned),
+                bastions: hops,
             }));
             (docker_over(dialer.clone()), Some(dialer))
         }

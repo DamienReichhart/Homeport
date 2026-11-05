@@ -10,6 +10,7 @@ const PRESENTED = 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPresented';
 function renderHost(
   status: HostStatus,
   extra: Record<string, (a: Record<string, unknown>) => unknown> = {},
+  servers = ['deploy@prod.example.com'],
 ) {
   const trusted: unknown[] = [];
   const removed: unknown[] = [];
@@ -21,6 +22,7 @@ function renderHost(
       fingerprint: 'SHA256:homeport',
       installCommand: "echo 'ssh-ed25519 AAAA' >> ~/.ssh/authorized_keys",
       dockerGroupCommand: 'sudo usermod -aG docker deploy',
+      servers,
     }),
     hosts_trust_key: (args) => {
       trusted.push(args);
@@ -42,11 +44,14 @@ describe('trust prompt', () => {
       state: 'hostKeyUntrusted',
       key: PRESENTED,
       fingerprint: 'SHA256:presented',
+      bastion: null,
     });
     expect(await screen.findByText('Is this the right server?')).toBeInTheDocument();
     expect(screen.getAllByText('SHA256:presented').length).toBeGreaterThan(0);
     await userEvent.setup().click(screen.getByRole('button', { name: 'Trust this key' }));
-    await waitFor(() => expect(trusted).toEqual([{ id: 'prod-id', key: PRESENTED }]));
+    await waitFor(() =>
+      expect(trusted).toEqual([{ id: 'prod-id', key: PRESENTED, bastion: null }]),
+    );
   });
 
   it('asks for confirmation before trusting a changed key', async () => {
@@ -55,6 +60,7 @@ describe('trust prompt', () => {
       key: PRESENTED,
       fingerprint: 'SHA256:presented',
       expectedFingerprint: 'SHA256:expected',
+      bastion: null,
     });
     const user = userEvent.setup();
     expect(await screen.findByText("The server's key changed")).toBeInTheDocument();
@@ -70,7 +76,39 @@ describe('trust prompt', () => {
     await user.click(
       within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Trust new key' }),
     );
-    await waitFor(() => expect(trusted).toEqual([{ id: 'prod-id', key: PRESENTED }]));
+    await waitFor(() =>
+      expect(trusted).toEqual([{ id: 'prod-id', key: PRESENTED, bastion: null }]),
+    );
+  });
+});
+
+describe('trust prompt for a bastion', () => {
+  it('names the bastion and trusts the key for it', async () => {
+    const { trusted } = renderHost({
+      state: 'hostKeyUntrusted',
+      key: PRESENTED,
+      fingerprint: 'SHA256:presented',
+      bastion: 'jump.example.com:22',
+    });
+    expect(await screen.findByText('Is this the right bastion?')).toBeInTheDocument();
+    expect(screen.getAllByText('jump.example.com:22').length).toBeGreaterThan(0);
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Trust this key' }));
+    await waitFor(() =>
+      expect(trusted).toEqual([{ id: 'prod-id', key: PRESENTED, bastion: 'jump.example.com:22' }]),
+    );
+  });
+
+  it('names the bastion whose key changed', async () => {
+    renderHost({
+      state: 'hostKeyMismatch',
+      key: PRESENTED,
+      fingerprint: 'SHA256:presented',
+      expectedFingerprint: 'SHA256:expected',
+      bastion: 'jump.example.com:22',
+    });
+    expect(
+      await screen.findByText("Bastion jump.example.com:22's key changed"),
+    ).toBeInTheDocument();
   });
 });
 
@@ -89,6 +127,15 @@ describe('SSH setup card', () => {
     expect(await navigator.clipboard.readText()).toBe(
       "echo 'ssh-ed25519 AAAA' >> ~/.ssh/authorized_keys",
     );
+  });
+});
+
+describe('SSH setup card behind bastions', () => {
+  it('lists every server the key must be added on', async () => {
+    renderHost({ state: 'connecting' }, {}, ['me@jump.example.com', 'deploy@prod.example.com']);
+    expect(await screen.findByText('Add it on:')).toBeInTheDocument();
+    expect(screen.getByText('me@jump.example.com')).toBeInTheDocument();
+    expect(screen.getByText('deploy@prod.example.com')).toBeInTheDocument();
   });
 });
 

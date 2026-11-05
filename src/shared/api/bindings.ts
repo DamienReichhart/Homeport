@@ -45,7 +45,7 @@ export const commands = {
 	hostsUpdate: (id: string, input: HostInput) => __TAURI_INVOKE<HostView>("hosts_update", { id, input }),
 	hostsDelete: (id: string) => __TAURI_INVOKE<null>("hosts_delete", { id }),
 	hostsSetEnabled: (id: string, enabled: boolean) => __TAURI_INVOKE<HostView>("hosts_set_enabled", { id, enabled }),
-	hostsTrustKey: (id: string, key: string) => __TAURI_INVOKE<HostView>("hosts_trust_key", { id, key }),
+	hostsTrustKey: (id: string, key: string, bastion: string | null) => __TAURI_INVOKE<HostView>("hosts_trust_key", { id, key, bastion }),
 	hostsReconnect: (id: string) => __TAURI_INVOKE<HostView>("hosts_reconnect", { id }),
 	hostsRegenerateKey: (id: string) => __TAURI_INVOKE<HostView>("hosts_regenerate_key", { id }),
 	hostsSshSetup: (id: string) => __TAURI_INVOKE<SshSetup>("hosts_ssh_setup", { id }),
@@ -187,6 +187,39 @@ export type AvailableUpdate = {
 	notes: string | null,
 	/**  RFC 3339 publication date. */
 	date: string | null,
+};
+
+/**  An SSH server an SSH Host is reached through (`ProxyJump`, ADR 0012). */
+export type Bastion = {
+	host: string,
+	port: number,
+	user: string,
+	auth: BastionAuth,
+	/**  OpenSSH public key of an `imported` key, shown to the user. */
+	publicKey: string | null,
+	/**
+	 *  The bastion's server key, trusted on first use. Kept by Homeport:
+	 *  whatever the frontend sends here is replaced by the stored one.
+	 */
+	hostKey: string | null,
+};
+
+export type BastionAuth = 
+/**  The Host's own key or agent. */
+"sameAsHost" | 
+/**  A private key of its own, sealed with the Host's secrets. */
+"imported" | 
+/**  Keys offered by the running ssh-agent. */
+"agent";
+
+/**
+ *  The private key typed for the `imported` bastion at `index` in the input's
+ *  list. A bastion with no entry keeps the key stored for its address.
+ */
+export type BastionKeyInput = {
+	index: number,
+	privateKey: string,
+	passphrase: string | null,
 };
 
 export type BuildArg = {
@@ -495,15 +528,27 @@ export type HostConnection =
 /**  The remote Engine socket, reached through SSH. */
 { kind: "ssh"; host: string; port: number; user: string; socketPath: string; auth: SshAuth; 
 /**  OpenSSH public key for `generated` and `imported` auth, shown to the user. */
-publicKey: string | null };
+publicKey: string | null; 
+/**
+ *  The servers to go through first, in order (ADR 0012). Empty for a
+ *  direct connection; migration 0005 added it to stored Hosts.
+ */
+bastions: Bastion[] };
 
 export type HostInput = {
 	name: string,
 	connection: HostConnection,
 	credentials: CredentialsInput | null,
+	/**  Keys typed for the connection's `imported` bastions. */
+	bastionKeys?: BastionKeyInput[],
 };
 
-export type HostStatus = { state: "disabled" } | { state: "connecting" } | { state: "connected"; engineVersion: string; apiVersion: string; os: string; arch: string } | { state: "unreachable"; error: AppError; retryInSecs: number } | { state: "unauthorized"; error: AppError } | { state: "hostKeyUntrusted"; key: string; fingerprint: string } | { state: "hostKeyMismatch"; key: string; fingerprint: string; expectedFingerprint: string } | { state: "credentialsLost" } | { state: "keychainUnavailable"; error: AppError } | { state: "invalid"; error: AppError };
+export type HostStatus = { state: "disabled" } | { state: "connecting" } | { state: "connected"; engineVersion: string; apiVersion: string; os: string; arch: string } | { state: "unreachable"; error: AppError; retryInSecs: number } | { state: "unauthorized"; error: AppError } | 
+/**
+ *  `bastion` is the address of the bastion that presented the key,
+ *  `None` for the Host's own SSH server.
+ */
+{ state: "hostKeyUntrusted"; key: string; fingerprint: string; bastion: string | null } | { state: "hostKeyMismatch"; key: string; fingerprint: string; expectedFingerprint: string; bastion: string | null } | { state: "credentialsLost" } | { state: "keychainUnavailable"; error: AppError } | { state: "invalid"; error: AppError };
 
 export type HostStatusChanged = {
 	hostId: string,
@@ -814,6 +859,11 @@ export type SshSetup = {
 	installCommand: string,
 	/**  Lets the SSH user reach the Docker socket, run on the server. */
 	dockerGroupCommand: string,
+	/**
+	 *  Every server the key must be authorised on, as `user@host`: the
+	 *  bastions that use the Host's key, in order, then the Host.
+	 */
+	servers: string[],
 };
 
 export type Stack = {

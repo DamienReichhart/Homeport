@@ -58,6 +58,7 @@ export function hostView(
       socketPath: '/var/run/docker.sock',
       auth: 'generated',
       publicKey: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHomeport homeport@test',
+      bastions: [],
     },
     status = connectedHost.status,
     hostKey = null,

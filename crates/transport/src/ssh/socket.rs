@@ -161,6 +161,7 @@ mod tests {
             socket_path: "/var/run/docker.sock".into(),
             credentials: Credentials::Agent,
             trusted_host_key: None,
+            bastions: vec![],
         }
     }
 

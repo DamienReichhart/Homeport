@@ -108,6 +108,13 @@ homeport_core::messages! {
     /// The SSH server presented a key other than the trusted one.
     SSH_HOST_KEY_CHANGED = "errors.transport.ssh.hostKeyChanged" => "The SSH server's key changed since it was trusted.";
     SSH_HOST_KEY_CHANGED_HINT = "errors.transport.ssh.hostKeyChanged.hint" => "If the machine was reinstalled, trust the new key on the host page. Otherwise someone may be intercepting the connection.";
+    /// A bastion's SSH server key was never trusted.
+    SSH_BASTION_KEY_UNTRUSTED = "errors.transport.ssh.bastionKeyUntrusted" => "The key of bastion {address} isn't trusted yet ({fingerprint}).";
+    /// A bastion presented a key other than the trusted one.
+    SSH_BASTION_KEY_CHANGED = "errors.transport.ssh.bastionKeyChanged" => "The key of bastion {address} changed since it was trusted.";
+    /// A bastion wouldn't open a connection to the next server on the way.
+    SSH_BASTION_FORWARD_FAILED = "errors.transport.ssh.bastionForwardFailed" => "Bastion {bastion} couldn't open a connection to {next}.";
+    SSH_BASTION_FORWARD_FAILED_HINT = "errors.transport.ssh.bastionForwardFailed.hint" => "Check that {next} is reachable from {bastion}, and that the bastion's SSH server allows TCP forwarding (AllowTcpForwarding).";
     /// The SSH session went silent.
     SSH_STOPPED_ANSWERING = "errors.transport.ssh.stoppedAnswering" => "The SSH server at {host} stopped answering.";
     SSH_STOPPED_ANSWERING_HINT = "errors.transport.ssh.stoppedAnswering.hint" => "Check that the machine is on and reachable. Homeport keeps retrying.";

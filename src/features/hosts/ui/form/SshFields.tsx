@@ -1,6 +1,7 @@
 import { KeyRoundIcon } from 'lucide-react';
 import { Input, ToggleGroup, ToggleGroupItem } from '@/shared/ui';
 import type { HostFormState } from '../../model/form';
+import { BastionFields } from './BastionFields';
 import { Field } from './Field';
 import { KeychainNeeded } from './KeychainNeeded';
 import { SecretText } from './SecretText';
@@ -95,6 +96,11 @@ export function SshFields({
           </Field>
         </>
       )}
+      <BastionFields
+        bastions={form.bastions}
+        onChange={(bastions) => set('bastions', bastions)}
+        keychain={keychain}
+      />
     </>
   );
 }
