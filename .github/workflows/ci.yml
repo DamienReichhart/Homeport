@@ -38,8 +38,15 @@ jobs:
           tool: cargo-about@0.9.3
       - run: bun run licenses
 
+  # Every platform Homeport ships for, so code behind #[cfg(windows)] or
+  # #[cfg(target_os = "macos")] is compiled and tested on each pull request.
   backend:
-    runs-on: ubuntu-latest
+    name: backend (${{ matrix.os }})
+    strategy:
+      fail-fast: false # finish the other platforms, so one failure doesn't hide another
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
@@ -47,6 +54,7 @@ jobs:
           bun-version-file: package.json
       - run: bun install --frozen-lockfile
       - name: Install Tauri system deps
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev librsvg2-dev libayatana-appindicator3-dev libssl-dev
@@ -54,8 +62,12 @@ jobs:
         with:
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
+        with:
+          key: backend-${{ matrix.os }}
       - run: bun run build # tauri::generate_context! needs ../dist
+      # Formatting doesn't depend on the platform.
       - run: cargo fmt --all --check
+        if: runner.os == 'Linux'
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo test --workspace
 
