@@ -50,6 +50,12 @@ export const commands = {
 	hostsRegenerateKey: (id: string) => __TAURI_INVOKE<HostView>("hosts_regenerate_key", { id }),
 	hostsSshSetup: (id: string) => __TAURI_INVOKE<SshSetup>("hosts_ssh_setup", { id }),
 	hostsEvents: (id: string) => __TAURI_INVOKE<EngineEvent[]>("hosts_events", { id }),
+	/**  The servers `~/.ssh/config` defines, as drafts of Hosts. */
+	hostsSshConfigPreview: () => __TAURI_INVOKE<ImportDraft[]>("hosts_ssh_config_preview"),
+	hostsSshConfigImport: (choices: ImportChoice[]) => __TAURI_INVOKE<ImportOutcome>("hosts_ssh_config_import", { choices }),
+	/**  The Docker CLI's contexts, as drafts of Hosts. */
+	hostsDockerContextsPreview: () => __TAURI_INVOKE<ImportDraft[]>("hosts_docker_contexts_preview"),
+	hostsDockerContextsImport: (choices: ImportChoice[]) => __TAURI_INVOKE<ImportOutcome>("hosts_docker_contexts_import", { choices }),
 	containersList: (hostId: string) => __TAURI_INVOKE<Container[]>("containers_list", { hostId }),
 	containersInspect: (hostId: string, id: string) => __TAURI_INVOKE<Value>("containers_inspect", { hostId, id }),
 	containersAct: (hostId: string, id: string, action: ContainerAction) => __TAURI_INVOKE<null>("containers_act", { hostId, id, action }),
@@ -598,6 +604,47 @@ export type ImageLayer = {
 	size: number,
 	comment: string,
 	tags: string[],
+};
+
+/**  A draft the user picked, with what they changed in the preview. */
+export type ImportChoice = {
+	source: string,
+	name: string,
+	/**  The Engine socket on an SSH server; `/var/run/docker.sock` when absent. */
+	socketPath: string | null,
+	/**  For the entry's encrypted keys. */
+	passphrase: string | null,
+};
+
+/**  One entry a source offers, as the preview shows it. */
+export type ImportDraft = {
+	/**  The alias or context name it comes from; how the import names it. */
+	source: string,
+	/**  The Host name proposed for it. */
+	name: string,
+	/**  What would be created; `None` when it can't be imported. */
+	connection: HostConnection | null,
+	/**  The key or certificate files it reads, for the user to recognise. */
+	files: string[],
+	/**  Whether one of its keys is encrypted and needs a passphrase. */
+	needsPassphrase: boolean,
+	/**  Why it can't be imported; such a draft can't be picked. */
+	problem: AppError | null,
+	/**  What will differ from the source, or needs a look. */
+	warnings: AppError[],
+	/**  A Host with this name already exists, so importing as is would fail. */
+	nameTaken: boolean,
+};
+
+export type ImportFailure = {
+	source: string,
+	error: AppError,
+};
+
+/**  What an import did: the Hosts it created, and why the others weren't. */
+export type ImportOutcome = {
+	created: HostView[],
+	failed: ImportFailure[],
 };
 
 /**  What [`import`] makes: the image's name and Dockerfile changes. */

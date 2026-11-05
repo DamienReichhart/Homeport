@@ -5,6 +5,7 @@ import { useCapabilities } from '@/shared/api';
 import { Button, Card, CardContent, ErrorMessage, PageHeader } from '@/shared/ui';
 import { emptyForm, toHostInput } from '../model/form';
 import { HostForm } from './form/HostForm';
+import { ImportCard } from './import/ImportCard';
 import { t } from '@/shared/i18n';
 
 export function AddHostPage() {
@@ -21,8 +22,9 @@ export function AddHostPage() {
   return (
     <div className="max-w-2xl">
       <PageHeader title={t('hosts.add')} description={t('hosts.addPage.description')} />
-      <div className="mb-4">
+      <div className="mb-4 grid gap-4">
         <LocalEngines onAdd={(input) => create.mutate(input)} pending={create.isPending} />
+        <ImportCard />
       </div>
       <Card>
         <CardContent className="grid gap-4">

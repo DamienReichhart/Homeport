@@ -2,6 +2,7 @@
 //! persists through [`HostStore`] and keeps [`HostRegistry`] in step.
 
 mod credentials;
+mod import;
 
 use std::sync::Arc;
 

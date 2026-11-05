@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { hostKeys } from '@/core/host';
-import { commands } from '@/shared/api';
+import { commands, type ImportChoice, type ImportOutcome } from '@/shared/api';
 import { t } from '@/shared/i18n';
 import { toHostInput, type HostFormState } from '../model/form';
+import type { ImportSource } from '../model/importRows';
 
 function useRefreshHosts() {
   const client = useQueryClient();
@@ -62,5 +63,24 @@ export function useDeleteHost(hostId: string) {
   return useMutation({
     mutationFn: () => commands.hostsDelete(hostId),
     onSuccess: refresh,
+  });
+}
+
+/** Creates the picked drafts as Hosts; the dialog shows what failed. */
+export function useImportHosts(source: ImportSource, onDone: (outcome: ImportOutcome) => void) {
+  const refresh = useRefreshHosts();
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: (choices: ImportChoice[]) =>
+      source === 'sshConfig'
+        ? commands.hostsSshConfigImport(choices)
+        : commands.hostsDockerContextsImport(choices),
+    onSuccess: async (outcome) => {
+      await refresh();
+      if (outcome.created.length > 0) {
+        toast.success(t('hosts.import.done', { count: outcome.created.length }));
+      }
+      onDone(outcome);
+    },
   });
 }

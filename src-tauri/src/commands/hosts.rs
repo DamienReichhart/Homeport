@@ -4,6 +4,7 @@ use tauri::State;
 
 use homeport_hosts::{
     detect::{self, DetectedEngine},
+    import::{ImportChoice, ImportDraft, ImportOutcome},
     registry::EngineEvent,
     service::{HostInput, HostView, SshSetup},
 };
@@ -87,4 +88,38 @@ pub fn hosts_ssh_setup(state: State<'_, AppState>, id: String) -> AppResult<SshS
 #[specta::specta]
 pub fn hosts_events(state: State<'_, AppState>, id: String) -> Vec<EngineEvent> {
     state.hosts.registry.events(&id)
+}
+
+/// The servers `~/.ssh/config` defines, as drafts of Hosts.
+#[tauri::command]
+#[specta::specta]
+pub async fn hosts_ssh_config_preview(state: State<'_, AppState>) -> AppResult<Vec<ImportDraft>> {
+    state.hosts.preview_ssh_config()
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn hosts_ssh_config_import(
+    state: State<'_, AppState>,
+    choices: Vec<ImportChoice>,
+) -> AppResult<ImportOutcome> {
+    state.hosts.import_ssh_config(choices)
+}
+
+/// The Docker CLI's contexts, as drafts of Hosts.
+#[tauri::command]
+#[specta::specta]
+pub async fn hosts_docker_contexts_preview(
+    state: State<'_, AppState>,
+) -> AppResult<Vec<ImportDraft>> {
+    state.hosts.preview_docker_contexts()
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn hosts_docker_contexts_import(
+    state: State<'_, AppState>,
+    choices: Vec<ImportChoice>,
+) -> AppResult<ImportOutcome> {
+    state.hosts.import_docker_contexts(choices)
 }
