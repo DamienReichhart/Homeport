@@ -11,7 +11,7 @@ A Docker Engine that Homeport connects to, defined by a name and how to reach it
 
 ### Stack
 
-A Compose project running on a Host, identified by its project name. Every Stack is Managed, Linked or External. See [Stacks](/docs/guides/stacks/).
+A Compose project running on a Host, identified by its project name. Every Stack is Managed, Linked, Synced or External. See [Stacks](/docs/guides/stacks/).
 
 ### Managed Stack
 
@@ -21,9 +21,21 @@ A Stack whose compose definition and environment Homeport holds, so it can be de
 
 A Stack whose compose files are a folder on this computer. Homeport keeps where the folder and its compose files are, reads and writes the files in place, and deploys with that folder as the project directory, so `build:`, `env_file:` and relative paths work. Found from the compose labels of running containers, or created from a folder. It becomes External while its files are missing. See [Linked Stacks](/docs/guides/stacks/#linked-stacks).
 
+### Synced Stack
+
+A Stack whose compose definition comes from a git repository. Homeport keeps a clone of it on this computer, fetches a branch or tag on demand or on an interval while Homeport is open, shows what changed, and deploys a commit from the compose file's folder, so `build:` and relative paths work. It's never edited in Homeport: its files change through git; only its environment and sync settings are Homeport's. See [Synced Stacks](/docs/guides/synced-stacks/).
+
+### Repository
+
+A git repository Homeport may read for Synced Stacks: its URL and how Homeport authenticates to it — a deploy key it generated, a user name and token, or nothing for a public one. Kept once for every Host, and shared by every Synced Stack made from it.
+
+### Deploy key
+
+The Ed25519 key Homeport generates for one repository, which you add to it on your git forge with read access only. Never your own SSH key.
+
 ### External Stack
 
-A Stack found running on a Host whose compose definition Homeport doesn't have, neither stored nor in a folder on this computer. It can be started, stopped and removed, but not redeployed or edited.
+A Stack found running on a Host whose compose definition Homeport doesn't have, neither stored, in a folder on this computer, nor in a repository it follows. It can be started, stopped and removed, but not redeployed or edited.
 
 ### Adopt
 

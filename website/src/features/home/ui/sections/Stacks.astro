@@ -1,18 +1,21 @@
 ---
-/** Managed, linked and found Compose Stacks. */
+/** Managed, linked, synced and found Compose Stacks. */
 import { href } from '@/shared/lib/href';
 import { Screenshot, TextLink } from '@/shared/ui';
 import Showcase from '../Showcase.astro';
 ---
 
-<Showcase eyebrow="Stacks" title="Compose Stacks, managed, linked or found" raised>
+<Showcase eyebrow="Stacks" title="Compose Stacks, managed, linked, synced or found" raised>
   <p>
     Keep a compose file and its environment in Homeport and deploy it to any Host — start from a
     template, combine several files, choose profiles; variables are stored encrypted, never written
     to disk. Or link a project folder on this computer: Homeport edits its files in place and
-    deploys from it, builds included. Every redeploy shows what changes first, each deploy is kept
-    so you can roll back, and Update pulls newer images and redeploys in one step. Stacks someone
-    deployed by hand show up too: start, stop or remove them, or adopt them.
+    deploys from it, builds included. Or follow a branch of a git repository, with a deploy key or a
+    token: each sync shows the new commits and what they change before deploying, and while Homeport
+    is open it checks for them, deploying on its own if you ask. Every redeploy shows what changes
+    first, each deploy is kept so you can roll back, and Update pulls newer images and redeploys in
+    one step. Stacks someone deployed by hand show up too: start, stop or remove them, or adopt
+    them.
   </p>
   <TextLink href={href('/docs/guides/stacks/')}>Managing Stacks</TextLink>
   <Screenshot

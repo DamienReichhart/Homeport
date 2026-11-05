@@ -101,6 +101,7 @@ crates/              Rust backend logic, one crate per layer (no Tauri types)
   transport/         reaching a Host: local, TCP, TLS, SSH, compose proxy
   engine/            containers, images, volumes, networks… over bollard
   hosts/  stacks/    the two domains: Hosts and Stacks
+  git/               Synced Stacks' repositories and the git CLI
   settings/ updates/ preferences, and how Homeport updates itself
 packaging/linux/     repository definitions, signing key, install script and
                      .deb/.rpm maintainer scripts

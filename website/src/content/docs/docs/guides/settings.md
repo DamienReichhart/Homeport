@@ -1,6 +1,6 @@
 ---
 title: Settings
-description: Theme, updates, registry logins, what this machine supports, version and licences.
+description: Theme, updates, registry logins, repositories, how often Synced Stacks are checked, what this machine supports, version and licences.
 ---
 
 **Settings** is the last item in the sidebar.
@@ -23,7 +23,7 @@ When an update is available, the card shows what you can do, which depends on ho
 
 ## Registries
 
-Logins for container registries — Docker Hub, GitHub Container Registry (GHCR), or your own — kept once in Homeport and used on every Host: when you pull an image, run a container from one that isn't there yet, push, build, or deploy a Managed or Linked Stack. There is one login per registry address.
+Logins for container registries — Docker Hub, GitHub Container Registry (GHCR), or your own — kept once in Homeport and used on every Host: when you pull an image, run a container from one that isn't there yet, push, build, or deploy a Managed, Linked or Synced Stack. There is one login per registry address.
 
 - **Add login** asks for the **Registry** (`docker.io`, `ghcr.io`, `registry.example.com:5000`), the **User name** and the **Password or access token**. GHCR, and Docker Hub accounts with two-factor authentication, need an access token rather than the password.
 - **Check login** asks the registry, from this computer, whether it accepts the login, as `docker login` does, without saving anything. A refused login says so with a hint; a registry Homeport can't reach says that instead.
@@ -35,14 +35,29 @@ Passwords and tokens are encrypted with the OS keychain's key and never shown ag
 
 Homeport doesn't read `~/.docker/config.json` or its credential helpers.
 
+## Repositories
+
+The git repositories [Synced Stacks](/docs/guides/synced-stacks/) are deployed from, kept once and usable on every Host.
+
+- **Add repository** asks for the repository's URL and how Homeport reaches it: a **Deploy key** it makes for that repository (SSH URLs), a **Token** with its user name (HTTPS URLs), or **Public** for one anyone can read.
+- The gear button shows a repository's deploy key, with where to add it on GitHub, GitLab, Gitea and Forgejo, and **New key** to replace it; or **Replace the token**. **Test access** lists its branches and tags from this computer. Once Homeport has trusted an SSH server's key, its fingerprint shows there, with **Reset** for when the forge really changed it.
+- **Remove** forgets the repository and deletes its clone on this computer; it's refused while a Synced Stack uses it.
+
+Keys and tokens are encrypted with the OS keychain's key and never shown again, logged or put in error details. Your own git configuration, credential helpers and SSH keys are never used. See [repositories](/docs/guides/synced-stacks/#repositories).
+
+## Synced Stacks
+
+**Check repositories every** sets how many minutes Homeport waits between checks of Synced Stacks' repositories for new commits: 5 by default, at least 1. Homeport checks only while it's open; nothing syncs while it's closed. See [polling and auto-deploy](/docs/guides/synced-stacks/#polling-and-auto-deploy).
+
 ## This machine
 
 What Homeport can use on this computer:
 
 - **OS keychain** — **Available** when SSH keys, certificates, Stack environments and registry logins can be stored encrypted; **Unavailable** otherwise. See [requirements](/docs/requirements/#optional-an-os-keychain).
 - **Compose CLI** — the Compose version found, such as `docker compose v2.29.1`, or **Not found** if Stacks can be started and stopped but not deployed. See [Stacks](/docs/guides/stacks/#what-deploying-needs).
+- **git** — the git found, such as `/usr/bin/git 2.43.0`, or what to install if Synced Stacks can't be used. See [requirements](/docs/requirements/#optional-git).
 
-Homeport checks both when it starts. After installing a keychain or Compose, quit and reopen Homeport.
+Homeport checks them when it starts. After installing a keychain, Compose or git, quit and reopen Homeport.
 
 ## About
 

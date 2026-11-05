@@ -115,7 +115,7 @@ A Stack started from a folder on another computer is External on this one, since
 
 ## What deploying needs
 
-Homeport deploys Managed and Linked Stacks with the `docker compose` command on **this** computer, pointed at the Host. Install the Docker CLI with the Compose plugin, or standalone `docker-compose` v2; **Settings → This machine** shows whether Homeport found it.
+Homeport deploys Managed, Linked and Synced Stacks with the `docker compose` command on **this** computer, pointed at the Host. Install the Docker CLI with the Compose plugin, or standalone `docker-compose` v2; **Settings → This machine** shows whether Homeport found it.
 
 For a Managed Stack, the command runs with the compose file on its standard input, the Stack's environment as variables, and an empty working folder, so nothing is written to disk. For a Linked Stack, it runs in the Stack's folder with its compose files, as if you ran it there. For SSH and TLS Hosts, Homeport routes the command through its own connection to the Host, so Compose never sees your keys.
 
@@ -230,7 +230,7 @@ services:
     profiles: [debug]
 ```
 
-Services without a profile always run. Those behind one run only when the Stack turns it on. When a Managed or Linked Stack's files declare profiles, its **Definition** tab shows **Profiles**, with a checkbox for each. Turn one on and choose **Save and redeploy** — or **Save profiles** to apply it at the next deploy.
+Services without a profile always run. Those behind one run only when the Stack turns it on. When a Managed, Linked or Synced Stack's files declare profiles, its **Definition** tab shows **Profiles**, with a checkbox for each. Turn one on and choose **Save and redeploy** — or **Save profiles** to apply it at the next deploy.
 
 Turning a profile off and redeploying removes its services' containers: Homeport removes them before `docker compose up`, since Compose itself leaves them running. **Take down** removes the services of every profile the files declare, turned on or not.
 
@@ -261,7 +261,7 @@ The comparison is between definitions only, not the containers' live configurati
 
 ## Deploy history and rolling back
 
-Each deploy of a Managed or Linked Stack from Homeport — **Deploy**, **Redeploy**, **Rebuild and deploy**, **Save and redeploy** — is recorded with the compose files, environment and profiles it used, when it ran and how it ended. The **History** tab of the Stack's page lists the last 20, newest first: **Succeeded**, **Failed** with its exit code, or **Not finished** for a run whose window was closed before it ended. **Deployed now** marks the newest one that succeeded.
+Each deploy of a Managed, Linked or Synced Stack from Homeport — **Deploy**, **Redeploy**, **Rebuild and deploy**, **Save and redeploy**, a [sync](/docs/guides/synced-stacks/#syncing) — is recorded with the compose files, environment and profiles it used, when it ran and how it ended; a Synced Stack's also shows its commit, and whether auto-deploy started it. The **History** tab of the Stack's page lists the last 20, newest first: **Succeeded**, **Failed** with its exit code, or **Not finished** for a run whose window was closed before it ended. **Deployed now** marks the newest one that succeeded.
 
 Select a deploy to see its compose files, read-only. Its environment is stored encrypted like the Stack's own, and the tab shows only the names of its variables. Without a keychain the list still works; a deploy with an environment just says it can't be opened.
 
@@ -285,14 +285,14 @@ A **Linked** Stack's history is read-only: its folder is its source, so restore 
   alt="A Stack's Logs tab, with every service's output interleaved and labelled."
 />
 
-- **Definition** holds the editor for a Managed or Linked Stack, or explains where an External Stack came from.
-- **History**, for Managed and Linked Stacks, lists their deploys. See [deploy history](#deploy-history-and-rolling-back).
+- **Definition** holds the editor for a Managed or Linked Stack, a Synced Stack's source and read-only files, or explains where an External Stack came from.
+- **History**, for Managed, Linked and Synced Stacks, lists their deploys. See [deploy history](#deploy-history-and-rolling-back).
 
 ## Updating a Stack
 
 **Update available** next to a Stack's state means one of its services runs an image whose tag points at a newer version in its registry; hover it to see which services. On the Stack's page, **Services** names them and marks each outdated image. **Check for newer images** at the top of the Stacks page asks the registries again. The check is the one the Containers page uses — see [newer images](/docs/guides/containers/#newer-images) — so opening Stacks right after Containers asks the registries nothing more. An image pinned by digest (`app@sha256:…`) never has an update, and a service with `build:` isn't checked.
 
-To update a Managed or Linked Stack, choose **Update**. It runs both steps in one window: it pulls every service's image with the stored logins, then runs `docker compose up` with what it pulled, so only the services whose image changed get new containers. The window says which images are newer before it starts, and there's no [review step](#reviewing-changes-before-a-redeploy), since the definition doesn't change. If a pull fails, the update stops there: the running containers are left as they were, and the error says why, with what to do.
+To update a Managed, Linked or Synced Stack, choose **Update**. It runs both steps in one window: it pulls every service's image with the stored logins, then runs `docker compose up` with what it pulled, so only the services whose image changed get new containers. The window says which images are newer before it starts, and there's no [review step](#reviewing-changes-before-a-redeploy), since the definition doesn't change. If a pull fails, the update stops there: the running containers are left as they were, and the error says why, with what to do.
 
 An External Stack shows **Update available** too, but its **Update** is disabled: Homeport has no compose file to redeploy it from, so [adopt](#adopting-an-external-stack) it first. Services with `build:` in a Linked Stack are never pulled; use **Rebuild and deploy** for those.
 

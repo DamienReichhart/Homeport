@@ -18,17 +18,24 @@ const release = await getLatestRelease();
     <ul>
       <li>
         <strong>OS keychain</strong> (macOS Keychain, Windows Credential Manager, or a Secret
-        Service such as GNOME Keyring) to store SSH keys, TLS certificates and Stack environments.
+        Service such as GNOME Keyring) to store SSH keys, TLS certificates, Stack environments and
+        repositories' deploy keys and tokens.
       </li>
       <li>
         <strong>
           <code>docker compose</code>
         </strong>{' '}
-        on this machine to deploy Managed and Linked Stacks.
+        on this machine to deploy Managed, Linked and Synced Stacks.
+      </li>
+      <li>
+        <strong>
+          <code>git</code>
+        </strong>{' '}
+        on this machine for Synced Stacks, deployed from a git repository.
       </li>
     </ul>
     <p>
-      Both are optional: Homeport tells you what is unavailable without them. See the{' '}
+      All are optional: Homeport tells you what is unavailable without them. See the{' '}
       <a href={href('/docs/requirements/')}>system requirements</a>.
     </p>
   </section>
