@@ -52,6 +52,16 @@ pub fn generate_key(comment: &str) -> GeneratedKey {
     }
 }
 
+/// Whether a private key can only be read with its passphrase.
+pub fn needs_passphrase(private_key: &str) -> bool {
+    let text = private_key.trim_start();
+    matches!(
+        decode_secret_key(private_key, None),
+        Err(russh::keys::Error::KeyIsEncrypted)
+    ) || text.starts_with("-----BEGIN ENCRYPTED PRIVATE KEY-----")
+        || (text.starts_with("PuTTY-User-Key-File-") && !text.contains("Encryption: none"))
+}
+
 /// Reads a user-supplied private key and returns its public half in OpenSSH format.
 pub fn public_key_of(private_key: &str, passphrase: Option<&str>) -> Result<String, ConnectError> {
     let key = decode_secret_key(private_key, passphrase).map_err(key_unreadable)?;
@@ -99,6 +109,16 @@ mod tests {
             public_key_of(&key.private_key, None).unwrap(),
             key.public_key
         );
+    }
+
+    #[test]
+    fn encrypted_keys_need_their_passphrase() {
+        // A throwaway key made for this test; its passphrase is "secret".
+        let encrypted = include_str!("testdata/encrypted_ed25519");
+        assert!(needs_passphrase(encrypted));
+        assert!(public_key_of(encrypted, Some("secret")).is_ok());
+        assert!(!needs_passphrase(&generate_key("plain").private_key));
+        assert!(!needs_passphrase("garbage"));
     }
 
     #[test]
