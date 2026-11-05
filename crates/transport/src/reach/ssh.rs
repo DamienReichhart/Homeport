@@ -3,6 +3,7 @@
 use homeport_core::error::{AppError, ErrorCode};
 
 use super::{connection_lost, network};
+use crate::messages as msg;
 
 /// Why an SSH session to `address` failed before or while logging in.
 pub fn ssh(address: &str, error: &russh::Error) -> AppError {
@@ -12,26 +13,21 @@ pub fn ssh(address: &str, error: &russh::Error) -> AppError {
         | russh::Error::KeepaliveTimeout
         | russh::Error::InactivityTimeout => AppError::new(
             ErrorCode::Timeout,
-            format!("The SSH server at {address} stopped answering."),
+            msg::SSH_STOPPED_ANSWERING.with("host", address),
         )
-        .with_hint("Check that the machine is on and reachable. Homeport keeps retrying.")
+        .with_hint(msg::SSH_STOPPED_ANSWERING_HINT)
         .with_cause(error),
-        russh::Error::Disconnect | russh::Error::HUP => {
-            connection_lost(address).with_cause(error)
-        }
+        russh::Error::Disconnect | russh::Error::HUP => connection_lost(address).with_cause(error),
         russh::Error::NoCommonAlgo { .. } | russh::Error::KexInit | russh::Error::Kex => {
             AppError::new(
                 ErrorCode::SshFailed,
-                format!("Homeport and the SSH server at {address} share no encryption method."),
+                msg::SSH_NO_COMMON_ALGORITHM.with("host", address),
             )
-            .with_hint("Update OpenSSH on that machine, or allow modern algorithms such as ed25519 and curve25519 in its sshd_config.")
+            .with_hint(msg::SSH_NO_COMMON_ALGORITHM_HINT)
             .with_cause(error)
         }
-        _ => AppError::new(
-            ErrorCode::SshFailed,
-            format!("The SSH connection to {address} failed."),
-        )
-        .with_cause(error),
+        _ => AppError::new(ErrorCode::SshFailed, msg::SSH_FAILED.with("host", address))
+            .with_cause(error),
     }
 }
 

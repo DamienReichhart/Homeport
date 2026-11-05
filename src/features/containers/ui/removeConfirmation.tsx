@@ -1,5 +1,6 @@
 import type { Container } from '@/shared/api';
 import type { ConfirmOptions } from '@/shared/ui';
+import { t } from '@/shared/i18n';
 
 /** Confirmation for removing containers, naming what goes with them. */
 export function removeConfirmation(
@@ -7,18 +8,20 @@ export function removeConfirmation(
   onConfirm: () => Promise<unknown>,
 ): ConfirmOptions {
   const running = containers.filter((c) => c.state === 'running').length;
-  const what = containers.length === 1 ? containers[0]?.name : `${containers.length} containers`;
+  const count = containers.length;
   return {
-    title: `Remove ${what}?`,
+    title:
+      count === 1
+        ? t('containers.remove.title', { name: containers[0]?.name })
+        : t('containers.remove.titleMany', { count }),
     description: (
       <>
-        The container{containers.length === 1 ? '' : 's'} and{' '}
-        {containers.length === 1 ? 'its' : 'their'} writable layer and anonymous volumes are
-        deleted. {running > 0 && <strong>{running} running will be stopped first. </strong>}
-        Named volumes are kept.
+        {t('containers.remove.deleted', { count })}{' '}
+        {running > 0 && <strong>{t('containers.remove.running', { count: running })} </strong>}
+        {t('containers.remove.namedKept')}
       </>
     ),
-    confirmLabel: 'Remove',
+    confirmLabel: t('common.remove'),
     destructive: true,
     onConfirm,
   };

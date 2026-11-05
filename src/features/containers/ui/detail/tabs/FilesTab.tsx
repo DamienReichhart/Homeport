@@ -14,6 +14,7 @@ import { Button, type ColumnDef, DataTable, ErrorMessage } from '@/shared/ui';
 import { useFileTransfers } from '../../../api/mutations';
 import { containerQueries } from '../../../api/queries';
 import { crumbs } from '../../../model/files';
+import { t } from '@/shared/i18n';
 
 const ICONS = { directory: FolderIcon, file: FileIcon, symlink: LinkIcon, other: FileIcon };
 
@@ -39,7 +40,10 @@ export function FilesTab({
 
   const download = async (entry: FileEntry) => {
     const dir = entry.kind === 'directory';
-    const target = await pickSavePath(`Save ${entry.name}`, dir ? `${entry.name}.tar` : entry.name);
+    const target = await pickSavePath(
+      t('containers.files.saveOne', { name: entry.name }),
+      dir ? `${entry.name}.tar` : entry.name,
+    );
     if (!target) return;
     save.mutate({ entry, target });
   };
@@ -47,7 +51,7 @@ export function FilesTab({
   const columns: ColumnDef<FileEntry, unknown>[] = [
     {
       id: 'name',
-      header: 'Name',
+      header: t('containers.files.column.name'),
       accessorFn: (e) => e.name,
       cell: ({ row }) => {
         const Icon = ICONS[row.original.kind];
@@ -61,19 +65,19 @@ export function FilesTab({
     },
     {
       id: 'size',
-      header: 'Size',
+      header: t('containers.files.column.size'),
       accessorFn: (e) => e.size,
       cell: ({ row }) => (row.original.kind === 'file' ? formatBytes(row.original.size) : ''),
     },
     {
       id: 'modified',
-      header: 'Modified',
+      header: t('containers.files.column.modified'),
       accessorFn: (e) => e.modified,
       cell: ({ row }) => formatDateTime(row.original.modified),
     },
     {
       id: 'mode',
-      header: 'Mode',
+      header: t('containers.files.column.mode'),
       accessorFn: (e) => e.mode,
       cell: ({ row }) => <span className="font-mono text-xs">{row.original.mode}</span>,
     },
@@ -85,7 +89,7 @@ export function FilesTab({
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label={`Download ${row.original.name}`}
+          aria-label={t('containers.files.downloadOne', { name: row.original.name })}
           onClick={(e) => {
             e.stopPropagation();
             void download(row.original);
@@ -98,14 +102,15 @@ export function FilesTab({
   ];
 
   if (!running)
-    return (
-      <p className="text-muted-foreground text-sm">Start the container to browse its files.</p>
-    );
+    return <p className="text-muted-foreground text-sm">{t('containers.files.startFirst')}</p>;
 
   return (
     <div className="grid gap-3">
       <div className="flex flex-wrap items-center gap-2">
-        <nav aria-label="Path" className="flex flex-wrap items-center gap-0.5 font-mono text-sm">
+        <nav
+          aria-label={t('containers.files.path')}
+          className="flex flex-wrap items-center gap-0.5 font-mono text-sm"
+        >
           {crumbs(path).map(([label, target], i) => (
             <span key={target} className="flex items-center">
               {i > 1 && <span className="text-muted-foreground">/</span>}
@@ -121,18 +126,18 @@ export function FilesTab({
         </nav>
         <div className="ml-auto flex gap-2">
           <Button variant="outline" size="sm" onClick={() => void listing.refetch()}>
-            <RefreshCwIcon /> Refresh
+            <RefreshCwIcon /> {t('common.refresh')}
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={async () => {
-              const sources = await pickFiles(`Upload to ${path}`);
+              const sources = await pickFiles(t('containers.files.uploadTo', { path }));
               if (sources.length === 0) return;
               upload.mutate({ path, sources });
             }}
           >
-            <UploadIcon /> Upload here
+            <UploadIcon /> {t('containers.files.uploadHere')}
           </Button>
         </div>
       </div>
@@ -143,7 +148,7 @@ export function FilesTab({
           columns={columns}
           data={listing.data ?? []}
           getRowId={(e) => e.path}
-          empty={listing.isPending ? 'Loading…' : 'This directory is empty.'}
+          empty={listing.isPending ? t('common.loading') : t('containers.files.empty')}
           onRowClick={(e) => e.kind === 'directory' && setPath(e.path)}
         />
       )}

@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { hostKeys } from '@/core/host';
 import { commands } from '@/shared/api';
+import { t } from '@/shared/i18n';
 import { toHostInput, type HostFormState } from '../model/form';
 
 function useRefreshHosts() {
@@ -17,7 +18,7 @@ export function useUpdateHost(hostId: string) {
     mutationFn: (form: HostFormState) => commands.hostsUpdate(hostId, toHostInput(form, true)),
     onSuccess: async () => {
       await refresh();
-      toast.success('Host saved');
+      toast.success(t('hosts.saved'));
     },
   });
 }

@@ -9,6 +9,7 @@ use homeport_core::{
 };
 
 use super::io_cause;
+use crate::messages as msg;
 
 /// The software that usually provides a local Engine socket.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -51,17 +52,6 @@ impl LocalEngine {
             Self::Unknown
         }
     }
-
-    fn name(self) -> &'static str {
-        match self {
-            Self::DockerEngine | Self::DockerRootless | Self::Unknown => "The Docker Engine",
-            Self::DockerDesktop => "Docker Desktop",
-            Self::Podman => "Podman",
-            Self::Colima => "Colima",
-            Self::OrbStack => "OrbStack",
-            Self::RancherDesktop => "Rancher Desktop",
-        }
-    }
 }
 
 /// Why the local socket at `socket_path` didn't answer.
@@ -77,73 +67,74 @@ pub fn local_socket(socket_path: &str, error: &(dyn StdError + 'static)) -> AppE
         }
         Some(io::ErrorKind::TimedOut) => AppError::new(
             ErrorCode::Timeout,
-            format!("The Docker Engine at {socket_path} didn't answer in time."),
+            msg::LOCAL_TIMEOUT.with("path", socket_path),
         )
-        .with_hint("It may be starting or overloaded. Homeport keeps retrying."),
+        .with_hint(msg::LOCAL_TIMEOUT_HINT),
         _ => AppError::new(
             ErrorCode::EngineNotRunning,
-            format!("Homeport can't talk to the Docker Engine at {socket_path}."),
+            msg::LOCAL_UNREACHABLE.with("path", socket_path),
         )
-        .with_hint("Check that the Docker Engine is running, then reconnect."),
+        .with_hint(msg::LOCAL_UNREACHABLE_HINT),
     };
     classified.with_cause(error)
 }
 
 fn not_running(socket_path: &str) -> AppError {
-    let engine = LocalEngine::of(socket_path);
     let error = AppError::new(
         ErrorCode::EngineNotRunning,
-        format!("No Docker Engine is running at {socket_path}."),
+        msg::LOCAL_NOT_RUNNING.with("path", socket_path),
     );
-    match engine {
+    match LocalEngine::of(socket_path) {
         LocalEngine::DockerEngine => error
-            .with_hint("Start the Docker Engine, and have it start with the computer:")
+            .with_hint(msg::LOCAL_NOT_RUNNING_DOCKER_ENGINE_HINT)
             .with_command("sudo systemctl enable --now docker"),
         LocalEngine::DockerRootless => error
-            .with_hint("Start your rootless Docker Engine, and have it start when you log in:")
+            .with_hint(msg::LOCAL_NOT_RUNNING_DOCKER_ROOTLESS_HINT)
             .with_command("systemctl --user enable --now docker"),
-        LocalEngine::Podman if cfg!(target_os = "linux") && socket_path.starts_with("/run/user/") => error
-            .with_hint("Start Podman's Docker-compatible socket:")
-            .with_command("systemctl --user enable --now podman.socket"),
+        LocalEngine::Podman
+            if cfg!(target_os = "linux") && socket_path.starts_with("/run/user/") =>
+        {
+            error
+                .with_hint(msg::LOCAL_NOT_RUNNING_PODMAN_SOCKET_HINT)
+                .with_command("systemctl --user enable --now podman.socket")
+        }
         LocalEngine::Podman if cfg!(target_os = "linux") => error
-            .with_hint("Start Podman's Docker-compatible socket:")
+            .with_hint(msg::LOCAL_NOT_RUNNING_PODMAN_SOCKET_HINT)
             .with_command("sudo systemctl enable --now podman.socket"),
         LocalEngine::Podman => error
-            .with_hint("Start the Podman machine:")
+            .with_hint(msg::LOCAL_NOT_RUNNING_PODMAN_MACHINE_HINT)
             .with_command("podman machine start"),
         LocalEngine::Colima => error
-            .with_hint("Start Colima:")
+            .with_hint(msg::LOCAL_NOT_RUNNING_COLIMA_HINT)
             .with_command("colima start"),
         LocalEngine::OrbStack => error
-            .with_hint("Open OrbStack, or start it from a terminal:")
+            .with_hint(msg::LOCAL_NOT_RUNNING_ORBSTACK_HINT)
             .with_command("orb start"),
-        LocalEngine::DockerDesktop | LocalEngine::RancherDesktop => error.with_hint(format!(
-            "Open {} and wait until its Engine is running.",
-            engine.name()
-        )),
-        LocalEngine::Unknown => error.with_hint(
-            "Start the Docker Engine that provides this socket, or check the socket path on the host page.",
-        ),
+        LocalEngine::DockerDesktop => error.with_hint(msg::LOCAL_NOT_RUNNING_DOCKER_DESKTOP_HINT),
+        LocalEngine::RancherDesktop => error.with_hint(msg::LOCAL_NOT_RUNNING_RANCHER_DESKTOP_HINT),
+        LocalEngine::Unknown => error.with_hint(msg::LOCAL_NOT_RUNNING_UNKNOWN_HINT),
     }
 }
 
 fn not_installed(socket_path: &str) -> AppError {
     let error = AppError::new(
         ErrorCode::EngineNotInstalled,
-        format!("The Docker Engine doesn't seem to be installed: nothing exists at {socket_path}."),
+        msg::LOCAL_NOT_INSTALLED.with("path", socket_path),
     );
     if cfg!(target_os = "linux") {
         error
-            .with_hint("Install Docker Engine (see docs.docker.com/engine/install), for example with Docker's install script, then let your user use it:")
-            .with_command("curl -fsSL https://get.docker.com | sh\nsudo systemctl enable --now docker")
+            .with_hint(msg::LOCAL_NOT_INSTALLED_LINUX_HINT)
+            .with_command(
+                "curl -fsSL https://get.docker.com | sh\nsudo systemctl enable --now docker",
+            )
             .with_command("sudo usermod -aG docker \"$USER\"")
     } else if cfg!(target_os = "macos") {
         error
-            .with_hint("Install Docker Desktop, OrbStack or Colima. With Homebrew, Colima is:")
+            .with_hint(msg::LOCAL_NOT_INSTALLED_MACOS_HINT)
             .with_command("brew install colima docker docker-compose\ncolima start")
     } else {
         error
-            .with_hint("Install Docker Desktop (see docs.docker.com/desktop), then open it:")
+            .with_hint(msg::LOCAL_NOT_INSTALLED_WINDOWS_HINT)
             .with_command("winget install Docker.DockerDesktop")
     }
 }
@@ -151,17 +142,17 @@ fn not_installed(socket_path: &str) -> AppError {
 fn permission_denied(socket_path: &str) -> AppError {
     let error = AppError::new(
         ErrorCode::PermissionDenied,
-        format!("Homeport isn't allowed to use the Docker Engine at {socket_path}."),
+        msg::LOCAL_PERMISSION_DENIED.with("path", socket_path),
     );
     match LocalEngine::of(socket_path) {
         LocalEngine::DockerEngine => error
-            .with_hint("Add your user to the docker group, then log out and back in (or restart) so it applies:")
+            .with_hint(msg::LOCAL_PERMISSION_DENIED_DOCKER_GROUP_HINT)
             .with_command("sudo usermod -aG docker \"$USER\""),
         _ if cfg!(windows) => error
-            .with_hint("Add your user to the docker-users group in an administrator terminal, then sign out and back in:")
+            .with_hint(msg::LOCAL_PERMISSION_DENIED_DOCKER_USERS_HINT)
             .with_command("net localgroup docker-users \"%USERNAME%\" /add"),
         _ => error
-            .with_hint("Check who may use the socket:")
+            .with_hint(msg::LOCAL_PERMISSION_DENIED_SOCKET_HINT)
             .with_command(format!("ls -l {socket_path}")),
     }
 }

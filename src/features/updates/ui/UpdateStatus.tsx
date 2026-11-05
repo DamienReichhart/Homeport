@@ -1,5 +1,6 @@
 import { ErrorMessage } from '@/shared/ui';
 import type { useUpdateCheck } from '../api/queries';
+import { t } from '@/shared/i18n';
 
 /** The outcome of the last check, in one line. */
 export function UpdateStatus({ check }: { check: ReturnType<typeof useUpdateCheck> }) {
@@ -10,8 +11,8 @@ export function UpdateStatus({ check }: { check: ReturnType<typeof useUpdateChec
   return (
     <span className="text-muted-foreground text-sm">
       {available
-        ? `Homeport ${available.version} is available (you have ${currentVersion}).`
-        : `Homeport ${currentVersion} is the latest version.`}
+        ? t('updates.status.available', { version: available.version, current: currentVersion })
+        : t('updates.status.latest', { current: currentVersion })}
     </span>
   );
 }

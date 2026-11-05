@@ -299,7 +299,7 @@ pub async fn registry_digest(
     inspect.descriptor.digest.ok_or_else(|| {
         AppError::new(
             homeport_core::error::ErrorCode::EngineError,
-            "The registry didn't say which image it has.",
+            crate::messages::REGISTRY_NO_DIGEST,
         )
     })
 }

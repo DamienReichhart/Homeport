@@ -2,7 +2,9 @@
 //! it, in **Settings → Registries**. The Engine's own classification
 //! (`homeport_core::error::engine`) can't know whether Homeport had a login.
 
-use homeport_core::error::{AppError, ErrorCode, Hint};
+use homeport_core::error::{AppError, ErrorCode, Text};
+
+use crate::messages as msg;
 
 use crate::{address, Registry};
 
@@ -10,59 +12,44 @@ use crate::{address, Registry};
 /// if any, was sent with it. Other errors pass through untouched.
 pub fn explain(error: AppError, reference: &str, login: Option<&Registry>) -> AppError {
     let registry = address::registry_of(reference);
-    let (message, hint) = match (error.code, login) {
+    let (message, hint): (Text, Text) = match (error.code, login) {
         (ErrorCode::RegistryAuthRequired, None) => (
-            "The image doesn't exist, or it's private.".to_owned(),
-            format!(
-                "Check the image name. If it's private, add a login for {registry} in Settings → Registries."
-            ),
+            msg::PULL_REFUSED.into(),
+            msg::PULL_REFUSED_HINT.with("registry", &registry),
         ),
         (ErrorCode::RegistryAuthRequired, Some(login)) => (
-            format!("The image doesn't exist, or {} can't access it.", login.username),
-            format!(
-                "Check the image name, and the login for {registry} in Settings → Registries."
-            ),
+            msg::PULL_REFUSED_LOGIN.with("username", &login.username),
+            msg::PULL_REFUSED_LOGIN_HINT.with("registry", &registry),
         ),
         (ErrorCode::RegistryLoginFailed, Some(login)) => (
-            format!("{registry} refused the stored login of {}.", login.username),
-            format!("Check the password or token for {registry} in Settings → Registries."),
+            msg::LOGIN_REFUSED
+                .with("registry", &registry)
+                .with("username", &login.username),
+            msg::LOGIN_REFUSED_HINT.with("registry", &registry),
         ),
         _ => return error,
     };
-    AppError {
-        message,
-        hint: Some(Hint {
-            text: hint,
-            commands: vec![],
-        }),
-        ..error
-    }
+    error.with_message(message).with_hint(hint)
 }
 
 /// [`explain`] for a push: the registry refusing means the login is missing
 /// or may not push to that repository, not that the image is missing.
 pub fn explain_push(error: AppError, reference: &str, login: Option<&Registry>) -> AppError {
     let registry = address::registry_of(reference);
-    let (message, hint) = match (error.code, login) {
+    let (message, hint): (Text, Text) = match (error.code, login) {
         (ErrorCode::RegistryAuthRequired, None) => (
-            format!("{registry} refused the push."),
-            format!("Add a login for {registry} in Settings → Registries."),
+            msg::PUSH_REFUSED.with("registry", &registry),
+            msg::PUSH_REFUSED_HINT.with("registry", &registry),
         ),
         (ErrorCode::RegistryAuthRequired, Some(login)) => (
-            format!("{registry} refused the push from {}.", login.username),
-            "Check that this login may push to the repository, in Settings → Registries."
-                .to_owned(),
+            msg::PUSH_REFUSED_LOGIN
+                .with("registry", &registry)
+                .with("username", &login.username),
+            msg::PUSH_REFUSED_LOGIN_HINT.into(),
         ),
         _ => return explain(error, reference, login),
     };
-    AppError {
-        message,
-        hint: Some(Hint {
-            text: hint,
-            commands: vec![],
-        }),
-        ..error
-    }
+    error.with_message(message).with_hint(hint)
 }
 
 #[cfg(test)]
@@ -70,7 +57,7 @@ mod tests {
     use super::*;
 
     fn denied() -> AppError {
-        AppError::new(ErrorCode::RegistryAuthRequired, "denied").with_detail("raw")
+        AppError::new(ErrorCode::RegistryAuthRequired, msg::PULL_REFUSED).with_detail("raw")
     }
 
     fn login() -> Registry {
@@ -96,7 +83,7 @@ mod tests {
         assert!(e.message.contains("alice"));
         assert!(e.hint.unwrap().text.contains("the login for ghcr.io"));
 
-        let refused = AppError::new(ErrorCode::RegistryLoginFailed, "refused");
+        let refused = AppError::new(ErrorCode::RegistryLoginFailed, msg::LOGIN_FAILED);
         let e = explain(refused, "ghcr.io/org/app:1", Some(&login()));
         assert!(e
             .hint
@@ -122,7 +109,7 @@ mod tests {
 
     #[test]
     fn other_errors_pass_through() {
-        let e = AppError::new(ErrorCode::DiskFull, "full");
+        let e = AppError::new(ErrorCode::DiskFull, msg::HTTPS_CLIENT);
         assert_eq!(explain(e.clone(), "nginx", None), e);
     }
 }

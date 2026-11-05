@@ -8,7 +8,7 @@ use homeport_engine::{
     containers,
     freshness::{FreshnessResult, FreshnessTarget},
     images::{self, Image, ImageLayer, PruneReport, PullEvent, SearchResult},
-    transfer::{self, TransferEvent},
+    transfer::{self, ImportSpec, TransferEvent},
 };
 
 use crate::{app::AppState, commands::registries, error::AppResult};
@@ -181,6 +181,42 @@ pub async fn images_load_subscribe(
     Ok(state
         .streams
         .spawn(transfer::load(docker, source.into(), move |e| {
+            on_event.send(e).is_ok()
+        })))
+}
+
+/// Creates an image from a root filesystem tar on this machine (`docker import`), streaming progress.
+#[tauri::command]
+#[specta::specta]
+pub async fn images_import_subscribe(
+    state: State<'_, AppState>,
+    host_id: String,
+    source: String,
+    spec: ImportSpec,
+    on_event: Channel<TransferEvent>,
+) -> AppResult<StreamId> {
+    let docker = state.hosts.registry.docker(&host_id)?;
+    Ok(state
+        .streams
+        .spawn(transfer::import(docker, source.into(), spec, move |e| {
+            on_event.send(e).is_ok()
+        })))
+}
+
+/// Saves a container's filesystem to a tar on this machine (`docker export`), streaming progress.
+#[tauri::command]
+#[specta::specta]
+pub async fn containers_export_subscribe(
+    state: State<'_, AppState>,
+    host_id: String,
+    id: String,
+    destination: String,
+    on_event: Channel<TransferEvent>,
+) -> AppResult<StreamId> {
+    let docker = state.hosts.registry.docker(&host_id)?;
+    Ok(state
+        .streams
+        .spawn(transfer::export(docker, id, destination.into(), move |e| {
             on_event.send(e).is_ok()
         })))
 }

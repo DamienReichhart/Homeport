@@ -3,6 +3,7 @@ import type { Container } from '@/shared/api';
 import { Button, type ConfirmOptions } from '@/shared/ui';
 import { useContainerMutations } from '../../api/mutations';
 import { removeConfirmation } from '../removeConfirmation';
+import { t } from '@/shared/i18n';
 
 /** Start, stop, restart and remove for the selected containers. */
 export function SelectionActions({
@@ -23,15 +24,17 @@ export function SelectionActions({
   const { act, remove } = useContainerMutations(hostId);
   return (
     <div className="ml-auto flex items-center gap-1.5">
-      <span className="text-muted-foreground text-sm">{selected.length} selected</span>
+      <span className="text-muted-foreground text-sm">
+        {t('containers.selected', { count: selected.length })}
+      </span>
       <Button size="sm" variant="outline" onClick={() => act.mutate({ ids, action: 'start' })}>
-        <PlayIcon /> Start
+        <PlayIcon /> {t('containers.action.start')}
       </Button>
       <Button size="sm" variant="outline" onClick={() => act.mutate({ ids, action: 'stop' })}>
-        <SquareIcon /> Stop
+        <SquareIcon /> {t('containers.action.stop')}
       </Button>
       <Button size="sm" variant="outline" onClick={() => act.mutate({ ids, action: 'restart' })}>
-        <RotateCwIcon /> Restart
+        <RotateCwIcon /> {t('containers.action.restart')}
       </Button>
       <Button
         size="sm"
@@ -45,7 +48,7 @@ export function SelectionActions({
           )
         }
       >
-        <Trash2Icon /> Remove
+        <Trash2Icon /> {t('common.remove')}
       </Button>
     </div>
   );

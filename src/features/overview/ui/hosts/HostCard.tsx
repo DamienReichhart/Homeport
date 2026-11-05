@@ -19,6 +19,7 @@ import {
   CardTitle,
 } from '@/shared/ui';
 import { HostUsage } from './HostUsage';
+import { t, tRich } from '@/shared/i18n';
 
 /** A Host at a glance; clicking it selects it and opens its containers. */
 export function HostCard({ view, selected }: { view: HostView; selected: boolean }) {
@@ -51,10 +52,13 @@ export function HostCard({ view, selected }: { view: HostView; selected: boolean
         {connected && info.data && (
           <div className="text-muted-foreground grid grid-cols-2 gap-2 text-sm">
             <span>
-              <span className="text-foreground font-medium">{info.data.running}</span> /{' '}
-              {info.data.containers} running
+              {tRich('overview.host.running', {
+                running: info.data.running,
+                total: info.data.containers,
+                strong: (chunks) => <span className="text-foreground font-medium">{chunks}</span>,
+              })}
             </span>
-            <span>{info.data.images} images</span>
+            <span>{t('overview.host.images', { count: info.data.images })}</span>
             <HostUsage hostId={view.host.id} cpus={info.data.cpus} memory={info.data.memory} />
           </div>
         )}

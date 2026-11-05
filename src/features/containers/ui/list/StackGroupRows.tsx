@@ -5,6 +5,7 @@ import type { ContainerUsage } from '@/shared/api';
 import { formatBytes, formatPercent } from '@/shared/lib';
 import { Button, Checkbox, StatusDot, TableCell, TableRow } from '@/shared/ui';
 import type { StackGroup } from '../../model/grouping';
+import { t } from '@/shared/i18n';
 
 /** A Stack's header row with its totals, then its containers' rows when open. */
 export function StackGroupRows({
@@ -33,7 +34,7 @@ export function StackGroupRows({
       <TableRow className="bg-muted/30 cursor-pointer" onClick={onToggleOpen}>
         <TableCell onClick={(e) => e.stopPropagation()}>
           <Checkbox
-            aria-label={`Select stack ${g.stack}`}
+            aria-label={t('containers.selectStack', { stack: g.stack })}
             checked={allSelected}
             onCheckedChange={(v) => onSelect(v === true)}
           />
@@ -56,7 +57,7 @@ export function StackGroupRows({
             />
             {g.stack}
             <span className="text-muted-foreground text-xs font-normal">
-              {g.running}/{g.containers.length} running
+              {t('containers.stack.running', { running: g.running, count: g.containers.length })}
             </span>
           </span>
         </TableCell>
@@ -75,7 +76,7 @@ export function StackGroupRows({
               navigate(`/stacks/${encodeURIComponent(g.stack)}`);
             }}
           >
-            Open stack
+            {t('containers.stack.open')}
           </Button>
         </TableCell>
       </TableRow>

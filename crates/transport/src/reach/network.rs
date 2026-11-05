@@ -5,6 +5,7 @@ use std::{error::Error as StdError, io};
 use homeport_core::error::{chain, AppError, ErrorCode};
 
 use super::{connection_lost, io_cause};
+use crate::messages as msg;
 
 /// Why `address` (a TCP or TLS Engine, or an SSH server) couldn't be reached
 /// over the network.
@@ -13,27 +14,27 @@ pub fn network(address: &str, error: &(dyn StdError + 'static)) -> AppError {
     let classified = if is_dns_failure(&text) {
         AppError::new(
             ErrorCode::DnsFailed,
-            format!("The name of {address} can't be found."),
+            msg::NETWORK_DNS_FAILED.with("host", address),
         )
-        .with_hint("Check the address for typos, and that this computer's network and DNS work.")
+        .with_hint(msg::NETWORK_DNS_FAILED_HINT)
     } else {
         match io_cause(error).map(io::Error::kind) {
             Some(io::ErrorKind::ConnectionRefused) => AppError::new(
                 ErrorCode::ConnectionRefused,
-                format!("{address} refused the connection."),
+                msg::NETWORK_REFUSED.with("host", address),
             )
-            .with_hint("Check the port, that the service listens on it, and that no firewall blocks it."),
+            .with_hint(msg::NETWORK_REFUSED_HINT),
             Some(io::ErrorKind::TimedOut) => AppError::new(
                 ErrorCode::Timeout,
-                format!("{address} didn't answer in time."),
+                msg::NETWORK_TIMEOUT.with("host", address),
             )
-            .with_hint("Check the address, that the machine is on, and that no firewall drops the connection."),
+            .with_hint(msg::NETWORK_TIMEOUT_HINT),
             Some(io::ErrorKind::HostUnreachable | io::ErrorKind::NetworkUnreachable) => {
                 AppError::new(
                     ErrorCode::NetworkUnreachable,
-                    format!("{address} can't be reached from this network."),
+                    msg::NETWORK_UNREACHABLE.with("host", address),
                 )
-                .with_hint("Check your network connection, or connect the VPN it's behind.")
+                .with_hint(msg::NETWORK_UNREACHABLE_HINT)
             }
             Some(
                 io::ErrorKind::ConnectionReset
@@ -43,9 +44,9 @@ pub fn network(address: &str, error: &(dyn StdError + 'static)) -> AppError {
             ) => connection_lost(address),
             _ => AppError::new(
                 ErrorCode::ConnectionRefused,
-                format!("Homeport can't reach {address}."),
+                msg::NETWORK_FAILED.with("host", address),
             )
-            .with_hint("Check the address and your network, then reconnect."),
+            .with_hint(msg::NETWORK_FAILED_HINT),
         }
     };
     classified.with_cause(error)
@@ -100,5 +101,12 @@ mod tests {
             &io::Error::other("failed to lookup address information: Name or service not known"),
         );
         assert_eq!(e.code, ErrorCode::DnsFailed);
+        assert_eq!(e.key, "errors.transport.network.dnsFailed");
+        assert_eq!(e.params["host"].to_string(), "prod.example:2375");
+        assert_eq!(e.message, "The name of prod.example:2375 can't be found.");
+        assert_eq!(
+            e.hint.unwrap().key,
+            "errors.transport.network.dnsFailed.hint"
+        );
     }
 }

@@ -10,6 +10,7 @@ import {
   TableRow,
 } from '@/shared/ui';
 import { containerQueries } from '../../../api/queries';
+import { t } from '@/shared/i18n';
 
 export function ProcessesTab({
   hostId,
@@ -26,7 +27,7 @@ export function ProcessesTab({
     refetchInterval: 5000,
   });
   if (!running)
-    return <p className="text-muted-foreground text-sm">The container isn&apos;t running.</p>;
+    return <p className="text-muted-foreground text-sm">{t('containers.notRunning')}</p>;
   if (top.isPending) return <Spinner />;
   if (top.error) return <ErrorMessage error={top.error} onRetry={() => void top.refetch()} />;
   return (
@@ -34,8 +35,8 @@ export function ProcessesTab({
       <Table>
         <TableHeader>
           <TableRow>
-            {top.data.titles.map((t) => (
-              <TableHead key={t}>{t}</TableHead>
+            {top.data.titles.map((title) => (
+              <TableHead key={title}>{title}</TableHead>
             ))}
           </TableRow>
         </TableHeader>

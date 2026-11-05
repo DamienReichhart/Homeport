@@ -4,5 +4,5 @@ import { SettingsPage } from './ui/SettingsPage';
 
 export const settingsFeature = defineFeature({
   routes: [{ path: 'settings', Component: SettingsPage }],
-  nav: { path: '/settings', label: 'Settings', icon: SettingsIcon },
+  nav: { path: '/settings', label: 'settings.nav', icon: SettingsIcon },
 });

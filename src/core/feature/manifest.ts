@@ -1,10 +1,12 @@
 import type { LucideIcon } from 'lucide-react';
 import type { RouteObject } from 'react-router-dom';
+import type { MessageKey } from '@/shared/i18n';
 
 /** A sidebar entry. */
 export interface NavEntry {
   path: string;
-  label: string;
+  /** Its name in the sidebar, from the catalogue. */
+  label: MessageKey;
   icon: LucideIcon;
 }
 

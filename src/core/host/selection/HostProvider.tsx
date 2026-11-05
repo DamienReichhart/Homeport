@@ -4,6 +4,7 @@ import { patchSettings, settingsQuery } from '@/core/settings';
 import { toastError } from '@/shared/ui';
 import { useHosts } from '../api/queries';
 import { HostSelectionContext, type HostSelection } from './context';
+import { t } from '@/shared/i18n';
 
 /**
  * The settings couldn't be read at start-up. The IPC gateway already wrote the
@@ -36,7 +37,7 @@ export function HostProvider({ children }: { children: ReactNode }) {
     (id: string) => {
       setHostId(id);
       patchSettings(client, { lastHostId: id }).catch((e: unknown) =>
-        toastError(e, 'Homeport couldn’t remember the selected Host'),
+        toastError(e, t('core.host.rememberFailed')),
       );
     },
     [client],

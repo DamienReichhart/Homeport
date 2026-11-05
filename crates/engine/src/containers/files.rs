@@ -20,6 +20,8 @@ use serde::Serialize;
 
 use homeport_core::error::{local_file, AppError, AppResult, ErrorCode};
 
+use crate::messages as msg;
+
 /// Go's `os.ModeDir`, as reported by the archive stat endpoint.
 const GO_MODE_DIR: u32 = 1 << 31;
 
@@ -81,7 +83,7 @@ pub fn parse_listing(output: &str) -> Vec<FileEntry> {
 fn absolute(path: &str) -> AppResult<&str> {
     let path = path.trim();
     if !path.starts_with('/') {
-        return Err(AppError::validation("Paths must start with /."));
+        return Err(AppError::validation(msg::FILES_PATH_NOT_ABSOLUTE));
     }
     Ok(path)
 }
@@ -107,12 +109,9 @@ pub async fn list(docker: &Docker, container_id: &str, path: &str) -> AppResult<
     match code {
         Some(0) => Ok(parse_listing(&stdout)),
         // find/stat missing (distroless images): exec itself fails with 126/127.
-        Some(126 | 127) | None => Err(AppError::new(
-            ErrorCode::NoShell,
-            "This container has no find and stat tools, so its files can't be listed.",
-        )
-        .with_hint("Minimal images (distroless, scratch) leave them out. Copy files with docker cp from a terminal instead.")
-        .with_detail(stderr.trim())),
+        Some(126 | 127) | None => Err(AppError::new(ErrorCode::NoShell, msg::FILES_NO_TOOLS)
+            .with_hint(msg::FILES_NO_TOOLS_HINT)
+            .with_detail(stderr.trim())),
         Some(_) => Err(listing_failure(path, stderr.trim())),
     }
 }
@@ -122,18 +121,18 @@ fn listing_failure(path: &str, stderr: &str) -> AppError {
     let error = if stderr.contains("No such file or directory") {
         AppError::new(
             ErrorCode::PathNotFound,
-            format!("{path} doesn't exist in the container."),
+            msg::FILES_PATH_MISSING.with("path", path),
         )
     } else if stderr.contains("Permission denied") {
         AppError::new(
             ErrorCode::ContainerPermissionDenied,
-            format!("The container's user isn't allowed to read {path}."),
+            msg::FILES_NOT_ALLOWED.with("path", path),
         )
-        .with_hint("Files owned by root can only be listed when the container runs as root.")
+        .with_hint(msg::FILES_NOT_ALLOWED_HINT)
     } else {
         AppError::new(
             ErrorCode::EngineError,
-            format!("{path} can't be listed in the container."),
+            msg::FILES_NOT_LISTED.with("path", path),
         )
     };
     error.with_detail(stderr)
@@ -158,7 +157,7 @@ async fn run(
     else {
         return Err(AppError::new(
             ErrorCode::EngineError,
-            "The Docker Engine didn't open the command's session.",
+            msg::FILES_SESSION_NOT_OPENED,
         ));
     };
     let (mut stdout, mut stderr) = (Vec::new(), Vec::new());
@@ -214,12 +213,10 @@ pub async fn download(
         return Ok(true);
     }
     let mut tar = tar::Archive::new(archive.as_slice());
-    let mut entry = tar.entries()?.next().ok_or_else(|| {
-        AppError::new(
-            ErrorCode::EngineError,
-            "The Docker Engine sent an empty archive for this file.",
-        )
-    })??;
+    let mut entry = tar
+        .entries()?
+        .next()
+        .ok_or_else(|| AppError::new(ErrorCode::EngineError, msg::FILES_EMPTY_ARCHIVE))??;
     let mut contents = Vec::new();
     entry.read_to_end(&mut contents)?;
     std::fs::write(destination, contents).map_err(|e| local_file(destination, e))?;
@@ -238,7 +235,7 @@ pub async fn upload(
     for source in sources {
         let name = source
             .file_name()
-            .ok_or_else(|| AppError::validation(format!("{} is not a file.", source.display())))?;
+            .ok_or_else(|| AppError::validation(msg::FILES_NOT_A_FILE.with("path", source)))?;
         if source.is_dir() {
             builder.append_dir_all(name, source)
         } else {
@@ -254,10 +251,9 @@ pub async fn upload(
         .upload_to_container(container_id, Some(options), body_full(archive.into()))
         .await
         .map_err(|e| match AppError::from(e) {
-            e if e.is(ErrorCode::PathNotFound) => AppError {
-                message: format!("{directory} doesn't exist in the container."),
-                ..e
-            },
+            e if e.is(ErrorCode::PathNotFound) => {
+                e.with_message(msg::FILES_PATH_MISSING.with("path", directory))
+            }
             e => e,
         })
 }

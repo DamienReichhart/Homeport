@@ -15,51 +15,28 @@ import {
   PageHeader,
   SearchInput,
   Spinner,
-  useConfirm,
+  useConfirmedAction,
 } from '@/shared/ui';
 import { usePruneVolumes, useRemoveVolume } from '../api/mutations';
+import { pruneVolumesConfirmation, removeVolumeConfirmation } from './confirmations';
 import { CreateVolumeDialog } from './dialogs/CreateVolumeDialog';
 import { InspectVolumeDialog } from './dialogs/InspectVolumeDialog';
 import { volumeColumns } from './volumeColumns';
+import { t } from '@/shared/i18n';
 
 function VolumesList({ hostId }: { hostId: string }) {
   const volumes = useQuery(resourceQueries.volumes(hostId));
   const removeVolume = useRemoveVolume(hostId);
   const pruneVolumes = usePruneVolumes(hostId);
-  const [dialog, confirm] = useConfirm();
+  const [dialog, confirm] = useConfirmedAction();
   const [query, setQuery] = useState('');
   const [creating, setCreating] = useState(false);
   const [inspecting, setInspecting] = useState<VolumeView | null>(null);
 
   const remove = (v: VolumeView) =>
-    confirm({
-      title: `Delete volume ${v.name}?`,
-      description: (
-        <>
-          <strong>All data in this volume is permanently deleted.</strong>
-          {v.usedBy.length > 0 &&
-            ` It is mounted by ${v.usedBy.join(', ')}; remove those containers first.`}
-        </>
-      ),
-      confirmLabel: 'Delete volume and data',
-      destructive: true,
-      onConfirm: () => removeVolume.mutateAsync(v).catch(() => {}),
-    });
-
+    confirm(removeVolumeConfirmation(v, () => removeVolume.mutateAsync(v)));
   const prune = (all: boolean) =>
-    confirm({
-      title: all ? 'Delete every unused volume?' : 'Delete unused anonymous volumes?',
-      description: (
-        <strong>
-          {all
-            ? 'The data in every volume no container uses is permanently deleted, named volumes included.'
-            : 'The data in unnamed volumes no container uses is permanently deleted.'}
-        </strong>
-      ),
-      confirmLabel: 'Delete volumes and data',
-      destructive: true,
-      onConfirm: () => pruneVolumes.mutateAsync(all),
-    });
+    confirm(pruneVolumesConfirmation(all, () => pruneVolumes.mutateAsync(all)));
 
   if (volumes.isPending) return <Spinner />;
   if (volumes.error)
@@ -67,39 +44,42 @@ function VolumesList({ hostId }: { hostId: string }) {
   return (
     <div>
       <PageHeader
-        title="Volumes"
-        description={`${volumes.data.length} volumes · ${volumes.data.filter((v) => v.usedBy.length === 0).length} unused`}
+        title={t('volumes.title')}
+        description={t('volumes.summary', {
+          count: volumes.data.length,
+          unused: volumes.data.filter((v) => v.usedBy.length === 0).length,
+        })}
         actions={
           <>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
-                  <BrushCleaningIcon /> Clean up
+                  <BrushCleaningIcon /> {t('volumes.cleanUp')}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem variant="destructive" onSelect={() => prune(false)}>
-                  Unused anonymous volumes
+                  {t('volumes.cleanUp.anonymous')}
                 </DropdownMenuItem>
                 <DropdownMenuItem variant="destructive" onSelect={() => prune(true)}>
-                  All unused volumes
+                  {t('volumes.cleanUp.all')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <Button onClick={() => setCreating(true)}>
-              <PlusIcon /> Create volume
+              <PlusIcon /> {t('volumes.create')}
             </Button>
           </>
         }
       />
       <div className="mb-3">
-        <SearchInput value={query} onChange={setQuery} placeholder="Search volumes" />
+        <SearchInput value={query} onChange={setQuery} placeholder={t('volumes.search')} />
       </div>
       {volumes.data.length === 0 ? (
         <EmptyState
           icon={HardDriveIcon}
-          title="No volumes"
-          description="Volumes keep container data across restarts and re-creations."
+          title={t('volumes.empty.title')}
+          description={t('volumes.empty.description')}
         />
       ) : (
         <DataTable

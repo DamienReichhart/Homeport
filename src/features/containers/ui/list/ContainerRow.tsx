@@ -15,6 +15,8 @@ import {
 import { containerTone } from '../../model/containerTone';
 import { portLabels } from '../../model/grouping';
 import { ContainerMenu } from '../ContainerMenu';
+import type { ContainerDialogRequest } from '../dialogs/ContainerDialogs';
+import { t } from '@/shared/i18n';
 
 /** One container in the list; `nested` rows sit under their Stack and show the service. */
 export function ContainerRow({
@@ -26,7 +28,7 @@ export function ContainerRow({
   address,
   selected,
   onSelect,
-  onRename,
+  onOpenDialog,
   confirm,
 }: {
   hostId: string;
@@ -39,7 +41,7 @@ export function ContainerRow({
   address: string;
   selected: boolean;
   onSelect: (on: boolean) => void;
-  onRename: (c: Container) => void;
+  onOpenDialog: (request: ContainerDialogRequest) => void;
   confirm: (options: ConfirmOptions) => void;
 }) {
   const navigate = useNavigate();
@@ -51,7 +53,7 @@ export function ContainerRow({
     >
       <TableCell onClick={(e) => e.stopPropagation()}>
         <Checkbox
-          aria-label={`Select ${c.name}`}
+          aria-label={t('containers.selectOne', { name: c.name })}
           checked={selected}
           onCheckedChange={(v) => onSelect(v === true)}
         />
@@ -111,7 +113,12 @@ export function ContainerRow({
         {formatRelative(c.created)}
       </TableCell>
       <TableCell>
-        <ContainerMenu hostId={hostId} container={c} onRename={onRename} confirm={confirm} />
+        <ContainerMenu
+          hostId={hostId}
+          container={c}
+          onOpenDialog={onOpenDialog}
+          confirm={confirm}
+        />
       </TableCell>
     </TableRow>
   );

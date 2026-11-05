@@ -14,6 +14,7 @@ import {
 } from '@/shared/ui';
 import { useCreateNetwork } from '../../api/mutations';
 import { emptyNetwork } from '../../model/networkInput';
+import { t } from '@/shared/i18n';
 
 export function CreateNetworkDialog({
   hostId,
@@ -33,7 +34,7 @@ export function CreateNetworkDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create a network</DialogTitle>
+          <DialogTitle>{t('networks.createDialog.title')}</DialogTitle>
         </DialogHeader>
         <form
           className="grid gap-3"
@@ -43,7 +44,7 @@ export function CreateNetworkDialog({
           }}
         >
           <div className="grid gap-1.5">
-            <Label htmlFor="net-name">Name</Label>
+            <Label htmlFor="net-name">{t('networks.createDialog.name')}</Label>
             <Input
               id="net-name"
               value={input.name}
@@ -53,7 +54,7 @@ export function CreateNetworkDialog({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-1.5">
-              <Label htmlFor="net-driver">Driver</Label>
+              <Label htmlFor="net-driver">{t('networks.createDialog.driver')}</Label>
               <Input
                 id="net-driver"
                 placeholder="bridge"
@@ -62,20 +63,20 @@ export function CreateNetworkDialog({
               />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="net-subnet">Subnet</Label>
+              <Label htmlFor="net-subnet">{t('networks.createDialog.subnet')}</Label>
               <Input
                 id="net-subnet"
-                placeholder="automatic"
+                placeholder={t('networks.createDialog.automatic')}
                 value={input.subnet ?? ''}
                 onChange={(e) => setInput({ ...input, subnet: e.target.value || null })}
               />
             </div>
           </div>
           <div className="grid gap-1.5">
-            <Label htmlFor="net-gw">Gateway</Label>
+            <Label htmlFor="net-gw">{t('networks.createDialog.gateway')}</Label>
             <Input
               id="net-gw"
-              placeholder="automatic"
+              placeholder={t('networks.createDialog.automatic')}
               value={input.gateway ?? ''}
               onChange={(e) => setInput({ ...input, gateway: e.target.value || null })}
             />
@@ -86,7 +87,7 @@ export function CreateNetworkDialog({
               checked={input.internal}
               onCheckedChange={(v) => setInput({ ...input, internal: v })}
             />
-            <Label htmlFor="net-internal">Internal — no access to outside networks</Label>
+            <Label htmlFor="net-internal">{t('networks.createDialog.internal')}</Label>
           </div>
           <div className="flex items-center gap-2">
             <Switch
@@ -94,15 +95,15 @@ export function CreateNetworkDialog({
               checked={input.attachable}
               onCheckedChange={(v) => setInput({ ...input, attachable: v })}
             />
-            <Label htmlFor="net-attachable">Attachable</Label>
+            <Label htmlFor="net-attachable">{t('networks.createDialog.attachable')}</Label>
           </div>
           {create.error && <ErrorMessage error={create.error} />}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={create.isPending || !input.name.trim()}>
-              Create
+              {t('common.create')}
             </Button>
           </DialogFooter>
         </form>

@@ -7,6 +7,8 @@ use reqwest::{header::WWW_AUTHENTICATE, Client, StatusCode};
 
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 
+use crate::messages as msg;
+
 use crate::{address, http, Credentials};
 
 /// Succeeds when the registry accepts the credentials.
@@ -72,9 +74,9 @@ async fn probe(client: &Client, address: &str) -> AppResult<(String, reqwest::Re
 pub fn login_failed(address: &str) -> AppError {
     AppError::new(
         ErrorCode::RegistryLoginFailed,
-        format!("{address} refused this user name and password."),
+        msg::LOGIN_FAILED.with("address", address),
     )
-    .with_hint("Check them. Registries such as GHCR, and Docker Hub accounts with two-factor authentication, need an access token instead of the password.")
+    .with_hint(msg::LOGIN_FAILED_HINT)
 }
 
 /// How a registry asks to be authenticated.

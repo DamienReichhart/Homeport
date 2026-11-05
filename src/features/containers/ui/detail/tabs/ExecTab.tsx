@@ -12,6 +12,7 @@ import {
   XTerm,
 } from '@/shared/ui';
 import { startExec } from '../../../api/streams';
+import { t } from '@/shared/i18n';
 
 interface SessionSpec {
   key: number;
@@ -43,9 +44,11 @@ function ExecTerminal({
             onEvent: (event) => {
               if (event.type === 'output') terminal.write(event.data);
               else if (event.type === 'exit') {
-                terminal.write(
-                  `\r\n\x1b[2m[process exited${event.code === null ? '' : ` with code ${event.code}`}]\x1b[22m\r\n`,
-                );
+                const exited =
+                  event.code === null
+                    ? t('containers.exec.exited')
+                    : t('containers.exec.exitedWithCode', { code: event.code });
+                terminal.write(`\r\n\x1b[2m${exited}\x1b[22m\r\n`);
                 if (event.error) terminal.write(terminalError(event.error));
               } else terminal.write(`\r\n${terminalError(event.error)}`);
             },
@@ -75,19 +78,22 @@ export function ExecTab({
   containerId: string;
   running: boolean;
 }) {
-  const [sessions, setSessions] = useState<SessionSpec[]>([
-    { key: 1, title: 'Shell', command: '', user: '', workingDir: '' },
+  const [sessions, setSessions] = useState<SessionSpec[]>(() => [
+    { key: 1, title: t('containers.exec.shell'), command: '', user: '', workingDir: '' },
   ]);
   const [active, setActive] = useState(1);
   const [draft, setDraft] = useState({ command: '', user: '', workingDir: '' });
   const [open, setOpen] = useState(false);
 
   if (!running)
-    return <p className="text-muted-foreground text-sm">Start the container to open a terminal.</p>;
+    return <p className="text-muted-foreground text-sm">{t('containers.exec.startFirst')}</p>;
 
   const add = () => {
     const key = Math.max(0, ...sessions.map((s) => s.key)) + 1;
-    setSessions((list) => [...list, { key, title: draft.command || `Shell ${key}`, ...draft }]);
+    setSessions((list) => [
+      ...list,
+      { key, title: draft.command || t('containers.exec.shellNumber', { number: key }), ...draft },
+    ]);
     setActive(key);
     setOpen(false);
   };
@@ -111,7 +117,11 @@ export function ExecTab({
             <button type="button" onClick={() => setActive(s.key)}>
               {s.title}
             </button>
-            <button type="button" aria-label={`Close ${s.title}`} onClick={() => close(s.key)}>
+            <button
+              type="button"
+              aria-label={t('containers.exec.closeOne', { title: s.title })}
+              onClick={() => close(s.key)}
+            >
               <XIcon className="size-3" />
             </button>
           </div>
@@ -119,15 +129,15 @@ export function ExecTab({
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button variant="ghost" size="sm">
-              <PlusIcon /> New terminal
+              <PlusIcon /> {t('containers.exec.new')}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="grid w-80 gap-3" align="start">
             <div className="grid gap-1.5">
-              <Label htmlFor="exec-cmd">Command</Label>
+              <Label htmlFor="exec-cmd">{t('containers.exec.command')}</Label>
               <Input
                 id="exec-cmd"
-                placeholder="bash, or sh when missing"
+                placeholder={t('containers.exec.commandPlaceholder')}
                 value={draft.command}
                 onChange={(e) => setDraft({ ...draft, command: e.target.value })}
                 className="font-mono"
@@ -135,25 +145,25 @@ export function ExecTab({
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="grid gap-1.5">
-                <Label htmlFor="exec-user">User</Label>
+                <Label htmlFor="exec-user">{t('containers.exec.user')}</Label>
                 <Input
                   id="exec-user"
-                  placeholder="default"
+                  placeholder={t('containers.exec.default')}
                   value={draft.user}
                   onChange={(e) => setDraft({ ...draft, user: e.target.value })}
                 />
               </div>
               <div className="grid gap-1.5">
-                <Label htmlFor="exec-wd">Directory</Label>
+                <Label htmlFor="exec-wd">{t('containers.exec.directory')}</Label>
                 <Input
                   id="exec-wd"
-                  placeholder="default"
+                  placeholder={t('containers.exec.default')}
                   value={draft.workingDir}
                   onChange={(e) => setDraft({ ...draft, workingDir: e.target.value })}
                 />
               </div>
             </div>
-            <Button onClick={add}>Open</Button>
+            <Button onClick={add}>{t('containers.exec.open')}</Button>
           </PopoverContent>
         </Popover>
       </div>
@@ -164,7 +174,7 @@ export function ExecTab({
           </div>
         ))}
         {sessions.length === 0 && (
-          <p className="text-muted-foreground text-sm">No terminal open.</p>
+          <p className="text-muted-foreground text-sm">{t('containers.exec.none')}</p>
         )}
       </div>
     </div>

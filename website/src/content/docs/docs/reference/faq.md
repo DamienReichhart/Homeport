@@ -37,7 +37,7 @@ There's no export yet. Copying `homeport.db` moves Host and Stack definitions, b
 
 ### Does Homeport collect data about me?
 
-No. There's no account, telemetry or analytics. The only request Homeport makes on its own is the update check, which downloads a small file from this website and sends nothing about you; you can turn it off in **Settings → Updates**. See [security and your data](/docs/reference/security/#what-homeport-connects-to).
+No. There's no account, telemetry or analytics. The only request Homeport makes on its own from your computer is the update check, which downloads a small file from this website and sends nothing about you; you can turn it off in **Settings → Updates**. Separately, the newer-image check asks your images' registries, through each Host's Engine, which version their tags point to; for a local Host that request leaves from your computer too. See [security and your data](/docs/reference/security/#what-homeport-connects-to).
 
 ### Can Homeport use my private registries?
 

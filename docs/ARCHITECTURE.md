@@ -102,7 +102,7 @@ Backend:
 1. Put the logic in the crate that owns its domain, with unit tests. A new domain (its own store and use cases), or code that needs a heavy dependency the other crates shouldn't carry, gets a new crate instead: `crates/notes/` named `homeport-notes`, with `publish = false` and `[lints] workspace = true`, listed in the root `[workspace.dependencies]`.
 2. `src-tauri/src/commands/notes.rs` (+ `pub mod notes;` in `commands/mod.rs`), thin `#[tauri::command]` functions.
 3. Annotate commands with `#[specta::specta]`, register them in `commands::builder()`, run `bun run bindings`; add the crate's service to `AppState` (`src-tauri/src/app/state.rs`) and build it in `app/setup.rs`.
-4. Add a variant to `ErrorCode` (`crates/core/src/error/code.rs`) if new failure modes are needed, and classify them in the crate that meets them.
+4. Add a variant to `ErrorCode` (`crates/core/src/error/code.rs`) if new failure modes are needed, and classify them in the crate that meets them. Declare each error's text in the crate's `messages.rs` (`messages!`: key and English template) and run `bun run bindings`, which regenerates `src/shared/i18n/en/errors.json` (ADR 0011; the guide at the top of `crates/core/src/error/mod.rs`).
 
 Website page (example: `compare`):
 
@@ -113,11 +113,12 @@ Website page (example: `compare`):
 
 - **UI**: shadcn/ui components (Tailwind v4) live in `src/shared/ui/primitives`; add more with `bunx shadcn add <name>` and export them from `src/shared/ui/index.ts`. Import every component from `@/shared/ui`.
 - **Brand**: colours, type and the logo are tokens in `src/shared/styles/global.css` and `<Logo />`/`<LogoMark />` in `src/shared/ui`; see [BRAND.md](BRAND.md). Use the tokens (`bg-success`, `text-warning`, `--chart-n`), not Tailwind's palette.
+- **Text**: every user-facing string comes from the catalogue in `src/shared/i18n/en/` through `t('feature.key', { param })` from `@/shared/i18n` (FormatJS, ICU MessageFormat). Errors carry a `key` and `params` that the frontend renders from the same catalogue; Rust declares each error's key and English template in its crate's `messages!` block and `bun run bindings` generates `errors.json` (ADR 0011).
 - **Server state**: TanStack Query, with `queryOptions` factories in each `api/queries.ts`. Engine resource lists are refreshed from pushed Engine events instead of polling (see Query keys above).
-- **Streams**: logs, stats, exec, pulls and compose output use Tauri channels. Start one with `subscribe()` from `@/shared/api` in the feature's `api/streams.ts`; the returned function cancels it on the backend.
+- **Streams**: logs, stats, exec, pulls, pushes, builds, image saves and loads, and compose output use Tauri channels. Start one with `subscribe()` from `@/shared/api` in the feature's `api/streams.ts`; the returned function cancels it on the backend.
 - **Storage**: SQLite (`homeport.db` in the app data dir) via `homeport_storage::Db`, migrated on open from `crates/storage/src/db/migrations/`. Secrets are sealed with `homeport_storage::SecretBox` (ADR 0002).
 - **Updates**: `tauri-plugin-updater`, driven from Rust (`src-tauri/src/commands/updates.rs`), never from the frontend. `homeport-updates` decides from the bundle type whether Homeport installs an update itself (NSIS, MSI, `.app`, AppImage) or leaves it to the package manager (`.deb`, `.rpm`). The manifest and the package repositories are built from the releases and served by the website (ADR 0003, [RELEASING.md](RELEASING.md#package-repositories-and-updates)); the `.deb`/`.rpm` maintainer scripts and the install script live in `packaging/linux/`.
 
 ## Deliberately not included (add when needed)
 
-- Global state library (Zustand/Redux), i18n, Windows and macOS code signing (see [RELEASING.md](RELEASING.md#code-signing)).
+- Global state library (Zustand/Redux), Windows and macOS code signing (see [RELEASING.md](RELEASING.md#code-signing)).

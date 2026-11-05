@@ -7,6 +7,7 @@
 //! - [`detect`] finds the Engines running on this computer.
 
 pub mod detect;
+pub mod messages;
 pub mod registry;
 pub mod service;
 pub mod store;

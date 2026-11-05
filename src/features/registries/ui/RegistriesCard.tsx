@@ -21,6 +21,7 @@ import { useRemoveRegistry } from '../api/mutations';
 import { registryQueries } from '../api/queries';
 import { registryLabel } from '../model/login';
 import { RegistryDialog } from './RegistryDialog';
+import { t } from '@/shared/i18n';
 
 /** The Registries card in Settings: the stored logins and the way to add one. */
 export function RegistriesCard() {
@@ -34,15 +35,12 @@ export function RegistriesCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Registries</CardTitle>
-        <CardDescription>
-          Logins for container registries, used to pull private images, push and build on every
-          Host.
-        </CardDescription>
+        <CardTitle>{t('registries.title')}</CardTitle>
+        <CardDescription>{t('registries.description')}</CardDescription>
         {keychain && (
           <CardAction>
             <Button variant="outline" size="sm" onClick={() => setEditing('new')}>
-              <PlusIcon /> Add login
+              <PlusIcon /> {t('registries.add')}
             </Button>
           </CardAction>
         )}
@@ -51,11 +49,8 @@ export function RegistriesCard() {
         {!keychain && (
           <Alert variant="destructive">
             <TriangleAlertIcon />
-            <AlertTitle>No OS keychain</AlertTitle>
-            <AlertDescription>
-              Registry passwords and tokens are encrypted with a key kept in the OS keychain, and
-              none is available. Images can still be pulled anonymously.
-            </AlertDescription>
+            <AlertTitle>{t('registries.noKeychain.title')}</AlertTitle>
+            <AlertDescription>{t('registries.noKeychain.description')}</AlertDescription>
           </Alert>
         )}
         {registries.isPending && <Spinner />}
@@ -63,9 +58,7 @@ export function RegistriesCard() {
           <ErrorMessage error={registries.error} onRetry={() => void registries.refetch()} />
         )}
         {registries.data?.length === 0 && (
-          <p className="text-muted-foreground text-sm">
-            No logins yet: images are pulled anonymously.
-          </p>
+          <p className="text-muted-foreground text-sm">{t('registries.empty')}</p>
         )}
         {registries.data && registries.data.length > 0 && (
           <ul className="divide-border divide-y">
@@ -78,7 +71,7 @@ export function RegistriesCard() {
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  aria-label={`Edit the login for ${r.address}`}
+                  aria-label={t('registries.editOne', { registry: r.address })}
                   disabled={!keychain}
                   onClick={() => setEditing(r)}
                 >
@@ -87,12 +80,12 @@ export function RegistriesCard() {
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  aria-label={`Remove the login for ${r.address}`}
+                  aria-label={t('registries.removeOne', { registry: r.address })}
                   onClick={() =>
                     confirm({
-                      title: `Remove the login for ${r.address}?`,
-                      description: `Images from ${r.address} will be pulled anonymously until a login is added again.`,
-                      confirmLabel: 'Remove',
+                      title: t('registries.remove.title', { registry: r.address }),
+                      description: t('registries.remove.description', { registry: r.address }),
+                      confirmLabel: t('common.remove'),
                       destructive: true,
                       onConfirm: () => remove.mutateAsync(r),
                     })

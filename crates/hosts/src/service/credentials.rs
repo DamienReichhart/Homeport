@@ -3,7 +3,9 @@
 
 use serde::Deserialize;
 
-use homeport_core::error::{AppError, AppResult};
+use homeport_core::error::{AppError, AppResult, ErrorCode};
+
+use crate::messages as msg;
 use homeport_transport::{self as transport, ConnectError};
 
 use crate::{HostConnection, HostSecrets, SshAuth};
@@ -40,7 +42,13 @@ pub(super) fn prepare(
     credentials: Option<CredentialsInput>,
     current: Option<&HostConnection>,
 ) -> AppResult<(HostConnection, Option<HostSecrets>)> {
-    let invalid = |e: ConnectError| AppError::validation(e.to_string());
+    // The transport's own message, as a plain validation failure.
+    let invalid = |e: ConnectError| AppError {
+        code: ErrorCode::Validation,
+        hint: None,
+        detail: None,
+        ..AppError::from(e)
+    };
     match connection {
         HostConnection::Tls { address } => {
             let secrets = match credentials {
@@ -59,7 +67,7 @@ pub(super) fn prepare(
                         key_pem,
                     })
                 }
-                Some(_) => return Err(AppError::validation("TLS hosts need certificates.")),
+                Some(_) => return Err(AppError::validation(msg::TLS_NEEDS_CERTIFICATES)),
                 None => None,
             };
             Ok((HostConnection::Tls { address }, secrets))
@@ -112,7 +120,7 @@ pub(super) fn prepare(
                     )
                 }
                 (_, None) => (kept_public_key, None),
-                (_, Some(_)) => return Err(AppError::validation("SSH hosts need a private key.")),
+                (_, Some(_)) => return Err(AppError::validation(msg::SSH_NEEDS_PRIVATE_KEY)),
             };
             Ok((
                 HostConnection::Ssh {

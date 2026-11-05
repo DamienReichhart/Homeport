@@ -3,29 +3,24 @@
 use std::fmt::Display;
 
 use super::{AppError, ErrorCode};
+use crate::messages as msg;
 
 impl AppError {
     pub fn credentials_lost() -> Self {
-        Self::new(
-            ErrorCode::CredentialsLost,
-            "Stored credentials can't be decrypted.",
-        )
-        .with_hint("The key that protects them is gone from the OS keychain. Re-enter the credentials on the host page, or regenerate the key.")
+        Self::new(ErrorCode::CredentialsLost, msg::CREDENTIALS_LOST)
+            .with_hint(msg::CREDENTIALS_LOST_HINT)
     }
 
     pub fn keychain_unavailable(reason: impl Display) -> Self {
         let hint = if cfg!(target_os = "linux") {
-            "Install and unlock a Secret Service keyring, such as GNOME Keyring or KWallet, then restart Homeport."
+            msg::KEYCHAIN_UNAVAILABLE_HINT_LINUX
         } else if cfg!(target_os = "macos") {
-            "Unlock the login keychain in Keychain Access, then restart Homeport."
+            msg::KEYCHAIN_UNAVAILABLE_HINT_MACOS
         } else {
-            "Make sure Windows Credential Manager is available, then restart Homeport."
+            msg::KEYCHAIN_UNAVAILABLE_HINT_WINDOWS
         };
-        Self::new(
-            ErrorCode::KeychainUnavailable,
-            "The OS keychain is unavailable, so secrets can't be stored.",
-        )
-        .with_hint(hint)
-        .with_detail(reason)
+        Self::new(ErrorCode::KeychainUnavailable, msg::KEYCHAIN_UNAVAILABLE)
+            .with_hint(hint)
+            .with_detail(reason)
     }
 }

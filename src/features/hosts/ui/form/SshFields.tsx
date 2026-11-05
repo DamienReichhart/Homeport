@@ -4,6 +4,10 @@ import type { HostFormState } from '../../model/form';
 import { Field } from './Field';
 import { KeychainNeeded } from './KeychainNeeded';
 import { SecretText } from './SecretText';
+import { t } from '@/shared/i18n';
+
+/** The PEM header of an OpenSSH key, shown as it appears in the file. */
+const PEM_OPENSSH_KEY = '-----BEGIN OPENSSH PRIVATE KEY-----';
 
 /** The server, user, socket and authentication of an SSH Host. */
 export function SshFields({
@@ -22,14 +26,14 @@ export function SshFields({
   return (
     <>
       <div className="grid grid-cols-[1fr_6rem] gap-3">
-        <Field label="Server">
+        <Field label={t('hosts.ssh.server')}>
           <Input
             value={form.sshHost}
             onChange={(e) => set('sshHost', e.target.value)}
             placeholder="server.example.com"
           />
         </Field>
-        <Field label="Port">
+        <Field label={t('hosts.ssh.port')}>
           <Input
             value={form.sshPort}
             onChange={(e) => set('sshPort', e.target.value)}
@@ -37,20 +41,20 @@ export function SshFields({
           />
         </Field>
       </div>
-      <Field
-        label="User"
-        hint="Needs access to the Docker socket, usually by being in the docker group."
-      >
+      <Field label={t('hosts.ssh.user')} hint={t('hosts.ssh.userHint')}>
         <Input
           value={form.sshUser}
           onChange={(e) => set('sshUser', e.target.value)}
           placeholder="deploy"
         />
       </Field>
-      <Field label="Remote socket path" hint="Rootless Docker uses /run/user/<uid>/docker.sock.">
+      <Field
+        label={t('hosts.ssh.socketPath')}
+        hint={t('hosts.ssh.socketPathHint', { path: '/run/user/<uid>/docker.sock' })}
+      >
         <Input value={form.sshSocketPath} onChange={(e) => set('sshSocketPath', e.target.value)} />
       </Field>
-      <Field label="Authentication">
+      <Field label={t('hosts.ssh.auth')}>
         <ToggleGroup
           type="single"
           variant="outline"
@@ -58,10 +62,10 @@ export function SshFields({
           onValueChange={(auth) => auth && set('sshAuth', auth as HostFormState['sshAuth'])}
         >
           <ToggleGroupItem value="generated" disabled={!keychain}>
-            <KeyRoundIcon /> New key for this host
+            <KeyRoundIcon /> {t('hosts.ssh.auth.generated')}
           </ToggleGroupItem>
           <ToggleGroupItem value="imported" disabled={!keychain}>
-            Existing key
+            {t('hosts.ssh.auth.imported')}
           </ToggleGroupItem>
           <ToggleGroupItem value="agent">ssh-agent</ToggleGroupItem>
         </ToggleGroup>
@@ -69,21 +73,20 @@ export function SshFields({
       {!keychain && form.sshAuth !== 'agent' && <KeychainNeeded />}
       {form.sshAuth === 'generated' && keychain && (
         <p className="text-muted-foreground text-sm">
-          {editing
-            ? 'This host keeps its key. Regenerate it from the host page.'
-            : 'Homeport creates an Ed25519 key for this host and shows you the command that authorizes it on the server.'}
+          {editing ? t('hosts.ssh.generated.editing') : t('hosts.ssh.generated.new')}
         </p>
       )}
       {form.sshAuth === 'imported' && keychain && (
         <>
           <SecretText
-            label="Private key"
+            label={t('hosts.ssh.privateKey')}
+            pickTitle={t('hosts.ssh.privateKey.choose')}
             value={form.privateKey}
             onChange={(v) => set('privateKey', v)}
-            placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
-            hint={keepHint ?? 'Stored encrypted; it never leaves this machine.'}
+            placeholder={PEM_OPENSSH_KEY}
+            hint={keepHint ?? t('hosts.ssh.privateKeyHint')}
           />
-          <Field label="Passphrase">
+          <Field label={t('hosts.ssh.passphrase')}>
             <Input
               type="password"
               value={form.passphrase}

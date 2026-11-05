@@ -4,7 +4,9 @@ use std::sync::Arc;
 
 use rusqlite::{OptionalExtension, Row};
 
-use homeport_core::error::{AppError, AppResult, ErrorCode, Hint};
+use homeport_core::error::{AppError, AppResult, ErrorCode};
+
+use crate::messages as msg;
 use homeport_storage::{Db, SecretBox};
 
 use crate::{Host, HostConnection, HostId, HostSecrets};
@@ -49,7 +51,7 @@ impl HostStore {
                 )
                 .optional()
             })?
-            .ok_or_else(|| AppError::not_found("This host no longer exists."))?
+            .ok_or_else(|| AppError::not_found(msg::GONE))?
     }
 
     pub fn create(&self, draft: HostDraft) -> AppResult<Host> {
@@ -116,7 +118,7 @@ impl HostStore {
             .db
             .with(|c| c.execute("DELETE FROM hosts WHERE id = ?1", [id]))?;
         if n == 0 {
-            return Err(AppError::not_found("This host no longer exists."));
+            return Err(AppError::not_found(msg::GONE));
         }
         Ok(())
     }
@@ -136,7 +138,7 @@ impl HostStore {
                 })
                 .optional()
             })?
-            .ok_or_else(|| AppError::not_found("This host no longer exists."))
+            .ok_or_else(|| AppError::not_found(msg::GONE))
     }
 
     fn seal(
@@ -146,7 +148,7 @@ impl HostStore {
     ) -> AppResult<Option<Vec<u8>>> {
         match (connection.needs_secrets(), secrets) {
             (true, Some(s)) => Ok(Some(self.secrets.seal_json(s)?)),
-            (true, None) => Err(AppError::validation("This connection needs credentials.")),
+            (true, None) => Err(AppError::validation(msg::NEEDS_CREDENTIALS)),
             (false, _) => Ok(None),
         }
     }
@@ -154,7 +156,7 @@ impl HostStore {
     fn exec(&self, id: &str, sql: &str, value: impl rusqlite::ToSql) -> AppResult<Host> {
         let n = self.db.with(|c| c.execute(sql, (id, value)))?;
         if n == 0 {
-            return Err(AppError::not_found("This host no longer exists."));
+            return Err(AppError::not_found(msg::GONE));
         }
         self.get(id)
     }
@@ -178,21 +180,15 @@ fn read_row(row: &Row<'_>) -> rusqlite::Result<AppResult<Host>> {
 fn validated_name(name: &str) -> AppResult<String> {
     let name = name.trim();
     if name.is_empty() {
-        return Err(AppError::validation("Give the host a name."));
+        return Err(AppError::validation(msg::NAME_EMPTY));
     }
     Ok(name.to_string())
 }
 
 fn unique_name_error(e: AppError, name: &str) -> AppError {
     if e.is(ErrorCode::NameInUse) {
-        AppError {
-            message: format!("A host named \"{name}\" already exists."),
-            hint: Some(Hint {
-                text: "Pick another name.".into(),
-                commands: vec![],
-            }),
-            ..e
-        }
+        e.with_message(msg::NAME_IN_USE.with("name", name))
+            .with_hint(msg::NAME_IN_USE_HINT)
     } else {
         e
     }

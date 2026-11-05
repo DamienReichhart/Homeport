@@ -25,6 +25,8 @@ use tokio::{
 
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 
+use crate::messages as msg;
+
 /// Starts bash when the image has it, sh otherwise.
 const DEFAULT_SHELL: &str = "if [ -x /bin/bash ]; then exec /bin/bash; else exec /bin/sh; fi";
 
@@ -124,8 +126,9 @@ pub async fn start(
     options: ExecOptions,
 ) -> AppResult<(Arc<ExecSession>, Output)> {
     let cmd = match options.command.as_deref().map(str::trim) {
-        Some(c) if !c.is_empty() => shell_words::split(c)
-            .map_err(|_| AppError::validation("The command has an unclosed quote."))?,
+        Some(c) if !c.is_empty() => {
+            shell_words::split(c).map_err(|_| AppError::validation(msg::COMMAND_UNCLOSED_QUOTE))?
+        }
         _ => vec!["sh".into(), "-c".into(), DEFAULT_SHELL.into()],
     };
     let non_empty = |s: Option<String>| s.filter(|s| !s.trim().is_empty());
@@ -155,7 +158,7 @@ pub async fn start(
     let StartExecResults::Attached { output, input } = started else {
         return Err(AppError::new(
             ErrorCode::EngineError,
-            "The Docker Engine didn't open the terminal session.",
+            msg::TERMINAL_NOT_OPENED,
         ));
     };
     Ok((
@@ -243,7 +246,7 @@ impl ExecSessions {
             .expect("exec lock poisoned")
             .get(&id)
             .map(|(s, _)| s.clone())
-            .ok_or_else(|| AppError::not_found("This terminal session has ended."))
+            .ok_or_else(|| AppError::not_found(msg::TERMINAL_ENDED))
     }
 
     pub fn close(&self, id: SessionId) {

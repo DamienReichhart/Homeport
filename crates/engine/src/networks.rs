@@ -16,6 +16,8 @@ use serde::{Deserialize, Serialize};
 
 use homeport_core::error::{AppError, AppResult};
 
+use crate::messages as msg;
+
 use crate::{images::PruneReport, COMPOSE_PROJECT};
 
 /// Networks every Engine creates; they can't be removed.
@@ -119,7 +121,7 @@ pub async fn inspect(docker: &Docker, id: &str) -> AppResult<serde_json::Value> 
 pub async fn create(docker: &Docker, input: NetworkInput) -> AppResult<String> {
     let name = input.name.trim();
     if name.is_empty() {
-        return Err(AppError::validation("Enter a network name."));
+        return Err(AppError::validation(msg::NETWORK_NAME));
     }
     let non_empty = |s: Option<String>| s.map(|s| s.trim().to_owned()).filter(|s| !s.is_empty());
     let subnet = non_empty(input.subnet);

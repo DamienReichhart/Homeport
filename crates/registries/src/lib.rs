@@ -12,6 +12,7 @@ pub mod hints;
 mod http;
 pub mod hub;
 pub mod login;
+pub mod messages;
 pub mod store;
 
 pub use self::address::{normalise, registry_of, DOCKER_HUB};

@@ -1,25 +1,14 @@
-import { useEffect, useReducer, useRef } from 'react';
-import type { AppError } from '@/shared/api';
-import { formatBytes } from '@/shared/lib';
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  ErrorMessage,
-  Progress,
-} from '@/shared/ui';
-import { useLoadImages, useSaveImages } from '../../api/streams';
-import { initialTransfer, reduceTransfer } from '../../model/transfer';
+import { TransferDialog as Progress } from '@/shared/ui';
+import { useImportImage, useLoadImages, useSaveImages } from '../../api/streams';
+import { t } from '@/shared/i18n';
 
-/** A save of `names` to `path`, or a load from `path`. */
+/** A save of `names` to `path`, a load from `path`, or an import of the root filesystem at `path`. */
 export type Transfer =
-  { kind: 'save'; names: string[]; path: string } | { kind: 'load'; path: string };
+  | { kind: 'save'; names: string[]; path: string }
+  | { kind: 'load'; path: string }
+  | { kind: 'import'; path: string; reference: string; changes: string[] };
 
-/** Runs one save or load and shows its progress, with a way to cancel. */
+/** Runs one save, load or import and shows its progress, with a way to cancel. */
 export function TransferDialog({
   hostId,
   transfer,
@@ -31,70 +20,49 @@ export function TransferDialog({
 }) {
   const save = useSaveImages(hostId);
   const load = useLoadImages(hostId);
-  const [state, dispatch] = useReducer(reduceTransfer, initialTransfer);
-  const stop = useRef<(() => void) | null>(null);
-
-  useEffect(() => {
-    const fail = (error: AppError) => dispatch({ type: 'error', error });
-    const cancel =
-      transfer.kind === 'save'
-        ? save(transfer.names, transfer.path, dispatch, fail)
-        : load(transfer.path, dispatch, fail);
-    stop.current = cancel;
-    return cancel;
-  }, [transfer, save, load]);
-
-  const busy = !state.done && !state.error;
-  const close = () => {
-    stop.current?.();
-    onClose();
-  };
-  const title =
-    transfer.kind === 'save'
-      ? `Saving ${transfer.names.length === 1 ? transfer.names[0] : `${transfer.names.length} images`}`
-      : 'Loading images';
-
-  return (
-    <Dialog open onOpenChange={(open) => !open && close()}>
-      <DialogContent className="sm:max-w-xl">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription className="break-all">
-            {transfer.kind === 'save' ? 'To' : 'From'} {transfer.path}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-2">
-          <div className="text-muted-foreground flex justify-between font-mono text-xs">
-            <span>{transfer.kind === 'save' ? 'Written' : 'Sent'}</span>
-            <span>
-              {formatBytes(state.bytes)}
-              {state.total ? ` / ${formatBytes(state.total)}` : ''}
-            </span>
-          </div>
-          <Progress
-            value={state.done ? 100 : state.total ? (state.bytes / state.total) * 100 : 0}
-          />
-          {state.lines.map((line, i) => (
-            <p key={i} className="text-muted-foreground font-mono text-xs">
-              {line}
-            </p>
-          ))}
-          {state.error && <ErrorMessage error={state.error} />}
-          {state.done && (
-            <p className="text-success text-sm">
-              Done
-              {transfer.kind === 'load' && state.images.length > 0
-                ? `: ${state.images.join(', ')}`
-                : '.'}
-            </p>
-          )}
-        </div>
-        <DialogFooter>
-          <Button variant={busy ? 'ghost' : 'default'} onClick={close}>
-            {busy ? 'Cancel' : 'Close'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
+  const importImage = useImportImage(hostId);
+  switch (transfer.kind) {
+    case 'save':
+      return (
+        <Progress
+          title={
+            transfer.names.length === 1
+              ? t('images.transfer.savingOne', { name: transfer.names[0] })
+              : t('images.transfer.saving', { count: transfer.names.length })
+          }
+          description={t('images.transfer.to', { path: transfer.path })}
+          counted={t('images.transfer.written')}
+          start={(onEvent, onError) => save(transfer.names, transfer.path, onEvent, onError)}
+          onClose={onClose}
+        />
+      );
+    case 'load':
+      return (
+        <Progress
+          title={t('images.transfer.loading')}
+          description={t('images.transfer.from', { path: transfer.path })}
+          counted={t('images.transfer.sent')}
+          start={(onEvent, onError) => load(transfer.path, onEvent, onError)}
+          done={(s) =>
+            s.images.length > 0
+              ? t('images.transfer.doneWith', { images: s.images.join(', ') })
+              : t('images.done')
+          }
+          onClose={onClose}
+        />
+      );
+    case 'import':
+      return (
+        <Progress
+          title={t('images.transfer.importing', { reference: transfer.reference })}
+          description={t('images.transfer.from', { path: transfer.path })}
+          counted={t('images.transfer.sent')}
+          start={(onEvent, onError) =>
+            importImage(transfer.path, transfer.reference, transfer.changes, onEvent, onError)
+          }
+          done={(s) => t('images.transfer.doneWith', { images: s.images.join(', ') })}
+          onClose={onClose}
+        />
+      );
+  }
 }

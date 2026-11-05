@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { commands, type Registry, type RegistryDraft } from '@/shared/api';
 import { toastError } from '@/shared/ui';
 import { registryKeys } from './queries';
+import { t } from '@/shared/i18n';
 
 function useRefreshRegistries() {
   const client = useQueryClient();
@@ -16,7 +17,7 @@ export function useSaveRegistry(id: string | null, onSaved: () => void) {
     meta: { silent: true },
     mutationFn: (draft: RegistryDraft) => commands.registriesSave(id, draft),
     onSuccess: async (saved) => {
-      toast.success(`Saved the login for ${saved.address}`);
+      toast.success(t('registries.saved', { registry: saved.address }));
       await refresh();
       onSaved();
     },
@@ -35,7 +36,8 @@ export function useRemoveRegistry() {
   const refresh = useRefreshRegistries();
   return useMutation({
     mutationFn: (registry: Registry) => commands.registriesRemove(registry.id),
-    onSuccess: (_, registry) => toast.success(`Removed the login for ${registry.address}`),
+    onSuccess: (_, registry) =>
+      toast.success(t('registries.removed', { registry: registry.address })),
     onError: (e) => toastError(e),
     onSettled: () => refresh(),
   });

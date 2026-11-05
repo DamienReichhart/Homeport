@@ -4,6 +4,7 @@ import { Button, Card, CardContent, CardHeader, CardTitle, ErrorMessage } from '
 import { useUpdateHost } from '../../api/mutations';
 import { formFromHost, type HostFormState } from '../../model/form';
 import { HostForm } from '../form/HostForm';
+import { t } from '@/shared/i18n';
 
 /** Edits how Homeport reaches a Host, starting from its saved settings. */
 export function ConnectionCard({ view }: { view: HostView }) {
@@ -13,7 +14,7 @@ export function ConnectionCard({ view }: { view: HostView }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Connection</CardTitle>
+        <CardTitle>{t('hosts.connection.title')}</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4">
         {form && (
@@ -30,7 +31,7 @@ export function ConnectionCard({ view }: { view: HostView }) {
           disabled={!form || save.isPending}
           onClick={() => form && save.mutate(form)}
         >
-          Save
+          {t('common.save')}
         </Button>
       </CardContent>
     </Card>

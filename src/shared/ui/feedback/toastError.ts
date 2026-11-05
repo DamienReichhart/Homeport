@@ -1,6 +1,7 @@
 import { toast } from 'sonner';
 import { toAppError } from '@/shared/api';
 import { showErrorDetails } from './ErrorDetails';
+import { t } from '@/shared/i18n';
 
 /** How long an error toast stays up; hovering it pauses the countdown. */
 const ERROR_TOAST_MS = 10_000;
@@ -14,6 +15,6 @@ export function toastError(error: unknown, title?: string) {
   toast.error(title ?? failure.message, {
     description: title ? failure.message : failure.hint?.text,
     duration: ERROR_TOAST_MS,
-    action: { label: 'Details', onClick: () => showErrorDetails(failure) },
+    action: { label: t('common.details'), onClick: () => showErrorDetails(failure) },
   });
 }

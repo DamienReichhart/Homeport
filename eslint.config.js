@@ -4,6 +4,7 @@ import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescrip
 import importX from 'eslint-plugin-import-x';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
+import noLiteralUiString from './eslint-rules/no-literal-ui-string.js';
 import tseslint from 'typescript-eslint';
 
 // Architecture guards (docs/ARCHITECTURE.md, ADR 0004). Imports point
@@ -39,6 +40,8 @@ export default tseslint.config(
       'node_modules',
       'src/shared/api/bindings.ts',
       'website',
+      // Claude Code's local worktrees and settings.
+      '.claude',
     ],
   },
   {
@@ -61,7 +64,8 @@ export default tseslint.config(
   {
     // Past 300 lines a file usually holds more than one thing: split it.
     files: ['src/**/*.{ts,tsx}'],
-    ignores: ['**/*.test.{ts,tsx}'],
+    // Catalogues are data: one line per message, however many there are.
+    ignores: ['**/*.test.{ts,tsx}', 'src/shared/i18n/en/**'],
     rules: { 'max-lines': ['warn', { max: 300, skipBlankLines: true, skipComments: true }] },
   },
   {
@@ -106,6 +110,24 @@ export default tseslint.config(
   {
     // Vendored shadcn/ui components co-export their cva variants.
     files: ['src/shared/ui/**/*.{ts,tsx}'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
+  {
+    // User-facing text comes from the catalogue (ADR 0011). Data in model/,
+    // the vendored primitives and tests are left alone.
+    files: [
+      'src/app/**/*.{ts,tsx}',
+      'src/features/**/*.{ts,tsx}',
+      'src/core/**/*.{ts,tsx}',
+      'src/shared/ui/**/*.{ts,tsx}',
+    ],
+    ignores: ['**/*.test.{ts,tsx}', 'src/shared/ui/primitives/**', 'src/**/model/**'],
+    plugins: { homeport: { rules: { 'no-literal-ui-string': noLiteralUiString } } },
+    rules: { 'homeport/no-literal-ui-string': 'error' },
+  },
+  {
+    // Test helpers are never hot-reloaded.
+    files: ['src/test/**/*.{ts,tsx}'],
     rules: { 'react-refresh/only-export-components': 'off' },
   },
 );

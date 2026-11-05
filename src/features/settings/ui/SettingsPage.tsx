@@ -7,6 +7,7 @@ import { useSaveSettings } from '../api/mutations';
 import { AboutCard } from './AboutCard';
 import { AppearanceCard } from './AppearanceCard';
 import { MachineCard } from './MachineCard';
+import { t } from '@/shared/i18n';
 
 export function SettingsPage() {
   const settings = useQuery(settingsQuery());
@@ -18,7 +19,7 @@ export function SettingsPage() {
 
   return (
     <div className="grid max-w-2xl gap-4">
-      <PageHeader title="Settings" />
+      <PageHeader title={t('settings.title')} />
       <AppearanceCard
         settings={settings.data}
         onChange={(next) => save.mutate(next)}

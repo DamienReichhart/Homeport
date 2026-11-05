@@ -67,8 +67,8 @@ const mail = `mailto:${PUBLISHER.email}`;
 
   <h3 id="app">Using the Homeport app</h3>
   <p>
-    Homeport stores your Hosts, keys, certificates and Stacks <strong>only on your computer</strong>
-    ; none of it is sent to the publisher or anyone else. See{' '}
+    Homeport stores your Hosts, keys, certificates, Stacks and registry logins{' '}
+    <strong>only on your computer</strong>; none of it is sent to the publisher or anyone else. See{' '}
     <a href={href('/docs/reference/security/')}>Security and your data</a> for exactly what it keeps
     and how secrets are encrypted. The app has no account, telemetry or crash reporting.
   </p>
@@ -90,6 +90,16 @@ const mail = `mailto:${PUBLISHER.email}`;
       <strong>Your choice:</strong> turn it off at any time in <strong>Settings → Updates</strong>.
     </li>
   </ul>
+
+  <p>
+    To tell you when a newer version of an image you use is published, each Host's Docker Engine
+    asks that image's registry (Docker Hub, GitHub Container Registry or your own) which version its
+    tag points to, when the containers, images or Stacks pages load (each answer is kept for 6
+    hours) and when you choose Check for newer images. When you browse Docker Hub tags in the pull
+    dialog, your computer asks Docker Hub directly. These requests go to the registries you use,
+    never to the publisher, and are handled by each registry under its own privacy policy; with a
+    local Host they come from your IP address.
+  </p>
 
   <h3 id="email">Writing to the publisher</h3>
   <p>

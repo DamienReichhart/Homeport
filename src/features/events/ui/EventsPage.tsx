@@ -16,6 +16,7 @@ import {
 } from '@/shared/ui';
 import { ALL_KINDS, filterEvents } from '../model/filterEvents';
 import { EventsTable } from './EventsTable';
+import { t } from '@/shared/i18n';
 
 function EventsList({ hostId }: { hostId: string }) {
   // Seeded from the backend's history; live updates append pushed events to this cache.
@@ -31,18 +32,15 @@ function EventsList({ hostId }: { hostId: string }) {
 
   return (
     <div>
-      <PageHeader
-        title="Events"
-        description="What the Engine reported since Homeport connected (the last 500)."
-      />
+      <PageHeader title={t('events.title')} description={t('events.description')} />
       <div className="mb-3 flex gap-3">
-        <SearchInput value={query} onChange={setQuery} placeholder="Search events" />
+        <SearchInput value={query} onChange={setQuery} placeholder={t('events.search')} />
         <Select value={kind} onValueChange={setKind}>
-          <SelectTrigger className="w-40" aria-label="Type">
+          <SelectTrigger className="w-40" aria-label={t('events.type')}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ALL_KINDS}>All types</SelectItem>
+            <SelectItem value={ALL_KINDS}>{t('events.allTypes')}</SelectItem>
             {kinds.map((k) => (
               <SelectItem key={k} value={k} className="capitalize">
                 {k}
@@ -54,8 +52,8 @@ function EventsList({ hostId }: { hostId: string }) {
       {shown.length === 0 ? (
         <EmptyState
           icon={ActivityIcon}
-          title="No events yet"
-          description="Start or stop a container and it shows up here."
+          title={t('events.empty.title')}
+          description={t('events.empty.description')}
         />
       ) : (
         <EventsTable events={shown} />

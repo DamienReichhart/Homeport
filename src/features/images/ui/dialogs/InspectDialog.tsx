@@ -21,6 +21,7 @@ import {
 } from '@/shared/ui';
 import { imageQueries } from '../../api/queries';
 import { imageName } from '../../model/imageName';
+import { t } from '@/shared/i18n';
 
 /** An image's layers and its raw JSON. */
 export function InspectDialog({
@@ -42,17 +43,17 @@ export function InspectDialog({
         </DialogHeader>
         <Tabs defaultValue="layers">
           <TabsList>
-            <TabsTrigger value="layers">Layers</TabsTrigger>
-            <TabsTrigger value="raw">Raw JSON</TabsTrigger>
+            <TabsTrigger value="layers">{t('images.inspect.layers')}</TabsTrigger>
+            <TabsTrigger value="raw">{t('images.inspect.raw')}</TabsTrigger>
           </TabsList>
           <TabsContent value="layers">
             {history.data ? (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Created</TableHead>
-                    <TableHead>Instruction</TableHead>
-                    <TableHead className="text-right">Size</TableHead>
+                    <TableHead>{t('images.inspect.created')}</TableHead>
+                    <TableHead>{t('images.inspect.instruction')}</TableHead>
+                    <TableHead className="text-right">{t('images.inspect.size')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

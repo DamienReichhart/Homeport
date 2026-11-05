@@ -1,4 +1,12 @@
 import type { RestartPolicy, RunSpec } from '@/shared/api';
+import {
+  advancedErrors,
+  advancedToSpec,
+  emptyAdvanced,
+  lines,
+  type AdvancedErrors,
+  type AdvancedForm,
+} from './runAdvanced';
 
 export interface PortRow {
   hostPort: string;
@@ -23,6 +31,9 @@ export interface RunForm {
   network: string;
   restart: RestartPolicy;
   autoRemove: boolean;
+  advanced: AdvancedForm;
+  /** The container this form was read from (Duplicate, Edit), whose other settings are kept. */
+  basedOn: string | null;
 }
 
 export const emptyRunForm = (image = ''): RunForm => ({
@@ -35,20 +46,27 @@ export const emptyRunForm = (image = ''): RunForm => ({
   network: '',
   restart: 'no',
   autoRemove: false,
+  advanced: emptyAdvanced(),
+  basedOn: null,
 });
+
+/** What can't be read in the form, by field; empty when it can be sent. */
+export type RunFormErrors = AdvancedErrors;
+
+export const runFormErrors = (form: RunForm): RunFormErrors => advancedErrors(form.advanced);
 
 const blankToNull = (s: string) => (s.trim() === '' ? null : s.trim());
 
-/** The Run request for a filled-in form; rows left empty are dropped. */
+/**
+ * The Run request for a filled-in form; rows left empty are dropped. Call it
+ * once `runFormErrors` is empty.
+ */
 export function toRunSpec(form: RunForm): RunSpec {
   return {
     image: form.image.trim(),
     name: blankToNull(form.name),
     command: blankToNull(form.command),
-    env: form.env
-      .split('\n')
-      .map((l) => l.trim())
-      .filter((l) => l !== '' && !l.startsWith('#')),
+    env: lines(form.env),
     ports: form.ports
       .filter((p) => p.containerPort.trim() !== '')
       .map((p) => ({
@@ -63,5 +81,7 @@ export function toRunSpec(form: RunForm): RunSpec {
     network: blankToNull(form.network),
     restart: form.restart,
     autoRemove: form.autoRemove,
+    ...advancedToSpec(form.advanced),
+    basedOn: form.basedOn,
   };
 }

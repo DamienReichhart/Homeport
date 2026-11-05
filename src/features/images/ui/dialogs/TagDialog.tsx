@@ -12,6 +12,7 @@ import {
 } from '@/shared/ui';
 import { useTagImage } from '../../api/mutations';
 import { imageName } from '../../model/imageName';
+import { t } from '@/shared/i18n';
 
 /** Gives an image another name, e.g. to push it to a registry. */
 export function TagDialog({
@@ -29,7 +30,7 @@ export function TagDialog({
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Tag {imageName(image)}</DialogTitle>
+          <DialogTitle>{t('images.tagDialog.title', { name: imageName(image) })}</DialogTitle>
         </DialogHeader>
         <form
           className="grid gap-3"
@@ -43,15 +44,15 @@ export function TagDialog({
             onChange={(e) => setTarget(e.target.value)}
             placeholder="registry.example.com/app:v2"
             autoFocus
-            aria-label="New name"
+            aria-label={t('images.tagDialog.newName')}
           />
           {tag.error && <ErrorMessage error={tag.error} />}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={onClose}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={tag.isPending || !target.trim()}>
-              Add tag
+              {t('images.tagDialog.add')}
             </Button>
           </DialogFooter>
         </form>

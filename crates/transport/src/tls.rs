@@ -7,10 +7,10 @@ use rustls_pki_types::{pem::PemObject, CertificateDer, PrivateKeyDer, ServerName
 use tokio::net::TcpStream;
 use tokio_rustls::TlsConnector;
 
-use homeport_core::error::{AppError, ErrorCode};
+use homeport_core::error::{AppError, ErrorCode, Message};
 
 use super::{BoxFuture, BoxStream, ConnectError, Dialer, CONNECT_TIMEOUT};
-use crate::reach;
+use crate::{messages as msg, reach};
 
 pub struct TlsDialer {
     /// The Host's name and address, for messages.
@@ -30,48 +30,46 @@ impl TlsDialer {
         cert_pem: &str,
         key_pem: &str,
     ) -> Result<Self, ConnectError> {
-        let invalid = |what: &str, e: &dyn std::fmt::Display| {
-            ConnectError::Invalid(
-                material_invalid(format!("The {what} can't be used.")).with_detail(e),
-            )
+        let invalid = |message: Message, e: &dyn std::fmt::Display| {
+            ConnectError::Invalid(material_invalid(message).with_detail(e))
         };
 
         let mut roots = RootCertStore::empty();
         for cert in CertificateDer::pem_slice_iter(ca_pem.as_bytes()) {
-            let cert = cert.map_err(|e| invalid("CA certificate", &e))?;
-            roots.add(cert).map_err(|e| invalid("CA certificate", &e))?;
+            let cert = cert.map_err(|e| invalid(msg::TLS_CA_UNUSABLE, &e))?;
+            roots
+                .add(cert)
+                .map_err(|e| invalid(msg::TLS_CA_UNUSABLE, &e))?;
         }
         if roots.is_empty() {
-            return Err(ConnectError::Invalid(material_invalid(
-                "The CA certificate contains no certificate.",
-            )));
+            return Err(ConnectError::Invalid(material_invalid(msg::TLS_CA_EMPTY)));
         }
         let chain = CertificateDer::pem_slice_iter(cert_pem.as_bytes())
             .collect::<Result<Vec<_>, _>>()
-            .map_err(|e| invalid("client certificate", &e))?;
+            .map_err(|e| invalid(msg::TLS_CLIENT_CERT_UNUSABLE, &e))?;
         if chain.is_empty() {
             return Err(ConnectError::Invalid(material_invalid(
-                "The client certificate contains no certificate.",
+                msg::TLS_CLIENT_CERT_EMPTY,
             )));
         }
         let key = PrivateKeyDer::from_pem_slice(key_pem.as_bytes())
-            .map_err(|e| invalid("client key", &e))?;
+            .map_err(|e| invalid(msg::TLS_CLIENT_KEY_UNUSABLE, &e))?;
 
         let config =
             ClientConfig::builder_with_provider(Arc::new(rustls::crypto::ring::default_provider()))
                 .with_safe_default_protocol_versions()
-                .map_err(|e| invalid("TLS configuration", &e))?
+                .map_err(|e| invalid(msg::TLS_CONFIG_UNUSABLE, &e))?
                 .with_root_certificates(roots)
                 .with_client_auth_cert(chain, key)
-                .map_err(|e| invalid("client certificate and key", &e))?;
+                .map_err(|e| invalid(msg::TLS_CLIENT_PAIR_UNUSABLE, &e))?;
 
         let host = address
             .rsplit_once(':')
             .map_or(address, |(host, _)| host)
             .trim_start_matches('[')
             .trim_end_matches(']');
-        let server_name =
-            ServerName::try_from(host.to_owned()).map_err(|e| invalid("address", &e))?;
+        let server_name = ServerName::try_from(host.to_owned())
+            .map_err(|e| invalid(msg::TLS_ADDRESS_UNUSABLE, &e))?;
 
         Ok(Self {
             label: label.to_owned(),
@@ -94,10 +92,8 @@ impl TlsDialer {
     }
 }
 
-fn material_invalid(message: impl Into<String>) -> AppError {
-    AppError::new(ErrorCode::TlsMaterialInvalid, message).with_hint(
-        "Paste PEM files (ca.pem, cert.pem, key.pem) made for this Engine on the host page.",
-    )
+fn material_invalid(message: impl Into<homeport_core::error::Text>) -> AppError {
+    AppError::new(ErrorCode::TlsMaterialInvalid, message).with_hint(msg::TLS_MATERIAL_INVALID_HINT)
 }
 
 impl Dialer for TlsDialer {

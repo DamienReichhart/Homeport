@@ -13,6 +13,7 @@
 pub mod compose;
 pub mod definition;
 pub mod lifecycle;
+pub mod messages;
 pub mod stack;
 pub mod store;
 

@@ -28,6 +28,7 @@ export {
   CardContent,
 } from './primitives/card';
 export { Checkbox } from './primitives/checkbox';
+export { Collapsible, CollapsibleContent, CollapsibleTrigger } from './primitives/collapsible';
 export {
   Dialog,
   DialogClose,
@@ -108,6 +109,8 @@ export { PageHeader } from './layout/PageHeader';
 
 // feedback
 export { ConfirmDialog, useConfirm, type ConfirmOptions } from './feedback/ConfirmDialog';
+export { TransferDialog } from './feedback/TransferDialog';
+export { useConfirmedAction, type ConfirmedAction } from './feedback/useConfirmedAction';
 export { EmptyState } from './feedback/EmptyState';
 export { ErrorDetailsHost, showErrorDetails } from './feedback/ErrorDetails';
 export { ErrorMessage } from './feedback/ErrorMessage';

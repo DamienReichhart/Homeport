@@ -6,6 +6,8 @@ use rusqlite::{OptionalExtension, Row};
 use serde::Serialize;
 
 use homeport_core::error::{AppError, AppResult, ErrorCode};
+
+use crate::messages as msg;
 use homeport_storage::{Db, SecretBox};
 
 use crate::definition;
@@ -54,7 +56,7 @@ impl StackStore {
                 )
                 .optional()
             })?
-            .ok_or_else(|| AppError::not_found("This stack no longer exists."))
+            .ok_or_else(|| AppError::not_found(msg::GONE))
     }
 
     pub fn create(
@@ -65,7 +67,7 @@ impl StackStore {
         env: &str,
     ) -> AppResult<ManagedStack> {
         let name = name.trim();
-        definition::validate_name(name).map_err(AppError::validation)?;
+        definition::validate_name(name)?;
         let env = self.seal_env(env)?;
         let id = uuid::Uuid::new_v4().to_string();
         self.db
@@ -76,14 +78,8 @@ impl StackStore {
                 )
             })
             .map_err(|e| match e.code {
-                ErrorCode::NameInUse => AppError {
-                    message: format!("This host already has a stack named \"{name}\"."),
-                    ..e
-                },
-                ErrorCode::NotFound => AppError {
-                    message: "This host no longer exists.".into(),
-                    ..e
-                },
+                ErrorCode::NameInUse => e.with_message(msg::NAME_IN_USE.with("name", name)),
+                ErrorCode::NotFound => e.with_message(msg::HOST_GONE),
                 _ => e,
             })?;
         self.get(&id)
@@ -100,7 +96,7 @@ impl StackStore {
             )
         })?;
         if n == 0 {
-            return Err(AppError::not_found("This stack no longer exists."));
+            return Err(AppError::not_found(msg::GONE));
         }
         self.get(id)
     }
@@ -119,7 +115,7 @@ impl StackStore {
                 c.query_row("SELECT env FROM stacks WHERE id = ?1", [id], |r| r.get(0))
                     .optional()
             })?
-            .ok_or_else(|| AppError::not_found("This stack no longer exists."))?;
+            .ok_or_else(|| AppError::not_found(msg::GONE))?;
         match sealed {
             Some(sealed) => Ok(String::from_utf8_lossy(&self.secrets.open(&sealed)?).into_owned()),
             None => Ok(String::new()),
@@ -131,7 +127,7 @@ impl StackStore {
         if env.trim().is_empty() {
             return Ok(None);
         }
-        definition::parse_env(env).map_err(AppError::validation)?;
+        definition::parse_env(env)?;
         Ok(Some(self.secrets.seal(env.as_bytes())?))
     }
 }

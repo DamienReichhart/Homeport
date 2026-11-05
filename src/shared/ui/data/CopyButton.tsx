@@ -1,8 +1,9 @@
 import { CheckIcon, CopyIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../primitives/button';
+import { t } from '@/shared/i18n';
 
-export function CopyButton({ text, label = 'Copy' }: { text: string; label?: string }) {
+export function CopyButton({ text, label = t('ui.copy') }: { text: string; label?: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <Button
@@ -16,7 +17,7 @@ export function CopyButton({ text, label = 'Copy' }: { text: string; label?: str
       }}
     >
       {copied ? <CheckIcon /> : <CopyIcon />}
-      {copied ? 'Copied' : label}
+      {copied ? t('ui.copied') : label}
     </Button>
   );
 }

@@ -6,3 +6,4 @@ src-tauri/icons
 bun.lock
 src/shared/api/bindings.ts
 .astro
+.claude

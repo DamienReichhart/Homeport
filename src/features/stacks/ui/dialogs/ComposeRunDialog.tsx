@@ -12,6 +12,7 @@ import {
 } from '@/shared/ui';
 import { useComposeRun } from '../../api/streams';
 import { COMPOSE_TITLES, type ComposeJob } from '../../model/composeJob';
+import { t } from '@/shared/i18n';
 
 /** Runs one compose command for a Managed Stack and shows its output live. */
 export function ComposeRunDialog({
@@ -35,9 +36,7 @@ export function ComposeRunDialog({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>
-            {COMPOSE_TITLES[job.action]} {job.name}
-          </DialogTitle>
+          <DialogTitle>{t(COMPOSE_TITLES[job.action], { name: job.name })}</DialogTitle>
         </DialogHeader>
         {failure && <ErrorMessage error={failure} />}
         <div className="h-80">
@@ -55,8 +54,8 @@ export function ComposeRunDialog({
                   } else {
                     terminal.writeln(
                       e.success
-                        ? '\x1b[32m✓ Done\x1b[39m'
-                        : `\x1b[31m✗ Failed with exit code ${e.code ?? '?'}\x1b[39m`,
+                        ? `\x1b[32m${t('stacks.compose.done')}\x1b[39m`
+                        : `\x1b[31m${t('stacks.compose.failed', { code: e.code ?? '?' })}\x1b[39m`,
                     );
                     if (e.error) fail(e.error);
                     else setResult(e.success ? 'ok' : 'failed');
@@ -72,7 +71,7 @@ export function ComposeRunDialog({
         </div>
         <DialogFooter>
           <Button variant={result === 'running' ? 'outline' : 'default'} onClick={onClose}>
-            {result === 'running' ? 'Cancel' : 'Close'}
+            {result === 'running' ? t('common.cancel') : t('common.close')}
           </Button>
         </DialogFooter>
       </DialogContent>

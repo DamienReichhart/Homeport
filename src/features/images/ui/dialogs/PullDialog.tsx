@@ -19,6 +19,7 @@ import { searchTerm } from '../../model/hub';
 import { initialPull, reducePull, type PullState } from '../../model/pull';
 import { HubSearch } from './HubSearch';
 import { HubTags } from './HubTags';
+import { t } from '@/shared/i18n';
 
 /** Pulls an image by reference and shows each layer's progress. */
 export function PullDialog({
@@ -64,11 +65,8 @@ export function PullDialog({
     <Dialog open={open} onOpenChange={close}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Pull an image</DialogTitle>
-          <DialogDescription>
-            Search Docker Hub by name, or type any reference the host can reach, e.g. nginx:1.27 or
-            ghcr.io/org/app:v2.
-          </DialogDescription>
+          <DialogTitle>{t('images.pullDialog.title')}</DialogTitle>
+          <DialogDescription>{t('images.pullDialog.description')}</DialogDescription>
         </DialogHeader>
         <form
           className="flex gap-2"
@@ -87,16 +85,16 @@ export function PullDialog({
                 dispatch('reset');
               }
             }}
-            placeholder="postgres, or nginx:1.27"
+            placeholder={t('images.pullDialog.placeholder')}
             autoFocus
             disabled={busy}
-            aria-label="Image reference"
+            aria-label={t('images.pullDialog.reference')}
           />
           <Button type="submit" disabled={busy || !reference.trim()}>
-            Pull
+            {t('images.pullDialog.pull')}
           </Button>
         </form>
-        <RegistryLogin reference={reference} verb="Pulled" />
+        <RegistryLogin reference={reference} verb="pull" />
         {!pulling && repository && (
           <HubTags
             repository={repository}
@@ -145,12 +143,12 @@ export function PullDialog({
               </div>
             ))}
             {state.error && <ErrorMessage error={state.error} />}
-            {state.done && <p className="text-success text-sm">Done.</p>}
+            {state.done && <p className="text-success text-sm">{t('images.done')}</p>}
           </div>
         )}
         <DialogFooter>
           <Button variant="ghost" onClick={() => close(false)}>
-            {busy ? 'Cancel' : 'Close'}
+            {busy ? t('common.cancel') : t('common.close')}
           </Button>
         </DialogFooter>
       </DialogContent>

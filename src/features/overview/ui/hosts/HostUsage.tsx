@@ -1,6 +1,7 @@
 import { CpuIcon, MemoryStickIcon } from 'lucide-react';
 import { useUsage } from '@/features/containers';
 import { formatBytes, formatPercent } from '@/shared/lib';
+import { t } from '@/shared/i18n';
 
 /** Live CPU and memory use of a Host's running containers against its capacity. */
 export function HostUsage({
@@ -17,10 +18,11 @@ export function HostUsage({
   const used = usage.reduce((sum, u) => sum + u.memoryUsage, 0);
   return (
     <>
-      <span className="flex items-center gap-1" title="Container CPU use, 100% per CPU">
-        <CpuIcon className="size-3.5" /> {formatPercent(cpu)} of {cpus} CPUs
+      <span className="flex items-center gap-1" title={t('overview.host.cpuTitle')}>
+        <CpuIcon className="size-3.5" />{' '}
+        {t('overview.host.cpu', { percent: formatPercent(cpu), cpus })}
       </span>
-      <span className="flex items-center gap-1" title="Container memory use">
+      <span className="flex items-center gap-1" title={t('overview.host.memoryTitle')}>
         <MemoryStickIcon className="size-3.5" /> {formatBytes(used)} / {formatBytes(memory)}
       </span>
     </>

@@ -26,21 +26,25 @@ import {
 import { containerQueries } from '../../api/queries';
 import { containerTone } from '../../model/containerTone';
 import { LogViewer } from '../logs/LogViewer';
+import { useContainerDialogs } from '../dialogs/ContainerDialogs';
 import { ContainerActions } from './ContainerActions';
 import { ExecTab } from './tabs/ExecTab';
 import { FilesTab } from './tabs/FilesTab';
+import { HealthTab } from './tabs/HealthTab';
 import { InspectTab } from './tabs/InspectTab';
 import { ProcessesTab } from './tabs/ProcessesTab';
 import { StatsTab } from './tabs/StatsTab';
+import { t, type MessageKey } from '@/shared/i18n';
 
-const TABS = ['logs', 'inspect', 'exec', 'files', 'stats', 'processes'] as const;
-const TAB_LABELS: Record<(typeof TABS)[number], string> = {
-  logs: 'Logs',
-  inspect: 'Inspect',
-  exec: 'Exec',
-  files: 'Files',
-  stats: 'Stats',
-  processes: 'Processes',
+const TABS = ['logs', 'inspect', 'health', 'exec', 'files', 'stats', 'processes'] as const;
+const TAB_LABELS: Record<(typeof TABS)[number], MessageKey> = {
+  logs: 'containers.tab.logs',
+  health: 'containers.tab.health',
+  inspect: 'containers.tab.inspect',
+  exec: 'containers.tab.exec',
+  files: 'containers.tab.files',
+  stats: 'containers.tab.stats',
+  processes: 'containers.tab.processes',
 };
 
 function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
@@ -48,6 +52,7 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
   const navigate = useNavigate();
   const containers = useContainers(hostId);
   const [dialog, confirm] = useConfirm();
+  const [containerDialogs, openDialog] = useContainerDialogs(hostId);
   const freshness = indexFreshness(useQuery(resourceQueries.freshness(hostId)).data);
   const container = containers.data?.find((c) => c.id === id || c.id.startsWith(id));
   const inspect = useQuery({
@@ -59,13 +64,13 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
   if (!container) {
     return (
       <div className="grid gap-3">
-        <ErrorMessage error={{ code: 'not_found', message: 'This container no longer exists.' }} />
+        <ErrorMessage error={{ code: 'not_found', message: t('containers.detail.gone') }} />
         <Button
           variant="outline"
           className="justify-self-start"
           onClick={() => navigate('/containers')}
         >
-          Back to containers
+          {t('containers.detail.backToList')}
         </Button>
       </div>
     );
@@ -80,7 +85,7 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label="Back"
+              aria-label={t('common.back')}
               onClick={() => navigate('/containers')}
             >
               <ArrowLeftIcon />
@@ -99,17 +104,24 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
             <span>· {container.status || container.state}</span>
           </span>
         }
-        actions={<ContainerActions hostId={hostId} container={container} confirm={confirm} />}
+        actions={
+          <ContainerActions
+            hostId={hostId}
+            container={container}
+            confirm={confirm}
+            onOpenDialog={openDialog}
+          />
+        }
       />
       <Tabs
         value={tab}
-        onValueChange={(t) => navigate(`/containers/${container.id}/${t}`, { replace: true })}
+        onValueChange={(next) => navigate(`/containers/${container.id}/${next}`, { replace: true })}
         className="flex min-h-0 flex-1 flex-col"
       >
         <TabsList>
-          {TABS.map((t) => (
-            <TabsTrigger key={t} value={t}>
-              {TAB_LABELS[t]}
+          {TABS.filter((value) => value !== 'health' || container.health !== null).map((value) => (
+            <TabsTrigger key={value} value={value}>
+              {t(TAB_LABELS[value])}
             </TabsTrigger>
           ))}
         </TabsList>
@@ -125,6 +137,9 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
             <Spinner />
           )}
         </TabsContent>
+        <TabsContent value="health" className="overflow-auto">
+          <HealthTab hostId={hostId} containerId={container.id} status={container.health} />
+        </TabsContent>
         <TabsContent value="exec" className="min-h-[24rem] flex-1">
           <ExecTab hostId={hostId} containerId={container.id} running={running} />
         </TabsContent>
@@ -139,6 +154,7 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
         </TabsContent>
       </Tabs>
       {dialog}
+      {containerDialogs}
     </div>
   );
 }

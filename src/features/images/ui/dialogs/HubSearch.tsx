@@ -5,6 +5,7 @@ import { useDebounced } from '@/shared/hooks';
 import { Spinner } from '@/shared/ui';
 import { imageQueries } from '../../api/queries';
 import { shortRepository } from '../../model/hub';
+import { t } from '@/shared/i18n';
 
 /** Docker Hub repositories matching what's typed, searched from the Host. */
 export function HubSearch({
@@ -22,35 +23,39 @@ export function HubSearch({
   if (results.error) {
     return (
       <p className="text-muted-foreground text-xs">
-        Docker Hub can’t be searched right now: {toAppError(results.error).message} A full name like
-        nginx:1.27 still pulls.
+        {t('images.hub.unavailable', { error: toAppError(results.error).message })}
       </p>
     );
   }
   if (!results.data) return null;
   if (results.data.length === 0) {
     return (
-      <p className="text-muted-foreground text-xs">Nothing on Docker Hub matches “{debounced}”.</p>
+      <p className="text-muted-foreground text-xs">
+        {t('images.hub.noMatch', { term: debounced })}
+      </p>
     );
   }
   return (
     <ul
       className="divide-border grid max-h-64 divide-y overflow-y-auto"
-      aria-label="Docker Hub results"
+      aria-label={t('images.hub.results')}
     >
       {results.data.map((r) => (
         <li key={r.name}>
           <button
             type="button"
             className="hover:bg-muted grid w-full gap-0.5 px-2 py-1.5 text-left"
-            aria-label={`${shortRepository(r.name)}${r.official ? ', official image' : ''}, ${r.stars.toLocaleString()} stars`}
+            aria-label={t(r.official ? 'images.hub.resultOfficial' : 'images.hub.result', {
+              name: shortRepository(r.name),
+              stars: r.stars.toLocaleString(),
+            })}
             onClick={() => onChoose(shortRepository(r.name))}
           >
             <span className="flex items-center gap-1.5 text-sm font-medium">
               {shortRepository(r.name)}
               {r.official && (
                 <span className="text-muted-foreground inline-flex items-center gap-0.5 text-xs font-normal">
-                  <BadgeCheckIcon className="size-3.5" /> Official
+                  <BadgeCheckIcon className="size-3.5" /> {t('images.hub.official')}
                 </span>
               )}
               <span className="text-muted-foreground ml-auto inline-flex items-center gap-0.5 text-xs font-normal">

@@ -13,6 +13,7 @@ import { useUpdateCheck } from '../api/queries';
 import { describeMethod } from '../model/updates';
 import { UpdateActions } from './UpdateActions';
 import { UpdateStatus } from './UpdateStatus';
+import { t } from '@/shared/i18n';
 
 /** The Updates card in Settings: automatic checks, "Check now", and the result. */
 export function UpdatesCard({
@@ -28,11 +29,9 @@ export function UpdatesCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Updates</CardTitle>
+        <CardTitle>{t('updates.title')}</CardTitle>
         <CardDescription>
-          {check.data
-            ? describeMethod(check.data)
-            : 'Homeport can look for a new version when it starts and every few hours.'}
+          {check.data ? describeMethod(check.data) : t('updates.description')}
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
@@ -42,7 +41,7 @@ export function UpdatesCard({
             checked={enabled}
             onCheckedChange={(checkForUpdates) => onChange({ ...settings, checkForUpdates })}
           />
-          <Label htmlFor="check-for-updates">Check for updates automatically</Label>
+          <Label htmlFor="check-for-updates">{t('updates.automatic')}</Label>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Button
@@ -51,7 +50,7 @@ export function UpdatesCard({
             disabled={check.isFetching}
             onClick={() => void check.refetch()}
           >
-            {check.isFetching ? 'Checking…' : 'Check now'}
+            {check.isFetching ? t('updates.checking') : t('updates.checkNow')}
           </Button>
           <UpdateStatus check={check} />
         </div>

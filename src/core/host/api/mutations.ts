@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { commands, type HostInput, type HostView } from '@/shared/api';
 import { hostKeys } from './keys';
+import { t } from '@/shared/i18n';
 
 /** Adds a Host; `onAdded` runs once the Host list has it. */
 export function useCreateHost(onAdded: (view: HostView) => void, silent = false) {
@@ -31,8 +32,8 @@ export function useCheckForNewerImages(hostId: string) {
         .size;
       toast.success(
         newer === 0
-          ? 'Every image is up to date'
-          : `${newer} ${newer === 1 ? 'image has' : 'images have'} a newer version`,
+          ? t('core.freshness.allUpToDate')
+          : t('core.freshness.newerCount', { count: newer }),
       );
     },
   });

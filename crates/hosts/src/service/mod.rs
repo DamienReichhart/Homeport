@@ -8,6 +8,8 @@ use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 
 use homeport_core::error::{AppError, AppResult};
+
+use crate::messages as msg;
 use homeport_transport as transport;
 
 pub use self::credentials::CredentialsInput;
@@ -111,7 +113,7 @@ impl HostService {
     /// Trusts the SSH server key the user just confirmed, then reconnects.
     pub fn trust_host_key(&self, id: &str, key: &str) -> AppResult<HostView> {
         if transport::ssh::fingerprint(key).is_none() {
-            return Err(AppError::validation("That isn't an SSH public key."));
+            return Err(AppError::validation(msg::NOT_A_PUBLIC_KEY));
         }
         self.store.set_host_key(id, Some(key.trim()))?;
         self.registry.restart(id);
@@ -135,7 +137,7 @@ impl HostService {
             ..
         } = current.connection
         else {
-            return Err(AppError::validation("Only SSH hosts use keys."));
+            return Err(AppError::validation(msg::KEYS_ONLY_FOR_SSH));
         };
         let key = transport::ssh::generate_key(&key_comment(&current.name));
         self.store.update(
@@ -168,9 +170,7 @@ impl HostService {
             ..
         } = host.connection
         else {
-            return Err(AppError::validation(
-                "This host doesn't use a Homeport-managed SSH key.",
-            ));
+            return Err(AppError::validation(msg::NO_MANAGED_KEY));
         };
         Ok(SshSetup {
             fingerprint: transport::ssh::fingerprint(&public_key).unwrap_or_default(),

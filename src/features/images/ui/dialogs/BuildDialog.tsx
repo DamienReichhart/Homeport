@@ -19,6 +19,7 @@ import {
 } from '@/shared/ui';
 import { useBuildImage } from '../../api/streams';
 import { emptyBuild, toBuildSpec, type BuildForm } from '../../model/build';
+import { t } from '@/shared/i18n';
 
 /**
  * Builds an image on the Host from a folder on this machine: the form, then
@@ -47,11 +48,8 @@ export function BuildDialog({ hostId, onClose }: { hostId: string; onClose: () =
     <Dialog open onOpenChange={(open) => !open && close()}>
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Build an image</DialogTitle>
-          <DialogDescription>
-            From a folder on this computer. Homeport sends it to the Host, leaving out what its
-            .dockerignore excludes, and the Host’s Engine builds it.
-          </DialogDescription>
+          <DialogTitle>{t('images.buildDialog.title')}</DialogTitle>
+          <DialogDescription>{t('images.buildDialog.description')}</DialogDescription>
         </DialogHeader>
         {running ? (
           <>
@@ -69,7 +67,7 @@ export function BuildDialog({ hostId, onClose }: { hostId: string; onClose: () =
                         terminal.writeln(`\x1b[31m${e.error.message}\x1b[39m`);
                         fail(e.error);
                       } else {
-                        terminal.writeln('\x1b[32m✓ Built\x1b[39m');
+                        terminal.writeln(`\x1b[32m${t('images.buildDialog.built')}\x1b[39m`);
                         setResult('ok');
                       }
                     },
@@ -89,7 +87,7 @@ export function BuildDialog({ hostId, onClose }: { hostId: string; onClose: () =
             }}
           >
             <div className="grid gap-1.5">
-              <Label htmlFor="build-context">Folder</Label>
+              <Label htmlFor="build-context">{t('images.buildDialog.folder')}</Label>
               <div className="flex gap-2">
                 <Input
                   id="build-context"
@@ -102,17 +100,17 @@ export function BuildDialog({ hostId, onClose }: { hostId: string; onClose: () =
                   type="button"
                   variant="outline"
                   onClick={async () => {
-                    const folder = await pickFolder('Choose the folder to build');
+                    const folder = await pickFolder(t('images.buildDialog.chooseFolder'));
                     if (folder) set('context', folder);
                   }}
                 >
-                  <FolderOpenIcon /> Choose…
+                  <FolderOpenIcon /> {t('images.buildDialog.choose')}
                 </Button>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-1.5">
-                <Label htmlFor="build-dockerfile">Dockerfile</Label>
+                <Label htmlFor="build-dockerfile">{t('images.buildDialog.dockerfile')}</Label>
                 <Input
                   id="build-dockerfile"
                   value={form.dockerfile}
@@ -121,33 +119,34 @@ export function BuildDialog({ hostId, onClose }: { hostId: string; onClose: () =
                 />
               </div>
               <div className="grid gap-1.5">
-                <Label htmlFor="build-target">Target stage</Label>
+                <Label htmlFor="build-target">{t('images.buildDialog.target')}</Label>
                 <Input
                   id="build-target"
                   value={form.target}
                   onChange={(e) => set('target', e.target.value)}
-                  placeholder="The last stage"
+                  placeholder={t('images.buildDialog.targetPlaceholder')}
                   spellCheck={false}
                 />
               </div>
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="build-tags">Names</Label>
+              <Label htmlFor="build-tags">{t('images.buildDialog.names')}</Label>
               <Input
                 id="build-tags"
                 value={form.tags}
                 onChange={(e) => set('tags', e.target.value)}
+                // eslint-disable-next-line homeport/no-literal-ui-string -- example image names
                 placeholder="app:1.0, ghcr.io/me/app:1.0"
                 spellCheck={false}
               />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="build-args">Build arguments</Label>
+              <Label htmlFor="build-args">{t('images.buildDialog.buildArgs')}</Label>
               <Textarea
                 id="build-args"
                 value={form.buildArgs}
                 onChange={(e) => set('buildArgs', e.target.value)}
-                placeholder="VERSION=1.0, one per line"
+                placeholder={t('images.buildDialog.buildArgsPlaceholder')}
                 className="h-20 font-mono text-xs"
                 spellCheck={false}
               />
@@ -158,11 +157,11 @@ export function BuildDialog({ hostId, onClose }: { hostId: string; onClose: () =
                   checked={form.noCache}
                   onCheckedChange={(v) => set('noCache', v === true)}
                 />
-                Don’t use the build cache
+                {t('images.buildDialog.noCache')}
               </Label>
               <Label className="inline-flex items-center gap-2 font-normal">
                 <Checkbox checked={form.pull} onCheckedChange={(v) => set('pull', v === true)} />
-                Pull newer base images
+                {t('images.buildDialog.pull')}
               </Label>
             </div>
             {'problem' in checked && form.context && (
@@ -173,15 +172,15 @@ export function BuildDialog({ hostId, onClose }: { hostId: string; onClose: () =
         <DialogFooter>
           {running ? (
             <Button variant={result === 'running' ? 'ghost' : 'default'} onClick={close}>
-              {result === 'running' ? 'Cancel' : 'Close'}
+              {result === 'running' ? t('common.cancel') : t('common.close')}
             </Button>
           ) : (
             <>
               <Button variant="ghost" onClick={close}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button type="submit" form="build-form" disabled={!('spec' in checked)}>
-                Build
+                {t('images.build')}
               </Button>
             </>
           )}

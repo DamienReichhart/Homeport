@@ -1,16 +1,27 @@
-//! Application-wide error type, serialized as `{ code, message, hint, detail }`
-//! so the frontend (`src/shared/api/errors.ts`) can show every failure the same
-//! way: what happened, what to do about it, and the raw details on demand.
+//! Application-wide error type, serialized as
+//! `{ code, key, params, message, hint, detail }` so the frontend
+//! (`src/shared/api/errors.ts`) can show every failure the same way: what
+//! happened, what to do about it, and the raw details on demand.
 //!
 //! Writing an error:
+//! - Declare its text in the crate's `messages.rs`, in the `messages!` block:
+//!   a stable key (`errors.<area>.<case>`, its hint at `<key>.hint`) and the
+//!   English as an ICU template with `{named}` arguments (ADR 0011). Build it
+//!   with `AppError::new(code, msg::KEY.with("name", value))` and
+//!   `.with_hint(msg::KEY_HINT)`, then run `bun run bindings`, which writes
+//!   the frontend's `errors.json`; the frontend renders the text by key.
 //! - `message` says what happened in one sentence, without raw OS, library or
 //!   Engine text. A Host is named by its name (remote ones as "prod (address)");
 //!   "Docker Engine" means the software, and the machine is never "the server"
-//!   (see `GLOSSARY.md`). British spelling, as `docs/BRAND.md` asks.
+//!   (see `GLOSSARY.md`). British spelling, as `docs/BRAND.md` asks. One key
+//!   per sentence: never glue fragments, and give plurals two keys.
 //! - `hint` says what to do, with copyable `commands` for the machine concerned;
-//!   when there's nothing better, point to Details.
-//! - `detail` keeps the raw cause (error chain, Engine response, stderr) for the
-//!   Details dialog and bug reports.
+//!   when there's nothing better, point to Details. Commands are never translated.
+//! - `params` hold names and values the user knows (a Host, a path, a port);
+//!   `detail` keeps the raw cause (error chain, Engine response, stderr) for the
+//!   Details dialog and bug reports, and is never translated.
+//! - `code` is for logic (`e.is(ErrorCode::PortInUse)`); add one only for a case
+//!   the user can act on differently.
 //! - Classify in the backend: the frontend only displays errors. Failures from a
 //!   transport travel inside `io::Error` and are recovered by [`reach::classified_cause`].
 
@@ -20,62 +31,94 @@ pub mod engine;
 mod local_file;
 pub mod reach;
 mod secrets;
+mod text;
 
 use std::{error::Error as StdError, fmt::Display};
 
 use serde::Serialize;
 
+use crate::messages as msg;
+
 pub use code::ErrorCode;
 pub use local_file::local_file;
+pub use text::{arguments, render, Message, Param, Params, Text};
 
 pub type AppResult<T> = Result<T, AppError>;
 
 /// What the user can do about a failure.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, specta::Type)]
 pub struct Hint {
+    /// The catalogue key of `text`; empty for text not in the catalogue.
+    pub key: String,
+    pub params: Params,
+    /// In English, for the log and when the key is unknown.
     pub text: String,
     /// Commands to run, each possibly spanning several lines. May be empty.
+    /// Never translated.
     pub commands: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type, thiserror::Error)]
 #[error("{message}")]
 pub struct AppError {
+    /// What failed, for logic: `e.is(ErrorCode::PortInUse)`.
     pub code: ErrorCode,
+    /// The catalogue key of `message` (`errors.*`), which the frontend
+    /// renders with `params`; empty for text not in the catalogue.
+    pub key: String,
+    pub params: Params,
+    /// In English, for the app log and when the key is unknown.
     pub message: String,
-    pub hint: Option<Hint>,
-    /// The raw cause, for the Details dialog.
+    // Boxed to keep `AppResult` small.
+    pub hint: Option<Box<Hint>>,
+    /// The raw cause, for the Details dialog. Never translated.
     pub detail: Option<String>,
 }
 
 impl AppError {
-    pub fn new(code: ErrorCode, message: impl Into<String>) -> Self {
+    pub fn new(code: ErrorCode, message: impl Into<Text>) -> Self {
+        let text = message.into();
         Self {
             code,
-            message: message.into(),
+            message: text.english(),
+            key: text.key,
+            params: text.params,
             hint: None,
             detail: None,
         }
     }
 
     /// Bad input from the user; the message alone says what to fix.
-    pub fn validation(message: impl Into<String>) -> Self {
+    pub fn validation(message: impl Into<Text>) -> Self {
         Self::new(ErrorCode::Validation, message)
     }
 
-    pub fn not_found(message: impl Into<String>) -> Self {
+    pub fn not_found(message: impl Into<Text>) -> Self {
         Self::new(ErrorCode::NotFound, message)
     }
 
-    pub fn with_hint(mut self, text: impl Into<String>) -> Self {
-        self.hint.get_or_insert_with(Hint::default).text = text.into();
+    pub fn with_hint(mut self, text: impl Into<Text>) -> Self {
+        let text = text.into();
+        let hint = self.hint.get_or_insert_with(Box::default);
+        hint.text = text.english();
+        hint.key = text.key;
+        hint.params = text.params;
+        self
+    }
+
+    /// Replaces the message, keeping the code, hint and detail.
+    pub fn with_message(mut self, message: impl Into<Text>) -> Self {
+        let text = message.into();
+        self.message = text.english();
+        self.key = text.key;
+        self.params = text.params;
         self
     }
 
     /// Adds a command to the hint; call [`Self::with_hint`] first for its text.
     pub fn with_command(mut self, command: impl Into<String>) -> Self {
         self.hint
-            .get_or_insert_with(Hint::default)
+            .get_or_insert_with(Box::default)
             .commands
             .push(command.into());
         self
@@ -127,13 +170,13 @@ pub fn chain(error: &(dyn StdError + 'static)) -> String {
 
 impl From<std::io::Error> for AppError {
     fn from(e: std::io::Error) -> Self {
-        Self::new(ErrorCode::Io, "A file or system operation failed.").with_cause(&e)
+        Self::new(ErrorCode::Io, msg::IO_FAILED).with_cause(&e)
     }
 }
 
 impl From<serde_json::Error> for AppError {
     fn from(e: serde_json::Error) -> Self {
-        Self::new(ErrorCode::Json, "Homeport received data it couldn't read.").with_cause(&e)
+        Self::new(ErrorCode::Json, msg::UNREADABLE_DATA).with_cause(&e)
     }
 }
 
@@ -143,16 +186,21 @@ mod tests {
 
     #[test]
     fn serializes_code_message_hint_and_detail() {
-        let err = AppError::new(ErrorCode::PermissionDenied, "Access refused.")
-            .with_hint("Add your user to the docker group.")
+        use sample::{ADD_TO_GROUP, REFUSED};
+        let err = AppError::new(ErrorCode::PermissionDenied, REFUSED)
+            .with_hint(ADD_TO_GROUP)
             .with_command("sudo usermod -aG docker \"$USER\"")
             .with_detail("Permission denied (os error 13)");
         assert_eq!(
             serde_json::to_value(&err).unwrap(),
             serde_json::json!({
                 "code": "permission_denied",
+                "key": "errors.test.refused",
+                "params": {},
                 "message": "Access refused.",
                 "hint": {
+                    "key": "errors.test.refused.hint",
+                    "params": {},
                     "text": "Add your user to the docker group.",
                     "commands": ["sudo usermod -aG docker \"$USER\""],
                 },
@@ -161,9 +209,34 @@ mod tests {
         );
     }
 
+    #[allow(unreachable_pub)]
+    mod sample {
+        crate::messages! {
+            BUSY = "errors.test.busy" => "Port {port} is busy.";
+            STOP = "errors.test.stop" => "Stop what uses {port}.";
+            REFUSED = "errors.test.refused" => "Access refused.";
+            ADD_TO_GROUP = "errors.test.refused.hint" => "Add your user to the docker group.";
+            ENTER_NAME = "errors.test.enterName" => "Enter a name.";
+        }
+    }
+
+    #[test]
+    fn keyed_errors_carry_their_key_and_params() {
+        use sample::{ALL, BUSY, STOP};
+        let err = AppError::new(ErrorCode::PortInUse, BUSY.with("port", 80))
+            .with_hint(STOP.with("port", 80));
+        let json = serde_json::to_value(&err).unwrap();
+        assert_eq!(json["key"], "errors.test.busy");
+        assert_eq!(json["params"]["port"], 80);
+        assert_eq!(json["message"], "Port 80 is busy.");
+        assert_eq!(json["hint"]["key"], "errors.test.stop");
+        assert_eq!(json["hint"]["text"], "Stop what uses 80.");
+        assert_eq!(ALL.len(), 5);
+    }
+
     #[test]
     fn serializes_missing_hint_and_detail_as_null() {
-        let json = serde_json::to_value(AppError::validation("Enter a name.")).unwrap();
+        let json = serde_json::to_value(AppError::validation(sample::ENTER_NAME)).unwrap();
         assert_eq!(json["code"], "validation");
         assert_eq!(json["hint"], serde_json::Value::Null);
         assert_eq!(json["detail"], serde_json::Value::Null);

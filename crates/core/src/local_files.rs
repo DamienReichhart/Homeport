@@ -4,6 +4,7 @@
 use std::path::Path;
 
 use crate::error::{local_file, AppError, AppResult, ErrorCode};
+use crate::messages as msg;
 
 /// Largest file [`read_text`] accepts; certificates and keys are far smaller.
 const MAX_TEXT_FILE: u64 = 1024 * 1024;
@@ -15,12 +16,9 @@ pub fn read_text(path: &Path) -> AppResult<String> {
     if size > MAX_TEXT_FILE {
         return Err(AppError::new(
             ErrorCode::FileTooLarge,
-            format!(
-                "{} is too large to be a key, certificate or compose file.",
-                path.display()
-            ),
+            msg::FILE_TOO_LARGE.with("path", path),
         )
-        .with_hint("Pick a file under 1 MB."));
+        .with_hint(msg::FILE_TOO_LARGE_HINT));
     }
     std::fs::read_to_string(path).map_err(|e| local_file(path, e))
 }
@@ -36,8 +34,8 @@ pub fn ensure_folder(dir: &Path) -> AppResult<()> {
 
 /// The file manager couldn't show `dir`.
 pub fn folder_not_opened(dir: &Path, cause: &(dyn std::error::Error + 'static)) -> AppError {
-    AppError::new(ErrorCode::Io, format!("{} can't be opened.", dir.display()))
-        .with_hint("Open it in your file manager instead.")
+    AppError::new(ErrorCode::Io, msg::FOLDER_NOT_OPENED.with("path", dir))
+        .with_hint(msg::FOLDER_NOT_OPENED_HINT)
         .with_cause(cause)
 }
 

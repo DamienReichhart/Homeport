@@ -3,6 +3,7 @@ import { ArrowUpCircleIcon, XIcon } from 'lucide-react';
 import { Button } from '@/shared/ui';
 import { useUpdateCheck } from '../api/queries';
 import { UpdateActions } from './UpdateActions';
+import { t, tRich } from '@/shared/i18n';
 
 /** A bar above every page while a newer version is available, until dismissed. */
 export function UpdateNotice() {
@@ -15,20 +16,25 @@ export function UpdateNotice() {
   return (
     <div
       role="status"
-      aria-label="Update available"
+      aria-label={t('updates.notice.label')}
       className="bg-primary/10 flex flex-wrap items-center gap-x-3 gap-y-2 border-b px-6 py-2 text-sm"
     >
       <ArrowUpCircleIcon className="text-primary size-4" />
       <span>
-        <strong className="font-medium">Homeport {available.version}</strong> is available
-        {viaPackageManager ? '. Update it with your package manager:' : '.'}
+        {tRich(
+          viaPackageManager ? 'updates.notice.availablePackageManager' : 'updates.notice.available',
+          {
+            version: available.version,
+            strong: (chunks) => <strong className="font-medium">{chunks}</strong>,
+          },
+        )}
       </span>
       <UpdateActions check={check.data} />
       <Button
         variant="ghost"
         size="icon-sm"
         className="ml-auto"
-        aria-label="Dismiss"
+        aria-label={t('updates.notice.dismiss')}
         onClick={() => setDismissed(available.version)}
       >
         <XIcon />

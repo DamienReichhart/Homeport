@@ -9,6 +9,7 @@
 mod app;
 mod commands;
 mod error;
+mod messages;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

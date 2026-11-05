@@ -1,6 +1,7 @@
 import { InfoIcon, Trash2Icon } from 'lucide-react';
 import type { VolumeView } from '@/shared/api';
 import { Badge, Button, type ColumnDef } from '@/shared/ui';
+import { t } from '@/shared/i18n';
 
 /** The volumes table's columns; the last one holds the row's actions. */
 export function volumeColumns({
@@ -13,32 +14,32 @@ export function volumeColumns({
   return [
     {
       id: 'name',
-      header: 'Name',
+      header: t('volumes.column.name'),
       accessorFn: (v) => v.name,
       cell: ({ row }) => <span className="font-medium break-all">{row.original.name}</span>,
     },
     {
       id: 'stack',
-      header: 'Stack',
+      header: t('volumes.column.stack'),
       accessorFn: (v) => v.stack ?? '',
       cell: ({ row }) =>
         row.original.stack && <Badge variant="outline">{row.original.stack}</Badge>,
     },
-    { id: 'driver', header: 'Driver', accessorFn: (v) => v.driver },
+    { id: 'driver', header: t('volumes.column.driver'), accessorFn: (v) => v.driver },
     {
       id: 'usedBy',
-      header: 'Used by',
+      header: t('volumes.column.usedBy'),
       accessorFn: (v) => v.usedBy.join(' '),
       cell: ({ row }) =>
         row.original.usedBy.length ? (
           row.original.usedBy.join(', ')
         ) : (
-          <Badge variant="outline">Unused</Badge>
+          <Badge variant="outline">{t('volumes.unused')}</Badge>
         ),
     },
     {
       id: 'created',
-      header: 'Created',
+      header: t('volumes.column.created'),
       accessorFn: (v) => v.createdAt ?? '',
       cell: ({ row }) =>
         row.original.createdAt ? new Date(row.original.createdAt).toLocaleDateString() : '—',
@@ -52,7 +53,7 @@ export function volumeColumns({
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label={`Inspect ${row.original.name}`}
+            aria-label={t('volumes.inspectOne', { name: row.original.name })}
             onClick={() => onInspect(row.original)}
           >
             <InfoIcon />
@@ -60,7 +61,7 @@ export function volumeColumns({
           <Button
             variant="ghost"
             size="icon-sm"
-            aria-label={`Delete ${row.original.name}`}
+            aria-label={t('volumes.deleteOne', { name: row.original.name })}
             onClick={() => onRemove(row.original)}
           >
             <Trash2Icon />

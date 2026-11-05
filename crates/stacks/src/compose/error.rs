@@ -1,7 +1,9 @@
 //! Classifies failures of the `docker compose` CLI: missing or outdated,
 //! unable to start, or exiting with an error described on stderr.
 
-use homeport_core::error::{engine, AppError, ErrorCode};
+use homeport_core::error::{engine, AppError, ErrorCode, Message};
+
+use crate::messages as msg;
 
 /// Why no usable compose CLI was found, given what `version --short` printed
 /// for the Docker CLI plugin and the standalone `docker-compose`, if anything.
@@ -9,7 +11,7 @@ pub(super) fn missing(docker_cli_installed: bool, standalone_version: Option<&st
     if let Some(version) = standalone_version {
         return AppError::new(
             ErrorCode::ComposeOutdated,
-            format!("docker-compose {version} is too old: Homeport needs Compose v2."),
+            msg::COMPOSE_OUTDATED.with("version", version),
         )
         .with_hint(install_hint(docker_cli_installed))
         .with_command(install_command(docker_cli_installed));
@@ -17,21 +19,21 @@ pub(super) fn missing(docker_cli_installed: bool, standalone_version: Option<&st
     AppError::new(
         ErrorCode::ComposeMissing,
         if docker_cli_installed {
-            "The Docker CLI is installed without its compose plugin."
+            msg::COMPOSE_PLUGIN_MISSING
         } else {
-            "The docker compose CLI isn't installed on this computer."
+            msg::COMPOSE_MISSING
         },
     )
     .with_hint(install_hint(docker_cli_installed))
     .with_command(install_command(docker_cli_installed))
 }
 
-fn install_hint(docker_cli_installed: bool) -> &'static str {
+fn install_hint(docker_cli_installed: bool) -> Message {
     match (cfg!(target_os = "linux"), docker_cli_installed) {
-        (true, true) => "Install the compose plugin. On Debian or Ubuntu with Docker's repository:",
-        (true, false) => "Install the Docker CLI with its compose plugin. On Debian or Ubuntu with Docker's repository:",
-        (false, _) if cfg!(target_os = "macos") => "Docker Desktop and OrbStack include it. Otherwise, with Homebrew:",
-        _ => "Docker Desktop includes it:",
+        (true, true) => msg::INSTALL_PLUGIN_HINT,
+        (true, false) => msg::INSTALL_CLI_HINT,
+        (false, _) if cfg!(target_os = "macos") => msg::INSTALL_MACOS_HINT,
+        _ => msg::INSTALL_WINDOWS_HINT,
     }
 }
 
@@ -53,16 +55,12 @@ fn install_command(docker_cli_installed: bool) -> &'static str {
 pub(super) fn spawn_failed(program: &str, error: &std::io::Error) -> AppError {
     AppError::new(
         ErrorCode::ComposeSpawnFailed,
-        format!("Homeport couldn't start {program}."),
+        msg::SPAWN_FAILED.with("program", program),
     )
     .with_hint(match error.kind() {
-        std::io::ErrorKind::NotFound => {
-            "It disappeared from the PATH. Reinstall it, then restart Homeport."
-        }
-        std::io::ErrorKind::PermissionDenied => {
-            "Homeport isn't allowed to run it. Check its file permissions."
-        }
-        _ => "Check that it runs from a terminal, then try again.",
+        std::io::ErrorKind::NotFound => msg::SPAWN_FAILED_NOT_FOUND_HINT,
+        std::io::ErrorKind::PermissionDenied => msg::SPAWN_FAILED_PERMISSION_HINT,
+        _ => msg::SPAWN_FAILED_HINT,
     })
     .with_cause(error)
 }
@@ -79,15 +77,17 @@ pub(super) fn exit_failure(
     let exit = code.map_or("was stopped".to_owned(), |c| {
         format!("exited with code {c}")
     });
+    let failed = match code {
+        Some(c) => msg::EXITED.with("verb", verb).with("code", c),
+        None => msg::STOPPED.with("verb", verb),
+    };
 
     let classified = if let Some(name) = missing_variable(&text) {
         AppError::new(
             ErrorCode::ComposeMissingVariable,
-            format!("The variable {name} has no value."),
+            msg::MISSING_VARIABLE.with("name", name),
         )
-        .with_hint(format!(
-            "Add {name}=… to the stack's environment, then try again."
-        ))
+        .with_hint(msg::MISSING_VARIABLE_HINT.with("name", name))
     } else if [
         "yaml:",
         "validating",
@@ -100,29 +100,22 @@ pub(super) fn exit_failure(
     .iter()
     .any(|needle| lower.contains(needle))
     {
-        AppError::new(
-            ErrorCode::ComposeInvalidDefinition,
-            "Compose rejected the stack's definition.",
-        )
-        .with_hint("Fix the problem reported in the output, in the definition editor.")
+        AppError::new(ErrorCode::ComposeInvalidDefinition, msg::INVALID_DEFINITION)
+            .with_hint(msg::INVALID_DEFINITION_HINT)
     } else if lower.contains("cannot connect to the docker daemon")
         || lower.contains("error during connect")
     {
         AppError::new(
             ErrorCode::ConnectionLost,
-            format!("Compose couldn't reach the Docker Engine of {host}."),
+            msg::ENGINE_UNREACHABLE.with("host", host),
         )
-        .with_hint(format!("Check that {host} is connected, then try again."))
+        .with_hint(msg::ENGINE_UNREACHABLE_HINT.with("host", host))
     } else {
         let from_engine = engine::from_message(None, &text);
         if is_specific(from_engine.code) {
             from_engine
         } else {
-            AppError::new(
-                ErrorCode::ComposeFailed,
-                format!("docker compose {verb} {exit}."),
-            )
-            .with_hint("The output above says why.")
+            AppError::new(ErrorCode::ComposeFailed, failed).with_hint(msg::FAILED_HINT)
         }
     };
     classified.with_detail(if text.is_empty() {

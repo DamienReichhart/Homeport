@@ -1,4 +1,5 @@
 import type { AppError, UpdateCheck } from '@/shared/api';
+import { t } from '@/shared/i18n';
 
 /** Where the website lives; the changelog and download page are under it. */
 export const WEBSITE_URL = 'https://damienreichhart.github.io/Homeport';
@@ -14,8 +15,10 @@ export type InstallState =
 
 export function describeProgress(state: InstallState): string | undefined {
   if (state.step === 'downloading')
-    return state.percent === null ? 'Downloading…' : `Downloading… ${state.percent}%`;
-  if (state.step === 'installing') return 'Installing…';
+    return state.percent === null
+      ? t('updates.progress.downloading')
+      : t('updates.progress.downloadingPercent', { percent: state.percent });
+  if (state.step === 'installing') return t('updates.progress.installing');
   return undefined;
 }
 
@@ -23,17 +26,17 @@ export function describeProgress(state: InstallState): string | undefined {
 export function describeMethod(check: UpdateCheck): string {
   switch (check.method.kind) {
     case 'inApp':
-      return 'Updates are downloaded, checked against Homeport’s signing key and installed when you choose.';
+      return t('updates.method.inApp');
     case 'packageManager':
       switch (check.method.manager) {
         case 'scoop':
-          return 'Installed with Scoop: updates come from the Homeport bucket.';
+          return t('updates.method.scoop');
         case 'aur':
-          return 'Installed from the AUR (homeport-bin): your AUR helper installs updates.';
+          return t('updates.method.aur');
         default:
-          return `Installed with ${check.method.manager}: updates come from the Homeport package repository.`;
+          return t('updates.method.packageManager', { manager: check.method.manager });
       }
     case 'manual':
-      return 'This is a development build: download new versions from the website.';
+      return t('updates.method.manual');
   }
 }

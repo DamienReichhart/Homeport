@@ -10,7 +10,7 @@ use homeport_core::{
     host::{HostConnection, HostSecrets},
 };
 
-use crate::{reach, ssh, tls, ConnectError, Dialer, CONNECT_TIMEOUT};
+use crate::{messages as msg, reach, ssh, tls, ConnectError, Dialer, CONNECT_TIMEOUT};
 
 /// Seconds bollard waits for a response before giving up.
 const REQUEST_TIMEOUT_SECS: u64 = 120;
@@ -61,7 +61,7 @@ pub async fn connect(
             )
             .map_err(|e| {
                 ConnectError::Invalid(
-                    AppError::validation("The TCP address isn't valid.").with_cause(&e),
+                    AppError::validation(msg::CONNECT_TCP_ADDRESS_INVALID).with_cause(&e),
                 )
             })?,
             None,
@@ -73,7 +73,13 @@ pub async fn connect(
                 key_pem,
             }) = secrets
             else {
-                return Err(ConnectError::Invalid(AppError::new(ErrorCode::TlsMaterialInvalid, "The TLS certificates are missing.").with_hint("Add the CA certificate, client certificate and client key on the host page.")));
+                return Err(ConnectError::Invalid(
+                    AppError::new(
+                        ErrorCode::TlsMaterialInvalid,
+                        msg::CONNECT_TLS_MATERIAL_MISSING,
+                    )
+                    .with_hint(msg::CONNECT_TLS_MATERIAL_MISSING_HINT),
+                ));
             };
             let dialer: Arc<dyn Dialer> = Arc::new(tls::TlsDialer::new(
                 &label(address),
@@ -113,7 +119,7 @@ pub async fn connect(
         .map_err(|_| {
             ConnectError::Unreachable(AppError::new(
                 ErrorCode::Timeout,
-                "The Docker Engine didn't answer in time.",
+                msg::CONNECT_ENGINE_TIMEOUT,
             ))
         })?
         .map_err(|e| match connection {

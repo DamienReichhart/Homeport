@@ -56,6 +56,8 @@ export const commands = {
 	containersRemove: (hostId: string, id: string, force: boolean, volumes: boolean) => __TAURI_INVOKE<null>("containers_remove", { hostId, id, force, volumes }),
 	containersRename: (hostId: string, id: string, name: string) => __TAURI_INVOKE<null>("containers_rename", { hostId, id, name }),
 	containersProcesses: (hostId: string, id: string) => __TAURI_INVOKE<Processes>("containers_processes", { hostId, id }),
+	/**  A container's healthcheck, status and last results; `None` without one. */
+	containersHealth: (hostId: string, id: string) => __TAURI_INVOKE<Health | null>("containers_health", { hostId, id }),
 	filesList: (hostId: string, containerId: string, path: string) => __TAURI_INVOKE<FileEntry[]>("files_list", { hostId, containerId, path }),
 	/**
 	 *  Saves a container path to `destination`; returns `true` when it was a
@@ -81,6 +83,10 @@ export const commands = {
 	imagesSaveSubscribe: (hostId: string, names: string[], destination: string, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("images_save_subscribe", { hostId, names, destination, onEvent }),
 	/**  Loads the images in a tar file on this machine into a Host, streaming progress. */
 	imagesLoadSubscribe: (hostId: string, source: string, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("images_load_subscribe", { hostId, source, onEvent }),
+	/**  Creates an image from a root filesystem tar on this machine (`docker import`), streaming progress. */
+	imagesImportSubscribe: (hostId: string, source: string, spec: ImportSpec, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("images_import_subscribe", { hostId, source, spec, onEvent }),
+	/**  Saves a container's filesystem to a tar on this machine (`docker export`), streaming progress. */
+	containersExportSubscribe: (hostId: string, id: string, destination: string, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("containers_export_subscribe", { hostId, id, destination, onEvent }),
 	execStart: (hostId: string, containerId: string, options: ExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("exec_start", { hostId, containerId, options, onEvent }),
 	execInput: (session: number, data: string) => __TAURI_INVOKE<null>("exec_input", { session, data }),
 	execResize: (session: number, cols: number, rows: number) => __TAURI_INVOKE<null>("exec_resize", { session, cols, rows }),
@@ -116,6 +122,14 @@ export const commands = {
 	systemPrune: (hostId: string, selection: PruneSelection) => __TAURI_INVOKE<SystemPruneReport>("system_prune", { hostId, selection }),
 	/**  Creates and starts a container; returns its id. */
 	containersRun: (hostId: string, spec: RunSpec) => __TAURI_INVOKE<string>("containers_run", { hostId, spec }),
+	/**  The Run dialog's form for an existing container, for Duplicate and Edit. */
+	containersRunSpec: (hostId: string, id: string) => __TAURI_INVOKE<RunSpec>("containers_run_spec", { hostId, id }),
+	/**  What recreating a container with a changed configuration loses, for Edit's confirmation. */
+	containersEditLosses: (hostId: string, id: string) => __TAURI_INVOKE<Loss[]>("containers_edit_losses", { hostId, id }),
+	/**  Recreates a container from `spec` under the same name (Edit); returns the new id. */
+	containersRecreate: (hostId: string, id: string, spec: RunSpec) => __TAURI_INVOKE<string>("containers_recreate", { hostId, id, spec }),
+	/**  Commits a container to a new image; returns the image's id. */
+	containersCommit: (hostId: string, id: string, spec: CommitSpec) => __TAURI_INVOKE<string>("containers_commit", { hostId, id, spec }),
 	/**  Every Stack on a Host: those running there plus undeployed Managed Stacks. */
 	stacksList: (hostId: string) => __TAURI_INVOKE<Stack[]>("stacks_list", { hostId }),
 	stacksGet: (id: string) => __TAURI_INVOKE<ManagedStack>("stacks_get", { id }),
@@ -145,10 +159,18 @@ export const events = {
 
 /* Types */
 export type AppError = {
+	/**  What failed, for logic: `e.is(ErrorCode::PortInUse)`. */
 	code: ErrorCode,
+	/**
+	 *  The catalogue key of `message` (`errors.*`), which the frontend
+	 *  renders with `params`; empty for text not in the catalogue.
+	 */
+	key: string,
+	params: { [key in string]: Param },
+	/**  In English, for the app log and when the key is unknown. */
 	message: string,
 	hint: Hint | null,
-	/**  The raw cause, for the Details dialog. */
+	/**  The raw cause, for the Details dialog. Never translated. */
 	detail: string | null,
 };
 
@@ -199,6 +221,18 @@ export type Capabilities = {
 	keychain: boolean,
 	/**  Whether Managed Stacks can be deployed here. */
 	compose: ComposeSupport,
+};
+
+export type CommitSpec = {
+	/**  The new image's name, `repo[:tag]`; an existing tag moves to it. */
+	reference: string,
+	/**  The commit message, shown in the image's history. */
+	comment: string | null,
+	author: string | null,
+	/**  Pause the container while committing, so its files are consistent. */
+	pause: boolean,
+	/**  Dockerfile instructions applied to the image, one per entry, like `ENV MODE=prod`. */
+	changes: string[],
 };
 
 export type ComposeAction = 
@@ -277,6 +311,16 @@ export type DetectedEngine = {
 	engineVersion: string,
 };
 
+/**  A device of the Host made available inside the container (`--device`). */
+export type DeviceSpec = {
+	/**  An absolute path under the Host's `/dev`. */
+	hostPath: string,
+	/**  Where it appears in the container; the same path when empty. */
+	containerPath: string | null,
+	/**  Some of `r`, `w` and `m`. */
+	permissions: string,
+};
+
 export type DiskUsage = {
 	images: UsageLine,
 	containers: UsageLine,
@@ -326,7 +370,11 @@ export type EngineInfo = {
 /**  Stable machine-readable identifier of a failure, one per case the user can act on. */
 export type ErrorCode = 
 /**  A failure that started in the frontend, outside any command. */
-"unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | "host_not_connected" | "engine_not_installed" | "engine_not_running" | "permission_denied" | "dns_failed" | "connection_refused" | "timeout" | "network_unreachable" | "connection_lost" | "tls_required" | "tls_not_supported" | "tls_certificate_expired" | "tls_certificate_not_yet_valid" | "tls_unknown_ca" | "tls_name_mismatch" | "tls_client_rejected" | "tls_handshake_failed" | "tls_material_invalid" | "ssh_auth_failed" | "ssh_agent_unavailable" | "ssh_key_invalid" | "ssh_failed" | "remote_engine_unavailable" | "host_key_untrusted" | "host_key_changed" | "engine_error" | "bad_request" | "forbidden" | "conflict" | "name_in_use" | "in_use" | "container_running" | "container_not_running" | "already_done" | "port_in_use" | "disk_full" | "image_not_found" | "registry_auth_required" | "registry_rate_limited" | "registry_unreachable" | "registry_login_failed" | "api_version_unsupported" | "build_failed" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
+"unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | "host_not_connected" | "engine_not_installed" | "engine_not_running" | "permission_denied" | "dns_failed" | "connection_refused" | "timeout" | "network_unreachable" | "connection_lost" | "tls_required" | "tls_not_supported" | "tls_certificate_expired" | "tls_certificate_not_yet_valid" | "tls_unknown_ca" | "tls_name_mismatch" | "tls_client_rejected" | "tls_handshake_failed" | "tls_material_invalid" | "ssh_auth_failed" | "ssh_agent_unavailable" | "ssh_key_invalid" | "ssh_failed" | "remote_engine_unavailable" | "host_key_untrusted" | "host_key_changed" | "engine_error" | "bad_request" | "forbidden" | "conflict" | "name_in_use" | "in_use" | "container_running" | "container_not_running" | "already_done" | "port_in_use" | "disk_full" | "image_not_found" | "registry_auth_required" | "registry_rate_limited" | "registry_unreachable" | "registry_login_failed" | "api_version_unsupported" | "build_failed" | 
+/**  A GPU was requested from a Host without the vendor's container toolkit. */
+"gpu_unavailable" | 
+/**  Recreating a container failed, and so did putting the original back. */
+"recreate_rolled_back" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
 
 export type ExecEvent = { type: "output"; data: string } | 
 /**  `error` explains an exit that means the command couldn't run. */
@@ -366,10 +414,63 @@ export type FreshnessResult = {
 	freshness: Freshness,
 };
 
+/**  GPUs requested from the vendor's container toolkit (`--gpus`). */
+export type GpuSpec = { kind: "all" } | { kind: "count"; count: number } | { kind: "ids"; ids: string[] };
+
+export type Health = {
+	/**  `starting`, `healthy` or `unhealthy`. */
+	status: string,
+	/**  Failed checks in a row. */
+	failingStreak: number,
+	config: HealthConfig,
+	/**  The last results the Engine keeps (up to five), newest first. */
+	log: HealthResult[],
+};
+
+export type HealthConfig = {
+	/**
+	 *  The check as it would be typed: the shell command for `CMD-SHELL`, the
+	 *  arguments quoted for `CMD`.
+	 */
+	command: string,
+	/**  `None` where the Engine's default applies (30 s, 30 s, 3, 0 s). */
+	intervalS: number | null,
+	timeoutS: number | null,
+	retries: number | null,
+	startPeriodS: number | null,
+};
+
+export type HealthResult = {
+	/**  RFC 3339 times. */
+	start: string,
+	end: string,
+	exitCode: number,
+	output: string,
+};
+
+/**  A healthcheck run in the container's shell (`--health-cmd` and friends). */
+export type HealthcheckSpec = {
+	/**  Run with `/bin/sh -c`; ignored when `disabled`. */
+	command: string,
+	intervalS: number | null,
+	timeoutS: number | null,
+	retries: number | null,
+	startPeriodS: number | null,
+	/**  Turns off the image's own healthcheck (`--no-healthcheck`). */
+	disabled: boolean,
+};
+
 /**  What the user can do about a failure. */
 export type Hint = {
+	/**  The catalogue key of `text`; empty for text not in the catalogue. */
+	key: string,
+	params: { [key in string]: Param },
+	/**  In English, for the log and when the key is unknown. */
 	text: string,
-	/**  Commands to run, each possibly spanning several lines. May be empty. */
+	/**
+	 *  Commands to run, each possibly spanning several lines. May be empty.
+	 *  Never translated.
+	 */
 	commands: string[],
 };
 
@@ -454,6 +555,14 @@ export type ImageLayer = {
 	tags: string[],
 };
 
+/**  What [`import`] makes: the image's name and Dockerfile changes. */
+export type ImportSpec = {
+	/**  `repo[:tag]` for the new image. */
+	reference: string,
+	/**  Dockerfile instructions, one per entry, like `CMD ["/bin/sh"]`. */
+	changes: string[],
+};
+
 export type Licenses = {
 	/**  Homeport's own license (`LICENSE`). */
 	app: string,
@@ -489,6 +598,24 @@ export type LogSource = {
 	/**  Shown in front of each line when several sources share a stream. */
 	label: string | null,
 };
+
+/**  Where the container's output goes (`--log-driver`, `--log-opt`). */
+export type LogSpec = {
+	driver: string,
+	/**  `key=value` driver options, such as `max-size=10m`. */
+	options: string[],
+};
+
+/**  Something the recreated container won't have, for the confirmation. */
+export type Loss = 
+/**  An anonymous volume: the new container gets an empty one at `path`. */
+{ kind: "anonymousVolume"; path: string } | 
+/**  Files changed inside the container since it was created. */
+{ kind: "filesystemChanges"; count: number } | 
+/**  It runs now, so it stops for as long as the swap takes. */
+{ kind: "downtime" } | 
+/**  It belongs to a Stack, whose next deploy recreates it from compose. */
+{ kind: "stackRedeploy"; stack: string };
 
 export type ManagedStack = {
 	id: string,
@@ -534,6 +661,9 @@ export type NetworkView = {
 };
 
 export type PackageManager = "apt" | "dnf" | "zypper" | "scoop" | "aur";
+
+/**  A parameter of a message: text such as a Host's name, or a number. */
+export type Param = string | number;
 
 export type PortBinding = {
 	ip: string | null,
@@ -615,6 +745,40 @@ export type RunSpec = {
 	restart: RestartPolicy,
 	/**  Remove the container when it exits (`--rm`). */
 	autoRemove: boolean,
+	/**  CPUs the container may use, such as `0.5` (`--cpus`). */
+	cpus: number | null,
+	/**  Relative CPU weight against other containers; 1024 is the default (`--cpu-shares`). */
+	cpuShares: number | null,
+	/**  Memory limit in bytes (`--memory`). */
+	memory: number | null,
+	/**  Soft memory limit in bytes (`--memory-reservation`). */
+	memoryReservation: number | null,
+	/**  Memory plus swap in bytes, `-1` for unlimited swap (`--memory-swap`). */
+	memorySwap: number | null,
+	/**  `key=value` entries. */
+	labels: string[],
+	/**  Capabilities, with or without their `CAP_` prefix, or `ALL`. */
+	capAdd: string[],
+	capDrop: string[],
+	/**  Gives the container full access to the Host (`--privileged`). */
+	privileged: boolean,
+	devices: DeviceSpec[],
+	gpus: GpuSpec | null,
+	healthcheck: HealthcheckSpec | null,
+	hostname: string | null,
+	domainname: string | null,
+	/**  DNS server addresses. */
+	dns: string[],
+	dnsSearch: string[],
+	/**  `name:address` entries for `/etc/hosts`; `host-gateway` is the Host's address. */
+	extraHosts: string[],
+	log: LogSpec | null,
+	/**
+	 *  Start from this container's full configuration and apply the spec on
+	 *  top, so settings the dialog doesn't show (ulimits, sysctls, security
+	 *  options, tmpfs, other networks…) are kept.
+	 */
+	basedOn: string | null,
 };
 
 /**  A Docker Hub repository found by a search. */
@@ -713,7 +877,7 @@ export type TransferEvent =
 { type: "progress"; bytes: number; total: number | null } | 
 /**  A line from the Engine, such as `Loaded image: nginx:1.27`. */
 { type: "line"; text: string } | 
-/**  Finished; `images` are the names saved or loaded. */
+/**  Finished; `images` are the names saved, loaded or imported (none for an export). */
 { type: "done"; images: string[] } | { type: "error"; error: AppError };
 
 export type UpdateCheck = {

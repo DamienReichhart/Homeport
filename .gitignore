@@ -13,3 +13,4 @@ coverage/
 .idea/
 src-tauri/licenses/
 .astro/
+.claude/worktrees/

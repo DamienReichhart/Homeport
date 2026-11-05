@@ -1,0 +1,37 @@
+//! The error messages of this crate, by catalogue key and English template
+//! (ADR 0011). `bun run bindings` writes them to the frontend's catalogue.
+
+homeport_core::messages! {
+    /// A Host that was connected stopped answering.
+    CONNECTION_LOST = "errors.hosts.connectionLost" => "Homeport lost the connection to {name}.";
+    CONNECTION_LOST_HINT = "errors.hosts.connectionLost.hint" => "The Docker Engine or the network may have restarted. Homeport keeps retrying.";
+    /// A command for a Host that isn't connected.
+    NOT_CONNECTED = "errors.hosts.notConnected" => "{name} isn't connected.";
+    /// A command for a Host that isn't connected and is no longer stored.
+    NOT_CONNECTED_UNKNOWN = "errors.hosts.notConnectedUnknown" => "This host isn't connected.";
+    /// …because it's disabled.
+    NOT_CONNECTED_DISABLED_HINT = "errors.hosts.notConnected.hintDisabled" => "Enable the host on its page to use it.";
+    /// …because Homeport is still connecting.
+    NOT_CONNECTED_CONNECTING_HINT = "errors.hosts.notConnected.hintConnecting" => "Homeport is still connecting; try again in a moment.";
+    /// …for another reason, shown on its page.
+    NOT_CONNECTED_HINT = "errors.hosts.notConnected.hint" => "Open the host's page to see why and fix it.";
+    /// Saving a TLS Host with SSH credentials.
+    TLS_NEEDS_CERTIFICATES = "errors.hosts.tlsNeedsCertificates" => "TLS hosts need certificates.";
+    /// Saving an SSH Host with TLS credentials.
+    SSH_NEEDS_PRIVATE_KEY = "errors.hosts.sshNeedsPrivateKey" => "SSH hosts need a private key.";
+    /// Trusting text that isn't an SSH public key.
+    NOT_A_PUBLIC_KEY = "errors.hosts.notAPublicKey" => "That isn't an SSH public key.";
+    /// Generating a key for a Host that doesn't use SSH.
+    KEYS_ONLY_FOR_SSH = "errors.hosts.keysOnlyForSsh" => "Only SSH hosts use keys.";
+    /// Asking for the setup of a key Homeport didn't generate.
+    NO_MANAGED_KEY = "errors.hosts.noManagedKey" => "This host doesn't use a Homeport-managed SSH key.";
+    /// A Host removed while it was in use.
+    GONE = "errors.hosts.gone" => "This host no longer exists.";
+    /// Saving a connection that needs credentials without them.
+    NEEDS_CREDENTIALS = "errors.hosts.needsCredentials" => "This connection needs credentials.";
+    /// Saving a Host without a name.
+    NAME_EMPTY = "errors.hosts.nameEmpty" => "Give the host a name.";
+    /// Saving a Host under a name another one has.
+    NAME_IN_USE = "errors.hosts.nameInUse" => "A host named \"{name}\" already exists.";
+    NAME_IN_USE_HINT = "errors.hosts.nameInUse.hint" => "Pick another name.";
+}

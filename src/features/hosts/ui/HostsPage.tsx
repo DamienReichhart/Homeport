@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useHosts } from '@/core/host';
 import { Button, DataTable, ErrorMessage, PageHeader } from '@/shared/ui';
 import { hostColumns } from './hostColumns';
+import { t } from '@/shared/i18n';
 
 export function HostsPage() {
   const hosts = useHosts();
@@ -10,12 +11,12 @@ export function HostsPage() {
   return (
     <div>
       <PageHeader
-        title="Hosts"
-        description="The Docker Engines Homeport connects to."
+        title={t('hosts.title')}
+        description={t('hosts.description')}
         actions={
           <Button asChild>
             <Link to="/hosts/new">
-              <PlusIcon /> Add host
+              <PlusIcon /> {t('hosts.add')}
             </Link>
           </Button>
         }
@@ -24,11 +25,11 @@ export function HostsPage() {
         <ErrorMessage error={hosts.error} onRetry={() => void hosts.refetch()} />
       ) : (
         <DataTable
-          columns={hostColumns}
+          columns={hostColumns()}
           data={hosts.data ?? []}
           getRowId={(v) => v.host.id}
           onRowClick={(v) => navigate(`/hosts/${v.host.id}`)}
-          empty="No hosts yet."
+          empty={t('hosts.empty')}
         />
       )}
     </div>

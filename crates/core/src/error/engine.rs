@@ -4,6 +4,7 @@
 //! [`from_message`] is shared with them.
 
 use super::{reach, AppError, ErrorCode};
+use crate::messages as msg;
 
 impl From<bollard::errors::Error> for AppError {
     fn from(e: bollard::errors::Error) -> Self {
@@ -27,35 +28,27 @@ pub fn from_bollard(error: &bollard::errors::Error) -> AppError {
         Error::DockerStreamError { error: message } => {
             from_message(None, message).with_detail(message)
         }
-        Error::RequestTimeoutError => AppError::new(
-            ErrorCode::Timeout,
-            "The Docker Engine didn't answer in time.",
-        )
-        .with_hint("It may be busy. Try again in a moment.")
-        .with_cause(error),
-        Error::JsonDataError { .. } | Error::JsonSerdeError { .. } => AppError::new(
-            ErrorCode::EngineError,
-            "The Docker Engine sent an answer Homeport can't read.",
-        )
-        .with_hint("The Engine may be much newer or older than Homeport supports. Updating both usually helps.")
-        .with_cause(error),
+        Error::RequestTimeoutError => AppError::new(ErrorCode::Timeout, msg::ENGINE_TIMEOUT)
+            .with_hint(msg::ENGINE_TIMEOUT_HINT)
+            .with_cause(error),
+        Error::JsonDataError { .. } | Error::JsonSerdeError { .. } => {
+            AppError::new(ErrorCode::EngineError, msg::ENGINE_UNREADABLE)
+                .with_hint(msg::ENGINE_UNREADABLE_HINT)
+                .with_cause(error)
+        }
         Error::APIVersionParseError {} => AppError::new(
             ErrorCode::ApiVersionUnsupported,
-            "The Docker Engine reported an API version Homeport can't read.",
+            msg::API_VERSION_UNREADABLE,
         )
         .with_cause(error),
         _ => match reach::io_cause(error).map(std::io::Error::kind) {
             Some(std::io::ErrorKind::NotFound | std::io::ErrorKind::ConnectionRefused) => {
-                AppError::new(
-                    ErrorCode::EngineNotRunning,
-                    "The Docker Engine stopped answering.",
-                )
-                .with_hint("Check that it's still running. Homeport reconnects on its own.")
-                .with_cause(error)
+                AppError::new(ErrorCode::EngineNotRunning, msg::ENGINE_STOPPED)
+                    .with_hint(msg::ENGINE_STOPPED_HINT)
+                    .with_cause(error)
             }
-            Some(_) => reach::connection_lost("the Docker Engine").with_cause(error),
-            None => AppError::new(ErrorCode::EngineError, "The Docker Engine request failed.")
-                .with_cause(error),
+            Some(_) => reach::engine_connection_lost().with_cause(error),
+            None => AppError::new(ErrorCode::EngineError, msg::REQUEST_FAILED).with_cause(error),
         },
     }
 }
@@ -68,31 +61,22 @@ pub fn from_message(status: Option<u16>, message: &str) -> AppError {
 
     if has("port is already allocated") || has("address already in use") {
         let what = match port_in(message) {
-            Some(port) => format!("Port {port} is already in use."),
-            None => "A published port is already in use.".to_owned(),
+            Some(port) => msg::PORT_IN_USE.with("port", port),
+            None => msg::PUBLISHED_PORT_IN_USE.into(),
         };
-        return AppError::new(ErrorCode::PortInUse, what).with_hint(
-            "Stop the container or program that uses it, or publish this container on another port.",
-        );
+        return AppError::new(ErrorCode::PortInUse, what).with_hint(msg::PORT_IN_USE_HINT);
     }
     if has("no space left on device") {
-        return AppError::new(ErrorCode::DiskFull, "The Docker Engine is out of disk space.").with_hint(
-            "Remove unused images, containers and volumes (Prune on the Overview page), or free space on the machine it runs on.",
-        );
+        return AppError::new(ErrorCode::DiskFull, msg::ENGINE_DISK_FULL)
+            .with_hint(msg::ENGINE_DISK_FULL_HINT);
     }
     if has("toomanyrequests") || has("pull rate limit") || has("429 too many requests") {
-        return AppError::new(
-            ErrorCode::RegistryRateLimited,
-            "The registry's pull limit was reached.",
-        )
-        .with_hint("Docker Hub limits anonymous pulls. Wait for the limit to reset (up to 6 hours), or add a Docker Hub login in Settings → Registries, which raises the limit.");
+        return AppError::new(ErrorCode::RegistryRateLimited, msg::RATE_LIMITED)
+            .with_hint(msg::RATE_LIMITED_HINT);
     }
     if has("incorrect username or password") {
-        return AppError::new(
-            ErrorCode::RegistryLoginFailed,
-            "The registry refused the stored user name and password.",
-        )
-        .with_hint("Check the login for this registry in Settings → Registries.");
+        return AppError::new(ErrorCode::RegistryLoginFailed, msg::LOGIN_FAILED)
+            .with_hint(msg::LOGIN_FAILED_HINT);
     }
     if has("pull access denied")
         || has("push access denied")
@@ -101,21 +85,15 @@ pub fn from_message(status: Option<u16>, message: &str) -> AppError {
         || has("authentication required")
         || has("unauthorized: ")
     {
-        return AppError::new(
-            ErrorCode::RegistryAuthRequired,
-            "The image doesn't exist, or it's private.",
-        )
-        .with_hint("Check the image name. If it's private, add a login for its registry in Settings → Registries.");
+        return AppError::new(ErrorCode::RegistryAuthRequired, msg::AUTH_REQUIRED)
+            .with_hint(msg::AUTH_REQUIRED_HINT);
     }
     if has("manifest unknown") || (has("manifest for") && has("not found")) {
-        return AppError::new(ErrorCode::ImageNotFound, "This image or tag doesn't exist.")
-            .with_hint("Check the image name and tag on the registry.");
+        return AppError::new(ErrorCode::ImageNotFound, msg::IMAGE_OR_TAG_MISSING)
+            .with_hint(msg::IMAGE_OR_TAG_MISSING_HINT);
     }
     if has("no such image") {
-        return AppError::new(
-            ErrorCode::ImageNotFound,
-            "This image no longer exists on the Docker Engine.",
-        );
+        return AppError::new(ErrorCode::ImageNotFound, msg::IMAGE_GONE);
     }
     if (has("dial tcp")
         || has("i/o timeout")
@@ -123,128 +101,109 @@ pub fn from_message(status: Option<u16>, message: &str) -> AppError {
         || has("no such host"))
         && (has("registry") || has("/v2/") || has("https://"))
     {
-        return AppError::new(
-            ErrorCode::RegistryUnreachable,
-            "The Docker Engine can't reach the image registry.",
-        )
-        .with_hint("Check the internet access, DNS and proxy settings of the machine it runs on.");
+        return AppError::new(ErrorCode::RegistryUnreachable, msg::REGISTRY_UNREACHABLE)
+            .with_hint(msg::REGISTRY_UNREACHABLE_HINT);
     }
     if has("invalid reference format") {
-        return AppError::new(ErrorCode::BadRequest, "That image name isn't valid.").with_hint(
-            "Use a name like nginx:1.27 or registry.example.com/team/app:tag, in lower case.",
-        );
+        return AppError::new(ErrorCode::BadRequest, msg::INVALID_IMAGE_NAME)
+            .with_hint(msg::INVALID_IMAGE_NAME_HINT);
     }
     if has("client sent an http request to an https server") {
-        return AppError::new(
-            ErrorCode::TlsRequired,
-            "This Docker Engine only accepts TLS connections.",
-        )
-        .with_hint(
-            "Change the connection to TLS on the host page and add the Engine's certificates.",
-        );
+        return AppError::new(ErrorCode::TlsRequired, msg::TLS_REQUIRED)
+            .with_hint(msg::TLS_REQUIRED_HINT);
     }
     if has("client version") && (has("too new") || has("too old"))
         || has("minimum supported api version")
     {
         return AppError::new(
             ErrorCode::ApiVersionUnsupported,
-            "This Docker Engine's API version isn't supported.",
+            msg::API_VERSION_UNSUPPORTED,
         )
-        .with_hint("Update the Docker Engine.");
+        .with_hint(msg::API_VERSION_UNSUPPORTED_HINT);
+    }
+    if has("could not select device driver") {
+        return AppError::new(ErrorCode::GpuUnavailable, msg::GPU_UNAVAILABLE)
+            .with_hint(msg::GPU_UNAVAILABLE_HINT);
+    }
+    if has("range of cpus is from") {
+        let what = match cpus_in(message) {
+            Some(1) => msg::CPUS_LIMITED_ONE.with("cpus", 1),
+            Some(cpus) => msg::CPUS_LIMITED.with("cpus", cpus),
+            None => msg::CPUS_FEWER.into(),
+        };
+        return AppError::new(ErrorCode::BadRequest, what).with_hint(msg::CPUS_LIMITED_HINT);
     }
     if has("is already in use by container") || has("conflict. the container name") {
-        return AppError::new(ErrorCode::NameInUse, "That container name is already used.")
-            .with_hint("Pick another name, or remove or rename the other container first.");
+        return AppError::new(ErrorCode::NameInUse, msg::CONTAINER_NAME_IN_USE)
+            .with_hint(msg::CONTAINER_NAME_IN_USE_HINT);
     }
     if has("volume is in use") {
-        return AppError::new(ErrorCode::InUse, "This volume is used by a container.")
-            .with_hint("Remove the containers that use it first.");
+        return AppError::new(ErrorCode::InUse, msg::VOLUME_IN_USE)
+            .with_hint(msg::VOLUME_IN_USE_HINT);
     }
     if has("has active endpoints") {
-        return AppError::new(
-            ErrorCode::InUse,
-            "This network still has containers attached.",
-        )
-        .with_hint("Disconnect or remove its containers first.");
+        return AppError::new(ErrorCode::InUse, msg::NETWORK_IN_USE)
+            .with_hint(msg::NETWORK_IN_USE_HINT);
     }
     if has("referenced in multiple repositories") {
-        return AppError::new(ErrorCode::InUse, "This image has several tags.")
-            .with_hint("Force the removal to delete every tag, or remove the tags one by one.");
+        return AppError::new(ErrorCode::InUse, msg::IMAGE_SEVERAL_TAGS)
+            .with_hint(msg::IMAGE_SEVERAL_TAGS_HINT);
     }
     if has("image is being used by") || has("unable to remove repository reference") {
-        return AppError::new(ErrorCode::InUse, "This image is used by a container.")
-            .with_hint("Remove the containers that use it, or force the removal.");
+        return AppError::new(ErrorCode::InUse, msg::IMAGE_IN_USE)
+            .with_hint(msg::IMAGE_IN_USE_HINT);
     }
     if has("container is running") || has("cannot remove a running container") {
-        return AppError::new(ErrorCode::ContainerRunning, "The container is running.")
-            .with_hint("Stop it first, or remove it with force.");
+        return AppError::new(ErrorCode::ContainerRunning, msg::CONTAINER_RUNNING)
+            .with_hint(msg::CONTAINER_RUNNING_HINT);
     }
     if has("is not running") {
-        return AppError::new(
-            ErrorCode::ContainerNotRunning,
-            "The container isn't running.",
-        )
-        .with_hint("Start it first.");
+        return AppError::new(ErrorCode::ContainerNotRunning, msg::CONTAINER_NOT_RUNNING)
+            .with_hint(msg::CONTAINER_NOT_RUNNING_HINT);
     }
     if has("is already paused") || has("is not paused") || status == Some(304) {
-        return AppError::new(
-            ErrorCode::AlreadyDone,
-            "The container is already in that state.",
-        );
+        return AppError::new(ErrorCode::AlreadyDone, msg::ALREADY_IN_STATE);
     }
     if has("executable file not found") {
         return command_not_found();
     }
     if has("could not find the file") || has("no such file or directory") {
-        return AppError::new(
-            ErrorCode::PathNotFound,
-            "That path doesn't exist in the container.",
-        );
+        return AppError::new(ErrorCode::PathNotFound, msg::PATH_MISSING);
     }
     if has("no such container") {
-        return AppError::not_found("This container no longer exists.")
-            .with_hint("It was probably removed elsewhere. The list refreshes on its own.");
+        return AppError::not_found(msg::CONTAINER_GONE).with_hint(msg::CONTAINER_GONE_HINT);
     }
     if has("no such volume") {
-        return AppError::not_found("This volume no longer exists.");
+        return AppError::not_found(msg::VOLUME_GONE);
     }
     if has("network") && has("not found") {
-        return AppError::not_found("This network no longer exists.");
+        return AppError::not_found(msg::NETWORK_GONE);
     }
 
     // Unrecognised answers: the Engine's own words stay in the detail.
-    let details = "The Docker Engine's exact answer is in Details.";
     match status {
-        Some(400) => AppError::new(
-            ErrorCode::BadRequest,
-            "The Docker Engine rejected the request as invalid.",
-        )
-        .with_hint(details),
-        Some(401 | 403) => AppError::new(
-            ErrorCode::Forbidden,
-            "The Docker Engine refused to do this.",
-        )
-        .with_hint("An authorisation plugin or a rootless Docker Engine may forbid it. The exact answer is in Details."),
-        Some(404) => AppError::not_found("This no longer exists on the Docker Engine.")
-            .with_hint("It was probably removed elsewhere. The lists refresh on their own."),
-        Some(409) => AppError::new(
-            ErrorCode::Conflict,
-            "This clashes with the current state of the Docker Engine.",
-        )
-        .with_hint(details),
-        _ => AppError::new(ErrorCode::EngineError, "The Docker Engine failed to do this.")
-            .with_hint(details),
+        Some(400) => {
+            AppError::new(ErrorCode::BadRequest, msg::BAD_REQUEST).with_hint(msg::FAILED_HINT)
+        }
+        Some(401 | 403) => {
+            AppError::new(ErrorCode::Forbidden, msg::FORBIDDEN).with_hint(msg::FORBIDDEN_HINT)
+        }
+        Some(404) => AppError::not_found(msg::GONE).with_hint(msg::GONE_HINT),
+        Some(409) => AppError::new(ErrorCode::Conflict, msg::CONFLICT).with_hint(msg::FAILED_HINT),
+        _ => AppError::new(ErrorCode::EngineError, msg::FAILED).with_hint(msg::FAILED_HINT),
     }
 }
 
 /// A command that doesn't exist in the container, often a shell missing from
 /// a minimal image.
 pub fn command_not_found() -> AppError {
-    AppError::new(
-        ErrorCode::NoShell,
-        "That command doesn't exist in the container.",
-    )
-    .with_hint("Minimal images may have no shell or tools. Try /bin/sh, or another command.")
+    AppError::new(ErrorCode::NoShell, msg::COMMAND_NOT_FOUND).with_hint(msg::COMMAND_NOT_FOUND_HINT)
+}
+
+/// The CPU count in "Range of CPUs is from 0.01 to 4.00, as there are only 4 CPUs available".
+fn cpus_in(message: &str) -> Option<u32> {
+    let rest = &message[message.find("only ")? + "only ".len()..];
+    rest.split(' ').next()?.parse().ok()
 }
 
 /// The host port in "Bind for 0.0.0.0:8080 failed" or "listen tcp4 0.0.0.0:80: bind…".
@@ -298,6 +257,8 @@ mod tests {
             (400, "Client sent an HTTP request to an HTTPS server.", ErrorCode::TlsRequired),
             (403, "authorization denied by plugin opa", ErrorCode::Forbidden),
             (500, "OCI runtime exec failed: exec failed: unable to start container process: exec: \"bash\": executable file not found in $PATH: unknown", ErrorCode::NoShell),
+            (500, "could not select device driver \"\" with capabilities: [[gpu]]", ErrorCode::GpuUnavailable),
+            (400, "Range of CPUs is from 0.01 to 4.00, as there are only 4 CPUs available", ErrorCode::BadRequest),
             (500, "something odd", ErrorCode::EngineError),
         ] {
             let e = engine(status, message);
@@ -316,6 +277,8 @@ mod tests {
             "Bind for 0.0.0.0:8080 failed: port is already allocated",
         );
         assert_eq!(e.message, "Port 8080 is already in use.");
+        assert_eq!(e.key, "errors.engine.portInUse");
+        assert_eq!(e.params["port"], super::super::Param::Number(8080));
         let e = engine(500, "listen tcp4 0.0.0.0:80: bind: address already in use");
         assert_eq!(e.message, "Port 80 is already in use.");
     }
@@ -331,6 +294,21 @@ mod tests {
     }
 
     #[test]
+    fn too_many_cpus_names_the_hosts_count() {
+        let e = engine(
+            400,
+            "Range of CPUs is from 0.01 to 4.00, as there are only 4 CPUs available",
+        );
+        assert_eq!(e.message, "This host has only 4 CPUs to give a container.");
+        assert_eq!(e.params["cpus"], super::super::Param::Number(4));
+        let e = engine(
+            400,
+            "Range of CPUs is from 0.01 to 1.00, as there are only 1 CPUs available",
+        );
+        assert_eq!(e.message, "This host has only 1 CPU to give a container.");
+    }
+
+    #[test]
     fn invalid_image_names_say_how_to_write_one() {
         let e = engine(400, "invalid reference format");
         assert_eq!(e.message, "That image name isn't valid.");
@@ -338,10 +316,7 @@ mod tests {
 
     #[test]
     fn errors_classified_by_a_dialer_survive_bollard() {
-        let classified = AppError::new(
-            ErrorCode::SshAuthFailed,
-            "The SSH server refused to let me@prod log in.",
-        );
+        let classified = reach::connection_lost("prod (10.0.0.2)");
         let e = bollard::errors::Error::IOError {
             err: std::io::Error::new(std::io::ErrorKind::ConnectionRefused, classified.clone()),
         };

@@ -1,9 +1,12 @@
 //! Containers: listing, inspection and lifecycle here; what runs inside one
 //! (exec, files, logs, stats) and creating one (`run`) in submodules.
 
+pub mod commit;
 pub mod exec;
 pub mod files;
+pub mod health;
 pub mod logs;
+pub mod recreate;
 pub mod run;
 pub mod stats;
 
@@ -21,6 +24,8 @@ use bollard::{
 use serde::{Deserialize, Serialize};
 
 use homeport_core::error::{AppError, AppResult, ErrorCode};
+
+use crate::messages as msg;
 
 use crate::{COMPOSE_PROJECT, COMPOSE_SERVICE};
 
@@ -189,7 +194,7 @@ pub async fn remove(docker: &Docker, id: &str, force: bool, volumes: bool) -> Ap
 pub async fn rename(docker: &Docker, id: &str, name: &str) -> AppResult<()> {
     let name = name.trim().trim_start_matches('/');
     if name.is_empty() {
-        return Err(AppError::validation("Enter a name."));
+        return Err(AppError::validation(msg::RENAME_EMPTY));
     }
     let options = RenameContainerOptionsBuilder::default().name(name).build();
     Ok(docker.rename_container(id, options).await?)

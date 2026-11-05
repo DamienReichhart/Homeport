@@ -8,6 +8,7 @@ use russh::client::Handle;
 use homeport_core::error::{AppError, ErrorCode};
 
 use super::{dialer::SshTarget, host_key::ServerKeyCheck};
+use crate::messages as msg;
 
 /// How long the server may take to describe its Engine socket.
 const PROBE_TIMEOUT: Duration = Duration::from_secs(5);
@@ -88,34 +89,47 @@ pub(super) fn socket_unavailable(
         Some(RemoteSocket::Usable) => forwarding_disabled(host),
         Some(RemoteSocket::Missing) => AppError::new(
             ErrorCode::EngineNotInstalled,
-            format!("The Docker Engine isn't installed on {host}."),
+            msg::SSH_ENGINE_NOT_INSTALLED.with("host", host),
         )
-        .with_hint(format!(
-            "Install it on {host}, for example with Docker's install script, then let {user} use it:"
-        ))
+        .with_hint(
+            msg::SSH_ENGINE_NOT_INSTALLED_HINT
+                .with("host", host)
+                .with("user", user),
+        )
         .with_command("curl -fsSL https://get.docker.com | sh\nsudo systemctl enable --now docker")
         .with_command(format!("sudo usermod -aG docker {user}")),
         Some(RemoteSocket::Stopped) => AppError::new(
             ErrorCode::EngineNotRunning,
-            format!("The Docker Engine isn't running on {host}: nothing listens at {socket}."),
+            msg::SSH_ENGINE_NOT_RUNNING
+                .with("host", host)
+                .with("path", socket),
         )
-        .with_hint(format!("Start it on {host}, and have it start with the machine:"))
+        .with_hint(msg::SSH_ENGINE_NOT_RUNNING_HINT.with("host", host))
         .with_command("sudo systemctl enable --now docker"),
         Some(RemoteSocket::Denied) => AppError::new(
             ErrorCode::PermissionDenied,
-            format!("{user} isn't allowed to use the Docker Engine on {host}."),
+            msg::SSH_ENGINE_PERMISSION_DENIED
+                .with("user", user)
+                .with("host", host),
         )
-        .with_hint(format!(
-            "On {host}, add {user} to the docker group. It applies to new logins, so reconnect afterwards:"
-        ))
+        .with_hint(
+            msg::SSH_ENGINE_PERMISSION_DENIED_HINT
+                .with("host", host)
+                .with("user", user),
+        )
         .with_command(format!("sudo usermod -aG docker {user}")),
         None => AppError::new(
             ErrorCode::RemoteEngineUnavailable,
-            format!("{user} can't open the Docker Engine socket at {socket} on {host}."),
+            msg::SSH_SOCKET_UNAVAILABLE
+                .with("user", user)
+                .with("path", socket)
+                .with("host", host),
         )
-        .with_hint(format!(
-            "Check that the Docker Engine runs on {host} and that {user} may use it. On {host}, run:"
-        ))
+        .with_hint(
+            msg::SSH_SOCKET_UNAVAILABLE_HINT
+                .with("host", host)
+                .with("user", user),
+        )
         .with_command("sudo systemctl enable --now docker")
         .with_command(format!("sudo usermod -aG docker {user}")),
     };
@@ -125,11 +139,9 @@ pub(super) fn socket_unavailable(
 fn forwarding_disabled(host: &str) -> AppError {
     AppError::new(
         ErrorCode::RemoteEngineUnavailable,
-        format!("The SSH server on {host} doesn't allow forwarding to the Docker Engine socket."),
+        msg::SSH_FORWARDING_DISABLED.with("host", host),
     )
-    .with_hint(format!(
-        "Allow it in sshd's configuration on {host}, then restart sshd (the service is \"sshd\" on some systems):"
-    ))
+    .with_hint(msg::SSH_FORWARDING_DISABLED_HINT.with("host", host))
     .with_command(
         "echo 'AllowStreamLocalForwarding yes' | sudo tee /etc/ssh/sshd_config.d/homeport.conf\nsudo systemctl restart ssh",
     )

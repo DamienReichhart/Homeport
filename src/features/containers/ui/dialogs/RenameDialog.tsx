@@ -11,6 +11,7 @@ import {
   Input,
 } from '@/shared/ui';
 import { useRenameContainer } from '../../api/mutations';
+import { t } from '@/shared/i18n';
 
 export function RenameDialog({
   hostId,
@@ -27,7 +28,7 @@ export function RenameDialog({
     <Dialog open={container !== null} onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Rename {container?.name}</DialogTitle>
+          <DialogTitle>{t('containers.rename.title', { name: container?.name })}</DialogTitle>
         </DialogHeader>
         <form
           className="grid gap-3"
@@ -40,15 +41,15 @@ export function RenameDialog({
             value={name}
             onChange={(e) => setName(e.target.value)}
             autoFocus
-            aria-label="New name"
+            aria-label={t('containers.rename.newName')}
           />
           {rename.error && <ErrorMessage error={rename.error} />}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={onClose}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={rename.isPending}>
-              Rename
+              {t('containers.action.rename')}
             </Button>
           </DialogFooter>
         </form>

@@ -8,6 +8,8 @@ use rusqlite::{OptionalExtension, Row};
 use serde::{Deserialize, Serialize};
 
 use homeport_core::error::{AppError, AppResult, ErrorCode};
+
+use crate::messages as msg;
 use homeport_storage::{Db, SecretBox};
 
 use crate::address;
@@ -104,8 +106,7 @@ impl RegistryStore {
         let secret = draft.secret.filter(|s| !s.is_empty());
         let result = match id {
             None => {
-                let secret = secret
-                    .ok_or_else(|| AppError::validation("Enter the password or access token."))?;
+                let secret = secret.ok_or_else(|| AppError::validation(msg::SECRET_EMPTY))?;
                 let sealed = self.secrets.seal(secret.as_bytes())?;
                 let id = uuid::Uuid::new_v4().to_string();
                 self.db
@@ -143,14 +144,9 @@ impl RegistryStore {
             }
         };
         let id = result.map_err(|e| match e.code {
-            ErrorCode::NameInUse => AppError {
-                message: format!("A login for {address} is already stored."),
-                hint: Some(homeport_core::error::Hint {
-                    text: "Edit that login instead.".into(),
-                    commands: vec![],
-                }),
-                ..e
-            },
+            ErrorCode::NameInUse => e
+                .with_message(msg::LOGIN_EXISTS.with("address", &address))
+                .with_hint(msg::LOGIN_EXISTS_HINT),
             _ => e,
         })?;
         self.get(&id)
@@ -185,9 +181,7 @@ impl RegistryStore {
                 self.open(address.clone(), username.clone(), &sealed)?
                     .secret
             }
-            (None, None) => {
-                return Err(AppError::validation("Enter the password or access token."))
-            }
+            (None, None) => return Err(AppError::validation(msg::SECRET_EMPTY)),
         };
         Ok(Credentials {
             address,
@@ -277,20 +271,17 @@ fn read_row(row: &Row<'_>) -> rusqlite::Result<Registry> {
 }
 
 fn validated(draft: &RegistryDraft) -> AppResult<(String, String)> {
-    let address = address::normalise(&draft.address).ok_or_else(|| {
-        AppError::validation(
-            "Enter the registry's address, like ghcr.io or registry.example.com:5000.",
-        )
-    })?;
+    let address = address::normalise(&draft.address)
+        .ok_or_else(|| AppError::validation(msg::ADDRESS_INVALID))?;
     let username = draft.username.trim();
     if username.is_empty() {
-        return Err(AppError::validation("Enter the user name."));
+        return Err(AppError::validation(msg::USERNAME_EMPTY));
     }
     Ok((address, username.to_owned()))
 }
 
 fn gone() -> AppError {
-    AppError::not_found("This registry login no longer exists.")
+    AppError::not_found(msg::GONE)
 }
 
 #[cfg(test)]

@@ -123,6 +123,18 @@ The Host would build from files on this computer. Build and push the image to a 
 
 Add a login for the image's registry in **Settings → Registries**, and use **Check login** to confirm the registry accepts it. GHCR, and Docker Hub accounts with two-factor authentication, need an access token rather than the password. The pull dialog says which login it will use; if it says **anonymously**, the image's registry doesn't match a stored login — `ghcr.io/org/app` needs a login for `ghcr.io`, and `org/app` one for Docker Hub.
 
+### A build fails
+
+The message names the step that failed, such as **The build failed at step 3/5 (RUN make)**; **Details** holds the end of the build's output. Homeport uses the Engine's classic builder, so Dockerfiles that need BuildKit (`RUN --mount`, `--secret`, heredocs) fail; build those from a terminal. A `FROM` image that's private needs a login for its registry in **Settings → Registries**.
+
+### No newer-image mark appears
+
+The mark only shows when the registry was asked and answered. Images built locally or pulled by digest never show one. If a registry can't be reached or limits requests (Docker Hub counts these checks against its pull limit), Homeport writes a line to its [log](/docs/reference/security/#logs) and shows nothing; answers are also kept for 6 hours, so choose **Check for newer images** to ask again now. A Docker Hub login in **Settings → Registries** raises the limit.
+
+### Searching Docker Hub shows an error
+
+The search runs on the selected Host, so it needs that Host's internet access, and tags are read from `hub.docker.com` by this computer. Either can be rate-limited or blocked by a proxy. The dialog still pulls any full reference you type, such as `postgres:17-alpine`.
+
 ### The Files tab says the container has no find/stat tools
 
 Minimal and distroless images don't include `find` and `stat`, which Homeport uses to list files. Use `docker cp` for those containers.

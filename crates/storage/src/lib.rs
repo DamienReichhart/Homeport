@@ -7,6 +7,7 @@
 
 pub mod crypto;
 pub mod db;
+pub mod messages;
 
 pub use crypto::{KeyStore, Keychain, SecretBox};
 pub use db::Db;

@@ -11,6 +11,7 @@ use homeport_updates::{update_method, Bundle, UpdateMethod};
 use crate::{
     app::AppState,
     error::{self, AppError, AppResult},
+    messages as msg,
 };
 
 #[derive(Debug, Serialize, specta::Type)]
@@ -91,12 +92,10 @@ pub async fn updates_install(
     on_progress: Channel<UpdateProgress>,
 ) -> AppResult<()> {
     if method() != UpdateMethod::InApp {
-        return Err(AppError::validation(
-            "This copy of Homeport is updated by your package manager.",
-        ));
+        return Err(AppError::validation(msg::UPDATE_BY_PACKAGE_MANAGER));
     }
     let Some(update) = state.update.lock().unwrap().clone() else {
-        return Err(AppError::not_found("No update is waiting to be installed."));
+        return Err(AppError::not_found(msg::UPDATE_NOTHING_WAITING));
     };
     let mut downloaded = 0u64;
     update

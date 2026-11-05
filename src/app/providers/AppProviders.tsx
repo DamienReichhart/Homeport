@@ -4,6 +4,7 @@ import { HostProvider } from '@/core/host';
 import { settingsQuery } from '@/core/settings';
 import { applyTheme } from '@/shared/lib';
 import { ErrorDetailsHost, Toaster, TooltipProvider } from '@/shared/ui';
+import { I18nProvider } from './I18nProvider';
 import { LiveUpdates } from './LiveUpdates';
 import { createQueryClient } from './queryClient';
 
@@ -18,15 +19,17 @@ export function AppProviders({ children, client }: { children: ReactNode; client
   }, [queryClient]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <HostProvider>
-          <LiveUpdates />
-          {children}
-        </HostProvider>
-        <Toaster richColors />
-        <ErrorDetailsHost />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <I18nProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <HostProvider>
+            <LiveUpdates />
+            {children}
+          </HostProvider>
+          <Toaster richColors />
+          <ErrorDetailsHost />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </I18nProvider>
   );
 }

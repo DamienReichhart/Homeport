@@ -12,7 +12,7 @@ use russh::keys::{
 
 use homeport_core::error::{AppError, ErrorCode};
 
-use crate::ConnectError;
+use crate::{messages as msg, ConnectError};
 
 /// A freshly generated Ed25519 keypair in OpenSSH formats.
 pub struct GeneratedKey {
@@ -57,11 +57,7 @@ pub fn public_key_of(private_key: &str, passphrase: Option<&str>) -> Result<Stri
     let key = decode_secret_key(private_key, passphrase).map_err(key_unreadable)?;
     key.public_key().to_openssh().map_err(|e| {
         ConnectError::Invalid(
-            AppError::new(
-                ErrorCode::SshKeyInvalid,
-                "The private key's public half can't be encoded.",
-            )
-            .with_cause(&e),
+            AppError::new(ErrorCode::SshKeyInvalid, msg::SSH_PUBLIC_KEY_UNENCODABLE).with_cause(&e),
         )
     })
 }
@@ -83,14 +79,9 @@ pub fn fingerprint(openssh_public_key: &str) -> Option<String> {
 
 pub(super) fn key_unreadable(e: russh::keys::Error) -> ConnectError {
     ConnectError::Invalid(
-        AppError::new(
-            ErrorCode::SshKeyInvalid,
-            "The SSH private key can't be read.",
-        )
-        .with_hint(
-            "Check that it's an OpenSSH or PEM private key and that the passphrase is right.",
-        )
-        .with_cause(&e),
+        AppError::new(ErrorCode::SshKeyInvalid, msg::SSH_KEY_UNREADABLE)
+            .with_hint(msg::SSH_KEY_UNREADABLE_HINT)
+            .with_cause(&e),
     )
 }
 

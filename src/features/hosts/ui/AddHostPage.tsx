@@ -5,6 +5,7 @@ import { useCapabilities } from '@/shared/api';
 import { Button, Card, CardContent, ErrorMessage, PageHeader } from '@/shared/ui';
 import { emptyForm, toHostInput } from '../model/form';
 import { HostForm } from './form/HostForm';
+import { t } from '@/shared/i18n';
 
 export function AddHostPage() {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ export function AddHostPage() {
 
   return (
     <div className="max-w-2xl">
-      <PageHeader title="Add host" description="Connect Homeport to a Docker Engine." />
+      <PageHeader title={t('hosts.add')} description={t('hosts.addPage.description')} />
       <div className="mb-4">
         <LocalEngines onAdd={(input) => create.mutate(input)} pending={create.isPending} />
       </div>
@@ -37,10 +38,10 @@ export function AddHostPage() {
               disabled={create.isPending}
               onClick={() => create.mutate(toHostInput(form, false))}
             >
-              Add host
+              {t('hosts.add')}
             </Button>
             <Button variant="ghost" onClick={() => navigate(-1)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
           </div>
         </CardContent>
