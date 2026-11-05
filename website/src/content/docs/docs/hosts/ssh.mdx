@@ -40,6 +40,23 @@ Homeport has its own SSH client. It logs in to the server and forwards a channel
 
 <DocScreenshot name="add-host-ssh" alt="The Add host form with SSH selected." />
 
+## Import from ~/.ssh/config
+
+If your servers are already in `~/.ssh/config`, choose **Import from ~/.ssh/config** on **Add host** instead of typing each one. Homeport lists every server the file names — following `Include`, applying `Host *` defaults — and you pick the ones to add.
+
+| In `~/.ssh/config` | In Homeport                                                                                        |
+| ------------------ | -------------------------------------------------------------------------------------------------- |
+| `Host prod`        | A Host named `prod`. Entries with wildcards (`Host *.example.com`) only provide defaults.          |
+| `HostName`         | **Server**; the alias itself when there's none.                                                    |
+| `User`, `Port`     | **User** (your local user name by default) and **Port** (`22`).                                    |
+| `IdentityFile`     | **Existing key**: the first file that can be read, with `~` and `%h`, `%r`, `%u`, `%p` expanded.   |
+| no `IdentityFile`  | **ssh-agent**.                                                                                     |
+| `ProxyJump a,b`    | Two [bastions](#through-a-bastion), in order, each looked up in the same file. A loop is reported. |
+
+The **Remote socket path** starts as `/var/run/docker.sock`; change it in the preview for rootless Docker or Podman. An encrypted key asks for its passphrase there.
+
+The preview flags what needs a look: a key that can't be read (the Host uses ssh-agent instead), a `ProxyCommand` (not supported; add its jump servers as bastions), and an alias that's already a Host's name. That one isn't picked: rename it to import it, so importing twice never creates duplicates. Keys are read once and stored encrypted; the file itself is never changed, and `Match` blocks and certificates (`CertificateFile`) are ignored.
+
 ## Authentication
 
 ### New key for this host (recommended)
