@@ -12,6 +12,10 @@ _Avoid_: Instance, endpoint, engine, context, server
 The Docker-compatible daemon a Host points to (Docker Engine, Docker Desktop, Podman, Colima, OrbStack…): the software that gets installed, started and stopped. Not a synonym for Host: "Start the Docker Engine" talks about the Engine, "Homeport can't reach prod-server" talks about the Host.
 _Avoid_: Daemon, server, backend
 
+**Bastion**:
+An SSH server an SSH Host is reached through when its own SSH server only accepts connections from it (OpenSSH's `ProxyJump`). A Host has an ordered list of them, possibly empty; each has its own trusted server key and either uses the Host's credentials or its own. Not a Host: it runs no Engine Homeport talks to.
+_Avoid_: Jump host, jump server, proxy, gateway, hop (in the UI)
+
 **Stack**:
 A Compose project running on a Host, identified by its project name. Every Stack is either Managed or External.
 _Avoid_: Compose, project, application
