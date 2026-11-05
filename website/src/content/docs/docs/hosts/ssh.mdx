@@ -13,7 +13,7 @@ SSH is the recommended way to reach a Docker Engine on a server. Nothing needs t
 Homeport has its own SSH client. It logs in to the server and forwards a channel to the Engine's Unix socket — the same thing `docker -H ssh://…` does, without needing the `ssh` program or `docker` on your machine.
 
 - Keys are decrypted only in memory and never written to disk, so it works the same on Windows, macOS and Linux.
-- Homeport doesn't read `~/.ssh/config` or `~/.ssh/known_hosts`. Host aliases, `ProxyJump` and the like aren't used; enter the real server address.
+- Homeport doesn't read `~/.ssh/known_hosts`: server keys are trusted in Homeport, per Host. A server reachable only through a jump server is added with [bastions](#through-a-bastion), Homeport's `ProxyJump`.
 - The server must allow forwarding to Unix sockets. OpenSSH does by default (`AllowStreamLocalForwarding yes`).
 
 ## Adding an SSH Host
@@ -118,6 +118,36 @@ When you're sure, choose **Trust the new key** and confirm.
 
 Editing a Host to point at a different server or port forgets the trusted key, and you'll be asked to trust the new one. Renaming the Host or changing the user or socket path keeps it.
 
+## Through a bastion
+
+Some servers only accept SSH from a jump server. Add that server under **Bastions** in the Host's form, and Homeport logs in to it first, then reaches the Host through it — what `ssh -J` or `ProxyJump` do, with Homeport's own SSH client. Nothing is installed on the bastion, and no key is written to disk.
+
+<Steps>
+
+1. In the SSH Host's form, choose **Add bastion**.
+
+2. Enter its **Server**, **Port** and **User**.
+
+3. Choose how Homeport logs in to it:
+
+   | Authentication       | When to use it                                                                                                                  |
+   | -------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+   | **Same as the host** | The bastion accepts the key the Host uses: the one Homeport created, your existing key, or your agent's.                        |
+   | **Its own key**      | The bastion needs a different key. Paste it or choose **Load from file…**; it's stored encrypted with the Host's other secrets. |
+   | **ssh-agent**        | Your agent holds the bastion's key, while the Host uses another, for example a key Homeport created just for it.                |
+
+4. For a chain of jump servers (`ProxyJump a,b`), add one bastion per server, in the order Homeport goes through them. The arrows move a bastion up or down.
+
+</Steps>
+
+On the first connection Homeport asks you to trust each server's key in turn, starting with the first bastion: **Is this the right bastion?** names it and shows its fingerprint. Each bastion's key is kept with the Host, and a changed key stops the connection with **Bastion …'s key changed**, as for the Host itself.
+
+When the Host uses a key Homeport created, the **Authorize Homeport on the server** card lists every server it must be added on: each bastion set to **Same as the host**, then the Host.
+
+The bastion must allow TCP forwarding to the Host (`AllowTcpForwarding yes`, OpenSSH's default). If it doesn't, or can't reach the Host, the Host shows _Bastion … couldn't open a connection to …_.
+
+Moving a bastion in the list keeps its trusted key; changing its server or port forgets that one key only.
+
 ## Regenerating a key
 
 For a key Homeport created, **Regenerate key** on the Host's page replaces it. The old key stops working, so run the new **Add the public key** command on the server, and remove the old line from `~/.ssh/authorized_keys`.
@@ -134,5 +164,6 @@ Removing the Host deletes its key from Homeport, but not from the server. Delete
 | _The SSH server couldn't open /var/run/docker.sock … Check the path and that … can use Docker._ | Check the **Remote socket path**, and add the user to the `docker` group.                   |
 | _SSH connection timed out_                                                                      | Check the server name, port and any firewall between you.                                   |
 | _No ssh-agent is reachable_                                                                     | Start your agent, add a key with `ssh-add`, and make sure Homeport can see `SSH_AUTH_SOCK`. |
+| _Bastion … couldn't open a connection to …_                                                     | Check that the bastion can reach the Host, and that its `sshd` allows `AllowTcpForwarding`. |
 
 More in [Troubleshooting](/docs/reference/troubleshooting/).
