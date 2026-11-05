@@ -210,10 +210,9 @@ jobs:
             --target "$GITHUB_SHA" --title "Homeport $TAG" --notes-file "$RUNNER_TEMP/notes.md" "${flags[@]}"
           echo "Published [$TAG]($(gh release view "$TAG" --json url --jq .url))" >> "$GITHUB_STEP_SUMMARY"
 
-  # winget, Scoop and the AUR (issues #6, #7 and #8) live outside GitHub
-  # Pages. Their files are rendered from the published checksums and always
-  # kept as an artifact; each channel is updated only once its secret is set
-  # (docs/RELEASING.md).
+  # Scoop and the AUR (issues #7 and #8) live outside GitHub Pages. Their files
+  # are rendered from the published checksums and always kept as an artifact;
+  # each channel is updated only once its secret is set (docs/RELEASING.md).
   channels:
     needs: [prepare, publish]
     if: needs.prepare.outputs.prerelease != 'true'
@@ -228,7 +227,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
-      - name: Render the winget and Scoop manifests and the AUR package
+      - name: Render the Scoop manifest and the AUR package
         run: |
           gh release download "$TAG" --pattern SHA256SUMS.txt --dir "$RUNNER_TEMP"
           bun scripts/channels.ts --version "$VERSION" --sums "$RUNNER_TEMP/SHA256SUMS.txt" --out "$RUNNER_TEMP/channels"
@@ -278,30 +277,3 @@ jobs:
           git diff --cached --quiet && { echo "Already at $VERSION."; exit 0; }
           git commit -m "Update to $VERSION"
           git push origin HEAD:master
-
-  # winget takes a pull request to microsoft/winget-pkgs, which wingetcreate
-  # (Windows only) opens from the rendered manifests with a token that may
-  # fork that repository.
-  winget:
-    needs: [prepare, channels]
-    if: needs.prepare.outputs.prerelease != 'true'
-    runs-on: windows-latest
-    env:
-      VERSION: ${{ needs.prepare.outputs.version }}
-    steps:
-      - uses: actions/download-artifact@v8
-        with:
-          name: channels
-          path: channels
-      - name: Submit the manifests to winget
-        shell: pwsh
-        env:
-          WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
-        run: |
-          if (-not $env:WINGET_TOKEN) {
-            Write-Output "::notice::WINGET_TOKEN isn't set; skipping winget."
-            exit 0
-          }
-          Invoke-WebRequest https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
-          .\wingetcreate.exe submit --token $env:WINGET_TOKEN `
-            --prtitle "New version: DamienReichhart.Homeport version $env:VERSION" channels/winget
