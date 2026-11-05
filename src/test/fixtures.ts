@@ -1,4 +1,12 @@
-import type { Container, FileEntry, HostView, StatsSample } from '@/shared/api';
+import type {
+  Container,
+  FileEntry,
+  HostConnection,
+  HostStatus,
+  HostView,
+  NetworkView,
+  StatsSample,
+} from '@/shared/api';
 
 export const connectedHost: HostView = {
   host: {
@@ -34,6 +42,58 @@ export function container(name: string, stack: string | null, state = 'running')
     stack,
     service: stack ? (name.split('-')[1] ?? null) : null,
     networks: [],
+  };
+}
+
+/** A Host with `connection` and `status`; defaults to a connected SSH Host. */
+export function hostView(
+  name: string,
+  {
+    id = `${name}-id`,
+    connection = {
+      kind: 'ssh',
+      host: `${name}.example.com`,
+      port: 22,
+      user: 'deploy',
+      socketPath: '/var/run/docker.sock',
+      auth: 'generated',
+      publicKey: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHomeport homeport@test',
+    },
+    status = connectedHost.status,
+    hostKey = null,
+  }: {
+    id?: string;
+    connection?: HostConnection;
+    status?: HostStatus;
+    hostKey?: string | null;
+  } = {},
+): HostView {
+  return {
+    host: { id, name, enabled: true, hostKey, createdAt: '', connection },
+    status,
+  };
+}
+
+/** A custom bridge network with `containers` attached. */
+export function network(
+  name: string,
+  containers: string[] = [],
+  overrides: Partial<NetworkView> = {},
+): NetworkView {
+  return {
+    id: `${name}-id`,
+    name,
+    driver: 'bridge',
+    scope: 'local',
+    internal: false,
+    attachable: false,
+    subnets: ['172.20.0.0/16'],
+    created: null,
+    labels: {},
+    stack: null,
+    builtIn: false,
+    containers,
+    ...overrides,
   };
 }
 
