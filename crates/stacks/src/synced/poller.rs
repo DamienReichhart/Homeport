@@ -137,6 +137,15 @@ impl Poller {
     pub async fn run(self: Arc<Self>, interval: impl Fn() -> Duration) {
         loop {
             tokio::time::sleep(jittered(interval(), random_unit())).await;
+            // Nothing to poll: don't even look for git.
+            let polling = self
+                .synced
+                .store
+                .list_all()
+                .map(|all| all.iter().any(|s| s.poll));
+            if !polling.unwrap_or(true) {
+                continue;
+            }
             match homeport_git::cli::detect().await {
                 Ok(cli) => self.round(&cli, interval()).await,
                 Err(e) => log::debug!("not polling Synced Stacks: {}", e.message),
