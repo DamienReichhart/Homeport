@@ -1,4 +1,6 @@
-//! Stacks on a Host, and deploying Managed Stacks.
+//! Stacks on a Host: finding them, Managed and Linked Stacks' definitions,
+//! deploying through the runtime, their deploy history and what a redeploy
+//! would change.
 
 use tauri::{ipc::Channel, State};
 

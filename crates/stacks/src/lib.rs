@@ -5,7 +5,8 @@
 //! has its compose files in a folder on this machine (ADR 0008); an External
 //! Stack only has its running containers until it is Adopted.
 //!
-//! - [`stack`] tells the Stacks of a Host apart from its containers.
+//! - [`list`] lists every Stack of a Host, recording the Linked ones it
+//!   finds; [`stack`] tells them apart from its containers.
 //! - [`definition`] checks a compose definition before it's stored.
 //! - [`store`] keeps Managed Stacks, their environment sealed.
 //! - [`history`] keeps what each deploy used, for rolling back.
