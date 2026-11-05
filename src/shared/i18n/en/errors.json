@@ -322,7 +322,7 @@
   "errors.transport.ssh.agentFailed.hint": "Check that the agent holds your key with `ssh-add -l`.",
   "errors.transport.ssh.agentUnavailable": "No ssh-agent is running.",
   "errors.transport.ssh.agentUnavailable.unix.hint": "Start an agent and add your key in the terminal Homeport is launched from, or pick another authentication method:",
-  "errors.transport.ssh.agentUnavailable.windows.hint": "Start the OpenSSH Authentication Agent service in an administrator PowerShell, then add your key:",
+  "errors.transport.ssh.agentUnavailable.windows.hint": "Open Pageant and load your key, or start the OpenSSH Authentication Agent service in an administrator PowerShell, then add your key:",
   "errors.transport.ssh.authRefused": "The SSH server refused to let {user}@{host} log in.",
   "errors.transport.ssh.authRefused.agent.hint": "Load a key the SSH server accepts into your ssh-agent, then reconnect.",
   "errors.transport.ssh.authRefused.key.hint": "Authorise Homeport's key for {user} by running this on {host}:",

@@ -127,29 +127,130 @@ fn agent_failed(e: &(dyn std::error::Error + 'static)) -> AppError {
         .with_cause(e)
 }
 
+/// How asking one agent went.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum AgentOutcome {
+    /// Nothing answered where it lives.
+    Unavailable,
+    /// It answered, but the server accepted none of its keys.
+    Refused,
+    Accepted,
+}
+
+/// What to do once the first agents of a list of `agents` gave `outcomes`.
+#[derive(Debug, PartialEq, Eq)]
+enum NextAgent {
+    /// Ask the agent at this place in the list.
+    Try(usize),
+    /// Stop: whether a key was accepted.
+    Done(bool),
+    /// None of them is running.
+    NoneRunning,
+}
+
+/// Asks each agent in turn until one holds a key the server accepts, so a
+/// key in any of them works (on Windows: the OpenSSH agent, then Pageant).
+fn next_agent(outcomes: &[AgentOutcome], agents: usize) -> NextAgent {
+    if outcomes.contains(&AgentOutcome::Accepted) {
+        NextAgent::Done(true)
+    } else if outcomes.len() < agents {
+        NextAgent::Try(outcomes.len())
+    } else if outcomes.iter().all(|o| *o == AgentOutcome::Unavailable) {
+        NextAgent::NoneRunning
+    } else {
+        NextAgent::Done(false)
+    }
+}
+
+/// On macOS and Linux, the agent at `$SSH_AUTH_SOCK`.
 #[cfg(unix)]
 pub(super) async fn authenticate_with_agent(
     session: &mut Handle<ServerKeyCheck>,
     user: &str,
     label: &str,
 ) -> Result<bool, ConnectError> {
-    let agent = russh::keys::agent::client::AgentClient::connect_env()
-        .await
-        .map_err(|e| ConnectError::Unauthorized(agent_unavailable(&e)))?;
-    try_agent_identities(session, user, label, agent).await
+    let mut outcomes = Vec::new();
+    let mut unavailable = None;
+    let mut failure = None;
+    loop {
+        let attempt = match next_agent(&outcomes, 1) {
+            NextAgent::Done(true) => return Ok(true),
+            NextAgent::Done(false) => return failure.map_or(Ok(false), Err),
+            NextAgent::NoneRunning => {
+                let cause = unavailable.expect("an unavailable agent left its error");
+                return Err(ConnectError::Unauthorized(agent_unavailable(&cause)));
+            }
+            NextAgent::Try(_) => match russh::keys::agent::client::AgentClient::connect_env().await
+            {
+                Ok(agent) => try_agent_identities(session, user, label, agent).await,
+                Err(e) => {
+                    unavailable = Some(e);
+                    outcomes.push(AgentOutcome::Unavailable);
+                    continue;
+                }
+            },
+        };
+        outcomes.push(record(attempt, &mut failure));
+    }
 }
 
+/// The outcome of asking a running agent, keeping a failure to report if
+/// no other agent does better.
+fn record(attempt: Result<bool, ConnectError>, failure: &mut Option<ConnectError>) -> AgentOutcome {
+    match attempt {
+        Ok(true) => AgentOutcome::Accepted,
+        Ok(false) => AgentOutcome::Refused,
+        Err(e) => {
+            *failure = Some(e);
+            AgentOutcome::Refused
+        }
+    }
+}
+
+/// The Windows OpenSSH agent's pipe.
+#[cfg(windows)]
+const OPENSSH_AGENT_PIPE: &str = r"\\.\pipe\openssh-ssh-agent";
+
+/// On Windows, the OpenSSH Authentication Agent first, then PuTTY's Pageant
+/// (or a tool that stands in for it, like KeeAgent or gpg-agent).
 #[cfg(windows)]
 pub(super) async fn authenticate_with_agent(
     session: &mut Handle<ServerKeyCheck>,
     user: &str,
     label: &str,
 ) -> Result<bool, ConnectError> {
-    let agent =
-        russh::keys::agent::client::AgentClient::connect_named_pipe(r"\\.\pipe\openssh-ssh-agent")
-            .await
-            .map_err(|e| ConnectError::Unauthorized(agent_unavailable(&e)))?;
-    try_agent_identities(session, user, label, agent).await
+    use russh::keys::agent::client::AgentClient;
+
+    let mut outcomes = Vec::new();
+    let mut unavailable = None;
+    let mut failure = None;
+    loop {
+        let attempt = match next_agent(&outcomes, 2) {
+            NextAgent::Done(true) => return Ok(true),
+            NextAgent::Done(false) => return failure.map_or(Ok(false), Err),
+            NextAgent::NoneRunning => {
+                let cause = unavailable.expect("an unavailable agent left its error");
+                return Err(ConnectError::Unauthorized(agent_unavailable(&cause)));
+            }
+            NextAgent::Try(0) => match AgentClient::connect_named_pipe(OPENSSH_AGENT_PIPE).await {
+                Ok(agent) => try_agent_identities(session, user, label, agent).await,
+                Err(e) => {
+                    unavailable = Some(e);
+                    outcomes.push(AgentOutcome::Unavailable);
+                    continue;
+                }
+            },
+            NextAgent::Try(_) => match AgentClient::connect_pageant().await {
+                Ok(agent) => try_agent_identities(session, user, label, agent).await,
+                Err(e) => {
+                    unavailable = Some(e);
+                    outcomes.push(AgentOutcome::Unavailable);
+                    continue;
+                }
+            },
+        };
+        outcomes.push(record(attempt, &mut failure));
+    }
 }
 
 async fn try_agent_identities<S>(
@@ -181,4 +282,54 @@ where
         }
     }
     Ok(false)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use AgentOutcome::*;
+
+    #[test]
+    fn the_first_agent_is_asked_first() {
+        assert_eq!(next_agent(&[], 2), NextAgent::Try(0));
+        assert_eq!(next_agent(&[], 1), NextAgent::Try(0));
+    }
+
+    #[test]
+    fn an_accepted_key_ends_the_search() {
+        assert_eq!(next_agent(&[Accepted], 2), NextAgent::Done(true));
+        assert_eq!(
+            next_agent(&[Unavailable, Accepted], 2),
+            NextAgent::Done(true)
+        );
+        assert_eq!(next_agent(&[Refused, Accepted], 2), NextAgent::Done(true));
+    }
+
+    #[test]
+    fn the_next_agent_is_asked_when_one_is_missing_or_holds_no_accepted_key() {
+        assert_eq!(next_agent(&[Unavailable], 2), NextAgent::Try(1));
+        assert_eq!(next_agent(&[Refused], 2), NextAgent::Try(1));
+    }
+
+    #[test]
+    fn running_agents_without_an_accepted_key_mean_the_server_refused() {
+        assert_eq!(
+            next_agent(&[Refused, Unavailable], 2),
+            NextAgent::Done(false)
+        );
+        assert_eq!(
+            next_agent(&[Unavailable, Refused], 2),
+            NextAgent::Done(false)
+        );
+        assert_eq!(next_agent(&[Refused], 1), NextAgent::Done(false));
+    }
+
+    #[test]
+    fn no_agent_running_is_reported_as_such() {
+        assert_eq!(
+            next_agent(&[Unavailable, Unavailable], 2),
+            NextAgent::NoneRunning
+        );
+        assert_eq!(next_agent(&[Unavailable], 1), NextAgent::NoneRunning);
+    }
 }

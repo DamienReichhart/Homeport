@@ -138,7 +138,7 @@ homeport_core::messages! {
     SSH_AUTH_REFUSED_AGENT_HINT = "errors.transport.ssh.authRefused.agent.hint" => "Load a key the SSH server accepts into your ssh-agent, then reconnect.";
     /// No ssh-agent could be reached.
     SSH_AGENT_UNAVAILABLE = "errors.transport.ssh.agentUnavailable" => "No ssh-agent is running.";
-    SSH_AGENT_UNAVAILABLE_WINDOWS_HINT = "errors.transport.ssh.agentUnavailable.windows.hint" => "Start the OpenSSH Authentication Agent service in an administrator PowerShell, then add your key:";
+    SSH_AGENT_UNAVAILABLE_WINDOWS_HINT = "errors.transport.ssh.agentUnavailable.windows.hint" => "Open Pageant and load your key, or start the OpenSSH Authentication Agent service in an administrator PowerShell, then add your key:";
     SSH_AGENT_UNAVAILABLE_UNIX_HINT = "errors.transport.ssh.agentUnavailable.unix.hint" => "Start an agent and add your key in the terminal Homeport is launched from, or pick another authentication method:";
     /// The ssh-agent failed to list or use its keys.
     SSH_AGENT_FAILED = "errors.transport.ssh.agentFailed" => "The ssh-agent failed to sign in.";
