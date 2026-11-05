@@ -150,7 +150,11 @@ export const commands = {
 	stacksGet: (id: string) => __TAURI_INVOKE<ManagedStack>("stacks_get", { id }),
 	/**  The decrypted environment of a Managed Stack, for editing. */
 	stacksGetEnv: (id: string) => __TAURI_INVOKE<string>("stacks_get_env", { id }),
-	stacksCheck: (compose: string) => __TAURI_INVOKE<ComposeCheck>("stacks_check", { compose }),
+	/**
+	 *  Checks a definition made of `files` (their YAML, merged in order) against
+	 *  the rules of its kind of Stack.
+	 */
+	stacksCheck: (files: string[], kind: SourceKind) => __TAURI_INVOKE<ComposeCheck>("stacks_check", { files, kind }),
 	/**  Creates a Managed Stack. Using the name of an External Stack adopts it. */
 	stacksCreate: (hostId: string, name: string, compose: string, env: string) => __TAURI_INVOKE<ManagedStack>("stacks_create", { hostId, name, compose, env }),
 	stacksUpdate: (id: string, compose: string, env: string) => __TAURI_INVOKE<ManagedStack>("stacks_update", { id, compose, env }),
@@ -159,6 +163,17 @@ export const commands = {
 	 *  becomes an External Stack.
 	 */
 	stacksForget: (id: string) => __TAURI_INVOKE<null>("stacks_forget", { id }),
+	/**
+	 *  A Linked Stack's compose files, read from its folder. `acknowledge` notes
+	 *  them as seen, so they no longer count as changed outside Homeport.
+	 */
+	stacksLinkedRead: (id: string, acknowledge: boolean) => __TAURI_INVOKE<LinkedFiles>("stacks_linked_read", { id, acknowledge }),
+	/**
+	 *  Writes one compose file of a Linked Stack in place. `expected` is the
+	 *  fingerprint of the file the edit started from; `None` overwrites it even
+	 *  when it changed outside Homeport.
+	 */
+	stacksLinkedWrite: (id: string, path: string, content: string, expected: string | null) => __TAURI_INVOKE<LinkedFiles>("stacks_linked_write", { id, path, content, expected }),
 	/**  Forgets a Linked Stack: its record goes, its folder and containers stay. */
 	stacksLinkedForget: (id: string) => __TAURI_INVOKE<null>("stacks_linked_forget", { id }),
 	stacksAct: (hostId: string, name: string, action: StackAction) => __TAURI_INVOKE<null>("stacks_act", { hostId, name, action }),
@@ -446,7 +461,13 @@ export type ErrorCode =
 /**  A GPU was requested from a Host without the vendor's container toolkit. */
 "gpu_unavailable" | 
 /**  Recreating a container failed, and so did putting the original back. */
-"recreate_rolled_back" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
+"recreate_rolled_back" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
+/**  A Linked Stack's folder, or one of its compose files, is gone. */
+"stack_folder_missing" | 
+/**  A Linked Stack's compose file can't be read or written. */
+"stack_file_unreadable" | 
+/**  A Linked Stack's compose file changed on disk since it was opened. */
+"stack_files_changed" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
 
 export type ExecEvent = { type: "output"; data: string } | 
 /**  `error` explains an exit that means the command couldn't run. */
@@ -704,6 +725,26 @@ export type Licenses = {
 	third_party: string | null,
 };
 
+/**  One compose file of a Linked Stack. */
+export type LinkedFile = {
+	/**  Its absolute path on this machine. */
+	path: string,
+	content: string,
+	/**  Of `content`, to tell whether the file changed since. */
+	fingerprint: string,
+};
+
+/**  A Linked Stack's compose files as they are now. */
+export type LinkedFiles = {
+	workingDir: string,
+	/**  In the order compose merges them. */
+	files: LinkedFile[],
+	/**  Of every file together, as stored when they were last read or written. */
+	fingerprint: string,
+	/**  The files differ from what Homeport last read or wrote. */
+	changedOutside: boolean,
+};
+
 export type LogEvent = { type: "lines"; lines: LogLine[] } | { type: "error"; error: AppError } | { type: "end" };
 
 export type LogLine = {
@@ -928,6 +969,9 @@ export type Settings = {
 	/**  Look for a new version at launch and every few hours. */
 	checkForUpdates?: boolean,
 };
+
+/**  The kinds of source, for the rules a definition is checked against. */
+export type SourceKind = "managed" | "linked";
 
 export type SshAuth = 
 /**  A keypair Homeport generated for this Host. */

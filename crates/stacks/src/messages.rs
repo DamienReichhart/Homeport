@@ -24,6 +24,23 @@ homeport_core::messages! {
     /// Pulling a Stack's image failed; the reason is in Details.
     PULL_FAILED = "errors.stacks.pullFailed" => "Homeport couldn't pull {image} for {services}.";
 
+    // Linked Stacks
+
+    /// A Linked Stack's folder is no longer on this machine.
+    FOLDER_MISSING = "errors.stacks.folderMissing" => "The folder {folder} is no longer on this computer.";
+    FOLDER_MISSING_HINT = "errors.stacks.folderMissing.hint" => "Put it back, or forget this Stack and link it again from where it is now.";
+    /// One of a Linked Stack's compose files is no longer in its folder.
+    FILE_MISSING = "errors.stacks.fileMissing" => "{file} is no longer on this computer.";
+    FILE_MISSING_HINT = "errors.stacks.fileMissing.hint" => "Put it back, or remove it from the Stack's compose files.";
+    /// A Linked Stack's compose file Homeport may not read or write.
+    FILE_UNREADABLE = "errors.stacks.fileUnreadable" => "Homeport can't read or write {file}.";
+    FILE_UNREADABLE_HINT = "errors.stacks.fileUnreadable.hint" => "Check that your user may read and write it, then try again.";
+    /// Saving a compose file that was edited elsewhere since it was opened.
+    FILES_CHANGED = "errors.stacks.filesChanged" => "{file} changed outside Homeport since you opened it.";
+    FILES_CHANGED_HINT = "errors.stacks.filesChanged.hint" => "Reload it to see the change, or overwrite it with your version.";
+    /// A path that isn't one of the Linked Stack's compose files.
+    NOT_A_STACK_FILE = "errors.stacks.notAStackFile" => "{file} isn't one of this Stack's compose files.";
+
     // Compose definitions
 
     /// A definition that isn't YAML; the parser's words are in Details.

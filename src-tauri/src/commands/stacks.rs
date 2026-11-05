@@ -9,6 +9,7 @@ use homeport_stacks::{
     compose::{self, ComposeAction, ComposeEvent},
     definition::{self, ComposeCheck},
     lifecycle::StackAction,
+    linked::{self, files::LinkedFiles},
     runtime::{self, ComposeJob, SourceKind, StackSource, StackTarget},
     store::ManagedStack,
     Stack,
@@ -46,10 +47,13 @@ pub fn stacks_get_env(state: State<'_, AppState>, id: String) -> AppResult<Strin
     state.stacks.env(&id)
 }
 
+/// Checks a definition made of `files` (their YAML, merged in order) against
+/// the rules of its kind of Stack.
 #[tauri::command]
 #[specta::specta]
-pub fn stacks_check(compose: String) -> ComposeCheck {
-    definition::check(&compose, SourceKind::Managed)
+pub fn stacks_check(files: Vec<String>, kind: SourceKind) -> ComposeCheck {
+    let files: Vec<&str> = files.iter().map(String::as_str).collect();
+    definition::check(&files, kind)
 }
 
 /// Creates a Managed Stack. Using the name of an External Stack adopts it.
@@ -83,6 +87,44 @@ pub fn stacks_update(
 #[specta::specta]
 pub fn stacks_forget(state: State<'_, AppState>, id: String) -> AppResult<()> {
     state.stacks.delete(&id)
+}
+
+/// A Linked Stack's compose files, read from its folder. `acknowledge` notes
+/// them as seen, so they no longer count as changed outside Homeport.
+#[tauri::command]
+#[specta::specta]
+pub fn stacks_linked_read(
+    state: State<'_, AppState>,
+    id: String,
+    acknowledge: bool,
+) -> AppResult<LinkedFiles> {
+    let stack = state.linked.get(&id)?;
+    let mut files = linked::files::read(&stack)?;
+    if acknowledge && files.changed_outside {
+        state.linked.set_fingerprint(&id, &files.fingerprint)?;
+        files.changed_outside = false;
+    }
+    Ok(files)
+}
+
+/// Writes one compose file of a Linked Stack in place. `expected` is the
+/// fingerprint of the file the edit started from; `None` overwrites it even
+/// when it changed outside Homeport.
+#[tauri::command]
+#[specta::specta]
+pub fn stacks_linked_write(
+    state: State<'_, AppState>,
+    id: String,
+    path: String,
+    content: String,
+    expected: Option<String>,
+) -> AppResult<LinkedFiles> {
+    let stack = state.linked.get(&id)?;
+    linked::files::write(&stack, &path, &content, expected.as_deref())?;
+    let stack = state
+        .linked
+        .set_fingerprint(&id, &linked::files::files_fingerprint(&stack.config_files))?;
+    linked::files::read(&stack)
 }
 
 /// Forgets a Linked Stack: its record goes, its folder and containers stay.

@@ -45,6 +45,20 @@ The second rule keeps a path that exists here by coincidence from linking the wr
 
 The folder is shown under the Stack's name in the list and on its page.
 
+### Editing a Linked Stack
+
+A Linked Stack's **Definition** tab shows each of its compose files in a tab of its own, read from the folder, with the folder's path above them. Edit them and choose **Save**: Homeport writes each changed file back where it is, so your own editor and version control see the change. The file is replaced in one step, keeping its permissions, so nothing ever reads it half written.
+
+The checks under the editor follow the Linked rules: `build:`, `env_file:` and relative paths are fine, since the folder is there. There's no environment editor: Compose reads the folder's `.env` when it runs, and Homeport neither shows nor changes it.
+
+#### Changed outside Homeport
+
+Homeport notes the files each time it reads or writes them. When they differ — you edited them in another editor, or pulled a new version — the tab shows **Changed outside Homeport**. It checks when the tab opens and each time you come back to Homeport's window. Choose **Reload** to see the files as they are now; edits you hadn't saved are dropped.
+
+If you save a file that was changed on disk since you opened it, Homeport refuses: **compose.yaml changed outside Homeport since you opened it**. Reload to see the other change, or choose **Overwrite** to replace it with your version.
+
+If the folder is gone, or a file can't be read, the tab says which and what to do instead of the editor.
+
 ### When the folder moves or disappears
 
 If a Linked Stack's compose files are no longer there — the folder was moved, renamed or deleted — the Stack is shown as **External**, with ⚠ **Its compose files are no longer on this computer**. Nothing is deleted from Homeport or the Host: put the files back and it's Linked again at the next refresh. To stop linking it, open its **Definition** tab and choose **Forget**; that only drops Homeport's note of the folder, never the folder or the containers.

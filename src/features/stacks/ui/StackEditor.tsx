@@ -1,11 +1,9 @@
-import { yaml } from '@codemirror/lang-yaml';
-import CodeMirror from '@uiw/react-codemirror';
-import { CircleXIcon, TriangleAlertIcon } from 'lucide-react';
 import { useEffect } from 'react';
 import type { ComposeCheck } from '@/shared/api';
-import { useResolvedTheme } from '@/shared/lib';
-import { editorTheme, Label, Textarea } from '@/shared/ui';
+import { Label, Textarea } from '@/shared/ui';
 import { useComposeCheck } from '../api/useComposeCheck';
+import { ComposeChecks } from './ComposeChecks';
+import { YamlEditor } from './YamlEditor';
 import { t } from '@/shared/i18n';
 
 /** An example environment, written as a .env file. */
@@ -27,25 +25,14 @@ export function StackEditor({
   keychain: boolean;
   onCheck?: (check: ComposeCheck | null) => void;
 }) {
-  const theme = useResolvedTheme();
-  const check = useComposeCheck(compose);
+  const check = useComposeCheck([compose], 'managed');
   useEffect(() => onCheck?.(check), [check, onCheck]);
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1fr_20rem]">
       <div className="grid gap-1.5">
         <Label>compose.yaml</Label>
-        <div className="overflow-hidden rounded-md border">
-          <CodeMirror
-            value={compose}
-            onChange={onComposeChange}
-            extensions={[yaml()]}
-            theme={editorTheme(theme)}
-            height="28rem"
-            basicSetup={{ foldGutter: true, highlightActiveLine: true }}
-            aria-label={t('stacks.editor.compose')}
-          />
-        </div>
+        <YamlEditor value={compose} onChange={onComposeChange} label={t('stacks.editor.compose')} />
       </div>
       <div className="grid content-start gap-4">
         <div className="grid gap-1.5">
@@ -65,20 +52,7 @@ export function StackEditor({
               : t('stacks.editor.envHintNoKeychain')}
           </p>
         </div>
-        {check && (check.errors.length > 0 || check.warnings.length > 0) && (
-          <ul className="grid gap-2 text-sm" aria-label={t('stacks.editor.problems')}>
-            {check.errors.map((e) => (
-              <li key={e} className="text-destructive flex gap-2">
-                <CircleXIcon className="mt-0.5 size-4 shrink-0" /> {e}
-              </li>
-            ))}
-            {check.warnings.map((w) => (
-              <li key={w} className="text-warning flex gap-2">
-                <TriangleAlertIcon className="mt-0.5 size-4 shrink-0" /> {w}
-              </li>
-            ))}
-          </ul>
-        )}
+        <ComposeChecks check={check} />
       </div>
     </div>
   );

@@ -131,6 +131,8 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             stacks::stacks_create,
             stacks::stacks_update,
             stacks::stacks_forget,
+            stacks::stacks_linked_read,
+            stacks::stacks_linked_write,
             stacks::stacks_linked_forget,
             stacks::stacks_act,
             stacks::stacks_remove,

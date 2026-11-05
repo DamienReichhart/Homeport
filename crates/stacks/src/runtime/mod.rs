@@ -40,6 +40,7 @@ pub enum StackSource {
 #[serde(rename_all = "camelCase")]
 pub enum SourceKind {
     Managed,
+    Linked,
 }
 
 impl StackSource {

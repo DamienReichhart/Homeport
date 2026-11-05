@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { hostKeys } from '@/core/host';
-import { commands, type ManagedStack, type StackAction } from '@/shared/api';
+import { commands, type LinkedFiles, type ManagedStack, type StackAction } from '@/shared/api';
 import { toastError } from '@/shared/ui';
 import { t } from '@/shared/i18n';
 import { stackKeys } from './queries';
@@ -78,6 +78,51 @@ export function useSaveDefinition(
       await client.invalidateQueries({ queryKey: stackKeys.managed(managedId) });
       toast.success(t('stacks.definitionSaved'));
       onSaved(saved, deploy);
+    },
+  });
+}
+
+/** Reads a Linked Stack's files again and notes them as seen. */
+export function useReloadLinked(linkedId: string, onLoaded: (files: LinkedFiles) => void) {
+  const client = useQueryClient();
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: () => commands.stacksLinkedRead(linkedId, true),
+    onSuccess: (files) => {
+      client.setQueryData(stackKeys.linked(linkedId), files);
+      onLoaded(files);
+    },
+  });
+}
+
+interface LinkedWrite {
+  files: { path: string; content: string; expected: string | null }[];
+  deploy: boolean;
+}
+
+/**
+ * Writes edited compose files of a Linked Stack in their folder, one after
+ * the other. A file changed on disk since its `expected` fingerprint is
+ * refused unless `expected` is null. `onSaved` gets the files as written.
+ */
+export function useWriteLinked(
+  linkedId: string,
+  onSaved: (files: LinkedFiles, deploy: boolean) => void,
+) {
+  const client = useQueryClient();
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: async ({ files }: LinkedWrite) => {
+      let result: LinkedFiles | null = null;
+      for (const f of files)
+        result = await commands.stacksLinkedWrite(linkedId, f.path, f.content, f.expected);
+      return result;
+    },
+    onSuccess: (files, { deploy }) => {
+      if (!files) return;
+      client.setQueryData(stackKeys.linked(linkedId), files);
+      toast.success(t('stacks.linked.saved'));
+      onSaved(files, deploy);
     },
   });
 }

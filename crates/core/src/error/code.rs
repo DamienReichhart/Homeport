@@ -84,6 +84,13 @@ pub enum ErrorCode {
     ComposeInvalidDefinition,
     ComposeMissingVariable,
     ComposeFailed,
+    // Linked Stacks' folders on this machine.
+    /// A Linked Stack's folder, or one of its compose files, is gone.
+    StackFolderMissing,
+    /// A Linked Stack's compose file can't be read or written.
+    StackFileUnreadable,
+    /// A Linked Stack's compose file changed on disk since it was opened.
+    StackFilesChanged,
     // Files and exec inside containers.
     NoShell,
     PathNotFound,

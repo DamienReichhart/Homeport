@@ -44,7 +44,7 @@ impl StackSource {
         match self {
             Self::Managed { compose, env } => {
                 if action.reads_definition() {
-                    if let Some(blocker) = definition::blocker(compose, self.kind()) {
+                    if let Some(blocker) = definition::blocker(&[compose], self.kind()) {
                         return Err(blocker);
                     }
                 }

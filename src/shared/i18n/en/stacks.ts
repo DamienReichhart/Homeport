@@ -86,13 +86,21 @@ export default {
   'stacks.forget.description':
     'Homeport deletes its stored compose file and environment. Running containers are left alone and the Stack becomes External.',
   'stacks.forget.confirm': 'Forget definition',
-  'stacks.linked.title': 'Linked Stack',
   'stacks.linked.description':
     'Its compose files are in <mono>{folder}</mono> on this computer. Homeport reads them there and never keeps a copy.',
   'stacks.linked.missingTitle': 'Compose files missing',
   'stacks.linked.missingDescription':
     'This Stack is linked to <mono>{folder}</mono>, but its compose files are no longer there, so it’s shown as External. Put them back to link it again, or forget it.',
   'stacks.problem.filesMissing': 'Its compose files are no longer on this computer.',
+  'stacks.linked.changedTitle': 'Changed outside Homeport',
+  'stacks.linked.changedDescription':
+    'These files were edited elsewhere since Homeport last read them. Reload to see the change before saving over it.',
+  'stacks.linked.reload': 'Reload',
+  'stacks.linked.overwrite': 'Overwrite',
+  'stacks.linked.saved': 'Compose files saved',
+  'stacks.linked.envNote':
+    'Compose reads the folder’s .env when it runs. Homeport doesn’t show or change it.',
+  'stacks.linked.files': 'Compose files',
   'stacks.linked.forget': 'Forget',
   'stacks.linked.forgetTitle': 'Forget {name}?',
   'stacks.linked.forgetDescription':
