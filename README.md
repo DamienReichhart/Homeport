@@ -42,7 +42,7 @@ Pushing a new version to `main` publishes it; see [docs/RELEASING.md](docs/RELEA
 - [cargo-about](https://github.com/EmbarkStudios/cargo-about) for release builds: `cargo install cargo-about --locked --features cli`
 - Tauri system dependencies: <https://tauri.app/start/prerequisites/>
   (Linux: `libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev librsvg2-dev libayatana-appindicator3-dev libssl-dev`)
-- At runtime: an OS keychain (macOS Keychain, Windows Credential Manager or a Secret Service such as GNOME Keyring) for SSH/TLS/stack secrets, and the `docker compose` CLI to deploy Managed Stacks. Both are optional; the app says what is unavailable without them.
+- At runtime: an OS keychain (macOS Keychain, Windows Credential Manager or a Secret Service such as GNOME Keyring) for SSH/TLS/stack secrets, and the `docker compose` CLI to deploy Managed and Linked Stacks. Both are optional; the app says what is unavailable without them.
 
 ## Commands
 

@@ -5,4 +5,4 @@ Bollard speaks only the Docker Engine API and has no Compose support, and reimpl
 ## Consequences
 
 - Deploying needs the Compose CLI installed on the user's machine. Without it, Stacks still show up and can be started, stopped and removed.
-- Compose resolves relative paths on the client, so Managed Stacks refuse `build:` and warn on relative bind mounts.
+- Compose resolves relative paths on the client, so Managed Stacks refuse `build:` and warn on relative bind mounts. Linked Stacks (ADR 0008) run compose in their folder on this machine, where those paths mean what they say.
