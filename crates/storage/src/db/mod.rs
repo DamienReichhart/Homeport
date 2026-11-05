@@ -21,6 +21,7 @@ const MIGRATION_SLICE: &[M<'static>] = &[
     M::up(include_str!("migrations/0004_registries.sql")),
     M::up(include_str!("migrations/0005_bastions.sql")),
     M::up(include_str!("migrations/0006_linked_stacks.sql")),
+    M::up(include_str!("migrations/0007_stack_files.sql")),
 ];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_SLICE);
 
@@ -126,6 +127,15 @@ mod tests {
             })
             .unwrap();
         assert_eq!(stacks, 1);
+        // Its one definition is now its first compose file.
+        let file: (i64, String, String) = conn
+            .query_row(
+                "SELECT position, name, content FROM stack_files WHERE stack_id = 's'",
+                [],
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+            )
+            .unwrap();
+        assert_eq!(file, (0, "compose.yaml".into(), "services: {}".into()));
         let linked: i64 = conn
             .query_row("SELECT count(*) FROM linked_stacks", [], |r| r.get(0))
             .unwrap();

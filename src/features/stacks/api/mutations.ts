@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { hostKeys } from '@/core/host';
 import {
   commands,
+  type ComposeFile,
   type FolderProject,
   type LinkedFiles,
   type LinkedStack,
@@ -40,7 +41,7 @@ export function useStackMutations(hostId: string) {
 
 interface NewStack {
   name: string;
-  compose: string;
+  files: ComposeFile[];
   env: string;
   deploy: boolean;
 }
@@ -57,8 +58,7 @@ export function useCreateStack(
   const client = useQueryClient();
   return useMutation({
     meta: { silent: true },
-    mutationFn: ({ name, compose, env }: NewStack) =>
-      commands.stacksCreate(hostId, name, compose, env),
+    mutationFn: ({ name, files, env }: NewStack) => commands.stacksCreate(hostId, name, files, env),
     onSuccess: async (stack, { deploy }) => {
       await client.invalidateQueries({ queryKey: hostKeys.stacks(hostId) });
       onSaved(stack, deploy);
@@ -100,7 +100,7 @@ export function useCreateLinked(
 }
 
 interface Definition {
-  compose: string;
+  files: ComposeFile[];
   env: string;
   deploy: boolean;
 }
@@ -113,7 +113,7 @@ export function useSaveDefinition(
   const client = useQueryClient();
   return useMutation({
     meta: { silent: true },
-    mutationFn: ({ compose, env }: Definition) => commands.stacksUpdate(managedId, compose, env),
+    mutationFn: ({ files, env }: Definition) => commands.stacksUpdate(managedId, files, env),
     onSuccess: async (saved, { deploy }) => {
       await client.invalidateQueries({ queryKey: stackKeys.managed(managedId) });
       toast.success(t('stacks.definitionSaved'));
@@ -163,6 +163,19 @@ export function useWriteLinked(
       client.setQueryData(stackKeys.linked(linkedId), files);
       toast.success(t('stacks.linked.saved'));
       onSaved(files, deploy);
+    },
+  });
+}
+
+/** Sets which compose files of its folder a Linked Stack uses, in order. */
+export function useSetLinkedFiles(linkedId: string, onSaved: (files: LinkedFiles) => void) {
+  const client = useQueryClient();
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: (configFiles: string[]) => commands.stacksLinkedSetFiles(linkedId, configFiles),
+    onSuccess: (files) => {
+      client.setQueryData(stackKeys.linked(linkedId), files);
+      onSaved(files);
     },
   });
 }

@@ -121,6 +121,28 @@ impl LinkedStore {
         self.get(id)
     }
 
+    /// Replaces the compose files the Linked Stack uses, in order, and notes
+    /// them as just read.
+    pub fn set_files(
+        &self,
+        id: &str,
+        config_files: &[String],
+        fingerprint: &str,
+    ) -> AppResult<LinkedStack> {
+        let files = serde_json::to_string(config_files)?;
+        let n = self.db.with(|c| {
+            c.execute(
+                "UPDATE linked_stacks SET config_files = ?2, fingerprint = ?3,
+                 updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?1",
+                (id, &files, fingerprint),
+            )
+        })?;
+        if n == 0 {
+            return Err(AppError::not_found(msg::GONE));
+        }
+        self.get(id)
+    }
+
     /// Forgets the Linked Stack. Its folder and containers are left alone.
     pub fn delete(&self, id: &str) -> AppResult<()> {
         self.db
@@ -194,6 +216,12 @@ mod tests {
         assert_eq!(s.working_dir, "/srv/shop");
         let s = store.set_fingerprint(&s.id, "fp2").unwrap();
         assert_eq!(s.fingerprint, "fp2");
+        let reordered: Vec<String> = files().into_iter().rev().collect();
+        let s = store.set_files(&s.id, &reordered, "fp3").unwrap();
+        assert_eq!(
+            (s.config_files.clone(), s.fingerprint.as_str()),
+            (reordered, "fp3")
+        );
         assert_eq!(store.list(&host).unwrap(), std::slice::from_ref(&s));
         store.delete(&s.id).unwrap();
         assert!(matches!(store.get(&s.id), Err(ref e) if e.is(ErrorCode::NotFound)));
@@ -202,7 +230,17 @@ mod tests {
     #[test]
     fn names_are_unique_per_host_across_kinds() {
         let (linked, managed, _, host) = setup();
-        managed.create(&host, "shop", "services: {}\n", "").unwrap();
+        managed
+            .create(
+                &host,
+                "shop",
+                &[crate::store::ComposeFile::new(
+                    "compose.yaml",
+                    "services: {}\n",
+                )],
+                "",
+            )
+            .unwrap();
         assert!(matches!(
             linked.create(&host, "shop", "/srv/shop", &files(), "fp"),
             Err(ref e) if e.is(ErrorCode::NameInUse) && e.message.contains("\"shop\"")
@@ -211,7 +249,7 @@ mod tests {
             .create(&host, "blog", "/srv/blog", &files(), "fp")
             .unwrap();
         assert!(matches!(
-            managed.create(&host, "blog", "services: {}\n", ""),
+            managed.create(&host, "blog", &[crate::store::ComposeFile::new("compose.yaml", "services: {}\n")], ""),
             Err(ref e) if e.is(ErrorCode::NameInUse)
         ));
         assert!(matches!(

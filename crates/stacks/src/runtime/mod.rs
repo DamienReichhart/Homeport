@@ -23,6 +23,7 @@ use homeport_transport::Dialer;
 use crate::{
     compose::{self, ComposeAction, ComposeCli, ComposeEvent},
     lifecycle::{self, StackAction},
+    store::ComposeFile,
 };
 
 pub(crate) use self::source::{Prepared, WorkDir};
@@ -30,9 +31,14 @@ pub(crate) use self::source::{Prepared, WorkDir};
 /// Where a Stack's compose definition comes from. External Stacks have none.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum StackSource {
-    /// A definition Homeport holds: sent to compose on stdin, with its
-    /// environment as process variables, so nothing is written to disk.
-    Managed { compose: String, env: String },
+    /// A definition Homeport holds, with its environment as process
+    /// variables so nothing secret is written to disk. A single compose file
+    /// goes in on stdin; several are written to the run's private folder,
+    /// since compose takes only one file on stdin.
+    Managed {
+        files: Vec<ComposeFile>,
+        env: String,
+    },
     /// Compose files in a folder on this machine (ADR 0008): compose runs in
     /// the folder, so `build:`, `env_file:` and relative paths work.
     Linked {

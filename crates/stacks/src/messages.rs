@@ -6,6 +6,12 @@ homeport_core::messages! {
 
     /// A Stack name Compose wouldn't take as a project name.
     STACK_NAME = "errors.stacks.name" => "Stack names use lowercase letters, digits, - and _, and start with a letter or digit.";
+    /// A Managed Stack saved without a compose file.
+    NO_FILES = "errors.stacks.noFiles" => "A stack needs at least one compose file.";
+    /// A compose file name with a folder in it, or without a YAML extension.
+    FILE_NAME = "errors.stacks.fileName" => "\"{name}\" isn't a compose file name. Use a name such as compose.prod.yaml, without folders.";
+    /// Two compose files of one Stack with the same name.
+    FILE_NAME_TWICE = "errors.stacks.fileNameTwice" => "Two compose files are named {name}.";
     /// A line of the Stack's environment without `=`.
     ENV_NOT_KEY_VALUE = "errors.stacks.envNotKeyValue" => "Line {line} isn't KEY=value.";
     /// A line of the Stack's environment whose name has other characters than letters, digits and `_`.
@@ -40,6 +46,8 @@ homeport_core::messages! {
     FILES_CHANGED_HINT = "errors.stacks.filesChanged.hint" => "Reload it to see the change, or overwrite it with your version.";
     /// A folder picked for a Linked Stack that has no compose file Compose would use.
     NO_COMPOSE_FILE = "errors.stacks.noComposeFile" => "{folder} has no compose file. Homeport looks for compose.yaml, compose.yml, docker-compose.yml or docker-compose.yaml.";
+    /// A compose file picked for a Linked Stack outside its folder.
+    NOT_IN_FOLDER = "errors.stacks.notInFolder" => "{file} isn't in the stack's folder, {folder}.";
     /// A path that isn't one of the Linked Stack's compose files.
     NOT_A_STACK_FILE = "errors.stacks.notAStackFile" => "{file} isn't one of this Stack's compose files.";
 

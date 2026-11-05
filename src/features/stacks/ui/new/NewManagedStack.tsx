@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { type ComposeCheck, useCapabilities } from '@/shared/api';
+import { type ComposeCheck, type ComposeFile, useCapabilities } from '@/shared/api';
 import { Button, ErrorMessage, Input, Label } from '@/shared/ui';
 import { useCreateStack } from '../../api/mutations';
 import type { ComposeJob } from '../../model/composeJob';
@@ -14,7 +14,9 @@ export function NewManagedStack({ hostId, adopting }: { hostId: string; adopting
   const navigate = useNavigate();
   const capabilities = useCapabilities();
   const [name, setName] = useState(adopting ?? '');
-  const [compose, setCompose] = useState(adopting ? '' : STARTER);
+  const [files, setFiles] = useState<ComposeFile[]>([
+    { name: 'compose.yaml', content: adopting ? '' : STARTER },
+  ]);
   const [env, setEnv] = useState('');
   const [check, setCheck] = useState<ComposeCheck | null>(null);
   const [job, setJob] = useState<ComposeJob | null>(null);
@@ -39,9 +41,9 @@ export function NewManagedStack({ hostId, adopting }: { hostId: string; adopting
         />
       </div>
       <StackEditor
-        compose={compose}
+        files={files}
         env={env}
-        onComposeChange={setCompose}
+        onFilesChange={setFiles}
         onEnvChange={setEnv}
         keychain={capabilities.data?.keychain ?? true}
         onCheck={setCheck}
@@ -50,14 +52,14 @@ export function NewManagedStack({ hostId, adopting }: { hostId: string; adopting
       <div className="flex gap-2">
         <Button
           disabled={save.isPending || !canDeploy || !name}
-          onClick={() => save.mutate({ name, compose, env, deploy: true })}
+          onClick={() => save.mutate({ name, files, env, deploy: true })}
         >
           {t('stacks.newPage.saveAndDeploy')}
         </Button>
         <Button
           variant="outline"
           disabled={save.isPending || !name}
-          onClick={() => save.mutate({ name, compose, env, deploy: false })}
+          onClick={() => save.mutate({ name, files, env, deploy: false })}
         >
           {t('common.save')}
         </Button>

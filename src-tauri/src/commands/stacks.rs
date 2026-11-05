@@ -16,7 +16,7 @@ use homeport_stacks::{
         LinkedStack,
     },
     runtime::{self, ComposeJob, SourceKind, StackSource, StackTarget},
-    store::ManagedStack,
+    store::{ComposeFile, ManagedStack},
     Stack,
 };
 
@@ -68,11 +68,11 @@ pub fn stacks_create(
     state: State<'_, AppState>,
     host_id: String,
     name: String,
-    compose: String,
+    files: Vec<ComposeFile>,
     env: String,
 ) -> AppResult<ManagedStack> {
     state.hosts.store.get(&host_id)?;
-    state.stacks.create(&host_id, &name, &compose, &env)
+    state.stacks.create(&host_id, &name, &files, &env)
 }
 
 #[tauri::command]
@@ -80,10 +80,10 @@ pub fn stacks_create(
 pub fn stacks_update(
     state: State<'_, AppState>,
     id: String,
-    compose: String,
+    files: Vec<ComposeFile>,
     env: String,
 ) -> AppResult<ManagedStack> {
-    state.stacks.update(&id, &compose, &env)
+    state.stacks.update(&id, &files, &env)
 }
 
 /// Forgets a Managed Stack's definition; its containers keep running and it
@@ -168,6 +168,21 @@ pub fn stacks_linked_write(
     linked::files::read(&stack)
 }
 
+/// Sets which compose files of its folder a Linked Stack uses, in order.
+#[tauri::command]
+#[specta::specta]
+pub fn stacks_linked_set_files(
+    state: State<'_, AppState>,
+    id: String,
+    config_files: Vec<String>,
+) -> AppResult<LinkedFiles> {
+    let stack = state.linked.get(&id)?;
+    linked::files::validate_choice(&stack.working_dir, &config_files)?;
+    let fingerprint = linked::files::files_fingerprint(&config_files);
+    let stack = state.linked.set_files(&id, &config_files, &fingerprint)?;
+    linked::files::read(&stack)
+}
+
 /// Forgets a Linked Stack: its record goes, its folder and containers stay.
 #[tauri::command]
 #[specta::specta]
@@ -233,7 +248,7 @@ fn source(
             let stack = state.stacks.get(id)?;
             let source = StackSource::Managed {
                 env: state.stacks.env(id)?,
-                compose: stack.compose,
+                files: stack.files,
             };
             (stack.host_id, stack.name, source)
         }

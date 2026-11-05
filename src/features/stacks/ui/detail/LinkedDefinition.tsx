@@ -25,6 +25,7 @@ import { useComposeCheck } from '../../api/useComposeCheck';
 import type { ComposeJob } from '../../model/composeJob';
 import { changedOutside, dirtyFiles, fileName, textOf, type Drafts } from '../../model/linkedEdit';
 import { ComposeChecks } from '../ComposeChecks';
+import { LinkedFileList } from './LinkedFileList';
 import { YamlEditor } from '../YamlEditor';
 import { t, tRich } from '@/shared/i18n';
 
@@ -179,6 +180,12 @@ function LinkedEditor({
           )}
         </div>
         <div className="grid content-start gap-4">
+          <LinkedFileList
+            linkedId={linkedId}
+            files={base}
+            locked={dirty.length > 0}
+            onChanged={onRestart}
+          />
           <p className="text-muted-foreground text-xs">{t('stacks.linked.envNote')}</p>
           <ComposeChecks check={check} />
         </div>

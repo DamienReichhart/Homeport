@@ -149,6 +149,31 @@ fn folder_present(stack: &LinkedStack) -> AppResult<()> {
     }
 }
 
+/// Checks the compose files picked for a Linked Stack: at least one, each a
+/// file inside `working_dir`, none twice.
+pub fn validate_choice(working_dir: &str, files: &[String]) -> AppResult<()> {
+    if files.is_empty() {
+        return Err(AppError::validation(msg::NO_FILES));
+    }
+    let folder = std::fs::canonicalize(working_dir).map_err(|_| folder_missing(working_dir))?;
+    for (i, file) in files.iter().enumerate() {
+        let path = std::fs::canonicalize(file).map_err(|e| file_error(file, &e))?;
+        if !path.starts_with(&folder) || !path.is_file() {
+            return Err(AppError::validation(
+                msg::NOT_IN_FOLDER
+                    .with("file", file)
+                    .with("folder", working_dir),
+            ));
+        }
+        if files[..i].contains(file) {
+            return Err(AppError::validation(
+                msg::FILE_NAME_TWICE.with("name", file),
+            ));
+        }
+    }
+    Ok(())
+}
+
 /// The error for a path that isn't one of a Linked Stack's compose files.
 pub fn not_a_stack_file(path: &str) -> AppError {
     AppError::validation(msg::NOT_A_STACK_FILE.with("file", path))
@@ -302,6 +327,30 @@ mod tests {
         let e = read(&s).unwrap_err();
         assert!(e.is(ErrorCode::StackFolderMissing));
         assert!(e.message.contains(&s.working_dir));
+    }
+
+    #[test]
+    fn chosen_files_must_be_in_the_folder() {
+        let dir = tempfile::tempdir().unwrap();
+        let s = stack(dir.path(), &["compose.yaml", "compose.prod.yaml"]);
+        let folder = &s.working_dir;
+        assert!(validate_choice(folder, &s.config_files).is_ok());
+        let reversed: Vec<_> = s.config_files.iter().rev().cloned().collect();
+        assert!(validate_choice(folder, &reversed).is_ok());
+        assert!(validate_choice(folder, &[]).is_err());
+        let twice = vec![s.config_files[0].clone(), s.config_files[0].clone()];
+        assert!(validate_choice(folder, &twice).is_err());
+
+        let elsewhere = tempfile::tempdir().unwrap();
+        let outside = elsewhere.path().join("compose.yaml");
+        std::fs::write(&outside, BASE).unwrap();
+        let e = validate_choice(folder, &[outside.to_string_lossy().into_owned()]).unwrap_err();
+        assert!(e.is(ErrorCode::Validation), "{e:?}");
+        let sneaky = format!(
+            "{folder}/../{}",
+            outside.file_name().unwrap().to_string_lossy()
+        );
+        assert!(validate_choice(folder, &[sneaky]).is_err());
     }
 
     #[cfg(unix)]

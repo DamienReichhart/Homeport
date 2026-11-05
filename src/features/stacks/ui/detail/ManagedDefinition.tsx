@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { type ComposeCheck, type ManagedStack, useCapabilities } from '@/shared/api';
 import { Button, ErrorMessage, useConfirm } from '@/shared/ui';
 import { useForgetDefinition, useSaveDefinition } from '../../api/mutations';
+import { sameFiles } from '../../model/composeFiles';
 import type { ComposeJob } from '../../model/composeJob';
 import { StackEditor } from '../StackEditor';
 import { t } from '@/shared/i18n';
@@ -22,10 +23,10 @@ export function ManagedDefinition({
   const navigate = useNavigate();
   const capabilities = useCapabilities();
   const [dialog, confirm] = useConfirm();
-  const [compose, setCompose] = useState(managed.compose);
+  const [files, setFiles] = useState(managed.files);
   const [env, setEnv] = useState(initialEnv);
   const [check, setCheck] = useState<ComposeCheck | null>(null);
-  const dirty = compose !== managed.compose || env !== initialEnv;
+  const dirty = !sameFiles(files, managed.files) || env !== initialEnv;
   const save = useSaveDefinition(managed.id, (saved, deploy) => {
     if (deploy) onDeploy({ kind: 'managed', stackId: saved.id, name: saved.name, action: 'up' });
   });
@@ -35,9 +36,9 @@ export function ManagedDefinition({
   return (
     <div className="grid gap-4">
       <StackEditor
-        compose={compose}
+        files={files}
         env={env}
-        onComposeChange={setCompose}
+        onFilesChange={setFiles}
         onEnvChange={setEnv}
         keychain={capabilities.data?.keychain ?? true}
         onCheck={setCheck}
@@ -46,14 +47,14 @@ export function ManagedDefinition({
       <div className="flex flex-wrap gap-2">
         <Button
           disabled={save.isPending || !canDeploy}
-          onClick={() => save.mutate({ compose, env, deploy: true })}
+          onClick={() => save.mutate({ files, env, deploy: true })}
         >
           {t('stacks.managed.saveAndRedeploy')}
         </Button>
         <Button
           variant="outline"
           disabled={save.isPending || !dirty}
-          onClick={() => save.mutate({ compose, env, deploy: false })}
+          onClick={() => save.mutate({ files, env, deploy: false })}
         >
           {t('common.save')}
         </Button>

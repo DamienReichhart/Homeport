@@ -373,7 +373,7 @@ mod tests {
     use homeport_transport::testing::UnixDialer;
     use homeport_transport::Dialer;
 
-    use crate::{lifecycle, runtime::StackSource};
+    use crate::{lifecycle, runtime::StackSource, store::ComposeFile};
 
     #[test]
     fn direct_hosts_are_passed_to_the_cli() {
@@ -444,7 +444,7 @@ mod tests {
     fn the_clis_environment_holds_no_registry_login() {
         let job = job(
             StackSource::Managed {
-                compose: String::new(),
+                files: vec![ComposeFile::new("compose.yaml", "")],
                 env: "GREETING=hello".into(),
             },
             HostConnection::Tcp {
@@ -479,7 +479,10 @@ mod tests {
     fn the_source_names_the_files_and_the_target_the_host() {
         let job = job(
             StackSource::Managed {
-                compose: "services:\n  web:\n    image: nginx\n".into(),
+                files: vec![ComposeFile::new(
+                    "compose.yaml",
+                    "services:\n  web:\n    image: nginx\n",
+                )],
                 env: String::new(),
             },
             HostConnection::Tcp {
@@ -547,10 +550,13 @@ mod tests {
         let events = std::sync::Mutex::new(Vec::new());
         let mut job = job(
                 StackSource::Managed {
-                    compose: format!(
-                        "services:\n  app:\n    image: {}\n    command: [\"sleep\", \"60\"]\n    environment:\n      GREETING: ${{GREETING}}\n",
-                        testing::IMAGE
-                    ),
+                    files: vec![ComposeFile::new(
+                        "compose.yaml",
+                        format!(
+                            "services:\n  app:\n    image: {}\n    command: [\"sleep\", \"60\"]\n    environment:\n      GREETING: ${{GREETING}}\n",
+                            testing::IMAGE
+                        ),
+                    )],
                     env: "GREETING=hello".into(),
                 },
                 connection,
@@ -665,6 +671,62 @@ mod tests {
             ),
             "{events:?}"
         );
+    }
+
+    #[tokio::test]
+    #[ignore = "needs a local Docker Engine and the compose CLI"]
+    async fn managed_stacks_merge_a_base_and_an_override() {
+        let docker = testing::docker();
+        testing::ensure_image(&docker).await;
+        let project = testing::unique("merged");
+        let _cleanup = RemoveStack(project.clone());
+        let base = format!(
+            "services:\n  app:\n    image: {}\n    command: [\"sleep\", \"60\"]\n    environment:\n      GREETING: base\n",
+            testing::IMAGE
+        );
+        let prod = "services:\n  app:\n    environment:\n      GREETING: prod\n";
+        let mut job = job(
+            StackSource::Managed {
+                files: vec![
+                    ComposeFile::new("compose.yaml", base),
+                    ComposeFile::new("compose.prod.yaml", prod),
+                ],
+                env: String::new(),
+            },
+            HostConnection::Local {
+                socket_path: "/var/run/docker.sock".into(),
+            },
+            None,
+            testing::docker(),
+            Logins::none(),
+            &project,
+            ComposeAction::Up,
+        );
+        job.cli = detect().await.expect("docker compose is installed");
+        let events = std::sync::Mutex::new(Vec::new());
+        crate::runtime::run(job, |e| {
+            events.lock().unwrap().push(e);
+            true
+        })
+        .await;
+        let events = events.into_inner().unwrap();
+        assert!(
+            matches!(
+                events.last(),
+                Some(ComposeEvent::Exit { success: true, .. })
+            ),
+            "{events:?}"
+        );
+        let running = lifecycle::containers_of(&docker, &project).await.unwrap();
+        let env = docker
+            .inspect_container(&running[0].id, None)
+            .await
+            .unwrap()
+            .config
+            .unwrap()
+            .env
+            .unwrap();
+        assert!(env.contains(&"GREETING=prod".to_string()), "{env:?}");
     }
 
     /// Deploys a folder with a build, an env_file and a relative bind mount

@@ -156,8 +156,8 @@ export const commands = {
 	 */
 	stacksCheck: (files: string[], kind: SourceKind) => __TAURI_INVOKE<ComposeCheck>("stacks_check", { files, kind }),
 	/**  Creates a Managed Stack. Using the name of an External Stack adopts it. */
-	stacksCreate: (hostId: string, name: string, compose: string, env: string) => __TAURI_INVOKE<ManagedStack>("stacks_create", { hostId, name, compose, env }),
-	stacksUpdate: (id: string, compose: string, env: string) => __TAURI_INVOKE<ManagedStack>("stacks_update", { id, compose, env }),
+	stacksCreate: (hostId: string, name: string, files: ComposeFile[], env: string) => __TAURI_INVOKE<ManagedStack>("stacks_create", { hostId, name, files, env }),
+	stacksUpdate: (id: string, files: ComposeFile[], env: string) => __TAURI_INVOKE<ManagedStack>("stacks_update", { id, files, env }),
 	/**
 	 *  Forgets a Managed Stack's definition; its containers keep running and it
 	 *  becomes an External Stack.
@@ -181,6 +181,8 @@ export const commands = {
 	 *  when it changed outside Homeport.
 	 */
 	stacksLinkedWrite: (id: string, path: string, content: string, expected: string | null) => __TAURI_INVOKE<LinkedFiles>("stacks_linked_write", { id, path, content, expected }),
+	/**  Sets which compose files of its folder a Linked Stack uses, in order. */
+	stacksLinkedSetFiles: (id: string, configFiles: string[]) => __TAURI_INVOKE<LinkedFiles>("stacks_linked_set_files", { id, configFiles }),
 	/**  Forgets a Linked Stack: its record goes, its folder and containers stay. */
 	stacksLinkedForget: (id: string) => __TAURI_INVOKE<null>("stacks_linked_forget", { id }),
 	stacksAct: (hostId: string, name: string, action: StackAction) => __TAURI_INVOKE<null>("stacks_act", { hostId, name, action }),
@@ -365,6 +367,13 @@ export type ComposeCli = {
 export type ComposeEvent = { type: "line"; text: string } | 
 /**  `error` explains a failed exit, from the end of stderr. */
 { type: "exit"; success: boolean; code: number | null; error: AppError | null } | { type: "error"; error: AppError };
+
+/**  One compose file of a Managed Stack. */
+export type ComposeFile = {
+	/**  A file name such as `compose.prod.yaml`, unique in the Stack. */
+	name: string,
+	content: string,
+};
 
 /**  The compose CLI used to deploy Managed Stacks, or why there's none. */
 export type ComposeSupport = { state: "available"; cli: ComposeCli } | 
@@ -838,7 +847,8 @@ export type ManagedStack = {
 	id: string,
 	hostId: string,
 	name: string,
-	compose: string,
+	/**  Its compose files, merged in this order; never empty. */
+	files: ComposeFile[],
 	hasEnv: boolean,
 	createdAt: string,
 	updatedAt: string,

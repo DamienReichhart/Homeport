@@ -184,6 +184,18 @@ Blank lines, `# comments` and `export` prefixes are allowed. Values may be quote
   Without one, the field is disabled and Stacks deploy without it.
 </Aside>
 
+## Several compose files
+
+A Stack can be made of several compose files merged in order, the way `docker compose -f compose.yaml -f compose.prod.yaml` merges them: a base file, then overrides that add or change keys — `ports:` for production, a debug service for development.
+
+**Managed Stacks** show one tab per file above the editor. Choose **Add file** to add one (Homeport suggests `compose.override.yaml`, `compose.prod.yaml` and so on), rename it in **File name**, move it earlier or later with the arrows, or remove it. The first file is the base and can't be removed. Names end in `.yaml` or `.yml`.
+
+With one file, Homeport sends it to Compose on its standard input, as before. With several, it writes them to a private folder that only your user can open, for the length of the command, and removes it afterwards. The environment is never written there: it still goes to Compose as variables.
+
+**Linked Stacks** list their files in the side panel of the **Definition** tab, in order. **Add a file…** picks another compose file from the Stack's folder — `compose.prod.yaml` instead of the default override, say — and the arrows and **✕** reorder and remove them. Save or reload your edits first: changing the files reloads the editor.
+
+The checks look at the files merged, so a service defined in the base and given `ports:` in an override is checked as one service.
+
 ## Deploying and redeploying
 
 **Deploy** — or **Redeploy** once the Stack is running — runs `docker compose up --detach --remove-orphans`. A window shows Compose's output as it runs and ends with **✓ Done** or the exit code it failed with.

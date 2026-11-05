@@ -40,22 +40,54 @@ pub(crate) struct Prepared {
     pub definition: Vec<(String, String)>,
 }
 
+/// A fresh folder only this user can enter, removed when dropped.
+fn private_dir() -> std::io::Result<tempfile::TempDir> {
+    let dir = tempfile::Builder::new().prefix("homeport-").tempdir()?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(dir.path(), std::fs::Permissions::from_mode(0o700))?;
+    }
+    Ok(dir)
+}
+
 impl StackSource {
     /// Checks the source can be used for `action` and lays it out for the CLI.
     pub(crate) fn prepare(&self, action: ComposeAction) -> AppResult<Prepared> {
         match self {
-            Self::Managed { compose, env } => {
+            Self::Managed { files, env } => {
                 if action.reads_definition() {
-                    if let Some(blocker) = definition::blocker(&[compose], self.kind()) {
+                    let yaml: Vec<&str> = files.iter().map(|f| f.content.as_str()).collect();
+                    if let Some(blocker) = definition::blocker(&yaml, self.kind()) {
                         return Err(blocker);
                     }
                 }
+                definition::validate_files(files)?;
+                let dir = private_dir()?;
+                let (file_args, stdin) = match files.as_slice() {
+                    [only] => (
+                        vec!["--file".into(), "-".into()],
+                        Some(only.content.clone()),
+                    ),
+                    several => {
+                        let mut args = Vec::new();
+                        for file in several {
+                            // Compose files aren't secret (ADR 0002); the environment stays out.
+                            std::fs::write(dir.path().join(&file.name), &file.content)?;
+                            args.extend(["--file".to_owned(), file.name.clone()]);
+                        }
+                        (args, None)
+                    }
+                };
                 Ok(Prepared {
-                    file_args: vec!["--file".into(), "-".into()],
-                    workdir: WorkDir::Temp(tempfile::tempdir()?),
-                    stdin: Some(compose.clone()),
+                    file_args,
+                    workdir: WorkDir::Temp(dir),
+                    stdin,
                     vars: definition::parse_env(env)?,
-                    definition: vec![("compose.yaml".into(), compose.clone())],
+                    definition: files
+                        .iter()
+                        .map(|f| (f.name.clone(), f.content.clone()))
+                        .collect(),
                 })
             }
             Self::Linked {
@@ -106,16 +138,18 @@ impl StackSource {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::store::ComposeFile;
 
     #[test]
     fn managed_definitions_go_in_on_stdin_from_an_empty_folder() {
+        let compose = "services:\n  web:\n    image: nginx\n";
         let source = StackSource::Managed {
-            compose: "services:\n  web:\n    image: nginx\n".into(),
+            files: vec![ComposeFile::new("compose.yaml", compose)],
             env: "A=1".into(),
         };
         let prepared = source.prepare(ComposeAction::Up).unwrap();
         assert_eq!(prepared.file_args, ["--file", "-"]);
-        assert_eq!(prepared.stdin.as_deref(), Some(source_compose(&source)));
+        assert_eq!(prepared.stdin.as_deref(), Some(compose));
         assert_eq!(prepared.vars, [("A".to_owned(), "1".to_owned())]);
         assert!(matches!(prepared.workdir, WorkDir::Temp(_)));
         assert_eq!(
@@ -127,18 +161,55 @@ mod tests {
     #[test]
     fn a_blocked_definition_can_still_be_taken_down() {
         let source = StackSource::Managed {
-            compose: "services:\n  app:\n    build: .\n".into(),
+            files: vec![ComposeFile::new(
+                "compose.yaml",
+                "services:\n  app:\n    build: .\n",
+            )],
             env: String::new(),
         };
         assert!(source.prepare(ComposeAction::Up).is_err());
         assert!(source.prepare(ComposeAction::Down).is_ok());
     }
 
-    fn source_compose(source: &StackSource) -> &str {
-        match source {
-            StackSource::Managed { compose, .. } => compose,
-            StackSource::Linked { .. } => unreachable!(),
+    #[test]
+    fn several_managed_files_are_written_to_the_private_folder_in_order() {
+        let source = StackSource::Managed {
+            files: vec![
+                ComposeFile::new("compose.yaml", "services:\n  web:\n    image: nginx\n"),
+                ComposeFile::new(
+                    "compose.prod.yaml",
+                    "services:\n  web:\n    ports: [\"80:80\"]\n",
+                ),
+            ],
+            env: "SECRET=hunter2".into(),
+        };
+        let prepared = source.prepare(ComposeAction::Up).unwrap();
+        assert_eq!(
+            prepared.file_args,
+            ["--file", "compose.yaml", "--file", "compose.prod.yaml"]
+        );
+        assert!(prepared.stdin.is_none());
+        let dir = prepared.workdir.path().to_owned();
+        let mut names: Vec<_> = std::fs::read_dir(&dir)
+            .unwrap()
+            .map(|e| e.unwrap().file_name().into_string().unwrap())
+            .collect();
+        names.sort();
+        assert_eq!(names, ["compose.prod.yaml", "compose.yaml"]);
+        // The environment is never written next to them.
+        for name in &names {
+            assert!(!std::fs::read_to_string(dir.join(name))
+                .unwrap()
+                .contains("hunter2"));
         }
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mode = std::fs::metadata(&dir).unwrap().permissions().mode();
+            assert_eq!(mode & 0o777, 0o700);
+        }
+        drop(prepared);
+        assert!(!dir.exists(), "removed after the run");
     }
 
     fn linked(dir: &Path, files: &[(&str, &str)]) -> StackSource {

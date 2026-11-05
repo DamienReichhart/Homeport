@@ -709,7 +709,7 @@ export const managedStacks: ManagedStack[] = [
   id: id as string,
   hostId: PROD,
   name: name as string,
-  compose: compose as string,
+  files: [{ name: 'compose.yaml', content: compose as string }],
   hasEnv: name === 'shop',
   createdAt: new Date((NOW - (age as number)) * 1000).toISOString(),
   updatedAt: new Date((NOW - (age as number)) * 1000).toISOString(),

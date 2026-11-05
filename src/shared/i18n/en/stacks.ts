@@ -86,6 +86,13 @@ export default {
 
   'stacks.newPage.saveAndDeploy': 'Save and deploy',
   'stacks.editor.compose': 'Compose definition',
+  'stacks.editor.files': 'Compose files, merged in this order',
+  'stacks.editor.addFile': 'Add file',
+  'stacks.editor.fileName': 'File name',
+  'stacks.editor.moveEarlier': 'Merge this file earlier',
+  'stacks.editor.moveLater': 'Merge this file later',
+  'stacks.editor.removeFile': 'Remove {name}',
+  'stacks.editor.baseFile': 'The first file is the base of the definition and stays.',
   'stacks.editor.environment': 'Environment',
   'stacks.editor.envNoKeychain': 'Needs an OS keychain',
   'stacks.editor.envHint':
@@ -114,6 +121,10 @@ export default {
   'stacks.linked.envNote':
     'Compose reads the folder’s .env when it runs. Homeport doesn’t show or change it.',
   'stacks.linked.files': 'Compose files',
+  'stacks.linked.order': 'Compose files, merged in this order',
+  'stacks.linked.addFile': 'Add a file…',
+  'stacks.linked.pickFile': 'Choose a compose file in the stack’s folder',
+  'stacks.linked.saveFirst': 'Save or reload your edits before changing the files.',
   'stacks.linked.forget': 'Forget',
   'stacks.linked.forgetTitle': 'Forget {name}?',
   'stacks.linked.forgetDescription':

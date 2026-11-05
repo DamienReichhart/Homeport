@@ -10,7 +10,7 @@ use serde_yaml_ng::{Mapping, Value};
 
 use homeport_core::error::{AppError, AppResult};
 
-use crate::{messages as msg, runtime::SourceKind};
+use crate::{messages as msg, runtime::SourceKind, store::ComposeFile};
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -41,6 +41,30 @@ pub fn validate_name(name: &str) -> AppResult<()> {
     } else {
         Err(AppError::validation(msg::STACK_NAME))
     }
+}
+
+/// A Managed Stack's compose files: at least one, each a plain file name
+/// ending in `.yaml` or `.yml`, no two alike.
+pub fn validate_files(files: &[ComposeFile]) -> AppResult<()> {
+    if files.is_empty() {
+        return Err(AppError::validation(msg::NO_FILES));
+    }
+    for (i, file) in files.iter().enumerate() {
+        let name = file.name.as_str();
+        let plain = !name.is_empty()
+            && !name.starts_with('.')
+            && !name.contains(['/', '\\', ':'])
+            && (name.ends_with(".yaml") || name.ends_with(".yml"));
+        if !plain {
+            return Err(AppError::validation(msg::FILE_NAME.with("name", name)));
+        }
+        if files[..i].iter().any(|f| f.name == file.name) {
+            return Err(AppError::validation(
+                msg::FILE_NAME_TWICE.with("name", name),
+            ));
+        }
+    }
+    Ok(())
 }
 
 /// What can be found wrong with a definition: the problems that block
@@ -291,6 +315,24 @@ mod tests {
         for bad in ["", "Shop", "-shop", "my shop", "café"] {
             assert!(validate_name(bad).is_err(), "{bad}");
         }
+    }
+
+    #[test]
+    fn compose_file_names_are_plain_and_unique() {
+        let f = |n: &str| ComposeFile::new(n, "");
+        assert!(validate_files(&[f("compose.yaml"), f("compose.prod.yml")]).is_ok());
+        assert!(validate_files(&[]).is_err());
+        for bad in [
+            "",
+            "../x.yaml",
+            "dir/x.yaml",
+            "x.txt",
+            ".hidden.yaml",
+            "C:x.yaml",
+        ] {
+            assert!(validate_files(&[f(bad)]).is_err(), "{bad}");
+        }
+        assert!(validate_files(&[f("a.yaml"), f("a.yaml")]).is_err());
     }
 
     #[test]
