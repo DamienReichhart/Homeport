@@ -1,6 +1,6 @@
 ---
 title: Stacks
-description: Deploy Compose Stacks to any Host, keep their environment encrypted, and adopt Stacks deployed elsewhere.
+description: Deploy Compose Stacks to any Host from Homeport or from a project folder, keep their environment encrypted, and adopt Stacks deployed elsewhere.
 ---
 
 import { Aside, Steps } from '@astrojs/starlight/components';
@@ -15,20 +15,28 @@ A **Stack** is a Compose project running on a Host. Homeport finds every Stack o
 
 ## Managed, Linked and External Stacks
 
+Every Stack is one of three kinds:
+
+| Kind         | Where its compose file is                         | Edit | Deploy | Build | Start, stop, remove |
+| ------------ | ------------------------------------------------- | ---- | ------ | ----- | ------------------- |
+| **Managed**  | In Homeport, with its environment encrypted       | ✓    | ✓      | —     | ✓                   |
+| **Linked**   | In its project folder on **this** computer        | ✓    | ✓      | ✓     | ✓                   |
+| **External** | Nowhere Homeport can see: deployed some other way | —    | —      | —     | ✓                   |
+
 - A **Managed Stack** is one whose compose file and environment Homeport keeps. You can edit it, deploy it and take it down from Homeport.
-- A **Linked Stack** is one whose compose files are a folder on **this** computer. Homeport remembers where the folder is and works on the files there. See [Linked Stacks](#linked-stacks).
-- An **External Stack** was deployed some other way — `docker compose up` on the server, a CI job, another tool. Homeport can start, stop, restart and remove its containers, but has no compose file to redeploy it from. You can [adopt](#adopting-an-external-stack) it to make it Managed.
+- A **Linked Stack** is one whose compose files are a folder on this computer, where you keep editing them. Homeport remembers where the folder is, works on the files there and deploys from it. See [Linked Stacks](#linked-stacks).
+- An **External Stack** was deployed some other way — `docker compose up` on the server, a CI job, another tool, or from a folder on another computer. Homeport can start, stop, restart and remove its containers, but has no compose file to redeploy it from. You can [adopt](#adopting-an-external-stack) it to make it Managed.
 
 Each Stack shows one of these states:
 
-| State              | Meaning                                 |
-| ------------------ | --------------------------------------- |
-| **Running**        | All of its containers are running.      |
-| **Partly running** | Some are.                               |
-| **Stopped**        | None are.                               |
-| **Not deployed**   | A Managed Stack with no containers yet. |
+| State              | Meaning                                           |
+| ------------------ | ------------------------------------------------- |
+| **Running**        | All of its containers are running.                |
+| **Partly running** | Some are.                                         |
+| **Stopped**        | None are.                                         |
+| **Not deployed**   | A Managed or Linked Stack with no containers yet. |
 
-Managed Stacks belong to one Host. To run the same compose file on two Hosts, create a Stack on each.
+Managed and Linked Stacks belong to one Host. To run the same compose file on two Hosts, create a Stack on each.
 
 ## Linked Stacks
 
@@ -105,9 +113,9 @@ A Stack started from a folder on another computer is External on this one, since
 
 ## What deploying needs
 
-Homeport deploys Managed Stacks with the `docker compose` command on **this** computer, pointed at the Host. Install the Docker CLI with the Compose plugin, or standalone `docker-compose` v2; **Settings → This machine** shows whether Homeport found it.
+Homeport deploys Managed and Linked Stacks with the `docker compose` command on **this** computer, pointed at the Host. Install the Docker CLI with the Compose plugin, or standalone `docker-compose` v2; **Settings → This machine** shows whether Homeport found it.
 
-The command runs with the compose file on its standard input, the Stack's environment as variables, and an empty working folder, so nothing is written to disk. For SSH and TLS Hosts, Homeport routes the command through its own connection to the Host, so Compose never sees your keys.
+For a Managed Stack, the command runs with the compose file on its standard input, the Stack's environment as variables, and an empty working folder, so nothing is written to disk. For a Linked Stack, it runs in the Stack's folder with its compose files, as if you ran it there. For SSH and TLS Hosts, Homeport routes the command through its own connection to the Host, so Compose never sees your keys.
 
 Without the Compose CLI you can still start, stop and remove Stacks; only **Deploy**, **Pull images** and **Take down** need it.
 
@@ -140,14 +148,15 @@ Compose itself is never given a login: no file Homeport creates for the run, and
 
 ### Checks as you type
 
-Homeport checks the definition as you type and lists problems under the editor.
+Homeport checks the definition as you type and lists problems under the editor. Which rules apply depends on the kind of Stack.
 
 **Errors** stop a deploy:
 
-- The YAML can't be parsed, or has no `services:`.
-- A service has no `image:`, or uses `build:`. The Host would build from files on _this_ computer, so use an image you've pushed to a registry instead.
+- The YAML can't be parsed, or has no `services:` — every kind.
+- A service has neither `image:` nor `build:` — every kind.
+- A service uses `build:` — **Managed Stacks** only. There's no folder to build from, so use an image you've pushed to a registry, or [link the folder](#creating-a-linked-stack) instead.
 
-**Warnings** let you deploy, but point at things that probably won't do what you expect, because Compose reads them from this computer rather than the Host:
+**Warnings**, for **Managed Stacks** only, let you deploy but point at things that probably won't do what you expect, because Compose reads them from this computer rather than the Host. A Linked Stack's folder is there, so they're fine for it:
 
 - A bind mount with a relative path such as `./data:/data`. Use an absolute path on the Host or a named volume.
 - `env_file:`, or `configs` and `secrets` read from a `file:`. Put variables in the Stack's environment instead.
@@ -204,18 +213,19 @@ A ⬆ in a Stack's **State** means one of its services runs an image whose tag h
 
 ## Stack actions
 
-| Action                     | Stacks   | What it does                                                                                |
-| -------------------------- | -------- | ------------------------------------------------------------------------------------------- |
-| **Deploy** / **Redeploy**  | Managed  | `docker compose up` with the stored definition.                                             |
-| **Start** / **Stop**       | Any      | Starts the stopped containers, or stops the running ones.                                   |
-| **Restart**                | Any      | Restarts every container.                                                                   |
-| **Pull images**            | Managed  | Pulls every service's image with the stored logins, to fetch newer ones before redeploying. |
-| **Take down**              | Managed  | `docker compose down`: removes containers and networks, keeps volumes and the definition.   |
-| **Take down with volumes** | Managed  | Also deletes the Stack's volumes **and their data**.                                        |
-| **Remove containers**      | External | Removes its containers and networks. Volumes are kept.                                      |
-| **Adopt**                  | External | Gives Homeport the compose file, making it Managed.                                         |
+| Action                     | Stacks          | What it does                                                                                |
+| -------------------------- | --------------- | ------------------------------------------------------------------------------------------- |
+| **Deploy** / **Redeploy**  | Managed, Linked | `docker compose up` with the Stack's definition.                                            |
+| **Rebuild and deploy**     | Linked          | `docker compose up --build`: rebuilds every service with `build:` first.                    |
+| **Start** / **Stop**       | Any             | Starts the stopped containers, or stops the running ones.                                   |
+| **Restart**                | Any             | Restarts every container.                                                                   |
+| **Pull images**            | Managed, Linked | Pulls every service's image with the stored logins, to fetch newer ones before redeploying. |
+| **Take down**              | Managed, Linked | `docker compose down`: removes containers and networks, keeps volumes and the definition.   |
+| **Take down with volumes** | Managed, Linked | Also deletes the Stack's volumes **and their data**.                                        |
+| **Remove containers**      | External        | Removes its containers and networks. Volumes are kept.                                      |
+| **Adopt**                  | External        | Gives Homeport the compose file, making it Managed.                                         |
 
-**Forget definition**, in a Managed Stack's **Definition** tab, deletes the compose file and environment from Homeport but leaves the containers running; the Stack becomes External.
+**Forget definition**, in a Managed Stack's **Definition** tab, deletes the compose file and environment from Homeport but leaves the containers running; the Stack becomes External. **Forget**, in a Linked Stack's **Definition** tab, drops Homeport's note of the folder; the folder, its files and the containers are left alone.
 
 ## Adopting an External Stack
 

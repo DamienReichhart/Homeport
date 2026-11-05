@@ -25,7 +25,7 @@ No — only a Docker Engine and an SSH server, which you most likely already hav
 
 ### Do I need Docker installed on my computer to manage remote servers?
 
-No. Homeport speaks the Engine API and SSH itself. The only exception is deploying Managed Stacks, which uses the `docker compose` command on your computer.
+No. Homeport speaks the Engine API and SSH itself. The only exception is deploying Managed and Linked Stacks, which uses the `docker compose` command on your computer.
 
 ### Can several people share Homeport's Hosts?
 
@@ -36,6 +36,14 @@ Each person runs their own Homeport with their own Hosts and keys. With a Homepo
 Yes. On the **Hosts** page, choose **Export**, pick the Hosts and a passphrase of at least 12 characters, and save the file. On the other computer, choose **Import** on the same page, open the file with the passphrase and pick what to add. Keys, certificates and trusted server keys come along, so the Hosts connect without asking you anything; see [moving to another computer](/docs/reference/security/#moving-to-another-computer).
 
 Copying `homeport.db` doesn't work for secrets: they're encrypted with a key kept in this computer's keychain, and show as **Credentials lost** elsewhere. Stacks aren't exported yet.
+
+### Can Homeport build images?
+
+Yes, in two places. The **Images** page builds an image from a folder on this computer. And a [Linked Stack](/docs/guides/stacks/#linked-stacks) — a Stack whose compose files are in a folder on this computer — can use `build:`: Homeport runs `docker compose` in that folder, so the build context is sent from there to the Host's Engine, which builds it. **Rebuild and deploy** rebuilds after a code change. A Managed Stack can't build, since Homeport holds only its YAML and there is no folder to build from: link the folder instead, or push the image to a registry.
+
+### Why does my Stack show as External on my other computer?
+
+A Stack started with `docker compose up` in a folder shows as [Linked](/docs/guides/stacks/#how-linked-stacks-are-found) only on a computer where that folder and its compose files exist, at the same path, and define the services that run. On another computer the path doesn't exist, so Homeport has no compose file for it and shows it as External. To manage it from there too, clone the project to that computer and link it with **New stack → Use a folder on this computer**, or adopt it as a Managed Stack.
 
 ### Does Homeport collect data about me?
 
