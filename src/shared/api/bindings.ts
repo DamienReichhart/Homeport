@@ -163,6 +163,11 @@ export const commands = {
 	 *  becomes an External Stack.
 	 */
 	stacksForget: (id: string) => __TAURI_INVOKE<null>("stacks_forget", { id }),
+	/**
+	 *  Sets the Compose profiles a Managed or Linked Stack deploys; they apply
+	 *  from its next compose command.
+	 */
+	stacksSetProfiles: (kind: SourceKind, id: string, profiles: string[]) => __TAURI_INVOKE<string[]>("stacks_set_profiles", { kind, id, profiles }),
 	/**  What Compose would make of a folder picked for a new Linked Stack. */
 	stacksLinkedInspect: (path: string) => __TAURI_INVOKE<FolderProject>("stacks_linked_inspect", { path }),
 	/**
@@ -354,6 +359,8 @@ export type ComposeCheck = {
 	errors: string[],
 	/**  Things that will probably not do what the author expects. */
 	warnings: string[],
+	/**  The Compose profiles its services declare, sorted. */
+	profiles: string[],
 };
 
 /**  How to invoke Compose on this machine. */
@@ -780,6 +787,8 @@ export type LinkedFiles = {
 	fingerprint: string,
 	/**  The files differ from what Homeport last read or wrote. */
 	changedOutside: boolean,
+	/**  The Compose profiles the Stack deploys. */
+	profiles: string[],
 };
 
 export type LinkedStack = {
@@ -795,6 +804,8 @@ export type LinkedStack = {
 	 *  changed outside Homeport.
 	 */
 	fingerprint: string,
+	/**  The Compose profiles it deploys; none until the user turns one on. */
+	profiles: string[],
 	createdAt: string,
 	updatedAt: string,
 };
@@ -850,6 +861,8 @@ export type ManagedStack = {
 	/**  Its compose files, merged in this order; never empty. */
 	files: ComposeFile[],
 	hasEnv: boolean,
+	/**  The Compose profiles it deploys, besides its services without one. */
+	profiles: string[],
 	createdAt: string,
 	updatedAt: string,
 };

@@ -215,6 +215,25 @@ With one file, Homeport sends it to Compose on its standard input, as before. Wi
 
 The checks look at the files merged, so a service defined in the base and given `ports:` in an override is checked as one service.
 
+## Profiles
+
+Compose files often keep optional services — debug tools, workers, a local database — behind `profiles:`:
+
+```yaml
+services:
+  app:
+    image: ghcr.io/org/app:1.4
+  adminer:
+    image: adminer:4.8.1
+    profiles: [debug]
+```
+
+Services without a profile always run. Those behind one run only when the Stack turns it on. When a Managed or Linked Stack's files declare profiles, its **Definition** tab shows **Profiles**, with a checkbox for each. Turn one on and choose **Save and redeploy** — or **Save profiles** to apply it at the next deploy.
+
+Turning a profile off and redeploying removes its services' containers: Homeport removes them before `docker compose up`, since Compose itself leaves them running. **Take down** removes the services of every profile the files declare, turned on or not.
+
+The Stack's profiles are the only ones that count. A `COMPOSE_PROFILES` variable in your shell, in a Managed Stack's environment or in a Linked Stack's `.env` doesn't change what Homeport deploys. A Linked Stack found from its compose labels starts with no profile turned on, even if it was started with `--profile`: turn them on in its **Definition** tab. If a profile you turned on disappears from the files, Homeport says so and turns it off at the next save.
+
 ## Deploying and redeploying
 
 **Deploy** — or **Redeploy** once the Stack is running — runs `docker compose up --detach --remove-orphans`. A window shows Compose's output as it runs and ends with **✓ Done** or the exit code it failed with.

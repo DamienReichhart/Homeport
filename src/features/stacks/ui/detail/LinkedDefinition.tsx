@@ -26,6 +26,7 @@ import type { ComposeJob } from '../../model/composeJob';
 import { changedOutside, dirtyFiles, fileName, textOf, type Drafts } from '../../model/linkedEdit';
 import { ComposeChecks } from '../ComposeChecks';
 import { LinkedFileList } from './LinkedFileList';
+import { ProfilesControl } from './ProfilesControl';
 import { YamlEditor } from '../YamlEditor';
 import { t, tRich } from '@/shared/i18n';
 
@@ -185,6 +186,15 @@ function LinkedEditor({
             files={base}
             locked={dirty.length > 0}
             onChanged={onRestart}
+          />
+          <ProfilesControl
+            key={current.profiles.join()}
+            kind="linked"
+            stackId={linkedId}
+            declared={check?.profiles ?? null}
+            active={current.profiles}
+            canDeploy={canDeploy && dirty.length === 0}
+            onDeploy={onDeploy}
           />
           <p className="text-muted-foreground text-xs">{t('stacks.linked.envNote')}</p>
           <ComposeChecks check={check} />

@@ -5,6 +5,7 @@ const files = (fingerprints: [string, string], changed = false): LinkedFiles => 
   workingDir: '/srv/site',
   fingerprint: 'all',
   changedOutside: changed,
+  profiles: [],
   files: [
     { path: '/srv/site/compose.yaml', content: 'a', fingerprint: fingerprints[0] },
     { path: '/srv/site/compose.prod.yaml', content: 'b', fingerprint: fingerprints[1] },

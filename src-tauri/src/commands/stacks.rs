@@ -190,6 +190,22 @@ pub fn stacks_linked_forget(state: State<'_, AppState>, id: String) -> AppResult
     state.linked.delete(&id)
 }
 
+/// Sets the Compose profiles a Managed or Linked Stack deploys; they apply
+/// from its next compose command.
+#[tauri::command]
+#[specta::specta]
+pub fn stacks_set_profiles(
+    state: State<'_, AppState>,
+    kind: SourceKind,
+    id: String,
+    profiles: Vec<String>,
+) -> AppResult<Vec<String>> {
+    Ok(match kind {
+        SourceKind::Managed => state.stacks.set_profiles(&id, &profiles)?.profiles,
+        SourceKind::Linked => state.linked.set_profiles(&id, &profiles)?.profiles,
+    })
+}
+
 #[tauri::command]
 #[specta::specta]
 pub async fn stacks_act(
@@ -223,42 +239,55 @@ pub async fn stacks_compose_subscribe(
     action: ComposeAction,
     on_event: Channel<ComposeEvent>,
 ) -> AppResult<StreamId> {
-    let (host_id, project, source) = source(&state, kind, &id)?;
+    let stack = resolve(&state, kind, &id)?;
     let job = ComposeJob {
         cli: compose::detect().await?,
-        source,
-        target: target(&state, &host_id)?,
+        source: stack.source,
+        target: target(&state, &stack.host_id)?,
         logins: registries::logins(&state)?,
-        project,
+        project: stack.name,
         action,
+        profiles: stack.profiles,
     };
     Ok(state
         .streams
         .spawn(runtime::run(job, move |e| on_event.send(e).is_ok())))
 }
 
-/// The Host, name and source of the Managed or Linked Stack `id`.
-fn source(
-    state: &AppState,
-    kind: SourceKind,
-    id: &str,
-) -> AppResult<(String, String, StackSource)> {
+/// A Managed or Linked Stack, ready to run.
+struct Resolved {
+    host_id: String,
+    name: String,
+    source: StackSource,
+    profiles: Vec<String>,
+}
+
+/// The Host, name, source and profiles of the Managed or Linked Stack `id`.
+fn resolve(state: &AppState, kind: SourceKind, id: &str) -> AppResult<Resolved> {
     Ok(match kind {
         SourceKind::Managed => {
             let stack = state.stacks.get(id)?;
-            let source = StackSource::Managed {
-                env: state.stacks.env(id)?,
-                files: stack.files,
-            };
-            (stack.host_id, stack.name, source)
+            Resolved {
+                source: StackSource::Managed {
+                    env: state.stacks.env(id)?,
+                    files: stack.files,
+                },
+                host_id: stack.host_id,
+                name: stack.name,
+                profiles: stack.profiles,
+            }
         }
         SourceKind::Linked => {
             let stack = state.linked.get(id)?;
-            let source = StackSource::Linked {
-                working_dir: stack.working_dir.into(),
-                config_files: stack.config_files,
-            };
-            (stack.host_id, stack.name, source)
+            Resolved {
+                source: StackSource::Linked {
+                    working_dir: stack.working_dir.into(),
+                    config_files: stack.config_files,
+                },
+                host_id: stack.host_id,
+                name: stack.name,
+                profiles: stack.profiles,
+            }
         }
     })
 }

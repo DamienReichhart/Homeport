@@ -22,6 +22,7 @@ const files = (changedOutside = false): LinkedFiles => ({
   workingDir: '/home/me/site',
   fingerprint: 'all',
   changedOutside,
+  profiles: [],
   files: [
     {
       path: '/home/me/site/compose.yaml',
@@ -37,7 +38,7 @@ function mock(overrides: Record<string, (args: Record<string, unknown>) => unkno
     containers_list: () => [],
     images_freshness: () => [],
     stacks_list: () => [site],
-    stacks_check: () => ({ errors: [], warnings: [] }),
+    stacks_check: () => ({ errors: [], warnings: [], profiles: [] }),
     stacks_linked_read: () => files(),
     ...overrides,
   });
@@ -74,5 +75,42 @@ describe('a Linked Stack’s definition', () => {
       await screen.findByText('The folder /home/me/site is no longer on this computer.'),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Forget' })).toBeInTheDocument();
+  });
+});
+
+describe('a Stack’s profiles', () => {
+  it('turns on a declared profile and saves it', async () => {
+    const saved: unknown[] = [];
+    mock({
+      stacks_check: () => ({ errors: [], warnings: [], profiles: ['debug', 'tools'] }),
+      stacks_set_profiles: ({ profiles }) => {
+        saved.push(profiles);
+        return profiles;
+      },
+    });
+    renderApp('/stacks/site');
+    await userEvent.click(await screen.findByRole('checkbox', { name: 'debug' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Save profiles' }));
+    await waitFor(() => expect(saved).toEqual([['debug']]));
+  });
+
+  it('says when a turned-on profile left the definition', async () => {
+    mock({
+      stacks_check: () => ({ errors: [], warnings: [], profiles: ['tools'] }),
+      stacks_linked_read: () => ({ ...files(), profiles: ['old'] }),
+    });
+    renderApp('/stacks/site');
+    expect(
+      await screen.findByText(
+        'old is no longer in the definition, so it’s turned off when you save.',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('is hidden when the definition declares none', async () => {
+    mock();
+    renderApp('/stacks/site');
+    await screen.findByRole('tab', { name: 'compose.yaml' });
+    expect(screen.queryByText('Profiles')).toBeNull();
   });
 });

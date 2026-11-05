@@ -27,7 +27,7 @@ use homeport_transport::proxy;
 
 use self::error as errors;
 use crate::{
-    definition,
+    definition, lifecycle,
     runtime::{ComposeJob, Prepared, StackTarget, WorkDir},
 };
 
@@ -231,6 +231,12 @@ async fn execute(job: ComposeJob, sink: &impl Fn(ComposeEvent) -> bool) -> AppRe
         }
     }
 
+    if job.action.reads_definition()
+        && !remove_turned_off(&job, &prepared, &docker_host, sink).await?
+    {
+        return Ok(());
+    }
+
     let mut child = cli(&args)
         .spawn()
         .map_err(|e| errors::spawn_failed(&job.cli.program, &e))?;
@@ -300,6 +306,57 @@ fn remote_path_warnings(prepared: &Prepared, job: &ComposeJob) -> Vec<String> {
         .collect()
 }
 
+/// Removes the containers of services whose profiles are all turned off:
+/// compose doesn't count them as orphans, so `up --remove-orphans` would
+/// leave them running. `Ok(false)` when the viewer went away.
+async fn remove_turned_off(
+    job: &ComposeJob,
+    prepared: &Prepared,
+    docker_host: &str,
+    sink: &impl Fn(ComposeEvent) -> bool,
+) -> AppResult<bool> {
+    let yaml: Vec<&str> = prepared
+        .definition
+        .iter()
+        .map(|(_, t)| t.as_str())
+        .collect();
+    let off = definition::services_turned_off(&yaml, &job.profiles);
+    if off.is_empty() {
+        return Ok(true);
+    }
+    let containers = lifecycle::containers_of(job.target.docker(), &job.project).await?;
+    let running: Vec<&String> = off
+        .iter()
+        .filter(|s| {
+            containers
+                .iter()
+                .any(|c| c.service.as_deref() == Some(s.as_str()))
+        })
+        .collect();
+    if running.is_empty() {
+        return Ok(true);
+    }
+    let names: Vec<&str> = running.iter().map(|s| s.as_str()).collect();
+    if !sink(ComposeEvent::Line {
+        text: format!(
+            "Removing {}: their profiles are turned off",
+            names.join(", ")
+        ),
+    }) {
+        return Ok(false);
+    }
+    let mut args = vec!["rm", "--stop", "--force"];
+    args.extend(&names);
+    // Every declared profile, so compose knows the services it removes.
+    let all = definition::declared_profiles(&yaml);
+    let mut command = profiled_command(job, prepared, docker_host, &args, &all);
+    let out = output_of(job, prepared, &mut command).await?;
+    if !out.status.success() {
+        return Err(failure(job, "rm", &out));
+    }
+    Ok(true)
+}
+
 /// Hands the source's stdin to the CLI, if it has one, and closes it.
 async fn write_stdin(child: &mut tokio::process::Child, prepared: &Prepared) -> AppResult<()> {
     let mut stdin = child.stdin.take().expect("stdin is piped");
@@ -310,14 +367,43 @@ async fn write_stdin(child: &mut tokio::process::Child, prepared: &Prepared) -> 
     Ok(())
 }
 
+/// The profiles a run passes: the Stack's own, and for taking it down every
+/// profile its files declare, so services of a profile turned off since go too.
+fn profiles(job: &ComposeJob, prepared: &Prepared) -> Vec<String> {
+    let mut profiles = job.profiles.clone();
+    if !job.action.reads_definition() {
+        let yaml: Vec<&str> = prepared
+            .definition
+            .iter()
+            .map(|(_, t)| t.as_str())
+            .collect();
+        profiles.extend(definition::declared_profiles(&yaml));
+        profiles.sort();
+        profiles.dedup();
+    }
+    profiles
+}
+
 /// One run of the CLI for `job`. Its environment is the Host's address, the
 /// `PATH` and the Stack's own variables: never a registry login.
 fn cli_command(job: &ComposeJob, prepared: &Prepared, docker_host: &str, args: &[&str]) -> Command {
+    profiled_command(job, prepared, docker_host, args, &profiles(job, prepared))
+}
+
+/// [`cli_command`] with the given `profiles` turned on.
+fn profiled_command(
+    job: &ComposeJob,
+    prepared: &Prepared,
+    docker_host: &str,
+    args: &[&str],
+    profiles: &[String],
+) -> Command {
     let mut command = Command::new(&job.cli.program);
     command
         .args(&job.cli.prefix)
         .args(["--project-name", &job.project])
         .args(&prepared.file_args)
+        .args(profiles.iter().flat_map(|p| ["--profile", p.as_str()]))
         .args(["--progress", "plain"])
         .args(args)
         .current_dir(prepared.workdir.path())
@@ -328,6 +414,9 @@ fn cli_command(job: &ComposeJob, prepared: &Prepared, docker_host: &str, args: &
         // Lets the CLI find its plugins and credential helpers from a GUI launch.
         .env("PATH", programs::search_path())
         .envs(prepared.vars.iter().cloned())
+        // Set rather than removed, so neither the user's shell, the Stack's
+        // environment nor a folder's .env changes which profiles run.
+        .env("COMPOSE_PROFILES", profiles.join(","))
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -342,25 +431,34 @@ async fn config_json(
     prepared: &Prepared,
     mut command: Command,
 ) -> AppResult<String> {
+    let out = output_of(job, prepared, &mut command).await?;
+    if !out.status.success() {
+        return Err(failure(job, "config", &out));
+    }
+    Ok(String::from_utf8_lossy(&out.stdout).into_owned())
+}
+
+/// Runs a short CLI command to the end and collects what it printed.
+async fn output_of(
+    job: &ComposeJob,
+    prepared: &Prepared,
+    command: &mut Command,
+) -> AppResult<std::process::Output> {
     let mut child = command
         .spawn()
         .map_err(|e| errors::spawn_failed(&job.cli.program, &e))?;
     write_stdin(&mut child, prepared).await?;
-    let out = child.wait_with_output().await?;
-    if !out.status.success() {
-        let stderr: Vec<String> = String::from_utf8_lossy(&out.stderr)
-            .lines()
-            .map(str::to_owned)
-            .collect();
-        let tail = &stderr[stderr.len().saturating_sub(STDERR_TAIL)..];
-        return Err(errors::exit_failure(
-            job.target.name(),
-            "config",
-            out.status.code(),
-            tail,
-        ));
-    }
-    Ok(String::from_utf8_lossy(&out.stdout).into_owned())
+    Ok(child.wait_with_output().await?)
+}
+
+/// Why the CLI's `verb` failed, from the end of its stderr.
+fn failure(job: &ComposeJob, verb: &str, out: &std::process::Output) -> AppError {
+    let stderr: Vec<String> = String::from_utf8_lossy(&out.stderr)
+        .lines()
+        .map(str::to_owned)
+        .collect();
+    let tail = &stderr[stderr.len().saturating_sub(STDERR_TAIL)..];
+    errors::exit_failure(job.target.name(), verb, out.status.code(), tail)
 }
 
 #[cfg(test)]
@@ -420,6 +518,7 @@ mod tests {
             },
             logins,
             action,
+            profiles: vec![],
         }
     }
 
@@ -522,6 +621,78 @@ mod tests {
             command.as_std().get_current_dir(),
             Some(prepared.workdir.path())
         );
+    }
+
+    const WITH_DEBUG: &str = "services:\n  web:\n    image: nginx\n  debug:\n    image: busybox\n    profiles: [debug]\n  tools:\n    image: busybox\n    profiles: [tools]\n";
+
+    fn profile_job(action: ComposeAction, active: &[&str], env: &str) -> ComposeJob {
+        let mut job = job(
+            StackSource::Managed {
+                files: vec![ComposeFile::new("compose.yaml", WITH_DEBUG)],
+                env: env.into(),
+            },
+            HostConnection::Tcp {
+                address: "h:2375".into(),
+            },
+            None,
+            testing::offline(),
+            Logins::none(),
+            "shop",
+            action,
+        );
+        job.profiles = active.iter().map(|p| (*p).to_owned()).collect();
+        job
+    }
+
+    #[test]
+    fn only_the_stack_s_profiles_are_deployed() {
+        // COMPOSE_PROFILES in the Stack's environment doesn't decide.
+        let job = profile_job(ComposeAction::Up, &["debug"], "COMPOSE_PROFILES=tools\n");
+        let prepared = job.source.prepare(job.action).unwrap();
+        let command = cli_command(&job, &prepared, "tcp://h:2375", job.action.args());
+        let all = everything(&command);
+        let args: Vec<_> = command
+            .as_std()
+            .get_args()
+            .filter_map(|a| a.to_str())
+            .collect();
+        assert_eq!(args.iter().filter(|a| **a == "--profile").count(), 1);
+        assert!(args.windows(2).any(|w| w == ["--profile", "debug"]));
+        let envs: Vec<_> = command
+            .as_std()
+            .get_envs()
+            .filter(|(k, _)| *k == "COMPOSE_PROFILES")
+            .map(|(_, v)| v.and_then(|v| v.to_str()))
+            .collect();
+        assert_eq!(envs, [Some("debug")], "{all:?}");
+    }
+
+    #[test]
+    fn taking_down_includes_every_declared_profile() {
+        let job = profile_job(ComposeAction::Down, &[], "");
+        let prepared = job.source.prepare(job.action).unwrap();
+        let args = everything(&cli_command(
+            &job,
+            &prepared,
+            "tcp://h:2375",
+            job.action.args(),
+        ));
+        let joined = args.join(" ");
+        assert!(
+            joined.contains("--profile debug --profile tools"),
+            "{joined}"
+        );
+        // With none turned on, deploying passes none, and pins it empty.
+        let job = profile_job(ComposeAction::Up, &[], "");
+        let prepared = job.source.prepare(job.action).unwrap();
+        let args = everything(&cli_command(
+            &job,
+            &prepared,
+            "tcp://h:2375",
+            job.action.args(),
+        ));
+        assert!(!args.contains(&"--profile".to_owned()));
+        assert!(args.contains(&"COMPOSE_PROFILES=".to_owned()));
     }
 
     #[test]
@@ -727,6 +898,78 @@ mod tests {
             .env
             .unwrap();
         assert!(env.contains(&"GREETING=prod".to_string()), "{env:?}");
+    }
+
+    #[tokio::test]
+    #[ignore = "needs a local Docker Engine and the compose CLI"]
+    async fn profiles_decide_which_services_run() {
+        let docker = testing::docker();
+        testing::ensure_image(&docker).await;
+        let project = testing::unique("profiles");
+        let _cleanup = RemoveStack(project.clone());
+        let compose = format!(
+            "services:\n  app:\n    image: {0}\n    command: [\"sleep\", \"60\"]\n  debug:\n    image: {0}\n    command: [\"sleep\", \"60\"]\n    profiles: [debug]\n",
+            testing::IMAGE
+        );
+        let run = |action, active: Vec<String>| {
+            let mut job = job(
+                StackSource::Managed {
+                    files: vec![ComposeFile::new("compose.yaml", compose.clone())],
+                    // Ignored: Homeport's own list wins.
+                    env: "COMPOSE_PROFILES=debug\n".into(),
+                },
+                HostConnection::Local {
+                    socket_path: "/var/run/docker.sock".into(),
+                },
+                None,
+                testing::docker(),
+                Logins::none(),
+                &project,
+                action,
+            );
+            job.profiles = active;
+            async move {
+                job.cli = detect().await.expect("docker compose is installed");
+                let events = std::sync::Mutex::new(Vec::new());
+                crate::runtime::run(job, |e| {
+                    events.lock().unwrap().push(e);
+                    true
+                })
+                .await;
+                let events = events.into_inner().unwrap();
+                assert!(
+                    matches!(
+                        events.last(),
+                        Some(ComposeEvent::Exit { success: true, .. })
+                    ),
+                    "{events:?}"
+                );
+            }
+        };
+        let services = || async {
+            let mut names: Vec<String> = lifecycle::containers_of(&testing::docker(), &project)
+                .await
+                .unwrap()
+                .into_iter()
+                .filter_map(|c| c.service)
+                .collect();
+            names.sort();
+            names
+        };
+
+        run(ComposeAction::Up, vec![]).await;
+        assert_eq!(services().await, ["app"]);
+        run(ComposeAction::Up, vec!["debug".into()]).await;
+        assert_eq!(services().await, ["app", "debug"]);
+        // Turned off again: redeploying removes it as an orphan.
+        run(ComposeAction::Up, vec![]).await;
+        assert_eq!(services().await, ["app"]);
+        run(ComposeAction::Up, vec!["debug".into()]).await;
+        run(ComposeAction::Down, vec![]).await;
+        assert!(
+            services().await.is_empty(),
+            "down removes every profile's services"
+        );
     }
 
     /// Deploys a folder with a build, an env_file and a relative bind mount

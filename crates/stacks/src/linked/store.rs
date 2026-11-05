@@ -24,6 +24,8 @@ pub struct LinkedStack {
     /// Of the files as Homeport last read or wrote them, to tell when they
     /// changed outside Homeport.
     pub fingerprint: String,
+    /// The Compose profiles it deploys; none until the user turns one on.
+    pub profiles: Vec<String>,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -33,7 +35,7 @@ pub struct LinkedStore {
 }
 
 const COLUMNS: &str =
-    "id, host_id, name, working_dir, config_files, fingerprint, created_at, updated_at";
+    "id, host_id, name, working_dir, config_files, fingerprint, created_at, updated_at, profiles";
 
 impl LinkedStore {
     pub fn new(db: Arc<Db>) -> Self {
@@ -143,6 +145,23 @@ impl LinkedStore {
         self.get(id)
     }
 
+    /// Sets the Compose profiles the Stack deploys.
+    pub fn set_profiles(&self, id: &str, profiles: &[String]) -> AppResult<LinkedStack> {
+        definition::validate_profiles(profiles)?;
+        let json = serde_json::to_string(profiles)?;
+        let n = self.db.with(|c| {
+            c.execute(
+                "UPDATE linked_stacks SET profiles = ?2,
+                 updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?1",
+                (id, &json),
+            )
+        })?;
+        if n == 0 {
+            return Err(AppError::not_found(msg::GONE));
+        }
+        self.get(id)
+    }
+
     /// Forgets the Linked Stack. Its folder and containers are left alone.
     pub fn delete(&self, id: &str) -> AppResult<()> {
         self.db
@@ -164,6 +183,9 @@ fn read_row(row: &Row<'_>) -> rusqlite::Result<LinkedStack> {
         fingerprint: row.get(5)?,
         created_at: row.get(6)?,
         updated_at: row.get(7)?,
+        profiles: serde_json::from_str(&row.get::<_, String>(8)?).map_err(|e| {
+            rusqlite::Error::FromSqlConversionFailure(8, rusqlite::types::Type::Text, e.into())
+        })?,
     })
 }
 
@@ -222,6 +244,9 @@ mod tests {
             (s.config_files.clone(), s.fingerprint.as_str()),
             (reordered, "fp3")
         );
+        assert!(s.profiles.is_empty());
+        let s = store.set_profiles(&s.id, &["debug".into()]).unwrap();
+        assert_eq!(s.profiles, ["debug"]);
         assert_eq!(store.list(&host).unwrap(), std::slice::from_ref(&s));
         store.delete(&s.id).unwrap();
         assert!(matches!(store.get(&s.id), Err(ref e) if e.is(ErrorCode::NotFound)));

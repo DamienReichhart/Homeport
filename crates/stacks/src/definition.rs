@@ -19,6 +19,8 @@ pub struct ComposeCheck {
     pub errors: Vec<String>,
     /// Things that will probably not do what the author expects.
     pub warnings: Vec<String>,
+    /// The Compose profiles its services declare, sorted.
+    pub profiles: Vec<String>,
 }
 
 impl ComposeCheck {
@@ -90,7 +92,66 @@ pub fn check(files: &[&str], kind: SourceKind) -> ComposeCheck {
             })
             .collect(),
         warnings: review.warnings,
+        profiles: declared_profiles(files),
     }
+}
+
+/// The profiles the services of `files` (merged) declare, sorted, once each.
+pub fn declared_profiles(files: &[&str]) -> Vec<String> {
+    let docs: Vec<Value> = files
+        .iter()
+        .filter_map(|f| serde_yaml_ng::from_str(f).ok())
+        .collect();
+    let mut profiles: Vec<String> = merge(&docs)
+        .services
+        .unwrap_or_default()
+        .iter()
+        .filter_map(|(_, service)| service.get("profiles").and_then(Value::as_sequence))
+        .flatten()
+        .filter_map(|p| p.as_str().map(str::to_owned))
+        .collect();
+    profiles.sort();
+    profiles.dedup();
+    profiles
+}
+
+/// The services of `files` (merged) that sit only behind profiles none of
+/// which is `active`, so they don't run.
+pub fn services_turned_off(files: &[&str], active: &[String]) -> Vec<String> {
+    let docs: Vec<Value> = files
+        .iter()
+        .filter_map(|f| serde_yaml_ng::from_str(f).ok())
+        .collect();
+    merge(&docs)
+        .services
+        .unwrap_or_default()
+        .into_iter()
+        .filter(|(_, service)| {
+            let profiles: Vec<&str> = service
+                .get("profiles")
+                .and_then(Value::as_sequence)
+                .into_iter()
+                .flatten()
+                .filter_map(Value::as_str)
+                .collect();
+            !profiles.is_empty() && !profiles.iter().any(|p| active.iter().any(|a| a == p))
+        })
+        .map(|(name, _)| name)
+        .collect()
+}
+
+/// Compose profile names: letters, digits, `_`, `.` and `-`, starting with a
+/// letter or digit.
+pub fn validate_profiles(profiles: &[String]) -> AppResult<()> {
+    for name in profiles {
+        let mut chars = name.chars();
+        let valid = chars.next().is_some_and(|c| c.is_ascii_alphanumeric())
+            && chars.all(|c| c.is_ascii_alphanumeric() || matches!(c, '_' | '.' | '-'));
+        if !valid {
+            return Err(AppError::validation(msg::PROFILE_NAME.with("name", name)));
+        }
+    }
+    Ok(())
 }
 
 /// The first problem that blocks deploying `files`, if any.
@@ -333,6 +394,32 @@ mod tests {
             assert!(validate_files(&[f(bad)]).is_err(), "{bad}");
         }
         assert!(validate_files(&[f("a.yaml"), f("a.yaml")]).is_err());
+    }
+
+    #[test]
+    fn profiles_are_the_union_of_every_service_s() {
+        let base = "services:\n  web:\n    image: nginx\n  debug:\n    image: busybox\n    profiles: [debug, tools]\n";
+        let extra = "services:\n  worker:\n    image: app\n    profiles: [workers, debug]\n";
+        assert_eq!(
+            declared_profiles(&[base, extra]),
+            ["debug", "tools", "workers"]
+        );
+        assert_eq!(
+            check(&[base], SourceKind::Managed).profiles,
+            ["debug", "tools"]
+        );
+        assert!(declared_profiles(&["services:\n  web:\n    image: x\n"]).is_empty());
+        assert!(validate_profiles(&["debug".into(), "a.b-c_1".into()]).is_ok());
+        assert!(validate_profiles(&["-x".into()]).is_err());
+        assert_eq!(
+            services_turned_off(&[base, extra], &[]),
+            ["debug", "worker"]
+        );
+        assert_eq!(
+            services_turned_off(&[base, extra], &["tools".into()]),
+            ["worker"]
+        );
+        assert!(validate_profiles(&["a b".into()]).is_err());
     }
 
     #[test]

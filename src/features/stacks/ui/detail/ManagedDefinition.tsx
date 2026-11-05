@@ -6,6 +6,7 @@ import { useForgetDefinition, useSaveDefinition } from '../../api/mutations';
 import { sameFiles } from '../../model/composeFiles';
 import type { ComposeJob } from '../../model/composeJob';
 import { StackEditor } from '../StackEditor';
+import { ProfilesControl } from './ProfilesControl';
 import { t } from '@/shared/i18n';
 
 /** Edits, saves, redeploys or forgets the stored definition of a Managed Stack. */
@@ -42,6 +43,17 @@ export function ManagedDefinition({
         onEnvChange={setEnv}
         keychain={capabilities.data?.keychain ?? true}
         onCheck={setCheck}
+      />
+      <ProfilesControl
+        key={managed.profiles.join()}
+        kind="managed"
+        stackId={managed.id}
+        declared={check?.profiles ?? null}
+        active={managed.profiles}
+        canDeploy={canDeploy && !dirty}
+        onDeploy={() =>
+          onDeploy({ kind: 'managed', stackId: managed.id, name: managed.name, action: 'up' })
+        }
       />
       {save.error && <ErrorMessage error={save.error} />}
       <div className="flex flex-wrap gap-2">

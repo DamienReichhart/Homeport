@@ -711,6 +711,7 @@ export const managedStacks: ManagedStack[] = [
   name: name as string,
   files: [{ name: 'compose.yaml', content: compose as string }],
   hasEnv: name === 'shop',
+  profiles: [],
   createdAt: new Date((NOW - (age as number)) * 1000).toISOString(),
   updatedAt: new Date((NOW - (age as number)) * 1000).toISOString(),
 }));

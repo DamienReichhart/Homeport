@@ -39,6 +39,8 @@ pub struct ManagedStack {
     /// Its compose files, merged in this order; never empty.
     pub files: Vec<ComposeFile>,
     pub has_env: bool,
+    /// The Compose profiles it deploys, besides its services without one.
+    pub profiles: Vec<String>,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -48,7 +50,7 @@ pub struct StackStore {
     secrets: Arc<SecretBox>,
 }
 
-const COLUMNS: &str = "id, host_id, name, env IS NOT NULL, created_at, updated_at";
+const COLUMNS: &str = "id, host_id, name, env IS NOT NULL, created_at, updated_at, profiles";
 
 impl StackStore {
     pub fn new(db: Arc<Db>, secrets: Arc<SecretBox>) -> Self {
@@ -147,6 +149,23 @@ impl StackStore {
         self.get(id)
     }
 
+    /// Sets the Compose profiles the Stack deploys.
+    pub fn set_profiles(&self, id: &str, profiles: &[String]) -> AppResult<ManagedStack> {
+        definition::validate_profiles(profiles)?;
+        let json = serde_json::to_string(profiles)?;
+        let n = self.db.with(|c| {
+            c.execute(
+                "UPDATE stacks SET profiles = ?2,
+                 updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?1",
+                (id, &json),
+            )
+        })?;
+        if n == 0 {
+            return Err(AppError::not_found(msg::GONE));
+        }
+        self.get(id)
+    }
+
     pub fn delete(&self, id: &str) -> AppResult<()> {
         self.db
             .with(|c| c.execute("DELETE FROM stacks WHERE id = ?1", [id]))?;
@@ -221,6 +240,9 @@ fn read_row(row: &Row<'_>) -> rusqlite::Result<ManagedStack> {
         has_env: row.get(3)?,
         created_at: row.get(4)?,
         updated_at: row.get(5)?,
+        profiles: serde_json::from_str(&row.get::<_, String>(6)?).map_err(|e| {
+            rusqlite::Error::FromSqlConversionFailure(6, rusqlite::types::Type::Text, e.into())
+        })?,
     })
 }
 
@@ -314,6 +336,16 @@ mod tests {
             reversed,
             "a refused update changes nothing"
         );
+    }
+
+    #[test]
+    fn stacks_keep_their_profiles() {
+        let (store, _, host) = setup(SecretBox::from_key(&[4; 32]));
+        let s = store.create(&host, "shop", &one(COMPOSE), "").unwrap();
+        assert!(s.profiles.is_empty());
+        let s = store.set_profiles(&s.id, &["debug".into()]).unwrap();
+        assert_eq!(s.profiles, ["debug"]);
+        assert!(store.set_profiles(&s.id, &["no good".into()]).is_err());
     }
 
     #[test]

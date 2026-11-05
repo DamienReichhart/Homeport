@@ -8,6 +8,7 @@ import {
   type LinkedFiles,
   type LinkedStack,
   type ManagedStack,
+  type SourceKind,
   type StackAction,
 } from '@/shared/api';
 import { toastError } from '@/shared/ui';
@@ -176,6 +177,21 @@ export function useSetLinkedFiles(linkedId: string, onSaved: (files: LinkedFiles
     onSuccess: (files) => {
       client.setQueryData(stackKeys.linked(linkedId), files);
       onSaved(files);
+    },
+  });
+}
+
+/** Sets the Compose profiles a Managed or Linked Stack deploys. */
+export function useSetProfiles(kind: SourceKind, stackId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: (profiles: string[]) => commands.stacksSetProfiles(kind, stackId, profiles),
+    onSuccess: async () => {
+      await client.invalidateQueries({
+        queryKey: kind === 'managed' ? stackKeys.managed(stackId) : stackKeys.linked(stackId),
+      });
+      toast.success(t('stacks.profiles.saved'));
     },
   });
 }

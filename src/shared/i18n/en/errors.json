@@ -271,6 +271,7 @@
   "errors.stacks.noFiles": "A stack needs at least one compose file.",
   "errors.stacks.notAStackFile": "{file} isn't one of this Stack's compose files.",
   "errors.stacks.notInFolder": "{file} isn't in the stack's folder, {folder}.",
+  "errors.stacks.profileName": "\"{name}\" isn't a profile name. Profile names use letters, digits, _, . and -, and start with a letter or digit.",
   "errors.stacks.proxyFailed": "Homeport couldn't open the private connection compose uses to reach {name}.",
   "errors.stacks.pullFailed": "Homeport couldn't pull {image} for {services}.",
   "errors.storage.bundle.notABundle": "This isn't a Homeport export file.",

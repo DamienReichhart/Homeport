@@ -114,6 +114,9 @@ pub struct ComposeJob {
     /// For pulling images through the Engine API (ADR 0010).
     pub logins: Logins,
     pub action: ComposeAction,
+    /// The Compose profiles the Stack deploys, besides its services without
+    /// one. They replace any `COMPOSE_PROFILES` from elsewhere.
+    pub profiles: Vec<String>,
 }
 
 /// Runs one compose command, streaming its output to `sink`; `sink` returns

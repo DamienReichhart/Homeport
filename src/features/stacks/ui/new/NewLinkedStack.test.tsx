@@ -28,7 +28,7 @@ describe('creating a Linked Stack', () => {
     mockCommands({
       ...baseCommands,
       stacks_list: () => [],
-      stacks_check: () => ({ errors: [], warnings: [] }),
+      stacks_check: () => ({ errors: [], warnings: [], profiles: [] }),
       stacks_linked_inspect: () => project,
       stacks_linked_create: (args) => {
         created.push(args);
@@ -59,7 +59,7 @@ describe('creating a Linked Stack', () => {
     mockCommands({
       ...baseCommands,
       stacks_list: () => [],
-      stacks_check: () => ({ errors: [], warnings: [] }),
+      stacks_check: () => ({ errors: [], warnings: [], profiles: [] }),
       stacks_linked_inspect: () => {
         throw { code: 'validation', message: '/home/me/empty has no compose file.' };
       },

@@ -432,7 +432,7 @@ export function installMocks({ theme, hostId }: MockOptions) {
     stacks_list: (a) => stacksOf(a.hostId as string),
     stacks_get: (a) => managedStacks.find((m) => m.id === a.id),
     stacks_get_env: (a) => (a.id === 'stack-shop' ? SHOP_ENV : ''),
-    stacks_check: () => ({ errors: [], warnings: [] }),
+    stacks_check: () => ({ errors: [], warnings: [], profiles: [] }),
     stacks_compose_subscribe: (a) => {
       const lines = [
         ' Container shop-db-1  Running',

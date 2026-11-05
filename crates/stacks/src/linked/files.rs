@@ -38,6 +38,8 @@ pub struct LinkedFiles {
     pub fingerprint: String,
     /// The files differ from what Homeport last read or wrote.
     pub changed_outside: bool,
+    /// The Compose profiles the Stack deploys.
+    pub profiles: Vec<String>,
 }
 
 /// The SHA-256 of a file's content, in hex.
@@ -90,6 +92,7 @@ pub fn read(stack: &LinkedStack) -> AppResult<LinkedFiles> {
         changed_outside: fingerprint != stack.fingerprint,
         files,
         fingerprint,
+        profiles: stack.profiles.clone(),
     })
 }
 
@@ -226,6 +229,7 @@ mod tests {
             working_dir: dir.to_string_lossy().into_owned(),
             fingerprint: files_fingerprint(&config_files),
             config_files,
+            profiles: vec![],
             created_at: String::new(),
             updated_at: String::new(),
         }

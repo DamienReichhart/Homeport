@@ -121,6 +121,14 @@ export default {
     'No OS keychain is available, so a Stack environment can’t be stored.',
   'stacks.editor.problems': 'Problems',
   'stacks.managed.saveAndRedeploy': 'Save and redeploy',
+  'stacks.profiles.title': 'Profiles',
+  'stacks.profiles.hint':
+    'Services behind a profile run only when it’s turned on. Services without one always run.',
+  'stacks.profiles.dropped':
+    '{count, plural, one {{profiles} is no longer in the definition, so it’s turned off when you save.} other {{profiles} are no longer in the definition, so they’re turned off when you save.}}',
+  'stacks.profiles.save': 'Save profiles',
+  'stacks.profiles.saveAndRedeploy': 'Save and redeploy',
+  'stacks.profiles.saved': 'Profiles saved',
   'stacks.forget.title': 'Forget the definition of {name}?',
   'stacks.forget.description':
     'Homeport deletes its stored compose file and environment. Running containers are left alone and the Stack becomes External.',

@@ -22,6 +22,7 @@ const MIGRATION_SLICE: &[M<'static>] = &[
     M::up(include_str!("migrations/0005_bastions.sql")),
     M::up(include_str!("migrations/0006_linked_stacks.sql")),
     M::up(include_str!("migrations/0007_stack_files.sql")),
+    M::up(include_str!("migrations/0008_stack_profiles.sql")),
 ];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_SLICE);
 
@@ -136,6 +137,13 @@ mod tests {
             )
             .unwrap();
         assert_eq!(file, (0, "compose.yaml".into(), "services: {}".into()));
+        // It deploys no profile until one is turned on.
+        let profiles: String = conn
+            .query_row("SELECT profiles FROM stacks WHERE id = 's'", [], |r| {
+                r.get(0)
+            })
+            .unwrap();
+        assert_eq!(profiles, "[]");
         let linked: i64 = conn
             .query_row("SELECT count(*) FROM linked_stacks", [], |r| r.get(0))
             .unwrap();

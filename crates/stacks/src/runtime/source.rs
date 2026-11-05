@@ -35,8 +35,8 @@ pub(crate) struct Prepared {
     pub stdin: Option<String>,
     /// The Stack's own variables, added to the CLI's environment.
     pub vars: Vec<(String, String)>,
-    /// The compose files as this run uses them, by name, in order; empty when
-    /// the action doesn't read them.
+    /// The compose files as this run uses them, by name, in order. Taking a
+    /// Linked Stack down leaves out those it can't read.
     pub definition: Vec<(String, String)>,
 }
 
@@ -98,18 +98,22 @@ impl StackSource {
                     return Err(files::folder_missing(&working_dir.to_string_lossy()));
                 }
                 let mut texts = Vec::new();
-                if action.reads_definition() {
-                    for file in config_files {
-                        let text = std::fs::read_to_string(file).map_err(|e| {
-                            AppError::new(
+                for file in config_files {
+                    match std::fs::read_to_string(file) {
+                        Ok(text) => texts.push((file.clone(), text)),
+                        // Taking a Stack down works from its project name alone.
+                        Err(_) if !action.reads_definition() => {}
+                        Err(e) => {
+                            return Err(AppError::new(
                                 ErrorCode::StackFolderMissing,
                                 msg::FILE_MISSING.with("file", file),
                             )
                             .with_hint(msg::FILE_MISSING_HINT)
-                            .with_cause(&e)
-                        })?;
-                        texts.push((file.clone(), text));
+                            .with_cause(&e))
+                        }
                     }
+                }
+                if action.reads_definition() {
                     let yaml: Vec<&str> = texts.iter().map(|(_, t)| t.as_str()).collect();
                     if let Some(blocker) = definition::blocker(&yaml, self.kind()) {
                         return Err(blocker);

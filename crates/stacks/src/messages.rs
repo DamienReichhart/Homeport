@@ -12,6 +12,8 @@ homeport_core::messages! {
     FILE_NAME = "errors.stacks.fileName" => "\"{name}\" isn't a compose file name. Use a name such as compose.prod.yaml, without folders.";
     /// Two compose files of one Stack with the same name.
     FILE_NAME_TWICE = "errors.stacks.fileNameTwice" => "Two compose files are named {name}.";
+    /// A Compose profile name with characters Compose doesn't allow.
+    PROFILE_NAME = "errors.stacks.profileName" => "\"{name}\" isn't a profile name. Profile names use letters, digits, _, . and -, and start with a letter or digit.";
     /// A line of the Stack's environment without `=`.
     ENV_NOT_KEY_VALUE = "errors.stacks.envNotKeyValue" => "Line {line} isn't KEY=value.";
     /// A line of the Stack's environment whose name has other characters than letters, digits and `_`.
