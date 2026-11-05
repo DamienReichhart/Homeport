@@ -8,7 +8,7 @@ use tauri::{App, Manager};
 use homeport_hosts::{registry::HostRegistry, service::HostService, store::HostStore};
 use homeport_registries::RegistryStore;
 use homeport_settings::SettingsService;
-use homeport_stacks::store::StackStore;
+use homeport_stacks::{linked::LinkedStore, store::StackStore};
 use homeport_storage::{Db, Keychain, SecretBox};
 
 use super::{events::TauriNotifier, AppState};
@@ -38,6 +38,7 @@ pub fn state(app: &App) -> Result<AppState, Box<dyn Error>> {
     });
     Ok(AppState {
         stacks: StackStore::new(db.clone(), secrets.clone()),
+        linked: LinkedStore::new(db.clone()),
         registries: RegistryStore::new(db.clone(), secrets.clone()),
         secrets,
         settings,

@@ -733,24 +733,26 @@ export function stacksOf(hostId: string): Stack[] {
     return {
       name,
       kind: managed ? 'managed' : 'external',
-      managedId: managed?.id ?? null,
+      id: managed?.id ?? null,
       state: running === 0 ? 'stopped' : running === members.length ? 'running' : 'partial',
       services,
       running,
       total: members.length,
       configFiles: managed ? null : `/opt/${name}/compose.yaml`,
+      workingDir: null,
     };
   });
   if (hostId === PROD) {
     stacks.push({
       name: 'analytics',
       kind: 'managed',
-      managedId: 'stack-analytics',
+      id: 'stack-analytics',
       state: 'notDeployed',
       services: [],
       running: 0,
       total: 0,
       configFiles: null,
+      workingDir: null,
     });
   }
   return stacks.sort((a, b) => a.name.localeCompare(b.name));

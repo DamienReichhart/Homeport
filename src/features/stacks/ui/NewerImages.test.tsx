@@ -18,7 +18,7 @@ function mock() {
       {
         name: 'shop',
         kind: 'managed',
-        managedId: 'm1',
+        id: 'm1',
         state: 'running',
         services: [
           { name: 'web', containerIds: [web.id], running: 1 },
@@ -27,6 +27,7 @@ function mock() {
         running: 2,
         total: 2,
         configFiles: null,
+        workingDir: null,
       },
     ],
     images_freshness: () => [

@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-use rusqlite::{OptionalExtension, Row};
+use rusqlite::{Connection, OptionalExtension, Row};
 use serde::Serialize;
 
 use homeport_core::error::{AppError, AppResult, ErrorCode};
@@ -70,18 +70,31 @@ impl StackStore {
         definition::validate_name(name)?;
         let env = self.seal_env(env)?;
         let id = uuid::Uuid::new_v4().to_string();
-        self.db
+        let created = self
+            .db
             .with(|c| {
-                c.execute(
+                let tx = c.transaction()?;
+                if name_taken(&tx, host_id, name)? {
+                    return Ok(false);
+                }
+                tx.execute(
                     "INSERT INTO stacks (id, host_id, name, compose, env) VALUES (?1, ?2, ?3, ?4, ?5)",
                     (&id, host_id, name, compose, &env),
-                )
+                )?;
+                tx.commit()?;
+                Ok(true)
             })
             .map_err(|e| match e.code {
                 ErrorCode::NameInUse => e.with_message(msg::NAME_IN_USE.with("name", name)),
                 ErrorCode::NotFound => e.with_message(msg::HOST_GONE),
                 _ => e,
             })?;
+        if !created {
+            return Err(AppError::new(
+                ErrorCode::NameInUse,
+                msg::NAME_IN_USE.with("name", name),
+            ));
+        }
         self.get(&id)
     }
 
@@ -130,6 +143,16 @@ impl StackStore {
         definition::parse_env(env)?;
         Ok(Some(self.secrets.seal(env.as_bytes())?))
     }
+}
+
+/// Whether the Host already has a Managed or Linked Stack named `name`.
+pub(crate) fn name_taken(c: &Connection, host_id: &str, name: &str) -> rusqlite::Result<bool> {
+    c.query_row(
+        "SELECT EXISTS (SELECT 1 FROM stacks WHERE host_id = ?1 AND name = ?2)
+             OR EXISTS (SELECT 1 FROM linked_stacks WHERE host_id = ?1 AND name = ?2)",
+        (host_id, name),
+        |r| r.get(0),
+    )
 }
 
 fn read_row(row: &Row<'_>) -> rusqlite::Result<ManagedStack> {

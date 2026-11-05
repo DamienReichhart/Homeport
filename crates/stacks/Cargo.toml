@@ -4,7 +4,7 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
-description = "Homeport's Stacks: Compose projects found on a Host, and the Managed Stacks deployed with the compose CLI"
+description = "Homeport's Stacks: Compose projects found on a Host, and the Managed and Linked Stacks deployed with the compose CLI"
 publish = false
 
 [lints]

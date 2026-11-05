@@ -43,16 +43,18 @@ export function StackActions({
   const capabilities = useCapabilities();
   const { act, remove } = useStackMutations(hostId);
   const support = capabilities.data?.compose;
-  const canCompose = stack.managedId !== null && support?.state === 'available';
+  // Only Managed Stacks deploy for now.
+  const managedId = stack.kind === 'managed' ? stack.id : null;
+  const canCompose = managedId !== null && support?.state === 'available';
   const compose = (action: ComposeJob['action']) => {
-    if (stack.managedId) onCompose({ stackId: stack.managedId, name: stack.name, action });
+    if (managedId) onCompose({ stackId: managedId, name: stack.name, action });
   };
   const deployed = stack.state !== 'notDeployed';
   const size = compact ? 'sm' : 'default';
 
   return (
     <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
-      {stack.managedId ? (
+      {managedId ? (
         <Button
           size={size}
           disabled={!canCompose}
@@ -67,7 +69,7 @@ export function StackActions({
         >
           <RocketIcon /> {deployed ? t('stacks.action.redeploy') : t('stacks.action.deploy')}
         </Button>
-      ) : (
+      ) : stack.kind === 'external' ? (
         <Button
           size={size}
           variant="outline"
@@ -75,7 +77,7 @@ export function StackActions({
         >
           {t('stacks.action.adopt')}
         </Button>
-      )}
+      ) : null}
       {deployed &&
         (stack.running > 0 ? (
           <Button
@@ -111,13 +113,13 @@ export function StackActions({
           >
             <RotateCwIcon /> {t('stacks.action.restart')}
           </DropdownMenuItem>
-          {stack.managedId && (
+          {managedId && (
             <DropdownMenuItem disabled={!canCompose} onSelect={() => compose('pull')}>
               <CloudDownloadIcon /> {t('stacks.action.pull')}
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
-          {stack.managedId ? (
+          {managedId ? (
             <>
               <DropdownMenuItem
                 variant="destructive"

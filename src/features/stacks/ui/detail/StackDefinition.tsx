@@ -13,10 +13,11 @@ import {
 } from '@/shared/ui';
 import { stackQueries } from '../../api/queries';
 import type { ComposeJob } from '../../model/composeJob';
+import { LinkedDefinition } from './LinkedDefinition';
 import { ManagedDefinition } from './ManagedDefinition';
 import { t, tRich } from '@/shared/i18n';
 
-/** A Managed Stack's editable definition, or how to adopt an External one. */
+/** A Managed or Linked Stack's definition, or how to adopt an External one. */
 export function StackDefinition({
   hostId,
   stack,
@@ -26,7 +27,21 @@ export function StackDefinition({
   stack: Stack;
   onDeploy: (job: ComposeJob) => void;
 }) {
-  const id = stack.managedId;
+  if (stack.kind === 'linked' && stack.id)
+    return <LinkedDefinition hostId={hostId} stack={stack} linkedId={stack.id} />;
+  return <OwnDefinition hostId={hostId} stack={stack} onDeploy={onDeploy} />;
+}
+
+function OwnDefinition({
+  hostId,
+  stack,
+  onDeploy,
+}: {
+  hostId: string;
+  stack: Stack;
+  onDeploy: (job: ComposeJob) => void;
+}) {
+  const id = stack.kind === 'managed' ? stack.id : null;
   const managed = useQuery({ ...stackQueries.managed(id ?? ''), enabled: !!id });
   const env = useQuery({ ...stackQueries.env(id ?? ''), enabled: !!id });
   if (!id) {

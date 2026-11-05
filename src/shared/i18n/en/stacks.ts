@@ -3,7 +3,7 @@ export default {
   'stacks.nav': 'Stacks',
   'stacks.title': 'Stacks',
   'stacks.description':
-    'Compose projects on this host. Managed Stacks keep their definition in Homeport; External ones were deployed elsewhere.',
+    'Compose projects on this host. Managed Stacks keep their definition in Homeport, Linked ones in a folder on this computer; External ones were deployed elsewhere.',
   'stacks.new': 'New stack',
   'stacks.search': 'Search stacks',
   'stacks.empty.title': 'No stacks',
@@ -13,6 +13,7 @@ export default {
   'stacks.column.state': 'State',
   'stacks.column.services': 'Services',
   'stacks.kind.managed': 'Managed',
+  'stacks.kind.linked': 'Linked',
   'stacks.kind.external': 'External',
   'stacks.state.running': 'Running',
   'stacks.state.partial': 'Partly running',
@@ -85,6 +86,13 @@ export default {
   'stacks.forget.description':
     'Homeport deletes its stored compose file and environment. Running containers are left alone and the Stack becomes External.',
   'stacks.forget.confirm': 'Forget definition',
+  'stacks.linked.title': 'Linked Stack',
+  'stacks.linked.description':
+    'Its compose files are in <mono>{folder}</mono> on this computer. Homeport reads them there and never keeps a copy.',
+  'stacks.linked.forget': 'Forget',
+  'stacks.linked.forgetTitle': 'Forget {name}?',
+  'stacks.linked.forgetDescription':
+    'Homeport forgets where its compose files are. The folder, its files and the running containers are left alone.',
   'stacks.external.title': 'External Stack',
   'stacks.external.description':
     'It was deployed outside Homeport. You can start, stop and remove it; adopt it with its compose file to edit and redeploy.',

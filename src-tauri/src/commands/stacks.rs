@@ -11,24 +11,32 @@ use homeport_stacks::{
     lifecycle::StackAction,
     runtime::{self, ComposeJob, SourceKind, StackSource, StackTarget},
     store::ManagedStack,
-    Stack,
+    Stack, StackRecord,
 };
 
 use crate::{app::AppState, commands::registries, error::AppResult};
 
-/// Every Stack on a Host: those running there plus undeployed Managed Stacks.
+/// Every Stack on a Host: those running there plus undeployed Managed and
+/// Linked Stacks.
 #[tauri::command]
 #[specta::specta]
 pub async fn stacks_list(state: State<'_, AppState>, host_id: String) -> AppResult<Vec<Stack>> {
     let docker = state.hosts.registry.docker(&host_id)?;
     let running = containers::list(&docker).await?;
-    let managed: Vec<(String, String)> = state
+    let mut records: Vec<StackRecord> = state
         .stacks
         .list(&host_id)?
         .into_iter()
-        .map(|s| (s.id, s.name))
+        .map(|s| StackRecord::managed(s.id, s.name))
         .collect();
-    Ok(stacks::derive(&running, &managed))
+    records.extend(
+        state
+            .linked
+            .list(&host_id)?
+            .into_iter()
+            .map(|s| StackRecord::linked(s.id, s.name, s.working_dir)),
+    );
+    Ok(stacks::derive(&running, &records))
 }
 
 #[tauri::command]
@@ -81,6 +89,13 @@ pub fn stacks_update(
 #[specta::specta]
 pub fn stacks_forget(state: State<'_, AppState>, id: String) -> AppResult<()> {
     state.stacks.delete(&id)
+}
+
+/// Forgets a Linked Stack: its record goes, its folder and containers stay.
+#[tauri::command]
+#[specta::specta]
+pub fn stacks_linked_forget(state: State<'_, AppState>, id: String) -> AppResult<()> {
+    state.linked.delete(&id)
 }
 
 #[tauri::command]

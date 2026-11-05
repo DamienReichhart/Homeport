@@ -3,6 +3,7 @@ import type { Stack } from '@/shared/api';
 import { Badge, type ColumnDef, type ConfirmOptions, StatusDot } from '@/shared/ui';
 import type { ComposeJob } from '../model/composeJob';
 import { newerServicesLabel, type ServiceFreshness } from '../model/freshness';
+import { KIND_BADGE, KIND_LABEL } from '../model/stackKind';
 import { STATE_LABEL, STATE_TONE } from '../model/stackState';
 import { StackActions } from './StackActions';
 import { t } from '@/shared/i18n';
@@ -32,9 +33,7 @@ export function stackColumns({
       header: t('stacks.column.kind'),
       accessorFn: (s) => s.kind,
       cell: ({ row }) => (
-        <Badge variant={row.original.kind === 'managed' ? 'default' : 'outline'}>
-          {row.original.kind === 'managed' ? t('stacks.kind.managed') : t('stacks.kind.external')}
-        </Badge>
+        <Badge variant={KIND_BADGE[row.original.kind]}>{t(KIND_LABEL[row.original.kind])}</Badge>
       ),
     },
     {

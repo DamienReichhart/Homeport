@@ -82,6 +82,15 @@ export function useSaveDefinition(
   });
 }
 
+/** Forgets a Linked Stack: its folder and containers are left alone. */
+export function useForgetLinked(hostId: string, linkedId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: () => commands.stacksLinkedForget(linkedId),
+    onSuccess: () => client.invalidateQueries({ queryKey: hostKeys.stacks(hostId) }),
+  });
+}
+
 /** Deletes a Managed Stack's stored definition, leaving its containers: it becomes External. */
 export function useForgetDefinition(hostId: string, managedId: string) {
   const client = useQueryClient();

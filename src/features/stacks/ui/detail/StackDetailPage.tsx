@@ -18,6 +18,7 @@ import {
   useConfirm,
 } from '@/shared/ui';
 import type { ComposeJob } from '../../model/composeJob';
+import { KIND_BADGE, KIND_LABEL } from '../../model/stackKind';
 import { STATE_LABEL, STATE_TONE } from '../../model/stackState';
 import { ComposeRunDialog } from '../dialogs/ComposeRunDialog';
 import { StackActions } from '../StackActions';
@@ -53,9 +54,7 @@ function StackDetail({ hostId, name }: { hostId: string; name: string }) {
               <ArrowLeftIcon />
             </Button>
             {stack.name}
-            <Badge variant={stack.kind === 'managed' ? 'default' : 'outline'}>
-              {stack.kind === 'managed' ? t('stacks.kind.managed') : t('stacks.kind.external')}
-            </Badge>
+            <Badge variant={KIND_BADGE[stack.kind]}>{t(KIND_LABEL[stack.kind])}</Badge>
           </span>
         }
         description={

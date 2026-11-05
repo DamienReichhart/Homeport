@@ -141,7 +141,10 @@ export const commands = {
 	containersRecreate: (hostId: string, id: string, spec: RunSpec) => __TAURI_INVOKE<string>("containers_recreate", { hostId, id, spec }),
 	/**  Commits a container to a new image; returns the image's id. */
 	containersCommit: (hostId: string, id: string, spec: CommitSpec) => __TAURI_INVOKE<string>("containers_commit", { hostId, id, spec }),
-	/**  Every Stack on a Host: those running there plus undeployed Managed Stacks. */
+	/**
+	 *  Every Stack on a Host: those running there plus undeployed Managed and
+	 *  Linked Stacks.
+	 */
 	stacksList: (hostId: string) => __TAURI_INVOKE<Stack[]>("stacks_list", { hostId }),
 	stacksGet: (id: string) => __TAURI_INVOKE<ManagedStack>("stacks_get", { id }),
 	/**  The decrypted environment of a Managed Stack, for editing. */
@@ -155,6 +158,8 @@ export const commands = {
 	 *  becomes an External Stack.
 	 */
 	stacksForget: (id: string) => __TAURI_INVOKE<null>("stacks_forget", { id }),
+	/**  Forgets a Linked Stack: its record goes, its folder and containers stay. */
+	stacksLinkedForget: (id: string) => __TAURI_INVOKE<null>("stacks_linked_forget", { id }),
 	stacksAct: (hostId: string, name: string, action: StackAction) => __TAURI_INVOKE<null>("stacks_act", { hostId, name, action }),
 	/**  Removes a Stack's containers and networks through the Engine API. */
 	stacksRemove: (hostId: string, name: string) => __TAURI_INVOKE<null>("stacks_remove", { hostId, name }),
@@ -949,19 +954,27 @@ export type SshSetup = {
 export type Stack = {
 	name: string,
 	kind: StackKind,
-	/**  Present for Managed Stacks. */
-	managedId: string | null,
+	/**  The stored record of a Managed or Linked Stack. */
+	id: string | null,
 	state: StackState,
 	services: StackService[],
 	running: number,
 	total: number,
 	/**  Where the compose files lived for whoever deployed it (on that machine). */
 	configFiles: string | null,
+	/**  The folder of a Linked Stack, on this machine. */
+	workingDir: string | null,
 };
 
 export type StackAction = "start" | "stop" | "restart";
 
-export type StackKind = "managed" | "external";
+export type StackKind = 
+/**  Homeport holds its compose definition and environment. */
+"managed" | 
+/**  Its compose files are a folder on this machine (ADR 0008). */
+"linked" | 
+/**  Only its containers are known. */
+"external";
 
 export type StackService = {
 	name: string,
@@ -976,7 +989,7 @@ export type StackState =
 "partial" | 
 /**  Containers exist but none is running. */
 "stopped" | 
-/**  A Managed Stack with no containers yet. */
+/**  A Managed or Linked Stack with no containers yet. */
 "notDeployed";
 
 export type StatsSample = {
