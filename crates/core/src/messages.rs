@@ -20,6 +20,14 @@ crate::messages! {
     SSH_PORT_INVALID = "errors.core.sshPortInvalid" => "The SSH port must be between 1 and 65535.";
     /// An SSH Host whose remote socket path is relative.
     REMOTE_SOCKET_NOT_ABSOLUTE = "errors.core.remoteSocketNotAbsolute" => "The remote socket path must be absolute, like /var/run/docker.sock.";
+    /// A bastion, by its place in the list, without a server.
+    BASTION_HOST_MISSING = "errors.core.bastionHostMissing" => "Enter the server of bastion {n}.";
+    /// A bastion without a user.
+    BASTION_USER_MISSING = "errors.core.bastionUserMissing" => "Enter the user of bastion {n}.";
+    /// A bastion on port 0.
+    BASTION_PORT_INVALID = "errors.core.bastionPortInvalid" => "The port of bastion {n} must be between 1 and 65535.";
+    /// Two hops of one Host at the same address.
+    BASTION_REPEATED = "errors.core.bastionRepeated" => "{address} appears twice on the way to this host.";
 
     // Files on this computer.
 

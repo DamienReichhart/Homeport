@@ -26,6 +26,39 @@ For a remote server, prefer **SSH**: it needs nothing exposed beyond the SSH por
 
 Host names must be unique, ignoring case.
 
+## Importing Hosts
+
+**Add host** offers two ways to add many Hosts at once, from what this computer already describes. Each opens a preview: pick the entries to import, rename them, and choose **Import**.
+
+- **Import from ~/.ssh/config** adds the servers your SSH config names, with their user, port, key and `ProxyJump` bastions. See [Import from ~/.ssh/config](/docs/hosts/ssh/#import-from-sshconfig).
+- **Import Docker contexts** adds the Engines of the Docker CLI's contexts (`docker context ls`), with their TLS certificates.
+
+Keys and certificates are read once, when you import, and stored encrypted like any other; neither `~/.ssh` nor `~/.docker` is ever changed.
+
+### Docker contexts
+
+Homeport reads every context under `~/.docker/contexts` (or under `$DOCKER_CONFIG` when it's set) and maps its Docker endpoint:
+
+| Endpoint                                                  | Becomes                                                      |
+| --------------------------------------------------------- | ------------------------------------------------------------ |
+| `unix:///…`, `npipe:////./pipe/…`                         | a **Local socket** Host                                      |
+| `tcp://host:port` with no TLS files                       | a **TCP** Host                                               |
+| `tcp://host:port` with `ca.pem`, `cert.pem` and `key.pem` | a **TLS** Host, with its certificates                        |
+| `ssh://user@host:port`                                    | an **SSH** Host using ssh-agent, with `/var/run/docker.sock` |
+
+The built-in `default` context isn't offered: [local detection](/docs/hosts/local/) already finds this machine's Engine. A context is shown but can't be picked when:
+
+- it sets `SkipTLSVerify`, since Homeport always checks the Engine's certificate;
+- its TLS folder holds only some of the three files;
+- its endpoint is something else, such as a Kubernetes one;
+- a Host already reaches the same Engine. Its name says which.
+
+A context whose name is already a Host's is offered as `name (2)`.
+
+## Moving to another computer
+
+**Export** on the Hosts page saves the Hosts you pick to a file protected by a passphrase; **Import** on the other computer's Hosts page opens it and adds the Hosts you pick, ready to connect. A Host whose name is taken there is proposed as `name (2)`, and you can rename or skip it. See [moving to another computer](/docs/reference/security/#moving-to-another-computer) for how the file is protected.
+
 ## Selecting a Host
 
 Every resource page — Containers, Images, Volumes, Networks, Stacks and Events — shows the Host selected in the **Host switcher**. Switch Host there, or select a Host's card on the [Overview](/docs/guides/overview/). Homeport remembers your choice between launches.
@@ -41,7 +74,7 @@ Each Host shows a status next to its name. When the selected Host isn't connecte
 | **Disabled**               | The Host's **Enabled** switch is off.                                          | Nothing until you turn it on.                                               |
 | **Unreachable**            | The network, socket or Engine didn't answer.                                   | Retries on its own, waiting longer each time.                               |
 | **Access refused**         | The SSH server refused the key, ssh-agent failed, or the TLS handshake failed. | Fix the cause, then **Reconnect**.                                          |
-| **Server key not trusted** | First SSH connection: the server's key needs your approval.                    | [Trust the key](/docs/hosts/ssh/#trust-the-servers-key) on the Host's page. |
+| **Server key not trusted** | First SSH connection: the server's or a bastion's key needs your approval.     | [Trust the key](/docs/hosts/ssh/#trust-the-servers-key) on the Host's page. |
 | **Server key changed**     | The SSH server presented a different key from the one you trusted.             | [Investigate first](/docs/hosts/ssh/#when-the-servers-key-changes).         |
 | **Credentials lost**       | The stored credentials can't be decrypted.                                     | [Re-enter them](/docs/reference/troubleshooting/#credentials-lost).         |
 | **Keychain unavailable**   | The Host needs stored secrets but there's no OS keychain.                      | See [requirements](/docs/requirements/#optional-an-os-keychain).            |

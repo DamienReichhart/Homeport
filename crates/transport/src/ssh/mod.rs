@@ -9,7 +9,10 @@ mod socket;
 
 pub use self::{
     auth::Credentials,
-    dialer::{SshDialer, SshTarget},
+    dialer::{SshDialer, SshHop, SshTarget},
     host_key::{check_host_key, HostKeyCheck},
-    keys::{authorized_keys_command, fingerprint, generate_key, public_key_of, GeneratedKey},
+    keys::{
+        authorized_keys_command, fingerprint, generate_key, needs_passphrase, public_key_of,
+        GeneratedKey,
+    },
 };

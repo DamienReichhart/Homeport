@@ -20,4 +20,14 @@ homeport_core::messages! {
     DB_FAILED = "errors.storage.dbFailed" => "Homeport's database failed.";
     /// A migration failed when the database was opened.
     DB_MIGRATION_FAILED = "errors.storage.dbMigrationFailed" => "Homeport couldn't upgrade its database.";
+    /// A passphrase too short to protect an export.
+    BUNDLE_PASSPHRASE_SHORT = "errors.storage.bundle.passphraseShort" => "Use a passphrase of at least {min} characters.";
+    /// A file picked for import that isn't a Homeport export.
+    BUNDLE_NOT_A_BUNDLE = "errors.storage.bundle.notABundle" => "This isn't a Homeport export file.";
+    /// The passphrase doesn't open the file, or the file was changed.
+    BUNDLE_UNREADABLE = "errors.storage.bundle.unreadable" => "The passphrase doesn't open this file, or the file is damaged.";
+    BUNDLE_UNREADABLE_HINT = "errors.storage.bundle.unreadable.hint" => "Check the passphrase, including capitals and spaces. If it's right, copy the file again from where it was exported.";
+    /// An export written by a newer Homeport.
+    BUNDLE_TOO_NEW = "errors.storage.bundle.tooNew" => "This file comes from a newer Homeport.";
+    BUNDLE_TOO_NEW_HINT = "errors.storage.bundle.tooNew.hint" => "Update Homeport on this computer, then import it again.";
 }

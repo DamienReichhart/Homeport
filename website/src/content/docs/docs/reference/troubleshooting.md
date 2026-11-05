@@ -83,9 +83,17 @@ Homeport logged in, but couldn't reach Docker. Check:
 - that the user can use Docker: `sudo usermod -aG docker <user>` on the server;
 - that the server allows socket forwarding (`AllowStreamLocalForwarding` in `sshd_config`, on by default).
 
-### "No ssh-agent is reachable"
+### "No ssh-agent is running"
 
 Start your SSH agent and add your key with `ssh-add`. If you opened Homeport from a desktop menu, it may not see the agent your terminal uses; log out and in, or start Homeport from a terminal where `ssh-add -l` lists your key.
+
+On Windows, Homeport uses either the OpenSSH Authentication Agent service or PuTTY's Pageant. Open Pageant and load your key, or start the service in an administrator PowerShell:
+
+```powershell
+Get-Service ssh-agent | Set-Service -StartupType Automatic
+Start-Service ssh-agent
+ssh-add
+```
 
 ### Access refused: "TLS handshake failed"
 
@@ -99,7 +107,7 @@ The SSH server presented a different key from the one you trusted. If you reinst
 
 ### Credentials lost
 
-The key that encrypts your secrets is missing from the keychain or has changed — after a keychain reset, a new user profile, or copying Homeport's data to another computer. Homeport keeps the Host; re-enter its credentials on the Host's page:
+The key that encrypts your secrets is missing from the keychain or has changed — after a keychain reset, a new user profile, or copying Homeport's data to another computer (use [Export and Import](/docs/reference/security/#moving-to-another-computer) for that). Homeport keeps the Host; re-enter its credentials on the Host's page:
 
 - **TLS** — load the three certificate files again and choose **Save**.
 - **SSH with an imported key** — paste the private key and passphrase again and choose **Save**.

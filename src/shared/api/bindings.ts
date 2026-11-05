@@ -45,11 +45,22 @@ export const commands = {
 	hostsUpdate: (id: string, input: HostInput) => __TAURI_INVOKE<HostView>("hosts_update", { id, input }),
 	hostsDelete: (id: string) => __TAURI_INVOKE<null>("hosts_delete", { id }),
 	hostsSetEnabled: (id: string, enabled: boolean) => __TAURI_INVOKE<HostView>("hosts_set_enabled", { id, enabled }),
-	hostsTrustKey: (id: string, key: string) => __TAURI_INVOKE<HostView>("hosts_trust_key", { id, key }),
+	hostsTrustKey: (id: string, key: string, bastion: string | null) => __TAURI_INVOKE<HostView>("hosts_trust_key", { id, key, bastion }),
 	hostsReconnect: (id: string) => __TAURI_INVOKE<HostView>("hosts_reconnect", { id }),
 	hostsRegenerateKey: (id: string) => __TAURI_INVOKE<HostView>("hosts_regenerate_key", { id }),
 	hostsSshSetup: (id: string) => __TAURI_INVOKE<SshSetup>("hosts_ssh_setup", { id }),
 	hostsEvents: (id: string) => __TAURI_INVOKE<EngineEvent[]>("hosts_events", { id }),
+	/**  The servers `~/.ssh/config` defines, as drafts of Hosts. */
+	hostsSshConfigPreview: () => __TAURI_INVOKE<ImportDraft[]>("hosts_ssh_config_preview"),
+	hostsSshConfigImport: (choices: ImportChoice[]) => __TAURI_INVOKE<ImportOutcome>("hosts_ssh_config_import", { choices }),
+	/**  The Docker CLI's contexts, as drafts of Hosts. */
+	hostsDockerContextsPreview: () => __TAURI_INVOKE<ImportDraft[]>("hosts_docker_contexts_preview"),
+	hostsDockerContextsImport: (choices: ImportChoice[]) => __TAURI_INVOKE<ImportOutcome>("hosts_docker_contexts_import", { choices }),
+	/**  Writes the Hosts `ids` to a file protected by `passphrase` (ADR 0013). */
+	hostsExport: (ids: string[], path: string, passphrase: string) => __TAURI_INVOKE<ExportOutcome>("hosts_export", { ids, path, passphrase }),
+	/**  The Hosts of an export file. */
+	hostsBundlePreview: (path: string, passphrase: string) => __TAURI_INVOKE<BundleHost[]>("hosts_bundle_preview", { path, passphrase }),
+	hostsBundleImport: (path: string, passphrase: string, choices: BundleChoice[]) => __TAURI_INVOKE<ImportOutcome>("hosts_bundle_import", { path, passphrase, choices }),
 	containersList: (hostId: string) => __TAURI_INVOKE<Container[]>("containers_list", { hostId }),
 	containersInspect: (hostId: string, id: string) => __TAURI_INVOKE<Value>("containers_inspect", { hostId, id }),
 	containersAct: (hostId: string, id: string, action: ContainerAction) => __TAURI_INVOKE<null>("containers_act", { hostId, id, action }),
@@ -189,6 +200,39 @@ export type AvailableUpdate = {
 	date: string | null,
 };
 
+/**  An SSH server an SSH Host is reached through (`ProxyJump`, ADR 0012). */
+export type Bastion = {
+	host: string,
+	port: number,
+	user: string,
+	auth: BastionAuth,
+	/**  OpenSSH public key of an `imported` key, shown to the user. */
+	publicKey: string | null,
+	/**
+	 *  The bastion's server key, trusted on first use. Kept by Homeport:
+	 *  whatever the frontend sends here is replaced by the stored one.
+	 */
+	hostKey: string | null,
+};
+
+export type BastionAuth = 
+/**  The Host's own key or agent. */
+"sameAsHost" | 
+/**  A private key of its own, sealed with the Host's secrets. */
+"imported" | 
+/**  Keys offered by the running ssh-agent. */
+"agent";
+
+/**
+ *  The private key typed for the `imported` bastion at `index` in the input's
+ *  list. A bastion with no entry keeps the key stored for its address.
+ */
+export type BastionKeyInput = {
+	index: number,
+	privateKey: string,
+	passphrase: string | null,
+};
+
 export type BuildArg = {
 	name: string,
 	value: string,
@@ -213,6 +257,24 @@ export type BuildSpec = {
 	noCache: boolean,
 	/**  Pull newer versions of the `FROM` images even if the Host has them. */
 	pull: boolean,
+};
+
+export type BundleChoice = {
+	index: number,
+	name: string,
+};
+
+/**  A Host in an export file, as the import preview shows it. */
+export type BundleHost = {
+	/**  Its place in the file, which the import refers to. */
+	index: number,
+	name: string,
+	/**  `name`, or a free variant when a Host already has it. */
+	suggestedName: string,
+	nameTaken: boolean,
+	connection: HostConnection,
+	/**  It needs secrets but was exported without them. */
+	secretsMissing: boolean,
 };
 
 /**  What this machine can do; features degrade gracefully when something is missing. */
@@ -370,7 +432,11 @@ export type EngineInfo = {
 /**  Stable machine-readable identifier of a failure, one per case the user can act on. */
 export type ErrorCode = 
 /**  A failure that started in the frontend, outside any command. */
-"unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | "host_not_connected" | "engine_not_installed" | "engine_not_running" | "permission_denied" | "dns_failed" | "connection_refused" | "timeout" | "network_unreachable" | "connection_lost" | "tls_required" | "tls_not_supported" | "tls_certificate_expired" | "tls_certificate_not_yet_valid" | "tls_unknown_ca" | "tls_name_mismatch" | "tls_client_rejected" | "tls_handshake_failed" | "tls_material_invalid" | "ssh_auth_failed" | "ssh_agent_unavailable" | "ssh_key_invalid" | "ssh_failed" | "remote_engine_unavailable" | "host_key_untrusted" | "host_key_changed" | "engine_error" | "bad_request" | "forbidden" | "conflict" | "name_in_use" | "in_use" | "container_running" | "container_not_running" | "already_done" | "port_in_use" | "disk_full" | "image_not_found" | "registry_auth_required" | "registry_rate_limited" | "registry_unreachable" | "registry_login_failed" | "api_version_unsupported" | "build_failed" | 
+"unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | 
+/**  An export file that the passphrase doesn't open, or that was damaged. */
+"bundle_unreadable" | 
+/**  An export file from a newer Homeport. */
+"bundle_too_new" | "host_not_connected" | "engine_not_installed" | "engine_not_running" | "permission_denied" | "dns_failed" | "connection_refused" | "timeout" | "network_unreachable" | "connection_lost" | "tls_required" | "tls_not_supported" | "tls_certificate_expired" | "tls_certificate_not_yet_valid" | "tls_unknown_ca" | "tls_name_mismatch" | "tls_client_rejected" | "tls_handshake_failed" | "tls_material_invalid" | "ssh_auth_failed" | "ssh_agent_unavailable" | "ssh_key_invalid" | "ssh_failed" | "remote_engine_unavailable" | "host_key_untrusted" | "host_key_changed" | "engine_error" | "bad_request" | "forbidden" | "conflict" | "name_in_use" | "in_use" | "container_running" | "container_not_running" | "already_done" | "port_in_use" | "disk_full" | "image_not_found" | "registry_auth_required" | "registry_rate_limited" | "registry_unreachable" | "registry_login_failed" | "api_version_unsupported" | "build_failed" | 
 /**  A GPU was requested from a Host without the vendor's container toolkit. */
 "gpu_unavailable" | 
 /**  Recreating a container failed, and so did putting the original back. */
@@ -387,6 +453,12 @@ export type ExecOptions = {
 	workingDir: string | null,
 	cols: number,
 	rows: number,
+};
+
+export type ExportOutcome = {
+	exported: number,
+	/**  Hosts written without their secrets, which couldn't be opened. */
+	withoutSecrets: string[],
 };
 
 export type FileEntry = {
@@ -495,15 +567,27 @@ export type HostConnection =
 /**  The remote Engine socket, reached through SSH. */
 { kind: "ssh"; host: string; port: number; user: string; socketPath: string; auth: SshAuth; 
 /**  OpenSSH public key for `generated` and `imported` auth, shown to the user. */
-publicKey: string | null };
+publicKey: string | null; 
+/**
+ *  The servers to go through first, in order (ADR 0012). Empty for a
+ *  direct connection; migration 0005 added it to stored Hosts.
+ */
+bastions: Bastion[] };
 
 export type HostInput = {
 	name: string,
 	connection: HostConnection,
 	credentials: CredentialsInput | null,
+	/**  Keys typed for the connection's `imported` bastions. */
+	bastionKeys?: BastionKeyInput[],
 };
 
-export type HostStatus = { state: "disabled" } | { state: "connecting" } | { state: "connected"; engineVersion: string; apiVersion: string; os: string; arch: string } | { state: "unreachable"; error: AppError; retryInSecs: number } | { state: "unauthorized"; error: AppError } | { state: "hostKeyUntrusted"; key: string; fingerprint: string } | { state: "hostKeyMismatch"; key: string; fingerprint: string; expectedFingerprint: string } | { state: "credentialsLost" } | { state: "keychainUnavailable"; error: AppError } | { state: "invalid"; error: AppError };
+export type HostStatus = { state: "disabled" } | { state: "connecting" } | { state: "connected"; engineVersion: string; apiVersion: string; os: string; arch: string } | { state: "unreachable"; error: AppError; retryInSecs: number } | { state: "unauthorized"; error: AppError } | 
+/**
+ *  `bastion` is the address of the bastion that presented the key,
+ *  `None` for the Host's own SSH server.
+ */
+{ state: "hostKeyUntrusted"; key: string; fingerprint: string; bastion: string | null } | { state: "hostKeyMismatch"; key: string; fingerprint: string; expectedFingerprint: string; bastion: string | null } | { state: "credentialsLost" } | { state: "keychainUnavailable"; error: AppError } | { state: "invalid"; error: AppError };
 
 export type HostStatusChanged = {
 	hostId: string,
@@ -553,6 +637,47 @@ export type ImageLayer = {
 	size: number,
 	comment: string,
 	tags: string[],
+};
+
+/**  A draft the user picked, with what they changed in the preview. */
+export type ImportChoice = {
+	source: string,
+	name: string,
+	/**  The Engine socket on an SSH server; `/var/run/docker.sock` when absent. */
+	socketPath: string | null,
+	/**  For the entry's encrypted keys. */
+	passphrase: string | null,
+};
+
+/**  One entry a source offers, as the preview shows it. */
+export type ImportDraft = {
+	/**  The alias or context name it comes from; how the import names it. */
+	source: string,
+	/**  The Host name proposed for it. */
+	name: string,
+	/**  What would be created; `None` when it can't be imported. */
+	connection: HostConnection | null,
+	/**  The key or certificate files it reads, for the user to recognise. */
+	files: string[],
+	/**  Whether one of its keys is encrypted and needs a passphrase. */
+	needsPassphrase: boolean,
+	/**  Why it can't be imported; such a draft can't be picked. */
+	problem: AppError | null,
+	/**  What will differ from the source, or needs a look. */
+	warnings: AppError[],
+	/**  A Host with this name already exists, so importing as is would fail. */
+	nameTaken: boolean,
+};
+
+export type ImportFailure = {
+	source: string,
+	error: AppError,
+};
+
+/**  What an import did: the Hosts it created, and why the others weren't. */
+export type ImportOutcome = {
+	created: HostView[],
+	failed: ImportFailure[],
 };
 
 /**  What [`import`] makes: the image's name and Dockerfile changes. */
@@ -814,6 +939,11 @@ export type SshSetup = {
 	installCommand: string,
 	/**  Lets the SSH user reach the Docker socket, run on the server. */
 	dockerGroupCommand: string,
+	/**
+	 *  Every server the key must be authorised on, as `user@host`: the
+	 *  bastions that use the Host's key, in order, then the Host.
+	 */
+	servers: string[],
 };
 
 export type Stack = {

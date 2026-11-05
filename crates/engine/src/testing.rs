@@ -16,6 +16,15 @@ pub fn docker() -> Docker {
     Docker::connect_with_local_defaults().expect("local Engine socket")
 }
 
+/// A client for tests that must fail before reaching an Engine: nothing
+/// listens on the discard port, so a request that slips through fails too.
+/// Unlike [`docker`], it works on machines without an Engine (CI on macOS
+/// and Windows).
+pub fn offline() -> Docker {
+    Docker::connect_with_http("tcp://127.0.0.1:9", 5, bollard::API_DEFAULT_VERSION)
+        .expect("an HTTP client always constructs")
+}
+
 pub fn unique(prefix: &str) -> String {
     format!(
         "homeport-test-{prefix}-{}",

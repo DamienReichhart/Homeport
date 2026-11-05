@@ -46,17 +46,17 @@ Tests sit next to the code they test. A file past 300 lines gets an ESLint warni
 
 Each crate depends only on crates below it in this list, so the graph has one direction and Cargo refuses a cycle:
 
-| Crate (folder)                               | Holds                                                                                                            |
-| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `homeport` (`src-tauri/`)                    | The Tauri shell: `app/` (bootstrap, state, events), `commands/` (one module per feature), `error.rs`             |
-| `homeport-hosts` (`crates/hosts/`)           | Hosts: their store, a supervised connection to each (`registry/`), the use cases (`service/`)                    |
-| `homeport-stacks` (`crates/stacks/`)         | Stacks: telling them apart, Managed Stacks' store, lifecycle, the compose CLI (ADR 0001)                         |
-| `homeport-registries` (`crates/registries/`) | Registry logins: their store, matching them to image references, the login check and Docker Hub (HTTP)           |
-| `homeport-settings`, `homeport-updates`      | The user's preferences; how this copy of Homeport is updated                                                     |
-| `homeport-engine` (`crates/engine/`)         | The Engine's resources as functions over a bollard client; what runs in a container under `containers/`          |
-| `homeport-transport` (`crates/transport/`)   | Reaching a Host: local, TCP, TLS, SSH (ADR 0002), the compose proxy, classifying failures to reach it (`reach/`) |
-| `homeport-storage` (`crates/storage/`)       | The SQLite database, its migrations, and the secrets sealed in it (ADR 0002)                                     |
-| `homeport-core` (`crates/core/`)             | `AppError` and `ErrorCode`, the Host model, helpers for this computer                                            |
+| Crate (folder)                               | Holds                                                                                                          |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `homeport` (`src-tauri/`)                    | The Tauri shell: `app/` (bootstrap, state, events), `commands/` (one module per feature), `error.rs`           |
+| `homeport-hosts` (`crates/hosts/`)           | Hosts: their store, a supervised connection to each (`registry/`), the use cases (`service/`), imports, export |
+| `homeport-stacks` (`crates/stacks/`)         | Stacks: telling them apart, Managed Stacks' store, lifecycle, the compose CLI (ADR 0001)                       |
+| `homeport-registries` (`crates/registries/`) | Registry logins: their store, matching them to image references, the login check and Docker Hub (HTTP)         |
+| `homeport-settings`, `homeport-updates`      | The user's preferences; how this copy of Homeport is updated                                                   |
+| `homeport-engine` (`crates/engine/`)         | The Engine's resources as functions over a bollard client; what runs in a container under `containers/`        |
+| `homeport-transport` (`crates/transport/`)   | Reaching a Host: local, TCP, TLS, SSH and bastions (ADR 0002, 0012), the compose proxy, classifying failures   |
+| `homeport-storage` (`crates/storage/`)       | The SQLite database, its migrations, the secrets sealed in it, export files (ADR 0002, 0013)                   |
+| `homeport-core` (`crates/core/`)             | `AppError` and `ErrorCode`, the Host model, helpers for this computer                                          |
 
 Rules:
 
@@ -116,7 +116,7 @@ Website page (example: `compare`):
 - **Text**: every user-facing string comes from the catalogue in `src/shared/i18n/en/` through `t('feature.key', { param })` from `@/shared/i18n` (FormatJS, ICU MessageFormat). Errors carry a `key` and `params` that the frontend renders from the same catalogue; Rust declares each error's key and English template in its crate's `messages!` block and `bun run bindings` generates `errors.json` (ADR 0011).
 - **Server state**: TanStack Query, with `queryOptions` factories in each `api/queries.ts`. Engine resource lists are refreshed from pushed Engine events instead of polling (see Query keys above).
 - **Streams**: logs, stats, exec, pulls, pushes, builds, image saves and loads, and compose output use Tauri channels. Start one with `subscribe()` from `@/shared/api` in the feature's `api/streams.ts`; the returned function cancels it on the backend.
-- **Storage**: SQLite (`homeport.db` in the app data dir) via `homeport_storage::Db`, migrated on open from `crates/storage/src/db/migrations/`. Secrets are sealed with `homeport_storage::SecretBox` (ADR 0002).
+- **Storage**: SQLite (`homeport.db` in the app data dir) via `homeport_storage::Db`, migrated on open from `crates/storage/src/db/migrations/`. Secrets are sealed with `homeport_storage::SecretBox` (ADR 0002); export files with a passphrase, by `homeport_storage::crypto::bundle` (ADR 0013).
 - **Updates**: `tauri-plugin-updater`, driven from Rust (`src-tauri/src/commands/updates.rs`), never from the frontend. `homeport-updates` decides from the bundle type whether Homeport installs an update itself (NSIS, MSI, `.app`, AppImage) or leaves it to the package manager (`.deb`, `.rpm`). The manifest and the package repositories are built from the releases and served by the website (ADR 0003, [RELEASING.md](RELEASING.md#package-repositories-and-updates)); the `.deb`/`.rpm` maintainer scripts and the install script live in `packaging/linux/`.
 
 ## Deliberately not included (add when needed)

@@ -13,7 +13,7 @@ import {
   Switch,
 } from '@/shared/ui';
 import { useCreateNetwork } from '../../api/mutations';
-import { emptyNetwork } from '../../model/networkInput';
+import { canCreateNetwork, emptyNetwork, toNetworkInput } from '../../model/networkInput';
 import { t } from '@/shared/i18n';
 
 export function CreateNetworkDialog({
@@ -40,7 +40,7 @@ export function CreateNetworkDialog({
           className="grid gap-3"
           onSubmit={(e) => {
             e.preventDefault();
-            create.mutate(input);
+            create.mutate(toNetworkInput(input));
           }}
         >
           <div className="grid gap-1.5">
@@ -102,7 +102,7 @@ export function CreateNetworkDialog({
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
               {t('common.cancel')}
             </Button>
-            <Button type="submit" disabled={create.isPending || !input.name.trim()}>
+            <Button type="submit" disabled={create.isPending || !canCreateNetwork(input)}>
               {t('common.create')}
             </Button>
           </DialogFooter>

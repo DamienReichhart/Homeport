@@ -26,16 +26,28 @@ pub fn check_host_key(trusted: Option<&str>, presented: &PublicKey) -> HostKeyCh
     }
 }
 
-pub(super) fn host_key_error(trusted: Option<&str>, presented: &PublicKey) -> ConnectError {
+/// The server presented `presented` rather than `trusted`. `bastion` is the
+/// address of the bastion that presented it, `None` for the Host itself.
+pub(super) fn host_key_error(
+    trusted: Option<&str>,
+    presented: &PublicKey,
+    bastion: Option<&str>,
+) -> ConnectError {
     let key = presented.to_openssh().unwrap_or_default();
     let fingerprint = presented.fingerprint(HashAlg::Sha256).to_string();
+    let bastion = bastion.map(str::to_owned);
     match trusted.and_then(fingerprint_of_trusted) {
         Some(expected_fingerprint) => ConnectError::HostKeyMismatch {
             key,
             fingerprint,
             expected_fingerprint,
+            bastion,
         },
-        None => ConnectError::HostKeyUntrusted { key, fingerprint },
+        None => ConnectError::HostKeyUntrusted {
+            key,
+            fingerprint,
+            bastion,
+        },
     }
 }
 
@@ -84,6 +96,21 @@ mod tests {
         assert_eq!(check_host_key(None, &presented), HostKeyCheck::Unknown);
         assert_eq!(check_host_key(Some(&a), &presented), HostKeyCheck::Trusted);
         assert_eq!(check_host_key(Some(&b), &presented), HostKeyCheck::Mismatch);
+    }
+
+    #[test]
+    fn rejections_say_which_server_presented_the_key() {
+        let a = generate_key("a").public_key;
+        let b = generate_key("b").public_key;
+        let presented = PublicKey::from_openssh(&a).unwrap();
+        assert!(matches!(
+            host_key_error(None, &presented, Some("jump:22")),
+            ConnectError::HostKeyUntrusted { bastion: Some(ref x), .. } if x == "jump:22"
+        ));
+        assert!(matches!(
+            host_key_error(Some(&b), &presented, None),
+            ConnectError::HostKeyMismatch { bastion: None, .. }
+        ));
     }
 
     #[test]

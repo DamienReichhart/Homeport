@@ -13,13 +13,20 @@ pub enum ConnectError {
     /// The Host answered but refused Homeport; retrying won't help.
     #[error("{0}")]
     Unauthorized(AppError),
+    /// `bastion` is the address of the bastion that presented the key,
+    /// `None` for the Host's own SSH server.
     #[error("the SSH server's key isn't trusted yet ({fingerprint})")]
-    HostKeyUntrusted { key: String, fingerprint: String },
+    HostKeyUntrusted {
+        key: String,
+        fingerprint: String,
+        bastion: Option<String>,
+    },
     #[error("the SSH server's key changed: expected {expected_fingerprint}, got {fingerprint}")]
     HostKeyMismatch {
         key: String,
         fingerprint: String,
         expected_fingerprint: String,
+        bastion: Option<String>,
     },
     /// The Host's settings can't work as entered.
     #[error("{0}")]
@@ -54,20 +61,36 @@ impl From<ConnectError> for AppError {
             ConnectError::Unreachable(e)
             | ConnectError::Unauthorized(e)
             | ConnectError::Invalid(e) => e,
-            ConnectError::HostKeyUntrusted { fingerprint, .. } => AppError::new(
+            ConnectError::HostKeyUntrusted {
+                fingerprint,
+                bastion,
+                ..
+            } => AppError::new(
                 ErrorCode::HostKeyUntrusted,
-                msg::SSH_HOST_KEY_UNTRUSTED.with("fingerprint", fingerprint),
+                match bastion {
+                    Some(address) => msg::SSH_BASTION_KEY_UNTRUSTED
+                        .with("address", address)
+                        .with("fingerprint", fingerprint),
+                    None => msg::SSH_HOST_KEY_UNTRUSTED.with("fingerprint", fingerprint),
+                },
             )
             .with_hint(msg::SSH_HOST_KEY_UNTRUSTED_HINT),
             ConnectError::HostKeyMismatch {
                 fingerprint,
                 expected_fingerprint,
+                bastion,
                 ..
-            } => AppError::new(ErrorCode::HostKeyChanged, msg::SSH_HOST_KEY_CHANGED)
-                .with_hint(msg::SSH_HOST_KEY_CHANGED_HINT)
-                .with_detail(format!(
-                    "expected {expected_fingerprint}, got {fingerprint}"
-                )),
+            } => AppError::new(
+                ErrorCode::HostKeyChanged,
+                match bastion {
+                    Some(address) => msg::SSH_BASTION_KEY_CHANGED.with("address", address),
+                    None => msg::SSH_HOST_KEY_CHANGED.into(),
+                },
+            )
+            .with_hint(msg::SSH_HOST_KEY_CHANGED_HINT)
+            .with_detail(format!(
+                "expected {expected_fingerprint}, got {fingerprint}"
+            )),
         }
     }
 }

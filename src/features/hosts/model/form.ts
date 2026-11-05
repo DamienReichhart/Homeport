@@ -1,7 +1,19 @@
-import type { Host, HostInput, SshAuth } from '@/shared/api';
+import type { BastionAuth, BastionKeyInput, Host, HostInput, SshAuth } from '@/shared/api';
 import type { MessageKey } from '@/shared/i18n';
 
 export type HostKind = 'local' | 'tcp' | 'tls' | 'ssh';
+
+/** One bastion of an SSH Host, as the form edits it. */
+export interface BastionFormState {
+  host: string;
+  port: string;
+  user: string;
+  auth: BastionAuth;
+  privateKey: string;
+  passphrase: string;
+  /** The public half of the key already stored for it, when editing. */
+  storedPublicKey: string | null;
+}
 
 /** Everything the Host form edits, as plain strings. */
 export interface HostFormState {
@@ -19,7 +31,19 @@ export interface HostFormState {
   keyPem: string;
   privateKey: string;
   passphrase: string;
+  /** The servers to go through first, in order. */
+  bastions: BastionFormState[];
 }
+
+export const emptyBastion = (): BastionFormState => ({
+  host: '',
+  port: '22',
+  user: '',
+  auth: 'sameAsHost',
+  privateKey: '',
+  passphrase: '',
+  storedPublicKey: null,
+});
 
 export const emptyForm = (kind: HostKind = 'ssh'): HostFormState => ({
   name: '',
@@ -36,6 +60,7 @@ export const emptyForm = (kind: HostKind = 'ssh'): HostFormState => ({
   keyPem: '',
   privateKey: '',
   passphrase: '',
+  bastions: [],
 });
 
 export function formFromHost(host: Host): HostFormState {
@@ -55,6 +80,14 @@ export function formFromHost(host: Host): HostFormState {
         sshUser: c.user,
         sshSocketPath: c.socketPath,
         sshAuth: c.auth,
+        bastions: c.bastions.map((b) => ({
+          ...emptyBastion(),
+          host: b.host,
+          port: String(b.port),
+          user: b.user,
+          auth: b.auth,
+          storedPublicKey: b.publicKey,
+        })),
       };
   }
 }
@@ -73,7 +106,11 @@ export function toHostInput(form: HostFormState, editing: boolean): HostInput {
         credentials: null,
       };
     case 'tcp':
-      return { name, connection: { kind: 'tcp', address: form.address.trim() }, credentials: null };
+      return {
+        name,
+        connection: { kind: 'tcp', address: form.address.trim() },
+        credentials: null,
+      };
     case 'tls': {
       const blank = !form.caPem.trim() && !form.certPem.trim() && !form.keyPem.trim();
       return {
@@ -97,16 +134,55 @@ export function toHostInput(form: HostFormState, editing: boolean): HostInput {
           socketPath: form.sshSocketPath.trim(),
           auth: form.sshAuth,
           publicKey: null,
+          bastions: form.bastions.map((b) => ({
+            host: b.host.trim(),
+            port: Number.parseInt(b.port, 10) || 0,
+            user: b.user.trim(),
+            auth: b.auth,
+            publicKey: null,
+            hostKey: null,
+          })),
         },
         credentials: importing
           ? { kind: 'sshKey', privateKey: form.privateKey, passphrase: form.passphrase || null }
           : null,
+        bastionKeys: bastionKeys(form.bastions),
       };
     }
   }
 }
 
+/** The keys typed for bastions that use their own; blank ones keep the stored key. */
+function bastionKeys(bastions: BastionFormState[]): BastionKeyInput[] {
+  return bastions.flatMap((b, index) =>
+    b.auth === 'imported' && b.privateKey.trim() !== ''
+      ? [{ index, privateKey: b.privateKey, passphrase: b.passphrase || null }]
+      : [],
+  );
+}
+
+/** `bastions` with the one at `index` moved by `by` places, kept within the list. */
+export function moveBastion(
+  bastions: BastionFormState[],
+  index: number,
+  by: number,
+): BastionFormState[] {
+  const to = index + by;
+  if (to < 0 || to >= bastions.length) return bastions;
+  const next = [...bastions];
+  const [moved] = next.splice(index, 1);
+  next.splice(to, 0, moved!);
+  return next;
+}
+
 /** The kinds of Host the form offers, in the order it shows them. */
+/** The ways a bastion can log in, in the order the form shows them. */
+export const BASTION_AUTHS: { auth: BastionAuth; label: MessageKey }[] = [
+  { auth: 'sameAsHost', label: 'hosts.bastions.auth.sameAsHost' },
+  { auth: 'imported', label: 'hosts.bastions.auth.imported' },
+  { auth: 'agent', label: 'hosts.bastions.auth.agent' },
+];
+
 export const HOST_KINDS: { kind: HostKind; label: MessageKey }[] = [
   { kind: 'ssh', label: 'hosts.kind.ssh' },
   { kind: 'tls', label: 'hosts.kind.tls' },

@@ -1,0 +1,13 @@
+# Check every text file out with LF, on Windows too: fixtures, snapshots and
+# generated files (bindings, catalogues) are compared byte for byte, and
+# Prettier and rustfmt expect LF.
+* text=auto eol=lf
+
+# Binary files, never converted.
+*.png binary
+*.jpg binary
+*.ico binary
+*.icns binary
+*.woff2 binary
+*.tar binary
+*.gz binary

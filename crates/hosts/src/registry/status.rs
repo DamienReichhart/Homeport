@@ -27,14 +27,18 @@ pub enum HostStatus {
     Unauthorized {
         error: AppError,
     },
+    /// `bastion` is the address of the bastion that presented the key,
+    /// `None` for the Host's own SSH server.
     HostKeyUntrusted {
         key: String,
         fingerprint: String,
+        bastion: Option<String>,
     },
     HostKeyMismatch {
         key: String,
         fingerprint: String,
         expected_fingerprint: String,
+        bastion: Option<String>,
     },
     CredentialsLost,
     KeychainUnavailable {
@@ -66,17 +70,25 @@ impl From<ConnectError> for HostStatus {
                 retry_in_secs: 0,
             },
             ConnectError::Unauthorized(error) => Self::Unauthorized { error },
-            ConnectError::HostKeyUntrusted { key, fingerprint } => {
-                Self::HostKeyUntrusted { key, fingerprint }
-            }
+            ConnectError::HostKeyUntrusted {
+                key,
+                fingerprint,
+                bastion,
+            } => Self::HostKeyUntrusted {
+                key,
+                fingerprint,
+                bastion,
+            },
             ConnectError::HostKeyMismatch {
                 key,
                 fingerprint,
                 expected_fingerprint,
+                bastion,
             } => Self::HostKeyMismatch {
                 key,
                 fingerprint,
                 expected_fingerprint,
+                bastion,
             },
             ConnectError::Invalid(error) => Self::Invalid { error },
         }

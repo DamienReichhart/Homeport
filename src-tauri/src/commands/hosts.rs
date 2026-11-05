@@ -1,11 +1,14 @@
 //! Hosts: adding, editing and connecting to them.
 
+use std::path::PathBuf;
+
 use tauri::State;
 
 use homeport_hosts::{
     detect::{self, DetectedEngine},
+    import::{ImportChoice, ImportDraft, ImportOutcome},
     registry::EngineEvent,
-    service::{HostInput, HostView, SshSetup},
+    service::{BundleChoice, BundleHost, ExportOutcome, HostInput, HostView, SshSetup},
 };
 
 use crate::{app::AppState, error::AppResult};
@@ -60,8 +63,9 @@ pub async fn hosts_trust_key(
     state: State<'_, AppState>,
     id: String,
     key: String,
+    bastion: Option<String>,
 ) -> AppResult<HostView> {
-    state.hosts.trust_host_key(&id, &key)
+    state.hosts.trust_host_key(&id, &key, bastion.as_deref())
 }
 
 #[tauri::command]
@@ -86,4 +90,72 @@ pub fn hosts_ssh_setup(state: State<'_, AppState>, id: String) -> AppResult<SshS
 #[specta::specta]
 pub fn hosts_events(state: State<'_, AppState>, id: String) -> Vec<EngineEvent> {
     state.hosts.registry.events(&id)
+}
+
+/// The servers `~/.ssh/config` defines, as drafts of Hosts.
+#[tauri::command]
+#[specta::specta]
+pub async fn hosts_ssh_config_preview(state: State<'_, AppState>) -> AppResult<Vec<ImportDraft>> {
+    state.hosts.preview_ssh_config()
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn hosts_ssh_config_import(
+    state: State<'_, AppState>,
+    choices: Vec<ImportChoice>,
+) -> AppResult<ImportOutcome> {
+    state.hosts.import_ssh_config(choices)
+}
+
+/// The Docker CLI's contexts, as drafts of Hosts.
+#[tauri::command]
+#[specta::specta]
+pub async fn hosts_docker_contexts_preview(
+    state: State<'_, AppState>,
+) -> AppResult<Vec<ImportDraft>> {
+    state.hosts.preview_docker_contexts()
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn hosts_docker_contexts_import(
+    state: State<'_, AppState>,
+    choices: Vec<ImportChoice>,
+) -> AppResult<ImportOutcome> {
+    state.hosts.import_docker_contexts(choices)
+}
+
+/// Writes the Hosts `ids` to a file protected by `passphrase` (ADR 0013).
+#[tauri::command]
+#[specta::specta]
+pub async fn hosts_export(
+    state: State<'_, AppState>,
+    ids: Vec<String>,
+    path: PathBuf,
+    passphrase: String,
+) -> AppResult<ExportOutcome> {
+    state.hosts.export_hosts(&ids, &path, &passphrase)
+}
+
+/// The Hosts of an export file.
+#[tauri::command]
+#[specta::specta]
+pub async fn hosts_bundle_preview(
+    state: State<'_, AppState>,
+    path: PathBuf,
+    passphrase: String,
+) -> AppResult<Vec<BundleHost>> {
+    state.hosts.preview_bundle(&path, &passphrase)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn hosts_bundle_import(
+    state: State<'_, AppState>,
+    path: PathBuf,
+    passphrase: String,
+    choices: Vec<BundleChoice>,
+) -> AppResult<ImportOutcome> {
+    state.hosts.import_bundle(&path, &passphrase, choices)
 }

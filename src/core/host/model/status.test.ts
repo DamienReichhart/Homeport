@@ -35,6 +35,7 @@ describe('describeStatus', () => {
       state: 'hostKeyUntrusted',
       key: 'ssh-ed25519 AAAA',
       fingerprint: 'SHA256:abc',
+      bastion: null,
     });
     expect(s.tone).toBe('warning');
     expect(s.detail).toContain('SHA256:abc');

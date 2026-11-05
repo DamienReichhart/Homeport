@@ -34,6 +34,10 @@ The server's certificate must name the host you enter — its DNS name or IP add
 
 The certificates and key are stored encrypted, which needs an [OS keychain](/docs/requirements/#optional-an-os-keychain). When editing the Host, leave a field blank to keep what's stored.
 
+### From a Docker context
+
+If `docker context ls` already lists the Engine, **Import Docker contexts** on **Add host** creates the Host with the context's address and its `ca.pem`, `cert.pem` and `key.pem`, without picking files. Contexts that skip TLS verification aren't imported. See [Docker contexts](/docs/hosts/#docker-contexts).
+
 ## TCP
 
 A **TCP** Host connects to `tcp://host:port` with no encryption and no authentication.

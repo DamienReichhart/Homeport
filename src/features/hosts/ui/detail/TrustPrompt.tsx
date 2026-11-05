@@ -8,25 +8,42 @@ import { t, tRich } from '@/shared/i18n';
 const mono = (chunks: ReactNode[]) => <span className="font-mono">{chunks}</span>;
 const FINGERPRINT_COMMAND = 'ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub';
 
-/** Asks the user to check an SSH server's key on first use, or after it changed. */
+/**
+ * Asks the user to check an SSH server's key on first use, or after it
+ * changed: the Host's own server's, or one of its bastions'.
+ */
 export function TrustPrompt({ view }: { view: HostView }) {
   const [dialog, confirm] = useConfirm();
   const trust = useTrustHostKey(view.host.id);
   const status = view.status;
   if (status.state === 'hostKeyUntrusted') {
+    const { bastion } = status;
     return (
       <Alert>
         <ShieldQuestionIcon />
-        <AlertTitle>{t('hosts.trust.untrusted.title')}</AlertTitle>
+        <AlertTitle>
+          {bastion ? t('hosts.trust.untrusted.bastionTitle') : t('hosts.trust.untrusted.title')}
+        </AlertTitle>
         <AlertDescription className="grid gap-2">
           <p>
-            {tRich('hosts.trust.untrusted.description', {
-              fingerprint: status.fingerprint,
-              command: FINGERPRINT_COMMAND,
-              mono,
-            })}
+            {bastion
+              ? tRich('hosts.trust.untrusted.bastionDescription', {
+                  bastion,
+                  fingerprint: status.fingerprint,
+                  command: FINGERPRINT_COMMAND,
+                  mono,
+                })
+              : tRich('hosts.trust.untrusted.description', {
+                  fingerprint: status.fingerprint,
+                  command: FINGERPRINT_COMMAND,
+                  mono,
+                })}
           </p>
-          <Button size="sm" className="justify-self-start" onClick={() => trust.mutate(status.key)}>
+          <Button
+            size="sm"
+            className="justify-self-start"
+            onClick={() => trust.mutate({ key: status.key, bastion })}
+          >
             {t('hosts.trust.untrusted.button')}
           </Button>
         </AlertDescription>
@@ -37,7 +54,11 @@ export function TrustPrompt({ view }: { view: HostView }) {
     return (
       <Alert variant="destructive">
         <ShieldAlertIcon />
-        <AlertTitle>{t('hosts.trust.mismatch.title')}</AlertTitle>
+        <AlertTitle>
+          {status.bastion
+            ? t('hosts.trust.mismatch.bastionTitle', { bastion: status.bastion })
+            : t('hosts.trust.mismatch.title')}
+        </AlertTitle>
         <AlertDescription className="grid gap-2">
           <p>
             {tRich('hosts.trust.mismatch.description', {
@@ -58,7 +79,7 @@ export function TrustPrompt({ view }: { view: HostView }) {
                 }),
                 confirmLabel: t('hosts.trust.mismatch.confirm'),
                 destructive: true,
-                onConfirm: () => trust.mutateAsync(status.key),
+                onConfirm: () => trust.mutateAsync({ key: status.key, bastion: status.bastion }),
               })
             }
           >

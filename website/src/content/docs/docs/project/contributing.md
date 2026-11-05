@@ -34,7 +34,7 @@ Open an issue describing the problem you want solved, not only the solution. Kno
    ```
 
 5. Write commit messages as [Conventional Commits](https://www.conventionalcommits.org) — `feat(stacks): …`, `fix(hosts): …`. Release notes are generated from them.
-6. Open a pull request against the `dev` branch.
+6. Open a pull request against the `dev` branch. CI runs the frontend checks and the licence check on Linux, and `cargo clippy` and `cargo test` on Linux, macOS and Windows, so code behind `#[cfg(windows)]` or `#[cfg(target_os = "macos")]` is compiled before it's merged. A test that needs a Docker Engine is marked `#[ignore = "needs a local Docker Engine"]`; a separate Linux job runs those against the runner's Engine.
 
 See [building from source](/docs/project/building/) to get set up.
 

@@ -59,7 +59,8 @@ const APP_BUNDLES: &[&str] = &[
     r"C:\Program Files\Docker\Docker",
 ];
 
-fn home() -> Option<PathBuf> {
+/// The user's home folder.
+pub fn home() -> Option<PathBuf> {
     std::env::var_os("HOME")
         .or_else(|| std::env::var_os("USERPROFILE"))
         .map(PathBuf::from)

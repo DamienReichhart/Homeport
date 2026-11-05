@@ -63,6 +63,7 @@ export const hosts: HostView[] = [
         socketPath: '/var/run/docker.sock',
         auth: 'generated',
         publicKey: DEMO_KEY,
+        bastions: [],
       },
       enabled: true,
       hostKey: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDemoServerKeyNotReal',

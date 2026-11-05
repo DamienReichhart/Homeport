@@ -1,5 +1,7 @@
 //! Finds Docker-compatible Engines running on this machine.
 
+mod podman;
+
 use std::{path::Path, time::Duration};
 
 use serde::Serialize;
@@ -47,14 +49,40 @@ fn path(base: &Path, rel: &str) -> String {
     base.join(rel).to_string_lossy().into_owned()
 }
 
+/// The running Podman machines on macOS, where their sockets move with each
+/// machine: asked of the `podman` CLI, or else looked for where Podman puts them.
+async fn podman_machines(home: Option<&Path>) -> Vec<(String, String)> {
+    if !cfg!(target_os = "macos") {
+        return vec![];
+    }
+    let machines = match podman::from_cli().await {
+        Some(machines) => machines,
+        None => {
+            let tmp = std::env::var_os("TMPDIR").map(std::path::PathBuf::from);
+            podman::from_paths(tmp.as_deref(), home)
+        }
+    };
+    machines
+        .into_iter()
+        .map(|m| (m.label, m.socket_path))
+        .collect()
+}
+
 /// Probes every candidate socket and returns the Engines that answer.
-/// Sockets that are symlinks to one already found are skipped.
+/// Sockets that are symlinks to one already found are skipped. Podman
+/// machines come first, so the `/var/run/docker.sock` link `podman-mac-helper`
+/// makes to one is shown as that machine.
 pub async fn detect() -> Vec<DetectedEngine> {
     let home = std::env::var_os("HOME").map(std::path::PathBuf::from);
     let runtime = std::env::var_os("XDG_RUNTIME_DIR").map(std::path::PathBuf::from);
     let mut seen = Vec::new();
     let mut engines = Vec::new();
-    for (label, socket_path) in candidates(home.as_deref(), runtime.as_deref()) {
+    let all = podman_machines(home.as_deref()).await.into_iter().chain(
+        candidates(home.as_deref(), runtime.as_deref())
+            .into_iter()
+            .map(|(label, path)| (label.to_owned(), path)),
+    );
+    for (label, socket_path) in all {
         if cfg!(unix) {
             let Ok(real) = std::fs::canonicalize(&socket_path) else {
                 continue;
@@ -68,7 +96,7 @@ pub async fn detect() -> Vec<DetectedEngine> {
             socket_path: socket_path.clone(),
         };
         let probe = async {
-            let connected = transport::connect(label, &connection, None, None)
+            let connected = transport::connect(&label, &connection, None, None)
                 .await
                 .ok()?;
             connected.docker.version().await.ok()?.version
@@ -76,7 +104,7 @@ pub async fn detect() -> Vec<DetectedEngine> {
         if let Ok(Some(engine_version)) = tokio::time::timeout(Duration::from_secs(3), probe).await
         {
             engines.push(DetectedEngine {
-                label: label.into(),
+                label,
                 socket_path,
                 engine_version,
             });

@@ -439,7 +439,7 @@ mod tests {
         let (sink, events) = recorder();
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("missing").join("a.tar");
-        save(testing::docker(), vec!["x".into()], path.clone(), sink).await;
+        save(testing::offline(), vec!["x".into()], path.clone(), sink).await;
         let events = events.lock().unwrap();
         assert!(
             matches!(events.last(), Some(TransferEvent::Error { .. })),
@@ -587,7 +587,7 @@ mod tests {
         let (sink, events) = recorder();
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("missing").join("rootfs.tar");
-        export(testing::docker(), "nope".into(), path.clone(), sink).await;
+        export(testing::offline(), "nope".into(), path.clone(), sink).await;
         assert!(matches!(
             events.lock().unwrap().last(),
             Some(TransferEvent::Error { .. })
@@ -599,7 +599,7 @@ mod tests {
     async fn imports_need_a_name() {
         let (sink, events) = recorder();
         import(
-            testing::docker(),
+            testing::offline(),
             "/nonexistent.tar".into(),
             ImportSpec {
                 reference: " ".into(),
