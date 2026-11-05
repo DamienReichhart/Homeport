@@ -19,9 +19,13 @@ pub mod compose;
 pub mod definition;
 pub mod lifecycle;
 pub mod linked;
+mod listing;
 pub mod messages;
 pub mod runtime;
 pub mod stack;
 pub mod store;
 
-pub use self::stack::{derive, Stack, StackKind, StackRecord, StackService, StackState};
+pub use self::{
+    listing::list,
+    stack::{derive, Stack, StackKind, StackProblem, StackRecord, StackService, StackState},
+};

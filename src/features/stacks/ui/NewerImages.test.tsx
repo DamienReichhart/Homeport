@@ -28,6 +28,7 @@ function mock() {
         total: 2,
         configFiles: null,
         workingDir: null,
+        problem: null,
       },
     ],
     images_freshness: () => [

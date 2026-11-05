@@ -89,6 +89,10 @@ export default {
   'stacks.linked.title': 'Linked Stack',
   'stacks.linked.description':
     'Its compose files are in <mono>{folder}</mono> on this computer. Homeport reads them there and never keeps a copy.',
+  'stacks.linked.missingTitle': 'Compose files missing',
+  'stacks.linked.missingDescription':
+    'This Stack is linked to <mono>{folder}</mono>, but its compose files are no longer there, so it’s shown as External. Put them back to link it again, or forget it.',
+  'stacks.problem.filesMissing': 'Its compose files are no longer on this computer.',
   'stacks.linked.forget': 'Forget',
   'stacks.linked.forgetTitle': 'Forget {name}?',
   'stacks.linked.forgetDescription':

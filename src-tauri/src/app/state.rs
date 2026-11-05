@@ -8,7 +8,10 @@ use homeport_engine::{containers::exec::ExecSessions, freshness::FreshnessCache}
 use homeport_hosts::service::HostService;
 use homeport_registries::RegistryStore;
 use homeport_settings::SettingsService;
-use homeport_stacks::{linked::LinkedStore, store::StackStore};
+use homeport_stacks::{
+    linked::{FileCache, LinkedStore},
+    store::StackStore,
+};
 use homeport_storage::SecretBox;
 
 pub struct AppState {
@@ -17,6 +20,8 @@ pub struct AppState {
     pub hosts: HostService,
     pub stacks: StackStore,
     pub linked: LinkedStore,
+    /// Parsed compose files, for finding Linked Stacks without re-reading them.
+    pub linked_files: FileCache,
     pub registries: RegistryStore,
     pub streams: Streams,
     pub exec: ExecSessions,

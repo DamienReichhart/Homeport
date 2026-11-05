@@ -11,32 +11,26 @@ use homeport_stacks::{
     lifecycle::StackAction,
     runtime::{self, ComposeJob, SourceKind, StackSource, StackTarget},
     store::ManagedStack,
-    Stack, StackRecord,
+    Stack,
 };
 
 use crate::{app::AppState, commands::registries, error::AppResult};
 
 /// Every Stack on a Host: those running there plus undeployed Managed and
-/// Linked Stacks.
+/// Linked Stacks. Stacks started from compose files on this machine are
+/// recorded as Linked the first time they're seen.
 #[tauri::command]
 #[specta::specta]
 pub async fn stacks_list(state: State<'_, AppState>, host_id: String) -> AppResult<Vec<Stack>> {
     let docker = state.hosts.registry.docker(&host_id)?;
     let running = containers::list(&docker).await?;
-    let mut records: Vec<StackRecord> = state
-        .stacks
-        .list(&host_id)?
-        .into_iter()
-        .map(|s| StackRecord::managed(s.id, s.name))
-        .collect();
-    records.extend(
-        state
-            .linked
-            .list(&host_id)?
-            .into_iter()
-            .map(|s| StackRecord::linked(s.id, s.name, s.working_dir)),
-    );
-    Ok(stacks::derive(&running, &records))
+    stacks::list(
+        &host_id,
+        &running,
+        &state.stacks,
+        &state.linked,
+        &state.linked_files,
+    )
 }
 
 #[tauri::command]

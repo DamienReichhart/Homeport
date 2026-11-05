@@ -13,9 +13,10 @@ A **Stack** is a Compose project running on a Host. Homeport finds every Stack o
   alt="The Stacks page, listing Managed and External Stacks with their state and services."
 />
 
-## Managed and External Stacks
+## Managed, Linked and External Stacks
 
 - A **Managed Stack** is one whose compose file and environment Homeport keeps. You can edit it, deploy it and take it down from Homeport.
+- A **Linked Stack** is one whose compose files are a folder on **this** computer. Homeport remembers where the folder is and works on the files there. See [Linked Stacks](#linked-stacks).
 - An **External Stack** was deployed some other way — `docker compose up` on the server, a CI job, another tool. Homeport can start, stop, restart and remove its containers, but has no compose file to redeploy it from. You can [adopt](#adopting-an-external-stack) it to make it Managed.
 
 Each Stack shows one of these states:
@@ -28,6 +29,27 @@ Each Stack shows one of these states:
 | **Not deployed**   | A Managed Stack with no containers yet. |
 
 Managed Stacks belong to one Host. To run the same compose file on two Hosts, create a Stack on each.
+
+## Linked Stacks
+
+A **Linked Stack** keeps its compose files in their project folder on this computer, where you edit them in your own editor and keep them under version control. Homeport never copies them: it remembers the folder and the compose files it uses, in order, and reads them where they are. The folder's `.env` stays in the folder.
+
+### How Linked Stacks are found
+
+When you run `docker compose up` in a folder, Compose labels every container with that folder and its compose files — even when `DOCKER_HOST` points at a remote Host. When Homeport lists a Host's Stacks, a Stack found running is shown as **Linked** if:
+
+1. both labels are there, and the folder and every compose file they name exist on this computer, and
+2. those files define the services that run: every running service is in the files, and every service the files define outside a profile has a container.
+
+The second rule keeps a path that exists here by coincidence from linking the wrong files — for example a Stack started on the server itself in `/srv/app`, when this computer has a `/srv/app` too. Files that use `include:` or `extends:` aren't followed, so such a Stack stays External for now. Finding Linked Stacks doesn't need the Compose CLI.
+
+The folder is shown under the Stack's name in the list and on its page.
+
+### When the folder moves or disappears
+
+If a Linked Stack's compose files are no longer there — the folder was moved, renamed or deleted — the Stack is shown as **External**, with ⚠ **Its compose files are no longer on this computer**. Nothing is deleted from Homeport or the Host: put the files back and it's Linked again at the next refresh. To stop linking it, open its **Definition** tab and choose **Forget**; that only drops Homeport's note of the folder, never the folder or the containers.
+
+A Stack started from a folder on another computer is External on this one, since its labels point at a path this computer doesn't have.
 
 ## What deploying needs
 

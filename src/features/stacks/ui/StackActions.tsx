@@ -69,7 +69,7 @@ export function StackActions({
         >
           <RocketIcon /> {deployed ? t('stacks.action.redeploy') : t('stacks.action.deploy')}
         </Button>
-      ) : stack.kind === 'external' ? (
+      ) : stack.kind === 'external' && stack.id === null ? (
         <Button
           size={size}
           variant="outline"

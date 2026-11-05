@@ -740,6 +740,7 @@ export function stacksOf(hostId: string): Stack[] {
       total: members.length,
       configFiles: managed ? null : `/opt/${name}/compose.yaml`,
       workingDir: null,
+      problem: null,
     };
   });
   if (hostId === PROD) {
@@ -753,6 +754,7 @@ export function stacksOf(hostId: string): Stack[] {
       total: 0,
       configFiles: null,
       workingDir: null,
+      problem: null,
     });
   }
   return stacks.sort((a, b) => a.name.localeCompare(b.name));

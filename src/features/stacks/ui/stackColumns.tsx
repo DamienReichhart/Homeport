@@ -1,3 +1,4 @@
+import { TriangleAlertIcon } from 'lucide-react';
 import { NewerImage } from '@/core/host';
 import type { Stack } from '@/shared/api';
 import { Badge, type ColumnDef, type ConfirmOptions, StatusDot } from '@/shared/ui';
@@ -26,14 +27,34 @@ export function stackColumns({
       id: 'name',
       header: t('stacks.column.name'),
       accessorFn: (s) => s.name,
-      cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
+      cell: ({ row }) => (
+        <span className="grid">
+          <span className="font-medium">{row.original.name}</span>
+          {row.original.kind === 'linked' && row.original.workingDir && (
+            <span className="text-muted-foreground font-mono text-xs">
+              {row.original.workingDir}
+            </span>
+          )}
+        </span>
+      ),
     },
     {
       id: 'kind',
       header: t('stacks.column.kind'),
       accessorFn: (s) => s.kind,
       cell: ({ row }) => (
-        <Badge variant={KIND_BADGE[row.original.kind]}>{t(KIND_LABEL[row.original.kind])}</Badge>
+        <span className="flex items-center gap-1.5">
+          <Badge variant={KIND_BADGE[row.original.kind]}>{t(KIND_LABEL[row.original.kind])}</Badge>
+          {row.original.problem === 'filesMissing' && (
+            <TriangleAlertIcon
+              role="img"
+              aria-label={t('stacks.problem.filesMissing')}
+              className="text-warning size-4"
+            >
+              <title>{t('stacks.problem.filesMissing')}</title>
+            </TriangleAlertIcon>
+          )}
+        </span>
       ),
     },
     {

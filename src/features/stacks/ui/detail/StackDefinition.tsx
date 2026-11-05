@@ -27,7 +27,8 @@ export function StackDefinition({
   stack: Stack;
   onDeploy: (job: ComposeJob) => void;
 }) {
-  if (stack.kind === 'linked' && stack.id)
+  // A Linked Stack, or one shown as External while its files are missing.
+  if (stack.id && (stack.kind === 'linked' || stack.problem === 'filesMissing'))
     return <LinkedDefinition hostId={hostId} stack={stack} linkedId={stack.id} />;
   return <OwnDefinition hostId={hostId} stack={stack} onDeploy={onDeploy} />;
 }

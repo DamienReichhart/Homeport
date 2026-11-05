@@ -28,12 +28,21 @@ export function LinkedDefinition({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('stacks.linked.title')}</CardTitle>
+        <CardTitle>
+          {stack.problem === 'filesMissing'
+            ? t('stacks.linked.missingTitle')
+            : t('stacks.linked.title')}
+        </CardTitle>
         <CardDescription>
-          {tRich('stacks.linked.description', {
-            folder: stack.workingDir ?? '',
-            mono: (chunks) => <span className="font-mono">{chunks}</span>,
-          })}
+          {tRich(
+            stack.problem === 'filesMissing'
+              ? 'stacks.linked.missingDescription'
+              : 'stacks.linked.description',
+            {
+              folder: stack.workingDir ?? '',
+              mono: (chunks) => <span className="font-mono">{chunks}</span>,
+            },
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent>

@@ -6,6 +6,8 @@ use serde::Serialize;
 
 use homeport_engine::containers::Container;
 
+use crate::linked::detect::CONFIG_FILES;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "lowercase")]
 pub enum StackKind {
@@ -28,6 +30,15 @@ pub enum StackState {
     Stopped,
     /// A Managed or Linked Stack with no containers yet.
     NotDeployed,
+}
+
+/// Why a Stack Homeport has a record of can't be used as its kind says.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub enum StackProblem {
+    /// A Linked Stack's compose files aren't on this machine any more, so
+    /// it's shown as External until they come back.
+    FilesMissing,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
@@ -53,6 +64,8 @@ pub struct Stack {
     pub config_files: Option<String>,
     /// The folder of a Linked Stack, on this machine.
     pub working_dir: Option<String>,
+    /// Why a recorded Stack is shown as another kind.
+    pub problem: Option<StackProblem>,
 }
 
 /// A Stack Homeport has a record of, deployed or not.
@@ -64,6 +77,8 @@ pub struct StackRecord {
     pub kind: StackKind,
     /// The folder of a Linked Stack.
     pub working_dir: Option<String>,
+    /// A Linked Stack whose files are gone: shown as External, with why.
+    pub files_missing: bool,
 }
 
 impl StackRecord {
@@ -73,6 +88,7 @@ impl StackRecord {
             name: name.into(),
             kind: StackKind::Managed,
             working_dir: None,
+            files_missing: false,
         }
     }
 
@@ -86,11 +102,29 @@ impl StackRecord {
             name: name.into(),
             kind: StackKind::Linked,
             working_dir: Some(working_dir.into()),
+            files_missing: false,
         }
     }
-}
 
-const CONFIG_FILES: &str = "com.docker.compose.project.config_files";
+    /// Marks a Linked Stack whose files are missing on this machine.
+    pub fn with_files_missing(mut self, missing: bool) -> Self {
+        self.files_missing = missing;
+        self
+    }
+
+    /// The kind the Stack is shown as.
+    fn shown_kind(&self) -> StackKind {
+        if self.files_missing {
+            StackKind::External
+        } else {
+            self.kind
+        }
+    }
+
+    fn problem(&self) -> Option<StackProblem> {
+        self.files_missing.then_some(StackProblem::FilesMissing)
+    }
+}
 
 /// Groups a Host's containers into Stacks, naming the kind of each from
 /// Homeport's `records`, and adds the recorded Stacks that have not been
@@ -125,7 +159,7 @@ pub fn derive(containers: &[Container], records: &[StackRecord]) -> Vec<Stack> {
             let record = record(name);
             Stack {
                 name: name.to_owned(),
-                kind: record.map_or(StackKind::External, |r| r.kind),
+                kind: record.map_or(StackKind::External, StackRecord::shown_kind),
                 id: record.map(|r| r.id.clone()),
                 state: match running {
                     0 => StackState::Stopped,
@@ -139,6 +173,7 @@ pub fn derive(containers: &[Container], records: &[StackRecord]) -> Vec<Stack> {
                     .iter()
                     .find_map(|c| c.labels.get(CONFIG_FILES).cloned()),
                 working_dir: record.and_then(|r| r.working_dir.clone()),
+                problem: record.and_then(StackRecord::problem),
             }
         })
         .collect();
@@ -147,7 +182,7 @@ pub fn derive(containers: &[Container], records: &[StackRecord]) -> Vec<Stack> {
         if !stacks.iter().any(|s| s.name == r.name) {
             stacks.push(Stack {
                 name: r.name.clone(),
-                kind: r.kind,
+                kind: r.shown_kind(),
                 id: Some(r.id.clone()),
                 state: StackState::NotDeployed,
                 services: vec![],
@@ -155,6 +190,7 @@ pub fn derive(containers: &[Container], records: &[StackRecord]) -> Vec<Stack> {
                 total: 0,
                 config_files: None,
                 working_dir: r.working_dir.clone(),
+                problem: r.problem(),
             });
         }
     }
@@ -260,6 +296,21 @@ mod tests {
         );
         assert_eq!(stacks[0].working_dir.as_deref(), Some("/srv/blog"));
         assert_eq!(stacks[1].working_dir.as_deref(), Some("/srv/draft"));
+    }
+
+    #[test]
+    fn linked_stacks_without_their_files_show_as_external_with_why() {
+        let records = [
+            StackRecord::linked("l1", "blog", "/gone").with_files_missing(true),
+            StackRecord::linked("l2", "draft", "/gone").with_files_missing(true),
+        ];
+        let stacks = derive(&[container("1", Some("blog"), "app", "running")], &records);
+        for s in &stacks {
+            assert_eq!(s.kind, StackKind::External);
+            assert_eq!(s.problem, Some(StackProblem::FilesMissing));
+            assert!(s.id.is_some(), "it can still be forgotten");
+        }
+        assert_eq!(stacks[1].state, StackState::NotDeployed);
     }
 
     #[test]

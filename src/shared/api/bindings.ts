@@ -143,7 +143,8 @@ export const commands = {
 	containersCommit: (hostId: string, id: string, spec: CommitSpec) => __TAURI_INVOKE<string>("containers_commit", { hostId, id, spec }),
 	/**
 	 *  Every Stack on a Host: those running there plus undeployed Managed and
-	 *  Linked Stacks.
+	 *  Linked Stacks. Stacks started from compose files on this machine are
+	 *  recorded as Linked the first time they're seen.
 	 */
 	stacksList: (hostId: string) => __TAURI_INVOKE<Stack[]>("stacks_list", { hostId }),
 	stacksGet: (id: string) => __TAURI_INVOKE<ManagedStack>("stacks_get", { id }),
@@ -964,6 +965,8 @@ export type Stack = {
 	configFiles: string | null,
 	/**  The folder of a Linked Stack, on this machine. */
 	workingDir: string | null,
+	/**  Why a recorded Stack is shown as another kind. */
+	problem: StackProblem | null,
 };
 
 export type StackAction = "start" | "stop" | "restart";
@@ -975,6 +978,14 @@ export type StackKind =
 "linked" | 
 /**  Only its containers are known. */
 "external";
+
+/**  Why a Stack Homeport has a record of can't be used as its kind says. */
+export type StackProblem = 
+/**
+ *  A Linked Stack's compose files aren't on this machine any more, so
+ *  it's shown as External until they come back.
+ */
+"filesMissing";
 
 export type StackService = {
 	name: string,

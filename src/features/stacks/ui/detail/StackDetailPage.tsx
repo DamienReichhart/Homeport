@@ -62,6 +62,7 @@ function StackDetail({ hostId, name }: { hostId: string; name: string }) {
             <StatusDot tone={STATE_TONE[stack.state]} /> {t(STATE_LABEL[stack.state])}
             {stack.total > 0 &&
               ` · ${t('stacks.detail.running', { running: stack.running, total: stack.total })}`}
+            {stack.workingDir && <span className="font-mono text-xs"> · {stack.workingDir}</span>}
           </span>
         }
         actions={
