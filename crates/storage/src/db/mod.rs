@@ -24,6 +24,8 @@ const MIGRATION_SLICE: &[M<'static>] = &[
     M::up(include_str!("migrations/0007_stack_files.sql")),
     M::up(include_str!("migrations/0008_stack_profiles.sql")),
     M::up(include_str!("migrations/0009_stack_deploys.sql")),
+    M::up(include_str!("migrations/0010_git_repositories.sql")),
+    M::up(include_str!("migrations/0011_synced_stacks.sql")),
 ];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_SLICE);
 
@@ -154,6 +156,52 @@ mod tests {
             .query_row("SELECT count(*) FROM linked_stacks", [], |r| r.get(0))
             .unwrap();
         assert_eq!(linked, 0);
+    }
+
+    #[test]
+    fn databases_from_0_10_keep_their_stacks_and_history() {
+        let mut conn = Connection::open_in_memory().unwrap();
+        conn.pragma_update(None, "foreign_keys", "ON").unwrap();
+        MIGRATIONS.to_version(&mut conn, 9).unwrap();
+        let local = r#"{"kind":"local","socketPath":"/var/run/docker.sock"}"#;
+        conn.execute_batch(&format!(
+            "INSERT INTO hosts (id, name, connection) VALUES ('h', 'local', '{local}');
+             INSERT INTO stacks (id, host_id, name) VALUES ('s', 'h', 'shop');
+             INSERT INTO linked_stacks (id, host_id, name, working_dir, config_files, fingerprint)
+                 VALUES ('l', 'h', 'blog', '/srv/blog', '[]', 'fp');
+             INSERT INTO stack_deploys (id, host_id, stack_id, stack_kind, stack_name, action, definition)
+                 VALUES ('d', 'h', 's', 'managed', 'shop', 'up', '[]');"
+        ))
+        .unwrap();
+        MIGRATIONS.to_latest(&mut conn).unwrap();
+
+        let count = |table: &str| -> i64 {
+            conn.query_row(&format!("SELECT count(*) FROM {table}"), [], |r| r.get(0))
+                .unwrap()
+        };
+        assert_eq!(
+            (
+                count("stacks"),
+                count("linked_stacks"),
+                count("stack_deploys")
+            ),
+            (1, 1, 1)
+        );
+        assert_eq!((count("git_repositories"), count("synced_stacks")), (0, 0));
+        // A repository can't go while a Synced Stack uses it.
+        conn.execute_batch(
+            "INSERT INTO git_repositories (id, url, auth) VALUES ('r', 'https://example.com/r.git', 'none');
+             INSERT INTO synced_stacks (id, host_id, name, repository_id, ref_kind, ref_name, compose_path)
+                 VALUES ('y', 'h', 'site', 'r', 'branch', 'main', 'compose.yaml');",
+        )
+        .unwrap();
+        assert!(conn
+            .execute("DELETE FROM git_repositories WHERE id = 'r'", [])
+            .is_err());
+        // Removing the Host removes its Synced Stacks.
+        conn.execute("DELETE FROM hosts WHERE id = 'h'", [])
+            .unwrap();
+        assert_eq!(count("synced_stacks"), 0);
     }
 
     #[test]
