@@ -1,0 +1,30 @@
+[package]
+name = "homeport-git"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Homeport's git repositories for Synced Stacks: their sealed credentials, and the git CLI run with them for one command at a time (ADR 0014)"
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+homeport-core.workspace = true
+homeport-storage.workspace = true
+homeport-transport.workspace = true
+russh.workspace = true
+tokio.workspace = true
+futures-util.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+specta.workspace = true
+rusqlite.workspace = true
+uuid.workspace = true
+tempfile.workspace = true
+log.workspace = true
+base64.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

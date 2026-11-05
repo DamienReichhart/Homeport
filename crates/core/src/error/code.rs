@@ -91,6 +91,21 @@ pub enum ErrorCode {
     StackFileUnreadable,
     /// A Linked Stack's compose file changed on disk since it was opened.
     StackFilesChanged,
+    // Synced Stacks' git repositories (ADR 0014).
+    /// The `git` CLI isn't installed on this computer.
+    GitMissing,
+    /// The repository refused the deploy key or the token.
+    GitAuthFailed,
+    /// The repository doesn't exist, or the credentials can't see it.
+    GitRepositoryNotFound,
+    /// The repository's server can't be reached from this computer.
+    GitUnreachable,
+    /// The SSH server of a repository presented a different key than the trusted one.
+    GitHostKeyChanged,
+    /// `git` failed in a way Homeport has no better words for.
+    GitFailed,
+    /// A Synced Stack's compose file, branch or tag isn't in its repository.
+    SyncedComposeFileMissing,
     // Files and exec inside containers.
     NoShell,
     PathNotFound,

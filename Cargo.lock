@@ -2191,6 +2191,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "homeport-git"
+version = "0.10.0"
+dependencies = [
+ "base64 0.22.1",
+ "futures-util",
+ "homeport-core",
+ "homeport-storage",
+ "homeport-transport",
+ "log",
+ "rusqlite",
+ "russh",
+ "serde",
+ "serde_json",
+ "specta",
+ "tempfile",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
 name = "homeport-hosts"
 version = "0.10.0"
 dependencies = [
