@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCapabilities, type Stack, type SyncedStack } from '@/shared/api';
 import { Button, ErrorMessage, Label, Spinner, Textarea, useConfirm } from '@/shared/ui';
 import { syncedQueries, useForgetSynced, useSaveSyncedEnv } from '../../api/synced';
+import type { ComposeJob } from '../../model/composeJob';
 import { repositoryQueries } from '@/features/repositories';
 import { SyncedFilesView } from './SyncedFilesView';
 import { SyncedSource } from './SyncedSource';
@@ -17,10 +18,12 @@ export function SyncedDefinition({
   hostId,
   stack,
   syncedId,
+  onDeploy,
 }: {
   hostId: string;
   stack: Stack;
   syncedId: string;
+  onDeploy: (job: ComposeJob) => void;
 }) {
   const synced = useQuery(syncedQueries.stack(syncedId));
   const env = useQuery(syncedQueries.env(syncedId));
@@ -31,6 +34,7 @@ export function SyncedDefinition({
   return (
     <Loaded
       key={synced.data.updatedAt}
+      onDeploy={onDeploy}
       hostId={hostId}
       stack={stack}
       synced={synced.data}
@@ -44,7 +48,9 @@ function Loaded({
   stack,
   synced,
   initialEnv,
+  onDeploy,
 }: {
+  onDeploy: (job: ComposeJob) => void;
   hostId: string;
   stack: Stack;
   synced: SyncedStack;
@@ -61,7 +67,12 @@ function Loaded({
   return (
     <div className="grid gap-4">
       <SyncedSource hostId={hostId} synced={synced} />
-      <SyncedFilesView synced={synced} url={url} />
+      <SyncedFilesView
+        synced={synced}
+        url={url}
+        canDeploy={capabilities.data?.compose.state === 'available'}
+        onDeploy={onDeploy}
+      />
       <div className="grid gap-1.5">
         <Label htmlFor="synced-env-edit">{t('stacks.newSynced.env')}</Label>
         <Textarea

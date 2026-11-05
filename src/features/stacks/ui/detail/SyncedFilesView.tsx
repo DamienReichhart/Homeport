@@ -2,9 +2,12 @@ import { useQuery } from '@tanstack/react-query';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { ExternalLinkIcon, FileIcon } from 'lucide-react';
 import { forgeFileUrl } from '@/features/repositories';
+import type { ComposeJob } from '../../model/composeJob';
 import type { SyncedStack } from '@/shared/api';
 import { Button, ErrorMessage, Spinner, toastError } from '@/shared/ui';
 import { syncedQueries } from '../../api/synced';
+import { useComposeCheck } from '../../api/useComposeCheck';
+import { ProfilesControl } from './ProfilesControl';
 import { YamlEditor } from '../YamlEditor';
 import { t } from '@/shared/i18n';
 
@@ -12,8 +15,20 @@ import { t } from '@/shared/i18n';
  * A Synced Stack's compose file at its fetched commit, read-only (it can
  * still be selected and copied), and the other files of its folder.
  */
-export function SyncedFilesView({ synced, url }: { synced: SyncedStack; url: string | null }) {
+export function SyncedFilesView({
+  synced,
+  url,
+  canDeploy,
+  onDeploy,
+}: {
+  synced: SyncedStack;
+  url: string | null;
+  canDeploy: boolean;
+  onDeploy: (job: ComposeJob) => void;
+}) {
   const files = useQuery(syncedQueries.files(synced.id, synced.fetchedCommit));
+  const composeText = files.data?.files[0]?.content ?? null;
+  const check = useComposeCheck(composeText === null ? [] : [composeText], 'synced');
   if (files.isPending) return <Spinner />;
   if (files.error) return <ErrorMessage error={files.error} onRetry={() => void files.refetch()} />;
   const [compose, ...others] = files.data.files;
@@ -45,6 +60,17 @@ export function SyncedFilesView({ synced, url }: { synced: SyncedStack; url: str
           label={t('stacks.syncedFiles.composeLabel', { path: compose.path })}
         />
       )}
+      <ProfilesControl
+        key={synced.profiles.join()}
+        kind="synced"
+        stackId={synced.id}
+        declared={composeText === null ? null : (check?.profiles ?? null)}
+        active={synced.profiles}
+        canDeploy={canDeploy}
+        onDeploy={() =>
+          onDeploy({ kind: 'synced', stackId: synced.id, name: synced.name, action: 'up' })
+        }
+      />
       {others.length > 0 && (
         <section className="grid gap-1">
           <h3 className="text-sm font-medium">{t('stacks.syncedFiles.others')}</h3>

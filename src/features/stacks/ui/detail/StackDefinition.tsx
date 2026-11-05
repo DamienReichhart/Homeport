@@ -34,7 +34,9 @@ export function StackDefinition({
       <LinkedDefinition hostId={hostId} stack={stack} linkedId={stack.id} onDeploy={onDeploy} />
     );
   if (stack.id && stack.kind === 'synced')
-    return <SyncedDefinition hostId={hostId} stack={stack} syncedId={stack.id} />;
+    return (
+      <SyncedDefinition hostId={hostId} stack={stack} syncedId={stack.id} onDeploy={onDeploy} />
+    );
   return <OwnDefinition hostId={hostId} stack={stack} onDeploy={onDeploy} />;
 }
 
