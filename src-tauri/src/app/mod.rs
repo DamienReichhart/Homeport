@@ -5,6 +5,7 @@
 mod appimage;
 pub mod events;
 mod logging;
+mod polling;
 mod setup;
 mod state;
 
@@ -33,6 +34,7 @@ pub fn run() {
             }
             let state = setup::state(app)?;
             app.manage(state);
+            polling::start(app.handle());
             Ok(())
         })
         .invoke_handler(invoke_handler)

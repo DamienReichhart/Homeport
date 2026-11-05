@@ -269,6 +269,19 @@ pub async fn stacks_synced_deploy_subscribe(
     .await
 }
 
+/// Turns a Synced Stack's polling and auto-deploy on or off; auto-deploy
+/// needs polling.
+#[tauri::command]
+#[specta::specta]
+pub fn stacks_synced_set_sync(
+    state: State<'_, AppState>,
+    id: String,
+    poll: bool,
+    auto_deploy: bool,
+) -> AppResult<SyncedStack> {
+    state.synced.store.set_sync(&id, poll, auto_deploy)
+}
+
 /// Forgets a Synced Stack: its record, history and worktree go, its
 /// containers are left alone and it becomes External.
 #[tauri::command]
@@ -366,6 +379,18 @@ async fn job(
     action: ComposeAction,
     commit: Option<&str>,
 ) -> AppResult<(ComposeJob, Option<String>)> {
+    recorded_job(state, kind, id, action, commit, false).await
+}
+
+/// [`job`], recorded as started by auto-deploy when `automatic`.
+pub(crate) async fn recorded_job(
+    state: &AppState,
+    kind: SourceKind,
+    id: &str,
+    action: ComposeAction,
+    commit: Option<&str>,
+    automatic: bool,
+) -> AppResult<(ComposeJob, Option<String>)> {
     let stack = resolve(state, kind, id, action, commit).await?;
     let job = ComposeJob {
         cli: compose::detect().await?,
@@ -380,6 +405,7 @@ async fn job(
             host_id: stack.host_id,
             stack_id: id.to_owned(),
             commit: stack.commit.clone(),
+            automatic,
         }),
     };
     Ok((job, stack.commit))

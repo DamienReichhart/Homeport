@@ -56,7 +56,7 @@ function Loaded({
   const forget = useForgetSynced(hostId, synced.id);
   return (
     <div className="grid gap-4">
-      <SyncedSource synced={synced} />
+      <SyncedSource hostId={hostId} synced={synced} />
       <div className="grid gap-1.5">
         <Label htmlFor="synced-env-edit">{t('stacks.newSynced.env')}</Label>
         <Textarea

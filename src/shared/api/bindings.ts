@@ -232,6 +232,11 @@ export const commands = {
 	 */
 	stacksSyncedDeploySubscribe: (id: string, commit: string, action: ComposeAction, onEvent: Channel<ComposeEvent>) => __TAURI_INVOKE<number>("stacks_synced_deploy_subscribe", { id, commit, action, onEvent }),
 	/**
+	 *  Turns a Synced Stack's polling and auto-deploy on or off; auto-deploy
+	 *  needs polling.
+	 */
+	stacksSyncedSetSync: (id: string, poll: boolean, autoDeploy: boolean) => __TAURI_INVOKE<SyncedStack>("stacks_synced_set_sync", { id, poll, autoDeploy }),
+	/**
 	 *  Forgets a Synced Stack: its record, history and worktree go, its
 	 *  containers are left alone and it becomes External.
 	 */
@@ -269,6 +274,8 @@ export const commands = {
 export const events = {
 	engineEventReceived: makeEvent<EngineEventReceived, EngineEventReceived>("engine-event-received"),
 	hostStatusChanged: makeEvent<HostStatusChanged, HostStatusChanged>("host-status-changed"),
+	syncedAutoDeployed: makeEvent<SyncedAutoDeployed, SyncedAutoDeployed>("synced-auto-deployed"),
+	syncedUpdateAvailable: makeEvent<SyncedUpdateAvailable, SyncedUpdateAvailable>("synced-update-available"),
 };
 
 /* Types */
@@ -566,6 +573,8 @@ export type DeploySummary = {
 	hasEnv: boolean,
 	/**  The commit a Synced Stack deployed. */
 	commit: string | null,
+	/**  Started by a Synced Stack's auto-deploy, not by the user. */
+	automatic: boolean,
 };
 
 export type DetectedEngine = {
@@ -1286,6 +1295,11 @@ export type Settings = {
 	lastHostId?: string | null,
 	/**  Look for a new version at launch and every few hours. */
 	checkForUpdates?: boolean,
+	/**
+	 *  Minutes between checks of Synced Stacks' repositories while Homeport
+	 *  runs; at least 1.
+	 */
+	syncIntervalMinutes?: number,
 };
 
 /**  The kinds of source, for the rules a definition is checked against. */
@@ -1329,6 +1343,11 @@ export type Stack = {
 	workingDir: string | null,
 	/**  Why a recorded Stack is shown as another kind. */
 	problem: StackProblem | null,
+	/**
+	 *  A Synced Stack whose fetched commit changes its compose file's folder
+	 *  since the deployed one.
+	 */
+	updateAvailable: boolean,
 };
 
 export type StackAction = "start" | "stop" | "restart";
@@ -1408,6 +1427,15 @@ export type SyncReview = {
 	builds: boolean,
 };
 
+/**  A Synced Stack's automatic deploy ended; `error` says why it failed. */
+export type SyncedAutoDeployed = {
+	hostId: string,
+	stackId: string,
+	name: string,
+	commit: string,
+	error: AppError | null,
+};
+
 /**  What a Synced Stack is created from. */
 export type SyncedDraft = {
 	name: string,
@@ -1432,8 +1460,31 @@ export type SyncedStack = {
 	deployedCommit: string | null,
 	/**  The ref's commit as last fetched. */
 	fetchedCommit: string | null,
+	/**  Fetched on an interval while Homeport runs. */
+	poll: boolean,
+	/**  Deploys each new commit without asking; off unless turned on. */
+	autoDeploy: boolean,
+	lastPolledAt: string | null,
+	/**  Why the last poll failed; `None` once one succeeds. */
+	lastPollError: AppError | null,
+	/**
+	 *  The fetched commit changes the compose file's folder since the
+	 *  deployed one.
+	 */
+	updateAvailable: boolean,
+	/**  The commit whose automatic deploy failed, which isn't tried again. */
+	autoDeployFailedCommit: string | null,
+	/**  Why it failed. */
+	autoDeployError: AppError | null,
 	createdAt: string,
 	updatedAt: string,
+};
+
+/**  A Synced Stack's poll found a new commit that changes its compose file's folder. */
+export type SyncedUpdateAvailable = {
+	hostId: string,
+	stackId: string,
+	name: string,
 };
 
 export type SystemPruneReport = {

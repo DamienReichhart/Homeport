@@ -68,6 +68,9 @@ pub struct Stack {
     pub working_dir: Option<String>,
     /// Why a recorded Stack is shown as another kind.
     pub problem: Option<StackProblem>,
+    /// A Synced Stack whose fetched commit changes its compose file's folder
+    /// since the deployed one.
+    pub update_available: bool,
 }
 
 /// A Stack Homeport has a record of, deployed or not.
@@ -81,6 +84,8 @@ pub struct StackRecord {
     pub working_dir: Option<String>,
     /// A Linked Stack whose files are gone: shown as External, with why.
     pub files_missing: bool,
+    /// A Synced Stack with a new commit waiting to be deployed.
+    pub update_available: bool,
 }
 
 impl StackRecord {
@@ -91,6 +96,7 @@ impl StackRecord {
             kind: StackKind::Managed,
             working_dir: None,
             files_missing: false,
+            update_available: false,
         }
     }
 
@@ -105,6 +111,7 @@ impl StackRecord {
             kind: StackKind::Linked,
             working_dir: Some(working_dir.into()),
             files_missing: false,
+            update_available: false,
         }
     }
 
@@ -115,7 +122,14 @@ impl StackRecord {
             kind: StackKind::Synced,
             working_dir: None,
             files_missing: false,
+            update_available: false,
         }
+    }
+
+    /// Marks a Synced Stack with a new commit waiting to be deployed.
+    pub fn with_update_available(mut self, available: bool) -> Self {
+        self.update_available = available;
+        self
     }
 
     /// Marks a Linked Stack whose files are missing on this machine.
@@ -186,6 +200,7 @@ pub fn derive(containers: &[Container], records: &[StackRecord]) -> Vec<Stack> {
                     .find_map(|c| c.labels.get(CONFIG_FILES).cloned()),
                 working_dir: record.and_then(|r| r.working_dir.clone()),
                 problem: record.and_then(StackRecord::problem),
+                update_available: record.is_some_and(|r| r.update_available),
             }
         })
         .collect();
@@ -203,6 +218,7 @@ pub fn derive(containers: &[Container], records: &[StackRecord]) -> Vec<Stack> {
                 config_files: None,
                 working_dir: r.working_dir.clone(),
                 problem: r.problem(),
+                update_available: r.update_available,
             });
         }
     }

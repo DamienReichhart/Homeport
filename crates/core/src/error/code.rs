@@ -1,9 +1,9 @@
 //! The stable codes the frontend tells failures apart by.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 /// Stable machine-readable identifier of a failure, one per case the user can act on.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, specta::Type)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "snake_case")]
 pub enum ErrorCode {
     /// A failure that started in the frontend, outside any command.

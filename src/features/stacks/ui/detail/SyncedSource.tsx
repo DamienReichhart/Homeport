@@ -4,10 +4,11 @@ import { repositoryLabel, repositoryQueries } from '@/features/repositories';
 import type { SyncedStack } from '@/shared/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, KeyValue } from '@/shared/ui';
 import { shortCommit } from '../../model/newSynced';
+import { SyncSettings } from './SyncSettings';
 import { t } from '@/shared/i18n';
 
 /** Where a Synced Stack's compose file comes from, and which commits it has. */
-export function SyncedSource({ synced }: { synced: SyncedStack }) {
+export function SyncedSource({ hostId, synced }: { hostId: string; synced: SyncedStack }) {
   const repositories = useQuery(repositoryQueries.list());
   const repository = repositories.data?.find((r) => r.id === synced.repositoryId);
   const mono = (text: string) => <span className="font-mono text-xs">{text}</span>;
@@ -17,9 +18,9 @@ export function SyncedSource({ synced }: { synced: SyncedStack }) {
     <Card>
       <CardHeader>
         <CardTitle>{t('stacks.synced.source')}</CardTitle>
-        <CardDescription>{t('stacks.synced.whileOpen')}</CardDescription>
+        <CardDescription>{t('stacks.synced.sourceDescription')}</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="grid gap-4">
         <KeyValue
           items={[
             [
@@ -47,6 +48,7 @@ export function SyncedSource({ synced }: { synced: SyncedStack }) {
               : []),
           ]}
         />
+        <SyncSettings hostId={hostId} synced={synced} />
       </CardContent>
     </Card>
   );

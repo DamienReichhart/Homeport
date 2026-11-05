@@ -61,7 +61,32 @@ impl SyncedStacks {
             return Ok((stack, false));
         }
         let moved = stack.ref_kind == RefKind::Tag && stack.fetched_commit.is_some();
-        Ok((self.store.set_fetched(id, &commit)?, moved))
+        Ok((self.note_fetched(cli, &stack, &commit).await?, moved))
+    }
+
+    /// Notes `commit` as the Stack's fetched one, with whether it changes
+    /// the compose file's folder since the deployed commit: an update that's
+    /// waiting. Before the first deploy, nothing is waiting.
+    pub async fn note_fetched(
+        &self,
+        cli: &GitCli,
+        stack: &SyncedStack,
+        commit: &str,
+    ) -> AppResult<SyncedStack> {
+        let repo = self.repositories.clone_dir(&stack.repository_id);
+        let folder = path::folder_of(&stack.compose_path);
+        let available = match &stack.deployed_commit {
+            None => false,
+            Some(d) if d == commit => false,
+            Some(d) if ops::has_commit(cli, &repo, d).await => {
+                !ops::changed_files(cli, &repo, d, commit, folder)
+                    .await?
+                    .is_empty()
+            }
+            // The deployed commit is gone from the history: treat it as changed.
+            Some(_) => true,
+        };
+        self.store.set_fetched(&stack.id, commit, available)
     }
 
     /// Fetches the Stack's ref and says what deploying it would change.
@@ -228,13 +253,13 @@ mod tests {
                 binary: false,
             }]
         );
-        assert_eq!(
-            lab.synced.store.get(&stack.id).unwrap().fetched_commit,
-            Some(second.clone())
-        );
+        let stored = lab.synced.store.get(&stack.id).unwrap();
+        assert_eq!(stored.fetched_commit, Some(second.clone()));
+        assert!(stored.update_available);
 
         // Deploying it checks the new commit out in the same worktree.
         let stack = lab.synced.store.set_deployed(&stack.id, &second).unwrap();
+        assert!(!stack.update_available);
         let (_, used) = lab
             .synced
             .source(&git, &stack, ComposeAction::Up, None)
@@ -249,6 +274,7 @@ mod tests {
         let review = lab.synced.sync(&git, &stack.id).await.unwrap();
         assert!(review.up_to_date);
         assert!(review.files.is_empty() && review.commits.is_empty());
+        assert!(!review.stack.update_available, "nothing to deploy");
     }
 
     #[tokio::test]

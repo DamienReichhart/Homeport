@@ -1179,6 +1179,7 @@ mod tests {
                 host_id: host.clone(),
                 stack_id: stack.id.clone(),
                 commit: None,
+                automatic: false,
             });
             async move {
                 job.cli = detect().await.expect("docker compose is installed");

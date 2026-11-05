@@ -179,6 +179,20 @@ export default {
   'stacks.synced.envSaved': 'Saved the environment. It applies from the next deploy.',
   'stacks.synced.forget': 'Forget',
   'stacks.action.sync': 'Sync',
+  'stacks.synced.sourceDescription': 'Edited in git. Homeport fetches it and deploys its commits.',
+  'stacks.syncUpdate.available': 'Update available',
+  'stacks.syncUpdate.description':
+    'A new commit changes its compose file’s folder. Sync to see it.',
+  'stacks.syncSettings.poll': 'Check for new commits',
+  'stacks.syncSettings.lastChecked': 'Last checked {when}',
+  'stacks.syncSettings.notChecked': 'Not checked yet',
+  'stacks.syncSettings.autoDeploy': 'Deploy new commits automatically',
+  'stacks.syncSettings.autoDeployHelp':
+    'Deploys each new commit as soon as Homeport sees it, without showing what changed first.',
+  'stacks.syncSettings.autoDeployFailed':
+    'The automatic deploy of {commit} failed, and won’t be tried again for that commit:',
+  'stacks.autoDeploy.done': 'Deployed {commit} of {name} automatically',
+  'stacks.autoDeploy.failed': 'The automatic deploy of {commit} of {name} failed',
   'stacks.sync.title': 'Sync {name}',
   'stacks.sync.fetching': 'Fetching the repository…',
   'stacks.sync.from': 'Deploying {to} in place of {from}.',

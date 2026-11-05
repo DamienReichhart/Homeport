@@ -35,7 +35,7 @@ pub fn list(
         synced
             .list(host_id)?
             .into_iter()
-            .map(|s| StackRecord::synced(s.id, s.name)),
+            .map(|s| StackRecord::synced(s.id, s.name).with_update_available(s.update_available)),
     );
     let mut known = linked.list(host_id)?;
 

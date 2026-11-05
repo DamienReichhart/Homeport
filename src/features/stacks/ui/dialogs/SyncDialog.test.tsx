@@ -16,6 +16,7 @@ const site: Stack = {
   configFiles: null,
   workingDir: null,
   problem: null,
+  updateAvailable: false,
 };
 
 const record: SyncedStack = {
@@ -30,6 +31,13 @@ const record: SyncedStack = {
   profiles: [],
   deployedCommit: 'aaaaaaa1111',
   fetchedCommit: 'bbbbbbb2222',
+  poll: true,
+  autoDeploy: false,
+  lastPolledAt: null,
+  lastPollError: null,
+  updateAvailable: true,
+  autoDeployFailedCommit: null,
+  autoDeployError: null,
   createdAt: '',
   updatedAt: '',
 };

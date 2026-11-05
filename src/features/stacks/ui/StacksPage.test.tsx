@@ -27,6 +27,7 @@ describe('stacks page', () => {
           configFiles: '/srv/blog/compose.yaml',
           workingDir: null,
           problem: null,
+          updateAvailable: false,
         },
         {
           name: 'docs',
@@ -39,6 +40,7 @@ describe('stacks page', () => {
           configFiles: '/home/me/docs/compose.yaml',
           workingDir: '/home/me/docs',
           problem: null,
+          updateAvailable: false,
         },
         {
           name: 'moved',
@@ -63,6 +65,7 @@ describe('stacks page', () => {
           configFiles: null,
           workingDir: null,
           problem: null,
+          updateAvailable: false,
         },
       ],
     });

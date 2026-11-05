@@ -70,6 +70,19 @@ export function useSaveSyncedEnv(syncedId: string) {
   });
 }
 
+/** Turns a Synced Stack's polling and auto-deploy on or off. */
+export function useSetSync(hostId: string, syncedId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ poll, autoDeploy }: { poll: boolean; autoDeploy: boolean }) =>
+      commands.stacksSyncedSetSync(syncedId, poll, autoDeploy),
+    onSuccess: async (stack) => {
+      client.setQueryData(syncedKeys.stack(syncedId), stack);
+      await client.invalidateQueries({ queryKey: hostKeys.stacks(hostId) });
+    },
+  });
+}
+
 /** Forgets a Synced Stack: its containers are left alone and it becomes External. */
 export function useForgetSynced(hostId: string, syncedId: string) {
   const client = useQueryClient();

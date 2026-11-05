@@ -36,6 +36,8 @@ pub struct DeploySummary {
     pub has_env: bool,
     /// The commit a Synced Stack deployed.
     pub commit: Option<String>,
+    /// Started by a Synced Stack's auto-deploy, not by the user.
+    pub automatic: bool,
 }
 
 /// One deploy with the definition it used.
@@ -73,6 +75,8 @@ pub struct NewDeploy<'a> {
     pub profiles: &'a [String],
     /// The commit of a Synced Stack.
     pub commit: Option<&'a str>,
+    /// Started by auto-deploy.
+    pub automatic: bool,
 }
 
 pub struct DeployHistory {
@@ -81,7 +85,7 @@ pub struct DeployHistory {
 }
 
 const COLUMNS: &str = "id, stack_id, stack_kind, action, started_at, finished_at, success, \
-     exit_code, env IS NOT NULL, definition, profiles, commit_hash";
+     exit_code, env IS NOT NULL, definition, profiles, commit_hash, automatic";
 
 impl DeployHistory {
     pub fn new(db: Arc<Db>, secrets: Arc<SecretBox>) -> Self {
@@ -109,8 +113,8 @@ impl DeployHistory {
             tx.execute(
                 "INSERT INTO stack_deploys
                  (id, host_id, stack_id, stack_kind, stack_name, action, definition, env, profiles,
-                  commit_hash)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
+                  commit_hash, automatic)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
                 (
                     &id,
                     deploy.host_id,
@@ -122,6 +126,7 @@ impl DeployHistory {
                     &env,
                     &profiles,
                     deploy.commit,
+                    deploy.automatic,
                 ),
             )?;
             tx.execute(
@@ -294,6 +299,7 @@ fn read_row(row: &Row<'_>) -> rusqlite::Result<Deploy> {
             exit_code: row.get(7)?,
             has_env: row.get(8)?,
             commit: row.get(11)?,
+            automatic: row.get(12)?,
         },
         files: serde_json::from_str(&definition).map_err(|e| invalid(9, e))?,
         profiles: serde_json::from_str(&profiles).map_err(|e| invalid(10, e))?,
@@ -338,6 +344,7 @@ mod tests {
             env,
             profiles: &[],
             commit: None,
+            automatic: false,
         }
     }
 

@@ -8,6 +8,7 @@ import { useSaveSettings } from '../api/mutations';
 import { AboutCard } from './AboutCard';
 import { AppearanceCard } from './AppearanceCard';
 import { MachineCard } from './MachineCard';
+import { SyncCard } from './SyncCard';
 import { t } from '@/shared/i18n';
 
 export function SettingsPage() {
@@ -29,6 +30,7 @@ export function SettingsPage() {
       <UpdatesCard settings={settings.data} onChange={(next) => save.mutate(next)} />
       <RegistriesCard />
       <RepositoriesCard />
+      <SyncCard settings={settings.data} onChange={(next) => save.mutate(next)} />
       <MachineCard />
       <AboutCard />
     </div>

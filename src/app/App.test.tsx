@@ -61,6 +61,7 @@ describe('app', () => {
       get_settings: () => ({ theme: 'system', lastHostId: null }),
       get_capabilities: () => ({
         keychain: false,
+        git: { state: 'available', cli: { program: 'git', version: '2.43.0' } },
         compose: {
           state: 'unavailable',
           problem: {

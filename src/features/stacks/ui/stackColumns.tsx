@@ -6,6 +6,7 @@ import type { ServiceFreshness } from '../model/freshness';
 import { KIND_BADGE, KIND_LABEL } from '../model/stackKind';
 import { STATE_LABEL, STATE_TONE } from '../model/stackState';
 import { StackActions } from './StackActions';
+import { SyncBadge } from './SyncBadge';
 import { UpdateBadge } from './UpdateBadge';
 import { t } from '@/shared/i18n';
 
@@ -73,6 +74,7 @@ export function stackColumns({
           {newerServices(row.original).length > 0 && (
             <UpdateBadge newer={newerServices(row.original)} />
           )}
+          {row.original.updateAvailable && <SyncBadge />}
         </span>
       ),
     },

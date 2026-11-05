@@ -287,6 +287,7 @@
   "errors.secrets.keychainUnavailable.hint.macos": "Unlock the login keychain in Keychain Access, then restart Homeport.",
   "errors.secrets.keychainUnavailable.hint.windows": "Make sure Windows Credential Manager is available, then restart Homeport.",
   "errors.shell.windowFailed": "The app window failed.",
+  "errors.stacks.autoDeployFailed": "The automatic deploy didn't finish.",
   "errors.stacks.deployGone": "This deploy is no longer in the stack's history.",
   "errors.stacks.envBadName": "Line {line} has an invalid variable name.",
   "errors.stacks.envNotKeyValue": "Line {line} isn't KEY=value.",

@@ -29,6 +29,20 @@ pub struct SyncedStack {
     pub deployed_commit: Option<String>,
     /// The ref's commit as last fetched.
     pub fetched_commit: Option<String>,
+    /// Fetched on an interval while Homeport runs.
+    pub poll: bool,
+    /// Deploys each new commit without asking; off unless turned on.
+    pub auto_deploy: bool,
+    pub last_polled_at: Option<String>,
+    /// Why the last poll failed; `None` once one succeeds.
+    pub last_poll_error: Option<AppError>,
+    /// The fetched commit changes the compose file's folder since the
+    /// deployed one.
+    pub update_available: bool,
+    /// The commit whose automatic deploy failed, which isn't tried again.
+    pub auto_deploy_failed_commit: Option<String>,
+    /// Why it failed.
+    pub auto_deploy_error: Option<AppError>,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -50,7 +64,9 @@ pub struct SyncedStore {
 }
 
 const COLUMNS: &str = "id, host_id, name, repository_id, ref_kind, ref_name, compose_path, \
-     env IS NOT NULL, profiles, deployed_commit, fetched_commit, created_at, updated_at";
+     env IS NOT NULL, profiles, deployed_commit, fetched_commit, created_at, updated_at, \
+     poll, auto_deploy, last_polled_at, last_poll_error, update_available, \
+     auto_deploy_failed_commit, auto_deploy_error";
 
 impl SyncedStore {
     pub fn new(db: Arc<Db>, secrets: Arc<SecretBox>) -> Self {
@@ -158,14 +174,68 @@ impl SyncedStore {
         self.update(id, "profiles = ?2", (id, &json))
     }
 
-    /// Notes the ref's commit as just fetched.
-    pub fn set_fetched(&self, id: &str, commit: &str) -> AppResult<SyncedStack> {
-        self.update(id, "fetched_commit = ?2", (id, commit))
+    /// Notes the ref's commit as just fetched, and whether it changes the
+    /// compose file's folder since the deployed commit.
+    pub fn set_fetched(
+        &self,
+        id: &str,
+        commit: &str,
+        update_available: bool,
+    ) -> AppResult<SyncedStack> {
+        self.update(
+            id,
+            "fetched_commit = ?2, update_available = ?3",
+            (id, commit, update_available),
+        )
     }
 
-    /// Notes the commit a deploy just succeeded with.
+    /// Notes the commit a deploy just succeeded with: once the fetched one
+    /// is deployed, no update is waiting, and a failed auto-deploy is over.
     pub fn set_deployed(&self, id: &str, commit: &str) -> AppResult<SyncedStack> {
-        self.update(id, "deployed_commit = ?2", (id, commit))
+        self.update(
+            id,
+            "deployed_commit = ?2,
+             update_available = CASE WHEN fetched_commit = ?2 THEN 0 ELSE update_available END,
+             auto_deploy_failed_commit = NULL, auto_deploy_error = NULL",
+            (id, commit),
+        )
+    }
+
+    /// Turns polling and auto-deploy on or off.
+    pub fn set_sync(&self, id: &str, poll: bool, auto_deploy: bool) -> AppResult<SyncedStack> {
+        self.update(
+            id,
+            "poll = ?2, auto_deploy = ?3",
+            (id, poll, auto_deploy && poll),
+        )
+    }
+
+    /// Notes how a poll ended, without touching `updated_at`.
+    pub fn set_polled(&self, id: &str, error: Option<&AppError>) -> AppResult<()> {
+        let error = error.map(serde_json::to_string).transpose()?;
+        self.db.with(|c| {
+            c.execute(
+                "UPDATE synced_stacks SET last_polled_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+                 last_poll_error = ?2 WHERE id = ?1",
+                (id, &error),
+            )
+        })?;
+        Ok(())
+    }
+
+    /// Notes that the automatic deploy of `commit` failed, so it isn't tried again.
+    pub fn set_auto_deploy_failed(
+        &self,
+        id: &str,
+        commit: &str,
+        error: &AppError,
+    ) -> AppResult<SyncedStack> {
+        let error = serde_json::to_string(error)?;
+        self.update(
+            id,
+            "auto_deploy_failed_commit = ?2, auto_deploy_error = ?3",
+            (id, commit, &error),
+        )
     }
 
     fn update(&self, id: &str, set: &str, params: impl rusqlite::Params) -> AppResult<SyncedStack> {
@@ -239,5 +309,18 @@ fn read_row(row: &Row<'_>) -> rusqlite::Result<SyncedStack> {
         fetched_commit: row.get(10)?,
         created_at: row.get(11)?,
         updated_at: row.get(12)?,
+        poll: row.get(13)?,
+        auto_deploy: row.get(14)?,
+        last_polled_at: row.get(15)?,
+        last_poll_error: error_of(row, 16)?,
+        update_available: row.get(17)?,
+        auto_deploy_failed_commit: row.get(18)?,
+        auto_deploy_error: error_of(row, 19)?,
     })
+}
+
+/// A stored `AppError`; one that no longer reads as one is dropped.
+fn error_of(row: &Row<'_>, i: usize) -> rusqlite::Result<Option<AppError>> {
+    let text: Option<String> = row.get(i)?;
+    Ok(text.and_then(|t| serde_json::from_str(&t).ok()))
 }

@@ -27,6 +27,7 @@ const MIGRATION_SLICE: &[M<'static>] = &[
     M::up(include_str!("migrations/0010_git_repositories.sql")),
     M::up(include_str!("migrations/0011_synced_stacks.sql")),
     M::up(include_str!("migrations/0012_stack_deploy_commits.sql")),
+    M::up(include_str!("migrations/0013_synced_polling.sql")),
 ];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_SLICE);
 
@@ -207,6 +208,15 @@ mod tests {
         assert!(conn
             .execute("DELETE FROM git_repositories WHERE id = 'r'", [])
             .is_err());
+        // Synced Stacks poll by default, and never deploy on their own until asked.
+        let (poll, auto): (bool, bool) = conn
+            .query_row(
+                "SELECT poll, auto_deploy FROM synced_stacks WHERE id = 'y'",
+                [],
+                |r| Ok((r.get(0)?, r.get(1)?)),
+            )
+            .unwrap();
+        assert_eq!((poll, auto), (true, false));
         // Removing the Host removes its Synced Stacks.
         conn.execute("DELETE FROM hosts WHERE id = 'h'", [])
             .unwrap();

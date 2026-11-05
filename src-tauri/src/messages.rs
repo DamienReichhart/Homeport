@@ -26,6 +26,8 @@ homeport_core::messages! {
     /// Installing from the app when a package manager owns the install.
     UPDATE_BY_PACKAGE_MANAGER = "errors.updates.byPackageManager" => "This copy of Homeport is updated by your package manager.";
     UPDATE_NOTHING_WAITING = "errors.updates.nothingWaiting" => "No update is waiting to be installed.";
+    /// An automatic deploy of a Synced Stack that ended without saying why.
+    AUTO_DEPLOY_FAILED = "errors.stacks.autoDeployFailed" => "The automatic deploy didn't finish.";
 }
 
 /// Where `bun run bindings` writes the English error catalogue.

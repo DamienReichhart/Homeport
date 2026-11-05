@@ -140,6 +140,8 @@ pub struct Recorder {
     pub stack_id: String,
     /// The commit a Synced Stack deploys.
     pub commit: Option<String>,
+    /// Started by a Synced Stack's auto-deploy.
+    pub automatic: bool,
 }
 
 impl Recorder {
@@ -160,6 +162,7 @@ impl Recorder {
                 env,
                 profiles: &job.profiles,
                 commit: self.commit.as_deref(),
+                automatic: self.automatic,
             })
             .map_err(|e| e.logged("recording a deploy"))
             .ok()

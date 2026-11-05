@@ -8,8 +8,11 @@
 //! - [`path`] checks a compose file's path inside the repository.
 //! - [`sync`] fetches a Synced Stack's ref and says what changed since its
 //!   deploy, for the review before deploying it.
+//! - [`poller`] fetches every Synced Stack's ref on an interval while
+//!   Homeport runs, and deploys new commits for those that ask it to.
 
 pub mod path;
+pub mod poller;
 pub mod store;
 pub mod sync;
 

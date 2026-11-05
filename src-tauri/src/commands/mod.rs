@@ -152,6 +152,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             stacks::stacks_synced_set_env,
             stacks::stacks_synced_sync,
             stacks::stacks_synced_deploy_subscribe,
+            stacks::stacks_synced_set_sync,
             stacks::stacks_synced_forget,
             stacks::stacks_act,
             stacks::stacks_remove,
@@ -164,6 +165,8 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
         .events(collect_events![
             events::HostStatusChanged,
             events::EngineEventReceived,
+            events::SyncedUpdateAvailable,
+            events::SyncedAutoDeployed,
         ])
 }
 

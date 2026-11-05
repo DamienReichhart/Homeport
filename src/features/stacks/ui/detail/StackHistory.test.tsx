@@ -16,6 +16,7 @@ const shop: Stack = {
   configFiles: null,
   workingDir: null,
   problem: null,
+  updateAvailable: false,
 };
 
 const summary = (id: string, success: boolean | null, at: string): DeploySummary => ({
@@ -23,6 +24,7 @@ const summary = (id: string, success: boolean | null, at: string): DeploySummary
   stackId: 'm1',
   kind: 'managed',
   commit: null,
+  automatic: false,
   action: 'up',
   startedAt: at,
   finishedAt: success === null ? null : at,

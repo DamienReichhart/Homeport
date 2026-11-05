@@ -100,7 +100,12 @@ export function network(
 
 /** Commands every rendered app needs, regardless of the page. */
 export const baseCommands = {
-  get_settings: () => ({ theme: 'system', lastHostId: 'h1', checkForUpdates: true }),
+  get_settings: () => ({
+    theme: 'system',
+    lastHostId: 'h1',
+    checkForUpdates: true,
+    syncIntervalMinutes: 5,
+  }),
   update_settings: ({ settings }: Record<string, unknown>) => settings,
   get_capabilities: () => ({
     keychain: true,
