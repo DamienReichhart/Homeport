@@ -286,9 +286,13 @@ A **Linked** Stack's history is read-only: its folder is its source, so restore 
 - **Definition** holds the editor for a Managed or Linked Stack, or explains where an External Stack came from.
 - **History**, for Managed and Linked Stacks, lists their deploys. See [deploy history](#deploy-history-and-rolling-back).
 
-## Newer images
+## Updating a Stack
 
-A ⬆ in a Stack's **State** means one of its services runs an image whose tag has a newer version in its registry; hover it to see which services. On the Stack's page, **Services** names them and marks each outdated image. For a Managed Stack, **Pull images**, then **Redeploy**, to update; an External Stack only shows the mark. **Check for newer images** at the top of the Stacks page asks the registries again. The check is the one the Containers page uses — see [newer images](/docs/guides/containers/#newer-images) — so opening Stacks right after Containers asks the registries nothing more.
+**Update available** next to a Stack's state means one of its services runs an image whose tag points at a newer version in its registry; hover it to see which services. On the Stack's page, **Services** names them and marks each outdated image. **Check for newer images** at the top of the Stacks page asks the registries again. The check is the one the Containers page uses — see [newer images](/docs/guides/containers/#newer-images) — so opening Stacks right after Containers asks the registries nothing more. An image pinned by digest (`app@sha256:…`) never has an update, and a service with `build:` isn't checked.
+
+To update a Managed or Linked Stack, choose **Update**. It runs both steps in one window: it pulls every service's image with the stored logins, then runs `docker compose up` with what it pulled, so only the services whose image changed get new containers. The window says which images are newer before it starts, and there's no [review step](#reviewing-changes-before-a-redeploy), since the definition doesn't change. If a pull fails, the update stops there: the running containers are left as they were, and the error says why, with what to do.
+
+An External Stack shows **Update available** too, but its **Update** is disabled: Homeport has no compose file to redeploy it from, so [adopt](#adopting-an-external-stack) it first. Services with `build:` in a Linked Stack are never pulled; use **Rebuild and deploy** for those.
 
 ## Stack actions
 

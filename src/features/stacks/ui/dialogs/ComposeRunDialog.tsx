@@ -79,6 +79,9 @@ function Run({ hostId, job, onClose }: { hostId: string; job: ComposeJob; onClos
           })}
         </DialogTitle>
       </DialogHeader>
+      {job.images && job.images.length > 0 && (
+        <p className="text-sm">{t('stacks.compose.updating', { images: job.images.join(', ') })}</p>
+      )}
       {failure && <ErrorMessage error={failure} />}
       <div className="h-80">
         <XTerm

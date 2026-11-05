@@ -18,6 +18,7 @@ export function currentDeploy(deploys: DeploySummary[]): string | null {
 export const ACTION_LABEL: Record<ComposeAction, MessageKey> = {
   up: 'stacks.action.deploy',
   rebuild: 'stacks.action.rebuild',
+  update: 'stacks.update.action',
   pull: 'stacks.action.pull',
   down: 'stacks.down.confirm',
   downWithVolumes: 'stacks.downWithVolumes.action',

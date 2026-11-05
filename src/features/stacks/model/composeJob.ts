@@ -14,6 +14,8 @@ export interface ComposeJob {
    * with what is deployed. Left out for first deploys, which go straight on.
    */
   review?: Candidate | null;
+  /** For an update: the images it pulls, to say which will change. */
+  images?: string[];
   name: string;
   action: ComposeAction;
 }
@@ -22,6 +24,7 @@ export interface ComposeJob {
 export const COMPOSE_TITLES: Record<ComposeAction, MessageKey> = {
   up: 'stacks.compose.up',
   rebuild: 'stacks.compose.rebuild',
+  update: 'stacks.compose.update',
   pull: 'stacks.compose.pull',
   down: 'stacks.compose.down',
   downWithVolumes: 'stacks.compose.downWithVolumes',

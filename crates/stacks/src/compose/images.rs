@@ -85,7 +85,7 @@ pub(super) async fn needed(
     let mut needed = Vec::new();
     for image in images {
         let wanted = match action {
-            ComposeAction::Pull => true,
+            ComposeAction::Pull | ComposeAction::Update => true,
             ComposeAction::Up | ComposeAction::Rebuild => {
                 image.always || docker.inspect_image(&image.image).await.is_err()
             }

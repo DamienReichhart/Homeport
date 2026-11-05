@@ -245,6 +245,7 @@ fn action_text(action: ComposeAction) -> &'static str {
     match action {
         ComposeAction::Up => "up",
         ComposeAction::Rebuild => "rebuild",
+        ComposeAction::Update => "update",
         ComposeAction::Pull => "pull",
         ComposeAction::Down => "down",
         ComposeAction::DownWithVolumes => "downWithVolumes",

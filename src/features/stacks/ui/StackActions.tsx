@@ -1,4 +1,5 @@
 import {
+  CircleArrowUpIcon,
   HammerIcon,
   CloudDownloadIcon,
   EllipsisVerticalIcon,
@@ -21,6 +22,8 @@ import {
 } from '@/shared/ui';
 import { useStackMutations } from '../api/mutations';
 import type { ComposeJob } from '../model/composeJob';
+import type { ServiceFreshness } from '../model/freshness';
+import { imagesToUpdate, updateAction } from '../model/update';
 import { t } from '@/shared/i18n';
 
 /**
@@ -32,12 +35,15 @@ export function StackActions({
   stack,
   confirm,
   onCompose,
+  newer = [],
   compact = false,
 }: {
   hostId: string;
   stack: Stack;
   confirm: (o: ConfirmOptions) => void;
   onCompose: (job: ComposeJob) => void;
+  /** Its services running an outdated image, for Update. */
+  newer?: ServiceFreshness[];
   compact?: boolean;
 }) {
   const navigate = useNavigate();
@@ -56,9 +62,31 @@ export function StackActions({
     onCompose({ kind: source, stackId: stack.id, name: stack.name, action, ...review });
   };
   const size = compact ? 'sm' : 'default';
+  const update = updateAction(stack, newer);
 
   return (
     <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+      {update !== 'none' && (
+        <Button
+          size={size}
+          variant="outline"
+          disabled={update === 'adoptFirst' || !canCompose}
+          title={update === 'adoptFirst' ? t('stacks.update.adoptFirst') : undefined}
+          onClick={() =>
+            source &&
+            stack.id &&
+            onCompose({
+              kind: source,
+              stackId: stack.id,
+              name: stack.name,
+              action: 'update',
+              images: imagesToUpdate(newer),
+            })
+          }
+        >
+          <CircleArrowUpIcon /> {t('stacks.update.action')}
+        </Button>
+      )}
       {deployable ? (
         <Button
           size={size}

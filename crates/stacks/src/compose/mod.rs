@@ -100,6 +100,10 @@ pub enum ComposeAction {
     /// `up -d --remove-orphans --build`: also rebuilds every service with
     /// `build:` first.
     Rebuild,
+    /// Pulls every service's image through the Engine API, then `up` with
+    /// what was pulled, so only services whose image changed are recreated.
+    /// Stops after a failed pull, leaving the running containers alone.
+    Update,
     /// Pulls every service's image through the Engine API; compose isn't run.
     Pull,
     /// `down --remove-orphans`, keeping volumes.
@@ -111,13 +115,13 @@ pub enum ComposeAction {
 impl ComposeAction {
     /// Whether the action deploys, so it's recorded in the Stack's history.
     pub fn deploys(self) -> bool {
-        matches!(self, Self::Up | Self::Rebuild)
+        matches!(self, Self::Up | Self::Rebuild | Self::Update)
     }
 
     /// Whether the action needs a definition that can be deployed; taking a
     /// Stack down only needs its project name and files.
     pub fn reads_definition(self) -> bool {
-        matches!(self, Self::Up | Self::Rebuild | Self::Pull)
+        matches!(self, Self::Up | Self::Rebuild | Self::Update | Self::Pull)
     }
 
     /// The compose subcommand, for messages.
@@ -127,7 +131,7 @@ impl ComposeAction {
 
     fn args(self) -> &'static [&'static str] {
         match self {
-            Self::Up => &["up", "--detach", "--remove-orphans"],
+            Self::Up | Self::Update => &["up", "--detach", "--remove-orphans"],
             Self::Rebuild => &["up", "--detach", "--remove-orphans", "--build"],
             Self::Pull => &["pull"],
             Self::Down => &["down", "--remove-orphans"],
@@ -246,8 +250,15 @@ async fn execute(
             });
             return Ok(());
         }
+        if job.action == ComposeAction::Update
+            && !sink(ComposeEvent::Line {
+                text: "Images pulled. Recreating the services whose image changed.".into(),
+            })
+        {
+            return Ok(());
+        }
         // Pulled above; compose mustn't pull them again with no login.
-        if wanted.iter().any(|i| i.always) {
+        if job.action == ComposeAction::Update || wanted.iter().any(|i| i.always) {
             args.extend(["--pull", "never"]);
         }
     }
@@ -488,7 +499,7 @@ fn failure(job: &ComposeJob, verb: &str, out: &std::process::Output) -> AppError
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::Arc;
+    use std::{path::Path, sync::Arc};
 
     use homeport_engine::{auth::Logins, testing};
     #[cfg(unix)]
@@ -718,6 +729,60 @@ mod tests {
         ));
         assert!(!args.contains(&"--profile".to_owned()));
         assert!(args.contains(&"COMPOSE_PROFILES=".to_owned()));
+    }
+
+    /// A stand-in compose CLI: answers `config` with one service and records
+    /// any other command in `ran`.
+    #[cfg(unix)]
+    fn fake_cli(dir: &Path) -> (ComposeCli, std::path::PathBuf) {
+        use std::os::unix::fs::PermissionsExt;
+        let ran = dir.join("ran");
+        let script = dir.join("compose");
+        std::fs::write(
+            &script,
+            format!(
+                "#!/bin/sh\ncase \"$*\" in\n  *config*) echo '{{\"services\":{{\"web\":{{\"image\":\"nginx:1.27\"}}}}}}' ;;\n  *) echo \"$*\" >> {} ;;\nesac\n",
+                ran.display()
+            ),
+        )
+        .unwrap();
+        std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o755)).unwrap();
+        (
+            ComposeCli {
+                program: script.to_string_lossy().into_owned(),
+                prefix: vec![],
+                version: "2.29.0".into(),
+            },
+            ran,
+        )
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn an_update_stops_after_a_failed_pull() {
+        let dir = tempfile::tempdir().unwrap();
+        let (cli, ran) = fake_cli(dir.path());
+        let mut job = profile_job(ComposeAction::Update, &[], "");
+        job.cli = cli;
+        // An Engine that can't be reached fails every pull.
+        let events = std::sync::Mutex::new(Vec::new());
+        run(job, |e| {
+            events.lock().unwrap().push(e);
+            true
+        })
+        .await;
+        let events = events.into_inner().unwrap();
+        assert!(
+            matches!(events.last(), Some(ComposeEvent::Error { error }) if error.message.contains("nginx:1.27")),
+            "{events:?}"
+        );
+        assert!(!ran.exists(), "compose up never ran");
+    }
+
+    #[test]
+    fn an_update_redeploys_only_with_what_it_pulled() {
+        assert!(ComposeAction::Update.deploys() && ComposeAction::Update.reads_definition());
+        assert_eq!(ComposeAction::Update.args(), ComposeAction::Up.args());
     }
 
     #[test]
@@ -1087,6 +1152,52 @@ mod tests {
         deploy().await;
         assert_eq!(greeting().await, "GREETING=one");
         assert_eq!(history.list(&stack.id).unwrap().len(), 3);
+    }
+
+    #[tokio::test]
+    #[ignore = "needs a local Docker Engine and the compose CLI"]
+    async fn updating_a_deployed_stack_pulls_then_redeploys() {
+        let docker = testing::docker();
+        testing::ensure_image(&docker).await;
+        let project = testing::unique("update");
+        let _cleanup = RemoveStack(project.clone());
+        let local = HostConnection::Local {
+            socket_path: "/var/run/docker.sock".into(),
+        };
+        let up = compose(&project, ComposeAction::Up, None, local.clone()).await;
+        assert!(
+            matches!(up.last(), Some(ComposeEvent::Exit { success: true, .. })),
+            "{up:?}"
+        );
+        let before = lifecycle::containers_of(&docker, &project).await.unwrap();
+
+        let update = compose(&project, ComposeAction::Update, None, local).await;
+        let lines: Vec<&str> = update
+            .iter()
+            .filter_map(|e| match e {
+                ComposeEvent::Line { text } => Some(text.as_str()),
+                _ => None,
+            })
+            .collect();
+        assert!(
+            matches!(
+                update.last(),
+                Some(ComposeEvent::Exit { success: true, .. })
+            ),
+            "{update:?}"
+        );
+        let pulled = lines
+            .iter()
+            .position(|l| l.starts_with("Pulling "))
+            .unwrap();
+        let between = lines
+            .iter()
+            .position(|l| l.starts_with("Images pulled."))
+            .unwrap();
+        assert!(pulled < between, "{lines:?}");
+        // The image didn't change, so its container wasn't recreated.
+        let after = lifecycle::containers_of(&docker, &project).await.unwrap();
+        assert_eq!(before[0].id, after[0].id);
     }
 
     /// Deploys a folder with a build, an env_file and a relative bind mount

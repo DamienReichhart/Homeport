@@ -374,6 +374,12 @@ export type ComposeAction =
  *  `build:` first.
  */
 "rebuild" | 
+/**
+ *  Pulls every service's image through the Engine API, then `up` with
+ *  what was pulled, so only services whose image changed are recreated.
+ *  Stops after a failed pull, leaving the running containers alone.
+ */
+"update" | 
 /**  Pulls every service's image through the Engine API; compose isn't run. */
 "pull" | 
 /**  `down --remove-orphans`, keeping volumes. */

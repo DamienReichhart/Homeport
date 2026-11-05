@@ -1,12 +1,12 @@
 import { TriangleAlertIcon } from 'lucide-react';
-import { NewerImage } from '@/core/host';
 import type { Stack } from '@/shared/api';
 import { Badge, type ColumnDef, type ConfirmOptions, StatusDot } from '@/shared/ui';
 import type { ComposeJob } from '../model/composeJob';
-import { newerServicesLabel, type ServiceFreshness } from '../model/freshness';
+import type { ServiceFreshness } from '../model/freshness';
 import { KIND_BADGE, KIND_LABEL } from '../model/stackKind';
 import { STATE_LABEL, STATE_TONE } from '../model/stackState';
 import { StackActions } from './StackActions';
+import { UpdateBadge } from './UpdateBadge';
 import { t } from '@/shared/i18n';
 
 /** The Stacks table's columns; the last one holds the row's actions. */
@@ -71,7 +71,7 @@ export function stackColumns({
             </span>
           )}
           {newerServices(row.original).length > 0 && (
-            <NewerImage label={newerServicesLabel(newerServices(row.original))} />
+            <UpdateBadge newer={newerServices(row.original)} />
           )}
         </span>
       ),
@@ -95,6 +95,7 @@ export function stackColumns({
           compact
           hostId={hostId}
           stack={row.original}
+          newer={newerServices(row.original)}
           confirm={confirm}
           onCompose={onCompose}
         />

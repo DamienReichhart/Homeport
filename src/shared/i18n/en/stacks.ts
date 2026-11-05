@@ -75,7 +75,8 @@ export default {
   'stacks.services.notDeployed': 'Not deployed yet.',
   'stacks.services.outdated':
     '{count, plural, one {{services} runs an outdated image.} other {{services} run outdated images.}}',
-  'stacks.services.howToUpdate': 'Pull images, then Redeploy to update.',
+  'stacks.services.howToUpdate': 'Choose Update to pull them and redeploy.',
+  'stacks.services.adoptToUpdate': 'Adopt it to update it from Homeport.',
   'stacks.services.column.service': 'Service',
   'stacks.services.column.container': 'Container',
   'stacks.services.column.image': 'Image',
@@ -106,6 +107,12 @@ export default {
   'stacks.compose.up': 'Deploying {name}',
   'stacks.compose.rebuild': 'Rebuilding and deploying {name}',
   'stacks.compose.rollback': 'Rolling back {name}',
+  'stacks.compose.update': 'Updating {name}',
+  'stacks.compose.updating': 'Newer images: {images}',
+  'stacks.update.available': 'Update available',
+  'stacks.update.action': 'Update',
+  'stacks.update.adoptFirst':
+    'Adopt this Stack first: Homeport needs its compose file to redeploy it.',
   'stacks.compose.pull': 'Pulling images for {name}',
   'stacks.compose.down': 'Taking down {name}',
   'stacks.compose.downWithVolumes': 'Taking down (with volumes) {name}',
