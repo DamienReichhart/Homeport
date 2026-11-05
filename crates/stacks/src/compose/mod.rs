@@ -1,17 +1,18 @@
-//! Deploying Managed Stacks with the local `docker compose` CLI (ADR 0001).
+//! Running the local `docker compose` CLI for a [`ComposeJob`] (ADR 0001).
 //!
-//! The YAML goes in on stdin and the environment as process variables, so
-//! nothing secret is written to disk. TLS and SSH Hosts are reached through
-//! a [`proxy`] that exists only while the command runs. Images are pulled
-//! through the Engine API with the stored registry logins first, so the CLI
-//! never needs one (ADR 0010).
+//! The job's source decides the compose files, working directory and stdin
+//! (a Managed Stack's YAML goes in on stdin and its environment as process
+//! variables, so nothing secret is written to disk); its target decides
+//! `DOCKER_HOST`. TLS and SSH Hosts are reached through a [`proxy`] that
+//! exists only while the command runs. Images are pulled through the Engine
+//! API with the stored registry logins first, so the CLI never needs one
+//! (ADR 0010).
 
 mod error;
 mod images;
 
-use std::{collections::VecDeque, process::Stdio, sync::Arc};
+use std::{collections::VecDeque, process::Stdio};
 
-use bollard::Docker;
 use serde::{Deserialize, Serialize};
 use tokio::{
     io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
@@ -22,11 +23,13 @@ use homeport_core::error::{AppError, AppResult, ErrorCode};
 
 use crate::messages as msg;
 use homeport_core::{host::HostConnection, programs};
-use homeport_engine::auth::Logins;
-use homeport_transport::{proxy, Dialer};
+use homeport_transport::proxy;
 
 use self::error as errors;
-use crate::definition;
+use crate::{
+    definition,
+    runtime::{ComposeJob, Prepared, StackTarget},
+};
 
 /// Lines of stderr kept to explain a failed run.
 const STDERR_TAIL: usize = 40;
@@ -102,6 +105,12 @@ pub enum ComposeAction {
 }
 
 impl ComposeAction {
+    /// Whether the action needs a definition that can be deployed; taking a
+    /// Stack down only needs its project name and files.
+    pub fn reads_definition(self) -> bool {
+        matches!(self, Self::Up | Self::Pull)
+    }
+
     /// The compose subcommand, for messages.
     fn verb(self) -> &'static str {
         self.args()[0]
@@ -147,23 +156,8 @@ pub fn direct_docker_host(connection: &HostConnection) -> Option<String> {
     }
 }
 
-pub struct ComposeRun {
-    pub cli: ComposeCli,
-    /// The Host's name, for messages.
-    pub host_name: String,
-    pub connection: HostConnection,
-    pub dialer: Option<Arc<dyn Dialer>>,
-    /// The Host's Engine, for pulling images with `logins`.
-    pub docker: Docker,
-    pub logins: Logins,
-    pub project: String,
-    pub compose: String,
-    pub env: String,
-    pub action: ComposeAction,
-}
-
 /// Runs one compose command, streaming its output lines to `sink`.
-pub async fn run(job: ComposeRun, sink: impl Fn(ComposeEvent) -> bool) {
+pub(crate) async fn run(job: ComposeJob, sink: impl Fn(ComposeEvent) -> bool) {
     if let Err(e) = execute(job, &sink).await {
         sink(ComposeEvent::Error {
             error: e.logged("compose run"),
@@ -171,45 +165,44 @@ pub async fn run(job: ComposeRun, sink: impl Fn(ComposeEvent) -> bool) {
     }
 }
 
-async fn execute(job: ComposeRun, sink: &impl Fn(ComposeEvent) -> bool) -> AppResult<()> {
-    definition::validate_name(&job.project)?;
-    if job.action != ComposeAction::Down && job.action != ComposeAction::DownWithVolumes {
-        if let Some(blocker) = definition::blocker(&job.compose) {
-            return Err(blocker);
-        }
+/// The `DOCKER_HOST` the CLI uses for `target`, and the proxy that must stay
+/// open until it exits, for TLS and SSH Hosts.
+fn docker_host(target: &StackTarget) -> AppResult<(String, Option<proxy::Proxy>)> {
+    let StackTarget::Host {
+        name,
+        connection,
+        dialer,
+        ..
+    } = target;
+    if let Some(host) = direct_docker_host(connection) {
+        return Ok((host, None));
     }
-    let vars = definition::parse_env(&job.env)?;
+    let dialer = dialer.clone().ok_or_else(|| {
+        AppError::new(
+            ErrorCode::HostNotConnected,
+            msg::HOST_NOT_CONNECTED.with("name", name),
+        )
+        .with_hint(msg::HOST_NOT_CONNECTED_HINT)
+    })?;
+    let proxy = proxy::open(dialer).map_err(|e| {
+        AppError::new(ErrorCode::Io, msg::PROXY_FAILED.with("name", name)).with_cause(&e)
+    })?;
+    Ok((proxy.docker_host.clone(), Some(proxy)))
+}
 
+async fn execute(job: ComposeJob, sink: &impl Fn(ComposeEvent) -> bool) -> AppResult<()> {
+    definition::validate_name(&job.project)?;
+    let prepared = job.source.prepare(job.action)?;
     // Keep the proxy alive until the CLI exits.
-    let (docker_host, _proxy) = match direct_docker_host(&job.connection) {
-        Some(host) => (host, None),
-        None => {
-            let dialer = job.dialer.clone().ok_or_else(|| {
-                AppError::new(
-                    ErrorCode::HostNotConnected,
-                    msg::HOST_NOT_CONNECTED.with("name", &job.host_name),
-                )
-                .with_hint(msg::HOST_NOT_CONNECTED_HINT)
-            })?;
-            let proxy = proxy::open(dialer).map_err(|e| {
-                AppError::new(
-                    ErrorCode::Io,
-                    msg::PROXY_FAILED.with("name", &job.host_name),
-                )
-                .with_cause(&e)
-            })?;
-            (proxy.docker_host.clone(), Some(proxy))
-        }
-    };
-    // An empty working directory so nothing on this machine is picked up as project files.
-    let workdir = tempfile::tempdir()?;
-    let cli = |args: &[&str]| cli_command(&job, &vars, &docker_host, workdir.path(), args);
+    let (docker_host, _proxy) = docker_host(&job.target)?;
+    let cli = |args: &[&str]| cli_command(&job, &prepared, &docker_host, args);
+    let docker = job.target.docker();
 
     let mut args: Vec<&str> = job.action.args().to_vec();
-    if matches!(job.action, ComposeAction::Up | ComposeAction::Pull) {
-        let config = config_json(&job, cli(&["config", "--format", "json"])).await?;
-        let wanted = images::needed(&job.docker, images::from_config(&config)?, job.action).await;
-        if !images::pull(&job.docker, &wanted, &job.logins, sink).await? {
+    if job.action.reads_definition() {
+        let config = config_json(&job, &prepared, cli(&["config", "--format", "json"])).await?;
+        let wanted = images::needed(docker, images::from_config(&config)?, job.action).await;
+        if !images::pull(docker, &wanted, &job.logins, sink).await? {
             return Ok(());
         }
         if job.action == ComposeAction::Pull {
@@ -229,10 +222,7 @@ async fn execute(job: ComposeRun, sink: &impl Fn(ComposeEvent) -> bool) -> AppRe
     let mut child = cli(&args)
         .spawn()
         .map_err(|e| errors::spawn_failed(&job.cli.program, &e))?;
-
-    let mut stdin = child.stdin.take().expect("stdin is piped");
-    stdin.write_all(job.compose.as_bytes()).await?;
-    drop(stdin);
+    write_stdin(&mut child, &prepared).await?;
 
     let mut stdout = BufReader::new(child.stdout.take().expect("stdout is piped")).lines();
     let mut stderr = BufReader::new(child.stderr.take().expect("stderr is piped")).lines();
@@ -258,7 +248,7 @@ async fn execute(job: ComposeRun, sink: &impl Fn(ComposeEvent) -> bool) -> AppRe
     let status = child.wait().await?;
     let error = (!status.success()).then(|| {
         errors::exit_failure(
-            &job.host_name,
+            job.target.name(),
             job.action.verb(),
             status.code(),
             tail.make_contiguous(),
@@ -273,35 +263,34 @@ async fn execute(job: ComposeRun, sink: &impl Fn(ComposeEvent) -> bool) -> AppRe
     Ok(())
 }
 
+/// Hands the source's stdin to the CLI, if it has one, and closes it.
+async fn write_stdin(child: &mut tokio::process::Child, prepared: &Prepared) -> AppResult<()> {
+    let mut stdin = child.stdin.take().expect("stdin is piped");
+    if let Some(text) = &prepared.stdin {
+        stdin.write_all(text.as_bytes()).await?;
+    }
+    drop(stdin);
+    Ok(())
+}
+
 /// One run of the CLI for `job`. Its environment is the Host's address, the
 /// `PATH` and the Stack's own variables: never a registry login.
-fn cli_command(
-    job: &ComposeRun,
-    vars: &[(String, String)],
-    docker_host: &str,
-    workdir: &std::path::Path,
-    args: &[&str],
-) -> Command {
+fn cli_command(job: &ComposeJob, prepared: &Prepared, docker_host: &str, args: &[&str]) -> Command {
     let mut command = Command::new(&job.cli.program);
     command
         .args(&job.cli.prefix)
-        .args([
-            "--project-name",
-            &job.project,
-            "--file",
-            "-",
-            "--progress",
-            "plain",
-        ])
+        .args(["--project-name", &job.project])
+        .args(&prepared.file_args)
+        .args(["--progress", "plain"])
         .args(args)
-        .current_dir(workdir)
+        .current_dir(prepared.workdir.path())
         .env_remove("DOCKER_CONTEXT")
         .env_remove("COMPOSE_FILE")
         .env_remove("COMPOSE_PROJECT_NAME")
         .env("DOCKER_HOST", docker_host)
         // Lets the CLI find its plugins and credential helpers from a GUI launch.
         .env("PATH", programs::search_path())
-        .envs(vars.iter().cloned())
+        .envs(prepared.vars.iter().cloned())
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -311,13 +300,15 @@ fn cli_command(
 
 /// The Stack's resolved model from `config --format json`: variables
 /// substituted, defaults filled in. Runs on this machine only.
-async fn config_json(job: &ComposeRun, mut command: Command) -> AppResult<String> {
+async fn config_json(
+    job: &ComposeJob,
+    prepared: &Prepared,
+    mut command: Command,
+) -> AppResult<String> {
     let mut child = command
         .spawn()
         .map_err(|e| errors::spawn_failed(&job.cli.program, &e))?;
-    let mut stdin = child.stdin.take().expect("stdin is piped");
-    stdin.write_all(job.compose.as_bytes()).await?;
-    drop(stdin);
+    write_stdin(&mut child, prepared).await?;
     let out = child.wait_with_output().await?;
     if !out.status.success() {
         let stderr: Vec<String> = String::from_utf8_lossy(&out.stderr)
@@ -326,7 +317,7 @@ async fn config_json(job: &ComposeRun, mut command: Command) -> AppResult<String
             .collect();
         let tail = &stderr[stderr.len().saturating_sub(STDERR_TAIL)..];
         return Err(errors::exit_failure(
-            &job.host_name,
+            job.target.name(),
             "config",
             out.status.code(),
             tail,
@@ -338,13 +329,14 @@ async fn config_json(job: &ComposeRun, mut command: Command) -> AppResult<String
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::Path;
+    use std::sync::Arc;
 
-    use homeport_engine::testing;
+    use homeport_engine::{auth::Logins, testing};
     #[cfg(unix)]
     use homeport_transport::testing::UnixDialer;
+    use homeport_transport::Dialer;
 
-    use crate::lifecycle;
+    use crate::{lifecycle, runtime::StackSource};
 
     #[test]
     fn direct_hosts_are_passed_to_the_cli() {
@@ -370,21 +362,60 @@ mod tests {
         );
     }
 
+    fn job(
+        source: StackSource,
+        connection: HostConnection,
+        dialer: Option<Arc<dyn Dialer>>,
+        docker: bollard::Docker,
+        logins: Logins,
+        project: &str,
+        action: ComposeAction,
+    ) -> ComposeJob {
+        ComposeJob {
+            cli: docker_cli(),
+            project: project.into(),
+            source,
+            target: StackTarget::Host {
+                name: "local".into(),
+                connection,
+                dialer,
+                docker,
+            },
+            logins,
+            action,
+        }
+    }
+
+    fn docker_cli() -> ComposeCli {
+        ComposeCli {
+            program: "docker".into(),
+            prefix: vec!["compose".into()],
+            version: "2.29.0".into(),
+        }
+    }
+
+    /// Every argument and environment variable of `command`, as text.
+    fn everything(command: &Command) -> Vec<String> {
+        let std = command.as_std();
+        std.get_envs()
+            .filter_map(|(k, v)| Some(format!("{}={}", k.to_str()?, v?.to_str()?)))
+            .chain(std.get_args().filter_map(|a| a.to_str().map(str::to_owned)))
+            .collect()
+    }
+
     #[test]
     fn the_clis_environment_holds_no_registry_login() {
-        let job = ComposeRun {
-            cli: ComposeCli {
-                program: "docker".into(),
-                prefix: vec!["compose".into()],
-                version: "2.29.0".into(),
+        let job = job(
+            StackSource::Managed {
+                compose: String::new(),
+                env: "GREETING=hello".into(),
             },
-            host_name: "local".into(),
-            connection: HostConnection::Tcp {
+            HostConnection::Tcp {
                 address: "h:2375".into(),
             },
-            dialer: None,
-            docker: testing::offline(),
-            logins: Logins::new(
+            None,
+            testing::offline(),
+            Logins::new(
                 vec![homeport_engine::auth::RegistryAuth {
                     address: "ghcr.io".into(),
                     username: "alice".into(),
@@ -392,19 +423,11 @@ mod tests {
                 }],
                 |_| "ghcr.io".into(),
             ),
-            project: "shop".into(),
-            compose: String::new(),
-            env: String::new(),
-            action: ComposeAction::Up,
-        };
-        let vars = vec![("GREETING".to_owned(), "hello".to_owned())];
-        let command = cli_command(&job, &vars, "tcp://h:2375", Path::new("/tmp"), &["up"]);
-        let std = command.as_std();
-        let everything: Vec<String> = std
-            .get_envs()
-            .filter_map(|(k, v)| Some(format!("{}={}", k.to_str()?, v?.to_str()?)))
-            .chain(std.get_args().filter_map(|a| a.to_str().map(str::to_owned)))
-            .collect();
+            "shop",
+            ComposeAction::Up,
+        );
+        let prepared = job.source.prepare(ComposeAction::Down).unwrap();
+        let everything = everything(&cli_command(&job, &prepared, "tcp://h:2375", &["up"]));
         assert!(everything.contains(&"DOCKER_HOST=tcp://h:2375".to_owned()));
         assert!(everything.contains(&"GREETING=hello".to_owned()));
         assert!(
@@ -415,6 +438,68 @@ mod tests {
         );
     }
 
+    #[test]
+    fn the_source_names_the_files_and_the_target_the_host() {
+        let job = job(
+            StackSource::Managed {
+                compose: "services:\n  web:\n    image: nginx\n".into(),
+                env: String::new(),
+            },
+            HostConnection::Tcp {
+                address: "h:2375".into(),
+            },
+            None,
+            testing::offline(),
+            Logins::none(),
+            "shop",
+            ComposeAction::Up,
+        );
+        let prepared = job.source.prepare(job.action).unwrap();
+        let (host, proxy) = docker_host(&job.target).unwrap();
+        assert!(proxy.is_none());
+        let command = cli_command(&job, &prepared, &host, job.action.args());
+        let args: Vec<_> = command
+            .as_std()
+            .get_args()
+            .filter_map(|a| a.to_str())
+            .collect();
+        assert_eq!(
+            args,
+            [
+                "compose",
+                "--project-name",
+                "shop",
+                "--file",
+                "-",
+                "--progress",
+                "plain",
+                "up",
+                "--detach",
+                "--remove-orphans"
+            ]
+        );
+        assert_eq!(
+            command.as_std().get_current_dir(),
+            Some(prepared.workdir.path())
+        );
+    }
+
+    #[test]
+    fn tls_hosts_need_a_connection_for_the_proxy() {
+        let target = StackTarget::Host {
+            name: "prod".into(),
+            connection: HostConnection::Tls {
+                address: "h:2376".into(),
+            },
+            dialer: None,
+            docker: testing::offline(),
+        };
+        assert!(matches!(
+            docker_host(&target),
+            Err(ref e) if e.is(ErrorCode::HostNotConnected)
+        ));
+    }
+
     async fn compose(
         project: &str,
         action: ComposeAction,
@@ -423,27 +508,26 @@ mod tests {
     ) -> Vec<ComposeEvent> {
         let cli = detect().await.expect("docker compose is installed");
         let events = std::sync::Mutex::new(Vec::new());
-        run(
-            ComposeRun {
-                cli,
-                host_name: "local".into(),
+        let mut job = job(
+                StackSource::Managed {
+                    compose: format!(
+                        "services:\n  app:\n    image: {}\n    command: [\"sleep\", \"60\"]\n    environment:\n      GREETING: ${{GREETING}}\n",
+                        testing::IMAGE
+                    ),
+                    env: "GREETING=hello".into(),
+                },
                 connection,
                 dialer,
-                docker: testing::docker(),
-                logins: Logins::none(),
-                project: project.into(),
-                compose: format!(
-                    "services:\n  app:\n    image: {}\n    command: [\"sleep\", \"60\"]\n    environment:\n      GREETING: ${{GREETING}}\n",
-                    testing::IMAGE
-                ),
-                env: "GREETING=hello".into(),
+                testing::docker(),
+                Logins::none(),
+                project,
                 action,
-            },
-            |e| {
-                events.lock().unwrap().push(e);
-                true
-            },
-        )
+            );
+        job.cli = cli;
+        crate::runtime::run(job, |e| {
+            events.lock().unwrap().push(e);
+            true
+        })
         .await;
         events.into_inner().unwrap()
     }

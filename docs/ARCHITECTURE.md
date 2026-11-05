@@ -50,7 +50,7 @@ Each crate depends only on crates below it in this list, so the graph has one di
 | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | `homeport` (`src-tauri/`)                    | The Tauri shell: `app/` (bootstrap, state, events), `commands/` (one module per feature), `error.rs`           |
 | `homeport-hosts` (`crates/hosts/`)           | Hosts: their store, a supervised connection to each (`registry/`), the use cases (`service/`), imports, export |
-| `homeport-stacks` (`crates/stacks/`)         | Stacks: telling them apart, Managed Stacks' store, lifecycle, the compose CLI (ADR 0001)                       |
+| `homeport-stacks` (`crates/stacks/`)         | Stacks: telling them apart, their store, the runtime (each source and target), lifecycle, the compose CLI      |
 | `homeport-registries` (`crates/registries/`) | Registry logins: their store, matching them to image references, the login check and Docker Hub (HTTP)         |
 | `homeport-settings`, `homeport-updates`      | The user's preferences; how this copy of Homeport is updated                                                   |
 | `homeport-engine` (`crates/engine/`)         | The Engine's resources as functions over a bollard client; what runs in a container under `containers/`        |
@@ -61,7 +61,7 @@ Each crate depends only on crates below it in this list, so the graph has one di
 Rules:
 
 - **Only the shell knows Tauri.** A crate that must tell the app something defines a trait the shell implements (`homeport_hosts::registry::Notifier`, forwarded to the webview by `app/events.rs`).
-- **Domain crates don't depend on each other.** `hosts` and `stacks` both sit on the lower crates; a command that needs both combines them (`stacks_compose_subscribe` reads the Host, then hands its connection to the compose runner).
+- **Domain crates don't depend on each other.** `hosts` and `stacks` both sit on the lower crates; a command that needs both combines them (`stacks_compose_subscribe` reads the Host into a `StackTarget`, the Stack's definition into a `StackSource`, and hands both to `homeport_stacks::runtime`).
 - **Foreign errors.** The orphan rule only lets `homeport-core` implement `From<…> for AppError`. It does so for bollard and russh behind its `bollard` and `russh` features; every other foreign error gets a named function next to the only code that meets it (`homeport_storage::db::sqlite_error`, `error::window` and `error::update` in the shell).
 - **Shared test helpers** sit behind a crate's `test-support` feature (`homeport-transport`'s dialer over the local socket, `homeport-engine`'s throwaway resources) and are only enabled as dev-dependencies.
 - **One version per dependency and one set of lints**, declared in the root `Cargo.toml` (`[workspace.dependencies]`, `[workspace.lints]`).

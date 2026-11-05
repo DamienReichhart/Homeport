@@ -1,0 +1,114 @@
+//! The one way every Stack runs: where its compose definition comes from (a
+//! [`StackSource`]) and where it runs (a [`StackTarget`]).
+//!
+//! Deploying, pulling and taking down go through [`run`], which hands the
+//! job to the compose CLI with the arguments its source decides and the
+//! `DOCKER_HOST` its target decides. Starting, stopping and removing go
+//! through [`act`] and [`remove`], on the Engine API, so they also work for
+//! External Stacks, which have no source at all (ADR 0001).
+//!
+//! A new kind of source or target is a new variant here and its arm below;
+//! the commands only resolve a Stack's source and target and hand them in.
+
+mod source;
+
+use std::sync::Arc;
+
+use bollard::Docker;
+
+use homeport_core::{error::AppResult, host::HostConnection};
+use homeport_engine::auth::Logins;
+use homeport_transport::Dialer;
+
+use crate::{
+    compose::{self, ComposeAction, ComposeCli, ComposeEvent},
+    lifecycle::{self, StackAction},
+};
+
+pub(crate) use self::source::Prepared;
+
+/// Where a Stack's compose definition comes from. External Stacks have none.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum StackSource {
+    /// A definition Homeport holds: sent to compose on stdin, with its
+    /// environment as process variables, so nothing is written to disk.
+    Managed { compose: String, env: String },
+}
+
+/// The kinds of source, for the rules a definition is checked against.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub enum SourceKind {
+    Managed,
+}
+
+impl StackSource {
+    pub fn kind(&self) -> SourceKind {
+        match self {
+            Self::Managed { .. } => SourceKind::Managed,
+        }
+    }
+}
+
+/// Where a Stack runs.
+#[derive(Clone)]
+pub enum StackTarget {
+    /// A Compose project on a Host.
+    Host {
+        /// The Host's name, for messages.
+        name: String,
+        connection: HostConnection,
+        /// Reaches TLS and SSH Hosts, through the per-command proxy.
+        dialer: Option<Arc<dyn Dialer>>,
+        /// The Host's Engine, for lifecycle and for pulling images.
+        docker: Docker,
+    },
+}
+
+impl StackTarget {
+    /// The Engine the target runs on.
+    pub fn docker(&self) -> &Docker {
+        match self {
+            Self::Host { docker, .. } => docker,
+        }
+    }
+
+    /// The target's name, for messages.
+    pub fn name(&self) -> &str {
+        match self {
+            Self::Host { name, .. } => name,
+        }
+    }
+}
+
+/// One compose command for one Stack.
+pub struct ComposeJob {
+    pub cli: ComposeCli,
+    /// The Compose project name: the Stack's name.
+    pub project: String,
+    pub source: StackSource,
+    pub target: StackTarget,
+    /// For pulling images through the Engine API (ADR 0010).
+    pub logins: Logins,
+    pub action: ComposeAction,
+}
+
+/// Runs one compose command, streaming its output to `sink`; `sink` returns
+/// false once nobody listens, which stops the run.
+pub async fn run(job: ComposeJob, sink: impl Fn(ComposeEvent) -> bool) {
+    compose::run(job, sink).await;
+}
+
+/// Starts, stops or restarts the Stack named `name` on `target`.
+pub async fn act(target: &StackTarget, name: &str, action: StackAction) -> AppResult<()> {
+    match target {
+        StackTarget::Host { docker, .. } => lifecycle::act(docker, name, action).await,
+    }
+}
+
+/// Removes the Stack's containers and networks from `target`, keeping volumes.
+pub async fn remove(target: &StackTarget, name: &str) -> AppResult<()> {
+    match target {
+        StackTarget::Host { docker, .. } => lifecycle::remove(docker, name).await,
+    }
+}

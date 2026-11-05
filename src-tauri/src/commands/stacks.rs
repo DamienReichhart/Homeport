@@ -6,9 +6,10 @@ use homeport_core::streams::StreamId;
 use homeport_engine::containers;
 use homeport_stacks::{
     self as stacks,
-    compose::{self, ComposeAction, ComposeEvent, ComposeRun},
+    compose::{self, ComposeAction, ComposeEvent},
     definition::{self, ComposeCheck},
-    lifecycle::{self, StackAction},
+    lifecycle::StackAction,
+    runtime::{self, ComposeJob, SourceKind, StackSource, StackTarget},
     store::ManagedStack,
     Stack,
 };
@@ -46,7 +47,7 @@ pub fn stacks_get_env(state: State<'_, AppState>, id: String) -> AppResult<Strin
 #[tauri::command]
 #[specta::specta]
 pub fn stacks_check(compose: String) -> ComposeCheck {
-    definition::check(&compose)
+    definition::check(&compose, SourceKind::Managed)
 }
 
 /// Creates a Managed Stack. Using the name of an External Stack adopts it.
@@ -90,7 +91,7 @@ pub async fn stacks_act(
     name: String,
     action: StackAction,
 ) -> AppResult<()> {
-    lifecycle::act(&state.hosts.registry.docker(&host_id)?, &name, action).await
+    runtime::act(&target(&state, &host_id)?, &name, action).await
 }
 
 /// Removes a Stack's containers and networks through the Engine API.
@@ -101,7 +102,7 @@ pub async fn stacks_remove(
     host_id: String,
     name: String,
 ) -> AppResult<()> {
-    lifecycle::remove(&state.hosts.registry.docker(&host_id)?, &name).await
+    runtime::remove(&target(&state, &host_id)?, &name).await
 }
 
 /// Runs a compose command for a Managed Stack, streaming its output.
@@ -114,23 +115,29 @@ pub async fn stacks_compose_subscribe(
     on_event: Channel<ComposeEvent>,
 ) -> AppResult<StreamId> {
     let stack = state.stacks.get(&id)?;
-    let host = state.hosts.store.get(&stack.host_id)?;
-    let dialer = state.hosts.registry.dialer(&stack.host_id)?;
-    let docker = state.hosts.registry.docker(&stack.host_id)?;
-    let cli = compose::detect().await?;
-    let job = ComposeRun {
-        cli,
-        host_name: host.name,
-        connection: host.connection,
-        dialer,
-        docker,
+    let job = ComposeJob {
+        cli: compose::detect().await?,
+        source: StackSource::Managed {
+            env: state.stacks.env(&id)?,
+            compose: stack.compose,
+        },
+        target: target(&state, &stack.host_id)?,
         logins: registries::logins(&state)?,
         project: stack.name,
-        env: state.stacks.env(&id)?,
-        compose: stack.compose,
         action,
     };
     Ok(state
         .streams
-        .spawn(compose::run(job, move |e| on_event.send(e).is_ok())))
+        .spawn(runtime::run(job, move |e| on_event.send(e).is_ok())))
+}
+
+/// Where the Stacks of `host_id` run: its Compose projects.
+fn target(state: &AppState, host_id: &str) -> AppResult<StackTarget> {
+    let host = state.hosts.store.get(host_id)?;
+    Ok(StackTarget::Host {
+        name: host.name,
+        connection: host.connection,
+        dialer: state.hosts.registry.dialer(host_id)?,
+        docker: state.hosts.registry.docker(host_id)?,
+    })
 }

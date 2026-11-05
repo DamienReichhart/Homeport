@@ -1,15 +1,16 @@
-//! Checks on a Managed Stack's compose definition and environment.
+//! Checks on a Stack's compose definition and environment.
 //!
 //! Compose resolves relative paths and reads `env_file`/`build` contexts on
-//! the machine running the CLI, which isn't the Host (ADR 0001), so those
-//! are refused or flagged before deploying.
+//! the machine running the CLI, which isn't the Host (ADR 0001). A Managed
+//! Stack has no folder on this machine, so those are refused or flagged
+//! before deploying; each [`SourceKind`] says which rules apply.
 
 use serde::Serialize;
 use serde_yaml_ng::Value;
 
 use homeport_core::error::{AppError, AppResult};
 
-use crate::messages as msg;
+use crate::{messages as msg, runtime::SourceKind};
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -50,8 +51,8 @@ struct Review {
     warnings: Vec<String>,
 }
 
-pub fn check(yaml: &str) -> ComposeCheck {
-    let review = review(yaml);
+pub fn check(yaml: &str, kind: SourceKind) -> ComposeCheck {
+    let review = review(yaml, kind);
     ComposeCheck {
         // The editor lists each blocker with its raw cause, if any.
         errors: review
@@ -67,12 +68,21 @@ pub fn check(yaml: &str) -> ComposeCheck {
 }
 
 /// The first problem that blocks deploying `yaml`, if any.
-pub fn blocker(yaml: &str) -> Option<AppError> {
-    review(yaml).blockers.into_iter().next()
+pub fn blocker(yaml: &str, kind: SourceKind) -> Option<AppError> {
+    review(yaml, kind).blockers.into_iter().next()
 }
 
-fn review(yaml: &str) -> Review {
+/// Whether the definition's files on this machine are its project files, so
+/// `build:`, `env_file:` and relative paths mean what their author meant.
+fn has_project_folder(kind: SourceKind) -> bool {
+    match kind {
+        SourceKind::Managed => false,
+    }
+}
+
+fn review(yaml: &str, kind: SourceKind) -> Review {
     let mut check = Review::default();
+    let local = has_project_folder(kind);
     let doc: Value = match serde_yaml_ng::from_str(yaml) {
         Ok(doc) => doc,
         Err(e) => {
@@ -96,7 +106,7 @@ fn review(yaml: &str) -> Review {
 
     for (name, service) in services {
         let name = name.as_str().unwrap_or("?");
-        if service.get("build").is_some() {
+        if !local && service.get("build").is_some() {
             check.blockers.push(AppError::validation(
                 msg::COMPOSE_BUILD.with("service", name),
             ));
@@ -105,6 +115,9 @@ fn review(yaml: &str) -> Review {
             check.blockers.push(AppError::validation(
                 msg::COMPOSE_NO_IMAGE.with("service", name),
             ));
+        }
+        if local {
+            continue;
         }
         if service.get("env_file").is_some() {
             check.warnings.push(format!(
@@ -125,6 +138,9 @@ fn review(yaml: &str) -> Review {
         }
     }
 
+    if local {
+        return check;
+    }
     for section in ["configs", "secrets"] {
         for (name, entry) in doc
             .get(section)
@@ -200,6 +216,10 @@ pub fn parse_env(text: &str) -> AppResult<Vec<(String, String)>> {
 mod tests {
     use super::*;
 
+    fn check_managed(yaml: &str) -> ComposeCheck {
+        check(yaml, SourceKind::Managed)
+    }
+
     #[test]
     fn stack_names_follow_compose_rules() {
         assert!(validate_name("shop-2_prod").is_ok());
@@ -210,7 +230,7 @@ mod tests {
 
     #[test]
     fn plain_image_stacks_pass() {
-        let c = check(
+        let c = check_managed(
             "services:\n  web:\n    image: nginx\n    volumes:\n      - data:/data\n      - /srv/site:/usr/share/nginx/html:ro\nvolumes:\n  data: {}\n",
         );
         assert_eq!(c, ComposeCheck::default());
@@ -218,14 +238,14 @@ mod tests {
 
     #[test]
     fn local_builds_are_refused() {
-        let c = check("services:\n  app:\n    build: .\n");
+        let c = check_managed("services:\n  app:\n    build: .\n");
         assert!(!c.is_deployable());
         assert!(c.errors[0].contains("build:"));
     }
 
     #[test]
     fn paths_read_on_this_machine_are_flagged() {
-        let c = check(
+        let c = check_managed(
             "services:\n  app:\n    image: app\n    env_file: .env\n    volumes:\n      - ./data:/data\n      - type: bind\n        source: ~/conf\n        target: /conf\nsecrets:\n  key:\n    file: ./key.pem\n",
         );
         assert!(c.is_deployable());
@@ -234,9 +254,9 @@ mod tests {
 
     #[test]
     fn malformed_definitions_are_explained() {
-        assert!(!check("services: [").is_deployable());
-        assert!(!check("version: '3'\n").is_deployable());
-        assert!(!check("services:\n  app:\n    ports: []\n").is_deployable());
+        assert!(!check_managed("services: [").is_deployable());
+        assert!(!check_managed("version: '3'\n").is_deployable());
+        assert!(!check_managed("services:\n  app:\n    ports: []\n").is_deployable());
     }
 
     #[test]
