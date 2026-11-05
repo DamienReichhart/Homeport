@@ -1,6 +1,6 @@
 import { queryOptions } from '@tanstack/react-query';
 import { hostKeys } from '@/core/host';
-import { commands } from '@/shared/api';
+import { commands, type Candidate, type SourceKind } from '@/shared/api';
 
 export const stackKeys = {
   /** A Managed Stack's stored definition; its environment is cached under it. */
@@ -39,6 +39,16 @@ export const stackQueries = {
       queryFn: () => commands.stacksDeploy(deployId),
       // A recorded deploy never changes.
       staleTime: Infinity,
+    }),
+  /** What redeploying would change; `candidate` null compares the stored definition. */
+  diff: (kind: SourceKind, stackId: string, candidate: Candidate | null) =>
+    queryOptions({
+      queryKey: ['stack-diff', kind, stackId, candidate] as const,
+      queryFn: () => commands.stacksDiff(kind, stackId, candidate),
+      // Always against what is deployed right now.
+      staleTime: 0,
+      gcTime: 0,
+      retry: false,
     }),
   env: (managedId: string) =>
     queryOptions({

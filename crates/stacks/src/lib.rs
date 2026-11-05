@@ -9,6 +9,7 @@
 //! - [`definition`] checks a compose definition before it's stored.
 //! - [`store`] keeps Managed Stacks, their environment sealed.
 //! - [`history`] keeps what each deploy used, for rolling back.
+//! - [`diff`] tells what a redeploy would change.
 //! - [`linked`] keeps where each Linked Stack's folder and files are.
 //! - [`runtime`] is the one way a Stack runs: its source (where the compose
 //!   definition comes from) and its target (where it runs). Every command
@@ -18,6 +19,7 @@
 
 pub mod compose;
 pub mod definition;
+pub mod diff;
 pub mod history;
 pub mod lifecycle;
 pub mod linked;

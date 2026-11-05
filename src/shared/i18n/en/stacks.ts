@@ -29,6 +29,27 @@ export default {
   'stacks.tab.logs': 'Logs',
   'stacks.tab.definition': 'Definition',
   'stacks.tab.history': 'History',
+  'stacks.review.title': 'Review changes to {name}',
+  'stacks.review.description':
+    'What redeploying changes, compared with the definition deployed {when}.',
+  'stacks.review.unknownTitle': 'What is deployed now is unknown',
+  'stacks.review.unknownDescription':
+    'This Stack was deployed before Homeport kept a history of its deploys, or from outside Homeport. This is the definition that will be deployed.',
+  'stacks.review.noChanges': 'Nothing changed since the last deploy.',
+  'stacks.review.redeployAnyway': 'Redeploy anyway',
+  'stacks.review.deploy': 'Deploy',
+  'stacks.review.back': 'Back',
+  'stacks.review.added': 'Added',
+  'stacks.review.removed': 'Removed',
+  'stacks.review.changed': 'Changed',
+  'stacks.review.unchanged': 'Unchanged',
+  'stacks.review.removedFile': 'Compose no longer uses this file.',
+  'stacks.review.reordered': 'The files merge in a different order.',
+  'stacks.review.environment': 'Environment',
+  'stacks.review.envUnchanged':
+    '{count, plural, one {# other variable is unchanged.} other {# other variables are unchanged.}}',
+  'stacks.review.profiles': 'Profiles: {before} → {after}',
+  'stacks.review.noProfile': 'none',
   'stacks.history.empty':
     'No deploy recorded yet. Each deploy from Homeport is listed here, with the definition it used.',
   'stacks.history.column.started': 'Deployed',

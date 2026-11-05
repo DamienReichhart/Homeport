@@ -198,6 +198,13 @@ export const commands = {
 	 *  its output.
 	 */
 	stacksComposeSubscribe: (kind: SourceKind, id: string, action: ComposeAction, onEvent: Channel<ComposeEvent>) => __TAURI_INVOKE<number>("stacks_compose_subscribe", { kind, id, action, onEvent }),
+	/**
+	 *  What redeploying the Managed or Linked Stack `id` would change: its
+	 *  latest successful deploy against `candidate`, or against its stored
+	 *  definition (a Linked Stack's files as they are now) when there's none.
+	 *  Environment values are compared here and never sent back.
+	 */
+	stacksDiff: (kind: SourceKind, id: string, candidate: Candidate | null) => __TAURI_INVOKE<DeployDiff>("stacks_diff", { kind, id, candidate }),
 	/**  A Stack's recorded deploys, newest first. */
 	stacksHistory: (id: string) => __TAURI_INVOKE<DeploySummary[]>("stacks_history", { id }),
 	/**  One recorded deploy, with its definition and the names of its variables. */
@@ -325,6 +332,16 @@ export type BundleHost = {
 	secretsMissing: boolean,
 };
 
+/**
+ *  The definition about to be deployed, when it isn't the stored one: the
+ *  editor's text for a Managed Stack, the edited files for a Linked one.
+ */
+export type Candidate = {
+	files: ComposeFile[],
+	/**  `None` for a Linked Stack, which has no environment of its own. */
+	env: string | null,
+};
+
 /**  What this machine can do; features degrade gracefully when something is missing. */
 export type Capabilities = {
 	/**  An OS keychain is reachable, so SSH, TLS, stack `.env` and registry secrets can be stored. */
@@ -450,6 +467,25 @@ export type DeployDetail = {
 	envKeys: string[] | null,
 };
 
+export type DeployDiff = {
+	/**
+	 *  Whether Homeport knows what is deployed: false when the Stack was
+	 *  deployed before it kept a history, or outside it.
+	 */
+	known: boolean,
+	/**  When the deployed definition was deployed. */
+	deployedAt: string | null,
+	/**  The candidate's files in order, then those it no longer has. */
+	files: FileChange[],
+	/**  The order of the files changed, which changes how they merge. */
+	reordered: boolean,
+	env: EnvKeyChange[],
+	deployedProfiles: string[],
+	candidateProfiles: string[],
+	/**  Nothing at all would change. */
+	unchanged: boolean,
+};
+
 /**  One deploy, without its files. */
 export type DeploySummary = {
 	id: string,
@@ -527,6 +563,14 @@ export type EngineInfo = {
 	images: number,
 };
 
+/**  What happened to one environment variable. */
+export type EnvChange = "added" | "removed" | "changed" | "unchanged";
+
+export type EnvKeyChange = {
+	key: string,
+	change: EnvChange,
+};
+
 /**  Stable machine-readable identifier of a failure, one per case the user can act on. */
 export type ErrorCode = 
 /**  A failure that started in the frontend, outside any command. */
@@ -563,6 +607,16 @@ export type ExportOutcome = {
 	exported: number,
 	/**  Hosts written without their secrets, which couldn't be opened. */
 	withoutSecrets: string[],
+};
+
+/**
+ *  One compose file, as deployed and as about to be; `None` on the side
+ *  that doesn't have it.
+ */
+export type FileChange = {
+	name: string,
+	deployed: string | null,
+	candidate: string | null,
 };
 
 export type FileEntry = {

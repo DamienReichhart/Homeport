@@ -1,4 +1,4 @@
-import type { ComposeAction, SourceKind } from '@/shared/api';
+import type { Candidate, ComposeAction, SourceKind } from '@/shared/api';
 import type { MessageKey } from '@/shared/i18n';
 
 /** One compose command to run for a Managed or Linked Stack. */
@@ -9,6 +9,11 @@ export interface ComposeJob {
   stackId: string;
   /** Roll a Managed Stack back to this recorded deploy, then deploy it. */
   rollbackTo?: string;
+  /**
+   * Show what changes before running: `null` compares the stored definition
+   * with what is deployed. Left out for first deploys, which go straight on.
+   */
+  review?: Candidate | null;
   name: string;
   action: ComposeAction;
 }

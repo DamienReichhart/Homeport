@@ -48,11 +48,13 @@ export function StackActions({
   const source = stack.kind === 'external' ? null : stack.kind;
   const deployable = source !== null && stack.id !== null;
   const canCompose = deployable && support?.state === 'available';
-  const compose = (action: ComposeJob['action']) => {
-    if (source && stack.id)
-      onCompose({ kind: source, stackId: stack.id, name: stack.name, action });
-  };
   const deployed = stack.state !== 'notDeployed';
+  const compose = (action: ComposeJob['action']) => {
+    if (!source || !stack.id) return;
+    // A redeploy shows what changes first; a first deploy goes straight on.
+    const review = deployed && (action === 'up' || action === 'rebuild') ? { review: null } : {};
+    onCompose({ kind: source, stackId: stack.id, name: stack.name, action, ...review });
+  };
   const size = compact ? 'sm' : 'default';
 
   return (

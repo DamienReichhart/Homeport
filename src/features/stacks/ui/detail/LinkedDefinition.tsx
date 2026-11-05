@@ -1,7 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { type ReactNode, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toAppError, useCapabilities, type LinkedFiles, type Stack } from '@/shared/api';
+import {
+  toAppError,
+  useCapabilities,
+  type Candidate,
+  type LinkedFiles,
+  type Stack,
+} from '@/shared/api';
 import {
   Alert,
   AlertDescription,
@@ -25,6 +31,7 @@ import { useComposeCheck } from '../../api/useComposeCheck';
 import type { ComposeJob } from '../../model/composeJob';
 import { changedOutside, dirtyFiles, fileName, textOf, type Drafts } from '../../model/linkedEdit';
 import { ComposeChecks } from '../ComposeChecks';
+import { ReviewDialog } from '../dialogs/ReviewDialog';
 import { LinkedFileList } from './LinkedFileList';
 import { ProfilesControl } from './ProfilesControl';
 import { YamlEditor } from '../YamlEditor';
@@ -79,9 +86,11 @@ export function LinkedDefinition({
       linkedId={linkedId}
       opened={files.data}
       current={files.data}
+      name={stack.name}
+      deployed={stack.state !== 'notDeployed'}
       onRestart={() => setVersion((v) => v + 1)}
-      onDeploy={() =>
-        onDeploy({ kind: 'linked', stackId: linkedId, name: stack.name, action: 'up' })
+      onDeploy={(review) =>
+        onDeploy({ kind: 'linked', stackId: linkedId, name: stack.name, action: 'up', ...review })
       }
       forget={forget}
     />
@@ -93,6 +102,8 @@ function LinkedEditor({
   linkedId,
   opened,
   current,
+  name,
+  deployed,
   onRestart,
   onDeploy,
   forget,
@@ -100,10 +111,15 @@ function LinkedEditor({
   linkedId: string;
   opened: LinkedFiles;
   current: LinkedFiles;
+  name: string;
+  /** Whether it runs, so a redeploy shows what changes first. */
+  deployed: boolean;
   onRestart: () => void;
-  onDeploy: () => void;
+  /** `review` asks the run to show what changes first, against the files on disk. */
+  onDeploy: (review?: { review: null }) => void;
   forget: ReactNode;
 }) {
+  const [review, setReview] = useState<Candidate | null>(null);
   const capabilities = useCapabilities();
   const [base] = useState(opened);
   const [drafts, setDrafts] = useState<Drafts>({});
@@ -124,7 +140,7 @@ function LinkedEditor({
     capabilities.data?.compose.state === 'available' && check !== null && check.errors.length === 0;
   const save = (overwrite: boolean, deploy: boolean) => {
     // Nothing to write: redeploy what's in the folder.
-    if (dirty.length === 0) return deploy && onDeploy();
+    if (dirty.length === 0) return deploy && onDeploy(deployed ? { review: null } : undefined);
     write.mutate({
       files: dirty.map((f) => ({
         path: f.path,
@@ -202,7 +218,17 @@ function LinkedEditor({
       </div>
       {write.error && <ErrorMessage error={write.error} />}
       <div className="flex flex-wrap gap-2">
-        <Button disabled={write.isPending || !canDeploy} onClick={() => save(false, true)}>
+        <Button
+          disabled={write.isPending || !canDeploy}
+          onClick={() =>
+            deployed && dirty.length > 0
+              ? setReview({
+                  files: base.files.map((f) => ({ name: f.path, content: textOf(f, drafts) })),
+                  env: null,
+                })
+              : save(false, true)
+          }
+        >
           {t('stacks.linked.saveAndRedeploy')}
         </Button>
         <Button
@@ -223,6 +249,14 @@ function LinkedEditor({
         )}
         <span className="ml-auto">{forget}</span>
       </div>
+      <ReviewDialog
+        kind="linked"
+        stackId={linkedId}
+        name={name}
+        candidate={review}
+        onDeploy={() => save(false, true)}
+        onClose={() => setReview(null)}
+      />
     </div>
   );
 }

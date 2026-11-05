@@ -245,6 +245,18 @@ The Stack's profiles are the only ones that count. A `COMPOSE_PROFILES` variable
 
 To change a Managed Stack, open it, edit its **Definition** and choose **Save and redeploy**. Compose recreates only the services that changed, and removes services you've deleted from the file.
 
+### Reviewing changes before a redeploy
+
+Before a redeploy runs — **Redeploy**, **Rebuild and deploy**, or **Save and redeploy** for a Stack that is running — Homeport shows **Review changes**: the definition deployed last time (the newest successful entry of its [history](#deploy-history-and-rolling-back)) against the one about to be.
+
+- Each compose file shows its changed lines inline: removed lines above the lines that replace them. An unchanged file is folded; select it to open it. Files added, removed or merged in another order are named.
+- Environment variables show only their names, marked **Added**, **Removed** or **Changed** — a changed password reads **Changed** without showing either value — and how many others are unchanged.
+- Turning a profile on or off shows too.
+
+Choose **Deploy** to go on to the run, or **Back** to return to the editor without changing anything. When nothing changed, the review says so and offers **Redeploy anyway**. When Homeport doesn't know what is deployed — the Stack was deployed before Homeport kept a history, or from outside it — the review says so and shows the definition that will be deployed. A first deploy, a rollback and an [update](#updating-a-stack) skip the review.
+
+The comparison is between definitions only, not the containers' live configuration on the Host.
+
 ## Deploy history and rolling back
 
 Each deploy of a Managed or Linked Stack from Homeport — **Deploy**, **Redeploy**, **Rebuild and deploy**, **Save and redeploy** — is recorded with the compose files, environment and profiles it used, when it ran and how it ended. The **History** tab of the Stack's page lists the last 20, newest first: **Succeeded**, **Failed** with its exit code, or **Not finished** for a run whose window was closed before it ended. **Deployed now** marks the newest one that succeeded.

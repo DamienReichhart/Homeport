@@ -78,6 +78,7 @@ function OwnDefinition({
   return (
     <ManagedDefinition
       key={managed.data.updatedAt}
+      deployed={stack.state !== 'notDeployed'}
       hostId={hostId}
       managed={managed.data}
       initialEnv={env.data}

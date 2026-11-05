@@ -8,6 +8,7 @@ use homeport_stacks::{
     self as stacks,
     compose::{self, ComposeAction, ComposeEvent},
     definition::{self, ComposeCheck},
+    diff::{self, Candidate, DeployDiff},
     history::{self, DeployDetail, DeploySummary},
     lifecycle::StackAction,
     linked::{
@@ -269,6 +270,70 @@ async fn job(
             stack_id: id.to_owned(),
         }),
     })
+}
+
+/// What redeploying the Managed or Linked Stack `id` would change: its
+/// latest successful deploy against `candidate`, or against its stored
+/// definition (a Linked Stack's files as they are now) when there's none.
+/// Environment values are compared here and never sent back.
+#[tauri::command]
+#[specta::specta]
+pub fn stacks_diff(
+    state: State<'_, AppState>,
+    kind: SourceKind,
+    id: String,
+    candidate: Option<Candidate>,
+) -> AppResult<DeployDiff> {
+    let (stored_files, stored_env, profiles) = match kind {
+        SourceKind::Managed => {
+            let stack = state.stacks.get(&id)?;
+            let env = match &candidate {
+                Some(Candidate { env: Some(_), .. }) => String::new(),
+                _ => state.stacks.env(&id)?,
+            };
+            (stack.files, env, stack.profiles)
+        }
+        SourceKind::Linked => {
+            let stack = state.linked.get(&id)?;
+            let files = match &candidate {
+                Some(_) => vec![],
+                None => linked::files::read(&stack)?
+                    .files
+                    .into_iter()
+                    .map(|f| ComposeFile::new(f.path, f.content))
+                    .collect(),
+            };
+            (files, String::new(), stack.profiles)
+        }
+    };
+    let (files, env) = match candidate {
+        Some(c) => (c.files, c.env.unwrap_or(stored_env)),
+        None => (stored_files, stored_env),
+    };
+    let latest = state.history.latest_successful(&id)?;
+    let deployed_env = match &latest {
+        // An environment the keychain can't open compares as empty.
+        Some(d) => state.history.env(&d.summary.id).unwrap_or_default(),
+        None => String::new(),
+    };
+    let deployed = latest.as_ref().map(|d| {
+        (
+            d.summary.started_at.as_str(),
+            diff::Definition {
+                files: &d.files,
+                env: &deployed_env,
+                profiles: &d.profiles,
+            },
+        )
+    });
+    Ok(diff::diff(
+        deployed,
+        diff::Definition {
+            files: &files,
+            env: &env,
+            profiles: &profiles,
+        },
+    ))
 }
 
 /// A Stack's recorded deploys, newest first.
