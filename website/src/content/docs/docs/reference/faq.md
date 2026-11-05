@@ -13,7 +13,7 @@ Not entirely. Homeport is a manager: it doesn't run a Docker Engine itself. On L
 
 ### Does it work with Podman?
 
-Yes, through Podman's Docker-compatible API socket. Homeport detects the usual Podman sockets on Linux and the default Podman machine pipe on Windows; on macOS, [add the socket by hand](/docs/hosts/local/#adding-a-socket-by-hand).
+Yes, through Podman's Docker-compatible API socket. Homeport detects the usual Podman sockets on Linux, every running [Podman machine on macOS](/docs/hosts/local/#podman-machines-on-macos), and the default Podman machine pipe on Windows. Anything else can be [added by hand](/docs/hosts/local/#adding-a-socket-by-hand).
 
 ### Does it work with Kubernetes or Docker Swarm?
 
