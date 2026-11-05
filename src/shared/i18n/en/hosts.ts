@@ -138,6 +138,34 @@ export default {
   'hosts.import.submit': '{count, plural, =0 {Import} one {Import # host} other {Import # hosts}}',
   'hosts.import.failed': '{name} wasn’t imported:',
   'hosts.import.done': '{count, plural, one {Imported # host} other {Imported # hosts}}',
+  'hosts.bundle.fileType': 'Homeport export',
+  'hosts.bundle.passphrase': 'Passphrase',
+  'hosts.bundle.passphraseHint':
+    'At least {min} characters. Homeport doesn’t keep it: without it, the file can’t be opened.',
+  'hosts.bundle.confirmation': 'Passphrase again',
+  'hosts.bundle.problem.short': 'Use at least {min} characters.',
+  'hosts.bundle.problem.mismatch': 'The two passphrases differ.',
+  'hosts.bundle.export.button': 'Export',
+  'hosts.bundle.export.title': 'Export hosts',
+  'hosts.bundle.export.description':
+    'Writes the hosts you pick, with their keys, certificates and trusted server keys, to one file encrypted with a passphrase. Import it on another computer to use them there.',
+  'hosts.bundle.export.hosts': 'Hosts to export',
+  'hosts.bundle.export.saveTitle': 'Save the export',
+  'hosts.bundle.export.submit':
+    '{count, plural, =0 {Export} one {Export # host…} other {Export # hosts…}}',
+  'hosts.bundle.export.done': '{count, plural, one {Exported # host} other {Exported # hosts}}',
+  'hosts.bundle.export.withoutSecrets':
+    'These were exported without their credentials, which can’t be opened on this computer:',
+  'hosts.bundle.import.button': 'Import',
+  'hosts.bundle.import.title': 'Import hosts from an export',
+  'hosts.bundle.import.description':
+    'Open a file exported from Homeport with its passphrase, then pick the hosts to add. Their credentials are stored encrypted on this computer.',
+  'hosts.bundle.import.choose': 'Choose file…',
+  'hosts.bundle.import.chooseTitle': 'Choose a Homeport export',
+  'hosts.bundle.import.open': 'Open',
+  'hosts.bundle.import.renamed': 'A host is named {name} already, so this one is renamed.',
+  'hosts.bundle.import.secretsMissing':
+    'Exported without its credentials; enter them on its page after importing.',
   'hosts.tls.ca': 'CA certificate',
   'hosts.tls.ca.choose': 'Choose the CA certificate',
   'hosts.tls.cert': 'Client certificate',

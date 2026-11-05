@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { hostKeys } from '@/core/host';
-import { commands, type ImportChoice, type ImportOutcome } from '@/shared/api';
+import { commands, type BundleChoice, type ImportChoice, type ImportOutcome } from '@/shared/api';
 import { t } from '@/shared/i18n';
 import { toHostInput, type HostFormState } from '../model/form';
 import type { ImportSource } from '../model/importRows';
@@ -75,6 +75,48 @@ export function useImportHosts(source: ImportSource, onDone: (outcome: ImportOut
       source === 'sshConfig'
         ? commands.hostsSshConfigImport(choices)
         : commands.hostsDockerContextsImport(choices),
+    onSuccess: async (outcome) => {
+      await refresh();
+      if (outcome.created.length > 0) {
+        toast.success(t('hosts.import.done', { count: outcome.created.length }));
+      }
+      onDone(outcome);
+    },
+  });
+}
+
+/** Writes the picked Hosts to an export file; the dialog shows a failure in place. */
+export function useExportHosts() {
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: ({ ids, path, passphrase }: { ids: string[]; path: string; passphrase: string }) =>
+      commands.hostsExport(ids, path, passphrase),
+  });
+}
+
+/** Opens an export file to list its Hosts; the dialog shows a failure in place. */
+export function usePreviewBundle() {
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: ({ path, passphrase }: { path: string; passphrase: string }) =>
+      commands.hostsBundlePreview(path, passphrase),
+  });
+}
+
+/** Creates the picked Hosts of an export file. */
+export function useImportBundle(onDone: (outcome: ImportOutcome) => void) {
+  const refresh = useRefreshHosts();
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: ({
+      path,
+      passphrase,
+      choices,
+    }: {
+      path: string;
+      passphrase: string;
+      choices: BundleChoice[];
+    }) => commands.hostsBundleImport(path, passphrase, choices),
     onSuccess: async (outcome) => {
       await refresh();
       if (outcome.created.length > 0) {
