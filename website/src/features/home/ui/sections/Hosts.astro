@@ -12,7 +12,8 @@ const connections = [
   },
   {
     name: 'SSH',
-    detail: 'A dedicated Ed25519 key per Host, or your own key or ssh-agent.',
+    detail:
+      'A dedicated Ed25519 key per Host, your own key, ssh-agent or Pageant; through bastions too.',
     code: 'deploy@server.example.com',
   },
   {
@@ -33,6 +34,11 @@ const connections = [
     Add a server once and it stays on the board. For SSH, Homeport makes a key just for that Host
     and hands you the one command that authorises it. It checks the server's fingerprint on first
     contact, and warns you if it ever changes.
+  </p>
+  <p>
+    Already described them? Import your servers from <code>~/.ssh/config</code>, jump servers
+    included, or your Docker contexts, certificates included. Moving to a new computer, take them
+    along in one file locked with a passphrase.
   </p>
   <ul class="connection-list">
     {connections.map((c) => (
