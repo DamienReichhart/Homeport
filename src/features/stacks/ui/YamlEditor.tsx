@@ -3,18 +3,20 @@ import CodeMirror from '@uiw/react-codemirror';
 import { useResolvedTheme } from '@/shared/lib';
 import { editorTheme } from '@/shared/ui';
 
-/** A compose file in the YAML editor. */
+/** A compose file in the YAML editor; `readOnly` still lets it be selected and copied. */
 export function YamlEditor({
   value,
   onChange,
   label,
   height = '28rem',
+  readOnly = false,
 }: {
   value: string;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
   /** Names the editor for assistive technology. */
   label: string;
   height?: string;
+  readOnly?: boolean;
 }) {
   const theme = useResolvedTheme();
   return (
@@ -22,6 +24,7 @@ export function YamlEditor({
       <CodeMirror
         value={value}
         onChange={onChange}
+        readOnly={readOnly}
         extensions={[yaml()]}
         theme={editorTheme(theme)}
         height={height}

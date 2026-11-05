@@ -22,7 +22,7 @@ use homeport_stacks::{
     },
     runtime::{self, ComposeJob, Recorder, SourceKind, StackSource, StackTarget},
     store::{ComposeFile, ManagedStack},
-    synced::{SyncReview, SyncedDraft, SyncedStack},
+    synced::{SyncReview, SyncedDraft, SyncedFiles, SyncedStack},
     Stack,
 };
 
@@ -217,6 +217,16 @@ pub async fn stacks_synced_create(
 #[specta::specta]
 pub fn stacks_synced_get(state: State<'_, AppState>, id: String) -> AppResult<SyncedStack> {
     state.synced.store.get(&id)
+}
+
+/// A Synced Stack's files at its fetched commit, read-only: no command
+/// writes them, since they change only through git.
+#[tauri::command]
+#[specta::specta]
+pub async fn stacks_synced_files(state: State<'_, AppState>, id: String) -> AppResult<SyncedFiles> {
+    let stack = state.synced.store.get(&id)?;
+    let cli = git::detect().await?;
+    state.synced.files(&cli, &stack).await
 }
 
 /// The decrypted environment of a Synced Stack, for editing.

@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useCapabilities, type Stack, type SyncedStack } from '@/shared/api';
 import { Button, ErrorMessage, Label, Spinner, Textarea, useConfirm } from '@/shared/ui';
 import { syncedQueries, useForgetSynced, useSaveSyncedEnv } from '../../api/synced';
+import { repositoryQueries } from '@/features/repositories';
+import { SyncedFilesView } from './SyncedFilesView';
 import { SyncedSource } from './SyncedSource';
 import { t } from '@/shared/i18n';
 
@@ -54,9 +56,12 @@ function Loaded({
   const [env, setEnv] = useState(initialEnv);
   const save = useSaveSyncedEnv(synced.id);
   const forget = useForgetSynced(hostId, synced.id);
+  const repositories = useQuery(repositoryQueries.list());
+  const url = repositories.data?.find((r) => r.id === synced.repositoryId)?.url ?? null;
   return (
     <div className="grid gap-4">
       <SyncedSource hostId={hostId} synced={synced} />
+      <SyncedFilesView synced={synced} url={url} />
       <div className="grid gap-1.5">
         <Label htmlFor="synced-env-edit">{t('stacks.newSynced.env')}</Label>
         <Textarea

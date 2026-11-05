@@ -27,7 +27,7 @@ use crate::{
 
 pub use self::{
     store::{SyncedDraft, SyncedStack, SyncedStore},
-    sync::{RepoFileChange, SyncReview},
+    sync::{RepoFile, RepoFileChange, SyncReview, SyncedFiles},
 };
 
 /// Synced Stacks, their repositories' clones and their worktrees.

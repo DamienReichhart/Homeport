@@ -148,6 +148,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             stacks::stacks_linked_forget,
             stacks::stacks_synced_create,
             stacks::stacks_synced_get,
+            stacks::stacks_synced_files,
             stacks::stacks_synced_get_env,
             stacks::stacks_synced_set_env,
             stacks::stacks_synced_sync,
@@ -183,6 +184,27 @@ pub fn export_bindings(path: impl AsRef<std::path::Path>) {
 #[cfg(test)]
 mod tests {
     use std::path::Path;
+
+    /// A Synced Stack's compose files change only through git: no command
+    /// for one takes files or file content (only its environment).
+    #[test]
+    fn no_command_writes_a_synced_stacks_files() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("bindings.ts");
+        super::export_bindings(&path);
+        let bindings = std::fs::read_to_string(path).unwrap();
+        let synced: Vec<&str> = bindings
+            .lines()
+            .filter(|l| l.trim_start().starts_with("stacksSynced"))
+            .collect();
+        assert!(synced.len() >= 8, "{synced:?}");
+        for line in synced {
+            let params = line.split("=>").next().unwrap_or_default();
+            for forbidden in ["files", "content", "path:", "ComposeFile"] {
+                assert!(!params.contains(forbidden), "{line}");
+            }
+        }
+    }
 
     /// Fails when the committed bindings drift from the Rust command surface.
     /// Run with `UPDATE_BINDINGS=1` to regenerate them.

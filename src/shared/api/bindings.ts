@@ -214,6 +214,11 @@ export const commands = {
 	 */
 	stacksSyncedCreate: (hostId: string, draft: SyncedDraft, env: string) => __TAURI_INVOKE<SyncedStack>("stacks_synced_create", { hostId, draft, env }),
 	stacksSyncedGet: (id: string) => __TAURI_INVOKE<SyncedStack>("stacks_synced_get", { id }),
+	/**
+	 *  A Synced Stack's files at its fetched commit, read-only: no command
+	 *  writes them, since they change only through git.
+	 */
+	stacksSyncedFiles: (id: string) => __TAURI_INVOKE<SyncedFiles>("stacks_synced_files", { id }),
 	/**  The decrypted environment of a Synced Stack, for editing. */
 	stacksSyncedGetEnv: (id: string) => __TAURI_INVOKE<string>("stacks_synced_get_env", { id }),
 	/**
@@ -1192,6 +1197,14 @@ export type RepoAuth =
 /**  Nothing: a public repository over HTTPS. */
 "none";
 
+/**  One file under a Synced Stack's compose file's folder, read-only. */
+export type RepoFile = {
+	/**  Relative to the repository's root. */
+	path: string,
+	/**  `None` when it isn't text Homeport shows, or is too large. */
+	content: string | null,
+};
+
 /**  One file under the compose file's folder that differs between two commits. */
 export type RepoFileChange = {
 	/**  Relative to the repository's root. */
@@ -1443,6 +1456,13 @@ export type SyncedDraft = {
 	refKind: RefKind,
 	refName: string,
 	composePath: string,
+};
+
+/**  A Synced Stack's files at its fetched commit, for its Definition tab. */
+export type SyncedFiles = {
+	commit: Commit,
+	/**  The files under the compose file's folder, the compose file first. */
+	files: RepoFile[],
 };
 
 export type SyncedStack = {

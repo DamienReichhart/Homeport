@@ -25,6 +25,25 @@ pub struct RepoFileChange {
     pub binary: bool,
 }
 
+/// One file under a Synced Stack's compose file's folder, read-only.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct RepoFile {
+    /// Relative to the repository's root.
+    pub path: String,
+    /// `None` when it isn't text Homeport shows, or is too large.
+    pub content: Option<String>,
+}
+
+/// A Synced Stack's files at its fetched commit, for its Definition tab.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct SyncedFiles {
+    pub commit: Commit,
+    /// The files under the compose file's folder, the compose file first.
+    pub files: Vec<RepoFile>,
+}
+
 /// What syncing would deploy, for the review before it does.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -95,6 +114,31 @@ impl SyncedStacks {
         let mut review = self.review(cli, &stack).await?;
         review.tag_moved = tag_moved;
         Ok(review)
+    }
+
+    /// The Stack's files at its fetched commit, as they'd be deployed. Only
+    /// reading: no command writes a Synced Stack's files, which change
+    /// through git.
+    pub async fn files(&self, cli: &GitCli, stack: &SyncedStack) -> AppResult<SyncedFiles> {
+        let repo = self.repositories.clone_dir(&stack.repository_id);
+        let commit = match &stack.fetched_commit {
+            Some(c) if ops::has_commit(cli, &repo, c).await => c.clone(),
+            _ => {
+                self.fetch_commit(cli, &stack.repository_id, stack.ref_kind, &stack.ref_name)
+                    .await?
+            }
+        };
+        let folder = path::folder_of(&stack.compose_path);
+        let paths = ops::list_files(cli, &repo, &commit, folder).await?;
+        let mut files = Vec::with_capacity(paths.len());
+        for p in ordered(paths, &stack.compose_path) {
+            let (content, _) = text(ops::read_file(cli, &repo, &commit, &p).await?);
+            files.push(RepoFile { path: p, content });
+        }
+        Ok(SyncedFiles {
+            commit: ops::commit(cli, &repo, &commit).await?,
+            files,
+        })
     }
 
     /// What deploying the fetched commit would change, from what is stored.
@@ -275,6 +319,31 @@ mod tests {
         assert!(review.up_to_date);
         assert!(review.files.is_empty() && review.commits.is_empty());
         assert!(!review.stack.update_available, "nothing to deploy");
+    }
+
+    #[tokio::test]
+    async fn the_definition_shows_the_folder_at_the_fetched_commit_compose_file_first() {
+        let git = cli::detect().await.unwrap();
+        let lab = Lab::new();
+        let first = lab.commit(
+            "First",
+            &[
+                ("app/compose.yaml", V1),
+                ("app/Dockerfile", "FROM nginx\n"),
+                ("app/logo.png", "\u{0}PNG"),
+                ("README.md", "outside the folder\n"),
+            ],
+        );
+        let stack = created(&lab, &git).await;
+        let shown = lab.synced.files(&git, &stack).await.unwrap();
+        assert_eq!(shown.commit.hash, first);
+        let paths: Vec<_> = shown.files.iter().map(|f| f.path.as_str()).collect();
+        assert_eq!(
+            paths,
+            ["app/compose.yaml", "app/Dockerfile", "app/logo.png"]
+        );
+        assert_eq!(shown.files[0].content.as_deref(), Some(V1));
+        assert_eq!(shown.files[2].content, None);
     }
 
     #[tokio::test]

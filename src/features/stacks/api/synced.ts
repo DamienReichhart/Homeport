@@ -15,6 +15,13 @@ export const syncedQueries = {
       queryKey: syncedKeys.stack(syncedId),
       queryFn: () => commands.stacksSyncedGet(syncedId),
     }),
+  /** Its files at the fetched commit, read-only. */
+  files: (syncedId: string, fetched: string | null) =>
+    queryOptions({
+      queryKey: [...syncedKeys.stack(syncedId), 'files', fetched] as const,
+      queryFn: () => commands.stacksSyncedFiles(syncedId),
+      retry: false,
+    }),
   env: (syncedId: string) =>
     queryOptions({
       queryKey: [...syncedKeys.stack(syncedId), 'env'],

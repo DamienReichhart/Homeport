@@ -179,6 +179,11 @@ export default {
   'stacks.synced.envSaved': 'Saved the environment. It applies from the next deploy.',
   'stacks.synced.forget': 'Forget',
   'stacks.action.sync': 'Sync',
+  'stacks.syncedFiles.editInGit':
+    '{path} at {commit}, read-only. Edit it in git: Homeport deploys what the repository holds.',
+  'stacks.syncedFiles.openOnForge': 'Open on the forge',
+  'stacks.syncedFiles.composeLabel': '{path}, read-only',
+  'stacks.syncedFiles.others': 'Other files in its folder',
   'stacks.synced.sourceDescription': 'Edited in git. Homeport fetches it and deploys its commits.',
   'stacks.syncUpdate.available': 'Update available',
   'stacks.syncUpdate.description':
