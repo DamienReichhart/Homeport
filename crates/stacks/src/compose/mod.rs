@@ -341,6 +341,7 @@ mod tests {
     use std::path::Path;
 
     use homeport_engine::testing;
+    #[cfg(unix)]
     use homeport_transport::testing::UnixDialer;
 
     use crate::lifecycle;
