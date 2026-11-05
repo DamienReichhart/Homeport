@@ -499,7 +499,7 @@ fn failure(job: &ComposeJob, verb: &str, out: &std::process::Output) -> AppError
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::{path::Path, sync::Arc};
+    use std::sync::Arc;
 
     use homeport_engine::{auth::Logins, testing};
     #[cfg(unix)]
@@ -731,52 +731,60 @@ mod tests {
         assert!(args.contains(&"COMPOSE_PROFILES=".to_owned()));
     }
 
-    /// A stand-in compose CLI: answers `config` with one service and records
-    /// any other command in `ran`.
+    /// Runs with a stand-in compose CLI, a shell script, so it needs a Unix shell.
     #[cfg(unix)]
-    fn fake_cli(dir: &Path) -> (ComposeCli, std::path::PathBuf) {
-        use std::os::unix::fs::PermissionsExt;
-        let ran = dir.join("ran");
-        let script = dir.join("compose");
-        std::fs::write(
-            &script,
-            format!(
-                "#!/bin/sh\ncase \"$*\" in\n  *config*) echo '{{\"services\":{{\"web\":{{\"image\":\"nginx:1.27\"}}}}}}' ;;\n  *) echo \"$*\" >> {} ;;\nesac\n",
-                ran.display()
-            ),
-        )
-        .unwrap();
-        std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o755)).unwrap();
-        (
-            ComposeCli {
-                program: script.to_string_lossy().into_owned(),
-                prefix: vec![],
-                version: "2.29.0".into(),
-            },
-            ran,
-        )
-    }
+    mod stand_in_cli {
+        use std::{
+            os::unix::fs::PermissionsExt,
+            path::{Path, PathBuf},
+        };
 
-    #[cfg(unix)]
-    #[tokio::test]
-    async fn an_update_stops_after_a_failed_pull() {
-        let dir = tempfile::tempdir().unwrap();
-        let (cli, ran) = fake_cli(dir.path());
-        let mut job = profile_job(ComposeAction::Update, &[], "");
-        job.cli = cli;
-        // An Engine that can't be reached fails every pull.
-        let events = std::sync::Mutex::new(Vec::new());
-        run(job, |e| {
-            events.lock().unwrap().push(e);
-            true
-        })
-        .await;
-        let events = events.into_inner().unwrap();
-        assert!(
-            matches!(events.last(), Some(ComposeEvent::Error { error }) if error.message.contains("nginx:1.27")),
-            "{events:?}"
-        );
-        assert!(!ran.exists(), "compose up never ran");
+        use super::*;
+
+        /// A stand-in compose CLI: answers `config` with one service and
+        /// records any other command in `ran`.
+        fn fake_cli(dir: &Path) -> (ComposeCli, PathBuf) {
+            let ran = dir.join("ran");
+            let script = dir.join("compose");
+            std::fs::write(
+                &script,
+                format!(
+                    "#!/bin/sh\ncase \"$*\" in\n  *config*) echo '{{\"services\":{{\"web\":{{\"image\":\"nginx:1.27\"}}}}}}' ;;\n  *) echo \"$*\" >> {} ;;\nesac\n",
+                    ran.display()
+                ),
+            )
+            .unwrap();
+            std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o755)).unwrap();
+            (
+                ComposeCli {
+                    program: script.to_string_lossy().into_owned(),
+                    prefix: vec![],
+                    version: "2.29.0".into(),
+                },
+                ran,
+            )
+        }
+
+        #[tokio::test]
+        async fn an_update_stops_after_a_failed_pull() {
+            let dir = tempfile::tempdir().unwrap();
+            let (cli, ran) = fake_cli(dir.path());
+            let mut job = profile_job(ComposeAction::Update, &[], "");
+            job.cli = cli;
+            // An Engine that can't be reached fails every pull.
+            let events = std::sync::Mutex::new(Vec::new());
+            run(job, |e| {
+                events.lock().unwrap().push(e);
+                true
+            })
+            .await;
+            let events = events.into_inner().unwrap();
+            assert!(
+                matches!(events.last(), Some(ComposeEvent::Error { error }) if error.message.contains("nginx:1.27")),
+                "{events:?}"
+            );
+            assert!(!ran.exists(), "compose up never ran");
+        }
     }
 
     #[test]
