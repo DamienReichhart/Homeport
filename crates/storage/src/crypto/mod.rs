@@ -11,6 +11,7 @@ use serde::{de::DeserializeOwned, Serialize};
 
 use homeport_core::error::{AppError, AppResult};
 
+pub mod bundle;
 mod keystore;
 
 pub use self::keystore::{random_key, Key, KeyStore, Keychain};

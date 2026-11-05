@@ -45,6 +45,8 @@ reqwest = { version = "0.13", default-features = false, features = ["rustls-no-p
 rusqlite = { version = "0.40", features = ["bundled"] }
 rusqlite_migration = "2.6"
 chacha20poly1305 = "0.10"
+# Deriving the key of a passphrase-protected export (ADR 0013).
+argon2 = { version = "0.6", default-features = false, features = ["alloc"] }
 getrandom = "0.3"
 keyring = "4"
 # Small utilities.
@@ -77,3 +79,11 @@ lto = true
 opt-level = "s"
 panic = "abort"
 strip = true
+
+# Deriving an export's key takes seconds unoptimised; keep debug builds and
+# tests close to release speed there.
+[profile.dev.package.argon2]
+opt-level = 3
+
+[profile.dev.package.blake2]
+opt-level = 3

@@ -88,7 +88,7 @@ impl Env {
 }
 
 /// `name`, or `name (2)`, `name (3)`… when taken (ignoring case, as Host names are).
-pub(crate) fn free_name(name: &str, taken: &[String]) -> String {
+pub fn free_name(name: &str, taken: &[String]) -> String {
     let is_taken = |n: &str| taken.iter().any(|t| t.eq_ignore_ascii_case(n));
     if !is_taken(name) {
         return name.to_owned();

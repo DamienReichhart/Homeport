@@ -1,6 +1,7 @@
 //! Use cases for managing Hosts: prepares credentials (generating SSH keys),
 //! persists through [`HostStore`] and keeps [`HostRegistry`] in step.
 
+mod bundle;
 mod credentials;
 mod import;
 
@@ -13,7 +14,10 @@ use homeport_core::error::{AppError, AppResult};
 use crate::messages as msg;
 use homeport_transport as transport;
 
-pub use self::credentials::{BastionKeyInput, CredentialsInput};
+pub use self::{
+    bundle::{BundleChoice, BundleHost, ExportOutcome},
+    credentials::{BastionKeyInput, CredentialsInput},
+};
 
 use self::credentials::{key_comment, prepare, Current};
 use crate::{

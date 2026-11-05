@@ -29,6 +29,9 @@ homeport_core::messages! {
     BASTION_NEEDS_KEY = "errors.hosts.bastionNeedsKey" => "Bastion {n} needs its private key.";
     /// Trusting a key for a bastion the Host no longer goes through.
     NO_SUCH_BASTION = "errors.hosts.noSuchBastion" => "This host doesn't go through {address}.";
+    /// Exporting with no Host picked.
+    EXPORT_NOTHING = "errors.hosts.exportNothing" => "Pick at least one host to export.";
+
     // Importing Hosts.
 
     /// The user has no home folder to find `~/.ssh` or `~/.docker` in.

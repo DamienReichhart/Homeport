@@ -55,6 +55,16 @@ impl HostStore {
     }
 
     pub fn create(&self, draft: HostDraft) -> AppResult<Host> {
+        self.insert(draft, true)
+    }
+
+    /// Creates a Host from an export, which may have lost its secrets: it is
+    /// then created without them and shows them missing until re-entered.
+    pub fn create_imported(&self, draft: HostDraft) -> AppResult<Host> {
+        self.insert(draft, false)
+    }
+
+    fn insert(&self, draft: HostDraft, require_secrets: bool) -> AppResult<Host> {
         let HostDraft {
             name,
             connection,
@@ -62,7 +72,10 @@ impl HostStore {
         } = draft;
         let name = validated_name(&name)?;
         connection.validate()?;
-        let sealed = self.seal(&connection, secrets.as_ref())?;
+        let sealed = match secrets {
+            None if !require_secrets => None,
+            secrets => self.seal(&connection, secrets.as_ref())?,
+        };
         let id: HostId = uuid::Uuid::new_v4().to_string();
         let connection_json = serde_json::to_string(&connection)?;
         self.db

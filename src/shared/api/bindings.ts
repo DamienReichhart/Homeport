@@ -56,6 +56,11 @@ export const commands = {
 	/**  The Docker CLI's contexts, as drafts of Hosts. */
 	hostsDockerContextsPreview: () => __TAURI_INVOKE<ImportDraft[]>("hosts_docker_contexts_preview"),
 	hostsDockerContextsImport: (choices: ImportChoice[]) => __TAURI_INVOKE<ImportOutcome>("hosts_docker_contexts_import", { choices }),
+	/**  Writes the Hosts `ids` to a file protected by `passphrase` (ADR 0013). */
+	hostsExport: (ids: string[], path: string, passphrase: string) => __TAURI_INVOKE<ExportOutcome>("hosts_export", { ids, path, passphrase }),
+	/**  The Hosts of an export file. */
+	hostsBundlePreview: (path: string, passphrase: string) => __TAURI_INVOKE<BundleHost[]>("hosts_bundle_preview", { path, passphrase }),
+	hostsBundleImport: (path: string, passphrase: string, choices: BundleChoice[]) => __TAURI_INVOKE<ImportOutcome>("hosts_bundle_import", { path, passphrase, choices }),
 	containersList: (hostId: string) => __TAURI_INVOKE<Container[]>("containers_list", { hostId }),
 	containersInspect: (hostId: string, id: string) => __TAURI_INVOKE<Value>("containers_inspect", { hostId, id }),
 	containersAct: (hostId: string, id: string, action: ContainerAction) => __TAURI_INVOKE<null>("containers_act", { hostId, id, action }),
@@ -254,6 +259,24 @@ export type BuildSpec = {
 	pull: boolean,
 };
 
+export type BundleChoice = {
+	index: number,
+	name: string,
+};
+
+/**  A Host in an export file, as the import preview shows it. */
+export type BundleHost = {
+	/**  Its place in the file, which the import refers to. */
+	index: number,
+	name: string,
+	/**  `name`, or a free variant when a Host already has it. */
+	suggestedName: string,
+	nameTaken: boolean,
+	connection: HostConnection,
+	/**  It needs secrets but was exported without them. */
+	secretsMissing: boolean,
+};
+
 /**  What this machine can do; features degrade gracefully when something is missing. */
 export type Capabilities = {
 	/**  An OS keychain is reachable, so SSH, TLS, stack `.env` and registry secrets can be stored. */
@@ -409,7 +432,11 @@ export type EngineInfo = {
 /**  Stable machine-readable identifier of a failure, one per case the user can act on. */
 export type ErrorCode = 
 /**  A failure that started in the frontend, outside any command. */
-"unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | "host_not_connected" | "engine_not_installed" | "engine_not_running" | "permission_denied" | "dns_failed" | "connection_refused" | "timeout" | "network_unreachable" | "connection_lost" | "tls_required" | "tls_not_supported" | "tls_certificate_expired" | "tls_certificate_not_yet_valid" | "tls_unknown_ca" | "tls_name_mismatch" | "tls_client_rejected" | "tls_handshake_failed" | "tls_material_invalid" | "ssh_auth_failed" | "ssh_agent_unavailable" | "ssh_key_invalid" | "ssh_failed" | "remote_engine_unavailable" | "host_key_untrusted" | "host_key_changed" | "engine_error" | "bad_request" | "forbidden" | "conflict" | "name_in_use" | "in_use" | "container_running" | "container_not_running" | "already_done" | "port_in_use" | "disk_full" | "image_not_found" | "registry_auth_required" | "registry_rate_limited" | "registry_unreachable" | "registry_login_failed" | "api_version_unsupported" | "build_failed" | 
+"unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | 
+/**  An export file that the passphrase doesn't open, or that was damaged. */
+"bundle_unreadable" | 
+/**  An export file from a newer Homeport. */
+"bundle_too_new" | "host_not_connected" | "engine_not_installed" | "engine_not_running" | "permission_denied" | "dns_failed" | "connection_refused" | "timeout" | "network_unreachable" | "connection_lost" | "tls_required" | "tls_not_supported" | "tls_certificate_expired" | "tls_certificate_not_yet_valid" | "tls_unknown_ca" | "tls_name_mismatch" | "tls_client_rejected" | "tls_handshake_failed" | "tls_material_invalid" | "ssh_auth_failed" | "ssh_agent_unavailable" | "ssh_key_invalid" | "ssh_failed" | "remote_engine_unavailable" | "host_key_untrusted" | "host_key_changed" | "engine_error" | "bad_request" | "forbidden" | "conflict" | "name_in_use" | "in_use" | "container_running" | "container_not_running" | "already_done" | "port_in_use" | "disk_full" | "image_not_found" | "registry_auth_required" | "registry_rate_limited" | "registry_unreachable" | "registry_login_failed" | "api_version_unsupported" | "build_failed" | 
 /**  A GPU was requested from a Host without the vendor's container toolkit. */
 "gpu_unavailable" | 
 /**  Recreating a container failed, and so did putting the original back. */
@@ -426,6 +453,12 @@ export type ExecOptions = {
 	workingDir: string | null,
 	cols: number,
 	rows: number,
+};
+
+export type ExportOutcome = {
+	exported: number,
+	/**  Hosts written without their secrets, which couldn't be opened. */
+	withoutSecrets: string[],
 };
 
 export type FileEntry = {
