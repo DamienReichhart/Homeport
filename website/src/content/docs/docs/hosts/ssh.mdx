@@ -69,7 +69,9 @@ Paste a private key, or choose **Load from file…**, and enter its **Passphrase
 
 ### ssh-agent
 
-Homeport asks your running SSH agent for keys, and stores nothing. It uses the agent at `$SSH_AUTH_SOCK` on macOS and Linux, and the Windows OpenSSH agent on Windows.
+Homeport asks your running SSH agent for keys, and stores nothing. It uses the agent at `$SSH_AUTH_SOCK` on macOS and Linux.
+
+On Windows it asks the OpenSSH Authentication Agent service first, then PuTTY's **Pageant** — or a tool that stands in for it, such as KeeAgent or gpg-agent with PuTTY support. A key held by either one works: if the OpenSSH agent isn't running, or holds no key the server accepts, Homeport tries Pageant's keys too.
 
 <Aside>
   ssh-agent is the only SSH option that works without an [OS
@@ -175,12 +177,12 @@ Removing the Host deletes its key from Homeport, but not from the server. Delete
 
 ## Common problems
 
-| Message                                                                                         | What to do                                                                                  |
-| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| _The server refused the key for …_                                                              | Run the **Add the public key** command on the server, then **Reconnect**.                   |
-| _The SSH server couldn't open /var/run/docker.sock … Check the path and that … can use Docker._ | Check the **Remote socket path**, and add the user to the `docker` group.                   |
-| _SSH connection timed out_                                                                      | Check the server name, port and any firewall between you.                                   |
-| _No ssh-agent is reachable_                                                                     | Start your agent, add a key with `ssh-add`, and make sure Homeport can see `SSH_AUTH_SOCK`. |
-| _Bastion … couldn't open a connection to …_                                                     | Check that the bastion can reach the Host, and that its `sshd` allows `AllowTcpForwarding`. |
+| Message                                                                                         | What to do                                                                                                                                                                                 |
+| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| _The server refused the key for …_                                                              | Run the **Add the public key** command on the server, then **Reconnect**.                                                                                                                  |
+| _The SSH server couldn't open /var/run/docker.sock … Check the path and that … can use Docker._ | Check the **Remote socket path**, and add the user to the `docker` group.                                                                                                                  |
+| _SSH connection timed out_                                                                      | Check the server name, port and any firewall between you.                                                                                                                                  |
+| _No ssh-agent is running_                                                                       | Start your agent, add a key with `ssh-add`, and make sure Homeport can see `SSH_AUTH_SOCK`. On Windows, open Pageant and load your key, or start the OpenSSH Authentication Agent service. |
+| _Bastion … couldn't open a connection to …_                                                     | Check that the bastion can reach the Host, and that its `sshd` allows `AllowTcpForwarding`.                                                                                                |
 
 More in [Troubleshooting](/docs/reference/troubleshooting/).
