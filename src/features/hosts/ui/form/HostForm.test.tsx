@@ -1,0 +1,105 @@
+import { screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
+import { emptyForm, type HostFormState } from '../../model/form';
+import { HostForm } from './HostForm';
+import { baseCommands } from '@/test/fixtures';
+import { mockCommands } from '@/test/ipc';
+import { renderWithProviders } from '@/test/render';
+
+/** The form with its own state, reporting each change. */
+function Harness({
+  initial = emptyForm('ssh'),
+  editing = false,
+  keychain = true,
+  onChange = () => {},
+}: {
+  initial?: HostFormState;
+  editing?: boolean;
+  keychain?: boolean;
+  onChange?: (form: HostFormState) => void;
+}) {
+  const [form, setForm] = useState(initial);
+  return (
+    <HostForm
+      form={form}
+      editing={editing}
+      keychain={keychain}
+      onChange={(next) => {
+        setForm(next);
+        onChange(next);
+      }}
+    />
+  );
+}
+
+describe('host form', () => {
+  beforeEach(() => mockCommands(baseCommands));
+
+  it('shows the fields of the kind of Host picked', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<Harness />);
+    expect(screen.getByText('Server')).toBeInTheDocument();
+    expect(screen.getByText('Remote socket path')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('radio', { name: 'TLS' }));
+    expect(screen.queryByText('Server')).toBeNull();
+    expect(screen.getByText('Address')).toBeInTheDocument();
+    expect(screen.getByText('CA certificate')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('radio', { name: 'TCP' }));
+    expect(screen.getByText('Unencrypted and unauthenticated')).toBeInTheDocument();
+    expect(screen.queryByText('CA certificate')).toBeNull();
+
+    await user.click(screen.getByRole('radio', { name: 'Local socket' }));
+    expect(screen.getByText('Socket path')).toBeInTheDocument();
+    expect(screen.queryByText('Address')).toBeNull();
+  });
+
+  it('asks for a TLS Host’s three PEM files', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<Harness initial={emptyForm('tls')} />);
+    for (const label of ['CA certificate', 'Client certificate', 'Client key']) {
+      expect(screen.getByText(label)).toBeInTheDocument();
+    }
+    expect(screen.getAllByRole('button', { name: /Load from file/ })).toHaveLength(3);
+    await user.click(screen.getByRole('radio', { name: 'SSH' }));
+    expect(screen.queryByText('Client key')).toBeNull();
+  });
+
+  it('offers a generated key, an imported key or ssh-agent for SSH', async () => {
+    const changes: HostFormState[] = [];
+    const user = userEvent.setup();
+    renderWithProviders(<Harness onChange={(f) => changes.push(f)} />);
+    expect(screen.getByText(/creates an Ed25519 key for this host/)).toBeInTheDocument();
+    expect(screen.queryByText('Private key')).toBeNull();
+
+    await user.click(screen.getByRole('radio', { name: 'Existing key' }));
+    expect(screen.getByText('Private key')).toBeInTheDocument();
+    expect(screen.getByText('Passphrase')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('radio', { name: 'ssh-agent' }));
+    expect(screen.queryByText('Private key')).toBeNull();
+    expect(changes.at(-1)?.sshAuth).toBe('agent');
+  });
+
+  it('hides the kind picker when editing and keeps stored credentials by default', () => {
+    renderWithProviders(<Harness initial={emptyForm('tls')} editing />);
+    expect(screen.queryByRole('radio', { name: 'SSH' })).toBeNull();
+    expect(screen.getAllByText('Leave blank to keep the stored value.')).toHaveLength(3);
+  });
+
+  it('leaves only ssh-agent when there is no keychain', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<Harness keychain={false} />);
+    expect(screen.getByText('No OS keychain')).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /New key for this host/ })).toBeDisabled();
+    expect(screen.getByRole('radio', { name: 'Existing key' })).toBeDisabled();
+    await user.click(screen.getByRole('radio', { name: 'ssh-agent' }));
+    expect(screen.queryByText('No OS keychain')).toBeNull();
+
+    await user.click(screen.getByRole('radio', { name: 'TLS' }));
+    expect(screen.getByText('No OS keychain')).toBeInTheDocument();
+    expect(screen.queryByText('CA certificate')).toBeNull();
+  });
+});
