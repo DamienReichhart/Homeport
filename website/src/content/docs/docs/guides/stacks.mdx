@@ -245,6 +245,22 @@ The Stack's profiles are the only ones that count. A `COMPOSE_PROFILES` variable
 
 To change a Managed Stack, open it, edit its **Definition** and choose **Save and redeploy**. Compose recreates only the services that changed, and removes services you've deleted from the file.
 
+## Deploy history and rolling back
+
+Each deploy of a Managed or Linked Stack from Homeport — **Deploy**, **Redeploy**, **Rebuild and deploy**, **Save and redeploy** — is recorded with the compose files, environment and profiles it used, when it ran and how it ended. The **History** tab of the Stack's page lists the last 20, newest first: **Succeeded**, **Failed** with its exit code, or **Not finished** for a run whose window was closed before it ended. **Deployed now** marks the newest one that succeeded.
+
+Select a deploy to see its compose files, read-only. Its environment is stored encrypted like the Stack's own, and the tab shows only the names of its variables. Without a keychain the list still works; a deploy with an environment just says it can't be opened.
+
+To undo a bad change to a **Managed** Stack, select the deploy that worked and choose **Roll back**. Homeport puts its compose files, environment and profiles back in place of the current ones, then redeploys, so the next history entry is the rollback itself.
+
+<Aside type="caution" title="What a rollback restores">
+  Only the definition. Images are pulled again for the tags it names, as those tags are now — if
+  `app:1.4` was re-pushed since, you get the new `app:1.4`. Volumes and their data are left as they
+  are.
+</Aside>
+
+A **Linked** Stack's history is read-only: its folder is its source, so restore the earlier files there — with your version control, for example — and redeploy. Forgetting a Stack deletes its history too.
+
 ## A Stack's page
 
 - **Services** lists each service with its container, image and status. Select a container to open it.
@@ -255,7 +271,8 @@ To change a Managed Stack, open it, edit its **Definition** and choose **Save an
   alt="A Stack's Logs tab, with every service's output interleaved and labelled."
 />
 
-- **Definition** holds the editor for a Managed Stack, or explains where an External Stack came from.
+- **Definition** holds the editor for a Managed or Linked Stack, or explains where an External Stack came from.
+- **History**, for Managed and Linked Stacks, lists their deploys. See [deploy history](#deploy-history-and-rolling-back).
 
 ## Newer images
 

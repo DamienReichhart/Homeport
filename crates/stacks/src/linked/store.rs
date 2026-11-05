@@ -163,9 +163,14 @@ impl LinkedStore {
     }
 
     /// Forgets the Linked Stack. Its folder and containers are left alone.
+    /// Its deploy history goes too.
     pub fn delete(&self, id: &str) -> AppResult<()> {
-        self.db
-            .with(|c| c.execute("DELETE FROM linked_stacks WHERE id = ?1", [id]))?;
+        self.db.with(|c| {
+            let tx = c.transaction()?;
+            tx.execute("DELETE FROM stack_deploys WHERE stack_id = ?1", [id])?;
+            tx.execute("DELETE FROM linked_stacks WHERE id = ?1", [id])?;
+            tx.commit()
+        })?;
         Ok(())
     }
 }

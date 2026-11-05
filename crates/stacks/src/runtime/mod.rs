@@ -22,6 +22,7 @@ use homeport_transport::Dialer;
 
 use crate::{
     compose::{self, ComposeAction, ComposeCli, ComposeEvent},
+    history::{DeployHistory, NewDeploy},
     lifecycle::{self, StackAction},
     store::ComposeFile,
 };
@@ -49,7 +50,7 @@ pub enum StackSource {
 }
 
 /// The kinds of source, for the rules a definition is checked against.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Deserialize, specta::Type)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub enum SourceKind {
     Managed,
@@ -117,6 +118,44 @@ pub struct ComposeJob {
     /// The Compose profiles the Stack deploys, besides its services without
     /// one. They replace any `COMPOSE_PROFILES` from elsewhere.
     pub profiles: Vec<String>,
+    /// Where to record a deploy, for the Stack's history.
+    pub record: Option<Recorder>,
+}
+
+/// Records the deploys of one Stack in its history.
+pub struct Recorder {
+    pub history: Arc<DeployHistory>,
+    pub host_id: String,
+    pub stack_id: String,
+}
+
+impl Recorder {
+    /// Records `job` as started; a failure to record never stops the deploy.
+    pub(crate) fn start(&self, job: &ComposeJob, prepared: &Prepared) -> Option<String> {
+        let env = match &job.source {
+            StackSource::Managed { env, .. } => env.as_str(),
+            StackSource::Linked { .. } => "",
+        };
+        self.history
+            .start(&NewDeploy {
+                host_id: &self.host_id,
+                stack_id: &self.stack_id,
+                kind: job.source.kind(),
+                name: &job.project,
+                action: job.action,
+                files: &prepared.definition,
+                env,
+                profiles: &job.profiles,
+            })
+            .map_err(|e| e.logged("recording a deploy"))
+            .ok()
+    }
+
+    pub(crate) fn finish(&self, id: &str, success: bool, code: Option<i32>) {
+        if let Err(e) = self.history.finish(id, success, code) {
+            e.logged("recording how a deploy ended");
+        }
+    }
 }
 
 /// Runs one compose command, streaming its output to `sink`; `sink` returns

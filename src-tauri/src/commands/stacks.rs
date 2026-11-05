@@ -8,6 +8,7 @@ use homeport_stacks::{
     self as stacks,
     compose::{self, ComposeAction, ComposeEvent},
     definition::{self, ComposeCheck},
+    history::{self, DeployDetail, DeploySummary},
     lifecycle::StackAction,
     linked::{
         self,
@@ -15,7 +16,7 @@ use homeport_stacks::{
         folder::{self, FolderProject},
         LinkedStack,
     },
-    runtime::{self, ComposeJob, SourceKind, StackSource, StackTarget},
+    runtime::{self, ComposeJob, Recorder, SourceKind, StackSource, StackTarget},
     store::{ComposeFile, ManagedStack},
     Stack,
 };
@@ -239,16 +240,66 @@ pub async fn stacks_compose_subscribe(
     action: ComposeAction,
     on_event: Channel<ComposeEvent>,
 ) -> AppResult<StreamId> {
-    let stack = resolve(&state, kind, &id)?;
-    let job = ComposeJob {
+    let job = job(&state, kind, &id, action).await?;
+    Ok(state
+        .streams
+        .spawn(runtime::run(job, move |e| on_event.send(e).is_ok())))
+}
+
+/// The compose job for `action` on the Managed or Linked Stack `id`, its
+/// deploys recorded in its history.
+async fn job(
+    state: &AppState,
+    kind: SourceKind,
+    id: &str,
+    action: ComposeAction,
+) -> AppResult<ComposeJob> {
+    let stack = resolve(state, kind, id)?;
+    Ok(ComposeJob {
         cli: compose::detect().await?,
         source: stack.source,
-        target: target(&state, &stack.host_id)?,
-        logins: registries::logins(&state)?,
+        target: target(state, &stack.host_id)?,
+        logins: registries::logins(state)?,
         project: stack.name,
         action,
         profiles: stack.profiles,
-    };
+        record: Some(Recorder {
+            history: state.history.clone(),
+            host_id: stack.host_id,
+            stack_id: id.to_owned(),
+        }),
+    })
+}
+
+/// A Stack's recorded deploys, newest first.
+#[tauri::command]
+#[specta::specta]
+pub fn stacks_history(state: State<'_, AppState>, id: String) -> AppResult<Vec<DeploySummary>> {
+    state.history.list(&id)
+}
+
+/// One recorded deploy, with its definition and the names of its variables.
+#[tauri::command]
+#[specta::specta]
+pub fn stacks_deploy(state: State<'_, AppState>, id: String) -> AppResult<DeployDetail> {
+    Ok(DeployDetail {
+        deploy: state.history.get(&id)?,
+        env_keys: state.history.env_keys(&id)?,
+    })
+}
+
+/// Rolls a Managed Stack back to the recorded deploy `deploy_id`: puts its
+/// definition, environment and profiles back, then redeploys, streaming the
+/// output.
+#[tauri::command]
+#[specta::specta]
+pub async fn stacks_rollback_subscribe(
+    state: State<'_, AppState>,
+    deploy_id: String,
+    on_event: Channel<ComposeEvent>,
+) -> AppResult<StreamId> {
+    let stack = history::restore(&state.history, &state.stacks, &deploy_id)?;
+    let job = job(&state, SourceKind::Managed, &stack.id, ComposeAction::Up).await?;
     Ok(state
         .streams
         .spawn(runtime::run(job, move |e| on_event.send(e).is_ok())))

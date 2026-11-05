@@ -28,6 +28,29 @@ export default {
   'stacks.tab.services': 'Services',
   'stacks.tab.logs': 'Logs',
   'stacks.tab.definition': 'Definition',
+  'stacks.tab.history': 'History',
+  'stacks.history.empty':
+    'No deploy recorded yet. Each deploy from Homeport is listed here, with the definition it used.',
+  'stacks.history.column.started': 'Deployed',
+  'stacks.history.column.action': 'Action',
+  'stacks.history.column.outcome': 'Outcome',
+  'stacks.history.succeeded': 'Succeeded',
+  'stacks.history.failed': 'Failed',
+  'stacks.history.failedCode': 'Failed (exit code {code})',
+  'stacks.history.unfinished': 'Not finished',
+  'stacks.history.current': 'Deployed now',
+  'stacks.history.select': 'Choose a deploy to see the definition it used.',
+  'stacks.history.envKeys': 'Environment: {keys}',
+  'stacks.history.noEnv': 'No environment.',
+  'stacks.history.envLocked':
+    'It had an environment, but this computer’s keychain can’t open it, so it can’t be rolled back here.',
+  'stacks.history.profiles': 'Profiles: {profiles}',
+  'stacks.history.rollBack': 'Roll back',
+  'stacks.history.rollBackTitle': 'Roll {name} back to this deploy?',
+  'stacks.history.rollBackDescription':
+    'Its compose files, environment and profiles replace the current ones, then the Stack is redeployed. Images are pulled again for their tags as they are now; volumes are left as they are.',
+  'stacks.history.linkedNote':
+    'A Linked Stack’s folder is its source: restore earlier files there, with your version control for example, then redeploy.',
   'stacks.services.notDeployed': 'Not deployed yet.',
   'stacks.services.outdated':
     '{count, plural, one {{services} runs an outdated image.} other {{services} run outdated images.}}',
@@ -61,6 +84,7 @@ export default {
   'stacks.remove.action': 'Remove containers',
   'stacks.compose.up': 'Deploying {name}',
   'stacks.compose.rebuild': 'Rebuilding and deploying {name}',
+  'stacks.compose.rollback': 'Rolling back {name}',
   'stacks.compose.pull': 'Pulling images for {name}',
   'stacks.compose.down': 'Taking down {name}',
   'stacks.compose.downWithVolumes': 'Taking down (with volumes) {name}',

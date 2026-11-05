@@ -1,4 +1,5 @@
 import { queryOptions } from '@tanstack/react-query';
+import { hostKeys } from '@/core/host';
 import { commands } from '@/shared/api';
 
 export const stackKeys = {
@@ -6,6 +7,10 @@ export const stackKeys = {
   managed: (managedId: string) => ['managed-stack', managedId] as const,
   /** A Linked Stack's compose files, as they are in its folder. */
   linked: (linkedId: string) => ['linked-stack', linkedId] as const,
+  /** A Stack's deploys; under the Host, so the end of a compose run refreshes it. */
+  history: (hostId: string, stackId: string) =>
+    [...hostKeys.scope(hostId), 'stack-history', stackId] as const,
+  deploy: (deployId: string) => ['stack-deploy', deployId] as const,
 };
 
 export const stackQueries = {
@@ -22,6 +27,18 @@ export const stackQueries = {
       refetchOnWindowFocus: 'always',
       // A missing folder or file won't appear by asking again.
       retry: false,
+    }),
+  history: (hostId: string, stackId: string) =>
+    queryOptions({
+      queryKey: stackKeys.history(hostId, stackId),
+      queryFn: () => commands.stacksHistory(stackId),
+    }),
+  deploy: (deployId: string) =>
+    queryOptions({
+      queryKey: stackKeys.deploy(deployId),
+      queryFn: () => commands.stacksDeploy(deployId),
+      // A recorded deploy never changes.
+      staleTime: Infinity,
     }),
   env: (managedId: string) =>
     queryOptions({

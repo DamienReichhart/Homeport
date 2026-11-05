@@ -141,6 +141,9 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             stacks::stacks_act,
             stacks::stacks_remove,
             stacks::stacks_compose_subscribe,
+            stacks::stacks_history,
+            stacks::stacks_deploy,
+            stacks::stacks_rollback_subscribe,
         ])
         .events(collect_events![
             events::HostStatusChanged,

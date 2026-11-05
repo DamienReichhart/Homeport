@@ -36,7 +36,11 @@ export function ComposeRunDialog({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>{t(COMPOSE_TITLES[job.action], { name: job.name })}</DialogTitle>
+          <DialogTitle>
+            {t(job.rollbackTo ? 'stacks.compose.rollback' : COMPOSE_TITLES[job.action], {
+              name: job.name,
+            })}
+          </DialogTitle>
         </DialogHeader>
         {failure && <ErrorMessage error={failure} />}
         <div className="h-80">

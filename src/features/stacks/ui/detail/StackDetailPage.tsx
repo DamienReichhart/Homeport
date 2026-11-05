@@ -23,6 +23,7 @@ import { STATE_LABEL, STATE_TONE } from '../../model/stackState';
 import { ComposeRunDialog } from '../dialogs/ComposeRunDialog';
 import { StackActions } from '../StackActions';
 import { StackDefinition } from './StackDefinition';
+import { StackHistory } from './StackHistory';
 import { StackServices } from './StackServices';
 import { t } from '@/shared/i18n';
 
@@ -36,6 +37,8 @@ function StackDetail({ hostId, name }: { hostId: string; name: string }) {
   if (stacks.isPending) return <Spinner />;
   if (!stack)
     return <ErrorMessage error={{ code: 'not_found', message: t('stacks.notFound', { name }) }} />;
+  // Managed and Linked Stacks keep a history of their deploys.
+  const recorded = stack.kind !== 'external' ? stack.id : null;
   const sources = stack.services.flatMap((s) =>
     s.containerIds.map((containerId) => ({ containerId, label: s.name })),
   );
@@ -79,6 +82,7 @@ function StackDetail({ hostId, name }: { hostId: string; name: string }) {
             {t('stacks.tab.logs')}
           </TabsTrigger>
           <TabsTrigger value="definition">{t('stacks.tab.definition')}</TabsTrigger>
+          {recorded && <TabsTrigger value="history">{t('stacks.tab.history')}</TabsTrigger>}
         </TabsList>
         <TabsContent value="services" className="overflow-auto">
           <StackServices hostId={hostId} stack={stack} />
@@ -89,6 +93,11 @@ function StackDetail({ hostId, name }: { hostId: string; name: string }) {
         <TabsContent value="definition" className="overflow-auto">
           <StackDefinition hostId={hostId} stack={stack} onDeploy={setJob} />
         </TabsContent>
+        {recorded && (
+          <TabsContent value="history" className="overflow-auto">
+            <StackHistory hostId={hostId} stack={stack} stackId={recorded} onDeploy={setJob} />
+          </TabsContent>
+        )}
       </Tabs>
       <ComposeRunDialog hostId={hostId} job={job} onClose={() => setJob(null)} />
       {dialog}

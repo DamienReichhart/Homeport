@@ -9,6 +9,7 @@ use homeport_hosts::service::HostService;
 use homeport_registries::RegistryStore;
 use homeport_settings::SettingsService;
 use homeport_stacks::{
+    history::DeployHistory,
     linked::{FileCache, LinkedStore},
     store::StackStore,
 };
@@ -22,6 +23,8 @@ pub struct AppState {
     pub linked: LinkedStore,
     /// Parsed compose files, for finding Linked Stacks without re-reading them.
     pub linked_files: FileCache,
+    /// What each deploy used, for the history and rolling back.
+    pub history: Arc<DeployHistory>,
     pub registries: RegistryStore,
     pub streams: Streams,
     pub exec: ExecSessions,

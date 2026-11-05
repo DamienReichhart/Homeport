@@ -7,6 +7,8 @@ export interface ComposeJob {
   kind: SourceKind;
   /** Its record. */
   stackId: string;
+  /** Roll a Managed Stack back to this recorded deploy, then deploy it. */
+  rollbackTo?: string;
   name: string;
   action: ComposeAction;
 }

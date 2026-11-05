@@ -26,6 +26,8 @@ It contains:
 | Managed Stack compose files                       | Plain text    |
 | Managed Stack environments                        | **Encrypted** |
 | Linked Stack folders and compose file paths       | Plain text    |
+| Deploy history: compose files and profiles        | Plain text    |
+| Deploy history: environments                      | **Encrypted** |
 | Registry addresses and user names                 | Plain text    |
 | Registry passwords and access tokens              | **Encrypted** |
 | Your theme and last selected Host                 | Plain text    |

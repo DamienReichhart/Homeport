@@ -14,6 +14,11 @@ homeport_core::messages! {
     FILE_NAME_TWICE = "errors.stacks.fileNameTwice" => "Two compose files are named {name}.";
     /// A Compose profile name with characters Compose doesn't allow.
     PROFILE_NAME = "errors.stacks.profileName" => "\"{name}\" isn't a profile name. Profile names use letters, digits, _, . and -, and start with a letter or digit.";
+    /// A recorded deploy dropped from the history while it was in use.
+    DEPLOY_GONE = "errors.stacks.deployGone" => "This deploy is no longer in the stack's history.";
+    /// Rolling back a Linked Stack, whose folder is its source.
+    ROLLBACK_LINKED = "errors.stacks.rollbackLinked" => "A linked stack can't be rolled back from Homeport.";
+    ROLLBACK_LINKED_HINT = "errors.stacks.rollbackLinked.hint" => "Restore the earlier files in its folder, with your version control for example, then redeploy.";
     /// A line of the Stack's environment without `=`.
     ENV_NOT_KEY_VALUE = "errors.stacks.envNotKeyValue" => "Line {line} isn't KEY=value.";
     /// A line of the Stack's environment whose name has other characters than letters, digits and `_`.

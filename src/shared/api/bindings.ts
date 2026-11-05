@@ -198,6 +198,16 @@ export const commands = {
 	 *  its output.
 	 */
 	stacksComposeSubscribe: (kind: SourceKind, id: string, action: ComposeAction, onEvent: Channel<ComposeEvent>) => __TAURI_INVOKE<number>("stacks_compose_subscribe", { kind, id, action, onEvent }),
+	/**  A Stack's recorded deploys, newest first. */
+	stacksHistory: (id: string) => __TAURI_INVOKE<DeploySummary[]>("stacks_history", { id }),
+	/**  One recorded deploy, with its definition and the names of its variables. */
+	stacksDeploy: (id: string) => __TAURI_INVOKE<DeployDetail>("stacks_deploy", { id }),
+	/**
+	 *  Rolls a Managed Stack back to the recorded deploy `deploy_id`: puts its
+	 *  definition, environment and profiles back, then redeploys, streaming the
+	 *  output.
+	 */
+	stacksRollbackSubscribe: (deployId: string, onEvent: Channel<ComposeEvent>) => __TAURI_INVOKE<number>("stacks_rollback_subscribe", { deployId, onEvent }),
 };
 
 /** Events */
@@ -418,6 +428,41 @@ export type ContainerUsage = {
 
 /**  Credentials typed by the user. Absent on update means "keep the stored ones". */
 export type CredentialsInput = { kind: "tls"; caPem: string; certPem: string; keyPem: string } | { kind: "sshKey"; privateKey: string; passphrase: string | null };
+
+/**  One deploy with the definition it used. */
+export type Deploy = {
+	summary: DeploySummary,
+	/**
+	 *  The compose files, in merge order: names for a Managed Stack, paths
+	 *  for a Linked one.
+	 */
+	files: ComposeFile[],
+	profiles: string[],
+};
+
+/**
+ *  A deploy as the history shows it: its definition, and the names of its
+ *  environment variables, never their values.
+ */
+export type DeployDetail = {
+	deploy: Deploy,
+	/**  `None` when it has an environment this computer's keychain can't open. */
+	envKeys: string[] | null,
+};
+
+/**  One deploy, without its files. */
+export type DeploySummary = {
+	id: string,
+	stackId: string,
+	kind: SourceKind,
+	action: ComposeAction,
+	startedAt: string,
+	/**  `None` while it runs, or when the run was cancelled. */
+	finishedAt: string | null,
+	success: boolean | null,
+	exitCode: number | null,
+	hasEnv: boolean,
+};
 
 export type DetectedEngine = {
 	/**  The product that usually owns this socket, e.g. "Colima". */

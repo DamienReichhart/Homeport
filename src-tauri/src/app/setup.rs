@@ -9,6 +9,7 @@ use homeport_hosts::{registry::HostRegistry, service::HostService, store::HostSt
 use homeport_registries::RegistryStore;
 use homeport_settings::SettingsService;
 use homeport_stacks::{
+    history::DeployHistory,
     linked::{FileCache, LinkedStore},
     store::StackStore,
 };
@@ -43,6 +44,7 @@ pub fn state(app: &App) -> Result<AppState, Box<dyn Error>> {
         stacks: StackStore::new(db.clone(), secrets.clone()),
         linked: LinkedStore::new(db.clone()),
         linked_files: FileCache::new(),
+        history: Arc::new(DeployHistory::new(db.clone(), secrets.clone())),
         registries: RegistryStore::new(db.clone(), secrets.clone()),
         secrets,
         settings,

@@ -28,7 +28,7 @@ use homeport_transport::proxy;
 use self::error as errors;
 use crate::{
     definition, lifecycle,
-    runtime::{ComposeJob, Prepared, StackTarget, WorkDir},
+    runtime::{ComposeJob, Prepared, Recorder, StackTarget, WorkDir},
 };
 
 /// Lines of stderr kept to explain a failed run.
@@ -90,7 +90,7 @@ async fn version_of(program: &std::path::Path, prefix: &[&str]) -> Option<String
     (out.status.success() && !version.is_empty()).then_some(version)
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, specta::Type)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub enum ComposeAction {
     /// `up -d --remove-orphans`: deploy or redeploy, after pulling the
@@ -109,6 +109,11 @@ pub enum ComposeAction {
 }
 
 impl ComposeAction {
+    /// Whether the action deploys, so it's recorded in the Stack's history.
+    pub fn deploys(self) -> bool {
+        matches!(self, Self::Up | Self::Rebuild)
+    }
+
     /// Whether the action needs a definition that can be deployed; taking a
     /// Stack down only needs its project name and files.
     pub fn reads_definition(self) -> bool {
@@ -161,9 +166,17 @@ pub fn direct_docker_host(connection: &HostConnection) -> Option<String> {
     }
 }
 
-/// Runs one compose command, streaming its output lines to `sink`.
-pub(crate) async fn run(job: ComposeJob, sink: impl Fn(ComposeEvent) -> bool) {
-    if let Err(e) = execute(job, &sink).await {
+/// Runs one compose command, streaming its output lines to `sink`. A deploy
+/// with a recorder is recorded when it starts and finished when it ends; a
+/// run nobody listens to any more stays unfinished.
+pub(crate) async fn run(mut job: ComposeJob, sink: impl Fn(ComposeEvent) -> bool) {
+    let recorder = job.record.take();
+    let mut recorded = None;
+    let result = execute(job, &sink, recorder.as_ref(), &mut recorded).await;
+    if let Err(e) = result {
+        if let (Some(recorder), Some(id)) = (&recorder, &recorded) {
+            recorder.finish(id, false, None);
+        }
         sink(ComposeEvent::Error {
             error: e.logged("compose run"),
         });
@@ -195,11 +208,19 @@ fn docker_host(target: &StackTarget) -> AppResult<(String, Option<proxy::Proxy>)
     Ok((proxy.docker_host.clone(), Some(proxy)))
 }
 
-async fn execute(job: ComposeJob, sink: &impl Fn(ComposeEvent) -> bool) -> AppResult<()> {
+async fn execute(
+    job: ComposeJob,
+    sink: &impl Fn(ComposeEvent) -> bool,
+    recorder: Option<&Recorder>,
+    recorded: &mut Option<String>,
+) -> AppResult<()> {
     definition::validate_name(&job.project)?;
     let prepared = job.source.prepare(job.action)?;
     // Keep the proxy alive until the CLI exits.
     let (docker_host, _proxy) = docker_host(&job.target)?;
+    if let Some(recorder) = recorder.filter(|_| job.action.deploys()) {
+        *recorded = recorder.start(&job, &prepared);
+    }
     let cli = |args: &[&str]| cli_command(&job, &prepared, &docker_host, args);
     let docker = job.target.docker();
     if !job.target.is_local() {
@@ -264,6 +285,9 @@ async fn execute(job: ComposeJob, sink: &impl Fn(ComposeEvent) -> bool) -> AppRe
         }
     }
     let status = child.wait().await?;
+    if let (Some(recorder), Some(id)) = (recorder, recorded.as_ref()) {
+        recorder.finish(id, status.success(), status.code());
+    }
     let error = (!status.success()).then(|| {
         errors::exit_failure(
             job.target.name(),
@@ -519,6 +543,7 @@ mod tests {
             logins,
             action,
             profiles: vec![],
+            record: None,
         }
     }
 
@@ -970,6 +995,98 @@ mod tests {
             services().await.is_empty(),
             "down removes every profile's services"
         );
+    }
+
+    #[tokio::test]
+    #[ignore = "needs a local Docker Engine and the compose CLI"]
+    async fn deploys_are_recorded_and_rolled_back() {
+        use homeport_hosts::store::{HostDraft, HostStore};
+        use homeport_storage::{Db, SecretBox};
+
+        use crate::{history::DeployHistory, runtime::Recorder, store::StackStore};
+
+        let docker = testing::docker();
+        testing::ensure_image(&docker).await;
+        let project = testing::unique("history");
+        let _cleanup = RemoveStack(project.clone());
+        let db = Arc::new(Db::open_in_memory().unwrap());
+        let secrets = Arc::new(SecretBox::from_key(&[4; 32]));
+        let host = HostStore::new(db.clone(), secrets.clone())
+            .create(HostDraft {
+                name: "local".into(),
+                connection: HostConnection::Local {
+                    socket_path: "/var/run/docker.sock".into(),
+                },
+                secrets: None,
+            })
+            .unwrap()
+            .id;
+        let stacks = StackStore::new(db.clone(), secrets.clone());
+        let history = Arc::new(DeployHistory::new(db, secrets));
+        let compose = format!(
+            "services:\n  app:\n    image: {}\n    command: [\"sleep\", \"60\"]\n    environment:\n      GREETING: ${{GREETING}}\n",
+            testing::IMAGE
+        );
+        let files = vec![ComposeFile::new("compose.yaml", compose)];
+        let stack = stacks
+            .create(&host, &project, &files, "GREETING=one")
+            .unwrap();
+
+        let deploy = || {
+            let stack = stacks.get(&stack.id).unwrap();
+            let mut job = job(
+                StackSource::Managed {
+                    files: stack.files,
+                    env: stacks.env(&stack.id).unwrap(),
+                },
+                HostConnection::Local {
+                    socket_path: "/var/run/docker.sock".into(),
+                },
+                None,
+                testing::docker(),
+                Logins::none(),
+                &project,
+                ComposeAction::Up,
+            );
+            job.record = Some(Recorder {
+                history: history.clone(),
+                host_id: host.clone(),
+                stack_id: stack.id.clone(),
+            });
+            async move {
+                job.cli = detect().await.expect("docker compose is installed");
+                crate::runtime::run(job, |_| true).await;
+            }
+        };
+        let greeting = || async {
+            let running = lifecycle::containers_of(&testing::docker(), &project)
+                .await
+                .unwrap();
+            testing::docker()
+                .inspect_container(&running[0].id, None)
+                .await
+                .unwrap()
+                .config
+                .unwrap()
+                .env
+                .unwrap()
+                .into_iter()
+                .find(|e| e.starts_with("GREETING="))
+                .unwrap()
+        };
+
+        deploy().await;
+        stacks.update(&stack.id, &files, "GREETING=two").unwrap();
+        deploy().await;
+        assert_eq!(greeting().await, "GREETING=two");
+        let deploys = history.list(&stack.id).unwrap();
+        assert_eq!(deploys.len(), 2);
+        assert!(deploys.iter().all(|d| d.success == Some(true)));
+
+        crate::history::restore(&history, &stacks, &deploys[1].id).unwrap();
+        deploy().await;
+        assert_eq!(greeting().await, "GREETING=one");
+        assert_eq!(history.list(&stack.id).unwrap().len(), 3);
     }
 
     /// Deploys a folder with a build, an env_file and a relative bind mount

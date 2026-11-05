@@ -166,9 +166,14 @@ impl StackStore {
         self.get(id)
     }
 
+    /// Forgets the Stack's definition and its deploy history.
     pub fn delete(&self, id: &str) -> AppResult<()> {
-        self.db
-            .with(|c| c.execute("DELETE FROM stacks WHERE id = ?1", [id]))?;
+        self.db.with(|c| {
+            let tx = c.transaction()?;
+            tx.execute("DELETE FROM stack_deploys WHERE stack_id = ?1", [id])?;
+            tx.execute("DELETE FROM stacks WHERE id = ?1", [id])?;
+            tx.commit()
+        })?;
         Ok(())
     }
 
