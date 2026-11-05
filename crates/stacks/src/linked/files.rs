@@ -105,9 +105,7 @@ pub fn write(
     expected: Option<&str>,
 ) -> AppResult<LinkedFile> {
     if !stack.config_files.iter().any(|f| f == path) {
-        return Err(AppError::validation(
-            msg::NOT_A_STACK_FILE.with("file", path),
-        ));
+        return Err(not_a_stack_file(path));
     }
     folder_present(stack)?;
     let target = Path::new(path);
@@ -149,6 +147,11 @@ fn folder_present(stack: &LinkedStack) -> AppResult<()> {
     } else {
         Err(folder_missing(&stack.working_dir))
     }
+}
+
+/// The error for a path that isn't one of a Linked Stack's compose files.
+pub fn not_a_stack_file(path: &str) -> AppError {
+    AppError::validation(msg::NOT_A_STACK_FILE.with("file", path))
 }
 
 /// The error for a Linked Stack whose folder is gone.

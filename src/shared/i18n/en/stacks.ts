@@ -74,6 +74,16 @@ export default {
   'stacks.newPage.sameDefinition.description':
     'Redeploying with a different file recreates the containers to match it, and removes services that are no longer listed.',
   'stacks.newPage.name': 'Name',
+  'stacks.newPage.source': 'Where the compose file is',
+  'stacks.newPage.writeCompose': 'Write a compose file',
+  'stacks.newPage.useFolder': 'Use a folder on this computer',
+  'stacks.newLinked.description':
+    'A compose project in a folder on this computer. Homeport works on its files where they are and deploys from that folder.',
+  'stacks.newLinked.choose': 'Choose a folder…',
+  'stacks.newLinked.pickTitle': 'Choose the folder of a compose project',
+  'stacks.newLinked.files': 'Compose files, in order',
+  'stacks.newLinked.takeOver.title': '{name} already runs on this host',
+
   'stacks.newPage.saveAndDeploy': 'Save and deploy',
   'stacks.editor.compose': 'Compose definition',
   'stacks.editor.environment': 'Environment',

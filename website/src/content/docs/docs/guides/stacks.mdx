@@ -34,6 +34,26 @@ Managed Stacks belong to one Host. To run the same compose file on two Hosts, cr
 
 A **Linked Stack** keeps its compose files in their project folder on this computer, where you edit them in your own editor and keep them under version control. Homeport never copies them: it remembers the folder and the compose files it uses, in order, and reads them where they are. The folder's `.env` stays in the folder.
 
+### Creating a Linked Stack
+
+A project folder that isn't running on the Host yet can be linked from Homeport:
+
+<Steps>
+
+1. Open **Stacks**, choose **New stack**, then **Use a folder on this computer**.
+
+2. Choose **Choose a folder…** and pick the folder that holds the compose project.
+
+3. Homeport lists the compose files Compose would use there, in order: the first of `compose.yaml`, `compose.yml`, `docker-compose.yml` and `docker-compose.yaml`, then its override file (`compose.override.yaml` and the like), if there is one. A folder with none of them can't be linked, and Homeport says so.
+
+4. Check the **Name**. It comes from the files' top-level `name:`, or from the folder's name the way Compose writes it (`My App` becomes `myapp`).
+
+5. Choose **Save and deploy** — or **Save** to deploy later.
+
+</Steps>
+
+If a Stack with that name already runs on the Host as an External Stack, creating the Linked Stack takes it over, as [adopting](#adopting-an-external-stack) does: redeploying recreates its containers to match the folder's files. To use files with other names, or in another order, see [several compose files](#several-compose-files).
+
 ### How Linked Stacks are found
 
 When you run `docker compose up` in a folder, Compose labels every container with that folder and its compose files — even when `DOCKER_HOST` points at a remote Host. When Homeport lists a Host's Stacks, a Stack found running is shown as **Linked** if:

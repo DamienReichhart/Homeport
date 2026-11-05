@@ -1,7 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { hostKeys } from '@/core/host';
-import { commands, type LinkedFiles, type ManagedStack, type StackAction } from '@/shared/api';
+import {
+  commands,
+  type FolderProject,
+  type LinkedFiles,
+  type LinkedStack,
+  type ManagedStack,
+  type StackAction,
+} from '@/shared/api';
 import { toastError } from '@/shared/ui';
 import { t } from '@/shared/i18n';
 import { stackKeys } from './queries';
@@ -52,6 +59,39 @@ export function useCreateStack(
     meta: { silent: true },
     mutationFn: ({ name, compose, env }: NewStack) =>
       commands.stacksCreate(hostId, name, compose, env),
+    onSuccess: async (stack, { deploy }) => {
+      await client.invalidateQueries({ queryKey: hostKeys.stacks(hostId) });
+      onSaved(stack, deploy);
+    },
+  });
+}
+
+/** Tells what Compose would make of a folder picked for a Linked Stack. */
+export function useInspectFolder(onFound: (project: FolderProject) => void) {
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: (folder: string) => commands.stacksLinkedInspect(folder),
+    onSuccess: onFound,
+  });
+}
+
+interface NewLinked {
+  name: string;
+  workingDir: string;
+  configFiles: string[];
+  deploy: boolean;
+}
+
+/** Records a new Linked Stack; `onSaved` runs once the Stack list has it. */
+export function useCreateLinked(
+  hostId: string,
+  onSaved: (stack: LinkedStack, deploy: boolean) => void,
+) {
+  const client = useQueryClient();
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: ({ name, workingDir, configFiles }: NewLinked) =>
+      commands.stacksLinkedCreate(hostId, name, workingDir, configFiles),
     onSuccess: async (stack, { deploy }) => {
       await client.invalidateQueries({ queryKey: hostKeys.stacks(hostId) });
       onSaved(stack, deploy);

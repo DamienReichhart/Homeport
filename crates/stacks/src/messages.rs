@@ -38,6 +38,8 @@ homeport_core::messages! {
     /// Saving a compose file that was edited elsewhere since it was opened.
     FILES_CHANGED = "errors.stacks.filesChanged" => "{file} changed outside Homeport since you opened it.";
     FILES_CHANGED_HINT = "errors.stacks.filesChanged.hint" => "Reload it to see the change, or overwrite it with your version.";
+    /// A folder picked for a Linked Stack that has no compose file Compose would use.
+    NO_COMPOSE_FILE = "errors.stacks.noComposeFile" => "{folder} has no compose file. Homeport looks for compose.yaml, compose.yml, docker-compose.yml or docker-compose.yaml.";
     /// A path that isn't one of the Linked Stack's compose files.
     NOT_A_STACK_FILE = "errors.stacks.notAStackFile" => "{file} isn't one of this Stack's compose files.";
 

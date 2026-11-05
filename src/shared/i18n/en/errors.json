@@ -265,6 +265,7 @@
   "errors.stacks.hostNotConnected.hint": "Wait for it to connect, then try again.",
   "errors.stacks.name": "Stack names use lowercase letters, digits, - and _, and start with a letter or digit.",
   "errors.stacks.nameInUse": "This host already has a stack named \"{name}\".",
+  "errors.stacks.noComposeFile": "{folder} has no compose file. Homeport looks for compose.yaml, compose.yml, docker-compose.yml or docker-compose.yaml.",
   "errors.stacks.notAStackFile": "{file} isn't one of this Stack's compose files.",
   "errors.stacks.proxyFailed": "Homeport couldn't open the private connection compose uses to reach {name}.",
   "errors.stacks.pullFailed": "Homeport couldn't pull {image} for {services}.",

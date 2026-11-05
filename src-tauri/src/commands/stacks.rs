@@ -9,7 +9,12 @@ use homeport_stacks::{
     compose::{self, ComposeAction, ComposeEvent},
     definition::{self, ComposeCheck},
     lifecycle::StackAction,
-    linked::{self, files::LinkedFiles},
+    linked::{
+        self,
+        files::LinkedFiles,
+        folder::{self, FolderProject},
+        LinkedStack,
+    },
     runtime::{self, ComposeJob, SourceKind, StackSource, StackTarget},
     store::ManagedStack,
     Stack,
@@ -87,6 +92,42 @@ pub fn stacks_update(
 #[specta::specta]
 pub fn stacks_forget(state: State<'_, AppState>, id: String) -> AppResult<()> {
     state.stacks.delete(&id)
+}
+
+/// What Compose would make of a folder picked for a new Linked Stack.
+#[tauri::command]
+#[specta::specta]
+pub fn stacks_linked_inspect(path: String) -> AppResult<FolderProject> {
+    folder::inspect(std::path::Path::new(&path))
+}
+
+/// Records a Linked Stack for the folder `working_dir` and its compose
+/// files. Using the name of an External Stack takes it over.
+#[tauri::command]
+#[specta::specta]
+pub fn stacks_linked_create(
+    state: State<'_, AppState>,
+    host_id: String,
+    name: String,
+    working_dir: String,
+    config_files: Vec<String>,
+) -> AppResult<LinkedStack> {
+    state.hosts.store.get(&host_id)?;
+    // The files are checked again here: the webview only names them.
+    let found = folder::inspect(std::path::Path::new(&working_dir))?;
+    if config_files.is_empty()
+        || config_files
+            .iter()
+            .any(|f| !found.files.iter().any(|g| &g.path == f))
+    {
+        return Err(linked::files::not_a_stack_file(
+            config_files.first().map_or("", String::as_str),
+        ));
+    }
+    let fingerprint = linked::files::files_fingerprint(&config_files);
+    state
+        .linked
+        .create(&host_id, &name, &working_dir, &config_files, &fingerprint)
 }
 
 /// A Linked Stack's compose files, read from its folder. `acknowledge` notes

@@ -1,27 +1,16 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { HostGate } from '@/core/host';
+import { useNavigate } from 'react-router-dom';
 import { type ComposeCheck, useCapabilities } from '@/shared/api';
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-  Button,
-  ErrorMessage,
-  Input,
-  Label,
-  PageHeader,
-} from '@/shared/ui';
-import { useCreateStack } from '../api/mutations';
-import type { ComposeJob } from '../model/composeJob';
-import { STARTER } from '../model/starter';
-import { ComposeRunDialog } from './dialogs/ComposeRunDialog';
-import { StackEditor } from './StackEditor';
+import { Button, ErrorMessage, Input, Label } from '@/shared/ui';
+import { useCreateStack } from '../../api/mutations';
+import type { ComposeJob } from '../../model/composeJob';
+import { STARTER } from '../../model/starter';
+import { ComposeRunDialog } from '../dialogs/ComposeRunDialog';
+import { StackEditor } from '../StackEditor';
 import { t } from '@/shared/i18n';
 
-function NewStack({ hostId }: { hostId: string }) {
-  const [params] = useSearchParams();
-  const adopting = params.get('adopt');
+/** Creates a Managed Stack, or adopts the External Stack named `adopting`. */
+export function NewManagedStack({ hostId, adopting }: { hostId: string; adopting: string | null }) {
   const navigate = useNavigate();
   const capabilities = useCapabilities();
   const [name, setName] = useState(adopting ?? '');
@@ -39,18 +28,6 @@ function NewStack({ hostId }: { hostId: string }) {
 
   return (
     <div className="grid gap-4">
-      <PageHeader
-        title={adopting ? t('stacks.newPage.adoptTitle', { name: adopting }) : t('stacks.new')}
-        description={
-          adopting ? t('stacks.newPage.adoptDescription') : t('stacks.newPage.description')
-        }
-      />
-      {adopting && (
-        <Alert>
-          <AlertTitle>{t('stacks.newPage.sameDefinition.title')}</AlertTitle>
-          <AlertDescription>{t('stacks.newPage.sameDefinition.description')}</AlertDescription>
-        </Alert>
-      )}
       <div className="grid max-w-sm gap-1.5">
         <Label htmlFor="stack-name">{t('stacks.newPage.name')}</Label>
         <Input
@@ -101,8 +78,4 @@ function NewStack({ hostId }: { hostId: string }) {
       />
     </div>
   );
-}
-
-export function NewStackPage() {
-  return <HostGate>{(hostId) => <NewStack key={hostId} hostId={hostId} />}</HostGate>;
 }

@@ -163,6 +163,13 @@ export const commands = {
 	 *  becomes an External Stack.
 	 */
 	stacksForget: (id: string) => __TAURI_INVOKE<null>("stacks_forget", { id }),
+	/**  What Compose would make of a folder picked for a new Linked Stack. */
+	stacksLinkedInspect: (path: string) => __TAURI_INVOKE<FolderProject>("stacks_linked_inspect", { path }),
+	/**
+	 *  Records a Linked Stack for the folder `working_dir` and its compose
+	 *  files. Using the name of an External Stack takes it over.
+	 */
+	stacksLinkedCreate: (hostId: string, name: string, workingDir: string, configFiles: string[]) => __TAURI_INVOKE<LinkedStack>("stacks_linked_create", { hostId, name, workingDir, configFiles }),
 	/**
 	 *  A Linked Stack's compose files, read from its folder. `acknowledge` notes
 	 *  them as seen, so they no longer count as changed outside Homeport.
@@ -510,6 +517,18 @@ export type FileEntry = {
 
 export type FileKind = "directory" | "file" | "symlink" | "other";
 
+/**  What Compose would make of a folder. */
+export type FolderProject = {
+	workingDir: string,
+	/**  The compose files Compose would use, in order, with their content. */
+	files: LinkedFile[],
+	/**
+	 *  The project name: the files' top-level `name:`, or the folder's name
+	 *  as Compose normalises it.
+	 */
+	name: string,
+};
+
 export type Freshness = "upToDate" | 
 /**  The registry has a different image under this tag. */
 "newer" | 
@@ -752,6 +771,23 @@ export type LinkedFiles = {
 	fingerprint: string,
 	/**  The files differ from what Homeport last read or wrote. */
 	changedOutside: boolean,
+};
+
+export type LinkedStack = {
+	id: string,
+	hostId: string,
+	name: string,
+	/**  The project folder on this machine, where compose runs. */
+	workingDir: string,
+	/**  The compose files, as absolute paths, in the order compose merges them. */
+	configFiles: string[],
+	/**
+	 *  Of the files as Homeport last read or wrote them, to tell when they
+	 *  changed outside Homeport.
+	 */
+	fingerprint: string,
+	createdAt: string,
+	updatedAt: string,
 };
 
 export type LogEvent = { type: "lines"; lines: LogLine[] } | { type: "error"; error: AppError } | { type: "end" };
