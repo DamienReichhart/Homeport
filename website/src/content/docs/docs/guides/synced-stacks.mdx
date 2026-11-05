@@ -1,0 +1,55 @@
+---
+title: Synced Stacks
+description: Deploy a Stack from a git repository, see what changed before each sync, and keep it following its branch while Homeport is open.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+A **Synced Stack** is a [Stack](/docs/guides/stacks/) whose compose file comes from a git repository. Homeport clones the repository on this computer, fetches its branch or tag when you ask (or on an interval while Homeport is open), shows what changed, and deploys the new commit to the Host. It never edits, commits or pushes: changes go through git.
+
+<Aside type="note" title="Homeport needs git">
+  Synced Stacks run the `git` installed on this computer. **Settings → This machine** says whether
+  Homeport found it, and how to install it if not. Every other kind of Stack works without git.
+</Aside>
+
+## Repositories
+
+Homeport reads repositories you add in **Settings → Repositories**, or from the **New stack** page. A repository is added once and can be used by Synced Stacks on every Host. Homeport reaches it in one of three ways:
+
+| Access         | URL                                               | What Homeport stores                                   |
+| -------------- | ------------------------------------------------- | ------------------------------------------------------ |
+| **Deploy key** | SSH: `git@github.com:owner/repo.git` or `ssh://…` | A key it makes for this repository only, **encrypted** |
+| **Token**      | HTTPS: `https://gitlab.com/owner/repo.git`        | Your user name, and the access token **encrypted**     |
+| **Public**     | HTTPS, for a repository anyone can read           | Nothing secret                                         |
+
+`http://` and local paths aren't accepted, so a token is never sent in clear.
+
+### With a deploy key
+
+<Steps>
+
+1. Choose **Add repository**, paste the repository's SSH URL, keep **Deploy key** and choose **Add and make a deploy key**.
+
+2. Copy the key Homeport shows, and add it to the repository **with read access only**:
+   - GitHub: the repository's **Settings → Deploy keys → Add deploy key**.
+   - GitLab: the project's **Settings → Repository → Deploy keys**.
+   - Gitea and Forgejo: the repository's **Settings → Deploy keys → Add deploy key**.
+
+3. Choose **Test access**. Homeport lists the repository's branches and tags from this computer.
+
+</Steps>
+
+Each repository gets its own key, so a leaked key can only read that one repository, and your own SSH keys and `~/.ssh/config` are never used. **New key** replaces it: add the new one to the repository, and remove the old one there.
+
+The first time Homeport reaches an SSH server, it trusts the key the server presents and remembers it, like `ssh` does; if the key later changes, every fetch fails until you check the new fingerprint on the forge's website and choose **Reset** next to the trusted key.
+
+### With a token
+
+Paste the repository's `https://` URL, choose **Token**, then enter the user name and an access token that may read the repository's contents: on GitHub a fine-grained token with **Contents: Read-only**, on GitLab a project or personal token with `read_repository`. **Test access** checks it. When it expires, enter a new one in **Replace the token**.
+
+<Aside type="tip">
+  Without an OS keychain, Homeport can't store deploy keys or tokens, so only public repositories
+  can be added. See [requirements](/docs/requirements/#optional-an-os-keychain).
+</Aside>
+
+Removing a repository deletes its key or token and its clone on this computer. It's refused while a Synced Stack uses it.

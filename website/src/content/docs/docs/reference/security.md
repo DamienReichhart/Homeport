@@ -30,6 +30,9 @@ It contains:
 | Deploy history: environments                      | **Encrypted** |
 | Registry addresses and user names                 | Plain text    |
 | Registry passwords and access tokens              | **Encrypted** |
+| Repository URLs, deploy keys' public halves       | Plain text    |
+| Repositories' server keys you trusted             | Plain text    |
+| Repository deploy keys and access tokens          | **Encrypted** |
 | Your theme and last selected Host                 | Plain text    |
 
 Homeport doesn't copy anything from your Engines: containers, images and logs are read live and never saved, except when you download logs or files yourself.
@@ -37,6 +40,10 @@ Homeport doesn't copy anything from your Engines: containers, images and logs ar
 ### Linked Stack folders
 
 For a [Linked Stack](/docs/guides/stacks/#linked-stacks), Homeport stores only where its folder and compose files are, and a fingerprint of the files to tell when they change — never a copy of them. It reads the compose files when you open the Stack, and writes to them only when you choose **Save** in its **Definition** tab, replacing each edited file in one step and keeping its permissions; it won't overwrite a file that changed since you opened it unless you say so. Homeport never reads or writes the folder's `.env`: Compose reads it when it runs. Forgetting a Linked Stack never touches the folder.
+
+### Repositories
+
+For [Synced Stacks](/docs/guides/synced-stacks/), Homeport keeps each repository's URL, and either a deploy key it generated for that repository (its private half encrypted) or your user name and an access token (encrypted). A repository's content isn't a secret: its clone sits in a `repositories` folder next to `homeport.db`.
 
 ## How secrets are encrypted
 
@@ -71,6 +78,8 @@ Homeport has its own SSH client, so it never writes a private key to a file for 
 
 When `docker compose` deploys a Stack to an SSH or TLS Host, Homeport opens a short-lived private socket on this computer — readable only by your user, or a named pipe that refuses remote clients on Windows — and forwards it over its own connection, for that one command.
 
+Repository keys and tokens never reach the disk either. For each `git` command, Homeport serves a private SSH agent holding only that repository's deploy key — on a socket only your user can open, or a named pipe that refuses remote clients on Windows — or passes the token in an HTTPS header through the command's environment. Your own git configuration, credential helpers and SSH keys are left out, so nothing is cached in your keychain or `~/.git-credentials`.
+
 Registry logins never reach `docker compose` either: Homeport pulls a Stack's images itself, through the Engine API, before running `docker compose up`, so the command's environment and the files it's given hold no password or token.
 
 ## Trusting servers
@@ -83,6 +92,7 @@ The first time Homeport connects to an SSH server, it asks you to confirm the se
 - **Your images' registries, through each Host's Engine**, to tell whether a [newer image](/docs/guides/containers/#newer-images) is published: when the Containers, Images or Stacks page loads (each answer is kept for 6 hours) and when you choose **Check for newer images**. The Engine asks the registry for the digest a tag points to, with the stored login for private registries, and downloads nothing. For a local Host, the Engine runs on your computer, so the request leaves from it.
 - **Docker Hub, when you browse tags** in the pull dialog: Homeport lists a repository's tags from `hub.docker.com`, from this computer, with your Docker Hub login when one is stored. Searching repositories goes through the Host's Engine instead.
 - **A registry, when you check its login** in **Settings → Registries**: Homeport asks the registry's `/v2/` endpoint, and its token service, from this computer, sending the user name and password or token over HTTPS (plain HTTP only for a registry on this computer, such as `localhost:5000`).
+- **Your repositories' servers**, for [Synced Stacks](/docs/guides/synced-stacks/): when you test access, create or sync a Synced Stack, and on an interval while Homeport is open if polling is on. Homeport runs `git` from this computer with that repository's deploy key or token.
 - **This website, to check for updates**: at launch and every 6 hours, Homeport downloads `updates/latest.json`, a small file listing the latest version. The request carries nothing about you, your Hosts or your containers, but like any web request it reaches GitHub Pages, which hosts this site, from your IP address. Turn it off in **Settings → Updates**. Updates themselves download from GitHub Releases, and Homeport installs one only if it's signed with Homeport's update key. See [updating](/docs/reference/updating/).
 
 ## What Homeport never does
