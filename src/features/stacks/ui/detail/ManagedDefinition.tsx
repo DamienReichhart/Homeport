@@ -1,10 +1,18 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { type ComposeCheck, type ManagedStack, useCapabilities } from '@/shared/api';
+import {
+  type Candidate,
+  type ComposeCheck,
+  type ManagedStack,
+  useCapabilities,
+} from '@/shared/api';
 import { Button, ErrorMessage, useConfirm } from '@/shared/ui';
 import { useForgetDefinition, useSaveDefinition } from '../../api/mutations';
+import { sameFiles } from '../../model/composeFiles';
 import type { ComposeJob } from '../../model/composeJob';
+import { ReviewDialog } from '../dialogs/ReviewDialog';
 import { StackEditor } from '../StackEditor';
+import { ProfilesControl } from './ProfilesControl';
 import { t } from '@/shared/i18n';
 
 /** Edits, saves, redeploys or forgets the stored definition of a Managed Stack. */
@@ -12,22 +20,26 @@ export function ManagedDefinition({
   hostId,
   managed,
   initialEnv,
+  deployed,
   onDeploy,
 }: {
   hostId: string;
   managed: ManagedStack;
   initialEnv: string;
+  /** Whether it runs, so a redeploy shows what changes first. */
+  deployed: boolean;
   onDeploy: (job: ComposeJob) => void;
 }) {
+  const [review, setReview] = useState<Candidate | null>(null);
   const navigate = useNavigate();
   const capabilities = useCapabilities();
   const [dialog, confirm] = useConfirm();
-  const [compose, setCompose] = useState(managed.compose);
+  const [files, setFiles] = useState(managed.files);
   const [env, setEnv] = useState(initialEnv);
   const [check, setCheck] = useState<ComposeCheck | null>(null);
-  const dirty = compose !== managed.compose || env !== initialEnv;
+  const dirty = !sameFiles(files, managed.files) || env !== initialEnv;
   const save = useSaveDefinition(managed.id, (saved, deploy) => {
-    if (deploy) onDeploy({ stackId: saved.id, name: saved.name, action: 'up' });
+    if (deploy) onDeploy({ kind: 'managed', stackId: saved.id, name: saved.name, action: 'up' });
   });
   const forget = useForgetDefinition(hostId, managed.id);
   const canDeploy =
@@ -35,25 +47,38 @@ export function ManagedDefinition({
   return (
     <div className="grid gap-4">
       <StackEditor
-        compose={compose}
+        files={files}
         env={env}
-        onComposeChange={setCompose}
+        onFilesChange={setFiles}
         onEnvChange={setEnv}
         keychain={capabilities.data?.keychain ?? true}
         onCheck={setCheck}
+      />
+      <ProfilesControl
+        key={managed.profiles.join()}
+        kind="managed"
+        stackId={managed.id}
+        declared={check?.profiles ?? null}
+        active={managed.profiles}
+        canDeploy={canDeploy && !dirty}
+        onDeploy={() =>
+          onDeploy({ kind: 'managed', stackId: managed.id, name: managed.name, action: 'up' })
+        }
       />
       {save.error && <ErrorMessage error={save.error} />}
       <div className="flex flex-wrap gap-2">
         <Button
           disabled={save.isPending || !canDeploy}
-          onClick={() => save.mutate({ compose, env, deploy: true })}
+          onClick={() =>
+            deployed ? setReview({ files, env }) : save.mutate({ files, env, deploy: true })
+          }
         >
           {t('stacks.managed.saveAndRedeploy')}
         </Button>
         <Button
           variant="outline"
           disabled={save.isPending || !dirty}
-          onClick={() => save.mutate({ compose, env, deploy: false })}
+          onClick={() => save.mutate({ files, env, deploy: false })}
         >
           {t('common.save')}
         </Button>
@@ -76,6 +101,14 @@ export function ManagedDefinition({
           {t('stacks.forget.confirm')}
         </Button>
       </div>
+      <ReviewDialog
+        kind="managed"
+        stackId={managed.id}
+        name={managed.name}
+        candidate={review}
+        onDeploy={() => save.mutate({ files, env, deploy: true })}
+        onClose={() => setReview(null)}
+      />
       {dialog}
     </div>
   );

@@ -4,7 +4,7 @@ import { mockCommands } from '@/test/ipc';
 import { renderApp } from '@/test/render';
 
 describe('stacks page', () => {
-  it('distinguishes managed and external stacks', async () => {
+  it('distinguishes managed, linked and external stacks', async () => {
     mockCommands({
       ...baseCommands,
       get_capabilities: () => ({
@@ -18,31 +18,67 @@ describe('stacks page', () => {
         {
           name: 'blog',
           kind: 'external',
-          managedId: null,
+          id: null,
           state: 'running',
           services: [{ name: 'app', containerIds: ['a'], running: 1 }],
           running: 1,
           total: 1,
           configFiles: '/srv/blog/compose.yaml',
+          workingDir: null,
+          problem: null,
+        },
+        {
+          name: 'docs',
+          kind: 'linked',
+          id: 'l1',
+          state: 'running',
+          services: [{ name: 'site', containerIds: ['d'], running: 1 }],
+          running: 1,
+          total: 1,
+          configFiles: '/home/me/docs/compose.yaml',
+          workingDir: '/home/me/docs',
+          problem: null,
+        },
+        {
+          name: 'moved',
+          kind: 'external',
+          id: 'l2',
+          state: 'running',
+          services: [{ name: 'app', containerIds: ['m'], running: 1 }],
+          running: 1,
+          total: 1,
+          configFiles: '/home/me/moved/compose.yaml',
+          workingDir: '/home/me/moved',
+          problem: 'filesMissing',
         },
         {
           name: 'shop',
           kind: 'managed',
-          managedId: 'm1',
+          id: 'm1',
           state: 'notDeployed',
           services: [],
           running: 0,
           total: 0,
           configFiles: null,
+          workingDir: null,
+          problem: null,
         },
       ],
     });
     renderApp('/stacks');
     expect(await screen.findByText('blog')).toBeInTheDocument();
-    expect(screen.getByText('External')).toBeInTheDocument();
+    expect(screen.getAllByText('External')).toHaveLength(2);
     expect(screen.getByText('Managed')).toBeInTheDocument();
+    expect(screen.getByText('Linked')).toBeInTheDocument();
+    expect(screen.getByText('/home/me/docs')).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: 'Its compose files are no longer on this computer.' }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Not deployed')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Adopt' })).toBeInTheDocument();
+    // Only the External Stack Homeport has no record of can be adopted.
+    expect(screen.getAllByRole('button', { name: 'Adopt' })).toHaveLength(1);
     expect(screen.getByRole('button', { name: /Deploy/ })).toBeEnabled();
+    // The running Linked Stack redeploys from its folder.
+    expect(screen.getByRole('button', { name: /Redeploy/ })).toBeEnabled();
   });
 });

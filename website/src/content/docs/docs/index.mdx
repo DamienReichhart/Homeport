@@ -48,7 +48,7 @@ Homeport doesn't run containers itself. It connects to the Docker Engines you al
 Homeport names things precisely, and the docs follow it:
 
 - A **Host** is a Docker Engine Homeport connects to. Every container, image, volume, network and Stack belongs to exactly one Host.
-- A **Stack** is a Compose project running on a Host. A **Managed Stack** is one whose compose file Homeport keeps; an **External Stack** was deployed some other way. You can **adopt** an External Stack to manage it.
+- A **Stack** is a Compose project running on a Host. A **Managed Stack** is one whose compose file Homeport keeps; a **Linked Stack** keeps its compose files in a folder on this computer; an **External Stack** was deployed some other way. You can **adopt** an External Stack to manage it.
 
 The [glossary](/docs/reference/glossary/) has the full list.
 

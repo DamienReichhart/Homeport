@@ -6,7 +6,7 @@ import { renderApp } from '@/test/render';
 const web = container('shop-web-1', 'shop');
 const db = container('shop-db-1', 'shop');
 
-function mock() {
+function mock(kind: 'managed' | 'external' = 'managed') {
   mockCommands({
     ...baseCommands,
     containers_list: () => [web, db],
@@ -17,8 +17,8 @@ function mock() {
     stacks_list: () => [
       {
         name: 'shop',
-        kind: 'managed',
-        managedId: 'm1',
+        kind,
+        id: kind === 'managed' ? 'm1' : null,
         state: 'running',
         services: [
           { name: 'web', containerIds: [web.id], running: 1 },
@@ -27,6 +27,8 @@ function mock() {
         running: 2,
         total: 2,
         configFiles: null,
+        workingDir: null,
+        problem: null,
       },
     ],
     images_freshness: () => [
@@ -40,7 +42,9 @@ describe('newer images on Stacks', () => {
   it('marks a Stack with an outdated service on the list', async () => {
     mock();
     renderApp('/stacks');
-    expect(await screen.findByRole('img', { name: 'Newer images for web' })).toBeInTheDocument();
+    expect(await screen.findByText('Update available')).toBeInTheDocument();
+    expect(screen.getByText(': Newer images for web')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Update' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Check for newer images' })).toBeInTheDocument();
   });
 
@@ -48,10 +52,23 @@ describe('newer images on Stacks', () => {
     mock();
     renderApp('/stacks/shop');
     expect(await screen.findByText('web runs an outdated image.')).toBeInTheDocument();
-    expect(screen.getByText('Pull images, then Redeploy to update.')).toBeInTheDocument();
+    expect(screen.getByText('Choose Update to pull them and redeploy.')).toBeInTheDocument();
+    expect(screen.getByText('Update available')).toBeInTheDocument();
     expect(
       screen.getByRole('img', { name: `A newer ${web.image} was published` }),
     ).toBeInTheDocument();
     expect(screen.queryByRole('img', { name: `A newer ${db.image} was published` })).toBeNull();
+  });
+
+  it('shows External Stacks the badge, but asks to adopt them before updating', async () => {
+    mock('external');
+    renderApp('/stacks');
+    expect(await screen.findByText('Update available')).toBeInTheDocument();
+    const update = screen.getByRole('button', { name: 'Update' });
+    expect(update).toBeDisabled();
+    expect(update).toHaveAttribute(
+      'title',
+      'Adopt this Stack first: Homeport needs its compose file to redeploy it.',
+    );
   });
 });

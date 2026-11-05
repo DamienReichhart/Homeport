@@ -34,9 +34,9 @@ Without one, Homeport shows a banner and still works with local sockets, plain T
 
 ## Optional: Docker Compose
 
-To deploy [Managed Stacks](/docs/guides/stacks/), Homeport runs the `docker compose` command on **this** machine — not on the Host. Install the Docker CLI with the Compose plugin (Docker Desktop includes it), or the standalone `docker-compose` v2.
+To deploy [Managed and Linked Stacks](/docs/guides/stacks/), Homeport runs the `docker compose` command on **this** machine — not on the Host. Install the Docker CLI with the Compose plugin (Docker Desktop includes it), or the standalone `docker-compose` v2.
 
-Without it, Stacks still appear and can be started, stopped and removed; only deploying needs Compose. **Settings → This machine** shows whether Homeport found it.
+Without it, Stacks still appear — Linked Stacks included — and can be started, stopped and removed; only deploying needs Compose. **Settings → This machine** shows whether Homeport found it.
 
 ## What each feature needs
 
@@ -48,7 +48,7 @@ Without it, Stacks still appear and can be started, stopped and removed; only de
 | TLS Hosts                                 |   Yes    |      —      |
 | Containers, images, volumes, networks     |    —     |      —      |
 | Starting, stopping, removing Stacks       |    —     |      —      |
-| Deploying Managed Stacks                  |    —     |     Yes     |
+| Deploying Managed and Linked Stacks       |    —     |     Yes     |
 | A Managed Stack's environment             |   Yes    |      —      |
 | Registry logins (private images, pushes)  |   Yes    |      —      |
 | Building an image from a folder           |    —     |      —      |

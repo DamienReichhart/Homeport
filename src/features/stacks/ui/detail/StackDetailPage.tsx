@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowLeftIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { HostGate, resourceQueries } from '@/core/host';
+import { HostGate, indexFreshness, resourceQueries, useContainers } from '@/core/host';
 import { LogViewer } from '@/features/containers';
 import {
   Badge,
@@ -18,10 +18,14 @@ import {
   useConfirm,
 } from '@/shared/ui';
 import type { ComposeJob } from '../../model/composeJob';
+import { serviceFreshness, stackFreshness } from '../../model/freshness';
+import { KIND_BADGE, KIND_LABEL } from '../../model/stackKind';
 import { STATE_LABEL, STATE_TONE } from '../../model/stackState';
 import { ComposeRunDialog } from '../dialogs/ComposeRunDialog';
 import { StackActions } from '../StackActions';
+import { UpdateBadge } from '../UpdateBadge';
 import { StackDefinition } from './StackDefinition';
+import { StackHistory } from './StackHistory';
 import { StackServices } from './StackServices';
 import { t } from '@/shared/i18n';
 
@@ -31,10 +35,16 @@ function StackDetail({ hostId, name }: { hostId: string; name: string }) {
   const [dialog, confirm] = useConfirm();
   const [job, setJob] = useState<ComposeJob | null>(null);
   const stack = stacks.data?.find((s) => s.name === name);
+  const containers = useContainers(hostId);
+  const freshness = indexFreshness(useQuery(resourceQueries.freshness(hostId)).data);
 
   if (stacks.isPending) return <Spinner />;
   if (!stack)
     return <ErrorMessage error={{ code: 'not_found', message: t('stacks.notFound', { name }) }} />;
+  const byId = new Map(containers.data?.map((c) => [c.id, c]));
+  const { newer } = stackFreshness(serviceFreshness(stack, byId, freshness));
+  // Managed and Linked Stacks keep a history of their deploys.
+  const recorded = stack.kind !== 'external' ? stack.id : null;
   const sources = stack.services.flatMap((s) =>
     s.containerIds.map((containerId) => ({ containerId, label: s.name })),
   );
@@ -53,9 +63,8 @@ function StackDetail({ hostId, name }: { hostId: string; name: string }) {
               <ArrowLeftIcon />
             </Button>
             {stack.name}
-            <Badge variant={stack.kind === 'managed' ? 'default' : 'outline'}>
-              {stack.kind === 'managed' ? t('stacks.kind.managed') : t('stacks.kind.external')}
-            </Badge>
+            <Badge variant={KIND_BADGE[stack.kind]}>{t(KIND_LABEL[stack.kind])}</Badge>
+            {newer.length > 0 && <UpdateBadge newer={newer} />}
           </span>
         }
         description={
@@ -63,10 +72,17 @@ function StackDetail({ hostId, name }: { hostId: string; name: string }) {
             <StatusDot tone={STATE_TONE[stack.state]} /> {t(STATE_LABEL[stack.state])}
             {stack.total > 0 &&
               ` · ${t('stacks.detail.running', { running: stack.running, total: stack.total })}`}
+            {stack.workingDir && <span className="font-mono text-xs"> · {stack.workingDir}</span>}
           </span>
         }
         actions={
-          <StackActions hostId={hostId} stack={stack} confirm={confirm} onCompose={setJob} />
+          <StackActions
+            hostId={hostId}
+            stack={stack}
+            newer={newer}
+            confirm={confirm}
+            onCompose={setJob}
+          />
         }
       />
       <Tabs
@@ -79,6 +95,7 @@ function StackDetail({ hostId, name }: { hostId: string; name: string }) {
             {t('stacks.tab.logs')}
           </TabsTrigger>
           <TabsTrigger value="definition">{t('stacks.tab.definition')}</TabsTrigger>
+          {recorded && <TabsTrigger value="history">{t('stacks.tab.history')}</TabsTrigger>}
         </TabsList>
         <TabsContent value="services" className="overflow-auto">
           <StackServices hostId={hostId} stack={stack} />
@@ -89,6 +106,11 @@ function StackDetail({ hostId, name }: { hostId: string; name: string }) {
         <TabsContent value="definition" className="overflow-auto">
           <StackDefinition hostId={hostId} stack={stack} onDeploy={setJob} />
         </TabsContent>
+        {recorded && (
+          <TabsContent value="history" className="overflow-auto">
+            <StackHistory hostId={hostId} stack={stack} stackId={recorded} onDeploy={setJob} />
+          </TabsContent>
+        )}
       </Tabs>
       <ComposeRunDialog hostId={hostId} job={job} onClose={() => setJob(null)} />
       {dialog}

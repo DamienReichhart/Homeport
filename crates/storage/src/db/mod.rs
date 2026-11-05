@@ -20,6 +20,10 @@ const MIGRATION_SLICE: &[M<'static>] = &[
     M::up(include_str!("migrations/0003_stacks.sql")),
     M::up(include_str!("migrations/0004_registries.sql")),
     M::up(include_str!("migrations/0005_bastions.sql")),
+    M::up(include_str!("migrations/0006_linked_stacks.sql")),
+    M::up(include_str!("migrations/0007_stack_files.sql")),
+    M::up(include_str!("migrations/0008_stack_profiles.sql")),
+    M::up(include_str!("migrations/0009_stack_deploys.sql")),
 ];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_SLICE);
 
@@ -99,6 +103,57 @@ mod tests {
         assert_eq!(a["host"], "h");
         assert_eq!(key.as_deref(), Some("ssh-ed25519 KEY"));
         assert!(read("b").0.get("bastions").is_none());
+    }
+
+    #[test]
+    fn databases_from_0_9_keep_their_hosts_and_stacks() {
+        let mut conn = Connection::open_in_memory().unwrap();
+        conn.pragma_update(None, "foreign_keys", "ON").unwrap();
+        MIGRATIONS.to_version(&mut conn, 5).unwrap();
+        let local = r#"{"kind":"local","socketPath":"/var/run/docker.sock"}"#;
+        conn.execute(
+            "INSERT INTO hosts (id, name, connection) VALUES ('h', 'local', ?1)",
+            [local],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO stacks (id, host_id, name, compose) VALUES ('s', 'h', 'shop', 'services: {}')",
+            [],
+        )
+        .unwrap();
+        MIGRATIONS.to_latest(&mut conn).unwrap();
+
+        let stacks: i64 = conn
+            .query_row("SELECT count(*) FROM stacks WHERE host_id = 'h'", [], |r| {
+                r.get(0)
+            })
+            .unwrap();
+        assert_eq!(stacks, 1);
+        // Its one definition is now its first compose file.
+        let file: (i64, String, String) = conn
+            .query_row(
+                "SELECT position, name, content FROM stack_files WHERE stack_id = 's'",
+                [],
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+            )
+            .unwrap();
+        assert_eq!(file, (0, "compose.yaml".into(), "services: {}".into()));
+        // It deploys no profile until one is turned on.
+        let profiles: String = conn
+            .query_row("SELECT profiles FROM stacks WHERE id = 's'", [], |r| {
+                r.get(0)
+            })
+            .unwrap();
+        assert_eq!(profiles, "[]");
+        // No deploy was recorded before history existed.
+        let deploys: i64 = conn
+            .query_row("SELECT count(*) FROM stack_deploys", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(deploys, 0);
+        let linked: i64 = conn
+            .query_row("SELECT count(*) FROM linked_stacks", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(linked, 0);
     }
 
     #[test]

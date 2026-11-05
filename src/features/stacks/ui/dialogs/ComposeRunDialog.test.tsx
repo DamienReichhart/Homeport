@@ -34,7 +34,7 @@ describe('compose run dialog', () => {
       <AppProviders client={createQueryClient()}>
         <ComposeRunDialog
           hostId="h1"
-          job={{ stackId: 's1', name: 'shop', action: 'up' }}
+          job={{ kind: 'managed', stackId: 's1', name: 'shop', action: 'up' }}
           onClose={() => {}}
         />
       </AppProviders>,

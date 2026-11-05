@@ -11,15 +11,19 @@ A Docker Engine that Homeport connects to, defined by a name and how to reach it
 
 ### Stack
 
-A Compose project running on a Host, identified by its project name. Every Stack is either Managed or External. See [Stacks](/docs/guides/stacks/).
+A Compose project running on a Host, identified by its project name. Every Stack is Managed, Linked or External. See [Stacks](/docs/guides/stacks/).
 
 ### Managed Stack
 
 A Stack whose compose definition and environment Homeport holds, so it can be deployed, redeployed and edited from Homeport.
 
+### Linked Stack
+
+A Stack whose compose files are a folder on this computer. Homeport keeps where the folder and its compose files are, reads and writes the files in place, and deploys with that folder as the project directory, so `build:`, `env_file:` and relative paths work. Found from the compose labels of running containers, or created from a folder. It becomes External while its files are missing. See [Linked Stacks](/docs/guides/stacks/#linked-stacks).
+
 ### External Stack
 
-A Stack found running on a Host whose compose definition Homeport doesn't have. It can be started, stopped and removed, but not redeployed or edited.
+A Stack found running on a Host whose compose definition Homeport doesn't have, neither stored nor in a folder on this computer. It can be started, stopped and removed, but not redeployed or edited.
 
 ### Adopt
 

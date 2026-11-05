@@ -25,11 +25,18 @@ It contains:
 | TLS CA certificates, client certificates and keys | **Encrypted** |
 | Managed Stack compose files                       | Plain text    |
 | Managed Stack environments                        | **Encrypted** |
+| Linked Stack folders and compose file paths       | Plain text    |
+| Deploy history: compose files and profiles        | Plain text    |
+| Deploy history: environments                      | **Encrypted** |
 | Registry addresses and user names                 | Plain text    |
 | Registry passwords and access tokens              | **Encrypted** |
 | Your theme and last selected Host                 | Plain text    |
 
 Homeport doesn't copy anything from your Engines: containers, images and logs are read live and never saved, except when you download logs or files yourself.
+
+### Linked Stack folders
+
+For a [Linked Stack](/docs/guides/stacks/#linked-stacks), Homeport stores only where its folder and compose files are, and a fingerprint of the files to tell when they change — never a copy of them. It reads the compose files when you open the Stack, and writes to them only when you choose **Save** in its **Definition** tab, replacing each edited file in one step and keeping its permissions; it won't overwrite a file that changed since you opened it unless you say so. Homeport never reads or writes the folder's `.env`: Compose reads it when it runs. Forgetting a Linked Stack never touches the folder.
 
 ## How secrets are encrypted
 

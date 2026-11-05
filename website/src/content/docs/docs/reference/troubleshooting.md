@@ -125,7 +125,17 @@ If it's installed but not found, Homeport may have a different `PATH` from your 
 
 ### Deploy fails: "uses build:"
 
-The Host would build from files on this computer. Build and push the image to a registry, then use `image:` instead.
+A Managed Stack has no folder to build from. Either [link the project folder](/docs/guides/stacks/#creating-a-linked-stack) instead — a Linked Stack builds — or build and push the image to a registry, then use `image:`.
+
+### My Stack became External
+
+A [Linked Stack](/docs/guides/stacks/#when-the-folder-moves-or-disappears) shows as External, marked ⚠ **Its compose files are no longer on this computer**, when its folder was moved, renamed or deleted, or a compose file in it was. Nothing is lost: put the folder back where it was and the Stack is Linked again at the next refresh. If the folder moved for good, choose **Forget** in the Stack's **Definition** tab, then link it again from its new place with **New stack → Use a folder on this computer**.
+
+A Stack started from a folder on another computer is always External here, since this computer doesn't have that path.
+
+### "Changed outside Homeport"
+
+A Linked Stack's compose files were edited outside Homeport — in your editor, by `git pull` — since Homeport last read them. Choose **Reload** to see them as they are. If you were editing in Homeport at the same time, saving is refused with **… changed outside Homeport since you opened it** so neither change is lost silently: reload and redo your edit, or choose **Overwrite** to keep yours. See [editing a Linked Stack](/docs/guides/stacks/#editing-a-linked-stack).
 
 ### Pulling a private image fails
 

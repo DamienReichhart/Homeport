@@ -17,15 +17,19 @@ An SSH server an SSH Host is reached through when its own SSH server only accept
 _Avoid_: Jump host, jump server, proxy, gateway, hop (in the UI)
 
 **Stack**:
-A Compose project running on a Host, identified by its project name. Every Stack is either Managed or External.
+A Compose project running on a Host, identified by its project name. Every Stack is Managed, Linked or External.
 _Avoid_: Compose, project, application
 
 **Managed Stack**:
 A Stack whose compose definition (and environment) Homeport holds, so it can be deployed, redeployed and edited from Homeport.
 _Avoid_: Owned stack, local stack
 
+**Linked Stack**:
+A Stack whose compose definition is a folder on this machine: Homeport keeps where the folder and its compose files are, reads and writes the files in place, and deploys with that folder as the project directory, so `build:`, `env_file:` and relative paths work. Found from the compose labels of running containers, or created from a folder. It becomes External while its files are missing.
+_Avoid_: Local stack, folder stack, bound stack
+
 **External Stack**:
-A Stack found running on a Host whose compose definition Homeport doesn't have. It can be started, stopped and removed, but not redeployed or edited.
+A Stack found running on a Host whose compose definition Homeport doesn't have, neither stored nor in a folder on this machine. It can be started, stopped and removed, but not redeployed or edited.
 _Avoid_: Unmanaged stack, foreign stack, discovered stack
 
 **Adopt**:

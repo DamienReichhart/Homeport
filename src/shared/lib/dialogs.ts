@@ -2,9 +2,13 @@ import { open, save, type DialogFilter } from '@tauri-apps/plugin-dialog';
 
 export type { DialogFilter };
 
-/** Asks for one file to open; `null` when cancelled. */
-export async function pickFile(title: string, filters?: DialogFilter[]): Promise<string | null> {
-  const picked = await open({ title, multiple: false, directory: false, filters });
+/** Asks for one file to open, starting in `defaultPath`; `null` when cancelled. */
+export async function pickFile(
+  title: string,
+  filters?: DialogFilter[],
+  defaultPath?: string,
+): Promise<string | null> {
+  const picked = await open({ title, multiple: false, directory: false, filters, defaultPath });
   return typeof picked === 'string' ? picked : null;
 }
 

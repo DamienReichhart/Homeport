@@ -141,25 +141,80 @@ export const commands = {
 	containersRecreate: (hostId: string, id: string, spec: RunSpec) => __TAURI_INVOKE<string>("containers_recreate", { hostId, id, spec }),
 	/**  Commits a container to a new image; returns the image's id. */
 	containersCommit: (hostId: string, id: string, spec: CommitSpec) => __TAURI_INVOKE<string>("containers_commit", { hostId, id, spec }),
-	/**  Every Stack on a Host: those running there plus undeployed Managed Stacks. */
+	/**
+	 *  Every Stack on a Host: those running there plus undeployed Managed and
+	 *  Linked Stacks. Stacks started from compose files on this machine are
+	 *  recorded as Linked the first time they're seen.
+	 */
 	stacksList: (hostId: string) => __TAURI_INVOKE<Stack[]>("stacks_list", { hostId }),
 	stacksGet: (id: string) => __TAURI_INVOKE<ManagedStack>("stacks_get", { id }),
 	/**  The decrypted environment of a Managed Stack, for editing. */
 	stacksGetEnv: (id: string) => __TAURI_INVOKE<string>("stacks_get_env", { id }),
-	stacksCheck: (compose: string) => __TAURI_INVOKE<ComposeCheck>("stacks_check", { compose }),
+	/**
+	 *  Checks a definition made of `files` (their YAML, merged in order) against
+	 *  the rules of its kind of Stack.
+	 */
+	stacksCheck: (files: string[], kind: SourceKind) => __TAURI_INVOKE<ComposeCheck>("stacks_check", { files, kind }),
 	/**  Creates a Managed Stack. Using the name of an External Stack adopts it. */
-	stacksCreate: (hostId: string, name: string, compose: string, env: string) => __TAURI_INVOKE<ManagedStack>("stacks_create", { hostId, name, compose, env }),
-	stacksUpdate: (id: string, compose: string, env: string) => __TAURI_INVOKE<ManagedStack>("stacks_update", { id, compose, env }),
+	stacksCreate: (hostId: string, name: string, files: ComposeFile[], env: string) => __TAURI_INVOKE<ManagedStack>("stacks_create", { hostId, name, files, env }),
+	stacksUpdate: (id: string, files: ComposeFile[], env: string) => __TAURI_INVOKE<ManagedStack>("stacks_update", { id, files, env }),
 	/**
 	 *  Forgets a Managed Stack's definition; its containers keep running and it
 	 *  becomes an External Stack.
 	 */
 	stacksForget: (id: string) => __TAURI_INVOKE<null>("stacks_forget", { id }),
+	/**
+	 *  Sets the Compose profiles a Managed or Linked Stack deploys; they apply
+	 *  from its next compose command.
+	 */
+	stacksSetProfiles: (kind: SourceKind, id: string, profiles: string[]) => __TAURI_INVOKE<string[]>("stacks_set_profiles", { kind, id, profiles }),
+	/**  What Compose would make of a folder picked for a new Linked Stack. */
+	stacksLinkedInspect: (path: string) => __TAURI_INVOKE<FolderProject>("stacks_linked_inspect", { path }),
+	/**
+	 *  Records a Linked Stack for the folder `working_dir` and its compose
+	 *  files. Using the name of an External Stack takes it over.
+	 */
+	stacksLinkedCreate: (hostId: string, name: string, workingDir: string, configFiles: string[]) => __TAURI_INVOKE<LinkedStack>("stacks_linked_create", { hostId, name, workingDir, configFiles }),
+	/**
+	 *  A Linked Stack's compose files, read from its folder. `acknowledge` notes
+	 *  them as seen, so they no longer count as changed outside Homeport.
+	 */
+	stacksLinkedRead: (id: string, acknowledge: boolean) => __TAURI_INVOKE<LinkedFiles>("stacks_linked_read", { id, acknowledge }),
+	/**
+	 *  Writes one compose file of a Linked Stack in place. `expected` is the
+	 *  fingerprint of the file the edit started from; `None` overwrites it even
+	 *  when it changed outside Homeport.
+	 */
+	stacksLinkedWrite: (id: string, path: string, content: string, expected: string | null) => __TAURI_INVOKE<LinkedFiles>("stacks_linked_write", { id, path, content, expected }),
+	/**  Sets which compose files of its folder a Linked Stack uses, in order. */
+	stacksLinkedSetFiles: (id: string, configFiles: string[]) => __TAURI_INVOKE<LinkedFiles>("stacks_linked_set_files", { id, configFiles }),
+	/**  Forgets a Linked Stack: its record goes, its folder and containers stay. */
+	stacksLinkedForget: (id: string) => __TAURI_INVOKE<null>("stacks_linked_forget", { id }),
 	stacksAct: (hostId: string, name: string, action: StackAction) => __TAURI_INVOKE<null>("stacks_act", { hostId, name, action }),
 	/**  Removes a Stack's containers and networks through the Engine API. */
 	stacksRemove: (hostId: string, name: string) => __TAURI_INVOKE<null>("stacks_remove", { hostId, name }),
-	/**  Runs a compose command for a Managed Stack, streaming its output. */
-	stacksComposeSubscribe: (id: string, action: ComposeAction, onEvent: Channel<ComposeEvent>) => __TAURI_INVOKE<number>("stacks_compose_subscribe", { id, action, onEvent }),
+	/**
+	 *  Runs a compose command for the Managed or Linked Stack `id`, streaming
+	 *  its output.
+	 */
+	stacksComposeSubscribe: (kind: SourceKind, id: string, action: ComposeAction, onEvent: Channel<ComposeEvent>) => __TAURI_INVOKE<number>("stacks_compose_subscribe", { kind, id, action, onEvent }),
+	/**
+	 *  What redeploying the Managed or Linked Stack `id` would change: its
+	 *  latest successful deploy against `candidate`, or against its stored
+	 *  definition (a Linked Stack's files as they are now) when there's none.
+	 *  Environment values are compared here and never sent back.
+	 */
+	stacksDiff: (kind: SourceKind, id: string, candidate: Candidate | null) => __TAURI_INVOKE<DeployDiff>("stacks_diff", { kind, id, candidate }),
+	/**  A Stack's recorded deploys, newest first. */
+	stacksHistory: (id: string) => __TAURI_INVOKE<DeploySummary[]>("stacks_history", { id }),
+	/**  One recorded deploy, with its definition and the names of its variables. */
+	stacksDeploy: (id: string) => __TAURI_INVOKE<DeployDetail>("stacks_deploy", { id }),
+	/**
+	 *  Rolls a Managed Stack back to the recorded deploy `deploy_id`: puts its
+	 *  definition, environment and profiles back, then redeploys, streaming the
+	 *  output.
+	 */
+	stacksRollbackSubscribe: (deployId: string, onEvent: Channel<ComposeEvent>) => __TAURI_INVOKE<number>("stacks_rollback_subscribe", { deployId, onEvent }),
 };
 
 /** Events */
@@ -277,6 +332,16 @@ export type BundleHost = {
 	secretsMissing: boolean,
 };
 
+/**
+ *  The definition about to be deployed, when it isn't the stored one: the
+ *  editor's text for a Managed Stack, the edited files for a Linked one.
+ */
+export type Candidate = {
+	files: ComposeFile[],
+	/**  `None` for a Linked Stack, which has no environment of its own. */
+	env: string | null,
+};
+
 /**  What this machine can do; features degrade gracefully when something is missing. */
 export type Capabilities = {
 	/**  An OS keychain is reachable, so SSH, TLS, stack `.env` and registry secrets can be stored. */
@@ -300,9 +365,21 @@ export type CommitSpec = {
 export type ComposeAction = 
 /**
  *  `up -d --remove-orphans`: deploy or redeploy, after pulling the
- *  images the Host lacks through the Engine API.
+ *  images the Host lacks through the Engine API. Builds what has no
+ *  image yet.
  */
 "up" | 
+/**
+ *  `up -d --remove-orphans --build`: also rebuilds every service with
+ *  `build:` first.
+ */
+"rebuild" | 
+/**
+ *  Pulls every service's image through the Engine API, then `up` with
+ *  what was pulled, so only services whose image changed are recreated.
+ *  Stops after a failed pull, leaving the running containers alone.
+ */
+"update" | 
 /**  Pulls every service's image through the Engine API; compose isn't run. */
 "pull" | 
 /**  `down --remove-orphans`, keeping volumes. */
@@ -315,6 +392,8 @@ export type ComposeCheck = {
 	errors: string[],
 	/**  Things that will probably not do what the author expects. */
 	warnings: string[],
+	/**  The Compose profiles its services declare, sorted. */
+	profiles: string[],
 };
 
 /**  How to invoke Compose on this machine. */
@@ -328,6 +407,13 @@ export type ComposeCli = {
 export type ComposeEvent = { type: "line"; text: string } | 
 /**  `error` explains a failed exit, from the end of stderr. */
 { type: "exit"; success: boolean; code: number | null; error: AppError | null } | { type: "error"; error: AppError };
+
+/**  One compose file of a Managed Stack. */
+export type ComposeFile = {
+	/**  A file name such as `compose.prod.yaml`, unique in the Stack. */
+	name: string,
+	content: string,
+};
 
 /**  The compose CLI used to deploy Managed Stacks, or why there's none. */
 export type ComposeSupport = { state: "available"; cli: ComposeCli } | 
@@ -365,6 +451,60 @@ export type ContainerUsage = {
 
 /**  Credentials typed by the user. Absent on update means "keep the stored ones". */
 export type CredentialsInput = { kind: "tls"; caPem: string; certPem: string; keyPem: string } | { kind: "sshKey"; privateKey: string; passphrase: string | null };
+
+/**  One deploy with the definition it used. */
+export type Deploy = {
+	summary: DeploySummary,
+	/**
+	 *  The compose files, in merge order: names for a Managed Stack, paths
+	 *  for a Linked one.
+	 */
+	files: ComposeFile[],
+	profiles: string[],
+};
+
+/**
+ *  A deploy as the history shows it: its definition, and the names of its
+ *  environment variables, never their values.
+ */
+export type DeployDetail = {
+	deploy: Deploy,
+	/**  `None` when it has an environment this computer's keychain can't open. */
+	envKeys: string[] | null,
+};
+
+export type DeployDiff = {
+	/**
+	 *  Whether Homeport knows what is deployed: false when the Stack was
+	 *  deployed before it kept a history, or outside it.
+	 */
+	known: boolean,
+	/**  When the deployed definition was deployed. */
+	deployedAt: string | null,
+	/**  The candidate's files in order, then those it no longer has. */
+	files: FileChange[],
+	/**  The order of the files changed, which changes how they merge. */
+	reordered: boolean,
+	env: EnvKeyChange[],
+	deployedProfiles: string[],
+	candidateProfiles: string[],
+	/**  Nothing at all would change. */
+	unchanged: boolean,
+};
+
+/**  One deploy, without its files. */
+export type DeploySummary = {
+	id: string,
+	stackId: string,
+	kind: SourceKind,
+	action: ComposeAction,
+	startedAt: string,
+	/**  `None` while it runs, or when the run was cancelled. */
+	finishedAt: string | null,
+	success: boolean | null,
+	exitCode: number | null,
+	hasEnv: boolean,
+};
 
 export type DetectedEngine = {
 	/**  The product that usually owns this socket, e.g. "Colima". */
@@ -429,6 +569,14 @@ export type EngineInfo = {
 	images: number,
 };
 
+/**  What happened to one environment variable. */
+export type EnvChange = "added" | "removed" | "changed" | "unchanged";
+
+export type EnvKeyChange = {
+	key: string,
+	change: EnvChange,
+};
+
 /**  Stable machine-readable identifier of a failure, one per case the user can act on. */
 export type ErrorCode = 
 /**  A failure that started in the frontend, outside any command. */
@@ -440,7 +588,13 @@ export type ErrorCode =
 /**  A GPU was requested from a Host without the vendor's container toolkit. */
 "gpu_unavailable" | 
 /**  Recreating a container failed, and so did putting the original back. */
-"recreate_rolled_back" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
+"recreate_rolled_back" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
+/**  A Linked Stack's folder, or one of its compose files, is gone. */
+"stack_folder_missing" | 
+/**  A Linked Stack's compose file can't be read or written. */
+"stack_file_unreadable" | 
+/**  A Linked Stack's compose file changed on disk since it was opened. */
+"stack_files_changed" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
 
 export type ExecEvent = { type: "output"; data: string } | 
 /**  `error` explains an exit that means the command couldn't run. */
@@ -461,6 +615,16 @@ export type ExportOutcome = {
 	withoutSecrets: string[],
 };
 
+/**
+ *  One compose file, as deployed and as about to be; `None` on the side
+ *  that doesn't have it.
+ */
+export type FileChange = {
+	name: string,
+	deployed: string | null,
+	candidate: string | null,
+};
+
 export type FileEntry = {
 	name: string,
 	path: string,
@@ -473,6 +637,18 @@ export type FileEntry = {
 };
 
 export type FileKind = "directory" | "file" | "symlink" | "other";
+
+/**  What Compose would make of a folder. */
+export type FolderProject = {
+	workingDir: string,
+	/**  The compose files Compose would use, in order, with their content. */
+	files: LinkedFile[],
+	/**
+	 *  The project name: the files' top-level `name:`, or the folder's name
+	 *  as Compose normalises it.
+	 */
+	name: string,
+};
 
 export type Freshness = "upToDate" | 
 /**  The registry has a different image under this tag. */
@@ -698,6 +874,47 @@ export type Licenses = {
 	third_party: string | null,
 };
 
+/**  One compose file of a Linked Stack. */
+export type LinkedFile = {
+	/**  Its absolute path on this machine. */
+	path: string,
+	content: string,
+	/**  Of `content`, to tell whether the file changed since. */
+	fingerprint: string,
+};
+
+/**  A Linked Stack's compose files as they are now. */
+export type LinkedFiles = {
+	workingDir: string,
+	/**  In the order compose merges them. */
+	files: LinkedFile[],
+	/**  Of every file together, as stored when they were last read or written. */
+	fingerprint: string,
+	/**  The files differ from what Homeport last read or wrote. */
+	changedOutside: boolean,
+	/**  The Compose profiles the Stack deploys. */
+	profiles: string[],
+};
+
+export type LinkedStack = {
+	id: string,
+	hostId: string,
+	name: string,
+	/**  The project folder on this machine, where compose runs. */
+	workingDir: string,
+	/**  The compose files, as absolute paths, in the order compose merges them. */
+	configFiles: string[],
+	/**
+	 *  Of the files as Homeport last read or wrote them, to tell when they
+	 *  changed outside Homeport.
+	 */
+	fingerprint: string,
+	/**  The Compose profiles it deploys; none until the user turns one on. */
+	profiles: string[],
+	createdAt: string,
+	updatedAt: string,
+};
+
 export type LogEvent = { type: "lines"; lines: LogLine[] } | { type: "error"; error: AppError } | { type: "end" };
 
 export type LogLine = {
@@ -746,8 +963,11 @@ export type ManagedStack = {
 	id: string,
 	hostId: string,
 	name: string,
-	compose: string,
+	/**  Its compose files, merged in this order; never empty. */
+	files: ComposeFile[],
 	hasEnv: boolean,
+	/**  The Compose profiles it deploys, besides its services without one. */
+	profiles: string[],
 	createdAt: string,
 	updatedAt: string,
 };
@@ -923,6 +1143,9 @@ export type Settings = {
 	checkForUpdates?: boolean,
 };
 
+/**  The kinds of source, for the rules a definition is checked against. */
+export type SourceKind = "managed" | "linked";
+
 export type SshAuth = 
 /**  A keypair Homeport generated for this Host. */
 "generated" | 
@@ -949,19 +1172,37 @@ export type SshSetup = {
 export type Stack = {
 	name: string,
 	kind: StackKind,
-	/**  Present for Managed Stacks. */
-	managedId: string | null,
+	/**  The stored record of a Managed or Linked Stack. */
+	id: string | null,
 	state: StackState,
 	services: StackService[],
 	running: number,
 	total: number,
 	/**  Where the compose files lived for whoever deployed it (on that machine). */
 	configFiles: string | null,
+	/**  The folder of a Linked Stack, on this machine. */
+	workingDir: string | null,
+	/**  Why a recorded Stack is shown as another kind. */
+	problem: StackProblem | null,
 };
 
 export type StackAction = "start" | "stop" | "restart";
 
-export type StackKind = "managed" | "external";
+export type StackKind = 
+/**  Homeport holds its compose definition and environment. */
+"managed" | 
+/**  Its compose files are a folder on this machine (ADR 0008). */
+"linked" | 
+/**  Only its containers are known. */
+"external";
+
+/**  Why a Stack Homeport has a record of can't be used as its kind says. */
+export type StackProblem = 
+/**
+ *  A Linked Stack's compose files aren't on this machine any more, so
+ *  it's shown as External until they come back.
+ */
+"filesMissing";
 
 export type StackService = {
 	name: string,
@@ -976,7 +1217,7 @@ export type StackState =
 "partial" | 
 /**  Containers exist but none is running. */
 "stopped" | 
-/**  A Managed Stack with no containers yet. */
+/**  A Managed or Linked Stack with no containers yet. */
 "notDeployed";
 
 export type StatsSample = {

@@ -709,8 +709,9 @@ export const managedStacks: ManagedStack[] = [
   id: id as string,
   hostId: PROD,
   name: name as string,
-  compose: compose as string,
+  files: [{ name: 'compose.yaml', content: compose as string }],
   hasEnv: name === 'shop',
+  profiles: [],
   createdAt: new Date((NOW - (age as number)) * 1000).toISOString(),
   updatedAt: new Date((NOW - (age as number)) * 1000).toISOString(),
 }));
@@ -733,24 +734,28 @@ export function stacksOf(hostId: string): Stack[] {
     return {
       name,
       kind: managed ? 'managed' : 'external',
-      managedId: managed?.id ?? null,
+      id: managed?.id ?? null,
       state: running === 0 ? 'stopped' : running === members.length ? 'running' : 'partial',
       services,
       running,
       total: members.length,
       configFiles: managed ? null : `/opt/${name}/compose.yaml`,
+      workingDir: null,
+      problem: null,
     };
   });
   if (hostId === PROD) {
     stacks.push({
       name: 'analytics',
       kind: 'managed',
-      managedId: 'stack-analytics',
+      id: 'stack-analytics',
       state: 'notDeployed',
       services: [],
       running: 0,
       total: 0,
       configFiles: null,
+      workingDir: null,
+      problem: null,
     });
   }
   return stacks.sort((a, b) => a.name.localeCompare(b.name));

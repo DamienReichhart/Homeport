@@ -87,7 +87,7 @@ Known weakness: Host Grotesk's hyphen is wide, so a name like `prod-eu-1` can re
 
 ## Voice
 
-Plain, specific, calm. Say what happened and what to do next; name things by the [glossary](../GLOSSARY.md) (Host, Engine, Stack, Managed Stack, External Stack, Adopt). British spelling (colour, licence). No exclamation marks.
+Plain, specific, calm. Say what happened and what to do next; name things by the [glossary](../GLOSSARY.md) (Host, Engine, Stack, Managed Stack, Linked Stack, External Stack, Adopt). British spelling (colour, licence). No exclamation marks.
 
 Never: seamless, effortless, powerful, unleash, supercharge, next-gen, blazing fast, AI-powered, single pane of glass, game-changer, "for developers, by developers".
 

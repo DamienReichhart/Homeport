@@ -38,9 +38,11 @@ export function StackServices({ hostId, stack }: { hostId: string; stack: Stack 
             count: newer.length,
             services: newer.map((s) => s.service).join(', '),
           })}{' '}
-          {stack.kind === 'managed' && (
-            <span className="text-muted-foreground">{t('stacks.services.howToUpdate')}</span>
-          )}
+          <span className="text-muted-foreground">
+            {stack.kind === 'external'
+              ? t('stacks.services.adoptToUpdate')
+              : t('stacks.services.howToUpdate')}
+          </span>
         </p>
       )}
       <div className="rounded-md border">

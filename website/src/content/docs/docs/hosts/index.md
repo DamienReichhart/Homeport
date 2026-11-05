@@ -22,7 +22,7 @@ For a remote server, prefer **SSH**: it needs nothing exposed beyond the SSH por
 - **Manage hosts** in the Host switcher lists every Host with its type, address and status. Select one to open its page.
 - On a Host's page you can change its connection details and choose **Save**; Homeport reconnects with the new settings. A Host's connection type can't be changed — remove it and add it again instead.
 - The **Enabled** switch disconnects a Host without forgetting it. A disabled Host doesn't retry until you turn it back on.
-- **Remove host** forgets the Host, its stored credentials and the compose definitions of its Managed Stacks. Nothing running on the Host is touched: containers, images and volumes stay as they are.
+- **Remove host** forgets the Host, its stored credentials, the compose definitions of its Managed Stacks, its Linked Stacks and its Stacks' deploy history. Nothing running on the Host is touched: containers, images and volumes stay as they are, and Linked Stacks' folders too.
 
 Host names must be unique, ignoring case.
 

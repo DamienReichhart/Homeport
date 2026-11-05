@@ -23,7 +23,7 @@ When an update is available, the card shows what you can do, which depends on ho
 
 ## Registries
 
-Logins for container registries — Docker Hub, GitHub Container Registry (GHCR), or your own — kept once in Homeport and used on every Host: when you pull an image, run a container from one that isn't there yet, push, build, or deploy a Managed Stack. There is one login per registry address.
+Logins for container registries — Docker Hub, GitHub Container Registry (GHCR), or your own — kept once in Homeport and used on every Host: when you pull an image, run a container from one that isn't there yet, push, build, or deploy a Managed or Linked Stack. There is one login per registry address.
 
 - **Add login** asks for the **Registry** (`docker.io`, `ghcr.io`, `registry.example.com:5000`), the **User name** and the **Password or access token**. GHCR, and Docker Hub accounts with two-factor authentication, need an access token rather than the password.
 - **Check login** asks the registry, from this computer, whether it accepts the login, as `docker login` does, without saving anything. A refused login says so with a hint; a registry Homeport can't reach says that instead.
