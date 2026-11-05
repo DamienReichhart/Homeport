@@ -225,11 +225,12 @@ fn with_files(c: &Connection, mut stack: ManagedStack) -> rusqlite::Result<Manag
     Ok(stack)
 }
 
-/// Whether the Host already has a Managed or Linked Stack named `name`.
+/// Whether the Host already has a Managed, Linked or Synced Stack named `name`.
 pub(crate) fn name_taken(c: &Connection, host_id: &str, name: &str) -> rusqlite::Result<bool> {
     c.query_row(
         "SELECT EXISTS (SELECT 1 FROM stacks WHERE host_id = ?1 AND name = ?2)
-             OR EXISTS (SELECT 1 FROM linked_stacks WHERE host_id = ?1 AND name = ?2)",
+             OR EXISTS (SELECT 1 FROM linked_stacks WHERE host_id = ?1 AND name = ?2)
+             OR EXISTS (SELECT 1 FROM synced_stacks WHERE host_id = ?1 AND name = ?2)",
         (host_id, name),
         |r| r.get(0),
     )

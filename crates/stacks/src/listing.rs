@@ -10,6 +10,7 @@ use crate::{
     linked::{detect, files, FileCache, LinkedStore},
     stack::{derive, Stack, StackRecord},
     store::StackStore,
+    synced::SyncedStore,
 };
 
 /// The Stacks of the Host `host_id`, given its `containers`. A Stack found
@@ -21,6 +22,7 @@ pub fn list(
     containers: &[Container],
     managed: &StackStore,
     linked: &LinkedStore,
+    synced: &SyncedStore,
     cache: &FileCache,
 ) -> AppResult<Vec<Stack>> {
     let mut records: Vec<StackRecord> = managed
@@ -28,6 +30,13 @@ pub fn list(
         .into_iter()
         .map(|s| StackRecord::managed(s.id, s.name))
         .collect();
+    // A Synced Stack runs from its worktree on this machine; it's never Linked.
+    records.extend(
+        synced
+            .list(host_id)?
+            .into_iter()
+            .map(|s| StackRecord::synced(s.id, s.name)),
+    );
     let mut known = linked.list(host_id)?;
 
     let mut projects: BTreeMap<&str, Vec<&Container>> = BTreeMap::new();
@@ -86,6 +95,7 @@ mod tests {
     struct Setup {
         managed: StackStore,
         linked: LinkedStore,
+        synced: SyncedStore,
         host: String,
         cache: FileCache,
     }
@@ -104,7 +114,8 @@ mod tests {
             .unwrap()
             .id;
         Setup {
-            managed: StackStore::new(db.clone(), secrets),
+            managed: StackStore::new(db.clone(), secrets.clone()),
+            synced: SyncedStore::new(db.clone(), secrets),
             linked: LinkedStore::new(db),
             host,
             cache: FileCache::new(),
@@ -145,7 +156,15 @@ mod tests {
         .unwrap();
         let containers = [container("site", "web", dir.path())];
 
-        let stacks = list(&s.host, &containers, &s.managed, &s.linked, &s.cache).unwrap();
+        let stacks = list(
+            &s.host,
+            &containers,
+            &s.managed,
+            &s.linked,
+            &s.synced,
+            &s.cache,
+        )
+        .unwrap();
         assert_eq!(stacks[0].kind, StackKind::Linked);
         assert_eq!(
             stacks[0].working_dir.as_deref(),
@@ -159,11 +178,27 @@ mod tests {
         );
 
         // Seen again: recorded once.
-        list(&s.host, &containers, &s.managed, &s.linked, &s.cache).unwrap();
+        list(
+            &s.host,
+            &containers,
+            &s.managed,
+            &s.linked,
+            &s.synced,
+            &s.cache,
+        )
+        .unwrap();
         assert_eq!(s.linked.list(&s.host).unwrap().len(), 1);
 
         std::fs::remove_file(dir.path().join("compose.yaml")).unwrap();
-        let stacks = list(&s.host, &containers, &s.managed, &s.linked, &s.cache).unwrap();
+        let stacks = list(
+            &s.host,
+            &containers,
+            &s.managed,
+            &s.linked,
+            &s.synced,
+            &s.cache,
+        )
+        .unwrap();
         assert_eq!(stacks[0].kind, StackKind::External);
         assert_eq!(stacks[0].problem, Some(StackProblem::FilesMissing));
         assert_eq!(
@@ -177,7 +212,15 @@ mod tests {
             "services:\n  web:\n    image: nginx\n",
         )
         .unwrap();
-        let stacks = list(&s.host, &containers, &s.managed, &s.linked, &s.cache).unwrap();
+        let stacks = list(
+            &s.host,
+            &containers,
+            &s.managed,
+            &s.linked,
+            &s.synced,
+            &s.cache,
+        )
+        .unwrap();
         assert_eq!(stacks[0].kind, StackKind::Linked);
     }
 
@@ -189,7 +232,15 @@ mod tests {
             "web",
             std::path::Path::new("/nowhere/on/this/machine"),
         )];
-        let stacks = list(&s.host, &containers, &s.managed, &s.linked, &s.cache).unwrap();
+        let stacks = list(
+            &s.host,
+            &containers,
+            &s.managed,
+            &s.linked,
+            &s.synced,
+            &s.cache,
+        )
+        .unwrap();
         assert_eq!(stacks[0].kind, StackKind::External);
         assert_eq!(stacks[0].problem, None);
         assert!(s.linked.list(&s.host).unwrap().is_empty());
@@ -222,7 +273,15 @@ mod tests {
 
         let s = setup();
         let containers = homeport_engine::containers::list(&docker).await.unwrap();
-        let stacks = list(&s.host, &containers, &s.managed, &s.linked, &s.cache).unwrap();
+        let stacks = list(
+            &s.host,
+            &containers,
+            &s.managed,
+            &s.linked,
+            &s.synced,
+            &s.cache,
+        )
+        .unwrap();
         crate::lifecycle::remove(&docker, &project).await.unwrap();
         let stack = stacks.iter().find(|st| st.name == project).unwrap();
         assert_eq!(stack.kind, StackKind::Linked, "{stack:?}");

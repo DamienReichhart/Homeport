@@ -13,6 +13,7 @@ use homeport_stacks::{
     history::DeployHistory,
     linked::{FileCache, LinkedStore},
     store::StackStore,
+    synced::SyncedStacks,
 };
 use homeport_storage::SecretBox;
 
@@ -28,7 +29,9 @@ pub struct AppState {
     pub history: Arc<DeployHistory>,
     pub registries: RegistryStore,
     /// Synced Stacks' git repositories and their clones on this machine.
-    pub repositories: Repositories,
+    pub repositories: Arc<Repositories>,
+    /// Synced Stacks and their worktrees on this machine.
+    pub synced: Arc<SyncedStacks>,
     pub streams: Streams,
     pub exec: ExecSessions,
     /// Registry digests, for telling when a newer image is published.

@@ -93,50 +93,72 @@ impl StackSource {
             Self::Linked {
                 working_dir,
                 config_files,
-            } => {
-                if !working_dir.is_dir() {
-                    return Err(files::folder_missing(&working_dir.to_string_lossy()));
-                }
-                let mut texts = Vec::new();
-                for file in config_files {
-                    match std::fs::read_to_string(file) {
-                        Ok(text) => texts.push((file.clone(), text)),
-                        // Taking a Stack down works from its project name alone.
-                        Err(_) if !action.reads_definition() => {}
-                        Err(e) => {
-                            return Err(AppError::new(
-                                ErrorCode::StackFolderMissing,
-                                msg::FILE_MISSING.with("file", file),
-                            )
-                            .with_hint(msg::FILE_MISSING_HINT)
-                            .with_cause(&e))
-                        }
-                    }
-                }
-                if action.reads_definition() {
-                    let yaml: Vec<&str> = texts.iter().map(|(_, t)| t.as_str()).collect();
-                    if let Some(blocker) = definition::blocker(&yaml, self.kind()) {
-                        return Err(blocker);
-                    }
-                }
-                let mut file_args = vec![
-                    "--project-directory".to_owned(),
-                    working_dir.to_string_lossy().into_owned(),
-                ];
-                for file in config_files {
-                    file_args.extend(["--file".to_owned(), file.clone()]);
-                }
-                Ok(Prepared {
-                    file_args,
-                    workdir: WorkDir::Folder(working_dir.clone()),
-                    stdin: None,
-                    // Compose reads the folder's .env itself.
-                    vars: vec![],
-                    definition: texts,
-                })
+            } => prepare_folder(self.kind(), action, working_dir, config_files, vec![]),
+            Self::Synced {
+                working_dir,
+                config_files,
+                env,
+            } => prepare_folder(
+                self.kind(),
+                action,
+                working_dir,
+                config_files,
+                definition::parse_env(env)?,
+            ),
+        }
+    }
+}
+
+/// A source whose compose files are in a folder on this machine: compose
+/// runs there, so `build:`, `env_file:` and relative paths work, with `vars`
+/// added to its environment on top of the folder's `.env`, which compose
+/// reads itself.
+fn prepare_folder(
+    kind: super::SourceKind,
+    action: ComposeAction,
+    working_dir: &Path,
+    config_files: &[String],
+    vars: Vec<(String, String)>,
+) -> AppResult<Prepared> {
+    if !working_dir.is_dir() {
+        return Err(files::folder_missing(&working_dir.to_string_lossy()));
+    }
+    let mut texts = Vec::new();
+    for file in config_files {
+        match std::fs::read_to_string(file) {
+            Ok(text) => texts.push((file.clone(), text)),
+            // Taking a Stack down works from its project name alone.
+            Err(_) if !action.reads_definition() => {}
+            Err(e) => {
+                return Err(AppError::new(
+                    ErrorCode::StackFolderMissing,
+                    msg::FILE_MISSING.with("file", file),
+                )
+                .with_hint(msg::FILE_MISSING_HINT)
+                .with_cause(&e))
             }
         }
     }
+    if action.reads_definition() {
+        let yaml: Vec<&str> = texts.iter().map(|(_, t)| t.as_str()).collect();
+        if let Some(blocker) = definition::blocker(&yaml, kind) {
+            return Err(blocker);
+        }
+    }
+    let mut file_args = vec![
+        "--project-directory".to_owned(),
+        working_dir.to_string_lossy().into_owned(),
+    ];
+    for file in config_files {
+        file_args.extend(["--file".to_owned(), file.clone()]);
+    }
+    Ok(Prepared {
+        file_args,
+        workdir: WorkDir::Folder(working_dir.to_owned()),
+        stdin: None,
+        vars,
+        definition: texts,
+    })
 }
 
 #[cfg(test)]
@@ -275,5 +297,22 @@ mod tests {
                 Err(ref e) if e.is(ErrorCode::StackFolderMissing)
             ));
         }
+    }
+
+    #[test]
+    fn synced_stacks_run_in_their_folder_with_their_environment() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("compose.yaml");
+        std::fs::write(&path, "services:\n  app:\n    build: .\n").unwrap();
+        let source = StackSource::Synced {
+            working_dir: dir.path().to_owned(),
+            config_files: vec![path.to_string_lossy().into_owned()],
+            env: "TOKEN=hunter2\n".into(),
+        };
+        let prepared = source.prepare(ComposeAction::Up).unwrap();
+        assert_eq!(prepared.file_args[0], "--project-directory");
+        assert_eq!(prepared.vars, [("TOKEN".to_owned(), "hunter2".to_owned())]);
+        assert_eq!(prepared.workdir.path(), dir.path());
+        assert!(!std::fs::read_to_string(&path).unwrap().contains("hunter2"));
     }
 }

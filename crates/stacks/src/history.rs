@@ -226,8 +226,18 @@ pub fn restore(
     deploy_id: &str,
 ) -> AppResult<ManagedStack> {
     let deploy = history.get(deploy_id)?;
-    if deploy.summary.kind != SourceKind::Managed {
-        return Err(AppError::validation(msg::ROLLBACK_LINKED).with_hint(msg::ROLLBACK_LINKED_HINT));
+    match deploy.summary.kind {
+        SourceKind::Managed => {}
+        SourceKind::Linked => {
+            return Err(
+                AppError::validation(msg::ROLLBACK_LINKED).with_hint(msg::ROLLBACK_LINKED_HINT)
+            )
+        }
+        SourceKind::Synced => {
+            return Err(
+                AppError::validation(msg::ROLLBACK_SYNCED).with_hint(msg::ROLLBACK_SYNCED_HINT)
+            )
+        }
     }
     let env = history.env(deploy_id)?;
     stacks.update(&deploy.summary.stack_id, &deploy.files, &env)?;
@@ -238,6 +248,7 @@ fn kind_text(kind: SourceKind) -> &'static str {
     match kind {
         SourceKind::Managed => "managed",
         SourceKind::Linked => "linked",
+        SourceKind::Synced => "synced",
     }
 }
 
@@ -264,10 +275,10 @@ fn read_row(row: &Row<'_>) -> rusqlite::Result<Deploy> {
         summary: DeploySummary {
             id: row.get(0)?,
             stack_id: row.get(1)?,
-            kind: if kind == "linked" {
-                SourceKind::Linked
-            } else {
-                SourceKind::Managed
+            kind: match kind.as_str() {
+                "linked" => SourceKind::Linked,
+                "synced" => SourceKind::Synced,
+                _ => SourceKind::Managed,
             },
             action: serde_json::from_value(serde_json::Value::String(action))
                 .map_err(|e| invalid(3, e))?,

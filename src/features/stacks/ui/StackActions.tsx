@@ -146,7 +146,7 @@ export function StackActions({
           >
             <RotateCwIcon /> {t('stacks.action.restart')}
           </DropdownMenuItem>
-          {source === 'linked' && (
+          {(source === 'linked' || source === 'synced') && (
             <DropdownMenuItem disabled={!canCompose} onSelect={() => compose('rebuild')}>
               <HammerIcon /> {t('stacks.action.rebuild')}
             </DropdownMenuItem>

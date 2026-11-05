@@ -164,7 +164,7 @@ pub fn blocker(files: &[&str], kind: SourceKind) -> Option<AppError> {
 fn has_project_folder(kind: SourceKind) -> bool {
     match kind {
         SourceKind::Managed => false,
-        SourceKind::Linked => true,
+        SourceKind::Linked | SourceKind::Synced => true,
     }
 }
 

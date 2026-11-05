@@ -13,6 +13,7 @@ use homeport_stacks::{
     history::DeployHistory,
     linked::{FileCache, LinkedStore},
     store::StackStore,
+    synced::{SyncedStacks, SyncedStore},
 };
 use homeport_storage::{Db, Keychain, SecretBox};
 
@@ -42,16 +43,23 @@ pub fn state(app: &App) -> Result<AppState, Box<dyn Error>> {
             log::error!("failed to start host connections: {e}");
         }
     });
+    let repositories = Arc::new(Repositories::new(
+        RepositoryStore::new(db.clone(), secrets.clone()),
+        data_dir.join("repositories"),
+    ));
+    let synced = Arc::new(SyncedStacks::new(
+        SyncedStore::new(db.clone(), secrets.clone()),
+        repositories.clone(),
+        data_dir.join("synced-stacks"),
+    ));
     Ok(AppState {
         stacks: StackStore::new(db.clone(), secrets.clone()),
         linked: LinkedStore::new(db.clone()),
         linked_files: FileCache::new(),
         history: Arc::new(DeployHistory::new(db.clone(), secrets.clone())),
         registries: RegistryStore::new(db.clone(), secrets.clone()),
-        repositories: Repositories::new(
-            RepositoryStore::new(db.clone(), secrets.clone()),
-            data_dir.join("repositories"),
-        ),
+        repositories,
+        synced,
         secrets,
         settings,
         hosts: HostService { store, registry },

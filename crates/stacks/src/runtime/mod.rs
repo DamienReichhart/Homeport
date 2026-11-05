@@ -47,6 +47,15 @@ pub enum StackSource {
         /// Absolute paths, in the order compose merges them.
         config_files: Vec<String>,
     },
+    /// A commit of a git repository checked out on this machine (ADR 0014):
+    /// run like a Linked Stack from the compose file's folder, with the
+    /// Stack's environment as process variables, as for a Managed one.
+    Synced {
+        working_dir: std::path::PathBuf,
+        /// Absolute paths, in the order compose merges them.
+        config_files: Vec<String>,
+        env: String,
+    },
 }
 
 /// The kinds of source, for the rules a definition is checked against.
@@ -55,6 +64,7 @@ pub enum StackSource {
 pub enum SourceKind {
     Managed,
     Linked,
+    Synced,
 }
 
 impl StackSource {
@@ -62,6 +72,7 @@ impl StackSource {
         match self {
             Self::Managed { .. } => SourceKind::Managed,
             Self::Linked { .. } => SourceKind::Linked,
+            Self::Synced { .. } => SourceKind::Synced,
         }
     }
 }
@@ -133,7 +144,7 @@ impl Recorder {
     /// Records `job` as started; a failure to record never stops the deploy.
     pub(crate) fn start(&self, job: &ComposeJob, prepared: &Prepared) -> Option<String> {
         let env = match &job.source {
-            StackSource::Managed { env, .. } => env.as_str(),
+            StackSource::Managed { env, .. } | StackSource::Synced { env, .. } => env.as_str(),
             StackSource::Linked { .. } => "",
         };
         self.history

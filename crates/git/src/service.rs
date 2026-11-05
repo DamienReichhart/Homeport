@@ -1,7 +1,11 @@
 //! Repositories and their clones on this machine: one bare clone each, in
 //! the app data folder, shared by the Synced Stacks made from it.
 
-use std::path::{Path, PathBuf};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    sync::{Arc, Mutex},
+};
 
 use homeport_core::error::AppResult;
 
@@ -16,6 +20,8 @@ pub struct Repositories {
     pub store: RepositoryStore,
     /// Where the clones live: `<root>/<id>.git`.
     root: PathBuf,
+    /// One fetch at a time per clone, so two never race for its refs.
+    locks: Mutex<HashMap<String, Arc<tokio::sync::Mutex<()>>>>,
 }
 
 impl Repositories {
@@ -23,6 +29,7 @@ impl Repositories {
         Self {
             store,
             root: root.into(),
+            locks: Mutex::default(),
         }
     }
 
@@ -48,6 +55,14 @@ impl Repositories {
         id: &str,
         refs: &[(RefKind, &str)],
     ) -> AppResult<PathBuf> {
+        let lock = self
+            .locks
+            .lock()
+            .expect("repository locks poisoned")
+            .entry(id.to_owned())
+            .or_default()
+            .clone();
+        let _fetching = lock.lock().await;
         let access = self.store.access(id)?;
         let dir = self.clone_dir(id);
         let learned = ops::fetch(cli, &dir, &remote(&access), refs).await?;
