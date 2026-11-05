@@ -138,6 +138,8 @@ pub struct Recorder {
     pub history: Arc<DeployHistory>,
     pub host_id: String,
     pub stack_id: String,
+    /// The commit a Synced Stack deploys.
+    pub commit: Option<String>,
 }
 
 impl Recorder {
@@ -157,6 +159,7 @@ impl Recorder {
                 files: &prepared.definition,
                 env,
                 profiles: &job.profiles,
+                commit: self.commit.as_deref(),
             })
             .map_err(|e| e.logged("recording a deploy"))
             .ok()

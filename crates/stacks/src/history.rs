@@ -34,6 +34,8 @@ pub struct DeploySummary {
     pub success: Option<bool>,
     pub exit_code: Option<i32>,
     pub has_env: bool,
+    /// The commit a Synced Stack deployed.
+    pub commit: Option<String>,
 }
 
 /// One deploy with the definition it used.
@@ -69,6 +71,8 @@ pub struct NewDeploy<'a> {
     /// The environment text, empty for none.
     pub env: &'a str,
     pub profiles: &'a [String],
+    /// The commit of a Synced Stack.
+    pub commit: Option<&'a str>,
 }
 
 pub struct DeployHistory {
@@ -77,7 +81,7 @@ pub struct DeployHistory {
 }
 
 const COLUMNS: &str = "id, stack_id, stack_kind, action, started_at, finished_at, success, \
-     exit_code, env IS NOT NULL, definition, profiles";
+     exit_code, env IS NOT NULL, definition, profiles, commit_hash";
 
 impl DeployHistory {
     pub fn new(db: Arc<Db>, secrets: Arc<SecretBox>) -> Self {
@@ -104,8 +108,9 @@ impl DeployHistory {
             let tx = c.transaction()?;
             tx.execute(
                 "INSERT INTO stack_deploys
-                 (id, host_id, stack_id, stack_kind, stack_name, action, definition, env, profiles)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+                 (id, host_id, stack_id, stack_kind, stack_name, action, definition, env, profiles,
+                  commit_hash)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
                 (
                     &id,
                     deploy.host_id,
@@ -116,6 +121,7 @@ impl DeployHistory {
                     &definition,
                     &env,
                     &profiles,
+                    deploy.commit,
                 ),
             )?;
             tx.execute(
@@ -287,6 +293,7 @@ fn read_row(row: &Row<'_>) -> rusqlite::Result<Deploy> {
             success: row.get(6)?,
             exit_code: row.get(7)?,
             has_env: row.get(8)?,
+            commit: row.get(11)?,
         },
         files: serde_json::from_str(&definition).map_err(|e| invalid(9, e))?,
         profiles: serde_json::from_str(&profiles).map_err(|e| invalid(10, e))?,
@@ -330,6 +337,7 @@ mod tests {
             files,
             env,
             profiles: &[],
+            commit: None,
         }
     }
 
@@ -450,6 +458,29 @@ mod tests {
         assert!(matches!(
             restore(&history, &stacks, &id),
             Err(ref e) if e.is(ErrorCode::Validation) && e.hint.is_some()
+        ));
+    }
+
+    #[test]
+    fn synced_deploys_keep_their_commit_and_are_not_rolled_back() {
+        let (history, _, host) = setup(SecretBox::from_key(&[4; 32]));
+        let stacks = StackStore::new(history.db.clone(), history.secrets.clone());
+        let f = files("1");
+        let id = history
+            .start(&NewDeploy {
+                kind: SourceKind::Synced,
+                commit: Some("0123456789abcdef"),
+                ..deploy(&host, &f, "")
+            })
+            .unwrap();
+        let summary = history.get(&id).unwrap().summary;
+        assert_eq!(
+            (summary.kind, summary.commit.as_deref()),
+            (SourceKind::Synced, Some("0123456789abcdef"))
+        );
+        assert!(matches!(
+            restore(&history, &stacks, &id),
+            Err(ref e) if e.key == "errors.stacks.rollbackSynced"
         ));
     }
 

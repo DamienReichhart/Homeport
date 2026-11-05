@@ -222,6 +222,16 @@ export const commands = {
 	 */
 	stacksSyncedSetEnv: (id: string, env: string) => __TAURI_INVOKE<SyncedStack>("stacks_synced_set_env", { id, env }),
 	/**
+	 *  "Sync": fetches a Synced Stack's branch or tag, and says what deploying
+	 *  the new commit would change since the deployed one.
+	 */
+	stacksSyncedSync: (id: string) => __TAURI_INVOKE<SyncReview>("stacks_synced_sync", { id }),
+	/**
+	 *  Deploys `commit` of a Synced Stack, the one its sync review showed, with
+	 *  `action` (`up` or `rebuild`), streaming the output.
+	 */
+	stacksSyncedDeploySubscribe: (id: string, commit: string, action: ComposeAction, onEvent: Channel<ComposeEvent>) => __TAURI_INVOKE<number>("stacks_synced_deploy_subscribe", { id, commit, action, onEvent }),
+	/**
 	 *  Forgets a Synced Stack: its record, history and worktree go, its
 	 *  containers are left alone and it becomes External.
 	 */
@@ -390,6 +400,16 @@ export type Capabilities = {
 	git: GitSupport,
 };
 
+/**  One commit, as a sync shows it. */
+export type Commit = {
+	hash: string,
+	shortHash: string,
+	subject: string,
+	author: string,
+	/**  ISO 8601, as the committer's clock wrote it. */
+	date: string,
+};
+
 export type CommitSpec = {
 	/**  The new image's name, `repo[:tag]`; an existing tag moves to it. */
 	reference: string,
@@ -544,6 +564,8 @@ export type DeploySummary = {
 	success: boolean | null,
 	exitCode: number | null,
 	hasEnv: boolean,
+	/**  The commit a Synced Stack deployed. */
+	commit: string | null,
 };
 
 export type DetectedEngine = {
@@ -1161,6 +1183,18 @@ export type RepoAuth =
 /**  Nothing: a public repository over HTTPS. */
 "none";
 
+/**  One file under the compose file's folder that differs between two commits. */
+export type RepoFileChange = {
+	/**  Relative to the repository's root. */
+	path: string,
+	/**  `None` when the file is new, or isn't text. */
+	before: string | null,
+	/**  `None` when the file was deleted, or isn't text. */
+	after: string | null,
+	/**  The file isn't text Homeport shows, or is too large to compare. */
+	binary: boolean,
+};
+
 /**  A stored repository, as the frontend sees it: never a secret. */
 export type Repository = {
 	id: string,
@@ -1344,6 +1378,34 @@ export type StatsSample = {
 	blockRead: number,
 	blockWrite: number,
 	pids: number,
+};
+
+/**  What syncing would deploy, for the review before it does. */
+export type SyncReview = {
+	stack: SyncedStack,
+	/**  What is deployed now, `None` before the first deploy. */
+	deployed: Commit | null,
+	/**  What would be deployed: the ref as just fetched. */
+	fetched: Commit,
+	/**
+	 *  The commits after the deployed one that change the compose file's
+	 *  folder, newest first, at most [`ops::LOG_LIMIT`].
+	 */
+	commits: Commit[],
+	/**
+	 *  The files that changed under the compose file's folder, the compose
+	 *  file first.
+	 */
+	files: RepoFileChange[],
+	/**  Nothing under the compose file's folder changed since the deploy. */
+	upToDate: boolean,
+	/**  A tag now points at another commit than when it was last fetched. */
+	tagMoved: boolean,
+	/**
+	 *  A service is built from the repository's files, so the deploy
+	 *  rebuilds it, and a changed Dockerfile applies.
+	 */
+	builds: boolean,
 };
 
 /**  What a Synced Stack is created from. */

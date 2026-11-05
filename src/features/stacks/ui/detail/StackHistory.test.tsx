@@ -22,6 +22,7 @@ const summary = (id: string, success: boolean | null, at: string): DeploySummary
   id,
   stackId: 'm1',
   kind: 'managed',
+  commit: null,
   action: 'up',
   startedAt: at,
   finishedAt: success === null ? null : at,

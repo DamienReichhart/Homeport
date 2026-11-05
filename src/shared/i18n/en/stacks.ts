@@ -178,6 +178,23 @@ export default {
   'stacks.synced.never': 'Not deployed yet',
   'stacks.synced.envSaved': 'Saved the environment. It applies from the next deploy.',
   'stacks.synced.forget': 'Forget',
+  'stacks.action.sync': 'Sync',
+  'stacks.sync.title': 'Sync {name}',
+  'stacks.sync.fetching': 'Fetching the repository…',
+  'stacks.sync.from': 'Deploying {to} in place of {from}.',
+  'stacks.sync.first': 'Deploying {commit} for the first time.',
+  'stacks.sync.upToDate':
+    'Up to date: nothing in the compose file’s folder changed since {commit} was deployed.',
+  'stacks.sync.redeployAnyway': 'Redeploy anyway',
+  'stacks.sync.deploy': 'Deploy {commit}',
+  'stacks.sync.commits': 'New commits',
+  'stacks.sync.by': '{author}, {when}',
+  'stacks.sync.added': 'new',
+  'stacks.sync.deleted': 'deleted',
+  'stacks.sync.binary': 'Changed. It isn’t text, or is too large to show.',
+  'stacks.sync.tagMoved.title': 'The tag {tag} moved',
+  'stacks.sync.tagMoved.description':
+    'It now points at another commit than when Homeport last fetched it. Check the changes below before deploying.',
   'stacks.synced.forgetTitle': 'Forget {name}?',
   'stacks.synced.forgetDescription':
     'Homeport stops following its repository and deletes its checkout on this computer. Its containers keep running, and it becomes an External Stack. The repository stays in Settings → Repositories.',

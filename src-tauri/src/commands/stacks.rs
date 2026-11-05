@@ -22,7 +22,7 @@ use homeport_stacks::{
     },
     runtime::{self, ComposeJob, Recorder, SourceKind, StackSource, StackTarget},
     store::{ComposeFile, ManagedStack},
-    synced::{SyncedDraft, SyncedStack},
+    synced::{SyncReview, SyncedDraft, SyncedStack},
     Stack,
 };
 
@@ -238,6 +238,37 @@ pub fn stacks_synced_set_env(
     state.synced.store.set_env(&id, &env)
 }
 
+/// "Sync": fetches a Synced Stack's branch or tag, and says what deploying
+/// the new commit would change since the deployed one.
+#[tauri::command]
+#[specta::specta]
+pub async fn stacks_synced_sync(state: State<'_, AppState>, id: String) -> AppResult<SyncReview> {
+    let cli = git::detect().await?;
+    state.synced.sync(&cli, &id).await
+}
+
+/// Deploys `commit` of a Synced Stack, the one its sync review showed, with
+/// `action` (`up` or `rebuild`), streaming the output.
+#[tauri::command]
+#[specta::specta]
+pub async fn stacks_synced_deploy_subscribe(
+    state: State<'_, AppState>,
+    id: String,
+    commit: String,
+    action: ComposeAction,
+    on_event: Channel<ComposeEvent>,
+) -> AppResult<StreamId> {
+    spawn(
+        &state,
+        SourceKind::Synced,
+        id,
+        action,
+        Some(commit),
+        on_event,
+    )
+    .await
+}
+
 /// Forgets a Synced Stack: its record, history and worktree go, its
 /// containers are left alone and it becomes External.
 #[tauri::command]
@@ -298,7 +329,21 @@ pub async fn stacks_compose_subscribe(
     action: ComposeAction,
     on_event: Channel<ComposeEvent>,
 ) -> AppResult<StreamId> {
-    let (job, commit) = job(&state, kind, &id, action).await?;
+    spawn(&state, kind, id, action, None, on_event).await
+}
+
+/// Starts the compose job for `action` on the Stack `id`, `commit` for a
+/// Synced Stack's reviewed one; a Synced Stack's deploy that succeeds is
+/// noted as its deployed commit.
+async fn spawn(
+    state: &AppState,
+    kind: SourceKind,
+    id: String,
+    action: ComposeAction,
+    commit: Option<String>,
+    on_event: Channel<ComposeEvent>,
+) -> AppResult<StreamId> {
+    let (job, commit) = job(state, kind, &id, action, commit.as_deref()).await?;
     let synced = state.synced.clone();
     Ok(state.streams.spawn(runtime::run(job, move |e| {
         if let (Some(commit), ComposeEvent::Exit { success: true, .. }) = (&commit, &e) {
@@ -319,8 +364,9 @@ async fn job(
     kind: SourceKind,
     id: &str,
     action: ComposeAction,
+    commit: Option<&str>,
 ) -> AppResult<(ComposeJob, Option<String>)> {
-    let stack = resolve(state, kind, id, action).await?;
+    let stack = resolve(state, kind, id, action, commit).await?;
     let job = ComposeJob {
         cli: compose::detect().await?,
         source: stack.source,
@@ -333,6 +379,7 @@ async fn job(
             history: state.history.clone(),
             host_id: stack.host_id,
             stack_id: id.to_owned(),
+            commit: stack.commit.clone(),
         }),
     };
     Ok((job, stack.commit))
@@ -374,7 +421,12 @@ pub async fn stacks_diff(
         }
         SourceKind::Synced => {
             let stack = state.synced.store.get(&id)?;
-            let files = match (&candidate, &stack.fetched_commit) {
+            // A redeploy runs the deployed commit again; a first deploy, the fetched one.
+            let commit = stack
+                .deployed_commit
+                .as_ref()
+                .or(stack.fetched_commit.as_ref());
+            let files = match (&candidate, commit) {
                 (None, Some(commit)) => {
                     let cli = git::detect().await?;
                     let text = state
@@ -447,7 +499,14 @@ pub async fn stacks_rollback_subscribe(
     on_event: Channel<ComposeEvent>,
 ) -> AppResult<StreamId> {
     let stack = history::restore(&state.history, &state.stacks, &deploy_id)?;
-    let (job, _) = job(&state, SourceKind::Managed, &stack.id, ComposeAction::Up).await?;
+    let (job, _) = job(
+        &state,
+        SourceKind::Managed,
+        &stack.id,
+        ComposeAction::Up,
+        None,
+    )
+    .await?;
     Ok(state
         .streams
         .spawn(runtime::run(job, move |e| on_event.send(e).is_ok())))
@@ -470,6 +529,7 @@ async fn resolve(
     kind: SourceKind,
     id: &str,
     action: ComposeAction,
+    commit: Option<&str>,
 ) -> AppResult<Resolved> {
     Ok(match kind {
         SourceKind::Managed => {
@@ -501,7 +561,7 @@ async fn resolve(
         SourceKind::Synced => {
             let stack = state.synced.store.get(id)?;
             let cli = git::detect().await?;
-            let (source, commit) = state.synced.source(&cli, &stack, action).await?;
+            let (source, commit) = state.synced.source(&cli, &stack, action, commit).await?;
             Resolved {
                 source,
                 host_id: stack.host_id,

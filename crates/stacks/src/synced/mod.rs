@@ -6,9 +6,12 @@
 //!
 //! - [`store`] keeps each Synced Stack's repository, ref, path and commits.
 //! - [`path`] checks a compose file's path inside the repository.
+//! - [`sync`] fetches a Synced Stack's ref and says what changed since its
+//!   deploy, for the review before deploying it.
 
 pub mod path;
 pub mod store;
+pub mod sync;
 
 use std::{path::PathBuf, sync::Arc};
 
@@ -19,7 +22,10 @@ use crate::{
     compose::ComposeAction, definition, messages as msg, runtime::SourceKind, runtime::StackSource,
 };
 
-pub use self::store::{SyncedDraft, SyncedStack, SyncedStore};
+pub use self::{
+    store::{SyncedDraft, SyncedStack, SyncedStore},
+    sync::{RepoFileChange, SyncReview},
+};
 
 /// Synced Stacks, their repositories' clones and their worktrees.
 pub struct SyncedStacks {
@@ -121,25 +127,24 @@ impl SyncedStacks {
         Ok(text)
     }
 
-    /// Where `stack` runs compose from for `action`, with the commit it uses.
-    /// A deploy checks the fetched commit out first; anything else uses the
-    /// worktree as it is, checking out the deployed commit if there's none.
+    /// Where `stack` runs compose from for `action`, with the commit it uses:
+    /// `commit` when a sync deploys the one it reviewed, otherwise the
+    /// deployed commit, or before the first deploy the fetched one. A deploy
+    /// checks its commit out first; anything else uses the worktree as it
+    /// is, unless there's none yet.
     pub async fn source(
         &self,
         cli: &GitCli,
         stack: &SyncedStack,
         action: ComposeAction,
+        commit: Option<&str>,
     ) -> AppResult<(StackSource, String)> {
         let worktree = self.worktree(&stack.id);
-        let commit = if action.deploys() {
-            stack.fetched_commit.clone()
-        } else {
-            stack
-                .deployed_commit
-                .clone()
-                .or_else(|| stack.fetched_commit.clone())
-        }
-        .ok_or_else(|| AppError::validation(msg::SYNCED_NOT_FETCHED))?;
+        let commit = commit
+            .map(str::to_owned)
+            .or_else(|| stack.deployed_commit.clone())
+            .or_else(|| stack.fetched_commit.clone())
+            .ok_or_else(|| AppError::validation(msg::SYNCED_NOT_FETCHED))?;
         if action.deploys() || !worktree.join(".git").exists() {
             let repo = self.repositories.clone_dir(&stack.repository_id);
             if !ops::has_commit(cli, &repo, &commit).await {
@@ -371,7 +376,7 @@ mod tests {
         // runs from the compose file's folder.
         let (source, used) = lab
             .synced
-            .source(&git, &stack, ComposeAction::Up)
+            .source(&git, &stack, ComposeAction::Up, None)
             .await
             .unwrap();
         assert_eq!(used, commit);

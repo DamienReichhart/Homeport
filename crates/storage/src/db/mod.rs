@@ -26,6 +26,7 @@ const MIGRATION_SLICE: &[M<'static>] = &[
     M::up(include_str!("migrations/0009_stack_deploys.sql")),
     M::up(include_str!("migrations/0010_git_repositories.sql")),
     M::up(include_str!("migrations/0011_synced_stacks.sql")),
+    M::up(include_str!("migrations/0012_stack_deploy_commits.sql")),
 ];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_SLICE);
 
@@ -188,6 +189,14 @@ mod tests {
             (1, 1, 1)
         );
         assert_eq!((count("git_repositories"), count("synced_stacks")), (0, 0));
+        let commit: Option<String> = conn
+            .query_row(
+                "SELECT commit_hash FROM stack_deploys WHERE id = 'd'",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert_eq!(commit, None, "deploys from before 0.11 have no commit");
         // A repository can't go while a Synced Stack uses it.
         conn.execute_batch(
             "INSERT INTO git_repositories (id, url, auth) VALUES ('r', 'https://example.com/r.git', 'none');

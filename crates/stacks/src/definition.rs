@@ -115,6 +115,20 @@ pub fn declared_profiles(files: &[&str]) -> Vec<String> {
     profiles
 }
 
+/// Whether a service of `files` (merged) is built from local files, so a
+/// deploy of changed files should rebuild it.
+pub fn builds(files: &[&str]) -> bool {
+    let docs: Vec<Value> = files
+        .iter()
+        .filter_map(|f| serde_yaml_ng::from_str(f).ok())
+        .collect();
+    merge(&docs)
+        .services
+        .unwrap_or_default()
+        .iter()
+        .any(|(_, service)| service.contains_key("build"))
+}
+
 /// The services of `files` (merged) that sit only behind profiles none of
 /// which is `active`, so they don't run.
 pub fn services_turned_off(files: &[&str], active: &[String]) -> Vec<String> {

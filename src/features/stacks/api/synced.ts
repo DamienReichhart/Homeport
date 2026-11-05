@@ -47,6 +47,16 @@ export function useCreateSynced(
   });
 }
 
+/** Fetches a Synced Stack's ref and says what deploying it would change; shown in place. */
+export function useSyncReview(syncedId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: () => commands.stacksSyncedSync(syncedId),
+    onSuccess: (review) => client.setQueryData(syncedKeys.stack(syncedId), review.stack),
+  });
+}
+
 /** Saves a Synced Stack's environment; shown in place on failure. */
 export function useSaveSyncedEnv(syncedId: string) {
   const client = useQueryClient();

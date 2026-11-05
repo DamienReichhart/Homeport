@@ -271,7 +271,17 @@ pub async fn changed_files(
     let out = cli
         .local(
             &neutral_dir(),
-            &[&dir, "diff", "--name-only", "-z", from, to, "--", &pathspec],
+            &[
+                &dir,
+                "diff",
+                "--name-only",
+                "--no-renames",
+                "-z",
+                from,
+                to,
+                "--",
+                &pathspec,
+            ],
         )
         .await?;
     Ok(split_nul(&out.text()))
