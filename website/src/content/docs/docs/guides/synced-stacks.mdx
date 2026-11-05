@@ -109,3 +109,15 @@ Two switches on the **Definition** tab control this, per Stack:
 
 - **Check for new commits**, on by default. Turn it off to sync only when you choose **Sync**.
 - **Deploy new commits automatically**, off by default. When on, Homeport deploys each new commit as soon as it sees it, **without showing you what changed first**, through the same steps as **Sync**; the deploy is recorded in the **History** as automatic, and a notification says when it's done. It waits while the Host can't be reached. If it fails, Homeport shows why and doesn't try that commit again: the next commit, or a **Sync** you deploy yourself, does.
+
+## Why can't I edit a Synced Stack?
+
+Because its repository is the one place its definition lives. If Homeport changed the compose file, the next sync would either overwrite that change or fight it, and nobody reading the repository would know what's deployed. So a Synced Stack's **Definition** tab shows its compose file at the fetched commit **read-only** — you can still select and copy from it — lists the other files of its folder, and links each one to its page on GitHub, GitLab, Gitea or Forgejo. Change them there, push, then **Sync**.
+
+What Homeport does hold stays editable on the same tab:
+
+- its **Environment**, encrypted on this computer, for values that don't belong in git;
+- its **profiles**, if the compose file declares some;
+- whether it **checks for new commits** and **deploys them automatically**.
+
+**Forget** stops Homeport following the repository; the Stack's containers keep running, and it becomes External.
