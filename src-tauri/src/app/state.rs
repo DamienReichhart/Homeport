@@ -5,6 +5,7 @@ use std::sync::{Arc, Mutex};
 
 use homeport_core::streams::Streams;
 use homeport_engine::{containers::exec::ExecSessions, freshness::FreshnessCache};
+use homeport_git::Repositories;
 use homeport_hosts::service::HostService;
 use homeport_registries::RegistryStore;
 use homeport_settings::SettingsService;
@@ -26,6 +27,8 @@ pub struct AppState {
     /// What each deploy used, for the history and rolling back.
     pub history: Arc<DeployHistory>,
     pub registries: RegistryStore,
+    /// Synced Stacks' git repositories and their clones on this machine.
+    pub repositories: Repositories,
     pub streams: Streams,
     pub exec: ExecSessions,
     /// Registry digests, for telling when a newer image is published.

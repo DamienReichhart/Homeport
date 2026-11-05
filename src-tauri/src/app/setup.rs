@@ -5,6 +5,7 @@ use std::{error::Error, sync::Arc};
 
 use tauri::{App, Manager};
 
+use homeport_git::{Repositories, RepositoryStore};
 use homeport_hosts::{registry::HostRegistry, service::HostService, store::HostStore};
 use homeport_registries::RegistryStore;
 use homeport_settings::SettingsService;
@@ -20,7 +21,8 @@ use super::{events::TauriNotifier, AppState};
 /// Builds the app's state and starts connecting to every Host.
 pub fn state(app: &App) -> Result<AppState, Box<dyn Error>> {
     let config_dir = app.path().app_config_dir()?;
-    let db = Arc::new(Db::open(&app.path().app_data_dir()?.join("homeport.db"))?);
+    let data_dir = app.path().app_data_dir()?;
+    let db = Arc::new(Db::open(&data_dir.join("homeport.db"))?);
     let settings = SettingsService::new(db.clone(), &config_dir.join("settings.json"))?;
     // Keychain backends may block on D-Bus; keep that off the async runtime.
     let secrets = std::thread::spawn(|| {
@@ -46,6 +48,10 @@ pub fn state(app: &App) -> Result<AppState, Box<dyn Error>> {
         linked_files: FileCache::new(),
         history: Arc::new(DeployHistory::new(db.clone(), secrets.clone())),
         registries: RegistryStore::new(db.clone(), secrets.clone()),
+        repositories: Repositories::new(
+            RepositoryStore::new(db.clone(), secrets.clone()),
+            data_dir.join("repositories"),
+        ),
         secrets,
         settings,
         hosts: HostService { store, registry },

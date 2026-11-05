@@ -10,9 +10,10 @@ import {
 } from '@/shared/ui';
 import { machineQuery } from '../api/queries';
 import { ComposeStatus } from './ComposeStatus';
+import { GitStatus } from './GitStatus';
 import { t } from '@/shared/i18n';
 
-/** What Homeport can use on this machine: the OS keychain and the compose CLI. */
+/** What Homeport can use on this machine: the OS keychain, the compose CLI and git. */
 export function MachineCard() {
   const capabilities = useQuery(machineQuery());
   return (
@@ -38,6 +39,7 @@ export function MachineCard() {
                 t('settings.machine.compose'),
                 <ComposeStatus compose={capabilities.data.compose} />,
               ],
+              [t('settings.machine.git'), <GitStatus git={capabilities.data.git} />],
             ]}
           />
         )}

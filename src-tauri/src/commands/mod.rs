@@ -19,6 +19,7 @@ pub mod hosts;
 pub mod images;
 pub mod networks;
 pub mod registries;
+pub mod repositories;
 pub mod settings;
 pub mod stacks;
 pub mod streams;
@@ -51,6 +52,13 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             registries::registries_check,
             registries::registries_login_for,
             registries::registries_hub_tags,
+            repositories::repositories_list,
+            repositories::repositories_create,
+            repositories::repositories_rotate_key,
+            repositories::repositories_set_token,
+            repositories::repositories_reset_host_key,
+            repositories::repositories_remove,
+            repositories::repositories_test,
             updates::updates_check,
             updates::updates_install,
             hosts::hosts_list,

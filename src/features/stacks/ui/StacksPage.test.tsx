@@ -9,6 +9,7 @@ describe('stacks page', () => {
       ...baseCommands,
       get_capabilities: () => ({
         keychain: true,
+        git: { state: 'available', cli: { program: 'git', version: '2.43.0' } },
         compose: {
           state: 'available',
           cli: { program: 'docker', prefix: ['compose'], version: '5.6.1' },

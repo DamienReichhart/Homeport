@@ -43,6 +43,7 @@ describe('settings diagnostics', () => {
       get_app_info: appInfo,
       get_capabilities: () => ({
         keychain: true,
+        git: { state: 'available', cli: { program: 'git', version: '2.43.0' } },
         compose: {
           state: 'unavailable',
           problem: {
@@ -79,6 +80,7 @@ describe('settings diagnostics', () => {
       get_app_info: appInfo,
       get_capabilities: () => ({
         keychain: true,
+        git: { state: 'available', cli: { program: 'git', version: '2.43.0' } },
         compose: installed
           ? {
               state: 'available',

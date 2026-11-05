@@ -104,6 +104,7 @@ export const baseCommands = {
   update_settings: ({ settings }: Record<string, unknown>) => settings,
   get_capabilities: () => ({
     keychain: true,
+    git: { state: 'available', cli: { program: 'git', version: '2.43.0' } },
     compose: {
       state: 'unavailable',
       problem: {
@@ -116,6 +117,7 @@ export const baseCommands = {
   }),
   hosts_list: () => [connectedHost],
   registries_list: () => [],
+  repositories_list: () => [],
   images_freshness: () => [],
   stream_cancel: () => null,
   updates_check: () => ({ currentVersion: '0.3.0', available: null, method: { kind: 'inApp' } }),

@@ -7,7 +7,8 @@
 //! configuration, credential helpers and SSH keys are never used.
 //!
 //! - [`url`] tells SSH and HTTPS repository URLs apart and checks them.
-//! - [`store`] keeps the repositories, each secret sealed in SQLite.
+//! - [`store`] keeps the repositories, each secret sealed in SQLite, and
+//!   [`Repositories`] their bare clones on this machine.
 //! - [`cli`] finds `git` and runs it, isolated from the user's configuration.
 //! - [`ops`] are the commands Synced Stacks need: listing a remote's
 //!   branches and tags, fetching, reading files at a commit, comparing two
@@ -19,6 +20,7 @@ pub mod cli;
 mod errors;
 pub mod messages;
 pub mod ops;
+mod service;
 pub mod store;
 pub mod url;
 
@@ -26,6 +28,7 @@ pub use self::{
     access::Remote,
     cli::GitCli,
     ops::{Commit, RefKind, RemoteRefs},
+    service::Repositories,
     store::{Access, RepoAuth, Repository, RepositoryDraft, RepositoryStore, Secret},
     url::RepoUrl,
 };

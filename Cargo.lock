@@ -2133,6 +2133,7 @@ version = "0.10.0"
 dependencies = [
  "homeport-core",
  "homeport-engine",
+ "homeport-git",
  "homeport-hosts",
  "homeport-registries",
  "homeport-settings",

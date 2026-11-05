@@ -16,6 +16,9 @@ export default {
     'Unavailable — SSH keys, TLS certificates, stack environments and registry logins can’t be stored.',
   'settings.machine.compose': 'Compose CLI',
   'settings.machine.composeMissing': 'Stacks can be started and stopped, but not deployed.',
+  'settings.machine.git': 'git',
+  'settings.machine.gitMissing':
+    'Synced Stacks need it; every other kind of Stack works without it.',
   'settings.about.tagline': 'Every Docker Engine, on one board.',
   'settings.about.openLogFolder': 'Open log folder',
   'settings.about.licenses': 'Licenses',

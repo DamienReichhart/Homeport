@@ -31,6 +31,23 @@ export const commands = {
 	 *  Docker Hub login when there is one.
 	 */
 	registriesHubTags: (repository: string, page: number, filter: string) => __TAURI_INVOKE<HubTagPage>("registries_hub_tags", { repository, page, filter }),
+	/**  Every stored repository, never with its key or token. */
+	repositoriesList: () => __TAURI_INVOKE<Repository[]>("repositories_list"),
+	/**  Adds a repository, generating its deploy key when it uses one. */
+	repositoriesCreate: (draft: RepositoryDraft) => __TAURI_INVOKE<Repository>("repositories_create", { draft }),
+	/**  Replaces a repository's deploy key with a new one. */
+	repositoriesRotateKey: (id: string) => __TAURI_INVOKE<Repository>("repositories_rotate_key", { id }),
+	/**  Replaces a repository's user name and token. */
+	repositoriesSetToken: (id: string, username: string, token: string) => __TAURI_INVOKE<Repository>("repositories_set_token", { id, username, token }),
+	/**
+	 *  Forgets the SSH server key trusted for a repository, so the next
+	 *  command trusts the one the server presents.
+	 */
+	repositoriesResetHostKey: (id: string) => __TAURI_INVOKE<Repository>("repositories_reset_host_key", { id }),
+	/**  Removes a repository and its clone; refused while a Synced Stack uses it. */
+	repositoriesRemove: (id: string) => __TAURI_INVOKE<null>("repositories_remove", { id }),
+	/**  "Test access": the repository's branches and tags, as this computer sees them. */
+	repositoriesTest: (id: string) => __TAURI_INVOKE<RemoteRefs>("repositories_test", { id }),
 	/**  Asks the update server for a newer version and remembers it for [`updates_install`]. */
 	updatesCheck: () => __TAURI_INVOKE<UpdateCheck>("updates_check"),
 	/**
@@ -348,6 +365,8 @@ export type Capabilities = {
 	keychain: boolean,
 	/**  Whether Managed Stacks can be deployed here. */
 	compose: ComposeSupport,
+	/**  Whether Synced Stacks can be cloned and fetched here. */
+	git: GitSupport,
 };
 
 export type CommitSpec = {
@@ -594,7 +613,21 @@ export type ErrorCode =
 /**  A Linked Stack's compose file can't be read or written. */
 "stack_file_unreadable" | 
 /**  A Linked Stack's compose file changed on disk since it was opened. */
-"stack_files_changed" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
+"stack_files_changed" | 
+/**  The `git` CLI isn't installed on this computer. */
+"git_missing" | 
+/**  The repository refused the deploy key or the token. */
+"git_auth_failed" | 
+/**  The repository doesn't exist, or the credentials can't see it. */
+"git_repository_not_found" | 
+/**  The repository's server can't be reached from this computer. */
+"git_unreachable" | 
+/**  The SSH server of a repository presented a different key than the trusted one. */
+"git_host_key_changed" | 
+/**  `git` failed in a way Homeport has no better words for. */
+"git_failed" | 
+/**  A Synced Stack's compose file, branch or tag isn't in its repository. */
+"synced_compose_file_missing" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
 
 export type ExecEvent = { type: "output"; data: string } | 
 /**  `error` explains an exit that means the command couldn't run. */
@@ -661,6 +694,18 @@ export type FreshnessResult = {
 	imageId: string,
 	freshness: Freshness,
 };
+
+/**  The `git` program found on this computer. */
+export type GitCli = {
+	program: string,
+	/**  As `git --version` prints it, without the `git version ` prefix. */
+	version: string,
+};
+
+/**  The git CLI Synced Stacks use, or why there's none. */
+export type GitSupport = { state: "available"; cli: GitCli } | 
+/**  `problem` says how to install it. */
+{ state: "unavailable"; problem: AppError };
 
 /**  GPUs requested from the vendor's container toolkit (`--gpus`). */
 export type GpuSpec = { kind: "all" } | { kind: "count"; count: number } | { kind: "ids"; ids: string[] };
@@ -1073,6 +1118,48 @@ export type RegistryDraft = {
 	address: string,
 	username: string,
 	secret: string | null,
+};
+
+/**  A remote's branches and tags, as "Test access" lists them. */
+export type RemoteRefs = {
+	branches: string[],
+	tags: string[],
+	/**  The branch the remote's `HEAD` points at. */
+	defaultBranch: string | null,
+};
+
+/**  How Homeport authenticates to a repository. */
+export type RepoAuth = 
+/**  A deploy key Homeport generated, over SSH. */
+"sshKey" | 
+/**  A user name and access token, over HTTPS. */
+"httpsToken" | 
+/**  Nothing: a public repository over HTTPS. */
+"none";
+
+/**  A stored repository, as the frontend sees it: never a secret. */
+export type Repository = {
+	id: string,
+	url: string,
+	auth: RepoAuth,
+	/**  The deploy key to add to the repository, in OpenSSH format. */
+	publicKey: string | null,
+	/**  Its `SHA256:…` fingerprint, as forges show it. */
+	keyFingerprint: string | null,
+	username: string | null,
+	hasToken: boolean,
+	/**  The `SHA256:…` fingerprint of the SSH server's key, once trusted. */
+	hostKeyFingerprint: string | null,
+	createdAt: string,
+	updatedAt: string,
+};
+
+/**  What the user typed to add a repository. */
+export type RepositoryDraft = {
+	url: string,
+	auth: RepoAuth,
+	username: string | null,
+	token: string | null,
 };
 
 export type RestartPolicy = "no" | "always" | "unless-stopped" | "on-failure";
