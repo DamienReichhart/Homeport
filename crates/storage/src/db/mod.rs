@@ -19,6 +19,7 @@ const MIGRATION_SLICE: &[M<'static>] = &[
     M::up(include_str!("migrations/0002_hosts.sql")),
     M::up(include_str!("migrations/0003_stacks.sql")),
     M::up(include_str!("migrations/0004_registries.sql")),
+    M::up(include_str!("migrations/0005_bastions.sql")),
 ];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_SLICE);
 
@@ -65,6 +66,39 @@ mod tests {
     #[test]
     fn migrations_are_valid() {
         MIGRATIONS.validate().unwrap();
+    }
+
+    #[test]
+    fn ssh_hosts_from_before_bastions_get_an_empty_list() {
+        let mut conn = Connection::open_in_memory().unwrap();
+        MIGRATIONS.to_version(&mut conn, 4).unwrap();
+        let ssh = r#"{"kind":"ssh","host":"h","port":22,"user":"u","socketPath":"/var/run/docker.sock","auth":"agent","publicKey":null}"#;
+        let local = r#"{"kind":"local","socketPath":"/var/run/docker.sock"}"#;
+        conn.execute(
+            "INSERT INTO hosts (id, name, connection, host_key) VALUES ('a', 'a', ?1, 'ssh-ed25519 KEY'), ('b', 'b', ?2, NULL)",
+            (ssh, local),
+        )
+        .unwrap();
+        MIGRATIONS.to_latest(&mut conn).unwrap();
+
+        let read = |id: &str| -> (serde_json::Value, Option<String>) {
+            conn.query_row(
+                "SELECT connection, host_key FROM hosts WHERE id = ?1",
+                [id],
+                |r| {
+                    Ok((
+                        serde_json::from_str(&r.get::<_, String>(0)?).unwrap(),
+                        r.get(1)?,
+                    ))
+                },
+            )
+            .unwrap()
+        };
+        let (a, key) = read("a");
+        assert_eq!(a["bastions"], serde_json::json!([]));
+        assert_eq!(a["host"], "h");
+        assert_eq!(key.as_deref(), Some("ssh-ed25519 KEY"));
+        assert!(read("b").0.get("bastions").is_none());
     }
 
     #[test]
