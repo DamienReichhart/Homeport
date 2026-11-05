@@ -393,10 +393,19 @@ async fn remove_turned_off(
 }
 
 /// Hands the source's stdin to the CLI, if it has one, and closes it.
+///
+/// A CLI that exits before reading all of it (a bad flag, a crash) closes
+/// the pipe; that isn't the failure to report, since its exit status and
+/// stderr, read next, say what went wrong.
 async fn write_stdin(child: &mut tokio::process::Child, prepared: &Prepared) -> AppResult<()> {
     let mut stdin = child.stdin.take().expect("stdin is piped");
     if let Some(text) = &prepared.stdin {
-        stdin.write_all(text.as_bytes()).await?;
+        match stdin.write_all(text.as_bytes()).await {
+            Err(e) if e.kind() == std::io::ErrorKind::BrokenPipe => {
+                log::debug!("compose stopped reading its definition: {e}");
+            }
+            result => result?,
+        }
     }
     drop(stdin);
     Ok(())
@@ -741,16 +750,16 @@ mod tests {
 
         use super::*;
 
-        /// A stand-in compose CLI: answers `config` with one service and
-        /// records any other command in `ran`.
-        fn fake_cli(dir: &Path) -> (ComposeCli, PathBuf) {
+        /// A stand-in compose CLI running `body` as a shell script; `ran` is
+        /// the file it may record commands in.
+        fn script_cli(dir: &Path, body: &str) -> (ComposeCli, PathBuf) {
             let ran = dir.join("ran");
             let script = dir.join("compose");
             std::fs::write(
                 &script,
                 format!(
-                    "#!/bin/sh\ncase \"$*\" in\n  *config*) echo '{{\"services\":{{\"web\":{{\"image\":\"nginx:1.27\"}}}}}}' ;;\n  *) echo \"$*\" >> {} ;;\nesac\n",
-                    ran.display()
+                    "#!/bin/sh\n{}",
+                    body.replace("$RAN", &ran.display().to_string())
                 ),
             )
             .unwrap();
@@ -765,6 +774,56 @@ mod tests {
             )
         }
 
+        /// Answers `config` with one service, without reading the definition
+        /// on its stdin, and records any other command in `ran`.
+        fn fake_cli(dir: &Path) -> (ComposeCli, PathBuf) {
+            script_cli(
+                dir,
+                "case \"$*\" in\n  *config*) echo '{\"services\":{\"web\":{\"image\":\"nginx:1.27\"}}}' ;;\n  *) echo \"$*\" >> $RAN ;;\nesac\n",
+            )
+        }
+
+        /// Runs `job` and collects its events.
+        async fn events_of(job: ComposeJob) -> Vec<ComposeEvent> {
+            let events = std::sync::Mutex::new(Vec::new());
+            run(job, |e| {
+                events.lock().unwrap().push(e);
+                true
+            })
+            .await;
+            events.into_inner().unwrap()
+        }
+
+        #[tokio::test]
+        async fn a_cli_that_exits_before_reading_its_input_is_explained_by_its_output() {
+            let dir = tempfile::tempdir().unwrap();
+            let (cli, _) = script_cli(dir.path(), "echo 'unknown flag: --bogus' >&2\nexit 1\n");
+            let mut job = profile_job(ComposeAction::Up, &[], "");
+            // Far more than a pipe holds, so writing it always meets the closed pipe.
+            let padding = "# padding\n".repeat(64 * 1024);
+            job.source = StackSource::Managed {
+                files: vec![ComposeFile::new(
+                    "compose.yaml",
+                    format!("{WITH_DEBUG}{padding}"),
+                )],
+                env: String::new(),
+            };
+            job.cli = cli;
+            let events = events_of(job).await;
+            let Some(ComposeEvent::Error { error }) = events.last() else {
+                panic!("{events:?}");
+            };
+            assert!(!error.is(ErrorCode::Io), "{error:?}");
+            assert!(
+                error
+                    .detail
+                    .as_deref()
+                    .unwrap_or("")
+                    .contains("unknown flag"),
+                "{error:?}"
+            );
+        }
+
         #[tokio::test]
         async fn an_update_stops_after_a_failed_pull() {
             let dir = tempfile::tempdir().unwrap();
@@ -772,13 +831,7 @@ mod tests {
             let mut job = profile_job(ComposeAction::Update, &[], "");
             job.cli = cli;
             // An Engine that can't be reached fails every pull.
-            let events = std::sync::Mutex::new(Vec::new());
-            run(job, |e| {
-                events.lock().unwrap().push(e);
-                true
-            })
-            .await;
-            let events = events.into_inner().unwrap();
+            let events = events_of(job).await;
             assert!(
                 matches!(events.last(), Some(ComposeEvent::Error { error }) if error.message.contains("nginx:1.27")),
                 "{events:?}"
