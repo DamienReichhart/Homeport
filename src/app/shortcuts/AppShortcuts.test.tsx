@@ -19,7 +19,7 @@ describe('keyboard shortcuts', () => {
     const user = userEvent.setup();
     renderApp('/containers');
     expect(await screen.findByRole('heading', { name: 'Containers' })).toBeInTheDocument();
-    await user.keyboard('{Control>}3{/Control}');
+    await user.keyboard('{Control>}4{/Control}');
     expect(await screen.findByRole('heading', { name: 'Images' })).toBeInTheDocument();
     await user.keyboard('{Control>},{/Control}');
     expect(await screen.findByRole('heading', { name: 'Settings' })).toBeInTheDocument();

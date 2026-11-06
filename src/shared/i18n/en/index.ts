@@ -1,4 +1,5 @@
 import app from './app';
+import board from './board';
 import common from './common';
 import containers from './containers';
 import core from './core';
@@ -22,6 +23,7 @@ export const uiMessages = {
   ...app,
   ...core,
   ...ui,
+  ...board,
   ...containers,
   ...events,
   ...hosts,

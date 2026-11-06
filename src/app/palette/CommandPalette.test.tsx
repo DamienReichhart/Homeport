@@ -89,6 +89,6 @@ describe('command palette', () => {
     const dialog = await palette();
     const goTo = within(dialog).getByRole('option', { name: /Go to Images/ });
     expect(within(goTo).getByText('Ctrl')).toBeInTheDocument();
-    expect(within(goTo).getByText('3')).toBeInTheDocument();
+    expect(within(goTo).getByText('4')).toBeInTheDocument();
   });
 });

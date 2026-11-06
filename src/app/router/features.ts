@@ -1,3 +1,4 @@
+import { boardFeature } from '@/features/board';
 import { containersFeature } from '@/features/containers';
 import { eventsFeature } from '@/features/events';
 import { hostsFeature } from '@/features/hosts';
@@ -13,6 +14,7 @@ import type { FeatureManifest } from '@/core/feature';
 /** Every feature with pages or palette commands, in sidebar order. Add one line per new feature. */
 export const features: FeatureManifest[] = [
   overviewFeature,
+  boardFeature,
   containersFeature,
   imagesFeature,
   volumesFeature,
