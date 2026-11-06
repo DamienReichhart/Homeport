@@ -1,6 +1,6 @@
 ---
 title: Settings
-description: Theme, updates, registry logins, repositories, how often Synced Stacks are checked, what this machine supports, version and licences.
+description: Theme, the system tray, updates, registry logins, repositories, how often Synced Stacks are checked, what this machine supports, version and licences.
 ---
 
 **Settings** is the last item in the sidebar.
@@ -8,6 +8,12 @@ description: Theme, updates, registry logins, repositories, how often Synced Sta
 ## Appearance
 
 **Theme** is **Match the system** by default, following your operating system's light or dark mode as it changes. Choose **Light** or **Dark** to fix it.
+
+## Desktop
+
+How Homeport runs on this computer.
+
+- **Close to the system tray** — off by default, so closing the window quits Homeport. Turn it on to hide the window in the [system tray](/docs/guides/overview/#system-tray) instead: Homeport keeps running with its Host connections open. Bring it back from the tray icon, or by opening Homeport again; quit from the tray's **Quit**. The switch is greyed out, with an explanation, on a desktop without a tray.
 
 ## Updates
 

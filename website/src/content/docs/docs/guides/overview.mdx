@@ -53,6 +53,18 @@ Containers go first, so the images, networks and volumes they held count as unus
   the button reads **Delete, including volume data** as a last reminder.
 </Aside>
 
+## System tray
+
+Homeport adds an icon to the system tray — the menu bar on macOS, the notification area on Windows. Its menu lists every Host with its status, such as **prod-server — Connected**, and updates as soon as a status changes:
+
+- Pick a Host to bring the window to the front on that Host's Overview.
+- An **Unreachable** Host has a submenu with **Open** and **Reconnect**, which tries again straight away.
+- **Open Homeport** brings the window back, **Add host…** opens the page to add one, and **Quit** always quits.
+
+The icon's tooltip sums it up: **Homeport — 3 of 4 Hosts connected**. On Windows, double-click the icon to open the window.
+
+With **Close to the system tray** on in [Settings](/docs/guides/settings/#desktop), closing the window hides Homeport instead of quitting it, so its Host connections stay open; reopen it from the tray, or by opening Homeport again. Some Linux desktops hide tray icons; see [requirements](/docs/requirements/#optional-a-system-tray).
+
 ## Events
 
 The **Events** page lists what the selected Host's Engine reported, newest first: containers starting and stopping, images pulled, volumes created, networks connected, and so on. Homeport keeps them, so they're still there after it restarts — "what restarted overnight?" has an answer.

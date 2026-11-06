@@ -35,7 +35,11 @@ Homeport reopens with the size, position and maximised state its window had when
 
 ### Opening Homeport again doesn't open a second window
 
-Only one Homeport runs at a time: opening it while it's already running brings its window to the front. Two copies would connect to every Host twice and write to the same data.
+Only one Homeport runs at a time: opening it while it's already running brings its window to the front, even when it's hidden in the [system tray](/docs/guides/overview/#system-tray). Two copies would connect to every Host twice and write to the same data.
+
+### There's no tray icon
+
+On Linux, the tray needs the appindicator library, and some desktops hide tray icons: on GNOME, install the AppIndicator Support extension. If Homeport finds no appindicator library, **Settings → Desktop** says so and closing the window quits. See [requirements](/docs/requirements/#optional-a-system-tray).
 
 ### A red banner says no OS keychain is available
 
