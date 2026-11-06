@@ -5,6 +5,7 @@ edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
 description = "Homeport desktop application"
+publish = false
 
 [lints]
 workspace = true
