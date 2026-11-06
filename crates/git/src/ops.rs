@@ -92,8 +92,7 @@ pub async fn list_remote(
             &neutral_dir(),
             &["ls-remote", "--symref", remote.url],
         )
-        .await
-        .map_err(|f| f.error)?;
+        .await?;
     Ok((parse_ls_remote(&out.text()), learned))
 }
 
@@ -157,13 +156,8 @@ pub async fn fetch(
         remote.url,
     ];
     args.extend(specs.iter().map(String::as_str));
-    match cli.remote(remote, &neutral_dir(), &args).await {
-        Ok((_, learned)) => Ok(learned),
-        Err(failure) => Err(match errors::missing_ref(&failure.stderr) {
-            Some(full) => ref_missing(&full).with_detail(failure.stderr.trim()),
-            None => failure.error,
-        }),
-    }
+    let (_, learned) = cli.remote(remote, &neutral_dir(), &args).await?;
+    Ok(learned)
 }
 
 /// The error for a branch or tag the repository doesn't have.

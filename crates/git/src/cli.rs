@@ -77,12 +77,6 @@ impl Output {
     }
 }
 
-/// A command reaching a server that failed: why, and what git printed.
-pub(crate) struct RemoteFailure {
-    pub(crate) error: AppError,
-    pub(crate) stderr: String,
-}
-
 /// Why a command failed: before it ran, or what it printed when it did.
 pub(crate) enum Failure {
     Error(AppError),
@@ -109,36 +103,25 @@ impl GitCli {
 
     /// Runs `git <args>` reaching `remote`, in `cwd`. Returns what it printed
     /// and the server key it trusted for the first time, if any; a failure
-    /// keeps what git printed, for the callers that look for more in it.
+    /// is classified from what git printed (see [`errors::failure`]).
     pub(crate) async fn remote(
         &self,
         remote: &Remote<'_>,
         cwd: &Path,
         args: &[&str],
-    ) -> Result<(Output, Option<String>), RemoteFailure> {
-        let session = Session::remote(remote)
-            .await
-            .map_err(|error| RemoteFailure {
-                error,
-                stderr: String::new(),
-            })?;
+    ) -> AppResult<(Output, Option<String>)> {
+        let session = Session::remote(remote).await?;
         match self.output(&session, cwd, args, NETWORK_TIMEOUT).await {
             Ok(out) => Ok((out, session.learned_host_key())),
-            Err(Failure::Error(error)) => Err(RemoteFailure {
-                error,
-                stderr: String::new(),
-            }),
-            Err(Failure::Exited { stderr }) => Err(RemoteFailure {
-                error: errors::failure(
-                    args[0],
-                    &stderr,
-                    Some(&Context {
-                        url: remote.url,
-                        secret: remote.secret,
-                    }),
-                ),
-                stderr,
-            }),
+            Err(Failure::Error(error)) => Err(error),
+            Err(Failure::Exited { stderr }) => Err(errors::failure(
+                args[0],
+                &stderr,
+                Some(&Context {
+                    url: remote.url,
+                    secret: remote.secret,
+                }),
+            )),
         }
     }
 

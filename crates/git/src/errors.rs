@@ -33,6 +33,10 @@ pub(crate) fn failure(verb: &str, stderr: &str, remote: Option<&Context<'_>>) ->
     let Some(remote) = remote else {
         return generic();
     };
+    // A branch or tag the remote doesn't have, which `fetch` names.
+    if let Some(full) = missing_ref(stderr) {
+        return crate::ops::ref_missing(&full).with_detail(&detail);
+    }
     let (host, path, transport) = match RepoUrl::parse(remote.url) {
         Ok(u) => (u.host, u.path, Some(u.transport)),
         Err(_) => (remote.url.to_owned(), String::new(), None),
@@ -117,7 +121,7 @@ pub(crate) fn failure(verb: &str, stderr: &str, remote: Option<&Context<'_>>) ->
 }
 
 /// The branch or tag `fetch` said the remote doesn't have, if that's why it failed.
-pub(crate) fn missing_ref(stderr: &str) -> Option<String> {
+fn missing_ref(stderr: &str) -> Option<String> {
     let lower = stderr.to_ascii_lowercase();
     let at = lower.find("couldn't find remote ref ")?;
     let rest = &stderr[at + "couldn't find remote ref ".len()..];
@@ -219,6 +223,21 @@ mod tests {
         );
         assert!(e.message.contains("bot"));
         assert!(!serde_json::to_string(&e).unwrap().contains("hunter2"));
+    }
+
+    #[test]
+    fn a_branch_the_remote_lacks_is_named_not_a_missing_repository() {
+        let e = failure(
+            "fetch",
+            "fatal: couldn't find remote ref refs/tags/v9\n",
+            Some(&Context {
+                url: HTTPS,
+                secret: &Secret::None,
+            }),
+        );
+        assert_eq!(e.code, ErrorCode::SyncedComposeFileMissing);
+        assert_eq!(e.message, "The repository has no tag named v9.");
+        assert!(e.detail.as_deref().unwrap().contains("refs/tags/v9"));
     }
 
     #[test]
