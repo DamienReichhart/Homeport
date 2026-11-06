@@ -14,6 +14,8 @@ use homeport_storage::{Db, SecretBox};
 
 use crate::address;
 
+pub mod backup;
+
 /// A stored login, as the frontend sees it: never the secret.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]

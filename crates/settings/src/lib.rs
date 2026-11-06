@@ -103,6 +103,17 @@ impl SettingsService {
         Ok(settings)
     }
 
+    /// Writes `settings` in `tx`, as restoring a backup does.
+    pub fn restore(tx: &rusqlite::Transaction<'_>, settings: &Settings) -> AppResult<()> {
+        tx.execute(
+            "INSERT INTO settings (key, value) VALUES (?1, ?2)
+             ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            (SETTINGS_KEY, serde_json::to_string(settings)?),
+        )
+        .map_err(homeport_storage::db::sqlite_error)?;
+        Ok(())
+    }
+
     fn import_legacy(&self, path: &Path) -> AppResult<()> {
         let Ok(raw) = fs::read_to_string(path) else {
             return Ok(());

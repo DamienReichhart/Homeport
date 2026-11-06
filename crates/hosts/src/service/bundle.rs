@@ -63,35 +63,53 @@ impl HostService {
         let mut without_secrets = Vec::new();
         let mut hosts = Vec::with_capacity(ids.len());
         for id in ids {
-            let host = self.store.get(id)?;
-            let secrets = if host.connection.needs_secrets() {
-                match self.store.secrets(id) {
-                    Ok(secrets) => secrets,
-                    Err(e)
-                        if e.is(ErrorCode::CredentialsLost)
-                            || e.is(ErrorCode::KeychainUnavailable) =>
-                    {
-                        without_secrets.push(host.name.clone());
-                        None
-                    }
-                    Err(e) => return Err(e),
-                }
-            } else {
-                None
-            };
-            hosts.push(ExportedHost {
-                name: host.name,
-                connection: host.connection,
-                enabled: host.enabled,
-                host_key: host.host_key,
-                secrets,
-            });
+            let mut host = self.exported(id, &mut without_secrets)?;
+            host.id = None;
+            hosts.push(host);
         }
         let sealed = Payload::new(hosts).seal(passphrase)?;
         std::fs::write(path, sealed).map_err(|e| local_file(path, e))?;
         Ok(ExportOutcome {
             exported: ids.len() as u32,
             without_secrets,
+        })
+    }
+
+    /// Every Host as a backup holds it, ids included; the names of those
+    /// whose secrets couldn't be opened are added to `without_secrets`.
+    pub fn backup_hosts(&self, without_secrets: &mut Vec<String>) -> AppResult<Vec<ExportedHost>> {
+        self.store
+            .list()?
+            .iter()
+            .map(|host| self.exported(&host.id, without_secrets))
+            .collect()
+    }
+
+    /// Host `id` with its opened secrets, or without them (named in
+    /// `without_secrets`) when they can't be opened.
+    fn exported(&self, id: &str, without_secrets: &mut Vec<String>) -> AppResult<ExportedHost> {
+        let host = self.store.get(id)?;
+        let secrets = if host.connection.needs_secrets() {
+            match self.store.secrets(id) {
+                Ok(secrets) => secrets,
+                Err(e)
+                    if e.is(ErrorCode::CredentialsLost) || e.is(ErrorCode::KeychainUnavailable) =>
+                {
+                    without_secrets.push(host.name.clone());
+                    None
+                }
+                Err(e) => return Err(e),
+            }
+        } else {
+            None
+        };
+        Ok(ExportedHost {
+            id: Some(host.id),
+            name: host.name,
+            connection: host.connection,
+            enabled: host.enabled,
+            host_key: host.host_key,
+            secrets,
         })
     }
 

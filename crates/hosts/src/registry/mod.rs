@@ -73,6 +73,16 @@ impl HostRegistry {
         Ok(())
     }
 
+    /// Drops every connection and connects to the stored Hosts afresh, as
+    /// after a restore replaced them all. Must run inside a Tokio runtime.
+    pub fn reload(&self) -> AppResult<()> {
+        let old: Vec<Entry> = self.lock().drain().map(|(_, entry)| entry).collect();
+        for task in old.into_iter().filter_map(|entry| entry.task) {
+            task.abort();
+        }
+        self.start_all()
+    }
+
     /// (Re)starts a Host's supervisor, e.g. after it was edited or trusted.
     pub fn restart(&self, id: &str) {
         let task = tokio::spawn(supervise(self.me.clone(), id.to_owned()));
