@@ -44,7 +44,7 @@ Without it, Stacks still appear — Linked Stacks included — and can be starte
 
 ## Optional: a system tray
 
-Homeport puts an icon in the system tray (the menu bar on macOS, the notification area on Windows) that lists every Host with its status. Windows and macOS always have one. On Linux it needs the **appindicator** library, which the `.deb` and `.rpm` packages install and the AppImage includes; a build from source needs `libayatana-appindicator3-1` (or `libappindicator3-1`). Some desktops hide tray icons — GNOME shows them only with an extension such as AppIndicator Support. Without a tray, Homeport works from its window, and closing the window quits it.
+Homeport puts an icon in the system tray (the menu bar on macOS, the notification area on Windows) that lists every Host with its status. Windows and macOS always have one. On Linux it needs the **appindicator** library: the AppImage includes it, and the `.deb` and `.rpm` packages recommend it, so `apt`, `dnf` and `zypper` install it unless you turned recommended packages off. Otherwise install `libayatana-appindicator3-1` (Debian, Ubuntu, openSUSE) or `libayatana-appindicator-gtk3` (Fedora). Some desktops hide tray icons — GNOME shows them only with an extension such as AppIndicator Support. Without a tray, Homeport works from its window, and closing the window quits it.
 
 ## What each feature needs
 

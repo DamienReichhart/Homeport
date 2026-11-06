@@ -54,6 +54,7 @@
     },
     "linux": {
       "deb": {
+        "recommends": ["libayatana-appindicator3-1 | libappindicator3-1"],
         "files": {
           "/usr/share/doc/homeport/copyright": "../LICENSE",
           "/usr/share/doc/homeport/THIRD_PARTY_LICENSES.txt": "licenses/THIRD_PARTY_LICENSES.txt",
@@ -64,6 +65,7 @@
         "postRemoveScript": "../packaging/linux/deb-postrm.sh"
       },
       "rpm": {
+        "recommends": ["libayatana-appindicator-gtk3", "libayatana-appindicator3-1"],
         "files": {
           "/usr/share/licenses/homeport/LICENSE": "../LICENSE",
           "/usr/share/licenses/homeport/THIRD_PARTY_LICENSES.txt": "licenses/THIRD_PARTY_LICENSES.txt",
