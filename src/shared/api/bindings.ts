@@ -66,7 +66,13 @@ export const commands = {
 	hostsReconnect: (id: string) => __TAURI_INVOKE<HostView>("hosts_reconnect", { id }),
 	hostsRegenerateKey: (id: string) => __TAURI_INVOKE<HostView>("hosts_regenerate_key", { id }),
 	hostsSshSetup: (id: string) => __TAURI_INVOKE<SshSetup>("hosts_ssh_setup", { id }),
-	hostsEvents: (id: string) => __TAURI_INVOKE<EngineEvent[]>("hosts_events", { id }),
+	/**
+	 *  Up to `limit` (1,000 by default) of a Host's kept Engine events, the
+	 *  latest, or the latest before `before`; oldest first.
+	 */
+	hostsEvents: (id: string, limit: number | null, before: EventCursor | null) => __TAURI_INVOKE<EngineEvent[]>("hosts_events", { id, limit, before }),
+	/**  Forgets a Host's kept Engine events. */
+	hostsEventsClear: (id: string) => __TAURI_INVOKE<null>("hosts_events_clear", { id }),
 	/**  The servers `~/.ssh/config` defines, as drafts of Hosts. */
 	hostsSshConfigPreview: () => __TAURI_INVOKE<ImportDraft[]>("hosts_ssh_config_preview"),
 	hostsSshConfigImport: (choices: ImportChoice[]) => __TAURI_INVOKE<ImportOutcome>("hosts_ssh_config_import", { choices }),
@@ -663,6 +669,8 @@ export type DiskUsage = {
 export type EngineEvent = {
 	/**  Unix time in seconds. */
 	time: number,
+	/**  Unix time in nanoseconds, which tells apart events of the same second. */
+	timeNano: number,
 	/**  `container`, `image`, `volume`, `network`, … */
 	kind: string,
 	action: string,
@@ -738,6 +746,18 @@ export type ErrorCode =
 "not_a_tar_archive" | 
 /**  Restoring into a volume that holds files, without replacing them. */
 "volume_not_empty" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
+
+/**
+ *  Where a page of older events starts: the oldest event already listed.
+ *  Events are ordered by time, then by these fields, which together tell
+ *  any two events of a Host apart.
+ */
+export type EventCursor = {
+	timeNano: number,
+	kind: string,
+	action: string,
+	actorId: string,
+};
 
 export type ExecEvent = { type: "output"; data: string } | 
 /**  `error` explains an exit that means the command couldn't run. */
@@ -1386,6 +1406,11 @@ export type Settings = {
 	 *  runs; at least 1.
 	 */
 	syncIntervalMinutes?: number,
+	/**
+	 *  Days each Host's Engine events are kept for the Events page, from 1
+	 *  to 365.
+	 */
+	keepEventsDays?: number,
 };
 
 /**  The kinds of source, for the rules a definition is checked against. */

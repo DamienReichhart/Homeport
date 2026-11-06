@@ -3,6 +3,7 @@ import { actorName, filterEvents } from './filterEvents';
 
 const event = (kind: string, action: string, name: string): EngineEvent => ({
   time: 1_700_000_000,
+  timeNano: 1_700_000_000_000_000_000,
   kind,
   action,
   actorId: 'sha256:0123456789abcdef',

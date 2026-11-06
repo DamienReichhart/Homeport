@@ -1,5 +1,6 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { commands } from '@/shared/api';
+import { EVENT_PAGE } from '../model/events';
 import { hostKeys } from './keys';
 
 export const hostQueries = {
@@ -65,10 +66,11 @@ export const resourceQueries = {
       staleTime: 5 * 60_000,
       retry: false,
     }),
+  /** The latest page of a Host's kept events; live updates append to it. */
   events: (hostId: string) =>
     queryOptions({
       queryKey: hostKeys.events(hostId),
-      queryFn: () => commands.hostsEvents(hostId),
+      queryFn: () => commands.hostsEvents(hostId, EVENT_PAGE, null),
     }),
 };
 

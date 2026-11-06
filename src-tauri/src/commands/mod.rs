@@ -72,6 +72,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             hosts::hosts_regenerate_key,
             hosts::hosts_ssh_setup,
             hosts::hosts_events,
+            hosts::hosts_events_clear,
             hosts::hosts_ssh_config_preview,
             hosts::hosts_ssh_config_import,
             hosts::hosts_docker_contexts_preview,

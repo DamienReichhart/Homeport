@@ -28,6 +28,7 @@ const MIGRATION_SLICE: &[M<'static>] = &[
     M::up(include_str!("migrations/0011_synced_stacks.sql")),
     M::up(include_str!("migrations/0012_stack_deploy_commits.sql")),
     M::up(include_str!("migrations/0013_synced_polling.sql")),
+    M::up(include_str!("migrations/0014_engine_events.sql")),
 ];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_SLICE);
 
@@ -74,6 +75,31 @@ mod tests {
     #[test]
     fn migrations_are_valid() {
         MIGRATIONS.validate().unwrap();
+    }
+
+    #[test]
+    fn databases_from_0_11_keep_engine_events_until_their_host_goes() {
+        let mut conn = Connection::open_in_memory().unwrap();
+        conn.pragma_update(None, "foreign_keys", "ON").unwrap();
+        MIGRATIONS.to_version(&mut conn, 13).unwrap();
+        let local = r#"{"kind":"local","socketPath":"/var/run/docker.sock"}"#;
+        conn.execute(
+            "INSERT INTO hosts (id, name, connection) VALUES ('h', 'local', ?1)",
+            [local],
+        )
+        .unwrap();
+        MIGRATIONS.to_latest(&mut conn).unwrap();
+
+        let insert = "INSERT OR IGNORE INTO engine_events
+            (host_id, time_nano, kind, action, actor_id, attributes)
+            VALUES ('h', 42, 'container', 'start', 'abc', '{}')";
+        assert_eq!(conn.execute(insert, []).unwrap(), 1);
+        assert_eq!(conn.execute(insert, []).unwrap(), 0, "kept once");
+        conn.execute("DELETE FROM hosts WHERE id = 'h'", []).unwrap();
+        let left: i64 = conn
+            .query_row("SELECT count(*) FROM engine_events", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(left, 0);
     }
 
     #[test]

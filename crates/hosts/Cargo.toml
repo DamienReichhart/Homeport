@@ -23,6 +23,7 @@ specta.workspace = true
 rusqlite.workspace = true
 uuid.workspace = true
 gethostname.workspace = true
+log.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true

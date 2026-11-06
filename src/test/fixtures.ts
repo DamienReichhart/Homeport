@@ -105,6 +105,7 @@ export const baseCommands = {
     lastHostId: 'h1',
     checkForUpdates: true,
     syncIntervalMinutes: 5,
+    keepEventsDays: 30,
   }),
   update_settings: ({ settings }: Record<string, unknown>) => settings,
   get_capabilities: () => ({

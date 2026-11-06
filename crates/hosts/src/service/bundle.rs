@@ -182,29 +182,20 @@ mod tests {
 
     use super::*;
     use crate::{
-        registry::{EngineEvent, HostRegistry, HostStatus, Notifier},
         service::{BastionKeyInput, CredentialsInput, HostInput},
         store::HostStore,
         Bastion, BastionAuth, HostSecrets, SshAuth,
     };
     use homeport_transport as transport;
 
-    struct Silent;
-    impl Notifier for Silent {
-        fn host_status(&self, _: &str, _: &HostStatus) {}
-        fn engine_event(&self, _: &str, _: &EngineEvent) {}
-    }
-
     /// A computer with its own database and keychain key.
     fn computer(key: u8) -> HostService {
+        let db = Arc::new(Db::open_in_memory().unwrap());
         let store = Arc::new(HostStore::new(
-            Arc::new(Db::open_in_memory().unwrap()),
+            db.clone(),
             Arc::new(SecretBox::from_key(&[key; 32])),
         ));
-        HostService {
-            registry: HostRegistry::new(store.clone(), Arc::new(Silent)),
-            store,
-        }
+        HostService::for_tests(db, store)
     }
 
     const PASS: &str = "moving to the new laptop";
@@ -352,11 +343,11 @@ mod tests {
             })
             .unwrap()
             .id;
-        let store = Arc::new(HostStore::new(db, Arc::new(SecretBox::from_key(&[2; 32]))));
-        let svc = HostService {
-            registry: HostRegistry::new(store.clone(), Arc::new(Silent)),
-            store,
-        };
+        let store = Arc::new(HostStore::new(
+            db.clone(),
+            Arc::new(SecretBox::from_key(&[2; 32])),
+        ));
+        let svc = HostService::for_tests(db, store);
         let outcome = svc.export_hosts(&[id], &file, PASS).unwrap();
         assert_eq!(outcome.without_secrets, ["tls"]);
 

@@ -4,6 +4,7 @@
 #[cfg(target_os = "linux")]
 mod appimage;
 pub mod events;
+pub mod history;
 mod logging;
 mod polling;
 mod setup;
@@ -35,6 +36,7 @@ pub fn run() {
             let state = setup::state(app)?;
             app.manage(state);
             polling::start(app.handle());
+            history::start(app.handle());
             Ok(())
         })
         .invoke_handler(invoke_handler)
@@ -44,7 +46,11 @@ pub fn run() {
             if let tauri::RunEvent::Exit = event {
                 // A volume being browsed keeps a helper container on its Host.
                 if let Some(state) = app.try_state::<AppState>() {
-                    tauri::async_runtime::block_on(state.volume_browser.end_all());
+                    tauri::async_runtime::block_on(async {
+                        state.volume_browser.end_all().await;
+                        // The last second of Engine events may still be waiting.
+                        state.hosts.events.flush().await;
+                    });
                 }
             }
         });
