@@ -148,6 +148,11 @@ fn base_config() -> Vec<(String, String)> {
         // A repository's symbolic links are checked out as plain files, so
         // a compose file can't point compose at a file elsewhere on this machine.
         ("core.symlinks", "false"),
+        // Files are checked out as the repository holds them, whatever the
+        // system's git does (Git for Windows turns autocrlf on): a script
+        // copied into a Linux image must keep its line endings. A
+        // repository's own .gitattributes still applies.
+        ("core.autocrlf", "false"),
         // Gives up on a server that stops sending, instead of hanging.
         ("http.lowSpeedLimit", "1"),
         ("http.lowSpeedTime", "60"),
@@ -263,6 +268,7 @@ mod tests {
             })
             .collect();
         assert!(config.contains(&("credential.helper".into(), String::new())));
+        assert!(config.contains(&("core.autocrlf".into(), "false".into())));
         let header = config
             .iter()
             .find(|(k, _)| k == "http.extraHeader")
