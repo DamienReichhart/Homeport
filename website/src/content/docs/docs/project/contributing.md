@@ -22,10 +22,6 @@ Open an issue describing the problem you want solved, not only the solution. Kno
 
 ## Contributing code
 
-Homeport is open source under the [GNU AGPL, version 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE). Before your first pull request can be merged, you sign the [Contributor License Agreement](https://github.com/DamienReichhart/Homeport/blob/main/CLA.md): the CLA check comments on your pull request with a sentence to reply with, and turns green once you have. It lets the maintainer offer Homeport under other licences alongside the AGPL, which keeps funding it possible; your own rights to your work don't change. Contribute only your own work, and no dependency under a copyleft or non-commercial license. See [`CONTRIBUTING.md`](https://github.com/DamienReichhart/Homeport/blob/main/CONTRIBUTING.md).
-
-The name and logo are covered by the [trademark policy](https://github.com/DamienReichhart/Homeport/blob/main/TRADEMARKS.md): forks are welcome, under a name and logo of their own.
-
 1. Read [`docs/ARCHITECTURE.md`](https://github.com/DamienReichhart/Homeport/blob/main/docs/ARCHITECTURE.md). Features are self-contained vertical slices, the frontend calls Rust only through the generated IPC bindings, and Rust logic lives in services that are unit-tested without Tauri.
 2. Use the project's vocabulary from [`GLOSSARY.md`](https://github.com/DamienReichhart/Homeport/blob/main/GLOSSARY.md) — Host, Stack, Managed, External, Adopt — in code, UI text and commits. Main decisions are recorded in [`docs/adr`](https://github.com/DamienReichhart/Homeport/tree/main/docs/adr).
 3. Follow the [brand guide](https://github.com/DamienReichhart/Homeport/blob/main/docs/BRAND.md) for colours and voice: plain, specific, calm, in British spelling.
