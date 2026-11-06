@@ -54,6 +54,25 @@ or, from a machine that has it, `docker save busybox:1.37 -o busybox.tar`, copy 
   Engines running Windows containers can't run the helper, so their volumes can't be opened.
 </Aside>
 
+### Backing up and restoring
+
+**Back up to a file…**, in the **⋯** menu of a volume's row, saves its contents to a `.tar` file on this computer. The archive holds the volume's files with their owners and permissions, at paths relative to its root, as `tar -C <volume> -cf backup.tar .` would make them, so you can also open or restore it without Homeport.
+
+**Restore from file** restores a backup:
+
+- From the top of the page, into **A new volume**, named after the file unless you change it, or **An existing volume** you pick.
+- From a volume's **⋯** menu, into that volume.
+
+If the existing volume already holds files, Homeport asks before deleting them and putting the backup's in their place. A file that isn't a tar archive is refused before anything changes.
+
+Both show their progress and can be cancelled. A cancelled backup leaves no file behind; a cancelled restore can leave the volume partly written, so restore it again before using it.
+
+#### Containers using the volume
+
+A backup of a volume a running container writes to — a database, say — may be inconsistent. Homeport names the running containers that use it, and you choose to **Back up anyway** or to stop them during the backup. A restore always stops them first. Either way, Homeport starts them again afterwards.
+
+Backups and restores use the same [helper container](#the-helper-container) as browsing, mounting the volume read-only for a backup. The archive travels over the Host's connection and is never held whole in memory, so large volumes and remote Hosts work too. Nothing is written on the Host but the volume being restored.
+
 ### Creating a volume
 
 **Create volume** asks for a **Name** and an optional **Driver** (`local` when empty).
