@@ -15,9 +15,10 @@ import { stackQueries } from '../../api/queries';
 import type { ComposeJob } from '../../model/composeJob';
 import { LinkedDefinition } from './LinkedDefinition';
 import { ManagedDefinition } from './ManagedDefinition';
+import { SyncedDefinition } from './SyncedDefinition';
 import { t, tRich } from '@/shared/i18n';
 
-/** A Managed or Linked Stack's definition, or how to adopt an External one. */
+/** A Managed, Linked or Synced Stack's definition, or how to adopt an External one. */
 export function StackDefinition({
   hostId,
   stack,
@@ -31,6 +32,10 @@ export function StackDefinition({
   if (stack.id && (stack.kind === 'linked' || stack.problem === 'filesMissing'))
     return (
       <LinkedDefinition hostId={hostId} stack={stack} linkedId={stack.id} onDeploy={onDeploy} />
+    );
+  if (stack.id && stack.kind === 'synced')
+    return (
+      <SyncedDefinition hostId={hostId} stack={stack} syncedId={stack.id} onDeploy={onDeploy} />
     );
   return <OwnDefinition hostId={hostId} stack={stack} onDeploy={onDeploy} />;
 }

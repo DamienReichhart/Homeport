@@ -100,10 +100,16 @@ export function network(
 
 /** Commands every rendered app needs, regardless of the page. */
 export const baseCommands = {
-  get_settings: () => ({ theme: 'system', lastHostId: 'h1', checkForUpdates: true }),
+  get_settings: () => ({
+    theme: 'system',
+    lastHostId: 'h1',
+    checkForUpdates: true,
+    syncIntervalMinutes: 5,
+  }),
   update_settings: ({ settings }: Record<string, unknown>) => settings,
   get_capabilities: () => ({
     keychain: true,
+    git: { state: 'available', cli: { program: 'git', version: '2.43.0' } },
     compose: {
       state: 'unavailable',
       problem: {
@@ -116,6 +122,7 @@ export const baseCommands = {
   }),
   hosts_list: () => [connectedHost],
   registries_list: () => [],
+  repositories_list: () => [],
   images_freshness: () => [],
   stream_cancel: () => null,
   updates_check: () => ({ currentVersion: '0.3.0', available: null, method: { kind: 'inApp' } }),

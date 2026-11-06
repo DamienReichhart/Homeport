@@ -3,7 +3,7 @@ members = ["src-tauri", "crates/*"]
 resolver = "2"
 
 [workspace.package]
-version = "0.10.0"
+version = "0.11.0"
 edition = "2021"
 license = "MIT"
 rust-version = "1.88"
@@ -51,6 +51,8 @@ getrandom = "0.3"
 keyring = "4"
 # Fingerprints of a Linked Stack's compose files (ADR 0008).
 sha2 = "0.10"
+# The Basic authorisation header of a git repository's token (ADR 0014).
+base64 = "0.22"
 # Small utilities.
 uuid = { version = "1", features = ["v4"] }
 gethostname = "1"
@@ -70,6 +72,7 @@ homeport-storage = { path = "crates/storage" }
 homeport-transport = { path = "crates/transport" }
 homeport-engine = { path = "crates/engine" }
 homeport-hosts = { path = "crates/hosts" }
+homeport-git = { path = "crates/git" }
 homeport-stacks = { path = "crates/stacks" }
 homeport-registries = { path = "crates/registries" }
 homeport-settings = { path = "crates/settings" }

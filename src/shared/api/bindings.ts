@@ -31,6 +31,23 @@ export const commands = {
 	 *  Docker Hub login when there is one.
 	 */
 	registriesHubTags: (repository: string, page: number, filter: string) => __TAURI_INVOKE<HubTagPage>("registries_hub_tags", { repository, page, filter }),
+	/**  Every stored repository, never with its key or token. */
+	repositoriesList: () => __TAURI_INVOKE<Repository[]>("repositories_list"),
+	/**  Adds a repository, generating its deploy key when it uses one. */
+	repositoriesCreate: (draft: RepositoryDraft) => __TAURI_INVOKE<Repository>("repositories_create", { draft }),
+	/**  Replaces a repository's deploy key with a new one. */
+	repositoriesRotateKey: (id: string) => __TAURI_INVOKE<Repository>("repositories_rotate_key", { id }),
+	/**  Replaces a repository's user name and token. */
+	repositoriesSetToken: (id: string, username: string, token: string) => __TAURI_INVOKE<Repository>("repositories_set_token", { id, username, token }),
+	/**
+	 *  Forgets the SSH server key trusted for a repository, so the next
+	 *  command trusts the one the server presents.
+	 */
+	repositoriesResetHostKey: (id: string) => __TAURI_INVOKE<Repository>("repositories_reset_host_key", { id }),
+	/**  Removes a repository and its clone; refused while a Synced Stack uses it. */
+	repositoriesRemove: (id: string) => __TAURI_INVOKE<null>("repositories_remove", { id }),
+	/**  "Test access": the repository's branches and tags, as this computer sees them. */
+	repositoriesTest: (id: string) => __TAURI_INVOKE<RemoteRefs>("repositories_test", { id }),
 	/**  Asks the update server for a newer version and remembers it for [`updates_install`]. */
 	updatesCheck: () => __TAURI_INVOKE<UpdateCheck>("updates_check"),
 	/**
@@ -142,8 +159,8 @@ export const commands = {
 	/**  Commits a container to a new image; returns the image's id. */
 	containersCommit: (hostId: string, id: string, spec: CommitSpec) => __TAURI_INVOKE<string>("containers_commit", { hostId, id, spec }),
 	/**
-	 *  Every Stack on a Host: those running there plus undeployed Managed and
-	 *  Linked Stacks. Stacks started from compose files on this machine are
+	 *  Every Stack on a Host: those running there plus undeployed Managed,
+	 *  Linked and Synced Stacks. Stacks started from compose files on this machine are
 	 *  recorded as Linked the first time they're seen.
 	 */
 	stacksList: (hostId: string) => __TAURI_INVOKE<Stack[]>("stacks_list", { hostId }),
@@ -164,8 +181,8 @@ export const commands = {
 	 */
 	stacksForget: (id: string) => __TAURI_INVOKE<null>("stacks_forget", { id }),
 	/**
-	 *  Sets the Compose profiles a Managed or Linked Stack deploys; they apply
-	 *  from its next compose command.
+	 *  Sets the Compose profiles a Managed, Linked or Synced Stack deploys; they
+	 *  apply from its next compose command.
 	 */
 	stacksSetProfiles: (kind: SourceKind, id: string, profiles: string[]) => __TAURI_INVOKE<string[]>("stacks_set_profiles", { kind, id, profiles }),
 	/**  What Compose would make of a folder picked for a new Linked Stack. */
@@ -190,19 +207,60 @@ export const commands = {
 	stacksLinkedSetFiles: (id: string, configFiles: string[]) => __TAURI_INVOKE<LinkedFiles>("stacks_linked_set_files", { id, configFiles }),
 	/**  Forgets a Linked Stack: its record goes, its folder and containers stay. */
 	stacksLinkedForget: (id: string) => __TAURI_INVOKE<null>("stacks_linked_forget", { id }),
+	/**
+	 *  Creates a Synced Stack on `host_id` from a repository's branch or tag:
+	 *  fetches it into the repository's clone and checks the compose file before
+	 *  anything is stored.
+	 */
+	stacksSyncedCreate: (hostId: string, draft: SyncedDraft, env: string) => __TAURI_INVOKE<SyncedStack>("stacks_synced_create", { hostId, draft, env }),
+	stacksSyncedGet: (id: string) => __TAURI_INVOKE<SyncedStack>("stacks_synced_get", { id }),
+	/**
+	 *  A Synced Stack's files at its fetched commit, read-only: no command
+	 *  writes them, since they change only through git.
+	 */
+	stacksSyncedFiles: (id: string) => __TAURI_INVOKE<SyncedFiles>("stacks_synced_files", { id }),
+	/**  The decrypted environment of a Synced Stack, for editing. */
+	stacksSyncedGetEnv: (id: string) => __TAURI_INVOKE<string>("stacks_synced_get_env", { id }),
+	/**
+	 *  Replaces a Synced Stack's environment, the one part of its definition
+	 *  that's Homeport's; its compose files only change through git.
+	 */
+	stacksSyncedSetEnv: (id: string, env: string) => __TAURI_INVOKE<SyncedStack>("stacks_synced_set_env", { id, env }),
+	/**
+	 *  "Sync": fetches a Synced Stack's branch or tag, and says what deploying
+	 *  the new commit would change since the deployed one.
+	 */
+	stacksSyncedSync: (id: string) => __TAURI_INVOKE<SyncReview>("stacks_synced_sync", { id }),
+	/**
+	 *  Deploys `commit` of a Synced Stack, the one its sync review showed, with
+	 *  `action` (`up` or `rebuild`), streaming the output.
+	 */
+	stacksSyncedDeploySubscribe: (id: string, commit: string, action: ComposeAction, onEvent: Channel<ComposeEvent>) => __TAURI_INVOKE<number>("stacks_synced_deploy_subscribe", { id, commit, action, onEvent }),
+	/**
+	 *  Turns a Synced Stack's polling and auto-deploy on or off; auto-deploy
+	 *  needs polling.
+	 */
+	stacksSyncedSetSync: (id: string, poll: boolean, autoDeploy: boolean) => __TAURI_INVOKE<SyncedStack>("stacks_synced_set_sync", { id, poll, autoDeploy }),
+	/**
+	 *  Forgets a Synced Stack: its record, history and worktree go, its
+	 *  containers are left alone and it becomes External.
+	 */
+	stacksSyncedForget: (id: string) => __TAURI_INVOKE<null>("stacks_synced_forget", { id }),
 	stacksAct: (hostId: string, name: string, action: StackAction) => __TAURI_INVOKE<null>("stacks_act", { hostId, name, action }),
 	/**  Removes a Stack's containers and networks through the Engine API. */
 	stacksRemove: (hostId: string, name: string) => __TAURI_INVOKE<null>("stacks_remove", { hostId, name }),
 	/**
-	 *  Runs a compose command for the Managed or Linked Stack `id`, streaming
-	 *  its output.
+	 *  Runs a compose command for the Managed, Linked or Synced Stack `id`,
+	 *  streaming its output. A Synced Stack's deploy that succeeds is noted as
+	 *  its deployed commit.
 	 */
 	stacksComposeSubscribe: (kind: SourceKind, id: string, action: ComposeAction, onEvent: Channel<ComposeEvent>) => __TAURI_INVOKE<number>("stacks_compose_subscribe", { kind, id, action, onEvent }),
 	/**
-	 *  What redeploying the Managed or Linked Stack `id` would change: its
-	 *  latest successful deploy against `candidate`, or against its stored
-	 *  definition (a Linked Stack's files as they are now) when there's none.
-	 *  Environment values are compared here and never sent back.
+	 *  What redeploying the Managed, Linked or Synced Stack `id` would change:
+	 *  its latest successful deploy against `candidate`, or against its stored
+	 *  definition (a Linked Stack's files as they are now, a Synced Stack's
+	 *  compose file at its fetched commit) when there's none. Environment values
+	 *  are compared here and never sent back.
 	 */
 	stacksDiff: (kind: SourceKind, id: string, candidate: Candidate | null) => __TAURI_INVOKE<DeployDiff>("stacks_diff", { kind, id, candidate }),
 	/**  A Stack's recorded deploys, newest first. */
@@ -221,6 +279,8 @@ export const commands = {
 export const events = {
 	engineEventReceived: makeEvent<EngineEventReceived, EngineEventReceived>("engine-event-received"),
 	hostStatusChanged: makeEvent<HostStatusChanged, HostStatusChanged>("host-status-changed"),
+	syncedAutoDeployed: makeEvent<SyncedAutoDeployed, SyncedAutoDeployed>("synced-auto-deployed"),
+	syncedUpdateAvailable: makeEvent<SyncedUpdateAvailable, SyncedUpdateAvailable>("synced-update-available"),
 };
 
 /* Types */
@@ -348,6 +408,18 @@ export type Capabilities = {
 	keychain: boolean,
 	/**  Whether Managed Stacks can be deployed here. */
 	compose: ComposeSupport,
+	/**  Whether Synced Stacks can be cloned and fetched here. */
+	git: GitSupport,
+};
+
+/**  One commit, as a sync shows it. */
+export type Commit = {
+	hash: string,
+	shortHash: string,
+	subject: string,
+	author: string,
+	/**  ISO 8601, as the committer's clock wrote it. */
+	date: string,
 };
 
 export type CommitSpec = {
@@ -504,6 +576,10 @@ export type DeploySummary = {
 	success: boolean | null,
 	exitCode: number | null,
 	hasEnv: boolean,
+	/**  The commit a Synced Stack deployed. */
+	commit: string | null,
+	/**  Started by a Synced Stack's auto-deploy, not by the user. */
+	automatic: boolean,
 };
 
 export type DetectedEngine = {
@@ -594,7 +670,21 @@ export type ErrorCode =
 /**  A Linked Stack's compose file can't be read or written. */
 "stack_file_unreadable" | 
 /**  A Linked Stack's compose file changed on disk since it was opened. */
-"stack_files_changed" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
+"stack_files_changed" | 
+/**  The `git` CLI isn't installed on this computer. */
+"git_missing" | 
+/**  The repository refused the deploy key or the token. */
+"git_auth_failed" | 
+/**  The repository doesn't exist, or the credentials can't see it. */
+"git_repository_not_found" | 
+/**  The repository's server can't be reached from this computer. */
+"git_unreachable" | 
+/**  The SSH server of a repository presented a different key than the trusted one. */
+"git_host_key_changed" | 
+/**  `git` failed in a way Homeport has no better words for. */
+"git_failed" | 
+/**  A Synced Stack's compose file, branch or tag isn't in its repository. */
+"synced_compose_file_missing" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
 
 export type ExecEvent = { type: "output"; data: string } | 
 /**  `error` explains an exit that means the command couldn't run. */
@@ -661,6 +751,18 @@ export type FreshnessResult = {
 	imageId: string,
 	freshness: Freshness,
 };
+
+/**  The `git` program found on this computer. */
+export type GitCli = {
+	program: string,
+	/**  As `git --version` prints it, without the `git version ` prefix. */
+	version: string,
+};
+
+/**  The git CLI Synced Stacks use, or why there's none. */
+export type GitSupport = { state: "available"; cli: GitCli } | 
+/**  `problem` says how to install it. */
+{ state: "unavailable"; problem: AppError };
 
 /**  GPUs requested from the vendor's container toolkit (`--gpus`). */
 export type GpuSpec = { kind: "all" } | { kind: "count"; count: number } | { kind: "ids"; ids: string[] };
@@ -1055,6 +1157,9 @@ export type PullEvent =
  */
 { type: "progress"; id: string | null; status: string; current: number | null; total: number | null } | { type: "done" } | { type: "error"; error: AppError };
 
+/**  What a Synced Stack follows. */
+export type RefKind = "branch" | "tag";
+
 /**  A stored login, as the frontend sees it: never the secret. */
 export type Registry = {
 	id: string,
@@ -1073,6 +1178,68 @@ export type RegistryDraft = {
 	address: string,
 	username: string,
 	secret: string | null,
+};
+
+/**  A remote's branches and tags, as "Test access" lists them. */
+export type RemoteRefs = {
+	branches: string[],
+	tags: string[],
+	/**  The branch the remote's `HEAD` points at. */
+	defaultBranch: string | null,
+};
+
+/**  How Homeport authenticates to a repository. */
+export type RepoAuth = 
+/**  A deploy key Homeport generated, over SSH. */
+"sshKey" | 
+/**  A user name and access token, over HTTPS. */
+"httpsToken" | 
+/**  Nothing: a public repository over HTTPS. */
+"none";
+
+/**  One file under a Synced Stack's compose file's folder, read-only. */
+export type RepoFile = {
+	/**  Relative to the repository's root. */
+	path: string,
+	/**  `None` when it isn't text Homeport shows, or is too large. */
+	content: string | null,
+};
+
+/**  One file under the compose file's folder that differs between two commits. */
+export type RepoFileChange = {
+	/**  Relative to the repository's root. */
+	path: string,
+	/**  `None` when the file is new, or isn't text. */
+	before: string | null,
+	/**  `None` when the file was deleted, or isn't text. */
+	after: string | null,
+	/**  The file isn't text Homeport shows, or is too large to compare. */
+	binary: boolean,
+};
+
+/**  A stored repository, as the frontend sees it: never a secret. */
+export type Repository = {
+	id: string,
+	url: string,
+	auth: RepoAuth,
+	/**  The deploy key to add to the repository, in OpenSSH format. */
+	publicKey: string | null,
+	/**  Its `SHA256:…` fingerprint, as forges show it. */
+	keyFingerprint: string | null,
+	username: string | null,
+	hasToken: boolean,
+	/**  The `SHA256:…` fingerprint of the SSH server's key, once trusted. */
+	hostKeyFingerprint: string | null,
+	createdAt: string,
+	updatedAt: string,
+};
+
+/**  What the user typed to add a repository. */
+export type RepositoryDraft = {
+	url: string,
+	auth: RepoAuth,
+	username: string | null,
+	token: string | null,
 };
 
 export type RestartPolicy = "no" | "always" | "unless-stopped" | "on-failure";
@@ -1141,10 +1308,15 @@ export type Settings = {
 	lastHostId?: string | null,
 	/**  Look for a new version at launch and every few hours. */
 	checkForUpdates?: boolean,
+	/**
+	 *  Minutes between checks of Synced Stacks' repositories while Homeport
+	 *  runs; at least 1.
+	 */
+	syncIntervalMinutes?: number,
 };
 
 /**  The kinds of source, for the rules a definition is checked against. */
-export type SourceKind = "managed" | "linked";
+export type SourceKind = "managed" | "linked" | "synced";
 
 export type SshAuth = 
 /**  A keypair Homeport generated for this Host. */
@@ -1172,7 +1344,7 @@ export type SshSetup = {
 export type Stack = {
 	name: string,
 	kind: StackKind,
-	/**  The stored record of a Managed or Linked Stack. */
+	/**  The stored record of a Managed, Linked or Synced Stack. */
 	id: string | null,
 	state: StackState,
 	services: StackService[],
@@ -1184,6 +1356,11 @@ export type Stack = {
 	workingDir: string | null,
 	/**  Why a recorded Stack is shown as another kind. */
 	problem: StackProblem | null,
+	/**
+	 *  A Synced Stack whose fetched commit changes its compose file's folder
+	 *  since the deployed one.
+	 */
+	updateAvailable: boolean,
 };
 
 export type StackAction = "start" | "stop" | "restart";
@@ -1193,6 +1370,8 @@ export type StackKind =
 "managed" | 
 /**  Its compose files are a folder on this machine (ADR 0008). */
 "linked" | 
+/**  Its compose file comes from a git repository (ADR 0014). */
+"synced" | 
 /**  Only its containers are known. */
 "external";
 
@@ -1217,7 +1396,7 @@ export type StackState =
 "partial" | 
 /**  Containers exist but none is running. */
 "stopped" | 
-/**  A Managed or Linked Stack with no containers yet. */
+/**  A Managed, Linked or Synced Stack with no containers yet. */
 "notDeployed";
 
 export type StatsSample = {
@@ -1231,6 +1410,101 @@ export type StatsSample = {
 	blockRead: number,
 	blockWrite: number,
 	pids: number,
+};
+
+/**  What syncing would deploy, for the review before it does. */
+export type SyncReview = {
+	stack: SyncedStack,
+	/**  What is deployed now, `None` before the first deploy. */
+	deployed: Commit | null,
+	/**  What would be deployed: the ref as just fetched. */
+	fetched: Commit,
+	/**
+	 *  The commits after the deployed one that change the compose file's
+	 *  folder, newest first, at most [`ops::LOG_LIMIT`].
+	 */
+	commits: Commit[],
+	/**
+	 *  The files that changed under the compose file's folder, the compose
+	 *  file first.
+	 */
+	files: RepoFileChange[],
+	/**  Nothing under the compose file's folder changed since the deploy. */
+	upToDate: boolean,
+	/**  A tag now points at another commit than when it was last fetched. */
+	tagMoved: boolean,
+	/**
+	 *  A service is built from the repository's files, so the deploy
+	 *  rebuilds it, and a changed Dockerfile applies.
+	 */
+	builds: boolean,
+};
+
+/**  A Synced Stack's automatic deploy ended; `error` says why it failed. */
+export type SyncedAutoDeployed = {
+	hostId: string,
+	stackId: string,
+	name: string,
+	commit: string,
+	error: AppError | null,
+};
+
+/**  What a Synced Stack is created from. */
+export type SyncedDraft = {
+	name: string,
+	repositoryId: string,
+	refKind: RefKind,
+	refName: string,
+	composePath: string,
+};
+
+/**  A Synced Stack's files at its fetched commit, for its Definition tab. */
+export type SyncedFiles = {
+	commit: Commit,
+	/**  The files under the compose file's folder, the compose file first. */
+	files: RepoFile[],
+};
+
+export type SyncedStack = {
+	id: string,
+	hostId: string,
+	name: string,
+	repositoryId: string,
+	refKind: RefKind,
+	refName: string,
+	/**  The compose file, relative to the repository's root. */
+	composePath: string,
+	hasEnv: boolean,
+	profiles: string[],
+	/**  The commit of the last successful deploy. */
+	deployedCommit: string | null,
+	/**  The ref's commit as last fetched. */
+	fetchedCommit: string | null,
+	/**  Fetched on an interval while Homeport runs. */
+	poll: boolean,
+	/**  Deploys each new commit without asking; off unless turned on. */
+	autoDeploy: boolean,
+	lastPolledAt: string | null,
+	/**  Why the last poll failed; `None` once one succeeds. */
+	lastPollError: AppError | null,
+	/**
+	 *  The fetched commit changes the compose file's folder since the
+	 *  deployed one.
+	 */
+	updateAvailable: boolean,
+	/**  The commit whose automatic deploy failed, which isn't tried again. */
+	autoDeployFailedCommit: string | null,
+	/**  Why it failed. */
+	autoDeployError: AppError | null,
+	createdAt: string,
+	updatedAt: string,
+};
+
+/**  A Synced Stack's poll found a new commit that changes its compose file's folder. */
+export type SyncedUpdateAvailable = {
+	hostId: string,
+	stackId: string,
+	name: string,
 };
 
 export type SystemPruneReport = {

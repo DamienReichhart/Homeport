@@ -9,6 +9,8 @@ const deploy = (
   id,
   stackId: 's1',
   kind: 'managed',
+  commit: null,
+  automatic: false,
   action: 'up',
   startedAt: '2026-11-05T10:00:00.000Z',
   finishedAt: finished ? '2026-11-05T10:00:05.000Z' : null,

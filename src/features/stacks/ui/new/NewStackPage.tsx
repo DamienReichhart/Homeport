@@ -11,9 +11,10 @@ import {
 } from '@/shared/ui';
 import { NewLinkedStack } from './NewLinkedStack';
 import { NewManagedStack } from './NewManagedStack';
+import { NewSyncedStack } from './NewSyncedStack';
 import { t } from '@/shared/i18n';
 
-type Mode = 'managed' | 'linked';
+type Mode = 'managed' | 'linked' | 'synced';
 
 function NewStack({ hostId }: { hostId: string }) {
   const [params] = useSearchParams();
@@ -29,7 +30,9 @@ function NewStack({ hostId }: { hostId: string }) {
             ? t('stacks.newPage.adoptDescription')
             : mode === 'linked'
               ? t('stacks.newLinked.description')
-              : t('stacks.newPage.description')
+              : mode === 'synced'
+                ? t('stacks.newSynced.description')
+                : t('stacks.newPage.description')
         }
       />
       {adopting ? (
@@ -48,10 +51,13 @@ function NewStack({ hostId }: { hostId: string }) {
         >
           <ToggleGroupItem value="managed">{t('stacks.newPage.writeCompose')}</ToggleGroupItem>
           <ToggleGroupItem value="linked">{t('stacks.newPage.useFolder')}</ToggleGroupItem>
+          <ToggleGroupItem value="synced">{t('stacks.newPage.useRepository')}</ToggleGroupItem>
         </ToggleGroup>
       )}
       {mode === 'linked' && !adopting ? (
         <NewLinkedStack hostId={hostId} />
+      ) : mode === 'synced' && !adopting ? (
+        <NewSyncedStack hostId={hostId} />
       ) : (
         <NewManagedStack hostId={hostId} adopting={adopting} />
       )}

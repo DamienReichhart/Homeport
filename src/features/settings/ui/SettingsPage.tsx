@@ -1,12 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { settingsQuery } from '@/core/settings';
 import { RegistriesCard } from '@/features/registries';
+import { RepositoriesCard } from '@/features/repositories';
 import { UpdatesCard } from '@/features/updates';
 import { ErrorMessage, PageHeader, Spinner } from '@/shared/ui';
 import { useSaveSettings } from '../api/mutations';
 import { AboutCard } from './AboutCard';
 import { AppearanceCard } from './AppearanceCard';
 import { MachineCard } from './MachineCard';
+import { SyncCard } from './SyncCard';
 import { t } from '@/shared/i18n';
 
 export function SettingsPage() {
@@ -27,6 +29,8 @@ export function SettingsPage() {
       />
       <UpdatesCard settings={settings.data} onChange={(next) => save.mutate(next)} />
       <RegistriesCard />
+      <RepositoriesCard />
+      <SyncCard settings={settings.data} onChange={(next) => save.mutate(next)} />
       <MachineCard />
       <AboutCard />
     </div>

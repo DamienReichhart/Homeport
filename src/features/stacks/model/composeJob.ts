@@ -1,7 +1,7 @@
 import type { Candidate, ComposeAction, SourceKind } from '@/shared/api';
 import type { MessageKey } from '@/shared/i18n';
 
-/** One compose command to run for a Managed or Linked Stack. */
+/** One compose command to run for a Managed, Linked or Synced Stack. */
 export interface ComposeJob {
   /** Where the Stack's definition is: held by Homeport, or in a folder. */
   kind: SourceKind;
@@ -9,6 +9,8 @@ export interface ComposeJob {
   stackId: string;
   /** Roll a Managed Stack back to this recorded deploy, then deploy it. */
   rollbackTo?: string;
+  /** Deploy this commit of a Synced Stack: the one its sync review showed. */
+  commit?: string;
   /**
    * Show what changes before running: `null` compares the stored definition
    * with what is deployed. Left out for first deploys, which go straight on.

@@ -35,7 +35,7 @@ mod text;
 
 use std::{error::Error as StdError, fmt::Display};
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::messages as msg;
 
@@ -46,7 +46,7 @@ pub use text::{arguments, render, Message, Param, Params, Text};
 pub type AppResult<T> = Result<T, AppError>;
 
 /// What the user can do about a failure.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, specta::Type)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
 pub struct Hint {
     /// The catalogue key of `text`; empty for text not in the catalogue.
     pub key: String,
@@ -58,7 +58,7 @@ pub struct Hint {
     pub commands: Vec<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type, thiserror::Error)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, specta::Type, thiserror::Error)]
 #[error("{message}")]
 pub struct AppError {
     /// What failed, for logic: `e.is(ErrorCode::PortInUse)`.

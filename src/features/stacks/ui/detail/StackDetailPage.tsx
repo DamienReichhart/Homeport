@@ -23,6 +23,7 @@ import { KIND_BADGE, KIND_LABEL } from '../../model/stackKind';
 import { STATE_LABEL, STATE_TONE } from '../../model/stackState';
 import { ComposeRunDialog } from '../dialogs/ComposeRunDialog';
 import { StackActions } from '../StackActions';
+import { SyncBadge } from '../SyncBadge';
 import { UpdateBadge } from '../UpdateBadge';
 import { StackDefinition } from './StackDefinition';
 import { StackHistory } from './StackHistory';
@@ -65,6 +66,7 @@ function StackDetail({ hostId, name }: { hostId: string; name: string }) {
             {stack.name}
             <Badge variant={KIND_BADGE[stack.kind]}>{t(KIND_LABEL[stack.kind])}</Badge>
             {newer.length > 0 && <UpdateBadge newer={newer} />}
+            {stack.updateAvailable && <SyncBadge />}
           </span>
         }
         description={

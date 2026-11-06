@@ -181,7 +181,7 @@ export function useSetLinkedFiles(linkedId: string, onSaved: (files: LinkedFiles
   });
 }
 
-/** Sets the Compose profiles a Managed or Linked Stack deploys. */
+/** Sets the Compose profiles a Managed, Linked or Synced Stack deploys. */
 export function useSetProfiles(kind: SourceKind, stackId: string) {
   const client = useQueryClient();
   return useMutation({
@@ -189,7 +189,12 @@ export function useSetProfiles(kind: SourceKind, stackId: string) {
     mutationFn: (profiles: string[]) => commands.stacksSetProfiles(kind, stackId, profiles),
     onSuccess: async () => {
       await client.invalidateQueries({
-        queryKey: kind === 'managed' ? stackKeys.managed(stackId) : stackKeys.linked(stackId),
+        queryKey:
+          kind === 'managed'
+            ? stackKeys.managed(stackId)
+            : kind === 'linked'
+              ? stackKeys.linked(stackId)
+              : ['synced-stack', stackId],
       });
       toast.success(t('stacks.profiles.saved'));
     },

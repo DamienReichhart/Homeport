@@ -17,7 +17,7 @@ An SSH server an SSH Host is reached through when its own SSH server only accept
 _Avoid_: Jump host, jump server, proxy, gateway, hop (in the UI)
 
 **Stack**:
-A Compose project running on a Host, identified by its project name. Every Stack is Managed, Linked or External.
+A Compose project running on a Host, identified by its project name. Every Stack is Managed, Linked, Synced or External.
 _Avoid_: Compose, project, application
 
 **Managed Stack**:
@@ -27,6 +27,18 @@ _Avoid_: Owned stack, local stack
 **Linked Stack**:
 A Stack whose compose definition is a folder on this machine: Homeport keeps where the folder and its compose files are, reads and writes the files in place, and deploys with that folder as the project directory, so `build:`, `env_file:` and relative paths work. Found from the compose labels of running containers, or created from a folder. It becomes External while its files are missing.
 _Avoid_: Local stack, folder stack, bound stack
+
+**Synced Stack**:
+A Stack whose compose definition comes from a git repository: Homeport keeps a clone of it on this machine, fetches a branch or tag on demand or on an interval while Homeport is open, shows what changed, and deploys a commit from the compose file's folder, so `build:` and relative paths work. Never edited in Homeport: its files change through git. Only its environment and its sync settings are Homeport's.
+_Avoid_: Git stack, GitOps stack, remote stack
+
+**Repository**:
+A git repository Homeport may read for Synced Stacks: its URL and how Homeport authenticates to it (a deploy key Homeport generated, a user name and token, or nothing for a public one), app-wide rather than per Host, and shared by every Synced Stack made from it.
+_Avoid_: Repo (in the UI), remote, source
+
+**Deploy key**:
+The Ed25519 key Homeport generates for one Repository, which the user adds to it on their git forge with read access only. Never the user's own SSH key.
+_Avoid_: SSH key (alone), access key
 
 **External Stack**:
 A Stack found running on a Host whose compose definition Homeport doesn't have, neither stored nor in a folder on this machine. It can be started, stopped and removed, but not redeployed or edited.

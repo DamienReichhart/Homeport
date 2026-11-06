@@ -15,6 +15,8 @@ pub enum StackKind {
     Managed,
     /// Its compose files are a folder on this machine (ADR 0008).
     Linked,
+    /// Its compose file comes from a git repository (ADR 0014).
+    Synced,
     /// Only its containers are known.
     External,
 }
@@ -28,7 +30,7 @@ pub enum StackState {
     Partial,
     /// Containers exist but none is running.
     Stopped,
-    /// A Managed or Linked Stack with no containers yet.
+    /// A Managed, Linked or Synced Stack with no containers yet.
     NotDeployed,
 }
 
@@ -54,7 +56,7 @@ pub struct StackService {
 pub struct Stack {
     pub name: String,
     pub kind: StackKind,
-    /// The stored record of a Managed or Linked Stack.
+    /// The stored record of a Managed, Linked or Synced Stack.
     pub id: Option<String>,
     pub state: StackState,
     pub services: Vec<StackService>,
@@ -66,6 +68,9 @@ pub struct Stack {
     pub working_dir: Option<String>,
     /// Why a recorded Stack is shown as another kind.
     pub problem: Option<StackProblem>,
+    /// A Synced Stack whose fetched commit changes its compose file's folder
+    /// since the deployed one.
+    pub update_available: bool,
 }
 
 /// A Stack Homeport has a record of, deployed or not.
@@ -73,12 +78,14 @@ pub struct Stack {
 pub struct StackRecord {
     pub id: String,
     pub name: String,
-    /// Managed or Linked.
+    /// Managed, Linked or Synced.
     pub kind: StackKind,
     /// The folder of a Linked Stack.
     pub working_dir: Option<String>,
     /// A Linked Stack whose files are gone: shown as External, with why.
     pub files_missing: bool,
+    /// A Synced Stack with a new commit waiting to be deployed.
+    pub update_available: bool,
 }
 
 impl StackRecord {
@@ -89,6 +96,7 @@ impl StackRecord {
             kind: StackKind::Managed,
             working_dir: None,
             files_missing: false,
+            update_available: false,
         }
     }
 
@@ -103,7 +111,25 @@ impl StackRecord {
             kind: StackKind::Linked,
             working_dir: Some(working_dir.into()),
             files_missing: false,
+            update_available: false,
         }
+    }
+
+    pub fn synced(id: impl Into<String>, name: impl Into<String>) -> Self {
+        Self {
+            id: id.into(),
+            name: name.into(),
+            kind: StackKind::Synced,
+            working_dir: None,
+            files_missing: false,
+            update_available: false,
+        }
+    }
+
+    /// Marks a Synced Stack with a new commit waiting to be deployed.
+    pub fn with_update_available(mut self, available: bool) -> Self {
+        self.update_available = available;
+        self
     }
 
     /// Marks a Linked Stack whose files are missing on this machine.
@@ -174,6 +200,7 @@ pub fn derive(containers: &[Container], records: &[StackRecord]) -> Vec<Stack> {
                     .find_map(|c| c.labels.get(CONFIG_FILES).cloned()),
                 working_dir: record.and_then(|r| r.working_dir.clone()),
                 problem: record.and_then(StackRecord::problem),
+                update_available: record.is_some_and(|r| r.update_available),
             }
         })
         .collect();
@@ -191,6 +218,7 @@ pub fn derive(containers: &[Container], records: &[StackRecord]) -> Vec<Stack> {
                 config_files: None,
                 working_dir: r.working_dir.clone(),
                 problem: r.problem(),
+                update_available: r.update_available,
             });
         }
     }
@@ -296,6 +324,36 @@ mod tests {
         );
         assert_eq!(stacks[0].working_dir.as_deref(), Some("/srv/blog"));
         assert_eq!(stacks[1].working_dir.as_deref(), Some("/srv/draft"));
+    }
+
+    #[test]
+    fn synced_stacks_come_from_their_records_deployed_or_not() {
+        let containers = [
+            container("1", Some("shop"), "web", "running"),
+            container("2", Some("blog"), "app", "running"),
+            container("3", Some("site"), "x", "exited"),
+        ];
+        let records = [
+            StackRecord::managed("m1", "shop"),
+            StackRecord::linked("l1", "blog", "/srv/blog"),
+            StackRecord::synced("y1", "site"),
+            StackRecord::synced("y2", "docs"),
+        ];
+        let kinds: Vec<_> = derive(&containers, &records)
+            .iter()
+            .map(|s| (s.name.clone(), s.kind, s.state))
+            .collect();
+        assert_eq!(
+            kinds,
+            [
+                ("blog".into(), StackKind::Linked, StackState::Running),
+                ("docs".into(), StackKind::Synced, StackState::NotDeployed),
+                ("shop".into(), StackKind::Managed, StackState::Running),
+                ("site".into(), StackKind::Synced, StackState::Stopped),
+            ]
+        );
+        let external = derive(&containers, &[]);
+        assert!(external.iter().all(|s| s.kind == StackKind::External));
     }
 
     #[test]

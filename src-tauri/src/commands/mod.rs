@@ -19,6 +19,7 @@ pub mod hosts;
 pub mod images;
 pub mod networks;
 pub mod registries;
+pub mod repositories;
 pub mod settings;
 pub mod stacks;
 pub mod streams;
@@ -51,6 +52,13 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             registries::registries_check,
             registries::registries_login_for,
             registries::registries_hub_tags,
+            repositories::repositories_list,
+            repositories::repositories_create,
+            repositories::repositories_rotate_key,
+            repositories::repositories_set_token,
+            repositories::repositories_reset_host_key,
+            repositories::repositories_remove,
+            repositories::repositories_test,
             updates::updates_check,
             updates::updates_install,
             hosts::hosts_list,
@@ -138,6 +146,15 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             stacks::stacks_linked_write,
             stacks::stacks_linked_set_files,
             stacks::stacks_linked_forget,
+            stacks::stacks_synced_create,
+            stacks::stacks_synced_get,
+            stacks::stacks_synced_files,
+            stacks::stacks_synced_get_env,
+            stacks::stacks_synced_set_env,
+            stacks::stacks_synced_sync,
+            stacks::stacks_synced_deploy_subscribe,
+            stacks::stacks_synced_set_sync,
+            stacks::stacks_synced_forget,
             stacks::stacks_act,
             stacks::stacks_remove,
             stacks::stacks_compose_subscribe,
@@ -149,6 +166,8 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
         .events(collect_events![
             events::HostStatusChanged,
             events::EngineEventReceived,
+            events::SyncedUpdateAvailable,
+            events::SyncedAutoDeployed,
         ])
 }
 
@@ -165,6 +184,27 @@ pub fn export_bindings(path: impl AsRef<std::path::Path>) {
 #[cfg(test)]
 mod tests {
     use std::path::Path;
+
+    /// A Synced Stack's compose files change only through git: no command
+    /// for one takes files or file content (only its environment).
+    #[test]
+    fn no_command_writes_a_synced_stacks_files() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("bindings.ts");
+        super::export_bindings(&path);
+        let bindings = std::fs::read_to_string(path).unwrap();
+        let synced: Vec<&str> = bindings
+            .lines()
+            .filter(|l| l.trim_start().starts_with("stacksSynced"))
+            .collect();
+        assert!(synced.len() >= 8, "{synced:?}");
+        for line in synced {
+            let params = line.split("=>").next().unwrap_or_default();
+            for forbidden in ["files", "content", "path:", "ComposeFile"] {
+                assert!(!params.contains(forbidden), "{line}");
+            }
+        }
+    }
 
     /// Fails when the committed bindings drift from the Rust command surface.
     /// Run with `UPDATE_BINDINGS=1` to regenerate them.

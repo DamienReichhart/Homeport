@@ -16,12 +16,15 @@ const shop: Stack = {
   configFiles: null,
   workingDir: null,
   problem: null,
+  updateAvailable: false,
 };
 
 const summary = (id: string, success: boolean | null, at: string): DeploySummary => ({
   id,
   stackId: 'm1',
   kind: 'managed',
+  commit: null,
+  automatic: false,
   action: 'up',
   startedAt: at,
   finishedAt: success === null ? null : at,
@@ -35,6 +38,7 @@ function mock(rolledBack: unknown[]) {
     ...baseCommands,
     get_capabilities: () => ({
       keychain: true,
+      git: { state: 'available', cli: { program: 'git', version: '2.43.0' } },
       compose: {
         state: 'available',
         cli: { program: 'docker', prefix: ['compose'], version: '5' },

@@ -28,6 +28,7 @@ export const sidebar: NonNullable<StarlightUserConfig['sidebar']> = [
       { label: 'Images', slug: 'docs/guides/images' },
       { label: 'Volumes and networks', slug: 'docs/guides/volumes-networks' },
       { label: 'Stacks', slug: 'docs/guides/stacks' },
+      { label: 'Synced Stacks', slug: 'docs/guides/synced-stacks' },
       { label: 'Settings', slug: 'docs/guides/settings' },
     ],
   },

@@ -58,6 +58,23 @@ homeport_core::messages! {
     /// A path that isn't one of the Linked Stack's compose files.
     NOT_A_STACK_FILE = "errors.stacks.notAStackFile" => "{file} isn't one of this Stack's compose files.";
 
+    // Synced Stacks
+
+    /// A compose file path outside the repository, or not a plain relative path.
+    SYNCED_PATH = "errors.stacks.syncedPath" => "\"{path}\" isn't a path inside the repository. Use one like compose.yaml or deploy/compose.yaml.";
+    /// A compose file path that doesn't end in .yaml or .yml.
+    SYNCED_PATH_NOT_YAML = "errors.stacks.syncedPathNotYaml" => "{path} isn't a compose file. Its name ends in .yaml or .yml.";
+    /// Creating a Synced Stack without a branch or tag.
+    SYNCED_REF_EMPTY = "errors.stacks.syncedRefEmpty" => "Choose the branch or tag to deploy.";
+    /// The compose file isn't at that path in the commit.
+    SYNCED_FILE_MISSING = "errors.stacks.syncedFileMissing" => "The repository has no compose file at {path} in commit {commit}.";
+    SYNCED_FILE_MISSING_HINT = "errors.stacks.syncedFileMissing.hint" => "Check the path, relative to the repository's root, and the branch or tag.";
+    /// Deploying a Synced Stack whose ref was never fetched.
+    SYNCED_NOT_FETCHED = "errors.stacks.syncedNotFetched" => "This synced stack hasn't been fetched yet. Sync it first.";
+    /// Rolling back a Synced Stack, whose repository is its source.
+    ROLLBACK_SYNCED = "errors.stacks.rollbackSynced" => "A synced stack can't be rolled back from Homeport.";
+    ROLLBACK_SYNCED_HINT = "errors.stacks.rollbackSynced.hint" => "Revert the change in its repository, or point the stack at an earlier tag, then sync.";
+
     // Compose definitions
 
     /// A definition that isn't YAML; the parser's words are in Details.

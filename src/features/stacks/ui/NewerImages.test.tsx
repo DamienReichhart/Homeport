@@ -29,6 +29,7 @@ function mock(kind: 'managed' | 'external' = 'managed') {
         configFiles: null,
         workingDir: null,
         problem: null,
+        updateAvailable: false,
       },
     ],
     images_freshness: () => [

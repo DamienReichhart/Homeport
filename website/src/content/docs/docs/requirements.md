@@ -24,31 +24,37 @@ Any Engine that speaks the Docker Engine API works, including Podman's Docker-co
 
 ## Optional: an OS keychain
 
-Homeport encrypts SSH keys, TLS certificates, Stack environments and registry logins with a key it keeps in your operating system's keychain:
+Homeport encrypts SSH keys, TLS certificates, Stack environments, registry logins and repositories' deploy keys and tokens with a key it keeps in your operating system's keychain:
 
 - **macOS** — Keychain
 - **Windows** — Credential Manager
 - **Linux** — a Secret Service provider, such as GNOME Keyring or KWallet
 
-Without one, Homeport shows a banner and still works with local sockets, plain TCP and SSH through **ssh-agent**. TLS Hosts, SSH Hosts with stored keys, Stack environments and registry logins need the keychain; without one, images are pulled anonymously. See [security and your data](/docs/reference/security/).
+Without one, Homeport shows a banner and still works with local sockets, plain TCP and SSH through **ssh-agent**. TLS Hosts, SSH Hosts with stored keys, Stack environments, registry logins and private repositories need the keychain; without one, images are pulled anonymously and only public repositories can be added. See [security and your data](/docs/reference/security/).
 
 ## Optional: Docker Compose
 
-To deploy [Managed and Linked Stacks](/docs/guides/stacks/), Homeport runs the `docker compose` command on **this** machine — not on the Host. Install the Docker CLI with the Compose plugin (Docker Desktop includes it), or the standalone `docker-compose` v2.
+To deploy [Managed, Linked and Synced Stacks](/docs/guides/stacks/), Homeport runs the `docker compose` command on **this** machine — not on the Host. Install the Docker CLI with the Compose plugin (Docker Desktop includes it), or the standalone `docker-compose` v2.
 
 Without it, Stacks still appear — Linked Stacks included — and can be started, stopped and removed; only deploying needs Compose. **Settings → This machine** shows whether Homeport found it.
 
+## Optional: git
+
+[Synced Stacks](/docs/guides/synced-stacks/) run the `git` installed on **this** machine to clone and fetch their repositories: Git for Windows, Apple's command line tools (`xcode-select --install`), or your distribution's `git` package. On Windows, Homeport points it at the system's OpenSSH for SSH repositories. Every other feature works without git; **Settings → This machine** shows whether Homeport found it.
+
 ## What each feature needs
 
-| Feature                                   | Keychain | Compose CLI |
-| ----------------------------------------- | :------: | :---------: |
-| Local socket and TCP Hosts                |    —     |      —      |
-| SSH Hosts with ssh-agent                  |    —     |      —      |
-| SSH Hosts with a Homeport or imported key |   Yes    |      —      |
-| TLS Hosts                                 |   Yes    |      —      |
-| Containers, images, volumes, networks     |    —     |      —      |
-| Starting, stopping, removing Stacks       |    —     |      —      |
-| Deploying Managed and Linked Stacks       |    —     |     Yes     |
-| A Managed Stack's environment             |   Yes    |      —      |
-| Registry logins (private images, pushes)  |   Yes    |      —      |
-| Building an image from a folder           |    —     |      —      |
+| Feature                                    | Keychain | Compose CLI | git |
+| ------------------------------------------ | :------: | :---------: | :-: |
+| Local socket and TCP Hosts                 |    —     |      —      |  —  |
+| SSH Hosts with ssh-agent                   |    —     |      —      |  —  |
+| SSH Hosts with a Homeport or imported key  |   Yes    |      —      |  —  |
+| TLS Hosts                                  |   Yes    |      —      |  —  |
+| Containers, images, volumes, networks      |    —     |      —      |  —  |
+| Starting, stopping, removing Stacks        |    —     |      —      |  —  |
+| Deploying Managed and Linked Stacks        |    —     |     Yes     |  —  |
+| A Managed or Synced Stack's environment    |   Yes    |      —      |  —  |
+| Registry logins (private images, pushes)   |   Yes    |      —      |  —  |
+| Synced Stacks from a public repository     |    —     |     Yes     | Yes |
+| Synced Stacks with a deploy key or a token |   Yes    |     Yes     | Yes |
+| Building an image from a folder            |    —     |      —      |  —  |

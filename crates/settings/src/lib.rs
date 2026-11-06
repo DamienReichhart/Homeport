@@ -28,6 +28,16 @@ pub struct Settings {
     pub last_host_id: Option<String>,
     /// Look for a new version at launch and every few hours.
     pub check_for_updates: bool,
+    /// Minutes between checks of Synced Stacks' repositories while Homeport
+    /// runs; at least 1.
+    pub sync_interval_minutes: u32,
+}
+
+impl Settings {
+    /// The interval between Synced Stacks' polls, never under a minute.
+    pub fn sync_interval(&self) -> std::time::Duration {
+        std::time::Duration::from_secs(u64::from(self.sync_interval_minutes.max(1)) * 60)
+    }
 }
 
 impl Default for Settings {
@@ -36,6 +46,7 @@ impl Default for Settings {
             theme: Theme::default(),
             last_host_id: None,
             check_for_updates: true,
+            sync_interval_minutes: 5,
         }
     }
 }
@@ -69,7 +80,8 @@ impl SettingsService {
         })
     }
 
-    pub fn update(&self, settings: Settings) -> AppResult<Settings> {
+    pub fn update(&self, mut settings: Settings) -> AppResult<Settings> {
+        settings.sync_interval_minutes = settings.sync_interval_minutes.clamp(1, 24 * 60);
         let raw = serde_json::to_string(&settings)?;
         self.db.with(|c| {
             c.execute(
@@ -131,6 +143,23 @@ mod tests {
         })
         .unwrap();
         assert!(!svc.get().unwrap().check_for_updates);
+    }
+
+    #[test]
+    fn synced_stacks_poll_every_five_minutes_and_never_under_one() {
+        let dir = tempfile::tempdir().unwrap();
+        let svc = service(dir.path());
+        assert_eq!(svc.get().unwrap().sync_interval().as_secs(), 300);
+        let saved: Settings = serde_json::from_str(r#"{ "theme": "dark" }"#).unwrap();
+        assert_eq!(saved.sync_interval_minutes, 5, "settings from before 0.11");
+        let set = svc
+            .update(Settings {
+                sync_interval_minutes: 0,
+                ..Default::default()
+            })
+            .unwrap();
+        assert_eq!(set.sync_interval_minutes, 1);
+        assert_eq!(svc.get().unwrap().sync_interval().as_secs(), 60);
     }
 
     #[test]

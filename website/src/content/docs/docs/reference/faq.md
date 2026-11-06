@@ -25,7 +25,15 @@ No — only a Docker Engine and an SSH server, which you most likely already hav
 
 ### Do I need Docker installed on my computer to manage remote servers?
 
-No. Homeport speaks the Engine API and SSH itself. The only exception is deploying Managed and Linked Stacks, which uses the `docker compose` command on your computer.
+No. Homeport speaks the Engine API and SSH itself. The only exception is deploying Managed, Linked and Synced Stacks, which uses the `docker compose` command on your computer.
+
+### Does Homeport keep my Stacks in sync when it's closed?
+
+No. [Synced Stacks](/docs/guides/synced-stacks/) are checked for new commits, and deployed automatically if you turn that on, only while Homeport is open. Homeport installs nothing on your servers — no agent, no webhook receiver — so when it's closed, nothing watches your repositories. When you open it again, it waits one interval, then checks them all. For deploys that must follow every push around the clock, run them from your CI.
+
+### Does Homeport need git?
+
+Only for [Synced Stacks](/docs/guides/synced-stacks/), which run the `git` installed on your computer, with each repository's own deploy key or token. **Settings → This machine** says whether Homeport found it. Your own git configuration, credential helpers and SSH keys are never used.
 
 ### Can several people share Homeport's Hosts?
 
@@ -51,7 +59,7 @@ No. There's no account, telemetry or analytics. The only request Homeport makes 
 
 ### Can Homeport use my private registries?
 
-Yes. Add a login for each registry in **Settings → Registries** — Docker Hub, GHCR or your own. Homeport hands it to the Engine to pull, push and build on any Host, and pulls a Managed or Linked Stack's images with it before deploying. Passwords and tokens are encrypted with your OS keychain. Homeport doesn't read the logins of `docker login` on this computer.
+Yes. Add a login for each registry in **Settings → Registries** — Docker Hub, GHCR or your own. Homeport hands it to the Engine to pull, push and build on any Host, and pulls a Managed, Linked or Synced Stack's images with it before deploying. Passwords and tokens are encrypted with your OS keychain. Homeport doesn't read the logins of `docker login` on this computer.
 
 ### How does Homeport know a newer image exists?
 

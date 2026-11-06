@@ -36,7 +36,7 @@ const OUTCOME_TONE: Record<Outcome, Tone> = {
 };
 
 /**
- * The deploys of a Managed or Linked Stack, newest first, with the
+ * The deploys of a Managed, Linked or Synced Stack, newest first, with the
  * definition each used; a Managed Stack can be rolled back to one.
  */
 export function StackHistory({
@@ -94,7 +94,14 @@ export function StackHistory({
                       </Badge>
                     )}
                   </TableCell>
-                  <TableCell>{t(ACTION_LABEL[d.action])}</TableCell>
+                  <TableCell>
+                    {t(ACTION_LABEL[d.action])}
+                    {d.commit && (
+                      <span className="text-muted-foreground ml-1.5 font-mono text-xs">
+                        {d.commit.slice(0, 7)}
+                      </span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     <span className="flex items-center gap-1.5">
                       <StatusDot tone={OUTCOME_TONE[outcome]} />

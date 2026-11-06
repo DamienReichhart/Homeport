@@ -1,0 +1,123 @@
+---
+title: Synced Stacks
+description: Deploy a Stack from a git repository, see what changed before each sync, and keep it following its branch while Homeport is open.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+A **Synced Stack** is a [Stack](/docs/guides/stacks/) whose compose file comes from a git repository. Homeport clones the repository on this computer, fetches its branch or tag when you ask (or on an interval while Homeport is open), shows what changed, and deploys the new commit to the Host. It never edits, commits or pushes: changes go through git.
+
+<Aside type="note" title="Homeport needs git">
+  Synced Stacks run the `git` installed on this computer. **Settings → This machine** says whether
+  Homeport found it, and how to install it if not. Every other kind of Stack works without git.
+</Aside>
+
+## Repositories
+
+Homeport reads repositories you add in **Settings → Repositories**, or from the **New stack** page. A repository is added once and can be used by Synced Stacks on every Host. Homeport reaches it in one of three ways:
+
+| Access         | URL                                               | What Homeport stores                                   |
+| -------------- | ------------------------------------------------- | ------------------------------------------------------ |
+| **Deploy key** | SSH: `git@github.com:owner/repo.git` or `ssh://…` | A key it makes for this repository only, **encrypted** |
+| **Token**      | HTTPS: `https://gitlab.com/owner/repo.git`        | Your user name, and the access token **encrypted**     |
+| **Public**     | HTTPS, for a repository anyone can read           | Nothing secret                                         |
+
+`http://` and local paths aren't accepted, so a token is never sent in clear.
+
+### With a deploy key
+
+<Steps>
+
+1. Choose **Add repository**, paste the repository's SSH URL, keep **Deploy key** and choose **Add and make a deploy key**.
+
+2. Copy the key Homeport shows, and add it to the repository **with read access only**:
+   - GitHub: the repository's **Settings → Deploy keys → Add deploy key**.
+   - GitLab: the project's **Settings → Repository → Deploy keys**.
+   - Gitea and Forgejo: the repository's **Settings → Deploy keys → Add deploy key**.
+
+3. Choose **Test access**. Homeport lists the repository's branches and tags from this computer.
+
+</Steps>
+
+Each repository gets its own key, so a leaked key can only read that one repository, and your own SSH keys and `~/.ssh/config` are never used. **New key** replaces it: add the new one to the repository, and remove the old one there.
+
+The first time Homeport reaches an SSH server, it trusts the key the server presents and remembers it, like `ssh` does; if the key later changes, every fetch fails until you check the new fingerprint on the forge's website and choose **Reset** next to the trusted key.
+
+### With a token
+
+Paste the repository's `https://` URL, choose **Token**, then enter the user name and an access token that may read the repository's contents: on GitHub a fine-grained token with **Contents: Read-only**, on GitLab a project or personal token with `read_repository`. **Test access** checks it. When it expires, enter a new one in **Replace the token**.
+
+<Aside type="tip">
+  Without an OS keychain, Homeport can't store deploy keys or tokens, so only public repositories
+  can be added. See [requirements](/docs/requirements/#optional-an-os-keychain).
+</Aside>
+
+Removing a repository deletes its key or token and its clone on this computer. It's refused while a Synced Stack uses it.
+
+## Creating a Synced Stack
+
+<Steps>
+
+1. Open **Stacks** on the Host to deploy to, choose **New stack**, then **Use a git repository**.
+
+2. Pick the **Repository**, or **Add repository** to add one there.
+
+3. Choose a **Branch** or a **Tag**. Homeport lists them from the repository's server, its default branch first.
+
+4. Enter the path of the **Compose file**, relative to the repository's root: `compose.yaml`, or `deploy/prod/compose.yaml`. Its folder is the project folder, so `build:`, `env_file:` and relative paths in it work as they would in a clone of your own.
+
+5. Check the **Name** (it comes from the repository's name), and add an **Environment** for what doesn't belong in git, such as passwords: `KEY=value` lines, encrypted on this computer and given to Compose as variables when it deploys.
+
+6. Choose **Save and deploy** — or **Save** to deploy later.
+
+</Steps>
+
+Homeport fetches the branch or tag and reads the compose file before it stores anything, so a wrong path, branch or tag, or a file Compose couldn't deploy, is reported right away. The Stack is listed as **Synced** and **Not deployed** until its first deploy; its **Definition** tab shows its repository, branch or tag, compose file, and the commit it deployed.
+
+The repository is cloned once on this computer, in a `repositories` folder next to Homeport's database, and shared by every Synced Stack made from it. Each Synced Stack deploys from its own checkout of the commit, in a `synced-stacks` folder there, which stays in place between deploys: files your containers write through relative bind mounts stay where they were. Symbolic links in the repository are checked out as plain files, so a compose file can't point Compose at a file elsewhere on this computer. Files keep the line endings the repository holds them with, on Windows too, so a script copied into a Linux image still runs; only the repository's own `.gitattributes` can change them.
+
+**Forget** stops Homeport following the repository. Its containers keep running and it becomes an External Stack; its checkout is deleted unless containers wrote files into it, and the repository's clone goes once no Synced Stack uses it. The repository stays in **Settings → Repositories**.
+
+## Syncing
+
+Choose **Sync** on a Synced Stack's row or page. Homeport fetches its branch or tag, then shows what deploying it would change before it does anything:
+
+- the **new commits** since the deployed one that change something in the compose file's folder, with their author and when they were made;
+- each **changed file** in that folder, the compose file first, with the removed lines struck through above the ones that replace them. A file that isn't text is named but not shown.
+
+Choose **Deploy** to deploy that exact commit: Homeport checks it out in the Stack's checkout and runs `docker compose up` from the compose file's folder, rebuilding the services that have `build:`, so a changed `Dockerfile` applies. The output streams as it runs, and the deploy is recorded in the Stack's **History** with its commit.
+
+- A push that changes nothing in the compose file's folder — documentation elsewhere in the repository, say — shows **Up to date**. **Redeploy anyway** deploys it all the same.
+- If a tag now points at another commit than when Homeport last fetched it, the review says so first.
+- If the fetch fails (the deploy key was removed, the server can't be reached) or the deploy fails, Homeport shows why and what to do, and the Stack keeps its deployed commit.
+
+**Redeploy** deploys the commit that's deployed now again, after showing what changed in its environment or profiles. **Deploy** on a Stack that was never deployed deploys the commit fetched when it was created. A Synced Stack can't be rolled back from Homeport: revert the change in its repository, or point the Stack at an earlier tag, then sync.
+
+## Polling and auto-deploy
+
+<Aside type="caution" title="Only while Homeport is open">
+  Homeport checks your repositories only while it's open. **Nothing syncs while it's closed**:
+  there's no agent on your servers and no webhook, since Homeport installs nothing there. When you
+  open it again, it waits one interval before its first check.
+</Aside>
+
+While Homeport is open, it fetches each Synced Stack's branch or tag on an interval — every 5 minutes by default, set in **Settings → Synced Stacks** (at least 1 minute). Each repository is fetched once per round, whatever number of Stacks use it, and one that keeps failing is tried less and less often, up to once an hour.
+
+When a new commit changes the compose file's folder, the Stack shows **Update available** in the list and on its page. **Sync** shows what changed and deploys it. The Stack's **Definition** tab says when it was **last checked**, and why the last check failed if it did.
+
+Two switches on the **Definition** tab control this, per Stack:
+
+- **Check for new commits**, on by default. Turn it off to sync only when you choose **Sync**.
+- **Deploy new commits automatically**, off by default. When on, Homeport deploys each new commit as soon as it sees it, **without showing you what changed first**, through the same steps as **Sync**; the deploy is recorded in the **History** as automatic, and a notification says when it's done. It waits while the Host can't be reached. If it fails, Homeport shows why and doesn't try that commit again: the next commit, or a **Sync** you deploy yourself, does.
+
+## Why can't I edit a Synced Stack?
+
+Because its repository is the one place its definition lives. If Homeport changed the compose file, the next sync would either overwrite that change or fight it, and nobody reading the repository would know what's deployed. So a Synced Stack's **Definition** tab shows its compose file at the fetched commit **read-only** — you can still select and copy from it — lists the other files of its folder, and links each one to its page on GitHub, GitLab, Gitea or Forgejo. Change them there, push, then **Sync**.
+
+What Homeport does hold stays editable on the same tab:
+
+- its **Environment**, encrypted on this computer, for values that don't belong in git;
+- its **profiles**, if the compose file declares some;
+- whether it **checks for new commits** and **deploys them automatically**.
+
+**Forget** stops Homeport following the repository; the Stack's containers keep running, and it becomes External.

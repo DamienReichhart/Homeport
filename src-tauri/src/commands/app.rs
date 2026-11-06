@@ -7,6 +7,7 @@ use serde::Serialize;
 use tauri::{AppHandle, Manager, State};
 
 use homeport_core::local_files;
+use homeport_git::{cli as git, GitCli};
 use homeport_stacks::compose::{self, ComposeCli};
 
 use crate::{
@@ -70,6 +71,25 @@ pub struct Capabilities {
     keychain: bool,
     /// Whether Managed Stacks can be deployed here.
     compose: ComposeSupport,
+    /// Whether Synced Stacks can be cloned and fetched here.
+    git: GitSupport,
+}
+
+/// The git CLI Synced Stacks use, or why there's none.
+#[derive(Debug, Serialize, specta::Type)]
+#[serde(
+    tag = "state",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase"
+)]
+pub enum GitSupport {
+    Available {
+        cli: GitCli,
+    },
+    /// `problem` says how to install it.
+    Unavailable {
+        problem: AppError,
+    },
 }
 
 /// The compose CLI used to deploy Managed Stacks, or why there's none.
@@ -97,6 +117,10 @@ pub async fn get_capabilities(state: State<'_, AppState>) -> Result<Capabilities
         compose: match compose::detect().await {
             Ok(cli) => ComposeSupport::Available { cli },
             Err(problem) => ComposeSupport::Unavailable { problem },
+        },
+        git: match git::detect().await {
+            Ok(cli) => GitSupport::Available { cli },
+            Err(problem) => GitSupport::Unavailable { problem },
         },
     })
 }

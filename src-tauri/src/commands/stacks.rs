@@ -1,11 +1,12 @@
-//! Stacks on a Host: finding them, Managed and Linked Stacks' definitions,
-//! deploying through the runtime, their deploy history and what a redeploy
-//! would change.
+//! Stacks on a Host: finding them, Managed, Linked and Synced Stacks'
+//! definitions, deploying through the runtime, their deploy history and what
+//! a redeploy would change.
 
 use tauri::{ipc::Channel, State};
 
 use homeport_core::streams::StreamId;
 use homeport_engine::containers;
+use homeport_git::cli as git;
 use homeport_stacks::{
     self as stacks,
     compose::{self, ComposeAction, ComposeEvent},
@@ -21,13 +22,14 @@ use homeport_stacks::{
     },
     runtime::{self, ComposeJob, Recorder, SourceKind, StackSource, StackTarget},
     store::{ComposeFile, ManagedStack},
+    synced::{SyncReview, SyncedDraft, SyncedFiles, SyncedStack},
     Stack,
 };
 
 use crate::{app::AppState, commands::registries, error::AppResult};
 
-/// Every Stack on a Host: those running there plus undeployed Managed and
-/// Linked Stacks. Stacks started from compose files on this machine are
+/// Every Stack on a Host: those running there plus undeployed Managed,
+/// Linked and Synced Stacks. Stacks started from compose files on this machine are
 /// recorded as Linked the first time they're seen.
 #[tauri::command]
 #[specta::specta]
@@ -39,6 +41,7 @@ pub async fn stacks_list(state: State<'_, AppState>, host_id: String) -> AppResu
         &running,
         &state.stacks,
         &state.linked,
+        &state.synced.store,
         &state.linked_files,
     )
 }
@@ -194,8 +197,112 @@ pub fn stacks_linked_forget(state: State<'_, AppState>, id: String) -> AppResult
     state.linked.delete(&id)
 }
 
-/// Sets the Compose profiles a Managed or Linked Stack deploys; they apply
-/// from its next compose command.
+/// Creates a Synced Stack on `host_id` from a repository's branch or tag:
+/// fetches it into the repository's clone and checks the compose file before
+/// anything is stored.
+#[tauri::command]
+#[specta::specta]
+pub async fn stacks_synced_create(
+    state: State<'_, AppState>,
+    host_id: String,
+    draft: SyncedDraft,
+    env: String,
+) -> AppResult<SyncedStack> {
+    state.hosts.store.get(&host_id)?;
+    let cli = git::detect().await?;
+    state.synced.create(&cli, &host_id, &draft, &env).await
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn stacks_synced_get(state: State<'_, AppState>, id: String) -> AppResult<SyncedStack> {
+    state.synced.store.get(&id)
+}
+
+/// A Synced Stack's files at its fetched commit, read-only: no command
+/// writes them, since they change only through git.
+#[tauri::command]
+#[specta::specta]
+pub async fn stacks_synced_files(state: State<'_, AppState>, id: String) -> AppResult<SyncedFiles> {
+    let stack = state.synced.store.get(&id)?;
+    let cli = git::detect().await?;
+    state.synced.files(&cli, &stack).await
+}
+
+/// The decrypted environment of a Synced Stack, for editing.
+#[tauri::command]
+#[specta::specta]
+pub fn stacks_synced_get_env(state: State<'_, AppState>, id: String) -> AppResult<String> {
+    state.synced.store.env(&id)
+}
+
+/// Replaces a Synced Stack's environment, the one part of its definition
+/// that's Homeport's; its compose files only change through git.
+#[tauri::command]
+#[specta::specta]
+pub fn stacks_synced_set_env(
+    state: State<'_, AppState>,
+    id: String,
+    env: String,
+) -> AppResult<SyncedStack> {
+    state.synced.store.set_env(&id, &env)
+}
+
+/// "Sync": fetches a Synced Stack's branch or tag, and says what deploying
+/// the new commit would change since the deployed one.
+#[tauri::command]
+#[specta::specta]
+pub async fn stacks_synced_sync(state: State<'_, AppState>, id: String) -> AppResult<SyncReview> {
+    let cli = git::detect().await?;
+    state.synced.sync(&cli, &id).await
+}
+
+/// Deploys `commit` of a Synced Stack, the one its sync review showed, with
+/// `action` (`up` or `rebuild`), streaming the output.
+#[tauri::command]
+#[specta::specta]
+pub async fn stacks_synced_deploy_subscribe(
+    state: State<'_, AppState>,
+    id: String,
+    commit: String,
+    action: ComposeAction,
+    on_event: Channel<ComposeEvent>,
+) -> AppResult<StreamId> {
+    spawn(
+        &state,
+        SourceKind::Synced,
+        id,
+        action,
+        Some(commit),
+        on_event,
+    )
+    .await
+}
+
+/// Turns a Synced Stack's polling and auto-deploy on or off; auto-deploy
+/// needs polling.
+#[tauri::command]
+#[specta::specta]
+pub fn stacks_synced_set_sync(
+    state: State<'_, AppState>,
+    id: String,
+    poll: bool,
+    auto_deploy: bool,
+) -> AppResult<SyncedStack> {
+    state.synced.store.set_sync(&id, poll, auto_deploy)
+}
+
+/// Forgets a Synced Stack: its record, history and worktree go, its
+/// containers are left alone and it becomes External.
+#[tauri::command]
+#[specta::specta]
+pub async fn stacks_synced_forget(state: State<'_, AppState>, id: String) -> AppResult<()> {
+    let cli = git::detect().await.ok();
+    state.synced.forget(cli.as_ref(), &id).await
+}
+
+/// Sets the Compose profiles a Managed, Linked or Synced Stack deploys; they
+/// apply from its next compose command.
 #[tauri::command]
 #[specta::specta]
 pub fn stacks_set_profiles(
@@ -207,6 +314,7 @@ pub fn stacks_set_profiles(
     Ok(match kind {
         SourceKind::Managed => state.stacks.set_profiles(&id, &profiles)?.profiles,
         SourceKind::Linked => state.linked.set_profiles(&id, &profiles)?.profiles,
+        SourceKind::Synced => state.synced.store.set_profiles(&id, &profiles)?.profiles,
     })
 }
 
@@ -232,8 +340,9 @@ pub async fn stacks_remove(
     runtime::remove(&target(&state, &host_id)?, &name).await
 }
 
-/// Runs a compose command for the Managed or Linked Stack `id`, streaming
-/// its output.
+/// Runs a compose command for the Managed, Linked or Synced Stack `id`,
+/// streaming its output. A Synced Stack's deploy that succeeds is noted as
+/// its deployed commit.
 #[tauri::command]
 #[specta::specta]
 pub async fn stacks_compose_subscribe(
@@ -243,22 +352,57 @@ pub async fn stacks_compose_subscribe(
     action: ComposeAction,
     on_event: Channel<ComposeEvent>,
 ) -> AppResult<StreamId> {
-    let job = job(&state, kind, &id, action).await?;
-    Ok(state
-        .streams
-        .spawn(runtime::run(job, move |e| on_event.send(e).is_ok())))
+    spawn(&state, kind, id, action, None, on_event).await
 }
 
-/// The compose job for `action` on the Managed or Linked Stack `id`, its
-/// deploys recorded in its history.
+/// Starts the compose job for `action` on the Stack `id`, `commit` for a
+/// Synced Stack's reviewed one; a Synced Stack's deploy that succeeds is
+/// noted as its deployed commit.
+async fn spawn(
+    state: &AppState,
+    kind: SourceKind,
+    id: String,
+    action: ComposeAction,
+    commit: Option<String>,
+    on_event: Channel<ComposeEvent>,
+) -> AppResult<StreamId> {
+    let (job, commit) = job(state, kind, &id, action, commit.as_deref()).await?;
+    let synced = state.synced.clone();
+    Ok(state.streams.spawn(runtime::run(job, move |e| {
+        if let (Some(commit), ComposeEvent::Exit { success: true, .. }) = (&commit, &e) {
+            if action.deploys() {
+                if let Err(e) = synced.store.set_deployed(&id, commit) {
+                    e.logged("noting a Synced Stack's deployed commit");
+                }
+            }
+        }
+        on_event.send(e).is_ok()
+    })))
+}
+
+/// The compose job for `action` on the Managed, Linked or Synced Stack `id`,
+/// its deploys recorded in its history, with the commit a Synced Stack uses.
 async fn job(
     state: &AppState,
     kind: SourceKind,
     id: &str,
     action: ComposeAction,
-) -> AppResult<ComposeJob> {
-    let stack = resolve(state, kind, id)?;
-    Ok(ComposeJob {
+    commit: Option<&str>,
+) -> AppResult<(ComposeJob, Option<String>)> {
+    recorded_job(state, kind, id, action, commit, false).await
+}
+
+/// [`job`], recorded as started by auto-deploy when `automatic`.
+pub(crate) async fn recorded_job(
+    state: &AppState,
+    kind: SourceKind,
+    id: &str,
+    action: ComposeAction,
+    commit: Option<&str>,
+    automatic: bool,
+) -> AppResult<(ComposeJob, Option<String>)> {
+    let stack = resolve(state, kind, id, action, commit).await?;
+    let job = ComposeJob {
         cli: compose::detect().await?,
         source: stack.source,
         target: target(state, &stack.host_id)?,
@@ -270,17 +414,21 @@ async fn job(
             history: state.history.clone(),
             host_id: stack.host_id,
             stack_id: id.to_owned(),
+            commit: stack.commit.clone(),
+            automatic,
         }),
-    })
+    };
+    Ok((job, stack.commit))
 }
 
-/// What redeploying the Managed or Linked Stack `id` would change: its
-/// latest successful deploy against `candidate`, or against its stored
-/// definition (a Linked Stack's files as they are now) when there's none.
-/// Environment values are compared here and never sent back.
+/// What redeploying the Managed, Linked or Synced Stack `id` would change:
+/// its latest successful deploy against `candidate`, or against its stored
+/// definition (a Linked Stack's files as they are now, a Synced Stack's
+/// compose file at its fetched commit) when there's none. Environment values
+/// are compared here and never sent back.
 #[tauri::command]
 #[specta::specta]
-pub fn stacks_diff(
+pub async fn stacks_diff(
     state: State<'_, AppState>,
     kind: SourceKind,
     id: String,
@@ -306,6 +454,27 @@ pub fn stacks_diff(
                     .collect(),
             };
             (files, String::new(), stack.profiles)
+        }
+        SourceKind::Synced => {
+            let stack = state.synced.store.get(&id)?;
+            // A redeploy runs the deployed commit again; a first deploy, the fetched one.
+            let commit = stack
+                .deployed_commit
+                .as_ref()
+                .or(stack.fetched_commit.as_ref());
+            let files = match (&candidate, commit) {
+                (None, Some(commit)) => {
+                    let cli = git::detect().await?;
+                    let text = state
+                        .synced
+                        .compose_file(&cli, &stack.repository_id, commit, &stack.compose_path)
+                        .await?;
+                    let path = state.synced.worktree(&stack.id).join(&stack.compose_path);
+                    vec![ComposeFile::new(path.to_string_lossy(), text)]
+                }
+                _ => vec![],
+            };
+            (files, state.synced.store.env(&id)?, stack.profiles)
         }
     };
     let (files, env) = match candidate {
@@ -366,22 +535,38 @@ pub async fn stacks_rollback_subscribe(
     on_event: Channel<ComposeEvent>,
 ) -> AppResult<StreamId> {
     let stack = history::restore(&state.history, &state.stacks, &deploy_id)?;
-    let job = job(&state, SourceKind::Managed, &stack.id, ComposeAction::Up).await?;
+    let (job, _) = job(
+        &state,
+        SourceKind::Managed,
+        &stack.id,
+        ComposeAction::Up,
+        None,
+    )
+    .await?;
     Ok(state
         .streams
         .spawn(runtime::run(job, move |e| on_event.send(e).is_ok())))
 }
 
-/// A Managed or Linked Stack, ready to run.
+/// A Managed, Linked or Synced Stack, ready to run.
 struct Resolved {
     host_id: String,
     name: String,
     source: StackSource,
     profiles: Vec<String>,
+    /// The commit a Synced Stack runs.
+    commit: Option<String>,
 }
 
-/// The Host, name, source and profiles of the Managed or Linked Stack `id`.
-fn resolve(state: &AppState, kind: SourceKind, id: &str) -> AppResult<Resolved> {
+/// The Host, name, source and profiles of the Managed, Linked or Synced
+/// Stack `id`; a Synced Stack's commit is checked out for `action` first.
+async fn resolve(
+    state: &AppState,
+    kind: SourceKind,
+    id: &str,
+    action: ComposeAction,
+    commit: Option<&str>,
+) -> AppResult<Resolved> {
     Ok(match kind {
         SourceKind::Managed => {
             let stack = state.stacks.get(id)?;
@@ -393,6 +578,7 @@ fn resolve(state: &AppState, kind: SourceKind, id: &str) -> AppResult<Resolved> 
                 host_id: stack.host_id,
                 name: stack.name,
                 profiles: stack.profiles,
+                commit: None,
             }
         }
         SourceKind::Linked => {
@@ -405,6 +591,19 @@ fn resolve(state: &AppState, kind: SourceKind, id: &str) -> AppResult<Resolved> 
                 host_id: stack.host_id,
                 name: stack.name,
                 profiles: stack.profiles,
+                commit: None,
+            }
+        }
+        SourceKind::Synced => {
+            let stack = state.synced.store.get(id)?;
+            let cli = git::detect().await?;
+            let (source, commit) = state.synced.source(&cli, &stack, action, commit).await?;
+            Resolved {
+                source,
+                host_id: stack.host_id,
+                name: stack.name,
+                profiles: stack.profiles,
+                commit: Some(commit),
             }
         }
     })

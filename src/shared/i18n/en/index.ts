@@ -9,6 +9,7 @@ import images from './images';
 import networks from './networks';
 import overview from './overview';
 import registries from './registries';
+import repositories from './repositories';
 import settings from './settings';
 import stacks from './stacks';
 import ui from './ui';
@@ -28,6 +29,7 @@ export const uiMessages = {
   ...networks,
   ...overview,
   ...registries,
+  ...repositories,
   ...settings,
   ...stacks,
   ...updates,

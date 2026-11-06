@@ -10,6 +10,7 @@ describe('app', () => {
       update_settings: ({ settings }) => settings,
       get_capabilities: () => ({
         keychain: true,
+        git: { state: 'available', cli: { program: 'git', version: '2.43.0' } },
         compose: {
           state: 'unavailable',
           problem: {
@@ -60,6 +61,7 @@ describe('app', () => {
       get_settings: () => ({ theme: 'system', lastHostId: null }),
       get_capabilities: () => ({
         keychain: false,
+        git: { state: 'available', cli: { program: 'git', version: '2.43.0' } },
         compose: {
           state: 'unavailable',
           problem: {
@@ -83,6 +85,7 @@ describe('first launch', () => {
       get_settings: () => ({ theme: 'system', lastHostId: null }),
       get_capabilities: () => ({
         keychain: true,
+        git: { state: 'available', cli: { program: 'git', version: '2.43.0' } },
         compose: {
           state: 'unavailable',
           problem: {

@@ -5,10 +5,12 @@ import {
   EllipsisVerticalIcon,
   PlayIcon,
   RocketIcon,
+  RefreshCwIcon,
   RotateCwIcon,
   SquareIcon,
   Trash2Icon,
 } from 'lucide-react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCapabilities, type Stack } from '@/shared/api';
 import {
@@ -24,11 +26,13 @@ import { useStackMutations } from '../api/mutations';
 import type { ComposeJob } from '../model/composeJob';
 import type { ServiceFreshness } from '../model/freshness';
 import { imagesToUpdate, updateAction } from '../model/update';
+import { SyncDialog } from './dialogs/SyncDialog';
 import { t } from '@/shared/i18n';
 
 /**
  * The actions of a Stack. Lifecycle works for every Stack; deploying needs
- * a Managed or Linked Stack and the compose CLI.
+ * a Managed, Linked or Synced Stack and the compose CLI. A Synced Stack is
+ * also synced from its repository.
  */
 export function StackActions({
   hostId,
@@ -48,9 +52,10 @@ export function StackActions({
 }) {
   const navigate = useNavigate();
   const capabilities = useCapabilities();
+  const [syncing, setSyncing] = useState(false);
   const { act, remove } = useStackMutations(hostId);
   const support = capabilities.data?.compose;
-  // Managed and Linked Stacks have a definition to deploy; External ones don't.
+  // Managed, Linked and Synced Stacks have a definition to deploy; External ones don't.
   const source = stack.kind === 'external' ? null : stack.kind;
   const deployable = source !== null && stack.id !== null;
   const canCompose = deployable && support?.state === 'available';
@@ -87,9 +92,20 @@ export function StackActions({
           <CircleArrowUpIcon /> {t('stacks.update.action')}
         </Button>
       )}
+      {source === 'synced' && stack.id && (
+        <Button
+          size={size}
+          variant={deployed ? 'default' : 'outline'}
+          disabled={!canCompose}
+          onClick={() => setSyncing(true)}
+        >
+          <RefreshCwIcon /> {t('stacks.action.sync')}
+        </Button>
+      )}
       {deployable ? (
         <Button
           size={size}
+          variant={source === 'synced' && deployed ? 'outline' : 'default'}
           disabled={!canCompose}
           title={
             canCompose
@@ -146,7 +162,7 @@ export function StackActions({
           >
             <RotateCwIcon /> {t('stacks.action.restart')}
           </DropdownMenuItem>
-          {source === 'linked' && (
+          {(source === 'linked' || source === 'synced') && (
             <DropdownMenuItem disabled={!canCompose} onSelect={() => compose('rebuild')}>
               <HammerIcon /> {t('stacks.action.rebuild')}
             </DropdownMenuItem>
@@ -208,6 +224,14 @@ export function StackActions({
           )}
         </DropdownMenuContent>
       </DropdownMenu>
+      {syncing && stack.id && (
+        <SyncDialog
+          stackId={stack.id}
+          name={stack.name}
+          onDeploy={onCompose}
+          onClose={() => setSyncing(false)}
+        />
+      )}
     </div>
   );
 }

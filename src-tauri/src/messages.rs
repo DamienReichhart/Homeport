@@ -26,6 +26,8 @@ homeport_core::messages! {
     /// Installing from the app when a package manager owns the install.
     UPDATE_BY_PACKAGE_MANAGER = "errors.updates.byPackageManager" => "This copy of Homeport is updated by your package manager.";
     UPDATE_NOTHING_WAITING = "errors.updates.nothingWaiting" => "No update is waiting to be installed.";
+    /// An automatic deploy of a Synced Stack that ended without saying why.
+    AUTO_DEPLOY_FAILED = "errors.stacks.autoDeployFailed" => "The automatic deploy didn't finish.";
 }
 
 /// Where `bun run bindings` writes the English error catalogue.
@@ -37,7 +39,7 @@ const CATALOGUE_PATH: &str = "../src/shared/i18n/en/errors.json";
 /// plain name (Rust renders `{name}` arguments only).
 #[cfg(test)]
 fn catalogue() -> Result<BTreeMap<&'static str, &'static str>, String> {
-    let all: [&[Message]; 8] = [
+    let all: [&[Message]; 9] = [
         homeport_core::messages::ALL,
         homeport_storage::messages::ALL,
         homeport_transport::messages::ALL,
@@ -45,6 +47,7 @@ fn catalogue() -> Result<BTreeMap<&'static str, &'static str>, String> {
         homeport_hosts::messages::ALL,
         homeport_stacks::messages::ALL,
         homeport_registries::messages::ALL,
+        homeport_git::messages::ALL,
         ALL,
     ];
     let mut catalogue = BTreeMap::new();
