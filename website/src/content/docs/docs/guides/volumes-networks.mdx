@@ -1,6 +1,6 @@
 ---
 title: Volumes and networks
-description: See which containers use which volumes and networks, create them, and remove them safely.
+description: See which containers use which volumes and networks and how big volumes are; browse, back up, restore and clone volumes; create and remove both safely.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -72,6 +72,14 @@ Both show their progress and can be cancelled. A cancelled backup leaves no file
 A backup of a volume a running container writes to — a database, say — may be inconsistent. Homeport names the running containers that use it, and you choose to **Back up anyway** or to stop them during the backup. A restore always stops them first. Either way, Homeport starts them again afterwards.
 
 Backups and restores use the same [helper container](#the-helper-container) as browsing, mounting the volume read-only for a backup. The archive travels over the Host's connection and is never held whole in memory, so large volumes and remote Hosts work too. Nothing is written on the Host but the volume being restored.
+
+### Cloning a volume
+
+**Clone…**, in the **⋯** menu of a volume's row, copies it into a new volume on the same Host — to try a migration or a new image version on a copy of real data, say. The copy is named `<name>-copy` unless you change it, and is selected in the list once made.
+
+It keeps the files' owners and permissions, and the source's driver, driver options and labels — except Compose's, so the copy belongs to no Stack. The source is mounted read-only in the [helper container](#the-helper-container) and never changes. As with a backup, Homeport names the running containers that use the source; copy anyway, or stop them during the copy.
+
+If the copy fails — the disk is full, say — Homeport removes the incomplete copy and says so, with the error in **Details**. To copy a volume to another Host, [back it up](#backing-up-and-restoring) and restore the file there.
 
 ### Creating a volume
 
