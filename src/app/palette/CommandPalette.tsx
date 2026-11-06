@@ -152,7 +152,7 @@ function PaletteRow({
   return (
     <CommandItem value={value} onSelect={() => onRun(item)}>
       {Icon && <Icon />}
-      <span className="truncate">{item.label}</span>
+      <span className="flex-1 truncate">{item.label}</span>
       {item.status && (
         <span className="text-muted-foreground inline-flex items-center gap-1.5 text-xs">
           <StatusDot tone={item.status.tone} />

@@ -64,8 +64,8 @@ export function SearchResults({
                 onSelect={() => open(hit)}
               >
                 <Icon />
-                <span className="truncate">{hit.label}</span>
-                <span className="text-muted-foreground ml-auto shrink-0 text-xs">
+                <span className="flex-1 truncate">{hit.label}</span>
+                <span className="text-muted-foreground shrink-0 text-xs">
                   {hit.state
                     ? t('search.onHostState', { host: hit.hostName, state: hit.state })
                     : hit.hostName}
