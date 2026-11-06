@@ -10,6 +10,7 @@ import { AppearanceCard } from './AppearanceCard';
 import { DataCard } from './DataCard';
 import { DesktopCard } from './DesktopCard';
 import { MachineCard } from './MachineCard';
+import { NotificationsCard } from './NotificationsCard';
 import { SyncCard } from './SyncCard';
 import { t } from '@/shared/i18n';
 
@@ -30,6 +31,7 @@ export function SettingsPage() {
         error={save.error}
       />
       <DesktopCard settings={settings.data} onChange={(next) => save.mutate(next)} />
+      <NotificationsCard settings={settings.data} onChange={(next) => save.mutate(next)} />
       <UpdatesCard settings={settings.data} onChange={(next) => save.mutate(next)} />
       <RegistriesCard />
       <RepositoriesCard />

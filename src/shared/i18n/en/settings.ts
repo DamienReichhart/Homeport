@@ -22,6 +22,13 @@ export default {
     'When it starts at login, Homeport stays in the system tray without opening its window.',
   'settings.desktop.startHiddenNoTray':
     'Needs a system tray to open the window from, which this desktop doesn’t have.',
+  'settings.notifications.title': 'Notifications',
+  'settings.notifications.description':
+    'Homeport tells you, even with its window closed to the tray, when:',
+  'settings.notifications.containerDied': 'A container stops with an error or runs out of memory',
+  'settings.notifications.containerUnhealthy': 'A container turns unhealthy',
+  'settings.notifications.hostUnreachable': 'A connected host becomes unreachable',
+  'settings.notifications.hostBack': 'An unreachable host is back',
   'settings.machine.title': 'This machine',
   'settings.machine.description': 'What Homeport can use here.',
   'settings.machine.keychain': 'OS keychain',

@@ -108,6 +108,12 @@ export const baseCommands = {
     keepEventsDays: 30,
     closeToTray: false,
     startHidden: false,
+    notifications: {
+      containerDied: true,
+      containerUnhealthy: true,
+      hostUnreachable: true,
+      hostBack: true,
+    },
   }),
   app_start_at_login: () => false,
   update_settings: ({ settings }: Record<string, unknown>) => settings,
