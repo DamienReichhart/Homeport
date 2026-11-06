@@ -1,6 +1,6 @@
 ---
 title: Overview and events
-description: See every Host at once, check disk usage, clean up, and follow the Engine's live events.
+description: See every Host at once, every container on one board, check disk usage, clean up, and follow the Engine's live events.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -23,7 +23,7 @@ Each Host has a card with its name, address, type and status. For a connected Ho
 - live CPU use of its containers, as a percentage of one CPU — `250%` on an 8-CPU Host means two and a half CPUs are busy;
 - memory used by its containers, out of the Host's total.
 
-Select a card to switch to that Host. If it's connected, Homeport opens its **Containers**.
+Select a card to switch to that Host. If it's connected, Homeport opens its **Containers**. **Its containers on the board** opens the [Board](#board) showing that Host only.
 
 ### The selected Host
 
@@ -52,6 +52,22 @@ Containers go first, so the images, networks and volumes they held count as unus
   **Unused volumes** deletes data, named volumes included, and can't be undone. When it's ticked,
   the button reads **Delete, including volume data** as a last reminder.
 </Aside>
+
+## Board
+
+The **Board**, second in the sidebar, lists the containers of every connected Host in one table: what runs where, and what's down, without switching Host.
+
+<DocScreenshot
+  name="board"
+  alt="The Board, listing the containers of three Hosts with a Host column, filters, and live CPU and memory."
+/>
+
+- **Columns** — Host, Name, Image, Status (with its health), Stack, Ports, CPU, Memory and Created. Select a column's name to sort by it, again to reverse. CPU and memory update live.
+- **Filters** — the Hosts to show (all by default), the state (**Running**, **Stopped** or **Unhealthy**), one Stack, and a search that matches names, short IDs, images, Stacks and Host names. <kbd>/</kbd> jumps to the search. **Clear filters** shows everything again. The filters stay as they were when you open a container and come back.
+- **Actions** — each row has the same start/stop button and menu as on the Containers page, acting on that row's Host. Tick several rows, on one Host or several, to start, stop, restart or remove them together; removing asks first and lists the containers Host by Host.
+- **Opening a container** — select a row: Homeport switches to its Host and opens the container. **Back** returns to the Board.
+
+A Host that isn't connected — unreachable, disabled, waiting for you — gets one line above the table, such as _nas (Unreachable) isn't shown._, with a link to its page; the other Hosts are listed as usual. Past a few hundred containers, only the rows in view are drawn, so the Board stays quick.
 
 ## System tray
 
