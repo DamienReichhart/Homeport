@@ -38,7 +38,7 @@ import { ContainerRow } from './ContainerRow';
 import { SelectionActions } from './SelectionActions';
 import { StackGroupRows } from './StackGroupRows';
 import { PAGE_ACTION_KEYS, usePageAction } from '@/shared/hooks';
-import { useActionRequest } from '@/core/feature';
+import { useActionRequest, usePageQuery } from '@/core/feature';
 import { t } from '@/shared/i18n';
 
 function ContainersList({ hostId }: { hostId: string }) {
@@ -47,7 +47,7 @@ function ContainersList({ hostId }: { hostId: string }) {
   const usage = useUsage(hostId);
   const freshness = indexFreshness(useQuery(resourceQueries.freshness(hostId)).data);
   const [dialog, confirm] = useConfirm();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = usePageQuery();
   const [onlyRunning, setOnlyRunning] = useState(false);
   const [collapsed, setCollapsed] = useState(new Set<string>());
   const [selected, setSelected] = useState(new Set<string>());

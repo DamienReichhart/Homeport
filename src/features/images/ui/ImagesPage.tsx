@@ -41,7 +41,7 @@ import { TagDialog } from './dialogs/TagDialog';
 import { TransferDialog, type Transfer } from './dialogs/TransferDialog';
 import { imageColumns } from './imageColumns';
 import { PAGE_ACTION_KEYS, usePageAction } from '@/shared/hooks';
-import { useActionRequest } from '@/core/feature';
+import { useActionRequest, usePageQuery } from '@/core/feature';
 import { t } from '@/shared/i18n';
 
 function ImagesList({ hostId }: { hostId: string }) {
@@ -50,7 +50,7 @@ function ImagesList({ hostId }: { hostId: string }) {
   const removeImage = useRemoveImage(hostId);
   const pruneImages = usePruneImages(hostId);
   const [dialog, confirm] = useConfirmedAction();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = usePageQuery();
   const [pulling, setPulling] = useState(false);
   const [building, setBuilding] = useState(false);
   const [running, setRunning] = useState<Image | null>(null);

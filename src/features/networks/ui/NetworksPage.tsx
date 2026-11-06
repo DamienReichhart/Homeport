@@ -20,6 +20,7 @@ import { CreateNetworkDialog } from './dialogs/CreateNetworkDialog';
 import { NetworkDialog } from './dialogs/NetworkDialog';
 import { networkColumns } from './networkColumns';
 import { PAGE_ACTION_KEYS, usePageAction } from '@/shared/hooks';
+import { usePageQuery } from '@/core/feature';
 import { t } from '@/shared/i18n';
 
 function NetworksList({ hostId }: { hostId: string }) {
@@ -27,7 +28,7 @@ function NetworksList({ hostId }: { hostId: string }) {
   const removeNetwork = useRemoveNetwork(hostId);
   const prune = usePruneNetworks(hostId);
   const [dialog, confirm] = useConfirmedAction();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = usePageQuery();
   const [creating, setCreating] = useState(false);
   const [open, setOpen] = useState<NetworkView | null>(null);
   usePageAction(t('networks.create'), () => setCreating(true));

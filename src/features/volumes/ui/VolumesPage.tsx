@@ -35,6 +35,7 @@ import { CreateVolumeDialog } from './dialogs/CreateVolumeDialog';
 import { InspectVolumeDialog } from './dialogs/InspectVolumeDialog';
 import { volumeColumns } from './volumeColumns';
 import { PAGE_ACTION_KEYS, usePageAction } from '@/shared/hooks';
+import { usePageQuery } from '@/core/feature';
 import { t } from '@/shared/i18n';
 
 const tar = () => [{ name: t('volumes.transfer.archives'), extensions: ['tar'] }];
@@ -45,7 +46,7 @@ function VolumesList({ hostId }: { hostId: string }) {
   const removeVolume = useRemoveVolume(hostId);
   const pruneVolumes = usePruneVolumes(hostId);
   const [dialog, confirm] = useConfirmedAction();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = usePageQuery();
   const [creating, setCreating] = useState(false);
   const [inspecting, setInspecting] = useState<VolumeView | null>(null);
   const [browsing, setBrowsing] = useState<VolumeView | null>(null);
