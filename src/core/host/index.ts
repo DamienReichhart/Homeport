@@ -13,6 +13,7 @@ export {
   type FreshnessIndex,
 } from './model/freshness';
 export { useHostStatusUpdates } from './live/useHostStatusUpdates';
+export { useTrayChoices, type TrayChoices } from './live/useTrayChoices';
 export {
   connectionLabel,
   describeAddress,

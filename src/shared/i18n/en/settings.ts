@@ -7,6 +7,13 @@ export default {
   'settings.theme.system': 'Match the system',
   'settings.theme.light': 'Light',
   'settings.theme.dark': 'Dark',
+  'settings.desktop.title': 'Desktop',
+  'settings.desktop.description': 'How Homeport runs on this computer.',
+  'settings.desktop.closeToTray': 'Close to the system tray',
+  'settings.desktop.closeToTrayHint':
+    'Closing the window keeps Homeport and its Host connections running in the tray. Quit from the tray icon. On desktops that hide tray icons, such as GNOME without an extension, the icon may not show.',
+  'settings.desktop.noTray':
+    'This desktop has no system tray Homeport can use, so closing the window quits it.',
   'settings.machine.title': 'This machine',
   'settings.machine.description': 'What Homeport can use here.',
   'settings.machine.keychain': 'OS keychain',
