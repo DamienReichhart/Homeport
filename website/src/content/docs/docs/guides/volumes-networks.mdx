@@ -32,6 +32,28 @@ The Engine measures every volume to give their sizes, which can take a few secon
 
 Only volumes of the `local` driver have a size; other drivers (NFS, cloud storage plugins) show **—**.
 
+### Browsing a volume's files
+
+The folder button on a volume's row opens its files: open folders, go back up with the path above the list, and download a file, or a folder as a `.tar` archive. Paths start at the volume's root (`/`).
+
+Browsing is read-only. Nothing you do here can change the volume, even while a container uses it.
+
+#### The helper container
+
+The Engine API can't read a volume, so Homeport opens it with a short-lived **helper container**: a `busybox:1.37` container with no network and a read-only filesystem, which mounts the volume read-only. Homeport removes it as soon as you close the browser or quit. If Homeport can't (it crashed, or the Host went away), the helper stops and is removed by the Engine within the hour, and Homeport removes what's left the next time this computer connects to the Host. Helpers are never shown in the Containers list, in a volume's **Used by**, or on the Events page.
+
+If the Host doesn't have `busybox:1.37` (about 2 MB), Homeport says so and pulls it only once you choose **Pull busybox:1.37**, with your [registry logins](/docs/guides/settings/#registries). It removes the image again when it's done, unless something else uses it. A Host without internet access can't pull it; get it there yourself:
+
+```sh
+docker pull busybox:1.37
+```
+
+or, from a machine that has it, `docker save busybox:1.37 -o busybox.tar`, copy the file over, and `docker load -i busybox.tar` on the Host.
+
+<Aside>
+  Engines running Windows containers can't run the helper, so their volumes can't be opened.
+</Aside>
+
 ### Creating a volume
 
 **Create volume** asks for a **Name** and an optional **Driver** (`local` when empty).
