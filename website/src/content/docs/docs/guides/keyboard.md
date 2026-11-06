@@ -1,6 +1,6 @@
 ---
 title: Keyboard
-description: Drive Homeport without the mouse — the command palette, shortcuts for every page and Host, and the help sheet that lists them.
+description: Drive Homeport without the mouse — the command palette and search across every Host, shortcuts for every page and Host, and the help sheet that lists them.
 ---
 
 Homeport can be used from the keyboard. Press <kbd>Mod</kbd> <kbd>K</kbd> to open the [command palette](#command-palette), and <kbd>?</kbd> on any page to see every shortcut that works there.
@@ -16,7 +16,17 @@ Homeport can be used from the keyboard. Press <kbd>Mod</kbd> <kbd>K</kbd> to ope
 - **Actions** — **Run a container**, **Pull an image**, **New Stack**, **Clean up the selected host**, **Add host**, **Manage hosts**, **Check for updates** and **Show keyboard shortcuts**.
 - **Settings** — **Theme: Light**, **Theme: Dark** and **Theme: Match the system**.
 
-Actions that need a Host — running a container, pulling, a new Stack, cleaning up — are listed only while the selected Host is connected. Each item shows its shortcut, if it has one. With nothing typed, the items you used last come first, under **Recent**, until Homeport quits.
+Actions that need a Host — running a container, pulling, a new Stack, cleaning up — are listed only while the selected Host is connected.
+
+### Searching every Host
+
+Type two characters or more and the palette also searches the **containers**, **Stacks**, **images**, **volumes** and **networks** of every connected Host — "where does `postgres` run?" has an answer without switching Host. It matches names, short IDs and, for containers, their image and Stack; names that start with what you typed come first.
+
+- Results are grouped by kind, five per kind until **Show all**. Each shows its Host, and for containers and Stacks whether they run: _prod-server · running_.
+- Choosing one switches to its Host and opens it: a container's or a Stack's page, or the Images, Volumes or Networks page searched for it.
+- Hosts that aren't connected are skipped, and the palette says how many: _2 hosts not searched (not connected)_.
+
+Homeport loads the lists only once you've typed two characters, and keeps them fresh from each Host's live events after that. Logs, files and compose definitions aren't searched. Each item shows its shortcut, if it has one. With nothing typed, the items you used last come first, under **Recent**, until Homeport quits.
 
 ## Shortcuts
 
