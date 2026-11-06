@@ -1,7 +1,8 @@
 import { NavLink } from 'react-router-dom';
 import { HostSwitcher } from '@/features/hosts';
 import { cn } from '@/shared/lib';
-import { Logo } from '@/shared/ui';
+import { Logo, WithShortcut } from '@/shared/ui';
+import { NAV_SHORTCUTS } from '../shortcuts/navShortcuts';
 import { navEntries } from '../router/features';
 import { t } from '@/shared/i18n';
 
@@ -15,24 +16,34 @@ export function Sidebar() {
       <div className="mb-3">
         <HostSwitcher />
       </div>
-      {navEntries.map(({ path, label, icon: Icon }) => (
-        <NavLink
-          key={path}
-          to={path}
-          end={path === '/'}
-          className={({ isActive }) =>
-            cn(
-              'group flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm transition-colors',
-              isActive
-                ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
-            )
-          }
-        >
-          <Icon className="text-muted-foreground group-aria-[current=page]:text-sidebar-primary size-4" />
-          {t(label)}
-        </NavLink>
-      ))}
+      {navEntries.map(({ path, label, icon: Icon }) => {
+        const link = (
+          <NavLink
+            key={path}
+            to={path}
+            end={path === '/'}
+            className={({ isActive }) =>
+              cn(
+                'group flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm transition-colors',
+                isActive
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+                  : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
+              )
+            }
+          >
+            <Icon className="text-muted-foreground group-aria-[current=page]:text-sidebar-primary size-4" />
+            {t(label)}
+          </NavLink>
+        );
+        const keys = NAV_SHORTCUTS.find((s) => s.entry.path === path)?.keys;
+        return keys ? (
+          <WithShortcut key={path} keys={keys} label={t(label)} side="right">
+            {link}
+          </WithShortcut>
+        ) : (
+          link
+        );
+      })}
     </nav>
   );
 }
