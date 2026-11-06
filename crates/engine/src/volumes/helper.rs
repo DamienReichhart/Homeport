@@ -37,6 +37,11 @@ pub const OWNER_LABEL: &str = "com.homeport.helper.owner";
 pub const ROOT: &str = "/volume";
 /// How long a running helper lives at most, even if Homeport goes away.
 pub const LIFETIME_SECS: u32 = 3600;
+/// How long a request waits for the Engine's answer when that answer only
+/// comes once a copy is done (a restore's upload, a clone's `cp`): the
+/// client's usual two minutes would end a large copy over a slow link.
+/// Cancelling still stops it at once.
+pub const COPY_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(24 * 3600);
 
 /// A volume mounted in a helper.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -117,7 +122,8 @@ pub async fn run(docker: &Docker, mounts: &[Mount<'_>], cmd: &[&str]) -> AppResu
 async fn run_to_end(docker: &Docker, id: &str) -> AppResult<(i64, String)> {
     docker.start_container(id, None).await?;
     let mut code = 0;
-    let mut waits = docker.wait_container(id, None::<WaitContainerOptions>);
+    let patient = docker.clone().with_timeout(COPY_TIMEOUT);
+    let mut waits = patient.wait_container(id, None::<WaitContainerOptions>);
     while let Some(wait) = waits.next().await {
         match wait {
             Ok(response) => code = response.status_code,

@@ -224,7 +224,9 @@ async fn upload(
     let options = UploadToContainerOptionsBuilder::default()
         .path(helper::ROOT)
         .build();
-    let upload = docker.upload_to_container(id, Some(options), bollard::body_try_stream(body));
+    // The Engine answers once it has extracted everything.
+    let patient = docker.clone().with_timeout(helper::COPY_TIMEOUT);
+    let upload = patient.upload_to_container(id, Some(options), bollard::body_try_stream(body));
     tokio::pin!(upload);
     let (mut sent, mut reported) = (0u64, 0u64);
     loop {
