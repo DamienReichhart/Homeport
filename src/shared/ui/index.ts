@@ -30,6 +30,17 @@ export {
 export { Checkbox } from './primitives/checkbox';
 export { Collapsible, CollapsibleContent, CollapsibleTrigger } from './primitives/collapsible';
 export {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+  CommandShortcut,
+} from './primitives/command';
+export {
   Dialog,
   DialogClose,
   DialogContent,
