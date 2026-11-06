@@ -34,32 +34,35 @@ export function BoardRowView({
           onCheckedChange={(on) => onSelect(on === true)}
         />
       </TableCell>
-      <TableCell className="max-w-40 truncate">{row.hostName}</TableCell>
+      <TableCell className="max-w-28 truncate">{row.hostName}</TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
           <StatusDot tone={containerTone(c.state, c.health)} />
-          <div className="min-w-0">
+          <div className="max-w-48 min-w-0">
             <p className="truncate font-medium">{c.name}</p>
             <p className="text-muted-foreground font-mono text-xs">{shortId(c.id)}</p>
           </div>
         </div>
       </TableCell>
-      <TableCell className="max-w-56 truncate">{c.image}</TableCell>
-      <TableCell>
-        <span className="text-sm">{c.status || c.state}</span>
+      <TableCell className="max-w-36 truncate" title={c.image}>
+        {c.image}
+      </TableCell>
+      <TableCell className="whitespace-nowrap">
+        {/* The health shows as a badge, not repeated in the status. */}
+        <span className="text-sm">
+          {(c.status || c.state).replace(/\s*\((healthy|unhealthy|health: starting)\)/, '')}
+        </span>
         {c.health && (
           <Badge variant={c.health === 'unhealthy' ? 'destructive' : 'outline'} className="ml-1.5">
             {c.health}
           </Badge>
         )}
       </TableCell>
-      <TableCell className="text-muted-foreground">{c.stack ?? '—'}</TableCell>
-      <TableCell>
+      <TableCell className="text-muted-foreground max-w-28 truncate">{c.stack ?? '—'}</TableCell>
+      <TableCell className="max-w-28 truncate" title={ports.map((p) => p.label).join(', ')}>
         <span className="text-muted-foreground font-mono text-xs">
-          {ports
-            .slice(0, 3)
-            .map((p) => p.label)
-            .join(', ')}
+          {ports[0]?.label}
+          {ports.length > 1 && ` +${ports.length - 1}`}
         </span>
       </TableCell>
       <TableCell className="text-right tabular-nums">
