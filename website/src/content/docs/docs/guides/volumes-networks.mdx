@@ -1,6 +1,6 @@
 ---
 title: Volumes and networks
-description: See which containers use which volumes and networks, create them, and remove them safely.
+description: See which containers use which volumes and networks and how big volumes are; browse, back up, restore and clone volumes; create and remove both safely.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -15,15 +15,71 @@ The **Volumes** page lists the selected Host's volumes and how many are unused.
   alt="The Volumes page, showing each volume's Stack, driver and the containers that use it."
 />
 
-| Column      | Shows                                               |
-| ----------- | --------------------------------------------------- |
-| **Name**    | The volume's name; a long ID for anonymous volumes. |
-| **Stack**   | The Stack that created it, if any.                  |
-| **Driver**  | Usually `local`.                                    |
-| **Used by** | The containers that mount it, or **Unused**.        |
-| **Created** | When it was created.                                |
+| Column      | Shows                                                        |
+| ----------- | ------------------------------------------------------------ |
+| **Name**    | The volume's name; a long ID for anonymous volumes.          |
+| **Stack**   | The Stack that created it, if any.                           |
+| **Driver**  | Usually `local`.                                             |
+| **Size**    | How much disk its data takes, as `docker system df -v` says. |
+| **Used by** | The containers that mount it, or **Unused**.                 |
+| **Created** | When it was created.                                         |
 
-A volume counts as used when any container mounts it, running or stopped. Select a volume to see which containers use it and its full details, including where its data lives on the Host (`Mountpoint`).
+A volume counts as used when any container mounts it, running or stopped. Select a volume to see its size, which containers use it and its full details, including where its data lives on the Host (`Mountpoint`).
+
+### Sizes
+
+The Engine measures every volume to give their sizes, which can take a few seconds on a Host with a lot of data, so the list appears at once and the **Size** column fills in after. Sort by **Size** to find the volume that fills a disk. Sizes are measured again when a volume is created or removed, and when you choose **Refresh sizes** — not every time a container writes, so a size can be a little behind.
+
+Only volumes of the `local` driver have a size; other drivers (NFS, cloud storage plugins) show **—**.
+
+### Browsing a volume's files
+
+The folder button on a volume's row opens its files: open folders, go back up with the path above the list, and download a file, or a folder as a `.tar` archive. Paths start at the volume's root (`/`).
+
+Browsing is read-only. Nothing you do here can change the volume, even while a container uses it.
+
+#### The helper container
+
+The Engine API can't read a volume, so Homeport opens it with a short-lived **helper container**: a `busybox:1.37` container with no network and a read-only filesystem, which mounts the volume read-only. Homeport removes it as soon as you close the browser or quit. If Homeport can't (it crashed, or the Host went away), the helper stops and is removed by the Engine within the hour, and Homeport removes what's left the next time this computer connects to the Host. Helpers are never shown in the Containers list, in a volume's **Used by**, or on the Events page.
+
+If the Host doesn't have `busybox:1.37` (about 2 MB), Homeport says so and pulls it only once you choose **Pull busybox:1.37**, with your [registry logins](/docs/guides/settings/#registries). It removes the image again when it's done, unless something else uses it. A Host without internet access can't pull it; get it there yourself:
+
+```sh
+docker pull busybox:1.37
+```
+
+or, from a machine that has it, `docker save busybox:1.37 -o busybox.tar`, copy the file over, and `docker load -i busybox.tar` on the Host.
+
+<Aside>
+  Engines running Windows containers can't run the helper, so their volumes can't be opened.
+</Aside>
+
+### Backing up and restoring
+
+**Back up to a file…**, in the **⋯** menu of a volume's row, saves its contents to a `.tar` file on this computer. The archive holds the volume's files with their owners and permissions, at paths relative to its root, as `tar -C <volume> -cf backup.tar .` would make them, so you can also open or restore it without Homeport.
+
+**Restore from file** restores a backup:
+
+- From the top of the page, into **A new volume**, named after the file unless you change it, or **An existing volume** you pick.
+- From a volume's **⋯** menu, into that volume.
+
+If the existing volume already holds files, Homeport asks before deleting them and putting the backup's in their place. A file that isn't a tar archive is refused before anything changes.
+
+Both show their progress and can be cancelled. A cancelled backup leaves no file behind; a cancelled restore can leave the volume partly written, so restore it again before using it.
+
+#### Containers using the volume
+
+A backup of a volume a running container writes to — a database, say — may be inconsistent. Homeport names the running containers that use it, and you choose to **Back up anyway** or to stop them during the backup. A restore always stops them first. Either way, Homeport starts them again afterwards.
+
+Backups and restores use the same [helper container](#the-helper-container) as browsing, mounting the volume read-only for a backup. The archive travels over the Host's connection and is never held whole in memory, so large volumes and remote Hosts work too. Nothing is written on the Host but the volume being restored.
+
+### Cloning a volume
+
+**Clone…**, in the **⋯** menu of a volume's row, copies it into a new volume on the same Host — to try a migration or a new image version on a copy of real data, say. The copy is named `<name>-copy` unless you change it, and is selected in the list once made.
+
+It keeps the files' owners and permissions, and the source's driver, driver options and labels — except Compose's, so the copy belongs to no Stack. The source is mounted read-only in the [helper container](#the-helper-container) and never changes. As with a backup, Homeport names the running containers that use the source; copy anyway, or stop them during the copy.
+
+If the copy fails — the disk is full, say — Homeport removes the incomplete copy and says so, with the error in **Details**. To copy a volume to another Host, [back it up](#backing-up-and-restoring) and restore the file there.
 
 ### Creating a volume
 

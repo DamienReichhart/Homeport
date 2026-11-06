@@ -4,7 +4,9 @@
 use std::sync::{Arc, Mutex};
 
 use homeport_core::streams::Streams;
-use homeport_engine::{containers::exec::ExecSessions, freshness::FreshnessCache};
+use homeport_engine::{
+    containers::exec::ExecSessions, freshness::FreshnessCache, volumes::browse::BrowseSessions,
+};
 use homeport_git::Repositories;
 use homeport_hosts::service::HostService;
 use homeport_registries::RegistryStore;
@@ -15,9 +17,12 @@ use homeport_stacks::{
     store::StackStore,
     synced::SyncedStacks,
 };
-use homeport_storage::SecretBox;
+use homeport_storage::{Db, SecretBox};
 
 pub struct AppState {
+    pub db: Arc<Db>,
+    /// The app data folder, where `homeport.db` lives.
+    pub data_dir: std::path::PathBuf,
     pub secrets: Arc<SecretBox>,
     pub settings: SettingsService,
     pub hosts: HostService,
@@ -34,6 +39,8 @@ pub struct AppState {
     pub synced: Arc<SyncedStacks>,
     pub streams: Streams,
     pub exec: ExecSessions,
+    /// Volumes being browsed, each in a helper container (ADR 0015).
+    pub volume_browser: BrowseSessions,
     /// Registry digests, for telling when a newer image is published.
     pub freshness: FreshnessCache,
     /// The update found by the last check, kept for installing it.

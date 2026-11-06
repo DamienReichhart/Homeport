@@ -338,7 +338,7 @@ export function installMocks({ theme, hostId }: MockOptions) {
         cli: { program: 'docker', prefix: ['compose'], version: '2.31.0' },
       },
     }),
-    get_licenses: () => ({ app: 'MIT License', third_party: null }),
+    get_licenses: () => ({ app: 'GNU AFFERO GENERAL PUBLIC LICENSE', third_party: null }),
     // Up to date, so no update bar shows in the screenshots.
     updates_check: () => ({ currentVersion: '0.2.0', available: null, method: { kind: 'inApp' } }),
     get_settings: () => settings,

@@ -25,3 +25,4 @@ Secrets are sealed under a key kept in the OS keychain (ADR 0002), so copying `h
 - On a name clash the preview proposes `prod (2)`; unpicking a Host skips it.
 - Deriving the key takes a fraction of a second in release builds; `argon2` and `blake2` are optimised in dev builds too, so tests and `tauri dev` stay fast.
 - Losing the passphrase loses the file. Nothing in Homeport can open it without one.
+- The v0.12 backup of all of Homeport's data uses this format and payload version, with `"backup": true` and its sections (`registries`, `repositories`, `stacks`, `settings`) next to `hosts`, whose entries then keep their `id` so Stacks find their Host. Hosts import reads a backup's Hosts like an export's; restoring refuses an export, which would replace everything with some Hosts.

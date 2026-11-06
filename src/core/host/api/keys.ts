@@ -12,6 +12,8 @@ export const hostKeys = {
   /** Under images, so a pull or removal refreshes it (from the backend's cache). */
   freshness: (hostId: string) => ['host', hostId, 'images', 'freshness'] as const,
   volumes: (hostId: string) => ['host', hostId, 'volumes'] as const,
+  /** Apart from volumes, so a container event doesn't make the Engine measure them again. */
+  volumeSizes: (hostId: string) => ['host', hostId, 'volume-sizes'] as const,
   networks: (hostId: string) => ['host', hostId, 'networks'] as const,
   stacks: (hostId: string) => ['host', hostId, 'stacks'] as const,
   system: (hostId: string) => ['host', hostId, 'system'] as const,

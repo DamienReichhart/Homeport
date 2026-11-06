@@ -21,6 +21,7 @@
 //! - [`lifecycle`] starts, stops and removes any Stack through the Engine API.
 //! - [`compose`] runs the `docker compose` CLI for a runtime job.
 
+pub mod backup;
 pub mod compose;
 pub mod definition;
 pub mod diff;

@@ -9,14 +9,17 @@ mod status;
 mod supervisor;
 
 use std::{
-    collections::{HashMap, VecDeque},
+    collections::{HashMap, HashSet},
     sync::{Arc, Mutex, Weak},
 };
 
 use bollard::Docker;
 use tokio::task::JoinHandle;
 
-use homeport_core::error::{AppError, AppResult, ErrorCode};
+use homeport_core::{
+    error::{AppError, AppResult, ErrorCode},
+    host::HELPER_LABEL,
+};
 
 use crate::messages as msg;
 use homeport_transport::{Connected, Dialer};
@@ -28,29 +31,34 @@ pub use self::{
 };
 
 use self::supervisor::supervise;
-use crate::{store::HostStore, HostId};
-
-/// How many Engine events each Host keeps for the Events page.
-const EVENT_HISTORY: usize = 500;
+use crate::{events::EventStore, store::HostStore, HostId};
 
 struct Entry {
     status: HostStatus,
     client: Option<Connected>,
     task: Option<JoinHandle<()>>,
-    events: VecDeque<EngineEvent>,
+    /// Homeport's own helper containers seen in the events, whose events
+    /// (and their volumes' mounts) aren't shown (ADR 0015).
+    helpers: HashSet<String>,
 }
 
 pub struct HostRegistry {
     store: Arc<HostStore>,
+    events: Arc<EventStore>,
     notifier: Arc<dyn Notifier>,
     entries: Mutex<HashMap<HostId, Entry>>,
     me: Weak<HostRegistry>,
 }
 
 impl HostRegistry {
-    pub fn new(store: Arc<HostStore>, notifier: Arc<dyn Notifier>) -> Arc<Self> {
+    pub fn new(
+        store: Arc<HostStore>,
+        events: Arc<EventStore>,
+        notifier: Arc<dyn Notifier>,
+    ) -> Arc<Self> {
         Arc::new_cyclic(|me| Self {
             store,
+            events,
             notifier,
             entries: Mutex::new(HashMap::new()),
             me: me.clone(),
@@ -65,6 +73,16 @@ impl HostRegistry {
         Ok(())
     }
 
+    /// Drops every connection and connects to the stored Hosts afresh, as
+    /// after a restore replaced them all. Must run inside a Tokio runtime.
+    pub fn reload(&self) -> AppResult<()> {
+        let old: Vec<Entry> = self.lock().drain().map(|(_, entry)| entry).collect();
+        for task in old.into_iter().filter_map(|entry| entry.task) {
+            task.abort();
+        }
+        self.start_all()
+    }
+
     /// (Re)starts a Host's supervisor, e.g. after it was edited or trusted.
     pub fn restart(&self, id: &str) {
         let task = tokio::spawn(supervise(self.me.clone(), id.to_owned()));
@@ -73,7 +91,7 @@ impl HostRegistry {
             status: HostStatus::Connecting,
             client: None,
             task: None,
-            events: VecDeque::new(),
+            helpers: HashSet::new(),
         });
         if let Some(old) = entry.task.replace(task) {
             old.abort();
@@ -104,13 +122,6 @@ impl HostRegistry {
     #[allow(dead_code)] // used by the compose proxy
     pub fn dialer(&self, id: &str) -> AppResult<Option<Arc<dyn Dialer>>> {
         self.connected(id).map(|c| c.dialer)
-    }
-
-    pub fn events(&self, id: &str) -> Vec<EngineEvent> {
-        self.lock()
-            .get(id)
-            .map(|e| e.events.iter().cloned().collect())
-            .unwrap_or_default()
     }
 
     fn connected(&self, id: &str) -> AppResult<Connected> {
@@ -166,12 +177,32 @@ impl HostRegistry {
 
     fn record_event(&self, id: &str, event: EngineEvent) {
         if let Some(entry) = self.lock().get_mut(id) {
-            if entry.events.len() == EVENT_HISTORY {
-                entry.events.pop_front();
+            if is_helpers(&mut entry.helpers, &event) {
+                return;
             }
-            entry.events.push_back(event.clone());
         }
+        self.events.record(id, &event);
         self.notifier.engine_event(id, &event);
+    }
+}
+
+/// Whether `event` is about a helper container, or a volume mounted in one;
+/// remembers the helpers it sees in `helpers`.
+fn is_helpers(helpers: &mut HashSet<String>, event: &EngineEvent) -> bool {
+    match event.kind.as_str() {
+        "container" if event.attributes.contains_key(HELPER_LABEL) => {
+            if event.action == "destroy" {
+                helpers.remove(&event.actor_id);
+            } else {
+                helpers.insert(event.actor_id.clone());
+            }
+            true
+        }
+        "volume" => event
+            .attributes
+            .get("container")
+            .is_some_and(|c| helpers.contains(c)),
+        _ => false,
     }
 }
 
@@ -195,8 +226,9 @@ mod tests {
     }
 
     fn setup(socket_path: &str) -> (Arc<HostRegistry>, Arc<Recorder>, HostId) {
+        let db = Arc::new(Db::open_in_memory().unwrap());
         let store = Arc::new(HostStore::new(
-            Arc::new(Db::open_in_memory().unwrap()),
+            db.clone(),
             Arc::new(SecretBox::from_key(&[3; 32])),
         ));
         let id = store
@@ -210,7 +242,12 @@ mod tests {
             .unwrap()
             .id;
         let recorder = Arc::new(Recorder::default());
-        (HostRegistry::new(store, recorder.clone()), recorder, id)
+        let events = EventStore::new(db);
+        (
+            HostRegistry::new(store, events, recorder.clone()),
+            recorder,
+            id,
+        )
     }
 
     async fn wait_for(reg: &HostRegistry, id: &str, pred: impl Fn(&HostStatus) -> bool) {
@@ -221,6 +258,45 @@ mod tests {
             tokio::time::sleep(Duration::from_millis(25)).await;
         }
         panic!("status never matched, last: {:?}", reg.status(id));
+    }
+
+    #[test]
+    fn helper_events_are_left_out() {
+        let event =
+            |kind: &str, action: &str, actor: &str, attributes: &[(&str, &str)]| EngineEvent {
+                time: 0,
+                time_nano: 0,
+                kind: kind.into(),
+                action: action.into(),
+                actor_id: actor.into(),
+                attributes: attributes
+                    .iter()
+                    .map(|(k, v)| (k.to_string(), v.to_string()))
+                    .collect(),
+            };
+        let mut helpers = HashSet::new();
+        let label = [(HELPER_LABEL, "true")];
+        assert!(is_helpers(
+            &mut helpers,
+            &event("container", "create", "h1", &label)
+        ));
+        assert!(is_helpers(
+            &mut helpers,
+            &event("volume", "mount", "db", &[("container", "h1")])
+        ));
+        assert!(!is_helpers(
+            &mut helpers,
+            &event("volume", "mount", "db", &[("container", "web")])
+        ));
+        assert!(!is_helpers(
+            &mut helpers,
+            &event("container", "start", "web", &[])
+        ));
+        assert!(is_helpers(
+            &mut helpers,
+            &event("container", "destroy", "h1", &label)
+        ));
+        assert!(helpers.is_empty());
     }
 
     #[tokio::test]
@@ -241,6 +317,97 @@ mod tests {
         reg.store.set_enabled(&id, false).unwrap();
         reg.restart(&id);
         wait_for(&reg, &id, |s| *s == HostStatus::Disabled).await;
+    }
+
+    /// Creates a network named `name` and returns the function removing it.
+    async fn network(docker: &Docker, name: &str) {
+        docker
+            .create_network(bollard::models::NetworkCreateRequest {
+                name: name.to_owned(),
+                ..Default::default()
+            })
+            .await
+            .unwrap();
+    }
+
+    fn created(events: &[EngineEvent], name: &str) -> usize {
+        events
+            .iter()
+            .filter(|e| e.kind == "network" && e.action == "create")
+            .filter(|e| e.attributes.get("name").map(String::as_str) == Some(name))
+            .count()
+    }
+
+    #[tokio::test]
+    #[ignore = "needs a local Docker Engine"]
+    async fn events_outlive_a_restart_and_the_gap_is_filled() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("homeport.db");
+        let docker = Docker::connect_with_local_defaults().unwrap();
+        let suffix = &uuid::Uuid::new_v4().simple().to_string()[..8];
+        let (seen, missed) = (
+            format!("homeport-test-seen-{suffix}"),
+            format!("homeport-test-missed-{suffix}"),
+        );
+        let start = |db: Arc<Db>| {
+            let store = Arc::new(HostStore::new(
+                db.clone(),
+                Arc::new(SecretBox::from_key(&[3; 32])),
+            ));
+            let id = match store.list().unwrap().into_iter().next() {
+                Some(host) => host.id,
+                None => {
+                    store
+                        .create(HostDraft {
+                            name: "local".into(),
+                            connection: HostConnection::Local {
+                                socket_path: "/var/run/docker.sock".into(),
+                            },
+                            secrets: None,
+                        })
+                        .unwrap()
+                        .id
+                }
+            };
+            let events = EventStore::new(db);
+            let reg = HostRegistry::new(store, events.clone(), Arc::new(Recorder::default()));
+            reg.restart(&id);
+            (reg, events, id)
+        };
+        let until = |events: Arc<EventStore>, id: String, name: String| async move {
+            for _ in 0..200 {
+                events.flush().await;
+                let page = events.page(&id, crate::events::PAGE, None).unwrap();
+                if created(&page, &name) > 0 {
+                    return page;
+                }
+                tokio::time::sleep(Duration::from_millis(25)).await;
+            }
+            panic!("{name} never showed up");
+        };
+
+        // Homeport runs and sees a network created.
+        let (reg, events, id) = start(Arc::new(Db::open(&path).unwrap()));
+        wait_for(&reg, &id, |s| matches!(s, HostStatus::Connected { .. })).await;
+        network(&docker, &seen).await;
+        until(events.clone(), id.clone(), seen.clone()).await;
+        reg.remove(&id);
+        drop((reg, events));
+
+        // Then quits; something happens meanwhile.
+        network(&docker, &missed).await;
+
+        // On the next start, both are listed once, in order.
+        let (reg, events, id) = start(Arc::new(Db::open(&path).unwrap()));
+        let page = until(events.clone(), id.clone(), missed.clone()).await;
+        reg.remove(&id);
+        for name in [&seen, &missed] {
+            docker.remove_network(name).await.ok();
+        }
+        assert_eq!(created(&page, &seen), 1, "{page:?}");
+        assert_eq!(created(&page, &missed), 1, "{page:?}");
+        let times: Vec<i64> = page.iter().map(|e| e.time_nano).collect();
+        assert!(times.windows(2).all(|w| w[0] <= w[1]));
     }
 
     #[tokio::test]

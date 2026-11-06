@@ -30,3 +30,8 @@ targets = [
 # Build and dev dependencies are not compiled into the app.
 ignore-build-dependencies = true
 ignore-dev-dependencies = true
+
+# Homeport's own crates (publish = false) aren't third-party software: their
+# license is LICENSE, shown on its own tab in Settings → Licenses.
+[private]
+ignore = true

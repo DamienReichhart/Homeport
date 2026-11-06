@@ -106,6 +106,13 @@ pub enum ErrorCode {
     GitFailed,
     /// A Synced Stack's compose file, branch or tag isn't in its repository.
     SyncedComposeFileMissing,
+    // Helper containers, which open volumes (ADR 0015).
+    /// The helper's image isn't on the Host and couldn't be pulled.
+    HelperImageUnavailable,
+    /// A file to restore a volume from that isn't a tar archive.
+    NotATarArchive,
+    /// Restoring into a volume that holds files, without replacing them.
+    VolumeNotEmpty,
     // Files and exec inside containers.
     NoShell,
     PathNotFound,

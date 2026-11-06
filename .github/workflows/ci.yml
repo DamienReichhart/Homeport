@@ -88,6 +88,8 @@ jobs:
           docker compose version
       # Pulling up front keeps the first tests' timing stable.
       - run: docker pull alpine:3.22
+      # The helper image that opens volumes (ADR 0015).
+      - run: docker pull busybox:1.37
       - run: cargo test --workspace --exclude homeport -- --ignored
       - name: Check that the tests cleaned up after themselves
         if: always()

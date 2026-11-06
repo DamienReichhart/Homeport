@@ -12,6 +12,8 @@ use super::HostStatus;
 pub struct EngineEvent {
     /// Unix time in seconds.
     pub time: i64,
+    /// Unix time in nanoseconds, which tells apart events of the same second.
+    pub time_nano: i64,
     /// `container`, `image`, `volume`, `network`, …
     pub kind: String,
     pub action: String,

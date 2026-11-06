@@ -131,6 +131,33 @@ homeport_core::messages! {
 
     /// Creating a volume without a name.
     VOLUME_NAME = "errors.volumes.name" => "Enter a volume name.";
+    /// Opening a volume on an Engine that runs Windows containers.
+    HELPER_WINDOWS = "errors.volumes.helperWindows" => "Homeport can't open volumes on Docker Engines that run Windows containers.";
+    /// The helper's image isn't on the Host and pulling it failed.
+    HELPER_IMAGE_UNAVAILABLE = "errors.volumes.helperImageUnavailable" => "Homeport couldn't get {image} onto this Host to open the volume.";
+    HELPER_IMAGE_UNAVAILABLE_HINT = "errors.volumes.helperImageUnavailable.hint" => "Pull it on the Host, or save it elsewhere with docker save and load it on the Host with docker load:";
+    /// A volume path that doesn't exist (any more).
+    VOLUME_PATH_MISSING = "errors.volumes.pathMissing" => "{path} doesn't exist in the volume.";
+    /// A volume path with `..` in it.
+    VOLUME_PATH_OUTSIDE = "errors.volumes.pathOutside" => "Paths can't leave the volume.";
+    /// Restoring into a new volume whose name is taken.
+    VOLUME_EXISTS = "errors.volumes.exists" => "A volume named {volume} already exists.";
+    VOLUME_EXISTS_HINT = "errors.volumes.exists.hint" => "Choose another name, or restore into the existing volume from its row.";
+    VOLUME_EXISTS_CLONE_HINT = "errors.volumes.exists.cloneHint" => "Choose another name for the copy.";
+    /// The copy into a clone failed; the reason is in Details.
+    CLONE_FAILED = "errors.volumes.cloneFailed" => "Homeport couldn't copy {source}.";
+    CLONE_REMOVED_HINT = "errors.volumes.cloneFailed.removedHint" => "The incomplete copy, {target}, was removed. The output in Details says what went wrong.";
+    CLONE_LEFT_HINT = "errors.volumes.cloneFailed.leftHint" => "The incomplete copy, {target}, couldn't be removed; delete it before using it. The output in Details says what went wrong.";
+    /// Restoring into a volume that holds files, without replacing them.
+    VOLUME_NOT_EMPTY = "errors.volumes.notEmpty" => "{volume} already holds files.";
+    /// Emptying a volume before a restore failed; the reason is in Details.
+    VOLUME_NOT_EMPTIED = "errors.volumes.notEmptied" => "Homeport couldn't empty {volume} before restoring into it.";
+    /// Restoring into a volume running containers use.
+    VOLUME_USED_BY_RUNNING = "errors.volumes.usedByRunning" => "{volume} is used by running containers: {containers}.";
+    VOLUME_USED_BY_RUNNING_HINT = "errors.volumes.usedByRunning.hint" => "Stop them first, so nothing writes to the volume while it's restored.";
+    /// Restoring a volume from a file that isn't a tar archive.
+    VOLUME_NOT_A_TAR = "errors.volumes.notATar" => "{path} isn't a tar archive.";
+    VOLUME_NOT_A_TAR_HINT = "errors.volumes.notATar.hint" => "Choose a file made by Back up, or a tar archive of a folder's contents, such as one made by tar -cf backup.tar -C folder .";
     /// Creating a network without a name.
     NETWORK_NAME = "errors.networks.name" => "Enter a network name.";
 

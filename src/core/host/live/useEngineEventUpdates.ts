@@ -2,6 +2,7 @@ import { useQueryClient, type QueryKey } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { events, type EngineEvent } from '@/shared/api';
 import { hostKeys } from '../api/keys';
+import { appendEvent } from '../model/events';
 
 /** Which cached lists an Engine event makes stale. */
 export function staleKeys(hostId: string, kind: string): QueryKey[] {
@@ -17,15 +18,13 @@ export function staleKeys(hostId: string, kind: string): QueryKey[] {
     case 'image':
       return [hostKeys.images(hostId), hostKeys.system(hostId)];
     case 'volume':
-      return [hostKeys.volumes(hostId), hostKeys.system(hostId)];
+      return [hostKeys.volumes(hostId), hostKeys.volumeSizes(hostId), hostKeys.system(hostId)];
     case 'network':
       return [hostKeys.networks(hostId)];
     default:
       return [];
   }
 }
-
-const EVENT_HISTORY = 500;
 
 /**
  * Keeps cached Engine data fresh from pushed events instead of polling;
@@ -42,7 +41,7 @@ export function useEngineEventUpdates() {
     };
     const unlisten = events.engineEventReceived.listen(({ payload }) => {
       client.setQueryData<EngineEvent[]>(hostKeys.events(payload.hostId), (list) =>
-        list ? [...list.slice(-(EVENT_HISTORY - 1)), payload.event] : list,
+        list ? appendEvent(list, payload.event) : list,
       );
       for (const key of staleKeys(payload.hostId, payload.event.kind))
         pending.set(JSON.stringify(key), key);

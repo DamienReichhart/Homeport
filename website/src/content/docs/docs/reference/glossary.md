@@ -45,6 +45,10 @@ To turn an External Stack into a Managed Stack by supplying its compose definiti
 
 The user name and password or access token Homeport keeps for one container registry, such as Docker Hub or GHCR, and uses on every Host to pull, push and build. See [Settings](/docs/guides/settings/#registries).
 
+### Helper container
+
+A short-lived `busybox` container Homeport creates on a Host to open a volume — to browse, back up, restore or clone it — since the Engine API can't read one. It has no network, mounts the volume read-only unless it must write to it, and is removed when the action ends. It never shows in the Containers list or on the Events page. See [Browsing a volume's files](/docs/guides/volumes-networks/#the-helper-container).
+
 ### Engine
 
 The Docker Engine (`dockerd`), or a compatible one such as Podman, that runs containers on a machine. Homeport talks to it through the Docker Engine API.

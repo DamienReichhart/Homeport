@@ -1,14 +1,41 @@
-import { InfoIcon, Trash2Icon } from 'lucide-react';
+import {
+  ArchiveIcon,
+  ArchiveRestoreIcon,
+  CopyIcon,
+  EllipsisIcon,
+  FolderOpenIcon,
+  InfoIcon,
+  Trash2Icon,
+} from 'lucide-react';
 import type { VolumeView } from '@/shared/api';
-import { Badge, Button, type ColumnDef } from '@/shared/ui';
+import {
+  Badge,
+  Button,
+  type ColumnDef,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/shared/ui';
+import { VolumeSize, type VolumeSizes } from './VolumeSize';
 import { t } from '@/shared/i18n';
 
 /** The volumes table's columns; the last one holds the row's actions. */
 export function volumeColumns({
+  sizes,
   onInspect,
+  onBrowse,
+  onBackup,
+  onRestore,
+  onClone,
   onRemove,
 }: {
+  sizes: VolumeSizes;
   onInspect: (volume: VolumeView) => void;
+  onBrowse: (volume: VolumeView) => void;
+  onBackup: (volume: VolumeView) => void;
+  onRestore: (volume: VolumeView) => void;
+  onClone: (volume: VolumeView) => void;
   onRemove: (volume: VolumeView) => void;
 }): ColumnDef<VolumeView, unknown>[] {
   return [
@@ -26,6 +53,13 @@ export function volumeColumns({
         row.original.stack && <Badge variant="outline">{row.original.stack}</Badge>,
     },
     { id: 'driver', header: t('volumes.column.driver'), accessorFn: (v) => v.driver },
+    {
+      id: 'size',
+      header: t('volumes.column.size'),
+      // Unknown sizes sort below every known one.
+      accessorFn: (v) => sizes?.[v.name] ?? -1,
+      cell: ({ row }) => <VolumeSize sizes={sizes} name={row.original.name} />,
+    },
     {
       id: 'usedBy',
       header: t('volumes.column.usedBy'),
@@ -58,6 +92,36 @@ export function volumeColumns({
           >
             <InfoIcon />
           </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={t('volumes.browseOne', { name: row.original.name })}
+            onClick={() => onBrowse(row.original)}
+          >
+            <FolderOpenIcon />
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t('volumes.moreActions', { name: row.original.name })}
+              >
+                <EllipsisIcon />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={() => onBackup(row.original)}>
+                <ArchiveIcon /> {t('volumes.backupMenu')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onRestore(row.original)}>
+                <ArchiveRestoreIcon /> {t('volumes.restoreMenu')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onClone(row.original)}>
+                <CopyIcon /> {t('volumes.cloneMenu')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button
             variant="ghost"
             size="icon-sm"

@@ -20,6 +20,48 @@ export default {
   'settings.sync.title': 'Synced Stacks',
   'settings.sync.interval': 'Check repositories every',
   'settings.sync.minutes': 'minutes',
+  'settings.data.title': 'Data',
+  'settings.data.description': 'What Homeport keeps on this computer.',
+  'settings.data.backup': 'Back up…',
+  'settings.data.restore': 'Restore…',
+  'settings.data.backupHint':
+    'Save every Host, Stack, registry login, repository and setting, with their secrets, to one passphrase-protected file, and restore it on this or another computer.',
+  'settings.backup.title': "Back up Homeport's data",
+  'settings.backup.description':
+    "The file holds every Host, Stack, registry login, repository and setting, and their keys, certificates, passwords and environments. Anyone with it and its passphrase can use them, so keep both safe. Engine events and deploy history aren't included.",
+  'settings.backup.passphrase': 'Passphrase',
+  'settings.backup.passphraseHint': "At least {min} characters. It can't be recovered.",
+  'settings.backup.confirmation': 'Passphrase again',
+  'settings.backup.problem.short': 'Use at least {min} characters.',
+  'settings.backup.problem.mismatch': 'The two passphrases differ.',
+  'settings.backup.start': 'Back up…',
+  'settings.backup.saveTitle': 'Save the backup as',
+  'settings.backup.fileType': 'Homeport backup',
+  'settings.backup.done':
+    'Backed up {hosts, plural, one {# Host} other {# Hosts}} and {stacks, plural, one {# Stack} other {# Stacks}}',
+  'settings.backup.withoutSecrets':
+    "These were backed up without their secrets, which couldn't be opened:",
+  'settings.restore.pick': 'Restore from',
+  'settings.restore.title': "Restore Homeport's data",
+  'settings.restore.from': 'From {path}',
+  'settings.restore.open': 'Open',
+  'settings.restore.madeBy': 'Backed up by Homeport {version} on {date}. It holds:',
+  'settings.restore.holds': 'What the backup holds',
+  'settings.restore.hosts': '{count, plural, one {# Host} other {# Hosts}}',
+  'settings.restore.stacks': '{count, plural, one {# Stack} other {# Stacks}}',
+  'settings.restore.registries':
+    '{count, plural, one {# registry login} other {# registry logins}}',
+  'settings.restore.repositories': '{count, plural, one {# repository} other {# repositories}}',
+  'settings.restore.settings': 'Your settings',
+  'settings.restore.replaces':
+    "Restoring replaces every Host, Stack, registry login, repository and setting you have now, and forgets the Engine events and deploy history. A copy of the current data is kept in Homeport's data folder first.",
+  'settings.restore.confirm': 'Replace everything',
+  'settings.restore.done':
+    'Restored {hosts, plural, one {# Host} other {# Hosts}} and {stacks, plural, one {# Stack} other {# Stacks}}',
+  'settings.data.keepEvents': 'Keep Engine events for',
+  'settings.data.days': 'days',
+  'settings.data.keepEventsHint':
+    'Each Host keeps at most 10,000 events for the Events page. Older ones are removed every hour.',
   'settings.machine.gitMissing':
     'Synced Stacks need it; every other kind of Stack works without it.',
   'settings.about.tagline': 'Every Docker Engine, on one board.',
@@ -27,7 +69,10 @@ export default {
   'settings.about.licenses': 'Licenses',
   'settings.licenses.title': 'Licenses',
   'settings.licenses.description':
-    'Homeport is free software under the MIT License, built on the open-source packages below.',
+    'Homeport is free software under the GNU Affero General Public License, version 3, built on the open-source packages below.',
+  'settings.licenses.source':
+    'The source code of this version is published under the same licence.',
+  'settings.licenses.sourceLink': 'Source of v{version}',
   'settings.licenses.thirdParty': 'Third-party software',
   'settings.licenses.missing.title': 'Not included in this build',
   'settings.licenses.missing.description':

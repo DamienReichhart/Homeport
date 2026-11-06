@@ -156,28 +156,16 @@ mod tests {
     use homeport_storage::{Db, SecretBox};
 
     use super::*;
-    use crate::{
-        registry::{EngineEvent, HostRegistry, HostStatus, Notifier},
-        store::HostStore,
-        BastionAuth, HostSecrets, SshAuth,
-    };
+    use crate::{store::HostStore, BastionAuth, HostSecrets, SshAuth};
     use homeport_transport as transport;
 
-    struct Silent;
-    impl Notifier for Silent {
-        fn host_status(&self, _: &str, _: &HostStatus) {}
-        fn engine_event(&self, _: &str, _: &EngineEvent) {}
-    }
-
     fn service() -> HostService {
+        let db = Arc::new(Db::open_in_memory().unwrap());
         let store = Arc::new(HostStore::new(
-            Arc::new(Db::open_in_memory().unwrap()),
+            db.clone(),
             Arc::new(SecretBox::from_key(&[3; 32])),
         ));
-        HostService {
-            registry: HostRegistry::new(store.clone(), Arc::new(Silent)),
-            store,
-        }
+        HostService::for_tests(db, store)
     }
 
     fn home(config: &str) -> (tempfile::TempDir, Env) {

@@ -63,35 +63,53 @@ impl HostService {
         let mut without_secrets = Vec::new();
         let mut hosts = Vec::with_capacity(ids.len());
         for id in ids {
-            let host = self.store.get(id)?;
-            let secrets = if host.connection.needs_secrets() {
-                match self.store.secrets(id) {
-                    Ok(secrets) => secrets,
-                    Err(e)
-                        if e.is(ErrorCode::CredentialsLost)
-                            || e.is(ErrorCode::KeychainUnavailable) =>
-                    {
-                        without_secrets.push(host.name.clone());
-                        None
-                    }
-                    Err(e) => return Err(e),
-                }
-            } else {
-                None
-            };
-            hosts.push(ExportedHost {
-                name: host.name,
-                connection: host.connection,
-                enabled: host.enabled,
-                host_key: host.host_key,
-                secrets,
-            });
+            let mut host = self.exported(id, &mut without_secrets)?;
+            host.id = None;
+            hosts.push(host);
         }
         let sealed = Payload::new(hosts).seal(passphrase)?;
         std::fs::write(path, sealed).map_err(|e| local_file(path, e))?;
         Ok(ExportOutcome {
             exported: ids.len() as u32,
             without_secrets,
+        })
+    }
+
+    /// Every Host as a backup holds it, ids included; the names of those
+    /// whose secrets couldn't be opened are added to `without_secrets`.
+    pub fn backup_hosts(&self, without_secrets: &mut Vec<String>) -> AppResult<Vec<ExportedHost>> {
+        self.store
+            .list()?
+            .iter()
+            .map(|host| self.exported(&host.id, without_secrets))
+            .collect()
+    }
+
+    /// Host `id` with its opened secrets, or without them (named in
+    /// `without_secrets`) when they can't be opened.
+    fn exported(&self, id: &str, without_secrets: &mut Vec<String>) -> AppResult<ExportedHost> {
+        let host = self.store.get(id)?;
+        let secrets = if host.connection.needs_secrets() {
+            match self.store.secrets(id) {
+                Ok(secrets) => secrets,
+                Err(e)
+                    if e.is(ErrorCode::CredentialsLost) || e.is(ErrorCode::KeychainUnavailable) =>
+                {
+                    without_secrets.push(host.name.clone());
+                    None
+                }
+                Err(e) => return Err(e),
+            }
+        } else {
+            None
+        };
+        Ok(ExportedHost {
+            id: Some(host.id),
+            name: host.name,
+            connection: host.connection,
+            enabled: host.enabled,
+            host_key: host.host_key,
+            secrets,
         })
     }
 
@@ -182,29 +200,20 @@ mod tests {
 
     use super::*;
     use crate::{
-        registry::{EngineEvent, HostRegistry, HostStatus, Notifier},
         service::{BastionKeyInput, CredentialsInput, HostInput},
         store::HostStore,
         Bastion, BastionAuth, HostSecrets, SshAuth,
     };
     use homeport_transport as transport;
 
-    struct Silent;
-    impl Notifier for Silent {
-        fn host_status(&self, _: &str, _: &HostStatus) {}
-        fn engine_event(&self, _: &str, _: &EngineEvent) {}
-    }
-
     /// A computer with its own database and keychain key.
     fn computer(key: u8) -> HostService {
+        let db = Arc::new(Db::open_in_memory().unwrap());
         let store = Arc::new(HostStore::new(
-            Arc::new(Db::open_in_memory().unwrap()),
+            db.clone(),
             Arc::new(SecretBox::from_key(&[key; 32])),
         ));
-        HostService {
-            registry: HostRegistry::new(store.clone(), Arc::new(Silent)),
-            store,
-        }
+        HostService::for_tests(db, store)
     }
 
     const PASS: &str = "moving to the new laptop";
@@ -352,11 +361,11 @@ mod tests {
             })
             .unwrap()
             .id;
-        let store = Arc::new(HostStore::new(db, Arc::new(SecretBox::from_key(&[2; 32]))));
-        let svc = HostService {
-            registry: HostRegistry::new(store.clone(), Arc::new(Silent)),
-            store,
-        };
+        let store = Arc::new(HostStore::new(
+            db.clone(),
+            Arc::new(SecretBox::from_key(&[2; 32])),
+        ));
+        let svc = HostService::for_tests(db, store);
         let outcome = svc.export_hosts(&[id], &file, PASS).unwrap();
         assert_eq!(outcome.without_secrets, ["tls"]);
 

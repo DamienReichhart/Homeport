@@ -7,6 +7,7 @@ import { ErrorMessage, PageHeader, Spinner } from '@/shared/ui';
 import { useSaveSettings } from '../api/mutations';
 import { AboutCard } from './AboutCard';
 import { AppearanceCard } from './AppearanceCard';
+import { DataCard } from './DataCard';
 import { MachineCard } from './MachineCard';
 import { SyncCard } from './SyncCard';
 import { t } from '@/shared/i18n';
@@ -31,6 +32,7 @@ export function SettingsPage() {
       <RegistriesCard />
       <RepositoriesCard />
       <SyncCard settings={settings.data} onChange={(next) => save.mutate(next)} />
+      <DataCard settings={settings.data} onChange={(next) => save.mutate(next)} />
       <MachineCard />
       <AboutCard />
     </div>

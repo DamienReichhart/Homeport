@@ -16,6 +16,8 @@ use crate::{
     url::{RepoUrl, Transport},
 };
 
+pub mod backup;
+
 /// How Homeport authenticates to a repository.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]

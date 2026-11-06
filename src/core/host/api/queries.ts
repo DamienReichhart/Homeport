@@ -1,5 +1,6 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { commands } from '@/shared/api';
+import { EVENT_PAGE } from '../model/events';
 import { hostKeys } from './keys';
 
 export const hostQueries = {
@@ -25,6 +26,17 @@ export const resourceQueries = {
     queryOptions({
       queryKey: hostKeys.volumes(hostId),
       queryFn: () => commands.volumesList(hostId),
+    }),
+  /**
+   * Each volume's size, `null` when its driver doesn't report one. Slow on a
+   * large Host, so it's apart from the list and kept a minute; volume events
+   * and the Volumes page's refresh ask again.
+   */
+  volumeSizes: (hostId: string) =>
+    queryOptions({
+      queryKey: hostKeys.volumeSizes(hostId),
+      queryFn: () => commands.volumesSizes(hostId),
+      staleTime: 60_000,
     }),
   networks: (hostId: string) =>
     queryOptions({
@@ -54,10 +66,11 @@ export const resourceQueries = {
       staleTime: 5 * 60_000,
       retry: false,
     }),
+  /** The latest page of a Host's kept events; live updates append to it. */
   events: (hostId: string) =>
     queryOptions({
       queryKey: hostKeys.events(hostId),
-      queryFn: () => commands.hostsEvents(hostId),
+      queryFn: () => commands.hostsEvents(hostId, EVENT_PAGE, null),
     }),
 };
 

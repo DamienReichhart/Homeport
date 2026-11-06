@@ -49,6 +49,27 @@ Keys and tokens are encrypted with the OS keychain's key and never shown again, 
 
 **Check repositories every** sets how many minutes Homeport waits between checks of Synced Stacks' repositories for new commits: 5 by default, at least 1. Homeport checks only while it's open; nothing syncs while it's closed. See [polling and auto-deploy](/docs/guides/synced-stacks/#polling-and-auto-deploy).
 
+## Data
+
+What Homeport keeps on this computer.
+
+### Backing up and restoring
+
+**Back up…** saves every Host, Stack, registry login, repository and setting, with their keys, certificates, tokens, passwords and environments, to one `.homeport` file. Type a passphrase of at least 12 characters twice: the whole file is encrypted with it, and it can't be recovered. Engine events and deploy history aren't included, nor anything on your Hosts — containers, images and volumes stay where they are.
+
+**Restore…** opens such a file with its passphrase and lists what it holds: its Hosts by name, and how many Stacks, registry logins and repositories. **Replace everything** then replaces all of Homeport's data with the backup's, on this or another computer:
+
+- Everything connects and deploys at once: SSH and TLS Hosts, registries and repositories without asking for a key or password again, nor to trust a server's key.
+- A [Linked Stack](/docs/guides/stacks/#linked-stacks) whose folder isn't on this computer shows as External until the folder is there, at the same path.
+- [Synced Stacks](/docs/guides/synced-stacks/) clone their repository again on their next sync.
+- The current data is copied to `homeport.db.before-restore-<date>` in Homeport's data folder first. Restoring a wrong file, a newer Homeport's, or one that fails halfway changes nothing.
+
+To add some Hosts to the ones you have instead, use **Export** and **Import** on the Hosts page.
+
+### Keeping Engine events
+
+**Keep Engine events for** sets how many days each Host's [Engine events](/docs/guides/overview/#events) are kept: 30 by default, from 1 to 365. Each Host keeps at most 10,000 events whatever this says. Older ones are removed when Homeport starts and every hour, and at once when you lower the number.
+
 ## This machine
 
 What Homeport can use on this computer:
@@ -63,4 +84,4 @@ Homeport checks them when it starts. After installing a keychain, Compose or git
 
 Shows Homeport's version and the platform it was built for, for example `v0.2.0 · macos/aarch64`. Include it when you [report an issue](https://github.com/DamienReichhart/Homeport/issues).
 
-**Licenses** shows Homeport's MIT licence and the notices of every open-source package it's built with.
+**Licenses** shows Homeport's licence (the GNU AGPL, version 3), a link to the source code of the version you run, and the notices of every open-source package it's built with.

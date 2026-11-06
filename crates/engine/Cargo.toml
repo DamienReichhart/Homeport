@@ -12,7 +12,7 @@ workspace = true
 
 [features]
 # Helpers that create (and clean up) throwaway resources on the local Engine.
-test-support = ["dep:uuid"]
+test-support = []
 
 [dependencies]
 homeport-core = { workspace = true, features = ["bollard"] }
@@ -26,7 +26,8 @@ serde_json.workspace = true
 specta.workspace = true
 tar.workspace = true
 shell-words.workspace = true
-uuid = { workspace = true, optional = true }
+uuid.workspace = true
+gethostname.workspace = true
 
 [dev-dependencies]
 homeport-transport = { workspace = true, features = ["test-support"] }

@@ -3,6 +3,7 @@ export { hostKeys } from './api/keys';
 export { useCheckForNewerImages, useCreateHost, useReconnectHost } from './api/mutations';
 export { hostQueries, resourceQueries, useContainers, useHosts } from './api/queries';
 export { useEngineEventUpdates } from './live/useEngineEventUpdates';
+export { cursorOf, EVENT_PAGE, eventKey } from './model/events';
 export {
   aggregateFreshness,
   containerFreshness,

@@ -6,7 +6,9 @@ use std::{error::Error, sync::Arc};
 use tauri::{App, Manager};
 
 use homeport_git::{Repositories, RepositoryStore};
-use homeport_hosts::{registry::HostRegistry, service::HostService, store::HostStore};
+use homeport_hosts::{
+    events::EventStore, registry::HostRegistry, service::HostService, store::HostStore,
+};
 use homeport_registries::RegistryStore;
 use homeport_settings::SettingsService;
 use homeport_stacks::{
@@ -36,7 +38,12 @@ pub fn state(app: &App) -> Result<AppState, Box<dyn Error>> {
     .expect("keychain thread panicked");
     let secrets = Arc::new(secrets);
     let store = Arc::new(HostStore::new(db.clone(), secrets.clone()));
-    let registry = HostRegistry::new(store.clone(), Arc::new(TauriNotifier(app.handle().clone())));
+    let events = EventStore::new(db.clone());
+    let registry = HostRegistry::new(
+        store.clone(),
+        events.clone(),
+        Arc::new(TauriNotifier(app.handle().clone())),
+    );
     let start = registry.clone();
     tauri::async_runtime::spawn(async move {
         if let Err(e) = start.start_all() {
@@ -62,10 +69,17 @@ pub fn state(app: &App) -> Result<AppState, Box<dyn Error>> {
         synced,
         secrets,
         settings,
-        hosts: HostService { store, registry },
+        hosts: HostService {
+            store,
+            registry,
+            events,
+        },
         streams: Default::default(),
         exec: Default::default(),
+        volume_browser: Default::default(),
         freshness: Default::default(),
         update: Default::default(),
+        db,
+        data_dir,
     })
 }

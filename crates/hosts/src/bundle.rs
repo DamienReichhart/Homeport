@@ -5,7 +5,7 @@
 use serde::{Deserialize, Serialize};
 
 use homeport_core::error::AppResult;
-use homeport_storage::crypto::bundle;
+use homeport_storage::{crypto::bundle, db::sqlite_error, SecretBox};
 
 use crate::{HostConnection, HostSecrets};
 
@@ -29,6 +29,10 @@ pub struct Payload {
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExportedHost {
+    /// Its id, so a backup's Stacks keep their Host on restoring. An import
+    /// gives each Host a new one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
     pub name: String,
     /// As stored, bastions and their trusted keys included.
     pub connection: HostConnection,
@@ -77,8 +81,42 @@ impl Payload {
     }
 }
 
+/// Writes a backup's Hosts in `tx`, into a database emptied of them, with
+/// their ids, so their Stacks find them, and their secrets sealed under
+/// this computer's key. A Host without its secrets asks for them again.
+pub fn restore(
+    tx: &rusqlite::Transaction<'_>,
+    secrets: &SecretBox,
+    hosts: &[ExportedHost],
+) -> AppResult<()> {
+    for host in hosts {
+        let id = host
+            .id
+            .clone()
+            .unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
+        let sealed = match &host.secrets {
+            Some(opened) if host.connection.needs_secrets() => Some(secrets.seal_json(opened)?),
+            _ => None,
+        };
+        tx.execute(
+            "INSERT INTO hosts (id, name, connection, secrets, host_key, enabled)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+            (
+                &id,
+                &host.name,
+                serde_json::to_string(&host.connection)?,
+                &sealed,
+                &host.host_key,
+                host.enabled,
+            ),
+        )
+        .map_err(sqlite_error)?;
+    }
+    Ok(())
+}
+
 /// The current time in UTC as `YYYY-MM-DDTHH:MM:SSZ`.
-fn now_rfc3339() -> String {
+pub fn now_rfc3339() -> String {
     let secs = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .map(|d| d.as_secs())
@@ -124,6 +162,7 @@ mod tests {
     #[test]
     fn payloads_round_trip_and_keep_unknown_sections_out_of_the_way() {
         let payload = Payload::new(vec![ExportedHost {
+            id: None,
             name: "prod".into(),
             connection: HostConnection::Tcp {
                 address: "h:2375".into(),

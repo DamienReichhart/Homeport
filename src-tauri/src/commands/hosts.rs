@@ -6,6 +6,7 @@ use tauri::State;
 
 use homeport_hosts::{
     detect::{self, DetectedEngine},
+    events::{self, EventCursor},
     import::{ImportChoice, ImportDraft, ImportOutcome},
     registry::EngineEvent,
     service::{BundleChoice, BundleHost, ExportOutcome, HostInput, HostView, SshSetup},
@@ -86,10 +87,28 @@ pub fn hosts_ssh_setup(state: State<'_, AppState>, id: String) -> AppResult<SshS
     state.hosts.ssh_setup(&id)
 }
 
+/// Up to `limit` (1,000 by default) of a Host's kept Engine events, the
+/// latest, or the latest before `before`; oldest first.
 #[tauri::command]
 #[specta::specta]
-pub fn hosts_events(state: State<'_, AppState>, id: String) -> Vec<EngineEvent> {
-    state.hosts.registry.events(&id)
+pub async fn hosts_events(
+    state: State<'_, AppState>,
+    id: String,
+    limit: Option<u32>,
+    before: Option<EventCursor>,
+) -> AppResult<Vec<EngineEvent>> {
+    // Events from the last second may still be waiting to be written.
+    state.hosts.events.flush().await;
+    let limit = limit.unwrap_or(events::PAGE).clamp(1, events::CAP_PER_HOST);
+    state.hosts.events.page(&id, limit, before.as_ref())
+}
+
+/// Forgets a Host's kept Engine events.
+#[tauri::command]
+#[specta::specta]
+pub async fn hosts_events_clear(state: State<'_, AppState>, id: String) -> AppResult<()> {
+    state.hosts.events.flush().await;
+    state.hosts.events.clear(&id)
 }
 
 /// The servers `~/.ssh/config` defines, as drafts of Hosts.

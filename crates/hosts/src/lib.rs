@@ -10,6 +10,7 @@
 
 pub mod bundle;
 pub mod detect;
+pub mod events;
 pub mod import;
 pub mod messages;
 pub mod registry;

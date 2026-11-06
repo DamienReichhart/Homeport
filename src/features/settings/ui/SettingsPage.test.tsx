@@ -11,12 +11,16 @@ describe('settings licenses', () => {
     mockCommands({
       ...baseCommands,
       get_app_info: appInfo,
-      get_licenses: () => ({ app: 'MIT License', third_party: 'serde 1.0.0 (crate)' }),
+      get_licenses: () => ({
+        app: 'GNU AFFERO GENERAL PUBLIC LICENSE',
+        third_party: 'serde 1.0.0 (crate)',
+      }),
     });
     const user = userEvent.setup();
     renderApp('/settings');
     await user.click(await screen.findByRole('button', { name: 'Licenses' }));
-    expect(await screen.findByText('MIT License')).toBeInTheDocument();
+    expect(await screen.findByText('GNU AFFERO GENERAL PUBLIC LICENSE')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Source of v0.2.0' })).toBeInTheDocument();
     await user.click(screen.getByRole('tab', { name: 'Third-party software' }));
     expect(await screen.findByText('serde 1.0.0 (crate)')).toBeInTheDocument();
   });
@@ -25,7 +29,7 @@ describe('settings licenses', () => {
     mockCommands({
       ...baseCommands,
       get_app_info: appInfo,
-      get_licenses: () => ({ app: 'MIT License', third_party: null }),
+      get_licenses: () => ({ app: 'GNU AFFERO GENERAL PUBLIC LICENSE', third_party: null }),
     });
     const user = userEvent.setup();
     renderApp('/settings');
@@ -107,5 +111,29 @@ describe('settings diagnostics', () => {
     await user.click(screen.getByRole('link', { name: 'Overview' }));
     await user.click(screen.getByRole('link', { name: 'Settings' }));
     expect(await screen.findByText('docker compose 2.40.0')).toBeInTheDocument();
+  });
+});
+
+describe('settings data', () => {
+  it('keeps Engine events for the days chosen, within a year', async () => {
+    const saved: unknown[] = [];
+    mockCommands({
+      ...baseCommands,
+      get_app_info: appInfo,
+      registries_list: () => [],
+      repositories_list: () => [],
+      update_settings: ({ settings }) => {
+        saved.push(settings);
+        return settings;
+      },
+    });
+    const user = userEvent.setup();
+    renderApp('/settings');
+    const days = await screen.findByLabelText('Keep Engine events for');
+    expect(days).toHaveValue(30);
+    await user.clear(days);
+    await user.type(days, '900{Enter}');
+    expect(days).toHaveValue(365);
+    expect(saved).toEqual([expect.objectContaining({ keepEventsDays: 365 })]);
   });
 });

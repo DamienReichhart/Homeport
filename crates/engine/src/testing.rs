@@ -12,8 +12,32 @@ use futures_util::TryStreamExt;
 
 pub const IMAGE: &str = "alpine:3.22";
 
+/// Held by every test that creates helper containers: one of them removes
+/// this computer's leftovers, which would end another test's helper.
+pub static HELPERS: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+
 pub fn docker() -> Docker {
     Docker::connect_with_local_defaults().expect("local Engine socket")
+}
+
+/// A client of the local Engine speaking API `major.minor`, to see how an
+/// older Engine (or Podman) answers.
+pub fn docker_at_api(major: usize, minor: usize) -> Docker {
+    let version = bollard::ClientVersion {
+        major_version: major,
+        minor_version: minor,
+    };
+    Docker::connect_with_local(&local_address(), 120, &version).expect("local Engine socket")
+}
+
+fn local_address() -> String {
+    std::env::var("DOCKER_HOST").unwrap_or_else(|_| {
+        if cfg!(windows) {
+            "npipe:////./pipe/docker_engine".into()
+        } else {
+            "unix:///var/run/docker.sock".into()
+        }
+    })
 }
 
 /// A client for tests that must fail before reaching an Engine: nothing
@@ -69,6 +93,135 @@ pub async fn container(docker: &Docker, name: &str, cmd: &[&str]) -> Guard {
     Guard {
         docker: docker.clone(),
         id: created.id,
+    }
+}
+
+/// Runs `sh -c script` in a throwaway container with `volume` mounted at
+/// `/data`, waits for it to exit, and removes it.
+pub async fn run_with_volume(docker: &Docker, volume: &str, script: &str) {
+    output_with_volume(docker, volume, script).await;
+}
+
+/// [`run_with_volume`], returning what the script wrote to stdout.
+pub async fn output_with_volume(docker: &Docker, volume: &str, script: &str) -> String {
+    use bollard::query_parameters::{LogsOptionsBuilder, WaitContainerOptions};
+
+    let guard = container_with_volume_running(docker, volume, &["sh", "-c", script]).await;
+    docker
+        .wait_container(&guard.id, None::<WaitContainerOptions>)
+        .try_collect::<Vec<_>>()
+        .await
+        .expect("test script exits with 0");
+    docker
+        .logs(
+            &guard.id,
+            Some(LogsOptionsBuilder::default().stdout(true).build()),
+        )
+        .try_collect::<Vec<_>>()
+        .await
+        .expect("test script output")
+        .into_iter()
+        .map(|line| String::from_utf8_lossy(&line.into_bytes()).into_owned())
+        .collect()
+}
+
+/// A stopped container mounting `volume` at `/data`, removed with the guard.
+pub async fn container_with_volume(docker: &Docker, volume: &str) -> Guard {
+    create_with_volume(docker, volume, &["sleep", "60"]).await
+}
+
+async fn container_with_volume_running(docker: &Docker, volume: &str, cmd: &[&str]) -> Guard {
+    let guard = create_with_volume(docker, volume, cmd).await;
+    docker
+        .start_container(&guard.id, None)
+        .await
+        .expect("start test container");
+    guard
+}
+
+async fn create_with_volume(docker: &Docker, volume: &str, cmd: &[&str]) -> Guard {
+    use bollard::models::HostConfig;
+
+    ensure_image(docker).await;
+    let created = docker
+        .create_container(
+            Some(
+                CreateContainerOptionsBuilder::default()
+                    .name(&unique("user"))
+                    .build(),
+            ),
+            ContainerCreateBody {
+                image: Some(IMAGE.into()),
+                cmd: Some(cmd.iter().map(|s| s.to_string()).collect()),
+                labels: Some([("homeport.test".to_string(), "1".to_string())].into()),
+                host_config: Some(HostConfig {
+                    binds: Some(vec![format!("{volume}:/data")]),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+        )
+        .await
+        .expect("create test container");
+    Guard {
+        docker: docker.clone(),
+        id: created.id,
+    }
+}
+
+/// A volume holding `etc/note.txt` ("hello\n", owned by 1234:5678, mode
+/// 640), removed with the guard.
+pub async fn filled_volume(docker: &Docker) -> VolumeGuard {
+    let name = unique("vol");
+    docker
+        .create_volume(bollard::models::VolumeCreateRequest {
+            name: Some(name.clone()),
+            ..Default::default()
+        })
+        .await
+        .expect("create test volume");
+    let guard = VolumeGuard {
+        docker: docker.clone(),
+        name,
+    };
+    run_with_volume(
+        docker,
+        &guard.name,
+        "mkdir /data/etc && echo hello > /data/etc/note.txt \
+         && chown 1234:5678 /data/etc/note.txt && chmod 640 /data/etc/note.txt",
+    )
+    .await;
+    guard
+}
+
+/// Removes the volume `name` when dropped, with whatever is in it.
+pub struct VolumeGuard {
+    pub docker: Docker,
+    pub name: String,
+}
+
+impl Drop for VolumeGuard {
+    fn drop(&mut self) {
+        let docker = self.docker.clone();
+        let name = self.name.clone();
+        std::thread::spawn(move || {
+            tokio::runtime::Runtime::new()
+                .unwrap()
+                .block_on(async move {
+                    let _ = docker
+                        .remove_volume(
+                            &name,
+                            Some(
+                                bollard::query_parameters::RemoveVolumeOptionsBuilder::default()
+                                    .force(true)
+                                    .build(),
+                            ),
+                        )
+                        .await;
+                })
+        })
+        .join()
+        .ok();
     }
 }
 

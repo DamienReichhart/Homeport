@@ -21,6 +21,7 @@ pub use self::{
 
 use self::credentials::{key_comment, prepare, Current};
 use crate::{
+    events::EventStore,
     registry::{HostRegistry, HostStatus},
     store::{HostDraft, HostStore},
     BastionAuth, Host, HostConnection, HostSecrets, SshAuth,
@@ -62,9 +63,27 @@ pub struct SshSetup {
 pub struct HostService {
     pub store: Arc<HostStore>,
     pub registry: Arc<HostRegistry>,
+    /// Each Host's Engine events, kept across restarts.
+    pub events: Arc<EventStore>,
 }
 
 impl HostService {
+    /// A service over `store` with nothing to report to, for tests.
+    #[cfg(test)]
+    pub(crate) fn for_tests(db: Arc<homeport_storage::Db>, store: Arc<HostStore>) -> Self {
+        struct Silent;
+        impl crate::registry::Notifier for Silent {
+            fn host_status(&self, _: &str, _: &HostStatus) {}
+            fn engine_event(&self, _: &str, _: &crate::registry::EngineEvent) {}
+        }
+        let events = EventStore::new(db);
+        Self {
+            registry: HostRegistry::new(store.clone(), events.clone(), Arc::new(Silent)),
+            store,
+            events,
+        }
+    }
+
     pub fn list(&self) -> AppResult<Vec<HostView>> {
         Ok(self
             .store
@@ -246,23 +265,13 @@ mod tests {
     use super::*;
     use homeport_core::error::ErrorCode;
 
-    use crate::registry::{EngineEvent, Notifier};
-
-    struct Silent;
-    impl Notifier for Silent {
-        fn host_status(&self, _: &str, _: &HostStatus) {}
-        fn engine_event(&self, _: &str, _: &EngineEvent) {}
-    }
-
     fn service() -> HostService {
+        let db = Arc::new(Db::open_in_memory().unwrap());
         let store = Arc::new(HostStore::new(
-            Arc::new(Db::open_in_memory().unwrap()),
+            db.clone(),
             Arc::new(SecretBox::from_key(&[5; 32])),
         ));
-        HostService {
-            registry: HostRegistry::new(store.clone(), Arc::new(Silent)),
-            store,
-        }
+        HostService::for_tests(db, store)
     }
 
     fn ssh(auth: SshAuth, credentials: Option<CredentialsInput>) -> HostInput {

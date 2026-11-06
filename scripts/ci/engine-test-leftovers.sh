@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Lists the homeport-test-* resources the Engine integration tests left behind,
+# Lists the homeport-test-* resources and homeport-helper-* containers the Engine integration tests left behind,
 # removes them, and fails if there were any: every test must clean up after itself.
 set -euo pipefail
 
-containers=$(docker ps --all --quiet --filter name=homeport-test-)
+# Helper containers (ADR 0015) too: a test that opens a volume must remove its helper.
+containers=$(docker ps --all --quiet --filter name=homeport-test- --filter name=homeport-helper-)
 # A name, or a digest reference (repo@sha256:…) when the Engine lists the tag as <none>.
 images=$(docker image ls --digests --format '{{.Repository}} {{.Tag}} {{.Digest}}' |
   awk '$1 ~ /(^|\/)homeport-test-/ { print ($2 == "<none>" ? $1 "@" $3 : $1 ":" $2) }' || true)

@@ -2,7 +2,7 @@
 
 use std::{sync::Weak, time::Duration};
 
-use bollard::{query_parameters::EventsOptions, Docker};
+use bollard::{query_parameters::EventsOptionsBuilder, Docker};
 use futures_util::StreamExt;
 
 use homeport_core::error::{AppError, ErrorCode};
@@ -11,7 +11,11 @@ use crate::messages as msg;
 use homeport_transport::{self as transport, ConnectError};
 
 use super::{EngineEvent, HostRegistry, HostStatus};
-use crate::HostId;
+use crate::{events, HostId};
+
+/// How far back a Host without any kept event asks its Engine for events
+/// on connecting. The Engine only holds its latest few hundred anyway.
+const FIRST_LOOK_BACK_NANOS: i64 = 24 * 3600 * 1_000_000_000;
 
 const PING_INTERVAL: Duration = Duration::from_secs(15);
 const MAX_BACKOFF_SECS: u32 = 60;
@@ -105,10 +109,23 @@ async fn describe(docker: &Docker) -> Result<HostStatus, AppError> {
     })
 }
 
-/// Forwards Engine events until the stream breaks or a ping fails.
+/// Forwards Engine events until the stream breaks or a ping fails. Asks
+/// first for those since the last one kept, to fill the gap while Homeport
+/// was closed or disconnected; repeats of kept ones are dropped on writing.
 async fn watch(registry: &Weak<HostRegistry>, id: &str, docker: Docker) {
+    let since = registry.upgrade().map(|reg| {
+        let last = reg.events.last_time_nano(id).unwrap_or_else(|e| {
+            log::warn!("couldn't read the last kept event of {id}: {e}");
+            None
+        });
+        events::since(last.unwrap_or_else(|| events::now_nano() - FIRST_LOOK_BACK_NANOS))
+    });
     let events = async {
-        let mut stream = docker.events(None::<EventsOptions>);
+        let mut options = EventsOptionsBuilder::default();
+        if let Some(since) = &since {
+            options = options.since(since);
+        }
+        let mut stream = docker.events(Some(options.build()));
         while let Some(Ok(msg)) = stream.next().await {
             let Some(reg) = registry.upgrade() else {
                 return;
@@ -118,6 +135,9 @@ async fn watch(registry: &Weak<HostRegistry>, id: &str, docker: Docker) {
                 id,
                 EngineEvent {
                     time: msg.time.unwrap_or_default(),
+                    time_nano: msg
+                        .time_nano
+                        .unwrap_or_else(|| msg.time.unwrap_or_default() * 1_000_000_000),
                     kind: msg.typ.map(|t| t.to_string()).unwrap_or_default(),
                     action: msg.action.unwrap_or_default(),
                     actor_id: actor.id.unwrap_or_default(),

@@ -66,7 +66,23 @@ export const commands = {
 	hostsReconnect: (id: string) => __TAURI_INVOKE<HostView>("hosts_reconnect", { id }),
 	hostsRegenerateKey: (id: string) => __TAURI_INVOKE<HostView>("hosts_regenerate_key", { id }),
 	hostsSshSetup: (id: string) => __TAURI_INVOKE<SshSetup>("hosts_ssh_setup", { id }),
-	hostsEvents: (id: string) => __TAURI_INVOKE<EngineEvent[]>("hosts_events", { id }),
+	/**
+	 *  Up to `limit` (1,000 by default) of a Host's kept Engine events, the
+	 *  latest, or the latest before `before`; oldest first.
+	 */
+	hostsEvents: (id: string, limit: number | null, before: EventCursor | null) => __TAURI_INVOKE<EngineEvent[]>("hosts_events", { id, limit, before }),
+	/**  Forgets a Host's kept Engine events. */
+	hostsEventsClear: (id: string) => __TAURI_INVOKE<null>("hosts_events_clear", { id }),
+	/**  Backs up everything Homeport holds to `path`, sealed with `passphrase`. */
+	dataBackup: (path: string, passphrase: string) => __TAURI_INVOKE<BackupOutcome>("data_backup", { path, passphrase }),
+	/**  What the backup at `path` holds, for the restore's confirmation. */
+	dataRestorePreview: (path: string, passphrase: string) => __TAURI_INVOKE<BackupContents>("data_restore_preview", { path, passphrase }),
+	/**
+	 *  Replaces everything Homeport holds with the backup at `path`, after
+	 *  copying the database to `homeport.db.before-restore-<time>` next to it,
+	 *  then reconnects to the restored Hosts.
+	 */
+	dataRestore: (path: string, passphrase: string) => __TAURI_INVOKE<BackupContents>("data_restore", { path, passphrase }),
 	/**  The servers `~/.ssh/config` defines, as drafts of Hosts. */
 	hostsSshConfigPreview: () => __TAURI_INVOKE<ImportDraft[]>("hosts_ssh_config_preview"),
 	hostsSshConfigImport: (choices: ImportChoice[]) => __TAURI_INVOKE<ImportOutcome>("hosts_ssh_config_import", { choices }),
@@ -134,10 +150,57 @@ export const commands = {
 	imagesRemove: (hostId: string, id: string, force: boolean) => __TAURI_INVOKE<string[]>("images_remove", { hostId, id, force }),
 	imagesPrune: (hostId: string, all: boolean) => __TAURI_INVOKE<PruneReport>("images_prune", { hostId, all }),
 	volumesList: (hostId: string) => __TAURI_INVOKE<VolumeView[]>("volumes_list", { hostId }),
+	/**
+	 *  Each volume's size in bytes, `null` when its driver doesn't report one.
+	 *  Apart from the list, because the Engine walks every volume to answer.
+	 */
+	volumesSizes: (hostId: string) => __TAURI_INVOKE<{ [key in string]: number | null }>("volumes_sizes", { hostId }),
 	volumesInspect: (hostId: string, name: string) => __TAURI_INVOKE<Value>("volumes_inspect", { hostId, name }),
 	volumesCreate: (hostId: string, input: VolumeInput) => __TAURI_INVOKE<string>("volumes_create", { hostId, input }),
 	volumesRemove: (hostId: string, name: string, force: boolean) => __TAURI_INVOKE<null>("volumes_remove", { hostId, name, force }),
 	volumesPrune: (hostId: string, all: boolean) => __TAURI_INVOKE<PruneReport>("volumes_prune", { hostId, all }),
+	/**
+	 *  The image of the helper container that opens volumes (ADR 0015), and
+	 *  whether the Host has it.
+	 */
+	volumesHelperImage: (hostId: string) => __TAURI_INVOKE<HelperImage>("volumes_helper_image", { hostId }),
+	/**
+	 *  Pulls the helper's image onto a Host, once the user agreed, streaming
+	 *  progress. A failure says how to get the image there by hand.
+	 */
+	volumesHelperPullSubscribe: (hostId: string, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("volumes_helper_pull_subscribe", { hostId, onEvent }),
+	/**
+	 *  Opens `volume` read-only in a helper; returns the session's id. With
+	 *  `pulled_image`, ending the session also removes the image Homeport pulled.
+	 */
+	volumesBrowseStart: (hostId: string, volume: string, pulledImage: boolean) => __TAURI_INVOKE<string>("volumes_browse_start", { hostId, volume, pulledImage }),
+	/**  Lists a folder of a browsed volume; paths are relative to the volume. */
+	volumesBrowseList: (hostId: string, session: string, path: string) => __TAURI_INVOKE<FileEntry[]>("volumes_browse_list", { hostId, session, path }),
+	/**  Saves a file, or a folder as a `.tar`, of a browsed volume to `destination`. */
+	volumesBrowseDownload: (hostId: string, session: string, path: string, destination: string) => __TAURI_INVOKE<boolean>("volumes_browse_download", { hostId, session, path, destination }),
+	/**  Ends a browse session, removing its helper. */
+	volumesBrowseEnd: (session: string) => __TAURI_INVOKE<null>("volumes_browse_end", { session }),
+	/**
+	 *  The running containers mounting a volume: a backup of it may be
+	 *  inconsistent, and a restore into it is refused until they stop.
+	 */
+	volumesRunningUsers: (hostId: string, volume: string) => __TAURI_INVOKE<string[]>("volumes_running_users", { hostId, volume }),
+	/**
+	 *  Backs a volume up to a `.tar` at `destination` on this machine,
+	 *  streaming progress. With `pulled_image`, the helper's image is removed
+	 *  afterwards if nothing else uses it.
+	 */
+	volumesBackupSubscribe: (hostId: string, volume: string, destination: string, pulledImage: boolean, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("volumes_backup_subscribe", { hostId, volume, destination, pulledImage, onEvent }),
+	/**
+	 *  Restores a volume, new or existing, from a `.tar` at `source` on this
+	 *  machine, streaming progress.
+	 */
+	volumesRestoreSubscribe: (hostId: string, source: string, spec: RestoreSpec, pulledImage: boolean, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("volumes_restore_subscribe", { hostId, source, spec, pulledImage, onEvent }),
+	/**
+	 *  Copies a volume into a new one on the same Host; returns its name. With
+	 *  `pulled_image`, the helper's image is removed afterwards if unused.
+	 */
+	volumesClone: (hostId: string, source: string, target: string, pulledImage: boolean) => __TAURI_INVOKE<string>("volumes_clone", { hostId, source, target, pulledImage }),
 	networksList: (hostId: string) => __TAURI_INVOKE<NetworkView[]>("networks_list", { hostId }),
 	networksInspect: (hostId: string, id: string) => __TAURI_INVOKE<Value>("networks_inspect", { hostId, id }),
 	networksCreate: (hostId: string, input: NetworkInput) => __TAURI_INVOKE<string>("networks_create", { hostId, input }),
@@ -313,6 +376,30 @@ export type AvailableUpdate = {
 	notes: string | null,
 	/**  RFC 3339 publication date. */
 	date: string | null,
+};
+
+/**  What a backup holds, as the restore's confirmation lists it. */
+export type BackupContents = {
+	/**  When it was written, in UTC (RFC 3339). */
+	createdAt: string,
+	/**  The Homeport that wrote it. */
+	appVersion: string,
+	/**  Its Hosts' names. */
+	hosts: string[],
+	stacks: number,
+	registries: number,
+	repositories: number,
+	settings: boolean,
+};
+
+/**  What a backup wrote. */
+export type BackupOutcome = {
+	contents: BackupContents,
+	/**
+	 *  What was written without its secret, which couldn't be opened:
+	 *  Hosts, Stacks, registries and repositories, by name.
+	 */
+	withoutSecrets: string[],
 };
 
 /**  An SSH server an SSH Host is reached through (`ProxyJump`, ADR 0012). */
@@ -616,6 +703,8 @@ export type DiskUsage = {
 export type EngineEvent = {
 	/**  Unix time in seconds. */
 	time: number,
+	/**  Unix time in nanoseconds, which tells apart events of the same second. */
+	timeNano: number,
 	/**  `container`, `image`, `volume`, `network`, … */
 	kind: string,
 	action: string,
@@ -684,7 +773,25 @@ export type ErrorCode =
 /**  `git` failed in a way Homeport has no better words for. */
 "git_failed" | 
 /**  A Synced Stack's compose file, branch or tag isn't in its repository. */
-"synced_compose_file_missing" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
+"synced_compose_file_missing" | 
+/**  The helper's image isn't on the Host and couldn't be pulled. */
+"helper_image_unavailable" | 
+/**  A file to restore a volume from that isn't a tar archive. */
+"not_a_tar_archive" | 
+/**  Restoring into a volume that holds files, without replacing them. */
+"volume_not_empty" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
+
+/**
+ *  Where a page of older events starts: the oldest event already listed.
+ *  Events are ordered by time, then by these fields, which together tell
+ *  any two events of a Host apart.
+ */
+export type EventCursor = {
+	timeNano: number,
+	kind: string,
+	action: string,
+	actorId: string,
+};
 
 export type ExecEvent = { type: "output"; data: string } | 
 /**  `error` explains an exit that means the command couldn't run. */
@@ -808,6 +915,14 @@ export type HealthcheckSpec = {
 	startPeriodS: number | null,
 	/**  Turns off the image's own healthcheck (`--no-healthcheck`). */
 	disabled: boolean,
+};
+
+/**  The helper's image, and whether the Host has it. */
+export type HelperImage = {
+	image: string,
+	present: boolean,
+	/**  About how much a pull downloads, in bytes. */
+	size: number,
 };
 
 /**  What the user can do about a failure. */
@@ -1244,6 +1359,18 @@ export type RepositoryDraft = {
 
 export type RestartPolicy = "no" | "always" | "unless-stopped" | "on-failure";
 
+/**  Where a restore writes. */
+export type RestoreSpec = {
+	volume: string,
+	/**  Create `volume` first; it must not exist. */
+	create: boolean,
+	/**
+	 *  Empty an existing volume that holds files before extracting.
+	 *  Without it, such a volume is refused with `volume_not_empty`.
+	 */
+	replace: boolean,
+};
+
 export type RunSpec = {
 	image: string,
 	name: string | null,
@@ -1313,6 +1440,11 @@ export type Settings = {
 	 *  runs; at least 1.
 	 */
 	syncIntervalMinutes?: number,
+	/**
+	 *  Days each Host's Engine events are kept for the Events page, from 1
+	 *  to 365.
+	 */
+	keepEventsDays?: number,
 };
 
 /**  The kinds of source, for the rules a definition is checked against. */

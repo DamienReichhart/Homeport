@@ -782,6 +782,7 @@ const eventSpecs: [number, string, string, string][] = [
 
 export const events: EngineEvent[] = eventSpecs.map(([ago, kind, action, name]) => ({
   time: NOW - ago,
+  timeNano: (NOW - ago) * 1e9,
   kind,
   action,
   actorId: hexId(`actor/${name}`),
