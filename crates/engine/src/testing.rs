@@ -16,6 +16,26 @@ pub fn docker() -> Docker {
     Docker::connect_with_local_defaults().expect("local Engine socket")
 }
 
+/// A client of the local Engine speaking API `major.minor`, to see how an
+/// older Engine (or Podman) answers.
+pub fn docker_at_api(major: usize, minor: usize) -> Docker {
+    let version = bollard::ClientVersion {
+        major_version: major,
+        minor_version: minor,
+    };
+    Docker::connect_with_local(&local_address(), 120, &version).expect("local Engine socket")
+}
+
+fn local_address() -> String {
+    std::env::var("DOCKER_HOST").unwrap_or_else(|_| {
+        if cfg!(windows) {
+            "npipe:////./pipe/docker_engine".into()
+        } else {
+            "unix:///var/run/docker.sock".into()
+        }
+    })
+}
+
 /// A client for tests that must fail before reaching an Engine: nothing
 /// listens on the discard port, so a request that slips through fails too.
 /// Unlike [`docker`], it works on machines without an Engine (CI on macOS
@@ -70,6 +90,47 @@ pub async fn container(docker: &Docker, name: &str, cmd: &[&str]) -> Guard {
         docker: docker.clone(),
         id: created.id,
     }
+}
+
+/// Runs `sh -c script` in a throwaway container with `volume` mounted at
+/// `/data`, waits for it to exit, and removes it.
+pub async fn run_with_volume(docker: &Docker, volume: &str, script: &str) {
+    use bollard::{models::HostConfig, query_parameters::WaitContainerOptions};
+
+    ensure_image(docker).await;
+    let created = docker
+        .create_container(
+            Some(
+                CreateContainerOptionsBuilder::default()
+                    .name(&unique("writer"))
+                    .build(),
+            ),
+            ContainerCreateBody {
+                image: Some(IMAGE.into()),
+                cmd: Some(vec!["sh".into(), "-c".into(), script.into()]),
+                labels: Some([("homeport.test".to_string(), "1".to_string())].into()),
+                host_config: Some(HostConfig {
+                    binds: Some(vec![format!("{volume}:/data")]),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+        )
+        .await
+        .expect("create test writer");
+    let guard = Guard {
+        docker: docker.clone(),
+        id: created.id,
+    };
+    docker
+        .start_container(&guard.id, None)
+        .await
+        .expect("start test writer");
+    docker
+        .wait_container(&guard.id, None::<WaitContainerOptions>)
+        .try_collect::<Vec<_>>()
+        .await
+        .expect("test writer exits with 0");
 }
 
 pub struct Guard {

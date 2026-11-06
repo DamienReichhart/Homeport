@@ -17,7 +17,7 @@ export function staleKeys(hostId: string, kind: string): QueryKey[] {
     case 'image':
       return [hostKeys.images(hostId), hostKeys.system(hostId)];
     case 'volume':
-      return [hostKeys.volumes(hostId), hostKeys.system(hostId)];
+      return [hostKeys.volumes(hostId), hostKeys.volumeSizes(hostId), hostKeys.system(hostId)];
     case 'network':
       return [hostKeys.networks(hostId)];
     default:

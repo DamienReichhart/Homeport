@@ -15,15 +15,22 @@ The **Volumes** page lists the selected Host's volumes and how many are unused.
   alt="The Volumes page, showing each volume's Stack, driver and the containers that use it."
 />
 
-| Column      | Shows                                               |
-| ----------- | --------------------------------------------------- |
-| **Name**    | The volume's name; a long ID for anonymous volumes. |
-| **Stack**   | The Stack that created it, if any.                  |
-| **Driver**  | Usually `local`.                                    |
-| **Used by** | The containers that mount it, or **Unused**.        |
-| **Created** | When it was created.                                |
+| Column      | Shows                                                        |
+| ----------- | ------------------------------------------------------------ |
+| **Name**    | The volume's name; a long ID for anonymous volumes.          |
+| **Stack**   | The Stack that created it, if any.                           |
+| **Driver**  | Usually `local`.                                             |
+| **Size**    | How much disk its data takes, as `docker system df -v` says. |
+| **Used by** | The containers that mount it, or **Unused**.                 |
+| **Created** | When it was created.                                         |
 
-A volume counts as used when any container mounts it, running or stopped. Select a volume to see which containers use it and its full details, including where its data lives on the Host (`Mountpoint`).
+A volume counts as used when any container mounts it, running or stopped. Select a volume to see its size, which containers use it and its full details, including where its data lives on the Host (`Mountpoint`).
+
+### Sizes
+
+The Engine measures every volume to give their sizes, which can take a few seconds on a Host with a lot of data, so the list appears at once and the **Size** column fills in after. Sort by **Size** to find the volume that fills a disk. Sizes are measured again when a volume is created or removed, and when you choose **Refresh sizes** — not every time a container writes, so a size can be a little behind.
+
+Only volumes of the `local` driver have a size; other drivers (NFS, cloud storage plugins) show **—**.
 
 ### Creating a volume
 

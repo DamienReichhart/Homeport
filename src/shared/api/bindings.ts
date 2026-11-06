@@ -134,6 +134,11 @@ export const commands = {
 	imagesRemove: (hostId: string, id: string, force: boolean) => __TAURI_INVOKE<string[]>("images_remove", { hostId, id, force }),
 	imagesPrune: (hostId: string, all: boolean) => __TAURI_INVOKE<PruneReport>("images_prune", { hostId, all }),
 	volumesList: (hostId: string) => __TAURI_INVOKE<VolumeView[]>("volumes_list", { hostId }),
+	/**
+	 *  Each volume's size in bytes, `null` when its driver doesn't report one.
+	 *  Apart from the list, because the Engine walks every volume to answer.
+	 */
+	volumesSizes: (hostId: string) => __TAURI_INVOKE<{ [key in string]: number | null }>("volumes_sizes", { hostId }),
 	volumesInspect: (hostId: string, name: string) => __TAURI_INVOKE<Value>("volumes_inspect", { hostId, name }),
 	volumesCreate: (hostId: string, input: VolumeInput) => __TAURI_INVOKE<string>("volumes_create", { hostId, input }),
 	volumesRemove: (hostId: string, name: string, force: boolean) => __TAURI_INVOKE<null>("volumes_remove", { hostId, name, force }),

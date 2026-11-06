@@ -113,6 +113,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             images::images_remove,
             images::images_prune,
             volumes::volumes_list,
+            volumes::volumes_sizes,
             volumes::volumes_inspect,
             volumes::volumes_create,
             volumes::volumes_remove,

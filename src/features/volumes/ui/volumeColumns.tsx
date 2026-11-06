@@ -1,13 +1,16 @@
 import { InfoIcon, Trash2Icon } from 'lucide-react';
 import type { VolumeView } from '@/shared/api';
 import { Badge, Button, type ColumnDef } from '@/shared/ui';
+import { VolumeSize, type VolumeSizes } from './VolumeSize';
 import { t } from '@/shared/i18n';
 
 /** The volumes table's columns; the last one holds the row's actions. */
 export function volumeColumns({
+  sizes,
   onInspect,
   onRemove,
 }: {
+  sizes: VolumeSizes;
   onInspect: (volume: VolumeView) => void;
   onRemove: (volume: VolumeView) => void;
 }): ColumnDef<VolumeView, unknown>[] {
@@ -26,6 +29,13 @@ export function volumeColumns({
         row.original.stack && <Badge variant="outline">{row.original.stack}</Badge>,
     },
     { id: 'driver', header: t('volumes.column.driver'), accessorFn: (v) => v.driver },
+    {
+      id: 'size',
+      header: t('volumes.column.size'),
+      // Unknown sizes sort below every known one.
+      accessorFn: (v) => sizes?.[v.name] ?? -1,
+      cell: ({ row }) => <VolumeSize sizes={sizes} name={row.original.name} />,
+    },
     {
       id: 'usedBy',
       header: t('volumes.column.usedBy'),

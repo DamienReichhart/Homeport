@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { BrushCleaningIcon, HardDriveIcon, PlusIcon } from 'lucide-react';
+import { BrushCleaningIcon, HardDriveIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
 import { useState } from 'react';
 import { HostGate, resourceQueries } from '@/core/host';
 import type { VolumeView } from '@/shared/api';
@@ -26,6 +26,7 @@ import { t } from '@/shared/i18n';
 
 function VolumesList({ hostId }: { hostId: string }) {
   const volumes = useQuery(resourceQueries.volumes(hostId));
+  const sizes = useQuery(resourceQueries.volumeSizes(hostId));
   const removeVolume = useRemoveVolume(hostId);
   const pruneVolumes = usePruneVolumes(hostId);
   const [dialog, confirm] = useConfirmedAction();
@@ -51,6 +52,14 @@ function VolumesList({ hostId }: { hostId: string }) {
         })}
         actions={
           <>
+            <Button
+              variant="outline"
+              disabled={sizes.isFetching}
+              onClick={() => void sizes.refetch()}
+            >
+              <RefreshCwIcon className={sizes.isFetching ? 'animate-spin' : undefined} />{' '}
+              {t('volumes.size.refresh')}
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
@@ -83,7 +92,12 @@ function VolumesList({ hostId }: { hostId: string }) {
         />
       ) : (
         <DataTable
-          columns={volumeColumns({ onInspect: setInspecting, onRemove: remove })}
+          columns={volumeColumns({
+            // A failed measurement shows every size as unknown; the list still works.
+            sizes: sizes.error ? {} : sizes.data,
+            onInspect: setInspecting,
+            onRemove: remove,
+          })}
           data={volumes.data}
           getRowId={(v) => v.name}
           filter={query}
@@ -95,6 +109,7 @@ function VolumesList({ hostId }: { hostId: string }) {
         <InspectVolumeDialog
           hostId={hostId}
           volume={inspecting}
+          sizes={sizes.error ? {} : sizes.data}
           onClose={() => setInspecting(null)}
         />
       )}

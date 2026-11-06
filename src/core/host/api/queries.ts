@@ -26,6 +26,17 @@ export const resourceQueries = {
       queryKey: hostKeys.volumes(hostId),
       queryFn: () => commands.volumesList(hostId),
     }),
+  /**
+   * Each volume's size, `null` when its driver doesn't report one. Slow on a
+   * large Host, so it's apart from the list and kept a minute; volume events
+   * and the Volumes page's refresh ask again.
+   */
+  volumeSizes: (hostId: string) =>
+    queryOptions({
+      queryKey: hostKeys.volumeSizes(hostId),
+      queryFn: () => commands.volumesSizes(hostId),
+      staleTime: 60_000,
+    }),
   networks: (hostId: string) =>
     queryOptions({
       queryKey: hostKeys.networks(hostId),

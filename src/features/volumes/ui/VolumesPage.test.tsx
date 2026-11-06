@@ -4,7 +4,48 @@ import { baseCommands } from '@/test/fixtures';
 import { mockCommands } from '@/test/ipc';
 import { renderApp } from '@/test/render';
 
+function volume(name: string, driver = 'local') {
+  const createdAt = '2026-01-02T03:04:05Z';
+  return { name, driver, mountpoint: '/x', createdAt, labels: {}, stack: null, usedBy: [] };
+}
+
 describe('volumes page', () => {
+  it('fills in sizes after the list, shows unknown ones as —, and sorts by size', async () => {
+    let measure: (sizes: Record<string, number | null>) => void = () => undefined;
+    let asked = 0;
+    mockCommands({
+      ...baseCommands,
+      volumes_list: () => [volume('db'), volume('cache'), volume('remote', 'rclone')],
+      volumes_sizes: () => {
+        asked += 1;
+        return new Promise((resolve) => (measure = resolve));
+      },
+    });
+    const user = userEvent.setup();
+    renderApp('/volumes');
+
+    // The list doesn't wait for the sizes.
+    expect(await screen.findByText('remote')).toBeInTheDocument();
+    expect(screen.getAllByLabelText('Measuring')).toHaveLength(3);
+
+    measure({ db: 3_000_000, cache: 2048, remote: null });
+    expect(await screen.findByText('2.9 MB')).toBeInTheDocument();
+    expect(screen.getByText('2.0 KB')).toBeInTheDocument();
+    expect(screen.getByText('—')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('columnheader', { name: 'Size' }));
+    const names = () =>
+      screen
+        .getAllByRole('row')
+        .slice(1)
+        .map((r) => within(r).getAllByRole('cell')[0]?.textContent);
+    // Largest first, unknown last.
+    await waitFor(() => expect(names()).toEqual(['db', 'cache', 'remote']));
+
+    await user.click(screen.getByRole('button', { name: 'Refresh sizes' }));
+    await waitFor(() => expect(asked).toBe(2));
+  });
+
   it('warns that deleting a volume destroys its data', async () => {
     const removed: string[] = [];
     mockCommands({

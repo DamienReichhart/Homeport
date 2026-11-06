@@ -1,5 +1,7 @@
 //! Volumes on a Host.
 
+use std::collections::HashMap;
+
 use tauri::State;
 
 use homeport_engine::{
@@ -16,6 +18,17 @@ pub async fn volumes_list(
     host_id: String,
 ) -> AppResult<Vec<VolumeView>> {
     volumes::list(&state.hosts.registry.docker(&host_id)?).await
+}
+
+/// Each volume's size in bytes, `null` when its driver doesn't report one.
+/// Apart from the list, because the Engine walks every volume to answer.
+#[tauri::command]
+#[specta::specta]
+pub async fn volumes_sizes(
+    state: State<'_, AppState>,
+    host_id: String,
+) -> AppResult<HashMap<String, Option<u64>>> {
+    volumes::sizes(&state.hosts.registry.docker(&host_id)?).await
 }
 
 #[tauri::command]

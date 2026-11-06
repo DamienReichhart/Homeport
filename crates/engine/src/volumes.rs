@@ -18,6 +18,10 @@ use crate::messages as msg;
 
 use crate::{images::PruneReport, COMPOSE_PROJECT};
 
+mod sizes;
+
+pub use sizes::sizes;
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct VolumeView {
