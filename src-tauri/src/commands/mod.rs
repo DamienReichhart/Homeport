@@ -184,6 +184,8 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             events::EngineEventReceived,
             events::SyncedUpdateAvailable,
             events::SyncedAutoDeployed,
+            events::TrayHostChosen,
+            events::TrayAddHostChosen,
         ])
 }
 

@@ -5,7 +5,7 @@
 //! frontend is granted no permission for them (`capabilities/default.json`).
 
 use tauri::{AppHandle, LogicalSize, Manager, Runtime, WebviewWindow};
-use tauri_plugin_window_state::StateFlags;
+use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 
 /// The window's label in `tauri.conf.json`.
 pub const MAIN: &str = "main";
@@ -34,6 +34,18 @@ pub fn show<R: Runtime>(app: &AppHandle<R>) {
     for result in [window.show(), window.unminimize(), window.set_focus()] {
         if let Err(e) = result {
             log::warn!("couldn't bring the window back: {e}");
+        }
+    }
+}
+
+/// Hides the main window, saving where it is first.
+pub fn hide<R: Runtime>(app: &AppHandle<R>) {
+    if let Err(e) = app.save_window_state(STATE) {
+        log::warn!("couldn't save the window's position: {e}");
+    }
+    if let Some(window) = app.get_webview_window(MAIN) {
+        if let Err(e) = window.hide() {
+            log::warn!("couldn't hide the window: {e}");
         }
     }
 }

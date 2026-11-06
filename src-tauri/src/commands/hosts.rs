@@ -2,7 +2,7 @@
 
 use std::path::PathBuf;
 
-use tauri::State;
+use tauri::{AppHandle, State};
 
 use homeport_hosts::{
     detect::{self, DetectedEngine},
@@ -35,17 +35,22 @@ pub async fn hosts_create(state: State<'_, AppState>, input: HostInput) -> AppRe
 #[tauri::command]
 #[specta::specta]
 pub async fn hosts_update(
+    app: AppHandle,
     state: State<'_, AppState>,
     id: String,
     input: HostInput,
 ) -> AppResult<HostView> {
-    state.hosts.update(&id, input)
+    let view = state.hosts.update(&id, input)?;
+    crate::app::tray::refresh(&app);
+    Ok(view)
 }
 
 #[tauri::command]
 #[specta::specta]
-pub fn hosts_delete(state: State<'_, AppState>, id: String) -> AppResult<()> {
-    state.hosts.delete(&id)
+pub fn hosts_delete(app: AppHandle, state: State<'_, AppState>, id: String) -> AppResult<()> {
+    state.hosts.delete(&id)?;
+    crate::app::tray::refresh(&app);
+    Ok(())
 }
 
 #[tauri::command]

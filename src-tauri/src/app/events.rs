@@ -44,6 +44,17 @@ pub struct SyncedAutoDeployed {
     pub error: Option<AppError>,
 }
 
+/// A Host was picked in the tray's menu: the window shows its Overview.
+#[derive(Debug, Clone, Serialize, specta::Type, tauri_specta::Event)]
+#[serde(rename_all = "camelCase")]
+pub struct TrayHostChosen {
+    pub host_id: String,
+}
+
+/// **Add host…** was picked in the tray's menu.
+#[derive(Debug, Clone, Serialize, specta::Type, tauri_specta::Event)]
+pub struct TrayAddHostChosen;
+
 /// Forwards what the host registry observes to the webview.
 pub struct TauriNotifier(pub AppHandle);
 
@@ -59,6 +70,7 @@ impl Notifier for TauriNotifier {
         if let Err(e) = event.emit(&self.0) {
             log::warn!("failed to emit host status: {e}");
         }
+        super::tray::refresh(&self.0);
     }
 
     fn engine_event(&self, host_id: &str, event: &EngineEvent) {

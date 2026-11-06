@@ -73,6 +73,9 @@ pub struct Capabilities {
     compose: ComposeSupport,
     /// Whether Synced Stacks can be cloned and fetched here.
     git: GitSupport,
+    /// Homeport has an icon in the system tray, so closing the window can
+    /// keep it running there.
+    tray: bool,
 }
 
 /// The git CLI Synced Stacks use, or why there's none.
@@ -111,7 +114,10 @@ pub enum ComposeSupport {
 
 #[tauri::command]
 #[specta::specta]
-pub async fn get_capabilities(state: State<'_, AppState>) -> Result<Capabilities, ()> {
+pub async fn get_capabilities(
+    app: AppHandle,
+    state: State<'_, AppState>,
+) -> Result<Capabilities, ()> {
     Ok(Capabilities {
         keychain: state.secrets.is_available(),
         compose: match compose::detect().await {
@@ -122,6 +128,7 @@ pub async fn get_capabilities(state: State<'_, AppState>) -> Result<Capabilities
             Ok(cli) => GitSupport::Available { cli },
             Err(problem) => GitSupport::Unavailable { problem },
         },
+        tray: crate::app::tray::is_available(&app),
     })
 }
 

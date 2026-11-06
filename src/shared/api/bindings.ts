@@ -344,6 +344,8 @@ export const events = {
 	hostStatusChanged: makeEvent<HostStatusChanged, HostStatusChanged>("host-status-changed"),
 	syncedAutoDeployed: makeEvent<SyncedAutoDeployed, SyncedAutoDeployed>("synced-auto-deployed"),
 	syncedUpdateAvailable: makeEvent<SyncedUpdateAvailable, SyncedUpdateAvailable>("synced-update-available"),
+	trayAddHostChosen: makeEvent<TrayAddHostChosen, TrayAddHostChosen>("tray-add-host-chosen"),
+	trayHostChosen: makeEvent<TrayHostChosen, TrayHostChosen>("tray-host-chosen"),
 };
 
 /* Types */
@@ -497,6 +499,11 @@ export type Capabilities = {
 	compose: ComposeSupport,
 	/**  Whether Synced Stacks can be cloned and fetched here. */
 	git: GitSupport,
+	/**
+	 *  Homeport has an icon in the system tray, so closing the window can
+	 *  keep it running there.
+	 */
+	tray: boolean,
 };
 
 /**  One commit, as a sync shows it. */
@@ -1445,6 +1452,11 @@ export type Settings = {
 	 *  to 365.
 	 */
 	keepEventsDays?: number,
+	/**
+	 *  Closing the window hides Homeport in the system tray instead of
+	 *  quitting, so its Host connections stay open.
+	 */
+	closeToTray?: boolean,
 };
 
 /**  The kinds of source, for the rules a definition is checked against. */
@@ -1656,6 +1668,14 @@ export type TransferEvent =
 { type: "line"; text: string } | 
 /**  Finished; `images` are the names saved, loaded or imported (none for an export). */
 { type: "done"; images: string[] } | { type: "error"; error: AppError };
+
+/**  **Add host…** was picked in the tray's menu. */
+export type TrayAddHostChosen = null;
+
+/**  A Host was picked in the tray's menu: the window shows its Overview. */
+export type TrayHostChosen = {
+	hostId: string,
+};
 
 export type UpdateCheck = {
 	currentVersion: string,

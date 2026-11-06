@@ -9,6 +9,7 @@ mod logging;
 mod polling;
 mod setup;
 mod state;
+pub mod tray;
 pub mod window;
 
 use tauri::Manager;
@@ -41,6 +42,7 @@ pub fn run() {
             }
             let state = setup::state(app)?;
             app.manage(state);
+            tray::create(app.handle());
             polling::start(app.handle());
             history::start(app.handle());
             // The window starts hidden (`tauri.conf.json`), so it shows once,
@@ -51,11 +53,23 @@ pub fn run() {
             }
             Ok(())
         })
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                let app = window.app_handle();
+                if window.label() == window::MAIN && closes_to_tray(app) {
+                    api.prevent_close();
+                    window::hide(app);
+                }
+            }
+        })
         .invoke_handler(invoke_handler)
         .build(tauri::generate_context!())
         .expect("error while building Homeport")
-        .run(|app, event| {
-            if let tauri::RunEvent::Exit = event {
+        .run(|app, event| match event {
+            // The Dock icon was clicked while the window was hidden.
+            #[cfg(target_os = "macos")]
+            tauri::RunEvent::Reopen { .. } => window::show(app),
+            tauri::RunEvent::Exit => {
                 // A volume being browsed keeps a helper container on its Host.
                 if let Some(state) = app.try_state::<AppState>() {
                     tauri::async_runtime::block_on(async {
@@ -65,5 +79,15 @@ pub fn run() {
                     });
                 }
             }
+            _ => {}
         });
+}
+
+/// Whether closing the window hides it in the tray: the user asked for it,
+/// and there is a tray to bring it back from.
+fn closes_to_tray(app: &tauri::AppHandle) -> bool {
+    let Some(state) = app.try_state::<AppState>() else {
+        return false;
+    };
+    tray::is_available(app) && state.settings.get().is_ok_and(|s| s.close_to_tray)
 }

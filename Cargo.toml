@@ -60,7 +60,7 @@ tar = "0.4"
 shell-words = "1"
 tempfile = "3"
 # The desktop shell.
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["tray-icon"] }
 tauri-build = { version = "2", features = [] }
 tauri-plugin-opener = "2"
 tauri-plugin-log = "2"
