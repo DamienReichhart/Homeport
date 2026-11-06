@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import { UpdateNotice } from '@/features/updates';
 import { KeychainWarning } from './KeychainWarning';
+import { CommandPalette } from '../palette/CommandPalette';
 import { AppShortcuts } from '../shortcuts/AppShortcuts';
 import { ShortcutsHelpProvider } from '../shortcuts/ShortcutsHelp';
 import { Sidebar } from './Sidebar';
@@ -12,6 +13,7 @@ export function AppLayout() {
       <div className="flex h-screen overflow-hidden">
         <TrayChoices />
         <AppShortcuts />
+        <CommandPalette />
         <Sidebar />
         <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <UpdateNotice />
