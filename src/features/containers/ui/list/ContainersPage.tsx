@@ -28,6 +28,7 @@ import {
   TableHeader,
   TableRow,
   useConfirm,
+  WithShortcut,
 } from '@/shared/ui';
 import { useUsage } from '../../api/streams';
 import { groupByStack } from '../../model/grouping';
@@ -36,6 +37,7 @@ import { RunContainerDialog } from '../dialogs/RunContainerDialog';
 import { ContainerRow } from './ContainerRow';
 import { SelectionActions } from './SelectionActions';
 import { StackGroupRows } from './StackGroupRows';
+import { PAGE_ACTION_KEYS, usePageAction } from '@/shared/hooks';
 import { t } from '@/shared/i18n';
 
 function ContainersList({ hostId }: { hostId: string }) {
@@ -50,6 +52,7 @@ function ContainersList({ hostId }: { hostId: string }) {
   const [selected, setSelected] = useState(new Set<string>());
   const [containerDialogs, openDialog] = useContainerDialogs(hostId);
   const [running, setRunning] = useState(false);
+  usePageAction(t('containers.runContainer'), () => setRunning(true));
 
   if (containers.isPending) return <Spinner />;
   if (containers.error)
@@ -100,9 +103,11 @@ function ContainersList({ hostId }: { hostId: string }) {
         actions={
           <>
             <CheckNewerImages hostId={hostId} />
-            <Button onClick={() => setRunning(true)}>
-              <PlusIcon /> {t('containers.runContainer')}
-            </Button>
+            <WithShortcut keys={PAGE_ACTION_KEYS} label={t('containers.runContainer')}>
+              <Button onClick={() => setRunning(true)}>
+                <PlusIcon /> {t('containers.runContainer')}
+              </Button>
+            </WithShortcut>
           </>
         }
       />

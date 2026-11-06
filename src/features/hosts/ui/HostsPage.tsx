@@ -2,16 +2,18 @@ import { DownloadIcon, PlusIcon, UploadIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useHosts } from '@/core/host';
-import { Button, DataTable, ErrorMessage, PageHeader } from '@/shared/ui';
+import { Button, DataTable, ErrorMessage, PageHeader, WithShortcut } from '@/shared/ui';
 import { ExportHostsDialog } from './bundle/ExportHostsDialog';
 import { ImportBundleDialog } from './bundle/ImportBundleDialog';
 import { hostColumns } from './hostColumns';
+import { PAGE_ACTION_KEYS, usePageAction } from '@/shared/hooks';
 import { t } from '@/shared/i18n';
 
 export function HostsPage() {
   const hosts = useHosts();
   const navigate = useNavigate();
   const [dialog, setDialog] = useState<'export' | 'import' | null>(null);
+  usePageAction(t('hosts.add'), () => void navigate('/hosts/new'));
   return (
     <div>
       <PageHeader
@@ -29,11 +31,13 @@ export function HostsPage() {
             >
               <DownloadIcon /> {t('hosts.bundle.export.button')}
             </Button>
-            <Button asChild>
-              <Link to="/hosts/new">
-                <PlusIcon /> {t('hosts.add')}
-              </Link>
-            </Button>
+            <WithShortcut keys={PAGE_ACTION_KEYS} label={t('hosts.add')}>
+              <Button asChild>
+                <Link to="/hosts/new">
+                  <PlusIcon /> {t('hosts.add')}
+                </Link>
+              </Button>
+            </WithShortcut>
           </>
         }
       />

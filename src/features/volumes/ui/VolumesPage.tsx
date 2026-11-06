@@ -23,6 +23,7 @@ import {
   SearchInput,
   Spinner,
   useConfirmedAction,
+  WithShortcut,
 } from '@/shared/ui';
 import { usePruneVolumes, useRemoveVolume } from '../api/mutations';
 import { pruneVolumesConfirmation, removeVolumeConfirmation } from './confirmations';
@@ -33,6 +34,7 @@ import { RestoreVolumeDialog } from './dialogs/RestoreVolumeDialog';
 import { CreateVolumeDialog } from './dialogs/CreateVolumeDialog';
 import { InspectVolumeDialog } from './dialogs/InspectVolumeDialog';
 import { volumeColumns } from './volumeColumns';
+import { PAGE_ACTION_KEYS, usePageAction } from '@/shared/hooks';
 import { t } from '@/shared/i18n';
 
 const tar = () => [{ name: t('volumes.transfer.archives'), extensions: ['tar'] }];
@@ -51,6 +53,7 @@ function VolumesList({ hostId }: { hostId: string }) {
   const [cloning, setCloning] = useState<VolumeView | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [restoring, setRestoring] = useState<{ source: string; existing?: string } | null>(null);
+  usePageAction(t('volumes.create'), () => setCreating(true));
 
   const backup = async (v: VolumeView) => {
     const destination = await pickSavePath(
@@ -109,9 +112,11 @@ function VolumesList({ hostId }: { hostId: string }) {
             <Button variant="outline" onClick={() => void restoreFrom()}>
               <ArchiveRestoreIcon /> {t('volumes.restoreFromFile')}
             </Button>
-            <Button onClick={() => setCreating(true)}>
-              <PlusIcon /> {t('volumes.create')}
-            </Button>
+            <WithShortcut keys={PAGE_ACTION_KEYS} label={t('volumes.create')}>
+              <Button onClick={() => setCreating(true)}>
+                <PlusIcon /> {t('volumes.create')}
+              </Button>
+            </WithShortcut>
           </>
         }
       />
