@@ -41,6 +41,34 @@ pub struct Settings {
     /// window. Whether Homeport starts at login is the OS's login entry,
     /// not a setting.
     pub start_hidden: bool,
+    /// Which OS notifications Homeport shows.
+    pub notifications: NotificationSettings,
+}
+
+/// The OS notifications Homeport shows, one switch per kind; all on unless
+/// turned off.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
+#[serde(default, rename_all = "camelCase")]
+pub struct NotificationSettings {
+    /// A container exited with an error or ran out of memory.
+    pub container_died: bool,
+    /// A container's health check started failing.
+    pub container_unhealthy: bool,
+    /// A connected Host stopped answering.
+    pub host_unreachable: bool,
+    /// An unreachable Host is connected again.
+    pub host_back: bool,
+}
+
+impl Default for NotificationSettings {
+    fn default() -> Self {
+        Self {
+            container_died: true,
+            container_unhealthy: true,
+            host_unreachable: true,
+            host_back: true,
+        }
+    }
 }
 
 impl Settings {
@@ -65,6 +93,7 @@ impl Default for Settings {
             keep_events_days: 30,
             close_to_tray: false,
             start_hidden: false,
+            notifications: NotificationSettings::default(),
         }
     }
 }
@@ -222,6 +251,23 @@ mod tests {
         let saved: Settings = serde_json::from_str(r#"{ "theme": "dark" }"#).unwrap();
         assert!(!saved.start_hidden, "settings from before 0.13");
         assert!(!Settings::default().start_hidden);
+    }
+
+    #[test]
+    fn every_notification_is_on_unless_turned_off() {
+        let saved: Settings = serde_json::from_str(r#"{ "theme": "dark" }"#).unwrap();
+        assert_eq!(
+            saved.notifications,
+            NotificationSettings::default(),
+            "settings from before 0.13"
+        );
+        let on = NotificationSettings::default();
+        assert!(on.container_died && on.container_unhealthy && on.host_unreachable && on.host_back);
+        // One kind turned off keeps the others on, as do kinds added later.
+        let saved: Settings =
+            serde_json::from_str(r#"{ "notifications": { "hostBack": false } }"#).unwrap();
+        assert!(!saved.notifications.host_back);
+        assert!(saved.notifications.container_died);
     }
 
     #[test]
