@@ -1,6 +1,6 @@
 ---
 title: Settings
-description: Theme, the system tray, updates, registry logins, repositories, how often Synced Stacks are checked, what this machine supports, version and licences.
+description: Theme, the system tray, starting at login, updates, registry logins, repositories, how often Synced Stacks are checked, what this machine supports, version and licences.
 ---
 
 **Settings** is the last item in the sidebar.
@@ -14,6 +14,8 @@ description: Theme, the system tray, updates, registry logins, repositories, how
 How Homeport runs on this computer.
 
 - **Close to the system tray** — off by default, so closing the window quits Homeport. Turn it on to hide the window in the [system tray](/docs/guides/overview/#system-tray) instead: Homeport keeps running with its Host connections open. Bring it back from the tray icon, or by opening Homeport again; quit from the tray's **Quit**. The switch is greyed out, with an explanation, on a desktop without a tray.
+- **Start at login** — off by default. Turn it on and Homeport starts when you log in, so it watches your Hosts from the start. The switch shows what your system has: if you remove Homeport from your login items yourself, it shows as off. On Windows it's listed in **Task Manager → Startup apps**, on macOS in **System Settings → General → Login Items**, on Linux in `~/.config/autostart/`. An AppImage's entry follows the file when you move it, from the next time you open it.
+- **Start hidden in the tray** — off by default, and only available while **Start at login** is on. When Homeport starts at login, it stays in the [system tray](/docs/guides/overview/#system-tray) without opening its window. Opening Homeport yourself always shows the window, and without a tray it always opens.
 
 ## Updates
 
