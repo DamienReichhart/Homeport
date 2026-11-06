@@ -49,7 +49,7 @@ fn desktop_entry(appimage: &str) -> String {
         "[Desktop Entry]\n\
          Type=Application\n\
          Name=Homeport\n\
-         Comment=Every container host, on one board.\n\
+         Comment=Every Docker Engine, docked in one place.\n\
          Exec={exec}\n\
          TryExec={try_exec}\n\
          Icon={ICON_NAME}\n\

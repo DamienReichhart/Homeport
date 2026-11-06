@@ -13,11 +13,9 @@ Nothing changes if you use Homeport: install it, run it at home or at work, on a
 
 Versions up to 0.11 were released under the MIT licence and stay available under it. If the AGPL doesn't fit what you want to build with Homeport, a commercial licence can be arranged: [open an issue](https://github.com/DamienReichhart/Homeport/issues) or write to the maintainer.
 
-The name and logo are covered separately, by the [trademark policy](https://github.com/DamienReichhart/Homeport/blob/main/TRADEMARKS.md): a fork must use its own.
+### Does Homeport replace Docker Desktop?
 
-### Do I still need an Engine?
-
-Yes. Homeport is a manager: it doesn't run an Engine itself. On Linux, install Docker Engine and use Homeport as its interface. On macOS and Windows you still need something that runs the Engine — Docker Desktop, Colima, OrbStack, Rancher Desktop or Podman — and Homeport can sit on top of any of them, along with your remote servers.
+Not entirely. Homeport is a manager: it doesn't run a Docker Engine itself. On Linux, install Docker Engine and use Homeport as its interface. On macOS and Windows you still need something that runs the Engine — Docker Desktop, Colima, OrbStack, Rancher Desktop or Podman — and Homeport can sit on top of any of them, along with your remote servers.
 
 ### Does it work with Podman?
 

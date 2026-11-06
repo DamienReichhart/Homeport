@@ -83,7 +83,6 @@ export function LicensesDialog({
             </TabsContent>
           </Tabs>
         )}
-        <p className="text-muted-foreground text-xs">{t('settings.licenses.trademarks')}</p>
       </DialogContent>
     </Dialog>
   );

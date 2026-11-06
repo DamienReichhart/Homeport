@@ -24,7 +24,7 @@ export function matches(c: Container, query: string): boolean {
   );
 }
 
-/** Nests containers under their Stack, each Stack a row that opens. */
+/** Nests containers under their Stack, like Docker Desktop's list. */
 export function groupByStack(containers: Container[], query = '', onlyRunning = false): Grouped {
   const visible = containers.filter(
     (c) => matches(c, query) && (!onlyRunning || c.state === 'running'),

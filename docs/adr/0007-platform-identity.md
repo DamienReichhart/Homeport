@@ -25,4 +25,4 @@ The project's position is that Homeport stays on your machine and visits your se
 - Charts can no longer rely on hue to tell series apart: a second series in a chart is dashed.
 - The website's hero is a typeset board of Hosts, not a screenshot. Screenshots are still captured from the real UI with mocked IPC (`bun run screenshots`, with Firefox or `CHROMIUM=…`).
 - Host Grotesk's hyphen is wide, so hyphenated names read a little like dashes in the sans. Setting machine identifiers in Fragment Mono is the follow-up.
-- The tagline changes from "docked in one place" to "on one board", dropping the last nautical word except the name itself. (ADR 0016 then replaces "Every Docker Engine" with "Every container host".)
+- The tagline changes from "docked in one place" to "on one board", dropping the last nautical word except the name itself.
