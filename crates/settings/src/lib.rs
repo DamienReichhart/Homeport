@@ -37,6 +37,10 @@ pub struct Settings {
     /// Closing the window hides Homeport in the system tray instead of
     /// quitting, so its Host connections stay open.
     pub close_to_tray: bool,
+    /// When started at login, stay in the system tray without opening the
+    /// window. Whether Homeport starts at login is the OS's login entry,
+    /// not a setting.
+    pub start_hidden: bool,
 }
 
 impl Settings {
@@ -60,6 +64,7 @@ impl Default for Settings {
             sync_interval_minutes: 5,
             keep_events_days: 30,
             close_to_tray: false,
+            start_hidden: false,
         }
     }
 }
@@ -210,6 +215,13 @@ mod tests {
         let saved: Settings = serde_json::from_str(r#"{ "theme": "dark" }"#).unwrap();
         assert!(!saved.close_to_tray, "settings from before 0.13");
         assert!(!Settings::default().close_to_tray);
+    }
+
+    #[test]
+    fn starting_at_login_opens_the_window_unless_start_hidden_is_on() {
+        let saved: Settings = serde_json::from_str(r#"{ "theme": "dark" }"#).unwrap();
+        assert!(!saved.start_hidden, "settings from before 0.13");
+        assert!(!Settings::default().start_hidden);
     }
 
     #[test]
