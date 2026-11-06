@@ -8,6 +8,13 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 export const commands = {
 	getAppInfo: () => __TAURI_INVOKE<AppInfo>("get_app_info"),
 	getCapabilities: () => __TAURI_INVOKE<Capabilities>("get_capabilities"),
+	/**
+	 *  Whether Homeport starts when the user logs in, read from the OS each
+	 *  time, so removing the entry by hand shows here.
+	 */
+	appStartAtLogin: () => __TAURI_INVOKE<boolean>("app_start_at_login"),
+	/**  Adds or removes the login entry; returns whether it's there now. */
+	appSetStartAtLogin: (enabled: boolean) => __TAURI_INVOKE<boolean>("app_set_start_at_login", { enabled }),
 	getLicenses: () => __TAURI_INVOKE<Licenses>("get_licenses"),
 	/**  Reads a file the user picked in an open dialog (certificates, keys, compose files). */
 	readTextFile: (path: string) => __TAURI_INVOKE<string>("read_text_file", { path }),
@@ -753,6 +760,8 @@ export type EnvKeyChange = {
 export type ErrorCode = 
 /**  A failure that started in the frontend, outside any command. */
 "unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | 
+/**  The OS refused the entry that starts Homeport at login. */
+"autostart_failed" | 
 /**  An export file that the passphrase doesn't open, or that was damaged. */
 "bundle_unreadable" | 
 /**  An export file from a newer Homeport. */
@@ -1457,6 +1466,12 @@ export type Settings = {
 	 *  quitting, so its Host connections stay open.
 	 */
 	closeToTray?: boolean,
+	/**
+	 *  When started at login, stay in the system tray without opening the
+	 *  window. Whether Homeport starts at login is the OS's login entry,
+	 *  not a setting.
+	 */
+	startHidden?: boolean,
 };
 
 /**  The kinds of source, for the rules a definition is checked against. */

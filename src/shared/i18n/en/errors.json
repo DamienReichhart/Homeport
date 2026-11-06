@@ -54,6 +54,8 @@
   "errors.core.sshPortInvalid": "The SSH port must be between 1 and 65535.",
   "errors.core.sshUserMissing": "Enter the SSH user.",
   "errors.core.unreadableData": "Homeport received data it couldn't read.",
+  "errors.desktop.autostartFailed": "Homeport couldn't change whether it starts when you log in.",
+  "errors.desktop.autostartFailed.hint": "Check that you may add login items on this computer, then try again.",
   "errors.engine.alreadyInState": "The container is already in that state.",
   "errors.engine.apiVersionUnreadable": "The Docker Engine reported an API version Homeport can't read.",
   "errors.engine.apiVersionUnsupported": "This Docker Engine's API version isn't supported.",

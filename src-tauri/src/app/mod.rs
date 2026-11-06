@@ -3,6 +3,7 @@
 
 #[cfg(target_os = "linux")]
 mod appimage;
+pub mod autostart;
 pub mod events;
 pub mod history;
 mod logging;
@@ -34,22 +35,30 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(autostart::plugin())
         .setup(move |app| {
             specta.mount_events(app);
             #[cfg(target_os = "linux")]
-            if let Err(e) = appimage::integrate(&app.path().data_dir()?) {
-                log::warn!("failed to add the AppImage to the app menu: {e}");
+            {
+                if let Err(e) = appimage::integrate(&app.path().data_dir()?) {
+                    log::warn!("failed to add the AppImage to the app menu: {e}");
+                }
+                autostart::follow_appimage(app.handle());
             }
             let state = setup::state(app)?;
+            let start_hidden = state.settings.get().is_ok_and(|s| s.start_hidden);
             app.manage(state);
             tray::create(app.handle());
             polling::start(app.handle());
             history::start(app.handle());
             // The window starts hidden (`tauri.conf.json`), so it shows once,
-            // where it was left.
+            // where it was left, unless started at login to stay in the tray.
             if let Some(main) = app.get_webview_window(window::MAIN) {
                 window::keep_on_screen(&main)?;
-                window::show(app.handle());
+                let tray = tray::is_available(app.handle());
+                if !autostart::starts_hidden(std::env::args(), start_hidden, tray) {
+                    window::show(app.handle());
+                }
             }
             Ok(())
         })

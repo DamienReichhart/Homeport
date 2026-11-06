@@ -35,6 +35,21 @@ pub fn get_app_info(app: AppHandle) -> AppInfo {
     }
 }
 
+/// Whether Homeport starts when the user logs in, read from the OS each
+/// time, so removing the entry by hand shows here.
+#[tauri::command]
+#[specta::specta]
+pub fn app_start_at_login(app: AppHandle) -> AppResult<bool> {
+    crate::app::autostart::is_enabled(&app)
+}
+
+/// Adds or removes the login entry; returns whether it's there now.
+#[tauri::command]
+#[specta::specta]
+pub fn app_set_start_at_login(app: AppHandle, enabled: bool) -> AppResult<bool> {
+    crate::app::autostart::set_enabled(&app, enabled)
+}
+
 #[derive(Debug, Serialize, specta::Type)]
 pub struct Licenses {
     /// Homeport's own license (`LICENSE`).

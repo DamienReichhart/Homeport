@@ -29,6 +29,9 @@ homeport_core::messages! {
     /// Installing from the app when a package manager owns the install.
     UPDATE_BY_PACKAGE_MANAGER = "errors.updates.byPackageManager" => "This copy of Homeport is updated by your package manager.";
     UPDATE_NOTHING_WAITING = "errors.updates.nothingWaiting" => "No update is waiting to be installed.";
+    /// Turning start at login on or off failed.
+    AUTOSTART_FAILED = "errors.desktop.autostartFailed" => "Homeport couldn't change whether it starts when you log in.";
+    AUTOSTART_FAILED_HINT = "errors.desktop.autostartFailed.hint" => "Check that you may add login items on this computer, then try again.";
     /// An automatic deploy of a Synced Stack that ended without saying why.
     AUTO_DEPLOY_FAILED = "errors.stacks.autoDeployFailed" => "The automatic deploy didn't finish.";
 }

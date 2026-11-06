@@ -10,6 +10,13 @@ pub fn window(e: tauri::Error) -> AppError {
     AppError::new(ErrorCode::Tauri, msg::WINDOW_FAILED).with_cause(&e)
 }
 
+/// Reading or writing the entry that starts Homeport at login failed.
+pub fn autostart(e: tauri_plugin_autostart::Error) -> AppError {
+    AppError::new(ErrorCode::AutostartFailed, msg::AUTOSTART_FAILED)
+        .with_hint(msg::AUTOSTART_FAILED_HINT)
+        .with_cause(&e)
+}
+
 /// Checking for, downloading or installing an update failed.
 pub fn update(e: tauri_plugin_updater::Error) -> AppError {
     use tauri_plugin_updater::Error as U;
