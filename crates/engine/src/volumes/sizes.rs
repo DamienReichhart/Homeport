@@ -171,7 +171,8 @@ mod tests {
     #[tokio::test]
     #[ignore = "needs a local Docker Engine"]
     async fn a_volume_reports_at_least_what_it_holds() {
-        let docker = testing::docker();
+        // Negotiated, as every Host's client is: the request names its version.
+        let docker = testing::docker().negotiate_version().await.unwrap();
         let volume = testing::filled_volume(&docker).await;
         let volume = &volume.name;
         testing::run_with_volume(&docker, volume, "head -c 200000 /dev/zero > /data/f").await;
