@@ -11,7 +11,7 @@ Yes. Homeport is free to use, for personal and commercial work, and open source 
 
 Nothing changes if you use Homeport: install it, run it at home or at work, on as many computers as you like. The AGPL only asks something of those who **distribute** Homeport, modified or not, or offer a modified version to others over a network: they must publish its full source code under the same licence. Every copy of Homeport links to the source of its exact version in **Settings → About → Licenses**.
 
-Versions up to 0.11 were released under the MIT licence and stay available under it. If the AGPL doesn't fit what you want to build with Homeport, a commercial licence can be arranged: [open an issue](https://github.com/DamienReichhart/Homeport/issues) or write to the maintainer.
+Versions up to 0.11 were released under the MIT licence and stay available under it.
 
 ### Does Homeport replace Docker Desktop?
 
