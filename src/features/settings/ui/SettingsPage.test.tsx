@@ -109,3 +109,27 @@ describe('settings diagnostics', () => {
     expect(await screen.findByText('docker compose 2.40.0')).toBeInTheDocument();
   });
 });
+
+describe('settings data', () => {
+  it('keeps Engine events for the days chosen, within a year', async () => {
+    const saved: unknown[] = [];
+    mockCommands({
+      ...baseCommands,
+      get_app_info: appInfo,
+      registries_list: () => [],
+      repositories_list: () => [],
+      update_settings: ({ settings }) => {
+        saved.push(settings);
+        return settings;
+      },
+    });
+    const user = userEvent.setup();
+    renderApp('/settings');
+    const days = await screen.findByLabelText('Keep Engine events for');
+    expect(days).toHaveValue(30);
+    await user.clear(days);
+    await user.type(days, '900{Enter}');
+    expect(days).toHaveValue(365);
+    expect(saved).toEqual([expect.objectContaining({ keepEventsDays: 365 })]);
+  });
+});

@@ -20,6 +20,12 @@ export default {
   'settings.sync.title': 'Synced Stacks',
   'settings.sync.interval': 'Check repositories every',
   'settings.sync.minutes': 'minutes',
+  'settings.data.title': 'Data',
+  'settings.data.description': 'What Homeport keeps on this computer.',
+  'settings.data.keepEvents': 'Keep Engine events for',
+  'settings.data.days': 'days',
+  'settings.data.keepEventsHint':
+    'Each Host keeps at most 10,000 events for the Events page. Older ones are removed every hour.',
   'settings.machine.gitMissing':
     'Synced Stacks need it; every other kind of Stack works without it.',
   'settings.about.tagline': 'Every Docker Engine, on one board.',
