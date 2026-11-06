@@ -124,6 +124,7 @@ export { CopyButton } from './data/CopyButton';
 export { DataTable, type ColumnDef } from './data/DataTable';
 export { FileBrowser } from './data/FileBrowser';
 export { JsonView } from './data/JsonView';
+export { Keys, WithShortcut } from './data/Keys';
 export { KeyValue } from './data/KeyValue';
 export { SearchInput } from './data/SearchInput';
 
