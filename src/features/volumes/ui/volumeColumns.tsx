@@ -1,6 +1,7 @@
 import {
   ArchiveIcon,
   ArchiveRestoreIcon,
+  CopyIcon,
   EllipsisIcon,
   FolderOpenIcon,
   InfoIcon,
@@ -26,6 +27,7 @@ export function volumeColumns({
   onBrowse,
   onBackup,
   onRestore,
+  onClone,
   onRemove,
 }: {
   sizes: VolumeSizes;
@@ -33,6 +35,7 @@ export function volumeColumns({
   onBrowse: (volume: VolumeView) => void;
   onBackup: (volume: VolumeView) => void;
   onRestore: (volume: VolumeView) => void;
+  onClone: (volume: VolumeView) => void;
   onRemove: (volume: VolumeView) => void;
 }): ColumnDef<VolumeView, unknown>[] {
   return [
@@ -113,6 +116,9 @@ export function volumeColumns({
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => onRestore(row.original)}>
                 <ArchiveRestoreIcon /> {t('volumes.restoreMenu')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => onClone(row.original)}>
+                <CopyIcon /> {t('volumes.cloneMenu')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

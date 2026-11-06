@@ -20,9 +20,11 @@ use crate::{images::PruneReport, COMPOSE_PROJECT};
 
 pub mod archive;
 pub mod browse;
+mod clone;
 pub mod helper;
 mod sizes;
 
+pub use clone::clone;
 pub use sizes::sizes;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]

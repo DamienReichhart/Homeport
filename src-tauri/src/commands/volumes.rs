@@ -227,3 +227,18 @@ pub async fn volumes_restore_subscribe(
         move |e| on_event.send(e).is_ok(),
     )))
 }
+
+/// Copies a volume into a new one on the same Host; returns its name. With
+/// `pulled_image`, the helper's image is removed afterwards if unused.
+#[tauri::command]
+#[specta::specta]
+pub async fn volumes_clone(
+    state: State<'_, AppState>,
+    host_id: String,
+    source: String,
+    target: String,
+    pulled_image: bool,
+) -> AppResult<String> {
+    let docker = state.hosts.registry.docker(&host_id)?;
+    volumes::clone(&docker, &source, &target, pulled_image).await
+}

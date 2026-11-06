@@ -57,3 +57,12 @@ export function volumeNameFromFile(path: string): string {
     .replace(/[^A-Za-z0-9_.-]/g, '-')
     .replace(/^[^A-Za-z0-9]+/, '');
 }
+
+/** The first free name for a copy of `volume`: `db-copy`, then `db-copy-2`… */
+export function copyName(volume: string, taken: ReadonlySet<string>): string {
+  const base = `${volume}-copy`;
+  if (!taken.has(base)) return base;
+  let n = 2;
+  while (taken.has(`${base}-${n}`)) n += 1;
+  return `${base}-${n}`;
+}

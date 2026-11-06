@@ -28,6 +28,7 @@ import { usePruneVolumes, useRemoveVolume } from '../api/mutations';
 import { pruneVolumesConfirmation, removeVolumeConfirmation } from './confirmations';
 import { BackupVolumeDialog } from './dialogs/BackupVolumeDialog';
 import { BrowseVolumeDialog } from './dialogs/BrowseVolumeDialog';
+import { CloneVolumeDialog } from './dialogs/CloneVolumeDialog';
 import { RestoreVolumeDialog } from './dialogs/RestoreVolumeDialog';
 import { CreateVolumeDialog } from './dialogs/CreateVolumeDialog';
 import { InspectVolumeDialog } from './dialogs/InspectVolumeDialog';
@@ -47,6 +48,8 @@ function VolumesList({ hostId }: { hostId: string }) {
   const [inspecting, setInspecting] = useState<VolumeView | null>(null);
   const [browsing, setBrowsing] = useState<VolumeView | null>(null);
   const [backingUp, setBackingUp] = useState<{ volume: string; destination: string } | null>(null);
+  const [cloning, setCloning] = useState<VolumeView | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
   const [restoring, setRestoring] = useState<{ source: string; existing?: string } | null>(null);
 
   const backup = async (v: VolumeView) => {
@@ -130,10 +133,12 @@ function VolumesList({ hostId }: { hostId: string }) {
             onBrowse: setBrowsing,
             onBackup: (v) => void backup(v),
             onRestore: (v) => void restoreFrom(v.name),
+            onClone: setCloning,
             onRemove: remove,
           })}
           data={volumes.data}
           getRowId={(v) => v.name}
+          selectedId={selected}
           filter={query}
           onRowClick={setInspecting}
         />
@@ -156,6 +161,15 @@ function VolumesList({ hostId }: { hostId: string }) {
           volume={backingUp.volume}
           destination={backingUp.destination}
           onClose={() => setBackingUp(null)}
+        />
+      )}
+      {cloning && (
+        <CloneVolumeDialog
+          hostId={hostId}
+          volume={cloning.name}
+          volumes={volumes.data}
+          onCloned={setSelected}
+          onClose={() => setCloning(null)}
         />
       )}
       {restoring && (

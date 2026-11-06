@@ -143,6 +143,11 @@ homeport_core::messages! {
     /// Restoring into a new volume whose name is taken.
     VOLUME_EXISTS = "errors.volumes.exists" => "A volume named {volume} already exists.";
     VOLUME_EXISTS_HINT = "errors.volumes.exists.hint" => "Choose another name, or restore into the existing volume from its row.";
+    VOLUME_EXISTS_CLONE_HINT = "errors.volumes.exists.cloneHint" => "Choose another name for the copy.";
+    /// The copy into a clone failed; the reason is in Details.
+    CLONE_FAILED = "errors.volumes.cloneFailed" => "Homeport couldn't copy {source}.";
+    CLONE_REMOVED_HINT = "errors.volumes.cloneFailed.removedHint" => "The incomplete copy, {target}, was removed. The output in Details says what went wrong.";
+    CLONE_LEFT_HINT = "errors.volumes.cloneFailed.leftHint" => "The incomplete copy, {target}, couldn't be removed; delete it before using it. The output in Details says what went wrong.";
     /// Restoring into a volume that holds files, without replacing them.
     VOLUME_NOT_EMPTY = "errors.volumes.notEmpty" => "{volume} already holds files.";
     /// Emptying a volume before a restore failed; the reason is in Details.

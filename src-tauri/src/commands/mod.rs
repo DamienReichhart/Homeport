@@ -127,6 +127,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             volumes::volumes_running_users,
             volumes::volumes_backup_subscribe,
             volumes::volumes_restore_subscribe,
+            volumes::volumes_clone,
             networks::networks_list,
             networks::networks_inspect,
             networks::networks_create,

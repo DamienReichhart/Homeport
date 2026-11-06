@@ -1,4 +1,10 @@
-import { reduceFlow, startFlow, volumeNameFromFile, type FlowEvent } from './transferFlow';
+import {
+  copyName,
+  reduceFlow,
+  startFlow,
+  volumeNameFromFile,
+  type FlowEvent,
+} from './transferFlow';
 
 const run = (...events: FlowEvent[]) => events.reduce(reduceFlow, startFlow);
 
@@ -38,5 +44,10 @@ describe('volume transfer flow', () => {
     expect(volumeNameFromFile('/home/me/shop_db.tar')).toBe('shop_db');
     expect(volumeNameFromFile('C:\\backups\\my db (1).TAR')).toBe('my-db--1-');
     expect(volumeNameFromFile('/x/.tar')).toBe('');
+  });
+
+  it('names a copy after its source, with the first free number', () => {
+    expect(copyName('db', new Set(['db']))).toBe('db-copy');
+    expect(copyName('db', new Set(['db', 'db-copy', 'db-copy-2']))).toBe('db-copy-3');
   });
 });

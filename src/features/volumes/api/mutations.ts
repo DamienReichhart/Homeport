@@ -91,3 +91,26 @@ export function usePauseContainers(hostId: string) {
   };
   return { stop, restart };
 }
+
+/** Copies a volume into a new one; the dialog shows a failure in place. */
+export function useCloneVolume(hostId: string) {
+  const refresh = useRefreshVolumes(hostId);
+  const client = useQueryClient();
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: ({
+      source,
+      target,
+      pulledImage,
+    }: {
+      source: string;
+      target: string;
+      pulledImage: boolean;
+    }) => commands.volumesClone(hostId, source, target, pulledImage),
+    onSuccess: async (name, { source }) => {
+      toast.success(t('volumes.clone.done', { source, target: name }));
+      await refresh();
+      await client.invalidateQueries({ queryKey: hostKeys.volumeSizes(hostId) });
+    },
+  });
+}

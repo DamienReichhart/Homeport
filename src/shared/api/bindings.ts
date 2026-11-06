@@ -180,6 +180,11 @@ export const commands = {
 	 *  machine, streaming progress.
 	 */
 	volumesRestoreSubscribe: (hostId: string, source: string, spec: RestoreSpec, pulledImage: boolean, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("volumes_restore_subscribe", { hostId, source, spec, pulledImage, onEvent }),
+	/**
+	 *  Copies a volume into a new one on the same Host; returns its name. With
+	 *  `pulled_image`, the helper's image is removed afterwards if unused.
+	 */
+	volumesClone: (hostId: string, source: string, target: string, pulledImage: boolean) => __TAURI_INVOKE<string>("volumes_clone", { hostId, source, target, pulledImage }),
 	networksList: (hostId: string) => __TAURI_INVOKE<NetworkView[]>("networks_list", { hostId }),
 	networksInspect: (hostId: string, id: string) => __TAURI_INVOKE<Value>("networks_inspect", { hostId, id }),
 	networksCreate: (hostId: string, input: NetworkInput) => __TAURI_INVOKE<string>("networks_create", { hostId, input }),
