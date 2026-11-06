@@ -66,11 +66,75 @@ impl Db {
         let mut conn = self.conn.lock().expect("db lock poisoned");
         f(&mut conn).map_err(sqlite_error)
     }
+
+    /// Runs `f` in one transaction, committed only if it succeeds: on an
+    /// error, nothing it wrote is kept.
+    pub fn transaction<T>(
+        &self,
+        f: impl FnOnce(&rusqlite::Transaction<'_>) -> AppResult<T>,
+    ) -> AppResult<T> {
+        let mut conn = self.conn.lock().expect("db lock poisoned");
+        let tx = conn.transaction().map_err(sqlite_error)?;
+        let value = f(&tx)?;
+        tx.commit().map_err(sqlite_error)?;
+        Ok(value)
+    }
+
+    /// Writes a copy of the database as it is now to `path`, which must not
+    /// exist (`VACUUM INTO`): a consistent snapshot, whatever is in the WAL.
+    pub fn copy_to(&self, path: &Path) -> AppResult<()> {
+        let target = path.to_string_lossy();
+        self.with(|c| c.execute("VACUUM INTO ?1", [target.as_ref()]).map(drop))
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn transactions_keep_nothing_of_a_failure() {
+        let db = Db::open_in_memory().unwrap();
+        let put = |tx: &rusqlite::Transaction<'_>, key: &str| {
+            tx.execute("INSERT INTO settings (key, value) VALUES (?1, '{}')", [key])
+                .map_err(sqlite_error)
+        };
+        let failed: AppResult<()> = db.transaction(|tx| {
+            put(tx, "a")?;
+            Err(homeport_core::error::AppError::validation(
+                homeport_core::messages::CONTAINER_GONE,
+            ))
+        });
+        assert!(failed.is_err());
+        db.transaction(|tx| put(tx, "b")).unwrap();
+        let keys: Vec<String> = db
+            .with(|c| {
+                c.prepare("SELECT key FROM settings")?
+                    .query_map([], |r| r.get(0))?
+                    .collect()
+            })
+            .unwrap();
+        assert_eq!(keys, ["b"]);
+    }
+
+    #[test]
+    fn copies_are_snapshots_of_the_database() {
+        let dir = tempfile::tempdir().unwrap();
+        let db = Db::open(&dir.path().join("homeport.db")).unwrap();
+        db.with(|c| c.execute("INSERT INTO settings (key, value) VALUES ('k', '1')", []))
+            .unwrap();
+        let copy = dir.path().join("copy.db");
+        db.copy_to(&copy).unwrap();
+        let copied = Db::open(&copy).unwrap();
+        let value: String = copied
+            .with(|c| {
+                c.query_row("SELECT value FROM settings WHERE key = 'k'", [], |r| {
+                    r.get(0)
+                })
+            })
+            .unwrap();
+        assert_eq!(value, "1");
+    }
 
     #[test]
     fn migrations_are_valid() {
@@ -95,7 +159,8 @@ mod tests {
             VALUES ('h', 42, 'container', 'start', 'abc', '{}')";
         assert_eq!(conn.execute(insert, []).unwrap(), 1);
         assert_eq!(conn.execute(insert, []).unwrap(), 0, "kept once");
-        conn.execute("DELETE FROM hosts WHERE id = 'h'", []).unwrap();
+        conn.execute("DELETE FROM hosts WHERE id = 'h'", [])
+            .unwrap();
         let left: i64 = conn
             .query_row("SELECT count(*) FROM engine_events", [], |r| r.get(0))
             .unwrap();
