@@ -11,12 +11,16 @@ describe('settings licenses', () => {
     mockCommands({
       ...baseCommands,
       get_app_info: appInfo,
-      get_licenses: () => ({ app: 'MIT License', third_party: 'serde 1.0.0 (crate)' }),
+      get_licenses: () => ({
+        app: 'GNU AFFERO GENERAL PUBLIC LICENSE',
+        third_party: 'serde 1.0.0 (crate)',
+      }),
     });
     const user = userEvent.setup();
     renderApp('/settings');
     await user.click(await screen.findByRole('button', { name: 'Licenses' }));
-    expect(await screen.findByText('MIT License')).toBeInTheDocument();
+    expect(await screen.findByText('GNU AFFERO GENERAL PUBLIC LICENSE')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Source of v0.2.0' })).toBeInTheDocument();
     await user.click(screen.getByRole('tab', { name: 'Third-party software' }));
     expect(await screen.findByText('serde 1.0.0 (crate)')).toBeInTheDocument();
   });
@@ -25,7 +29,7 @@ describe('settings licenses', () => {
     mockCommands({
       ...baseCommands,
       get_app_info: appInfo,
-      get_licenses: () => ({ app: 'MIT License', third_party: null }),
+      get_licenses: () => ({ app: 'GNU AFFERO GENERAL PUBLIC LICENSE', third_party: null }),
     });
     const user = userEvent.setup();
     renderApp('/settings');

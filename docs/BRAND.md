@@ -98,7 +98,7 @@ Only claim what is true for every connection type, or say which one it's true fo
 - **No agent and no web panel** on the server: true for all.
 - **No extra open port**: true only for SSH. TLS and TCP need the Engine's API port (usually 2376 and 2375), which the user exposes. Never write "no open port" without saying "over SSH".
 - **Nothing installed**: true. An SSH Host with Homeport's key adds one line to `authorized_keys`; say so where it matters.
-- **Free, MIT, Windows, macOS and Linux**, **no account**, **no telemetry**: true.
+- **Free, open source, Windows, macOS and Linux**, **no account**, **no telemetry**: true.
 
 ## Never
 

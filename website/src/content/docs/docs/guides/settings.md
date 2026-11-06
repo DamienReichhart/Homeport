@@ -84,4 +84,4 @@ Homeport checks them when it starts. After installing a keychain, Compose or git
 
 Shows Homeport's version and the platform it was built for, for example `v0.2.0 · macos/aarch64`. Include it when you [report an issue](https://github.com/DamienReichhart/Homeport/issues).
 
-**Licenses** shows Homeport's MIT licence and the notices of every open-source package it's built with.
+**Licenses** shows Homeport's licence (the GNU AGPL, version 3), a link to the source code of the version you run, and the notices of every open-source package it's built with.

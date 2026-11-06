@@ -72,7 +72,7 @@ const CARD = /* html */ `<!doctype html>
   <img class="lockup" src="lockup-light.svg" alt="" />
   <h1>Every Docker Engine, on one board.</h1>
   <p>Your local and remote Engines over SSH, TLS or TCP. No agent on the server.</p>
-  <div class="meta">Free · MIT · Windows · macOS · Linux</div>
+  <div class="meta">Free · Open source · Windows · macOS · Linux</div>
   <table>
     <tr><th>Host</th><th>Via</th><th>Status</th></tr>
     ${BOARD.map(

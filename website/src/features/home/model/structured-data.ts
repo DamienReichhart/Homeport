@@ -14,7 +14,7 @@ export function softwareApplication(
     description: DESCRIPTION,
     applicationCategory: 'DeveloperApplication',
     operatingSystem: 'Windows, macOS, Linux',
-    license: 'https://opensource.org/licenses/MIT',
+    license: 'https://www.gnu.org/licenses/agpl-3.0.html',
     url: new URL(href('/'), site).href,
     downloadUrl: new URL(href('/download/'), site).href,
     codeRepository: REPO_URL,

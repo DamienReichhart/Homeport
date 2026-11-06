@@ -1,6 +1,14 @@
 # Licenses Homeport may ship, most preferred first: for a dual-licensed
 # dependency, the first accepted license is the one listed. `bun run licenses`
 # fails on anything else, so review a new license before adding it here.
+#
+# Never accept a copyleft license here: GPL, LGPL, AGPL, SSPL, EUPL, OSL and
+# the like, nor a non-commercial one (CC-BY-NC, the Commons Clause, BUSL).
+# Homeport is AGPL-3.0-only, but its maintainer holds the copyright of every
+# line (contributors sign the CLA), which keeps a commercial licence possible
+# (ADR 0016). One dependency under such a license would make that impossible.
+# MPL-2.0 is file-level copyleft and stays compatible. `scripts/accepted.test.ts`
+# fails if one is added.
 accepted = [
     "MIT",
     "MIT-0",

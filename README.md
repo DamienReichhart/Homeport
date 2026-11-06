@@ -113,4 +113,4 @@ website/             the website and user documentation
 
 ## License
 
-[MIT](LICENSE) © Damien Reichhart. Third-party software is listed in the generated notices described above.
+[AGPL-3.0-only](LICENSE) © Damien Reichhart. Versions up to 0.11 were released under the MIT License and stay available under it. Third-party software is listed in the generated notices described above.

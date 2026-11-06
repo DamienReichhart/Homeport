@@ -69,7 +69,10 @@ export default {
   'settings.about.licenses': 'Licenses',
   'settings.licenses.title': 'Licenses',
   'settings.licenses.description':
-    'Homeport is free software under the MIT License, built on the open-source packages below.',
+    'Homeport is free software under the GNU Affero General Public License, version 3, built on the open-source packages below.',
+  'settings.licenses.source':
+    'The source code of this version is published under the same licence.',
+  'settings.licenses.sourceLink': 'Source of v{version}',
   'settings.licenses.thirdParty': 'Third-party software',
   'settings.licenses.missing.title': 'Not included in this build',
   'settings.licenses.missing.description':

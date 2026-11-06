@@ -53,7 +53,7 @@ export function scoopManifest(version: string, sums: Map<string, string>): strin
     version,
     description: DESCRIPTION,
     homepage: HOMEPAGE,
-    license: 'MIT',
+    license: 'AGPL-3.0-only',
     notes: 'Homeport leaves its updates to Scoop: run `scoop update homeport`.',
     architecture: {
       '64bit': {
@@ -100,7 +100,7 @@ pkgrel=${pkgrel}
 pkgdesc='${DESCRIPTION}'
 arch=('x86_64' 'aarch64')
 url='${HOMEPAGE}'
-license=('MIT')
+license=('AGPL-3.0-only')
 depends=(${DEPENDS.map((d) => `'${d}'`).join(' ')})
 provides=('homeport')
 conflicts=('homeport')
@@ -130,7 +130,7 @@ package() {
 \turl = ${HOMEPAGE}
 \tarch = x86_64
 \tarch = aarch64
-\tlicense = MIT
+\tlicense = AGPL-3.0-only
 ${DEPENDS.map((d) => `\tdepends = ${d}`).join('\n')}
 \tprovides = homeport
 \tconflicts = homeport

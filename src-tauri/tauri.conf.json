@@ -31,7 +31,7 @@
     "longDescription": "A desktop app for managing Docker Engines anywhere: this machine's, or remote ones over SSH, TLS or TCP.",
     "publisher": "Damien Reichhart",
     "copyright": "Copyright (c) 2026 Damien Reichhart",
-    "license": "MIT",
+    "license": "AGPL-3.0-only",
     "licenseFile": "../LICENSE",
     "homepage": "https://github.com/DamienReichhart/Homeport",
     "icon": [

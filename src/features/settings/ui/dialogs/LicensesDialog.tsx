@@ -1,5 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
+import { openUrl } from '@tauri-apps/plugin-opener';
+import { ExternalLinkIcon } from 'lucide-react';
+import { appQueries } from '@/shared/api';
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -12,7 +16,9 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  toastError,
 } from '@/shared/ui';
+import { sourceUrl } from '../../model/source';
 import { licensesQuery } from '../../api/queries';
 import { t, tRich } from '@/shared/i18n';
 
@@ -27,6 +33,8 @@ export function LicensesDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const licenses = useQuery({ ...licensesQuery(), enabled: open });
+  const info = useQuery({ ...appQueries.info(), enabled: open });
+  const version = info.data?.version;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -35,6 +43,18 @@ export function LicensesDialog({
           <DialogTitle>{t('settings.licenses.title')}</DialogTitle>
           <DialogDescription>{t('settings.licenses.description')}</DialogDescription>
         </DialogHeader>
+        {version && (
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span>{t('settings.licenses.source', { version })}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openUrl(sourceUrl(version)).catch(toastError)}
+            >
+              <ExternalLinkIcon /> {t('settings.licenses.sourceLink', { version })}
+            </Button>
+          </div>
+        )}
         {licenses.isPending && <Spinner />}
         {licenses.error && (
           <ErrorMessage error={licenses.error} onRetry={() => void licenses.refetch()} />
