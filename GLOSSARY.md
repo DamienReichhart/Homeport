@@ -51,3 +51,7 @@ _Avoid_: Import, claim
 **Registry login**:
 The user name and password or access token Homeport keeps for one container registry address (Docker Hub, GHCR, a private registry), app-wide rather than per Host, and hands to the Engine when it pulls, pushes or builds. Docker Hub is always stored as `docker.io`.
 _Avoid_: Registry credential (in the UI), account, auth
+
+**Helper container**:
+A short-lived `busybox` container Homeport creates on a Host to open a volume (browse, back up, restore or clone it), since the Engine API can't read one. It mounts the volume read-only unless it must write to it, has no network, and is removed when the action ends (ADR 0015). Hidden from the Containers list and the Events page. Not a container of the user's.
+_Avoid_: Sidecar, agent, temporary container
