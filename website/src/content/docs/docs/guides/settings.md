@@ -49,6 +49,12 @@ Keys and tokens are encrypted with the OS keychain's key and never shown again, 
 
 **Check repositories every** sets how many minutes Homeport waits between checks of Synced Stacks' repositories for new commits: 5 by default, at least 1. Homeport checks only while it's open; nothing syncs while it's closed. See [polling and auto-deploy](/docs/guides/synced-stacks/#polling-and-auto-deploy).
 
+## Data
+
+What Homeport keeps on this computer.
+
+**Keep Engine events for** sets how many days each Host's [Engine events](/docs/guides/overview/#events) are kept: 30 by default, from 1 to 365. Each Host keeps at most 10,000 events whatever this says. Older ones are removed when Homeport starts and every hour, and at once when you lower the number.
+
 ## This machine
 
 What Homeport can use on this computer:

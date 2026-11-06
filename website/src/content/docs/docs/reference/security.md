@@ -34,8 +34,9 @@ It contains:
 | Repositories' server keys you trusted             | Plain text    |
 | Repository deploy keys and access tokens          | **Encrypted** |
 | Your theme and last selected Host                 | Plain text    |
+| Each Host's Engine events, for the Events page    | Plain text    |
 
-Homeport doesn't copy anything from your Engines: containers, images and logs are read live and never saved, except when you download logs or files yourself.
+Homeport doesn't copy anything else from your Engines: containers, images, volumes and logs are read live and never saved, except when you download logs or files, or back up a volume, yourself. The Engine events it keeps — what happened to which container, image, volume or network, with their labels — are kept for 30 days by default ([Settings → Data](/docs/guides/settings/#data)), at most 10,000 per Host, and removed with their Host or with **Clear history**.
 
 ### Linked Stack folders
 
@@ -99,6 +100,7 @@ The first time Homeport connects to an SSH server, it asks you to confirm the se
 
 - **No account.** There is nothing to sign up for.
 - **No telemetry, analytics or crash reporting.**
+- **Nothing installed on your Hosts.** The only container Homeport ever starts of its own is a short-lived [helper container](/docs/guides/volumes-networks/#the-helper-container) when you open, back up, restore or clone a volume; it has no network and is removed when it's done. Its image is pulled only once you agree.
 - **No silent installs.** An update is installed only when you choose **Install and restart**; Linux packages are only ever updated by your package manager.
 
 The [privacy policy](/privacy/) sets out what this means in law: who is responsible for your data, on what basis, and how to exercise your rights.
