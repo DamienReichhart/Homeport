@@ -39,11 +39,18 @@ Only for [Synced Stacks](/docs/guides/synced-stacks/), which run the `git` insta
 
 Each person runs their own Homeport with their own Hosts and keys. With a Homeport-created key per person and per server, you can see and revoke each one's access in `authorized_keys`.
 
-### Can I move my Hosts to another computer?
+### Can I move Homeport to another computer?
 
-Yes. On the **Hosts** page, choose **Export**, pick the Hosts and a passphrase of at least 12 characters, and save the file. On the other computer, choose **Import** on the same page, open the file with the passphrase and pick what to add. Keys, certificates and trusted server keys come along, so the Hosts connect without asking you anything; see [moving to another computer](/docs/reference/security/#moving-to-another-computer).
+Yes, in two ways:
 
-Copying `homeport.db` doesn't work for secrets: they're encrypted with a key kept in this computer's keychain, and show as **Credentials lost** elsewhere. Stacks aren't exported yet.
+- **Everything**: **Settings → Data → Back up…** saves every Host, Stack, registry login, repository and setting, with their secrets, to one file protected by a passphrase of at least 12 characters. On the new computer, **Restore…** in the same place opens it, lists what it holds, and replaces what's there. Everything connects and deploys without asking you for a key or a password again. See [backing up and restoring](/docs/guides/settings/#backing-up-and-restoring).
+- **Some Hosts**: on the **Hosts** page, **Export** the Hosts you pick, and **Import** them on the other computer, next to the Hosts it already has. See [moving to another computer](/docs/reference/security/#moving-to-another-computer).
+
+Copying `homeport.db` doesn't work for secrets: they're encrypted with a key kept in this computer's keychain, and show as **Credentials lost** elsewhere.
+
+### Does a backup include my containers and volumes?
+
+No. A backup holds what Homeport keeps — how to reach your Hosts, your Stacks' definitions and environments, logins and settings — not what runs on your Hosts. Your containers, images and volumes stay on the Hosts. To copy a volume's data, [back it up to a file](/docs/guides/volumes-networks/#backing-up-and-restoring) from the Volumes page.
 
 ### Can Homeport build images?
 

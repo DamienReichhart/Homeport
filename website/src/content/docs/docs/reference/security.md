@@ -60,7 +60,7 @@ Homeport shows a banner and won't store secrets. Local socket, TCP and ssh-agent
 
 ### If the keychain key is lost
 
-Resetting the keychain, or moving `homeport.db` to another computer or user, leaves secrets that can't be decrypted. Homeport doesn't delete anything: affected Hosts show **Credentials lost** until you re-enter their credentials. See [troubleshooting](/docs/reference/troubleshooting/#credentials-lost). To move Hosts, export them instead.
+Resetting the keychain, or moving `homeport.db` to another computer or user, leaves secrets that can't be decrypted. Homeport doesn't delete anything: affected Hosts show **Credentials lost** until you re-enter their credentials. See [troubleshooting](/docs/reference/troubleshooting/#credentials-lost). To move your data, back it up or export your Hosts instead.
 
 ### Moving to another computer
 
@@ -72,6 +72,18 @@ Resetting the keychain, or moving `homeport.db` to another computer or user, lea
 - A Host whose credentials are already lost on this computer is exported without them, and the export says which.
 
 Treat the file like the keys it holds: delete it once imported. The format is described in [ADR 0013](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md).
+
+### Backups
+
+**Settings → Data → Back up…** writes everything above — Hosts, Stacks, registry logins, repositories and settings, with their secrets opened — to one file in the same encrypted format, with a passphrase you type twice. Engine events and deploy history aren't included. A secret that can't be opened on this computer is left out, and the backup says which.
+
+**Restore…** asks for the passphrase and lists what the file holds before changing anything. Restoring then:
+
+1. copies the current database to `homeport.db.before-restore-<date and time>`, next to `homeport.db`;
+2. replaces every Host, Stack, login, repository and setting in one step, so a failure leaves your data as it was;
+3. encrypts every secret again with this computer's keychain key.
+
+A backup made by a newer Homeport is refused; one made by an older Homeport restores. The backup holds every secret Homeport has: keep it, and its passphrase, as safe as the keys themselves.
 
 ## Keys never touch the disk in clear
 
