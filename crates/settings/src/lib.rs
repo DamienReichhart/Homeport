@@ -1,4 +1,4 @@
-//! The user's preferences (theme, last Host, update checks), kept as one JSON
+//! The user's preferences (theme, last Host, update checks, the desktop), kept as one JSON
 //! document in the database.
 
 use std::{fs, path::Path, sync::Arc};
@@ -34,6 +34,9 @@ pub struct Settings {
     /// Days each Host's Engine events are kept for the Events page, from 1
     /// to 365.
     pub keep_events_days: u32,
+    /// Closing the window hides Homeport in the system tray instead of
+    /// quitting, so its Host connections stay open.
+    pub close_to_tray: bool,
 }
 
 impl Settings {
@@ -56,6 +59,7 @@ impl Default for Settings {
             check_for_updates: true,
             sync_interval_minutes: 5,
             keep_events_days: 30,
+            close_to_tray: false,
         }
     }
 }
@@ -199,6 +203,13 @@ mod tests {
             assert_eq!(set.keep_events_days, kept);
         }
         assert_eq!(svc.get().unwrap().keep_events().as_secs(), 365 * 86_400);
+    }
+
+    #[test]
+    fn closing_quits_unless_close_to_tray_is_on() {
+        let saved: Settings = serde_json::from_str(r#"{ "theme": "dark" }"#).unwrap();
+        assert!(!saved.close_to_tray, "settings from before 0.13");
+        assert!(!Settings::default().close_to_tray);
     }
 
     #[test]
