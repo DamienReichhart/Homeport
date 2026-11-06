@@ -1,4 +1,4 @@
-import { crumbs } from './files';
+import { crumbs } from './fileBrowser.model';
 
 describe('crumbs', () => {
   it('splits a path into clickable parents', () => {

@@ -170,16 +170,9 @@ export default {
 
   // Files
   'containers.files.startFirst': 'Start the container to browse its files.',
-  'containers.files.column.name': 'Name',
-  'containers.files.column.size': 'Size',
-  'containers.files.column.modified': 'Modified',
-  'containers.files.column.mode': 'Mode',
-  'containers.files.path': 'Path',
   'containers.files.saveOne': 'Save {name}',
-  'containers.files.downloadOne': 'Download {name}',
   'containers.files.uploadTo': 'Upload to {path}',
   'containers.files.uploadHere': 'Upload here',
-  'containers.files.empty': 'This directory is empty.',
   'containers.files.saved': 'Saved {name}',
   'containers.files.savedArchive': 'Saved {name} as a .tar archive',
   'containers.files.uploaded': 'Uploaded {count, plural, one {# file} other {# files}} to {path}',
