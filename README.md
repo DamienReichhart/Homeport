@@ -5,11 +5,11 @@
   </picture>
 </h1>
 
-**Every Docker Engine, on one board.**
+**Every container host, on one board.**
 
 [Website](https://damienreichhart.github.io/Homeport/) · [Documentation](https://damienreichhart.github.io/Homeport/docs/) · [Download](https://damienreichhart.github.io/Homeport/download/)
 
-A desktop app for managing Docker Engines anywhere — this machine's, or remote ones over SSH, TLS or TCP — in the spirit of Docker Desktop. Built with [Tauri 2](https://tauri.app), React 19, TypeScript and Rust ([bollard](https://github.com/fussybeaver/bollard) for the Engine API, SQLite for its own data).
+A desktop app for managing Docker Engines anywhere — this machine's, or remote ones over SSH, TLS or TCP. Built with [Tauri 2](https://tauri.app), React 19, TypeScript and Rust ([bollard](https://github.com/fussybeaver/bollard) for the Engine API, SQLite for its own data).
 
 ## Features
 
@@ -113,4 +113,6 @@ website/             the website and user documentation
 
 ## License
 
-[AGPL-3.0-only](LICENSE) © Damien Reichhart. Versions up to 0.11 were released under the MIT License and stay available under it. Third-party software is listed in the generated notices described above.
+[AGPL-3.0-only](LICENSE) © Damien Reichhart. Versions up to 0.11 were released under the MIT License and stay available under it. Third-party software is listed in the generated notices described above. Contributions need a signed [Contributor License Agreement](CLA.md); see [CONTRIBUTING.md](CONTRIBUTING.md). The Homeport name and logo are covered by the [trademark policy](TRADEMARKS.md).
+
+Docker, Podman, Kubernetes, Helm, Nomad, containerd, Incus, Colima, OrbStack and Rancher Desktop are trademarks of their respective owners. Homeport is an independent project, not affiliated with or endorsed by any of them.

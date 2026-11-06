@@ -1,7 +1,7 @@
 {
   "name": "Homeport",
   "short_name": "Homeport",
-  "description": "Every Docker Engine, on one board.",
+  "description": "Every container host, on one board.",
   "start_url": "./",
   "scope": "./",
   "display": "browser",

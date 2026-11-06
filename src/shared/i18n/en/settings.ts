@@ -64,7 +64,7 @@ export default {
     'Each Host keeps at most 10,000 events for the Events page. Older ones are removed every hour.',
   'settings.machine.gitMissing':
     'Synced Stacks need it; every other kind of Stack works without it.',
-  'settings.about.tagline': 'Every Docker Engine, on one board.',
+  'settings.about.tagline': 'Every container host, on one board.',
   'settings.about.openLogFolder': 'Open log folder',
   'settings.about.licenses': 'Licenses',
   'settings.licenses.title': 'Licenses',
@@ -73,6 +73,8 @@ export default {
   'settings.licenses.source':
     'The source code of this version is published under the same licence.',
   'settings.licenses.sourceLink': 'Source of v{version}',
+  'settings.licenses.trademarks':
+    'Docker, Podman, Kubernetes, Helm, Nomad, containerd, Incus, Colima, OrbStack and Rancher Desktop are trademarks of their respective owners. Homeport is an independent project, not affiliated with or endorsed by any of them. The Homeport name and logo are covered by its trademark policy.',
   'settings.licenses.thirdParty': 'Third-party software',
   'settings.licenses.missing.title': 'Not included in this build',
   'settings.licenses.missing.description':

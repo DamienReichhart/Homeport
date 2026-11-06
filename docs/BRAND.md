@@ -2,7 +2,9 @@
 
 Homeport stays on your machine and visits your servers. It never moves in. The identity is built to feel **steady**: calm, neutral and legible from across a room, with one red signal that you trust without thinking. The references are a railway station clock (neutral face, one loud red hand), maritime signal flags (flat colour, one exact meaning each) and Shaker joinery (nothing decorative that doesn't do a job). ADR 0007 records why it replaced the harbour identity.
 
-Tagline: **Every Docker Engine, on one board.**
+Tagline: **Every container host, on one board.**
+
+The brand names no Engine: Homeport works with many, and their names are their owners' trademarks (ADR 0016). Name Docker, Podman and the others only to say what Homeport works with, never in a tagline, a description or a comparison, and use none of their logos. The name and logo of Homeport itself are covered by [TRADEMARKS.md](../TRADEMARKS.md).
 
 ## Mark
 

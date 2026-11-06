@@ -21,6 +21,7 @@ describe('settings licenses', () => {
     await user.click(await screen.findByRole('button', { name: 'Licenses' }));
     expect(await screen.findByText('GNU AFFERO GENERAL PUBLIC LICENSE')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Source of v0.2.0' })).toBeInTheDocument();
+    expect(screen.getByText(/not affiliated with or endorsed by any of them/)).toBeInTheDocument();
     await user.click(screen.getByRole('tab', { name: 'Third-party software' }));
     expect(await screen.findByText('serde 1.0.0 (crate)')).toBeInTheDocument();
   });

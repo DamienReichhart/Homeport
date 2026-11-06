@@ -7,6 +7,7 @@ import LegalDocument from '../LegalDocument.astro';
 
 const mail = `mailto:${PUBLISHER.email}`;
 const license = `${REPO_URL}/blob/main/LICENSE`;
+const trademarks = `${REPO_URL}/blob/main/TRADEMARKS.md`;
 ---
 
 <LegalDocument
@@ -67,11 +68,12 @@ const license = `${REPO_URL}/blob/main/LICENSE`;
     <strong>Homeport name, mark and logo</strong> identify the official project. You may use them to
     refer to it (in an article, a tutorial, or a link to this site), but not as the name or logo of
     a fork or another product, or in a way that suggests the publisher endorses you, without written
-    permission.
+    permission; the <a href={trademarks}>trademark policy</a> says what is allowed.
   </p>
   <p>
-    Docker is a trademark of Docker, Inc. Other product names are the trademarks of their owners.
-    Homeport is an independent project, not affiliated with or endorsed by Docker, Inc. or by them.
+    Docker, Podman, Kubernetes, Helm, Nomad, containerd, Incus, Colima, OrbStack and Rancher Desktop
+    are trademarks of their respective owners. Homeport is an independent project, not affiliated
+    with or endorsed by any of them.
   </p>
 
   <h2 id="liability">5. Liability</h2>
