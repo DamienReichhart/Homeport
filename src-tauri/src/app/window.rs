@@ -4,7 +4,9 @@
 //! Single-instance and window-state are driven from Rust only, so the
 //! frontend is granted no permission for them (`capabilities/default.json`).
 
-use tauri::{AppHandle, LogicalSize, Manager, Runtime, WebviewWindow};
+use std::{collections::HashMap, fs};
+
+use tauri::{AppHandle, LogicalSize, Manager, Monitor, PhysicalPosition, Runtime, WebviewWindow};
 use tauri_plugin_window_state::{AppHandleExt, StateFlags};
 
 /// The window's label in `tauri.conf.json`.
@@ -50,35 +52,84 @@ pub fn hide<R: Runtime>(app: &AppHandle<R>) {
     }
 }
 
-/// Moves the window back to the default size, centred, when its restored
-/// place is off every monitor (a display was unplugged since).
+/// Opens the window at the default size, centred, when the place it was
+/// saved at is off every monitor (a display was unplugged since). Reads the
+/// saved place, since a window that isn't shown yet has no size on Linux.
 pub fn keep_on_screen<R: Runtime>(window: &WebviewWindow<R>) -> tauri::Result<()> {
-    let (Ok(position), Ok(size)) = (window.outer_position(), window.outer_size()) else {
+    let Some(saved) = saved_place(window.app_handle()) else {
         return Ok(());
     };
-    let monitors: Vec<Rect> = window
-        .available_monitors()?
-        .iter()
-        .map(|m| Rect {
-            x: m.position().x,
-            y: m.position().y,
-            width: m.size().width,
-            height: m.size().height,
-        })
-        .collect();
-    let bounds = Rect {
-        x: position.x,
-        y: position.y,
-        width: size.width,
-        height: size.height,
-    };
-    if !is_reachable(bounds, &monitors) {
-        log::info!("the window was off every monitor; opening it centred");
-        window.unmaximize()?;
-        window.set_size(DEFAULT_SIZE)?;
-        window.center()?;
+    let monitors = window.available_monitors()?;
+    let rects: Vec<Rect> = monitors.iter().map(rect).collect();
+    if is_reachable(saved, &rects) {
+        return Ok(());
     }
-    Ok(())
+    let Some(monitor) = window
+        .primary_monitor()?
+        .or_else(|| monitors.into_iter().next())
+    else {
+        return Ok(());
+    };
+    log::info!("the window was saved off every monitor; opening it centred");
+    let size = DEFAULT_SIZE.to_physical::<u32>(monitor.scale_factor());
+    let (x, y) = centred(rect(&monitor), size.width, size.height);
+    window.unmaximize()?;
+    window.set_size(size)?;
+    window.set_position(PhysicalPosition { x, y })
+}
+
+/// Where the window-state plugin saved the main window, before maximising.
+fn saved_place<R: Runtime>(app: &AppHandle<R>) -> Option<Rect> {
+    #[derive(serde::Deserialize)]
+    struct Saved {
+        width: u32,
+        height: u32,
+        x: i32,
+        y: i32,
+        #[serde(default)]
+        prev_x: i32,
+        #[serde(default)]
+        prev_y: i32,
+        #[serde(default)]
+        maximized: bool,
+    }
+    let path = app.path().app_config_dir().ok()?.join(app.filename());
+    let mut saved: HashMap<String, Saved> = serde_json::from_slice(&fs::read(path).ok()?).ok()?;
+    let main = saved.remove(MAIN)?;
+    // The plugin's placeholder for a window it never saw move.
+    if main.width == 0 || main.height == 0 {
+        return None;
+    }
+    let (x, y) = if main.maximized {
+        (main.prev_x, main.prev_y)
+    } else {
+        (main.x, main.y)
+    };
+    Some(Rect {
+        x,
+        y,
+        width: main.width,
+        height: main.height,
+    })
+}
+
+fn rect(monitor: &Monitor) -> Rect {
+    Rect {
+        x: monitor.position().x,
+        y: monitor.position().y,
+        width: monitor.size().width,
+        height: monitor.size().height,
+    }
+}
+
+/// The top-left corner of a `width` × `height` window centred on `monitor`,
+/// kept on it when the window is bigger.
+fn centred(monitor: Rect, width: u32, height: u32) -> (i32, i32) {
+    let offset = |space: u32, size: u32| i32::try_from(space.saturating_sub(size) / 2).unwrap_or(0);
+    (
+        monitor.x + offset(monitor.width, width),
+        monitor.y + offset(monitor.height, height),
+    )
 }
 
 /// A rectangle in physical pixels.
@@ -161,6 +212,14 @@ mod tests {
         assert!(!is_reachable(window(100, -50), &[LAPTOP]));
         // The title bar is below the bottom.
         assert!(!is_reachable(window(100, 1070), &[LAPTOP]));
+    }
+
+    #[test]
+    fn the_default_window_is_centred_on_the_monitor_left() {
+        assert_eq!(centred(LAPTOP, 1100, 720), (410, 180));
+        assert_eq!(centred(EXTERNAL, 1100, 720), (1920 + 730, 360));
+        // Bigger than the monitor: its corner stays on it.
+        assert_eq!(centred(LAPTOP, 2200, 1440), (0, 0));
     }
 
     #[test]
