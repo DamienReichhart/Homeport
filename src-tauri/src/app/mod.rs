@@ -9,6 +9,7 @@ mod logging;
 mod polling;
 mod setup;
 mod state;
+pub mod window;
 
 use tauri::Manager;
 
@@ -23,7 +24,12 @@ pub fn run() {
     commands::export_bindings(commands::BINDINGS_PATH);
 
     tauri::Builder::default()
+        // First, so a second launch hands over before anything else starts.
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            window::show(app)
+        }))
         .plugin(logging::plugin())
+        .plugin(window::state_plugin())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
@@ -37,6 +43,12 @@ pub fn run() {
             app.manage(state);
             polling::start(app.handle());
             history::start(app.handle());
+            // The window starts hidden (`tauri.conf.json`), so it shows once,
+            // where it was left.
+            if let Some(main) = app.get_webview_window(window::MAIN) {
+                window::keep_on_screen(&main)?;
+                window::show(app.handle());
+            }
             Ok(())
         })
         .invoke_handler(invoke_handler)
