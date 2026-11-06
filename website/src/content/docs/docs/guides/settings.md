@@ -1,6 +1,6 @@
 ---
 title: Settings
-description: Theme, the system tray, starting at login, updates, registry logins, repositories, how often Synced Stacks are checked, what this machine supports, version and licences.
+description: Theme, the system tray, starting at login, notifications, updates, registry logins, repositories, how often Synced Stacks are checked, what this machine supports, version and licences.
 ---
 
 **Settings** is the last item in the sidebar.
@@ -16,6 +16,21 @@ How Homeport runs on this computer.
 - **Close to the system tray** — off by default, so closing the window quits Homeport. Turn it on to hide the window in the [system tray](/docs/guides/overview/#system-tray) instead: Homeport keeps running with its Host connections open. Bring it back from the tray icon, or by opening Homeport again; quit from the tray's **Quit**. The switch is greyed out, with an explanation, on a desktop without a tray.
 - **Start at login** — off by default. Turn it on and Homeport starts when you log in, so it watches your Hosts from the start. The switch shows what your system has: if you remove Homeport from your login items yourself, it shows as off. On Windows it's listed in **Task Manager → Startup apps**, on macOS in **System Settings → General → Login Items**, on Linux in `~/.config/autostart/`. An AppImage's entry follows the file when you move it, from the next time you open it.
 - **Start hidden in the tray** — off by default, and only available while **Start at login** is on. When Homeport starts at login, it stays in the [system tray](/docs/guides/overview/#system-tray) without opening its window. Opening Homeport yourself always shows the window, and without a tray it always opens.
+
+## Notifications
+
+Homeport shows a notification from your operating system when something happens on a Host, whether its window is open, minimised or [closed to the tray](#desktop). Each kind has its own switch, all on by default, and a switch takes effect at once:
+
+| Switch                                                    | Example                                                                     |
+| --------------------------------------------------------- | --------------------------------------------------------------------------- |
+| **A container stops with an error or runs out of memory** | _web-1 stopped on prod-server (exit code 137)_, _db ran out of memory on …_ |
+| **A container turns unhealthy**                           | _api is unhealthy on prod-server_                                           |
+| **A connected host becomes unreachable**                  | _prod-server is unreachable: …_                                             |
+| **An unreachable host is back**                           | _prod-server is connected again._                                           |
+
+Stopping a container — with **Stop** in Homeport, `docker stop`, `docker kill` or `docker compose down` — isn't a crash, so it shows nothing; nor does a container that exits with code 0. A Host that fails to connect when Homeport starts isn't an outage either: only one that was connected. A container stuck restarting, or a Host that keeps dropping, notifies at most once every 5 minutes.
+
+Notifications come from the connections Homeport already holds, so nothing is installed on your Hosts, and they stop when Homeport quits. Your operating system decides how they look and whether they show: check its notification settings for Homeport if none appear.
 
 ## Updates
 
