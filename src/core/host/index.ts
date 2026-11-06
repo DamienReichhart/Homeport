@@ -1,6 +1,7 @@
 // Public API of the Host core. Import from "@/core/host" only.
 export { hostKeys } from './api/keys';
 export { useCheckForNewerImages, useCreateHost, useReconnectHost } from './api/mutations';
+export { useEveryHost, type HostResult } from './api/everyHost';
 export { hostQueries, resourceQueries, useContainers, useHosts } from './api/queries';
 export { useEngineEventUpdates } from './live/useEngineEventUpdates';
 export { cursorOf, EVENT_PAGE, eventKey } from './model/events';
