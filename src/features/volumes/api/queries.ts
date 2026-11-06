@@ -26,6 +26,14 @@ export const volumeQueries = {
       queryFn: () => commands.volumesHelperImage(hostId),
       staleTime: 0,
     }),
+  /** The running containers using a volume, asked afresh each time. */
+  runningUsers: (hostId: string, volume: string) =>
+    queryOptions({
+      queryKey: [...hostKeys.containers(hostId), 'using-volume', volume],
+      queryFn: () => commands.volumesRunningUsers(hostId, volume),
+      staleTime: 0,
+      gcTime: 0,
+    }),
   /** A folder of a browsed volume; paths are relative to the volume. */
   browse: (hostId: string, session: string, path: string) =>
     queryOptions({

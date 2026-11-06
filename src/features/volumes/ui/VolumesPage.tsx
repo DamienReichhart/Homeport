@@ -1,8 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
-import { BrushCleaningIcon, HardDriveIcon, PlusIcon, RefreshCwIcon } from 'lucide-react';
+import {
+  ArchiveRestoreIcon,
+  BrushCleaningIcon,
+  HardDriveIcon,
+  PlusIcon,
+  RefreshCwIcon,
+} from 'lucide-react';
 import { useState } from 'react';
 import { HostGate, resourceQueries } from '@/core/host';
 import type { VolumeView } from '@/shared/api';
+import { pickFile, pickSavePath } from '@/shared/lib';
 import {
   Button,
   DataTable,
@@ -19,11 +26,15 @@ import {
 } from '@/shared/ui';
 import { usePruneVolumes, useRemoveVolume } from '../api/mutations';
 import { pruneVolumesConfirmation, removeVolumeConfirmation } from './confirmations';
+import { BackupVolumeDialog } from './dialogs/BackupVolumeDialog';
 import { BrowseVolumeDialog } from './dialogs/BrowseVolumeDialog';
+import { RestoreVolumeDialog } from './dialogs/RestoreVolumeDialog';
 import { CreateVolumeDialog } from './dialogs/CreateVolumeDialog';
 import { InspectVolumeDialog } from './dialogs/InspectVolumeDialog';
 import { volumeColumns } from './volumeColumns';
 import { t } from '@/shared/i18n';
+
+const tar = () => [{ name: t('volumes.transfer.archives'), extensions: ['tar'] }];
 
 function VolumesList({ hostId }: { hostId: string }) {
   const volumes = useQuery(resourceQueries.volumes(hostId));
@@ -35,6 +46,21 @@ function VolumesList({ hostId }: { hostId: string }) {
   const [creating, setCreating] = useState(false);
   const [inspecting, setInspecting] = useState<VolumeView | null>(null);
   const [browsing, setBrowsing] = useState<VolumeView | null>(null);
+  const [backingUp, setBackingUp] = useState<{ volume: string; destination: string } | null>(null);
+  const [restoring, setRestoring] = useState<{ source: string; existing?: string } | null>(null);
+
+  const backup = async (v: VolumeView) => {
+    const destination = await pickSavePath(
+      t('volumes.backup.saveAs', { volume: v.name }),
+      `${v.name}.tar`,
+      tar(),
+    );
+    if (destination) setBackingUp({ volume: v.name, destination });
+  };
+  const restoreFrom = async (existing?: string) => {
+    const source = await pickFile(t('volumes.restore.pick'), tar());
+    if (source) setRestoring({ source, existing });
+  };
 
   const remove = (v: VolumeView) =>
     confirm(removeVolumeConfirmation(v, () => removeVolume.mutateAsync(v)));
@@ -77,6 +103,9 @@ function VolumesList({ hostId }: { hostId: string }) {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <Button variant="outline" onClick={() => void restoreFrom()}>
+              <ArchiveRestoreIcon /> {t('volumes.restoreFromFile')}
+            </Button>
             <Button onClick={() => setCreating(true)}>
               <PlusIcon /> {t('volumes.create')}
             </Button>
@@ -99,6 +128,8 @@ function VolumesList({ hostId }: { hostId: string }) {
             sizes: sizes.error ? {} : sizes.data,
             onInspect: setInspecting,
             onBrowse: setBrowsing,
+            onBackup: (v) => void backup(v),
+            onRestore: (v) => void restoreFrom(v.name),
             onRemove: remove,
           })}
           data={volumes.data}
@@ -118,6 +149,23 @@ function VolumesList({ hostId }: { hostId: string }) {
       )}
       {browsing && (
         <BrowseVolumeDialog hostId={hostId} volume={browsing} onClose={() => setBrowsing(null)} />
+      )}
+      {backingUp && (
+        <BackupVolumeDialog
+          hostId={hostId}
+          volume={backingUp.volume}
+          destination={backingUp.destination}
+          onClose={() => setBackingUp(null)}
+        />
+      )}
+      {restoring && (
+        <RestoreVolumeDialog
+          hostId={hostId}
+          source={restoring.source}
+          existing={restoring.existing}
+          volumes={volumes.data}
+          onClose={() => setRestoring(null)}
+        />
       )}
       {dialog}
     </div>

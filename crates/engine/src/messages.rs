@@ -140,6 +140,19 @@ homeport_core::messages! {
     VOLUME_PATH_MISSING = "errors.volumes.pathMissing" => "{path} doesn't exist in the volume.";
     /// A volume path with `..` in it.
     VOLUME_PATH_OUTSIDE = "errors.volumes.pathOutside" => "Paths can't leave the volume.";
+    /// Restoring into a new volume whose name is taken.
+    VOLUME_EXISTS = "errors.volumes.exists" => "A volume named {volume} already exists.";
+    VOLUME_EXISTS_HINT = "errors.volumes.exists.hint" => "Choose another name, or restore into the existing volume from its row.";
+    /// Restoring into a volume that holds files, without replacing them.
+    VOLUME_NOT_EMPTY = "errors.volumes.notEmpty" => "{volume} already holds files.";
+    /// Emptying a volume before a restore failed; the reason is in Details.
+    VOLUME_NOT_EMPTIED = "errors.volumes.notEmptied" => "Homeport couldn't empty {volume} before restoring into it.";
+    /// Restoring into a volume running containers use.
+    VOLUME_USED_BY_RUNNING = "errors.volumes.usedByRunning" => "{volume} is used by running containers: {containers}.";
+    VOLUME_USED_BY_RUNNING_HINT = "errors.volumes.usedByRunning.hint" => "Stop them first, so nothing writes to the volume while it's restored.";
+    /// Restoring a volume from a file that isn't a tar archive.
+    VOLUME_NOT_A_TAR = "errors.volumes.notATar" => "{path} isn't a tar archive.";
+    VOLUME_NOT_A_TAR_HINT = "errors.volumes.notATar.hint" => "Choose a file made by Back up, or a tar archive of a folder's contents, such as one made by tar -cf backup.tar -C folder .";
     /// Creating a network without a name.
     NETWORK_NAME = "errors.networks.name" => "Enter a network name.";
 

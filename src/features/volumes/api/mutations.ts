@@ -63,3 +63,31 @@ export function useDownloadFromVolume(hostId: string, session: string) {
     onError: (e) => toastError(e),
   });
 }
+
+/**
+ * Stops containers for the length of an action on their volume, and starts
+ * them again afterwards. `stop` resolves once they've stopped; `restart`
+ * never throws, and says which it couldn't start.
+ */
+export function usePauseContainers(hostId: string) {
+  const client = useQueryClient();
+  const refresh = () => client.invalidateQueries({ queryKey: hostKeys.containers(hostId) });
+  const stop = useMutation({
+    meta: { silent: true },
+    mutationFn: async (names: string[]) => {
+      for (const name of names) await commands.containersAct(hostId, name, 'stop');
+    },
+    onSettled: refresh,
+  });
+  const restart = async (names: string[]) => {
+    for (const name of names) {
+      try {
+        await commands.containersAct(hostId, name, 'start');
+      } catch (e) {
+        toastError(e);
+      }
+    }
+    if (names.length > 0) await refresh();
+  };
+  return { stop, restart };
+}

@@ -164,6 +164,22 @@ export const commands = {
 	volumesBrowseDownload: (hostId: string, session: string, path: string, destination: string) => __TAURI_INVOKE<boolean>("volumes_browse_download", { hostId, session, path, destination }),
 	/**  Ends a browse session, removing its helper. */
 	volumesBrowseEnd: (session: string) => __TAURI_INVOKE<null>("volumes_browse_end", { session }),
+	/**
+	 *  The running containers mounting a volume: a backup of it may be
+	 *  inconsistent, and a restore into it is refused until they stop.
+	 */
+	volumesRunningUsers: (hostId: string, volume: string) => __TAURI_INVOKE<string[]>("volumes_running_users", { hostId, volume }),
+	/**
+	 *  Backs a volume up to a `.tar` at `destination` on this machine,
+	 *  streaming progress. With `pulled_image`, the helper's image is removed
+	 *  afterwards if nothing else uses it.
+	 */
+	volumesBackupSubscribe: (hostId: string, volume: string, destination: string, pulledImage: boolean, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("volumes_backup_subscribe", { hostId, volume, destination, pulledImage, onEvent }),
+	/**
+	 *  Restores a volume, new or existing, from a `.tar` at `source` on this
+	 *  machine, streaming progress.
+	 */
+	volumesRestoreSubscribe: (hostId: string, source: string, spec: RestoreSpec, pulledImage: boolean, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("volumes_restore_subscribe", { hostId, source, spec, pulledImage, onEvent }),
 	networksList: (hostId: string) => __TAURI_INVOKE<NetworkView[]>("networks_list", { hostId }),
 	networksInspect: (hostId: string, id: string) => __TAURI_INVOKE<Value>("networks_inspect", { hostId, id }),
 	networksCreate: (hostId: string, input: NetworkInput) => __TAURI_INVOKE<string>("networks_create", { hostId, input }),
@@ -712,7 +728,11 @@ export type ErrorCode =
 /**  A Synced Stack's compose file, branch or tag isn't in its repository. */
 "synced_compose_file_missing" | 
 /**  The helper's image isn't on the Host and couldn't be pulled. */
-"helper_image_unavailable" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
+"helper_image_unavailable" | 
+/**  A file to restore a volume from that isn't a tar archive. */
+"not_a_tar_archive" | 
+/**  Restoring into a volume that holds files, without replacing them. */
+"volume_not_empty" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
 
 export type ExecEvent = { type: "output"; data: string } | 
 /**  `error` explains an exit that means the command couldn't run. */
@@ -1279,6 +1299,18 @@ export type RepositoryDraft = {
 };
 
 export type RestartPolicy = "no" | "always" | "unless-stopped" | "on-failure";
+
+/**  Where a restore writes. */
+export type RestoreSpec = {
+	volume: string,
+	/**  Create `volume` first; it must not exist. */
+	create: boolean,
+	/**
+	 *  Empty an existing volume that holds files before extracting.
+	 *  Without it, such a volume is refused with `volume_not_empty`.
+	 */
+	replace: boolean,
+};
 
 export type RunSpec = {
 	image: string,

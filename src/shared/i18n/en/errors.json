@@ -460,10 +460,18 @@
   "errors.updates.signature.hint": "Download the new version from Homeport's website instead.",
   "errors.updates.wrongDisk": "Homeport can't replace itself where it's installed.",
   "errors.updates.wrongDisk.hint": "Move Homeport to a folder on your main disk, or install it from its package repository.",
+  "errors.volumes.exists": "A volume named {volume} already exists.",
+  "errors.volumes.exists.hint": "Choose another name, or restore into the existing volume from its row.",
   "errors.volumes.helperImageUnavailable": "Homeport couldn't get {image} onto this Host to open the volume.",
   "errors.volumes.helperImageUnavailable.hint": "Pull it on the Host, or save it elsewhere with docker save and load it on the Host with docker load:",
   "errors.volumes.helperWindows": "Homeport can't open volumes on Docker Engines that run Windows containers.",
   "errors.volumes.name": "Enter a volume name.",
+  "errors.volumes.notATar": "{path} isn't a tar archive.",
+  "errors.volumes.notATar.hint": "Choose a file made by Back up, or a tar archive of a folder's contents, such as one made by tar -cf backup.tar -C folder .",
+  "errors.volumes.notEmptied": "Homeport couldn't empty {volume} before restoring into it.",
+  "errors.volumes.notEmpty": "{volume} already holds files.",
   "errors.volumes.pathMissing": "{path} doesn't exist in the volume.",
-  "errors.volumes.pathOutside": "Paths can't leave the volume."
+  "errors.volumes.pathOutside": "Paths can't leave the volume.",
+  "errors.volumes.usedByRunning": "{volume} is used by running containers: {containers}.",
+  "errors.volumes.usedByRunning.hint": "Stop them first, so nothing writes to the volume while it's restored."
 }

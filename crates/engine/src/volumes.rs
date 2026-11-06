@@ -18,6 +18,7 @@ use crate::messages as msg;
 
 use crate::{images::PruneReport, COMPOSE_PROJECT};
 
+pub mod archive;
 pub mod browse;
 pub mod helper;
 mod sizes;

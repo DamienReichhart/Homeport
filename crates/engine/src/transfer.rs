@@ -25,7 +25,7 @@ use crate::messages as msg;
 use crate::{containers::commit, images::split_reference};
 
 /// Progress is reported at most once per this many bytes.
-const REPORT_EVERY: u64 = 1024 * 1024;
+pub(crate) const REPORT_EVERY: u64 = 1024 * 1024;
 const CHUNK: usize = 64 * 1024;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
@@ -81,7 +81,7 @@ async fn save_to(
 /// Writes what the Engine streams into `destination`, reporting the bytes.
 /// The file is removed unless the stream completes, also when the task is
 /// cancelled, so nothing half-written is left behind.
-async fn write_file(
+pub(crate) async fn write_file(
     mut stream: impl futures_util::Stream<Item = Result<Bytes, bollard::errors::Error>> + Unpin,
     destination: &Path,
     sink: &impl Fn(TransferEvent) -> bool,
@@ -143,7 +143,7 @@ pub async fn export(
 
 /// The file at `source` as a request body read as the Engine takes it, its
 /// size, and a channel reporting each chunk's size as it's sent.
-async fn file_body(
+pub(crate) async fn file_body(
     source: &Path,
 ) -> AppResult<(
     impl futures_util::Stream<Item = Result<Bytes, io::Error>> + Send + 'static,
@@ -352,7 +352,11 @@ fn invalid_archive(error: AppError, source: &Path) -> AppError {
     }
 }
 
-fn finish(result: AppResult<Vec<String>>, context: &str, sink: &impl Fn(TransferEvent) -> bool) {
+pub(crate) fn finish(
+    result: AppResult<Vec<String>>,
+    context: &str,
+    sink: &impl Fn(TransferEvent) -> bool,
+) {
     match result {
         Ok(images) => {
             sink(TransferEvent::Done { images });

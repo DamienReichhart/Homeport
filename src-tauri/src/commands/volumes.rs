@@ -8,8 +8,11 @@ use homeport_core::streams::StreamId;
 use homeport_engine::{
     containers::files::FileEntry,
     images::{self, PruneReport, PullEvent},
+    transfer::TransferEvent,
     volumes::{
-        self, browse,
+        self,
+        archive::{self, RestoreSpec},
+        browse,
         helper::{self, HelperImage},
         VolumeInput, VolumeView,
     },
@@ -166,4 +169,61 @@ pub async fn volumes_browse_download(
 pub async fn volumes_browse_end(state: State<'_, AppState>, session: String) -> AppResult<()> {
     state.volume_browser.end(&session).await;
     Ok(())
+}
+
+/// The running containers mounting a volume: a backup of it may be
+/// inconsistent, and a restore into it is refused until they stop.
+#[tauri::command]
+#[specta::specta]
+pub async fn volumes_running_users(
+    state: State<'_, AppState>,
+    host_id: String,
+    volume: String,
+) -> AppResult<Vec<String>> {
+    archive::running_users(&state.hosts.registry.docker(&host_id)?, &volume).await
+}
+
+/// Backs a volume up to a `.tar` at `destination` on this machine,
+/// streaming progress. With `pulled_image`, the helper's image is removed
+/// afterwards if nothing else uses it.
+#[tauri::command]
+#[specta::specta]
+pub async fn volumes_backup_subscribe(
+    state: State<'_, AppState>,
+    host_id: String,
+    volume: String,
+    destination: String,
+    pulled_image: bool,
+    on_event: Channel<TransferEvent>,
+) -> AppResult<StreamId> {
+    let docker = state.hosts.registry.docker(&host_id)?;
+    Ok(state.streams.spawn(archive::backup(
+        docker,
+        volume,
+        destination.into(),
+        pulled_image,
+        move |e| on_event.send(e).is_ok(),
+    )))
+}
+
+/// Restores a volume, new or existing, from a `.tar` at `source` on this
+/// machine, streaming progress.
+#[tauri::command]
+#[specta::specta]
+pub async fn volumes_restore_subscribe(
+    state: State<'_, AppState>,
+    host_id: String,
+    source: String,
+    spec: RestoreSpec,
+    pulled_image: bool,
+    on_event: Channel<TransferEvent>,
+) -> AppResult<StreamId> {
+    let docker = state.hosts.registry.docker(&host_id)?;
+    Ok(state.streams.spawn(archive::restore(
+        docker,
+        source.into(),
+        spec,
+        pulled_image,
+        move |e| on_event.send(e).is_ok(),
+    )))
 }

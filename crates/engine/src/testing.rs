@@ -99,19 +99,60 @@ pub async fn container(docker: &Docker, name: &str, cmd: &[&str]) -> Guard {
 /// Runs `sh -c script` in a throwaway container with `volume` mounted at
 /// `/data`, waits for it to exit, and removes it.
 pub async fn run_with_volume(docker: &Docker, volume: &str, script: &str) {
-    use bollard::{models::HostConfig, query_parameters::WaitContainerOptions};
+    output_with_volume(docker, volume, script).await;
+}
+
+/// [`run_with_volume`], returning what the script wrote to stdout.
+pub async fn output_with_volume(docker: &Docker, volume: &str, script: &str) -> String {
+    use bollard::query_parameters::{LogsOptionsBuilder, WaitContainerOptions};
+
+    let guard = container_with_volume_running(docker, volume, &["sh", "-c", script]).await;
+    docker
+        .wait_container(&guard.id, None::<WaitContainerOptions>)
+        .try_collect::<Vec<_>>()
+        .await
+        .expect("test script exits with 0");
+    docker
+        .logs(
+            &guard.id,
+            Some(LogsOptionsBuilder::default().stdout(true).build()),
+        )
+        .try_collect::<Vec<_>>()
+        .await
+        .expect("test script output")
+        .into_iter()
+        .map(|line| String::from_utf8_lossy(&line.into_bytes()).into_owned())
+        .collect()
+}
+
+/// A stopped container mounting `volume` at `/data`, removed with the guard.
+pub async fn container_with_volume(docker: &Docker, volume: &str) -> Guard {
+    create_with_volume(docker, volume, &["sleep", "60"]).await
+}
+
+async fn container_with_volume_running(docker: &Docker, volume: &str, cmd: &[&str]) -> Guard {
+    let guard = create_with_volume(docker, volume, cmd).await;
+    docker
+        .start_container(&guard.id, None)
+        .await
+        .expect("start test container");
+    guard
+}
+
+async fn create_with_volume(docker: &Docker, volume: &str, cmd: &[&str]) -> Guard {
+    use bollard::models::HostConfig;
 
     ensure_image(docker).await;
     let created = docker
         .create_container(
             Some(
                 CreateContainerOptionsBuilder::default()
-                    .name(&unique("writer"))
+                    .name(&unique("user"))
                     .build(),
             ),
             ContainerCreateBody {
                 image: Some(IMAGE.into()),
-                cmd: Some(vec!["sh".into(), "-c".into(), script.into()]),
+                cmd: Some(cmd.iter().map(|s| s.to_string()).collect()),
                 labels: Some([("homeport.test".to_string(), "1".to_string())].into()),
                 host_config: Some(HostConfig {
                     binds: Some(vec![format!("{volume}:/data")]),
@@ -121,20 +162,11 @@ pub async fn run_with_volume(docker: &Docker, volume: &str, script: &str) {
             },
         )
         .await
-        .expect("create test writer");
-    let guard = Guard {
+        .expect("create test container");
+    Guard {
         docker: docker.clone(),
         id: created.id,
-    };
-    docker
-        .start_container(&guard.id, None)
-        .await
-        .expect("start test writer");
-    docker
-        .wait_container(&guard.id, None::<WaitContainerOptions>)
-        .try_collect::<Vec<_>>()
-        .await
-        .expect("test writer exits with 0");
+    }
 }
 
 /// A volume holding `etc/note.txt` ("hello\n", owned by 1234:5678, mode
