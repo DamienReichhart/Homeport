@@ -38,6 +38,7 @@ import { ContainerRow } from './ContainerRow';
 import { SelectionActions } from './SelectionActions';
 import { StackGroupRows } from './StackGroupRows';
 import { PAGE_ACTION_KEYS, usePageAction } from '@/shared/hooks';
+import { useActionRequest } from '@/core/feature';
 import { t } from '@/shared/i18n';
 
 function ContainersList({ hostId }: { hostId: string }) {
@@ -53,6 +54,7 @@ function ContainersList({ hostId }: { hostId: string }) {
   const [containerDialogs, openDialog] = useContainerDialogs(hostId);
   const [running, setRunning] = useState(false);
   usePageAction(t('containers.runContainer'), () => setRunning(true));
+  useActionRequest('run', () => setRunning(true));
 
   if (containers.isPending) return <Spinner />;
   if (containers.error)

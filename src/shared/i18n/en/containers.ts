@@ -368,4 +368,5 @@ export default {
   'containers.export.written': 'Written',
   'containers.export.finished': 'Done. Import it on the Images page, or with docker import.',
   'containers.export.done': 'Exported to {destination}',
+  'containers.palette.run': 'Run a container',
 } as const;

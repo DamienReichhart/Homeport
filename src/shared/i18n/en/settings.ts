@@ -99,4 +99,8 @@ export default {
   'settings.licenses.missing.title': 'Not included in this build',
   'settings.licenses.missing.description':
     'Release builds bundle them; run <code>{command}</code> to generate them for a development build.',
+  'settings.palette.group': 'Settings',
+  'settings.palette.themeLight': 'Theme: Light',
+  'settings.palette.themeDark': 'Theme: Dark',
+  'settings.palette.themeSystem': 'Theme: Match the system',
 } as const;

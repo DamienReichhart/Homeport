@@ -18,11 +18,13 @@ import {
   TableRow,
 } from '@/shared/ui';
 import { PruneDialog } from '../dialogs/PruneDialog';
+import { useActionRequest } from '@/core/feature';
 import { t } from '@/shared/i18n';
 
 /** What takes space on a Host's disk, and the clean-up. */
 export function DiskUsageCard({ hostId }: { hostId: string }) {
   const [pruning, setPruning] = useState(false);
+  useActionRequest('prune', () => setPruning(true));
   const usage = useQuery(resourceQueries.diskUsage(hostId));
   const partial = usage.data?.partial ?? false;
   // With an older Engine, volume and build cache sizes are unknown, not zero.

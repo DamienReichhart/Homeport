@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, within } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { baseCommands } from '@/test/fixtures';
 import { mockCommands } from '@/test/ipc';
 import { DiskUsageCard } from './DiskUsageCard';
@@ -19,7 +20,9 @@ function renderCard(partial: boolean) {
   });
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <DiskUsageCard hostId="h1" />
+      <MemoryRouter>
+        <DiskUsageCard hostId="h1" />
+      </MemoryRouter>
     </QueryClientProvider>,
   );
 }

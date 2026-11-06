@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { saveSettings } from '@/core/settings';
+import { useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { patchSettings, saveSettings } from '@/core/settings';
 import { commands, type Settings } from '@/shared/api';
-import { applyTheme } from '@/shared/lib';
+import { applyTheme, type Theme } from '@/shared/lib';
 import { toastError } from '@/shared/ui';
 import { startAtLoginKey } from './queries';
 
@@ -28,4 +28,10 @@ export function useSetStartAtLogin() {
     mutationFn: (enabled: boolean) => commands.appSetStartAtLogin(enabled),
     onSuccess: (enabled) => client.setQueryData(startAtLoginKey, enabled),
   });
+}
+
+/** Saves `theme` and applies it, as the palette's Theme commands do. */
+export async function setTheme(client: QueryClient, theme: Theme) {
+  const saved = await patchSettings(client, { theme });
+  applyTheme(saved.theme ?? 'system');
 }

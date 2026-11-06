@@ -41,6 +41,7 @@ import { TagDialog } from './dialogs/TagDialog';
 import { TransferDialog, type Transfer } from './dialogs/TransferDialog';
 import { imageColumns } from './imageColumns';
 import { PAGE_ACTION_KEYS, usePageAction } from '@/shared/hooks';
+import { useActionRequest } from '@/core/feature';
 import { t } from '@/shared/i18n';
 
 function ImagesList({ hostId }: { hostId: string }) {
@@ -73,6 +74,7 @@ function ImagesList({ hostId }: { hostId: string }) {
   };
   const [inspecting, setInspecting] = useState<Image | null>(null);
   usePageAction(t('images.pull'), () => setPulling(true));
+  useActionRequest('pull', () => setPulling(true));
 
   const remove = (image: Image) =>
     confirm(removeImageConfirmation(image, () => removeImage.mutateAsync(image)));

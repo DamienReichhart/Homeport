@@ -282,4 +282,5 @@ export default {
     'It was deployed outside Homeport. You can start, stop and remove it; adopt it with its compose file to edit and redeploy.',
   'stacks.external.descriptionFrom':
     'It was deployed outside Homeport from <mono>{files}</mono> on that machine. You can start, stop and remove it; adopt it with its compose file to edit and redeploy.',
+  'stacks.palette.new': 'New Stack',
 } as const;
