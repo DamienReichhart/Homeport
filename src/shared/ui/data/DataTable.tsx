@@ -17,9 +17,15 @@ import { t } from '@/shared/i18n';
 
 export type { ColumnDef } from '@tanstack/react-table';
 
+/** Brings a newly marked row into view (jsdom has no scrolling). */
+function scrollIntoView(row: HTMLTableRowElement | null) {
+  row?.scrollIntoView?.({ block: 'nearest' });
+}
+
 /**
  * A sortable, filterable table. `filter` is matched against every column
- * with an accessor; `onSelectionChange` enables row checkboxes.
+ * with an accessor; `onSelectionChange` enables row checkboxes;
+ * `selectedId` marks one row, such as one just made, and scrolls to it.
  */
 export function DataTable<T>({
   columns,
@@ -29,6 +35,7 @@ export function DataTable<T>({
   empty,
   onRowClick,
   onSelectionChange,
+  selectedId,
   initialSorting = [],
 }: {
   columns: ColumnDef<T, unknown>[];
@@ -38,6 +45,7 @@ export function DataTable<T>({
   empty?: ReactNode;
   onRowClick?: (row: T) => void;
   onSelectionChange?: (rows: T[]) => void;
+  selectedId?: string | null;
   initialSorting?: SortingState;
 }) {
   const [sorting, setSorting] = useState<SortingState>(initialSorting);
@@ -132,7 +140,9 @@ export function DataTable<T>({
             rows.map((row) => (
               <TableRow
                 key={row.id}
-                data-state={row.getIsSelected() ? 'selected' : undefined}
+                data-state={row.getIsSelected() || row.id === selectedId ? 'selected' : undefined}
+                aria-selected={row.id === selectedId || undefined}
+                ref={row.id === selectedId ? scrollIntoView : undefined}
                 className={cn(onRowClick && 'cursor-pointer')}
                 onClick={() => onRowClick?.(row.original)}
               >
