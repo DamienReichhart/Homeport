@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { PaletteCommand } from '@/core/feature';
 import { useHosts, useHostSelection } from '@/core/host';
+import { SearchResults } from '@/features/search';
 import { useShortcut } from '@/shared/hooks';
 import {
   Command,
@@ -131,6 +132,7 @@ export function CommandPalette() {
               ))}
             </CommandGroup>
           ))}
+          <SearchResults query={query} active={open} onChosen={() => show(false)} />
         </CommandList>
       </Command>
     </CommandDialog>
