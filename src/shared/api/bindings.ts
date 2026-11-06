@@ -1238,6 +1238,21 @@ export type NetworkView = {
 	containers: string[],
 };
 
+/**
+ *  The OS notifications Homeport shows, one switch per kind; all on unless
+ *  turned off.
+ */
+export type NotificationSettings = {
+	/**  A container exited with an error or ran out of memory. */
+	containerDied?: boolean,
+	/**  A container's health check started failing. */
+	containerUnhealthy?: boolean,
+	/**  A connected Host stopped answering. */
+	hostUnreachable?: boolean,
+	/**  An unreachable Host is connected again. */
+	hostBack?: boolean,
+};
+
 export type PackageManager = "apt" | "dnf" | "zypper" | "scoop" | "aur";
 
 /**  A parameter of a message: text such as a Host's name, or a number. */
@@ -1472,6 +1487,8 @@ export type Settings = {
 	 *  not a setting.
 	 */
 	startHidden?: boolean,
+	/**  Which OS notifications Homeport shows. */
+	notifications?: NotificationSettings,
 };
 
 /**  The kinds of source, for the rules a definition is checked against. */

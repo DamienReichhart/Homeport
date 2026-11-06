@@ -42,7 +42,7 @@ pub fn state(app: &App) -> Result<AppState, Box<dyn Error>> {
     let registry = HostRegistry::new(
         store.clone(),
         events.clone(),
-        Arc::new(TauriNotifier(app.handle().clone())),
+        Arc::new(TauriNotifier::new(app.handle().clone())),
     );
     let start = registry.clone();
     tauri::async_runtime::spawn(async move {

@@ -7,6 +7,7 @@ pub mod autostart;
 pub mod events;
 pub mod history;
 mod logging;
+mod notifications;
 mod polling;
 mod setup;
 mod state;
@@ -36,6 +37,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(autostart::plugin())
+        .plugin(tauri_plugin_notification::init())
         .setup(move |app| {
             specta.mount_events(app);
             #[cfg(target_os = "linux")]
