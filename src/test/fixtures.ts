@@ -107,7 +107,9 @@ export const baseCommands = {
     syncIntervalMinutes: 5,
     keepEventsDays: 30,
     closeToTray: false,
+    startHidden: false,
   }),
+  app_start_at_login: () => false,
   update_settings: ({ settings }: Record<string, unknown>) => settings,
   get_capabilities: () => ({
     keychain: true,

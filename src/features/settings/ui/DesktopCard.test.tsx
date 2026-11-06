@@ -40,4 +40,64 @@ describe('desktop settings', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('switch', { name: 'Close to the system tray' })).toBeDisabled();
   });
+
+  it('turns start at login on, then allows start hidden', async () => {
+    let atLogin = false;
+    const saved: Settings[] = [];
+    mockCommands({
+      ...baseCommands,
+      get_app_info: appInfo,
+      app_start_at_login: () => atLogin,
+      app_set_start_at_login: ({ enabled }) => {
+        atLogin = enabled as boolean;
+        return atLogin;
+      },
+      update_settings: ({ settings }) => {
+        saved.push(settings as Settings);
+        return settings;
+      },
+    });
+    const user = userEvent.setup();
+    renderApp('/settings');
+    const hidden = await screen.findByRole('switch', { name: 'Start hidden in the tray' });
+    expect(hidden).toBeDisabled();
+    await user.click(await screen.findByRole('switch', { name: 'Start at login' }));
+    await waitFor(() => expect(hidden).toBeEnabled());
+    expect(atLogin).toBe(true);
+    await user.click(hidden);
+    await waitFor(() => expect(saved.at(-1)?.startHidden).toBe(true));
+  });
+
+  it('shows a login entry removed outside Homeport as off', async () => {
+    mockCommands({ ...baseCommands, get_app_info: appInfo, app_start_at_login: () => false });
+    renderApp('/settings');
+    const toggle = await screen.findByRole('switch', { name: 'Start at login' });
+    await waitFor(() => expect(toggle).toBeEnabled());
+    expect(toggle).not.toBeChecked();
+  });
+
+  it('says why the login entry couldn’t be changed', async () => {
+    mockCommands({
+      ...baseCommands,
+      get_app_info: appInfo,
+      app_set_start_at_login: () => {
+        throw {
+          code: 'autostart_failed',
+          key: 'errors.desktop.autostartFailed',
+          params: {},
+          message: 'Homeport couldn’t change whether it starts when you log in.',
+          hint: null,
+          detail: null,
+        };
+      },
+    });
+    const user = userEvent.setup();
+    renderApp('/settings');
+    const toggle = await screen.findByRole('switch', { name: 'Start at login' });
+    await waitFor(() => expect(toggle).toBeEnabled());
+    await user.click(toggle);
+    expect(
+      await screen.findByText("Homeport couldn't change whether it starts when you log in."),
+    ).toBeInTheDocument();
+  });
 });

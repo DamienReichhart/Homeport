@@ -14,6 +14,14 @@ export default {
     'Closing the window keeps Homeport and its Host connections running in the tray. Quit from the tray icon. On desktops that hide tray icons, such as GNOME without an extension, the icon may not show.',
   'settings.desktop.noTray':
     'This desktop has no system tray Homeport can use, so closing the window quits it.',
+  'settings.desktop.startAtLogin': 'Start at login',
+  'settings.desktop.startAtLoginHint':
+    'Homeport starts when you log in to this computer, so it watches your Hosts from the start.',
+  'settings.desktop.startHidden': 'Start hidden in the tray',
+  'settings.desktop.startHiddenHint':
+    'When it starts at login, Homeport stays in the system tray without opening its window.',
+  'settings.desktop.startHiddenNoTray':
+    'Needs a system tray to open the window from, which this desktop doesn’t have.',
   'settings.machine.title': 'This machine',
   'settings.machine.description': 'What Homeport can use here.',
   'settings.machine.keychain': 'OS keychain',
