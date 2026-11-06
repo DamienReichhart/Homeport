@@ -16,6 +16,14 @@ _Avoid_: Daemon, server, backend
 An SSH server an SSH Host is reached through when its own SSH server only accepts connections from it (OpenSSH's `ProxyJump`). A Host has an ordered list of them, possibly empty; each has its own trusted server key and either uses the Host's credentials or its own. Not a Host: it runs no Engine Homeport talks to.
 _Avoid_: Jump host, jump server, proxy, gateway, hop (in the UI)
 
+**Board**:
+The page listing the containers of every connected Host in one table, each row labelled with its Host. The other resource pages show the selected Host only.
+_Avoid_: Dashboard, all hosts view
+
+**Command palette**:
+The search box opened with Mod+K that goes to a page, switches Host, runs a command, and finds resources on every connected Host.
+_Avoid_: Quick open, launcher, omnibox
+
 **Stack**:
 A Compose project running on a Host, identified by its project name. Every Stack is Managed, Linked, Synced or External.
 _Avoid_: Compose, project, application
