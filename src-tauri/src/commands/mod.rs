@@ -12,6 +12,7 @@ use tauri_specta::{collect_commands, collect_events, ErrorHandlingMode};
 use crate::app::events;
 
 pub mod app;
+pub mod backup;
 pub mod containers;
 pub mod exec;
 pub mod files;
@@ -73,6 +74,9 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             hosts::hosts_ssh_setup,
             hosts::hosts_events,
             hosts::hosts_events_clear,
+            backup::data_backup,
+            backup::data_restore_preview,
+            backup::data_restore,
             hosts::hosts_ssh_config_preview,
             hosts::hosts_ssh_config_import,
             hosts::hosts_docker_contexts_preview,

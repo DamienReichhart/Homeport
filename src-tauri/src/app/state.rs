@@ -17,9 +17,12 @@ use homeport_stacks::{
     store::StackStore,
     synced::SyncedStacks,
 };
-use homeport_storage::SecretBox;
+use homeport_storage::{Db, SecretBox};
 
 pub struct AppState {
+    pub db: Arc<Db>,
+    /// The app data folder, where `homeport.db` lives.
+    pub data_dir: std::path::PathBuf,
     pub secrets: Arc<SecretBox>,
     pub settings: SettingsService,
     pub hosts: HostService,

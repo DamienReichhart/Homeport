@@ -73,6 +73,16 @@ export const commands = {
 	hostsEvents: (id: string, limit: number | null, before: EventCursor | null) => __TAURI_INVOKE<EngineEvent[]>("hosts_events", { id, limit, before }),
 	/**  Forgets a Host's kept Engine events. */
 	hostsEventsClear: (id: string) => __TAURI_INVOKE<null>("hosts_events_clear", { id }),
+	/**  Backs up everything Homeport holds to `path`, sealed with `passphrase`. */
+	dataBackup: (path: string, passphrase: string) => __TAURI_INVOKE<BackupOutcome>("data_backup", { path, passphrase }),
+	/**  What the backup at `path` holds, for the restore's confirmation. */
+	dataRestorePreview: (path: string, passphrase: string) => __TAURI_INVOKE<BackupContents>("data_restore_preview", { path, passphrase }),
+	/**
+	 *  Replaces everything Homeport holds with the backup at `path`, after
+	 *  copying the database to `homeport.db.before-restore-<time>` next to it,
+	 *  then reconnects to the restored Hosts.
+	 */
+	dataRestore: (path: string, passphrase: string) => __TAURI_INVOKE<BackupContents>("data_restore", { path, passphrase }),
 	/**  The servers `~/.ssh/config` defines, as drafts of Hosts. */
 	hostsSshConfigPreview: () => __TAURI_INVOKE<ImportDraft[]>("hosts_ssh_config_preview"),
 	hostsSshConfigImport: (choices: ImportChoice[]) => __TAURI_INVOKE<ImportOutcome>("hosts_ssh_config_import", { choices }),
@@ -366,6 +376,30 @@ export type AvailableUpdate = {
 	notes: string | null,
 	/**  RFC 3339 publication date. */
 	date: string | null,
+};
+
+/**  What a backup holds, as the restore's confirmation lists it. */
+export type BackupContents = {
+	/**  When it was written, in UTC (RFC 3339). */
+	createdAt: string,
+	/**  The Homeport that wrote it. */
+	appVersion: string,
+	/**  Its Hosts' names. */
+	hosts: string[],
+	stacks: number,
+	registries: number,
+	repositories: number,
+	settings: boolean,
+};
+
+/**  What a backup wrote. */
+export type BackupOutcome = {
+	contents: BackupContents,
+	/**
+	 *  What was written without its secret, which couldn't be opened:
+	 *  Hosts, Stacks, registries and repositories, by name.
+	 */
+	withoutSecrets: string[],
 };
 
 /**  An SSH server an SSH Host is reached through (`ProxyJump`, ADR 0012). */

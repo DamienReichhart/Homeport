@@ -1,4 +1,6 @@
 {
+  "errors.backup.isAnExport": "{path} is an export of Hosts, not a backup of Homeport's data.",
+  "errors.backup.isAnExport.hint": "Import its Hosts from the Hosts page instead, which adds them to the ones you have.",
   "errors.build.argName": "Each build argument needs a name without \"=\".",
   "errors.build.dockerfileOutside": "The Dockerfile must be a path inside the build folder.",
   "errors.build.failed": "The build failed.",
