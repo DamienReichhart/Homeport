@@ -10,6 +10,10 @@ use crate::messages as msg;
 
 pub type HostId = String;
 
+/// The label of the helper containers Homeport runs on a Host to open
+/// volumes (ADR 0015). Containers with it, and what they do, are hidden.
+pub const HELPER_LABEL: &str = "com.homeport.helper";
+
 /// How to reach a Host. Never contains secret material; that lives in [`HostSecrets`].
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
 #[serde(

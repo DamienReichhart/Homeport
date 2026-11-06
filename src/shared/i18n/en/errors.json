@@ -460,5 +460,10 @@
   "errors.updates.signature.hint": "Download the new version from Homeport's website instead.",
   "errors.updates.wrongDisk": "Homeport can't replace itself where it's installed.",
   "errors.updates.wrongDisk.hint": "Move Homeport to a folder on your main disk, or install it from its package repository.",
-  "errors.volumes.name": "Enter a volume name."
+  "errors.volumes.helperImageUnavailable": "Homeport couldn't get {image} onto this Host to open the volume.",
+  "errors.volumes.helperImageUnavailable.hint": "Pull it on the Host, or save it elsewhere with docker save and load it on the Host with docker load:",
+  "errors.volumes.helperWindows": "Homeport can't open volumes on Docker Engines that run Windows containers.",
+  "errors.volumes.name": "Enter a volume name.",
+  "errors.volumes.pathMissing": "{path} doesn't exist in the volume.",
+  "errors.volumes.pathOutside": "Paths can't leave the volume."
 }

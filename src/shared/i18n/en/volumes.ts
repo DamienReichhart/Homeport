@@ -23,6 +23,20 @@ export default {
   'volumes.unused': 'Unused',
   'volumes.inspectOne': 'Inspect {name}',
   'volumes.deleteOne': 'Delete {name}',
+  'volumes.browseOne': 'Browse the files of {name}',
+  'volumes.browse.title': 'Files of {name}',
+  'volumes.browse.description':
+    'Read-only: nothing here can change the volume, even while containers use it.',
+  'volumes.browse.saveOne': 'Save {name}',
+  'volumes.browse.saved': 'Saved {name}',
+  'volumes.browse.savedArchive': 'Saved {name} as a .tar archive',
+  'volumes.helper.needed':
+    "Homeport opens volumes with a short-lived helper container, which needs the {image} image (about {size}). This Host doesn't have it.",
+  'volumes.helper.removed':
+    "Homeport pulls it only if you agree, and removes it again when it's done, unless something else uses it.",
+  'volumes.helper.pull': 'Pull {image}',
+  'volumes.helper.pulling': 'Pulling {image}…',
+  'volumes.helper.progress': 'Pull progress',
   'volumes.usedBy': 'Used by {containers}.',
   'volumes.notUsed': 'No container uses this volume.',
   'volumes.createDialog.title': 'Create a volume',

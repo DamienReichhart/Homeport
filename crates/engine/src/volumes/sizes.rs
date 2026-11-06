@@ -112,10 +112,7 @@ mod tests {
     use bollard::models::{SystemDataUsageResponse, VolumeListResponse};
 
     use super::*;
-    use crate::{
-        testing,
-        volumes::{create, remove, VolumeInput},
-    };
+    use crate::testing;
 
     /// `/system/df?type=volume&verbose=1` from Docker 29 (API 1.52 and later).
     const ITEMS: &str = r#"{"VolumeUsage":{"Items":[
@@ -175,23 +172,13 @@ mod tests {
     #[ignore = "needs a local Docker Engine"]
     async fn a_volume_reports_at_least_what_it_holds() {
         let docker = testing::docker();
-        testing::ensure_image(&docker).await;
-        let volume = create(
-            &docker,
-            VolumeInput {
-                name: testing::unique("sized"),
-                driver: None,
-                labels: HashMap::new(),
-            },
-        )
-        .await
-        .unwrap();
-        testing::run_with_volume(&docker, &volume, "head -c 200000 /dev/zero > /data/f").await;
+        let volume = testing::filled_volume(&docker).await;
+        let volume = &volume.name;
+        testing::run_with_volume(&docker, volume, "head -c 200000 /dev/zero > /data/f").await;
 
-        let size = sizes(&docker).await.unwrap()[&volume];
+        let size = sizes(&docker).await.unwrap()[volume];
         // And in the older shape, as Podman and Docker before 29 answer.
-        let older = sizes(&testing::docker_at_api(1, 47)).await.unwrap()[&volume];
-        remove(&docker, &volume, false).await.unwrap();
+        let older = sizes(&testing::docker_at_api(1, 47)).await.unwrap()[volume];
         assert!(size.unwrap() >= 200_000, "{size:?}");
         assert!(older.unwrap() >= 200_000, "{older:?}");
     }

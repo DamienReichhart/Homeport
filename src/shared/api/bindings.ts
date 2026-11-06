@@ -143,6 +143,27 @@ export const commands = {
 	volumesCreate: (hostId: string, input: VolumeInput) => __TAURI_INVOKE<string>("volumes_create", { hostId, input }),
 	volumesRemove: (hostId: string, name: string, force: boolean) => __TAURI_INVOKE<null>("volumes_remove", { hostId, name, force }),
 	volumesPrune: (hostId: string, all: boolean) => __TAURI_INVOKE<PruneReport>("volumes_prune", { hostId, all }),
+	/**
+	 *  The image of the helper container that opens volumes (ADR 0015), and
+	 *  whether the Host has it.
+	 */
+	volumesHelperImage: (hostId: string) => __TAURI_INVOKE<HelperImage>("volumes_helper_image", { hostId }),
+	/**
+	 *  Pulls the helper's image onto a Host, once the user agreed, streaming
+	 *  progress. A failure says how to get the image there by hand.
+	 */
+	volumesHelperPullSubscribe: (hostId: string, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("volumes_helper_pull_subscribe", { hostId, onEvent }),
+	/**
+	 *  Opens `volume` read-only in a helper; returns the session's id. With
+	 *  `pulled_image`, ending the session also removes the image Homeport pulled.
+	 */
+	volumesBrowseStart: (hostId: string, volume: string, pulledImage: boolean) => __TAURI_INVOKE<string>("volumes_browse_start", { hostId, volume, pulledImage }),
+	/**  Lists a folder of a browsed volume; paths are relative to the volume. */
+	volumesBrowseList: (hostId: string, session: string, path: string) => __TAURI_INVOKE<FileEntry[]>("volumes_browse_list", { hostId, session, path }),
+	/**  Saves a file, or a folder as a `.tar`, of a browsed volume to `destination`. */
+	volumesBrowseDownload: (hostId: string, session: string, path: string, destination: string) => __TAURI_INVOKE<boolean>("volumes_browse_download", { hostId, session, path, destination }),
+	/**  Ends a browse session, removing its helper. */
+	volumesBrowseEnd: (session: string) => __TAURI_INVOKE<null>("volumes_browse_end", { session }),
 	networksList: (hostId: string) => __TAURI_INVOKE<NetworkView[]>("networks_list", { hostId }),
 	networksInspect: (hostId: string, id: string) => __TAURI_INVOKE<Value>("networks_inspect", { hostId, id }),
 	networksCreate: (hostId: string, input: NetworkInput) => __TAURI_INVOKE<string>("networks_create", { hostId, input }),
@@ -689,7 +710,9 @@ export type ErrorCode =
 /**  `git` failed in a way Homeport has no better words for. */
 "git_failed" | 
 /**  A Synced Stack's compose file, branch or tag isn't in its repository. */
-"synced_compose_file_missing" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
+"synced_compose_file_missing" | 
+/**  The helper's image isn't on the Host and couldn't be pulled. */
+"helper_image_unavailable" | "no_shell" | "path_not_found" | "container_permission_denied" | "file_too_large";
 
 export type ExecEvent = { type: "output"; data: string } | 
 /**  `error` explains an exit that means the command couldn't run. */
@@ -813,6 +836,14 @@ export type HealthcheckSpec = {
 	startPeriodS: number | null,
 	/**  Turns off the image's own healthcheck (`--no-healthcheck`). */
 	disabled: boolean,
+};
+
+/**  The helper's image, and whether the Host has it. */
+export type HelperImage = {
+	image: string,
+	present: boolean,
+	/**  About how much a pull downloads, in bytes. */
+	size: number,
 };
 
 /**  What the user can do about a failure. */

@@ -19,6 +19,7 @@ import {
 } from '@/shared/ui';
 import { usePruneVolumes, useRemoveVolume } from '../api/mutations';
 import { pruneVolumesConfirmation, removeVolumeConfirmation } from './confirmations';
+import { BrowseVolumeDialog } from './dialogs/BrowseVolumeDialog';
 import { CreateVolumeDialog } from './dialogs/CreateVolumeDialog';
 import { InspectVolumeDialog } from './dialogs/InspectVolumeDialog';
 import { volumeColumns } from './volumeColumns';
@@ -33,6 +34,7 @@ function VolumesList({ hostId }: { hostId: string }) {
   const [query, setQuery] = useState('');
   const [creating, setCreating] = useState(false);
   const [inspecting, setInspecting] = useState<VolumeView | null>(null);
+  const [browsing, setBrowsing] = useState<VolumeView | null>(null);
 
   const remove = (v: VolumeView) =>
     confirm(removeVolumeConfirmation(v, () => removeVolume.mutateAsync(v)));
@@ -96,6 +98,7 @@ function VolumesList({ hostId }: { hostId: string }) {
             // A failed measurement shows every size as unknown; the list still works.
             sizes: sizes.error ? {} : sizes.data,
             onInspect: setInspecting,
+            onBrowse: setBrowsing,
             onRemove: remove,
           })}
           data={volumes.data}
@@ -112,6 +115,9 @@ function VolumesList({ hostId }: { hostId: string }) {
           sizes={sizes.error ? {} : sizes.data}
           onClose={() => setInspecting(null)}
         />
+      )}
+      {browsing && (
+        <BrowseVolumeDialog hostId={hostId} volume={browsing} onClose={() => setBrowsing(null)} />
       )}
       {dialog}
     </div>

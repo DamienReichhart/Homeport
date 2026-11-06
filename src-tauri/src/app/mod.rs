@@ -38,6 +38,14 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(invoke_handler)
-        .run(tauri::generate_context!())
-        .expect("error while running Homeport");
+        .build(tauri::generate_context!())
+        .expect("error while building Homeport")
+        .run(|app, event| {
+            if let tauri::RunEvent::Exit = event {
+                // A volume being browsed keeps a helper container on its Host.
+                if let Some(state) = app.try_state::<AppState>() {
+                    tauri::async_runtime::block_on(state.volume_browser.end_all());
+                }
+            }
+        });
 }

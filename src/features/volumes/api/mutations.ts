@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { hostKeys } from '@/core/host';
-import { commands, type VolumeView } from '@/shared/api';
+import { commands, type FileEntry, type VolumeView } from '@/shared/api';
 import { formatBytes } from '@/shared/lib';
 import { toastError } from '@/shared/ui';
 import { t } from '@/shared/i18n';
@@ -46,5 +46,20 @@ export function usePruneVolumes(hostId: string) {
       );
       await refresh();
     },
+  });
+}
+
+/** Saves a file, or a folder as a `.tar`, from a browsed volume to `target` on this machine. */
+export function useDownloadFromVolume(hostId: string, session: string) {
+  return useMutation({
+    mutationFn: ({ entry, target }: { entry: FileEntry; target: string }) =>
+      commands.volumesBrowseDownload(hostId, session, entry.path, target),
+    onSuccess: (archived, { entry }) =>
+      toast.success(
+        archived
+          ? t('volumes.browse.savedArchive', { name: entry.name })
+          : t('volumes.browse.saved', { name: entry.name }),
+      ),
+    onError: (e) => toastError(e),
   });
 }

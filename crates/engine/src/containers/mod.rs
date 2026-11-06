@@ -27,7 +27,7 @@ use homeport_core::error::{AppError, AppResult, ErrorCode};
 
 use crate::messages as msg;
 
-use crate::{COMPOSE_PROJECT, COMPOSE_SERVICE};
+use crate::{volumes::helper, COMPOSE_PROJECT, COMPOSE_SERVICE};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -131,12 +131,14 @@ impl From<EngineSummary> for Container {
     }
 }
 
+/// Every container but Homeport's own helpers (ADR 0015).
 pub async fn list(docker: &Docker) -> AppResult<Vec<Container>> {
     let options = ListContainersOptionsBuilder::default().all(true).build();
     let mut containers: Vec<Container> = docker
         .list_containers(Some(options))
         .await?
         .into_iter()
+        .filter(|c| !c.labels.as_ref().is_some_and(helper::is_helper))
         .map(Container::from)
         .collect();
     containers.sort_by(|a, b| a.name.cmp(&b.name));

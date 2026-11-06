@@ -9,14 +9,17 @@ mod status;
 mod supervisor;
 
 use std::{
-    collections::{HashMap, VecDeque},
+    collections::{HashMap, HashSet, VecDeque},
     sync::{Arc, Mutex, Weak},
 };
 
 use bollard::Docker;
 use tokio::task::JoinHandle;
 
-use homeport_core::error::{AppError, AppResult, ErrorCode};
+use homeport_core::{
+    error::{AppError, AppResult, ErrorCode},
+    host::HELPER_LABEL,
+};
 
 use crate::messages as msg;
 use homeport_transport::{Connected, Dialer};
@@ -38,6 +41,9 @@ struct Entry {
     client: Option<Connected>,
     task: Option<JoinHandle<()>>,
     events: VecDeque<EngineEvent>,
+    /// Homeport's own helper containers seen in the events, whose events
+    /// (and their volumes' mounts) aren't shown (ADR 0015).
+    helpers: HashSet<String>,
 }
 
 pub struct HostRegistry {
@@ -74,6 +80,7 @@ impl HostRegistry {
             client: None,
             task: None,
             events: VecDeque::new(),
+            helpers: HashSet::new(),
         });
         if let Some(old) = entry.task.replace(task) {
             old.abort();
@@ -166,12 +173,35 @@ impl HostRegistry {
 
     fn record_event(&self, id: &str, event: EngineEvent) {
         if let Some(entry) = self.lock().get_mut(id) {
+            if is_helpers(&mut entry.helpers, &event) {
+                return;
+            }
             if entry.events.len() == EVENT_HISTORY {
                 entry.events.pop_front();
             }
             entry.events.push_back(event.clone());
         }
         self.notifier.engine_event(id, &event);
+    }
+}
+
+/// Whether `event` is about a helper container, or a volume mounted in one;
+/// remembers the helpers it sees in `helpers`.
+fn is_helpers(helpers: &mut HashSet<String>, event: &EngineEvent) -> bool {
+    match event.kind.as_str() {
+        "container" if event.attributes.contains_key(HELPER_LABEL) => {
+            if event.action == "destroy" {
+                helpers.remove(&event.actor_id);
+            } else {
+                helpers.insert(event.actor_id.clone());
+            }
+            true
+        }
+        "volume" => event
+            .attributes
+            .get("container")
+            .is_some_and(|c| helpers.contains(c)),
+        _ => false,
     }
 }
 
@@ -221,6 +251,44 @@ mod tests {
             tokio::time::sleep(Duration::from_millis(25)).await;
         }
         panic!("status never matched, last: {:?}", reg.status(id));
+    }
+
+    #[test]
+    fn helper_events_are_left_out() {
+        let event =
+            |kind: &str, action: &str, actor: &str, attributes: &[(&str, &str)]| EngineEvent {
+                time: 0,
+                kind: kind.into(),
+                action: action.into(),
+                actor_id: actor.into(),
+                attributes: attributes
+                    .iter()
+                    .map(|(k, v)| (k.to_string(), v.to_string()))
+                    .collect(),
+            };
+        let mut helpers = HashSet::new();
+        let label = [(HELPER_LABEL, "true")];
+        assert!(is_helpers(
+            &mut helpers,
+            &event("container", "create", "h1", &label)
+        ));
+        assert!(is_helpers(
+            &mut helpers,
+            &event("volume", "mount", "db", &[("container", "h1")])
+        ));
+        assert!(!is_helpers(
+            &mut helpers,
+            &event("volume", "mount", "db", &[("container", "web")])
+        ));
+        assert!(!is_helpers(
+            &mut helpers,
+            &event("container", "start", "web", &[])
+        ));
+        assert!(is_helpers(
+            &mut helpers,
+            &event("container", "destroy", "h1", &label)
+        ));
+        assert!(helpers.is_empty());
     }
 
     #[tokio::test]

@@ -131,6 +131,15 @@ homeport_core::messages! {
 
     /// Creating a volume without a name.
     VOLUME_NAME = "errors.volumes.name" => "Enter a volume name.";
+    /// Opening a volume on an Engine that runs Windows containers.
+    HELPER_WINDOWS = "errors.volumes.helperWindows" => "Homeport can't open volumes on Docker Engines that run Windows containers.";
+    /// The helper's image isn't on the Host and pulling it failed.
+    HELPER_IMAGE_UNAVAILABLE = "errors.volumes.helperImageUnavailable" => "Homeport couldn't get {image} onto this Host to open the volume.";
+    HELPER_IMAGE_UNAVAILABLE_HINT = "errors.volumes.helperImageUnavailable.hint" => "Pull it on the Host, or save it elsewhere with docker save and load it on the Host with docker load:";
+    /// A volume path that doesn't exist (any more).
+    VOLUME_PATH_MISSING = "errors.volumes.pathMissing" => "{path} doesn't exist in the volume.";
+    /// A volume path with `..` in it.
+    VOLUME_PATH_OUTSIDE = "errors.volumes.pathOutside" => "Paths can't leave the volume.";
     /// Creating a network without a name.
     NETWORK_NAME = "errors.networks.name" => "Enter a network name.";
 

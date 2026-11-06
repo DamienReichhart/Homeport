@@ -4,7 +4,9 @@
 use std::sync::{Arc, Mutex};
 
 use homeport_core::streams::Streams;
-use homeport_engine::{containers::exec::ExecSessions, freshness::FreshnessCache};
+use homeport_engine::{
+    containers::exec::ExecSessions, freshness::FreshnessCache, volumes::browse::BrowseSessions,
+};
 use homeport_git::Repositories;
 use homeport_hosts::service::HostService;
 use homeport_registries::RegistryStore;
@@ -34,6 +36,8 @@ pub struct AppState {
     pub synced: Arc<SyncedStacks>,
     pub streams: Streams,
     pub exec: ExecSessions,
+    /// Volumes being browsed, each in a helper container (ADR 0015).
+    pub volume_browser: BrowseSessions,
     /// Registry digests, for telling when a newer image is published.
     pub freshness: FreshnessCache,
     /// The update found by the last check, kept for installing it.

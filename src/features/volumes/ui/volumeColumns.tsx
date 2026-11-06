@@ -1,4 +1,4 @@
-import { InfoIcon, Trash2Icon } from 'lucide-react';
+import { FolderOpenIcon, InfoIcon, Trash2Icon } from 'lucide-react';
 import type { VolumeView } from '@/shared/api';
 import { Badge, Button, type ColumnDef } from '@/shared/ui';
 import { VolumeSize, type VolumeSizes } from './VolumeSize';
@@ -8,10 +8,12 @@ import { t } from '@/shared/i18n';
 export function volumeColumns({
   sizes,
   onInspect,
+  onBrowse,
   onRemove,
 }: {
   sizes: VolumeSizes;
   onInspect: (volume: VolumeView) => void;
+  onBrowse: (volume: VolumeView) => void;
   onRemove: (volume: VolumeView) => void;
 }): ColumnDef<VolumeView, unknown>[] {
   return [
@@ -67,6 +69,14 @@ export function volumeColumns({
             onClick={() => onInspect(row.original)}
           >
             <InfoIcon />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={t('volumes.browseOne', { name: row.original.name })}
+            onClick={() => onBrowse(row.original)}
+          >
+            <FolderOpenIcon />
           </Button>
           <Button
             variant="ghost"

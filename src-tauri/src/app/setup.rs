@@ -65,6 +65,7 @@ pub fn state(app: &App) -> Result<AppState, Box<dyn Error>> {
         hosts: HostService { store, registry },
         streams: Default::default(),
         exec: Default::default(),
+        volume_browser: Default::default(),
         freshness: Default::default(),
         update: Default::default(),
     })

@@ -12,6 +12,10 @@ use futures_util::TryStreamExt;
 
 pub const IMAGE: &str = "alpine:3.22";
 
+/// Held by every test that creates helper containers: one of them removes
+/// this computer's leftovers, which would end another test's helper.
+pub static HELPERS: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+
 pub fn docker() -> Docker {
     Docker::connect_with_local_defaults().expect("local Engine socket")
 }
@@ -131,6 +135,62 @@ pub async fn run_with_volume(docker: &Docker, volume: &str, script: &str) {
         .try_collect::<Vec<_>>()
         .await
         .expect("test writer exits with 0");
+}
+
+/// A volume holding `etc/note.txt` ("hello\n", owned by 1234:5678, mode
+/// 640), removed with the guard.
+pub async fn filled_volume(docker: &Docker) -> VolumeGuard {
+    let name = unique("vol");
+    docker
+        .create_volume(bollard::models::VolumeCreateRequest {
+            name: Some(name.clone()),
+            ..Default::default()
+        })
+        .await
+        .expect("create test volume");
+    let guard = VolumeGuard {
+        docker: docker.clone(),
+        name,
+    };
+    run_with_volume(
+        docker,
+        &guard.name,
+        "mkdir /data/etc && echo hello > /data/etc/note.txt \
+         && chown 1234:5678 /data/etc/note.txt && chmod 640 /data/etc/note.txt",
+    )
+    .await;
+    guard
+}
+
+/// Removes the volume `name` when dropped, with whatever is in it.
+pub struct VolumeGuard {
+    pub docker: Docker,
+    pub name: String,
+}
+
+impl Drop for VolumeGuard {
+    fn drop(&mut self) {
+        let docker = self.docker.clone();
+        let name = self.name.clone();
+        std::thread::spawn(move || {
+            tokio::runtime::Runtime::new()
+                .unwrap()
+                .block_on(async move {
+                    let _ = docker
+                        .remove_volume(
+                            &name,
+                            Some(
+                                bollard::query_parameters::RemoveVolumeOptionsBuilder::default()
+                                    .force(true)
+                                    .build(),
+                            ),
+                        )
+                        .await;
+                })
+        })
+        .join()
+        .ok();
+    }
 }
 
 pub struct Guard {

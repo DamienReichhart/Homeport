@@ -2178,6 +2178,7 @@ dependencies = [
  "bollard",
  "bytes",
  "futures-util",
+ "gethostname",
  "homeport-core",
  "homeport-transport",
  "log",

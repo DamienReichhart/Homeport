@@ -18,6 +18,8 @@ use crate::messages as msg;
 
 use crate::{images::PruneReport, COMPOSE_PROJECT};
 
+pub mod browse;
+pub mod helper;
 mod sizes;
 
 pub use sizes::sizes;
@@ -51,6 +53,9 @@ pub async fn list(docker: &Docker) -> AppResult<Vec<VolumeView>> {
             ListContainersOptionsBuilder::default().all(true).build(),
         ))
         .await?
+        .into_iter()
+        // A helper mounting a volume doesn't make it used (ADR 0015).
+        .filter(|c| !c.labels.as_ref().is_some_and(helper::is_helper))
     {
         let name = c
             .names
