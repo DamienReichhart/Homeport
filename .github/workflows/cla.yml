@@ -1,0 +1,50 @@
+name: CLA
+
+# Every pull request author other than the maintainer and the bots must sign
+# CLA.md before it can be merged (ADR 0016). Signatures are kept in
+# signatures/cla.json on the cla-signatures branch, outside the protected
+# dev and main branches.
+#
+# Security: pull_request_target runs with a write token, so this workflow
+# never checks out or runs anything from the pull request. The action is
+# pinned to a commit, and the token can do only what signing needs.
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, closed]
+  issue_comment:
+    types: [created]
+
+permissions:
+  actions: write
+  contents: write # commits signatures to the cla-signatures branch
+  pull-requests: write # comments, and locks the PR after merge
+  statuses: write
+
+concurrency:
+  group: cla-${{ github.event.pull_request.number || github.event.issue.number }}
+
+jobs:
+  cla:
+    if: >-
+      github.event_name == 'pull_request_target' ||
+      (github.event.issue.pull_request &&
+        (github.event.comment.body == 'recheck' ||
+         github.event.comment.body == 'I have read the CLA Document and I hereby sign the CLA'))
+    runs-on: ubuntu-latest
+    steps:
+      # contributor-assistant/github-action v2.6.1
+      - uses: contributor-assistant/github-action@ca4a40a7d1004f18d9960b404b97e5f30a505a08
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path-to-document: https://github.com/DamienReichhart/Homeport/blob/main/CLA.md
+          path-to-signatures: signatures/cla.json
+          branch: cla-signatures
+          allowlist: DamienReichhart,dependabot[bot],github-actions[bot],claude[bot]
+          custom-notsigned-prcomment: >-
+            Thank you for your contribution. Before it can be merged, please read the
+            [Contributor License Agreement](https://github.com/DamienReichhart/Homeport/blob/main/CLA.md)
+            and sign it by replying to this pull request with the sentence below.
+            Every author of its commits must sign.
+          custom-pr-sign-comment: I have read the CLA Document and I hereby sign the CLA
+          lock-pullrequest-aftermerge: false
