@@ -3,11 +3,11 @@ import { HostSwitcher } from '@/features/hosts';
 import { SwarmNav } from '@/features/swarm';
 import { cn } from '@/shared/lib';
 import { Logo, WithShortcut } from '@/shared/ui';
-import { NAV_SHORTCUTS } from '../shortcuts/navShortcuts';
-import { navEntries } from '../router/features';
+import { useNavEntries } from '../shortcuts/navShortcuts';
 import { t } from '@/shared/i18n';
 
 export function Sidebar() {
+  const { entries, shortcuts } = useNavEntries();
   return (
     <nav
       aria-label={t('app.nav.main')}
@@ -17,7 +17,7 @@ export function Sidebar() {
       <div className="mb-3">
         <HostSwitcher />
       </div>
-      {navEntries.map(({ path, label, icon: Icon }) => {
+      {entries.map(({ path, label, icon: Icon }) => {
         const link = (
           <NavLink
             key={path}
@@ -36,7 +36,7 @@ export function Sidebar() {
             {t(label)}
           </NavLink>
         );
-        const keys = NAV_SHORTCUTS.find((s) => s.entry.path === path)?.keys;
+        const keys = shortcuts.find((s) => s.entry.path === path)?.keys;
         return keys ? (
           <WithShortcut key={path} keys={keys} label={t(label)} side="right">
             {link}

@@ -1,7 +1,7 @@
 /** English text of the `core` namespace; every key starts with `core.`. */
 export default {
   'core.host.engineVersion': 'Engine {version}',
-  'core.host.rememberFailed': 'Homeport couldn’t remember the selected Host',
+  'core.selection.rememberFailed': 'Homeport couldn’t remember what you selected',
   'core.connection.local': 'Local',
   'core.status.connected': 'Connected',
   'core.status.connecting': 'Connecting',

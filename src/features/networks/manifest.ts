@@ -4,5 +4,5 @@ import { NetworksPage } from './ui/NetworksPage';
 
 export const networksFeature = defineFeature({
   routes: [{ path: 'networks', Component: NetworksPage }],
-  nav: { path: '/networks', label: 'networks.nav', icon: NetworkIcon },
+  nav: { path: '/networks', label: 'networks.nav', icon: NetworkIcon, scope: 'host' },
 });

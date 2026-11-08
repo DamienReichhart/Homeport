@@ -4,8 +4,8 @@ import userEvent from '@testing-library/user-event';
 import { Toaster } from '@/shared/ui';
 import { baseCommands } from '@/test/fixtures';
 import { mockCommands } from '@/test/ipc';
-import { useHostSelection } from './context';
-import { HostProvider } from './HostProvider';
+import { useHostSelection } from '@/core/host';
+import { SelectionRoot } from './SelectionRoot';
 
 function Picker() {
   const { hostId, select } = useHostSelection();
@@ -20,9 +20,9 @@ function renderProvider() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
-      <HostProvider>
+      <SelectionRoot>
         <Picker />
-      </HostProvider>
+      </SelectionRoot>
       <Toaster />
     </QueryClientProvider>,
   );
@@ -40,7 +40,7 @@ describe('host selection', () => {
     renderProvider();
     await user.click(await screen.findByRole('button', { name: /Selected/ }));
     expect(
-      await screen.findByText('Homeport couldn’t remember the selected Host'),
+      await screen.findByText('Homeport couldn’t remember what you selected'),
     ).toBeInTheDocument();
     expect(screen.getByText('Homeport couldn’t save its data.')).toBeInTheDocument();
   });

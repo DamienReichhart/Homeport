@@ -1685,6 +1685,9 @@ export type SearchResult = {
 	official: boolean,
 };
 
+/**  What the resource pages show: one Host or one Cluster, by id. */
+export type Selection = { kind: "host"; id: string } | { kind: "cluster"; id: string };
+
 /**  What the Edit dialog changes on a service; `None` keeps that part. */
 export type ServiceChange = {
 	image: string | null,
@@ -1767,8 +1770,16 @@ export type ServiceView = {
 
 export type Settings = {
 	theme?: Theme,
-	/**  The Host selected when the app was last closed. */
+	/**
+	 *  The Host selected when the app was last closed, kept in step with
+	 *  [`Settings::last_selection`] so an older Homeport opens on it too.
+	 */
 	lastHostId?: string | null,
+	/**
+	 *  The Host or Cluster selected when the app was last closed; `None`
+	 *  in settings from before Clusters, which only have `last_host_id`.
+	 */
+	lastSelection?: Selection | null,
 	/**  Look for a new version at launch and every few hours. */
 	checkForUpdates?: boolean,
 	/**

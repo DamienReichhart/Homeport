@@ -24,7 +24,6 @@ export {
   type StatusSummary,
 } from './model/status';
 export { useHostSelection, type HostSelection } from './selection/context';
-export { HostProvider } from './selection/HostProvider';
 export { CheckNewerImages } from './ui/CheckNewerImages';
 export { HostGate } from './ui/HostGate';
 export { NewerImage } from './ui/NewerImage';

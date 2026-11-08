@@ -26,9 +26,12 @@ src/
 │       ├── manifest.ts   routes, sidebar entry and command palette commands
 │       └── index.ts      the public API: the manifest and what other features use
 ├── core/           the domain every feature stands on
-│   ├── feature/    the manifest contract, palette commands, useActionRequest
-│   ├── host/       Host selection, statuses, HostGate, the Engine resources' keys and lists,
-│   │               and the live updates that refresh them
+│   ├── feature/    the manifest contract (each sidebar entry's scope: host, cluster or app),
+│   │               palette commands, useActionRequest
+│   ├── selection/  what the pages show, a Host or a Cluster, remembered across launches
+│   ├── host/       the selected Host (useHostSelection), statuses, HostGate, the Engine
+│   │               resources' keys and lists, and the live updates that refresh them
+│   ├── cluster/    Clusters: their keys (clusterKeys.scope), list, statuses and ClusterGate
 │   ├── swarm/      the Swarms found through their manager Hosts (ADR 0016): their keys,
 │   │               the list, SwarmGate, and the live updates of their manager Hosts
 │   └── settings/   the user's settings
@@ -42,7 +45,9 @@ src/
 
 Tests sit next to the code they test. A file past 300 lines gets an ESLint warning: it usually holds more than one thing. A folder past about ten files gets subfolders by role.
 
-**Query keys.** Every key of a Host starts with `hostKeys.scope(hostId)` (`@/core/host`), so one invalidation refreshes everything a Host has. The lists of Engine resources (containers, images, volumes, networks, Stacks, system usage, events) are read through `resourceQueries`, because several features read them and Engine events invalidate them (`useEngineEventUpdates`). Every other key lives in the feature's `api/queries.ts`.
+**Selection.** The pages show one Host or one Cluster (`@/core/selection`); a sidebar entry's `scope` says which its pages are about, and the sidebar, the shortcuts and the palette only offer the entries of the selected kind, plus the app's. A Host page opened while a Cluster is selected, or the reverse, goes to the Overview.
+
+**Query keys.** Every key of a Host starts with `hostKeys.scope(hostId)` (`@/core/host`), and every key of a Cluster with `clusterKeys.scope(clusterId)` (`@/core/cluster`), so one invalidation refreshes everything a Host or a Cluster has. The lists of Engine resources (containers, images, volumes, networks, Stacks, system usage, events) are read through `resourceQueries`, because several features read them and Engine events invalidate them (`useEngineEventUpdates`). Every other key lives in the feature's `api/queries.ts`.
 
 ## Backend layout
 

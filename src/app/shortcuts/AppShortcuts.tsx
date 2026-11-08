@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { NavEntry } from '@/core/feature';
 import { hostKeys, useHosts, useHostSelection } from '@/core/host';
 import { useShortcut } from '@/shared/hooks';
-import { NAV_SHORTCUTS } from './navShortcuts';
+import { useNavEntries } from './navShortcuts';
 import { t } from '@/shared/i18n';
 
 /** The shortcuts that work on every page. */
@@ -12,6 +12,7 @@ export function AppShortcuts() {
   const client = useQueryClient();
   const hosts = useHosts();
   const { hostId, select } = useHostSelection();
+  const { shortcuts } = useNavEntries();
 
   const step = (by: number) => {
     const list = hosts.data ?? [];
@@ -51,7 +52,7 @@ export function AppShortcuts() {
   });
   return (
     <>
-      {NAV_SHORTCUTS.map(({ entry, keys }) => (
+      {shortcuts.map(({ entry, keys }) => (
         <NavShortcut key={entry.path} entry={entry} keys={keys} />
       ))}
     </>

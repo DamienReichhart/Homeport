@@ -24,8 +24,12 @@ pub enum Theme {
 #[serde(default, rename_all = "camelCase")]
 pub struct Settings {
     pub theme: Theme,
-    /// The Host selected when the app was last closed.
+    /// The Host selected when the app was last closed, kept in step with
+    /// [`Settings::last_selection`] so an older Homeport opens on it too.
     pub last_host_id: Option<String>,
+    /// The Host or Cluster selected when the app was last closed; `None`
+    /// in settings from before Clusters, which only have `last_host_id`.
+    pub last_selection: Option<Selection>,
     /// Look for a new version at launch and every few hours.
     pub check_for_updates: bool,
     /// Minutes between checks of Synced Stacks' repositories while Homeport
@@ -43,6 +47,14 @@ pub struct Settings {
     pub start_hidden: bool,
     /// Which OS notifications Homeport shows.
     pub notifications: NotificationSettings,
+}
+
+/// What the resource pages show: one Host or one Cluster, by id.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
+#[serde(tag = "kind", rename_all = "lowercase")]
+pub enum Selection {
+    Host { id: String },
+    Cluster { id: String },
 }
 
 /// The OS notifications Homeport shows, one switch per kind; all on unless
@@ -88,6 +100,7 @@ impl Default for Settings {
         Self {
             theme: Theme::default(),
             last_host_id: None,
+            last_selection: None,
             check_for_updates: true,
             sync_interval_minutes: 5,
             keep_events_days: 30,
@@ -268,6 +281,24 @@ mod tests {
             serde_json::from_str(r#"{ "notifications": { "hostBack": false } }"#).unwrap();
         assert!(!saved.notifications.host_back);
         assert!(saved.notifications.container_died);
+    }
+
+    #[test]
+    fn settings_from_before_clusters_keep_their_host() {
+        let saved: Settings = serde_json::from_str(r#"{ "lastHostId": "h1" }"#).unwrap();
+        assert_eq!(saved.last_host_id.as_deref(), Some("h1"));
+        assert_eq!(saved.last_selection, None);
+    }
+
+    #[test]
+    fn a_selected_cluster_is_read_back() {
+        let saved: Settings =
+            serde_json::from_str(r#"{ "lastSelection": { "kind": "cluster", "id": "c1" } }"#)
+                .unwrap();
+        assert_eq!(
+            saved.last_selection,
+            Some(Selection::Cluster { id: "c1".into() })
+        );
     }
 
     #[test]

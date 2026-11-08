@@ -5,7 +5,9 @@ import {
   Button,
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectSeparator,
   SelectTrigger,
   SelectValue,
@@ -41,12 +43,17 @@ export function HostSwitcher() {
           <SelectValue placeholder={t('hosts.switcher.placeholder')} />
         </SelectTrigger>
         <SelectContent>
-          {hosts.data?.map(({ host, status }) => (
-            <SelectItem key={host.id} value={host.id} title={statusTitle(status)}>
-              <StatusDot tone={describeStatus(status).tone} />
-              <span className="truncate">{host.name}</span>
-            </SelectItem>
-          ))}
+          {hosts.data?.length ? (
+            <SelectGroup>
+              <SelectLabel>{t('hosts.switcher.hosts')}</SelectLabel>
+              {hosts.data.map(({ host, status }) => (
+                <SelectItem key={host.id} value={host.id} title={statusTitle(status)}>
+                  <StatusDot tone={describeStatus(status).tone} />
+                  <span className="truncate">{host.name}</span>
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          ) : null}
           {hosts.data?.length ? <SelectSeparator /> : null}
           <SelectItem value={ADD}>
             <PlusIcon /> {t('hosts.switcher.add')}
