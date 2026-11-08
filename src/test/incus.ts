@@ -1,4 +1,4 @@
-import type { HostView, IncusInstance, IncusProject } from '@/shared/api';
+import type { HostView, IncusImage, IncusInstance, IncusProject, RemoteImage } from '@/shared/api';
 import { connectedHost } from './fixtures';
 
 /** A local Incus Host, connected. */
@@ -49,5 +49,42 @@ export const incusInstance = (name: string, over: Partial<IncusInstance> = {}): 
   snapshots: 0,
   ephemeral: false,
   location: 'none',
+  ...over,
+});
+
+/** An image kept on an Incus Host. */
+export const incusImage = (fingerprint: string, over: Partial<IncusImage> = {}): IncusImage => ({
+  fingerprint,
+  aliases: [],
+  description: 'Alpine 3.21 amd64 (20261108_13:00)',
+  type: 'container',
+  architecture: 'x86_64',
+  size: 3_367_792,
+  os: 'Alpine',
+  release: '3.21',
+  variant: 'default',
+  uploadedAt: '2026-11-08T22:35:36Z',
+  lastUsedAt: null,
+  autoUpdate: true,
+  cached: false,
+  public: false,
+  source: { server: 'https://images.linuxcontainers.org', alias: 'alpine/3.21' },
+  ...over,
+});
+
+/** An image a remote server publishes. */
+export const remoteImage = (alias: string, over: Partial<RemoteImage> = {}): RemoteImage => ({
+  alias,
+  aliases: [alias],
+  os: 'Debian',
+  release: '12',
+  releaseTitle: 'bookworm',
+  variant: 'default',
+  arch: 'amd64',
+  container: true,
+  virtualMachine: true,
+  serial: '20261108_05:24',
+  containerSize: 100_000_000,
+  virtualMachineSize: 400_000_000,
   ...over,
 });

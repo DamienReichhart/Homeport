@@ -99,6 +99,21 @@ homeport_core::messages! {
     INSTANCE_RUNNING_HINT = "errors.incus.instanceRunning.hint" => "Stop it first, or delete it with Stop it first checked.";
     /// Stopping a stopped Instance, freezing a frozen one…
     INSTANCE_ALREADY_THERE = "errors.incus.instanceAlreadyThere" => "The Instance is already in that state.";
+    // Images.
+
+    /// An image that isn't in the project.
+    LOCAL_IMAGE_NOT_FOUND = "errors.incus.localImageNotFound" => "There's no image {fingerprint} in this project; it may have just been deleted.";
+    /// An alias without a name.
+    ALIAS_MISSING = "errors.incus.aliasMissing" => "Enter an alias.";
+    /// An alias another image has.
+    ALIAS_IN_USE = "errors.incus.aliasInUse" => "Another image already has the alias {name}.";
+    ALIAS_IN_USE_HINT = "errors.incus.aliasInUse.hint" => "Remove it from that image first, or pick another alias.";
+    /// The remote server's catalogue couldn't be fetched.
+    CATALOGUE_UNREACHABLE = "errors.incus.catalogueUnreachable" => "Homeport couldn't read the image list of {server}.";
+    CATALOGUE_UNREACHABLE_HINT = "errors.incus.catalogueUnreachable.hint" => "Check this computer's internet connection, or type the image's alias instead: Incus downloads it itself.";
+    /// The catalogue isn't a simplestreams index.
+    CATALOGUE_UNREADABLE = "errors.incus.catalogueUnreadable" => "The image server's list isn't one Homeport can read.";
+
     /// The project picked isn't there any more.
     PROJECT_NOT_FOUND = "errors.incus.projectNotFound" => "There's no project {project} on {name}.";
     PROJECT_NOT_FOUND_HINT = "errors.incus.projectNotFound.hint" => "Pick another project under the host switcher.";

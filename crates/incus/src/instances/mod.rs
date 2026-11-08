@@ -432,4 +432,4 @@ pub async fn delete(incus: &Incus, project: &str, name: &str, stop_first: bool) 
 }
 
 #[cfg(test)]
-mod tests;
+pub(crate) mod tests;

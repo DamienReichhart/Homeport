@@ -13,6 +13,7 @@ import { eventsFeature } from '@/features/events';
 import { helmFeature } from '@/features/helm';
 import { hostsFeature } from '@/features/hosts';
 import { imagesFeature } from '@/features/images';
+import { incusImagesFeature } from '@/features/incus-images';
 import { incusInstancesFeature } from '@/features/incus-instances';
 import { networkFeature } from '@/features/network';
 import { networksFeature } from '@/features/networks';
@@ -46,6 +47,7 @@ export const features: FeatureManifest[] = [
   containerdSnapshotsFeature,
   containerdNamespacesFeature,
   incusInstancesFeature,
+  incusImagesFeature,
   swarmFeature,
   workloadsFeature,
   podsFeature,

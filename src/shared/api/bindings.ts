@@ -481,6 +481,24 @@ export const commands = {
 	incusInstanceAct: (hostId: string, project: string, name: string, action: InstanceAction, force: boolean) => __TAURI_INVOKE<null>("incus_instance_act", { hostId, project, name, action, force }),
 	/**  Deletes an Instance with its snapshots; `stop_first` stops a running one. */
 	incusInstanceDelete: (hostId: string, project: string, name: string, stopFirst: boolean) => __TAURI_INVOKE<null>("incus_instance_delete", { hostId, project, name, stopFirst }),
+	/**  The images of `project`, newest first. */
+	incusImages: (hostId: string, project: string) => __TAURI_INVOKE<IncusImage[]>("incus_images", { hostId, project }),
+	/**
+	 *  What `server` (a simplestreams image server) publishes for the Host's
+	 *  architecture, read from this computer and kept a few minutes.
+	 */
+	incusRemoteImages: (hostId: string, server: string) => __TAURI_INVOKE<RemoteImage[]>("incus_remote_images", { hostId, server }),
+	/**
+	 *  Copies an image from a remote server into `project`, streaming the
+	 *  download's progress.
+	 */
+	incusImageCopySubscribe: (hostId: string, project: string, copy: ImageCopy, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("incus_image_copy_subscribe", { hostId, project, copy, onEvent }),
+	/**  Fetches a newer build of an image from where it came from. */
+	incusImageRefresh: (hostId: string, project: string, fingerprint: string) => __TAURI_INVOKE<null>("incus_image_refresh", { hostId, project, fingerprint }),
+	/**  Deletes an image; Instances made from it keep their own copy. */
+	incusImageDelete: (hostId: string, project: string, fingerprint: string) => __TAURI_INVOKE<null>("incus_image_delete", { hostId, project, fingerprint }),
+	incusImageAliasAdd: (hostId: string, project: string, fingerprint: string, name: string) => __TAURI_INVOKE<null>("incus_image_alias_add", { hostId, project, fingerprint, name }),
+	incusImageAliasRemove: (hostId: string, project: string, name: string) => __TAURI_INVOKE<null>("incus_image_alias_remove", { hostId, project, name }),
 	podsList: (hostId: string) => __TAURI_INVOKE<PodmanPod[]>("pods_list", { hostId }),
 	podsInspect: (hostId: string, id: string) => __TAURI_INVOKE<PodmanPodDetail>("pods_inspect", { hostId, id }),
 	podsAct: (hostId: string, id: string, action: PodmanPodAction) => __TAURI_INVOKE<null>("pods_act", { hostId, id, action }),
@@ -2001,6 +2019,17 @@ export type Image = {
 	labels: { [key in string]: string },
 };
 
+/**  What to copy from a remote image server. */
+export type ImageCopy = {
+	server: string,
+	alias: string,
+	type: InstanceType,
+	/**  Keep it up to date from the server. */
+	autoUpdate: boolean,
+	/**  Also give it the remote alias here, so Instances can be made from it by name. */
+	addAlias: boolean,
+};
+
 export type ImageLayer = {
 	id: string,
 	created: number,
@@ -2008,6 +2037,12 @@ export type ImageLayer = {
 	size: number,
 	comment: string,
 	tags: string[],
+};
+
+/**  Where an image came from. */
+export type ImageSource = {
+	server: string,
+	alias: string,
 };
 
 /**  A draft the user picked, with what they changed in the preview. */
@@ -2057,6 +2092,30 @@ export type ImportSpec = {
 	reference: string,
 	/**  Dockerfile instructions, one per entry, like `CMD ["/bin/sh"]`. */
 	changes: string[],
+};
+
+/**  One image kept on the Host. */
+export type IncusImage = {
+	fingerprint: string,
+	aliases: string[],
+	/**  "Debian 12 amd64 (20261108_05:24)". */
+	description: string,
+	type: InstanceType,
+	architecture: string,
+	size: number,
+	os: string,
+	release: string,
+	variant: string,
+	/**  RFC 3339. */
+	uploadedAt: string,
+	lastUsedAt: string | null,
+	/**  Whether Incus keeps it up to date from where it came from. */
+	autoUpdate: boolean,
+	/**  Whether Incus downloaded it to make an Instance, and deletes it once unused. */
+	cached: boolean,
+	public: boolean,
+	/**  The server and alias it was copied from, if any. */
+	source: ImageSource | null,
 };
 
 /**  One Instance, as the list shows it. */
@@ -2964,6 +3023,34 @@ export type ReleaseSummary = {
 	chartName: string,
 	chartVersion: string,
 	appVersion: string,
+};
+
+/**  One image a remote server publishes for an architecture. */
+export type RemoteImage = {
+	/**
+	 *  Its shortest alias, what `incus launch images:<alias>` takes:
+	 *  "debian/12".
+	 */
+	alias: string,
+	/**  Every alias, shortest first. */
+	aliases: string[],
+	os: string,
+	release: string,
+	/**  The release's name when it has one: "bookworm". */
+	releaseTitle: string,
+	/**  "default", "cloud" (with cloud-init)… */
+	variant: string,
+	/**  Its architecture as the server names it: "amd64". */
+	arch: string,
+	/**  Whether it's published as a system container image. */
+	container: boolean,
+	/**  Whether it's published as a virtual machine image. */
+	virtualMachine: boolean,
+	/**  The latest build: "20261108_05:24". */
+	serial: string,
+	/**  Bytes of the container and virtual machine root filesystems. */
+	containerSize: number | null,
+	virtualMachineSize: number | null,
 };
 
 /**  A remote's branches and tags, as "Test access" lists them. */

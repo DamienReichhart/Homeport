@@ -9,10 +9,12 @@
 mod client;
 mod error;
 pub mod events;
+pub mod images;
 pub mod instances;
 pub mod messages;
 pub mod operations;
 pub mod projects;
+pub mod simplestreams;
 pub mod trust;
 mod websocket;
 
