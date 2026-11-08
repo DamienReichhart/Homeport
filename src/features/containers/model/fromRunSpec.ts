@@ -75,6 +75,8 @@ export function fromRunSpec(spec: RunSpec): RunForm {
     autoRemove: spec.autoRemove,
     advanced: advanced(spec),
     basedOn: spec.basedOn,
+    // Duplicate and Edit never run into a pod.
+    pod: '',
   };
 }
 

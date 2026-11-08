@@ -2,7 +2,7 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import type { RunSpec } from '@/shared/api';
-import { baseCommands } from '@/test/fixtures';
+import { baseCommands, podmanHost } from '@/test/fixtures';
 import { mockCommands } from '@/test/ipc';
 import { renderWithProviders } from '@/test/render';
 import { RunContainerDialog } from './RunContainerDialog';
@@ -26,6 +26,70 @@ function renderDialog() {
   );
   return sent;
 }
+
+function renderOnPodman() {
+  const sent: { spec: RunSpec; pod: unknown }[] = [];
+  mockCommands({
+    ...baseCommands,
+    hosts_list: () => [podmanHost],
+    images_list: () => [],
+    networks_list: () => [],
+    containers_list: () => [],
+    pods_list: () => [
+      {
+        id: 'p1',
+        name: 'shop',
+        status: 'running',
+        created: '',
+        infraId: null,
+        labels: {},
+        networks: [],
+        containers: [],
+      },
+    ],
+    containers_run: ({ spec, pod }) => {
+      sent.push({ spec: spec as RunSpec, pod });
+      return 'new-id';
+    },
+  });
+  renderWithProviders(
+    <MemoryRouter>
+      <RunContainerDialog hostId="h1" image="nginx:1.27" open onOpenChange={() => {}} />
+    </MemoryRouter>,
+  );
+  return sent;
+}
+
+describe('run dialog in a pod', () => {
+  it('isn’t offered on a Docker Engine', async () => {
+    renderDialog();
+    expect(await screen.findByText('Advanced options')).toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: 'Pod' })).toBeNull();
+    expect(screen.getByText('Ports')).toBeInTheDocument();
+  });
+
+  it('runs into the pod picked on Podman, leaving ports to it', async () => {
+    const sent = renderOnPodman();
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('combobox', { name: 'Pod' }));
+    await user.click(await screen.findByRole('option', { name: 'shop' }));
+    expect(screen.queryByText('Ports')).toBeNull();
+    expect(screen.getByText(/Containers in shop share its network/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Run' }));
+    await waitFor(() => expect(sent).toHaveLength(1));
+    expect(sent[0]!.pod).toBe('shop');
+    expect(sent[0]!.spec).toMatchObject({ image: 'nginx:1.27', ports: [], network: null });
+  });
+
+  it('runs outside any pod unless one is picked', async () => {
+    const sent = renderOnPodman();
+    const user = userEvent.setup();
+    await screen.findByRole('combobox', { name: 'Pod' });
+    await user.click(screen.getByRole('button', { name: 'Run' }));
+    await waitFor(() => expect(sent).toHaveLength(1));
+    expect(sent[0]!.pod).toBeNull();
+  });
+});
 
 describe('run dialog', () => {
   it('keeps the advanced options out of the way until asked', async () => {

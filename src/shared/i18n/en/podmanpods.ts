@@ -58,6 +58,8 @@ export default {
   'podmanpods.detail.created': 'Created',
   'podmanpods.detail.labels': 'Labels',
   'podmanpods.detail.command': 'Created with',
+  'podmanpods.detail.runContainer': 'Run container',
+  'podmanpods.detail.runContainerIn': 'Run a container in {name}',
   'podmanpods.newDialog.title': 'New pod',
   'podmanpods.newDialog.description':
     'Its containers share one network, so ports are published on the pod, for all of them.',

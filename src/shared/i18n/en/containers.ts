@@ -208,6 +208,10 @@ export default {
   'containers.run.commandPlaceholder': "The image's default",
   'containers.run.environment': 'Environment',
   'containers.run.network': 'Network',
+  'containers.run.pod': 'Pod',
+  'containers.run.noPod': 'None',
+  'containers.run.podOwnsNetwork':
+    'Containers in {pod} share its network: ports, the network, the hostname and DNS are the pod’s.',
   'containers.run.defaultNetwork': 'Default (bridge)',
   'containers.run.restart': 'Restart',
   'containers.run.restartPolicy': 'Restart policy',

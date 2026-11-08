@@ -135,6 +135,15 @@ describe('Podman pods', () => {
     expect(screen.getByText('ipc, net, uts')).toBeInTheDocument();
   });
 
+  it('run new containers from their page, into themselves', async () => {
+    const user = setup();
+    renderApp('/podman-pods/p1');
+    await user.click(await screen.findByRole('button', { name: 'Run container' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Run a container in web' });
+    expect(within(dialog).getByRole('combobox', { name: 'Pod' })).toHaveTextContent('web');
+    expect(within(dialog).queryByText('Ports')).toBeNull();
+  });
+
   it('are named on the containers in them', async () => {
     setup();
     renderApp('/containers');

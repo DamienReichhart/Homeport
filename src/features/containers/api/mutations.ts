@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { hostKeys } from '@/core/host';
 import { commands, type CommitSpec, type ContainerAction, type FileEntry } from '@/shared/api';
 import { toastError } from '@/shared/ui';
-import { toRunSpec, type RunForm } from '../model/runForm';
+import { podOf, toRunSpec, type RunForm } from '../model/runForm';
 import { t, type MessageKey } from '@/shared/i18n';
 
 /** The toast after an action, by action; each message takes the number of containers. */
@@ -67,7 +67,7 @@ export function useRunContainer(hostId: string, onStarted: (id: string) => void)
   const refresh = useRefreshContainers(hostId);
   return useMutation({
     meta: { silent: true },
-    mutationFn: (form: RunForm) => commands.containersRun(hostId, toRunSpec(form), null),
+    mutationFn: (form: RunForm) => commands.containersRun(hostId, toRunSpec(form), podOf(form)),
     onSuccess: async (id) => {
       toast.success(t('containers.run.started'));
       await refresh();

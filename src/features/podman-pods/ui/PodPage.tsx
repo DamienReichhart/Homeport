@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeftIcon } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { ArrowLeftIcon, PlusIcon } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { HostGate } from '@/core/host';
+import { RunContainerDialog } from '@/features/containers';
 import type { PodmanPodDetail } from '@/shared/api';
 import { formatRelative, shortId } from '@/shared/lib';
 import {
@@ -118,6 +119,7 @@ function PodDetailView({ hostId, id }: { hostId: string; id: string }) {
   const navigate = useNavigate();
   const pod = useQuery(podQueries.inspect(hostId, id));
   const [dialog, confirm] = useConfirmedAction();
+  const [running, setRunning] = useState(false);
   const back = () => void navigate('/podman-pods');
 
   if (pod.isPending) return <Spinner />;
@@ -137,11 +139,25 @@ function PodDetailView({ hostId, id }: { hostId: string; id: string }) {
             </span>
           }
           description={t(podStatusLabel(p.status))}
-          actions={<PodActions hostId={hostId} pod={p} confirm={confirm} onRemoved={back} />}
+          actions={
+            <>
+              <Button onClick={() => setRunning(true)}>
+                <PlusIcon /> {t('podmanpods.detail.runContainer')}
+              </Button>
+              <PodActions hostId={hostId} pod={p} confirm={confirm} onRemoved={back} />
+            </>
+          }
         />
       </div>
       <Containers pod={p} />
       <Details pod={p} />
+      <RunContainerDialog
+        hostId={hostId}
+        open={running}
+        onOpenChange={setRunning}
+        pod={p.name}
+        title={t('podmanpods.detail.runContainerIn', { name: p.name })}
+      />
       {dialog}
     </div>
   );
