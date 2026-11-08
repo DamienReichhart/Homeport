@@ -1,27 +1,12 @@
 //! Container logs, streamed in batches. Several containers can share one
 //! stream (a Stack's services), each line tagged with its source.
 
-use std::time::Duration;
-
 use bollard::{container::LogOutput, query_parameters::LogsOptionsBuilder, Docker};
 use futures_util::{stream::select_all, StreamExt};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
-const BATCH_LINES: usize = 500;
-const BATCH_EVERY: Duration = Duration::from_millis(50);
-
-#[derive(Debug, Clone, Deserialize, specta::Type)]
-#[serde(rename_all = "camelCase")]
-pub struct LogOptions {
-    /// Lines of history to start with; `None` for all of it.
-    pub tail: Option<u32>,
-    pub timestamps: bool,
-    /// Only lines newer than this Unix time (seconds).
-    pub since: Option<i32>,
-    pub stdout: bool,
-    pub stderr: bool,
-    pub follow: bool,
-}
+pub use homeport_core::logs::{LineSplitter, LogEvent, LogLine, LogOptions};
+use homeport_core::logs::{BATCH_EVERY, BATCH_LINES};
 
 #[derive(Debug, Clone, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -29,56 +14,6 @@ pub struct LogSource {
     pub container_id: String,
     /// Shown in front of each line when several sources share a stream.
     pub label: Option<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
-#[serde(rename_all = "camelCase")]
-pub struct LogLine {
-    pub source: Option<String>,
-    /// `stdout`, `stderr` or `console` (TTY containers).
-    pub stream: String,
-    pub text: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
-#[serde(tag = "type", rename_all = "camelCase")]
-pub enum LogEvent {
-    Lines {
-        lines: Vec<LogLine>,
-    },
-    Error {
-        error: homeport_core::error::AppError,
-    },
-    End,
-}
-
-/// Splits a byte stream into lines, keeping partial lines until completed so
-/// multi-byte characters and TTY chunks are never cut.
-#[derive(Default)]
-pub struct LineSplitter {
-    pending: Vec<u8>,
-}
-
-impl LineSplitter {
-    pub fn push(&mut self, bytes: &[u8]) -> Vec<String> {
-        self.pending.extend_from_slice(bytes);
-        let mut lines = Vec::new();
-        while let Some(end) = self.pending.iter().position(|&b| b == b'\n') {
-            let line: Vec<u8> = self.pending.drain(..=end).collect();
-            lines.push(decode(&line[..line.len() - 1]));
-        }
-        lines
-    }
-
-    /// Whatever is left after the stream ends.
-    pub fn finish(&mut self) -> Option<String> {
-        (!self.pending.is_empty()).then(|| decode(&std::mem::take(&mut self.pending)))
-    }
-}
-
-fn decode(line: &[u8]) -> String {
-    let line = line.strip_suffix(b"\r").unwrap_or(line);
-    String::from_utf8_lossy(line).into_owned()
 }
 
 /// Streams logs of `sources` to `sink` until they end, the sink is gone
@@ -170,19 +105,6 @@ mod tests {
 
     use super::*;
     use crate::{containers, testing};
-
-    #[test]
-    fn lines_survive_arbitrary_chunking() {
-        let mut s = LineSplitter::default();
-        assert!(s.push(b"hel").is_empty());
-        assert_eq!(s.push(b"lo\r\nwor"), ["hello"]);
-        // "é" is two bytes; split it across chunks.
-        assert_eq!(s.push(&[b'l', b'd', 0xC3]), Vec::<String>::new());
-        assert_eq!(s.push(&[0xA9, b'\n', b'\n']), ["worldé", ""]);
-        assert_eq!(s.finish(), None);
-        s.push(b"tail");
-        assert_eq!(s.finish().as_deref(), Some("tail"));
-    }
 
     #[tokio::test]
     #[ignore = "needs a local Docker Engine"]

@@ -24,7 +24,10 @@ use futures_util::{
 };
 use serde::Serialize;
 
-use homeport_core::error::{engine::from_bollard, AppError, AppResult};
+use homeport_core::{
+    error::{engine::from_bollard, AppError, AppResult},
+    logs::{BATCH_EVERY, BATCH_LINES},
+};
 
 use crate::{
     containers::logs::{LineSplitter, LogEvent, LogLine, LogOptions},
@@ -255,8 +258,6 @@ pub async fn remove(docker: &Docker, id: &str) -> AppResult<()> {
 
 /// How often a followed service's logs look for tasks started since.
 const NEW_TASKS_EVERY: Duration = Duration::from_secs(3);
-const BATCH_LINES: usize = 500;
-const BATCH_EVERY: Duration = Duration::from_millis(50);
 
 /// The tasks of a service that ran a container, each with the label its
 /// lines carry: `service.slot@node` (`service@node` for a global one).
