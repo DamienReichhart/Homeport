@@ -90,8 +90,8 @@ jobs:
       - run: docker pull alpine:3.22
       # The helper image that opens volumes (ADR 0015).
       - run: docker pull busybox:1.37
-      # containerd's socket is root's; the job below runs those tests.
-      - run: cargo test --workspace --exclude homeport -- --ignored --skip containerd_live
+      # containerd's and Incus's sockets are root's; the jobs below run those tests.
+      - run: cargo test --workspace --exclude homeport -- --ignored --skip containerd_live --skip incus_live
       - name: Check that the tests cleaned up after themselves
         if: always()
         run: scripts/ci/engine-test-leftovers.sh
@@ -120,3 +120,33 @@ jobs:
         run: |
           left=$(sudo ctr --namespace homeport-test containers ls -q)
           if [ -n "$left" ]; then echo "containers left behind: $left"; exit 1; fi
+
+  # The tests marked #[ignore = "needs a local Incus"] against an Incus
+  # installed on the runner from Ubuntu's archive (ADR 0021). Its socket is
+  # the incus-admin group's, so the test binaries run with sudo; they make
+  # small Alpine containers from images.linuxcontainers.org, a custom volume,
+  # a bridge and a profile, and remove them. HTTPS listens on loopback for
+  # the trust token test.
+  incus-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: incus-tests
+      - name: Install and start Incus
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y incus
+          sudo incus admin init --minimal
+          sudo incus config set core.https_address 127.0.0.1:8443
+          sudo incus version
+      - run: cargo test -p homeport-incus -p homeport-hosts -- --ignored incus_live
+        env:
+          CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER: sudo -E
+      - name: Check that the tests cleaned up after themselves
+        if: always()
+        run: |
+          left=$(sudo incus list --format csv --columns n | grep homeport- || true)
+          if [ -n "$left" ]; then echo "instances left behind: $left"; exit 1; fi
