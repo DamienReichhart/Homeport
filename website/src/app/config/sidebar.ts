@@ -34,6 +34,7 @@ export const sidebar: NonNullable<StarlightUserConfig['sidebar']> = [
       { label: 'Port forwarding', slug: 'docs/clusters/port-forward' },
       { label: 'Scaling, restarting and deleting', slug: 'docs/clusters/actions' },
       { label: 'Applying and editing YAML', slug: 'docs/clusters/yaml' },
+      { label: 'Helm releases', slug: 'docs/clusters/helm' },
     ],
   },
   {
