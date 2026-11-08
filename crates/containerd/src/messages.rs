@@ -56,6 +56,22 @@ homeport_core::messages! {
     TASK_WONT_STOP = "errors.containerd.taskWontStop" => "{id} didn't stop, even after SIGKILL.";
     TASK_WONT_STOP_HINT = "errors.containerd.taskWontStop.hint" => "Its process may be stuck in the kernel (uninterruptible I/O, a hung mount). Check it on the host with ps, then try again.";
 
+    // Logs and exec, which run commands on the Host's machine (ADR 0020).
+
+    /// A container whose output no tool kept.
+    LOGS_NOT_RECORDED = "errors.containerd.logsNotRecorded" => "This container's output isn't recorded.";
+    LOGS_NOT_RECORDED_HINT = "errors.containerd.logsNotRecorded.hint" => "containerd keeps no logs: the tool that starts a task decides where its output goes. ctr and most clients send it nowhere; nerdctl and Kubernetes write it to a file Homeport reads.";
+    /// nerdctl sent the output to a log driver Homeport can't read.
+    LOGS_DRIVER = "errors.containerd.logsDriver" => "nerdctl sends this container's output to {driver}, which Homeport can't read.";
+    LOGS_DRIVER_HINT = "errors.containerd.logsDriver.hint" => "Read it where {driver} keeps it, or run the container again with nerdctl's default json-file log driver.";
+    /// Logs of a containerd Host whose connection can't run commands.
+    LOGS_NEED_SHELL = "errors.containerd.logsNeedShell" => "Homeport can't read the logs of {name}'s containers from this kind of connection.";
+    NEEDS_SHELL_HINT = "errors.containerd.needsShell.hint" => "containerd's logs and terminals need its machine's files, which Homeport reaches over SSH, or on this computer for a local Linux socket. Connect to the host over SSH to use them.";
+    /// tail failed on the Host's machine.
+    LOGS_UNREADABLE = "errors.containerd.logsUnreadable" => "Homeport couldn't read this container's log file.";
+    LOGS_UNREADABLE_HINT = "errors.containerd.logsUnreadable.hint" => "Log files usually belong to root. Connect as a user who may read them; Details has what the machine answered.";
+
+
     // Namespaces.
 
     /// Creating a namespace under a name another one has.

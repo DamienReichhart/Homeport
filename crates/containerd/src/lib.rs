@@ -12,6 +12,7 @@ pub mod containers;
 mod error;
 pub mod events;
 pub mod introspection;
+pub mod logs;
 pub mod messages;
 pub mod namespaces;
 #[cfg(test)]

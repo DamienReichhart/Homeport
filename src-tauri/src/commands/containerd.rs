@@ -2,11 +2,16 @@
 //! Every command but the namespaces' own names the namespace it's about;
 //! a Host whose Engine isn't containerd answers `EngineUnsupported`.
 
-use tauri::State;
+use tauri::{ipc::Channel, State};
 
 use homeport_containerd::{
     containers::{self, ContainerdContainer, ContainerdContainerDetail, TaskAction},
+    logs::{self, ContainerdLogSource},
     namespaces::{self, ContainerdNamespace},
+};
+use homeport_core::{
+    logs::{LogEvent, LogOptions},
+    streams::StreamId,
 };
 
 use crate::{app::AppState, error::AppResult};
@@ -111,4 +116,37 @@ pub async fn containerd_container_remove(
 ) -> AppResult<()> {
     let client = state.hosts.registry.containerd(&host_id)?;
     containers::remove(&client, &namespace, &id, force, keep_snapshot).await
+}
+
+/// Where a container's output was kept, if anywhere, so the Logs tab can
+/// explain an empty one.
+#[tauri::command]
+#[specta::specta]
+pub async fn containerd_logs_source(
+    state: State<'_, AppState>,
+    host_id: String,
+    namespace: String,
+    id: String,
+) -> AppResult<ContainerdLogSource> {
+    logs::locate(&state.hosts.registry.containerd(&host_id)?, &namespace, &id).await
+}
+
+/// Streams a container's logs from the file its creator wrote, read with
+/// `tail` on the Host's machine (ADR 0020).
+#[tauri::command]
+#[specta::specta]
+pub async fn containerd_logs_subscribe(
+    state: State<'_, AppState>,
+    host_id: String,
+    namespace: String,
+    id: String,
+    options: LogOptions,
+    on_event: Channel<LogEvent>,
+) -> AppResult<StreamId> {
+    let client = state.hosts.registry.containerd(&host_id)?;
+    Ok(state
+        .streams
+        .spawn(logs::stream(client, namespace, id, options, move |e| {
+            on_event.send(e).is_ok()
+        })))
 }

@@ -15,4 +15,10 @@ export const containerdContainerQueries = {
       queryKey: [...hostKeys.containerdContainers(hostId, namespace), 'inspect', id],
       queryFn: () => commands.containerdContainerInspect(hostId, namespace, id),
     }),
+  /** Where a container's output was kept, if anywhere. */
+  logsSource: (hostId: string, namespace: string, id: string) =>
+    queryOptions({
+      queryKey: [...hostKeys.containerdContainers(hostId, namespace), 'logs-source', id],
+      queryFn: () => commands.containerdLogsSource(hostId, namespace, id),
+    }),
 };

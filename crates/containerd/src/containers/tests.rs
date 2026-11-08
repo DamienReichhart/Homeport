@@ -121,6 +121,7 @@ mod live {
         let client = testing::client().await;
         let image = testing::pulled();
         let id = testing::unique("homeport-test-task");
+        let _cleanup = testing::Cleanup(id.clone());
         // A process that ignores SIGTERM, so stopping ends with SIGKILL.
         testing::ctr(&[
             "run",
@@ -181,6 +182,7 @@ mod live {
         let client = testing::client().await;
         let image = testing::pulled();
         let id = testing::unique("homeport-test-keep");
+        let _cleanup = testing::Cleanup(id.clone());
         testing::ctr(&["containers", "create", &image, &id, "true"]);
         assert_eq!(state(&client, &id).await, TaskState::None);
         remove(&client, NAMESPACE, &id, false, true).await.unwrap();

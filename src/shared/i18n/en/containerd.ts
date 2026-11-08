@@ -59,7 +59,15 @@ export default {
   'containerd.containers.kill.send': 'Send',
   'containerd.containers.backToList': 'Back to containers',
   'containerd.containers.tab.overview': 'Overview',
+  'containerd.containers.tab.logs': 'Logs',
   'containerd.containers.tab.spec': 'Spec',
+  'containerd.logs.from': 'From {path}',
+  'containerd.logs.none.title': 'This container’s output isn’t recorded',
+  'containerd.logs.none.description':
+    'containerd keeps no logs: the tool that starts a task decides where its output goes. Containers made with ctr and most other clients send it nowhere; nerdctl and Kubernetes write it to a file, which Homeport reads.',
+  'containerd.logs.driver.title': 'nerdctl sends this container’s output to {driver}',
+  'containerd.logs.driver.description':
+    'Homeport reads nerdctl’s default json-file logs only. Read these where {driver} keeps them, or run the container again with the json-file driver.',
   'containerd.containers.field.id': 'ID',
   'containerd.containers.field.namespace': 'Namespace',
   'containerd.containers.field.image': 'Image',

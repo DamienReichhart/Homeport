@@ -237,6 +237,8 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             containerd::containerd_container_act,
             containerd::containerd_container_kill,
             containerd::containerd_container_remove,
+            containerd::containerd_logs_source,
+            containerd::containerd_logs_subscribe,
             podman::pods_list,
             podman::pods_inspect,
             podman::pods_act,

@@ -22,14 +22,16 @@ import {
 import { containerdContainerQueries } from '../api/queries';
 import { managedByKubernetes, STATE_LABELS, stateTone } from '../model/containers';
 import { CREATED_BY } from './containerColumns';
+import { LogsTab } from './LogsTab';
 import { KillDialog } from './KillDialog';
 import { RemoveContainerDialog } from './RemoveContainerDialog';
 import { TaskActions } from './TaskActions';
 import { t, type MessageKey } from '@/shared/i18n';
 
-const TABS = ['overview', 'spec'] as const;
+const TABS = ['overview', 'logs', 'spec'] as const;
 const TAB_LABELS: Record<(typeof TABS)[number], MessageKey> = {
   overview: 'containerd.containers.tab.overview',
+  logs: 'containerd.containers.tab.logs',
   spec: 'containerd.containers.tab.spec',
 };
 
@@ -140,6 +142,9 @@ function ContainerDetail({
               />
             </div>
           )}
+        </TabsContent>
+        <TabsContent value="logs" className="min-h-[24rem] flex-1">
+          <LogsTab hostId={hostId} namespace={namespace} id={container.id} />
         </TabsContent>
         <TabsContent value="spec" className="overflow-auto">
           {spec ? (

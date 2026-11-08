@@ -425,6 +425,16 @@ export const commands = {
 	 *  kills a running task first.
 	 */
 	containerdContainerRemove: (hostId: string, namespace: string, id: string, force: boolean, keepSnapshot: boolean) => __TAURI_INVOKE<null>("containerd_container_remove", { hostId, namespace, id, force, keepSnapshot }),
+	/**
+	 *  Where a container's output was kept, if anywhere, so the Logs tab can
+	 *  explain an empty one.
+	 */
+	containerdLogsSource: (hostId: string, namespace: string, id: string) => __TAURI_INVOKE<ContainerdLogSource>("containerd_logs_source", { hostId, namespace, id }),
+	/**
+	 *  Streams a container's logs from the file its creator wrote, read with
+	 *  `tail` on the Host's machine (ADR 0020).
+	 */
+	containerdLogsSubscribe: (hostId: string, namespace: string, id: string, options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("containerd_logs_subscribe", { hostId, namespace, id, options, onEvent }),
 	podsList: (hostId: string) => __TAURI_INVOKE<PodmanPod[]>("pods_list", { hostId }),
 	podsInspect: (hostId: string, id: string) => __TAURI_INVOKE<PodmanPodDetail>("pods_inspect", { hostId, id }),
 	podsAct: (hostId: string, id: string, action: PodmanPodAction) => __TAURI_INVOKE<null>("pods_act", { hostId, id, action }),
@@ -1242,6 +1252,24 @@ export type ContainerdContainerDetail = {
 	extensions: string[],
 	updatedAt: string | null,
 };
+
+/**  How a log file's lines are written. */
+export type ContainerdLogFormat = 
+/**  Docker's json-file lines, as nerdctl writes them. */
+"json" | 
+/**  `<time> <stream> <F|P> <text>`, as the kubelet's CRI writes them. */
+"cri";
+
+/**  Where a container's output was kept, if anywhere. */
+export type ContainerdLogSource = 
+/**  A file on the Host's machine. */
+{ kind: "file"; path: string; format: ContainerdLogFormat } | 
+/**  The newest `*.log` of a CRI container's folder. */
+{ kind: "folder"; path: string } | 
+/**  A nerdctl log driver Homeport can't read, such as journald or fluentd. */
+{ kind: "driver"; driver: string } | 
+/**  Nothing kept it: `ctr run` and most other clients. */
+{ kind: "none" };
 
 /**  One namespace and what it holds. */
 export type ContainerdNamespace = {
