@@ -9,13 +9,17 @@ Homeport names things precisely. These terms appear throughout the app and these
 
 A Docker Engine that Homeport connects to, defined by a name and how to reach it: a local socket, TCP, TLS or SSH. Every container, image, volume, network and Stack belongs to exactly one Host. See [Hosts and connections](/docs/hosts/).
 
+### Cluster
+
+A Kubernetes cluster Homeport connects to through its API server, added from a context of a kubeconfig: a name, the API server's address, and the credentials the kubeconfig gives, stored encrypted. Homeport installs nothing on it and only reaches what those credentials allow. Not a Swarm, which is found through its hosts and never added. Kubernetes' own objects keep their Kubernetes names: Namespace, Pod, Deployment, Service, Node… See [Clusters](/docs/clusters/).
+
 ### Swarm
 
 A Docker Swarm cluster, found through the hosts that belong to it and never added on its own. Homeport reaches it through any connected manager host, tells Swarms apart by their swarm ID, and stores nothing about one. It's named after its first manager host, since Docker gives every Swarm the same name. See [Swarms](/docs/guides/swarm/).
 
 ### Node
 
-One Engine in a Swarm: a manager or a worker. A node is a host only when Homeport connects to it, and a host's page links to its node.
+One Engine in a Swarm: a manager or a worker. A Cluster's Nodes are Kubernetes Nodes, the machines it runs Pods on. A node is a host only when Homeport connects to it, and a host's page links to its node.
 
 ### Service
 

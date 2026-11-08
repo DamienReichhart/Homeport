@@ -6,9 +6,9 @@ description: What Homeport is, what it does, and how these docs are organised.
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import { DocScreenshot } from '@/features/docs';
 
-**Homeport** is a desktop app for managing Docker Engines anywhere — this machine's, or remote ones over SSH, TLS or TCP — in the spirit of Docker Desktop. It runs on Windows, macOS and Linux, is free, and is open source under the [GNU Affero General Public License, version 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE).
+**Homeport** is a desktop app for managing Docker Engines anywhere — this machine's, or remote ones over SSH, TLS or TCP — and the Kubernetes clusters your kubeconfig reaches, in the spirit of Docker Desktop. It runs on Windows, macOS and Linux, is free, and is open source under the [GNU Affero General Public License, version 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE).
 
-Homeport doesn't run containers itself. It connects to the Docker Engines you already have, called **Hosts**, and gives you one window for everything on them: containers, images, volumes, networks and Compose **Stacks**.
+Homeport doesn't run containers itself. It connects to the Docker Engines you already have, called **Hosts**, and gives you one window for everything on them: containers, images, volumes, networks and Compose **Stacks**. It also connects to Kubernetes **Clusters** from your kubeconfig, to browse what runs on them.
 
 <DocScreenshot
   name="overview"
@@ -30,6 +30,10 @@ Homeport doesn't run containers itself. It connects to the Docker Engines you al
   <Card title="Deploy Compose Stacks" icon="rocket">
     Keep a compose file and its encrypted environment in Homeport, and deploy it to any Host.
   </Card>
+  <Card title="Browse Kubernetes" icon="server">
+    Add clusters from your kubeconfig, EKS, GKE and AKS included, and see their workloads, Pods,
+    Services, configuration, Nodes and Events, live.
+  </Card>
   <Card title="Keep things tidy" icon="seti:folder">
     Images, volumes and networks with usage at a glance, and a clean-up dialog that says what it
     will remove.
@@ -40,6 +44,7 @@ Homeport doesn't run containers itself. It connects to the Docker Engines you al
 
 - **Getting started** — [install Homeport](/docs/installation/), then follow the [quick start](/docs/quick-start/) to connect your first Host.
 - **Hosts** — how each kind of connection works: [local engines](/docs/hosts/local/), [SSH](/docs/hosts/ssh/), and [TLS and TCP](/docs/hosts/tls-tcp/).
+- **Clusters** — [adding Kubernetes clusters](/docs/clusters/) from a kubeconfig, and browsing them.
 - **Using Homeport** — a guide to each page of the app.
 - **Reference** — [security](/docs/reference/security/), [troubleshooting](/docs/reference/troubleshooting/), the [FAQ](/docs/reference/faq/) and the [glossary](/docs/reference/glossary/).
 
@@ -48,6 +53,7 @@ Homeport doesn't run containers itself. It connects to the Docker Engines you al
 Homeport names things precisely, and the docs follow it:
 
 - A **Host** is a Docker Engine Homeport connects to. Every container, image, volume, network and Stack belongs to exactly one Host.
+- A **Cluster** is a Kubernetes cluster Homeport connects to, added from a context of your kubeconfig.
 - A **Stack** is a Compose project running on a Host. A **Managed Stack** is one whose compose file Homeport keeps; a **Linked Stack** keeps its compose files in a folder on this computer; an **External Stack** was deployed some other way. You can **adopt** an External Stack to manage it.
 
 The [glossary](/docs/reference/glossary/) has the full list.

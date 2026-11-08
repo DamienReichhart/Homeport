@@ -5,7 +5,16 @@ description: How Homeport connects to Kubernetes clusters from your kubeconfig, 
 
 A **Cluster** is a Kubernetes cluster Homeport connects to through its API server. You add one from a context of a kubeconfig — the file `kubectl` already uses — so there are no new credentials to create, and Homeport installs nothing on the cluster: it only talks to the Kubernetes API your kubeconfig already reaches, with the rights its credentials have.
 
-Clusters sit next to your Hosts in the switcher at the top of the sidebar. Selecting one shows the pages about it; selecting a Host shows the Host pages again.
+Clusters sit next to your Hosts in the switcher at the top of the sidebar. Selecting one shows the pages about it — **Workloads**, **Pods**, **Network**, **Configuration**, **Nodes** and **Events** — and its dashboard on the [Overview](/docs/guides/overview/#the-selected-cluster); selecting a Host shows the Host pages again.
+
+## What Homeport shows, and what not yet
+
+In this version, Clusters are read-only: you can see what runs on them and whether it's healthy, live.
+
+1. [Add a cluster](#adding-a-cluster) from your kubeconfig, or a [local one](/docs/clusters/local/) in one click; cloud ones sign in through their [exec plugin](/docs/clusters/exec-plugins/).
+2. Browse its [workloads and Pods](/docs/clusters/workloads/), its [Services, Ingresses, ConfigMaps and Secrets](/docs/clusters/networking-config/), and its [Nodes and Events](/docs/clusters/nodes-events/).
+
+Not yet: logs, a shell in a container, port forwarding, scaling, restarting, deleting and applying or editing YAML come in **0.16**; Helm releases in **0.17**. Until then, `kubectl` does those.
 
 ## Adding a Cluster
 

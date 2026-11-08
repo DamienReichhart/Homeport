@@ -155,6 +155,14 @@ The exec plugin ran and failed. **Details** shows the end of what it printed, of
 
 The `gcp` and `azure` auth providers were removed from Kubernetes. Fetch the credentials again with `gke-gcloud-auth-plugin` installed (GKE), or run `kubelogin convert-kubeconfig` (AKS), then add the context again.
 
+### "Your credentials can't list … in …"
+
+The cluster's RBAC doesn't let your kubeconfig's user do that. Pick a namespace you're allowed to see in the picker at the top right, or ask the cluster's administrator. The message gives the `kubectl auth can-i` command that checks it. Other pages keep working.
+
+### Unreachable: "… refused the connection" or "… didn't answer in time"
+
+The API server isn't reachable from this computer: the cluster is stopped (a local one), behind a VPN, or the kubeconfig's server address changed. Homeport keeps retrying on its own; check `kubectl cluster-info` with the same context.
+
 ### "The certificate of … isn't signed by the CA in its kubeconfig"
 
 kind, k3d and minikube make new certificates each time they recreate a cluster. Use **Refresh from kubeconfig** on the Cluster's page.
