@@ -21,6 +21,8 @@ Not entirely. Homeport is a manager: it doesn't run a Docker Engine itself. On L
 
 Yes, through Podman's Docker-compatible API socket. Homeport detects the usual Podman sockets on Linux, every running [Podman machine on macOS](/docs/hosts/local/#podman-machines-on-macos), and the default Podman machine pipe on Windows. Anything else can be [added by hand](/docs/hosts/local/#adding-a-socket-by-hand).
 
+Homeport also recognises Podman when it connects, and then offers what only Podman has, through Podman's own API on the same socket: [pods](/docs/guides/podman-pods/), which you can list, start, stop, create and remove, and run containers in from the Run dialog.
+
 ### Does it work with Kubernetes or Docker Swarm?
 
 Docker Swarm, yes. Homeport finds a Swarm through its manager hosts, once one of them is a host, and manages it fully: its nodes, services, tasks, secrets, configs and swarm stacks, including Managed, Linked and Synced Stacks deployed to it. It can also start a Swarm on a host, and join or leave one. Everything goes through a connected manager's Engine API; nothing is installed on the nodes. See [Swarms](/docs/guides/swarm/).

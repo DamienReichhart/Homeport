@@ -15,6 +15,9 @@ _Avoid_: Daemon, server, backend
 **Engine kind**:
 What sort of Engine a Host points to, stored with it: Docker-compatible (Docker Engine, or Podman through its compatible API), containerd or Incus. It decides which pages a Host shows. Called `engine` in code, never `kind`, which is the connection's. Podman is not a kind of its own: it's a Docker-compatible Engine recognised on every connect, because the same socket can change product.
 
+**Pod**:
+On a Podman Host, a group of containers that share one network namespace (and their hostname and IPC) and start and stop together, around an infra container that holds the namespaces and the published ports. Shown on the Pods page through Podman's own API. A Cluster's Pod is the Kubernetes one: in code and text about Hosts, say "Podman pod" wherever both could be meant.
+
 **Bastion**:
 An SSH server an SSH Host is reached through when its own SSH server only accepts connections from it (OpenSSH's `ProxyJump`). A Host has an ordered list of them, possibly empty; each has its own trusted server key and either uses the Host's credentials or its own. Not a Host: it runs no Engine Homeport talks to.
 _Avoid_: Jump host, jump server, proxy, gateway, hop (in the UI)
