@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeftIcon } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { IncusGate } from '@/core/host';
 import { formatBytes } from '@/shared/lib';
 import {
@@ -128,8 +128,8 @@ function InstanceDetail({
                 <span className="text-muted-foreground text-sm">—</span>
               )}
               {instance.profiles.map((profile) => (
-                <Badge key={profile} variant="outline">
-                  {profile}
+                <Badge key={profile} variant="outline" asChild>
+                  <Link to={`/incus/profiles/${encodeURIComponent(profile)}`}>{profile}</Link>
                 </Badge>
               ))}
             </div>

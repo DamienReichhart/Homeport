@@ -15,10 +15,6 @@ pub(crate) fn answer(status: u16, message: &str) -> AppError {
     }
     let error = match status {
         404 => AppError::new(ErrorCode::NotFound, msg::NOT_FOUND).with_hint(msg::DETAILS_HINT),
-        409 if mentions(message, &["already exists"]) => {
-            AppError::new(ErrorCode::NameInUse, msg::ALREADY_EXISTS)
-                .with_hint(msg::ALREADY_EXISTS_HINT)
-        }
         409 => AppError::new(ErrorCode::Conflict, msg::CONFLICT).with_hint(msg::DETAILS_HINT),
         412 => AppError::new(ErrorCode::ChangedSinceLoaded, msg::CHANGED_SINCE_LOADED)
             .with_hint(msg::CHANGED_SINCE_LOADED_HINT),
@@ -54,6 +50,27 @@ fn mentions(message: &str, needles: &[&str]) -> bool {
 /// The sentences Incus uses for failures that call for their own advice.
 fn known(message: &str) -> Option<AppError> {
     use crate::messages as m;
+    // Incus answers these with 500 as often as with 409 or 400.
+    if mentions(message, &["already exists"]) {
+        return Some(
+            AppError::new(ErrorCode::NameInUse, m::ALREADY_EXISTS)
+                .with_hint(m::ALREADY_EXISTS_HINT),
+        );
+    }
+    if mentions(message, &["currently in use", "is in use", "still in use"]) {
+        return Some(AppError::new(ErrorCode::InUse, m::IN_USE_GENERIC).with_hint(m::IN_USE_HINT));
+    }
+    if mentions(
+        message,
+        &[
+            "unknown configuration key",
+            "invalid value for",
+            "invalid device",
+            "invalid config",
+        ],
+    ) {
+        return Some(AppError::new(ErrorCode::BadRequest, m::INVALID).with_hint(m::INVALID_HINT));
+    }
     if mentions(message, &["no space left on device", "quota exceeded"]) {
         return Some(AppError::new(ErrorCode::DiskFull, m::DISK_FULL).with_hint(m::DISK_FULL_HINT));
     }
@@ -170,6 +187,17 @@ mod tests {
         for (status, text, code) in [
             (404, "Instance not found", ErrorCode::NotFound),
             (409, "Instance \"web\" already exists", ErrorCode::NameInUse),
+            (
+                500,
+                "Error inserting \"p1\" into database: The profile already exists",
+                ErrorCode::NameInUse,
+            ),
+            (500, "Profile is currently in use", ErrorCode::InUse),
+            (
+                500,
+                "Unknown configuration key: limits.cpuz",
+                ErrorCode::BadRequest,
+            ),
             (
                 409,
                 "Instance is busy running a \"start\" operation",

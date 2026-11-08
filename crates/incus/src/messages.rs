@@ -62,6 +62,7 @@ homeport_core::messages! {
     /// An object other objects still use.
     IN_USE = "errors.incus.inUse" => "{name} is used by {users}, so it can't be removed.";
     IN_USE_UNNAMED = "errors.incus.inUseUnnamed" => "{name} is in use, so it can't be removed.";
+    IN_USE_GENERIC = "errors.incus.inUseGeneric" => "Incus refused, because something uses this.";
     IN_USE_HINT = "errors.incus.inUse.hint" => "Remove it from what uses it first.";
     /// A disk or pool that filled up.
     DISK_FULL = "errors.incus.diskFull" => "The storage pool has no space left.";
@@ -113,6 +114,20 @@ homeport_core::messages! {
     CATALOGUE_UNREACHABLE_HINT = "errors.incus.catalogueUnreachable.hint" => "Check this computer's internet connection, or type the image's alias instead: Incus downloads it itself.";
     /// The catalogue isn't a simplestreams index.
     CATALOGUE_UNREADABLE = "errors.incus.catalogueUnreadable" => "The image server's list isn't one Homeport can read.";
+
+    // Profiles.
+
+    /// A profile that isn't in the project.
+    PROFILE_NOT_FOUND = "errors.incus.profileNotFound" => "There's no profile {name} in this project; it may have just been deleted.";
+    /// A profile name Incus wouldn't accept.
+    PROFILE_NAME_INVALID = "errors.incus.profileNameInvalid" => "\"{name}\" isn't a profile name: use letters, digits, dashes and dots, without spaces or slashes.";
+    /// A profile's YAML that can't be read.
+    PROFILE_YAML_INVALID = "errors.incus.profileYamlInvalid" => "The YAML isn't a profile Homeport can read.";
+    PROFILE_YAML_INVALID_HINT = "errors.incus.profileYamlInvalid.hint" => "A profile has a description, a config map of text values and a devices map; Details says where the YAML went wrong.";
+    /// Deleting the default profile.
+    PROFILE_DEFAULT = "errors.incus.profileDefault" => "The default profile can't be deleted.";
+    /// Deleting a profile Instances use.
+    PROFILE_IN_USE_HINT = "errors.incus.profileInUse.hint" => "Remove it from those Instances' profiles first, with incus profile remove.";
 
     /// The project picked isn't there any more.
     PROJECT_NOT_FOUND = "errors.incus.projectNotFound" => "There's no project {project} on {name}.";

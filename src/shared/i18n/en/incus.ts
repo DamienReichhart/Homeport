@@ -85,7 +85,8 @@ export default {
   'incus.remote.alias': 'Alias',
   'incus.images.nav': 'Images',
   'incus.images.title': 'Images',
-  'incus.images.summary': '{count, plural, one {# image} other {# images}} in the project {project}.',
+  'incus.images.summary':
+    '{count, plural, one {# image} other {# images}} in the project {project}.',
   'incus.images.search': 'Filter by alias, fingerprint or description',
   'incus.images.empty': 'No images in {project}',
   'incus.images.emptyDescription':
@@ -121,4 +122,38 @@ export default {
   'incus.images.delete.title': 'Delete the image {name}?',
   'incus.images.delete.description':
     'Instances made from it keep working: each has its own copy. New ones need it downloaded again.',
+  'incus.profiles.nav': 'Profiles',
+  'incus.profiles.title': 'Profiles',
+  'incus.profiles.summary':
+    '{count, plural, one {# profile} other {# profiles}} in the project {project}.',
+  'incus.profiles.search': 'Filter by name or description',
+  'incus.profiles.empty': 'No profiles in {project}',
+  'incus.profiles.new': 'New profile',
+  'incus.profiles.new.title': 'New profile',
+  'incus.profiles.new.description':
+    'An empty profile in the project {project}. Add its configuration and devices once it’s made.',
+  'incus.profiles.new.name': 'Name',
+  'incus.profiles.new.descriptionField': 'Description',
+  'incus.profiles.created': 'Created the profile {name}',
+  'incus.profiles.column.name': 'Name',
+  'incus.profiles.column.description': 'Description',
+  'incus.profiles.column.settings': 'Settings',
+  'incus.profiles.column.usedBy': 'Used by',
+  'incus.profiles.settings':
+    '{config, plural, one {# key} other {# keys}}, {devices, plural, one {# device} other {# devices}}',
+  'incus.profiles.defaultKept': 'Incus keeps the default profile.',
+  'incus.profiles.inUse': 'Used by {names}: remove it from them first.',
+  'incus.profiles.deleteOne': 'Delete {name}',
+  'incus.profiles.deleted': 'Deleted the profile {name}',
+  'incus.profiles.delete.title': 'Delete the profile {name}?',
+  'incus.profiles.delete.description':
+    'It’s deleted from the project {project}. No instance uses it.',
+  'incus.profiles.backToList': 'Back to profiles',
+  'incus.profiles.noDescription': 'No description',
+  'incus.profiles.reload': 'Reload',
+  'incus.profiles.saved': 'Saved the profile {name}',
+  'incus.profiles.usedBy': 'Used by',
+  'incus.profiles.editHint':
+    'Its description, config and devices, as incus profile edit shows them. Saving applies them to the instances using it, as Incus does; if someone changed it since it loaded, Homeport refuses rather than overwrite.',
+  'incus.profiles.yamlOf': 'YAML of {name}',
 } as const;

@@ -499,6 +499,15 @@ export const commands = {
 	incusImageDelete: (hostId: string, project: string, fingerprint: string) => __TAURI_INVOKE<null>("incus_image_delete", { hostId, project, fingerprint }),
 	incusImageAliasAdd: (hostId: string, project: string, fingerprint: string, name: string) => __TAURI_INVOKE<null>("incus_image_alias_add", { hostId, project, fingerprint, name }),
 	incusImageAliasRemove: (hostId: string, project: string, name: string) => __TAURI_INVOKE<null>("incus_image_alias_remove", { hostId, project, name }),
+	/**  The profiles of `project`, with the Instances using each. */
+	incusProfiles: (hostId: string, project: string) => __TAURI_INVOKE<IncusProfile[]>("incus_profiles", { hostId, project }),
+	/**  One profile, with its YAML and the ETag to save it with. */
+	incusProfile: (hostId: string, project: string, name: string) => __TAURI_INVOKE<IncusProfileDetail>("incus_profile", { hostId, project, name }),
+	/**  Saves a profile's YAML; refused if it changed since `etag` was read. */
+	incusProfileUpdate: (hostId: string, project: string, name: string, yaml: string, etag: string | null) => __TAURI_INVOKE<null>("incus_profile_update", { hostId, project, name, yaml, etag }),
+	incusProfileCreate: (hostId: string, project: string, name: string, description: string) => __TAURI_INVOKE<null>("incus_profile_create", { hostId, project, name, description }),
+	/**  Deletes an unused profile other than `default`. */
+	incusProfileDelete: (hostId: string, project: string, name: string) => __TAURI_INVOKE<null>("incus_profile_delete", { hostId, project, name }),
 	podsList: (hostId: string) => __TAURI_INVOKE<PodmanPod[]>("pods_list", { hostId }),
 	podsInspect: (hostId: string, id: string) => __TAURI_INVOKE<PodmanPodDetail>("pods_inspect", { hostId, id }),
 	podsAct: (hostId: string, id: string, action: PodmanPodAction) => __TAURI_INVOKE<null>("pods_act", { hostId, id, action }),
@@ -2162,6 +2171,25 @@ export type IncusInstanceDetail = {
 	statefulSnapshots: boolean,
 	/**  Incus's own description of it, for the Raw tab. */
 	raw: Value,
+};
+
+/**  One profile. */
+export type IncusProfile = {
+	name: string,
+	description: string,
+	config: { [key in string]: string },
+	devices: { [key in string]: { [key in string]: string } },
+	/**  The Instances using it, by name. */
+	usedBy: string[],
+};
+
+/**  A profile with what editing it needs. */
+export type IncusProfileDetail = {
+	profile: IncusProfile,
+	/**  Its description, configuration and devices, as `incus profile edit` shows them. */
+	yaml: string,
+	/**  What it was when read, so saving refuses changes made since. */
+	etag: string | null,
 };
 
 /**  A project, with how many Instances and images it holds. */
