@@ -1,15 +1,20 @@
 //! The task that keeps one Host connected: connect, watch, retry.
 
-use std::{sync::Weak, time::Duration};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Weak},
+    time::Duration,
+};
 
 use bollard::{query_parameters::EventsOptionsBuilder, Docker};
 use futures_util::StreamExt;
+use serde::Deserialize;
 
 use homeport_core::error::{AppError, ErrorCode};
 use homeport_engine::swarm;
 
 use crate::messages as msg;
-use homeport_transport::{self as transport, ConnectError};
+use homeport_transport::{self as transport, http, ConnectError, Dialer};
 
 use super::{Client, EngineEvent, HostRegistry, HostStatus};
 use crate::{events, EngineKind, HostId};
@@ -70,9 +75,14 @@ pub(super) async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
                 Ok(status) => {
                     backoff = 1;
                     let docker = connected.docker.clone();
+                    // Podman sends events bollard can't read; read its own way.
+                    let podman = status
+                        .podman_version()
+                        .is_some()
+                        .then(|| connected.dialer.clone());
                     reg.set_status(&id, status, Some(Client::Docker(connected)));
                     drop(reg);
-                    watch(&registry, &id, docker).await;
+                    watch(&registry, &id, docker, podman).await;
                     AppError::new(
                         ErrorCode::ConnectionLost,
                         msg::CONNECTION_LOST.with("name", &host.name),
@@ -133,10 +143,58 @@ async fn membership(docker: &Docker) -> Option<swarm::SwarmMembership> {
     })
 }
 
+/// One event as the Engine writes it, read leniently: Podman sends kinds
+/// (`pod`, `system`) that bollard's event type refuses, which would end the
+/// stream.
+#[derive(Deserialize)]
+struct RawEvent {
+    #[serde(rename = "Type", default)]
+    kind: String,
+    #[serde(rename = "Action", default)]
+    action: String,
+    #[serde(rename = "Actor", default)]
+    actor: Option<RawActor>,
+    #[serde(default)]
+    time: i64,
+    #[serde(rename = "timeNano", default)]
+    time_nano: Option<i64>,
+}
+
+#[derive(Deserialize)]
+struct RawActor {
+    #[serde(rename = "ID", default)]
+    id: String,
+    #[serde(rename = "Attributes", default)]
+    attributes: Option<HashMap<String, String>>,
+}
+
+/// One line of the Engine's event stream; `None` for one that isn't an event.
+fn parse_event(line: &[u8]) -> Option<EngineEvent> {
+    let raw: RawEvent = serde_json::from_slice(line)
+        .map_err(|e| log::debug!("skipping an event Homeport can't read: {e}"))
+        .ok()?;
+    let actor = raw.actor;
+    Some(EngineEvent {
+        time: raw.time,
+        time_nano: raw.time_nano.unwrap_or(raw.time * 1_000_000_000),
+        kind: raw.kind,
+        action: raw.action,
+        actor_id: actor.as_ref().map(|a| a.id.clone()).unwrap_or_default(),
+        attributes: actor.and_then(|a| a.attributes).unwrap_or_default(),
+    })
+}
+
 /// Forwards Engine events until the stream breaks or a ping fails. Asks
 /// first for those since the last one kept, to fill the gap while Homeport
 /// was closed or disconnected; repeats of kept ones are dropped on writing.
-async fn watch(registry: &Weak<HostRegistry>, id: &str, docker: Docker) {
+/// A Podman Host's events are read through `podman`, its dialer, line by
+/// line, skipping what isn't an event.
+async fn watch(
+    registry: &Weak<HostRegistry>,
+    id: &str,
+    docker: Docker,
+    podman: Option<Arc<dyn Dialer>>,
+) {
     let since = registry.upgrade().map(|reg| {
         let last = reg.events.last_time_nano(id).unwrap_or_else(|e| {
             log::warn!("couldn't read the last kept event of {id}: {e}");
@@ -144,7 +202,31 @@ async fn watch(registry: &Weak<HostRegistry>, id: &str, docker: Docker) {
         });
         events::since(last.unwrap_or_else(|| events::now_nano() - FIRST_LOOK_BACK_NANOS))
     });
+    let podman_events = async {
+        let Some(dialer) = &podman else {
+            return;
+        };
+        let mut path = "/events".to_owned();
+        if let Some(since) = &since {
+            path.push_str(&format!("?since={}", http::encode(since)));
+        }
+        let mut lines = match http::lines(&**dialer, http::Request::get(path)).await {
+            Ok(lines) => lines,
+            Err(e) => return log::debug!("couldn't read the events of {id}: {e}"),
+        };
+        while let Some(Ok(line)) = lines.next().await {
+            let Some(reg) = registry.upgrade() else {
+                return;
+            };
+            if let Some(event) = parse_event(&line) {
+                reg.record_event(id, event);
+            }
+        }
+    };
     let events = async {
+        if podman.is_some() {
+            return podman_events.await;
+        }
         let mut options = EventsOptionsBuilder::default();
         if let Some(since) = &since {
             options = options.since(since);
@@ -216,6 +298,31 @@ mod tests {
             "ApiVersion": "1.41"
         }));
         assert_eq!(podman_version(&podman).as_deref(), Some("5.8.1"));
+    }
+
+    #[test]
+    fn podmans_own_kinds_of_event_are_read() {
+        // As Podman 4.9 and 5.x write them to /events.
+        let pod = br#"{"status":"create","id":"c56f","Type":"pod","Action":"create","Actor":{"ID":"c56f","Attributes":{"name":"web"}},"scope":"local","time":1794162522,"timeNano":1794162522479016754}"#;
+        let event = parse_event(pod).unwrap();
+        assert_eq!(
+            (event.kind.as_str(), event.action.as_str()),
+            ("pod", "create")
+        );
+        assert_eq!(event.actor_id, "c56f");
+        assert_eq!(
+            event.attributes.get("name").map(String::as_str),
+            Some("web")
+        );
+        assert_eq!(event.time_nano, 1_794_162_522_479_016_754);
+
+        let system = br#"{"Type":"system","Action":"refresh","time":1794162500}"#;
+        let event = parse_event(system).unwrap();
+        assert_eq!(event.kind, "system");
+        assert_eq!(event.time_nano, 1_794_162_500_000_000_000);
+        assert!(event.actor_id.is_empty() && event.attributes.is_empty());
+
+        assert!(parse_event(b"not json").is_none());
     }
 
     #[test]

@@ -775,5 +775,31 @@ mod tests {
         let podman = reg.podman(&id).unwrap();
         assert_eq!(Some(podman.version()), version.as_deref());
         homeport_engine::podman::pods::list(&podman).await.unwrap();
+
+        // Podman's own kinds of event, such as a pod's, keep the Host connected.
+        use homeport_engine::podman::pods;
+        let name = format!(
+            "homeport-test-events-{}",
+            &uuid::Uuid::new_v4().simple().to_string()[..8]
+        );
+        let spec = pods::PodSpec {
+            name: name.clone(),
+            ..Default::default()
+        };
+        let pod = pods::create(&podman, &spec).await.unwrap();
+        let mut seen = false;
+        for _ in 0..40 {
+            tokio::time::sleep(Duration::from_millis(50)).await;
+            reg.events.flush().await;
+            let page = reg.events.page(&id, crate::events::PAGE, None).unwrap();
+            if page.iter().any(|e| e.kind == "pod" && e.actor_id == pod) {
+                seen = true;
+                break;
+            }
+        }
+        let still = reg.status(&id);
+        pods::remove(&podman, &pod, true).await.unwrap();
+        assert!(seen, "the pod's event was kept");
+        assert!(matches!(still, HostStatus::Connected { .. }), "{still:?}");
     }
 }
