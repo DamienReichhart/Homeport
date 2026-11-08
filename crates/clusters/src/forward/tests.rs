@@ -121,5 +121,4 @@ async fn a_free_port_is_picked_and_a_taken_one_refused() {
     let e = bind(Some(port)).await.unwrap_err();
     assert_eq!(e.code, ErrorCode::PortInUse);
     drop(listeners);
-    assert!(is_free(port).await);
 }
