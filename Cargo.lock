@@ -2449,6 +2449,7 @@ dependencies = [
  "protoc-bin-vendored",
  "serde",
  "serde_json",
+ "shell-words",
  "specta",
  "tempfile",
  "tokio",

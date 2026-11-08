@@ -11,6 +11,7 @@ mod client;
 pub mod containers;
 mod error;
 pub mod events;
+pub mod exec;
 pub mod introspection;
 pub mod logs;
 pub mod messages;

@@ -6,12 +6,14 @@ use tauri::{ipc::Channel, State};
 
 use homeport_containerd::{
     containers::{self, ContainerdContainer, ContainerdContainerDetail, TaskAction},
+    exec::{self, ContainerdExecOptions, SessionId},
     logs::{self, ContainerdLogSource},
     namespaces::{self, ContainerdNamespace},
 };
 use homeport_core::{
     logs::{LogEvent, LogOptions},
     streams::StreamId,
+    terminal::ExecEvent,
 };
 
 use crate::{app::AppState, error::AppResult};
@@ -149,4 +151,59 @@ pub async fn containerd_logs_subscribe(
         .spawn(logs::stream(client, namespace, id, options, move |e| {
             on_event.send(e).is_ok()
         })))
+}
+
+/// Opens a terminal in a container's running task, through FIFOs on the
+/// Host's machine (ADR 0020).
+#[tauri::command]
+#[specta::specta]
+pub async fn containerd_exec_start(
+    state: State<'_, AppState>,
+    host_id: String,
+    namespace: String,
+    id: String,
+    options: ContainerdExecOptions,
+    on_event: Channel<ExecEvent>,
+) -> AppResult<SessionId> {
+    let client = state.hosts.registry.containerd(&host_id)?;
+    let (session, output) = exec::start(&client, &namespace, &id, options).await?;
+    Ok(state
+        .containerd_exec
+        .open(session, output, move |e| on_event.send(e).is_ok()))
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn containerd_exec_input(
+    state: State<'_, AppState>,
+    session: SessionId,
+    data: String,
+) -> AppResult<()> {
+    state
+        .containerd_exec
+        .get(session)?
+        .write(data.as_bytes())
+        .await
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn containerd_exec_resize(
+    state: State<'_, AppState>,
+    session: SessionId,
+    cols: u16,
+    rows: u16,
+) -> AppResult<()> {
+    state.containerd_exec.get(session)?.resize(cols, rows).await
+}
+
+/// Closes a terminal, killing its process; async, since that needs the runtime.
+#[tauri::command]
+#[specta::specta]
+pub async fn containerd_exec_close(
+    state: State<'_, AppState>,
+    session: SessionId,
+) -> AppResult<()> {
+    state.containerd_exec.close(session);
+    Ok(())
 }

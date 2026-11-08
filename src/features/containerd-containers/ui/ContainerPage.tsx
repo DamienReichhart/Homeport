@@ -22,16 +22,18 @@ import {
 import { containerdContainerQueries } from '../api/queries';
 import { managedByKubernetes, STATE_LABELS, stateTone } from '../model/containers';
 import { CREATED_BY } from './containerColumns';
+import { ExecTab } from './ExecTab';
 import { LogsTab } from './LogsTab';
 import { KillDialog } from './KillDialog';
 import { RemoveContainerDialog } from './RemoveContainerDialog';
 import { TaskActions } from './TaskActions';
 import { t, type MessageKey } from '@/shared/i18n';
 
-const TABS = ['overview', 'logs', 'spec'] as const;
+const TABS = ['overview', 'logs', 'exec', 'spec'] as const;
 const TAB_LABELS: Record<(typeof TABS)[number], MessageKey> = {
   overview: 'containerd.containers.tab.overview',
   logs: 'containerd.containers.tab.logs',
+  exec: 'containerd.containers.tab.exec',
   spec: 'containerd.containers.tab.spec',
 };
 
@@ -145,6 +147,14 @@ function ContainerDetail({
         </TabsContent>
         <TabsContent value="logs" className="min-h-[24rem] flex-1">
           <LogsTab hostId={hostId} namespace={namespace} id={container.id} />
+        </TabsContent>
+        <TabsContent value="exec" className="min-h-[24rem] flex-1">
+          <ExecTab
+            hostId={hostId}
+            namespace={namespace}
+            id={container.id}
+            running={container.state === 'running'}
+          />
         </TabsContent>
         <TabsContent value="spec" className="overflow-auto">
           {spec ? (

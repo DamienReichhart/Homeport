@@ -435,6 +435,15 @@ export const commands = {
 	 *  `tail` on the Host's machine (ADR 0020).
 	 */
 	containerdLogsSubscribe: (hostId: string, namespace: string, id: string, options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("containerd_logs_subscribe", { hostId, namespace, id, options, onEvent }),
+	/**
+	 *  Opens a terminal in a container's running task, through FIFOs on the
+	 *  Host's machine (ADR 0020).
+	 */
+	containerdExecStart: (hostId: string, namespace: string, id: string, options: ContainerdExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("containerd_exec_start", { hostId, namespace, id, options, onEvent }),
+	containerdExecInput: (session: number, data: string) => __TAURI_INVOKE<null>("containerd_exec_input", { session, data }),
+	containerdExecResize: (session: number, cols: number, rows: number) => __TAURI_INVOKE<null>("containerd_exec_resize", { session, cols, rows }),
+	/**  Closes a terminal, killing its process; async, since that needs the runtime. */
+	containerdExecClose: (session: number) => __TAURI_INVOKE<null>("containerd_exec_close", { session }),
 	podsList: (hostId: string) => __TAURI_INVOKE<PodmanPod[]>("pods_list", { hostId }),
 	podsInspect: (hostId: string, id: string) => __TAURI_INVOKE<PodmanPodDetail>("pods_inspect", { hostId, id }),
 	podsAct: (hostId: string, id: string, action: PodmanPodAction) => __TAURI_INVOKE<null>("pods_act", { hostId, id, action }),
@@ -1251,6 +1260,16 @@ export type ContainerdContainerDetail = {
 	/**  The names of its extensions, such as CRI's metadata. */
 	extensions: string[],
 	updatedAt: string | null,
+};
+
+export type ContainerdExecOptions = {
+	/**  The command to run, parsed with shell quoting; the default picks a shell. */
+	command: string | null,
+	/**  A numeric `uid[:gid]`; the container's user otherwise. */
+	user: string | null,
+	workingDir: string | null,
+	cols: number,
+	rows: number,
 };
 
 /**  How a log file's lines are written. */

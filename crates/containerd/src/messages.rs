@@ -71,6 +71,22 @@ homeport_core::messages! {
     LOGS_UNREADABLE = "errors.containerd.logsUnreadable" => "Homeport couldn't read this container's log file.";
     LOGS_UNREADABLE_HINT = "errors.containerd.logsUnreadable.hint" => "Log files usually belong to root. Connect as a user who may read them; Details has what the machine answered.";
 
+    /// A terminal on a containerd Host whose connection can't run commands.
+    EXEC_NEEDS_SHELL = "errors.containerd.execNeedsShell" => "Homeport can't open a terminal in {name}'s containers from this kind of connection.";
+    /// The script that makes the FIFOs failed on the Host's machine.
+    EXEC_SETUP_FAILED = "errors.containerd.execSetupFailed" => "Homeport couldn't prepare the terminal on the host.";
+    EXEC_SETUP_FAILED_HINT = "errors.containerd.execSetupFailed.hint" => "It runs mktemp, mkfifo and cat there, in the temporary folder. Details has what the machine answered.";
+    /// A command with an unclosed quote.
+    EXEC_UNCLOSED_QUOTE = "errors.containerd.execUnclosedQuote" => "The command has an unclosed quote.";
+    /// A user that isn't a number.
+    EXEC_USER_NOT_NUMERIC = "errors.containerd.execUserNotNumeric" => "\"{user}\" isn't a user ID: give a number, or uid:gid.";
+    /// A container spec without a process to start from.
+    EXEC_NO_SPEC = "errors.containerd.execNoSpec" => "This container's spec has no process to start a terminal from.";
+    /// The container has no shell, or not the program asked for.
+    EXEC_NO_SHELL = "errors.containerd.execNoShell" => "The container has no such program.";
+    EXEC_NO_SHELL_HINT = "errors.containerd.execNoShell.hint" => "Images without a shell (distroless, scratch) can't open one; run a program the image has instead.";
+    /// Input or a resize for a terminal that already closed.
+    EXEC_ENDED = "errors.containerd.execEnded" => "This terminal session has ended.";
 
     // Namespaces.
 

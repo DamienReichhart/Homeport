@@ -28,6 +28,7 @@ futures-util.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 jiff.workspace = true
+shell-words.workspace = true
 specta.workspace = true
 uuid.workspace = true
 log.workspace = true
