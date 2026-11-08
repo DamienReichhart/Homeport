@@ -353,6 +353,9 @@ export function installMocks({ theme, hostId }: MockOptions) {
       return settings;
     },
     hosts_list: () => hosts,
+    // The demo has Hosts only, so every shot stays as it was.
+    clusters_list: () => [],
+    clusters_detect_local: () => ({ found: [], missing: [] }),
     // The demo Swarm shows only where it's photographed, so other shots stay as they were.
     swarms_list: () => (routeOf().startsWith('/swarms') ? [swarm] : []),
     swarm_inspect: () => swarmSummary,

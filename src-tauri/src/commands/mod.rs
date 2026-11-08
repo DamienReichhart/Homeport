@@ -109,6 +109,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             clusters::clusters_nodes_list,
             clusters::clusters_node_get,
             clusters::clusters_events_list,
+            clusters::clusters_summary,
             backup::data_backup,
             backup::data_restore_preview,
             backup::data_restore,

@@ -12,6 +12,7 @@ mod kind;
 pub mod network;
 pub mod nodes;
 pub mod pods;
+pub mod summary;
 mod watch;
 pub mod workloads;
 
@@ -47,6 +48,7 @@ pub use self::{
     },
     nodes::{ClusterNodeDetail, ClusterNodeView, NodeTaint},
     pods::{NamespaceView, PodContainer, PodDetail, PodHealth, PodView},
+    summary::{ClusterSummary, NodeCounts, Part, PodCounts},
     watch::watch,
     workloads::{TemplateContainer, WorkloadDetail, WorkloadHealth, WorkloadKind, WorkloadView},
 };

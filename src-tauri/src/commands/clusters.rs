@@ -5,9 +5,9 @@ use tauri::{ipc::Channel, State};
 
 use homeport_clusters::resources::{
     self, ClusterNodeDetail, ClusterNodeView, ClusterServiceDetail, ClusterServiceView,
-    ConfigMapDetail, ConfigMapView, EventView, IngressDetail, IngressView, NamespaceView, On,
-    PodDetail, PodView, ResourceKind, RevealedValue, SecretDetail, SecretView, WorkloadDetail,
-    WorkloadKind, WorkloadView,
+    ClusterSummary, ConfigMapDetail, ConfigMapView, EventView, IngressDetail, IngressView,
+    NamespaceView, On, PodDetail, PodView, ResourceKind, RevealedValue, SecretDetail, SecretView,
+    WorkloadDetail, WorkloadKind, WorkloadView,
 };
 use homeport_clusters::{
     detect::{self, LocalClusters},
@@ -387,4 +387,17 @@ pub async fn clusters_events_list(
     namespace: Option<String>,
 ) -> AppResult<Vec<EventView>> {
     on(&state, &id)?.events(namespace.as_deref()).await
+}
+
+/// The Cluster `id` at a glance (Nodes, Pods by phase, workloads short of
+/// Pods, the latest warnings), for the Overview; `namespace` (every one
+/// without) for what lives in Namespaces.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_summary(
+    state: State<'_, AppState>,
+    id: String,
+    namespace: Option<String>,
+) -> AppResult<ClusterSummary> {
+    Ok(on(&state, &id)?.summary(namespace.as_deref()).await)
 }

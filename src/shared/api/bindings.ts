@@ -144,6 +144,12 @@ export const commands = {
 	clustersNodeGet: (id: string, name: string) => __TAURI_INVOKE<ClusterNodeDetail>("clusters_node_get", { id, name }),
 	/**  The Events in `namespace` (every one without), warnings first. */
 	clustersEventsList: (id: string, namespace: string | null) => __TAURI_INVOKE<EventView[]>("clusters_events_list", { id, namespace }),
+	/**
+	 *  The Cluster `id` at a glance (Nodes, Pods by phase, workloads short of
+	 *  Pods, the latest warnings), for the Overview; `namespace` (every one
+	 *  without) for what lives in Namespaces.
+	 */
+	clustersSummary: (id: string, namespace: string | null) => __TAURI_INVOKE<ClusterSummary>("clusters_summary", { id, namespace }),
 	/**  Backs up everything Homeport holds to `path`, sealed with `passphrase`. */
 	dataBackup: (path: string, passphrase: string) => __TAURI_INVOKE<BackupOutcome>("data_backup", { path, passphrase }),
 	/**  What the backup at `path` holds, for the restore's confirmation. */
@@ -804,6 +810,15 @@ platform: string } |
 export type ClusterStatusChanged = {
 	clusterId: string,
 	status: ClusterStatus,
+};
+
+export type ClusterSummary = {
+	nodes: Part<NodeCounts>,
+	pods: Part<PodCounts>,
+	/**  Deployments, StatefulSets and DaemonSets with fewer Pods ready than wanted. */
+	unready: Part<WorkloadView[]>,
+	/**  The latest Warning events. */
+	warnings: Part<EventView[]>,
 };
 
 /**  A Cluster and its connection's status, as the frontend lists them. */
@@ -1793,6 +1808,13 @@ export type NodeChange = {
 	labels: { [key in string]: string } | null,
 };
 
+export type NodeCounts = {
+	ready: number,
+	total: number,
+	/**  The Nodes that aren't ready, by name. */
+	notReady: string[],
+};
+
 /**  [`SwarmRole`] as an input. */
 export type NodeRole = "manager" | "worker";
 
@@ -1875,6 +1897,9 @@ export type PackageManager = "apt" | "dnf" | "zypper" | "scoop" | "aur";
 /**  A parameter of a message: text such as a Host's name, or a number. */
 export type Param = string | number;
 
+/**  One part of the summary, or why it couldn't be read. */
+export type Part<T> = { state: "read"; value: T } | { state: "failed"; error: AppError };
+
 /**  A container of a Pod and its state. */
 export type PodContainer = {
 	name: string,
@@ -1891,6 +1916,17 @@ export type PodContainer = {
 	restarts: number,
 	/**  Why it last ended, when it restarted. */
 	lastReason: string | null,
+};
+
+export type PodCounts = {
+	total: number,
+	running: number,
+	pending: number,
+	succeeded: number,
+	failed: number,
+	/**  Crashing, or unable to pull their image. */
+	crashing: number,
+	other: number,
 };
 
 export type PodDetail = {
