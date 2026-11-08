@@ -6,11 +6,13 @@ use tauri::{ipc::Channel, State};
 use homeport_core::streams::StreamId;
 use homeport_engine::{
     containers::logs::{LogEvent, LogOptions},
+    networks::{self, NetworkView},
     swarm::{
         self,
         nodes::{self, NodeChange, NodeView},
         objects::{self, ConfigContent, ObjectInput, SwarmObject},
         services::{self, ServiceView},
+        spec::{self, ServiceChange, ServiceSpecInput},
         tasks::{self, TaskFilter, TaskView},
         SwarmSummary,
     },
@@ -298,4 +300,46 @@ pub async fn swarm_configs_remove(
     id: String,
 ) -> AppResult<()> {
     objects::remove_config(&state.hosts.registry.manager(&swarm_id)?, &id).await
+}
+
+/// Creates a service from the Create service form, returning its ID.
+#[tauri::command]
+#[specta::specta]
+pub async fn swarm_services_create(
+    state: State<'_, AppState>,
+    swarm_id: String,
+    input: ServiceSpecInput,
+) -> AppResult<String> {
+    spec::create(&state.hosts.registry.manager(&swarm_id)?, &input).await
+}
+
+/// Changes a service's image, environment or replicas, from the service as
+/// read at `version`; the Swarm rolls its tasks over.
+#[tauri::command]
+#[specta::specta]
+pub async fn swarm_services_update(
+    state: State<'_, AppState>,
+    swarm_id: String,
+    id: String,
+    version: u64,
+    change: ServiceChange,
+) -> AppResult<()> {
+    spec::update(
+        &state.hosts.registry.manager(&swarm_id)?,
+        &id,
+        version,
+        &change,
+    )
+    .await
+}
+
+/// The Swarm's overlay networks, which services attach to.
+#[tauri::command]
+#[specta::specta]
+pub async fn swarm_networks_list(
+    state: State<'_, AppState>,
+    swarm_id: String,
+) -> AppResult<Vec<NetworkView>> {
+    let all = networks::list(&state.hosts.registry.manager(&swarm_id)?).await?;
+    Ok(all.into_iter().filter(|n| n.driver == "overlay").collect())
 }

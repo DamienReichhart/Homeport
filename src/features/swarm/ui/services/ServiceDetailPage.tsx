@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeftIcon, ScaleIcon, Undo2Icon } from 'lucide-react';
-import { useMemo } from 'react';
+import { ArrowLeftIcon, PencilIcon, ScaleIcon, Undo2Icon } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { LogViewer } from '@/features/containers';
 import { SwarmGate } from '@/core/swarm';
@@ -21,6 +21,7 @@ import { swarmFeatureQueries } from '../../api/queries';
 import { serviceLogs } from '../../api/streams';
 import { canScale } from '../../model/services';
 import { TasksTab } from '../tasks/TasksTab';
+import { EditServiceDialog } from './EditServiceDialog';
 import { ReplicasBadge } from './ReplicasBadge';
 import { useServiceActions } from './useServiceActions';
 import { t, type MessageKey } from '@/shared/i18n';
@@ -41,6 +42,7 @@ function ServiceDetail({ swarm, id }: { swarm: SwarmView; id: string }) {
   const [dialogs, actions] = useServiceActions(swarm.id, back);
   const stream = useMemo(() => serviceLogs(swarm.id, id), [swarm.id, id]);
   const service = services.data?.find((s) => s.id === id);
+  const [editing, setEditing] = useState(false);
 
   if (services.isPending) return <Spinner />;
   if (!service)
@@ -68,11 +70,16 @@ function ServiceDetail({ swarm, id }: { swarm: SwarmView; id: string }) {
         description={
           <span className="font-mono text-xs">
             {service.image}
-            {service.updateState && ` · ${service.updateState}`}
+            {service.updateState &&
+              ` · ${t('swarm.service.update', { state: service.updateState })}`}
+            {service.updateMessage && ` (${service.updateMessage})`}
           </span>
         }
         actions={
           <>
+            <Button onClick={() => setEditing(true)}>
+              <PencilIcon /> {t('swarm.edit.open')}
+            </Button>
             {canScale(service) && (
               <Button variant="outline" onClick={() => actions.onScale(service)}>
                 <ScaleIcon /> {t('swarm.services.action.scale')}
@@ -118,6 +125,9 @@ function ServiceDetail({ swarm, id }: { swarm: SwarmView; id: string }) {
         </TabsContent>
       </Tabs>
       {dialogs}
+      {editing && (
+        <EditServiceDialog swarmId={swarm.id} service={service} onClose={() => setEditing(false)} />
+      )}
     </div>
   );
 }

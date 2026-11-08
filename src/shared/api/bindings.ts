@@ -364,6 +364,15 @@ export const commands = {
 	/**  Puts back a service's previous spec. */
 	swarmServicesRollback: (swarmId: string, id: string) => __TAURI_INVOKE<null>("swarm_services_rollback", { swarmId, id }),
 	swarmServicesRemove: (swarmId: string, id: string) => __TAURI_INVOKE<null>("swarm_services_remove", { swarmId, id }),
+	/**  Creates a service from the Create service form, returning its ID. */
+	swarmServicesCreate: (swarmId: string, input: ServiceSpecInput) => __TAURI_INVOKE<string>("swarm_services_create", { swarmId, input }),
+	/**
+	 *  Changes a service's image, environment or replicas, from the service as
+	 *  read at `version`; the Swarm rolls its tasks over.
+	 */
+	swarmServicesUpdate: (swarmId: string, id: string, version: number, change: ServiceChange) => __TAURI_INVOKE<null>("swarm_services_update", { swarmId, id, version, change }),
+	/**  The Swarm's overlay networks, which services attach to. */
+	swarmNetworksList: (swarmId: string) => __TAURI_INVOKE<NetworkView[]>("swarm_networks_list", { swarmId }),
 	/**
 	 *  Streams the logs of every task of a service, each line labelled with its
 	 *  task and node.
@@ -1269,6 +1278,16 @@ export type ManagedStack = {
 /**  How a manager node takes part in the Swarm's Raft. */
 export type ManagerStatus = "leader" | "reachable" | "unreachable";
 
+/**  Replicated with a number of replicas, or one task per node. */
+export type ModeInput = { kind: "replicated"; replicas: number } | { kind: "global" };
+
+/**  A volume (by name) or a bind mount (an absolute path on each node). */
+export type MountInput = {
+	source: string,
+	target: string,
+	readOnly: boolean,
+};
+
 export type MountSpec = {
 	/**  An absolute path on the Host (bind mount) or a volume name. */
 	source: string,
@@ -1357,6 +1376,15 @@ export type ObjectInput = {
 	labels: { [key in string]: string },
 };
 
+/**
+ *  A secret or config given to the service, by name, as a file at `target`
+ *  (`/run/secrets/<name>` or `/<name>` when empty).
+ */
+export type ObjectRef = {
+	name: string,
+	target: string | null,
+};
+
 /**  Where a new secret's or config's value comes from. */
 export type ObjectValue = 
 /**  Typed in Homeport. */
@@ -1377,6 +1405,19 @@ export type PortBinding = {
 	privatePort: number,
 	publicPort: number | null,
 	protocol: string,
+};
+
+/**
+ *  A published port. `host_mode` publishes on the node running the task
+ *  only, instead of on every node through the routing mesh.
+ */
+export type PortInput = {
+	target: number,
+	/**  `None` lets the Swarm pick one (ingress only). */
+	published: number | null,
+	/**  `tcp`, `udp` or `sctp`. */
+	protocol: string,
+	hostMode: boolean,
 };
 
 export type PortSpec = {
@@ -1502,6 +1543,9 @@ export type RepositoryDraft = {
 	token: string | null,
 };
 
+/**  When a task's container is restarted. */
+export type RestartCondition = "none" | "on-failure" | "any";
+
 export type RestartPolicy = "no" | "always" | "unless-stopped" | "on-failure";
 
 /**  Where a restore writes. */
@@ -1574,6 +1618,19 @@ export type SearchResult = {
 	official: boolean,
 };
 
+/**  What the Edit dialog changes on a service; `None` keeps that part. */
+export type ServiceChange = {
+	image: string | null,
+	/**  Replaces every `KEY=value` entry. */
+	env: string[] | null,
+	replicas: number | null,
+	/**
+	 *  Restart every task even when nothing changed, as `--force` does:
+	 *  pulls the tag again when the image is unchanged.
+	 */
+	redeploy: boolean,
+};
+
 /**  How many tasks a service runs. */
 export type ServiceMode = 
 /**  A set number of replicas. */
@@ -1592,6 +1649,24 @@ export type ServicePort = {
 	protocol: string,
 	/**  `ingress` (the routing mesh) or `host`. */
 	mode: string,
+};
+
+/**  What the Create service dialog asks for. */
+export type ServiceSpecInput = {
+	name: string,
+	image: string,
+	mode: ModeInput,
+	/**  `KEY=value` entries. */
+	env: string[],
+	/**  Replaces the image's command, split like a shell would. */
+	command: string | null,
+	ports: PortInput[],
+	/**  Overlay networks, by name. */
+	networks: string[],
+	mounts: MountInput[],
+	secrets: ObjectRef[],
+	configs: ObjectRef[],
+	restart: RestartCondition | null,
 };
 
 export type ServiceView = {

@@ -40,4 +40,10 @@ export const swarmFeatureQueries = {
       queryKey: [...swarmKeys.configs(swarmId), id, 'content'],
       queryFn: () => commands.swarmConfigsInspect(swarmId, id),
     }),
+  /** The Swarm's overlay networks, for a service to attach to. */
+  networks: (swarmId: string) =>
+    queryOptions({
+      queryKey: [...swarmKeys.scope(swarmId), 'networks'],
+      queryFn: () => commands.swarmNetworksList(swarmId),
+    }),
 };

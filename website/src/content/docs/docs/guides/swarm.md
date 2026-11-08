@@ -52,6 +52,14 @@ Each service's menu:
 
 Select a service to open it: the **Logs** tab follows its logs, and **Inspect** shows its full definition as the Engine has it, including what Homeport doesn't edit (placement constraints, resource limits, health check, update and rollback policies).
 
+### Create and update a service
+
+**Create service**, on the Services tab, starts a service from an image: its name, whether it's replicated (and how many replicas) or global, when its tasks restart, a command to replace the image's own, environment variables (one `KEY=value` per line), published ports, volumes and bind mounts, the overlay networks it joins, and the secrets and configs it's given, each mounted where you say (`/run/secrets/<name>` for a secret by default). Ports go through the Swarm's routing mesh, reachable on every node, unless you choose to publish them on the node running each task only. Bind mounts are paths on each node, not on this computer. Homeport checks the form before sending it: a valid name, `KEY=value` entries, a port published twice. The new service opens on its **Tasks** tab, where you watch its replicas start.
+
+**Edit**, on a service's page, changes its image, environment and replicas, and only those: its ports, mounts, networks and everything else are sent back as they are. The Swarm then rolls its tasks over to the new settings a few at a time, and the page shows the update's progress. **Redeploy every task** restarts them even when nothing changed, pulling the image again, which is how a new push of the same tag is rolled out. If someone else updated the service since you opened it, Homeport says so instead of overwriting their change: refresh and edit again.
+
+Private images: the nodes pull images themselves, so a private image needs a login on each node (`docker login` there), or a Stack deployed with your registry credentials (see [Deploying Stacks](#deploying-stacks-to-a-swarm)).
+
 ## Tasks
 
 A service runs as **tasks**: one per replica (its slot, such as `web.2`), or one per node for a global service (`agent@node-b`). Each task runs as a container on its node. When a service shows fewer tasks running than it should, the answer is in its tasks.

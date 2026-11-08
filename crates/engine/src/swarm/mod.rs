@@ -6,6 +6,7 @@
 pub mod nodes;
 pub mod objects;
 pub mod services;
+pub mod spec;
 pub mod tasks;
 
 use bollard::{

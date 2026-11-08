@@ -231,4 +231,17 @@ homeport_core::messages! {
     OBJECT_IN_USE = "errors.swarm.objectInUse" => "A service still uses this.";
     OBJECT_IN_USE_HINT = "errors.swarm.objectInUse.hint" => "Used by {services}. Remove it from them, or remove them, first.";
     OBJECT_IN_USE_HINT_UNKNOWN = "errors.swarm.objectInUse.hintUnknown" => "Remove it from the services that use it, or remove them, first.";
+    /// A service name that isn't a DNS label.
+    SERVICE_NAME = "errors.swarm.serviceName" => "Service names hold up to 63 letters, digits, hyphens and underscores, and start and end with a letter or digit.";
+    /// Another service has this name.
+    SERVICE_NAME_IN_USE = "errors.swarm.serviceNameInUse" => "A service with that name already runs on this Swarm.";
+    SERVICE_NAME_IN_USE_HINT = "errors.swarm.serviceNameInUse.hint" => "Pick another name, or edit that service instead.";
+    /// A port without a container port.
+    SERVICE_PORT_TARGET = "errors.swarm.servicePortTarget" => "Each port needs the container port it goes to.";
+    /// The same published port twice in one service.
+    SERVICE_PORT_TWICE = "errors.swarm.servicePortTwice" => "Port {port} is published twice.";
+    /// A host-mode port without a published port.
+    SERVICE_HOST_PORT_NEEDED = "errors.swarm.serviceHostPortNeeded" => "Ports published on the node itself need a port number.";
+    /// A secret or config named in a service that the Swarm doesn't have.
+    OBJECT_MISSING = "errors.swarm.objectMissing" => "This Swarm has no secret or config named {name}.";
 }

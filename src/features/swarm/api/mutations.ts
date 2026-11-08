@@ -5,6 +5,8 @@ import {
   commands,
   type NodeChange,
   type ObjectInput,
+  type ServiceChange,
+  type ServiceSpecInput,
   type ServiceView,
   type SwarmNode,
   type SwarmObject,
@@ -118,5 +120,34 @@ export function useRemoveObject(swarmId: string, kind: ObjectKind) {
     onSuccess: (_, object) => toast.success(t('swarm.objects.removed', { name: object.name })),
     onError: (e) => toastError(e),
     onSettled: () => refresh(),
+  });
+}
+
+/** Creates a service; the dialog shows a failure in place. */
+export function useCreateService(swarmId: string, onCreated: (id: string) => void) {
+  const refresh = useRefreshSwarm(swarmId);
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: (input: ServiceSpecInput) => commands.swarmServicesCreate(swarmId, input),
+    onSuccess: async (id, input) => {
+      toast.success(t('swarm.services.created', { name: input.name }));
+      await refresh();
+      onCreated(id);
+    },
+  });
+}
+
+/** Updates a service from the version it was read at; the dialog shows a failure in place. */
+export function useUpdateService(swarmId: string, onDone: () => void) {
+  const refresh = useRefreshSwarm(swarmId);
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: ({ service, change }: { service: ServiceView; change: ServiceChange }) =>
+      commands.swarmServicesUpdate(swarmId, service.id, service.version, change),
+    onSuccess: async (_, { service }) => {
+      toast.success(t('swarm.services.updating', { name: service.name }));
+      await refresh();
+      onDone();
+    },
   });
 }
