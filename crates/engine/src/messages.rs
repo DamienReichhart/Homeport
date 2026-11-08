@@ -212,4 +212,10 @@ homeport_core::messages! {
     /// Removing a node that's still up without force.
     NODE_REMOVE_READY = "errors.swarm.removeReady" => "This node is still up.";
     NODE_REMOVE_READY_HINT = "errors.swarm.removeReady.hint" => "Have it leave the Swarm first, or remove it with Force.";
+    /// Rolling back a service that was never updated.
+    SERVICE_NO_PREVIOUS = "errors.swarm.serviceNoPrevious" => "This service has no earlier version to roll back to.";
+    /// Scaling a global service or a job.
+    SERVICE_NOT_REPLICATED = "errors.swarm.serviceNotReplicated" => "Only replicated services can be scaled; a global service runs one task on every node.";
+    /// An absurd number of replicas.
+    SERVICE_REPLICAS = "errors.swarm.serviceReplicas" => "Choose at most 10000 replicas.";
 }

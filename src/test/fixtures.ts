@@ -5,6 +5,7 @@ import type {
   HostStatus,
   HostView,
   NetworkView,
+  ServiceView,
   StatsSample,
 } from '@/shared/api';
 
@@ -238,6 +239,29 @@ export function statsSample(n = 1, overrides: Partial<StatsSample> = {}): StatsS
     blockRead: 0,
     blockWrite: 0,
     pids: 3,
+    ...overrides,
+  };
+}
+
+/** A Swarm service, replicated with 3 of 3 running unless overridden. */
+export function serviceView(overrides: Partial<ServiceView> = {}): ServiceView {
+  return {
+    id: 'svc1',
+    version: 3,
+    name: 'web',
+    image: 'nginx:1.27',
+    imageDigest: null,
+    mode: 'replicated',
+    replicas: 3,
+    running: 3,
+    desired: 3,
+    ports: [],
+    updateState: null,
+    updateMessage: null,
+    stack: null,
+    labels: {},
+    created: null,
+    updated: null,
     ...overrides,
   };
 }

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { swarmKeys } from '@/core/swarm';
-import { commands, type NodeChange, type SwarmNode } from '@/shared/api';
+import { commands, type NodeChange, type ServiceView, type SwarmNode } from '@/shared/api';
 import { toastError } from '@/shared/ui';
 import { t } from '@/shared/i18n';
 
@@ -38,5 +38,41 @@ export function useRemoveNode(swarmId: string, onRemoved: () => void) {
       await refresh();
       onRemoved();
     },
+  });
+}
+
+/** Sets a replicated service's replicas; the dialog shows a failure in place. */
+export function useScaleService(swarmId: string, onDone: () => void) {
+  const refresh = useRefreshSwarm(swarmId);
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: ({ service, replicas }: { service: ServiceView; replicas: number }) =>
+      commands.swarmServicesScale(swarmId, service.id, service.version, replicas),
+    onSuccess: async (_, { service, replicas }) => {
+      toast.success(t('swarm.services.scaled', { name: service.name, count: replicas }));
+      await refresh();
+      onDone();
+    },
+  });
+}
+
+export function useRollbackService(swarmId: string) {
+  const refresh = useRefreshSwarm(swarmId);
+  return useMutation({
+    mutationFn: (service: ServiceView) => commands.swarmServicesRollback(swarmId, service.id),
+    onSuccess: (_, service) =>
+      toast.success(t('swarm.services.rolledBack', { name: service.name })),
+    onError: (e) => toastError(e),
+    onSettled: () => refresh(),
+  });
+}
+
+export function useRemoveService(swarmId: string) {
+  const refresh = useRefreshSwarm(swarmId);
+  return useMutation({
+    mutationFn: (service: ServiceView) => commands.swarmServicesRemove(swarmId, service.id),
+    onSuccess: (_, service) => toast.success(t('swarm.services.removed', { name: service.name })),
+    onError: (e) => toastError(e),
+    onSettled: () => refresh(),
   });
 }

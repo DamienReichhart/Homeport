@@ -13,4 +13,14 @@ export const swarmFeatureQueries = {
       queryKey: [...swarmKeys.nodes(swarmId), id],
       queryFn: () => commands.swarmNodesInspect(swarmId, id),
     }),
+  services: (swarmId: string) =>
+    queryOptions({
+      queryKey: swarmKeys.services(swarmId),
+      queryFn: () => commands.swarmServicesList(swarmId),
+    }),
+  serviceInspect: (swarmId: string, id: string) =>
+    queryOptions({
+      queryKey: [...swarmKeys.services(swarmId), id, 'inspect'],
+      queryFn: () => commands.swarmServicesInspect(swarmId, id),
+    }),
 };

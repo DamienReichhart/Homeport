@@ -38,3 +38,16 @@ Each node's menu changes it:
 | **Remove**             | Takes it out of the Swarm.                                                                       |
 
 Homeport refuses, before asking the Engine, to demote the Swarm's last reachable manager (a Swarm without one can't be managed at all) and to drain its last active node (its tasks would have nowhere to go). Removing a node that's still up needs **Force**; a manager must be demoted first. If someone else changed a node since the list was read, the change is refused with **This was changed elsewhere**: refresh and try again, so nothing is overwritten.
+
+## Services
+
+The **Services** tab lists what the Swarm runs: each service's name, image, mode (replicated with its number of replicas, or global: one task on every node), how many of its tasks run against how many should (in warning colour while fewer run), its published ports, the swarm stack it belongs to, and the state of its last update. The list refreshes on its own as services change.
+
+Each service's menu:
+
+- **Logs** opens its logs, merged from every task, each line labelled with its task and node, such as `web.2@node-b`. While following, the tasks the Swarm starts later join in.
+- **Scale** sets how many replicas a replicated service runs; 0 stops it without removing it. Global services aren't scaled: they run one task per node.
+- **Roll back** puts back the settings the service had before its last update (image, environment, replicas…), the way `docker service rollback` does. A service that was never updated has nothing to roll back to, and says so.
+- **Remove** stops and removes its tasks. Its volumes are kept.
+
+Select a service to open it: the **Logs** tab follows its logs, and **Inspect** shows its full definition as the Engine has it, including what Homeport doesn't edit (placement constraints, resource limits, health check, update and rollback policies).

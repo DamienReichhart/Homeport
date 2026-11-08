@@ -356,6 +356,19 @@ export const commands = {
 	 */
 	swarmNodesUpdate: (swarmId: string, id: string, version: number, change: NodeChange) => __TAURI_INVOKE<null>("swarm_nodes_update", { swarmId, id, version, change }),
 	swarmNodesRemove: (swarmId: string, id: string, force: boolean) => __TAURI_INVOKE<null>("swarm_nodes_remove", { swarmId, id, force }),
+	/**  Every service of a Swarm, with its running and desired tasks. */
+	swarmServicesList: (swarmId: string) => __TAURI_INVOKE<ServiceView[]>("swarm_services_list", { swarmId }),
+	swarmServicesInspect: (swarmId: string, id: string) => __TAURI_INVOKE<Value>("swarm_services_inspect", { swarmId, id }),
+	/**  Sets a replicated service's replicas, from the service as read at `version`. */
+	swarmServicesScale: (swarmId: string, id: string, version: number, replicas: number) => __TAURI_INVOKE<null>("swarm_services_scale", { swarmId, id, version, replicas }),
+	/**  Puts back a service's previous spec. */
+	swarmServicesRollback: (swarmId: string, id: string) => __TAURI_INVOKE<null>("swarm_services_rollback", { swarmId, id }),
+	swarmServicesRemove: (swarmId: string, id: string) => __TAURI_INVOKE<null>("swarm_services_remove", { swarmId, id }),
+	/**
+	 *  Streams the logs of every task of a service, each line labelled with its
+	 *  task and node.
+	 */
+	swarmServiceLogsSubscribe: (swarmId: string, id: string, options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("swarm_service_logs_subscribe", { swarmId, id, options, onEvent }),
 };
 
 /** Events */
@@ -1520,6 +1533,55 @@ export type SearchResult = {
 	description: string,
 	stars: number,
 	official: boolean,
+};
+
+/**  How many tasks a service runs. */
+export type ServiceMode = 
+/**  A set number of replicas. */
+"replicated" | 
+/**  One task on every node that may run it. */
+"global" | 
+/**  Runs to completion, a set number of times. */
+"replicatedJob" | 
+/**  Runs to completion once on every node. */
+"globalJob";
+
+export type ServicePort = {
+	target: number,
+	published: number | null,
+	/**  `tcp`, `udp` or `sctp`. */
+	protocol: string,
+	/**  `ingress` (the routing mesh) or `host`. */
+	mode: string,
+};
+
+export type ServiceView = {
+	id: string,
+	/**  The service's `Version.Index`, sent back with an update. */
+	version: number,
+	name: string,
+	/**  Its image without the digest the Swarm pinned. */
+	image: string,
+	imageDigest: string | null,
+	mode: ServiceMode,
+	/**  The replicas asked for, for a replicated service. */
+	replicas: number | null,
+	/**  Tasks running now. */
+	running: number,
+	/**  Tasks that should be running. */
+	desired: number,
+	ports: ServicePort[],
+	/**
+	 *  `updating`, `paused`, `completed`, `rollback_started`… while or after
+	 *  an update; `None` when the service was never updated.
+	 */
+	updateState: string | null,
+	updateMessage: string | null,
+	/**  The swarm stack it belongs to (`com.docker.stack.namespace`). */
+	stack: string | null,
+	labels: { [key in string]: string },
+	created: string | null,
+	updated: string | null,
 };
 
 export type Settings = {

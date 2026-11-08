@@ -6,7 +6,7 @@ import {
   EraserIcon,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import type { LogSource } from '@/shared/api';
+import type { AppError, LogEvent, LogOptions, LogSource } from '@/shared/api';
 import { pickSavePath } from '@/shared/lib';
 import {
   Button,
@@ -27,11 +27,30 @@ import { streamLogs } from '../../api/streams';
 import { MAX_KEPT_LINES, renderLine, SINCE, TAILS } from '../../model/logs';
 import { t } from '@/shared/i18n';
 
+/** Opens a log stream; the returned function stops it. */
+export type LogStreamer = (
+  options: LogOptions,
+  onEvent: (event: LogEvent) => void,
+  onError: (error: AppError) => void,
+) => () => void;
+
 /**
- * Live logs of one or more containers. Several sources are interleaved with
- * a coloured label per source, like `docker compose logs`.
+ * Live logs of one or more containers of a Host, or of another `stream`
+ * (a Swarm service's tasks) told apart by `streamKey`. Several sources are
+ * interleaved with a coloured label per source, like `docker compose logs`.
  */
-export function LogViewer({ hostId, sources }: { hostId: string; sources: LogSource[] }) {
+export function LogViewer(
+  props: { hostId: string; sources: LogSource[] } | { stream: LogStreamer; streamKey: string },
+) {
+  const hostId = 'hostId' in props ? props.hostId : '';
+  const sources = 'sources' in props ? props.sources : [];
+  const custom = 'stream' in props ? props.stream : null;
+  const customRef = useRef(custom);
+  // Before the stream's effect, which reads it.
+  useEffect(() => {
+    customRef.current = custom;
+  });
+  const customKey = 'streamKey' in props ? props.streamKey : null;
   const handle = useRef<XTermHandle | null>(null);
   const kept = useRef<string[]>([]);
   const [ready, setReady] = useState(false);
@@ -58,9 +77,9 @@ export function LogViewer({ hostId, sources }: { hostId: string; sources: LogSou
     kept.current = [];
     const parsed = JSON.parse(sourcesKey) as LogSource[];
     const labels = parsed.flatMap((s) => (s.label ? [s.label] : []));
-    return streamLogs(
-      hostId,
-      parsed,
+    const open: LogStreamer =
+      customRef.current ?? ((...args) => streamLogs(hostId, parsed, ...args));
+    return open(
       {
         tail: tail === 'all' ? null : Number(tail),
         since: since === 'all' ? null : Math.floor(Date.now() / 1000) - Number(since),
@@ -71,6 +90,9 @@ export function LogViewer({ hostId, sources }: { hostId: string; sources: LogSou
       },
       (event) => {
         if (event.type === 'lines') {
+          // A stream's sources may only be known from its lines.
+          for (const line of event.lines)
+            if (line.source && !labels.includes(line.source)) labels.push(line.source);
           const rendered = event.lines.map((l) => renderLine(l, labels, timestamps));
           term.write(`${rendered.join('\r\n')}\r\n`);
           kept.current.push(
@@ -87,7 +109,7 @@ export function LogViewer({ hostId, sources }: { hostId: string; sources: LogSou
       },
       (error) => term.write(terminalError(error)),
     );
-  }, [ready, hostId, sourcesKey, tail, since, timestamps, stdout, stderr]);
+  }, [ready, hostId, sourcesKey, customKey, tail, since, timestamps, stdout, stderr]);
 
   const find = (forward: boolean) => {
     const search = handle.current?.search;

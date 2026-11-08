@@ -4,6 +4,7 @@
 //! `homeport_hosts::registry::HostRegistry::manager` hands out.
 
 pub mod nodes;
+pub mod services;
 
 use bollard::{
     models::{LocalNodeState, SystemInfo},
