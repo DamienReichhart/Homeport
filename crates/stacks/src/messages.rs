@@ -99,6 +99,8 @@ homeport_core::messages! {
     SWARM_OBJECT_CHANGED_HINT = "errors.compose.swarmObjectChanged.hint" => "Give it a new name: for example name: app_conf_${CONF_VERSION} under configs:, and change CONF_VERSION in the environment each time its file changes.";
     /// Pulling a swarm stack's images, which its nodes do.
     SWARM_NO_PULL = "errors.compose.swarmNoPull" => "A Swarm's nodes pull their images themselves when a Stack is deployed. Redeploy it instead.";
+    /// Linking a swarm stack to a folder that describes other services.
+    SWARM_LINK_MISMATCH = "errors.compose.swarmLinkMismatch" => "This folder doesn't describe this Stack: it runs {running}, and the folder's compose files declare {declared}.";
     /// A service without an image.
     COMPOSE_NO_IMAGE = "errors.compose.noImage" => "Service \"{service}\" needs an image.";
 

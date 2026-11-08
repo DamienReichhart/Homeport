@@ -20,8 +20,9 @@ use homeport_engine::{
 };
 use homeport_hosts::registry::SwarmView;
 use homeport_stacks::{
+    linked::{files as linked_files, folder, LinkedStack},
     swarm::{self as stacks_swarm, RemoveReport, SwarmStackParts},
-    Stack,
+    Stack, StackOwner,
 };
 
 use crate::{app::AppState, error::AppResult};
@@ -474,4 +475,29 @@ pub async fn swarm_stacks_remove(
     name: String,
 ) -> AppResult<RemoveReport> {
     stacks_swarm::remove(&state.hosts.registry.manager(&swarm_id)?, &name).await
+}
+
+/// Links the External swarm stack `name` to a folder on this computer,
+/// once its compose files are checked to declare the services it runs.
+#[tauri::command]
+#[specta::specta]
+pub async fn swarm_stacks_link(
+    state: State<'_, AppState>,
+    swarm_id: String,
+    name: String,
+    working_dir: String,
+) -> AppResult<LinkedStack> {
+    let services = services::list(&state.hosts.registry.manager(&swarm_id)?).await?;
+    let found = folder::inspect(std::path::Path::new(&working_dir))?;
+    let texts: Vec<&str> = found.files.iter().map(|f| f.content.as_str()).collect();
+    stacks_swarm::check_link(&name, &services, &texts)?;
+    let config_files: Vec<String> = found.files.iter().map(|f| f.path.clone()).collect();
+    let fingerprint = linked_files::files_fingerprint(&config_files);
+    state.linked.create(
+        StackOwner::Swarm(swarm_id),
+        &name,
+        &found.working_dir,
+        &config_files,
+        &fingerprint,
+    )
 }

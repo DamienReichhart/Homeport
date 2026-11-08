@@ -51,6 +51,8 @@ Managed, Linked and Synced Stacks belong to one Host, or to one Swarm. To run th
 
 A **Linked Stack** keeps its compose files in their project folder on this computer, where you edit them in your own editor and keep them under version control. Homeport never copies them: it remembers the folder and the compose files it uses, in order, and reads them where they are. The folder's `.env` stays in the folder.
 
+A Linked Stack can also be deployed to a Swarm, its `configs: file:` and `secrets: file:` read from the folder; see [Linked and Synced Stacks on a Swarm](/docs/guides/swarm/#linked-and-synced-stacks-on-a-swarm).
+
 ### Creating a Linked Stack
 
 A project folder that isn't running on the Host yet can be linked from Homeport:

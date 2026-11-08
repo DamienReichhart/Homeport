@@ -127,3 +127,22 @@ What changes on a Swarm:
 - **Images come from a registry.** Each node pulls the images of the tasks it runs, so a service built from local files (`build:` without `image:`) is refused before anything runs: push the image first and name it in `image:`. **Send my registry credentials**, in a Stack's **Definition**, has the docker CLI send the logins it has on this computer (`docker login`) to the Swarm, so its nodes can pull private images. It's off by default; Homeport's own registry logins are never handed to the CLI.
 - **Some compose keys are ignored** by `docker stack deploy`: `container_name`, `restart` (use `deploy.restart_policy`), `depends_on` conditions and `profiles`. The editor warns about them. Bind mounts are paths on whichever node runs the task.
 - **Remove** takes the Stack down as `docker stack rm` does, and there's no start or stop.
+
+### Linked and Synced Stacks on a Swarm
+
+Most swarm stacks live in a folder or a repository next to their config files, and that's where Linked and Synced Stacks shine on a Swarm. Homeport runs `docker stack deploy` from the Stack's folder on this computer (a Linked Stack's, or a Synced Stack's checkout), so relative `env_file:`, `configs: file:` and `secrets: file:` are read here and sent to the Swarm. The folder's `.env` is read too, as compose would (`docker stack deploy` doesn't on its own). Nothing is written on any node, and secrets read from files go to the Swarm without Homeport keeping them.
+
+- A service with `build:` needs an `image:` too: Homeport can't hand the nodes an image built here. Build and push it, then deploy.
+- A Synced Stack on a Swarm syncs, deploys and auto-deploys as on a host: each deploy uses the commit just fetched.
+- An External swarm stack deployed from a folder can be linked to it: on its page, choose **Link to a folder…**. Homeport checks that the folder's compose files declare the services the Stack runs before linking, so a Stack isn't tied to another project's files.
+
+Swarm configs and secrets can't be changed once created. When a `file:` source changes, redeploying fails with **A config or secret of this Stack changed**: give the object a versioned name, for example
+
+```yaml
+configs:
+  app_conf:
+    name: app_conf_${CONF_VERSION}
+    file: ./app.conf
+```
+
+and change `CONF_VERSION` in the folder's `.env` (or the Stack's environment) each time the file changes. Homeport never removes and recreates one behind your back.

@@ -203,6 +203,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             swarm::swarm_stacks_list,
             swarm::swarm_stacks_parts,
             swarm::swarm_stacks_remove,
+            swarm::swarm_stacks_link,
             swarm::swarm_service_logs_subscribe,
             swarm::swarm_tasks_list,
             swarm::swarm_tasks_inspect,

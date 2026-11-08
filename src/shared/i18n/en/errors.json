@@ -41,6 +41,7 @@
   "errors.compose.spawnFailed.hintNotFound": "It disappeared from the PATH. Reinstall it, then restart Homeport.",
   "errors.compose.spawnFailed.hintPermission": "Homeport isn't allowed to run it. Check its file permissions.",
   "errors.compose.stopped": "docker compose {verb} was stopped.",
+  "errors.compose.swarmLinkMismatch": "This folder doesn't describe this Stack: it runs {running}, and the folder's compose files declare {declared}.",
   "errors.compose.swarmNoPull": "A Swarm's nodes pull their images themselves when a Stack is deployed. Redeploy it instead.",
   "errors.compose.swarmNoStartStop": "A swarm stack can't be started or stopped as a whole. Scale its services instead.",
   "errors.compose.swarmObjectChanged": "A config or secret of this Stack changed, and the Swarm can't change one in place.",

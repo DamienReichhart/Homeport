@@ -120,6 +120,22 @@ pub fn declared_profiles(files: &[&str]) -> Vec<String> {
     profiles
 }
 
+/// The services of `files` (merged), sorted.
+pub fn service_names(files: &[&str]) -> Vec<String> {
+    let docs: Vec<Value> = files
+        .iter()
+        .filter_map(|f| serde_yaml_ng::from_str(f).ok())
+        .collect();
+    let mut names: Vec<String> = merge(&docs)
+        .services
+        .unwrap_or_default()
+        .into_iter()
+        .map(|(name, _)| name)
+        .collect();
+    names.sort();
+    names
+}
+
 /// Whether a service of `files` (merged) is built from local files, so a
 /// deploy of changed files should rebuild it.
 pub fn builds(files: &[&str]) -> bool {

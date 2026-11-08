@@ -232,3 +232,15 @@ export function useRemoveSwarmStack(swarmId: string, onRemoved?: () => void) {
     onSettled: () => refresh(),
   });
 }
+
+/** Links an External swarm stack to a folder on this computer, after checking its services match. */
+export function useLinkSwarmStack(swarmId: string) {
+  const refresh = useRefreshSwarm(swarmId);
+  return useMutation({
+    mutationFn: ({ name, folder }: { name: string; folder: string }) =>
+      commands.swarmStacksLink(swarmId, name, folder),
+    onSuccess: (_, { name }) => toast.success(t('swarm.stacks.linked', { name })),
+    onError: (e) => toastError(e),
+    onSettled: () => refresh(),
+  });
+}

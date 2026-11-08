@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeftIcon, RocketIcon, Trash2Icon } from 'lucide-react';
+import { ArrowLeftIcon, FolderOpenIcon, RocketIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { SwarmGate } from '@/core/swarm';
@@ -15,6 +15,7 @@ import {
   type ComposeJob,
 } from '@/features/stacks';
 import type { StackOwner, SwarmView } from '@/shared/api';
+import { pickFolder } from '@/shared/lib';
 import {
   Badge,
   Button,
@@ -33,7 +34,7 @@ import {
   TabsTrigger,
   useConfirmedAction,
 } from '@/shared/ui';
-import { useRemoveSwarmStack } from '../../api/mutations';
+import { useLinkSwarmStack, useRemoveSwarmStack } from '../../api/mutations';
 import { swarmFeatureQueries } from '../../api/queries';
 import { t } from '@/shared/i18n';
 
@@ -43,6 +44,7 @@ function SwarmStackDetail({ swarm, name }: { swarm: SwarmView; name: string }) {
   const stacks = useQuery(swarmFeatureQueries.stacks(swarm.id));
   const parts = useQuery(swarmFeatureQueries.stackParts(swarm.id, name));
   const remove = useRemoveSwarmStack(swarm.id);
+  const link = useLinkSwarmStack(swarm.id);
   const [dialog, confirm] = useConfirmedAction();
   const stack = stacks.data?.find((s) => s.name === name);
   const owner: StackOwner = { kind: 'swarm', id: swarm.id };
@@ -98,6 +100,19 @@ function SwarmStackDetail({ swarm, name }: { swarm: SwarmView; name: string }) {
                 {stack.state === 'notDeployed'
                   ? t('swarm.stacks.deploy')
                   : t('swarm.stacks.redeploy')}
+              </Button>
+            )}
+            {!recorded && (
+              <Button
+                variant="outline"
+                disabled={link.isPending}
+                onClick={() =>
+                  void pickFolder(t('swarm.stacks.linkTitle', { name: stack.name })).then(
+                    (folder) => folder && link.mutate({ name: stack.name, folder }),
+                  )
+                }
+              >
+                <FolderOpenIcon /> {t('swarm.stacks.link')}
               </Button>
             )}
             {!recorded && (

@@ -399,6 +399,11 @@ export const commands = {
 	/**  Removes a swarm stack as `docker stack rm` does, through the Engine API. */
 	swarmStacksRemove: (swarmId: string, name: string) => __TAURI_INVOKE<RemoveReport>("swarm_stacks_remove", { swarmId, name }),
 	/**
+	 *  Links the External swarm stack `name` to a folder on this computer,
+	 *  once its compose files are checked to declare the services it runs.
+	 */
+	swarmStacksLink: (swarmId: string, name: string, workingDir: string) => __TAURI_INVOKE<LinkedStack>("swarm_stacks_link", { swarmId, name, workingDir }),
+	/**
 	 *  Streams the logs of every task of a service, each line labelled with its
 	 *  task and node.
 	 */

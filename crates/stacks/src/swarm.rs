@@ -153,6 +153,28 @@ pub fn list(
     Ok(stacks)
 }
 
+/// Checks that the compose files `texts` describe the swarm stack `name` as
+/// it runs: the same services, by name. A swarm stack's services don't say
+/// where their files are, so linking one to a folder is the user's call,
+/// and this keeps it from being linked to another project's.
+pub fn check_link(name: &str, services: &[ServiceView], texts: &[&str]) -> AppResult<()> {
+    let mut running: Vec<String> = services
+        .iter()
+        .filter(|s| s.stack.as_deref() == Some(name))
+        .map(|s| short_name(name, &s.name).to_owned())
+        .collect();
+    running.sort();
+    let declared = crate::definition::service_names(texts);
+    if running == declared {
+        return Ok(());
+    }
+    Err(homeport_core::error::AppError::validation(
+        crate::messages::SWARM_LINK_MISMATCH
+            .with("running", running.join(", "))
+            .with("declared", declared.join(", ")),
+    ))
+}
+
 /// What a swarm stack is made of, by name.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -377,6 +399,23 @@ mod tests {
         assert_eq!(stacks[0].state, StackState::Running);
         assert_eq!(stacks[1].state, StackState::NotDeployed);
         assert_eq!(stacks[2].state, StackState::Stopped);
+    }
+
+    #[test]
+    fn a_folder_links_only_when_its_services_match() {
+        let running = [
+            service("shop_web", Some("shop"), 1, 1),
+            service("shop_db", Some("shop"), 1, 1),
+            service("blog_web", Some("blog"), 1, 1),
+        ];
+        let both = "services:\n  web:\n    image: nginx\n  db:\n    image: postgres\n";
+        assert!(check_link("shop", &running, &[both]).is_ok());
+        let one = "services:\n  web:\n    image: nginx\n";
+        let refused = check_link("shop", &running, &[one]).unwrap_err();
+        assert!(refused.message.contains("db, web"), "{}", refused.message);
+        // Merged like compose: an override's service counts.
+        let db = "services:\n  db:\n    image: postgres\n";
+        assert!(check_link("shop", &running, &[one, db]).is_ok());
     }
 
     #[test]

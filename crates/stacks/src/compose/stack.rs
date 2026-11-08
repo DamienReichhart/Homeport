@@ -446,4 +446,96 @@ mod tests {
             "{events:?}"
         );
     }
+
+    #[tokio::test]
+    #[ignore = "needs a local Docker Engine and the docker CLI"]
+    async fn linked_stacks_deploy_their_file_configs_and_env_to_a_swarm() {
+        let docker = testing::docker();
+        let _swarm = testing::swarm(&docker).await;
+        testing::ensure_image(&docker).await;
+        let name = testing::unique("linked").replace('-', "");
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("app.conf"), "port: 80\n").unwrap();
+        let compose = format!(
+            "services:\n  app:\n    image: {}\n    command: [\"sleep\", \"300\"]\n    environment:\n      GREETING: ${{GREETING}}\n    configs:\n      - source: conf\n        target: /app.conf\nconfigs:\n  conf:\n    file: ./app.conf\n",
+            testing::IMAGE
+        );
+        let file = dir.path().join("compose.yaml");
+        std::fs::write(&file, compose).unwrap();
+        let deploy = |action: ComposeAction| {
+            let job = ComposeJob {
+                cli: ComposeCli {
+                    program: "docker".into(),
+                    prefix: vec![],
+                    version: String::new(),
+                },
+                project: name.clone(),
+                source: StackSource::Linked {
+                    working_dir: dir.path().to_owned(),
+                    config_files: vec![file.to_string_lossy().into_owned()],
+                },
+                target: StackTarget::Swarm {
+                    swarm_id: "test".into(),
+                    name: "the test Swarm".into(),
+                    manager: Reach {
+                        name: "local".into(),
+                        connection: HostConnection::Local {
+                            socket_path: "/var/run/docker.sock".into(),
+                        },
+                        dialer: None,
+                        docker: testing::docker(),
+                    },
+                },
+                logins: Logins::none(),
+                action,
+                profiles: vec![],
+                record: None,
+                registry_auth: false,
+            };
+            async move {
+                let events = Arc::new(Mutex::new(Vec::new()));
+                let sink = {
+                    let events = events.clone();
+                    move |e| {
+                        events.lock().unwrap().push(e);
+                        true
+                    }
+                };
+                runtime::run(job, sink).await;
+                let events = events.lock().unwrap().clone();
+                events
+            }
+        };
+
+        std::fs::write(dir.path().join(".env"), "GREETING=hello\n").unwrap();
+        let events = deploy(ComposeAction::Up).await;
+        assert!(succeeded(&events), "{events:?}");
+        assert_eq!(greeting(&name).await.as_deref(), Some("hello"));
+        let parts = swarm::parts(&docker, &name).await.unwrap();
+        assert_eq!(parts.configs, [format!("{name}_conf")]);
+
+        // The folder's .env changed: the redeploy reads it again.
+        std::fs::write(dir.path().join(".env"), "GREETING=bonjour\n").unwrap();
+        let events = deploy(ComposeAction::Up).await;
+        assert!(succeeded(&events), "{events:?}");
+        assert_eq!(greeting(&name).await.as_deref(), Some("bonjour"));
+
+        // A changed config file can't be updated in place: the hint says to version it.
+        std::fs::write(dir.path().join("app.conf"), "port: 8080\n").unwrap();
+        let events = deploy(ComposeAction::Up).await;
+        let error = events.iter().find_map(|e| match e {
+            ComposeEvent::Exit {
+                error: Some(error), ..
+            } => Some(error.clone()),
+            _ => None,
+        });
+        assert_eq!(
+            error.map(|e| e.key),
+            Some("errors.compose.swarmObjectChanged".to_owned()),
+            "{events:?}"
+        );
+
+        let events = deploy(ComposeAction::Down).await;
+        assert!(succeeded(&events), "{events:?}");
+    }
 }
