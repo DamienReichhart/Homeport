@@ -20,9 +20,10 @@ export function useNavEntries(): { entries: NavEntry[]; shortcuts: NavShortcut[]
   // With no Host selected, the Docker pages show, each explaining how to add one.
   const docker = !host || supports(host, 'docker');
   const podman = supports(host, 'podman');
+  const containerd = supports(host, 'containerd');
   return useMemo(() => {
-    const supported = (c: HostCapability) => (c === 'docker' ? docker : podman);
-    const entries = visibleNavEntries(navEntries, kind, supported);
+    const offered: Record<HostCapability, boolean> = { docker, podman, containerd };
+    const entries = visibleNavEntries(navEntries, kind, (c) => offered[c]);
     return { entries, shortcuts: navShortcuts(entries) };
-  }, [kind, docker, podman]);
+  }, [kind, docker, podman, containerd]);
 }

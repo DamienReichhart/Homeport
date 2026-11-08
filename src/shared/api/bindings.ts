@@ -408,6 +408,11 @@ export const commands = {
 	 *  returns its id. A pod on a Host that isn't Podman is `EngineUnsupported`.
 	 */
 	containersRun: (hostId: string, spec: RunSpec, pod: string | null) => __TAURI_INVOKE<string>("containers_run", { hostId, spec, pod }),
+	/**  Every namespace of the Host, with what each holds. */
+	containerdNamespaces: (hostId: string) => __TAURI_INVOKE<ContainerdNamespace[]>("containerd_namespaces", { hostId }),
+	containerdNamespaceCreate: (hostId: string, name: string) => __TAURI_INVOKE<null>("containerd_namespace_create", { hostId, name }),
+	/**  Removes an empty namespace; one that holds anything is refused. */
+	containerdNamespaceRemove: (hostId: string, name: string) => __TAURI_INVOKE<null>("containerd_namespace_remove", { hostId, name }),
 	podsList: (hostId: string) => __TAURI_INVOKE<PodmanPod[]>("pods_list", { hostId }),
 	podsInspect: (hostId: string, id: string) => __TAURI_INVOKE<PodmanPodDetail>("pods_inspect", { hostId, id }),
 	podsAct: (hostId: string, id: string, action: PodmanPodAction) => __TAURI_INVOKE<null>("pods_act", { hostId, id, action }),
@@ -1189,6 +1194,14 @@ export type ContainerUsage = {
 	cpuPercent: number | null,
 	memoryUsage: number,
 	memoryLimit: number,
+};
+
+/**  One namespace and what it holds. */
+export type ContainerdNamespace = {
+	name: string,
+	labels: { [key in string]: string },
+	containers: number,
+	images: number,
 };
 
 /**  One context the user picked, and the name its Cluster gets. */
@@ -2958,6 +2971,11 @@ export type Settings = {
 	 *  every Namespace. A Cluster without one shows its context's Namespace.
 	 */
 	clusterNamespaces?: { [key in string]: string },
+	/**
+	 *  The namespace each containerd Host's pages show, by Host id. A Host
+	 *  without one shows `default`, or the only namespace holding something.
+	 */
+	containerdNamespaces?: { [key in string]: string },
 	/**  Look for a new version at launch and every few hours. */
 	checkForUpdates?: boolean,
 	/**

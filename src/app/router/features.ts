@@ -4,6 +4,7 @@ import { boardFeature } from '@/features/board';
 import { clusterEventsFeature } from '@/features/cluster-events';
 import { clustersFeature } from '@/features/clusters';
 import { configFeature } from '@/features/config';
+import { containerdNamespacesFeature } from '@/features/containerd-namespaces';
 import { containersFeature } from '@/features/containers';
 import { eventsFeature } from '@/features/events';
 import { helmFeature } from '@/features/helm';
@@ -36,6 +37,7 @@ export const features: FeatureManifest[] = [
   stacksFeature,
   podmanPodsFeature,
   quadletsFeature,
+  containerdNamespacesFeature,
   swarmFeature,
   workloadsFeature,
   podsFeature,

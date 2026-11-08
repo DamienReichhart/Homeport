@@ -14,6 +14,11 @@ export default {
   'core.unsupported.containerd':
     'This page is for containerd, and {name} runs {engine}. Pick a containerd host in the switcher to use it.',
   'core.unsupported.overview': 'Go to the Overview',
+  'core.containerd.namespace': 'Namespace',
+  'core.containerd.holds':
+    '{containers, plural, one {# container} other {# containers}}, {images, plural, one {# image} other {# images}}',
+  'core.containerd.manage': 'Manage namespaces',
+  'core.containerd.rememberFailed': 'Homeport couldn’t remember the namespace you picked',
   'core.selection.rememberFailed': 'Homeport couldn’t remember what you selected',
   'core.connection.local': 'Local',
   'core.status.connected': 'Connected',

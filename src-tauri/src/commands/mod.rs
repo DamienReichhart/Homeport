@@ -18,6 +18,7 @@ pub mod cluster_api;
 pub mod cluster_forwards;
 pub mod cluster_streams;
 pub mod clusters;
+pub mod containerd;
 pub mod containers;
 pub mod exec;
 pub mod files;
@@ -228,6 +229,9 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             system::system_disk_usage,
             system::system_prune,
             containers::containers_run,
+            containerd::containerd_namespaces,
+            containerd::containerd_namespace_create,
+            containerd::containerd_namespace_remove,
             podman::pods_list,
             podman::pods_inspect,
             podman::pods_act,

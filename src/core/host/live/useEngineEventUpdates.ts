@@ -4,11 +4,26 @@ import { events, type EngineEvent } from '@/shared/api';
 import { hostKeys } from '../api/keys';
 import { appendEvent } from '../model/events';
 
-/** Which cached lists an Engine event makes stale. */
+/**
+ * Which cached lists an Engine event makes stale. containerd's events
+ * (`task`, `snapshot`, `namespace`, `content`, and its own `container` and
+ * `image`) refresh its pages in every namespace.
+ */
 export function staleKeys(hostId: string, kind: string): QueryKey[] {
   switch (kind) {
+    case 'task':
+      return [hostKeys.containerdContainers(hostId)];
+    case 'snapshot':
+      return [hostKeys.containerdSnapshots(hostId)];
+    case 'namespace':
+      return [hostKeys.containerdNamespaces(hostId)];
+    case 'content':
+      return [hostKeys.containerdImages(hostId)];
     case 'container':
       return [
+        hostKeys.containerdContainers(hostId),
+        hostKeys.containerdSnapshots(hostId),
+        hostKeys.containerdNamespaces(hostId),
         hostKeys.containers(hostId),
         hostKeys.stacks(hostId),
         hostKeys.system(hostId),
@@ -21,7 +36,12 @@ export function staleKeys(hostId: string, kind: string): QueryKey[] {
     case 'pod':
       return [hostKeys.pods(hostId)];
     case 'image':
-      return [hostKeys.images(hostId), hostKeys.system(hostId)];
+      return [
+        hostKeys.images(hostId),
+        hostKeys.system(hostId),
+        hostKeys.containerdImages(hostId),
+        hostKeys.containerdNamespaces(hostId),
+      ];
     case 'volume':
       return [hostKeys.volumes(hostId), hostKeys.volumeSizes(hostId), hostKeys.system(hostId)];
     case 'network':

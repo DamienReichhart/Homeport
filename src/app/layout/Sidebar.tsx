@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { ContainerdNamespacePicker } from '@/core/host';
 import { HostSwitcher } from '@/features/hosts';
 import { SwarmNav } from '@/features/swarm';
 import { cn } from '@/shared/lib';
@@ -14,8 +15,9 @@ export function Sidebar() {
       className="bg-sidebar text-sidebar-foreground border-sidebar-border flex w-56 shrink-0 flex-col gap-0.5 border-r p-3"
     >
       <Logo className="mb-3 px-1.5 pt-1" />
-      <div className="mb-3">
+      <div className="mb-3 grid gap-1.5">
         <HostSwitcher />
+        <ContainerdNamespacePicker />
       </div>
       {entries.map(({ path, label, icon: Icon }) => {
         const link = (

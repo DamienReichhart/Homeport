@@ -28,7 +28,7 @@ const MAX_LEN: usize = 76;
 /// One namespace and what it holds.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
-pub struct NamespaceSummary {
+pub struct ContainerdNamespace {
     pub name: String,
     pub labels: HashMap<String, String>,
     pub containers: u32,
@@ -53,7 +53,7 @@ pub fn validate(name: &str) -> AppResult<()> {
 }
 
 /// Every namespace, sorted by name, with how many containers and images it holds.
-pub async fn list(client: &Containerd) -> AppResult<Vec<NamespaceSummary>> {
+pub async fn list(client: &Containerd) -> AppResult<Vec<ContainerdNamespace>> {
     let namespaces = client
         .namespaces()
         .list(ListNamespacesRequest::default())
@@ -79,7 +79,7 @@ pub async fn list(client: &Containerd) -> AppResult<Vec<NamespaceSummary>> {
             .into_inner()
             .images
             .len();
-        summaries.push(NamespaceSummary {
+        summaries.push(ContainerdNamespace {
             name,
             labels,
             containers: u32::try_from(containers).unwrap_or(u32::MAX),
@@ -88,18 +88,6 @@ pub async fn list(client: &Containerd) -> AppResult<Vec<NamespaceSummary>> {
     }
     summaries.sort_by(|a, b| a.name.cmp(&b.name));
     Ok(summaries)
-}
-
-/// The namespace the pages show first: `default` when it holds something
-/// or nothing does, or else the only one that holds something.
-pub fn preferred(namespaces: &[NamespaceSummary]) -> String {
-    let holds = |n: &&NamespaceSummary| n.containers > 0 || n.images > 0;
-    let default_holds = namespaces.iter().any(|n| n.name == DEFAULT && holds(&n));
-    let mut holding = namespaces.iter().filter(holds);
-    match (holding.next(), holding.next()) {
-        (Some(only), None) if !default_holds => only.name.clone(),
-        _ => DEFAULT.to_owned(),
-    }
 }
 
 /// Creates an empty namespace.
@@ -165,15 +153,6 @@ fn not_empty(name: &str, status: &tonic::Status) -> AppError {
 mod tests {
     use super::*;
 
-    fn ns(name: &str, containers: u32, images: u32) -> NamespaceSummary {
-        NamespaceSummary {
-            name: name.into(),
-            labels: HashMap::new(),
-            containers,
-            images,
-        }
-    }
-
     #[test]
     fn names_are_letters_and_digits_with_single_separators() {
         for good in ["default", "k8s.io", "my-ns_2", "a"] {
@@ -190,24 +169,6 @@ mod tests {
         ] {
             assert!(validate(bad).is_err(), "{bad}");
         }
-    }
-
-    #[test]
-    fn default_comes_first_unless_only_another_namespace_holds_something() {
-        assert_eq!(preferred(&[]), "default");
-        assert_eq!(preferred(&[ns("default", 0, 0)]), "default");
-        assert_eq!(
-            preferred(&[ns("default", 0, 0), ns("k8s.io", 12, 30)]),
-            "k8s.io"
-        );
-        assert_eq!(
-            preferred(&[ns("default", 1, 0), ns("k8s.io", 12, 30)]),
-            "default"
-        );
-        assert_eq!(
-            preferred(&[ns("buildkit", 0, 2), ns("k8s.io", 12, 30)]),
-            "default"
-        );
     }
 
     #[test]

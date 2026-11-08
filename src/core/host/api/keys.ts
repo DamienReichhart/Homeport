@@ -22,4 +22,24 @@ export const hostKeys = {
   pods: (hostId: string) => ['host', hostId, 'pods'] as const,
   /** Podman's Quadlet units, and each one's file under it. */
   quadlets: (hostId: string) => ['host', hostId, 'quadlets'] as const,
+  /** A containerd Host's namespaces, with what each holds. */
+  containerdNamespaces: (hostId: string) => ['host', hostId, 'containerd-namespaces'] as const,
+  /**
+   * A containerd Host's containers in `namespace`; without it, every
+   * namespace's, for invalidating them all.
+   */
+  containerdContainers: (hostId: string, namespace?: string) =>
+    namespace === undefined
+      ? (['host', hostId, 'containerd-containers'] as const)
+      : (['host', hostId, 'containerd-containers', namespace] as const),
+  /** A containerd Host's images in `namespace`, or every namespace's. */
+  containerdImages: (hostId: string, namespace?: string) =>
+    namespace === undefined
+      ? (['host', hostId, 'containerd-images'] as const)
+      : (['host', hostId, 'containerd-images', namespace] as const),
+  /** A containerd Host's snapshots in `namespace`, or every namespace's. */
+  containerdSnapshots: (hostId: string, namespace?: string) =>
+    namespace === undefined
+      ? (['host', hostId, 'containerd-snapshots'] as const)
+      : (['host', hostId, 'containerd-snapshots', namespace] as const),
 };
