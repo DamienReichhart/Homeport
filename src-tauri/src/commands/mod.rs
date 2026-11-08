@@ -14,6 +14,7 @@ use crate::app::events;
 pub mod app;
 pub mod backup;
 pub mod cluster_actions;
+pub mod cluster_api;
 pub mod cluster_forwards;
 pub mod cluster_streams;
 pub mod clusters;
@@ -124,6 +125,11 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             cluster_actions::clusters_apply,
             cluster_actions::clusters_resource_edit_yaml,
             cluster_actions::clusters_api_edit_yaml,
+            cluster_api::clusters_api_resources,
+            cluster_api::clusters_api_list,
+            cluster_api::clusters_api_get,
+            cluster_api::clusters_api_object_events,
+            cluster_api::clusters_api_watch_subscribe,
             cluster_forwards::clusters_forward_start,
             cluster_forwards::clusters_forward_list,
             cluster_forwards::clusters_forward_stop,

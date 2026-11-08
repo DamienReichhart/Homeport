@@ -3,7 +3,11 @@
 //! knowing what a YAML document's `apiVersion` and `kind` name.
 
 use futures_util::future::join_all;
-use k8s_openapi::apimachinery::pkg::apis::meta::v1::{APIResource, APIResourceList};
+use k8s_openapi::{
+    api::authorization::v1::{ResourceRule, SelfSubjectRulesReview, SelfSubjectRulesReviewSpec},
+    apimachinery::pkg::apis::meta::v1::{APIResource, APIResourceList},
+};
+use kube::api::{Api, PostParams};
 use serde::Serialize;
 
 use homeport_core::error::{AppError, AppResult, ErrorCode};
@@ -24,6 +28,9 @@ pub struct ApiResourceInfo {
     pub verbs: Vec<String>,
     /// `all`, …
     pub categories: Vec<String>,
+    /// Whether the credentials may list its objects in the namespace asked
+    /// about; `None` when the cluster can't say (some authorizers don't).
+    pub listable: Option<bool>,
 }
 
 impl ApiResourceInfo {
@@ -53,8 +60,21 @@ pub fn types_of(list: &APIResourceList) -> Vec<ApiResourceInfo> {
             short_names: r.short_names.clone().unwrap_or_default(),
             verbs: r.verbs.clone(),
             categories: r.categories.clone().unwrap_or_default(),
+            listable: None,
         })
         .collect()
+}
+
+/// Whether `rules` let `verb` be done on `plural` of `group`.
+pub fn allows(rules: &[ResourceRule], group: &str, plural: &str, verb: &str) -> bool {
+    let has = |list: &[String], value: &str| list.iter().any(|v| v == "*" || v == value);
+    rules.iter().any(|rule| {
+        // Rules for some objects by name don't allow listing them all.
+        rule.resource_names.as_ref().is_none_or(Vec::is_empty)
+            && has(&rule.verbs, verb)
+            && has(rule.api_groups.as_deref().unwrap_or_default(), group)
+            && has(rule.resources.as_deref().unwrap_or_default(), plural)
+    })
 }
 
 /// Sorts types by group, the core group first, then by kind.
@@ -69,6 +89,45 @@ pub fn sort(types: &mut [ApiResourceInfo]) {
 }
 
 impl On {
+    /// What the credentials may do in `namespace`, as the API server says;
+    /// `None` when it can't say for sure.
+    pub async fn rules(&self, namespace: &str) -> Option<Vec<ResourceRule>> {
+        let review = SelfSubjectRulesReview {
+            spec: SelfSubjectRulesReviewSpec {
+                namespace: Some(namespace.to_owned()),
+            },
+            ..Default::default()
+        };
+        let api: Api<SelfSubjectRulesReview> = Api::all(self.client.clone());
+        match api.create(&PostParams::default(), &review).await {
+            Ok(answer) => {
+                let status = answer.status?;
+                (!status.incomplete).then_some(status.resource_rules)
+            }
+            Err(e) => {
+                log::debug!("couldn't review the credentials' rules: {e}");
+                None
+            }
+        }
+    }
+
+    /// Every type the Cluster serves, at each group's preferred version,
+    /// each marked with whether the credentials may list it in `namespace`
+    /// (the default one for every namespace).
+    pub async fn discover_for(&self, namespace: Option<&str>) -> AppResult<Vec<ApiResourceInfo>> {
+        let ns = namespace
+            .unwrap_or_else(|| self.client.default_namespace())
+            .to_owned();
+        let (types, rules) = futures_util::join!(self.discover(), self.rules(&ns));
+        let mut types = types?;
+        if let Some(rules) = rules {
+            for t in &mut types {
+                t.listable = Some(allows(&rules, &t.api.group, &t.api.plural, "list"));
+            }
+        }
+        Ok(types)
+    }
+
     /// Every type the Cluster serves, at each group's preferred version.
     /// A group whose server doesn't answer (an aggregated API that is down,
     /// like a missing metrics-server) is left out.
@@ -172,6 +231,7 @@ mod tests {
         };
         let types = types_of(&list);
         assert_eq!(types.len(), 2);
+        assert_eq!(types[0].listable, None);
         let cert = &types[0];
         assert_eq!(cert.api.group, "cert-manager.io");
         assert_eq!(cert.api.version, "v1");
@@ -203,5 +263,29 @@ mod tests {
         assert_eq!(types[0].api.group, "");
         assert_eq!(types[0].api.api_version(), "v1");
         assert_eq!(types[1].api.api_version(), "apps/v1");
+    }
+
+    fn rule(groups: &[&str], resources: &[&str], verbs: &[&str], names: &[&str]) -> ResourceRule {
+        let list = |l: &[&str]| Some(l.iter().map(|s| (*s).to_owned()).collect::<Vec<_>>());
+        ResourceRule {
+            api_groups: list(groups),
+            resources: list(resources),
+            verbs: verbs.iter().map(|s| (*s).to_owned()).collect(),
+            resource_names: if names.is_empty() { None } else { list(names) },
+        }
+    }
+
+    #[test]
+    fn rules_say_what_may_be_listed() {
+        let rules = [
+            rule(&[""], &["pods", "services"], &["get", "list"], &[]),
+            rule(&["cert-manager.io"], &["*"], &["*"], &[]),
+            rule(&[""], &["secrets"], &["list"], &["only-this"]),
+        ];
+        assert!(allows(&rules, "", "pods", "list"));
+        assert!(!allows(&rules, "", "pods", "delete"));
+        assert!(allows(&rules, "cert-manager.io", "certificates", "list"));
+        assert!(!allows(&rules, "apps", "deployments", "list"));
+        assert!(!allows(&rules, "", "secrets", "list"));
     }
 }

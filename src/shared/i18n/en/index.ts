@@ -1,3 +1,4 @@
+import apiresources from './apiresources';
 import app from './app';
 import apply from './apply';
 import board from './board';
@@ -34,6 +35,7 @@ export const uiMessages = {
   ...app,
   ...core,
   ...ui,
+  ...apiresources,
   ...apply,
   ...board,
   ...clusterevents,

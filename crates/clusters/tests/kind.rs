@@ -66,6 +66,16 @@ async fn a_kind_cluster_is_browsed() {
         .await
         .unwrap();
     assert!(!yaml.contains("managedFields"));
+
+    let types = on.discover_for(Some("kube-system")).await.unwrap();
+    let pods = types.iter().find(|t| t.api.plural == "pods").unwrap();
+    assert!(pods.short_names.contains(&"po".to_owned()));
+    let table = on.api_list(&pods.api, Some("kube-system")).await.unwrap();
+    assert!(table.columns.iter().any(|c| c.name == "Status"));
+    assert!(table
+        .rows
+        .iter()
+        .any(|r| r.name.starts_with("kube-apiserver")));
 }
 
 #[tokio::test]

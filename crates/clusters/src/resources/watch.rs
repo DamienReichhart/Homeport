@@ -11,14 +11,14 @@ use k8s_openapi::api::{
     networking::v1::Ingress,
 };
 use kube::{
-    api::{Api, PartialObjectMeta},
+    api::{Api, DynamicObject, PartialObjectMeta},
     runtime::{watcher, WatchStreamExt},
     Resource,
 };
 use serde::de::DeserializeOwned;
 use tokio::time::Instant;
 
-use super::ResourceKind;
+use super::{ApiType, ResourceKind};
 
 /// Changes closer together than this are told as one.
 const BATCH: Duration = Duration::from_millis(500);
@@ -61,6 +61,23 @@ where
         Some(ns) => Api::namespaced(client, ns),
         None => Api::all(client),
     }
+}
+
+/// Calls `changed` whenever the objects of `api` in `namespace` (every one
+/// with `None`) change, like [`watch`] for any type the Cluster serves.
+pub async fn watch_api(
+    client: kube::Client,
+    api: ApiType,
+    namespace: Option<String>,
+    mut changed: impl FnMut() -> bool + Send,
+) {
+    let ar = api.api_resource();
+    let meta: Api<PartialObjectMeta<DynamicObject>> =
+        match namespace.as_deref().filter(|_| api.namespaced) {
+            Some(ns) => Api::namespaced_with(client, ns, &ar),
+            None => Api::all_with(client, &ar),
+        };
+    run(meta, &mut changed).await;
 }
 
 async fn run<K>(api: Api<K>, changed: &mut (impl FnMut() -> bool + Send))

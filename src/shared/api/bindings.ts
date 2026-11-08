@@ -181,6 +181,24 @@ export const commands = {
 	clustersResourceEditYaml: (id: string, kind: ResourceKind, namespace: string | null, name: string) => __TAURI_INVOKE<string>("clusters_resource_edit_yaml", { id, kind, namespace, name }),
 	/**  An object of any type the Cluster serves, as YAML to edit. */
 	clustersApiEditYaml: (id: string, api: ApiType, namespace: string | null, name: string) => __TAURI_INVOKE<string>("clusters_api_edit_yaml", { id, api, namespace, name }),
+	/**
+	 *  Every type the Cluster serves, at each group's preferred version, each
+	 *  marked with whether the credentials may list it in `namespace`.
+	 */
+	clustersApiResources: (id: string, namespace: string | null) => __TAURI_INVOKE<ApiResourceInfo[]>("clusters_api_resources", { id, namespace }),
+	/**
+	 *  The objects of `api` in `namespace` (every one without), with the
+	 *  columns the API server suggests.
+	 */
+	clustersApiList: (id: string, api: ApiType, namespace: string | null) => __TAURI_INVOKE<ObjectTable>("clusters_api_list", { id, api, namespace }),
+	clustersApiGet: (id: string, api: ApiType, namespace: string | null, name: string) => __TAURI_INVOKE<ObjectDetail>("clusters_api_get", { id, api, namespace, name }),
+	/**  The Events about an object of any `kind`, warnings first. */
+	clustersApiObjectEvents: (id: string, kind: string, namespace: string | null, name: string) => __TAURI_INVOKE<EventView[]>("clusters_api_object_events", { id, kind, namespace, name }),
+	/**
+	 *  Watches the objects of `api` in `namespace` (every one without) and
+	 *  says when they change, until cancelled.
+	 */
+	clustersApiWatchSubscribe: (id: string, api: ApiType, namespace: string | null, onEvent: Channel<ApiChanged>) => __TAURI_INVOKE<number>("clusters_api_watch_subscribe", { id, api, namespace, onEvent }),
 	/**  Forwards `local_port` (a free one without) to `remote_port` of a Pod or Service. */
 	clustersForwardStart: (id: string, target: ForwardTarget, remotePort: number, localPort: number | null) => __TAURI_INVOKE<PortForward>("clusters_forward_start", { id, target, remotePort, localPort }),
 	/**  Every active forward, across Clusters. */
@@ -561,6 +579,27 @@ export const events = {
 export type AddedCluster = {
 	id: string,
 	name: string,
+};
+
+/**  Told when the objects of a type changed. */
+export type ApiChanged = {
+	api: ApiType,
+};
+
+/**  A type of object the Cluster serves. */
+export type ApiResourceInfo = {
+	api: ApiType,
+	/**  `pvc`, `deploy`…: what kubectl also accepts. */
+	shortNames: string[],
+	/**  What can be done with its objects: `list`, `watch`, `delete`, `patch`… */
+	verbs: string[],
+	/**  `all`, … */
+	categories: string[],
+	/**
+	 *  Whether the credentials may list its objects in the namespace asked
+	 *  about; `None` when the cluster can't say (some authorizers don't).
+	 */
+	listable: boolean | null,
 };
 
 export type ApiType = {
@@ -1968,6 +2007,19 @@ export type NotificationSettings = {
 	hostBack?: boolean,
 };
 
+/**  An object of any type, as its page shows it. */
+export type ObjectDetail = {
+	name: string,
+	namespace: string | null,
+	created: string | null,
+	labels: { [key in string]: string },
+	annotations: { [key in string]: string },
+	owners: OwnerRef[],
+	/**  Its `status.conditions`, when it has them. */
+	conditions: ConditionView[],
+	yaml: string,
+};
+
 /**  A secret or config to create. */
 export type ObjectInput = {
 	name: string,
@@ -1984,6 +2036,12 @@ export type ObjectRef = {
 	target: string | null,
 };
 
+/**  The objects of a type, as `kubectl get` lists them. */
+export type ObjectTable = {
+	columns: TableColumn[],
+	rows: TableRow[],
+};
+
 /**  Where a new secret's or config's value comes from. */
 export type ObjectValue = 
 /**  Typed in Homeport. */
@@ -1993,6 +2051,14 @@ export type ObjectValue =
  *  webview hands over.
  */
 { kind: "file"; path: string };
+
+/**  An object it refers to as its owner. */
+export type OwnerRef = {
+	apiVersion: string,
+	kind: string,
+	name: string,
+	controller: boolean,
+};
 
 /**  The resource that controls another, such as a Pod's ReplicaSet. */
 export type OwnerView = {
@@ -2805,6 +2871,24 @@ export type SystemPruneReport = {
 	networks: number,
 	volumes: number,
 	spaceReclaimed: number,
+};
+
+/**  A column of an object list, as the API server describes it. */
+export type TableColumn = {
+	name: string,
+	/**  `string`, `integer`, `date`… */
+	type: string,
+	description: string,
+	/**  0 for the columns `kubectl get` shows; more for those of `-o wide`. */
+	priority: number,
+};
+
+/**  One object of a list, with its cells in the columns' order. */
+export type TableRow = {
+	name: string,
+	namespace: string | null,
+	cells: string[],
+	created: string | null,
 };
 
 /**  Which tasks to list: all of them, or those of a service or of a node. */

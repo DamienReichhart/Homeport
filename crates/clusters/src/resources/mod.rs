@@ -9,6 +9,7 @@ pub mod actions;
 mod api_type;
 mod common;
 pub mod config;
+pub mod dynamic;
 pub mod events;
 mod kind;
 pub mod network;
@@ -43,6 +44,7 @@ pub use self::{
         ConfigMapDetail, ConfigMapView, ConfigValue, DataKey, RevealedValue, SecretDetail,
         SecretView,
     },
+    dynamic::{ObjectDetail, ObjectTable, OwnerRef, TableColumn, TableRow},
     events::{EventObject, EventView},
     kind::ResourceKind,
     network::{
@@ -52,7 +54,7 @@ pub use self::{
     nodes::{ClusterNodeDetail, ClusterNodeView, NodeTaint},
     pods::{NamespaceView, PodContainer, PodDetail, PodHealth, PodPort, PodView},
     summary::{ClusterSummary, NodeCounts, Part, PodCounts},
-    watch::watch,
+    watch::{watch, watch_api},
     workloads::{TemplateContainer, WorkloadDetail, WorkloadHealth, WorkloadKind, WorkloadView},
 };
 

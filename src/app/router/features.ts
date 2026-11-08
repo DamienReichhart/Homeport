@@ -1,3 +1,4 @@
+import { apiResourcesFeature } from '@/features/api-resources';
 import { applyFeature } from '@/features/apply';
 import { boardFeature } from '@/features/board';
 import { clusterEventsFeature } from '@/features/cluster-events';
@@ -37,6 +38,7 @@ export const features: FeatureManifest[] = [
   configFeature,
   nodesFeature,
   clusterEventsFeature,
+  apiResourcesFeature,
   applyFeature,
   portForwardsFeature,
   eventsFeature,
