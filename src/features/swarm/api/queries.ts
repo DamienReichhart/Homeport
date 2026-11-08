@@ -1,6 +1,6 @@
 import { queryOptions } from '@tanstack/react-query';
 import { swarmKeys } from '@/core/swarm';
-import { commands } from '@/shared/api';
+import { commands, type TaskFilter } from '@/shared/api';
 
 export const swarmFeatureQueries = {
   nodes: (swarmId: string) =>
@@ -22,5 +22,10 @@ export const swarmFeatureQueries = {
     queryOptions({
       queryKey: [...swarmKeys.services(swarmId), id, 'inspect'],
       queryFn: () => commands.swarmServicesInspect(swarmId, id),
+    }),
+  tasks: (swarmId: string, filter: TaskFilter) =>
+    queryOptions({
+      queryKey: [...swarmKeys.tasks(swarmId), filter],
+      queryFn: () => commands.swarmTasksList(swarmId, filter),
     }),
 };

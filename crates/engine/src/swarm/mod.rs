@@ -5,6 +5,7 @@
 
 pub mod nodes;
 pub mod services;
+pub mod tasks;
 
 use bollard::{
     models::{LocalNodeState, SystemInfo},

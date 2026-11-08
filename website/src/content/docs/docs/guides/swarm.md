@@ -51,3 +51,19 @@ Each service's menu:
 - **Remove** stops and removes its tasks. Its volumes are kept.
 
 Select a service to open it: the **Logs** tab follows its logs, and **Inspect** shows its full definition as the Engine has it, including what Homeport doesn't edit (placement constraints, resource limits, health check, update and rollback policies).
+
+## Tasks
+
+A service runs as **tasks**: one per replica (its slot, such as `web.2`), or one per node for a global service (`agent@node-b`). Each task runs as a container on its node. When a service shows fewer tasks running than it should, the answer is in its tasks.
+
+The **Tasks** tab lists the Swarm's tasks, grouped by service then slot, newest first: the node each runs on, what it's doing and what the Swarm wants it to do, since when, its error and its image. A service's page has the same tab for that service only, and a node's menu has **Show its tasks**. By default each slot shows only the task the Swarm wants running; turn on **Show history** to see the earlier attempts it shut down or that failed. A task on a node that's also one of your hosts has **Open container**, which selects that host and opens the container.
+
+Common errors:
+
+| Error                                                     | What it means                                                                                                                            |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `No such image`, `pull access denied`                     | The node can't pull the image: check its name, or whether the registry needs a login on that node.                                       |
+| `no suitable node`                                        | No node meets the service's constraints, has the resources it reserves, or is active: check placement constraints and node availability. |
+| `port is already allocated`, `address already in use`     | A port published in `host` mode is taken on that node.                                                                                   |
+| `invalid mount config`, `bind source path does not exist` | A bind mount names a path the node doesn't have. Bind mounts are paths on each node.                                                     |
+| `task: non-zero exit (1)`                                 | The container started and exited with an error: open its logs from the service's **Logs** tab.                                           |

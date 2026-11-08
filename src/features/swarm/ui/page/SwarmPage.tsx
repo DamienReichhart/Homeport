@@ -5,15 +5,17 @@ import type { SwarmView } from '@/shared/api';
 import { Badge, PageHeader, Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui';
 import { NodesTab } from '../nodes/NodesTab';
 import { ServicesTab } from '../services/ServicesTab';
+import { TasksTab } from '../tasks/TasksTab';
 import { SummaryTab } from './SummaryTab';
 import { t, type MessageKey } from '@/shared/i18n';
 
-const TABS = ['summary', 'nodes', 'services'] as const;
+const TABS = ['summary', 'nodes', 'services', 'tasks'] as const;
 type Tab = (typeof TABS)[number];
 const TAB_LABELS: Record<Tab, MessageKey> = {
   summary: 'swarm.tab.summary',
   nodes: 'swarm.tab.nodes',
   services: 'swarm.tab.services',
+  tasks: 'swarm.tab.tasks',
 };
 
 function SwarmDetail({ swarm }: { swarm: SwarmView }) {
@@ -47,10 +49,18 @@ function SwarmDetail({ swarm }: { swarm: SwarmView }) {
           <SummaryTab swarm={swarm} />
         </TabsContent>
         <TabsContent value="nodes" className="overflow-auto">
-          <NodesTab swarm={swarm} />
+          <NodesTab
+            swarm={swarm}
+            onShowTasks={(node) =>
+              void navigate(`/swarms/${swarm.id}/tasks?node=${encodeURIComponent(node.id)}`)
+            }
+          />
         </TabsContent>
         <TabsContent value="services" className="overflow-auto">
           <ServicesTab swarm={swarm} />
+        </TabsContent>
+        <TabsContent value="tasks" className="overflow-auto">
+          <TasksTab swarmId={swarm.id} />
         </TabsContent>
       </Tabs>
     </div>

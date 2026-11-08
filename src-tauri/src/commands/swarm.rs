@@ -10,6 +10,7 @@ use homeport_engine::{
         self,
         nodes::{self, NodeChange, NodeView},
         services::{self, ServiceView},
+        tasks::{self, TaskFilter, TaskView},
         SwarmSummary,
     },
 };
@@ -186,4 +187,43 @@ pub async fn swarm_service_logs_subscribe(
         .spawn(services::stream_logs(docker, id, options, move |e| {
             on_event.send(e).is_ok()
         })))
+}
+
+/// The tasks of a Swarm, of one of its services or of one of its nodes,
+/// newest first, each with the Host its node is, if it's one.
+#[tauri::command]
+#[specta::specta]
+pub async fn swarm_tasks_list(
+    state: State<'_, AppState>,
+    swarm_id: String,
+    filter: TaskFilter,
+) -> AppResult<Vec<SwarmTask>> {
+    let tasks = tasks::list(&state.hosts.registry.manager(&swarm_id)?, &filter).await?;
+    let hosts = state.hosts.registry.node_hosts();
+    Ok(tasks
+        .into_iter()
+        .map(|task| SwarmTask {
+            host_id: task.node_id.as_ref().and_then(|n| hosts.get(n).cloned()),
+            task,
+        })
+        .collect())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn swarm_tasks_inspect(
+    state: State<'_, AppState>,
+    swarm_id: String,
+    id: String,
+) -> AppResult<serde_json::Value> {
+    tasks::inspect(&state.hosts.registry.manager(&swarm_id)?, &id).await
+}
+
+/// A task of a Swarm, and the Host its node is when Homeport connects to it.
+#[derive(Debug, Clone, serde::Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct SwarmTask {
+    #[serde(flatten)]
+    pub task: TaskView,
+    pub host_id: Option<String>,
 }

@@ -20,18 +20,20 @@ import {
 import { swarmFeatureQueries } from '../../api/queries';
 import { serviceLogs } from '../../api/streams';
 import { canScale } from '../../model/services';
+import { TasksTab } from '../tasks/TasksTab';
 import { ReplicasBadge } from './ReplicasBadge';
 import { useServiceActions } from './useServiceActions';
 import { t, type MessageKey } from '@/shared/i18n';
 
-const TABS = ['logs', 'inspect'] as const;
+const TABS = ['tasks', 'logs', 'inspect'] as const;
 const TAB_LABELS: Record<(typeof TABS)[number], MessageKey> = {
+  tasks: 'swarm.service.tab.tasks',
   logs: 'swarm.service.tab.logs',
   inspect: 'swarm.service.tab.inspect',
 };
 
 function ServiceDetail({ swarm, id }: { swarm: SwarmView; id: string }) {
-  const { tab = 'logs' } = useParams();
+  const { tab = 'tasks' } = useParams();
   const navigate = useNavigate();
   const back = () => void navigate(`/swarms/${swarm.id}/services`);
   const services = useQuery(swarmFeatureQueries.services(swarm.id));
@@ -99,6 +101,9 @@ function ServiceDetail({ swarm, id }: { swarm: SwarmView; id: string }) {
             </TabsTrigger>
           ))}
         </TabsList>
+        <TabsContent value="tasks" className="overflow-auto">
+          <TasksTab swarmId={swarm.id} serviceId={id} />
+        </TabsContent>
         <TabsContent value="logs" className="min-h-[24rem] flex-1">
           <LogViewer stream={stream} streamKey={`${swarm.id}/${id}`} />
         </TabsContent>

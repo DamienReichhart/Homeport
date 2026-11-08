@@ -369,6 +369,12 @@ export const commands = {
 	 *  task and node.
 	 */
 	swarmServiceLogsSubscribe: (swarmId: string, id: string, options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("swarm_service_logs_subscribe", { swarmId, id, options, onEvent }),
+	/**
+	 *  The tasks of a Swarm, of one of its services or of one of its nodes,
+	 *  newest first, each with the Host its node is, if it's one.
+	 */
+	swarmTasksList: (swarmId: string, filter: TaskFilter) => __TAURI_INVOKE<SwarmTask[]>("swarm_tasks_list", { swarmId, filter }),
+	swarmTasksInspect: (swarmId: string, id: string) => __TAURI_INVOKE<Value>("swarm_tasks_inspect", { swarmId, id }),
 };
 
 /** Events */
@@ -1761,6 +1767,11 @@ export type SwarmSummary = {
 	services: number,
 };
 
+/**  A task of a Swarm, and the Host its node is when Homeport connects to it. */
+export type SwarmTask = {
+	hostId: string | null,
+} & TaskView;
+
 /**  A Swarm, found through the Hosts that belong to it (ADR 0016). */
 export type SwarmView = {
 	id: string,
@@ -1873,6 +1884,37 @@ export type SystemPruneReport = {
 	networks: number,
 	volumes: number,
 	spaceReclaimed: number,
+};
+
+/**  Which tasks to list: all of them, or those of a service or of a node. */
+export type TaskFilter = {
+	serviceId: string | null,
+	nodeId: string | null,
+};
+
+export type TaskView = {
+	id: string,
+	serviceId: string,
+	serviceName: string,
+	/**
+	 *  The replica's number, for a replicated service; `None` for a global
+	 *  one, whose tasks are told apart by node.
+	 */
+	slot: number | null,
+	nodeId: string | null,
+	nodeHostname: string | null,
+	/**  What the Swarm wants: `running`, `shutdown`… */
+	desiredState: string,
+	/**  What the task is doing: `running`, `preparing`, `failed`, `rejected`… */
+	state: string,
+	/**  When it got into `state`. */
+	since: string | null,
+	/**  Why it failed or was rejected, in the Engine's words. */
+	error: string | null,
+	message: string | null,
+	image: string,
+	containerId: string | null,
+	exitCode: number | null,
 };
 
 export type Theme = "system" | "light" | "dark";
