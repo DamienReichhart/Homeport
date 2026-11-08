@@ -67,6 +67,17 @@ impl ClusterRegistry {
         Ok(())
     }
 
+    /// Drops every connection and connects to the stored Clusters afresh, as
+    /// after a restore replaced them all. Must run inside a Tokio runtime.
+    pub fn reload(&self) -> AppResult<()> {
+        let old: Vec<Entry> = self.lock().drain().map(|(_, entry)| entry).collect();
+        for task in old.into_iter().filter_map(|entry| entry.task) {
+            task.abort();
+        }
+        self.lock_issued().clear();
+        self.start_all()
+    }
+
     /// (Re)starts a Cluster's supervisor, e.g. after it was edited or
     /// refreshed; its exec plugin runs again.
     pub fn restart(&self, id: &str) {

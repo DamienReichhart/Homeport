@@ -1,5 +1,5 @@
-//! Backing up everything Homeport holds — Hosts, Stacks, registry logins,
-//! repositories, settings and their secrets — to one passphrase-protected
+//! Backing up everything Homeport holds — Hosts, Clusters, Stacks, registry
+//! logins, repositories, settings and their secrets — to one passphrase-protected
 //! file, and restoring it on this or another computer (ADR 0013's format).
 //!
 //! Domain crates don't depend on each other (ADR 0005), so only the shell
@@ -13,6 +13,7 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
+use homeport_clusters::store::backup::{self as clusters, BackedUpCluster};
 use homeport_core::error::{local_file, AppError, AppResult};
 use homeport_git::store::backup::{self as repositories, BackedUpRepository};
 use homeport_hosts::bundle::{self as hosts, ExportedHost, PAYLOAD_VERSION};
@@ -41,6 +42,8 @@ struct Backup {
     #[serde(default)]
     hosts: Vec<ExportedHost>,
     #[serde(default)]
+    clusters: Vec<BackedUpCluster>,
+    #[serde(default)]
     registries: Vec<BackedUpLogin>,
     #[serde(default)]
     repositories: Vec<BackedUpRepository>,
@@ -60,6 +63,8 @@ pub struct BackupContents {
     pub app_version: String,
     /// Its Hosts' names.
     pub hosts: Vec<String>,
+    /// Its Clusters' names.
+    pub clusters: Vec<String>,
     pub stacks: u32,
     pub registries: u32,
     pub repositories: u32,
@@ -72,7 +77,7 @@ pub struct BackupContents {
 pub struct BackupOutcome {
     pub contents: BackupContents,
     /// What was written without its secret, which couldn't be opened:
-    /// Hosts, Stacks, registries and repositories, by name.
+    /// Hosts, Clusters, Stacks, registries and repositories, by name.
     pub without_secrets: Vec<String>,
 }
 
@@ -82,6 +87,7 @@ impl Backup {
             created_at: self.created_at.clone(),
             app_version: self.app_version.clone(),
             hosts: self.hosts.iter().map(|h| h.name.clone()).collect(),
+            clusters: self.clusters.iter().map(|c| c.name.clone()).collect(),
             stacks: self.stacks.count() as u32,
             registries: self.registries.len() as u32,
             repositories: self.repositories.len() as u32,
@@ -134,6 +140,7 @@ fn collect(state: &AppState) -> AppResult<(Backup, Vec<String>)> {
         &host_ids,
         &mut without_secrets,
     )?;
+    let clusters = state.clusters.store.backup(&mut without_secrets)?;
     let registries = state.registries.backup(&mut without_secrets)?;
     let repositories = state.repositories.store.backup(&mut without_secrets)?;
     let backup = Backup {
@@ -142,6 +149,7 @@ fn collect(state: &AppState) -> AppResult<(Backup, Vec<String>)> {
         app_version: env!("CARGO_PKG_VERSION").into(),
         backup: true,
         hosts,
+        clusters,
         registries,
         repositories,
         stacks,
@@ -164,11 +172,13 @@ fn replace(state: &AppState, backup: &Backup) -> AppResult<()> {
              DELETE FROM stack_deploys;
              DELETE FROM engine_events;
              DELETE FROM hosts;
+             DELETE FROM clusters;
              DELETE FROM git_repositories;
              DELETE FROM registries;",
         )
         .map_err(sqlite_error)?;
         hosts::restore(tx, secrets, &backup.hosts)?;
+        clusters::restore(tx, secrets, &backup.clusters)?;
         registries::restore(tx, secrets, &backup.registries)?;
         repositories::restore(tx, secrets, &backup.repositories)?;
         stacks::restore(tx, secrets, &backup.stacks)?;
@@ -204,6 +214,7 @@ async fn restore_from(
     state.hosts.events.flush().await;
     replace(state, &backup)?;
     state.hosts.registry.reload()?;
+    state.clusters.registry.reload()?;
     Ok(backup.contents())
 }
 
@@ -227,7 +238,7 @@ pub async fn data_restore_preview(path: String, passphrase: String) -> ShellResu
 
 /// Replaces everything Homeport holds with the backup at `path`, after
 /// copying the database to `homeport.db.before-restore-<time>` next to it,
-/// then reconnects to the restored Hosts.
+/// then reconnects to the restored Hosts and Clusters.
 #[tauri::command]
 #[specta::specta]
 pub async fn data_restore(
@@ -245,7 +256,8 @@ mod tests {
     use homeport_clusters::{
         registry::{ClusterNotifier, ClusterRegistry, ClusterStatus},
         service::ClusterService,
-        store::ClusterStore,
+        store::{ClusterDraft, ClusterStore},
+        ClusterConnection, ClusterKind, ClusterSecrets,
     };
     use homeport_core::{
         error::ErrorCode,
@@ -407,6 +419,22 @@ mod tests {
             )
             .unwrap();
         state
+            .clusters
+            .store
+            .create(ClusterDraft {
+                name: "kind-dev".into(),
+                kind: ClusterKind::Kubernetes,
+                connection: ClusterConnection {
+                    server: "https://127.0.0.1:6443".into(),
+                    ..Default::default()
+                },
+                secrets: ClusterSecrets {
+                    client_key: Some("CLUSTER KEY".into()),
+                    ..Default::default()
+                },
+            })
+            .unwrap();
+        state
             .settings
             .update(Settings {
                 theme: Theme::Dark,
@@ -443,6 +471,18 @@ mod tests {
             .unwrap();
         let restored = restore_from(&desktop, &file, PASS).await.unwrap();
         assert_eq!(restored.registries, 1);
+        assert_eq!(restored.clusters, ["kind-dev"]);
+        let cluster = &desktop.clusters.store.list().unwrap()[0];
+        assert_eq!(
+            desktop
+                .clusters
+                .store
+                .secrets(&cluster.id)
+                .unwrap()
+                .client_key
+                .as_deref(),
+            Some("CLUSTER KEY")
+        );
 
         let hosts = desktop.hosts.store.list().unwrap();
         assert_eq!(hosts.iter().map(|h| &h.name).collect::<Vec<_>>(), ["prod"]);

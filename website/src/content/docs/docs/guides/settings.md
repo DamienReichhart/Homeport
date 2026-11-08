@@ -78,9 +78,9 @@ What Homeport keeps on this computer.
 
 ### Backing up and restoring
 
-**Back up…** saves every Host, Stack, registry login, repository and setting, with their keys, certificates, tokens, passwords and environments, to one `.homeport` file. Type a passphrase of at least 12 characters twice: the whole file is encrypted with it, and it can't be recovered. Engine events and deploy history aren't included, nor anything on your Hosts — containers, images and volumes stay where they are.
+**Back up…** saves every Host, Cluster, Stack, registry login, repository and setting, with their keys, certificates, tokens, passwords and environments, to one `.homeport` file. Type a passphrase of at least 12 characters twice: the whole file is encrypted with it, and it can't be recovered. Engine events and deploy history aren't included, nor anything on your Hosts or Clusters — containers, images, volumes and Kubernetes resources stay where they are.
 
-**Restore…** opens such a file with its passphrase and lists what it holds: its Hosts by name, and how many Stacks, registry logins and repositories. **Replace everything** then replaces all of Homeport's data with the backup's, on this or another computer:
+**Restore…** opens such a file with its passphrase and lists what it holds: its Hosts and Clusters by name, and how many Stacks, registry logins and repositories. **Replace everything** then replaces all of Homeport's data with the backup's, on this or another computer:
 
 - Everything connects and deploys at once: SSH and TLS Hosts, registries and repositories without asking for a key or password again, nor to trust a server's key.
 - A [Linked Stack](/docs/guides/stacks/#linked-stacks) whose folder isn't on this computer shows as External until the folder is there, at the same path.

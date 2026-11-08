@@ -14,6 +14,7 @@ const contents = {
   createdAt: '2026-11-06T10:00:00Z',
   appVersion: '0.12.0',
   hosts: ['prod', 'lab'],
+  clusters: ['kind-dev'],
   stacks: 3,
   registries: 1,
   repositories: 1,

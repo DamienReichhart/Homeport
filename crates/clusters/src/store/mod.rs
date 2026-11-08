@@ -1,5 +1,7 @@
 //! Persistence for Clusters. Credentials are sealed before they reach SQLite.
 
+pub mod backup;
+
 use std::sync::Arc;
 
 use rusqlite::{OptionalExtension, Row};

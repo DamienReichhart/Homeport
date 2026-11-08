@@ -53,7 +53,7 @@ export default {
     'Save every Host, Stack, registry login, repository and setting, with their secrets, to one passphrase-protected file, and restore it on this or another computer.',
   'settings.backup.title': "Back up Homeport's data",
   'settings.backup.description':
-    "The file holds every Host, Stack, registry login, repository and setting, and their keys, certificates, passwords and environments. Anyone with it and its passphrase can use them, so keep both safe. Engine events and deploy history aren't included.",
+    "The file holds every Host, Cluster, Stack, registry login, repository and setting, and their keys, certificates, tokens, passwords and environments. Anyone with it and its passphrase can use them, so keep both safe. Engine events and deploy history aren't included.",
   'settings.backup.passphrase': 'Passphrase',
   'settings.backup.passphraseHint': "At least {min} characters. It can't be recovered.",
   'settings.backup.confirmation': 'Passphrase again',
@@ -73,6 +73,7 @@ export default {
   'settings.restore.madeBy': 'Backed up by Homeport {version} on {date}. It holds:',
   'settings.restore.holds': 'What the backup holds',
   'settings.restore.hosts': '{count, plural, one {# Host} other {# Hosts}}',
+  'settings.restore.clusters': '{count, plural, one {# Cluster} other {# Clusters}}',
   'settings.restore.stacks': '{count, plural, one {# Stack} other {# Stacks}}',
   'settings.restore.registries':
     '{count, plural, one {# registry login} other {# registry logins}}',

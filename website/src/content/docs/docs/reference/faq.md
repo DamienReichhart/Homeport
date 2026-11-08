@@ -59,7 +59,7 @@ Each person runs their own Homeport with their own Hosts and keys. With a Homepo
 
 Yes, in two ways:
 
-- **Everything**: **Settings → Data → Back up…** saves every Host, Stack, registry login, repository and setting, with their secrets, to one file protected by a passphrase of at least 12 characters. On the new computer, **Restore…** in the same place opens it, lists what it holds, and replaces what's there. Everything connects and deploys without asking you for a key or a password again. See [backing up and restoring](/docs/guides/settings/#backing-up-and-restoring).
+- **Everything**: **Settings → Data → Back up…** saves every Host, Cluster, Stack, registry login, repository and setting, with their secrets, to one file protected by a passphrase of at least 12 characters. On the new computer, **Restore…** in the same place opens it, lists what it holds, and replaces what's there. Everything connects and deploys without asking you for a key or a password again. See [backing up and restoring](/docs/guides/settings/#backing-up-and-restoring).
 - **Some Hosts**: on the **Hosts** page, **Export** the Hosts you pick, and **Import** them on the other computer, next to the Hosts it already has. See [moving to another computer](/docs/reference/security/#moving-to-another-computer).
 
 Copying `homeport.db` doesn't work for secrets: they're encrypted with a key kept in this computer's keychain, and show as **Credentials lost** elsewhere.

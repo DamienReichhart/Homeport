@@ -111,7 +111,7 @@ export const commands = {
 	/**
 	 *  Replaces everything Homeport holds with the backup at `path`, after
 	 *  copying the database to `homeport.db.before-restore-<time>` next to it,
-	 *  then reconnects to the restored Hosts.
+	 *  then reconnects to the restored Hosts and Clusters.
 	 */
 	dataRestore: (path: string, passphrase: string) => __TAURI_INVOKE<BackupContents>("data_restore", { path, passphrase }),
 	/**  The servers `~/.ssh/config` defines, as drafts of Hosts. */
@@ -524,6 +524,8 @@ export type BackupContents = {
 	appVersion: string,
 	/**  Its Hosts' names. */
 	hosts: string[],
+	/**  Its Clusters' names. */
+	clusters: string[],
 	stacks: number,
 	registries: number,
 	repositories: number,
@@ -535,7 +537,7 @@ export type BackupOutcome = {
 	contents: BackupContents,
 	/**
 	 *  What was written without its secret, which couldn't be opened:
-	 *  Hosts, Stacks, registries and repositories, by name.
+	 *  Hosts, Clusters, Stacks, registries and repositories, by name.
 	 */
 	withoutSecrets: string[],
 };

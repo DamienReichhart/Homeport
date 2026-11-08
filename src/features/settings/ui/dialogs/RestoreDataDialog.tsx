@@ -63,6 +63,12 @@ export function RestoreDataDialog({ path, onClose }: { path: string; onClose: ()
                 {t('settings.restore.hosts', { count: contents.hosts.length })}
                 {contents.hosts.length > 0 && `: ${contents.hosts.join(', ')}`}
               </li>
+              {contents.clusters.length > 0 && (
+                <li>
+                  {t('settings.restore.clusters', { count: contents.clusters.length })}:{' '}
+                  {contents.clusters.join(', ')}
+                </li>
+              )}
               <li>{t('settings.restore.stacks', { count: contents.stacks })}</li>
               <li>{t('settings.restore.registries', { count: contents.registries })}</li>
               <li>{t('settings.restore.repositories', { count: contents.repositories })}</li>

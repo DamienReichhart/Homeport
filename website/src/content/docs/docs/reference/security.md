@@ -79,12 +79,12 @@ Treat the file like the keys it holds: delete it once imported. The format is de
 
 ### Backups
 
-**Settings → Data → Back up…** writes everything above — Hosts, Stacks, registry logins, repositories and settings, with their secrets opened — to one file in the same encrypted format, with a passphrase you type twice. Engine events and deploy history aren't included. A secret that can't be opened on this computer is left out, and the backup says which.
+**Settings → Data → Back up…** writes everything above — Hosts, Clusters, Stacks, registry logins, repositories and settings, with their secrets opened — to one file in the same encrypted format, with a passphrase you type twice. Engine events and deploy history aren't included. A secret that can't be opened on this computer is left out, and the backup says which.
 
 **Restore…** asks for the passphrase and lists what the file holds before changing anything. Restoring then:
 
 1. copies the current database to `homeport.db.before-restore-<date and time>`, next to `homeport.db`;
-2. replaces every Host, Stack, login, repository and setting in one step, so a failure leaves your data as it was;
+2. replaces every Host, Cluster, Stack, login, repository and setting in one step, so a failure leaves your data as it was;
 3. encrypts every secret again with this computer's keychain key.
 
 A backup made by a newer Homeport is refused; one made by an older Homeport restores. The backup holds every secret Homeport has: keep it, and its passphrase, as safe as the keys themselves.
