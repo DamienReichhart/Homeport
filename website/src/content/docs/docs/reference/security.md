@@ -131,12 +131,14 @@ The first time Homeport connects to an SSH server, it asks you to confirm the se
 
 Homeport talks to a Host's Engine through its API, and runs commands on a Host's server only for what that API can't do:
 
-| When                                                                          | Where                                                        | Command                                                                                              |
-| ----------------------------------------------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
-| An SSH Host's server refuses to open its Engine socket                        | the SSH server                                               | a POSIX shell check of whether the socket exists and is readable, and whether an Engine is installed |
-| **Start**, **Stop** or **Restart** of a [Quadlet unit](/docs/guides/quadlet/) | the SSH server, or this computer for a local socket on Linux | `systemctl [--user] start\|stop\|restart '<unit>.service'`                                           |
+| When                                                                                      | Where                                                        | Command                                                                                                                  |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| An SSH Host's server refuses to open its Engine socket                                    | the SSH server                                               | a POSIX shell check of whether the socket exists and is readable, and whether an Engine is installed                     |
+| **Start**, **Stop** or **Restart** of a [Quadlet unit](/docs/guides/quadlet/)             | the SSH server, or this computer for a local socket on Linux | `systemctl [--user] start\|stop\|restart '<unit>.service'`                                                               |
+| A [containerd container's logs](/docs/hosts/containerd/#logs)                             | the SSH server, or this computer for a local socket on Linux | `tail -n <lines> [-F] -- '<log file>'`, after `ls` of a Kubernetes container's log folder when CRI doesn't name the file |
+| A [terminal in a containerd container](/docs/hosts/containerd/#a-terminal-in-a-container) | the SSH server, or this computer for a local socket on Linux | `mktemp -d`, `mkfifo -m 600` for two FIFOs in that folder, `cat` through them, then `rm -rf` of the folder               |
 
-They run with the SSH user's rights (or yours, on this computer) and never with `sudo`. Values are checked and quoted before they go into a command. Installing, editing and removing Quadlet units goes through Podman's API, which writes the files itself; Homeport writes no file on a Host.
+They run with the SSH user's rights (or yours, on this computer) and never with `sudo`. Values are checked and quoted before they go into a command. Installing, editing and removing Quadlet units goes through Podman's API, which writes the files itself. The only files Homeport makes on a Host are a containerd terminal's two FIFOs, in a private temporary folder removed when the terminal closes.
 
 ## What Homeport never does
 

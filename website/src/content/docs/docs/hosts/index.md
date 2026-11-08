@@ -1,9 +1,9 @@
 ---
 title: Hosts and connections
-description: How Homeport connects to Docker Engines, what each Host status means, and how reconnection works.
+description: How Homeport connects to Docker Engines and containerd, what each Host status means, and how reconnection works.
 ---
 
-A **Host** is a Docker Engine that Homeport connects to. It has a name and a way to reach it. Every container, image, volume, network and Stack you see belongs to exactly one Host.
+A **Host** is a Docker Engine, or containerd, that Homeport connects to. It has a name and a way to reach it. Every container, image, volume, network and Stack you see belongs to exactly one Host.
 
 ## Kinds of connection
 
@@ -20,13 +20,13 @@ For a remote server, prefer **SSH**: it needs nothing exposed beyond the SSH por
 
 Besides how to reach it, each Host says what kind of Engine it points to, in the form's **Engine** field. It decides which pages the sidebar shows for that Host.
 
-| Engine                | What it covers                                                           | Pages                                                                                    |
-| --------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| **Docker-compatible** | Docker Engine, Docker Desktop, Colima, OrbStack, Rancher Desktop, Podman | Containers, Images, Volumes, Networks, Stacks, Events; and on Podman, also its own pages |
-| **containerd**        | coming in a later version                                                | —                                                                                        |
-| **Incus**             | coming in a later version                                                | —                                                                                        |
+| Engine                | What it covers                                                           | Pages                                                                                                |
+| --------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| **Docker-compatible** | Docker Engine, Docker Desktop, Colima, OrbStack, Rancher Desktop, Podman | Containers, Images, Volumes, Networks, Stacks, Events; and on Podman, also its own pages             |
+| **containerd**        | containerd's own service, k3s's, Docker Engine's own containerd          | containerd's Containers, Images, Snapshots and Namespaces; see [containerd](/docs/hosts/containerd/) |
+| **Incus**             | coming in a later version                                                | —                                                                                                    |
 
-Only Docker-compatible Engines can be added for now; the form shows the others greyed out, and picks one from the socket path when it names containerd's or Incus's socket. Hosts added before Homeport 0.18 are Docker-compatible, with nothing else changed.
+Incus can't be added yet; the form shows it greyed out. The form picks the Engine from the socket path when it names containerd's or Incus's socket. containerd is reached only through its socket, on this computer or over SSH, so TCP and TLS are greyed out for it. Hosts added before Homeport 0.18 are Docker-compatible, with nothing else changed.
 
 **Podman** is a Docker-compatible Engine that Homeport recognises each time it connects, because the same socket can switch product: the Host's status then reads **Podman** and its version instead of the Engine's, and the sidebar adds the pages only Podman has. A page the selected Host can't show isn't in the sidebar, and opening it from a link says why.
 
@@ -77,7 +77,7 @@ A context whose name is already a Host's is offered as `name (2)`.
 
 ## Selecting a Host
 
-Every resource page — Containers, Images, Volumes, Networks, Stacks and Events — shows the Host selected in the **Host switcher**. Switch Host there, or select a Host's card on the [Overview](/docs/guides/overview/). Homeport remembers your choice between launches.
+Every resource page — Containers, Images, Volumes, Networks, Stacks and Events — shows the Host selected in the **Host switcher**. A containerd Host's pages also show one namespace at a time, picked [under the switcher](/docs/hosts/containerd/#namespaces). Switch Host there, or select a Host's card on the [Overview](/docs/guides/overview/). Homeport remembers your choice between launches.
 
 ## Statuses
 
@@ -85,7 +85,7 @@ Each Host shows a status next to its name. When the selected Host isn't connecte
 
 | Status                     | Meaning                                                                        | What happens next                                                           |
 | -------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| **Connected**              | The Engine answered. Its version is shown, or Podman's on a Podman Host.       | Homeport keeps watching the connection.                                     |
+| **Connected**              | The Engine answered. Its version is shown, or Podman's or containerd's.        | Homeport keeps watching the connection.                                     |
 | **Connecting**             | Homeport is reaching the Engine.                                               | —                                                                           |
 | **Disabled**               | The Host's **Enabled** switch is off.                                          | Nothing until you turn it on.                                               |
 | **Unreachable**            | The network, socket or Engine didn't answer.                                   | Retries on its own, waiting longer each time.                               |

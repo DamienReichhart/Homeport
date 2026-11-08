@@ -17,6 +17,10 @@ Versions up to 0.11 were released under the MIT licence and stay available under
 
 Not entirely. Homeport is a manager: it doesn't run a Docker Engine itself. On Linux, install Docker Engine and use Homeport as its interface. On macOS and Windows you still need something that runs the Engine — Docker Desktop, Colima, OrbStack, Rancher Desktop or Podman — and Homeport can sit on top of any of them, along with your remote servers.
 
+### Does it work with containerd?
+
+Yes, directly, without Docker: a Host's Engine can be [containerd](/docs/hosts/containerd/), reached through its socket on this machine or over SSH — k3s's, Docker Engine's own, or containerd's service on a server. Homeport lists its namespaces, its containers and their tasks (start, stop, pause, signal, remove), their logs where nerdctl or Kubernetes wrote them, a terminal in them, its images (pull, remove) and its snapshots. It doesn't create containers or deploy Stacks there; nerdctl does that.
+
 ### Does it work with Podman?
 
 Yes, through Podman's Docker-compatible API socket. Homeport detects the usual Podman sockets on Linux, every running [Podman machine on macOS](/docs/hosts/local/#podman-machines-on-macos), and the default Podman machine pipe on Windows. Anything else can be [added by hand](/docs/hosts/local/#adding-a-socket-by-hand).

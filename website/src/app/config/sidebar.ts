@@ -18,6 +18,7 @@ export const sidebar: NonNullable<StarlightUserConfig['sidebar']> = [
       { label: 'Local engines', slug: 'docs/hosts/local' },
       { label: 'SSH', slug: 'docs/hosts/ssh' },
       { label: 'TLS and TCP', slug: 'docs/hosts/tls-tcp' },
+      { label: 'containerd', slug: 'docs/hosts/containerd' },
     ],
   },
   {

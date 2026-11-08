@@ -241,6 +241,22 @@ User units (rootless Podman) need the user's systemd instance, which only runs w
 
 System units (rootful Podman) can only be started and stopped by a user allowed to manage them, such as `root`, and Homeport never uses `sudo`. Connect as such a user, or use rootless Podman, whose units are the user's own.
 
+### containerd: "isn't allowed to use containerd at /run/containerd/containerd.sock"
+
+containerd's socket belongs to root. Give a group access to it with `gid` under `[grpc]` in `/etc/containerd/config.toml`, add your user (or the SSH user) to that group, restart containerd and log in again; [the containerd page](/docs/hosts/containerd/#letting-your-user-use-the-socket) has the commands. Rootless containerd can't be reached at all: its socket only exists inside RootlessKit's namespace.
+
+### containerd: "This container's output isn't recorded"
+
+containerd keeps no logs; the tool that started the task decides where its output goes. Containers made with `ctr` usually send it nowhere. nerdctl's and Kubernetes' containers log to files Homeport reads; see [Logs](/docs/hosts/containerd/#logs).
+
+### containerd: logs or the terminal say they need SSH
+
+They need the files of containerd's machine, which Homeport reaches over SSH, or on this computer for a local socket on Linux. Add the Host over SSH. If the log file can't be read, it usually belongs to root: connect as a user allowed to read it.
+
+### containerd: "can't pull images for Homeport"
+
+Pulling goes through containerd's Transfer service, stable from containerd 2.0. Update containerd, or pull with `ctr images pull` or `nerdctl pull` on the Host; the image then shows on the Images page.
+
 ### "host … is not connected"
 
 The action needed the Host, but it disconnected. Wait for it to reconnect, or choose **Retry now**.

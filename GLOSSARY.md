@@ -13,7 +13,16 @@ The Docker-compatible daemon a Host points to (Docker Engine, Docker Desktop, Po
 _Avoid_: Daemon, server, backend
 
 **Engine kind**:
-What sort of Engine a Host points to, stored with it: Docker-compatible (Docker Engine, or Podman through its compatible API), containerd or Incus. It decides which pages a Host shows. Called `engine` in code, never `kind`, which is the connection's. Podman is not a kind of its own: it's a Docker-compatible Engine recognised on every connect, because the same socket can change product.
+What sort of Engine a Host points to, stored with it: Docker-compatible (Docker Engine, or Podman through its compatible API), containerd or Incus. It decides which pages a Host shows; containerd Hosts get their own (ADR 0020). Called `engine` in code, never `kind`, which is the connection's. Podman is not a kind of its own: it's a Docker-compatible Engine recognised on every connect, because the same socket can change product.
+
+**Namespace (containerd)**:
+The space every object of a containerd Host lives in (`default` for nerdctl, `k8s.io` for Kubernetes, `moby` for Docker); every call names one. A containerd Host's pages show one at a time, remembered per Host. A Cluster's Namespace is the Kubernetes one: say "containerd namespace" wherever both could be meant.
+
+**Task (containerd)**:
+What runs for a containerd container, which is only metadata (image, spec, snapshot). Starting a container creates and starts its task; stopping leaves a stopped task until the next start. A Swarm's task is one slot of a service: say "containerd task" wherever both could be meant.
+
+**Snapshot**:
+On a containerd Host, a layer of files a snapshotter keeps: a committed layer of an unpacked image, or a container's active, writable one, each built on a parent.
 
 **Pod**:
 On a Podman Host, a group of containers that share one network namespace (and their hostname and IPC) and start and stop together, around an infra container that holds the namespaces and the published ports. Shown on the Pods page through Podman's own API. A Cluster's Pod is the Kubernetes one: in code and text about Hosts, say "Podman pod" wherever both could be meant.
