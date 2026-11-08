@@ -38,6 +38,7 @@ import {
   usageOf,
   volumes,
 } from './data';
+import { clusterHandlers, clusterSettings, swarmHandlers } from './orchestrators';
 
 interface Internals {
   runCallback: (id: number, data: unknown) => void;
@@ -332,7 +333,12 @@ export interface MockOptions {
 const routeOf = () => new URLSearchParams(window.location.search).get('route') ?? '/';
 
 export function installMocks({ theme, hostId }: MockOptions) {
-  let settings: Settings = { theme, lastHostId: hostId, checkForUpdates: true };
+  let settings: Settings = {
+    theme,
+    lastHostId: hostId,
+    checkForUpdates: true,
+    ...clusterSettings(),
+  };
   mockWindows('main');
 
   const handlers: Record<string, (args: Record<string, unknown>) => unknown> = {
@@ -353,9 +359,8 @@ export function installMocks({ theme, hostId }: MockOptions) {
       return settings;
     },
     hosts_list: () => hosts,
-    // The demo has Hosts only, so every shot stays as it was.
-    clusters_list: () => [],
-    clusters_detect_local: () => ({ found: [], missing: [] }),
+    ...swarmHandlers,
+    ...clusterHandlers(),
     // The demo Swarm shows only where it's photographed, so other shots stay as they were.
     swarms_list: () => (routeOf().startsWith('/swarms') ? [swarm] : []),
     swarm_inspect: () => swarmSummary,
