@@ -136,6 +136,18 @@ homeport_core::messages! {
     /// Resizing the root disk when no chosen profile gives one.
     ROOT_DISK_UNKNOWN = "errors.incus.rootDiskUnknown" => "None of the chosen profiles gives the Instance a root disk to resize.";
     ROOT_DISK_UNKNOWN_HINT = "errors.incus.rootDiskUnknown.hint" => "Leave the disk size empty, or add a profile with a root disk (the default profile usually has one).";
+    // Console and exec.
+
+    /// A terminal on an Instance that doesn't run.
+    TERMINAL_NOT_RUNNING = "errors.incus.terminalNotRunning" => "{name} isn't running, so it has no terminal to open.";
+    /// Input or a resize for a terminal that already closed.
+    TERMINAL_ENDED = "errors.incus.terminalEnded" => "This terminal session has ended.";
+    /// A command with an unclosed quote.
+    EXEC_UNCLOSED_QUOTE = "errors.incus.execUnclosedQuote" => "The command has an unclosed quote.";
+    /// The Instance has no shell, or not the program asked for.
+    EXEC_NO_SHELL = "errors.incus.execNoShell" => "The Instance has no such program.";
+    EXEC_NO_SHELL_HINT = "errors.incus.execNoShell.hint" => "Check the command's path inside the Instance, or open the Console tab instead.";
+
     /// The project picked isn't there any more.
     PROJECT_NOT_FOUND = "errors.incus.projectNotFound" => "There's no project {project} on {name}.";
     PROJECT_NOT_FOUND_HINT = "errors.incus.projectNotFound.hint" => "Pick another project under the host switcher.";

@@ -504,6 +504,19 @@ export const commands = {
 	incusImageDelete: (hostId: string, project: string, fingerprint: string) => __TAURI_INVOKE<null>("incus_image_delete", { hostId, project, fingerprint }),
 	incusImageAliasAdd: (hostId: string, project: string, fingerprint: string, name: string) => __TAURI_INVOKE<null>("incus_image_alias_add", { hostId, project, fingerprint, name }),
 	incusImageAliasRemove: (hostId: string, project: string, name: string) => __TAURI_INVOKE<null>("incus_image_alias_remove", { hostId, project, name }),
+	/**
+	 *  Runs a command (a shell by default) in a running Instance, with a
+	 *  terminal, through Incus's exec websockets.
+	 */
+	incusExecStart: (hostId: string, project: string, name: string, options: IncusExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("incus_exec_start", { hostId, project, name, options, onEvent }),
+	/**  Attaches to a running Instance's text console. */
+	incusConsoleStart: (hostId: string, project: string, name: string, cols: number, rows: number, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("incus_console_start", { hostId, project, name, cols, rows, onEvent }),
+	/**  What an Instance printed on its console, if Incus kept it. */
+	incusConsoleLog: (hostId: string, project: string, name: string) => __TAURI_INVOKE<string>("incus_console_log", { hostId, project, name }),
+	incusTerminalInput: (session: number, data: string) => __TAURI_INVOKE<null>("incus_terminal_input", { session, data }),
+	incusTerminalResize: (session: number, cols: number, rows: number) => __TAURI_INVOKE<null>("incus_terminal_resize", { session, cols, rows }),
+	/**  Closes a terminal: hangs up an exec's command, detaches from a console. */
+	incusTerminalClose: (session: number) => __TAURI_INVOKE<null>("incus_terminal_close", { session }),
 	/**  The profiles of `project`, with the Instances using each. */
 	incusProfiles: (hostId: string, project: string) => __TAURI_INVOKE<IncusProfile[]>("incus_profiles", { hostId, project }),
 	/**  One profile, with its YAML and the ETag to save it with. */
@@ -2106,6 +2119,17 @@ export type ImportSpec = {
 	reference: string,
 	/**  Dockerfile instructions, one per entry, like `CMD ["/bin/sh"]`. */
 	changes: string[],
+};
+
+/**  What the Exec tab asks for. */
+export type IncusExecOptions = {
+	/**  A command line, split like a shell would; a shell when empty. */
+	command: string | null,
+	/**  A numeric user ID; root when empty. */
+	user: number | null,
+	cwd: string | null,
+	cols: number,
+	rows: number,
 };
 
 /**  One image kept on the Host. */

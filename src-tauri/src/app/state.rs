@@ -11,6 +11,7 @@ use homeport_engine::{
 };
 use homeport_git::Repositories;
 use homeport_hosts::service::HostService;
+use homeport_incus::terminal::IncusTerminals;
 use homeport_registries::RegistryStore;
 use homeport_settings::SettingsService;
 use homeport_stacks::{
@@ -44,6 +45,8 @@ pub struct AppState {
     pub exec: ExecSessions,
     /// Terminals open in containerd containers' tasks.
     pub containerd_exec: ContainerdExecSessions,
+    /// Terminals open on Incus Instances: exec sessions and consoles.
+    pub incus_terminals: IncusTerminals,
     /// Terminals open in Pods' containers.
     pub pod_terminals: PodTerminals,
     /// Volumes being browsed, each in a helper container (ADR 0015).

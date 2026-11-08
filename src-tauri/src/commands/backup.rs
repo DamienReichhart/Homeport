@@ -336,6 +336,7 @@ mod tests {
             streams: Default::default(),
             exec: Default::default(),
             containerd_exec: Default::default(),
+            incus_terminals: Default::default(),
             pod_terminals: Default::default(),
             volume_browser: Default::default(),
             freshness: Default::default(),

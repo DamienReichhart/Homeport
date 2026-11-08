@@ -23,11 +23,14 @@ import { cpuSeconds, STATUS_LABELS, statusTone, TYPE_LABELS } from '../model/ins
 import { ConfigTable, DevicesList } from './ConfigTable';
 import { DeleteInstanceDialog } from './DeleteInstanceDialog';
 import { InstanceActions } from './InstanceActions';
+import { ConsoleTab, ExecTab } from './TerminalTabs';
 import { t, type MessageKey } from '@/shared/i18n';
 
-const TABS = ['overview', 'config', 'devices', 'raw'] as const;
+const TABS = ['overview', 'console', 'exec', 'config', 'devices', 'raw'] as const;
 const TAB_LABELS: Record<(typeof TABS)[number], MessageKey> = {
   overview: 'incus.instances.tab.overview',
+  console: 'incus.instances.tab.console',
+  exec: 'incus.instances.tab.exec',
   config: 'incus.instances.tab.config',
   devices: 'incus.instances.tab.devices',
   raw: 'incus.instances.tab.raw',
@@ -134,6 +137,22 @@ function InstanceDetail({
               ))}
             </div>
           </div>
+        </TabsContent>
+        <TabsContent value="console" className="min-h-[24rem] flex-1">
+          <ConsoleTab
+            hostId={hostId}
+            project={project}
+            name={instance.name}
+            running={instance.status === 'running'}
+          />
+        </TabsContent>
+        <TabsContent value="exec" className="min-h-[24rem] flex-1">
+          <ExecTab
+            hostId={hostId}
+            project={project}
+            name={instance.name}
+            running={instance.status === 'running'}
+          />
         </TabsContent>
         <TabsContent value="config" className="overflow-auto">
           <ConfigTable own={detail.data.config} expanded={detail.data.expandedConfig} />

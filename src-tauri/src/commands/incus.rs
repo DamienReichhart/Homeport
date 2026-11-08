@@ -8,6 +8,7 @@ use homeport_core::{
     host::{EngineKind, HostConnection},
     pull::PullEvent,
     streams::StreamId,
+    terminal::ExecEvent,
 };
 use homeport_hosts::service::{CredentialsInput, HostInput, HostView};
 use homeport_incus::{
@@ -16,6 +17,7 @@ use homeport_incus::{
     profiles::{self, IncusProfile, IncusProfileDetail},
     projects::{self, IncusProject},
     simplestreams::{self, RemoteImage},
+    terminal::{self, IncusExecOptions, IncusTerminal, SessionId},
     trust::{self, TrustToken, TrustTokenSummary},
 };
 
@@ -301,4 +303,89 @@ pub async fn incus_profile_delete(
     name: String,
 ) -> AppResult<()> {
     profiles::delete(&state.hosts.registry.incus(&host_id)?, &project, &name).await
+}
+
+/// Runs a command (a shell by default) in a running Instance, with a
+/// terminal, through Incus's exec websockets.
+#[tauri::command]
+#[specta::specta]
+pub async fn incus_exec_start(
+    state: State<'_, AppState>,
+    host_id: String,
+    project: String,
+    name: String,
+    options: IncusExecOptions,
+    on_event: Channel<ExecEvent>,
+) -> AppResult<SessionId> {
+    let incus = state.hosts.registry.incus(&host_id)?;
+    let (session, output) = IncusTerminal::exec(&incus, &project, &name, &options).await?;
+    session.resize(options.cols, options.rows).await.ok();
+    Ok(state
+        .incus_terminals
+        .open(session, output, move |e| on_event.send(e).is_ok()))
+}
+
+/// Attaches to a running Instance's text console.
+#[tauri::command]
+#[specta::specta]
+pub async fn incus_console_start(
+    state: State<'_, AppState>,
+    host_id: String,
+    project: String,
+    name: String,
+    cols: u16,
+    rows: u16,
+    on_event: Channel<ExecEvent>,
+) -> AppResult<SessionId> {
+    let incus = state.hosts.registry.incus(&host_id)?;
+    let (session, output) = IncusTerminal::console(&incus, &project, &name, cols, rows).await?;
+    Ok(state
+        .incus_terminals
+        .open(session, output, move |e| on_event.send(e).is_ok()))
+}
+
+/// What an Instance printed on its console, if Incus kept it.
+#[tauri::command]
+#[specta::specta]
+pub async fn incus_console_log(
+    state: State<'_, AppState>,
+    host_id: String,
+    project: String,
+    name: String,
+) -> AppResult<String> {
+    let incus = state.hosts.registry.incus(&host_id)?;
+    Ok(terminal::console_log(&incus, &project, &name).await)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn incus_terminal_input(
+    state: State<'_, AppState>,
+    session: SessionId,
+    data: String,
+) -> AppResult<()> {
+    state
+        .incus_terminals
+        .get(session)?
+        .write(data.as_bytes())
+        .await
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn incus_terminal_resize(
+    state: State<'_, AppState>,
+    session: SessionId,
+    cols: u16,
+    rows: u16,
+) -> AppResult<()> {
+    state.incus_terminals.get(session)?.resize(cols, rows).await
+}
+
+/// Closes a terminal: hangs up an exec's command, detaches from a console.
+#[tauri::command]
+#[specta::specta]
+pub async fn incus_terminal_close(state: State<'_, AppState>, session: SessionId) -> AppResult<()> {
+    state.incus_terminals.close(session);
+    Ok(())
 }

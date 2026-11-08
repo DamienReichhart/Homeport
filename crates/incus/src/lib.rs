@@ -16,6 +16,7 @@ pub mod operations;
 pub mod profiles;
 pub mod projects;
 pub mod simplestreams;
+pub mod terminal;
 pub mod trust;
 mod websocket;
 
