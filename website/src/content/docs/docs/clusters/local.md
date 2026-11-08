@@ -1,0 +1,39 @@
+---
+title: Local clusters
+description: The Kubernetes clusters Homeport finds on this computer, and how to turn on Kubernetes in Docker Desktop, OrbStack and Rancher Desktop.
+---
+
+Homeport looks through this computer's kubeconfig for clusters running here, asks each one's API server its version, and offers the ones that answer on **Add a cluster** and on the welcome page, one click each. It never starts, creates or installs a cluster.
+
+## What is found
+
+| Tool                | Its kubeconfig context                  | Added as          |
+| ------------------- | --------------------------------------- | ----------------- |
+| **Docker Desktop**  | `docker-desktop`                        | `Docker Desktop`  |
+| **OrbStack**        | `orbstack`                              | `OrbStack`        |
+| **Rancher Desktop** | `rancher-desktop`                       | `Rancher Desktop` |
+| **kind**            | `kind-<name>`                           | the context name  |
+| **k3d**             | `k3d-<name>`                            | the context name  |
+| **minikube**        | `minikube`, or a profile minikube wrote | the context name  |
+
+A context counts as local only when its API server is on this computer (`127.0.0.1`, `localhost`, `kubernetes.docker.internal`…) or, for minikube and Rancher Desktop, in their VM on a private address. A remote context is never offered, whatever its name. A local cluster that doesn't answer shows **Not running**; start it with its own tool and open the page again.
+
+### kind and k3d clusters missing from the kubeconfig
+
+When a [local Host](/docs/hosts/local/) is connected, Homeport also spots the containers of running kind and k3d clusters (by their `io.x-k8s.kind.cluster` and `k3d.cluster` labels). One that your kubeconfig doesn't reach is shown with the command that adds it, rather than added behind your back:
+
+```bash
+kind export kubeconfig --name <name>
+```
+
+```bash
+k3d kubeconfig merge <name> --kubeconfig-merge-default
+```
+
+## Turning on Kubernetes
+
+- **Docker Desktop**: **Settings → Kubernetes → Enable Kubernetes**, then **Apply & restart**. It adds the `docker-desktop` context.
+- **OrbStack**: **Settings → Kubernetes → Enable Kubernetes**, or run `orb start k8s`. It adds the `orbstack` context.
+- **Rancher Desktop**: **Preferences → Kubernetes → Enable Kubernetes**. It adds the `rancher-desktop` context.
+
+kind (`kind create cluster`), k3d (`k3d cluster create`) and minikube (`minikube start`) add their contexts when they create a cluster. They make new certificates each time they recreate one: use **Refresh from kubeconfig** on its page afterwards.

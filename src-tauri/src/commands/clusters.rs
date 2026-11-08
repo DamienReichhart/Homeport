@@ -4,9 +4,12 @@
 use tauri::State;
 
 use homeport_clusters::{
+    detect::{self, LocalClusters},
     kubeconfig::{ContextChoice, KubeContexts},
     service::ClusterView,
 };
+use homeport_core::host::HostConnection;
+use homeport_engine::containers;
 
 use crate::{app::AppState, error::AppResult};
 
@@ -88,4 +91,28 @@ pub async fn clusters_refresh(
     text: Option<String>,
 ) -> AppResult<ClusterView> {
     state.clusters.refresh(&id, text.as_deref())
+}
+
+/// The local clusters (Docker Desktop, OrbStack, Rancher Desktop, kind,
+/// k3d, minikube) this machine's kubeconfig reaches, each probed, and the
+/// kind and k3d clusters running on a connected local Host that it doesn't.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_detect_local(state: State<'_, AppState>) -> AppResult<LocalClusters> {
+    let found = detect::detect(&state.clusters.store.list()?).await;
+    let mut labels = vec![];
+    for host in state.hosts.store.list()? {
+        if !matches!(host.connection, HostConnection::Local { .. }) {
+            continue;
+        }
+        let Ok(docker) = state.hosts.registry.docker(&host.id) else {
+            continue;
+        };
+        match containers::list(&docker).await {
+            Ok(list) => labels.extend(list.into_iter().map(|c| c.labels)),
+            Err(e) => log::debug!("couldn't list the containers of {}: {e}", host.name),
+        }
+    }
+    let missing = detect::missing(&labels, &detect::local_contexts());
+    Ok(LocalClusters { found, missing })
 }

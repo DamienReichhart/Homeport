@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { LocalClusters, useClusterSelection } from '@/core/cluster';
 import { KeychainNeeded } from '@/features/hosts';
 import { useCapabilities, type KubeContexts } from '@/shared/api';
 import {
@@ -66,28 +68,38 @@ function Pasted() {
 /** Adds Clusters from contexts of this machine's kubeconfig or of a pasted one. */
 export function AddClusterPage() {
   const capabilities = useCapabilities();
+  const navigate = useNavigate();
+  const { select } = useClusterSelection();
   return (
     <div className="max-w-3xl">
       <PageHeader title={t('clusters.add')} description={t('clusters.addPage.description')} />
       {capabilities.data?.keychain === false ? (
         <KeychainNeeded />
       ) : (
-        <Card>
-          <CardContent>
-            <Tabs defaultValue="machine">
-              <TabsList>
-                <TabsTrigger value="machine">{t('clusters.addPage.fromMachine')}</TabsTrigger>
-                <TabsTrigger value="paste">{t('clusters.addPage.paste')}</TabsTrigger>
-              </TabsList>
-              <TabsContent value="machine" className="pt-3">
-                <FromThisMachine />
-              </TabsContent>
-              <TabsContent value="paste" className="pt-3">
-                <Pasted />
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+        <div className="grid gap-4">
+          <LocalClusters
+            onAdded={(view) => {
+              select(view.cluster.id);
+              void navigate(`/clusters/${view.cluster.id}`);
+            }}
+          />
+          <Card>
+            <CardContent>
+              <Tabs defaultValue="machine">
+                <TabsList>
+                  <TabsTrigger value="machine">{t('clusters.addPage.fromMachine')}</TabsTrigger>
+                  <TabsTrigger value="paste">{t('clusters.addPage.paste')}</TabsTrigger>
+                </TabsList>
+                <TabsContent value="machine" className="pt-3">
+                  <FromThisMachine />
+                </TabsContent>
+                <TabsContent value="paste" className="pt-3">
+                  <Pasted />
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );

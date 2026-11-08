@@ -4,6 +4,13 @@ import { clusterKeys } from './keys';
 
 export const clusterQueries = {
   list: () => queryOptions({ queryKey: clusterKeys.list, queryFn: () => commands.clustersList() }),
+  /** Clusters running on this machine that its kubeconfig reaches, each probed. */
+  localClusters: () =>
+    queryOptions({
+      queryKey: clusterKeys.localClusters,
+      queryFn: () => commands.clustersDetectLocal(),
+      retry: false,
+    }),
 };
 
 export const useClusters = () => useQuery(clusterQueries.list());

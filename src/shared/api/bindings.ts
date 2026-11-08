@@ -98,6 +98,12 @@ export const commands = {
 	clustersImport: (contexts: ContextChoice[], text: string | null) => __TAURI_INVOKE<ClusterView[]>("clusters_import", { contexts, text }),
 	/**  Reads a Cluster's context again from its kubeconfig and reconnects. */
 	clustersRefresh: (id: string, text: string | null) => __TAURI_INVOKE<ClusterView>("clusters_refresh", { id, text }),
+	/**
+	 *  The local clusters (Docker Desktop, OrbStack, Rancher Desktop, kind,
+	 *  k3d, minikube) this machine's kubeconfig reaches, each probed, and the
+	 *  kind and k3d clusters running on a connected local Host that it doesn't.
+	 */
+	clustersDetectLocal: () => __TAURI_INVOKE<LocalClusters>("clusters_detect_local"),
 	/**  Backs up everything Homeport holds to `path`, sealed with `passphrase`. */
 	dataBackup: (path: string, passphrase: string) => __TAURI_INVOKE<BackupOutcome>("data_backup", { path, passphrase }),
 	/**  What the backup at `path` holds, for the restore's confirmation. */
@@ -1417,6 +1423,28 @@ export type LinkedStack = {
 	updatedAt: string,
 };
 
+/**  A local cluster found in the kubeconfig. */
+export type LocalCluster = {
+	tool: LocalTool,
+	/**  The context it is reached through. */
+	context: string,
+	/**  The name its Cluster gets when added in one click. */
+	suggestedName: string,
+	server: string,
+	/**  Its API server answered, with this version. */
+	serverVersion: string | null,
+	/**  The Cluster already made from its context. */
+	added: AddedCluster | null,
+};
+
+export type LocalClusters = {
+	found: LocalCluster[],
+	missing: MissingLocalCluster[],
+};
+
+/**  What runs a local cluster. */
+export type LocalTool = "dockerDesktop" | "orbstack" | "rancherDesktop" | "kind" | "k3d" | "minikube";
+
 export type LogEvent = { type: "lines"; lines: LogLine[] } | { type: "error"; error: AppError } | { type: "end" };
 
 export type LogLine = {
@@ -1479,6 +1507,17 @@ export type ManagedStack = {
 
 /**  How a manager node takes part in the Swarm's Raft. */
 export type ManagerStatus = "leader" | "reachable" | "unreachable";
+
+/**
+ *  A kind or k3d cluster whose containers run on a local Host, but that
+ *  the kubeconfig doesn't reach yet.
+ */
+export type MissingLocalCluster = {
+	tool: LocalTool,
+	name: string,
+	/**  The command that writes it into the kubeconfig. */
+	command: string,
+};
 
 /**  Replicated with a number of replicas, or one task per node. */
 export type ModeInput = { kind: "replicated"; replicas: number } | { kind: "global" };

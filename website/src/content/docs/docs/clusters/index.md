@@ -9,7 +9,7 @@ Clusters sit next to your Hosts in the switcher at the top of the sidebar. Selec
 
 ## Adding a Cluster
 
-Choose **Add cluster…** in the switcher, or **Add a cluster** on the Clusters page. Each context you pick becomes a Cluster, named after the context; you can rename it before or after importing.
+Choose **Add cluster…** in the switcher, or **Add a cluster** on the Clusters page. [Local clusters](/docs/clusters/local/) — Docker Desktop, OrbStack, Rancher Desktop, kind, k3d, minikube — are offered at the top, one click each. Each context you pick becomes a Cluster, named after the context; you can rename it before or after importing.
 
 - **From this machine's kubeconfig** reads the files listed in `KUBECONFIG`, merged as `kubectl` merges them, or `~/.kube/config` when `KUBECONFIG` isn't set. The current context is picked for you.
 - **Paste a kubeconfig** reads text you paste, in memory only: it's never saved as a file. Files it refers to (`certificate-authority: /…`) must be full paths; the simplest is to paste one with everything inlined:

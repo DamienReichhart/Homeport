@@ -5,5 +5,6 @@
  */
 export const clusterKeys = {
   list: ['clusters'] as const,
+  localClusters: ['local-clusters'] as const,
   scope: (clusterId: string) => ['cluster', clusterId] as const,
 };

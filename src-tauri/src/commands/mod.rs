@@ -87,6 +87,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             clusters::clusters_kubeconfig_contexts,
             clusters::clusters_import,
             clusters::clusters_refresh,
+            clusters::clusters_detect_local,
             backup::data_backup,
             backup::data_restore_preview,
             backup::data_restore,
