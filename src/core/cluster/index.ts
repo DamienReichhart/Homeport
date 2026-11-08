@@ -7,6 +7,7 @@ export { useClusterStatusUpdates } from './live/useClusterStatusUpdates';
 export { useResourceWatch } from './live/useResourceWatch';
 export { age, podTone, workloadHealth } from './model/health';
 export { chosenNamespace } from './model/namespace';
+export { kindPath, objectPath } from './model/paths';
 export {
   clusterStatusError,
   describeClusterStatus,
@@ -22,4 +23,6 @@ export { Labels } from './ui/Labels';
 export { LocalClusters } from './ui/LocalClusters';
 export { NamespacePicker } from './ui/NamespacePicker';
 export { ObjectEvents } from './ui/ObjectEvents';
+export { ResourceList, type Section } from './ui/ResourceList';
+export { ResourceTabs, type ResourceTab } from './ui/ResourceTabs';
 export { ResourceYaml } from './ui/ResourceYaml';

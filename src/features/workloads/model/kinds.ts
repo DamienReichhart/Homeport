@@ -1,3 +1,4 @@
+import { objectPath } from '@/core/cluster';
 import type { WorkloadKind } from '@/shared/api';
 import type { MessageKey } from '@/shared/i18n';
 
@@ -21,7 +22,7 @@ export function pathOf(kind: WorkloadKind): string {
 
 /** The page of one workload. */
 export const workloadPath = (kind: WorkloadKind, namespace: string, name: string) =>
-  `/workloads/${pathOf(kind)}/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}`;
+  objectPath(kind, namespace, name) ?? `/workloads/${pathOf(kind)}`;
 
 /** `3/3` for replicas; a CronJob, which wants none, shows its active Jobs. */
 export function readyText(ready: number, desired: number, kind: WorkloadKind): string {

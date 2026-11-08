@@ -140,4 +140,6 @@ homeport_core::messages! {
     FORBIDDEN_HINT = "errors.clusters.forbidden.hint" => "Ask the cluster's administrator for this permission. Check with:";
     /// The resource was deleted while it was open.
     RESOURCE_GONE = "errors.clusters.resourceGone" => "{kind} {name} no longer exists.";
+    /// A Secret's key that is gone by the time it's revealed.
+    SECRET_KEY_GONE = "errors.clusters.secretKeyGone" => "{name} no longer has a key {key}.";
 }

@@ -72,6 +72,7 @@ export default {
   'core.conditions.none': 'No conditions reported.',
   'core.labels.none': 'None',
   'core.yaml.label': 'YAML',
+  'core.list.empty': 'None here.',
   'core.yaml.copy': 'Copy YAML',
   'core.gate.welcome.title': 'Welcome to Homeport',
   'core.gate.welcome.description':

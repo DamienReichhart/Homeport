@@ -252,3 +252,146 @@ fn events_put_warnings_first_then_the_newest() {
         ]
     );
 }
+
+#[test]
+fn a_secrets_list_view_carries_no_value() {
+    let secret: k8s_openapi::api::core::v1::Secret = from(serde_json::json!({
+        "metadata": { "name": "db", "namespace": "shop" },
+        "type": "Opaque",
+        "data": { "password": "aHVudGVyMg==", "cert": "/w==" }
+    }));
+    let view = config::secret(&secret);
+    let json = serde_json::to_string(&view).unwrap();
+    assert!(
+        !json.contains("aHVudGVyMg==") && !json.contains("hunter2"),
+        "{json}"
+    );
+    let detail = serde_json::to_string(&config::secret_detail(&secret)).unwrap();
+    assert!(!detail.contains("hunter2") && !detail.contains("aHVudGVyMg=="));
+    assert_eq!(
+        view.keys
+            .iter()
+            .map(|k| (k.key.as_str(), k.size, k.binary))
+            .collect::<Vec<_>>(),
+        [("cert", 1, true), ("password", 7, false)]
+    );
+    let revealed = config::value(&secret, "password").unwrap();
+    assert_eq!(
+        (revealed.value.as_str(), revealed.binary),
+        ("hunter2", false)
+    );
+    assert!(
+        !format!("{revealed:?}").contains("hunter2"),
+        "Debug hides it"
+    );
+    assert_eq!(config::value(&secret, "cert").unwrap().value, "/w==");
+    assert!(config::value(&secret, "missing").is_none());
+}
+
+#[test]
+fn service_ports_and_external_addresses_read_like_kubectl() {
+    let svc: k8s_openapi::api::core::v1::Service = from(serde_json::json!({
+        "metadata": { "name": "web", "namespace": "shop" },
+        "spec": {
+            "type": "LoadBalancer", "clusterIP": "10.96.0.12",
+            "selector": { "app": "web" },
+            "ports": [
+                { "name": "http", "port": 80, "targetPort": "http", "nodePort": 30080, "protocol": "TCP" },
+                { "port": 9090, "targetPort": 9090 }
+            ]
+        },
+        "status": { "loadBalancer": { "ingress": [{ "ip": "203.0.113.9" }] } }
+    }));
+    let view = network::service(&svc);
+    assert_eq!(view.kind, "LoadBalancer");
+    assert_eq!(view.ports, ["80:30080/TCP", "9090/TCP"]);
+    assert_eq!(view.external, ["203.0.113.9"]);
+    assert_eq!(view.selector, "app=web");
+    let detail = network::service_detail(&svc);
+    assert_eq!(detail.ports[0].target_port, "http");
+    assert_eq!(detail.ports[1].target_port, "9090");
+    let headless: k8s_openapi::api::core::v1::Service = from(serde_json::json!({
+        "metadata": { "name": "db" }, "spec": { "clusterIP": "None" }
+    }));
+    assert_eq!(network::service(&headless).cluster_ip, None);
+}
+
+#[test]
+fn ingress_rules_list_each_path_and_its_backend() {
+    let ing: k8s_openapi::api::networking::v1::Ingress = from(serde_json::json!({
+        "metadata": { "name": "web", "namespace": "shop" },
+        "spec": {
+            "ingressClassName": "nginx",
+            "defaultBackend": { "service": { "name": "fallback", "port": { "number": 80 } } },
+            "tls": [{ "hosts": ["shop.example.com"], "secretName": "shop-tls" }],
+            "rules": [{ "host": "shop.example.com", "http": { "paths": [
+                { "path": "/api", "pathType": "Prefix", "backend": { "service": { "name": "api", "port": { "name": "http" } } } },
+                { "path": "/", "pathType": "Prefix", "backend": { "service": { "name": "web", "port": { "number": 8080 } } } }
+            ] } }]
+        },
+        "status": { "loadBalancer": { "ingress": [{ "hostname": "lb.example.com" }] } }
+    }));
+    let view = network::ingress(&ing);
+    assert_eq!(view.class.as_deref(), Some("nginx"));
+    assert_eq!(view.hosts, ["shop.example.com"]);
+    assert_eq!(view.addresses, ["lb.example.com"]);
+    assert!(view.tls);
+    let detail = network::ingress_detail(&ing);
+    let paths: Vec<_> = detail
+        .paths
+        .iter()
+        .map(|p| {
+            (
+                p.host.as_str(),
+                p.path.as_str(),
+                p.service.as_deref(),
+                p.port.as_deref(),
+            )
+        })
+        .collect();
+    assert_eq!(
+        paths,
+        [
+            ("*", "*", Some("fallback"), Some("80")),
+            ("shop.example.com", "/api", Some("api"), Some("http")),
+            ("shop.example.com", "/", Some("web"), Some("8080")),
+        ]
+    );
+    assert_eq!(detail.tls[0].secret.as_deref(), Some("shop-tls"));
+}
+
+#[test]
+fn a_nodes_readiness_roles_and_capacity_are_read() {
+    let node: k8s_openapi::api::core::v1::Node = from(serde_json::json!({
+        "metadata": { "name": "node-a", "labels": {
+            "node-role.kubernetes.io/control-plane": "", "kubernetes.io/os": "linux" } },
+        "spec": { "unschedulable": true, "taints": [{ "key": "node-role.kubernetes.io/control-plane", "effect": "NoSchedule" }] },
+        "status": {
+            "conditions": [{ "type": "Ready", "status": "True" }, { "type": "MemoryPressure", "status": "False" }],
+            "addresses": [{ "type": "InternalIP", "address": "10.0.0.4" }, { "type": "Hostname", "address": "node-a" }],
+            "allocatable": { "cpu": "4", "memory": "16302048Ki", "pods": "110" },
+            "capacity": { "cpu": "4" },
+            "nodeInfo": { "kubeletVersion": "v1.33.1", "operatingSystem": "linux", "architecture": "arm64",
+                "osImage": "Debian", "kernelVersion": "6.1", "containerRuntimeVersion": "containerd://2.0",
+                "bootID": "", "machineID": "", "systemUUID": "", "kubeProxyVersion": "" }
+        }
+    }));
+    let view = nodes::view(&node);
+    assert!(view.ready && view.unschedulable);
+    assert_eq!(view.roles, ["control-plane"]);
+    assert_eq!(
+        (view.version.as_str(), view.arch.as_str()),
+        ("v1.33.1", "arm64")
+    );
+    assert_eq!(view.internal_ip.as_deref(), Some("10.0.0.4"));
+    assert_eq!((view.cpu.as_deref(), view.taints), (Some("4"), 1));
+    let detail = nodes::detail(&node);
+    assert_eq!(detail.allocatable["pods"], "110");
+    assert_eq!(detail.taints[0].effect, "NoSchedule");
+    assert_eq!(detail.addresses, ["InternalIP 10.0.0.4", "Hostname node-a"]);
+    let not_ready: k8s_openapi::api::core::v1::Node = from(serde_json::json!({
+        "metadata": { "name": "node-b" },
+        "status": { "conditions": [{ "type": "Ready", "status": "Unknown" }] }
+    }));
+    assert!(!nodes::view(&not_ready).ready);
+}

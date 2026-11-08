@@ -125,6 +125,25 @@ export const commands = {
 	 *  says when they change, until cancelled.
 	 */
 	clustersWatchSubscribe: (id: string, kind: ResourceKind, namespace: string | null, onEvent: Channel<ResourcesChanged>) => __TAURI_INVOKE<number>("clusters_watch_subscribe", { id, kind, namespace, onEvent }),
+	clustersServicesList: (id: string, namespace: string | null) => __TAURI_INVOKE<ClusterServiceView[]>("clusters_services_list", { id, namespace }),
+	clustersServiceGet: (id: string, namespace: string, name: string) => __TAURI_INVOKE<ClusterServiceDetail>("clusters_service_get", { id, namespace, name }),
+	clustersIngressesList: (id: string, namespace: string | null) => __TAURI_INVOKE<IngressView[]>("clusters_ingresses_list", { id, namespace }),
+	clustersIngressGet: (id: string, namespace: string, name: string) => __TAURI_INVOKE<IngressDetail>("clusters_ingress_get", { id, namespace, name }),
+	clustersConfigMapsList: (id: string, namespace: string | null) => __TAURI_INVOKE<ConfigMapView[]>("clusters_config_maps_list", { id, namespace }),
+	clustersConfigMapGet: (id: string, namespace: string, name: string) => __TAURI_INVOKE<ConfigMapDetail>("clusters_config_map_get", { id, namespace, name }),
+	/**  Secrets with their keys and sizes, never their values. */
+	clustersSecretsList: (id: string, namespace: string | null) => __TAURI_INVOKE<SecretView[]>("clusters_secrets_list", { id, namespace }),
+	/**  A Secret's keys, labels and annotations, never its values. */
+	clustersSecretGet: (id: string, namespace: string, name: string) => __TAURI_INVOKE<SecretDetail>("clusters_secret_get", { id, namespace, name }),
+	/**
+	 *  One decoded value of a Secret, read when the user reveals it; neither
+	 *  cached nor logged.
+	 */
+	clustersSecretReveal: (id: string, namespace: string, name: string, key: string) => __TAURI_INVOKE<RevealedValue>("clusters_secret_reveal", { id, namespace, name, key }),
+	clustersNodesList: (id: string) => __TAURI_INVOKE<ClusterNodeView[]>("clusters_nodes_list", { id }),
+	clustersNodeGet: (id: string, name: string) => __TAURI_INVOKE<ClusterNodeDetail>("clusters_node_get", { id, name }),
+	/**  The Events in `namespace` (every one without), warnings first. */
+	clustersEventsList: (id: string, namespace: string | null) => __TAURI_INVOKE<EventView[]>("clusters_events_list", { id, namespace }),
 	/**  Backs up everything Homeport holds to `path`, sealed with `passphrase`. */
 	dataBackup: (path: string, passphrase: string) => __TAURI_INVOKE<BackupOutcome>("data_backup", { path, passphrase }),
 	/**  What the backup at `path` holds, for the restore's confirmation. */
@@ -700,6 +719,76 @@ export type ClusterConnection = {
 /**  The orchestrator a Cluster runs. Nomad Clusters will share the table. */
 export type ClusterKind = "kubernetes";
 
+export type ClusterNodeDetail = {
+	view: ClusterNodeView,
+	labels: { [key in string]: string },
+	annotations: { [key in string]: string },
+	conditions: ConditionView[],
+	capacity: { [key in string]: string },
+	allocatable: { [key in string]: string },
+	taints: NodeTaint[],
+	osImage: string | null,
+	kernel: string | null,
+	containerRuntime: string | null,
+	/**  `InternalIP 10.0.0.4`, `Hostname node-a`… */
+	addresses: string[],
+};
+
+export type ClusterNodeView = {
+	name: string,
+	/**  Its Ready condition is true. */
+	ready: boolean,
+	/**  Cordoned: no new Pod is scheduled on it. */
+	unschedulable: boolean,
+	/**  From its `node-role.kubernetes.io/<role>` labels. */
+	roles: string[],
+	/**  The kubelet's version. */
+	version: string,
+	os: string,
+	arch: string,
+	internalIp: string | null,
+	/**  Allocatable CPU and memory, as Kubernetes writes them (`4`, `16302048Ki`). */
+	cpu: string | null,
+	memory: string | null,
+	taints: number,
+	created: string | null,
+};
+
+export type ClusterServiceDetail = {
+	view: ClusterServiceView,
+	labels: { [key in string]: string },
+	annotations: { [key in string]: string },
+	ports: ClusterServicePort[],
+	sessionAffinity: string | null,
+};
+
+export type ClusterServicePort = {
+	name: string | null,
+	port: number,
+	/**  The Pods' port, by number or by the name of a container port. */
+	targetPort: string,
+	nodePort: number | null,
+	protocol: string,
+};
+
+export type ClusterServiceView = {
+	namespace: string,
+	name: string,
+	/**  `ClusterIP`, `NodePort`, `LoadBalancer` or `ExternalName`. */
+	type: string,
+	clusterIp: string | null,
+	/**  Load balancers' and external addresses, or an ExternalName's name. */
+	external: string[],
+	/**  `80/TCP`, `443:30443/TCP` (with a node port), as kubectl shows them. */
+	ports: string[],
+	/**
+	 *  The labels of the Pods it sends traffic to, as `key=value,…`; empty
+	 *  when it selects none.
+	 */
+	selector: string,
+	created: string | null,
+};
+
 export type ClusterStatus = { state: "disabled" } | { state: "connecting" } | { state: "connected"; 
 /**  The API server's version, such as `v1.33.1`. */
 serverVersion: string; 
@@ -819,6 +908,27 @@ export type ConfigContent = {
 	size: number,
 };
 
+export type ConfigMapDetail = {
+	view: ConfigMapView,
+	labels: { [key in string]: string },
+	annotations: { [key in string]: string },
+	values: ConfigValue[],
+};
+
+export type ConfigMapView = {
+	namespace: string,
+	name: string,
+	keys: DataKey[],
+	created: string | null,
+};
+
+/**  A ConfigMap's value; binary ones have none. */
+export type ConfigValue = {
+	key: string,
+	value: string | null,
+	size: number,
+};
+
 export type Container = {
 	id: string,
 	name: string,
@@ -856,6 +966,15 @@ export type ContextChoice = {
 
 /**  Credentials typed by the user. Absent on update means "keep the stored ones". */
 export type CredentialsInput = { kind: "tls"; caPem: string; certPem: string; keyPem: string } | { kind: "sshKey"; privateKey: string; passphrase: string | null };
+
+/**  One key of a ConfigMap or Secret, and how big its value is. */
+export type DataKey = {
+	key: string,
+	/**  Bytes. */
+	size: number,
+	/**  Binary data, which isn't shown as text. */
+	binary: boolean,
+};
 
 /**  One deploy with the definition it used. */
 export type Deploy = {
@@ -1373,6 +1492,45 @@ export type ImportSpec = {
 	changes: string[],
 };
 
+export type IngressDetail = {
+	view: IngressView,
+	labels: { [key in string]: string },
+	annotations: { [key in string]: string },
+	/**  Every rule's paths, the default backend's first (host `*`, path `*`). */
+	paths: IngressPath[],
+	tls: IngressTls[],
+};
+
+/**  Where one path of an Ingress sends traffic. */
+export type IngressPath = {
+	/**  `*` for every host. */
+	host: string,
+	path: string,
+	pathType: string,
+	/**  The Service it sends to, when it sends to one. */
+	service: string | null,
+	/**  That Service's port, by number or name. */
+	port: string | null,
+	/**  Another backend (a resource), described. */
+	resource: string | null,
+};
+
+export type IngressTls = {
+	hosts: string[],
+	secret: string | null,
+};
+
+export type IngressView = {
+	namespace: string,
+	name: string,
+	class: string | null,
+	hosts: string[],
+	/**  The addresses its controller published. */
+	addresses: string[],
+	tls: boolean,
+	created: string | null,
+};
+
 /**  What `docker swarm join` needs for each role. `Debug` hides the tokens. */
 export type JoinInfo = {
 	workerToken: string,
@@ -1637,6 +1795,12 @@ export type NodeChange = {
 
 /**  [`SwarmRole`] as an input. */
 export type NodeRole = "manager" | "worker";
+
+export type NodeTaint = {
+	key: string,
+	value: string | null,
+	effect: string,
+};
 
 export type NodeView = {
 	id: string,
@@ -1939,6 +2103,12 @@ export type RestoreSpec = {
 	replace: boolean,
 };
 
+/**  One revealed value of a Secret, decoded; binary ones as base64. */
+export type RevealedValue = {
+	value: string,
+	binary: boolean,
+};
+
 export type RunSpec = {
 	image: string,
 	name: string | null,
@@ -1995,6 +2165,22 @@ export type SearchResult = {
 	description: string,
 	stars: number,
 	official: boolean,
+};
+
+export type SecretDetail = {
+	view: SecretView,
+	labels: { [key in string]: string },
+	annotations: { [key in string]: string },
+};
+
+/**  A Secret, without any of its values. */
+export type SecretView = {
+	namespace: string,
+	name: string,
+	/**  `Opaque`, `kubernetes.io/tls`, `kubernetes.io/dockerconfigjson`… */
+	type: string,
+	keys: DataKey[],
+	created: string | null,
 };
 
 /**  What the resource pages show: one Host or one Cluster, by id. */

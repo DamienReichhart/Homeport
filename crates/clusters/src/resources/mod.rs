@@ -6,8 +6,11 @@
 //! naming the verb and resource, so a page can say so and the others work.
 
 mod common;
+pub mod config;
 pub mod events;
 mod kind;
+pub mod network;
+pub mod nodes;
 pub mod pods;
 mod watch;
 pub mod workloads;
@@ -17,7 +20,8 @@ use std::fmt::Debug;
 use k8s_openapi::api::{
     apps::v1::{DaemonSet, Deployment, StatefulSet},
     batch::v1::{CronJob, Job},
-    core::v1::{Event, Namespace, Pod},
+    core::v1::{ConfigMap, Event, Namespace, Node, Pod, Secret, Service},
+    networking::v1::Ingress,
 };
 use kube::{
     api::{Api, ListParams},
@@ -31,8 +35,17 @@ use crate::{classify::classify, messages as msg, model::Cluster};
 
 pub use self::{
     common::{ConditionView, OwnerView},
+    config::{
+        ConfigMapDetail, ConfigMapView, ConfigValue, DataKey, RevealedValue, SecretDetail,
+        SecretView,
+    },
     events::{EventObject, EventView},
     kind::ResourceKind,
+    network::{
+        ClusterServiceDetail, ClusterServicePort, ClusterServiceView, IngressDetail, IngressPath,
+        IngressTls, IngressView,
+    },
+    nodes::{ClusterNodeDetail, ClusterNodeView, NodeTaint},
     pods::{NamespaceView, PodContainer, PodDetail, PodHealth, PodView},
     watch::watch,
     workloads::{TemplateContainer, WorkloadDetail, WorkloadHealth, WorkloadKind, WorkloadView},
@@ -261,6 +274,146 @@ impl On {
         Ok(pods::detail(&pod))
     }
 
+    pub async fn services(&self, namespace: Option<&str>) -> AppResult<Vec<ClusterServiceView>> {
+        let items: Vec<Service> = self
+            .list(
+                self.api(namespace),
+                ResourceKind::Service,
+                namespace,
+                ListParams::default(),
+            )
+            .await?;
+        Ok(sorted(items.iter().map(network::service).collect(), |s| {
+            (s.namespace.clone(), s.name.clone())
+        }))
+    }
+
+    pub async fn service(&self, namespace: &str, name: &str) -> AppResult<ClusterServiceDetail> {
+        let ns = Some(namespace);
+        let s: Service = self
+            .get(self.api(ns), ResourceKind::Service, ns, name)
+            .await?;
+        Ok(network::service_detail(&s))
+    }
+
+    pub async fn ingresses(&self, namespace: Option<&str>) -> AppResult<Vec<IngressView>> {
+        let items: Vec<Ingress> = self
+            .list(
+                self.api(namespace),
+                ResourceKind::Ingress,
+                namespace,
+                ListParams::default(),
+            )
+            .await?;
+        Ok(sorted(items.iter().map(network::ingress).collect(), |i| {
+            (i.namespace.clone(), i.name.clone())
+        }))
+    }
+
+    pub async fn ingress(&self, namespace: &str, name: &str) -> AppResult<IngressDetail> {
+        let ns = Some(namespace);
+        let i: Ingress = self
+            .get(self.api(ns), ResourceKind::Ingress, ns, name)
+            .await?;
+        Ok(network::ingress_detail(&i))
+    }
+
+    pub async fn config_maps(&self, namespace: Option<&str>) -> AppResult<Vec<ConfigMapView>> {
+        let items: Vec<ConfigMap> = self
+            .list(
+                self.api(namespace),
+                ResourceKind::ConfigMap,
+                namespace,
+                ListParams::default(),
+            )
+            .await?;
+        Ok(sorted(
+            items.iter().map(config::config_map).collect(),
+            |c| (c.namespace.clone(), c.name.clone()),
+        ))
+    }
+
+    pub async fn config_map(&self, namespace: &str, name: &str) -> AppResult<ConfigMapDetail> {
+        let ns = Some(namespace);
+        let c: ConfigMap = self
+            .get(self.api(ns), ResourceKind::ConfigMap, ns, name)
+            .await?;
+        Ok(config::config_map_detail(&c))
+    }
+
+    /// Secrets' names, types and keys; never a value.
+    pub async fn secrets(&self, namespace: Option<&str>) -> AppResult<Vec<SecretView>> {
+        let items: Vec<Secret> = self
+            .list(
+                self.api(namespace),
+                ResourceKind::Secret,
+                namespace,
+                ListParams::default(),
+            )
+            .await?;
+        Ok(sorted(items.iter().map(config::secret).collect(), |s| {
+            (s.namespace.clone(), s.name.clone())
+        }))
+    }
+
+    pub async fn secret(&self, namespace: &str, name: &str) -> AppResult<SecretDetail> {
+        let ns = Some(namespace);
+        let s: Secret = self
+            .get(self.api(ns), ResourceKind::Secret, ns, name)
+            .await?;
+        Ok(config::secret_detail(&s))
+    }
+
+    /// One value of a Secret, decoded, for the user who asked to see it.
+    pub async fn reveal(&self, namespace: &str, name: &str, key: &str) -> AppResult<RevealedValue> {
+        let ns = Some(namespace);
+        let s: Secret = self
+            .get(self.api(ns), ResourceKind::Secret, ns, name)
+            .await?;
+        config::value(&s, key).ok_or_else(|| {
+            AppError::new(
+                ErrorCode::NotFound,
+                msg::SECRET_KEY_GONE.with("key", key).with("name", name),
+            )
+        })
+    }
+
+    pub async fn nodes(&self) -> AppResult<Vec<ClusterNodeView>> {
+        let items: Vec<Node> = self
+            .list(
+                self.cluster_api(),
+                ResourceKind::Node,
+                None,
+                ListParams::default(),
+            )
+            .await?;
+        Ok(sorted(items.iter().map(nodes::view).collect(), |n| {
+            n.name.clone()
+        }))
+    }
+
+    pub async fn node(&self, name: &str) -> AppResult<ClusterNodeDetail> {
+        let n: Node = self
+            .get(self.cluster_api(), ResourceKind::Node, None, name)
+            .await?;
+        Ok(nodes::detail(&n))
+    }
+
+    /// The Events in `namespace` (every one with `None`), warnings first.
+    pub async fn events(&self, namespace: Option<&str>) -> AppResult<Vec<EventView>> {
+        let items: Vec<Event> = self
+            .list(
+                self.api(namespace),
+                ResourceKind::Event,
+                namespace,
+                ListParams::default(),
+            )
+            .await?;
+        let mut views: Vec<_> = items.iter().map(events::view).collect();
+        events::sort(&mut views);
+        Ok(views)
+    }
+
     /// The Events about one object, warnings first.
     pub async fn object_events(
         &self,
@@ -293,10 +446,6 @@ impl On {
         namespace: Option<&str>,
         name: &str,
     ) -> AppResult<String> {
-        use k8s_openapi::api::{
-            core::v1::{ConfigMap, Node, Secret, Service},
-            networking::v1::Ingress,
-        };
         use serde_json::to_value as json;
         let ns = namespace;
         let mut value = match kind {
@@ -334,6 +483,11 @@ impl On {
             AppError::new(ErrorCode::Json, homeport_core::messages::UNREADABLE_DATA).with_cause(&e)
         })
     }
+}
+
+fn sorted<T, K: Ord>(mut items: Vec<T>, key: impl Fn(&T) -> K) -> Vec<T> {
+    items.sort_by_key(key);
+    items
 }
 
 /// Drops `managedFields` and kubectl's last applied configuration, and

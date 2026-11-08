@@ -1,10 +1,14 @@
 import { boardFeature } from '@/features/board';
+import { clusterEventsFeature } from '@/features/cluster-events';
 import { clustersFeature } from '@/features/clusters';
+import { configFeature } from '@/features/config';
 import { containersFeature } from '@/features/containers';
 import { eventsFeature } from '@/features/events';
 import { hostsFeature } from '@/features/hosts';
 import { imagesFeature } from '@/features/images';
+import { networkFeature } from '@/features/network';
 import { networksFeature } from '@/features/networks';
+import { nodesFeature } from '@/features/nodes';
 import { overviewFeature } from '@/features/overview';
 import { podsFeature } from '@/features/pods';
 import { settingsFeature } from '@/features/settings';
@@ -27,6 +31,10 @@ export const features: FeatureManifest[] = [
   swarmFeature,
   workloadsFeature,
   podsFeature,
+  networkFeature,
+  configFeature,
+  nodesFeature,
+  clusterEventsFeature,
   eventsFeature,
   settingsFeature,
   hostsFeature,

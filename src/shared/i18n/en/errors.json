@@ -67,6 +67,7 @@
   "errors.clusters.notConnected.hintDisabled": "Enable the cluster on its page to use it.",
   "errors.clusters.notConnectedUnknown": "This cluster isn't connected.",
   "errors.clusters.resourceGone": "{kind} {name} no longer exists.",
+  "errors.clusters.secretKeyGone": "{name} no longer has a key {key}.",
   "errors.clusters.serverInvalid": "\"{server}\" isn't the URL of a Kubernetes API server, like https://127.0.0.1:6443.",
   "errors.clusters.timeout": "{name} didn't answer in time.",
   "errors.clusters.timeout.hint": "Check that the cluster is running and reachable from this computer, then reconnect.",

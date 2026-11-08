@@ -4,7 +4,9 @@
 use tauri::{ipc::Channel, State};
 
 use homeport_clusters::resources::{
-    self, EventView, NamespaceView, On, PodDetail, PodView, ResourceKind, WorkloadDetail,
+    self, ClusterNodeDetail, ClusterNodeView, ClusterServiceDetail, ClusterServiceView,
+    ConfigMapDetail, ConfigMapView, EventView, IngressDetail, IngressView, NamespaceView, On,
+    PodDetail, PodView, ResourceKind, RevealedValue, SecretDetail, SecretView, WorkloadDetail,
     WorkloadKind, WorkloadView,
 };
 use homeport_clusters::{
@@ -255,4 +257,134 @@ pub async fn clusters_watch_subscribe(
         .spawn(resources::watch(client, kind, namespace, move || {
             on_event.send(ResourcesChanged { kind }).is_ok()
         })))
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_services_list(
+    state: State<'_, AppState>,
+    id: String,
+    namespace: Option<String>,
+) -> AppResult<Vec<ClusterServiceView>> {
+    on(&state, &id)?.services(namespace.as_deref()).await
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_service_get(
+    state: State<'_, AppState>,
+    id: String,
+    namespace: String,
+    name: String,
+) -> AppResult<ClusterServiceDetail> {
+    on(&state, &id)?.service(&namespace, &name).await
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_ingresses_list(
+    state: State<'_, AppState>,
+    id: String,
+    namespace: Option<String>,
+) -> AppResult<Vec<IngressView>> {
+    on(&state, &id)?.ingresses(namespace.as_deref()).await
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_ingress_get(
+    state: State<'_, AppState>,
+    id: String,
+    namespace: String,
+    name: String,
+) -> AppResult<IngressDetail> {
+    on(&state, &id)?.ingress(&namespace, &name).await
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_config_maps_list(
+    state: State<'_, AppState>,
+    id: String,
+    namespace: Option<String>,
+) -> AppResult<Vec<ConfigMapView>> {
+    on(&state, &id)?.config_maps(namespace.as_deref()).await
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_config_map_get(
+    state: State<'_, AppState>,
+    id: String,
+    namespace: String,
+    name: String,
+) -> AppResult<ConfigMapDetail> {
+    on(&state, &id)?.config_map(&namespace, &name).await
+}
+
+/// Secrets with their keys and sizes, never their values.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_secrets_list(
+    state: State<'_, AppState>,
+    id: String,
+    namespace: Option<String>,
+) -> AppResult<Vec<SecretView>> {
+    on(&state, &id)?.secrets(namespace.as_deref()).await
+}
+
+/// A Secret's keys, labels and annotations, never its values.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_secret_get(
+    state: State<'_, AppState>,
+    id: String,
+    namespace: String,
+    name: String,
+) -> AppResult<SecretDetail> {
+    on(&state, &id)?.secret(&namespace, &name).await
+}
+
+/// One decoded value of a Secret, read when the user reveals it; neither
+/// cached nor logged.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_secret_reveal(
+    state: State<'_, AppState>,
+    id: String,
+    namespace: String,
+    name: String,
+    key: String,
+) -> AppResult<RevealedValue> {
+    on(&state, &id)?.reveal(&namespace, &name, &key).await
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_nodes_list(
+    state: State<'_, AppState>,
+    id: String,
+) -> AppResult<Vec<ClusterNodeView>> {
+    on(&state, &id)?.nodes().await
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_node_get(
+    state: State<'_, AppState>,
+    id: String,
+    name: String,
+) -> AppResult<ClusterNodeDetail> {
+    on(&state, &id)?.node(&name).await
+}
+
+/// The Events in `namespace` (every one without), warnings first.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_events_list(
+    state: State<'_, AppState>,
+    id: String,
+    namespace: Option<String>,
+) -> AppResult<Vec<EventView>> {
+    on(&state, &id)?.events(namespace.as_deref()).await
 }

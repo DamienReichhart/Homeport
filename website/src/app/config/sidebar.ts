@@ -27,6 +27,8 @@ export const sidebar: NonNullable<StarlightUserConfig['sidebar']> = [
       { label: 'Local clusters', slug: 'docs/clusters/local' },
       { label: 'Exec plugins', slug: 'docs/clusters/exec-plugins' },
       { label: 'Workloads and Pods', slug: 'docs/clusters/workloads' },
+      { label: 'Services and configuration', slug: 'docs/clusters/networking-config' },
+      { label: 'Nodes and Events', slug: 'docs/clusters/nodes-events' },
     ],
   },
   {
