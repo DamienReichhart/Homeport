@@ -1,12 +1,15 @@
 //! Classifies failures to reach an Engine: local sockets and named pipes,
-//! then (for remote Hosts) the network, TLS and SSH layers.
+//! containerd's sockets, then (for remote Hosts) the network, TLS and SSH layers.
 
+mod containerd;
 mod local;
 mod network;
 mod ssh;
 mod tls;
 
+pub(crate) use self::containerd::containerd_group_commands;
 pub use self::{
+    containerd::local_containerd,
     local::{local_socket, LocalEngine},
     network::network,
     ssh::ssh,

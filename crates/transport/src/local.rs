@@ -3,21 +3,42 @@
 //! the Docker path is unchanged, and give the APIs bollard doesn't speak
 //! (Podman's libpod, and later Incus and containerd) a stream to the Engine.
 
-use std::{io, time::Duration};
+use std::{io, process::Stdio, time::Duration};
 
-use tokio::net::TcpStream;
+use tokio::{io::AsyncReadExt, net::TcpStream, sync::oneshot};
 
-use crate::{reach, BoxFuture, BoxStream, CommandOutput, ConnectError, Dialer, CONNECT_TIMEOUT};
+use homeport_core::{error::AppError, host::EngineKind};
+
+use crate::{
+    dialer::Guarded, reach, BoxFuture, BoxStream, CommandOutput, ConnectError, Dialer, Spawned,
+    CONNECT_TIMEOUT,
+};
 
 /// Dials the Engine socket (Unix) or named pipe (Windows) on this machine.
 pub struct LocalDialer {
     socket_path: String,
+    /// The kind of Engine behind the socket, for the hints of a failure.
+    engine: EngineKind,
 }
 
 impl LocalDialer {
     pub fn new(socket_path: &str) -> Self {
+        Self::for_engine(socket_path, EngineKind::Docker)
+    }
+
+    /// A dialer for an Engine of another kind than Docker's, whose failures
+    /// say how to start or reach that Engine.
+    pub fn for_engine(socket_path: &str, engine: EngineKind) -> Self {
         Self {
             socket_path: socket_path.to_owned(),
+            engine,
+        }
+    }
+
+    fn classify(&self, e: &io::Error) -> AppError {
+        match self.engine {
+            EngineKind::Containerd => reach::local_containerd(&self.socket_path, e),
+            _ => reach::local_socket(&self.socket_path, e),
         }
     }
 
@@ -61,10 +82,7 @@ impl Dialer for LocalDialer {
         Box::pin(async move {
             match self.open().await {
                 Ok(_) => Ok(()),
-                Err(e) => Err(ConnectError::from(reach::local_socket(
-                    &self.socket_path,
-                    &e,
-                ))),
+                Err(e) => Err(ConnectError::from(self.classify(&e))),
             }
         })
     }
@@ -74,7 +92,7 @@ impl Dialer for LocalDialer {
             // Keep the classification for whoever reads the failed request.
             self.open()
                 .await
-                .map_err(|e| io::Error::new(e.kind(), reach::local_socket(&self.socket_path, &e)))
+                .map_err(|e| io::Error::new(e.kind(), self.classify(&e)))
         })
     }
 
@@ -108,6 +126,108 @@ impl Dialer for LocalDialer {
                 stderr: String::from_utf8_lossy(&output.stderr).into_owned(),
             })
         })
+    }
+
+    fn spawn(&self, command: String) -> BoxFuture<'_, io::Result<Spawned>> {
+        Box::pin(async move {
+            if !self.runs_commands() {
+                return Err(io::Error::new(
+                    io::ErrorKind::Unsupported,
+                    "this Engine runs in a virtual machine",
+                ));
+            }
+            spawn_here(&command)
+        })
+    }
+}
+
+/// Starts `command` with `sh` on this computer, its stdin and stdout as the
+/// stream; dropping the stream kills it.
+fn spawn_here(command: &str) -> io::Result<Spawned> {
+    let mut child = tokio::process::Command::new("sh")
+        .arg("-c")
+        .arg(command)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .kill_on_drop(true)
+        .spawn()?;
+    let (stdin, stdout, mut stderr) = (
+        child.stdin.take().expect("stdin is piped"),
+        child.stdout.take().expect("stdout is piped"),
+        child.stderr.take().expect("stderr is piped"),
+    );
+    let (guard, mut dropped) = oneshot::channel::<()>();
+    let (done, exited) = oneshot::channel();
+    tokio::spawn(async move {
+        let mut err = Vec::new();
+        let read_err = stderr.read_to_end(&mut err);
+        let status = tokio::select! {
+            (_, status) = async { tokio::join!(read_err, child.wait()) } => status.ok(),
+            _ = &mut dropped => {
+                child.start_kill().ok();
+                child.wait().await.ok()
+            }
+        };
+        done.send(CommandOutput {
+            status: status
+                .and_then(|s| s.code())
+                .and_then(|c| u32::try_from(c).ok()),
+            stdout: String::new(),
+            stderr: String::from_utf8_lossy(&err).into_owned(),
+        })
+        .ok();
+    });
+    Ok(Spawned {
+        io: Box::new(Guarded {
+            inner: tokio::io::join(stdout, ClosingStdin(Some(stdin))),
+            _guard: guard,
+        }),
+        exit: Box::pin(async move {
+            exited.await.unwrap_or(CommandOutput {
+                status: None,
+                stdout: String::new(),
+                stderr: String::new(),
+            })
+        }),
+    })
+}
+
+/// A child's stdin that closes the pipe on shutdown, so the child reads
+/// the end of its input; tokio's only flushes it.
+struct ClosingStdin(Option<tokio::process::ChildStdin>);
+
+impl tokio::io::AsyncWrite for ClosingStdin {
+    fn poll_write(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+        buf: &[u8],
+    ) -> std::task::Poll<io::Result<usize>> {
+        match self.0.as_mut() {
+            Some(stdin) => std::pin::Pin::new(stdin).poll_write(cx, buf),
+            None => std::task::Poll::Ready(Err(io::ErrorKind::BrokenPipe.into())),
+        }
+    }
+
+    fn poll_flush(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> std::task::Poll<io::Result<()>> {
+        match self.0.as_mut() {
+            Some(stdin) => std::pin::Pin::new(stdin).poll_flush(cx),
+            None => std::task::Poll::Ready(Ok(())),
+        }
+    }
+
+    fn poll_shutdown(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> std::task::Poll<io::Result<()>> {
+        if let Some(stdin) = self.0.as_mut() {
+            std::task::ready!(std::pin::Pin::new(stdin).poll_flush(cx))?;
+        }
+        self.0 = None;
+        std::task::Poll::Ready(Ok(()))
     }
 }
 
@@ -212,6 +332,36 @@ mod tests {
             .run("sleep 5".into(), Duration::from_millis(50))
             .await;
         assert_eq!(slow.unwrap_err().kind(), io::ErrorKind::TimedOut);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[tokio::test]
+    async fn spawned_commands_stream_their_input_and_output() {
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+        let dialer = LocalDialer::new("/run/containerd/containerd.sock");
+        let mut cat = dialer
+            .spawn("echo ready; cat; echo bye >&2; exit 4".into())
+            .await
+            .unwrap();
+        let mut line = [0; 6];
+        cat.io.read_exact(&mut line).await.unwrap();
+        assert_eq!(&line, b"ready\n");
+        cat.io.write_all(b"ping").await.unwrap();
+        cat.io.shutdown().await.unwrap();
+        let mut rest = Vec::new();
+        cat.io.read_to_end(&mut rest).await.unwrap();
+        assert_eq!(rest, b"ping");
+        let exit = cat.exit.await;
+        assert_eq!(exit.status, Some(4));
+        assert_eq!(exit.stderr, "bye\n");
+
+        // Dropping the stream ends a command that would run on.
+        let sleeping = dialer.spawn("sleep 30".into()).await.unwrap();
+        drop(sleeping.io);
+        let exit = tokio::time::timeout(Duration::from_secs(5), sleeping.exit)
+            .await
+            .expect("the command was killed");
+        assert!(!exit.success());
     }
 
     #[tokio::test]

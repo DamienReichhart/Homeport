@@ -5,10 +5,13 @@ use std::time::Duration;
 
 use russh::client::Handle;
 
-use homeport_core::error::{AppError, ErrorCode};
+use homeport_core::{
+    error::{AppError, ErrorCode},
+    host::EngineKind,
+};
 
 use super::{dialer::SshTarget, host_key::ServerKeyCheck};
-use crate::messages as msg;
+use crate::{messages as msg, reach::containerd_group_commands};
 
 /// How long the server may take to describe its Engine socket.
 const PROBE_TIMEOUT: Duration = Duration::from_secs(5);
@@ -20,7 +23,7 @@ pub(super) enum RemoteSocket {
     Usable,
     /// There, but the user may not use it.
     Denied,
-    /// No socket, but a Docker-compatible Engine is installed.
+    /// No socket, but the Engine is installed.
     Stopped,
     /// No socket and no Engine installed.
     Missing,
@@ -38,13 +41,17 @@ impl RemoteSocket {
     }
 }
 
-/// A POSIX shell check of `socket`, printing one of [`RemoteSocket`]'s answers.
-fn probe_script(socket: &str) -> String {
+/// A POSIX shell check of `socket`, printing one of [`RemoteSocket`]'s
+/// answers; `engine` decides which programs mean it's installed.
+fn probe_script(socket: &str, engine: EngineKind) -> String {
     let q = format!("'{}'", socket.replace('\'', r"'\''"));
+    let installed = match engine {
+        EngineKind::Containerd => "command -v containerd >/dev/null 2>&1 || command -v k3s >/dev/null 2>&1",
+        _ => "command -v dockerd >/dev/null 2>&1 || command -v docker >/dev/null 2>&1 || command -v podman >/dev/null 2>&1",
+    };
     format!(
         "if [ -S {q} ]; then if [ -r {q} ] && [ -w {q} ]; then echo usable; else echo denied; fi; \
-         elif command -v dockerd >/dev/null 2>&1 || command -v docker >/dev/null 2>&1 || command -v podman >/dev/null 2>&1; \
-         then echo stopped; else echo missing; fi"
+         elif {installed}; then echo stopped; else echo missing; fi"
     )
 }
 
@@ -52,10 +59,14 @@ fn probe_script(socket: &str) -> String {
 pub(super) async fn probe_socket(
     session: &Handle<ServerKeyCheck>,
     socket: &str,
+    engine: EngineKind,
 ) -> Option<RemoteSocket> {
     let run = async {
         let mut channel = session.channel_open_session().await.ok()?;
-        channel.exec(true, probe_script(socket)).await.ok()?;
+        channel
+            .exec(true, probe_script(socket, engine))
+            .await
+            .ok()?;
         let mut output = Vec::new();
         while let Some(message) = channel.wait().await {
             match message {
@@ -84,6 +95,36 @@ pub(super) fn socket_unavailable(
         e,
         russh::Error::ChannelOpenFailure(russh::ChannelOpenFailure::AdministrativelyProhibited)
     );
+    if t.engine == EngineKind::Containerd {
+        let error = match probe {
+            _ if prohibited => forwarding_disabled(host),
+            Some(RemoteSocket::Usable) => forwarding_disabled(host),
+            Some(RemoteSocket::Missing) => AppError::new(
+                ErrorCode::EngineNotInstalled,
+                msg::SSH_CONTAINERD_NOT_INSTALLED.with("host", host),
+            )
+            .with_hint(msg::SSH_CONTAINERD_NOT_INSTALLED_HINT.with("host", host)),
+            Some(RemoteSocket::Stopped) => AppError::new(
+                ErrorCode::EngineNotRunning,
+                msg::SSH_CONTAINERD_NOT_RUNNING
+                    .with("host", host)
+                    .with("path", socket),
+            )
+            .with_hint(msg::SSH_CONTAINERD_NOT_RUNNING_HINT.with("host", host))
+            .with_command("sudo systemctl enable --now containerd"),
+            Some(RemoteSocket::Denied) | None => AppError::new(
+                ErrorCode::PermissionDenied,
+                msg::SSH_CONTAINERD_PERMISSION_DENIED
+                    .with("user", user)
+                    .with("host", host)
+                    .with("path", socket),
+            )
+            .with_hint(msg::SSH_CONTAINERD_PERMISSION_DENIED_HINT.with("host", host))
+            .with_command(containerd_group_commands(user))
+            .with_command("sudo systemctl restart containerd"),
+        };
+        return error.with_cause(e);
+    }
     let error = match probe {
         _ if prohibited => forwarding_disabled(host),
         Some(RemoteSocket::Usable) => forwarding_disabled(host),
@@ -162,6 +203,7 @@ mod tests {
             credentials: Credentials::Agent,
             trusted_host_key: None,
             bastions: vec![],
+            engine: EngineKind::Docker,
         }
     }
 
@@ -220,9 +262,48 @@ mod tests {
 
     #[test]
     fn the_probe_quotes_the_socket_path_and_reads_its_answer() {
-        let script = probe_script("/tmp/it's.sock");
+        let script = probe_script("/tmp/it's.sock", EngineKind::Docker);
         assert!(script.contains(r"'/tmp/it'\''s.sock'"), "{script}");
         assert_eq!(RemoteSocket::parse("denied\n"), Some(RemoteSocket::Denied));
         assert_eq!(RemoteSocket::parse("bash: syntax error"), None);
+    }
+
+    #[test]
+    fn containerd_hosts_are_probed_and_explained_as_containerd() {
+        let script = probe_script("/run/containerd/containerd.sock", EngineKind::Containerd);
+        assert!(script.contains("command -v containerd"), "{script}");
+        assert!(!script.contains("dockerd"), "{script}");
+        let mut t = target();
+        t.engine = EngineKind::Containerd;
+        t.socket_path = "/run/containerd/containerd.sock".into();
+        for (probe, code, command) in [
+            (
+                Some(RemoteSocket::Stopped),
+                ErrorCode::EngineNotRunning,
+                "systemctl enable --now containerd",
+            ),
+            (
+                Some(RemoteSocket::Denied),
+                ErrorCode::PermissionDenied,
+                "usermod -aG containerd deploy",
+            ),
+            (
+                None,
+                ErrorCode::PermissionDenied,
+                "usermod -aG containerd deploy",
+            ),
+        ] {
+            let e = socket_unavailable(&t, probe, &refused());
+            assert_eq!(e.code, code, "{probe:?}");
+            let hint = e.hint.unwrap();
+            assert!(!hint.text.contains("docker group"), "{hint:?}");
+            assert!(
+                hint.commands.join("\n").contains(command),
+                "{probe:?}: {hint:?}"
+            );
+        }
+        let missing = socket_unavailable(&t, Some(RemoteSocket::Missing), &refused());
+        assert_eq!(missing.code, ErrorCode::EngineNotInstalled);
+        assert!(missing.message.contains("containerd"), "{missing:?}");
     }
 }

@@ -6,7 +6,7 @@ use bollard::{BollardRequest, Docker, API_DEFAULT_VERSION};
 
 use homeport_core::{
     error::{AppError, ErrorCode},
-    host::{HostConnection, HostSecrets},
+    host::{EngineKind, HostConnection, HostSecrets},
 };
 
 use crate::{
@@ -97,46 +97,14 @@ pub async fn connect(
             )?);
             (docker_over(dialer.clone()), dialer, true)
         }
-        HostConnection::Ssh {
-            host,
-            port,
-            user,
-            socket_path,
-            auth,
-            bastions,
-            ..
-        } => {
-            let credentials = ssh::Credentials::from_secrets(*auth, secrets.as_ref())?;
-            let hops = bastions
-                .iter()
-                .enumerate()
-                .map(|(i, b)| {
-                    let address = b.address();
-                    Ok(ssh::SshHop {
-                        label: format!("{address} (bastion {} of {name})", i + 1),
-                        credentials: ssh::Credentials::for_bastion(
-                            b.auth,
-                            &address,
-                            &credentials,
-                            secrets.as_ref(),
-                        )?,
-                        host: b.host.clone(),
-                        port: b.port,
-                        user: b.user.clone(),
-                        trusted_host_key: b.host_key.clone(),
-                    })
-                })
-                .collect::<Result<Vec<_>, ConnectError>>()?;
-            let dialer: Arc<dyn Dialer> = Arc::new(ssh::SshDialer::new(ssh::SshTarget {
-                label: label(&format!("{user}@{host}:{port}")),
-                host: host.clone(),
-                port: *port,
-                user: user.clone(),
-                socket_path: socket_path.clone(),
-                credentials,
-                trusted_host_key: trusted_host_key.map(str::to_owned),
-                bastions: hops,
-            }));
+        HostConnection::Ssh { .. } => {
+            let dialer = ssh_dialer(
+                name,
+                connection,
+                secrets.as_ref(),
+                trusted_host_key,
+                EngineKind::Docker,
+            )?;
             (docker_over(dialer.clone()), dialer, true)
         }
     };
@@ -168,6 +136,87 @@ pub async fn connect(
             _ => ConnectError::from(AppError::from(e)),
         })?;
     Ok(Connected { docker, dialer })
+}
+
+/// The dialer of an SSH Host, which `connect` checks before using it.
+fn ssh_dialer(
+    name: &str,
+    connection: &HostConnection,
+    secrets: Option<&HostSecrets>,
+    trusted_host_key: Option<&str>,
+    engine: EngineKind,
+) -> Result<Arc<dyn Dialer>, ConnectError> {
+    let HostConnection::Ssh {
+        host,
+        port,
+        user,
+        socket_path,
+        auth,
+        bastions,
+        ..
+    } = connection
+    else {
+        unreachable!("only called for SSH Hosts");
+    };
+    let credentials = ssh::Credentials::from_secrets(*auth, secrets)?;
+    let hops = bastions
+        .iter()
+        .enumerate()
+        .map(|(i, b)| {
+            let address = b.address();
+            Ok(ssh::SshHop {
+                label: format!("{address} (bastion {} of {name})", i + 1),
+                credentials: ssh::Credentials::for_bastion(
+                    b.auth,
+                    &address,
+                    &credentials,
+                    secrets,
+                )?,
+                host: b.host.clone(),
+                port: b.port,
+                user: b.user.clone(),
+                trusted_host_key: b.host_key.clone(),
+            })
+        })
+        .collect::<Result<Vec<_>, ConnectError>>()?;
+    Ok(Arc::new(ssh::SshDialer::new(ssh::SshTarget {
+        label: format!("{name} ({user}@{host}:{port})"),
+        host: host.clone(),
+        port: *port,
+        user: user.clone(),
+        socket_path: socket_path.clone(),
+        credentials,
+        trusted_host_key: trusted_host_key.map(str::to_owned),
+        bastions: hops,
+        engine,
+    })))
+}
+
+/// A connected dialer to the Engine socket of a Host whose Engine bollard
+/// doesn't speak, such as containerd (ADR 0020): its local socket, or its
+/// socket through SSH. TCP and TLS aren't offered for these Engines.
+pub async fn dial_engine(
+    name: &str,
+    connection: &HostConnection,
+    secrets: Option<HostSecrets>,
+    trusted_host_key: Option<&str>,
+    engine: EngineKind,
+) -> Result<Arc<dyn Dialer>, ConnectError> {
+    let dialer: Arc<dyn Dialer> = match connection {
+        HostConnection::Local { socket_path } => {
+            Arc::new(LocalDialer::for_engine(socket_path, engine))
+        }
+        HostConnection::Ssh { .. } => {
+            ssh_dialer(name, connection, secrets.as_ref(), trusted_host_key, engine)?
+        }
+        HostConnection::Tcp { .. } | HostConnection::Tls { .. } => {
+            return Err(ConnectError::Invalid(AppError::validation(
+                msg::CONNECT_ENGINE_NEEDS_SOCKET.with("engine", engine.label()),
+            )))
+        }
+    };
+    dialer.connect().await?;
+    Ok(dialer)
 }
 
 /// A bollard client whose requests travel over streams from `dialer`.

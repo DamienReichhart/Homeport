@@ -8,9 +8,15 @@ use russh::{
     client::{self, Handle},
     keys::PrivateKeyWithHashAlg,
 };
-use tokio::sync::Mutex;
+use tokio::{
+    io::AsyncWriteExt,
+    sync::{oneshot, Mutex},
+};
 
-use homeport_core::error::{AppError, ErrorCode};
+use homeport_core::{
+    error::{AppError, ErrorCode},
+    host::EngineKind,
+};
 
 use super::{
     auth::{auth_refused, authenticate_with_agent, Credentials},
@@ -18,8 +24,8 @@ use super::{
     socket::{probe_socket, socket_unavailable},
 };
 use crate::{
-    messages as msg, reach, BoxFuture, BoxStream, CommandOutput, ConnectError, Dialer,
-    CONNECT_TIMEOUT,
+    dialer::Guarded, messages as msg, reach, BoxFuture, BoxStream, CommandOutput, ConnectError,
+    Dialer, Spawned, CONNECT_TIMEOUT,
 };
 
 pub struct SshTarget {
@@ -33,6 +39,8 @@ pub struct SshTarget {
     pub trusted_host_key: Option<String>,
     /// The servers to go through first, in order.
     pub bastions: Vec<SshHop>,
+    /// The kind of Engine behind the socket, for explaining a refusal.
+    pub engine: EngineKind,
 }
 
 /// A bastion on the way to a Host.
@@ -146,7 +154,8 @@ impl SshDialer {
             Ok(channel) => Ok(Box::new(channel.into_stream())),
             Err(e) => {
                 // The refusal doesn't say why, so ask the server.
-                let probe = probe_socket(session, &self.target.socket_path).await;
+                let probe =
+                    probe_socket(session, &self.target.socket_path, self.target.engine).await;
                 Err(ConnectError::from(socket_unavailable(
                     &self.target,
                     probe,
@@ -256,23 +265,89 @@ fn forward_failed(bastion: &Hop<'_>, next: &Hop<'_>, e: &russh::Error) -> Connec
 }
 
 impl SshDialer {
-    /// Runs `command` on a session channel of the Host's SSH session,
-    /// holding the session's lock only to open the channel.
-    async fn run_command(&self, command: String) -> io::Result<CommandOutput> {
-        let mut channel = {
-            let mut chain = self.chain.lock().await;
-            if chain.as_ref().is_none_or(Chain::is_closed) {
-                let opened = self.open_chain().await.map_err(|e| {
-                    io::Error::new(io::ErrorKind::ConnectionRefused, AppError::from(e))
-                })?;
-                *chain = Some(opened);
-            }
-            let session = chain.as_ref().expect("the chain was just opened").host();
-            session
-                .channel_open_session()
+    /// Opens a session channel on the Host's SSH session, holding the
+    /// session's lock only to open it.
+    async fn session_channel(&self) -> io::Result<russh::Channel<client::Msg>> {
+        let mut chain = self.chain.lock().await;
+        if chain.as_ref().is_none_or(Chain::is_closed) {
+            let opened = self
+                .open_chain()
                 .await
-                .map_err(io::Error::other)?
-        };
+                .map_err(|e| io::Error::new(io::ErrorKind::ConnectionRefused, AppError::from(e)))?;
+            *chain = Some(opened);
+        }
+        let session = chain.as_ref().expect("the chain was just opened").host();
+        session
+            .channel_open_session()
+            .await
+            .map_err(io::Error::other)
+    }
+
+    /// Starts `command` on a session channel, its data as the stream; the
+    /// channel closes when the stream is dropped.
+    async fn spawn_command(&self, command: String) -> io::Result<Spawned> {
+        let channel = self.session_channel().await?;
+        channel
+            .exec(true, command)
+            .await
+            .map_err(io::Error::other)?;
+        let (mut read, write) = channel.split();
+        let writer = write.make_writer();
+        let (mut sink, source) = tokio::io::duplex(64 * 1024);
+        let (guard, mut dropped) = oneshot::channel::<()>();
+        let (done, exited) = oneshot::channel();
+        tokio::spawn(async move {
+            let (mut stderr, mut status) = (Vec::new(), None);
+            loop {
+                tokio::select! {
+                    message = read.wait() => match message {
+                        Some(russh::ChannelMsg::Data { data }) => {
+                            if sink.write_all(&data).await.is_err() {
+                                break;
+                            }
+                        }
+                        Some(russh::ChannelMsg::ExtendedData { data, ext: 1 }) => {
+                            stderr.extend_from_slice(&data);
+                        }
+                        Some(russh::ChannelMsg::ExitStatus { exit_status }) => {
+                            status = Some(exit_status);
+                        }
+                        Some(russh::ChannelMsg::Eof) => {
+                            sink.shutdown().await.ok();
+                        }
+                        Some(russh::ChannelMsg::Close) | None => break,
+                        Some(_) => {}
+                    },
+                    _ = &mut dropped => break,
+                }
+            }
+            write.close().await.ok();
+            drop(sink);
+            done.send(CommandOutput {
+                status,
+                stdout: String::new(),
+                stderr: String::from_utf8_lossy(&stderr).into_owned(),
+            })
+            .ok();
+        });
+        Ok(Spawned {
+            io: Box::new(Guarded {
+                inner: tokio::io::join(source, writer),
+                _guard: guard,
+            }),
+            exit: Box::pin(async move {
+                exited.await.unwrap_or(CommandOutput {
+                    status: None,
+                    stdout: String::new(),
+                    stderr: String::new(),
+                })
+            }),
+        })
+    }
+
+    /// Runs `command` on a session channel of the Host's SSH session.
+    async fn run_command(&self, command: String) -> io::Result<CommandOutput> {
+        let mut channel = self.session_channel().await?;
         channel
             .exec(true, command)
             .await
@@ -312,6 +387,10 @@ impl Dialer for SshDialer {
         })
     }
 
+    fn spawn(&self, command: String) -> BoxFuture<'_, io::Result<Spawned>> {
+        Box::pin(self.spawn_command(command))
+    }
+
     fn dial(&self) -> BoxFuture<'_, io::Result<BoxStream>> {
         Box::pin(async move {
             self.open_channel()
@@ -347,6 +426,7 @@ mod tests {
             credentials: Credentials::Agent,
             trusted_host_key: Some("ssh-ed25519 PROD".into()),
             bastions,
+            engine: EngineKind::Docker,
         }
     }
 
