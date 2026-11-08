@@ -21,6 +21,18 @@ A **failed** release is marked in red, and one **pending** an install, upgrade o
 
 If your credentials can't list Secrets in every Namespace, Homeport lists the releases of the Cluster's default Namespace instead and says so; pick another Namespace to see its releases.
 
+## Installing a chart
+
+**Install chart** (or <kbd>n</kbd>) on the Releases tab installs a chart on the selected Cluster:
+
+1. **Pick the chart.** Search the charts of helm's [repositories](#chart-repositories) and click **Use**, or, under **From an OCI registry**, give a reference such as `oci://registry-1.docker.io/bitnamicharts/nginx`, which installs without adding a repository.
+2. **Choose its version, name and Namespace.** A repository chart's versions are listed, the latest first; an OCI chart's version is typed, or left empty for the latest. The release is named after the chart to start with: at most 53 lowercase letters, digits, dashes and dots. The Namespace is the one the page shows (or the Cluster's default), and is created if it doesn't exist unless you untick that.
+3. **Edit its values.** The editor starts with the chart's default values (`helm show values`); change what you need, and **Reset to the chart's defaults** puts them back. Values are checked as YAML before helm runs, and go to helm on its standard input — never in a file.
+4. **Preview**, optionally: helm renders the chart with your values and the Cluster's help (`--dry-run=server`), and Homeport shows the manifest it would apply, hooks included, and the chart's notes. Nothing changes on the Cluster.
+5. **Install.** helm's output streams in, as `helm install` prints it. With **Wait until its resources are ready**, helm waits for the release's Deployments, Pods and Services to be ready, for at most the minutes given (5 by default), and marks the release failed if they aren't. **Open release** then opens its page.
+
+Charts from a local folder or a `.tgz` file aren't installed from Homeport; neither are charts from OCI registries that need a login unless you signed in with `helm registry login` in a terminal.
+
 ## A release's page
 
 Click a release to open it:
@@ -50,5 +62,9 @@ Homeport only adds public repositories. One that needs a login is added in a ter
 - **The helm CLI isn't installed**: install helm 3 as above, then reopen the page.
 - **Helm 2**: Homeport only drives Helm 3 and later. Install a current helm.
 - **Not allowed**: helm reads releases from Secrets; listing them needs `list` on `secrets` in the Namespace. Details names what was refused.
+- **A release with this name already exists**: release names are unique in a Namespace. Pick another, or upgrade the existing release.
+- **Chart or version not found**: check the name and version; a repository chart needs its repository added and [updated](#chart-repositories).
+- **The values aren't valid YAML**: the message names the line; fix it and retry.
+- **Gave up waiting**: with **Wait**, a resource wasn't ready in time. Look at the release's Pods and Events for what is stuck.
 - **Not a chart repository, or can't be reached**: the URL serves no `index.yaml`, or this computer can't reach it. Details shows what helm said.
 - **Not connected**: helm goes through the Cluster's connection in Homeport; the Cluster's page says why it isn't connected.
