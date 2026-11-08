@@ -3,11 +3,11 @@
 //! the Docker path is unchanged, and give the APIs bollard doesn't speak
 //! (Podman's libpod, and later Incus and containerd) a stream to the Engine.
 
-use std::io;
+use std::{io, time::Duration};
 
 use tokio::net::TcpStream;
 
-use crate::{reach, BoxFuture, BoxStream, ConnectError, Dialer, CONNECT_TIMEOUT};
+use crate::{reach, BoxFuture, BoxStream, CommandOutput, ConnectError, Dialer, CONNECT_TIMEOUT};
 
 /// Dials the Engine socket (Unix) or named pipe (Windows) on this machine.
 pub struct LocalDialer {
@@ -75,6 +75,38 @@ impl Dialer for LocalDialer {
             self.open()
                 .await
                 .map_err(|e| io::Error::new(e.kind(), reach::local_socket(&self.socket_path, &e)))
+        })
+    }
+
+    /// On Linux a local socket's Engine runs on this computer; on macOS and
+    /// Windows it runs in a VM (Podman machine, Docker Desktop), which this
+    /// computer's commands don't reach.
+    fn runs_commands(&self) -> bool {
+        cfg!(target_os = "linux")
+    }
+
+    fn run(&self, command: String, timeout: Duration) -> BoxFuture<'_, io::Result<CommandOutput>> {
+        Box::pin(async move {
+            if !self.runs_commands() {
+                return Err(io::Error::new(
+                    io::ErrorKind::Unsupported,
+                    "this Engine runs in a virtual machine",
+                ));
+            }
+            let child = tokio::process::Command::new("sh")
+                .arg("-c")
+                .arg(&command)
+                .stdin(std::process::Stdio::null())
+                .kill_on_drop(true)
+                .output();
+            let output = tokio::time::timeout(timeout, child)
+                .await
+                .map_err(|_| io::Error::new(io::ErrorKind::TimedOut, "the command timed out"))??;
+            Ok(CommandOutput {
+                status: output.status.code().and_then(|c| u32::try_from(c).ok()),
+                stdout: String::from_utf8_lossy(&output.stdout).into_owned(),
+                stderr: String::from_utf8_lossy(&output.stderr).into_owned(),
+            })
         })
     }
 }
@@ -158,6 +190,39 @@ mod tests {
         let dialer = LocalDialer::new(path.to_str().unwrap());
         dialer.connect().await.unwrap();
         dialer.dial().await.unwrap();
+    }
+
+    #[cfg(target_os = "linux")]
+    #[tokio::test]
+    async fn local_linux_sockets_run_commands_on_this_computer() {
+        let dialer = LocalDialer::new("/run/podman/podman.sock");
+        assert!(dialer.runs_commands());
+        let out = dialer
+            .run(
+                "echo out; echo err >&2; exit 3".into(),
+                Duration::from_secs(5),
+            )
+            .await
+            .unwrap();
+        assert_eq!(out.stdout, "out\n");
+        assert_eq!(out.stderr, "err\n");
+        assert_eq!(out.status, Some(3));
+        assert!(!out.success());
+        let slow = dialer
+            .run("sleep 5".into(), Duration::from_millis(50))
+            .await;
+        assert_eq!(slow.unwrap_err().kind(), io::ErrorKind::TimedOut);
+    }
+
+    #[tokio::test]
+    async fn tcp_hosts_run_no_commands() {
+        let dialer = TcpDialer::new("lab", "127.0.0.1:1");
+        assert!(!dialer.runs_commands());
+        let err = dialer
+            .run("true".into(), Duration::from_secs(1))
+            .await
+            .unwrap_err();
+        assert_eq!(err.kind(), io::ErrorKind::Unsupported);
     }
 
     #[tokio::test]

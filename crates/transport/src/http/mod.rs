@@ -13,7 +13,7 @@ use hyper::{
     client::conn::http1::SendRequest,
     header::{self, HeaderMap, HeaderName, HeaderValue},
     upgrade::Upgraded,
-    Method, StatusCode,
+    Method,
 };
 use hyper_util::rt::TokioIo;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
@@ -24,6 +24,8 @@ use homeport_core::{
 };
 
 use crate::Dialer;
+
+pub use hyper::StatusCode;
 
 /// How long a request may take before its answer starts.
 pub const REQUEST_TIMEOUT: Duration = Duration::from_secs(120);

@@ -17,7 +17,10 @@ use super::{
     host_key::{host_key_error, ServerKeyCheck},
     socket::{probe_socket, socket_unavailable},
 };
-use crate::{messages as msg, reach, BoxFuture, BoxStream, ConnectError, Dialer, CONNECT_TIMEOUT};
+use crate::{
+    messages as msg, reach, BoxFuture, BoxStream, CommandOutput, ConnectError, Dialer,
+    CONNECT_TIMEOUT,
+};
 
 pub struct SshTarget {
     /// The Host's name and SSH address, for messages.
@@ -252,9 +255,61 @@ fn forward_failed(bastion: &Hop<'_>, next: &Hop<'_>, e: &russh::Error) -> Connec
     )
 }
 
+impl SshDialer {
+    /// Runs `command` on a session channel of the Host's SSH session,
+    /// holding the session's lock only to open the channel.
+    async fn run_command(&self, command: String) -> io::Result<CommandOutput> {
+        let mut channel = {
+            let mut chain = self.chain.lock().await;
+            if chain.as_ref().is_none_or(Chain::is_closed) {
+                let opened = self.open_chain().await.map_err(|e| {
+                    io::Error::new(io::ErrorKind::ConnectionRefused, AppError::from(e))
+                })?;
+                *chain = Some(opened);
+            }
+            let session = chain.as_ref().expect("the chain was just opened").host();
+            session
+                .channel_open_session()
+                .await
+                .map_err(io::Error::other)?
+        };
+        channel
+            .exec(true, command)
+            .await
+            .map_err(io::Error::other)?;
+        let (mut stdout, mut stderr, mut status) = (Vec::new(), Vec::new(), None);
+        while let Some(message) = channel.wait().await {
+            match message {
+                russh::ChannelMsg::Data { data } => stdout.extend_from_slice(&data),
+                russh::ChannelMsg::ExtendedData { data, ext: 1 } => stderr.extend_from_slice(&data),
+                russh::ChannelMsg::ExitStatus { exit_status } => status = Some(exit_status),
+                russh::ChannelMsg::Close => break,
+                _ => {}
+            }
+        }
+        Ok(CommandOutput {
+            status,
+            stdout: String::from_utf8_lossy(&stdout).into_owned(),
+            stderr: String::from_utf8_lossy(&stderr).into_owned(),
+        })
+    }
+}
+
 impl Dialer for SshDialer {
     fn connect(&self) -> BoxFuture<'_, Result<(), ConnectError>> {
         Box::pin(async move { self.open_channel().await.map(drop) })
+    }
+
+    fn runs_commands(&self) -> bool {
+        true
+    }
+
+    fn run(&self, command: String, timeout: Duration) -> BoxFuture<'_, io::Result<CommandOutput>> {
+        Box::pin(async move {
+            tokio::time::timeout(timeout, self.run_command(command))
+                .await
+                .map_err(|_| io::Error::new(io::ErrorKind::TimedOut, "the command timed out"))?
+        })
     }
 
     fn dial(&self) -> BoxFuture<'_, io::Result<BoxStream>> {
