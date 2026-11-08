@@ -16,13 +16,15 @@ A **Host** is a Docker Engine that Homeport connects to. It has a name and a way
 
 For a remote server, prefer **SSH**: it needs nothing exposed beyond the SSH port and is the simplest to set up securely.
 
+A host that belongs to a Docker Swarm shows **Manager of** or **Worker of** its Swarm, and adding one manager as a host is enough for the Swarm to appear in the sidebar. A host's page also has a **Swarm** card to start a Swarm, join one or leave it. See [Swarms](/docs/guides/swarm/).
+
 ## Adding, editing and removing Hosts
 
 - **Add** a Host with **Add host…** in the Host switcher at the top of the sidebar, or **Add host** on the Overview.
 - **Manage hosts** in the Host switcher lists every Host with its type, address and status. Select one to open its page.
 - On a Host's page you can change its connection details and choose **Save**; Homeport reconnects with the new settings. A Host's connection type can't be changed — remove it and add it again instead.
 - The **Enabled** switch disconnects a Host without forgetting it. A disabled Host doesn't retry until you turn it back on.
-- **Remove host** forgets the Host, its stored credentials, the compose definitions of its Managed Stacks, its Linked Stacks and its Stacks' deploy history. Nothing running on the Host is touched: containers, images and volumes stay as they are, and Linked Stacks' folders too.
+- **Remove host** forgets the Host, its stored credentials, the compose definitions of its Managed Stacks, its Linked Stacks and its Stacks' deploy history. Nothing running on the Host is touched: containers, images and volumes stay as they are, and Linked Stacks' folders too. The Stacks of a Swarm the Host manages belong to the Swarm, and are kept.
 
 Host names must be unique, ignoring case.
 

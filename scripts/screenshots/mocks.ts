@@ -32,6 +32,9 @@ import {
   random,
   sshSetup,
   stacksOf,
+  swarm,
+  swarmServices,
+  swarmSummary,
   usageOf,
   volumes,
 } from './data';
@@ -325,6 +328,9 @@ export interface MockOptions {
   hostId: string;
 }
 
+/** The page being photographed. */
+const routeOf = () => new URLSearchParams(window.location.search).get('route') ?? '/';
+
 export function installMocks({ theme, hostId }: MockOptions) {
   let settings: Settings = { theme, lastHostId: hostId, checkForUpdates: true };
   mockWindows('main');
@@ -347,6 +353,10 @@ export function installMocks({ theme, hostId }: MockOptions) {
       return settings;
     },
     hosts_list: () => hosts,
+    // The demo Swarm shows only where it's photographed, so other shots stay as they were.
+    swarms_list: () => (routeOf().startsWith('/swarms') ? [swarm] : []),
+    swarm_inspect: () => swarmSummary,
+    swarm_services_list: () => swarmServices,
     registries_list: () => [
       { id: 'r1', address: 'docker.io', username: 'acme', createdAt: '', updatedAt: '' },
       { id: 'r2', address: 'ghcr.io', username: 'acme-ci', createdAt: '', updatedAt: '' },

@@ -3,7 +3,11 @@ title: Swarms
 description: Find your Docker Swarms through their manager hosts and manage their nodes, services, tasks, secrets, configs and swarm stacks.
 ---
 
-A **Swarm** is a Docker Swarm cluster. Homeport doesn't add a Swarm on its own: it finds it through the hosts that belong to it, and manages it through any connected manager. Nothing is installed on any node, and nothing about a Swarm is stored on this computer.
+import { DocScreenshot } from '@/features/docs';
+
+A **Swarm** is a Docker Swarm cluster. Homeport doesn't add a Swarm on its own: it finds it through the [hosts](/docs/hosts/) that belong to it, and manages it through any connected manager. Nothing is installed on any node, and nothing about a Swarm is stored on this computer.
+
+This page follows a Swarm from finding or creating it to its nodes, services and tasks, secrets and configs, and its [Stacks](/docs/guides/stacks/): those deployed from a terminal, and those Homeport deploys.
 
 ## Finding a Swarm
 
@@ -62,6 +66,11 @@ Each node's menu changes it:
 Homeport refuses, before asking the Engine, to demote the Swarm's last reachable manager (a Swarm without one can't be managed at all) and to drain its last active node (its tasks would have nowhere to go). Removing a node that's still up needs **Force**; a manager must be demoted first. If someone else changed a node since the list was read, the change is refused with **This was changed elsewhere**: refresh and try again, so nothing is overwritten.
 
 ## Services
+
+<DocScreenshot
+  name="swarm-services"
+  alt="A Swarm's Services tab, listing each service with its image, mode, running and desired tasks, ports and Stack."
+/>
 
 The **Services** tab lists what the Swarm runs: each service's name, image, mode (replicated with its number of replicas, or global: one task on every node), how many of its tasks run against how many should (in warning colour while fewer run), its published ports, the swarm stack it belongs to, and the state of its last update. The list refreshes on its own as services change.
 

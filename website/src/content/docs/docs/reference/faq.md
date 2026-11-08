@@ -23,15 +23,19 @@ Yes, through Podman's Docker-compatible API socket. Homeport detects the usual P
 
 ### Does it work with Kubernetes or Docker Swarm?
 
-Homeport manages Docker Engines and Compose Stacks. It doesn't manage Kubernetes, and doesn't have Swarm services or nodes, though it shows the containers Swarm runs on a Host.
+Docker Swarm, yes. Homeport finds a Swarm through its manager hosts, once one of them is a host, and manages it fully: its nodes, services, tasks, secrets, configs and swarm stacks, including Managed, Linked and Synced Stacks deployed to it. It can also start a Swarm on a host, and join or leave one. Everything goes through a connected manager's Engine API; nothing is installed on the nodes. See [Swarms](/docs/guides/swarm/).
+
+Kubernetes isn't supported: Homeport doesn't connect to Kubernetes clusters.
 
 ### Do I need to install anything on my servers?
 
 No — only a Docker Engine and an SSH server, which you most likely already have. Homeport doesn't install agents.
 
+A Swarm needs nothing more than the Engine either. Its nodes must reach each other, though, which Homeport can't set up for you: open 2377/tcp (to the managers), 7946/tcp and 7946/udp, and 4789/udp between them. See [ports between nodes](/docs/guides/swarm/#ports-between-nodes).
+
 ### Do I need Docker installed on my computer to manage remote servers?
 
-No. Homeport speaks the Engine API and SSH itself. The only exception is deploying Managed, Linked and Synced Stacks, which uses the `docker compose` command on your computer.
+No. Homeport speaks the Engine API and SSH itself. The only exceptions are deploying Managed, Linked and Synced Stacks, which uses the `docker compose` command on your computer, and deploying them to a Swarm, which uses the `docker` command (`docker stack deploy`). Neither needs an Engine on your computer.
 
 ### Does Homeport keep my Stacks in sync when it's closed?
 
