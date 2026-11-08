@@ -2248,6 +2248,7 @@ dependencies = [
  "futures-util",
  "gethostname",
  "homeport-core",
+ "homeport-engine",
  "homeport-storage",
  "homeport-transport",
  "log",

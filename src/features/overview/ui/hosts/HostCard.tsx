@@ -7,6 +7,7 @@ import {
   resourceQueries,
   useHostSelection,
 } from '@/core/host';
+import { HostSwarmLink } from '@/features/swarm';
 import type { HostView } from '@/shared/api';
 import { cn } from '@/shared/lib';
 import {
@@ -49,6 +50,7 @@ export function HostCard({ view, selected }: { view: HostView; selected: boolean
       </CardHeader>
       <CardContent className="grid gap-3">
         <HostStatusBadge status={view.status} />
+        {connected && <HostSwarmLink hostId={view.host.id} />}
         {connected && info.data && (
           <div className="text-muted-foreground grid grid-cols-2 gap-2 text-sm">
             <span>

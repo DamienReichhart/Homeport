@@ -16,6 +16,22 @@ _Avoid_: Daemon, server, backend
 An SSH server an SSH Host is reached through when its own SSH server only accepts connections from it (OpenSSH's `ProxyJump`). A Host has an ordered list of them, possibly empty; each has its own trusted server key and either uses the Host's credentials or its own. Not a Host: it runs no Engine Homeport talks to.
 _Avoid_: Jump host, jump server, proxy, gateway, hop (in the UI)
 
+**Swarm**:
+A Docker Swarm cluster, found through the Hosts that belong to it and never added on its own: Homeport reaches it through any connected manager Host, addresses it by its swarm ID, and stores nothing about it (ADR 0016). Named "Swarm of <its first manager Host>", since Docker gives every Swarm the same name.
+_Avoid_: Cluster (alone), swarm mode, orchestrator
+
+**Node**:
+One Engine in a Swarm, a manager or a worker. A node is a Host only when Homeport connects to it; a Host's page links to its node and back.
+_Avoid_: Member, machine, server
+
+**Service**:
+What a Swarm runs: an image, its settings and a number of replicas (or one per node, for a global service), carried out as tasks.
+_Avoid_: App, deployment, workload
+
+**Task**:
+One slot of a service on one node, run as a container there. A service that isn't converging says why in its tasks.
+_Avoid_: Replica (for a single one), job, pod
+
 **Board**:
 The page listing the containers of every connected Host in one table, each row labelled with its Host. The other resource pages show the selected Host only.
 _Avoid_: Dashboard, all hosts view
@@ -25,7 +41,7 @@ The search box opened with Mod+K that goes to a page, switches Host, runs a comm
 _Avoid_: Quick open, launcher, omnibox
 
 **Stack**:
-A Compose project running on a Host, identified by its project name. Every Stack is Managed, Linked, Synced or External.
+A Compose project running on a Host, or a swarm stack running on a Swarm, identified by its project name (its namespace on a Swarm). Every Stack is Managed, Linked, Synced or External.
 _Avoid_: Compose, project, application
 
 **Managed Stack**:

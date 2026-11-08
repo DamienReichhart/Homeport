@@ -343,6 +343,10 @@ export const commands = {
 	 *  output.
 	 */
 	stacksRollbackSubscribe: (deployId: string, onEvent: Channel<ComposeEvent>) => __TAURI_INVOKE<number>("stacks_rollback_subscribe", { deployId, onEvent }),
+	/**  Every Swarm the Hosts belong to, once each. */
+	swarmsList: () => __TAURI_INVOKE<SwarmView[]>("swarms_list"),
+	/**  What a connected manager says about the Swarm `swarm_id`. */
+	swarmInspect: (swarmId: string) => __TAURI_INVOKE<SwarmSummary>("swarm_inspect", { swarmId }),
 };
 
 /** Events */
@@ -769,7 +773,9 @@ export type ErrorCode =
 /**  A GPU was requested from a Host without the vendor's container toolkit. */
 "gpu_unavailable" | 
 /**  Recreating a container failed, and so did putting the original back. */
-"recreate_rolled_back" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
+"recreate_rolled_back" | 
+/**  No manager Host of a Swarm is connected. */
+"swarm_unreachable" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
 /**  A Linked Stack's folder, or one of its compose files, is gone. */
 "stack_folder_missing" | 
 /**  A Linked Stack's compose file can't be read or written. */
@@ -991,7 +997,9 @@ export type HostInput = {
 	bastionKeys?: BastionKeyInput[],
 };
 
-export type HostStatus = { state: "disabled" } | { state: "connecting" } | { state: "connected"; engineVersion: string; apiVersion: string; os: string; arch: string } | { state: "unreachable"; error: AppError; retryInSecs: number } | { state: "unauthorized"; error: AppError } | 
+export type HostStatus = { state: "disabled" } | { state: "connecting" } | { state: "connected"; engineVersion: string; apiVersion: string; os: string; arch: string; 
+/**  The Host's place in a Swarm, `None` outside one. */
+swarm: SwarmMembership | null } | { state: "unreachable"; error: AppError; retryInSecs: number } | { state: "unauthorized"; error: AppError } | 
 /**
  *  `bastion` is the address of the bastion that presented the key,
  *  `None` for the Host's own SSH server.
@@ -1586,6 +1594,61 @@ export type StatsSample = {
 	blockRead: number,
 	blockWrite: number,
 	pids: number,
+};
+
+/**  A Host's place in a Swarm. */
+export type SwarmMembership = {
+	/**
+	 *  The Swarm's ID. Only managers know it; a worker's Swarm is found
+	 *  through the managers it talks to.
+	 */
+	swarmId: string | null,
+	/**  This node's ID in the Swarm. */
+	nodeId: string,
+	role: SwarmRole,
+	state: SwarmNodeState,
+	/**  The address other nodes reach this one at. */
+	nodeAddr: string | null,
+	/**  The node IDs and addresses of the managers this node knows. */
+	managers: SwarmPeer[],
+	/**  Why the node is in error, in the Engine's words. */
+	error: string | null,
+};
+
+/**  Where a node stands in its Swarm, as its Engine reports it. */
+export type SwarmNodeState = "active" | 
+/**  Joining, or a manager waiting for the others. */
+"pending" | 
+/**  Encrypted at rest and waiting for its unlock key. */
+"locked" | "error";
+
+export type SwarmPeer = {
+	nodeId: string,
+	addr: string,
+};
+
+/**  Whether a node manages the Swarm or only runs its tasks. */
+export type SwarmRole = "manager" | "worker";
+
+/**  What a manager says about its Swarm. */
+export type SwarmSummary = {
+	id: string,
+	created: string | null,
+	updated: string | null,
+	nodes: number,
+	managers: number,
+	services: number,
+};
+
+/**  A Swarm, found through the Hosts that belong to it (ADR 0016). */
+export type SwarmView = {
+	id: string,
+	/**  Its manager Hosts, in the Hosts' order. */
+	managers: string[],
+	/**  Its worker Hosts, in the Hosts' order. */
+	workers: string[],
+	/**  Whether one of its managers is connected, so it can be managed. */
+	reachable: boolean,
 };
 
 /**  What syncing would deploy, for the review before it does. */

@@ -14,6 +14,7 @@ import repositories from './repositories';
 import search from './search';
 import settings from './settings';
 import stacks from './stacks';
+import swarm from './swarm';
 import ui from './ui';
 import updates from './updates';
 import volumes from './volumes';
@@ -36,6 +37,7 @@ export const uiMessages = {
   ...search,
   ...settings,
   ...stacks,
+  ...swarm,
   ...updates,
   ...volumes,
 };

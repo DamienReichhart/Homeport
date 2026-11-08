@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { HostSwitcher } from '@/features/hosts';
+import { SwarmNav } from '@/features/swarm';
 import { cn } from '@/shared/lib';
 import { Logo, WithShortcut } from '@/shared/ui';
 import { NAV_SHORTCUTS } from '../shortcuts/navShortcuts';
@@ -44,6 +45,7 @@ export function Sidebar() {
           link
         );
       })}
+      <SwarmNav />
     </nav>
   );
 }

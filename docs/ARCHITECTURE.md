@@ -29,6 +29,8 @@ src/
 │   ├── feature/    the manifest contract, palette commands, useActionRequest
 │   ├── host/       Host selection, statuses, HostGate, the Engine resources' keys and lists,
 │   │               and the live updates that refresh them
+│   ├── swarm/      the Swarms found through their manager Hosts (ADR 0016): their keys,
+│   │               the list, SwarmGate, and the live updates of their manager Hosts
 │   └── settings/   the user's settings
 ├── shared/         no domain knowledge
 │   ├── api/        IPC gateway: bindings, commands, errors, streams, app-level queries
@@ -46,18 +48,18 @@ Tests sit next to the code they test. A file past 300 lines gets an ESLint warni
 
 Each crate depends only on crates below it in this list, so the graph has one direction and Cargo refuses a cycle:
 
-| Crate (folder)                               | Holds                                                                                                                                                                   |
-| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `homeport` (`src-tauri/`)                    | The Tauri shell: `app/` (bootstrap, state, events), `commands/` (one module per feature), `error.rs`                                                                    |
-| `homeport-hosts` (`crates/hosts/`)           | Hosts: their store, a supervised connection to each (`registry/`), their kept Engine events (`events`), the use cases (`service/`), imports, export                     |
-| `homeport-stacks` (`crates/stacks/`)         | Stacks: telling them apart, their store, the runtime (each source and target), lifecycle, the compose CLI, Synced Stacks and their poller                               |
-| `homeport-git` (`crates/git/`)               | Synced Stacks' repositories: their sealed credentials, and the `git` CLI run with them per command (ADR 0014)                                                           |
-| `homeport-registries` (`crates/registries/`) | Registry logins: their store, matching them to image references, the login check and Docker Hub (HTTP)                                                                  |
-| `homeport-settings`, `homeport-updates`      | The user's preferences; how this copy of Homeport is updated                                                                                                            |
-| `homeport-engine` (`crates/engine/`)         | The Engine's resources as functions over a bollard client; what runs in a container under `containers/`; the helper containers that open volumes (`volumes/`, ADR 0015) |
-| `homeport-transport` (`crates/transport/`)   | Reaching a Host: local, TCP, TLS, SSH and bastions (ADR 0002, 0012), the compose proxy, classifying failures                                                            |
-| `homeport-storage` (`crates/storage/`)       | The SQLite database, its migrations, the secrets sealed in it, export files (ADR 0002, 0013)                                                                            |
-| `homeport-core` (`crates/core/`)             | `AppError` and `ErrorCode`, the Host model, helpers for this computer                                                                                                   |
+| Crate (folder)                               | Holds                                                                                                                                                                                                         |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `homeport` (`src-tauri/`)                    | The Tauri shell: `app/` (bootstrap, state, events), `commands/` (one module per feature), `error.rs`                                                                                                          |
+| `homeport-hosts` (`crates/hosts/`)           | Hosts: their store, a supervised connection to each (`registry/`), their kept Engine events (`events`), the use cases (`service/`), imports, export                                                           |
+| `homeport-stacks` (`crates/stacks/`)         | Stacks: telling them apart, their store, the runtime (each source and target), lifecycle, the compose CLI, Synced Stacks and their poller                                                                     |
+| `homeport-git` (`crates/git/`)               | Synced Stacks' repositories: their sealed credentials, and the `git` CLI run with them per command (ADR 0014)                                                                                                 |
+| `homeport-registries` (`crates/registries/`) | Registry logins: their store, matching them to image references, the login check and Docker Hub (HTTP)                                                                                                        |
+| `homeport-settings`, `homeport-updates`      | The user's preferences; how this copy of Homeport is updated                                                                                                                                                  |
+| `homeport-engine` (`crates/engine/`)         | The Engine's resources as functions over a bollard client; what runs in a container under `containers/`; the helper containers that open volumes (`volumes/`, ADR 0015); Swarm mode under `swarm/` (ADR 0016) |
+| `homeport-transport` (`crates/transport/`)   | Reaching a Host: local, TCP, TLS, SSH and bastions (ADR 0002, 0012), the compose proxy, classifying failures                                                                                                  |
+| `homeport-storage` (`crates/storage/`)       | The SQLite database, its migrations, the secrets sealed in it, export files (ADR 0002, 0013)                                                                                                                  |
+| `homeport-core` (`crates/core/`)             | `AppError` and `ErrorCode`, the Host model, helpers for this computer                                                                                                                                         |
 
 Rules:
 

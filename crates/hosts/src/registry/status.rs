@@ -3,6 +3,7 @@
 use serde::Serialize;
 
 use homeport_core::error::AppError;
+use homeport_engine::swarm::SwarmMembership;
 use homeport_transport::ConnectError;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
@@ -19,6 +20,8 @@ pub enum HostStatus {
         api_version: String,
         os: String,
         arch: String,
+        /// The Host's place in a Swarm, `None` outside one.
+        swarm: Option<SwarmMembership>,
     },
     Unreachable {
         error: AppError,
@@ -50,6 +53,14 @@ pub enum HostStatus {
 }
 
 impl HostStatus {
+    /// The Host's place in a Swarm, while it's connected.
+    pub fn swarm(&self) -> Option<&SwarmMembership> {
+        match self {
+            Self::Connected { swarm, .. } => swarm.as_ref(),
+            _ => None,
+        }
+    }
+
     /// The classified cause of a status that needs the user, if it has one.
     pub fn error(&self) -> Option<&AppError> {
         match self {

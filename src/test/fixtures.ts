@@ -23,6 +23,7 @@ export const connectedHost: HostView = {
     apiVersion: '1.52',
     os: 'linux',
     arch: 'amd64',
+    swarm: null,
   },
 };
 
@@ -132,6 +133,7 @@ export const baseCommands = {
     },
   }),
   hosts_list: () => [connectedHost],
+  swarms_list: () => [],
   registries_list: () => [],
   repositories_list: () => [],
   images_freshness: () => [],

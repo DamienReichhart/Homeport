@@ -24,6 +24,7 @@ pub mod repositories;
 pub mod settings;
 pub mod stacks;
 pub mod streams;
+pub mod swarm;
 pub mod system;
 pub mod updates;
 pub mod volumes;
@@ -180,6 +181,8 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             stacks::stacks_history,
             stacks::stacks_deploy,
             stacks::stacks_rollback_subscribe,
+            swarm::swarms_list,
+            swarm::swarm_inspect,
         ])
         .events(collect_events![
             events::HostStatusChanged,

@@ -14,6 +14,7 @@ workspace = true
 homeport-core = { workspace = true, features = ["bollard"] }
 homeport-storage.workspace = true
 homeport-transport.workspace = true
+homeport-engine.workspace = true
 bollard.workspace = true
 tokio.workspace = true
 futures-util.workspace = true

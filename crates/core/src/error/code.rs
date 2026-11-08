@@ -79,6 +79,9 @@ pub enum ErrorCode {
     GpuUnavailable,
     /// Recreating a container failed, and so did putting the original back.
     RecreateRolledBack,
+    // Swarms (ADR 0016).
+    /// No manager Host of a Swarm is connected.
+    SwarmUnreachable,
     // Compose.
     ComposeMissing,
     ComposeOutdated,

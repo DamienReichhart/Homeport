@@ -138,6 +138,7 @@ mod tests {
             api_version: "1.48".into(),
             os: "linux".into(),
             arch: "x86_64".into(),
+            swarm: None,
         }
     }
 

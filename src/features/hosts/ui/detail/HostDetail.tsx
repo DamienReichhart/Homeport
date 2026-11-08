@@ -1,5 +1,6 @@
 import { RefreshCwIcon } from 'lucide-react';
 import { connectionLabel, describeStatus, HostStatusBadge, statusError } from '@/core/host';
+import { HostSwarmLink } from '@/features/swarm';
 import type { HostView } from '@/shared/api';
 import { Badge, Button, ErrorMessage, Label, PageHeader, Switch } from '@/shared/ui';
 import { useHostConnection } from '../../api/mutations';
@@ -29,6 +30,7 @@ export function HostDetail({ view }: { view: HostView }) {
             {detail && !statusError(view.status) && (
               <span className="text-muted-foreground">· {detail}</span>
             )}
+            <HostSwarmLink hostId={view.host.id} />
           </span>
         }
         actions={

@@ -75,6 +75,7 @@ export const hosts: HostView[] = [
       apiVersion: '1.51',
       os: 'linux',
       arch: 'x86_64',
+      swarm: null,
     },
   },
   {
@@ -92,6 +93,7 @@ export const hosts: HostView[] = [
       apiVersion: '1.51',
       os: 'linux',
       arch: 'aarch64',
+      swarm: null,
     },
   },
   {
@@ -109,6 +111,7 @@ export const hosts: HostView[] = [
       apiVersion: '1.47',
       os: 'linux',
       arch: 'x86_64',
+      swarm: null,
     },
   },
 ];
