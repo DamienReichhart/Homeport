@@ -3,14 +3,16 @@
 use std::{io, sync::Arc};
 
 use bollard::{BollardRequest, Docker, API_DEFAULT_VERSION};
-use hyper_util::rt::TokioIo;
 
 use homeport_core::{
     error::{AppError, ErrorCode},
     host::{HostConnection, HostSecrets},
 };
 
-use crate::{messages as msg, reach, ssh, tls, ConnectError, Dialer, CONNECT_TIMEOUT};
+use crate::{
+    http, messages as msg, reach, ssh, tls, ConnectError, Dialer, LocalDialer, TcpDialer,
+    CONNECT_TIMEOUT,
+};
 
 /// Seconds bollard waits for a response before giving up.
 const REQUEST_TIMEOUT_SECS: u64 = 120;
@@ -19,9 +21,10 @@ const REQUEST_TIMEOUT_SECS: u64 = 120;
 #[derive(Clone)]
 pub struct Connected {
     pub docker: Docker,
-    /// Present for TLS and SSH Hosts; the compose proxy forwards through it.
-    #[allow(dead_code)] // read by the compose proxy
-    pub dialer: Option<Arc<dyn Dialer>>,
+    /// Opens streams to the Host's Engine socket, whatever the connection:
+    /// bollard's client goes through it for TLS and SSH, [`http`] for every
+    /// API bollard doesn't speak, and the compose proxy forwards through it.
+    pub dialer: Arc<dyn Dialer>,
 }
 
 /// Whether bollard failed below HTTP, i.e. the network didn't carry the request.
@@ -42,7 +45,9 @@ pub async fn connect(
     trusted_host_key: Option<&str>,
 ) -> Result<Connected, ConnectError> {
     let label = |address: &str| format!("{name} ({address})");
-    let (docker, dialer) = match connection {
+    // Local and TCP Hosts keep bollard's own connectors; their dialer sits
+    // beside them, so nothing on the Docker path changes.
+    let (docker, dialer, dialed): (Docker, Arc<dyn Dialer>, bool) = match connection {
         HostConnection::Local { socket_path } => (
             // A missing socket usually means the Engine isn't running.
             Docker::connect_with_socket(socket_path, REQUEST_TIMEOUT_SECS, API_DEFAULT_VERSION)
@@ -51,7 +56,8 @@ pub async fn connect(
                     let missing = io::Error::new(io::ErrorKind::NotFound, e.to_string());
                     ConnectError::from(reach::local_socket(socket_path, &missing))
                 })?,
-            None,
+            Arc::new(LocalDialer::new(socket_path)),
+            false,
         ),
         HostConnection::Tcp { address } => (
             Docker::connect_with_http(
@@ -64,7 +70,8 @@ pub async fn connect(
                     AppError::validation(msg::CONNECT_TCP_ADDRESS_INVALID).with_cause(&e),
                 )
             })?,
-            None,
+            Arc::new(TcpDialer::new(&label(address), address)),
+            false,
         ),
         HostConnection::Tls { address } => {
             let Some(HostSecrets::Tls {
@@ -88,7 +95,7 @@ pub async fn connect(
                 &cert_pem,
                 &key_pem,
             )?);
-            (docker_over(dialer.clone()), Some(dialer))
+            (docker_over(dialer.clone()), dialer, true)
         }
         HostConnection::Ssh {
             host,
@@ -130,10 +137,10 @@ pub async fn connect(
                 trusted_host_key: trusted_host_key.map(str::to_owned),
                 bastions: hops,
             }));
-            (docker_over(dialer.clone()), Some(dialer))
+            (docker_over(dialer.clone()), dialer, true)
         }
     };
-    if let Some(dialer) = &dialer {
+    if dialed {
         dialer.connect().await?;
     }
     let docker = tokio::time::timeout(CONNECT_TIMEOUT, docker.negotiate_version())
@@ -170,25 +177,8 @@ pub(crate) fn docker_over(dialer: Arc<dyn Dialer>) -> Docker {
     let transport = move |mut req: BollardRequest| {
         let dialer = dialer.clone();
         async move {
-            let stream = dialer.dial().await?;
-            let (mut sender, conn) =
-                hyper::client::conn::http1::handshake(TokioIo::new(stream)).await?;
-            tokio::spawn(async move {
-                if let Err(e) = conn.with_upgrades().await {
-                    log::debug!("engine connection closed: {e}");
-                }
-            });
-            // Send origin-form with an explicit Host header, as Go's server requires.
-            let path = req
-                .uri()
-                .path_and_query()
-                .map(|p| p.as_str().to_owned())
-                .unwrap_or_else(|| "/".into());
-            *req.uri_mut() = path.parse().expect("a path is a valid URI");
-            req.headers_mut().insert(
-                hyper::header::HOST,
-                hyper::header::HeaderValue::from_static("docker"),
-            );
+            let mut sender = http::handshake(&*dialer).await?;
+            http::origin_form(&mut req);
             Ok(sender.send_request(req).await?)
         }
     };
@@ -227,8 +217,12 @@ mod tests {
         )
         .await
         .unwrap();
-        assert!(connected.dialer.is_none());
         connected.docker.ping().await.unwrap();
+        // The dialer beside bollard's connector reaches the same Engine.
+        let ping = http::send(&*connected.dialer, http::Request::get("/_ping"))
+            .await
+            .unwrap();
+        assert!(ping.status.is_success());
     }
 
     async fn connect_local(socket_path: &str) -> ConnectError {

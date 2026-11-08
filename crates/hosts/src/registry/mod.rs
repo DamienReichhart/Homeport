@@ -147,9 +147,9 @@ impl HostRegistry {
         self.docker_connection(id).map(|c| c.docker)
     }
 
-    /// The dialer of a connected TLS or SSH Host (`None` for local and TCP).
-    #[allow(dead_code)] // used by the compose proxy
-    pub fn dialer(&self, id: &str) -> AppResult<Option<Arc<dyn Dialer>>> {
+    /// What opens streams to a connected Host's Engine socket, for the
+    /// compose proxy and for the APIs bollard doesn't speak.
+    pub fn dialer(&self, id: &str) -> AppResult<Arc<dyn Dialer>> {
         self.docker_connection(id).map(|c| c.dialer)
     }
 

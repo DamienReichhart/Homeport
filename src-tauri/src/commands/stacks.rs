@@ -651,7 +651,7 @@ fn reach(state: &AppState, host_id: &str) -> AppResult<Reach> {
     Ok(Reach {
         name: host.name,
         connection: host.connection,
-        dialer: state.hosts.registry.dialer(host_id)?,
+        dialer: Some(state.hosts.registry.dialer(host_id)?),
         docker: state.hosts.registry.docker(host_id)?,
     })
 }
