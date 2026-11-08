@@ -15,6 +15,7 @@ import { nodesFeature } from '@/features/nodes';
 import { overviewFeature } from '@/features/overview';
 import { podmanPodsFeature } from '@/features/podman-pods';
 import { podsFeature } from '@/features/pods';
+import { quadletsFeature } from '@/features/quadlets';
 import { portForwardsFeature } from '@/features/port-forwards';
 import { settingsFeature } from '@/features/settings';
 import { stacksFeature } from '@/features/stacks';
@@ -34,6 +35,7 @@ export const features: FeatureManifest[] = [
   networksFeature,
   stacksFeature,
   podmanPodsFeature,
+  quadletsFeature,
   swarmFeature,
   workloadsFeature,
   podsFeature,

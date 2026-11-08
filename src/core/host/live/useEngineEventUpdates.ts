@@ -14,8 +14,9 @@ export function staleKeys(hostId: string, kind: string): QueryKey[] {
         hostKeys.system(hostId),
         hostKeys.volumes(hostId),
         hostKeys.networks(hostId),
-        // A pod's status is its containers'.
+        // A pod's and a Quadlet unit's status are their containers'.
         hostKeys.pods(hostId),
+        hostKeys.quadlets(hostId),
       ];
     case 'pod':
       return [hostKeys.pods(hostId)];
