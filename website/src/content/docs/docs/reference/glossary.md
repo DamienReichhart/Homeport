@@ -17,6 +17,10 @@ What sort of Engine a host points to: Docker-compatible (Docker Engine, or Podma
 
 On a Podman host, a group of containers that share one network and start and stop together, around an infra container that holds the ports the pod publishes. A Cluster's Pods are Kubernetes Pods. See [Podman pods](/docs/guides/podman-pods/).
 
+### Quadlet unit
+
+A file on a Podman host, such as `web.container`, that systemd turns into a service, `web.service`, so Podman's containers start at boot and systemd keeps them running. See [Quadlet units](/docs/guides/quadlet/).
+
 ### Cluster
 
 A Kubernetes cluster Homeport connects to through its API server, added from a context of a kubeconfig: a name, the API server's address, and the credentials the kubeconfig gives, stored encrypted. Homeport installs nothing on it and only reaches what those credentials allow. Not a Swarm, which is found through its hosts and never added. Kubernetes' own objects keep their Kubernetes names: Namespace, Pod, Deployment, Service, Node… See [Clusters](/docs/clusters/).

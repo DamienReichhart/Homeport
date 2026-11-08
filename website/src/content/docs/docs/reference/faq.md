@@ -21,7 +21,7 @@ Not entirely. Homeport is a manager: it doesn't run a Docker Engine itself. On L
 
 Yes, through Podman's Docker-compatible API socket. Homeport detects the usual Podman sockets on Linux, every running [Podman machine on macOS](/docs/hosts/local/#podman-machines-on-macos), and the default Podman machine pipe on Windows. Anything else can be [added by hand](/docs/hosts/local/#adding-a-socket-by-hand).
 
-Homeport also recognises Podman when it connects, and then offers what only Podman has, through Podman's own API on the same socket: [pods](/docs/guides/podman-pods/), which you can list, start, stop, create and remove, and run containers in from the Run dialog.
+Homeport also recognises Podman when it connects, and then offers what only Podman has, through Podman's own API on the same socket: [pods](/docs/guides/podman-pods/), which you can list, start, stop, create and remove, and run containers in from the Run dialog; and [Quadlet units](/docs/guides/quadlet/), which you can list, read, install, edit and remove, and start or stop over SSH.
 
 ### Does it work with Kubernetes or Docker Swarm?
 
