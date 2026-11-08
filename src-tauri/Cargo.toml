@@ -25,6 +25,7 @@ homeport-storage.workspace = true
 homeport-transport.workspace = true
 homeport-engine.workspace = true
 homeport-containerd.workspace = true
+homeport-incus.workspace = true
 homeport-hosts.workspace = true
 homeport-clusters.workspace = true
 homeport-stacks.workspace = true

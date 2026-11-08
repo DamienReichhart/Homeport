@@ -24,7 +24,9 @@ export function describeStatus(status: HostStatus): StatusSummary {
           ? t('core.host.podmanVersion', { version: status.podmanVersion })
           : status.containerdVersion
             ? t('core.host.containerdVersion', { version: status.containerdVersion })
-            : t('core.host.engineVersion', { version: status.engineVersion }),
+            : status.incusVersion
+              ? t('core.host.incusVersion', { version: status.incusVersion })
+              : t('core.host.engineVersion', { version: status.engineVersion }),
       };
     case 'connecting':
       return { label: t('core.status.connecting'), tone: 'info' };

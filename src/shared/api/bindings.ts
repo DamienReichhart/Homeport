@@ -460,6 +460,8 @@ export const commands = {
 	containerdSnapshots: (hostId: string, namespace: string, snapshotter: string | null) => __TAURI_INVOKE<ContainerdSnapshots>("containerd_snapshots", { hostId, namespace, snapshotter }),
 	/**  Removes a snapshot nothing uses and nothing is built on. */
 	containerdSnapshotRemove: (hostId: string, namespace: string, snapshotter: string, key: string) => __TAURI_INVOKE<null>("containerd_snapshot_remove", { hostId, namespace, snapshotter, key }),
+	/**  The projects the Host's connection may use, with what each holds. */
+	incusProjects: (hostId: string) => __TAURI_INVOKE<IncusProject[]>("incus_projects", { hostId }),
 	podsList: (hostId: string) => __TAURI_INVOKE<PodmanPod[]>("pods_list", { hostId }),
 	podsInspect: (hostId: string, id: string) => __TAURI_INVOKE<PodmanPodDetail>("pods_inspect", { hostId, id }),
 	podsAct: (hostId: string, id: string, action: PodmanPodAction) => __TAURI_INVOKE<null>("pods_act", { hostId, id, action }),
@@ -1458,8 +1460,8 @@ export type DetectedEngine = {
 	engineVersion: string,
 	/**
 	 *  Why the Engine found there can't be added as it is, and how to fix
-	 *  it: a containerd socket the user may not use, or one only RootlessKit
-	 *  reaches.
+	 *  it: a containerd or Incus socket the user may not use, or one only
+	 *  RootlessKit reaches.
 	 */
 	problem: AppError | null,
 };
@@ -1534,7 +1536,7 @@ export type EngineKind =
 "docker" | 
 /**  containerd, through its own gRPC API (ADR 0020). */
 "containerd" | 
-/**  Incus, through its REST API (not supported yet). */
+/**  Incus, through its REST API (ADR 0021). */
 "incus";
 
 /**  What happened to one environment variable. */
@@ -1586,6 +1588,24 @@ export type ErrorCode =
 "namespace_not_empty" | 
 /**  A containerd task that didn't stop after SIGKILL. */
 "task_wont_stop" | 
+/**  An Incus without an API extension Homeport or an action needs. */
+"incus_extension_missing" | 
+/**  An Incus trust token that can't be read, or has expired. */
+"incus_token_invalid" | 
+/**  An Incus trust token Incus refused: already used, or revoked. */
+"incus_token_refused" | 
+/**  A server that presented another certificate than the one pinned. */
+"certificate_mismatch" | 
+/**  An Incus that doesn't listen on the network. */
+"incus_not_listening" | 
+/**  A virtual machine on a Host without hardware virtualization. */
+"virtualization_unavailable" | 
+/**  Exec in a virtual machine whose Incus agent isn't running. */
+"incus_agent_not_running" | 
+/**  A stateful snapshot an Instance can't take. */
+"stateful_unsupported" | 
+/**  An object changed since the page loaded it. */
+"changed_since_loaded" | 
 /**  No manager Host of a Swarm is connected. */
 "swarm_unreachable" | 
 /**  A node couldn't reach the managers of the Swarm it was joining. */
@@ -1908,6 +1928,11 @@ podmanVersion: string | null;
  *  which is then also `engine_version`.
  */
 containerdVersion: string | null; 
+/**
+ *  The version of Incus when the Host's Engine is Incus, which is
+ *  then also `engine_version`.
+ */
+incusVersion: string | null; 
 /**  The Host's place in a Swarm, `None` outside one. */
 swarm: SwarmMembership | null } | { state: "unreachable"; error: AppError; retryInSecs: number } | { state: "unauthorized"; error: AppError } | 
 /**
@@ -2013,6 +2038,14 @@ export type ImportSpec = {
 	reference: string,
 	/**  Dockerfile instructions, one per entry, like `CMD ["/bin/sh"]`. */
 	changes: string[],
+};
+
+/**  A project, with how many Instances and images it holds. */
+export type IncusProject = {
+	name: string,
+	description: string,
+	instances: number,
+	images: number,
 };
 
 export type IngressDetail = {
@@ -3144,6 +3177,11 @@ export type Settings = {
 	 *  without one shows `default`, or the only namespace holding something.
 	 */
 	containerdNamespaces?: { [key in string]: string },
+	/**
+	 *  The project each Incus Host's pages show, by Host id. A Host without
+	 *  one shows `default`, or the first project it may use.
+	 */
+	incusProjects?: { [key in string]: string },
 	/**  Look for a new version at launch and every few hours. */
 	checkForUpdates?: boolean,
 	/**

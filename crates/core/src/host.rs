@@ -27,7 +27,7 @@ pub enum EngineKind {
     Docker,
     /// containerd, through its own gRPC API (ADR 0020).
     Containerd,
-    /// Incus, through its REST API (not supported yet).
+    /// Incus, through its REST API (ADR 0021).
     Incus,
 }
 
@@ -60,17 +60,17 @@ impl EngineKind {
         }
     }
 
-    /// Refuses the kinds Homeport can't connect to yet, so nothing
-    /// half-works, and connections a kind isn't served over: containerd
-    /// only answers on its socket, on this computer or through SSH.
+    /// Refuses connections a kind of Engine isn't served over: containerd
+    /// and Incus only answer on their socket, on this computer or through SSH.
     pub fn validate(self, connection: &HostConnection) -> AppResult<()> {
         match (self, connection) {
             (Self::Docker, _) => Ok(()),
-            (Self::Containerd, HostConnection::Local { .. } | HostConnection::Ssh { .. }) => Ok(()),
+            (
+                Self::Containerd | Self::Incus,
+                HostConnection::Local { .. } | HostConnection::Ssh { .. },
+            ) => Ok(()),
             (Self::Containerd, _) => Err(AppError::validation(msg::CONTAINERD_NEEDS_SOCKET)),
-            (Self::Incus, _) => Err(AppError::validation(
-                msg::ENGINE_NOT_YET_SUPPORTED.with("engine", self.label()),
-            )),
+            (Self::Incus, _) => Err(AppError::validation(msg::INCUS_NEEDS_SOCKET)),
         }
     }
 }
@@ -480,7 +480,7 @@ mod tests {
     }
 
     #[test]
-    fn docker_compatible_engines_and_containerd_are_accepted() {
+    fn every_engine_is_accepted_over_the_connections_it_answers_on() {
         let local = HostConnection::Local {
             socket_path: "/run/containerd/containerd.sock".into(),
         };
@@ -496,7 +496,12 @@ mod tests {
         let err = EngineKind::Containerd.validate(&tcp).unwrap_err();
         assert!(err.is(ErrorCode::Validation));
         assert!(err.message.contains("socket"), "{err:?}");
-        let err = EngineKind::Incus.validate(&local).unwrap_err();
+        let incus = HostConnection::Local {
+            socket_path: "/var/lib/incus/unix.socket".into(),
+        };
+        assert!(EngineKind::Incus.validate(&incus).is_ok());
+        assert!(EngineKind::Incus.validate(&remote).is_ok());
+        let err = EngineKind::Incus.validate(&tcp).unwrap_err();
         assert!(err.is(ErrorCode::Validation));
         assert!(err.message.contains("Incus"), "{err:?}");
     }

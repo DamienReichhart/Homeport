@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { MonitorIcon, PlusIcon } from 'lucide-react';
-import type { HostInput } from '@/shared/api';
+import type { EngineKind, HostInput } from '@/shared/api';
 import {
   Button,
   Card,
@@ -11,7 +11,13 @@ import {
   ErrorMessage,
 } from '@/shared/ui';
 import { hostQueries, useHosts } from '../api/queries';
-import { t } from '@/shared/i18n';
+import { t, type MessageKey } from '@/shared/i18n';
+
+const VERSION_LABELS: Record<EngineKind, MessageKey> = {
+  docker: 'core.host.engineVersion',
+  containerd: 'core.host.containerdVersion',
+  incus: 'core.host.incusVersion',
+};
 
 /** Engines answering on this machine's sockets that aren't Hosts yet, one click to add. */
 export function LocalEngines({
@@ -55,10 +61,7 @@ export function LocalEngines({
                   <p className="text-sm font-medium">
                     {engine.label}{' '}
                     <span className="text-muted-foreground">
-                      ·{' '}
-                      {engine.engine === 'containerd'
-                        ? t('core.host.containerdVersion', { version: engine.engineVersion })
-                        : t('core.host.engineVersion', { version: engine.engineVersion })}
+                      · {t(VERSION_LABELS[engine.engine], { version: engine.engineVersion })}
                     </span>
                   </p>
                   <p className="text-muted-foreground truncate font-mono text-xs">

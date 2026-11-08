@@ -58,6 +58,10 @@ protoc-bin-vendored = "3"
 prost = "0.14"
 prost-types = "0.14"
 tower = { version = "0.5", default-features = false, features = ["util"] }
+# Incus's websockets (events, console, exec; ADR 0021) over the Host's dialer,
+# and the client certificate an Incus Host trusts Homeport by.
+tokio-tungstenite = { version = "0.30", default-features = false, features = ["handshake"] }
+rcgen = { version = "0.14", default-features = false, features = ["crypto", "pem", "ring"] }
 # HTTP from this machine (registry logins, Docker Hub), on the same rustls
 # and ring as the rest of the app.
 reqwest = { version = "0.13", default-features = false, features = ["rustls-no-provider", "json", "query", "system-proxy"] }
@@ -96,6 +100,7 @@ homeport-storage = { path = "crates/storage" }
 homeport-transport = { path = "crates/transport" }
 homeport-engine = { path = "crates/engine" }
 homeport-containerd = { path = "crates/containerd" }
+homeport-incus = { path = "crates/incus" }
 homeport-hosts = { path = "crates/hosts" }
 homeport-clusters = { path = "crates/clusters" }
 homeport-git = { path = "crates/git" }

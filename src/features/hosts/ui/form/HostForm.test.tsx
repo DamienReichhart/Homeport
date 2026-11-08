@@ -56,14 +56,14 @@ describe('host form', () => {
     expect(screen.queryByText('Address')).toBeNull();
   });
 
-  it('offers Docker-compatible Engines and containerd, preset from the socket', async () => {
+  it('offers Docker-compatible Engines, containerd and Incus, preset from the socket', async () => {
     const user = userEvent.setup();
     let last: HostFormState | null = null;
     renderWithProviders(<Harness initial={emptyForm('local')} onChange={(f) => (last = f)} />);
     const engine = screen.getByRole('combobox', { name: 'Engine' });
     expect(engine).toHaveTextContent('Docker-compatible');
     await user.click(engine);
-    expect(await screen.findByRole('option', { name: /Incus/ })).toHaveAttribute(
+    expect(await screen.findByRole('option', { name: 'Incus' })).not.toHaveAttribute(
       'aria-disabled',
       'true',
     );
@@ -76,6 +76,9 @@ describe('host form', () => {
     await user.clear(socket);
     await user.type(socket, '/run/containerd/containerd.sock');
     expect(last!.engine).toBe('containerd');
+    await user.clear(socket);
+    await user.type(socket, '/var/lib/incus/unix.socket');
+    expect(last!.engine).toBe('incus');
   });
 
   it('reaches containerd only through its socket, here or over SSH', async () => {

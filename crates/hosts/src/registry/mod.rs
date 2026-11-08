@@ -25,6 +25,7 @@ use homeport_engine::{
     podman::Podman,
     swarm::{self, SwarmMembership, SwarmRole},
 };
+use homeport_incus::Incus;
 use serde::Serialize;
 
 use crate::messages as msg;
@@ -47,6 +48,8 @@ pub(crate) enum Client {
     Docker(Connected),
     /// containerd's gRPC API over the Host's dialer (ADR 0020).
     Containerd(Containerd),
+    /// Incus's REST API over the Host's dialer (ADR 0021).
+    Incus(Incus),
 }
 
 struct Entry {
@@ -159,6 +162,7 @@ impl HostRegistry {
         match self.connected(id)? {
             Client::Docker(connected) => Ok(connected.dialer),
             Client::Containerd(containerd) => Ok(containerd.dialer().clone()),
+            Client::Incus(incus) => Ok(incus.dialer().clone()),
         }
     }
 
@@ -167,8 +171,32 @@ impl HostRegistry {
     pub fn containerd(&self, id: &str) -> AppResult<Containerd> {
         match self.connected(id)? {
             Client::Containerd(containerd) => Ok(containerd),
-            Client::Docker(_) => Err(self.not_containerd(id)),
+            Client::Docker(_) | Client::Incus(_) => Err(self.not_containerd(id)),
         }
+    }
+
+    /// Incus's API on a connected Incus Host; `EngineUnsupported` for any
+    /// other Engine.
+    pub fn incus(&self, id: &str) -> AppResult<Incus> {
+        match self.connected(id)? {
+            Client::Incus(incus) => Ok(incus),
+            Client::Docker(_) | Client::Containerd(_) => Err(self.not_incus(id)),
+        }
+    }
+
+    /// Why a Host can't do what only Incus does.
+    fn not_incus(&self, id: &str) -> AppError {
+        let error = match self.store.get(id) {
+            Ok(host) => AppError::new(
+                ErrorCode::EngineUnsupported,
+                msg::NOT_INCUS.with("name", host.name),
+            ),
+            Err(_) => AppError::new(
+                ErrorCode::EngineUnsupported,
+                msg::ENGINE_UNSUPPORTED_UNKNOWN,
+            ),
+        };
+        error.with_hint(msg::NOT_INCUS_HINT)
     }
 
     /// Why a Host can't do what only containerd does.
@@ -214,7 +242,7 @@ impl HostRegistry {
     fn docker_connection(&self, id: &str) -> AppResult<Connected> {
         match self.connected(id)? {
             Client::Docker(connected) => Ok(connected),
-            Client::Containerd(_) => Err(self.unsupported(id)),
+            Client::Containerd(_) | Client::Incus(_) => Err(self.unsupported(id)),
         }
     }
 
@@ -751,35 +779,28 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn hosts_of_another_engine_kind_are_not_connected() {
-        let db = Arc::new(Db::open_in_memory().unwrap());
-        let store = Arc::new(HostStore::new(
-            db.clone(),
-            Arc::new(SecretBox::from_key(&[3; 32])),
-        ));
-        let id = store
-            .create(HostDraft {
-                name: "lab".into(),
-                connection: HostConnection::Local {
-                    socket_path: "/nonexistent/incus.sock".into(),
-                },
-                engine: crate::EngineKind::Docker,
-                secrets: None,
-            })
-            .unwrap()
-            .id;
-        // As a backup from a newer Homeport would restore it.
-        db.with(|c| c.execute("UPDATE hosts SET engine = 'incus'", []))
-            .unwrap();
-        let reg = HostRegistry::new(store, EventStore::new(db), Arc::new(Recorder::default()));
+    async fn a_stopped_incus_is_explained_as_incus() {
+        let dir = tempfile::tempdir().unwrap();
+        let socket = dir.path().join("unix.socket");
+        let (reg, _, id) = setup_engine(socket.to_str().unwrap(), crate::EngineKind::Incus);
         reg.restart(&id);
-        wait_for(&reg, &id, |s| matches!(s, HostStatus::Invalid { .. })).await;
+        wait_for(&reg, &id, |s| matches!(s, HostStatus::Unreachable { .. })).await;
         let error = reg.status(&id).error().cloned().unwrap();
-        assert!(error.is(ErrorCode::EngineUnsupported), "{error:?}");
-        assert!(error.message.contains("lab runs Incus"), "{error:?}");
+        assert_eq!(error.code, ErrorCode::EngineNotRunning, "{error:?}");
+        assert!(error.message.contains("Incus"), "{error:?}");
+        assert!(reg.incus(&id).is_err());
         assert!(reg.docker(&id).is_err());
+    }
+
+    #[tokio::test]
+    async fn pages_of_another_engine_kind_say_what_the_host_runs() {
+        let (reg, _, id) = setup_engine("/nonexistent/unix.socket", crate::EngineKind::Incus);
         let unsupported = reg.unsupported(&id);
         assert!(unsupported.is(ErrorCode::EngineUnsupported));
+        assert!(
+            unsupported.message.contains("local runs Incus"),
+            "{unsupported:?}"
+        );
         assert!(unsupported.hint.is_some());
     }
 
@@ -905,5 +926,24 @@ mod tests {
         pods::remove(&podman, &pod, true).await.unwrap();
         assert!(seen, "the pod's event was kept");
         assert!(matches!(still, HostStatus::Connected { .. }), "{still:?}");
+    }
+
+    #[tokio::test]
+    #[ignore = "needs a local Incus"]
+    async fn incus_live_hosts_connect_and_hand_out_their_api() {
+        let socket = std::env::var("HOMEPORT_INCUS_SOCKET")
+            .unwrap_or_else(|_| "/var/lib/incus/unix.socket".into());
+        let (reg, _, id) = setup_engine(&socket, crate::EngineKind::Incus);
+        reg.restart(&id);
+        wait_for(&reg, &id, |s| matches!(s, HostStatus::Connected { .. })).await;
+        assert!(reg
+            .status(&id)
+            .incus_version()
+            .is_some_and(|v| !v.is_empty()));
+        let client = reg.incus(&id).unwrap();
+        let projects = homeport_incus::projects::list(&client).await.unwrap();
+        assert!(projects.iter().any(|p| p.name == "default"), "{projects:?}");
+        assert!(reg.docker(&id).is_err());
+        assert!(reg.containerd(&id).is_err());
     }
 }

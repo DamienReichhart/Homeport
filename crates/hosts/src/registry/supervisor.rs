@@ -13,6 +13,7 @@ use serde::Deserialize;
 use homeport_containerd::{introspection, Containerd};
 use homeport_core::error::{AppError, ErrorCode};
 use homeport_engine::swarm;
+use homeport_incus::Incus;
 
 use crate::messages as msg;
 use homeport_transport::{self as transport, http, ConnectError, Dialer};
@@ -41,12 +42,6 @@ pub(super) async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
         if !host.enabled {
             return reg.set_status(&id, HostStatus::Disabled, None);
         }
-        // Only a restored backup from a newer Homeport can hold another kind.
-        if !matches!(host.engine, EngineKind::Docker | EngineKind::Containerd) {
-            let error = super::unsupported(&host.name, host.engine.label())
-                .with_hint(msg::ENGINE_NOT_CONNECTABLE_HINT);
-            return reg.set_status(&id, HostStatus::Invalid { error }, None);
-        }
         reg.set_status(&id, HostStatus::Connecting, None);
 
         let secrets = if host.connection.needs_secrets() {
@@ -64,18 +59,36 @@ pub(super) async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
             None
         };
 
-        if host.engine == EngineKind::Containerd {
-            let error = match connect_containerd(&host, secrets).await {
+        if host.engine != EngineKind::Docker {
+            let connected = match host.engine {
+                EngineKind::Incus => connect_incus(&host, secrets)
+                    .await
+                    .map(|(client, status)| (Client::Incus(client), status)),
+                _ => connect_containerd(&host, secrets)
+                    .await
+                    .map(|(client, status)| (Client::Containerd(client), status)),
+            };
+            let error = match connected {
                 Ok((client, status)) => {
                     backoff = 1;
-                    reg.set_status(&id, status, Some(Client::Containerd(client.clone())));
+                    reg.set_status(&id, status, Some(client.clone()));
                     drop(reg);
-                    watch_containerd(&registry, &id, client).await;
+                    let hint = match client {
+                        Client::Incus(client) => {
+                            watch_incus(&registry, &id, client).await;
+                            msg::INCUS_CONNECTION_LOST_HINT
+                        }
+                        Client::Containerd(client) => {
+                            watch_containerd(&registry, &id, client).await;
+                            msg::CONTAINERD_CONNECTION_LOST_HINT
+                        }
+                        Client::Docker(_) => unreachable!("Docker Hosts connect below"),
+                    };
                     AppError::new(
                         ErrorCode::ConnectionLost,
                         msg::CONNECTION_LOST.with("name", &host.name),
                     )
-                    .with_hint(msg::CONTAINERD_CONNECTION_LOST_HINT)
+                    .with_hint(hint)
                 }
                 Err(ConnectError::Unreachable(error)) => error,
                 Err(other) => return reg.set_status(&id, other.into(), None),
@@ -176,9 +189,85 @@ async fn connect_containerd(
         arch: info.arch,
         podman_version: None,
         containerd_version: Some(client.version().to_owned()),
+        incus_version: None,
         swarm: None,
     };
     Ok((client, status))
+}
+
+/// Connects to an Incus Host and describes it. An Incus that doesn't trust
+/// Homeport, or lacks what Homeport needs, stops there: retrying won't help.
+async fn connect_incus(
+    host: &crate::Host,
+    secrets: Option<homeport_core::host::HostSecrets>,
+) -> Result<(Incus, HostStatus), ConnectError> {
+    let dialer = transport::dial_engine(
+        &host.name,
+        &host.connection,
+        secrets,
+        host.host_key.as_deref(),
+        EngineKind::Incus,
+    )
+    .await?;
+    let client = Incus::connect(&host.name, dialer)
+        .await
+        .map_err(|error| match error.code {
+            ErrorCode::IncusExtensionMissing => ConnectError::Invalid(error),
+            ErrorCode::TlsClientRejected => ConnectError::Unauthorized(error),
+            _ => ConnectError::Unreachable(error),
+        })?;
+    let server = client.server();
+    let status = HostStatus::Connected {
+        engine_version: server.version.clone(),
+        api_version: "1.0".to_owned(),
+        os: server.os.clone(),
+        arch: server.arch.clone(),
+        podman_version: None,
+        containerd_version: None,
+        incus_version: Some(server.version.clone()),
+        swarm: None,
+    };
+    Ok((client, status))
+}
+
+/// Records Incus's lifecycle events, in every project, until the websocket
+/// closes or a ping fails. Incus keeps no history, so nothing that happened
+/// while Homeport was away is filled in.
+async fn watch_incus(registry: &Weak<HostRegistry>, id: &str, client: Incus) {
+    let events = async {
+        let mut stream = match homeport_incus::events::subscribe(&client).await {
+            Ok(stream) => Box::pin(stream),
+            Err(e) => return log::debug!("couldn't read the events of {id}: {e}"),
+        };
+        while let Some(event) = stream.next().await {
+            let Some(reg) = registry.upgrade() else {
+                return;
+            };
+            reg.record_event(
+                id,
+                EngineEvent {
+                    time: event.time_nano / 1_000_000_000,
+                    time_nano: event.time_nano,
+                    kind: event.kind,
+                    action: event.action,
+                    actor_id: event.actor_id,
+                    attributes: event.attributes,
+                },
+            );
+        }
+    };
+    let pings = async {
+        loop {
+            tokio::time::sleep(PING_INTERVAL).await;
+            if client.ping().await.is_err() {
+                return;
+            }
+        }
+    };
+    tokio::select! {
+        _ = events => {}
+        _ = pings => {}
+    }
 }
 
 /// Records containerd's events, in every namespace, until the stream
@@ -226,6 +315,7 @@ async fn describe(docker: &Docker) -> Result<HostStatus, AppError> {
     Ok(HostStatus::Connected {
         podman_version: podman_version(&v),
         containerd_version: None,
+        incus_version: None,
         engine_version: v.version.unwrap_or_default(),
         api_version: v.api_version.unwrap_or_default(),
         os: v.os.unwrap_or_default(),

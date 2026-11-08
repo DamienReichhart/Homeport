@@ -265,6 +265,7 @@ mod tests {
             arch: "x86_64".into(),
             podman_version: None,
             containerd_version: None,
+            incus_version: None,
             swarm: None,
         }
     }

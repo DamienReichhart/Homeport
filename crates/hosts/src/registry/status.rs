@@ -26,6 +26,9 @@ pub enum HostStatus {
         /// The version of containerd when the Host's Engine is containerd,
         /// which is then also `engine_version`.
         containerd_version: Option<String>,
+        /// The version of Incus when the Host's Engine is Incus, which is
+        /// then also `engine_version`.
+        incus_version: Option<String>,
         /// The Host's place in a Swarm, `None` outside one.
         swarm: Option<SwarmMembership>,
     },
@@ -73,6 +76,14 @@ impl HostStatus {
             Self::Connected {
                 containerd_version, ..
             } => containerd_version.as_deref(),
+            _ => None,
+        }
+    }
+
+    /// The version of Incus the Host runs, while it's connected to one.
+    pub fn incus_version(&self) -> Option<&str> {
+        match self {
+            Self::Connected { incus_version, .. } => incus_version.as_deref(),
             _ => None,
         }
     }

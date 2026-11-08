@@ -58,8 +58,20 @@ describe('add host page', () => {
       ...baseCommands,
       hosts_list: () => [connectedHost],
       hosts_detect_local: () => [
-        { label: 'Docker Engine', socketPath: '/var/run/docker.sock', engineVersion: '29.1' },
-        { label: 'Podman', socketPath: '/run/user/1000/podman/podman.sock', engineVersion: '5.4' },
+        {
+          label: 'Docker Engine',
+          socketPath: '/var/run/docker.sock',
+          engine: 'docker',
+          engineVersion: '29.1',
+          problem: null,
+        },
+        {
+          label: 'Podman',
+          socketPath: '/run/user/1000/podman/podman.sock',
+          engine: 'docker',
+          engineVersion: '5.4',
+          problem: null,
+        },
       ],
       hosts_create: ({ input }) => {
         created.push(input);
@@ -79,6 +91,7 @@ describe('add host page', () => {
         {
           name: 'Podman',
           connection: { kind: 'local', socketPath: '/run/user/1000/podman/podman.sock' },
+          engine: 'docker',
           credentials: null,
         },
       ]),

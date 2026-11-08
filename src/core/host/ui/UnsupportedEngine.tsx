@@ -19,6 +19,7 @@ export function UnsupportedEngine({
   const description = {
     podman: () => t('core.unsupported.podman', { name }),
     containerd: () => t('core.unsupported.containerd', { name, engine }),
+    incus: () => t('core.unsupported.incus', { name, engine }),
     docker: () => t('core.unsupported.docker', { name, engine }),
   }[requires]();
   return (

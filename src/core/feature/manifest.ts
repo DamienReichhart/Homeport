@@ -11,10 +11,11 @@ export type NavScope = 'host' | 'cluster' | 'app';
 
 /**
  * What a Host page needs from the selected Host's Engine: the Docker Engine
- * API (Docker, or Podman through its compatible API), Podman's own, or
- * containerd's. `supports()` in `@/core/host` tells whether a Host offers it.
+ * API (Docker, or Podman through its compatible API), Podman's own,
+ * containerd's or Incus's. `supports()` in `@/core/host` tells whether a
+ * Host offers it.
  */
-export type HostCapability = 'docker' | 'podman' | 'containerd';
+export type HostCapability = 'docker' | 'podman' | 'containerd' | 'incus';
 
 /** A sidebar entry. */
 export interface NavEntry {

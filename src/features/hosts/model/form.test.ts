@@ -58,6 +58,8 @@ describe('host form', () => {
     expect(custom.socketPath).toBe('/srv/my.sock');
     expect(withEngine(tcp, 'docker').sshSocketPath).toBe('/var/run/docker.sock');
     expect(engineReachableOver('containerd', 'tls')).toBe(false);
+    expect(engineReachableOver('incus', 'tcp')).toBe(false);
+    expect(withEngine(emptyForm('local'), 'incus').socketPath).toBe('/var/lib/incus/unix.socket');
     expect(engineReachableOver('docker', 'tls')).toBe(true);
   });
 

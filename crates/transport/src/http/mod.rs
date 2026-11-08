@@ -1,6 +1,6 @@
 //! Plain HTTP/1.1 over a stream from a [`Dialer`], for the APIs bollard
-//! doesn't speak: Podman's own (libpod) on the Engine socket, and later
-//! Incus's REST API. Each request gets its own connection, as bollard's do,
+//! doesn't speak: Podman's own (libpod) on the Engine socket, and Incus's
+//! REST API (ADR 0021). Each request gets its own connection, as bollard's do,
 //! and failures are classified like the Docker Engine's answers.
 
 use std::{error::Error as StdError, pin::Pin, task::Poll, time::Duration};
@@ -11,7 +11,7 @@ use http_body_util::{BodyExt, Full};
 use hyper::{
     body::{Body, Incoming},
     client::conn::http1::SendRequest,
-    header::{self, HeaderMap, HeaderName, HeaderValue},
+    header::{self, HeaderMap},
     upgrade::Upgraded,
     Method,
 };
@@ -25,7 +25,10 @@ use homeport_core::{
 
 use crate::Dialer;
 
-pub use hyper::StatusCode;
+pub use hyper::{
+    header::{HeaderName, HeaderValue},
+    StatusCode,
+};
 
 /// How long a request may take before its answer starts.
 pub const REQUEST_TIMEOUT: Duration = Duration::from_secs(120);
@@ -93,6 +96,14 @@ impl Request {
 
     pub fn delete(path: impl Into<String>) -> Self {
         Self::new(Method::DELETE, path)
+    }
+
+    pub fn put(path: impl Into<String>) -> Self {
+        Self::new(Method::PUT, path)
+    }
+
+    pub fn patch(path: impl Into<String>) -> Self {
+        Self::new(Method::PATCH, path)
     }
 
     pub fn method(&self) -> &Method {

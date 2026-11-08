@@ -90,11 +90,9 @@ export function HostForm({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {ENGINE_KINDS.map(({ engine, available }) => (
-              <SelectItem key={engine} value={engine} disabled={!available}>
-                {available
-                  ? t(ENGINE_LABELS[engine])
-                  : t('hosts.form.engineSoon', { engine: t(ENGINE_LABELS[engine]) })}
+            {ENGINE_KINDS.map((engine) => (
+              <SelectItem key={engine} value={engine}>
+                {t(ENGINE_LABELS[engine])}
               </SelectItem>
             ))}
           </SelectContent>

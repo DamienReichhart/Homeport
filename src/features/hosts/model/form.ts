@@ -208,12 +208,8 @@ export function engineForSocket(path: string): EngineKind {
   return 'docker';
 }
 
-/** The kinds of Engine the form offers; Incus connects in a later version. */
-export const ENGINE_KINDS: { engine: EngineKind; available: boolean }[] = [
-  { engine: 'docker', available: true },
-  { engine: 'containerd', available: true },
-  { engine: 'incus', available: false },
-];
+/** The kinds of Engine the form offers, in the order it shows them. */
+export const ENGINE_KINDS: EngineKind[] = ['docker', 'containerd', 'incus'];
 
 /** Where each kind of Engine's socket usually is, on this computer or over SSH. */
 export const DEFAULT_SOCKETS: Record<EngineKind, string> = {
@@ -222,9 +218,9 @@ export const DEFAULT_SOCKETS: Record<EngineKind, string> = {
   incus: '/var/lib/incus/unix.socket',
 };
 
-/** Whether `engine` can be reached over `kind`: containerd only answers on its socket. */
+/** Whether `engine` can be reached over `kind`: containerd and Incus only answer on their socket. */
 export function engineReachableOver(engine: EngineKind, kind: HostKind): boolean {
-  return engine !== 'containerd' || kind === 'local' || kind === 'ssh';
+  return engine === 'docker' || kind === 'local' || kind === 'ssh';
 }
 
 /**

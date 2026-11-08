@@ -106,6 +106,25 @@ pub enum ErrorCode {
     NamespaceNotEmpty,
     /// A containerd task that didn't stop after SIGKILL.
     TaskWontStop,
+    // Incus (ADR 0021).
+    /// An Incus without an API extension Homeport or an action needs.
+    IncusExtensionMissing,
+    /// An Incus trust token that can't be read, or has expired.
+    IncusTokenInvalid,
+    /// An Incus trust token Incus refused: already used, or revoked.
+    IncusTokenRefused,
+    /// A server that presented another certificate than the one pinned.
+    CertificateMismatch,
+    /// An Incus that doesn't listen on the network.
+    IncusNotListening,
+    /// A virtual machine on a Host without hardware virtualization.
+    VirtualizationUnavailable,
+    /// Exec in a virtual machine whose Incus agent isn't running.
+    IncusAgentNotRunning,
+    /// A stateful snapshot an Instance can't take.
+    StatefulUnsupported,
+    /// An object changed since the page loaded it.
+    ChangedSinceLoaded,
     // Swarms (ADR 0016).
     /// No manager Host of a Swarm is connected.
     SwarmUnreachable,

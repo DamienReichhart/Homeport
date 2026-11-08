@@ -1,7 +1,8 @@
 // Public API of the Host core. Import from "@/core/host" only.
-export { hostKeys } from './api/keys';
+export { hostKeys, type IncusResource } from './api/keys';
 export { useCheckForNewerImages, useCreateHost, useReconnectHost } from './api/mutations';
 export { containerdQueries, useContainerdNamespace } from './api/containerd';
+export { incusQueries, useIncusProject } from './api/incus';
 export { useEveryHost, type HostResult } from './api/everyHost';
 export { podsByContainer, usePodsByContainer, type PodRef } from './api/pods';
 export { hostQueries, resourceQueries, useContainers, useHosts } from './api/queries';
@@ -18,6 +19,7 @@ export {
 export {
   containerdVersion,
   ENGINE_LABELS,
+  incusVersion,
   podmanAtLeast,
   podmanVersion,
   supports,
@@ -35,10 +37,13 @@ export {
 } from './model/status';
 export { useHostSelection, type HostSelection } from './selection/context';
 export { DEFAULT_NAMESPACE, preferredNamespace } from './model/containerd';
+export { DEFAULT_PROJECT, preferredProject } from './model/incus';
 export { CheckNewerImages } from './ui/CheckNewerImages';
 export { ContainerdGate } from './ui/ContainerdGate';
 export { ContainerdNamespacePicker } from './ui/ContainerdNamespacePicker';
 export { HostCapabilityGuard } from './ui/HostCapabilityGuard';
+export { IncusGate } from './ui/IncusGate';
+export { IncusProjectPicker } from './ui/IncusProjectPicker';
 export { HostGate } from './ui/HostGate';
 export { NewerImage } from './ui/NewerImage';
 export { HostStatusBadge } from './ui/HostStatusBadge';

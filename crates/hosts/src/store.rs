@@ -447,21 +447,28 @@ mod tests {
     }
 
     #[test]
-    fn hosts_are_docker_compatible_engines_or_containerd_until_incus_connects() {
+    fn hosts_keep_their_kind_of_engine() {
         let s = store();
         let host = s.create(local("local")).unwrap();
         assert_eq!(host.engine, EngineKind::Docker);
-        let mut draft = local("other");
-        draft.engine = EngineKind::Incus;
-        assert!(matches!(s.create(draft), Err(ref e) if e.is(ErrorCode::Validation)));
-        let mut draft = local("local");
-        draft.engine = EngineKind::Incus;
-        assert!(s.update(&host.id, draft).is_err());
-        assert_eq!(s.get(&host.id).unwrap().engine, EngineKind::Docker);
 
         let mut draft = local("k3s");
         draft.engine = EngineKind::Containerd;
         assert_eq!(s.create(draft).unwrap().engine, EngineKind::Containerd);
+
+        let mut draft = local("lab");
+        draft.engine = EngineKind::Incus;
+        let lab = s.create(draft).unwrap();
+        assert_eq!(s.get(&lab.id).unwrap().engine, EngineKind::Incus);
+
+        // Incus doesn't answer on plain TCP.
+        let mut draft = local("local");
+        draft.engine = EngineKind::Incus;
+        draft.connection = HostConnection::Tcp {
+            address: "10.0.0.2:8443".into(),
+        };
+        assert!(matches!(s.update(&host.id, draft), Err(ref e) if e.is(ErrorCode::Validation)));
+        assert_eq!(s.get(&host.id).unwrap().engine, EngineKind::Docker);
     }
 
     #[test]

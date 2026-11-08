@@ -1,7 +1,8 @@
 //! Finds the Engines running on this machine at their well-known sockets:
-//! Docker-compatible ones, and containerd.
+//! Docker-compatible ones, containerd and Incus.
 
 mod containerd;
+mod incus;
 mod podman;
 
 use std::{path::Path, time::Duration};
@@ -24,8 +25,8 @@ pub struct DetectedEngine {
     /// Empty when `problem` is set.
     pub engine_version: String,
     /// Why the Engine found there can't be added as it is, and how to fix
-    /// it: a containerd socket the user may not use, or one only RootlessKit
-    /// reaches.
+    /// it: a containerd or Incus socket the user may not use, or one only
+    /// RootlessKit reaches.
     pub problem: Option<AppError>,
 }
 
@@ -132,6 +133,12 @@ pub async fn detect() -> Vec<DetectedEngine> {
             }
         }
         let probe = containerd::probe(label, &socket_path, runtime.as_deref());
+        if let Ok(Some(found)) = tokio::time::timeout(Duration::from_secs(3), probe).await {
+            engines.push(found);
+        }
+    }
+    for (label, socket_path) in incus::candidates() {
+        let probe = incus::probe(label, &socket_path);
         if let Ok(Some(found)) = tokio::time::timeout(Duration::from_secs(3), probe).await {
             engines.push(found);
         }

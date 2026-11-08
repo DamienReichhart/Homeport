@@ -113,7 +113,13 @@ describe('first launch', () => {
       }),
       hosts_list: () => [],
       hosts_detect_local: () => [
-        { label: 'Docker Engine', socketPath: '/var/run/docker.sock', engineVersion: '29.1' },
+        {
+          label: 'Docker Engine',
+          socketPath: '/var/run/docker.sock',
+          engine: 'docker',
+          engineVersion: '29.1',
+          problem: null,
+        },
       ],
     });
     renderApp('/containers');

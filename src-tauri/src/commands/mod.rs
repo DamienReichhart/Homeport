@@ -25,6 +25,7 @@ pub mod files;
 pub mod helm;
 pub mod hosts;
 pub mod images;
+pub mod incus;
 pub mod networks;
 pub mod podman;
 pub mod registries;
@@ -248,6 +249,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             containerd::containerd_images_pull_subscribe,
             containerd::containerd_snapshots,
             containerd::containerd_snapshot_remove,
+            incus::incus_projects,
             podman::pods_list,
             podman::pods_inspect,
             podman::pods_act,

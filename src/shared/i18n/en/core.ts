@@ -3,6 +3,7 @@ export default {
   'core.host.engineVersion': 'Engine {version}',
   'core.host.podmanVersion': 'Podman {version}',
   'core.host.containerdVersion': 'containerd {version}',
+  'core.host.incusVersion': 'Incus {version}',
   'core.engine.docker': 'Docker-compatible',
   'core.engine.containerd': 'containerd',
   'core.engine.incus': 'Incus',
@@ -13,12 +14,18 @@ export default {
     'This page is for Podman, and {name} runs another Docker-compatible Engine. Pick a Podman host in the switcher to use it.',
   'core.unsupported.containerd':
     'This page is for containerd, and {name} runs {engine}. Pick a containerd host in the switcher to use it.',
+  'core.unsupported.incus':
+    'This page is for Incus, and {name} runs {engine}. Pick an Incus host in the switcher to use it.',
   'core.unsupported.overview': 'Go to the Overview',
   'core.containerd.namespace': 'Namespace',
   'core.containerd.holds':
     '{containers, plural, one {# container} other {# containers}}, {images, plural, one {# image} other {# images}}',
   'core.containerd.manage': 'Manage namespaces',
   'core.containerd.rememberFailed': 'Homeport couldn’t remember the namespace you picked',
+  'core.incus.project': 'Project',
+  'core.incus.holds':
+    '{instances, plural, one {# instance} other {# instances}}, {images, plural, one {# image} other {# images}}',
+  'core.incus.rememberFailed': 'Homeport couldn’t remember the project you picked',
   'core.selection.rememberFailed': 'Homeport couldn’t remember what you selected',
   'core.connection.local': 'Local',
   'core.status.connected': 'Connected',

@@ -27,6 +27,7 @@ export const connectedHost: HostView = {
     arch: 'amd64',
     podmanVersion: null,
     containerdVersion: null,
+    incusVersion: null,
     swarm: null,
   },
 };
@@ -42,6 +43,7 @@ export const podmanHost: HostView = {
     arch: 'amd64',
     podmanVersion: '5.8.1',
     containerdVersion: null,
+    incusVersion: null,
     swarm: null,
   },
 };
