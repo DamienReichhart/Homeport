@@ -209,4 +209,10 @@ homeport_core::messages! {
     CHANGED_MEANWHILE_HINT = "errors.clusters.changedMeanwhile.hint" => "Look at it again, then retry.";
     /// A Secret's key that is gone by the time it's revealed.
     SECRET_KEY_GONE = "errors.clusters.secretKeyGone" => "{name} no longer has a key {key}.";
+
+    // The private proxy a CLI reaches a Cluster through (ADR 0009).
+
+    /// The loopback listener or its kubeconfig couldn't be made.
+    PROXY_FAILED = "errors.clusters.proxyFailed" => "Homeport couldn't open the private connection helm uses to reach {name}.";
+    PROXY_FAILED_HINT = "errors.clusters.proxyFailed.hint" => "Check that this computer's temporary folder is writable, then retry. See Details for the cause.";
 }

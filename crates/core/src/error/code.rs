@@ -101,6 +101,8 @@ pub enum ErrorCode {
     ExecPluginFailed,
     /// A Cluster's exec credential plugin needs a terminal to sign in.
     ExecPluginInteractive,
+    /// The private local proxy a CLI reaches a Cluster through couldn't open (ADR 0009).
+    ClusterProxyFailed,
     // Compose.
     ComposeMissing,
     ComposeOutdated,

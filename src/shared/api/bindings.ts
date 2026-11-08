@@ -1280,7 +1280,9 @@ export type ErrorCode =
 /**  A Cluster's exec credential plugin exited with an error or printed no credentials. */
 "exec_plugin_failed" | 
 /**  A Cluster's exec credential plugin needs a terminal to sign in. */
-"exec_plugin_interactive" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
+"exec_plugin_interactive" | 
+/**  The private local proxy a CLI reaches a Cluster through couldn't open (ADR 0009). */
+"cluster_proxy_failed" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
 /**  A Linked Stack's folder, or one of its compose files, is gone. */
 "stack_folder_missing" | 
 /**  A Linked Stack's compose file can't be read or written. */

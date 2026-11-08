@@ -322,3 +322,29 @@ async fn applying_the_same_manifest_twice_changes_nothing_the_second_time() {
     .await
     .unwrap();
 }
+
+#[tokio::test]
+#[ignore = "needs a kind cluster and kubectl"]
+async fn kubectl_reaches_the_cluster_through_the_private_proxy() {
+    let Some(on) = connect() else { return };
+    let Some(kubectl) = homeport_core::programs::find("kubectl") else {
+        eprintln!("skipped: no kubectl on this machine");
+        return;
+    };
+    let client = on.client.clone();
+    let access = homeport_clusters::proxy::ClusterAccess {
+        cluster: on.cluster.clone(),
+        clients: std::sync::Arc::new(move || Ok(client.clone())),
+    };
+    let command = homeport_clusters::proxy::CliCommand {
+        program: kubectl,
+        args: vec!["get".into(), "ns".into(), "-o".into(), "name".into()],
+        ..Default::default()
+    };
+    let out = homeport_clusters::proxy::output(&command, Some(&access), |f| {
+        panic!("kubectl failed: {f:?}")
+    })
+    .await
+    .unwrap();
+    assert!(out.lines().any(|l| l == "namespace/kube-system"), "{out}");
+}

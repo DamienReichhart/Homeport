@@ -93,6 +93,8 @@
   "errors.clusters.notConnected.hintConnecting": "Homeport is still connecting; try again in a moment.",
   "errors.clusters.notConnected.hintDisabled": "Enable the cluster on its page to use it.",
   "errors.clusters.notConnectedUnknown": "This cluster isn't connected.",
+  "errors.clusters.proxyFailed": "Homeport couldn't open the private connection helm uses to reach {name}.",
+  "errors.clusters.proxyFailed.hint": "Check that this computer's temporary folder is writable, then retry. See Details for the cause.",
   "errors.clusters.replicasNegative": "A workload can't run fewer than 0 Pods.",
   "errors.clusters.resourceGone": "{kind} {name} no longer exists.",
   "errors.clusters.secretKeyGone": "{name} no longer has a key {key}.",

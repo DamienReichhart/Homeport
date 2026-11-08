@@ -2365,11 +2365,16 @@ name = "homeport-clusters"
 version = "0.16.0"
 dependencies = [
  "base64 0.22.1",
+ "bytes",
  "futures-util",
+ "getrandom 0.3.4",
  "homeport-core",
  "homeport-storage",
  "homeport-transport",
  "http",
+ "http-body-util",
+ "hyper",
+ "hyper-util",
  "jiff",
  "k8s-openapi",
  "kube",
