@@ -195,4 +195,21 @@ homeport_core::messages! {
     /// Loading a file that isn't an image archive.
     TRANSFER_NOT_AN_IMAGE_ARCHIVE = "errors.transfer.notAnImageArchive" => "{path} isn't an image archive the Docker Engine can load.";
     TRANSFER_NOT_AN_IMAGE_ARCHIVE_HINT = "errors.transfer.notAnImageArchive.hint" => "Choose a .tar made by docker save or by Save in Homeport, or a compressed one (.tar.gz).";
+
+    // Swarms
+
+    /// A node that left the Swarm since the list was read.
+    NODE_GONE = "errors.swarm.nodeGone" => "This node is no longer in the Swarm.";
+    /// Demoting the only manager that takes part in the Swarm.
+    NODE_LAST_MANAGER = "errors.swarm.lastManager" => "This is the Swarm's last reachable manager, so it can't be demoted.";
+    NODE_LAST_MANAGER_HINT = "errors.swarm.lastManager.hint" => "Promote another node first. A Swarm without a manager can't be managed at all.";
+    /// Draining the last node that can run tasks.
+    NODE_LAST_ACTIVE = "errors.swarm.lastActive" => "Draining this node would leave no node to run the Swarm's tasks.";
+    /// A node label with an empty key.
+    NODE_LABEL_KEY = "errors.swarm.labelKey" => "Each label needs a key.";
+    /// Removing a manager node.
+    NODE_REMOVE_MANAGER = "errors.swarm.removeManager" => "A manager can't be removed. Demote it to a worker first.";
+    /// Removing a node that's still up without force.
+    NODE_REMOVE_READY = "errors.swarm.removeReady" => "This node is still up.";
+    NODE_REMOVE_READY_HINT = "errors.swarm.removeReady.hint" => "Have it leave the Swarm first, or remove it with Force.";
 }

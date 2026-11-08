@@ -183,6 +183,10 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             stacks::stacks_rollback_subscribe,
             swarm::swarms_list,
             swarm::swarm_inspect,
+            swarm::swarm_nodes_list,
+            swarm::swarm_nodes_inspect,
+            swarm::swarm_nodes_update,
+            swarm::swarm_nodes_remove,
         ])
         .events(collect_events![
             events::HostStatusChanged,

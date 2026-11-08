@@ -3,6 +3,8 @@
 //! node: [`membership`] works on any node; the others need a manager, which
 //! `homeport_hosts::registry::HostRegistry::manager` hands out.
 
+pub mod nodes;
+
 use bollard::{
     models::{LocalNodeState, SystemInfo},
     query_parameters::ListServicesOptions,

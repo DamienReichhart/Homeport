@@ -262,6 +262,14 @@ impl HostRegistry {
         swarms
     }
 
+    /// The Host each Swarm node is, by node ID, for the nodes that are Hosts.
+    pub fn node_hosts(&self) -> HashMap<String, HostId> {
+        self.lock()
+            .iter()
+            .filter_map(|(id, e)| Some((e.swarm.as_ref()?.node_id.clone(), id.clone())))
+            .collect()
+    }
+
     /// The client of a connected manager of the Swarm `swarm_id`.
     pub fn manager(&self, swarm_id: &str) -> AppResult<Docker> {
         let id = self.manager_host(swarm_id)?;

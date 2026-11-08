@@ -3,13 +3,15 @@ import { useHosts } from '@/core/host';
 import { shortSwarmId, SwarmGate, swarmLabel } from '@/core/swarm';
 import type { SwarmView } from '@/shared/api';
 import { Badge, PageHeader, Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui';
+import { NodesTab } from '../nodes/NodesTab';
 import { SummaryTab } from './SummaryTab';
 import { t, type MessageKey } from '@/shared/i18n';
 
-const TABS = ['summary'] as const;
+const TABS = ['summary', 'nodes'] as const;
 type Tab = (typeof TABS)[number];
 const TAB_LABELS: Record<Tab, MessageKey> = {
   summary: 'swarm.tab.summary',
+  nodes: 'swarm.tab.nodes',
 };
 
 function SwarmDetail({ swarm }: { swarm: SwarmView }) {
@@ -41,6 +43,9 @@ function SwarmDetail({ swarm }: { swarm: SwarmView }) {
         </TabsList>
         <TabsContent value="summary" className="overflow-auto">
           <SummaryTab swarm={swarm} />
+        </TabsContent>
+        <TabsContent value="nodes" className="overflow-auto">
+          <NodesTab swarm={swarm} />
         </TabsContent>
       </Tabs>
     </div>

@@ -347,6 +347,15 @@ export const commands = {
 	swarmsList: () => __TAURI_INVOKE<SwarmView[]>("swarms_list"),
 	/**  What a connected manager says about the Swarm `swarm_id`. */
 	swarmInspect: (swarmId: string) => __TAURI_INVOKE<SwarmSummary>("swarm_inspect", { swarmId }),
+	/**  A Swarm's nodes, each with the Host it is, if it's one. */
+	swarmNodesList: (swarmId: string) => __TAURI_INVOKE<SwarmNode[]>("swarm_nodes_list", { swarmId }),
+	swarmNodesInspect: (swarmId: string, id: string) => __TAURI_INVOKE<Value>("swarm_nodes_inspect", { swarmId, id }),
+	/**
+	 *  Changes a node's availability, role or labels, from the node as read at
+	 *  `version`; refuses to demote the last manager or drain every node.
+	 */
+	swarmNodesUpdate: (swarmId: string, id: string, version: number, change: NodeChange) => __TAURI_INVOKE<null>("swarm_nodes_update", { swarmId, id, version, change }),
+	swarmNodesRemove: (swarmId: string, id: string, force: boolean) => __TAURI_INVOKE<null>("swarm_nodes_remove", { swarmId, id, force }),
 };
 
 /** Events */
@@ -382,6 +391,15 @@ export type AppInfo = {
 	os: string,
 	arch: string,
 };
+
+/**  Whether the scheduler may place tasks on a node. */
+export type Availability = 
+/**  Runs new tasks. */
+"active" | 
+/**  Keeps its tasks, gets no new ones. */
+"pause" | 
+/**  Its tasks move to other nodes. */
+"drain";
 
 export type AvailableUpdate = {
 	version: string,
@@ -1213,6 +1231,9 @@ export type ManagedStack = {
 	updatedAt: string,
 };
 
+/**  How a manager node takes part in the Swarm's Raft. */
+export type ManagerStatus = "leader" | "reachable" | "unreachable";
+
 export type MountSpec = {
 	/**  An absolute path on the Host (bind mount) or a volume name. */
 	source: string,
@@ -1244,6 +1265,39 @@ export type NetworkView = {
 	builtIn: boolean,
 	/**  Names of attached containers. */
 	containers: string[],
+};
+
+/**  What to change on a node; `None` leaves that part as it is. */
+export type NodeChange = {
+	availability: Availability | null,
+	/**  Promote to manager or demote to worker. */
+	role: NodeRole | null,
+	/**  Replaces every label. */
+	labels: { [key in string]: string } | null,
+};
+
+/**  [`SwarmRole`] as an input. */
+export type NodeRole = "manager" | "worker";
+
+export type NodeView = {
+	id: string,
+	/**  The node's `Version.Index`, sent back with an update. */
+	version: number,
+	hostname: string,
+	role: SwarmRole,
+	availability: Availability,
+	/**  `ready`, `down`, `unknown` or `disconnected`. */
+	state: string,
+	/**  Why the node is in its state, in the Engine's words. */
+	message: string | null,
+	/**  `None` for workers. */
+	managerStatus: ManagerStatus | null,
+	engineVersion: string | null,
+	address: string | null,
+	os: string | null,
+	arch: string | null,
+	labels: { [key in string]: string },
+	created: string | null,
 };
 
 /**
@@ -1614,6 +1668,11 @@ export type SwarmMembership = {
 	/**  Why the node is in error, in the Engine's words. */
 	error: string | null,
 };
+
+/**  A node of a Swarm, and the Host it is when Homeport connects to it. */
+export type SwarmNode = {
+	hostId: string | null,
+} & NodeView;
 
 /**  Where a node stands in its Swarm, as its Engine reports it. */
 export type SwarmNodeState = "active" | 
