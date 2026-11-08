@@ -24,6 +24,7 @@ export default {
   'containers.stack.swarm': 'Swarm',
   'containers.stack.open': 'Open stack',
   'containers.inPod': 'In the Podman pod {pod}',
+  'containers.fromUnit': 'Created by the Quadlet unit {unit}',
   'containers.selected': '{count} selected',
 
   // Actions on a container

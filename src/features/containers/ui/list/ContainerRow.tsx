@@ -18,6 +18,9 @@ import { ContainerMenu } from '../ContainerMenu';
 import type { ContainerDialogRequest } from '../dialogs/ContainerDialogs';
 import { t } from '@/shared/i18n';
 
+/** The label Podman puts on the containers a Quadlet unit created. */
+const QUADLET_UNIT = 'PODMAN_SYSTEMD_UNIT';
+
 /** One container in the list; `nested` rows sit under their Stack and show the service. */
 export function ContainerRow({
   hostId,
@@ -67,6 +70,17 @@ export function ContainerRow({
           <div className="min-w-0">
             <p className="flex items-center gap-1.5 font-medium">
               <span className="truncate">{nested && c.service ? c.service : c.name}</span>
+              {c.labels[QUADLET_UNIT] && (
+                <Badge asChild variant="secondary">
+                  <Link
+                    to={`/quadlets/${encodeURIComponent(c.labels[QUADLET_UNIT])}`}
+                    title={t('containers.fromUnit', { unit: c.labels[QUADLET_UNIT] })}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {c.labels[QUADLET_UNIT]}
+                  </Link>
+                </Badge>
+              )}
               {pod && (
                 <Badge asChild variant="outline">
                   <Link
