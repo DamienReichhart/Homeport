@@ -530,21 +530,27 @@ fn sorted<T, K: Ord>(mut items: Vec<T>, key: impl Fn(&T) -> K) -> Vec<T> {
 /// Drops `managedFields` and kubectl's last applied configuration, and
 /// masks a Secret's values.
 pub fn tidy(value: &mut serde_json::Value) {
-    if let Some(meta) = value.get_mut("metadata").and_then(|m| m.as_object_mut()) {
-        meta.remove("managedFields");
-        if let Some(annotations) = meta.get_mut("annotations").and_then(|a| a.as_object_mut()) {
-            annotations.remove("kubectl.kubernetes.io/last-applied-configuration");
-            if annotations.is_empty() {
-                meta.remove("annotations");
-            }
-        }
-    }
+    strip(value);
     if value.get("kind").and_then(|k| k.as_str()) == Some("Secret") {
         for field in ["data", "stringData"] {
             if let Some(data) = value.get_mut(field).and_then(|d| d.as_object_mut()) {
                 for v in data.values_mut() {
                     *v = serde_json::Value::String(HIDDEN.into());
                 }
+            }
+        }
+    }
+}
+
+/// Drops `managedFields` and kubectl's last applied configuration, which
+/// repeat what the object holds.
+pub fn strip(value: &mut serde_json::Value) {
+    if let Some(meta) = value.get_mut("metadata").and_then(|m| m.as_object_mut()) {
+        meta.remove("managedFields");
+        if let Some(annotations) = meta.get_mut("annotations").and_then(|a| a.as_object_mut()) {
+            annotations.remove("kubectl.kubernetes.io/last-applied-configuration");
+            if annotations.is_empty() {
+                meta.remove("annotations");
             }
         }
     }

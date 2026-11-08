@@ -167,6 +167,20 @@ export const commands = {
 	clustersDelete: (id: string, kind: ResourceKind, namespace: string | null, name: string, grace: number | null) => __TAURI_INVOKE<null>("clusters_delete", { id, kind, namespace, name, grace }),
 	/**  Deletes an object of any type the Cluster serves. */
 	clustersApiDelete: (id: string, api: ApiType, namespace: string | null, name: string) => __TAURI_INVOKE<null>("clusters_api_delete", { id, api, namespace, name }),
+	/**
+	 *  What applying `yaml` would change, document by document, from a dry
+	 *  run; nothing changes on the Cluster.
+	 */
+	clustersApplyPreview: (id: string, yaml: string, namespace: string | null) => __TAURI_INVOKE<ApplyResult>("clusters_apply_preview", { id, yaml, namespace }),
+	/**
+	 *  Applies `yaml` with server-side apply as the `homeport` field manager;
+	 *  `force` takes over the fields other managers own.
+	 */
+	clustersApply: (id: string, yaml: string, namespace: string | null, force: boolean) => __TAURI_INVOKE<ApplyResult>("clusters_apply", { id, yaml, namespace, force }),
+	/**  An object shown on one of Homeport's own pages, as YAML to edit. */
+	clustersResourceEditYaml: (id: string, kind: ResourceKind, namespace: string | null, name: string) => __TAURI_INVOKE<string>("clusters_resource_edit_yaml", { id, kind, namespace, name }),
+	/**  An object of any type the Cluster serves, as YAML to edit. */
+	clustersApiEditYaml: (id: string, api: ApiType, namespace: string | null, name: string) => __TAURI_INVOKE<string>("clusters_api_edit_yaml", { id, api, namespace, name }),
 	/**  Forwards `local_port` (a free one without) to `remote_port` of a Pod or Service. */
 	clustersForwardStart: (id: string, target: ForwardTarget, remotePort: number, localPort: number | null) => __TAURI_INVOKE<PortForward>("clusters_forward_start", { id, target, remotePort, localPort }),
 	/**  Every active forward, across Clusters. */
@@ -581,6 +595,31 @@ export type AppInfo = {
 	version: string,
 	os: string,
 	arch: string,
+};
+
+/**  What applying a document does, or did. */
+export type ApplyAction = "created" | "changed" | "unchanged" | 
+/**  It can't be applied: see its error. */
+"failed";
+
+/**  One document of the YAML, and what applying it does. */
+export type ApplyDocument = {
+	apiVersion: string,
+	kind: string,
+	namespace: string | null,
+	name: string,
+	action: ApplyAction,
+	/**  The object as it is, without what the server manages; `None` when new. */
+	before: string | null,
+	/**  As it would be, or is, after applying. */
+	after: string | null,
+	conflicts: FieldConflict[],
+	error: AppError | null,
+};
+
+/**  Every document of the YAML, in order. */
+export type ApplyResult = {
+	documents: ApplyDocument[],
 };
 
 /**  How a Cluster's user authenticates, as its kubeconfig says. */
@@ -1281,6 +1320,14 @@ export type ExportOutcome = {
 	exported: number,
 	/**  Hosts written without their secrets, which couldn't be opened. */
 	withoutSecrets: string[],
+};
+
+/**  Fields of the object another field manager owns, which applying would take over. */
+export type FieldConflict = {
+	/**  `.spec.replicas`. */
+	field: string,
+	/**  What the API server said: `conflict with "kubectl-client-side-apply" using apps/v1`. */
+	message: string,
 };
 
 /**

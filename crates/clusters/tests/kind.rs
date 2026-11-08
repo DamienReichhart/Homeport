@@ -272,3 +272,43 @@ async fn a_forwarded_port_reaches_the_pod_until_stopped() {
     .await
     .unwrap();
 }
+
+#[tokio::test]
+#[ignore = "needs a kind cluster"]
+async fn applying_the_same_manifest_twice_changes_nothing_the_second_time() {
+    use homeport_clusters::apply::ApplyAction;
+
+    let Some(on) = connect() else { return };
+    let name = format!("homeport-apply-{}", std::process::id());
+    let yaml = format!(
+        "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: {name}\nspec:\n  replicas: 0\n  selector:\n    matchLabels: {{ app: {name} }}\n  template:\n    metadata:\n      labels: {{ app: {name} }}\n    spec:\n      containers:\n      - name: web\n        image: busybox:1.37\n"
+    );
+    let preview = on.apply_preview(&yaml, Some("default")).await.unwrap();
+    assert_eq!(preview.documents[0].action, ApplyAction::Created);
+    // A dry run changes nothing.
+    assert!(on
+        .workload(WorkloadKind::Deployment, "default", &name)
+        .await
+        .is_err());
+    let applied = on.apply(&yaml, Some("default"), false).await.unwrap();
+    assert_eq!(applied.documents[0].action, ApplyAction::Created);
+    let again = on.apply_preview(&yaml, Some("default")).await.unwrap();
+    assert_eq!(again.documents[0].action, ApplyAction::Unchanged);
+
+    let edited = on
+        .edit_yaml(&ResourceKind::Deployment.api_type(), Some("default"), &name)
+        .await
+        .unwrap()
+        .replace("replicas: 0", "replicas: 1");
+    let preview = on.apply_preview(&edited, Some("default")).await.unwrap();
+    assert_eq!(preview.documents[0].action, ApplyAction::Changed);
+
+    on.delete(
+        &ResourceKind::Deployment.api_type(),
+        Some("default"),
+        &name,
+        None,
+    )
+    .await
+    .unwrap();
+}

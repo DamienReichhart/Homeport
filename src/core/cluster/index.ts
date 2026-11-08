@@ -30,4 +30,6 @@ export { ObjectEvents } from './ui/ObjectEvents';
 export { ResourceList, type Section } from './ui/ResourceList';
 export { ResourceTabs, type ResourceTab } from './ui/ResourceTabs';
 export { ResourceYaml } from './ui/ResourceYaml';
+export { ApplyFlow } from './ui/apply/ApplyFlow';
+export { EditYamlDialog, type EditTarget } from './ui/apply/EditYamlDialog';
 export { useDeleteObjects } from './ui/useDeleteObjects';

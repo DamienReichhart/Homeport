@@ -114,4 +114,26 @@ export default {
   'core.delete.done': '{count, plural, one {Deleted {name}} other {Deleted # objects}}',
   'core.delete.action': 'Delete',
   'core.delete.selected': 'Delete {count}',
+  'core.apply.preview': 'Preview changes',
+  'core.apply.apply': 'Apply',
+  'core.apply.force': 'Apply anyway',
+  'core.apply.stale': 'The YAML changed since this preview.',
+  'core.apply.noChanges': 'No changes: the cluster already holds this.',
+  'core.apply.confirmTitle':
+    'Apply {count, plural, one {# change} other {# changes}} to {cluster}?',
+  'core.apply.confirmDescription':
+    'Homeport applies it with server-side apply as the homeport field manager, as the preview shows.',
+  'core.apply.forceTitle': 'Take over the conflicting fields?',
+  'core.apply.forceDescription':
+    'The tools that manage them on {cluster} may set them back, or stop managing them. Homeport becomes their manager.',
+  'core.apply.done': 'Applied to {cluster}',
+  'core.apply.diffOf': 'Changes to {kind} {name}',
+  'core.apply.action.created': 'Created',
+  'core.apply.action.changed': 'Changed',
+  'core.apply.action.unchanged': 'No changes',
+  'core.apply.action.failed': 'Can’t apply',
+  'core.yaml.edit': 'Edit',
+  'core.yaml.editTitle': 'Edit {kind} {name}',
+  'core.yaml.editDescription':
+    'On {cluster}. Change the YAML, preview what it changes, then apply it.',
 } as const;

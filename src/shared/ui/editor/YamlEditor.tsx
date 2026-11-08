@@ -1,9 +1,9 @@
 import { yaml } from '@codemirror/lang-yaml';
 import CodeMirror from '@uiw/react-codemirror';
 import { useResolvedTheme } from '@/shared/lib';
-import { editorTheme } from '@/shared/ui';
+import { editorTheme } from './editorTheme';
 
-/** A compose file in the YAML editor; `readOnly` still lets it be selected and copied. */
+/** A YAML file in an editor (a compose file, Kubernetes manifests); `readOnly` still lets it be selected and copied. */
 export function YamlEditor({
   value,
   onChange,

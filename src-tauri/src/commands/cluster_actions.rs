@@ -1,9 +1,13 @@
 //! Changing what runs on a Cluster: scaling, restarting, suspending and
-//! running workloads, and deleting objects. The pages' watches show the result.
+//! running workloads, deleting objects, and applying YAML. The pages'
+//! watches show the result.
 
 use tauri::State;
 
-use homeport_clusters::resources::{ApiType, ResourceKind, WorkloadKind};
+use homeport_clusters::{
+    apply::ApplyResult,
+    resources::{ApiType, ResourceKind, WorkloadKind},
+};
 
 use super::clusters::on;
 use crate::{app::AppState, error::AppResult};
@@ -106,5 +110,66 @@ pub async fn clusters_api_delete(
 ) -> AppResult<()> {
     on(&state, &id)?
         .delete(&api, namespace.as_deref(), &name, None)
+        .await
+}
+
+/// What applying `yaml` would change, document by document, from a dry
+/// run; nothing changes on the Cluster.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_apply_preview(
+    state: State<'_, AppState>,
+    id: String,
+    yaml: String,
+    namespace: Option<String>,
+) -> AppResult<ApplyResult> {
+    on(&state, &id)?
+        .apply_preview(&yaml, namespace.as_deref())
+        .await
+}
+
+/// Applies `yaml` with server-side apply as the `homeport` field manager;
+/// `force` takes over the fields other managers own.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_apply(
+    state: State<'_, AppState>,
+    id: String,
+    yaml: String,
+    namespace: Option<String>,
+    force: bool,
+) -> AppResult<ApplyResult> {
+    on(&state, &id)?
+        .apply(&yaml, namespace.as_deref(), force)
+        .await
+}
+
+/// An object shown on one of Homeport's own pages, as YAML to edit.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_resource_edit_yaml(
+    state: State<'_, AppState>,
+    id: String,
+    kind: ResourceKind,
+    namespace: Option<String>,
+    name: String,
+) -> AppResult<String> {
+    on(&state, &id)?
+        .edit_yaml(&kind.api_type(), namespace.as_deref(), &name)
+        .await
+}
+
+/// An object of any type the Cluster serves, as YAML to edit.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_api_edit_yaml(
+    state: State<'_, AppState>,
+    id: String,
+    api: ApiType,
+    namespace: Option<String>,
+    name: String,
+) -> AppResult<String> {
+    on(&state, &id)?
+        .edit_yaml(&api, namespace.as_deref(), &name)
         .await
 }

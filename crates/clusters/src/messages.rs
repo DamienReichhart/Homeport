@@ -186,6 +186,24 @@ homeport_core::messages! {
     FORWARD_NO_READY_POD_HINT = "errors.clusters.forward.noReadyPod.hint" => "Its Pods tab says why. The forward tries again on the next connection.";
     /// A Service's named target port that its Pod doesn't declare.
     FORWARD_NAMED_PORT_MISSING = "errors.clusters.forward.namedPortMissing" => "{pod} has no container port named {port}.";
+    // Applying and editing YAML.
+
+    /// YAML that doesn't parse.
+    YAML_INVALID = "errors.clusters.apply.yamlInvalid" => "The YAML isn't valid at line {line}.";
+    /// Nothing to apply.
+    YAML_EMPTY = "errors.clusters.apply.yamlEmpty" => "There's nothing to apply: the YAML holds no document.";
+    /// A document without apiVersion, kind or metadata.name.
+    DOCUMENT_INCOMPLETE = "errors.clusters.apply.documentIncomplete" => "A document needs an apiVersion, a kind and a metadata.name (it has \"{apiVersion}\" and \"{kind}\").";
+    /// A kind the Cluster doesn't serve.
+    KIND_UNKNOWN = "errors.clusters.apply.kindUnknown" => "{name} doesn't serve the kind {kind} in {apiVersion}.";
+    KIND_UNKNOWN_HINT = "errors.clusters.apply.kindUnknown.hint" => "Check the apiVersion and kind. A custom resource needs its CRD installed first.";
+    /// Fields owned by another field manager.
+    APPLY_CONFLICTS = "errors.clusters.apply.conflicts" => "Other tools manage some fields of {kind} {name} that this would change.";
+    APPLY_CONFLICTS_HINT = "errors.clusters.apply.conflicts.hint" => "Leave those fields out, or apply anyway to take them over.";
+    /// The API server's validation refused the object.
+    APPLY_INVALID = "errors.clusters.apply.invalid" => "The cluster refused {kind} {name} as it is.";
+    /// Editing a Secret, whose values Homeport only reveals one at a time.
+    SECRET_NOT_EDITABLE = "errors.clusters.apply.secretNotEditable" => "Homeport doesn't edit Secrets, since it never shows all their values at once.";
     /// The object changed between reading it and changing it.
     CHANGED_MEANWHILE = "errors.clusters.changedMeanwhile" => "{kind} {name} changed while you were working on it.";
     CHANGED_MEANWHILE_HINT = "errors.clusters.changedMeanwhile.hint" => "Look at it again, then retry.";

@@ -1,4 +1,5 @@
 import app from './app';
+import apply from './apply';
 import board from './board';
 import clusterevents from './clusterevents';
 import clusters from './clusters';
@@ -33,6 +34,7 @@ export const uiMessages = {
   ...app,
   ...core,
   ...ui,
+  ...apply,
   ...board,
   ...clusterevents,
   ...clusters,
