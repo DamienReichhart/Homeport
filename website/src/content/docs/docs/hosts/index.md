@@ -1,18 +1,18 @@
 ---
 title: Hosts and connections
-description: How Homeport connects to Docker Engines and containerd, what each Host status means, and how reconnection works.
+description: How Homeport connects to Docker Engines, containerd and Incus, what each Host status means, and how reconnection works.
 ---
 
-A **Host** is a Docker Engine, or containerd, that Homeport connects to. It has a name and a way to reach it. Every container, image, volume, network and Stack you see belongs to exactly one Host.
+A **Host** is a Docker Engine, containerd or Incus that Homeport connects to. It has a name and a way to reach it. Every container, Instance, image, volume, network and Stack you see belongs to exactly one Host.
 
 ## Kinds of connection
 
-| Type             | Reach an Engine…                                 | Credentials                                | Guide                               |
-| ---------------- | ------------------------------------------------ | ------------------------------------------ | ----------------------------------- |
-| **Local socket** | on this machine, through a socket or pipe        | none                                       | [Local engines](/docs/hosts/local/) |
-| **SSH**          | on a server you can log in to                    | a Homeport key, your own key, or ssh-agent | [SSH](/docs/hosts/ssh/)             |
-| **TLS**          | exposed with `dockerd --tlsverify`               | CA certificate, client certificate and key | [TLS and TCP](/docs/hosts/tls-tcp/) |
-| **TCP**          | exposed without encryption, on a trusted network | none                                       | [TLS and TCP](/docs/hosts/tls-tcp/) |
+| Type             | Reach an Engine…                                     | Credentials                                                          | Guide                                                            |
+| ---------------- | ---------------------------------------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| **Local socket** | on this machine, through a socket or pipe            | none                                                                 | [Local engines](/docs/hosts/local/)                              |
+| **SSH**          | on a server you can log in to                        | a Homeport key, your own key, or ssh-agent                           | [SSH](/docs/hosts/ssh/)                                          |
+| **TLS**          | exposed with `dockerd --tlsverify`, or Incus's HTTPS | CA certificate, client certificate and key; for Incus, a trust token | [TLS and TCP](/docs/hosts/tls-tcp/), [Incus](/docs/hosts/incus/) |
+| **TCP**          | exposed without encryption, on a trusted network     | none                                                                 | [TLS and TCP](/docs/hosts/tls-tcp/)                              |
 
 For a remote server, prefer **SSH**: it needs nothing exposed beyond the SSH port and is the simplest to set up securely.
 
@@ -24,9 +24,9 @@ Besides how to reach it, each Host says what kind of Engine it points to, in the
 | --------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
 | **Docker-compatible** | Docker Engine, Docker Desktop, Colima, OrbStack, Rancher Desktop, Podman | Containers, Images, Volumes, Networks, Stacks, Events; and on Podman, also its own pages             |
 | **containerd**        | containerd's own service, k3s's, Docker Engine's own containerd          | containerd's Containers, Images, Snapshots and Namespaces; see [containerd](/docs/hosts/containerd/) |
-| **Incus**             | coming in a later version                                                | —                                                                                                    |
+| **Incus**             | Incus 6.0 and later: system containers and virtual machines              | Instances, Images, Profiles, Storage and Networks; see [Incus](/docs/hosts/incus/)                   |
 
-Incus can't be added yet; the form shows it greyed out. The form picks the Engine from the socket path when it names containerd's or Incus's socket. containerd is reached only through its socket, on this computer or over SSH, so TCP and TLS are greyed out for it. Hosts added before Homeport 0.18 are Docker-compatible, with nothing else changed.
+The form picks the Engine from the socket path when it names containerd's or Incus's socket. containerd is reached only through its socket, on this computer or over SSH, so TCP and TLS are greyed out for it; Incus through its socket or over HTTPS (TLS), so only TCP is greyed out. Hosts added before Homeport 0.18 are Docker-compatible, with nothing else changed.
 
 **Podman** is a Docker-compatible Engine that Homeport recognises each time it connects, because the same socket can switch product: the Host's status then reads **Podman** and its version instead of the Engine's, and the sidebar adds the pages only Podman has. A page the selected Host can't show isn't in the sidebar, and opening it from a link says why.
 
@@ -77,24 +77,24 @@ A context whose name is already a Host's is offered as `name (2)`.
 
 ## Selecting a Host
 
-Every resource page — Containers, Images, Volumes, Networks, Stacks and Events — shows the Host selected in the **Host switcher**. A containerd Host's pages also show one namespace at a time, picked [under the switcher](/docs/hosts/containerd/#namespaces). Switch Host there, or select a Host's card on the [Overview](/docs/guides/overview/). Homeport remembers your choice between launches.
+Every resource page — Containers, Images, Volumes, Networks, Stacks and Events — shows the Host selected in the **Host switcher**. A containerd Host's pages also show one namespace at a time, picked [under the switcher](/docs/hosts/containerd/#namespaces), and an Incus Host's one [project](/docs/hosts/incus/#projects). Switch Host there, or select a Host's card on the [Overview](/docs/guides/overview/). Homeport remembers your choice between launches.
 
 ## Statuses
 
 Each Host shows a status next to its name. When the selected Host isn't connected, resource pages show its status with **Retry now** and **Open host settings**.
 
-| Status                     | Meaning                                                                        | What happens next                                                           |
-| -------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| **Connected**              | The Engine answered. Its version is shown, or Podman's or containerd's.        | Homeport keeps watching the connection.                                     |
-| **Connecting**             | Homeport is reaching the Engine.                                               | —                                                                           |
-| **Disabled**               | The Host's **Enabled** switch is off.                                          | Nothing until you turn it on.                                               |
-| **Unreachable**            | The network, socket or Engine didn't answer.                                   | Retries on its own, waiting longer each time.                               |
-| **Access refused**         | The SSH server refused the key, ssh-agent failed, or the TLS handshake failed. | Fix the cause, then **Reconnect**.                                          |
-| **Server key not trusted** | First SSH connection: the server's or a bastion's key needs your approval.     | [Trust the key](/docs/hosts/ssh/#trust-the-servers-key) on the Host's page. |
-| **Server key changed**     | The SSH server presented a different key from the one you trusted.             | [Investigate first](/docs/hosts/ssh/#when-the-servers-key-changes).         |
-| **Credentials lost**       | The stored credentials can't be decrypted.                                     | [Re-enter them](/docs/reference/troubleshooting/#credentials-lost).         |
-| **Keychain unavailable**   | The Host needs stored secrets but there's no OS keychain.                      | See [requirements](/docs/requirements/#optional-an-os-keychain).            |
-| **Misconfigured**          | Something in the Host's settings is missing or invalid.                        | The message says what; fix it and **Save**.                                 |
+| Status                     | Meaning                                                                          | What happens next                                                           |
+| -------------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| **Connected**              | The Engine answered. Its version is shown, or Podman's, containerd's or Incus's. | Homeport keeps watching the connection.                                     |
+| **Connecting**             | Homeport is reaching the Engine.                                                 | —                                                                           |
+| **Disabled**               | The Host's **Enabled** switch is off.                                            | Nothing until you turn it on.                                               |
+| **Unreachable**            | The network, socket or Engine didn't answer.                                     | Retries on its own, waiting longer each time.                               |
+| **Access refused**         | The SSH server refused the key, ssh-agent failed, or the TLS handshake failed.   | Fix the cause, then **Reconnect**.                                          |
+| **Server key not trusted** | First SSH connection: the server's or a bastion's key needs your approval.       | [Trust the key](/docs/hosts/ssh/#trust-the-servers-key) on the Host's page. |
+| **Server key changed**     | The SSH server presented a different key from the one you trusted.               | [Investigate first](/docs/hosts/ssh/#when-the-servers-key-changes).         |
+| **Credentials lost**       | The stored credentials can't be decrypted.                                       | [Re-enter them](/docs/reference/troubleshooting/#credentials-lost).         |
+| **Keychain unavailable**   | The Host needs stored secrets but there's no OS keychain.                        | See [requirements](/docs/requirements/#optional-an-os-keychain).            |
+| **Misconfigured**          | Something in the Host's settings is missing or invalid.                          | The message says what; fix it and **Save**.                                 |
 
 ## Reconnection
 

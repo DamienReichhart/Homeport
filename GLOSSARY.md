@@ -13,7 +13,7 @@ The Docker-compatible daemon a Host points to (Docker Engine, Docker Desktop, Po
 _Avoid_: Daemon, server, backend
 
 **Engine kind**:
-What sort of Engine a Host points to, stored with it: Docker-compatible (Docker Engine, or Podman through its compatible API), containerd or Incus. It decides which pages a Host shows; containerd Hosts get their own (ADR 0020). Called `engine` in code, never `kind`, which is the connection's. Podman is not a kind of its own: it's a Docker-compatible Engine recognised on every connect, because the same socket can change product.
+What sort of Engine a Host points to, stored with it: Docker-compatible (Docker Engine, or Podman through its compatible API), containerd or Incus. It decides which pages a Host shows; containerd Hosts get their own (ADR 0020), and so do Incus Hosts (ADR 0021). Called `engine` in code, never `kind`, which is the connection's. Podman is not a kind of its own: it's a Docker-compatible Engine recognised on every connect, because the same socket can change product.
 
 **Namespace (containerd)**:
 The space every object of a containerd Host lives in (`default` for nerdctl, `k8s.io` for Kubernetes, `moby` for Docker); every call names one. A containerd Host's pages show one at a time, remembered per Host. A Cluster's Namespace is the Kubernetes one: say "containerd namespace" wherever both could be meant.
@@ -22,7 +22,20 @@ The space every object of a containerd Host lives in (`default` for nerdctl, `k8
 What runs for a containerd container, which is only metadata (image, spec, snapshot). Starting a container creates and starts its task; stopping leaves a stopped task until the next start. A Swarm's task is one slot of a service: say "containerd task" wherever both could be meant.
 
 **Snapshot**:
-On a containerd Host, a layer of files a snapshotter keeps: a committed layer of an unpacked image, or a container's active, writable one, each built on a parent.
+On a containerd Host, a layer of files a snapshotter keeps: a committed layer of an unpacked image, or a container's active, writable one, each built on a parent. On an Incus Host, a saved state of an Instance's disk (and, stateful, its memory) that the Instance can be restored to: say "Instance snapshot" wherever both could be meant.
+
+**Instance**:
+What an Incus Host runs: a system container, which boots a whole distribution on the host's kernel, or a virtual machine. Not a Container, which is the Docker Engine's (or containerd's) and runs one application.
+_Avoid_: VM (for both), Incus container (for both)
+
+**Project (Incus)**:
+The space an Incus Host keeps Instances, images, profiles, custom volumes and networks in; every request about them names one. An Incus Host's pages show one at a time, remembered per Host, like a containerd namespace.
+
+**Profile**:
+A set of configuration keys and devices that Incus applies to the Instances listing it, in order: shared limits, networks, storage, cloud-init.
+
+**Trust token**:
+What `incus config trust add <name>` prints: base64 JSON naming the client, the Incus server's addresses and certificate fingerprint, a secret and an expiry. Homeport adds an Incus Host over HTTPS with it, once.
 
 **Pod**:
 On a Podman Host, a group of containers that share one network namespace (and their hostname and IPC) and start and stop together, around an infra container that holds the namespaces and the published ports. Shown on the Pods page through Podman's own API. A Cluster's Pod is the Kubernetes one: in code and text about Hosts, say "Podman pod" wherever both could be meant.

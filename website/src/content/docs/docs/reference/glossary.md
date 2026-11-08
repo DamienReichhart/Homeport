@@ -11,7 +11,7 @@ A Docker Engine that Homeport connects to, defined by a name and how to reach it
 
 ### Engine kind
 
-What sort of Engine a host points to: Docker-compatible (Docker Engine, or Podman through its compatible API), containerd or Incus. It decides which pages a host shows; Incus can't be added yet. Podman isn't a kind of its own: Homeport recognises it each time it connects. See [Engine kinds](/docs/hosts/#engine-kinds).
+What sort of Engine a host points to: Docker-compatible (Docker Engine, or Podman through its compatible API), containerd or Incus. It decides which pages a host shows: containerd and Incus hosts get their own. Podman isn't a kind of its own: Homeport recognises it each time it connects. See [Engine kinds](/docs/hosts/#engine-kinds).
 
 ### Namespace (containerd's)
 
@@ -19,7 +19,23 @@ On a containerd host, the space every container, image and snapshot lives in: ne
 
 ### Snapshot
 
-On a containerd host, a layer of files on disk: an unpacked image layer, or a container's writable layer. See [snapshots](/docs/hosts/containerd/#snapshots).
+On a containerd host, a layer of files on disk: an unpacked image layer, or a container's writable layer. See [snapshots](/docs/hosts/containerd/#snapshots). On an Incus host, a saved state of an instance that it can be restored to; see [instance snapshots](/docs/guides/instances/#snapshots).
+
+### Instance
+
+What an Incus host runs: a system container, which boots a whole Linux distribution on the host's kernel, or a virtual machine with a kernel of its own. Not a container, which runs one application. See [Instances](/docs/guides/instances/).
+
+### Project (Incus's)
+
+On an Incus host, the space its instances, images, profiles, custom volumes and networks live in. An Incus host's pages show one at a time, picked under the host switcher. See [projects](/docs/hosts/incus/#projects).
+
+### Profile
+
+On an Incus host, configuration and devices shared by the instances that list it. See [profiles](/docs/guides/instances/#profiles).
+
+### Trust token
+
+What `incus config trust add` prints on an Incus server, pasted into Homeport once to add that server over HTTPS. See [trust tokens](/docs/hosts/incus/#over-https-with-a-trust-token).
 
 ### Pod
 

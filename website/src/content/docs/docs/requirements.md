@@ -24,6 +24,8 @@ Any Engine that speaks the Docker Engine API works, including Podman's Docker-co
 
 It also manages [containerd](/docs/hosts/containerd/) 1.7 and later directly, through its socket on this machine or over SSH: k3s's, Docker Engine's own, or containerd's service on a server. Pulling images there needs containerd 2.0 or later, and logs and terminals need the Host reached over SSH, or a containerd on this computer (Linux).
 
+It also manages [Incus](/docs/hosts/incus/) 6.0 and later, through its socket on this machine or over SSH, or over HTTPS with a trust token. Virtual machines need hardware virtualization (`/dev/kvm`) on the Incus server, and a terminal in one needs the `incus-agent` its image runs.
+
 On a Podman Host, Homeport also uses Podman's own API: [pods](/docs/guides/podman-pods/) need Podman 4.0 or later, and [Quadlet units](/docs/guides/quadlet/) are listed from Podman 5.7 and installed, edited and removed from 5.8. Starting and stopping a Quadlet unit needs the Host to be reached over SSH, or a Podman on this computer (Linux).
 
 ## Optional: Kubernetes clusters

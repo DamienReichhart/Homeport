@@ -23,6 +23,7 @@ It contains:
 | SSH public keys and the server keys you trusted      | Plain text    |
 | SSH private keys and their passphrases               | **Encrypted** |
 | TLS CA certificates, client certificates and keys    | **Encrypted** |
+| Incus Hosts' client keys and pinned certificates     | **Encrypted** |
 | Managed Stack compose files                          | Plain text    |
 | Managed Stack environments                           | **Encrypted** |
 | Linked Stack folders and compose file paths          | Plain text    |
@@ -114,7 +115,11 @@ Registry logins never reach `docker compose` either: Homeport pulls a Stack's im
 
 ## Trusting servers
 
-The first time Homeport connects to an SSH server, it asks you to confirm the server's key fingerprint, and it refuses to connect if that key later changes until you confirm again. TLS Hosts verify the server's certificate against your CA and the server's name. See [SSH Hosts](/docs/hosts/ssh/#first-connection).
+The first time Homeport connects to an SSH server, it asks you to confirm the server's key fingerprint, and it refuses to connect if that key later changes until you confirm again. TLS Hosts verify the server's certificate against your CA and the server's name; Incus Hosts over HTTPS accept only the certificate they were added with. See [SSH Hosts](/docs/hosts/ssh/#first-connection).
+
+### Incus certificates
+
+Adding an [Incus Host over HTTPS](/docs/hosts/incus/#over-https-with-a-trust-token) makes a client certificate and its private key in memory, an ECDSA P-384 key, and stores them encrypted with the Host's other secrets, never in clear on disk. Incus's own certificate is stored the same way and pinned: Homeport accepts exactly that certificate from the server, compared by its SHA-256 fingerprint, and refuses a different one, showing both fingerprints. The trust token is used once and not kept. Remove Homeport's certificate on the server with `incus config trust remove` to revoke it.
 
 ## What Homeport connects to
 
@@ -124,6 +129,7 @@ The first time Homeport connects to an SSH server, it asks you to confirm the se
 - **A registry, when you check its login** in **Settings → Registries**: Homeport asks the registry's `/v2/` endpoint, and its token service, from this computer, sending the user name and password or token over HTTPS (plain HTTP only for a registry on this computer, such as `localhost:5000`).
 - **Your repositories' servers**, for [Synced Stacks](/docs/guides/synced-stacks/): when you test access, create or sync a Synced Stack, and on an interval while Homeport is open if polling is on. Homeport runs `git` from this computer with that repository's deploy key or token.
 - **The Clusters you add**, through the Kubernetes API server their kubeconfig names (and its proxy, when it has one), with the credentials it gives, checking the server's certificate against the kubeconfig's CA. Exec plugins contact their own cloud (AWS, Google Cloud, Azure) from this computer, as they do for `kubectl`.
+- **Incus image servers**, for the image pickers on an [Incus Host](/docs/guides/instances/#making-an-instance): Homeport downloads a server's list of images (`streams/v1/images.json`, from `images.linuxcontainers.org` unless you pick another) from this computer, and keeps it ten minutes. Incus downloads the images themselves.
 - **Chart repositories and OCI registries, through helm**, when you add or update a repository, search charts, or install or upgrade a chart: `helm` downloads indexes and charts from this computer, as it does in a terminal.
 - **This website, to check for updates**: at launch and every 6 hours, Homeport downloads `updates/latest.json`, a small file listing the latest version. The request carries nothing about you, your Hosts or your containers, but like any web request it reaches GitHub Pages, which hosts this site, from your IP address. Turn it off in **Settings → Updates**. Updates themselves download from GitHub Releases, and Homeport installs one only if it's signed with Homeport's update key. See [updating](/docs/reference/updating/).
 
@@ -138,7 +144,7 @@ Homeport talks to a Host's Engine through its API, and runs commands on a Host's
 | A [containerd container's logs](/docs/hosts/containerd/#logs)                             | the SSH server, or this computer for a local socket on Linux | `tail -n <lines> [-F] -- '<log file>'`, after `ls` of a Kubernetes container's log folder when CRI doesn't name the file |
 | A [terminal in a containerd container](/docs/hosts/containerd/#a-terminal-in-a-container) | the SSH server, or this computer for a local socket on Linux | `mktemp -d`, `mkfifo -m 600` for two FIFOs in that folder, `cat` through them, then `rm -rf` of the folder               |
 
-They run with the SSH user's rights (or yours, on this computer) and never with `sudo`. Values are checked and quoted before they go into a command. Installing, editing and removing Quadlet units goes through Podman's API, which writes the files itself. The only files Homeport makes on a Host are a containerd terminal's two FIFOs, in a private temporary folder removed when the terminal closes.
+They run with the SSH user's rights (or yours, on this computer) and never with `sudo`. Values are checked and quoted before they go into a command. Installing, editing and removing Quadlet units goes through Podman's API, which writes the files itself. Nothing runs on an Incus Host: its console and terminals go through Incus's own API. The only files Homeport makes on a Host are a containerd terminal's two FIFOs, in a private temporary folder removed when the terminal closes.
 
 ## What Homeport never does
 
