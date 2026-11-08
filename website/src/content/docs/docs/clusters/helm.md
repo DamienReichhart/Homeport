@@ -33,9 +33,22 @@ Click a release to open it:
 
 Values, Notes, Manifest and Resources show the current revision; pick an earlier one above them to see what it was installed with.
 
+## Chart repositories
+
+**Chart repositories**, the second tab of the Helm page, lists the repositories helm knows on this computer: the same list as `helm repo list` in a terminal, shared by every Cluster. Homeport keeps no list of its own, so a repository added in a terminal appears here, and one added here appears in `helm repo list`.
+
+- **Add repository** asks for a name (letters, digits, dots, dashes and underscores) and the repository's `https://` URL, such as `https://charts.bitnami.com/bitnami`, and downloads its index.
+- **Update all**, or **Update** on one repository, downloads the latest indexes, as `helm repo update` does, with helm's output shown live. Charts published since the last update only show up after one.
+- **Remove** forgets a repository, after you confirm. Releases installed from it keep running.
+
+**Find charts** searches the charts of these repositories by name or description, as `helm search repo` does: type `postgres` after adding Bitnami's repository to see its PostgreSQL charts, with their latest chart and app versions.
+
+Homeport only adds public repositories. One that needs a login is added in a terminal, with `helm repo add --username …`, where helm keeps its password as it always does; it then appears here and works like the others. A chart in an OCI registry (`oci://…`) needs no repository.
+
 ## When it doesn't work
 
 - **The helm CLI isn't installed**: install helm 3 as above, then reopen the page.
 - **Helm 2**: Homeport only drives Helm 3 and later. Install a current helm.
 - **Not allowed**: helm reads releases from Secrets; listing them needs `list` on `secrets` in the Namespace. Details names what was refused.
+- **Not a chart repository, or can't be reached**: the URL serves no `index.yaml`, or this computer can't reach it. Details shows what helm said.
 - **Not connected**: helm goes through the Cluster's connection in Homeport; the Cluster's page says why it isn't connected.
