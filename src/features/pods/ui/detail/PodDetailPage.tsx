@@ -45,7 +45,7 @@ function ownerLink(namespace: string, owner: OwnerView): string | null {
     : null;
 }
 
-function Overview({ pod }: { pod: PodDetail }) {
+function Overview({ clusterId, pod }: { clusterId: string; pod: PodDetail }) {
   const v = pod.view;
   const link = v.owner && ownerLink(v.namespace, v.owner);
   const items: [string, ReactNode][] = [
@@ -78,7 +78,12 @@ function Overview({ pod }: { pod: PodDetail }) {
           <KeyValue items={items} />
         </CardContent>
       </Card>
-      <PodContainers containers={pod.containers} />
+      <PodContainers
+        clusterId={clusterId}
+        namespace={v.namespace}
+        pod={v.name}
+        containers={pod.containers}
+      />
     </div>
   );
 }
@@ -143,7 +148,7 @@ function PodDetailView({ cluster }: { cluster: ClusterView }) {
           ))}
         </TabsList>
         <TabsContent value="overview" className="pt-3">
-          <Overview pod={pod.data} />
+          <Overview clusterId={id} pod={pod.data} />
         </TabsContent>
         <TabsContent value="logs" className="pt-3">
           {tab === 'logs' && <PodLogs clusterId={id} pod={pod.data} />}

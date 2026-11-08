@@ -1,4 +1,5 @@
 import { age } from '@/core/cluster';
+import { ForwardButton } from '@/features/port-forwards';
 import type { PodContainer } from '@/shared/api';
 import { Badge, DataTable, StatusDot, type ColumnDef } from '@/shared/ui';
 import { t, type MessageKey } from '@/shared/i18n';
@@ -80,7 +81,56 @@ const columns: ColumnDef<PodContainer, unknown>[] = [
   },
 ];
 
-/** A Pod's containers, init containers first, with their state and restarts. */
-export function PodContainers({ containers }: { containers: PodContainer[] }) {
-  return <DataTable columns={columns} data={containers} getRowId={(c) => `${c.init}:${c.name}`} />;
+/** The ports column: each port a container declares, TCP ones with Forward. */
+function portsColumn(
+  clusterId: string,
+  namespace: string,
+  pod: string,
+): ColumnDef<PodContainer, unknown> {
+  return {
+    id: 'ports',
+    header: t('pods.container.ports'),
+    accessorFn: (c) => c.ports.map((p) => p.port).join(', '),
+    cell: ({ row }) => (
+      <span className="grid gap-1">
+        {row.original.ports.map((p) => (
+          <span key={`${p.port}/${p.protocol}`} className="flex items-center gap-1">
+            <span className="font-mono text-xs">
+              {p.name ? `${p.name} ` : ''}
+              {p.port}/{p.protocol}
+            </span>
+            {p.protocol === 'TCP' && !row.original.init && (
+              <ForwardButton
+                clusterId={clusterId}
+                target={{ kind: 'pod', namespace, name: pod }}
+                port={p.port}
+              />
+            )}
+          </span>
+        ))}
+      </span>
+    ),
+  };
+}
+
+/** A Pod's containers, init containers first, with their state, restarts and ports. */
+export function PodContainers({
+  clusterId,
+  namespace,
+  pod,
+  containers,
+}: {
+  clusterId: string;
+  namespace: string;
+  pod: string;
+  containers: PodContainer[];
+}) {
+  const withPorts = containers.some((c) => c.ports.length > 0);
+  return (
+    <DataTable
+      columns={withPorts ? [...columns, portsColumn(clusterId, namespace, pod)] : columns}
+      data={containers}
+      getRowId={(c) => `${c.init}:${c.name}`}
+    />
+  );
 }

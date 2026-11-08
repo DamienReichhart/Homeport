@@ -167,6 +167,13 @@ export const commands = {
 	clustersDelete: (id: string, kind: ResourceKind, namespace: string | null, name: string, grace: number | null) => __TAURI_INVOKE<null>("clusters_delete", { id, kind, namespace, name, grace }),
 	/**  Deletes an object of any type the Cluster serves. */
 	clustersApiDelete: (id: string, api: ApiType, namespace: string | null, name: string) => __TAURI_INVOKE<null>("clusters_api_delete", { id, api, namespace, name }),
+	/**  Forwards `local_port` (a free one without) to `remote_port` of a Pod or Service. */
+	clustersForwardStart: (id: string, target: ForwardTarget, remotePort: number, localPort: number | null) => __TAURI_INVOKE<PortForward>("clusters_forward_start", { id, target, remotePort, localPort }),
+	/**  Every active forward, across Clusters. */
+	clustersForwardList: () => __TAURI_INVOKE<PortForward[]>("clusters_forward_list"),
+	clustersForwardStop: (forward: number) => __TAURI_INVOKE<void>("clusters_forward_stop", { forward }),
+	/**  Whether `port` is free on this computer, to propose it as the local port. */
+	clustersForwardPortFree: (port: number) => __TAURI_INVOKE<boolean>("clusters_forward_port_free", { port }),
 	/**
 	 *  Streams the logs of one Pod, or of several in one stream with each
 	 *  line labelled, until cancelled or they end.
@@ -529,6 +536,7 @@ export const events = {
 	clusterStatusChanged: makeEvent<ClusterStatusChanged, ClusterStatusChanged>("cluster-status-changed"),
 	engineEventReceived: makeEvent<EngineEventReceived, EngineEventReceived>("engine-event-received"),
 	hostStatusChanged: makeEvent<HostStatusChanged, HostStatusChanged>("host-status-changed"),
+	portForwardChanged: makeEvent<PortForwardChanged, PortForwardChanged>("port-forward-changed"),
 	syncedAutoDeployed: makeEvent<SyncedAutoDeployed, SyncedAutoDeployed>("synced-auto-deployed"),
 	syncedUpdateAvailable: makeEvent<SyncedUpdateAvailable, SyncedUpdateAvailable>("synced-update-available"),
 	trayAddHostChosen: makeEvent<TrayAddHostChosen, TrayAddHostChosen>("tray-add-host-chosen"),
@@ -1310,6 +1318,20 @@ export type FolderProject = {
 	name: string,
 };
 
+/**  A forward failed, or ended because its target is gone. */
+export type ForwardEvent = {
+	id: number,
+	clusterId: string,
+	error: AppError,
+	/**  The forward was stopped. */
+	ended: boolean,
+};
+
+/**  What a forward reaches. */
+export type ForwardTarget = { kind: "pod"; namespace: string; name: string } | 
+/**  Through one of its ready Pods, picked again when that one goes. */
+{ kind: "service"; namespace: string; name: string };
+
 export type Freshness = "upToDate" | 
 /**  The registry has a different image under this tag. */
 "newer" | 
@@ -1955,6 +1977,8 @@ export type PodContainer = {
 	restarts: number,
 	/**  Why it last ended, when it restarted. */
 	lastReason: string | null,
+	/**  The ports it declares. */
+	ports: PodPort[],
 };
 
 export type PodCounts = {
@@ -2008,6 +2032,14 @@ export type PodLogTarget = {
 	previous: boolean,
 };
 
+/**  A port a container declares. */
+export type PodPort = {
+	port: number,
+	/**  `TCP`, `UDP` or `SCTP`. */
+	protocol: string,
+	name: string | null,
+};
+
 export type PodView = {
 	namespace: string,
 	name: string,
@@ -2035,6 +2067,29 @@ export type PortBinding = {
 	privatePort: number,
 	publicPort: number | null,
 	protocol: string,
+};
+
+/**  An active forward, as the list shows it. */
+export type PortForward = {
+	id: number,
+	clusterId: string,
+	clusterName: string,
+	target: ForwardTarget,
+	/**  The port of the Pod, or of the Service. */
+	remotePort: number,
+	localPort: number,
+	/**  Where it listens: `127.0.0.1:8080`, and `[::1]:8080` when that was free. */
+	addresses: string[],
+	/**  Connections open through it now. */
+	connections: number,
+	/**  The Pod connections go to, once one went through. */
+	pod: string | null,
+	started: string,
+};
+
+/**  A port forward failed, or ended because its target is gone. */
+export type PortForwardChanged = {
+	event: ForwardEvent,
 };
 
 /**

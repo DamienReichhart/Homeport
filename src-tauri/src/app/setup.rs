@@ -5,7 +5,7 @@ use std::{error::Error, sync::Arc};
 
 use tauri::{App, Manager};
 
-use homeport_clusters::{registry::ClusterRegistry, service::ClusterService, store::ClusterStore};
+use homeport_clusters::{service::ClusterService, store::ClusterStore};
 use homeport_git::{Repositories, RepositoryStore};
 use homeport_hosts::{
     events::EventStore, registry::HostRegistry, service::HostService, store::HostStore,
@@ -55,13 +55,10 @@ pub fn state(app: &App) -> Result<AppState, Box<dyn Error>> {
         }
     });
     let cluster_store = Arc::new(ClusterStore::new(db.clone(), secrets.clone()));
-    let clusters = ClusterService {
-        registry: ClusterRegistry::new(
-            cluster_store.clone(),
-            Arc::new(TauriClusterNotifier::new(app.handle().clone())),
-        ),
-        store: cluster_store,
-    };
+    let clusters = ClusterService::new(
+        cluster_store,
+        Arc::new(TauriClusterNotifier::new(app.handle().clone())),
+    );
     let start = clusters.registry.clone();
     tauri::async_runtime::spawn(async move {
         if let Err(e) = start.start_all() {

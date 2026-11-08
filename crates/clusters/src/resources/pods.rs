@@ -76,6 +76,18 @@ pub struct PodContainer {
     pub restarts: u32,
     /// Why it last ended, when it restarted.
     pub last_reason: Option<String>,
+    /// The ports it declares.
+    pub ports: Vec<PodPort>,
+}
+
+/// A port a container declares.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct PodPort {
+    pub port: u16,
+    /// `TCP`, `UDP` or `SCTP`.
+    pub protocol: String,
+    pub name: Option<String>,
 }
 
 /// The status column of `kubectl get pods`, simplified: a terminating Pod,
@@ -231,6 +243,18 @@ fn container(
         restarts: status.map_or(0, |s| s.restart_count.max(0) as u32),
         last_reason: status
             .and_then(|s| s.last_state.as_ref()?.terminated.as_ref()?.reason.clone()),
+        ports: c
+            .ports
+            .iter()
+            .flatten()
+            .filter_map(|p| {
+                Some(PodPort {
+                    port: u16::try_from(p.container_port).ok()?,
+                    protocol: p.protocol.clone().unwrap_or_else(|| "TCP".into()),
+                    name: p.name.clone(),
+                })
+            })
+            .collect(),
     }
 }
 

@@ -11,6 +11,7 @@ import { networksFeature } from '@/features/networks';
 import { nodesFeature } from '@/features/nodes';
 import { overviewFeature } from '@/features/overview';
 import { podsFeature } from '@/features/pods';
+import { portForwardsFeature } from '@/features/port-forwards';
 import { settingsFeature } from '@/features/settings';
 import { stacksFeature } from '@/features/stacks';
 import { swarmFeature } from '@/features/swarm';
@@ -35,6 +36,7 @@ export const features: FeatureManifest[] = [
   configFeature,
   nodesFeature,
   clusterEventsFeature,
+  portForwardsFeature,
   eventsFeature,
   settingsFeature,
   hostsFeature,

@@ -37,6 +37,7 @@ export default {
   'pods.container.restarts': 'Restarts',
   'pods.container.restartsWhy': '{count} (last: {reason})',
   'pods.container.started': 'Started',
+  'pods.container.ports': 'Ports',
   'pods.state.running': 'Running',
   'pods.state.waiting': 'Waiting',
   'pods.state.terminated': 'Terminated',

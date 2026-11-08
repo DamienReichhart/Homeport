@@ -190,3 +190,85 @@ async fn a_pod_gives_its_logs_and_a_terminal_then_is_deleted() {
     .await
     .unwrap();
 }
+
+#[tokio::test]
+#[ignore = "needs a kind cluster"]
+async fn a_forwarded_port_reaches_the_pod_until_stopped() {
+    use std::{sync::Arc, time::Duration};
+
+    use homeport_clusters::{
+        forward::{ForwardTarget, PortForwards},
+        registry::{ClusterNotifier, ClusterStatus},
+    };
+    use k8s_openapi::api::core::v1::Pod;
+    use kube::api::{Api, PostParams};
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+    struct Silent;
+    impl ClusterNotifier for Silent {
+        fn cluster_status(&self, _: &str, _: &ClusterStatus) {}
+    }
+
+    let Some(on) = connect() else { return };
+    let name = format!("homeport-forward-{}", std::process::id());
+    let pod: Pod = serde_json::from_value(serde_json::json!({
+        "apiVersion": "v1",
+        "kind": "Pod",
+        "metadata": { "name": name },
+        "spec": { "containers": [{
+            "name": "web",
+            "image": "busybox:1.37",
+            "command": ["sh", "-c", "echo hello > /tmp/index.html; httpd -f -p 8080 -h /tmp"],
+            "ports": [{ "containerPort": 8080 }],
+        }] },
+    }))
+    .unwrap();
+    let pods: Api<Pod> = Api::namespaced(on.client.clone(), "default");
+    pods.create(&PostParams::default(), &pod).await.unwrap();
+    for _ in 0..120 {
+        if on.pod("default", &name).await.unwrap().view.status == "Running" {
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(500)).await;
+    }
+
+    let forwards = PortForwards::new(Arc::new(Silent));
+    let target = ForwardTarget::Pod {
+        namespace: "default".into(),
+        name: name.clone(),
+    };
+    let forward = forwards
+        .start(on.clone(), target, 8080, None)
+        .await
+        .unwrap();
+    assert!(forward
+        .addresses
+        .iter()
+        .all(|a| a.starts_with("127.0.0.1:") || a.starts_with("[::1]:")));
+    let mut socket = tokio::net::TcpStream::connect(("127.0.0.1", forward.local_port))
+        .await
+        .unwrap();
+    socket
+        .write_all(b"GET /index.html HTTP/1.0\r\n\r\n")
+        .await
+        .unwrap();
+    let mut answer = String::new();
+    socket.read_to_string(&mut answer).await.unwrap();
+    assert!(answer.contains("hello"), "{answer}");
+
+    forwards.stop(forward.id);
+    tokio::time::sleep(Duration::from_millis(100)).await;
+    assert!(
+        tokio::net::TcpStream::connect(("127.0.0.1", forward.local_port))
+            .await
+            .is_err()
+    );
+    on.delete(
+        &ResourceKind::Pod.api_type(),
+        Some("default"),
+        &name,
+        Some(0),
+    )
+    .await
+    .unwrap();
+}

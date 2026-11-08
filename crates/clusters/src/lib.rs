@@ -14,6 +14,7 @@ pub mod classify;
 pub mod client;
 pub mod detect;
 pub mod exec;
+pub mod forward;
 pub mod kubeconfig;
 pub mod logs;
 pub mod messages;

@@ -12,12 +12,13 @@ import {
   useResourceWatch,
 } from '@/core/cluster';
 import { RelatedPods } from '@/features/pods';
+import { ForwardButton } from '@/features/port-forwards';
 import type { ClusterServiceDetail, ClusterView } from '@/shared/api';
 import { Badge, Card, CardContent, DataTable, KeyValue } from '@/shared/ui';
 import { networkQueries } from '../api/queries';
 import { t } from '@/shared/i18n';
 
-function Overview({ service }: { service: ClusterServiceDetail }) {
+function Overview({ clusterId, service }: { clusterId: string; service: ClusterServiceDetail }) {
   const v = service.view;
   const items: [string, ReactNode][] = [
     [t('network.detail.namespace'), v.namespace],
@@ -49,6 +50,20 @@ function Overview({ service }: { service: ClusterServiceDetail }) {
           },
           { id: 'target', header: t('network.port.target'), accessorFn: (p) => p.targetPort },
           { id: 'node', header: t('network.port.node'), accessorFn: (p) => p.nodePort ?? '' },
+          {
+            id: 'forward',
+            header: '',
+            enableSorting: false,
+            cell: ({ row }) =>
+              row.original.protocol === 'TCP' &&
+              v.selector && (
+                <ForwardButton
+                  clusterId={clusterId}
+                  target={{ kind: 'service', namespace: v.namespace, name: v.name }}
+                  port={row.original.port}
+                />
+              ),
+          },
         ]}
         data={service.ports}
         getRowId={(p) => `${p.port}/${p.protocol}`}
@@ -78,7 +93,11 @@ function ServiceDetailView({ cluster }: { cluster: ClusterView }) {
       }
       description={(s) => s.view.type}
       tabs={(s) => [
-        { value: 'overview', label: t('network.tab.overview'), content: <Overview service={s} /> },
+        {
+          value: 'overview',
+          label: t('network.tab.overview'),
+          content: <Overview clusterId={id} service={s} />,
+        },
         {
           value: 'pods',
           label: t('network.tab.pods'),

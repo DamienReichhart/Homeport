@@ -166,6 +166,26 @@ homeport_core::messages! {
     NO_SHELL_HINT = "errors.clusters.terminal.noShell.hint" => "Minimal (distroless) images have no shell. Type a command the image has, or attach a debug container from a terminal, which Homeport doesn't do:";
     /// The process ended with an error that isn't an exit code.
     EXEC_ENDED_WITH_ERROR = "errors.clusters.terminal.endedWithError" => "The command ended with an error.";
+    // Port forwards.
+
+    /// The local port of a forward is taken.
+    LOCAL_PORT_IN_USE = "errors.clusters.forward.portInUse" => "Port {port} is already in use on this computer.";
+    LOCAL_PORT_IN_USE_HINT = "errors.clusters.forward.portInUse.hint" => "Pick another local port, or leave it empty for a free one.";
+    /// A local port below 1024 without the rights to listen on it.
+    LOCAL_PORT_PRIVILEGED = "errors.clusters.forward.portPrivileged" => "This computer doesn't let Homeport listen on port {port}.";
+    /// Forwarding to a Pod that isn't running.
+    FORWARD_POD_NOT_RUNNING = "errors.clusters.forward.podNotRunning" => "{pod} isn't running, so nothing can be forwarded to it.";
+    FORWARD_POD_NOT_RUNNING_HINT = "errors.clusters.forward.podNotRunning.hint" => "Its page says why. Forward to its Service instead to follow its replacements.";
+    /// Forwarding to a Service that selects no Pods.
+    FORWARD_NO_SELECTOR = "errors.clusters.forward.noSelector" => "{service} doesn't select Pods, so there's nothing to forward to.";
+    FORWARD_NO_SELECTOR_HINT = "errors.clusters.forward.noSelector.hint" => "Services without a selector point at endpoints Homeport can't forward to; forward to a Pod instead.";
+    /// Forwarding a port a Service doesn't have.
+    FORWARD_NO_SUCH_PORT = "errors.clusters.forward.noSuchPort" => "{service} has no port {port}.";
+    /// None of a Service's Pods is ready.
+    FORWARD_NO_READY_POD = "errors.clusters.forward.noReadyPod" => "None of the Pods of {service} is ready.";
+    FORWARD_NO_READY_POD_HINT = "errors.clusters.forward.noReadyPod.hint" => "Its Pods tab says why. The forward tries again on the next connection.";
+    /// A Service's named target port that its Pod doesn't declare.
+    FORWARD_NAMED_PORT_MISSING = "errors.clusters.forward.namedPortMissing" => "{pod} has no container port named {port}.";
     /// The object changed between reading it and changing it.
     CHANGED_MEANWHILE = "errors.clusters.changedMeanwhile" => "{kind} {name} changed while you were working on it.";
     CHANGED_MEANWHILE_HINT = "errors.clusters.changedMeanwhile.hint" => "Look at it again, then retry.";

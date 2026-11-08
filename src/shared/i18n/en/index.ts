@@ -15,6 +15,7 @@ import networks from './networks';
 import nodes from './nodes';
 import overview from './overview';
 import pods from './pods';
+import portforwards from './portforwards';
 import registries from './registries';
 import repositories from './repositories';
 import search from './search';
@@ -45,6 +46,7 @@ export const uiMessages = {
   ...nodes,
   ...overview,
   ...pods,
+  ...portforwards,
   ...registries,
   ...repositories,
   ...search,

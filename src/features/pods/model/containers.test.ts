@@ -14,6 +14,7 @@ const container = (name: string, extra: Partial<PodContainer> = {}): PodContaine
   ready: true,
   restarts: 0,
   lastReason: null,
+  ports: [],
   ...extra,
 });
 

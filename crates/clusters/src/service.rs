@@ -8,10 +8,11 @@ use serde::Serialize;
 use homeport_core::error::{AppError, AppResult};
 
 use crate::{
+    forward::PortForwards,
     kubeconfig::{self, ContextChoice, KubeContexts, Source},
     messages as msg,
     model::{Cluster, ClusterKind},
-    registry::{ClusterRegistry, ClusterStatus},
+    registry::{ClusterNotifier, ClusterRegistry, ClusterStatus},
     store::{ClusterDraft, ClusterStore},
 };
 
@@ -27,9 +28,20 @@ pub struct ClusterView {
 pub struct ClusterService {
     pub store: Arc<ClusterStore>,
     pub registry: Arc<ClusterRegistry>,
+    /// The port forwards to every Cluster, in memory only.
+    pub forwards: Arc<PortForwards>,
 }
 
 impl ClusterService {
+    /// The service over `store`, reporting through `notifier`.
+    pub fn new(store: Arc<ClusterStore>, notifier: Arc<dyn ClusterNotifier>) -> Self {
+        Self {
+            registry: ClusterRegistry::new(store.clone(), notifier.clone()),
+            forwards: PortForwards::new(notifier),
+            store,
+        }
+    }
+
     pub fn view(&self, cluster: Cluster) -> ClusterView {
         let status = self.registry.status(&cluster.id);
         ClusterView { cluster, status }
@@ -56,6 +68,9 @@ impl ClusterService {
     /// Enables or disables a Cluster; its supervisor connects or stops.
     pub fn set_enabled(&self, id: &str, enabled: bool) -> AppResult<ClusterView> {
         let cluster = self.store.set_enabled(id, enabled)?;
+        if !enabled {
+            self.forwards.stop_cluster(id);
+        }
         self.registry.restart(id);
         Ok(self.view(cluster))
     }
@@ -63,6 +78,7 @@ impl ClusterService {
     /// Forgets a Cluster and its credentials. Nothing changes on the Cluster.
     pub fn remove(&self, id: &str) -> AppResult<()> {
         self.store.delete(id)?;
+        self.forwards.stop_cluster(id);
         self.registry.remove(id);
         Ok(())
     }
@@ -174,10 +190,7 @@ mod tests {
             db,
             Arc::new(SecretBox::from_key(&[5; 32])),
         ));
-        ClusterService {
-            registry: ClusterRegistry::new(store.clone(), Arc::new(Silent)),
-            store,
-        }
+        ClusterService::new(store, Arc::new(Silent))
     }
 
     fn kubeconfig(server: &str) -> String {

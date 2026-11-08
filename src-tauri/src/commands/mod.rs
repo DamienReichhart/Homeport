@@ -14,6 +14,7 @@ use crate::app::events;
 pub mod app;
 pub mod backup;
 pub mod cluster_actions;
+pub mod cluster_forwards;
 pub mod cluster_streams;
 pub mod clusters;
 pub mod containers;
@@ -119,6 +120,10 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             cluster_actions::clusters_cron_job_trigger,
             cluster_actions::clusters_delete,
             cluster_actions::clusters_api_delete,
+            cluster_forwards::clusters_forward_start,
+            cluster_forwards::clusters_forward_list,
+            cluster_forwards::clusters_forward_stop,
+            cluster_forwards::clusters_forward_port_free,
             cluster_streams::clusters_pod_logs_subscribe,
             cluster_streams::clusters_exec_start,
             cluster_streams::clusters_exec_input,
@@ -265,6 +270,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
         .events(collect_events![
             events::HostStatusChanged,
             events::ClusterStatusChanged,
+            events::PortForwardChanged,
             events::EngineEventReceived,
             events::SyncedUpdateAvailable,
             events::SyncedAutoDeployed,

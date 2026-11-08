@@ -70,6 +70,7 @@ describe('pods', () => {
             ready: false,
             restarts: 0,
             lastReason: null,
+            ports: [],
           },
           {
             name: 'web',
@@ -83,6 +84,7 @@ describe('pods', () => {
             ready: true,
             restarts: 2,
             lastReason: 'OOMKilled',
+            ports: [],
           },
         ],
         hostIp: '192.168.1.5',

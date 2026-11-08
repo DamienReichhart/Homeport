@@ -50,7 +50,7 @@ pub use self::{
         IngressTls, IngressView,
     },
     nodes::{ClusterNodeDetail, ClusterNodeView, NodeTaint},
-    pods::{NamespaceView, PodContainer, PodDetail, PodHealth, PodView},
+    pods::{NamespaceView, PodContainer, PodDetail, PodHealth, PodPort, PodView},
     summary::{ClusterSummary, NodeCounts, Part, PodCounts},
     watch::watch,
     workloads::{TemplateContainer, WorkloadDetail, WorkloadHealth, WorkloadKind, WorkloadView},
@@ -298,6 +298,17 @@ impl On {
         let ns = Some(namespace);
         let pod: Pod = self.get(self.api(ns), ResourceKind::Pod, ns, name).await?;
         Ok(pods::detail(&pod))
+    }
+
+    pub(crate) async fn get_pod(&self, namespace: &str, name: &str) -> AppResult<Pod> {
+        let ns = Some(namespace);
+        self.get(self.api(ns), ResourceKind::Pod, ns, name).await
+    }
+
+    pub(crate) async fn get_service(&self, namespace: &str, name: &str) -> AppResult<Service> {
+        let ns = Some(namespace);
+        self.get(self.api(ns), ResourceKind::Service, ns, name)
+            .await
     }
 
     pub async fn services(&self, namespace: Option<&str>) -> AppResult<Vec<ClusterServiceView>> {

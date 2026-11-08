@@ -25,6 +25,7 @@ const container = (name: string) => ({
   ready: true,
   restarts: 0,
   lastReason: null,
+  ports: [],
 });
 
 const pod = {
