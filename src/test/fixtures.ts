@@ -46,27 +46,6 @@ export const podmanHost: HostView = {
   },
 };
 
-/** A local containerd Host, connected. */
-export const containerdHost: HostView = {
-  host: {
-    ...connectedHost.host,
-    id: 'c1',
-    name: 'k3s',
-    engine: 'containerd',
-    connection: { kind: 'local', socketPath: '/run/containerd/containerd.sock' },
-  },
-  status: {
-    state: 'connected',
-    engineVersion: '2.1.4',
-    apiVersion: 'b7a25261',
-    os: 'linux',
-    arch: 'amd64',
-    podmanVersion: null,
-    containerdVersion: '2.1.4',
-    swarm: null,
-  },
-};
-
 export function container(name: string, stack: string | null, state = 'running'): Container {
   return {
     id: `${name}-0123456789abcdef`,

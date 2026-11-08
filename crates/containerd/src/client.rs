@@ -19,6 +19,7 @@ use crate::{
         events::v1::events_client::EventsClient, images::v1::images_client::ImagesClient,
         introspection::v1::introspection_client::IntrospectionClient,
         namespaces::v1::namespaces_client::NamespacesClient,
+        snapshots::v1::snapshots_client::SnapshotsClient, tasks::v1::tasks_client::TasksClient,
         version::v1::version_client::VersionClient,
     },
     error, messages as msg,
@@ -149,8 +150,14 @@ impl Containerd {
     pub(crate) fn containers(&self) -> ContainersClient<Channel> {
         ContainersClient::new(self.channel.clone())
     }
+    pub(crate) fn tasks(&self) -> TasksClient<Channel> {
+        TasksClient::new(self.channel.clone())
+    }
     pub(crate) fn images(&self) -> ImagesClient<Channel> {
         ImagesClient::new(self.channel.clone())
+    }
+    pub(crate) fn snapshots(&self) -> SnapshotsClient<Channel> {
+        SnapshotsClient::new(self.channel.clone())
     }
     pub(crate) fn introspection(&self) -> IntrospectionClient<Channel> {
         IntrospectionClient::new(self.channel.clone())

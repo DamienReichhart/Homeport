@@ -413,6 +413,18 @@ export const commands = {
 	containerdNamespaceCreate: (hostId: string, name: string) => __TAURI_INVOKE<null>("containerd_namespace_create", { hostId, name }),
 	/**  Removes an empty namespace; one that holds anything is refused. */
 	containerdNamespaceRemove: (hostId: string, name: string) => __TAURI_INVOKE<null>("containerd_namespace_remove", { hostId, name }),
+	/**  The containers of `namespace`, each with its task. */
+	containerdContainers: (hostId: string, namespace: string) => __TAURI_INVOKE<ContainerdContainer[]>("containerd_containers", { hostId, namespace }),
+	containerdContainerInspect: (hostId: string, namespace: string, id: string) => __TAURI_INVOKE<ContainerdContainerDetail>("containerd_container_inspect", { hostId, namespace, id }),
+	/**  Starts, stops (SIGKILL after 10 s), pauses or resumes a container's task. */
+	containerdContainerAct: (hostId: string, namespace: string, id: string, action: TaskAction) => __TAURI_INVOKE<null>("containerd_container_act", { hostId, namespace, id, action }),
+	/**  Sends a signal, by name or number, to a container's task. */
+	containerdContainerKill: (hostId: string, namespace: string, id: string, signal: string) => __TAURI_INVOKE<null>("containerd_container_kill", { hostId, namespace, id, signal }),
+	/**
+	 *  Removes a container and, unless `keep_snapshot`, its snapshot; `force`
+	 *  kills a running task first.
+	 */
+	containerdContainerRemove: (hostId: string, namespace: string, id: string, force: boolean, keepSnapshot: boolean) => __TAURI_INVOKE<null>("containerd_container_remove", { hostId, namespace, id, force, keepSnapshot }),
 	podsList: (hostId: string) => __TAURI_INVOKE<PodmanPod[]>("pods_list", { hostId }),
 	podsInspect: (hostId: string, id: string) => __TAURI_INVOKE<PodmanPodDetail>("pods_inspect", { hostId, id }),
 	podsAct: (hostId: string, id: string, action: PodmanPodAction) => __TAURI_INVOKE<null>("pods_act", { hostId, id, action }),
@@ -1196,6 +1208,41 @@ export type ContainerUsage = {
 	memoryLimit: number,
 };
 
+/**  A container and its task, as the list shows them. */
+export type ContainerdContainer = {
+	id: string,
+	/**  nerdctl's name, or the Pod's container's, or the id. */
+	name: string,
+	image: string,
+	labels: { [key in string]: string },
+	runtime: string,
+	snapshotter: string,
+	snapshotKey: string,
+	/**  RFC 3339. */
+	createdAt: string | null,
+	createdBy: CreatedBy,
+	/**  The Kubernetes Pod it belongs to, as `namespace/name`. */
+	pod: string | null,
+	/**  A Pod's pause container, which holds its namespaces. */
+	sandbox: boolean,
+	state: TaskState,
+	/**  The task's main process. */
+	pid: number | null,
+	/**  How a stopped task ended. */
+	exitStatus: number | null,
+	exitedAt: string | null,
+};
+
+/**  A container with everything containerd holds about it. */
+export type ContainerdContainerDetail = {
+	container: ContainerdContainer,
+	/**  Its OCI runtime spec, as containerd stores it. */
+	spec: Value | null,
+	/**  The names of its extensions, such as CRI's metadata. */
+	extensions: string[],
+	updatedAt: string | null,
+};
+
 /**  One namespace and what it holds. */
 export type ContainerdNamespace = {
 	name: string,
@@ -1209,6 +1256,15 @@ export type ContextChoice = {
 	context: string,
 	name: string,
 };
+
+/**  Which tool made a container, which decides what Homeport can show of it. */
+export type CreatedBy = 
+/**  Kubernetes' CRI: the kubelet undoes stops and removals. */
+"kubernetes" | "nerdctl" | 
+/**  Docker's own containers, in the `moby` namespace. */
+"docker" | 
+/**  `ctr` or another client. */
+"other";
 
 /**  Credentials typed by the user. Absent on update means "keep the stored ones". */
 export type CredentialsInput = { kind: "tls"; caPem: string; certPem: string; keyPem: string } | { kind: "sshKey"; privateKey: string; passphrase: string | null };
@@ -3317,11 +3373,17 @@ export type TableRow = {
 	created: string | null,
 };
 
+/**  What can be done to a container's task. */
+export type TaskAction = "start" | "stop" | "pause" | "resume";
+
 /**  Which tasks to list: all of them, or those of a service or of a node. */
 export type TaskFilter = {
 	serviceId: string | null,
 	nodeId: string | null,
 };
+
+/**  What a container's task is doing; `none` when it has no task. */
+export type TaskState = "none" | "created" | "running" | "paused" | "pausing" | "stopped" | "unknown";
 
 export type TaskView = {
 	id: string,

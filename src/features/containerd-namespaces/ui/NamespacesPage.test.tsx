@@ -1,7 +1,8 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ContainerdNamespace } from '@/shared/api';
-import { baseCommands, connectedHost, containerdHost } from '@/test/fixtures';
+import { baseCommands, connectedHost } from '@/test/fixtures';
+import { containerdHost } from '@/test/containerd';
 import { mockCommands } from '@/test/ipc';
 import { renderApp } from '@/test/render';
 

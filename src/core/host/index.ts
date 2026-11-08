@@ -36,6 +36,7 @@ export {
 export { useHostSelection, type HostSelection } from './selection/context';
 export { DEFAULT_NAMESPACE, preferredNamespace } from './model/containerd';
 export { CheckNewerImages } from './ui/CheckNewerImages';
+export { ContainerdGate } from './ui/ContainerdGate';
 export { ContainerdNamespacePicker } from './ui/ContainerdNamespacePicker';
 export { HostCapabilityGuard } from './ui/HostCapabilityGuard';
 export { HostGate } from './ui/HostGate';

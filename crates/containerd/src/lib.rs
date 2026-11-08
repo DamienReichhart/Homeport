@@ -8,10 +8,13 @@
 
 pub mod api;
 mod client;
+pub mod containers;
 mod error;
 pub mod events;
 pub mod introspection;
 pub mod messages;
 pub mod namespaces;
+#[cfg(test)]
+mod testing;
 
 pub use client::{Containerd, MIN_VERSION, PULL_VERSION};

@@ -39,6 +39,23 @@ homeport_core::messages! {
     FAILED = "errors.containerd.failed" => "containerd couldn't do this.";
     DETAILS_HINT = "errors.containerd.details.hint" => "Details has containerd's own answer.";
 
+    // Containers and tasks.
+
+    /// A container that isn't in the namespace.
+    CONTAINER_NOT_FOUND = "errors.containerd.containerNotFound" => "There's no container {id} in this namespace; it may have just been removed.";
+    /// Starting a container whose task already runs.
+    TASK_ALREADY_RUNNING = "errors.containerd.taskAlreadyRunning" => "{id} is already running.";
+    /// Stopping, pausing or killing a container without a running task.
+    TASK_NOT_RUNNING = "errors.containerd.taskNotRunning" => "{id} isn't running.";
+    /// Removing a container whose task runs, without forcing.
+    TASK_STILL_RUNNING = "errors.containerd.taskStillRunning" => "{id} is running, so it can't be removed.";
+    TASK_STILL_RUNNING_HINT = "errors.containerd.taskStillRunning.hint" => "Stop it first, or remove it with Force, which kills it.";
+    /// A signal name Linux doesn't have.
+    SIGNAL_UNKNOWN = "errors.containerd.signalUnknown" => "{signal} isn't a signal; use a name like SIGHUP or a number from 1 to 64.";
+    /// A task still alive after SIGKILL.
+    TASK_WONT_STOP = "errors.containerd.taskWontStop" => "{id} didn't stop, even after SIGKILL.";
+    TASK_WONT_STOP_HINT = "errors.containerd.taskWontStop.hint" => "Its process may be stuck in the kernel (uninterruptible I/O, a hung mount). Check it on the host with ps, then try again.";
+
     // Namespaces.
 
     /// Creating a namespace under a name another one has.
