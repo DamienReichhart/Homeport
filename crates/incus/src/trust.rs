@@ -133,7 +133,7 @@ impl TrustToken {
 /// `text` padded with `=` to a multiple of four.
 fn pad(text: &str) -> String {
     let mut padded = text.trim_end_matches('=').to_owned();
-    while padded.len() % 4 != 0 {
+    while !padded.len().is_multiple_of(4) {
         padded.push('=');
     }
     padded
