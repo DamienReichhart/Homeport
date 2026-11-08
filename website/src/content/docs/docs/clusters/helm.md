@@ -1,6 +1,6 @@
 ---
 title: Helm releases
-description: List a Cluster's Helm releases and their history, values, notes, manifest and resources, through the helm CLI on this computer.
+description: List, install, upgrade, roll back and uninstall a Cluster's Helm releases, and manage chart repositories, through the helm CLI on this computer.
 ---
 
 **Helm**, in the sidebar of a Cluster, shows the [Helm](https://helm.sh) releases on it: the same releases `helm list` shows in a terminal, whether they were installed from Homeport or not.
@@ -45,6 +45,27 @@ Click a release to open it:
 
 Values, Notes, Manifest and Resources show the current revision; pick an earlier one above them to see what it was installed with.
 
+## Upgrading a release
+
+**Upgrade**, on a release's page, changes its chart version, its values, or both:
+
+- **Chart** — the chart to upgrade from. helm doesn't record where a chart came from, so Homeport looks for a chart of that name in your repositories, the ones that have the release's current version first. Pick another with **Another chart…**, as `repository/chart` or an `oci://` reference — which is what a release installed from an OCI registry needs.
+- **Chart version** — the versions of that chart, the latest first, or typed for an OCI chart.
+- **Values** — the editor starts with the release's user-supplied values. They replace the release's: the chart's defaults fill in the rest. **Changes to the values** shows them side by side with the current ones, and **Reset to the current values** puts them back.
+- **Wait until its resources are ready**, for at most the minutes given.
+
+**Preview** renders the upgrade with the Cluster's help without changing anything, and shows the new manifest and what changes in it against the current one. **Upgrade** runs `helm upgrade`, with helm's output live. Each upgrade is a new revision in **History**.
+
+## Rolling back
+
+In **History**, **Roll back to revision N** on any earlier revision asks first, naming the chart and app versions now and after, then runs `helm rollback`: helm puts back that revision's chart and values as a new revision, so a rollback can itself be rolled back. Tick **Wait until its resources are ready** to have helm wait for them.
+
+A release stuck **pending** after an interrupted install, upgrade or rollback is locked: helm refuses to change it until it ends. Rolling it back to its last deployed revision unlocks it.
+
+## Uninstalling
+
+**Uninstall**, on a release's page, names the release, its Namespace and Cluster and lists the objects that will be deleted with it, before `helm uninstall` runs. Objects a chart marks to keep (`helm.sh/resource-policy: keep`) and the PersistentVolumeClaims of StatefulSets stay on the Cluster. **Keep its history** leaves the release listed as `uninstalled`, so it can be rolled back; without it, the release is gone from the list. **Wait until its objects are deleted** has helm wait for them.
+
 ## Chart repositories
 
 **Chart repositories**, the second tab of the Helm page, lists the repositories helm knows on this computer: the same list as `helm repo list` in a terminal, shared by every Cluster. Homeport keeps no list of its own, so a repository added in a terminal appears here, and one added here appears in `helm repo list`.
@@ -62,8 +83,9 @@ Homeport only adds public repositories. One that needs a login is added in a ter
 - **The helm CLI isn't installed**: install helm 3 as above, then reopen the page.
 - **Helm 2**: Homeport only drives Helm 3 and later. Install a current helm.
 - **Not allowed**: helm reads releases from Secrets; listing them needs `list` on `secrets` in the Namespace. Details names what was refused.
+- **Another install, upgrade or rollback is in progress**: the release is locked by a pending operation. Wait for it to finish, or roll back to its last deployed revision.
 - **A release with this name already exists**: release names are unique in a Namespace. Pick another, or upgrade the existing release.
-- **Chart or version not found**: check the name and version; a repository chart needs its repository added and [updated](#chart-repositories).
+- **Chart or version not found**: check the name and version; a repository chart needs its repository added and [updated](#chart-repositories). To upgrade a release whose chart is in no repository of yours, add that repository first.
 - **The values aren't valid YAML**: the message names the line; fix it and retry.
 - **Gave up waiting**: with **Wait**, a resource wasn't ready in time. Look at the release's Pods and Events for what is stuck.
 - **Not a chart repository, or can't be reached**: the URL serves no `index.yaml`, or this computer can't reach it. Details shows what helm said.
