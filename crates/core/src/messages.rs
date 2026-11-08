@@ -165,6 +165,9 @@ crate::messages! {
     VOLUME_GONE = "errors.engine.volumeGone" => "This volume no longer exists.";
     /// A network was removed elsewhere.
     NETWORK_GONE = "errors.engine.networkGone" => "This network no longer exists.";
+    /// A Swarm object updated by someone else since Homeport read it.
+    OUT_OF_SEQUENCE = "errors.engine.outOfSequence" => "This was changed elsewhere since Homeport read it.";
+    OUT_OF_SEQUENCE_HINT = "errors.engine.outOfSequence.hint" => "Refresh and try again, so nothing changed elsewhere is overwritten.";
     /// An unrecognised HTTP 400 from the Engine.
     BAD_REQUEST = "errors.engine.badRequest" => "The Docker Engine rejected the request as invalid.";
     /// An unrecognised HTTP 401 or 403 from the Engine.

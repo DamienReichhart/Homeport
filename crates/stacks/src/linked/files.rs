@@ -224,7 +224,8 @@ mod tests {
             .collect();
         LinkedStack {
             id: "l1".into(),
-            host_id: "h".into(),
+            owner: crate::StackOwner::from("h"),
+            registry_auth: false,
             name: "site".into(),
             working_dir: dir.to_string_lossy().into_owned(),
             fingerprint: files_fingerprint(&config_files),

@@ -32,6 +32,7 @@ import {
 } from '@/shared/ui';
 import { useUsage } from '../../api/streams';
 import { groupByStack } from '../../model/grouping';
+import { swarmOfHost, useSwarms } from '@/core/swarm';
 import { useContainerDialogs } from '../dialogs/ContainerDialogs';
 import { RunContainerDialog } from '../dialogs/RunContainerDialog';
 import { ContainerRow } from './ContainerRow';
@@ -45,6 +46,7 @@ function ContainersList({ hostId }: { hostId: string }) {
   const { host } = useHostSelection();
   const containers = useContainers(hostId);
   const usage = useUsage(hostId);
+  const swarms = useSwarms();
   const freshness = indexFreshness(useQuery(resourceQueries.freshness(hostId)).data);
   const [dialog, confirm] = useConfirm();
   const [query, setQuery] = usePageQuery();
@@ -62,6 +64,7 @@ function ContainersList({ hostId }: { hostId: string }) {
 
   const all = containers.data;
   const { groups, standalone } = groupByStack(all, query, onlyRunning);
+  const swarm = swarmOfHost(swarms.data, hostId);
   const address = host ? hostAddress(host.host.connection) : 'localhost';
   const selectedContainers = all.filter((c) => selected.has(c.id));
   const toggle = (ids: string[], on: boolean) =>
@@ -158,13 +161,14 @@ function ContainersList({ hostId }: { hostId: string }) {
                 const ids = g.containers.map((c) => c.id);
                 return (
                   <StackGroupRows
-                    key={g.stack}
+                    key={`${g.swarm ? 'swarm' : 'compose'}:${g.stack}`}
                     group={g}
                     open={!collapsed.has(g.stack)}
                     onToggleOpen={() => toggleOpen(g.stack)}
                     usage={usage}
                     allSelected={ids.every((id) => selected.has(id))}
                     onSelect={(on) => toggle(ids, on)}
+                    swarmId={swarm?.swarm.id}
                   >
                     {g.containers.map((c) => row(c, true))}
                   </StackGroupRows>

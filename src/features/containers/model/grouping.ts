@@ -2,8 +2,20 @@ import type { Container } from '@/shared/api';
 
 export interface StackGroup {
   stack: string;
+  /** A swarm stack's tasks on this Host, rather than a Compose project. */
+  swarm: boolean;
   containers: Container[];
   running: number;
+}
+
+/** The label `docker stack deploy` puts on a swarm stack's containers. */
+export const STACK_NAMESPACE = 'com.docker.stack.namespace';
+
+/** The Compose project of a container, or else the swarm stack its task belongs to. */
+function stackOf(c: Container): { stack: string; swarm: boolean } | null {
+  if (c.stack) return { stack: c.stack, swarm: false };
+  const namespace = c.labels[STACK_NAMESPACE];
+  return namespace ? { stack: namespace, swarm: true } : null;
 }
 
 export interface Grouped {
@@ -24,21 +36,32 @@ export function matches(c: Container, query: string): boolean {
   );
 }
 
-/** Nests containers under their Stack, like Docker Desktop's list. */
+/**
+ * Nests containers under their Stack, like Docker Desktop's list: a Compose
+ * project's, or a swarm stack's tasks running on this Host.
+ */
 export function groupByStack(containers: Container[], query = '', onlyRunning = false): Grouped {
   const visible = containers.filter(
     (c) => matches(c, query) && (!onlyRunning || c.state === 'running'),
   );
-  const byStack = new Map<string, Container[]>();
+  const byStack = new Map<string, { stack: string; swarm: boolean; members: Container[] }>();
   const standalone: Container[] = [];
   for (const c of visible) {
-    if (c.stack) byStack.set(c.stack, [...(byStack.get(c.stack) ?? []), c]);
-    else standalone.push(c);
+    const of = stackOf(c);
+    if (!of) {
+      standalone.push(c);
+      continue;
+    }
+    const key = `${of.swarm ? 'swarm' : 'compose'}:${of.stack}`;
+    const group = byStack.get(key) ?? { ...of, members: [] };
+    group.members.push(c);
+    byStack.set(key, group);
   }
-  const groups = [...byStack.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([stack, members]) => ({
+  const groups = [...byStack.values()]
+    .sort((a, b) => a.stack.localeCompare(b.stack) || Number(a.swarm) - Number(b.swarm))
+    .map(({ stack, swarm, members }) => ({
       stack,
+      swarm,
       containers: members.sort((a, b) => a.name.localeCompare(b.name)),
       running: members.filter((c) => c.state === 'running').length,
     }));

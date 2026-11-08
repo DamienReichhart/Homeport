@@ -7,6 +7,7 @@ import { networksFeature } from '@/features/networks';
 import { overviewFeature } from '@/features/overview';
 import { settingsFeature } from '@/features/settings';
 import { stacksFeature } from '@/features/stacks';
+import { swarmFeature } from '@/features/swarm';
 import { updatesFeature } from '@/features/updates';
 import { volumesFeature } from '@/features/volumes';
 import type { FeatureManifest } from '@/core/feature';
@@ -20,6 +21,7 @@ export const features: FeatureManifest[] = [
   volumesFeature,
   networksFeature,
   stacksFeature,
+  swarmFeature,
   eventsFeature,
   settingsFeature,
   hostsFeature,

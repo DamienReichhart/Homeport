@@ -13,6 +13,7 @@ use homeport_storage::{Db, SecretBox};
 use crate::{
     compose::ComposeAction,
     definition, messages as msg,
+    owner::StackOwner,
     runtime::SourceKind,
     store::{ComposeFile, ManagedStack, StackStore},
 };
@@ -63,7 +64,8 @@ pub struct DeployDetail {
 
 /// What a deploy is recorded with when it starts.
 pub struct NewDeploy<'a> {
-    pub host_id: &'a str,
+    /// The Host or Swarm the Stack is deployed to.
+    pub owner: &'a StackOwner,
     pub stack_id: &'a str,
     pub kind: SourceKind,
     pub name: &'a str,
@@ -112,12 +114,13 @@ impl DeployHistory {
             let tx = c.transaction()?;
             tx.execute(
                 "INSERT INTO stack_deploys
-                 (id, host_id, stack_id, stack_kind, stack_name, action, definition, env, profiles,
-                  commit_hash, automatic)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
+                 (id, host_id, swarm_id, stack_id, stack_kind, stack_name, action, definition, env,
+                  profiles, commit_hash, automatic)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
                 (
                     &id,
-                    deploy.host_id,
+                    deploy.owner.host_id(),
+                    deploy.owner.swarm_id(),
                     deploy.stack_id,
                     kind_text(deploy.kind),
                     deploy.name,
@@ -317,7 +320,7 @@ mod tests {
 
     use super::*;
 
-    fn setup(secrets: SecretBox) -> (DeployHistory, HostStore, String) {
+    fn setup(secrets: SecretBox) -> (DeployHistory, HostStore, StackOwner) {
         let db = Arc::new(Db::open_in_memory().unwrap());
         let secrets = Arc::new(secrets);
         let hosts = HostStore::new(db.clone(), secrets.clone());
@@ -330,12 +333,20 @@ mod tests {
                 secrets: None,
             })
             .unwrap();
-        (DeployHistory::new(db, secrets), hosts, host.id)
+        (
+            DeployHistory::new(db, secrets),
+            hosts,
+            StackOwner::Host(host.id),
+        )
     }
 
-    fn deploy<'a>(host: &'a str, files: &'a [(String, String)], env: &'a str) -> NewDeploy<'a> {
+    fn deploy<'a>(
+        host: &'a StackOwner,
+        files: &'a [(String, String)],
+        env: &'a str,
+    ) -> NewDeploy<'a> {
         NewDeploy {
-            host_id: host,
+            owner: host,
             stack_id: "s1",
             kind: SourceKind::Managed,
             name: "shop",
@@ -496,7 +507,7 @@ mod tests {
         let (history, hosts, host) = setup(SecretBox::from_key(&[4; 32]));
         let f = files("1");
         let id = history.start(&deploy(&host, &f, "")).unwrap();
-        hosts.delete(&host).unwrap();
+        hosts.delete(host.id()).unwrap();
         assert!(history.get(&id).is_err());
     }
 
@@ -523,7 +534,7 @@ mod tests {
             .id;
         let f = files("1");
         let id = DeployHistory::new(db.clone(), with_key)
-            .start(&deploy(&host, &f, "A=1"))
+            .start(&deploy(&StackOwner::Host(host), &f, "A=1"))
             .unwrap();
         let without = DeployHistory::new(db, Arc::new(SecretBox::from_store(&NoKeychain)));
         assert_eq!(without.list("s1").unwrap().len(), 1);

@@ -6,6 +6,7 @@ use bollard::{query_parameters::EventsOptionsBuilder, Docker};
 use futures_util::StreamExt;
 
 use homeport_core::error::{AppError, ErrorCode};
+use homeport_engine::swarm;
 
 use crate::messages as msg;
 use homeport_transport::{self as transport, ConnectError};
@@ -106,6 +107,15 @@ async fn describe(docker: &Docker) -> Result<HostStatus, AppError> {
         api_version: v.api_version.unwrap_or_default(),
         os: v.os.unwrap_or_default(),
         arch: v.arch.unwrap_or_default(),
+        swarm: membership(docker).await,
+    })
+}
+
+/// The Host's place in a Swarm; an Engine that can't say counts as outside one.
+async fn membership(docker: &Docker) -> Option<swarm::SwarmMembership> {
+    swarm::membership(docker).await.unwrap_or_else(|e| {
+        log::debug!("couldn't read swarm membership: {e}");
+        None
     })
 }
 
@@ -131,6 +141,10 @@ async fn watch(registry: &Weak<HostRegistry>, id: &str, docker: Docker) {
                 return;
             };
             let actor = msg.actor.unwrap_or_default();
+            let kind = msg.typ.map(|t| t.to_string()).unwrap_or_default();
+            if kind == "node" {
+                reg.set_swarm(id, membership(&docker).await);
+            }
             reg.record_event(
                 id,
                 EngineEvent {
@@ -138,7 +152,7 @@ async fn watch(registry: &Weak<HostRegistry>, id: &str, docker: Docker) {
                     time_nano: msg
                         .time_nano
                         .unwrap_or_else(|| msg.time.unwrap_or_default() * 1_000_000_000),
-                    kind: msg.typ.map(|t| t.to_string()).unwrap_or_default(),
+                    kind,
                     action: msg.action.unwrap_or_default(),
                     actor_id: actor.id.unwrap_or_default(),
                     attributes: actor.attributes.unwrap_or_default(),
@@ -152,6 +166,12 @@ async fn watch(registry: &Weak<HostRegistry>, id: &str, docker: Docker) {
             match tokio::time::timeout(transport::CONNECT_TIMEOUT, docker.ping()).await {
                 Ok(Ok(_)) => {}
                 _ => return,
+            }
+            // A Swarm joined or left from a terminal sends no event on a worker.
+            let swarm = membership(&docker).await;
+            match registry.upgrade() {
+                Some(reg) => reg.set_swarm(id, swarm),
+                None => return,
             }
         }
     };

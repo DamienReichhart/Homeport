@@ -85,6 +85,22 @@ homeport_core::messages! {
     COMPOSE_NO_SERVICE = "errors.compose.noService" => "Define at least one service.";
     /// A service built from local files.
     COMPOSE_BUILD = "errors.compose.build" => "Service \"{service}\" uses build:, which would build from files on this machine. Use a pushed image instead.";
+    /// A service built from local files, for a Swarm whose nodes can't use the image.
+    COMPOSE_BUILD_SWARM = "errors.compose.buildSwarm" => "Service \"{service}\" is built from files on this machine, but a Swarm's nodes pull their images. Push the image to a registry and name it in image:.";
+    /// A config or secret read from a file, in a Managed Stack for a Swarm.
+    COMPOSE_FILE_OBJECT_SWARM = "errors.compose.fileObjectSwarm" => "{section} \"{name}\" is read from a file, which a Managed Stack doesn't have. Use a Linked or Synced Stack, or an external one created on the Swarm.";
+    /// Starting or stopping a swarm stack, which Docker can't do.
+    SWARM_NO_START_STOP = "errors.compose.swarmNoStartStop" => "A swarm stack can't be started or stopped as a whole. Scale its services instead.";
+    /// The docker CLI isn't installed, needed for a swarm deploy.
+    DOCKER_CLI_MISSING = "errors.compose.dockerCliMissing" => "Deploying to a Swarm needs the docker command on this computer.";
+    DOCKER_CLI_MISSING_HINT = "errors.compose.dockerCliMissing.hint" => "Install the Docker CLI (Docker Desktop, or the docker-ce-cli package on Linux). Homeport runs docker stack deploy with it; no Engine is needed here.";
+    /// A swarm deploy whose config or secret changed since the last one.
+    SWARM_OBJECT_CHANGED = "errors.compose.swarmObjectChanged" => "A config or secret of this Stack changed, and the Swarm can't change one in place.";
+    SWARM_OBJECT_CHANGED_HINT = "errors.compose.swarmObjectChanged.hint" => "Give it a new name: for example name: app_conf_${CONF_VERSION} under configs:, and change CONF_VERSION in the environment each time its file changes.";
+    /// Pulling a swarm stack's images, which its nodes do.
+    SWARM_NO_PULL = "errors.compose.swarmNoPull" => "A Swarm's nodes pull their images themselves when a Stack is deployed. Redeploy it instead.";
+    /// Linking a swarm stack to a folder that describes other services.
+    SWARM_LINK_MISMATCH = "errors.compose.swarmLinkMismatch" => "This folder doesn't describe this Stack: it runs {running}, and the folder's compose files declare {declared}.";
     /// A service without an image.
     COMPOSE_NO_IMAGE = "errors.compose.noImage" => "Service \"{service}\" needs an image.";
 

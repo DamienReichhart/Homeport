@@ -126,6 +126,11 @@ export default {
   'stacks.newPage.sameDefinition.title': 'Use the same definition',
   'stacks.newPage.sameDefinition.description':
     'Redeploying with a different file recreates the containers to match it, and removes services that are no longer listed.',
+  'stacks.newPage.target': 'Deploy to',
+  'stacks.registryAuth.label': 'Send my registry credentials',
+  'stacks.registryAuth.description':
+    'Deploys with --with-registry-auth: the docker CLI on this computer sends the registry logins it has (from docker login) to the Swarm, so its nodes can pull private images. Off, nodes pull with their own logins.',
+  'stacks.newPage.targetHost': 'The host {name}',
   'stacks.newPage.name': 'Name',
   'stacks.newPage.otherTemplate': 'Choose another template',
   'stacks.templates.title': 'Start from a template',

@@ -410,3 +410,81 @@ impl Drop for ImageName {
         .ok();
     }
 }
+
+/// Held by every test that needs the local Engine in Swarm mode, so one
+/// test's Swarm isn't left under another's feet.
+static SWARM: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+
+/// The local Engine as the single manager of a throwaway Swarm. An Engine
+/// already in a Swarm is used as it is and left in it; otherwise the Swarm
+/// is created for the test and left (with force) when the guard drops.
+pub struct SwarmGuard {
+    pub swarm_id: String,
+    created: bool,
+    _lock: tokio::sync::MutexGuard<'static, ()>,
+}
+
+pub async fn swarm(docker: &Docker) -> SwarmGuard {
+    use bollard::models::SwarmInitRequest;
+
+    let lock = SWARM.lock().await;
+    let info = docker.info().await.expect("engine info");
+    let active = info
+        .swarm
+        .as_ref()
+        .and_then(|s| s.local_node_state)
+        .is_some_and(|s| s == bollard::models::LocalNodeState::ACTIVE);
+    if !active {
+        docker
+            .init_swarm(SwarmInitRequest {
+                listen_addr: Some("127.0.0.1:2377".into()),
+                advertise_addr: Some("127.0.0.1".into()),
+                ..Default::default()
+            })
+            .await
+            .expect("init a throwaway swarm");
+    }
+    let swarm_id = docker
+        .inspect_swarm()
+        .await
+        .expect("inspect the swarm")
+        .id
+        .unwrap_or_default();
+    SwarmGuard {
+        swarm_id,
+        created: !active,
+        _lock: lock,
+    }
+}
+
+impl SwarmGuard {
+    /// Whether the test created this Swarm, so it may leave and recreate it.
+    pub fn created(&self) -> bool {
+        self.created
+    }
+}
+
+impl Drop for SwarmGuard {
+    fn drop(&mut self) {
+        if !self.created {
+            return;
+        }
+        // Drop can't await: leave from a runtime of its own.
+        std::thread::spawn(|| {
+            let runtime = tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .expect("runtime");
+            runtime.block_on(async {
+                let options = bollard::query_parameters::LeaveSwarmOptionsBuilder::default()
+                    .force(true)
+                    .build();
+                if let Err(e) = docker().leave_swarm(Some(options)).await {
+                    eprintln!("couldn't leave the test swarm: {e}");
+                }
+            });
+        })
+        .join()
+        .ok();
+    }
+}

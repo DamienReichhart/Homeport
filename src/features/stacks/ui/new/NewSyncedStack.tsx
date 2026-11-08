@@ -24,10 +24,13 @@ import { useCreateSynced } from '../../api/synced';
 import type { ComposeJob } from '../../model/composeJob';
 import { nameFromRepository, refChoices } from '../../model/newSynced';
 import { ComposeRunDialog } from '../dialogs/ComposeRunDialog';
+import { stackPath } from '../../api/owner';
+import { deployTool } from '../../model/deployTool';
+import type { StackOwner } from '@/shared/api';
 import { t } from '@/shared/i18n';
 
 /** Creates a Synced Stack from a git repository's branch or tag. */
-export function NewSyncedStack({ hostId }: { hostId: string }) {
+export function NewSyncedStack({ owner }: { owner: StackOwner }) {
   const navigate = useNavigate();
   const capabilities = useCapabilities();
   const repositories = useQuery(repositoryQueries.list());
@@ -42,9 +45,9 @@ export function NewSyncedStack({ hostId }: { hostId: string }) {
   const refs = useQuery(repositoryQueries.refs(repositoryId));
   const choices = refChoices(refs.data, refKind);
   const chosenRef = refName || choices[0] || '';
-  const save = useCreateSynced(hostId, (stack, deploy) => {
+  const save = useCreateSynced(owner, (stack, deploy) => {
     if (deploy) setJob({ kind: 'synced', stackId: stack.id, name: stack.name, action: 'up' });
-    else navigate(`/stacks/${encodeURIComponent(stack.name)}`);
+    else navigate(stackPath(owner, stack.name));
   });
   const git = capabilities.data?.git;
   const choose = (id: string) => {
@@ -61,7 +64,7 @@ export function NewSyncedStack({ hostId }: { hostId: string }) {
       deploy,
     });
   const ready = repositoryId !== null && chosenRef !== '' && composePath.trim() !== '' && name;
-  const canDeploy = capabilities.data?.compose.state === 'available';
+  const canDeploy = deployTool(capabilities.data, owner)?.state === 'available';
 
   if (git?.state === 'unavailable')
     return (
@@ -189,11 +192,11 @@ export function NewSyncedStack({ hostId }: { hostId: string }) {
         />
       )}
       <ComposeRunDialog
-        hostId={hostId}
+        owner={owner}
         job={job}
         onClose={() => {
           setJob(null);
-          navigate(`/stacks/${encodeURIComponent(name)}`);
+          navigate(stackPath(owner, name));
         }}
       />
     </div>

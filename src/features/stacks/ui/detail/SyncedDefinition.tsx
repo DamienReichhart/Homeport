@@ -8,6 +8,8 @@ import type { ComposeJob } from '../../model/composeJob';
 import { repositoryQueries } from '@/features/repositories';
 import { SyncedFilesView } from './SyncedFilesView';
 import { SyncedSource } from './SyncedSource';
+import type { StackOwner } from '@/shared/api';
+import { deployTool } from '../../model/deployTool';
 import { t } from '@/shared/i18n';
 
 /**
@@ -15,12 +17,12 @@ import { t } from '@/shared/i18n';
  * its environment is Homeport's, and stays editable here.
  */
 export function SyncedDefinition({
-  hostId,
+  owner,
   stack,
   syncedId,
   onDeploy,
 }: {
-  hostId: string;
+  owner: StackOwner;
   stack: Stack;
   syncedId: string;
   onDeploy: (job: ComposeJob) => void;
@@ -35,7 +37,7 @@ export function SyncedDefinition({
     <Loaded
       key={synced.data.updatedAt}
       onDeploy={onDeploy}
-      hostId={hostId}
+      owner={owner}
       stack={stack}
       synced={synced.data}
       initialEnv={env.data}
@@ -44,14 +46,14 @@ export function SyncedDefinition({
 }
 
 function Loaded({
-  hostId,
+  owner,
   stack,
   synced,
   initialEnv,
   onDeploy,
 }: {
   onDeploy: (job: ComposeJob) => void;
-  hostId: string;
+  owner: StackOwner;
   stack: Stack;
   synced: SyncedStack;
   initialEnv: string;
@@ -61,16 +63,16 @@ function Loaded({
   const [dialog, confirm] = useConfirm();
   const [env, setEnv] = useState(initialEnv);
   const save = useSaveSyncedEnv(synced.id);
-  const forget = useForgetSynced(hostId, synced.id);
+  const forget = useForgetSynced(owner, synced.id);
   const repositories = useQuery(repositoryQueries.list());
   const url = repositories.data?.find((r) => r.id === synced.repositoryId)?.url ?? null;
   return (
     <div className="grid gap-4">
-      <SyncedSource hostId={hostId} synced={synced} />
+      <SyncedSource owner={owner} synced={synced} />
       <SyncedFilesView
         synced={synced}
         url={url}
-        canDeploy={capabilities.data?.compose.state === 'available'}
+        canDeploy={deployTool(capabilities.data, owner)?.state === 'available'}
         onDeploy={onDeploy}
       />
       <div className="grid gap-1.5">

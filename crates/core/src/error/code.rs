@@ -79,6 +79,13 @@ pub enum ErrorCode {
     GpuUnavailable,
     /// Recreating a container failed, and so did putting the original back.
     RecreateRolledBack,
+    // Swarms (ADR 0016).
+    /// No manager Host of a Swarm is connected.
+    SwarmUnreachable,
+    /// A node couldn't reach the managers of the Swarm it was joining.
+    SwarmJoinFailed,
+    /// The `docker` CLI isn't installed, which deploying a Stack to a Swarm needs.
+    DockerCliMissing,
     // Compose.
     ComposeMissing,
     ComposeOutdated,

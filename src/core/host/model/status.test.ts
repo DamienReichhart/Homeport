@@ -9,6 +9,7 @@ describe('describeStatus', () => {
         apiVersion: '1.52',
         os: 'linux',
         arch: 'amd64',
+        swarm: null,
       }),
     ).toEqual({ label: 'Connected', tone: 'success', detail: 'Engine 29.1' });
   });

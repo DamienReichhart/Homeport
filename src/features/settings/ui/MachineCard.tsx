@@ -39,6 +39,13 @@ export function MachineCard() {
                 t('settings.machine.compose'),
                 <ComposeStatus compose={capabilities.data.compose} />,
               ],
+              [
+                t('settings.machine.stackDeploy'),
+                <ComposeStatus
+                  compose={capabilities.data.stackDeploy}
+                  missing={t('settings.machine.stackDeployMissing')}
+                />,
+              ],
               [t('settings.machine.git'), <GitStatus git={capabilities.data.git} />],
             ]}
           />

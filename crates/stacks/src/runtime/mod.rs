@@ -16,7 +16,10 @@ use std::sync::Arc;
 
 use bollard::Docker;
 
-use homeport_core::{error::AppResult, host::HostConnection};
+use homeport_core::{
+    error::{AppError, AppResult},
+    host::HostConnection,
+};
 use homeport_engine::auth::Logins;
 use homeport_transport::Dialer;
 
@@ -24,7 +27,10 @@ use crate::{
     compose::{self, ComposeAction, ComposeCli, ComposeEvent},
     history::{DeployHistory, NewDeploy},
     lifecycle::{self, StackAction},
+    messages as msg,
+    owner::StackOwner,
     store::ComposeFile,
+    swarm,
 };
 
 pub(crate) use self::source::{Prepared, WorkDir};
@@ -77,41 +83,65 @@ impl StackSource {
     }
 }
 
+/// How the CLI and the Engine API reach one Host: a Stack's own, or the
+/// manager a Swarm is reached through.
+#[derive(Clone)]
+pub struct Reach {
+    /// The Host's name, for messages.
+    pub name: String,
+    pub connection: HostConnection,
+    /// Reaches TLS and SSH Hosts, through the per-command proxy.
+    pub dialer: Option<Arc<dyn Dialer>>,
+    /// The Host's Engine, for lifecycle and for pulling images.
+    pub docker: Docker,
+}
+
 /// Where a Stack runs.
 #[derive(Clone)]
 pub enum StackTarget {
     /// A Compose project on a Host.
-    Host {
-        /// The Host's name, for messages.
+    Host(Reach),
+    /// A swarm stack on a Swarm, through one of its connected managers
+    /// (ADR 0017): `docker stack deploy` runs against it.
+    Swarm {
+        swarm_id: String,
+        /// The Swarm's name, for messages.
         name: String,
-        connection: HostConnection,
-        /// Reaches TLS and SSH Hosts, through the per-command proxy.
-        dialer: Option<Arc<dyn Dialer>>,
-        /// The Host's Engine, for lifecycle and for pulling images.
-        docker: Docker,
+        manager: Reach,
     },
 }
 
 impl StackTarget {
-    /// The Engine the target runs on.
-    pub fn docker(&self) -> &Docker {
+    /// The Host a command reaches: the Stack's own, or the Swarm's manager.
+    pub fn reach(&self) -> &Reach {
         match self {
-            Self::Host { docker, .. } => docker,
+            Self::Host(reach) | Self::Swarm { manager: reach, .. } => reach,
         }
     }
 
+    /// The Engine the target runs on, or the manager of its Swarm.
+    pub fn docker(&self) -> &Docker {
+        &self.reach().docker
+    }
+
     /// Whether the target is this machine, where a path here means the same
-    /// file to the Engine.
+    /// file to the Engine. Never true for a Swarm, whose tasks run anywhere.
     pub fn is_local(&self) -> bool {
         match self {
-            Self::Host { connection, .. } => matches!(connection, HostConnection::Local { .. }),
+            Self::Host(reach) => matches!(reach.connection, HostConnection::Local { .. }),
+            Self::Swarm { .. } => false,
         }
+    }
+
+    pub fn is_swarm(&self) -> bool {
+        matches!(self, Self::Swarm { .. })
     }
 
     /// The target's name, for messages.
     pub fn name(&self) -> &str {
         match self {
-            Self::Host { name, .. } => name,
+            Self::Host(reach) => &reach.name,
+            Self::Swarm { name, .. } => name,
         }
     }
 }
@@ -131,12 +161,16 @@ pub struct ComposeJob {
     pub profiles: Vec<String>,
     /// Where to record a deploy, for the Stack's history.
     pub record: Option<Recorder>,
+    /// On a Swarm: `--with-registry-auth`, sending the docker CLI's own
+    /// registry logins to the nodes.
+    pub registry_auth: bool,
 }
 
 /// Records the deploys of one Stack in its history.
 pub struct Recorder {
     pub history: Arc<DeployHistory>,
-    pub host_id: String,
+    /// The Host or Swarm the Stack is deployed to.
+    pub owner: StackOwner,
     pub stack_id: String,
     /// The commit a Synced Stack deploys.
     pub commit: Option<String>,
@@ -153,7 +187,7 @@ impl Recorder {
         };
         self.history
             .start(&NewDeploy {
-                host_id: &self.host_id,
+                owner: &self.owner,
                 stack_id: &self.stack_id,
                 kind: job.source.kind(),
                 name: &job.project,
@@ -181,16 +215,27 @@ pub async fn run(job: ComposeJob, sink: impl Fn(ComposeEvent) -> bool) {
     compose::run(job, sink).await;
 }
 
-/// Starts, stops or restarts the Stack named `name` on `target`.
+/// Starts, stops or restarts the Stack named `name` on `target`. A swarm
+/// stack has no such operation: its services are scaled instead.
 pub async fn act(target: &StackTarget, name: &str, action: StackAction) -> AppResult<()> {
     match target {
-        StackTarget::Host { docker, .. } => lifecycle::act(docker, name, action).await,
+        StackTarget::Host(reach) => lifecycle::act(&reach.docker, name, action).await,
+        StackTarget::Swarm { .. } => Err(AppError::validation(msg::SWARM_NO_START_STOP)),
     }
 }
 
-/// Removes the Stack's containers and networks from `target`, keeping volumes.
+/// Removes the Stack from `target`, keeping volumes: its containers and
+/// networks on a Host; its services, networks, secrets and configs on a
+/// Swarm, as `docker stack rm` does.
 pub async fn remove(target: &StackTarget, name: &str) -> AppResult<()> {
     match target {
-        StackTarget::Host { docker, .. } => lifecycle::remove(docker, name).await,
+        StackTarget::Host(reach) => lifecycle::remove(&reach.docker, name).await,
+        StackTarget::Swarm { manager, .. } => {
+            let report = swarm::remove(&manager.docker, name).await?;
+            for kept in report.kept {
+                log::warn!("kept {kept} of swarm stack {name}");
+            }
+            Ok(())
+        }
     }
 }

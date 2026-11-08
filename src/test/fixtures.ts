@@ -5,6 +5,7 @@ import type {
   HostStatus,
   HostView,
   NetworkView,
+  ServiceView,
   StatsSample,
 } from '@/shared/api';
 
@@ -23,6 +24,7 @@ export const connectedHost: HostView = {
     apiVersion: '1.52',
     os: 'linux',
     arch: 'amd64',
+    swarm: null,
   },
 };
 
@@ -121,6 +123,10 @@ export const baseCommands = {
     keychain: true,
     tray: true,
     git: { state: 'available', cli: { program: 'git', version: '2.43.0' } },
+    stackDeploy: {
+      state: 'available',
+      cli: { program: 'docker', prefix: [], version: '29.1.0' },
+    },
     compose: {
       state: 'unavailable',
       problem: {
@@ -132,6 +138,7 @@ export const baseCommands = {
     },
   }),
   hosts_list: () => [connectedHost],
+  swarms_list: () => [],
   registries_list: () => [],
   repositories_list: () => [],
   images_freshness: () => [],
@@ -236,6 +243,29 @@ export function statsSample(n = 1, overrides: Partial<StatsSample> = {}): StatsS
     blockRead: 0,
     blockWrite: 0,
     pids: 3,
+    ...overrides,
+  };
+}
+
+/** A Swarm service, replicated with 3 of 3 running unless overridden. */
+export function serviceView(overrides: Partial<ServiceView> = {}): ServiceView {
+  return {
+    id: 'svc1',
+    version: 3,
+    name: 'web',
+    image: 'nginx:1.27',
+    imageDigest: null,
+    mode: 'replicated',
+    replicas: 3,
+    running: 3,
+    desired: 3,
+    ports: [],
+    updateState: null,
+    updateMessage: null,
+    stack: null,
+    labels: {},
+    created: null,
+    updated: null,
     ...overrides,
   };
 }

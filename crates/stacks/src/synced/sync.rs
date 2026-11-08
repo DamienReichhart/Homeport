@@ -446,18 +446,19 @@ mod tests {
                     cli: detect().await.expect("docker compose is installed"),
                     project,
                     source,
-                    target: StackTarget::Host {
+                    target: StackTarget::Host(crate::runtime::Reach {
                         name: "local".into(),
                         connection: HostConnection::Local {
                             socket_path: "/var/run/docker.sock".into(),
                         },
                         dialer: None,
                         docker: testing::docker(),
-                    },
+                    }),
                     logins: Logins::none(),
                     action: ComposeAction::Up,
                     profiles: vec![],
                     record: None,
+                    registry_auth: false,
                 };
                 let events = std::sync::Mutex::new(Vec::new());
                 crate::runtime::run(job, |e| {

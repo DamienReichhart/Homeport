@@ -24,6 +24,7 @@ pub mod repositories;
 pub mod settings;
 pub mod stacks;
 pub mod streams;
+pub mod swarm;
 pub mod system;
 pub mod updates;
 pub mod volumes;
@@ -158,6 +159,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             stacks::stacks_update,
             stacks::stacks_forget,
             stacks::stacks_set_profiles,
+            stacks::stacks_set_registry_auth,
             stacks::stacks_linked_inspect,
             stacks::stacks_linked_create,
             stacks::stacks_linked_read,
@@ -180,6 +182,38 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             stacks::stacks_history,
             stacks::stacks_deploy,
             stacks::stacks_rollback_subscribe,
+            swarm::swarms_list,
+            swarm::swarm_inspect,
+            swarm::swarm_nodes_list,
+            swarm::swarm_nodes_inspect,
+            swarm::swarm_nodes_update,
+            swarm::swarm_nodes_remove,
+            swarm::swarm_services_list,
+            swarm::swarm_services_inspect,
+            swarm::swarm_services_scale,
+            swarm::swarm_services_rollback,
+            swarm::swarm_services_remove,
+            swarm::swarm_services_create,
+            swarm::swarm_services_update,
+            swarm::swarm_networks_list,
+            swarm::swarm_init,
+            swarm::swarm_join,
+            swarm::swarm_leave,
+            swarm::swarm_join_info,
+            swarm::swarm_stacks_list,
+            swarm::swarm_stacks_parts,
+            swarm::swarm_stacks_remove,
+            swarm::swarm_stacks_link,
+            swarm::swarm_service_logs_subscribe,
+            swarm::swarm_tasks_list,
+            swarm::swarm_tasks_inspect,
+            swarm::swarm_secrets_list,
+            swarm::swarm_secrets_create,
+            swarm::swarm_secrets_remove,
+            swarm::swarm_configs_list,
+            swarm::swarm_configs_create,
+            swarm::swarm_configs_inspect,
+            swarm::swarm_configs_remove,
         ])
         .events(collect_events![
             events::HostStatusChanged,

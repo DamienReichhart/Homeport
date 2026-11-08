@@ -69,4 +69,13 @@ homeport_core::messages! {
     /// Saving a Host under a name another one has.
     NAME_IN_USE = "errors.hosts.nameInUse" => "A host named \"{name}\" already exists.";
     NAME_IN_USE_HINT = "errors.hosts.nameInUse.hint" => "Pick another name.";
+
+    // Swarms (ADR 0016).
+
+    /// A Swarm command while none of its manager Hosts is connected.
+    SWARM_UNREACHABLE = "errors.swarm.unreachable" => "No manager of this Swarm is connected.";
+    /// …naming the manager Hosts Homeport knows.
+    SWARM_UNREACHABLE_HINT = "errors.swarm.unreachable.hint" => "Connect one of its managers: {hosts}.";
+    /// …when Homeport knows none of them.
+    SWARM_UNREACHABLE_UNKNOWN_HINT = "errors.swarm.unreachable.hintUnknown" => "Add a manager of this Swarm as a host, or reconnect one.";
 }

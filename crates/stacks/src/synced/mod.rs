@@ -56,12 +56,13 @@ impl SyncedStacks {
         self.worktrees.join(id)
     }
 
-    /// Creates a Synced Stack on `host_id`: fetches its ref, and checks the
-    /// compose file is there and can be deployed, before anything is stored.
+    /// Creates a Synced Stack on a Host or a Swarm (`owner`): fetches its
+    /// ref, and checks the compose file is there and can be deployed, before
+    /// anything is stored.
     pub async fn create(
         &self,
         cli: &GitCli,
-        host_id: &str,
+        owner: impl Into<crate::StackOwner>,
         draft: &SyncedDraft,
         env: &str,
     ) -> AppResult<SyncedStack> {
@@ -80,7 +81,7 @@ impl SyncedStacks {
             .await?;
         self.compose_file(cli, &draft.repository_id, &commit, &draft.compose_path)
             .await?;
-        self.store.create(host_id, &draft, env, &commit)
+        self.store.create(owner, &draft, env, &commit)
     }
 
     /// Fetches the ref into the repository's clone and returns its commit.

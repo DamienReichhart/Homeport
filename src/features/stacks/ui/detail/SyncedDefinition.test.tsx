@@ -39,11 +39,13 @@ const site: Stack = {
   workingDir: null,
   problem: null,
   updateAvailable: true,
+  registryAuth: false,
 };
 
 const record: SyncedStack = {
   id: 'y1',
-  hostId: 'h1',
+  owner: { kind: 'host', id: 'h1' },
+  registryAuth: false,
   name: 'site',
   repositoryId: 'r1',
   refKind: 'branch',
@@ -107,7 +109,8 @@ function mock(calls: Record<string, unknown>[]) {
     }),
     stacks_get: () => ({
       id: 'm1',
-      hostId: 'h1',
+      owner: { kind: 'host', id: 'h1' },
+      registryAuth: false,
       name: 'shop',
       files: [{ name: 'compose.yaml', content: 'services: {}' }],
       hasEnv: false,

@@ -20,6 +20,8 @@ use homeport_core::{
     error::{AppError, AppResult, ErrorCode},
     host::HELPER_LABEL,
 };
+use homeport_engine::swarm::{self, SwarmMembership, SwarmRole};
+use serde::Serialize;
 
 use crate::messages as msg;
 use homeport_transport::{Connected, Dialer};
@@ -40,6 +42,23 @@ struct Entry {
     /// Homeport's own helper containers seen in the events, whose events
     /// (and their volumes' mounts) aren't shown (ADR 0015).
     helpers: HashSet<String>,
+    /// The Host's place in a Swarm when it was last connected, so a Swarm
+    /// whose managers are all disconnected can still name them. Kept in
+    /// memory only: nothing about a Swarm is stored (ADR 0016).
+    swarm: Option<SwarmMembership>,
+}
+
+/// A Swarm, found through the Hosts that belong to it (ADR 0016).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct SwarmView {
+    pub id: String,
+    /// Its manager Hosts, in the Hosts' order.
+    pub managers: Vec<HostId>,
+    /// Its worker Hosts, in the Hosts' order.
+    pub workers: Vec<HostId>,
+    /// Whether one of its managers is connected, so it can be managed.
+    pub reachable: bool,
 }
 
 pub struct HostRegistry {
@@ -92,6 +111,7 @@ impl HostRegistry {
             client: None,
             task: None,
             helpers: HashSet::new(),
+            swarm: None,
         });
         if let Some(old) = entry.task.replace(task) {
             old.abort();
@@ -169,10 +189,120 @@ impl HostRegistry {
 
     fn set_status(&self, id: &str, status: HostStatus, client: Option<Connected>) {
         if let Some(entry) = self.lock().get_mut(id) {
+            if let HostStatus::Connected { swarm, .. } = &status {
+                entry.swarm.clone_from(swarm);
+            }
             entry.status = status.clone();
             entry.client = client;
         }
         self.notifier.host_status(id, &status);
+    }
+
+    /// Updates a connected Host's place in a Swarm, telling the app when it changed.
+    fn set_swarm(&self, id: &str, membership: Option<SwarmMembership>) {
+        let changed = {
+            let mut entries = self.lock();
+            let Some(entry) = entries.get_mut(id) else {
+                return;
+            };
+            match &mut entry.status {
+                HostStatus::Connected { swarm, .. } if *swarm != membership => {
+                    swarm.clone_from(&membership);
+                    entry.swarm = membership;
+                    Some(entry.status.clone())
+                }
+                _ => None,
+            }
+        };
+        if let Some(status) = changed {
+            self.notifier.host_status(id, &status);
+        }
+    }
+
+    /// Reads a Host's place in a Swarm again, after Homeport changed it.
+    pub async fn refresh_swarm(&self, id: &str) {
+        if let Ok(docker) = self.docker(id) {
+            match swarm::membership(&docker).await {
+                Ok(membership) => self.set_swarm(id, membership),
+                Err(e) => log::debug!("couldn't read the swarm membership of {id}: {e}"),
+            }
+        }
+    }
+
+    /// Every Swarm the Hosts belong to, one per swarm ID however many of
+    /// its managers are Hosts. A worker is placed by its node ID, read from
+    /// a connected manager's node list, or else by the managers it knows.
+    pub async fn swarms(&self) -> Vec<SwarmView> {
+        let order: Vec<HostId> = self
+            .store
+            .list()
+            .map(|hosts| hosts.into_iter().map(|h| h.id).collect())
+            .unwrap_or_default();
+        let members: Vec<(HostId, SwarmMembership, bool)> = {
+            let entries = self.lock();
+            order
+                .iter()
+                .filter_map(|id| {
+                    let entry = entries.get(id)?;
+                    Some((id.clone(), entry.swarm.clone()?, entry.client.is_some()))
+                })
+                .collect()
+        };
+        let mut swarms = group_managers(&members);
+        for view in &mut swarms {
+            let nodes = match self.manager(&view.id) {
+                Ok(docker) => swarm::node_ids(&docker).await.unwrap_or_else(|e| {
+                    log::debug!("couldn't list the nodes of swarm {}: {e}", view.id);
+                    vec![]
+                }),
+                Err(_) => vec![],
+            };
+            view.workers = workers_of(view, &members, &nodes);
+        }
+        swarms
+    }
+
+    /// The Host each Swarm node is, by node ID, for the nodes that are Hosts.
+    pub fn node_hosts(&self) -> HashMap<String, HostId> {
+        self.lock()
+            .iter()
+            .filter_map(|(id, e)| Some((e.swarm.as_ref()?.node_id.clone(), id.clone())))
+            .collect()
+    }
+
+    /// The client of a connected manager of the Swarm `swarm_id`.
+    pub fn manager(&self, swarm_id: &str) -> AppResult<Docker> {
+        let id = self.manager_host(swarm_id)?;
+        self.docker(&id)
+    }
+
+    /// A connected manager Host of the Swarm `swarm_id`, or why there's none.
+    pub fn manager_host(&self, swarm_id: &str) -> AppResult<HostId> {
+        let known: Vec<HostId> = {
+            let entries = self.lock();
+            let managers: Vec<(&HostId, &Entry)> = entries
+                .iter()
+                .filter(|(_, e)| {
+                    e.swarm.as_ref().is_some_and(|m| {
+                        m.role == SwarmRole::Manager && m.swarm_id.as_deref() == Some(swarm_id)
+                    })
+                })
+                .collect();
+            if let Some((id, _)) = managers.iter().find(|(_, e)| e.client.is_some()) {
+                return Ok((*id).clone());
+            }
+            managers.into_iter().map(|(id, _)| id.clone()).collect()
+        };
+        let names: Vec<String> = known
+            .iter()
+            .filter_map(|id| self.store.get(id).ok().map(|h| h.name))
+            .collect();
+        let error = AppError::new(ErrorCode::SwarmUnreachable, msg::SWARM_UNREACHABLE);
+        Err(if names.is_empty() {
+            error.with_hint(msg::SWARM_UNREACHABLE_UNKNOWN_HINT)
+        } else {
+            error.with_hint(msg::SWARM_UNREACHABLE_HINT.with("hosts", names.join(", ")))
+        })
     }
 
     fn record_event(&self, id: &str, event: EngineEvent) {
@@ -184,6 +314,60 @@ impl HostRegistry {
         self.events.record(id, &event);
         self.notifier.engine_event(id, &event);
     }
+}
+
+/// The Swarms of the manager Hosts among `members`, by swarm ID, in the Hosts' order.
+fn group_managers(members: &[(HostId, SwarmMembership, bool)]) -> Vec<SwarmView> {
+    let mut swarms: Vec<SwarmView> = Vec::new();
+    for (id, membership, connected) in members {
+        let Some(swarm_id) = membership
+            .swarm_id
+            .as_ref()
+            .filter(|_| membership.role == SwarmRole::Manager)
+        else {
+            continue;
+        };
+        let index = match swarms.iter().position(|s| &s.id == swarm_id) {
+            Some(index) => index,
+            None => {
+                swarms.push(SwarmView {
+                    id: swarm_id.clone(),
+                    managers: vec![],
+                    workers: vec![],
+                    reachable: false,
+                });
+                swarms.len() - 1
+            }
+        };
+        swarms[index].managers.push(id.clone());
+        swarms[index].reachable |= connected;
+    }
+    swarms
+}
+
+/// The worker Hosts among `members` that belong to `swarm`: their node is
+/// in its `nodes`, or they talk to one of its manager Hosts.
+fn workers_of(
+    swarm: &SwarmView,
+    members: &[(HostId, SwarmMembership, bool)],
+    nodes: &[String],
+) -> Vec<HostId> {
+    let manager_nodes: Vec<&str> = members
+        .iter()
+        .filter(|(id, _, _)| swarm.managers.contains(id))
+        .map(|(_, m, _)| m.node_id.as_str())
+        .collect();
+    members
+        .iter()
+        .filter(|(_, m, _)| m.role == SwarmRole::Worker)
+        .filter(|(_, m, _)| {
+            nodes.contains(&m.node_id)
+                || m.managers
+                    .iter()
+                    .any(|p| manager_nodes.contains(&p.node_id.as_str()))
+        })
+        .map(|(id, _, _)| id.clone())
+        .collect()
 }
 
 /// Whether `event` is about a helper container, or a volume mounted in one;
@@ -258,6 +442,57 @@ mod tests {
             tokio::time::sleep(Duration::from_millis(25)).await;
         }
         panic!("status never matched, last: {:?}", reg.status(id));
+    }
+
+    fn member(swarm: Option<&str>, node: &str, role: SwarmRole, knows: &[&str]) -> SwarmMembership {
+        SwarmMembership {
+            swarm_id: swarm.map(str::to_owned),
+            node_id: node.into(),
+            role,
+            state: homeport_engine::swarm::SwarmNodeState::Active,
+            node_addr: None,
+            managers: knows
+                .iter()
+                .map(|n| homeport_engine::swarm::SwarmPeer {
+                    node_id: (*n).into(),
+                    addr: format!("{n}:2377"),
+                })
+                .collect(),
+            error: None,
+        }
+    }
+
+    #[test]
+    fn two_managers_of_one_swarm_make_one_swarm() {
+        use SwarmRole::{Manager, Worker};
+        let members = vec![
+            (
+                "a".to_owned(),
+                member(Some("s1"), "n1", Manager, &[]),
+                false,
+            ),
+            ("b".to_owned(), member(Some("s1"), "n2", Manager, &[]), true),
+            (
+                "c".to_owned(),
+                member(Some("s2"), "n9", Manager, &[]),
+                false,
+            ),
+            ("w".to_owned(), member(None, "n3", Worker, &["n1"]), true),
+            ("x".to_owned(), member(None, "n4", Worker, &["n7"]), true),
+        ];
+        let swarms = group_managers(&members);
+        assert_eq!(swarms.len(), 2);
+        assert_eq!(swarms[0].id, "s1");
+        assert_eq!(swarms[0].managers, ["a", "b"]);
+        assert!(swarms[0].reachable);
+        assert!(!swarms[1].reachable);
+        // By the managers it knows, then by the Swarm's node list.
+        assert_eq!(workers_of(&swarms[0], &members, &[]), ["w"]);
+        assert_eq!(
+            workers_of(&swarms[0], &members, &["n4".to_owned()]),
+            ["w", "x"]
+        );
+        assert!(workers_of(&swarms[1], &members, &[]).is_empty());
     }
 
     #[test]

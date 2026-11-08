@@ -17,6 +17,7 @@ const site: Stack = {
   workingDir: '/home/me/site',
   problem: null,
   updateAvailable: false,
+  registryAuth: false,
 };
 
 const files = (changedOutside = false): LinkedFiles => ({

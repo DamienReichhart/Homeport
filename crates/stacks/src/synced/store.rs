@@ -10,13 +10,14 @@ use homeport_core::error::{AppError, AppResult, ErrorCode};
 use homeport_git::RefKind;
 use homeport_storage::{Db, SecretBox};
 
-use crate::{definition, messages as msg, store::name_taken};
+use crate::{definition, messages as msg, owner::StackOwner, store::name_taken};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct SyncedStack {
     pub id: String,
-    pub host_id: String,
+    /// The Host or Swarm it's deployed to.
+    pub owner: StackOwner,
     pub name: String,
     pub repository_id: String,
     pub ref_kind: RefKind,
@@ -43,6 +44,8 @@ pub struct SyncedStack {
     pub auto_deploy_failed_commit: Option<String>,
     /// Why it failed.
     pub auto_deploy_error: Option<AppError>,
+    /// On a Swarm: the docker CLI sends its own registry logins with a deploy.
+    pub registry_auth: bool,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -66,20 +69,34 @@ pub struct SyncedStore {
 const COLUMNS: &str = "id, host_id, name, repository_id, ref_kind, ref_name, compose_path, \
      env IS NOT NULL, profiles, deployed_commit, fetched_commit, created_at, updated_at, \
      poll, auto_deploy, last_polled_at, last_poll_error, update_available, \
-     auto_deploy_failed_commit, auto_deploy_error";
+     auto_deploy_failed_commit, auto_deploy_error, swarm_id, registry_auth";
 
 impl SyncedStore {
     pub fn new(db: Arc<Db>, secrets: Arc<SecretBox>) -> Self {
         Self { db, secrets }
     }
 
+    /// The Synced Stacks of the Host `host_id`.
     pub fn list(&self, host_id: &str) -> AppResult<Vec<SyncedStack>> {
-        self.query("WHERE host_id = ?1 ORDER BY name", [host_id])
+        self.list_of(&StackOwner::from(host_id))
     }
 
-    /// Every Synced Stack, on every Host.
+    /// The Synced Stacks of a Host or a Swarm.
+    pub fn list_of(&self, owner: &StackOwner) -> AppResult<Vec<SyncedStack>> {
+        self.query(
+            &format!("WHERE {} = ?1 ORDER BY name", owner.column()),
+            [owner.id()],
+        )
+    }
+
+    /// Every Synced Stack, on every Host and Swarm.
     pub fn list_all(&self) -> AppResult<Vec<SyncedStack>> {
-        self.query("ORDER BY host_id, name", [])
+        self.query("ORDER BY host_id, swarm_id, name", [])
+    }
+
+    /// Whether a swarm deploy sends the docker CLI's registry logins.
+    pub fn set_registry_auth(&self, id: &str, on: bool) -> AppResult<SyncedStack> {
+        self.update(id, "registry_auth = ?2", (id, on))
     }
 
     /// The Synced Stacks made from repository `repository_id`.
@@ -112,11 +129,12 @@ impl SyncedStore {
     /// Its name must be free on the Host, among every kind of Stack.
     pub fn create(
         &self,
-        host_id: &str,
+        owner: impl Into<StackOwner>,
         draft: &SyncedDraft,
         env: &str,
         fetched_commit: &str,
     ) -> AppResult<SyncedStack> {
+        let owner = owner.into();
         let name = draft.name.trim();
         definition::validate_name(name)?;
         let env = self.seal_env(env)?;
@@ -125,16 +143,18 @@ impl SyncedStore {
             .db
             .with(|c| {
                 let tx = c.transaction()?;
-                if name_taken(&tx, host_id, name)? {
+                if name_taken(&tx, &owner, name)? {
                     return Ok(false);
                 }
                 tx.execute(
                     "INSERT INTO synced_stacks
-                     (id, host_id, name, repository_id, ref_kind, ref_name, compose_path, env, fetched_commit)
-                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+                     (id, host_id, swarm_id, name, repository_id, ref_kind, ref_name, compose_path,
+                      env, fetched_commit)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
                     (
                         &id,
-                        host_id,
+                        owner.host_id(),
+                        owner.swarm_id(),
                         name,
                         &draft.repository_id,
                         draft.ref_kind.text(),
@@ -295,7 +315,7 @@ impl SyncedStore {
 fn read_row(row: &Row<'_>) -> rusqlite::Result<SyncedStack> {
     Ok(SyncedStack {
         id: row.get(0)?,
-        host_id: row.get(1)?,
+        owner: StackOwner::from_columns(row.get(1)?, row.get(20)?)?,
         name: row.get(2)?,
         repository_id: row.get(3)?,
         ref_kind: RefKind::from_text(&row.get::<_, String>(4)?),
@@ -316,6 +336,7 @@ fn read_row(row: &Row<'_>) -> rusqlite::Result<SyncedStack> {
         update_available: row.get(17)?,
         auto_deploy_failed_commit: row.get(18)?,
         auto_deploy_error: error_of(row, 19)?,
+        registry_auth: row.get(21)?,
     })
 }
 

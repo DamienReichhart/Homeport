@@ -1,6 +1,7 @@
 import { PlusIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { HostGate, useHosts, useHostSelection } from '@/core/host';
+import { SwarmCards } from '@/features/swarm';
 import { Button, PageHeader } from '@/shared/ui';
 import { HostDashboard } from './dashboard/HostDashboard';
 import { HostCard } from './hosts/HostCard';
@@ -28,6 +29,7 @@ export function OverviewPage() {
           ))}
         </div>
       )}
+      <SwarmCards />
       <section className="grid gap-3">
         {host && <h2 className="text-lg font-semibold">{host.host.name}</h2>}
         <HostGate>{(id) => <HostDashboard hostId={id} />}</HostGate>

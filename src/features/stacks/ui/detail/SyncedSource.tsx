@@ -5,10 +5,11 @@ import type { SyncedStack } from '@/shared/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, KeyValue } from '@/shared/ui';
 import { shortCommit } from '../../model/newSynced';
 import { SyncSettings } from './SyncSettings';
+import type { StackOwner } from '@/shared/api';
 import { t } from '@/shared/i18n';
 
 /** Where a Synced Stack's compose file comes from, and which commits it has. */
-export function SyncedSource({ hostId, synced }: { hostId: string; synced: SyncedStack }) {
+export function SyncedSource({ owner, synced }: { owner: StackOwner; synced: SyncedStack }) {
   const repositories = useQuery(repositoryQueries.list());
   const repository = repositories.data?.find((r) => r.id === synced.repositoryId);
   const mono = (text: string) => <span className="font-mono text-xs">{text}</span>;
@@ -48,7 +49,7 @@ export function SyncedSource({ hostId, synced }: { hostId: string; synced: Synce
               : []),
           ]}
         />
-        <SyncSettings hostId={hostId} synced={synced} />
+        <SyncSettings owner={owner} synced={synced} />
       </CardContent>
     </Card>
   );

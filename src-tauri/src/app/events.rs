@@ -7,6 +7,7 @@ use tauri_specta::Event;
 use homeport_core::error::AppError;
 use homeport_engine::volumes::helper;
 use homeport_hosts::registry::{EngineEvent, HostStatus, Notifier};
+use homeport_stacks::StackOwner;
 
 use super::{notifications::Notifications, AppState};
 
@@ -28,7 +29,8 @@ pub struct EngineEventReceived {
 #[derive(Debug, Clone, Serialize, specta::Type, tauri_specta::Event)]
 #[serde(rename_all = "camelCase")]
 pub struct SyncedUpdateAvailable {
-    pub host_id: String,
+    /// The Host or Swarm it's deployed to.
+    pub owner: StackOwner,
     pub stack_id: String,
     pub name: String,
 }
@@ -37,7 +39,8 @@ pub struct SyncedUpdateAvailable {
 #[derive(Debug, Clone, Serialize, specta::Type, tauri_specta::Event)]
 #[serde(rename_all = "camelCase")]
 pub struct SyncedAutoDeployed {
-    pub host_id: String,
+    /// The Host or Swarm it's deployed to.
+    pub owner: StackOwner,
     pub stack_id: String,
     pub name: String,
     pub commit: String,

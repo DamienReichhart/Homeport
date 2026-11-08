@@ -20,6 +20,7 @@
 //!   that deploys, pulls, takes down, starts, stops or removes goes through it.
 //! - [`lifecycle`] starts, stops and removes any Stack through the Engine API.
 //! - [`compose`] runs the `docker compose` CLI for a runtime job.
+//! - [`swarm`] finds the Stacks deployed to a Swarm and removes them (ADR 0016).
 
 pub mod backup;
 pub mod compose;
@@ -30,12 +31,15 @@ pub mod lifecycle;
 pub mod linked;
 mod listing;
 pub mod messages;
+pub mod owner;
 pub mod runtime;
 pub mod stack;
 pub mod store;
+pub mod swarm;
 pub mod synced;
 
 pub use self::{
     listing::list,
+    owner::StackOwner,
     stack::{derive, Stack, StackKind, StackProblem, StackRecord, StackService, StackState},
 };

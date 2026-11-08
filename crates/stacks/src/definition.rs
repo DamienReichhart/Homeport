@@ -78,9 +78,14 @@ struct Review {
 }
 
 /// Checks a definition made of `files` (their YAML text, merged in order the
-/// way compose merges them) against the rules of `kind`.
+/// way compose merges them) against the rules of `kind`, for a Host.
 pub fn check(files: &[&str], kind: SourceKind) -> ComposeCheck {
-    let review = review(files, kind);
+    check_for(files, kind, false)
+}
+
+/// [`check`], for a Swarm when `swarm`: `docker stack deploy`'s rules too.
+pub fn check_for(files: &[&str], kind: SourceKind, swarm: bool) -> ComposeCheck {
+    let review = review(files, kind, swarm);
     ComposeCheck {
         // The editor lists each blocker with its raw cause, if any.
         errors: review
@@ -113,6 +118,22 @@ pub fn declared_profiles(files: &[&str]) -> Vec<String> {
     profiles.sort();
     profiles.dedup();
     profiles
+}
+
+/// The services of `files` (merged), sorted.
+pub fn service_names(files: &[&str]) -> Vec<String> {
+    let docs: Vec<Value> = files
+        .iter()
+        .filter_map(|f| serde_yaml_ng::from_str(f).ok())
+        .collect();
+    let mut names: Vec<String> = merge(&docs)
+        .services
+        .unwrap_or_default()
+        .into_iter()
+        .map(|(name, _)| name)
+        .collect();
+    names.sort();
+    names
 }
 
 /// Whether a service of `files` (merged) is built from local files, so a
@@ -168,10 +189,25 @@ pub fn validate_profiles(profiles: &[String]) -> AppResult<()> {
     Ok(())
 }
 
-/// The first problem that blocks deploying `files`, if any.
+/// The first problem that blocks deploying `files` to a Host, if any.
 pub fn blocker(files: &[&str], kind: SourceKind) -> Option<AppError> {
-    review(files, kind).blockers.into_iter().next()
+    blocker_for(files, kind, false)
 }
+
+/// [`blocker`], for a Swarm when `swarm`.
+pub fn blocker_for(files: &[&str], kind: SourceKind, swarm: bool) -> Option<AppError> {
+    review(files, kind, swarm).blockers.into_iter().next()
+}
+
+/// Keys of a service `docker stack deploy` ignores, with what to use instead.
+const IGNORED_ON_SWARM: [(&str, &str); 3] = [
+    ("container_name", "a Swarm names each task itself"),
+    ("restart", "use deploy.restart_policy"),
+    (
+        "links",
+        "services reach each other by name on their networks",
+    ),
+];
 
 /// Whether the definition's files on this machine are its project files, so
 /// `build:`, `env_file:` and relative paths mean what their author meant.
@@ -222,7 +258,7 @@ fn merge(docs: &[Value]) -> Merged {
     Merged { services, sections }
 }
 
-fn review(files: &[&str], kind: SourceKind) -> Review {
+fn review(files: &[&str], kind: SourceKind, swarm: bool) -> Review {
     let mut check = Review::default();
     let local = has_project_folder(kind);
     let mut docs = Vec::with_capacity(files.len());
@@ -253,15 +289,30 @@ fn review(files: &[&str], kind: SourceKind) -> Review {
     for (name, service) in &services {
         let name = name.as_str();
         let service = Value::Mapping(service.clone());
-        if !local && service.get("build").is_some() {
+        let builds = service.get("build").is_some();
+        let has_image = service.get("image").is_some();
+        if swarm && builds && !has_image {
+            // A Swarm's nodes pull their images; one built here reaches none.
+            check.blockers.push(AppError::validation(
+                msg::COMPOSE_BUILD_SWARM.with("service", name),
+            ));
+        } else if !local && builds {
             check.blockers.push(AppError::validation(
                 msg::COMPOSE_BUILD.with("service", name),
             ));
+        } else if swarm && builds {
+            check.warnings.push(format!(
+                "Service \"{name}\" has build:, which a Swarm ignores: its nodes pull {} from its registry, so push the image there first.",
+                service.get("image").and_then(Value::as_str).unwrap_or("its image")
+            ));
         }
-        if service.get("image").is_none() && service.get("build").is_none() {
+        if !has_image && !builds {
             check.blockers.push(AppError::validation(
                 msg::COMPOSE_NO_IMAGE.with("service", name),
             ));
+        }
+        if swarm {
+            swarm_warnings(&mut check, name, &service);
         }
         if local {
             continue;
@@ -270,6 +321,10 @@ fn review(files: &[&str], kind: SourceKind) -> Review {
             check.warnings.push(format!(
                 "Service \"{name}\" uses env_file:, which is read on this machine. Put the variables in the Stack's environment instead."
             ));
+        }
+        if swarm {
+            // Already said, as paths on each node.
+            continue;
         }
         for volume in service
             .get("volumes")
@@ -290,7 +345,17 @@ fn review(files: &[&str], kind: SourceKind) -> Review {
     }
     for (section, entries) in &merged.sections {
         for (name, entry) in entries {
-            if entry.get("file").is_some() {
+            if entry.get("file").is_none() {
+                continue;
+            }
+            if swarm {
+                // A Managed Stack's deploy has no folder to read it from.
+                check.blockers.push(AppError::validation(
+                    msg::COMPOSE_FILE_OBJECT_SWARM
+                        .with("section", *section)
+                        .with("name", name),
+                ));
+            } else {
                 check.warnings.push(format!(
                     "{section} \"{name}\" is read from a file on this machine."
                 ));
@@ -298,6 +363,49 @@ fn review(files: &[&str], kind: SourceKind) -> Review {
         }
     }
     check
+}
+
+/// What `docker stack deploy` does differently with a service of a Swarm:
+/// keys it ignores, and bind mounts, which are paths on each node.
+fn swarm_warnings(check: &mut Review, name: &str, service: &Value) {
+    for (key, instead) in IGNORED_ON_SWARM {
+        if service.get(key).is_some() {
+            check.warnings.push(format!(
+                "Service \"{name}\" sets {key}:, which docker stack deploy ignores: {instead}."
+            ));
+        }
+    }
+    let waits = service
+        .get("depends_on")
+        .and_then(Value::as_mapping)
+        .is_some_and(|d| d.values().any(|v| v.get("condition").is_some()));
+    if waits {
+        check.warnings.push(format!(
+            "Service \"{name}\" waits for its depends_on: conditions, which a Swarm ignores: services start in any order, so make it retry until what it needs is up."
+        ));
+    }
+    if service.get("profiles").is_some() {
+        check.warnings.push(format!(
+            "Service \"{name}\" has profiles:, which docker stack deploy ignores: it's deployed whatever profiles are on."
+        ));
+    }
+    for volume in service
+        .get("volumes")
+        .and_then(Value::as_sequence)
+        .into_iter()
+        .flatten()
+    {
+        if let Some(source) = bind_source(volume) {
+            let relative = if is_relative(&source) {
+                " A relative path is resolved on this computer first, then looked for on each node."
+            } else {
+                ""
+            };
+            check.warnings.push(format!(
+                "Service \"{name}\" mounts \"{source}\", a path on whichever node runs its task, which must have it.{relative}"
+            ));
+        }
+    }
 }
 
 /// The bind mounts of `files` (merged) whose source is a relative path, by
@@ -408,6 +516,52 @@ mod tests {
             assert!(validate_files(&[f(bad)]).is_err(), "{bad}");
         }
         assert!(validate_files(&[f("a.yaml"), f("a.yaml")]).is_err());
+    }
+
+    #[test]
+    fn a_swarm_refuses_local_builds_without_an_image() {
+        let built = "services:\n  app:\n    build: .\n";
+        let pushed = "services:\n  app:\n    build: .\n    image: registry.example.com/app:1\n";
+        for kind in [SourceKind::Managed, SourceKind::Linked, SourceKind::Synced] {
+            let refused = check_for(&[built], kind, true);
+            assert!(!refused.is_deployable(), "{kind:?}");
+            assert!(
+                refused.errors[0].contains("pull their images"),
+                "{refused:?}"
+            );
+        }
+        // With an image, a Linked Stack builds here and the nodes pull it.
+        let linked = check_for(&[pushed], SourceKind::Linked, true);
+        assert!(linked.is_deployable(), "{linked:?}");
+        assert!(linked.warnings.iter().any(|w| w.contains("push the image")));
+        // On a Host, a Linked Stack builds without an image, as before.
+        assert!(check_for(&[built], SourceKind::Linked, false).is_deployable());
+    }
+
+    #[test]
+    fn a_swarm_warns_about_what_stack_deploy_ignores() {
+        let yaml = "services:\n  web:\n    image: nginx\n    container_name: web\n    restart: always\n    depends_on:\n      db:\n        condition: service_healthy\n    volumes:\n      - ./site:/usr/share/nginx/html\n      - /srv/data:/data\n  db:\n    image: postgres\n";
+        let checked = check_for(&[yaml], SourceKind::Linked, true);
+        assert!(checked.is_deployable());
+        let has = |needle: &str| checked.warnings.iter().any(|w| w.contains(needle));
+        assert!(has("container_name:"));
+        assert!(has("restart:"));
+        assert!(has("depends_on:"));
+        assert!(has("\"./site\", a path on whichever node"));
+        assert!(has("\"/srv/data\", a path on whichever node"));
+        // None of that is said for a Host.
+        assert!(check_for(&[yaml], SourceKind::Linked, false)
+            .warnings
+            .is_empty());
+    }
+
+    #[test]
+    fn file_configs_need_a_folder_on_a_swarm() {
+        let yaml = "services:\n  web:\n    image: nginx\n    configs: [conf]\nconfigs:\n  conf:\n    file: ./nginx.conf\n";
+        assert!(!check_for(&[yaml], SourceKind::Managed, true).is_deployable());
+        assert!(check_for(&[yaml], SourceKind::Managed, false).is_deployable());
+        assert!(check_for(&[yaml], SourceKind::Linked, true).is_deployable());
+        assert!(check_for(&[yaml], SourceKind::Synced, true).is_deployable());
     }
 
     #[test]

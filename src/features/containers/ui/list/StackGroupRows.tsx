@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ContainerUsage } from '@/shared/api';
 import { formatBytes, formatPercent } from '@/shared/lib';
-import { Button, Checkbox, StatusDot, TableCell, TableRow } from '@/shared/ui';
+import { Badge, Button, Checkbox, StatusDot, TableCell, TableRow } from '@/shared/ui';
 import type { StackGroup } from '../../model/grouping';
 import { t } from '@/shared/i18n';
 
@@ -15,9 +15,12 @@ export function StackGroupRows({
   usage,
   allSelected,
   onSelect,
+  swarmId,
   children,
 }: {
   group: StackGroup;
+  /** The Swarm the Host belongs to, where a swarm stack's page is. */
+  swarmId?: string | null;
   open: boolean;
   onToggleOpen: () => void;
   usage: Map<string, ContainerUsage>;
@@ -56,6 +59,7 @@ export function StackGroupRows({
               }
             />
             {g.stack}
+            {g.swarm && <Badge variant="outline">{t('containers.stack.swarm')}</Badge>}
             <span className="text-muted-foreground text-xs font-normal">
               {t('containers.stack.running', { running: g.running, count: g.containers.length })}
             </span>
@@ -68,16 +72,22 @@ export function StackGroupRows({
           {g.running ? formatBytes(mem) : '—'}
         </TableCell>
         <TableCell colSpan={2} className="text-right">
-          <Button
-            variant="link"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/stacks/${encodeURIComponent(g.stack)}`);
-            }}
-          >
-            {t('containers.stack.open')}
-          </Button>
+          {(!g.swarm || swarmId) && (
+            <Button
+              variant="link"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(
+                  g.swarm && swarmId
+                    ? `/swarms/${swarmId}/stacks/${encodeURIComponent(g.stack)}`
+                    : `/stacks/${encodeURIComponent(g.stack)}`,
+                );
+              }}
+            >
+              {t('containers.stack.open')}
+            </Button>
+          )}
         </TableCell>
       </TableRow>
       {open && children}

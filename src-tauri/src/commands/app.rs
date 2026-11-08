@@ -86,6 +86,9 @@ pub struct Capabilities {
     keychain: bool,
     /// Whether Managed Stacks can be deployed here.
     compose: ComposeSupport,
+    /// Whether Stacks can be deployed to a Swarm from here: the `docker`
+    /// CLI, for `docker stack deploy` (ADR 0017).
+    stack_deploy: ComposeSupport,
     /// Whether Synced Stacks can be cloned and fetched here.
     git: GitSupport,
     /// Homeport has an icon in the system tray, so closing the window can
@@ -136,6 +139,10 @@ pub async fn get_capabilities(
     Ok(Capabilities {
         keychain: state.secrets.is_available(),
         compose: match compose::detect().await {
+            Ok(cli) => ComposeSupport::Available { cli },
+            Err(problem) => ComposeSupport::Unavailable { problem },
+        },
+        stack_deploy: match compose::stack::detect().await {
             Ok(cli) => ComposeSupport::Available { cli },
             Err(problem) => ComposeSupport::Unavailable { problem },
         },

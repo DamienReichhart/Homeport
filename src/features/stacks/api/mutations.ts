@@ -10,8 +10,10 @@ import {
   type ManagedStack,
   type SourceKind,
   type StackAction,
+  type StackOwner,
 } from '@/shared/api';
 import { toastError } from '@/shared/ui';
+import { scopeKey, stacksKey } from './owner';
 import { t } from '@/shared/i18n';
 import { stackKeys } from './queries';
 
@@ -53,15 +55,15 @@ interface NewStack {
  * place.
  */
 export function useCreateStack(
-  hostId: string,
+  owner: StackOwner,
   onSaved: (stack: ManagedStack, deploy: boolean) => void,
 ) {
   const client = useQueryClient();
   return useMutation({
     meta: { silent: true },
-    mutationFn: ({ name, files, env }: NewStack) => commands.stacksCreate(hostId, name, files, env),
+    mutationFn: ({ name, files, env }: NewStack) => commands.stacksCreate(owner, name, files, env),
     onSuccess: async (stack, { deploy }) => {
-      await client.invalidateQueries({ queryKey: hostKeys.stacks(hostId) });
+      await client.invalidateQueries({ queryKey: stacksKey(owner) });
       onSaved(stack, deploy);
     },
   });
@@ -85,16 +87,16 @@ interface NewLinked {
 
 /** Records a new Linked Stack; `onSaved` runs once the Stack list has it. */
 export function useCreateLinked(
-  hostId: string,
+  owner: StackOwner,
   onSaved: (stack: LinkedStack, deploy: boolean) => void,
 ) {
   const client = useQueryClient();
   return useMutation({
     meta: { silent: true },
     mutationFn: ({ name, workingDir, configFiles }: NewLinked) =>
-      commands.stacksLinkedCreate(hostId, name, workingDir, configFiles),
+      commands.stacksLinkedCreate(owner, name, workingDir, configFiles),
     onSuccess: async (stack, { deploy }) => {
-      await client.invalidateQueries({ queryKey: hostKeys.stacks(hostId) });
+      await client.invalidateQueries({ queryKey: stacksKey(owner) });
       onSaved(stack, deploy);
     },
   });
@@ -202,19 +204,30 @@ export function useSetProfiles(kind: SourceKind, stackId: string) {
 }
 
 /** Forgets a Linked Stack: its folder and containers are left alone. */
-export function useForgetLinked(hostId: string, linkedId: string) {
+export function useForgetLinked(owner: StackOwner, linkedId: string) {
   const client = useQueryClient();
   return useMutation({
     mutationFn: () => commands.stacksLinkedForget(linkedId),
-    onSuccess: () => client.invalidateQueries({ queryKey: hostKeys.stacks(hostId) }),
+    onSuccess: () => client.invalidateQueries({ queryKey: stacksKey(owner) }),
   });
 }
 
 /** Deletes a Managed Stack's stored definition, leaving its containers: it becomes External. */
-export function useForgetDefinition(hostId: string, managedId: string) {
+export function useForgetDefinition(owner: StackOwner, managedId: string) {
   const client = useQueryClient();
   return useMutation({
     mutationFn: () => commands.stacksForget(managedId),
-    onSuccess: () => client.invalidateQueries({ queryKey: hostKeys.stacks(hostId) }),
+    onSuccess: () => client.invalidateQueries({ queryKey: stacksKey(owner) }),
+  });
+}
+
+/** Whether a swarm deploy sends the docker CLI's registry logins. */
+export function useRegistryAuth(owner: StackOwner) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: ({ kind, id, on }: { kind: SourceKind; id: string; on: boolean }) =>
+      commands.stacksSetRegistryAuth(kind, id, on),
+    onError: (e) => toastError(e),
+    onSettled: () => client.invalidateQueries({ queryKey: scopeKey(owner) }),
   });
 }

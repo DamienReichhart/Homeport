@@ -38,11 +38,20 @@ Each Stack shows one of these states:
 | **Stopped**        | None are.                                                 |
 | **Not deployed**   | A Managed, Linked or Synced Stack with no containers yet. |
 
-Managed, Linked and Synced Stacks belong to one Host. To run the same compose file on two Hosts, create a Stack on each.
+Managed, Linked and Synced Stacks belong to one Host, or to one Swarm. To run the same compose file on two Hosts, create a Stack on each.
+
+<Aside>
+  Stacks deployed to a [Swarm](/docs/guides/swarm/), from a terminal or from Homeport, are listed on
+  the Swarm's own page, under **Stacks**, rather than here. To deploy one, choose the Swarm under
+  **Deploy to** on **New Stack**. See [Deploying Stacks to a
+  Swarm](/docs/guides/swarm/#deploying-stacks-to-a-swarm).
+</Aside>
 
 ## Linked Stacks
 
 A **Linked Stack** keeps its compose files in their project folder on this computer, where you edit them in your own editor and keep them under version control. Homeport never copies them: it remembers the folder and the compose files it uses, in order, and reads them where they are. The folder's `.env` stays in the folder.
+
+A Linked Stack can also be deployed to a Swarm, its `configs: file:` and `secrets: file:` read from the folder; see [Linked and Synced Stacks on a Swarm](/docs/guides/swarm/#linked-and-synced-stacks-on-a-swarm).
 
 ### Creating a Linked Stack
 

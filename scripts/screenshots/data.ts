@@ -12,7 +12,9 @@ import type {
   Image,
   ManagedStack,
   NetworkView,
+  ServiceView,
   Stack,
+  SwarmView,
   VolumeView,
 } from '@/shared/api';
 
@@ -75,6 +77,7 @@ export const hosts: HostView[] = [
       apiVersion: '1.51',
       os: 'linux',
       arch: 'x86_64',
+      swarm: null,
     },
   },
   {
@@ -92,6 +95,7 @@ export const hosts: HostView[] = [
       apiVersion: '1.51',
       os: 'linux',
       arch: 'aarch64',
+      swarm: null,
     },
   },
   {
@@ -109,6 +113,7 @@ export const hosts: HostView[] = [
       apiVersion: '1.47',
       os: 'linux',
       arch: 'x86_64',
+      swarm: null,
     },
   },
 ];
@@ -707,11 +712,12 @@ export const managedStacks: ManagedStack[] = [
   ['stack-analytics', 'analytics', ANALYTICS_COMPOSE, 1 * HOUR],
 ].map(([id, name, compose, age]) => ({
   id: id as string,
-  hostId: PROD,
+  owner: { kind: 'host' as const, id: PROD },
   name: name as string,
   files: [{ name: 'compose.yaml', content: compose as string }],
   hasEnv: name === 'shop',
   profiles: [],
+  registryAuth: false,
   createdAt: new Date((NOW - (age as number)) * 1000).toISOString(),
   updatedAt: new Date((NOW - (age as number)) * 1000).toISOString(),
 }));
@@ -727,6 +733,8 @@ export function stacksOf(hostId: string): Stack[] {
         name: service,
         containerIds: of.map((c) => c.id),
         running: of.filter((c) => c.state === 'running').length,
+        serviceId: null,
+        desired: null,
       };
     });
     const running = members.filter((c) => c.state === 'running').length;
@@ -743,6 +751,7 @@ export function stacksOf(hostId: string): Stack[] {
       workingDir: null,
       problem: null,
       updateAvailable: false,
+      registryAuth: false,
     };
   });
   if (hostId === PROD) {
@@ -758,6 +767,7 @@ export function stacksOf(hostId: string): Stack[] {
       workingDir: null,
       problem: null,
       updateAvailable: false,
+      registryAuth: false,
     });
   }
   return stacks.sort((a, b) => a.name.localeCompare(b.name));
@@ -795,3 +805,79 @@ export const events: EngineEvent[] = eventSpecs.map(([ago, kind, action, name]) 
     ),
   },
 }));
+
+/** The demo Swarm: managed through prod-eu-1 and staging, shown on `/swarms` routes only. */
+export const SWARM_ID = 'k3x9qv2m8hzt4w1n0bcd7yfr';
+
+export const swarm: SwarmView = {
+  id: SWARM_ID,
+  managers: [PROD, STAGING],
+  workers: [],
+  reachable: true,
+};
+
+const swarmService = (
+  name: string,
+  image: string,
+  replicas: number | null,
+  running: number,
+  desired: number,
+  ports: ServiceView['ports'] = [],
+  stack: string | null = 'shop',
+): ServiceView => ({
+  id: hexId(`service/${name}`).slice(0, 25),
+  version: 41,
+  name,
+  image,
+  imageDigest: null,
+  mode: replicas === null ? 'global' : 'replicated',
+  replicas,
+  running,
+  desired,
+  ports,
+  updateState: name === 'shop_api' ? 'updating' : name === 'shop_web' ? 'completed' : null,
+  updateMessage: null,
+  stack,
+  labels: stack ? { 'com.docker.stack.namespace': stack } : {},
+  created: new Date((NOW - 12 * DAY) * 1000).toISOString(),
+  updated: new Date((NOW - 2 * HOUR) * 1000).toISOString(),
+});
+
+export const swarmServices: ServiceView[] = [
+  swarmService('shop_web', 'nginx:1.27-alpine', 3, 3, 3, [
+    { target: 80, published: 443, protocol: 'tcp', mode: 'ingress' },
+  ]),
+  swarmService('shop_api', 'ghcr.io/acme/shop-api:2.4.1', 4, 3, 4),
+  swarmService('shop_worker', 'ghcr.io/acme/shop-worker:2.4.1', 2, 2, 2),
+  swarmService('shop_db', 'postgres:17', 1, 1, 1),
+  swarmService(
+    'monitoring_node-exporter',
+    'prom/node-exporter:v1.8.2',
+    null,
+    5,
+    5,
+    [],
+    'monitoring',
+  ),
+  swarmService(
+    'traefik',
+    'traefik:v3.2',
+    2,
+    2,
+    2,
+    [
+      { target: 80, published: 80, protocol: 'tcp', mode: 'ingress' },
+      { target: 443, published: 8443, protocol: 'tcp', mode: 'ingress' },
+    ],
+    null,
+  ),
+];
+
+export const swarmSummary = {
+  id: SWARM_ID,
+  created: new Date((NOW - 90 * DAY) * 1000).toISOString(),
+  updated: new Date((NOW - 3 * DAY) * 1000).toISOString(),
+  nodes: 5,
+  managers: 3,
+  services: swarmServices.length,
+};

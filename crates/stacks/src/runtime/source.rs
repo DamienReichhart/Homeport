@@ -9,6 +9,7 @@ use super::StackSource;
 use crate::{compose::ComposeAction, definition, linked::files, messages as msg};
 
 /// The working directory of a run.
+#[derive(Debug)]
 pub(crate) enum WorkDir {
     /// An empty private folder, removed when the run ends, so nothing on this
     /// machine is picked up as project files.
@@ -27,6 +28,7 @@ impl WorkDir {
 }
 
 /// A source ready to hand to the CLI for one run.
+#[derive(Debug)]
 pub(crate) struct Prepared {
     /// The arguments that name the compose files, after `--project-name`.
     pub file_args: Vec<String>,
@@ -54,11 +56,16 @@ fn private_dir() -> std::io::Result<tempfile::TempDir> {
 impl StackSource {
     /// Checks the source can be used for `action` and lays it out for the CLI.
     pub(crate) fn prepare(&self, action: ComposeAction) -> AppResult<Prepared> {
+        self.prepare_for(action, false)
+    }
+
+    /// [`Self::prepare`], with a Swarm's rules too when `swarm` (ADR 0017).
+    pub(crate) fn prepare_for(&self, action: ComposeAction, swarm: bool) -> AppResult<Prepared> {
         match self {
             Self::Managed { files, env } => {
                 if action.reads_definition() {
                     let yaml: Vec<&str> = files.iter().map(|f| f.content.as_str()).collect();
-                    if let Some(blocker) = definition::blocker(&yaml, self.kind()) {
+                    if let Some(blocker) = definition::blocker_for(&yaml, self.kind(), swarm) {
                         return Err(blocker);
                     }
                 }
@@ -93,7 +100,14 @@ impl StackSource {
             Self::Linked {
                 working_dir,
                 config_files,
-            } => prepare_folder(self.kind(), action, working_dir, config_files, vec![]),
+            } => prepare_folder(
+                self.kind(),
+                action,
+                swarm,
+                working_dir,
+                config_files,
+                vec![],
+            ),
             Self::Synced {
                 working_dir,
                 config_files,
@@ -101,6 +115,7 @@ impl StackSource {
             } => prepare_folder(
                 self.kind(),
                 action,
+                swarm,
                 working_dir,
                 config_files,
                 definition::parse_env(env)?,
@@ -116,6 +131,7 @@ impl StackSource {
 fn prepare_folder(
     kind: super::SourceKind,
     action: ComposeAction,
+    swarm: bool,
     working_dir: &Path,
     config_files: &[String],
     vars: Vec<(String, String)>,
@@ -141,7 +157,7 @@ fn prepare_folder(
     }
     if action.reads_definition() {
         let yaml: Vec<&str> = texts.iter().map(|(_, t)| t.as_str()).collect();
-        if let Some(blocker) = definition::blocker(&yaml, kind) {
+        if let Some(blocker) = definition::blocker_for(&yaml, kind, swarm) {
             return Err(blocker);
         }
     }

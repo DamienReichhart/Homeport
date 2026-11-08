@@ -19,6 +19,11 @@ export default {
     'The stored credentials can’t be decrypted. Re-enter them or regenerate the key.',
   'core.status.keychainUnavailable': 'Keychain unavailable',
   'core.status.invalid': 'Misconfigured',
+  'core.swarm.label': 'Swarm of {host}',
+  'core.swarm.labelUnknown': 'Swarm {id}',
+  'core.swarm.gone.title': 'This Swarm isn’t known any more',
+  'core.swarm.gone.description':
+    'None of the hosts Homeport connects to belongs to it now. Add one of its managers as a host to manage it.',
   'core.gate.welcome.title': 'Welcome to Homeport',
   'core.gate.welcome.description':
     "Bring in a Docker Engine to get started — this machine's, or a remote one over SSH or TLS.",

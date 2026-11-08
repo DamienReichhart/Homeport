@@ -5,7 +5,7 @@ mod error;
 
 use std::{path::Path, sync::Mutex};
 
-use rusqlite::Connection;
+use rusqlite::{Connection, OptionalExtension};
 use rusqlite_migration::{Migrations, M};
 
 use homeport_core::error::AppResult;
@@ -29,11 +29,32 @@ const MIGRATION_SLICE: &[M<'static>] = &[
     M::up(include_str!("migrations/0012_stack_deploy_commits.sql")),
     M::up(include_str!("migrations/0013_synced_polling.sql")),
     M::up(include_str!("migrations/0014_engine_events.sql")),
+    M::up(include_str!("migrations/0015_swarm_stacks.sql")),
 ];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_SLICE);
 
 pub struct Db {
     conn: Mutex<Connection>,
+}
+
+/// Brings `conn`'s schema to the latest version, then turns foreign keys on.
+///
+/// Migrations run with foreign keys off, as SQLite asks for rebuilding a
+/// table (0015): dropping the old table would otherwise cascade to the rows
+/// that point at it. They're checked once every migration has run.
+fn migrate(conn: &mut Connection) -> AppResult<()> {
+    conn.pragma_update(None, "foreign_keys", "OFF")
+        .map_err(sqlite_error)?;
+    MIGRATIONS.to_latest(conn).map_err(migration_error)?;
+    let broken: Option<String> = conn
+        .query_row("PRAGMA foreign_key_check", [], |r| r.get(0))
+        .optional()
+        .map_err(sqlite_error)?;
+    if let Some(table) = broken {
+        return Err(error::foreign_keys_broken(&table));
+    }
+    conn.pragma_update(None, "foreign_keys", "ON")
+        .map_err(sqlite_error)
 }
 
 impl Db {
@@ -53,9 +74,7 @@ impl Db {
     }
 
     fn init(mut conn: Connection) -> AppResult<Self> {
-        conn.pragma_update(None, "foreign_keys", "ON")
-            .map_err(sqlite_error)?;
-        MIGRATIONS.to_latest(&mut conn).map_err(migration_error)?;
+        migrate(&mut conn)?;
         Ok(Self {
             conn: Mutex::new(conn),
         })
@@ -144,7 +163,6 @@ mod tests {
     #[test]
     fn databases_from_0_11_keep_engine_events_until_their_host_goes() {
         let mut conn = Connection::open_in_memory().unwrap();
-        conn.pragma_update(None, "foreign_keys", "ON").unwrap();
         MIGRATIONS.to_version(&mut conn, 13).unwrap();
         let local = r#"{"kind":"local","socketPath":"/var/run/docker.sock"}"#;
         conn.execute(
@@ -152,7 +170,7 @@ mod tests {
             [local],
         )
         .unwrap();
-        MIGRATIONS.to_latest(&mut conn).unwrap();
+        migrate(&mut conn).unwrap();
 
         let insert = "INSERT OR IGNORE INTO engine_events
             (host_id, time_nano, kind, action, actor_id, attributes)
@@ -168,6 +186,71 @@ mod tests {
     }
 
     #[test]
+    fn stacks_from_0_13_keep_their_host_and_files() {
+        let mut conn = Connection::open_in_memory().unwrap();
+        MIGRATIONS.to_version(&mut conn, 14).unwrap();
+        let local = r#"{"kind":"local","socketPath":"/var/run/docker.sock"}"#;
+        conn.execute_batch(&format!(
+            "INSERT INTO hosts (id, name, connection) VALUES ('h', 'local', '{local}');
+             INSERT INTO stacks (id, host_id, name, env, profiles) VALUES ('m', 'h', 'shop', NULL, '[\"debug\"]');
+             INSERT INTO stack_files (stack_id, position, name, content) VALUES ('m', 0, 'compose.yaml', 'services: {{}}');
+             INSERT INTO linked_stacks (id, host_id, name, working_dir, config_files, fingerprint)
+                 VALUES ('l', 'h', 'blog', '/srv/blog', '[]', 'f');
+             INSERT INTO git_repositories (id, url, auth) VALUES ('r', 'https://example.com/a.git', 'none');
+             INSERT INTO synced_stacks (id, host_id, name, repository_id, ref_kind, ref_name, compose_path, auto_deploy)
+                 VALUES ('s', 'h', 'site', 'r', 'branch', 'main', 'compose.yaml', 1);
+             INSERT INTO stack_deploys (id, host_id, stack_id, stack_kind, stack_name, action, definition)
+                 VALUES ('d', 'h', 'm', 'managed', 'shop', 'up', '[]');"
+        ))
+        .unwrap();
+        migrate(&mut conn).unwrap();
+
+        let owner = |table: &str| -> (Option<String>, Option<String>) {
+            conn.query_row(&format!("SELECT host_id, swarm_id FROM {table}"), [], |r| {
+                Ok((r.get(0)?, r.get(1)?))
+            })
+            .unwrap()
+        };
+        for table in ["stacks", "linked_stacks", "synced_stacks", "stack_deploys"] {
+            assert_eq!(owner(table), (Some("h".into()), None), "{table}");
+        }
+        let files: i64 = conn
+            .query_row("SELECT count(*) FROM stack_files", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(files, 1, "rebuilding stacks keeps its files");
+        let kept: (String, bool) = conn
+            .query_row("SELECT profiles, auto_deploy FROM synced_stacks", [], |r| {
+                Ok((r.get::<_, String>(0)?, r.get(1)?))
+            })
+            .unwrap();
+        assert_eq!(kept, ("[]".to_owned(), true));
+
+        // A Stack belongs to a Host or a Swarm, never both or neither.
+        for (host, swarm) in [("NULL", "NULL"), ("'h'", "'s1'")] {
+            let insert = format!(
+                "INSERT INTO stacks (id, host_id, swarm_id, name) VALUES ('x', {host}, {swarm}, 'x')"
+            );
+            assert!(conn.execute(&insert, []).is_err(), "{host} {swarm}");
+        }
+        conn.execute(
+            "INSERT INTO stacks (id, swarm_id, name) VALUES ('w', 's1', 'shop')",
+            [],
+        )
+        .unwrap();
+        // Removing the Host keeps the Swarm's Stack and drops its own.
+        conn.execute("DELETE FROM hosts WHERE id = 'h'", [])
+            .unwrap();
+        let left: Vec<String> = conn
+            .prepare("SELECT id FROM stacks")
+            .unwrap()
+            .query_map([], |r| r.get(0))
+            .unwrap()
+            .collect::<rusqlite::Result<_>>()
+            .unwrap();
+        assert_eq!(left, ["w"]);
+    }
+
+    #[test]
     fn ssh_hosts_from_before_bastions_get_an_empty_list() {
         let mut conn = Connection::open_in_memory().unwrap();
         MIGRATIONS.to_version(&mut conn, 4).unwrap();
@@ -178,7 +261,7 @@ mod tests {
             (ssh, local),
         )
         .unwrap();
-        MIGRATIONS.to_latest(&mut conn).unwrap();
+        migrate(&mut conn).unwrap();
 
         let read = |id: &str| -> (serde_json::Value, Option<String>) {
             conn.query_row(
@@ -203,7 +286,6 @@ mod tests {
     #[test]
     fn databases_from_0_9_keep_their_hosts_and_stacks() {
         let mut conn = Connection::open_in_memory().unwrap();
-        conn.pragma_update(None, "foreign_keys", "ON").unwrap();
         MIGRATIONS.to_version(&mut conn, 5).unwrap();
         let local = r#"{"kind":"local","socketPath":"/var/run/docker.sock"}"#;
         conn.execute(
@@ -216,7 +298,7 @@ mod tests {
             [],
         )
         .unwrap();
-        MIGRATIONS.to_latest(&mut conn).unwrap();
+        migrate(&mut conn).unwrap();
 
         let stacks: i64 = conn
             .query_row("SELECT count(*) FROM stacks WHERE host_id = 'h'", [], |r| {
@@ -254,7 +336,6 @@ mod tests {
     #[test]
     fn databases_from_0_10_keep_their_stacks_and_history() {
         let mut conn = Connection::open_in_memory().unwrap();
-        conn.pragma_update(None, "foreign_keys", "ON").unwrap();
         MIGRATIONS.to_version(&mut conn, 9).unwrap();
         let local = r#"{"kind":"local","socketPath":"/var/run/docker.sock"}"#;
         conn.execute_batch(&format!(
@@ -266,7 +347,7 @@ mod tests {
                  VALUES ('d', 'h', 's', 'managed', 'shop', 'up', '[]');"
         ))
         .unwrap();
-        MIGRATIONS.to_latest(&mut conn).unwrap();
+        migrate(&mut conn).unwrap();
 
         let count = |table: &str| -> i64 {
             conn.query_row(&format!("SELECT count(*) FROM {table}"), [], |r| r.get(0))

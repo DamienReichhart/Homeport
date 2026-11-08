@@ -9,9 +9,25 @@ Homeport names things precisely. These terms appear throughout the app and these
 
 A Docker Engine that Homeport connects to, defined by a name and how to reach it: a local socket, TCP, TLS or SSH. Every container, image, volume, network and Stack belongs to exactly one Host. See [Hosts and connections](/docs/hosts/).
 
+### Swarm
+
+A Docker Swarm cluster, found through the hosts that belong to it and never added on its own. Homeport reaches it through any connected manager host, tells Swarms apart by their swarm ID, and stores nothing about one. It's named after its first manager host, since Docker gives every Swarm the same name. See [Swarms](/docs/guides/swarm/).
+
+### Node
+
+One Engine in a Swarm: a manager or a worker. A node is a host only when Homeport connects to it, and a host's page links to its node.
+
+### Service
+
+What a Swarm runs: an image, its settings and a number of replicas, or one task on every node for a global service.
+
+### Task
+
+One slot of a service on one node, run as a container there. When a service doesn't converge, its tasks say why.
+
 ### Stack
 
-A Compose project running on a Host, identified by its project name. Every Stack is Managed, Linked, Synced or External. See [Stacks](/docs/guides/stacks/).
+A Compose project running on a Host, or a swarm stack running on a Swarm, identified by its project name. Every Stack is Managed, Linked, Synced or External. See [Stacks](/docs/guides/stacks/) and [swarm stacks](/docs/guides/swarm/#swarm-stacks).
 
 ### Managed Stack
 

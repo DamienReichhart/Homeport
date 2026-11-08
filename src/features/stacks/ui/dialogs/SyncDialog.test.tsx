@@ -17,11 +17,13 @@ const site: Stack = {
   workingDir: null,
   problem: null,
   updateAvailable: false,
+  registryAuth: false,
 };
 
 const record: SyncedStack = {
   id: 'y1',
-  hostId: 'h1',
+  owner: { kind: 'host', id: 'h1' },
+  registryAuth: false,
   name: 'site',
   repositoryId: 'r1',
   refKind: 'branch',

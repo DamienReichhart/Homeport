@@ -20,10 +20,10 @@ use homeport_stacks::{
         folder::{self, FolderProject},
         LinkedStack,
     },
-    runtime::{self, ComposeJob, Recorder, SourceKind, StackSource, StackTarget},
+    runtime::{self, ComposeJob, Reach, Recorder, SourceKind, StackSource, StackTarget},
     store::{ComposeFile, ManagedStack},
     synced::{SyncReview, SyncedDraft, SyncedFiles, SyncedStack},
-    Stack,
+    Stack, StackOwner,
 };
 
 use crate::{app::AppState, commands::registries, error::AppResult};
@@ -60,26 +60,52 @@ pub fn stacks_get_env(state: State<'_, AppState>, id: String) -> AppResult<Strin
 }
 
 /// Checks a definition made of `files` (their YAML, merged in order) against
-/// the rules of its kind of Stack.
+/// the rules of its kind of Stack, and of a Swarm's when `swarm`.
 #[tauri::command]
 #[specta::specta]
-pub fn stacks_check(files: Vec<String>, kind: SourceKind) -> ComposeCheck {
+pub fn stacks_check(files: Vec<String>, kind: SourceKind, swarm: bool) -> ComposeCheck {
     let files: Vec<&str> = files.iter().map(String::as_str).collect();
-    definition::check(&files, kind)
+    definition::check_for(&files, kind, swarm)
 }
 
-/// Creates a Managed Stack. Using the name of an External Stack adopts it.
+/// Checks a new Stack's Host or Swarm is one Homeport knows.
+fn known(state: &AppState, owner: &StackOwner) -> AppResult<()> {
+    match owner {
+        StackOwner::Host(id) => state.hosts.store.get(id).map(drop),
+        StackOwner::Swarm(id) => state.hosts.registry.manager_host(id).map(drop),
+    }
+}
+
+/// Creates a Managed Stack on a Host or a Swarm. Using the name of an
+/// External Stack adopts it.
 #[tauri::command]
 #[specta::specta]
 pub fn stacks_create(
     state: State<'_, AppState>,
-    host_id: String,
+    owner: StackOwner,
     name: String,
     files: Vec<ComposeFile>,
     env: String,
 ) -> AppResult<ManagedStack> {
-    state.hosts.store.get(&host_id)?;
-    state.stacks.create(&host_id, &name, &files, &env)
+    known(&state, &owner)?;
+    state.stacks.create(&owner, &name, &files, &env)
+}
+
+/// Whether deploying a Stack to a Swarm sends the docker CLI's own registry
+/// logins (`--with-registry-auth`).
+#[tauri::command]
+#[specta::specta]
+pub fn stacks_set_registry_auth(
+    state: State<'_, AppState>,
+    kind: SourceKind,
+    id: String,
+    on: bool,
+) -> AppResult<bool> {
+    Ok(match kind {
+        SourceKind::Managed => state.stacks.set_registry_auth(&id, on)?.registry_auth,
+        SourceKind::Linked => state.linked.set_registry_auth(&id, on)?.registry_auth,
+        SourceKind::Synced => state.synced.store.set_registry_auth(&id, on)?.registry_auth,
+    })
 }
 
 #[tauri::command]
@@ -108,18 +134,18 @@ pub fn stacks_linked_inspect(path: String) -> AppResult<FolderProject> {
     folder::inspect(std::path::Path::new(&path))
 }
 
-/// Records a Linked Stack for the folder `working_dir` and its compose
-/// files. Using the name of an External Stack takes it over.
+/// Records a Linked Stack of a Host or a Swarm for the folder `working_dir`
+/// and its compose files. Using the name of an External Stack takes it over.
 #[tauri::command]
 #[specta::specta]
 pub fn stacks_linked_create(
     state: State<'_, AppState>,
-    host_id: String,
+    owner: StackOwner,
     name: String,
     working_dir: String,
     config_files: Vec<String>,
 ) -> AppResult<LinkedStack> {
-    state.hosts.store.get(&host_id)?;
+    known(&state, &owner)?;
     // The files are checked again here: the webview only names them.
     let found = folder::inspect(std::path::Path::new(&working_dir))?;
     if config_files.is_empty()
@@ -134,7 +160,7 @@ pub fn stacks_linked_create(
     let fingerprint = linked::files::files_fingerprint(&config_files);
     state
         .linked
-        .create(&host_id, &name, &working_dir, &config_files, &fingerprint)
+        .create(&owner, &name, &working_dir, &config_files, &fingerprint)
 }
 
 /// A Linked Stack's compose files, read from its folder. `acknowledge` notes
@@ -197,20 +223,20 @@ pub fn stacks_linked_forget(state: State<'_, AppState>, id: String) -> AppResult
     state.linked.delete(&id)
 }
 
-/// Creates a Synced Stack on `host_id` from a repository's branch or tag:
-/// fetches it into the repository's clone and checks the compose file before
-/// anything is stored.
+/// Creates a Synced Stack on a Host or a Swarm from a repository's branch or
+/// tag: fetches it into the repository's clone and checks the compose file
+/// before anything is stored.
 #[tauri::command]
 #[specta::specta]
 pub async fn stacks_synced_create(
     state: State<'_, AppState>,
-    host_id: String,
+    owner: StackOwner,
     draft: SyncedDraft,
     env: String,
 ) -> AppResult<SyncedStack> {
-    state.hosts.store.get(&host_id)?;
+    known(&state, &owner)?;
     let cli = git::detect().await?;
-    state.synced.create(&cli, &host_id, &draft, &env).await
+    state.synced.create(&cli, &owner, &draft, &env).await
 }
 
 #[tauri::command]
@@ -326,7 +352,7 @@ pub async fn stacks_act(
     name: String,
     action: StackAction,
 ) -> AppResult<()> {
-    runtime::act(&target(&state, &host_id)?, &name, action).await
+    runtime::act(&target(&state, &StackOwner::from(&host_id))?, &name, action).await
 }
 
 /// Removes a Stack's containers and networks through the Engine API.
@@ -337,7 +363,7 @@ pub async fn stacks_remove(
     host_id: String,
     name: String,
 ) -> AppResult<()> {
-    runtime::remove(&target(&state, &host_id)?, &name).await
+    runtime::remove(&target(&state, &StackOwner::from(&host_id))?, &name).await
 }
 
 /// Runs a compose command for the Managed, Linked or Synced Stack `id`,
@@ -402,21 +428,27 @@ pub(crate) async fn recorded_job(
     automatic: bool,
 ) -> AppResult<(ComposeJob, Option<String>)> {
     let stack = resolve(state, kind, id, action, commit).await?;
+    let cli = if stack.owner.is_swarm() {
+        compose::stack::detect().await?
+    } else {
+        compose::detect().await?
+    };
     let job = ComposeJob {
-        cli: compose::detect().await?,
+        cli,
         source: stack.source,
-        target: target(state, &stack.host_id)?,
+        target: target(state, &stack.owner)?,
         logins: registries::logins(state)?,
         project: stack.name,
         action,
         profiles: stack.profiles,
         record: Some(Recorder {
             history: state.history.clone(),
-            host_id: stack.host_id,
+            owner: stack.owner,
             stack_id: id.to_owned(),
             commit: stack.commit.clone(),
             automatic,
         }),
+        registry_auth: stack.registry_auth,
     };
     Ok((job, stack.commit))
 }
@@ -550,7 +582,8 @@ pub async fn stacks_rollback_subscribe(
 
 /// A Managed, Linked or Synced Stack, ready to run.
 struct Resolved {
-    host_id: String,
+    owner: StackOwner,
+    registry_auth: bool,
     name: String,
     source: StackSource,
     profiles: Vec<String>,
@@ -575,7 +608,8 @@ async fn resolve(
                     env: state.stacks.env(id)?,
                     files: stack.files,
                 },
-                host_id: stack.host_id,
+                owner: stack.owner,
+                registry_auth: stack.registry_auth,
                 name: stack.name,
                 profiles: stack.profiles,
                 commit: None,
@@ -588,7 +622,8 @@ async fn resolve(
                     working_dir: stack.working_dir.into(),
                     config_files: stack.config_files,
                 },
-                host_id: stack.host_id,
+                owner: stack.owner,
+                registry_auth: stack.registry_auth,
                 name: stack.name,
                 profiles: stack.profiles,
                 commit: None,
@@ -600,7 +635,8 @@ async fn resolve(
             let (source, commit) = state.synced.source(&cli, &stack, action, commit).await?;
             Resolved {
                 source,
-                host_id: stack.host_id,
+                owner: stack.owner,
+                registry_auth: stack.registry_auth,
                 name: stack.name,
                 profiles: stack.profiles,
                 commit: Some(commit),
@@ -609,13 +645,29 @@ async fn resolve(
     })
 }
 
-/// Where the Stacks of `host_id` run: its Compose projects.
-fn target(state: &AppState, host_id: &str) -> AppResult<StackTarget> {
+/// How commands reach the Host `host_id`.
+fn reach(state: &AppState, host_id: &str) -> AppResult<Reach> {
     let host = state.hosts.store.get(host_id)?;
-    Ok(StackTarget::Host {
+    Ok(Reach {
         name: host.name,
         connection: host.connection,
         dialer: state.hosts.registry.dialer(host_id)?,
         docker: state.hosts.registry.docker(host_id)?,
+    })
+}
+
+/// Where the Stacks of `owner` run: a Host's Compose projects, or a Swarm's
+/// swarm stacks through one of its connected managers.
+pub(crate) fn target(state: &AppState, owner: &StackOwner) -> AppResult<StackTarget> {
+    Ok(match owner {
+        StackOwner::Host(host_id) => StackTarget::Host(reach(state, host_id)?),
+        StackOwner::Swarm(swarm_id) => {
+            let manager = reach(state, &state.hosts.registry.manager_host(swarm_id)?)?;
+            StackTarget::Swarm {
+                swarm_id: swarm_id.clone(),
+                name: format!("the Swarm of {}", manager.name),
+                manager,
+            }
+        }
     })
 }

@@ -292,7 +292,8 @@ mod tests {
     fn stack(id: &str, repository: &str, ref_name: &str, poll: bool) -> SyncedStack {
         SyncedStack {
             id: id.into(),
-            host_id: "h".into(),
+            owner: crate::StackOwner::from("h"),
+            registry_auth: false,
             name: id.into(),
             repository_id: repository.into(),
             ref_kind: RefKind::Branch,

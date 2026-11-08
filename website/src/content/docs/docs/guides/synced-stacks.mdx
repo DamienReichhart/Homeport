@@ -76,6 +76,8 @@ Homeport fetches the branch or tag and reads the compose file before it stores a
 
 The repository is cloned once on this computer, in a `repositories` folder next to Homeport's database, and shared by every Synced Stack made from it. Each Synced Stack deploys from its own checkout of the commit, in a `synced-stacks` folder there, which stays in place between deploys: files your containers write through relative bind mounts stay where they were. Symbolic links in the repository are checked out as plain files, so a compose file can't point Compose at a file elsewhere on this computer. Files keep the line endings the repository holds them with, on Windows too, so a script copied into a Linux image still runs; only the repository's own `.gitattributes` can change them.
 
+A Synced Stack can be deployed to a [Swarm](/docs/guides/swarm/) instead: choose it under **Deploy to** on **New stack**. It syncs, deploys and auto-deploys the same way, with `docker stack deploy` run from its checkout; see [Linked and Synced Stacks on a Swarm](/docs/guides/swarm/#linked-and-synced-stacks-on-a-swarm) for what changes, `build:` first of all.
+
 **Forget** stops Homeport following the repository. Its containers keep running and it becomes an External Stack; its checkout is deleted unless containers wrote files into it, and the repository's clone goes once no Synced Stack uses it. The repository stays in **Settings → Repositories**.
 
 ## Syncing

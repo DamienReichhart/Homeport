@@ -133,6 +133,10 @@ pub fn from_message(status: Option<u16>, message: &str) -> AppError {
         };
         return AppError::new(ErrorCode::BadRequest, what).with_hint(msg::CPUS_LIMITED_HINT);
     }
+    if has("update out of sequence") {
+        return AppError::new(ErrorCode::Conflict, msg::OUT_OF_SEQUENCE)
+            .with_hint(msg::OUT_OF_SEQUENCE_HINT);
+    }
     if has("is already in use by container") || has("conflict. the container name") {
         return AppError::new(ErrorCode::NameInUse, msg::CONTAINER_NAME_IN_USE)
             .with_hint(msg::CONTAINER_NAME_IN_USE_HINT);
@@ -244,6 +248,7 @@ mod tests {
             (409, "conflict: unable to delete 1234 (must be forced) - image is referenced in multiple repositories", ErrorCode::InUse),
             (409, "cannot remove container \"/web\": container is running: stop the container before removing or force remove", ErrorCode::ContainerRunning),
             (409, "Container abc is not running", ErrorCode::ContainerNotRunning),
+            (500, "rpc error: code = Unknown desc = update out of sequence", ErrorCode::Conflict),
             (304, "", ErrorCode::AlreadyDone),
             (404, "No such container: abc", ErrorCode::NotFound),
             (404, "pull access denied for nope/nope, repository does not exist or may require 'docker login': denied: requested access to the resource is denied", ErrorCode::RegistryAuthRequired),

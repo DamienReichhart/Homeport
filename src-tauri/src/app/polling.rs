@@ -17,6 +17,7 @@ use homeport_stacks::{
         poller::{AutoDeploy, PollEvents, Poller},
         SyncedStack,
     },
+    StackOwner,
 };
 
 use super::{
@@ -30,7 +31,7 @@ pub struct TauriPollEvents(pub AppHandle);
 impl PollEvents for TauriPollEvents {
     fn update_available(&self, stack: &SyncedStack) {
         let event = SyncedUpdateAvailable {
-            host_id: stack.host_id.clone(),
+            owner: stack.owner.clone(),
             stack_id: stack.id.clone(),
             name: stack.name.clone(),
         };
@@ -46,11 +47,18 @@ impl PollEvents for TauriPollEvents {
     ) -> Pin<Box<dyn Future<Output = AutoDeploy> + Send + '_>> {
         Box::pin(async move {
             let state = self.0.state::<AppState>();
-            // Paused while the Host can't be reached; the next round tries again.
-            if !matches!(
-                state.hosts.registry.status(&stack.host_id),
-                HostStatus::Connected { .. }
-            ) {
+            // Paused while the Host, or every manager of the Swarm, can't be
+            // reached; the next round tries again.
+            let reachable = match &stack.owner {
+                StackOwner::Host(id) => {
+                    matches!(
+                        state.hosts.registry.status(id),
+                        HostStatus::Connected { .. }
+                    )
+                }
+                StackOwner::Swarm(id) => state.hosts.registry.manager_host(id).is_ok(),
+            };
+            if !reachable {
                 return AutoDeploy::Skipped;
             }
             match deploy(&state, &stack, &commit).await {
@@ -62,7 +70,7 @@ impl PollEvents for TauriPollEvents {
 
     fn auto_deployed(&self, stack: &SyncedStack, commit: &str, error: Option<&AppError>) {
         let event = SyncedAutoDeployed {
-            host_id: stack.host_id.clone(),
+            owner: stack.owner.clone(),
             stack_id: stack.id.clone(),
             name: stack.name.clone(),
             commit: commit.to_owned(),

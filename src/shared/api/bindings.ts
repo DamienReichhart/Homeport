@@ -239,11 +239,14 @@ export const commands = {
 	stacksGetEnv: (id: string) => __TAURI_INVOKE<string>("stacks_get_env", { id }),
 	/**
 	 *  Checks a definition made of `files` (their YAML, merged in order) against
-	 *  the rules of its kind of Stack.
+	 *  the rules of its kind of Stack, and of a Swarm's when `swarm`.
 	 */
-	stacksCheck: (files: string[], kind: SourceKind) => __TAURI_INVOKE<ComposeCheck>("stacks_check", { files, kind }),
-	/**  Creates a Managed Stack. Using the name of an External Stack adopts it. */
-	stacksCreate: (hostId: string, name: string, files: ComposeFile[], env: string) => __TAURI_INVOKE<ManagedStack>("stacks_create", { hostId, name, files, env }),
+	stacksCheck: (files: string[], kind: SourceKind, swarm: boolean) => __TAURI_INVOKE<ComposeCheck>("stacks_check", { files, kind, swarm }),
+	/**
+	 *  Creates a Managed Stack on a Host or a Swarm. Using the name of an
+	 *  External Stack adopts it.
+	 */
+	stacksCreate: (owner: StackOwner, name: string, files: ComposeFile[], env: string) => __TAURI_INVOKE<ManagedStack>("stacks_create", { owner, name, files, env }),
 	stacksUpdate: (id: string, files: ComposeFile[], env: string) => __TAURI_INVOKE<ManagedStack>("stacks_update", { id, files, env }),
 	/**
 	 *  Forgets a Managed Stack's definition; its containers keep running and it
@@ -255,13 +258,18 @@ export const commands = {
 	 *  apply from its next compose command.
 	 */
 	stacksSetProfiles: (kind: SourceKind, id: string, profiles: string[]) => __TAURI_INVOKE<string[]>("stacks_set_profiles", { kind, id, profiles }),
+	/**
+	 *  Whether deploying a Stack to a Swarm sends the docker CLI's own registry
+	 *  logins (`--with-registry-auth`).
+	 */
+	stacksSetRegistryAuth: (kind: SourceKind, id: string, on: boolean) => __TAURI_INVOKE<boolean>("stacks_set_registry_auth", { kind, id, on }),
 	/**  What Compose would make of a folder picked for a new Linked Stack. */
 	stacksLinkedInspect: (path: string) => __TAURI_INVOKE<FolderProject>("stacks_linked_inspect", { path }),
 	/**
-	 *  Records a Linked Stack for the folder `working_dir` and its compose
-	 *  files. Using the name of an External Stack takes it over.
+	 *  Records a Linked Stack of a Host or a Swarm for the folder `working_dir`
+	 *  and its compose files. Using the name of an External Stack takes it over.
 	 */
-	stacksLinkedCreate: (hostId: string, name: string, workingDir: string, configFiles: string[]) => __TAURI_INVOKE<LinkedStack>("stacks_linked_create", { hostId, name, workingDir, configFiles }),
+	stacksLinkedCreate: (owner: StackOwner, name: string, workingDir: string, configFiles: string[]) => __TAURI_INVOKE<LinkedStack>("stacks_linked_create", { owner, name, workingDir, configFiles }),
 	/**
 	 *  A Linked Stack's compose files, read from its folder. `acknowledge` notes
 	 *  them as seen, so they no longer count as changed outside Homeport.
@@ -278,11 +286,11 @@ export const commands = {
 	/**  Forgets a Linked Stack: its record goes, its folder and containers stay. */
 	stacksLinkedForget: (id: string) => __TAURI_INVOKE<null>("stacks_linked_forget", { id }),
 	/**
-	 *  Creates a Synced Stack on `host_id` from a repository's branch or tag:
-	 *  fetches it into the repository's clone and checks the compose file before
-	 *  anything is stored.
+	 *  Creates a Synced Stack on a Host or a Swarm from a repository's branch or
+	 *  tag: fetches it into the repository's clone and checks the compose file
+	 *  before anything is stored.
 	 */
-	stacksSyncedCreate: (hostId: string, draft: SyncedDraft, env: string) => __TAURI_INVOKE<SyncedStack>("stacks_synced_create", { hostId, draft, env }),
+	stacksSyncedCreate: (owner: StackOwner, draft: SyncedDraft, env: string) => __TAURI_INVOKE<SyncedStack>("stacks_synced_create", { owner, draft, env }),
 	stacksSyncedGet: (id: string) => __TAURI_INVOKE<SyncedStack>("stacks_synced_get", { id }),
 	/**
 	 *  A Synced Stack's files at its fetched commit, read-only: no command
@@ -343,6 +351,79 @@ export const commands = {
 	 *  output.
 	 */
 	stacksRollbackSubscribe: (deployId: string, onEvent: Channel<ComposeEvent>) => __TAURI_INVOKE<number>("stacks_rollback_subscribe", { deployId, onEvent }),
+	/**  Every Swarm the Hosts belong to, once each. */
+	swarmsList: () => __TAURI_INVOKE<SwarmView[]>("swarms_list"),
+	/**  What a connected manager says about the Swarm `swarm_id`. */
+	swarmInspect: (swarmId: string) => __TAURI_INVOKE<SwarmSummary>("swarm_inspect", { swarmId }),
+	/**  A Swarm's nodes, each with the Host it is, if it's one. */
+	swarmNodesList: (swarmId: string) => __TAURI_INVOKE<SwarmNode[]>("swarm_nodes_list", { swarmId }),
+	swarmNodesInspect: (swarmId: string, id: string) => __TAURI_INVOKE<Value>("swarm_nodes_inspect", { swarmId, id }),
+	/**
+	 *  Changes a node's availability, role or labels, from the node as read at
+	 *  `version`; refuses to demote the last manager or drain every node.
+	 */
+	swarmNodesUpdate: (swarmId: string, id: string, version: number, change: NodeChange) => __TAURI_INVOKE<null>("swarm_nodes_update", { swarmId, id, version, change }),
+	swarmNodesRemove: (swarmId: string, id: string, force: boolean) => __TAURI_INVOKE<null>("swarm_nodes_remove", { swarmId, id, force }),
+	/**  Every service of a Swarm, with its running and desired tasks. */
+	swarmServicesList: (swarmId: string) => __TAURI_INVOKE<ServiceView[]>("swarm_services_list", { swarmId }),
+	swarmServicesInspect: (swarmId: string, id: string) => __TAURI_INVOKE<Value>("swarm_services_inspect", { swarmId, id }),
+	/**  Sets a replicated service's replicas, from the service as read at `version`. */
+	swarmServicesScale: (swarmId: string, id: string, version: number, replicas: number) => __TAURI_INVOKE<null>("swarm_services_scale", { swarmId, id, version, replicas }),
+	/**  Puts back a service's previous spec. */
+	swarmServicesRollback: (swarmId: string, id: string) => __TAURI_INVOKE<null>("swarm_services_rollback", { swarmId, id }),
+	swarmServicesRemove: (swarmId: string, id: string) => __TAURI_INVOKE<null>("swarm_services_remove", { swarmId, id }),
+	/**  Creates a service from the Create service form, returning its ID. */
+	swarmServicesCreate: (swarmId: string, input: ServiceSpecInput) => __TAURI_INVOKE<string>("swarm_services_create", { swarmId, input }),
+	/**
+	 *  Changes a service's image, environment or replicas, from the service as
+	 *  read at `version`; the Swarm rolls its tasks over.
+	 */
+	swarmServicesUpdate: (swarmId: string, id: string, version: number, change: ServiceChange) => __TAURI_INVOKE<null>("swarm_services_update", { swarmId, id, version, change }),
+	/**  The Swarm's overlay networks, which services attach to. */
+	swarmNetworksList: (swarmId: string) => __TAURI_INVOKE<NetworkView[]>("swarm_networks_list", { swarmId }),
+	/**  Makes `host_id` the first manager of a new Swarm, returning its ID. */
+	swarmInit: (hostId: string, advertiseAddr: string | null, listenAddr: string | null) => __TAURI_INVOKE<string>("swarm_init", { hostId, advertiseAddr, listenAddr }),
+	/**  Joins `host_id` to a Swarm as a worker or a manager. */
+	swarmJoin: (hostId: string, target: JoinTarget, role: JoinRole, advertiseAddr: string | null) => __TAURI_INVOKE<null>("swarm_join", { hostId, target, role, advertiseAddr }),
+	/**  Has `host_id` leave its Swarm; a manager needs `force`. */
+	swarmLeave: (hostId: string, force: boolean) => __TAURI_INVOKE<null>("swarm_leave", { hostId, force }),
+	/**
+	 *  The join tokens and manager addresses of a Swarm, for its Join commands;
+	 *  never stored or logged.
+	 */
+	swarmJoinInfo: (swarmId: string) => __TAURI_INVOKE<JoinInfo>("swarm_join_info", { swarmId }),
+	/**  The Stacks deployed to a Swarm, found by their namespace label. */
+	swarmStacksList: (swarmId: string) => __TAURI_INVOKE<Stack[]>("swarm_stacks_list", { swarmId }),
+	/**  The networks, secrets and configs of a swarm stack. */
+	swarmStacksParts: (swarmId: string, name: string) => __TAURI_INVOKE<SwarmStackParts>("swarm_stacks_parts", { swarmId, name }),
+	/**  Removes a swarm stack as `docker stack rm` does, through the Engine API. */
+	swarmStacksRemove: (swarmId: string, name: string) => __TAURI_INVOKE<RemoveReport>("swarm_stacks_remove", { swarmId, name }),
+	/**
+	 *  Links the External swarm stack `name` to a folder on this computer,
+	 *  once its compose files are checked to declare the services it runs.
+	 */
+	swarmStacksLink: (swarmId: string, name: string, workingDir: string) => __TAURI_INVOKE<LinkedStack>("swarm_stacks_link", { swarmId, name, workingDir }),
+	/**
+	 *  Streams the logs of every task of a service, each line labelled with its
+	 *  task and node.
+	 */
+	swarmServiceLogsSubscribe: (swarmId: string, id: string, options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("swarm_service_logs_subscribe", { swarmId, id, options, onEvent }),
+	/**
+	 *  The tasks of a Swarm, of one of its services or of one of its nodes,
+	 *  newest first, each with the Host its node is, if it's one.
+	 */
+	swarmTasksList: (swarmId: string, filter: TaskFilter) => __TAURI_INVOKE<SwarmTask[]>("swarm_tasks_list", { swarmId, filter }),
+	swarmTasksInspect: (swarmId: string, id: string) => __TAURI_INVOKE<Value>("swarm_tasks_inspect", { swarmId, id }),
+	/**  A Swarm's secrets, never their values. */
+	swarmSecretsList: (swarmId: string) => __TAURI_INVOKE<SwarmObject[]>("swarm_secrets_list", { swarmId }),
+	/**  Sends a new secret's value to the Swarm once; Homeport keeps none of it. */
+	swarmSecretsCreate: (swarmId: string, input: ObjectInput) => __TAURI_INVOKE<string>("swarm_secrets_create", { swarmId, input }),
+	swarmSecretsRemove: (swarmId: string, id: string) => __TAURI_INVOKE<null>("swarm_secrets_remove", { swarmId, id }),
+	swarmConfigsList: (swarmId: string) => __TAURI_INVOKE<SwarmObject[]>("swarm_configs_list", { swarmId }),
+	swarmConfigsCreate: (swarmId: string, input: ObjectInput) => __TAURI_INVOKE<string>("swarm_configs_create", { swarmId, input }),
+	/**  A config's content, as text when it is. */
+	swarmConfigsInspect: (swarmId: string, id: string) => __TAURI_INVOKE<ConfigContent>("swarm_configs_inspect", { swarmId, id }),
+	swarmConfigsRemove: (swarmId: string, id: string) => __TAURI_INVOKE<null>("swarm_configs_remove", { swarmId, id }),
 };
 
 /** Events */
@@ -378,6 +459,15 @@ export type AppInfo = {
 	os: string,
 	arch: string,
 };
+
+/**  Whether the scheduler may place tasks on a node. */
+export type Availability = 
+/**  Runs new tasks. */
+"active" | 
+/**  Keeps its tasks, gets no new ones. */
+"pause" | 
+/**  Its tasks move to other nodes. */
+"drain";
 
 export type AvailableUpdate = {
 	version: string,
@@ -504,6 +594,11 @@ export type Capabilities = {
 	keychain: boolean,
 	/**  Whether Managed Stacks can be deployed here. */
 	compose: ComposeSupport,
+	/**
+	 *  Whether Stacks can be deployed to a Swarm from here: the `docker`
+	 *  CLI, for `docker stack deploy` (ADR 0017).
+	 */
+	stackDeploy: ComposeSupport,
 	/**  Whether Synced Stacks can be cloned and fetched here. */
 	git: GitSupport,
 	/**
@@ -592,6 +687,12 @@ export type ComposeFile = {
 export type ComposeSupport = { state: "available"; cli: ComposeCli } | 
 /**  `problem` says what's missing and how to install it. */
 { state: "unavailable"; problem: AppError };
+
+/**  A config's content as text, or its size when it isn't text. */
+export type ConfigContent = {
+	text: string | null,
+	size: number,
+};
 
 export type Container = {
 	id: string,
@@ -769,7 +870,13 @@ export type ErrorCode =
 /**  A GPU was requested from a Host without the vendor's container toolkit. */
 "gpu_unavailable" | 
 /**  Recreating a container failed, and so did putting the original back. */
-"recreate_rolled_back" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
+"recreate_rolled_back" | 
+/**  No manager Host of a Swarm is connected. */
+"swarm_unreachable" | 
+/**  A node couldn't reach the managers of the Swarm it was joining. */
+"swarm_join_failed" | 
+/**  The `docker` CLI isn't installed, which deploying a Stack to a Swarm needs. */
+"docker_cli_missing" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
 /**  A Linked Stack's folder, or one of its compose files, is gone. */
 "stack_folder_missing" | 
 /**  A Linked Stack's compose file can't be read or written. */
@@ -991,7 +1098,9 @@ export type HostInput = {
 	bastionKeys?: BastionKeyInput[],
 };
 
-export type HostStatus = { state: "disabled" } | { state: "connecting" } | { state: "connected"; engineVersion: string; apiVersion: string; os: string; arch: string } | { state: "unreachable"; error: AppError; retryInSecs: number } | { state: "unauthorized"; error: AppError } | 
+export type HostStatus = { state: "disabled" } | { state: "connecting" } | { state: "connected"; engineVersion: string; apiVersion: string; os: string; arch: string; 
+/**  The Host's place in a Swarm, `None` outside one. */
+swarm: SwarmMembership | null } | { state: "unreachable"; error: AppError; retryInSecs: number } | { state: "unauthorized"; error: AppError } | 
 /**
  *  `bastion` is the address of the bastion that presented the key,
  *  `None` for the Host's own SSH server.
@@ -1097,6 +1206,23 @@ export type ImportSpec = {
 	changes: string[],
 };
 
+/**  What `docker swarm join` needs for each role. `Debug` hides the tokens. */
+export type JoinInfo = {
+	workerToken: string,
+	managerToken: string,
+	/**  `address:2377` of every reachable manager. */
+	managerAddrs: string[],
+};
+
+/**  Whether a node joins to run tasks or to manage the Swarm too. */
+export type JoinRole = "worker" | "manager";
+
+/**
+ *  The Swarm a Host joins: one Homeport knows, whose token and manager
+ *  addresses are fetched through a connected manager, or a pasted token.
+ */
+export type JoinTarget = { kind: "known"; swarmId: string } | { kind: "token"; token: string; addresses: string[] };
+
 export type Licenses = {
 	/**  Homeport's own license (`LICENSE`). */
 	app: string,
@@ -1131,7 +1257,8 @@ export type LinkedFiles = {
 
 export type LinkedStack = {
 	id: string,
-	hostId: string,
+	/**  The Host or Swarm it's deployed to. */
+	owner: StackOwner,
 	name: string,
 	/**  The project folder on this machine, where compose runs. */
 	workingDir: string,
@@ -1144,6 +1271,8 @@ export type LinkedStack = {
 	fingerprint: string,
 	/**  The Compose profiles it deploys; none until the user turns one on. */
 	profiles: string[],
+	/**  On a Swarm: the docker CLI sends its own registry logins with a deploy. */
+	registryAuth: boolean,
 	createdAt: string,
 	updatedAt: string,
 };
@@ -1194,15 +1323,31 @@ export type Loss =
 
 export type ManagedStack = {
 	id: string,
-	hostId: string,
+	/**  The Host or Swarm it's deployed to. */
+	owner: StackOwner,
 	name: string,
 	/**  Its compose files, merged in this order; never empty. */
 	files: ComposeFile[],
 	hasEnv: boolean,
 	/**  The Compose profiles it deploys, besides its services without one. */
 	profiles: string[],
+	/**  On a Swarm: the docker CLI sends its own registry logins with a deploy. */
+	registryAuth: boolean,
 	createdAt: string,
 	updatedAt: string,
+};
+
+/**  How a manager node takes part in the Swarm's Raft. */
+export type ManagerStatus = "leader" | "reachable" | "unreachable";
+
+/**  Replicated with a number of replicas, or one task per node. */
+export type ModeInput = { kind: "replicated"; replicas: number } | { kind: "global" };
+
+/**  A volume (by name) or a bind mount (an absolute path on each node). */
+export type MountInput = {
+	source: string,
+	target: string,
+	readOnly: boolean,
 };
 
 export type MountSpec = {
@@ -1238,6 +1383,39 @@ export type NetworkView = {
 	containers: string[],
 };
 
+/**  What to change on a node; `None` leaves that part as it is. */
+export type NodeChange = {
+	availability: Availability | null,
+	/**  Promote to manager or demote to worker. */
+	role: NodeRole | null,
+	/**  Replaces every label. */
+	labels: { [key in string]: string } | null,
+};
+
+/**  [`SwarmRole`] as an input. */
+export type NodeRole = "manager" | "worker";
+
+export type NodeView = {
+	id: string,
+	/**  The node's `Version.Index`, sent back with an update. */
+	version: number,
+	hostname: string,
+	role: SwarmRole,
+	availability: Availability,
+	/**  `ready`, `down`, `unknown` or `disconnected`. */
+	state: string,
+	/**  Why the node is in its state, in the Engine's words. */
+	message: string | null,
+	/**  `None` for workers. */
+	managerStatus: ManagerStatus | null,
+	engineVersion: string | null,
+	address: string | null,
+	os: string | null,
+	arch: string | null,
+	labels: { [key in string]: string },
+	created: string | null,
+};
+
 /**
  *  The OS notifications Homeport shows, one switch per kind; all on unless
  *  turned off.
@@ -1253,6 +1431,32 @@ export type NotificationSettings = {
 	hostBack?: boolean,
 };
 
+/**  A secret or config to create. */
+export type ObjectInput = {
+	name: string,
+	value: ObjectValue,
+	labels: { [key in string]: string },
+};
+
+/**
+ *  A secret or config given to the service, by name, as a file at `target`
+ *  (`/run/secrets/<name>` or `/<name>` when empty).
+ */
+export type ObjectRef = {
+	name: string,
+	target: string | null,
+};
+
+/**  Where a new secret's or config's value comes from. */
+export type ObjectValue = 
+/**  Typed in Homeport. */
+{ kind: "text"; text: string } | 
+/**
+ *  A file on this computer, read here and sent; its path is all the
+ *  webview hands over.
+ */
+{ kind: "file"; path: string };
+
 export type PackageManager = "apt" | "dnf" | "zypper" | "scoop" | "aur";
 
 /**  A parameter of a message: text such as a Host's name, or a number. */
@@ -1263,6 +1467,19 @@ export type PortBinding = {
 	privatePort: number,
 	publicPort: number | null,
 	protocol: string,
+};
+
+/**
+ *  A published port. `host_mode` publishes on the node running the task
+ *  only, instead of on every node through the routing mesh.
+ */
+export type PortInput = {
+	target: number,
+	/**  `None` lets the Swarm pick one (ingress only). */
+	published: number | null,
+	/**  `tcp`, `udp` or `sctp`. */
+	protocol: string,
+	hostMode: boolean,
 };
 
 export type PortSpec = {
@@ -1334,6 +1551,11 @@ export type RemoteRefs = {
 	defaultBranch: string | null,
 };
 
+/**  What removing a swarm stack left behind, by name, with why. */
+export type RemoveReport = {
+	kept: string[],
+};
+
 /**  How Homeport authenticates to a repository. */
 export type RepoAuth = 
 /**  A deploy key Homeport generated, over SSH. */
@@ -1387,6 +1609,9 @@ export type RepositoryDraft = {
 	username: string | null,
 	token: string | null,
 };
+
+/**  When a task's container is restarted. */
+export type RestartCondition = "none" | "on-failure" | "any";
 
 export type RestartPolicy = "no" | "always" | "unless-stopped" | "on-failure";
 
@@ -1458,6 +1683,86 @@ export type SearchResult = {
 	description: string,
 	stars: number,
 	official: boolean,
+};
+
+/**  What the Edit dialog changes on a service; `None` keeps that part. */
+export type ServiceChange = {
+	image: string | null,
+	/**  Replaces every `KEY=value` entry. */
+	env: string[] | null,
+	replicas: number | null,
+	/**
+	 *  Restart every task even when nothing changed, as `--force` does:
+	 *  pulls the tag again when the image is unchanged.
+	 */
+	redeploy: boolean,
+};
+
+/**  How many tasks a service runs. */
+export type ServiceMode = 
+/**  A set number of replicas. */
+"replicated" | 
+/**  One task on every node that may run it. */
+"global" | 
+/**  Runs to completion, a set number of times. */
+"replicatedJob" | 
+/**  Runs to completion once on every node. */
+"globalJob";
+
+export type ServicePort = {
+	target: number,
+	published: number | null,
+	/**  `tcp`, `udp` or `sctp`. */
+	protocol: string,
+	/**  `ingress` (the routing mesh) or `host`. */
+	mode: string,
+};
+
+/**  What the Create service dialog asks for. */
+export type ServiceSpecInput = {
+	name: string,
+	image: string,
+	mode: ModeInput,
+	/**  `KEY=value` entries. */
+	env: string[],
+	/**  Replaces the image's command, split like a shell would. */
+	command: string | null,
+	ports: PortInput[],
+	/**  Overlay networks, by name. */
+	networks: string[],
+	mounts: MountInput[],
+	secrets: ObjectRef[],
+	configs: ObjectRef[],
+	restart: RestartCondition | null,
+};
+
+export type ServiceView = {
+	id: string,
+	/**  The service's `Version.Index`, sent back with an update. */
+	version: number,
+	name: string,
+	/**  Its image without the digest the Swarm pinned. */
+	image: string,
+	imageDigest: string | null,
+	mode: ServiceMode,
+	/**  The replicas asked for, for a replicated service. */
+	replicas: number | null,
+	/**  Tasks running now. */
+	running: number,
+	/**  Tasks that should be running. */
+	desired: number,
+	ports: ServicePort[],
+	/**
+	 *  `updating`, `paused`, `completed`, `rollback_started`… while or after
+	 *  an update; `None` when the service was never updated.
+	 */
+	updateState: string | null,
+	updateMessage: string | null,
+	/**  The swarm stack it belongs to (`com.docker.stack.namespace`). */
+	stack: string | null,
+	labels: { [key in string]: string },
+	created: string | null,
+	updated: string | null,
 };
 
 export type Settings = {
@@ -1537,6 +1842,8 @@ export type Stack = {
 	 *  since the deployed one.
 	 */
 	updateAvailable: boolean,
+	/**  On a Swarm: its deploys send the docker CLI's registry logins. */
+	registryAuth: boolean,
 };
 
 export type StackAction = "start" | "stop" | "restart";
@@ -1551,6 +1858,9 @@ export type StackKind =
 /**  Only its containers are known. */
 "external";
 
+/**  A Stack's Host or Swarm, by ID. */
+export type StackOwner = { kind: "host"; id: string } | { kind: "swarm"; id: string };
+
 /**  Why a Stack Homeport has a record of can't be used as its kind says. */
 export type StackProblem = 
 /**
@@ -1563,6 +1873,9 @@ export type StackService = {
 	name: string,
 	containerIds: string[],
 	running: number,
+	/**  On a Swarm: the service's ID, and how many tasks should run. */
+	serviceId: string | null,
+	desired: number | null,
 };
 
 export type StackState = 
@@ -1586,6 +1899,89 @@ export type StatsSample = {
 	blockRead: number,
 	blockWrite: number,
 	pids: number,
+};
+
+/**  A Host's place in a Swarm. */
+export type SwarmMembership = {
+	/**
+	 *  The Swarm's ID. Only managers know it; a worker's Swarm is found
+	 *  through the managers it talks to.
+	 */
+	swarmId: string | null,
+	/**  This node's ID in the Swarm. */
+	nodeId: string,
+	role: SwarmRole,
+	state: SwarmNodeState,
+	/**  The address other nodes reach this one at. */
+	nodeAddr: string | null,
+	/**  The node IDs and addresses of the managers this node knows. */
+	managers: SwarmPeer[],
+	/**  Why the node is in error, in the Engine's words. */
+	error: string | null,
+};
+
+/**  A node of a Swarm, and the Host it is when Homeport connects to it. */
+export type SwarmNode = {
+	hostId: string | null,
+} & NodeView;
+
+/**  Where a node stands in its Swarm, as its Engine reports it. */
+export type SwarmNodeState = "active" | 
+/**  Joining, or a manager waiting for the others. */
+"pending" | 
+/**  Encrypted at rest and waiting for its unlock key. */
+"locked" | "error";
+
+/**  What a secret or config is, as the lists show it. Never its value. */
+export type SwarmObject = {
+	id: string,
+	name: string,
+	created: string | null,
+	updated: string | null,
+	labels: { [key in string]: string },
+	/**  The names of the services that use it. */
+	services: string[],
+};
+
+export type SwarmPeer = {
+	nodeId: string,
+	addr: string,
+};
+
+/**  Whether a node manages the Swarm or only runs its tasks. */
+export type SwarmRole = "manager" | "worker";
+
+/**  What a swarm stack is made of, by name. */
+export type SwarmStackParts = {
+	networks: string[],
+	secrets: string[],
+	configs: string[],
+};
+
+/**  What a manager says about its Swarm. */
+export type SwarmSummary = {
+	id: string,
+	created: string | null,
+	updated: string | null,
+	nodes: number,
+	managers: number,
+	services: number,
+};
+
+/**  A task of a Swarm, and the Host its node is when Homeport connects to it. */
+export type SwarmTask = {
+	hostId: string | null,
+} & TaskView;
+
+/**  A Swarm, found through the Hosts that belong to it (ADR 0016). */
+export type SwarmView = {
+	id: string,
+	/**  Its manager Hosts, in the Hosts' order. */
+	managers: string[],
+	/**  Its worker Hosts, in the Hosts' order. */
+	workers: string[],
+	/**  Whether one of its managers is connected, so it can be managed. */
+	reachable: boolean,
 };
 
 /**  What syncing would deploy, for the review before it does. */
@@ -1618,7 +2014,8 @@ export type SyncReview = {
 
 /**  A Synced Stack's automatic deploy ended; `error` says why it failed. */
 export type SyncedAutoDeployed = {
-	hostId: string,
+	/**  The Host or Swarm it's deployed to. */
+	owner: StackOwner,
 	stackId: string,
 	name: string,
 	commit: string,
@@ -1643,7 +2040,8 @@ export type SyncedFiles = {
 
 export type SyncedStack = {
 	id: string,
-	hostId: string,
+	/**  The Host or Swarm it's deployed to. */
+	owner: StackOwner,
 	name: string,
 	repositoryId: string,
 	refKind: RefKind,
@@ -1672,13 +2070,16 @@ export type SyncedStack = {
 	autoDeployFailedCommit: string | null,
 	/**  Why it failed. */
 	autoDeployError: AppError | null,
+	/**  On a Swarm: the docker CLI sends its own registry logins with a deploy. */
+	registryAuth: boolean,
 	createdAt: string,
 	updatedAt: string,
 };
 
 /**  A Synced Stack's poll found a new commit that changes its compose file's folder. */
 export type SyncedUpdateAvailable = {
-	hostId: string,
+	/**  The Host or Swarm it's deployed to. */
+	owner: StackOwner,
 	stackId: string,
 	name: string,
 };
@@ -1689,6 +2090,37 @@ export type SystemPruneReport = {
 	networks: number,
 	volumes: number,
 	spaceReclaimed: number,
+};
+
+/**  Which tasks to list: all of them, or those of a service or of a node. */
+export type TaskFilter = {
+	serviceId: string | null,
+	nodeId: string | null,
+};
+
+export type TaskView = {
+	id: string,
+	serviceId: string,
+	serviceName: string,
+	/**
+	 *  The replica's number, for a replicated service; `None` for a global
+	 *  one, whose tasks are told apart by node.
+	 */
+	slot: number | null,
+	nodeId: string | null,
+	nodeHostname: string | null,
+	/**  What the Swarm wants: `running`, `shutdown`… */
+	desiredState: string,
+	/**  What the task is doing: `running`, `preparing`, `failed`, `rejected`… */
+	state: string,
+	/**  When it got into `state`. */
+	since: string | null,
+	/**  Why it failed or was rejected, in the Engine's words. */
+	error: string | null,
+	message: string | null,
+	image: string,
+	containerId: string | null,
+	exitCode: number | null,
 };
 
 export type Theme = "system" | "light" | "dark";

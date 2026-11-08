@@ -13,7 +13,7 @@ import { copyFileSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync
 import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { build } from 'vite';
-import { PROD, hexId } from './data';
+import { PROD, SWARM_ID, hexId } from './data';
 
 const HERE = import.meta.dir;
 const ROOT = join(HERE, '..', '..');
@@ -115,6 +115,7 @@ const SHOTS: Shot[] = [
     hold: 3500,
   },
   { name: 'host-ssh', route: `/hosts/${PROD}` },
+  { name: 'swarm-services', route: `/swarms/${SWARM_ID}/services` },
 ];
 
 /** Snap Firefox can only reach non-hidden paths in the home directory. */

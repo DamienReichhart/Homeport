@@ -195,4 +195,70 @@ homeport_core::messages! {
     /// Loading a file that isn't an image archive.
     TRANSFER_NOT_AN_IMAGE_ARCHIVE = "errors.transfer.notAnImageArchive" => "{path} isn't an image archive the Docker Engine can load.";
     TRANSFER_NOT_AN_IMAGE_ARCHIVE_HINT = "errors.transfer.notAnImageArchive.hint" => "Choose a .tar made by docker save or by Save in Homeport, or a compressed one (.tar.gz).";
+
+    // Swarms
+
+    /// A node that left the Swarm since the list was read.
+    NODE_GONE = "errors.swarm.nodeGone" => "This node is no longer in the Swarm.";
+    /// Demoting the only manager that takes part in the Swarm.
+    NODE_LAST_MANAGER = "errors.swarm.lastManager" => "This is the Swarm's last reachable manager, so it can't be demoted.";
+    NODE_LAST_MANAGER_HINT = "errors.swarm.lastManager.hint" => "Promote another node first. A Swarm without a manager can't be managed at all.";
+    /// Draining the last node that can run tasks.
+    NODE_LAST_ACTIVE = "errors.swarm.lastActive" => "Draining this node would leave no node to run the Swarm's tasks.";
+    /// A node label with an empty key.
+    NODE_LABEL_KEY = "errors.swarm.labelKey" => "Each label needs a key.";
+    /// Removing a manager node.
+    NODE_REMOVE_MANAGER = "errors.swarm.removeManager" => "A manager can't be removed. Demote it to a worker first.";
+    /// Removing a node that's still up without force.
+    NODE_REMOVE_READY = "errors.swarm.removeReady" => "This node is still up.";
+    NODE_REMOVE_READY_HINT = "errors.swarm.removeReady.hint" => "Have it leave the Swarm first, or remove it with Force.";
+    /// Rolling back a service that was never updated.
+    SERVICE_NO_PREVIOUS = "errors.swarm.serviceNoPrevious" => "This service has no earlier version to roll back to.";
+    /// Scaling a global service or a job.
+    SERVICE_NOT_REPLICATED = "errors.swarm.serviceNotReplicated" => "Only replicated services can be scaled; a global service runs one task on every node.";
+    /// An absurd number of replicas.
+    SERVICE_REPLICAS = "errors.swarm.serviceReplicas" => "Choose at most 10000 replicas.";
+    /// A secret or config name Docker refuses.
+    OBJECT_NAME = "errors.swarm.objectName" => "Names start with a letter or digit, and hold up to 64 letters, digits, dots, hyphens and underscores.";
+    /// A secret or config without a value.
+    OBJECT_EMPTY = "errors.swarm.objectEmpty" => "Enter a value, or load it from a file.";
+    /// A secret or config over the Swarm's 500 KB limit.
+    OBJECT_TOO_LARGE = "errors.swarm.objectTooLarge" => "Secrets and configs can hold at most 500 KB.";
+    /// A secret or config whose name another one has.
+    OBJECT_NAME_IN_USE = "errors.swarm.objectNameInUse" => "That name is already used in this Swarm.";
+    OBJECT_NAME_IN_USE_HINT = "errors.swarm.objectNameInUse.hint" => "Secrets and configs can't be changed: create one under a new name, such as with a version at the end, and point the services at it.";
+    /// Removing a secret or config a service uses.
+    OBJECT_IN_USE = "errors.swarm.objectInUse" => "A service still uses this.";
+    OBJECT_IN_USE_HINT = "errors.swarm.objectInUse.hint" => "Used by {services}. Remove it from them, or remove them, first.";
+    OBJECT_IN_USE_HINT_UNKNOWN = "errors.swarm.objectInUse.hintUnknown" => "Remove it from the services that use it, or remove them, first.";
+    /// A service name that isn't a DNS label.
+    SERVICE_NAME = "errors.swarm.serviceName" => "Service names hold up to 63 letters, digits, hyphens and underscores, and start and end with a letter or digit.";
+    /// Another service has this name.
+    SERVICE_NAME_IN_USE = "errors.swarm.serviceNameInUse" => "A service with that name already runs on this Swarm.";
+    SERVICE_NAME_IN_USE_HINT = "errors.swarm.serviceNameInUse.hint" => "Pick another name, or edit that service instead.";
+    /// A port without a container port.
+    SERVICE_PORT_TARGET = "errors.swarm.servicePortTarget" => "Each port needs the container port it goes to.";
+    /// The same published port twice in one service.
+    SERVICE_PORT_TWICE = "errors.swarm.servicePortTwice" => "Port {port} is published twice.";
+    /// A host-mode port without a published port.
+    SERVICE_HOST_PORT_NEEDED = "errors.swarm.serviceHostPortNeeded" => "Ports published on the node itself need a port number.";
+    /// A secret or config named in a service that the Swarm doesn't have.
+    OBJECT_MISSING = "errors.swarm.objectMissing" => "This Swarm has no secret or config named {name}.";
+    /// Initialising or joining a Swarm on a Host already in one.
+    ALREADY_IN_SWARM = "errors.swarm.alreadyIn" => "This host is already in a Swarm.";
+    ALREADY_IN_SWARM_HINT = "errors.swarm.alreadyIn.hint" => "Have it leave that Swarm first.";
+    /// Leaving a Swarm on a Host that isn't in one.
+    NOT_IN_SWARM = "errors.swarm.notIn" => "This host isn't in a Swarm.";
+    /// Leaving as a manager without force.
+    LEAVE_NEEDS_FORCE = "errors.swarm.leaveNeedsForce" => "A manager leaves the Swarm only with Force.";
+    /// The Engine can't tell which address other nodes reach it at.
+    ADVERTISE_NEEDED = "errors.swarm.advertiseNeeded" => "Choose the address other nodes reach this host at.";
+    ADVERTISE_NEEDED_HINT = "errors.swarm.advertiseNeeded.hint" => "The machine has several addresses. Enter the one the other nodes can reach, such as its LAN address.";
+    /// Joining without a token or an address.
+    JOIN_NEEDS_TOKEN = "errors.swarm.joinNeedsToken" => "Enter the join token and a manager's address.";
+    /// A join token the managers refuse.
+    JOIN_TOKEN_INVALID = "errors.swarm.joinTokenInvalid" => "The managers refused this join token.";
+    /// The node couldn't reach a manager.
+    JOIN_FAILED = "errors.swarm.joinFailed" => "This host couldn't reach the Swarm's managers.";
+    JOIN_FAILED_HINT = "errors.swarm.joinFailed.hint" => "Nodes talk to each other directly: open 2377/tcp (managers), 7946/tcp and 7946/udp, and 4789/udp between every node, in their firewalls and your network's.";
 }

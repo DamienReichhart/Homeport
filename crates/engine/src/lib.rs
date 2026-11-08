@@ -9,6 +9,7 @@ pub mod freshness;
 pub mod images;
 pub mod messages;
 pub mod networks;
+pub mod swarm;
 pub mod system;
 pub mod transfer;
 pub mod volumes;
