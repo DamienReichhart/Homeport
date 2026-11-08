@@ -5,6 +5,7 @@ import {
   age,
   ClusterGate,
   ConditionList,
+  DeleteObjectButton,
   HealthBadge,
   Labels,
   ObjectEvents,
@@ -112,6 +113,18 @@ function PodDetailView({ cluster }: { cluster: ClusterView }) {
               })}
             </span>
           </span>
+        }
+        actions={
+          <DeleteObjectButton
+            cluster={cluster}
+            target={{
+              type: { kind: 'pod' },
+              namespace,
+              name,
+              owner: pod.data.view.owner,
+            }}
+            onDeleted={() => void navigate('/pods', { replace: true })}
+          />
         }
       />
       <Tabs

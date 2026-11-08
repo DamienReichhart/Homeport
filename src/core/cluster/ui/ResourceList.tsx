@@ -1,5 +1,5 @@
 import type { UseQueryResult } from '@tanstack/react-query';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePageQuery } from '@/core/feature';
 import type { ClusterView, ResourceKind } from '@/shared/api';
@@ -15,6 +15,9 @@ import {
   type ColumnDef,
 } from '@/shared/ui';
 import { useResourceWatch } from '../live/useResourceWatch';
+import type { DeleteTarget } from '../model/deletion';
+import { stillListed } from '../model/selection';
+import { DeleteSelected } from './DeleteSelected';
 import { NamespacePicker } from './NamespacePicker';
 import { t } from '@/shared/i18n';
 
@@ -45,6 +48,7 @@ export function ResourceList<T>({
   current,
   toolbar,
   empty,
+  deletable,
 }: {
   cluster: ClusterView;
   kind: ResourceKind;
@@ -62,11 +66,15 @@ export function ResourceList<T>({
   current?: string;
   toolbar?: ReactNode;
   empty?: string;
+  /** Lets rows be picked and deleted together, each as this object. */
+  deletable?: (row: T) => DeleteTarget;
 }) {
   const navigate = useNavigate();
   const [query, setQuery] = usePageQuery();
   const id = cluster.cluster.id;
+  const [selected, setSelected] = useState<T[]>([]);
   useResourceWatch(id, kind, namespace ?? null);
+  const picked = stillListed(selected, list.data, getRowId);
   return (
     <div>
       <PageHeader
@@ -92,6 +100,7 @@ export function ResourceList<T>({
         )}
         <SearchInput value={query} onChange={setQuery} placeholder={search} />
         {toolbar}
+        {deletable && <DeleteSelected cluster={cluster} targets={picked.map(deletable)} />}
       </div>
       {list.isPending ? (
         <Spinner />
@@ -106,6 +115,7 @@ export function ResourceList<T>({
           pageSize={100}
           empty={empty ?? t('core.list.empty')}
           onRowClick={rowPath && ((row) => void navigate(rowPath(row)))}
+          onSelectionChange={deletable && setSelected}
         />
       )}
     </div>

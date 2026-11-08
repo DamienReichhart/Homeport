@@ -65,6 +65,11 @@ function ServiceDetailView({ cluster }: { cluster: ClusterView }) {
   return (
     <ResourceTabs
       detail={detail}
+      deletable={{
+        cluster,
+        target: { type: { kind: 'service' }, namespace: namespace, name },
+        listPath: '/services',
+      }}
       base={objectPath('service', namespace, name) ?? '/services'}
       title={
         <span className="flex items-center gap-2">

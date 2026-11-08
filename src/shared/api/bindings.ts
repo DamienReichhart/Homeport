@@ -150,6 +150,23 @@ export const commands = {
 	 *  without) for what lives in Namespaces.
 	 */
 	clustersSummary: (id: string, namespace: string | null) => __TAURI_INVOKE<ClusterSummary>("clusters_summary", { id, namespace }),
+	/**  Sets how many Pods a Deployment or a StatefulSet runs. */
+	clustersScale: (id: string, kind: WorkloadKind, namespace: string, name: string, replicas: number) => __TAURI_INVOKE<null>("clusters_scale", { id, kind, namespace, name, replicas }),
+	/**  The HorizontalPodAutoscaler that scales a workload, if one does. */
+	clustersAutoscaler: (id: string, kind: WorkloadKind, namespace: string, name: string) => __TAURI_INVOKE<string | null>("clusters_autoscaler", { id, kind, namespace, name }),
+	/**  Rolls a workload's Pods out again, like `kubectl rollout restart`. */
+	clustersRestart: (id: string, kind: WorkloadKind, namespace: string, name: string) => __TAURI_INVOKE<null>("clusters_restart", { id, kind, namespace, name }),
+	/**  Suspends a CronJob or resumes it. */
+	clustersCronJobSuspend: (id: string, namespace: string, name: string, suspended: boolean) => __TAURI_INVOKE<null>("clusters_cron_job_suspend", { id, namespace, name, suspended }),
+	/**  Starts a Job from a CronJob now; returns the Job's name. */
+	clustersCronJobTrigger: (id: string, namespace: string, name: string) => __TAURI_INVOKE<string>("clusters_cron_job_trigger", { id, namespace, name }),
+	/**
+	 *  Deletes an object shown on one of Homeport's own pages; `grace`
+	 *  overrides how long a Pod is given to stop.
+	 */
+	clustersDelete: (id: string, kind: ResourceKind, namespace: string | null, name: string, grace: number | null) => __TAURI_INVOKE<null>("clusters_delete", { id, kind, namespace, name, grace }),
+	/**  Deletes an object of any type the Cluster serves. */
+	clustersApiDelete: (id: string, api: ApiType, namespace: string | null, name: string) => __TAURI_INVOKE<null>("clusters_api_delete", { id, api, namespace, name }),
 	/**  Backs up everything Homeport holds to `path`, sealed with `passphrase`. */
 	dataBackup: (path: string, passphrase: string) => __TAURI_INVOKE<BackupOutcome>("data_backup", { path, passphrase }),
 	/**  What the backup at `path` holds, for the restore's confirmation. */
@@ -511,6 +528,17 @@ export const events = {
 export type AddedCluster = {
 	id: string,
 	name: string,
+};
+
+export type ApiType = {
+	/**  Empty for the core group (Pods, Services…). */
+	group: string,
+	version: string,
+	kind: string,
+	/**  The plural of its API resource, as RBAC names it (`deployments`). */
+	plural: string,
+	/**  Whether its objects live in a Namespace. */
+	namespaced: boolean,
 };
 
 export type AppError = {

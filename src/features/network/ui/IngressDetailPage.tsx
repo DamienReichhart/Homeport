@@ -80,6 +80,11 @@ function IngressDetailView({ cluster }: { cluster: ClusterView }) {
   return (
     <ResourceTabs
       detail={detail}
+      deletable={{
+        cluster,
+        target: { type: { kind: 'ingress' }, namespace: namespace, name },
+        listPath: '/ingresses',
+      }}
       base={objectPath('ingress', namespace, name) ?? '/ingresses'}
       title={
         <span className="flex items-center gap-2">

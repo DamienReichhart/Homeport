@@ -71,6 +71,7 @@ function Services({ cluster }: { cluster: ClusterView }) {
       namespace={namespace}
       onNamespace={setNamespace}
       columns={columns(namespace === null)}
+      deletable={(s) => ({ type: { kind: 'service' }, namespace: s.namespace, name: s.name })}
       getRowId={(s) => `${s.namespace}/${s.name}`}
       rowPath={(s) => objectPath('service', s.namespace, s.name) ?? '/services'}
       search={t('network.searchServices')}

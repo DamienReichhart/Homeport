@@ -59,6 +59,7 @@ function Nodes({ cluster }: { cluster: ClusterView }) {
       summary={(count) => t('nodes.summary', { count })}
       list={list}
       columns={columns}
+      deletable={(n) => ({ type: { kind: 'node' }, namespace: null, name: n.name })}
       getRowId={(n) => n.name}
       rowPath={(n) => objectPath('node', null, n.name) ?? '/nodes'}
       search={t('nodes.search')}

@@ -1,13 +1,16 @@
 import { age, HealthBadge } from '@/core/cluster';
-import type { WorkloadKind, WorkloadView } from '@/shared/api';
+import type { ClusterView, WorkloadKind, WorkloadView } from '@/shared/api';
 import { type ColumnDef } from '@/shared/ui';
 import { readyText } from '../model/kinds';
+import { WorkloadActions } from './actions/WorkloadActions';
 import { t } from '@/shared/i18n';
 
 /** The workloads table's columns for `kind`. */
 export function workloadColumns(
   kind: WorkloadKind,
   showNamespace: boolean,
+  /** Adds each row's actions menu. */
+  cluster?: ClusterView,
 ): ColumnDef<WorkloadView, unknown>[] {
   const columns: ColumnDef<WorkloadView, unknown>[] = [
     {
@@ -79,5 +82,12 @@ export function workloadColumns(
       cell: ({ row }) => age(row.original.created),
     },
   );
+  if (cluster)
+    columns.push({
+      id: 'actions',
+      header: '',
+      enableSorting: false,
+      cell: ({ row }) => <WorkloadActions cluster={cluster} workload={row.original} />,
+    });
   return columns;
 }

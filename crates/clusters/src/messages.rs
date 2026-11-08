@@ -140,6 +140,13 @@ homeport_core::messages! {
     FORBIDDEN_HINT = "errors.clusters.forbidden.hint" => "Ask the cluster's administrator for this permission. Check with:";
     /// The resource was deleted while it was open.
     RESOURCE_GONE = "errors.clusters.resourceGone" => "{kind} {name} no longer exists.";
+    /// Scaling to fewer than no Pods.
+    REPLICAS_NEGATIVE = "errors.clusters.replicasNegative" => "A workload can't run fewer than 0 Pods.";
+    /// An action a kind of workload doesn't have, such as scaling a DaemonSet.
+    ACTION_NOT_SUPPORTED = "errors.clusters.actionNotSupported" => "A {kind} can't {action}.";
+    /// The object changed between reading it and changing it.
+    CHANGED_MEANWHILE = "errors.clusters.changedMeanwhile" => "{kind} {name} changed while you were working on it.";
+    CHANGED_MEANWHILE_HINT = "errors.clusters.changedMeanwhile.hint" => "Look at it again, then retry.";
     /// A Secret's key that is gone by the time it's revealed.
     SECRET_KEY_GONE = "errors.clusters.secretKeyGone" => "{name} no longer has a key {key}.";
 }

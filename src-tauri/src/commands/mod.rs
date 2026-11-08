@@ -13,6 +13,7 @@ use crate::app::events;
 
 pub mod app;
 pub mod backup;
+pub mod cluster_actions;
 pub mod clusters;
 pub mod containers;
 pub mod exec;
@@ -110,6 +111,13 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             clusters::clusters_node_get,
             clusters::clusters_events_list,
             clusters::clusters_summary,
+            cluster_actions::clusters_scale,
+            cluster_actions::clusters_autoscaler,
+            cluster_actions::clusters_restart,
+            cluster_actions::clusters_cron_job_suspend,
+            cluster_actions::clusters_cron_job_trigger,
+            cluster_actions::clusters_delete,
+            cluster_actions::clusters_api_delete,
             backup::data_backup,
             backup::data_restore_preview,
             backup::data_restore,

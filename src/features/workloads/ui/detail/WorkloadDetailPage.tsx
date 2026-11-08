@@ -21,8 +21,9 @@ import {
   TabsTrigger,
 } from '@/shared/ui';
 import { workloadQueries } from '../../api/queries';
-import { kindOf, WORKLOAD_KINDS, workloadPath } from '../../model/kinds';
+import { kindOf, pathOf, WORKLOAD_KINDS, workloadPath } from '../../model/kinds';
 import { kindResource } from '../../model/resource';
+import { WorkloadActions } from '../actions/WorkloadActions';
 import { CronJobJobs } from './CronJobJobs';
 import { WorkloadOverview } from './WorkloadOverview';
 import { t, type MessageKey } from '@/shared/i18n';
@@ -62,6 +63,14 @@ function WorkloadDetailView({ cluster }: { cluster: ClusterView }) {
           </span>
         }
         description={<HealthBadge workload={detail.data.view.health} />}
+        actions={
+          <WorkloadActions
+            cluster={cluster}
+            workload={detail.data.view}
+            header
+            onDeleted={() => void navigate(`/workloads/${pathOf(kind)}`, { replace: true })}
+          />
+        }
       />
       <Tabs
         value={tab}

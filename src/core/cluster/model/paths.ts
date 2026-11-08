@@ -53,3 +53,8 @@ export function kindPath(kind: string, namespace: string | null, name: string): 
   const known = KINDS[kind];
   return known ? objectPath(known, namespace, name) : null;
 }
+
+/** The Kubernetes kind name of `kind` (`Deployment`). */
+export function kindName(kind: ResourceKind): string {
+  return Object.entries(KINDS).find(([, k]) => k === kind)?.[0] ?? 'Event';
+}
