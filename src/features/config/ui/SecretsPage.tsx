@@ -52,6 +52,7 @@ function Secrets({ cluster }: { cluster: ClusterView }) {
       namespace={namespace}
       onNamespace={setNamespace}
       columns={columns(namespace === null)}
+      deletable={(s) => ({ type: { kind: 'secret' }, namespace: s.namespace, name: s.name })}
       getRowId={(s) => `${s.namespace}/${s.name}`}
       rowPath={(s) => objectPath('secret', s.namespace, s.name) ?? '/secrets'}
       search={t('config.searchSecrets')}

@@ -126,7 +126,7 @@ pub async fn clusters_detect_local(state: State<'_, AppState>) -> AppResult<Loca
 // What runs on a Cluster (read-only).
 
 /// The connected Cluster `id`.
-fn on(state: &AppState, id: &str) -> AppResult<On> {
+pub(crate) fn on(state: &AppState, id: &str) -> AppResult<On> {
     let (client, cluster) = state.clusters.registry.client(id)?;
     Ok(On { client, cluster })
 }

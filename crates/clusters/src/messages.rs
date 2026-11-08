@@ -140,6 +140,73 @@ homeport_core::messages! {
     FORBIDDEN_HINT = "errors.clusters.forbidden.hint" => "Ask the cluster's administrator for this permission. Check with:";
     /// The resource was deleted while it was open.
     RESOURCE_GONE = "errors.clusters.resourceGone" => "{kind} {name} no longer exists.";
+    /// Scaling to fewer than no Pods.
+    REPLICAS_NEGATIVE = "errors.clusters.replicasNegative" => "A workload can't run fewer than 0 Pods.";
+    /// An action a kind of workload doesn't have, such as scaling a DaemonSet.
+    ACTION_NOT_SUPPORTED = "errors.clusters.actionNotSupported" => "A {kind} can't {action}.";
+    /// Asking for the logs of a previous instance of a container that never restarted.
+    NO_PREVIOUS_LOGS = "errors.clusters.logs.noPrevious" => "{container} in {pod} hasn't restarted, so it has no previous instance.";
+    NO_PREVIOUS_LOGS_HINT = "errors.clusters.logs.noPrevious.hint" => "Turn off Previous instance to see its current logs.";
+    /// Asking for the logs of a container that hasn't started.
+    CONTAINER_WAITING = "errors.clusters.logs.waiting" => "{container} hasn't started yet: {reason}.";
+    CONTAINER_WAITING_HINT = "errors.clusters.logs.waiting.hint" => "Its Pod's page says why it waits. After a crash, Previous instance shows the run that crashed.";
+    // Terminals in a Pod's container.
+
+    /// A typed command with an unclosed quote.
+    COMMAND_UNCLOSED_QUOTE = "errors.clusters.terminal.unclosedQuote" => "The command has a quote that isn't closed.";
+    /// The exec API answered without the streams a terminal needs.
+    TERMINAL_NOT_OPENED = "errors.clusters.terminal.notOpened" => "Homeport couldn't open a terminal in {pod}.";
+    /// Input or a resize for a terminal that has ended.
+    TERMINAL_ENDED = "errors.clusters.terminal.ended" => "This terminal has ended.";
+    /// Exec into a container that isn't running.
+    EXEC_NOT_RUNNING = "errors.clusters.terminal.notRunning" => "{container} in {pod} isn't running, so no terminal can open in it.";
+    EXEC_NOT_RUNNING_HINT = "errors.clusters.terminal.notRunning.hint" => "Its Pod's page says why. A completed Pod's containers have stopped for good.";
+    /// The command, often the shell, isn't in the image.
+    NO_SHELL = "errors.clusters.terminal.noShell" => "That command doesn't exist in the container.";
+    NO_SHELL_HINT = "errors.clusters.terminal.noShell.hint" => "Minimal (distroless) images have no shell. Type a command the image has, or attach a debug container from a terminal, which Homeport doesn't do:";
+    /// The process ended with an error that isn't an exit code.
+    EXEC_ENDED_WITH_ERROR = "errors.clusters.terminal.endedWithError" => "The command ended with an error.";
+    // Port forwards.
+
+    /// The local port of a forward is taken.
+    LOCAL_PORT_IN_USE = "errors.clusters.forward.portInUse" => "Port {port} is already in use on this computer.";
+    LOCAL_PORT_IN_USE_HINT = "errors.clusters.forward.portInUse.hint" => "Pick another local port, or leave it empty for a free one.";
+    /// A local port below 1024 without the rights to listen on it.
+    LOCAL_PORT_PRIVILEGED = "errors.clusters.forward.portPrivileged" => "This computer doesn't let Homeport listen on port {port}.";
+    /// Forwarding to a Pod that isn't running.
+    FORWARD_POD_NOT_RUNNING = "errors.clusters.forward.podNotRunning" => "{pod} isn't running, so nothing can be forwarded to it.";
+    FORWARD_POD_NOT_RUNNING_HINT = "errors.clusters.forward.podNotRunning.hint" => "Its page says why. Forward to its Service instead to follow its replacements.";
+    /// Forwarding to a Service that selects no Pods.
+    FORWARD_NO_SELECTOR = "errors.clusters.forward.noSelector" => "{service} doesn't select Pods, so there's nothing to forward to.";
+    FORWARD_NO_SELECTOR_HINT = "errors.clusters.forward.noSelector.hint" => "Services without a selector point at endpoints Homeport can't forward to; forward to a Pod instead.";
+    /// Forwarding a port a Service doesn't have.
+    FORWARD_NO_SUCH_PORT = "errors.clusters.forward.noSuchPort" => "{service} has no port {port}.";
+    /// None of a Service's Pods is ready.
+    FORWARD_NO_READY_POD = "errors.clusters.forward.noReadyPod" => "None of the Pods of {service} is ready.";
+    FORWARD_NO_READY_POD_HINT = "errors.clusters.forward.noReadyPod.hint" => "Its Pods tab says why. The forward tries again on the next connection.";
+    /// A Service's named target port that its Pod doesn't declare.
+    FORWARD_NAMED_PORT_MISSING = "errors.clusters.forward.namedPortMissing" => "{pod} has no container port named {port}.";
+    // Applying and editing YAML.
+
+    /// YAML that doesn't parse.
+    YAML_INVALID = "errors.clusters.apply.yamlInvalid" => "The YAML isn't valid at line {line}.";
+    /// Nothing to apply.
+    YAML_EMPTY = "errors.clusters.apply.yamlEmpty" => "There's nothing to apply: the YAML holds no document.";
+    /// A document without apiVersion, kind or metadata.name.
+    DOCUMENT_INCOMPLETE = "errors.clusters.apply.documentIncomplete" => "A document needs an apiVersion, a kind and a metadata.name (it has \"{apiVersion}\" and \"{kind}\").";
+    /// A kind the Cluster doesn't serve.
+    KIND_UNKNOWN = "errors.clusters.apply.kindUnknown" => "{name} doesn't serve the kind {kind} in {apiVersion}.";
+    KIND_UNKNOWN_HINT = "errors.clusters.apply.kindUnknown.hint" => "Check the apiVersion and kind. A custom resource needs its CRD installed first.";
+    /// Fields owned by another field manager.
+    APPLY_CONFLICTS = "errors.clusters.apply.conflicts" => "Other tools manage some fields of {kind} {name} that this would change.";
+    APPLY_CONFLICTS_HINT = "errors.clusters.apply.conflicts.hint" => "Leave those fields out, or apply anyway to take them over.";
+    /// The API server's validation refused the object.
+    APPLY_INVALID = "errors.clusters.apply.invalid" => "The cluster refused {kind} {name} as it is.";
+    /// Editing a Secret, whose values Homeport only reveals one at a time.
+    SECRET_NOT_EDITABLE = "errors.clusters.apply.secretNotEditable" => "Homeport doesn't edit Secrets, since it never shows all their values at once.";
+    /// The object changed between reading it and changing it.
+    CHANGED_MEANWHILE = "errors.clusters.changedMeanwhile" => "{kind} {name} changed while you were working on it.";
+    CHANGED_MEANWHILE_HINT = "errors.clusters.changedMeanwhile.hint" => "Look at it again, then retry.";
     /// A Secret's key that is gone by the time it's revealed.
     SECRET_KEY_GONE = "errors.clusters.secretKeyGone" => "{name} no longer has a key {key}.";
 }

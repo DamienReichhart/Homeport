@@ -3,7 +3,7 @@
 
 use std::sync::{Arc, Mutex};
 
-use homeport_clusters::service::ClusterService;
+use homeport_clusters::{service::ClusterService, terminal::PodTerminals};
 use homeport_core::streams::Streams;
 use homeport_engine::{
     containers::exec::ExecSessions, freshness::FreshnessCache, volumes::browse::BrowseSessions,
@@ -41,6 +41,8 @@ pub struct AppState {
     pub synced: Arc<SyncedStacks>,
     pub streams: Streams,
     pub exec: ExecSessions,
+    /// Terminals open in Pods' containers.
+    pub pod_terminals: PodTerminals,
     /// Volumes being browsed, each in a helper container (ADR 0015).
     pub volume_browser: BrowseSessions,
     /// Registry digests, for telling when a newer image is published.

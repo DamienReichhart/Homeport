@@ -1,4 +1,6 @@
+import apiresources from './apiresources';
 import app from './app';
+import apply from './apply';
 import board from './board';
 import clusterevents from './clusterevents';
 import clusters from './clusters';
@@ -15,6 +17,7 @@ import networks from './networks';
 import nodes from './nodes';
 import overview from './overview';
 import pods from './pods';
+import portforwards from './portforwards';
 import registries from './registries';
 import repositories from './repositories';
 import search from './search';
@@ -32,6 +35,8 @@ export const uiMessages = {
   ...app,
   ...core,
   ...ui,
+  ...apiresources,
+  ...apply,
   ...board,
   ...clusterevents,
   ...clusters,
@@ -45,6 +50,7 @@ export const uiMessages = {
   ...nodes,
   ...overview,
   ...pods,
+  ...portforwards,
   ...registries,
   ...repositories,
   ...search,

@@ -26,6 +26,10 @@ _Avoid_: Context (for a Cluster), kube cluster, k8s, environment
 
 Kubernetes' own objects (Namespace, Pod, Deployment, StatefulSet, DaemonSet, Job, CronJob, Service, Ingress, ConfigMap, Secret, Node, Event) keep their Kubernetes names and capitals. A Cluster's Node, Service or Secret is the Kubernetes one, never a Swarm's.
 
+**Port forward**:
+A local port on this computer's loopback that Homeport connects, through the Kubernetes API, to a port of a Pod, or of a Service through one of its ready Pods, like `kubectl port-forward`. Kept in memory: it ends when Homeport quits or its Cluster is removed.
+_Avoid_: Tunnel, proxy, published port (that's a container's)
+
 **Node**:
 One Engine in a Swarm, a manager or a worker. A node is a Host only when Homeport connects to it; a Host's page links to its node and back.
 _Avoid_: Member, machine, server

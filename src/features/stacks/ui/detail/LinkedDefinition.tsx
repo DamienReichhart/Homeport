@@ -26,6 +26,7 @@ import {
   TabsList,
   TabsTrigger,
   useConfirm,
+  YamlEditor,
 } from '@/shared/ui';
 import { useForgetLinked, useReloadLinked, useWriteLinked } from '../../api/mutations';
 import { stackQueries } from '../../api/queries';
@@ -36,7 +37,6 @@ import { ComposeChecks } from '../ComposeChecks';
 import { ReviewDialog } from '../dialogs/ReviewDialog';
 import { LinkedFileList } from './LinkedFileList';
 import { ProfilesControl } from './ProfilesControl';
-import { YamlEditor } from '../YamlEditor';
 import { t, tRich } from '@/shared/i18n';
 
 const mono = (chunks: ReactNode[]) => <span className="font-mono">{chunks}</span>;

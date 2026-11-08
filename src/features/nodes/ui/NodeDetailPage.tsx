@@ -82,6 +82,11 @@ function NodeDetailView({ cluster }: { cluster: ClusterView }) {
   return (
     <ResourceTabs
       detail={detail}
+      deletable={{
+        cluster,
+        target: { type: { kind: 'node' }, namespace: null, name },
+        listPath: '/nodes',
+      }}
       base={objectPath('node', null, name) ?? '/nodes'}
       title={name}
       description={(n) => <NodeStatus node={n.view} />}

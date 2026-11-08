@@ -214,6 +214,7 @@ async fn restore_from(
     state.hosts.events.flush().await;
     replace(state, &backup)?;
     state.hosts.registry.reload()?;
+    state.clusters.forwards.stop_all();
     state.clusters.registry.reload()?;
     Ok(backup.contents())
 }
@@ -254,7 +255,7 @@ mod tests {
     use std::sync::Arc;
 
     use homeport_clusters::{
-        registry::{ClusterNotifier, ClusterRegistry, ClusterStatus},
+        registry::{ClusterNotifier, ClusterStatus},
         service::ClusterService,
         store::{ClusterDraft, ClusterStore},
         ClusterConnection, ClusterKind, ClusterSecrets,
@@ -313,10 +314,7 @@ mod tests {
         ));
         let cluster_store = Arc::new(ClusterStore::new(db.clone(), secrets.clone()));
         AppState {
-            clusters: ClusterService {
-                registry: ClusterRegistry::new(cluster_store.clone(), Arc::new(Silent)),
-                store: cluster_store,
-            },
+            clusters: ClusterService::new(cluster_store, Arc::new(Silent)),
             settings: SettingsService::new(db.clone(), &dir.join("settings.json")).unwrap(),
             hosts: HostService {
                 store,
@@ -337,6 +335,7 @@ mod tests {
             secrets,
             streams: Default::default(),
             exec: Default::default(),
+            pod_terminals: Default::default(),
             volume_browser: Default::default(),
             freshness: Default::default(),
             update: Default::default(),

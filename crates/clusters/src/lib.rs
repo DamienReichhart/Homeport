@@ -10,16 +10,21 @@
 //! Homeport installs nothing on a Cluster: it only talks to the Kubernetes
 //! API the kubeconfig already reaches.
 
+pub mod apply;
 pub mod classify;
 pub mod client;
 pub mod detect;
+pub mod discovery;
 pub mod exec;
+pub mod forward;
 pub mod kubeconfig;
+pub mod logs;
 pub mod messages;
 pub mod model;
 pub mod registry;
 pub mod resources;
 pub mod service;
 pub mod store;
+pub mod terminal;
 
 pub use model::{AuthMethod, Cluster, ClusterConnection, ClusterId, ClusterKind, ClusterSecrets};

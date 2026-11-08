@@ -64,6 +64,7 @@ function Ingresses({ cluster }: { cluster: ClusterView }) {
       namespace={namespace}
       onNamespace={setNamespace}
       columns={columns(namespace === null)}
+      deletable={(i) => ({ type: { kind: 'ingress' }, namespace: i.namespace, name: i.name })}
       getRowId={(i) => `${i.namespace}/${i.name}`}
       rowPath={(i) => objectPath('ingress', i.namespace, i.name) ?? '/ingresses'}
       search={t('network.searchIngresses')}

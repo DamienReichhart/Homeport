@@ -1,11 +1,19 @@
 import { ArrowLeftIcon, ArrowRightIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { ComposeCheck, ComposeFile } from '@/shared/api';
-import { Button, Input, Label, Tabs, TabsList, TabsTrigger, Textarea } from '@/shared/ui';
+import {
+  Button,
+  Input,
+  Label,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  Textarea,
+  YamlEditor,
+} from '@/shared/ui';
 import { useComposeCheck } from '../api/useComposeCheck';
 import { addFile, contents, move, removeFile, updateFile } from '../model/composeFiles';
 import { ComposeChecks } from './ComposeChecks';
-import { YamlEditor } from './YamlEditor';
 import { t } from '@/shared/i18n';
 
 /** An example environment, written as a .env file. */

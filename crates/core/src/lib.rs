@@ -9,6 +9,8 @@ pub mod backoff;
 pub mod error;
 pub mod host;
 pub mod local_files;
+pub mod logs;
 pub mod messages;
 pub mod programs;
 pub mod streams;
+pub mod terminal;

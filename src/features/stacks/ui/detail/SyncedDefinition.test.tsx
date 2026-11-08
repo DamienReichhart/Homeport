@@ -6,7 +6,8 @@ import { mockCommands } from '@/test/ipc';
 import { renderApp } from '@/test/render';
 
 // CodeMirror doesn't run in jsdom: the editor is a text area that keeps the props.
-vi.mock('../YamlEditor', () => ({
+vi.mock('@/shared/ui', async (original) => ({
+  ...(await original<object>()),
   YamlEditor: ({
     value,
     label,

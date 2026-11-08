@@ -51,10 +51,13 @@ export function PodsTable({
   pods,
   filter = '',
   showNamespace,
+  onSelectionChange,
 }: {
   pods: PodView[];
   filter?: string;
   showNamespace: boolean;
+  /** Lets rows be picked, for deleting several. */
+  onSelectionChange?: (pods: PodView[]) => void;
 }) {
   const navigate = useNavigate();
   return (
@@ -65,6 +68,7 @@ export function PodsTable({
       filter={filter}
       pageSize={PAGE}
       empty={t('pods.empty')}
+      onSelectionChange={onSelectionChange}
       onRowClick={(p) =>
         void navigate(`/pods/${encodeURIComponent(p.namespace)}/${encodeURIComponent(p.name)}`)
       }

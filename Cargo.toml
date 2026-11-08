@@ -3,7 +3,7 @@ members = ["src-tauri", "crates/*"]
 resolver = "2"
 
 [workspace.package]
-version = "0.15.0"
+version = "0.16.0"
 edition = "2021"
 license = "AGPL-3.0-only"
 rust-version = "1.89"
@@ -40,8 +40,8 @@ tokio-rustls = { version = "0.26", default-features = false, features = ["ring",
 rustls-pki-types = { version = "1", features = ["std"] }
 # The Kubernetes API of a Cluster, on rustls and ring like the rest of the
 # app. k8s-openapi's `earliest` schema (1.33) reads older Clusters' stable
-# resources too.
-kube = { version = "5", default-features = false, features = ["client", "rustls-tls", "ring", "runtime", "http-proxy", "oidc"] }
+# resources too. `ws` opens the websockets of exec, attach and port-forwards.
+kube = { version = "5", default-features = false, features = ["client", "rustls-tls", "ring", "runtime", "http-proxy", "oidc", "ws"] }
 http = "1"
 # Exec credential plugins' expiry timestamps (RFC 3339), as kube-rs reads them.
 jiff = "0.2"

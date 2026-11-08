@@ -36,8 +36,10 @@ An Ingress's **Rules** tab is where to check routing: which host and path go to 
 
 A Secret's page shows its type and each key with its size, masked. **Reveal** fetches that one value from the cluster and shows it, decoded (binary values as base64), with **Copy** and **Hide**. Values are never part of a list, a Secret's page or its YAML; a revealed one isn't cached, stored or logged, and is hidden again when you leave the page. See [Security and your data](/docs/reference/security/#clusters).
 
-Editing ConfigMaps and Secrets comes with YAML editing in a later version.
+A ConfigMap's **YAML** tab has **Edit**, to change it through a preview and server-side apply ([Applying and editing YAML](/docs/clusters/yaml/)). Secrets aren't edited in Homeport, since it never shows all their values at once; apply a Secret's manifest instead.
 
-## What isn't shown yet
+## Everything else
 
-Endpoints and EndpointSlices, NetworkPolicies and PersistentVolumes have no page of their own yet; a later version adds a browser for any API resource, custom ones included.
+Endpoints and EndpointSlices, NetworkPolicies, PersistentVolumes and the resources your CRDs add are under [API resources](/docs/clusters/api-resources/).
+
+A Service's ports have **Forward…**, to [reach it from this computer](/docs/clusters/port-forward/) through one of its ready Pods; every page here has **Delete** in its header.

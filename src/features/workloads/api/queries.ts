@@ -17,6 +17,13 @@ export const workloadQueries = {
       queryFn: () => commands.clustersWorkloadGet(clusterId, kind, namespace, name),
       retry: false,
     }),
+  /** The HorizontalPodAutoscaler that scales a workload, if any. */
+  autoscaler: (clusterId: string, kind: WorkloadKind, namespace: string, name: string) =>
+    queryOptions({
+      queryKey: [...clusterKeys.kind(clusterId, kindResource(kind)), 'autoscaler', namespace, name],
+      queryFn: () => commands.clustersAutoscaler(clusterId, kind, namespace, name),
+      retry: false,
+    }),
   /** The Jobs a CronJob started, under the Jobs' kind. */
   jobsOf: (clusterId: string, namespace: string, name: string) =>
     queryOptions({

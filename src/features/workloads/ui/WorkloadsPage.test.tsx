@@ -102,4 +102,60 @@ describe('workloads', () => {
     await user.click(screen.getByRole('tab', { name: 'YAML' }));
     expect(await screen.findByText('kind: Deployment')).toBeInTheDocument();
   });
+
+  it('scales a Deployment from its row, warning that its autoscaler will override it', async () => {
+    const scaled: unknown[] = [];
+    mockCommands({
+      ...baseCommands,
+      ...clusterCommands,
+      clusters_workloads_list: () => [workloadView('web')],
+      clusters_autoscaler: () => 'web-hpa',
+      clusters_scale: (args) => {
+        scaled.push(args);
+        return null;
+      },
+    });
+    const user = userEvent.setup();
+    renderApp('/workloads');
+    await user.click(await screen.findByRole('button', { name: 'Actions for web' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Scale' }));
+    expect(await screen.findByText(/The autoscaler web-hpa manages its Pods/)).toBeInTheDocument();
+    const field = screen.getByLabelText('Pods');
+    await user.clear(field);
+    await user.type(field, '0');
+    await user.click(screen.getByRole('button', { name: 'Scale' }));
+    await waitFor(() =>
+      expect(scaled).toEqual([
+        { id: 'c1', kind: 'deployment', namespace: 'default', name: 'web', replicas: 0 },
+      ]),
+    );
+  });
+
+  it('deletes a workload only once the confirmation names it and the cluster', async () => {
+    const deleted: unknown[] = [];
+    mockCommands({
+      ...baseCommands,
+      ...clusterCommands,
+      clusters_workloads_list: () => [workloadView('web')],
+      clusters_delete: (args) => {
+        deleted.push(args);
+        return null;
+      },
+    });
+    const user = userEvent.setup();
+    renderApp('/workloads');
+    await user.click(await screen.findByRole('button', { name: 'Actions for web' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
+    const dialog = await screen.findByRole('alertdialog');
+    expect(
+      within(dialog).getByText(/Deployment web will be deleted from the namespace default on/),
+    ).toBeInTheDocument();
+    expect(deleted).toEqual([]);
+    await user.click(within(dialog).getByRole('button', { name: 'Delete' }));
+    await waitFor(() =>
+      expect(deleted).toEqual([
+        { id: 'c1', kind: 'deployment', namespace: 'default', name: 'web', grace: null },
+      ]),
+    );
+  });
 });

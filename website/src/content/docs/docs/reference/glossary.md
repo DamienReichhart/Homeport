@@ -17,6 +17,10 @@ A Kubernetes cluster Homeport connects to through its API server, added from a c
 
 A Docker Swarm cluster, found through the hosts that belong to it and never added on its own. Homeport reaches it through any connected manager host, tells Swarms apart by their swarm ID, and stores nothing about one. It's named after its first manager host, since Docker gives every Swarm the same name. See [Swarms](/docs/guides/swarm/).
 
+### Port forward
+
+A port on this computer's loopback that Homeport connects, through the Kubernetes API, to a port of a Pod, or of a Service through one of its ready Pods, like `kubectl port-forward`. It ends when Homeport quits. See [Port forwarding](/docs/clusters/port-forward/).
+
 ### Node
 
 One Engine in a Swarm: a manager or a worker. A Cluster's Nodes are Kubernetes Nodes, the machines it runs Pods on. A node is a host only when Homeport connects to it, and a host's page links to its node.

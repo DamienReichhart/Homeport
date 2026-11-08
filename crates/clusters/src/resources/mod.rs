@@ -5,8 +5,11 @@
 //! A request the credentials aren't allowed to make fails with `Forbidden`,
 //! naming the verb and resource, so a page can say so and the others work.
 
+pub mod actions;
+mod api_type;
 mod common;
 pub mod config;
+pub mod dynamic;
 pub mod events;
 mod kind;
 pub mod network;
@@ -35,11 +38,13 @@ use homeport_core::error::{AppError, AppResult, ErrorCode};
 use crate::{classify::classify, messages as msg, model::Cluster};
 
 pub use self::{
+    api_type::ApiType,
     common::{ConditionView, OwnerView},
     config::{
         ConfigMapDetail, ConfigMapView, ConfigValue, DataKey, RevealedValue, SecretDetail,
         SecretView,
     },
+    dynamic::{ObjectDetail, ObjectTable, OwnerRef, TableColumn, TableRow},
     events::{EventObject, EventView},
     kind::ResourceKind,
     network::{
@@ -47,9 +52,9 @@ pub use self::{
         IngressTls, IngressView,
     },
     nodes::{ClusterNodeDetail, ClusterNodeView, NodeTaint},
-    pods::{NamespaceView, PodContainer, PodDetail, PodHealth, PodView},
+    pods::{NamespaceView, PodContainer, PodDetail, PodHealth, PodPort, PodView},
     summary::{ClusterSummary, NodeCounts, Part, PodCounts},
-    watch::watch,
+    watch::{watch, watch_api},
     workloads::{TemplateContainer, WorkloadDetail, WorkloadHealth, WorkloadKind, WorkloadView},
 };
 
@@ -85,7 +90,7 @@ impl On {
     }
 
     /// Why `verb` on `kind` failed: not allowed, gone, or the Cluster's failure.
-    fn failed(
+    pub(crate) fn failed(
         &self,
         verb: &str,
         kind: ResourceKind,
@@ -93,17 +98,38 @@ impl On {
         name: Option<&str>,
         error: &kube::Error,
     ) -> AppError {
-        match error {
-            kube::Error::Api(status) if status.code == 403 => {
-                forbidden(verb, kind, namespace).with_detail(&status.message)
+        self.failed_on(verb, &kind.api_type(), namespace, name, error)
+    }
+
+    /// Why `verb` on an object of `api` failed: not allowed, gone, changed
+    /// meanwhile, or the Cluster's failure.
+    pub(crate) fn failed_on(
+        &self,
+        verb: &str,
+        api: &ApiType,
+        namespace: Option<&str>,
+        name: Option<&str>,
+        error: &kube::Error,
+    ) -> AppError {
+        match (error, name) {
+            (kube::Error::Api(status), _) if status.code == 403 => {
+                forbidden_on(verb, api, namespace).with_detail(&status.message)
             }
-            kube::Error::Api(status) if status.code == 404 && name.is_some() => AppError::new(
+            (kube::Error::Api(status), Some(name)) if status.code == 404 => AppError::new(
                 ErrorCode::NotFound,
                 msg::RESOURCE_GONE
-                    .with("kind", kind.kind())
-                    .with("name", name.unwrap_or_default()),
+                    .with("kind", &api.kind)
+                    .with("name", name),
             ),
-            e => classify(&self.cluster.name, &self.cluster.connection.server, e),
+            (kube::Error::Api(status), Some(name)) if status.code == 409 => AppError::new(
+                ErrorCode::Conflict,
+                msg::CHANGED_MEANWHILE
+                    .with("kind", &api.kind)
+                    .with("name", name),
+            )
+            .with_hint(msg::CHANGED_MEANWHILE_HINT)
+            .with_detail(&status.message),
+            (e, _) => classify(&self.cluster.name, &self.cluster.connection.server, e),
         }
     }
 
@@ -274,6 +300,17 @@ impl On {
         let ns = Some(namespace);
         let pod: Pod = self.get(self.api(ns), ResourceKind::Pod, ns, name).await?;
         Ok(pods::detail(&pod))
+    }
+
+    pub(crate) async fn get_pod(&self, namespace: &str, name: &str) -> AppResult<Pod> {
+        let ns = Some(namespace);
+        self.get(self.api(ns), ResourceKind::Pod, ns, name).await
+    }
+
+    pub(crate) async fn get_service(&self, namespace: &str, name: &str) -> AppResult<Service> {
+        let ns = Some(namespace);
+        self.get(self.api(ns), ResourceKind::Service, ns, name)
+            .await
     }
 
     pub async fn services(&self, namespace: Option<&str>) -> AppResult<Vec<ClusterServiceView>> {
@@ -495,15 +532,7 @@ fn sorted<T, K: Ord>(mut items: Vec<T>, key: impl Fn(&T) -> K) -> Vec<T> {
 /// Drops `managedFields` and kubectl's last applied configuration, and
 /// masks a Secret's values.
 pub fn tidy(value: &mut serde_json::Value) {
-    if let Some(meta) = value.get_mut("metadata").and_then(|m| m.as_object_mut()) {
-        meta.remove("managedFields");
-        if let Some(annotations) = meta.get_mut("annotations").and_then(|a| a.as_object_mut()) {
-            annotations.remove("kubectl.kubernetes.io/last-applied-configuration");
-            if annotations.is_empty() {
-                meta.remove("annotations");
-            }
-        }
-    }
+    strip(value);
     if value.get("kind").and_then(|k| k.as_str()) == Some("Secret") {
         for field in ["data", "stringData"] {
             if let Some(data) = value.get_mut(field).and_then(|d| d.as_object_mut()) {
@@ -515,32 +544,58 @@ pub fn tidy(value: &mut serde_json::Value) {
     }
 }
 
+/// Drops `managedFields` and kubectl's last applied configuration, which
+/// repeat what the object holds.
+pub fn strip(value: &mut serde_json::Value) {
+    if let Some(meta) = value.get_mut("metadata").and_then(|m| m.as_object_mut()) {
+        meta.remove("managedFields");
+        if let Some(annotations) = meta.get_mut("annotations").and_then(|a| a.as_object_mut()) {
+            annotations.remove("kubectl.kubernetes.io/last-applied-configuration");
+            if annotations.is_empty() {
+                meta.remove("annotations");
+            }
+        }
+    }
+}
+
 /// What a Secret's value shows as until it is revealed.
 pub const HIDDEN: &str = "(hidden)";
 
 /// The credentials aren't allowed `verb` on `kind`.
 pub fn forbidden(verb: &str, kind: ResourceKind, namespace: Option<&str>) -> AppError {
-    let resource = kind.plural();
-    let (message, command) = match (kind.namespaced(), namespace) {
+    forbidden_on(verb, &kind.api_type(), namespace)
+}
+
+/// The credentials aren't allowed `verb` on the objects of `api`.
+pub fn forbidden_on(verb: &str, api: &ApiType, namespace: Option<&str>) -> AppError {
+    // kubectl knows the built-in kinds by their plural; others need their group.
+    let resource = if api.group.is_empty() || BUILT_IN_GROUPS.contains(&api.group.as_str()) {
+        api.plural.clone()
+    } else {
+        api.resource()
+    };
+    let (message, command) = match (api.namespaced, namespace) {
         (true, Some(ns)) => (
             msg::FORBIDDEN_IN
                 .with("verb", verb)
-                .with("resource", resource)
+                .with("resource", &resource)
                 .with("namespace", ns),
             format!("kubectl auth can-i {verb} {resource} --namespace {ns}"),
         ),
         (true, None) => (
             msg::FORBIDDEN_EVERYWHERE
                 .with("verb", verb)
-                .with("resource", resource),
+                .with("resource", &resource),
             format!("kubectl auth can-i {verb} {resource} --all-namespaces"),
         ),
         (false, _) => (
-            msg::FORBIDDEN.with("verb", verb).with("resource", resource),
+            msg::FORBIDDEN
+                .with("verb", verb)
+                .with("resource", &resource),
             format!("kubectl auth can-i {verb} {resource}"),
         ),
     };
-    let hint = if kind.namespaced() && namespace.is_none() {
+    let hint = if api.namespaced && namespace.is_none() {
         msg::FORBIDDEN_EVERYWHERE_HINT
     } else {
         msg::FORBIDDEN_HINT
@@ -549,6 +604,17 @@ pub fn forbidden(verb: &str, kind: ResourceKind, namespace: Option<&str>) -> App
         .with_hint(hint)
         .with_command(command)
 }
+
+/// The API groups of Kubernetes itself, whose resources kubectl knows by plural.
+const BUILT_IN_GROUPS: &[&str] = &[
+    "apps",
+    "batch",
+    "autoscaling",
+    "networking.k8s.io",
+    "policy",
+    "rbac.authorization.k8s.io",
+    "storage.k8s.io",
+];
 
 #[cfg(test)]
 mod tests;

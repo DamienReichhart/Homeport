@@ -4,7 +4,10 @@ use serde::Serialize;
 use tauri::{AppHandle, Manager};
 use tauri_specta::Event;
 
-use homeport_clusters::registry::{ClusterNotifier, ClusterStatus};
+use homeport_clusters::{
+    forward::ForwardEvent,
+    registry::{ClusterNotifier, ClusterStatus},
+};
 use homeport_core::error::AppError;
 use homeport_engine::volumes::helper;
 use homeport_hosts::registry::{EngineEvent, HostStatus, Notifier};
@@ -24,6 +27,13 @@ pub struct HostStatusChanged {
 pub struct ClusterStatusChanged {
     pub cluster_id: String,
     pub status: ClusterStatus,
+}
+
+/// A port forward failed, or ended because its target is gone.
+#[derive(Debug, Clone, Serialize, specta::Type, tauri_specta::Event)]
+#[serde(rename_all = "camelCase")]
+pub struct PortForwardChanged {
+    pub event: ForwardEvent,
 }
 
 #[derive(Debug, Clone, Serialize, specta::Type, tauri_specta::Event)]
@@ -129,6 +139,15 @@ impl ClusterNotifier for TauriClusterNotifier {
         };
         if let Err(e) = event.emit(&self.app) {
             log::warn!("failed to emit cluster status: {e}");
+        }
+    }
+
+    fn port_forward(&self, event: &ForwardEvent) {
+        let event = PortForwardChanged {
+            event: event.clone(),
+        };
+        if let Err(e) = event.emit(&self.app) {
+            log::warn!("failed to emit a port forward's change: {e}");
         }
     }
 }

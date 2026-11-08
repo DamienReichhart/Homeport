@@ -5,6 +5,7 @@ import {
   age,
   ClusterGate,
   ConditionList,
+  DeleteObjectButton,
   HealthBadge,
   Labels,
   ObjectEvents,
@@ -26,6 +27,8 @@ import {
 } from '@/shared/ui';
 import { podQueries } from '../../api/queries';
 import { PodContainers } from './PodContainers';
+import { PodLogs } from './PodLogs';
+import { PodTerminal } from './PodTerminal';
 import { t, type MessageKey } from '@/shared/i18n';
 
 /** The page of a Pod's owner, when Homeport shows that kind. */
@@ -42,7 +45,7 @@ function ownerLink(namespace: string, owner: OwnerView): string | null {
     : null;
 }
 
-function Overview({ pod }: { pod: PodDetail }) {
+function Overview({ clusterId, pod }: { clusterId: string; pod: PodDetail }) {
   const v = pod.view;
   const link = v.owner && ownerLink(v.namespace, v.owner);
   const items: [string, ReactNode][] = [
@@ -75,14 +78,21 @@ function Overview({ pod }: { pod: PodDetail }) {
           <KeyValue items={items} />
         </CardContent>
       </Card>
-      <PodContainers containers={pod.containers} />
+      <PodContainers
+        clusterId={clusterId}
+        namespace={v.namespace}
+        pod={v.name}
+        containers={pod.containers}
+      />
     </div>
   );
 }
 
-const TABS = ['overview', 'conditions', 'events', 'yaml'] as const;
+const TABS = ['overview', 'logs', 'terminal', 'conditions', 'events', 'yaml'] as const;
 const TAB_LABELS: Record<(typeof TABS)[number], MessageKey> = {
   overview: 'pods.tab.overview',
+  logs: 'pods.tab.logs',
+  terminal: 'pods.tab.terminal',
   conditions: 'pods.tab.conditions',
   events: 'pods.tab.events',
   yaml: 'pods.tab.source',
@@ -113,6 +123,18 @@ function PodDetailView({ cluster }: { cluster: ClusterView }) {
             </span>
           </span>
         }
+        actions={
+          <DeleteObjectButton
+            cluster={cluster}
+            target={{
+              type: { kind: 'pod' },
+              namespace,
+              name,
+              owner: pod.data.view.owner,
+            }}
+            onDeleted={() => void navigate('/pods', { replace: true })}
+          />
+        }
       />
       <Tabs
         value={tab}
@@ -126,7 +148,13 @@ function PodDetailView({ cluster }: { cluster: ClusterView }) {
           ))}
         </TabsList>
         <TabsContent value="overview" className="pt-3">
-          <Overview pod={pod.data} />
+          <Overview clusterId={id} pod={pod.data} />
+        </TabsContent>
+        <TabsContent value="logs" className="pt-3">
+          {tab === 'logs' && <PodLogs clusterId={id} pod={pod.data} />}
+        </TabsContent>
+        <TabsContent value="terminal" className="pt-3">
+          {tab === 'terminal' && <PodTerminal clusterId={id} pod={pod.data} />}
         </TabsContent>
         <TabsContent value="conditions" className="pt-3">
           <ConditionList conditions={pod.data.conditions} />

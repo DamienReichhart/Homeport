@@ -150,6 +150,73 @@ export const commands = {
 	 *  without) for what lives in Namespaces.
 	 */
 	clustersSummary: (id: string, namespace: string | null) => __TAURI_INVOKE<ClusterSummary>("clusters_summary", { id, namespace }),
+	/**  Sets how many Pods a Deployment or a StatefulSet runs. */
+	clustersScale: (id: string, kind: WorkloadKind, namespace: string, name: string, replicas: number) => __TAURI_INVOKE<null>("clusters_scale", { id, kind, namespace, name, replicas }),
+	/**  The HorizontalPodAutoscaler that scales a workload, if one does. */
+	clustersAutoscaler: (id: string, kind: WorkloadKind, namespace: string, name: string) => __TAURI_INVOKE<string | null>("clusters_autoscaler", { id, kind, namespace, name }),
+	/**  Rolls a workload's Pods out again, like `kubectl rollout restart`. */
+	clustersRestart: (id: string, kind: WorkloadKind, namespace: string, name: string) => __TAURI_INVOKE<null>("clusters_restart", { id, kind, namespace, name }),
+	/**  Suspends a CronJob or resumes it. */
+	clustersCronJobSuspend: (id: string, namespace: string, name: string, suspended: boolean) => __TAURI_INVOKE<null>("clusters_cron_job_suspend", { id, namespace, name, suspended }),
+	/**  Starts a Job from a CronJob now; returns the Job's name. */
+	clustersCronJobTrigger: (id: string, namespace: string, name: string) => __TAURI_INVOKE<string>("clusters_cron_job_trigger", { id, namespace, name }),
+	/**
+	 *  Deletes an object shown on one of Homeport's own pages; `grace`
+	 *  overrides how long a Pod is given to stop.
+	 */
+	clustersDelete: (id: string, kind: ResourceKind, namespace: string | null, name: string, grace: number | null) => __TAURI_INVOKE<null>("clusters_delete", { id, kind, namespace, name, grace }),
+	/**  Deletes an object of any type the Cluster serves. */
+	clustersApiDelete: (id: string, api: ApiType, namespace: string | null, name: string) => __TAURI_INVOKE<null>("clusters_api_delete", { id, api, namespace, name }),
+	/**
+	 *  What applying `yaml` would change, document by document, from a dry
+	 *  run; nothing changes on the Cluster.
+	 */
+	clustersApplyPreview: (id: string, yaml: string, namespace: string | null) => __TAURI_INVOKE<ApplyResult>("clusters_apply_preview", { id, yaml, namespace }),
+	/**
+	 *  Applies `yaml` with server-side apply as the `homeport` field manager;
+	 *  `force` takes over the fields other managers own.
+	 */
+	clustersApply: (id: string, yaml: string, namespace: string | null, force: boolean) => __TAURI_INVOKE<ApplyResult>("clusters_apply", { id, yaml, namespace, force }),
+	/**  An object shown on one of Homeport's own pages, as YAML to edit. */
+	clustersResourceEditYaml: (id: string, kind: ResourceKind, namespace: string | null, name: string) => __TAURI_INVOKE<string>("clusters_resource_edit_yaml", { id, kind, namespace, name }),
+	/**  An object of any type the Cluster serves, as YAML to edit. */
+	clustersApiEditYaml: (id: string, api: ApiType, namespace: string | null, name: string) => __TAURI_INVOKE<string>("clusters_api_edit_yaml", { id, api, namespace, name }),
+	/**
+	 *  Every type the Cluster serves, at each group's preferred version, each
+	 *  marked with whether the credentials may list it in `namespace`.
+	 */
+	clustersApiResources: (id: string, namespace: string | null) => __TAURI_INVOKE<ApiResourceInfo[]>("clusters_api_resources", { id, namespace }),
+	/**
+	 *  The objects of `api` in `namespace` (every one without), with the
+	 *  columns the API server suggests.
+	 */
+	clustersApiList: (id: string, api: ApiType, namespace: string | null) => __TAURI_INVOKE<ObjectTable>("clusters_api_list", { id, api, namespace }),
+	clustersApiGet: (id: string, api: ApiType, namespace: string | null, name: string) => __TAURI_INVOKE<ObjectDetail>("clusters_api_get", { id, api, namespace, name }),
+	/**  The Events about an object of any `kind`, warnings first. */
+	clustersApiObjectEvents: (id: string, kind: string, namespace: string | null, name: string) => __TAURI_INVOKE<EventView[]>("clusters_api_object_events", { id, kind, namespace, name }),
+	/**
+	 *  Watches the objects of `api` in `namespace` (every one without) and
+	 *  says when they change, until cancelled.
+	 */
+	clustersApiWatchSubscribe: (id: string, api: ApiType, namespace: string | null, onEvent: Channel<ApiChanged>) => __TAURI_INVOKE<number>("clusters_api_watch_subscribe", { id, api, namespace, onEvent }),
+	/**  Forwards `local_port` (a free one without) to `remote_port` of a Pod or Service. */
+	clustersForwardStart: (id: string, target: ForwardTarget, remotePort: number, localPort: number | null) => __TAURI_INVOKE<PortForward>("clusters_forward_start", { id, target, remotePort, localPort }),
+	/**  Every active forward, across Clusters. */
+	clustersForwardList: () => __TAURI_INVOKE<PortForward[]>("clusters_forward_list"),
+	clustersForwardStop: (forward: number) => __TAURI_INVOKE<void>("clusters_forward_stop", { forward }),
+	/**  Whether `port` is free on this computer, to propose it as the local port. */
+	clustersForwardPortFree: (port: number) => __TAURI_INVOKE<boolean>("clusters_forward_port_free", { port }),
+	/**
+	 *  Streams the logs of one Pod, or of several in one stream with each
+	 *  line labelled, until cancelled or they end.
+	 */
+	clustersPodLogsSubscribe: (id: string, namespace: string, sources: PodLogSource[], target: PodLogTarget, options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("clusters_pod_logs_subscribe", { id, namespace, sources, target, options, onEvent }),
+	/**  Opens a terminal in a Pod's container, like `kubectl exec -it`. */
+	clustersExecStart: (id: string, namespace: string, pod: string, options: PodExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("clusters_exec_start", { id, namespace, pod, options, onEvent }),
+	clustersExecInput: (terminal: number, data: string) => __TAURI_INVOKE<null>("clusters_exec_input", { terminal, data }),
+	clustersExecResize: (terminal: number, cols: number, rows: number) => __TAURI_INVOKE<null>("clusters_exec_resize", { terminal, cols, rows }),
+	/**  Ends a Pod terminal and its process. */
+	clustersExecClose: (terminal: number) => __TAURI_INVOKE<void>("clusters_exec_close", { terminal }),
 	/**  Backs up everything Homeport holds to `path`, sealed with `passphrase`. */
 	dataBackup: (path: string, passphrase: string) => __TAURI_INVOKE<BackupOutcome>("data_backup", { path, passphrase }),
 	/**  What the backup at `path` holds, for the restore's confirmation. */
@@ -501,6 +568,7 @@ export const events = {
 	clusterStatusChanged: makeEvent<ClusterStatusChanged, ClusterStatusChanged>("cluster-status-changed"),
 	engineEventReceived: makeEvent<EngineEventReceived, EngineEventReceived>("engine-event-received"),
 	hostStatusChanged: makeEvent<HostStatusChanged, HostStatusChanged>("host-status-changed"),
+	portForwardChanged: makeEvent<PortForwardChanged, PortForwardChanged>("port-forward-changed"),
 	syncedAutoDeployed: makeEvent<SyncedAutoDeployed, SyncedAutoDeployed>("synced-auto-deployed"),
 	syncedUpdateAvailable: makeEvent<SyncedUpdateAvailable, SyncedUpdateAvailable>("synced-update-available"),
 	trayAddHostChosen: makeEvent<TrayAddHostChosen, TrayAddHostChosen>("tray-add-host-chosen"),
@@ -511,6 +579,38 @@ export const events = {
 export type AddedCluster = {
 	id: string,
 	name: string,
+};
+
+/**  Told when the objects of a type changed. */
+export type ApiChanged = {
+	api: ApiType,
+};
+
+/**  A type of object the Cluster serves. */
+export type ApiResourceInfo = {
+	api: ApiType,
+	/**  `pvc`, `deploy`…: what kubectl also accepts. */
+	shortNames: string[],
+	/**  What can be done with its objects: `list`, `watch`, `delete`, `patch`… */
+	verbs: string[],
+	/**  `all`, … */
+	categories: string[],
+	/**
+	 *  Whether the credentials may list its objects in the namespace asked
+	 *  about; `None` when the cluster can't say (some authorizers don't).
+	 */
+	listable: boolean | null,
+};
+
+export type ApiType = {
+	/**  Empty for the core group (Pods, Services…). */
+	group: string,
+	version: string,
+	kind: string,
+	/**  The plural of its API resource, as RBAC names it (`deployments`). */
+	plural: string,
+	/**  Whether its objects live in a Namespace. */
+	namespaced: boolean,
 };
 
 export type AppError = {
@@ -534,6 +634,31 @@ export type AppInfo = {
 	version: string,
 	os: string,
 	arch: string,
+};
+
+/**  What applying a document does, or did. */
+export type ApplyAction = "created" | "changed" | "unchanged" | 
+/**  It can't be applied: see its error. */
+"failed";
+
+/**  One document of the YAML, and what applying it does. */
+export type ApplyDocument = {
+	apiVersion: string,
+	kind: string,
+	namespace: string | null,
+	name: string,
+	action: ApplyAction,
+	/**  The object as it is, without what the server manages; `None` when new. */
+	before: string | null,
+	/**  As it would be, or is, after applying. */
+	after: string | null,
+	conflicts: FieldConflict[],
+	error: AppError | null,
+};
+
+/**  Every document of the YAML, in order. */
+export type ApplyResult = {
+	documents: ApplyDocument[],
 };
 
 /**  How a Cluster's user authenticates, as its kubeconfig says. */
@@ -1236,6 +1361,14 @@ export type ExportOutcome = {
 	withoutSecrets: string[],
 };
 
+/**  Fields of the object another field manager owns, which applying would take over. */
+export type FieldConflict = {
+	/**  `.spec.replicas`. */
+	field: string,
+	/**  What the API server said: `conflict with "kubectl-client-side-apply" using apps/v1`. */
+	message: string,
+};
+
 /**
  *  One compose file, as deployed and as about to be; `None` on the side
  *  that doesn't have it.
@@ -1270,6 +1403,20 @@ export type FolderProject = {
 	 */
 	name: string,
 };
+
+/**  A forward failed, or ended because its target is gone. */
+export type ForwardEvent = {
+	id: number,
+	clusterId: string,
+	error: AppError,
+	/**  The forward was stopped. */
+	ended: boolean,
+};
+
+/**  What a forward reaches. */
+export type ForwardTarget = { kind: "pod"; namespace: string; name: string } | 
+/**  Through one of its ready Pods, picked again when that one goes. */
+{ kind: "service"; namespace: string; name: string };
 
 export type Freshness = "upToDate" | 
 /**  The registry has a different image under this tag. */
@@ -1860,6 +2007,19 @@ export type NotificationSettings = {
 	hostBack?: boolean,
 };
 
+/**  An object of any type, as its page shows it. */
+export type ObjectDetail = {
+	name: string,
+	namespace: string | null,
+	created: string | null,
+	labels: { [key in string]: string },
+	annotations: { [key in string]: string },
+	owners: OwnerRef[],
+	/**  Its `status.conditions`, when it has them. */
+	conditions: ConditionView[],
+	yaml: string,
+};
+
 /**  A secret or config to create. */
 export type ObjectInput = {
 	name: string,
@@ -1876,6 +2036,12 @@ export type ObjectRef = {
 	target: string | null,
 };
 
+/**  The objects of a type, as `kubectl get` lists them. */
+export type ObjectTable = {
+	columns: TableColumn[],
+	rows: TableRow[],
+};
+
 /**  Where a new secret's or config's value comes from. */
 export type ObjectValue = 
 /**  Typed in Homeport. */
@@ -1885,6 +2051,14 @@ export type ObjectValue =
  *  webview hands over.
  */
 { kind: "file"; path: string };
+
+/**  An object it refers to as its owner. */
+export type OwnerRef = {
+	apiVersion: string,
+	kind: string,
+	name: string,
+	controller: boolean,
+};
 
 /**  The resource that controls another, such as a Pod's ReplicaSet. */
 export type OwnerView = {
@@ -1916,6 +2090,8 @@ export type PodContainer = {
 	restarts: number,
 	/**  Why it last ended, when it restarted. */
 	lastReason: string | null,
+	/**  The ports it declares. */
+	ports: PodPort[],
 };
 
 export type PodCounts = {
@@ -1940,10 +2116,42 @@ export type PodDetail = {
 	serviceAccount: string | null,
 };
 
+export type PodExecOptions = {
+	/**  The container; the Pod's only one (or default) without. */
+	container: string | null,
+	/**  The command to run, parsed with shell quoting; the default picks a shell. */
+	command: string | null,
+	cols: number,
+	rows: number,
+};
+
 /**  How a Pod is doing, for its colour. */
 export type PodHealth = "running" | "pending" | "succeeded" | "failed" | 
 /**  A container that keeps crashing, or can't pull its image. */
 "crashing" | "terminating" | "unknown";
+
+/**  A Pod to read the logs of. */
+export type PodLogSource = {
+	pod: string,
+	/**  Shown in front of each line when several Pods share a stream. */
+	label: string | null,
+};
+
+/**  What to read of each Pod, beyond the options every log viewer has. */
+export type PodLogTarget = {
+	/**  The container; the Pod's only one (or default) without. */
+	container: string | null,
+	/**  The instance that ran before the last restart, like `kubectl logs --previous`. */
+	previous: boolean,
+};
+
+/**  A port a container declares. */
+export type PodPort = {
+	port: number,
+	/**  `TCP`, `UDP` or `SCTP`. */
+	protocol: string,
+	name: string | null,
+};
 
 export type PodView = {
 	namespace: string,
@@ -1972,6 +2180,29 @@ export type PortBinding = {
 	privatePort: number,
 	publicPort: number | null,
 	protocol: string,
+};
+
+/**  An active forward, as the list shows it. */
+export type PortForward = {
+	id: number,
+	clusterId: string,
+	clusterName: string,
+	target: ForwardTarget,
+	/**  The port of the Pod, or of the Service. */
+	remotePort: number,
+	localPort: number,
+	/**  Where it listens: `127.0.0.1:8080`, and `[::1]:8080` when that was free. */
+	addresses: string[],
+	/**  Connections open through it now. */
+	connections: number,
+	/**  The Pod connections go to, once one went through. */
+	pod: string | null,
+	started: string,
+};
+
+/**  A port forward failed, or ended because its target is gone. */
+export type PortForwardChanged = {
+	event: ForwardEvent,
 };
 
 /**
@@ -2640,6 +2871,24 @@ export type SystemPruneReport = {
 	networks: number,
 	volumes: number,
 	spaceReclaimed: number,
+};
+
+/**  A column of an object list, as the API server describes it. */
+export type TableColumn = {
+	name: string,
+	/**  `string`, `integer`, `date`… */
+	type: string,
+	description: string,
+	/**  0 for the columns `kubectl get` shows; more for those of `-o wide`. */
+	priority: number,
+};
+
+/**  One object of a list, with its cells in the columns' order. */
+export type TableRow = {
+	name: string,
+	namespace: string | null,
+	cells: string[],
+	created: string | null,
 };
 
 /**  Which tasks to list: all of them, or those of a service or of a node. */

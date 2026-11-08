@@ -4,11 +4,10 @@ import { ExternalLinkIcon, FileIcon } from 'lucide-react';
 import { forgeFileUrl } from '@/features/repositories';
 import type { ComposeJob } from '../../model/composeJob';
 import type { SyncedStack } from '@/shared/api';
-import { Button, ErrorMessage, Spinner, toastError } from '@/shared/ui';
+import { Button, ErrorMessage, Spinner, toastError, YamlEditor } from '@/shared/ui';
 import { syncedQueries } from '../../api/synced';
 import { useComposeCheck } from '../../api/useComposeCheck';
 import { ProfilesControl } from './ProfilesControl';
-import { YamlEditor } from '../YamlEditor';
 import { t } from '@/shared/i18n';
 
 /**

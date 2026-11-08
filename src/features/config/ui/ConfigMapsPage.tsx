@@ -46,6 +46,7 @@ function ConfigMaps({ cluster }: { cluster: ClusterView }) {
       namespace={namespace}
       onNamespace={setNamespace}
       columns={columns(namespace === null)}
+      deletable={(c) => ({ type: { kind: 'configMap' }, namespace: c.namespace, name: c.name })}
       getRowId={(c) => `${c.namespace}/${c.name}`}
       rowPath={(c) => objectPath('configMap', c.namespace, c.name) ?? '/configmaps'}
       search={t('config.searchConfigMaps')}

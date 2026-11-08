@@ -24,6 +24,11 @@ function ConfigMapView({ cluster }: { cluster: ClusterView }) {
   return (
     <ResourceTabs
       detail={detail}
+      deletable={{
+        cluster,
+        target: { type: { kind: 'configMap' }, namespace, name },
+        listPath: '/configmaps',
+      }}
       base={objectPath('configMap', namespace, name) ?? '/configmaps'}
       title={
         <span className="flex items-center gap-2">
@@ -97,6 +102,11 @@ function SecretView({ cluster }: { cluster: ClusterView }) {
   return (
     <ResourceTabs
       detail={detail}
+      deletable={{
+        cluster,
+        target: { type: { kind: 'secret' }, namespace, name },
+        listPath: '/secrets',
+      }}
       base={objectPath('secret', namespace, name) ?? '/secrets'}
       title={
         <span className="flex items-center gap-2">

@@ -1,4 +1,4 @@
-import type { ResourceKind } from '@/shared/api';
+import type { ApiType, ResourceKind } from '@/shared/api';
 
 /**
  * Query keys of the Clusters and of what each one holds. Every key of a
@@ -14,6 +14,9 @@ export const clusterKeys = {
   /** An object's Events, refreshed with the Events' watch. */
   objectEvents: (clusterId: string, kind: ResourceKind, namespace: string | null, name: string) =>
     ['cluster', clusterId, 'event', 'of', kind, namespace, name] as const,
+  /** Everything read about the objects of an API type, as the API resources pages show them. */
+  api: (clusterId: string, api: ApiType) =>
+    ['cluster', clusterId, 'api', api.group, api.version, api.plural] as const,
   yaml: (clusterId: string, kind: ResourceKind, namespace: string | null, name: string) =>
     ['cluster', clusterId, kind, 'yaml', namespace, name] as const,
 };

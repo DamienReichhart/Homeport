@@ -16,6 +16,13 @@ export const clusterResourceQueries = {
       queryFn: () => commands.clustersObjectEvents(clusterId, kind, namespace, name),
       retry: false,
     }),
+  /** The Events about an object of any Kubernetes kind (`Certificate`). */
+  eventsOfKind: (clusterId: string, kind: string, namespace: string | null, name: string) =>
+    queryOptions({
+      queryKey: [...clusterKeys.kind(clusterId, 'event'), 'of', kind, namespace, name] as const,
+      queryFn: () => commands.clustersApiObjectEvents(clusterId, kind, namespace, name),
+      retry: false,
+    }),
   yaml: (clusterId: string, kind: ResourceKind, namespace: string | null, name: string) =>
     queryOptions({
       queryKey: clusterKeys.yaml(clusterId, kind, namespace, name),

@@ -42,11 +42,21 @@ export function ObjectEvents({
   name,
 }: {
   clusterId: string;
-  kind: ResourceKind;
+  /** One of Homeport's kinds, or any Kubernetes kind by name (`Certificate`). */
+  kind: ResourceKind | { name: string };
   namespace: string | null;
   name: string;
 }) {
-  const events = useQuery(clusterResourceQueries.objectEvents(clusterId, kind, namespace, name));
+  const known = typeof kind === 'string';
+  const ofKind = useQuery({
+    ...clusterResourceQueries.objectEvents(clusterId, known ? kind : 'event', namespace, name),
+    enabled: known,
+  });
+  const ofName = useQuery({
+    ...clusterResourceQueries.eventsOfKind(clusterId, known ? '' : kind.name, namespace, name),
+    enabled: !known,
+  });
+  const events = known ? ofKind : ofName;
   useResourceWatch(clusterId, 'event', namespace);
   if (events.isPending) return <Spinner />;
   if (events.error)

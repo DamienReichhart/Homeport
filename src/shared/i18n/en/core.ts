@@ -94,4 +94,46 @@ export default {
     '{count, plural, one {# image has} other {# images have}} a newer version',
   'core.freshness.newerOne': 'A newer {reference} was published',
   'core.freshness.newerMany': 'Newer images were published: {references}',
+  'core.delete.title': 'Delete {kind} {name}?',
+  'core.delete.titleMany': 'Delete {count} {kind} objects?',
+  'core.delete.titleObjects': 'Delete {count} objects?',
+  'core.delete.one': '{kind} {name} will be deleted from {cluster}.',
+  'core.delete.oneIn': '{kind} {name} will be deleted from the namespace {namespace} on {cluster}.',
+  'core.delete.many': 'These will be deleted from {cluster}: {names}.',
+  'core.delete.manyIn':
+    'These will be deleted from the namespace {namespace} on {cluster}: {names}.',
+  'core.delete.namespace':
+    'Everything in the namespace goes with it: its workloads, Pods, Services, ConfigMaps and Secrets.',
+  'core.delete.recreated': '{kind} {name} controls it, so it will start a new Pod in its place.',
+  'core.delete.pods': 'Its Pods are deleted with it.',
+  'core.delete.cronJob': 'It starts no more Jobs; those it started are deleted with it.',
+  'core.delete.node':
+    'Homeport doesn’t drain it first: its Pods stay until the Node registers again or they’re rescheduled.',
+  'core.delete.confirm': 'Delete',
+  'core.delete.failed': 'Homeport couldn’t delete {name}',
+  'core.delete.done': '{count, plural, one {Deleted {name}} other {Deleted # objects}}',
+  'core.delete.action': 'Delete',
+  'core.delete.selected': 'Delete {count}',
+  'core.apply.preview': 'Preview changes',
+  'core.apply.apply': 'Apply',
+  'core.apply.force': 'Apply anyway',
+  'core.apply.stale': 'The YAML changed since this preview.',
+  'core.apply.noChanges': 'No changes: the cluster already holds this.',
+  'core.apply.confirmTitle':
+    'Apply {count, plural, one {# change} other {# changes}} to {cluster}?',
+  'core.apply.confirmDescription':
+    'Homeport applies it with server-side apply as the homeport field manager, as the preview shows.',
+  'core.apply.forceTitle': 'Take over the conflicting fields?',
+  'core.apply.forceDescription':
+    'The tools that manage them on {cluster} may set them back, or stop managing them. Homeport becomes their manager.',
+  'core.apply.done': 'Applied to {cluster}',
+  'core.apply.diffOf': 'Changes to {kind} {name}',
+  'core.apply.action.created': 'Created',
+  'core.apply.action.changed': 'Changed',
+  'core.apply.action.unchanged': 'No changes',
+  'core.apply.action.failed': 'Can’t apply',
+  'core.yaml.edit': 'Edit',
+  'core.yaml.editTitle': 'Edit {kind} {name}',
+  'core.yaml.editDescription':
+    'On {cluster}. Change the YAML, preview what it changes, then apply it.',
 } as const;

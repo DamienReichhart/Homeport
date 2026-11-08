@@ -5,7 +5,7 @@ import {
   DownloadIcon,
   EraserIcon,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { AppError, LogEvent, LogOptions, LogSource } from '@/shared/api';
 import { pickSavePath } from '@/shared/lib';
 import {
@@ -40,8 +40,14 @@ export type LogStreamer = (
  * interleaved with a coloured label per source, like `docker compose logs`.
  */
 export function LogViewer(
-  props: { hostId: string; sources: LogSource[] } | { stream: LogStreamer; streamKey: string },
+  props: ({ hostId: string; sources: LogSource[] } | { stream: LogStreamer; streamKey: string }) & {
+    /** Offers stdout and stderr apart; Kubernetes merges them, so its logs don't. */
+    streamToggles?: boolean;
+    /** Controls shown before the viewer's own, such as a container picker. */
+    toolbar?: ReactNode;
+  },
 ) {
+  const { streamToggles = true, toolbar } = props;
   const hostId = 'hostId' in props ? props.hostId : '';
   const sources = 'sources' in props ? props.sources : [];
   const custom = 'stream' in props ? props.stream : null;
@@ -122,6 +128,7 @@ export function LogViewer(
   return (
     <div className="flex h-full min-h-0 flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
+        {toolbar}
         <Select value={tail} onValueChange={setTail}>
           <SelectTrigger className="w-32" size="sm" aria-label={t('containers.logs.history')}>
             <SelectValue />
@@ -149,12 +156,16 @@ export function LogViewer(
         <Toggle size="sm" variant="outline" pressed={timestamps} onPressedChange={setTimestamps}>
           {t('containers.logs.timestamps')}
         </Toggle>
-        <Toggle size="sm" variant="outline" pressed={stdout} onPressedChange={setStdout}>
-          stdout
-        </Toggle>
-        <Toggle size="sm" variant="outline" pressed={stderr} onPressedChange={setStderr}>
-          stderr
-        </Toggle>
+        {streamToggles && (
+          <>
+            <Toggle size="sm" variant="outline" pressed={stdout} onPressedChange={setStdout}>
+              stdout
+            </Toggle>
+            <Toggle size="sm" variant="outline" pressed={stderr} onPressedChange={setStderr}>
+              stderr
+            </Toggle>
+          </>
+        )}
         <Toggle
           size="sm"
           variant="outline"

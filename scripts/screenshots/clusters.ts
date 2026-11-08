@@ -282,6 +282,7 @@ export function podDetail(name: string): PodDetail {
         ready: false,
         restarts: 0,
         lastReason: null,
+        ports: [],
       },
       {
         name: 'api',
@@ -295,6 +296,7 @@ export function podDetail(name: string): PodDetail {
         ready: false,
         restarts: 7,
         lastReason: 'Error',
+        ports: [],
       },
       {
         name: 'envoy',
@@ -308,6 +310,7 @@ export function podDetail(name: string): PodDetail {
         ready: true,
         restarts: 0,
         lastReason: null,
+        ports: [],
       },
     ],
     hostIp: '10.0.2.56',

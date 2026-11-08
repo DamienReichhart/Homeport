@@ -1,8 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ClusterGate, NamespacePicker, useNamespace, useResourceWatch } from '@/core/cluster';
+import {
+  ClusterGate,
+  DeleteSelected,
+  NamespacePicker,
+  stillListed,
+  useNamespace,
+  useResourceWatch,
+} from '@/core/cluster';
 import { usePageQuery } from '@/core/feature';
-import type { ClusterView } from '@/shared/api';
+import type { ClusterView, WorkloadView } from '@/shared/api';
 import {
   DataTable,
   ErrorMessage,
@@ -28,6 +36,9 @@ function WorkloadsList({ cluster }: { cluster: ClusterView }) {
   const [query, setQuery] = usePageQuery();
   const workloads = useQuery(workloadQueries.list(id, kind, namespace));
   useResourceWatch(id, kindResource(kind), namespace);
+  const [selected, setSelected] = useState<WorkloadView[]>([]);
+  const rowId = (w: WorkloadView) => `${w.kind}/${w.namespace}/${w.name}`;
+  const picked = stillListed(selected, workloads.data, rowId);
   return (
     <div>
       <PageHeader
@@ -52,6 +63,14 @@ function WorkloadsList({ cluster }: { cluster: ClusterView }) {
           </TabsList>
         </Tabs>
         <SearchInput value={query} onChange={setQuery} placeholder={t('workloads.search')} />
+        <DeleteSelected
+          cluster={cluster}
+          targets={picked.map((w) => ({
+            type: { kind: w.kind },
+            namespace: w.namespace,
+            name: w.name,
+          }))}
+        />
       </div>
       {workloads.isPending ? (
         <Spinner />
@@ -59,9 +78,11 @@ function WorkloadsList({ cluster }: { cluster: ClusterView }) {
         <ErrorMessage error={workloads.error} onRetry={() => void workloads.refetch()} />
       ) : (
         <DataTable
-          columns={workloadColumns(kind, namespace === null)}
+          key={kind}
+          columns={workloadColumns(kind, namespace === null, cluster)}
           data={workloads.data}
-          getRowId={(w) => `${w.namespace}/${w.name}`}
+          getRowId={rowId}
+          onSelectionChange={setSelected}
           filter={query}
           pageSize={100}
           empty={t('workloads.empty')}
