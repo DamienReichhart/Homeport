@@ -8,6 +8,7 @@ import { ClusterCard } from './clusters/ClusterCard';
 import { ClusterDashboard } from './dashboard/ClusterDashboard';
 import { ContainerdDashboard } from './dashboard/ContainerdDashboard';
 import { HostDashboard } from './dashboard/HostDashboard';
+import { IncusDashboard } from './dashboard/IncusDashboard';
 import { HostCard } from './hosts/HostCard';
 import { t } from '@/shared/i18n';
 
@@ -66,6 +67,8 @@ export function OverviewPage() {
               {(id) =>
                 host && supports(host, 'containerd') ? (
                   <ContainerdDashboard key={id} host={host} />
+                ) : host && supports(host, 'incus') ? (
+                  <IncusDashboard key={id} host={host} />
                 ) : (
                   <HostDashboard hostId={id} />
                 )

@@ -5,6 +5,7 @@ import {
   describeAddress,
   HostStatusBadge,
   containerdQueries,
+  incusQueries,
   resourceQueries,
   supports,
   useHostSelection,
@@ -31,6 +32,7 @@ export function HostCard({ view, selected }: { view: HostView; selected: boolean
   const connected = view.status.state === 'connected';
   const docker = supports(view, 'docker');
   const containerd = supports(view, 'containerd');
+  const incus = supports(view, 'incus');
   const info = useQuery({
     ...resourceQueries.systemInfo(view.host.id),
     enabled: connected && docker,
@@ -39,6 +41,14 @@ export function HostCard({ view, selected }: { view: HostView; selected: boolean
     ...containerdQueries.namespaces(view.host.id),
     enabled: connected && containerd,
   });
+  const projects = useQuery({
+    ...incusQueries.projects(view.host.id),
+    enabled: connected && incus,
+  });
+  const inProjects = projects.data?.reduce(
+    (sum, p) => ({ instances: sum.instances + p.instances, images: sum.images + p.images }),
+    { instances: 0, images: 0 },
+  );
   const held = namespaces.data?.reduce(
     (sum, n) => ({ containers: sum.containers + n.containers, images: sum.images + n.images }),
     { containers: 0, images: 0 },
@@ -51,7 +61,10 @@ export function HostCard({ view, selected }: { view: HostView; selected: boolean
       )}
       onClick={() => {
         select(view.host.id);
-        if (connected) navigate(containerd ? '/containerd/containers' : '/containers');
+        if (connected)
+          navigate(
+            containerd ? '/containerd/containers' : incus ? '/incus/instances' : '/containers',
+          );
       }}
     >
       <CardHeader>
@@ -88,6 +101,17 @@ export function HostCard({ view, selected }: { view: HostView; selected: boolean
               })}
             </span>
             <span>{t('overview.host.images', { count: held.images })}</span>
+          </div>
+        )}
+        {connected && inProjects && (
+          <div className="text-muted-foreground grid grid-cols-2 gap-2 text-sm">
+            <span>
+              {t('overview.host.incusInstances', {
+                count: inProjects.instances,
+                projects: projects.data?.length ?? 0,
+              })}
+            </span>
+            <span>{t('overview.host.images', { count: inProjects.images })}</span>
           </div>
         )}
         {connected && docker && (
