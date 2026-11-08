@@ -282,19 +282,33 @@ impl On {
             conflicts: vec![],
             error: None,
         };
-        let live = match dynamic.get_opt(&id.name).await {
-            Ok(live) => live,
-            Err(e) => {
-                return ApplyDocument {
-                    error: Some(self.failed_on("get", api, namespace.as_deref(), None, &e)),
-                    ..base
-                }
-            }
-        };
         let mut params = PatchParams::apply(FIELD_MANAGER);
         params.dry_run = dry_run;
         params.force = force;
-        let answer = dynamic.patch(&id.name, &params, &Patch::Apply(&doc)).await;
+        // A controller may update the object between reading it and the dry
+        // run (a new Deployment gets its revision annotation): compare two
+        // snapshots of one state, read again until it holds still.
+        let mut attempt = 0;
+        let (live, answer) = loop {
+            let live = match dynamic.get_opt(&id.name).await {
+                Ok(live) => live,
+                Err(e) => {
+                    return ApplyDocument {
+                        error: Some(self.failed_on("get", api, namespace.as_deref(), None, &e)),
+                        ..base
+                    }
+                }
+            };
+            let answer = dynamic.patch(&id.name, &params, &Patch::Apply(&doc)).await;
+            attempt += 1;
+            if !dry_run || answer.is_err() || attempt == SNAPSHOT_ATTEMPTS {
+                break (live, answer);
+            }
+            let again = dynamic.get_opt(&id.name).await.ok().flatten();
+            if version(live.as_ref()) == version(again.as_ref()) {
+                break (live, answer);
+            }
+        };
         let after: DynamicObject = match answer {
             Ok(after) => after,
             Err(kube::Error::Api(status)) if status.code == 409 => {
@@ -380,6 +394,14 @@ impl On {
             ..base
         }
     }
+}
+
+/// How many times a preview reads an object that keeps changing.
+const SNAPSHOT_ATTEMPTS: u32 = 3;
+
+/// An object's `resourceVersion`, which changes with every write.
+fn version(object: Option<&DynamicObject>) -> Option<&str> {
+    object?.metadata.resource_version.as_deref()
 }
 
 fn to_value(object: &DynamicObject) -> Value {
