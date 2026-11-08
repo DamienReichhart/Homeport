@@ -67,6 +67,7 @@ describe('creating a Synced Stack', () => {
       ...baseCommands,
       get_capabilities: () => ({
         keychain: true,
+        helm: { state: 'available', cli: { program: 'helm', version: 'v3.16.2' } },
         stackDeploy: {
           state: 'available',
           cli: { program: 'docker', prefix: [], version: '29.1.0' },

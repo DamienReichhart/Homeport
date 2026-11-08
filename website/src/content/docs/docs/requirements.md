@@ -1,6 +1,6 @@
 ---
 title: System requirements
-description: What Homeport needs to run, and the optional pieces that unlock SSH, TLS, Stack deploys and Kubernetes clusters.
+description: What Homeport needs to run, and the optional pieces that unlock SSH, TLS, Stack deploys, Kubernetes clusters and Helm.
 ---
 
 ## Operating systems
@@ -51,25 +51,30 @@ To deploy a Stack to a [Swarm](/docs/guides/swarm/), Homeport runs `docker stack
 
 [Synced Stacks](/docs/guides/synced-stacks/) run the `git` installed on **this** machine to clone and fetch their repositories: Git for Windows, Apple's command line tools (`xcode-select --install`), or your distribution's `git` package. On Windows, Homeport points it at the system's OpenSSH for SSH repositories. Every other feature works without git; **Settings → This machine** shows whether Homeport found it.
 
+## Optional: Helm
+
+To manage [Helm releases](/docs/clusters/helm/) on a Cluster, Homeport runs the `helm` command, version 3 or later, on **this** machine. It points helm at the Cluster through a private connection, so no cluster credential is written to disk, and helm uses its own chart repositories, as in a terminal. Install it with `brew install helm` (macOS), `winget install Helm.Helm`, Chocolatey or Scoop (Windows), or `snap install helm --classic`, your distribution's package or the script from [helm.sh](https://helm.sh/docs/intro/install/) (Linux). Every other Cluster page works without it; **Settings → This machine** shows whether Homeport found it.
+
 ## Optional: a system tray
 
 Homeport puts an icon in the system tray (the menu bar on macOS, the notification area on Windows) that lists every Host with its status. Windows and macOS always have one. On Linux it needs the **appindicator** library: the AppImage includes it, and the `.deb` and `.rpm` packages recommend it, so `apt`, `dnf` and `zypper` install it unless you turned recommended packages off. Otherwise install `libayatana-appindicator3-1` (Debian, Ubuntu, openSUSE) or `libayatana-appindicator-gtk3` (Fedora). Some desktops hide tray icons — GNOME shows them only with an extension such as AppIndicator Support. Without a tray, Homeport works from its window, and closing the window quits it.
 
 ## What each feature needs
 
-| Feature                                    | Keychain | Compose CLI | git |
-| ------------------------------------------ | :------: | :---------: | :-: |
-| Deploying Stacks to a Swarm                |    —     | docker CLI  |  —  |
-| Local socket and TCP Hosts                 |    —     |      —      |  —  |
-| SSH Hosts with ssh-agent                   |    —     |      —      |  —  |
-| SSH Hosts with a Homeport or imported key  |   Yes    |      —      |  —  |
-| TLS Hosts                                  |   Yes    |      —      |  —  |
-| Containers, images, volumes, networks      |    —     |      —      |  —  |
-| Starting, stopping, removing Stacks        |    —     |      —      |  —  |
-| Deploying Managed and Linked Stacks        |    —     |     Yes     |  —  |
-| A Managed or Synced Stack's environment    |   Yes    |      —      |  —  |
-| Registry logins (private images, pushes)   |   Yes    |      —      |  —  |
-| Synced Stacks from a public repository     |    —     |     Yes     | Yes |
-| Synced Stacks with a deploy key or a token |   Yes    |     Yes     | Yes |
-| Building an image from a folder            |    —     |      —      |  —  |
-| Kubernetes Clusters                        |   Yes    |      —      |  —  |
+| Feature                                    | Keychain | Compose CLI | git | helm |
+| ------------------------------------------ | :------: | :---------: | :-: | :--: |
+| Deploying Stacks to a Swarm                |    —     | docker CLI  |  —  |  —   |
+| Local socket and TCP Hosts                 |    —     |      —      |  —  |  —   |
+| SSH Hosts with ssh-agent                   |    —     |      —      |  —  |  —   |
+| SSH Hosts with a Homeport or imported key  |   Yes    |      —      |  —  |  —   |
+| TLS Hosts                                  |   Yes    |      —      |  —  |  —   |
+| Containers, images, volumes, networks      |    —     |      —      |  —  |  —   |
+| Starting, stopping, removing Stacks        |    —     |      —      |  —  |  —   |
+| Deploying Managed and Linked Stacks        |    —     |     Yes     |  —  |  —   |
+| A Managed or Synced Stack's environment    |   Yes    |      —      |  —  |  —   |
+| Registry logins (private images, pushes)   |   Yes    |      —      |  —  |  —   |
+| Synced Stacks from a public repository     |    —     |     Yes     | Yes |  —   |
+| Synced Stacks with a deploy key or a token |   Yes    |     Yes     | Yes |  —   |
+| Building an image from a folder            |    —     |      —      |  —  |  —   |
+| Kubernetes Clusters                        |   Yes    |      —      |  —  |  —   |
+| Helm releases                              |   Yes    |      —      |  —  | Yes  |

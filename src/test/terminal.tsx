@@ -53,6 +53,7 @@ export function FakeXTerm({
       cols: 80,
       rows: 24,
       write,
+      writeln: (data: string) => write(`${data}\r\n`),
       reset: () => write(''),
       clear: () => {
         written = '';

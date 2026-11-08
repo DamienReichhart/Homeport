@@ -6,6 +6,7 @@ import { clustersFeature } from '@/features/clusters';
 import { configFeature } from '@/features/config';
 import { containersFeature } from '@/features/containers';
 import { eventsFeature } from '@/features/events';
+import { helmFeature } from '@/features/helm';
 import { hostsFeature } from '@/features/hosts';
 import { imagesFeature } from '@/features/images';
 import { networkFeature } from '@/features/network';
@@ -40,6 +41,7 @@ export const features: FeatureManifest[] = [
   clusterEventsFeature,
   apiResourcesFeature,
   applyFeature,
+  helmFeature,
   portForwardsFeature,
   eventsFeature,
   settingsFeature,

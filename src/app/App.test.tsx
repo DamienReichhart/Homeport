@@ -10,6 +10,7 @@ describe('app', () => {
       update_settings: ({ settings }) => settings,
       get_capabilities: () => ({
         keychain: true,
+        helm: { state: 'available', cli: { program: 'helm', version: 'v3.16.2' } },
         stackDeploy: {
           state: 'available',
           cli: { program: 'docker', prefix: [], version: '29.1.0' },
@@ -65,6 +66,7 @@ describe('app', () => {
       get_settings: () => ({ theme: 'system', lastHostId: null }),
       get_capabilities: () => ({
         keychain: false,
+        helm: { state: 'available', cli: { program: 'helm', version: 'v3.16.2' } },
         stackDeploy: {
           state: 'available',
           cli: { program: 'docker', prefix: [], version: '29.1.0' },
@@ -93,6 +95,7 @@ describe('first launch', () => {
       get_settings: () => ({ theme: 'system', lastHostId: null }),
       get_capabilities: () => ({
         keychain: true,
+        helm: { state: 'available', cli: { program: 'helm', version: 'v3.16.2' } },
         stackDeploy: {
           state: 'available',
           cli: { program: 'docker', prefix: [], version: '29.1.0' },

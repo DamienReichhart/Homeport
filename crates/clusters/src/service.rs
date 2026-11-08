@@ -12,6 +12,7 @@ use crate::{
     kubeconfig::{self, ContextChoice, KubeContexts, Source},
     messages as msg,
     model::{Cluster, ClusterKind},
+    proxy::ClusterAccess,
     registry::{ClusterNotifier, ClusterRegistry, ClusterStatus},
     store::{ClusterDraft, ClusterStore},
 };
@@ -81,6 +82,19 @@ impl ClusterService {
         self.forwards.stop_cluster(id);
         self.registry.remove(id);
         Ok(())
+    }
+
+    /// What a CLI needs to reach the connected Cluster `id` through a
+    /// private proxy (ADR 0009): the Cluster, and its supervisor's current
+    /// client on each request, so renewed exec-plugin tokens are used.
+    pub fn access(&self, id: &str) -> AppResult<ClusterAccess> {
+        let (_, cluster) = self.registry.client(id)?;
+        let registry = self.registry.clone();
+        let id = id.to_owned();
+        Ok(ClusterAccess {
+            cluster,
+            clients: Arc::new(move || registry.client(&id).map(|(client, _)| client)),
+        })
     }
 
     pub fn reconnect(&self, id: &str) -> AppResult<ClusterView> {

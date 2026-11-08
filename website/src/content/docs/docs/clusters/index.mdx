@@ -13,7 +13,7 @@ A **Cluster** is a Kubernetes cluster Homeport connects to through its API serve
   caption="Clusters sit on the Overview next to your Hosts; the selected one shows its dashboard."
 />
 
-Clusters sit next to your Hosts in the switcher at the top of the sidebar. Selecting one shows the pages about it — **Workloads**, **Pods**, **Network**, **Configuration**, **Nodes**, **Events**, **API resources**, **Apply YAML** and **Port forwards** — and its dashboard on the [Overview](/docs/guides/overview/#the-selected-cluster); selecting a Host shows the Host pages again.
+Clusters sit next to your Hosts in the switcher at the top of the sidebar. Selecting one shows the pages about it — **Workloads**, **Pods**, **Network**, **Configuration**, **Nodes**, **Events**, **API resources**, **Apply YAML**, **Helm** and **Port forwards** — and its dashboard on the [Overview](/docs/guides/overview/#the-selected-cluster); selecting a Host shows the Host pages again.
 
 ## What you can do
 
@@ -23,8 +23,9 @@ You can see what runs on a Cluster and whether it's healthy, live, and do the ev
 2. Browse its [workloads and Pods](/docs/clusters/workloads/), its [Services, Ingresses, ConfigMaps and Secrets](/docs/clusters/networking-config/), its [Nodes and Events](/docs/clusters/nodes-events/), and [any other API resource](/docs/clusters/api-resources/), custom resources included.
 3. Read a Pod's or a workload's [logs and open a terminal](/docs/clusters/logs-exec/) in a container, and [forward a port](/docs/clusters/port-forward/) to this computer.
 4. [Scale, restart and delete](/docs/clusters/actions/), and [apply or edit YAML](/docs/clusters/yaml/) with a preview of what changes.
+5. List, install, upgrade, roll back and uninstall [Helm releases](/docs/clusters/helm/), and manage helm's chart repositories, with the `helm` CLI on this computer.
 
-Every change goes to the Kubernetes API with your credentials' rights, and anything that removes or replaces something asks first, naming the cluster. Helm releases come in **0.17**.
+Every change goes to the Kubernetes API with your credentials' rights, and anything that removes or replaces something asks first, naming the cluster.
 
 ## Adding a Cluster
 

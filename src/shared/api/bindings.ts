@@ -207,6 +207,54 @@ export const commands = {
 	/**  Whether `port` is free on this computer, to propose it as the local port. */
 	clustersForwardPortFree: (port: number) => __TAURI_INVOKE<boolean>("clusters_forward_port_free", { port }),
 	/**
+	 *  The releases in `namespace`, or every Namespace; when the credentials
+	 *  can't list every Namespace, those of the Cluster's default one.
+	 */
+	clustersHelmReleases: (id: string, namespace: string | null) => __TAURI_INVOKE<ReleaseList>("clusters_helm_releases", { id, namespace }),
+	/**  Every revision of a release, oldest first. */
+	clustersHelmHistory: (id: string, namespace: string, name: string) => __TAURI_INVOKE<ReleaseRevision[]>("clusters_helm_history", { id, namespace, name }),
+	/**
+	 *  The values, notes, manifest and resources of one revision of a release,
+	 *  the current one without `revision`.
+	 */
+	clustersHelmReleaseDetails: (id: string, namespace: string, name: string, revision: number | null) => __TAURI_INVOKE<ReleaseDetails>("clusters_helm_release_details", { id, namespace, name, revision }),
+	/**  The chart repositories helm knows on this machine. */
+	helmReposList: () => __TAURI_INVOKE<ChartRepository[]>("helm_repos_list"),
+	/**  Adds a public chart repository to helm's list. */
+	helmReposAdd: (name: string, url: string) => __TAURI_INVOKE<null>("helm_repos_add", { name, url }),
+	/**
+	 *  Downloads the indexes of `names`, or of every repository, streaming
+	 *  helm's output.
+	 */
+	helmReposUpdateSubscribe: (names: string[], onEvent: Channel<CliEvent>) => __TAURI_INVOKE<number>("helm_repos_update_subscribe", { names, onEvent }),
+	helmReposRemove: (name: string) => __TAURI_INVOKE<null>("helm_repos_remove", { name }),
+	/**
+	 *  Charts in the repositories matching `query`, at their latest version or
+	 *  every version.
+	 */
+	helmChartsSearch: (query: string, versions: boolean) => __TAURI_INVOKE<ChartVersion[]>("helm_charts_search", { query, versions }),
+	/**  A chart's default values, as YAML, at `version` or its latest. */
+	helmChartValues: (chart: string, version: string | null) => __TAURI_INVOKE<string>("helm_chart_values", { chart, version }),
+	/**  Every version of a repository chart, newest first; none for OCI charts. */
+	helmChartVersions: (chart: string) => __TAURI_INVOKE<ChartVersion[]>("helm_chart_versions", { chart }),
+	/**  What installing `request` would apply, rendered with the Cluster. */
+	clustersHelmPreviewInstall: (id: string, request: InstallRequest) => __TAURI_INVOKE<ReleasePreview>("clusters_helm_preview_install", { id, request }),
+	/**  Installs a chart, streaming helm's output. */
+	clustersHelmInstallSubscribe: (id: string, request: InstallRequest, onEvent: Channel<CliEvent>) => __TAURI_INVOKE<number>("clusters_helm_install_subscribe", { id, request, onEvent }),
+	/**
+	 *  The repository charts a release of `chart` at `version` can be upgraded
+	 *  from, the likeliest first.
+	 */
+	helmChartCandidates: (chart: string, version: string) => __TAURI_INVOKE<string[]>("helm_chart_candidates", { chart, version }),
+	/**  What upgrading a release as asked would apply, rendered with the Cluster. */
+	clustersHelmPreviewUpgrade: (id: string, request: UpgradeRequest) => __TAURI_INVOKE<ReleasePreview>("clusters_helm_preview_upgrade", { id, request }),
+	/**  Upgrades a release, streaming helm's output. */
+	clustersHelmUpgradeSubscribe: (id: string, request: UpgradeRequest, onEvent: Channel<CliEvent>) => __TAURI_INVOKE<number>("clusters_helm_upgrade_subscribe", { id, request, onEvent }),
+	/**  Rolls a release back to one of its revisions, streaming helm's output. */
+	clustersHelmRollbackSubscribe: (id: string, request: RollbackRequest, onEvent: Channel<CliEvent>) => __TAURI_INVOKE<number>("clusters_helm_rollback_subscribe", { id, request, onEvent }),
+	/**  Uninstalls a release, streaming helm's output. */
+	clustersHelmUninstallSubscribe: (id: string, request: UninstallRequest, onEvent: Channel<CliEvent>) => __TAURI_INVOKE<number>("clusters_helm_uninstall_subscribe", { id, request, onEvent }),
+	/**
 	 *  Streams the logs of one Pod, or of several in one stream with each
 	 *  line labelled, until cancelled or they end.
 	 */
@@ -813,12 +861,34 @@ export type Capabilities = {
 	stackDeploy: ComposeSupport,
 	/**  Whether Synced Stacks can be cloned and fetched here. */
 	git: GitSupport,
+	/**  Whether Helm releases can be managed from here (ADR 0009). */
+	helm: HelmSupport,
 	/**
 	 *  Homeport has an icon in the system tray, so closing the window can
 	 *  keep it running there.
 	 */
 	tray: boolean,
 };
+
+/**  A chart repository helm knows. */
+export type ChartRepository = {
+	name: string,
+	url: string,
+};
+
+/**  A chart (or one version of it) found in the repositories. */
+export type ChartVersion = {
+	/**  `repository/chart`, as helm installs it. */
+	name: string,
+	version: string,
+	appVersion: string,
+	description: string,
+};
+
+/**  What a streamed run reports. */
+export type CliEvent = { type: "line"; text: string } | 
+/**  `error` explains a failed exit, from the end of stderr. */
+{ type: "exit"; success: boolean; code: number | null; error: AppError | null } | { type: "error"; error: AppError };
 
 export type Cluster = {
 	id: string,
@@ -1280,7 +1350,17 @@ export type ErrorCode =
 /**  A Cluster's exec credential plugin exited with an error or printed no credentials. */
 "exec_plugin_failed" | 
 /**  A Cluster's exec credential plugin needs a terminal to sign in. */
-"exec_plugin_interactive" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
+"exec_plugin_interactive" | 
+/**  The private local proxy a CLI reaches a Cluster through couldn't open (ADR 0009). */
+"cluster_proxy_failed" | 
+/**  The `helm` CLI isn't installed on this computer. */
+"helm_missing" | 
+/**  The `helm` CLI found is Helm 2, which Homeport doesn't support. */
+"helm_outdated" | 
+/**  A release is locked by an install, upgrade or rollback still pending. */
+"helm_release_locked" | 
+/**  `helm` failed in a way Homeport has no better words for. */
+"helm_failed" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
 /**  A Linked Stack's folder, or one of its compose files, is gone. */
 "stack_folder_missing" | 
 /**  A Linked Stack's compose file can't be read or written. */
@@ -1488,6 +1568,18 @@ export type HealthcheckSpec = {
 	disabled: boolean,
 };
 
+/**  The `helm` program found on this computer. */
+export type HelmCli = {
+	program: string,
+	/**  As `helm version --short` prints it, without build metadata: `v3.16.2`. */
+	version: string,
+};
+
+/**  The helm CLI Helm releases are managed with, or why there's none. */
+export type HelmSupport = { state: "available"; cli: HelmCli } | 
+/**  `problem` says how to install it. */
+{ state: "unavailable"; problem: AppError };
+
 /**  The helper's image, and whether the Host has it. */
 export type HelperImage = {
 	image: string,
@@ -1691,6 +1783,25 @@ export type IngressView = {
 	addresses: string[],
 	tls: boolean,
 	created: string | null,
+};
+
+/**  What to install, and how. */
+export type InstallRequest = {
+	/**  The release's name. */
+	name: string,
+	namespace: string,
+	/**  `repository/chart`, or an `oci://` reference. */
+	chart: string,
+	/**  The chart version; the latest without. */
+	version: string | null,
+	/**  YAML; empty for the chart's defaults. */
+	values: string,
+	/**  Creates the Namespace when it doesn't exist. */
+	createNamespace: boolean,
+	/**  Waits for the release's resources to be ready. */
+	wait: boolean,
+	/**  How long `wait` may take, in seconds; helm's default (5 min) without. */
+	timeoutSeconds: number | null,
 };
 
 /**  What `docker swarm join` needs for each role. `Debug` hides the tokens. */
@@ -2279,6 +2390,78 @@ export type RegistryDraft = {
 	secret: string | null,
 };
 
+/**  What one revision of a release was installed with. */
+export type ReleaseDetails = {
+	/**  The values given at install or upgrade, as YAML; empty for none. */
+	userValues: string,
+	/**  Every value the chart was rendered with, its defaults included. */
+	computedValues: string,
+	notes: string,
+	manifest: string,
+	resources: ReleaseResource[],
+};
+
+/**  The releases of a Cluster. */
+export type ReleaseList = {
+	releases: ReleaseSummary[],
+	/**
+	 *  Set when every Namespace was asked for but the credentials only
+	 *  allow this one, the Cluster's default, which was listed instead.
+	 */
+	onlyNamespace: string | null,
+};
+
+/**  What an install or upgrade would apply. */
+export type ReleasePreview = {
+	/**  The rendered manifest, hooks included. */
+	manifest: string,
+	notes: string,
+};
+
+/**  An object a release's manifest creates. */
+export type ReleaseResource = {
+	apiVersion: string,
+	kind: string,
+	name: string,
+	/**
+	 *  As the manifest says; namespaced objects without one are in the
+	 *  release's Namespace.
+	 */
+	namespace: string | null,
+};
+
+/**  One revision of a release, as `helm history` gives it. */
+export type ReleaseRevision = {
+	revision: number,
+	updated: string | null,
+	status: string,
+	chart: string,
+	chartName: string,
+	chartVersion: string,
+	appVersion: string,
+	/**  What helm wrote: `Install complete`, `Upgrade "x" failed: …`. */
+	description: string,
+};
+
+/**  One release, as `helm list` gives it. */
+export type ReleaseSummary = {
+	name: string,
+	namespace: string,
+	revision: number,
+	/**  RFC 3339, when helm's date could be read. */
+	updated: string | null,
+	/**
+	 *  `deployed`, `failed`, `pending-install`, `pending-upgrade`,
+	 *  `pending-rollback`, `uninstalling`, `superseded`, `uninstalled`…
+	 */
+	status: string,
+	/**  `nginx-15.1.0`, as helm names it. */
+	chart: string,
+	chartName: string,
+	chartVersion: string,
+	appVersion: string,
+};
+
 /**  A remote's branches and tags, as "Test access" lists them. */
 export type RemoteRefs = {
 	branches: string[],
@@ -2374,6 +2557,15 @@ export type RestoreSpec = {
 export type RevealedValue = {
 	value: string,
 	binary: boolean,
+};
+
+/**  Rolling a release back to one of its revisions. */
+export type RollbackRequest = {
+	name: string,
+	namespace: string,
+	revision: number,
+	wait: boolean,
+	timeoutSeconds: number | null,
 };
 
 export type RunSpec = {
@@ -2948,6 +3140,19 @@ export type TrayHostChosen = {
 	hostId: string,
 };
 
+/**  Uninstalling a release, which deletes the objects it created. */
+export type UninstallRequest = {
+	name: string,
+	namespace: string,
+	/**
+	 *  Keeps the release's history, so it is listed as `uninstalled` and
+	 *  can be rolled back.
+	 */
+	keepHistory: boolean,
+	wait: boolean,
+	timeoutSeconds: number | null,
+};
+
 export type UpdateCheck = {
 	currentVersion: string,
 	/**  The newer version, if there is one. */
@@ -2967,6 +3172,26 @@ export type UpdateProgress = {
 	downloaded: number,
 	/**  Total size, when the server sends it. */
 	total: number | null,
+};
+
+/**  A new chart version and/or values for a release. */
+export type UpgradeRequest = {
+	name: string,
+	namespace: string,
+	/**
+	 *  `repository/chart` or an `oci://` reference: the release's chart,
+	 *  found in the user's repositories, or another.
+	 */
+	chart: string,
+	/**  The latest without. */
+	version: string | null,
+	/**
+	 *  Every user-supplied value, as YAML: they replace the release's, and
+	 *  the chart's defaults fill the rest.
+	 */
+	values: string,
+	wait: boolean,
+	timeoutSeconds: number | null,
 };
 
 export type UsageLine = {

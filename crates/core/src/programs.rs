@@ -1,5 +1,5 @@
 //! Finds the programs Homeport runs on this machine: the Docker-related
-//! CLIs, git, and the cloud CLIs that Clusters' exec credential plugins are
+//! CLIs, git, helm, and the cloud CLIs that Clusters' exec credential plugins are
 //! (`aws`, `gcloud`'s `gke-gcloud-auth-plugin`, `kubelogin`, `az`).
 //!
 //! An app started from the Finder, a desktop launcher or the Start menu gets a
@@ -14,7 +14,8 @@ use std::{
 };
 
 /// Where Docker, Podman, Colima, OrbStack and Rancher Desktop put their CLIs,
-/// and the AWS, Google Cloud and Azure CLIs and kubelogin theirs, beyond
+/// the AWS, Google Cloud and Azure CLIs and kubelogin theirs, and winget,
+/// Chocolatey and Scoop theirs (helm), beyond
 /// what a GUI app's PATH usually holds.
 fn install_dirs(home: Option<&Path>) -> Vec<PathBuf> {
     let mut dirs: Vec<PathBuf> = if cfg!(target_os = "macos") {
@@ -43,8 +44,15 @@ fn install_dirs(home: Option<&Path>) -> Vec<PathBuf> {
             program_files.join(r"Google\Cloud SDK\google-cloud-sdk\bin"),
         ];
         if let Some(local) = std::env::var_os("LOCALAPPDATA") {
-            dirs.push(PathBuf::from(local).join(r"Google\Cloud SDK\google-cloud-sdk\bin"));
+            let local = PathBuf::from(local);
+            dirs.push(local.join(r"Google\Cloud SDK\google-cloud-sdk\bin"));
+            // Where winget links the programs it installs, such as helm.
+            dirs.push(local.join(r"Microsoft\WinGet\Links"));
         }
+        // Chocolatey's shims.
+        let program_data = std::env::var_os("ProgramData")
+            .map_or_else(|| PathBuf::from(r"C:\ProgramData"), PathBuf::from);
+        dirs.push(program_data.join(r"chocolatey\bin"));
         dirs
     } else {
         [
@@ -71,6 +79,8 @@ fn install_dirs(home: Option<&Path>) -> Vec<PathBuf> {
             "google-cloud-sdk/bin",
             ".azure-kubelogin",
             ".krew/bin",
+            // Scoop's shims, on Windows.
+            "scoop/shims",
         ] {
             dirs.push(home.join(dir));
         }

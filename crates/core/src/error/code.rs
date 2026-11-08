@@ -101,6 +101,17 @@ pub enum ErrorCode {
     ExecPluginFailed,
     /// A Cluster's exec credential plugin needs a terminal to sign in.
     ExecPluginInteractive,
+    /// The private local proxy a CLI reaches a Cluster through couldn't open (ADR 0009).
+    ClusterProxyFailed,
+    // Helm (ADR 0009).
+    /// The `helm` CLI isn't installed on this computer.
+    HelmMissing,
+    /// The `helm` CLI found is Helm 2, which Homeport doesn't support.
+    HelmOutdated,
+    /// A release is locked by an install, upgrade or rollback still pending.
+    HelmReleaseLocked,
+    /// `helm` failed in a way Homeport has no better words for.
+    HelmFailed,
     // Compose.
     ComposeMissing,
     ComposeOutdated,

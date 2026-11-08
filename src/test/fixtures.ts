@@ -123,6 +123,7 @@ export const baseCommands = {
     keychain: true,
     tray: true,
     git: { state: 'available', cli: { program: 'git', version: '2.43.0' } },
+    helm: { state: 'available', cli: { program: '/usr/local/bin/helm', version: 'v3.16.2' } },
     stackDeploy: {
       state: 'available',
       cli: { program: 'docker', prefix: [], version: '29.1.0' },

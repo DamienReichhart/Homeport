@@ -21,6 +21,14 @@ A Docker Swarm cluster, found through the hosts that belong to it and never adde
 
 A port on this computer's loopback that Homeport connects, through the Kubernetes API, to a port of a Pod, or of a Service through one of its ready Pods, like `kubectl port-forward`. It ends when Homeport quits. See [Port forwarding](/docs/clusters/port-forward/).
 
+### Release
+
+A Helm release: one install of a chart on a Cluster, named in its Namespace, with a numbered revision for each install, upgrade and rollback. Helm keeps it on the cluster; a release made in a terminal and one made in Homeport are the same. See [Helm releases](/docs/clusters/helm/).
+
+### Chart repository
+
+A server helm downloads charts from, in helm's own list on this computer — the one `helm repo list` shows. Charts in an OCI registry are installed by their `oci://` reference instead. See [chart repositories](/docs/clusters/helm/#chart-repositories).
+
 ### Node
 
 One Engine in a Swarm: a manager or a worker. A Cluster's Nodes are Kubernetes Nodes, the machines it runs Pods on. A node is a host only when Homeport connects to it, and a host's page links to its node.

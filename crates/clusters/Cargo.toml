@@ -32,6 +32,10 @@ uuid.workspace = true
 base64.workspace = true
 log.workspace = true
 shell-words.workspace = true
-
-[dev-dependencies]
+# The private proxy a CLI such as helm reaches the Cluster through (ADR 0009).
+hyper = { workspace = true, features = ["server"] }
+hyper-util.workspace = true
+http-body-util.workspace = true
+bytes.workspace = true
+getrandom.workspace = true
 tempfile.workspace = true

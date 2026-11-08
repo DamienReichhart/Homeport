@@ -6,6 +6,7 @@ use std::path::Path;
 use serde::Serialize;
 use tauri::{AppHandle, Manager, State};
 
+use homeport_clusters::helm::{self, HelmCli};
 use homeport_core::local_files;
 use homeport_git::{cli as git, GitCli};
 use homeport_stacks::compose::{self, ComposeCli};
@@ -91,6 +92,8 @@ pub struct Capabilities {
     stack_deploy: ComposeSupport,
     /// Whether Synced Stacks can be cloned and fetched here.
     git: GitSupport,
+    /// Whether Helm releases can be managed from here (ADR 0009).
+    helm: HelmSupport,
     /// Homeport has an icon in the system tray, so closing the window can
     /// keep it running there.
     tray: bool,
@@ -106,6 +109,23 @@ pub struct Capabilities {
 pub enum GitSupport {
     Available {
         cli: GitCli,
+    },
+    /// `problem` says how to install it.
+    Unavailable {
+        problem: AppError,
+    },
+}
+
+/// The helm CLI Helm releases are managed with, or why there's none.
+#[derive(Debug, Serialize, specta::Type)]
+#[serde(
+    tag = "state",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase"
+)]
+pub enum HelmSupport {
+    Available {
+        cli: HelmCli,
     },
     /// `problem` says how to install it.
     Unavailable {
@@ -149,6 +169,10 @@ pub async fn get_capabilities(
         git: match git::detect().await {
             Ok(cli) => GitSupport::Available { cli },
             Err(problem) => GitSupport::Unavailable { problem },
+        },
+        helm: match helm::detect().await {
+            Ok(cli) => HelmSupport::Available { cli },
+            Err(problem) => HelmSupport::Unavailable { problem },
         },
         tray: crate::app::tray::is_available(&app),
     })

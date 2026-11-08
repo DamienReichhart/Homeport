@@ -209,4 +209,82 @@ homeport_core::messages! {
     CHANGED_MEANWHILE_HINT = "errors.clusters.changedMeanwhile.hint" => "Look at it again, then retry.";
     /// A Secret's key that is gone by the time it's revealed.
     SECRET_KEY_GONE = "errors.clusters.secretKeyGone" => "{name} no longer has a key {key}.";
+
+    // The private proxy a CLI reaches a Cluster through (ADR 0009).
+
+    /// The loopback listener or its kubeconfig couldn't be made.
+    PROXY_FAILED = "errors.clusters.proxyFailed" => "Homeport couldn't open the private connection helm uses to reach {name}.";
+    PROXY_FAILED_HINT = "errors.clusters.proxyFailed.hint" => "Check that this computer's temporary folder is writable, then retry. See Details for the cause.";
+
+    // Helm (ADR 0009).
+
+    /// No `helm` program on this computer.
+    HELM_MISSING = "errors.helm.missing" => "The helm CLI isn't installed on this computer.";
+    /// A `helm` older than Helm 3.
+    HELM_OUTDATED = "errors.helm.outdated" => "helm {version} is Helm 2, which Homeport doesn't support.";
+    HELM_INSTALL_MACOS_HINT = "errors.helm.install.hintMacos" => "Install Helm 3 with Homebrew, then reopen this page.";
+    HELM_INSTALL_WINDOWS_HINT = "errors.helm.install.hintWindows" => "Install Helm 3 with winget, Chocolatey (choco install kubernetes-helm) or Scoop (scoop install helm), then reopen this page.";
+    HELM_INSTALL_LINUX_HINT = "errors.helm.install.hintLinux" => "Install Helm 3 with snap, your distribution's package, or the official script from helm.sh, then reopen this page.";
+    /// `helm` couldn't be started.
+    HELM_SPAWN_FAILED = "errors.helm.spawnFailed" => "Homeport couldn't start helm.";
+    HELM_SPAWN_FAILED_HINT = "errors.helm.spawnFailed.hint" => "Check that helm can be run from a terminal. See Details for the cause.";
+    /// Any other failure of `helm`.
+    HELM_FAILED = "errors.helm.failed" => "helm {verb} exited with code {code}.";
+    /// …killed before it exited.
+    HELM_STOPPED = "errors.helm.stopped" => "helm {verb} was stopped before it finished.";
+    HELM_FAILED_HINT = "errors.helm.failed.hint" => "See Details for what helm said.";
+    /// A release locked by a pending install, upgrade or rollback.
+    HELM_LOCKED = "errors.helm.locked" => "Another install, upgrade or rollback of this release is still in progress.";
+    HELM_LOCKED_HINT = "errors.helm.locked.hint" => "Wait for it to finish, or roll the release back to its last deployed revision from its History.";
+    /// Installing under a release name in use in the Namespace.
+    HELM_NAME_IN_USE = "errors.helm.nameInUse" => "A release with this name already exists in this Namespace.";
+    HELM_NAME_IN_USE_HINT = "errors.helm.nameInUse.hint" => "Pick another name, or upgrade the existing release.";
+    /// Adding a chart repository under a name helm already has.
+    HELM_REPO_NAME_IN_USE = "errors.helm.repoNameInUse" => "helm already has a chart repository with this name.";
+    HELM_REPO_NAME_IN_USE_HINT = "errors.helm.repoNameInUse.hint" => "Pick another name, or remove the existing repository first.";
+    /// A chart repository URL that doesn't serve an index.
+    HELM_REPO_UNREACHABLE = "errors.helm.repoUnreachable" => "This URL isn't a chart repository, or can't be reached from this computer.";
+    HELM_REPO_UNREACHABLE_HINT = "errors.helm.repoUnreachable.hint" => "Check the URL: it serves an index.yaml. See Details for what helm said.";
+    /// A repository name helm doesn't know.
+    HELM_REPO_NOT_FOUND = "errors.helm.repoNotFound" => "helm has no chart repository with this name.";
+    HELM_REPO_NOT_FOUND_HINT = "errors.helm.repoNotFound.hint" => "Add the repository under Chart repositories first.";
+    /// A release that isn't on the Cluster any more.
+    HELM_RELEASE_NOT_FOUND = "errors.helm.releaseNotFound" => "This release isn't on the cluster any more.";
+    HELM_RELEASE_NOT_FOUND_HINT = "errors.helm.releaseNotFound.hint" => "It may have been uninstalled. Go back to the list of releases.";
+    /// A chart or chart version that isn't where helm looked.
+    HELM_CHART_NOT_FOUND = "errors.helm.chartNotFound" => "helm couldn't find this chart or version.";
+    HELM_CHART_NOT_FOUND_HINT = "errors.helm.chartNotFound.hint" => "Check the chart's name and version. A repository chart needs its repository added and updated.";
+    /// Values that aren't valid YAML, or don't fit the chart.
+    HELM_VALUES_INVALID = "errors.helm.valuesInvalid" => "helm couldn't read the values.";
+    HELM_VALUES_INVALID_HINT = "errors.helm.valuesInvalid.hint" => "Fix the YAML at the line Details names, then retry.";
+    /// The Cluster's RBAC refused what helm needed.
+    HELM_FORBIDDEN = "errors.helm.forbidden" => "Your credentials on {name} don't allow what helm needed to do.";
+    HELM_FORBIDDEN_HINT = "errors.helm.forbidden.hint" => "Details names the verb and resource that were refused. Pick a Namespace you can use, or ask the cluster's administrator for access.";
+    /// `--wait` or a hook that didn't finish in time.
+    HELM_TIMEOUT = "errors.helm.timeout" => "helm gave up waiting for the release's resources to be ready.";
+    HELM_TIMEOUT_HINT = "errors.helm.timeout.hint" => "Look at the release's Pods and Events for what is stuck, then upgrade or roll back.";
+    /// helm couldn't reach the Cluster through the proxy.
+    HELM_UNREACHABLE = "errors.helm.unreachable" => "helm couldn't reach {name}.";
+    HELM_UNREACHABLE_HINT = "errors.helm.unreachable.hint" => "Check that the cluster is connected on its page, then retry.";
+    /// helm printed JSON Homeport can't read.
+    HELM_UNREADABLE = "errors.helm.unreadable" => "helm printed something Homeport can't read.";
+    /// A chart repository name helm wouldn't take.
+    HELM_REPO_NAME_INVALID = "errors.helm.repoNameInvalid" => "\"{name}\" isn't a repository name. Use letters, digits, dots, dashes and underscores.";
+    /// A chart repository URL that isn't http(s).
+    HELM_REPO_URL_INVALID = "errors.helm.repoUrlInvalid" => "\"{url}\" isn't the URL of a chart repository.";
+    HELM_REPO_URL_INVALID_HINT = "errors.helm.repoUrlInvalid.hint" => "Use an https:// URL such as https://charts.bitnami.com/bitnami. A chart in an OCI registry (oci://…) is installed directly, without adding a repository.";
+    /// A chart repository URL with a user name or password in it.
+    HELM_REPO_URL_CREDENTIALS = "errors.helm.repoUrlCredentials" => "Homeport doesn't add repositories that need a login.";
+    HELM_REPO_URL_CREDENTIALS_HINT = "errors.helm.repoUrlCredentials.hint" => "helm would store the password in clear. Add it in a terminal with helm repo add --username, and it appears here.";
+    /// A release name helm wouldn't take.
+    HELM_RELEASE_NAME_INVALID = "errors.helm.releaseNameInvalid" => "\"{name}\" isn't a release name. Use at most 53 lowercase letters, digits, dashes and dots, starting and ending with a letter or digit.";
+    /// A Namespace name Kubernetes wouldn't take.
+    HELM_NAMESPACE_INVALID = "errors.helm.namespaceInvalid" => "\"{namespace}\" isn't a Namespace name. Use at most 63 lowercase letters, digits and dashes, starting and ending with a letter or digit.";
+    /// A chart that is neither `repository/chart` nor `oci://…`.
+    HELM_CHART_INVALID = "errors.helm.chartInvalid" => "\"{chart}\" isn't a chart Homeport can install.";
+    HELM_CHART_INVALID_HINT = "errors.helm.chartInvalid.hint" => "Pick a chart from a repository (repository/chart), or give an OCI reference such as oci://registry-1.docker.io/bitnamicharts/nginx.";
+    /// Values that are YAML but not a mapping.
+    HELM_VALUES_NOT_MAP = "errors.helm.valuesNotMap" => "Values are a YAML mapping of keys, such as replicaCount: 2.";
+    /// Values that aren't YAML.
+    HELM_VALUES_YAML = "errors.helm.valuesYaml" => "The values aren't valid YAML, at line {line}.";
 }

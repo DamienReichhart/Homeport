@@ -100,8 +100,9 @@ What Homeport can use on this computer:
 - **OS keychain** — **Available** when SSH keys, certificates, Stack environments and registry logins can be stored encrypted; **Unavailable** otherwise. See [requirements](/docs/requirements/#optional-an-os-keychain).
 - **Compose CLI** — the Compose version found, such as `docker compose v2.29.1`, or **Not found** if Stacks can be started and stopped but not deployed. See [Stacks](/docs/guides/stacks/#what-deploying-needs).
 - **git** — the git found, such as `/usr/bin/git 2.43.0`, or what to install if Synced Stacks can't be used. See [requirements](/docs/requirements/#optional-git).
+- **Helm CLI** — the helm found, such as `/usr/local/bin/helm v3.16.2`, or what to install for this system if [Helm releases](/docs/clusters/helm/) can't be listed or installed. Helm 2 is reported as unsupported. See [requirements](/docs/requirements/#optional-helm).
 
-Homeport checks them when it starts. After installing a keychain, Compose or git, quit and reopen Homeport.
+Homeport checks the CLIs each time this page opens, so one installed since launch shows up; after installing a keychain, quit and reopen Homeport.
 
 ## About
 

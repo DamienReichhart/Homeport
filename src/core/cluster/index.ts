@@ -3,6 +3,7 @@ export { clusterKeys } from './api/keys';
 export { useAddLocalCluster, useReconnectCluster } from './api/mutations';
 export { clusterQueries, useClusters } from './api/queries';
 export { clusterResourceQueries } from './api/resources';
+export { useHelm } from './helm/useHelm';
 export { useClusterStatusUpdates } from './live/useClusterStatusUpdates';
 export { useResourceWatch } from './live/useResourceWatch';
 export { age, podTone, workloadHealth } from './model/health';
