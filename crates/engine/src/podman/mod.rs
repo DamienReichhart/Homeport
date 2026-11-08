@@ -5,6 +5,7 @@
 
 pub mod containers;
 pub mod pods;
+pub mod quadlets;
 
 use std::sync::Arc;
 
@@ -46,6 +47,20 @@ impl Podman {
     pub(crate) fn path(&self, rest: &str) -> String {
         let major = numbers(&self.version).first().copied().unwrap_or(4);
         format!("/v{major}.0.0/libpod{rest}")
+    }
+
+    /// Whether the Host's connection runs commands where Podman runs (ADR 0019).
+    pub fn runs_commands(&self) -> bool {
+        self.dialer.runs_commands()
+    }
+
+    /// Runs one shell command where Podman runs; see [`Dialer::run`].
+    pub(crate) async fn run(
+        &self,
+        command: String,
+        timeout: std::time::Duration,
+    ) -> std::io::Result<homeport_transport::CommandOutput> {
+        self.dialer.run(command, timeout).await
     }
 
     pub(crate) async fn send(&self, request: Request) -> AppResult<Response> {

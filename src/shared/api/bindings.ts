@@ -415,6 +415,19 @@ export const commands = {
 	podsRemove: (hostId: string, id: string, force: boolean) => __TAURI_INVOKE<number>("pods_remove", { hostId, id, force }),
 	/**  Creates a pod; returns its id. */
 	podsCreate: (hostId: string, spec: PodmanPodSpec) => __TAURI_INVOKE<string>("pods_create", { hostId, spec }),
+	/**  The Host's Quadlet units, with the containers each created. */
+	quadletsList: (hostId: string) => __TAURI_INVOKE<QuadletUnits>("quadlets_list", { hostId }),
+	/**  A unit's file, as Podman reads it on the Host (Podman 5.8 and later). */
+	quadletsFile: (hostId: string, name: string) => __TAURI_INVOKE<string>("quadlets_file", { hostId, name }),
+	/**
+	 *  Installs a unit with its extra files; `replace` edits an installed one.
+	 *  Returns where the files went on the Host.
+	 */
+	quadletsInstall: (hostId: string, install: QuadletInstall, replace: boolean) => __TAURI_INVOKE<string[]>("quadlets_install", { hostId, install, replace }),
+	/**  Removes a unit; `force` stops its service first. */
+	quadletsRemove: (hostId: string, name: string, force: boolean) => __TAURI_INVOKE<null>("quadlets_remove", { hostId, name, force }),
+	/**  Starts, stops or restarts a unit's service with `systemctl`. */
+	quadletsAct: (hostId: string, unit: string, scope: UnitScope, action: UnitAction) => __TAURI_INVOKE<null>("quadlets_act", { hostId, unit, scope, action }),
 	/**  The Run dialog's form for an existing container, for Duplicate and Edit. */
 	containersRunSpec: (hostId: string, id: string) => __TAURI_INVOKE<RunSpec>("containers_run_spec", { hostId, id }),
 	/**  What recreating a container with a changed configuration loses, for Edit's confirmation. */
@@ -1365,6 +1378,16 @@ export type ErrorCode =
 "recreate_rolled_back" | 
 /**  Removing a pod whose containers are running, without stopping them. */
 "pod_running" | 
+/**  An action the Host's Podman is too old for, such as Quadlet's API before 5.8. */
+"podman_too_old" | 
+/**  A Quadlet unit file Podman can't use: a wrong name or a missing section. */
+"quadlet_invalid" | 
+/**  Installing a Quadlet unit under a name another unit has. */
+"quadlet_exists" | 
+/**  systemd refused to start, stop or restart a unit's service, or isn't there. */
+"systemd_refused" | 
+/**  User units need the user's systemd instance, which only lingering keeps. */
+"user_units_need_linger" | 
 /**  No manager Host of a Swarm is connected. */
 "swarm_unreachable" | 
 /**  A node couldn't reach the managers of the Swarm it was joining. */
@@ -2467,6 +2490,77 @@ export type PullEvent =
  */
 { type: "progress"; id: string | null; status: string; current: number | null; total: number | null } | { type: "done" } | { type: "error"; error: AppError };
 
+/**  A container a unit created. */
+export type QuadletContainer = {
+	id: string,
+	name: string,
+	state: string,
+};
+
+/**  A file to install: its name, and its text. */
+export type QuadletFile = {
+	name: string,
+	content: string,
+};
+
+/**  A unit to install or edit, with the files that go beside it. */
+export type QuadletInstall = {
+	/**  The unit file, such as `web.container`. */
+	unit: QuadletFile,
+	/**  Files installed beside it: a Containerfile, kube YAML, an env file. */
+	extra?: QuadletFile[],
+	/**
+	 *  The application folder to install into. With extra files and none
+	 *  given, the unit's name without its extension.
+	 */
+	app?: string | null,
+};
+
+/**  Where a Host's units were read from. */
+export type QuadletSource = 
+/**  Podman's API, with every unit and its file's path. */
+"api" | 
+/**  Only the label of the containers units created, on Podman before 5.7. */
+"labels";
+
+export type QuadletUnit = {
+	/**
+	 *  The unit file's name, `web.container`; `None` when the unit is only
+	 *  known from its containers' label.
+	 */
+	name: string | null,
+	/**
+	 *  The systemd service it generates, `web.service`; `None` until
+	 *  systemd has been reloaded since it was installed.
+	 */
+	unitName: string | null,
+	/**  Where the file is on the Host. */
+	path: string | null,
+	/**
+	 *  systemd's state (`active/running`, `inactive/dead`, `failed/failed`),
+	 *  Podman's `Not loaded` or `loaded template`, or for a unit known from
+	 *  its containers, theirs (`running`, `exited`).
+	 */
+	status: string,
+	/**  The application it was installed with, beside its extra files. */
+	app: string | null,
+	/**  The pod unit a `.container` unit names in `Pod=`. */
+	pod: string | null,
+	scope: UnitScope,
+	containers: QuadletContainer[],
+};
+
+/**  A Podman Host's Quadlet units, and what it can do with them. */
+export type QuadletUnits = {
+	units: QuadletUnit[],
+	source: QuadletSource,
+	podmanVersion: string,
+	/**  Podman 5.8 and later read, install, edit and remove unit files. */
+	managesFiles: boolean,
+	/**  The Host's connection can run `systemctl`: SSH, or a local Linux socket. */
+	runsSystemctl: boolean,
+};
+
 /**  What a Synced Stack follows. */
 export type RefKind = "branch" | "tag";
 
@@ -3252,6 +3346,14 @@ export type UninstallRequest = {
 	wait: boolean,
 	timeoutSeconds: number | null,
 };
+
+export type UnitAction = "start" | "stop" | "restart";
+
+/**
+ *  Whose systemd runs a unit: the system's for rootful Podman, the user's
+ *  (`systemctl --user`) for rootless.
+ */
+export type UnitScope = "system" | "user";
 
 export type UpdateCheck = {
 	currentVersion: string,
