@@ -94,7 +94,7 @@ fn a_secrets_values_count_as_changes_but_stay_hidden() {
 }
 
 #[test]
-fn an_edited_object_keeps_its_version_and_drops_the_rest() {
+fn an_edited_object_drops_what_the_server_manages_its_version_included() {
     let value = editable(json!({
         "apiVersion": "v1",
         "kind": "ConfigMap",
@@ -104,10 +104,7 @@ fn an_edited_object_keeps_its_version_and_drops_the_rest() {
         },
         "data": { "k": "v" },
     }));
-    assert_eq!(
-        value["metadata"],
-        json!({ "name": "a", "resourceVersion": "7" })
-    );
+    assert_eq!(value["metadata"], json!({ "name": "a" }));
 }
 
 #[test]

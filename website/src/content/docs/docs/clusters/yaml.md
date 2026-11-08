@@ -18,9 +18,9 @@ Applying the same manifests twice reports **No changes** the second time. Editin
 
 ## Editing an object
 
-Every object's **YAML** tab has **Edit**: its YAML as the cluster holds it, without what the server manages (`managedFields`, `status`, its uid and creation time). Change it, **Preview changes** to see only the lines you changed, then **Apply**.
+Every object's **YAML** tab has **Edit**: its YAML as the cluster holds it, without what the server manages (`managedFields`, `status`, its `resourceVersion`, uid and creation time). Change it, **Preview changes** to see only the lines you changed, then **Apply**.
 
-The YAML keeps the object's `resourceVersion`: if someone changes the object while you edit it, applying is refused rather than overwriting their change. Close and edit again.
+The preview compares your YAML with the object as it is when you preview, so a change made meanwhile shows in the diff. If the edit changes a field another tool manages, the preview lists it as a conflict instead of overwriting it.
 
 Secrets can't be edited in Homeport, since it never shows all their values at once; and Events are written by Kubernetes itself.
 

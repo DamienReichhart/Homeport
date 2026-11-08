@@ -101,17 +101,15 @@ fn shown(value: &Value) -> String {
     serde_yaml_ng::to_string(&value).unwrap_or_default()
 }
 
-/// What an object holds for editing: without what the server manages, but
-/// with its `resourceVersion`, so a change made meanwhile is refused.
+/// What an object holds for editing: without what the server manages. Its
+/// `resourceVersion` is left out too: every status update bumps it, so a busy
+/// workload's edit would be refused at random. Server-side apply still says
+/// when the edit changes fields another manager owns.
 pub fn editable(mut value: Value) -> Value {
-    let version = value.pointer("/metadata/resourceVersion").cloned();
     normalize(&mut value);
     if let Some(meta) = value.get_mut("metadata").and_then(Value::as_object_mut) {
         for field in ["uid", "creationTimestamp"] {
             meta.remove(field);
-        }
-        if let Some(version) = version {
-            meta.insert("resourceVersion".into(), version);
         }
     }
     value
