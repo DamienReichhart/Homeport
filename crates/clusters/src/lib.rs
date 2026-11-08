@@ -7,7 +7,7 @@
 //! - [`client`] builds a kube-rs client in memory; [`classify`] explains its failures.
 //! - [`service`] holds the use cases the app exposes.
 //! - [`proxy`] lets a CLI reach a Cluster with no credential on disk, which
-//!   `helm` runs through (ADR 0009).
+//!   [`helm`] runs through (ADR 0009).
 //!
 //! Homeport installs nothing on a Cluster: it only talks to the Kubernetes
 //! API the kubeconfig already reaches.
@@ -19,6 +19,7 @@ pub mod detect;
 pub mod discovery;
 pub mod exec;
 pub mod forward;
+pub mod helm;
 pub mod kubeconfig;
 pub mod logs;
 pub mod messages;

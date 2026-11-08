@@ -42,6 +42,7 @@ export default {
   'settings.machine.stackDeployMissing':
     'Stacks can’t be deployed to a Swarm; everything else about Swarms works.',
   'settings.machine.git': 'git',
+  'settings.machine.helm': 'Helm CLI',
   'settings.sync.title': 'Synced Stacks',
   'settings.sync.interval': 'Check repositories every',
   'settings.sync.minutes': 'minutes',
@@ -90,6 +91,8 @@ export default {
     'Each Host keeps at most 10,000 events for the Events page. Older ones are removed every hour.',
   'settings.machine.gitMissing':
     'Synced Stacks need it; every other kind of Stack works without it.',
+  'settings.machine.helmMissing':
+    'Helm releases can’t be listed or installed; everything else about Clusters works.',
   'settings.about.tagline': 'Every Docker Engine, on one board.',
   'settings.about.openLogFolder': 'Open log folder',
   'settings.about.licenses': 'Licenses',

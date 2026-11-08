@@ -52,6 +52,18 @@ describe('settings diagnostics', () => {
           cli: { program: 'docker', prefix: [], version: '29.1.0' },
         },
         git: { state: 'available', cli: { program: 'git', version: '2.43.0' } },
+        helm: {
+          state: 'unavailable',
+          problem: {
+            code: 'helm_missing',
+            message: 'The helm CLI isn’t installed on this computer.',
+            hint: {
+              text: 'Install Helm 3 with snap.',
+              commands: ['sudo snap install helm --classic'],
+            },
+            detail: null,
+          },
+        },
         compose: {
           state: 'unavailable',
           problem: {
@@ -76,6 +88,13 @@ describe('settings diagnostics', () => {
       await screen.findByText('The Docker CLI is installed without its compose plugin.'),
     ).toBeInTheDocument();
     expect(screen.getByText('sudo apt-get install docker-compose-plugin')).toBeInTheDocument();
+    expect(screen.getByText('The helm CLI isn’t installed on this computer.')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Helm releases can’t be listed or installed; everything else about Clusters works.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText('sudo snap install helm --classic')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Open log folder' }));
     expect(opened).toBe(1);
@@ -93,6 +112,7 @@ describe('settings diagnostics', () => {
           cli: { program: 'docker', prefix: [], version: '29.1.0' },
         },
         git: { state: 'available', cli: { program: 'git', version: '2.43.0' } },
+        helm: { state: 'available', cli: { program: '/usr/local/bin/helm', version: 'v3.16.2' } },
         compose: installed
           ? {
               state: 'available',
@@ -114,6 +134,7 @@ describe('settings diagnostics', () => {
     expect(
       await screen.findByText('The docker compose CLI isn’t installed on this computer.'),
     ).toBeInTheDocument();
+    expect(screen.getByText('/usr/local/bin/helm v3.16.2')).toBeInTheDocument();
 
     installed = true;
     await user.click(screen.getByRole('link', { name: 'Overview' }));

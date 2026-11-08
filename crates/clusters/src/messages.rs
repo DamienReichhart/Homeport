@@ -215,4 +215,14 @@ homeport_core::messages! {
     /// The loopback listener or its kubeconfig couldn't be made.
     PROXY_FAILED = "errors.clusters.proxyFailed" => "Homeport couldn't open the private connection helm uses to reach {name}.";
     PROXY_FAILED_HINT = "errors.clusters.proxyFailed.hint" => "Check that this computer's temporary folder is writable, then retry. See Details for the cause.";
+
+    // Helm (ADR 0009).
+
+    /// No `helm` program on this computer.
+    HELM_MISSING = "errors.helm.missing" => "The helm CLI isn't installed on this computer.";
+    /// A `helm` older than Helm 3.
+    HELM_OUTDATED = "errors.helm.outdated" => "helm {version} is Helm 2, which Homeport doesn't support.";
+    HELM_INSTALL_MACOS_HINT = "errors.helm.install.hintMacos" => "Install Helm 3 with Homebrew, then reopen this page.";
+    HELM_INSTALL_WINDOWS_HINT = "errors.helm.install.hintWindows" => "Install Helm 3 with winget, Chocolatey (choco install kubernetes-helm) or Scoop (scoop install helm), then reopen this page.";
+    HELM_INSTALL_LINUX_HINT = "errors.helm.install.hintLinux" => "Install Helm 3 with snap, your distribution's package, or the official script from helm.sh, then reopen this page.";
 }

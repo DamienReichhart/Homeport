@@ -813,6 +813,8 @@ export type Capabilities = {
 	stackDeploy: ComposeSupport,
 	/**  Whether Synced Stacks can be cloned and fetched here. */
 	git: GitSupport,
+	/**  Whether Helm releases can be managed from here (ADR 0009). */
+	helm: HelmSupport,
 	/**
 	 *  Homeport has an icon in the system tray, so closing the window can
 	 *  keep it running there.
@@ -1282,7 +1284,15 @@ export type ErrorCode =
 /**  A Cluster's exec credential plugin needs a terminal to sign in. */
 "exec_plugin_interactive" | 
 /**  The private local proxy a CLI reaches a Cluster through couldn't open (ADR 0009). */
-"cluster_proxy_failed" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
+"cluster_proxy_failed" | 
+/**  The `helm` CLI isn't installed on this computer. */
+"helm_missing" | 
+/**  The `helm` CLI found is Helm 2, which Homeport doesn't support. */
+"helm_outdated" | 
+/**  A release is locked by an install, upgrade or rollback still pending. */
+"helm_release_locked" | 
+/**  `helm` failed in a way Homeport has no better words for. */
+"helm_failed" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
 /**  A Linked Stack's folder, or one of its compose files, is gone. */
 "stack_folder_missing" | 
 /**  A Linked Stack's compose file can't be read or written. */
@@ -1489,6 +1499,18 @@ export type HealthcheckSpec = {
 	/**  Turns off the image's own healthcheck (`--no-healthcheck`). */
 	disabled: boolean,
 };
+
+/**  The `helm` program found on this computer. */
+export type HelmCli = {
+	program: string,
+	/**  As `helm version --short` prints it, without build metadata: `v3.16.2`. */
+	version: string,
+};
+
+/**  The helm CLI Helm releases are managed with, or why there's none. */
+export type HelmSupport = { state: "available"; cli: HelmCli } | 
+/**  `problem` says how to install it. */
+{ state: "unavailable"; problem: AppError };
 
 /**  The helper's image, and whether the Host has it. */
 export type HelperImage = {
