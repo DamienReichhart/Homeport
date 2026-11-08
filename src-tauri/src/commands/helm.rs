@@ -6,7 +6,7 @@ use tauri::{ipc::Channel, State};
 use homeport_clusters::{
     helm::{
         ChartRepository, ChartVersion, Helm, InstallRequest, ReleaseDetails, ReleaseList,
-        ReleasePreview, ReleaseRevision,
+        ReleasePreview, ReleaseRevision, RollbackRequest, UninstallRequest, UpgradeRequest,
     },
     proxy::CliEvent,
 };
@@ -151,4 +151,68 @@ pub async fn clusters_helm_install_subscribe(
     Ok(state
         .streams
         .spawn(helm.install(request, move |e| on_event.send(e).is_ok())))
+}
+
+/// The repository charts a release of `chart` at `version` can be upgraded
+/// from, the likeliest first.
+#[tauri::command]
+#[specta::specta]
+pub async fn helm_chart_candidates(chart: String, version: String) -> AppResult<Vec<String>> {
+    Helm::local()?.chart_candidates(&chart, &version).await
+}
+
+/// What upgrading a release as asked would apply, rendered with the Cluster.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_helm_preview_upgrade(
+    state: State<'_, AppState>,
+    id: String,
+    request: UpgradeRequest,
+) -> AppResult<ReleasePreview> {
+    helm(&state, &id)?.preview_upgrade(&request).await
+}
+
+/// Upgrades a release, streaming helm's output.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_helm_upgrade_subscribe(
+    state: State<'_, AppState>,
+    id: String,
+    request: UpgradeRequest,
+    on_event: Channel<CliEvent>,
+) -> AppResult<StreamId> {
+    let helm = helm(&state, &id)?;
+    Ok(state
+        .streams
+        .spawn(helm.upgrade(request, move |e| on_event.send(e).is_ok())))
+}
+
+/// Rolls a release back to one of its revisions, streaming helm's output.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_helm_rollback_subscribe(
+    state: State<'_, AppState>,
+    id: String,
+    request: RollbackRequest,
+    on_event: Channel<CliEvent>,
+) -> AppResult<StreamId> {
+    let helm = helm(&state, &id)?;
+    Ok(state
+        .streams
+        .spawn(helm.rollback(request, move |e| on_event.send(e).is_ok())))
+}
+
+/// Uninstalls a release, streaming helm's output.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_helm_uninstall_subscribe(
+    state: State<'_, AppState>,
+    id: String,
+    request: UninstallRequest,
+    on_event: Channel<CliEvent>,
+) -> AppResult<StreamId> {
+    let helm = helm(&state, &id)?;
+    Ok(state
+        .streams
+        .spawn(helm.uninstall(request, move |e| on_event.send(e).is_ok())))
 }

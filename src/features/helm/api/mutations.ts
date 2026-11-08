@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { commands, type InstallRequest } from '@/shared/api';
+import { commands, type InstallRequest, type UpgradeRequest } from '@/shared/api';
 import { toastError } from '@/shared/ui';
 import { helmKeys } from './queries';
 import { t } from '@/shared/i18n';
@@ -32,5 +32,13 @@ export function usePreviewInstall(clusterId: string) {
   return useMutation({
     mutationFn: (request: InstallRequest) =>
       commands.clustersHelmPreviewInstall(clusterId, request),
+  });
+}
+
+/** Renders what an upgrade would apply, with the Cluster's help; the dialog shows a failure. */
+export function usePreviewUpgrade(clusterId: string) {
+  return useMutation({
+    mutationFn: (request: UpgradeRequest) =>
+      commands.clustersHelmPreviewUpgrade(clusterId, request),
   });
 }

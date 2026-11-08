@@ -3,6 +3,7 @@
 //! configuration (chart repositories, registry logins, caches) stays the
 //! user's.
 
+mod change;
 mod errors;
 mod install;
 mod releases;
@@ -17,6 +18,7 @@ use tokio::process::Command;
 use homeport_core::{error::AppResult, programs};
 
 pub use self::{
+    change::{RollbackRequest, UninstallRequest, UpgradeRequest},
     errors::{failure, missing},
     install::{InstallRequest, ReleasePreview},
     releases::{ReleaseDetails, ReleaseList, ReleaseResource, ReleaseRevision, ReleaseSummary},

@@ -242,6 +242,19 @@ export const commands = {
 	/**  Installs a chart, streaming helm's output. */
 	clustersHelmInstallSubscribe: (id: string, request: InstallRequest, onEvent: Channel<CliEvent>) => __TAURI_INVOKE<number>("clusters_helm_install_subscribe", { id, request, onEvent }),
 	/**
+	 *  The repository charts a release of `chart` at `version` can be upgraded
+	 *  from, the likeliest first.
+	 */
+	helmChartCandidates: (chart: string, version: string) => __TAURI_INVOKE<string[]>("helm_chart_candidates", { chart, version }),
+	/**  What upgrading a release as asked would apply, rendered with the Cluster. */
+	clustersHelmPreviewUpgrade: (id: string, request: UpgradeRequest) => __TAURI_INVOKE<ReleasePreview>("clusters_helm_preview_upgrade", { id, request }),
+	/**  Upgrades a release, streaming helm's output. */
+	clustersHelmUpgradeSubscribe: (id: string, request: UpgradeRequest, onEvent: Channel<CliEvent>) => __TAURI_INVOKE<number>("clusters_helm_upgrade_subscribe", { id, request, onEvent }),
+	/**  Rolls a release back to one of its revisions, streaming helm's output. */
+	clustersHelmRollbackSubscribe: (id: string, request: RollbackRequest, onEvent: Channel<CliEvent>) => __TAURI_INVOKE<number>("clusters_helm_rollback_subscribe", { id, request, onEvent }),
+	/**  Uninstalls a release, streaming helm's output. */
+	clustersHelmUninstallSubscribe: (id: string, request: UninstallRequest, onEvent: Channel<CliEvent>) => __TAURI_INVOKE<number>("clusters_helm_uninstall_subscribe", { id, request, onEvent }),
+	/**
 	 *  Streams the logs of one Pod, or of several in one stream with each
 	 *  line labelled, until cancelled or they end.
 	 */
@@ -2546,6 +2559,15 @@ export type RevealedValue = {
 	binary: boolean,
 };
 
+/**  Rolling a release back to one of its revisions. */
+export type RollbackRequest = {
+	name: string,
+	namespace: string,
+	revision: number,
+	wait: boolean,
+	timeoutSeconds: number | null,
+};
+
 export type RunSpec = {
 	image: string,
 	name: string | null,
@@ -3118,6 +3140,19 @@ export type TrayHostChosen = {
 	hostId: string,
 };
 
+/**  Uninstalling a release, which deletes the objects it created. */
+export type UninstallRequest = {
+	name: string,
+	namespace: string,
+	/**
+	 *  Keeps the release's history, so it is listed as `uninstalled` and
+	 *  can be rolled back.
+	 */
+	keepHistory: boolean,
+	wait: boolean,
+	timeoutSeconds: number | null,
+};
+
 export type UpdateCheck = {
 	currentVersion: string,
 	/**  The newer version, if there is one. */
@@ -3137,6 +3172,26 @@ export type UpdateProgress = {
 	downloaded: number,
 	/**  Total size, when the server sends it. */
 	total: number | null,
+};
+
+/**  A new chart version and/or values for a release. */
+export type UpgradeRequest = {
+	name: string,
+	namespace: string,
+	/**
+	 *  `repository/chart` or an `oci://` reference: the release's chart,
+	 *  found in the user's repositories, or another.
+	 */
+	chart: string,
+	/**  The latest without. */
+	version: string | null,
+	/**
+	 *  Every user-supplied value, as YAML: they replace the release's, and
+	 *  the chart's defaults fill the rest.
+	 */
+	values: string,
+	wait: boolean,
+	timeoutSeconds: number | null,
 };
 
 export type UsageLine = {

@@ -129,4 +129,44 @@ export default {
   'helm.preview.description':
     'What helm would apply, rendered with the cluster’s help. Nothing has been changed yet.',
   'helm.preview.manifest': 'Rendered manifest',
+
+  'helm.upgrade.open': 'Upgrade',
+  'helm.upgrade.title': 'Upgrade {name} on {cluster}',
+  'helm.upgrade.current': 'Now running chart {chart}, app {app}.',
+  'helm.upgrade.chart': 'Chart',
+  'helm.upgrade.otherChart': 'Another chart…',
+  'helm.upgrade.chartPlaceholder': 'repository/{chart}, or oci://…/{chart}',
+  'helm.upgrade.noCandidate':
+    'None of helm’s repositories has a chart named {chart}. Add its repository under Chart repositories, or give an OCI reference.',
+  'helm.upgrade.editValues': 'Edit values',
+  'helm.upgrade.valuesDiff': 'Changes to the values',
+  'helm.upgrade.resetValues': 'Reset to the current values',
+  'helm.upgrade.valuesNote':
+    'These values replace the release’s user-supplied ones; the chart’s defaults fill in the rest.',
+  'helm.upgrade.manifestDiff': 'Changes to the manifest',
+  'helm.upgrade.upgrade': 'Upgrade',
+  'helm.upgrade.running': 'Upgrading {name} on {cluster}',
+  'helm.rollback.open': 'Roll back to revision {revision}',
+  'helm.rollback.title': 'Roll {name} back to revision {revision}?',
+  'helm.rollback.description':
+    'helm puts back the chart and values of revision {revision} of {name} in {namespace} on {cluster}, as a new revision.',
+  'helm.rollback.from': 'Now (revision {revision})',
+  'helm.rollback.to': 'After (revision {revision})',
+  'helm.rollback.versions': 'Chart {chart}, app {app}',
+  'helm.rollback.confirm': 'Roll back to revision {revision}',
+  'helm.rollback.running': 'Rolling {name} back to revision {revision}',
+  'helm.uninstall.open': 'Uninstall',
+  'helm.uninstall.title': 'Uninstall {name}?',
+  'helm.uninstall.description':
+    'helm deletes the release {name} from the Namespace {namespace} on {cluster}, with the objects it created.',
+  'helm.uninstall.resources':
+    '{count, plural, one {# object will be deleted:} other {# objects will be deleted:}}',
+  'helm.uninstall.resourcesLabel': 'Objects that will be deleted',
+  'helm.uninstall.kept':
+    'Objects a chart marks to keep, and PersistentVolumeClaims made by StatefulSets, stay on the cluster.',
+  'helm.uninstall.keepHistory': 'Keep its history, so it can be rolled back',
+  'helm.uninstall.wait': 'Wait until its objects are deleted',
+  'helm.uninstall.confirm': 'Uninstall {name}',
+  'helm.uninstall.running': 'Uninstalling {name} from {cluster}',
+  'helm.uninstall.backToReleases': 'Back to releases',
 };

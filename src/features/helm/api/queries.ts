@@ -75,4 +75,12 @@ export const helmQueries = {
       staleTime: 60_000,
       retry: false,
     }),
+  /** The repository charts a release of `chart` at `version` can be upgraded from. */
+  chartCandidates: (chart: string, version: string) =>
+    queryOptions({
+      queryKey: [...helmKeys.repositories, 'candidates', chart, version],
+      queryFn: () => commands.helmChartCandidates(chart, version),
+      staleTime: 60_000,
+      retry: false,
+    }),
 };
