@@ -811,7 +811,7 @@ mod tests {
 
     #[tokio::test]
     #[ignore = "needs a local containerd"]
-    async fn containerd_hosts_connect_and_hand_out_their_api() {
+    async fn containerd_live_hosts_connect_and_hand_out_their_api() {
         let socket = std::env::var("HOMEPORT_CONTAINERD_SOCKET")
             .unwrap_or_else(|_| "/run/containerd/containerd.sock".into());
         let (reg, _, id) = setup_engine(&socket, crate::EngineKind::Containerd);
