@@ -16,6 +16,7 @@ import { RelatedPods } from '@/features/pods';
 import type { ClusterNodeDetail, ClusterView } from '@/shared/api';
 import { Card, CardContent, CardHeader, CardTitle, DataTable, KeyValue } from '@/shared/ui';
 import { nodeQueries } from '../api/queries';
+import { readableQuantity } from '../model/quantity';
 import { NodeStatus } from './NodeStatus';
 import { t } from '@/shared/i18n';
 
@@ -56,12 +57,12 @@ function Overview({ node }: { node: ClusterNodeDetail }) {
               {
                 id: 'capacity',
                 header: t('nodes.resource.capacity'),
-                accessorFn: (r) => node.capacity[r] ?? '',
+                accessorFn: (r) => readableQuantity(r, node.capacity[r]),
               },
               {
                 id: 'allocatable',
                 header: t('nodes.resource.allocatable'),
-                accessorFn: (r) => node.allocatable[r] ?? '',
+                accessorFn: (r) => readableQuantity(r, node.allocatable[r]),
               },
             ]}
             data={resources}

@@ -32,7 +32,7 @@ describe('nodes', () => {
         labels: {},
         annotations: {},
         conditions: [],
-        capacity: { cpu: '4' },
+        capacity: { cpu: '4', memory: '15335132Ki' },
         allocatable: { cpu: '3800m' },
         taints: [],
         osImage: 'Debian GNU/Linux 12',
@@ -50,7 +50,8 @@ describe('nodes', () => {
     expect(await screen.findByText('Not ready')).toBeInTheDocument();
     expect(screen.getByText('scheduling disabled', { exact: false })).toBeInTheDocument();
     await user.click(screen.getByText('node-a'));
-    expect(await screen.findByText('3800m')).toBeInTheDocument();
+    expect(await screen.findByText('3.8')).toBeInTheDocument();
+    expect(screen.getByText('14.6 GB')).toBeInTheDocument();
     await user.click(screen.getByRole('tab', { name: 'Pods' }));
     await waitFor(() =>
       expect(pods).toEqual([{ id: 'c1', namespace: null, selector: null, node: 'node-a' }]),

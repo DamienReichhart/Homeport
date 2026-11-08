@@ -13,7 +13,7 @@ export default {
   'nodes.column.version': 'Version',
   'nodes.column.ip': 'Internal IP',
   'nodes.column.platform': 'Platform',
-  'nodes.column.cpu': 'CPU',
+  'nodes.column.cpu': 'CPUs',
   'nodes.column.memory': 'Memory',
   'nodes.column.age': 'Age',
   'nodes.tab.overview': 'Overview',

@@ -3,6 +3,7 @@ import { age, ClusterGate, objectPath, ResourceList } from '@/core/cluster';
 import type { ClusterNodeView, ClusterView } from '@/shared/api';
 import { type ColumnDef } from '@/shared/ui';
 import { nodeQueries } from '../api/queries';
+import { bytesOf, coresOf, readableQuantity } from '../model/quantity';
 import { NodeStatus } from './NodeStatus';
 import { t } from '@/shared/i18n';
 
@@ -28,8 +29,18 @@ const columns: ColumnDef<ClusterNodeView, unknown>[] = [
     cell: ({ row }) => <span className="font-mono text-xs">{row.original.internalIp}</span>,
   },
   { id: 'platform', header: t('nodes.column.platform'), accessorFn: (n) => `${n.os}/${n.arch}` },
-  { id: 'cpu', header: t('nodes.column.cpu'), accessorFn: (n) => n.cpu ?? '' },
-  { id: 'memory', header: t('nodes.column.memory'), accessorFn: (n) => n.memory ?? '' },
+  {
+    id: 'cpu',
+    header: t('nodes.column.cpu'),
+    accessorFn: (n) => coresOf(n.cpu ?? '') ?? 0,
+    cell: ({ row }) => readableQuantity('cpu', row.original.cpu),
+  },
+  {
+    id: 'memory',
+    header: t('nodes.column.memory'),
+    accessorFn: (n) => bytesOf(n.memory ?? '') ?? 0,
+    cell: ({ row }) => readableQuantity('memory', row.original.memory),
+  },
   {
     id: 'age',
     header: t('nodes.column.age'),

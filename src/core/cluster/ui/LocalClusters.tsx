@@ -42,7 +42,7 @@ function Found({
           <p className="text-sm font-medium">
             {local.suggestedName}{' '}
             <span className="text-muted-foreground">
-              · {t(TOOLS[local.tool])}
+              {local.suggestedName !== t(TOOLS[local.tool]) && ` · ${t(TOOLS[local.tool])}`}
               {running && ` · ${t('core.cluster.serverVersion', { version: local.serverVersion })}`}
             </span>
           </p>

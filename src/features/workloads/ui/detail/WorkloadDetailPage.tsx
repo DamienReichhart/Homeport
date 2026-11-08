@@ -49,7 +49,7 @@ function WorkloadDetailView({ cluster }: { cluster: ClusterView }) {
   if (detail.isPending) return <Spinner />;
   if (detail.error)
     return <ErrorMessage error={detail.error} onRetry={() => void detail.refetch()} />;
-  const label = WORKLOAD_KINDS.find((k) => k.kind === kind)?.label;
+  const label = WORKLOAD_KINDS.find((k) => k.kind === kind)?.one;
   const children = kind === 'cronJob' ? 'jobs' : 'pods';
   const tabs = ['overview', children, 'conditions', 'events', 'yaml'] as const;
   return (

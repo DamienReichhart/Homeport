@@ -89,6 +89,7 @@ describe('workloads', () => {
     const user = userEvent.setup();
     renderApp('/workloads/deployments/default/web');
     expect(await screen.findByText('RollingUpdate')).toBeInTheDocument();
+    expect(screen.getByText('Deployment')).toBeInTheDocument();
     expect(screen.getByText('80/TCP')).toBeInTheDocument();
     await user.click(screen.getByRole('tab', { name: 'Pods' }));
     await waitFor(() =>
