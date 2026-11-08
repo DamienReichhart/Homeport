@@ -218,6 +218,21 @@ export const commands = {
 	 *  the current one without `revision`.
 	 */
 	clustersHelmReleaseDetails: (id: string, namespace: string, name: string, revision: number | null) => __TAURI_INVOKE<ReleaseDetails>("clusters_helm_release_details", { id, namespace, name, revision }),
+	/**  The chart repositories helm knows on this machine. */
+	helmReposList: () => __TAURI_INVOKE<ChartRepository[]>("helm_repos_list"),
+	/**  Adds a public chart repository to helm's list. */
+	helmReposAdd: (name: string, url: string) => __TAURI_INVOKE<null>("helm_repos_add", { name, url }),
+	/**
+	 *  Downloads the indexes of `names`, or of every repository, streaming
+	 *  helm's output.
+	 */
+	helmReposUpdateSubscribe: (names: string[], onEvent: Channel<CliEvent>) => __TAURI_INVOKE<number>("helm_repos_update_subscribe", { names, onEvent }),
+	helmReposRemove: (name: string) => __TAURI_INVOKE<null>("helm_repos_remove", { name }),
+	/**
+	 *  Charts in the repositories matching `query`, at their latest version or
+	 *  every version.
+	 */
+	helmChartsSearch: (query: string, versions: boolean) => __TAURI_INVOKE<ChartVersion[]>("helm_charts_search", { query, versions }),
 	/**
 	 *  Streams the logs of one Pod, or of several in one stream with each
 	 *  line labelled, until cancelled or they end.
@@ -833,6 +848,26 @@ export type Capabilities = {
 	 */
 	tray: boolean,
 };
+
+/**  A chart repository helm knows. */
+export type ChartRepository = {
+	name: string,
+	url: string,
+};
+
+/**  A chart (or one version of it) found in the repositories. */
+export type ChartVersion = {
+	/**  `repository/chart`, as helm installs it. */
+	name: string,
+	version: string,
+	appVersion: string,
+	description: string,
+};
+
+/**  What a streamed run reports. */
+export type CliEvent = { type: "line"; text: string } | 
+/**  `error` explains a failed exit, from the end of stderr. */
+{ type: "exit"; success: boolean; code: number | null; error: AppError | null } | { type: "error"; error: AppError };
 
 export type Cluster = {
 	id: string,

@@ -10,19 +10,15 @@ import {
   Button,
   DataTable,
   ErrorMessage,
-  PageHeader,
   SearchInput,
   Spinner,
-  Tabs,
-  TabsList,
-  TabsTrigger,
   type ColumnDef,
 } from '@/shared/ui';
 import { helmQueries } from '../api/queries';
 import { releasePath } from '../model/paths';
 import { HelmGate } from './HelmGate';
+import { HelmPageHeader } from './HelmPageHeader';
 import { ReleaseStatus } from './ReleaseStatus';
-import { sections } from './sections';
 import { t } from '@/shared/i18n';
 
 function columns(showNamespace: boolean): ColumnDef<ReleaseSummary, unknown>[] {
@@ -81,31 +77,25 @@ function Releases({ cluster }: { cluster: ClusterView }) {
   const only = list.data?.onlyNamespace ?? null;
   return (
     <div>
-      <PageHeader
-        title={t('helm.title')}
+      <HelmPageHeader
+        current="/helm"
         description={list.data && t('helm.summary', { count: list.data.releases.length })}
         actions={<NamespacePicker clusterId={id} value={namespace} onChange={setNamespace} />}
+        toolbar={
+          <>
+            <SearchInput value={query} onChange={setQuery} placeholder={t('helm.search')} />
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={list.isFetching}
+              onClick={() => void list.refetch()}
+            >
+              <RefreshCwIcon /> {t('helm.refresh')}
+            </Button>
+          </>
+        }
       />
-      <div className="mb-3 flex flex-wrap items-center gap-3">
-        <Tabs value="/helm" onValueChange={(path) => void navigate(path, { replace: true })}>
-          <TabsList>
-            {sections().map((s) => (
-              <TabsTrigger key={s.path} value={s.path}>
-                {s.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-        <SearchInput value={query} onChange={setQuery} placeholder={t('helm.search')} />
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={list.isFetching}
-          onClick={() => void list.refetch()}
-        >
-          <RefreshCwIcon /> {t('helm.refresh')}
-        </Button>
-      </div>
+      <div className="mb-3" />
       {only && (
         <Alert className="mb-3">
           <AlertDescription>{t('helm.onlyNamespace', { namespace: only })}</AlertDescription>

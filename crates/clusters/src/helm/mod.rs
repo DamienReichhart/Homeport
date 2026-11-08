@@ -5,6 +5,7 @@
 
 mod errors;
 mod releases;
+mod repos;
 mod run;
 
 use std::{path::PathBuf, process::Stdio};
@@ -17,6 +18,7 @@ use homeport_core::{error::AppResult, programs};
 pub use self::{
     errors::{failure, missing},
     releases::{ReleaseDetails, ReleaseList, ReleaseResource, ReleaseRevision, ReleaseSummary},
+    repos::{ChartRepository, ChartVersion},
     run::Helm,
 };
 

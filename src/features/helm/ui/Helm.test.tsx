@@ -3,51 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { baseCommands } from '@/test/fixtures';
 import { clusterCommands } from '@/test/clusters';
 import { mockCommands } from '@/test/ipc';
+import { details, history, release } from '@/test/helm';
 import { renderApp } from '@/test/render';
-
-export const release = (name: string, status = 'deployed', overrides = {}) => ({
-  name,
-  namespace: 'shop',
-  revision: 2,
-  updated: '2026-11-01T18:02:03Z',
-  status,
-  chart: 'nginx-18.2.4',
-  chartName: 'nginx',
-  chartVersion: '18.2.4',
-  appVersion: '1.27.2',
-  ...overrides,
-});
-
-export const history = [
-  {
-    revision: 1,
-    updated: '2026-10-30T12:00:00Z',
-    status: 'superseded',
-    chart: 'nginx-18.2.3',
-    chartName: 'nginx',
-    chartVersion: '18.2.3',
-    appVersion: '1.27.1',
-    description: 'Install complete',
-  },
-  {
-    revision: 2,
-    updated: '2026-11-01T18:02:03Z',
-    status: 'deployed',
-    chart: 'nginx-18.2.4',
-    chartName: 'nginx',
-    chartVersion: '18.2.4',
-    appVersion: '1.27.2',
-    description: 'Upgrade complete',
-  },
-];
-
-export const details = (revision: number) => ({
-  userValues: `replicaCount: ${revision}\n`,
-  computedValues: `replicaCount: ${revision}\nimage:\n  tag: 1.27\n`,
-  notes: 'Visit http://web.shop\n',
-  manifest: 'apiVersion: v1\nkind: Service\nmetadata:\n  name: web\n',
-  resources: [{ apiVersion: 'v1', kind: 'Service', name: 'web', namespace: null }],
-});
 
 describe('helm releases', () => {
   it('lists releases with their chart and flags failed and pending ones', async () => {
@@ -73,7 +30,7 @@ describe('helm releases', () => {
       'data-tone',
       'warning',
     );
-    expect(screen.getAllByText('deployed')[0].querySelector('[data-tone]')).toHaveAttribute(
+    expect(screen.getAllByText('deployed')[0]?.querySelector('[data-tone]')).toHaveAttribute(
       'data-tone',
       'success',
     );
@@ -122,9 +79,9 @@ describe('helm releases', () => {
       ...clusterCommands,
       clusters_helm_releases: () => ({ releases: [release('web')], onlyNamespace: null }),
       clusters_helm_history: () => history,
-      clusters_helm_release_details: (args: { revision: number }) => {
-        asked.push(args.revision);
-        return details(args.revision);
+      clusters_helm_release_details: ({ revision }) => {
+        asked.push(revision);
+        return details(revision as number);
       },
       clusters_api_resources: () => [],
     });

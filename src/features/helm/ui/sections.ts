@@ -2,4 +2,7 @@ import type { Section } from '@/core/cluster';
 import { t } from '@/shared/i18n';
 
 /** The Helm pages, as tabs. */
-export const sections = (): Section[] => [{ path: '/helm', label: t('helm.section.releases') }];
+export const sections = (): Section[] => [
+  { path: '/helm', label: t('helm.section.releases') },
+  { path: '/helm/repositories', label: t('helm.section.repositories') },
+];

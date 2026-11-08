@@ -7,6 +7,8 @@ export const REFRESH_MS = 30_000;
 
 /** Keys of what helm says about a Cluster, under the Cluster's scope. */
 export const helmKeys = {
+  /** helm's own chart repositories on this machine, the same for every Cluster. */
+  repositories: ['helm-repositories'] as const,
   all: (clusterId: string) => [...clusterKeys.scope(clusterId), 'helm'] as const,
   release: (clusterId: string, namespace: string, name: string) =>
     [...helmKeys.all(clusterId), 'release', namespace, name] as const,
@@ -41,6 +43,20 @@ export const helmQueries = {
       queryKey: [...clusterKeys.scope(clusterId), 'api-types', null],
       queryFn: () => commands.clustersApiResources(clusterId, null),
       staleTime: 5 * 60_000,
+      retry: false,
+    }),
+  repositories: () =>
+    queryOptions({
+      queryKey: [...helmKeys.repositories, 'list'],
+      queryFn: () => commands.helmReposList(),
+      retry: false,
+    }),
+  /** Charts in the repositories matching `query`, latest versions only or every one. */
+  charts: (query: string, versions: boolean) =>
+    queryOptions({
+      queryKey: [...helmKeys.repositories, 'charts', query, versions],
+      queryFn: () => commands.helmChartsSearch(query, versions),
+      staleTime: 60_000,
       retry: false,
     }),
 };

@@ -45,4 +45,45 @@ export default {
   'helm.resource.apiVersion': 'API version',
   'helm.resource.empty': 'This revision creates no objects.',
   'helm.copy': 'Copy',
+
+  'helm.section.repositories': 'Chart repositories',
+  'helm.run.done': 'Done.',
+  'helm.run.failed': 'helm exited with code {code}.',
+  'helm.repos.description':
+    'The chart repositories helm knows on this computer, shared with helm in a terminal. Repositories that need a login are added there with helm repo add --username, and then appear here.',
+  'helm.repos.name': 'Name',
+  'helm.repos.url': 'URL',
+  'helm.repos.add': 'Add repository',
+  'helm.repos.addTitle': 'Add a chart repository',
+  'helm.repos.addDescription':
+    'helm downloads its index now. Only public repositories can be added here.',
+  'helm.repos.added': 'Added the chart repository {name}',
+  'helm.repos.update': 'Update',
+  'helm.repos.updateAll': 'Update all',
+  'helm.repos.updatingAll': 'Updating every chart repository',
+  'helm.repos.updating': 'Updating {name}',
+  'helm.repos.remove': 'Remove',
+  'helm.repos.removeNamed': 'Remove {name}',
+  'helm.repos.removeTitle': 'Remove {name}?',
+  'helm.repos.removeDescription':
+    'helm forgets the repository {url} on this computer, in a terminal too. Releases installed from it keep running; upgrading them needs it again.',
+  'helm.repos.removeFailed': 'helm couldn’t remove the repository',
+  'helm.repos.empty':
+    'helm has no chart repository yet. Add one, such as https://charts.bitnami.com/bitnami.',
+  'helm.repos.problem.noName': 'Name the repository.',
+  'helm.repos.problem.name': 'Use letters, digits, dots, dashes and underscores in the name.',
+  'helm.repos.problem.noUrl': 'Give the repository’s URL.',
+  'helm.repos.problem.oci':
+    'An OCI registry isn’t added as a repository: install its chart with its oci:// reference.',
+  'helm.repos.problem.url': 'Use an http:// or https:// URL.',
+  'helm.repos.problem.credentials':
+    'Repositories that need a login are added in a terminal, where helm keeps the password.',
+  'helm.charts.title': 'Find charts',
+  'helm.charts.description': 'Search the charts of these repositories by name or description.',
+  'helm.charts.search': 'Search charts, such as postgres',
+  'helm.charts.hint': 'Type part of a chart’s name or description.',
+  'helm.charts.name': 'Chart',
+  'helm.charts.version': 'Chart version',
+  'helm.charts.pick': 'Use',
+  'helm.charts.none': 'No chart matches. Update the repositories, or add the one that has it.',
 };

@@ -268,4 +268,12 @@ homeport_core::messages! {
     HELM_UNREACHABLE_HINT = "errors.helm.unreachable.hint" => "Check that the cluster is connected on its page, then retry.";
     /// helm printed JSON Homeport can't read.
     HELM_UNREADABLE = "errors.helm.unreadable" => "helm printed something Homeport can't read.";
+    /// A chart repository name helm wouldn't take.
+    HELM_REPO_NAME_INVALID = "errors.helm.repoNameInvalid" => "\"{name}\" isn't a repository name. Use letters, digits, dots, dashes and underscores.";
+    /// A chart repository URL that isn't http(s).
+    HELM_REPO_URL_INVALID = "errors.helm.repoUrlInvalid" => "\"{url}\" isn't the URL of a chart repository.";
+    HELM_REPO_URL_INVALID_HINT = "errors.helm.repoUrlInvalid.hint" => "Use an https:// URL such as https://charts.bitnami.com/bitnami. A chart in an OCI registry (oci://…) is installed directly, without adding a repository.";
+    /// A chart repository URL with a user name or password in it.
+    HELM_REPO_URL_CREDENTIALS = "errors.helm.repoUrlCredentials" => "Homeport doesn't add repositories that need a login.";
+    HELM_REPO_URL_CREDENTIALS_HINT = "errors.helm.repoUrlCredentials.hint" => "helm would store the password in clear. Add it in a terminal with helm repo add --username, and it appears here.";
 }
