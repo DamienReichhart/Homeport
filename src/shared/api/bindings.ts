@@ -517,6 +517,13 @@ export const commands = {
 	incusTerminalResize: (session: number, cols: number, rows: number) => __TAURI_INVOKE<null>("incus_terminal_resize", { session, cols, rows }),
 	/**  Closes a terminal: hangs up an exec's command, detaches from a console. */
 	incusTerminalClose: (session: number) => __TAURI_INVOKE<null>("incus_terminal_close", { session }),
+	/**  The snapshots of an Instance, oldest first. */
+	incusSnapshots: (hostId: string, project: string, instance: string) => __TAURI_INVOKE<IncusSnapshot[]>("incus_snapshots", { hostId, project, instance }),
+	/**  Takes a snapshot of an Instance, stateful and expiring if asked. */
+	incusSnapshotCreate: (hostId: string, project: string, instance: string, request: SnapshotRequest) => __TAURI_INVOKE<null>("incus_snapshot_create", { hostId, project, instance, request }),
+	/**  Restores an Instance to one of its snapshots; what changed since is lost. */
+	incusSnapshotRestore: (hostId: string, project: string, instance: string, snapshot: string, stateful: boolean) => __TAURI_INVOKE<null>("incus_snapshot_restore", { hostId, project, instance, snapshot, stateful }),
+	incusSnapshotDelete: (hostId: string, project: string, instance: string, snapshot: string) => __TAURI_INVOKE<null>("incus_snapshot_delete", { hostId, project, instance, snapshot }),
 	/**  The profiles of `project`, with the Instances using each. */
 	incusProfiles: (hostId: string, project: string) => __TAURI_INVOKE<IncusProfile[]>("incus_profiles", { hostId, project }),
 	/**  One profile, with its YAML and the ETag to save it with. */
@@ -2229,6 +2236,19 @@ export type IncusProject = {
 	images: number,
 };
 
+/**  One snapshot of an Instance. */
+export type IncusSnapshot = {
+	name: string,
+	/**  RFC 3339. */
+	createdAt: string,
+	/**  When Incus deletes it on its own; `None` for never. */
+	expiresAt: string | null,
+	/**  Whether it holds the running state (memory) too. */
+	stateful: boolean,
+	/**  Its size in bytes, when the storage driver can tell. */
+	size: number | null,
+};
+
 export type IngressDetail = {
 	view: IngressView,
 	labels: { [key in string]: string },
@@ -3458,6 +3478,15 @@ export type SnapshotKind =
 "active" | 
 /**  A read-only mount of another snapshot. */
 "view" | "unknown";
+
+/**  What the Take snapshot dialog asks for. */
+export type SnapshotRequest = {
+	/**  Empty lets Incus name it `snapN`. */
+	name: string,
+	stateful: boolean,
+	/**  RFC 3339; `None` keeps it until deleted. */
+	expiresAt: string | null,
+};
 
 /**  What uses a snapshot. */
 export type SnapshotUser = { kind: "container"; id: string } | { kind: "image"; name: string };

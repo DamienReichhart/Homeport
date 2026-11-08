@@ -148,6 +148,19 @@ homeport_core::messages! {
     EXEC_NO_SHELL = "errors.incus.execNoShell" => "The Instance has no such program.";
     EXEC_NO_SHELL_HINT = "errors.incus.execNoShell.hint" => "Check the command's path inside the Instance, or open the Console tab instead.";
 
+    // Snapshots.
+
+    /// A snapshot that isn't there.
+    SNAPSHOT_NOT_FOUND = "errors.incus.snapshotNotFound" => "There's no snapshot {name}; it may have just been deleted or expired.";
+    /// Taking a snapshot under a name in use.
+    SNAPSHOT_EXISTS = "errors.incus.snapshotExists" => "The Instance already has a snapshot named {name}.";
+    /// A snapshot name with a slash.
+    SNAPSHOT_NAME_INVALID = "errors.incus.snapshotNameInvalid" => "\"{name}\" isn't a snapshot name: it can't contain a slash.";
+    /// An expiry that isn't a time.
+    SNAPSHOT_EXPIRY_INVALID = "errors.incus.snapshotExpiryInvalid" => "{time} isn't a date and time.";
+    /// An expiry already gone.
+    SNAPSHOT_EXPIRY_PAST = "errors.incus.snapshotExpiryPast" => "The expiry is in the past: pick a later time, or none.";
+
     /// The project picked isn't there any more.
     PROJECT_NOT_FOUND = "errors.incus.projectNotFound" => "There's no project {project} on {name}.";
     PROJECT_NOT_FOUND_HINT = "errors.incus.projectNotFound.hint" => "Pick another project under the host switcher.";

@@ -23,14 +23,16 @@ import { cpuSeconds, STATUS_LABELS, statusTone, TYPE_LABELS } from '../model/ins
 import { ConfigTable, DevicesList } from './ConfigTable';
 import { DeleteInstanceDialog } from './DeleteInstanceDialog';
 import { InstanceActions } from './InstanceActions';
+import { SnapshotsTab } from './SnapshotsTab';
 import { ConsoleTab, ExecTab } from './TerminalTabs';
 import { t, type MessageKey } from '@/shared/i18n';
 
-const TABS = ['overview', 'console', 'exec', 'config', 'devices', 'raw'] as const;
+const TABS = ['overview', 'console', 'exec', 'snapshots', 'config', 'devices', 'raw'] as const;
 const TAB_LABELS: Record<(typeof TABS)[number], MessageKey> = {
   overview: 'incus.instances.tab.overview',
   console: 'incus.instances.tab.console',
   exec: 'incus.instances.tab.exec',
+  snapshots: 'incus.instances.tab.snapshots',
   config: 'incus.instances.tab.config',
   devices: 'incus.instances.tab.devices',
   raw: 'incus.instances.tab.raw',
@@ -152,6 +154,14 @@ function InstanceDetail({
             project={project}
             name={instance.name}
             running={instance.status === 'running'}
+          />
+        </TabsContent>
+        <TabsContent value="snapshots" className="overflow-auto">
+          <SnapshotsTab
+            hostId={hostId}
+            project={project}
+            instance={instance}
+            statefulAllowed={detail.data.statefulSnapshots}
           />
         </TabsContent>
         <TabsContent value="config" className="overflow-auto">

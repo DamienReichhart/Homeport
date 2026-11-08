@@ -15,6 +15,12 @@ export const incusInstanceQueries = {
       queryKey: [...hostKeys.incus(hostId, 'instances', project), 'detail', name],
       queryFn: () => commands.incusInstance(hostId, project, name),
     }),
+  /** An Instance's snapshots, oldest first; snapshot events refresh them. */
+  snapshots: (hostId: string, project: string, name: string) =>
+    queryOptions({
+      queryKey: [...hostKeys.incus(hostId, 'instances', project), 'snapshots', name],
+      queryFn: () => commands.incusSnapshots(hostId, project, name),
+    }),
   /** What the Instance printed on its console before attaching, if Incus kept it. */
   consoleLog: (hostId: string, project: string, name: string) =>
     queryOptions({
