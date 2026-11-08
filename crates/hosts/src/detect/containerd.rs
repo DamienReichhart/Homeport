@@ -85,11 +85,11 @@ pub(super) async fn probe(
     }
 }
 
-#[cfg(test)]
+// containerd's sockets are only looked for on Linux, where it runs.
+#[cfg(all(test, target_os = "linux"))]
 mod tests {
     use super::*;
 
-    #[cfg(target_os = "linux")]
     #[test]
     fn containerds_sockets_are_candidates() {
         let list = candidates(Some(Path::new("/run/user/1000")));
@@ -104,7 +104,6 @@ mod tests {
         );
     }
 
-    #[cfg(target_os = "linux")]
     #[tokio::test]
     async fn rootless_containerd_is_explained_instead_of_shown() {
         let run = tempfile::tempdir().unwrap();
