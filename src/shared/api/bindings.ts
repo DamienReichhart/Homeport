@@ -453,6 +453,13 @@ export const commands = {
 	 *  login for its registry, streaming progress.
 	 */
 	containerdImagesPullSubscribe: (hostId: string, namespace: string, reference: string, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("containerd_images_pull_subscribe", { hostId, namespace, reference, onEvent }),
+	/**
+	 *  The snapshots of a snapshotter (the Host's default when `None`) in
+	 *  `namespace`, largest first, each with what uses it.
+	 */
+	containerdSnapshots: (hostId: string, namespace: string, snapshotter: string | null) => __TAURI_INVOKE<ContainerdSnapshots>("containerd_snapshots", { hostId, namespace, snapshotter }),
+	/**  Removes a snapshot nothing uses and nothing is built on. */
+	containerdSnapshotRemove: (hostId: string, namespace: string, snapshotter: string, key: string) => __TAURI_INVOKE<null>("containerd_snapshot_remove", { hostId, namespace, snapshotter, key }),
 	podsList: (hostId: string) => __TAURI_INVOKE<PodmanPod[]>("pods_list", { hostId }),
 	podsInspect: (hostId: string, id: string) => __TAURI_INVOKE<PodmanPodDetail>("pods_inspect", { hostId, id }),
 	podsAct: (hostId: string, id: string, action: PodmanPodAction) => __TAURI_INVOKE<null>("pods_act", { hostId, id, action }),
@@ -1325,6 +1332,35 @@ export type ContainerdNamespace = {
 	labels: { [key in string]: string },
 	containers: number,
 	images: number,
+};
+
+export type ContainerdSnapshot = {
+	/**  Its key: a container's id, or a layer's chain ID. */
+	key: string,
+	/**  The snapshot it's built on, empty for a base layer. */
+	parent: string,
+	kind: SnapshotKind,
+	/**
+	 *  Bytes on disk, as `ctr snapshot usage` counts them; `None` when the
+	 *  snapshotter couldn't say.
+	 */
+	size: number | null,
+	inodes: number | null,
+	/**  RFC 3339. */
+	createdAt: string | null,
+	labels: { [key in string]: string },
+	users: SnapshotUser[],
+	/**  How many snapshots are built on it. */
+	children: number,
+};
+
+/**  The snapshots of one snapshotter, and every snapshotter the Host has. */
+export type ContainerdSnapshots = {
+	snapshotter: string,
+	snapshotters: string[],
+	snapshots: ContainerdSnapshot[],
+	/**  Their usage added up. */
+	total: number,
 };
 
 /**  One context the user picked, and the name its Cluster gets. */
@@ -3134,6 +3170,17 @@ export type Settings = {
 	/**  Which OS notifications Homeport shows. */
 	notifications?: NotificationSettings,
 };
+
+export type SnapshotKind = 
+/**  A layer, read-only, that others build on. */
+"committed" | 
+/**  A container's writable layer. */
+"active" | 
+/**  A read-only mount of another snapshot. */
+"view" | "unknown";
+
+/**  What uses a snapshot. */
+export type SnapshotUser = { kind: "container"; id: string } | { kind: "image"; name: string };
 
 /**  The kinds of source, for the rules a definition is checked against. */
 export type SourceKind = "managed" | "linked" | "synced";

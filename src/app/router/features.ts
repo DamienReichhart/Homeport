@@ -7,6 +7,7 @@ import { configFeature } from '@/features/config';
 import { containerdContainersFeature } from '@/features/containerd-containers';
 import { containerdImagesFeature } from '@/features/containerd-images';
 import { containerdNamespacesFeature } from '@/features/containerd-namespaces';
+import { containerdSnapshotsFeature } from '@/features/containerd-snapshots';
 import { containersFeature } from '@/features/containers';
 import { eventsFeature } from '@/features/events';
 import { helmFeature } from '@/features/helm';
@@ -41,6 +42,7 @@ export const features: FeatureManifest[] = [
   quadletsFeature,
   containerdContainersFeature,
   containerdImagesFeature,
+  containerdSnapshotsFeature,
   containerdNamespacesFeature,
   swarmFeature,
   workloadsFeature,

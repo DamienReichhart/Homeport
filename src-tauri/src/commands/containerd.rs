@@ -10,6 +10,7 @@ use homeport_containerd::{
     images::{self, ContainerdImage, PullCredentials},
     logs::{self, ContainerdLogSource},
     namespaces::{self, ContainerdNamespace},
+    snapshots::{self, ContainerdSnapshots},
 };
 use homeport_core::{
     logs::{LogEvent, LogOptions},
@@ -274,4 +275,32 @@ pub async fn containerd_images_pull_subscribe(
             on_event.send(e).is_ok()
         },
     )))
+}
+
+/// The snapshots of a snapshotter (the Host's default when `None`) in
+/// `namespace`, largest first, each with what uses it.
+#[tauri::command]
+#[specta::specta]
+pub async fn containerd_snapshots(
+    state: State<'_, AppState>,
+    host_id: String,
+    namespace: String,
+    snapshotter: Option<String>,
+) -> AppResult<ContainerdSnapshots> {
+    let client = state.hosts.registry.containerd(&host_id)?;
+    snapshots::list(&client, &namespace, snapshotter.as_deref()).await
+}
+
+/// Removes a snapshot nothing uses and nothing is built on.
+#[tauri::command]
+#[specta::specta]
+pub async fn containerd_snapshot_remove(
+    state: State<'_, AppState>,
+    host_id: String,
+    namespace: String,
+    snapshotter: String,
+    key: String,
+) -> AppResult<()> {
+    let client = state.hosts.registry.containerd(&host_id)?;
+    snapshots::remove(&client, &namespace, &snapshotter, &key).await
 }

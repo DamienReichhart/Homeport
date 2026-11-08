@@ -17,6 +17,7 @@ pub mod introspection;
 pub mod logs;
 pub mod messages;
 pub mod namespaces;
+pub mod snapshots;
 #[cfg(test)]
 mod testing;
 

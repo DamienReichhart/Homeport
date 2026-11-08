@@ -146,33 +146,49 @@ fn platforms(index: &Manifest) -> Vec<String> {
         .collect()
 }
 
-/// An image's size for `info`'s platform and the platforms it has.
-async fn describe(
+/// What an image's manifests say for `info`'s platform.
+#[derive(Default)]
+pub(crate) struct Described {
+    pub(crate) size: Option<i64>,
+    pub(crate) platforms: Vec<String>,
+    /// The digest of its config for the platform, which holds the
+    /// garbage-collection reference to its top layer's snapshot.
+    pub(crate) config: Option<String>,
+}
+
+/// An image's size and config for `info`'s platform, and the platforms it has.
+pub(crate) async fn describe(
     client: &Containerd,
     namespace: &str,
     image: &Image,
     info: &ServerInfo,
-) -> (Option<i64>, Vec<String>) {
+) -> Described {
     let Some(target) = &image.target else {
-        return (None, vec![]);
+        return Described::default();
     };
     let Ok(top) = read(client, namespace, &target.digest, target.size).await else {
-        return (None, vec![]);
+        return Described::default();
     };
     let Ok(top_json) = serde_json::from_slice::<Manifest>(&top) else {
-        return (None, vec![]);
+        return Described::default();
     };
     let (manifest, mut size, platforms) = match chosen(&top_json, info) {
         Some(entry) => {
             let Ok(bytes) = read(client, namespace, &entry.digest, entry.size).await else {
-                return (None, platforms(&top_json));
+                return Described {
+                    platforms: platforms(&top_json),
+                    ..Default::default()
+                };
             };
             (bytes, target.size + entry.size, platforms(&top_json))
         }
         None => (top, target.size, vec![]),
     };
     let Ok(manifest) = serde_json::from_slice::<Manifest>(&manifest) else {
-        return (None, platforms);
+        return Described {
+            platforms,
+            ..Default::default()
+        };
     };
     size += manifest.config.as_ref().map_or(0, |c| c.size);
     size += manifest.layers.iter().map(|l| l.size).sum::<i64>();
@@ -181,7 +197,22 @@ async fn describe(
     } else {
         platforms
     };
-    (Some(size), platforms)
+    Described {
+        size: Some(size),
+        platforms,
+        config: manifest.config.map(|c| c.digest),
+    }
+}
+
+/// The images of `namespace`, as containerd stores them.
+pub(crate) async fn records(client: &Containerd, namespace: &str) -> AppResult<Vec<Image>> {
+    Ok(client
+        .images()
+        .list(call(namespace, ListImagesRequest::default())?)
+        .await
+        .map_err(|s| error::status(&s))?
+        .into_inner()
+        .images)
 }
 
 /// How many containers of `namespace` each image is the image of.
@@ -202,18 +233,14 @@ async fn users(client: &Containerd, namespace: &str) -> AppResult<HashMap<String
 
 /// The images of `namespace`, by name.
 pub async fn list(client: &Containerd, namespace: &str) -> AppResult<Vec<ContainerdImage>> {
-    let images = client
-        .images()
-        .list(call(namespace, ListImagesRequest::default())?)
-        .await
-        .map_err(|s| error::status(&s))?
-        .into_inner()
-        .images;
+    let images = records(client, namespace).await?;
     let info = introspection::describe(client).await?;
     let users = users(client, namespace).await?;
     let mut list = Vec::with_capacity(images.len());
     for image in images {
-        let (size, platforms) = describe(client, namespace, &image, &info).await;
+        let Described {
+            size, platforms, ..
+        } = describe(client, namespace, &image, &info).await;
         let target = image.target.clone().unwrap_or_default();
         list.push(ContainerdImage {
             containers: users

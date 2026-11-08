@@ -112,6 +112,33 @@ export default {
   'containerd.images.remove.title': 'Remove {name}?',
   'containerd.images.remove.description':
     'containerd removes the name, and frees its content and snapshots once nothing else holds them.',
+  'containerd.snapshots.nav': 'Snapshots',
+  'containerd.snapshots.title': 'Snapshots',
+  'containerd.snapshots.summary':
+    '{count, plural, one {# snapshot} other {# snapshots}} in {namespace} use {total}; {unused, plural, =0 {none is unused} one {# is unused} other {# are unused}} ({unusedSize}).',
+  'containerd.snapshots.snapshotter': 'Snapshotter',
+  'containerd.snapshots.unusedOnly': 'Only unused',
+  'containerd.snapshots.unused': 'Unused',
+  'containerd.snapshots.usedByContainer': 'container {id}',
+  'containerd.snapshots.usedByImage': 'image {name}',
+  'containerd.snapshots.empty': 'No snapshots in {snapshotter}',
+  'containerd.snapshots.emptyDescription':
+    'Snapshots are the layers of unpacked images and the writable layers of containers.',
+  'containerd.snapshots.column.key': 'Key',
+  'containerd.snapshots.column.kind': 'Kind',
+  'containerd.snapshots.column.size': 'Size',
+  'containerd.snapshots.column.usedBy': 'Used by',
+  'containerd.snapshots.kind.committed': 'Layer',
+  'containerd.snapshots.kind.active': 'Writable',
+  'containerd.snapshots.kind.view': 'View',
+  'containerd.snapshots.kind.unknown': 'Unknown',
+  'containerd.snapshots.removeOne': 'Remove {key}',
+  'containerd.snapshots.removed': 'Snapshot {key} removed',
+  'containerd.snapshots.inUse':
+    'Something uses it or is built on it. Remove the container or image first.',
+  'containerd.snapshots.remove.title': 'Remove the snapshot {key}?',
+  'containerd.snapshots.remove.description':
+    'Nothing uses it. Its files, {size}, are deleted from the host.',
   'containerd.namespaces.nav': 'Namespaces',
   'containerd.namespaces.title': 'Namespaces',
   'containerd.namespaces.summary':

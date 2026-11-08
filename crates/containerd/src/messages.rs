@@ -100,6 +100,17 @@ homeport_core::messages! {
     /// A pull the registry refused without credentials.
     PULL_AUTH_REQUIRED = "errors.containerd.pullAuthRequired" => "The registry refused to let Homeport pull this image.";
 
+    // Snapshots.
+
+    /// A snapshot that isn't there.
+    SNAPSHOT_NOT_FOUND = "errors.containerd.snapshotNotFound" => "There's no snapshot {key} in this snapshotter.";
+    /// Removing a snapshot others are built on.
+    SNAPSHOT_HAS_CHILD = "errors.containerd.snapshotHasChild" => "A snapshot is built on {key}, so it can't be removed.";
+    SNAPSHOT_HAS_CHILDREN = "errors.containerd.snapshotHasChildren" => "{count} snapshots are built on {key}, so it can't be removed.";
+    /// Removing a snapshot a container or an image uses.
+    SNAPSHOT_USED = "errors.containerd.snapshotUsed" => "{key} is used by {users}, so it can't be removed.";
+    SNAPSHOT_IN_USE_HINT = "errors.containerd.snapshotInUse.hint" => "Remove what uses it first: the container, or the image whose layers it holds. Snapshots nothing uses can be removed here.";
+
     // Namespaces.
 
     /// Creating a namespace under a name another one has.
