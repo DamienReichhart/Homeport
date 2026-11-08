@@ -15,6 +15,7 @@ export {
   type FreshnessIndex,
 } from './model/freshness';
 export {
+  containerdVersion,
   ENGINE_LABELS,
   podmanAtLeast,
   podmanVersion,

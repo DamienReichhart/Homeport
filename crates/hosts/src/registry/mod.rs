@@ -16,6 +16,7 @@ use std::{
 use bollard::Docker;
 use tokio::task::JoinHandle;
 
+use homeport_containerd::Containerd;
 use homeport_core::{
     error::{AppError, AppResult, ErrorCode},
     host::HELPER_LABEL,
@@ -39,11 +40,13 @@ use self::supervisor::supervise;
 use crate::{events::EventStore, store::HostStore, HostId};
 
 /// How a connected Host's Engine is reached, one variant per kind of Engine
-/// (`EngineKind`). Only Docker-compatible Engines connect for now.
+/// (`EngineKind`) Homeport connects to.
 #[derive(Clone)]
 pub(crate) enum Client {
     /// The Docker Engine API through bollard, and the dialer beside it.
     Docker(Connected),
+    /// containerd's gRPC API over the Host's dialer (ADR 0020).
+    Containerd(Containerd),
 }
 
 struct Entry {
@@ -153,7 +156,34 @@ impl HostRegistry {
     /// What opens streams to a connected Host's Engine socket, for the
     /// compose proxy and for the APIs bollard doesn't speak.
     pub fn dialer(&self, id: &str) -> AppResult<Arc<dyn Dialer>> {
-        self.docker_connection(id).map(|c| c.dialer)
+        match self.connected(id)? {
+            Client::Docker(connected) => Ok(connected.dialer),
+            Client::Containerd(containerd) => Ok(containerd.dialer().clone()),
+        }
+    }
+
+    /// containerd's API on a connected containerd Host; `EngineUnsupported`
+    /// for any other Engine.
+    pub fn containerd(&self, id: &str) -> AppResult<Containerd> {
+        match self.connected(id)? {
+            Client::Containerd(containerd) => Ok(containerd),
+            Client::Docker(_) => Err(self.not_containerd(id)),
+        }
+    }
+
+    /// Why a Host can't do what only containerd does.
+    fn not_containerd(&self, id: &str) -> AppError {
+        let error = match self.store.get(id) {
+            Ok(host) => AppError::new(
+                ErrorCode::EngineUnsupported,
+                msg::NOT_CONTAINERD.with("name", host.name),
+            ),
+            Err(_) => AppError::new(
+                ErrorCode::EngineUnsupported,
+                msg::ENGINE_UNSUPPORTED_UNKNOWN,
+            ),
+        };
+        error.with_hint(msg::NOT_CONTAINERD_HINT)
     }
 
     /// Podman's own API on a connected Podman Host; `EngineUnsupported`
@@ -184,6 +214,7 @@ impl HostRegistry {
     fn docker_connection(&self, id: &str) -> AppResult<Connected> {
         match self.connected(id)? {
             Client::Docker(connected) => Ok(connected),
+            Client::Containerd(_) => Err(self.unsupported(id)),
         }
     }
 
@@ -475,6 +506,13 @@ mod tests {
     }
 
     fn setup(socket_path: &str) -> (Arc<HostRegistry>, Arc<Recorder>, HostId) {
+        setup_engine(socket_path, crate::EngineKind::Docker)
+    }
+
+    fn setup_engine(
+        socket_path: &str,
+        engine: crate::EngineKind,
+    ) -> (Arc<HostRegistry>, Arc<Recorder>, HostId) {
         let db = Arc::new(Db::open_in_memory().unwrap());
         let store = Arc::new(HostStore::new(
             db.clone(),
@@ -486,7 +524,7 @@ mod tests {
                 connection: HostConnection::Local {
                     socket_path: socket_path.into(),
                 },
-                engine: crate::EngineKind::Docker,
+                engine,
                 secrets: None,
             })
             .unwrap()
@@ -756,6 +794,72 @@ mod tests {
         let err = reg.podman(&id).err().unwrap();
         assert!(err.is(ErrorCode::EngineUnsupported), "{err:?}");
         assert!(err.message.contains("doesn't run Podman"), "{err:?}");
+    }
+
+    #[tokio::test]
+    async fn a_stopped_containerd_is_explained_as_containerd() {
+        let dir = tempfile::tempdir().unwrap();
+        let socket = dir.path().join("containerd.sock");
+        let (reg, _, id) = setup_engine(socket.to_str().unwrap(), crate::EngineKind::Containerd);
+        reg.restart(&id);
+        wait_for(&reg, &id, |s| matches!(s, HostStatus::Unreachable { .. })).await;
+        let error = reg.status(&id).error().cloned().unwrap();
+        assert_eq!(error.code, ErrorCode::EngineNotRunning, "{error:?}");
+        assert!(error.message.contains("containerd"), "{error:?}");
+        assert!(reg.containerd(&id).is_err());
+    }
+
+    #[tokio::test]
+    #[ignore = "needs a local containerd"]
+    async fn containerd_hosts_connect_and_hand_out_their_api() {
+        let socket = std::env::var("HOMEPORT_CONTAINERD_SOCKET")
+            .unwrap_or_else(|_| "/run/containerd/containerd.sock".into());
+        let (reg, _, id) = setup_engine(&socket, crate::EngineKind::Containerd);
+        reg.restart(&id);
+        wait_for(&reg, &id, |s| matches!(s, HostStatus::Connected { .. })).await;
+        let status = reg.status(&id);
+        let version = status
+            .containerd_version()
+            .expect("containerd says its version");
+        assert!(
+            version.chars().next().unwrap().is_ascii_digit(),
+            "{version}"
+        );
+        let client = reg.containerd(&id).unwrap();
+        assert_eq!(client.version(), version);
+        homeport_containerd::namespaces::list(&client)
+            .await
+            .unwrap();
+        let err = reg.docker(&id).err().unwrap();
+        assert!(err.is(ErrorCode::EngineUnsupported), "{err:?}");
+        assert!(reg.dialer(&id).is_ok());
+
+        // Its events are kept, as a Docker Engine's are.
+        let name = format!(
+            "homeport-test-{}",
+            &uuid::Uuid::new_v4().simple().to_string()[..8]
+        );
+        tokio::time::sleep(Duration::from_millis(200)).await;
+        homeport_containerd::namespaces::create(&client, &name)
+            .await
+            .unwrap();
+        let mut seen = false;
+        for _ in 0..40 {
+            tokio::time::sleep(Duration::from_millis(50)).await;
+            reg.events.flush().await;
+            let page = reg.events.page(&id, crate::events::PAGE, None).unwrap();
+            if page
+                .iter()
+                .any(|e| e.kind == "namespace" && e.actor_id == name)
+            {
+                seen = true;
+                break;
+            }
+        }
+        homeport_containerd::namespaces::remove(&client, &name)
+            .await
+            .unwrap();
+        assert!(seen, "the namespace's event was kept");
     }
 
     #[tokio::test]

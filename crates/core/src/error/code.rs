@@ -95,6 +95,17 @@ pub enum ErrorCode {
     SystemdRefused,
     /// User units need the user's systemd instance, which only lingering keeps.
     UserUnitsNeedLinger,
+    // containerd (ADR 0020).
+    /// A containerd older than Homeport connects to, or than an action needs.
+    ContainerdTooOld,
+    /// Logs or exec on a containerd Host whose connection can't run commands.
+    ContainerdNeedsShell,
+    /// A containerd container whose output no tool recorded.
+    ContainerdNoLogs,
+    /// Removing a containerd namespace that still holds something.
+    NamespaceNotEmpty,
+    /// A containerd task that didn't stop after SIGKILL.
+    TaskWontStop,
     // Swarms (ADR 0016).
     /// No manager Host of a Swarm is connected.
     SwarmUnreachable,

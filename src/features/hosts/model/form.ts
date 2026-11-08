@@ -208,12 +208,41 @@ export function engineForSocket(path: string): EngineKind {
   return 'docker';
 }
 
-/** The kinds of Engine the form offers; only Docker-compatible ones connect for now. */
+/** The kinds of Engine the form offers; Incus connects in a later version. */
 export const ENGINE_KINDS: { engine: EngineKind; available: boolean }[] = [
   { engine: 'docker', available: true },
-  { engine: 'containerd', available: false },
+  { engine: 'containerd', available: true },
   { engine: 'incus', available: false },
 ];
+
+/** Where each kind of Engine's socket usually is, on this computer or over SSH. */
+export const DEFAULT_SOCKETS: Record<EngineKind, string> = {
+  docker: '/var/run/docker.sock',
+  containerd: '/run/containerd/containerd.sock',
+  incus: '/var/lib/incus/unix.socket',
+};
+
+/** Whether `engine` can be reached over `kind`: containerd only answers on its socket. */
+export function engineReachableOver(engine: EngineKind, kind: HostKind): boolean {
+  return engine !== 'containerd' || kind === 'local' || kind === 'ssh';
+}
+
+/**
+ * The form with another Engine picked: socket paths still at the previous
+ * Engine's default move to the new one's, and a connection the Engine can't
+ * be reached over becomes SSH.
+ */
+export function withEngine(form: HostFormState, engine: EngineKind): HostFormState {
+  const previous = DEFAULT_SOCKETS[form.engine];
+  const next = DEFAULT_SOCKETS[engine];
+  return {
+    ...form,
+    engine,
+    kind: engineReachableOver(engine, form.kind) ? form.kind : 'ssh',
+    socketPath: form.socketPath === previous ? next : form.socketPath,
+    sshSocketPath: form.sshSocketPath === previous ? next : form.sshSocketPath,
+  };
+}
 
 export const HOST_KINDS: { kind: HostKind; label: MessageKey }[] = [
   { kind: 'ssh', label: 'hosts.kind.ssh' },

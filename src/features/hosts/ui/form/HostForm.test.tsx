@@ -56,7 +56,7 @@ describe('host form', () => {
     expect(screen.queryByText('Address')).toBeNull();
   });
 
-  it('offers only Docker-compatible Engines for now, preset from the socket', async () => {
+  it('offers Docker-compatible Engines and containerd, preset from the socket', async () => {
     const user = userEvent.setup();
     let last: HostFormState | null = null;
     renderWithProviders(<Harness initial={emptyForm('local')} onChange={(f) => (last = f)} />);
@@ -67,11 +67,27 @@ describe('host form', () => {
       'aria-disabled',
       'true',
     );
+    expect(screen.getByRole('option', { name: 'containerd' })).not.toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
     await user.keyboard('{Escape}');
     const socket = screen.getByDisplayValue('/var/run/docker.sock');
     await user.clear(socket);
     await user.type(socket, '/run/containerd/containerd.sock');
     expect(last!.engine).toBe('containerd');
+  });
+
+  it('reaches containerd only through its socket, here or over SSH', async () => {
+    const user = userEvent.setup();
+    let last: HostFormState | null = null;
+    renderWithProviders(<Harness initial={emptyForm('tcp')} onChange={(f) => (last = f)} />);
+    await user.click(screen.getByRole('combobox', { name: 'Engine' }));
+    await user.click(await screen.findByRole('option', { name: 'containerd' }));
+    expect(last!.kind).toBe('ssh');
+    expect(last!.sshSocketPath).toBe('/run/containerd/containerd.sock');
+    expect(screen.getByRole('radio', { name: 'TCP' })).toBeDisabled();
+    expect(screen.getByRole('radio', { name: 'TLS' })).toBeDisabled();
   });
 
   it('asks for a TLS Host’s three PEM files', async () => {

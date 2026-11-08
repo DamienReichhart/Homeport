@@ -1273,7 +1273,14 @@ export type DetectedEngine = {
 	socketPath: string,
 	/**  The kind of Engine behind the socket, which presets the Host form. */
 	engine: EngineKind,
+	/**  Empty when `problem` is set. */
 	engineVersion: string,
+	/**
+	 *  Why the Engine found there can't be added as it is, and how to fix
+	 *  it: a containerd socket the user may not use, or one only RootlessKit
+	 *  reaches.
+	 */
+	problem: AppError | null,
 };
 
 /**  A device of the Host made available inside the container (`--device`). */
@@ -1344,7 +1351,7 @@ export type EngineKind =
  *  its compatible API. Which one is read on every connect.
  */
 "docker" | 
-/**  containerd, through its own API (not supported yet). */
+/**  containerd, through its own gRPC API (ADR 0020). */
 "containerd" | 
 /**  Incus, through its REST API (not supported yet). */
 "incus";
@@ -1388,6 +1395,16 @@ export type ErrorCode =
 "systemd_refused" | 
 /**  User units need the user's systemd instance, which only lingering keeps. */
 "user_units_need_linger" | 
+/**  A containerd older than Homeport connects to, or than an action needs. */
+"containerd_too_old" | 
+/**  Logs or exec on a containerd Host whose connection can't run commands. */
+"containerd_needs_shell" | 
+/**  A containerd container whose output no tool recorded. */
+"containerd_no_logs" | 
+/**  Removing a containerd namespace that still holds something. */
+"namespace_not_empty" | 
+/**  A containerd task that didn't stop after SIGKILL. */
+"task_wont_stop" | 
 /**  No manager Host of a Swarm is connected. */
 "swarm_unreachable" | 
 /**  A node couldn't reach the managers of the Swarm it was joining. */
@@ -1705,6 +1722,11 @@ export type HostStatus = { state: "disabled" } | { state: "connecting" } | { sta
  *  connect because the same socket can change product.
  */
 podmanVersion: string | null; 
+/**
+ *  The version of containerd when the Host's Engine is containerd,
+ *  which is then also `engine_version`.
+ */
+containerdVersion: string | null; 
 /**  The Host's place in a Swarm, `None` outside one. */
 swarm: SwarmMembership | null } | { state: "unreachable"; error: AppError; retryInSecs: number } | { state: "unauthorized"; error: AppError } | 
 /**

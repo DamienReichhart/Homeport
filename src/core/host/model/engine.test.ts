@@ -29,7 +29,19 @@ describe('supports', () => {
     const incus: HostView = { ...connectedHost, host: { ...connectedHost.host, engine: 'incus' } };
     expect(supports(incus, 'docker')).toBe(false);
     expect(supports(incus, 'podman')).toBe(false);
+    expect(supports(incus, 'containerd')).toBe(false);
     expect(supports(null, 'docker')).toBe(false);
+  });
+
+  it('gives a containerd Host its own pages and no Docker ones', () => {
+    const containerd: HostView = {
+      ...connectedHost,
+      host: { ...connectedHost.host, engine: 'containerd' },
+    };
+    expect(supports(containerd, 'containerd')).toBe(true);
+    expect(supports(containerd, 'docker')).toBe(false);
+    expect(supports(containerd, 'podman')).toBe(false);
+    expect(supports(connectedHost, 'containerd')).toBe(false);
   });
 });
 

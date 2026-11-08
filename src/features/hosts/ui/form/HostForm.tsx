@@ -17,7 +17,9 @@ import {
 import {
   ENGINE_KINDS,
   engineForSocket,
+  engineReachableOver,
   HOST_KINDS,
+  withEngine,
   type HostFormState,
   type HostKind,
 } from '../../model/form';
@@ -55,7 +57,16 @@ export function HostForm({
           onValueChange={(kind) => kind && set('kind', kind as HostKind)}
         >
           {HOST_KINDS.map(({ kind, label }) => (
-            <ToggleGroupItem key={kind} value={kind}>
+            <ToggleGroupItem
+              key={kind}
+              value={kind}
+              disabled={!engineReachableOver(form.engine, kind)}
+              title={
+                engineReachableOver(form.engine, kind)
+                  ? undefined
+                  : t('hosts.form.socketOnly', { engine: t(ENGINE_LABELS[form.engine]) })
+              }
+            >
               {t(label)}
             </ToggleGroupItem>
           ))}
@@ -71,7 +82,10 @@ export function HostForm({
       </Field>
 
       <Field label={t('hosts.form.engine')} hint={t('hosts.form.engineHint')}>
-        <Select value={form.engine} onValueChange={(engine) => set('engine', engine as EngineKind)}>
+        <Select
+          value={form.engine}
+          onValueChange={(engine) => onChange(withEngine(form, engine as EngineKind))}
+        >
           <SelectTrigger className="w-full" aria-label={t('hosts.form.engine')}>
             <SelectValue />
           </SelectTrigger>

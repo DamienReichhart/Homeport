@@ -22,6 +22,7 @@ const connected = (swarm: SwarmMembership | null): HostStatus => ({
   os: 'linux',
   arch: 'amd64',
   podmanVersion: null,
+  containerdVersion: null,
   swarm,
 });
 

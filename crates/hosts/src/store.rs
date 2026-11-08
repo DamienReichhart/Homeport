@@ -75,7 +75,7 @@ impl HostStore {
         } = draft;
         let name = validated_name(&name)?;
         connection.validate()?;
-        engine.validate()?;
+        engine.validate(&connection)?;
         let sealed = match secrets {
             None if !require_secrets => None,
             secrets => self.seal(&connection, secrets.as_ref())?,
@@ -101,7 +101,7 @@ impl HostStore {
         let current = self.get(id)?;
         let name = validated_name(&draft.name)?;
         draft.connection.validate()?;
-        draft.engine.validate()?;
+        draft.engine.validate(&draft.connection)?;
         keep_bastion_keys(&current.connection, &mut draft.connection);
         let connection_json = serde_json::to_string(&draft.connection)?;
         let sealed = match &draft.secrets {
@@ -447,19 +447,21 @@ mod tests {
     }
 
     #[test]
-    fn hosts_are_docker_compatible_engines_until_others_can_connect() {
+    fn hosts_are_docker_compatible_engines_or_containerd_until_incus_connects() {
         let s = store();
         let host = s.create(local("local")).unwrap();
         assert_eq!(host.engine, EngineKind::Docker);
-        for engine in [EngineKind::Containerd, EngineKind::Incus] {
-            let mut draft = local("other");
-            draft.engine = engine;
-            assert!(matches!(s.create(draft), Err(ref e) if e.is(ErrorCode::Validation)));
-            let mut draft = local("local");
-            draft.engine = engine;
-            assert!(s.update(&host.id, draft).is_err());
-        }
+        let mut draft = local("other");
+        draft.engine = EngineKind::Incus;
+        assert!(matches!(s.create(draft), Err(ref e) if e.is(ErrorCode::Validation)));
+        let mut draft = local("local");
+        draft.engine = EngineKind::Incus;
+        assert!(s.update(&host.id, draft).is_err());
         assert_eq!(s.get(&host.id).unwrap().engine, EngineKind::Docker);
+
+        let mut draft = local("k3s");
+        draft.engine = EngineKind::Containerd;
+        assert_eq!(s.create(draft).unwrap().engine, EngineKind::Containerd);
     }
 
     #[test]
