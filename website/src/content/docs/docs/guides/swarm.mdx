@@ -19,7 +19,13 @@ Add one manager of the Swarm as a host, the way you add any other host (see [Hos
 
 Docker gives every Swarm the same name, so Homeport calls one **Swarm of** its first manager host, with the start of its swarm ID. Adding a second manager of the same Swarm doesn't show it twice: Swarms are told apart by their swarm ID. A worker host shows which Swarm it belongs to once one of that Swarm's managers is a host too.
 
-The Swarm's page starts with its **Summary**: its manager and worker hosts, how many nodes and managers it has, how many services run on it, and its swarm ID.
+The Swarm's page starts with its **Summary**: its manager and worker hosts, how many nodes and managers it has, how many services run on it, and its swarm ID. Its tabs — **Nodes**, **Services**, **Tasks**, **Stacks**, **Secrets** and **Configs** — are covered below.
+
+<DocScreenshot
+  name="swarm-summary"
+  alt="A Swarm's Summary tab: its manager hosts, node and service counts, swarm ID, and the join commands revealed for a worker and a manager."
+  caption="The Summary, with the join commands revealed for machines Homeport doesn't manage."
+/>
 
 ### When no manager is connected
 
@@ -48,6 +54,11 @@ Nodes talk to each other directly, not through Homeport, and Homeport installs n
 When a host can't reach the managers, joining fails with **This host couldn't reach the Swarm's managers**, and the hint lists these ports.
 
 ## Nodes
+
+<DocScreenshot
+  name="swarm-nodes"
+  alt="A Swarm's Nodes tab: three managers (one the leader) and two workers, one of them drained, with their Engine versions, addresses and labels."
+/>
 
 The **Nodes** tab lists every node of the Swarm: its hostname, whether it's a manager (and the leader, reachable or unreachable) or a worker, its availability, whether it's up (`ready`) or `down`, its Engine version, address and labels. A node that is also one of your hosts links to the host's page, and the host's page links back to its node. The list refreshes on its own as nodes change.
 
@@ -81,7 +92,15 @@ Each service's menu:
 - **Roll back** puts back the settings the service had before its last update (image, environment, replicas…), the way `docker service rollback` does. A service that was never updated has nothing to roll back to, and says so.
 - **Remove** stops and removes its tasks. Its volumes are kept.
 
-Select a service to open it: the **Logs** tab follows its logs, and **Inspect** shows its full definition as the Engine has it, including what Homeport doesn't edit (placement constraints, resource limits, health check, update and rollback policies).
+Select a service to open it. Its page starts on its **Tasks**, so a rollout in progress or a replica that won't start shows at once, with **Edit**, **Scale**, **Roll back** and **Remove** at the top.
+
+<DocScreenshot
+  name="swarm-service"
+  alt="A service's page during an update: three of its four replicas run, the fourth is still preparing on worker-eu-1."
+  caption="shop_api mid-update: 3 of 4 replicas run while the fourth is prepared."
+/>
+
+The **Logs** tab follows its logs, and **Inspect** shows its full definition as the Engine has it, including what Homeport doesn't edit (placement constraints, resource limits, health check, update and rollback policies).
 
 ### Create and update a service
 
@@ -95,7 +114,16 @@ Private images: the nodes pull images themselves, so a private image needs a log
 
 A service runs as **tasks**: one per replica (its slot, such as `web.2`), or one per node for a global service (`agent@node-b`). Each task runs as a container on its node. When a service shows fewer tasks running than it should, the answer is in its tasks.
 
-The **Tasks** tab lists the Swarm's tasks, grouped by service then slot, newest first: the node each runs on, what it's doing and what the Swarm wants it to do, since when, its error and its image. A service's page has the same tab for that service only, and a node's menu has **Show its tasks**. By default each slot shows only the task the Swarm wants running; turn on **Show history** to see the earlier attempts it shut down or that failed. A task on a node that's also one of your hosts has **Open container**, which selects that host and opens the container.
+The **Tasks** tab lists the Swarm's tasks, grouped by service then slot, newest first: the node each runs on, what it's doing and what the Swarm wants it to do (**should be running** when the two differ), since when, its message — in red when it's an error — and its image.
+
+<DocScreenshot
+  name="swarm-tasks"
+  alt="A Swarm's Tasks tab: a global service's task on every node, then each replica of shop_api, one still preparing."
+/>
+A service's page has the same tab for that service only, and a node's menu has **Show its tasks**.
+By default each slot shows only the task the Swarm wants running; turn on **Show history** to see
+the earlier attempts it shut down or that failed. A task on a node that's also one of your hosts has
+**Open container**, which selects that host and opens the container.
 
 Common errors:
 
@@ -111,6 +139,11 @@ Common errors:
 
 Services read credentials from **secrets** and configuration files from **configs**, both mounted as files in their containers (secrets under `/run/secrets/`). The **Secrets** and **Configs** tabs list them with the services that use them, their labels, and when they were created and updated.
 
+<DocScreenshot
+  name="swarm-secrets"
+  alt="A Swarm's Secrets tab listing three secrets with the services that use each one."
+/>
+
 **Create secret** asks for a name and the value, masked unless you choose **Show**, or **Load from file…** to send a file from this computer instead (a key, a certificate). The value goes to the Swarm once: Homeport doesn't keep it, and the Engine never sends it back, so no one can read it from the Swarm, Homeport included. **Create config** works the same, with the content shown as you type; a config's content can be viewed again from its row. Both are limited to 500 KB.
 
 Secrets and configs can't be changed once created. To change one, create a new one under a new name, such as `db_password_v2`, point the services at it, then remove the old one. A secret or config a service uses can't be removed: the Swarm refuses, and Homeport names the services that use it.
@@ -120,6 +153,11 @@ Secrets and configs can't be changed once created. To change one, create a new o
 A **swarm stack** is a Stack deployed to a Swarm: a compose file turned into services, networks, secrets and configs that share a namespace. Homeport finds every one of them, however it was deployed, from the `com.docker.stack.namespace` label `docker stack deploy` puts on them. The Swarm's **Stacks** tab lists them, like the **Stacks** page lists a host's: their kind, state (running when every task of every service runs, stopped when every service is scaled to 0) and services.
 
 A Stack deployed from a terminal with `docker stack deploy` is **External**: Homeport has no compose file for it. Select it to see its services, each linking to its page, and its networks, secrets and configs. **Remove** does what `docker stack rm` does: it removes the services, waits for their tasks to stop, then removes the networks, secrets and configs of the namespace. Anything the Swarm refused to remove is listed. Volumes are kept on each node.
+
+<DocScreenshot
+  name="swarm-stacks"
+  alt="A Swarm's Stacks tab: the Managed shop Stack partly running, 9 of 10 tasks, and the External monitoring Stack running."
+/>
 
 A swarm stack has no start or stop: Docker has no such operation for one. To stop a Stack without removing it, scale its services to 0 from their pages.
 
