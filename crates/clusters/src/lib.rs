@@ -12,10 +12,11 @@
 
 pub mod classify;
 pub mod client;
+pub mod kubeconfig;
 pub mod messages;
 pub mod model;
 pub mod registry;
 pub mod service;
 pub mod store;
 
-pub use model::{Cluster, ClusterConnection, ClusterId, ClusterKind, ClusterSecrets};
+pub use model::{AuthMethod, Cluster, ClusterConnection, ClusterId, ClusterKind, ClusterSecrets};

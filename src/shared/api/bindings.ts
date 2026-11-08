@@ -89,6 +89,15 @@ export const commands = {
 	/**  Forgets a Cluster and its credentials; nothing changes on the Cluster. */
 	clustersRemove: (id: string) => __TAURI_INVOKE<null>("clusters_remove", { id }),
 	clustersReconnect: (id: string) => __TAURI_INVOKE<ClusterView>("clusters_reconnect", { id }),
+	/**
+	 *  The contexts of the pasted kubeconfig `text`, or of this machine's
+	 *  (`KUBECONFIG`, else `~/.kube/config`). A pasted one stays in memory.
+	 */
+	clustersKubeconfigContexts: (text: string | null) => __TAURI_INVOKE<KubeContexts>("clusters_kubeconfig_contexts", { text }),
+	/**  Adds a Cluster for each context picked, its credentials sealed. */
+	clustersImport: (contexts: ContextChoice[], text: string | null) => __TAURI_INVOKE<ClusterView[]>("clusters_import", { contexts, text }),
+	/**  Reads a Cluster's context again from its kubeconfig and reconnects. */
+	clustersRefresh: (id: string, text: string | null) => __TAURI_INVOKE<ClusterView>("clusters_refresh", { id, text }),
 	/**  Backs up everything Homeport holds to `path`, sealed with `passphrase`. */
 	dataBackup: (path: string, passphrase: string) => __TAURI_INVOKE<BackupOutcome>("data_backup", { path, passphrase }),
 	/**  What the backup at `path` holds, for the restore's confirmation. */
@@ -447,6 +456,11 @@ export const events = {
 };
 
 /* Types */
+export type AddedCluster = {
+	id: string,
+	name: string,
+};
+
 export type AppError = {
 	/**  What failed, for logic: `e.is(ErrorCode::PortInUse)`. */
 	code: ErrorCode,
@@ -475,7 +489,9 @@ export type AuthMethod =
 /**  No credential: the API server sees an anonymous user. */
 { method: "none" } | { method: "clientCertificate" } | { method: "token" } | { method: "basic"; username: string } | 
 /**  A program on this machine prints the credentials (`aws`, `gke-gcloud-auth-plugin`…). */
-{ method: "exec"; command: string };
+{ method: "exec"; command: string } | 
+/**  An OpenID Connect ID token, refreshed with its refresh token. */
+{ method: "oidc" };
 
 /**  Whether the scheduler may place tasks on a node. */
 export type Availability = 
@@ -793,6 +809,12 @@ export type ContainerUsage = {
 	memoryLimit: number,
 };
 
+/**  One context the user picked, and the name its Cluster gets. */
+export type ContextChoice = {
+	context: string,
+	name: string,
+};
+
 /**  Credentials typed by the user. Absent on update means "keep the stored ones". */
 export type CredentialsInput = { kind: "tls"; caPem: string; certPem: string; keyPem: string } | { kind: "sshKey"; privateKey: string; passphrase: string | null };
 
@@ -952,7 +974,9 @@ export type ErrorCode =
 /**  The Cluster's API server refused the credentials from its kubeconfig. */
 "cluster_unauthorized" | 
 /**  The Kubernetes API answered with an error Homeport has no better words for. */
-"cluster_api_error" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
+"cluster_api_error" | 
+/**  A kubeconfig user authenticates with a removed auth provider (gcp, azure). */
+"kubeconfig_auth_provider_unsupported" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
 /**  A Linked Stack's folder, or one of its compose files, is gone. */
 "stack_folder_missing" | 
 /**  A Linked Stack's compose file can't be read or written. */
@@ -1298,6 +1322,29 @@ export type JoinRole = "worker" | "manager";
  *  addresses are fetched through a connected manager, or a pasted token.
  */
 export type JoinTarget = { kind: "known"; swarmId: string } | { kind: "token"; token: string; addresses: string[] };
+
+/**  One context of a kubeconfig, as the import lists it. */
+export type KubeContext = {
+	name: string,
+	/**  The API server, when the context's cluster is in the kubeconfig. */
+	server: string | null,
+	user: string | null,
+	namespace: string | null,
+	auth: AuthMethod | null,
+	/**  The kubeconfig's current context. */
+	current: boolean,
+	/**  The Cluster already made from this context, which importing refreshes. */
+	added: AddedCluster | null,
+	/**  Why it can't be imported, if it can't. */
+	problem: AppError | null,
+};
+
+/**  A kubeconfig's contexts, as the Add a Cluster page shows them. */
+export type KubeContexts = {
+	/**  The files read, in merge order; empty for a pasted kubeconfig. */
+	paths: string[],
+	contexts: KubeContext[],
+};
 
 /**  Where a Cluster's kubeconfig context came from. */
 export type KubeconfigSource = {

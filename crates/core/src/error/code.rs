@@ -93,6 +93,8 @@ pub enum ErrorCode {
     ClusterUnauthorized,
     /// The Kubernetes API answered with an error Homeport has no better words for.
     ClusterApiError,
+    /// A kubeconfig user authenticates with a removed auth provider (gcp, azure).
+    KubeconfigAuthProviderUnsupported,
     // Compose.
     ComposeMissing,
     ComposeOutdated,

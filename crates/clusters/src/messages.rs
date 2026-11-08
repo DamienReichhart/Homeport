@@ -64,4 +64,49 @@ homeport_core::messages! {
     /// Any other TLS failure.
     TLS_HANDSHAKE_FAILED = "errors.clusters.tls.handshakeFailed" => "The secure connection to {name} failed.";
     TLS_HANDSHAKE_FAILED_HINT = "errors.clusters.tls.handshakeFailed.hint" => "See Details, and check that kubectl works with this context.";
+
+    // Kubeconfigs.
+
+    /// The user has no home folder to find `~/.kube` in.
+    NO_HOME_FOLDER = "errors.clusters.kubeconfig.noHomeFolder" => "Homeport can't find your home folder.";
+    /// Neither `KUBECONFIG`'s files nor `~/.kube/config` exist.
+    KUBECONFIG_MISSING = "errors.clusters.kubeconfig.missing" => "There's no kubeconfig at {path}.";
+    KUBECONFIG_MISSING_HINT = "errors.clusters.kubeconfig.missing.hint" => "Paste a kubeconfig instead, or set KUBECONFIG before starting Homeport.";
+    /// A kubeconfig file that isn't YAML kubectl reads.
+    KUBECONFIG_INVALID_FILE = "errors.clusters.kubeconfig.invalidFile" => "{path} isn't a kubeconfig Homeport can read.";
+    /// A pasted kubeconfig that isn't YAML kubectl reads.
+    KUBECONFIG_INVALID = "errors.clusters.kubeconfig.invalid" => "That isn't a kubeconfig Homeport can read.";
+    KUBECONFIG_INVALID_HINT = "errors.clusters.kubeconfig.invalid.hint" => "Check that it's the YAML kubectl uses; see Details for where it went wrong.";
+    /// A pasted kubeconfig without any context.
+    KUBECONFIG_NO_CONTEXTS = "errors.clusters.kubeconfig.noContexts" => "That kubeconfig has no contexts to import.";
+    /// A pasted kubeconfig that refers to a file by a relative path.
+    KUBECONFIG_RELATIVE_PATH = "errors.clusters.kubeconfig.relativePath" => "It refers to {path}, which can't be found from a pasted kubeconfig.";
+    KUBECONFIG_RELATIVE_PATH_HINT = "errors.clusters.kubeconfig.relativePath.hint" => "Paste a kubeconfig with its certificates inlined:";
+    /// A file the kubeconfig refers to over 1 MB.
+    KUBECONFIG_FILE_TOO_LARGE = "errors.clusters.kubeconfig.fileTooLarge" => "{path} is too large to be a certificate, key or token.";
+    /// A `*-data` field that isn't base64 PEM.
+    KUBECONFIG_DATA_INVALID = "errors.clusters.kubeconfig.dataInvalid" => "A certificate or key in the kubeconfig isn't valid base64.";
+    /// The context the user picked is gone from the kubeconfig.
+    CONTEXT_GONE = "errors.clusters.kubeconfig.contextGone" => "The context {context} is no longer in the kubeconfig.";
+    CONTEXT_GONE_HINT = "errors.clusters.kubeconfig.contextGone.hint" => "Read the kubeconfig again and pick from what it holds now.";
+    /// A context whose cluster entry is missing.
+    CONTEXT_NO_CLUSTER = "errors.clusters.kubeconfig.noCluster" => "Its cluster {cluster} isn't in the kubeconfig.";
+    /// A context whose cluster has no server.
+    CONTEXT_NO_SERVER = "errors.clusters.kubeconfig.noServer" => "Its cluster has no server address.";
+    /// A context whose user entry is missing.
+    CONTEXT_NO_USER = "errors.clusters.kubeconfig.noUser" => "Its user {user} isn't in the kubeconfig.";
+    /// A user of a removed auth provider.
+    AUTH_PROVIDER_UNSUPPORTED = "errors.clusters.kubeconfig.authProviderUnsupported" => "Its user signs in with the {provider} auth provider, which Kubernetes no longer supports.";
+    AUTH_PROVIDER_GCP_HINT = "errors.clusters.kubeconfig.authProviderUnsupported.hintGcp" => "Install gke-gcloud-auth-plugin and fetch the cluster's credentials again, which switches the kubeconfig to it:";
+    AUTH_PROVIDER_AZURE_HINT = "errors.clusters.kubeconfig.authProviderUnsupported.hintAzure" => "Switch the kubeconfig to kubelogin, Azure's exec plugin:";
+    AUTH_PROVIDER_OTHER_HINT = "errors.clusters.kubeconfig.authProviderUnsupported.hintOther" => "Switch this user to an exec plugin, as kubectl now requires.";
+    /// Refreshing a Cluster that was pasted, without pasting it again.
+    NOT_REFRESHABLE = "errors.clusters.kubeconfig.notRefreshable" => "{name} was pasted, so it can't be refreshed from this computer's kubeconfig.";
+    NOT_REFRESHABLE_HINT = "errors.clusters.kubeconfig.notRefreshable.hint" => "Paste its kubeconfig again.";
+    /// Refreshing a Cluster that wasn't imported from a kubeconfig.
+    NO_SOURCE = "errors.clusters.kubeconfig.noSource" => "{name} wasn't imported from a kubeconfig.";
+    /// Importing with nothing picked.
+    IMPORT_NOTHING = "errors.clusters.kubeconfig.importNothing" => "Pick at least one context to import.";
+    /// Importing two contexts under one name.
+    IMPORT_SAME_NAME = "errors.clusters.kubeconfig.importSameName" => "Two clusters would be named \"{name}\".";
 }

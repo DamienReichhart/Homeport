@@ -1,5 +1,5 @@
 import { toAppError } from '@/shared/api';
-import { PlusIcon, ServerCogIcon, TriangleAlertIcon } from 'lucide-react';
+import { PlusIcon, ServerCogIcon, ShipWheelIcon, TriangleAlertIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   Button,
@@ -22,6 +22,8 @@ import { t } from '@/shared/i18n';
 
 const ADD = '__add__';
 const MANAGE = '__manage__';
+const ADD_CLUSTER = '__add_cluster__';
+const MANAGE_CLUSTERS = '__manage_clusters__';
 /** Clusters' values; a Host's value is its id. */
 const CLUSTER = 'cluster:';
 
@@ -66,6 +68,8 @@ export function HostSwitcher() {
         onValueChange={(next) => {
           if (next === ADD) navigate('/hosts/new');
           else if (next === MANAGE) navigate('/hosts');
+          else if (next === ADD_CLUSTER) navigate('/clusters/new');
+          else if (next === MANAGE_CLUSTERS) navigate('/clusters');
           else if (next.startsWith(CLUSTER))
             select({ kind: 'cluster', id: next.slice(CLUSTER.length) });
           else select({ kind: 'host', id: next });
@@ -108,6 +112,15 @@ export function HostSwitcher() {
           <SelectItem value={MANAGE}>
             <ServerCogIcon /> {t('hosts.switcher.manage')}
           </SelectItem>
+          <SelectSeparator />
+          <SelectItem value={ADD_CLUSTER}>
+            <PlusIcon /> {t('hosts.switcher.addCluster')}
+          </SelectItem>
+          {clusters.data?.length ? (
+            <SelectItem value={MANAGE_CLUSTERS}>
+              <ShipWheelIcon /> {t('hosts.switcher.manageClusters')}
+            </SelectItem>
+          ) : null}
         </SelectContent>
       </Select>
       {unusable?.error && (

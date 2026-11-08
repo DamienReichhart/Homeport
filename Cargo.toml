@@ -41,7 +41,7 @@ rustls-pki-types = { version = "1", features = ["std"] }
 # The Kubernetes API of a Cluster, on rustls and ring like the rest of the
 # app. k8s-openapi's `earliest` schema (1.33) reads older Clusters' stable
 # resources too.
-kube = { version = "5", default-features = false, features = ["client", "rustls-tls", "ring", "runtime", "http-proxy"] }
+kube = { version = "5", default-features = false, features = ["client", "rustls-tls", "ring", "runtime", "http-proxy", "oidc"] }
 http = "1"
 # The secret strings kube's AuthInfo holds credentials in.
 secrecy = "0.10"

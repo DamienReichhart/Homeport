@@ -75,6 +75,8 @@ pub enum AuthMethod {
     Exec {
         command: String,
     },
+    /// An OpenID Connect ID token, refreshed with its refresh token.
+    Oidc,
 }
 
 /// Where a Cluster's kubeconfig context came from.
@@ -103,6 +105,8 @@ pub struct ClusterSecrets {
     pub password: Option<String>,
     /// The exec credential plugin and its environment.
     pub exec: Option<ExecConfig>,
+    /// The `oidc` auth provider's settings: its ID and refresh tokens, issuer and client.
+    pub oidc: Option<std::collections::BTreeMap<String, String>>,
 }
 
 /// An exec credential plugin, as `client.authentication.k8s.io` describes it.

@@ -3,7 +3,10 @@
 
 use tauri::State;
 
-use homeport_clusters::service::ClusterView;
+use homeport_clusters::{
+    kubeconfig::{ContextChoice, KubeContexts},
+    service::ClusterView,
+};
 
 use crate::{app::AppState, error::AppResult};
 
@@ -52,4 +55,37 @@ pub fn clusters_remove(state: State<'_, AppState>, id: String) -> AppResult<()> 
 #[specta::specta]
 pub async fn clusters_reconnect(state: State<'_, AppState>, id: String) -> AppResult<ClusterView> {
     state.clusters.reconnect(&id)
+}
+
+/// The contexts of the pasted kubeconfig `text`, or of this machine's
+/// (`KUBECONFIG`, else `~/.kube/config`). A pasted one stays in memory.
+#[tauri::command]
+#[specta::specta]
+pub fn clusters_kubeconfig_contexts(
+    state: State<'_, AppState>,
+    text: Option<String>,
+) -> AppResult<KubeContexts> {
+    state.clusters.kubeconfig_contexts(text.as_deref())
+}
+
+/// Adds a Cluster for each context picked, its credentials sealed.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_import(
+    state: State<'_, AppState>,
+    contexts: Vec<ContextChoice>,
+    text: Option<String>,
+) -> AppResult<Vec<ClusterView>> {
+    state.clusters.import(&contexts, text.as_deref())
+}
+
+/// Reads a Cluster's context again from its kubeconfig and reconnects.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_refresh(
+    state: State<'_, AppState>,
+    id: String,
+    text: Option<String>,
+) -> AppResult<ClusterView> {
+    state.clusters.refresh(&id, text.as_deref())
 }

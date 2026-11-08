@@ -18,6 +18,8 @@ export default {
   'hosts.switcher.manage': 'Manage hosts',
   'hosts.switcher.hosts': 'Hosts',
   'hosts.switcher.clusters': 'Clusters',
+  'hosts.switcher.addCluster': 'Add cluster…',
+  'hosts.switcher.manageClusters': 'Manage clusters',
   'hosts.switcher.whyUnusable': 'Why {name} can’t be used',
   'hosts.detail.enabled': 'Enabled',
   'hosts.detail.reconnect': 'Reconnect',

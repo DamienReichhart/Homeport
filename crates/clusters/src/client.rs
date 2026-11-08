@@ -85,6 +85,14 @@ pub fn config(
     auth.password = secrets.password.clone().map(SecretString::from);
     auth.client_certificate_data = cert.as_deref().map(b64);
     auth.client_key_data = key.as_deref().map(|k| SecretString::from(b64(k)));
+    if let Some(oidc) = &secrets.oidc {
+        // kube-rs refreshes the ID token in memory; nothing is written back.
+        auth.auth_provider = Some(kube::config::AuthProviderConfig {
+            name: "oidc".into(),
+            config: oidc.clone().into_iter().collect(),
+            other: Default::default(),
+        });
+    }
     Ok(config)
 }
 

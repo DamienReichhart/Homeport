@@ -1,4 +1,5 @@
 import { boardFeature } from '@/features/board';
+import { clustersFeature } from '@/features/clusters';
 import { containersFeature } from '@/features/containers';
 import { eventsFeature } from '@/features/events';
 import { hostsFeature } from '@/features/hosts';
@@ -25,6 +26,7 @@ export const features: FeatureManifest[] = [
   eventsFeature,
   settingsFeature,
   hostsFeature,
+  clustersFeature,
   updatesFeature,
 ];
 
