@@ -23,6 +23,9 @@ pub enum HostStatus {
         /// The version of Podman when the Engine is Podman, read on every
         /// connect because the same socket can change product.
         podman_version: Option<String>,
+        /// The version of containerd when the Host's Engine is containerd,
+        /// which is then also `engine_version`.
+        containerd_version: Option<String>,
         /// The Host's place in a Swarm, `None` outside one.
         swarm: Option<SwarmMembership>,
     },
@@ -60,6 +63,16 @@ impl HostStatus {
     pub fn podman_version(&self) -> Option<&str> {
         match self {
             Self::Connected { podman_version, .. } => podman_version.as_deref(),
+            _ => None,
+        }
+    }
+
+    /// The version of containerd the Host runs, while it's connected to one.
+    pub fn containerd_version(&self) -> Option<&str> {
+        match self {
+            Self::Connected {
+                containerd_version, ..
+            } => containerd_version.as_deref(),
             _ => None,
         }
     }

@@ -1,12 +1,14 @@
-//! Finds the Engines running on this machine: Docker-compatible ones, at
-//! their well-known sockets.
+//! Finds the Engines running on this machine at their well-known sockets:
+//! Docker-compatible ones, and containerd.
 
+mod containerd;
 mod podman;
 
 use std::{path::Path, time::Duration};
 
 use serde::Serialize;
 
+use homeport_core::error::AppError;
 use homeport_transport as transport;
 
 use crate::{EngineKind, HostConnection};
@@ -19,7 +21,12 @@ pub struct DetectedEngine {
     pub socket_path: String,
     /// The kind of Engine behind the socket, which presets the Host form.
     pub engine: EngineKind,
+    /// Empty when `problem` is set.
     pub engine_version: String,
+    /// Why the Engine found there can't be added as it is, and how to fix
+    /// it: a containerd socket the user may not use, or one only RootlessKit
+    /// reaches.
+    pub problem: Option<AppError>,
 }
 
 /// Well-known Engine sockets, most common first.
@@ -111,7 +118,22 @@ pub async fn detect() -> Vec<DetectedEngine> {
                 socket_path,
                 engine: EngineKind::Docker,
                 engine_version,
+                problem: None,
             });
+        }
+    }
+    for (label, socket_path) in containerd::candidates(runtime.as_deref()) {
+        if cfg!(unix) {
+            if let Ok(real) = std::fs::canonicalize(&socket_path) {
+                if seen.contains(&real) {
+                    continue;
+                }
+                seen.push(real);
+            }
+        }
+        let probe = containerd::probe(label, &socket_path, runtime.as_deref());
+        if let Ok(Some(found)) = tokio::time::timeout(Duration::from_secs(3), probe).await {
+            engines.push(found);
         }
     }
     engines

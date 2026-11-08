@@ -140,6 +140,7 @@ mod tests {
             os: "linux".into(),
             arch: "x86_64".into(),
             podman_version: None,
+            containerd_version: None,
             swarm: None,
         }
     }

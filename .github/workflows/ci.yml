@@ -90,7 +90,33 @@ jobs:
       - run: docker pull alpine:3.22
       # The helper image that opens volumes (ADR 0015).
       - run: docker pull busybox:1.37
-      - run: cargo test --workspace --exclude homeport -- --ignored
+      # containerd's socket is root's; the job below runs those tests.
+      - run: cargo test --workspace --exclude homeport -- --ignored --skip containerd_live
       - name: Check that the tests cleaned up after themselves
         if: always()
         run: scripts/ci/engine-test-leftovers.sh
+
+  # The tests marked #[ignore = "needs a local containerd"] against the
+  # containerd under the runner's Docker Engine (ADR 0020). Its socket is
+  # root's, so the test binaries run with sudo; they work in their own
+  # homeport-test namespace and pull from mirror.gcr.io, without Docker
+  # Hub's limits. Pulling through Transfer needs containerd 2.0 and skips
+  # itself on an older one.
+  containerd-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: containerd-tests
+      - name: Show containerd's version
+        run: sudo ctr version
+      - run: cargo test -p homeport-containerd -p homeport-hosts -- --ignored containerd_live
+        env:
+          CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER: sudo -E
+      - name: Check that the tests cleaned up after themselves
+        if: always()
+        run: |
+          left=$(sudo ctr --namespace homeport-test containers ls -q)
+          if [ -n "$left" ]; then echo "containers left behind: $left"; exit 1; fi

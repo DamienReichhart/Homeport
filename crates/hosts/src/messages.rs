@@ -23,8 +23,16 @@ homeport_core::messages! {
     /// Something only Podman offers, on a Host that runs another Engine.
     NOT_PODMAN = "errors.hosts.notPodman" => "{name} doesn't run Podman, which this needs.";
     NOT_PODMAN_HINT = "errors.hosts.notPodman.hint" => "Pick a Podman host in the host switcher.";
+    /// Something only containerd offers, on a Host that runs another Engine.
+    NOT_CONTAINERD = "errors.hosts.notContainerd" => "{name} doesn't run containerd, which this needs.";
+    NOT_CONTAINERD_HINT = "errors.hosts.notContainerd.hint" => "Pick a containerd host in the host switcher.";
     /// A restored Host whose kind of Engine this version can't connect to.
-    ENGINE_NOT_CONNECTABLE_HINT = "errors.hosts.engineNotConnectable.hint" => "This version of Homeport can only connect to Docker-compatible Engines. Update Homeport to use this host.";
+    ENGINE_NOT_CONNECTABLE_HINT = "errors.hosts.engineNotConnectable.hint" => "This version of Homeport connects to Docker-compatible Engines and containerd. Update Homeport to use this host.";
+    /// A containerd Host that was connected stopped answering.
+    CONTAINERD_CONNECTION_LOST_HINT = "errors.hosts.connectionLost.containerdHint" => "containerd or the network may have restarted. Homeport keeps retrying.";
+    /// Rootless containerd found, whose socket only exists inside RootlessKit.
+    DETECT_CONTAINERD_ROOTLESS = "errors.hosts.detect.containerdRootless" => "Rootless containerd runs here, but its socket at {path} is only there inside RootlessKit's namespace, where Homeport can't reach it.";
+    DETECT_CONTAINERD_ROOTLESS_HINT = "errors.hosts.detect.containerdRootless.hint" => "Use containerd's system service instead, or reach this computer over SSH as root.";
     /// Saving a TLS Host with SSH credentials.
     TLS_NEEDS_CERTIFICATES = "errors.hosts.tlsNeedsCertificates" => "TLS hosts need certificates.";
     /// Saving an SSH Host with TLS credentials.

@@ -10,6 +10,7 @@ describe('describeStatus', () => {
         os: 'linux',
         arch: 'amd64',
         podmanVersion: null,
+        containerdVersion: null,
         swarm: null,
       }),
     ).toEqual({ label: 'Connected', tone: 'success', detail: 'Engine 29.1' });
@@ -24,6 +25,7 @@ describe('describeStatus', () => {
         os: 'linux',
         arch: 'amd64',
         podmanVersion: '5.8.1',
+        containerdVersion: null,
         swarm: null,
       }).detail,
     ).toBe('Podman 5.8.1');

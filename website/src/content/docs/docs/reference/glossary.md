@@ -11,7 +11,15 @@ A Docker Engine that Homeport connects to, defined by a name and how to reach it
 
 ### Engine kind
 
-What sort of Engine a host points to: Docker-compatible (Docker Engine, or Podman through its compatible API), containerd or Incus. It decides which pages a host shows; only Docker-compatible Engines can be added for now. Podman isn't a kind of its own: Homeport recognises it each time it connects. See [Engine kinds](/docs/hosts/#engine-kinds).
+What sort of Engine a host points to: Docker-compatible (Docker Engine, or Podman through its compatible API), containerd or Incus. It decides which pages a host shows; Incus can't be added yet. Podman isn't a kind of its own: Homeport recognises it each time it connects. See [Engine kinds](/docs/hosts/#engine-kinds).
+
+### Namespace (containerd's)
+
+On a containerd host, the space every container, image and snapshot lives in: nerdctl uses `default`, Kubernetes `k8s.io`, Docker `moby`. A containerd host's pages show one at a time. A Cluster's Namespaces are Kubernetes ones. See [containerd namespaces](/docs/hosts/containerd/#namespaces).
+
+### Snapshot
+
+On a containerd host, a layer of files on disk: an unpacked image layer, or a container's writable layer. See [snapshots](/docs/hosts/containerd/#snapshots).
 
 ### Pod
 
@@ -51,7 +59,7 @@ What a Swarm runs: an image, its settings and a number of replicas, or one task 
 
 ### Task
 
-One slot of a service on one node, run as a container there. When a service doesn't converge, its tasks say why.
+One slot of a service on one node, run as a container there. When a service doesn't converge, its tasks say why. On a containerd host, a task is what runs for a container, which is only metadata: starting a container creates its task.
 
 ### Stack
 

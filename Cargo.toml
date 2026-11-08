@@ -3,7 +3,7 @@ members = ["src-tauri", "crates/*"]
 resolver = "2"
 
 [workspace.package]
-version = "0.18.0"
+version = "0.19.0"
 edition = "2021"
 license = "AGPL-3.0-only"
 rust-version = "1.89"
@@ -49,6 +49,15 @@ jiff = "0.2"
 # The secret strings kube's AuthInfo holds credentials in.
 secrecy = "0.10"
 k8s-openapi = { version = "0.29", default-features = false, features = ["std", "earliest"] }
+# containerd's gRPC API (ADR 0020): HTTP/2 over the Host's dialer, with code
+# generated at build time from the vendored .proto files by the vendored protoc.
+tonic = { version = "0.14", default-features = false, features = ["codegen", "channel"] }
+tonic-prost = "0.14"
+tonic-prost-build = { version = "0.14", default-features = false }
+protoc-bin-vendored = "3"
+prost = "0.14"
+prost-types = "0.14"
+tower = { version = "0.5", default-features = false, features = ["util"] }
 # HTTP from this machine (registry logins, Docker Hub), on the same rustls
 # and ring as the rest of the app.
 reqwest = { version = "0.13", default-features = false, features = ["rustls-no-provider", "json", "query", "system-proxy"] }
@@ -86,6 +95,7 @@ homeport-core = { path = "crates/core" }
 homeport-storage = { path = "crates/storage" }
 homeport-transport = { path = "crates/transport" }
 homeport-engine = { path = "crates/engine" }
+homeport-containerd = { path = "crates/containerd" }
 homeport-hosts = { path = "crates/hosts" }
 homeport-clusters = { path = "crates/clusters" }
 homeport-git = { path = "crates/git" }

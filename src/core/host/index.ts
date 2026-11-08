@@ -1,6 +1,7 @@
 // Public API of the Host core. Import from "@/core/host" only.
 export { hostKeys } from './api/keys';
 export { useCheckForNewerImages, useCreateHost, useReconnectHost } from './api/mutations';
+export { containerdQueries, useContainerdNamespace } from './api/containerd';
 export { useEveryHost, type HostResult } from './api/everyHost';
 export { podsByContainer, usePodsByContainer, type PodRef } from './api/pods';
 export { hostQueries, resourceQueries, useContainers, useHosts } from './api/queries';
@@ -15,6 +16,7 @@ export {
   type FreshnessIndex,
 } from './model/freshness';
 export {
+  containerdVersion,
   ENGINE_LABELS,
   podmanAtLeast,
   podmanVersion,
@@ -32,7 +34,10 @@ export {
   type StatusSummary,
 } from './model/status';
 export { useHostSelection, type HostSelection } from './selection/context';
+export { DEFAULT_NAMESPACE, preferredNamespace } from './model/containerd';
 export { CheckNewerImages } from './ui/CheckNewerImages';
+export { ContainerdGate } from './ui/ContainerdGate';
+export { ContainerdNamespacePicker } from './ui/ContainerdNamespacePicker';
 export { HostCapabilityGuard } from './ui/HostCapabilityGuard';
 export { HostGate } from './ui/HostGate';
 export { NewerImage } from './ui/NewerImage';

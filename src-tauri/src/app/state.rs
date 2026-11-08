@@ -4,6 +4,7 @@
 use std::sync::{Arc, Mutex};
 
 use homeport_clusters::{service::ClusterService, terminal::PodTerminals};
+use homeport_containerd::exec::ContainerdExecSessions;
 use homeport_core::streams::Streams;
 use homeport_engine::{
     containers::exec::ExecSessions, freshness::FreshnessCache, volumes::browse::BrowseSessions,
@@ -41,6 +42,8 @@ pub struct AppState {
     pub synced: Arc<SyncedStacks>,
     pub streams: Streams,
     pub exec: ExecSessions,
+    /// Terminals open in containerd containers' tasks.
+    pub containerd_exec: ContainerdExecSessions,
     /// Terminals open in Pods' containers.
     pub pod_terminals: PodTerminals,
     /// Volumes being browsed, each in a helper container (ADR 0015).

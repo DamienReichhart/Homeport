@@ -33,6 +33,9 @@ pub struct Settings {
     /// The Namespace each Cluster's pages show, by Cluster id; `""` for
     /// every Namespace. A Cluster without one shows its context's Namespace.
     pub cluster_namespaces: BTreeMap<String, String>,
+    /// The namespace each containerd Host's pages show, by Host id. A Host
+    /// without one shows `default`, or the only namespace holding something.
+    pub containerd_namespaces: BTreeMap<String, String>,
     /// Look for a new version at launch and every few hours.
     pub check_for_updates: bool,
     /// Minutes between checks of Synced Stacks' repositories while Homeport
@@ -105,6 +108,7 @@ impl Default for Settings {
             last_host_id: None,
             last_selection: None,
             cluster_namespaces: BTreeMap::new(),
+            containerd_namespaces: BTreeMap::new(),
             check_for_updates: true,
             sync_interval_minutes: 5,
             keep_events_days: 30,

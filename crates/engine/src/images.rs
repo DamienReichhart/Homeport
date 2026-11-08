@@ -19,6 +19,8 @@ use crate::messages as msg;
 
 use crate::auth::RegistryAuth;
 
+pub use homeport_core::pull::PullEvent;
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct Image {
@@ -43,28 +45,6 @@ pub struct ImageLayer {
     pub size: i64,
     pub comment: String,
     pub tags: Vec<String>,
-}
-
-/// Progress of a pull or a push.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
-#[serde(
-    tag = "type",
-    rename_all = "camelCase",
-    rename_all_fields = "camelCase"
-)]
-pub enum PullEvent {
-    /// Progress of one layer (or a general status when `id` is absent).
-    /// Pushes never name the layer: the Engine API client drops its id.
-    Progress {
-        id: Option<String>,
-        status: String,
-        current: Option<i64>,
-        total: Option<i64>,
-    },
-    Done,
-    Error {
-        error: AppError,
-    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]

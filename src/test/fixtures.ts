@@ -26,6 +26,7 @@ export const connectedHost: HostView = {
     os: 'linux',
     arch: 'amd64',
     podmanVersion: null,
+    containerdVersion: null,
     swarm: null,
   },
 };
@@ -40,6 +41,7 @@ export const podmanHost: HostView = {
     os: 'linux',
     arch: 'amd64',
     podmanVersion: '5.8.1',
+    containerdVersion: null,
     swarm: null,
   },
 };

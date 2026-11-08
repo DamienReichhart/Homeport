@@ -6,6 +6,7 @@ import clusterevents from './clusterevents';
 import clusters from './clusters';
 import common from './common';
 import config from './config';
+import containerd from './containerd';
 import containers from './containers';
 import core from './core';
 import errors from './errors.json';
@@ -44,6 +45,7 @@ export const uiMessages = {
   ...clusterevents,
   ...clusters,
   ...config,
+  ...containerd,
   ...containers,
   ...events,
   ...helm,

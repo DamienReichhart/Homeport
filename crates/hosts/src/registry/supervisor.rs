@@ -10,6 +10,7 @@ use bollard::{query_parameters::EventsOptionsBuilder, Docker};
 use futures_util::StreamExt;
 use serde::Deserialize;
 
+use homeport_containerd::{introspection, Containerd};
 use homeport_core::error::{AppError, ErrorCode};
 use homeport_engine::swarm;
 
@@ -41,7 +42,7 @@ pub(super) async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
             return reg.set_status(&id, HostStatus::Disabled, None);
         }
         // Only a restored backup from a newer Homeport can hold another kind.
-        if host.engine != EngineKind::Docker {
+        if !matches!(host.engine, EngineKind::Docker | EngineKind::Containerd) {
             let error = super::unsupported(&host.name, host.engine.label())
                 .with_hint(msg::ENGINE_NOT_CONNECTABLE_HINT);
             return reg.set_status(&id, HostStatus::Invalid { error }, None);
@@ -62,6 +63,39 @@ pub(super) async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
         } else {
             None
         };
+
+        if host.engine == EngineKind::Containerd {
+            let error = match connect_containerd(&host, secrets).await {
+                Ok((client, status)) => {
+                    backoff = 1;
+                    reg.set_status(&id, status, Some(Client::Containerd(client.clone())));
+                    drop(reg);
+                    watch_containerd(&registry, &id, client).await;
+                    AppError::new(
+                        ErrorCode::ConnectionLost,
+                        msg::CONNECTION_LOST.with("name", &host.name),
+                    )
+                    .with_hint(msg::CONTAINERD_CONNECTION_LOST_HINT)
+                }
+                Err(ConnectError::Unreachable(error)) => error,
+                Err(other) => return reg.set_status(&id, other.into(), None),
+            };
+            let Some(reg) = registry.upgrade() else {
+                return;
+            };
+            reg.set_status(
+                &id,
+                HostStatus::Unreachable {
+                    error,
+                    retry_in_secs: backoff,
+                },
+                None,
+            );
+            drop(reg);
+            tokio::time::sleep(Duration::from_secs(backoff.into())).await;
+            backoff = next_backoff(backoff);
+            continue;
+        }
 
         let error = match transport::connect(
             &host.name,
@@ -112,10 +146,86 @@ pub(super) async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
     }
 }
 
+/// Connects to a containerd Host and describes it. A containerd too old
+/// for Homeport stops there: retrying won't change its version.
+async fn connect_containerd(
+    host: &crate::Host,
+    secrets: Option<homeport_core::host::HostSecrets>,
+) -> Result<(Containerd, HostStatus), ConnectError> {
+    let dialer = transport::dial_engine(
+        &host.name,
+        &host.connection,
+        secrets,
+        host.host_key.as_deref(),
+        EngineKind::Containerd,
+    )
+    .await?;
+    let client = Containerd::connect(&host.name, dialer)
+        .await
+        .map_err(|error| match error.code {
+            ErrorCode::ContainerdTooOld => ConnectError::Invalid(error),
+            _ => ConnectError::Unreachable(error),
+        })?;
+    let info = introspection::describe(&client)
+        .await
+        .map_err(ConnectError::Unreachable)?;
+    let status = HostStatus::Connected {
+        engine_version: client.version().to_owned(),
+        api_version: client.revision().to_owned(),
+        os: info.os,
+        arch: info.arch,
+        podman_version: None,
+        containerd_version: Some(client.version().to_owned()),
+        swarm: None,
+    };
+    Ok((client, status))
+}
+
+/// Records containerd's events, in every namespace, until the stream
+/// breaks or a ping fails. containerd keeps no history, so nothing that
+/// happened while Homeport was away is filled in.
+async fn watch_containerd(registry: &Weak<HostRegistry>, id: &str, client: Containerd) {
+    let events = async {
+        let mut stream = match homeport_containerd::events::subscribe(&client).await {
+            Ok(stream) => Box::pin(stream),
+            Err(e) => return log::debug!("couldn't read the events of {id}: {e}"),
+        };
+        while let Some(event) = stream.next().await {
+            let Some(reg) = registry.upgrade() else {
+                return;
+            };
+            reg.record_event(
+                id,
+                EngineEvent {
+                    time: event.time_nano / 1_000_000_000,
+                    time_nano: event.time_nano,
+                    kind: event.kind,
+                    action: event.action,
+                    actor_id: event.actor_id,
+                    attributes: event.attributes,
+                },
+            );
+        }
+    };
+    let pings = async {
+        loop {
+            tokio::time::sleep(PING_INTERVAL).await;
+            if client.ping().await.is_err() {
+                return;
+            }
+        }
+    };
+    tokio::select! {
+        _ = events => {}
+        _ = pings => {}
+    }
+}
+
 async fn describe(docker: &Docker) -> Result<HostStatus, AppError> {
     let v = docker.version().await?;
     Ok(HostStatus::Connected {
         podman_version: podman_version(&v),
+        containerd_version: None,
         engine_version: v.version.unwrap_or_default(),
         api_version: v.api_version.unwrap_or_default(),
         os: v.os.unwrap_or_default(),

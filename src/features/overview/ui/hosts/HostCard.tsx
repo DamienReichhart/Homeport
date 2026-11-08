@@ -4,7 +4,9 @@ import {
   connectionLabel,
   describeAddress,
   HostStatusBadge,
+  containerdQueries,
   resourceQueries,
+  supports,
   useHostSelection,
 } from '@/core/host';
 import { HostSwarmLink } from '@/features/swarm';
@@ -27,7 +29,20 @@ export function HostCard({ view, selected }: { view: HostView; selected: boolean
   const { select } = useHostSelection();
   const navigate = useNavigate();
   const connected = view.status.state === 'connected';
-  const info = useQuery({ ...resourceQueries.systemInfo(view.host.id), enabled: connected });
+  const docker = supports(view, 'docker');
+  const containerd = supports(view, 'containerd');
+  const info = useQuery({
+    ...resourceQueries.systemInfo(view.host.id),
+    enabled: connected && docker,
+  });
+  const namespaces = useQuery({
+    ...containerdQueries.namespaces(view.host.id),
+    enabled: connected && containerd,
+  });
+  const held = namespaces.data?.reduce(
+    (sum, n) => ({ containers: sum.containers + n.containers, images: sum.images + n.images }),
+    { containers: 0, images: 0 },
+  );
   return (
     <Card
       className={cn(
@@ -36,7 +51,7 @@ export function HostCard({ view, selected }: { view: HostView; selected: boolean
       )}
       onClick={() => {
         select(view.host.id);
-        if (connected) navigate('/containers');
+        if (connected) navigate(containerd ? '/containerd/containers' : '/containers');
       }}
     >
       <CardHeader>
@@ -64,7 +79,18 @@ export function HostCard({ view, selected }: { view: HostView; selected: boolean
             <HostUsage hostId={view.host.id} cpus={info.data.cpus} memory={info.data.memory} />
           </div>
         )}
-        {connected && (
+        {connected && held && (
+          <div className="text-muted-foreground grid grid-cols-2 gap-2 text-sm">
+            <span>
+              {t('overview.host.containerdContainers', {
+                count: held.containers,
+                namespaces: namespaces.data?.length ?? 0,
+              })}
+            </span>
+            <span>{t('overview.host.images', { count: held.images })}</span>
+          </div>
+        )}
+        {connected && docker && (
           <Link
             to={`/board?host=${encodeURIComponent(view.host.id)}`}
             className="text-primary justify-self-start text-sm hover:underline"

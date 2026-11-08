@@ -21,8 +21,10 @@ pub mod testing;
 pub mod tls;
 
 pub use self::{
-    connect::{connect, Connected},
-    dialer::{shell_quote, BoxFuture, BoxStream, CommandOutput, Dialer, Stream, CONNECT_TIMEOUT},
+    connect::{connect, dial_engine, Connected},
+    dialer::{
+        shell_quote, BoxFuture, BoxStream, CommandOutput, Dialer, Spawned, Stream, CONNECT_TIMEOUT,
+    },
     error::ConnectError,
     local::{LocalDialer, TcpDialer},
 };

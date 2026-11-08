@@ -27,7 +27,14 @@ export function supports(host: HostView | null | undefined, capability: HostCapa
       return docker;
     case 'podman':
       return docker && podmanVersion(host) !== null;
+    case 'containerd':
+      return host.host.engine === 'containerd';
   }
+}
+
+/** The containerd version a connected Host runs, `null` for any other Engine or state. */
+export function containerdVersion(host: HostView | null | undefined): string | null {
+  return host?.status.state === 'connected' ? host.status.containerdVersion : null;
 }
 
 /** `version`'s leading numbers, so "5.8.1-dev" reads as [5, 8, 1]. */
@@ -48,11 +55,11 @@ export function versionAtLeast(version: string, minimum: string): boolean {
 }
 
 /**
- * Whether what `host` offers is known yet: its Engine kind always is, and
- * Podman once it's connected. Until then a page can't say it's unsupported.
+ * Whether what `host` offers is known yet: its Engine kind always is (the
+ * Docker Engine API, containerd), and Podman once it's connected. Until then a page can't say it's unsupported.
  */
 export function capabilityKnown(host: HostView, capability: HostCapability): boolean {
-  return capability === 'docker' || host.status.state === 'connected';
+  return capability !== 'podman' || host.status.state === 'connected';
 }
 
 /** Whether a connected Host runs Podman `minimum` or later. */

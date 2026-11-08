@@ -68,7 +68,8 @@ export default {
   'hosts.form.name': 'Name',
   'hosts.form.engine': 'Engine',
   'hosts.form.engineHint':
-    'Docker-compatible covers Docker and Podman; Homeport tells them apart when it connects.',
+    'Docker-compatible covers Docker and Podman; Homeport tells them apart when it connects. containerd is reached through its socket, here or over SSH.',
+  'hosts.form.socketOnly': '{engine} only answers on its socket: connect locally or over SSH.',
   'hosts.form.engineSoon': '{engine} (coming in a later version)',
   'hosts.form.socketPath': 'Socket path',
   'hosts.form.socketPathHint': 'A Unix socket, or a named pipe like {pipe} on Windows.',

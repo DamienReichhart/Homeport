@@ -15,10 +15,12 @@ export function UnsupportedEngine({
   requires: HostCapability;
 }) {
   const name = host.host.name;
-  const description =
-    requires === 'podman'
-      ? t('core.unsupported.podman', { name })
-      : t('core.unsupported.docker', { name, engine: t(ENGINE_LABELS[host.host.engine]) });
+  const engine = t(ENGINE_LABELS[host.host.engine]);
+  const description = {
+    podman: () => t('core.unsupported.podman', { name }),
+    containerd: () => t('core.unsupported.containerd', { name, engine }),
+    docker: () => t('core.unsupported.docker', { name, engine }),
+  }[requires]();
   return (
     <EmptyState
       icon={CircleSlashIcon}

@@ -29,6 +29,11 @@ const features: { icon: IconName; title: string; body: string }[] = [
     body: 'Homeport recognises Podman when it connects and adds what only Podman has: pods, created with their ports and run containers in, and Quadlet units, installed, edited and started under systemd, through Podman’s own API.',
   },
   {
+    icon: 'box',
+    title: 'containerd, directly',
+    body: 'Connect to containerd on its socket, locally or over SSH, with no Docker: pick a namespace, start, stop and signal its containers’ tasks, read their logs, open a terminal, pull images with your registry logins, and find the snapshots eating your disk.',
+  },
+  {
     icon: 'shipWheel',
     title: 'Kubernetes clusters',
     body: 'Add clusters from your kubeconfig — EKS, GKE and AKS included — or find local ones in one click. Browse workloads, Pods, Services, configuration and any API resource live; follow logs, open a terminal, forward ports, scale and apply YAML with a preview, and install, upgrade and roll back Helm charts, with nothing installed on the cluster.',

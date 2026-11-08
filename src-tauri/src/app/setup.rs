@@ -92,6 +92,7 @@ pub fn state(app: &App) -> Result<AppState, Box<dyn Error>> {
         clusters,
         streams: Default::default(),
         exec: Default::default(),
+        containerd_exec: Default::default(),
         pod_terminals: Default::default(),
         volume_browser: Default::default(),
         freshness: Default::default(),

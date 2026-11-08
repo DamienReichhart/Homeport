@@ -1,7 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { MonitorIcon, PlusIcon } from 'lucide-react';
 import type { HostInput } from '@/shared/api';
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui';
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  ErrorMessage,
+} from '@/shared/ui';
 import { hostQueries, useHosts } from '../api/queries';
 import { t } from '@/shared/i18n';
 
@@ -30,38 +38,51 @@ export function LocalEngines({
         <CardDescription>{t('core.localEngines.description')}</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-2">
-        {local.map((engine) => (
-          <div key={engine.socketPath} className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-2">
-              <MonitorIcon className="text-muted-foreground size-4" />
-              <div className="min-w-0">
-                <p className="text-sm font-medium">
-                  {engine.label}{' '}
-                  <span className="text-muted-foreground">
-                    · {t('core.host.engineVersion', { version: engine.engineVersion })}
-                  </span>
-                </p>
-                <p className="text-muted-foreground truncate font-mono text-xs">
-                  {engine.socketPath}
-                </p>
-              </div>
+        {local.map((engine) =>
+          engine.problem ? (
+            <div key={engine.socketPath} className="grid gap-1">
+              <p className="text-sm font-medium">
+                {engine.label}{' '}
+                <span className="text-muted-foreground font-mono text-xs">{engine.socketPath}</span>
+              </p>
+              <ErrorMessage error={engine.problem} />
             </div>
-            <Button
-              size="sm"
-              disabled={pending}
-              onClick={() =>
-                onAdd({
-                  name: engine.label,
-                  connection: { kind: 'local', socketPath: engine.socketPath },
-                  engine: engine.engine,
-                  credentials: null,
-                })
-              }
-            >
-              <PlusIcon /> {t('core.localEngines.add')}
-            </Button>
-          </div>
-        ))}
+          ) : (
+            <div key={engine.socketPath} className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-2">
+                <MonitorIcon className="text-muted-foreground size-4" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">
+                    {engine.label}{' '}
+                    <span className="text-muted-foreground">
+                      ·{' '}
+                      {engine.engine === 'containerd'
+                        ? t('core.host.containerdVersion', { version: engine.engineVersion })
+                        : t('core.host.engineVersion', { version: engine.engineVersion })}
+                    </span>
+                  </p>
+                  <p className="text-muted-foreground truncate font-mono text-xs">
+                    {engine.socketPath}
+                  </p>
+                </div>
+              </div>
+              <Button
+                size="sm"
+                disabled={pending}
+                onClick={() =>
+                  onAdd({
+                    name: engine.label,
+                    connection: { kind: 'local', socketPath: engine.socketPath },
+                    engine: engine.engine,
+                    credentials: null,
+                  })
+                }
+              >
+                <PlusIcon /> {t('core.localEngines.add')}
+              </Button>
+            </div>
+          ),
+        )}
       </CardContent>
     </Card>
   );

@@ -408,6 +408,58 @@ export const commands = {
 	 *  returns its id. A pod on a Host that isn't Podman is `EngineUnsupported`.
 	 */
 	containersRun: (hostId: string, spec: RunSpec, pod: string | null) => __TAURI_INVOKE<string>("containers_run", { hostId, spec, pod }),
+	/**  Every namespace of the Host, with what each holds. */
+	containerdNamespaces: (hostId: string) => __TAURI_INVOKE<ContainerdNamespace[]>("containerd_namespaces", { hostId }),
+	containerdNamespaceCreate: (hostId: string, name: string) => __TAURI_INVOKE<null>("containerd_namespace_create", { hostId, name }),
+	/**  Removes an empty namespace; one that holds anything is refused. */
+	containerdNamespaceRemove: (hostId: string, name: string) => __TAURI_INVOKE<null>("containerd_namespace_remove", { hostId, name }),
+	/**  The containers of `namespace`, each with its task. */
+	containerdContainers: (hostId: string, namespace: string) => __TAURI_INVOKE<ContainerdContainer[]>("containerd_containers", { hostId, namespace }),
+	containerdContainerInspect: (hostId: string, namespace: string, id: string) => __TAURI_INVOKE<ContainerdContainerDetail>("containerd_container_inspect", { hostId, namespace, id }),
+	/**  Starts, stops (SIGKILL after 10 s), pauses or resumes a container's task. */
+	containerdContainerAct: (hostId: string, namespace: string, id: string, action: TaskAction) => __TAURI_INVOKE<null>("containerd_container_act", { hostId, namespace, id, action }),
+	/**  Sends a signal, by name or number, to a container's task. */
+	containerdContainerKill: (hostId: string, namespace: string, id: string, signal: string) => __TAURI_INVOKE<null>("containerd_container_kill", { hostId, namespace, id, signal }),
+	/**
+	 *  Removes a container and, unless `keep_snapshot`, its snapshot; `force`
+	 *  kills a running task first.
+	 */
+	containerdContainerRemove: (hostId: string, namespace: string, id: string, force: boolean, keepSnapshot: boolean) => __TAURI_INVOKE<null>("containerd_container_remove", { hostId, namespace, id, force, keepSnapshot }),
+	/**
+	 *  Where a container's output was kept, if anywhere, so the Logs tab can
+	 *  explain an empty one.
+	 */
+	containerdLogsSource: (hostId: string, namespace: string, id: string) => __TAURI_INVOKE<ContainerdLogSource>("containerd_logs_source", { hostId, namespace, id }),
+	/**
+	 *  Streams a container's logs from the file its creator wrote, read with
+	 *  `tail` on the Host's machine (ADR 0020).
+	 */
+	containerdLogsSubscribe: (hostId: string, namespace: string, id: string, options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("containerd_logs_subscribe", { hostId, namespace, id, options, onEvent }),
+	/**
+	 *  Opens a terminal in a container's running task, through FIFOs on the
+	 *  Host's machine (ADR 0020).
+	 */
+	containerdExecStart: (hostId: string, namespace: string, id: string, options: ContainerdExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("containerd_exec_start", { hostId, namespace, id, options, onEvent }),
+	containerdExecInput: (session: number, data: string) => __TAURI_INVOKE<null>("containerd_exec_input", { session, data }),
+	containerdExecResize: (session: number, cols: number, rows: number) => __TAURI_INVOKE<null>("containerd_exec_resize", { session, cols, rows }),
+	/**  Closes a terminal, killing its process; async, since that needs the runtime. */
+	containerdExecClose: (session: number) => __TAURI_INVOKE<null>("containerd_exec_close", { session }),
+	/**  The images of `namespace`, with their size for the Host's platform. */
+	containerdImages: (hostId: string, namespace: string) => __TAURI_INVOKE<ContainerdImage[]>("containerd_images", { hostId, namespace }),
+	/**  Removes an image no container of the namespace was made from. */
+	containerdImageRemove: (hostId: string, namespace: string, name: string) => __TAURI_INVOKE<null>("containerd_image_remove", { hostId, namespace, name }),
+	/**
+	 *  Pulls an image through containerd's Transfer service with the stored
+	 *  login for its registry, streaming progress.
+	 */
+	containerdImagesPullSubscribe: (hostId: string, namespace: string, reference: string, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("containerd_images_pull_subscribe", { hostId, namespace, reference, onEvent }),
+	/**
+	 *  The snapshots of a snapshotter (the Host's default when `None`) in
+	 *  `namespace`, largest first, each with what uses it.
+	 */
+	containerdSnapshots: (hostId: string, namespace: string, snapshotter: string | null) => __TAURI_INVOKE<ContainerdSnapshots>("containerd_snapshots", { hostId, namespace, snapshotter }),
+	/**  Removes a snapshot nothing uses and nothing is built on. */
+	containerdSnapshotRemove: (hostId: string, namespace: string, snapshotter: string, key: string) => __TAURI_INVOKE<null>("containerd_snapshot_remove", { hostId, namespace, snapshotter, key }),
 	podsList: (hostId: string) => __TAURI_INVOKE<PodmanPod[]>("pods_list", { hostId }),
 	podsInspect: (hostId: string, id: string) => __TAURI_INVOKE<PodmanPodDetail>("pods_inspect", { hostId, id }),
 	podsAct: (hostId: string, id: string, action: PodmanPodAction) => __TAURI_INVOKE<null>("pods_act", { hostId, id, action }),
@@ -1191,11 +1243,140 @@ export type ContainerUsage = {
 	memoryLimit: number,
 };
 
+/**  A container and its task, as the list shows them. */
+export type ContainerdContainer = {
+	id: string,
+	/**  nerdctl's name, or the Pod's container's, or the id. */
+	name: string,
+	image: string,
+	labels: { [key in string]: string },
+	runtime: string,
+	snapshotter: string,
+	snapshotKey: string,
+	/**  RFC 3339. */
+	createdAt: string | null,
+	createdBy: CreatedBy,
+	/**  The Kubernetes Pod it belongs to, as `namespace/name`. */
+	pod: string | null,
+	/**  A Pod's pause container, which holds its namespaces. */
+	sandbox: boolean,
+	state: TaskState,
+	/**  The task's main process. */
+	pid: number | null,
+	/**  How a stopped task ended. */
+	exitStatus: number | null,
+	exitedAt: string | null,
+};
+
+/**  A container with everything containerd holds about it. */
+export type ContainerdContainerDetail = {
+	container: ContainerdContainer,
+	/**  Its OCI runtime spec, as containerd stores it. */
+	spec: Value | null,
+	/**  The names of its extensions, such as CRI's metadata. */
+	extensions: string[],
+	updatedAt: string | null,
+};
+
+export type ContainerdExecOptions = {
+	/**  The command to run, parsed with shell quoting; the default picks a shell. */
+	command: string | null,
+	/**  A numeric `uid[:gid]`; the container's user otherwise. */
+	user: string | null,
+	workingDir: string | null,
+	cols: number,
+	rows: number,
+};
+
+export type ContainerdImage = {
+	/**  Its full reference, as containerd names it: `docker.io/library/alpine:3.22`. */
+	name: string,
+	/**  The digest of its index or manifest. */
+	digest: string,
+	mediaType: string,
+	/**
+	 *  The bytes of its manifest, config and layers for the Host's platform,
+	 *  as `ctr images ls` counts them; `None` when they aren't all here.
+	 */
+	size: number | null,
+	/**  The platforms it's published for, `os/arch[/variant]`. */
+	platforms: string[],
+	/**  RFC 3339. */
+	createdAt: string | null,
+	labels: { [key in string]: string },
+	/**  The containers of the namespace made from it. */
+	containers: number,
+};
+
+/**  How a log file's lines are written. */
+export type ContainerdLogFormat = 
+/**  Docker's json-file lines, as nerdctl writes them. */
+"json" | 
+/**  `<time> <stream> <F|P> <text>`, as the kubelet's CRI writes them. */
+"cri";
+
+/**  Where a container's output was kept, if anywhere. */
+export type ContainerdLogSource = 
+/**  A file on the Host's machine. */
+{ kind: "file"; path: string; format: ContainerdLogFormat } | 
+/**  The newest `*.log` of a CRI container's folder. */
+{ kind: "folder"; path: string } | 
+/**  A nerdctl log driver Homeport can't read, such as journald or fluentd. */
+{ kind: "driver"; driver: string } | 
+/**  Nothing kept it: `ctr run` and most other clients. */
+{ kind: "none" };
+
+/**  One namespace and what it holds. */
+export type ContainerdNamespace = {
+	name: string,
+	labels: { [key in string]: string },
+	containers: number,
+	images: number,
+};
+
+export type ContainerdSnapshot = {
+	/**  Its key: a container's id, or a layer's chain ID. */
+	key: string,
+	/**  The snapshot it's built on, empty for a base layer. */
+	parent: string,
+	kind: SnapshotKind,
+	/**
+	 *  Bytes on disk, as `ctr snapshot usage` counts them; `None` when the
+	 *  snapshotter couldn't say.
+	 */
+	size: number | null,
+	inodes: number | null,
+	/**  RFC 3339. */
+	createdAt: string | null,
+	labels: { [key in string]: string },
+	users: SnapshotUser[],
+	/**  How many snapshots are built on it. */
+	children: number,
+};
+
+/**  The snapshots of one snapshotter, and every snapshotter the Host has. */
+export type ContainerdSnapshots = {
+	snapshotter: string,
+	snapshotters: string[],
+	snapshots: ContainerdSnapshot[],
+	/**  Their usage added up. */
+	total: number,
+};
+
 /**  One context the user picked, and the name its Cluster gets. */
 export type ContextChoice = {
 	context: string,
 	name: string,
 };
+
+/**  Which tool made a container, which decides what Homeport can show of it. */
+export type CreatedBy = 
+/**  Kubernetes' CRI: the kubelet undoes stops and removals. */
+"kubernetes" | "nerdctl" | 
+/**  Docker's own containers, in the `moby` namespace. */
+"docker" | 
+/**  `ctr` or another client. */
+"other";
 
 /**  Credentials typed by the user. Absent on update means "keep the stored ones". */
 export type CredentialsInput = { kind: "tls"; caPem: string; certPem: string; keyPem: string } | { kind: "sshKey"; privateKey: string; passphrase: string | null };
@@ -1273,7 +1454,14 @@ export type DetectedEngine = {
 	socketPath: string,
 	/**  The kind of Engine behind the socket, which presets the Host form. */
 	engine: EngineKind,
+	/**  Empty when `problem` is set. */
 	engineVersion: string,
+	/**
+	 *  Why the Engine found there can't be added as it is, and how to fix
+	 *  it: a containerd socket the user may not use, or one only RootlessKit
+	 *  reaches.
+	 */
+	problem: AppError | null,
 };
 
 /**  A device of the Host made available inside the container (`--device`). */
@@ -1344,7 +1532,7 @@ export type EngineKind =
  *  its compatible API. Which one is read on every connect.
  */
 "docker" | 
-/**  containerd, through its own API (not supported yet). */
+/**  containerd, through its own gRPC API (ADR 0020). */
 "containerd" | 
 /**  Incus, through its REST API (not supported yet). */
 "incus";
@@ -1388,6 +1576,16 @@ export type ErrorCode =
 "systemd_refused" | 
 /**  User units need the user's systemd instance, which only lingering keeps. */
 "user_units_need_linger" | 
+/**  A containerd older than Homeport connects to, or than an action needs. */
+"containerd_too_old" | 
+/**  Logs or exec on a containerd Host whose connection can't run commands. */
+"containerd_needs_shell" | 
+/**  A containerd container whose output no tool recorded. */
+"containerd_no_logs" | 
+/**  Removing a containerd namespace that still holds something. */
+"namespace_not_empty" | 
+/**  A containerd task that didn't stop after SIGKILL. */
+"task_wont_stop" | 
 /**  No manager Host of a Swarm is connected. */
 "swarm_unreachable" | 
 /**  A node couldn't reach the managers of the Swarm it was joining. */
@@ -1705,6 +1903,11 @@ export type HostStatus = { state: "disabled" } | { state: "connecting" } | { sta
  *  connect because the same socket can change product.
  */
 podmanVersion: string | null; 
+/**
+ *  The version of containerd when the Host's Engine is containerd,
+ *  which is then also `engine_version`.
+ */
+containerdVersion: string | null; 
 /**  The Host's place in a Swarm, `None` outside one. */
 swarm: SwarmMembership | null } | { state: "unreachable"; error: AppError; retryInSecs: number } | { state: "unauthorized"; error: AppError } | 
 /**
@@ -2936,6 +3139,11 @@ export type Settings = {
 	 *  every Namespace. A Cluster without one shows its context's Namespace.
 	 */
 	clusterNamespaces?: { [key in string]: string },
+	/**
+	 *  The namespace each containerd Host's pages show, by Host id. A Host
+	 *  without one shows `default`, or the only namespace holding something.
+	 */
+	containerdNamespaces?: { [key in string]: string },
 	/**  Look for a new version at launch and every few hours. */
 	checkForUpdates?: boolean,
 	/**
@@ -2962,6 +3170,17 @@ export type Settings = {
 	/**  Which OS notifications Homeport shows. */
 	notifications?: NotificationSettings,
 };
+
+export type SnapshotKind = 
+/**  A layer, read-only, that others build on. */
+"committed" | 
+/**  A container's writable layer. */
+"active" | 
+/**  A read-only mount of another snapshot. */
+"view" | "unknown";
+
+/**  What uses a snapshot. */
+export type SnapshotUser = { kind: "container"; id: string } | { kind: "image"; name: string };
 
 /**  The kinds of source, for the rules a definition is checked against. */
 export type SourceKind = "managed" | "linked" | "synced";
@@ -3277,11 +3496,17 @@ export type TableRow = {
 	created: string | null,
 };
 
+/**  What can be done to a container's task. */
+export type TaskAction = "start" | "stop" | "pause" | "resume";
+
 /**  Which tasks to list: all of them, or those of a service or of a node. */
 export type TaskFilter = {
 	serviceId: string | null,
 	nodeId: string | null,
 };
+
+/**  What a container's task is doing; `none` when it has no task. */
+export type TaskState = "none" | "created" | "running" | "paused" | "pausing" | "stopped" | "unknown";
 
 export type TaskView = {
 	id: string,

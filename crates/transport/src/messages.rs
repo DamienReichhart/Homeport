@@ -12,6 +12,8 @@ homeport_core::messages! {
     /// A TLS Host has no certificates stored.
     CONNECT_TLS_MATERIAL_MISSING = "errors.transport.connect.tlsMaterialMissing" => "The TLS certificates are missing.";
     CONNECT_TLS_MATERIAL_MISSING_HINT = "errors.transport.connect.tlsMaterialMissing.hint" => "Add the CA certificate, client certificate and client key on the host page.";
+    /// A containerd (or other socket-only) Host saved with TCP or TLS.
+    CONNECT_ENGINE_NEEDS_SOCKET = "errors.transport.connect.engineNeedsSocket" => "Homeport reaches {engine} through its socket, on this computer or over SSH.";
     /// The Engine took too long to answer the first request.
     CONNECT_ENGINE_TIMEOUT = "errors.transport.connect.engineTimeout" => "The Docker Engine didn't answer in time.";
 
@@ -44,6 +46,24 @@ homeport_core::messages! {
     LOCAL_PERMISSION_DENIED_DOCKER_GROUP_HINT = "errors.transport.local.permissionDenied.dockerGroup.hint" => "Add your user to the docker group, then log out and back in (or restart) so it applies:";
     LOCAL_PERMISSION_DENIED_DOCKER_USERS_HINT = "errors.transport.local.permissionDenied.dockerUsers.hint" => "Add your user to the docker-users group in an administrator terminal, then sign out and back in:";
     LOCAL_PERMISSION_DENIED_SOCKET_HINT = "errors.transport.local.permissionDenied.socket.hint" => "Check who may use the socket:";
+
+    // A local containerd socket (ADR 0020).
+
+    /// The local containerd socket didn't answer in time.
+    LOCAL_CONTAINERD_TIMEOUT = "errors.transport.local.containerdTimeout" => "containerd at {path} didn't answer in time.";
+    /// The local containerd socket failed in a way not told apart.
+    LOCAL_CONTAINERD_UNREACHABLE = "errors.transport.local.containerdUnreachable" => "Homeport can't talk to containerd at {path}.";
+    LOCAL_CONTAINERD_UNREACHABLE_HINT = "errors.transport.local.containerdUnreachable.hint" => "Check that containerd is running, then reconnect.";
+    /// Nothing listens on the local containerd socket.
+    LOCAL_CONTAINERD_NOT_RUNNING = "errors.transport.local.containerdNotRunning" => "No containerd is running at {path}.";
+    LOCAL_CONTAINERD_NOT_RUNNING_HINT = "errors.transport.local.containerdNotRunning.hint" => "Start containerd, and have it start with the computer:";
+    LOCAL_CONTAINERD_NOT_RUNNING_K3S_HINT = "errors.transport.local.containerdNotRunning.k3s.hint" => "This socket is k3s's containerd. Start k3s:";
+    /// Rootless containerd's socket is only there inside RootlessKit's namespace.
+    LOCAL_CONTAINERD_ROOTLESS_HINT = "errors.transport.local.containerdRootless.hint" => "Rootless containerd keeps its socket inside RootlessKit's namespace, where Homeport can't reach it. Use containerd's system service, or reach this machine over SSH as root.";
+    /// The user may not use the local containerd socket.
+    LOCAL_CONTAINERD_PERMISSION_DENIED = "errors.transport.local.containerdPermissionDenied" => "Homeport isn't allowed to use containerd at {path}.";
+    /// containerd's socket belongs to root unless `[grpc] gid` names a group.
+    CONTAINERD_GID_HINT = "errors.transport.containerdGid.hint" => "containerd's socket belongs to root. Make a group for it, set gid under [grpc] in /etc/containerd/config.toml to the ID this prints, restart containerd, then log in again:";
 
     // The network to a remote Host.
 
@@ -155,6 +175,15 @@ homeport_core::messages! {
     /// The remote Engine socket couldn't be opened, and the server couldn't say why.
     SSH_SOCKET_UNAVAILABLE = "errors.transport.ssh.socketUnavailable" => "{user} can't open the Docker Engine socket at {path} on {host}.";
     SSH_SOCKET_UNAVAILABLE_HINT = "errors.transport.ssh.socketUnavailable.hint" => "Check that the Docker Engine runs on {host} and that {user} may use it. On {host}, run:";
+    /// containerd isn't installed on the SSH server.
+    SSH_CONTAINERD_NOT_INSTALLED = "errors.transport.ssh.containerdNotInstalled" => "containerd isn't installed on {host}.";
+    SSH_CONTAINERD_NOT_INSTALLED_HINT = "errors.transport.ssh.containerdNotInstalled.hint" => "Install containerd on {host} from its package (containerd or containerd.io), or check the socket path on the host page.";
+    /// containerd is installed on the SSH server but its socket is missing.
+    SSH_CONTAINERD_NOT_RUNNING = "errors.transport.ssh.containerdNotRunning" => "containerd isn't running on {host}: nothing listens at {path}.";
+    SSH_CONTAINERD_NOT_RUNNING_HINT = "errors.transport.ssh.containerdNotRunning.hint" => "Start it on {host}, and have it start with the machine:";
+    /// The SSH user may not use the remote containerd socket.
+    SSH_CONTAINERD_PERMISSION_DENIED = "errors.transport.ssh.containerdPermissionDenied" => "{user} isn't allowed to use containerd at {path} on {host}.";
+    SSH_CONTAINERD_PERMISSION_DENIED_HINT = "errors.transport.ssh.containerdPermissionDenied.hint" => "containerd's socket belongs to root. On {host}, make a group for it, set gid under [grpc] in /etc/containerd/config.toml to the ID this prints, restart containerd, then reconnect:";
     /// sshd refuses to forward to the remote Engine socket.
     SSH_FORWARDING_DISABLED = "errors.transport.ssh.forwardingDisabled" => "The SSH server on {host} doesn't allow forwarding to the Docker Engine socket.";
     SSH_FORWARDING_DISABLED_HINT = "errors.transport.ssh.forwardingDisabled.hint" => "Allow it in sshd's configuration on {host}, then restart sshd (the service is \"sshd\" on some systems):";

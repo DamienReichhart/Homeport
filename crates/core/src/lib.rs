@@ -12,5 +12,6 @@ pub mod local_files;
 pub mod logs;
 pub mod messages;
 pub mod programs;
+pub mod pull;
 pub mod streams;
 pub mod terminal;

@@ -2,9 +2,11 @@ import {
   emptyBastion,
   emptyForm,
   engineForSocket,
+  engineReachableOver,
   formFromHost,
   moveBastion,
   toHostInput,
+  withEngine,
 } from './form';
 
 describe('host form', () => {
@@ -44,6 +46,19 @@ describe('host form', () => {
     expect(engineForSocket('/run/containerd/containerd.sock')).toBe('containerd');
     expect(engineForSocket('/var/lib/incus/unix.socket')).toBe('incus');
     expect(engineForSocket(' /var/snap/lxd/common/lxd/unix.socket ')).toBe('incus');
+  });
+
+  it('moves default socket paths and the connection along with the Engine', () => {
+    const tcp = withEngine({ ...emptyForm('tcp') }, 'containerd');
+    expect(tcp.kind).toBe('ssh');
+    expect(tcp.sshSocketPath).toBe('/run/containerd/containerd.sock');
+    expect(tcp.socketPath).toBe('/run/containerd/containerd.sock');
+    const custom = withEngine({ ...emptyForm('local'), socketPath: '/srv/my.sock' }, 'containerd');
+    expect(custom.kind).toBe('local');
+    expect(custom.socketPath).toBe('/srv/my.sock');
+    expect(withEngine(tcp, 'docker').sshSocketPath).toBe('/var/run/docker.sock');
+    expect(engineReachableOver('containerd', 'tls')).toBe(false);
+    expect(engineReachableOver('docker', 'tls')).toBe(true);
   });
 
   it('sends imported keys with an optional passphrase', () => {

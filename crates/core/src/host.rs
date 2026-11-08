@@ -25,7 +25,7 @@ pub enum EngineKind {
     /// its compatible API. Which one is read on every connect.
     #[default]
     Docker,
-    /// containerd, through its own API (not supported yet).
+    /// containerd, through its own gRPC API (ADR 0020).
     Containerd,
     /// Incus, through its REST API (not supported yet).
     Incus,
@@ -60,11 +60,15 @@ impl EngineKind {
         }
     }
 
-    /// Refuses the kinds Homeport can't connect to yet, so nothing half-works.
-    pub fn validate(self) -> AppResult<()> {
-        match self {
-            Self::Docker => Ok(()),
-            Self::Containerd | Self::Incus => Err(AppError::validation(
+    /// Refuses the kinds Homeport can't connect to yet, so nothing
+    /// half-works, and connections a kind isn't served over: containerd
+    /// only answers on its socket, on this computer or through SSH.
+    pub fn validate(self, connection: &HostConnection) -> AppResult<()> {
+        match (self, connection) {
+            (Self::Docker, _) => Ok(()),
+            (Self::Containerd, HostConnection::Local { .. } | HostConnection::Ssh { .. }) => Ok(()),
+            (Self::Containerd, _) => Err(AppError::validation(msg::CONTAINERD_NEEDS_SOCKET)),
+            (Self::Incus, _) => Err(AppError::validation(
                 msg::ENGINE_NOT_YET_SUPPORTED.with("engine", self.label()),
             )),
         }
@@ -476,13 +480,25 @@ mod tests {
     }
 
     #[test]
-    fn only_docker_compatible_engines_are_accepted_for_now() {
-        assert!(EngineKind::Docker.validate().is_ok());
-        for kind in [EngineKind::Containerd, EngineKind::Incus] {
-            let err = kind.validate().unwrap_err();
-            assert!(err.is(ErrorCode::Validation));
-            assert!(err.message.contains(kind.label()), "{err:?}");
+    fn docker_compatible_engines_and_containerd_are_accepted() {
+        let local = HostConnection::Local {
+            socket_path: "/run/containerd/containerd.sock".into(),
+        };
+        let tcp = HostConnection::Tcp {
+            address: "10.0.0.2:2375".into(),
+        };
+        let remote = ssh("server", "deploy", 22, "/run/containerd/containerd.sock");
+        for c in [&local, &tcp, &remote] {
+            assert!(EngineKind::Docker.validate(c).is_ok());
         }
+        assert!(EngineKind::Containerd.validate(&local).is_ok());
+        assert!(EngineKind::Containerd.validate(&remote).is_ok());
+        let err = EngineKind::Containerd.validate(&tcp).unwrap_err();
+        assert!(err.is(ErrorCode::Validation));
+        assert!(err.message.contains("socket"), "{err:?}");
+        let err = EngineKind::Incus.validate(&local).unwrap_err();
+        assert!(err.is(ErrorCode::Validation));
+        assert!(err.message.contains("Incus"), "{err:?}");
     }
 
     #[test]
