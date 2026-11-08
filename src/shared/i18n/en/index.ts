@@ -10,6 +10,7 @@ import containers from './containers';
 import core from './core';
 import errors from './errors.json';
 import events from './events';
+import helm from './helm';
 import hosts from './hosts';
 import images from './images';
 import network from './network';
@@ -43,6 +44,7 @@ export const uiMessages = {
   ...config,
   ...containers,
   ...events,
+  ...helm,
   ...hosts,
   ...images,
   ...network,

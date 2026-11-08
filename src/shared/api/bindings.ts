@@ -207,6 +207,18 @@ export const commands = {
 	/**  Whether `port` is free on this computer, to propose it as the local port. */
 	clustersForwardPortFree: (port: number) => __TAURI_INVOKE<boolean>("clusters_forward_port_free", { port }),
 	/**
+	 *  The releases in `namespace`, or every Namespace; when the credentials
+	 *  can't list every Namespace, those of the Cluster's default one.
+	 */
+	clustersHelmReleases: (id: string, namespace: string | null) => __TAURI_INVOKE<ReleaseList>("clusters_helm_releases", { id, namespace }),
+	/**  Every revision of a release, oldest first. */
+	clustersHelmHistory: (id: string, namespace: string, name: string) => __TAURI_INVOKE<ReleaseRevision[]>("clusters_helm_history", { id, namespace, name }),
+	/**
+	 *  The values, notes, manifest and resources of one revision of a release,
+	 *  the current one without `revision`.
+	 */
+	clustersHelmReleaseDetails: (id: string, namespace: string, name: string, revision: number | null) => __TAURI_INVOKE<ReleaseDetails>("clusters_helm_release_details", { id, namespace, name, revision }),
+	/**
 	 *  Streams the logs of one Pod, or of several in one stream with each
 	 *  line labelled, until cancelled or they end.
 	 */
@@ -2301,6 +2313,71 @@ export type RegistryDraft = {
 	address: string,
 	username: string,
 	secret: string | null,
+};
+
+/**  What one revision of a release was installed with. */
+export type ReleaseDetails = {
+	/**  The values given at install or upgrade, as YAML; empty for none. */
+	userValues: string,
+	/**  Every value the chart was rendered with, its defaults included. */
+	computedValues: string,
+	notes: string,
+	manifest: string,
+	resources: ReleaseResource[],
+};
+
+/**  The releases of a Cluster. */
+export type ReleaseList = {
+	releases: ReleaseSummary[],
+	/**
+	 *  Set when every Namespace was asked for but the credentials only
+	 *  allow this one, the Cluster's default, which was listed instead.
+	 */
+	onlyNamespace: string | null,
+};
+
+/**  An object a release's manifest creates. */
+export type ReleaseResource = {
+	apiVersion: string,
+	kind: string,
+	name: string,
+	/**
+	 *  As the manifest says; namespaced objects without one are in the
+	 *  release's Namespace.
+	 */
+	namespace: string | null,
+};
+
+/**  One revision of a release, as `helm history` gives it. */
+export type ReleaseRevision = {
+	revision: number,
+	updated: string | null,
+	status: string,
+	chart: string,
+	chartName: string,
+	chartVersion: string,
+	appVersion: string,
+	/**  What helm wrote: `Install complete`, `Upgrade "x" failed: …`. */
+	description: string,
+};
+
+/**  One release, as `helm list` gives it. */
+export type ReleaseSummary = {
+	name: string,
+	namespace: string,
+	revision: number,
+	/**  RFC 3339, when helm's date could be read. */
+	updated: string | null,
+	/**
+	 *  `deployed`, `failed`, `pending-install`, `pending-upgrade`,
+	 *  `pending-rollback`, `uninstalling`, `superseded`, `uninstalled`…
+	 */
+	status: string,
+	/**  `nginx-15.1.0`, as helm names it. */
+	chart: string,
+	chartName: string,
+	chartVersion: string,
+	appVersion: string,
 };
 
 /**  A remote's branches and tags, as "Test access" lists them. */

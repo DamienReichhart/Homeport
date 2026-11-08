@@ -4,6 +4,8 @@
 //! user's.
 
 mod errors;
+mod releases;
+mod run;
 
 use std::{path::PathBuf, process::Stdio};
 
@@ -12,7 +14,11 @@ use tokio::process::Command;
 
 use homeport_core::{error::AppResult, programs};
 
-pub use self::errors::missing;
+pub use self::{
+    errors::{failure, missing},
+    releases::{ReleaseDetails, ReleaseList, ReleaseResource, ReleaseRevision, ReleaseSummary},
+    run::Helm,
+};
 
 /// The `helm` program found on this computer.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
@@ -79,6 +85,20 @@ pub async fn detect() -> AppResult<HelmCli> {
         _ => Err(missing()),
     }
 }
+
+/// Variables of Homeport's environment that would point helm at another
+/// cluster or Namespace than the proxy's kubeconfig says.
+pub(crate) const FOREIGN_ENV: [&str; 9] = [
+    "HELM_KUBECONTEXT",
+    "HELM_KUBETOKEN",
+    "HELM_KUBEAPISERVER",
+    "HELM_KUBEASUSER",
+    "HELM_KUBEASGROUPS",
+    "HELM_KUBECAFILE",
+    "HELM_KUBETLS_SERVER_NAME",
+    "HELM_KUBEINSECURE_SKIP_TLS_VERIFY",
+    "HELM_NAMESPACE",
+];
 
 #[cfg(test)]
 mod tests {
