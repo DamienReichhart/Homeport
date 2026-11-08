@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
 import { RegistryLogin } from '@/features/registries';
-import type { PullEvent } from '@/shared/api';
+import type { AppError, PullEvent } from '@/shared/api';
 import { formatBytes } from '@/shared/lib';
 import {
   Button,
@@ -21,17 +21,33 @@ import { HubSearch } from './HubSearch';
 import { HubTags } from './HubTags';
 import { t } from '@/shared/i18n';
 
-/** Pulls an image by reference and shows each layer's progress. */
+/** Starts a pull of `reference`; the returned function cancels it. */
+export type ImagePuller = (
+  reference: string,
+  onEvent: (event: PullEvent) => void,
+  onError: (error: AppError) => void,
+) => () => void;
+
+/**
+ * Pulls an image by reference and shows each layer's progress, through the
+ * Host's Docker Engine API unless `puller` pulls another way (containerd's).
+ * `search` offers Docker Hub's search, which only a Docker Engine answers.
+ */
 export function PullDialog({
   hostId,
   open,
   onOpenChange,
+  puller,
+  search = true,
 }: {
   hostId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  puller?: ImagePuller;
+  search?: boolean;
 }) {
-  const pull = usePullImage(hostId);
+  const dockerPull = usePullImage(hostId);
+  const pull = puller ?? dockerPull;
   const [reference, setReference] = useState('');
   const [pulling, setPulling] = useState<string | null>(null);
   /** The Docker Hub repository whose tags are listed, once one is chosen. */
@@ -105,7 +121,7 @@ export function PullDialog({
             }}
           />
         )}
-        {!pulling && !repository && searchTerm(reference) && (
+        {search && !pulling && !repository && searchTerm(reference) && (
           <HubSearch
             hostId={hostId}
             term={searchTerm(reference)!}

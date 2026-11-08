@@ -88,6 +88,18 @@ homeport_core::messages! {
     /// Input or a resize for a terminal that already closed.
     EXEC_ENDED = "errors.containerd.execEnded" => "This terminal session has ended.";
 
+    // Images.
+
+    /// Removing an image a container was made from.
+    IMAGE_IN_USE = "errors.containerd.imageInUse" => "{name} is the image of {containers}, so it can't be removed.";
+    IMAGE_IN_USE_HINT = "errors.containerd.imageInUse.hint" => "Remove those containers first. containerd only frees the image's content once nothing holds it.";
+    /// Removing an image that's gone.
+    IMAGE_NOT_FOUND = "errors.containerd.imageNotFound" => "There's no image {name} in this namespace.";
+    /// A pull of an image or tag the registry doesn't have.
+    PULL_NOT_FOUND = "errors.containerd.pullNotFound" => "The registry has no such image or tag.";
+    /// A pull the registry refused without credentials.
+    PULL_AUTH_REQUIRED = "errors.containerd.pullAuthRequired" => "The registry refused to let Homeport pull this image.";
+
     // Namespaces.
 
     /// Creating a namespace under a name another one has.

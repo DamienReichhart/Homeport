@@ -5,6 +5,7 @@ import { clusterEventsFeature } from '@/features/cluster-events';
 import { clustersFeature } from '@/features/clusters';
 import { configFeature } from '@/features/config';
 import { containerdContainersFeature } from '@/features/containerd-containers';
+import { containerdImagesFeature } from '@/features/containerd-images';
 import { containerdNamespacesFeature } from '@/features/containerd-namespaces';
 import { containersFeature } from '@/features/containers';
 import { eventsFeature } from '@/features/events';
@@ -39,6 +40,7 @@ export const features: FeatureManifest[] = [
   podmanPodsFeature,
   quadletsFeature,
   containerdContainersFeature,
+  containerdImagesFeature,
   containerdNamespacesFeature,
   swarmFeature,
   workloadsFeature,

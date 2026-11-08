@@ -12,6 +12,7 @@ pub mod containers;
 mod error;
 pub mod events;
 pub mod exec;
+pub mod images;
 pub mod introspection;
 pub mod logs;
 pub mod messages;

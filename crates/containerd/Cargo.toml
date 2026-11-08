@@ -15,7 +15,8 @@ workspace = true
 doctest = false
 
 [dependencies]
-homeport-core.workspace = true
+# `bollard` for the registry classifier the Docker pull shares (error::engine).
+homeport-core = { workspace = true, features = ["bollard"] }
 homeport-transport.workspace = true
 tonic.workspace = true
 tonic-prost.workspace = true

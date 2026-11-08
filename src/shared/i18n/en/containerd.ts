@@ -90,6 +90,28 @@ export default {
   'containerd.containers.field.extensions': 'Extensions',
   'containerd.containers.labels': 'Labels',
   'containerd.containers.noSpec': 'containerd holds no runtime spec for this container.',
+  'containerd.images.nav': 'Images',
+  'containerd.images.title': 'Images',
+  'containerd.images.summary':
+    '{count, plural, one {# image} other {# images}} in the namespace {namespace}.',
+  'containerd.images.pull': 'Pull image',
+  'containerd.images.pulled': '{reference} pulled into {namespace}',
+  'containerd.images.removed': '{name} removed',
+  'containerd.images.search': 'Filter by name',
+  'containerd.images.empty': 'No images in {namespace}',
+  'containerd.images.emptyDescription':
+    'Pull one: containerd fetches it, then unpacks it for this host’s platform so its containers can run.',
+  'containerd.images.column.name': 'Name',
+  'containerd.images.column.platforms': 'Platforms',
+  'containerd.images.column.size': 'Size',
+  'containerd.images.column.containers': 'Containers',
+  'containerd.images.column.created': 'Created',
+  'containerd.images.sizeUnknown': 'Its content for this host’s platform isn’t all here.',
+  'containerd.images.removeOne': 'Remove {name}',
+  'containerd.images.inUse': 'Containers of this namespace were made from it. Remove them first.',
+  'containerd.images.remove.title': 'Remove {name}?',
+  'containerd.images.remove.description':
+    'containerd removes the name, and frees its content and snapshots once nothing else holds them.',
   'containerd.namespaces.nav': 'Namespaces',
   'containerd.namespaces.title': 'Namespaces',
   'containerd.namespaces.summary':

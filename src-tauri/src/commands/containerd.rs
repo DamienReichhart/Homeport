@@ -7,11 +7,13 @@ use tauri::{ipc::Channel, State};
 use homeport_containerd::{
     containers::{self, ContainerdContainer, ContainerdContainerDetail, TaskAction},
     exec::{self, ContainerdExecOptions, SessionId},
+    images::{self, ContainerdImage, PullCredentials},
     logs::{self, ContainerdLogSource},
     namespaces::{self, ContainerdNamespace},
 };
 use homeport_core::{
     logs::{LogEvent, LogOptions},
+    pull::PullEvent,
     streams::StreamId,
     terminal::ExecEvent,
 };
@@ -206,4 +208,70 @@ pub async fn containerd_exec_close(
 ) -> AppResult<()> {
     state.containerd_exec.close(session);
     Ok(())
+}
+
+/// The images of `namespace`, with their size for the Host's platform.
+#[tauri::command]
+#[specta::specta]
+pub async fn containerd_images(
+    state: State<'_, AppState>,
+    host_id: String,
+    namespace: String,
+) -> AppResult<Vec<ContainerdImage>> {
+    images::list(&state.hosts.registry.containerd(&host_id)?, &namespace).await
+}
+
+/// Removes an image no container of the namespace was made from.
+#[tauri::command]
+#[specta::specta]
+pub async fn containerd_image_remove(
+    state: State<'_, AppState>,
+    host_id: String,
+    namespace: String,
+    name: String,
+) -> AppResult<()> {
+    images::remove(
+        &state.hosts.registry.containerd(&host_id)?,
+        &namespace,
+        &name,
+    )
+    .await
+}
+
+/// Pulls an image through containerd's Transfer service with the stored
+/// login for its registry, streaming progress.
+#[tauri::command]
+#[specta::specta]
+pub async fn containerd_images_pull_subscribe(
+    state: State<'_, AppState>,
+    host_id: String,
+    namespace: String,
+    reference: String,
+    on_event: Channel<PullEvent>,
+) -> AppResult<StreamId> {
+    let client = state.hosts.registry.containerd(&host_id)?;
+    let qualified = images::qualify(&reference);
+    let credentials = state
+        .registries
+        .credentials_for(&qualified)?
+        .map(|c| PullCredentials {
+            username: c.username,
+            secret: c.secret,
+        });
+    let explained = super::registries::explainer(&state, &qualified);
+    Ok(state.streams.spawn(images::pull(
+        client,
+        namespace,
+        reference,
+        credentials,
+        move |e| {
+            let e = match e {
+                PullEvent::Error { error } => PullEvent::Error {
+                    error: explained(error),
+                },
+                e => e,
+            };
+            on_event.send(e).is_ok()
+        },
+    )))
 }

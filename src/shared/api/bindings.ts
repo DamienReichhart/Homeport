@@ -444,6 +444,15 @@ export const commands = {
 	containerdExecResize: (session: number, cols: number, rows: number) => __TAURI_INVOKE<null>("containerd_exec_resize", { session, cols, rows }),
 	/**  Closes a terminal, killing its process; async, since that needs the runtime. */
 	containerdExecClose: (session: number) => __TAURI_INVOKE<null>("containerd_exec_close", { session }),
+	/**  The images of `namespace`, with their size for the Host's platform. */
+	containerdImages: (hostId: string, namespace: string) => __TAURI_INVOKE<ContainerdImage[]>("containerd_images", { hostId, namespace }),
+	/**  Removes an image no container of the namespace was made from. */
+	containerdImageRemove: (hostId: string, namespace: string, name: string) => __TAURI_INVOKE<null>("containerd_image_remove", { hostId, namespace, name }),
+	/**
+	 *  Pulls an image through containerd's Transfer service with the stored
+	 *  login for its registry, streaming progress.
+	 */
+	containerdImagesPullSubscribe: (hostId: string, namespace: string, reference: string, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("containerd_images_pull_subscribe", { hostId, namespace, reference, onEvent }),
 	podsList: (hostId: string) => __TAURI_INVOKE<PodmanPod[]>("pods_list", { hostId }),
 	podsInspect: (hostId: string, id: string) => __TAURI_INVOKE<PodmanPodDetail>("pods_inspect", { hostId, id }),
 	podsAct: (hostId: string, id: string, action: PodmanPodAction) => __TAURI_INVOKE<null>("pods_act", { hostId, id, action }),
@@ -1270,6 +1279,26 @@ export type ContainerdExecOptions = {
 	workingDir: string | null,
 	cols: number,
 	rows: number,
+};
+
+export type ContainerdImage = {
+	/**  Its full reference, as containerd names it: `docker.io/library/alpine:3.22`. */
+	name: string,
+	/**  The digest of its index or manifest. */
+	digest: string,
+	mediaType: string,
+	/**
+	 *  The bytes of its manifest, config and layers for the Host's platform,
+	 *  as `ctr images ls` counts them; `None` when they aren't all here.
+	 */
+	size: number | null,
+	/**  The platforms it's published for, `os/arch[/variant]`. */
+	platforms: string[],
+	/**  RFC 3339. */
+	createdAt: string | null,
+	labels: { [key in string]: string },
+	/**  The containers of the namespace made from it. */
+	containers: number,
 };
 
 /**  How a log file's lines are written. */
