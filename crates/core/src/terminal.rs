@@ -5,6 +5,9 @@ use serde::Serialize;
 
 use crate::error::AppError;
 
+/// Starts bash when the image has it, sh otherwise: what a terminal runs by default.
+pub const DEFAULT_SHELL: &str = "if [ -x /bin/bash ]; then exec /bin/bash; else exec /bin/sh; fi";
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum ExecEvent {

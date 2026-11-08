@@ -48,4 +48,12 @@ export default {
   'pods.logs.pod': 'Pod',
   'pods.logs.allPods': 'All {count, plural, one {# Pod} other {# Pods}}',
   'pods.logs.noPods': 'It runs no Pod right now.',
+  'pods.tab.terminal': 'Terminal',
+  'pods.terminal.shell': 'Shell',
+  'pods.terminal.command': 'Command',
+  'pods.terminal.connect': 'Connect',
+  'pods.terminal.reconnect': 'Reconnect',
+  'pods.terminal.notRunning': 'This container isn’t running.',
+  'pods.terminal.exited': 'The process exited.',
+  'pods.terminal.exitedWithCode': 'The process exited with code {code}.',
 } as const;

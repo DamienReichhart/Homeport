@@ -25,12 +25,10 @@ use tokio::{
 
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 
+use homeport_core::terminal::DEFAULT_SHELL;
 pub use homeport_core::terminal::{ExecEvent, Utf8Decoder};
 
 use crate::messages as msg;
-
-/// Starts bash when the image has it, sh otherwise.
-const DEFAULT_SHELL: &str = "if [ -x /bin/bash ]; then exec /bin/bash; else exec /bin/sh; fi";
 
 #[derive(Debug, Clone, Default, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]

@@ -172,6 +172,12 @@ export const commands = {
 	 *  line labelled, until cancelled or they end.
 	 */
 	clustersPodLogsSubscribe: (id: string, namespace: string, sources: PodLogSource[], target: PodLogTarget, options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("clusters_pod_logs_subscribe", { id, namespace, sources, target, options, onEvent }),
+	/**  Opens a terminal in a Pod's container, like `kubectl exec -it`. */
+	clustersExecStart: (id: string, namespace: string, pod: string, options: PodExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("clusters_exec_start", { id, namespace, pod, options, onEvent }),
+	clustersExecInput: (terminal: number, data: string) => __TAURI_INVOKE<null>("clusters_exec_input", { terminal, data }),
+	clustersExecResize: (terminal: number, cols: number, rows: number) => __TAURI_INVOKE<null>("clusters_exec_resize", { terminal, cols, rows }),
+	/**  Ends a Pod terminal and its process. */
+	clustersExecClose: (terminal: number) => __TAURI_INVOKE<void>("clusters_exec_close", { terminal }),
 	/**  Backs up everything Homeport holds to `path`, sealed with `passphrase`. */
 	dataBackup: (path: string, passphrase: string) => __TAURI_INVOKE<BackupOutcome>("data_backup", { path, passphrase }),
 	/**  What the backup at `path` holds, for the restore's confirmation. */
@@ -1971,6 +1977,15 @@ export type PodDetail = {
 	hostIp: string | null,
 	qosClass: string | null,
 	serviceAccount: string | null,
+};
+
+export type PodExecOptions = {
+	/**  The container; the Pod's only one (or default) without. */
+	container: string | null,
+	/**  The command to run, parsed with shell quoting; the default picks a shell. */
+	command: string | null,
+	cols: number,
+	rows: number,
 };
 
 /**  How a Pod is doing, for its colour. */

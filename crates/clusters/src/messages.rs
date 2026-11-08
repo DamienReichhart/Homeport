@@ -150,6 +150,22 @@ homeport_core::messages! {
     /// Asking for the logs of a container that hasn't started.
     CONTAINER_WAITING = "errors.clusters.logs.waiting" => "{container} hasn't started yet: {reason}.";
     CONTAINER_WAITING_HINT = "errors.clusters.logs.waiting.hint" => "Its Pod's page says why it waits. After a crash, Previous instance shows the run that crashed.";
+    // Terminals in a Pod's container.
+
+    /// A typed command with an unclosed quote.
+    COMMAND_UNCLOSED_QUOTE = "errors.clusters.terminal.unclosedQuote" => "The command has a quote that isn't closed.";
+    /// The exec API answered without the streams a terminal needs.
+    TERMINAL_NOT_OPENED = "errors.clusters.terminal.notOpened" => "Homeport couldn't open a terminal in {pod}.";
+    /// Input or a resize for a terminal that has ended.
+    TERMINAL_ENDED = "errors.clusters.terminal.ended" => "This terminal has ended.";
+    /// Exec into a container that isn't running.
+    EXEC_NOT_RUNNING = "errors.clusters.terminal.notRunning" => "{container} in {pod} isn't running, so no terminal can open in it.";
+    EXEC_NOT_RUNNING_HINT = "errors.clusters.terminal.notRunning.hint" => "Its Pod's page says why. A completed Pod's containers have stopped for good.";
+    /// The command, often the shell, isn't in the image.
+    NO_SHELL = "errors.clusters.terminal.noShell" => "That command doesn't exist in the container.";
+    NO_SHELL_HINT = "errors.clusters.terminal.noShell.hint" => "Minimal (distroless) images have no shell. Type a command the image has, or attach a debug container from a terminal, which Homeport doesn't do:";
+    /// The process ended with an error that isn't an exit code.
+    EXEC_ENDED_WITH_ERROR = "errors.clusters.terminal.endedWithError" => "The command ended with an error.";
     /// The object changed between reading it and changing it.
     CHANGED_MEANWHILE = "errors.clusters.changedMeanwhile" => "{kind} {name} changed while you were working on it.";
     CHANGED_MEANWHILE_HINT = "errors.clusters.changedMeanwhile.hint" => "Look at it again, then retry.";

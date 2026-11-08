@@ -28,6 +28,7 @@ import {
 import { podQueries } from '../../api/queries';
 import { PodContainers } from './PodContainers';
 import { PodLogs } from './PodLogs';
+import { PodTerminal } from './PodTerminal';
 import { t, type MessageKey } from '@/shared/i18n';
 
 /** The page of a Pod's owner, when Homeport shows that kind. */
@@ -82,10 +83,11 @@ function Overview({ pod }: { pod: PodDetail }) {
   );
 }
 
-const TABS = ['overview', 'logs', 'conditions', 'events', 'yaml'] as const;
+const TABS = ['overview', 'logs', 'terminal', 'conditions', 'events', 'yaml'] as const;
 const TAB_LABELS: Record<(typeof TABS)[number], MessageKey> = {
   overview: 'pods.tab.overview',
   logs: 'pods.tab.logs',
+  terminal: 'pods.tab.terminal',
   conditions: 'pods.tab.conditions',
   events: 'pods.tab.events',
   yaml: 'pods.tab.source',
@@ -145,6 +147,9 @@ function PodDetailView({ cluster }: { cluster: ClusterView }) {
         </TabsContent>
         <TabsContent value="logs" className="pt-3">
           {tab === 'logs' && <PodLogs clusterId={id} pod={pod.data} />}
+        </TabsContent>
+        <TabsContent value="terminal" className="pt-3">
+          {tab === 'terminal' && <PodTerminal clusterId={id} pod={pod.data} />}
         </TabsContent>
         <TabsContent value="conditions" className="pt-3">
           <ConditionList conditions={pod.data.conditions} />

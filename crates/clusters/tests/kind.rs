@@ -7,7 +7,7 @@
 use homeport_clusters::{
     client,
     kubeconfig::{self, Source},
-    resources::{On, WorkloadKind},
+    resources::{On, ResourceKind, WorkloadKind},
     Cluster, ClusterKind,
 };
 
@@ -15,15 +15,14 @@ fn context() -> String {
     std::env::var("HOMEPORT_TEST_CONTEXT").unwrap_or_else(|_| "kind-homeport".into())
 }
 
-#[tokio::test]
-#[ignore = "needs a kind cluster"]
-async fn a_kind_cluster_is_browsed() {
+/// The test cluster, or `None` (and why) when the kubeconfig doesn't reach it.
+fn connect() -> Option<On> {
     let Some((connection, secrets)) = Source::local()
         .ok()
         .and_then(|source| kubeconfig::resolve(&source, &context()).ok())
     else {
         eprintln!("skipped: no kubeconfig context {}", context());
-        return;
+        return None;
     };
     let cluster = Cluster {
         id: "test".into(),
@@ -33,10 +32,16 @@ async fn a_kind_cluster_is_browsed() {
         enabled: true,
         created_at: String::new(),
     };
-    let on = On {
+    Some(On {
         client: client::client(&cluster, &secrets, None).unwrap(),
         cluster,
-    };
+    })
+}
+
+#[tokio::test]
+#[ignore = "needs a kind cluster"]
+async fn a_kind_cluster_is_browsed() {
+    let Some(on) = connect() else { return };
     let namespaces = on.namespaces().await.unwrap();
     assert!(namespaces.iter().any(|n| n.name == "kube-system"));
     let system = on.pods(Some("kube-system"), None, None).await.unwrap();
@@ -57,12 +62,131 @@ async fn a_kind_cluster_is_browsed() {
         .unwrap();
     assert_eq!(pods.len() as u32, coredns.desired);
     let yaml = on
-        .yaml(
-            homeport_clusters::resources::ResourceKind::Deployment,
-            Some("kube-system"),
-            "coredns",
-        )
+        .yaml(ResourceKind::Deployment, Some("kube-system"), "coredns")
         .await
         .unwrap();
     assert!(!yaml.contains("managedFields"));
+}
+
+#[tokio::test]
+#[ignore = "needs a kind cluster"]
+async fn a_pod_gives_its_logs_and_a_terminal_then_is_deleted() {
+    use std::{
+        sync::{Arc, Mutex},
+        time::Duration,
+    };
+
+    use homeport_clusters::{
+        logs::{PodLogSource, PodLogTarget},
+        terminal::{self, PodExecOptions},
+    };
+    use homeport_core::{
+        logs::{LogEvent, LogOptions},
+        terminal::ExecEvent,
+    };
+    use k8s_openapi::api::core::v1::Pod;
+    use kube::api::{Api, PostParams};
+
+    let Some(on) = connect() else { return };
+    let name = format!("homeport-test-{}", std::process::id());
+    let pod: Pod = serde_json::from_value(serde_json::json!({
+        "apiVersion": "v1",
+        "kind": "Pod",
+        "metadata": { "name": name },
+        "spec": { "containers": [{
+            "name": "box",
+            "image": "busybox:1.37",
+            "command": ["sh", "-c", "echo started; sleep 300"],
+        }] },
+    }))
+    .unwrap();
+    let pods: Api<Pod> = Api::namespaced(on.client.clone(), "default");
+    pods.create(&PostParams::default(), &pod).await.unwrap();
+    for _ in 0..120 {
+        let detail = on.pod("default", &name).await.unwrap();
+        if detail.view.status == "Running" {
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(500)).await;
+    }
+
+    let events = Arc::new(Mutex::new(vec![]));
+    let sink = {
+        let events = events.clone();
+        move |e| {
+            events.lock().unwrap().push(e);
+            true
+        }
+    };
+    let options = LogOptions {
+        tail: None,
+        timestamps: false,
+        since: None,
+        stdout: true,
+        stderr: true,
+        follow: false,
+    };
+    on.clone()
+        .stream_logs(
+            "default".into(),
+            vec![PodLogSource {
+                pod: name.clone(),
+                label: None,
+            }],
+            PodLogTarget::default(),
+            options,
+            sink,
+        )
+        .await;
+    let text: Vec<String> = events
+        .lock()
+        .unwrap()
+        .iter()
+        .flat_map(|e| match e {
+            LogEvent::Lines { lines } => lines.iter().map(|l| l.text.clone()).collect(),
+            _ => vec![],
+        })
+        .collect();
+    assert_eq!(text, ["started"]);
+
+    let (session, process) = on
+        .exec(
+            "default",
+            &name,
+            PodExecOptions {
+                cols: 80,
+                rows: 24,
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap();
+    let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
+    let pump = tokio::spawn(terminal::pump(process, move |e| tx.send(e).is_ok()));
+    session.resize(100, 30).await.unwrap();
+    session.write(b"echo hel''lo; exit 3\n").await.unwrap();
+    let mut output = String::new();
+    let code = tokio::time::timeout(Duration::from_secs(20), async {
+        loop {
+            match rx.recv().await.unwrap() {
+                ExecEvent::Output { data } => output.push_str(&data),
+                ExecEvent::Exit { code, .. } => return code,
+                ExecEvent::Error { error } => panic!("{error}"),
+            }
+        }
+    })
+    .await
+    .unwrap();
+    pump.await.unwrap();
+    assert!(output.contains("hello"), "{output}");
+    assert_eq!(code, Some(3));
+
+    on.delete(
+        &ResourceKind::Pod.api_type(),
+        Some("default"),
+        &name,
+        Some(0),
+    )
+    .await
+    .unwrap();
 }
