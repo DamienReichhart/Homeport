@@ -82,6 +82,9 @@ pub enum ErrorCode {
     GpuUnavailable,
     /// Recreating a container failed, and so did putting the original back.
     RecreateRolledBack,
+    // Podman.
+    /// Removing a pod whose containers are running, without stopping them.
+    PodRunning,
     // Swarms (ADR 0016).
     /// No manager Host of a Swarm is connected.
     SwarmUnreachable,

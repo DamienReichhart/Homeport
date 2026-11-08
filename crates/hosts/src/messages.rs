@@ -20,6 +20,9 @@ homeport_core::messages! {
     ENGINE_UNSUPPORTED_HINT = "errors.hosts.engineUnsupported.hint" => "Choose a host whose Engine offers it in the host switcher.";
     /// The same, for a Host that is no longer stored.
     ENGINE_UNSUPPORTED_UNKNOWN = "errors.hosts.engineUnsupportedUnknown" => "This host's Engine doesn't offer this.";
+    /// Something only Podman offers, on a Host that runs another Engine.
+    NOT_PODMAN = "errors.hosts.notPodman" => "{name} doesn't run Podman, which this needs.";
+    NOT_PODMAN_HINT = "errors.hosts.notPodman.hint" => "Pick a Podman host in the host switcher.";
     /// A restored Host whose kind of Engine this version can't connect to.
     ENGINE_NOT_CONNECTABLE_HINT = "errors.hosts.engineNotConnectable.hint" => "This version of Homeport can only connect to Docker-compatible Engines. Update Homeport to use this host.";
     /// Saving a TLS Host with SSH credentials.

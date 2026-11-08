@@ -87,7 +87,7 @@ pub(super) fn key_value(entry: &str, not_key_value: Message) -> AppResult<(&str,
 }
 
 /// A user label, refusing Compose's own keys.
-pub(super) fn label(entry: &str) -> AppResult<(&str, &str)> {
+pub(crate) fn label(entry: &str) -> AppResult<(&str, &str)> {
     let (key, value) = key_value(entry, msg::RUN_LABEL)?;
     if key.starts_with(COMPOSE_LABEL_PREFIX) {
         return Err(invalid(

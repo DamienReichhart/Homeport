@@ -403,8 +403,18 @@ export const commands = {
 	systemInfo: (hostId: string) => __TAURI_INVOKE<EngineInfo>("system_info", { hostId }),
 	systemDiskUsage: (hostId: string) => __TAURI_INVOKE<DiskUsage>("system_disk_usage", { hostId }),
 	systemPrune: (hostId: string, selection: PruneSelection) => __TAURI_INVOKE<SystemPruneReport>("system_prune", { hostId, selection }),
-	/**  Creates and starts a container; returns its id. */
-	containersRun: (hostId: string, spec: RunSpec) => __TAURI_INVOKE<string>("containers_run", { hostId, spec }),
+	/**
+	 *  Creates and starts a container, in the Podman pod `pod` when given;
+	 *  returns its id. A pod on a Host that isn't Podman is `EngineUnsupported`.
+	 */
+	containersRun: (hostId: string, spec: RunSpec, pod: string | null) => __TAURI_INVOKE<string>("containers_run", { hostId, spec, pod }),
+	podsList: (hostId: string) => __TAURI_INVOKE<PodmanPod[]>("pods_list", { hostId }),
+	podsInspect: (hostId: string, id: string) => __TAURI_INVOKE<PodmanPodDetail>("pods_inspect", { hostId, id }),
+	podsAct: (hostId: string, id: string, action: PodmanPodAction) => __TAURI_INVOKE<null>("pods_act", { hostId, id, action }),
+	/**  Removes a pod and its containers; returns how many containers went with it. */
+	podsRemove: (hostId: string, id: string, force: boolean) => __TAURI_INVOKE<number>("pods_remove", { hostId, id, force }),
+	/**  Creates a pod; returns its id. */
+	podsCreate: (hostId: string, spec: PodmanPodSpec) => __TAURI_INVOKE<string>("pods_create", { hostId, spec }),
 	/**  The Run dialog's form for an existing container, for Duplicate and Edit. */
 	containersRunSpec: (hostId: string, id: string) => __TAURI_INVOKE<RunSpec>("containers_run_spec", { hostId, id }),
 	/**  What recreating a container with a changed configuration loses, for Edit's confirmation. */
@@ -1353,6 +1363,8 @@ export type ErrorCode =
 "gpu_unavailable" | 
 /**  Recreating a container failed, and so did putting the original back. */
 "recreate_rolled_back" | 
+/**  Removing a pod whose containers are running, without stopping them. */
+"pod_running" | 
 /**  No manager Host of a Swarm is connected. */
 "swarm_unreachable" | 
 /**  A node couldn't reach the managers of the Swarm it was joining. */
@@ -2315,6 +2327,63 @@ export type PodView = {
 	created: string | null,
 	owner: OwnerView | null,
 	images: string[],
+};
+
+/**  A pod as the Pods page lists it. */
+export type PodmanPod = {
+	id: string,
+	name: string,
+	/**
+	 *  `created`, `running`, `paused`, `stopped`, `exited`, `degraded`
+	 *  (some containers running), `dead` or `error`.
+	 */
+	status: string,
+	/**  When it was created, RFC 3339. */
+	created: string,
+	/**  The container that holds its namespaces and published ports, if it has one. */
+	infraId: string | null,
+	labels: { [key in string]: string },
+	networks: string[],
+	/**  Its containers, the infra container first. */
+	containers: PodmanPodContainer[],
+};
+
+export type PodmanPodAction = "start" | "stop" | "restart" | "pause" | "unpause";
+
+export type PodmanPodContainer = {
+	id: string,
+	name: string,
+	/**  The container's state, as the Containers page shows it (`running`, `exited`…). */
+	state: string,
+	/**  Whether it's the pod's infra container. */
+	infra: boolean,
+};
+
+/**  A pod with what only its inspect document says. */
+export type PodmanPodDetail = {
+	/**  The ports published on the pod, which every container in it shares. */
+	ports: PodmanPodPort[],
+	/**  The namespaces its containers share, such as `net`, `ipc` and `uts`. */
+	sharedNamespaces: string[],
+	hostname: string,
+	/**  The `podman pod create` command it was made with, when Podman kept it. */
+	createCommand: string[],
+} & PodmanPod;
+
+export type PodmanPodPort = {
+	containerPort: number,
+	protocol: string,
+	hostIp: string | null,
+	hostPort: number | null,
+};
+
+/**  A new pod, as the **New pod** dialog fills it. */
+export type PodmanPodSpec = {
+	name: string,
+	/**  Published on the pod's infra container, for every container in it. */
+	ports: PortSpec[],
+	/**  `key=value` entries. */
+	labels: string[],
 };
 
 export type PortBinding = {

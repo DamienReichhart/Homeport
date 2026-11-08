@@ -115,6 +115,34 @@ homeport_core::messages! {
     /// A log driver that's empty or has spaces.
     RUN_LOG_DRIVER = "errors.run.logDriver" => "Choose a log driver, like json-file or local.";
 
+    // Podman pods
+
+    /// A pod that isn't there any more.
+    POD_GONE = "errors.pods.gone" => "This pod doesn't exist any more.";
+    POD_GONE_HINT = "errors.pods.gone.hint" => "It may have been removed from a terminal. The list shows the pods there are now.";
+    /// Starting a running pod, stopping a stopped one…
+    POD_ALREADY = "errors.pods.already" => "The pod is already in that state.";
+    /// Some containers of a pod failed to start, stop, restart, pause or resume.
+    POD_ACTION_FAILED = "errors.pods.actionFailed" => "Podman couldn't {action} every container of the pod.";
+    POD_ACTION_FAILED_HINT = "errors.pods.actionFailed.hint" => "Details names the containers and why. Open them on the Containers page to see their logs.";
+    /// Removing a pod with running containers without stopping them.
+    POD_RUNNING = "errors.pods.running" => "The pod has running containers.";
+    POD_RUNNING_HINT = "errors.pods.running.hint" => "Stop the pod first, or remove it with its running containers.";
+    /// A pod name Podman doesn't accept.
+    POD_NAME = "errors.pods.name" => "\"{name}\" isn't a valid pod name. Start with a letter or digit, then use letters, digits, _, . or -.";
+    /// Creating a pod under a name another pod has.
+    POD_NAME_IN_USE = "errors.pods.nameInUse" => "A pod named {name} already exists.";
+    POD_NAME_IN_USE_HINT = "errors.pods.nameInUse.hint" => "Choose another name, or remove the other pod first.";
+    /// Publishing a port on a container that runs in a pod.
+    POD_CONTAINER_PORTS = "errors.pods.containerPorts" => "Containers in a pod can't publish ports: the pod publishes them for all its containers.";
+    POD_CONTAINER_PORTS_HINT = "errors.pods.containerPorts.hint" => "Remove the ports, and publish them when you create the pod instead.";
+    /// Setting what a pod's containers share (network, hostname, DNS) on one of them.
+    POD_CONTAINER_SHARED = "errors.pods.containerShared" => "Containers in a pod share its network, hostname and DNS settings, so they can't set their own.";
+    /// GPUs for a container run into a pod.
+    POD_CONTAINER_GPUS = "errors.pods.containerGpus" => "Homeport can't give GPUs to a container in a pod yet.";
+    /// Running a copy of a container into a pod.
+    POD_CONTAINER_BASED_ON = "errors.pods.containerBasedOn" => "Only new containers can be run into a pod, not copies or edits of existing ones.";
+
     // Images
 
     /// Pushing an image under a name that isn't a repository and tag.

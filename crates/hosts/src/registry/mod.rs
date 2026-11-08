@@ -20,7 +20,10 @@ use homeport_core::{
     error::{AppError, AppResult, ErrorCode},
     host::HELPER_LABEL,
 };
-use homeport_engine::swarm::{self, SwarmMembership, SwarmRole};
+use homeport_engine::{
+    podman::Podman,
+    swarm::{self, SwarmMembership, SwarmRole},
+};
 use serde::Serialize;
 
 use crate::messages as msg;
@@ -151,6 +154,31 @@ impl HostRegistry {
     /// compose proxy and for the APIs bollard doesn't speak.
     pub fn dialer(&self, id: &str) -> AppResult<Arc<dyn Dialer>> {
         self.docker_connection(id).map(|c| c.dialer)
+    }
+
+    /// Podman's own API on a connected Podman Host; `EngineUnsupported`
+    /// for any other Engine.
+    pub fn podman(&self, id: &str) -> AppResult<Podman> {
+        let connected = self.docker_connection(id)?;
+        match self.status(id).podman_version() {
+            Some(version) => Ok(Podman::new(connected.dialer, version)),
+            None => Err(self.not_podman(id)),
+        }
+    }
+
+    /// Why a Host can't do what only Podman does.
+    fn not_podman(&self, id: &str) -> AppError {
+        let error = match self.store.get(id) {
+            Ok(host) => AppError::new(
+                ErrorCode::EngineUnsupported,
+                msg::NOT_PODMAN.with("name", host.name),
+            ),
+            Err(_) => AppError::new(
+                ErrorCode::EngineUnsupported,
+                msg::ENGINE_UNSUPPORTED_UNKNOWN,
+            ),
+        };
+        error.with_hint(msg::NOT_PODMAN_HINT)
     }
 
     fn docker_connection(&self, id: &str) -> AppResult<Connected> {
@@ -724,5 +752,28 @@ mod tests {
         reg.restart(&id);
         wait_for(&reg, &id, |s| matches!(s, HostStatus::Connected { .. })).await;
         reg.docker(&id).unwrap().ping().await.unwrap();
+        assert_eq!(reg.status(&id).podman_version(), None);
+        let err = reg.podman(&id).err().unwrap();
+        assert!(err.is(ErrorCode::EngineUnsupported), "{err:?}");
+        assert!(err.message.contains("doesn't run Podman"), "{err:?}");
+    }
+
+    #[tokio::test]
+    #[ignore = "needs a local Podman Engine"]
+    async fn podman_hosts_say_so_and_hand_out_its_api() {
+        let socket = std::env::var("HOMEPORT_PODMAN_SOCKET")
+            .unwrap_or_else(|_| "/run/podman/podman.sock".into());
+        if !std::path::Path::new(&socket).exists() {
+            eprintln!("no local Podman Engine at {socket}; skipping");
+            return;
+        }
+        let (reg, _, id) = setup(&socket);
+        reg.restart(&id);
+        wait_for(&reg, &id, |s| matches!(s, HostStatus::Connected { .. })).await;
+        let version = reg.status(&id).podman_version().map(str::to_owned);
+        assert!(version.is_some(), "{:?}", reg.status(&id));
+        let podman = reg.podman(&id).unwrap();
+        assert_eq!(Some(podman.version()), version.as_deref());
+        homeport_engine::podman::pods::list(&podman).await.unwrap();
     }
 }

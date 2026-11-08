@@ -67,7 +67,7 @@ export function useRunContainer(hostId: string, onStarted: (id: string) => void)
   const refresh = useRefreshContainers(hostId);
   return useMutation({
     meta: { silent: true },
-    mutationFn: (form: RunForm) => commands.containersRun(hostId, toRunSpec(form)),
+    mutationFn: (form: RunForm) => commands.containersRun(hostId, toRunSpec(form), null),
     onSuccess: async (id) => {
       toast.success(t('containers.run.started'));
       await refresh();
