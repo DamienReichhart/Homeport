@@ -2327,7 +2327,7 @@ dependencies = [
 
 [[package]]
 name = "homeport"
-version = "0.15.0"
+version = "0.16.0"
 dependencies = [
  "homeport-clusters",
  "homeport-core",
@@ -2362,7 +2362,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-clusters"
-version = "0.15.0"
+version = "0.16.0"
 dependencies = [
  "base64 0.22.1",
  "futures-util",
@@ -2390,7 +2390,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-core"
-version = "0.15.0"
+version = "0.16.0"
 dependencies = [
  "bollard",
  "log",
@@ -2405,7 +2405,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-engine"
-version = "0.15.0"
+version = "0.16.0"
 dependencies = [
  "base64 0.22.1",
  "bollard",
@@ -2427,7 +2427,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-git"
-version = "0.15.0"
+version = "0.16.0"
 dependencies = [
  "base64 0.22.1",
  "futures-util",
@@ -2447,7 +2447,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-hosts"
-version = "0.15.0"
+version = "0.16.0"
 dependencies = [
  "bollard",
  "futures-util",
@@ -2468,7 +2468,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-registries"
-version = "0.15.0"
+version = "0.16.0"
 dependencies = [
  "homeport-core",
  "homeport-engine",
@@ -2486,7 +2486,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-settings"
-version = "0.15.0"
+version = "0.16.0"
 dependencies = [
  "homeport-core",
  "homeport-storage",
@@ -2500,7 +2500,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-stacks"
-version = "0.15.0"
+version = "0.16.0"
 dependencies = [
  "bollard",
  "homeport-core",
@@ -2523,7 +2523,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-storage"
-version = "0.15.0"
+version = "0.16.0"
 dependencies = [
  "argon2",
  "chacha20poly1305",
@@ -2540,7 +2540,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-transport"
-version = "0.15.0"
+version = "0.16.0"
 dependencies = [
  "bollard",
  "getrandom 0.3.4",
@@ -2560,7 +2560,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-updates"
-version = "0.15.0"
+version = "0.16.0"
 dependencies = [
  "serde",
  "specta",
