@@ -67,3 +67,11 @@ Common errors:
 | `port is already allocated`, `address already in use`     | A port published in `host` mode is taken on that node.                                                                                   |
 | `invalid mount config`, `bind source path does not exist` | A bind mount names a path the node doesn't have. Bind mounts are paths on each node.                                                     |
 | `task: non-zero exit (1)`                                 | The container started and exited with an error: open its logs from the service's **Logs** tab.                                           |
+
+## Secrets and configs
+
+Services read credentials from **secrets** and configuration files from **configs**, both mounted as files in their containers (secrets under `/run/secrets/`). The **Secrets** and **Configs** tabs list them with the services that use them, their labels, and when they were created and updated.
+
+**Create secret** asks for a name and the value, masked unless you choose **Show**, or **Load from file…** to send a file from this computer instead (a key, a certificate). The value goes to the Swarm once: Homeport doesn't keep it, and the Engine never sends it back, so no one can read it from the Swarm, Homeport included. **Create config** works the same, with the content shown as you type; a config's content can be viewed again from its row. Both are limited to 500 KB.
+
+Secrets and configs can't be changed once created. To change one, create a new one under a new name, such as `db_password_v2`, point the services at it, then remove the old one. A secret or config a service uses can't be removed: the Swarm refuses, and Homeport names the services that use it.

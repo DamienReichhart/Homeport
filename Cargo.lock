@@ -2203,6 +2203,7 @@ dependencies = [
 name = "homeport-engine"
 version = "0.13.0"
 dependencies = [
+ "base64 0.22.1",
  "bollard",
  "bytes",
  "futures-util",

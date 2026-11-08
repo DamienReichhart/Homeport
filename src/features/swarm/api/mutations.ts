@@ -1,7 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { swarmKeys } from '@/core/swarm';
-import { commands, type NodeChange, type ServiceView, type SwarmNode } from '@/shared/api';
+import {
+  commands,
+  type NodeChange,
+  type ObjectInput,
+  type ServiceView,
+  type SwarmNode,
+  type SwarmObject,
+} from '@/shared/api';
 import { toastError } from '@/shared/ui';
 import { t } from '@/shared/i18n';
 
@@ -72,6 +79,43 @@ export function useRemoveService(swarmId: string) {
   return useMutation({
     mutationFn: (service: ServiceView) => commands.swarmServicesRemove(swarmId, service.id),
     onSuccess: (_, service) => toast.success(t('swarm.services.removed', { name: service.name })),
+    onError: (e) => toastError(e),
+    onSettled: () => refresh(),
+  });
+}
+
+/** A secret or a config: the two are listed, created and removed alike. */
+export type ObjectKind = 'secret' | 'config';
+
+/**
+ * Creates a secret or config; the dialog shows a failure in place. Its input
+ * may hold a secret's value, so the mutation is dropped from the cache as
+ * soon as nothing watches it (and the dialog resets it on closing).
+ */
+export function useCreateObject(swarmId: string, kind: ObjectKind, onCreated: () => void) {
+  const refresh = useRefreshSwarm(swarmId);
+  return useMutation({
+    meta: { silent: true },
+    gcTime: 0,
+    mutationFn: (input: ObjectInput) =>
+      kind === 'secret'
+        ? commands.swarmSecretsCreate(swarmId, input)
+        : commands.swarmConfigsCreate(swarmId, input),
+    onSuccess: async () => {
+      await refresh();
+      onCreated();
+    },
+  });
+}
+
+export function useRemoveObject(swarmId: string, kind: ObjectKind) {
+  const refresh = useRefreshSwarm(swarmId);
+  return useMutation({
+    mutationFn: (object: SwarmObject) =>
+      kind === 'secret'
+        ? commands.swarmSecretsRemove(swarmId, object.id)
+        : commands.swarmConfigsRemove(swarmId, object.id),
+    onSuccess: (_, object) => toast.success(t('swarm.objects.removed', { name: object.name })),
     onError: (e) => toastError(e),
     onSettled: () => refresh(),
   });

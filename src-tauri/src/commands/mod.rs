@@ -195,6 +195,13 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             swarm::swarm_service_logs_subscribe,
             swarm::swarm_tasks_list,
             swarm::swarm_tasks_inspect,
+            swarm::swarm_secrets_list,
+            swarm::swarm_secrets_create,
+            swarm::swarm_secrets_remove,
+            swarm::swarm_configs_list,
+            swarm::swarm_configs_create,
+            swarm::swarm_configs_inspect,
+            swarm::swarm_configs_remove,
         ])
         .events(collect_events![
             events::HostStatusChanged,

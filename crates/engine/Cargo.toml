@@ -28,6 +28,7 @@ tar.workspace = true
 shell-words.workspace = true
 uuid.workspace = true
 gethostname.workspace = true
+base64.workspace = true
 
 [dev-dependencies]
 homeport-transport = { workspace = true, features = ["test-support"] }

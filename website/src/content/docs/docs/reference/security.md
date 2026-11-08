@@ -46,6 +46,10 @@ For a [Linked Stack](/docs/guides/stacks/#linked-stacks), Homeport stores only w
 
 For [Synced Stacks](/docs/guides/synced-stacks/), Homeport keeps each repository's URL, and either a deploy key it generated for that repository (its private half encrypted) or your user name and an access token (encrypted). A repository's content isn't a secret: its clone sits in a `repositories` folder next to `homeport.db`.
 
+### Swarms
+
+Homeport stores nothing about a [Swarm](/docs/guides/swarm/): it finds one through its manager hosts each time it connects. Swarm secret values go to the Swarm and aren't kept by Homeport: a value you type or load from a file is sent to the Engine once, never written to `homeport.db`, a file or the log, and dropped from memory when the dialog closes. The Engine never sends a secret's value back, so Homeport can't show one either. Join tokens are fetched from a manager when you need them, and never stored or logged.
+
 ## How secrets are encrypted
 
 - Each secret is sealed on its own with **XChaCha20-Poly1305**, an authenticated cipher, so tampering is detected as well as reading prevented.

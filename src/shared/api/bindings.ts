@@ -375,6 +375,16 @@ export const commands = {
 	 */
 	swarmTasksList: (swarmId: string, filter: TaskFilter) => __TAURI_INVOKE<SwarmTask[]>("swarm_tasks_list", { swarmId, filter }),
 	swarmTasksInspect: (swarmId: string, id: string) => __TAURI_INVOKE<Value>("swarm_tasks_inspect", { swarmId, id }),
+	/**  A Swarm's secrets, never their values. */
+	swarmSecretsList: (swarmId: string) => __TAURI_INVOKE<SwarmObject[]>("swarm_secrets_list", { swarmId }),
+	/**  Sends a new secret's value to the Swarm once; Homeport keeps none of it. */
+	swarmSecretsCreate: (swarmId: string, input: ObjectInput) => __TAURI_INVOKE<string>("swarm_secrets_create", { swarmId, input }),
+	swarmSecretsRemove: (swarmId: string, id: string) => __TAURI_INVOKE<null>("swarm_secrets_remove", { swarmId, id }),
+	swarmConfigsList: (swarmId: string) => __TAURI_INVOKE<SwarmObject[]>("swarm_configs_list", { swarmId }),
+	swarmConfigsCreate: (swarmId: string, input: ObjectInput) => __TAURI_INVOKE<string>("swarm_configs_create", { swarmId, input }),
+	/**  A config's content, as text when it is. */
+	swarmConfigsInspect: (swarmId: string, id: string) => __TAURI_INVOKE<ConfigContent>("swarm_configs_inspect", { swarmId, id }),
+	swarmConfigsRemove: (swarmId: string, id: string) => __TAURI_INVOKE<null>("swarm_configs_remove", { swarmId, id }),
 };
 
 /** Events */
@@ -633,6 +643,12 @@ export type ComposeFile = {
 export type ComposeSupport = { state: "available"; cli: ComposeCli } | 
 /**  `problem` says what's missing and how to install it. */
 { state: "unavailable"; problem: AppError };
+
+/**  A config's content as text, or its size when it isn't text. */
+export type ConfigContent = {
+	text: string | null,
+	size: number,
+};
 
 export type Container = {
 	id: string,
@@ -1334,6 +1350,23 @@ export type NotificationSettings = {
 	hostBack?: boolean,
 };
 
+/**  A secret or config to create. */
+export type ObjectInput = {
+	name: string,
+	value: ObjectValue,
+	labels: { [key in string]: string },
+};
+
+/**  Where a new secret's or config's value comes from. */
+export type ObjectValue = 
+/**  Typed in Homeport. */
+{ kind: "text"; text: string } | 
+/**
+ *  A file on this computer, read here and sent; its path is all the
+ *  webview hands over.
+ */
+{ kind: "file"; path: string };
+
 export type PackageManager = "apt" | "dnf" | "zypper" | "scoop" | "aur";
 
 /**  A parameter of a message: text such as a Host's name, or a number. */
@@ -1748,6 +1781,17 @@ export type SwarmNodeState = "active" |
 "pending" | 
 /**  Encrypted at rest and waiting for its unlock key. */
 "locked" | "error";
+
+/**  What a secret or config is, as the lists show it. Never its value. */
+export type SwarmObject = {
+	id: string,
+	name: string,
+	created: string | null,
+	updated: string | null,
+	labels: { [key in string]: string },
+	/**  The names of the services that use it. */
+	services: string[],
+};
 
 export type SwarmPeer = {
 	nodeId: string,

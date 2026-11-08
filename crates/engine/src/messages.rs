@@ -218,4 +218,17 @@ homeport_core::messages! {
     SERVICE_NOT_REPLICATED = "errors.swarm.serviceNotReplicated" => "Only replicated services can be scaled; a global service runs one task on every node.";
     /// An absurd number of replicas.
     SERVICE_REPLICAS = "errors.swarm.serviceReplicas" => "Choose at most 10000 replicas.";
+    /// A secret or config name Docker refuses.
+    OBJECT_NAME = "errors.swarm.objectName" => "Names start with a letter or digit, and hold up to 64 letters, digits, dots, hyphens and underscores.";
+    /// A secret or config without a value.
+    OBJECT_EMPTY = "errors.swarm.objectEmpty" => "Enter a value, or load it from a file.";
+    /// A secret or config over the Swarm's 500 KB limit.
+    OBJECT_TOO_LARGE = "errors.swarm.objectTooLarge" => "Secrets and configs can hold at most 500 KB.";
+    /// A secret or config whose name another one has.
+    OBJECT_NAME_IN_USE = "errors.swarm.objectNameInUse" => "That name is already used in this Swarm.";
+    OBJECT_NAME_IN_USE_HINT = "errors.swarm.objectNameInUse.hint" => "Secrets and configs can't be changed: create one under a new name, such as with a version at the end, and point the services at it.";
+    /// Removing a secret or config a service uses.
+    OBJECT_IN_USE = "errors.swarm.objectInUse" => "A service still uses this.";
+    OBJECT_IN_USE_HINT = "errors.swarm.objectInUse.hint" => "Used by {services}. Remove it from them, or remove them, first.";
+    OBJECT_IN_USE_HINT_UNKNOWN = "errors.swarm.objectInUse.hintUnknown" => "Remove it from the services that use it, or remove them, first.";
 }

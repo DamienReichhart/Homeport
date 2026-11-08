@@ -4,18 +4,21 @@ import { shortSwarmId, SwarmGate, swarmLabel } from '@/core/swarm';
 import type { SwarmView } from '@/shared/api';
 import { Badge, PageHeader, Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui';
 import { NodesTab } from '../nodes/NodesTab';
+import { ObjectsTab } from '../objects/ObjectsTab';
 import { ServicesTab } from '../services/ServicesTab';
 import { TasksTab } from '../tasks/TasksTab';
 import { SummaryTab } from './SummaryTab';
 import { t, type MessageKey } from '@/shared/i18n';
 
-const TABS = ['summary', 'nodes', 'services', 'tasks'] as const;
+const TABS = ['summary', 'nodes', 'services', 'tasks', 'secrets', 'configs'] as const;
 type Tab = (typeof TABS)[number];
 const TAB_LABELS: Record<Tab, MessageKey> = {
   summary: 'swarm.tab.summary',
   nodes: 'swarm.tab.nodes',
   services: 'swarm.tab.services',
   tasks: 'swarm.tab.tasks',
+  secrets: 'swarm.tab.secrets',
+  configs: 'swarm.tab.configs',
 };
 
 function SwarmDetail({ swarm }: { swarm: SwarmView }) {
@@ -61,6 +64,12 @@ function SwarmDetail({ swarm }: { swarm: SwarmView }) {
         </TabsContent>
         <TabsContent value="tasks" className="overflow-auto">
           <TasksTab swarmId={swarm.id} />
+        </TabsContent>
+        <TabsContent value="secrets" className="overflow-auto">
+          <ObjectsTab swarmId={swarm.id} kind="secret" />
+        </TabsContent>
+        <TabsContent value="configs" className="overflow-auto">
+          <ObjectsTab swarmId={swarm.id} kind="config" />
         </TabsContent>
       </Tabs>
     </div>

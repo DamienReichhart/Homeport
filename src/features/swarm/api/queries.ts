@@ -28,4 +28,16 @@ export const swarmFeatureQueries = {
       queryKey: [...swarmKeys.tasks(swarmId), filter],
       queryFn: () => commands.swarmTasksList(swarmId, filter),
     }),
+  /** A Swarm's secrets or configs. */
+  objects: (swarmId: string, kind: 'secret' | 'config') =>
+    queryOptions({
+      queryKey: kind === 'secret' ? swarmKeys.secrets(swarmId) : swarmKeys.configs(swarmId),
+      queryFn: () =>
+        kind === 'secret' ? commands.swarmSecretsList(swarmId) : commands.swarmConfigsList(swarmId),
+    }),
+  configContent: (swarmId: string, id: string) =>
+    queryOptions({
+      queryKey: [...swarmKeys.configs(swarmId), id, 'content'],
+      queryFn: () => commands.swarmConfigsInspect(swarmId, id),
+    }),
 };

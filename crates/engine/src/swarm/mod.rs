@@ -4,6 +4,7 @@
 //! `homeport_hosts::registry::HostRegistry::manager` hands out.
 
 pub mod nodes;
+pub mod objects;
 pub mod services;
 pub mod tasks;
 
