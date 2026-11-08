@@ -86,6 +86,13 @@ pub enum ErrorCode {
     SwarmJoinFailed,
     /// The `docker` CLI isn't installed, which deploying a Stack to a Swarm needs.
     DockerCliMissing,
+    // Clusters.
+    /// A command for a Cluster that isn't connected.
+    ClusterNotConnected,
+    /// The Cluster's API server refused the credentials from its kubeconfig.
+    ClusterUnauthorized,
+    /// The Kubernetes API answered with an error Homeport has no better words for.
+    ClusterApiError,
     // Compose.
     ComposeMissing,
     ComposeOutdated,

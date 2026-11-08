@@ -242,6 +242,11 @@ pub async fn data_restore(
 mod tests {
     use std::sync::Arc;
 
+    use homeport_clusters::{
+        registry::{ClusterNotifier, ClusterRegistry, ClusterStatus},
+        service::ClusterService,
+        store::ClusterStore,
+    };
     use homeport_core::{
         error::ErrorCode,
         host::{HostConnection, HostSecrets},
@@ -279,6 +284,9 @@ mod tests {
         fn host_status(&self, _: &str, _: &HostStatus) {}
         fn engine_event(&self, _: &str, _: &EngineEvent) {}
     }
+    impl ClusterNotifier for Silent {
+        fn cluster_status(&self, _: &str, _: &ClusterStatus) {}
+    }
 
     /// A computer: its own data folder, database and keychain key.
     fn computer(dir: &Path, key: u8) -> AppState {
@@ -291,7 +299,12 @@ mod tests {
             RepositoryStore::new(db.clone(), secrets.clone()),
             dir.join("repositories"),
         ));
+        let cluster_store = Arc::new(ClusterStore::new(db.clone(), secrets.clone()));
         AppState {
+            clusters: ClusterService {
+                registry: ClusterRegistry::new(cluster_store.clone(), Arc::new(Silent)),
+                store: cluster_store,
+            },
             settings: SettingsService::new(db.clone(), &dir.join("settings.json")).unwrap(),
             hosts: HostService {
                 store,

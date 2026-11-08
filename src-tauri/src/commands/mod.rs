@@ -13,6 +13,7 @@ use crate::app::events;
 
 pub mod app;
 pub mod backup;
+pub mod clusters;
 pub mod containers;
 pub mod exec;
 pub mod files;
@@ -77,6 +78,12 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             hosts::hosts_ssh_setup,
             hosts::hosts_events,
             hosts::hosts_events_clear,
+            clusters::clusters_list,
+            clusters::clusters_get,
+            clusters::clusters_update,
+            clusters::clusters_set_enabled,
+            clusters::clusters_remove,
+            clusters::clusters_reconnect,
             backup::data_backup,
             backup::data_restore_preview,
             backup::data_restore,
@@ -217,6 +224,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
         ])
         .events(collect_events![
             events::HostStatusChanged,
+            events::ClusterStatusChanged,
             events::EngineEventReceived,
             events::SyncedUpdateAvailable,
             events::SyncedAutoDeployed,

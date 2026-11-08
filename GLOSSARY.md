@@ -20,6 +20,10 @@ _Avoid_: Jump host, jump server, proxy, gateway, hop (in the UI)
 A Docker Swarm cluster, found through the Hosts that belong to it and never added on its own: Homeport reaches it through any connected manager Host, addresses it by its swarm ID, and stores nothing about it (ADR 0016). Named "Swarm of <its first manager Host>", since Docker gives every Swarm the same name.
 _Avoid_: Cluster (alone), swarm mode, orchestrator
 
+**Cluster**:
+A Kubernetes cluster Homeport connects to through its API server, added from a context of a kubeconfig: a name, the API server's address and the credentials the kubeconfig gives, stored sealed. Homeport installs nothing on it and only reaches what those credentials allow. Not a Swarm, which is found through its Hosts and never added. The UI may say where a Cluster came from ("context kind-dev of ~/.kube/config"), but a Cluster is never called a context.
+_Avoid_: Context (for a Cluster), kube cluster, k8s, environment
+
 **Node**:
 One Engine in a Swarm, a manager or a worker. A node is a Host only when Homeport connects to it; a Host's page links to its node and back.
 _Avoid_: Member, machine, server

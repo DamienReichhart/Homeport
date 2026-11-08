@@ -3,6 +3,7 @@
 
 use std::sync::{Arc, Mutex};
 
+use homeport_clusters::service::ClusterService;
 use homeport_core::streams::Streams;
 use homeport_engine::{
     containers::exec::ExecSessions, freshness::FreshnessCache, volumes::browse::BrowseSessions,
@@ -26,6 +27,7 @@ pub struct AppState {
     pub secrets: Arc<SecretBox>,
     pub settings: SettingsService,
     pub hosts: HostService,
+    pub clusters: ClusterService,
     pub stacks: StackStore,
     pub linked: LinkedStore,
     /// Parsed compose files, for finding Linked Stacks without re-reading them.

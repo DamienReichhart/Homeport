@@ -80,6 +80,15 @@ export const commands = {
 	hostsEvents: (id: string, limit: number | null, before: EventCursor | null) => __TAURI_INVOKE<EngineEvent[]>("hosts_events", { id, limit, before }),
 	/**  Forgets a Host's kept Engine events. */
 	hostsEventsClear: (id: string) => __TAURI_INVOKE<null>("hosts_events_clear", { id }),
+	/**  Every Cluster with its connection's status, by name. */
+	clustersList: () => __TAURI_INVOKE<ClusterView[]>("clusters_list"),
+	clustersGet: (id: string) => __TAURI_INVOKE<ClusterView>("clusters_get", { id }),
+	/**  Renames a Cluster. */
+	clustersUpdate: (id: string, name: string) => __TAURI_INVOKE<ClusterView>("clusters_update", { id, name }),
+	clustersSetEnabled: (id: string, enabled: boolean) => __TAURI_INVOKE<ClusterView>("clusters_set_enabled", { id, enabled }),
+	/**  Forgets a Cluster and its credentials; nothing changes on the Cluster. */
+	clustersRemove: (id: string) => __TAURI_INVOKE<null>("clusters_remove", { id }),
+	clustersReconnect: (id: string) => __TAURI_INVOKE<ClusterView>("clusters_reconnect", { id }),
 	/**  Backs up everything Homeport holds to `path`, sealed with `passphrase`. */
 	dataBackup: (path: string, passphrase: string) => __TAURI_INVOKE<BackupOutcome>("data_backup", { path, passphrase }),
 	/**  What the backup at `path` holds, for the restore's confirmation. */
@@ -428,6 +437,7 @@ export const commands = {
 
 /** Events */
 export const events = {
+	clusterStatusChanged: makeEvent<ClusterStatusChanged, ClusterStatusChanged>("cluster-status-changed"),
 	engineEventReceived: makeEvent<EngineEventReceived, EngineEventReceived>("engine-event-received"),
 	hostStatusChanged: makeEvent<HostStatusChanged, HostStatusChanged>("host-status-changed"),
 	syncedAutoDeployed: makeEvent<SyncedAutoDeployed, SyncedAutoDeployed>("synced-auto-deployed"),
@@ -459,6 +469,13 @@ export type AppInfo = {
 	os: string,
 	arch: string,
 };
+
+/**  How a Cluster's user authenticates, as its kubeconfig says. */
+export type AuthMethod = 
+/**  No credential: the API server sees an anonymous user. */
+{ method: "none" } | { method: "clientCertificate" } | { method: "token" } | { method: "basic"; username: string } | 
+/**  A program on this machine prints the credentials (`aws`, `gke-gcloud-auth-plugin`…). */
+{ method: "exec"; command: string };
 
 /**  Whether the scheduler may place tasks on a node. */
 export type Availability = 
@@ -606,6 +623,59 @@ export type Capabilities = {
 	 *  keep it running there.
 	 */
 	tray: boolean,
+};
+
+export type Cluster = {
+	id: string,
+	name: string,
+	kind: ClusterKind,
+	connection: ClusterConnection,
+	enabled: boolean,
+	createdAt: string,
+};
+
+/**  How to reach a Cluster's API, without any credential. */
+export type ClusterConnection = {
+	/**  The API server's URL, such as `https://127.0.0.1:6443`. */
+	server?: string,
+	/**  The name to check the server's certificate against, when not the URL's. */
+	tlsServerName?: string | null,
+	/**  The kubeconfig turns off checking the server's certificate. */
+	insecureSkipTlsVerify?: boolean,
+	/**  An HTTP proxy in front of the API server. */
+	proxyUrl?: string | null,
+	/**  The Namespace the kubeconfig context defaults to. */
+	namespace?: string | null,
+	/**  How Homeport authenticates, to tell the user; the credentials themselves are sealed. */
+	auth?: AuthMethod,
+	/**  The kubeconfig context it was imported from, for refreshing it. */
+	source?: KubeconfigSource | null,
+};
+
+/**  The orchestrator a Cluster runs. Nomad Clusters will share the table. */
+export type ClusterKind = "kubernetes";
+
+export type ClusterStatus = { state: "disabled" } | { state: "connecting" } | { state: "connected"; 
+/**  The API server's version, such as `v1.33.1`. */
+serverVersion: string; 
+/**  Its OS and architecture, such as `linux/arm64`. */
+platform: string } | 
+/**  Retrying on its own in `retry_in_secs`. */
+{ state: "unreachable"; error: AppError; retryInSecs: number } | 
+/**  The API server refused the credentials; waits for the user. */
+{ state: "unauthorized"; error: AppError } | { state: "credentialsLost" } | { state: "keychainUnavailable"; error: AppError } | 
+/**  Something only the user can fix (a certificate, a missing plugin); waits for them. */
+{ state: "invalid"; error: AppError };
+
+export type ClusterStatusChanged = {
+	clusterId: string,
+	status: ClusterStatus,
+};
+
+/**  A Cluster and its connection's status, as the frontend lists them. */
+export type ClusterView = {
+	cluster: Cluster,
+	status: ClusterStatus,
 };
 
 /**  One commit, as a sync shows it. */
@@ -876,7 +946,13 @@ export type ErrorCode =
 /**  A node couldn't reach the managers of the Swarm it was joining. */
 "swarm_join_failed" | 
 /**  The `docker` CLI isn't installed, which deploying a Stack to a Swarm needs. */
-"docker_cli_missing" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
+"docker_cli_missing" | 
+/**  A command for a Cluster that isn't connected. */
+"cluster_not_connected" | 
+/**  The Cluster's API server refused the credentials from its kubeconfig. */
+"cluster_unauthorized" | 
+/**  The Kubernetes API answered with an error Homeport has no better words for. */
+"cluster_api_error" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
 /**  A Linked Stack's folder, or one of its compose files, is gone. */
 "stack_folder_missing" | 
 /**  A Linked Stack's compose file can't be read or written. */
@@ -1222,6 +1298,17 @@ export type JoinRole = "worker" | "manager";
  *  addresses are fetched through a connected manager, or a pasted token.
  */
 export type JoinTarget = { kind: "known"; swarmId: string } | { kind: "token"; token: string; addresses: string[] };
+
+/**  Where a Cluster's kubeconfig context came from. */
+export type KubeconfigSource = {
+	/**  The context's name in the kubeconfig. */
+	context: string,
+	/**
+	 *  Pasted into Homeport rather than read from this machine's kubeconfig,
+	 *  so it can't be refreshed from there.
+	 */
+	pasted: boolean,
+};
 
 export type Licenses = {
 	/**  Homeport's own license (`LICENSE`). */

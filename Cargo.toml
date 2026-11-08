@@ -6,7 +6,7 @@ resolver = "2"
 version = "0.14.0"
 edition = "2021"
 license = "AGPL-3.0-only"
-rust-version = "1.88"
+rust-version = "1.89"
 
 # Lints every crate opts into with `[lints] workspace = true`.
 [workspace.lints.rust]
@@ -38,6 +38,14 @@ russh = { version = "0.65", default-features = false, features = ["ring", "flate
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12", "logging"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12", "logging"] }
 rustls-pki-types = { version = "1", features = ["std"] }
+# The Kubernetes API of a Cluster, on rustls and ring like the rest of the
+# app. k8s-openapi's `earliest` schema (1.33) reads older Clusters' stable
+# resources too.
+kube = { version = "5", default-features = false, features = ["client", "rustls-tls", "ring", "runtime", "http-proxy"] }
+http = "1"
+# The secret strings kube's AuthInfo holds credentials in.
+secrecy = "0.10"
+k8s-openapi = { version = "0.29", default-features = false, features = ["std", "earliest"] }
 # HTTP from this machine (registry logins, Docker Hub), on the same rustls
 # and ring as the rest of the app.
 reqwest = { version = "0.13", default-features = false, features = ["rustls-no-provider", "json", "query", "system-proxy"] }
@@ -76,6 +84,7 @@ homeport-storage = { path = "crates/storage" }
 homeport-transport = { path = "crates/transport" }
 homeport-engine = { path = "crates/engine" }
 homeport-hosts = { path = "crates/hosts" }
+homeport-clusters = { path = "crates/clusters" }
 homeport-git = { path = "crates/git" }
 homeport-stacks = { path = "crates/stacks" }
 homeport-registries = { path = "crates/registries" }

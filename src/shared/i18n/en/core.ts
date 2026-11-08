@@ -24,6 +24,15 @@ export default {
   'core.swarm.gone.title': 'This Swarm isn’t known any more',
   'core.swarm.gone.description':
     'None of the hosts Homeport connects to belongs to it now. Add one of its managers as a host to manage it.',
+  'core.cluster.serverVersion': 'Kubernetes {version}',
+  'core.cluster.credentialsLostDetail':
+    'The stored credentials can’t be decrypted. Refresh the cluster from its kubeconfig.',
+  'core.cluster.reconnectFailed': 'Homeport couldn’t reconnect to the cluster',
+  'core.cluster.gate.none': 'No cluster selected',
+  'core.cluster.gate.noneDescription':
+    'Pick a cluster in the sidebar, or add one from your kubeconfig.',
+  'core.cluster.gate.add': 'Add a cluster',
+  'core.cluster.gate.openSettings': 'Open cluster settings',
   'core.gate.welcome.title': 'Welcome to Homeport',
   'core.gate.welcome.description':
     "Bring in a Docker Engine to get started — this machine's, or a remote one over SSH or TLS.",

@@ -30,6 +30,7 @@ const MIGRATION_SLICE: &[M<'static>] = &[
     M::up(include_str!("migrations/0013_synced_polling.sql")),
     M::up(include_str!("migrations/0014_engine_events.sql")),
     M::up(include_str!("migrations/0015_swarm_stacks.sql")),
+    M::up(include_str!("migrations/0016_clusters.sql")),
 ];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_SLICE);
 
@@ -183,6 +184,40 @@ mod tests {
             .query_row("SELECT count(*) FROM engine_events", [], |r| r.get(0))
             .unwrap();
         assert_eq!(left, 0);
+    }
+
+    #[test]
+    fn databases_from_0_14_gain_clusters_and_keep_their_hosts() {
+        let mut conn = Connection::open_in_memory().unwrap();
+        MIGRATIONS.to_version(&mut conn, 15).unwrap();
+        let local = r#"{"kind":"local","socketPath":"/var/run/docker.sock"}"#;
+        conn.execute(
+            "INSERT INTO hosts (id, name, connection) VALUES ('h', 'local', ?1)",
+            [local],
+        )
+        .unwrap();
+        migrate(&mut conn).unwrap();
+
+        let hosts: i64 = conn
+            .query_row("SELECT count(*) FROM hosts", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(hosts, 1);
+        conn.execute(
+            "INSERT INTO clusters (id, name, connection) VALUES ('c', 'kind-dev', '{}')",
+            [],
+        )
+        .unwrap();
+        let (kind, enabled): (String, bool) = conn
+            .query_row("SELECT kind, enabled FROM clusters", [], |r| {
+                Ok((r.get(0)?, r.get(1)?))
+            })
+            .unwrap();
+        assert_eq!((kind.as_str(), enabled), ("kubernetes", true));
+        let duplicate = conn.execute(
+            "INSERT INTO clusters (id, name, connection) VALUES ('d', 'KIND-DEV', '{}')",
+            [],
+        );
+        assert!(duplicate.is_err(), "names are unique whatever their case");
     }
 
     #[test]

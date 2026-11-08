@@ -138,6 +138,7 @@ export const baseCommands = {
     },
   }),
   hosts_list: () => [connectedHost],
+  clusters_list: () => [],
   swarms_list: () => [],
   registries_list: () => [],
   repositories_list: () => [],
@@ -266,6 +267,30 @@ export function serviceView(overrides: Partial<ServiceView> = {}): ServiceView {
     labels: {},
     created: null,
     updated: null,
+    ...overrides,
+  };
+}
+
+/** A Cluster connected to its API server, as `clusters_list` returns it. */
+export function clusterView(name: string, overrides: Record<string, unknown> = {}) {
+  return {
+    cluster: {
+      id: 'c1',
+      name,
+      kind: 'kubernetes',
+      connection: {
+        server: 'https://127.0.0.1:6443',
+        tlsServerName: null,
+        insecureSkipTlsVerify: false,
+        proxyUrl: null,
+        namespace: 'default',
+        auth: { method: 'clientCertificate' },
+        source: { context: name, pasted: false },
+      },
+      enabled: true,
+      createdAt: '2026-11-01T10:00:00Z',
+    },
+    status: { state: 'connected', serverVersion: 'v1.33.1', platform: 'linux/arm64' },
     ...overrides,
   };
 }
