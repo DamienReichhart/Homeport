@@ -1,11 +1,11 @@
 ---
 title: Workloads and Pods
-description: Browse a Cluster's Namespaces, Deployments, StatefulSets, DaemonSets, Jobs, CronJobs and Pods, live and read-only.
+description: Browse a Cluster's Namespaces, Deployments, StatefulSets, DaemonSets, Jobs, CronJobs and Pods, live.
 ---
 
 import { DocScreenshot } from '@/features/docs';
 
-Select a Cluster in the switcher and the sidebar shows its pages. **Workloads** and **Pods** list what runs on it; every list follows the cluster live through a Kubernetes watch, so a Deployment you scale or a Pod that crashes shows its new state within seconds without refreshing. These pages are read-only: logs, a shell, scaling and deleting come in a later version.
+Select a Cluster in the switcher and the sidebar shows its pages. **Workloads** and **Pods** list what runs on it; every list follows the cluster live through a Kubernetes watch, so a Deployment you scale or a Pod that crashes shows its new state within seconds without refreshing. Each page also lets you act on what it shows: [logs and a terminal](/docs/clusters/logs-exec/), [scaling, restarting and deleting](/docs/clusters/actions/), and [editing YAML](/docs/clusters/yaml/).
 
 ## Namespaces
 
@@ -44,7 +44,10 @@ A workload's page has:
 
 - **Overview**: its namespace, replicas, rollout strategy, the labels it selects Pods by, its labels and annotations, and its containers with their images and ports.
 - **Pods**: the Pods it selects (for a CronJob, **Jobs**: the Jobs it started, newest first).
-- **Conditions**, **Events** (warnings first; Kubernetes keeps them for about an hour) and **YAML**, read-only and without `managedFields`.
+- **Logs** of its Pods, all interleaved or one at a time (not for a CronJob; its Jobs have theirs).
+- **Conditions**, **Events** (warnings first; Kubernetes keeps them for about an hour) and **YAML**, without `managedFields`, with **Edit**.
+
+Its header has its actions: **Scale**, **Restart**, **Suspend** or **Resume** and **Run now** where they apply, and **Delete**; see [Scaling, restarting and deleting](/docs/clusters/actions/).
 
 ## Pods
 
@@ -61,14 +64,15 @@ A workload's page has:
   caption="Why api-…-xr4np isn't ready: its api container keeps crashing; its sidecar is fine."
 />
 
-A Pod's page shows its Node, IPs, QoS class, service account and what controls it, then each container (init containers first) with its image, state, why it waits or ended, its restarts and why it last restarted. **Conditions**, **Events** and **YAML** follow, as for workloads.
+A Pod's page shows its Node, IPs, QoS class, service account and what controls it, then each container (init containers first) with its image, state, why it waits or ended, its restarts and why it last restarted. Each container lists the ports it declares, with **Forward…** to [reach one from this computer](/docs/clusters/port-forward/). **Logs** and **Terminal** follow ([Logs and terminals](/docs/clusters/logs-exec/)), then **Conditions**, **Events** and **YAML**, as for workloads, and **Delete** in the header.
 
 ### Finding out why a Pod isn't ready
 
 1. On **Pods**, sort by **Status** or **Restarts**: `CrashLoopBackOff`, `ImagePullBackOff` and `Error` are shown in red.
 2. Open the Pod. The container that isn't ready says why it waits or ended, and **Restarts** gives the reason of its last exit — `Error`, `OOMKilled` (it hit its memory limit), `Completed`.
-3. **Events** has what the kubelet and the scheduler said: an image that can't be pulled, a probe that fails, no Node with enough memory.
-4. **YAML** shows the Pod as the cluster has it, for its probes, limits and environment.
+3. **Logs** with **Previous instance** shows what the container printed before it crashed.
+4. **Events** has what the kubelet and the scheduler said: an image that can't be pulled, a probe that fails, no Node with enough memory.
+5. **YAML** shows the Pod as the cluster has it, for its probes, limits and environment.
 
 ## When your credentials can't see something
 

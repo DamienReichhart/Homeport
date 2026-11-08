@@ -57,7 +57,7 @@ Homeport stores nothing about a [Swarm](/docs/guides/swarm/): it finds one throu
 
 ### Clusters
 
-A [Cluster](/docs/clusters/)'s credentials come from your kubeconfig and are stored only encrypted, like SSH keys; files the kubeconfig refers to are read once and inlined, a pasted kubeconfig is never written to a file, and your kubeconfig is never changed. An [exec plugin](/docs/clusters/exec-plugins/) runs on this computer, as you, and the token or certificate it prints is kept in memory only, until it expires. Homeport stores nothing else about what runs on a Cluster: Pods, workloads and the rest are read live.
+A [Cluster](/docs/clusters/)'s credentials come from your kubeconfig and are stored only encrypted, like SSH keys; files the kubeconfig refers to are read once and inlined, a pasted kubeconfig is never written to a file, and your kubeconfig is never changed. An [exec plugin](/docs/clusters/exec-plugins/) runs on this computer, as you, and the token or certificate it prints is kept in memory only, until it expires. Homeport stores nothing else about what runs on a Cluster: Pods, workloads and the rest are read live. [Port forwards](/docs/clusters/port-forward/) listen on this computer's loopback only (`127.0.0.1` and `::1`), so nothing else on your network can use them, and they end when Homeport quits. Changes made with [Apply YAML or Edit](/docs/clusters/yaml/) are recorded on the cluster under the field manager `homeport`.
 
 **Kubernetes Secret values** are fetched only when you choose **Reveal** for one key, one at a time: lists, a Secret's page and its YAML carry its keys and sizes, never its values. A revealed value stays in that page's memory — not in any cache, not in `homeport.db`, not in the log — and is hidden again when you leave the page.
 
@@ -128,7 +128,7 @@ The first time Homeport connects to an SSH server, it asks you to confirm the se
 
 - **No account.** There is nothing to sign up for.
 - **No telemetry, analytics or crash reporting.**
-- **Nothing installed on your Clusters.** Homeport only reads the Kubernetes API, with your credentials' rights.
+- **Nothing installed on your Clusters.** Homeport only uses the Kubernetes API, with your credentials' rights, and changes nothing without you asking: whatever removes or replaces something asks first, naming the cluster.
 - **Nothing installed on your Hosts.** The only container Homeport ever starts of its own is a short-lived [helper container](/docs/guides/volumes-networks/#the-helper-container) when you open, back up, restore or clone a volume; it has no network and is removed when it's done. Its image is pulled only once you agree.
 - **No silent installs.** An update is installed only when you choose **Install and restart**; Linux packages are only ever updated by your package manager.
 
