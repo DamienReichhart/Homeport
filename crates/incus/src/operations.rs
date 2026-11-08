@@ -137,14 +137,6 @@ pub(crate) async fn get(incus: &Incus, project: &str, id: &str) -> AppResult<Ope
         .await
 }
 
-/// Asks Incus to cancel the operation `id`, for actions the user gave up on.
-pub(crate) async fn cancel(incus: &Incus, project: &str, id: &str) {
-    let path = scoped(&format!("/1.0/operations/{}", segment(id)), project);
-    if let Err(e) = incus.sync::<serde_json::Value>(Request::delete(path)).await {
-        log::debug!("couldn't cancel operation {id}: {e}");
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

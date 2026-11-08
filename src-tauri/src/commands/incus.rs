@@ -14,10 +14,12 @@ use homeport_hosts::service::{CredentialsInput, HostInput, HostView};
 use homeport_incus::{
     images::{self, ImageCopy, IncusImage},
     instances::{self, IncusInstance, IncusInstanceDetail, InstanceAction, InstanceSpec},
+    networks::{self, BridgeRequest, IncusNetwork, IncusNetworkState},
     profiles::{self, IncusProfile, IncusProfileDetail},
     projects::{self, IncusProject},
     simplestreams::{self, RemoteImage},
     snapshots::{self, IncusSnapshot, SnapshotRequest},
+    storage::{self, IncusStoragePool, IncusVolume, VolumeRequest},
     terminal::{self, IncusExecOptions, IncusTerminal, SessionId},
     trust::{self, TrustToken, TrustTokenSummary},
 };
@@ -443,4 +445,100 @@ pub async fn incus_snapshot_delete(
 ) -> AppResult<()> {
     let incus = state.hosts.registry.incus(&host_id)?;
     snapshots::delete(&incus, &project, &instance, &snapshot).await
+}
+
+/// Every storage pool, with how full it is.
+#[tauri::command]
+#[specta::specta]
+pub async fn incus_storage_pools(
+    state: State<'_, AppState>,
+    host_id: String,
+    project: String,
+) -> AppResult<Vec<IncusStoragePool>> {
+    storage::pools(&state.hosts.registry.incus(&host_id)?, &project).await
+}
+
+/// The volumes of a pool in `project`, with what uses each.
+#[tauri::command]
+#[specta::specta]
+pub async fn incus_storage_volumes(
+    state: State<'_, AppState>,
+    host_id: String,
+    project: String,
+    pool: String,
+) -> AppResult<Vec<IncusVolume>> {
+    storage::volumes(&state.hosts.registry.incus(&host_id)?, &project, &pool).await
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn incus_volume_create(
+    state: State<'_, AppState>,
+    host_id: String,
+    project: String,
+    pool: String,
+    request: VolumeRequest,
+) -> AppResult<()> {
+    let incus = state.hosts.registry.incus(&host_id)?;
+    storage::create_volume(&incus, &project, &pool, &request).await
+}
+
+/// Deletes a custom volume nothing uses.
+#[tauri::command]
+#[specta::specta]
+pub async fn incus_volume_delete(
+    state: State<'_, AppState>,
+    host_id: String,
+    project: String,
+    pool: String,
+    name: String,
+) -> AppResult<()> {
+    let incus = state.hosts.registry.incus(&host_id)?;
+    storage::delete_volume(&incus, &project, &pool, &name).await
+}
+
+/// The networks `project` sees, managed ones first.
+#[tauri::command]
+#[specta::specta]
+pub async fn incus_networks(
+    state: State<'_, AppState>,
+    host_id: String,
+    project: String,
+) -> AppResult<Vec<IncusNetwork>> {
+    networks::list(&state.hosts.registry.incus(&host_id)?, &project).await
+}
+
+/// A network's addresses on the host and its DHCP leases.
+#[tauri::command]
+#[specta::specta]
+pub async fn incus_network_state(
+    state: State<'_, AppState>,
+    host_id: String,
+    project: String,
+    name: String,
+) -> AppResult<IncusNetworkState> {
+    networks::state(&state.hosts.registry.incus(&host_id)?, &project, &name).await
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn incus_bridge_create(
+    state: State<'_, AppState>,
+    host_id: String,
+    project: String,
+    request: BridgeRequest,
+) -> AppResult<()> {
+    networks::create_bridge(&state.hosts.registry.incus(&host_id)?, &project, &request).await
+}
+
+/// Deletes a managed network nothing uses.
+#[tauri::command]
+#[specta::specta]
+pub async fn incus_network_delete(
+    state: State<'_, AppState>,
+    host_id: String,
+    project: String,
+    name: String,
+) -> AppResult<()> {
+    networks::delete(&state.hosts.registry.incus(&host_id)?, &project, &name).await
 }

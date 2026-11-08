@@ -161,6 +161,21 @@ homeport_core::messages! {
     /// An expiry already gone.
     SNAPSHOT_EXPIRY_PAST = "errors.incus.snapshotExpiryPast" => "The expiry is in the past: pick a later time, or none.";
 
+    // Storage and networks.
+
+    /// A volume name Incus wouldn't accept.
+    VOLUME_NAME_INVALID = "errors.incus.volumeNameInvalid" => "\"{name}\" isn't a volume name: give one without slashes.";
+    /// Deleting a volume Instances use.
+    VOLUME_IN_USE_HINT = "errors.incus.volumeInUse.hint" => "Detach it from those Instances first (incus storage volume detach), then delete it.";
+    /// A network that isn't there.
+    NETWORK_NOT_FOUND = "errors.incus.networkNotFound" => "There's no network {name}; it may have just been deleted.";
+    /// A network name Linux wouldn't accept.
+    NETWORK_NAME_INVALID = "errors.incus.networkNameInvalid" => "\"{name}\" isn't a network name: use up to 15 letters, digits and dashes.";
+    /// Deleting a network Incus doesn't manage.
+    NETWORK_UNMANAGED = "errors.incus.networkUnmanaged" => "{name} is this machine's own interface, not one Incus manages, so Homeport doesn't delete it.";
+    /// Deleting a network Instances or profiles use.
+    NETWORK_IN_USE_HINT = "errors.incus.networkInUse.hint" => "Remove it from those profiles and Instances first, then delete it.";
+
     /// The project picked isn't there any more.
     PROJECT_NOT_FOUND = "errors.incus.projectNotFound" => "There's no project {project} on {name}.";
     PROJECT_NOT_FOUND_HINT = "errors.incus.projectNotFound.hint" => "Pick another project under the host switcher.";

@@ -524,6 +524,20 @@ export const commands = {
 	/**  Restores an Instance to one of its snapshots; what changed since is lost. */
 	incusSnapshotRestore: (hostId: string, project: string, instance: string, snapshot: string, stateful: boolean) => __TAURI_INVOKE<null>("incus_snapshot_restore", { hostId, project, instance, snapshot, stateful }),
 	incusSnapshotDelete: (hostId: string, project: string, instance: string, snapshot: string) => __TAURI_INVOKE<null>("incus_snapshot_delete", { hostId, project, instance, snapshot }),
+	/**  Every storage pool, with how full it is. */
+	incusStoragePools: (hostId: string, project: string) => __TAURI_INVOKE<IncusStoragePool[]>("incus_storage_pools", { hostId, project }),
+	/**  The volumes of a pool in `project`, with what uses each. */
+	incusStorageVolumes: (hostId: string, project: string, pool: string) => __TAURI_INVOKE<IncusVolume[]>("incus_storage_volumes", { hostId, project, pool }),
+	incusVolumeCreate: (hostId: string, project: string, pool: string, request: VolumeRequest) => __TAURI_INVOKE<null>("incus_volume_create", { hostId, project, pool, request }),
+	/**  Deletes a custom volume nothing uses. */
+	incusVolumeDelete: (hostId: string, project: string, pool: string, name: string) => __TAURI_INVOKE<null>("incus_volume_delete", { hostId, project, pool, name }),
+	/**  The networks `project` sees, managed ones first. */
+	incusNetworks: (hostId: string, project: string) => __TAURI_INVOKE<IncusNetwork[]>("incus_networks", { hostId, project }),
+	/**  A network's addresses on the host and its DHCP leases. */
+	incusNetworkState: (hostId: string, project: string, name: string) => __TAURI_INVOKE<IncusNetworkState>("incus_network_state", { hostId, project, name }),
+	incusBridgeCreate: (hostId: string, project: string, request: BridgeRequest) => __TAURI_INVOKE<null>("incus_bridge_create", { hostId, project, request }),
+	/**  Deletes a managed network nothing uses. */
+	incusNetworkDelete: (hostId: string, project: string, name: string) => __TAURI_INVOKE<null>("incus_network_delete", { hostId, project, name }),
 	/**  The profiles of `project`, with the Instances using each. */
 	incusProfiles: (hostId: string, project: string) => __TAURI_INVOKE<IncusProfile[]>("incus_profiles", { hostId, project }),
 	/**  One profile, with its YAML and the ETag to save it with. */
@@ -940,6 +954,16 @@ export type BastionKeyInput = {
 	index: number,
 	privateKey: string,
 	passphrase: string | null,
+};
+
+/**  What the New bridge dialog asks for. */
+export type BridgeRequest = {
+	name: string,
+	/**  `auto`, `none`, or an address with its prefix: "10.0.5.1/24". */
+	ipv4: string,
+	ipv6: string,
+	nat: boolean,
+	description: string,
 };
 
 export type BuildArg = {
@@ -2209,6 +2233,44 @@ export type IncusInstanceDetail = {
 	raw: Value,
 };
 
+/**  An address the network's DHCP server handed out, or holds for its gateway. */
+export type IncusLease = {
+	hostname: string,
+	hwaddr: string,
+	address: string,
+	/**  `dynamic`, `static` or `gateway`. */
+	type: string,
+};
+
+/**  One network. */
+export type IncusNetwork = {
+	name: string,
+	/**  `bridge`, `macvlan`, `ovn`, `physical`, `loopback`… */
+	type: string,
+	/**  Whether Incus made and runs it, or it's the machine's own. */
+	managed: boolean,
+	description: string,
+	status: string,
+	/**  Its configured IPv4 and IPv6 addresses: "10.42.71.1/24". */
+	ipv4: string | null,
+	ipv6: string | null,
+	/**  Whether it masquerades outgoing IPv4 traffic. */
+	nat: boolean,
+	config: { [key in string]: string },
+	usedBy: IncusUser[],
+};
+
+/**  A network's live state and DHCP leases. */
+export type IncusNetworkState = {
+	/**  `up` or `down`. */
+	state: string,
+	hwaddr: string,
+	mtu: number,
+	/**  Its addresses on the host, with their prefix: "10.42.71.1/24". */
+	addresses: string[],
+	leases: IncusLease[],
+};
+
 /**  One profile. */
 export type IncusProfile = {
 	name: string,
@@ -2247,6 +2309,46 @@ export type IncusSnapshot = {
 	stateful: boolean,
 	/**  Its size in bytes, when the storage driver can tell. */
 	size: number | null,
+};
+
+/**  One storage pool. */
+export type IncusStoragePool = {
+	name: string,
+	description: string,
+	/**  `dir`, `zfs`, `btrfs`, `lvm`, `ceph`… */
+	driver: string,
+	/**  `Created`, or what went wrong with it. */
+	status: string,
+	/**  Bytes used and in all, when the driver can tell. */
+	used: number | null,
+	total: number | null,
+	usedBy: IncusUser[],
+};
+
+/**  One user of an object: an Instance, a profile, a network… */
+export type IncusUser = {
+	/**
+	 *  `instance`, `profile`, `network`, `volume`, `image`, `project`, or
+	 *  the collection's own name for anything else.
+	 */
+	kind: string,
+	name: string,
+	/**  The project it's in, when Incus says. */
+	project: string | null,
+};
+
+/**  One volume of a pool. */
+export type IncusVolume = {
+	name: string,
+	/**  `container`, `virtual-machine`, `image` or `custom`. */
+	type: string,
+	/**  `filesystem`, `block` or `iso`. */
+	contentType: string,
+	description: string,
+	/**  Its size limit, as configured: "10GiB". */
+	size: string | null,
+	createdAt: string | null,
+	usedBy: IncusUser[],
 };
 
 export type IngressDetail = {
@@ -3956,6 +4058,15 @@ export type VolumeInput = {
 	/**  Defaults to `local`. */
 	driver: string | null,
 	labels: { [key in string]: string },
+};
+
+/**  What the New volume dialog asks for. */
+export type VolumeRequest = {
+	name: string,
+	/**  "10GiB"; the pool's default when `None`. */
+	size: string | null,
+	/**  `filesystem` or `block`. */
+	contentType: string,
 };
 
 export type VolumeView = {

@@ -15,7 +15,9 @@ import { hostsFeature } from '@/features/hosts';
 import { imagesFeature } from '@/features/images';
 import { incusImagesFeature } from '@/features/incus-images';
 import { incusInstancesFeature } from '@/features/incus-instances';
+import { incusNetworksFeature } from '@/features/incus-networks';
 import { incusProfilesFeature } from '@/features/incus-profiles';
+import { incusStorageFeature } from '@/features/incus-storage';
 import { networkFeature } from '@/features/network';
 import { networksFeature } from '@/features/networks';
 import { nodesFeature } from '@/features/nodes';
@@ -50,6 +52,8 @@ export const features: FeatureManifest[] = [
   incusInstancesFeature,
   incusImagesFeature,
   incusProfilesFeature,
+  incusStorageFeature,
+  incusNetworksFeature,
   swarmFeature,
   workloadsFeature,
   podsFeature,
