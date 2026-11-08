@@ -167,6 +167,14 @@ The API server isn't reachable from this computer: the cluster is stopped (a loc
 
 kind, k3d and minikube make new certificates each time they recreate a cluster. Use **Refresh from kubeconfig** on the Cluster's page.
 
+### Helm: "The helm CLI isn't installed on this computer"
+
+[Helm releases](/docs/clusters/helm/) need `helm` 3 or later on this computer. Install it (`brew install helm`, `winget install Helm.Helm`, or `snap install helm --classic`), then reopen the Helm page; **Settings → This machine** shows the one Homeport found. A `helm` 2 is reported as unsupported.
+
+### Helm: "Another install, upgrade or rollback of this release is still in progress"
+
+The release is `pending-…`: an install, upgrade or rollback didn't finish, often because it was interrupted. helm refuses to change it until that ends. Wait for it, or roll the release back to its last deployed revision from its **History**.
+
 ## Using Homeport
 
 ### Deploy is greyed out: "The docker compose CLI is not installed"

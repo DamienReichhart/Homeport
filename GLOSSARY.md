@@ -30,6 +30,14 @@ Kubernetes' own objects (Namespace, Pod, Deployment, StatefulSet, DaemonSet, Job
 A local port on this computer's loopback that Homeport connects, through the Kubernetes API, to a port of a Pod, or of a Service through one of its ready Pods, like `kubectl port-forward`. Kept in memory: it ends when Homeport quits or its Cluster is removed.
 _Avoid_: Tunnel, proxy, published port (that's a container's)
 
+**Release**:
+A Helm release: one install of a chart on a Cluster, named in its Namespace, with a numbered revision for each install, upgrade and rollback. Helm keeps it in Secrets in that Namespace; Homeport manages it through the user's `helm` CLI (ADR 0009) and stores nothing about it. A release made in a terminal and one made in Homeport are the same.
+_Avoid_: Deployment (that's a Kubernetes object), app, install
+
+**Chart repository**:
+A server helm downloads charts from, in helm's own list on this computer (`helm repo list`), shared with the terminal. An OCI registry holding charts isn't one: its charts are installed by their `oci://` reference.
+_Avoid_: Helm repo (in the UI), registry (for an http one)
+
 **Node**:
 One Engine in a Swarm, a manager or a worker. A node is a Host only when Homeport connects to it; a Host's page links to its node and back.
 _Avoid_: Member, machine, server
