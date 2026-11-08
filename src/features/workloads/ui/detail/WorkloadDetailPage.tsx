@@ -8,7 +8,7 @@ import {
   ResourceYaml,
   useResourceWatch,
 } from '@/core/cluster';
-import { RelatedPods } from '@/features/pods';
+import { RelatedPods, WorkloadLogs } from '@/features/pods';
 import type { ClusterView } from '@/shared/api';
 import {
   Badge,
@@ -29,12 +29,13 @@ import { WorkloadOverview } from './WorkloadOverview';
 import { t, type MessageKey } from '@/shared/i18n';
 
 const TAB_LABELS: Record<
-  'overview' | 'pods' | 'jobs' | 'conditions' | 'events' | 'yaml',
+  'overview' | 'pods' | 'jobs' | 'logs' | 'conditions' | 'events' | 'yaml',
   MessageKey
 > = {
   overview: 'workloads.tab.overview',
   pods: 'workloads.tab.pods',
   jobs: 'workloads.tab.jobs',
+  logs: 'workloads.tab.logs',
   conditions: 'workloads.tab.conditions',
   events: 'workloads.tab.events',
   yaml: 'workloads.tab.source',
@@ -52,7 +53,10 @@ function WorkloadDetailView({ cluster }: { cluster: ClusterView }) {
     return <ErrorMessage error={detail.error} onRetry={() => void detail.refetch()} />;
   const label = WORKLOAD_KINDS.find((k) => k.kind === kind)?.one;
   const children = kind === 'cronJob' ? 'jobs' : 'pods';
-  const tabs = ['overview', children, 'conditions', 'events', 'yaml'] as const;
+  const tabs =
+    kind === 'cronJob'
+      ? (['overview', children, 'conditions', 'events', 'yaml'] as const)
+      : (['overview', children, 'logs', 'conditions', 'events', 'yaml'] as const);
   return (
     <div className="flex h-full min-h-0 flex-col">
       <PageHeader
@@ -91,6 +95,16 @@ function WorkloadDetailView({ cluster }: { cluster: ClusterView }) {
         <TabsContent value="pods" className="pt-3">
           {detail.data.selector && (
             <RelatedPods clusterId={id} namespace={namespace} selector={detail.data.selector} />
+          )}
+        </TabsContent>
+        <TabsContent value="logs" className="pt-3">
+          {tab === 'logs' && detail.data.selector && (
+            <WorkloadLogs
+              clusterId={id}
+              namespace={namespace}
+              selector={detail.data.selector}
+              containers={detail.data.containers.map((c) => c.name)}
+            />
           )}
         </TabsContent>
         <TabsContent value="jobs" className="pt-3">

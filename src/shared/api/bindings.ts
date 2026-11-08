@@ -167,6 +167,11 @@ export const commands = {
 	clustersDelete: (id: string, kind: ResourceKind, namespace: string | null, name: string, grace: number | null) => __TAURI_INVOKE<null>("clusters_delete", { id, kind, namespace, name, grace }),
 	/**  Deletes an object of any type the Cluster serves. */
 	clustersApiDelete: (id: string, api: ApiType, namespace: string | null, name: string) => __TAURI_INVOKE<null>("clusters_api_delete", { id, api, namespace, name }),
+	/**
+	 *  Streams the logs of one Pod, or of several in one stream with each
+	 *  line labelled, until cancelled or they end.
+	 */
+	clustersPodLogsSubscribe: (id: string, namespace: string, sources: PodLogSource[], target: PodLogTarget, options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("clusters_pod_logs_subscribe", { id, namespace, sources, target, options, onEvent }),
 	/**  Backs up everything Homeport holds to `path`, sealed with `passphrase`. */
 	dataBackup: (path: string, passphrase: string) => __TAURI_INVOKE<BackupOutcome>("data_backup", { path, passphrase }),
 	/**  What the backup at `path` holds, for the restore's confirmation. */
@@ -1972,6 +1977,21 @@ export type PodDetail = {
 export type PodHealth = "running" | "pending" | "succeeded" | "failed" | 
 /**  A container that keeps crashing, or can't pull its image. */
 "crashing" | "terminating" | "unknown";
+
+/**  A Pod to read the logs of. */
+export type PodLogSource = {
+	pod: string,
+	/**  Shown in front of each line when several Pods share a stream. */
+	label: string | null,
+};
+
+/**  What to read of each Pod, beyond the options every log viewer has. */
+export type PodLogTarget = {
+	/**  The container; the Pod's only one (or default) without. */
+	container: string | null,
+	/**  The instance that ran before the last restart, like `kubectl logs --previous`. */
+	previous: boolean,
+};
 
 export type PodView = {
 	namespace: string,

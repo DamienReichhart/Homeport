@@ -40,4 +40,12 @@ export default {
   'pods.state.running': 'Running',
   'pods.state.waiting': 'Waiting',
   'pods.state.terminated': 'Terminated',
+  'pods.tab.logs': 'Logs',
+  'pods.logs.container': 'Container',
+  'pods.logs.initContainer': '{name} (init)',
+  'pods.logs.previous': 'Previous instance',
+  'pods.logs.noRestart': 'It hasn’t restarted, so there’s no previous instance.',
+  'pods.logs.pod': 'Pod',
+  'pods.logs.allPods': 'All {count, plural, one {# Pod} other {# Pods}}',
+  'pods.logs.noPods': 'It runs no Pod right now.',
 } as const;

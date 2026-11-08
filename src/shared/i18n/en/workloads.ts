@@ -29,6 +29,7 @@ export default {
   'workloads.tab.overview': 'Overview',
   'workloads.tab.pods': 'Pods',
   'workloads.tab.jobs': 'Jobs',
+  'workloads.tab.logs': 'Logs',
   'workloads.tab.conditions': 'Conditions',
   'workloads.tab.events': 'Events',
   'workloads.tab.source': 'YAML',

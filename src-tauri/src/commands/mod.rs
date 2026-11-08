@@ -14,6 +14,7 @@ use crate::app::events;
 pub mod app;
 pub mod backup;
 pub mod cluster_actions;
+pub mod cluster_streams;
 pub mod clusters;
 pub mod containers;
 pub mod exec;
@@ -118,6 +119,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             cluster_actions::clusters_cron_job_trigger,
             cluster_actions::clusters_delete,
             cluster_actions::clusters_api_delete,
+            cluster_streams::clusters_pod_logs_subscribe,
             backup::data_backup,
             backup::data_restore_preview,
             backup::data_restore,

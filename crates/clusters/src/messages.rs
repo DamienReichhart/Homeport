@@ -144,6 +144,12 @@ homeport_core::messages! {
     REPLICAS_NEGATIVE = "errors.clusters.replicasNegative" => "A workload can't run fewer than 0 Pods.";
     /// An action a kind of workload doesn't have, such as scaling a DaemonSet.
     ACTION_NOT_SUPPORTED = "errors.clusters.actionNotSupported" => "A {kind} can't {action}.";
+    /// Asking for the logs of a previous instance of a container that never restarted.
+    NO_PREVIOUS_LOGS = "errors.clusters.logs.noPrevious" => "{container} in {pod} hasn't restarted, so it has no previous instance.";
+    NO_PREVIOUS_LOGS_HINT = "errors.clusters.logs.noPrevious.hint" => "Turn off Previous instance to see its current logs.";
+    /// Asking for the logs of a container that hasn't started.
+    CONTAINER_WAITING = "errors.clusters.logs.waiting" => "{container} hasn't started yet: {reason}.";
+    CONTAINER_WAITING_HINT = "errors.clusters.logs.waiting.hint" => "Its Pod's page says why it waits. After a crash, Previous instance shows the run that crashed.";
     /// The object changed between reading it and changing it.
     CHANGED_MEANWHILE = "errors.clusters.changedMeanwhile" => "{kind} {name} changed while you were working on it.";
     CHANGED_MEANWHILE_HINT = "errors.clusters.changedMeanwhile.hint" => "Look at it again, then retry.";

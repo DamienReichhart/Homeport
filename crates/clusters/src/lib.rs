@@ -15,6 +15,7 @@ pub mod client;
 pub mod detect;
 pub mod exec;
 pub mod kubeconfig;
+pub mod logs;
 pub mod messages;
 pub mod model;
 pub mod registry;
