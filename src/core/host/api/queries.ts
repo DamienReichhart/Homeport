@@ -66,6 +66,9 @@ export const resourceQueries = {
       staleTime: 5 * 60_000,
       retry: false,
     }),
+  /** A Podman Host's pods; container events make them stale. */
+  pods: (hostId: string) =>
+    queryOptions({ queryKey: hostKeys.pods(hostId), queryFn: () => commands.podsList(hostId) }),
   /** The latest page of a Host's kept events; live updates append to it. */
   events: (hostId: string) =>
     queryOptions({

@@ -23,6 +23,7 @@ export default {
   'containers.stack.running': '{running}/{count} running',
   'containers.stack.swarm': 'Swarm',
   'containers.stack.open': 'Open stack',
+  'containers.inPod': 'In the Podman pod {pod}',
   'containers.selected': '{count} selected',
 
   // Actions on a container

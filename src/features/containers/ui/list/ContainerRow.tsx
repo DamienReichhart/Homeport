@@ -1,6 +1,6 @@
 import { openUrl } from '@tauri-apps/plugin-opener';
-import { useNavigate } from 'react-router-dom';
-import { NewerImage, newerLabel } from '@/core/host';
+import { Link, useNavigate } from 'react-router-dom';
+import { NewerImage, newerLabel, type PodRef } from '@/core/host';
 import type { Container, ContainerUsage } from '@/shared/api';
 import { formatBytes, formatPercent, formatRelative, shortId } from '@/shared/lib';
 import {
@@ -24,6 +24,7 @@ export function ContainerRow({
   container: c,
   nested,
   usage,
+  pod,
   newer,
   address,
   selected,
@@ -35,6 +36,8 @@ export function ContainerRow({
   container: Container;
   nested: boolean;
   usage?: ContainerUsage;
+  /** The Podman pod it runs in. */
+  pod?: PodRef;
   /** The registry has a newer image under the tag it was created from. */
   newer?: boolean;
   /** Where published ports are reachable, for links. */
@@ -62,7 +65,20 @@ export function ContainerRow({
         <div className="flex items-center gap-2">
           <StatusDot tone={containerTone(c.state, c.health)} />
           <div className="min-w-0">
-            <p className="truncate font-medium">{nested && c.service ? c.service : c.name}</p>
+            <p className="flex items-center gap-1.5 font-medium">
+              <span className="truncate">{nested && c.service ? c.service : c.name}</span>
+              {pod && (
+                <Badge asChild variant="outline">
+                  <Link
+                    to={`/podman-pods/${pod.id}`}
+                    title={t('containers.inPod', { pod: pod.name })}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {pod.name}
+                  </Link>
+                </Badge>
+              )}
+            </p>
             <p className="text-muted-foreground font-mono text-xs">{shortId(c.id)}</p>
           </div>
         </div>

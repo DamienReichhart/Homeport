@@ -2,6 +2,7 @@
 export { hostKeys } from './api/keys';
 export { useCheckForNewerImages, useCreateHost, useReconnectHost } from './api/mutations';
 export { useEveryHost, type HostResult } from './api/everyHost';
+export { podsByContainer, usePodsByContainer, type PodRef } from './api/pods';
 export { hostQueries, resourceQueries, useContainers, useHosts } from './api/queries';
 export { useEngineEventUpdates } from './live/useEngineEventUpdates';
 export { cursorOf, EVENT_PAGE, eventKey } from './model/events';

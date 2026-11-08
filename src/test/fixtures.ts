@@ -30,6 +30,20 @@ export const connectedHost: HostView = {
   },
 };
 
+/** The same local Host, connected to Podman. */
+export const podmanHost: HostView = {
+  host: { ...connectedHost.host, name: 'podman' },
+  status: {
+    state: 'connected',
+    engineVersion: '5.8.1',
+    apiVersion: '1.41',
+    os: 'linux',
+    arch: 'amd64',
+    podmanVersion: '5.8.1',
+    swarm: null,
+  },
+};
+
 export function container(name: string, stack: string | null, state = 'running'): Container {
   return {
     id: `${name}-0123456789abcdef`,

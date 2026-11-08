@@ -13,6 +13,7 @@ import { networkFeature } from '@/features/network';
 import { networksFeature } from '@/features/networks';
 import { nodesFeature } from '@/features/nodes';
 import { overviewFeature } from '@/features/overview';
+import { podmanPodsFeature } from '@/features/podman-pods';
 import { podsFeature } from '@/features/pods';
 import { portForwardsFeature } from '@/features/port-forwards';
 import { settingsFeature } from '@/features/settings';
@@ -32,6 +33,7 @@ export const features: FeatureManifest[] = [
   volumesFeature,
   networksFeature,
   stacksFeature,
+  podmanPodsFeature,
   swarmFeature,
   workloadsFeature,
   podsFeature,
