@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { visibleNavEntries, type NavEntry } from '@/core/feature';
+import { visibleNavEntries, type HostCapability, type NavEntry } from '@/core/feature';
+import { supports, useHostSelection } from '@/core/host';
 import { useSelection } from '@/core/selection';
 import { navEntries } from '../router/features';
 
@@ -15,8 +16,13 @@ export const navShortcuts = (entries: NavEntry[]): NavShortcut[] =>
 /** The sidebar's entries for the current selection, and their shortcuts. */
 export function useNavEntries(): { entries: NavEntry[]; shortcuts: NavShortcut[] } {
   const kind = useSelection().selection?.kind ?? null;
+  const { host } = useHostSelection();
+  // With no Host selected, the Docker pages show, each explaining how to add one.
+  const docker = !host || supports(host, 'docker');
+  const podman = supports(host, 'podman');
   return useMemo(() => {
-    const entries = visibleNavEntries(navEntries, kind);
+    const supported = (c: HostCapability) => (c === 'docker' ? docker : podman);
+    const entries = visibleNavEntries(navEntries, kind, supported);
     return { entries, shortcuts: navShortcuts(entries) };
-  }, [kind]);
+  }, [kind, docker, podman]);
 }

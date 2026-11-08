@@ -1,4 +1,11 @@
-import type { BastionAuth, BastionKeyInput, Host, HostInput, SshAuth } from '@/shared/api';
+import type {
+  BastionAuth,
+  BastionKeyInput,
+  EngineKind,
+  Host,
+  HostInput,
+  SshAuth,
+} from '@/shared/api';
 import type { MessageKey } from '@/shared/i18n';
 
 export type HostKind = 'local' | 'tcp' | 'tls' | 'ssh';
@@ -19,6 +26,8 @@ export interface BastionFormState {
 export interface HostFormState {
   name: string;
   kind: HostKind;
+  /** The kind of Engine the Host points to; `kind` is the connection's. */
+  engine: EngineKind;
   socketPath: string;
   address: string;
   sshHost: string;
@@ -48,6 +57,7 @@ export const emptyBastion = (): BastionFormState => ({
 export const emptyForm = (kind: HostKind = 'ssh'): HostFormState => ({
   name: '',
   kind,
+  engine: 'docker',
   socketPath: '/var/run/docker.sock',
   address: '',
   sshHost: '',
@@ -64,7 +74,7 @@ export const emptyForm = (kind: HostKind = 'ssh'): HostFormState => ({
 });
 
 export function formFromHost(host: Host): HostFormState {
-  const form = { ...emptyForm(host.connection.kind), name: host.name };
+  const form = { ...emptyForm(host.connection.kind), name: host.name, engine: host.engine };
   const c = host.connection;
   switch (c.kind) {
     case 'local':
@@ -103,12 +113,14 @@ export function toHostInput(form: HostFormState, editing: boolean): HostInput {
       return {
         name,
         connection: { kind: 'local', socketPath: form.socketPath.trim() },
+        engine: form.engine,
         credentials: null,
       };
     case 'tcp':
       return {
         name,
         connection: { kind: 'tcp', address: form.address.trim() },
+        engine: form.engine,
         credentials: null,
       };
     case 'tls': {
@@ -116,6 +128,7 @@ export function toHostInput(form: HostFormState, editing: boolean): HostInput {
       return {
         name,
         connection: { kind: 'tls', address: form.address.trim() },
+        engine: form.engine,
         credentials:
           editing && blank
             ? null
@@ -143,6 +156,7 @@ export function toHostInput(form: HostFormState, editing: boolean): HostInput {
             hostKey: null,
           })),
         },
+        engine: form.engine,
         credentials: importing
           ? { kind: 'sshKey', privateKey: form.privateKey, passphrase: form.passphrase || null }
           : null,
@@ -181,6 +195,24 @@ export const BASTION_AUTHS: { auth: BastionAuth; label: MessageKey }[] = [
   { auth: 'sameAsHost', label: 'hosts.bastions.auth.sameAsHost' },
   { auth: 'imported', label: 'hosts.bastions.auth.imported' },
   { auth: 'agent', label: 'hosts.bastions.auth.agent' },
+];
+
+/**
+ * The kind of Engine a socket path suggests: containerd's and Incus's own
+ * sockets name them, every other one is a Docker-compatible Engine's.
+ */
+export function engineForSocket(path: string): EngineKind {
+  const file = path.trim().toLowerCase();
+  if (/(^|\/)containerd(\/containerd)?\.sock$/.test(file)) return 'containerd';
+  if (/(^|\/)(incus|lxd)(\/unix)?\.socket$/.test(file)) return 'incus';
+  return 'docker';
+}
+
+/** The kinds of Engine the form offers; only Docker-compatible ones connect for now. */
+export const ENGINE_KINDS: { engine: EngineKind; available: boolean }[] = [
+  { engine: 'docker', available: true },
+  { engine: 'containerd', available: false },
+  { engine: 'incus', available: false },
 ];
 
 export const HOST_KINDS: { kind: HostKind; label: MessageKey }[] = [

@@ -5,6 +5,7 @@ import { NewStackPage } from './ui/new/NewStackPage';
 import { StacksPage } from './ui/StacksPage';
 
 export const stacksFeature = defineFeature({
+  requires: 'docker',
   routes: [
     { path: 'stacks', Component: StacksPage },
     { path: 'stacks/new', Component: NewStackPage },

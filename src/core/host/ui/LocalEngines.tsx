@@ -53,6 +53,7 @@ export function LocalEngines({
                 onAdd({
                   name: engine.label,
                   connection: { kind: 'local', socketPath: engine.socketPath },
+                  engine: engine.engine,
                   credentials: null,
                 })
               }

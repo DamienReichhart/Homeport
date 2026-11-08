@@ -1,4 +1,11 @@
-import { emptyBastion, emptyForm, formFromHost, moveBastion, toHostInput } from './form';
+import {
+  emptyBastion,
+  emptyForm,
+  engineForSocket,
+  formFromHost,
+  moveBastion,
+  toHostInput,
+} from './form';
 
 describe('host form', () => {
   it('builds an SSH host with a generated key', () => {
@@ -18,9 +25,25 @@ describe('host form', () => {
         publicKey: null,
         bastions: [],
       },
+      engine: 'docker',
       credentials: null,
       bastionKeys: [],
     });
+  });
+
+  it('sends the Engine kind with every kind of connection', () => {
+    for (const kind of ['local', 'tcp', 'tls', 'ssh'] as const) {
+      expect(toHostInput({ ...emptyForm(kind), engine: 'docker' }, false).engine).toBe('docker');
+    }
+  });
+
+  it('presets the Engine from a socket path', () => {
+    expect(engineForSocket('/var/run/docker.sock')).toBe('docker');
+    expect(engineForSocket('/run/user/1000/podman/podman.sock')).toBe('docker');
+    expect(engineForSocket('//./pipe/docker_engine')).toBe('docker');
+    expect(engineForSocket('/run/containerd/containerd.sock')).toBe('containerd');
+    expect(engineForSocket('/var/lib/incus/unix.socket')).toBe('incus');
+    expect(engineForSocket(' /var/snap/lxd/common/lxd/unix.socket ')).toBe('incus');
   });
 
   it('sends imported keys with an optional passphrase', () => {

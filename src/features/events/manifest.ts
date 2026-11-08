@@ -3,6 +3,7 @@ import { defineFeature } from '@/core/feature';
 import { EventsPage } from './ui/EventsPage';
 
 export const eventsFeature = defineFeature({
+  requires: 'docker',
   routes: [{ path: 'events', Component: EventsPage }],
   nav: { path: '/events', label: 'events.nav', icon: ActivityIcon, scope: 'host' },
 });

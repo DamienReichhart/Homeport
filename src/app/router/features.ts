@@ -21,7 +21,7 @@ import { swarmFeature } from '@/features/swarm';
 import { updatesFeature } from '@/features/updates';
 import { volumesFeature } from '@/features/volumes';
 import { workloadsFeature } from '@/features/workloads';
-import type { FeatureManifest } from '@/core/feature';
+import { navEntriesOf, type FeatureManifest } from '@/core/feature';
 
 /** Every feature with pages or palette commands, in sidebar order. Add one line per new feature. */
 export const features: FeatureManifest[] = [
@@ -50,4 +50,4 @@ export const features: FeatureManifest[] = [
   updatesFeature,
 ];
 
-export const navEntries = features.flatMap((f) => (f.nav ? [f.nav] : []));
+export const navEntries = navEntriesOf(features);

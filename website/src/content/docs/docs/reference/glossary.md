@@ -9,6 +9,10 @@ Homeport names things precisely. These terms appear throughout the app and these
 
 A Docker Engine that Homeport connects to, defined by a name and how to reach it: a local socket, TCP, TLS or SSH. Every container, image, volume, network and Stack belongs to exactly one Host. See [Hosts and connections](/docs/hosts/).
 
+### Engine kind
+
+What sort of Engine a host points to: Docker-compatible (Docker Engine, or Podman through its compatible API), containerd or Incus. It decides which pages a host shows; only Docker-compatible Engines can be added for now. Podman isn't a kind of its own: Homeport recognises it each time it connects. See [Engine kinds](/docs/hosts/#engine-kinds).
+
 ### Cluster
 
 A Kubernetes cluster Homeport connects to through its API server, added from a context of a kubeconfig: a name, the API server's address, and the credentials the kubeconfig gives, stored encrypted. Homeport installs nothing on it and only reaches what those credentials allow. Not a Swarm, which is found through its hosts and never added. Kubernetes' own objects keep their Kubernetes names: Namespace, Pod, Deployment, Service, Node… See [Clusters](/docs/clusters/).

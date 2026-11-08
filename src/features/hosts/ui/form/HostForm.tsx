@@ -1,13 +1,26 @@
 import { TriangleAlertIcon } from 'lucide-react';
+import { ENGINE_LABELS } from '@/core/host';
+import type { EngineKind } from '@/shared/api';
 import {
   Alert,
   AlertDescription,
   AlertTitle,
   Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   ToggleGroup,
   ToggleGroupItem,
 } from '@/shared/ui';
-import { HOST_KINDS, type HostFormState, type HostKind } from '../../model/form';
+import {
+  ENGINE_KINDS,
+  engineForSocket,
+  HOST_KINDS,
+  type HostFormState,
+  type HostKind,
+} from '../../model/form';
 import { Field } from './Field';
 import { SshFields } from './SshFields';
 import { TlsFields } from './TlsFields';
@@ -57,12 +70,38 @@ export function HostForm({
         />
       </Field>
 
+      <Field label={t('hosts.form.engine')} hint={t('hosts.form.engineHint')}>
+        <Select value={form.engine} onValueChange={(engine) => set('engine', engine as EngineKind)}>
+          <SelectTrigger className="w-full" aria-label={t('hosts.form.engine')}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {ENGINE_KINDS.map(({ engine, available }) => (
+              <SelectItem key={engine} value={engine} disabled={!available}>
+                {available
+                  ? t(ENGINE_LABELS[engine])
+                  : t('hosts.form.engineSoon', { engine: t(ENGINE_LABELS[engine]) })}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Field>
+
       {form.kind === 'local' && (
         <Field
           label={t('hosts.form.socketPath')}
           hint={t('hosts.form.socketPathHint', { pipe: '//./pipe/docker_engine' })}
         >
-          <Input value={form.socketPath} onChange={(e) => set('socketPath', e.target.value)} />
+          <Input
+            value={form.socketPath}
+            onChange={(e) =>
+              onChange({
+                ...form,
+                socketPath: e.target.value,
+                engine: engineForSocket(e.target.value),
+              })
+            }
+          />
         </Field>
       )}
 

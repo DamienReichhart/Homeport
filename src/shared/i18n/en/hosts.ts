@@ -66,6 +66,10 @@ export default {
   'hosts.kind.local': 'Local socket',
   'hosts.form.keepHint': 'Leave blank to keep the stored value.',
   'hosts.form.name': 'Name',
+  'hosts.form.engine': 'Engine',
+  'hosts.form.engineHint':
+    'Docker-compatible covers Docker and Podman; Homeport tells them apart when it connects.',
+  'hosts.form.engineSoon': '{engine} (coming in a later version)',
   'hosts.form.socketPath': 'Socket path',
   'hosts.form.socketPathHint': 'A Unix socket, or a named pipe like {pipe} on Windows.',
   'hosts.form.address': 'Address',

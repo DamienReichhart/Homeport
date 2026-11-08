@@ -4,6 +4,7 @@ import { ContainerDetailPage } from './ui/detail/ContainerDetailPage';
 import { ContainersPage } from './ui/list/ContainersPage';
 
 export const containersFeature = defineFeature({
+  requires: 'docker',
   routes: [
     { path: 'containers', Component: ContainersPage },
     { path: 'containers/:id/:tab?', Component: ContainerDetailPage },

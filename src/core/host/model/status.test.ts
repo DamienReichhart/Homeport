@@ -15,6 +15,20 @@ describe('describeStatus', () => {
     ).toEqual({ label: 'Connected', tone: 'success', detail: 'Engine 29.1' });
   });
 
+  it('says a connected host runs Podman', () => {
+    expect(
+      describeStatus({
+        state: 'connected',
+        engineVersion: '5.8.1',
+        apiVersion: '1.41',
+        os: 'linux',
+        arch: 'amd64',
+        podmanVersion: '5.8.1',
+        swarm: null,
+      }).detail,
+    ).toBe('Podman 5.8.1');
+  });
+
   it('explains why a host is unreachable and when it retries', () => {
     const s = describeStatus({
       state: 'unreachable',

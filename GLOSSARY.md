@@ -12,6 +12,9 @@ _Avoid_: Instance, endpoint, engine, context, server
 The Docker-compatible daemon a Host points to (Docker Engine, Docker Desktop, Podman, Colima, OrbStack…): the software that gets installed, started and stopped. Not a synonym for Host: "Start the Docker Engine" talks about the Engine, "Homeport can't reach prod-server" talks about the Host.
 _Avoid_: Daemon, server, backend
 
+**Engine kind**:
+What sort of Engine a Host points to, stored with it: Docker-compatible (Docker Engine, or Podman through its compatible API), containerd or Incus. It decides which pages a Host shows. Called `engine` in code, never `kind`, which is the connection's. Podman is not a kind of its own: it's a Docker-compatible Engine recognised on every connect, because the same socket can change product.
+
 **Bastion**:
 An SSH server an SSH Host is reached through when its own SSH server only accepts connections from it (OpenSSH's `ProxyJump`). A Host has an ordered list of them, possibly empty; each has its own trusted server key and either uses the Host's credentials or its own. Not a Host: it runs no Engine Homeport talks to.
 _Avoid_: Jump host, jump server, proxy, gateway, hop (in the UI)

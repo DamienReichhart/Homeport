@@ -16,6 +16,20 @@ A **Host** is a Docker Engine that Homeport connects to. It has a name and a way
 
 For a remote server, prefer **SSH**: it needs nothing exposed beyond the SSH port and is the simplest to set up securely.
 
+## Engine kinds
+
+Besides how to reach it, each Host says what kind of Engine it points to, in the form's **Engine** field. It decides which pages the sidebar shows for that Host.
+
+| Engine                | What it covers                                                           | Pages                                                                                    |
+| --------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| **Docker-compatible** | Docker Engine, Docker Desktop, Colima, OrbStack, Rancher Desktop, Podman | Containers, Images, Volumes, Networks, Stacks, Events; and on Podman, also its own pages |
+| **containerd**        | coming in a later version                                                | —                                                                                        |
+| **Incus**             | coming in a later version                                                | —                                                                                        |
+
+Only Docker-compatible Engines can be added for now; the form shows the others greyed out, and picks one from the socket path when it names containerd's or Incus's socket. Hosts added before Homeport 0.18 are Docker-compatible, with nothing else changed.
+
+**Podman** is a Docker-compatible Engine that Homeport recognises each time it connects, because the same socket can switch product: the Host's status then reads **Podman** and its version instead of the Engine's, and the sidebar adds the pages only Podman has. A page the selected Host can't show isn't in the sidebar, and opening it from a link says why.
+
 A host that belongs to a Docker Swarm shows **Manager of** or **Worker of** its Swarm, and adding one manager as a host is enough for the Swarm to appear in the sidebar. A host's page also has a **Swarm** card to start a Swarm, join one or leave it. See [Swarms](/docs/guides/swarm/).
 
 ## Adding, editing and removing Hosts
@@ -71,7 +85,7 @@ Each Host shows a status next to its name. When the selected Host isn't connecte
 
 | Status                     | Meaning                                                                        | What happens next                                                           |
 | -------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| **Connected**              | The Engine answered. Its version is shown.                                     | Homeport keeps watching the connection.                                     |
+| **Connected**              | The Engine answered. Its version is shown, or Podman's on a Podman Host.       | Homeport keeps watching the connection.                                     |
 | **Connecting**             | Homeport is reaching the Engine.                                               | —                                                                           |
 | **Disabled**               | The Host's **Enabled** switch is off.                                          | Nothing until you turn it on.                                               |
 | **Unreachable**            | The network, socket or Engine didn't answer.                                   | Retries on its own, waiting longer each time.                               |
