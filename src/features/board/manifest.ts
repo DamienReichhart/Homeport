@@ -5,5 +5,5 @@ import { BoardPage } from './ui/BoardPage';
 // Not behind HostGate: it shows every Host at once.
 export const boardFeature = defineFeature({
   routes: [{ path: 'board', Component: BoardPage }],
-  nav: { path: '/board', label: 'board.nav', icon: TableIcon },
+  nav: { path: '/board', label: 'board.nav', icon: TableIcon, scope: 'app' },
 });

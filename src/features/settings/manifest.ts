@@ -16,7 +16,7 @@ const theme = (value: Theme, label: MessageKey, icon: PaletteCommand['icon']): P
 
 export const settingsFeature = defineFeature({
   routes: [{ path: 'settings', Component: SettingsPage }],
-  nav: { path: '/settings', label: 'settings.nav', icon: SettingsIcon },
+  nav: { path: '/settings', label: 'settings.nav', icon: SettingsIcon, scope: 'app' },
   commands: [
     theme('light', 'settings.palette.themeLight', SunIcon),
     theme('dark', 'settings.palette.themeDark', MoonIcon),

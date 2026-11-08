@@ -8,7 +8,7 @@ export const containersFeature = defineFeature({
     { path: 'containers', Component: ContainersPage },
     { path: 'containers/:id/:tab?', Component: ContainerDetailPage },
   ],
-  nav: { path: '/containers', label: 'containers.nav', icon: BoxIcon },
+  nav: { path: '/containers', label: 'containers.nav', icon: BoxIcon, scope: 'host' },
   commands: [
     {
       id: 'containers:run',

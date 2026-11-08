@@ -5,7 +5,7 @@ import { paletteItems, recentItems, remember, score, type PaletteSource } from '
 
 const containers = defineFeature({
   routes: [],
-  nav: { path: '/containers', label: 'containers.nav', icon: BoxIcon },
+  nav: { path: '/containers', label: 'containers.nav', icon: BoxIcon, scope: 'host' },
   commands: [
     {
       id: 'containers:run',
@@ -17,7 +17,7 @@ const containers = defineFeature({
 });
 const volumes = defineFeature({
   routes: [],
-  nav: { path: '/volumes', label: 'volumes.nav', icon: BoxIcon },
+  nav: { path: '/volumes', label: 'volumes.nav', icon: BoxIcon, scope: 'host' },
   commands: [{ id: 'volumes:create', label: 'volumes.create', run: () => {} }],
 });
 const unreachable = hostView('prod-server', {

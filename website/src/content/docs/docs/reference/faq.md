@@ -25,7 +25,11 @@ Yes, through Podman's Docker-compatible API socket. Homeport detects the usual P
 
 Docker Swarm, yes. Homeport finds a Swarm through its manager hosts, once one of them is a host, and manages it fully: its nodes, services, tasks, secrets, configs and swarm stacks, including Managed, Linked and Synced Stacks deployed to it. It can also start a Swarm on a host, and join or leave one. Everything goes through a connected manager's Engine API; nothing is installed on the nodes. See [Swarms](/docs/guides/swarm/).
 
-Kubernetes isn't supported: Homeport doesn't connect to Kubernetes clusters.
+Kubernetes, yes. Add a cluster from your kubeconfig — this computer's or one you paste — and Homeport finds local ones (Docker Desktop, OrbStack, Rancher Desktop, kind, k3d, minikube) for you. EKS, GKE and AKS work through the exec plugin their kubeconfig names. You can browse Namespaces, workloads, Pods, Services, Ingresses, ConfigMaps, Secrets, Nodes and Events, live. Nothing is installed on the cluster: Homeport only talks to the Kubernetes API your kubeconfig already reaches, with its credentials' rights. Operating a cluster (logs, a shell, port forwarding, scaling, applying YAML) comes in 0.16, Helm in 0.17. See [Clusters](/docs/clusters/).
+
+### Do I need kubectl?
+
+No. Homeport reads your kubeconfig and talks to the Kubernetes API itself. The only programs it runs are the [exec plugins](/docs/clusters/exec-plugins/) a kubeconfig names, such as the AWS CLI for EKS, `gke-gcloud-auth-plugin` for GKE or `kubelogin` for AKS — the same ones `kubectl` would run. Having `kubectl` around still helps to check what your credentials can do (`kubectl auth can-i`).
 
 ### Do I need to install anything on my servers?
 
@@ -59,7 +63,7 @@ Each person runs their own Homeport with their own Hosts and keys. With a Homepo
 
 Yes, in two ways:
 
-- **Everything**: **Settings → Data → Back up…** saves every Host, Stack, registry login, repository and setting, with their secrets, to one file protected by a passphrase of at least 12 characters. On the new computer, **Restore…** in the same place opens it, lists what it holds, and replaces what's there. Everything connects and deploys without asking you for a key or a password again. See [backing up and restoring](/docs/guides/settings/#backing-up-and-restoring).
+- **Everything**: **Settings → Data → Back up…** saves every Host, Cluster, Stack, registry login, repository and setting, with their secrets, to one file protected by a passphrase of at least 12 characters. On the new computer, **Restore…** in the same place opens it, lists what it holds, and replaces what's there. Everything connects and deploys without asking you for a key or a password again. See [backing up and restoring](/docs/guides/settings/#backing-up-and-restoring).
 - **Some Hosts**: on the **Hosts** page, **Export** the Hosts you pick, and **Import** them on the other computer, next to the Hosts it already has. See [moving to another computer](/docs/reference/security/#moving-to-another-computer).
 
 Copying `homeport.db` doesn't work for secrets: they're encrypted with a key kept in this computer's keychain, and show as **Credentials lost** elsewhere.

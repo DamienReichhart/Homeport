@@ -13,7 +13,7 @@ import { copyFileSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync
 import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { build } from 'vite';
-import { PROD, SWARM_ID, hexId } from './data';
+import { PROD, SWARM_ID, hexId, swarmServices } from './data';
 
 const HERE = import.meta.dir;
 const ROOT = join(HERE, '..', '..');
@@ -55,6 +55,8 @@ interface Shot {
   steps?: string[];
   hold?: number;
   fastClock?: boolean;
+  /** Demo data beyond the Hosts: `clusters` selects the demo EKS Cluster. */
+  demo?: 'clusters';
 }
 
 const container = (name: string) => hexId(`${PROD}/${name}`);
@@ -116,6 +118,35 @@ const SHOTS: Shot[] = [
   },
   { name: 'host-ssh', route: `/hosts/${PROD}` },
   { name: 'swarm-services', route: `/swarms/${SWARM_ID}/services` },
+  {
+    name: 'swarm-summary',
+    route: `/swarms/${SWARM_ID}`,
+    steps: ['click:Show the join commands'],
+    hold: 3500,
+  },
+  { name: 'swarm-nodes', route: `/swarms/${SWARM_ID}/nodes` },
+  { name: 'swarm-tasks', route: `/swarms/${SWARM_ID}/tasks` },
+  { name: 'swarm-stacks', route: `/swarms/${SWARM_ID}/stacks` },
+  { name: 'swarm-secrets', route: `/swarms/${SWARM_ID}/secrets` },
+  { name: 'swarm-service', route: `/swarms/${SWARM_ID}/services/${swarmServices[1]!.id}` },
+  { name: 'cluster-overview', route: '/', demo: 'clusters' },
+  { name: 'cluster-overview-dark', route: '/', theme: 'dark', demo: 'clusters' },
+  { name: 'add-cluster', route: '/clusters/new', demo: 'clusters' },
+  { name: 'cluster-workloads', route: '/workloads', demo: 'clusters' },
+  { name: 'cluster-workload', route: '/workloads/deployments/shop/api', demo: 'clusters' },
+  { name: 'cluster-pods', route: '/pods', demo: 'clusters' },
+  { name: 'cluster-pod', route: '/pods/shop/api-6b8f4d7c5-xr4np', demo: 'clusters' },
+  { name: 'cluster-services', route: '/services', demo: 'clusters' },
+  { name: 'cluster-ingress', route: '/ingresses/shop/storefront/rules', demo: 'clusters' },
+  {
+    name: 'cluster-secret',
+    route: '/secrets/shop/db-credentials',
+    demo: 'clusters',
+    steps: ['click:Reveal'],
+    hold: 3500,
+  },
+  { name: 'cluster-nodes', route: '/nodes', demo: 'clusters' },
+  { name: 'cluster-events', route: '/cluster-events', demo: 'clusters' },
 ];
 
 /** Snap Firefox can only reach non-hidden paths in the home directory. */
@@ -181,6 +212,7 @@ async function main() {
         hold: String(shot.hold ?? 2500),
       });
       if (shot.fastClock) query.set('clock', 'fast');
+      if (shot.demo) query.set('demo', shot.demo);
       for (const step of shot.steps ?? []) query.append('step', step);
       const url = `http://127.0.0.1:${server.port}/scripts/screenshots/index.html?${query}`;
       const png = join(work, `${shot.name}.png`);

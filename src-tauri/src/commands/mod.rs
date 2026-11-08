@@ -13,6 +13,7 @@ use crate::app::events;
 
 pub mod app;
 pub mod backup;
+pub mod clusters;
 pub mod containers;
 pub mod exec;
 pub mod files;
@@ -77,6 +78,38 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             hosts::hosts_ssh_setup,
             hosts::hosts_events,
             hosts::hosts_events_clear,
+            clusters::clusters_list,
+            clusters::clusters_get,
+            clusters::clusters_update,
+            clusters::clusters_set_enabled,
+            clusters::clusters_remove,
+            clusters::clusters_reconnect,
+            clusters::clusters_kubeconfig_contexts,
+            clusters::clusters_import,
+            clusters::clusters_refresh,
+            clusters::clusters_detect_local,
+            clusters::clusters_namespaces,
+            clusters::clusters_workloads_list,
+            clusters::clusters_workload_get,
+            clusters::clusters_cron_job_jobs,
+            clusters::clusters_pods_list,
+            clusters::clusters_pod_get,
+            clusters::clusters_object_events,
+            clusters::clusters_resource_yaml,
+            clusters::clusters_watch_subscribe,
+            clusters::clusters_services_list,
+            clusters::clusters_service_get,
+            clusters::clusters_ingresses_list,
+            clusters::clusters_ingress_get,
+            clusters::clusters_config_maps_list,
+            clusters::clusters_config_map_get,
+            clusters::clusters_secrets_list,
+            clusters::clusters_secret_get,
+            clusters::clusters_secret_reveal,
+            clusters::clusters_nodes_list,
+            clusters::clusters_node_get,
+            clusters::clusters_events_list,
+            clusters::clusters_summary,
             backup::data_backup,
             backup::data_restore_preview,
             backup::data_restore,
@@ -217,6 +250,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
         ])
         .events(collect_events![
             events::HostStatusChanged,
+            events::ClusterStatusChanged,
             events::EngineEventReceived,
             events::SyncedUpdateAvailable,
             events::SyncedAutoDeployed,

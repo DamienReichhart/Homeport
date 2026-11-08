@@ -21,6 +21,17 @@ export const sidebar: NonNullable<StarlightUserConfig['sidebar']> = [
     ],
   },
   {
+    label: 'Clusters',
+    items: [
+      { label: 'Clusters and kubeconfigs', slug: 'docs/clusters' },
+      { label: 'Local clusters', slug: 'docs/clusters/local' },
+      { label: 'Exec plugins', slug: 'docs/clusters/exec-plugins' },
+      { label: 'Workloads and Pods', slug: 'docs/clusters/workloads' },
+      { label: 'Services and configuration', slug: 'docs/clusters/networking-config' },
+      { label: 'Nodes and Events', slug: 'docs/clusters/nodes-events' },
+    ],
+  },
+  {
     label: 'Using Homeport',
     items: [
       { label: 'Overview and events', slug: 'docs/guides/overview' },

@@ -80,6 +80,76 @@ export const commands = {
 	hostsEvents: (id: string, limit: number | null, before: EventCursor | null) => __TAURI_INVOKE<EngineEvent[]>("hosts_events", { id, limit, before }),
 	/**  Forgets a Host's kept Engine events. */
 	hostsEventsClear: (id: string) => __TAURI_INVOKE<null>("hosts_events_clear", { id }),
+	/**  Every Cluster with its connection's status, by name. */
+	clustersList: () => __TAURI_INVOKE<ClusterView[]>("clusters_list"),
+	clustersGet: (id: string) => __TAURI_INVOKE<ClusterView>("clusters_get", { id }),
+	/**  Renames a Cluster. */
+	clustersUpdate: (id: string, name: string) => __TAURI_INVOKE<ClusterView>("clusters_update", { id, name }),
+	clustersSetEnabled: (id: string, enabled: boolean) => __TAURI_INVOKE<ClusterView>("clusters_set_enabled", { id, enabled }),
+	/**  Forgets a Cluster and its credentials; nothing changes on the Cluster. */
+	clustersRemove: (id: string) => __TAURI_INVOKE<null>("clusters_remove", { id }),
+	clustersReconnect: (id: string) => __TAURI_INVOKE<ClusterView>("clusters_reconnect", { id }),
+	/**
+	 *  The contexts of the pasted kubeconfig `text`, or of this machine's
+	 *  (`KUBECONFIG`, else `~/.kube/config`). A pasted one stays in memory.
+	 */
+	clustersKubeconfigContexts: (text: string | null) => __TAURI_INVOKE<KubeContexts>("clusters_kubeconfig_contexts", { text }),
+	/**  Adds a Cluster for each context picked, its credentials sealed. */
+	clustersImport: (contexts: ContextChoice[], text: string | null) => __TAURI_INVOKE<ClusterView[]>("clusters_import", { contexts, text }),
+	/**  Reads a Cluster's context again from its kubeconfig and reconnects. */
+	clustersRefresh: (id: string, text: string | null) => __TAURI_INVOKE<ClusterView>("clusters_refresh", { id, text }),
+	/**
+	 *  The local clusters (Docker Desktop, OrbStack, Rancher Desktop, kind,
+	 *  k3d, minikube) this machine's kubeconfig reaches, each probed, and the
+	 *  kind and k3d clusters running on a connected local Host that it doesn't.
+	 */
+	clustersDetectLocal: () => __TAURI_INVOKE<LocalClusters>("clusters_detect_local"),
+	clustersNamespaces: (id: string) => __TAURI_INVOKE<NamespaceView[]>("clusters_namespaces", { id }),
+	/**  The workloads of `kind` in `namespace`, or in every Namespace without one. */
+	clustersWorkloadsList: (id: string, kind: WorkloadKind, namespace: string | null) => __TAURI_INVOKE<WorkloadView[]>("clusters_workloads_list", { id, kind, namespace }),
+	clustersWorkloadGet: (id: string, kind: WorkloadKind, namespace: string, name: string) => __TAURI_INVOKE<WorkloadDetail>("clusters_workload_get", { id, kind, namespace, name }),
+	/**  The Jobs a CronJob started, newest first. */
+	clustersCronJobJobs: (id: string, namespace: string, name: string) => __TAURI_INVOKE<WorkloadView[]>("clusters_cron_job_jobs", { id, namespace, name }),
+	/**
+	 *  The Pods in `namespace` (every one without), those matching a label
+	 *  `selector` or on a `node` when given.
+	 */
+	clustersPodsList: (id: string, namespace: string | null, selector: string | null, node: string | null) => __TAURI_INVOKE<PodView[]>("clusters_pods_list", { id, namespace, selector, node }),
+	clustersPodGet: (id: string, namespace: string, name: string) => __TAURI_INVOKE<PodDetail>("clusters_pod_get", { id, namespace, name }),
+	/**  The Events about one object, warnings first. */
+	clustersObjectEvents: (id: string, kind: ResourceKind, namespace: string | null, name: string) => __TAURI_INVOKE<EventView[]>("clusters_object_events", { id, kind, namespace, name }),
+	/**  An object as read-only YAML, without managedFields or Secret values. */
+	clustersResourceYaml: (id: string, kind: ResourceKind, namespace: string | null, name: string) => __TAURI_INVOKE<string>("clusters_resource_yaml", { id, kind, namespace, name }),
+	/**
+	 *  Watches the resources of `kind` in `namespace` (every one without) and
+	 *  says when they change, until cancelled.
+	 */
+	clustersWatchSubscribe: (id: string, kind: ResourceKind, namespace: string | null, onEvent: Channel<ResourcesChanged>) => __TAURI_INVOKE<number>("clusters_watch_subscribe", { id, kind, namespace, onEvent }),
+	clustersServicesList: (id: string, namespace: string | null) => __TAURI_INVOKE<ClusterServiceView[]>("clusters_services_list", { id, namespace }),
+	clustersServiceGet: (id: string, namespace: string, name: string) => __TAURI_INVOKE<ClusterServiceDetail>("clusters_service_get", { id, namespace, name }),
+	clustersIngressesList: (id: string, namespace: string | null) => __TAURI_INVOKE<IngressView[]>("clusters_ingresses_list", { id, namespace }),
+	clustersIngressGet: (id: string, namespace: string, name: string) => __TAURI_INVOKE<IngressDetail>("clusters_ingress_get", { id, namespace, name }),
+	clustersConfigMapsList: (id: string, namespace: string | null) => __TAURI_INVOKE<ConfigMapView[]>("clusters_config_maps_list", { id, namespace }),
+	clustersConfigMapGet: (id: string, namespace: string, name: string) => __TAURI_INVOKE<ConfigMapDetail>("clusters_config_map_get", { id, namespace, name }),
+	/**  Secrets with their keys and sizes, never their values. */
+	clustersSecretsList: (id: string, namespace: string | null) => __TAURI_INVOKE<SecretView[]>("clusters_secrets_list", { id, namespace }),
+	/**  A Secret's keys, labels and annotations, never its values. */
+	clustersSecretGet: (id: string, namespace: string, name: string) => __TAURI_INVOKE<SecretDetail>("clusters_secret_get", { id, namespace, name }),
+	/**
+	 *  One decoded value of a Secret, read when the user reveals it; neither
+	 *  cached nor logged.
+	 */
+	clustersSecretReveal: (id: string, namespace: string, name: string, key: string) => __TAURI_INVOKE<RevealedValue>("clusters_secret_reveal", { id, namespace, name, key }),
+	clustersNodesList: (id: string) => __TAURI_INVOKE<ClusterNodeView[]>("clusters_nodes_list", { id }),
+	clustersNodeGet: (id: string, name: string) => __TAURI_INVOKE<ClusterNodeDetail>("clusters_node_get", { id, name }),
+	/**  The Events in `namespace` (every one without), warnings first. */
+	clustersEventsList: (id: string, namespace: string | null) => __TAURI_INVOKE<EventView[]>("clusters_events_list", { id, namespace }),
+	/**
+	 *  The Cluster `id` at a glance (Nodes, Pods by phase, workloads short of
+	 *  Pods, the latest warnings), for the Overview; `namespace` (every one
+	 *  without) for what lives in Namespaces.
+	 */
+	clustersSummary: (id: string, namespace: string | null) => __TAURI_INVOKE<ClusterSummary>("clusters_summary", { id, namespace }),
 	/**  Backs up everything Homeport holds to `path`, sealed with `passphrase`. */
 	dataBackup: (path: string, passphrase: string) => __TAURI_INVOKE<BackupOutcome>("data_backup", { path, passphrase }),
 	/**  What the backup at `path` holds, for the restore's confirmation. */
@@ -87,7 +157,7 @@ export const commands = {
 	/**
 	 *  Replaces everything Homeport holds with the backup at `path`, after
 	 *  copying the database to `homeport.db.before-restore-<time>` next to it,
-	 *  then reconnects to the restored Hosts.
+	 *  then reconnects to the restored Hosts and Clusters.
 	 */
 	dataRestore: (path: string, passphrase: string) => __TAURI_INVOKE<BackupContents>("data_restore", { path, passphrase }),
 	/**  The servers `~/.ssh/config` defines, as drafts of Hosts. */
@@ -428,6 +498,7 @@ export const commands = {
 
 /** Events */
 export const events = {
+	clusterStatusChanged: makeEvent<ClusterStatusChanged, ClusterStatusChanged>("cluster-status-changed"),
 	engineEventReceived: makeEvent<EngineEventReceived, EngineEventReceived>("engine-event-received"),
 	hostStatusChanged: makeEvent<HostStatusChanged, HostStatusChanged>("host-status-changed"),
 	syncedAutoDeployed: makeEvent<SyncedAutoDeployed, SyncedAutoDeployed>("synced-auto-deployed"),
@@ -437,6 +508,11 @@ export const events = {
 };
 
 /* Types */
+export type AddedCluster = {
+	id: string,
+	name: string,
+};
+
 export type AppError = {
 	/**  What failed, for logic: `e.is(ErrorCode::PortInUse)`. */
 	code: ErrorCode,
@@ -459,6 +535,15 @@ export type AppInfo = {
 	os: string,
 	arch: string,
 };
+
+/**  How a Cluster's user authenticates, as its kubeconfig says. */
+export type AuthMethod = 
+/**  No credential: the API server sees an anonymous user. */
+{ method: "none" } | { method: "clientCertificate" } | { method: "token" } | { method: "basic"; username: string } | 
+/**  A program on this machine prints the credentials (`aws`, `gke-gcloud-auth-plugin`…). */
+{ method: "exec"; command: string } | 
+/**  An OpenID Connect ID token, refreshed with its refresh token. */
+{ method: "oidc" };
 
 /**  Whether the scheduler may place tasks on a node. */
 export type Availability = 
@@ -485,6 +570,8 @@ export type BackupContents = {
 	appVersion: string,
 	/**  Its Hosts' names. */
 	hosts: string[],
+	/**  Its Clusters' names. */
+	clusters: string[],
 	stacks: number,
 	registries: number,
 	repositories: number,
@@ -496,7 +583,7 @@ export type BackupOutcome = {
 	contents: BackupContents,
 	/**
 	 *  What was written without its secret, which couldn't be opened:
-	 *  Hosts, Stacks, registries and repositories, by name.
+	 *  Hosts, Clusters, Stacks, registries and repositories, by name.
 	 */
 	withoutSecrets: string[],
 };
@@ -608,6 +695,138 @@ export type Capabilities = {
 	tray: boolean,
 };
 
+export type Cluster = {
+	id: string,
+	name: string,
+	kind: ClusterKind,
+	connection: ClusterConnection,
+	enabled: boolean,
+	createdAt: string,
+};
+
+/**  How to reach a Cluster's API, without any credential. */
+export type ClusterConnection = {
+	/**  The API server's URL, such as `https://127.0.0.1:6443`. */
+	server?: string,
+	/**  The name to check the server's certificate against, when not the URL's. */
+	tlsServerName?: string | null,
+	/**  The kubeconfig turns off checking the server's certificate. */
+	insecureSkipTlsVerify?: boolean,
+	/**  An HTTP proxy in front of the API server. */
+	proxyUrl?: string | null,
+	/**  The Namespace the kubeconfig context defaults to. */
+	namespace?: string | null,
+	/**  How Homeport authenticates, to tell the user; the credentials themselves are sealed. */
+	auth?: AuthMethod,
+	/**  The kubeconfig context it was imported from, for refreshing it. */
+	source?: KubeconfigSource | null,
+};
+
+/**  The orchestrator a Cluster runs. Nomad Clusters will share the table. */
+export type ClusterKind = "kubernetes";
+
+export type ClusterNodeDetail = {
+	view: ClusterNodeView,
+	labels: { [key in string]: string },
+	annotations: { [key in string]: string },
+	conditions: ConditionView[],
+	capacity: { [key in string]: string },
+	allocatable: { [key in string]: string },
+	taints: NodeTaint[],
+	osImage: string | null,
+	kernel: string | null,
+	containerRuntime: string | null,
+	/**  `InternalIP 10.0.0.4`, `Hostname node-a`… */
+	addresses: string[],
+};
+
+export type ClusterNodeView = {
+	name: string,
+	/**  Its Ready condition is true. */
+	ready: boolean,
+	/**  Cordoned: no new Pod is scheduled on it. */
+	unschedulable: boolean,
+	/**  From its `node-role.kubernetes.io/<role>` labels. */
+	roles: string[],
+	/**  The kubelet's version. */
+	version: string,
+	os: string,
+	arch: string,
+	internalIp: string | null,
+	/**  Allocatable CPU and memory, as Kubernetes writes them (`4`, `16302048Ki`). */
+	cpu: string | null,
+	memory: string | null,
+	taints: number,
+	created: string | null,
+};
+
+export type ClusterServiceDetail = {
+	view: ClusterServiceView,
+	labels: { [key in string]: string },
+	annotations: { [key in string]: string },
+	ports: ClusterServicePort[],
+	sessionAffinity: string | null,
+};
+
+export type ClusterServicePort = {
+	name: string | null,
+	port: number,
+	/**  The Pods' port, by number or by the name of a container port. */
+	targetPort: string,
+	nodePort: number | null,
+	protocol: string,
+};
+
+export type ClusterServiceView = {
+	namespace: string,
+	name: string,
+	/**  `ClusterIP`, `NodePort`, `LoadBalancer` or `ExternalName`. */
+	type: string,
+	clusterIp: string | null,
+	/**  Load balancers' and external addresses, or an ExternalName's name. */
+	external: string[],
+	/**  `80/TCP`, `443:30443/TCP` (with a node port), as kubectl shows them. */
+	ports: string[],
+	/**
+	 *  The labels of the Pods it sends traffic to, as `key=value,…`; empty
+	 *  when it selects none.
+	 */
+	selector: string,
+	created: string | null,
+};
+
+export type ClusterStatus = { state: "disabled" } | { state: "connecting" } | { state: "connected"; 
+/**  The API server's version, such as `v1.33.1`. */
+serverVersion: string; 
+/**  Its OS and architecture, such as `linux/arm64`. */
+platform: string } | 
+/**  Retrying on its own in `retry_in_secs`. */
+{ state: "unreachable"; error: AppError; retryInSecs: number } | 
+/**  The API server refused the credentials; waits for the user. */
+{ state: "unauthorized"; error: AppError } | { state: "credentialsLost" } | { state: "keychainUnavailable"; error: AppError } | 
+/**  Something only the user can fix (a certificate, a missing plugin); waits for them. */
+{ state: "invalid"; error: AppError };
+
+export type ClusterStatusChanged = {
+	clusterId: string,
+	status: ClusterStatus,
+};
+
+export type ClusterSummary = {
+	nodes: Part<NodeCounts>,
+	pods: Part<PodCounts>,
+	/**  Deployments, StatefulSets and DaemonSets with fewer Pods ready than wanted. */
+	unready: Part<WorkloadView[]>,
+	/**  The latest Warning events. */
+	warnings: Part<EventView[]>,
+};
+
+/**  A Cluster and its connection's status, as the frontend lists them. */
+export type ClusterView = {
+	cluster: Cluster,
+	status: ClusterStatus,
+};
+
 /**  One commit, as a sync shows it. */
 export type Commit = {
 	hash: string,
@@ -688,9 +907,40 @@ export type ComposeSupport = { state: "available"; cli: ComposeCli } |
 /**  `problem` says what's missing and how to install it. */
 { state: "unavailable"; problem: AppError };
 
+/**  One condition of a resource's status. */
+export type ConditionView = {
+	type: string,
+	/**  `True`, `False` or `Unknown`. */
+	status: string,
+	reason: string | null,
+	message: string | null,
+	lastTransition: string | null,
+};
+
 /**  A config's content as text, or its size when it isn't text. */
 export type ConfigContent = {
 	text: string | null,
+	size: number,
+};
+
+export type ConfigMapDetail = {
+	view: ConfigMapView,
+	labels: { [key in string]: string },
+	annotations: { [key in string]: string },
+	values: ConfigValue[],
+};
+
+export type ConfigMapView = {
+	namespace: string,
+	name: string,
+	keys: DataKey[],
+	created: string | null,
+};
+
+/**  A ConfigMap's value; binary ones have none. */
+export type ConfigValue = {
+	key: string,
+	value: string | null,
 	size: number,
 };
 
@@ -723,8 +973,23 @@ export type ContainerUsage = {
 	memoryLimit: number,
 };
 
+/**  One context the user picked, and the name its Cluster gets. */
+export type ContextChoice = {
+	context: string,
+	name: string,
+};
+
 /**  Credentials typed by the user. Absent on update means "keep the stored ones". */
 export type CredentialsInput = { kind: "tls"; caPem: string; certPem: string; keyPem: string } | { kind: "sshKey"; privateKey: string; passphrase: string | null };
+
+/**  One key of a ConfigMap or Secret, and how big its value is. */
+export type DataKey = {
+	key: string,
+	/**  Bytes. */
+	size: number,
+	/**  Binary data, which isn't shown as text. */
+	binary: boolean,
+};
 
 /**  One deploy with the definition it used. */
 export type Deploy = {
@@ -876,7 +1141,21 @@ export type ErrorCode =
 /**  A node couldn't reach the managers of the Swarm it was joining. */
 "swarm_join_failed" | 
 /**  The `docker` CLI isn't installed, which deploying a Stack to a Swarm needs. */
-"docker_cli_missing" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
+"docker_cli_missing" | 
+/**  A command for a Cluster that isn't connected. */
+"cluster_not_connected" | 
+/**  The Cluster's API server refused the credentials from its kubeconfig. */
+"cluster_unauthorized" | 
+/**  The Kubernetes API answered with an error Homeport has no better words for. */
+"cluster_api_error" | 
+/**  A kubeconfig user authenticates with a removed auth provider (gcp, azure). */
+"kubeconfig_auth_provider_unsupported" | 
+/**  The program of a Cluster's exec credential plugin isn't installed. */
+"exec_plugin_missing" | 
+/**  A Cluster's exec credential plugin exited with an error or printed no credentials. */
+"exec_plugin_failed" | 
+/**  A Cluster's exec credential plugin needs a terminal to sign in. */
+"exec_plugin_interactive" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
 /**  A Linked Stack's folder, or one of its compose files, is gone. */
 "stack_folder_missing" | 
 /**  A Linked Stack's compose file can't be read or written. */
@@ -914,6 +1193,28 @@ export type EventCursor = {
 	kind: string,
 	action: string,
 	actorId: string,
+};
+
+/**  The resource an Event is about. */
+export type EventObject = {
+	kind: string,
+	namespace: string | null,
+	name: string,
+};
+
+export type EventView = {
+	namespace: string,
+	name: string,
+	/**  `Normal` or `Warning`. */
+	type: string,
+	reason: string,
+	message: string,
+	object: EventObject,
+	count: number,
+	firstSeen: string | null,
+	lastSeen: string | null,
+	/**  What reported it (`kubelet`, `deployment-controller`…). */
+	source: string | null,
 };
 
 export type ExecEvent = { type: "output"; data: string } | 
@@ -1206,6 +1507,45 @@ export type ImportSpec = {
 	changes: string[],
 };
 
+export type IngressDetail = {
+	view: IngressView,
+	labels: { [key in string]: string },
+	annotations: { [key in string]: string },
+	/**  Every rule's paths, the default backend's first (host `*`, path `*`). */
+	paths: IngressPath[],
+	tls: IngressTls[],
+};
+
+/**  Where one path of an Ingress sends traffic. */
+export type IngressPath = {
+	/**  `*` for every host. */
+	host: string,
+	path: string,
+	pathType: string,
+	/**  The Service it sends to, when it sends to one. */
+	service: string | null,
+	/**  That Service's port, by number or name. */
+	port: string | null,
+	/**  Another backend (a resource), described. */
+	resource: string | null,
+};
+
+export type IngressTls = {
+	hosts: string[],
+	secret: string | null,
+};
+
+export type IngressView = {
+	namespace: string,
+	name: string,
+	class: string | null,
+	hosts: string[],
+	/**  The addresses its controller published. */
+	addresses: string[],
+	tls: boolean,
+	created: string | null,
+};
+
 /**  What `docker swarm join` needs for each role. `Debug` hides the tokens. */
 export type JoinInfo = {
 	workerToken: string,
@@ -1222,6 +1562,40 @@ export type JoinRole = "worker" | "manager";
  *  addresses are fetched through a connected manager, or a pasted token.
  */
 export type JoinTarget = { kind: "known"; swarmId: string } | { kind: "token"; token: string; addresses: string[] };
+
+/**  One context of a kubeconfig, as the import lists it. */
+export type KubeContext = {
+	name: string,
+	/**  The API server, when the context's cluster is in the kubeconfig. */
+	server: string | null,
+	user: string | null,
+	namespace: string | null,
+	auth: AuthMethod | null,
+	/**  The kubeconfig's current context. */
+	current: boolean,
+	/**  The Cluster already made from this context, which importing refreshes. */
+	added: AddedCluster | null,
+	/**  Why it can't be imported, if it can't. */
+	problem: AppError | null,
+};
+
+/**  A kubeconfig's contexts, as the Add a Cluster page shows them. */
+export type KubeContexts = {
+	/**  The files read, in merge order; empty for a pasted kubeconfig. */
+	paths: string[],
+	contexts: KubeContext[],
+};
+
+/**  Where a Cluster's kubeconfig context came from. */
+export type KubeconfigSource = {
+	/**  The context's name in the kubeconfig. */
+	context: string,
+	/**
+	 *  Pasted into Homeport rather than read from this machine's kubeconfig,
+	 *  so it can't be refreshed from there.
+	 */
+	pasted: boolean,
+};
 
 export type Licenses = {
 	/**  Homeport's own license (`LICENSE`). */
@@ -1276,6 +1650,28 @@ export type LinkedStack = {
 	createdAt: string,
 	updatedAt: string,
 };
+
+/**  A local cluster found in the kubeconfig. */
+export type LocalCluster = {
+	tool: LocalTool,
+	/**  The context it is reached through. */
+	context: string,
+	/**  The name its Cluster gets when added in one click. */
+	suggestedName: string,
+	server: string,
+	/**  Its API server answered, with this version. */
+	serverVersion: string | null,
+	/**  The Cluster already made from its context. */
+	added: AddedCluster | null,
+};
+
+export type LocalClusters = {
+	found: LocalCluster[],
+	missing: MissingLocalCluster[],
+};
+
+/**  What runs a local cluster. */
+export type LocalTool = "dockerDesktop" | "orbstack" | "rancherDesktop" | "kind" | "k3d" | "minikube";
 
 export type LogEvent = { type: "lines"; lines: LogLine[] } | { type: "error"; error: AppError } | { type: "end" };
 
@@ -1340,6 +1736,17 @@ export type ManagedStack = {
 /**  How a manager node takes part in the Swarm's Raft. */
 export type ManagerStatus = "leader" | "reachable" | "unreachable";
 
+/**
+ *  A kind or k3d cluster whose containers run on a local Host, but that
+ *  the kubeconfig doesn't reach yet.
+ */
+export type MissingLocalCluster = {
+	tool: LocalTool,
+	name: string,
+	/**  The command that writes it into the kubeconfig. */
+	command: string,
+};
+
 /**  Replicated with a number of replicas, or one task per node. */
 export type ModeInput = { kind: "replicated"; replicas: number } | { kind: "global" };
 
@@ -1355,6 +1762,15 @@ export type MountSpec = {
 	source: string,
 	target: string,
 	readOnly: boolean,
+};
+
+/**  A Namespace, as the filter and its list show it. */
+export type NamespaceView = {
+	name: string,
+	/**  `Active` or `Terminating`. */
+	phase: string,
+	created: string | null,
+	labels: { [key in string]: string },
 };
 
 export type NetworkInput = {
@@ -1392,8 +1808,21 @@ export type NodeChange = {
 	labels: { [key in string]: string } | null,
 };
 
+export type NodeCounts = {
+	ready: number,
+	total: number,
+	/**  The Nodes that aren't ready, by name. */
+	notReady: string[],
+};
+
 /**  [`SwarmRole`] as an input. */
 export type NodeRole = "manager" | "worker";
+
+export type NodeTaint = {
+	key: string,
+	value: string | null,
+	effect: string,
+};
 
 export type NodeView = {
 	id: string,
@@ -1457,10 +1886,86 @@ export type ObjectValue =
  */
 { kind: "file"; path: string };
 
+/**  The resource that controls another, such as a Pod's ReplicaSet. */
+export type OwnerView = {
+	kind: string,
+	name: string,
+};
+
 export type PackageManager = "apt" | "dnf" | "zypper" | "scoop" | "aur";
 
 /**  A parameter of a message: text such as a Host's name, or a number. */
 export type Param = string | number;
+
+/**  One part of the summary, or why it couldn't be read. */
+export type Part<T> = { state: "read"; value: T } | { state: "failed"; error: AppError };
+
+/**  A container of a Pod and its state. */
+export type PodContainer = {
+	name: string,
+	image: string,
+	/**  An init container, run before the others. */
+	init: boolean,
+	/**  `running`, `waiting` or `terminated`. */
+	state: string,
+	reason: string | null,
+	message: string | null,
+	started: string | null,
+	exitCode: number | null,
+	ready: boolean,
+	restarts: number,
+	/**  Why it last ended, when it restarted. */
+	lastReason: string | null,
+};
+
+export type PodCounts = {
+	total: number,
+	running: number,
+	pending: number,
+	succeeded: number,
+	failed: number,
+	/**  Crashing, or unable to pull their image. */
+	crashing: number,
+	other: number,
+};
+
+export type PodDetail = {
+	view: PodView,
+	labels: { [key in string]: string },
+	annotations: { [key in string]: string },
+	conditions: ConditionView[],
+	containers: PodContainer[],
+	hostIp: string | null,
+	qosClass: string | null,
+	serviceAccount: string | null,
+};
+
+/**  How a Pod is doing, for its colour. */
+export type PodHealth = "running" | "pending" | "succeeded" | "failed" | 
+/**  A container that keeps crashing, or can't pull its image. */
+"crashing" | "terminating" | "unknown";
+
+export type PodView = {
+	namespace: string,
+	name: string,
+	/**  Its phase (`Running`, `Pending`…). */
+	phase: string,
+	/**
+	 *  What `kubectl get pods` shows: the phase, or why a container waits
+	 *  or ended (`CrashLoopBackOff`, `ImagePullBackOff`, `OOMKilled`…).
+	 */
+	status: string,
+	health: PodHealth,
+	/**  Containers ready, of `containers`. */
+	ready: number,
+	containers: number,
+	restarts: number,
+	node: string | null,
+	ip: string | null,
+	created: string | null,
+	owner: OwnerView | null,
+	images: string[],
+};
 
 export type PortBinding = {
 	ip: string | null,
@@ -1610,6 +2115,13 @@ export type RepositoryDraft = {
 	token: string | null,
 };
 
+export type ResourceKind = "namespace" | "deployment" | "statefulSet" | "daemonSet" | "job" | "cronJob" | "pod" | "service" | "ingress" | "configMap" | "secret" | "node" | "event";
+
+/**  Told when the resources a list shows changed. */
+export type ResourcesChanged = {
+	kind: ResourceKind,
+};
+
 /**  When a task's container is restarted. */
 export type RestartCondition = "none" | "on-failure" | "any";
 
@@ -1625,6 +2137,12 @@ export type RestoreSpec = {
 	 *  Without it, such a volume is refused with `volume_not_empty`.
 	 */
 	replace: boolean,
+};
+
+/**  One revealed value of a Secret, decoded; binary ones as base64. */
+export type RevealedValue = {
+	value: string,
+	binary: boolean,
 };
 
 export type RunSpec = {
@@ -1684,6 +2202,25 @@ export type SearchResult = {
 	stars: number,
 	official: boolean,
 };
+
+export type SecretDetail = {
+	view: SecretView,
+	labels: { [key in string]: string },
+	annotations: { [key in string]: string },
+};
+
+/**  A Secret, without any of its values. */
+export type SecretView = {
+	namespace: string,
+	name: string,
+	/**  `Opaque`, `kubernetes.io/tls`, `kubernetes.io/dockerconfigjson`… */
+	type: string,
+	keys: DataKey[],
+	created: string | null,
+};
+
+/**  What the resource pages show: one Host or one Cluster, by id. */
+export type Selection = { kind: "host"; id: string } | { kind: "cluster"; id: string };
 
 /**  What the Edit dialog changes on a service; `None` keeps that part. */
 export type ServiceChange = {
@@ -1767,8 +2304,21 @@ export type ServiceView = {
 
 export type Settings = {
 	theme?: Theme,
-	/**  The Host selected when the app was last closed. */
+	/**
+	 *  The Host selected when the app was last closed, kept in step with
+	 *  [`Settings::last_selection`] so an older Homeport opens on it too.
+	 */
 	lastHostId?: string | null,
+	/**
+	 *  The Host or Cluster selected when the app was last closed; `None`
+	 *  in settings from before Clusters, which only have `last_host_id`.
+	 */
+	lastSelection?: Selection | null,
+	/**
+	 *  The Namespace each Cluster's pages show, by Cluster id; `""` for
+	 *  every Namespace. A Cluster without one shows its context's Namespace.
+	 */
+	clusterNamespaces?: { [key in string]: string },
 	/**  Look for a new version at launch and every few hours. */
 	checkForUpdates?: boolean,
 	/**
@@ -2123,6 +2673,14 @@ export type TaskView = {
 	exitCode: number | null,
 };
 
+/**  A container of a workload's Pod template. */
+export type TemplateContainer = {
+	name: string,
+	image: string,
+	/**  `8080/TCP`, … */
+	ports: string[],
+};
+
 export type Theme = "system" | "light" | "dark";
 
 export type TransferEvent = 
@@ -2187,6 +2745,54 @@ export type VolumeView = {
 	stack: string | null,
 	/**  Names of containers mounting this volume. */
 	usedBy: string[],
+};
+
+/**  A workload with what its page shows beyond the list. */
+export type WorkloadDetail = {
+	view: WorkloadView,
+	labels: { [key in string]: string },
+	annotations: { [key in string]: string },
+	/**  The labels its Pods are selected by, as `key=value,…`; empty for a CronJob. */
+	selector: string,
+	conditions: ConditionView[],
+	containers: TemplateContainer[],
+	/**  How it rolls out (`RollingUpdate`, `Recreate`, `OnDelete`). */
+	strategy: string | null,
+};
+
+/**  Whether a workload does what it's asked. */
+export type WorkloadHealth = 
+/**  Every wanted Pod is ready (or a Job finished, a CronJob is scheduled). */
+"ready" | 
+/**  Rolling out, scheduling or running towards what it wants. */
+"progressing" | 
+/**  Stuck: a rollout past its deadline, Pods unavailable. */
+"degraded" | 
+/**  A Job that failed. */
+"failed" | 
+/**  A Job or CronJob that is suspended, or scaled to zero. */
+"paused";
+
+export type WorkloadKind = "deployment" | "statefulSet" | "daemonSet" | "job" | "cronJob";
+
+export type WorkloadView = {
+	kind: WorkloadKind,
+	namespace: string,
+	name: string,
+	/**  Pods ready (succeeded for a Job, active for a CronJob). */
+	ready: number,
+	/**  Pods wanted (completions for a Job; 0 for a CronJob). */
+	desired: number,
+	/**  Pods running the newest template, for rollouts. */
+	upToDate: number | null,
+	health: WorkloadHealth,
+	images: string[],
+	created: string | null,
+	/**  A CronJob's schedule. */
+	schedule: string | null,
+	/**  When a CronJob last started a Job. */
+	lastSchedule: string | null,
+	owner: OwnerView | null,
 };
 
 /* Tauri Specta runtime */

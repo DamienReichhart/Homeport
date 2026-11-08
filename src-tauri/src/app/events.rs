@@ -4,6 +4,7 @@ use serde::Serialize;
 use tauri::{AppHandle, Manager};
 use tauri_specta::Event;
 
+use homeport_clusters::registry::{ClusterNotifier, ClusterStatus};
 use homeport_core::error::AppError;
 use homeport_engine::volumes::helper;
 use homeport_hosts::registry::{EngineEvent, HostStatus, Notifier};
@@ -16,6 +17,13 @@ use super::{notifications::Notifications, AppState};
 pub struct HostStatusChanged {
     pub host_id: String,
     pub status: HostStatus,
+}
+
+#[derive(Debug, Clone, Serialize, specta::Type, tauri_specta::Event)]
+#[serde(rename_all = "camelCase")]
+pub struct ClusterStatusChanged {
+    pub cluster_id: String,
+    pub status: ClusterStatus,
 }
 
 #[derive(Debug, Clone, Serialize, specta::Type, tauri_specta::Event)]
@@ -98,6 +106,29 @@ impl Notifier for TauriNotifier {
         };
         if let Err(e) = event.emit(&self.app) {
             log::warn!("failed to emit engine event: {e}");
+        }
+    }
+}
+
+/// Forwards each Cluster's status changes to the webview.
+pub struct TauriClusterNotifier {
+    app: AppHandle,
+}
+
+impl TauriClusterNotifier {
+    pub fn new(app: AppHandle) -> Self {
+        Self { app }
+    }
+}
+
+impl ClusterNotifier for TauriClusterNotifier {
+    fn cluster_status(&self, cluster_id: &str, status: &ClusterStatus) {
+        let event = ClusterStatusChanged {
+            cluster_id: cluster_id.to_owned(),
+            status: status.clone(),
+        };
+        if let Err(e) = event.emit(&self.app) {
+            log::warn!("failed to emit cluster status: {e}");
         }
     }
 }

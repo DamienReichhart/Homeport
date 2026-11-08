@@ -1,6 +1,6 @@
 ---
 title: Overview and events
-description: See every Host at once, every container on one board, check disk usage, clean up, and follow the Engine's live events.
+description: See every Host and Cluster at once, every container on one board, check disk usage, clean up, and follow the Engine's live events.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -8,7 +8,7 @@ import { DocScreenshot } from '@/features/docs';
 
 ## Overview
 
-The **Overview** is the only page that shows every Host together. It opens when Homeport starts.
+The **Overview** is the only page that shows every Host and [Cluster](/docs/clusters/) together. It opens when Homeport starts. **Add host** and **Add cluster** at the top lead to the pages that add them.
 
 <DocScreenshot
   name="overview"
@@ -24,6 +24,28 @@ Each Host has a card with its name, address, type and status. For a connected Ho
 - memory used by its containers, out of the Host's total.
 
 Select a card to switch to that Host. If it's connected, Homeport opens its **Containers**. **Its containers on the board** opens the [Board](#board) showing that Host only.
+
+### Cluster cards
+
+After the Host cards, each Cluster has a card with its name, API server, status and Kubernetes version, and, once connected, how many of its Nodes are ready and how many of its Pods run (in the namespace its pages show). Homeport counts them on its side and asks again every 30 seconds while the Overview is open. A count your credentials aren't allowed to read says **not allowed** instead. Select a card to switch to that Cluster.
+
+### The selected Cluster
+
+When a Cluster is selected, the section below the cards shows it instead of a Host:
+
+<DocScreenshot
+  name="cluster-overview"
+  alt="The Overview with three Host cards, two Cluster cards, and the selected EKS Cluster's dashboard: version, Nodes 4 of 5 ready, Pods by phase, workloads not ready and recent warnings."
+  caption="The Overview with eks-prod selected: one Node isn't ready, and api and search are short of Pods."
+/>
+
+- **Cluster** — its version, platform, API server and the namespace its pages show.
+- **Nodes** — how many are ready, each one that isn't, linked to its page.
+- **Pods** — how many run, wait, fail (crashing, or unable to pull their image) or are done.
+- **Workloads not ready** — Deployments, StatefulSets and DaemonSets with fewer Pods ready than they want, linked to their pages.
+- **Recent warnings** — the last Warning events, each linked to its object. **All events** opens the Cluster's Events.
+
+A part your credentials may not read says so, and the others still show.
 
 ### The selected Host
 

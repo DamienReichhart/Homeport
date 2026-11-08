@@ -1,0 +1,36 @@
+[package]
+name = "homeport-clusters"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Homeport's Clusters: storing them with their kubeconfig credentials sealed, keeping a supervised connection to each, and reading what runs on them"
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+homeport-core.workspace = true
+homeport-storage.workspace = true
+kube.workspace = true
+k8s-openapi.workspace = true
+http.workspace = true
+rustls.workspace = true
+rustls-pki-types.workspace = true
+secrecy.workspace = true
+jiff.workspace = true
+homeport-transport.workspace = true
+tokio.workspace = true
+futures-util.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml_ng.workspace = true
+specta.workspace = true
+rusqlite.workspace = true
+uuid.workspace = true
+base64.workspace = true
+log.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

@@ -1,14 +1,20 @@
 import app from './app';
 import board from './board';
+import clusterevents from './clusterevents';
+import clusters from './clusters';
 import common from './common';
+import config from './config';
 import containers from './containers';
 import core from './core';
 import errors from './errors.json';
 import events from './events';
 import hosts from './hosts';
 import images from './images';
+import network from './network';
 import networks from './networks';
+import nodes from './nodes';
 import overview from './overview';
+import pods from './pods';
 import registries from './registries';
 import repositories from './repositories';
 import search from './search';
@@ -18,6 +24,7 @@ import swarm from './swarm';
 import ui from './ui';
 import updates from './updates';
 import volumes from './volumes';
+import workloads from './workloads';
 
 /** The UI's text: one namespace per file, its keys prefixed with its name. */
 export const uiMessages = {
@@ -26,12 +33,18 @@ export const uiMessages = {
   ...core,
   ...ui,
   ...board,
+  ...clusterevents,
+  ...clusters,
+  ...config,
   ...containers,
   ...events,
   ...hosts,
   ...images,
+  ...network,
   ...networks,
+  ...nodes,
   ...overview,
+  ...pods,
   ...registries,
   ...repositories,
   ...search,
@@ -40,6 +53,7 @@ export const uiMessages = {
   ...swarm,
   ...updates,
   ...volumes,
+  ...workloads,
 };
 
 /**

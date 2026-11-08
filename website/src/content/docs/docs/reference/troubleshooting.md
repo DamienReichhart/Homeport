@@ -133,6 +133,40 @@ The key that encrypts your secrets is missing from the keychain or has changed �
 
 Managed Stack environments sealed with the old key need re-entering too.
 
+## Clusters
+
+### Access refused: "… refused the credentials from its kubeconfig"
+
+The API server answered 401: the certificate or token has expired or was revoked. Check that `kubectl --context <context> get namespaces` still works, then use **Refresh from kubeconfig** on the Cluster's page. For an exec plugin, Homeport already asked it for a new token once.
+
+### "… isn't installed on this computer"
+
+The Cluster's [exec plugin](/docs/clusters/exec-plugins/) (`aws`, `gke-gcloud-auth-plugin`, `kubelogin`…) wasn't found on `PATH` or in its usual install places. Install it, check it runs in a terminal, then **Reconnect**.
+
+### "… needs you to sign in, which it can't do inside Homeport"
+
+The exec plugin wants a browser or a device code. Run `kubectl --context <context> get namespaces` once in a terminal, sign in there, then **Reconnect**.
+
+### "… couldn't get credentials for …"
+
+The exec plugin ran and failed. **Details** shows the end of what it printed, often an expired profile or a wrong region. Homeport tries again on its own.
+
+### "… signs in with the gcp auth provider, which Kubernetes no longer supports"
+
+The `gcp` and `azure` auth providers were removed from Kubernetes. Fetch the credentials again with `gke-gcloud-auth-plugin` installed (GKE), or run `kubelogin convert-kubeconfig` (AKS), then add the context again.
+
+### "Your credentials can't list … in …"
+
+The cluster's RBAC doesn't let your kubeconfig's user do that. Pick a namespace you're allowed to see in the picker at the top right, or ask the cluster's administrator. The message gives the `kubectl auth can-i` command that checks it. Other pages keep working.
+
+### Unreachable: "… refused the connection" or "… didn't answer in time"
+
+The API server isn't reachable from this computer: the cluster is stopped (a local one), behind a VPN, or the kubeconfig's server address changed. Homeport keeps retrying on its own; check `kubectl cluster-info` with the same context.
+
+### "The certificate of … isn't signed by the CA in its kubeconfig"
+
+kind, k3d and minikube make new certificates each time they recreate a cluster. Use **Refresh from kubeconfig** on the Cluster's page.
+
 ## Using Homeport
 
 ### Deploy is greyed out: "The docker compose CLI is not installed"

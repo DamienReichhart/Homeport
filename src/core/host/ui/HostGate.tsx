@@ -1,6 +1,7 @@
 import { RefreshCwIcon, ServerOffIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { LocalClusters, useClusterSelection } from '@/core/cluster';
 import { Button, EmptyState, ErrorMessage, LogoMark, Spinner } from '@/shared/ui';
 import { useCreateHost, useReconnectHost } from '../api/mutations';
 import { useHosts } from '../api/queries';
@@ -18,6 +19,7 @@ export function HostGate({ children }: { children: (hostId: string) => ReactNode
   const { host, select } = useHostSelection();
   const reconnect = useReconnectHost();
   const add = useCreateHost((view) => select(view.host.id));
+  const { select: selectCluster } = useClusterSelection();
 
   if (hosts.isPending) return <Spinner />;
   if (!host) {
@@ -29,9 +31,15 @@ export function HostGate({ children }: { children: (hostId: string) => ReactNode
         action={
           <div className="grid max-w-xl justify-items-center gap-4">
             <LocalEngines onAdd={(input) => add.mutate(input)} pending={add.isPending} />
-            <Button asChild>
-              <Link to="/hosts/new">{t('core.gate.addAnother')}</Link>
-            </Button>
+            <LocalClusters hideAdded onAdded={(view) => selectCluster(view.cluster.id)} />
+            <div className="flex gap-2">
+              <Button asChild>
+                <Link to="/hosts/new">{t('core.gate.addAnother')}</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link to="/clusters/new">{t('core.gate.addCluster')}</Link>
+              </Button>
+            </div>
           </div>
         }
       />

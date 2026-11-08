@@ -4,5 +4,5 @@ import { EventsPage } from './ui/EventsPage';
 
 export const eventsFeature = defineFeature({
   routes: [{ path: 'events', Component: EventsPage }],
-  nav: { path: '/events', label: 'events.nav', icon: ActivityIcon },
+  nav: { path: '/events', label: 'events.nav', icon: ActivityIcon, scope: 'host' },
 });

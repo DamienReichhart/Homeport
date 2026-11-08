@@ -138,6 +138,8 @@ export const baseCommands = {
     },
   }),
   hosts_list: () => [connectedHost],
+  clusters_list: () => [],
+  clusters_detect_local: () => ({ found: [], missing: [] }),
   swarms_list: () => [],
   registries_list: () => [],
   repositories_list: () => [],

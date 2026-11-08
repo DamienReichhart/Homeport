@@ -1,0 +1,75 @@
+---
+title: Workloads and Pods
+description: Browse a Cluster's Namespaces, Deployments, StatefulSets, DaemonSets, Jobs, CronJobs and Pods, live and read-only.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+Select a Cluster in the switcher and the sidebar shows its pages. **Workloads** and **Pods** list what runs on it; every list follows the cluster live through a Kubernetes watch, so a Deployment you scale or a Pod that crashes shows its new state within seconds without refreshing. These pages are read-only: logs, a shell, scaling and deleting come in a later version.
+
+## Namespaces
+
+Each Cluster page shows one Namespace, or **All namespaces**, picked at the top right. It starts at the namespace of the Cluster's kubeconfig context (else `default`), and Homeport remembers your choice per Cluster.
+
+If your credentials may only see some Namespaces, pick one of those: the pages work there. When they can't even list Namespaces, the picker becomes a field where you type the one you're allowed to use.
+
+## Workloads
+
+<DocScreenshot
+  name="cluster-workloads"
+  alt="The Workloads page on its Deployments tab: api progressing at 2 of 3 with 1 up to date, three ready, and search degraded at 0 of 1."
+  caption="api is mid-rollout (1 Pod on the new template), search can't start."
+/>
+
+**Workloads** has a tab per kind: **Deployments**, **StatefulSets**, **DaemonSets**, **Jobs** and **CronJobs**. Each row shows its health, how many Pods are ready of how many it wants, how many run its newest template, its images and its age.
+
+| Health          | Means                                                                             |
+| --------------- | --------------------------------------------------------------------------------- |
+| **Ready**       | Every wanted Pod is ready and up to date; a Job finished; a CronJob is scheduled. |
+| **Progressing** | Rolling out, scheduling, or a Job still running.                                  |
+| **Degraded**    | A Deployment's rollout passed its progress deadline.                              |
+| **Failed**      | A Job failed.                                                                     |
+| **Paused**      | Scaled to zero, or a suspended Job or CronJob.                                    |
+
+### Reading a workload
+
+**Ready** counts Pods that pass their readiness probe against those the workload wants; **Up to date** counts those running its newest template. During a rollout the second lags behind the first: `2/3` ready with `1` up to date means one new Pod is in, and the old ones still serve. When **Up to date** stays behind and the health turns **Degraded**, the new Pods can't start — their page says why.
+
+<DocScreenshot
+  name="cluster-workload"
+  alt="The api Deployment's Overview: namespace, 2 of 3 ready, 1 up to date, RollingUpdate strategy, the app=api selector, its labels, and its containers with images and ports."
+/>
+
+A workload's page has:
+
+- **Overview**: its namespace, replicas, rollout strategy, the labels it selects Pods by, its labels and annotations, and its containers with their images and ports.
+- **Pods**: the Pods it selects (for a CronJob, **Jobs**: the Jobs it started, newest first).
+- **Conditions**, **Events** (warnings first; Kubernetes keeps them for about an hour) and **YAML**, read-only and without `managedFields`.
+
+## Pods
+
+<DocScreenshot
+  name="cluster-pods"
+  alt="The Pods page: Pods of the shop namespace with their status, one in CrashLoopBackOff with 7 restarts and one in ImagePullBackOff, their ready containers, Node and age."
+/>
+
+**Pods** lists each Pod with its status as `kubectl get pods` shows it — `Running`, `Pending`, `CrashLoopBackOff`, `ImagePullBackOff`, `Init:…`, `Terminating` — its ready containers, restarts, Node and age. Long lists show 100 rows a page, so a cluster with thousands of Pods stays responsive; the search box filters all of them.
+
+<DocScreenshot
+  name="cluster-pod"
+  alt="A crashing Pod's page: an init container that completed, the api container waiting in CrashLoopBackOff after 7 restarts (last: Error), and an envoy sidecar running."
+  caption="Why api-…-xr4np isn't ready: its api container keeps crashing; its sidecar is fine."
+/>
+
+A Pod's page shows its Node, IPs, QoS class, service account and what controls it, then each container (init containers first) with its image, state, why it waits or ended, its restarts and why it last restarted. **Conditions**, **Events** and **YAML** follow, as for workloads.
+
+### Finding out why a Pod isn't ready
+
+1. On **Pods**, sort by **Status** or **Restarts**: `CrashLoopBackOff`, `ImagePullBackOff` and `Error` are shown in red.
+2. Open the Pod. The container that isn't ready says why it waits or ended, and **Restarts** gives the reason of its last exit — `Error`, `OOMKilled` (it hit its memory limit), `Completed`.
+3. **Events** has what the kubelet and the scheduler said: an image that can't be pulled, a probe that fails, no Node with enough memory.
+4. **YAML** shows the Pod as the cluster has it, for its probes, limits and environment.
+
+## When your credentials can't see something
+
+A list your credentials aren't allowed to read says so — "Your credentials can't list daemonsets in shop." — with the `kubectl auth can-i` command to check; the other pages keep working.

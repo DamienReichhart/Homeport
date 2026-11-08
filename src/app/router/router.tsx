@@ -1,7 +1,25 @@
-import { createMemoryRouter, type RouteObject } from 'react-router-dom';
+import { createMemoryRouter, Outlet, type RouteObject } from 'react-router-dom';
+import { featureScope, type FeatureManifest } from '@/core/feature';
 import { AppLayout } from '../layout/AppLayout';
 import { CrashPage } from './CrashPage';
 import { features } from './features';
+import { ScopeGuard } from './ScopeGuard';
+
+/** A feature's routes, behind a guard when its pages need a Host or a Cluster. */
+function scopedRoutes(feature: FeatureManifest): RouteObject[] {
+  const scope = featureScope(feature);
+  if (scope === 'app') return feature.routes;
+  return [
+    {
+      element: (
+        <ScopeGuard scope={scope}>
+          <Outlet />
+        </ScopeGuard>
+      ),
+      children: feature.routes,
+    },
+  ];
+}
 
 /** Route table, assembled from the features' manifests; keep logic out of here. */
 export const routes: RouteObject[] = [
@@ -12,7 +30,7 @@ export const routes: RouteObject[] = [
       {
         // Pages crash inside the layout, so the sidebar stays usable.
         errorElement: <CrashPage />,
-        children: features.flatMap((f) => f.routes),
+        children: features.flatMap(scopedRoutes),
       },
     ],
   },

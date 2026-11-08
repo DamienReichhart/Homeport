@@ -21,7 +21,7 @@ import {
 } from '@/shared/ui';
 import { features } from '../router/features';
 import { useOpenShortcutsHelp } from '../shortcuts/helpContext';
-import { NAV_SHORTCUTS } from '../shortcuts/navShortcuts';
+import { useNavEntries } from '../shortcuts/navShortcuts';
 import {
   paletteItems,
   recentItems,
@@ -31,8 +31,6 @@ import {
   type PaletteItem,
 } from './model/items';
 import { t } from '@/shared/i18n';
-
-const navKeys = new Map(NAV_SHORTCUTS.map(({ entry, keys }) => [entry.path, keys]));
 
 /** The command palette, opened with Mod+K from any page. */
 export function CommandPalette() {
@@ -45,6 +43,13 @@ export function CommandPalette() {
   const hosts = useHosts();
   const { hostId, host, select } = useHostSelection();
   const openHelp = useOpenShortcutsHelp();
+  const { entries, shortcuts } = useNavEntries();
+  const navKeys = useMemo(
+    () => new Map(shortcuts.map(({ entry, keys }) => [entry.path, keys])),
+    [shortcuts],
+  );
+  // The pages of what isn't selected, and their commands, aren't offered.
+  const shown = useMemo(() => features.filter((f) => !f.nav || entries.includes(f.nav)), [entries]);
   // Opened from the keyboard, it has no trigger to give focus back to.
   const returnFocus = useRef<HTMLElement | null>(null);
   const show = (next: boolean) => {
@@ -78,13 +83,13 @@ export function CommandPalette() {
   const items = useMemo(
     () =>
       paletteItems({
-        features,
+        features: shown,
         appCommands,
         hosts: hosts.data ?? [],
         selected: host,
         navKeys,
       }),
-    [appCommands, hosts.data, host],
+    [appCommands, hosts.data, host, shown, navKeys],
   );
 
   const ctx: PaletteContext = {

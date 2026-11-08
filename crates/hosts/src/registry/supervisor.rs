@@ -19,12 +19,8 @@ use crate::{events, HostId};
 const FIRST_LOOK_BACK_NANOS: i64 = 24 * 3600 * 1_000_000_000;
 
 const PING_INTERVAL: Duration = Duration::from_secs(15);
-const MAX_BACKOFF_SECS: u32 = 60;
 
-/// The next wait after `current` seconds: doubling from 1 up to 60.
-pub fn next_backoff(current: u32) -> u32 {
-    (current.max(1) * 2).min(MAX_BACKOFF_SECS)
-}
+pub use homeport_core::backoff::next_backoff;
 
 pub(super) async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
     let mut backoff = 1;
@@ -178,18 +174,5 @@ async fn watch(registry: &Weak<HostRegistry>, id: &str, docker: Docker) {
     tokio::select! {
         _ = events => {}
         _ = pings => {}
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn backoff_doubles_up_to_a_minute() {
-        let waits: Vec<_> = std::iter::successors(Some(1), |&b| Some(next_backoff(b)))
-            .take(8)
-            .collect();
-        assert_eq!(waits, [1, 2, 4, 8, 16, 32, 60, 60]);
     }
 }

@@ -26,9 +26,12 @@ src/
 │       ├── manifest.ts   routes, sidebar entry and command palette commands
 │       └── index.ts      the public API: the manifest and what other features use
 ├── core/           the domain every feature stands on
-│   ├── feature/    the manifest contract, palette commands, useActionRequest
-│   ├── host/       Host selection, statuses, HostGate, the Engine resources' keys and lists,
-│   │               and the live updates that refresh them
+│   ├── feature/    the manifest contract (each sidebar entry's scope: host, cluster or app),
+│   │               palette commands, useActionRequest
+│   ├── selection/  what the pages show, a Host or a Cluster, remembered across launches
+│   ├── host/       the selected Host (useHostSelection), statuses, HostGate, the Engine
+│   │               resources' keys and lists, and the live updates that refresh them
+│   ├── cluster/    Clusters: their keys (clusterKeys.scope), list, statuses and ClusterGate
 │   ├── swarm/      the Swarms found through their manager Hosts (ADR 0016): their keys,
 │   │               the list, SwarmGate, and the live updates of their manager Hosts
 │   └── settings/   the user's settings
@@ -42,7 +45,9 @@ src/
 
 Tests sit next to the code they test. A file past 300 lines gets an ESLint warning: it usually holds more than one thing. A folder past about ten files gets subfolders by role.
 
-**Query keys.** Every key of a Host starts with `hostKeys.scope(hostId)` (`@/core/host`), so one invalidation refreshes everything a Host has. The lists of Engine resources (containers, images, volumes, networks, Stacks, system usage, events) are read through `resourceQueries`, because several features read them and Engine events invalidate them (`useEngineEventUpdates`). Every other key lives in the feature's `api/queries.ts`.
+**Selection.** The pages show one Host or one Cluster (`@/core/selection`); a sidebar entry's `scope` says which its pages are about, and the sidebar, the shortcuts and the palette only offer the entries of the selected kind, plus the app's. A Host page opened while a Cluster is selected, or the reverse, goes to the Overview.
+
+**Query keys.** Every key of a Host starts with `hostKeys.scope(hostId)` (`@/core/host`), and every key of a Cluster with `clusterKeys.scope(clusterId)` (`@/core/cluster`), so one invalidation refreshes everything a Host or a Cluster has. The lists of Engine resources (containers, images, volumes, networks, Stacks, system usage, events) are read through `resourceQueries`, because several features read them and Engine events invalidate them (`useEngineEventUpdates`). Every other key lives in the feature's `api/queries.ts`.
 
 ## Backend layout
 
@@ -52,6 +57,7 @@ Each crate depends only on crates below it in this list, so the graph has one di
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `homeport` (`src-tauri/`)                    | The Tauri shell: `app/` (bootstrap, state, events), `commands/` (one module per feature), `error.rs`                                                                                                          |
 | `homeport-hosts` (`crates/hosts/`)           | Hosts: their store, a supervised connection to each (`registry/`), their kept Engine events (`events`), the use cases (`service/`), imports, export                                                           |
+| `homeport-clusters` (`crates/clusters/`)     | Clusters: their store with the kubeconfig credentials sealed, a supervised connection to each through kube-rs (`registry/`), classifying the Kubernetes API's failures, the use cases (`service`)             |
 | `homeport-stacks` (`crates/stacks/`)         | Stacks: telling them apart, their store, the runtime (each source and target), lifecycle, the compose CLI, Synced Stacks and their poller                                                                     |
 | `homeport-git` (`crates/git/`)               | Synced Stacks' repositories: their sealed credentials, and the `git` CLI run with them per command (ADR 0014)                                                                                                 |
 | `homeport-registries` (`crates/registries/`) | Registry logins: their store, matching them to image references, the login check and Docker Hub (HTTP)                                                                                                        |
@@ -63,8 +69,8 @@ Each crate depends only on crates below it in this list, so the graph has one di
 
 Rules:
 
-- **Only the shell knows Tauri.** A crate that must tell the app something defines a trait the shell implements (`homeport_hosts::registry::Notifier`, forwarded to the webview by `app/events.rs`; `homeport_stacks::synced::poller::PollEvents`, implemented in `app/polling.rs`, which also deploys for it).
-- **Domain crates don't depend on each other.** `hosts` and `stacks` both sit on the lower crates; a command that needs both combines them (`stacks_compose_subscribe` reads the Host into a `StackTarget`, the Stack's definition into a `StackSource`, and hands both to `homeport_stacks::runtime`). A backup of Homeport's data (`commands/backup.rs`) likewise gathers each domain's section and restores them in one `Db::transaction`.
+- **Only the shell knows Tauri.** A crate that must tell the app something defines a trait the shell implements (`homeport_hosts::registry::Notifier` and `homeport_clusters::registry::ClusterNotifier`, forwarded to the webview by `app/events.rs`; `homeport_stacks::synced::poller::PollEvents`, implemented in `app/polling.rs`, which also deploys for it).
+- **Domain crates don't depend on each other.** `hosts`, `clusters` and `stacks` all sit on the lower crates; a command that needs both combines them (`stacks_compose_subscribe` reads the Host into a `StackTarget`, the Stack's definition into a `StackSource`, and hands both to `homeport_stacks::runtime`). A backup of Homeport's data (`commands/backup.rs`) likewise gathers each domain's section and restores them in one `Db::transaction`.
 - **Foreign errors.** The orphan rule only lets `homeport-core` implement `From<…> for AppError`. It does so for bollard and russh behind its `bollard` and `russh` features; every other foreign error gets a named function next to the only code that meets it (`homeport_storage::db::sqlite_error`, `error::window` and `error::update` in the shell).
 - **Shared test helpers** sit behind a crate's `test-support` feature (`homeport-transport`'s dialer over the local socket, `homeport-engine`'s throwaway resources) and are only enabled as dev-dependencies.
 - **One version per dependency and one set of lints**, declared in the root `Cargo.toml` (`[workspace.dependencies]`, `[workspace.lints]`).
@@ -121,6 +127,7 @@ Website page (example: `compare`):
 - **Text**: every user-facing string comes from the catalogue in `src/shared/i18n/en/` through `t('feature.key', { param })` from `@/shared/i18n` (FormatJS, ICU MessageFormat). Errors carry a `key` and `params` that the frontend renders from the same catalogue; Rust declares each error's key and English template in its crate's `messages!` block and `bun run bindings` generates `errors.json` (ADR 0011).
 - **Server state**: TanStack Query, with `queryOptions` factories in each `api/queries.ts`. Engine resource lists are refreshed from pushed Engine events instead of polling (see Query keys above).
 - **Volumes' contents**: browsing, backing up, restoring and cloning a volume go through a short-lived helper container (`homeport_engine::volumes::helper`, ADR 0015), hidden from the lists and events; its image is pulled only once the user agrees.
+- **Clusters**: `homeport-clusters` reaches each Cluster's Kubernetes API with kube-rs, from a kubeconfig context imported with its credentials sealed (ADR 0018): a client built in memory, a supervisor like a Host's, exec plugins run by Homeport with their tokens in memory only. Cluster lists are read in pages and kept fresh by metadata-only watches (`useResourceWatch`), whose changes invalidate `clusterKeys.kind(clusterId, kind)`; a 403 is a `Forbidden` error naming the verb and resource. Secret values only come back one key at a time, on Reveal, outside any query cache.
 - **Git**: Synced Stacks run the user's `git` with a repository's credentials for one command at a time (a private SSH agent or an environment-only header), never the user's own git configuration or keys; clones and worktrees live in the app data dir (ADR 0014).
 - **Streams**: logs, stats, exec, pulls, pushes, builds, image saves and loads, volume backups and restores, and compose output use Tauri channels. Start one with `subscribe()` from `@/shared/api` in the feature's `api/streams.ts`; the returned function cancels it on the backend.
 - **Storage**: SQLite (`homeport.db` in the app data dir) via `homeport_storage::Db`, migrated on open from `crates/storage/src/db/migrations/`. Secrets are sealed with `homeport_storage::SecretBox` (ADR 0002); export files and backups with a passphrase, by `homeport_storage::crypto::bundle` (ADR 0013). Engine events are kept per Host by `homeport_hosts::events::EventStore`, written in batches by a thread of its own.

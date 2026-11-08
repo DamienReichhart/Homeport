@@ -108,7 +108,7 @@ export default {
   'swarm.tasks.column.task': 'Task',
   'swarm.tasks.column.node': 'Node',
   'swarm.tasks.column.state': 'State',
-  'swarm.tasks.column.error': 'Error',
+  'swarm.tasks.column.error': 'Message',
   'swarm.tasks.column.image': 'Image',
   'swarm.tasks.desired': 'should be {state}',
   'swarm.tasks.openContainer': 'Open container',

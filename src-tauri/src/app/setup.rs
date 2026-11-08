@@ -5,6 +5,7 @@ use std::{error::Error, sync::Arc};
 
 use tauri::{App, Manager};
 
+use homeport_clusters::{registry::ClusterRegistry, service::ClusterService, store::ClusterStore};
 use homeport_git::{Repositories, RepositoryStore};
 use homeport_hosts::{
     events::EventStore, registry::HostRegistry, service::HostService, store::HostStore,
@@ -19,7 +20,10 @@ use homeport_stacks::{
 };
 use homeport_storage::{Db, Keychain, SecretBox};
 
-use super::{events::TauriNotifier, AppState};
+use super::{
+    events::{TauriClusterNotifier, TauriNotifier},
+    AppState,
+};
 
 /// Builds the app's state and starts connecting to every Host.
 pub fn state(app: &App) -> Result<AppState, Box<dyn Error>> {
@@ -50,6 +54,20 @@ pub fn state(app: &App) -> Result<AppState, Box<dyn Error>> {
             log::error!("failed to start host connections: {e}");
         }
     });
+    let cluster_store = Arc::new(ClusterStore::new(db.clone(), secrets.clone()));
+    let clusters = ClusterService {
+        registry: ClusterRegistry::new(
+            cluster_store.clone(),
+            Arc::new(TauriClusterNotifier::new(app.handle().clone())),
+        ),
+        store: cluster_store,
+    };
+    let start = clusters.registry.clone();
+    tauri::async_runtime::spawn(async move {
+        if let Err(e) = start.start_all() {
+            log::error!("failed to start cluster connections: {e}");
+        }
+    });
     let repositories = Arc::new(Repositories::new(
         RepositoryStore::new(db.clone(), secrets.clone()),
         data_dir.join("repositories"),
@@ -74,6 +92,7 @@ pub fn state(app: &App) -> Result<AppState, Box<dyn Error>> {
             registry,
             events,
         },
+        clusters,
         streams: Default::default(),
         exec: Default::default(),
         volume_browser: Default::default(),

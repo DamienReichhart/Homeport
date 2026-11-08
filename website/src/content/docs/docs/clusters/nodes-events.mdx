@@ -1,0 +1,34 @@
+---
+title: Nodes and Events
+description: See a Cluster's Nodes, their capacity and the Pods on each, and its Events, warnings first.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+## Nodes
+
+**Nodes** lists the machines the Cluster runs Pods on, with whether each is **Ready** (and **scheduling disabled** when it's cordoned), its roles, kubelet version, internal IP, platform and allocatable CPU and memory.
+
+<DocScreenshot
+  name="cluster-nodes"
+  alt="The Nodes page: five EKS Nodes, one not ready with scheduling disabled, with their kubelet version, internal IP, platform, CPUs and memory."
+/>
+
+CPUs are shown in cores (`3.92` for `3920m`) and memory in GB; Kubernetes reports what is **allocatable** to Pods, a little less than the machine has, since the kubelet and the system keep some.
+
+A Node's page shows its OS image, kernel, container runtime, addresses, taints, labels, and its capacity next to what's allocatable to Pods; then the **Pods** running on it, in every Namespace, its **Conditions** (memory, disk and PID pressure), **Events** and **YAML**. A Pod's page links to its Node.
+
+## Events
+
+<DocScreenshot
+  name="cluster-events"
+  alt="The Events page: three warnings first (a Pod backing off, an image that can't be pulled, a Node not ready), then normal events, each with its object, message, count and age."
+/>
+
+**Events** lists what Kubernetes reported in the selected Namespace (or all of them): warnings first, then the newest, each with its reason, the object it's about — linked to that object's page — its message, how many times it happened and when it last did. Filter by **Warnings** or **Normal**, and search by reason, object or message. The list updates live.
+
+Kubernetes keeps Events for about an hour, so an empty list is normal on a quiet cluster. Every object's page also has its own **Events** tab.
+
+## When your credentials can't see something
+
+Nodes aren't in a Namespace, so listing them needs a cluster-wide permission many users don't have. The page then says "Your credentials can't list nodes." and every other page keeps working.

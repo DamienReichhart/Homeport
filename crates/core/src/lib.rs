@@ -5,6 +5,7 @@
 //! with, what a Host is, and helpers for the computer Homeport runs on. It knows nothing about
 //! Tauri, SQLite or how Hosts are reached.
 
+pub mod backoff;
 pub mod error;
 pub mod host;
 pub mod local_files;

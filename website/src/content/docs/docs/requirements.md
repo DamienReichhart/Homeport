@@ -1,6 +1,6 @@
 ---
 title: System requirements
-description: What Homeport needs to run, and the optional pieces that unlock SSH, TLS and Stack deploys.
+description: What Homeport needs to run, and the optional pieces that unlock SSH, TLS, Stack deploys and Kubernetes clusters.
 ---
 
 ## Operating systems
@@ -22,15 +22,22 @@ Homeport doesn't include a container runtime. It manages Docker Engines that alr
 
 Any Engine that speaks the Docker Engine API works, including Podman's Docker-compatible socket.
 
+## Optional: Kubernetes clusters
+
+To browse [Clusters](/docs/clusters/), Homeport needs a kubeconfig that reaches them (the one `kubectl` uses, or one you paste) and network access to their API servers. It speaks the Kubernetes API itself, so `kubectl` isn't needed.
+
+- **Kubernetes versions**: clusters running Kubernetes 1.24 or later. Homeport uses only stable APIs (`v1`, `apps/v1`, `batch/v1`, `networking.k8s.io/v1`), and is built against the 1.33 API.
+- **Exec plugins**: a cloud kubeconfig names a program to run on this computer for its credentials — the [AWS CLI](https://aws.amazon.com/cli/) (version 2) for EKS, `gke-gcloud-auth-plugin` from the Google Cloud CLI for GKE, `kubelogin` for AKS. Install the one your kubeconfig names; see [exec plugins](/docs/clusters/exec-plugins/).
+
 ## Optional: an OS keychain
 
-Homeport encrypts SSH keys, TLS certificates, Stack environments, registry logins and repositories' deploy keys and tokens with a key it keeps in your operating system's keychain:
+Homeport encrypts SSH keys, TLS certificates, Clusters' kubeconfig credentials, Stack environments, registry logins and repositories' deploy keys and tokens with a key it keeps in your operating system's keychain:
 
 - **macOS** — Keychain
 - **Windows** — Credential Manager
 - **Linux** — a Secret Service provider, such as GNOME Keyring or KWallet
 
-Without one, Homeport shows a banner and still works with local sockets, plain TCP and SSH through **ssh-agent**. TLS Hosts, SSH Hosts with stored keys, Stack environments, registry logins and private repositories need the keychain; without one, images are pulled anonymously and only public repositories can be added. See [security and your data](/docs/reference/security/).
+Without one, Homeport shows a banner and still works with local sockets, plain TCP and SSH through **ssh-agent**. TLS Hosts, SSH Hosts with stored keys, Clusters, Stack environments, registry logins and private repositories need the keychain; without one, images are pulled anonymously and only public repositories can be added. See [security and your data](/docs/reference/security/).
 
 ## Optional: Docker Compose
 
@@ -65,3 +72,4 @@ Homeport puts an icon in the system tray (the menu bar on macOS, the notificatio
 | Synced Stacks from a public repository     |    —     |     Yes     | Yes |
 | Synced Stacks with a deploy key or a token |   Yes    |     Yes     | Yes |
 | Building an image from a folder            |    —     |      —      |  —  |
+| Kubernetes Clusters                        |   Yes    |      —      |  —  |
