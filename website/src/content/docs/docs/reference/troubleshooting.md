@@ -225,6 +225,22 @@ The container must be running, and have `/bin/sh` or `/bin/bash`. Use **New term
 
 The Engine refuses while a container — even a stopped one — still uses it. Remove those containers first; the confirmation lists them.
 
+### "This needs Podman 5.8 or later"
+
+Podman's API reads, installs, edits and removes [Quadlet units](/docs/guides/quadlet/) from Podman 5.8, and lists them from 5.7. Update Podman on the Host, or use `podman quadlet` in a terminal there. Starting and stopping units works on every Podman.
+
+### Quadlet: Start and Stop are greyed out
+
+Homeport starts and stops a unit's service with `systemctl`, which it can only run over SSH or for a Podman on this computer (on Linux). Reach the Host over SSH instead of TCP or TLS. A unit whose service shows **not generated yet** has nothing to start: systemd's generator skipped its file.
+
+### Quadlet: "The user's systemd isn't running on the host"
+
+User units (rootless Podman) need the user's systemd instance, which only runs while the user is logged in unless lingering is on. As that user on the Host, run `loginctl enable-linger "$USER"`, then try again.
+
+### Quadlet: "systemd didn't let this user manage …"
+
+System units (rootful Podman) can only be started and stopped by a user allowed to manage them, such as `root`, and Homeport never uses `sudo`. Connect as such a user, or use rootless Podman, whose units are the user's own.
+
 ### "host … is not connected"
 
 The action needed the Host, but it disconnected. Wait for it to reconnect, or choose **Retry now**.

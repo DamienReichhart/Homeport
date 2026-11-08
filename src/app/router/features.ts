@@ -13,7 +13,9 @@ import { networkFeature } from '@/features/network';
 import { networksFeature } from '@/features/networks';
 import { nodesFeature } from '@/features/nodes';
 import { overviewFeature } from '@/features/overview';
+import { podmanPodsFeature } from '@/features/podman-pods';
 import { podsFeature } from '@/features/pods';
+import { quadletsFeature } from '@/features/quadlets';
 import { portForwardsFeature } from '@/features/port-forwards';
 import { settingsFeature } from '@/features/settings';
 import { stacksFeature } from '@/features/stacks';
@@ -21,7 +23,7 @@ import { swarmFeature } from '@/features/swarm';
 import { updatesFeature } from '@/features/updates';
 import { volumesFeature } from '@/features/volumes';
 import { workloadsFeature } from '@/features/workloads';
-import type { FeatureManifest } from '@/core/feature';
+import { navEntriesOf, type FeatureManifest } from '@/core/feature';
 
 /** Every feature with pages or palette commands, in sidebar order. Add one line per new feature. */
 export const features: FeatureManifest[] = [
@@ -32,6 +34,8 @@ export const features: FeatureManifest[] = [
   volumesFeature,
   networksFeature,
   stacksFeature,
+  podmanPodsFeature,
+  quadletsFeature,
   swarmFeature,
   workloadsFeature,
   podsFeature,
@@ -50,4 +54,4 @@ export const features: FeatureManifest[] = [
   updatesFeature,
 ];
 
-export const navEntries = features.flatMap((f) => (f.nav ? [f.nav] : []));
+export const navEntries = navEntriesOf(features);

@@ -13,6 +13,7 @@ use homeport_engine::containers::{
     stats::{self, StatsSample},
     Container, ContainerAction, Processes,
 };
+use homeport_engine::podman;
 
 use crate::{app::AppState, commands::registries, error::AppResult};
 
@@ -79,19 +80,29 @@ pub async fn containers_processes(
     containers::processes(&state.hosts.registry.docker(&host_id)?, &id).await
 }
 
-/// Creates and starts a container; returns its id.
+/// Creates and starts a container, in the Podman pod `pod` when given;
+/// returns its id. A pod on a Host that isn't Podman is `EngineUnsupported`.
 #[tauri::command]
 #[specta::specta]
 pub async fn containers_run(
     state: State<'_, AppState>,
     host_id: String,
     spec: RunSpec,
+    pod: Option<String>,
 ) -> AppResult<String> {
     let docker = state.hosts.registry.docker(&host_id)?;
     let image = spec.image.trim().to_owned();
     let auth = registries::auth_for(&state, &image)?;
-    run::run(&docker, spec, auth)
-        .await
+    let run = async {
+        match pod.as_deref().map(str::trim).filter(|p| !p.is_empty()) {
+            Some(pod) => {
+                let podman = state.hosts.registry.podman(&host_id)?;
+                podman::containers::run_in_pod(&docker, &podman, spec, pod, auth).await
+            }
+            None => run::run(&docker, spec, auth).await,
+        }
+    };
+    run.await
         .map_err(|e| registries::explain(&state, &image, e))
 }
 

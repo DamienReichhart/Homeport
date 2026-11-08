@@ -3,6 +3,7 @@ import { defineFeature } from '@/core/feature';
 import { ImagesPage } from './ui/ImagesPage';
 
 export const imagesFeature = defineFeature({
+  requires: 'docker',
   routes: [{ path: 'images', Component: ImagesPage }],
   nav: { path: '/images', label: 'images.nav', icon: LayersIcon, scope: 'host' },
   commands: [

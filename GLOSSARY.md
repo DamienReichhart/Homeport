@@ -12,6 +12,15 @@ _Avoid_: Instance, endpoint, engine, context, server
 The Docker-compatible daemon a Host points to (Docker Engine, Docker Desktop, Podman, Colima, OrbStack…): the software that gets installed, started and stopped. Not a synonym for Host: "Start the Docker Engine" talks about the Engine, "Homeport can't reach prod-server" talks about the Host.
 _Avoid_: Daemon, server, backend
 
+**Engine kind**:
+What sort of Engine a Host points to, stored with it: Docker-compatible (Docker Engine, or Podman through its compatible API), containerd or Incus. It decides which pages a Host shows. Called `engine` in code, never `kind`, which is the connection's. Podman is not a kind of its own: it's a Docker-compatible Engine recognised on every connect, because the same socket can change product.
+
+**Pod**:
+On a Podman Host, a group of containers that share one network namespace (and their hostname and IPC) and start and stop together, around an infra container that holds the namespaces and the published ports. Shown on the Pods page through Podman's own API. A Cluster's Pod is the Kubernetes one: in code and text about Hosts, say "Podman pod" wherever both could be meant.
+
+**Quadlet unit**:
+A file on a Podman Host (`web.container`, `shop.pod`, `cache.volume`…) that systemd's generator turns into a service (`web.service`); rootful Podman's are system units, rootless Podman's the user's. Listed, read, installed and removed through Podman's API; its service is started and stopped with `systemctl` over SSH (ADR 0019). The unit is the file, the service is what systemd runs: "start the unit" starts its service.
+
 **Bastion**:
 An SSH server an SSH Host is reached through when its own SSH server only accepts connections from it (OpenSSH's `ProxyJump`). A Host has an ordered list of them, possibly empty; each has its own trusted server key and either uses the Host's credentials or its own. Not a Host: it runs no Engine Homeport talks to.
 _Avoid_: Jump host, jump server, proxy, gateway, hop (in the UI)

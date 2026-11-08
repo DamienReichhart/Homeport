@@ -47,6 +47,8 @@ export const sidebar: NonNullable<StarlightUserConfig['sidebar']> = [
       { label: 'Stacks', slug: 'docs/guides/stacks' },
       { label: 'Synced Stacks', slug: 'docs/guides/synced-stacks' },
       { label: 'Swarms', slug: 'docs/guides/swarm' },
+      { label: 'Podman pods', slug: 'docs/guides/podman-pods' },
+      { label: 'Quadlet units', slug: 'docs/guides/quadlet' },
       { label: 'Settings', slug: 'docs/guides/settings' },
       { label: 'Keyboard', slug: 'docs/guides/keyboard' },
     ],

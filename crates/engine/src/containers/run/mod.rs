@@ -20,6 +20,7 @@ use homeport_core::error::AppResult;
 use crate::{auth::RegistryAuth, containers, images};
 
 pub use body::{create_body, Base};
+pub(crate) use checks::label;
 pub use checks::CAPABILITIES;
 pub(crate) use from_inspect::anonymous_volumes;
 pub use from_inspect::spec_from_inspect;
@@ -246,7 +247,11 @@ pub async fn spec_for(docker: &Docker, id: &str) -> AppResult<RunSpec> {
     ))
 }
 
-async fn pull(docker: &Docker, image: &str, auth: Option<RegistryAuth>) -> AppResult<()> {
+pub(crate) async fn pull(
+    docker: &Docker,
+    image: &str,
+    auth: Option<RegistryAuth>,
+) -> AppResult<()> {
     let failure = std::sync::Mutex::new(None);
     images::pull(docker.clone(), image.to_owned(), auth, |e| {
         if let images::PullEvent::Error { error } = e {

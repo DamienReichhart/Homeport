@@ -16,6 +16,7 @@ test-support = []
 
 [dependencies]
 homeport-core = { workspace = true, features = ["bollard"] }
+homeport-transport.workspace = true
 bollard.workspace = true
 tokio.workspace = true
 futures-util.workspace = true

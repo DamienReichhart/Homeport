@@ -25,6 +25,7 @@ pub mod helm;
 pub mod hosts;
 pub mod images;
 pub mod networks;
+pub mod podman;
 pub mod registries;
 pub mod repositories;
 pub mod settings;
@@ -227,6 +228,16 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             system::system_disk_usage,
             system::system_prune,
             containers::containers_run,
+            podman::pods_list,
+            podman::pods_inspect,
+            podman::pods_act,
+            podman::pods_remove,
+            podman::pods_create,
+            podman::quadlets_list,
+            podman::quadlets_file,
+            podman::quadlets_install,
+            podman::quadlets_remove,
+            podman::quadlets_act,
             containers::containers_run_spec,
             containers::containers_edit_losses,
             containers::containers_recreate,

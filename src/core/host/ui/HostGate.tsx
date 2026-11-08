@@ -5,16 +5,26 @@ import { LocalClusters, useClusterSelection } from '@/core/cluster';
 import { Button, EmptyState, ErrorMessage, LogoMark, Spinner } from '@/shared/ui';
 import { useCreateHost, useReconnectHost } from '../api/mutations';
 import { useHosts } from '../api/queries';
+import type { HostCapability } from '@/core/feature';
+import { capabilityKnown, supports } from '../model/engine';
 import { describeStatus, statusError } from '../model/status';
 import { useHostSelection } from '../selection/context';
 import { LocalEngines } from './LocalEngines';
+import { UnsupportedEngine } from './UnsupportedEngine';
 import { t } from '@/shared/i18n';
 
 /**
  * Renders `children` with the selected Host's id once it is connected, and
- * explains what to do otherwise.
+ * explains what to do otherwise, including when its Engine doesn't offer
+ * what the page `requires`.
  */
-export function HostGate({ children }: { children: (hostId: string) => ReactNode }) {
+export function HostGate({
+  children,
+  requires,
+}: {
+  children: (hostId: string) => ReactNode;
+  requires?: HostCapability;
+}) {
   const hosts = useHosts();
   const { host, select } = useHostSelection();
   const reconnect = useReconnectHost();
@@ -44,6 +54,9 @@ export function HostGate({ children }: { children: (hostId: string) => ReactNode
         }
       />
     );
+  }
+  if (requires && capabilityKnown(host, requires) && !supports(host, requires)) {
+    return <UnsupportedEngine host={host} requires={requires} />;
   }
   if (host.status.state === 'connected') return <>{children(host.host.id)}</>;
   if (host.status.state === 'connecting')

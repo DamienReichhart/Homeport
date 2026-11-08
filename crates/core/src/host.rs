@@ -14,6 +14,63 @@ pub type HostId = String;
 /// volumes (ADR 0015). Containers with it, and what they do, are hidden.
 pub const HELPER_LABEL: &str = "com.homeport.helper";
 
+/// The kind of Engine a Host points to, which decides what Homeport can
+/// show and do on it. Named `engine` everywhere: `kind` is the connection's.
+#[derive(
+    Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize, specta::Type,
+)]
+#[serde(rename_all = "lowercase")]
+pub enum EngineKind {
+    /// An Engine speaking the Docker Engine API: Docker, or Podman through
+    /// its compatible API. Which one is read on every connect.
+    #[default]
+    Docker,
+    /// containerd, through its own API (not supported yet).
+    Containerd,
+    /// Incus, through its REST API (not supported yet).
+    Incus,
+}
+
+impl EngineKind {
+    /// Its stored and serialized name.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Docker => "docker",
+            Self::Containerd => "containerd",
+            Self::Incus => "incus",
+        }
+    }
+
+    /// Its name for the user, in messages.
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Docker => "a Docker-compatible Engine",
+            Self::Containerd => "containerd",
+            Self::Incus => "Incus",
+        }
+    }
+
+    /// Reads a stored name; `None` for one this version doesn't know.
+    pub fn parse(name: &str) -> Option<Self> {
+        match name {
+            "docker" => Some(Self::Docker),
+            "containerd" => Some(Self::Containerd),
+            "incus" => Some(Self::Incus),
+            _ => None,
+        }
+    }
+
+    /// Refuses the kinds Homeport can't connect to yet, so nothing half-works.
+    pub fn validate(self) -> AppResult<()> {
+        match self {
+            Self::Docker => Ok(()),
+            Self::Containerd | Self::Incus => Err(AppError::validation(
+                msg::ENGINE_NOT_YET_SUPPORTED.with("engine", self.label()),
+            )),
+        }
+    }
+}
+
 /// How to reach a Host. Never contains secret material; that lives in [`HostSecrets`].
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
 #[serde(
@@ -152,6 +209,8 @@ pub struct Host {
     pub id: HostId,
     pub name: String,
     pub connection: HostConnection,
+    /// The kind of Engine it points to; migration 0017 made stored Hosts Docker-compatible.
+    pub engine: EngineKind,
     pub enabled: bool,
     /// The SSH server key trusted on first use, in OpenSSH format.
     pub host_key: Option<String>,
@@ -395,6 +454,35 @@ mod tests {
     fn ipv6_addresses_are_bracketed() {
         assert_eq!(ssh_address("10.0.0.1", 22), "10.0.0.1:22");
         assert_eq!(ssh_address("fd00::1", 2222), "[fd00::1]:2222");
+    }
+
+    #[test]
+    fn engine_kinds_are_lowercase_names() {
+        for (kind, name) in [
+            (EngineKind::Docker, "docker"),
+            (EngineKind::Containerd, "containerd"),
+            (EngineKind::Incus, "incus"),
+        ] {
+            assert_eq!(serde_json::to_value(kind).unwrap(), serde_json::json!(name));
+            assert_eq!(
+                serde_json::from_value::<EngineKind>(name.into()).unwrap(),
+                kind
+            );
+            assert_eq!(EngineKind::parse(name), Some(kind));
+            assert_eq!(kind.as_str(), name);
+        }
+        assert_eq!(EngineKind::parse("lxd"), None);
+        assert_eq!(EngineKind::default(), EngineKind::Docker);
+    }
+
+    #[test]
+    fn only_docker_compatible_engines_are_accepted_for_now() {
+        assert!(EngineKind::Docker.validate().is_ok());
+        for kind in [EngineKind::Containerd, EngineKind::Incus] {
+            let err = kind.validate().unwrap_err();
+            assert!(err.is(ErrorCode::Validation));
+            assert!(err.message.contains(kind.label()), "{err:?}");
+        }
     }
 
     #[test]

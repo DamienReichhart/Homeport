@@ -10,6 +10,7 @@ import {
   resourceQueries,
   useContainers,
   useHostSelection,
+  usePodsByContainer,
 } from '@/core/host';
 import type { Container } from '@/shared/api';
 import {
@@ -46,6 +47,7 @@ function ContainersList({ hostId }: { hostId: string }) {
   const { host } = useHostSelection();
   const containers = useContainers(hostId);
   const usage = useUsage(hostId);
+  const pods = usePodsByContainer(hostId);
   const swarms = useSwarms();
   const freshness = indexFreshness(useQuery(resourceQueries.freshness(hostId)).data);
   const [dialog, confirm] = useConfirm();
@@ -88,6 +90,7 @@ function ContainersList({ hostId }: { hostId: string }) {
       container={c}
       nested={nested}
       usage={usage.get(c.id)}
+      pod={pods.get(c.id)}
       newer={containerFreshness(freshness, c) === 'newer'}
       address={address}
       selected={selected.has(c.id)}

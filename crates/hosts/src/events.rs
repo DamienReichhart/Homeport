@@ -291,6 +291,7 @@ mod tests {
                 connection: HostConnection::Local {
                     socket_path: "/var/run/docker.sock".into(),
                 },
+                engine: crate::EngineKind::Docker,
                 secrets: None,
             })
             .unwrap()

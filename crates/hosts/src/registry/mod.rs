@@ -20,7 +20,10 @@ use homeport_core::{
     error::{AppError, AppResult, ErrorCode},
     host::HELPER_LABEL,
 };
-use homeport_engine::swarm::{self, SwarmMembership, SwarmRole};
+use homeport_engine::{
+    podman::Podman,
+    swarm::{self, SwarmMembership, SwarmRole},
+};
 use serde::Serialize;
 
 use crate::messages as msg;
@@ -35,9 +38,17 @@ pub use self::{
 use self::supervisor::supervise;
 use crate::{events::EventStore, store::HostStore, HostId};
 
+/// How a connected Host's Engine is reached, one variant per kind of Engine
+/// (`EngineKind`). Only Docker-compatible Engines connect for now.
+#[derive(Clone)]
+pub(crate) enum Client {
+    /// The Docker Engine API through bollard, and the dialer beside it.
+    Docker(Connected),
+}
+
 struct Entry {
     status: HostStatus,
-    client: Option<Connected>,
+    client: Option<Client>,
     task: Option<JoinHandle<()>>,
     /// Homeport's own helper containers seen in the events, whose events
     /// (and their volumes' mounts) aren't shown (ADR 0015).
@@ -133,18 +144,61 @@ impl HostRegistry {
             .map_or(HostStatus::Connecting, |e| e.status.clone())
     }
 
-    /// The Engine client of a connected Host.
+    /// The Docker Engine API client of a connected Host;
+    /// `EngineUnsupported` for a Host whose Engine doesn't speak it.
     pub fn docker(&self, id: &str) -> AppResult<Docker> {
-        self.connected(id).map(|c| c.docker)
+        self.docker_connection(id).map(|c| c.docker)
     }
 
-    /// The dialer of a connected TLS or SSH Host (`None` for local and TCP).
-    #[allow(dead_code)] // used by the compose proxy
-    pub fn dialer(&self, id: &str) -> AppResult<Option<Arc<dyn Dialer>>> {
-        self.connected(id).map(|c| c.dialer)
+    /// What opens streams to a connected Host's Engine socket, for the
+    /// compose proxy and for the APIs bollard doesn't speak.
+    pub fn dialer(&self, id: &str) -> AppResult<Arc<dyn Dialer>> {
+        self.docker_connection(id).map(|c| c.dialer)
     }
 
-    fn connected(&self, id: &str) -> AppResult<Connected> {
+    /// Podman's own API on a connected Podman Host; `EngineUnsupported`
+    /// for any other Engine.
+    pub fn podman(&self, id: &str) -> AppResult<Podman> {
+        let connected = self.docker_connection(id)?;
+        match self.status(id).podman_version() {
+            Some(version) => Ok(Podman::new(connected.dialer, version)),
+            None => Err(self.not_podman(id)),
+        }
+    }
+
+    /// Why a Host can't do what only Podman does.
+    fn not_podman(&self, id: &str) -> AppError {
+        let error = match self.store.get(id) {
+            Ok(host) => AppError::new(
+                ErrorCode::EngineUnsupported,
+                msg::NOT_PODMAN.with("name", host.name),
+            ),
+            Err(_) => AppError::new(
+                ErrorCode::EngineUnsupported,
+                msg::ENGINE_UNSUPPORTED_UNKNOWN,
+            ),
+        };
+        error.with_hint(msg::NOT_PODMAN_HINT)
+    }
+
+    fn docker_connection(&self, id: &str) -> AppResult<Connected> {
+        match self.connected(id)? {
+            Client::Docker(connected) => Ok(connected),
+        }
+    }
+
+    /// Why a Host's Engine can't do what was asked: it is of another kind.
+    pub fn unsupported(&self, id: &str) -> AppError {
+        match self.store.get(id) {
+            Ok(host) => unsupported(&host.name, host.engine.label()),
+            Err(_) => AppError::new(
+                ErrorCode::EngineUnsupported,
+                msg::ENGINE_UNSUPPORTED_UNKNOWN,
+            ),
+        }
+    }
+
+    fn connected(&self, id: &str) -> AppResult<Client> {
         let status = {
             let entries = self.lock();
             match entries.get(id) {
@@ -187,7 +241,7 @@ impl HostRegistry {
         self.entries.lock().expect("registry lock poisoned")
     }
 
-    fn set_status(&self, id: &str, status: HostStatus, client: Option<Connected>) {
+    fn set_status(&self, id: &str, status: HostStatus, client: Option<Client>) {
         if let Some(entry) = self.lock().get_mut(id) {
             if let HostStatus::Connected { swarm, .. } = &status {
                 entry.swarm.clone_from(swarm);
@@ -316,6 +370,17 @@ impl HostRegistry {
     }
 }
 
+/// `name`'s Engine, described by `engine`, doesn't offer what was asked.
+pub(crate) fn unsupported(name: &str, engine: &str) -> AppError {
+    AppError::new(
+        ErrorCode::EngineUnsupported,
+        msg::ENGINE_UNSUPPORTED
+            .with("name", name)
+            .with("engine", engine),
+    )
+    .with_hint(msg::ENGINE_UNSUPPORTED_HINT)
+}
+
 /// The Swarms of the manager Hosts among `members`, by swarm ID, in the Hosts' order.
 fn group_managers(members: &[(HostId, SwarmMembership, bool)]) -> Vec<SwarmView> {
     let mut swarms: Vec<SwarmView> = Vec::new();
@@ -421,6 +486,7 @@ mod tests {
                 connection: HostConnection::Local {
                     socket_path: socket_path.into(),
                 },
+                engine: crate::EngineKind::Docker,
                 secrets: None,
             })
             .unwrap()
@@ -598,6 +664,7 @@ mod tests {
                             connection: HostConnection::Local {
                                 socket_path: "/var/run/docker.sock".into(),
                             },
+                            engine: crate::EngineKind::Docker,
                             secrets: None,
                         })
                         .unwrap()
@@ -646,11 +713,93 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn hosts_of_another_engine_kind_are_not_connected() {
+        let db = Arc::new(Db::open_in_memory().unwrap());
+        let store = Arc::new(HostStore::new(
+            db.clone(),
+            Arc::new(SecretBox::from_key(&[3; 32])),
+        ));
+        let id = store
+            .create(HostDraft {
+                name: "lab".into(),
+                connection: HostConnection::Local {
+                    socket_path: "/nonexistent/incus.sock".into(),
+                },
+                engine: crate::EngineKind::Docker,
+                secrets: None,
+            })
+            .unwrap()
+            .id;
+        // As a backup from a newer Homeport would restore it.
+        db.with(|c| c.execute("UPDATE hosts SET engine = 'incus'", []))
+            .unwrap();
+        let reg = HostRegistry::new(store, EventStore::new(db), Arc::new(Recorder::default()));
+        reg.restart(&id);
+        wait_for(&reg, &id, |s| matches!(s, HostStatus::Invalid { .. })).await;
+        let error = reg.status(&id).error().cloned().unwrap();
+        assert!(error.is(ErrorCode::EngineUnsupported), "{error:?}");
+        assert!(error.message.contains("lab runs Incus"), "{error:?}");
+        assert!(reg.docker(&id).is_err());
+        let unsupported = reg.unsupported(&id);
+        assert!(unsupported.is(ErrorCode::EngineUnsupported));
+        assert!(unsupported.hint.is_some());
+    }
+
+    #[tokio::test]
     #[ignore = "needs a local Docker Engine"]
     async fn reachable_hosts_connect_and_hand_out_a_client() {
         let (reg, _, id) = setup("/var/run/docker.sock");
         reg.restart(&id);
         wait_for(&reg, &id, |s| matches!(s, HostStatus::Connected { .. })).await;
         reg.docker(&id).unwrap().ping().await.unwrap();
+        assert_eq!(reg.status(&id).podman_version(), None);
+        let err = reg.podman(&id).err().unwrap();
+        assert!(err.is(ErrorCode::EngineUnsupported), "{err:?}");
+        assert!(err.message.contains("doesn't run Podman"), "{err:?}");
+    }
+
+    #[tokio::test]
+    #[ignore = "needs a local Podman Engine"]
+    async fn podman_hosts_say_so_and_hand_out_its_api() {
+        let socket = std::env::var("HOMEPORT_PODMAN_SOCKET")
+            .unwrap_or_else(|_| "/run/podman/podman.sock".into());
+        if !std::path::Path::new(&socket).exists() {
+            eprintln!("no local Podman Engine at {socket}; skipping");
+            return;
+        }
+        let (reg, _, id) = setup(&socket);
+        reg.restart(&id);
+        wait_for(&reg, &id, |s| matches!(s, HostStatus::Connected { .. })).await;
+        let version = reg.status(&id).podman_version().map(str::to_owned);
+        assert!(version.is_some(), "{:?}", reg.status(&id));
+        let podman = reg.podman(&id).unwrap();
+        assert_eq!(Some(podman.version()), version.as_deref());
+        homeport_engine::podman::pods::list(&podman).await.unwrap();
+
+        // Podman's own kinds of event, such as a pod's, keep the Host connected.
+        use homeport_engine::podman::pods;
+        let name = format!(
+            "homeport-test-events-{}",
+            &uuid::Uuid::new_v4().simple().to_string()[..8]
+        );
+        let spec = pods::PodSpec {
+            name: name.clone(),
+            ..Default::default()
+        };
+        let pod = pods::create(&podman, &spec).await.unwrap();
+        let mut seen = false;
+        for _ in 0..40 {
+            tokio::time::sleep(Duration::from_millis(50)).await;
+            reg.events.flush().await;
+            let page = reg.events.page(&id, crate::events::PAGE, None).unwrap();
+            if page.iter().any(|e| e.kind == "pod" && e.actor_id == pod) {
+                seen = true;
+                break;
+            }
+        }
+        let still = reg.status(&id);
+        pods::remove(&podman, &pod, true).await.unwrap();
+        assert!(seen, "the pod's event was kept");
+        assert!(matches!(still, HostStatus::Connected { .. }), "{still:?}");
     }
 }

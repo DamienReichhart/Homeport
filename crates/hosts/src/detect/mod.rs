@@ -1,4 +1,5 @@
-//! Finds Docker-compatible Engines running on this machine.
+//! Finds the Engines running on this machine: Docker-compatible ones, at
+//! their well-known sockets.
 
 mod podman;
 
@@ -8,7 +9,7 @@ use serde::Serialize;
 
 use homeport_transport as transport;
 
-use crate::HostConnection;
+use crate::{EngineKind, HostConnection};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -16,6 +17,8 @@ pub struct DetectedEngine {
     /// The product that usually owns this socket, e.g. "Colima".
     pub label: String,
     pub socket_path: String,
+    /// The kind of Engine behind the socket, which presets the Host form.
+    pub engine: EngineKind,
     pub engine_version: String,
 }
 
@@ -106,6 +109,7 @@ pub async fn detect() -> Vec<DetectedEngine> {
             engines.push(DetectedEngine {
                 label,
                 socket_path,
+                engine: EngineKind::Docker,
                 engine_version,
             });
         }

@@ -17,6 +17,8 @@ import network from './network';
 import networks from './networks';
 import nodes from './nodes';
 import overview from './overview';
+import podmanpods from './podmanpods';
+import quadlets from './quadlets';
 import pods from './pods';
 import portforwards from './portforwards';
 import registries from './registries';
@@ -51,6 +53,8 @@ export const uiMessages = {
   ...networks,
   ...nodes,
   ...overview,
+  ...podmanpods,
+  ...quadlets,
   ...pods,
   ...portforwards,
   ...registries,

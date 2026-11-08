@@ -23,6 +23,8 @@ export default {
   'containers.stack.running': '{running}/{count} running',
   'containers.stack.swarm': 'Swarm',
   'containers.stack.open': 'Open stack',
+  'containers.inPod': 'In the Podman pod {pod}',
+  'containers.fromUnit': 'Created by the Quadlet unit {unit}',
   'containers.selected': '{count} selected',
 
   // Actions on a container
@@ -207,6 +209,10 @@ export default {
   'containers.run.commandPlaceholder': "The image's default",
   'containers.run.environment': 'Environment',
   'containers.run.network': 'Network',
+  'containers.run.pod': 'Pod',
+  'containers.run.noPod': 'None',
+  'containers.run.podOwnsNetwork':
+    'Containers in {pod} share its network: ports, the network, the hostname and DNS are the pod’s.',
   'containers.run.defaultNetwork': 'Default (bridge)',
   'containers.run.restart': 'Restart',
   'containers.run.restartPolicy': 'Restart policy',

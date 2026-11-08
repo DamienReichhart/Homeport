@@ -403,8 +403,31 @@ export const commands = {
 	systemInfo: (hostId: string) => __TAURI_INVOKE<EngineInfo>("system_info", { hostId }),
 	systemDiskUsage: (hostId: string) => __TAURI_INVOKE<DiskUsage>("system_disk_usage", { hostId }),
 	systemPrune: (hostId: string, selection: PruneSelection) => __TAURI_INVOKE<SystemPruneReport>("system_prune", { hostId, selection }),
-	/**  Creates and starts a container; returns its id. */
-	containersRun: (hostId: string, spec: RunSpec) => __TAURI_INVOKE<string>("containers_run", { hostId, spec }),
+	/**
+	 *  Creates and starts a container, in the Podman pod `pod` when given;
+	 *  returns its id. A pod on a Host that isn't Podman is `EngineUnsupported`.
+	 */
+	containersRun: (hostId: string, spec: RunSpec, pod: string | null) => __TAURI_INVOKE<string>("containers_run", { hostId, spec, pod }),
+	podsList: (hostId: string) => __TAURI_INVOKE<PodmanPod[]>("pods_list", { hostId }),
+	podsInspect: (hostId: string, id: string) => __TAURI_INVOKE<PodmanPodDetail>("pods_inspect", { hostId, id }),
+	podsAct: (hostId: string, id: string, action: PodmanPodAction) => __TAURI_INVOKE<null>("pods_act", { hostId, id, action }),
+	/**  Removes a pod and its containers; returns how many containers went with it. */
+	podsRemove: (hostId: string, id: string, force: boolean) => __TAURI_INVOKE<number>("pods_remove", { hostId, id, force }),
+	/**  Creates a pod; returns its id. */
+	podsCreate: (hostId: string, spec: PodmanPodSpec) => __TAURI_INVOKE<string>("pods_create", { hostId, spec }),
+	/**  The Host's Quadlet units, with the containers each created. */
+	quadletsList: (hostId: string) => __TAURI_INVOKE<QuadletUnits>("quadlets_list", { hostId }),
+	/**  A unit's file, as Podman reads it on the Host (Podman 5.8 and later). */
+	quadletsFile: (hostId: string, name: string) => __TAURI_INVOKE<string>("quadlets_file", { hostId, name }),
+	/**
+	 *  Installs a unit with its extra files; `replace` edits an installed one.
+	 *  Returns where the files went on the Host.
+	 */
+	quadletsInstall: (hostId: string, install: QuadletInstall, replace: boolean) => __TAURI_INVOKE<string[]>("quadlets_install", { hostId, install, replace }),
+	/**  Removes a unit; `force` stops its service first. */
+	quadletsRemove: (hostId: string, name: string, force: boolean) => __TAURI_INVOKE<null>("quadlets_remove", { hostId, name, force }),
+	/**  Starts, stops or restarts a unit's service with `systemctl`. */
+	quadletsAct: (hostId: string, unit: string, scope: UnitScope, action: UnitAction) => __TAURI_INVOKE<null>("quadlets_act", { hostId, unit, scope, action }),
 	/**  The Run dialog's form for an existing container, for Duplicate and Edit. */
 	containersRunSpec: (hostId: string, id: string) => __TAURI_INVOKE<RunSpec>("containers_run_spec", { hostId, id }),
 	/**  What recreating a container with a changed configuration loses, for Edit's confirmation. */
@@ -1248,6 +1271,8 @@ export type DetectedEngine = {
 	/**  The product that usually owns this socket, e.g. "Colima". */
 	label: string,
 	socketPath: string,
+	/**  The kind of Engine behind the socket, which presets the Host form. */
+	engine: EngineKind,
 	engineVersion: string,
 };
 
@@ -1309,6 +1334,21 @@ export type EngineInfo = {
 	images: number,
 };
 
+/**
+ *  The kind of Engine a Host points to, which decides what Homeport can
+ *  show and do on it. Named `engine` everywhere: `kind` is the connection's.
+ */
+export type EngineKind = 
+/**
+ *  An Engine speaking the Docker Engine API: Docker, or Podman through
+ *  its compatible API. Which one is read on every connect.
+ */
+"docker" | 
+/**  containerd, through its own API (not supported yet). */
+"containerd" | 
+/**  Incus, through its REST API (not supported yet). */
+"incus";
+
 /**  What happened to one environment variable. */
 export type EnvChange = "added" | "removed" | "changed" | "unchanged";
 
@@ -1326,11 +1366,28 @@ export type ErrorCode =
 /**  An export file that the passphrase doesn't open, or that was damaged. */
 "bundle_unreadable" | 
 /**  An export file from a newer Homeport. */
-"bundle_too_new" | "host_not_connected" | "engine_not_installed" | "engine_not_running" | "permission_denied" | "dns_failed" | "connection_refused" | "timeout" | "network_unreachable" | "connection_lost" | "tls_required" | "tls_not_supported" | "tls_certificate_expired" | "tls_certificate_not_yet_valid" | "tls_unknown_ca" | "tls_name_mismatch" | "tls_client_rejected" | "tls_handshake_failed" | "tls_material_invalid" | "ssh_auth_failed" | "ssh_agent_unavailable" | "ssh_key_invalid" | "ssh_failed" | "remote_engine_unavailable" | "host_key_untrusted" | "host_key_changed" | "engine_error" | "bad_request" | "forbidden" | "conflict" | "name_in_use" | "in_use" | "container_running" | "container_not_running" | "already_done" | "port_in_use" | "disk_full" | "image_not_found" | "registry_auth_required" | "registry_rate_limited" | "registry_unreachable" | "registry_login_failed" | "api_version_unsupported" | "build_failed" | 
+"bundle_too_new" | "host_not_connected" | "engine_not_installed" | "engine_not_running" | "permission_denied" | "dns_failed" | "connection_refused" | "timeout" | "network_unreachable" | "connection_lost" | "tls_required" | "tls_not_supported" | "tls_certificate_expired" | "tls_certificate_not_yet_valid" | "tls_unknown_ca" | "tls_name_mismatch" | "tls_client_rejected" | "tls_handshake_failed" | "tls_material_invalid" | "ssh_auth_failed" | "ssh_agent_unavailable" | "ssh_key_invalid" | "ssh_failed" | "remote_engine_unavailable" | "host_key_untrusted" | "host_key_changed" | 
+/**
+ *  A page or action the Host's kind of Engine doesn't offer, such as
+ *  pods on a Docker Engine.
+ */
+"engine_unsupported" | "engine_error" | "bad_request" | "forbidden" | "conflict" | "name_in_use" | "in_use" | "container_running" | "container_not_running" | "already_done" | "port_in_use" | "disk_full" | "image_not_found" | "registry_auth_required" | "registry_rate_limited" | "registry_unreachable" | "registry_login_failed" | "api_version_unsupported" | "build_failed" | 
 /**  A GPU was requested from a Host without the vendor's container toolkit. */
 "gpu_unavailable" | 
 /**  Recreating a container failed, and so did putting the original back. */
 "recreate_rolled_back" | 
+/**  Removing a pod whose containers are running, without stopping them. */
+"pod_running" | 
+/**  An action the Host's Podman is too old for, such as Quadlet's API before 5.8. */
+"podman_too_old" | 
+/**  A Quadlet unit file Podman can't use: a wrong name or a missing section. */
+"quadlet_invalid" | 
+/**  Installing a Quadlet unit under a name another unit has. */
+"quadlet_exists" | 
+/**  systemd refused to start, stop or restart a unit's service, or isn't there. */
+"systemd_refused" | 
+/**  User units need the user's systemd instance, which only lingering keeps. */
+"user_units_need_linger" | 
 /**  No manager Host of a Swarm is connected. */
 "swarm_unreachable" | 
 /**  A node couldn't reach the managers of the Swarm it was joining. */
@@ -1606,6 +1663,8 @@ export type Host = {
 	id: string,
 	name: string,
 	connection: HostConnection,
+	/**  The kind of Engine it points to; migration 0017 made stored Hosts Docker-compatible. */
+	engine: EngineKind,
 	enabled: boolean,
 	/**  The SSH server key trusted on first use, in OpenSSH format. */
 	hostKey: string | null,
@@ -1633,12 +1692,19 @@ bastions: Bastion[] };
 export type HostInput = {
 	name: string,
 	connection: HostConnection,
+	/**  The kind of Engine it points to; Docker-compatible when left out. */
+	engine?: EngineKind,
 	credentials: CredentialsInput | null,
 	/**  Keys typed for the connection's `imported` bastions. */
 	bastionKeys?: BastionKeyInput[],
 };
 
 export type HostStatus = { state: "disabled" } | { state: "connecting" } | { state: "connected"; engineVersion: string; apiVersion: string; os: string; arch: string; 
+/**
+ *  The version of Podman when the Engine is Podman, read on every
+ *  connect because the same socket can change product.
+ */
+podmanVersion: string | null; 
 /**  The Host's place in a Swarm, `None` outside one. */
 swarm: SwarmMembership | null } | { state: "unreachable"; error: AppError; retryInSecs: number } | { state: "unauthorized"; error: AppError } | 
 /**
@@ -2286,6 +2352,63 @@ export type PodView = {
 	images: string[],
 };
 
+/**  A pod as the Pods page lists it. */
+export type PodmanPod = {
+	id: string,
+	name: string,
+	/**
+	 *  `created`, `running`, `paused`, `stopped`, `exited`, `degraded`
+	 *  (some containers running), `dead` or `error`.
+	 */
+	status: string,
+	/**  When it was created, RFC 3339. */
+	created: string,
+	/**  The container that holds its namespaces and published ports, if it has one. */
+	infraId: string | null,
+	labels: { [key in string]: string },
+	networks: string[],
+	/**  Its containers, the infra container first. */
+	containers: PodmanPodContainer[],
+};
+
+export type PodmanPodAction = "start" | "stop" | "restart" | "pause" | "unpause";
+
+export type PodmanPodContainer = {
+	id: string,
+	name: string,
+	/**  The container's state, as the Containers page shows it (`running`, `exited`…). */
+	state: string,
+	/**  Whether it's the pod's infra container. */
+	infra: boolean,
+};
+
+/**  A pod with what only its inspect document says. */
+export type PodmanPodDetail = {
+	/**  The ports published on the pod, which every container in it shares. */
+	ports: PodmanPodPort[],
+	/**  The namespaces its containers share, such as `net`, `ipc` and `uts`. */
+	sharedNamespaces: string[],
+	hostname: string,
+	/**  The `podman pod create` command it was made with, when Podman kept it. */
+	createCommand: string[],
+} & PodmanPod;
+
+export type PodmanPodPort = {
+	containerPort: number,
+	protocol: string,
+	hostIp: string | null,
+	hostPort: number | null,
+};
+
+/**  A new pod, as the **New pod** dialog fills it. */
+export type PodmanPodSpec = {
+	name: string,
+	/**  Published on the pod's infra container, for every container in it. */
+	ports: PortSpec[],
+	/**  `key=value` entries. */
+	labels: string[],
+};
+
 export type PortBinding = {
 	ip: string | null,
 	privatePort: number,
@@ -2366,6 +2489,77 @@ export type PullEvent =
  *  Pushes never name the layer: the Engine API client drops its id.
  */
 { type: "progress"; id: string | null; status: string; current: number | null; total: number | null } | { type: "done" } | { type: "error"; error: AppError };
+
+/**  A container a unit created. */
+export type QuadletContainer = {
+	id: string,
+	name: string,
+	state: string,
+};
+
+/**  A file to install: its name, and its text. */
+export type QuadletFile = {
+	name: string,
+	content: string,
+};
+
+/**  A unit to install or edit, with the files that go beside it. */
+export type QuadletInstall = {
+	/**  The unit file, such as `web.container`. */
+	unit: QuadletFile,
+	/**  Files installed beside it: a Containerfile, kube YAML, an env file. */
+	extra?: QuadletFile[],
+	/**
+	 *  The application folder to install into. With extra files and none
+	 *  given, the unit's name without its extension.
+	 */
+	app?: string | null,
+};
+
+/**  Where a Host's units were read from. */
+export type QuadletSource = 
+/**  Podman's API, with every unit and its file's path. */
+"api" | 
+/**  Only the label of the containers units created, on Podman before 5.7. */
+"labels";
+
+export type QuadletUnit = {
+	/**
+	 *  The unit file's name, `web.container`; `None` when the unit is only
+	 *  known from its containers' label.
+	 */
+	name: string | null,
+	/**
+	 *  The systemd service it generates, `web.service`; `None` until
+	 *  systemd has been reloaded since it was installed.
+	 */
+	unitName: string | null,
+	/**  Where the file is on the Host. */
+	path: string | null,
+	/**
+	 *  systemd's state (`active/running`, `inactive/dead`, `failed/failed`),
+	 *  Podman's `Not loaded` or `loaded template`, or for a unit known from
+	 *  its containers, theirs (`running`, `exited`).
+	 */
+	status: string,
+	/**  The application it was installed with, beside its extra files. */
+	app: string | null,
+	/**  The pod unit a `.container` unit names in `Pod=`. */
+	pod: string | null,
+	scope: UnitScope,
+	containers: QuadletContainer[],
+};
+
+/**  A Podman Host's Quadlet units, and what it can do with them. */
+export type QuadletUnits = {
+	units: QuadletUnit[],
+	source: QuadletSource,
+	podmanVersion: string,
+	/**  Podman 5.8 and later read, install, edit and remove unit files. */
+	managesFiles: boolean,
+	/**  The Host's connection can run `systemctl`: SSH, or a local Linux socket. */
+	runsSystemctl: boolean,
+};
 
 /**  What a Synced Stack follows. */
 export type RefKind = "branch" | "tag";
@@ -3152,6 +3346,14 @@ export type UninstallRequest = {
 	wait: boolean,
 	timeoutSeconds: number | null,
 };
+
+export type UnitAction = "start" | "stop" | "restart";
+
+/**
+ *  Whose systemd runs a unit: the system's for rootful Podman, the user's
+ *  (`systemctl --user`) for rootless.
+ */
+export type UnitScope = "system" | "user";
 
 export type UpdateCheck = {
 	currentVersion: string,

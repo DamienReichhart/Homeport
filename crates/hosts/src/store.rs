@@ -9,9 +9,9 @@ use homeport_core::error::{AppError, AppResult, ErrorCode};
 use crate::messages as msg;
 use homeport_storage::{Db, SecretBox};
 
-use crate::{Host, HostConnection, HostId, HostSecrets};
+use crate::{EngineKind, Host, HostConnection, HostId, HostSecrets};
 
-const COLUMNS: &str = "id, name, connection, enabled, host_key, created_at";
+const COLUMNS: &str = "id, name, connection, enabled, host_key, created_at, engine";
 
 pub struct HostStore {
     db: Arc<Db>,
@@ -22,6 +22,8 @@ pub struct HostStore {
 pub struct HostDraft {
     pub name: String,
     pub connection: HostConnection,
+    /// The kind of Engine it points to; only Docker-compatible ones for now.
+    pub engine: EngineKind,
     pub secrets: Option<HostSecrets>,
 }
 
@@ -68,10 +70,12 @@ impl HostStore {
         let HostDraft {
             name,
             connection,
+            engine,
             secrets,
         } = draft;
         let name = validated_name(&name)?;
         connection.validate()?;
+        engine.validate()?;
         let sealed = match secrets {
             None if !require_secrets => None,
             secrets => self.seal(&connection, secrets.as_ref())?,
@@ -81,8 +85,9 @@ impl HostStore {
         self.db
             .with(|c| {
                 c.execute(
-                    "INSERT INTO hosts (id, name, connection, secrets) VALUES (?1, ?2, ?3, ?4)",
-                    (&id, &name, &connection_json, &sealed),
+                    "INSERT INTO hosts (id, name, connection, secrets, engine)
+                     VALUES (?1, ?2, ?3, ?4, ?5)",
+                    (&id, &name, &connection_json, &sealed, engine.as_str()),
                 )
             })
             .map_err(|e| unique_name_error(e, &name))?;
@@ -96,6 +101,7 @@ impl HostStore {
         let current = self.get(id)?;
         let name = validated_name(&draft.name)?;
         draft.connection.validate()?;
+        draft.engine.validate()?;
         keep_bastion_keys(&current.connection, &mut draft.connection);
         let connection_json = serde_json::to_string(&draft.connection)?;
         let sealed = match &draft.secrets {
@@ -110,9 +116,17 @@ impl HostStore {
         self.db
             .with(|c| {
                 c.execute(
-                    "UPDATE hosts SET name = ?2, connection = ?3, secrets = ?4, host_key = ?5
+                    "UPDATE hosts SET name = ?2, connection = ?3, secrets = ?4, host_key = ?5,
+                         engine = ?6
                      WHERE id = ?1",
-                    (id, &name, &connection_json, &sealed, &host_key),
+                    (
+                        id,
+                        &name,
+                        &connection_json,
+                        &sealed,
+                        &host_key,
+                        draft.engine.as_str(),
+                    ),
                 )
             })
             .map_err(|e| unique_name_error(e, &name))?;
@@ -197,6 +211,10 @@ impl HostStore {
 
 fn read_row(row: &Row<'_>) -> rusqlite::Result<AppResult<Host>> {
     let connection: String = row.get(2)?;
+    let engine: String = row.get(6)?;
+    // The table's CHECK only admits known kinds; a newer database's would
+    // still open, as a Docker-compatible Engine.
+    let engine = EngineKind::parse(&engine).unwrap_or_default();
     Ok(Ok(Host {
         id: row.get(0)?,
         name: row.get(1)?,
@@ -204,6 +222,7 @@ fn read_row(row: &Row<'_>) -> rusqlite::Result<AppResult<Host>> {
             Ok(c) => c,
             Err(e) => return Ok(Err(e.into())),
         },
+        engine,
         enabled: row.get(3)?,
         host_key: row.get(4)?,
         created_at: row.get(5)?,
@@ -277,6 +296,7 @@ mod tests {
             connection: HostConnection::Local {
                 socket_path: "/var/run/docker.sock".into(),
             },
+            engine: EngineKind::Docker,
             secrets: None,
         }
     }
@@ -293,6 +313,7 @@ mod tests {
                 public_key: Some("ssh-ed25519 AAAA homeport".into()),
                 bastions: vec![],
             },
+            engine: EngineKind::Docker,
             secrets: Some(HostSecrets::ssh_key("PRIVATE".into(), None)),
         }
     }
@@ -423,6 +444,22 @@ mod tests {
                 ("new".into(), None)
             ]
         );
+    }
+
+    #[test]
+    fn hosts_are_docker_compatible_engines_until_others_can_connect() {
+        let s = store();
+        let host = s.create(local("local")).unwrap();
+        assert_eq!(host.engine, EngineKind::Docker);
+        for engine in [EngineKind::Containerd, EngineKind::Incus] {
+            let mut draft = local("other");
+            draft.engine = engine;
+            assert!(matches!(s.create(draft), Err(ref e) if e.is(ErrorCode::Validation)));
+            let mut draft = local("local");
+            draft.engine = engine;
+            assert!(s.update(&host.id, draft).is_err());
+        }
+        assert_eq!(s.get(&host.id).unwrap().engine, EngineKind::Docker);
     }
 
     #[test]

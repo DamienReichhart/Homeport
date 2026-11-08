@@ -127,12 +127,23 @@ The first time Homeport connects to an SSH server, it asks you to confirm the se
 - **Chart repositories and OCI registries, through helm**, when you add or update a repository, search charts, or install or upgrade a chart: `helm` downloads indexes and charts from this computer, as it does in a terminal.
 - **This website, to check for updates**: at launch and every 6 hours, Homeport downloads `updates/latest.json`, a small file listing the latest version. The request carries nothing about you, your Hosts or your containers, but like any web request it reaches GitHub Pages, which hosts this site, from your IP address. Turn it off in **Settings → Updates**. Updates themselves download from GitHub Releases, and Homeport installs one only if it's signed with Homeport's update key. See [updating](/docs/reference/updating/).
 
+## What Homeport runs on your Hosts
+
+Homeport talks to a Host's Engine through its API, and runs commands on a Host's server only for what that API can't do:
+
+| When                                                                          | Where                                                        | Command                                                                                              |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| An SSH Host's server refuses to open its Engine socket                        | the SSH server                                               | a POSIX shell check of whether the socket exists and is readable, and whether an Engine is installed |
+| **Start**, **Stop** or **Restart** of a [Quadlet unit](/docs/guides/quadlet/) | the SSH server, or this computer for a local socket on Linux | `systemctl [--user] start\|stop\|restart '<unit>.service'`                                           |
+
+They run with the SSH user's rights (or yours, on this computer) and never with `sudo`. Values are checked and quoted before they go into a command. Installing, editing and removing Quadlet units goes through Podman's API, which writes the files itself; Homeport writes no file on a Host.
+
 ## What Homeport never does
 
 - **No account.** There is nothing to sign up for.
 - **No telemetry, analytics or crash reporting.**
 - **Nothing installed on your Clusters.** Homeport only uses the Kubernetes API, with your credentials' rights, and changes nothing without you asking: whatever removes or replaces something asks first, naming the cluster.
-- **Nothing installed on your Hosts.** The only container Homeport ever starts of its own is a short-lived [helper container](/docs/guides/volumes-networks/#the-helper-container) when you open, back up, restore or clone a volume; it has no network and is removed when it's done. Its image is pulled only once you agree.
+- **Nothing installed on your Hosts.** The only commands Homeport runs on a Host are [listed above](#what-homeport-runs-on-your-hosts). The only container Homeport ever starts of its own is a short-lived [helper container](/docs/guides/volumes-networks/#the-helper-container) when you open, back up, restore or clone a volume; it has no network and is removed when it's done. Its image is pulled only once you agree.
 - **No silent installs.** An update is installed only when you choose **Install and restart**; Linux packages are only ever updated by your package manager.
 
 The [privacy policy](/privacy/) sets out what this means in law: who is responsible for your data, on what basis, and how to exercise your rights.

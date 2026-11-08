@@ -107,6 +107,7 @@ impl HostService {
             id: Some(host.id),
             name: host.name,
             connection: host.connection,
+            engine: host.engine,
             enabled: host.enabled,
             host_key: host.host_key,
             secrets,
@@ -166,6 +167,7 @@ impl HostService {
         let created = self.store.create_imported(HostDraft {
             name: name.to_owned(),
             connection: host.connection,
+            engine: host.engine,
             secrets: host.secrets,
         })?;
         if let Some(key) = &host.host_key {
@@ -202,7 +204,7 @@ mod tests {
     use crate::{
         service::{BastionKeyInput, CredentialsInput, HostInput},
         store::HostStore,
-        Bastion, BastionAuth, HostSecrets, SshAuth,
+        Bastion, BastionAuth, EngineKind, HostSecrets, SshAuth,
     };
     use homeport_transport as transport;
 
@@ -237,6 +239,7 @@ mod tests {
                     host_key: None,
                 }],
             },
+            engine: EngineKind::Docker,
             credentials: None,
             bastion_keys: vec![BastionKeyInput {
                 index: 0,
@@ -268,6 +271,7 @@ mod tests {
                 connection: HostConnection::Tcp {
                     address: "192.0.2.9:2375".into(),
                 },
+                engine: EngineKind::Docker,
                 credentials: None,
                 bastion_keys: vec![],
             })
@@ -353,6 +357,7 @@ mod tests {
                 connection: HostConnection::Tls {
                     address: "h:2376".into(),
                 },
+                engine: EngineKind::Docker,
                 secrets: Some(HostSecrets::Tls {
                     ca_pem: "CA".into(),
                     cert_pem: "CERT".into(),
@@ -400,6 +405,7 @@ mod tests {
                 connection: HostConnection::Local {
                     socket_path: "/var/run/docker.sock".into(),
                 },
+                engine: EngineKind::Docker,
                 credentials: None::<CredentialsInput>,
                 bastion_keys: vec![],
             })

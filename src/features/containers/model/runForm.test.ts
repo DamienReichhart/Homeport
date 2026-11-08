@@ -1,4 +1,4 @@
-import { emptyRunForm, runFormErrors, toRunSpec, type RunForm } from './runForm';
+import { emptyRunForm, podOf, runFormErrors, toRunSpec, type RunForm } from './runForm';
 import { emptyAdvanced } from './runAdvanced';
 
 const unset = {
@@ -30,6 +30,19 @@ const withAdvanced = (patch: (a: RunForm['advanced']) => void): RunForm => {
 };
 
 describe('run form', () => {
+  it('leaves ports and the network to the pod a container runs in', () => {
+    const form: RunForm = {
+      ...emptyRunForm('nginx'),
+      ports: [{ hostPort: '8080', containerPort: '80', protocol: 'tcp' }],
+      network: 'web',
+      pod: 'shop',
+    };
+    expect(podOf(form)).toBe('shop');
+    expect(toRunSpec(form)).toMatchObject({ ports: [], network: null });
+    expect(podOf({ ...form, pod: ' ' })).toBeNull();
+    expect(toRunSpec({ ...form, pod: '' })).toMatchObject({ network: 'web' });
+  });
+
   it('turns form rows into a run request', () => {
     const spec = toRunSpec({
       ...emptyRunForm(' nginx '),

@@ -1,6 +1,16 @@
 /** English text of the `core` namespace; every key starts with `core.`. */
 export default {
   'core.host.engineVersion': 'Engine {version}',
+  'core.host.podmanVersion': 'Podman {version}',
+  'core.engine.docker': 'Docker-compatible',
+  'core.engine.containerd': 'containerd',
+  'core.engine.incus': 'Incus',
+  'core.unsupported.title': '{name} can’t show this page',
+  'core.unsupported.docker':
+    'This page needs a Docker-compatible Engine, and {name} runs {engine}.',
+  'core.unsupported.podman':
+    'This page is for Podman, and {name} runs another Docker-compatible Engine. Pick a Podman host in the switcher to use it.',
+  'core.unsupported.overview': 'Go to the Overview',
   'core.selection.rememberFailed': 'Homeport couldn’t remember what you selected',
   'core.connection.local': 'Local',
   'core.status.connected': 'Connected',

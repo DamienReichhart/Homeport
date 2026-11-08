@@ -20,6 +20,9 @@ pub enum HostStatus {
         api_version: String,
         os: String,
         arch: String,
+        /// The version of Podman when the Engine is Podman, read on every
+        /// connect because the same socket can change product.
+        podman_version: Option<String>,
         /// The Host's place in a Swarm, `None` outside one.
         swarm: Option<SwarmMembership>,
     },
@@ -53,6 +56,14 @@ pub enum HostStatus {
 }
 
 impl HostStatus {
+    /// The version of Podman the Host runs, while it's connected to one.
+    pub fn podman_version(&self) -> Option<&str> {
+        match self {
+            Self::Connected { podman_version, .. } => podman_version.as_deref(),
+            _ => None,
+        }
+    }
+
     /// The Host's place in a Swarm, while it's connected.
     pub fn swarm(&self) -> Option<&SwarmMembership> {
         match self {

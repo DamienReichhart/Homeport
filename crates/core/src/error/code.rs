@@ -56,6 +56,9 @@ pub enum ErrorCode {
     RemoteEngineUnavailable,
     HostKeyUntrusted,
     HostKeyChanged,
+    /// A page or action the Host's kind of Engine doesn't offer, such as
+    /// pods on a Docker Engine.
+    EngineUnsupported,
     // Engine API responses.
     EngineError,
     BadRequest,
@@ -79,6 +82,19 @@ pub enum ErrorCode {
     GpuUnavailable,
     /// Recreating a container failed, and so did putting the original back.
     RecreateRolledBack,
+    // Podman.
+    /// Removing a pod whose containers are running, without stopping them.
+    PodRunning,
+    /// An action the Host's Podman is too old for, such as Quadlet's API before 5.8.
+    PodmanTooOld,
+    /// A Quadlet unit file Podman can't use: a wrong name or a missing section.
+    QuadletInvalid,
+    /// Installing a Quadlet unit under a name another unit has.
+    QuadletExists,
+    /// systemd refused to start, stop or restart a unit's service, or isn't there.
+    SystemdRefused,
+    /// User units need the user's systemd instance, which only lingering keeps.
+    UserUnitsNeedLinger,
     // Swarms (ADR 0016).
     /// No manager Host of a Swarm is connected.
     SwarmUnreachable,

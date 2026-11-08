@@ -354,6 +354,7 @@ mod tests {
                 connection: HostConnection::Tls {
                     address: "prod:2376".into(),
                 },
+                engine: homeport_hosts::EngineKind::Docker,
                 secrets: Some(HostSecrets::Tls {
                     ca_pem: "CA".into(),
                     cert_pem: "CERT".into(),
@@ -465,6 +466,7 @@ mod tests {
                 connection: HostConnection::Tcp {
                     address: "old:2375".into(),
                 },
+                engine: homeport_hosts::EngineKind::Docker,
                 secrets: None,
             })
             .unwrap();

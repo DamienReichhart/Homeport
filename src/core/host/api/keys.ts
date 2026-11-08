@@ -18,4 +18,8 @@ export const hostKeys = {
   stacks: (hostId: string) => ['host', hostId, 'stacks'] as const,
   system: (hostId: string) => ['host', hostId, 'system'] as const,
   events: (hostId: string) => ['host', hostId, 'events'] as const,
+  /** Podman's pods, and each one's inspect document under it. */
+  pods: (hostId: string) => ['host', hostId, 'pods'] as const,
+  /** Podman's Quadlet units, and each one's file under it. */
+  quadlets: (hostId: string) => ['host', hostId, 'quadlets'] as const,
 };

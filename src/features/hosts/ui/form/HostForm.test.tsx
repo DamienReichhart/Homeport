@@ -56,6 +56,24 @@ describe('host form', () => {
     expect(screen.queryByText('Address')).toBeNull();
   });
 
+  it('offers only Docker-compatible Engines for now, preset from the socket', async () => {
+    const user = userEvent.setup();
+    let last: HostFormState | null = null;
+    renderWithProviders(<Harness initial={emptyForm('local')} onChange={(f) => (last = f)} />);
+    const engine = screen.getByRole('combobox', { name: 'Engine' });
+    expect(engine).toHaveTextContent('Docker-compatible');
+    await user.click(engine);
+    expect(await screen.findByRole('option', { name: /Incus/ })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    await user.keyboard('{Escape}');
+    const socket = screen.getByDisplayValue('/var/run/docker.sock');
+    await user.clear(socket);
+    await user.type(socket, '/run/containerd/containerd.sock');
+    expect(last!.engine).toBe('containerd');
+  });
+
   it('asks for a TLS Host’s three PEM files', async () => {
     const user = userEvent.setup();
     renderWithProviders(<Harness initial={emptyForm('tls')} />);

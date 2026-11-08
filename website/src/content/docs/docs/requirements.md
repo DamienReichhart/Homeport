@@ -22,6 +22,8 @@ Homeport doesn't include a container runtime. It manages Docker Engines that alr
 
 Any Engine that speaks the Docker Engine API works, including Podman's Docker-compatible socket.
 
+On a Podman Host, Homeport also uses Podman's own API: [pods](/docs/guides/podman-pods/) need Podman 4.0 or later, and [Quadlet units](/docs/guides/quadlet/) are listed from Podman 5.7 and installed, edited and removed from 5.8. Starting and stopping a Quadlet unit needs the Host to be reached over SSH, or a Podman on this computer (Linux).
+
 ## Optional: Kubernetes clusters
 
 To browse [Clusters](/docs/clusters/), Homeport needs a kubeconfig that reaches them (the one `kubectl` uses, or one you paste) and network access to their API servers. It speaks the Kubernetes API itself, so `kubectl` isn't needed.

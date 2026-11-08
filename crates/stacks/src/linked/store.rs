@@ -261,6 +261,7 @@ mod tests {
                 connection: HostConnection::Local {
                     socket_path: "/var/run/docker.sock".into(),
                 },
+                engine: homeport_hosts::EngineKind::Docker,
                 secrets: None,
             })
             .unwrap();

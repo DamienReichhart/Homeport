@@ -115,6 +115,91 @@ homeport_core::messages! {
     /// A log driver that's empty or has spaces.
     RUN_LOG_DRIVER = "errors.run.logDriver" => "Choose a log driver, like json-file or local.";
 
+    // Podman pods
+
+    /// A pod that isn't there any more.
+    POD_GONE = "errors.pods.gone" => "This pod doesn't exist any more.";
+    POD_GONE_HINT = "errors.pods.gone.hint" => "It may have been removed from a terminal. The list shows the pods there are now.";
+    /// Starting a running pod, stopping a stopped one…
+    POD_ALREADY = "errors.pods.already" => "The pod is already in that state.";
+    /// Some containers of a pod failed to start, stop, restart, pause or resume.
+    POD_ACTION_FAILED = "errors.pods.actionFailed" => "Podman couldn't {action} every container of the pod.";
+    POD_ACTION_FAILED_HINT = "errors.pods.actionFailed.hint" => "Details names the containers and why. Open them on the Containers page to see their logs.";
+    /// Removing a pod with running containers without stopping them.
+    POD_RUNNING = "errors.pods.running" => "The pod has running containers.";
+    POD_RUNNING_HINT = "errors.pods.running.hint" => "Stop the pod first, or remove it with its running containers.";
+    /// A pod name Podman doesn't accept.
+    POD_NAME = "errors.pods.name" => "\"{name}\" isn't a valid pod name. Start with a letter or digit, then use letters, digits, _, . or -.";
+    /// Creating a pod under a name another pod has.
+    POD_NAME_IN_USE = "errors.pods.nameInUse" => "A pod named {name} already exists.";
+    POD_NAME_IN_USE_HINT = "errors.pods.nameInUse.hint" => "Choose another name, or remove the other pod first.";
+    /// Publishing a port on a container that runs in a pod.
+    POD_CONTAINER_PORTS = "errors.pods.containerPorts" => "Containers in a pod can't publish ports: the pod publishes them for all its containers.";
+    POD_CONTAINER_PORTS_HINT = "errors.pods.containerPorts.hint" => "Remove the ports, and publish them when you create the pod instead.";
+    /// Setting what a pod's containers share (network, hostname, DNS) on one of them.
+    POD_CONTAINER_SHARED = "errors.pods.containerShared" => "Containers in a pod share its network, hostname and DNS settings, so they can't set their own.";
+    /// GPUs for a container run into a pod.
+    POD_CONTAINER_GPUS = "errors.pods.containerGpus" => "Homeport can't give GPUs to a container in a pod yet.";
+    /// Running a copy of a container into a pod.
+    POD_CONTAINER_BASED_ON = "errors.pods.containerBasedOn" => "Only new containers can be run into a pod, not copies or edits of existing ones.";
+
+    // Quadlet units (ADR 0019)
+
+    /// An action the Host's Podman is too old for.
+    PODMAN_TOO_OLD = "errors.quadlets.podmanTooOld" => "This needs Podman {needed} or later, and the host runs Podman {version}.";
+    PODMAN_TOO_OLD_HINT = "errors.quadlets.podmanTooOld.hint" => "Update Podman on the host to {needed} or later to do this from Homeport, or use podman quadlet in a terminal there.";
+    /// A unit that isn't there any more.
+    QUADLET_GONE = "errors.quadlets.gone" => "{name} isn't installed any more.";
+    QUADLET_GONE_HINT = "errors.quadlets.gone.hint" => "It may have been removed from a terminal. The list shows the units there are now.";
+    /// A unit file name without a Quadlet extension.
+    QUADLET_NAME = "errors.quadlets.name" => "\"{name}\" isn't a Quadlet unit name. Use a name like web.container, ending in .container, .pod, .volume, .network, .kube, .image, .build or .artifact.";
+    /// An extra file name with a folder in it.
+    QUADLET_EXTRA_NAME = "errors.quadlets.extraName" => "\"{name}\" can't be installed beside a unit. Use a plain file name, without folders.";
+    /// Two files under one name.
+    QUADLET_EXTRA_TWICE = "errors.quadlets.extraTwice" => "{name} is given twice. Each file beside a unit needs its own name.";
+    /// An application folder name Podman won't take.
+    QUADLET_APP = "errors.quadlets.app" => "\"{app}\" isn't a valid application name. Use letters, digits, _, ., @ or -.";
+    /// A unit file without its kind's section.
+    QUADLET_SECTION_MISSING = "errors.quadlets.sectionMissing" => "{name} has no {section} section, so Quadlet would skip it.";
+    QUADLET_SECTION_MISSING_HINT = "errors.quadlets.sectionMissing.hint" => "Add a {section} line, with the unit's settings under it.";
+    /// Installing under a name another unit has.
+    QUADLET_EXISTS = "errors.quadlets.exists" => "A unit named {name} is already installed.";
+    QUADLET_EXISTS_HINT = "errors.quadlets.exists.hint" => "Choose another name, or edit the installed unit instead.";
+    /// Podman refused a unit's files.
+    QUADLET_REFUSED = "errors.quadlets.refused" => "Podman refused to install {name}.";
+    QUADLET_REFUSED_HINT = "errors.quadlets.refused.hint" => "Details has Podman's reason.";
+    /// Podman's Quadlet API without systemd to talk to.
+    QUADLET_NO_SYSTEMD = "errors.quadlets.noSystemd" => "Podman couldn't reach systemd on the host.";
+    QUADLET_NO_SYSTEMD_HINT = "errors.quadlets.noSystemd.hint" => "Quadlet units need systemd to run the Podman service the host's socket belongs to. Details has Podman's words.";
+    /// Removing a running unit without stopping it.
+    QUADLET_RUNNING = "errors.quadlets.running" => "{name} is running.";
+    QUADLET_RUNNING_HINT = "errors.quadlets.running.hint" => "Choose to stop it as it's removed, or stop it first.";
+    /// Podman reported an error removing a unit.
+    QUADLET_NOT_REMOVED = "errors.quadlets.notRemoved" => "Podman couldn't remove {name}.";
+    QUADLET_NOT_REMOVED_HINT = "errors.quadlets.notRemoved.hint" => "Details has Podman's reason. The list shows whether it's still installed.";
+    /// A service name that isn't a systemd service's.
+    QUADLET_UNIT_NAME = "errors.quadlets.unitName" => "\"{name}\" isn't a systemd service name.";
+    /// Starting a unit on a connection that runs no commands.
+    QUADLET_NO_COMMANDS = "errors.quadlets.noCommands" => "Homeport can only start and stop units over SSH, or for a Podman on this computer.";
+    QUADLET_NO_COMMANDS_HINT = "errors.quadlets.noCommands.hint" => "Podman's API can't start or stop a unit's service, so Homeport runs systemctl where Podman runs. Connect to this host over SSH to do it from Homeport.";
+    /// The user's systemd instance isn't running.
+    QUADLET_NO_USER_SYSTEMD = "errors.quadlets.noUserSystemd" => "The user's systemd isn't running on the host, so its units can't be started or stopped.";
+    QUADLET_NO_USER_SYSTEMD_HINT = "errors.quadlets.noUserSystemd.hint" => "Let the user's units run without a login session by enabling lingering, as that user on the host:";
+    /// systemd refused the user's rights.
+    QUADLET_NOT_ALLOWED = "errors.quadlets.notAllowed" => "systemd didn't let this user manage {unit}.";
+    QUADLET_NOT_ALLOWED_HINT = "errors.quadlets.notAllowed.hint" => "System units need a user allowed to manage them, such as root; Homeport never uses sudo. Connect as that user, or use rootless Podman's user units.";
+    /// systemd doesn't know a unit's service.
+    QUADLET_UNIT_NOT_LOADED = "errors.quadlets.unitNotLoaded" => "systemd doesn't know {unit}.";
+    QUADLET_UNIT_NOT_LOADED_HINT = "errors.quadlets.unitNotLoaded.hint" => "Quadlet skips files it can't read. Check the unit file, then systemctl daemon-reload on the host shows why.";
+    /// systemd failed to start, stop or restart a service.
+    QUADLET_ACTION_FAILED = "errors.quadlets.actionFailed" => "systemd couldn't {action} {unit}.";
+    QUADLET_ACTION_FAILED_HINT = "errors.quadlets.actionFailed.hint" => "Details has what systemctl said. journalctl -u with the unit's name on the host shows its log.";
+    /// systemctl didn't finish in time.
+    QUADLET_TIMEOUT = "errors.quadlets.timeout" => "{unit} didn't finish in time.";
+    QUADLET_TIMEOUT_HINT = "errors.quadlets.timeout.hint" => "It may still be pulling its image. Refresh the list in a moment to see its state.";
+    /// systemctl couldn't be run at all.
+    QUADLET_COMMAND_FAILED = "errors.quadlets.commandFailed" => "Homeport couldn't run systemctl for {unit} on the host.";
+
     // Images
 
     /// Pushing an image under a name that isn't a repository and tag.

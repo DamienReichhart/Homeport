@@ -49,7 +49,10 @@ export function CommandPalette() {
     [shortcuts],
   );
   // The pages of what isn't selected, and their commands, aren't offered.
-  const shown = useMemo(() => features.filter((f) => !f.nav || entries.includes(f.nav)), [entries]);
+  const shown = useMemo(
+    () => features.filter((f) => !f.nav || entries.some((e) => e.path === f.nav?.path)),
+    [entries],
+  );
   // Opened from the keyboard, it has no trigger to give focus back to.
   const returnFocus = useRef<HTMLElement | null>(null);
   const show = (next: boolean) => {

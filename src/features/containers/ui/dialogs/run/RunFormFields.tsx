@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import type { Dispatch, SetStateAction } from 'react';
 import { resourceQueries } from '@/core/host';
 import { RegistryLogin } from '@/features/registries';
-import type { RestartPolicy } from '@/shared/api';
+import type { PodmanPod, RestartPolicy } from '@/shared/api';
 import {
   Input,
   Label,
@@ -27,6 +27,7 @@ const RESTART: { value: RestartPolicy; label: MessageKey }[] = [
   { value: 'always', label: 'containers.run.restart.always' },
 ];
 const DEFAULT_NETWORK = '__default__';
+const NO_POD = '__none__';
 
 /** Every field of the Run dialog, shared by Run, Duplicate and Edit. */
 export function RunFormFields({
@@ -36,6 +37,7 @@ export function RunFormFields({
   errors,
   advancedOpen = false,
   lockName = false,
+  pods = null,
 }: {
   hostId: string;
   form: RunForm;
@@ -44,6 +46,8 @@ export function RunFormFields({
   advancedOpen?: boolean;
   /** Edit keeps the name; Rename changes it. */
   lockName?: boolean;
+  /** The Podman pods it can run in, on a Podman Host when running a new container. */
+  pods?: PodmanPod[] | null;
 }) {
   const images = useQuery(resourceQueries.images(hostId));
   const networks = useQuery(resourceQueries.networks(hostId));
@@ -52,6 +56,7 @@ export function RunFormFields({
   const networkNames = (networks.data ?? []).map((n) => n.name).filter((n) => n !== 'bridge');
   // `host`, `none` or a network that's gone still shows as chosen.
   if (form.network && !networkNames.includes(form.network)) networkNames.push(form.network);
+  const inPod = pods !== null && form.pod !== '';
 
   return (
     <>
@@ -102,7 +107,34 @@ export function RunFormFields({
         />
       </div>
 
-      <PortsField ports={form.ports} onChange={(ports) => set('ports', ports)} />
+      {pods && (
+        <div className="grid gap-1.5">
+          <Label>{t('containers.run.pod')}</Label>
+          <Select
+            value={form.pod || NO_POD}
+            onValueChange={(v) => set('pod', v === NO_POD ? '' : v)}
+          >
+            <SelectTrigger aria-label={t('containers.run.pod')}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NO_POD}>{t('containers.run.noPod')}</SelectItem>
+              {pods.map((p) => (
+                <SelectItem key={p.id} value={p.name}>
+                  {p.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {inPod && (
+            <p className="text-muted-foreground text-xs">
+              {t('containers.run.podOwnsNetwork', { pod: form.pod })}
+            </p>
+          )}
+        </div>
+      )}
+
+      {!inPod && <PortsField ports={form.ports} onChange={(ports) => set('ports', ports)} />}
       <MountsField mounts={form.mounts} onChange={(mounts) => set('mounts', mounts)} />
 
       <div className="grid gap-1.5">
@@ -119,25 +151,29 @@ export function RunFormFields({
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="grid gap-1.5">
-          <Label>{t('containers.run.network')}</Label>
-          <Select
-            value={form.network || DEFAULT_NETWORK}
-            onValueChange={(v) => set('network', v === DEFAULT_NETWORK ? '' : v)}
-          >
-            <SelectTrigger aria-label={t('containers.run.network')}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={DEFAULT_NETWORK}>{t('containers.run.defaultNetwork')}</SelectItem>
-              {networkNames.map((n) => (
-                <SelectItem key={n} value={n}>
-                  {n}
+        {!inPod && (
+          <div className="grid gap-1.5">
+            <Label>{t('containers.run.network')}</Label>
+            <Select
+              value={form.network || DEFAULT_NETWORK}
+              onValueChange={(v) => set('network', v === DEFAULT_NETWORK ? '' : v)}
+            >
+              <SelectTrigger aria-label={t('containers.run.network')}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={DEFAULT_NETWORK}>
+                  {t('containers.run.defaultNetwork')}
                 </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+                {networkNames.map((n) => (
+                  <SelectItem key={n} value={n}>
+                    {n}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
         <div className="grid gap-1.5">
           <Label>{t('containers.run.restart')}</Label>
           <Select
