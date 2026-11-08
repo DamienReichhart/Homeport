@@ -9,13 +9,14 @@ use serde::Serialize;
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 use homeport_storage::Db;
 
-use crate::{definition, messages as msg, store::name_taken};
+use crate::{definition, messages as msg, owner::StackOwner, store::name_taken};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct LinkedStack {
     pub id: String,
-    pub host_id: String,
+    /// The Host or Swarm it's deployed to.
+    pub owner: StackOwner,
     pub name: String,
     /// The project folder on this machine, where compose runs.
     pub working_dir: String,
@@ -26,6 +27,8 @@ pub struct LinkedStack {
     pub fingerprint: String,
     /// The Compose profiles it deploys; none until the user turns one on.
     pub profiles: Vec<String>,
+    /// On a Swarm: the docker CLI sends its own registry logins with a deploy.
+    pub registry_auth: bool,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -34,22 +37,54 @@ pub struct LinkedStore {
     db: Arc<Db>,
 }
 
-const COLUMNS: &str =
-    "id, host_id, name, working_dir, config_files, fingerprint, created_at, updated_at, profiles";
+const COLUMNS: &str = "id, host_id, name, working_dir, config_files, fingerprint, created_at, \
+     updated_at, profiles, swarm_id, registry_auth";
 
 impl LinkedStore {
     pub fn new(db: Arc<Db>) -> Self {
         Self { db }
     }
 
+    /// The Linked Stacks of the Host `host_id`.
     pub fn list(&self, host_id: &str) -> AppResult<Vec<LinkedStack>> {
+        self.list_of(&StackOwner::from(host_id))
+    }
+
+    /// The Linked Stacks of every Swarm.
+    pub fn list_on_swarms(&self) -> AppResult<Vec<LinkedStack>> {
         self.db.with(|c| {
             c.prepare(&format!(
-                "SELECT {COLUMNS} FROM linked_stacks WHERE host_id = ?1 ORDER BY name"
+                "SELECT {COLUMNS} FROM linked_stacks WHERE swarm_id IS NOT NULL ORDER BY swarm_id, name"
             ))?
-            .query_map([host_id], read_row)?
+            .query_map([], read_row)?
             .collect()
         })
+    }
+
+    /// The Linked Stacks of a Host or a Swarm.
+    pub fn list_of(&self, owner: &StackOwner) -> AppResult<Vec<LinkedStack>> {
+        self.db.with(|c| {
+            c.prepare(&format!(
+                "SELECT {COLUMNS} FROM linked_stacks WHERE {} = ?1 ORDER BY name",
+                owner.column()
+            ))?
+            .query_map([owner.id()], read_row)?
+            .collect()
+        })
+    }
+
+    /// Whether a swarm deploy sends the docker CLI's registry logins.
+    pub fn set_registry_auth(&self, id: &str, on: bool) -> AppResult<LinkedStack> {
+        let n = self.db.with(|c| {
+            c.execute(
+                "UPDATE linked_stacks SET registry_auth = ?2 WHERE id = ?1",
+                (id, on),
+            )
+        })?;
+        if n == 0 {
+            return Err(AppError::not_found(msg::GONE));
+        }
+        self.get(id)
     }
 
     pub fn get(&self, id: &str) -> AppResult<LinkedStack> {
@@ -69,12 +104,13 @@ impl LinkedStore {
     /// Managed and Linked Stacks alike.
     pub fn create(
         &self,
-        host_id: &str,
+        owner: impl Into<StackOwner>,
         name: &str,
         working_dir: &str,
         config_files: &[String],
         fingerprint: &str,
     ) -> AppResult<LinkedStack> {
+        let owner = owner.into();
         let name = name.trim();
         definition::validate_name(name)?;
         let id = uuid::Uuid::new_v4().to_string();
@@ -83,13 +119,22 @@ impl LinkedStore {
             .db
             .with(|c| {
                 let tx = c.transaction()?;
-                if name_taken(&tx, host_id, name)? {
+                if name_taken(&tx, &owner, name)? {
                     return Ok(false);
                 }
                 tx.execute(
-                    "INSERT INTO linked_stacks (id, host_id, name, working_dir, config_files, fingerprint)
-                     VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
-                    (&id, host_id, name, working_dir, &files, fingerprint),
+                    "INSERT INTO linked_stacks
+                     (id, host_id, swarm_id, name, working_dir, config_files, fingerprint)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+                    (
+                        &id,
+                        owner.host_id(),
+                        owner.swarm_id(),
+                        name,
+                        working_dir,
+                        &files,
+                        fingerprint,
+                    ),
                 )?;
                 tx.commit()?;
                 Ok(true)
@@ -179,7 +224,7 @@ fn read_row(row: &Row<'_>) -> rusqlite::Result<LinkedStack> {
     let files: String = row.get(4)?;
     Ok(LinkedStack {
         id: row.get(0)?,
-        host_id: row.get(1)?,
+        owner: StackOwner::from_columns(row.get(1)?, row.get(9)?)?,
         name: row.get(2)?,
         working_dir: row.get(3)?,
         config_files: serde_json::from_str(&files).map_err(|e| {
@@ -191,6 +236,7 @@ fn read_row(row: &Row<'_>) -> rusqlite::Result<LinkedStack> {
         profiles: serde_json::from_str(&row.get::<_, String>(8)?).map_err(|e| {
             rusqlite::Error::FromSqlConversionFailure(8, rusqlite::types::Type::Text, e.into())
         })?,
+        registry_auth: row.get(10)?,
     })
 }
 

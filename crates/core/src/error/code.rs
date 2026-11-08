@@ -84,6 +84,8 @@ pub enum ErrorCode {
     SwarmUnreachable,
     /// A node couldn't reach the managers of the Swarm it was joining.
     SwarmJoinFailed,
+    /// The `docker` CLI isn't installed, which deploying a Stack to a Swarm needs.
+    DockerCliMissing,
     // Compose.
     ComposeMissing,
     ComposeOutdated,

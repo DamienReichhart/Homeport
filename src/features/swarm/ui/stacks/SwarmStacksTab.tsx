@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { DataTable, EmptyState, ErrorMessage, SearchInput, Spinner } from '@/shared/ui';
+import { PlusIcon } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button, DataTable, EmptyState, ErrorMessage, SearchInput, Spinner } from '@/shared/ui';
 import { swarmFeatureQueries } from '../../api/queries';
 import { swarmStackColumns } from './swarmStackColumns';
 import { t } from '@/shared/i18n';
@@ -16,7 +17,14 @@ export function SwarmStacksTab({ swarmId }: { swarmId: string }) {
     return <ErrorMessage error={stacks.error} onRetry={() => void stacks.refetch()} />;
   return (
     <div className="grid gap-3">
-      <SearchInput value={query} onChange={setQuery} placeholder={t('swarm.stacks.search')} />
+      <div className="flex flex-wrap items-center gap-2">
+        <SearchInput value={query} onChange={setQuery} placeholder={t('swarm.stacks.search')} />
+        <Button asChild className="ml-auto">
+          <Link to={`/stacks/new?swarm=${encodeURIComponent(swarmId)}`}>
+            <PlusIcon /> {t('swarm.stacks.new')}
+          </Link>
+        </Button>
+      </div>
       {stacks.data.length === 0 ? (
         <EmptyState title={t('swarm.stacks.empty')} description={t('swarm.stacks.emptyHint')} />
       ) : (

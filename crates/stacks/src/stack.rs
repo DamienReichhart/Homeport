@@ -74,6 +74,8 @@ pub struct Stack {
     /// A Synced Stack whose fetched commit changes its compose file's folder
     /// since the deployed one.
     pub update_available: bool,
+    /// On a Swarm: its deploys send the docker CLI's registry logins.
+    pub registry_auth: bool,
 }
 
 /// A Stack Homeport has a record of, deployed or not.
@@ -89,6 +91,8 @@ pub struct StackRecord {
     pub files_missing: bool,
     /// A Synced Stack with a new commit waiting to be deployed.
     pub update_available: bool,
+    /// On a Swarm: its deploys send the docker CLI's registry logins.
+    pub registry_auth: bool,
 }
 
 impl StackRecord {
@@ -100,6 +104,7 @@ impl StackRecord {
             working_dir: None,
             files_missing: false,
             update_available: false,
+            registry_auth: false,
         }
     }
 
@@ -115,6 +120,7 @@ impl StackRecord {
             working_dir: Some(working_dir.into()),
             files_missing: false,
             update_available: false,
+            registry_auth: false,
         }
     }
 
@@ -126,12 +132,19 @@ impl StackRecord {
             working_dir: None,
             files_missing: false,
             update_available: false,
+            registry_auth: false,
         }
     }
 
     /// Marks a Synced Stack with a new commit waiting to be deployed.
     pub fn with_update_available(mut self, available: bool) -> Self {
         self.update_available = available;
+        self
+    }
+
+    /// Notes that its swarm deploys send the docker CLI's registry logins.
+    pub fn with_registry_auth(mut self, on: bool) -> Self {
+        self.registry_auth = on;
         self
     }
 
@@ -206,6 +219,7 @@ pub fn derive(containers: &[Container], records: &[StackRecord]) -> Vec<Stack> {
                 working_dir: record.and_then(|r| r.working_dir.clone()),
                 problem: record.and_then(StackRecord::problem),
                 update_available: record.is_some_and(|r| r.update_available),
+                registry_auth: record.is_some_and(|r| r.registry_auth),
             }
         })
         .collect();
@@ -224,6 +238,7 @@ pub fn derive(containers: &[Container], records: &[StackRecord]) -> Vec<Stack> {
                 working_dir: r.working_dir.clone(),
                 problem: r.problem(),
                 update_available: r.update_available,
+                registry_auth: r.registry_auth,
             });
         }
     }

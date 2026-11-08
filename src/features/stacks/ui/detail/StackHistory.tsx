@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useCapabilities, type Stack } from '@/shared/api';
+import { useCapabilities, type Stack, type StackOwner } from '@/shared/api';
 import { formatDateTime } from '@/shared/lib';
 import {
   Badge,
@@ -21,6 +21,7 @@ import { stackQueries } from '../../api/queries';
 import type { ComposeJob } from '../../model/composeJob';
 import { fileName } from '../../model/linkedEdit';
 import { ACTION_LABEL, currentDeploy, outcomeOf, type Outcome } from '../../model/history';
+import { deployTool } from '../../model/deployTool';
 import { t, type MessageKey } from '@/shared/i18n';
 
 const OUTCOME_LABEL: Record<Outcome, MessageKey> = {
@@ -40,17 +41,17 @@ const OUTCOME_TONE: Record<Outcome, Tone> = {
  * definition each used; a Managed Stack can be rolled back to one.
  */
 export function StackHistory({
-  hostId,
+  owner,
   stack,
   stackId,
   onDeploy,
 }: {
-  hostId: string;
+  owner: StackOwner;
   stack: Stack;
   stackId: string;
   onDeploy: (job: ComposeJob) => void;
 }) {
-  const deploys = useQuery(stackQueries.history(hostId, stackId));
+  const deploys = useQuery(stackQueries.history(owner, stackId));
   const [selected, setSelected] = useState<string | null>(null);
   if (deploys.isPending) return <Spinner />;
   if (deploys.error)
@@ -117,7 +118,13 @@ export function StackHistory({
         </Table>
       </div>
       {selected ? (
-        <DeployView key={selected} deployId={selected} stack={stack} onDeploy={onDeploy} />
+        <DeployView
+          key={selected}
+          owner={owner}
+          deployId={selected}
+          stack={stack}
+          onDeploy={onDeploy}
+        />
       ) : (
         <p className="text-muted-foreground text-sm">{t('stacks.history.select')}</p>
       )}
@@ -127,10 +134,12 @@ export function StackHistory({
 
 /** One recorded deploy, read-only: its files, the names of its variables, its profiles. */
 function DeployView({
+  owner,
   deployId,
   stack,
   onDeploy,
 }: {
+  owner: StackOwner;
   deployId: string;
   stack: Stack;
   onDeploy: (job: ComposeJob) => void;
@@ -143,7 +152,7 @@ function DeployView({
   const { deploy, envKeys } = detail.data;
   const managed = deploy.summary.kind === 'managed';
   const canRollBack =
-    managed && envKeys !== null && capabilities.data?.compose.state === 'available';
+    managed && envKeys !== null && deployTool(capabilities.data, owner)?.state === 'available';
 
   return (
     <div className="grid content-start gap-3">

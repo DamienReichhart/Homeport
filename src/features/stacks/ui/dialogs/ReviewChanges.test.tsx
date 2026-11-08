@@ -31,7 +31,7 @@ function show(result: DeployDiff, started: unknown[] = []) {
   render(
     <AppProviders client={createQueryClient()}>
       <ComposeRunDialog
-        hostId="h1"
+        owner={{ kind: 'host', id: 'h1' }}
         job={{ kind: 'managed', stackId: 's1', name: 'shop', action: 'up', review: null }}
         onClose={() => {}}
       />

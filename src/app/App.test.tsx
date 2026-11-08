@@ -10,6 +10,10 @@ describe('app', () => {
       update_settings: ({ settings }) => settings,
       get_capabilities: () => ({
         keychain: true,
+        stackDeploy: {
+          state: 'available',
+          cli: { program: 'docker', prefix: [], version: '29.1.0' },
+        },
         git: { state: 'available', cli: { program: 'git', version: '2.43.0' } },
         compose: {
           state: 'unavailable',
@@ -61,6 +65,10 @@ describe('app', () => {
       get_settings: () => ({ theme: 'system', lastHostId: null }),
       get_capabilities: () => ({
         keychain: false,
+        stackDeploy: {
+          state: 'available',
+          cli: { program: 'docker', prefix: [], version: '29.1.0' },
+        },
         git: { state: 'available', cli: { program: 'git', version: '2.43.0' } },
         compose: {
           state: 'unavailable',
@@ -85,6 +93,10 @@ describe('first launch', () => {
       get_settings: () => ({ theme: 'system', lastHostId: null }),
       get_capabilities: () => ({
         keychain: true,
+        stackDeploy: {
+          state: 'available',
+          cli: { program: 'docker', prefix: [], version: '29.1.0' },
+        },
         git: { state: 'available', cli: { program: 'git', version: '2.43.0' } },
         compose: {
           state: 'unavailable',

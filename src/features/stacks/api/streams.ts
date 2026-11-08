@@ -1,8 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { hostKeys } from '@/core/host';
-import { commands, subscribe, type AppError, type ComposeEvent } from '@/shared/api';
+import {
+  commands,
+  subscribe,
+  type AppError,
+  type ComposeEvent,
+  type StackOwner,
+} from '@/shared/api';
 import type { ComposeJob } from '../model/composeJob';
+import { scopeKey } from './owner';
 import { stackKeys } from './queries';
 
 /**
@@ -11,7 +17,7 @@ import { stackKeys } from './queries';
  * touch any of it. The returned function starts a run and returns its
  * canceller.
  */
-export function useComposeRun(hostId: string) {
+export function useComposeRun(owner: StackOwner) {
   const client = useQueryClient();
   return useCallback(
     (job: ComposeJob, onEvent: (event: ComposeEvent) => void, onError: (error: AppError) => void) =>
@@ -25,7 +31,7 @@ export function useComposeRun(hostId: string) {
         (event) => {
           onEvent(event);
           if (event.type === 'exit') {
-            void client.invalidateQueries({ queryKey: hostKeys.scope(hostId) });
+            void client.invalidateQueries({ queryKey: scopeKey(owner) });
             // A rollback puts an earlier definition back.
             if (job.rollbackTo)
               void client.invalidateQueries({ queryKey: stackKeys.managed(job.stackId) });
@@ -36,6 +42,6 @@ export function useComposeRun(hostId: string) {
         },
         onError,
       ),
-    [client, hostId],
+    [client, owner],
   );
 }

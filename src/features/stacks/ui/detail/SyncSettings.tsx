@@ -2,11 +2,12 @@ import type { SyncedStack } from '@/shared/api';
 import { formatRelative } from '@/shared/lib';
 import { ErrorMessage, Label, Switch } from '@/shared/ui';
 import { useSetSync } from '../../api/synced';
+import type { StackOwner } from '@/shared/api';
 import { t } from '@/shared/i18n';
 
 /** A Synced Stack's polling and auto-deploy, and how its last check went. */
-export function SyncSettings({ hostId, synced }: { hostId: string; synced: SyncedStack }) {
-  const set = useSetSync(hostId, synced.id);
+export function SyncSettings({ owner, synced }: { owner: StackOwner; synced: SyncedStack }) {
+  const set = useSetSync(owner, synced.id);
   return (
     <div className="grid gap-3">
       <div className="flex items-start gap-2">

@@ -50,7 +50,7 @@ describe('creating a Synced Stack', () => {
     await user.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(created).toHaveLength(1));
     expect(created[0]).toEqual({
-      hostId: 'h1',
+      owner: { kind: 'host', id: 'h1' },
       draft: {
         name: 'shop',
         repositoryId: 'r1',
@@ -67,6 +67,10 @@ describe('creating a Synced Stack', () => {
       ...baseCommands,
       get_capabilities: () => ({
         keychain: true,
+        stackDeploy: {
+          state: 'available',
+          cli: { program: 'docker', prefix: [], version: '29.1.0' },
+        },
         compose: {
           state: 'available',
           cli: { program: 'docker', prefix: ['compose'], version: '5' },

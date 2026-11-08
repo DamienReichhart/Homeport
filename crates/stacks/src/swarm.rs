@@ -17,7 +17,13 @@ use serde::Serialize;
 use homeport_core::error::AppResult;
 use homeport_engine::swarm::services::{ServiceView, STACK_NAMESPACE};
 
-use crate::stack::{Stack, StackKind, StackRecord, StackService, StackState};
+use crate::{
+    linked::{detect, FileCache, LinkedStore},
+    owner::StackOwner,
+    stack::{Stack, StackKind, StackRecord, StackService, StackState},
+    store::StackStore,
+    synced::SyncedStore,
+};
 
 /// How long removing a swarm stack waits for its tasks to stop before
 /// removing its networks.
@@ -78,6 +84,7 @@ pub fn derive_swarm(services: &[ServiceView], records: &[StackRecord]) -> Vec<St
                 working_dir: record.and_then(|r| r.working_dir.clone()),
                 problem: None,
                 update_available: record.is_some_and(|r| r.update_available),
+                registry_auth: record.is_some_and(|r| r.registry_auth),
             }
         })
         .collect();
@@ -95,11 +102,55 @@ pub fn derive_swarm(services: &[ServiceView], records: &[StackRecord]) -> Vec<St
                 working_dir: r.working_dir.clone(),
                 problem: None,
                 update_available: r.update_available,
+                registry_auth: r.registry_auth,
             });
         }
     }
     stacks.sort_by(|a, b| a.name.cmp(&b.name));
     stacks
+}
+
+/// Every Stack of the Swarm `swarm_id`, given its `services`: those deployed
+/// (External unless Homeport has a record of them) and the Managed, Linked
+/// and Synced ones not deployed yet. A swarm stack is never recorded as
+/// Linked on its own: its services don't say where their files are.
+pub fn list(
+    swarm_id: &str,
+    services: &[ServiceView],
+    managed: &StackStore,
+    linked: &LinkedStore,
+    synced: &SyncedStore,
+    cache: &FileCache,
+) -> AppResult<Vec<Stack>> {
+    let owner = StackOwner::Swarm(swarm_id.to_owned());
+    let mut records: Vec<StackRecord> = managed
+        .list_of(&owner)?
+        .into_iter()
+        .map(|s| StackRecord::managed(s.id, s.name).with_registry_auth(s.registry_auth))
+        .collect();
+    records.extend(synced.list_of(&owner)?.into_iter().map(|s| {
+        StackRecord::synced(s.id, s.name)
+            .with_update_available(s.update_available)
+            .with_registry_auth(s.registry_auth)
+    }));
+    records.extend(linked.list_of(&owner)?.into_iter().map(|l| {
+        let missing = !detect::files_present(cache, &l.config_files);
+        StackRecord::linked(l.id, l.name, l.working_dir)
+            .with_files_missing(missing)
+            .with_registry_auth(l.registry_auth)
+    }));
+    let mut stacks = derive_swarm(services, &records);
+    for stack in &mut stacks {
+        if let Some(record) = records
+            .iter()
+            .find(|r| r.name == stack.name && r.files_missing)
+        {
+            stack.kind = StackKind::External;
+            stack.problem = Some(crate::stack::StackProblem::FilesMissing);
+            stack.id = Some(record.id.clone());
+        }
+    }
+    Ok(stacks)
 }
 
 /// What a swarm stack is made of, by name.

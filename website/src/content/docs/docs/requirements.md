@@ -38,6 +38,8 @@ To deploy [Managed, Linked and Synced Stacks](/docs/guides/stacks/), Homeport ru
 
 Without it, Stacks still appear — Linked Stacks included — and can be started, stopped and removed; only deploying needs Compose. **Settings → This machine** shows whether Homeport found it.
 
+To deploy a Stack to a [Swarm](/docs/guides/swarm/), Homeport runs `docker stack deploy` on this machine instead, so it needs the `docker` command itself (the Compose plugin isn't used). Docker Desktop has it; on Linux, install your distribution's Docker CLI package (`docker-ce-cli`, `docker.io` or `docker`). No Engine needs to run here.
+
 ## Optional: git
 
 [Synced Stacks](/docs/guides/synced-stacks/) run the `git` installed on **this** machine to clone and fetch their repositories: Git for Windows, Apple's command line tools (`xcode-select --install`), or your distribution's `git` package. On Windows, Homeport points it at the system's OpenSSH for SSH repositories. Every other feature works without git; **Settings → This machine** shows whether Homeport found it.
@@ -50,6 +52,7 @@ Homeport puts an icon in the system tray (the menu bar on macOS, the notificatio
 
 | Feature                                    | Keychain | Compose CLI | git |
 | ------------------------------------------ | :------: | :---------: | :-: |
+| Deploying Stacks to a Swarm                |    —     | docker CLI  |  —  |
 | Local socket and TCP Hosts                 |    —     |      —      |  —  |
 | SSH Hosts with ssh-agent                   |    —     |      —      |  —  |
 | SSH Hosts with a Homeport or imported key  |   Yes    |      —      |  —  |

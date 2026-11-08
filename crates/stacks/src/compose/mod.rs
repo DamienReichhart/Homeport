@@ -10,6 +10,7 @@
 
 mod error;
 mod images;
+pub mod stack;
 
 use std::{collections::VecDeque, process::Stdio};
 
@@ -28,11 +29,11 @@ use homeport_transport::proxy;
 use self::error as errors;
 use crate::{
     definition, lifecycle,
-    runtime::{ComposeJob, Prepared, Recorder, StackTarget, WorkDir},
+    runtime::{ComposeJob, Prepared, Reach, Recorder, StackTarget, WorkDir},
 };
 
 /// Lines of stderr kept to explain a failed run.
-const STDERR_TAIL: usize = 40;
+pub(crate) const STDERR_TAIL: usize = 40;
 
 /// How to invoke Compose on this machine.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
@@ -170,13 +171,18 @@ pub fn direct_docker_host(connection: &HostConnection) -> Option<String> {
     }
 }
 
-/// Runs one compose command, streaming its output lines to `sink`. A deploy
-/// with a recorder is recorded when it starts and finished when it ends; a
-/// run nobody listens to any more stays unfinished.
+/// Runs one compose command, streaming its output lines to `sink`: `docker
+/// compose` on a Host, `docker stack deploy` on a Swarm. A deploy with a
+/// recorder is recorded when it starts and finished when it ends; a run
+/// nobody listens to any more stays unfinished.
 pub(crate) async fn run(mut job: ComposeJob, sink: impl Fn(ComposeEvent) -> bool) {
     let recorder = job.record.take();
     let mut recorded = None;
-    let result = execute(job, &sink, recorder.as_ref(), &mut recorded).await;
+    let result = if job.target.is_swarm() {
+        stack::execute(job, &sink, recorder.as_ref(), &mut recorded).await
+    } else {
+        execute(job, &sink, recorder.as_ref(), &mut recorded).await
+    };
     if let Err(e) = result {
         if let (Some(recorder), Some(id)) = (&recorder, &recorded) {
             recorder.finish(id, false, None);
@@ -190,12 +196,12 @@ pub(crate) async fn run(mut job: ComposeJob, sink: impl Fn(ComposeEvent) -> bool
 /// The `DOCKER_HOST` the CLI uses for `target`, and the proxy that must stay
 /// open until it exits, for TLS and SSH Hosts.
 fn docker_host(target: &StackTarget) -> AppResult<(String, Option<proxy::Proxy>)> {
-    let StackTarget::Host {
+    let Reach {
         name,
         connection,
         dialer,
         ..
-    } = target;
+    } = target.reach();
     if let Some(host) = direct_docker_host(connection) {
         return Ok((host, None));
     }
@@ -554,16 +560,17 @@ mod tests {
             cli: docker_cli(),
             project: project.into(),
             source,
-            target: StackTarget::Host {
+            target: StackTarget::Host(crate::runtime::Reach {
                 name: "local".into(),
                 connection,
                 dialer,
                 docker,
-            },
+            }),
             logins,
             action,
             profiles: vec![],
             record: None,
+            registry_auth: false,
         }
     }
 
@@ -848,14 +855,14 @@ mod tests {
 
     #[test]
     fn tls_hosts_need_a_connection_for_the_proxy() {
-        let target = StackTarget::Host {
+        let target = StackTarget::Host(crate::runtime::Reach {
             name: "prod".into(),
             connection: HostConnection::Tls {
                 address: "h:2376".into(),
             },
             dialer: None,
             docker: testing::offline(),
-        };
+        });
         assert!(matches!(
             docker_host(&target),
             Err(ref e) if e.is(ErrorCode::HostNotConnected)
@@ -1176,7 +1183,7 @@ mod tests {
             );
             job.record = Some(Recorder {
                 history: history.clone(),
-                host_id: host.clone(),
+                owner: crate::StackOwner::Host(host.clone()),
                 stack_id: stack.id.clone(),
                 commit: None,
                 automatic: false,

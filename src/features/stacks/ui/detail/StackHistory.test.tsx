@@ -17,6 +17,7 @@ const shop: Stack = {
   workingDir: null,
   problem: null,
   updateAvailable: false,
+  registryAuth: false,
 };
 
 const summary = (id: string, success: boolean | null, at: string): DeploySummary => ({
@@ -38,6 +39,10 @@ function mock(rolledBack: unknown[]) {
     ...baseCommands,
     get_capabilities: () => ({
       keychain: true,
+      stackDeploy: {
+        state: 'available',
+        cli: { program: 'docker', prefix: [], version: '29.1.0' },
+      },
       git: { state: 'available', cli: { program: 'git', version: '2.43.0' } },
       compose: {
         state: 'available',

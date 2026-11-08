@@ -115,3 +115,15 @@ A Stack deployed from a terminal with `docker stack deploy` is **External**: Hom
 A swarm stack has no start or stop: Docker has no such operation for one. To stop a Stack without removing it, scale its services to 0 from their pages.
 
 On a host's **Containers** page, the containers that a swarm stack's tasks run there are grouped under that Stack, marked **Swarm**, rather than listed one by one.
+
+## Deploying Stacks to a Swarm
+
+Managed, Linked and Synced Stacks can be deployed to a Swarm instead of a host. On **New Stack** (from the Stacks page, or **New Stack** on a Swarm's **Stacks** tab), choose the Swarm under **Deploy to**, then write the compose file, pick a folder or a repository as for a host. The Swarm's **Stacks** tab lists them with the External ones; a Stack's page there has **Deploy** or **Redeploy**, its **Definition** to edit, and its **History** to roll back, as on a host.
+
+Homeport deploys with `docker stack deploy`, run on this computer against whichever of the Swarm's managers is connected, through the same private, per-command connection as compose: nothing is installed or written on any node. It needs the `docker` command on this computer (see [requirements](/docs/requirements/)). With no manager connected, deploying says so. A Stack of a Swarm belongs to the Swarm, not to the manager it was created through: removing that host keeps it.
+
+What changes on a Swarm:
+
+- **Images come from a registry.** Each node pulls the images of the tasks it runs, so a service built from local files (`build:` without `image:`) is refused before anything runs: push the image first and name it in `image:`. **Send my registry credentials**, in a Stack's **Definition**, has the docker CLI send the logins it has on this computer (`docker login`) to the Swarm, so its nodes can pull private images. It's off by default; Homeport's own registry logins are never handed to the CLI.
+- **Some compose keys are ignored** by `docker stack deploy`: `container_name`, `restart` (use `deploy.restart_policy`), `depends_on` conditions and `profiles`. The editor warns about them. Bind mounts are paths on whichever node runs the task.
+- **Remove** takes the Stack down as `docker stack rm` does, and there's no start or stop.

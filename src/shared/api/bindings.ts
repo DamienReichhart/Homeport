@@ -239,11 +239,14 @@ export const commands = {
 	stacksGetEnv: (id: string) => __TAURI_INVOKE<string>("stacks_get_env", { id }),
 	/**
 	 *  Checks a definition made of `files` (their YAML, merged in order) against
-	 *  the rules of its kind of Stack.
+	 *  the rules of its kind of Stack, and of a Swarm's when `swarm`.
 	 */
-	stacksCheck: (files: string[], kind: SourceKind) => __TAURI_INVOKE<ComposeCheck>("stacks_check", { files, kind }),
-	/**  Creates a Managed Stack. Using the name of an External Stack adopts it. */
-	stacksCreate: (hostId: string, name: string, files: ComposeFile[], env: string) => __TAURI_INVOKE<ManagedStack>("stacks_create", { hostId, name, files, env }),
+	stacksCheck: (files: string[], kind: SourceKind, swarm: boolean) => __TAURI_INVOKE<ComposeCheck>("stacks_check", { files, kind, swarm }),
+	/**
+	 *  Creates a Managed Stack on a Host or a Swarm. Using the name of an
+	 *  External Stack adopts it.
+	 */
+	stacksCreate: (owner: StackOwner, name: string, files: ComposeFile[], env: string) => __TAURI_INVOKE<ManagedStack>("stacks_create", { owner, name, files, env }),
 	stacksUpdate: (id: string, files: ComposeFile[], env: string) => __TAURI_INVOKE<ManagedStack>("stacks_update", { id, files, env }),
 	/**
 	 *  Forgets a Managed Stack's definition; its containers keep running and it
@@ -255,13 +258,18 @@ export const commands = {
 	 *  apply from its next compose command.
 	 */
 	stacksSetProfiles: (kind: SourceKind, id: string, profiles: string[]) => __TAURI_INVOKE<string[]>("stacks_set_profiles", { kind, id, profiles }),
+	/**
+	 *  Whether deploying a Stack to a Swarm sends the docker CLI's own registry
+	 *  logins (`--with-registry-auth`).
+	 */
+	stacksSetRegistryAuth: (kind: SourceKind, id: string, on: boolean) => __TAURI_INVOKE<boolean>("stacks_set_registry_auth", { kind, id, on }),
 	/**  What Compose would make of a folder picked for a new Linked Stack. */
 	stacksLinkedInspect: (path: string) => __TAURI_INVOKE<FolderProject>("stacks_linked_inspect", { path }),
 	/**
-	 *  Records a Linked Stack for the folder `working_dir` and its compose
-	 *  files. Using the name of an External Stack takes it over.
+	 *  Records a Linked Stack of a Host or a Swarm for the folder `working_dir`
+	 *  and its compose files. Using the name of an External Stack takes it over.
 	 */
-	stacksLinkedCreate: (hostId: string, name: string, workingDir: string, configFiles: string[]) => __TAURI_INVOKE<LinkedStack>("stacks_linked_create", { hostId, name, workingDir, configFiles }),
+	stacksLinkedCreate: (owner: StackOwner, name: string, workingDir: string, configFiles: string[]) => __TAURI_INVOKE<LinkedStack>("stacks_linked_create", { owner, name, workingDir, configFiles }),
 	/**
 	 *  A Linked Stack's compose files, read from its folder. `acknowledge` notes
 	 *  them as seen, so they no longer count as changed outside Homeport.
@@ -278,11 +286,11 @@ export const commands = {
 	/**  Forgets a Linked Stack: its record goes, its folder and containers stay. */
 	stacksLinkedForget: (id: string) => __TAURI_INVOKE<null>("stacks_linked_forget", { id }),
 	/**
-	 *  Creates a Synced Stack on `host_id` from a repository's branch or tag:
-	 *  fetches it into the repository's clone and checks the compose file before
-	 *  anything is stored.
+	 *  Creates a Synced Stack on a Host or a Swarm from a repository's branch or
+	 *  tag: fetches it into the repository's clone and checks the compose file
+	 *  before anything is stored.
 	 */
-	stacksSyncedCreate: (hostId: string, draft: SyncedDraft, env: string) => __TAURI_INVOKE<SyncedStack>("stacks_synced_create", { hostId, draft, env }),
+	stacksSyncedCreate: (owner: StackOwner, draft: SyncedDraft, env: string) => __TAURI_INVOKE<SyncedStack>("stacks_synced_create", { owner, draft, env }),
 	stacksSyncedGet: (id: string) => __TAURI_INVOKE<SyncedStack>("stacks_synced_get", { id }),
 	/**
 	 *  A Synced Stack's files at its fetched commit, read-only: no command
@@ -581,6 +589,11 @@ export type Capabilities = {
 	keychain: boolean,
 	/**  Whether Managed Stacks can be deployed here. */
 	compose: ComposeSupport,
+	/**
+	 *  Whether Stacks can be deployed to a Swarm from here: the `docker`
+	 *  CLI, for `docker stack deploy` (ADR 0017).
+	 */
+	stackDeploy: ComposeSupport,
 	/**  Whether Synced Stacks can be cloned and fetched here. */
 	git: GitSupport,
 	/**
@@ -856,7 +869,9 @@ export type ErrorCode =
 /**  No manager Host of a Swarm is connected. */
 "swarm_unreachable" | 
 /**  A node couldn't reach the managers of the Swarm it was joining. */
-"swarm_join_failed" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
+"swarm_join_failed" | 
+/**  The `docker` CLI isn't installed, which deploying a Stack to a Swarm needs. */
+"docker_cli_missing" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
 /**  A Linked Stack's folder, or one of its compose files, is gone. */
 "stack_folder_missing" | 
 /**  A Linked Stack's compose file can't be read or written. */
@@ -1237,7 +1252,8 @@ export type LinkedFiles = {
 
 export type LinkedStack = {
 	id: string,
-	hostId: string,
+	/**  The Host or Swarm it's deployed to. */
+	owner: StackOwner,
 	name: string,
 	/**  The project folder on this machine, where compose runs. */
 	workingDir: string,
@@ -1250,6 +1266,8 @@ export type LinkedStack = {
 	fingerprint: string,
 	/**  The Compose profiles it deploys; none until the user turns one on. */
 	profiles: string[],
+	/**  On a Swarm: the docker CLI sends its own registry logins with a deploy. */
+	registryAuth: boolean,
 	createdAt: string,
 	updatedAt: string,
 };
@@ -1300,13 +1318,16 @@ export type Loss =
 
 export type ManagedStack = {
 	id: string,
-	hostId: string,
+	/**  The Host or Swarm it's deployed to. */
+	owner: StackOwner,
 	name: string,
 	/**  Its compose files, merged in this order; never empty. */
 	files: ComposeFile[],
 	hasEnv: boolean,
 	/**  The Compose profiles it deploys, besides its services without one. */
 	profiles: string[],
+	/**  On a Swarm: the docker CLI sends its own registry logins with a deploy. */
+	registryAuth: boolean,
 	createdAt: string,
 	updatedAt: string,
 };
@@ -1816,6 +1837,8 @@ export type Stack = {
 	 *  since the deployed one.
 	 */
 	updateAvailable: boolean,
+	/**  On a Swarm: its deploys send the docker CLI's registry logins. */
+	registryAuth: boolean,
 };
 
 export type StackAction = "start" | "stop" | "restart";
@@ -1829,6 +1852,9 @@ export type StackKind =
 "synced" | 
 /**  Only its containers are known. */
 "external";
+
+/**  A Stack's Host or Swarm, by ID. */
+export type StackOwner = { kind: "host"; id: string } | { kind: "swarm"; id: string };
 
 /**  Why a Stack Homeport has a record of can't be used as its kind says. */
 export type StackProblem = 
@@ -1983,7 +2009,8 @@ export type SyncReview = {
 
 /**  A Synced Stack's automatic deploy ended; `error` says why it failed. */
 export type SyncedAutoDeployed = {
-	hostId: string,
+	/**  The Host or Swarm it's deployed to. */
+	owner: StackOwner,
 	stackId: string,
 	name: string,
 	commit: string,
@@ -2008,7 +2035,8 @@ export type SyncedFiles = {
 
 export type SyncedStack = {
 	id: string,
-	hostId: string,
+	/**  The Host or Swarm it's deployed to. */
+	owner: StackOwner,
 	name: string,
 	repositoryId: string,
 	refKind: RefKind,
@@ -2037,13 +2065,16 @@ export type SyncedStack = {
 	autoDeployFailedCommit: string | null,
 	/**  Why it failed. */
 	autoDeployError: AppError | null,
+	/**  On a Swarm: the docker CLI sends its own registry logins with a deploy. */
+	registryAuth: boolean,
 	createdAt: string,
 	updatedAt: string,
 };
 
 /**  A Synced Stack's poll found a new commit that changes its compose file's folder. */
 export type SyncedUpdateAvailable = {
-	hostId: string,
+	/**  The Host or Swarm it's deployed to. */
+	owner: StackOwner,
 	stackId: string,
 	name: string,
 };

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import type { Stack } from '@/shared/api';
+import type { Stack, StackOwner } from '@/shared/api';
 import {
   Button,
   Card,
@@ -20,32 +20,28 @@ import { t, tRich } from '@/shared/i18n';
 
 /** A Managed, Linked or Synced Stack's definition, or how to adopt an External one. */
 export function StackDefinition({
-  hostId,
+  owner,
   stack,
   onDeploy,
 }: {
-  hostId: string;
+  owner: StackOwner;
   stack: Stack;
   onDeploy: (job: ComposeJob) => void;
 }) {
   // A Linked Stack, or one shown as External while its files are missing.
   if (stack.id && (stack.kind === 'linked' || stack.problem === 'filesMissing'))
-    return (
-      <LinkedDefinition hostId={hostId} stack={stack} linkedId={stack.id} onDeploy={onDeploy} />
-    );
+    return <LinkedDefinition owner={owner} stack={stack} linkedId={stack.id} onDeploy={onDeploy} />;
   if (stack.id && stack.kind === 'synced')
-    return (
-      <SyncedDefinition hostId={hostId} stack={stack} syncedId={stack.id} onDeploy={onDeploy} />
-    );
-  return <OwnDefinition hostId={hostId} stack={stack} onDeploy={onDeploy} />;
+    return <SyncedDefinition owner={owner} stack={stack} syncedId={stack.id} onDeploy={onDeploy} />;
+  return <OwnDefinition owner={owner} stack={stack} onDeploy={onDeploy} />;
 }
 
 function OwnDefinition({
-  hostId,
+  owner,
   stack,
   onDeploy,
 }: {
-  hostId: string;
+  owner: StackOwner;
   stack: Stack;
   onDeploy: (job: ComposeJob) => void;
 }) {
@@ -84,7 +80,7 @@ function OwnDefinition({
     <ManagedDefinition
       key={managed.data.updatedAt}
       deployed={stack.state !== 'notDeployed'}
-      hostId={hostId}
+      owner={owner}
       managed={managed.data}
       initialEnv={env.data}
       onDeploy={onDeploy}

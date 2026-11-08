@@ -8,32 +8,41 @@ import { TEMPLATES, type StackTemplate } from '../../model/templates';
 import { ComposeRunDialog } from '../dialogs/ComposeRunDialog';
 import { StackEditor } from '../StackEditor';
 import { TemplateGallery } from './TemplateGallery';
+import { stackPath } from '../../api/owner';
+import { deployTool } from '../../model/deployTool';
+import type { StackOwner } from '@/shared/api';
 import { t } from '@/shared/i18n';
 
 /**
  * Creates a Managed Stack from a template picked first, or adopts the
  * External Stack named `adopting` from an empty editor.
  */
-export function NewManagedStack({ hostId, adopting }: { hostId: string; adopting: string | null }) {
+export function NewManagedStack({
+  owner,
+  adopting,
+}: {
+  owner: StackOwner;
+  adopting: string | null;
+}) {
   const [template, setTemplate] = useState<StackTemplate | null>(null);
-  if (adopting) return <ManagedForm key="adopt" hostId={hostId} adopting={adopting} />;
+  if (adopting) return <ManagedForm key="adopt" owner={owner} adopting={adopting} />;
   if (!template) return <TemplateGallery templates={TEMPLATES} onPick={setTemplate} />;
   return (
     <div className="grid gap-4">
       <Button variant="link" className="justify-self-start px-0" onClick={() => setTemplate(null)}>
         {t('stacks.newPage.otherTemplate')}
       </Button>
-      <ManagedForm key={template.id} hostId={hostId} adopting={null} template={template} />
+      <ManagedForm key={template.id} owner={owner} adopting={null} template={template} />
     </div>
   );
 }
 
 function ManagedForm({
-  hostId,
+  owner,
   adopting,
   template,
 }: {
-  hostId: string;
+  owner: StackOwner;
   adopting: string | null;
   template?: StackTemplate;
 }) {
@@ -47,12 +56,12 @@ function ManagedForm({
   const [check, setCheck] = useState<ComposeCheck | null>(null);
   const [job, setJob] = useState<ComposeJob | null>(null);
 
-  const save = useCreateStack(hostId, (stack, deploy) => {
+  const save = useCreateStack(owner, (stack, deploy) => {
     if (deploy) setJob({ kind: 'managed', stackId: stack.id, name: stack.name, action: 'up' });
-    else navigate(`/stacks/${encodeURIComponent(stack.name)}`);
+    else navigate(stackPath(owner, stack.name));
   });
-  const canDeploy =
-    capabilities.data?.compose.state === 'available' && check !== null && check.errors.length === 0;
+  const tool = deployTool(capabilities.data, owner);
+  const canDeploy = tool?.state === 'available' && check !== null && check.errors.length === 0;
 
   return (
     <div className="grid gap-4">
@@ -73,6 +82,7 @@ function ManagedForm({
         onEnvChange={setEnv}
         keychain={capabilities.data?.keychain ?? true}
         onCheck={setCheck}
+        swarm={owner.kind === 'swarm'}
       />
       {save.error && <ErrorMessage error={save.error} />}
       <div className="flex gap-2">
@@ -93,15 +103,13 @@ function ManagedForm({
           {t('common.cancel')}
         </Button>
       </div>
-      {capabilities.data?.compose.state === 'unavailable' && (
-        <ErrorMessage error={capabilities.data.compose.problem} />
-      )}
+      {tool?.state === 'unavailable' && <ErrorMessage error={tool.problem} />}
       <ComposeRunDialog
-        hostId={hostId}
+        owner={owner}
         job={job}
         onClose={() => {
           setJob(null);
-          navigate(`/stacks/${encodeURIComponent(name)}`);
+          navigate(stackPath(owner, name));
         }}
       />
     </div>

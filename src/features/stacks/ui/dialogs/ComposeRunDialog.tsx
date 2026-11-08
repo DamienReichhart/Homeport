@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { toAppError, type AppError } from '@/shared/api';
+import { toAppError, type AppError, type StackOwner } from '@/shared/api';
 import {
   Button,
   Dialog,
@@ -20,24 +20,24 @@ import { t } from '@/shared/i18n';
  * output live, after showing what changes when the job asks for a review.
  */
 export function ComposeRunDialog({
-  hostId,
+  owner,
   job,
   onClose,
 }: {
-  hostId: string;
+  owner: StackOwner;
   job: ComposeJob | null;
   onClose: () => void;
 }) {
   if (!job) return null;
-  return <RunDialog hostId={hostId} job={job} onClose={onClose} />;
+  return <RunDialog owner={owner} job={job} onClose={onClose} />;
 }
 
 function RunDialog({
-  hostId,
+  owner,
   job,
   onClose,
 }: {
-  hostId: string;
+  owner: StackOwner;
   job: ComposeJob;
   onClose: () => void;
 }) {
@@ -46,7 +46,7 @@ function RunDialog({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-3xl">
         {reviewed ? (
-          <Run hostId={hostId} job={job} onClose={onClose} />
+          <Run owner={owner} job={job} onClose={onClose} />
         ) : (
           <ReviewChanges
             kind={job.kind}
@@ -62,8 +62,8 @@ function RunDialog({
   );
 }
 
-function Run({ hostId, job, onClose }: { hostId: string; job: ComposeJob; onClose: () => void }) {
-  const run = useComposeRun(hostId);
+function Run({ owner, job, onClose }: { owner: StackOwner; job: ComposeJob; onClose: () => void }) {
+  const run = useComposeRun(owner);
   const [result, setResult] = useState<'running' | 'ok' | 'failed'>('running');
   const [failure, setFailure] = useState<AppError | null>(null);
   const fail = (error: unknown) => {

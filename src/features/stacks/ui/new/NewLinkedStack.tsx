@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { FolderOpenIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { resourceQueries } from '@/core/host';
 import { useCapabilities, type FolderProject } from '@/shared/api';
 import { pickFolder } from '@/shared/lib';
 import {
@@ -21,13 +20,17 @@ import { fileName } from '../../model/linkedEdit';
 import { takenOver } from '../../model/newLinked';
 import { ComposeChecks } from '../ComposeChecks';
 import { ComposeRunDialog } from '../dialogs/ComposeRunDialog';
+import { stackPath } from '../../api/owner';
+import { stackQueries } from '../../api/queries';
+import { deployTool } from '../../model/deployTool';
+import type { StackOwner } from '@/shared/api';
 import { t } from '@/shared/i18n';
 
 /** Creates a Linked Stack from a folder on this computer that holds a compose project. */
-export function NewLinkedStack({ hostId }: { hostId: string }) {
+export function NewLinkedStack({ owner }: { owner: StackOwner }) {
   const navigate = useNavigate();
   const capabilities = useCapabilities();
-  const stacks = useQuery(resourceQueries.stacks(hostId));
+  const stacks = useQuery(stackQueries.of(owner));
   const [project, setProject] = useState<FolderProject | null>(null);
   const [name, setName] = useState('');
   const [job, setJob] = useState<ComposeJob | null>(null);
@@ -35,10 +38,14 @@ export function NewLinkedStack({ hostId }: { hostId: string }) {
     setProject(found);
     setName(found.name);
   });
-  const check = useComposeCheck(project?.files.map((f) => f.content) ?? [], 'linked');
-  const save = useCreateLinked(hostId, (stack, deploy) => {
+  const check = useComposeCheck(
+    project?.files.map((f) => f.content) ?? [],
+    'linked',
+    owner.kind === 'swarm',
+  );
+  const save = useCreateLinked(owner, (stack, deploy) => {
     if (deploy) setJob({ kind: 'linked', stackId: stack.id, name: stack.name, action: 'up' });
-    else navigate(`/stacks/${encodeURIComponent(stack.name)}`);
+    else navigate(stackPath(owner, stack.name));
   });
   const choose = async () => {
     const folder = await pickFolder(t('stacks.newLinked.pickTitle'));
@@ -53,7 +60,9 @@ export function NewLinkedStack({ hostId }: { hostId: string }) {
       deploy,
     });
   const canDeploy =
-    capabilities.data?.compose.state === 'available' && check !== null && check.errors.length === 0;
+    deployTool(capabilities.data, owner)?.state === 'available' &&
+    check !== null &&
+    check.errors.length === 0;
   const external = takenOver(stacks.data, name);
 
   return (
@@ -108,11 +117,11 @@ export function NewLinkedStack({ hostId }: { hostId: string }) {
         </>
       )}
       <ComposeRunDialog
-        hostId={hostId}
+        owner={owner}
         job={job}
         onClose={() => {
           setJob(null);
-          navigate(`/stacks/${encodeURIComponent(name)}`);
+          navigate(stackPath(owner, name));
         }}
       />
     </div>

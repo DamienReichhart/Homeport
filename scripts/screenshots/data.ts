@@ -710,11 +710,12 @@ export const managedStacks: ManagedStack[] = [
   ['stack-analytics', 'analytics', ANALYTICS_COMPOSE, 1 * HOUR],
 ].map(([id, name, compose, age]) => ({
   id: id as string,
-  hostId: PROD,
+  owner: { kind: 'host' as const, id: PROD },
   name: name as string,
   files: [{ name: 'compose.yaml', content: compose as string }],
   hasEnv: name === 'shop',
   profiles: [],
+  registryAuth: false,
   createdAt: new Date((NOW - (age as number)) * 1000).toISOString(),
   updatedAt: new Date((NOW - (age as number)) * 1000).toISOString(),
 }));
@@ -748,6 +749,7 @@ export function stacksOf(hostId: string): Stack[] {
       workingDir: null,
       problem: null,
       updateAvailable: false,
+      registryAuth: false,
     };
   });
   if (hostId === PROD) {
@@ -763,6 +765,7 @@ export function stacksOf(hostId: string): Stack[] {
       workingDir: null,
       problem: null,
       updateAvailable: false,
+      registryAuth: false,
     });
   }
   return stacks.sort((a, b) => a.name.localeCompare(b.name));

@@ -1,7 +1,7 @@
 import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { hostKeys } from '@/core/host';
-import { commands, type SyncedDraft, type SyncedStack } from '@/shared/api';
+import { commands, type StackOwner, type SyncedDraft, type SyncedStack } from '@/shared/api';
+import { stacksKey } from './owner';
 import { t } from '@/shared/i18n';
 
 export const syncedKeys = {
@@ -40,15 +40,15 @@ interface NewSynced {
  * the Stack list has it. A failure is shown in place.
  */
 export function useCreateSynced(
-  hostId: string,
+  owner: StackOwner,
   onSaved: (stack: SyncedStack, deploy: boolean) => void,
 ) {
   const client = useQueryClient();
   return useMutation({
     meta: { silent: true },
-    mutationFn: ({ draft, env }: NewSynced) => commands.stacksSyncedCreate(hostId, draft, env),
+    mutationFn: ({ draft, env }: NewSynced) => commands.stacksSyncedCreate(owner, draft, env),
     onSuccess: async (stack, { deploy }) => {
-      await client.invalidateQueries({ queryKey: hostKeys.stacks(hostId) });
+      await client.invalidateQueries({ queryKey: stacksKey(owner) });
       onSaved(stack, deploy);
     },
   });
@@ -78,23 +78,23 @@ export function useSaveSyncedEnv(syncedId: string) {
 }
 
 /** Turns a Synced Stack's polling and auto-deploy on or off. */
-export function useSetSync(hostId: string, syncedId: string) {
+export function useSetSync(owner: StackOwner, syncedId: string) {
   const client = useQueryClient();
   return useMutation({
     mutationFn: ({ poll, autoDeploy }: { poll: boolean; autoDeploy: boolean }) =>
       commands.stacksSyncedSetSync(syncedId, poll, autoDeploy),
     onSuccess: async (stack) => {
       client.setQueryData(syncedKeys.stack(syncedId), stack);
-      await client.invalidateQueries({ queryKey: hostKeys.stacks(hostId) });
+      await client.invalidateQueries({ queryKey: stacksKey(owner) });
     },
   });
 }
 
 /** Forgets a Synced Stack: its containers are left alone and it becomes External. */
-export function useForgetSynced(hostId: string, syncedId: string) {
+export function useForgetSynced(owner: StackOwner, syncedId: string) {
   const client = useQueryClient();
   return useMutation({
     mutationFn: () => commands.stacksSyncedForget(syncedId),
-    onSuccess: () => client.invalidateQueries({ queryKey: hostKeys.stacks(hostId) }),
+    onSuccess: () => client.invalidateQueries({ queryKey: stacksKey(owner) }),
   });
 }

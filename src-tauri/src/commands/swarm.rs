@@ -444,7 +444,14 @@ pub async fn swarm_stacks_list(
     swarm_id: String,
 ) -> AppResult<Vec<Stack>> {
     let services = services::list(&state.hosts.registry.manager(&swarm_id)?).await?;
-    Ok(stacks_swarm::derive_swarm(&services, &[]))
+    stacks_swarm::list(
+        &swarm_id,
+        &services,
+        &state.stacks,
+        &state.linked,
+        &state.synced.store,
+        &state.linked_files,
+    )
 }
 
 /// The networks, secrets and configs of a swarm stack.

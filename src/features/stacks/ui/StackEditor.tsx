@@ -23,15 +23,18 @@ export function StackEditor({
   onEnvChange,
   keychain,
   onCheck,
+  swarm = false,
 }: {
   files: ComposeFile[];
+  /** Checked against a Swarm's rules too. */
+  swarm?: boolean;
   env: string;
   onFilesChange: (files: ComposeFile[]) => void;
   onEnvChange: (value: string) => void;
   keychain: boolean;
   onCheck?: (check: ComposeCheck | null) => void;
 }) {
-  const check = useComposeCheck(contents(files), 'managed');
+  const check = useComposeCheck(contents(files), 'managed', swarm);
   useEffect(() => onCheck?.(check), [check, onCheck]);
   const [active, setActive] = useState(0);
   const index = Math.min(active, files.length - 1);

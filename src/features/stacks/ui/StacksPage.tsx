@@ -20,6 +20,7 @@ import { ComposeRunDialog } from './dialogs/ComposeRunDialog';
 import { stackColumns } from './stackColumns';
 import { PAGE_ACTION_KEYS, usePageAction } from '@/shared/hooks';
 import { usePageQuery } from '@/core/feature';
+import { hostOwner } from '../api/owner';
 import { t } from '@/shared/i18n';
 
 function StacksList({ hostId }: { hostId: string }) {
@@ -83,7 +84,7 @@ function StacksList({ hostId }: { hostId: string }) {
           onRowClick={(s) => navigate(`/stacks/${encodeURIComponent(s.name)}`)}
         />
       )}
-      <ComposeRunDialog hostId={hostId} job={job} onClose={() => setJob(null)} />
+      <ComposeRunDialog owner={hostOwner(hostId)} job={job} onClose={() => setJob(null)} />
       {dialog}
     </div>
   );

@@ -38,6 +38,9 @@ export default {
     'Unavailable — SSH keys, TLS certificates, stack environments and registry logins can’t be stored.',
   'settings.machine.compose': 'Compose CLI',
   'settings.machine.composeMissing': 'Stacks can be started and stopped, but not deployed.',
+  'settings.machine.stackDeploy': 'Docker CLI, for Swarms',
+  'settings.machine.stackDeployMissing':
+    'Stacks can’t be deployed to a Swarm; everything else about Swarms works.',
   'settings.machine.git': 'git',
   'settings.sync.title': 'Synced Stacks',
   'settings.sync.interval': 'Check repositories every',

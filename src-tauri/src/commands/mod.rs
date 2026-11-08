@@ -159,6 +159,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             stacks::stacks_update,
             stacks::stacks_forget,
             stacks::stacks_set_profiles,
+            stacks::stacks_set_registry_auth,
             stacks::stacks_linked_inspect,
             stacks::stacks_linked_create,
             stacks::stacks_linked_read,

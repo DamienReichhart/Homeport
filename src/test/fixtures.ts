@@ -123,6 +123,10 @@ export const baseCommands = {
     keychain: true,
     tray: true,
     git: { state: 'available', cli: { program: 'git', version: '2.43.0' } },
+    stackDeploy: {
+      state: 'available',
+      cli: { program: 'docker', prefix: [], version: '29.1.0' },
+    },
     compose: {
       state: 'unavailable',
       problem: {

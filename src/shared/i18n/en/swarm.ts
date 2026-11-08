@@ -241,6 +241,10 @@ export default {
   'swarm.join.manager': 'As a manager',
 
   'swarm.stacks.search': 'Search stacks',
+  'swarm.stacks.new': 'New Stack',
+  'swarm.stacks.deploy': 'Deploy',
+  'swarm.stacks.redeploy': 'Redeploy',
+  'swarm.stacks.adopt': 'Adopt',
   'swarm.stacks.empty': 'No Stacks on this Swarm',
   'swarm.stacks.emptyHint':
     'Stacks deployed with docker stack deploy show here, as do those you deploy to this Swarm from Homeport.',

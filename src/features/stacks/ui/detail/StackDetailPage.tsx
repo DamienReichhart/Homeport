@@ -28,6 +28,7 @@ import { UpdateBadge } from '../UpdateBadge';
 import { StackDefinition } from './StackDefinition';
 import { StackHistory } from './StackHistory';
 import { StackServices } from './StackServices';
+import { hostOwner } from '../../api/owner';
 import { t } from '@/shared/i18n';
 
 function StackDetail({ hostId, name }: { hostId: string; name: string }) {
@@ -106,15 +107,20 @@ function StackDetail({ hostId, name }: { hostId: string; name: string }) {
           <LogViewer hostId={hostId} sources={sources} />
         </TabsContent>
         <TabsContent value="definition" className="overflow-auto">
-          <StackDefinition hostId={hostId} stack={stack} onDeploy={setJob} />
+          <StackDefinition owner={hostOwner(hostId)} stack={stack} onDeploy={setJob} />
         </TabsContent>
         {recorded && (
           <TabsContent value="history" className="overflow-auto">
-            <StackHistory hostId={hostId} stack={stack} stackId={recorded} onDeploy={setJob} />
+            <StackHistory
+              owner={hostOwner(hostId)}
+              stack={stack}
+              stackId={recorded}
+              onDeploy={setJob}
+            />
           </TabsContent>
         )}
       </Tabs>
-      <ComposeRunDialog hostId={hostId} job={job} onClose={() => setJob(null)} />
+      <ComposeRunDialog owner={hostOwner(hostId)} job={job} onClose={() => setJob(null)} />
       {dialog}
     </div>
   );

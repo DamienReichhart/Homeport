@@ -31,6 +31,12 @@ pub fn sqlite_error(e: rusqlite::Error) -> AppError {
     error.with_cause(&e)
 }
 
+/// A migration left rows of `table` pointing at nothing.
+pub(super) fn foreign_keys_broken(table: &str) -> AppError {
+    AppError::new(ErrorCode::DbMigration, msg::DB_MIGRATION_FAILED)
+        .with_detail(format!("foreign key check failed in {table}"))
+}
+
 pub(super) fn migration_error(e: rusqlite_migration::Error) -> AppError {
     AppError::new(ErrorCode::DbMigration, msg::DB_MIGRATION_FAILED).with_cause(&e)
 }

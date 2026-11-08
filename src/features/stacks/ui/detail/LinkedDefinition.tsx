@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { deployTool } from '../../model/deployTool';
 import { type ReactNode, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -7,6 +8,7 @@ import {
   type Candidate,
   type LinkedFiles,
   type Stack,
+  type StackOwner,
 } from '@/shared/api';
 import {
   Alert,
@@ -44,12 +46,12 @@ const mono = (chunks: ReactNode[]) => <span className="font-mono">{chunks}</span
  * they can't be: the folder is gone or a file can't be read.
  */
 export function LinkedDefinition({
-  hostId,
+  owner,
   stack,
   linkedId,
   onDeploy,
 }: {
-  hostId: string;
+  owner: StackOwner;
   stack: Stack;
   linkedId: string;
   onDeploy: (job: ComposeJob) => void;
@@ -58,7 +60,7 @@ export function LinkedDefinition({
   const files = useQuery({ ...stackQueries.linked(linkedId), enabled: !missing });
   // Bumped to start editing again from what's on disk.
   const [version, setVersion] = useState(0);
-  const forget = <ForgetButton hostId={hostId} stack={stack} linkedId={linkedId} />;
+  const forget = <ForgetButton owner={owner} stack={stack} linkedId={linkedId} />;
 
   if (missing)
     return (
@@ -89,6 +91,7 @@ export function LinkedDefinition({
       name={stack.name}
       deployed={stack.state !== 'notDeployed'}
       onRestart={() => setVersion((v) => v + 1)}
+      swarm={owner.kind === 'swarm'}
       onDeploy={(review) =>
         onDeploy({ kind: 'linked', stackId: linkedId, name: stack.name, action: 'up', ...review })
       }
@@ -107,8 +110,11 @@ function LinkedEditor({
   onRestart,
   onDeploy,
   forget,
+  swarm,
 }: {
   linkedId: string;
+  /** Checked against a Swarm's rules too. */
+  swarm: boolean;
   opened: LinkedFiles;
   current: LinkedFiles;
   name: string;
@@ -127,6 +133,7 @@ function LinkedEditor({
   const check = useComposeCheck(
     base.files.map((f) => textOf(f, drafts)),
     'linked',
+    swarm,
   );
   const reload = useReloadLinked(linkedId, onRestart);
   const write = useWriteLinked(linkedId, (_, deploy) => {
@@ -137,7 +144,10 @@ function LinkedEditor({
   const outside = changedOutside(base, current);
   const conflict = write.error && toAppError(write.error).code === 'stack_files_changed';
   const canDeploy =
-    capabilities.data?.compose.state === 'available' && check !== null && check.errors.length === 0;
+    deployTool(capabilities.data, swarm ? { kind: 'swarm', id: '' } : { kind: 'host', id: '' })
+      ?.state === 'available' &&
+    check !== null &&
+    check.errors.length === 0;
   const save = (overwrite: boolean, deploy: boolean) => {
     // Nothing to write: redeploy what's in the folder.
     if (dirty.length === 0) return deploy && onDeploy(deployed ? { review: null } : undefined);
@@ -262,17 +272,17 @@ function LinkedEditor({
 }
 
 function ForgetButton({
-  hostId,
+  owner,
   stack,
   linkedId,
 }: {
-  hostId: string;
+  owner: StackOwner;
   stack: Stack;
   linkedId: string;
 }) {
   const navigate = useNavigate();
   const [dialog, confirm] = useConfirm();
-  const forget = useForgetLinked(hostId, linkedId);
+  const forget = useForgetLinked(owner, linkedId);
   return (
     <>
       <Button

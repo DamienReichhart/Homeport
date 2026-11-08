@@ -10,7 +10,7 @@ use homeport_core::error::{AppError, AppResult, ErrorCode};
 use crate::messages as msg;
 use homeport_storage::{Db, SecretBox};
 
-use crate::definition;
+use crate::{definition, owner::StackOwner};
 
 /// One compose file of a Managed Stack.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
@@ -34,13 +34,16 @@ impl ComposeFile {
 #[serde(rename_all = "camelCase")]
 pub struct ManagedStack {
     pub id: String,
-    pub host_id: String,
+    /// The Host or Swarm it's deployed to.
+    pub owner: StackOwner,
     pub name: String,
     /// Its compose files, merged in this order; never empty.
     pub files: Vec<ComposeFile>,
     pub has_env: bool,
     /// The Compose profiles it deploys, besides its services without one.
     pub profiles: Vec<String>,
+    /// On a Swarm: the docker CLI sends its own registry logins with a deploy.
+    pub registry_auth: bool,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -50,20 +53,41 @@ pub struct StackStore {
     secrets: Arc<SecretBox>,
 }
 
-const COLUMNS: &str = "id, host_id, name, env IS NOT NULL, created_at, updated_at, profiles";
+const COLUMNS: &str =
+    "id, host_id, name, env IS NOT NULL, created_at, updated_at, profiles, swarm_id, registry_auth";
 
 impl StackStore {
     pub fn new(db: Arc<Db>, secrets: Arc<SecretBox>) -> Self {
         Self { db, secrets }
     }
 
+    /// The Managed Stacks of the Host `host_id`.
     pub fn list(&self, host_id: &str) -> AppResult<Vec<ManagedStack>> {
+        self.list_of(&StackOwner::from(host_id))
+    }
+
+    /// The Managed Stacks of every Swarm.
+    pub fn list_on_swarms(&self) -> AppResult<Vec<ManagedStack>> {
         self.db.with(|c| {
             let stacks = c
                 .prepare(&format!(
-                    "SELECT {COLUMNS} FROM stacks WHERE host_id = ?1 ORDER BY name"
+                    "SELECT {COLUMNS} FROM stacks WHERE swarm_id IS NOT NULL ORDER BY swarm_id, name"
                 ))?
-                .query_map([host_id], read_row)?
+                .query_map([], read_row)?
+                .collect::<rusqlite::Result<Vec<_>>>()?;
+            stacks.into_iter().map(|s| with_files(c, s)).collect()
+        })
+    }
+
+    /// The Managed Stacks of a Host or a Swarm.
+    pub fn list_of(&self, owner: &StackOwner) -> AppResult<Vec<ManagedStack>> {
+        self.db.with(|c| {
+            let stacks = c
+                .prepare(&format!(
+                    "SELECT {COLUMNS} FROM stacks WHERE {} = ?1 ORDER BY name",
+                    owner.column()
+                ))?
+                .query_map([owner.id()], read_row)?
                 .collect::<rusqlite::Result<Vec<_>>>()?;
             stacks.into_iter().map(|s| with_files(c, s)).collect()
         })
@@ -84,13 +108,15 @@ impl StackStore {
             .ok_or_else(|| AppError::not_found(msg::GONE))
     }
 
+    /// Records a Managed Stack of a Host or a Swarm (`owner`).
     pub fn create(
         &self,
-        host_id: &str,
+        owner: impl Into<StackOwner>,
         name: &str,
         files: &[ComposeFile],
         env: &str,
     ) -> AppResult<ManagedStack> {
+        let owner = owner.into();
         let name = name.trim();
         definition::validate_name(name)?;
         definition::validate_files(files)?;
@@ -100,12 +126,12 @@ impl StackStore {
             .db
             .with(|c| {
                 let tx = c.transaction()?;
-                if name_taken(&tx, host_id, name)? {
+                if name_taken(&tx, &owner, name)? {
                     return Ok(false);
                 }
                 tx.execute(
-                    "INSERT INTO stacks (id, host_id, name, env) VALUES (?1, ?2, ?3, ?4)",
-                    (&id, host_id, name, &env),
+                    "INSERT INTO stacks (id, host_id, swarm_id, name, env) VALUES (?1, ?2, ?3, ?4, ?5)",
+                    (&id, owner.host_id(), owner.swarm_id(), name, &env),
                 )?;
                 write_files(&tx, &id, files)?;
                 tx.commit()?;
@@ -158,6 +184,20 @@ impl StackStore {
                 "UPDATE stacks SET profiles = ?2,
                  updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?1",
                 (id, &json),
+            )
+        })?;
+        if n == 0 {
+            return Err(AppError::not_found(msg::GONE));
+        }
+        self.get(id)
+    }
+
+    /// Whether a swarm deploy sends the docker CLI's registry logins.
+    pub fn set_registry_auth(&self, id: &str, on: bool) -> AppResult<ManagedStack> {
+        let n = self.db.with(|c| {
+            c.execute(
+                "UPDATE stacks SET registry_auth = ?2 WHERE id = ?1",
+                (id, on),
             )
         })?;
         if n == 0 {
@@ -225,13 +265,16 @@ fn with_files(c: &Connection, mut stack: ManagedStack) -> rusqlite::Result<Manag
     Ok(stack)
 }
 
-/// Whether the Host already has a Managed, Linked or Synced Stack named `name`.
-pub(crate) fn name_taken(c: &Connection, host_id: &str, name: &str) -> rusqlite::Result<bool> {
+/// Whether the Host or Swarm already has a Managed, Linked or Synced Stack named `name`.
+pub(crate) fn name_taken(c: &Connection, owner: &StackOwner, name: &str) -> rusqlite::Result<bool> {
+    let column = owner.column();
     c.query_row(
-        "SELECT EXISTS (SELECT 1 FROM stacks WHERE host_id = ?1 AND name = ?2)
-             OR EXISTS (SELECT 1 FROM linked_stacks WHERE host_id = ?1 AND name = ?2)
-             OR EXISTS (SELECT 1 FROM synced_stacks WHERE host_id = ?1 AND name = ?2)",
-        (host_id, name),
+        &format!(
+            "SELECT EXISTS (SELECT 1 FROM stacks WHERE {column} = ?1 AND name = ?2)
+                 OR EXISTS (SELECT 1 FROM linked_stacks WHERE {column} = ?1 AND name = ?2)
+                 OR EXISTS (SELECT 1 FROM synced_stacks WHERE {column} = ?1 AND name = ?2)"
+        ),
+        (owner.id(), name),
         |r| r.get(0),
     )
 }
@@ -240,7 +283,7 @@ pub(crate) fn name_taken(c: &Connection, host_id: &str, name: &str) -> rusqlite:
 fn read_row(row: &Row<'_>) -> rusqlite::Result<ManagedStack> {
     Ok(ManagedStack {
         id: row.get(0)?,
-        host_id: row.get(1)?,
+        owner: StackOwner::from_columns(row.get(1)?, row.get(7)?)?,
         name: row.get(2)?,
         files: vec![],
         has_env: row.get(3)?,
@@ -249,6 +292,7 @@ fn read_row(row: &Row<'_>) -> rusqlite::Result<ManagedStack> {
         profiles: serde_json::from_str(&row.get::<_, String>(6)?).map_err(|e| {
             rusqlite::Error::FromSqlConversionFailure(6, rusqlite::types::Type::Text, e.into())
         })?,
+        registry_auth: row.get(8)?,
     })
 }
 
@@ -360,6 +404,21 @@ mod tests {
         let s = store.create(&host, "shop", &one(COMPOSE), "").unwrap();
         hosts.delete(&host).unwrap();
         assert!(matches!(store.get(&s.id), Err(ref e) if e.is(ErrorCode::NotFound)));
+    }
+
+    #[test]
+    fn swarm_stacks_have_names_of_their_own_and_outlive_any_host() {
+        let (store, hosts, host) = setup(SecretBox::from_key(&[4; 32]));
+        let swarm = StackOwner::Swarm("swarm1".into());
+        store.create(&host, "shop", &one(COMPOSE), "").unwrap();
+        let s = store.create(&swarm, "shop", &one(COMPOSE), "").unwrap();
+        assert_eq!(s.owner, swarm);
+        assert!(!s.registry_auth);
+        assert!(store.create(&swarm, "shop", &one(COMPOSE), "").is_err());
+        assert_eq!(store.list_of(&swarm).unwrap().len(), 1);
+        assert!(store.set_registry_auth(&s.id, true).unwrap().registry_auth);
+        hosts.delete(&host).unwrap();
+        assert_eq!(store.get(&s.id).unwrap().name, "shop");
     }
 
     #[test]

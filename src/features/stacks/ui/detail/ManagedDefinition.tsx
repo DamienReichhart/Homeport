@@ -13,17 +13,19 @@ import type { ComposeJob } from '../../model/composeJob';
 import { ReviewDialog } from '../dialogs/ReviewDialog';
 import { StackEditor } from '../StackEditor';
 import { ProfilesControl } from './ProfilesControl';
+import type { StackOwner } from '@/shared/api';
+import { deployTool } from '../../model/deployTool';
 import { t } from '@/shared/i18n';
 
 /** Edits, saves, redeploys or forgets the stored definition of a Managed Stack. */
 export function ManagedDefinition({
-  hostId,
+  owner,
   managed,
   initialEnv,
   deployed,
   onDeploy,
 }: {
-  hostId: string;
+  owner: StackOwner;
   managed: ManagedStack;
   initialEnv: string;
   /** Whether it runs, so a redeploy shows what changes first. */
@@ -41,9 +43,11 @@ export function ManagedDefinition({
   const save = useSaveDefinition(managed.id, (saved, deploy) => {
     if (deploy) onDeploy({ kind: 'managed', stackId: saved.id, name: saved.name, action: 'up' });
   });
-  const forget = useForgetDefinition(hostId, managed.id);
+  const forget = useForgetDefinition(owner, managed.id);
   const canDeploy =
-    capabilities.data?.compose.state === 'available' && check !== null && check.errors.length === 0;
+    deployTool(capabilities.data, owner)?.state === 'available' &&
+    check !== null &&
+    check.errors.length === 0;
   return (
     <div className="grid gap-4">
       <StackEditor
@@ -53,6 +57,7 @@ export function ManagedDefinition({
         onEnvChange={setEnv}
         keychain={capabilities.data?.keychain ?? true}
         onCheck={setCheck}
+        swarm={owner.kind === 'swarm'}
       />
       <ProfilesControl
         key={managed.profiles.join()}
