@@ -10,6 +10,7 @@ import hosts from './hosts';
 import images from './images';
 import networks from './networks';
 import overview from './overview';
+import pods from './pods';
 import registries from './registries';
 import repositories from './repositories';
 import search from './search';
@@ -19,6 +20,7 @@ import swarm from './swarm';
 import ui from './ui';
 import updates from './updates';
 import volumes from './volumes';
+import workloads from './workloads';
 
 /** The UI's text: one namespace per file, its keys prefixed with its name. */
 export const uiMessages = {
@@ -34,6 +36,7 @@ export const uiMessages = {
   ...images,
   ...networks,
   ...overview,
+  ...pods,
   ...registries,
   ...repositories,
   ...search,
@@ -42,6 +45,7 @@ export const uiMessages = {
   ...swarm,
   ...updates,
   ...volumes,
+  ...workloads,
 };
 
 /**

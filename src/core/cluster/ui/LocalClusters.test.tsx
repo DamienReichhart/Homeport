@@ -1,6 +1,7 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { baseCommands, clusterView } from '@/test/fixtures';
+import { baseCommands } from '@/test/fixtures';
+import { clusterView } from '@/test/clusters';
 import { mockCommands } from '@/test/ipc';
 import { renderWithProviders } from '@/test/render';
 import { LocalClusters } from './LocalClusters';

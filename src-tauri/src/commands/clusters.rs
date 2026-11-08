@@ -1,14 +1,18 @@
 //! Clusters: the Kubernetes APIs Homeport connects to, each supervised
 //! like a Host.
 
-use tauri::State;
+use tauri::{ipc::Channel, State};
 
+use homeport_clusters::resources::{
+    self, EventView, NamespaceView, On, PodDetail, PodView, ResourceKind, WorkloadDetail,
+    WorkloadKind, WorkloadView,
+};
 use homeport_clusters::{
     detect::{self, LocalClusters},
     kubeconfig::{ContextChoice, KubeContexts},
     service::ClusterView,
 };
-use homeport_core::host::HostConnection;
+use homeport_core::{host::HostConnection, streams::StreamId};
 use homeport_engine::containers;
 
 use crate::{app::AppState, error::AppResult};
@@ -115,4 +119,140 @@ pub async fn clusters_detect_local(state: State<'_, AppState>) -> AppResult<Loca
     }
     let missing = detect::missing(&labels, &detect::local_contexts());
     Ok(LocalClusters { found, missing })
+}
+
+// What runs on a Cluster (read-only).
+
+/// The connected Cluster `id`.
+fn on(state: &AppState, id: &str) -> AppResult<On> {
+    let (client, cluster) = state.clusters.registry.client(id)?;
+    Ok(On { client, cluster })
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_namespaces(
+    state: State<'_, AppState>,
+    id: String,
+) -> AppResult<Vec<NamespaceView>> {
+    on(&state, &id)?.namespaces().await
+}
+
+/// The workloads of `kind` in `namespace`, or in every Namespace without one.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_workloads_list(
+    state: State<'_, AppState>,
+    id: String,
+    kind: WorkloadKind,
+    namespace: Option<String>,
+) -> AppResult<Vec<WorkloadView>> {
+    on(&state, &id)?.workloads(kind, namespace.as_deref()).await
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_workload_get(
+    state: State<'_, AppState>,
+    id: String,
+    kind: WorkloadKind,
+    namespace: String,
+    name: String,
+) -> AppResult<WorkloadDetail> {
+    on(&state, &id)?.workload(kind, &namespace, &name).await
+}
+
+/// The Jobs a CronJob started, newest first.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_cron_job_jobs(
+    state: State<'_, AppState>,
+    id: String,
+    namespace: String,
+    name: String,
+) -> AppResult<Vec<WorkloadView>> {
+    on(&state, &id)?.jobs_of(&namespace, &name).await
+}
+
+/// The Pods in `namespace` (every one without), those matching a label
+/// `selector` or on a `node` when given.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_pods_list(
+    state: State<'_, AppState>,
+    id: String,
+    namespace: Option<String>,
+    selector: Option<String>,
+    node: Option<String>,
+) -> AppResult<Vec<PodView>> {
+    on(&state, &id)?
+        .pods(namespace.as_deref(), selector.as_deref(), node.as_deref())
+        .await
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_pod_get(
+    state: State<'_, AppState>,
+    id: String,
+    namespace: String,
+    name: String,
+) -> AppResult<PodDetail> {
+    on(&state, &id)?.pod(&namespace, &name).await
+}
+
+/// The Events about one object, warnings first.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_object_events(
+    state: State<'_, AppState>,
+    id: String,
+    kind: ResourceKind,
+    namespace: Option<String>,
+    name: String,
+) -> AppResult<Vec<EventView>> {
+    on(&state, &id)?
+        .object_events(kind, namespace.as_deref(), &name)
+        .await
+}
+
+/// An object as read-only YAML, without managedFields or Secret values.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_resource_yaml(
+    state: State<'_, AppState>,
+    id: String,
+    kind: ResourceKind,
+    namespace: Option<String>,
+    name: String,
+) -> AppResult<String> {
+    on(&state, &id)?
+        .yaml(kind, namespace.as_deref(), &name)
+        .await
+}
+
+/// Told when the resources a list shows changed.
+#[derive(Debug, Clone, serde::Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct ResourcesChanged {
+    pub kind: ResourceKind,
+}
+
+/// Watches the resources of `kind` in `namespace` (every one without) and
+/// says when they change, until cancelled.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_watch_subscribe(
+    state: State<'_, AppState>,
+    id: String,
+    kind: ResourceKind,
+    namespace: Option<String>,
+    on_event: Channel<ResourcesChanged>,
+) -> AppResult<StreamId> {
+    let (client, _) = state.clusters.registry.client(&id)?;
+    Ok(state
+        .streams
+        .spawn(resources::watch(client, kind, namespace, move || {
+            on_event.send(ResourcesChanged { kind }).is_ok()
+        })))
 }

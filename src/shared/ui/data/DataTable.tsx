@@ -2,14 +2,16 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
   type ColumnDef,
   type RowSelectionState,
   type SortingState,
 } from '@tanstack/react-table';
-import { ArrowDownIcon, ArrowUpIcon } from 'lucide-react';
+import { ArrowDownIcon, ArrowUpIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
+import { Button } from '../primitives/button';
 import { Checkbox } from '../primitives/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../primitives/table';
 import { cn } from '@/shared/lib/utils';
@@ -25,7 +27,8 @@ function scrollIntoView(row: HTMLTableRowElement | null) {
 /**
  * A sortable, filterable table. `filter` is matched against every column
  * with an accessor; `onSelectionChange` enables row checkboxes;
- * `selectedId` marks one row, such as one just made, and scrolls to it.
+ * `selectedId` marks one row, such as one just made, and scrolls to it;
+ * `pageSize` shows long lists a page at a time, so thousands of rows stay fast.
  */
 export function DataTable<T>({
   columns,
@@ -37,6 +40,7 @@ export function DataTable<T>({
   onSelectionChange,
   selectedId,
   initialSorting = [],
+  pageSize,
 }: {
   columns: ColumnDef<T, unknown>[];
   data: T[];
@@ -47,6 +51,7 @@ export function DataTable<T>({
   onSelectionChange?: (rows: T[]) => void;
   selectedId?: string | null;
   initialSorting?: SortingState;
+  pageSize?: number;
 }) {
   const [sorting, setSorting] = useState<SortingState>(initialSorting);
   const [selection, setSelection] = useState<RowSelectionState>({});
@@ -95,7 +100,15 @@ export function DataTable<T>({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    ...(pageSize
+      ? {
+          getPaginationRowModel: getPaginationRowModel(),
+          initialState: { pagination: { pageIndex: 0, pageSize } },
+          autoResetPageIndex: true,
+        }
+      : {}),
   });
+  const pages = pageSize ? table.getPageCount() : 1;
 
   const rows = table.getRowModel().rows;
   return (
@@ -156,6 +169,33 @@ export function DataTable<T>({
           )}
         </TableBody>
       </Table>
+      {pages > 1 && (
+        <div className="text-muted-foreground flex items-center justify-end gap-2 border-t px-3 py-2 text-sm">
+          {t('ui.table.page', {
+            page: table.getState().pagination.pageIndex + 1,
+            pages,
+            rows: table.getFilteredRowModel().rows.length,
+          })}
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={t('ui.table.previous')}
+            disabled={!table.getCanPreviousPage()}
+            onClick={() => table.previousPage()}
+          >
+            <ChevronLeftIcon />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={t('ui.table.next')}
+            disabled={!table.getCanNextPage()}
+            onClick={() => table.nextPage()}
+          >
+            <ChevronRightIcon />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

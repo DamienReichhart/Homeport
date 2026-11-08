@@ -127,4 +127,17 @@ homeport_core::messages! {
     /// The plugin needs a terminal or a browser to sign in.
     EXEC_INTERACTIVE = "errors.clusters.exec.interactive" => "{command} needs you to sign in, which it can't do inside Homeport.";
     EXEC_INTERACTIVE_HINT = "errors.clusters.exec.interactive.hint" => "Run kubectl once in a terminal with this context to sign in, then reconnect:";
+
+    // What runs on a Cluster.
+
+    /// The credentials may not do this in one Namespace.
+    FORBIDDEN_IN = "errors.clusters.forbiddenIn" => "Your credentials can't {verb} {resource} in {namespace}.";
+    /// …in every Namespace at once.
+    FORBIDDEN_EVERYWHERE = "errors.clusters.forbiddenEverywhere" => "Your credentials can't {verb} {resource} across all namespaces.";
+    FORBIDDEN_EVERYWHERE_HINT = "errors.clusters.forbiddenEverywhere.hint" => "Pick a namespace you're allowed to see, or ask the cluster's administrator for this permission. Check with:";
+    /// …on a resource that isn't in a Namespace.
+    FORBIDDEN = "errors.clusters.forbidden" => "Your credentials can't {verb} {resource}.";
+    FORBIDDEN_HINT = "errors.clusters.forbidden.hint" => "Ask the cluster's administrator for this permission. Check with:";
+    /// The resource was deleted while it was open.
+    RESOURCE_GONE = "errors.clusters.resourceGone" => "{kind} {name} no longer exists.";
 }

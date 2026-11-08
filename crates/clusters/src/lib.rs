@@ -18,6 +18,7 @@ pub mod kubeconfig;
 pub mod messages;
 pub mod model;
 pub mod registry;
+pub mod resources;
 pub mod service;
 pub mod store;
 

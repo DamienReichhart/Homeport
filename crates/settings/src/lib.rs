@@ -1,7 +1,7 @@
 //! The user's preferences (theme, last Host, update checks, the desktop), kept as one JSON
 //! document in the database.
 
-use std::{fs, path::Path, sync::Arc};
+use std::{collections::BTreeMap, fs, path::Path, sync::Arc};
 
 use rusqlite::OptionalExtension;
 use serde::{Deserialize, Serialize};
@@ -30,6 +30,9 @@ pub struct Settings {
     /// The Host or Cluster selected when the app was last closed; `None`
     /// in settings from before Clusters, which only have `last_host_id`.
     pub last_selection: Option<Selection>,
+    /// The Namespace each Cluster's pages show, by Cluster id; `""` for
+    /// every Namespace. A Cluster without one shows its context's Namespace.
+    pub cluster_namespaces: BTreeMap<String, String>,
     /// Look for a new version at launch and every few hours.
     pub check_for_updates: bool,
     /// Minutes between checks of Synced Stacks' repositories while Homeport
@@ -101,6 +104,7 @@ impl Default for Settings {
             theme: Theme::default(),
             last_host_id: None,
             last_selection: None,
+            cluster_namespaces: BTreeMap::new(),
             check_for_updates: true,
             sync_interval_minutes: 5,
             keep_events_days: 30,

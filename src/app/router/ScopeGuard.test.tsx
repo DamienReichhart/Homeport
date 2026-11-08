@@ -1,5 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
-import { baseCommands, clusterView, connectedHost } from '@/test/fixtures';
+import { baseCommands, connectedHost } from '@/test/fixtures';
+import { clusterView } from '@/test/clusters';
 import { mockCommands } from '@/test/ipc';
 import { renderApp } from '@/test/render';
 

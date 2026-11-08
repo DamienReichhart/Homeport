@@ -104,6 +104,27 @@ export const commands = {
 	 *  kind and k3d clusters running on a connected local Host that it doesn't.
 	 */
 	clustersDetectLocal: () => __TAURI_INVOKE<LocalClusters>("clusters_detect_local"),
+	clustersNamespaces: (id: string) => __TAURI_INVOKE<NamespaceView[]>("clusters_namespaces", { id }),
+	/**  The workloads of `kind` in `namespace`, or in every Namespace without one. */
+	clustersWorkloadsList: (id: string, kind: WorkloadKind, namespace: string | null) => __TAURI_INVOKE<WorkloadView[]>("clusters_workloads_list", { id, kind, namespace }),
+	clustersWorkloadGet: (id: string, kind: WorkloadKind, namespace: string, name: string) => __TAURI_INVOKE<WorkloadDetail>("clusters_workload_get", { id, kind, namespace, name }),
+	/**  The Jobs a CronJob started, newest first. */
+	clustersCronJobJobs: (id: string, namespace: string, name: string) => __TAURI_INVOKE<WorkloadView[]>("clusters_cron_job_jobs", { id, namespace, name }),
+	/**
+	 *  The Pods in `namespace` (every one without), those matching a label
+	 *  `selector` or on a `node` when given.
+	 */
+	clustersPodsList: (id: string, namespace: string | null, selector: string | null, node: string | null) => __TAURI_INVOKE<PodView[]>("clusters_pods_list", { id, namespace, selector, node }),
+	clustersPodGet: (id: string, namespace: string, name: string) => __TAURI_INVOKE<PodDetail>("clusters_pod_get", { id, namespace, name }),
+	/**  The Events about one object, warnings first. */
+	clustersObjectEvents: (id: string, kind: ResourceKind, namespace: string | null, name: string) => __TAURI_INVOKE<EventView[]>("clusters_object_events", { id, kind, namespace, name }),
+	/**  An object as read-only YAML, without managedFields or Secret values. */
+	clustersResourceYaml: (id: string, kind: ResourceKind, namespace: string | null, name: string) => __TAURI_INVOKE<string>("clusters_resource_yaml", { id, kind, namespace, name }),
+	/**
+	 *  Watches the resources of `kind` in `namespace` (every one without) and
+	 *  says when they change, until cancelled.
+	 */
+	clustersWatchSubscribe: (id: string, kind: ResourceKind, namespace: string | null, onEvent: Channel<ResourcesChanged>) => __TAURI_INVOKE<number>("clusters_watch_subscribe", { id, kind, namespace, onEvent }),
 	/**  Backs up everything Homeport holds to `path`, sealed with `passphrase`. */
 	dataBackup: (path: string, passphrase: string) => __TAURI_INVOKE<BackupOutcome>("data_backup", { path, passphrase }),
 	/**  What the backup at `path` holds, for the restore's confirmation. */
@@ -782,6 +803,16 @@ export type ComposeSupport = { state: "available"; cli: ComposeCli } |
 /**  `problem` says what's missing and how to install it. */
 { state: "unavailable"; problem: AppError };
 
+/**  One condition of a resource's status. */
+export type ConditionView = {
+	type: string,
+	/**  `True`, `False` or `Unknown`. */
+	status: string,
+	reason: string | null,
+	message: string | null,
+	lastTransition: string | null,
+};
+
 /**  A config's content as text, or its size when it isn't text. */
 export type ConfigContent = {
 	text: string | null,
@@ -1028,6 +1059,28 @@ export type EventCursor = {
 	kind: string,
 	action: string,
 	actorId: string,
+};
+
+/**  The resource an Event is about. */
+export type EventObject = {
+	kind: string,
+	namespace: string | null,
+	name: string,
+};
+
+export type EventView = {
+	namespace: string,
+	name: string,
+	/**  `Normal` or `Warning`. */
+	type: string,
+	reason: string,
+	message: string,
+	object: EventObject,
+	count: number,
+	firstSeen: string | null,
+	lastSeen: string | null,
+	/**  What reported it (`kubelet`, `deployment-controller`…). */
+	source: string | null,
 };
 
 export type ExecEvent = { type: "output"; data: string } | 
@@ -1538,6 +1591,15 @@ export type MountSpec = {
 	readOnly: boolean,
 };
 
+/**  A Namespace, as the filter and its list show it. */
+export type NamespaceView = {
+	name: string,
+	/**  `Active` or `Terminating`. */
+	phase: string,
+	created: string | null,
+	labels: { [key in string]: string },
+};
+
 export type NetworkInput = {
 	name: string,
 	/**  Defaults to `bridge`. */
@@ -1638,10 +1700,72 @@ export type ObjectValue =
  */
 { kind: "file"; path: string };
 
+/**  The resource that controls another, such as a Pod's ReplicaSet. */
+export type OwnerView = {
+	kind: string,
+	name: string,
+};
+
 export type PackageManager = "apt" | "dnf" | "zypper" | "scoop" | "aur";
 
 /**  A parameter of a message: text such as a Host's name, or a number. */
 export type Param = string | number;
+
+/**  A container of a Pod and its state. */
+export type PodContainer = {
+	name: string,
+	image: string,
+	/**  An init container, run before the others. */
+	init: boolean,
+	/**  `running`, `waiting` or `terminated`. */
+	state: string,
+	reason: string | null,
+	message: string | null,
+	started: string | null,
+	exitCode: number | null,
+	ready: boolean,
+	restarts: number,
+	/**  Why it last ended, when it restarted. */
+	lastReason: string | null,
+};
+
+export type PodDetail = {
+	view: PodView,
+	labels: { [key in string]: string },
+	annotations: { [key in string]: string },
+	conditions: ConditionView[],
+	containers: PodContainer[],
+	hostIp: string | null,
+	qosClass: string | null,
+	serviceAccount: string | null,
+};
+
+/**  How a Pod is doing, for its colour. */
+export type PodHealth = "running" | "pending" | "succeeded" | "failed" | 
+/**  A container that keeps crashing, or can't pull its image. */
+"crashing" | "terminating" | "unknown";
+
+export type PodView = {
+	namespace: string,
+	name: string,
+	/**  Its phase (`Running`, `Pending`…). */
+	phase: string,
+	/**
+	 *  What `kubectl get pods` shows: the phase, or why a container waits
+	 *  or ended (`CrashLoopBackOff`, `ImagePullBackOff`, `OOMKilled`…).
+	 */
+	status: string,
+	health: PodHealth,
+	/**  Containers ready, of `containers`. */
+	ready: number,
+	containers: number,
+	restarts: number,
+	node: string | null,
+	ip: string | null,
+	created: string | null,
+	owner: OwnerView | null,
+	images: string[],
+};
 
 export type PortBinding = {
 	ip: string | null,
@@ -1789,6 +1913,13 @@ export type RepositoryDraft = {
 	auth: RepoAuth,
 	username: string | null,
 	token: string | null,
+};
+
+export type ResourceKind = "namespace" | "deployment" | "statefulSet" | "daemonSet" | "job" | "cronJob" | "pod" | "service" | "ingress" | "configMap" | "secret" | "node" | "event";
+
+/**  Told when the resources a list shows changed. */
+export type ResourcesChanged = {
+	kind: ResourceKind,
 };
 
 /**  When a task's container is restarted. */
@@ -1961,6 +2092,11 @@ export type Settings = {
 	 *  in settings from before Clusters, which only have `last_host_id`.
 	 */
 	lastSelection?: Selection | null,
+	/**
+	 *  The Namespace each Cluster's pages show, by Cluster id; `""` for
+	 *  every Namespace. A Cluster without one shows its context's Namespace.
+	 */
+	clusterNamespaces?: { [key in string]: string },
 	/**  Look for a new version at launch and every few hours. */
 	checkForUpdates?: boolean,
 	/**
@@ -2315,6 +2451,14 @@ export type TaskView = {
 	exitCode: number | null,
 };
 
+/**  A container of a workload's Pod template. */
+export type TemplateContainer = {
+	name: string,
+	image: string,
+	/**  `8080/TCP`, … */
+	ports: string[],
+};
+
 export type Theme = "system" | "light" | "dark";
 
 export type TransferEvent = 
@@ -2379,6 +2523,54 @@ export type VolumeView = {
 	stack: string | null,
 	/**  Names of containers mounting this volume. */
 	usedBy: string[],
+};
+
+/**  A workload with what its page shows beyond the list. */
+export type WorkloadDetail = {
+	view: WorkloadView,
+	labels: { [key in string]: string },
+	annotations: { [key in string]: string },
+	/**  The labels its Pods are selected by, as `key=value,…`; empty for a CronJob. */
+	selector: string,
+	conditions: ConditionView[],
+	containers: TemplateContainer[],
+	/**  How it rolls out (`RollingUpdate`, `Recreate`, `OnDelete`). */
+	strategy: string | null,
+};
+
+/**  Whether a workload does what it's asked. */
+export type WorkloadHealth = 
+/**  Every wanted Pod is ready (or a Job finished, a CronJob is scheduled). */
+"ready" | 
+/**  Rolling out, scheduling or running towards what it wants. */
+"progressing" | 
+/**  Stuck: a rollout past its deadline, Pods unavailable. */
+"degraded" | 
+/**  A Job that failed. */
+"failed" | 
+/**  A Job or CronJob that is suspended, or scaled to zero. */
+"paused";
+
+export type WorkloadKind = "deployment" | "statefulSet" | "daemonSet" | "job" | "cronJob";
+
+export type WorkloadView = {
+	kind: WorkloadKind,
+	namespace: string,
+	name: string,
+	/**  Pods ready (succeeded for a Job, active for a CronJob). */
+	ready: number,
+	/**  Pods wanted (completions for a Job; 0 for a CronJob). */
+	desired: number,
+	/**  Pods running the newest template, for rollouts. */
+	upToDate: number | null,
+	health: WorkloadHealth,
+	images: string[],
+	created: string | null,
+	/**  A CronJob's schedule. */
+	schedule: string | null,
+	/**  When a CronJob last started a Job. */
+	lastSchedule: string | null,
+	owner: OwnerView | null,
 };
 
 /* Tauri Specta runtime */

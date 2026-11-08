@@ -6,11 +6,13 @@ import { hostsFeature } from '@/features/hosts';
 import { imagesFeature } from '@/features/images';
 import { networksFeature } from '@/features/networks';
 import { overviewFeature } from '@/features/overview';
+import { podsFeature } from '@/features/pods';
 import { settingsFeature } from '@/features/settings';
 import { stacksFeature } from '@/features/stacks';
 import { swarmFeature } from '@/features/swarm';
 import { updatesFeature } from '@/features/updates';
 import { volumesFeature } from '@/features/volumes';
+import { workloadsFeature } from '@/features/workloads';
 import type { FeatureManifest } from '@/core/feature';
 
 /** Every feature with pages or palette commands, in sidebar order. Add one line per new feature. */
@@ -23,6 +25,8 @@ export const features: FeatureManifest[] = [
   networksFeature,
   stacksFeature,
   swarmFeature,
+  workloadsFeature,
+  podsFeature,
   eventsFeature,
   settingsFeature,
   hostsFeature,
