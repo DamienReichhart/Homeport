@@ -1,8 +1,8 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { baseCommands } from '@/test/fixtures';
-import { incusHost, incusInstance, incusProject } from '@/test/incus';
-import { mockCommands } from '@/test/ipc';
+import { incusHost, incusImage, incusInstance, incusProject, remoteImage } from '@/test/incus';
+import { mockCommands, sendToChannel } from '@/test/ipc';
 import { renderApp } from '@/test/render';
 
 const web = incusInstance('web', { snapshots: 2 });
@@ -32,6 +32,13 @@ function setup(calls: Call[] = []) {
       raw: { name },
     }),
     incus_instance_act: record('incus_instance_act', null),
+    incus_instance_create_subscribe: record('incus_instance_create_subscribe', 1),
+    incus_images: () => [incusImage('4495673b5944aaaa', { aliases: ['alpine'] })],
+    incus_remote_images: () => [remoteImage('debian/12')],
+    incus_profiles: () => [
+      { name: 'default', description: '', config: {}, devices: {}, usedBy: [] },
+      { name: 'web', description: '', config: {}, devices: {}, usedBy: [] },
+    ],
     incus_instance_delete: record('incus_instance_delete', null),
   });
   return userEvent.setup();
@@ -99,5 +106,51 @@ describe('incus instances', () => {
     expect(screen.getAllByText('From a profile')).toHaveLength(1);
     await user.click(screen.getByRole('tab', { name: 'Devices' }));
     expect(await screen.findByText('root')).toBeInTheDocument();
+  });
+
+  it('make an instance from a remote image with profiles and limits, showing the download', async () => {
+    const calls: Call[] = [];
+    const user = setup(calls);
+    renderApp('/incus/instances');
+    await user.click(await screen.findByRole('button', { name: 'New instance' }));
+    const dialog = await screen.findByRole('dialog');
+    const create = within(dialog).getByRole('button', { name: 'Create' });
+    await user.type(within(dialog).getByLabelText('Name'), 'web2');
+    expect(create).toBeDisabled();
+    await user.click(await within(dialog).findByRole('button', { name: /Debian 12/ }));
+    await user.click(within(dialog).getByLabelText('web'));
+    await user.type(within(dialog).getByLabelText('Memory'), '2GiB');
+    await user.click(create);
+    await waitFor(() =>
+      expect(calls.find((c) => c.cmd === 'incus_instance_create_subscribe')?.args).toMatchObject({
+        hostId: 'i1',
+        project: 'default',
+        spec: {
+          name: 'web2',
+          type: 'container',
+          source: {
+            kind: 'remote',
+            server: 'https://images.linuxcontainers.org',
+            alias: 'debian/12',
+          },
+          profiles: ['default', 'web'],
+          cpu: null,
+          memory: '2GiB',
+          disk: null,
+          start: true,
+        },
+      }),
+    );
+    const channel = calls.find((c) => c.cmd === 'incus_instance_create_subscribe')?.args.onEvent;
+    sendToChannel(channel, {
+      type: 'progress',
+      id: null,
+      status: 'rootfs: 7% (3.10MB/s)',
+      current: 7,
+      total: 100,
+    });
+    expect(await within(dialog).findByText('rootfs: 7% (3.10MB/s)')).toBeInTheDocument();
+    sendToChannel(channel, { type: 'done' });
+    expect(await within(dialog).findByText('web2 is ready.')).toBeInTheDocument();
   });
 });

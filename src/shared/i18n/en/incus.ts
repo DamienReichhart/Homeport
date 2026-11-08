@@ -156,4 +156,31 @@ export default {
   'incus.profiles.editHint':
     'Its description, config and devices, as incus profile edit shows them. Saving applies them to the instances using it, as Incus does; if someone changed it since it loaded, Homeport refuses rather than overwrite.',
   'incus.profiles.yamlOf': 'YAML of {name}',
+  'incus.new.action': 'New instance',
+  'incus.new.title': 'New instance',
+  'incus.new.description':
+    'A system container or a virtual machine in the project {project}, from an image.',
+  'incus.new.name': 'Name',
+  'incus.new.image': 'Image',
+  'incus.new.origin.remote': 'From an image server',
+  'incus.new.origin.local': 'From this host’s images',
+  'incus.new.localImage': 'Image on this host',
+  'incus.new.localImagePlaceholder': 'Pick an image',
+  'incus.new.profiles': 'Profiles',
+  'incus.new.cpu': 'CPUs',
+  'incus.new.memory': 'Memory',
+  'incus.new.disk': 'Root disk',
+  'incus.new.limitsHint':
+    'Optional: left empty, the profiles decide. Sizes read like 512MiB or 20GiB.',
+  'incus.new.start': 'Start it once it’s made',
+  'incus.new.confirm': 'Create',
+  'incus.new.open': 'Open it',
+  'incus.new.made': 'Made {name}',
+  'incus.new.done': '{name} is ready.',
+  'incus.new.problem.name':
+    'Name it with letters, digits and dashes, starting with a letter, up to 63 characters.',
+  'incus.new.problem.image': 'Pick an image, or type its alias.',
+  'incus.new.problem.cpu': 'CPUs is a whole number from 1.',
+  'incus.new.problem.memory': 'Memory reads like 512MiB or 2GiB.',
+  'incus.new.problem.disk': 'Root disk reads like 20GiB.',
 } as const;

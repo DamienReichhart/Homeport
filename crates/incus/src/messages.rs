@@ -129,6 +129,13 @@ homeport_core::messages! {
     /// Deleting a profile Instances use.
     PROFILE_IN_USE_HINT = "errors.incus.profileInUse.hint" => "Remove it from those Instances' profiles first, with incus profile remove.";
 
+    /// A name Incus wouldn't give an Instance.
+    INSTANCE_NAME_INVALID = "errors.incus.instanceNameInvalid" => "\"{name}\" isn't an Instance name: use letters, digits and dashes, starting with a letter, up to 63 characters.";
+    /// Creating an Instance under a name in use.
+    INSTANCE_EXISTS = "errors.incus.instanceExists" => "The project already has an Instance named {name}.";
+    /// Resizing the root disk when no chosen profile gives one.
+    ROOT_DISK_UNKNOWN = "errors.incus.rootDiskUnknown" => "None of the chosen profiles gives the Instance a root disk to resize.";
+    ROOT_DISK_UNKNOWN_HINT = "errors.incus.rootDiskUnknown.hint" => "Leave the disk size empty, or add a profile with a root disk (the default profile usually has one).";
     /// The project picked isn't there any more.
     PROJECT_NOT_FOUND = "errors.incus.projectNotFound" => "There's no project {project} on {name}.";
     PROJECT_NOT_FOUND_HINT = "errors.incus.projectNotFound.hint" => "Pick another project under the host switcher.";

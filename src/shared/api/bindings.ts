@@ -481,6 +481,11 @@ export const commands = {
 	incusInstanceAct: (hostId: string, project: string, name: string, action: InstanceAction, force: boolean) => __TAURI_INVOKE<null>("incus_instance_act", { hostId, project, name, action, force }),
 	/**  Deletes an Instance with its snapshots; `stop_first` stops a running one. */
 	incusInstanceDelete: (hostId: string, project: string, name: string, stopFirst: boolean) => __TAURI_INVOKE<null>("incus_instance_delete", { hostId, project, name, stopFirst }),
+	/**
+	 *  Makes an Instance from an image, streaming the image download's
+	 *  progress until it's made (and started, if asked).
+	 */
+	incusInstanceCreateSubscribe: (hostId: string, project: string, spec: InstanceSpec, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("incus_instance_create_subscribe", { hostId, project, spec, onEvent }),
 	/**  The images of `project`, newest first. */
 	incusImages: (hostId: string, project: string) => __TAURI_INVOKE<IncusImage[]>("incus_images", { hostId, project }),
 	/**
@@ -2260,6 +2265,30 @@ export type InstallRequest = {
 
 /**  A change of state an Instance can be asked for. */
 export type InstanceAction = "start" | "stop" | "restart" | "freeze" | "unfreeze";
+
+/**  Where a new Instance's image comes from. */
+export type InstanceSource = 
+/**  An image the Host keeps, by fingerprint. */
+{ kind: "local"; fingerprint: string } | 
+/**  An image of a simplestreams server, by alias: "debian/12". */
+{ kind: "remote"; server: string; alias: string };
+
+/**  What the New Instance dialog asks for. */
+export type InstanceSpec = {
+	name: string,
+	type: InstanceType,
+	source: InstanceSource,
+	/**  In order: later ones override earlier ones. */
+	profiles: string[],
+	/**  `limits.cpu`: how many CPUs. */
+	cpu: number | null,
+	/**  `limits.memory`: "2GiB". */
+	memory: string | null,
+	/**  The root disk's size: "20GiB". */
+	disk: string | null,
+	/**  Start it once it's made. */
+	start: boolean,
+};
 
 /**  What an Instance is doing, from Incus's status code. */
 export type InstanceStatus = "running" | "stopped" | "frozen" | "starting" | "stopping" | "freezing" | "error" | "unknown";

@@ -256,6 +256,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             incus::incus_instance,
             incus::incus_instance_act,
             incus::incus_instance_delete,
+            incus::incus_instance_create_subscribe,
             incus::incus_images,
             incus::incus_remote_images,
             incus::incus_image_copy_subscribe,

@@ -12,7 +12,7 @@ use homeport_core::{
 use homeport_hosts::service::{CredentialsInput, HostInput, HostView};
 use homeport_incus::{
     images::{self, ImageCopy, IncusImage},
-    instances::{self, IncusInstance, IncusInstanceDetail, InstanceAction},
+    instances::{self, IncusInstance, IncusInstanceDetail, InstanceAction, InstanceSpec},
     profiles::{self, IncusProfile, IncusProfileDetail},
     projects::{self, IncusProject},
     simplestreams::{self, RemoteImage},
@@ -107,6 +107,24 @@ pub async fn incus_instance_act(
 ) -> AppResult<()> {
     let incus = state.hosts.registry.incus(&host_id)?;
     instances::act(&incus, &project, &name, action, force).await
+}
+
+/// Makes an Instance from an image, streaming the image download's
+/// progress until it's made (and started, if asked).
+#[tauri::command]
+#[specta::specta]
+pub async fn incus_instance_create_subscribe(
+    state: State<'_, AppState>,
+    host_id: String,
+    project: String,
+    spec: InstanceSpec,
+    on_event: Channel<PullEvent>,
+) -> AppResult<StreamId> {
+    let incus = state.hosts.registry.incus(&host_id)?;
+    instances::validate_name(&spec.name)?;
+    Ok(state.streams.spawn(async move {
+        instances::create(&incus, &project, &spec, move |e| on_event.send(e).is_ok()).await;
+    }))
 }
 
 /// Deletes an Instance with its snapshots; `stop_first` stops a running one.

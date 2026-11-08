@@ -86,6 +86,79 @@ fn instance_types_are_incus_names() {
     assert_eq!(path("my vm"), "/1.0/instances/my%20vm");
 }
 
+fn spec(source: InstanceSource) -> InstanceSpec {
+    InstanceSpec {
+        name: "web".into(),
+        kind: InstanceType::Container,
+        source,
+        profiles: vec!["default".into()],
+        cpu: Some(2),
+        memory: Some("2GiB".into()),
+        disk: Some("20GiB".into()),
+        start: true,
+    }
+}
+
+#[test]
+fn a_new_instance_names_its_image_profiles_and_limits() {
+    let remote = spec(InstanceSource::Remote {
+        server: "https://images.linuxcontainers.org".into(),
+        alias: "debian/12".into(),
+    });
+    assert_eq!(
+        create_body(&remote, Some("default"), true),
+        serde_json::json!({
+            "name": "web",
+            "type": "container",
+            "profiles": ["default"],
+            "config": { "limits.cpu": "2", "limits.memory": "2GiB" },
+            "devices": { "root": { "type": "disk", "path": "/", "pool": "default", "size": "20GiB" } },
+            "source": {
+                "type": "image",
+                "mode": "pull",
+                "server": "https://images.linuxcontainers.org",
+                "protocol": "simplestreams",
+                "alias": "debian/12"
+            },
+            "start": true
+        })
+    );
+    let mut local = spec(InstanceSource::Local {
+        fingerprint: "4495673b".into(),
+    });
+    local.kind = InstanceType::VirtualMachine;
+    local.cpu = None;
+    local.memory = None;
+    local.disk = None;
+    let body = create_body(&local, None, false);
+    assert_eq!(body["type"], "virtual-machine");
+    assert_eq!(
+        body["source"],
+        serde_json::json!({ "type": "image", "fingerprint": "4495673b" })
+    );
+    assert_eq!(body["config"], serde_json::json!({}));
+    assert_eq!(body["devices"], serde_json::json!({}));
+    assert!(body.get("start").is_none());
+}
+
+#[test]
+fn instance_names_are_hostname_labels() {
+    for good in ["web", "db-1", "a"] {
+        assert!(validate_name(good).is_ok(), "{good}");
+    }
+    for bad in [
+        "",
+        "1web",
+        "-web",
+        "web-",
+        "my web",
+        "web.lab",
+        &"a".repeat(64),
+    ] {
+        assert!(validate_name(bad).is_err(), "{bad}");
+    }
+}
+
 /// A client for the local Incus, for the live tests.
 pub(crate) async fn live() -> Incus {
     let socket = std::env::var("HOMEPORT_INCUS_SOCKET")
@@ -102,12 +175,31 @@ pub(crate) fn live_image() -> String {
     std::env::var("HOMEPORT_INCUS_IMAGE").unwrap_or_else(|_| "images:alpine/3.21".into())
 }
 
-/// Runs the `incus` CLI on this machine, for the live tests' setup.
-pub(crate) fn incus_cli(args: &[&str]) -> std::process::Output {
-    std::process::Command::new("incus")
-        .args(args)
-        .output()
-        .expect("the incus CLI runs")
+/// Makes a small container Instance named `name` from the live image,
+/// stopped, through Homeport's own create.
+pub(crate) async fn live_instance(incus: &Incus, name: &str) {
+    let alias = live_image();
+    let alias = alias.strip_prefix("images:").unwrap_or(&alias).to_owned();
+    let spec = InstanceSpec {
+        name: name.to_owned(),
+        kind: InstanceType::Container,
+        source: InstanceSource::Remote {
+            server: crate::simplestreams::DEFAULT_SERVER.into(),
+            alias,
+        },
+        profiles: vec!["default".into()],
+        cpu: None,
+        memory: None,
+        disk: None,
+        start: false,
+    };
+    let mut events = Vec::new();
+    create(incus, "default", &spec, |e| {
+        events.push(e);
+        true
+    })
+    .await;
+    assert_eq!(events.last(), Some(&PullEvent::Done), "{events:?}");
 }
 
 #[tokio::test]
@@ -115,8 +207,25 @@ pub(crate) fn incus_cli(args: &[&str]) -> std::process::Output {
 async fn incus_live_instances_start_freeze_stop_and_delete() {
     let incus = live().await;
     let name = format!("homeport-test-{}", std::process::id());
-    let made = incus_cli(&["init", &live_image(), &name]);
-    assert!(made.status.success(), "{made:?}");
+    live_instance(&incus, &name).await;
+    // Its name is taken now.
+    let alias = live_image();
+    let mut taken = spec(InstanceSource::Remote {
+        server: crate::simplestreams::DEFAULT_SERVER.into(),
+        alias: alias.strip_prefix("images:").unwrap_or(&alias).to_owned(),
+    });
+    taken.name = name.clone();
+    taken.disk = None;
+    let mut events = Vec::new();
+    create(&incus, "default", &taken, |e| {
+        events.push(e);
+        true
+    })
+    .await;
+    assert!(
+        matches!(events.last(), Some(PullEvent::Error { error }) if error.code == ErrorCode::NameInUse),
+        "{events:?}"
+    );
 
     act(&incus, "default", &name, InstanceAction::Start, false)
         .await
