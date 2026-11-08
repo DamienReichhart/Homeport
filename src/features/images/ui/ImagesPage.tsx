@@ -26,6 +26,7 @@ import {
   SearchInput,
   Spinner,
   useConfirmedAction,
+  WithShortcut,
 } from '@/shared/ui';
 import { chooseArchiveToLoad, chooseArchiveToSave, chooseFilesystemToImport } from '../api/files';
 import { usePruneImages, useRemoveImage } from '../api/mutations';
@@ -39,6 +40,8 @@ import { PushDialog } from './dialogs/PushDialog';
 import { TagDialog } from './dialogs/TagDialog';
 import { TransferDialog, type Transfer } from './dialogs/TransferDialog';
 import { imageColumns } from './imageColumns';
+import { PAGE_ACTION_KEYS, usePageAction } from '@/shared/hooks';
+import { useActionRequest, usePageQuery } from '@/core/feature';
 import { t } from '@/shared/i18n';
 
 function ImagesList({ hostId }: { hostId: string }) {
@@ -47,7 +50,7 @@ function ImagesList({ hostId }: { hostId: string }) {
   const removeImage = useRemoveImage(hostId);
   const pruneImages = usePruneImages(hostId);
   const [dialog, confirm] = useConfirmedAction();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = usePageQuery();
   const [pulling, setPulling] = useState(false);
   const [building, setBuilding] = useState(false);
   const [running, setRunning] = useState<Image | null>(null);
@@ -70,6 +73,8 @@ function ImagesList({ hostId }: { hostId: string }) {
     if (path) setImporting(path);
   };
   const [inspecting, setInspecting] = useState<Image | null>(null);
+  usePageAction(t('images.pull'), () => setPulling(true));
+  useActionRequest('pull', () => setPulling(true));
 
   const remove = (image: Image) =>
     confirm(removeImageConfirmation(image, () => removeImage.mutateAsync(image)));
@@ -118,9 +123,11 @@ function ImagesList({ hostId }: { hostId: string }) {
             <Button variant="outline" onClick={() => setBuilding(true)}>
               <HammerIcon /> {t('images.build')}
             </Button>
-            <Button onClick={() => setPulling(true)}>
-              <DownloadIcon /> {t('images.pull')}
-            </Button>
+            <WithShortcut keys={PAGE_ACTION_KEYS} label={t('images.pull')}>
+              <Button onClick={() => setPulling(true)}>
+                <DownloadIcon /> {t('images.pull')}
+              </Button>
+            </WithShortcut>
           </>
         }
       />

@@ -172,4 +172,6 @@ export default {
   'hosts.tls.cert.choose': 'Choose the client certificate',
   'hosts.tls.key': 'Client key',
   'hosts.tls.key.choose': 'Choose the client key',
+  'hosts.palette.add': 'Add host',
+  'hosts.palette.manage': 'Manage hosts',
 } as const;

@@ -12,11 +12,14 @@ import {
   SearchInput,
   Spinner,
   useConfirm,
+  WithShortcut,
 } from '@/shared/ui';
 import type { ComposeJob } from '../model/composeJob';
 import { serviceFreshness, stackFreshness } from '../model/freshness';
 import { ComposeRunDialog } from './dialogs/ComposeRunDialog';
 import { stackColumns } from './stackColumns';
+import { PAGE_ACTION_KEYS, usePageAction } from '@/shared/hooks';
+import { usePageQuery } from '@/core/feature';
 import { t } from '@/shared/i18n';
 
 function StacksList({ hostId }: { hostId: string }) {
@@ -26,8 +29,9 @@ function StacksList({ hostId }: { hostId: string }) {
   const byId = new Map(containers.data?.map((c) => [c.id, c]));
   const navigate = useNavigate();
   const [dialog, confirm] = useConfirm();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = usePageQuery();
   const [job, setJob] = useState<ComposeJob | null>(null);
+  usePageAction(t('stacks.new'), () => void navigate('/stacks/new'));
 
   if (stacks.isPending) return <Spinner />;
   if (stacks.error)
@@ -40,11 +44,13 @@ function StacksList({ hostId }: { hostId: string }) {
         actions={
           <>
             <CheckNewerImages hostId={hostId} />
-            <Button asChild>
-              <Link to="/stacks/new">
-                <PlusIcon /> {t('stacks.new')}
-              </Link>
-            </Button>
+            <WithShortcut keys={PAGE_ACTION_KEYS} label={t('stacks.new')}>
+              <Button asChild>
+                <Link to="/stacks/new">
+                  <PlusIcon /> {t('stacks.new')}
+                </Link>
+              </Button>
+            </WithShortcut>
           </>
         }
       />

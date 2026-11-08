@@ -1,4 +1,5 @@
 import app from './app';
+import board from './board';
 import common from './common';
 import containers from './containers';
 import core from './core';
@@ -10,6 +11,7 @@ import networks from './networks';
 import overview from './overview';
 import registries from './registries';
 import repositories from './repositories';
+import search from './search';
 import settings from './settings';
 import stacks from './stacks';
 import ui from './ui';
@@ -22,6 +24,7 @@ export const uiMessages = {
   ...app,
   ...core,
   ...ui,
+  ...board,
   ...containers,
   ...events,
   ...hosts,
@@ -30,6 +33,7 @@ export const uiMessages = {
   ...overview,
   ...registries,
   ...repositories,
+  ...search,
   ...settings,
   ...stacks,
   ...updates,

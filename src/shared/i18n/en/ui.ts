@@ -3,6 +3,8 @@ export default {
   'ui.copy': 'Copy',
   'ui.copied': 'Copied',
   'ui.search': 'Search',
+  'ui.shortcuts.focusSearch': 'Search this page',
+  'ui.shortcuts.thisPage': 'This page',
   'ui.table.selectAll': 'Select all',
   'ui.table.selectRow': 'Select row',
   'ui.table.empty': 'Nothing here.',

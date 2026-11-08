@@ -41,6 +41,8 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
         .commands(collect_commands![
             app::get_app_info,
             app::get_capabilities,
+            app::app_start_at_login,
+            app::app_set_start_at_login,
             app::get_licenses,
             app::read_text_file,
             app::write_text_file,
@@ -184,6 +186,8 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             events::EngineEventReceived,
             events::SyncedUpdateAvailable,
             events::SyncedAutoDeployed,
+            events::TrayHostChosen,
+            events::TrayAddHostChosen,
         ])
 }
 

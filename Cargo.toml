@@ -3,7 +3,7 @@ members = ["src-tauri", "crates/*"]
 resolver = "2"
 
 [workspace.package]
-version = "0.12.0"
+version = "0.13.0"
 edition = "2021"
 license = "AGPL-3.0-only"
 rust-version = "1.88"
@@ -60,12 +60,16 @@ tar = "0.4"
 shell-words = "1"
 tempfile = "3"
 # The desktop shell.
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["tray-icon"] }
 tauri-build = { version = "2", features = [] }
 tauri-plugin-opener = "2"
 tauri-plugin-log = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-updater = "2"
+tauri-plugin-single-instance = "2"
+tauri-plugin-window-state = "2"
+tauri-plugin-autostart = "2"
+tauri-plugin-notification = "2"
 # Homeport's own crates, from the bottom of the dependency graph up.
 homeport-core = { path = "crates/core" }
 homeport-storage = { path = "crates/storage" }

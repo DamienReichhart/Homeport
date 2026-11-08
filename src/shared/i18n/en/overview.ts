@@ -53,4 +53,6 @@ export default {
     'Deletes the data in every volume no container uses, named volumes included.',
   'overview.pruned':
     'Removed {containers, plural, one {# container} other {# containers}}, {images, plural, one {# image} other {# images}}, {networks, plural, one {# network} other {# networks}} and {volumes, plural, one {# volume} other {# volumes}} — {space} reclaimed.',
+  'overview.palette.prune': 'Clean up the selected host',
+  'overview.host.onBoard': 'Its containers on the board',
 } as const;

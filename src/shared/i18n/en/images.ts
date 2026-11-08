@@ -137,4 +137,5 @@ export default {
   'images.transfer.loading': 'Loading images',
   'images.transfer.importing': 'Importing {reference}',
   'images.transfer.doneWith': 'Done: {images}',
+  'images.palette.pull': 'Pull an image',
 } as const;

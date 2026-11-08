@@ -37,6 +37,12 @@ No. Homeport speaks the Engine API and SSH itself. The only exception is deployi
 
 No. [Synced Stacks](/docs/guides/synced-stacks/) are checked for new commits, and deployed automatically if you turn that on, only while Homeport is open. Homeport installs nothing on your servers — no agent, no webhook receiver — so when it's closed, nothing watches your repositories. When you open it again, it waits one interval, then checks them all. For deploys that must follow every push around the clock, run them from your CI.
 
+To keep Homeport running without its window, turn on **Close to the system tray**, and **Start at login** with **Start hidden in the tray**, in [Settings → Desktop](/docs/guides/settings/#desktop).
+
+### Can Homeport tell me when a container crashes?
+
+Yes, while it runs — even hidden in the system tray. It shows an OS notification when a container stops with an error, runs out of memory or turns unhealthy, and when a Host becomes unreachable or comes back. Each kind can be turned off in [Settings → Notifications](/docs/guides/settings/#notifications). It learns this from the event stream it already holds with each Host, so nothing is installed on your servers; when Homeport isn't running, nobody is told.
+
 ### Does Homeport need git?
 
 Only for [Synced Stacks](/docs/guides/synced-stacks/), which run the `git` installed on your computer, with each repository's own deploy key or token. **Settings → This machine** says whether Homeport found it. Your own git configuration, credential helpers and SSH keys are never used.

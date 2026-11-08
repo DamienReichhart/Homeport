@@ -14,3 +14,13 @@ export const licensesQuery = () =>
  * compose CLI installed since launch shows up without a restart.
  */
 export const machineQuery = () => queryOptions({ ...appQueries.capabilities(), staleTime: 0 });
+
+export const startAtLoginKey = ['start-at-login'] as const;
+
+/** Whether the OS starts Homeport at login, asked each time Settings opens. */
+export const startAtLoginQuery = () =>
+  queryOptions({
+    queryKey: startAtLoginKey,
+    queryFn: () => commands.appStartAtLogin(),
+    staleTime: 0,
+  });

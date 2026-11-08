@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   connectionLabel,
   describeAddress,
@@ -61,6 +61,15 @@ export function HostCard({ view, selected }: { view: HostView; selected: boolean
             <span>{t('overview.host.images', { count: info.data.images })}</span>
             <HostUsage hostId={view.host.id} cpus={info.data.cpus} memory={info.data.memory} />
           </div>
+        )}
+        {connected && (
+          <Link
+            to={`/board?host=${encodeURIComponent(view.host.id)}`}
+            className="text-primary justify-self-start text-sm hover:underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {t('overview.host.onBoard')}
+          </Link>
         )}
       </CardContent>
     </Card>

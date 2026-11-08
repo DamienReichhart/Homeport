@@ -24,6 +24,8 @@ pub enum ErrorCode {
     UpdateSignatureInvalid,
     UpdatePermissionDenied,
     UpdateFailed,
+    /// The OS refused the entry that starts Homeport at login.
+    AutostartFailed,
     /// An export file that the passphrase doesn't open, or that was damaged.
     BundleUnreadable,
     /// An export file from a newer Homeport.

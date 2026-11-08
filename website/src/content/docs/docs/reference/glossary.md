@@ -49,6 +49,14 @@ The user name and password or access token Homeport keeps for one container regi
 
 A short-lived `busybox` container Homeport creates on a Host to open a volume — to browse, back up, restore or clone it — since the Engine API can't read one. It has no network, mounts the volume read-only unless it must write to it, and is removed when the action ends. It never shows in the Containers list or on the Events page. See [Browsing a volume's files](/docs/guides/volumes-networks/#the-helper-container).
 
+### Board
+
+The page listing the containers of every connected Host in one table, each labelled with its Host. See [Board](/docs/guides/overview/#board).
+
+### Command palette
+
+The search box opened with <kbd>Mod</kbd> <kbd>K</kbd>: go to a page, switch Host, run a command, or find a container, image, volume, network or Stack on any connected Host. See [Keyboard](/docs/guides/keyboard/#command-palette).
+
 ### Engine
 
 The Docker Engine (`dockerd`), or a compatible one such as Podman, that runs containers on a machine. Homeport talks to it through the Docker Engine API.

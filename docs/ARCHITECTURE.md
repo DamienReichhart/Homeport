@@ -6,7 +6,7 @@
 2. **Dependencies point inward.** `app` → `features` → `core` → `shared` (ADR 0004). A layer never imports the layers to its left; features, core modules and the UI kit are imported through their `index.ts` only, and import cycles are errors. ESLint enforces this (`eslint.config.js`).
 3. **One IPC gateway.** Frontend code calls Rust only via `commands` from `@/shared/api`, and only from a feature's `api/` folder or from `core`, never from its components: the generated bindings with every rejection normalized to `AppError { code, message, hint, detail }`, tagged with the command and written to the app log. Show a failure with `<ErrorMessage>` (in place, with Details and Retry) or `toastError` (transient); both open the shared Details dialog. Writing errors is covered in `crates/core/src/error/mod.rs`. Tests mock IPC with `mockCommands` (`src/test/ipc.ts`).
 4. **Thin commands, logic in crates.** The Rust backend is a Cargo workspace (ADR 0005). `src-tauri/src/commands/*` parse input and delegate to the crates under `crates/`, which never see Tauri, so `cargo test -p homeport-<crate>` runs without the webview. See [Backend layout](#backend-layout).
-5. **Least privilege.** Every plugin/API the frontend may use is listed in `src-tauri/capabilities/`. Add permissions per feature, never wildcard.
+5. **Least privilege.** Every plugin/API the frontend may use is listed in `src-tauri/capabilities/`. Add permissions per feature, never wildcard. Plugins driven from Rust only (updater, single-instance, window-state) get no permission at all.
 6. **Generated contract.** Commands and their types are exported to `src/shared/api/bindings.ts` by `tauri-specta` (on every debug run, or `bun run bindings`). Never edit that file; a Rust test fails when it is stale.
 
 ## Frontend layout
@@ -23,10 +23,10 @@ src/
 │       ├── model/        pure logic and types, unit-tested
 │       ├── ui/           components, one exported component per file;
 │       │                 dialogs/, and subfolders (list/, detail/…) when a page has parts
-│       ├── manifest.ts   routes and sidebar entry
+│       ├── manifest.ts   routes, sidebar entry and command palette commands
 │       └── index.ts      the public API: the manifest and what other features use
 ├── core/           the domain every feature stands on
-│   ├── feature/    the manifest contract
+│   ├── feature/    the manifest contract, palette commands, useActionRequest
 │   ├── host/       Host selection, statuses, HostGate, the Engine resources' keys and lists,
 │   │               and the live updates that refresh them
 │   └── settings/   the user's settings
@@ -96,7 +96,7 @@ A component's styles live in the component. One that overrides a global rule mus
 Frontend:
 
 1. `src/features/notes/{api,model,ui}` and an `index.ts` that exports only the public surface.
-2. `manifest.ts` with `defineFeature({ routes, nav })`, exported from `index.ts`, and one line in `src/app/router/features.ts`.
+2. `manifest.ts` with `defineFeature({ routes, nav, commands })`, exported from `index.ts`, and one line in `src/app/router/features.ts`. A command in `commands` is listed in the command palette (`src/app/palette/`); one that starts something on a page opens it with `ctx.open(path, action)`, and the page starts it with `useActionRequest(action, start)`.
 
 Backend:
 
@@ -114,6 +114,8 @@ Website page (example: `compare`):
 
 - **UI**: shadcn/ui components (Tailwind v4) live in `src/shared/ui/primitives`; add more with `bunx shadcn add <name>` and export them from `src/shared/ui/index.ts`. Import every component from `@/shared/ui`.
 - **Brand**: colours, type and the logo are tokens in `src/shared/styles/global.css` and `<Logo />`/`<LogoMark />` in `src/shared/ui`; see [BRAND.md](BRAND.md). Use the tokens (`bg-success`, `text-warning`, `--chart-n`), not Tailwind's palette.
+- **Keyboard**: `useShortcut({ keys, label, group, handler })` from `@/shared/hooks` registers a shortcut while a component is mounted; the help sheet (`?`) and the palette list them. `Mod` is ⌘ on macOS and Ctrl elsewhere; plain keys don't fire in text fields, the editor or dialogs, and nothing fires in the terminal. A page's main action takes `n` with `usePageAction`.
+- **Desktop**: the tray (`src-tauri/src/app/tray/`), notifications (`app/notifications.rs`, from `homeport_hosts::alerts`), single-instance and window-state (`app/window.rs`) and start at login (`app/autostart.rs`) are driven from Rust only; their choices reach the frontend as typed events (`TrayHostChosen`).
 - **Text**: every user-facing string comes from the catalogue in `src/shared/i18n/en/` through `t('feature.key', { param })` from `@/shared/i18n` (FormatJS, ICU MessageFormat). Errors carry a `key` and `params` that the frontend renders from the same catalogue; Rust declares each error's key and English template in its crate's `messages!` block and `bun run bindings` generates `errors.json` (ADR 0011).
 - **Server state**: TanStack Query, with `queryOptions` factories in each `api/queries.ts`. Engine resource lists are refreshed from pushed Engine events instead of polling (see Query keys above).
 - **Volumes' contents**: browsing, backing up, restoring and cloning a volume go through a short-lived helper container (`homeport_engine::volumes::helper`, ADR 0015), hidden from the lists and events; its image is pulled only once the user agrees.

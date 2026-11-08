@@ -42,6 +42,10 @@ Without it, Stacks still appear — Linked Stacks included — and can be starte
 
 [Synced Stacks](/docs/guides/synced-stacks/) run the `git` installed on **this** machine to clone and fetch their repositories: Git for Windows, Apple's command line tools (`xcode-select --install`), or your distribution's `git` package. On Windows, Homeport points it at the system's OpenSSH for SSH repositories. Every other feature works without git; **Settings → This machine** shows whether Homeport found it.
 
+## Optional: a system tray
+
+Homeport puts an icon in the system tray (the menu bar on macOS, the notification area on Windows) that lists every Host with its status. Windows and macOS always have one. On Linux it needs the **appindicator** library: the AppImage includes it, and the `.deb` and `.rpm` packages recommend it, so `apt`, `dnf` and `zypper` install it unless you turned recommended packages off. Otherwise install `libayatana-appindicator3-1` (Debian, Ubuntu, openSUSE) or `libayatana-appindicator-gtk3` (Fedora). Some desktops hide tray icons — GNOME shows them only with an extension such as AppIndicator Support. Without a tray, Homeport works from its window, and closing the window quits it.
+
 ## What each feature needs
 
 | Feature                                    | Keychain | Compose CLI | git |

@@ -66,6 +66,16 @@ For the AppImage, delete the file. Its menu entry disappears with it.
 
 Uninstalling leaves your data in place, so reinstalling brings everything back.
 
+### The login entry
+
+If **Start at login** is on, turn it off in **Settings → Desktop** before uninstalling: uninstalling leaves the login entry behind, pointing at a Homeport that's gone. To remove it afterwards:
+
+| System  | Login entry                                                                                                                                                   |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows | **Task Manager → Startup apps**: disable **Homeport**, or delete the `Homeport` value under `HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run` |
+| macOS   | Delete `~/Library/LaunchAgents/Homeport.plist`                                                                                                                |
+| Linux   | Delete `~/.config/autostart/Homeport.desktop`                                                                                                                 |
+
 ## Removing your data
 
 <Aside type="caution">

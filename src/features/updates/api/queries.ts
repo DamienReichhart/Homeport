@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type QueryClient } from '@tanstack/react-query';
 import { settingsQuery } from '@/core/settings';
 import { commands } from '@/shared/api';
 import { CHECK_INTERVAL_MS } from '../model/updates';
@@ -18,6 +18,16 @@ export function useUpdateCheck() {
     staleTime: CHECK_INTERVAL_MS,
     refetchInterval: CHECK_INTERVAL_MS,
     refetchOnWindowFocus: false,
+    retry: false,
+  });
+}
+
+/** Checks for an update now, whatever the setting; Settings shows the answer. */
+export function checkForUpdatesNow(client: QueryClient) {
+  return client.fetchQuery({
+    queryKey: updatesKey,
+    queryFn: () => commands.updatesCheck(),
+    staleTime: 0,
     retry: false,
   });
 }

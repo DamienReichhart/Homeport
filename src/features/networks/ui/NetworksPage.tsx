@@ -12,12 +12,15 @@ import {
   SearchInput,
   Spinner,
   useConfirmedAction,
+  WithShortcut,
 } from '@/shared/ui';
 import { usePruneNetworks, useRemoveNetwork } from '../api/mutations';
 import { pruneNetworksConfirmation, removeNetworkConfirmation } from './confirmations';
 import { CreateNetworkDialog } from './dialogs/CreateNetworkDialog';
 import { NetworkDialog } from './dialogs/NetworkDialog';
 import { networkColumns } from './networkColumns';
+import { PAGE_ACTION_KEYS, usePageAction } from '@/shared/hooks';
+import { usePageQuery } from '@/core/feature';
 import { t } from '@/shared/i18n';
 
 function NetworksList({ hostId }: { hostId: string }) {
@@ -25,9 +28,10 @@ function NetworksList({ hostId }: { hostId: string }) {
   const removeNetwork = useRemoveNetwork(hostId);
   const prune = usePruneNetworks(hostId);
   const [dialog, confirm] = useConfirmedAction();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = usePageQuery();
   const [creating, setCreating] = useState(false);
   const [open, setOpen] = useState<NetworkView | null>(null);
+  usePageAction(t('networks.create'), () => setCreating(true));
 
   const remove = (n: NetworkView) =>
     confirm(removeNetworkConfirmation(n, () => removeNetwork.mutateAsync(n)));
@@ -48,9 +52,11 @@ function NetworksList({ hostId }: { hostId: string }) {
             >
               <BrushCleaningIcon /> {t('networks.cleanUp')}
             </Button>
-            <Button onClick={() => setCreating(true)}>
-              <PlusIcon /> {t('networks.create')}
-            </Button>
+            <WithShortcut keys={PAGE_ACTION_KEYS} label={t('networks.create')}>
+              <Button onClick={() => setCreating(true)}>
+                <PlusIcon /> {t('networks.create')}
+              </Button>
+            </WithShortcut>
           </>
         }
       />

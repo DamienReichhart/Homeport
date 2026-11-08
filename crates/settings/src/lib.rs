@@ -1,4 +1,4 @@
-//! The user's preferences (theme, last Host, update checks), kept as one JSON
+//! The user's preferences (theme, last Host, update checks, the desktop), kept as one JSON
 //! document in the database.
 
 use std::{fs, path::Path, sync::Arc};
@@ -34,6 +34,41 @@ pub struct Settings {
     /// Days each Host's Engine events are kept for the Events page, from 1
     /// to 365.
     pub keep_events_days: u32,
+    /// Closing the window hides Homeport in the system tray instead of
+    /// quitting, so its Host connections stay open.
+    pub close_to_tray: bool,
+    /// When started at login, stay in the system tray without opening the
+    /// window. Whether Homeport starts at login is the OS's login entry,
+    /// not a setting.
+    pub start_hidden: bool,
+    /// Which OS notifications Homeport shows.
+    pub notifications: NotificationSettings,
+}
+
+/// The OS notifications Homeport shows, one switch per kind; all on unless
+/// turned off.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
+#[serde(default, rename_all = "camelCase")]
+pub struct NotificationSettings {
+    /// A container exited with an error or ran out of memory.
+    pub container_died: bool,
+    /// A container's health check started failing.
+    pub container_unhealthy: bool,
+    /// A connected Host stopped answering.
+    pub host_unreachable: bool,
+    /// An unreachable Host is connected again.
+    pub host_back: bool,
+}
+
+impl Default for NotificationSettings {
+    fn default() -> Self {
+        Self {
+            container_died: true,
+            container_unhealthy: true,
+            host_unreachable: true,
+            host_back: true,
+        }
+    }
 }
 
 impl Settings {
@@ -56,6 +91,9 @@ impl Default for Settings {
             check_for_updates: true,
             sync_interval_minutes: 5,
             keep_events_days: 30,
+            close_to_tray: false,
+            start_hidden: false,
+            notifications: NotificationSettings::default(),
         }
     }
 }
@@ -199,6 +237,37 @@ mod tests {
             assert_eq!(set.keep_events_days, kept);
         }
         assert_eq!(svc.get().unwrap().keep_events().as_secs(), 365 * 86_400);
+    }
+
+    #[test]
+    fn closing_quits_unless_close_to_tray_is_on() {
+        let saved: Settings = serde_json::from_str(r#"{ "theme": "dark" }"#).unwrap();
+        assert!(!saved.close_to_tray, "settings from before 0.13");
+        assert!(!Settings::default().close_to_tray);
+    }
+
+    #[test]
+    fn starting_at_login_opens_the_window_unless_start_hidden_is_on() {
+        let saved: Settings = serde_json::from_str(r#"{ "theme": "dark" }"#).unwrap();
+        assert!(!saved.start_hidden, "settings from before 0.13");
+        assert!(!Settings::default().start_hidden);
+    }
+
+    #[test]
+    fn every_notification_is_on_unless_turned_off() {
+        let saved: Settings = serde_json::from_str(r#"{ "theme": "dark" }"#).unwrap();
+        assert_eq!(
+            saved.notifications,
+            NotificationSettings::default(),
+            "settings from before 0.13"
+        );
+        let on = NotificationSettings::default();
+        assert!(on.container_died && on.container_unhealthy && on.host_unreachable && on.host_back);
+        // One kind turned off keeps the others on, as do kinds added later.
+        let saved: Settings =
+            serde_json::from_str(r#"{ "notifications": { "hostBack": false } }"#).unwrap();
+        assert!(!saved.notifications.host_back);
+        assert!(saved.notifications.container_died);
     }
 
     #[test]

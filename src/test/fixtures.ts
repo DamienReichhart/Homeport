@@ -106,10 +106,20 @@ export const baseCommands = {
     checkForUpdates: true,
     syncIntervalMinutes: 5,
     keepEventsDays: 30,
+    closeToTray: false,
+    startHidden: false,
+    notifications: {
+      containerDied: true,
+      containerUnhealthy: true,
+      hostUnreachable: true,
+      hostBack: true,
+    },
   }),
+  app_start_at_login: () => false,
   update_settings: ({ settings }: Record<string, unknown>) => settings,
   get_capabilities: () => ({
     keychain: true,
+    tray: true,
     git: { state: 'available', cli: { program: 'git', version: '2.43.0' } },
     compose: {
       state: 'unavailable',

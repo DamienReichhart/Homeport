@@ -2,6 +2,7 @@ import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
 import { useEffect, useState, type ReactNode } from 'react';
 import { HostProvider } from '@/core/host';
 import { settingsQuery } from '@/core/settings';
+import { ShortcutsProvider } from '@/shared/hooks';
 import { applyTheme } from '@/shared/lib';
 import { ErrorDetailsHost, Toaster, TooltipProvider } from '@/shared/ui';
 import { I18nProvider } from './I18nProvider';
@@ -22,10 +23,12 @@ export function AppProviders({ children, client }: { children: ReactNode; client
     <I18nProvider>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <HostProvider>
-            <LiveUpdates />
-            {children}
-          </HostProvider>
+          <ShortcutsProvider>
+            <HostProvider>
+              <LiveUpdates />
+              {children}
+            </HostProvider>
+          </ShortcutsProvider>
           <Toaster richColors />
           <ErrorDetailsHost />
         </TooltipProvider>

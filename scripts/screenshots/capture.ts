@@ -62,6 +62,8 @@ const container = (name: string) => hexId(`${PROD}/${name}`);
 const SHOTS: Shot[] = [
   { name: 'overview-light', route: '/' },
   { name: 'overview-dark', route: '/', theme: 'dark' },
+  { name: 'board-light', route: '/board' },
+  { name: 'board-dark', route: '/board', theme: 'dark' },
   { name: 'containers-light', route: '/containers' },
   { name: 'containers-dark', route: '/containers', theme: 'dark' },
   { name: 'container-logs', route: `/containers/${container('shop-api-1')}/logs`, theme: 'dark' },

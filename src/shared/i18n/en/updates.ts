@@ -29,4 +29,5 @@ export default {
   'updates.method.packageManager':
     'Installed with {manager}: updates come from the Homeport package repository.',
   'updates.method.manual': 'This is a development build: download new versions from the website.',
+  'updates.palette.check': 'Check for updates',
 } as const;

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeftIcon } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   containerFreshness,
   HostGate,
@@ -50,6 +50,10 @@ const TAB_LABELS: Record<(typeof TABS)[number], MessageKey> = {
 function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
   const { tab = 'logs' } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Opened from the board, Back returns there with its filters.
+  const from = (location.state as { from?: string } | null)?.from;
+  const back = () => void navigate(from ?? '/containers');
   const containers = useContainers(hostId);
   const [dialog, confirm] = useConfirm();
   const [containerDialogs, openDialog] = useContainerDialogs(hostId);
@@ -65,11 +69,7 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
     return (
       <div className="grid gap-3">
         <ErrorMessage error={{ code: 'not_found', message: t('containers.detail.gone') }} />
-        <Button
-          variant="outline"
-          className="justify-self-start"
-          onClick={() => navigate('/containers')}
-        >
+        <Button variant="outline" className="justify-self-start" onClick={back}>
           {t('containers.detail.backToList')}
         </Button>
       </div>
@@ -82,12 +82,7 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
       <PageHeader
         title={
           <span className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={t('common.back')}
-              onClick={() => navigate('/containers')}
-            >
+            <Button variant="ghost" size="icon-sm" aria-label={t('common.back')} onClick={back}>
               <ArrowLeftIcon />
             </Button>
             <StatusDot tone={containerTone(container.state, container.health)} />
@@ -115,7 +110,9 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
       />
       <Tabs
         value={tab}
-        onValueChange={(next) => navigate(`/containers/${container.id}/${next}`, { replace: true })}
+        onValueChange={(next) =>
+          navigate(`/containers/${container.id}/${next}`, { replace: true, state: location.state })
+        }
         className="flex min-h-0 flex-1 flex-col"
       >
         <TabsList>

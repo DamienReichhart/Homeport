@@ -23,6 +23,24 @@ xattr -dr com.apple.quarantine /Applications/Homeport.app
 
 If it mentions FUSE, install `libfuse2` (`libfuse2t64` on Ubuntu 24.04 and later). Check the file is executable: `chmod +x Homeport_*.AppImage`.
 
+### Homeport opens in the wrong place
+
+Homeport reopens with the size, position and maximised state its window had when you closed it. If the display it was on is gone, it opens centred on one that's left. To forget the saved place, quit Homeport and delete `.window-state.json` from its settings folder:
+
+| System  | File                                                                |
+| ------- | ------------------------------------------------------------------- |
+| Linux   | `~/.config/com.homeport.app/.window-state.json`                     |
+| macOS   | `~/Library/Application Support/com.homeport.app/.window-state.json` |
+| Windows | `%APPDATA%\com.homeport.app\.window-state.json`                     |
+
+### Opening Homeport again doesn't open a second window
+
+Only one Homeport runs at a time: opening it while it's already running brings its window to the front, even when it's hidden in the [system tray](/docs/guides/overview/#system-tray). Two copies would connect to every Host twice and write to the same data.
+
+### There's no tray icon
+
+On Linux, the tray needs the appindicator library, and some desktops hide tray icons: on GNOME, install the AppIndicator Support extension. If Homeport finds no appindicator library, **Settings → Desktop** says so and closing the window quits. See [requirements](/docs/requirements/#optional-a-system-tray).
+
 ### A red banner says no OS keychain is available
 
 Homeport couldn't reach your keychain. On Linux this usually means no Secret Service is running — common on minimal desktops and window managers. Install and start GNOME Keyring (`gnome-keyring`) or enable KWallet's Secret Service, then restart Homeport. Until then, use local socket, TCP or ssh-agent Hosts.

@@ -7,6 +7,28 @@ export default {
   'settings.theme.system': 'Match the system',
   'settings.theme.light': 'Light',
   'settings.theme.dark': 'Dark',
+  'settings.desktop.title': 'Desktop',
+  'settings.desktop.description': 'How Homeport runs on this computer.',
+  'settings.desktop.closeToTray': 'Close to the system tray',
+  'settings.desktop.closeToTrayHint':
+    'Closing the window keeps Homeport and its Host connections running in the tray. Quit from the tray icon. On desktops that hide tray icons, such as GNOME without an extension, the icon may not show.',
+  'settings.desktop.noTray':
+    'This desktop has no system tray Homeport can use, so closing the window quits it.',
+  'settings.desktop.startAtLogin': 'Start at login',
+  'settings.desktop.startAtLoginHint':
+    'Homeport starts when you log in to this computer, so it watches your Hosts from the start.',
+  'settings.desktop.startHidden': 'Start hidden in the tray',
+  'settings.desktop.startHiddenHint':
+    'When it starts at login, Homeport stays in the system tray without opening its window.',
+  'settings.desktop.startHiddenNoTray':
+    'Needs a system tray to open the window from, which this desktop doesn’t have.',
+  'settings.notifications.title': 'Notifications',
+  'settings.notifications.description':
+    'Homeport tells you, even with its window closed to the tray, when:',
+  'settings.notifications.containerDied': 'A container stops with an error or runs out of memory',
+  'settings.notifications.containerUnhealthy': 'A container turns unhealthy',
+  'settings.notifications.hostUnreachable': 'A connected host becomes unreachable',
+  'settings.notifications.hostBack': 'An unreachable host is back',
   'settings.machine.title': 'This machine',
   'settings.machine.description': 'What Homeport can use here.',
   'settings.machine.keychain': 'OS keychain',
@@ -77,4 +99,8 @@ export default {
   'settings.licenses.missing.title': 'Not included in this build',
   'settings.licenses.missing.description':
     'Release builds bundle them; run <code>{command}</code> to generate them for a development build.',
+  'settings.palette.group': 'Settings',
+  'settings.palette.themeLight': 'Theme: Light',
+  'settings.palette.themeDark': 'Theme: Dark',
+  'settings.palette.themeSystem': 'Theme: Match the system',
 } as const;

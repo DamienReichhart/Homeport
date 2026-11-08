@@ -8,7 +8,7 @@ use homeport_core::error::AppError;
 use homeport_engine::volumes::helper;
 use homeport_hosts::registry::{EngineEvent, HostStatus, Notifier};
 
-use super::AppState;
+use super::{notifications::Notifications, AppState};
 
 #[derive(Debug, Clone, Serialize, specta::Type, tauri_specta::Event)]
 #[serde(rename_all = "camelCase")]
@@ -44,29 +44,56 @@ pub struct SyncedAutoDeployed {
     pub error: Option<AppError>,
 }
 
-/// Forwards what the host registry observes to the webview.
-pub struct TauriNotifier(pub AppHandle);
+/// A Host was picked in the tray's menu: the window shows its Overview.
+#[derive(Debug, Clone, Serialize, specta::Type, tauri_specta::Event)]
+#[serde(rename_all = "camelCase")]
+pub struct TrayHostChosen {
+    pub host_id: String,
+}
+
+/// **Add host…** was picked in the tray's menu.
+#[derive(Debug, Clone, Serialize, specta::Type, tauri_specta::Event)]
+pub struct TrayAddHostChosen;
+
+/// Forwards what the host registry observes to the webview, the tray and
+/// the OS's notifications.
+pub struct TauriNotifier {
+    app: AppHandle,
+    notifications: Notifications,
+}
+
+impl TauriNotifier {
+    pub fn new(app: AppHandle) -> Self {
+        Self {
+            app,
+            notifications: Notifications::default(),
+        }
+    }
+}
 
 impl Notifier for TauriNotifier {
     fn host_status(&self, host_id: &str, status: &HostStatus) {
         if matches!(status, HostStatus::Connected { .. }) {
-            remove_leftover_helpers(&self.0, host_id);
+            remove_leftover_helpers(&self.app, host_id);
         }
         let event = HostStatusChanged {
             host_id: host_id.to_owned(),
             status: status.clone(),
         };
-        if let Err(e) = event.emit(&self.0) {
+        if let Err(e) = event.emit(&self.app) {
             log::warn!("failed to emit host status: {e}");
         }
+        super::tray::refresh(&self.app);
+        self.notifications.host_status(&self.app, host_id, status);
     }
 
     fn engine_event(&self, host_id: &str, event: &EngineEvent) {
+        self.notifications.engine_event(&self.app, host_id, event);
         let event = EngineEventReceived {
             host_id: host_id.to_owned(),
             event: event.clone(),
         };
-        if let Err(e) = event.emit(&self.0) {
+        if let Err(e) = event.emit(&self.app) {
             log::warn!("failed to emit engine event: {e}");
         }
     }

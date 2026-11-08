@@ -8,6 +8,13 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 export const commands = {
 	getAppInfo: () => __TAURI_INVOKE<AppInfo>("get_app_info"),
 	getCapabilities: () => __TAURI_INVOKE<Capabilities>("get_capabilities"),
+	/**
+	 *  Whether Homeport starts when the user logs in, read from the OS each
+	 *  time, so removing the entry by hand shows here.
+	 */
+	appStartAtLogin: () => __TAURI_INVOKE<boolean>("app_start_at_login"),
+	/**  Adds or removes the login entry; returns whether it's there now. */
+	appSetStartAtLogin: (enabled: boolean) => __TAURI_INVOKE<boolean>("app_set_start_at_login", { enabled }),
 	getLicenses: () => __TAURI_INVOKE<Licenses>("get_licenses"),
 	/**  Reads a file the user picked in an open dialog (certificates, keys, compose files). */
 	readTextFile: (path: string) => __TAURI_INVOKE<string>("read_text_file", { path }),
@@ -344,6 +351,8 @@ export const events = {
 	hostStatusChanged: makeEvent<HostStatusChanged, HostStatusChanged>("host-status-changed"),
 	syncedAutoDeployed: makeEvent<SyncedAutoDeployed, SyncedAutoDeployed>("synced-auto-deployed"),
 	syncedUpdateAvailable: makeEvent<SyncedUpdateAvailable, SyncedUpdateAvailable>("synced-update-available"),
+	trayAddHostChosen: makeEvent<TrayAddHostChosen, TrayAddHostChosen>("tray-add-host-chosen"),
+	trayHostChosen: makeEvent<TrayHostChosen, TrayHostChosen>("tray-host-chosen"),
 };
 
 /* Types */
@@ -497,6 +506,11 @@ export type Capabilities = {
 	compose: ComposeSupport,
 	/**  Whether Synced Stacks can be cloned and fetched here. */
 	git: GitSupport,
+	/**
+	 *  Homeport has an icon in the system tray, so closing the window can
+	 *  keep it running there.
+	 */
+	tray: boolean,
 };
 
 /**  One commit, as a sync shows it. */
@@ -746,6 +760,8 @@ export type EnvKeyChange = {
 export type ErrorCode = 
 /**  A failure that started in the frontend, outside any command. */
 "unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | 
+/**  The OS refused the entry that starts Homeport at login. */
+"autostart_failed" | 
 /**  An export file that the passphrase doesn't open, or that was damaged. */
 "bundle_unreadable" | 
 /**  An export file from a newer Homeport. */
@@ -1222,6 +1238,21 @@ export type NetworkView = {
 	containers: string[],
 };
 
+/**
+ *  The OS notifications Homeport shows, one switch per kind; all on unless
+ *  turned off.
+ */
+export type NotificationSettings = {
+	/**  A container exited with an error or ran out of memory. */
+	containerDied?: boolean,
+	/**  A container's health check started failing. */
+	containerUnhealthy?: boolean,
+	/**  A connected Host stopped answering. */
+	hostUnreachable?: boolean,
+	/**  An unreachable Host is connected again. */
+	hostBack?: boolean,
+};
+
 export type PackageManager = "apt" | "dnf" | "zypper" | "scoop" | "aur";
 
 /**  A parameter of a message: text such as a Host's name, or a number. */
@@ -1445,6 +1476,19 @@ export type Settings = {
 	 *  to 365.
 	 */
 	keepEventsDays?: number,
+	/**
+	 *  Closing the window hides Homeport in the system tray instead of
+	 *  quitting, so its Host connections stay open.
+	 */
+	closeToTray?: boolean,
+	/**
+	 *  When started at login, stay in the system tray without opening the
+	 *  window. Whether Homeport starts at login is the OS's login entry,
+	 *  not a setting.
+	 */
+	startHidden?: boolean,
+	/**  Which OS notifications Homeport shows. */
+	notifications?: NotificationSettings,
 };
 
 /**  The kinds of source, for the rules a definition is checked against. */
@@ -1656,6 +1700,14 @@ export type TransferEvent =
 { type: "line"; text: string } | 
 /**  Finished; `images` are the names saved, loaded or imported (none for an export). */
 { type: "done"; images: string[] } | { type: "error"; error: AppError };
+
+/**  **Add host…** was picked in the tray's menu. */
+export type TrayAddHostChosen = null;
+
+/**  A Host was picked in the tray's menu: the window shows its Overview. */
+export type TrayHostChosen = {
+	hostId: string,
+};
 
 export type UpdateCheck = {
 	currentVersion: string,

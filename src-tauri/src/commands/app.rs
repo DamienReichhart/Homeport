@@ -35,6 +35,21 @@ pub fn get_app_info(app: AppHandle) -> AppInfo {
     }
 }
 
+/// Whether Homeport starts when the user logs in, read from the OS each
+/// time, so removing the entry by hand shows here.
+#[tauri::command]
+#[specta::specta]
+pub fn app_start_at_login(app: AppHandle) -> AppResult<bool> {
+    crate::app::autostart::is_enabled(&app)
+}
+
+/// Adds or removes the login entry; returns whether it's there now.
+#[tauri::command]
+#[specta::specta]
+pub fn app_set_start_at_login(app: AppHandle, enabled: bool) -> AppResult<bool> {
+    crate::app::autostart::set_enabled(&app, enabled)
+}
+
 #[derive(Debug, Serialize, specta::Type)]
 pub struct Licenses {
     /// Homeport's own license (`LICENSE`).
@@ -73,6 +88,9 @@ pub struct Capabilities {
     compose: ComposeSupport,
     /// Whether Synced Stacks can be cloned and fetched here.
     git: GitSupport,
+    /// Homeport has an icon in the system tray, so closing the window can
+    /// keep it running there.
+    tray: bool,
 }
 
 /// The git CLI Synced Stacks use, or why there's none.
@@ -111,7 +129,10 @@ pub enum ComposeSupport {
 
 #[tauri::command]
 #[specta::specta]
-pub async fn get_capabilities(state: State<'_, AppState>) -> Result<Capabilities, ()> {
+pub async fn get_capabilities(
+    app: AppHandle,
+    state: State<'_, AppState>,
+) -> Result<Capabilities, ()> {
     Ok(Capabilities {
         keychain: state.secrets.is_available(),
         compose: match compose::detect().await {
@@ -122,6 +143,7 @@ pub async fn get_capabilities(state: State<'_, AppState>) -> Result<Capabilities
             Ok(cli) => GitSupport::Available { cli },
             Err(problem) => GitSupport::Unavailable { problem },
         },
+        tray: crate::app::tray::is_available(&app),
     })
 }
 
