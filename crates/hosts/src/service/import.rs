@@ -11,7 +11,7 @@ use crate::{
         ssh_config::{self, DEFAULT_SOCKET},
         Env, ImportChoice, ImportDraft, ImportFailure, ImportOutcome,
     },
-    messages as msg, HostConnection,
+    messages as msg, EngineKind, HostConnection,
 };
 
 impl HostService {
@@ -52,6 +52,7 @@ impl HostService {
             Ok(HostInput {
                 name: choice.name.clone(),
                 connection,
+                engine: EngineKind::Docker,
                 credentials: plan.key.map(|k| CredentialsInput::SshKey {
                     private_key: k.text,
                     passphrase: passphrase.clone(),
@@ -105,6 +106,7 @@ impl HostService {
             Ok(HostInput {
                 name: choice.name.clone(),
                 connection,
+                engine: EngineKind::Docker,
                 credentials: plan.tls.map(|t| CredentialsInput::Tls {
                     ca_pem: t.ca_pem,
                     cert_pem: t.cert_pem,

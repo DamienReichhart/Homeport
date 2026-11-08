@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use homeport_core::error::AppResult;
 use homeport_storage::{crypto::bundle, db::sqlite_error, SecretBox};
 
-use crate::{HostConnection, HostSecrets};
+use crate::{EngineKind, HostConnection, HostSecrets};
 
 /// The payload version this Homeport writes and reads. Sections a later
 /// version adds (Stacks, settings) sit next to `hosts`, so older readers
@@ -36,6 +36,9 @@ pub struct ExportedHost {
     pub name: String,
     /// As stored, bastions and their trusted keys included.
     pub connection: HostConnection,
+    /// Files from before 0.18 have none: their Hosts were all Docker-compatible.
+    #[serde(default)]
+    pub engine: EngineKind,
     pub enabled: bool,
     /// The SSH server key trusted on first use.
     pub host_key: Option<String>,
@@ -99,8 +102,8 @@ pub fn restore(
             _ => None,
         };
         tx.execute(
-            "INSERT INTO hosts (id, name, connection, secrets, host_key, enabled)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+            "INSERT INTO hosts (id, name, connection, secrets, host_key, enabled, engine)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
             (
                 &id,
                 &host.name,
@@ -108,6 +111,7 @@ pub fn restore(
                 &sealed,
                 &host.host_key,
                 host.enabled,
+                host.engine.as_str(),
             ),
         )
         .map_err(sqlite_error)?;
@@ -167,6 +171,7 @@ mod tests {
             connection: HostConnection::Tcp {
                 address: "h:2375".into(),
             },
+            engine: EngineKind::Docker,
             enabled: false,
             host_key: None,
             secrets: None,

@@ -124,6 +124,7 @@ mod tests {
                 connection: HostConnection::Local {
                     socket_path: "/var/run/docker.sock".into(),
                 },
+                engine: homeport_hosts::EngineKind::Docker,
                 enabled: true,
                 host_key: None,
                 created_at: String::new(),
@@ -138,6 +139,7 @@ mod tests {
             api_version: "1.48".into(),
             os: "linux".into(),
             arch: "x86_64".into(),
+            podman_version: None,
             swarm: None,
         }
     }

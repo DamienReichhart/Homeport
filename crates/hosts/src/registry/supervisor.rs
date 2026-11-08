@@ -11,8 +11,8 @@ use homeport_engine::swarm;
 use crate::messages as msg;
 use homeport_transport::{self as transport, ConnectError};
 
-use super::{EngineEvent, HostRegistry, HostStatus};
-use crate::{events, HostId};
+use super::{Client, EngineEvent, HostRegistry, HostStatus};
+use crate::{events, EngineKind, HostId};
 
 /// How far back a Host without any kept event asks its Engine for events
 /// on connecting. The Engine only holds its latest few hundred anyway.
@@ -34,6 +34,12 @@ pub(super) async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
         };
         if !host.enabled {
             return reg.set_status(&id, HostStatus::Disabled, None);
+        }
+        // Only a restored backup from a newer Homeport can hold another kind.
+        if host.engine != EngineKind::Docker {
+            let error = super::unsupported(&host.name, host.engine.label())
+                .with_hint(msg::ENGINE_NOT_CONNECTABLE_HINT);
+            return reg.set_status(&id, HostStatus::Invalid { error }, None);
         }
         reg.set_status(&id, HostStatus::Connecting, None);
 
@@ -64,7 +70,7 @@ pub(super) async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
                 Ok(status) => {
                     backoff = 1;
                     let docker = connected.docker.clone();
-                    reg.set_status(&id, status, Some(connected));
+                    reg.set_status(&id, status, Some(Client::Docker(connected)));
                     drop(reg);
                     watch(&registry, &id, docker).await;
                     AppError::new(
@@ -99,12 +105,24 @@ pub(super) async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
 async fn describe(docker: &Docker) -> Result<HostStatus, AppError> {
     let v = docker.version().await?;
     Ok(HostStatus::Connected {
+        podman_version: podman_version(&v),
         engine_version: v.version.unwrap_or_default(),
         api_version: v.api_version.unwrap_or_default(),
         os: v.os.unwrap_or_default(),
         arch: v.arch.unwrap_or_default(),
         swarm: membership(docker).await,
     })
+}
+
+/// Podman's version, from the "Podman Engine" component its `/version`
+/// lists beside the Docker-compatible fields; `None` for any other Engine.
+fn podman_version(v: &bollard::models::SystemVersion) -> Option<String> {
+    v.components
+        .as_ref()?
+        .iter()
+        .find(|c| c.name.eq_ignore_ascii_case("podman engine"))
+        .map(|c| c.version.clone())
+        .filter(|version| !version.is_empty())
 }
 
 /// The Host's place in a Swarm; an Engine that can't say counts as outside one.
@@ -174,5 +192,43 @@ async fn watch(registry: &Weak<HostRegistry>, id: &str, docker: Docker) {
     tokio::select! {
         _ = events => {}
         _ = pings => {}
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn version(json: serde_json::Value) -> bollard::models::SystemVersion {
+        serde_json::from_value(json).unwrap()
+    }
+
+    #[test]
+    fn podman_says_so_in_its_components() {
+        // Trimmed from Podman 5.8's GET /version.
+        let podman = version(serde_json::json!({
+            "Platform": { "Name": "linux/amd64/fedora-43" },
+            "Components": [
+                { "Name": "Podman Engine", "Version": "5.8.1", "Details": { "APIVersion": "5.8.1" } },
+                { "Name": "Conmon", "Version": "conmon version 2.1.13", "Details": {} }
+            ],
+            "Version": "5.8.1",
+            "ApiVersion": "1.41"
+        }));
+        assert_eq!(podman_version(&podman).as_deref(), Some("5.8.1"));
+    }
+
+    #[test]
+    fn docker_has_no_podman_component() {
+        let docker = version(serde_json::json!({
+            "Components": [
+                { "Name": "Engine", "Version": "29.0.1", "Details": {} },
+                { "Name": "containerd", "Version": "v2.1.4", "Details": {} }
+            ],
+            "Version": "29.0.1",
+            "ApiVersion": "1.52"
+        }));
+        assert_eq!(podman_version(&docker), None);
+        assert_eq!(podman_version(&version(serde_json::json!({}))), None);
     }
 }

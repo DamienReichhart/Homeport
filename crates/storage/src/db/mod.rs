@@ -31,6 +31,7 @@ const MIGRATION_SLICE: &[M<'static>] = &[
     M::up(include_str!("migrations/0014_engine_events.sql")),
     M::up(include_str!("migrations/0015_swarm_stacks.sql")),
     M::up(include_str!("migrations/0016_clusters.sql")),
+    M::up(include_str!("migrations/0017_host_engines.sql")),
 ];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_SLICE);
 
@@ -218,6 +219,43 @@ mod tests {
             [],
         );
         assert!(duplicate.is_err(), "names are unique whatever their case");
+    }
+
+    #[test]
+    fn hosts_from_0_17_open_as_docker_compatible_engines() {
+        let mut conn = Connection::open_in_memory().unwrap();
+        MIGRATIONS.to_version(&mut conn, 16).unwrap();
+        let local = r#"{"kind":"local","socketPath":"/var/run/docker.sock"}"#;
+        conn.execute(
+            "INSERT INTO hosts (id, name, connection, host_key, enabled) VALUES ('h', 'local', ?1, 'k', 0)",
+            [local],
+        )
+        .unwrap();
+        migrate(&mut conn).unwrap();
+
+        let (name, connection, host_key, enabled, engine): (String, String, String, bool, String) =
+            conn.query_row(
+                "SELECT name, connection, host_key, enabled, engine FROM hosts",
+                [],
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?)),
+            )
+            .unwrap();
+        assert_eq!(
+            (
+                name.as_str(),
+                connection.as_str(),
+                host_key.as_str(),
+                enabled
+            ),
+            ("local", local, "k", false),
+            "nothing else changes"
+        );
+        assert_eq!(engine, "docker");
+        let unknown = conn.execute(
+            "INSERT INTO hosts (id, name, connection, engine) VALUES ('x', 'x', ?1, 'lxd')",
+            [local],
+        );
+        assert!(unknown.is_err(), "only known kinds are stored");
     }
 
     #[test]

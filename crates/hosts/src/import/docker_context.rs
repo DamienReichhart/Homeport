@@ -426,6 +426,7 @@ mod tests {
                 connection: HostConnection::Tcp {
                     address: "10.0.0.2:2375".into(),
                 },
+                engine: crate::EngineKind::Docker,
                 enabled: true,
                 host_key: None,
                 created_at: String::new(),
@@ -436,6 +437,7 @@ mod tests {
                 connection: HostConnection::Local {
                     socket_path: "/x".into(),
                 },
+                engine: crate::EngineKind::Docker,
                 enabled: true,
                 host_key: None,
                 created_at: String::new(),

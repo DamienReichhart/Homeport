@@ -46,6 +46,7 @@ describe('host form', () => {
     const form = formFromHost({
       id: '1',
       name: 'box',
+      engine: 'docker',
       enabled: true,
       hostKey: null,
       createdAt: '',
@@ -91,6 +92,7 @@ describe('host form', () => {
     const form = formFromHost({
       id: '1',
       name: 'box',
+      engine: 'docker',
       enabled: true,
       hostKey: null,
       createdAt: '',

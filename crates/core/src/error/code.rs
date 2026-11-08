@@ -56,6 +56,9 @@ pub enum ErrorCode {
     RemoteEngineUnavailable,
     HostKeyUntrusted,
     HostKeyChanged,
+    /// A page or action the Host's kind of Engine doesn't offer, such as
+    /// pods on a Docker Engine.
+    EngineUnsupported,
     // Engine API responses.
     EngineError,
     BadRequest,

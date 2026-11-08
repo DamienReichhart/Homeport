@@ -24,7 +24,7 @@ use crate::{
     events::EventStore,
     registry::{HostRegistry, HostStatus},
     store::{HostDraft, HostStore},
-    BastionAuth, Host, HostConnection, HostSecrets, SshAuth,
+    BastionAuth, EngineKind, Host, HostConnection, HostSecrets, SshAuth,
 };
 
 #[derive(Deserialize, specta::Type)]
@@ -32,6 +32,9 @@ use crate::{
 pub struct HostInput {
     pub name: String,
     pub connection: HostConnection,
+    /// The kind of Engine it points to; Docker-compatible when left out.
+    #[serde(default)]
+    pub engine: EngineKind,
     pub credentials: Option<CredentialsInput>,
     /// Keys typed for the connection's `imported` bastions.
     #[serde(default)]
@@ -108,6 +111,7 @@ impl HostService {
         let host = self.store.create(HostDraft {
             name: input.name,
             connection,
+            engine: input.engine,
             secrets,
         })?;
         self.registry.restart(&host.id);
@@ -131,6 +135,7 @@ impl HostService {
             HostDraft {
                 name: input.name,
                 connection,
+                engine: input.engine,
                 secrets,
             },
         )?;
@@ -212,6 +217,7 @@ impl HostService {
                     public_key: Some(key.public_key),
                     bastions,
                 },
+                engine: current.engine,
                 secrets: Some(HostSecrets::Ssh {
                     private_key: Some(key.private_key),
                     passphrase: None,
@@ -287,6 +293,7 @@ mod tests {
                 public_key: None,
                 bastions: vec![],
             },
+            engine: EngineKind::Docker,
             credentials,
             bastion_keys: vec![],
         }
@@ -380,6 +387,7 @@ mod tests {
             connection: HostConnection::Tls {
                 address: "h:2376".into(),
             },
+            engine: EngineKind::Docker,
             credentials: Some(CredentialsInput::Tls {
                 ca_pem: "x".into(),
                 cert_pem: "x".into(),

@@ -15,6 +15,13 @@ homeport_core::messages! {
     NOT_CONNECTED_CONNECTING_HINT = "errors.hosts.notConnected.hintConnecting" => "Homeport is still connecting; try again in a moment.";
     /// …for another reason, shown on its page.
     NOT_CONNECTED_HINT = "errors.hosts.notConnected.hint" => "Open the host's page to see why and fix it.";
+    /// A page or action the Host's kind of Engine doesn't offer.
+    ENGINE_UNSUPPORTED = "errors.hosts.engineUnsupported" => "{name} runs {engine}, which doesn't offer this.";
+    ENGINE_UNSUPPORTED_HINT = "errors.hosts.engineUnsupported.hint" => "Choose a host whose Engine offers it in the host switcher.";
+    /// The same, for a Host that is no longer stored.
+    ENGINE_UNSUPPORTED_UNKNOWN = "errors.hosts.engineUnsupportedUnknown" => "This host's Engine doesn't offer this.";
+    /// A restored Host whose kind of Engine this version can't connect to.
+    ENGINE_NOT_CONNECTABLE_HINT = "errors.hosts.engineNotConnectable.hint" => "This version of Homeport can only connect to Docker-compatible Engines. Update Homeport to use this host.";
     /// Saving a TLS Host with SSH credentials.
     TLS_NEEDS_CERTIFICATES = "errors.hosts.tlsNeedsCertificates" => "TLS hosts need certificates.";
     /// Saving an SSH Host with TLS credentials.

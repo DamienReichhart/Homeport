@@ -24,6 +24,7 @@ describe('Swarm naming', () => {
         apiVersion: '1.52',
         os: 'linux',
         arch: 'amd64',
+        podmanVersion: null,
         swarm: {
           swarmId: 's1',
           nodeId: 'n1',

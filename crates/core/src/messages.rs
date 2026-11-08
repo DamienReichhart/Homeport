@@ -26,6 +26,8 @@ crate::messages! {
     BASTION_USER_MISSING = "errors.core.bastionUserMissing" => "Enter the user of bastion {n}.";
     /// A bastion on port 0.
     BASTION_PORT_INVALID = "errors.core.bastionPortInvalid" => "The port of bastion {n} must be between 1 and 65535.";
+    /// A Host whose kind of Engine this version can't connect to yet.
+    ENGINE_NOT_YET_SUPPORTED = "errors.core.engineNotYetSupported" => "Homeport can't connect to {engine} yet. Choose a Docker-compatible Engine.";
     /// Two hops of one Host at the same address.
     BASTION_REPEATED = "errors.core.bastionRepeated" => "{address} appears twice on the way to this host.";
 

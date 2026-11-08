@@ -13,6 +13,7 @@ export const connectedHost: HostView = {
   host: {
     id: 'h1',
     name: 'local',
+    engine: 'docker',
     enabled: true,
     hostKey: null,
     createdAt: '',
@@ -24,6 +25,7 @@ export const connectedHost: HostView = {
     apiVersion: '1.52',
     os: 'linux',
     arch: 'amd64',
+    podmanVersion: null,
     swarm: null,
   },
 };
@@ -72,7 +74,7 @@ export function hostView(
   } = {},
 ): HostView {
   return {
-    host: { id, name, enabled: true, hostKey, createdAt: '', connection },
+    host: { id, name, engine: 'docker', enabled: true, hostKey, createdAt: '', connection },
     status,
   };
 }

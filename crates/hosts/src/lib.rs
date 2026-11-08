@@ -20,5 +20,6 @@ pub mod service;
 pub mod store;
 
 pub use homeport_core::host::{
-    Bastion, BastionAuth, Host, HostConnection, HostId, HostSecrets, SshAuth, SshKeySecret,
+    Bastion, BastionAuth, EngineKind, Host, HostConnection, HostId, HostSecrets, SshAuth,
+    SshKeySecret,
 };

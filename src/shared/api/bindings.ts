@@ -1248,6 +1248,8 @@ export type DetectedEngine = {
 	/**  The product that usually owns this socket, e.g. "Colima". */
 	label: string,
 	socketPath: string,
+	/**  The kind of Engine behind the socket, which presets the Host form. */
+	engine: EngineKind,
 	engineVersion: string,
 };
 
@@ -1309,6 +1311,21 @@ export type EngineInfo = {
 	images: number,
 };
 
+/**
+ *  The kind of Engine a Host points to, which decides what Homeport can
+ *  show and do on it. Named `engine` everywhere: `kind` is the connection's.
+ */
+export type EngineKind = 
+/**
+ *  An Engine speaking the Docker Engine API: Docker, or Podman through
+ *  its compatible API. Which one is read on every connect.
+ */
+"docker" | 
+/**  containerd, through its own API (not supported yet). */
+"containerd" | 
+/**  Incus, through its REST API (not supported yet). */
+"incus";
+
 /**  What happened to one environment variable. */
 export type EnvChange = "added" | "removed" | "changed" | "unchanged";
 
@@ -1326,7 +1343,12 @@ export type ErrorCode =
 /**  An export file that the passphrase doesn't open, or that was damaged. */
 "bundle_unreadable" | 
 /**  An export file from a newer Homeport. */
-"bundle_too_new" | "host_not_connected" | "engine_not_installed" | "engine_not_running" | "permission_denied" | "dns_failed" | "connection_refused" | "timeout" | "network_unreachable" | "connection_lost" | "tls_required" | "tls_not_supported" | "tls_certificate_expired" | "tls_certificate_not_yet_valid" | "tls_unknown_ca" | "tls_name_mismatch" | "tls_client_rejected" | "tls_handshake_failed" | "tls_material_invalid" | "ssh_auth_failed" | "ssh_agent_unavailable" | "ssh_key_invalid" | "ssh_failed" | "remote_engine_unavailable" | "host_key_untrusted" | "host_key_changed" | "engine_error" | "bad_request" | "forbidden" | "conflict" | "name_in_use" | "in_use" | "container_running" | "container_not_running" | "already_done" | "port_in_use" | "disk_full" | "image_not_found" | "registry_auth_required" | "registry_rate_limited" | "registry_unreachable" | "registry_login_failed" | "api_version_unsupported" | "build_failed" | 
+"bundle_too_new" | "host_not_connected" | "engine_not_installed" | "engine_not_running" | "permission_denied" | "dns_failed" | "connection_refused" | "timeout" | "network_unreachable" | "connection_lost" | "tls_required" | "tls_not_supported" | "tls_certificate_expired" | "tls_certificate_not_yet_valid" | "tls_unknown_ca" | "tls_name_mismatch" | "tls_client_rejected" | "tls_handshake_failed" | "tls_material_invalid" | "ssh_auth_failed" | "ssh_agent_unavailable" | "ssh_key_invalid" | "ssh_failed" | "remote_engine_unavailable" | "host_key_untrusted" | "host_key_changed" | 
+/**
+ *  A page or action the Host's kind of Engine doesn't offer, such as
+ *  pods on a Docker Engine.
+ */
+"engine_unsupported" | "engine_error" | "bad_request" | "forbidden" | "conflict" | "name_in_use" | "in_use" | "container_running" | "container_not_running" | "already_done" | "port_in_use" | "disk_full" | "image_not_found" | "registry_auth_required" | "registry_rate_limited" | "registry_unreachable" | "registry_login_failed" | "api_version_unsupported" | "build_failed" | 
 /**  A GPU was requested from a Host without the vendor's container toolkit. */
 "gpu_unavailable" | 
 /**  Recreating a container failed, and so did putting the original back. */
@@ -1606,6 +1628,8 @@ export type Host = {
 	id: string,
 	name: string,
 	connection: HostConnection,
+	/**  The kind of Engine it points to; migration 0017 made stored Hosts Docker-compatible. */
+	engine: EngineKind,
 	enabled: boolean,
 	/**  The SSH server key trusted on first use, in OpenSSH format. */
 	hostKey: string | null,
@@ -1633,12 +1657,19 @@ bastions: Bastion[] };
 export type HostInput = {
 	name: string,
 	connection: HostConnection,
+	/**  The kind of Engine it points to; Docker-compatible when left out. */
+	engine?: EngineKind,
 	credentials: CredentialsInput | null,
 	/**  Keys typed for the connection's `imported` bastions. */
 	bastionKeys?: BastionKeyInput[],
 };
 
 export type HostStatus = { state: "disabled" } | { state: "connecting" } | { state: "connected"; engineVersion: string; apiVersion: string; os: string; arch: string; 
+/**
+ *  The version of Podman when the Engine is Podman, read on every
+ *  connect because the same socket can change product.
+ */
+podmanVersion: string | null; 
 /**  The Host's place in a Swarm, `None` outside one. */
 swarm: SwarmMembership | null } | { state: "unreachable"; error: AppError; retryInSecs: number } | { state: "unauthorized"; error: AppError } | 
 /**
