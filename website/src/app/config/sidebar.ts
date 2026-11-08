@@ -29,6 +29,7 @@ export const sidebar: NonNullable<StarlightUserConfig['sidebar']> = [
       { label: 'Workloads and Pods', slug: 'docs/clusters/workloads' },
       { label: 'Services and configuration', slug: 'docs/clusters/networking-config' },
       { label: 'Nodes and Events', slug: 'docs/clusters/nodes-events' },
+      { label: 'API resources', slug: 'docs/clusters/api-resources' },
       { label: 'Logs and terminals', slug: 'docs/clusters/logs-exec' },
       { label: 'Port forwarding', slug: 'docs/clusters/port-forward' },
       { label: 'Scaling, restarting and deleting', slug: 'docs/clusters/actions' },
