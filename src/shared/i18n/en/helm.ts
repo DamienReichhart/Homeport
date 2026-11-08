@@ -86,4 +86,47 @@ export default {
   'helm.charts.version': 'Chart version',
   'helm.charts.pick': 'Use',
   'helm.charts.none': 'No chart matches. Update the repositories, or add the one that has it.',
+
+  'helm.install.open': 'Install chart',
+  'helm.install.title': 'Install a chart on {cluster}',
+  'helm.install.titleChart': 'Install {chart} on {cluster}',
+  'helm.install.description':
+    'Pick a chart from helm’s repositories, or give the reference of one in an OCI registry.',
+  'helm.install.fromRepository': 'From a repository',
+  'helm.install.fromOci': 'From an OCI registry',
+  'helm.install.ociReference': 'OCI reference',
+  'helm.install.ociHint':
+    'A chart in a public OCI registry installs without adding a repository. Registries that need a login are signed in to with helm registry login in a terminal.',
+  'helm.install.next': 'Next',
+  'helm.install.version': 'Chart version',
+  'helm.install.versionLatest': 'Latest',
+  'helm.install.versionOption': '{version} (app {app})',
+  'helm.install.name': 'Release name',
+  'helm.install.namespace': 'Namespace',
+  'helm.install.createNamespace': 'Create the Namespace if it doesn’t exist',
+  'helm.install.wait': 'Wait until its resources are ready',
+  'helm.install.timeout': 'for at most',
+  'helm.install.minutes': 'minutes',
+  'helm.install.values': 'Values',
+  'helm.install.valuesLabel': 'Values to install with',
+  'helm.install.resetDefaults': 'Reset to the chart’s defaults',
+  'helm.install.changeChart': 'Change chart',
+  'helm.install.back': 'Back',
+  'helm.install.preview': 'Preview',
+  'helm.install.previewing': 'Rendering…',
+  'helm.install.install': 'Install',
+  'helm.install.running': 'Installing {chart} as {name} on {cluster}',
+  'helm.install.openRelease': 'Open release',
+  'helm.install.problem.noName': 'Name the release.',
+  'helm.install.problem.nameLong': 'A release name has at most 53 characters.',
+  'helm.install.problem.name':
+    'Use lowercase letters, digits, dashes and dots in the release name, starting and ending with a letter or digit.',
+  'helm.install.problem.noNamespace': 'Name the Namespace.',
+  'helm.install.problem.namespace':
+    'Use at most 63 lowercase letters, digits and dashes in the Namespace, starting and ending with a letter or digit.',
+  'helm.install.problem.oci':
+    'Give a reference such as oci://registry-1.docker.io/bitnamicharts/nginx.',
+  'helm.preview.description':
+    'What helm would apply, rendered with the cluster’s help. Nothing has been changed yet.',
+  'helm.preview.manifest': 'Rendered manifest',
 };

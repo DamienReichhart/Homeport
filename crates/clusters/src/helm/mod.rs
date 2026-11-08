@@ -4,6 +4,7 @@
 //! user's.
 
 mod errors;
+mod install;
 mod releases;
 mod repos;
 mod run;
@@ -17,6 +18,7 @@ use homeport_core::{error::AppResult, programs};
 
 pub use self::{
     errors::{failure, missing},
+    install::{InstallRequest, ReleasePreview},
     releases::{ReleaseDetails, ReleaseList, ReleaseResource, ReleaseRevision, ReleaseSummary},
     repos::{ChartRepository, ChartVersion},
     run::Helm,

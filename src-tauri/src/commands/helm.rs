@@ -4,7 +4,10 @@
 use tauri::{ipc::Channel, State};
 
 use homeport_clusters::{
-    helm::{ChartRepository, ChartVersion, Helm, ReleaseDetails, ReleaseList, ReleaseRevision},
+    helm::{
+        ChartRepository, ChartVersion, Helm, InstallRequest, ReleaseDetails, ReleaseList,
+        ReleasePreview, ReleaseRevision,
+    },
     proxy::CliEvent,
 };
 use homeport_core::streams::StreamId;
@@ -106,4 +109,46 @@ pub async fn helm_repos_remove(name: String) -> AppResult<()> {
 #[specta::specta]
 pub async fn helm_charts_search(query: String, versions: bool) -> AppResult<Vec<ChartVersion>> {
     Helm::local()?.search_charts(&query, versions).await
+}
+
+/// A chart's default values, as YAML, at `version` or its latest.
+#[tauri::command]
+#[specta::specta]
+pub async fn helm_chart_values(chart: String, version: Option<String>) -> AppResult<String> {
+    Helm::local()?
+        .chart_values(&chart, version.as_deref())
+        .await
+}
+
+/// Every version of a repository chart, newest first; none for OCI charts.
+#[tauri::command]
+#[specta::specta]
+pub async fn helm_chart_versions(chart: String) -> AppResult<Vec<ChartVersion>> {
+    Helm::local()?.chart_versions(&chart).await
+}
+
+/// What installing `request` would apply, rendered with the Cluster.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_helm_preview_install(
+    state: State<'_, AppState>,
+    id: String,
+    request: InstallRequest,
+) -> AppResult<ReleasePreview> {
+    helm(&state, &id)?.preview_install(&request).await
+}
+
+/// Installs a chart, streaming helm's output.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_helm_install_subscribe(
+    state: State<'_, AppState>,
+    id: String,
+    request: InstallRequest,
+    on_event: Channel<CliEvent>,
+) -> AppResult<StreamId> {
+    let helm = helm(&state, &id)?;
+    Ok(state
+        .streams
+        .spawn(helm.install(request, move |e| on_event.send(e).is_ok())))
 }

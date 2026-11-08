@@ -276,4 +276,15 @@ homeport_core::messages! {
     /// A chart repository URL with a user name or password in it.
     HELM_REPO_URL_CREDENTIALS = "errors.helm.repoUrlCredentials" => "Homeport doesn't add repositories that need a login.";
     HELM_REPO_URL_CREDENTIALS_HINT = "errors.helm.repoUrlCredentials.hint" => "helm would store the password in clear. Add it in a terminal with helm repo add --username, and it appears here.";
+    /// A release name helm wouldn't take.
+    HELM_RELEASE_NAME_INVALID = "errors.helm.releaseNameInvalid" => "\"{name}\" isn't a release name. Use at most 53 lowercase letters, digits, dashes and dots, starting and ending with a letter or digit.";
+    /// A Namespace name Kubernetes wouldn't take.
+    HELM_NAMESPACE_INVALID = "errors.helm.namespaceInvalid" => "\"{namespace}\" isn't a Namespace name. Use at most 63 lowercase letters, digits and dashes, starting and ending with a letter or digit.";
+    /// A chart that is neither `repository/chart` nor `oci://…`.
+    HELM_CHART_INVALID = "errors.helm.chartInvalid" => "\"{chart}\" isn't a chart Homeport can install.";
+    HELM_CHART_INVALID_HINT = "errors.helm.chartInvalid.hint" => "Pick a chart from a repository (repository/chart), or give an OCI reference such as oci://registry-1.docker.io/bitnamicharts/nginx.";
+    /// Values that are YAML but not a mapping.
+    HELM_VALUES_NOT_MAP = "errors.helm.valuesNotMap" => "Values are a YAML mapping of keys, such as replicaCount: 2.";
+    /// Values that aren't YAML.
+    HELM_VALUES_YAML = "errors.helm.valuesYaml" => "The values aren't valid YAML, at line {line}.";
 }

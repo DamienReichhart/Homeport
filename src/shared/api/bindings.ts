@@ -233,6 +233,14 @@ export const commands = {
 	 *  every version.
 	 */
 	helmChartsSearch: (query: string, versions: boolean) => __TAURI_INVOKE<ChartVersion[]>("helm_charts_search", { query, versions }),
+	/**  A chart's default values, as YAML, at `version` or its latest. */
+	helmChartValues: (chart: string, version: string | null) => __TAURI_INVOKE<string>("helm_chart_values", { chart, version }),
+	/**  Every version of a repository chart, newest first; none for OCI charts. */
+	helmChartVersions: (chart: string) => __TAURI_INVOKE<ChartVersion[]>("helm_chart_versions", { chart }),
+	/**  What installing `request` would apply, rendered with the Cluster. */
+	clustersHelmPreviewInstall: (id: string, request: InstallRequest) => __TAURI_INVOKE<ReleasePreview>("clusters_helm_preview_install", { id, request }),
+	/**  Installs a chart, streaming helm's output. */
+	clustersHelmInstallSubscribe: (id: string, request: InstallRequest, onEvent: Channel<CliEvent>) => __TAURI_INVOKE<number>("clusters_helm_install_subscribe", { id, request, onEvent }),
 	/**
 	 *  Streams the logs of one Pod, or of several in one stream with each
 	 *  line labelled, until cancelled or they end.
@@ -1764,6 +1772,25 @@ export type IngressView = {
 	created: string | null,
 };
 
+/**  What to install, and how. */
+export type InstallRequest = {
+	/**  The release's name. */
+	name: string,
+	namespace: string,
+	/**  `repository/chart`, or an `oci://` reference. */
+	chart: string,
+	/**  The chart version; the latest without. */
+	version: string | null,
+	/**  YAML; empty for the chart's defaults. */
+	values: string,
+	/**  Creates the Namespace when it doesn't exist. */
+	createNamespace: boolean,
+	/**  Waits for the release's resources to be ready. */
+	wait: boolean,
+	/**  How long `wait` may take, in seconds; helm's default (5 min) without. */
+	timeoutSeconds: number | null,
+};
+
 /**  What `docker swarm join` needs for each role. `Debug` hides the tokens. */
 export type JoinInfo = {
 	workerToken: string,
@@ -2369,6 +2396,13 @@ export type ReleaseList = {
 	 *  allow this one, the Cluster's default, which was listed instead.
 	 */
 	onlyNamespace: string | null,
+};
+
+/**  What an install or upgrade would apply. */
+export type ReleasePreview = {
+	/**  The rendered manifest, hooks included. */
+	manifest: string,
+	notes: string,
 };
 
 /**  An object a release's manifest creates. */

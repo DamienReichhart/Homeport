@@ -21,11 +21,14 @@ export function HelmRunDialog({
   title,
   run,
   onDone,
+  doneAction,
   onClose,
 }: {
   title: string;
   run: HelmRun;
   onDone?: (success: boolean) => void;
+  /** Offered once helm succeeded, such as opening the release. */
+  doneAction?: { label: string; onClick: () => void };
   onClose: () => void;
 }) {
   const [result, setResult] = useState<'running' | 'ok' | 'failed'>('running');
@@ -73,6 +76,9 @@ export function HelmRunDialog({
           />
         </div>
         <DialogFooter>
+          {doneAction && result === 'ok' && (
+            <Button onClick={doneAction.onClick}>{doneAction.label}</Button>
+          )}
           <Button variant={result === 'running' ? 'outline' : 'default'} onClick={onClose}>
             {result === 'running' ? t('common.cancel') : t('common.close')}
           </Button>

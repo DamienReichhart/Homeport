@@ -59,4 +59,20 @@ export const helmQueries = {
       staleTime: 60_000,
       retry: false,
     }),
+  /** A chart's default values, at `version` or its latest; fixed per version. */
+  chartValues: (chart: string, version: string | null) =>
+    queryOptions({
+      queryKey: [...helmKeys.repositories, 'values', chart, version],
+      queryFn: () => commands.helmChartValues(chart, version),
+      staleTime: version ? Infinity : 60_000,
+      retry: false,
+    }),
+  /** Every version of a repository chart, newest first. */
+  chartVersions: (chart: string) =>
+    queryOptions({
+      queryKey: [...helmKeys.repositories, 'versions', chart],
+      queryFn: () => commands.helmChartVersions(chart),
+      staleTime: 60_000,
+      retry: false,
+    }),
 };
