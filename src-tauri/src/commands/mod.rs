@@ -249,6 +249,8 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             containerd::containerd_images_pull_subscribe,
             containerd::containerd_snapshots,
             containerd::containerd_snapshot_remove,
+            incus::incus_trust_token_read,
+            incus::incus_trust_add,
             incus::incus_projects,
             podman::pods_list,
             podman::pods_inspect,

@@ -11,6 +11,7 @@ homeport_core::messages! {
     CONNECT_TCP_ADDRESS_INVALID = "errors.transport.connect.tcpAddressInvalid" => "The TCP address isn't valid.";
     /// A TLS Host has no certificates stored.
     CONNECT_TLS_MATERIAL_MISSING = "errors.transport.connect.tlsMaterialMissing" => "The TLS certificates are missing.";
+    CONNECT_INCUS_MATERIAL_MISSING_HINT = "errors.transport.connect.incusMaterialMissing.hint" => "Add the host again with a new trust token from incus config trust add.";
     CONNECT_TLS_MATERIAL_MISSING_HINT = "errors.transport.connect.tlsMaterialMissing.hint" => "Add the CA certificate, client certificate and client key on the host page.";
     /// A containerd (or other socket-only) Host saved with TCP or TLS.
     CONNECT_ENGINE_NEEDS_SOCKET = "errors.transport.connect.engineNeedsSocket" => "Homeport reaches {engine} through its socket, on this computer or over SSH.";

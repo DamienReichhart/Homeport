@@ -61,7 +61,8 @@ impl EngineKind {
     }
 
     /// Refuses connections a kind of Engine isn't served over: containerd
-    /// and Incus only answer on their socket, on this computer or through SSH.
+    /// only answers on its socket, on this computer or through SSH, and
+    /// Incus on its socket or over HTTPS.
     pub fn validate(self, connection: &HostConnection) -> AppResult<()> {
         match (self, connection) {
             (Self::Docker, _) => Ok(()),
@@ -69,6 +70,7 @@ impl EngineKind {
                 Self::Containerd | Self::Incus,
                 HostConnection::Local { .. } | HostConnection::Ssh { .. },
             ) => Ok(()),
+            (Self::Incus, HostConnection::Tls { .. }) => Ok(()),
             (Self::Containerd, _) => Err(AppError::validation(msg::CONTAINERD_NEEDS_SOCKET)),
             (Self::Incus, _) => Err(AppError::validation(msg::INCUS_NEEDS_SOCKET)),
         }
@@ -501,6 +503,11 @@ mod tests {
         };
         assert!(EngineKind::Incus.validate(&incus).is_ok());
         assert!(EngineKind::Incus.validate(&remote).is_ok());
+        let https = HostConnection::Tls {
+            address: "10.0.0.5:8443".into(),
+        };
+        assert!(EngineKind::Incus.validate(&https).is_ok());
+        assert!(EngineKind::Containerd.validate(&https).is_err());
         let err = EngineKind::Incus.validate(&tcp).unwrap_err();
         assert!(err.is(ErrorCode::Validation));
         assert!(err.message.contains("Incus"), "{err:?}");

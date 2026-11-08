@@ -12,6 +12,7 @@ pub mod events;
 pub mod messages;
 pub mod operations;
 pub mod projects;
+pub mod trust;
 mod websocket;
 
 pub use client::{Incus, IncusServer, DEFAULT_PROJECT, REQUIRED_EXTENSIONS};

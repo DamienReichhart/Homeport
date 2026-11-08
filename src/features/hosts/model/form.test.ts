@@ -6,6 +6,7 @@ import {
   formFromHost,
   moveBastion,
   toHostInput,
+  usesTrustToken,
   withEngine,
 } from './form';
 
@@ -59,6 +60,11 @@ describe('host form', () => {
     expect(withEngine(tcp, 'docker').sshSocketPath).toBe('/var/run/docker.sock');
     expect(engineReachableOver('containerd', 'tls')).toBe(false);
     expect(engineReachableOver('incus', 'tcp')).toBe(false);
+    expect(engineReachableOver('incus', 'tls')).toBe(true);
+    const https = { ...emptyForm('tls'), engine: 'incus' as const };
+    expect(usesTrustToken(https)).toBe(true);
+    expect(usesTrustToken({ ...https, incusTrust: 'certificate' })).toBe(false);
+    expect(usesTrustToken({ ...https, engine: 'docker' })).toBe(false);
     expect(withEngine(emptyForm('local'), 'incus').socketPath).toBe('/var/lib/incus/unix.socket');
     expect(engineReachableOver('docker', 'tls')).toBe(true);
   });

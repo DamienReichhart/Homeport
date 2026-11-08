@@ -35,6 +35,23 @@ pub fn tls(label: &str, address: &str, error: &(dyn StdError + 'static)) -> AppE
         )
         .with_hint(msg::TLS_CLIENT_REJECTED_HINT)
     };
+    let pin = match tls {
+        Tls::InvalidCertificate(Cert::Other(other)) => {
+            other.0.downcast_ref::<crate::tls::PinMismatch>()
+        }
+        _ => None,
+    };
+    if let Some(pin) = pin {
+        return AppError::new(
+            ErrorCode::CertificateMismatch,
+            msg::TLS_PIN_MISMATCH
+                .with("host", label)
+                .with("presented", &pin.presented)
+                .with("expected", &pin.expected),
+        )
+        .with_hint(msg::TLS_PIN_MISMATCH_HINT)
+        .with_cause(error);
+    }
     let classified = match tls {
         Tls::InvalidCertificate(Cert::Expired | Cert::ExpiredContext { .. }) => AppError::new(
             ErrorCode::TlsCertificateExpired,

@@ -29,7 +29,7 @@ crate::messages! {
     /// A containerd Host saved with TCP or TLS, which containerd doesn't serve.
     CONTAINERD_NEEDS_SOCKET = "errors.core.containerdNeedsSocket" => "containerd only answers on its socket. Connect through its socket on this computer, or over SSH.";
     /// An Incus Host saved with plain TCP, which Incus doesn't serve.
-    INCUS_NEEDS_SOCKET = "errors.core.incusNeedsSocket" => "Incus answers on its socket. Connect through its socket on this computer, or over SSH.";
+    INCUS_NEEDS_SOCKET = "errors.core.incusNeedsSocket" => "Incus doesn't answer over plain TCP. Connect through its socket on this computer, over SSH, or over HTTPS with a trust token.";
     /// Two hops of one Host at the same address.
     BASTION_REPEATED = "errors.core.bastionRepeated" => "{address} appears twice on the way to this host.";
 

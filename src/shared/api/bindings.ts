@@ -460,6 +460,14 @@ export const commands = {
 	containerdSnapshots: (hostId: string, namespace: string, snapshotter: string | null) => __TAURI_INVOKE<ContainerdSnapshots>("containerd_snapshots", { hostId, namespace, snapshotter }),
 	/**  Removes a snapshot nothing uses and nothing is built on. */
 	containerdSnapshotRemove: (hostId: string, namespace: string, snapshotter: string, key: string) => __TAURI_INVOKE<null>("containerd_snapshot_remove", { hostId, namespace, snapshotter, key }),
+	/**  What a pasted trust token says, for the Host form to show before adding. */
+	incusTrustTokenRead: (token: string) => __TAURI_INVOKE<TrustTokenSummary>("incus_trust_token_read", { token }),
+	/**
+	 *  Adds an Incus Host over HTTPS with a trust token from
+	 *  `incus config trust add`: Homeport makes a client certificate, registers
+	 *  it with the token, and keeps the server's certificate pinned (ADR 0021).
+	 */
+	incusTrustAdd: (name: string, token: string) => __TAURI_INVOKE<HostView>("incus_trust_add", { name, token }),
 	/**  The projects the Host's connection may use, with what each holds. */
 	incusProjects: (hostId: string) => __TAURI_INVOKE<IncusProject[]>("incus_projects", { hostId }),
 	podsList: (hostId: string) => __TAURI_INVOKE<PodmanPod[]>("pods_list", { hostId }),
@@ -3237,7 +3245,10 @@ export type SshSetup = {
 	fingerprint: string,
 	/**  Appends the key to `~/.ssh/authorized_keys`, run on the server. */
 	installCommand: string,
-	/**  Lets the SSH user reach the Docker socket, run on the server. */
+	/**
+	 *  Lets the SSH user reach the Engine's socket (Docker's, or Incus's),
+	 *  run on the server.
+	 */
 	dockerGroupCommand: string,
 	/**
 	 *  Every server the key must be authorised on, as `user@host`: the
@@ -3595,6 +3606,15 @@ export type TrayAddHostChosen = null;
 /**  A Host was picked in the tray's menu: the window shows its Overview. */
 export type TrayHostChosen = {
 	hostId: string,
+};
+
+/**  What the Host form shows about a pasted token before adding the Host. */
+export type TrustTokenSummary = {
+	clientName: string,
+	fingerprint: string,
+	addresses: string[],
+	/**  RFC 3339, `None` for a token that doesn't expire. */
+	expiresAt: string | null,
 };
 
 /**  Uninstalling a release, which deletes the objects it created. */

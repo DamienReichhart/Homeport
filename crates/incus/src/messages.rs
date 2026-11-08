@@ -18,6 +18,26 @@ homeport_core::messages! {
     /// An answer that isn't the JSON Incus sends.
     UNREADABLE = "errors.incus.unreadable" => "Incus sent an answer Homeport couldn't read.";
 
+    // Trust tokens (ADR 0021).
+
+    /// Text that isn't an Incus trust token.
+    TOKEN_INVALID = "errors.incus.tokenInvalid" => "This isn't an Incus trust token.";
+    TOKEN_INVALID_HINT = "errors.incus.tokenInvalid.hint" => "Paste the whole token this prints on the Incus server, a single line of letters and digits:";
+    /// A token past its expiry.
+    TOKEN_EXPIRED = "errors.incus.tokenExpired" => "This trust token expired at {time}.";
+    TOKEN_EXPIRED_HINT = "errors.incus.tokenExpired.hint" => "Make a new one on the Incus server, and paste it within its lifetime:";
+    /// Incus refused the token.
+    TOKEN_REFUSED = "errors.incus.tokenRefused" => "Incus refused the trust token.";
+    TOKEN_REFUSED_HINT = "errors.incus.tokenRefused.hint" => "A token works once: it may have been used already, or revoked with incus config trust revoke-token. Make a new one on the server:";
+    /// No address of the token answered.
+    NOT_LISTENING = "errors.incus.notListening" => "Homeport couldn't reach Incus at {addresses}.";
+    NOT_LISTENING_HINT = "errors.incus.notListening.hint" => "Incus may not listen on the network, or a firewall may block port 8443. On the server, have it listen on every address:";
+    /// An address presented another certificate than the token's.
+    TOKEN_FINGERPRINT_MISMATCH = "errors.incus.tokenFingerprintMismatch" => "{address} presented a certificate with fingerprint {presented}, not the {expected} the token names.";
+    TOKEN_FINGERPRINT_MISMATCH_HINT = "errors.incus.tokenFingerprintMismatch.hint" => "Something other than this Incus answers at that address, or something intercepts the connection. Check the server's fingerprint with incus info on it before trusting anything.";
+    /// Making the client certificate failed.
+    CERTIFICATE_FAILED = "errors.incus.certificateFailed" => "Homeport couldn't make its client certificate.";
+
     // Incus's answers.
 
     /// Incus has no such object.

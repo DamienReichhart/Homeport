@@ -32,6 +32,15 @@ export const sshSetupQuery = (host: Host) =>
  * Asks for a file and reads it as text; `null` when cancelled or when the
  * read fails, which is reported as a toast.
  */
+/** What a pasted Incus trust token says; a token that can't be used fails with why. */
+export const trustTokenQuery = (token: string) =>
+  queryOptions({
+    queryKey: ['incus-trust-token', token],
+    queryFn: () => commands.incusTrustTokenRead(token),
+    enabled: token.trim() !== '',
+    retry: false,
+  });
+
 export async function loadTextFile(title: string): Promise<string | null> {
   const path = await pickFile(title);
   if (!path) return null;
