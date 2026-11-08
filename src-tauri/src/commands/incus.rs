@@ -7,6 +7,7 @@ use tauri::State;
 use homeport_core::host::{EngineKind, HostConnection};
 use homeport_hosts::service::{CredentialsInput, HostInput, HostView};
 use homeport_incus::{
+    instances::{self, IncusInstance, IncusInstanceDetail, InstanceAction},
     projects::{self, IncusProject},
     trust::{self, TrustToken, TrustTokenSummary},
 };
@@ -60,4 +61,57 @@ pub async fn incus_projects(
     host_id: String,
 ) -> AppResult<Vec<IncusProject>> {
     projects::list(&state.hosts.registry.incus(&host_id)?).await
+}
+
+/// The Instances of `project`, with their state.
+#[tauri::command]
+#[specta::specta]
+pub async fn incus_instances(
+    state: State<'_, AppState>,
+    host_id: String,
+    project: String,
+) -> AppResult<Vec<IncusInstance>> {
+    instances::list(&state.hosts.registry.incus(&host_id)?, &project).await
+}
+
+/// One Instance with its configuration, devices and snapshots' names.
+#[tauri::command]
+#[specta::specta]
+pub async fn incus_instance(
+    state: State<'_, AppState>,
+    host_id: String,
+    project: String,
+    name: String,
+) -> AppResult<IncusInstanceDetail> {
+    instances::get(&state.hosts.registry.incus(&host_id)?, &project, &name).await
+}
+
+/// Starts, stops, restarts, freezes or unfreezes an Instance; `force` stops
+/// or restarts it without waiting for its system to shut down.
+#[tauri::command]
+#[specta::specta]
+pub async fn incus_instance_act(
+    state: State<'_, AppState>,
+    host_id: String,
+    project: String,
+    name: String,
+    action: InstanceAction,
+    force: bool,
+) -> AppResult<()> {
+    let incus = state.hosts.registry.incus(&host_id)?;
+    instances::act(&incus, &project, &name, action, force).await
+}
+
+/// Deletes an Instance with its snapshots; `stop_first` stops a running one.
+#[tauri::command]
+#[specta::specta]
+pub async fn incus_instance_delete(
+    state: State<'_, AppState>,
+    host_id: String,
+    project: String,
+    name: String,
+    stop_first: bool,
+) -> AppResult<()> {
+    let incus = state.hosts.registry.incus(&host_id)?;
+    instances::delete(&incus, &project, &name, stop_first).await
 }

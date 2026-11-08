@@ -124,6 +124,20 @@ fn known(message: &str) -> Option<AppError> {
                 .with_hint(m::INSTANCE_NOT_RUNNING_HINT),
         );
     }
+    if mentions(
+        message,
+        &[
+            "already stopped",
+            "already frozen",
+            "is not frozen",
+            "isn't frozen",
+        ],
+    ) {
+        return Some(AppError::new(
+            ErrorCode::AlreadyDone,
+            m::INSTANCE_ALREADY_THERE,
+        ));
+    }
     if mentions(message, &["instance is already running", "already running"]) {
         return Some(AppError::new(
             ErrorCode::AlreadyDone,

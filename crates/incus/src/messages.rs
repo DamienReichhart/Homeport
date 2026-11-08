@@ -88,6 +88,17 @@ homeport_core::messages! {
     /// An image or alias the server doesn't have.
     IMAGE_NOT_FOUND = "errors.incus.imageNotFound" => "The image server has no such image.";
     IMAGE_NOT_FOUND_HINT = "errors.incus.imageNotFound.hint" => "Check the alias, or pick the image from the list: aliases look like debian/12 or ubuntu/24.04/cloud.";
+    /// An Instance that isn't in the project.
+    INSTANCE_NOT_FOUND = "errors.incus.instanceNotFound" => "There's no Instance {name} in this project; it may have just been deleted.";
+    INSTANCE_NOT_FOUND_HINT = "errors.incus.instanceNotFound.hint" => "Refresh the list, or pick another project under the host switcher.";
+    /// A graceful stop the guest didn't finish in time.
+    STOP_TIMED_OUT = "errors.incus.stopTimedOut" => "{name} didn't shut down within {seconds} seconds.";
+    STOP_TIMED_OUT_HINT = "errors.incus.stopTimedOut.hint" => "Its system may be ignoring the shutdown request (virtual machines need ACPI or the Incus agent). Stop it with Force, which cuts it off like pulling the plug.";
+    /// Deleting a running Instance.
+    INSTANCE_RUNNING = "errors.incus.instanceRunning" => "{name} is running, so it can't be deleted.";
+    INSTANCE_RUNNING_HINT = "errors.incus.instanceRunning.hint" => "Stop it first, or delete it with Stop it first checked.";
+    /// Stopping a stopped Instance, freezing a frozen one…
+    INSTANCE_ALREADY_THERE = "errors.incus.instanceAlreadyThere" => "The Instance is already in that state.";
     /// The project picked isn't there any more.
     PROJECT_NOT_FOUND = "errors.incus.projectNotFound" => "There's no project {project} on {name}.";
     PROJECT_NOT_FOUND_HINT = "errors.incus.projectNotFound.hint" => "Pick another project under the host switcher.";

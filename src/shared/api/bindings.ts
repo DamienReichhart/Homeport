@@ -470,6 +470,17 @@ export const commands = {
 	incusTrustAdd: (name: string, token: string) => __TAURI_INVOKE<HostView>("incus_trust_add", { name, token }),
 	/**  The projects the Host's connection may use, with what each holds. */
 	incusProjects: (hostId: string) => __TAURI_INVOKE<IncusProject[]>("incus_projects", { hostId }),
+	/**  The Instances of `project`, with their state. */
+	incusInstances: (hostId: string, project: string) => __TAURI_INVOKE<IncusInstance[]>("incus_instances", { hostId, project }),
+	/**  One Instance with its configuration, devices and snapshots' names. */
+	incusInstance: (hostId: string, project: string, name: string) => __TAURI_INVOKE<IncusInstanceDetail>("incus_instance", { hostId, project, name }),
+	/**
+	 *  Starts, stops, restarts, freezes or unfreezes an Instance; `force` stops
+	 *  or restarts it without waiting for its system to shut down.
+	 */
+	incusInstanceAct: (hostId: string, project: string, name: string, action: InstanceAction, force: boolean) => __TAURI_INVOKE<null>("incus_instance_act", { hostId, project, name, action, force }),
+	/**  Deletes an Instance with its snapshots; `stop_first` stops a running one. */
+	incusInstanceDelete: (hostId: string, project: string, name: string, stopFirst: boolean) => __TAURI_INVOKE<null>("incus_instance_delete", { hostId, project, name, stopFirst }),
 	podsList: (hostId: string) => __TAURI_INVOKE<PodmanPod[]>("pods_list", { hostId }),
 	podsInspect: (hostId: string, id: string) => __TAURI_INVOKE<PodmanPodDetail>("pods_inspect", { hostId, id }),
 	podsAct: (hostId: string, id: string, action: PodmanPodAction) => __TAURI_INVOKE<null>("pods_act", { hostId, id, action }),
@@ -2048,6 +2059,52 @@ export type ImportSpec = {
 	changes: string[],
 };
 
+/**  One Instance, as the list shows it. */
+export type IncusInstance = {
+	name: string,
+	type: InstanceType,
+	status: InstanceStatus,
+	description: string,
+	/**
+	 *  The image it was made from, as its description says: "Debian 12
+	 *  amd64 (20261108_05:24)"; empty when unknown.
+	 */
+	image: string,
+	architecture: string,
+	profiles: string[],
+	/**  Its global addresses, IPv4 first, without loopback. */
+	addresses: string[],
+	/**  CPU time used since it started, in nanoseconds. */
+	cpuUsageNs: number | null,
+	memoryBytes: number | null,
+	processes: number | null,
+	/**  RFC 3339. */
+	createdAt: string,
+	lastUsedAt: string | null,
+	/**  How many snapshots it has: deleting it deletes them too. */
+	snapshots: number,
+	ephemeral: boolean,
+	/**  Its cluster member, `none` outside a cluster. */
+	location: string,
+};
+
+/**  One Instance with what its page shows. */
+export type IncusInstanceDetail = {
+	instance: IncusInstance,
+	/**  Its own configuration, then with its profiles' applied. */
+	config: { [key in string]: string },
+	expandedConfig: { [key in string]: string },
+	/**  Its own devices, then with its profiles' applied. */
+	devices: { [key in string]: { [key in string]: string } },
+	expandedDevices: { [key in string]: { [key in string]: string } },
+	/**  The names of its snapshots, oldest first. */
+	snapshotNames: string[],
+	/**  Whether it can take stateful snapshots (`migration.stateful`). */
+	statefulSnapshots: boolean,
+	/**  Incus's own description of it, for the Raw tab. */
+	raw: Value,
+};
+
 /**  A project, with how many Instances and images it holds. */
 export type IncusProject = {
 	name: string,
@@ -2113,6 +2170,15 @@ export type InstallRequest = {
 	/**  How long `wait` may take, in seconds; helm's default (5 min) without. */
 	timeoutSeconds: number | null,
 };
+
+/**  A change of state an Instance can be asked for. */
+export type InstanceAction = "start" | "stop" | "restart" | "freeze" | "unfreeze";
+
+/**  What an Instance is doing, from Incus's status code. */
+export type InstanceStatus = "running" | "stopped" | "frozen" | "starting" | "stopping" | "freezing" | "error" | "unknown";
+
+/**  What an Instance is. */
+export type InstanceType = "container" | "virtual-machine";
 
 /**  What `docker swarm join` needs for each role. `Debug` hides the tokens. */
 export type JoinInfo = {
