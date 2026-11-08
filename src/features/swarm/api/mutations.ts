@@ -5,6 +5,8 @@ import {
   commands,
   type NodeChange,
   type ObjectInput,
+  type JoinRole,
+  type JoinTarget,
   type ServiceChange,
   type ServiceSpecInput,
   type ServiceView,
@@ -146,6 +148,67 @@ export function useUpdateService(swarmId: string, onDone: () => void) {
       commands.swarmServicesUpdate(swarmId, service.id, service.version, change),
     onSuccess: async (_, { service }) => {
       toast.success(t('swarm.services.updating', { name: service.name }));
+      await refresh();
+      onDone();
+    },
+  });
+}
+
+/** Refreshes the Hosts and Swarms after a Host's membership changed. */
+function useRefreshMembership() {
+  const client = useQueryClient();
+  return () =>
+    Promise.all([
+      client.invalidateQueries({ queryKey: swarmKeys.list }),
+      client.invalidateQueries({ queryKey: ['hosts'] }),
+    ]);
+}
+
+/** Makes a Host the first manager of a new Swarm; the dialog shows a failure in place. */
+export function useInitSwarm(hostId: string, onDone: () => void) {
+  const refresh = useRefreshMembership();
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: ({ advertise, listen }: { advertise: string; listen: string }) =>
+      commands.swarmInit(hostId, advertise.trim() || null, listen.trim() || null),
+    onSuccess: async () => {
+      toast.success(t('swarm.membership.created'));
+      await refresh();
+      onDone();
+    },
+  });
+}
+
+/** Joins a Host to a Swarm; the token, if pasted, leaves the cache with the dialog. */
+export function useJoinSwarm(hostId: string, onDone: () => void) {
+  const refresh = useRefreshMembership();
+  return useMutation({
+    meta: { silent: true },
+    gcTime: 0,
+    mutationFn: ({
+      target,
+      role,
+      advertise,
+    }: {
+      target: JoinTarget;
+      role: JoinRole;
+      advertise: string;
+    }) => commands.swarmJoin(hostId, target, role, advertise.trim() || null),
+    onSuccess: async () => {
+      toast.success(t('swarm.membership.joined'));
+      await refresh();
+      onDone();
+    },
+  });
+}
+
+export function useLeaveSwarm(hostId: string, onDone: () => void) {
+  const refresh = useRefreshMembership();
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: (force: boolean) => commands.swarmLeave(hostId, force),
+    onSuccess: async () => {
+      toast.success(t('swarm.membership.left'));
       await refresh();
       onDone();
     },

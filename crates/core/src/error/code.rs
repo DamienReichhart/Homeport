@@ -82,6 +82,8 @@ pub enum ErrorCode {
     // Swarms (ADR 0016).
     /// No manager Host of a Swarm is connected.
     SwarmUnreachable,
+    /// A node couldn't reach the managers of the Swarm it was joining.
+    SwarmJoinFailed,
     // Compose.
     ComposeMissing,
     ComposeOutdated,

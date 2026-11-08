@@ -189,4 +189,53 @@ export default {
     'Only what you change here is sent; the rest of the service is kept. The Swarm replaces its tasks a few at a time with the new settings.',
   'swarm.edit.redeploy': 'Redeploy every task, pulling the image again even if its tag is the same',
   'swarm.edit.submit': 'Update',
+
+  'swarm.membership.card.title': 'Swarm',
+  'swarm.membership.card.none': 'This host isn’t in a Swarm.',
+  'swarm.membership.card.state': 'Its node is {state}.',
+  'swarm.membership.card.ports':
+    'Start a Swarm here, or join one. The nodes of a Swarm must reach each other on 2377/tcp, 7946/tcp and udp, and 4789/udp; Homeport can’t open those ports for you.',
+  'swarm.membership.created': 'Swarm created',
+  'swarm.membership.joined': 'Joined the Swarm',
+  'swarm.membership.left': 'Left the Swarm',
+  'swarm.membership.advertise': 'Advertise address',
+  'swarm.membership.advertisePlaceholder': 'Picked by the Engine',
+  'swarm.membership.advertiseHelp':
+    'The address other nodes reach this host at. Leave it empty to let the Engine pick, which works when the machine has one address.',
+  'swarm.membership.listen': 'Listen address',
+  'swarm.membership.init.open': 'Init a Swarm',
+  'swarm.membership.init.title': 'Start a Swarm on {name}',
+  'swarm.membership.init.description':
+    'This host becomes the first manager of a new Swarm. Other hosts can then join it as workers or managers.',
+  'swarm.membership.init.submit': 'Start the Swarm',
+  'swarm.membership.join.open': 'Join a Swarm',
+  'swarm.membership.join.title': 'Join {name} to a Swarm',
+  'swarm.membership.join.description':
+    'Pick a Swarm Homeport knows, and Homeport fetches its join token from a connected manager. For another Swarm, paste the token and a manager’s address from docker swarm join-token.',
+  'swarm.membership.join.swarm': 'Swarm',
+  'swarm.membership.join.paste': 'Another Swarm, by its token',
+  'swarm.membership.join.token': 'Join token',
+  'swarm.membership.join.address': 'Manager address',
+  'swarm.membership.join.addressPlaceholder': '192.168.1.10:2377',
+  'swarm.membership.join.as': 'Join as',
+  'swarm.membership.join.submit': 'Join',
+  'swarm.membership.leave.open': 'Leave the Swarm',
+  'swarm.membership.leave.title': 'Have {name} leave its Swarm?',
+  'swarm.membership.leave.worker':
+    'Its tasks stop here and are rescheduled on the other nodes. Its node stays listed as down until a manager removes it.',
+  'swarm.membership.leave.manager':
+    'It stops being a manager and a node. The other managers keep the Swarm going; demoting it first is gentler.',
+  'swarm.membership.leave.last':
+    'This is the Swarm’s last manager: the Swarm goes with it, with every service, secret and config. Other nodes are left in a Swarm with no manager.',
+  'swarm.membership.leave.force': 'Force: leave although it’s a manager',
+  'swarm.membership.leave.typeName': 'Type {name} to confirm',
+  'swarm.membership.leave.submit': 'Leave',
+
+  'swarm.join.title': 'Join commands',
+  'swarm.join.description':
+    'For machines Homeport doesn’t manage: run one of these there. Hosts Homeport manages join from their page instead, without copying anything.',
+  'swarm.join.reveal': 'Show the join commands',
+  'swarm.join.hide': 'Hide them',
+  'swarm.join.worker': 'As a worker',
+  'swarm.join.manager': 'As a manager',
 };

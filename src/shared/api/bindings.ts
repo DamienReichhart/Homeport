@@ -373,6 +373,17 @@ export const commands = {
 	swarmServicesUpdate: (swarmId: string, id: string, version: number, change: ServiceChange) => __TAURI_INVOKE<null>("swarm_services_update", { swarmId, id, version, change }),
 	/**  The Swarm's overlay networks, which services attach to. */
 	swarmNetworksList: (swarmId: string) => __TAURI_INVOKE<NetworkView[]>("swarm_networks_list", { swarmId }),
+	/**  Makes `host_id` the first manager of a new Swarm, returning its ID. */
+	swarmInit: (hostId: string, advertiseAddr: string | null, listenAddr: string | null) => __TAURI_INVOKE<string>("swarm_init", { hostId, advertiseAddr, listenAddr }),
+	/**  Joins `host_id` to a Swarm as a worker or a manager. */
+	swarmJoin: (hostId: string, target: JoinTarget, role: JoinRole, advertiseAddr: string | null) => __TAURI_INVOKE<null>("swarm_join", { hostId, target, role, advertiseAddr }),
+	/**  Has `host_id` leave its Swarm; a manager needs `force`. */
+	swarmLeave: (hostId: string, force: boolean) => __TAURI_INVOKE<null>("swarm_leave", { hostId, force }),
+	/**
+	 *  The join tokens and manager addresses of a Swarm, for its Join commands;
+	 *  never stored or logged.
+	 */
+	swarmJoinInfo: (swarmId: string) => __TAURI_INVOKE<JoinInfo>("swarm_join_info", { swarmId }),
 	/**
 	 *  Streams the logs of every task of a service, each line labelled with its
 	 *  task and node.
@@ -837,7 +848,9 @@ export type ErrorCode =
 /**  Recreating a container failed, and so did putting the original back. */
 "recreate_rolled_back" | 
 /**  No manager Host of a Swarm is connected. */
-"swarm_unreachable" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
+"swarm_unreachable" | 
+/**  A node couldn't reach the managers of the Swarm it was joining. */
+"swarm_join_failed" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
 /**  A Linked Stack's folder, or one of its compose files, is gone. */
 "stack_folder_missing" | 
 /**  A Linked Stack's compose file can't be read or written. */
@@ -1166,6 +1179,23 @@ export type ImportSpec = {
 	/**  Dockerfile instructions, one per entry, like `CMD ["/bin/sh"]`. */
 	changes: string[],
 };
+
+/**  What `docker swarm join` needs for each role. `Debug` hides the tokens. */
+export type JoinInfo = {
+	workerToken: string,
+	managerToken: string,
+	/**  `address:2377` of every reachable manager. */
+	managerAddrs: string[],
+};
+
+/**  Whether a node joins to run tasks or to manage the Swarm too. */
+export type JoinRole = "worker" | "manager";
+
+/**
+ *  The Swarm a Host joins: one Homeport knows, whose token and manager
+ *  addresses are fetched through a connected manager, or a pasted token.
+ */
+export type JoinTarget = { kind: "known"; swarmId: string } | { kind: "token"; token: string; addresses: string[] };
 
 export type Licenses = {
 	/**  Homeport's own license (`LICENSE`). */

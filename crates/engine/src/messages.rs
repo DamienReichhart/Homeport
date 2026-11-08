@@ -244,4 +244,21 @@ homeport_core::messages! {
     SERVICE_HOST_PORT_NEEDED = "errors.swarm.serviceHostPortNeeded" => "Ports published on the node itself need a port number.";
     /// A secret or config named in a service that the Swarm doesn't have.
     OBJECT_MISSING = "errors.swarm.objectMissing" => "This Swarm has no secret or config named {name}.";
+    /// Initialising or joining a Swarm on a Host already in one.
+    ALREADY_IN_SWARM = "errors.swarm.alreadyIn" => "This host is already in a Swarm.";
+    ALREADY_IN_SWARM_HINT = "errors.swarm.alreadyIn.hint" => "Have it leave that Swarm first.";
+    /// Leaving a Swarm on a Host that isn't in one.
+    NOT_IN_SWARM = "errors.swarm.notIn" => "This host isn't in a Swarm.";
+    /// Leaving as a manager without force.
+    LEAVE_NEEDS_FORCE = "errors.swarm.leaveNeedsForce" => "A manager leaves the Swarm only with Force.";
+    /// The Engine can't tell which address other nodes reach it at.
+    ADVERTISE_NEEDED = "errors.swarm.advertiseNeeded" => "Choose the address other nodes reach this host at.";
+    ADVERTISE_NEEDED_HINT = "errors.swarm.advertiseNeeded.hint" => "The machine has several addresses. Enter the one the other nodes can reach, such as its LAN address.";
+    /// Joining without a token or an address.
+    JOIN_NEEDS_TOKEN = "errors.swarm.joinNeedsToken" => "Enter the join token and a manager's address.";
+    /// A join token the managers refuse.
+    JOIN_TOKEN_INVALID = "errors.swarm.joinTokenInvalid" => "The managers refused this join token.";
+    /// The node couldn't reach a manager.
+    JOIN_FAILED = "errors.swarm.joinFailed" => "This host couldn't reach the Swarm's managers.";
+    JOIN_FAILED_HINT = "errors.swarm.joinFailed.hint" => "Nodes talk to each other directly: open 2377/tcp (managers), 7946/tcp and 7946/udp, and 4789/udp between every node, in their firewalls and your network's.";
 }

@@ -4,6 +4,7 @@ import { useHosts } from '@/core/host';
 import { swarmQueries } from '@/core/swarm';
 import type { SwarmView } from '@/shared/api';
 import { Card, CardContent, CardHeader, CardTitle, KeyValue, Spinner } from '@/shared/ui';
+import { JoinCommands } from './JoinCommands';
 import { t } from '@/shared/i18n';
 
 function HostLinks({ ids }: { ids: string[] }) {
@@ -26,30 +27,33 @@ export function SummaryTab({ swarm }: { swarm: SwarmView }) {
   if (!summary.data) return <Spinner />;
   const s = summary.data;
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t('swarm.summary.title')}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <KeyValue
-          items={[
-            [t('swarm.summary.managerHosts'), <HostLinks key="m" ids={swarm.managers} />],
-            [t('swarm.summary.workerHosts'), <HostLinks key="w" ids={swarm.workers} />],
-            [
-              t('swarm.summary.nodes'),
-              t('swarm.summary.nodeCounts', { nodes: s.nodes, managers: s.managers }),
-            ],
-            [t('swarm.summary.services'), s.services],
-            [t('swarm.summary.created'), s.created ? new Date(s.created).toLocaleString() : null],
-            [
-              t('swarm.summary.id'),
-              <span key="id" className="font-mono text-xs">
-                {s.id}
-              </span>,
-            ],
-          ]}
-        />
-      </CardContent>
-    </Card>
+    <div className="grid gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('swarm.summary.title')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <KeyValue
+            items={[
+              [t('swarm.summary.managerHosts'), <HostLinks key="m" ids={swarm.managers} />],
+              [t('swarm.summary.workerHosts'), <HostLinks key="w" ids={swarm.workers} />],
+              [
+                t('swarm.summary.nodes'),
+                t('swarm.summary.nodeCounts', { nodes: s.nodes, managers: s.managers }),
+              ],
+              [t('swarm.summary.services'), s.services],
+              [t('swarm.summary.created'), s.created ? new Date(s.created).toLocaleString() : null],
+              [
+                t('swarm.summary.id'),
+                <span key="id" className="font-mono text-xs">
+                  {s.id}
+                </span>,
+              ],
+            ]}
+          />
+        </CardContent>
+      </Card>
+      <JoinCommands swarmId={swarm.id} />
+    </div>
   );
 }

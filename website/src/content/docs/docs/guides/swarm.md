@@ -21,6 +21,28 @@ The Swarm's page starts with its **Summary**: its manager and worker hosts, how 
 
 Everything Homeport does to a Swarm goes through one of its connected managers, whichever answers first. When none is connected, the Swarm's page says **No manager of this Swarm is connected** and names the manager hosts it last saw: reconnect one of them, or add another manager as a host.
 
+## Creating a Swarm
+
+Homeport can set up a Swarm from hosts it already connects to, with nothing to copy between terminals. Each connected host's page has a **Swarm** card:
+
+1. On the host that will manage the Swarm, choose **Init a Swarm**. Homeport fills in the **advertise address** (the address other nodes reach it at) when it reaches the host by IP; leave it empty to let the Engine pick, which works when the machine has a single address. The host becomes the Swarm's first manager, and the Swarm appears in the sidebar.
+2. On each other host, choose **Join a Swarm**, pick the Swarm, and join as a **worker** or a **manager**. Homeport fetches the join token from a connected manager. To join a Swarm Homeport doesn't know, choose **Another Swarm, by its token** and paste the token and a manager's address from `docker swarm join-token worker`.
+3. For machines that aren't hosts in Homeport, the Swarm's **Summary** has **Join commands**: reveal them and copy the `docker swarm join` command for a worker or a manager. Tokens are fetched when you reveal them and are never stored or logged.
+
+**Leave the Swarm**, on a host's card, takes it out: a worker's tasks move to other nodes. A manager needs **Force**; demote it first to keep the Swarm healthy. The last manager leaving takes the Swarm with it, with every service, secret and config, so Homeport asks you to type the host's name first.
+
+### Ports between nodes
+
+Nodes talk to each other directly, not through Homeport, and Homeport installs nothing on them, so it can't open ports for you. Between every node of a Swarm, in their firewalls and your network's, allow:
+
+| Port | Protocol | For                                   |
+| ---- | -------- | ------------------------------------- |
+| 2377 | TCP      | Managing the Swarm (to the managers)  |
+| 7946 | TCP, UDP | Nodes finding each other              |
+| 4789 | UDP      | Overlay network traffic between nodes |
+
+When a host can't reach the managers, joining fails with **This host couldn't reach the Swarm's managers**, and the hint lists these ports.
+
 ## Nodes
 
 The **Nodes** tab lists every node of the Swarm: its hostname, whether it's a manager (and the leader, reachable or unreachable) or a worker, its availability, whether it's up (`ready`) or `down`, its Engine version, address and labels. A node that is also one of your hosts links to the host's page, and the host's page links back to its node. The list refreshes on its own as nodes change.

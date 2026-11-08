@@ -3,6 +3,7 @@
 //! node: [`membership`] works on any node; the others need a manager, which
 //! `homeport_hosts::registry::HostRegistry::manager` hands out.
 
+pub mod membership;
 pub mod nodes;
 pub mod objects;
 pub mod services;

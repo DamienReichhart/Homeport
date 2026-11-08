@@ -457,6 +457,13 @@ pub async fn swarm(docker: &Docker) -> SwarmGuard {
     }
 }
 
+impl SwarmGuard {
+    /// Whether the test created this Swarm, so it may leave and recreate it.
+    pub fn created(&self) -> bool {
+        self.created
+    }
+}
+
 impl Drop for SwarmGuard {
     fn drop(&mut self) {
         if !self.created {

@@ -46,4 +46,12 @@ export const swarmFeatureQueries = {
       queryKey: [...swarmKeys.scope(swarmId), 'networks'],
       queryFn: () => commands.swarmNetworksList(swarmId),
     }),
+  /** Join tokens: never kept once nothing shows them. */
+  joinInfo: (swarmId: string) =>
+    queryOptions({
+      queryKey: [...swarmKeys.scope(swarmId), 'join-info'],
+      queryFn: () => commands.swarmJoinInfo(swarmId),
+      gcTime: 0,
+      staleTime: 0,
+    }),
 };
