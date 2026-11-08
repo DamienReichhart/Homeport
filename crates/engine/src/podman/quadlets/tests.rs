@@ -74,7 +74,11 @@ async fn lists_units_from_the_api_with_their_containers() {
     let units = list(&fake.podman, &containers).await.unwrap();
     assert_eq!(units.source, QuadletSource::Api);
     assert!(units.manages_files);
-    assert!(units.runs_systemctl, "a local Linux socket runs systemctl");
+    assert_eq!(
+        units.runs_systemctl,
+        cfg!(target_os = "linux"),
+        "only a local socket on Linux runs systemctl: elsewhere Podman runs in a VM"
+    );
     let names: Vec<_> = units.units.iter().map(|u| u.name.clone()).collect();
     assert_eq!(
         names,
