@@ -16,6 +16,7 @@ export default {
   'swarm.tab.nodes': 'Nodes',
   'swarm.tab.services': 'Services',
   'swarm.tab.tasks': 'Tasks',
+  'swarm.tab.stacks': 'Stacks',
   'swarm.tab.secrets': 'Secrets',
   'swarm.tab.configs': 'Configs',
   'swarm.summary.title': 'This Swarm',
@@ -238,4 +239,21 @@ export default {
   'swarm.join.hide': 'Hide them',
   'swarm.join.worker': 'As a worker',
   'swarm.join.manager': 'As a manager',
+
+  'swarm.stacks.search': 'Search stacks',
+  'swarm.stacks.empty': 'No Stacks on this Swarm',
+  'swarm.stacks.emptyHint':
+    'Stacks deployed with docker stack deploy show here, as do those you deploy to this Swarm from Homeport.',
+  'swarm.stacks.backToList': 'Back to the Stacks',
+  'swarm.stacks.services': 'Services',
+  'swarm.stacks.noServices': 'Nothing is deployed yet.',
+  'swarm.stacks.parts': 'Networks, secrets and configs',
+  'swarm.stacks.networks': 'Networks',
+  'swarm.stacks.noStartStop':
+    'A swarm stack can’t be stopped or started as a whole: scale its services to 0 instead, from their pages.',
+  'swarm.stacks.removed': '{name} removed',
+  'swarm.stacks.removedPartly': '{name} removed, except for:',
+  'swarm.stacks.remove.title': 'Remove the Stack {name}?',
+  'swarm.stacks.remove.description':
+    'Its services are removed, then its networks, secrets and configs, as docker stack rm does. Its volumes are kept on each node.',
 };

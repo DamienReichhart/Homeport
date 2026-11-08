@@ -214,3 +214,21 @@ export function useLeaveSwarm(hostId: string, onDone: () => void) {
     },
   });
 }
+
+/** Removes a swarm stack, warning about what it couldn't remove. */
+export function useRemoveSwarmStack(swarmId: string, onRemoved?: () => void) {
+  const refresh = useRefreshSwarm(swarmId);
+  return useMutation({
+    mutationFn: (name: string) => commands.swarmStacksRemove(swarmId, name),
+    onSuccess: (report, name) => {
+      if (report.kept.length === 0) toast.success(t('swarm.stacks.removed', { name }));
+      else
+        toast.warning(t('swarm.stacks.removedPartly', { name }), {
+          description: report.kept.join('\n'),
+        });
+      onRemoved?.();
+    },
+    onError: (e) => toastError(e),
+    onSettled: () => refresh(),
+  });
+}

@@ -384,6 +384,12 @@ export const commands = {
 	 *  never stored or logged.
 	 */
 	swarmJoinInfo: (swarmId: string) => __TAURI_INVOKE<JoinInfo>("swarm_join_info", { swarmId }),
+	/**  The Stacks deployed to a Swarm, found by their namespace label. */
+	swarmStacksList: (swarmId: string) => __TAURI_INVOKE<Stack[]>("swarm_stacks_list", { swarmId }),
+	/**  The networks, secrets and configs of a swarm stack. */
+	swarmStacksParts: (swarmId: string, name: string) => __TAURI_INVOKE<SwarmStackParts>("swarm_stacks_parts", { swarmId, name }),
+	/**  Removes a swarm stack as `docker stack rm` does, through the Engine API. */
+	swarmStacksRemove: (swarmId: string, name: string) => __TAURI_INVOKE<RemoveReport>("swarm_stacks_remove", { swarmId, name }),
 	/**
 	 *  Streams the logs of every task of a service, each line labelled with its
 	 *  task and node.
@@ -1519,6 +1525,11 @@ export type RemoteRefs = {
 	defaultBranch: string | null,
 };
 
+/**  What removing a swarm stack left behind, by name, with why. */
+export type RemoveReport = {
+	kept: string[],
+};
+
 /**  How Homeport authenticates to a repository. */
 export type RepoAuth = 
 /**  A deploy key Homeport generated, over SSH. */
@@ -1831,6 +1842,9 @@ export type StackService = {
 	name: string,
 	containerIds: string[],
 	running: number,
+	/**  On a Swarm: the service's ID, and how many tasks should run. */
+	serviceId: string | null,
+	desired: number | null,
 };
 
 export type StackState = 
@@ -1905,6 +1919,13 @@ export type SwarmPeer = {
 
 /**  Whether a node manages the Swarm or only runs its tasks. */
 export type SwarmRole = "manager" | "worker";
+
+/**  What a swarm stack is made of, by name. */
+export type SwarmStackParts = {
+	networks: string[],
+	secrets: string[],
+	configs: string[],
+};
 
 /**  What a manager says about its Swarm. */
 export type SwarmSummary = {

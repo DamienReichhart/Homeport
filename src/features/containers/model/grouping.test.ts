@@ -41,6 +41,19 @@ describe('container grouping', () => {
     expect(standalone.map((x) => x.name)).toEqual(['redis']);
   });
 
+  it('nests a swarm stack’s task containers under it, apart from a Compose project of that name', () => {
+    const { groups, standalone } = groupByStack([
+      c('shop_web.1.abc', null, 'running', { labels: { 'com.docker.stack.namespace': 'shop' } }),
+      c('shop-web-1', 'shop'),
+      c('lonely', null),
+    ]);
+    expect(groups.map((g) => [g.stack, g.swarm, g.containers.length])).toEqual([
+      ['shop', false, 1],
+      ['shop', true, 1],
+    ]);
+    expect(standalone.map((x) => x.name)).toEqual(['lonely']);
+  });
+
   it('filters by search and running state', () => {
     expect(groupByStack(all, 'shop').groups.map((g) => g.stack)).toEqual(['shop']);
     const running = groupByStack(all, '', true);

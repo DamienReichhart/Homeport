@@ -54,4 +54,14 @@ export const swarmFeatureQueries = {
       gcTime: 0,
       staleTime: 0,
     }),
+  stacks: (swarmId: string) =>
+    queryOptions({
+      queryKey: swarmKeys.stacks(swarmId),
+      queryFn: () => commands.swarmStacksList(swarmId),
+    }),
+  stackParts: (swarmId: string, name: string) =>
+    queryOptions({
+      queryKey: [...swarmKeys.stacks(swarmId), name, 'parts'],
+      queryFn: () => commands.swarmStacksParts(swarmId, name),
+    }),
 };

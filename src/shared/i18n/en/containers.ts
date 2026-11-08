@@ -21,6 +21,7 @@ export default {
   'containers.selectOne': 'Select {name}',
   'containers.selectStack': 'Select stack {stack}',
   'containers.stack.running': '{running}/{count} running',
+  'containers.stack.swarm': 'Swarm',
   'containers.stack.open': 'Open stack',
   'containers.selected': '{count} selected',
 

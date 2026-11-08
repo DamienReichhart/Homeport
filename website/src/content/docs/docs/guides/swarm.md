@@ -105,3 +105,13 @@ Services read credentials from **secrets** and configuration files from **config
 **Create secret** asks for a name and the value, masked unless you choose **Show**, or **Load from file…** to send a file from this computer instead (a key, a certificate). The value goes to the Swarm once: Homeport doesn't keep it, and the Engine never sends it back, so no one can read it from the Swarm, Homeport included. **Create config** works the same, with the content shown as you type; a config's content can be viewed again from its row. Both are limited to 500 KB.
 
 Secrets and configs can't be changed once created. To change one, create a new one under a new name, such as `db_password_v2`, point the services at it, then remove the old one. A secret or config a service uses can't be removed: the Swarm refuses, and Homeport names the services that use it.
+
+## Swarm stacks
+
+A **swarm stack** is a Stack deployed to a Swarm: a compose file turned into services, networks, secrets and configs that share a namespace. Homeport finds every one of them, however it was deployed, from the `com.docker.stack.namespace` label `docker stack deploy` puts on them. The Swarm's **Stacks** tab lists them, like the **Stacks** page lists a host's: their kind, state (running when every task of every service runs, stopped when every service is scaled to 0) and services.
+
+A Stack deployed from a terminal with `docker stack deploy` is **External**: Homeport has no compose file for it. Select it to see its services, each linking to its page, and its networks, secrets and configs. **Remove** does what `docker stack rm` does: it removes the services, waits for their tasks to stop, then removes the networks, secrets and configs of the namespace. Anything the Swarm refused to remove is listed. Volumes are kept on each node.
+
+A swarm stack has no start or stop: Docker has no such operation for one. To stop a Stack without removing it, scale its services to 0 from their pages.
+
+On a host's **Containers** page, the containers that a swarm stack's tasks run there are grouped under that Stack, marked **Swarm**, rather than listed one by one.

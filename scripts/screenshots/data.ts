@@ -730,6 +730,8 @@ export function stacksOf(hostId: string): Stack[] {
         name: service,
         containerIds: of.map((c) => c.id),
         running: of.filter((c) => c.state === 'running').length,
+        serviceId: null,
+        desired: null,
       };
     });
     const running = members.filter((c) => c.state === 'running').length;

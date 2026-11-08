@@ -19,6 +19,10 @@ use homeport_engine::{
     },
 };
 use homeport_hosts::registry::SwarmView;
+use homeport_stacks::{
+    swarm::{self as stacks_swarm, RemoveReport, SwarmStackParts},
+    Stack,
+};
 
 use crate::{app::AppState, error::AppResult};
 
@@ -363,7 +367,11 @@ pub async fn swarm_init(
 /// The Swarm a Host joins: one Homeport knows, whose token and manager
 /// addresses are fetched through a connected manager, or a pasted token.
 #[derive(Clone, serde::Deserialize, specta::Type)]
-#[serde(tag = "kind", rename_all = "camelCase", rename_all_fields = "camelCase")]
+#[serde(
+    tag = "kind",
+    rename_all = "camelCase",
+    rename_all_fields = "camelCase"
+)]
 pub enum JoinTarget {
     Known {
         swarm_id: String,
@@ -426,4 +434,37 @@ pub async fn swarm_leave(
 #[specta::specta]
 pub async fn swarm_join_info(state: State<'_, AppState>, swarm_id: String) -> AppResult<JoinInfo> {
     membership::join_info(&state.hosts.registry.manager(&swarm_id)?).await
+}
+
+/// The Stacks deployed to a Swarm, found by their namespace label.
+#[tauri::command]
+#[specta::specta]
+pub async fn swarm_stacks_list(
+    state: State<'_, AppState>,
+    swarm_id: String,
+) -> AppResult<Vec<Stack>> {
+    let services = services::list(&state.hosts.registry.manager(&swarm_id)?).await?;
+    Ok(stacks_swarm::derive_swarm(&services, &[]))
+}
+
+/// The networks, secrets and configs of a swarm stack.
+#[tauri::command]
+#[specta::specta]
+pub async fn swarm_stacks_parts(
+    state: State<'_, AppState>,
+    swarm_id: String,
+    name: String,
+) -> AppResult<SwarmStackParts> {
+    stacks_swarm::parts(&state.hosts.registry.manager(&swarm_id)?, &name).await
+}
+
+/// Removes a swarm stack as `docker stack rm` does, through the Engine API.
+#[tauri::command]
+#[specta::specta]
+pub async fn swarm_stacks_remove(
+    state: State<'_, AppState>,
+    swarm_id: String,
+    name: String,
+) -> AppResult<RemoveReport> {
+    stacks_swarm::remove(&state.hosts.registry.manager(&swarm_id)?, &name).await
 }

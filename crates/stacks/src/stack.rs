@@ -49,6 +49,9 @@ pub struct StackService {
     pub name: String,
     pub container_ids: Vec<String>,
     pub running: u32,
+    /// On a Swarm: the service's ID, and how many tasks should run.
+    pub service_id: Option<String>,
+    pub desired: Option<u32>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
@@ -176,6 +179,8 @@ pub fn derive(containers: &[Container], records: &[StackRecord]) -> Vec<Stack> {
                         name: service_name,
                         container_ids: vec![],
                         running: 0,
+                        service_id: None,
+                        desired: None,
                     });
                 s.container_ids.push(c.id.clone());
                 s.running += u32::from(c.state == "running");

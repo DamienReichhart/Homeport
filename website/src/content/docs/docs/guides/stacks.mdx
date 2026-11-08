@@ -38,7 +38,13 @@ Each Stack shows one of these states:
 | **Stopped**        | None are.                                                 |
 | **Not deployed**   | A Managed, Linked or Synced Stack with no containers yet. |
 
-Managed, Linked and Synced Stacks belong to one Host. To run the same compose file on two Hosts, create a Stack on each.
+Managed, Linked and Synced Stacks belong to one Host, or to one Swarm. To run the same compose file on two Hosts, create a Stack on each.
+
+<Aside>
+  Stacks deployed to a [Swarm](/docs/guides/swarm/) with `docker stack deploy` are listed on the
+  Swarm's own page, under **Stacks**, rather than here. See [Swarm
+  stacks](/docs/guides/swarm/#swarm-stacks).
+</Aside>
 
 ## Linked Stacks
 
