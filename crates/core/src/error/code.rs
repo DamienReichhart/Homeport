@@ -95,6 +95,12 @@ pub enum ErrorCode {
     ClusterApiError,
     /// A kubeconfig user authenticates with a removed auth provider (gcp, azure).
     KubeconfigAuthProviderUnsupported,
+    /// The program of a Cluster's exec credential plugin isn't installed.
+    ExecPluginMissing,
+    /// A Cluster's exec credential plugin exited with an error or printed no credentials.
+    ExecPluginFailed,
+    /// A Cluster's exec credential plugin needs a terminal to sign in.
+    ExecPluginInteractive,
     // Compose.
     ComposeMissing,
     ComposeOutdated,

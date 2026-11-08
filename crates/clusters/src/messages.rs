@@ -109,4 +109,22 @@ homeport_core::messages! {
     IMPORT_NOTHING = "errors.clusters.kubeconfig.importNothing" => "Pick at least one context to import.";
     /// Importing two contexts under one name.
     IMPORT_SAME_NAME = "errors.clusters.kubeconfig.importSameName" => "Two clusters would be named \"{name}\".";
+
+    // Exec credential plugins.
+
+    /// The plugin's program isn't installed.
+    EXEC_MISSING = "errors.clusters.exec.missing" => "{command} isn't installed on this computer.";
+    /// …and the kubeconfig says how to install it (in Details).
+    EXEC_MISSING_HINT_KUBECONFIG = "errors.clusters.exec.missing.hintKubeconfig" => "The kubeconfig says how to install it; see Details. Then reconnect.";
+    EXEC_MISSING_HINT_AWS = "errors.clusters.exec.missing.hintAws" => "Install the AWS CLI (version 2) in a standard place, check it works, then reconnect:";
+    EXEC_MISSING_HINT_GKE = "errors.clusters.exec.missing.hintGke" => "Install the Google Cloud CLI and its GKE plugin, then reconnect:";
+    EXEC_MISSING_HINT_KUBELOGIN = "errors.clusters.exec.missing.hintKubelogin" => "Install kubelogin, for example with the Azure CLI, then reconnect:";
+    EXEC_MISSING_HINT_AZ = "errors.clusters.exec.missing.hintAz" => "Install the Azure CLI, then reconnect.";
+    EXEC_MISSING_HINT = "errors.clusters.exec.missing.hint" => "Install it, or put it in a folder on your PATH, then reconnect.";
+    /// The plugin exited with an error or printed no credentials.
+    EXEC_FAILED = "errors.clusters.exec.failed" => "{command} couldn't get credentials for {name}.";
+    EXEC_FAILED_HINT = "errors.clusters.exec.failed.hint" => "See Details for what it said. Homeport tries again on its own.";
+    /// The plugin needs a terminal or a browser to sign in.
+    EXEC_INTERACTIVE = "errors.clusters.exec.interactive" => "{command} needs you to sign in, which it can't do inside Homeport.";
+    EXEC_INTERACTIVE_HINT = "errors.clusters.exec.interactive.hint" => "Run kubectl once in a terminal with this context to sign in, then reconnect:";
 }

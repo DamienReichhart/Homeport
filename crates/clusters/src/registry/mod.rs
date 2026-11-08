@@ -12,6 +12,7 @@ mod supervisor;
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex, Weak},
+    time::SystemTime,
 };
 
 use tokio::task::JoinHandle;
@@ -20,7 +21,8 @@ use homeport_core::error::{AppError, AppResult, ErrorCode};
 
 use crate::{
     classify::classify,
-    client::{self, CONNECT_TIMEOUT},
+    client::{self, IssuedCredentials, CONNECT_TIMEOUT},
+    exec::{self, ClusterInfo, Issued},
     messages as msg,
     model::{Cluster, ClusterId, ClusterSecrets},
     store::ClusterStore,
@@ -40,6 +42,9 @@ pub struct ClusterRegistry {
     store: Arc<ClusterStore>,
     notifier: Arc<dyn ClusterNotifier>,
     entries: Mutex<HashMap<ClusterId, Entry>>,
+    /// What each Cluster's exec plugin last issued, in memory only, until it
+    /// is about to expire.
+    issued: Mutex<HashMap<ClusterId, Issued>>,
     me: Weak<ClusterRegistry>,
 }
 
@@ -49,6 +54,7 @@ impl ClusterRegistry {
             store,
             notifier,
             entries: Mutex::new(HashMap::new()),
+            issued: Mutex::new(HashMap::new()),
             me: me.clone(),
         })
     }
@@ -61,8 +67,10 @@ impl ClusterRegistry {
         Ok(())
     }
 
-    /// (Re)starts a Cluster's supervisor, e.g. after it was edited or refreshed.
+    /// (Re)starts a Cluster's supervisor, e.g. after it was edited or
+    /// refreshed; its exec plugin runs again.
     pub fn restart(&self, id: &str) {
+        self.forget_issued(id);
         let task = tokio::spawn(supervise(self.me.clone(), id.to_owned()));
         let mut entries = self.lock();
         let entry = entries.entry(id.to_owned()).or_insert_with(|| Entry {
@@ -77,6 +85,7 @@ impl ClusterRegistry {
     }
 
     pub fn remove(&self, id: &str) {
+        self.forget_issued(id);
         if let Some(entry) = self.lock().remove(id) {
             if let Some(task) = entry.task {
                 task.abort();
@@ -136,24 +145,94 @@ impl ClusterRegistry {
     }
 
     /// Builds a client for `cluster` and checks that its API server answers.
+    /// Credentials from an exec plugin that the API refuses are asked for
+    /// once more before giving up.
     async fn connect(
         &self,
         cluster: &Cluster,
         secrets: &ClusterSecrets,
     ) -> AppResult<(kube::Client, ClusterStatus)> {
-        let client = client::client(cluster, secrets, None)?;
-        let status = version(cluster, &client).await?;
-        Ok((client, status))
+        let issued = self.credentials(cluster, secrets, false).await?;
+        let client = client::client(cluster, secrets, issued.as_ref())?;
+        match version(cluster, &client).await {
+            Err(e) if e.is(ErrorCode::ClusterUnauthorized) && secrets.exec.is_some() => {
+                let issued = self.credentials(cluster, secrets, true).await?;
+                let client = client::client(cluster, secrets, issued.as_ref())?;
+                let status = version(cluster, &client).await?;
+                Ok((client, status))
+            }
+            answer => answer.map(|status| (client, status)),
+        }
     }
 
-    /// A new client when the credentials it was built with are about to
-    /// expire, `None` while they're good.
+    /// A new client when the exec plugin's credentials are about to expire,
+    /// `None` while they're good or the Cluster has no plugin.
     async fn renewed(
         &self,
-        _cluster: &Cluster,
-        _secrets: &ClusterSecrets,
+        cluster: &Cluster,
+        secrets: &ClusterSecrets,
     ) -> AppResult<Option<kube::Client>> {
-        Ok(None)
+        if secrets.exec.is_none() {
+            return Ok(None);
+        }
+        let due = self
+            .lock_issued()
+            .get(&cluster.id)
+            .is_none_or(|i| i.is_due(SystemTime::now()));
+        if !due {
+            return Ok(None);
+        }
+        let issued = self.credentials(cluster, secrets, true).await?;
+        let client = client::client(cluster, secrets, issued.as_ref())?;
+        if let Some(entry) = self.lock().get_mut(&cluster.id) {
+            entry.client = Some(client.clone());
+        }
+        Ok(Some(client))
+    }
+
+    /// What `cluster`'s exec plugin issued: kept until it is about to expire,
+    /// asked again when `force`. `None` for a Cluster without a plugin.
+    async fn credentials(
+        &self,
+        cluster: &Cluster,
+        secrets: &ClusterSecrets,
+        force: bool,
+    ) -> AppResult<Option<IssuedCredentials>> {
+        let Some(plugin) = &secrets.exec else {
+            return Ok(None);
+        };
+        if !force {
+            if let Some(issued) = self.lock_issued().get(&cluster.id) {
+                if !issued.is_due(SystemTime::now()) {
+                    return Ok(Some(issued.credentials.clone()));
+                }
+            }
+        }
+        let info = ClusterInfo {
+            server: cluster.connection.server.clone(),
+            tls_server_name: cluster.connection.tls_server_name.clone(),
+            insecure_skip_tls_verify: cluster.connection.insecure_skip_tls_verify,
+            certificate_authority: secrets.certificate_authority.clone(),
+        };
+        let context = cluster
+            .connection
+            .source
+            .as_ref()
+            .map(|s| s.context.as_str());
+        let issued = exec::run(&cluster.name, context, plugin, &info).await?;
+        let credentials = issued.credentials.clone();
+        self.lock_issued().insert(cluster.id.clone(), issued);
+        Ok(Some(credentials))
+    }
+
+    fn forget_issued(&self, id: &str) {
+        self.lock_issued().remove(id);
+    }
+
+    fn lock_issued(&self) -> std::sync::MutexGuard<'_, HashMap<ClusterId, Issued>> {
+        self.issued
+            .lock()
+            .expect("cluster credentials lock poisoned")
     }
 
     fn lock(&self) -> std::sync::MutexGuard<'_, HashMap<ClusterId, Entry>> {

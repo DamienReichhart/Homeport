@@ -1,4 +1,6 @@
-//! Finds the Docker-related programs installed on this machine.
+//! Finds the programs Homeport runs on this machine: the Docker-related
+//! CLIs, git, and the cloud CLIs that Clusters' exec credential plugins are
+//! (`aws`, `gcloud`'s `gke-gcloud-auth-plugin`, `kubelogin`, `az`).
 //!
 //! An app started from the Finder, a desktop launcher or the Start menu gets a
 //! minimal PATH (on macOS, no `/usr/local/bin` or `/opt/homebrew/bin`), so
@@ -12,7 +14,8 @@ use std::{
 };
 
 /// Where Docker, Podman, Colima, OrbStack and Rancher Desktop put their CLIs,
-/// beyond what a GUI app's PATH usually holds.
+/// and the AWS, Google Cloud and Azure CLIs and kubelogin theirs, beyond
+/// what a GUI app's PATH usually holds.
 fn install_dirs(home: Option<&Path>) -> Vec<PathBuf> {
     let mut dirs: Vec<PathBuf> = if cfg!(target_os = "macos") {
         [
@@ -22,20 +25,39 @@ fn install_dirs(home: Option<&Path>) -> Vec<PathBuf> {
             "/Applications/Docker.app/Contents/Resources/bin",
             "/Applications/OrbStack.app/Contents/MacOS/xbin",
             "/Applications/Rancher Desktop.app/Contents/Resources/resources/darwin/bin",
+            // Google Cloud SDK from Homebrew's cask.
+            "/opt/homebrew/share/google-cloud-sdk/bin",
+            "/usr/local/share/google-cloud-sdk/bin",
+            "/opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin",
         ]
         .map(PathBuf::from)
         .to_vec()
     } else if cfg!(windows) {
         let program_files = std::env::var_os("ProgramFiles")
             .map_or_else(|| PathBuf::from(r"C:\Program Files"), PathBuf::from);
-        vec![
+        let mut dirs = vec![
             program_files.join(r"Docker\Docker\resources\bin"),
             program_files.join(r"RedHat\Podman"),
-        ]
+            program_files.join(r"Amazon\AWSCLIV2"),
+            program_files.join(r"Microsoft SDKs\Azure\CLI2\wbin"),
+            program_files.join(r"Google\Cloud SDK\google-cloud-sdk\bin"),
+        ];
+        if let Some(local) = std::env::var_os("LOCALAPPDATA") {
+            dirs.push(PathBuf::from(local).join(r"Google\Cloud SDK\google-cloud-sdk\bin"));
+        }
+        dirs
     } else {
-        ["/usr/local/bin", "/usr/bin", "/bin", "/snap/bin"]
-            .map(PathBuf::from)
-            .to_vec()
+        [
+            "/usr/local/bin",
+            "/usr/bin",
+            "/bin",
+            "/snap/bin",
+            // Google Cloud SDK from the apt and dnf repositories.
+            "/usr/lib/google-cloud-sdk/bin",
+            "/usr/lib64/google-cloud-sdk/bin",
+        ]
+        .map(PathBuf::from)
+        .to_vec()
     };
     if let Some(home) = home {
         for dir in [
@@ -44,6 +66,11 @@ fn install_dirs(home: Option<&Path>) -> Vec<PathBuf> {
             ".rd/bin",
             ".local/bin",
             "bin",
+            // The Google Cloud SDK's own installer, kubelogin from
+            // `az aks install-cli`, and kubectl plugins from krew.
+            "google-cloud-sdk/bin",
+            ".azure-kubelogin",
+            ".krew/bin",
         ] {
             dirs.push(home.join(dir));
         }

@@ -22,7 +22,10 @@ export const sidebar: NonNullable<StarlightUserConfig['sidebar']> = [
   },
   {
     label: 'Clusters',
-    items: [{ label: 'Clusters and kubeconfigs', slug: 'docs/clusters' }],
+    items: [
+      { label: 'Clusters and kubeconfigs', slug: 'docs/clusters' },
+      { label: 'Exec plugins', slug: 'docs/clusters/exec-plugins' },
+    ],
   },
   {
     label: 'Using Homeport',

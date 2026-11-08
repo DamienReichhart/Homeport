@@ -38,21 +38,28 @@ pub(super) async fn supervise(registry: Weak<ClusterRegistry>, id: ClusterId) {
             Err(error) => return reg.set_status(&id, ClusterStatus::Invalid { error }, None),
         };
 
-        let error = match reg.connect(&cluster, &secrets).await {
+        let (error, was_connected) = match reg.connect(&cluster, &secrets).await {
             Ok((client, status)) => {
                 backoff = 1;
                 reg.set_status(&id, status, Some(client.clone()));
                 drop(reg);
-                check(&registry, &cluster, &secrets, client).await
+                (check(&registry, &cluster, &secrets, client).await, true)
             }
-            Err(error) => error,
+            Err(error) => (error, false),
         };
 
         let Some(reg) = registry.upgrade() else {
             return;
         };
+        // An exec plugin's token refused while connected: connecting again
+        // asks the plugin for a new one before giving up.
+        if was_connected && error.is(ErrorCode::ClusterUnauthorized) && secrets.exec.is_some() {
+            continue;
+        }
         if classify::needs_user(&error) {
-            let status = if error.is(ErrorCode::ClusterUnauthorized) {
+            let status = if error.is(ErrorCode::ClusterUnauthorized)
+                || error.is(ErrorCode::ExecPluginInteractive)
+            {
                 ClusterStatus::Unauthorized { error }
             } else {
                 ClusterStatus::Invalid { error }

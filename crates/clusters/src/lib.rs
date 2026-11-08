@@ -12,6 +12,7 @@
 
 pub mod classify;
 pub mod client;
+pub mod exec;
 pub mod kubeconfig;
 pub mod messages;
 pub mod model;

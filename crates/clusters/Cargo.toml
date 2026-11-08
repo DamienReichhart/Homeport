@@ -19,6 +19,7 @@ http.workspace = true
 rustls.workspace = true
 rustls-pki-types.workspace = true
 secrecy.workspace = true
+jiff.workspace = true
 homeport-transport.workspace = true
 tokio.workspace = true
 futures-util.workspace = true

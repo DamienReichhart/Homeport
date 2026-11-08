@@ -976,7 +976,13 @@ export type ErrorCode =
 /**  The Kubernetes API answered with an error Homeport has no better words for. */
 "cluster_api_error" | 
 /**  A kubeconfig user authenticates with a removed auth provider (gcp, azure). */
-"kubeconfig_auth_provider_unsupported" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
+"kubeconfig_auth_provider_unsupported" | 
+/**  The program of a Cluster's exec credential plugin isn't installed. */
+"exec_plugin_missing" | 
+/**  A Cluster's exec credential plugin exited with an error or printed no credentials. */
+"exec_plugin_failed" | 
+/**  A Cluster's exec credential plugin needs a terminal to sign in. */
+"exec_plugin_interactive" | "compose_missing" | "compose_outdated" | "compose_spawn_failed" | "compose_invalid_definition" | "compose_missing_variable" | "compose_failed" | 
 /**  A Linked Stack's folder, or one of its compose files, is gone. */
 "stack_folder_missing" | 
 /**  A Linked Stack's compose file can't be read or written. */

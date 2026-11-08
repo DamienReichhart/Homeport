@@ -160,3 +160,139 @@ async fn a_disabled_cluster_isnt_connected() {
         "errors.clusters.notConnected.hintDisabled"
     );
 }
+
+#[cfg(unix)]
+mod exec_plugins {
+    use std::os::unix::fs::PermissionsExt;
+
+    use super::*;
+    use crate::model::ExecConfig;
+
+    /// A plugin that counts its runs in `runs` and issues a token expiring at `expiry`.
+    fn counting_plugin(dir: &std::path::Path, expiry: &str) -> ExecConfig {
+        let script = dir.join("plugin");
+        let runs = dir.join("runs");
+        std::fs::write(
+            &script,
+            format!(
+                "#!/bin/sh\necho run >> '{}'\necho '{{\"kind\":\"ExecCredential\",\"status\":{{\"token\":\"t\",\"expirationTimestamp\":\"{expiry}\"}}}}'\n",
+                runs.display()
+            ),
+        )
+        .unwrap();
+        std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o755)).unwrap();
+        ExecConfig {
+            api_version: "client.authentication.k8s.io/v1".into(),
+            command: script.display().to_string(),
+            ..Default::default()
+        }
+    }
+
+    fn runs(dir: &std::path::Path) -> usize {
+        std::fs::read_to_string(dir.join("runs"))
+            .map(|s| s.lines().count())
+            .unwrap_or(0)
+    }
+
+    fn with_plugin(server: &str, exec: ExecConfig) -> (Arc<ClusterRegistry>, String) {
+        let (registry, _, id) = registry(server);
+        let mut cluster = registry.store.get(&id).unwrap();
+        cluster.connection.auth = crate::AuthMethod::Exec {
+            command: exec.command.clone(),
+        };
+        let secrets = ClusterSecrets {
+            exec: Some(exec),
+            ..Default::default()
+        };
+        registry
+            .store
+            .replace_connection(&id, &cluster.connection, &secrets)
+            .unwrap();
+        (registry, id)
+    }
+
+    #[tokio::test]
+    async fn the_plugin_runs_once_per_token_lifetime() {
+        let dir = tempfile::tempdir().unwrap();
+        let server = fake_api("200 OK", VERSION).await;
+        let (registry, id) =
+            with_plugin(&server, counting_plugin(dir.path(), "2099-01-01T00:00:00Z"));
+        registry.start_all().unwrap();
+        assert!(settled(&registry, &id).await.is_connected());
+        assert_eq!(runs(dir.path()), 1);
+
+        let cluster = registry.store.get(&id).unwrap();
+        let secrets = registry.store.secrets(&id).unwrap();
+        registry
+            .credentials(&cluster, &secrets, false)
+            .await
+            .unwrap();
+        assert!(registry
+            .renewed(&cluster, &secrets)
+            .await
+            .unwrap()
+            .is_none());
+        assert_eq!(runs(dir.path()), 1, "reused before it expires");
+    }
+
+    #[tokio::test]
+    async fn a_token_about_to_expire_is_renewed() {
+        let dir = tempfile::tempdir().unwrap();
+        let server = fake_api("200 OK", VERSION).await;
+        let (registry, id) =
+            with_plugin(&server, counting_plugin(dir.path(), "2000-01-01T00:00:00Z"));
+        let cluster = registry.store.get(&id).unwrap();
+        let secrets = registry.store.secrets(&id).unwrap();
+        registry
+            .credentials(&cluster, &secrets, false)
+            .await
+            .unwrap();
+        registry
+            .credentials(&cluster, &secrets, false)
+            .await
+            .unwrap();
+        assert_eq!(runs(dir.path()), 2, "an expired token is asked for again");
+        assert!(registry
+            .renewed(&cluster, &secrets)
+            .await
+            .unwrap()
+            .is_some());
+        assert_eq!(runs(dir.path()), 3);
+    }
+
+    #[tokio::test]
+    async fn a_refused_token_is_asked_for_once_more() {
+        let dir = tempfile::tempdir().unwrap();
+        let server = fake_api(
+            "401 Unauthorized",
+            r#"{"kind":"Status","apiVersion":"v1","status":"Failure","message":"Unauthorized","reason":"Unauthorized","code":401}"#,
+        )
+        .await;
+        let (registry, id) =
+            with_plugin(&server, counting_plugin(dir.path(), "2099-01-01T00:00:00Z"));
+        registry.start_all().unwrap();
+        let status = settled(&registry, &id).await;
+        assert!(
+            matches!(status, ClusterStatus::Unauthorized { .. }),
+            "{status:?}"
+        );
+        assert_eq!(runs(dir.path()), 2);
+    }
+
+    #[tokio::test]
+    async fn a_missing_plugin_waits_for_the_user() {
+        let (registry, id) = with_plugin(
+            "https://127.0.0.1:1",
+            ExecConfig {
+                command: "homeport-no-such-plugin".into(),
+                ..Default::default()
+            },
+        );
+        registry.start_all().unwrap();
+        let status = settled(&registry, &id).await;
+        let ClusterStatus::Invalid { error } = status else {
+            panic!("{status:?}");
+        };
+        assert!(error.is(ErrorCode::ExecPluginMissing));
+    }
+}

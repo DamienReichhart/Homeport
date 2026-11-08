@@ -147,6 +147,8 @@ pub fn needs_user(error: &AppError) -> bool {
     matches!(
         error.code,
         ErrorCode::ClusterUnauthorized
+            | ErrorCode::ExecPluginMissing
+            | ErrorCode::ExecPluginInteractive
             | ErrorCode::TlsMaterialInvalid
             | ErrorCode::TlsUnknownCa
             | ErrorCode::TlsNameMismatch
