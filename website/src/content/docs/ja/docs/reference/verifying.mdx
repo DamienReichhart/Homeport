@@ -31,7 +31,7 @@ shasum -a 256 --ignore-missing -c SHA256SUMS.txt
 <TabItem label="Windows">
 
 ```powershell
-(Get-FileHash .\Homeport_0.2.0_x64-setup.exe -Algorithm SHA256).Hash.ToLower()
+(Get-FileHash .\Homeport-1.0.0-windows-x64-setup.exe -Algorithm SHA256).Hash.ToLower()
 ```
 
 結果を、`SHA256SUMS.txt` にあるインストーラーの行と比較します。
@@ -48,7 +48,7 @@ shasum -a 256 --ignore-missing -c SHA256SUMS.txt
 [GitHub CLI](https://cli.github.com) をインストールしていれば、次を実行します:
 
 ```sh
-gh attestation verify Homeport_0.2.0_x64-setup.exe --repo DamienReichhart/Homeport
+gh attestation verify Homeport-1.0.0-windows-x64-setup.exe --repo DamienReichhart/Homeport
 ```
 
 確認に成功すると、ファイルのビルド元のワークフローとコミットが表示されます。
@@ -65,7 +65,7 @@ Homeport のパッケージリポジトリとすべての `.rpm` は、Homeport 
 
 ```sh
 sudo rpm --import homeport.asc   # once
-rpm -K Homeport-<version>-1.x86_64.rpm
+rpm -K Homeport-<version>-linux-x64.rpm
 ```
 
 署名されたパッケージでは、`rpm -K` は `digests signatures OK` と表示します。`.deb` ファイル自体は署名されていません。リポジトリの署名付きインデックスがそれを保証し、ダウンロードしたものはチェックサムと来歴証明で保証されます。

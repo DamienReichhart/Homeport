@@ -18,11 +18,11 @@ Toda instalación se mantiene al día: Homeport se actualiza solo en Windows, en
 
 ## Windows
 
-| Archivo                              | Para qué sirve                                        |
-| ------------------------------------ | ----------------------------------------------------- |
-| `Homeport_<version>_x64-setup.exe`   | La mayoría de los PC. Instala para el usuario actual. |
-| `Homeport_<version>_arm64-setup.exe` | Windows en ARM (Snapdragon y otros PC ARM64).         |
-| `Homeport_<version>_x64_en-US.msi`   | Instalaciones gestionadas y silenciosas en x64.       |
+| Archivo                                      | Para qué sirve                                        |
+| -------------------------------------------- | ----------------------------------------------------- |
+| `Homeport-<version>-windows-x64-setup.exe`   | La mayoría de los PC. Instala para el usuario actual. |
+| `Homeport-<version>-windows-arm64-setup.exe` | Windows en ARM (Snapdragon y otros PC ARM64).         |
+| `Homeport-<version>-windows-x64.msi`         | Instalaciones gestionadas y silenciosas en x64.       |
 
 <Steps>
 
@@ -37,15 +37,15 @@ Toda instalación se mantiene al día: Homeport se actualiza solo en Windows, en
 Para una instalación silenciosa con el paquete MSI:
 
 ```powershell
-msiexec /i Homeport_<version>_x64_en-US.msi /quiet
+msiexec /i Homeport-<version>-windows-x64.msi /quiet
 ```
 
 ## macOS
 
-| Archivo                          | Para qué sirve                            |
-| -------------------------------- | ----------------------------------------- |
-| `Homeport_<version>_aarch64.dmg` | Mac con Apple silicon (M1 y posteriores). |
-| `Homeport_<version>_x64.dmg`     | Mac con procesador Intel.                 |
+| Archivo                              | Para qué sirve                            |
+| ------------------------------------ | ----------------------------------------- |
+| `Homeport-<version>-macos-arm64.dmg` | Mac con Apple silicon (M1 y posteriores). |
+| `Homeport-<version>-macos-x64.dmg`   | Mac con procesador Intel.                 |
 
 ¿No sabes cuál tienes? Abre el menú Apple → **Acerca de este Mac**: una línea **Chip** significa Apple silicon; una línea **Procesador** que nombra Intel significa Intel.
 
@@ -103,27 +103,27 @@ Puede que `dnf` y `zypper` te pidan confiar en la clave la primera vez que usan 
 
 ### Archivos de paquete
 
-También puedes descargar el `.deb` (`amd64` para x64, `arm64` para ARM) o el `.rpm` (`x86_64` o `aarch64`) e instalarlo directamente:
+También puedes descargar el `.deb` o el `.rpm` de tu procesador (`x64` para Intel y AMD, `arm64` para ARM) e instalarlo directamente:
 
 <Tabs syncKey="linux-format">
 <TabItem label="Debian, Ubuntu">
 
 ```sh
-sudo apt install ./Homeport_<version>_amd64.deb
+sudo apt install ./Homeport-<version>-linux-x64.deb
 ```
 
 </TabItem>
 <TabItem label="Fedora, RHEL">
 
 ```sh
-sudo dnf install ./Homeport-<version>-1.x86_64.rpm
+sudo dnf install ./Homeport-<version>-linux-x64.rpm
 ```
 
 </TabItem>
 <TabItem label="openSUSE">
 
 ```sh
-sudo zypper install ./Homeport-<version>-1.x86_64.rpm
+sudo zypper install ./Homeport-<version>-linux-x64.rpm
 ```
 
 </TabItem>
@@ -136,8 +136,8 @@ La primera vez que instalas uno de estos paquetes, también añade el repositori
 La AppImage funciona en la mayoría de las distribuciones sin instalar nada, y se actualiza sola desde Homeport. Hazla ejecutable y ejecútala:
 
 ```sh
-chmod +x Homeport_<version>_amd64.AppImage
-./Homeport_<version>_amd64.AppImage
+chmod +x Homeport-<version>-linux-x64.AppImage
+./Homeport-<version>-linux-x64.AppImage
 ```
 
 Cada vez que se ejecuta, añade Homeport al menú de aplicaciones. Si no arranca y menciona FUSE, instala `libfuse2` (`libfuse2t64` en Ubuntu 24.04 y posteriores).

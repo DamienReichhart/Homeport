@@ -31,7 +31,7 @@ shasum -a 256 --ignore-missing -c SHA256SUMS.txt
 <TabItem label="Windows">
 
 ```powershell
-(Get-FileHash .\Homeport_0.2.0_x64-setup.exe -Algorithm SHA256).Hash.ToLower()
+(Get-FileHash .\Homeport-1.0.0-windows-x64-setup.exe -Algorithm SHA256).Hash.ToLower()
 ```
 
 Confronta il risultato con la riga del programma di installazione in `SHA256SUMS.txt`.
@@ -48,7 +48,7 @@ Un checksum dimostra che il file non è stato danneggiato o sostituito dopo la p
 Con la [GitHub CLI](https://cli.github.com) installata:
 
 ```sh
-gh attestation verify Homeport_0.2.0_x64-setup.exe --repo DamienReichhart/Homeport
+gh attestation verify Homeport-1.0.0-windows-x64-setup.exe --repo DamienReichhart/Homeport
 ```
 
 Un controllo riuscito stampa il workflow e il commit da cui il file è stato compilato.
@@ -65,7 +65,7 @@ Il repository dei pacchetti di Homeport e ogni `.rpm` sono firmati con la chiave
 
 ```sh
 sudo rpm --import homeport.asc   # once
-rpm -K Homeport-<version>-1.x86_64.rpm
+rpm -K Homeport-<version>-linux-x64.rpm
 ```
 
 `rpm -K` stampa `digests signatures OK` per un pacchetto firmato. Un file `.deb` non è firmato di per sé: lo copre l’indice firmato del repository, e uno scaricato è coperto dal suo checksum e dalla sua attestazione.

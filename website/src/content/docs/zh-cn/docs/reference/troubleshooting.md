@@ -21,7 +21,7 @@ xattr -dr com.apple.quarantine /Applications/Homeport.app
 
 ### AppImage 无法启动
 
-如果提示中提到 FUSE，请安装 `libfuse2`（Ubuntu 24.04 及更高版本为 `libfuse2t64`）。检查文件是否可执行：`chmod +x Homeport_*.AppImage`。
+如果提示中提到 FUSE，请安装 `libfuse2`（Ubuntu 24.04 及更高版本为 `libfuse2t64`）。检查文件是否可执行：`chmod +x Homeport*.AppImage`。
 
 ### Homeport 在错误的位置打开
 

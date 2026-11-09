@@ -31,7 +31,7 @@ shasum -a 256 --ignore-missing -c SHA256SUMS.txt
 <TabItem label="Windows">
 
 ```powershell
-(Get-FileHash .\Homeport_0.2.0_x64-setup.exe -Algorithm SHA256).Hash.ToLower()
+(Get-FileHash .\Homeport-1.0.0-windows-x64-setup.exe -Algorithm SHA256).Hash.ToLower()
 ```
 
 Compare o resultado com a linha do instalador em `SHA256SUMS.txt`.
@@ -48,7 +48,7 @@ Um checksum prova que o arquivo não foi danificado nem trocado depois que o che
 Com a [GitHub CLI](https://cli.github.com) instalada:
 
 ```sh
-gh attestation verify Homeport_0.2.0_x64-setup.exe --repo DamienReichhart/Homeport
+gh attestation verify Homeport-1.0.0-windows-x64-setup.exe --repo DamienReichhart/Homeport
 ```
 
 Uma verificação bem-sucedida exibe o workflow e o commit a partir dos quais o arquivo foi gerado.
@@ -65,7 +65,7 @@ O `apt`, o `dnf` e o `zypper` verificam essas assinaturas a cada atualização e
 
 ```sh
 sudo rpm --import homeport.asc   # once
-rpm -K Homeport-<version>-1.x86_64.rpm
+rpm -K Homeport-<version>-linux-x64.rpm
 ```
 
 O `rpm -K` exibe `digests signatures OK` para um pacote assinado. Um arquivo `.deb` não é assinado por si só: o índice assinado do repositório o cobre, e um baixado é coberto pelo seu checksum e pela sua atestação.

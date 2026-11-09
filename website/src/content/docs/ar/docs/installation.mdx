@@ -18,11 +18,11 @@ import { COMING_LATER, INSTALL_COMMAND, MANUAL_SETUP } from '@/core/packages';
 
 ## Windows
 
-| الملف                                | استخدمه لـ                                        |
-| ------------------------------------ | ------------------------------------------------- |
-| `Homeport_<version>_x64-setup.exe`   | معظم أجهزة الكمبيوتر. يثبّت للمستخدم الحالي.      |
-| `Homeport_<version>_arm64-setup.exe` | Windows على ARM (Snapdragon وأجهزة ARM64 الأخرى). |
-| `Homeport_<version>_x64_en-US.msi`   | عمليات التثبيت المُدارة والصامتة على x64.         |
+| الملف                                        | استخدمه لـ                                        |
+| -------------------------------------------- | ------------------------------------------------- |
+| `Homeport-<version>-windows-x64-setup.exe`   | معظم أجهزة الكمبيوتر. يثبّت للمستخدم الحالي.      |
+| `Homeport-<version>-windows-arm64-setup.exe` | Windows على ARM (Snapdragon وأجهزة ARM64 الأخرى). |
+| `Homeport-<version>-windows-x64.msi`         | عمليات التثبيت المُدارة والصامتة على x64.         |
 
 <Steps>
 
@@ -37,15 +37,15 @@ import { COMING_LATER, INSTALL_COMMAND, MANUAL_SETUP } from '@/core/packages';
 للتثبيت الصامت باستخدام حزمة MSI:
 
 ```powershell
-msiexec /i Homeport_<version>_x64_en-US.msi /quiet
+msiexec /i Homeport-<version>-windows-x64.msi /quiet
 ```
 
 ## macOS
 
-| الملف                            | استخدمه لـ                                    |
-| -------------------------------- | --------------------------------------------- |
-| `Homeport_<version>_aarch64.dmg` | أجهزة Mac بشرائح Apple silicon (M1 وما بعده). |
-| `Homeport_<version>_x64.dmg`     | أجهزة Mac بمعالج Intel.                       |
+| الملف                                | استخدمه لـ                                    |
+| ------------------------------------ | --------------------------------------------- |
+| `Homeport-<version>-macos-arm64.dmg` | أجهزة Mac بشرائح Apple silicon (M1 وما بعده). |
+| `Homeport-<version>-macos-x64.dmg`   | أجهزة Mac بمعالج Intel.                       |
 
 لست متأكدًا أيها لديك؟ افتح قائمة Apple ← **About This Mac**: يعني سطر **Chip** أن جهازك يعمل بشريحة Apple silicon، ويعني سطر **Processor** يذكر Intel أنه يعمل بمعالج Intel.
 
@@ -103,27 +103,27 @@ xattr -dr com.apple.quarantine /Applications/Homeport.app
 
 ### ملفات الحزم
 
-يمكنك أيضًا تنزيل حزمة `.deb` (`amd64` لـ x64، و`arm64` لـ ARM) أو `.rpm` (`x86_64` أو `aarch64`) وتثبيتها مباشرةً:
+يمكنك أيضًا تنزيل حزمة `.deb` أو `.rpm` المناسبة لمعالجك (`x64` لـ Intel و AMD، و`arm64` لـ ARM) وتثبيتها مباشرةً:
 
 <Tabs syncKey="linux-format">
 <TabItem label="Debian, Ubuntu">
 
 ```sh
-sudo apt install ./Homeport_<version>_amd64.deb
+sudo apt install ./Homeport-<version>-linux-x64.deb
 ```
 
 </TabItem>
 <TabItem label="Fedora, RHEL">
 
 ```sh
-sudo dnf install ./Homeport-<version>-1.x86_64.rpm
+sudo dnf install ./Homeport-<version>-linux-x64.rpm
 ```
 
 </TabItem>
 <TabItem label="openSUSE">
 
 ```sh
-sudo zypper install ./Homeport-<version>-1.x86_64.rpm
+sudo zypper install ./Homeport-<version>-linux-x64.rpm
 ```
 
 </TabItem>
@@ -136,8 +136,8 @@ sudo zypper install ./Homeport-<version>-1.x86_64.rpm
 يعمل AppImage على معظم التوزيعات دون تثبيت أي شيء، ويحدّث نفسه من داخل Homeport. اجعله قابلًا للتنفيذ وشغّله:
 
 ```sh
-chmod +x Homeport_<version>_amd64.AppImage
-./Homeport_<version>_amd64.AppImage
+chmod +x Homeport-<version>-linux-x64.AppImage
+./Homeport-<version>-linux-x64.AppImage
 ```
 
 في كل مرة يعمل فيها، يضيف Homeport إلى قائمة التطبيقات. إذا لم يبدأ وذكر FUSE، فثبّت `libfuse2` (`libfuse2t64` على Ubuntu 24.04 وما بعده).

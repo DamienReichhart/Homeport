@@ -21,7 +21,7 @@ xattr -dr com.apple.quarantine /Applications/Homeport.app
 
 ### La AppImage no arranca
 
-Si menciona FUSE, instala `libfuse2` (`libfuse2t64` en Ubuntu 24.04 y posteriores). Comprueba que el archivo es ejecutable: `chmod +x Homeport_*.AppImage`.
+Si menciona FUSE, instala `libfuse2` (`libfuse2t64` en Ubuntu 24.04 y posteriores). Comprueba que el archivo es ejecutable: `chmod +x Homeport*.AppImage`.
 
 ### Homeport se abre en el lugar equivocado
 

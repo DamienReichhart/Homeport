@@ -31,7 +31,7 @@ shasum -a 256 --ignore-missing -c SHA256SUMS.txt
 <TabItem label="Windows">
 
 ```powershell
-(Get-FileHash .\Homeport_0.2.0_x64-setup.exe -Algorithm SHA256).Hash.ToLower()
+(Get-FileHash .\Homeport-1.0.0-windows-x64-setup.exe -Algorithm SHA256).Hash.ToLower()
 ```
 
 결과를 `SHA256SUMS.txt`에 있는 설치 프로그램의 줄과 비교하세요.
@@ -48,7 +48,7 @@ shasum -a 256 --ignore-missing -c SHA256SUMS.txt
 [GitHub CLI](https://cli.github.com)를 설치했다면 다음을 실행합니다.
 
 ```sh
-gh attestation verify Homeport_0.2.0_x64-setup.exe --repo DamienReichhart/Homeport
+gh attestation verify Homeport-1.0.0-windows-x64-setup.exe --repo DamienReichhart/Homeport
 ```
 
 확인에 성공하면 파일을 빌드한 워크플로와 커밋이 출력됩니다.
@@ -65,7 +65,7 @@ Homeport 패키지 저장소와 모든 `.rpm`은 Homeport 패키지 키(RSA 4096
 
 ```sh
 sudo rpm --import homeport.asc   # once
-rpm -K Homeport-<version>-1.x86_64.rpm
+rpm -K Homeport-<version>-linux-x64.rpm
 ```
 
 서명된 패키지라면 `rpm -K`가 `digests signatures OK`를 출력합니다. `.deb` 파일 자체는 서명되어 있지 않습니다. 저장소의 서명된 인덱스가 `.deb`를 보증하며, 다운로드한 `.deb`는 체크섬과 증명으로 보증됩니다.

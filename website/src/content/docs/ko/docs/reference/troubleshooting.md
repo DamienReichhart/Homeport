@@ -21,7 +21,7 @@ xattr -dr com.apple.quarantine /Applications/Homeport.app
 
 ### AppImage가 시작되지 않음
 
-FUSE에 대한 메시지가 나오면 `libfuse2`(Ubuntu 24.04 이상에서는 `libfuse2t64`)를 설치하세요. 파일에 실행 권한이 있는지도 확인하세요: `chmod +x Homeport_*.AppImage`.
+FUSE에 대한 메시지가 나오면 `libfuse2`(Ubuntu 24.04 이상에서는 `libfuse2t64`)를 설치하세요. 파일에 실행 권한이 있는지도 확인하세요: `chmod +x Homeport*.AppImage`.
 
 ### Homeport가 엉뚱한 위치에서 열림
 

@@ -31,7 +31,7 @@ shasum -a 256 --ignore-missing -c SHA256SUMS.txt
 <TabItem label="Windows">
 
 ```powershell
-(Get-FileHash .\Homeport_0.2.0_x64-setup.exe -Algorithm SHA256).Hash.ToLower()
+(Get-FileHash .\Homeport-1.0.0-windows-x64-setup.exe -Algorithm SHA256).Hash.ToLower()
 ```
 
 नतीजे की तुलना `SHA256SUMS.txt` में इंस्टॉलर की लाइन से करें।
@@ -48,7 +48,7 @@ shasum -a 256 --ignore-missing -c SHA256SUMS.txt
 [GitHub CLI](https://cli.github.com) इंस्टॉल होने पर:
 
 ```sh
-gh attestation verify Homeport_0.2.0_x64-setup.exe --repo DamienReichhart/Homeport
+gh attestation verify Homeport-1.0.0-windows-x64-setup.exe --repo DamienReichhart/Homeport
 ```
 
 सफल जाँच वह वर्कफ़्लो और कमिट प्रिंट करती है जिससे फ़ाइल बनाई गई थी।
@@ -65,7 +65,7 @@ Homeport पैकेज रिपॉज़िटरी और हर `.rpm` Hom
 
 ```sh
 sudo rpm --import homeport.asc   # once
-rpm -K Homeport-<version>-1.x86_64.rpm
+rpm -K Homeport-<version>-linux-x64.rpm
 ```
 
 साइन किए गए पैकेज के लिए `rpm -K` `digests signatures OK` प्रिंट करता है। `.deb` फ़ाइल ख़ुद साइन नहीं की जाती: रिपॉज़िटरी का साइन किया हुआ इंडेक्स उसे कवर करता है, और डाउनलोड की गई `.deb` उसके चेकसम और अटेस्टेशन से कवर होती है।

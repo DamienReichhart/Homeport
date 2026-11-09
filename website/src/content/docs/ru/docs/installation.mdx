@@ -19,11 +19,11 @@ import { COMING_LATER, INSTALL_COMMAND, MANUAL_SETUP } from '@/core/packages';
 
 ## Windows
 
-| Файл                                 | Для чего                                                   |
-| ------------------------------------ | ---------------------------------------------------------- |
-| `Homeport_<version>_x64-setup.exe`   | Большинство ПК. Устанавливается для текущего пользователя. |
-| `Homeport_<version>_arm64-setup.exe` | Windows на ARM (Snapdragon и другие ПК на ARM64).          |
-| `Homeport_<version>_x64_en-US.msi`   | Управляемая и автоматическая (тихая) установка на x64.     |
+| Файл                                         | Для чего                                                   |
+| -------------------------------------------- | ---------------------------------------------------------- |
+| `Homeport-<version>-windows-x64-setup.exe`   | Большинство ПК. Устанавливается для текущего пользователя. |
+| `Homeport-<version>-windows-arm64-setup.exe` | Windows на ARM (Snapdragon и другие ПК на ARM64).          |
+| `Homeport-<version>-windows-x64.msi`         | Управляемая и автоматическая (тихая) установка на x64.     |
 
 <Steps>
 
@@ -38,15 +38,15 @@ import { COMING_LATER, INSTALL_COMMAND, MANUAL_SETUP } from '@/core/packages';
 Для тихой установки из пакета MSI:
 
 ```powershell
-msiexec /i Homeport_<version>_x64_en-US.msi /quiet
+msiexec /i Homeport-<version>-windows-x64.msi /quiet
 ```
 
 ## macOS
 
-| Файл                             | Для чего                                |
-| -------------------------------- | --------------------------------------- |
-| `Homeport_<version>_aarch64.dmg` | Mac с чипом Apple silicon (M1 и новее). |
-| `Homeport_<version>_x64.dmg`     | Mac с процессором Intel.                |
+| Файл                                 | Для чего                                |
+| ------------------------------------ | --------------------------------------- |
+| `Homeport-<version>-macos-arm64.dmg` | Mac с чипом Apple silicon (M1 и новее). |
+| `Homeport-<version>-macos-x64.dmg`   | Mac с процессором Intel.                |
 
 Не знаете, какой у вас? Откройте меню Apple → **Об этом Mac**: строка **Чип** означает Apple silicon, строка **Процессор** с названием Intel означает Intel.
 
@@ -104,27 +104,27 @@ Homeport для Linux требует glibc 2.35 или новее — Ubuntu 22.
 
 ### Файлы пакетов
 
-Можно также скачать `.deb` (`amd64` для x64, `arm64` для ARM) или `.rpm` (`x86_64` или `aarch64`) и установить его напрямую:
+Можно также скачать `.deb` или `.rpm` для своего процессора (`x64` для Intel и AMD, `arm64` для ARM) и установить его напрямую:
 
 <Tabs syncKey="linux-format">
 <TabItem label="Debian, Ubuntu">
 
 ```sh
-sudo apt install ./Homeport_<version>_amd64.deb
+sudo apt install ./Homeport-<version>-linux-x64.deb
 ```
 
 </TabItem>
 <TabItem label="Fedora, RHEL">
 
 ```sh
-sudo dnf install ./Homeport-<version>-1.x86_64.rpm
+sudo dnf install ./Homeport-<version>-linux-x64.rpm
 ```
 
 </TabItem>
 <TabItem label="openSUSE">
 
 ```sh
-sudo zypper install ./Homeport-<version>-1.x86_64.rpm
+sudo zypper install ./Homeport-<version>-linux-x64.rpm
 ```
 
 </TabItem>
@@ -137,8 +137,8 @@ sudo zypper install ./Homeport-<version>-1.x86_64.rpm
 AppImage работает в большинстве дистрибутивов без установки и обновляется сам изнутри Homeport. Сделайте файл исполняемым и запустите его:
 
 ```sh
-chmod +x Homeport_<version>_amd64.AppImage
-./Homeport_<version>_amd64.AppImage
+chmod +x Homeport-<version>-linux-x64.AppImage
+./Homeport-<version>-linux-x64.AppImage
 ```
 
 При каждом запуске он добавляет Homeport в меню приложений. Если он не запускается и упоминает FUSE, установите `libfuse2` (`libfuse2t64` в Ubuntu 24.04 и новее).

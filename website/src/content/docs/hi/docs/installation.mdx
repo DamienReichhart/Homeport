@@ -19,11 +19,11 @@ Homeport के पास Windows, macOS और Linux के लिए इंस
 
 ## Windows
 
-| फ़ाइल                                | इसका इस्तेमाल किसके लिए करें                       |
-| ------------------------------------ | -------------------------------------------------- |
-| `Homeport_<version>_x64-setup.exe`   | ज़्यादातर PC। मौजूदा यूज़र के लिए इंस्टॉल करता है। |
-| `Homeport_<version>_arm64-setup.exe` | ARM पर Windows (Snapdragon और दूसरे ARM64 PC)।     |
-| `Homeport_<version>_x64_en-US.msi`   | x64 पर प्रबंधित और साइलेंट इंस्टॉल।                |
+| फ़ाइल                                        | इसका इस्तेमाल किसके लिए करें                       |
+| -------------------------------------------- | -------------------------------------------------- |
+| `Homeport-<version>-windows-x64-setup.exe`   | ज़्यादातर PC। मौजूदा यूज़र के लिए इंस्टॉल करता है। |
+| `Homeport-<version>-windows-arm64-setup.exe` | ARM पर Windows (Snapdragon और दूसरे ARM64 PC)।     |
+| `Homeport-<version>-windows-x64.msi`         | x64 पर प्रबंधित और साइलेंट इंस्टॉल।                |
 
 <Steps>
 
@@ -38,15 +38,15 @@ Homeport के पास Windows, macOS और Linux के लिए इंस
 MSI पैकेज के साथ साइलेंट इंस्टॉल के लिए:
 
 ```powershell
-msiexec /i Homeport_<version>_x64_en-US.msi /quiet
+msiexec /i Homeport-<version>-windows-x64.msi /quiet
 ```
 
 ## macOS
 
-| फ़ाइल                            | इसका इस्तेमाल किसके लिए करें           |
-| -------------------------------- | -------------------------------------- |
-| `Homeport_<version>_aarch64.dmg` | Apple silicon वाले Mac (M1 और बाद के)। |
-| `Homeport_<version>_x64.dmg`     | Intel प्रोसेसर वाले Mac।               |
+| फ़ाइल                                | इसका इस्तेमाल किसके लिए करें           |
+| ------------------------------------ | -------------------------------------- |
+| `Homeport-<version>-macos-arm64.dmg` | Apple silicon वाले Mac (M1 और बाद के)। |
+| `Homeport-<version>-macos-x64.dmg`   | Intel प्रोसेसर वाले Mac।               |
 
 पक्का नहीं कि आपके पास कौन-सा है? Apple मेनू → **About This Mac** खोलें: **Chip** लाइन का मतलब Apple silicon है, और Intel नाम वाली **Processor** लाइन का मतलब Intel है।
 
@@ -104,27 +104,27 @@ Linux के लिए Homeport को x64 या ARM64 पर glibc 2.35 या
 
 ### पैकेज फ़ाइलें
 
-आप `.deb` (x64 के लिए `amd64`, ARM के लिए `arm64`) या `.rpm` (`x86_64` या `aarch64`) डाउनलोड करके उसे सीधे इंस्टॉल भी कर सकते हैं:
+आप अपने प्रोसेसर के लिए `.deb` या `.rpm` (Intel और AMD के लिए `x64`, ARM के लिए `arm64`) डाउनलोड करके उसे सीधे इंस्टॉल भी कर सकते हैं:
 
 <Tabs syncKey="linux-format">
 <TabItem label="Debian, Ubuntu">
 
 ```sh
-sudo apt install ./Homeport_<version>_amd64.deb
+sudo apt install ./Homeport-<version>-linux-x64.deb
 ```
 
 </TabItem>
 <TabItem label="Fedora, RHEL">
 
 ```sh
-sudo dnf install ./Homeport-<version>-1.x86_64.rpm
+sudo dnf install ./Homeport-<version>-linux-x64.rpm
 ```
 
 </TabItem>
 <TabItem label="openSUSE">
 
 ```sh
-sudo zypper install ./Homeport-<version>-1.x86_64.rpm
+sudo zypper install ./Homeport-<version>-linux-x64.rpm
 ```
 
 </TabItem>
@@ -137,8 +137,8 @@ sudo zypper install ./Homeport-<version>-1.x86_64.rpm
 AppImage ज़्यादातर डिस्ट्रीब्यूशन पर बिना कुछ इंस्टॉल किए चलता है, और Homeport के अंदर से ख़ुद को अपडेट करता है। इसे एक्ज़ीक्यूटेबल बनाएँ और चलाएँ:
 
 ```sh
-chmod +x Homeport_<version>_amd64.AppImage
-./Homeport_<version>_amd64.AppImage
+chmod +x Homeport-<version>-linux-x64.AppImage
+./Homeport-<version>-linux-x64.AppImage
 ```
 
 हर बार चलने पर, यह Homeport को आपके ऐप्लिकेशन मेनू में जोड़ता है। अगर यह शुरू नहीं होता और FUSE का ज़िक्र करता है, तो `libfuse2` इंस्टॉल करें (Ubuntu 24.04 और बाद के संस्करण पर `libfuse2t64`)।

@@ -18,11 +18,11 @@ Homeport 提供适用于 Windows、macOS 和 Linux 的安装程序，每个系�
 
 ## Windows
 
-| 文件                                 | 用途                                           |
-| ------------------------------------ | ---------------------------------------------- |
-| `Homeport_<version>_x64-setup.exe`   | 大多数 PC。为当前用户安装。                    |
-| `Homeport_<version>_arm64-setup.exe` | Windows on ARM（Snapdragon 及其他 ARM64 PC）。 |
-| `Homeport_<version>_x64_en-US.msi`   | x64 上的托管安装和静默安装。                   |
+| 文件                                         | 用途                                           |
+| -------------------------------------------- | ---------------------------------------------- |
+| `Homeport-<version>-windows-x64-setup.exe`   | 大多数 PC。为当前用户安装。                    |
+| `Homeport-<version>-windows-arm64-setup.exe` | Windows on ARM（Snapdragon 及其他 ARM64 PC）。 |
+| `Homeport-<version>-windows-x64.msi`         | x64 上的托管安装和静默安装。                   |
 
 <Steps>
 
@@ -37,15 +37,15 @@ Homeport 提供适用于 Windows、macOS 和 Linux 的安装程序，每个系�
 使用 MSI 软件包进行静默安装：
 
 ```powershell
-msiexec /i Homeport_<version>_x64_en-US.msi /quiet
+msiexec /i Homeport-<version>-windows-x64.msi /quiet
 ```
 
 ## macOS
 
-| 文件                             | 用途                                     |
-| -------------------------------- | ---------------------------------------- |
-| `Homeport_<version>_aarch64.dmg` | 搭载 Apple 芯片的 Mac（M1 及更新机型）。 |
-| `Homeport_<version>_x64.dmg`     | 搭载 Intel 处理器的 Mac。                |
+| 文件                                 | 用途                                     |
+| ------------------------------------ | ---------------------------------------- |
+| `Homeport-<version>-macos-arm64.dmg` | 搭载 Apple 芯片的 Mac（M1 及更新机型）。 |
+| `Homeport-<version>-macos-x64.dmg`   | 搭载 Intel 处理器的 Mac。                |
 
 不确定你的 Mac 是哪一种？打开苹果菜单 → **关于本机**（About This Mac）：有**芯片**（Chip）一行表示 Apple 芯片，有写着 Intel 的**处理器**（Processor）一行表示 Intel。
 
@@ -103,27 +103,27 @@ Linux 版 Homeport 需要 glibc 2.35 或更高版本（Ubuntu 22.04、Debian 12�
 
 ### 软件包文件
 
-也可以下载 `.deb`（x64 用 `amd64`，ARM 用 `arm64`）或 `.rpm`（`x86_64` 或 `aarch64`）并直接安装：
+也可以下载适合你的处理器的 `.deb` 或 `.rpm`（Intel 和 AMD 用 `x64`，ARM 用 `arm64`）并直接安装：
 
 <Tabs syncKey="linux-format">
 <TabItem label="Debian, Ubuntu">
 
 ```sh
-sudo apt install ./Homeport_<version>_amd64.deb
+sudo apt install ./Homeport-<version>-linux-x64.deb
 ```
 
 </TabItem>
 <TabItem label="Fedora, RHEL">
 
 ```sh
-sudo dnf install ./Homeport-<version>-1.x86_64.rpm
+sudo dnf install ./Homeport-<version>-linux-x64.rpm
 ```
 
 </TabItem>
 <TabItem label="openSUSE">
 
 ```sh
-sudo zypper install ./Homeport-<version>-1.x86_64.rpm
+sudo zypper install ./Homeport-<version>-linux-x64.rpm
 ```
 
 </TabItem>
@@ -136,8 +136,8 @@ sudo zypper install ./Homeport-<version>-1.x86_64.rpm
 AppImage 无需安装即可在大多数发行版上运行，并可在 Homeport 内部自行更新。将其设为可执行并运行：
 
 ```sh
-chmod +x Homeport_<version>_amd64.AppImage
-./Homeport_<version>_amd64.AppImage
+chmod +x Homeport-<version>-linux-x64.AppImage
+./Homeport-<version>-linux-x64.AppImage
 ```
 
 每次运行时，它都会将 Homeport 添加到你的应用程序菜单。如果无法启动并提到 FUSE，请安装 `libfuse2`（Ubuntu 24.04 及更高版本为 `libfuse2t64`）。
