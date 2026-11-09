@@ -160,6 +160,12 @@ pub enum ErrorCode {
     NomadJobNotFound,
     /// A task group count outside its scaling policy's minimum and maximum.
     NomadScaleOutOfBounds,
+    /// A Nomad job specification Nomad couldn't parse.
+    NomadParseFailed,
+    /// A planned Nomad job some of whose allocations can't be placed.
+    NomadPlacementFailed,
+    /// A Nomad job changed by someone else since it was planned.
+    NomadJobModified,
     // Helm (ADR 0009).
     /// The `helm` CLI isn't installed on this computer.
     HelmMissing,

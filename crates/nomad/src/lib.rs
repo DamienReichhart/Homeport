@@ -9,6 +9,7 @@
 //! - [`agent`] reads the Cluster's status: its leader, version and region.
 //! - [`jobs`] lists, shows, stops and scales jobs; [`watch`] tells a page
 //!   when what it shows changed, through Nomad's blocking queries.
+//! - [`run`] parses, plans and runs a job specification, HCL2 or JSON.
 
 pub mod address;
 pub mod agent;
@@ -16,6 +17,7 @@ pub mod client;
 pub mod error;
 pub mod jobs;
 pub mod messages;
+pub mod run;
 mod time;
 mod tls;
 pub mod watch;

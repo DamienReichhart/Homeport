@@ -87,6 +87,30 @@ homeport_core::messages! {
     READ_DENIED = "errors.nomad.readDenied" => "{name} refused: the ACL token can't read jobs in this namespace.";
     READ_DENIED_HINT = "errors.nomad.readDenied.hint" => "Listing jobs and their allocations needs the read-job capability (list-jobs and read-job), which the read policy grants.";
 
+    // Running a job.
+
+    /// A specification that isn't HCL Nomad can parse, at a place it named.
+    PARSE_FAILED_AT = "errors.nomad.parseFailedAt" => "The job specification doesn't parse, at line {line}, column {column}.";
+    /// …at no place Homeport could read.
+    PARSE_FAILED = "errors.nomad.parseFailed" => "The job specification doesn't parse.";
+    PARSE_FAILED_HINT = "errors.nomad.parseFailed.hint" => "Details has what Nomad found wrong. Variables need a default: Homeport doesn't pass variable files.";
+    /// JSON that isn't a job.
+    JSON_NOT_A_JOB = "errors.nomad.jsonNotAJob" => "This JSON isn't a Nomad job.";
+    JSON_NOT_A_JOB_HINT = "errors.nomad.jsonNotAJob.hint" => "Paste a job in Nomad's API format, a Job object or one with ID and TaskGroups, as nomad job inspect prints it:";
+    /// An empty specification.
+    SPEC_EMPTY = "errors.nomad.specEmpty" => "Paste or open a job specification first.";
+    /// Some task groups can't be placed.
+    PLACEMENT_FAILED = "errors.nomad.placementFailed" => "Nomad can't place every allocation of {job}: {groups}.";
+    PLACEMENT_FAILED_HINT = "errors.nomad.placementFailed.hint" => "No eligible node has the resources or matches the constraints. Running it anyway queues what can't be placed until a node can take it.";
+    /// The job changed since it was planned.
+    JOB_MODIFIED = "errors.nomad.jobModified" => "{job} changed since it was planned, so it wasn't run.";
+    JOB_MODIFIED_HINT = "errors.nomad.jobModified.hint" => "Someone else ran or stopped it in between. Plan again to see the change against what runs now.";
+    /// Running a new job whose ID another job has.
+    JOB_EXISTS = "errors.nomad.jobExists" => "{job} was created by someone else since it was planned, so it wasn't run.";
+    /// The token lacks submit-job.
+    SUBMIT_DENIED = "errors.nomad.submitDenied" => "{name} refused: the ACL token can't run jobs in namespace {namespace}.";
+    SUBMIT_DENIED_HINT = "errors.nomad.submitDenied.hint" => "Planning and running need the submit-job capability on the job's namespace, which the write policy grants.";
+
     /// An answer that isn't the JSON Nomad sends.
     UNREADABLE = "errors.nomad.unreadable" => "{name} sent an answer Homeport couldn't read.";
     UNREADABLE_HINT = "errors.nomad.unreadable.hint" => "Check that the address points to a Nomad agent's HTTP API, usually on port 4646.";
