@@ -1,0 +1,79 @@
+---
+title: 工作负载和 Pod
+description: 实时浏览集群的 Namespace、Deployment、StatefulSet、DaemonSet、Job、CronJob 和 Pod。
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+在切换器中选择一个集群，侧边栏就会显示其页面。**工作负载**和 **Pod** 列出在其上运行的内容；每个列表都通过 Kubernetes watch 实时跟进集群，因此你扩缩的 Deployment 或崩溃的 Pod 会在几秒内显示其新状态，无需刷新。每个页面还让你对其显示的内容进行操作：[日志和终端](/docs/clusters/logs-exec/)、[扩缩、重启和删除](/docs/clusters/actions/)，以及[编辑 YAML](/docs/clusters/yaml/)。
+
+## Namespace
+
+每个集群页面显示一个 Namespace，或**所有 Namespace**，在右上角选择。它起初为该集群 kubeconfig 上下文的 namespace（否则为 `default`），Homeport 会按集群记住你的选择。
+
+如果你的凭据只能查看部分 Namespace，请选择其中之一：页面在那里可以正常使用。当凭据连 Namespace 都无法列出时，选择器会变成一个输入框，供你输入你有权使用的 Namespace。
+
+## 工作负载
+
+<DocScreenshot
+  name="cluster-workloads"
+  alt="工作负载页面的 Deployment 标签页：api 正在进行中，3 个中有 2 个就绪、1 个已更新；三个就绪；search 已降级，1 个中有 0 个就绪。"
+  caption="api 正在 rollout 中（1 个 Pod 使用新模板），search 无法启动。"
+/>
+
+**工作负载**为每种 kind 提供一个标签页：**Deployment**、**StatefulSet**、**DaemonSet**、**Job** 和 **CronJob**。每一行显示其健康状况、期望的 Pod 中有多少已就绪、有多少运行其最新模板、其镜像和存在时间。
+
+| 健康状况   | 含义                                                              |
+| ---------- | ----------------------------------------------------------------- |
+| **就绪**   | 每个期望的 Pod 都已就绪且为最新；Job 已完成；CronJob 已排定计划。 |
+| **进行中** | 正在 rollout、正在调度，或 Job 仍在运行。                         |
+| **降级**   | Deployment 的 rollout 超过了其进度期限。                          |
+| **失败**   | Job 失败了。                                                      |
+| **已暂停** | 已扩缩到零，或 Job 或 CronJob 已被挂起。                          |
+
+### 解读工作负载
+
+**就绪**统计通过就绪探针的 Pod 数与该工作负载期望的 Pod 数之比；**已更新**统计运行其最新模板的 Pod 数。在 rollout 期间，后者落后于前者：`2/3` 就绪、`1` 个已更新，表示一个新 Pod 已就位，旧 Pod 仍在提供服务。当**已更新**一直落后且健康状况变为**降级**时，说明新的 Pod 无法启动——它们的页面会说明原因。
+
+<DocScreenshot
+  name="cluster-workload"
+  alt="api Deployment 的概览：namespace、3 个中有 2 个就绪、1 个已更新、RollingUpdate 策略、app=api 选择器、其标签，以及其容器及镜像和端口。"
+/>
+
+工作负载的页面包含：
+
+- **概览**：其 namespace、副本数、rollout 策略、用于选择 Pod 的标签、其标签和注解，以及其容器及其镜像和端口。
+- **Pod**：它选择的 Pod（对 CronJob 而言为 **Job**：它启动的 Job，最新的在最前）。
+- **日志**：其 Pod 的日志，可全部交织显示，也可逐个查看（CronJob 没有此项；其 Job 有各自的日志）。
+- **条件**、**事件**（警告在最前；Kubernetes 只保留事件约一小时）和 **YAML**（不含 `managedFields`，提供**编辑**）。
+
+其页头提供其操作：适用时有**扩缩**、**重启**、**挂起**或**恢复**以及**立即运行**，还有**删除**；参见[扩缩、重启和删除](/docs/clusters/actions/)。
+
+## Pod
+
+<DocScreenshot
+  name="cluster-pods"
+  alt="Pod 页面：shop namespace 中的 Pod 及其状态，其中一个处于 CrashLoopBackOff 且重启了 7 次，一个处于 ImagePullBackOff，还显示其就绪容器、Node 和存在时间。"
+/>
+
+**Pod** 列出每个 Pod 及其状态，与 `kubectl get pods` 的显示方式相同——`Running`、`Pending`、`CrashLoopBackOff`、`ImagePullBackOff`、`Init:…`、`Terminating`——以及其就绪容器、重启次数、Node 和存在时间。长列表每页显示 100 行，因此有数千个 Pod 的集群也能保持流畅；搜索框会筛选所有 Pod。
+
+<DocScreenshot
+  name="cluster-pod"
+  alt="一个崩溃中的 Pod 的页面：一个已完成的 init 容器，api 容器在重启 7 次后处于 CrashLoopBackOff 等待状态（上次：Error），以及一个正在运行的 envoy sidecar。"
+  caption="api-…-xr4np 为什么未就绪：它的 api 容器不断崩溃；它的 sidecar 正常。"
+/>
+
+Pod 的页面显示其 Node、IP、QoS 类、服务账号以及控制它的对象，然后是每个容器（init 容器在最前）及其镜像、状态、等待或结束的原因、重启次数以及上次重启的原因。每个容器都列出它声明的端口，并提供**转发…**以[从本机访问端口](/docs/clusters/port-forward/)。接下来是**日志**和**终端**（[日志和终端](/docs/clusters/logs-exec/)），然后是**条件**、**事件**和 **YAML**，与工作负载相同，页头中还有**删除**。
+
+### 找出 Pod 未就绪的原因
+
+1. 在 **Pod** 页面上，按**状态**或**重启次数**排序：`CrashLoopBackOff`、`ImagePullBackOff` 和 `Error` 以红色显示。
+2. 打开该 Pod。未就绪的容器会说明它等待或结束的原因，**重启次数**会给出其上次退出的原因——`Error`、`OOMKilled`（达到了内存上限）、`Completed`。
+3. 带**上一个实例**的**日志**会显示容器在崩溃前输出的内容。
+4. **事件**中有 kubelet 和调度器给出的信息：无法拉取的镜像、失败的探针、没有内存足够的 Node。
+5. **YAML** 显示集群中保存的该 Pod，可查看其探针、限制和环境变量。
+
+## 当你的凭据看不到某些内容时
+
+你的凭据无权读取的列表会说明这一点——“你的凭据不允许在 shop 中对 daemonsets 执行‘list’。”——并给出用于检查的 `kubectl auth can-i` 命令；其他页面仍能正常使用。

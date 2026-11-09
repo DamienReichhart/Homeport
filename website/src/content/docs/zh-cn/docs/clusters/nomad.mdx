@@ -1,0 +1,194 @@
+---
+title: Nomad 集群
+description: Homeport 如何通过地址、ACL 令牌和 TLS 材料连接 Nomad 集群的 HTTP API，以及它保存哪些内容。
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+集群既可以是 Kubernetes 集群，也可以是 **Nomad** 集群。Homeport 从你的计算机与 Nomad agent（server 或 client）本就提供的 HTTP API 通信：集群上不会安装任何内容，本机上也不需要 `nomad` CLI。它所做的一切都通过 API 完成，所用权限就是你提供的 ACL 令牌所拥有的权限。
+
+Nomad 集群与你的主机和 Kubernetes 集群一起显示在切换器中。选择一个 Nomad 集群后，概览上会显示其版本、区域和地址，侧边栏中会显示它自己的页面：**[Job](#jobs)**（你可以在这里[运行 job](#run-a-job)，并打开其 allocation 的[日志和 shell](#logs-and-shell)）和 **[Node](#nodes)**。选中它时，Kubernetes 页面会被隐藏。
+
+你可以做的事情，按本页介绍的顺序：
+
+1. 通过地址[添加集群](#adding-a-nomad-cluster)，如果它使用 [TLS](#tls) 和 [ACL 令牌](#the-acl-token)，也一并提供。
+2. 实时查看其 [job](#jobs) 及其 allocation；停止、清除和扩缩它们。
+3. 在查看 Nomad 的规划之后，用 HCL 或 JSON [运行 job](#run-a-job)，或者编辑并重新运行 job。
+4. 跟随查看 task 的[日志并在其中打开 shell](#logs-and-shell)。
+5. [腾空 node](#nodes) 并切换其调度资格。
+6. 选择一个 [namespace](#namespaces)，或选择全部。
+
+## 添加 Nomad 集群
+
+在切换器中选择**添加集群…**，然后选择 **Nomad** 标签页，并填写：
+
+- **名称**：切换器和概览中显示的名称，例如 `nomad-prod`。
+- **地址**：agent 的 HTTP API，与 `NOMAD_ADDR` 提供给 `nomad` CLI 的相同。`nomad.example.com` 会变成 `http://nomad.example.com:4646`：未指定端口时会加上 4646 端口，提供了 TLS 材料时则使用 `https://`。
+- **区域**：留空则使用 agent 自身的区域。设置它可以通过联邦 agent 管理另一个区域，与 `NOMAD_REGION` 的作用相同。
+- **ACL 令牌**：集群启用 ACL 时所用令牌的 Secret ID。参见下文的[令牌](#the-acl-token)。
+
+**测试连接**会在不保存的情况下连接一次，并显示 Nomad 版本和区域，或无法连接的原因。**添加集群**会保存并连接。之后其页面会显示其状态、版本和区域，并允许你更改上述任何设置：令牌和 TLS 密钥不会再次显示，留空的字段会保留已保存的值。已保存凭据旁边的**删除**会在你保存时将其删除。
+
+## TLS
+
+如果 agent 提供的 HTTPS 使用的是公共 CA 或你的计算机已信任的 CA 签发的证书，只需一个 `https://` 地址即可。其他情况请打开 **TLS 设置**，粘贴提供给 `nomad` CLI 的 PEM 文件的内容：
+
+| 字段                           | `nomad` CLI 的变量                      | 何时需要                                                                                                      |
+| ------------------------------ | --------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **CA 证书**                    | `NOMAD_CACERT`                          | agent 的证书由你自己的 CA 签发，例如 `nomad-agent-ca.pem`。                                                   |
+| **客户端证书**和**客户端密钥** | `NOMAD_CLIENT_CERT`、`NOMAD_CLIENT_KEY` | agent 要求客户端证书（`verify_https_client`）。两者都提供，或都不提供。                                       |
+| **TLS 服务器名称**             | `NOMAD_TLS_SERVER_NAME`                 | 证书不是为该地址的名称签发的。Nomad 自己的证书是为 `server.global.nomad` 签发的，其中 `global` 换成你的区域。 |
+
+提供 CA 证书后，此集群只信任该 CA，与 `nomad` CLI 相同。
+
+## ACL 令牌
+
+Homeport 在每个请求的 `X-Nomad-Token` 请求头中发送令牌，绝不放在 URL 中。连接期间，它每 15 秒检查一次令牌；Nomad 不认识的令牌（已删除、已过期或输入错误）会以**访问被拒绝**中止连接，直到你粘贴一个新令牌。
+
+无法读取 agent（`agent:read`）的令牌仍然可以连接：此时集群的页面会显示其区域，但不显示其版本。
+
+## Job
+
+**Job** 列出所选集群的 job 及其类型（`service`、`batch`、`system` 或 `sysbatch`）、状态，以及其 task group 运行的 allocation 数与期望数的对比。页面打开期间会保持最新：Homeport 使用[阻塞查询](https://developer.hashicorp.com/nomad/api-docs#blocking-queries)向 Nomad 查询，因此一有变化 Nomad 就会立即答复，无需任何轮询。离开页面会结束这些查询。
+
+<DocScreenshot
+  name="nomad-jobs"
+  alt="nomad-prod 集群的 Job 页面：shop namespace 中的六个 job，显示其类型、状态、运行中与期望的 allocation 数，以及各自的提交时间。"
+/>
+
+打开一个 job 可查看其设置（优先级、datacenter、node pool、版本）、其 **task group** 及其 task 和驱动，以及其 **allocation**（最新的在最前）和每个 allocation 所在的 node。
+
+- **停止**会先询问你，注明该 job 及其 namespace。Nomad 会停止每个 allocation，并保留该 job 的定义，直到其垃圾回收运行；勾选**清除它**会立即删除该 job 及其历史，与 `nomad job stop -purge` 相同。清除默认处于关闭状态。
+- **扩缩**作用于 `service` 或 `batch` job 的某个 task group，设置它运行多少个 allocation，与 `nomad job scale` 相同。当该 group 有 `scaling` 块时，数量必须保持在其 `min` 和 `max` 之间；超出范围的数量 Homeport 会在询问 Nomad 之前就拒绝，而 Nomad 拒绝时（例如有 deployment 正在进行），会显示 Nomad 自己给出的原因。依据该策略工作的自动扩缩器可能会再次更改数量。
+
+列出 job 需要 `list-jobs` 和 `read-job` 能力；停止 job 需要 `submit-job`，扩缩需要 `scale-job`（或 `submit-job`），均针对该 job 的 namespace。
+
+## 运行 job
+
+Job 页面上的**运行 job** 接受 HCL2 或 JSON 格式的 job 规范：编写、粘贴，或用**打开文件…**读取 `.nomad.hcl`、`.hcl` 或 `.json` 文件。Homeport 根据第一个字符（JSON 为 `{`）区分这两种格式，并使用 Nomad 自己的端点，因此这里不需要 HCL 解析器或 `nomad` CLI。
+
+1. **规划**会请 Nomad 解析 HCL，然后像 `nomad job plan` 一样告诉你运行它会改变什么：对每个 task group，列出要放置、停止、原地更新或替换的 allocation，会改变的字段（镜像、数量、参数…），以及 Nomad 无法放置的 allocation 及其原因（node 被约束条件过滤掉，或内存、CPU 不足）。此时集群上还不会发生任何更改。
+2. **运行**会按规划的内容提交该 job。如果在此期间有其他人运行或停止了该 job，Nomad 会拒绝，Homeport 会说明这一点，而不会覆盖他们的更改：请重新规划以查看。有无法放置的 allocation 的规划会提供**仍然运行**，它会将这些 allocation 排队，直到有 node 能接纳它们。
+
+<DocScreenshot
+  name="nomad-run-plan"
+  alt="编辑并运行 shop-api，处于规划阶段：task group api 被编辑，有一个 allocation 待放置、三个被替换，其数量从 3 变为 4，镜像从 shop-api 2.5.0 变为 2.6.0。"
+  caption="规划会在任何内容发生更改之前显示运行 job 会改变什么。"
+/>
+
+无法解析的规范会说明 Nomad 在哪一行哪一列发现了问题，Nomad 的消息在**详细信息**中。JSON 规范可以是 Nomad API 格式的 job，既可以是 `nomad job inspect` 打印的 `{"Job": {…}}`，也可以是 job 对象本身。
+
+指定了 `namespace` 的 job 会进入该 namespace；未指定的则进入 Job 页面上所选的 namespace，或 `default`。`variable` 块在有默认值时可以使用：Homeport 不传递变量文件（`-var-file`）。
+
+job 页面上的**编辑并运行**会打开同一个对话框，其中是该 job 提交时的规范（如果 Nomad 保留了它：Nomad 1.6 及更高版本会保留随 job 提交的源文件），否则为其 JSON。Homeport 不保留任何规范的副本：Nomad 将其与 job 一起保存。
+
+规划和运行需要对该 job 的 namespace 拥有 `submit-job` 能力。
+
+## 日志和 shell
+
+从 job 的页面打开一个 allocation，可查看其 task、task 的状态和重启次数，以及其近期事件（已接收、已启动、已终止、驱动故障…），页面打开期间会保持最新。有两个标签页作用于其中一个 task；当 task group 有多个 task 时，请选择要操作的 task。
+
+- **日志**会像 `nomad alloc logs -f` 一样实时跟随该 task 的 stdout 和 stderr，从最后几行开始；可以关闭其中任一输出流、进行搜索，或**下载**显示的内容。task 停止后，日志在该 allocation 被垃圾回收之前仍可读取。
+- **Shell** 会像 `nomad alloc exec -t` 一样在正在运行的 task 中打开一个交互式终端：默认为 `/bin/sh`，或你输入的命令（`/bin/bash`、`/busybox/sh` 或任何程序）。它会随窗口调整大小，并报告命令的退出码；**重新连接**会启动一个新的终端。离开该标签页会结束 node 上的该命令。
+
+两者都通过 Nomad 的 HTTP API 进行：server 会将它们转发给运行该 allocation 的 client node，因此 Homeport 不需要对你的 node 拥有 SSH 访问权限，也不会在其上安装任何内容。令牌通过请求头传递，绝不会出现在 WebSocket 的 URL 中。
+
+| 要…             | 令牌需要对该 job 的 namespace 拥有                                   |
+| --------------- | -------------------------------------------------------------------- |
+| 查看 allocation | `read-job`                                                           |
+| 读取其日志      | `read-logs`                                                          |
+| 打开 shell      | `alloc-exec`，对使用 `raw_exec` 驱动的 task 还需要 `alloc-node-exec` |
+
+未在运行的 task、server 无法访问的 node，以及缺少相应能力的令牌，各有其专门的消息。
+
+## Node
+
+**Node** 列出集群的 client node 及其状态（就绪、正在初始化、已宕机或已断开连接）、是否接收新的 allocation、其 datacenter 和 node pool、每个 node 上运行的 allocation 数、其地址和 Nomad 版本。打开一个 node 可查看其驱动及其健康状况、其操作系统和 CPU，以及它运行的 allocation。
+
+- **腾空**会先询问你，与 `nomad node drain -enable` 相同：Nomad 会将该 node 标记为不可调度，然后在其 `migrate` 块允许的范围内将其 allocation 迁移到其他 node。**截止时间**默认为一小时（`30m`、`2h`、`1h30m`…）；时间到了之后，仍留在那里的 allocation 会被停止。勾选**无截止时间**可等待每个 allocation 迁移完毕，勾选**让 system job 继续在其上运行**可将 system job 保留在那里，与 `-ignore-system` 相同。随后该 node 的页面会显示腾空进度，即仍有多少 allocation 在那里运行，直到一个也不剩。
+- **取消腾空**会停止正在进行的腾空，并使该 node 重新可调度。已迁移的 allocation 会留在其新位置。
+- **可接收新的 allocation** 会将 node 纳入或移出调度，而不迁移其上运行的内容，与 `nomad node eligibility -enable` 和 `-disable` 相同。
+
+读取 node 需要一条 `policy = "read"` 的 `node` 规则；腾空和更改调度资格需要 `policy = "write"`。Homeport 不管理 node pool、不清除 node，也不运行垃圾回收。
+
+## Namespace
+
+有 namespace 的集群会在其 Job 页面上显示 **Namespace** 选择器：起初为 `default`，之后为你选择的那个，并按集群记住，重启后依然有效。**所有 namespace** 会列出令牌能读取的每个 namespace 中的 job，并添加一个 **Namespace** 列，与 `nomad job status -namespace '*'` 相同。
+
+**运行 job** 会将 job 发送到其规范指定的 namespace；未指定的则进入所选的 namespace，在显示全部时则进入 `default`。job 自己的页面、其 allocation 以及它们的日志和 shell 始终使用该 job 的 namespace。
+
+无法列出 namespace 的令牌，或没有任何 namespace 的集群，会看到其默认 namespace，没有选择器，也没有错误。Homeport 不会创建、编辑或删除 namespace。
+
+## ACL 策略
+
+在启用了 ACL 的集群上，请为 Homeport 提供一个专用令牌，并配上授予你所需权限的策略。下面这个策略涵盖 Homeport 所做的一切：
+
+```hcl title="homeport.hcl"
+namespace "*" {
+  policy       = "read"
+  capabilities = ["submit-job", "scale-job", "read-logs", "alloc-exec"]
+}
+
+node {
+  policy = "write"
+}
+
+agent {
+  policy = "read"
+}
+```
+
+下面这个策略只允许 Homeport 查看：job、allocation、它们的日志、node 和 namespace，不允许任何更改，也不能打开 shell：
+
+```hcl title="homeport-read.hcl"
+namespace "*" {
+  policy       = "read"
+  capabilities = ["read-logs"]
+}
+
+node {
+  policy = "read"
+}
+
+agent {
+  policy = "read"
+}
+```
+
+应用其中一个策略并用它创建令牌，然后将令牌的 Secret ID 粘贴到集群的设置中：
+
+```bash
+nomad acl policy apply -description "Homeport" homeport homeport.hcl
+nomad acl token create -name=homeport -policy=homeport
+```
+
+将 `"*"` 替换为某个 namespace 的名称，可将 Homeport 限制在该 namespace 内；在能力中加入 `alloc-node-exec`，可在使用 `raw_exec` 驱动的 task 中打开 shell。各部分所需的权限：
+
+| Homeport…                         | 需要                                             |
+| --------------------------------- | ------------------------------------------------ |
+| 显示集群的版本                    | `agent` `read`（可选：没有它也能连接）           |
+| 列出 job、allocation 和 namespace | 对该 namespace 的 `read`                         |
+| 规划并运行 job、停止 job          | 对该 namespace 的 `submit-job`                   |
+| 扩缩 task group                   | 对该 namespace 的 `scale-job`（或 `submit-job`） |
+| 读取 task 的日志                  | 对该 namespace 的 `read-logs`                    |
+| 打开 shell                        | 对该 namespace 的 `alloc-exec`                   |
+| 列出 node                         | `node` `read`                                    |
+| 腾空 node、更改其调度资格         | `node` `write`                                   |
+
+## 状态和问题
+
+状态遵循与 [Kubernetes 集群](/docs/clusters/#statuses)相同的规则：agent 无法访问时，Homeport 会自行重试；只有你能修复的问题，它会等你修复。
+
+- **地址错误**：找不到的名称、被拒绝的连接或超时都会说明是哪一种，并附上它尝试的地址。
+- **证书已过期、CA 未知或名称不符**：每种情况都会说明需要在 **TLS 设置**中更改什么。
+- **agent 只通过 HTTPS 应答**，或根本不使用 TLS：请更改地址中的 `http://` 或 `https://`。
+- **没有 leader**：集群的 server 无法就 leader 达成一致，因此什么也读取不了。Nomad 需要其大多数 server 处于运行状态；请在某个 server 上用 `nomad server members` 检查它们。
+
+## 各项内容的保存位置
+
+| 以明文保存在 Homeport 的数据库中 | 仅加密保存（与 SSH 密钥相同） |
+| -------------------------------- | ----------------------------- |
+| 名称、地址、区域、TLS 服务器名称 | ACL 令牌                      |
+| 是否保存了令牌、CA 或客户端证书  | CA 证书、客户端证书及其密钥   |
+
+Homeport 的[数据备份](/docs/reference/security/)包含 Nomad 集群及其凭据，与 Kubernetes 集群相同。

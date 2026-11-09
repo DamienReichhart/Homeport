@@ -1,0 +1,47 @@
+---
+title: 本地集群
+description: Homeport 在本机上找到的 Kubernetes 集群，以及如何在 Docker Desktop、OrbStack 和 Rancher Desktop 中开启 Kubernetes。
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+Homeport 会在本机的 kubeconfig 中查找在本机运行的集群，向每个集群的 API server 查询其版本，并在**添加集群**页面和欢迎页面上列出有响应的集群，每个只需一键。它绝不会启动、创建或安装集群。
+
+<DocScreenshot
+  name="add-cluster"
+  alt="本机上的集群：kind-dev 已添加，Docker Desktop 的集群带有添加按钮，OrbStack 的集群未运行，还有一个 k3d 集群显示了将其添加到 kubeconfig 的命令。"
+  caption="kind-dev 已是一个集群，Docker Desktop 的集群一键即可添加，OrbStack 的集群已停止，而一个正在运行的 k3d 集群还不在 kubeconfig 中。"
+/>
+
+## 能找到哪些集群
+
+| 工具                | 其 kubeconfig 上下文                       | 添加后的名称      |
+| ------------------- | ------------------------------------------ | ----------------- |
+| **Docker Desktop**  | `docker-desktop`                           | `Docker Desktop`  |
+| **OrbStack**        | `orbstack`                                 | `OrbStack`        |
+| **Rancher Desktop** | `rancher-desktop`                          | `Rancher Desktop` |
+| **kind**            | `kind-<name>`                              | 上下文名称        |
+| **k3d**             | `k3d-<name>`                               | 上下文名称        |
+| **minikube**        | `minikube`，或 minikube 写入的某个 profile | 上下文名称        |
+
+只有当上下文的 API server 位于本机（`127.0.0.1`、`localhost`、`kubernetes.docker.internal`…），或者对 minikube 和 Rancher Desktop 而言位于其虚拟机中的私有地址上时，该上下文才算作本地上下文。远程上下文无论叫什么名字都不会列出。没有响应的本地集群会显示**未运行**；请用其自身的工具启动它，然后重新打开该页面。
+
+### kubeconfig 中缺少的 kind 和 k3d 集群
+
+当某个[本地主机](/docs/hosts/local/)已连接时，Homeport 还会找出正在运行的 kind 和 k3d 集群的容器（通过其 `io.x-k8s.kind.cluster` 和 `k3d.cluster` 标签）。你的 kubeconfig 无法访问的集群会显示添加它的命令，而不是在你不知情的情况下添加：
+
+```bash
+kind export kubeconfig --name <name>
+```
+
+```bash
+k3d kubeconfig merge <name> --kubeconfig-merge-default
+```
+
+## 开启 Kubernetes
+
+- **Docker Desktop**：**Settings → Kubernetes → Enable Kubernetes**，然后选择 **Apply & restart**。它会添加 `docker-desktop` 上下文。
+- **OrbStack**：**Settings → Kubernetes → Enable Kubernetes**，或运行 `orb start k8s`。它会添加 `orbstack` 上下文。
+- **Rancher Desktop**：**Preferences → Kubernetes → Enable Kubernetes**。它会添加 `rancher-desktop` 上下文。
+
+kind（`kind create cluster`）、k3d（`k3d cluster create`）和 minikube（`minikube start`）在创建集群时会添加其上下文。它们每次重新创建集群时都会生成新证书：之后请在其页面上使用**从 kubeconfig 刷新**。

@@ -1,0 +1,45 @@
+---
+title: Service 和配置
+description: 浏览集群的 Service、Ingress、ConfigMap 和 Secret，Secret 的值一次只显示一个键。
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+## Service 和 Ingress
+
+**网络**列出所选 Namespace 中的 **Service**——其类型、cluster IP、外部地址（负载均衡器的地址和 `externalIPs`）以及按 `kubectl` 显示方式列出的端口（带 node port 时为 `443:30443/TCP`）——并在其第二个标签页上列出 **Ingress**，附有其 class、主机名以及其控制器发布的地址。
+
+- Service 的页面显示其端口和目标端口、会话亲和性、用于选择 Pod 的标签，以及一个列出这些 Pod 的 **Pod** 标签页。没有选择器的 Service 会说明这一点：其 endpoint 是手动管理的。
+- Ingress 的页面列出每条规则的路径（默认后端在最前）及每条路径将流量发往何处（链接到该 Service 的页面），以及其 TLS 主机名和证书 Secret。
+
+<DocScreenshot
+  name="cluster-services"
+  alt="网络页面的 Service 标签页：几个 ClusterIP Service 及其 cluster IP 和端口，一个带有外部主机名和 node port 的 LoadBalancer，以及一个没有 cluster IP 的 headless Service。"
+/>
+
+Ingress 的**规则**标签页是检查路由的地方：哪个主机名和路径会发往哪个 Service 和端口。
+
+<DocScreenshot
+  name="cluster-ingress"
+  alt="storefront Ingress 的规则：/api 发往 api:8080，/checkout 发往 checkout:8080，/ 发往 web:http，适用于 shop.example.com 和 www.shop.example.com。"
+/>
+
+## ConfigMap 和 Secret
+
+**配置**列出 **ConfigMap** 和 **Secret** 及其键。ConfigMap 的页面会显示每个值；二进制数据只显示其大小。
+
+<DocScreenshot
+  name="cluster-secret"
+  alt="db-credentials Secret 的数据标签页：password 已显示，带有复制和隐藏按钮；username 仍被遮盖，带有显示按钮。"
+  caption="一个键已显示；另一个在你请求之前一直被遮盖。"
+/>
+
+Secret 的页面显示其类型以及每个键及其大小，值被遮盖。**显示**会从集群获取那一个值并将其解码后显示（二进制值以 base64 显示），附有**复制**和**隐藏**。值绝不会出现在列表、Secret 的页面或其 YAML 中；显示过的值不会被缓存、保存或记录，离开页面后会再次隐藏。参见[安全与你的数据](/docs/reference/security/#clusters)。
+
+ConfigMap 的 **YAML** 标签页提供**编辑**，可通过预览和服务器端应用来更改它（[应用和编辑 YAML](/docs/clusters/yaml/)）。Secret 不能在 Homeport 中编辑，因为 Homeport 绝不会一次性显示其所有值；请改为应用 Secret 的清单。
+
+## 其他内容
+
+Endpoints 和 EndpointSlice、NetworkPolicy、PersistentVolume 以及你的 CRD 添加的资源都在 [API 资源](/docs/clusters/api-resources/)下。
+
+Service 的端口提供**转发…**，可通过其某个就绪的 Pod [从本机访问它](/docs/clusters/port-forward/)；这里的每个页面都在页头中提供**删除**。
