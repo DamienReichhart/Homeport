@@ -4,15 +4,19 @@
  *   bun run screenshots [--locale <tag>…] [name…]
  *
  * Builds `scripts/screenshots/` (the app's frontend with mocked IPC and demo
- * data), serves it, and photographs each shot with headless Firefox at
- * 1440×900 into `website/src/assets/screenshots/<name>.png` (English) and
+ * data), serves it, and photographs each shot with headless Firefox in a
+ * 1440×900 window at twice the pixel density (`SCALE`), so each PNG is
+ * 2880×1800 and stays sharp on HiDPI screens. They go into
+ * `website/src/assets/screenshots/<name>.png` (English) and
  * `website/src/assets/screenshots/<tag>/<name>.png` for every other language,
  * the tag in lower case (`fr`, `pt-br`). Every language with an app catalogue
  * is captured, so each page of the website shows the app in its own language;
  * `--locale` (one per flag) captures only those, for a quick retake. Pass shot
  * names to capture only those. `website/src/features/docs/screenshots.test.ts`
- * fails when a language lacks a shot English has. Set FIREFOX to use another Firefox binary, or CHROMIUM
- * to a Chrome or Chromium binary to use that instead.
+ * fails when a language lacks a shot English has.
+ *
+ * Set FIREFOX to use another Firefox binary, or CHROMIUM to a Chrome or
+ * Chromium binary to use that instead.
  */
 import {
   copyFileSync,
@@ -20,6 +24,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readdirSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -34,7 +39,16 @@ const OUT = join(ROOT, 'website', 'src', 'assets', 'screenshots');
 const FIREFOX = process.env.FIREFOX ?? 'firefox';
 const CHROMIUM = process.env.CHROMIUM;
 
-/** The command that photographs `url` into `png` at 1440×900, with reduced motion. */
+/** The window the app is laid out in, in CSS pixels. */
+const WIDTH = 1440;
+const HEIGHT = 900;
+/** Device pixels per CSS pixel: the PNGs are WIDTH × SCALE by HEIGHT × SCALE. */
+const SCALE = 2;
+
+/**
+ * The command that photographs `url` into `png`, laid out at WIDTH×HEIGHT and
+ * drawn at SCALE, with reduced motion. Firefox takes the scale from its profile.
+ */
 function screenshotCommand(profile: string, png: string, url: string): string[] {
   if (CHROMIUM) {
     return [
@@ -44,7 +58,8 @@ function screenshotCommand(profile: string, png: string, url: string): string[] 
       '--hide-scrollbars',
       '--force-prefers-reduced-motion',
       `--screenshot=${png}`,
-      '--window-size=1440,900',
+      `--window-size=${WIDTH},${HEIGHT}`,
+      `--force-device-scale-factor=${SCALE}`,
       url,
     ];
   }
@@ -56,7 +71,7 @@ function screenshotCommand(profile: string, png: string, url: string): string[] 
     profile,
     '--screenshot',
     png,
-    '--window-size=1440,900',
+    `--window-size=${WIDTH},${HEIGHT}`,
     url,
   ];
 }
@@ -66,6 +81,12 @@ function workDir(): string {
   const snap = join(homedir(), 'snap', 'firefox', 'common');
   const base = existsSync(snap) ? snap : tmpdir();
   return mkdtempSync(join(base, 'homeport-screenshots-'));
+}
+
+/** The size of a PNG, from its header. */
+function pngSize(path: string): { width: number; height: number } {
+  const header = readFileSync(path).subarray(0, 24);
+  return { width: header.readUInt32BE(16), height: header.readUInt32BE(20) };
 }
 
 const GIF = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
@@ -135,6 +156,7 @@ async function main() {
         'user_pref("datareporting.policy.dataSubmissionEnabled", false);',
         'user_pref("toolkit.telemetry.reportingpolicy.firstRun", false);',
         'user_pref("ui.prefersReducedMotion", 1);',
+        `user_pref("layout.css.devPixelsPerPx", "${SCALE}");`,
       ].join('\n'),
     );
     for (const locale of locales) {
@@ -161,6 +183,11 @@ async function main() {
         clearTimeout(timer);
         if (!existsSync(png))
           throw new Error(`The browser produced no screenshot for ${shot.name}`);
+        const { width, height } = pngSize(png);
+        if (width !== WIDTH * SCALE || height !== HEIGHT * SCALE)
+          throw new Error(
+            `${shot.name} is ${width}×${height}, not ${WIDTH * SCALE}×${HEIGHT * SCALE}: the browser ignored the window size or the scale`,
+          );
         copyFileSync(png, join(out, `${shot.name}.png`));
         console.log(`✓ ${locale} ${shot.name}`);
       }
