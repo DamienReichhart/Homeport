@@ -1,0 +1,241 @@
+---
+title: Conteneurs
+description: Lister, exécuter et gérer des conteneurs — journaux, terminaux, fichiers, statistiques et processus.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+La page **Conteneurs** liste tous les conteneurs de l’hôte sélectionné, en cours d’exécution ou non.
+
+<DocScreenshot
+  name="containers"
+  alt="La page Conteneurs, avec les conteneurs regroupés sous leurs stacks, et le CPU et la mémoire en direct."
+/>
+
+## La liste
+
+Les conteneurs qui appartiennent à une [stack](/docs/guides/stacks/) sont regroupés sous elle ; les conteneurs autonomes suivent. La ligne d’une stack indique combien de ses conteneurs sont en cours d’exécution, ainsi que leur CPU et leur mémoire cumulés. Sélectionnez-la pour replier le groupe, ou **Ouvrir la stack** pour aller à la stack.
+
+| Colonne     | Affiche                                                                                                                          |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Nom**     | Une pastille d’état, le nom (le nom du service dans une stack) et l’ID court.                                                    |
+| **Image**   | L’image à partir de laquelle il a été créé, avec une marque ⬆ quand une [image plus récente](#images-plus-récentes) est publiée. |
+| **État**    | Tel que le moteur l’indique, par exemple _Up 3 hours (healthy)_, avec un badge de santé s’il y a un health check.                |
+| **Ports**   | Jusqu’à trois ports, les ports publiés d’abord. Un port publié est un lien qui l’ouvre dans votre navigateur.                    |
+| **CPU**     | En direct, en pourcentage d’un CPU : `200%` signifie deux CPU entièrement utilisés.                                              |
+| **Mémoire** | En direct, sans compter le cache de pages que le noyau peut récupérer.                                                           |
+| **Créé**    | Il y a combien de temps.                                                                                                         |
+
+Le CPU et la mémoire se mettent à jour toutes les deux secondes. **Rechercher des conteneurs** porte sur les noms, les images, les stacks, les services et les préfixes d’ID ; **En cours d’exécution seulement** masque le reste.
+
+Sélectionnez un conteneur pour l’ouvrir.
+
+### Images plus récentes
+
+Un ⬆ à côté de l’image signifie que son registre a désormais une autre image sous le tag à partir duquel le conteneur a été créé : `nginx:1.27` a changé depuis sa récupération, ou une image plus récente a été récupérée mais le conteneur n’a pas été recréé. Survolez-le pour savoir lequel des deux. Pour mettre à jour, récupérez l’image et recréez le conteneur — pour une stack, **Récupérer les images** puis **Redéployer**.
+
+Homeport interroge le registre par l’intermédiaire du moteur de l’hôte, qui compare les digests sans rien récupérer, en utilisant vos [identifiants de registre](/docs/guides/settings/#registres) enregistrés pour les images privées. Les réponses sont gardées 6 heures, si bien que rouvrir la liste ne redemande rien ; **Rechercher des images plus récentes**, en haut de la page, interroge à nouveau tous les registres tout de suite. Les images construites localement, récupérées par digest (`app@sha256:…`) ou dont le registre est injoignable n’affichent rien plutôt qu’une fausse alerte. La page du conteneur affiche la même marque à côté de son image.
+
+### Actions
+
+Le bouton au bout de chaque ligne démarre ou arrête le conteneur. Le menu **⋮** contient le reste : **Journaux**, **Ouvrir un terminal**, **Redémarrer**, **Mettre en pause** ou **Reprendre**, **Forcer l’arrêt**, **Renommer**, [**Modifier**](#modifier-un-conteneur), [**Dupliquer**](#dupliquer-un-conteneur), [**Créer une image…**](#créer-une-image-à-partir-dun-conteneur), [**Exporter le système de fichiers…**](#exporter-le-système-de-fichiers-dun-conteneur) et **Supprimer**.
+
+Cochez des conteneurs pour agir sur plusieurs à la fois avec **Démarrer**, **Arrêter**, **Redémarrer** ou **Supprimer**. La case à cocher de la ligne d’une stack sélectionne tous ses conteneurs.
+
+<Aside type="caution" title="Ce que Supprimer efface">
+  Supprimer un conteneur l’efface, avec sa couche inscriptible et ses volumes anonymes. Les volumes
+  nommés sont conservés. Un conteneur en cours d’exécution est arrêté immédiatement, sans attendre
+  qu’il s’arrête proprement.
+</Aside>
+
+**Forcer l’arrêt** envoie `SIGKILL` tout de suite, si bien que le processus n’a pas l’occasion de faire le ménage. **Arrêter** lui laisse d’abord le délai d’arrêt du conteneur.
+
+## La page d’un conteneur
+
+L’en-tête montre l’image et l’état, avec **Démarrer** ou **Arrêter**, **Redémarrer**, **Mettre en pause** ou **Reprendre**, et **Supprimer** ; son menu **⋮** contient **Renommer**, **Modifier**, **Dupliquer**, **Créer une image…** et **Exporter le système de fichiers…**. Les onglets en dessous contiennent tout le reste.
+
+<Aside>
+  Quitter un onglet met fin à ce qu’il faisait : les terminaux se ferment quand vous quittez
+  **Exec**, les graphiques repartent de zéro quand vous revenez sur **Statistiques**, et les
+  **Journaux** se rechargent.
+</Aside>
+
+### Journaux
+
+<DocScreenshot
+  name="container-logs"
+  alt="L’onglet Journaux d’un conteneur, avec l’historique, l’horodatage, les filtres de flux et la recherche."
+/>
+
+Les journaux défilent à mesure que le conteneur les écrit. La barre d’outils règle ce que vous voyez :
+
+- **Historique** — combien de lignes passées charger : les 100, 1 000 (par défaut) ou 10 000 dernières, ou tout.
+- **Depuis** — n’importe quand, ou les 5 dernières minutes, la dernière heure ou les dernières 24 heures.
+- **Horodatage** — afficher l’horodatage du moteur avant chaque ligne.
+- **stdout** et **stderr** — afficher ou masquer l’un ou l’autre flux.
+- **Suivre** — continuer à défiler jusqu’à la ligne la plus récente. Les nouvelles lignes continuent d’arriver même quand c’est désactivé.
+- **Rechercher dans les journaux** — met en surbrillance les correspondances. Appuyez sur <kbd>Enter</kbd> pour la suivante et sur <kbd>Shift</kbd>+<kbd>Enter</kbd> pour la précédente.
+- **Effacer** vide l’affichage ; **Télécharger les journaux** enregistre ce que vous avez chargé dans un fichier texte, jusqu’aux 100 000 dernières lignes.
+
+Quand le conteneur s’arrête, le journal se termine par _— fin des journaux —_.
+
+### Inspecter
+
+**Détails** résume le conteneur sous forme de cartes : état et code de sortie, commande, politique de redémarrage, health checks, environnement, montages, ports, réseaux et labels. **JSON brut** montre le document d’inspection complet du moteur.
+
+<Aside type="caution">
+  Les variables d’environnement sont affichées en clair, telles que le moteur les enregistre.
+  Pensez-y avant de partager votre écran.
+</Aside>
+
+### Santé
+
+Affiché pour les conteneurs qui ont un health check — le leur, ou celui de leur image. **Health check** donne l’état (_starting_, _healthy_ ou _unhealthy_), la commande, son calendrier (les valeurs par défaut du moteur complètent ce qui n’est pas défini : toutes les 30 s, un délai de 30 s, 3 nouveaux essais) et le nombre de vérifications qui ont échoué d’affilée. **Derniers résultats** liste les vérifications que le moteur conserve, de la plus récente à la plus ancienne, avec leur code de sortie, le moment où elles ont eu lieu, leur durée et ce qu’elles ont affiché ; une longue sortie se replie derrière **Afficher … lignes de plus**.
+
+Quand la liste indique _unhealthy_, c’est donc ici que se trouve la raison, sans lire le JSON brut. L’onglet s’actualise de lui-même une fois par intervalle de vérification et à chaque changement d’état. Un conteneur dont le health check est désactivé n’a pas d’onglet Santé ; pour en ajouter ou en modifier un, [modifiez le conteneur](#modifier-un-conteneur).
+
+### Exec
+
+<DocScreenshot
+  name="container-terminal"
+  alt="Un terminal interactif dans l’onglet Exec d’un conteneur."
+/>
+
+Un terminal interactif dans le conteneur en cours d’exécution. Le premier, **Shell**, s’ouvre de lui-même et exécute `bash`, ou `sh` quand l’image n’a pas bash.
+
+**Nouveau terminal** en ouvre un autre avec votre propre **Commande**, votre **Utilisateur** et votre **Répertoire**, par exemple `psql -U postgres` en tant qu’utilisateur `postgres`. Plusieurs peuvent être ouverts à la fois ; fermez-en un avec son **×**. Les terminaux se redimensionnent avec la fenêtre.
+
+Les images sans shell — `scratch` ou les images distroless — ne peuvent pas ouvrir le terminal par défaut.
+
+### Fichiers
+
+Parcourez le système de fichiers du conteneur à partir de `/`. Sélectionnez un dossier pour l’ouvrir, ou utilisez le chemin en haut pour remonter.
+
+- **Télécharger** un fichier, ou tout un dossier sous forme d’archive `.tar`, avec le bouton au bout de sa ligne.
+- **Envoyer ici** copie des fichiers de votre ordinateur dans le dossier où vous êtes, en remplaçant les fichiers de même nom.
+
+Lister les fichiers exécute `find` et `stat` dans le conteneur, si bien que les images minimales qui ne les ont pas ne peuvent pas être parcourues. Les transferts sont gardés en mémoire, donc mieux vaut copier les très gros fichiers avec `docker cp`.
+
+### Statistiques
+
+Des graphiques en direct des cinq dernières minutes, mis à jour chaque seconde : **CPU**, **Mémoire** (par rapport à la limite du conteneur), **Réseau** reçu et envoyé, et **E/S disque** en lecture et en écriture, avec le nombre de processus.
+
+<DocScreenshot
+  name="container-stats"
+  alt="L’onglet Statistiques d’un conteneur, avec les graphiques du CPU, de la mémoire, du réseau et des E/S disque."
+/>
+
+### Processus
+
+Les processus qui tournent dans le conteneur, tels que `ps aux` les montre, actualisés toutes les cinq secondes.
+
+## Exécuter un conteneur
+
+**Exécuter un conteneur** sur la page Conteneurs — ou le bouton ▶ à côté d’une image — ouvre **Exécuter un conteneur** :
+
+| Champ                                          | Remarques                                                                                                                                                                                |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Image**                                      | Obligatoire. Propose les images de l’hôte. Récupérée d’abord si l’hôte ne l’a pas, avec les [identifiants de registre](/docs/guides/settings/#registres) enregistrés.                    |
+| **Nom**                                        | Facultatif ; le moteur en génère un s’il est vide.                                                                                                                                       |
+| **Commande**                                   | Remplace la commande par défaut de l’image (pas son point d’entrée). Mettez les arguments entre guillemets comme dans un shell.                                                          |
+| **Ports**                                      | **Port de l’hôte** → **Port du conteneur**, `tcp` ou `udp`. Laissez le port de l’hôte vide pour laisser le moteur en choisir un libre. Les ports sont publiés sur toutes les interfaces. |
+| **Volumes**                                    | Un nom de volume ou un `/host/path` absolu, monté sur un chemin absolu du conteneur, éventuellement en **lecture seule**. Un nom qui n’existe pas encore crée un volume.                 |
+| **Environnement**                              | Un `KEY=value` par ligne. Les lignes vides et celles qui commencent par `#` sont ignorées.                                                                                               |
+| **Réseau**                                     | **Par défaut (bridge)**, ou n’importe quel réseau de l’hôte.                                                                                                                             |
+| **Redémarrage**                                | **Jamais**, **En cas d’échec**, **Sauf s’il est arrêté** ou **Toujours**.                                                                                                                |
+| **Supprimer le conteneur quand il se termine** | Comme `docker run --rm`. Un conteneur supprimé à sa sortie ne peut pas aussi redémarrer.                                                                                                 |
+
+Choisissez **Exécuter** : Homeport crée et démarre le conteneur, puis ouvre ses journaux.
+
+Si le conteneur ne peut pas démarrer — un port déjà utilisé, par exemple —, Homeport le supprime à nouveau et la boîte de dialogue reste ouverte avec la raison, pour que vous puissiez corriger le champ et l’exécuter sous le même nom.
+
+### Options avancées
+
+**Options avancées**, sous la politique de redémarrage, ouvre les réglages dont on a moins souvent besoin, un onglet chacun. Une valeur que Homeport ne peut pas lire est expliquée sous son champ, et **Exécuter** attend qu’elle soit corrigée. Tout ce qui est défini ici s’affiche dans l’onglet **Inspecter** du conteneur.
+
+**Ressources**
+
+| Champ                            | Remarques                                                                                                                |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Limite de CPU**                | Combien de CPU il peut utiliser, comme `0.5` ou `2` (`--cpus`). Vide, il utilise tous les CPU.                           |
+| **Parts de CPU**                 | Son poids face aux autres conteneurs quand les CPU sont occupés ; `1024` est la valeur par défaut (`--cpu-shares`).      |
+| **Limite de mémoire**            | Comme `512m` ou `2g` (`--memory`). Les tailles se comptent en puissances de 1024, comme le fait Docker. Au moins `6m`.   |
+| **Réservation de mémoire**       | Une limite souple que le moteur n’applique que lorsque l’hôte manque de mémoire ; au plus la limite.                     |
+| **Limite de mémoire et de swap** | La mémoire plus le swap, donc au moins la limite de mémoire ; `-1` pour un swap illimité. Demande une limite de mémoire. |
+
+**Labels** — un `key=value` par ligne, tels que les lisent les proxys inverses comme Traefik et Caddy et les outils de sauvegarde. Les clés qui commencent par `com.docker.compose.` sont refusées : elles appartiennent à Docker Compose, et Homeport afficherait le conteneur comme faisant partie d’une stack.
+
+**Sécurité** — les capacités à ajouter et à retirer, saisies une par une avec des suggestions (`NET_ADMIN` et `CAP_NET_ADMIN` sont identiques ; `ALL` les désigne toutes), et **Privilégié**.
+
+<Aside type="danger" title="Mode privilégié">
+  Un conteneur privilégié peut utiliser tous les périphériques et toutes les capacités de l’hôte, et
+  tout ce qui s’y exécute peut prendre le contrôle de l’hôte. Ajoutez plutôt, quand c’est possible,
+  uniquement les capacités et les périphériques dont il a besoin.
+</Aside>
+
+**Périphériques** — les périphériques de l’hôte à transmettre, comme `/dev/dri` pour le transcodage matériel ou `/dev/ttyUSB0` pour une clé Zigbee, avec le chemin dans le conteneur (le même s’il est vide) et les permissions : une partie de `r` (lecture), `w` (écriture) et `m` (création de fichiers de périphérique). **GPU** les demande tous, un certain nombre d’entre eux, ou certains choisis par index ou UUID, comme `docker run --gpus`.
+
+<Aside type="note" title="Les GPU demandent la boîte à outils du fabricant">
+  L’hôte doit avoir la boîte à outils pour conteneurs du fabricant de son GPU installée — pour
+  NVIDIA, le [NVIDIA Container
+  Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+  — et le Docker Engine redémarré ensuite. Homeport ne l’installe pas. Sans elle, l’exécution échoue
+  avec _Cet hôte ne peut pas fournir de GPU aux conteneurs._
+</Aside>
+
+**Health check** — gardez **Celui de l’image, s’il existe**, définissez **Une commande** exécutée avec `/bin/sh -c` (le code de sortie 0 signifie en bonne santé), ou désactivez celui de l’image avec **Aucun (désactiver celui de l’image)**. **Intervalle**, **Délai** et **Période de démarrage** prennent des durées comme `30s` ou `1m30s` ; **Nouveaux essais** est le nombre d’échecs d’affilée qui le font passer en mauvaise santé. L’état s’affiche alors dans la liste comme _healthy_ ou _unhealthy_.
+
+**Identité réseau** — le **Nom d’hôte** et le **Nom de domaine** du conteneur, ses **Serveurs DNS** (adresses) et ses **Domaines de recherche DNS**, et les **Hôtes supplémentaires** : des lignes `name:address` ajoutées à son `/etc/hosts`, pour les noms que le DNS de votre réseau ne connaît pas. `host-gateway` désigne l’adresse de l’hôte lui-même, si bien que `host.docker.internal:host-gateway` permet de joindre les services de l’hôte.
+
+**Journalisation** — le **Pilote de journalisation** : `json-file`, `local`, `journald`, `syslog`, `none`, ou tout autre pilote dont dispose le moteur ; vide, c’est celui du moteur par défaut. Les **Options du pilote** sont des lignes `key=value` ; pour `json-file`, `max-size=10m` et `max-file=3` empêchent les journaux de remplir le disque d’un petit hôte. Avec `journald`, `syslog` ou `none`, l’onglet **Journaux** peut rester vide.
+
+## Dupliquer un conteneur
+
+**Dupliquer** ouvre la boîte de dialogue Exécuter, remplie à partir du conteneur — image, commande, environnement, ports, volumes, réseau, politique de redémarrage et toutes les options avancées — sous le nom `<name>-copy`. Changez ce dont vous avez besoin et choisissez **Exécuter**.
+
+Les réglages que la boîte de dialogue ne montre pas, comme les ulimits, les sysctls, les options de sécurité, les montages tmpfs et les autres réseaux auxquels le conteneur est rattaché (avec leurs alias), sont copiés tels quels. Seul ce qui venait uniquement de l’image est laissé hors du formulaire, si bien qu’un tag plus récent de l’image apporte ses propres valeurs par défaut.
+
+La copie ne reprend pas ce qui identifie l’original : elle reçoit son propre nom d’hôte (sauf si vous en définissez un), sa propre adresse MAC et de nouveaux volumes anonymes, et un conteneur issu d’une [stack](/docs/guides/stacks/) perd ses labels de stack et ses alias de service, si bien que la copie ne rejoint pas la stack et ne répond pas à son nom de service. Si l’original publie un port fixe de l’hôte, la boîte de dialogue le signale : deux conteneurs ne peuvent pas l’utiliser tous les deux pendant qu’ils tournent, donc changez-le ou laissez-le vide pour laisser le moteur en choisir un.
+
+## Modifier un conteneur
+
+Le Docker Engine ne peut pas changer la plupart des réglages d’un conteneur existant, si bien que **Modifier** le recrée : il ouvre la boîte de dialogue Exécuter, remplie à partir du conteneur, et **Appliquer** le remplace par un conteneur créé avec vos modifications. Le nom reste le même (utilisez **Renommer** pour le changer).
+
+Avant que quoi que ce soit ne se passe, Homeport liste ce que le nouveau conteneur n’aura pas :
+
+- **Les volumes anonymes** — le nouveau conteneur démarre avec des volumes vides. Les anciens ne sont pas supprimés : ils sont conservés comme volumes inutilisés que vous pouvez encore ouvrir ou [nettoyer](/docs/guides/volumes-networks/).
+- **Les fichiers modifiés dans le conteneur** depuis sa création, comme des paquets installés ou une configuration modifiée. Pour les garder, [créez d’abord une image à partir du conteneur](#créer-une-image-à-partir-dun-conteneur) — la confirmation a un bouton pour cela — et modifiez le conteneur pour qu’il utilise cette image.
+- **L’interruption** — un conteneur en cours d’exécution s’arrête pendant l’échange des deux, en général quelques secondes.
+- **Le prochain déploiement d’une stack** — pour un conteneur d’une stack, le prochain déploiement de la stack le recrée à partir de son fichier compose, sans votre modification. Modifiez le fichier compose pour qu’elle dure.
+
+Ce qui est conservé : le nom, les réseaux avec leurs alias, les volumes nommés et les montages bind, et tous les réglages que la boîte de dialogue ne montre pas. Le conteneur tourne ensuite s’il tournait avant.
+
+<Aside type="note" title="Si quelque chose se passe mal">
+  Homeport crée le nouveau conteneur avant de toucher à l’original, et ne supprime l’original qu’une
+  fois le nouveau en cours d’exécution. Si une étape échoue — le nouveau port est pris, par exemple
+  —, le nouveau conteneur est supprimé et l’original remis tel qu’il était, en cours d’exécution
+  s’il l’était, et la boîte de dialogue indique pourquoi. Dans le cas rare où sa remise en place
+  échoue aussi, le message indique où se trouve l’original, comme `web-old-1a2b3c4d`, pour que vous
+  puissiez lui rendre son nom et le démarrer.
+</Aside>
+
+## Créer une image à partir d’un conteneur
+
+**Créer une image…** enregistre les fichiers du conteneur tels qu’ils sont maintenant — y compris tout ce qui y a été modifié depuis sa création — et ses réglages sous forme de nouvelle image sur l’hôte, comme `docker commit`.
+
+| Champ                                                | Remarques                                                                                                                                                                                        |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Nom de l’image**                                   | `repo:tag`, qui commence par le nom du conteneur et la date du jour, comme `web:2026-11-04`. Si une image porte déjà ce nom, la boîte de dialogue le signale : le nom passe à la nouvelle image. |
+| **Message**                                          | Affiché dans l’historique de l’image (**Inspecter** → **Couches**).                                                                                                                              |
+| **Auteur**                                           | Facultatif.                                                                                                                                                                                      |
+| **Modifications**                                    | Des instructions Dockerfile appliquées à la nouvelle image, une par ligne : `CMD`, `ENTRYPOINT`, `ENV`, `EXPOSE`, `LABEL`, `ONBUILD`, `USER`, `VOLUME` ou `WORKDIR`, comme `ENV MODE=prod`.      |
+| **Mettre le conteneur en pause pendant la création** | Activé par défaut : ses processus sont figés pendant les quelques secondes nécessaires, pour que les fichiers en cours d’écriture restent cohérents. Le conteneur reprend ensuite.               |
+
+La nouvelle image apparaît aussitôt sur la [page Images](/docs/guides/images/). Les volumes, nommés ou anonymes, n’en font pas partie : sauvegardez-les séparément. Pour obtenir une image que vous pouvez reconstruire, préférez [en construire une à partir d’un Dockerfile](/docs/guides/images/#construire-une-image).
+
+## Exporter le système de fichiers d’un conteneur
+
+**Exporter le système de fichiers…** enregistre tous les fichiers du conteneur — ceux de son image et tout ce qui a changé depuis — dans un seul `.tar` sur cet ordinateur, comme `docker export`. Choisissez où l’enregistrer ; il porte le nom du conteneur. La progression indique les octets écrits, **Annuler** l’arrête, et un export annulé ou échoué ne laisse aucun fichier partiel. L’archive est écrite directement sur le disque, si bien que des conteneurs de plusieurs gigaoctets ne posent pas de problème.
+
+L’archive est un système de fichiers simple et à plat : pas de couches, d’historique ni de réglages, et pas de volumes. Ouvrez-la avec n’importe quel outil tar, ou refaites-en une image avec [**Importer depuis un tar…**](/docs/guides/images/#importer-un-système-de-fichiers) sur la page Images ou `docker import`. Pour garder aussi les réglages d’un conteneur, [créez plutôt une image à partir de celui-ci](#créer-une-image-à-partir-dun-conteneur).

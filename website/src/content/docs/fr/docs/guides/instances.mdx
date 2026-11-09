@@ -1,0 +1,75 @@
+---
+title: Instances
+description: Exécuter des conteneurs système et des machines virtuelles Incus ; ouvrir leur console et un terminal à l’intérieur ; prendre et restaurer des instantanés ; gérer les images, les profils, les pools de stockage et les réseaux.
+---
+
+Une **instance** est ce qu’exécute un [hôte Incus](/docs/hosts/incus/) : un **conteneur système**, qui démarre toute une distribution Linux en partageant le noyau de l’hôte, ou une **machine virtuelle**, avec son propre noyau. Chaque page décrite ici montre le projet choisi sous le sélecteur d’hôte.
+
+## La page Instances
+
+**Instances** liste les instances du projet avec leur type, leur état, leur image, leurs adresses globales (IPv4 d’abord), leur mémoire et leur âge. Filtrez-les par nom, ou n’affichez que les conteneurs ou que les machines virtuelles.
+
+| Action             | Ce que fait Incus                                                                                                                                                                       |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Démarrer**       | La démarre.                                                                                                                                                                             |
+| **Arrêter**        | Demande à son système de s’éteindre, et lui laisse 30 secondes ; une instance qui ne le fait pas est signalée, avec **Forcer l’arrêt** comme issue.                                     |
+| **Forcer l’arrêt** | La coupe aussitôt, comme si on débranchait la prise.                                                                                                                                    |
+| **Redémarrer**     | L’éteint proprement et la démarre à nouveau.                                                                                                                                            |
+| **Geler**          | Met en pause tous ses processus ; **Dégeler** les reprend.                                                                                                                              |
+| **Supprimer**      | Demande d’abord confirmation, en nommant les instantanés supprimés avec elle. Une instance en cours d’exécution n’est supprimée qu’une fois que vous avez coché **Arrêtez-la d’abord**. |
+
+La liste s’actualise à partir des événements d’Incus en un instant, quel que soit l’auteur de la modification.
+
+La page d’une instance a une **Vue d’ensemble** (adresses, temps CPU, mémoire, processus, instantanés, et ses profils, chacun avec un lien vers sa page), sa **Configuration** et ses **Périphériques**, où ce que définissent ses profils est marqué **Issu d’un profil**, et la description qu’Incus en donne lui-même sous **Brut**.
+
+## Créer une instance
+
+**Nouvelle instance** (ou <kbd>n</kbd>) en crée une à partir d’une image :
+
+- **Depuis un serveur d’images** : le serveur public `https://images.linuxcontainers.org` par défaut, ou un autre serveur simplestreams. Homeport liste ce qu’il publie pour l’architecture de l’hôte, en conteneurs ou en machines virtuelles, avec une recherche par système, version ou alias ; vous pouvez aussi taper un alias comme `debian/12` ou `ubuntu/24.04/cloud`. Incus télécharge l’image, comme le ferait `incus launch images:debian/12`.
+- **Depuis les images de cet hôte** : une image que l’hôte conserve déjà.
+
+Choisissez ses **profils** (dans l’ordre : les suivants l’emportent sur les précédents), et éventuellement ses **CPU**, sa **Mémoire** (`2GiB`) et la taille de son **Disque racine** (`20GiB`, dans le pool où se trouve le disque racine de ses profils). **La démarrer une fois créée** est activé par défaut. La boîte de dialogue suit le téléchargement et la décompression dans les termes d’Incus, puis ouvre la nouvelle instance.
+
+Un nom déjà utilisé, une image que le serveur n’a pas, un pool de stockage plein, ou une machine virtuelle sur un hôte sans virtualisation matérielle (pas de `/dev/kvm`) sont chacun signalés, avec ce qu’il faut faire.
+
+## Console et terminal
+
+**Console** montre ce que l’instance a affiché jusqu’ici sur sa console texte, puis s’y attache : l’invite de connexion, ou un démarrage en direct, comme le montre `incus console`. Cela fonctionne aussi pour les machines virtuelles, et quand le réseau ou le SSH de l’instance est cassé. Quitter l’onglet, ou **Rattacher**, ne fait que détacher.
+
+**Exec** ouvre un shell dans une instance en cours d’exécution (bash quand elle l’a, sh sinon), ou exécute la commande que vous indiquez, sous un utilisateur numérique et dans un dossier de votre choix ; **Ouvrir** en démarre un nouveau avec ce que vous avez tapé. Fermer l’onglet interrompt la commande, si bien que rien de ce qui a été lancé depuis lui ne continue de tourner. Dans une machine virtuelle, exec a besoin de lâ`incus-agent` que les images d’Incus incluent et démarrent au boot ; tant qu’il ne tourne pas, Homeport le signale et l’onglet Console est la porte d’entrée.
+
+## Instantanés
+
+**Instantanés** liste les instantanés de l’instance avec le moment où chacun a été pris, celui où il expire et s’il contient l’état d’exécution.
+
+- **Prendre un instantané** le nomme (ou laisse Incus le nommer `snap0`, `snap1`…) et le conserve jusqu’à sa suppression ou pendant un jour, une semaine ou 30 jours. Pendant que l’instance tourne, et quand son réglage `migration.stateful` le permet, l’instantané peut inclure sa mémoire, si bien qu’une restauration reprend là où elle en était.
+- **Restaurer** remet l’instance dans l’état où elle était au moment de l’instantané. Tout ce qui a changé depuis est perdu, et une instance en cours d’exécution redémarre, donc Homeport demande d’abord confirmation.
+- **Supprimer** retire un instantané, après confirmation ; l’instance reste telle qu’elle est.
+
+## Images
+
+**Images** liste les images que conserve le projet, avec leurs alias, leur description, leur type, leur architecture, leur taille et leur âge. Les images qu’Incus a téléchargées pour créer une instance sont marquées **en cache** : il les supprime quand plus rien ne les a utilisées depuis un moment.
+
+- **Obtenir une image** en télécharge une à l’avance depuis un serveur d’images, choisie comme pour une nouvelle instance. **La maintenir à jour depuis le serveur** fait actualiser l’image par Incus depuis le serveur ; **Lui donner le même alias ici** permet aux nouvelles instances de l’utiliser par son nom.
+- **Actualiser** récupère une version plus récente d’une image depuis l’endroit d’où elle vient.
+- Le bouton en forme d’étiquette ajoute un alias ; la croix sur un alias le retire.
+- **Supprimer** retire une image. Les instances créées à partir d’elle continuent de fonctionner : chacune a sa propre copie.
+
+## Profils
+
+**Profils** liste les profils du projet avec le nombre de clés et de périphériques que chacun définit et les instances qui l’utilisent. La page d’un profil permet de modifier sa description, sa configuration et ses périphériques en YAML, comme le fait `incus profile edit`, et renvoie vers les instances qui l’utilisent. **Enregistrer** applique les modifications à ces instances, comme le fait Incus. Si quelqu’un a modifié le profil depuis que la page l’a chargé, l’enregistrement est refusé plutôt que d’écraser ses modifications : **Recharger**, puis refaites vos modifications.
+
+**Nouveau profil** en crée un vide et l’ouvre. `default`, et les profils qu’utilisent des instances, ne peuvent pas être supprimés.
+
+## Stockage
+
+**Stockage** montre chaque pool de stockage avec son pilote et son taux de remplissage, ainsi que les volumes du pool sélectionné dans le projet : ceux des instances et des images, et les volumes personnalisés, avec leur contenu, leur taille et ce qui les utilise.
+
+**Nouveau volume** crée un volume personnalisé, un système de fichiers ou un périphérique bloc, d’une taille donnée ou de celle par défaut du pool, à attacher à des instances pour des données qui leur survivent (`incus storage volume attach`). Un volume personnalisé peut être supprimé dès que plus rien ne l’utilise. Les pools eux-mêmes se créent avec `incus storage create`.
+
+## Réseaux
+
+**Réseaux** liste les réseaux que voit le projet, les réseaux gérés (créés par Incus) en premier, avec leurs réglages IPv4 et IPv6, le NAT et leurs utilisateurs. La page d’un réseau montre ses adresses sur l’hôte, son MTU et son adresse MAC, les instances et les profils qui l’utilisent, et les baux DHCP d’un réseau géré, comme le fait `incus network list-leases`.
+
+**Nouveau bridge** crée un bridge géré. Son IPv4 et son IPv6 valent `auto` (un sous-réseau libre), `none`, ou l’adresse propre du bridge avec son préfixe, comme `10.0.5.1/24` ; **NAT** masque le trafic IPv4 sortant. Un réseau utilisé, ou l’une des interfaces propres de la machine, ne se supprime pas d’ici.

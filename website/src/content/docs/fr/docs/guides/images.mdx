@@ -1,0 +1,122 @@
+---
+title: Images
+description: Récupérer, construire, pousser, enregistrer, charger, taguer, inspecter, exécuter et supprimer des images, et nettoyer ce que rien n’utilise.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+La page **Images** liste les images stockées sur l’hôte sélectionné, avec leur taille totale.
+
+<DocScreenshot
+  name="images"
+  alt="La page Images, qui liste les images avec leur taille et indique si elles sont utilisées."
+/>
+
+| Colonne    | Affiche                                                                             |
+| ---------- | ----------------------------------------------------------------------------------- |
+| **Nom**    | Le premier tag, et combien elle en a d’autres ; `<none>` pour les images sans tag.  |
+| **ID**     | L’ID court de l’image.                                                              |
+| **Créée**  | Il y a combien de temps l’image a été construite.                                   |
+| **Taille** | Sa taille sur le disque.                                                            |
+| **État**   | **Utilisée** avec le nombre de conteneurs créés à partir d’elle, ou **Inutilisée**. |
+
+Les conteneurs arrêtés comptent comme utilisant une image. Sélectionnez un en-tête de colonne pour trier, et cherchez avec **Rechercher des images**.
+
+Un ⬆ à côté du nom signifie que l’un des tags de l’image pointe vers une image plus récente dans son registre ; survolez-le pour savoir lequel. Récupérez le tag pour l’obtenir. **Rechercher des images plus récentes** interroge à nouveau les registres au lieu d’utiliser les réponses gardées 6 heures. Voir [images plus récentes](/docs/guides/containers/#images-plus-récentes) pour le fonctionnement de la vérification.
+
+## Récupérer une image
+
+Choisissez **Récupérer une image** et saisissez une référence : `nginx` (qui signifie `nginx:latest`), `nginx:1.27`, `ghcr.io/org/app:v2`, `registry.example.com:5000/app`, ou un digest comme `app@sha256:…`.
+
+Homeport affiche la progression de la récupération couche par couche, et indique **Terminé.** quand elle est finie. **Annuler** arrête de suivre la récupération.
+
+### Rechercher sur Docker Hub
+
+Taper un nom seul comme `postg` lance une recherche sur Docker Hub pendant la frappe, et liste les dépôts correspondants avec leur description, leurs étoiles et une marque **Officielle**. Choisissez-en un pour voir ses tags, du plus récent au plus ancien, avec leur taille et la date à laquelle ils ont été poussés ; **Filtrer les tags** restreint la liste (`alpine`), et **Plus de tags** charge la page suivante. Choisir un tag remplit la référence, comme `postgres:17-alpine`, prête à **Récupérer**.
+
+La recherche s’exécute sur l’hôte sélectionné, si bien qu’elle atteint Docker Hub par le réseau de l’hôte, comme le fera la récupération. Les tags sont lus sur Docker Hub par cet ordinateur ; des [identifiants](/docs/guides/settings/#registres) Docker Hub enregistrés relèvent ses limites de requêtes. Taper un tag, un digest ou un autre registre (`ghcr.io/…`) passe la recherche, et si Docker Hub est injoignable, la boîte de dialogue le signale et récupère quand même ce que vous tapez. Les autres registres ne peuvent pas encore être parcourus.
+
+### Images privées
+
+Quand des identifiants pour le registre de l’image sont enregistrés dans [**Paramètres → Registres**](/docs/guides/settings/#registres), Homeport les transmet au moteur avec la récupération, si bien que les images privées se récupèrent sur n’importe quel hôte — local, TCP, TLS ou SSH — sans rien configurer sur place. Sous la référence, la boîte de dialogue indique comment l’image sera récupérée : **Récupérée en tant que alice sur ghcr.io**, ou **Récupérée de façon anonyme** quand aucun identifiant ne correspond.
+
+Une image sans registre dans son nom (`nginx`, `bitnami/redis`) utilise les identifiants de Docker Hub. Des identifiants Docker Hub relèvent aussi la limite de récupération de Docker Hub.
+
+Si le registre refuse la récupération, le message indique quoi faire : ajouter des identifiants pour ce registre quand aucun n’était enregistré, ou vérifier ceux qui le sont.
+
+<Aside>
+  Les identifiants voyagent jusqu’au moteur avec la requête et ne sont pas enregistrés sur l’hôte.
+  Homeport ne lit pas les identifiants de `docker login` dans `~/.docker/config.json`.
+</Aside>
+
+## Construire une image
+
+Choisissez **Construire** et sélectionnez un **Dossier** de cet ordinateur qui contient un Dockerfile — le contexte de build. Homeport empaquette le dossier, laisse de côté tout ce que son `.dockerignore` exclut (avec les règles de Docker : `*`, `**`, les exceptions `!`, la dernière ligne qui correspond l’emporte), et l’envoie à l’hôte sélectionné, dont le moteur le construit. Le même build fonctionne sur un hôte distant en SSH ou en TLS, sans rien installer sur place.
+
+| Champ                                          | Ce qu’il fait                                                                                                   |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Dockerfile**                                 | Son chemin dans le dossier ; `Dockerfile` par défaut. Il est toujours envoyé, même si `.dockerignore` le liste. |
+| **Étape cible**                                | L’étape d’un Dockerfile multi-étapes où s’arrêter (`--target`).                                                 |
+| **Noms**                                       | Un ou plusieurs noms pour le résultat, comme `app:1.0, ghcr.io/me/app:1.0`.                                     |
+| **Arguments de build**                         | `NAME=value`, un par ligne, pour les `ARG` du Dockerfile.                                                       |
+| **Ne pas utiliser le cache de build**          | Exécute à nouveau chaque étape (`--no-cache`).                                                                  |
+| **Récupérer des images de base plus récentes** | Récupère les images `FROM` même si l’hôte les a déjà (`--pull`).                                                |
+
+La sortie du build défile en direct ; **Annuler** l’arrête. Quand il se termine, les noms apparaissent sur la page Images. Si une étape échoue, le message la nomme (**Le build a échoué à l’étape 3/5 (RUN make).**) et **Détails** contient la fin de la sortie. Les images `FROM` privées se récupèrent avec les [identifiants de registre](/docs/guides/settings/#registres) que vous avez enregistrés.
+
+<Aside>
+  Homeport utilise le builder classique du moteur, celui que propose son API. Les fonctionnalités de
+  BuildKit comme `RUN --mount` et les secrets de build ne sont pas disponibles ; construisez ces
+  images depuis un terminal.
+</Aside>
+
+### Créer plutôt une image à partir d’un conteneur
+
+Une image peut aussi venir d’un conteneur : **Créer une image…**, dans le menu **⋮** d’un conteneur, enregistre ses fichiers et ses réglages tels qu’ils sont maintenant — voir [Créer une image à partir d’un conteneur](/docs/guides/containers/#créer-une-image-à-partir-dun-conteneur). C’est le moyen rapide de garder ce que quelqu’un a installé ou modifié dans un conteneur en cours d’exécution. Un build est le moyen durable : son Dockerfile dit comment l’image est faite, si bien qu’elle peut être reconstruite, relue et mise à jour quand l’image de base évolue. Une image créée à partir d’un conteneur, non.
+
+## Pousser une image
+
+Choisissez **Pousser** dans le menu **⋮** d’une image. **Nom à pousser** commence par le premier nom de l’image ; choisissez un autre de ses noms, ou tapez-en un nouveau comme `ghcr.io/org/app:v2` — l’image reçoit d’abord ce nom, comme le fait **Taguer**. La première partie du nom indique vers quel registre elle part : `ghcr.io/org/app` va sur GHCR, `org/app` sur Docker Hub.
+
+Homeport pousse par l’intermédiaire du moteur de l’hôte, avec les [identifiants de registre](/docs/guides/settings/#registres) enregistrés pour ce registre, et indique lesquels sous le nom (**Poussée en tant que alice sur ghcr.io**). Sans identifiants enregistrés, la boîte de dialogue prévient avant que vous ne commenciez, puisque la plupart des registres refusent les envois anonymes. Pendant l’opération, la boîte de dialogue compte les couches poussées et celles que le registre avait déjà, et montre l’envoi en cours ; **Annuler** arrête l’opération.
+
+Si le registre refuse, le message indique s’il faut ajouter des identifiants ou vérifier que ceux qui sont enregistrés peuvent pousser vers ce dépôt.
+
+## Enregistrer et charger des images
+
+Pour transférer des images vers un hôte qui ne peut pas joindre de registre — un serveur isolé du réseau, un Raspberry Pi sur un réseau domestique —, enregistrez-les dans un fichier sur cet ordinateur et chargez le fichier sur l’autre hôte.
+
+- **Enregistrer…**, dans le menu **⋮** d’une image, l’écrit, avec tous ses noms, dans un seul fichier `.tar` de votre choix. Pour en enregistrer plusieurs à la fois, cochez-les dans la liste et choisissez **Enregistrer N images…** en haut de la page.
+- **Charger…**, en haut de la page, lit un `.tar` produit par **Enregistrer…** ou `docker save` — compressé en `.tar.gz` aussi — dans l’hôte sélectionné. Une fois terminé, la boîte de dialogue nomme les images chargées, avec leurs tags.
+
+Le fichier voyage entre cet ordinateur et l’hôte par la propre connexion de l’hôte, si bien que cela fonctionne aussi pour les hôtes distants. La progression indique les octets écrits ou envoyés ; **Annuler** l’arrête, et un enregistrement annulé ou échoué ne laisse aucun fichier partiel. Homeport ne garde jamais toute l’archive en mémoire, si bien que des images de plusieurs gigaoctets ne posent pas de problème.
+
+### Importer un système de fichiers
+
+**Importer depuis un tar…**, en haut de la page, transforme le tar d’un système de fichiers racine en image, comme `docker import` : un tar produit par [**Exporter le système de fichiers…**](/docs/guides/containers/#exporter-le-système-de-fichiers-dun-conteneur) d’un conteneur ou par `docker export`, la sortie de `debootstrap` ou de Buildroot, ou une appliance de fabricant. Choisissez le fichier (brut ou compressé avec gzip, xz ou bzip2), donnez à l’image un **Nom** — il part du nom du fichier — et, si vous le souhaitez, des **Modifications** : des instructions Dockerfile comme `CMD ["/bin/sh"]` ou `ENV LANG=C.UTF-8`, puisqu’une image importée n’a pas de commande à elle. La progression indique les octets envoyés ; l’image apparaît ensuite dans la liste.
+
+### Enregistrer et charger, ou exporter et importer ?
+
+|          | **Enregistrer** / **Charger**                              | **Exporter le système de fichiers** / **Importer depuis un tar**             |
+| -------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Part de  | Une ou plusieurs images                                    | Les fichiers d’un conteneur, tels qu’ils sont maintenant                     |
+| Conserve | Toutes les couches, l’historique, les noms et les réglages | Les fichiers seulement, aplatis en une seule couche                          |
+| Perd     | Rien                                                       | L’historique, les noms, et les réglages comme la commande et l’environnement |
+| Sert à   | Transférer des images vers un hôte sans registre           | Sauvegarder ou inspecter les fichiers d’un conteneur, ou partir d’un rootfs  |
+
+## Travailler avec une image
+
+- **▶ Exécuter** ouvre la [boîte de dialogue Exécuter](/docs/guides/containers/#exécuter-un-conteneur) avec l’image déjà remplie.
+- **Inspecter** — ou sélectionner la ligne — montre les **Couches**, les instructions qui ont construit chaque couche et leur taille, et le **JSON brut**.
+- **Taguer** ajoute un autre nom, comme `registry.example.com/app:v2`. Cela ne pousse rien ; **Pousser** s’en charge.
+- **Supprimer** efface l’image et les couches qu’aucune autre image n’utilise. Une image avec plusieurs tags les perd tous. Le moteur refuse de supprimer une image qu’un conteneur utilise encore ; supprimez d’abord le conteneur.
+
+## Nettoyage
+
+**Nettoyer** propose deux niveaux :
+
+- **Images orphelines** — les images sans tag laissées par les builds et les récupérations. Leur suppression est sans risque.
+- **Toutes les images inutilisées** — toutes les images qu’aucun conteneur n’utilise, y compris celles qui ont un tag. Elles peuvent être récupérées à nouveau, mais cela prend du temps et de la bande passante.
+
+Homeport indique combien ont été supprimées et combien de place a été récupérée. Le [nettoyage de la Vue d’ensemble](/docs/guides/overview/#nettoyage) peut aussi supprimer d’un coup les conteneurs arrêtés, les réseaux, le cache de build et les volumes.

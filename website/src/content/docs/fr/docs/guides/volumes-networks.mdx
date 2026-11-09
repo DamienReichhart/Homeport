@@ -1,0 +1,137 @@
+---
+title: Volumes et réseaux
+description: Voir quels conteneurs utilisent quels volumes et réseaux et quelle taille font les volumes ; parcourir, sauvegarder, restaurer et cloner des volumes ; créer et supprimer les deux en toute sécurité.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+## Volumes
+
+La page **Volumes** liste les volumes de l’hôte sélectionné et indique combien sont inutilisés.
+
+<DocScreenshot
+  name="volumes"
+  alt="La page Volumes, qui montre pour chaque volume sa stack, son pilote et les conteneurs qui l’utilisent."
+/>
+
+| Colonne         | Affiche                                                                       |
+| --------------- | ----------------------------------------------------------------------------- |
+| **Nom**         | Le nom du volume ; un long ID pour les volumes anonymes.                      |
+| **Stack**       | La stack qui l’a créé, le cas échéant.                                        |
+| **Pilote**      | En général `local`.                                                           |
+| **Taille**      | La place que ses données occupent sur le disque, selon `docker system df -v`. |
+| **Utilisé par** | Les conteneurs qui le montent, ou **Inutilisé**.                              |
+| **Créé**        | Quand il a été créé.                                                          |
+
+Un volume compte comme utilisé dès qu’un conteneur le monte, en cours d’exécution ou arrêté. Sélectionnez un volume pour voir sa taille, les conteneurs qui l’utilisent et tous ses détails, y compris l’endroit où ses données se trouvent sur l’hôte (`Mountpoint`).
+
+### Tailles
+
+Le moteur mesure chaque volume pour donner leur taille, ce qui peut prendre quelques secondes sur un hôte qui a beaucoup de données ; la liste apparaît donc aussitôt et la colonne **Taille** se remplit ensuite. Triez par **Taille** pour trouver le volume qui remplit un disque. Les tailles sont mesurées à nouveau quand un volume est créé ou supprimé, et quand vous choisissez **Actualiser les tailles** — pas à chaque écriture d’un conteneur, si bien qu’une taille peut être légèrement en retard.
+
+Seuls les volumes du pilote `local` ont une taille ; les autres pilotes (NFS, plugins de stockage cloud) affichent **—**.
+
+### Parcourir les fichiers d’un volume
+
+Le bouton en forme de dossier sur la ligne d’un volume ouvre ses fichiers : ouvrez des dossiers, remontez avec le chemin au-dessus de la liste, et téléchargez un fichier, ou un dossier sous forme d’archive `.tar`. Les chemins partent de la racine du volume (`/`).
+
+La navigation est en lecture seule. Rien de ce que vous faites ici ne peut modifier le volume, même pendant qu’un conteneur l’utilise.
+
+#### Le conteneur auxiliaire
+
+L’API du moteur ne peut pas lire un volume, si bien que Homeport l’ouvre avec un **conteneur auxiliaire** éphémère : un conteneur `busybox:1.37` sans réseau et avec un système de fichiers en lecture seule, qui monte le volume en lecture seule. Homeport le supprime dès que vous fermez le navigateur de fichiers ou quittez l’application. Si Homeport ne le peut pas (il a planté, ou l’hôte a disparu), le conteneur auxiliaire s’arrête et est supprimé par le moteur dans l’heure, et Homeport supprime ce qui reste la prochaine fois que cet ordinateur se connecte à l’hôte. Les conteneurs auxiliaires n’apparaissent jamais dans la liste des conteneurs, dans **Utilisé par** d’un volume, ni sur la page Événements.
+
+Si l’hôte n’a pas `busybox:1.37` (environ 2 Mo), Homeport le signale et ne la récupère qu’une fois que vous choisissez **Récupérer busybox:1.37**, avec vos [identifiants de registre](/docs/guides/settings/#registres). Il supprime à nouveau l’image une fois terminé, sauf si quelque chose d’autre l’utilise. Un hôte sans accès à Internet ne peut pas la récupérer ; amenez-la vous-même :
+
+```sh
+docker pull busybox:1.37
+```
+
+ou bien, depuis une machine qui l’a, `docker save busybox:1.37 -o busybox.tar`, copiez le fichier, puis `docker load -i busybox.tar` sur l’hôte.
+
+<Aside>
+  Les moteurs qui exécutent des conteneurs Windows ne peuvent pas exécuter le conteneur auxiliaire,
+  si bien que leurs volumes ne peuvent pas être ouverts.
+</Aside>
+
+### Sauvegarder et restaurer
+
+**Sauvegarder dans un fichier…**, dans le menu **⋯** de la ligne d’un volume, enregistre son contenu dans un fichier `.tar` sur cet ordinateur. L’archive contient les fichiers du volume avec leurs propriétaires et leurs permissions, avec des chemins relatifs à sa racine, comme les produirait `tar -C <volume> -cf backup.tar .`, si bien que vous pouvez aussi l’ouvrir ou la restaurer sans Homeport.
+
+**Restaurer depuis un fichier** restaure une sauvegarde :
+
+- Depuis le haut de la page, dans **Un nouveau volume**, nommé d’après le fichier sauf si vous changez le nom, ou dans **Un volume existant** que vous choisissez.
+- Depuis le menu **⋯** d’un volume, dans ce volume.
+
+Si le volume existant contient déjà des fichiers, Homeport demande confirmation avant de les supprimer et de mettre ceux de la sauvegarde à leur place. Un fichier qui n’est pas une archive tar est refusé avant que quoi que ce soit ne change.
+
+Les deux opérations affichent leur progression et peuvent être annulées. Une sauvegarde annulée ne laisse aucun fichier ; une restauration annulée peut laisser le volume partiellement écrit, donc restaurez-le à nouveau avant de l’utiliser.
+
+#### Conteneurs qui utilisent le volume
+
+La sauvegarde d’un volume dans lequel écrit un conteneur en cours d’exécution — une base de données, par exemple — peut être incohérente. Homeport nomme les conteneurs en cours d’exécution qui l’utilisent, et vous choisissez de **Sauvegarder quand même** ou de les arrêter pendant la sauvegarde. Une restauration les arrête toujours d’abord. Dans les deux cas, Homeport les redémarre ensuite.
+
+Les sauvegardes et les restaurations utilisent le même [conteneur auxiliaire](#le-conteneur-auxiliaire) que la navigation, qui monte le volume en lecture seule pour une sauvegarde. L’archive voyage par la connexion de l’hôte et n’est jamais gardée entière en mémoire, si bien que les gros volumes et les hôtes distants fonctionnent aussi. Rien n’est écrit sur l’hôte en dehors du volume restauré.
+
+### Cloner un volume
+
+**Cloner…**, dans le menu **⋯** de la ligne d’un volume, le copie dans un nouveau volume sur le même hôte — pour essayer une migration ou une nouvelle version d’image sur une copie de données réelles, par exemple. La copie s’appelle `<name>-copy` sauf si vous changez le nom, et elle est sélectionnée dans la liste une fois créée.
+
+Elle garde les propriétaires et les permissions des fichiers, ainsi que le pilote, les options du pilote et les labels de la source — sauf ceux de Compose, si bien que la copie n’appartient à aucune stack. La source est montée en lecture seule dans le [conteneur auxiliaire](#le-conteneur-auxiliaire) et ne change jamais. Comme pour une sauvegarde, Homeport nomme les conteneurs en cours d’exécution qui utilisent la source ; copiez quand même, ou arrêtez-les pendant la copie.
+
+Si la copie échoue — le disque est plein, par exemple —, Homeport supprime la copie incomplète et le signale, avec l’erreur dans **Détails**. Pour copier un volume vers un autre hôte, [sauvegardez-le](#sauvegarder-et-restaurer) et restaurez le fichier là-bas.
+
+### Créer un volume
+
+**Créer un volume** demande un **Nom** et, facultativement, un **Pilote** (`local` s’il est vide).
+
+### Supprimer des volumes
+
+<Aside type="danger">Supprimer un volume supprime définitivement les données qu’il contient.</Aside>
+
+Le bouton de suppression de chaque ligne demande confirmation et nomme les conteneurs qui montent encore le volume. Le moteur refuse de supprimer un volume qu’un conteneur utilise, même arrêté — supprimez d’abord ces conteneurs.
+
+**Nettoyer** en supprime plusieurs à la fois :
+
+- **Volumes anonymes inutilisés** — les volumes sans nom qu’aucun conteneur n’utilise.
+- **Tous les volumes inutilisés** — tous les volumes qu’aucun conteneur n’utilise, volumes nommés compris.
+
+## Réseaux
+
+La page **Réseaux** liste les réseaux de l’hôte sélectionné, les réseaux intégrés `bridge`, `host` et `none` en premier.
+
+<DocScreenshot
+  name="networks"
+  alt="La page Réseaux, avec les réseaux intégrés et ceux des stacks, leurs sous-réseaux et leur nombre de conteneurs."
+/>
+
+| Colonne         | Affiche                                                                  |
+| --------------- | ------------------------------------------------------------------------ |
+| **Nom**         | Avec un badge **intégré** ou **interne** quand c’est le cas.             |
+| **Stack**       | La stack qui l’a créé, le cas échéant.                                   |
+| **Pilote**      | `bridge`, `overlay`, `macvlan`…                                          |
+| **Sous-réseau** | Sa plage d’adresses IP.                                                  |
+| **Conteneurs**  | Combien de conteneurs y sont rattachés, en cours d’exécution ou arrêtés. |
+
+### Connecter des conteneurs
+
+Sélectionnez un réseau pour voir les conteneurs qui y sont rattachés. Sur les réseaux que vous avez créés :
+
+- **Déconnecter** détache un conteneur.
+- **Connecter un conteneur…** liste les conteneurs qui ne sont pas encore rattachés ; choisissez-en un, puis **Connecter**.
+
+Les réseaux intégrés ne peuvent pas être modifiés ici.
+
+### Créer un réseau
+
+**Créer un réseau** prend un **Nom**, un **Pilote** (`bridge` s’il est vide) et, facultativement, un **Sous-réseau** et une **Passerelle** — laissez-les vides pour laisser le moteur choisir. Deux interrupteurs :
+
+- **Interne** — les conteneurs du réseau ne peuvent pas joindre les réseaux extérieurs.
+- **Attachable** — des conteneurs autonomes peuvent rejoindre un réseau `overlay`.
+
+### Supprimer des réseaux
+
+Les réseaux intégrés ne peuvent pas être supprimés. Pour les autres réseaux, la confirmation indique combien de conteneurs y sont encore rattachés ; le moteur refuse de supprimer un réseau sur lequel des conteneurs tournent. Les conteneurs qui font référence par son nom à un réseau supprimé ne démarreront pas tant qu’il n’existera pas à nouveau.
+
+**Nettoyer** supprime tous les réseaux personnalisés auxquels aucun conteneur n’est rattaché.
