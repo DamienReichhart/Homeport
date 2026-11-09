@@ -44,6 +44,7 @@ export default {
   'docs/guides/settings': 'Настройки',
   'docs/guides/keyboard': 'Клавиатура',
   'docs/reference/security': 'Безопасность и ваши данные',
+  'docs/reference/data-and-backups': 'Ваши данные и резервные копии',
   'docs/reference/verifying': 'Проверка загрузок',
   'docs/reference/updating': 'Обновление и удаление',
   'docs/reference/troubleshooting': 'Устранение неполадок',

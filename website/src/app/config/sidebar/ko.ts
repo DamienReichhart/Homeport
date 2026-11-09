@@ -44,6 +44,7 @@ export default {
   'docs/guides/settings': '설정',
   'docs/guides/keyboard': '키보드',
   'docs/reference/security': '보안과 데이터',
+  'docs/reference/data-and-backups': '데이터와 백업',
   'docs/reference/verifying': '다운로드 확인',
   'docs/reference/updating': '업데이트와 제거',
   'docs/reference/troubleshooting': '문제 해결',

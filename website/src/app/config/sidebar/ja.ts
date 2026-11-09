@@ -44,6 +44,7 @@ export default {
   'docs/guides/settings': '設定',
   'docs/guides/keyboard': 'キーボード',
   'docs/reference/security': 'セキュリティとデータ',
+  'docs/reference/data-and-backups': 'データとバックアップ',
   'docs/reference/verifying': 'ダウンロードの検証',
   'docs/reference/updating': 'アップデートとアンインストール',
   'docs/reference/troubleshooting': 'トラブルシューティング',

@@ -44,6 +44,7 @@ export default {
   'docs/guides/settings': 'الإعدادات',
   'docs/guides/keyboard': 'لوحة المفاتيح',
   'docs/reference/security': 'الأمان وبياناتك',
+  'docs/reference/data-and-backups': 'بياناتك والنسخ الاحتياطية',
   'docs/reference/verifying': 'التحقق من التنزيلات',
   'docs/reference/updating': 'التحديث وإلغاء التثبيت',
   'docs/reference/troubleshooting': 'استكشاف المشكلات وحلها',

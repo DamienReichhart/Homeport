@@ -44,6 +44,7 @@ export default {
   'docs/guides/settings': '设置',
   'docs/guides/keyboard': '键盘',
   'docs/reference/security': '安全与你的数据',
+  'docs/reference/data-and-backups': '你的数据与备份',
   'docs/reference/verifying': '验证下载',
   'docs/reference/updating': '更新与卸载',
   'docs/reference/troubleshooting': '故障排除',

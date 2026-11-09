@@ -45,6 +45,7 @@ export default {
   'docs/guides/settings': 'Settings',
   'docs/guides/keyboard': 'Keyboard',
   'docs/reference/security': 'Security and your data',
+  'docs/reference/data-and-backups': 'Your data and backups',
   'docs/reference/verifying': 'Verifying downloads',
   'docs/reference/updating': 'Updating and uninstalling',
   'docs/reference/troubleshooting': 'Troubleshooting',

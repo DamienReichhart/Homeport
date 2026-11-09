@@ -110,6 +110,10 @@ export const sidebar: NonNullable<StarlightUserConfig['sidebar']> = [
     ...group('group.reference'),
     items: [
       { ...entry('docs/reference/security'), slug: 'docs/reference/security' },
+      {
+        ...entry('docs/reference/data-and-backups'),
+        slug: 'docs/reference/data-and-backups',
+      },
       { ...entry('docs/reference/verifying'), slug: 'docs/reference/verifying' },
       { ...entry('docs/reference/updating'), slug: 'docs/reference/updating' },
       { ...entry('docs/reference/troubleshooting'), slug: 'docs/reference/troubleshooting' },
