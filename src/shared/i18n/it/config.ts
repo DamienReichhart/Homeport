@@ -1,0 +1,37 @@
+/** Italian text of the `config` namespace. */
+import type en from '../en/config';
+import type { Translation } from '../types';
+
+export default {
+  'config.nav': 'Configurazione',
+  'config.title': 'Configurazione',
+  'config.configMaps': 'ConfigMap',
+  'config.secrets': 'Secret',
+  'config.configMap': 'ConfigMap',
+  'config.secret': 'Secret',
+  'config.configMapsSummary': '{count, plural, one {# ConfigMap} other {# ConfigMap}}',
+  'config.secretsSummary': '{count, plural, one {# Secret} other {# Secret}}',
+  'config.searchConfigMaps': 'Cerca ConfigMap',
+  'config.searchSecrets': 'Cerca Secret',
+  'config.column.name': 'Nome',
+  'config.column.namespace': 'Namespace',
+  'config.column.type': 'Tipo',
+  'config.column.keys': 'Chiavi',
+  'config.column.age': 'Età',
+  'config.tab.data': 'Dati',
+  'config.tab.overview': 'Panoramica',
+  'config.tab.events': 'Eventi',
+  'config.tab.source': 'YAML',
+  'config.detail.namespace': 'Namespace',
+  'config.detail.type': 'Tipo',
+  'config.detail.labels': 'Etichette',
+  'config.detail.annotations': 'Annotazioni',
+  'config.noKeys': 'Nessuna chiave.',
+  'config.binary': '(dati binari)',
+  'config.base64': 'base64',
+  'config.reveal': 'Mostra',
+  'config.revealOne': 'Mostra {key}',
+  'config.hide': 'Nascondi',
+  'config.copy': 'Copia {key}',
+  'config.reveal.failed': 'Homeport non è riuscito a mostrare {key}',
+} satisfies Translation<typeof en>;
