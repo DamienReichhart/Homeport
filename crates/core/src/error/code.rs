@@ -166,6 +166,10 @@ pub enum ErrorCode {
     NomadPlacementFailed,
     /// A Nomad job changed by someone else since it was planned.
     NomadJobModified,
+    /// Logs or exec in a Nomad allocation, or task, that isn't running.
+    NomadAllocationNotRunning,
+    /// A Nomad client node the servers can't reach, to forward logs or exec to.
+    NomadNodeUnreachable,
     // Helm (ADR 0009).
     /// The `helm` CLI isn't installed on this computer.
     HelmMissing,

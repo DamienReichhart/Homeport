@@ -157,3 +157,98 @@ async fn nomad_live_a_job_runs_is_rerun_changed_scaled_and_stopped() {
     })
     .await;
 }
+
+#[tokio::test]
+#[ignore = "needs a local Nomad agent"]
+async fn nomad_live_a_tasks_log_is_read_and_a_command_runs_through_exec() {
+    use std::sync::{Arc, Mutex};
+
+    use homeport_core::{logs::LogEvent, logs::LogOptions, terminal::ExecEvent};
+    use homeport_nomad::exec::{pump, NomadExecOptions, NomadTerminal};
+
+    let nomad = dev_agent();
+    let name = "homeport-live-logs";
+    run(&nomad, &web_job(name, "hello-from-homeport")).await;
+    until("a running allocation", || async {
+        nomad
+            .job(None, name)
+            .await
+            .is_ok_and(|d| d.allocations.iter().any(|a| a.client_status == "running"))
+    })
+    .await;
+    let alloc = nomad
+        .job(None, name)
+        .await
+        .unwrap()
+        .allocations
+        .into_iter()
+        .find(|a| a.client_status == "running")
+        .unwrap()
+        .id;
+
+    let lines = Arc::new(Mutex::new(vec![]));
+    let seen = lines.clone();
+    nomad
+        .stream_logs(
+            alloc.clone(),
+            "server".into(),
+            LogOptions {
+                tail: None,
+                timestamps: false,
+                since: None,
+                stdout: true,
+                stderr: false,
+                follow: false,
+            },
+            move |e| {
+                if let LogEvent::Lines { lines } = e {
+                    seen.lock()
+                        .unwrap()
+                        .extend(lines.into_iter().map(|l| l.text));
+                }
+                true
+            },
+        )
+        .await;
+    assert!(lines
+        .lock()
+        .unwrap()
+        .iter()
+        .any(|l| l == "hello-from-homeport"));
+
+    let options = NomadExecOptions {
+        task: "server".into(),
+        command: Some("sh -c 'echo exec-from-homeport'".into()),
+        cols: 80,
+        rows: 24,
+    };
+    let (terminal, output) = NomadTerminal::open(&nomad, &alloc, &options).await.unwrap();
+    let events = Arc::new(Mutex::new(vec![]));
+    let seen = events.clone();
+    tokio::time::timeout(
+        std::time::Duration::from_secs(30),
+        pump(
+            nomad.clone(),
+            alloc.clone(),
+            "server".into(),
+            terminal,
+            output,
+            move |e| {
+                seen.lock().unwrap().push(e);
+                true
+            },
+        ),
+    )
+    .await
+    .unwrap();
+    let events = events.lock().unwrap().clone();
+    assert!(events
+        .iter()
+        .any(|e| matches!(e, ExecEvent::Output { data } if data.contains("exec-from-homeport"))));
+    assert!(matches!(
+        events.last(),
+        Some(ExecEvent::Exit { code: Some(0), .. })
+    ));
+
+    nomad.stop_job(None, name, true).await.unwrap();
+}

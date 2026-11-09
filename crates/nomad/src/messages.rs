@@ -111,6 +111,31 @@ homeport_core::messages! {
     SUBMIT_DENIED = "errors.nomad.submitDenied" => "{name} refused: the ACL token can't run jobs in namespace {namespace}.";
     SUBMIT_DENIED_HINT = "errors.nomad.submitDenied.hint" => "Planning and running need the submit-job capability on the job's namespace, which the write policy grants.";
 
+    // Allocations: their logs and terminals.
+
+    /// No such allocation.
+    ALLOC_NOT_FOUND = "errors.nomad.allocNotFound" => "{name} has no allocation {alloc}.";
+    ALLOC_NOT_FOUND_HINT = "errors.nomad.allocNotFound.hint" => "It may have been garbage-collected. Open the job again to see its current allocations.";
+    /// The task or allocation isn't running.
+    ALLOC_NOT_RUNNING = "errors.nomad.allocNotRunning" => "Task {task} of allocation {alloc} isn't running.";
+    ALLOC_NOT_RUNNING_HINT = "errors.nomad.allocNotRunning.hint" => "A shell needs a running task. Its logs stay readable until the allocation is garbage-collected.";
+    /// The servers can't reach the allocation's node.
+    NODE_UNREACHABLE = "errors.nomad.nodeUnreachable" => "{name} can't reach the node allocation {alloc} runs on.";
+    NODE_UNREACHABLE_HINT = "errors.nomad.nodeUnreachable.hint" => "Logs and shells go through the servers to the client node. Check that the node is up and its Nomad agent connected, on the Nodes page or with:";
+    /// The token lacks read-logs.
+    LOGS_DENIED = "errors.nomad.logsDenied" => "{name} refused: the ACL token can't read logs in this namespace.";
+    LOGS_DENIED_HINT = "errors.nomad.logsDenied.hint" => "Reading a task's logs needs the read-logs capability on the job's namespace.";
+    /// The token lacks alloc-exec.
+    EXEC_DENIED = "errors.nomad.execDenied" => "{name} refused: the ACL token can't open a shell in this namespace.";
+    EXEC_DENIED_HINT = "errors.nomad.execDenied.hint" => "A shell needs the alloc-exec capability on the job's namespace, and alloc-node-exec for tasks using the raw_exec driver.";
+    /// A command with a quote left open.
+    COMMAND_UNCLOSED_QUOTE = "errors.nomad.commandUnclosedQuote" => "The command has a quote that isn't closed.";
+    /// The command isn't in the task.
+    EXEC_NO_COMMAND = "errors.nomad.execNoCommand" => "The task has no {command} to run.";
+    EXEC_NO_COMMAND_HINT = "errors.nomad.execNoCommand.hint" => "Its image may not include a shell. Try another command, such as /bin/bash or /busybox/sh.";
+    /// The terminal ended.
+    TERMINAL_ENDED = "errors.nomad.terminalEnded" => "The terminal ended.";
+
     /// An answer that isn't the JSON Nomad sends.
     UNREADABLE = "errors.nomad.unreadable" => "{name} sent an answer Homeport couldn't read.";
     UNREADABLE_HINT = "errors.nomad.unreadable.hint" => "Check that the address points to a Nomad agent's HTTP API, usually on port 4646.";

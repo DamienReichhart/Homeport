@@ -4,8 +4,14 @@
 use tauri::{ipc::Channel, State};
 
 use homeport_clusters::{nomad::NomadForm, service::ClusterView};
-use homeport_core::streams::StreamId;
+use homeport_core::{
+    logs::{LogEvent, LogOptions},
+    streams::StreamId,
+    terminal::ExecEvent,
+};
 use homeport_nomad::{
+    allocations::NomadAllocationDetail,
+    exec::{NomadExecOptions, NomadTerminal, TerminalId},
     jobs::{NomadJobDetail, NomadJobView},
     run::{NomadJobSource, NomadPlan, NomadPlanToRun, NomadRunResult},
     watch::{watch, NomadWatch},
@@ -166,4 +172,95 @@ pub async fn clusters_nomad_job_source(
     nomad(&state, &id)?
         .job_source(namespace.as_deref(), &job_id)
         .await
+}
+
+// An allocation: its detail, its tasks' logs and terminals in them.
+
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_nomad_allocation(
+    state: State<'_, AppState>,
+    id: String,
+    alloc_id: String,
+) -> AppResult<NomadAllocationDetail> {
+    nomad(&state, &id)?.allocation(&alloc_id).await
+}
+
+/// Streams a task's stdout and stderr, as `options` asks, until cancelled
+/// or they end.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_nomad_logs_subscribe(
+    state: State<'_, AppState>,
+    id: String,
+    alloc_id: String,
+    task: String,
+    options: LogOptions,
+    on_event: Channel<LogEvent>,
+) -> AppResult<StreamId> {
+    let nomad = nomad(&state, &id)?;
+    Ok(state.streams.spawn(async move {
+        nomad
+            .stream_logs(alloc_id, task, options, move |e| on_event.send(e).is_ok())
+            .await;
+    }))
+}
+
+/// Opens a terminal in a task, like `nomad alloc exec -t`.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_nomad_exec_start(
+    state: State<'_, AppState>,
+    id: String,
+    alloc_id: String,
+    options: NomadExecOptions,
+    on_event: Channel<ExecEvent>,
+) -> AppResult<TerminalId> {
+    let nomad = nomad(&state, &id)?;
+    let (terminal, output) = NomadTerminal::open(&nomad, &alloc_id, &options).await?;
+    Ok(state
+        .nomad_terminals
+        .open(nomad, alloc_id, options.task, terminal, output, move |e| {
+            on_event.send(e).is_ok()
+        }))
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_nomad_exec_input(
+    state: State<'_, AppState>,
+    terminal: TerminalId,
+    data: String,
+) -> AppResult<()> {
+    state
+        .nomad_terminals
+        .get(terminal)?
+        .write(data.as_bytes())
+        .await
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_nomad_exec_resize(
+    state: State<'_, AppState>,
+    terminal: TerminalId,
+    cols: u16,
+    rows: u16,
+) -> AppResult<()> {
+    state
+        .nomad_terminals
+        .get(terminal)?
+        .resize(cols, rows)
+        .await
+}
+
+/// Ends a terminal and its command.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_nomad_exec_close(
+    state: State<'_, AppState>,
+    terminal: TerminalId,
+) -> AppResult<()> {
+    state.nomad_terminals.close(terminal);
+    Ok(())
 }

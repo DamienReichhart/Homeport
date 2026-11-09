@@ -60,6 +60,7 @@ struct Inner {
     address: String,
     region: Option<String>,
     token: Option<String>,
+    tls: Arc<rustls::ClientConfig>,
 }
 
 /// An answer to a blocking query, with the index to wait from next.
@@ -95,17 +96,17 @@ pub fn segment(segment: &str) -> String {
 impl Nomad {
     /// A client for `config`; fails when its TLS material can't be used.
     pub fn new(config: &NomadConfig) -> AppResult<Self> {
-        let tls = tls::config(&TlsMaterial {
+        let tls = Arc::new(tls::config(&TlsMaterial {
             name: &config.name,
             certificate_authority: config.certificate_authority.as_deref(),
             client_certificate: config.client_certificate.as_deref(),
             client_key: config.client_key.as_deref(),
             server_name: config.tls_server_name.as_deref(),
-        })?;
+        })?);
         let http = reqwest::Client::builder()
             .user_agent(concat!("Homeport/", env!("CARGO_PKG_VERSION")))
             .connect_timeout(CONNECT_TIMEOUT)
-            .tls_backend_preconfigured(tls)
+            .tls_backend_preconfigured((*tls).clone())
             .build()
             .map_err(|e| AppError::new(ErrorCode::Io, msg::HTTPS_CLIENT).with_cause(&e))?;
         Ok(Self(Arc::new(Inner {
@@ -114,6 +115,7 @@ impl Nomad {
             address: config.address.trim_end_matches('/').to_owned(),
             region: given(&config.region),
             token: given(&config.token),
+            tls,
         })))
     }
 
@@ -135,9 +137,25 @@ impl Nomad {
         self.0.token.as_deref()
     }
 
+    /// The TLS configuration, for the connections reqwest doesn't make (exec).
+    pub(crate) fn tls_config(&self) -> Arc<rustls::ClientConfig> {
+        self.0.tls.clone()
+    }
+
     /// A request to `path` with the token and the region, timed out after
     /// [`REQUEST_TIMEOUT`].
     pub(crate) fn request(
+        &self,
+        method: Method,
+        path: &str,
+        query: &[(&str, String)],
+    ) -> RequestBuilder {
+        self.streaming(method, path, query).timeout(REQUEST_TIMEOUT)
+    }
+
+    /// A request to `path` with the token and the region and no timeout,
+    /// for an answer that streams until it's dropped, such as logs.
+    pub(crate) fn streaming(
         &self,
         method: Method,
         path: &str,
@@ -147,7 +165,6 @@ impl Nomad {
             .0
             .http
             .request(method, format!("{}{path}", self.0.address))
-            .timeout(REQUEST_TIMEOUT)
             .query(query);
         if let Some(region) = self.region() {
             request = request.query(&[("region", region)]);

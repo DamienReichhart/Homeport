@@ -139,6 +139,18 @@ export const commands = {
 	clustersNomadJobRun: (id: string, plan: NomadPlanToRun, source: string | null) => __TAURI_INVOKE<NomadRunResult>("clusters_nomad_job_run", { id, plan, source }),
 	/**  A job's specification to edit: as submitted when Nomad kept it, else its JSON. */
 	clustersNomadJobSource: (id: string, namespace: string | null, jobId: string) => __TAURI_INVOKE<NomadJobSource>("clusters_nomad_job_source", { id, namespace, jobId }),
+	clustersNomadAllocation: (id: string, allocId: string) => __TAURI_INVOKE<NomadAllocationDetail>("clusters_nomad_allocation", { id, allocId }),
+	/**
+	 *  Streams a task's stdout and stderr, as `options` asks, until cancelled
+	 *  or they end.
+	 */
+	clustersNomadLogsSubscribe: (id: string, allocId: string, task: string, options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("clusters_nomad_logs_subscribe", { id, allocId, task, options, onEvent }),
+	/**  Opens a terminal in a task, like `nomad alloc exec -t`. */
+	clustersNomadExecStart: (id: string, allocId: string, options: NomadExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("clusters_nomad_exec_start", { id, allocId, options, onEvent }),
+	clustersNomadExecInput: (terminal: number, data: string) => __TAURI_INVOKE<null>("clusters_nomad_exec_input", { terminal, data }),
+	clustersNomadExecResize: (terminal: number, cols: number, rows: number) => __TAURI_INVOKE<null>("clusters_nomad_exec_resize", { terminal, cols, rows }),
+	/**  Ends a terminal and its command. */
+	clustersNomadExecClose: (terminal: number) => __TAURI_INVOKE<null>("clusters_nomad_exec_close", { terminal }),
 	clustersNamespaces: (id: string) => __TAURI_INVOKE<NamespaceView[]>("clusters_namespaces", { id }),
 	/**  The workloads of `kind` in `namespace`, or in every Namespace without one. */
 	clustersWorkloadsList: (id: string, kind: WorkloadKind, namespace: string | null) => __TAURI_INVOKE<WorkloadView[]>("clusters_workloads_list", { id, kind, namespace }),
@@ -1776,6 +1788,10 @@ export type ErrorCode =
 "nomad_placement_failed" | 
 /**  A Nomad job changed by someone else since it was planned. */
 "nomad_job_modified" | 
+/**  Logs or exec in a Nomad allocation, or task, that isn't running. */
+"nomad_allocation_not_running" | 
+/**  A Nomad client node the servers can't reach, to forward logs or exec to. */
+"nomad_node_unreachable" | 
 /**  The `helm` CLI isn't installed on this computer. */
 "helm_missing" | 
 /**  The `helm` CLI found is Helm 2, which Homeport doesn't support. */
@@ -2824,6 +2840,16 @@ export type NomadAgent = {
 	leader: string,
 };
 
+/**
+ *  An allocation's detail: what the job pages list, its tasks' events,
+ *  newest first, and why the client gave it its status.
+ */
+export type NomadAllocationDetail = {
+	allocation: NomadAllocationView,
+	clientDescription: string | null,
+	events: NomadTaskEvent[],
+};
+
 /**  An allocation: one placement of a task group on a client node. */
 export type NomadAllocationView = {
 	id: string,
@@ -2861,6 +2887,15 @@ export type NomadConnection = {
 	customCa?: boolean,
 	/**  Whether a client certificate and key are sealed with it. */
 	clientCertificate?: boolean,
+};
+
+/**  What the Shell tab asks for. */
+export type NomadExecOptions = {
+	task: string,
+	/**  A command line, split like a shell would; `/bin/sh` when empty. */
+	command: string | null,
+	cols: number,
+	rows: number,
 };
 
 /**  A field a plan changes, in a task group or one of its tasks. */
@@ -3018,6 +3053,15 @@ export type NomadScaling = {
 	enabled: boolean,
 };
 
+/**  Something that happened to a task, as Nomad records it. */
+export type NomadTaskEvent = {
+	task: string,
+	/**  Such as `Started`, `Terminated` or `Driver Failure`. */
+	kind: string,
+	message: string,
+	time: string | null,
+};
+
 /**  A task group of a job's detail. */
 export type NomadTaskGroupView = {
 	counts: NomadGroupCounts,
@@ -3045,7 +3089,9 @@ export type NomadWatch =
 /**  The jobs of a namespace (the token's default without one, all with `*`). */
 { topic: "jobs"; namespace: string | null } | 
 /**  One job, its summary and its allocations. */
-{ topic: "job"; namespace: string | null; jobId: string };
+{ topic: "job"; namespace: string | null; jobId: string } | 
+/**  One allocation and its tasks' states. */
+{ topic: "allocation"; allocId: string };
 
 /**
  *  The OS notifications Homeport shows, one switch per kind; all on unless

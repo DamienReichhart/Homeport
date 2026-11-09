@@ -49,6 +49,8 @@ pub struct AppState {
     pub incus_terminals: IncusTerminals,
     /// Terminals open in Pods' containers.
     pub pod_terminals: PodTerminals,
+    /// Terminals open in Nomad allocations' tasks.
+    pub nomad_terminals: homeport_nomad::exec::NomadTerminals,
     /// Volumes being browsed, each in a helper container (ADR 0015).
     pub volume_browser: BrowseSessions,
     /// Registry digests, for telling when a newer image is published.

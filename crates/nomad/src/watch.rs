@@ -30,6 +30,8 @@ pub enum NomadWatch {
         namespace: Option<String>,
         job_id: String,
     },
+    /// One allocation and its tasks' states.
+    Allocation { alloc_id: String },
 }
 
 impl NomadWatch {
@@ -47,6 +49,9 @@ impl NomadWatch {
                     (format!("{base}/summary"), query.clone()),
                     (format!("{base}/allocations"), query),
                 ]
+            }
+            Self::Allocation { alloc_id } => {
+                vec![(format!("/v1/allocation/{}", segment(alloc_id)), vec![])]
             }
         }
     }
