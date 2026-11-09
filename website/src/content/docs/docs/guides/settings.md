@@ -93,7 +93,7 @@ What Homeport keeps on this computer.
 - [Synced Stacks](/docs/guides/synced-stacks/) clone their repository again on their next sync.
 - The current data is copied to `homeport.db.before-restore-<date>` in Homeport's data folder first. Restoring a wrong file, a newer Homeport's, or one that fails halfway changes nothing.
 
-To add some Hosts to the ones you have instead, use **Export** and **Import** on the Hosts page.
+To add some Hosts to the ones you have instead, use **Export** and **Import** on the Hosts page. [Your data and backups](/docs/reference/data-and-backups/) says where Homeport's files are, what a backup includes, and how to copy the database yourself.
 
 ### Keeping Engine events
 
