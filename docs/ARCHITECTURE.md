@@ -101,6 +101,8 @@ website/src/
 
 A component's styles live in the component. One that overrides a global rule must outrank it (`.cta.card`), because Vite doesn't keep the global stylesheet ahead of a page's CSS. Logic goes in `model/` (or `core/`, `shared/lib/`) so it can be tested: `bun test`, with the tests next to the code.
 
+Screenshots are captured in every language (`bun run screenshots`), and Astro converts each to AVIF and WebP at build time. Its results are cached in `website/node_modules/.astro/assets/`, each named after a hash of its source image's bytes, so a screenshot whose content changes is converted again whatever its name. The Pages workflow keeps that cache between runs, keyed on the lockfile and the images, and `website/scripts/prune-image-cache.ts` trims it to what the last build used, so it doesn't grow with every recapture. A website build with a warm cache takes about a minute.
+
 ## Adding a feature (example: `notes`)
 
 Frontend:
