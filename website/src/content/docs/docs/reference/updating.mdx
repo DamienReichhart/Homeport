@@ -12,7 +12,7 @@ How Homeport updates depends on how you installed it.
 
 ### Windows, macOS and the AppImage
 
-Homeport checks for a new version when it starts and every 6 hours. When one is out, a bar at the top of the window says so: choose **What's new** to read the [changelog](/changelog/), or **Install and restart**. Homeport downloads the update, checks its signature, installs it and opens again. Nothing is installed until you choose to, and your Hosts, Stacks and settings are kept.
+Homeport checks for a new version when it starts and every 6 hours. When one is out, a bar at the top of the window says so: choose **What's new** to read the [changelog](/changelog/), or **Install and restart**. Homeport downloads the update, checks its signature, installs it and opens again. Nothing is installed until you choose to, and [your data is kept](#your-data-across-versions).
 
 You can also check now from **Settings → Updates → Check now**.
 
@@ -42,6 +42,14 @@ Versions before 0.3.0 don't update themselves, and their Linux packages don't ad
 
 To hear about new versions anyway, watch the repository on GitHub (**Watch → Custom → Releases**), or follow the [releases feed](https://github.com/DamienReichhart/Homeport/releases.atom).
 
+## Your data across versions
+
+Every version of Homeport opens the data of every earlier version, back to 0.1.0, and upgrades it without losing anything: Hosts, Stacks, Clusters, settings and secrets. An update never asks you to set anything up again: the first time a new version starts, it upgrades its database where it is, and everything connects as before. Each release is tested against a sample database of every release before it.
+
+**Downgrading isn't supported.** Once a newer version has opened your data, an older one can't read it, and it doesn't try: it stops with [a message naming the version to install](/docs/reference/troubleshooting/#this-database-was-last-used-by-homeport--or-later) instead of changing anything. Your data stays as the newer version left it; install that version, or a newer one, and Homeport opens it again.
+
+**Back up before you try a prerelease.** A prerelease upgrades the database like any other version, so the stable release you came from can no longer open it. Choose **Settings → Data → Back up…** first; see [Your data and backups](/docs/reference/data-and-backups/#backing-up-in-homeport). To go back to the stable release, quit Homeport, move `homeport.db` out of the [data folder](/docs/reference/data-and-backups/#the-data-folder), install the stable release again, and **Restore…** that backup.
+
 ## Uninstalling
 
 <Tabs syncKey="os">
@@ -64,7 +72,7 @@ For the AppImage, delete the file. Its menu entry disappears with it.
 </TabItem>
 </Tabs>
 
-Uninstalling leaves your data in place, so reinstalling brings everything back.
+Uninstalling leaves your data in place, so reinstalling brings everything back. [Your data and backups](/docs/reference/data-and-backups/) says where it is.
 
 ### The login entry
 
@@ -79,9 +87,11 @@ If **Start at login** is on, turn it off in **Settings → Desktop** before unin
 ## Removing your data
 
 <Aside type="caution">
-  This deletes your Hosts, their stored keys and certificates, your Managed Stack definitions, your
-  Linked Stacks and their deploy history. Linked Stacks' folders stay where they are. Nothing on
-  your Hosts is touched.
+  This deletes your Hosts and Clusters with their stored keys, certificates and tokens, your
+  Managed, Linked and Synced Stacks with their environments and deploy history, your registry
+  logins, repositories and settings. Linked Stacks' folders stay where they are. Nothing on your
+  Hosts and Clusters is touched. To keep a copy first, [back it
+  up](/docs/reference/data-and-backups/).
 </Aside>
 
 1. Delete Homeport's data and log folders:
@@ -92,9 +102,9 @@ If **Start at login** is on, turn it off in **Settings → Desktop** before unin
    | macOS   | `~/Library/Application Support/com.homeport.app/`, `~/Library/Logs/com.homeport.app/` |
    | Windows | `%APPDATA%\com.homeport.app\`, `%LOCALAPPDATA%\com.homeport.app\`                     |
 
-2. Delete the encryption key from your keychain — the entry for `com.homeport.app`:
+2. Delete the encryption key from your keychain — the entry for `com.homeport.app`, account `secrets-key`:
    - **macOS** — in **Keychain Access**, search for `com.homeport.app` and delete it.
    - **Windows** — in **Credential Manager → Windows Credentials**, remove the entry containing `com.homeport.app`.
    - **Linux** — in **Passwords and Keys** (Seahorse) or KWallet, delete the entry for `com.homeport.app`.
 
-3. On your servers, remove Homeport's public keys from `~/.ssh/authorized_keys` — their comments start with `homeport@`.
+3. On your servers, remove Homeport's public keys from `~/.ssh/authorized_keys` — their comments start with `homeport@`. On your git forges, remove the deploy keys Homeport made for your repositories, and on Incus servers added over HTTPS, Homeport's certificate (`incus config trust list`, then `incus config trust remove`).

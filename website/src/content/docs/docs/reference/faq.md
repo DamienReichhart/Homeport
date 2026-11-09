@@ -79,10 +79,14 @@ Each person runs their own Homeport with their own Hosts and keys. With a Homepo
 
 Yes, in two ways:
 
-- **Everything**: **Settings → Data → Back up…** saves every Host, Cluster, Stack, registry login, repository and setting, with their secrets, to one file protected by a passphrase of at least 12 characters. On the new computer, **Restore…** in the same place opens it, lists what it holds, and replaces what's there. Everything connects and deploys without asking you for a key or a password again. See [backing up and restoring](/docs/guides/settings/#backing-up-and-restoring).
+- **Everything**: **Settings → Data → Back up…** saves every Host, Cluster, Stack, registry login, repository and setting, with their secrets, to one file protected by a passphrase of at least 12 characters. On the new computer, **Restore…** in the same place opens it, lists what it holds, and replaces what's there. Everything connects and deploys without asking you for a key or a password again. See [Your data and backups](/docs/reference/data-and-backups/#backing-up-in-homeport).
 - **Some Hosts**: on the **Hosts** page, **Export** the Hosts you pick, and **Import** them on the other computer, next to the Hosts it already has. See [moving to another computer](/docs/reference/security/#moving-to-another-computer).
 
-Copying `homeport.db` doesn't work for secrets: they're encrypted with a key kept in this computer's keychain, and show as **Credentials lost** elsewhere.
+Copying `homeport.db` doesn't work for secrets: they're encrypted with a key kept in this computer's keychain, and show as **Credentials lost** elsewhere. See [copying the files yourself](/docs/reference/data-and-backups/#copying-the-files-yourself).
+
+### Where does Homeport keep its data?
+
+In one SQLite database, `homeport.db`, in your user's application data folder, with the key that encrypts its secrets in your operating system's keychain. Nothing is kept on your servers or anywhere online. [Your data and backups](/docs/reference/data-and-backups/) gives the folder on each system, what to back up and how to restore it.
 
 ### Does a backup include my containers and volumes?
 
@@ -98,7 +102,7 @@ A Stack started with `docker compose up` in a folder shows as [Linked](/docs/gui
 
 ### Does Homeport collect data about me?
 
-No. There's no account, telemetry or analytics. The only request Homeport makes on its own from your computer is the update check, which downloads a small file from this website and sends nothing about you; you can turn it off in **Settings → Updates**. Separately, the newer-image check asks your images' registries, through each Host's Engine, which version their tags point to; for a local Host that request leaves from your computer too. See [security and your data](/docs/reference/security/#what-homeport-connects-to).
+No. There's no account, telemetry, analytics or crash reporting. The only request Homeport makes on its own from your computer is the update check, which downloads a small file from this website and sends nothing about you; you can turn it off in **Settings → Updates**. Separately, the newer-image check asks your images' registries, through each Host's Engine, which version their tags point to; for a local Host that request leaves from your computer too. See [security and your data](/docs/reference/security/#what-homeport-connects-to).
 
 ### Can Homeport use my private registries?
 
@@ -112,9 +116,13 @@ It asks the image's registry, through the Host's Engine, which digest the tag po
 
 On Windows, macOS and with the AppImage, Homeport tells you when a new version is out: choose **Install and restart**. On Linux, the `.deb` and `.rpm` packages update with the rest of your system from the Homeport package repository. See [updating](/docs/reference/updating/).
 
+### Will an update lose my Hosts?
+
+No. Every version of Homeport opens the data of every earlier version, back to 0.1.0, and upgrades it without losing anything: Hosts, Stacks, Clusters, settings and secrets. Going back to an older version is the one thing that isn't supported: the older Homeport stops with a message instead of changing anything. See [Your data across versions](/docs/reference/updating/#your-data-across-versions).
+
 ### Is Homeport on Homebrew, winget, Flathub or the AUR?
 
-Not yet. They're planned; the [installation page](/docs/installation/#coming-later) links to each one's issue.
+Not yet. On Linux, Homeport has its own APT and RPM repositories, so `apt`, `dnf` and `zypper` install and update it. Homebrew, winget, Scoop, the AUR, Flathub and Snap are planned; the [installation page](/docs/installation/#coming-later) links to each one's issue.
 
 ### Is Homeport available in my language?
 
