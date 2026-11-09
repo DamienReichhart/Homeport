@@ -1,0 +1,36 @@
+/** French text of the `app` namespace. */
+import type en from '../en/app';
+import type { Translation } from '../types';
+
+export default {
+  'app.nav.main': 'Principal',
+  'app.keychainMissing':
+    'Aucun trousseau du système n’est disponible : les clés SSH, les certificats TLS et les environnements des stacks ne peuvent pas être enregistrés. Les hôtes locaux, TCP et ssh-agent fonctionnent toujours.',
+  'app.crash.title': 'Un problème est survenu',
+  'app.crash.description':
+    'Homeport a rencontré un problème inattendu sur cette page. Recharger la page suffit en général ; si cela se reproduit, copiez le rapport depuis Détails dans une issue.',
+  'app.crash.reload': 'Recharger',
+  'app.crash.backToOverview': 'Retour à la vue d’ensemble',
+  'app.shortcuts.title': 'Raccourcis clavier',
+  'app.shortcuts.description':
+    'Les raccourcis qui fonctionnent ici. Les touches comme N et / sont sans effet pendant la saisie dans un champ.',
+  'app.shortcuts.general': 'Général',
+  'app.shortcuts.navigation': 'Aller à',
+  'app.shortcuts.hosts': 'Hôtes',
+  'app.shortcuts.help': 'Afficher les raccourcis clavier',
+  'app.shortcuts.settings': 'Ouvrir les Paramètres',
+  'app.shortcuts.goTo': 'Aller à {page}',
+  'app.shortcuts.previousHost': 'Hôte précédent',
+  'app.shortcuts.nextHost': 'Hôte suivant',
+  'app.shortcuts.refresh': 'Actualiser les listes de cet hôte',
+  'app.palette.title': 'Palette de commandes',
+  'app.palette.description': 'Aller à une page, changer d’hôte ou lancer une commande.',
+  'app.palette.open': 'Ouvrir la palette de commandes',
+  'app.palette.placeholder': 'Saisissez une page, un hôte ou une commande…',
+  'app.palette.empty': 'Aucun résultat.',
+  'app.palette.recent': 'Récents',
+  'app.palette.goTo': 'Aller à',
+  'app.palette.hosts': 'Hôtes',
+  'app.palette.actions': 'Actions',
+  'app.palette.switchTo': 'Passer à {name}',
+} satisfies Translation<typeof en>;
