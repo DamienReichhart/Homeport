@@ -65,6 +65,28 @@ homeport_core::messages! {
     /// Any other error answer.
     API_ERROR = "errors.nomad.apiError" => "{name} answered with an error.";
     DETAILS_HINT = "errors.nomad.details.hint" => "Details has Nomad's answer.";
+    // Jobs.
+
+    /// No such job.
+    JOB_NOT_FOUND = "errors.nomad.jobNotFound" => "{name} has no job {job}.";
+    JOB_NOT_FOUND_HINT = "errors.nomad.jobNotFound.hint" => "It may have been stopped and purged, or be in another namespace.";
+    /// A count below the scaling policy's minimum.
+    SCALE_BELOW_MIN = "errors.nomad.scaleBelowMin" => "Task group {group} of {job} can't run fewer than {min}.";
+    /// A count above the scaling policy's maximum.
+    SCALE_ABOVE_MAX = "errors.nomad.scaleAboveMax" => "Task group {group} of {job} can't run more than {max}.";
+    SCALE_BOUNDS_HINT = "errors.nomad.scaleBounds.hint" => "Its scaling policy sets the bounds. Change them in the job's definition to go further.";
+    /// Nomad refused a scale for a reason of its own.
+    SCALE_REFUSED_HINT = "errors.nomad.scaleRefused.hint" => "Details has Nomad's reason.";
+    /// The token lacks submit-job or scale-job.
+    SCALE_DENIED = "errors.nomad.scaleDenied" => "{name} refused: the ACL token can't scale jobs in this namespace.";
+    SCALE_DENIED_HINT = "errors.nomad.scaleDenied.hint" => "Scaling needs the scale-job capability, which the write policy also grants, on the job's namespace.";
+    /// The token lacks submit-job to stop.
+    STOP_DENIED = "errors.nomad.stopDenied" => "{name} refused: the ACL token can't stop jobs in this namespace.";
+    STOP_DENIED_HINT = "errors.nomad.stopDenied.hint" => "Stopping needs the submit-job capability on the job's namespace.";
+    /// The token lacks read-job.
+    READ_DENIED = "errors.nomad.readDenied" => "{name} refused: the ACL token can't read jobs in this namespace.";
+    READ_DENIED_HINT = "errors.nomad.readDenied.hint" => "Listing jobs and their allocations needs the read-job capability (list-jobs and read-job), which the read policy grants.";
+
     /// An answer that isn't the JSON Nomad sends.
     UNREADABLE = "errors.nomad.unreadable" => "{name} sent an answer Homeport couldn't read.";
     UNREADABLE_HINT = "errors.nomad.unreadable.hint" => "Check that the address points to a Nomad agent's HTTP API, usually on port 4646.";

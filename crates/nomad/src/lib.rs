@@ -7,13 +7,18 @@
 //!   token (sent in `X-Nomad-Token`, never in a URL) and the TLS material.
 //! - [`error`] explains Nomad's answers and the failures to reach it.
 //! - [`agent`] reads the Cluster's status: its leader, version and region.
+//! - [`jobs`] lists, shows, stops and scales jobs; [`watch`] tells a page
+//!   when what it shows changed, through Nomad's blocking queries.
 
 pub mod address;
 pub mod agent;
 pub mod client;
 pub mod error;
+pub mod jobs;
 pub mod messages;
+mod time;
 mod tls;
+pub mod watch;
 
 pub use address::{normalize_address, DEFAULT_PORT};
 pub use agent::NomadAgent;

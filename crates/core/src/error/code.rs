@@ -156,6 +156,10 @@ pub enum ErrorCode {
     NomadPermissionDenied,
     /// A Nomad Cluster whose servers have no leader, so nothing can be changed or read.
     NomadNoLeader,
+    /// A Nomad job that doesn't exist, or not in the namespace asked.
+    NomadJobNotFound,
+    /// A task group count outside its scaling policy's minimum and maximum.
+    NomadScaleOutOfBounds,
     // Helm (ADR 0009).
     /// The `helm` CLI isn't installed on this computer.
     HelmMissing,

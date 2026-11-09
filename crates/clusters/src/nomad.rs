@@ -17,7 +17,7 @@ use crate::{
 #[serde(rename_all = "camelCase", default)]
 pub struct NomadForm {
     pub name: String,
-    /// Such as `nomad.example.com`, `10.0.0.5:4646` or `https://nomad:4646`.
+    /// Such as `nomad.example.com:4646`, `10.0.0.5` or `https://nomad:4646`.
     pub address: String,
     pub region: Option<String>,
     pub tls_server_name: Option<String>,

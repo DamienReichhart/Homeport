@@ -5,7 +5,7 @@
 use std::{sync::Arc, time::Duration};
 
 use reqwest::{Method, RequestBuilder, Response};
-use serde::de::DeserializeOwned;
+use serde::{de::DeserializeOwned, Serialize};
 
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 
@@ -221,6 +221,27 @@ impl Nomad {
             index,
         })
     }
+
+    pub(crate) async fn post<T: DeserializeOwned>(
+        &self,
+        path: &str,
+        query: &[(&str, String)],
+        body: &impl Serialize,
+    ) -> AppResult<T> {
+        let response = self
+            .send(self.request(Method::POST, path, query).json(body))
+            .await?;
+        self.read(response).await
+    }
+
+    pub(crate) async fn delete<T: DeserializeOwned>(
+        &self,
+        path: &str,
+        query: &[(&str, String)],
+    ) -> AppResult<T> {
+        let response = self.send(self.request(Method::DELETE, path, query)).await?;
+        self.read(response).await
+    }
 }
 
 #[cfg(test)]
@@ -341,7 +362,10 @@ pub(crate) mod testing {
                             .unwrap_or((404, vec![], "no route".into()));
                         let mut reply =
                             format!("HTTP/1.1 {status} X\r\ncontent-length: {}\r\n", body.len());
+                        let count = log.lock().unwrap().len();
                         for (k, v) in extra {
+                            // `$COUNT` stands for how many requests came so far.
+                            let v = v.replace("$COUNT", &count.to_string());
                             reply.push_str(&format!("{k}: {v}\r\n"));
                         }
                         reply.push_str("\r\n");

@@ -2640,6 +2640,7 @@ dependencies = [
  "homeport-core",
  "homeport-transport",
  "http",
+ "jiff",
  "log",
  "reqwest",
  "rustls",
