@@ -204,7 +204,7 @@ fn yaml_leaves_out_managed_fields_and_secret_values() {
 fn forbidden_lists_name_the_verb_resource_and_namespace() {
     let e = forbidden("list", ResourceKind::Secret, Some("shop"));
     assert!(e.is(ErrorCode::Forbidden));
-    assert_eq!(e.message, "Your credentials can't list secrets in shop.");
+    assert_eq!(e.message, "Your credentials don't allow “list” on secrets in shop.");
     assert_eq!(
         e.hint.unwrap().commands,
         ["kubectl auth can-i list secrets --namespace shop"]
@@ -212,10 +212,10 @@ fn forbidden_lists_name_the_verb_resource_and_namespace() {
     let e = forbidden("list", ResourceKind::Pod, None);
     assert_eq!(
         e.message,
-        "Your credentials can't list pods across all namespaces."
+        "Your credentials don't allow “list” on pods across all namespaces."
     );
     let e = forbidden("list", ResourceKind::Node, Some("shop"));
-    assert_eq!(e.message, "Your credentials can't list nodes.");
+    assert_eq!(e.message, "Your credentials don't allow “list” on nodes.");
 }
 
 #[test]

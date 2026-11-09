@@ -60,7 +60,7 @@ impl On {
                 .patch_scale(name, &params, &patch)
                 .await
                 .map(drop),
-            _ => return Err(not_supported("scale", kind)),
+            _ => return Err(not_supported(msg::SCALE_NOT_SUPPORTED, kind)),
         };
         result.map_err(|e| self.failed("patch", r, ns, Some(name), &e))
     }
@@ -88,7 +88,7 @@ impl On {
                 .patch(name, &params, &patch)
                 .await
                 .map(drop),
-            _ => return Err(not_supported("restart", kind)),
+            _ => return Err(not_supported(msg::RESTART_NOT_SUPPORTED, kind)),
         };
         result.map_err(|e| self.failed("patch", kind.resource(), ns, Some(name), &e))
     }
@@ -225,12 +225,8 @@ fn manual_job_name(cron: &str, suffix: &str) -> String {
     format!("{}{tail}", head.trim_end_matches('-'))
 }
 
-fn not_supported(action: &str, kind: WorkloadKind) -> AppError {
-    AppError::validation(
-        msg::ACTION_NOT_SUPPORTED
-            .with("action", action)
-            .with("kind", kind.resource().kind()),
-    )
+fn not_supported(message: homeport_core::error::Message, kind: WorkloadKind) -> AppError {
+    AppError::validation(message.with("kind", kind.resource().kind()))
 }
 
 #[cfg(test)]

@@ -136,19 +136,20 @@ homeport_core::messages! {
     // What runs on a Cluster.
 
     /// The credentials may not do this in one Namespace.
-    FORBIDDEN_IN = "errors.clusters.forbiddenIn" => "Your credentials can't {verb} {resource} in {namespace}.";
+    FORBIDDEN_IN = "errors.clusters.forbiddenIn" => "Your credentials don't allow “{verb}” on {resource} in {namespace}.";
     /// …in every Namespace at once.
-    FORBIDDEN_EVERYWHERE = "errors.clusters.forbiddenEverywhere" => "Your credentials can't {verb} {resource} across all namespaces.";
+    FORBIDDEN_EVERYWHERE = "errors.clusters.forbiddenEverywhere" => "Your credentials don't allow “{verb}” on {resource} across all namespaces.";
     FORBIDDEN_EVERYWHERE_HINT = "errors.clusters.forbiddenEverywhere.hint" => "Pick a namespace you're allowed to see, or ask the cluster's administrator for this permission. Check with:";
     /// …on a resource that isn't in a Namespace.
-    FORBIDDEN = "errors.clusters.forbidden" => "Your credentials can't {verb} {resource}.";
+    FORBIDDEN = "errors.clusters.forbidden" => "Your credentials don't allow “{verb}” on {resource}.";
     FORBIDDEN_HINT = "errors.clusters.forbidden.hint" => "Ask the cluster's administrator for this permission. Check with:";
     /// The resource was deleted while it was open.
     RESOURCE_GONE = "errors.clusters.resourceGone" => "{kind} {name} no longer exists.";
     /// Scaling to fewer than no Pods.
     REPLICAS_NEGATIVE = "errors.clusters.replicasNegative" => "A workload can't run fewer than 0 Pods.";
     /// An action a kind of workload doesn't have, such as scaling a DaemonSet.
-    ACTION_NOT_SUPPORTED = "errors.clusters.actionNotSupported" => "A {kind} can't {action}.";
+    SCALE_NOT_SUPPORTED = "errors.clusters.scaleNotSupported" => "A {kind} can't be scaled.";
+    RESTART_NOT_SUPPORTED = "errors.clusters.restartNotSupported" => "A {kind} can't be restarted.";
     /// Asking for the logs of a previous instance of a container that never restarted.
     NO_PREVIOUS_LOGS = "errors.clusters.logs.noPrevious" => "{container} in {pod} hasn't restarted, so it has no previous instance.";
     NO_PREVIOUS_LOGS_HINT = "errors.clusters.logs.noPrevious.hint" => "Turn off Previous instance to see its current logs.";
