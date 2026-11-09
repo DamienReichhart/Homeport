@@ -9,6 +9,8 @@
   "native.alerts.stopped.title": "Contêiner parado",
   "native.alerts.unhealthy.body": "{container} não está íntegro em {host}",
   "native.alerts.unhealthy.title": "Contêiner não íntegro",
+  "native.compose.pullingAnonymously": "Baixando {image} anonimamente",
+  "native.compose.pullingAs": "Baixando {image} como {user} em {registry}",
   "native.tray.addHost": "Adicionar host…",
   "native.tray.connectedOfMany": "Homeport — {connected} de {total} hosts conectados",
   "native.tray.connectedOfOne": "Homeport — {connected} de 1 host conectado",

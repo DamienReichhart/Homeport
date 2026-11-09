@@ -9,6 +9,8 @@
   "native.alerts.stopped.title": "컨테이너 중지됨",
   "native.alerts.unhealthy.body": "{host} 호스트의 {container} 컨테이너가 비정상 상태입니다",
   "native.alerts.unhealthy.title": "컨테이너 비정상",
+  "native.compose.pullingAnonymously": "이미지 {image} 익명으로 풀 중",
+  "native.compose.pullingAs": "{registry} 레지스트리에서 {user} 계정으로 이미지 {image} 풀 중",
   "native.tray.addHost": "호스트 추가…",
   "native.tray.connectedOfMany": "Homeport — 호스트 {total}개 중 {connected}개 연결됨",
   "native.tray.connectedOfOne": "Homeport — 호스트 1개 중 {connected}개 연결됨",

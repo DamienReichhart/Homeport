@@ -143,4 +143,7 @@ homeport_core::messages! {
     STOPPED = "errors.compose.stopped" => "docker compose {verb} was stopped.";
     /// For both of the above.
     FAILED_HINT = "errors.compose.failed.hint" => "The output above says why.";
+    /// A deploy's own output lines (`native.`: Rust writes them into the log, in the app's language).
+    LOG_PULLING_AS = "native.compose.pullingAs" => "Pulling {image} as {user} on {registry}";
+    LOG_PULLING_ANONYMOUSLY = "native.compose.pullingAnonymously" => "Pulling {image} anonymously";
 }

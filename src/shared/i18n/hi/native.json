@@ -9,6 +9,8 @@
   "native.alerts.stopped.title": "कंटेनर रुक गया",
   "native.alerts.unhealthy.body": "{host} पर {container} अस्वस्थ है",
   "native.alerts.unhealthy.title": "कंटेनर अस्वस्थ",
+  "native.compose.pullingAnonymously": "{image} बिना लॉगिन के पुल किया जा रहा है",
+  "native.compose.pullingAs": "{registry} से {user} के रूप में {image} पुल किया जा रहा है",
   "native.tray.addHost": "होस्ट जोड़ें…",
   "native.tray.connectedOfMany": "Homeport — {total} में से {connected} होस्ट कनेक्ट हैं",
   "native.tray.connectedOfOne": "Homeport — 1 में से {connected} होस्ट कनेक्ट है",

@@ -9,6 +9,8 @@
   "native.alerts.stopped.title": "Container gestoppt",
   "native.alerts.unhealthy.body": "{container} ist auf {host} fehlerhaft",
   "native.alerts.unhealthy.title": "Container fehlerhaft",
+  "native.compose.pullingAnonymously": "{image} wird anonym gepullt",
+  "native.compose.pullingAs": "{image} wird als {user} von {registry} gepullt",
   "native.tray.addHost": "Host hinzufügen…",
   "native.tray.connectedOfMany": "Homeport — {connected} von {total} Hosts verbunden",
   "native.tray.connectedOfOne": "Homeport — {connected} von 1 Host verbunden",

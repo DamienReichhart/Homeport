@@ -9,6 +9,8 @@
   "native.alerts.stopped.title": "توقفت الحاوية",
   "native.alerts.unhealthy.body": "{container} غير سليمة على {host}",
   "native.alerts.unhealthy.title": "الحاوية غير سليمة",
+  "native.compose.pullingAnonymously": "جارٍ سحب {image} دون تسجيل دخول",
+  "native.compose.pullingAs": "جارٍ سحب {image} باسم {user} من {registry}",
   "native.tray.addHost": "إضافة مضيف…",
   "native.tray.connectedOfMany": "Homeport — {connected} من {total} مضيفات متصلة",
   "native.tray.connectedOfOne": "Homeport — {connected} من مضيف واحد متصل",

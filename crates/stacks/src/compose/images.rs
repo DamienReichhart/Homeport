@@ -108,11 +108,14 @@ pub(super) async fn pull(
 ) -> AppResult<bool> {
     for image in images {
         let auth = logins.for_reference(&image.image).cloned();
-        let how = match &auth {
-            Some(a) => format!("as {} on {}", a.username, a.address),
-            None => "anonymously".to_owned(),
+        let text = match &auth {
+            Some(a) => msg::LOG_PULLING_AS
+                .with("image", image.image.as_str())
+                .with("user", a.username.as_str())
+                .with("registry", a.address.as_str()),
+            None => msg::LOG_PULLING_ANONYMOUSLY.with("image", image.image.as_str()),
         };
-        if !line(sink, format!("Pulling {} {how}", image.image)) {
+        if !line(sink, text.localized()) {
             return Ok(false);
         }
         let failure = std::sync::Mutex::new(None::<AppError>);

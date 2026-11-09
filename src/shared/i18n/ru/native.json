@@ -9,6 +9,8 @@
   "native.alerts.stopped.title": "Контейнер остановился",
   "native.alerts.unhealthy.body": "{container} нездоров на {host}",
   "native.alerts.unhealthy.title": "Контейнер нездоров",
+  "native.compose.pullingAnonymously": "Анонимная загрузка {image}",
+  "native.compose.pullingAs": "Загрузка {image} от имени {user} из {registry}",
   "native.tray.addHost": "Добавить хост…",
   "native.tray.connectedOfMany": "Homeport — подключено хостов: {connected} из {total}",
   "native.tray.connectedOfOne": "Homeport — подключено хостов: {connected} из 1",

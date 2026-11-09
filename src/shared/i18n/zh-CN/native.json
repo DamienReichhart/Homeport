@@ -9,6 +9,8 @@
   "native.alerts.stopped.title": "容器已停止",
   "native.alerts.unhealthy.body": "{container} 在 {host} 上不健康",
   "native.alerts.unhealthy.title": "容器不健康",
+  "native.compose.pullingAnonymously": "正在匿名拉取 {image}",
+  "native.compose.pullingAs": "正在以 {user} 身份从 {registry} 拉取 {image}",
   "native.tray.addHost": "添加主机…",
   "native.tray.connectedOfMany": "Homeport — {total} 个主机中已连接 {connected} 个",
   "native.tray.connectedOfOne": "Homeport — 1 个主机中已连接 {connected} 个",

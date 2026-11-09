@@ -9,6 +9,8 @@
   "native.alerts.stopped.title": "コンテナが停止しました",
   "native.alerts.unhealthy.body": "{host} の {container} が異常な状態です",
   "native.alerts.unhealthy.title": "コンテナが異常な状態です",
+  "native.compose.pullingAnonymously": "{image} を匿名でプル中",
+  "native.compose.pullingAs": "{registry} から {user} として {image} をプル中",
   "native.tray.addHost": "ホストを追加…",
   "native.tray.connectedOfMany": "Homeport — {total} 台中 {connected} 台のホストに接続中",
   "native.tray.connectedOfOne": "Homeport — 1 台中 {connected} 台のホストに接続中",

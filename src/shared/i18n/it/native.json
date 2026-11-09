@@ -9,6 +9,8 @@
   "native.alerts.stopped.title": "Container arrestato",
   "native.alerts.unhealthy.body": "{container} non è integro su {host}",
   "native.alerts.unhealthy.title": "Container non integro",
+  "native.compose.pullingAnonymously": "Download anonimo di {image}",
+  "native.compose.pullingAs": "Download di {image} come {user} da {registry}",
   "native.tray.addHost": "Aggiungi host…",
   "native.tray.connectedOfMany": "Homeport — {connected} di {total} host connessi",
   "native.tray.connectedOfOne": "Homeport — {connected} di 1 host connesso",

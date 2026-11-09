@@ -9,6 +9,8 @@
   "native.alerts.stopped.title": "Container stopped",
   "native.alerts.unhealthy.body": "{container} is unhealthy on {host}",
   "native.alerts.unhealthy.title": "Container unhealthy",
+  "native.compose.pullingAnonymously": "Pulling {image} anonymously",
+  "native.compose.pullingAs": "Pulling {image} as {user} on {registry}",
   "native.tray.addHost": "Add host…",
   "native.tray.connectedOfMany": "Homeport — {connected} of {total} Hosts connected",
   "native.tray.connectedOfOne": "Homeport — {connected} of 1 Host connected",
