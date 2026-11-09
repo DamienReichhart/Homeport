@@ -7,6 +7,8 @@
 
 pub mod crypto;
 pub mod db;
+#[cfg(feature = "test-support")]
+pub mod fixtures;
 pub mod messages;
 
 pub use crypto::{KeyStore, Keychain, SecretBox};

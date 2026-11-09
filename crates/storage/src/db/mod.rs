@@ -305,6 +305,45 @@ mod tests {
         assert_eq!(requires, release_of(MIGRATION_SLICE.len()));
     }
 
+    /// The promise behind every upgrade: a migration that shipped is never
+    /// edited, because databases that already ran it wouldn't get the change.
+    #[test]
+    fn released_migrations_are_unchanged() {
+        use sha2::{Digest, Sha256};
+        let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/db/migrations");
+        let mut files: Vec<String> = std::fs::read_dir(&dir)
+            .unwrap()
+            .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
+            .filter(|name| name.ends_with(".sql"))
+            .collect();
+        files.sort();
+        assert_eq!(
+            files.len(),
+            MIGRATION_SLICE.len(),
+            "every migration file is in MIGRATION_SLICE"
+        );
+
+        let released: Vec<Released> = released().collect();
+        assert!(released.len() <= files.len());
+        for (migration, file) in released.iter().zip(&files) {
+            assert_eq!(
+                migration.file, file,
+                "RELEASED lists the migrations in order, without gaps"
+            );
+            let bytes = std::fs::read(dir.join(file)).unwrap();
+            let hash: String = Sha256::digest(&bytes)
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect();
+            assert_eq!(
+                hash, migration.sha256,
+                "{file} was released in {} and must never change: \
+                 fix it with a new migration (docs/RELEASING.md, Data compatibility)",
+                migration.release
+            );
+        }
+    }
+
     #[test]
     fn released_migrations_name_their_release() {
         assert_eq!(release_of(1), "0.1.0");
