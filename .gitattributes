@@ -11,3 +11,4 @@
 *.woff2 binary
 *.tar binary
 *.gz binary
+*.db binary
