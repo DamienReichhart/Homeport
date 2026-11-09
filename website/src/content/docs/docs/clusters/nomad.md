@@ -22,11 +22,11 @@ Choose **Add cluster…** in the switcher, then the **Nomad** tab, and fill in:
 
 An agent that serves HTTPS with a certificate a public CA, or a CA your computer already trusts, needs nothing more than an `https://` address. Open **TLS settings** for the rest, pasting the contents of the PEM files the `nomad` CLI is given:
 
-| Field               | The `nomad` CLI's variable | When you need it                                                                       |
-| ------------------- | -------------------------- | -------------------------------------------------------------------------------------- |
-| **CA certificate**  | `NOMAD_CACERT`             | The agent's certificate is signed by your own CA, such as `nomad-agent-ca.pem`.        |
-| **Client certificate** and **Client key** | `NOMAD_CLIENT_CERT`, `NOMAD_CLIENT_KEY` | The agent asks for client certificates (`verify_https_client`). Give both or neither. |
-| **TLS server name** | `NOMAD_TLS_SERVER_NAME`    | The certificate isn't made for the address's name. Nomad's own are made for `server.global.nomad`, with your region in place of `global`. |
+| Field                                     | The `nomad` CLI's variable              | When you need it                                                                                                                          |
+| ----------------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **CA certificate**                        | `NOMAD_CACERT`                          | The agent's certificate is signed by your own CA, such as `nomad-agent-ca.pem`.                                                           |
+| **Client certificate** and **Client key** | `NOMAD_CLIENT_CERT`, `NOMAD_CLIENT_KEY` | The agent asks for client certificates (`verify_https_client`). Give both or neither.                                                     |
+| **TLS server name**                       | `NOMAD_TLS_SERVER_NAME`                 | The certificate isn't made for the address's name. Nomad's own are made for `server.global.nomad`, with your region in place of `global`. |
 
 When a CA certificate is given, only that CA is trusted for this cluster, as with the `nomad` CLI.
 
@@ -47,9 +47,9 @@ The status follows the same rules as for [Kubernetes clusters](/docs/clusters/#s
 
 ## What is stored where
 
-| Kept in clear in Homeport's database                       | Kept only encrypted (like SSH keys)                          |
-| ---------------------------------------------------------- | ------------------------------------------------------------ |
-| the name, the address, the region, the TLS server name     | the ACL token                                                |
-| whether a token, a CA or a client certificate is stored    | the CA certificate, the client certificate and its key       |
+| Kept in clear in Homeport's database                    | Kept only encrypted (like SSH keys)                    |
+| ------------------------------------------------------- | ------------------------------------------------------ |
+| the name, the address, the region, the TLS server name  | the ACL token                                          |
+| whether a token, a CA or a client certificate is stored | the CA certificate, the client certificate and its key |
 
 Homeport's [data backup](/docs/reference/security/) includes Nomad clusters with their credentials, as it does Kubernetes clusters.
