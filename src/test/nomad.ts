@@ -6,6 +6,7 @@ export const nomadCommands = {
   get_settings: nomadSelected,
   clusters_list: () => [nomadClusterView('nomad-dev')],
   clusters_nomad_watch_subscribe: () => 1,
+  clusters_nomad_namespaces: () => ({ listable: false, namespaces: [] }),
   stream_cancel: () => null,
 };
 

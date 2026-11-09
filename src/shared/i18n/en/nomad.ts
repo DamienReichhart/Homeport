@@ -9,6 +9,9 @@ export default {
   'nomad.status.unknown': 'Unknown',
   'nomad.status.stopped': 'Stopped',
 
+  'nomad.namespace.label': 'Namespace',
+  'nomad.namespace.all': 'All namespaces',
+
   'nomad.jobs.nav': 'Jobs',
   'nomad.jobs.title': 'Jobs',
   'nomad.jobs.summary': '{count, plural, one {# job} other {# jobs}}',
@@ -16,6 +19,7 @@ export default {
   'nomad.jobs.empty.title': 'No jobs',
   'nomad.jobs.empty.description': 'Nothing runs on this cluster yet, or the token can’t see it.',
   'nomad.jobs.column.name': 'Name',
+  'nomad.jobs.column.namespace': 'Namespace',
   'nomad.jobs.column.type': 'Type',
   'nomad.jobs.column.status': 'Status',
   'nomad.jobs.column.groups': 'Allocations',

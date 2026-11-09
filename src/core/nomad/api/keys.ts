@@ -8,5 +8,6 @@ export const nomadKeys = {
   allocation: (clusterId: string, allocId: string) =>
     ['nomad', clusterId, 'allocation', allocId] as const,
   nodes: (clusterId: string) => ['nomad', clusterId, 'nodes'] as const,
+  namespaces: (clusterId: string) => ['nomad', clusterId, 'namespaces'] as const,
   node: (clusterId: string, nodeId: string) => ['nomad', clusterId, 'node', nodeId] as const,
 };
