@@ -47,6 +47,21 @@ Open a job for its settings (priority, datacenters, node pool, version), its **t
 
 Listing jobs needs the `list-jobs` and `read-job` capabilities; stopping one needs `submit-job`, and scaling `scale-job` (or `submit-job`), on the job's namespace.
 
+## Run a job
+
+**Run job**, on the Jobs page, takes a job specification in HCL2 or JSON: write it, paste it, or **Open file…** to read a `.nomad.hcl`, `.hcl` or `.json` file. Homeport tells the two formats apart by the first character (`{` for JSON) and uses Nomad's own endpoints, so no HCL parser or `nomad` CLI is needed here.
+
+1. **Plan** asks Nomad to parse the HCL, then what running it would change, as `nomad job plan` does: for each task group, the allocations to place, stop, update in place or replace, the fields that change (an image, a count, an argument…), and any allocations Nomad can't place, with why (nodes filtered out by a constraint, or short of memory or CPU). Nothing changes on the cluster yet.
+2. **Run** submits the job as it was planned. If someone else ran or stopped the job in between, Nomad refuses and Homeport says so instead of overwriting their change: plan again to see it. A plan with allocations that can't be placed offers **Run anyway**, which queues them until a node can take them.
+
+A specification that doesn't parse says at which line and column Nomad found the problem, with Nomad's message in **Details**. A JSON specification can be a job in Nomad's API format, either `{"Job": {…}}` as `nomad job inspect` prints it or the job object itself.
+
+A job that names a `namespace` goes there; one that names none goes to the namespace selected on the Jobs page, or `default`. `variable` blocks work when they have defaults: Homeport doesn't pass variable files (`-var-file`).
+
+**Edit and run**, on a job's page, opens the same dialog with the job's specification as it was submitted, when Nomad kept it (Nomad 1.6 and later keep the source of jobs submitted with it), or its JSON otherwise. Homeport keeps no copy of any specification: Nomad stores it with the job.
+
+Planning and running need the `submit-job` capability on the job's namespace.
+
 ## Statuses and problems
 
 The status follows the same rules as for [Kubernetes clusters](/docs/clusters/#statuses): Homeport retries on its own while the agent can't be reached, and waits for you when only you can fix it.
