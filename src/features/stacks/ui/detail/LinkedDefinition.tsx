@@ -257,7 +257,7 @@ function LinkedEditor({
             {t('stacks.linked.overwrite')}
           </Button>
         )}
-        <span className="ml-auto">{forget}</span>
+        <span className="ms-auto">{forget}</span>
       </div>
       <ReviewDialog
         kind="linked"

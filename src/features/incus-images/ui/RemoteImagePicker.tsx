@@ -58,7 +58,7 @@ export function RemoteImagePicker({
                   aria-pressed={alias === image.alias}
                   onClick={() => onAlias(image.alias)}
                   className={cn(
-                    'hover:bg-muted flex w-full items-center justify-between gap-3 px-3 py-1.5 text-left text-sm',
+                    'hover:bg-muted flex w-full items-center justify-between gap-3 px-3 py-1.5 text-start text-sm',
                     alias === image.alias && 'bg-accent text-accent-foreground',
                   )}
                 >

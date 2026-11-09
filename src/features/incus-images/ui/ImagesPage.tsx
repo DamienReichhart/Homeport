@@ -101,7 +101,7 @@ function ImagesList({ hostId, project }: { hostId: string; project: string }) {
         <span className="text-muted-foreground whitespace-nowrap">
           {formatRelative(seconds(row.original.uploadedAt))}
           {row.original.cached && (
-            <Badge variant="outline" className="ml-2" title={t('incus.images.cachedHint')}>
+            <Badge variant="outline" className="ms-2" title={t('incus.images.cachedHint')}>
               {t('incus.images.cached')}
             </Badge>
           )}

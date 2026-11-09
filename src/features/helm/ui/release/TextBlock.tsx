@@ -6,7 +6,7 @@ export function TextBlock({ text, label, empty }: { text: string; label: string;
   if (!text.trim()) return <p className="text-muted-foreground text-sm">{empty}</p>;
   return (
     <div className="relative">
-      <div className="absolute top-2 right-2">
+      <div className="absolute top-2 end-2">
         <CopyButton text={text} label={t('helm.copy')} />
       </div>
       <pre

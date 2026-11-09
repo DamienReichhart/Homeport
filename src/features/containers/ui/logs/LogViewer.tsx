@@ -175,7 +175,7 @@ export function LogViewer(
         >
           <ArrowDownToLineIcon /> {t('containers.logs.follow')}
         </Toggle>
-        <div className="ml-auto flex items-center gap-1">
+        <div className="ms-auto flex items-center gap-1">
           <Input
             className="h-7 w-44"
             placeholder={t('containers.logs.find')}

@@ -45,7 +45,7 @@ export function HubSearch({
         <li key={r.name}>
           <button
             type="button"
-            className="hover:bg-muted grid w-full gap-0.5 px-2 py-1.5 text-left"
+            className="hover:bg-muted grid w-full gap-0.5 px-2 py-1.5 text-start"
             aria-label={t(r.official ? 'images.hub.resultOfficial' : 'images.hub.result', {
               name: shortRepository(r.name),
               stars: formatNumber(r.stars),

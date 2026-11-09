@@ -21,7 +21,7 @@ export function BoardSelection({
     <div
       role="toolbar"
       aria-label={t('board.selection')}
-      className="ml-auto flex items-center gap-1.5"
+      className="ms-auto flex items-center gap-1.5"
     >
       <span className="text-muted-foreground text-sm">
         {t('containers.selected', { count: selected.length })}

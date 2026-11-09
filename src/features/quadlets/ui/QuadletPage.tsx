@@ -96,8 +96,8 @@ function UnitDetail({ hostId, unitKey }: { hostId: string; unitKey: string }) {
   return (
     <div className="grid gap-4">
       <div>
-        <Button variant="ghost" size="sm" className="-ml-2 mb-2" onClick={back}>
-          <ArrowLeftIcon /> {t('quadlets.title')}
+        <Button variant="ghost" size="sm" className="-ms-2 mb-2" onClick={back}>
+          <ArrowLeftIcon className="rtl:-scale-x-100" /> {t('quadlets.title')}
         </Button>
         <PageHeader
           title={
@@ -172,7 +172,7 @@ function UnitDetail({ hostId, unitKey }: { hostId: string; unitKey: string }) {
               <StatusDot tone={c.state === 'running' ? 'success' : 'muted'} />
               <span className="font-medium">{c.name}</span>
               <span className="text-muted-foreground font-mono text-xs">{shortId(c.id)}</span>
-              <span className="text-muted-foreground ml-auto">{c.state}</span>
+              <span className="text-muted-foreground ms-auto">{c.state}</span>
             </Link>
           ))}
         </CardContent>

@@ -82,7 +82,7 @@ export function LocalClusters({
   if (found.length === 0 && missing.length === 0) return null;
 
   return (
-    <Card className="w-full text-left">
+    <Card className="w-full text-start">
       <CardHeader>
         <CardTitle>{t('core.localClusters.title')}</CardTitle>
         <CardDescription>{t('core.localClusters.description')}</CardDescription>

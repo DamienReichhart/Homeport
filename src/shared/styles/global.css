@@ -161,6 +161,17 @@
   pre {
     font-synthesis-weight: none;
   }
+  /* Machine text (commands, paths, ids, logs, terminals, editors) reads left
+     to right in a right-to-left layout too, isolated from the text around it. */
+  .font-mono,
+  code,
+  kbd,
+  pre,
+  .xterm,
+  .cm-editor {
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
   ::selection {
     background-color: color-mix(in oklch, var(--primary) 24%, transparent);
   }

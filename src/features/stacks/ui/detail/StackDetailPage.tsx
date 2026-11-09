@@ -62,7 +62,7 @@ function StackDetail({ hostId, name }: { hostId: string; name: string }) {
               aria-label={t('common.back')}
               onClick={() => navigate('/stacks')}
             >
-              <ArrowLeftIcon />
+              <ArrowLeftIcon className="rtl:-scale-x-100" />
             </Button>
             {stack.name}
             <Badge variant={KIND_BADGE[stack.kind]}>{t(KIND_LABEL[stack.kind])}</Badge>

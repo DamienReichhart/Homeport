@@ -130,7 +130,7 @@ export function ObjectsTab({ swarmId, kind }: { swarmId: string; kind: ObjectKin
           onChange={setQuery}
           placeholder={secret ? t('swarm.objects.searchSecrets') : t('swarm.objects.searchConfigs')}
         />
-        <Button className="ml-auto" onClick={() => setCreating(true)}>
+        <Button className="ms-auto" onClick={() => setCreating(true)}>
           <PlusIcon />
           {secret ? t('swarm.objects.createSecret') : t('swarm.objects.createConfig')}
         </Button>

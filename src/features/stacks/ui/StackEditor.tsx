@@ -99,7 +99,7 @@ export function StackEditor({
                     setActive(index - 1);
                   }}
                 >
-                  <ArrowLeftIcon />
+                  <ArrowLeftIcon className="rtl:-scale-x-100" />
                 </Button>
                 <Button
                   variant="ghost"
@@ -111,7 +111,7 @@ export function StackEditor({
                     setActive(index + 1);
                   }}
                 >
-                  <ArrowRightIcon />
+                  <ArrowRightIcon className="rtl:-scale-x-100" />
                 </Button>
                 <Button
                   variant="ghost"

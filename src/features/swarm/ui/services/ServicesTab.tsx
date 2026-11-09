@@ -25,7 +25,7 @@ export function ServicesTab({ swarm }: { swarm: SwarmView }) {
     <div className="grid gap-3">
       <div className="flex flex-wrap items-center gap-2">
         <SearchInput value={query} onChange={setQuery} placeholder={t('swarm.services.search')} />
-        <Button className="ml-auto" onClick={() => setCreating(true)}>
+        <Button className="ms-auto" onClick={() => setCreating(true)}>
           <PlusIcon /> {t('swarm.create.open')}
         </Button>
       </div>

@@ -143,7 +143,7 @@ export function WarningsCard({ part }: { part: Part<EventView[]> }) {
                     ) : (
                       `${e.object.kind}/${e.object.name}`
                     )}
-                    <span className="text-muted-foreground ml-auto text-xs">{age(e.lastSeen)}</span>
+                    <span className="text-muted-foreground ms-auto text-xs">{age(e.lastSeen)}</span>
                   </span>
                   <span className="text-muted-foreground break-words">{e.message}</span>
                 </div>

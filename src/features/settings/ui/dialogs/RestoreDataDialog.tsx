@@ -59,7 +59,7 @@ export function RestoreDataDialog({ path, onClose }: { path: string; onClose: ()
                 date: formatDateTime(contents.createdAt),
               })}
             </p>
-            <ul className="list-disc pl-5" aria-label={t('settings.restore.holds')}>
+            <ul className="list-disc ps-5" aria-label={t('settings.restore.holds')}>
               <li>
                 {t('settings.restore.hosts', { count: contents.hosts.length })}
                 {contents.hosts.length > 0 && `: ${contents.hosts.join(', ')}`}

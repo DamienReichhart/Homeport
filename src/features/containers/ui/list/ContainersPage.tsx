@@ -153,8 +153,8 @@ function ContainersList({ hostId }: { hostId: string }) {
                 <TableHead>{t('containers.column.image')}</TableHead>
                 <TableHead>{t('containers.column.status')}</TableHead>
                 <TableHead>{t('containers.column.ports')}</TableHead>
-                <TableHead className="text-right">{t('containers.column.cpu')}</TableHead>
-                <TableHead className="text-right">{t('containers.column.memory')}</TableHead>
+                <TableHead className="text-end">{t('containers.column.cpu')}</TableHead>
+                <TableHead className="text-end">{t('containers.column.memory')}</TableHead>
                 <TableHead>{t('containers.column.created')}</TableHead>
                 <TableHead className="w-20" />
               </TableRow>

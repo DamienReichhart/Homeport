@@ -23,7 +23,7 @@ export function AboutCard() {
               {info.data ? `v${info.data.version} · ${info.data.os}/${info.data.arch}` : '…'}
             </p>
           </div>
-          <Button variant="outline" size="sm" className="ml-auto" onClick={openLogFolder}>
+          <Button variant="outline" size="sm" className="ms-auto" onClick={openLogFolder}>
             <FolderOpenIcon /> {t('settings.about.openLogFolder')}
           </Button>
           <Button variant="outline" size="sm" onClick={() => setLicensesOpen(true)}>

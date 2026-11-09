@@ -70,7 +70,7 @@ function NetworkDetail({
         title={
           <span className="flex items-center gap-2">
             <Button variant="ghost" size="icon-sm" aria-label={t('common.back')} onClick={back}>
-              <ArrowLeftIcon />
+              <ArrowLeftIcon className="rtl:-scale-x-100" />
             </Button>
             {network.name}
             <Badge variant="secondary">{network.type}</Badge>

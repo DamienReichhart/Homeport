@@ -148,7 +148,7 @@ function JobDetail({
           <>
             <Button asChild variant="ghost">
               <Link to="/nomad/jobs">
-                <ArrowLeftIcon /> {t('nomad.job.back')}
+                <ArrowLeftIcon className="rtl:-scale-x-100" /> {t('nomad.job.back')}
               </Link>
             </Button>
             <Button variant="outline" disabled={loadingSource} onClick={editAndRun}>

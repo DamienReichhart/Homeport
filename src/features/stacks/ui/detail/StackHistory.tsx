@@ -84,13 +84,13 @@ export function StackHistory({
                   <TableCell>
                     <button
                       type="button"
-                      className="text-left hover:underline"
+                      className="text-start hover:underline"
                       onClick={() => setSelected(d.id)}
                     >
                       {formatDateTime(Date.parse(d.startedAt) / 1000)}
                     </button>
                     {d.id === current && (
-                      <Badge variant="secondary" className="ml-2">
+                      <Badge variant="secondary" className="ms-2">
                         {t('stacks.history.current')}
                       </Badge>
                     )}
@@ -98,7 +98,7 @@ export function StackHistory({
                   <TableCell>
                     {t(ACTION_LABEL[d.action])}
                     {d.commit && (
-                      <span className="text-muted-foreground ml-1.5 font-mono text-xs">
+                      <span className="text-muted-foreground ms-1.5 font-mono text-xs">
                         {d.commit.slice(0, 7)}
                       </span>
                     )}

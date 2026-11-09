@@ -52,7 +52,7 @@ function NodeDetail({ cluster, detail }: { cluster: ClusterView; detail: NomadNo
           <>
             <Button asChild variant="ghost">
               <Link to="/nomad/nodes">
-                <ArrowLeftIcon /> {t('nomad.node.back')}
+                <ArrowLeftIcon className="rtl:-scale-x-100" /> {t('nomad.node.back')}
               </Link>
             </Button>
             <div className="flex items-center gap-2">

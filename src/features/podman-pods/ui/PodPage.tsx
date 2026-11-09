@@ -55,7 +55,7 @@ function Containers({ pod }: { pod: PodmanPodDetail }) {
             <span className="font-medium">{c.name}</span>
             <span className="text-muted-foreground font-mono text-xs">{shortId(c.id)}</span>
             {c.infra && <Badge variant="secondary">{t('podmanpods.detail.infra')}</Badge>}
-            <span className="text-muted-foreground ml-auto">{c.state}</span>
+            <span className="text-muted-foreground ms-auto">{c.state}</span>
           </Link>
         ))}
       </CardContent>
@@ -128,8 +128,8 @@ function PodDetailView({ hostId, id }: { hostId: string; id: string }) {
   return (
     <div className="grid gap-4">
       <div>
-        <Button variant="ghost" size="sm" className="-ml-2 mb-2" onClick={back}>
-          <ArrowLeftIcon /> {t('podmanpods.title')}
+        <Button variant="ghost" size="sm" className="-ms-2 mb-2" onClick={back}>
+          <ArrowLeftIcon className="rtl:-scale-x-100" /> {t('podmanpods.title')}
         </Button>
         <PageHeader
           title={

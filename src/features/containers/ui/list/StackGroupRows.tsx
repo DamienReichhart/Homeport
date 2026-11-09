@@ -47,7 +47,7 @@ export function StackGroupRows({
             {open ? (
               <ChevronDownIcon className="size-4" />
             ) : (
-              <ChevronRightIcon className="size-4" />
+              <ChevronRightIcon className="size-4 rtl:-scale-x-100" />
             )}
             <StatusDot
               tone={
@@ -65,13 +65,13 @@ export function StackGroupRows({
             </span>
           </span>
         </TableCell>
-        <TableCell className="text-right tabular-nums">
+        <TableCell className="text-end tabular-nums">
           {g.running ? formatPercent(cpu) : '—'}
         </TableCell>
-        <TableCell className="text-right tabular-nums">
+        <TableCell className="text-end tabular-nums">
           {g.running ? formatBytes(mem) : '—'}
         </TableCell>
-        <TableCell colSpan={2} className="text-right">
+        <TableCell colSpan={2} className="text-end">
           {(!g.swarm || swarmId) && (
             <Button
               variant="link"

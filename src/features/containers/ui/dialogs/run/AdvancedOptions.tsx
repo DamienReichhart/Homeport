@@ -64,7 +64,10 @@ export function AdvancedOptions({
     <Collapsible open={open || failing} onOpenChange={setOpen} className="grid gap-3">
       <CollapsibleTrigger className="hover:text-primary flex items-center gap-1 justify-self-start text-sm font-medium">
         <ChevronRightIcon
-          className={cn('size-4 transition-transform', (open || failing) && 'rotate-90')}
+          className={cn(
+            'size-4 transition-transform',
+            open || failing ? 'rotate-90' : 'rtl:-scale-x-100',
+          )}
         />
         {t('containers.advanced.title')}
       </CollapsibleTrigger>

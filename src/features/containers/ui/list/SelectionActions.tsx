@@ -23,7 +23,7 @@ export function SelectionActions({
 }) {
   const { act, remove } = useContainerMutations(hostId);
   return (
-    <div className="ml-auto flex items-center gap-1.5">
+    <div className="ms-auto flex items-center gap-1.5">
       <span className="text-muted-foreground text-sm">
         {t('containers.selected', { count: selected.length })}
       </span>

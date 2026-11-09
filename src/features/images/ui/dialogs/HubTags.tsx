@@ -26,7 +26,7 @@ export function HubTags({
     <div className="grid gap-2">
       <div className="flex items-center gap-2">
         <Button type="button" variant="ghost" size="sm" onClick={onBack}>
-          <ArrowLeftIcon /> {t('images.hub.backToSearch')}
+          <ArrowLeftIcon className="rtl:-scale-x-100" /> {t('images.hub.backToSearch')}
         </Button>
         <span className="text-sm font-medium">{repository}</span>
         {tags.data && (
@@ -47,7 +47,7 @@ export function HubTags({
             <li key={tag.name}>
               <button
                 type="button"
-                className="hover:bg-muted flex w-full items-center gap-3 px-2 py-1.5 text-left"
+                className="hover:bg-muted flex w-full items-center gap-3 px-2 py-1.5 text-start"
                 aria-label={tag.name}
                 onClick={() => onChoose(tag.name)}
               >
@@ -56,7 +56,7 @@ export function HubTags({
                   <span className="text-muted-foreground text-xs">{formatBytes(tag.size)}</span>
                 )}
                 {tag.lastPushed && (
-                  <span className="text-muted-foreground w-24 text-right text-xs">
+                  <span className="text-muted-foreground w-24 text-end text-xs">
                     {formatRelative(Date.parse(tag.lastPushed) / 1000)}
                   </span>
                 )}

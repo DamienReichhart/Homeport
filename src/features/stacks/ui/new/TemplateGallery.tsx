@@ -27,7 +27,7 @@ export function TemplateGallery({
               type="button"
               aria-describedby={`${id}-${template.id}`}
               onClick={() => onPick(template)}
-              className="hover:bg-muted focus-visible:ring-ring/50 grid content-start gap-1 rounded-lg border p-3 text-left outline-none focus-visible:ring-[3px]"
+              className="hover:bg-muted focus-visible:ring-ring/50 grid content-start gap-1 rounded-lg border p-3 text-start outline-none focus-visible:ring-[3px]"
             >
               <span className="font-medium">{t(template.title)}</span>
               <span id={`${id}-${template.id}`} className="text-muted-foreground text-sm">

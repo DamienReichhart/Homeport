@@ -64,7 +64,7 @@ export function ContainerRow({
           onCheckedChange={(v) => onSelect(v === true)}
         />
       </TableCell>
-      <TableCell className={nested ? 'pl-8' : undefined}>
+      <TableCell className={nested ? 'ps-8' : undefined}>
         <div className="flex items-center gap-2">
           <StatusDot tone={containerTone(c.state, c.health)} />
           <div className="min-w-0">
@@ -106,7 +106,7 @@ export function ContainerRow({
       <TableCell>
         <span className="text-sm">{c.status || c.state}</span>
         {c.health && (
-          <Badge variant={c.health === 'unhealthy' ? 'destructive' : 'outline'} className="ml-1.5">
+          <Badge variant={c.health === 'unhealthy' ? 'destructive' : 'outline'} className="ms-1.5">
             {c.health}
           </Badge>
         )}
@@ -133,10 +133,10 @@ export function ContainerRow({
             )}
         </div>
       </TableCell>
-      <TableCell className="text-right tabular-nums">
+      <TableCell className="text-end tabular-nums">
         {usage ? formatPercent(usage.cpuPercent ?? 0) : '—'}
       </TableCell>
-      <TableCell className="text-right tabular-nums">
+      <TableCell className="text-end tabular-nums">
         {usage ? formatBytes(usage.memoryUsage) : '—'}
       </TableCell>
       <TableCell className="text-muted-foreground whitespace-nowrap">

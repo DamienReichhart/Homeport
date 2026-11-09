@@ -183,7 +183,7 @@ export function DataTable<T>({
             disabled={!table.getCanPreviousPage()}
             onClick={() => table.previousPage()}
           >
-            <ChevronLeftIcon />
+            <ChevronLeftIcon className="rtl:-scale-x-100" />
           </Button>
           <Button
             variant="ghost"
@@ -192,7 +192,7 @@ export function DataTable<T>({
             disabled={!table.getCanNextPage()}
             onClick={() => table.nextPage()}
           >
-            <ChevronRightIcon />
+            <ChevronRightIcon className="rtl:-scale-x-100" />
           </Button>
         </div>
       )}

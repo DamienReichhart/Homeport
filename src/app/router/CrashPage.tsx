@@ -20,7 +20,7 @@ export function CrashPage() {
       icon={TriangleAlertIcon}
       title={t('app.crash.title')}
       description={
-        <div className="grid gap-3 text-left">
+        <div className="grid gap-3 text-start">
           <p className="text-center">{t('app.crash.description')}</p>
           <ErrorMessage error={error} />
         </div>

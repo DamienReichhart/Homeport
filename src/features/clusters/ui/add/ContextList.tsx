@@ -47,7 +47,7 @@ export function ContextList({
               </span>
             </div>
             {context.added ? (
-              <div className="text-muted-foreground flex items-center gap-2 pl-7 text-sm">
+              <div className="text-muted-foreground flex items-center gap-2 ps-7 text-sm">
                 {t('clusters.import.added', { name: context.added.name })}
                 <Button
                   size="sm"
@@ -59,12 +59,12 @@ export function ContextList({
                 </Button>
               </div>
             ) : context.problem ? (
-              <div className="pl-7">
+              <div className="ps-7">
                 <ErrorMessage error={context.problem} />
               </div>
             ) : (
               row.picked && (
-                <div className="pl-7">
+                <div className="ps-7">
                   <Input
                     aria-label={t('clusters.import.name', { context: context.name })}
                     value={row.name}

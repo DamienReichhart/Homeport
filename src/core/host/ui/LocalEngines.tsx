@@ -38,7 +38,7 @@ export function LocalEngines({
   if (local.length === 0) return null;
 
   return (
-    <Card className="w-full text-left">
+    <Card className="w-full text-start">
       <CardHeader>
         <CardTitle>{t('core.localEngines.title')}</CardTitle>
         <CardDescription>{t('core.localEngines.description')}</CardDescription>
