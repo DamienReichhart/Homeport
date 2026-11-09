@@ -55,9 +55,9 @@ The same window appears for any other failure to open the database (damaged file
 
 ## Updates and the package repository
 
-### "Couldn't check for updates"
+### "Homeport couldn't download the update"
 
-Homeport couldn't download the update information from this website: you may be offline, or behind a proxy or firewall that blocks `damienreichhart.github.io`. Homeport keeps working; it checks again later, or choose **Settings → Updates → Check now**. You can always download the latest version from the [download page](/download/).
+When it shows while checking, Homeport couldn't download the update information from this website: you may be offline, or behind a proxy or firewall that blocks `damienreichhart.github.io`. Homeport keeps working; it checks again later, or choose **Settings → Updates → Check now**. You can always download the latest version from the [download page](/download/).
 
 ### An update fails to install
 
@@ -81,7 +81,7 @@ Check the repository is still set up: `/etc/apt/sources.list.d/homeport.sources`
 
 ## Connecting
 
-### Unreachable: Permission denied
+### "Homeport isn't allowed to use the Docker Engine at …"
 
 Your user can't open the Docker socket. On Linux, add it to the `docker` group and log in again:
 
@@ -89,21 +89,21 @@ Your user can't open the Docker socket. On Linux, add it to the `docker` group a
 sudo usermod -aG docker $USER
 ```
 
-### Unreachable: No such file or directory
+### "No Docker Engine is running at …"
 
-Nothing is listening at the socket path. Start your Engine — Docker Desktop, Colima, OrbStack, Rancher Desktop — or check the path. See [local engines](/docs/hosts/local/#adding-a-socket-by-hand).
+Nothing is listening at the socket path. When nothing exists there at all, the message is _The Docker Engine doesn't seem to be installed_ instead. Start your Engine — Docker Desktop, Colima, OrbStack, Rancher Desktop — or check the path. See [local engines](/docs/hosts/local/#adding-a-socket-by-hand).
 
-### "The Engine did not answer in time" or "SSH connection timed out"
+### "The Docker Engine didn't answer in time" or "… didn't answer in time"
 
 Homeport waits 10 seconds for a connection. Check the address and port, that the server is up, and that no firewall is in the way. Homeport keeps retrying on its own.
 
-### Access refused: "The server refused the key for …"
+### Access refused: "The SSH server refused to let … log in"
 
 The server doesn't accept Homeport's key yet. Run the **Add the public key** command from the Host's page on the server, then choose **Reconnect**. See [SSH Hosts](/docs/hosts/ssh/#authorise-homeports-key).
 
-### "The SSH server couldn't open /var/run/docker.sock"
+### "… can't open the Docker Engine socket at /var/run/docker.sock on …"
 
-Homeport logged in, but couldn't reach Docker. Check:
+Homeport logged in, but couldn't reach Docker. When it can tell why, the message says so instead: the Engine isn't installed or isn't running on the server, the user isn't allowed to use it, or the SSH server doesn't allow forwarding to its socket. Check:
 
 - the **Remote socket path** — rootless Docker uses `/run/user/<uid>/docker.sock`;
 - that the user can use Docker: `sudo usermod -aG docker <user>` on the server;
@@ -121,7 +121,7 @@ Start-Service ssh-agent
 ssh-add
 ```
 
-### Access refused: "TLS handshake failed"
+### Access refused: "The secure connection to … failed"
 
 - The CA certificate must be the one that signed the server's certificate.
 - The address you entered must match a name or IP address in the server's certificate.
@@ -159,7 +159,7 @@ The exec plugin wants a browser or a device code. Run `kubectl --context <contex
 
 The exec plugin ran and failed. **Details** shows the end of what it printed, often an expired profile or a wrong region. Homeport tries again on its own.
 
-### "… signs in with the gcp auth provider, which Kubernetes no longer supports"
+### "Its user signs in with the gcp auth provider, which Kubernetes no longer supports"
 
 The `gcp` and `azure` auth providers were removed from Kubernetes. Fetch the credentials again with `gke-gcloud-auth-plugin` installed (GKE), or run `kubelogin convert-kubeconfig` (AKS), then add the context again.
 
@@ -229,7 +229,7 @@ The release is `pending-…`: an install, upgrade or rollback didn't finish, oft
 
 ## Using Homeport
 
-### Deploy is greyed out: "The docker compose CLI is not installed"
+### Deploy is greyed out: "The docker compose CLI isn't installed on this computer"
 
 Homeport needs `docker compose` on this computer to deploy Stacks. Install Docker Desktop or the Docker CLI with the Compose plugin, then restart Homeport. **Settings → This machine** shows whether it's found.
 
@@ -337,7 +337,7 @@ Exec in a virtual machine goes through `incus-agent` inside it, which Incus's ow
 
 A page of Homeport hit a problem it didn't expect and shows this instead of its content; the sidebar still works. **Reload** usually brings the page back, and **Back to overview** leaves it. If it keeps happening, copy the report from **Details** into [an issue](https://github.com/DamienReichhart/Homeport/issues/new/choose), with the [diagnostics bundle](#exporting-diagnostics-for-a-bug-report).
 
-### "host … is not connected"
+### "… isn't connected"
 
 The action needed the Host, but it disconnected. Wait for it to reconnect, or choose **Retry now**.
 

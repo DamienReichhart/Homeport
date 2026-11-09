@@ -122,7 +122,7 @@ For a key created by Homeport, or one you imported, the card **Authorize Homepor
 
 </Steps>
 
-Until the key is authorised, the Host shows **Access refused**: _The server refused the key for deploy@server. Add the public key to its authorized_keys._ It waits for you rather than retrying.
+Until the key is authorised, the Host shows **Access refused**: _The SSH server refused to let deploy@server log in._, with the command that authorises Homeport's key. It waits for you rather than retrying.
 
 ## When the server's key changes
 
@@ -177,12 +177,12 @@ Removing the Host deletes its key from Homeport, but not from the server. Delete
 
 ## Common problems
 
-| Message                                                                                         | What to do                                                                                                                                                                                 |
-| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| _The server refused the key for …_                                                              | Run the **Add the public key** command on the server, then **Reconnect**.                                                                                                                  |
-| _The SSH server couldn't open /var/run/docker.sock … Check the path and that … can use Docker._ | Check the **Remote socket path**, and add the user to the `docker` group.                                                                                                                  |
-| _SSH connection timed out_                                                                      | Check the server name, port and any firewall between you.                                                                                                                                  |
-| _No ssh-agent is running_                                                                       | Start your agent, add a key with `ssh-add`, and make sure Homeport can see `SSH_AUTH_SOCK`. On Windows, open Pageant and load your key, or start the OpenSSH Authentication Agent service. |
-| _Bastion … couldn't open a connection to …_                                                     | Check that the bastion can reach the Host, and that its `sshd` allows `AllowTcpForwarding`.                                                                                                |
+| Message                                                              | What to do                                                                                                                                                                                 |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| _The SSH server refused to let … log in._                            | Run the **Add the public key** command on the server, then **Reconnect**.                                                                                                                  |
+| _… can't open the Docker Engine socket at /var/run/docker.sock on …_ | Check the **Remote socket path**, and add the user to the `docker` group.                                                                                                                  |
+| _… didn't answer in time._                                           | Check the server name, port and any firewall between you.                                                                                                                                  |
+| _No ssh-agent is running_                                            | Start your agent, add a key with `ssh-add`, and make sure Homeport can see `SSH_AUTH_SOCK`. On Windows, open Pageant and load your key, or start the OpenSSH Authentication Agent service. |
+| _Bastion … couldn't open a connection to …_                          | Check that the bastion can reach the Host, and that its `sshd` allows `AllowTcpForwarding`.                                                                                                |
 
 More in [Troubleshooting](/docs/reference/troubleshooting/).
