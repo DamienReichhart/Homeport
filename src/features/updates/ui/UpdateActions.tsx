@@ -1,8 +1,9 @@
 import { openUrl } from '@tauri-apps/plugin-opener';
 import type { UpdateCheck } from '@/shared/api';
+import { WEBSITE_URL } from '@/shared/lib';
 import { Button, CopyButton, ErrorMessage, toastError } from '@/shared/ui';
 import { useInstallUpdate } from '../api/mutations';
-import { describeProgress, WEBSITE_URL } from '../model/updates';
+import { describeProgress } from '../model/updates';
 import { t } from '@/shared/i18n';
 
 /**

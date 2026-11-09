@@ -1,9 +1,6 @@
 import type { AppError, UpdateCheck } from '@/shared/api';
 import { t } from '@/shared/i18n';
 
-/** Where the website lives; the changelog and download page are under it. */
-export const WEBSITE_URL = 'https://damienreichhart.github.io/Homeport';
-
 /** How often Homeport looks for a new version while it's open. */
 export const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
 
