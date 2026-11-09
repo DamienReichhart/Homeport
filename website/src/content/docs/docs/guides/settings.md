@@ -1,6 +1,6 @@
 ---
 title: Settings
-description: Theme, the system tray, starting at login, notifications, updates, registry logins, repositories, how often Synced Stacks are checked, what this machine supports, version and licences.
+description: Theme and language, the system tray, starting at login, notifications, updates, registry logins, repositories, how often Synced Stacks are checked, what this machine supports, version and licences.
 ---
 
 **Settings** is the last item in the sidebar.
@@ -8,6 +8,12 @@ description: Theme, the system tray, starting at login, notifications, updates, 
 ## Appearance
 
 **Theme** is **Match the system** by default, following your operating system's light or dark mode as it changes. Choose **Light** or **Dark** to fix it.
+
+**Language** is **Match the system** by default: Homeport shows itself in your operating system's language when it has it, and in English otherwise. The choice names the language it found, such as **Match the system (Français)**. Pick a language to use that one instead; the whole window switches at once, without a restart, and so do the tray menu and notifications.
+
+Homeport speaks English, French (Français), Spanish (Español), German (Deutsch), Italian (Italiano), Brazilian Portuguese (Português), Russian (Русский), Simplified Chinese (简体中文), Japanese (日本語), Korean (한국어), Hindi (हिन्दी) and Arabic (العربية), which it shows right to left. Regional variants follow their language: Canadian French shows French, European Portuguese shows Brazilian Portuguese. Traditional Chinese isn't available yet and shows English.
+
+Dates, numbers and sizes follow the language too, in your system's regional style when it has one for it: _1.5 GB_ and _4 Nov 2026_ in British English, _1,5 Go_ and _4 nov. 2026_ in French. Names, IDs, commands, logs and what Engines and Clusters say stay as they are, and an error's **Details** keep the original text of the system or library that failed, so a bug report reads the same in every language.
 
 ## Desktop
 
