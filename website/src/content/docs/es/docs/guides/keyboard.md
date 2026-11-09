@@ -53,4 +53,4 @@ El botón de la acción principal de una página muestra <kbd>N</kbd> cuando pas
 
 ### Mientras escribes
 
-Las teclas solas — <kbd>N</kbd>, <kbd>/</kbd>, <kbd>?</kbd> y las flechas con <kbd>Alt</kbd> — nunca se activan mientras escribes en un campo, en el editor de un stack o en un cuadro de diálogo: escriben el carácter. Los atajos con <kbd>Mod</kbd> también funcionan ahí. En la **Terminal** de un contenedor, todas las teclas van al contenedor y no se activa ningún atajo.
+Las teclas solas — <kbd>N</kbd>, <kbd>/</kbd>, <kbd>?</kbd> y las flechas con <kbd>Alt</kbd> — nunca se activan mientras escribes en un campo, en el editor de un stack o en un cuadro de diálogo: escriben el carácter. Los atajos con <kbd>Mod</kbd> también funcionan ahí. En el **Terminal** de un contenedor, todas las teclas van al contenedor y no se activa ningún atajo.

@@ -17,7 +17,7 @@ La página **Pods** aparece en la barra lateral solo mientras hay un host Podman
 | **Redes**        | Las redes en las que está el pod.                                                                                                      |
 | **Creado**       | Cuándo se creó.                                                                                                                        |
 
-Cada fila tiene la acción que corresponde a su estado — **Iniciar** para un pod detenido, **Detener** para uno en ejecución — y **Eliminar**. Selecciona un pod para abrir su página. La lista se actualiza sola a medida que los contenedores del pod se inician y se detienen, ya sea desde Homeport o desde una terminal.
+Cada fila tiene la acción que corresponde a su estado — **Iniciar** para un pod detenido, **Detener** para uno en ejecución — y **Eliminar**. Selecciona un pod para abrir su página. La lista se actualiza sola a medida que los contenedores del pod se inician y se detienen, ya sea desde Homeport o desde un terminal.
 
 En la página **Contenedores**, un contenedor que se ejecuta en un pod muestra el nombre del pod junto al suyo; selecciona el nombre para abrir el pod.
 

@@ -1,0 +1,127 @@
+---
+title: Stacks sincronizados
+description: Despliega un stack desde un repositorio git, ve lo que cambió antes de cada sincronización y haz que siga su rama mientras Homeport está abierto.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+Un **stack sincronizado** es un [stack](/docs/guides/stacks/) cuyo archivo compose procede de un repositorio git. Homeport clona el repositorio en este equipo, obtiene su rama o su etiqueta cuando se lo pides (o a intervalos mientras Homeport está abierto), muestra lo que cambió y despliega el nuevo commit en el host. Nunca edita, hace commit ni hace push: los cambios pasan por git.
+
+<Aside type="note" title="Homeport necesita git">
+  Los stacks sincronizados ejecutan el `git` instalado en este equipo. **Ajustes → Este equipo**
+  indica si Homeport lo encontró y, si no, cómo instalarlo. Todos los demás tipos de stack funcionan
+  sin git.
+</Aside>
+
+## Repositorios
+
+Homeport lee los repositorios que añades en **Ajustes → Repositorios**, o desde la página **Nuevo stack**. Un repositorio se añade una vez y lo pueden usar los stacks sincronizados de todos los hosts. Homeport accede a él de una de estas tres formas:
+
+| Acceso                  | URL                                                  | Qué guarda Homeport                                        |
+| ----------------------- | ---------------------------------------------------- | ---------------------------------------------------------- |
+| **Clave de despliegue** | SSH: `git@github.com:owner/repo.git` o `ssh://…`     | Una clave que crea solo para este repositorio, **cifrada** |
+| **Token**               | HTTPS: `https://gitlab.com/owner/repo.git`           | Tu nombre de usuario y el token de acceso **cifrado**      |
+| **Público**             | HTTPS, para un repositorio que cualquiera puede leer | Nada secreto                                               |
+
+No se aceptan `http://` ni las rutas locales, así que un token nunca se envía sin cifrar.
+
+### Con una clave de despliegue
+
+<Steps>
+
+1. Elige **Añadir repositorio**, pega la URL SSH del repositorio, deja **Clave de despliegue** y elige **Añadir y crear una clave de despliegue**.
+
+2. Copia la clave que muestra Homeport y añádela al repositorio **solo con acceso de lectura**:
+   - GitHub: en el repositorio, **Settings → Deploy keys → Add deploy key**.
+   - GitLab: en el proyecto, **Settings → Repository → Deploy keys**.
+   - Gitea y Forgejo: en el repositorio, **Settings → Deploy keys → Add deploy key**.
+
+3. Elige **Probar acceso**. Homeport lista las ramas y las etiquetas del repositorio desde este equipo.
+
+</Steps>
+
+Cada repositorio recibe su propia clave, así que una clave filtrada solo puede leer ese repositorio, y tus propias claves SSH y tu `~/.ssh/config` nunca se usan. **Nueva clave** la sustituye: añade la nueva al repositorio y quita allí la anterior.
+
+La primera vez que Homeport accede a un servidor SSH, confía en la clave que presenta el servidor y la recuerda, como hace `ssh`; si la clave cambia después, todas las obtenciones fallan hasta que compruebes la nueva huella en el sitio web de la forja y elijas **Restablecer** junto a la clave de confianza.
+
+### Con un token
+
+Pega la URL `https://` del repositorio, elige **Token** e introduce el nombre de usuario y un token de acceso que pueda leer el contenido del repositorio: en GitHub, un token detallado (fine-grained) con **Contents: Read-only**; en GitLab, un token de proyecto o personal con `read_repository`. **Probar acceso** lo comprueba. Cuando caduque, introduce uno nuevo en **Sustituir el token**.
+
+<Aside type="tip">
+  Sin un llavero del sistema, Homeport no puede guardar claves de despliegue ni tokens, así que solo
+  se pueden añadir repositorios públicos. Consulta
+  [Requisitos](/docs/requirements/#optional-an-os-keychain).
+</Aside>
+
+Quitar un repositorio borra su clave o su token y su clon en este equipo. Se rechaza mientras lo use un stack sincronizado.
+
+## Crear un stack sincronizado
+
+<Steps>
+
+1. Abre **Stacks** en el host en el que quieres desplegar, elige **Nuevo stack** y después **Usar un repositorio git**.
+
+2. Elige el **Repositorio**, o **Añadir repositorio** para añadir uno ahí mismo.
+
+3. Elige una **Rama** o una **Etiqueta**. Homeport las lista desde el servidor del repositorio, con su rama por defecto primero.
+
+4. Introduce la ruta del **Archivo compose**, relativa a la raíz del repositorio: `compose.yaml` o `deploy/prod/compose.yaml`. Su carpeta es la carpeta del proyecto, así que `build:`, `env_file:` y las rutas relativas que contiene funcionan como en un clon tuyo.
+
+5. Revisa el **Nombre** (sale del nombre del repositorio) y añade un **Entorno** para lo que no debe ir en git, como las contraseñas: líneas `KEY=value`, cifradas en este equipo y pasadas a Compose como variables al desplegar.
+
+6. Elige **Guardar y desplegar**, o **Guardar** para desplegar más tarde.
+
+</Steps>
+
+Homeport obtiene la rama o la etiqueta y lee el archivo compose antes de guardar nada, así que una ruta, una rama o una etiqueta equivocadas, o un archivo que Compose no podría desplegar, se indican al momento. El stack aparece como **Sincronizado** y **No desplegado** hasta su primer despliegue; su pestaña **Definición** muestra su repositorio, su rama o su etiqueta, su archivo compose y el commit que desplegó.
+
+El repositorio se clona una vez en este equipo, en una carpeta `repositories` junto a la base de datos de Homeport, y lo comparten todos los stacks sincronizados creados a partir de él. Cada stack sincronizado se despliega desde su propia copia de trabajo del commit, en una carpeta `synced-stacks` en ese mismo lugar, que se mantiene entre despliegues: los archivos que tus contenedores escriben mediante bind mounts relativos se quedan donde estaban. Los enlaces simbólicos del repositorio se extraen como archivos normales, así que un archivo compose no puede dirigir a Compose a un archivo de otra parte de este equipo. Los archivos conservan los finales de línea con los que los guarda el repositorio, también en Windows, así que un script copiado en una imagen Linux se sigue ejecutando; solo el propio `.gitattributes` del repositorio puede cambiarlos.
+
+Un stack sincronizado se puede desplegar en un [Swarm](/docs/guides/swarm/) en su lugar: elígelo en **Desplegar en**, en **Nuevo stack**. Se sincroniza, se despliega y se despliega automáticamente del mismo modo, con `docker stack deploy` ejecutado desde su copia de trabajo; consulta [Stacks vinculados y sincronizados en un Swarm](/docs/guides/swarm/#linked-and-synced-stacks-on-a-swarm) para ver qué cambia, empezando por `build:`.
+
+**Olvidar** hace que Homeport deje de seguir el repositorio. Sus contenedores siguen en ejecución y pasa a ser un stack externo; su copia de trabajo se borra salvo que los contenedores hayan escrito archivos en ella, y el clon del repositorio desaparece cuando ya no lo usa ningún stack sincronizado. El repositorio se queda en **Ajustes → Repositorios**.
+
+## Sincronizar
+
+Elige **Sincronizar** en la fila o en la página de un stack sincronizado. Homeport obtiene su rama o su etiqueta y después muestra lo que cambiaría al desplegarla, antes de hacer nada:
+
+- los **commits nuevos** desde el desplegado que cambian algo en la carpeta del archivo compose, con su autor y cuándo se hicieron;
+- cada **archivo modificado** en esa carpeta, primero el archivo compose, con las líneas eliminadas tachadas encima de las que las sustituyen. Un archivo que no es texto se nombra, pero no se muestra.
+
+Elige **Desplegar** para desplegar exactamente ese commit: Homeport lo extrae en la copia de trabajo del stack y ejecuta `docker compose up` desde la carpeta del archivo compose, recompilando los servicios que tienen `build:`, de modo que un `Dockerfile` modificado se aplica. La salida se muestra a medida que se ejecuta, y el despliegue se registra en el **Historial** del stack con su commit.
+
+- Un push que no cambia nada en la carpeta del archivo compose — documentación en otra parte del repositorio, por ejemplo — muestra **Al día**. **Volver a desplegar de todos modos** lo despliega igualmente.
+- Si una etiqueta apunta ahora a un commit distinto del de la última vez que Homeport la obtuvo, la revisión lo indica primero.
+- Si la obtención falla (se quitó la clave de despliegue, no se puede acceder al servidor) o el despliegue falla, Homeport muestra el motivo y qué hacer, y el stack conserva su commit desplegado.
+
+**Volver a desplegar** despliega de nuevo el commit desplegado actualmente, después de mostrar lo que cambió en su entorno o sus perfiles. **Desplegar** en un stack que nunca se desplegó despliega el commit obtenido al crearlo. Un stack sincronizado no se puede revertir desde Homeport: revierte el cambio en su repositorio, o apunta el stack a una etiqueta anterior, y después sincroniza.
+
+## Sondeo y despliegue automático
+
+<Aside type="caution" title="Solo mientras Homeport está abierto">
+  Homeport solo comprueba tus repositorios mientras está abierto. **Nada se sincroniza mientras está
+  cerrado**: no hay ningún agente en tus servidores ni ningún webhook, ya que Homeport no instala
+  nada allí. Cuando lo vuelves a abrir, espera un intervalo antes de su primera comprobación.
+</Aside>
+
+Mientras Homeport está abierto, obtiene la rama o la etiqueta de cada stack sincronizado a intervalos: cada 5 minutos por defecto, según lo fijado en **Ajustes → Stacks sincronizados** (1 minuto como mínimo). Cada repositorio se obtiene una vez por ronda, sea cual sea el número de stacks que lo usan, y uno que falla una y otra vez se intenta cada vez con menos frecuencia, hasta una vez por hora.
+
+Cuando un commit nuevo cambia la carpeta del archivo compose, el stack muestra **Actualización disponible** en la lista y en su página. **Sincronizar** muestra lo que cambió y lo despliega. La pestaña **Definición** del stack indica cuándo fue la **última comprobación** y, si falló, por qué.
+
+Dos interruptores de la pestaña **Definición** lo controlan, stack por stack:
+
+- **Buscar commits nuevos**, activado por defecto. Desactívalo para sincronizar solo cuando elijas **Sincronizar**.
+- **Desplegar automáticamente los commits nuevos**, desactivado por defecto. Cuando está activado, Homeport despliega cada commit nuevo en cuanto lo ve, **sin mostrarte antes lo que cambió**, con los mismos pasos que **Sincronizar**; el despliegue se registra en el **Historial** como automático, y una notificación avisa cuando termina. Espera mientras no se puede acceder al host. Si falla, Homeport muestra el motivo y no vuelve a intentar ese commit: lo hará el siguiente commit, o una **Sincronización** que despliegues tú.
+
+## ¿Por qué no puedo editar un stack sincronizado?
+
+Porque su repositorio es el único lugar donde vive su definición. Si Homeport cambiara el archivo compose, la siguiente sincronización sobrescribiría ese cambio o lucharía contra él, y nadie que leyera el repositorio sabría qué está desplegado. Por eso, la pestaña **Definición** de un stack sincronizado muestra su archivo compose en el commit obtenido **de solo lectura** — aún puedes seleccionarlo y copiarlo —, lista los demás archivos de su carpeta y enlaza cada uno a su página en GitHub, GitLab, Gitea o Forgejo. Cámbialos allí, haz push y después **Sincroniza**.
+
+Lo que sí guarda Homeport sigue siendo editable en la misma pestaña:
+
+- su **Entorno**, cifrado en este equipo, para los valores que no deben ir en git;
+- sus **perfiles**, si el archivo compose declara alguno;
+- si **busca commits nuevos** y si **los despliega automáticamente**.
+
+**Olvidar** hace que Homeport deje de seguir el repositorio; los contenedores del stack siguen en ejecución, y pasa a ser externo.
