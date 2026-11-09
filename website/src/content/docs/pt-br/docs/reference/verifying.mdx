@@ -1,0 +1,79 @@
+---
+title: Verificar downloads
+description: Confira um instalador do Homeport com o seu checksum, a proveniência de build e as assinaturas, e saiba como as atualizações e os pacotes Linux são verificados.
+---
+
+import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import { KEY_URL } from '@/core/packages';
+import { SigningKeyFingerprint } from '@/features/docs';
+
+Toda release do Homeport é gerada pelo GitHub Actions a partir do repositório público. Você pode conferir se o arquivo que baixou é o que foi gerado, de duas formas. Os pacotes Linux e as atualizações também são assinados e verificados para você.
+
+## Checksums
+
+Cada release inclui `SHA256SUMS.txt`, com um checksum SHA-256 para cada arquivo. A [página de download](/download/) também mostra o checksum de cada arquivo. Baixe `SHA256SUMS.txt` na mesma pasta do instalador e depois:
+
+<Tabs syncKey="os">
+<TabItem label="Linux">
+
+```sh
+sha256sum --ignore-missing -c SHA256SUMS.txt
+```
+
+</TabItem>
+<TabItem label="macOS">
+
+```sh
+shasum -a 256 --ignore-missing -c SHA256SUMS.txt
+```
+
+</TabItem>
+<TabItem label="Windows">
+
+```powershell
+(Get-FileHash .\Homeport_0.2.0_x64-setup.exe -Algorithm SHA256).Hash.ToLower()
+```
+
+Compare o resultado com a linha do instalador em `SHA256SUMS.txt`.
+
+</TabItem>
+</Tabs>
+
+`OK` ao lado do nome do arquivo significa que ele corresponde.
+
+## Proveniência de build
+
+Um checksum prova que o arquivo não foi danificado nem trocado depois que o checksum foi publicado. Uma [atestação de proveniência de build](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) vai além: ela é assinada pelo GitHub e registra o repositório, o commit e o workflow que produziram o arquivo.
+
+Com a [GitHub CLI](https://cli.github.com) instalada:
+
+```sh
+gh attestation verify Homeport_0.2.0_x64-setup.exe --repo DamienReichhart/Homeport
+```
+
+Uma verificação bem-sucedida exibe o workflow e o commit a partir dos quais o arquivo foi gerado.
+
+## Assinaturas dos pacotes
+
+O repositório de pacotes do Homeport e todos os `.rpm` são assinados com a chave de pacotes do Homeport (RSA 4096):
+
+**Impressão digital:** <SigningKeyFingerprint />
+
+O `apt`, o `dnf` e o `zypper` verificam essas assinaturas a cada atualização e recusam pacotes e dados de repositório que não correspondam. Para conferir a chave que você baixou, ou um arquivo `.rpm`:
+
+<Code code={`curl -fsSL ${KEY_URL} | gpg --show-keys --with-fingerprint`} lang="sh" />
+
+```sh
+sudo rpm --import homeport.asc   # once
+rpm -K Homeport-<version>-1.x86_64.rpm
+```
+
+O `rpm -K` exibe `digests signatures OK` para um pacote assinado. Um arquivo `.deb` não é assinado por si só: o índice assinado do repositório o cobre, e um baixado é coberto pelo seu checksum e pela sua atestação.
+
+## Assinaturas das atualizações
+
+Toda atualização que o atualizador do aplicativo instala é assinada com uma chave de atualização separada do Homeport, cuja metade pública vem embutida no Homeport. Antes de instalar, o Homeport verifica a assinatura e se ela foi feita para a versão anunciada, e recusa qualquer outra coisa, mesmo quando vem do endereço certo.
+
+## Assinatura de código
+
+O aplicativo para macOS tem assinatura ad hoc, e os instaladores para Windows ainda não são assinados com um certificado comercial, então o macOS e o Windows pedem que você confirme a primeira execução. A [instalação](/docs/installation/) mostra como. As atualizações instaladas de dentro do Homeport não perguntam de novo.

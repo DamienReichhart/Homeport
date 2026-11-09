@@ -1,0 +1,96 @@
+---
+title: Início rápido
+description: Conecte o seu primeiro host e aprenda a se orientar no Homeport em cinco minutos.
+---
+
+import { Aside, LinkCard, Steps } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+Este guia leva você de uma instalação nova até um contêiner em execução no seu primeiro host.
+
+## 1. Adicione um host
+
+Na primeira vez que você abre o Homeport, ele mostra **Bem-vindo ao Homeport**.
+
+Se um Docker Engine estiver rodando nesta máquina, ele aparece em **Encontrados nesta máquina** com a sua versão, por exemplo `Docker Desktop · Engine 27.3.1`. Escolha **Adicionar** ao lado dele e você estará conectado — pule para a [etapa 2](#2-look-around).
+
+Para se conectar a um Engine remoto, escolha **Adicionar outro host**:
+
+<Steps>
+
+1. Escolha como se conectar: **SSH**, **TLS**, **TCP** ou **Socket local**. SSH é a escolha habitual para um servidor.
+
+2. Dê ao host um **Nome** que você vá reconhecer, como `production`.
+
+3. Preencha os detalhes da conexão. Para SSH, são o **Servidor**, a **Porta**, o **Usuário** e, se o Docker não estiver no local padrão, o **Caminho do socket remoto**.
+
+4. Escolha **Adicionar host**. O Homeport abre a página do host e começa a se conectar.
+
+</Steps>
+
+<DocScreenshot
+  name="add-host-ssh"
+  alt="A página Adicionar host com SSH selecionado."
+  caption="Adicionando um host SSH. O Homeport cria uma chave só para ele."
+/>
+
+Um host SSH precisa de mais duas coisas na primeira vez. [Hosts SSH](/docs/hosts/ssh/) explica cada uma:
+
+- **Confie na chave do servidor.** O Homeport mostra a impressão digital do servidor; compare-a e escolha **Confiar nesta chave**.
+- **Autorize a chave do Homeport.** Copie o comando em **Autorizar o Homeport no servidor**, execute-o no servidor e depois escolha **Reconectar**.
+
+Quando o status mudar para **Conectado**, está pronto.
+
+## 2. Explore
+
+A barra lateral tem uma página para cada tipo de recurso, e todas mostram o host escolhido no **seletor de hosts** no topo da barra lateral:
+
+| Página            | O que mostra                                                                   |
+| ----------------- | ------------------------------------------------------------------------------ |
+| **Visão geral**   | Um cartão para cada host, o Engine do host selecionado, uso de disco e eventos |
+| **Contêineres**   | Todos os contêineres, agrupados por stack, com CPU e memória ao vivo           |
+| **Imagens**       | Imagens locais, o que as usa, download e limpeza                               |
+| **Volumes**       | Volumes e os contêineres que os usam                                           |
+| **Redes**         | Redes, as suas sub-redes e os contêineres conectados                           |
+| **Stacks**        | Projetos Compose, gerenciados e externos                                       |
+| **Eventos**       | O que o Engine informou desde que o Homeport se conectou                       |
+| **Configurações** | Tema, o que esta máquina suporta e licenças                                    |
+
+O Homeport se atualiza à medida que o Engine informa mudanças, então você nunca precisa de um botão de atualizar — inicie um contêiner em um terminal e ele aparece na hora.
+
+## 3. Execute um contêiner
+
+<Steps>
+
+1. Abra **Contêineres** e escolha **Executar contêiner**.
+
+2. Digite uma **Imagem**, como `nginx:alpine`. O Homeport a baixa primeiro se o host não a tiver.
+
+3. Em **Portas**, escolha **Adicionar porta** e mapeie a porta `8080` do host para a porta `80` do contêiner.
+
+4. Escolha **Executar**. O Homeport abre o novo contêiner na aba **Logs**.
+
+</Steps>
+
+De volta à página Contêineres, a porta `8080:80/tcp` é um link: selecione-a para abrir o site no navegador.
+
+## 4. Adicione mais hosts
+
+Adicione quantos hosts quiser com **Adicionar host…** no seletor de hosts. A Visão geral mostra todos juntos; selecione um cartão para mudar para aquele host.
+
+<Aside type="tip">
+  O Homeport lembra o host que você tinha selecionado e se reconecta a todos os hosts ao iniciar.
+</Aside>
+
+## Próximos passos
+
+<LinkCard
+  title="Hosts e conexões"
+  description="Status, reconexão e cada tipo de conexão em detalhe."
+  href="/docs/hosts/"
+/>
+<LinkCard
+  title="Stacks"
+  description="Implante arquivos compose em qualquer host e adote stacks implantadas em outro lugar."
+  href="/docs/guides/stacks/"
+/>
