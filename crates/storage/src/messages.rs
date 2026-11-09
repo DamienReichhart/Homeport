@@ -20,6 +20,13 @@ homeport_core::messages! {
     DB_FAILED = "errors.storage.dbFailed" => "Homeport's database failed.";
     /// A migration failed when the database was opened.
     DB_MIGRATION_FAILED = "errors.storage.dbMigrationFailed" => "Homeport couldn't upgrade its database.";
+    /// The database was migrated by a newer Homeport, which says the oldest
+    /// version able to open it. Nothing was written to it.
+    DB_FROM_NEWER = "errors.storage.dbFromNewer" => "This database was last used by Homeport {version} or later.";
+    DB_FROM_NEWER_HINT = "errors.storage.dbFromNewer.hint" => "Install Homeport {version} or newer from the download page. Your data hasn't been changed.";
+    /// The same, for a database that doesn't name the version it needs.
+    DB_FROM_NEWER_UNKNOWN = "errors.storage.dbFromNewerUnknown" => "This database was last used by a newer Homeport than this one ({current}).";
+    DB_FROM_NEWER_UNKNOWN_HINT = "errors.storage.dbFromNewerUnknown.hint" => "Install the latest Homeport from the download page. Your data hasn't been changed.";
     /// A passphrase too short to protect an export.
     BUNDLE_PASSPHRASE_SHORT = "errors.storage.bundle.passphraseShort" => "Use a passphrase of at least {min} characters.";
     /// A file picked for import that isn't a Homeport export.

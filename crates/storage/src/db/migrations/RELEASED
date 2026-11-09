@@ -1,0 +1,28 @@
+# The migrations that have been released: file, SHA-256 of its bytes, and the
+# first release that shipped it, in order.
+#
+# A released migration is never edited: a database that already ran it would
+# end up with a different schema than a new one. Fix a mistake with a new
+# migration. `released_migrations_are_unchanged` fails when a file's hash no
+# longer matches, and `Db::open` names the release from here when it refuses a
+# database from a newer Homeport.
+#
+# Releasing adds a line for each new migration (docs/RELEASING.md):
+#   sha256sum crates/storage/src/db/migrations/00NN_name.sql
+0001_settings.sql c01515710d5b43429c74c65eb5d463275d1594919b3f108ca21c4b0779b76fc8 0.1.0
+0002_hosts.sql 7c4b61157752ed830e4d0f0dd1945bcdf39dec99f6b60b92ca7fa470b6c8c7c8 0.1.0
+0003_stacks.sql 8258db433f7944a0f2cfbe18c83dd956f72d7ca0f91a438abbc17fb033951683 0.1.0
+0004_registries.sql b3f9c20b7ec1963e29d1a31824bae24901b6c632de500953f2965e145fc16e5f 0.7.0
+0005_bastions.sql 95800b22821a55ddc96749721ab8c984fdec7cc7f163c15586acc8ecd7deab14 0.9.0
+0006_linked_stacks.sql 264eaf0aa938e895ce5cd9a2bfa3f9764dcafd099bda3710c7054d2192e4f725 0.10.0
+0007_stack_files.sql 4176c2d89463f544e2831f26c49f8d58f56c69bcc25ed5c6cf0543a27ca43b45 0.10.0
+0008_stack_profiles.sql a3521ad56f2f3ae726a119da11a44769970eb8f7b80f853dfc2587953919012a 0.10.0
+0009_stack_deploys.sql 1622593c34eee45abf9e742c82aaac68a76b3b72fb716e305be2ff1d20f7f256 0.10.0
+0010_git_repositories.sql ff8a6ac764db61739a1ede0664d02c6e53c9f1e9e17b7ab1f6473ef06780e8cc 0.11.0
+0011_synced_stacks.sql 2659d614fec42d9cfb3e40a9db08ffe5fab90120775fb90cead0de5a1108e24e 0.11.0
+0012_stack_deploy_commits.sql d3d7d2c6fa217705591edec22f57a403638545b66102b029bded27b83987b952 0.11.0
+0013_synced_polling.sql e894ce8a76e13d02c067edd9f6c01bc1a5e6b97be188ab9f3cecd65e65e7322a 0.11.0
+0014_engine_events.sql 6e765f5e6ad852dc21e664266fd85e6d1706a2581f1780a9836ce31b05f52fba 0.12.0
+0015_swarm_stacks.sql 58f60b273ab53ff49eb49ca6f04ae2fedd0381ba5ae72e04c47a72b1a1eb605c 0.14.0
+0016_clusters.sql 4b23aad2c89ed3522f18f092881d959310d3fb79dd9b046f222059b96b2bc6f6 0.15.0
+0017_host_engines.sql f53987cb35ad4cf2c6c68f7573367d95223cb47fdc73e89ac68b492e88e1e84e 0.18.0

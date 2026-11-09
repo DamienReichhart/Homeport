@@ -7,6 +7,13 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 /** Commands */
 export const commands = {
 	getAppInfo: () => __TAURI_INVOKE<AppInfo>("get_app_info"),
+	/**
+	 *  Why Homeport couldn't start, if it couldn't: the window then shows this
+	 *  instead of the app, and no other command works.
+	 */
+	startupProblem: () => __TAURI_INVOKE<StartupProblem | null>("startup_problem"),
+	/**  Opens the folder holding Homeport's database in the file manager. */
+	openDataFolder: () => __TAURI_INVOKE<null>("open_data_folder"),
 	getCapabilities: () => __TAURI_INVOKE<Capabilities>("get_capabilities"),
 	/**
 	 *  Whether Homeport starts when the user logs in, read from the OS each
@@ -1713,7 +1720,9 @@ export type EnvKeyChange = {
 /**  Stable machine-readable identifier of a failure, one per case the user can act on. */
 export type ErrorCode = 
 /**  A failure that started in the frontend, outside any command. */
-"unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | 
+"unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | 
+/**  The database was migrated by a newer Homeport; nothing was written to it. */
+"db_from_newer_version" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | 
 /**  The OS refused the entry that starts Homeport at login. */
 "autostart_failed" | 
 /**  An export file that the passphrase doesn't open, or that was damaged. */
@@ -4146,6 +4155,13 @@ export type StackState =
 "stopped" | 
 /**  A Managed, Linked or Synced Stack with no containers yet. */
 "notDeployed";
+
+/**  The database couldn't be opened. */
+export type StartupProblem = {
+	error: AppError,
+	/**  Where the database is, for the user to find and keep. */
+	databasePath: string,
+};
 
 export type StatsSample = {
 	/**  Percent of one CPU; 200 means two CPUs fully used. */

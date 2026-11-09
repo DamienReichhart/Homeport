@@ -15,6 +15,8 @@ pub enum ErrorCode {
     DbLocked,
     DbCorrupt,
     DbMigration,
+    /// The database was migrated by a newer Homeport; nothing was written to it.
+    DbFromNewerVersion,
     Tauri,
     Validation,
     NotFound,

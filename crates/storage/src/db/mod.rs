@@ -2,6 +2,8 @@
 //! Docker state is never cached here; the daemon is the source of truth.
 
 mod error;
+mod newer;
+mod released;
 
 use std::{path::Path, sync::Mutex};
 
@@ -11,6 +13,7 @@ use rusqlite_migration::{Migrations, M};
 use homeport_core::error::AppResult;
 
 pub use self::error::sqlite_error;
+pub use self::released::{release_of, released, Released};
 
 use self::error::migration_error;
 
@@ -32,6 +35,7 @@ const MIGRATION_SLICE: &[M<'static>] = &[
     M::up(include_str!("migrations/0015_swarm_stacks.sql")),
     M::up(include_str!("migrations/0016_clusters.sql")),
     M::up(include_str!("migrations/0017_host_engines.sql")),
+    M::up(include_str!("migrations/0018_database_info.sql")),
 ];
 const MIGRATIONS: Migrations<'static> = Migrations::from_slice(MIGRATION_SLICE);
 
@@ -56,14 +60,33 @@ fn migrate(conn: &mut Connection) -> AppResult<()> {
         return Err(error::foreign_keys_broken(&table));
     }
     conn.pragma_update(None, "foreign_keys", "ON")
-        .map_err(sqlite_error)
+        .map_err(sqlite_error)?;
+    record_required_release(conn)
+}
+
+/// Writes the oldest Homeport able to open this schema into the database,
+/// for an older Homeport to name when it refuses the file (`newer`).
+fn record_required_release(conn: &Connection) -> AppResult<()> {
+    conn.execute(
+        "INSERT INTO database_info (key, value) VALUES (?1, ?2)
+         ON CONFLICT (key) DO UPDATE SET value = excluded.value
+         WHERE value <> excluded.value",
+        (newer::REQUIRES, release_of(MIGRATION_SLICE.len())),
+    )
+    .map(drop)
+    .map_err(sqlite_error)
 }
 
 impl Db {
+    /// Opens the database at `path`, creating it and migrating it as needed.
+    ///
+    /// A database from a newer Homeport is refused with
+    /// `ErrorCode::DbFromNewerVersion` before anything is written.
     pub fn open(path: &Path) -> AppResult<Self> {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
         }
+        newer::refuse_newer(path, MIGRATION_SLICE.len())?;
         let conn = Connection::open(path).map_err(sqlite_error)?;
         conn.pragma_update(None, "journal_mode", "WAL")
             .map_err(sqlite_error)?;
@@ -112,6 +135,7 @@ impl Db {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use homeport_core::error::ErrorCode;
 
     #[test]
     fn transactions_keep_nothing_of_a_failure() {
@@ -160,6 +184,137 @@ mod tests {
     #[test]
     fn migrations_are_valid() {
         MIGRATIONS.validate().unwrap();
+    }
+
+    /// Every file in the folder, by name, with its bytes.
+    fn files_in(dir: &Path) -> Vec<(String, Vec<u8>)> {
+        let mut files: Vec<_> = std::fs::read_dir(dir)
+            .unwrap()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                (
+                    entry.file_name().to_string_lossy().into_owned(),
+                    std::fs::read(entry.path()).unwrap(),
+                )
+            })
+            .collect();
+        files.sort();
+        files
+    }
+
+    /// A database one migration past the latest, as a newer Homeport that
+    /// records the version it needs would leave it.
+    fn newer_database(path: &Path, requires: Option<&str>) {
+        let db = Db::open(path).unwrap();
+        db.with(|c| {
+            c.execute("INSERT INTO settings VALUES ('k', '1')", [])?;
+            match requires {
+                Some(version) => c.execute(
+                    "UPDATE database_info SET value = ?1 WHERE key = 'requires'",
+                    [version],
+                )?,
+                None => c.execute("DROP TABLE database_info", [])?,
+            };
+            c.pragma_update(None, "user_version", MIGRATION_SLICE.len() as i64 + 1)
+        })
+        .unwrap();
+    }
+
+    #[test]
+    fn a_database_from_a_newer_homeport_is_refused_untouched() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("homeport.db");
+        newer_database(&path, Some("9.4.0"));
+        let before = files_in(dir.path());
+        assert_eq!(before.len(), 1, "closing leaves the database file alone");
+
+        let error = Db::open(&path).err().expect("refused");
+        assert_eq!(error.code, ErrorCode::DbFromNewerVersion);
+        assert_eq!(
+            error.message,
+            "This database was last used by Homeport 9.4.0 or later."
+        );
+        let hint = error.hint.expect("says what to do");
+        assert!(hint.text.contains("Install Homeport 9.4.0 or newer"));
+        assert!(hint.text.contains("hasn't been changed"));
+        assert!(!hint.text.to_lowercase().contains("delete"));
+        assert_eq!(files_in(dir.path()), before, "nothing on disk changed");
+    }
+
+    #[test]
+    fn a_newer_database_that_names_no_version_is_refused_too() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("homeport.db");
+        newer_database(&path, None);
+        let before = files_in(dir.path());
+
+        let error = Db::open(&path).err().expect("refused");
+        assert_eq!(error.code, ErrorCode::DbFromNewerVersion);
+        assert!(error.message.contains("a newer Homeport than this one"));
+        assert_eq!(files_in(dir.path()), before);
+    }
+
+    #[test]
+    fn a_newer_database_left_open_by_a_crash_is_refused_without_losing_its_log() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("homeport.db");
+        let live = dir.path().join("live.db");
+        // The newer Homeport is still holding the file, so its last writes are
+        // only in the write-ahead log; copying now is what a crash leaves.
+        let conn = Connection::open(&live).unwrap();
+        conn.pragma_update(None, "journal_mode", "WAL").unwrap();
+        conn.pragma_update(None, "wal_autocheckpoint", 0).unwrap();
+        conn.execute_batch("CREATE TABLE settings (key TEXT, value TEXT)")
+            .unwrap();
+        conn.pragma_update(None, "user_version", MIGRATION_SLICE.len() as i64 + 1)
+            .unwrap();
+        for suffix in ["", "-wal"] {
+            let name = |base: &Path| {
+                let mut name = base.as_os_str().to_owned();
+                name.push(suffix);
+                std::path::PathBuf::from(name)
+            };
+            std::fs::copy(name(&live), name(&path)).unwrap();
+        }
+        drop(conn);
+        let before = std::fs::read(&path).unwrap();
+        let log = std::fs::read(dir.path().join("homeport.db-wal")).unwrap();
+        assert!(!log.is_empty());
+
+        let error = Db::open(&path).err().expect("refused");
+        assert_eq!(error.code, ErrorCode::DbFromNewerVersion);
+        assert_eq!(std::fs::read(&path).unwrap(), before);
+        assert_eq!(
+            std::fs::read(dir.path().join("homeport.db-wal")).unwrap(),
+            log
+        );
+    }
+
+    #[test]
+    fn opening_records_the_oldest_homeport_that_can_read_the_file() {
+        let db = Db::open_in_memory().unwrap();
+        let requires: String = db
+            .with(|c| {
+                c.query_row(
+                    "SELECT value FROM database_info WHERE key = 'requires'",
+                    [],
+                    |r| r.get(0),
+                )
+            })
+            .unwrap();
+        assert_eq!(requires, release_of(MIGRATION_SLICE.len()));
+    }
+
+    #[test]
+    fn released_migrations_name_their_release() {
+        assert_eq!(release_of(1), "0.1.0");
+        assert_eq!(release_of(4), "0.7.0");
+        assert_eq!(release_of(17), "0.18.0");
+        // One past the latest isn't released by definition.
+        assert_eq!(
+            release_of(MIGRATION_SLICE.len() + 1),
+            env!("CARGO_PKG_VERSION")
+        );
     }
 
     #[test]
