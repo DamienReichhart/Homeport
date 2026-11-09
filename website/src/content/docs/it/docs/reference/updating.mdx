@@ -1,0 +1,100 @@
+---
+title: Aggiornare e disinstallare
+description: Come si aggiorna Homeport su ogni sistema, e come rimuoverlo completamente insieme ai suoi dati.
+---
+
+import { Aside, Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import { MANUAL_SETUP, UPDATE_COMMANDS } from '@/core/packages';
+
+## Aggiornare
+
+Il modo in cui Homeport si aggiorna dipende da come l’hai installato.
+
+### Windows, macOS e l’AppImage
+
+Homeport controlla se c’è una nuova versione all’avvio e ogni 6 ore. Quando ne esce una, una barra in cima alla finestra lo segnala: scegli **Novità** per leggere il [changelog](/changelog/), o **Installa e riavvia**. Homeport scarica l’aggiornamento, ne verifica la firma, lo installa e si riapre. Nulla viene installato finché non lo scegli tu, e i tuoi host, stack e impostazioni vengono conservati.
+
+Puoi anche controllare subito da **Impostazioni → Aggiornamenti → Controlla ora**.
+
+### Pacchetti Linux
+
+I pacchetti `.deb` e `.rpm`, che siano installati con l’[installazione rapida](/docs/installation/#quick-install), la [configurazione manuale](/docs/installation/#manual-setup) o un file scaricato, si aggiornano dal repository dei pacchetti di Homeport insieme al resto del sistema: i tuoi soliti aggiornamenti software includono Homeport. Per aggiornare solo Homeport:
+
+<Tabs syncKey="linux-format">
+  {MANUAL_SETUP.map((setup) => (
+    <TabItem label={setup.label}>
+      <Code code={UPDATE_COMMANDS[setup.id]} lang="sh" />
+    </TabItem>
+  ))}
+</Tabs>
+
+Homeport ti avvisa quando esce una nuova versione e mostra il comando per il tuo sistema, ma lascia l’installazione al tuo gestore di pacchetti.
+
+Se hai rimosso il repository di Homeport, il tuo gestore di pacchetti non può vedere le nuove versioni. Configuralo di nuovo con l’[installazione rapida](/docs/installation/#quick-install), o scarica il nuovo pacchetto e installalo sopra quello vecchio.
+
+### Disattivare il controllo degli aggiornamenti
+
+Disattiva **Impostazioni → Aggiornamenti → Cerca aggiornamenti automaticamente**. **Controlla ora** continua a funzionare. Un controllo scarica un piccolo file da questo sito e non invia nulla su di te o sui tuoi host. Vedi [la sicurezza e i tuoi dati](/docs/reference/security/#what-homeport-connects-to).
+
+### Aggiornare dalla 0.2.0 o precedenti
+
+Le versioni precedenti alla 0.3.0 non si aggiornano da sole, e i loro pacchetti Linux non aggiungono il repository. Installa una volta la 0.3.0 o successiva, nello stesso modo in cui hai installato Homeport: dalla [pagina di download](/download/), o su Linux con l’[installazione rapida](/docs/installation/#quick-install). Dopodiché, gli aggiornamenti arrivano da soli.
+
+Per essere comunque avvisato delle nuove versioni, segui il repository su GitHub (**Watch → Custom → Releases**), o segui il [feed delle release](https://github.com/DamienReichhart/Homeport/releases.atom).
+
+## Disinstallare
+
+<Tabs syncKey="os">
+<TabItem label="Windows">
+Apri **Impostazioni → App → App installate**, trova **Homeport** e scegli **Disinstalla**.
+</TabItem>
+<TabItem label="macOS">Esci da Homeport e trascinalo da Applicazioni al Cestino.</TabItem>
+<TabItem label="Linux">
+
+```sh
+sudo apt purge homeport       # Debian, Ubuntu
+sudo dnf remove homeport      # Fedora, RHEL
+sudo zypper remove homeport   # openSUSE
+```
+
+Questo rimuove anche il repository di Homeport. Su Debian e Ubuntu, `apt remove` lo conserva, insieme al resto della configurazione del pacchetto, e `apt purge` lo rimuove con la sua chiave. Su Fedora e openSUSE la chiave resta nel portachiavi di rpm; `rpm -q gpg-pubkey --qf '%{NAME}-%{VERSION}-%{RELEASE} %{SUMMARY}\n'` elenca le chiavi, e `sudo rpm -e gpg-pubkey-<version>-<release>` rimuove quella di Homeport.
+
+Per l’AppImage, elimina il file. La sua voce di menu scompare con esso.
+
+</TabItem>
+</Tabs>
+
+La disinstallazione lascia i tuoi dati dove sono, quindi reinstallare riporta tutto.
+
+### La voce di avvio all’accesso
+
+Se **Avvia all’accesso** è attivo, disattivalo in **Impostazioni → Desktop** prima di disinstallare: la disinstallazione lascia la voce di avvio, che punta a un Homeport che non c’è più. Per rimuoverla in seguito:
+
+| Sistema | Voce di avvio all’accesso                                                                                                                                            |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows | **Gestione attività → App di avvio**: disattiva **Homeport**, o elimina il valore `Homeport` sotto `HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run` |
+| macOS   | Elimina `~/Library/LaunchAgents/Homeport.plist`                                                                                                                      |
+| Linux   | Elimina `~/.config/autostart/Homeport.desktop`                                                                                                                       |
+
+## Rimuovere i tuoi dati
+
+<Aside type="caution">
+  Questo elimina i tuoi host, le loro chiavi e i loro certificati memorizzati, le definizioni dei
+  tuoi stack gestiti, i tuoi stack collegati e la loro cronologia delle distribuzioni. Le cartelle
+  degli stack collegati restano dove sono. Nulla sui tuoi host viene toccato.
+</Aside>
+
+1. Elimina le cartelle dei dati e dei log di Homeport:
+
+   | Sistema | Cartelle                                                                              |
+   | ------- | ------------------------------------------------------------------------------------- |
+   | Linux   | `~/.local/share/com.homeport.app/`, `~/.config/com.homeport.app/`                     |
+   | macOS   | `~/Library/Application Support/com.homeport.app/`, `~/Library/Logs/com.homeport.app/` |
+   | Windows | `%APPDATA%\com.homeport.app\`, `%LOCALAPPDATA%\com.homeport.app\`                     |
+
+2. Elimina la chiave di cifratura dal tuo portachiavi — la voce di `com.homeport.app`:
+   - **macOS** — in **Accesso Portachiavi**, cerca `com.homeport.app` ed eliminala.
+   - **Windows** — in **Gestione credenziali → Credenziali di Windows**, rimuovi la voce che contiene `com.homeport.app`.
+   - **Linux** — in **Password e chiavi** (Seahorse) o KWallet, elimina la voce di `com.homeport.app`.
+
+3. Sui tuoi server, rimuovi le chiavi pubbliche di Homeport da `~/.ssh/authorized_keys` — i loro commenti iniziano con `homeport@`.

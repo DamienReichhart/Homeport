@@ -1,0 +1,180 @@
+---
+title: Installazione
+description: Installa Homeport su Windows, macOS o Linux.
+---
+
+import { Aside, Code, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+import { COMING_LATER, INSTALL_COMMAND, MANUAL_SETUP } from '@/core/packages';
+
+Homeport ha programmi di installazione per Windows, macOS e Linux, ciascuno per x64 e ARM. Scaricali dalla [pagina di download](/download/), che ti indica il file giusto per il tuo sistema, o dall’[ultima release su GitHub](https://github.com/DamienReichhart/Homeport/releases/latest). Su Linux, il repository dei pacchetti di Homeport lo installa con un solo comando.
+
+Ogni installazione resta aggiornata: Homeport si aggiorna da sé su Windows, su macOS e con l’AppImage, e i pacchetti Linux si aggiornano insieme al resto del sistema. Vedi [aggiornamenti](/docs/reference/updating/).
+
+<Aside>
+  Homeport gestisce Docker Engine ma non ne include uno. Se vuoi dei container su questo computer,
+  installa anche Docker Engine, Docker Desktop, Colima, OrbStack, Rancher Desktop o Podman — oppure
+  connetti Homeport a un server remoto. Vedi i [requisiti di sistema](/docs/requirements/).
+</Aside>
+
+## Windows
+
+| File                                 | Da usare per                                             |
+| ------------------------------------ | -------------------------------------------------------- |
+| `Homeport_<version>_x64-setup.exe`   | La maggior parte dei PC. Installa per l’utente corrente. |
+| `Homeport_<version>_arm64-setup.exe` | Windows su ARM (Snapdragon e altri PC ARM64).            |
+| `Homeport_<version>_x64_en-US.msi`   | Installazioni gestite e silenziose su x64.               |
+
+<Steps>
+
+1. Scarica il programma di installazione per il tuo PC e aprilo.
+
+2. Windows SmartScreen potrebbe dire **Windows ha protetto il PC**, perché il programma di installazione non è ancora firmato con un certificato a pagamento. Scegli **Ulteriori informazioni**, poi **Esegui comunque**.
+
+3. Segui il programma di installazione. Homeport viene aggiunto al menu Start.
+
+</Steps>
+
+Per un’installazione silenziosa con il pacchetto MSI:
+
+```powershell
+msiexec /i Homeport_<version>_x64_en-US.msi /quiet
+```
+
+## macOS
+
+| File                             | Da usare per                             |
+| -------------------------------- | ---------------------------------------- |
+| `Homeport_<version>_aarch64.dmg` | Mac con Apple silicon (M1 e successivi). |
+| `Homeport_<version>_x64.dmg`     | Mac con processore Intel.                |
+
+Non sai quale hai? Apri il menu Apple → **Informazioni su questo Mac**: una riga **Chip** indica Apple silicon, una riga **Processore** che nomina Intel indica Intel.
+
+<Steps>
+
+1. Apri il `.dmg` e trascina **Homeport** in **Applicazioni**.
+
+2. Apri Homeport da Applicazioni o da Launchpad.
+
+3. Homeport non è ancora autenticato da Apple, quindi macOS potrebbe dire che **non può essere aperto** o che **non può verificare la presenza di malware**. Scegli **Fine** (o **OK**), apri **Impostazioni di Sistema → Privacy e sicurezza**, scorri fino a Sicurezza e scegli **Apri comunque** accanto a Homeport. Conferma, e macOS ricorda la tua scelta.
+
+</Steps>
+
+<Aside type="tip" title="Dal terminale">
+  Puoi anche rimuovere l’attributo di quarantena che macOS applica alle app scaricate:
+
+```sh
+xattr -dr com.apple.quarantine /Applications/Homeport.app
+```
+
+</Aside>
+
+## Linux
+
+Homeport per Linux richiede glibc 2.35 o successiva — Ubuntu 22.04, Debian 12, Fedora 36 o qualsiasi versione più recente — su x64 o ARM64.
+
+### Installazione rapida
+
+Questo configura il repository dei pacchetti di Homeport e installa Homeport, così `apt`, `dnf` o `zypper` lo mantengono aggiornato insieme al resto del sistema:
+
+<Code code={INSTALL_COMMAND} lang="sh" />
+
+Lo script funziona su Debian, Ubuntu e derivate (`apt`), Fedora, RHEL e affini (`dnf`) e openSUSE (`zypper`). Dice cosa farà prima di chiedere `sudo`, poi:
+
+1. aggiunge la chiave di firma di Homeport,
+2. aggiunge il repository di Homeport,
+3. installa il pacchetto `homeport`, o lo aggiorna se è già installato.
+
+Eseguirlo di nuovo non causa problemi. Puoi prima [leggere lo script](https://github.com/DamienReichhart/Homeport/blob/main/packaging/linux/install.sh), o seguire la configurazione manuale qui sotto: fa la stessa cosa.
+
+### Configurazione manuale
+
+Aggiungi tu la chiave di firma e il repository, poi installa il pacchetto `homeport`:
+
+<Tabs syncKey="linux-format">
+  {MANUAL_SETUP.map((setup) => (
+    <TabItem label={setup.label}>
+      <p>{setup.distributions}:</p>
+      <Code code={setup.commands} lang="sh" />
+    </TabItem>
+  ))}
+</Tabs>
+
+`dnf` e `zypper` potrebbero chiederti di considerare attendibile la chiave la prima volta che usano il repository. Controlla che la sua impronta corrisponda a quella in [verificare i download](/docs/reference/verifying/#package-signatures) prima di accettare.
+
+### File dei pacchetti
+
+Puoi anche scaricare il `.deb` (`amd64` per x64, `arm64` per ARM) o l’`.rpm` (`x86_64` o `aarch64`) e installarlo direttamente:
+
+<Tabs syncKey="linux-format">
+<TabItem label="Debian, Ubuntu">
+
+```sh
+sudo apt install ./Homeport_<version>_amd64.deb
+```
+
+</TabItem>
+<TabItem label="Fedora, RHEL">
+
+```sh
+sudo dnf install ./Homeport-<version>-1.x86_64.rpm
+```
+
+</TabItem>
+<TabItem label="openSUSE">
+
+```sh
+sudo zypper install ./Homeport-<version>-1.x86_64.rpm
+```
+
+</TabItem>
+</Tabs>
+
+La prima volta che installi uno di questi pacchetti, aggiunge anche il repository di Homeport, così ricevi gli aggiornamenti come con l’installazione rapida. Se preferisci di no, elimina il file del repository (`/etc/apt/sources.list.d/homeport.sources`, `/etc/yum.repos.d/homeport.repo` o `/etc/zypp/repos.d/homeport.repo`): gli aggiornamenti successivi del pacchetto non lo aggiungeranno di nuovo.
+
+### AppImage
+
+L’AppImage funziona sulla maggior parte delle distribuzioni senza installare nulla, e si aggiorna da sé dall’interno di Homeport. Rendila eseguibile ed eseguila:
+
+```sh
+chmod +x Homeport_<version>_amd64.AppImage
+./Homeport_<version>_amd64.AppImage
+```
+
+A ogni esecuzione, aggiunge Homeport al menu delle applicazioni. Se non si avvia e menziona FUSE, installa `libfuse2` (`libfuse2t64` su Ubuntu 24.04 e successivi).
+
+I pacchetti `.deb` e `.rpm` aggiungono Homeport al menu delle applicazioni e installano le sue note di licenza in `/usr/share/doc/homeport/` o `/usr/share/licenses/homeport/`.
+
+<Aside type="caution" title="Usi Docker su questo computer?">
+  Per raggiungere il socket Docker locale senza root, il tuo utente deve far parte del gruppo `docker`:
+
+```sh
+sudo usermod -aG docker $USER
+```
+
+Esci e accedi di nuovo perché abbia effetto. Senza questo, un host locale appare come **Non raggiungibile** con
+_Permission denied_.
+
+</Aside>
+
+## In arrivo
+
+Sono previsti altri modi per installare Homeport. Segui una issue per sapere quando arriva:
+
+<ul>
+  {COMING_LATER.map((channel) => (
+    <li>
+      <a href={`https://github.com/DamienReichhart/Homeport/issues/${channel.issue}`}>
+        {channel.name}
+      </a>{' '}
+      — {channel.what}
+    </li>
+  ))}
+</ul>
+
+## Controlla il download
+
+Ogni release elenca un checksum SHA-256 per ogni file e un’attestazione firmata della provenienza della build, e i pacchetti e i repository Linux sono firmati. [Verificare i download](/docs/reference/verifying/) mostra come controllarli.
+
+## Prossimi passi
+
+Apri Homeport e segui l’[avvio rapido](/docs/quick-start/) per connettere il tuo primo host.

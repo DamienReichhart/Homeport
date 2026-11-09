@@ -1,0 +1,53 @@
+---
+title: Host TLS e TCP
+description: Connettiti a un Docker Engine esposto sulla rete, con TLS reciproco o TCP semplice.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+I Docker Engine possono essere in ascolto su una porta TCP oltre che sul loro socket. Homeport vi si connette con TLS reciproco — la configurazione che Docker chiama `--tlsverify` — oppure, su una rete di cui ti fidi completamente, con TCP semplice.
+
+## TLS
+
+Con TLS reciproco, Homeport verifica il certificato del server rispetto alla tua CA, e il server verifica il certificato client di Homeport. È il modo sicuro per esporre un Engine su una rete.
+
+### Cosa ti serve
+
+I tre file della tua configurazione TLS di Docker, in formato PEM:
+
+| Campo                  | Di solito chiamato | Contiene                                                                                              |
+| ---------------------- | ------------------ | ----------------------------------------------------------------------------------------------------- |
+| **Certificato CA**     | `ca.pem`           | L’autorità di certificazione che ha firmato il certificato del server. Può contenere più certificati. |
+| **Certificato client** | `cert.pem`         | Il certificato di Homeport, firmato da una CA di cui il server si fida.                               |
+| **Chiave client**      | `key.pem`          | La chiave privata del certificato client, non cifrata.                                                |
+
+La guida di Docker [Protect the Docker daemon socket](https://docs.docker.com/engine/security/protect-access/) spiega come crearli.
+
+### Aggiungere un host TLS
+
+1. Scegli **Aggiungi host…** nel selettore degli host e seleziona **TLS**.
+2. Inserisci un **Nome** e l’**Indirizzo** come `host:port`, per esempio `docker.example.com:2376`.
+3. Per ogni certificato e per la chiave, incolla il testo PEM o scegli **Carica da file…**.
+4. Scegli **Aggiungi host**.
+
+Il certificato del server deve nominare l’host che inserisci — il suo nome DNS o indirizzo IP deve essere tra i nomi alternativi del soggetto del certificato — altrimenti la connessione fallisce con _Handshake TLS non riuscito_.
+
+I certificati e la chiave vengono memorizzati cifrati, il che richiede un [portachiavi del sistema operativo](/docs/requirements/#optional-an-os-keychain). Quando modifichi l’host, lascia un campo vuoto per conservare ciò che è memorizzato.
+
+### Da un contesto Docker
+
+Se `docker context ls` elenca già l’Engine, **Importa i contesti Docker** in **Aggiungi host** crea l’host con l’indirizzo del contesto e i suoi `ca.pem`, `cert.pem` e `key.pem`, senza scegliere file. I contesti che saltano la verifica TLS non vengono importati. Vedi [Contesti Docker](/docs/hosts/#docker-contexts).
+
+## TCP
+
+Un host **TCP** si connette a `tcp://host:port` senza cifratura e senza autenticazione.
+
+<Aside type="danger" title="Non cifrato e non autenticato">
+  Chiunque possa raggiungere la porta controlla l’Engine — e tramite esso, il computer. Usa TCP
+  semplice solo su una rete di cui ti fidi completamente, come una VM locale. Altrimenti, usa
+  [SSH](/docs/hosts/ssh/) o TLS.
+</Aside>
+
+1. Scegli **Aggiungi host…** e seleziona **TCP**.
+2. Inserisci un **Nome** e l’**Indirizzo** come `host:port`, per esempio `192.168.1.10:2375`. Gli indirizzi IPv6 vanno tra parentesi quadre: `[fd00::10]:2375`.
+3. Scegli **Aggiungi host**.
