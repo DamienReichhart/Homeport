@@ -130,6 +130,15 @@ export const commands = {
 	 *  blocking queries, until the stream is cancelled.
 	 */
 	clustersNomadWatchSubscribe: (id: string, topic: NomadWatch, onEvent: Channel<boolean>) => __TAURI_INVOKE<number>("clusters_nomad_watch_subscribe", { id, topic, onEvent }),
+	/**
+	 *  Parses `spec` (HCL2 by Nomad itself, or JSON) and asks Nomad what
+	 *  running it would change. A job naming no namespace goes to `namespace`.
+	 */
+	clustersNomadJobPlan: (id: string, namespace: string | null, spec: string) => __TAURI_INVOKE<NomadPlan>("clusters_nomad_job_plan", { id, namespace, spec }),
+	/**  Runs a planned job unless it changed since, keeping `source` with it. */
+	clustersNomadJobRun: (id: string, plan: NomadPlanToRun, source: string | null) => __TAURI_INVOKE<NomadRunResult>("clusters_nomad_job_run", { id, plan, source }),
+	/**  A job's specification to edit: as submitted when Nomad kept it, else its JSON. */
+	clustersNomadJobSource: (id: string, namespace: string | null, jobId: string) => __TAURI_INVOKE<NomadJobSource>("clusters_nomad_job_source", { id, namespace, jobId }),
 	clustersNamespaces: (id: string) => __TAURI_INVOKE<NamespaceView[]>("clusters_namespaces", { id }),
 	/**  The workloads of `kind` in `namespace`, or in every Namespace without one. */
 	clustersWorkloadsList: (id: string, kind: WorkloadKind, namespace: string | null) => __TAURI_INVOKE<WorkloadView[]>("clusters_workloads_list", { id, kind, namespace }),
@@ -1761,6 +1770,12 @@ export type ErrorCode =
 "nomad_job_not_found" | 
 /**  A task group count outside its scaling policy's minimum and maximum. */
 "nomad_scale_out_of_bounds" | 
+/**  A Nomad job specification Nomad couldn't parse. */
+"nomad_parse_failed" | 
+/**  A planned Nomad job some of whose allocations can't be placed. */
+"nomad_placement_failed" | 
+/**  A Nomad job changed by someone else since it was planned. */
+"nomad_job_modified" | 
 /**  The `helm` CLI isn't installed on this computer. */
 "helm_missing" | 
 /**  The `helm` CLI found is Helm 2, which Homeport doesn't support. */
@@ -2848,6 +2863,16 @@ export type NomadConnection = {
 	clientCertificate?: boolean,
 };
 
+/**  A field a plan changes, in a task group or one of its tasks. */
+export type NomadFieldChange = {
+	/**  Such as `Task "server" › Config › image`. */
+	path: string,
+	/**  `Added`, `Deleted` or `Edited`. */
+	change: string,
+	old: string | null,
+	new: string | null,
+};
+
 /**
  *  A Nomad Cluster as the add and edit form describe it. When editing, a
  *  credential left `None` keeps the stored one and an empty one removes it.
@@ -2888,6 +2913,17 @@ export type NomadJobDetail = {
 	allocations: NomadAllocationView[],
 };
 
+/**
+ *  A job's specification for editing: as submitted when Nomad kept it,
+ *  else its JSON.
+ */
+export type NomadJobSource = {
+	source: string,
+	format: SpecFormat,
+	/**  Nomad kept the specification as it was submitted. */
+	submitted: boolean,
+};
+
 /**  A job as the Jobs page lists it. */
 export type NomadJobView = {
 	id: string,
@@ -2907,6 +2943,71 @@ export type NomadJobView = {
 	parentId: string | null,
 	submitted: string | null,
 	groups: NomadGroupCounts[],
+};
+
+/**  Why some allocations of a task group can't be placed. */
+export type NomadPlacementFailure = {
+	nodesEvaluated: number,
+	nodesFiltered: number,
+	nodesExhausted: number,
+	/**  The resources no node had enough of, such as `memory`. */
+	exhausted: string[],
+	/**  The constraints that filtered nodes out, with how many each did. */
+	constraints: string[],
+	/**  More allocations failing the same way. */
+	coalesced: number,
+};
+
+/**  Nomad's plan of a job, and what running it needs. */
+export type NomadPlan = {
+	jobId: string,
+	namespace: string,
+	format: SpecFormat,
+	/**  The job as Nomad's JSON, run as it was planned. */
+	job: Value,
+	/**  The job's index when planned: running fails if it moved since. */
+	jobModifyIndex: number,
+	/**  A job no Nomad has yet. */
+	newJob: boolean,
+	/**  `Added`, `Deleted`, `Edited` or `None`, for the job as a whole. */
+	change: string,
+	groups: NomadPlanGroup[],
+	warnings: string | null,
+	/**  Allocations that can't be placed, explained; running still queues them. */
+	placement: AppError | null,
+};
+
+/**  What a plan does to one task group. */
+export type NomadPlanGroup = {
+	name: string,
+	/**  `Added`, `Deleted`, `Edited` or `None`. */
+	change: string,
+	place: number,
+	stop: number,
+	inPlace: number,
+	destructive: number,
+	migrate: number,
+	canary: number,
+	ignore: number,
+	fields: NomadFieldChange[],
+	failure: NomadPlacementFailure | null,
+};
+
+/**  What running a planned job needs from its plan, as the frontend sends it back. */
+export type NomadPlanToRun = {
+	jobId: string,
+	namespace: string,
+	format: SpecFormat,
+	job: Value,
+	jobModifyIndex: number,
+};
+
+/**  What running a job started. */
+export type NomadRunResult = {
+	jobId: string,
+	namespace: string,
+	evalId: string | null,
+	warnings: string | null,
 };
 
 /**  A task group's scaling bounds, from its `scaling` block. */
@@ -3800,6 +3901,9 @@ export type SnapshotUser = { kind: "container"; id: string } | { kind: "image"; 
 
 /**  The kinds of source, for the rules a definition is checked against. */
 export type SourceKind = "managed" | "linked" | "synced";
+
+/**  How a job specification is written. */
+export type SpecFormat = "hcl2" | "json";
 
 export type SshAuth = 
 /**  A keypair Homeport generated for this Host. */

@@ -7,6 +7,7 @@ use homeport_clusters::{nomad::NomadForm, service::ClusterView};
 use homeport_core::streams::StreamId;
 use homeport_nomad::{
     jobs::{NomadJobDetail, NomadJobView},
+    run::{NomadJobSource, NomadPlan, NomadPlanToRun, NomadRunResult},
     watch::{watch, NomadWatch},
     NomadAgent,
 };
@@ -122,4 +123,47 @@ pub async fn clusters_nomad_watch_subscribe(
     Ok(state
         .streams
         .spawn(watch(nomad, topic, move || on_event.send(true).is_ok())))
+}
+
+// Running a job from its specification.
+
+/// Parses `spec` (HCL2 by Nomad itself, or JSON) and asks Nomad what
+/// running it would change. A job naming no namespace goes to `namespace`.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_nomad_job_plan(
+    state: State<'_, AppState>,
+    id: String,
+    namespace: Option<String>,
+    spec: String,
+) -> AppResult<NomadPlan> {
+    let nomad = nomad(&state, &id)?;
+    let (job, format) = nomad.parse_job(&spec).await?;
+    nomad.plan_job(job, format, namespace.as_deref()).await
+}
+
+/// Runs a planned job unless it changed since, keeping `source` with it.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_nomad_job_run(
+    state: State<'_, AppState>,
+    id: String,
+    plan: NomadPlanToRun,
+    source: Option<String>,
+) -> AppResult<NomadRunResult> {
+    nomad(&state, &id)?.run_job(&plan, source.as_deref()).await
+}
+
+/// A job's specification to edit: as submitted when Nomad kept it, else its JSON.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_nomad_job_source(
+    state: State<'_, AppState>,
+    id: String,
+    namespace: Option<String>,
+    job_id: String,
+) -> AppResult<NomadJobSource> {
+    nomad(&state, &id)?
+        .job_source(namespace.as_deref(), &job_id)
+        .await
 }
