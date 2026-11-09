@@ -327,14 +327,17 @@ function statsSamples(): (n: number) => StatsSample {
 export interface MockOptions {
   theme: Theme;
   hostId: string;
+  /** The app's language, as Settings stores it. */
+  language?: string;
 }
 
 /** The page being photographed. */
 const routeOf = () => new URLSearchParams(window.location.search).get('route') ?? '/';
 
-export function installMocks({ theme, hostId }: MockOptions) {
+export function installMocks({ theme, hostId, language = 'en' }: MockOptions) {
   let settings: Settings = {
     theme,
+    language,
     lastHostId: hostId,
     checkForUpdates: true,
     ...clusterSettings(),

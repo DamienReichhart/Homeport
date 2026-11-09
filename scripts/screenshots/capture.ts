@@ -1,15 +1,27 @@
 /**
  * Captures the website's screenshots of the real Homeport UI.
  *
- *   bun run screenshots [name…]
+ *   bun run screenshots [--locale <tag>…|all] [name…]
  *
  * Builds `scripts/screenshots/` (the app's frontend with mocked IPC and demo
  * data), serves it, and photographs each shot with headless Firefox at
- * 1440×900 into `website/src/assets/screenshots/<name>.png`. Pass shot names
- * to capture only those. Set FIREFOX to use another Firefox binary, or CHROMIUM
+ * 1440×900 into `website/src/assets/screenshots/<name>.png` (English) and
+ * `website/src/assets/screenshots/<tag>/<name>.png` for every other language,
+ * the tag in lower case (`fr`, `pt-br`). `--locale` picks the languages (one
+ * per flag, or `all` for every app catalogue); by default, English and every
+ * language that already has a folder of screenshots. Pass shot names to
+ * capture only those. Set FIREFOX to use another Firefox binary, or CHROMIUM
  * to a Chrome or Chromium binary to use that instead.
  */
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { build } from 'vite';
@@ -57,8 +69,35 @@ function workDir(): string {
 
 const GIF = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
 
+/** The app's languages: every catalogue folder with a meta.ts. */
+const CATALOGUES = readdirSync(join(ROOT, 'src', 'shared', 'i18n')).filter((d) =>
+  existsSync(join(ROOT, 'src', 'shared', 'i18n', d, 'meta.ts')),
+);
+
+/** Where a language's shots go: English at the top, others in their folder. */
+const outDir = (tag: string) => (tag === 'en' ? OUT : join(OUT, tag.toLowerCase()));
+
+/** The languages and shot names asked for on the command line. */
+function parseArgs(args: string[]): { locales: string[]; names: string[] } {
+  const asked: string[] = [];
+  const names: string[] = [];
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--locale') asked.push(args[++i] ?? '');
+    else names.push(args[i] ?? '');
+  }
+  const locales =
+    asked.length === 0
+      ? CATALOGUES.filter((tag) => tag === 'en' || existsSync(outDir(tag)))
+      : asked.includes('all')
+        ? CATALOGUES
+        : asked;
+  for (const tag of locales)
+    if (!CATALOGUES.includes(tag)) throw new Error(`No catalogue for ${tag} in src/shared/i18n`);
+  return { locales, names };
+}
+
 async function main() {
-  const only = process.argv.slice(2);
+  const { locales, names: only } = parseArgs(process.argv.slice(2));
   const shots = only.length ? SHOTS.filter((s) => only.includes(s.name)) : SHOTS;
   if (shots.length === 0) throw new Error(`No shot named ${only.join(', ')}`);
 
@@ -102,29 +141,33 @@ async function main() {
         'user_pref("ui.prefersReducedMotion", 1);',
       ].join('\n'),
     );
-    mkdirSync(OUT, { recursive: true });
-
-    for (const shot of shots) {
-      const query = new URLSearchParams({
-        route: shot.route,
-        theme: shot.theme ?? 'light',
-        hold: String(shot.hold ?? 2500),
-      });
-      if (shot.fastClock) query.set('clock', 'fast');
-      if (shot.demo) query.set('demo', shot.demo);
-      for (const step of shot.steps ?? []) query.append('step', step);
-      const url = `http://127.0.0.1:${server.port}/scripts/screenshots/index.html?${query}`;
-      const png = join(work, `${shot.name}.png`);
-      const proc = Bun.spawn(screenshotCommand(profile, png, url), {
-        stdout: 'ignore',
-        stderr: process.env.DEBUG_SHOTS ? 'inherit' : 'ignore',
-      });
-      const timer = setTimeout(() => proc.kill(), 90_000);
-      await proc.exited;
-      clearTimeout(timer);
-      if (!existsSync(png)) throw new Error(`The browser produced no screenshot for ${shot.name}`);
-      copyFileSync(png, join(OUT, `${shot.name}.png`));
-      console.log(`✓ ${shot.name}`);
+    for (const locale of locales) {
+      const out = outDir(locale);
+      mkdirSync(out, { recursive: true });
+      for (const shot of shots) {
+        const query = new URLSearchParams({
+          route: shot.route,
+          theme: shot.theme ?? 'light',
+          hold: String(shot.hold ?? 2500),
+          lang: locale,
+        });
+        if (shot.fastClock) query.set('clock', 'fast');
+        if (shot.demo) query.set('demo', shot.demo);
+        for (const step of shot.steps ?? []) query.append('step', step);
+        const url = `http://127.0.0.1:${server.port}/scripts/screenshots/index.html?${query}`;
+        const png = join(work, `${locale}-${shot.name}.png`);
+        const proc = Bun.spawn(screenshotCommand(profile, png, url), {
+          stdout: 'ignore',
+          stderr: process.env.DEBUG_SHOTS ? 'inherit' : 'ignore',
+        });
+        const timer = setTimeout(() => proc.kill(), 90_000);
+        await proc.exited;
+        clearTimeout(timer);
+        if (!existsSync(png))
+          throw new Error(`The browser produced no screenshot for ${shot.name}`);
+        copyFileSync(png, join(out, `${shot.name}.png`));
+        console.log(`✓ ${locale} ${shot.name}`);
+      }
     }
     await server.stop(true);
   } finally {

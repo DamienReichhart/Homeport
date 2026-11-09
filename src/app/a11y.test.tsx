@@ -6,6 +6,7 @@ import { SHOTS } from '../../scripts/screenshots/shots';
 import { navEntriesOf } from '@/core/feature';
 import { accessibilityProblems } from '@/test/axe';
 import { renderApp } from '@/test/render';
+import { intl } from '@/shared/i18n';
 import { features } from './router/features';
 
 /**
@@ -41,13 +42,14 @@ for (const entry of navEntriesOf(features)) {
   add({ route: entry.path, demo: 'clusters' });
 }
 
-/** Clicks the control whose text is `text`, as the screenshot steps do. */
+/** Clicks the control whose text is `text` (`@key`: that key's text), as the screenshot steps do. */
 async function click(text: string) {
+  const label = text.startsWith('@') ? intl().formatMessage({ id: text.slice(1) }) : text;
   const el = [
     ...document.querySelectorAll<HTMLElement>(
       'button, [role="tab"], [role="menuitem"], [role="option"], a',
     ),
-  ].find((e) => e.textContent?.trim() === text);
+  ].find((e) => e.textContent?.trim() === label);
   if (el) await userEvent.click(el);
 }
 

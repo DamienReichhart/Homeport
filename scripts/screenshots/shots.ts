@@ -5,6 +5,11 @@
  */
 import { PROD, SWARM_ID, hexId, swarmServices } from './data';
 
+/**
+ * A step is `click:<label>`, `fill:<placeholder>=<value>` or `wait:<ms>`. A
+ * label written `@key` is that catalogue key's text in the shot's language, so
+ * the same steps work in every language.
+ */
 export interface Shot {
   name: string;
   route: string;
@@ -42,15 +47,26 @@ export const SHOTS: Shot[] = [
     fastClock: true,
   },
   { name: 'stacks', route: '/stacks' },
-  { name: 'stack-editor', route: '/stacks/shop', steps: ['click:Definition'], hold: 3500 },
+  {
+    name: 'stack-editor',
+    route: '/stacks/shop',
+    steps: ['click:@stacks.tab.definition'],
+    hold: 3500,
+  },
   {
     name: 'stack-editor-dark',
     route: '/stacks/shop',
     theme: 'dark',
-    steps: ['click:Definition'],
+    steps: ['click:@stacks.tab.definition'],
     hold: 3500,
   },
-  { name: 'stack-logs', route: '/stacks/shop', theme: 'dark', steps: ['click:Logs'], hold: 3500 },
+  {
+    name: 'stack-logs',
+    route: '/stacks/shop',
+    theme: 'dark',
+    steps: ['click:@stacks.tab.logs'],
+    hold: 3500,
+  },
   { name: 'images', route: '/images' },
   { name: 'volumes', route: '/volumes' },
   { name: 'networks', route: '/networks' },
@@ -81,7 +97,7 @@ export const SHOTS: Shot[] = [
   {
     name: 'swarm-summary',
     route: `/swarms/${SWARM_ID}`,
-    steps: ['click:Show the join commands'],
+    steps: ['click:@swarm.join.reveal'],
     hold: 3500,
   },
   { name: 'swarm-nodes', route: `/swarms/${SWARM_ID}/nodes` },
@@ -102,7 +118,7 @@ export const SHOTS: Shot[] = [
     name: 'cluster-secret',
     route: '/secrets/shop/db-credentials',
     demo: 'clusters',
-    steps: ['click:Reveal'],
+    steps: ['click:@config.reveal'],
     hold: 3500,
   },
   { name: 'cluster-nodes', route: '/nodes', demo: 'clusters' },
@@ -112,7 +128,7 @@ export const SHOTS: Shot[] = [
     name: 'nomad-run-plan',
     route: '/nomad/jobs/shop/shop-api',
     demo: 'nomad',
-    steps: ['click:Edit and run', 'wait:800', 'click:Plan'],
+    steps: ['click:@nomad.job.editAndRun', 'wait:800', 'click:@nomad.run.plan'],
     hold: 3500,
   },
 ];
