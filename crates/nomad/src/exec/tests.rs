@@ -169,14 +169,26 @@ async fn a_refused_upgrade_says_why() {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let address = format!("http://{}", listener.local_addr().unwrap());
     tokio::spawn(async move {
-        use tokio::io::AsyncWriteExt;
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
         let (mut tcp, _) = listener.accept().await.unwrap();
+        // Read the upgrade request first, as Nomad does: closing a socket
+        // with unread data resets the connection on Windows.
+        let mut request = Vec::new();
+        let mut chunk = [0; 1024];
+        while !request.windows(4).any(|w| w == b"\r\n\r\n") {
+            let n = tcp.read(&mut chunk).await.unwrap();
+            if n == 0 {
+                break;
+            }
+            request.extend_from_slice(&chunk[..n]);
+        }
         let body = "Permission denied";
         let reply = format!(
             "HTTP/1.1 403 Forbidden\r\ncontent-length: {}\r\n\r\n{body}",
             body.len()
         );
         tcp.write_all(reply.as_bytes()).await.unwrap();
+        tcp.shutdown().await.unwrap();
     });
     let nomad = Nomad::new(&crate::NomadConfig {
         name: "dev".into(),
