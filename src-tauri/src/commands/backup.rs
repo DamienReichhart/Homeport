@@ -258,7 +258,7 @@ mod tests {
         registry::{ClusterNotifier, ClusterStatus},
         service::ClusterService,
         store::{ClusterDraft, ClusterStore},
-        ClusterConnection, ClusterKind, ClusterSecrets,
+        ClusterConnection, ClusterSecrets, KubernetesConnection, KubernetesSecrets,
     };
     use homeport_core::{
         error::ErrorCode,
@@ -425,15 +425,14 @@ mod tests {
             .store
             .create(ClusterDraft {
                 name: "kind-dev".into(),
-                kind: ClusterKind::Kubernetes,
-                connection: ClusterConnection {
+                connection: ClusterConnection::Kubernetes(KubernetesConnection {
                     server: "https://127.0.0.1:6443".into(),
                     ..Default::default()
-                },
-                secrets: ClusterSecrets {
+                }),
+                secrets: ClusterSecrets::Kubernetes(KubernetesSecrets {
                     client_key: Some("CLUSTER KEY".into()),
                     ..Default::default()
-                },
+                }),
             })
             .unwrap();
         state
@@ -476,16 +475,12 @@ mod tests {
         assert_eq!(restored.registries, 1);
         assert_eq!(restored.clusters, ["kind-dev"]);
         let cluster = &desktop.clusters.store.list().unwrap()[0];
-        assert_eq!(
-            desktop
-                .clusters
-                .store
-                .secrets(&cluster.id)
-                .unwrap()
-                .client_key
-                .as_deref(),
-            Some("CLUSTER KEY")
-        );
+        let ClusterSecrets::Kubernetes(secrets) =
+            desktop.clusters.store.secrets(&cluster.id).unwrap()
+        else {
+            panic!("not Kubernetes credentials");
+        };
+        assert_eq!(secrets.client_key.as_deref(), Some("CLUSTER KEY"));
 
         let hosts = desktop.hosts.store.list().unwrap();
         assert_eq!(hosts.iter().map(|h| &h.name).collect::<Vec<_>>(), ["prod"]);

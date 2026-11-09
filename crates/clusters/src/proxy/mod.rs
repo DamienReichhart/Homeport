@@ -96,7 +96,10 @@ pub async fn open(cluster: &Cluster, clients: ClientSource) -> AppResult<Cluster
     let token = token();
     let dir = private_dir().map_err(|e| failed(&e))?;
     let kubeconfig = dir.path().join("kubeconfig");
-    let namespace = cluster.connection.namespace.as_deref().unwrap_or("default");
+    let namespace = cluster
+        .kubernetes()
+        .and_then(|c| c.namespace.as_deref())
+        .unwrap_or("default");
     write_private(&kubeconfig, &kubeconfig_yaml(address, &token, namespace))
         .map_err(|e| failed(&e))?;
 

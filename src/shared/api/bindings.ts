@@ -871,7 +871,7 @@ export type ApplyResult = {
 	documents: ApplyDocument[],
 };
 
-/**  How a Cluster's user authenticates, as its kubeconfig says. */
+/**  How a Kubernetes Cluster's user authenticates, as its kubeconfig says. */
 export type AuthMethod = 
 /**  No credential: the API server sees an anonymous user. */
 { method: "none" } | { method: "clientCertificate" } | { method: "token" } | { method: "basic"; username: string } | 
@@ -1065,32 +1065,29 @@ export type CliEvent = { type: "line"; text: string } |
 export type Cluster = {
 	id: string,
 	name: string,
+	/**  Always its connection's kind, which the store keeps in its own column. */
 	kind: ClusterKind,
 	connection: ClusterConnection,
 	enabled: boolean,
 	createdAt: string,
 };
 
-/**  How to reach a Cluster's API, without any credential. */
+/**
+ *  How to reach a Cluster's API, by kind, without any credential. Stored
+ *  as the variant's own JSON, its kind in a column of its own; sent to the
+ *  frontend tagged with `kind`.
+ */
 export type ClusterConnection = {
-	/**  The API server's URL, such as `https://127.0.0.1:6443`. */
-	server?: string,
-	/**  The name to check the server's certificate against, when not the URL's. */
-	tlsServerName?: string | null,
-	/**  The kubeconfig turns off checking the server's certificate. */
-	insecureSkipTlsVerify?: boolean,
-	/**  An HTTP proxy in front of the API server. */
-	proxyUrl?: string | null,
-	/**  The Namespace the kubeconfig context defaults to. */
-	namespace?: string | null,
-	/**  How Homeport authenticates, to tell the user; the credentials themselves are sealed. */
-	auth?: AuthMethod,
-	/**  The kubeconfig context it was imported from, for refreshing it. */
-	source?: KubeconfigSource | null,
-};
+	kind: "kubernetes",
+} & KubernetesConnection | {
+	kind: "nomad",
+} & NomadConnection;
 
-/**  The orchestrator a Cluster runs. Nomad Clusters will share the table. */
-export type ClusterKind = "kubernetes";
+/**
+ *  What a Cluster runs, which decides what Homeport can show and do on it.
+ *  Both kinds share the `clusters` table, told apart by its `kind` column.
+ */
+export type ClusterKind = "kubernetes" | "nomad";
 
 export type ClusterNodeDetail = {
 	view: ClusterNodeView,
@@ -2493,6 +2490,24 @@ export type KubeconfigSource = {
 	pasted: boolean,
 };
 
+/**  How to reach a Kubernetes Cluster's API server, without any credential. */
+export type KubernetesConnection = {
+	/**  The API server's URL, such as `https://127.0.0.1:6443`. */
+	server?: string,
+	/**  The name to check the server's certificate against, when not the URL's. */
+	tlsServerName?: string | null,
+	/**  The kubeconfig turns off checking the server's certificate. */
+	insecureSkipTlsVerify?: boolean,
+	/**  An HTTP proxy in front of the API server. */
+	proxyUrl?: string | null,
+	/**  The Namespace the kubeconfig context defaults to. */
+	namespace?: string | null,
+	/**  How Homeport authenticates, to tell the user; the credentials themselves are sealed. */
+	auth?: AuthMethod,
+	/**  The kubeconfig context it was imported from, for refreshing it. */
+	source?: KubeconfigSource | null,
+};
+
 export type Licenses = {
 	/**  Homeport's own license (`LICENSE`). */
 	app: string,
@@ -2739,6 +2754,12 @@ export type NodeView = {
 	arch: string | null,
 	labels: { [key in string]: string },
 	created: string | null,
+};
+
+/**  How to reach a Nomad Cluster's HTTP API, without any credential. */
+export type NomadConnection = {
+	/**  The API's URL, such as `https://nomad.example.com:4646`. */
+	address?: string,
 };
 
 /**

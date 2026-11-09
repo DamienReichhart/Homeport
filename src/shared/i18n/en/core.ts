@@ -17,6 +17,8 @@ export default {
   'core.unsupported.incus':
     'This page is for Incus, and {name} runs {engine}. Pick an Incus host in the switcher to use it.',
   'core.unsupported.overview': 'Go to the Overview',
+  'core.cluster.kind.kubernetes': 'Kubernetes',
+  'core.cluster.kind.nomad': 'Nomad',
   'core.containerd.namespace': 'Namespace',
   'core.containerd.holds':
     '{containers, plural, one {# container} other {# containers}}, {images, plural, one {# image} other {# images}}',

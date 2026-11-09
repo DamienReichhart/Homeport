@@ -31,4 +31,7 @@ pub mod service;
 pub mod store;
 pub mod terminal;
 
-pub use model::{AuthMethod, Cluster, ClusterConnection, ClusterId, ClusterKind, ClusterSecrets};
+pub use model::{
+    AuthMethod, Cluster, ClusterConnection, ClusterId, ClusterKind, ClusterSecrets,
+    KubernetesConnection, KubernetesSecrets, NomadConnection, NomadSecrets,
+};

@@ -28,7 +28,7 @@ fn connect() -> Option<On> {
         id: "test".into(),
         name: context(),
         kind: ClusterKind::Kubernetes,
-        connection,
+        connection: homeport_clusters::ClusterConnection::Kubernetes(connection),
         enabled: true,
         created_at: String::new(),
     };

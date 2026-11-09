@@ -11,7 +11,7 @@ use crate::{
     forward::PortForwards,
     kubeconfig::{self, ContextChoice, KubeContexts, Source},
     messages as msg,
-    model::{Cluster, ClusterKind},
+    model::{Cluster, ClusterConnection, ClusterSecrets},
     proxy::ClusterAccess,
     registry::{ClusterNotifier, ClusterRegistry, ClusterStatus},
     store::{ClusterDraft, ClusterStore},
@@ -134,9 +134,8 @@ impl ClusterService {
             let (connection, secrets) = kubeconfig::resolve(&source, &choice.context)?;
             drafts.push(ClusterDraft {
                 name: name.to_owned(),
-                kind: ClusterKind::Kubernetes,
-                connection,
-                secrets,
+                connection: ClusterConnection::Kubernetes(connection),
+                secrets: ClusterSecrets::Kubernetes(secrets),
             });
         }
         let existing = self.store.list()?;
@@ -166,7 +165,7 @@ impl ClusterService {
     /// certificates; keeps its name and reconnects.
     pub fn refresh(&self, id: &str, text: Option<&str>) -> AppResult<ClusterView> {
         let cluster = self.store.get(id)?;
-        let Some(origin) = &cluster.connection.source else {
+        let Some(origin) = &cluster.kubernetes_or_refuse()?.source else {
             return Err(AppError::validation(
                 msg::NO_SOURCE.with("name", &cluster.name),
             ));
@@ -179,7 +178,11 @@ impl ClusterService {
         }
         let source = Source::of(text)?;
         let (connection, secrets) = kubeconfig::resolve(&source, &origin.context)?;
-        let cluster = self.store.replace_connection(id, &connection, &secrets)?;
+        let cluster = self.store.replace_connection(
+            id,
+            &ClusterConnection::Kubernetes(connection),
+            &ClusterSecrets::Kubernetes(secrets),
+        )?;
         self.registry.restart(id);
         Ok(self.view(cluster))
     }
@@ -280,6 +283,6 @@ mod tests {
             .refresh(&id, Some(&kubeconfig("https://127.0.0.1:2")))
             .unwrap();
         assert_eq!(next.cluster.name, "dev");
-        assert_eq!(next.cluster.connection.server, "https://127.0.0.1:2");
+        assert_eq!(next.cluster.address(), "https://127.0.0.1:2");
     }
 }

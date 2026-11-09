@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useNamespace } from '@/core/cluster';
+import { clusterAddress, useNamespace } from '@/core/cluster';
 import type { ClusterView } from '@/shared/api';
 import {
   Card,
@@ -38,7 +38,7 @@ export function ClusterDashboard({ cluster }: { cluster: ClusterView }) {
               ],
               [
                 t('overview.cluster.server'),
-                <span className="font-mono text-xs">{cluster.cluster.connection.server}</span>,
+                <span className="font-mono text-xs">{clusterAddress(cluster.cluster)}</span>,
               ],
               [t('overview.cluster.namespace'), namespace ?? t('overview.cluster.allNamespaces')],
             ]}

@@ -2,7 +2,13 @@ import { useQuery } from '@tanstack/react-query';
 import { PlusIcon, RefreshCwIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { age, ClusterGate, NamespacePicker, useNamespace } from '@/core/cluster';
+import {
+  age,
+  ClusterGate,
+  kubernetesConnection,
+  NamespacePicker,
+  useNamespace,
+} from '@/core/cluster';
 import { usePageQuery } from '@/core/feature';
 import type { ClusterView, InstallRequest, ReleaseSummary } from '@/shared/api';
 import { PAGE_ACTION_KEYS, usePageAction } from '@/shared/hooks';
@@ -139,7 +145,9 @@ function Releases({ cluster }: { cluster: ClusterView }) {
         <InstallDialog
           clusterId={id}
           clusterName={cluster.cluster.name}
-          namespace={namespace ?? only ?? cluster.cluster.connection.namespace ?? 'default'}
+          namespace={
+            namespace ?? only ?? kubernetesConnection(cluster.cluster)?.namespace ?? 'default'
+          }
           onInstall={(request) => {
             setChoosing(false);
             setInstalling(request);

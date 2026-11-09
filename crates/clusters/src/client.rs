@@ -10,7 +10,7 @@ use secrecy::SecretString;
 use homeport_core::error::AppResult;
 
 use crate::classify::{classify, credentials_unusable};
-use crate::model::{Cluster, ClusterSecrets};
+use crate::model::{Cluster, KubernetesSecrets};
 
 /// How long connecting to an API server may take.
 pub const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
@@ -26,10 +26,10 @@ pub struct IssuedCredentials {
 /// The kube-rs configuration of `cluster`.
 pub fn config(
     cluster: &Cluster,
-    secrets: &ClusterSecrets,
+    secrets: &KubernetesSecrets,
     issued: Option<&IssuedCredentials>,
 ) -> AppResult<kube::Config> {
-    let connection = &cluster.connection;
+    let connection = cluster.kubernetes_or_refuse()?;
     let uri: http::Uri = connection
         .server
         .parse()
@@ -99,31 +99,31 @@ pub fn config(
 /// A client for `cluster`. Must run inside a Tokio runtime.
 pub fn client(
     cluster: &Cluster,
-    secrets: &ClusterSecrets,
+    secrets: &KubernetesSecrets,
     issued: Option<&IssuedCredentials>,
 ) -> AppResult<kube::Client> {
     let config = config(cluster, secrets, issued)?;
     kube::Client::try_from(config).map_err(|e| match e {
         kube::Error::RustlsTls(_) | kube::Error::Auth(_) => credentials_unusable(&cluster.name, &e),
-        e => classify(&cluster.name, &cluster.connection.server, &e),
+        e => classify(&cluster.name, cluster.address(), &e),
     })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::{ClusterConnection, ClusterKind};
+    use crate::model::{ClusterConnection, ClusterKind, KubernetesConnection};
 
     fn cluster() -> Cluster {
         Cluster {
             id: "c".into(),
             name: "kind-dev".into(),
             kind: ClusterKind::Kubernetes,
-            connection: ClusterConnection {
+            connection: ClusterConnection::Kubernetes(KubernetesConnection {
                 server: "https://127.0.0.1:6443".into(),
                 namespace: Some("shop".into()),
                 ..Default::default()
-            },
+            }),
             enabled: true,
             created_at: String::new(),
         }
@@ -131,14 +131,14 @@ mod tests {
 
     #[test]
     fn the_context_namespace_is_the_default() {
-        let c = config(&cluster(), &ClusterSecrets::default(), None).unwrap();
+        let c = config(&cluster(), &KubernetesSecrets::default(), None).unwrap();
         assert_eq!(c.default_namespace, "shop");
         assert_eq!(c.cluster_url.to_string(), "https://127.0.0.1:6443/");
     }
 
     #[test]
     fn issued_credentials_replace_the_stored_token() {
-        let secrets = ClusterSecrets {
+        let secrets = KubernetesSecrets {
             token: Some("stored".into()),
             ..Default::default()
         };
@@ -153,7 +153,7 @@ mod tests {
 
     #[test]
     fn a_ca_that_isnt_pem_is_unusable() {
-        let secrets = ClusterSecrets {
+        let secrets = KubernetesSecrets {
             certificate_authority: Some("not a certificate".into()),
             ..Default::default()
         };

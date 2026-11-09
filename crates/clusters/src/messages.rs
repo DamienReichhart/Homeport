@@ -13,6 +13,13 @@ homeport_core::messages! {
     SERVER_INVALID = "errors.clusters.serverInvalid" => "\"{server}\" isn't the URL of a Kubernetes API server, like https://127.0.0.1:6443.";
     /// A Cluster of a kind a newer Homeport stored.
     UNKNOWN_KIND = "errors.clusters.unknownKind" => "Homeport doesn't know clusters of kind {kind}.";
+    /// Saving a connection or credentials of another kind than the Cluster's.
+    KIND_CHANGED = "errors.clusters.kindChanged" => "A cluster can't change kind; add a new one instead.";
+    /// A command of one kind of Cluster sent to a Cluster of another.
+    WRONG_KIND = "errors.clusters.wrongKind" => "{name} is a {kind} cluster, which this doesn't work with.";
+    /// A Nomad Cluster stored by a Homeport that can reach it.
+    NOMAD_UNSUPPORTED = "errors.clusters.nomadUnsupported" => "This version of Homeport can't connect to Nomad clusters.";
+    WRONG_KIND_HINT = "errors.clusters.wrongKind.hint" => "Select a cluster of the right kind in the switcher.";
 
     // Reaching a Cluster.
 

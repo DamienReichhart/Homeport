@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { kubernetesConnection } from '@/core/cluster';
 import type { ClusterView } from '@/shared/api';
 import {
   Button,
@@ -20,7 +21,7 @@ import { t } from '@/shared/i18n';
  * certificates).
  */
 export function RefreshCard({ view }: { view: ClusterView }) {
-  const source = view.cluster.connection.source;
+  const source = kubernetesConnection(view.cluster)?.source;
   const refresh = useRefreshCluster(view.cluster.id);
   const [text, setText] = useState('');
   if (!source) return null;

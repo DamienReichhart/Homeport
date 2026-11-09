@@ -10,6 +10,12 @@ export { age, podTone, workloadHealth } from './model/health';
 export { deleteConfirmation, targetKind, type DeleteTarget } from './model/deletion';
 export { chosenNamespace } from './model/namespace';
 export { stillListed } from './model/selection';
+export {
+  CLUSTER_KIND_LABELS,
+  clusterAddress,
+  isClusterKind,
+  kubernetesConnection,
+} from './model/kind';
 export { kindName, kindPath, objectPath } from './model/paths';
 export {
   clusterStatusError,

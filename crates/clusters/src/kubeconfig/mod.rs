@@ -192,9 +192,8 @@ fn added_from(clusters: &[Cluster], name: &str) -> Option<AddedCluster> {
     clusters
         .iter()
         .find(|c| {
-            c.connection
-                .source
-                .as_ref()
+            c.kubernetes()
+                .and_then(|k| k.source.as_ref())
                 .is_some_and(|s| s.context == name)
         })
         .map(|c| AddedCluster {

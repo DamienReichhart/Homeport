@@ -129,7 +129,7 @@ impl On {
             )
             .with_hint(msg::CHANGED_MEANWHILE_HINT)
             .with_detail(&status.message),
-            (e, _) => classify(&self.cluster.name, &self.cluster.connection.server, e),
+            (e, _) => classify(&self.cluster.name, self.cluster.address(), e),
         }
     }
 

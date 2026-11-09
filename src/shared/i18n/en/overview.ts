@@ -4,7 +4,6 @@ export default {
   'overview.title': 'Overview',
   'overview.addHost': 'Add host',
   'overview.addCluster': 'Add cluster',
-  'overview.cluster.kind': 'Kubernetes',
   'overview.cluster.nodes': '{ready} of {total} nodes ready',
   'overview.cluster.nodesNotAllowed': 'Nodes: not allowed',
   'overview.cluster.pods': '{running} of {total} pods running',

@@ -42,6 +42,7 @@ export const clusters: ClusterView[] = [
       name: 'eks-prod',
       kind: 'kubernetes',
       connection: {
+        kind: 'kubernetes',
         server: EKS_SERVER,
         tlsServerName: null,
         insecureSkipTlsVerify: false,
@@ -61,6 +62,7 @@ export const clusters: ClusterView[] = [
       name: 'kind-dev',
       kind: 'kubernetes',
       connection: {
+        kind: 'kubernetes',
         server: 'https://127.0.0.1:41235',
         tlsServerName: null,
         insecureSkipTlsVerify: false,

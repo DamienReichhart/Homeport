@@ -9,7 +9,7 @@ use homeport_storage::{Db, SecretBox};
 
 use super::*;
 use crate::{
-    model::{ClusterConnection, ClusterKind},
+    model::{ClusterConnection, KubernetesConnection, KubernetesSecrets},
     store::ClusterDraft,
 };
 
@@ -60,15 +60,14 @@ fn registry(server: &str) -> (Arc<ClusterRegistry>, Arc<Recorder>, String) {
     let id = store
         .create(ClusterDraft {
             name: "kind-dev".into(),
-            kind: ClusterKind::Kubernetes,
-            connection: ClusterConnection {
+            connection: ClusterConnection::Kubernetes(KubernetesConnection {
                 server: server.into(),
                 ..Default::default()
-            },
-            secrets: ClusterSecrets {
+            }),
+            secrets: ClusterSecrets::Kubernetes(KubernetesSecrets {
                 token: Some("t".into()),
                 ..Default::default()
-            },
+            }),
         })
         .unwrap()
         .id;
@@ -108,6 +107,30 @@ async fn a_cluster_that_answers_is_connected() {
         .unwrap()
         .iter()
         .any(|(c, s)| c == &id && s.is_connected()));
+}
+
+#[tokio::test]
+async fn kubernetes_commands_refuse_a_cluster_of_another_kind() {
+    let server = fake_api("200 OK", VERSION).await;
+    let (registry, _, kubernetes) = registry(&server);
+    let nomad = registry
+        .store
+        .create(ClusterDraft {
+            name: "nomad-dev".into(),
+            connection: ClusterConnection::Nomad(crate::model::NomadConnection {
+                address: "http://127.0.0.1:4646".into(),
+            }),
+            secrets: ClusterSecrets::none(ClusterKind::Nomad),
+        })
+        .unwrap()
+        .id;
+    registry.start_all().unwrap();
+    assert!(settled(&registry, &kubernetes).await.is_connected());
+    let Err(e) = registry.client(&nomad) else {
+        panic!("a Nomad Cluster gave a kube-rs client");
+    };
+    assert!(e.is(ErrorCode::Validation), "{e:?}");
+    assert!(e.message.contains("nomad-dev") && e.message.contains("Nomad"));
 }
 
 #[tokio::test]
@@ -196,17 +219,18 @@ mod exec_plugins {
 
     fn with_plugin(server: &str, exec: ExecConfig) -> (Arc<ClusterRegistry>, String) {
         let (registry, _, id) = registry(server);
-        let mut cluster = registry.store.get(&id).unwrap();
-        cluster.connection.auth = crate::AuthMethod::Exec {
+        let cluster = registry.store.get(&id).unwrap();
+        let mut connection = cluster.kubernetes().unwrap().clone();
+        connection.auth = crate::AuthMethod::Exec {
             command: exec.command.clone(),
         };
-        let secrets = ClusterSecrets {
+        let secrets = ClusterSecrets::Kubernetes(KubernetesSecrets {
             exec: Some(exec),
             ..Default::default()
-        };
+        });
         registry
             .store
-            .replace_connection(&id, &cluster.connection, &secrets)
+            .replace_connection(&id, &ClusterConnection::Kubernetes(connection), &secrets)
             .unwrap();
         (registry, id)
     }
@@ -222,7 +246,7 @@ mod exec_plugins {
         assert_eq!(runs(dir.path()), 1);
 
         let cluster = registry.store.get(&id).unwrap();
-        let secrets = registry.store.secrets(&id).unwrap();
+        let secrets = kubernetes_secrets(&registry, &id);
         registry
             .credentials(&cluster, &secrets, false)
             .await
@@ -242,7 +266,7 @@ mod exec_plugins {
         let (registry, id) =
             with_plugin(&server, counting_plugin(dir.path(), "2000-01-01T00:00:00Z"));
         let cluster = registry.store.get(&id).unwrap();
-        let secrets = registry.store.secrets(&id).unwrap();
+        let secrets = kubernetes_secrets(&registry, &id);
         registry
             .credentials(&cluster, &secrets, false)
             .await
@@ -294,5 +318,13 @@ mod exec_plugins {
             panic!("{status:?}");
         };
         assert!(error.is(ErrorCode::ExecPluginMissing));
+    }
+}
+
+/// The Kubernetes credentials stored for `id`.
+fn kubernetes_secrets(registry: &ClusterRegistry, id: &str) -> KubernetesSecrets {
+    match registry.store.secrets(id).unwrap() {
+        ClusterSecrets::Kubernetes(s) => s,
+        ClusterSecrets::Nomad(_) => panic!("not a Kubernetes Cluster"),
     }
 }

@@ -1,5 +1,10 @@
 import { RefreshCwIcon } from 'lucide-react';
-import { clusterStatusError, ClusterStatusBadge, describeClusterStatus } from '@/core/cluster';
+import {
+  CLUSTER_KIND_LABELS,
+  clusterStatusError,
+  ClusterStatusBadge,
+  describeClusterStatus,
+} from '@/core/cluster';
 import type { ClusterView } from '@/shared/api';
 import { Badge, Button, ErrorMessage, Label, PageHeader, Switch } from '@/shared/ui';
 import { useClusterConnection } from '../../api/mutations';
@@ -19,7 +24,8 @@ export function ClusterDetail({ view }: { view: ClusterView }) {
       <PageHeader
         title={
           <span className="flex items-center gap-2">
-            {view.cluster.name} <Badge variant="outline">{t('clusters.kind.kubernetes')}</Badge>
+            {view.cluster.name}{' '}
+            <Badge variant="outline">{t(CLUSTER_KIND_LABELS[view.cluster.kind])}</Badge>
           </span>
         }
         description={

@@ -1,4 +1,4 @@
-import type { AuthMethod } from '@/shared/api';
+import type { AuthMethod, Cluster } from '@/shared/api';
 import { t } from '@/shared/i18n';
 
 /** How a Cluster's user authenticates, in a few words. */
@@ -17,4 +17,11 @@ export function authLabel(auth: AuthMethod | null | undefined): string {
     default:
       return t('clusters.auth.none');
   }
+}
+
+/** How Homeport authenticates to a Cluster of any kind, in a few words. */
+export function clusterAuthLabel(cluster: Cluster): string {
+  const c = cluster.connection;
+  if (c.kind === 'kubernetes') return authLabel(c.auth);
+  return t('clusters.auth.none');
 }

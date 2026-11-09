@@ -9,6 +9,7 @@ export function clusterView(name: string, overrides: Record<string, unknown> = {
       name,
       kind: 'kubernetes',
       connection: {
+        kind: 'kubernetes',
         server: 'https://127.0.0.1:6443',
         tlsServerName: null,
         insecureSkipTlsVerify: false,
