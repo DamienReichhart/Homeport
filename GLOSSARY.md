@@ -52,10 +52,12 @@ A Docker Swarm cluster, found through the Hosts that belong to it and never adde
 _Avoid_: Cluster (alone), swarm mode, orchestrator
 
 **Cluster**:
-A Kubernetes cluster Homeport connects to through its API server, added from a context of a kubeconfig: a name, the API server's address and the credentials the kubeconfig gives, stored sealed. Homeport installs nothing on it and only reaches what those credentials allow. Not a Swarm, which is found through its Hosts and never added. The UI may say where a Cluster came from ("context kind-dev of ~/.kube/config"), but a Cluster is never called a context.
-_Avoid_: Context (for a Cluster), kube cluster, k8s, environment
+A Kubernetes cluster or a Nomad cluster Homeport connects to through its API; its kind says which, and decides the pages it has. A Kubernetes Cluster is added from a context of a kubeconfig: a name, the API server's address and the credentials the kubeconfig gives, stored sealed. A Nomad Cluster is added by the address of one of its agents: a name, the address, an optional region, and an ACL token and TLS material, stored sealed. Homeport installs nothing on either and only reaches what those credentials allow. Not a Swarm, which is found through its Hosts and never added. The UI may say where a Kubernetes Cluster came from ("context kind-dev of ~/.kube/config"), but a Cluster is never called a context.
+_Avoid_: Context (for a Cluster), kube cluster, k8s, environment, orchestrator
 
 Kubernetes' own objects (Namespace, Pod, Deployment, StatefulSet, DaemonSet, Job, CronJob, Service, Ingress, ConfigMap, Secret, Node, Event) keep their Kubernetes names and capitals. A Cluster's Node, Service or Secret is the Kubernetes one, never a Swarm's.
+
+Nomad's own objects (job, task group, task, allocation, evaluation, deployment, client node, node pool, namespace, ACL token and policy) keep Nomad's names, in lower case as Nomad writes them. A Nomad job is never a Stack, and an allocation is never a container: it runs one or more tasks, each with its driver.
 
 **Port forward**:
 A local port on this computer's loopback that Homeport connects, through the Kubernetes API, to a port of a Pod, or of a Service through one of its ready Pods, like `kubectl port-forward`. Kept in memory: it ends when Homeport quits or its Cluster is removed.

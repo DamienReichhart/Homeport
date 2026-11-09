@@ -3,9 +3,20 @@ title: Nomad clusters
 description: How Homeport connects to a Nomad cluster's HTTP API with an address, an ACL token and TLS material, and what it stores.
 ---
 
+import { DocScreenshot } from '@/features/docs';
+
 A Cluster can be a **Nomad** cluster as well as a Kubernetes one. Homeport talks to the HTTP API that a Nomad agent, server or client, already serves, from your computer: nothing is installed on the cluster, and no `nomad` CLI is needed on this machine. Everything it does goes through the API with the rights of the ACL token you give it.
 
-Nomad clusters sit next to your Hosts and Kubernetes clusters in the switcher. Selecting one shows its dashboard on the Overview; the Kubernetes pages are hidden while it is selected.
+Nomad clusters sit next to your Hosts and Kubernetes clusters in the switcher. Selecting one shows its version, region and address on the Overview, and its own pages in the sidebar: **[Jobs](#jobs)**, where you [run jobs](#run-a-job) and open their allocations' [logs and shells](#logs-and-shell), and **[Nodes](#nodes)**. The Kubernetes pages are hidden while it is selected.
+
+What you can do, in the order this page explains it:
+
+1. [Add a cluster](#adding-a-nomad-cluster) by its address, with [TLS](#tls) and [an ACL token](#the-acl-token) when it uses them.
+2. See its [jobs](#jobs) and their allocations, live; stop, purge and scale them.
+3. [Run a job](#run-a-job) from HCL or JSON after seeing Nomad's plan, or edit and re-run one.
+4. Follow a task's [logs and open a shell](#logs-and-shell) in it.
+5. [Drain nodes](#nodes) and switch their eligibility.
+6. Pick a [namespace](#namespaces), or all of them.
 
 ## Adding a Nomad cluster
 
@@ -40,6 +51,11 @@ A token that can't read the agent (`agent:read`) still connects: the cluster's p
 
 **Jobs** lists the selected cluster's jobs with their type (`service`, `batch`, `system` or `sysbatch`), their status, and how many allocations their task groups run against how many they want. The page stays current while it's open: Homeport asks Nomad with [blocking queries](https://developer.hashicorp.com/nomad/api-docs#blocking-queries), so Nomad answers as soon as something changes, and nothing polls. Leaving the page ends them.
 
+<DocScreenshot
+  name="nomad-jobs"
+  alt="The Jobs page of the nomad-prod cluster: six jobs in the shop namespace with their type, status, allocations running against those wanted, and when each was submitted."
+/>
+
 Open a job for its settings (priority, datacenters, node pool, version), its **task groups** with their tasks and drivers, and its **allocations**, newest first, with the node each runs on.
 
 - **Stop** asks first, naming the job and its namespace. Nomad stops every allocation and keeps the job's definition until its garbage collection runs; tick **Purge it** to remove the job and its history at once, as `nomad job stop -purge` does. Purge is off by default.
@@ -53,6 +69,12 @@ Listing jobs needs the `list-jobs` and `read-job` capabilities; stopping one nee
 
 1. **Plan** asks Nomad to parse the HCL, then what running it would change, as `nomad job plan` does: for each task group, the allocations to place, stop, update in place or replace, the fields that change (an image, a count, an argument…), and any allocations Nomad can't place, with why (nodes filtered out by a constraint, or short of memory or CPU). Nothing changes on the cluster yet.
 2. **Run** submits the job as it was planned. If someone else ran or stopped the job in between, Nomad refuses and Homeport says so instead of overwriting their change: plan again to see it. A plan with allocations that can't be placed offers **Run anyway**, which queues them until a node can take them.
+
+<DocScreenshot
+  name="nomad-run-plan"
+  alt="Edit and run shop-api, at its plan: task group api is edited, with one allocation to place and three replaced, its count going from 3 to 4 and its image from shop-api 2.5.0 to 2.6.0."
+  caption="The plan shows what running a job would change before anything does."
+/>
 
 A specification that doesn't parse says at which line and column Nomad found the problem, with Nomad's message in **Details**. A JSON specification can be a job in Nomad's API format, either `{"Job": {…}}` as `nomad job inspect` prints it or the job object itself.
 
@@ -96,6 +118,62 @@ A cluster with namespaces shows a **Namespace** picker on its Jobs page: `defaul
 **Run job** sends a job to the namespace its specification names; one that names none goes to the namespace picked, or `default` while all are shown. A job's own page, its allocations and their logs and shells always use the job's namespace.
 
 A token that can't list namespaces, or a cluster without any, sees its default namespace with no picker and no error. Homeport doesn't create, edit or delete namespaces.
+
+## ACL policies
+
+On a cluster with ACLs enabled, give Homeport a token of its own with a policy that grants what you'll use. This one covers everything Homeport does:
+
+```hcl title="homeport.hcl"
+namespace "*" {
+  policy       = "read"
+  capabilities = ["submit-job", "scale-job", "read-logs", "alloc-exec"]
+}
+
+node {
+  policy = "write"
+}
+
+agent {
+  policy = "read"
+}
+```
+
+This one only lets Homeport look: jobs, allocations, their logs, nodes and namespaces, with no change and no shell:
+
+```hcl title="homeport-read.hcl"
+namespace "*" {
+  policy       = "read"
+  capabilities = ["read-logs"]
+}
+
+node {
+  policy = "read"
+}
+
+agent {
+  policy = "read"
+}
+```
+
+Apply one and make a token with it, then paste the token's secret ID in the cluster's settings:
+
+```bash
+nomad acl policy apply -description "Homeport" homeport homeport.hcl
+nomad acl token create -name=homeport -policy=homeport
+```
+
+Replace `"*"` with a namespace's name to limit Homeport to it, and add `alloc-node-exec` to the capabilities to open shells in tasks that use the `raw_exec` driver. What each part needs:
+
+| Homeport…                              | needs                                          |
+| -------------------------------------- | ---------------------------------------------- |
+| shows the cluster's version            | `agent` `read` (optional: it connects without) |
+| lists jobs, allocations and namespaces | `read` on the namespace                        |
+| plans and runs a job, stops one        | `submit-job` on the namespace                  |
+| scales a task group                    | `scale-job` (or `submit-job`) on the namespace |
+| reads a task's logs                    | `read-logs` on the namespace                   |
+| opens a shell                          | `alloc-exec` on the namespace                  |
+| lists nodes                            | `node` `read`                                  |
+| drains a node, changes its eligibility | `node` `write`                                 |
 
 ## Statuses and problems
 

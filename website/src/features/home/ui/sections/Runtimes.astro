@@ -1,5 +1,5 @@
 ---
-/** The Docker runtimes Homeport works with. */
+/** The Engines and clusters Homeport works with. */
 const runtimes = [
   'Docker Engine',
   'Docker Desktop',
@@ -7,12 +7,16 @@ const runtimes = [
   'OrbStack',
   'Rancher Desktop',
   'Podman',
+  'containerd',
+  'Incus',
+  'Kubernetes',
+  'Nomad',
 ];
 ---
 
 <section class="runtimes" aria-label="Works with">
   <div class="container runtimes__inner">
-    <p>Works with the Engine you already run</p>
+    <p>Works with what you already run</p>
     <ul>
       {runtimes.map((name) => (
         <li>{name}</li>

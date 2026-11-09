@@ -1,6 +1,6 @@
 ---
 title: System requirements
-description: What Homeport needs to run, and the optional pieces that unlock SSH, TLS, Stack deploys, Kubernetes clusters and Helm.
+description: What Homeport needs to run, and the optional pieces that unlock SSH, TLS, Stack deploys, Kubernetes and Nomad clusters, and Helm.
 ---
 
 ## Operating systems
@@ -34,6 +34,12 @@ To browse [Clusters](/docs/clusters/), Homeport needs a kubeconfig that reaches 
 
 - **Kubernetes versions**: clusters running Kubernetes 1.24 or later. Homeport uses only stable APIs (`v1`, `apps/v1`, `batch/v1`, `networking.k8s.io/v1`), and is built against the 1.33 API.
 - **Exec plugins**: a cloud kubeconfig names a program to run on this computer for its credentials — the [AWS CLI](https://aws.amazon.com/cli/) (version 2) for EKS, `gke-gcloud-auth-plugin` from the Google Cloud CLI for GKE, `kubelogin` for AKS. Install the one your kubeconfig names; see [exec plugins](/docs/clusters/exec-plugins/).
+
+## Optional: Nomad clusters
+
+To manage [Nomad clusters](/docs/clusters/nomad/), Homeport needs network access to a Nomad agent's HTTP API (port 4646 by default) and, when the cluster has ACLs enabled, a token; see [the ACL policy](/docs/clusters/nomad/#acl-policies) it needs. It speaks Nomad's API itself, so the `nomad` CLI isn't needed, and nothing is installed on the cluster.
+
+- **Nomad versions**: Nomad 1.6 or later. **Edit and run** starts from a job's submitted specification, which Nomad keeps from 1.6 on.
 
 ## Optional: an OS keychain
 
@@ -83,4 +89,5 @@ Homeport puts an icon in the system tray (the menu bar on macOS, the notificatio
 | Synced Stacks with a deploy key or a token |   Yes    |     Yes     | Yes |  —   |
 | Building an image from a folder            |    —     |      —      |  —  |  —   |
 | Kubernetes Clusters                        |   Yes    |      —      |  —  |  —   |
+| Nomad Clusters                             |   Yes    |      —      |  —  |  —   |
 | Helm releases                              |   Yes    |      —      |  —  | Yes  |

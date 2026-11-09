@@ -47,7 +47,11 @@ A file on a Podman host, such as `web.container`, that systemd turns into a serv
 
 ### Cluster
 
-A Kubernetes cluster Homeport connects to through its API server, added from a context of a kubeconfig: a name, the API server's address, and the credentials the kubeconfig gives, stored encrypted. Homeport installs nothing on it and only reaches what those credentials allow. Not a Swarm, which is found through its hosts and never added. Kubernetes' own objects keep their Kubernetes names: Namespace, Pod, Deployment, Service, Node… See [Clusters](/docs/clusters/).
+A Kubernetes cluster or a Nomad cluster Homeport connects to through its API. A Kubernetes one is added from a context of a kubeconfig: a name, the API server's address, and the credentials the kubeconfig gives, stored encrypted. A Nomad one is added by the address of one of its agents, with an ACL token and TLS material, stored encrypted. Homeport installs nothing on either and only reaches what those credentials allow. Not a Swarm, which is found through its hosts and never added. Kubernetes' own objects keep their Kubernetes names: Namespace, Pod, Deployment, Service, Node… Nomad's keep Nomad's: job, task group, task, allocation, client node, namespace. See [Clusters](/docs/clusters/) and [Nomad clusters](/docs/clusters/nomad/).
+
+### Allocation
+
+On a Nomad cluster, one placement of a job's task group on a client node, running its tasks. Its logs and a shell in it go through Nomad's servers to the node. See [logs and shell](/docs/clusters/nomad/#logs-and-shell).
 
 ### Swarm
 

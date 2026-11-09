@@ -1,11 +1,11 @@
 ---
 title: Clusters
-description: How Homeport connects to Kubernetes clusters from your kubeconfig, what it stores, and what each status means.
+description: How Homeport connects to Kubernetes clusters from your kubeconfig, what it stores, and what each status means. Nomad clusters have their own page.
 ---
 
 import { DocScreenshot } from '@/features/docs';
 
-A **Cluster** is a Kubernetes cluster Homeport connects to through its API server. You add one from a context of a kubeconfig — the file `kubectl` already uses — so there are no new credentials to create, and Homeport installs nothing on the cluster: it only talks to the Kubernetes API your kubeconfig already reaches, with the rights its credentials have.
+A **Cluster** is a Kubernetes cluster, or a [Nomad cluster](/docs/clusters/nomad/), Homeport connects to through its API. This section is about Kubernetes ones; Nomad ones have [their own page](/docs/clusters/nomad/). A Kubernetes Cluster is one Homeport reaches through its API server. You add one from a context of a kubeconfig — the file `kubectl` already uses — so there are no new credentials to create, and Homeport installs nothing on the cluster: it only talks to the Kubernetes API your kubeconfig already reaches, with the rights its credentials have.
 
 <DocScreenshot
   name="cluster-overview"
