@@ -1,0 +1,45 @@
+---
+title: Service e configurazione
+description: Sfoglia i Service, gli Ingress, le ConfigMap e i Secret di un cluster, con i valori dei Secret mostrati una chiave alla volta.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+## Service e Ingress
+
+**Rete** elenca i **Service** del Namespace selezionato — il loro tipo, l’IP del cluster, gli indirizzi esterni (quelli dei load balancer e gli `externalIPs`) e le porte come le mostra `kubectl` (`443:30443/TCP` con una node port) — e, nella sua seconda scheda, gli **Ingress** con la loro classe, gli host e gli indirizzi pubblicati dal loro controller.
+
+- La pagina di un Service mostra le sue porte e porte di destinazione, la sua affinità di sessione, le etichette con cui seleziona i Pod, e una scheda **Pod** con quei Pod. Un Service senza selettore lo dice: i suoi endpoint sono gestiti manualmente.
+- La pagina di un Ingress elenca i percorsi di ogni regola (prima il backend predefinito) con la destinazione a cui ciascuno invia il traffico, con un link alla pagina del Service, e i suoi host TLS e i Secret dei certificati.
+
+<DocScreenshot
+  name="cluster-services"
+  alt="La pagina Rete nella scheda Service: service ClusterIP con i loro IP del cluster e le porte, un LoadBalancer con il suo hostname esterno e le node port, e un service headless senza IP del cluster."
+/>
+
+La scheda **Regole** di un Ingress è dove controllare l’instradamento: quale host e percorso vanno a quale Service e porta.
+
+<DocScreenshot
+  name="cluster-ingress"
+  alt="Le regole dell’Ingress storefront: /api verso api:8080, /checkout verso checkout:8080, e / verso web:http, per shop.example.com e www.shop.example.com."
+/>
+
+## ConfigMap e Secret
+
+**Configurazione** elenca le **ConfigMap** e i **Secret** con le loro chiavi. La pagina di una ConfigMap mostra ogni valore; i dati binari mostrano solo la loro dimensione.
+
+<DocScreenshot
+  name="cluster-secret"
+  alt="La scheda Dati del Secret db-credentials: password mostrata con i pulsanti Copia e Nascondi, username ancora mascherato con un pulsante Mostra."
+  caption="Una chiave mostrata; l’altra resta mascherata finché non lo chiedi."
+/>
+
+La pagina di un Secret mostra il suo tipo e ogni chiave con la sua dimensione, mascherata. **Mostra** recupera quel singolo valore dal cluster e lo mostra, decodificato (i valori binari in base64), con **Copia** e **Nascondi**. I valori non fanno mai parte di un elenco, della pagina di un Secret o del suo YAML; uno mostrato non viene messo in cache, memorizzato o registrato, e viene nascosto di nuovo quando lasci la pagina. Vedi [Sicurezza e i tuoi dati](/docs/reference/security/#clusters).
+
+La scheda **YAML** di una ConfigMap ha **Modifica**, per cambiarla tramite un’anteprima e il server-side apply ([Applicare e modificare YAML](/docs/clusters/yaml/)). I Secret non si modificano in Homeport, poiché non mostra mai tutti i loro valori insieme; applica invece il manifest di un Secret.
+
+## Tutto il resto
+
+Endpoints ed EndpointSlice, NetworkPolicy, PersistentVolume e le risorse aggiunte dalle tue CRD si trovano in [Risorse API](/docs/clusters/api-resources/).
+
+Le porte di un Service hanno **Inoltra…**, per [raggiungerlo da questo computer](/docs/clusters/port-forward/) tramite uno dei suoi Pod pronti; ogni pagina qui ha **Elimina** nella sua intestazione.

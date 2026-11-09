@@ -1,0 +1,34 @@
+---
+title: Node ed eventi
+description: Vedi i Node di un cluster, la loro capacità e i Pod su ciascuno, e i suoi eventi, prima gli avvisi.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+## Node
+
+**Node** elenca le macchine su cui il cluster esegue i Pod, indicando per ciascuna se è **Pronto** (e **pianificazione disattivata** quando è in cordon), i suoi ruoli, la versione del kubelet, l’IP interno, la piattaforma e la CPU e la memoria allocabili.
+
+<DocScreenshot
+  name="cluster-nodes"
+  alt="La pagina Node: cinque Node EKS, uno non pronto con la pianificazione disattivata, con la loro versione del kubelet, IP interno, piattaforma, CPU e memoria."
+/>
+
+Le CPU sono mostrate in core (`3.92` per `3920m`) e la memoria in GB; Kubernetes riporta ciò che è **allocabile** ai Pod, un po’ meno di quanto abbia la macchina, poiché il kubelet e il sistema ne tengono una parte.
+
+La pagina di un Node mostra la sua immagine del sistema operativo, il kernel, il runtime dei container, gli indirizzi, i taint, le etichette, e la sua capacità accanto a ciò che è allocabile ai Pod; poi i **Pod** in esecuzione su di esso, in tutti i Namespace, le sue **Condizioni** (pressione su memoria, disco e PID), gli **Eventi** e lo **YAML**. La pagina di un Pod ha un link al suo Node.
+
+## Eventi
+
+<DocScreenshot
+  name="cluster-events"
+  alt="La pagina Eventi: prima tre avvisi (un Pod in backoff, un’immagine che non può essere scaricata, un Node non pronto), poi gli eventi normali, ciascuno con il suo oggetto, messaggio, conteggio ed età."
+/>
+
+**Eventi** elenca ciò che Kubernetes ha riportato nel Namespace selezionato (o in tutti): prima gli avvisi, poi i più recenti, ciascuno con il suo motivo, l’oggetto che riguarda — con un link alla pagina di quell’oggetto — il suo messaggio, quante volte è successo e quando è successo l’ultima volta. Filtra per **Avvisi** o **Normali**, e cerca per motivo, oggetto o messaggio. L’elenco si aggiorna in tempo reale.
+
+Kubernetes conserva gli eventi per circa un’ora, quindi un elenco vuoto è normale su un cluster tranquillo. Anche la pagina di ogni oggetto ha la sua scheda **Eventi**.
+
+## Quando le tue credenziali non possono vedere qualcosa
+
+I Node non appartengono a un Namespace, quindi elencarli richiede un permesso a livello di cluster che molti utenti non hanno. La pagina allora dice «Le tue credenziali non consentono “list” su nodes.» e tutte le altre pagine continuano a funzionare.
