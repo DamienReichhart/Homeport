@@ -31,7 +31,7 @@ describe('images page', () => {
     });
     renderApp('/images');
     expect(await screen.findByText('nginx:1.27')).toBeInTheDocument();
-    expect(screen.getByText('+1 more tags')).toBeInTheDocument();
+    expect(screen.getByText('+1 more tag')).toBeInTheDocument();
     expect(screen.getByText('In use · 2')).toBeInTheDocument();
     expect(screen.getByText('<none>')).toBeInTheDocument();
     expect(screen.getByText('2 images · 190.0 MB')).toBeInTheDocument();

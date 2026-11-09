@@ -58,7 +58,30 @@ async function fill(placeholder: string, value: string) {
   if (el) await userEvent.type(el, value);
 }
 
+/** jsdom has no canvas; charts draw on this context, which does nothing. */
+function stubCanvas() {
+  const context = new Proxy(
+    {},
+    {
+      get: (_, name) => (name === 'measureText' ? () => ({ width: 0 }) : () => {}),
+      set: () => true,
+    },
+  );
+  HTMLCanvasElement.prototype.getContext = (() => context) as never;
+  // uPlot builds its paths with Path2D, which jsdom lacks too.
+  globalThis.Path2D ??= class {
+    moveTo() {}
+    lineTo() {}
+    rect() {}
+    arc() {}
+    closePath() {}
+    bezierCurveTo() {}
+    addPath() {}
+  } as never;
+}
+
 describe('every page, checked with axe', () => {
+  beforeAll(stubCanvas);
   afterEach(() => window.history.replaceState(null, '', '/'));
 
   it.each(

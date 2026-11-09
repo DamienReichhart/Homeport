@@ -152,7 +152,12 @@ describe('Podman pods', () => {
       'href',
       '/podman-pods/p1',
     );
+    // redis runs in no pod: its only link is its own name, to its logs.
     const redis = screen.getByText('redis').closest('tr')!;
-    expect(within(redis).queryByRole('link')).toBeNull();
+    expect(
+      within(redis)
+        .queryAllByRole('link')
+        .filter((a) => a.getAttribute('href')?.startsWith('/podman-pods/')),
+    ).toEqual([]);
   });
 });
