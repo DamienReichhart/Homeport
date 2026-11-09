@@ -36,6 +36,17 @@ Homeport sends the token in the `X-Nomad-Token` header of each request, never in
 
 A token that can't read the agent (`agent:read`) still connects: the cluster's page then shows its region but not its version.
 
+## Jobs
+
+**Jobs** lists the selected cluster's jobs with their type (`service`, `batch`, `system` or `sysbatch`), their status, and how many allocations their task groups run against how many they want. The page stays current while it's open: Homeport asks Nomad with [blocking queries](https://developer.hashicorp.com/nomad/api-docs#blocking-queries), so Nomad answers as soon as something changes, and nothing polls. Leaving the page ends them.
+
+Open a job for its settings (priority, datacenters, node pool, version), its **task groups** with their tasks and drivers, and its **allocations**, newest first, with the node each runs on.
+
+- **Stop** asks first, naming the job and its namespace. Nomad stops every allocation and keeps the job's definition until its garbage collection runs; tick **Purge it** to remove the job and its history at once, as `nomad job stop -purge` does. Purge is off by default.
+- **Scale**, on a task group of a `service` or `batch` job, sets how many allocations it runs, as `nomad job scale` does. When the group has a `scaling` block, the count must stay within its `min` and `max`; Homeport refuses one outside before asking Nomad, and shows Nomad's own reason when it refuses, such as a deployment in progress. An autoscaler acting on the policy may change the count again.
+
+Listing jobs needs the `list-jobs` and `read-job` capabilities; stopping one needs `submit-job`, and scaling `scale-job` (or `submit-job`), on the job's namespace.
+
 ## Statuses and problems
 
 The status follows the same rules as for [Kubernetes clusters](/docs/clusters/#statuses): Homeport retries on its own while the agent can't be reached, and waits for you when only you can fix it.
