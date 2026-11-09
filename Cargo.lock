@@ -2438,6 +2438,7 @@ dependencies = [
  "homeport-git",
  "homeport-hosts",
  "homeport-incus",
+ "homeport-nomad",
  "homeport-registries",
  "homeport-settings",
  "homeport-stacks",
@@ -2473,6 +2474,7 @@ dependencies = [
  "futures-util",
  "getrandom 0.3.4",
  "homeport-core",
+ "homeport-nomad",
  "homeport-storage",
  "homeport-transport",
  "http",
@@ -2624,6 +2626,29 @@ dependencies = [
  "shell-words",
  "specta",
  "tempfile",
+ "tokio",
+ "tokio-rustls",
+ "tokio-tungstenite",
+]
+
+[[package]]
+name = "homeport-nomad"
+version = "0.20.0"
+dependencies = [
+ "base64 0.22.1",
+ "futures-util",
+ "homeport-core",
+ "homeport-transport",
+ "http",
+ "log",
+ "reqwest",
+ "rustls",
+ "rustls-pki-types",
+ "rustls-platform-verifier",
+ "serde",
+ "serde_json",
+ "shell-words",
+ "specta",
  "tokio",
  "tokio-rustls",
  "tokio-tungstenite",
