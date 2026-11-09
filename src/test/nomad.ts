@@ -79,3 +79,22 @@ export function nomadJobDetail(overrides: Record<string, unknown> = {}) {
     ...overrides,
   };
 }
+
+/** A ready, eligible client node as `clusters_nomad_nodes` lists it. */
+export function nomadNode(name: string, overrides: Record<string, unknown> = {}) {
+  return {
+    id: `f00d000${name.length}-0000-0000-0000-000000000000`,
+    name,
+    datacenter: 'dc1',
+    nodePool: 'default',
+    nodeClass: null,
+    address: '10.0.0.11',
+    version: '1.10.3',
+    status: 'ready',
+    statusDescription: null,
+    eligible: true,
+    draining: false,
+    running: 2,
+    ...overrides,
+  };
+}
