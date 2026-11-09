@@ -116,6 +116,14 @@ On Windows, macOS and with the AppImage, Homeport tells you when a new version i
 
 Not yet. They're planned; the [installation page](/docs/installation/#coming-later) links to each one's issue.
 
+### Is Homeport available in my language?
+
+Homeport speaks English, French, Spanish, German, Italian, Brazilian Portuguese, Russian, Simplified Chinese, Japanese, Korean, Hindi and Arabic, and follows your operating system's language unless you pick one under [Settings → Appearance](/docs/guides/settings/#appearance). The website is in all of them too; the documentation is fully translated into French, and other languages show the English page where a translation doesn't exist yet. To add a language, see [Contributing](/docs/project/contributing/#translating-homeport).
+
+### Is Homeport accessible?
+
+It can be used with the keyboard alone, follows your system's reduced-motion setting, meets WCAG 2.2 AA contrast, and every page is checked with automated accessibility tools. A hands-on screen-reader audit is under way. See [Keyboard and accessibility](/docs/reference/accessibility/) for what works, the known limits and how to report a barrier.
+
 ### Is there a command-line interface?
 
 No — Homeport is a desktop app. Your existing `docker` CLI works alongside it, and Homeport updates live when you change things from the terminal.
