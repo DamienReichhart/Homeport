@@ -50,7 +50,7 @@ export default {
   'pods.logs.previous': 'Instancia anterior',
   'pods.logs.noRestart': 'No se ha reiniciado, así que no hay ninguna instancia anterior.',
   'pods.logs.pod': 'Pod',
-  'pods.logs.allPods': '{count, plural, one {El # Pod} other {Los # Pods}}',
+  'pods.logs.allPods': '{count, plural, one {El Pod} other {Todos los # Pods}}',
   'pods.logs.noPods': 'Ahora mismo no ejecuta ningún Pod.',
   'pods.tab.terminal': 'Terminal',
   'pods.terminal.shell': 'Shell',
