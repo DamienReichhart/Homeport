@@ -6,9 +6,9 @@ description: What Homeport is, what it does, and how these docs are organised.
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import { DocScreenshot } from '@/features/docs';
 
-**Homeport** is a desktop app for managing Docker Engines anywhere — this machine's, or remote ones over SSH, TLS or TCP — and the Kubernetes clusters your kubeconfig reaches, in the spirit of Docker Desktop. It runs on Windows, macOS and Linux, is free, and is open source under the [GNU Affero General Public License, version 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE).
+**Homeport** is a desktop app for managing Docker Engines, containerd and Incus anywhere — this machine's, or remote ones over SSH, TLS or TCP — the Swarms they form, and the Kubernetes clusters your kubeconfig reaches and the Nomad clusters you name, in the spirit of Docker Desktop. It runs on Windows, macOS and Linux, is free, and is open source under the [GNU Affero General Public License, version 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE).
 
-Homeport doesn't run containers itself. It connects to the Docker Engines you already have, called **Hosts**, and gives you one window for everything on them: containers, images, volumes, networks and Compose **Stacks**. It also connects to Kubernetes **Clusters** from your kubeconfig, to browse what runs on them.
+Homeport doesn't run containers itself. It connects to the Engines you already have, called **Hosts**, and gives you one window for everything on them: containers, images, volumes, networks and Compose **Stacks**. It also connects to Kubernetes and Nomad **Clusters**, to see what runs on them and manage it. Nothing is installed on a Host or a Cluster.
 
 <DocScreenshot
   name="overview"
@@ -28,7 +28,12 @@ Homeport doesn't run containers itself. It connects to the Docker Engines you al
     Run dialog.
   </Card>
   <Card title="Deploy Compose Stacks" icon="rocket">
-    Keep a compose file and its encrypted environment in Homeport, and deploy it to any Host.
+    Keep a compose file and its encrypted environment in Homeport, deploy from a project folder or
+    follow a git repository, and deploy to any Host or Swarm.
+  </Card>
+  <Card title="Manage Swarms" icon="seti:docker">
+    Find a Docker Swarm through its manager Hosts, and manage its nodes, services, tasks, secrets,
+    configs and swarm stacks.
   </Card>
   <Card title="Use Podman's own features" icon="seti:config">
     On a Podman Host, manage pods and run containers in them, and install, edit and start Quadlet
@@ -45,7 +50,12 @@ Homeport doesn't run containers itself. It connects to the Docker Engines you al
   </Card>
   <Card title="Browse Kubernetes" icon="server">
     Add clusters from your kubeconfig, EKS, GKE and AKS included, and see their workloads, Pods,
-    Services, configuration, Nodes and Events, live.
+    Services, configuration, Nodes and Events, live. Read logs, open a terminal, forward ports,
+    scale, apply YAML and manage Helm releases.
+  </Card>
+  <Card title="Run Nomad jobs" icon="server">
+    Add a Nomad cluster by its agent's address, plan and run jobs, follow their allocations and
+    logs, open a shell in a task, and drain nodes.
   </Card>
   <Card title="Keep things tidy" icon="seti:folder">
     Images, volumes and networks with usage at a glance, and a clean-up dialog that says what it
@@ -56,18 +66,19 @@ Homeport doesn't run containers itself. It connects to the Docker Engines you al
 ## How these docs are organised
 
 - **Getting started** — [install Homeport](/docs/installation/), then follow the [quick start](/docs/quick-start/) to connect your first Host.
-- **Hosts** — how each kind of connection works: [local engines](/docs/hosts/local/), [SSH](/docs/hosts/ssh/), and [TLS and TCP](/docs/hosts/tls-tcp/).
-- **Clusters** — [adding Kubernetes clusters](/docs/clusters/) from a kubeconfig, and browsing them.
+- **Hosts** — how each kind of connection works: [local engines](/docs/hosts/local/), [SSH](/docs/hosts/ssh/), and [TLS and TCP](/docs/hosts/tls-tcp/); and the Engines that have pages of their own, [containerd](/docs/hosts/containerd/) and [Incus](/docs/hosts/incus/).
+- **Clusters** — [adding Kubernetes clusters](/docs/clusters/) from a kubeconfig, browsing and changing them, [Helm releases](/docs/clusters/helm/), and [Nomad clusters](/docs/clusters/nomad/).
 - **Using Homeport** — a guide to each page of the app.
-- **Reference** — [security](/docs/reference/security/), [troubleshooting](/docs/reference/troubleshooting/), the [FAQ](/docs/reference/faq/) and the [glossary](/docs/reference/glossary/).
+- **Reference** — [security](/docs/reference/security/), [your data and backups](/docs/reference/data-and-backups/), [updating](/docs/reference/updating/), [troubleshooting](/docs/reference/troubleshooting/), the [FAQ](/docs/reference/faq/) and the [glossary](/docs/reference/glossary/).
 
 ## Words we use
 
 Homeport names things precisely, and the docs follow it:
 
-- A **Host** is a Docker Engine Homeport connects to. Every container, image, volume, network and Stack belongs to exactly one Host.
-- A **Cluster** is a Kubernetes cluster Homeport connects to, added from a context of your kubeconfig.
-- A **Stack** is a Compose project running on a Host. A **Managed Stack** is one whose compose file Homeport keeps; a **Linked Stack** keeps its compose files in a folder on this computer; an **External Stack** was deployed some other way. You can **adopt** an External Stack to manage it.
+- A **Host** is an Engine Homeport connects to: a Docker Engine or a compatible one such as Podman, containerd or Incus. Every container, image, volume, network and Stack belongs to exactly one Host.
+- A **Cluster** is a Kubernetes cluster, added from a context of your kubeconfig, or a Nomad cluster, added by the address of one of its agents.
+- A **Swarm** is a Docker Swarm, found through the Hosts that belong to it and never added on its own.
+- A **Stack** is a Compose project running on a Host, or a swarm stack running on a Swarm. A **Managed Stack** is one whose compose file Homeport keeps; a **Linked Stack** keeps its compose files in a folder on this computer; a **Synced Stack** follows a git repository; an **External Stack** was deployed some other way. You can **adopt** an External Stack to manage it.
 
 The [glossary](/docs/reference/glossary/) has the full list.
 
