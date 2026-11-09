@@ -1,16 +1,17 @@
 /**
  * Captures the website's screenshots of the real Homeport UI.
  *
- *   bun run screenshots [--locale <tag>…|all] [name…]
+ *   bun run screenshots [--locale <tag>…] [name…]
  *
  * Builds `scripts/screenshots/` (the app's frontend with mocked IPC and demo
  * data), serves it, and photographs each shot with headless Firefox at
  * 1440×900 into `website/src/assets/screenshots/<name>.png` (English) and
  * `website/src/assets/screenshots/<tag>/<name>.png` for every other language,
- * the tag in lower case (`fr`, `pt-br`). `--locale` picks the languages (one
- * per flag, or `all` for every app catalogue); by default, English and every
- * language that already has a folder of screenshots. Pass shot names to
- * capture only those. Set FIREFOX to use another Firefox binary, or CHROMIUM
+ * the tag in lower case (`fr`, `pt-br`). Every language with an app catalogue
+ * is captured, so each page of the website shows the app in its own language;
+ * `--locale` (one per flag) captures only those, for a quick retake. Pass shot
+ * names to capture only those. `website/src/features/docs/screenshots.test.ts`
+ * fails when a language lacks a shot English has. Set FIREFOX to use another Firefox binary, or CHROMIUM
  * to a Chrome or Chromium binary to use that instead.
  */
 import {
@@ -85,12 +86,7 @@ function parseArgs(args: string[]): { locales: string[]; names: string[] } {
     if (args[i] === '--locale') asked.push(args[++i] ?? '');
     else names.push(args[i] ?? '');
   }
-  const locales =
-    asked.length === 0
-      ? CATALOGUES.filter((tag) => tag === 'en' || existsSync(outDir(tag)))
-      : asked.includes('all')
-        ? CATALOGUES
-        : asked;
+  const locales = asked.length === 0 || asked.includes('all') ? CATALOGUES : asked;
   for (const tag of locales)
     if (!CATALOGUES.includes(tag)) throw new Error(`No catalogue for ${tag} in src/shared/i18n`);
   return { locales, names };

@@ -45,14 +45,14 @@ Local builds aren't signed for the in-app updater and leave the `.rpm` unsigned;
 
 ## Useful commands
 
-| Command               | What it does                                                                    |
-| --------------------- | ------------------------------------------------------------------------------- |
-| `bun run check`       | Typecheck, lint, format check and frontend tests                                |
-| `bun run rust:lint`   | `cargo clippy` with warnings as errors                                          |
-| `bun run rust:test`   | Rust unit tests                                                                 |
-| `bun run bindings`    | Regenerate the TypeScript bindings for the IPC                                  |
-| `bun run licenses`    | Generate the third-party licence notices                                        |
-| `bun run screenshots` | Recapture the screenshots used on this website (`--locale fr` for one language) |
+| Command               | What it does                                                                                    |
+| --------------------- | ----------------------------------------------------------------------------------------------- |
+| `bun run check`       | Typecheck, lint, format check and frontend tests                                                |
+| `bun run rust:lint`   | `cargo clippy` with warnings as errors                                                          |
+| `bun run rust:test`   | Rust unit tests                                                                                 |
+| `bun run bindings`    | Regenerate the TypeScript bindings for the IPC                                                  |
+| `bun run licenses`    | Generate the third-party licence notices                                                        |
+| `bun run screenshots` | Recapture the screenshots used on this website, in every language (`--locale fr` to retake one) |
 
 Integration tests talk to the local Docker Engine and the Compose CLI. They are marked `#[ignore = "needs a local Docker Engine"]` (or `"… and the compose CLI"`, and a few `"… access to Docker Hub"`), create only resources named `homeport-test-*` and remove them afterwards. Run them with an Engine and the compose plugin on this machine:
 
