@@ -1,20 +1,27 @@
 ---
 /** Every release, newest first, or a link to GitHub when the releases couldn't be read. */
+import { strings } from '@/core/i18n';
 import { getReleases } from '@/core/release';
-import { RELEASES_URL } from '@/core/site';
+import { type Locale, RELEASES_URL, ROOT_LOCALE } from '@/core/site';
+import { escapeHtml, fillHtml } from '@/shared/lib/template';
 import ReleaseEntry from '../ReleaseEntry.astro';
 
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
 const releases = await getReleases();
+const github = `<a href="${RELEASES_URL}">${escapeHtml(s['changelog.github'])}</a>`;
 ---
 
 {releases.length === 0 ? (
-  <p class="empty">
-    The release history is on <a href={RELEASES_URL}>GitHub</a>.
-  </p>
+  <p class="empty" set:html={fillHtml(s['changelog.empty'], { link: github })} />
 ) : (
-  <ol class="timeline">
+  <ol class="timeline" lang={locale === ROOT_LOCALE ? undefined : 'en'}>
     {releases.map((release, index) => (
-      <ReleaseEntry release={release} latest={index === 0} />
+      <ReleaseEntry release={release} latest={index === 0} locale={locale} />
     ))}
   </ol>
 )}

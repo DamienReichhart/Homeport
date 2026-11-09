@@ -1,6 +1,11 @@
 ---
-/** One release: its version and date, then its notes and links. */
+/**
+ * One release: its version and date, then its notes and links. The notes come
+ * from GitHub in English; the date and labels are in the page's language.
+ */
+import { strings } from '@/core/i18n';
 import type { Release } from '@/core/release';
+import { type Locale, localePath, ROOT_LOCALE } from '@/core/site';
 import { formatDate } from '@/shared/lib/format';
 import { href } from '@/shared/lib/href';
 import { releaseNotes } from '../model/notes';
@@ -9,29 +14,33 @@ interface Props {
   release: Release;
   /** Whether this is the newest release. */
   latest: boolean;
+  locale: Locale;
 }
 
-const { release, latest } = Astro.props;
+const { release, latest, locale } = Astro.props;
+const s = strings(locale);
+/** The page's language, on what isn't the English notes. */
+const lang = locale === ROOT_LOCALE ? undefined : locale.lang;
 ---
 
 <li class="entry" id={release.tag}>
-  <div class="entry__meta">
+  <div class="entry__meta" lang={lang}>
     <a class="entry__version" href={`#${release.tag}`}>
       {release.version}
     </a>
-    <time datetime={release.publishedAt}>{formatDate(release.publishedAt)}</time>
-    {latest && !release.prerelease && <span class="tag tag--latest">Latest</span>}
-    {release.prerelease && <span class="tag">Prerelease</span>}
+    <time datetime={release.publishedAt}>{formatDate(release.publishedAt, locale.lang)}</time>
+    {latest && !release.prerelease && <span class="tag tag--latest">{s['changelog.latest']}</span>}
+    {release.prerelease && <span class="tag">{s['changelog.prerelease']}</span>}
   </div>
   <article class="entry__body prose">
     <h2>{release.name}</h2>
     <Fragment set:html={releaseNotes(release.body)} />
-    <p class="entry__links">
-      <a href={release.url}>Release on GitHub</a>
+    <p class="entry__links" lang={lang}>
+      <a href={release.url}>{s['changelog.onGitHub']}</a>
       {release.installers.length > 0 && (
         <>
           {' · '}
-          <a href={href('/download/')}>Download</a>
+          <a href={href(localePath('/download/', locale))}>{s['changelog.download']}</a>
         </>
       )}
     </p>
@@ -106,7 +115,7 @@ const { release, latest } = Astro.props;
     color: var(--hp-text);
   }
   .entry__body :global(ul) {
-    padding-left: 1.2rem;
+    padding-inline-start: 1.2rem;
   }
   .entry__body :global(li a) {
     color: var(--hp-text-faint);

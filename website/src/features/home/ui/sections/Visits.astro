@@ -3,30 +3,30 @@
  * The position: Homeport stays on your machine and visits your servers. It
  * says plainly what that costs on the server, port by port.
  */
+import { strings } from '@/core/i18n';
+import { type Locale, localePath } from '@/core/site';
 import { href } from '@/shared/lib/href';
+import { fillHtml } from '@/shared/lib/template';
 import { TextLink } from '@/shared/ui';
 
-const absences = [
-  {
-    title: 'No agent',
-    body: 'Nothing to install, update or secure on the server. Homeport talks to the Engine that is already there.',
-  },
-  {
-    title: 'No web panel',
-    body: 'No dashboard deployed on your servers, and no login page waiting for someone to find it.',
-  },
-  {
-    title: 'No account',
-    body: 'No sign-in, no seat, no subscription and no telemetry. It shows you your containers, and that is all.',
-  },
-];
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
+
+const absences = (['agent', 'panel', 'account'] as const).map((id) => ({
+  title: s[`home.visits.${id}.title`],
+  body: s[`home.visits.${id}.body`],
+}));
 ---
 
 <section class="section section--raised" id="visits">
   <div class="container visits">
     <div class="visits__statement" data-reveal>
-      <span class="eyebrow">Where it lives</span>
-      <h2>Homeport stays on your machine and visits your servers. It never moves in.</h2>
+      <span class="eyebrow">{s['home.visits.eyebrow']}</span>
+      <h2>{s['home.visits.title']}</h2>
     </div>
 
     <ul class="visits__list" data-reveal>
@@ -39,31 +39,27 @@ const absences = [
     </ul>
 
     <div class="visits__ports" data-reveal>
-      <h3>What it needs on the server, honestly</h3>
+      <h3>{s['home.visits.ports.title']}</h3>
       <dl>
         <div>
           <dt>SSH</dt>
-          <dd>
-            The port you already have open. With the key Homeport makes, one line in{' '}
-            <code>authorized_keys</code>.
-          </dd>
+          <dd
+            set:html={fillHtml(s['home.visits.ports.ssh'], {
+              file: '<code>authorized_keys</code>',
+            })}
+          />
         </div>
         <div>
           <dt>TLS</dt>
-          <dd>
-            The Engine’s own API port (usually <code>2376</code>), which you expose yourself.
-          </dd>
+          <dd set:html={fillHtml(s['home.visits.ports.tls'], { port: '<code>2376</code>' })} />
         </div>
         <div>
           <dt>TCP</dt>
-          <dd>
-            The Engine’s API port (usually <code>2375</code>), unencrypted. Only on a network you
-            trust.
-          </dd>
+          <dd set:html={fillHtml(s['home.visits.ports.tcp'], { port: '<code>2375</code>' })} />
         </div>
       </dl>
-      <p>When you can, use SSH: it adds nothing to the server you’re not already running.</p>
-      <TextLink href={href('/docs/hosts/')}>How connections work</TextLink>
+      <p>{s['home.visits.ports.advice']}</p>
+      <TextLink href={href(localePath('/docs/hosts/', locale))}>{s['home.visits.link']}</TextLink>
     </div>
   </div>
 </section>

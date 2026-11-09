@@ -1,32 +1,49 @@
 ---
 /** Previous versions, building from source, and the installers planned for later. */
+import { type StringKey, strings } from '@/core/i18n';
 import { COMING_LATER } from '@/core/packages';
-import { ISSUES_URL, RELEASES_URL, REPO_URL } from '@/core/site';
+import { ISSUES_URL, type Locale, localePath, RELEASES_URL, REPO_URL } from '@/core/site';
 import { href } from '@/shared/lib/href';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
+/** What each channel will be, by its name in COMING_LATER; a channel missing here shows its English text. */
+const later: Record<string, StringKey> = {
+  Homebrew: 'download.later.homebrew',
+  winget: 'download.later.winget',
+  Scoop: 'download.later.scoop',
+  AUR: 'download.later.aur',
+  Flathub: 'download.later.flathub',
+  Snap: 'download.later.snap',
+};
 ---
 
 <section class="more">
-  <h2>Other ways to get Homeport</h2>
+  <h2>{s['download.other.title']}</h2>
   <div class="more__grid">
     <a class="card more__item" href={RELEASES_URL}>
-      <strong>Previous versions</strong>
-      <span>Every release, with notes and files, on GitHub.</span>
+      <strong>{s['download.other.previous.title']}</strong>
+      <span>{s['download.other.previous.body']}</span>
     </a>
-    <a class="card more__item" href={href('/docs/project/building/')}>
-      <strong>Build from source</strong>
-      <span>Bun, Rust and the Tauri prerequisites.</span>
+    <a class="card more__item" href={href(localePath('/docs/project/building/', locale))}>
+      <strong>{s['download.other.build.title']}</strong>
+      <span>{s['download.other.build.body']}</span>
     </a>
     <a class="card more__item" href={REPO_URL}>
-      <strong>Source code</strong>
-      <span>Open source under the AGPL, on GitHub.</span>
+      <strong>{s['download.other.source.title']}</strong>
+      <span>{s['download.other.source.body']}</span>
     </a>
   </div>
-  <h3 class="more__later">Coming later</h3>
+  <h3 class="more__later">{s['download.later.title']}</h3>
   <ul class="later">
     {COMING_LATER.map((channel) => (
       <li>
         <a href={`${ISSUES_URL}/${channel.issue}`}>{channel.name}</a>
-        <span>{channel.what}</span>
+        <span>{later[channel.name] ? s[later[channel.name]!] : channel.what}</span>
       </li>
     ))}
   </ul>

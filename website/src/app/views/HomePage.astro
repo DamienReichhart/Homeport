@@ -1,0 +1,42 @@
+---
+/** The home page in one language; `pages/index.astro` and `pages/[locale]/index.astro` render it. */
+import SiteLayout from '@/app/layouts/SiteLayout.astro';
+import { strings } from '@/core/i18n';
+import { getLatestRelease } from '@/core/release';
+import type { Locale } from '@/core/site';
+import {
+  CallToAction,
+  Containers,
+  Desktops,
+  Features,
+  Hero,
+  Hosts,
+  Runtimes,
+  Security,
+  softwareApplication,
+  Stacks,
+  Visits,
+} from '@/features/home';
+import { ScrollReveal } from '@/shared/ui';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const jsonLd = softwareApplication(Astro.site, await getLatestRelease(), locale);
+---
+
+<SiteLayout title={strings(locale)['home.title']} jsonLd={jsonLd} locale={locale}>
+  <Hero locale={locale} />
+  <Runtimes locale={locale} />
+  <Visits locale={locale} />
+  <Features locale={locale} />
+  <Hosts locale={locale} />
+  <Containers locale={locale} />
+  <Stacks locale={locale} />
+  <Security locale={locale} />
+  <Desktops locale={locale} />
+  <CallToAction locale={locale} />
+  <ScrollReveal />
+</SiteLayout>

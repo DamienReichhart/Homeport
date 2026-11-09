@@ -1,44 +1,47 @@
 ---
 /** How Homeport keeps the credentials it holds. */
+import { strings } from '@/core/i18n';
+import { type Locale, localePath } from '@/core/site';
 import { href } from '@/shared/lib/href';
+import { fillHtml } from '@/shared/lib/template';
 import { Icon, TextLink } from '@/shared/ui';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
 ---
 
 <section class="section">
   <div class="container">
     <div class="section-heading section-heading--center" data-reveal>
-      <span class="eyebrow">Security</span>
-      <h2>Your keys stay sealed</h2>
-      <p>Homeport handles the credentials that open your servers, so it treats them that way.</p>
+      <span class="eyebrow">{s['home.security.eyebrow']}</span>
+      <h2>{s['home.security.title']}</h2>
+      <p>{s['home.security.lead']}</p>
     </div>
     <div class="security-grid">
       <article class="card security" data-reveal>
         <Icon name="lock" />
-        <h3>Encrypted at rest</h3>
-        <p>
-          SSH keys, TLS certificates, Stack environments and repository tokens are sealed with
-          XChaCha20-Poly1305. The key lives in your OS keychain, not next to the data.
-        </p>
+        <h3>{s['home.security.rest.title']}</h3>
+        <p>{s['home.security.rest.body']}</p>
       </article>
       <article class="card security" data-reveal>
         <Icon name="key" />
-        <h3>Never on disk in clear</h3>
-        <p>
-          Homeport speaks SSH itself, so decrypted keys stay in memory. No key files, no changes to
-          your <code>~/.ssh</code>.
-        </p>
+        <h3>{s['home.security.disk.title']}</h3>
+        <p set:html={fillHtml(s['home.security.disk.body'], { dir: '<code>~/.ssh</code>' })} />
       </article>
       <article class="card security" data-reveal>
         <Icon name="shield" />
-        <h3>Nothing phones home</h3>
-        <p>
-          No account, no telemetry, no tracking. Homeport talks to your Engines and nothing else.
-          Every release is built in the open, with checksums and build provenance.
-        </p>
+        <h3>{s['home.security.home.title']}</h3>
+        <p>{s['home.security.home.body']}</p>
       </article>
     </div>
     <p class="center-link">
-      <TextLink href={href('/docs/reference/security/')}>Security and your data</TextLink>
+      <TextLink href={href(localePath('/docs/reference/security/', locale))}>
+        {s['home.security.link']}
+      </TextLink>
     </p>
   </div>
 </section>

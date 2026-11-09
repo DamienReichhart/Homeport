@@ -1,38 +1,44 @@
 ---
 /** A card per desktop platform, each linking to its downloads. */
+import { strings } from '@/core/i18n';
+import { type Locale, localePath } from '@/core/site';
 import { href } from '@/shared/lib/href';
 import { Icon } from '@/shared/ui';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
+
+const platforms = [
+  { os: 'windows', name: 'Windows', icon: 'windows' },
+  { os: 'macos', name: 'macOS', icon: 'apple' },
+  { os: 'linux', name: 'Linux', icon: 'linux' },
+] as const;
 ---
 
 <section class="section section--raised">
   <div class="container">
     <div class="section-heading section-heading--center" data-reveal>
-      <span class="eyebrow">Download</span>
-      <h2>Native on every desktop</h2>
-      <p>
-        A small, fast app built with Tauri and Rust — not a browser tab in disguise. Installers for
-        x64 and ARM that keep Homeport up to date.
-      </p>
+      <span class="eyebrow">{s['home.desktops.eyebrow']}</span>
+      <h2>{s['home.desktops.title']}</h2>
+      <p>{s['home.desktops.lead']}</p>
     </div>
     <div class="platform-grid">
-      <a class="card platform" href={href('/download/#windows')} data-reveal>
-        <Icon name="windows" size={32} />
-        <h3>Windows</h3>
-        <p>10 and 11 · x64 and ARM64</p>
-        <span>Installer (.exe) · MSI</span>
-      </a>
-      <a class="card platform" href={href('/download/#macos')} data-reveal>
-        <Icon name="apple" size={32} />
-        <h3>macOS</h3>
-        <p>Apple silicon and Intel</p>
-        <span>Disk image (.dmg)</span>
-      </a>
-      <a class="card platform" href={href('/download/#linux')} data-reveal>
-        <Icon name="linux" size={32} />
-        <h3>Linux</h3>
-        <p>x64 and ARM64</p>
-        <span>apt · dnf · zypper · AppImage</span>
-      </a>
+      {platforms.map((platform) => (
+        <a
+          class="card platform"
+          href={href(localePath(`/download/#${platform.os}`, locale))}
+          data-reveal
+        >
+          <Icon name={platform.icon} size={32} />
+          <h3>{platform.name}</h3>
+          <p>{s[`home.desktops.${platform.os}.versions`]}</p>
+          <span>{s[`home.desktops.${platform.os}.formats`]}</span>
+        </a>
+      ))}
     </div>
   </div>
 </section>

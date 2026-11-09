@@ -3,17 +3,23 @@
  * "Download for <your OS>". Rendered as a link to the download page; a script
  * then points it at the right installer when the visitor's system is clear.
  * Any element with `data-download-note` on the page gets a matching hint
- * (see DownloadMeta.astro).
+ * (see DownloadMeta.astro). The script's text comes with the link, in the
+ * page's language.
  */
+import { strings } from '@/core/i18n';
 import { getLatestRelease } from '@/core/release';
+import { type Locale, localePath } from '@/core/site';
 import { href } from '@/shared/lib/href';
 import { Icon } from '@/shared/ui';
+import type { DownloadText } from '../model/platform';
 
 interface Props {
+  locale: Locale;
   size?: 'large' | 'default';
 }
 
-const { size = 'large' } = Astro.props;
+const { locale, size = 'large' } = Astro.props;
+const s = strings(locale);
 const release = await getLatestRelease();
 const pick = (os: string, arch: string, format: string) =>
   release?.installers.find((i) => i.os === os && i.arch === arch && i.format === format)?.url ?? '';
@@ -24,7 +30,16 @@ const targets = {
   'macos-arm64': pick('macos', 'arm64', 'dmg'),
   'macos-x64': pick('macos', 'x64', 'dmg'),
 };
-const downloadPage = href('/download/');
+const downloadPage = href(localePath('/download/', locale));
+const text: DownloadText = {
+  label: s['download.button.for'],
+  windowsArm: s['download.note.windowsArm'],
+  windowsX64: s['download.note.windowsX64'],
+  macosArm: s['download.note.macosArm'],
+  macosX64: s['download.note.macosX64'],
+  macos: s['download.note.macos'],
+  linux: s['download.note.linux'],
+};
 ---
 
 <a
@@ -33,35 +48,33 @@ const downloadPage = href('/download/');
   data-download-link
   data-targets={JSON.stringify(targets)}
   data-page={downloadPage}
+  data-text={JSON.stringify(text)}
 >
   <Icon name="download" />
-  <span data-download-label>Download Homeport</span>
+  <span data-download-label>{s['download.button']}</span>
 </a>
 
 <script>
-  import { detectPlatform, OS_NAMES } from '../model/platform';
+  import { detectPlatform, type DownloadText, OS_NAMES } from '../model/platform';
 
   async function enhance() {
     const { os, arch } = await detectPlatform();
     if (os === 'other') return;
+    const links = document.querySelectorAll<HTMLAnchorElement>('[data-download-link]');
+    const text = JSON.parse(links[0]?.dataset.text ?? 'null') as DownloadText | null;
+    if (!text) return;
 
     let note: string;
-    if (os === 'windows')
-      note = arch === 'arm64' ? 'Windows on ARM installer' : 'Windows x64 installer';
+    if (os === 'windows') note = arch === 'arm64' ? text.windowsArm : text.windowsX64;
     else if (os === 'macos')
-      note =
-        arch === 'arm64'
-          ? 'For Apple silicon Macs'
-          : arch === 'x64'
-            ? 'For Intel Macs'
-            : 'Apple silicon and Intel';
-    else note = '.deb, .rpm and AppImage';
+      note = arch === 'arm64' ? text.macosArm : arch === 'x64' ? text.macosX64 : text.macos;
+    else note = text.linux;
     document.querySelectorAll('[data-download-note]').forEach((el) => (el.textContent = note));
 
-    for (const link of document.querySelectorAll<HTMLAnchorElement>('[data-download-link]')) {
+    for (const link of links) {
       const targets = JSON.parse(link.dataset.targets ?? '{}') as Record<string, string>;
       const label = link.querySelector('[data-download-label]');
-      if (label) label.textContent = `Download for ${OS_NAMES[os]}`;
+      if (label) label.textContent = text.label.replace('{os}', OS_NAMES[os]);
       // Go to the platform's section unless one file is clearly right.
       link.href = `${link.dataset.page}#${os}`;
       const direct =

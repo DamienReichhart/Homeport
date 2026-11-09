@@ -1,45 +1,34 @@
 ---
 /** Connecting to remote Engines, and the ways Homeport reaches them. */
+import { strings } from '@/core/i18n';
+import { type Locale, localePath } from '@/core/site';
 import { href } from '@/shared/lib/href';
+import { fillHtml } from '@/shared/lib/template';
 import { Screenshot, TextLink } from '@/shared/ui';
 import Showcase from '../Showcase.astro';
 
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
+
 const connections = [
   {
-    name: 'Local socket',
-    detail: 'Unix sockets and Windows named pipes, detected automatically.',
+    name: s['home.hosts.socket.name'],
+    detail: s['home.hosts.socket.detail'],
     code: '/var/run/docker.sock',
   },
-  {
-    name: 'SSH',
-    detail:
-      'A dedicated Ed25519 key per Host, your own key, ssh-agent or Pageant; through bastions too.',
-    code: 'deploy@server.example.com',
-  },
-  {
-    name: 'TLS',
-    detail: 'Mutual TLS with your CA, client certificate and key.',
-    code: 'docker.example.com:2376',
-  },
-  {
-    name: 'TCP',
-    detail: 'Plain, unencrypted TCP, only for an Engine on a network you trust.',
-    code: '192.168.1.10:2375',
-  },
+  { name: 'SSH', detail: s['home.hosts.ssh.detail'], code: 'deploy@server.example.com' },
+  { name: 'TLS', detail: s['home.hosts.tls.detail'], code: 'docker.example.com:2376' },
+  { name: 'TCP', detail: s['home.hosts.tcp.detail'], code: '192.168.1.10:2375' },
 ];
 ---
 
-<Showcase eyebrow="Hosts" title="Remote Engines without the ceremony" raised>
-  <p>
-    Add a server once and it stays on the board. For SSH, Homeport makes a key just for that Host
-    and hands you the one command that authorises it. It checks the server's fingerprint on first
-    contact, and warns you if it ever changes.
-  </p>
-  <p>
-    Already described them? Import your servers from <code>~/.ssh/config</code>, jump servers
-    included, or your Docker contexts, certificates included. Moving to a new computer, take them
-    along in one file locked with a passphrase.
-  </p>
+<Showcase eyebrow={s['home.hosts.eyebrow']} title={s['home.hosts.title']} raised>
+  <p>{s['home.hosts.body']}</p>
+  <p set:html={fillHtml(s['home.hosts.import'], { file: '<code>~/.ssh/config</code>' })} />
   <ul class="connection-list">
     {connections.map((c) => (
       <li>
@@ -49,11 +38,12 @@ const connections = [
       </li>
     ))}
   </ul>
-  <TextLink href={href('/docs/hosts/')}>How connections work</TextLink>
+  <TextLink href={href(localePath('/docs/hosts/', locale))}>{s['home.hosts.link']}</TextLink>
   <Screenshot
     slot="media"
     name="add-host-ssh"
-    alt="The Add host page with SSH selected: server, port, user, remote socket path and a new key for this Host."
+    folder={locale.code}
+    alt={s['home.hosts.screenshot']}
     crop="960 / 820"
     sizes="(min-width: 64rem) 760px, 100vw"
   />

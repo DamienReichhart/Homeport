@@ -1,15 +1,22 @@
 ---
 /** The one-line install that adds the package repository, and the manual setup per distribution. */
+import { strings } from '@/core/i18n';
 import { INSTALL_COMMAND, INSTALL_SCRIPT_URL, MANUAL_SETUP } from '@/core/packages';
+import type { Locale } from '@/core/site';
+import { escapeHtml, fillHtml } from '@/shared/lib/template';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
 ---
 
 <div class="repo">
   <div class="repo__intro">
-    <strong>Quick install</strong>
-    <span>
-      Adds the Homeport package repository and installs Homeport, so apt, dnf or zypper keeps it up
-      to date.
-    </span>
+    <strong>{s['download.repo.title']}</strong>
+    <span>{s['download.repo.body']}</span>
   </div>
   <div class="command">
     <pre class="code-block"><code>{INSTALL_COMMAND}</code></pre>
@@ -17,45 +24,53 @@ import { INSTALL_COMMAND, INSTALL_SCRIPT_URL, MANUAL_SETUP } from '@/core/packag
       type="button"
       class="button button--secondary button--small"
       data-copy={INSTALL_COMMAND}
+      data-copied={s['download.repo.copied']}
     >
-      Copy
+      {s['download.repo.copy']}
     </button>
   </div>
-  <p class="repo__note">
-    <a href={INSTALL_SCRIPT_URL}>Read the script</a> first if you like, or set the repository up
-    yourself:
-  </p>
+  <p
+    class="repo__note"
+    set:html={fillHtml(s['download.repo.script'], {
+      link: `<a href="${INSTALL_SCRIPT_URL}">${escapeHtml(s['download.repo.scriptLink'])}</a>`,
+    })}
+  />
   <details class="repo__manual">
-    <summary>Manual setup</summary>
+    <summary>{s['download.repo.manual']}</summary>
     {MANUAL_SETUP.map((setup) => (
       <div class="repo__distro">
         <strong>{setup.label}</strong>
-        <span>{setup.distributions}</span>
+        <span>{s[`download.repo.${setup.id}`]}</span>
         <div class="command">
           <pre class="code-block"><code>{setup.commands}</code></pre>
           <button
             type="button"
             class="button button--secondary button--small"
             data-copy={setup.commands}
+            data-copied={s['download.repo.copied']}
           >
-            Copy
+            {s['download.repo.copy']}
           </button>
         </div>
       </div>
     ))}
   </details>
-  <p class="repo__note">
-    Or download a package below. The <code>.deb</code> and <code>.rpm</code> add the repository too,
-    so they get updates as well.
-  </p>
+  <p
+    class="repo__note"
+    set:html={fillHtml(s['download.repo.packages'], {
+      deb: '<code>.deb</code>',
+      rpm: '<code>.rpm</code>',
+    })}
+  />
 </div>
 
 <script>
   for (const button of document.querySelectorAll<HTMLButtonElement>('[data-copy]')) {
     button.addEventListener('click', () => {
+      const label = (button.dataset.label ??= button.textContent?.trim() ?? '');
       void navigator.clipboard.writeText(button.dataset.copy ?? '').then(() => {
-        button.textContent = 'Copied';
-        setTimeout(() => (button.textContent = 'Copy'), 1500);
+        button.textContent = button.dataset.copied ?? label;
+        setTimeout(() => (button.textContent = label), 1500);
       });
     });
   }

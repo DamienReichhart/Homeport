@@ -1,87 +1,85 @@
 ---
 /** What to know around the install: requirements, first launch, updates and verifying. */
+import { strings } from '@/core/i18n';
 import { getLatestRelease } from '@/core/release';
-import { REPO } from '@/core/site';
+import { type Locale, localePath, REPO } from '@/core/site';
 import { href } from '@/shared/lib/href';
+import { escapeHtml, fillHtml } from '@/shared/lib/template';
 
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
 const release = await getLatestRelease();
+const docs = (path: string) => href(localePath(path, locale));
+const tag = (name: string, text: string) => `<${name}>${escapeHtml(text)}</${name}>`;
+const packages = { deb: '<code>.deb</code>', rpm: '<code>.rpm</code>' };
 ---
 
 <div class="info-grid">
   <section class="card info prose">
-    <h2>Before you install</h2>
-    <p>
-      Homeport manages Docker Engines — it doesn't include one. Run it next to Docker Engine, Docker
-      Desktop, Colima, OrbStack, Rancher Desktop or Podman, or point it at a remote server over SSH,
-      TLS or TCP.
-    </p>
+    <h2>{s['download.before.title']}</h2>
+    <p>{s['download.before.body']}</p>
     <ul>
-      <li>
-        <strong>OS keychain</strong> (macOS Keychain, Windows Credential Manager, or a Secret
-        Service such as GNOME Keyring) to store SSH keys, TLS certificates, Stack environments and
-        repositories' deploy keys and tokens.
-      </li>
-      <li>
-        <strong>
-          <code>docker compose</code>
-        </strong>{' '}
-        on this machine to deploy Managed, Linked and Synced Stacks.
-      </li>
-      <li>
-        <strong>
-          <code>git</code>
-        </strong>{' '}
-        on this machine for Synced Stacks, deployed from a git repository.
-      </li>
+      <li
+        set:html={fillHtml(s['download.before.keychain'], {
+          keychain: tag('strong', s['download.before.keychainName']),
+        })}
+      />
+      <li
+        set:html={fillHtml(s['download.before.compose'], {
+          tool: '<strong><code>docker compose</code></strong>',
+        })}
+      />
+      <li
+        set:html={fillHtml(s['download.before.git'], { tool: '<strong><code>git</code></strong>' })}
+      />
+    </ul>
+    <p
+      set:html={fillHtml(s['download.before.optional'], {
+        link: `<a href="${docs('/docs/requirements/')}">${escapeHtml(s['download.before.requirements'])}</a>`,
+      })}
+    />
+  </section>
+
+  <section class="card info prose">
+    <h2>{s['download.first.title']}</h2>
+    <p>{s['download.first.body']}</p>
+    <ul>
+      <li
+        set:html={fillHtml(s['download.first.windows'], {
+          os: '<strong>Windows</strong>',
+          moreInfo: tag('em', s['download.first.moreInfo']),
+          runAnyway: tag('em', s['download.first.runAnyway']),
+        })}
+      />
+      <li
+        set:html={fillHtml(s['download.first.macos'], {
+          os: '<strong>macOS</strong>',
+          settings: tag('em', s['download.first.settings']),
+          openAnyway: tag('em', s['download.first.openAnyway']),
+        })}
+      />
     </ul>
     <p>
-      All are optional: Homeport tells you what is unavailable without them. See the{' '}
-      <a href={href('/docs/requirements/')}>system requirements</a>.
+      <a href={docs('/docs/installation/')}>{s['download.first.link']}</a>
     </p>
   </section>
 
   <section class="card info prose">
-    <h2>First launch</h2>
+    <h2>{s['download.updates.title']}</h2>
+    <p>{s['download.updates.body']}</p>
+    <p set:html={fillHtml(s['download.updates.packages'], packages)} />
     <p>
-      The installers are not yet signed with a paid certificate, so your system may ask for
-      confirmation once:
-    </p>
-    <ul>
-      <li>
-        <strong>Windows</strong>: SmartScreen shows “Windows protected your PC”. Choose{' '}
-        <em>More info</em>, then <em>Run anyway</em>.
-      </li>
-      <li>
-        <strong>macOS</strong>: if Homeport “can't be opened”, allow it in{' '}
-        <em>System Settings → Privacy &amp; Security</em> and choose <em>Open Anyway</em>.
-      </li>
-    </ul>
-    <p>
-      <a href={href('/docs/installation/')}>Step-by-step instructions</a>
+      <a href={docs('/docs/reference/updating/')}>{s['download.updates.link']}</a>
     </p>
   </section>
 
   <section class="card info prose">
-    <h2>Staying up to date</h2>
-    <p>
-      On Windows, macOS and with the AppImage, Homeport tells you when a new version is out and
-      installs it when you choose. Every update is signed and checked before it's installed.
-    </p>
-    <p>
-      The <code>.deb</code> and <code>.rpm</code> packages update with the rest of your system, from
-      the Homeport package repository.
-    </p>
-    <p>
-      <a href={href('/docs/reference/updating/')}>How updates work</a>
-    </p>
-  </section>
-
-  <section class="card info prose">
-    <h2>Verify your download</h2>
-    <p>
-      Every release is built by GitHub Actions from the public source, with a SHA-256 checksum and a
-      signed build provenance attestation for each file.
-    </p>
+    <h2>{s['download.verify.title']}</h2>
+    <p>{s['download.verify.body']}</p>
     <pre class="code-block"><code>gh attestation verify &lt;file&gt; --repo {REPO}</code></pre>
     <p>
       {release?.checksumsUrl ? (
@@ -89,7 +87,7 @@ const release = await getLatestRelease();
       ) : (
         <span>SHA256SUMS.txt</span>
       )}{' '}
-      · <a href={href('/docs/reference/verifying/')}>How to verify</a>
+      · <a href={docs('/docs/reference/verifying/')}>{s['download.verify.link']}</a>
     </p>
   </section>
 </div>
@@ -111,7 +109,7 @@ const release = await getLatestRelease();
     font-size: 1.2rem;
   }
   .info ul {
-    padding-left: 1.1rem;
+    padding-inline-start: 1.1rem;
   }
   .info .code-block {
     margin-bottom: 1rem;

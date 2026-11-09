@@ -1,18 +1,27 @@
 ---
 /** A platform's installers: a row per format, a button per architecture, and their checksums. */
-import { archLabel, FORMATS, type Os, type Release } from '@/core/release';
-import { RELEASES_URL } from '@/core/site';
+import { strings } from '@/core/i18n';
+import { type Arch, FORMATS, type Format, type Os, type Release } from '@/core/release';
+import { type Locale, RELEASES_URL } from '@/core/site';
 import { formatSize } from '@/shared/lib/format';
+import { escapeHtml, fill, fillHtml } from '@/shared/lib/template';
 import { Icon } from '@/shared/ui';
 import { formatsFor } from '../../model/installers';
 
 interface Props {
   os: Os;
   release: Release | undefined;
+  locale: Locale;
 }
 
-const { os, release } = Astro.props;
+const { os, release, locale } = Astro.props;
+const s = strings(locale);
 const rows = formatsFor(release, os);
+const label = (format: Format) => s[`download.format.${format}.label`];
+const archLabel = (os: Os, arch: Arch) =>
+  os === 'macos'
+    ? s[arch === 'arm64' ? 'download.arch.appleSilicon' : 'download.arch.intel']
+    : s[arch === 'arm64' ? 'download.arch.arm64' : 'download.arch.x64'];
 ---
 
 {rows.length > 0 ? (
@@ -21,10 +30,10 @@ const rows = formatsFor(release, os);
       <li data-format={format}>
         <div class="files__info">
           <strong>
-            {FORMATS[format].label} <code>{FORMATS[format].ext}</code>
+            {label(format)} <code>{FORMATS[format].ext}</code>
           </strong>
           <span>
-            {FORMATS[format].hint} · {formatSize(files[0]!.size)}
+            {s[`download.format.${format}.hint`]} · {formatSize(files[0]!.size, locale.lang)}
           </span>
         </div>
         <div class="files__buttons">
@@ -38,14 +47,14 @@ const rows = formatsFor(release, os);
               <Icon name="download" size={16} />
               {archLabel(file.os, file.arch)}
               <span class="visually-hidden">
-                {FORMATS[format].label} ({file.name})
+                {fill(s['download.files.file'], { format: label(format), file: file.name })}
               </span>
             </a>
           ))}
         </div>
         {files.some((f) => f.sha256) && (
           <details class="files__sum">
-            <summary>SHA-256 checksums</summary>
+            <summary>{s['download.files.checksums']}</summary>
             {files.map((file) => (
               <p>
                 <span>{archLabel(file.os, file.arch)}</span>
@@ -58,9 +67,12 @@ const rows = formatsFor(release, os);
     ))}
   </ul>
 ) : (
-  <p class="files__empty">
-    See the <a href={`${RELEASES_URL}/latest`}>latest release on GitHub</a>.
-  </p>
+  <p
+    class="files__empty"
+    set:html={fillHtml(s['download.files.none'], {
+      link: `<a href="${RELEASES_URL}/latest">${escapeHtml(s['download.files.latest'])}</a>`,
+    })}
+  />
 )}
 
 <style>

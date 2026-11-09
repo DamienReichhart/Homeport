@@ -1,14 +1,6 @@
 ---
-import SiteLayout from '@/app/layouts/SiteLayout.astro';
-import { ChangelogHero, Timeline } from '@/features/changelog';
+import ChangelogPage from '@/app/views/ChangelogPage.astro';
+import { ROOT_LOCALE } from '@/core/site';
 ---
 
-<SiteLayout
-  title="Changelog — Homeport"
-  description="What's new in each Homeport release: features, fixes and other changes."
->
-  <ChangelogHero />
-  <div class="container">
-    <Timeline />
-  </div>
-</SiteLayout>
+<ChangelogPage locale={ROOT_LOCALE} />

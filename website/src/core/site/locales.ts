@@ -2,9 +2,9 @@
  * The site's languages. English is the root (`/`, `/docs/…`); every other
  * language lives under its own prefix (`/fr/`, `/fr/docs/…`). The app's
  * languages are the same set (`src/shared/i18n/` at the repository root).
- * Adding one: an entry here, its strings in `src/app/i18n/strings/`, and its
- * docs under `src/content/docs/<code>/` (pages without a translation fall
- * back to English).
+ * Adding one: an entry here, its strings in `src/core/i18n/strings/<code>/`
+ * (registered in `TABLES` there), its sidebar labels, and its docs under
+ * `src/content/docs/<code>/` (pages without a translation fall back to English).
  */
 export interface Locale {
   /** The URL prefix and Starlight locale key; empty for English, the root. */
