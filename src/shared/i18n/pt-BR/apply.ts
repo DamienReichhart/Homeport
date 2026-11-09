@@ -1,0 +1,18 @@
+/** Brazilian Portuguese text of the `apply` namespace. */
+import type en from '../en/apply';
+import type { Translation } from '../types';
+
+export default {
+  'apply.nav': 'Aplicar YAML',
+  'apply.title': 'Aplicar YAML',
+  'apply.description':
+    'Cole ou abra manifestos, veja o que eles alterariam em {cluster} e depois aplique-os, como o kubectl apply.',
+  'apply.open': 'Abrir arquivo…',
+  'apply.openTitle': 'Abrir manifestos',
+  'apply.openFailed': 'O Homeport não conseguiu ler esse arquivo',
+  'apply.manifests': 'Manifestos do Kubernetes',
+  'apply.editor': 'Manifestos a aplicar',
+  'apply.defaultNamespace': 'Documentos sem namespace vão para {namespace}.',
+  'apply.defaultNamespaceCluster':
+    'Documentos sem namespace vão para o namespace padrão do cluster.',
+} satisfies Translation<typeof en>;
