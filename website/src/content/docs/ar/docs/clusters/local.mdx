@@ -1,0 +1,47 @@
+---
+title: العناقيد المحلية
+description: عناقيد Kubernetes التي يعثر عليها Homeport على هذا الكمبيوتر، وكيفية تشغيل Kubernetes في Docker Desktop وOrbStack وRancher Desktop.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+يبحث Homeport في ملف kubeconfig على هذا الكمبيوتر عن العناقيد التي تعمل هنا، ويسأل خادم API لكل منها عن إصداره، ويعرض العناقيد التي تجيب في **إضافة عنقود** وفي صفحة الترحيب، بنقرة واحدة لكل منها. ولا يشغّل أي عنقود أو ينشئه أو يثبّته أبدًا.
+
+<DocScreenshot
+  name="add-cluster"
+  alt="العناقيد على هذا الجهاز: kind-dev مضاف بالفعل، وعنقود Docker Desktop مع زر «إضافة»، وعنقود OrbStack لا يعمل، وعنقود k3d مع الأمر الذي يضيفه إلى ملف kubeconfig."
+  caption="kind-dev عنقود بالفعل، وعنقود Docker Desktop على بُعد نقرة واحدة، وعنقود OrbStack متوقف، وعنقود k3d قيد التشغيل لم يُضَف إلى ملف kubeconfig بعد."
+/>
+
+## ما يُعثر عليه
+
+| الأداة              | سياقها في ملف kubeconfig               | يُضاف باسم        |
+| ------------------- | -------------------------------------- | ----------------- |
+| **Docker Desktop**  | `docker-desktop`                       | `Docker Desktop`  |
+| **OrbStack**        | `orbstack`                             | `OrbStack`        |
+| **Rancher Desktop** | `rancher-desktop`                      | `Rancher Desktop` |
+| **kind**            | `kind-<name>`                          | اسم السياق        |
+| **k3d**             | `k3d-<name>`                           | اسم السياق        |
+| **minikube**        | `minikube`، أو ملف تعريف كتبه minikube | اسم السياق        |
+
+لا يُعدّ السياق محليًا إلا عندما يكون خادم API الخاص به على هذا الكمبيوتر (`127.0.0.1`، `localhost`، `kubernetes.docker.internal`…) أو، بالنسبة إلى minikube وRancher Desktop، في آلتهما الافتراضية على عنوان خاص. لا يُعرض السياق البعيد أبدًا، مهما كان اسمه. والعنقود المحلي الذي لا يجيب يعرض **لا يعمل**؛ شغّله بأداته الخاصة ثم افتح الصفحة مجددًا.
+
+### عناقيد kind وk3d غير الموجودة في ملف kubeconfig
+
+عندما يكون [مضيف محلي](/docs/hosts/local/) متصلًا، يرصد Homeport أيضًا حاويات عناقيد kind وk3d العاملة (من خلال التسميتين `io.x-k8s.kind.cluster` و`k3d.cluster`). والعنقود الذي لا يصل إليه ملف kubeconfig يُعرض مع الأمر الذي يضيفه، بدلًا من إضافته من دون علمك:
+
+```bash
+kind export kubeconfig --name <name>
+```
+
+```bash
+k3d kubeconfig merge <name> --kubeconfig-merge-default
+```
+
+## تشغيل Kubernetes
+
+- **Docker Desktop**: **Settings → Kubernetes → Enable Kubernetes**، ثم **Apply & restart**. يضيف ذلك السياق `docker-desktop`.
+- **OrbStack**: **Settings → Kubernetes → Enable Kubernetes**، أو شغّل `orb start k8s`. يضيف ذلك السياق `orbstack`.
+- **Rancher Desktop**: **Preferences → Kubernetes → Enable Kubernetes**. يضيف ذلك السياق `rancher-desktop`.
+
+يضيف kind (`kind create cluster`) وk3d (`k3d cluster create`) وminikube (`minikube start`) سياقاتها عندما تنشئ عنقودًا. وتُنشئ شهادات جديدة في كل مرة تعيد فيها إنشاءه: استخدم بعد ذلك **التحديث من kubeconfig** في صفحته.
