@@ -3,7 +3,7 @@ title: Settings
 description: Theme and language, the system tray, starting at login, notifications, updates, registry logins, repositories, how often Synced Stacks are checked, what this machine supports, version and licences.
 ---
 
-**Settings** is the last item in the sidebar.
+**Settings** is the last page in the sidebar, above the **Documentation** and **GitHub** links, which open in your browser.
 
 ## Appearance
 
