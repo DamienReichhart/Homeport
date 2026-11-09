@@ -31,7 +31,12 @@ const decimals = (digits: number) =>
   cached(
     `n${digits}`,
     (l) =>
-      new Intl.NumberFormat(l, { minimumFractionDigits: digits, maximumFractionDigits: digits }),
+      new Intl.NumberFormat(l, {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits,
+        // A size is under 1024 of its unit: `1000 B`, never `1,000 B`.
+        useGrouping: false,
+      }),
   );
 
 /** `1536` → `1.5 KB` (`1,5 Ko` in French). Uses powers of 1024, like the Docker CLI. */
