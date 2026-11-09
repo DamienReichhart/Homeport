@@ -169,7 +169,7 @@ kind, k3d and minikube make new certificates each time they recreate a cluster. 
 
 ### Nomad: "… doesn't know the ACL token Homeport sent"
 
-The token was mistyped, has expired, or was deleted. Make a new one with the policy from [ACL policies](/docs/clusters/nomad/#acl-policies) (`nomad acl token create -name=homeport -policy=homeport`) and paste its secret ID in the cluster's **Settings**. The cluster waits as **Unauthorized** until you do.
+The token was mistyped, has expired, or was deleted. Make a new one with the policy from [ACL policies](/docs/clusters/nomad/#acl-policies) (`nomad acl token create -name=homeport -policy=homeport`) and paste its secret ID in the cluster's **Settings**. The cluster waits as **Access refused** until you do.
 
 ### Nomad: "… refused: the ACL token lacks a permission this needs"
 
