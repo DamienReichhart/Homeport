@@ -5,4 +5,6 @@ export const nomadKeys = {
     ['nomad', clusterId, 'jobs', namespace ?? ''] as const,
   job: (clusterId: string, namespace: string, jobId: string) =>
     ['nomad', clusterId, 'job', namespace, jobId] as const,
+  allocation: (clusterId: string, allocId: string) =>
+    ['nomad', clusterId, 'allocation', allocId] as const,
 };

@@ -14,6 +14,11 @@ export const nomadJobQueries = {
       queryKey: nomadKeys.job(clusterId, namespace, jobId),
       queryFn: () => commands.clustersNomadJob(clusterId, namespace, jobId),
     }),
+  allocation: (clusterId: string, allocId: string) =>
+    queryOptions({
+      queryKey: nomadKeys.allocation(clusterId, allocId),
+      queryFn: () => commands.clustersNomadAllocation(clusterId, allocId),
+    }),
 };
 
 /** A job's specification to edit: as submitted when Nomad kept it, else its JSON. */

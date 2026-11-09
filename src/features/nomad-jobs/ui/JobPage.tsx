@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeftIcon, PencilIcon, SquareIcon } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { age, ClusterGate } from '@/core/cluster';
 import { AllocationsTable, jobTone, NomadStatus, nomadKeys, useNomadWatch } from '@/core/nomad';
 import type { ClusterView, NomadJobDetail, NomadJobSource, NomadTaskGroupView } from '@/shared/api';
@@ -111,6 +111,7 @@ function JobDetail({
   job: JobRef;
   detail: NomadJobDetail;
 }) {
+  const navigate = useNavigate();
   const [stopping, setStopping] = useState(false);
   const [scaling, setScaling] = useState<NomadTaskGroupView | null>(null);
   const [source, setSource] = useState<NomadJobSource | null>(null);
@@ -196,7 +197,10 @@ function JobDetail({
           <CardTitle>{t('nomad.job.allocations')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <AllocationsTable allocations={detail.allocations} />
+          <AllocationsTable
+            allocations={detail.allocations}
+            onOpen={(a) => void navigate(`/nomad/allocations/${a.id}`)}
+          />
         </CardContent>
       </Card>
       {stopping && (
