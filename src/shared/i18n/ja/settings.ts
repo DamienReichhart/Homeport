@@ -102,6 +102,18 @@ export default {
   'settings.about.tagline': 'すべての Docker Engine を、1 つのボードで。',
   'settings.about.openLogFolder': 'ログフォルダーを開く',
   'settings.about.licenses': 'ライセンス',
+  'settings.about.exportDiagnostics': '診断情報をエクスポート…',
+  'settings.diagnostics.title': '診断情報をエクスポート',
+  'settings.diagnostics.description':
+    'バグ報告に添付する zip ファイルです。バージョンと、使用しているホストやクラスターの種類の概要、およびシークレットを取り除いた Homeport のログが含まれます。どこにも送信されません。ファイルを共有するかどうかはあなたが決めます。',
+  'settings.diagnostics.includeNames': '名前とアドレスを含める',
+  'settings.diagnostics.includeNamesHelp':
+    'オフの場合、ホストとクラスターは概要とログの中で host-1、cluster-1… と表示されます。',
+  'settings.diagnostics.files': 'zip 内のファイル',
+  'settings.diagnostics.save': '保存…',
+  'settings.diagnostics.saveTitle': '診断情報を保存',
+  'settings.diagnostics.fileType': 'Zip アーカイブ',
+  'settings.diagnostics.done': '診断情報を {path} に保存しました。',
   'settings.licenses.title': 'ライセンス',
   'settings.licenses.description':
     'Homeport は GNU Affero General Public License バージョン 3 に基づくフリーソフトウェアで、以下のオープンソースパッケージを使って作られています。',

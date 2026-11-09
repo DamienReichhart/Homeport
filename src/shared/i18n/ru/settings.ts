@@ -106,6 +106,18 @@ export default {
   'settings.about.tagline': 'Все Docker Engine на одной доске.',
   'settings.about.openLogFolder': 'Открыть папку журналов',
   'settings.about.licenses': 'Лицензии',
+  'settings.about.exportDiagnostics': 'Экспортировать диагностику…',
+  'settings.diagnostics.title': 'Экспорт диагностики',
+  'settings.diagnostics.description':
+    'Zip-файл для отчёта об ошибке: сводка версий и типов хостов и кластеров, которые вы используете, и журналы Homeport без секретов. Ничего никуда не отправляется: делиться ли файлом, решаете вы.',
+  'settings.diagnostics.includeNames': 'Включить имена и адреса',
+  'settings.diagnostics.includeNamesHelp':
+    'Если выключено, хосты и кластеры обозначаются в сводке и журналах как host-1, cluster-1…',
+  'settings.diagnostics.files': 'Файлы в архиве',
+  'settings.diagnostics.save': 'Сохранить…',
+  'settings.diagnostics.saveTitle': 'Сохранить диагностику',
+  'settings.diagnostics.fileType': 'Zip-архив',
+  'settings.diagnostics.done': 'Диагностика сохранена в {path}.',
   'settings.licenses.title': 'Лицензии',
   'settings.licenses.description':
     'Homeport — свободное программное обеспечение под лицензией GNU Affero General Public License версии 3, построенное на перечисленных ниже пакетах с открытым исходным кодом.',

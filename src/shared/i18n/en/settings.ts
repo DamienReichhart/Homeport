@@ -98,6 +98,18 @@ export default {
   'settings.about.tagline': 'Every Docker Engine, on one board.',
   'settings.about.openLogFolder': 'Open log folder',
   'settings.about.licenses': 'Licenses',
+  'settings.about.exportDiagnostics': 'Export diagnostics…',
+  'settings.diagnostics.title': 'Export diagnostics',
+  'settings.diagnostics.description':
+    'A zip file to attach to a bug report: a summary of versions and of the kinds of hosts and clusters you use, and Homeport’s logs with secrets removed. Nothing is sent anywhere: you decide whether to share the file.',
+  'settings.diagnostics.includeNames': 'Include names and addresses',
+  'settings.diagnostics.includeNamesHelp':
+    'When off, hosts and clusters appear as host-1, cluster-1… in the summary and in the logs.',
+  'settings.diagnostics.files': 'Files in the zip',
+  'settings.diagnostics.save': 'Save…',
+  'settings.diagnostics.saveTitle': 'Save diagnostics',
+  'settings.diagnostics.fileType': 'Zip archive',
+  'settings.diagnostics.done': 'Diagnostics saved to {path}.',
   'settings.licenses.title': 'Licenses',
   'settings.licenses.description':
     'Homeport is free software under the GNU Affero General Public License, version 3, built on the open-source packages below.',

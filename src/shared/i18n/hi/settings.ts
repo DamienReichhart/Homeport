@@ -103,6 +103,18 @@ export default {
   'settings.about.tagline': 'हर Docker Engine, एक बोर्ड पर।',
   'settings.about.openLogFolder': 'लॉग फ़ोल्डर खोलें',
   'settings.about.licenses': 'लाइसेंस',
+  'settings.about.exportDiagnostics': 'डायग्नोस्टिक्स एक्सपोर्ट करें…',
+  'settings.diagnostics.title': 'डायग्नोस्टिक्स एक्सपोर्ट करें',
+  'settings.diagnostics.description':
+    'बग रिपोर्ट के साथ जोड़ने के लिए एक zip फ़ाइल: वर्शन और आपके इस्तेमाल किए जा रहे होस्ट और क्लस्टर के प्रकारों का सारांश, और Homeport के लॉग जिनसे सीक्रेट हटा दिए गए हैं। कुछ भी कहीं नहीं भेजा जाता: फ़ाइल शेयर करनी है या नहीं, यह आप तय करते हैं।',
+  'settings.diagnostics.includeNames': 'नाम और पते शामिल करें',
+  'settings.diagnostics.includeNamesHelp':
+    'बंद होने पर, होस्ट और क्लस्टर सारांश और लॉग में host-1, cluster-1… के रूप में दिखते हैं।',
+  'settings.diagnostics.files': 'zip की फ़ाइलें',
+  'settings.diagnostics.save': 'सेव करें…',
+  'settings.diagnostics.saveTitle': 'डायग्नोस्टिक्स सेव करें',
+  'settings.diagnostics.fileType': 'Zip आर्काइव',
+  'settings.diagnostics.done': 'डायग्नोस्टिक्स {path} में सेव हो गया।',
   'settings.licenses.title': 'लाइसेंस',
   'settings.licenses.description':
     'Homeport, GNU Affero General Public License संस्करण 3 के तहत मुफ़्त सॉफ़्टवेयर है, जो नीचे दिए गए ओपन-सोर्स पैकेज पर बना है।',

@@ -100,6 +100,18 @@ export default {
   'settings.about.tagline': '모든 Docker Engine을 하나의 보드에서.',
   'settings.about.openLogFolder': '로그 폴더 열기',
   'settings.about.licenses': '라이선스',
+  'settings.about.exportDiagnostics': '진단 정보 내보내기…',
+  'settings.diagnostics.title': '진단 정보 내보내기',
+  'settings.diagnostics.description':
+    '버그 보고서에 첨부할 zip 파일입니다. 버전과 사용 중인 호스트 및 클러스터 종류의 요약, 그리고 비밀 정보를 제거한 Homeport 로그가 들어 있습니다. 어디로도 전송되지 않으며, 파일을 공유할지는 직접 결정합니다.',
+  'settings.diagnostics.includeNames': '이름과 주소 포함',
+  'settings.diagnostics.includeNamesHelp':
+    '끄면 호스트와 클러스터가 요약과 로그에 host-1, cluster-1…로 표시됩니다.',
+  'settings.diagnostics.files': 'zip에 포함된 파일',
+  'settings.diagnostics.save': '저장…',
+  'settings.diagnostics.saveTitle': '진단 정보 저장',
+  'settings.diagnostics.fileType': 'Zip 압축 파일',
+  'settings.diagnostics.done': '진단 정보를 {path}에 저장했습니다.',
   'settings.licenses.title': '라이선스',
   'settings.licenses.description':
     'Homeport는 GNU Affero General Public License 버전 3에 따른 자유 소프트웨어이며, 아래의 오픈 소스 패키지를 기반으로 만들어졌습니다.',

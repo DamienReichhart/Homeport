@@ -92,6 +92,18 @@ export default {
   'settings.about.tagline': '所有 Docker Engine，尽在一个看板。',
   'settings.about.openLogFolder': '打开日志文件夹',
   'settings.about.licenses': '许可证',
+  'settings.about.exportDiagnostics': '导出诊断信息…',
+  'settings.diagnostics.title': '导出诊断信息',
+  'settings.diagnostics.description':
+    '一个可附加到错误报告的 zip 文件：包含版本以及你所用主机和集群类型的摘要，以及已移除机密的 Homeport 日志。不会发送到任何地方：是否分享该文件由你决定。',
+  'settings.diagnostics.includeNames': '包含名称和地址',
+  'settings.diagnostics.includeNamesHelp':
+    '关闭时，主机和集群在摘要和日志中显示为 host-1、cluster-1…',
+  'settings.diagnostics.files': 'zip 中的文件',
+  'settings.diagnostics.save': '保存…',
+  'settings.diagnostics.saveTitle': '保存诊断信息',
+  'settings.diagnostics.fileType': 'Zip 压缩包',
+  'settings.diagnostics.done': '诊断信息已保存到 {path}。',
   'settings.licenses.title': '许可证',
   'settings.licenses.description':
     'Homeport 是依据 GNU Affero 通用公共许可证第 3 版发布的自由软件，基于以下开源软件包构建。',

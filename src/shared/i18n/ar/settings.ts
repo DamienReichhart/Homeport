@@ -104,6 +104,18 @@ export default {
   'settings.about.tagline': 'كل محركات Docker، على لوحة واحدة.',
   'settings.about.openLogFolder': 'فتح مجلد السجلات',
   'settings.about.licenses': 'التراخيص',
+  'settings.about.exportDiagnostics': 'تصدير التشخيص…',
+  'settings.diagnostics.title': 'تصدير التشخيص',
+  'settings.diagnostics.description':
+    'ملف zip لإرفاقه ببلاغ عن خطأ: ملخّص للإصدارات ولأنواع المضيفات والعناقيد التي تستخدمها، وسجلات Homeport بعد إزالة الأسرار منها. لا يُرسَل شيء إلى أي مكان: أنت من يقرّر مشاركة الملف.',
+  'settings.diagnostics.includeNames': 'تضمين الأسماء والعناوين',
+  'settings.diagnostics.includeNamesHelp':
+    'عند الإيقاف، تظهر المضيفات والعناقيد بالشكل host-1 و cluster-1… في الملخّص وفي السجلات.',
+  'settings.diagnostics.files': 'الملفات في ملف zip',
+  'settings.diagnostics.save': 'حفظ…',
+  'settings.diagnostics.saveTitle': 'حفظ التشخيص',
+  'settings.diagnostics.fileType': 'أرشيف zip',
+  'settings.diagnostics.done': 'حُفظ التشخيص في {path}.',
   'settings.licenses.title': 'التراخيص',
   'settings.licenses.description':
     'Homeport برنامج حر بموجب رخصة GNU Affero العمومية العامة، الإصدار 3، مبني على الحزم مفتوحة المصدر أدناه.',

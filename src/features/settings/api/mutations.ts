@@ -38,3 +38,12 @@ export async function setTheme(client: QueryClient, theme: Theme) {
   const saved = await patchSettings(client, { theme });
   applyTheme(saved.theme ?? 'system');
 }
+
+/** Writes the diagnostics bundle to a path; the dialog shows a failure in place. */
+export function useExportDiagnostics() {
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: ({ path, includeNames }: { path: string; includeNames: boolean }) =>
+      commands.diagnosticsExport(path, includeNames),
+  });
+}
