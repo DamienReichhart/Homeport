@@ -1,0 +1,345 @@
+---
+title: Stack
+description: Distribuisci stack Compose su qualsiasi host da Homeport o da una cartella di progetto, mantieni il loro ambiente cifrato e adotta stack distribuiti altrove.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+Uno **stack** è un progetto Compose in esecuzione su un host. Homeport trova ogni stack sull’host selezionato grazie alle etichette che Compose applica ai suoi container, comunque sia stato distribuito.
+
+<DocScreenshot
+  name="stacks"
+  alt="La pagina Stack, che elenca stack gestiti ed esterni con il loro stato e i loro servizi."
+/>
+
+## Stack gestiti, collegati, sincronizzati ed esterni
+
+Ogni stack è di uno di quattro tipi:
+
+| Tipo              | Dove si trova il suo file compose                               | Modifica | Distribuzione | Build | Avvio, arresto, rimozione |
+| ----------------- | --------------------------------------------------------------- | -------- | ------------- | ----- | ------------------------- |
+| **Gestito**       | In Homeport, con il suo ambiente cifrato                        | ✓        | ✓             | —     | ✓                         |
+| **Collegato**     | Nella sua cartella di progetto su **questo** computer           | ✓        | ✓             | ✓     | ✓                         |
+| **Sincronizzato** | In un repository git che Homeport clona e segue                 | git      | ✓             | ✓     | ✓                         |
+| **Esterno**       | Da nessuna parte visibile a Homeport: distribuito in altro modo | —        | —             | —     | ✓                         |
+
+- Uno **stack gestito** è uno stack di cui Homeport conserva il file compose e l’ambiente. Puoi modificarlo, distribuirlo e smontarlo da Homeport.
+- Uno **stack collegato** è uno stack i cui file compose sono una cartella su questo computer, dove continui a modificarli. Homeport ricorda dove si trova la cartella, lavora sui file lì e distribuisce da essa. Vedi [Stack collegati](#linked-stacks).
+- Uno **stack sincronizzato** è uno stack il cui file compose proviene da un repository git. Homeport recupera il suo branch o tag, mostra cosa è cambiato e distribuisce il nuovo commit; si modifica tramite git, mai in Homeport. Vedi [Stack sincronizzati](/docs/guides/synced-stacks/).
+- Uno **stack esterno** è stato distribuito in un altro modo: `docker compose up` sul server, un job di CI, un altro strumento, o da una cartella su un altro computer. Homeport può avviare, arrestare, riavviare e rimuovere i suoi container, ma non ha un file compose da cui ridistribuirlo. Puoi [adottarlo](#adopting-an-external-stack) per renderlo gestito.
+
+Ogni stack mostra uno di questi stati:
+
+| Stato                      | Significato                                                          |
+| -------------------------- | -------------------------------------------------------------------- |
+| **In esecuzione**          | Tutti i suoi container sono in esecuzione.                           |
+| **In parte in esecuzione** | Alcuni lo sono.                                                      |
+| **Arrestato**              | Nessuno lo è.                                                        |
+| **Non distribuito**        | Uno stack gestito, collegato o sincronizzato ancora senza container. |
+
+Gli stack gestiti, collegati e sincronizzati appartengono a un solo host, o a un solo Swarm. Per eseguire lo stesso file compose su due host, crea uno stack su ciascuno.
+
+<Aside>
+  Gli stack distribuiti su uno [Swarm](/docs/guides/swarm/), da un terminale o da Homeport, sono
+  elencati nella pagina dello Swarm stesso, sotto **Stack**, invece che qui. Per distribuirne uno,
+  scegli lo Swarm in **Distribuisci su** nella pagina **Nuovo stack**. Vedi [Distribuire stack su
+  uno Swarm](/docs/guides/swarm/#deploying-stacks-to-a-swarm).
+</Aside>
+
+## Stack collegati
+
+Uno **stack collegato** tiene i suoi file compose nella loro cartella di progetto su questo computer, dove li modifichi con il tuo editor e li tieni sotto controllo di versione. Homeport non li copia mai: ricorda la cartella e i file compose che usa, in ordine, e li legge dove si trovano. Il `.env` della cartella resta nella cartella.
+
+Uno stack collegato può anche essere distribuito su uno Swarm, con i suoi `configs: file:` e `secrets: file:` letti dalla cartella; vedi [Stack collegati e sincronizzati su uno Swarm](/docs/guides/swarm/#linked-and-synced-stacks-on-a-swarm).
+
+### Creare uno stack collegato
+
+Una cartella di progetto che non è ancora in esecuzione sull’host può essere collegata da Homeport:
+
+<Steps>
+
+1. Apri **Stack**, scegli **Nuovo stack**, poi **Usa una cartella di questo computer**.
+
+2. Scegli **Scegli una cartella…** e seleziona la cartella che contiene il progetto compose.
+
+3. Homeport elenca i file compose che Compose userebbe lì, in ordine: il primo tra `compose.yaml`, `compose.yml`, `docker-compose.yml` e `docker-compose.yaml`, poi il suo file di override (`compose.override.yaml` e simili), se c’è. Una cartella senza nessuno di questi non può essere collegata, e Homeport lo segnala.
+
+4. Controlla il **Nome**. Deriva dal `name:` di primo livello dei file, oppure dal nome della cartella come lo scrive Compose (`My App` diventa `myapp`).
+
+5. Scegli **Salva e distribuisci**, oppure **Salva** per distribuire più tardi.
+
+</Steps>
+
+Se uno stack con quel nome è già in esecuzione sull’host come stack esterno, la creazione dello stack collegato lo rileva, come fa l’[adozione](#adopting-an-external-stack): la ridistribuzione ricrea i suoi container in base ai file della cartella. Per usare file con altri nomi, o in un altro ordine, vedi [più file compose](#several-compose-files).
+
+### Come vengono trovati gli stack collegati
+
+Quando esegui `docker compose up` in una cartella, Compose etichetta ogni container con quella cartella e i suoi file compose, anche quando `DOCKER_HOST` punta a un host remoto. Quando Homeport elenca gli stack di un host, uno stack trovato in esecuzione viene mostrato come **Collegato** se:
+
+1. ci sono entrambe le etichette, e la cartella e ogni file compose che indicano esistono su questo computer, e
+2. quei file definiscono i servizi in esecuzione: ogni servizio in esecuzione è nei file, e ogni servizio che i file definiscono al di fuori di un profilo ha un container.
+
+La seconda regola evita che un percorso che esiste qui per coincidenza colleghi i file sbagliati: per esempio uno stack avviato sul server stesso in `/srv/app`, quando anche questo computer ha un `/srv/app`. I file che usano `include:` o `extends:` non vengono seguiti, quindi uno stack del genere per ora resta esterno. Trovare gli stack collegati non richiede la CLI di Compose.
+
+La cartella è mostrata sotto il nome dello stack nell’elenco e nella sua pagina.
+
+### Modificare uno stack collegato
+
+La scheda **Definizione** di uno stack collegato mostra ciascuno dei suoi file compose in una scheda propria, letti dalla cartella, con il percorso della cartella sopra di essi. Modificali e scegli **Salva**: Homeport riscrive ogni file modificato dove si trova, così il tuo editor e il controllo di versione vedono la modifica. Il file viene sostituito in un solo passaggio, mantenendo i suoi permessi, così nulla lo legge mai scritto a metà.
+
+I controlli sotto l’editor seguono le regole degli stack collegati: `build:`, `env_file:` e i percorsi relativi vanno bene, perché la cartella c’è. Non c’è un editor dell’ambiente: Compose legge il `.env` della cartella quando viene eseguito, e Homeport non lo mostra né lo modifica.
+
+#### Modificati fuori da Homeport
+
+Homeport prende nota dei file ogni volta che li legge o li scrive. Quando sono diversi (li hai modificati in un altro editor, o hai scaricato una nuova versione), la scheda mostra **Modificati fuori da Homeport**. Controlla quando la scheda si apre e ogni volta che torni alla finestra di Homeport. Scegli **Ricarica** per vedere i file come sono ora; le modifiche che non avevi salvato vengono scartate.
+
+Se salvi un file che è stato modificato su disco dopo che l’hai aperto, Homeport si rifiuta: **compose.yaml è cambiato fuori da Homeport da quando l’hai aperto**. Ricarica per vedere l’altra modifica, oppure scegli **Sovrascrivi** per sostituirla con la tua versione.
+
+Se la cartella non c’è più, o un file non si può leggere, la scheda indica quale e cosa fare, al posto dell’editor.
+
+### Distribuire e compilare uno stack collegato
+
+**Distribuisci**, **Ridistribuisci**, **Scarica immagini** e **Smonta** funzionano anche per gli stack collegati. Homeport esegue `docker compose` nella cartella dello stack, con `--project-directory` impostato su di essa e un `--file` per ciascuno dei suoi file compose, in ordine (come se lo eseguissi tu lì), sempre tramite la propria connessione per gli host SSH e TLS. Quindi `build:`, `env_file:`, i percorsi `./relative` e il `.env` della cartella funzionano tutti.
+
+Un servizio con `build:` viene compilato quando non ha ancora un’immagine. Per ricompilarlo dopo aver modificato il suo codice, scegli **Ricompila e distribuisci** nel menu **⋮** dello stack (`up --build`). La build viene eseguita sull’Engine dell’**host**, con il contesto di build inviato da questo computer. I servizi con `build:` non vengono mai scaricati; le loro immagini di base vengono scaricate dalla build stessa, con il tuo `docker login`.
+
+**Salva e ridistribuisci** nella scheda **Definizione** scrive i file che hai modificato, poi distribuisce.
+
+<Aside type="caution" title="Percorsi relativi su un host remoto">
+  Un bind mount come `./data:/data` si risolve nella cartella su **questo** computer, per esempio
+  `/home/me/site/data`. Su un host remoto quel percorso potrebbe non esistere, e l’Engine crea lì
+  invece una cartella vuota. Quando distribuisci uno stack collegato su un host che non è questo
+  computer, l’output inizia con un avviso per ciascuno di questi montaggi. Usa un volume con nome o
+  un percorso assoluto sull’host per i dati che devono stare lì.
+</Aside>
+
+Se la cartella non c’è più, la distribuzione si interrompe con **La cartella … non è più su questo computer**. Senza la CLI di Compose, gli stack collegati possono comunque essere avviati, arrestati e rimossi.
+
+### Quando la cartella si sposta o scompare
+
+Se i file compose di uno stack collegato non ci sono più (la cartella è stata spostata, rinominata o eliminata), lo stack viene mostrato come **Esterno**, con ⚠ **I suoi file compose non sono più su questo computer**. Nulla viene eliminato da Homeport o dall’host: rimetti a posto i file e torna collegato al prossimo aggiornamento. Per smettere di collegarlo, apri la sua scheda **Definizione** e scegli **Dimentica**; questo elimina solo la nota di Homeport sulla cartella, mai la cartella o i container.
+
+Uno stack avviato da una cartella su un altro computer è esterno su questo, perché le sue etichette puntano a un percorso che questo computer non ha.
+
+## Cosa serve per distribuire
+
+Homeport distribuisce gli stack gestiti, collegati e sincronizzati con il comando `docker compose` su **questo** computer, puntato verso l’host. Installa la CLI di Docker con il plugin Compose, oppure `docker-compose` v2 autonomo; **Impostazioni → Questo computer** indica se Homeport l’ha trovato.
+
+Per uno stack gestito, il comando viene eseguito con il file compose sul suo standard input, l’ambiente dello stack come variabili e una cartella di lavoro vuota, così nulla viene scritto su disco. Per uno stack collegato, viene eseguito nella cartella dello stack con i suoi file compose, come se lo eseguissi tu lì. Per gli host SSH e TLS, Homeport instrada il comando tramite la propria connessione all’host, così Compose non vede mai le tue chiavi.
+
+Senza la CLI di Compose puoi comunque avviare, arrestare e rimuovere gli stack; solo **Distribuisci**, **Scarica immagini** e **Smonta** la richiedono.
+
+### Immagini private
+
+Prima di `docker compose up`, Homeport scarica le immagini che l’host non ha ancora tramite la propria connessione all’host, con l’[accesso al registro](/docs/guides/settings/#registries) memorizzato per il registro di ogni immagine, così le immagini private si distribuiscono su qualsiasi host senza `docker login` su questo computer. L’output della distribuzione mostra ogni download e l’accesso che usa (**Download di ghcr.io/org/app:1 come alice su ghcr.io**, oppure **in forma anonima**), mai la password. Un servizio con `pull_policy: always` viene scaricato ogni volta; `never` e `build` vengono lasciati stare.
+
+A Compose stesso non viene mai passato un accesso: nessun file che Homeport crea per l’esecuzione, e nessuna delle variabili d’ambiente del comando, ne contiene uno. Il tuo `docker login` su questo computer non si applica a questi download; aggiungi invece l’accesso in **Impostazioni → Registri**. Se un registro rifiuta un’immagine, la distribuzione si interrompe prima che Compose venga eseguito, e il messaggio dice di aggiungere o controllare l’accesso.
+
+## Creare uno stack gestito
+
+<Steps>
+
+1. Apri **Stack** e scegli **Nuovo stack**. **Scrivi un file compose** è selezionato.
+
+2. Scegli un [modello](#starting-from-a-template), oppure **Vuoto** per partire da zero.
+
+3. Inserisci un **Nome**: lettere minuscole, cifre, `-` e `_`, che inizi con una lettera o una cifra. Il modello ne suggerisce uno. Diventa il nome del progetto Compose e non si può cambiare in seguito.
+
+4. Adatta il file compose nell’editor.
+
+5. Metti le variabili in **Ambiente**, una `KEY=value` per riga, come in un file `.env`. Compose le sostituisce a `${KEY}` nel file. Compila le password che un modello lascia vuote.
+
+6. Scegli **Salva e distribuisci**, oppure **Salva** per distribuire più tardi.
+
+</Steps>
+
+### Partire da un modello
+
+La pagina Nuovo stack si apre su una galleria di modelli. Ognuno è un file compose con un ambiente che seguono le buone pratiche: tag delle immagini fissati a una versione, dati in volumi con nome e segreti nell’ambiente invece che nel file. Usa **Tab** per spostarti tra le schede e **Enter** per sceglierne una; **Scegli un altro modello** torna indietro.
+
+| Modello                   | Cosa esegue                                                            |
+| ------------------------- | ---------------------------------------------------------------------- |
+| **Sito statico**          | nginx che serve i file di un volume con nome, sulla porta `HTTP_PORT`. |
+| **PostgreSQL e Adminer**  | PostgreSQL, e Adminer su `ADMINER_PORT` per esplorarlo.                |
+| **MariaDB**               | MariaDB con un database e un utente per l’app.                         |
+| **Redis**                 | Redis con una password, che salva i suoi dati su disco.                |
+| **Reverse proxy (Caddy)** | Caddy che inoltra `SITE_ADDRESS` a `UPSTREAM`, con HTTPS automatico.   |
+| **Uptime Kuma**           | Uptime Kuma, per monitorare siti e servizi, su `HTTP_PORT`.            |
+| **WordPress**             | WordPress con il proprio database MariaDB.                             |
+| **Vuoto**                 | Una sezione `services:` da compilare tu.                               |
+
+Le password restano vuote, con un commento che dice cosa inserire: compilale prima di distribuire. L’adozione di uno stack esterno salta la galleria e apre un editor vuoto.
+
+<DocScreenshot
+  name="stack-editor"
+  alt="L’editor dello stack con un file compose, il suo ambiente e i controlli sotto di esso."
+/>
+
+### Controlli durante la digitazione
+
+Homeport controlla la definizione mentre digiti ed elenca i problemi sotto l’editor. Le regole applicate dipendono dal tipo di stack.
+
+Gli **errori** bloccano una distribuzione:
+
+- Lo YAML non può essere analizzato, o non ha `services:`: per ogni tipo.
+- Un servizio non ha né `image:` né `build:`: per ogni tipo.
+- Un servizio usa `build:`: solo per gli **stack gestiti**. Non c’è una cartella da cui compilare, quindi usa un’immagine che hai inviato a un registro, oppure [collega la cartella](#creating-a-linked-stack).
+
+Gli **avvisi**, solo per gli **stack gestiti**, ti lasciano distribuire ma segnalano cose che probabilmente non faranno ciò che ti aspetti, perché Compose le legge da questo computer invece che dall’host. La cartella di uno stack collegato c’è, quindi per esso vanno bene:
+
+- Un bind mount con un percorso relativo come `./data:/data`. Usa un percorso assoluto sull’host o un volume con nome.
+- `env_file:`, oppure `configs` e `secrets` letti da un `file:`. Metti invece le variabili nell’ambiente dello stack.
+
+### L’ambiente
+
+L’ambiente è memorizzato cifrato e passato direttamente a Compose, mai scritto su disco: è il posto giusto per password e token. Il file compose stesso è memorizzato in chiaro, quindi tienici fuori i segreti:
+
+```yaml
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+```
+
+```ini
+DB_PASSWORD=correct-horse-battery-staple
+```
+
+Sono ammessi righe vuote, `# commenti` e prefissi `export`. I valori possono essere tra virgolette; tra virgolette doppie, `\n` è un a capo.
+
+<Aside>
+  Per memorizzare un ambiente serve un [portachiavi del sistema
+  operativo](/docs/requirements/#optional-an-os-keychain). Senza, il campo è disattivato e gli stack
+  si distribuiscono senza ambiente.
+</Aside>
+
+## Più file compose
+
+Uno stack può essere composto da più file compose uniti in ordine, come li unisce `docker compose -f compose.yaml -f compose.prod.yaml`: un file di base, poi degli override che aggiungono o modificano chiavi (`ports:` per la produzione, un servizio di debug per lo sviluppo).
+
+Gli **stack gestiti** mostrano una scheda per file sopra l’editor. Scegli **Aggiungi file** per aggiungerne uno (Homeport suggerisce `compose.override.yaml`, `compose.prod.yaml` e così via), rinominalo in **Nome del file**, spostalo prima o dopo con le frecce, o rimuovilo. Il primo file è la base e non si può rimuovere. I nomi finiscono in `.yaml` o `.yml`.
+
+Con un solo file, Homeport lo invia a Compose sul suo standard input, come prima. Con più file, li scrive in una cartella privata che solo il tuo utente può aprire, per la durata del comando, e la rimuove dopo. L’ambiente non viene mai scritto lì: va sempre a Compose come variabili.
+
+Gli **stack collegati** elencano i loro file nel pannello laterale della scheda **Definizione**, in ordine. **Aggiungi un file…** sceglie un altro file compose dalla cartella dello stack (`compose.prod.yaml` invece dell’override predefinito, per esempio), e le frecce e **✕** li riordinano e li rimuovono. Prima salva o ricarica le tue modifiche: cambiare i file ricarica l’editor.
+
+I controlli considerano i file uniti, quindi un servizio definito nella base e a cui un override aggiunge `ports:` viene controllato come un unico servizio.
+
+## Profili
+
+I file compose spesso tengono servizi facoltativi (strumenti di debug, worker, un database locale) dietro `profiles:`:
+
+```yaml
+services:
+  app:
+    image: ghcr.io/org/app:1.4
+  adminer:
+    image: adminer:4.8.1
+    profiles: [debug]
+```
+
+I servizi senza profilo vengono sempre eseguiti. Quelli dietro un profilo vengono eseguiti solo quando lo stack lo attiva. Quando i file di uno stack gestito, collegato o sincronizzato dichiarano dei profili, la sua scheda **Definizione** mostra **Profili**, con una casella di controllo per ciascuno. Attivane uno e scegli **Salva e ridistribuisci**, oppure **Salva i profili** per applicarlo alla prossima distribuzione.
+
+Disattivare un profilo e ridistribuire rimuove i container dei suoi servizi: Homeport li rimuove prima di `docker compose up`, perché Compose stesso li lascia in esecuzione. **Smonta** rimuove i servizi di ogni profilo dichiarato dai file, attivo o no.
+
+Contano solo i profili dello stack. Una variabile `COMPOSE_PROFILES` nella tua shell, nell’ambiente di uno stack gestito o nel `.env` di uno stack collegato non cambia ciò che Homeport distribuisce. Uno stack collegato trovato tramite le sue etichette compose parte senza alcun profilo attivo, anche se è stato avviato con `--profile`: attivali nella sua scheda **Definizione**. Se un profilo che hai attivato scompare dai file, Homeport lo segnala e lo disattiva al salvataggio successivo.
+
+## Distribuire e ridistribuire
+
+**Distribuisci** (o **Ridistribuisci** quando lo stack è in esecuzione) esegue `docker compose up --detach --remove-orphans`. Una finestra mostra l’output di Compose durante l’esecuzione e termina con **✓ Fatto** o con il codice di uscita con cui non è riuscito.
+
+<Aside type="caution">
+  Chiudere la finestra dell’output mentre Compose è in esecuzione lo interrompe, il che può lasciare
+  una distribuzione a metà. Ridistribuisci per completarla.
+</Aside>
+
+Per modificare uno stack gestito, aprilo, modifica la sua **Definizione** e scegli **Salva e ridistribuisci**. Compose ricrea solo i servizi che sono cambiati, e rimuove quelli che hai eliminato dal file.
+
+### Rivedere le modifiche prima di una ridistribuzione
+
+Prima che venga eseguita una ridistribuzione (**Ridistribuisci**, **Ricompila e distribuisci**, o **Salva e ridistribuisci** per uno stack in esecuzione), Homeport mostra **Rivedi le modifiche**: la definizione distribuita l’ultima volta (la voce riuscita più recente della sua [cronologia](#deploy-history-and-rolling-back)) a confronto con quella che sta per esserlo.
+
+- Ogni file compose mostra le righe modificate in linea: le righe rimosse sopra quelle che le sostituiscono. Un file invariato è compresso; selezionalo per aprirlo. I file aggiunti, rimossi o uniti in un altro ordine vengono indicati.
+- Le variabili d’ambiente mostrano solo il loro nome, contrassegnato come **Aggiunto**, **Rimosso** o **Modificato** (una password modificata appare come **Modificato** senza mostrare né il vecchio né il nuovo valore), e quante altre sono invariate.
+- Viene mostrata anche l’attivazione o la disattivazione di un profilo.
+
+Scegli **Distribuisci** per procedere con l’esecuzione, oppure **Indietro** per tornare all’editor senza cambiare nulla. Quando non è cambiato nulla, la revisione lo indica e propone **Ridistribuisci comunque**. Quando Homeport non sa cosa è distribuito (lo stack è stato distribuito prima che Homeport tenesse una cronologia, o dall’esterno), la revisione lo indica e mostra la definizione che verrà distribuita. Una prima distribuzione, un ripristino e un [aggiornamento](#updating-a-stack) saltano la revisione.
+
+Il confronto riguarda solo le definizioni, non la configurazione effettiva dei container sull’host.
+
+## Cronologia delle distribuzioni e ripristino
+
+Ogni distribuzione di uno stack gestito, collegato o sincronizzato da Homeport (**Distribuisci**, **Ridistribuisci**, **Ricompila e distribuisci**, **Salva e ridistribuisci**, una [sincronizzazione](/docs/guides/synced-stacks/#syncing)) viene registrata con i file compose, l’ambiente e i profili usati, quando è stata eseguita e come è terminata; quella di uno stack sincronizzato mostra anche il suo commit, e se è stata avviata dalla distribuzione automatica. La scheda **Cronologia** della pagina dello stack elenca le ultime 20, dalla più recente: **Riuscita**, **Non riuscita** con il suo codice di uscita, o **Non terminata** per un’esecuzione la cui finestra è stata chiusa prima della fine. **Distribuita ora** contrassegna la più recente tra quelle riuscite.
+
+Seleziona una distribuzione per vederne i file compose, in sola lettura. Il suo ambiente è memorizzato cifrato come quello dello stack stesso, e la scheda mostra solo i nomi delle sue variabili. Senza un portachiavi l’elenco funziona comunque; una distribuzione con un ambiente indica semplicemente che non può essere aperta.
+
+Per annullare una modifica sbagliata a uno stack **gestito**, seleziona la distribuzione che funzionava e scegli **Ripristina**. Homeport rimette i suoi file compose, il suo ambiente e i suoi profili al posto di quelli attuali, poi ridistribuisce, quindi la voce successiva della cronologia è il ripristino stesso.
+
+<Aside type="caution" title="Cosa ripristina un ripristino">
+  Solo la definizione. Le immagini vengono scaricate di nuovo per i tag che indica, come sono quei
+  tag ora: se `app:1.4` è stato reinviato nel frattempo, ottieni il nuovo `app:1.4`. I volumi e i
+  loro dati restano come sono.
+</Aside>
+
+La cronologia di uno stack **collegato** è in sola lettura: la sua cartella è la sua sorgente, quindi ripristina lì i file precedenti (con il tuo controllo di versione, per esempio) e ridistribuisci. Dimenticare uno stack elimina anche la sua cronologia.
+
+## La pagina di uno stack
+
+- **Servizi** elenca ogni servizio con il suo container, l’immagine e lo stato. Seleziona un container per aprirlo.
+- **Log** mostra insieme i log di tutti i container, con ogni riga contrassegnata dal suo servizio.
+
+<DocScreenshot
+  name="stack-logs"
+  alt="La scheda Log di uno stack, con l’output di tutti i servizi intercalato e contrassegnato."
+/>
+
+- **Definizione** contiene l’editor per uno stack gestito o collegato, la sorgente e i file in sola lettura di uno stack sincronizzato, oppure spiega da dove proviene uno stack esterno.
+- **Cronologia**, per gli stack gestiti, collegati e sincronizzati, elenca le loro distribuzioni. Vedi [cronologia delle distribuzioni](#deploy-history-and-rolling-back).
+
+## Aggiornare uno stack
+
+**Aggiornamento disponibile** accanto allo stato di uno stack significa che uno dei suoi servizi esegue un’immagine il cui tag punta a una versione più recente nel suo registro; passaci sopra il puntatore per vedere quali servizi. Nella pagina dello stack, **Servizi** li indica e contrassegna ogni immagine non aggiornata. **Cerca immagini più recenti** in cima alla pagina Stack interroga di nuovo i registri. Il controllo è lo stesso usato dalla pagina Container (vedi [immagini più recenti](/docs/guides/containers/#newer-images)), quindi aprire Stack subito dopo Container non interroga di nuovo i registri. Un’immagine fissata tramite digest (`app@sha256:…`) non ha mai aggiornamenti, e un servizio con `build:` non viene controllato.
+
+Per aggiornare uno stack gestito, collegato o sincronizzato, scegli **Aggiorna**. Esegue entrambi i passaggi in un’unica finestra: scarica l’immagine di ogni servizio con gli accessi memorizzati, poi esegue `docker compose up` con ciò che ha scaricato, così solo i servizi la cui immagine è cambiata ricevono nuovi container. La finestra indica quali immagini sono più recenti prima di iniziare, e non c’è il [passaggio di revisione](#reviewing-changes-before-a-redeploy), perché la definizione non cambia. Se un download non riesce, l’aggiornamento si ferma lì: i container in esecuzione restano come erano, e l’errore dice perché, con cosa fare.
+
+Anche uno stack esterno mostra **Aggiornamento disponibile**, ma il suo **Aggiorna** è disattivato: Homeport non ha un file compose da cui ridistribuirlo, quindi prima [adottalo](#adopting-an-external-stack). I servizi con `build:` in uno stack collegato non vengono mai scaricati; per quelli usa **Ricompila e distribuisci**.
+
+## Azioni sugli stack
+
+| Azione                                | Stack              | Cosa fa                                                                                                                  |
+| ------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| **Distribuisci** / **Ridistribuisci** | Gestiti, collegati | `docker compose up` con la definizione dello stack.                                                                      |
+| **Ricompila e distribuisci**          | Collegati          | `docker compose up --build`: ricompila prima ogni servizio con `build:`.                                                 |
+| **Avvia** / **Arresta**               | Tutti              | Avvia i container arrestati, o arresta quelli in esecuzione.                                                             |
+| **Riavvia**                           | Tutti              | Riavvia ogni container.                                                                                                  |
+| **Scarica immagini**                  | Gestiti, collegati | Scarica l’immagine di ogni servizio con gli accessi memorizzati, per ottenere quelle più recenti prima di ridistribuire. |
+| **Smonta**                            | Gestiti, collegati | `docker compose down`: rimuove container e reti, conserva i volumi e la definizione.                                     |
+| **Smonta con i volumi**               | Gestiti, collegati | Elimina anche i volumi dello stack **e i loro dati**.                                                                    |
+| **Rimuovi i container**               | Esterni            | Rimuove i suoi container e le sue reti. I volumi vengono conservati.                                                     |
+| **Adotta**                            | Esterni            | Fornisce a Homeport il file compose, rendendolo gestito.                                                                 |
+
+**Dimentica la definizione**, nella scheda **Definizione** di uno stack gestito, elimina il file compose e l’ambiente da Homeport ma lascia i container in esecuzione; lo stack diventa esterno. **Dimentica**, nella scheda **Definizione** di uno stack collegato, elimina la nota di Homeport sulla cartella; la cartella, i suoi file e i container restano intatti.
+
+## Adottare uno stack esterno
+
+<Steps>
+
+1. Apri lo stack esterno e scegli **Adotta**.
+
+2. Incolla il file compose con cui è stato distribuito. Il nome viene compilato e bloccato.
+
+3. Aggiungi le sue variabili d’ambiente, se ne usava.
+
+4. Scegli **Salva** per prenderlo in carico senza toccare i container in esecuzione, oppure **Salva e distribuisci** per ridistribuirlo subito.
+
+</Steps>
+
+<Aside type="caution" title="Usa la stessa definizione">
+  Ridistribuire con un file diverso ricrea i container in base a esso, e rimuove i servizi che non
+  sono più elencati. I percorsi che erano relativi sulla macchina che lo ha distribuito per prima
+  potrebbero ora risolversi diversamente.
+</Aside>
+
+Anche creare un nuovo stack con lo stesso nome di uno esterno lo adotta.

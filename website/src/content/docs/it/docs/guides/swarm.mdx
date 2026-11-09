@@ -1,0 +1,196 @@
+---
+title: Swarm
+description: Trova i tuoi Docker Swarm tramite i loro host manager e gestisci nodi, servizi, task, segreti, config e stack swarm.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+Uno **Swarm** è un cluster Docker Swarm. Homeport non aggiunge uno Swarm da solo: lo trova tramite gli [host](/docs/hosts/) che ne fanno parte, e lo gestisce tramite un qualsiasi manager connesso. Su nessun nodo viene installato nulla, e nulla di uno Swarm viene memorizzato su questo computer.
+
+Questa pagina segue uno Swarm da quando lo trovi o lo crei fino ai suoi nodi, servizi e task, segreti e config, e ai suoi [stack](/docs/guides/stacks/): quelli distribuiti da un terminale e quelli che distribuisce Homeport.
+
+## Trovare uno Swarm
+
+Aggiungi un manager dello Swarm come host, come aggiungi qualsiasi altro host (vedi [Host e connessioni](/docs/hosts/)). Non appena è connesso, lo Swarm compare:
+
+- nella barra laterale, sotto **Swarm**,
+- nella **Panoramica**, con una scheda propria,
+- su ciascuno dei suoi host, come **Manager di** o **Worker di** quello Swarm.
+
+Docker dà a ogni Swarm lo stesso nome, quindi Homeport ne chiama uno **Swarm di** seguito dal suo primo host manager, con l’inizio del suo ID swarm. Aggiungere un secondo manager dello stesso Swarm non lo mostra due volte: gli Swarm si distinguono per il loro ID swarm. Un host worker mostra a quale Swarm appartiene una volta che anche uno dei manager di quello Swarm è un host.
+
+La pagina dello Swarm inizia con il suo **Riepilogo**: i suoi host manager e worker, quanti nodi e manager ha, quanti servizi vi girano e il suo ID swarm. Le sue schede (**Nodi**, **Servizi**, **Task**, **Stack**, **Segreti** e **Config**) sono descritte più sotto.
+
+<DocScreenshot
+  name="swarm-summary"
+  alt="La scheda Riepilogo di uno Swarm: i suoi host manager, il numero di nodi e servizi, l’ID swarm e i comandi di adesione mostrati per un worker e un manager."
+  caption="Il Riepilogo, con i comandi di adesione mostrati per le macchine che Homeport non gestisce."
+/>
+
+### Quando nessun manager è connesso
+
+Tutto ciò che Homeport fa su uno Swarm passa da uno dei suoi manager connessi, quello che risponde per primo. Quando nessuno è connesso, la pagina dello Swarm dice **Nessun manager di questo Swarm è connesso** e indica gli host manager che ha visto per ultimi: riconnettine uno, o aggiungi un altro manager come host.
+
+## Creare uno Swarm
+
+Homeport può configurare uno Swarm a partire da host a cui si connette già, senza nulla da copiare tra terminali. La pagina di ogni host connesso ha una scheda **Swarm**:
+
+1. Sull’host che gestirà lo Swarm, scegli **Inizializza uno Swarm**. Homeport compila l’**indirizzo annunciato** (l’indirizzo a cui gli altri nodi lo raggiungono) quando raggiunge l’host tramite IP; lascialo vuoto perché sia l’Engine a sceglierlo, il che funziona quando la macchina ha un solo indirizzo. L’host diventa il primo manager dello Swarm, e lo Swarm compare nella barra laterale.
+2. Su ogni altro host, scegli **Unisciti a uno Swarm**, scegli lo Swarm e unisciti come **worker** o come **manager**. Homeport recupera il token di adesione da un manager connesso. Per unirti a uno Swarm che Homeport non conosce, scegli **Un altro Swarm, tramite il suo token** e incolla il token e l’indirizzo di un manager ottenuti da `docker swarm join-token worker`.
+3. Per le macchine che non sono host in Homeport, il **Riepilogo** dello Swarm ha i **Comandi di adesione**: mostrali e copia il comando `docker swarm join` per un worker o un manager. I token vengono recuperati quando li mostri e non vengono mai memorizzati né registrati nei log.
+
+**Esci dallo Swarm**, nella scheda di un host, lo fa uscire: i task di un worker si spostano su altri nodi. Un manager richiede **Forza**; retrocedilo prima, per mantenere lo Swarm in buono stato. Quando esce l’ultimo manager, lo Swarm sparisce con lui, con tutti i servizi, i segreti e i config, quindi Homeport ti chiede prima di digitare il nome dell’host.
+
+### Porte tra i nodi
+
+I nodi comunicano direttamente tra loro, non tramite Homeport, e Homeport non vi installa nulla, quindi non può aprire le porte al posto tuo. Tra tutti i nodi di uno Swarm, nei loro firewall e in quelli della tua rete, consenti:
+
+| Porta | Protocollo | Per                                       |
+| ----- | ---------- | ----------------------------------------- |
+| 2377  | TCP        | Gestire lo Swarm (verso i manager)        |
+| 7946  | TCP, UDP   | Il rilevamento reciproco dei nodi         |
+| 4789  | UDP        | Il traffico della rete overlay tra i nodi |
+
+Quando un host non riesce a raggiungere i manager, l’adesione non riesce con **Questo host non è riuscito a raggiungere i manager dello Swarm**, e il suggerimento elenca queste porte.
+
+## Nodi
+
+<DocScreenshot
+  name="swarm-nodes"
+  alt="La scheda Nodi di uno Swarm: tre manager (uno è il leader) e due worker, uno dei quali svuotato, con le versioni dell’Engine, gli indirizzi e le etichette."
+/>
+
+La scheda **Nodi** elenca tutti i nodi dello Swarm: il nome host, se è un manager (e se è il leader, raggiungibile o non raggiungibile) o un worker, la disponibilità, se è attivo (`ready`) o `down`, la versione dell’Engine, l’indirizzo e le etichette. Un nodo che è anche uno dei tuoi host è collegato alla pagina dell’host, e la pagina dell’host rimanda al suo nodo. L’elenco si aggiorna da solo quando i nodi cambiano.
+
+Il menu di ogni nodo lo modifica:
+
+| Azione                    | Cosa fa                                                                                                  |
+| ------------------------- | -------------------------------------------------------------------------------------------------------- |
+| **Attiva**                | Lo scheduler può di nuovo assegnargli nuovi task.                                                        |
+| **Sospendi**              | Mantiene i suoi task ma non ne riceve di nuovi.                                                          |
+| **Svuota**                | I suoi task si spostano su altri nodi: fallo prima di una manutenzione.                                  |
+| **Promuovi a manager**    | Si unisce ai manager. Mantienine un numero dispari (1, 3 o 5) così lo Swarm sopravvive al guasto di uno. |
+| **Retrocedi a worker**    | Lascia i manager ma continua a eseguire task.                                                            |
+| **Modifica le etichette** | Imposta le etichette con cui i vincoli di posizionamento scelgono i nodi, come `node.labels.zone==a`.    |
+| **Rimuovi**               | Lo fa uscire dallo Swarm.                                                                                |
+
+Homeport si rifiuta, prima di interpellare l’Engine, di retrocedere l’ultimo manager raggiungibile dello Swarm (uno Swarm senza manager non può essere gestito affatto) e di svuotare il suo ultimo nodo attivo (i suoi task non avrebbero dove andare). Rimuovere un nodo ancora attivo richiede **Forza**; un manager va prima retrocesso. Se qualcun altro ha modificato un nodo dopo la lettura dell’elenco, la modifica viene rifiutata con **Questo elemento è stato modificato altrove**: aggiorna e riprova, così nulla viene sovrascritto.
+
+## Servizi
+
+<DocScreenshot
+  name="swarm-services"
+  alt="La scheda Servizi di uno Swarm, che elenca ogni servizio con immagine, modalità, task in esecuzione e richiesti, porte e stack."
+/>
+
+La scheda **Servizi** elenca ciò che lo Swarm esegue: per ogni servizio, il nome, l’immagine, la modalità (replicato con il suo numero di repliche, o globale: un task su ogni nodo), quanti dei suoi task sono in esecuzione rispetto a quanti dovrebbero esserlo (nel colore di avviso quando sono meno), le porte pubblicate, lo stack swarm a cui appartiene e lo stato del suo ultimo aggiornamento. L’elenco si aggiorna da solo quando i servizi cambiano.
+
+Il menu di ogni servizio:
+
+- **Log** apre i suoi log, uniti da tutti i task, con ogni riga contrassegnata dal suo task e dal suo nodo, come `web.2@node-b`. Durante il monitoraggio, si aggiungono anche i task che lo Swarm avvia in seguito.
+- **Ridimensiona** imposta quante repliche esegue un servizio replicato; 0 lo arresta senza rimuoverlo. I servizi globali non si ridimensionano: eseguono un task per nodo.
+- **Annulla aggiornamento** ripristina le impostazioni che il servizio aveva prima del suo ultimo aggiornamento (immagine, ambiente, repliche…), come fa `docker service rollback`. Un servizio mai aggiornato non ha nulla da ripristinare, e lo indica.
+- **Rimuovi** arresta e rimuove i suoi task. I suoi volumi vengono conservati.
+
+Seleziona un servizio per aprirlo. La sua pagina si apre sui suoi **Task**, così un rollout in corso o una replica che non si avvia si vedono subito, con **Modifica**, **Ridimensiona**, **Annulla aggiornamento** e **Rimuovi** in alto.
+
+<DocScreenshot
+  name="swarm-service"
+  alt="La pagina di un servizio durante un aggiornamento: tre delle sue quattro repliche sono in esecuzione, la quarta è ancora in preparazione su worker-eu-1."
+  caption="shop_api a metà aggiornamento: 3 repliche su 4 sono in esecuzione mentre la quarta viene preparata."
+/>
+
+La scheda **Log** segue i suoi log, e **Ispeziona** mostra la sua definizione completa come la conosce l’Engine, compreso ciò che Homeport non modifica (vincoli di posizionamento, limiti di risorse, controllo di integrità, criteri di aggiornamento e di rollback).
+
+### Creare e aggiornare un servizio
+
+**Crea servizio**, nella scheda Servizi, avvia un servizio da un’immagine: il nome, se è replicato (e con quante repliche) o globale, quando si riavviano i suoi task, un comando che sostituisca quello dell’immagine, le variabili d’ambiente (una `KEY=value` per riga), le porte pubblicate, i volumi e i bind mount, le reti overlay a cui si unisce, e i segreti e i config che riceve, ognuno montato dove indichi (`/run/secrets/<name>` per impostazione predefinita per un segreto). Le porte passano dalla routing mesh dello Swarm, raggiungibili su ogni nodo, a meno che tu non scelga di pubblicarle solo sul nodo che esegue ciascun task. I bind mount sono percorsi su ogni nodo, non su questo computer. Homeport controlla il modulo prima di inviarlo: un nome valido, voci `KEY=value`, una porta pubblicata due volte. Il nuovo servizio si apre sulla sua scheda **Task**, dove puoi guardare le sue repliche avviarsi.
+
+**Modifica**, nella pagina di un servizio, cambia la sua immagine, il suo ambiente e le sue repliche, e solo questi: le sue porte, i montaggi, le reti e tutto il resto vengono rinviati come sono. Lo Swarm poi sposta i suoi task sulle nuove impostazioni qualcuno alla volta, e la pagina mostra l’avanzamento dell’aggiornamento. **Ridistribuisci ogni task** li riavvia anche quando nulla è cambiato, scaricando di nuovo l’immagine: è così che si distribuisce un nuovo push dello stesso tag. Se qualcun altro ha aggiornato il servizio dopo che lo hai aperto, Homeport lo segnala invece di sovrascrivere la sua modifica: aggiorna e modifica di nuovo.
+
+Immagini private: sono i nodi stessi a scaricare le immagini, quindi un’immagine privata richiede un accesso su ogni nodo (`docker login` lì), oppure uno stack distribuito con le tue credenziali dei registri (vedi [Distribuire stack](#deploying-stacks-to-a-swarm)).
+
+## Task
+
+Un servizio viene eseguito come **task**: uno per replica (il suo slot, come `web.2`), o uno per nodo per un servizio globale (`agent@node-b`). Ogni task viene eseguito come container sul suo nodo. Quando un servizio mostra meno task in esecuzione di quanti dovrebbe, la risposta è nei suoi task.
+
+La scheda **Task** elenca i task dello Swarm, raggruppati per servizio e poi per slot, dal più recente: il nodo su cui gira ciascuno, cosa sta facendo e cosa lo Swarm vuole che faccia (**dovrebbe essere in esecuzione** quando le due cose differiscono), da quando, il suo messaggio (in rosso quando è un errore) e la sua immagine.
+
+<DocScreenshot
+  name="swarm-tasks"
+  alt="La scheda Task di uno Swarm: il task di un servizio globale su ogni nodo, poi ogni replica di shop_api, una ancora in preparazione."
+/>
+La pagina di un servizio ha la stessa scheda limitata a quel servizio, e il menu di un nodo ha
+**Mostra i suoi task**. Per impostazione predefinita ogni slot mostra solo il task che lo Swarm
+vuole in esecuzione; attiva **Mostra la cronologia** per vedere i tentativi precedenti che ha
+arrestato o che non sono riusciti. Un task su un nodo che è anche uno dei tuoi host ha **Apri il
+container**, che seleziona quell’host e apre il container.
+
+Errori comuni:
+
+| Errore                                                    | Cosa significa                                                                                                                                        |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `No such image`, `pull access denied`                     | Il nodo non riesce a scaricare l’immagine: controlla il suo nome, o se il registro richiede un accesso su quel nodo.                                  |
+| `no suitable node`                                        | Nessun nodo soddisfa i vincoli del servizio, ha le risorse che riserva o è attivo: controlla i vincoli di posizionamento e la disponibilità dei nodi. |
+| `port is already allocated`, `address already in use`     | Una porta pubblicata in modalità `host` è già occupata su quel nodo.                                                                                  |
+| `invalid mount config`, `bind source path does not exist` | Un bind mount indica un percorso che il nodo non ha. I bind mount sono percorsi su ogni nodo.                                                         |
+| `task: non-zero exit (1)`                                 | Il container si è avviato ed è uscito con un errore: apri i suoi log dalla scheda **Log** del servizio.                                               |
+
+## Segreti e config
+
+I servizi leggono le credenziali dai **segreti** e i file di configurazione dai **config**, entrambi montati come file nei loro container (i segreti sotto `/run/secrets/`). Le schede **Segreti** e **Config** li elencano con i servizi che li usano, le loro etichette, e quando sono stati creati e aggiornati.
+
+<DocScreenshot
+  name="swarm-secrets"
+  alt="La scheda Segreti di uno Swarm, che elenca tre segreti con i servizi che usano ciascuno."
+/>
+
+**Crea segreto** chiede un nome e il valore, mascherato a meno che tu non scelga **Mostra**, oppure **Carica da file…** per inviare invece un file da questo computer (una chiave, un certificato). Il valore va allo Swarm una sola volta: Homeport non lo conserva, e l’Engine non lo restituisce mai, quindi nessuno può leggerlo dallo Swarm, Homeport compreso. **Crea config** funziona allo stesso modo, con il contenuto visibile mentre digiti; il contenuto di un config si può rivedere dalla sua riga. Entrambi sono limitati a 500 KB.
+
+Segreti e config non si possono modificare una volta creati. Per cambiarne uno, creane uno nuovo con un nuovo nome, come `db_password_v2`, fai puntare i servizi a quello, poi rimuovi il vecchio. Un segreto o un config usato da un servizio non si può rimuovere: lo Swarm si rifiuta, e Homeport indica i servizi che lo usano.
+
+## Stack swarm
+
+Uno **stack swarm** è uno stack distribuito su uno Swarm: un file compose trasformato in servizi, reti, segreti e config che condividono un namespace. Homeport li trova tutti, comunque siano stati distribuiti, grazie all’etichetta `com.docker.stack.namespace` che `docker stack deploy` applica loro. La scheda **Stack** dello Swarm li elenca, come la pagina **Stack** elenca quelli di un host: il tipo, lo stato (in esecuzione quando ogni task di ogni servizio è in esecuzione, arrestato quando ogni servizio è ridimensionato a 0) e i servizi.
+
+Uno stack distribuito da un terminale con `docker stack deploy` è **Esterno**: Homeport non ha un file compose per esso. Selezionalo per vederne i servizi, ognuno collegato alla sua pagina, e le reti, i segreti e i config. **Rimuovi** fa ciò che fa `docker stack rm`: rimuove i servizi, attende che i loro task si arrestino, poi rimuove le reti, i segreti e i config del namespace. Tutto ciò che lo Swarm si è rifiutato di rimuovere viene elencato. I volumi vengono conservati su ogni nodo.
+
+<DocScreenshot
+  name="swarm-stacks"
+  alt="La scheda Stack di uno Swarm: lo stack gestito shop in parte in esecuzione, 9 task su 10, e lo stack esterno monitoring in esecuzione."
+/>
+
+Uno stack swarm non si avvia né si arresta: Docker non ha un’operazione del genere per gli stack swarm. Per arrestare uno stack senza rimuoverlo, ridimensiona i suoi servizi a 0 dalle loro pagine.
+
+Nella pagina **Container** di un host, i container che i task di uno stack swarm eseguono lì sono raggruppati sotto quello stack, contrassegnati come **Swarm**, invece di essere elencati uno per uno.
+
+## Distribuire stack su uno Swarm
+
+Gli stack gestiti, collegati e sincronizzati possono essere distribuiti su uno Swarm invece che su un host. In **Nuovo stack** (dalla pagina Stack, o **Nuovo stack** nella scheda **Stack** di uno Swarm), scegli lo Swarm in **Distribuisci su**, poi scrivi il file compose, scegli una cartella o un repository come per un host. La scheda **Stack** dello Swarm li elenca insieme a quelli esterni; lì la pagina di uno stack ha **Distribuisci** o **Ridistribuisci**, la sua **Definizione** da modificare e la sua **Cronologia** per tornare a una revisione precedente, come su un host.
+
+Homeport distribuisce con `docker stack deploy`, eseguito su questo computer verso il manager dello Swarm che è connesso, tramite la stessa connessione privata per singolo comando usata per compose: su nessun nodo viene installato o scritto nulla. Richiede il comando `docker` su questo computer (vedi [requisiti](/docs/requirements/)). Senza alcun manager connesso, la distribuzione lo segnala. Uno stack di uno Swarm appartiene allo Swarm, non al manager tramite cui è stato creato: rimuovere quell’host lo conserva.
+
+Cosa cambia su uno Swarm:
+
+- **Le immagini provengono da un registro.** Ogni nodo scarica le immagini dei task che esegue, quindi un servizio compilato da file locali (`build:` senza `image:`) viene rifiutato prima che venga eseguito qualsiasi cosa: invia prima l’immagine e indicala in `image:`. **Invia le mie credenziali dei registri**, nella **Definizione** di uno stack, fa sì che la CLI docker invii allo Swarm gli accessi che ha su questo computer (`docker login`), così i suoi nodi possono scaricare immagini private. È disattivato per impostazione predefinita; gli accessi ai registri di Homeport non vengono mai passati alla CLI.
+- **Alcune chiavi compose vengono ignorate** da `docker stack deploy`: `container_name`, `restart` (usa `deploy.restart_policy`), le condizioni di `depends_on` e `profiles`. L’editor avvisa in merito. I bind mount sono percorsi sul nodo che esegue il task, qualunque esso sia.
+- **Rimuovi** smonta lo stack come fa `docker stack rm`, e non c’è avvio né arresto.
+
+### Stack collegati e sincronizzati su uno Swarm
+
+La maggior parte degli stack swarm vive in una cartella o in un repository accanto ai propri file di configurazione, ed è lì che gli stack collegati e sincronizzati danno il meglio su uno Swarm. Homeport esegue `docker stack deploy` dalla cartella dello stack su questo computer (quella di uno stack collegato, o la copia di lavoro di uno stack sincronizzato), quindi gli `env_file:`, `configs: file:` e `secrets: file:` relativi vengono letti qui e inviati allo Swarm. Viene letto anche il `.env` della cartella, come farebbe compose (`docker stack deploy` da solo non lo fa). Su nessun nodo viene scritto nulla, e i segreti letti dai file vanno allo Swarm senza che Homeport li conservi.
+
+- Un servizio con `build:` richiede anche un `image:`: Homeport non può passare ai nodi un’immagine compilata qui. Compilala e inviala, poi distribuisci.
+- Uno stack sincronizzato su uno Swarm si sincronizza, si distribuisce e si distribuisce automaticamente come su un host: ogni distribuzione usa il commit appena recuperato.
+- Uno stack swarm esterno distribuito da una cartella può essere collegato a essa: nella sua pagina, scegli **Collega a una cartella…**. Prima del collegamento, Homeport verifica che i file compose della cartella dichiarino i servizi che lo stack esegue, così uno stack non viene legato ai file di un altro progetto.
+
+I config e i segreti dello Swarm non si possono modificare una volta creati. Quando una sorgente `file:` cambia, la ridistribuzione non riesce con **Un config o un segreto di questo stack è cambiato**: dai all’oggetto un nome con versione, per esempio
+
+```yaml
+configs:
+  app_conf:
+    name: app_conf_${CONF_VERSION}
+    file: ./app.conf
+```
+
+e cambia `CONF_VERSION` nel `.env` della cartella (o nell’ambiente dello stack) ogni volta che il file cambia. Homeport non ne rimuove e ricrea mai uno a tua insaputa.
