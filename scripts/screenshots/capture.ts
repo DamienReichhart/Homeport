@@ -15,6 +15,10 @@
  * names to capture only those. `website/src/features/docs/screenshots.test.ts`
  * fails when a language lacks a shot English has.
  *
+ * Each PNG is then compressed losslessly with oxipng when it's installed
+ * (`cargo install oxipng`, or OXIPNG for a binary that isn't on PATH); without
+ * it the shots are left as the browser wrote them, with a notice.
+ *
  * Set FIREFOX to use another Firefox binary, or CHROMIUM to a Chrome or
  * Chromium binary to use that instead.
  */
@@ -26,6 +30,7 @@ import {
   readdirSync,
   readFileSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
@@ -87,6 +92,29 @@ function workDir(): string {
 function pngSize(path: string): { width: number; height: number } {
   const header = readFileSync(path).subarray(0, 24);
   return { width: header.readUInt32BE(16), height: header.readUInt32BE(20) };
+}
+
+/** oxipng's path: OXIPNG, or the one on PATH; undefined when there is none. */
+const OXIPNG = process.env.OXIPNG ?? Bun.which('oxipng') ?? undefined;
+
+/** Compresses the PNGs in place without changing a pixel. */
+async function optimise(pngs: string[]): Promise<void> {
+  if (pngs.length === 0) return;
+  if (!OXIPNG) {
+    console.warn(
+      'oxipng not found: the screenshots are not compressed. Install it (`cargo install oxipng`) and capture again before committing them.',
+    );
+    return;
+  }
+  const size = () => pngs.reduce((sum, png) => sum + statSync(png).size, 0);
+  const before = size();
+  const proc = Bun.spawn([OXIPNG, '-o', '4', '--strip', 'safe', '--quiet', ...pngs], {
+    stdout: 'ignore',
+    stderr: 'inherit',
+  });
+  if ((await proc.exited) !== 0) throw new Error('oxipng failed');
+  const mb = (bytes: number) => `${(bytes / 1e6).toFixed(1)} MB`;
+  console.log(`✓ oxipng: ${pngs.length} screenshots, ${mb(before)} → ${mb(size())}`);
 }
 
 const GIF = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
@@ -159,6 +187,7 @@ async function main() {
         `user_pref("layout.css.devPixelsPerPx", "${SCALE}");`,
       ].join('\n'),
     );
+    const written: string[] = [];
     for (const locale of locales) {
       const out = outDir(locale);
       mkdirSync(out, { recursive: true });
@@ -188,11 +217,14 @@ async function main() {
           throw new Error(
             `${shot.name} is ${width}×${height}, not ${WIDTH * SCALE}×${HEIGHT * SCALE}: the browser ignored the window size or the scale`,
           );
-        copyFileSync(png, join(out, `${shot.name}.png`));
+        const target = join(out, `${shot.name}.png`);
+        copyFileSync(png, target);
+        written.push(target);
         console.log(`✓ ${locale} ${shot.name}`);
       }
     }
     await server.stop(true);
+    await optimise(written);
   } finally {
     rmSync(work, { recursive: true, force: true });
   }
