@@ -1,24 +1,41 @@
-import { existsSync } from 'node:fs';
 import type { StarlightUserConfig } from '@astrojs/starlight/types';
 import { PREFIXED_LOCALES } from '../../core/site/locales.ts';
 import en from './sidebar/en.ts';
+import fr from './sidebar/fr.ts';
+import es from './sidebar/es.ts';
+import de from './sidebar/de.ts';
+import it from './sidebar/it.ts';
+import ptbr from './sidebar/pt-br.ts';
+import ru from './sidebar/ru.ts';
+import zhcn from './sidebar/zh-cn.ts';
+import ja from './sidebar/ja.ts';
+import ko from './sidebar/ko.ts';
+import hi from './sidebar/hi.ts';
+import ar from './sidebar/ar.ts';
 
 type Key = keyof typeof en;
 
 /**
- * Every language's labels, from `sidebar/<code>.ts`; a language without a
- * file shows English. Read with `import()`, since astro.config loads this
- * file outside Vite, where `import.meta.glob` doesn't exist.
+ * Every language's labels, by its code in `LOCALES`. astro.config loads this
+ * file outside Vite, so each language is imported here: a new language adds
+ * its `sidebar/<code>.ts` and one line below; one without labels shows English.
  */
-const labels = new Map<string, Partial<Record<Key, string>>>();
-for (const locale of PREFIXED_LOCALES) {
-  const file = new URL(`./sidebar/${locale.code}.ts`, import.meta.url);
-  if (existsSync(file))
-    labels.set(
-      locale.lang,
-      ((await import(file.href)) as { default: Record<Key, string> }).default,
-    );
-}
+const BY_CODE: Record<string, Partial<Record<Key, string>>> = {
+  fr: fr,
+  es: es,
+  de: de,
+  it: it,
+  'pt-br': ptbr,
+  ru: ru,
+  'zh-cn': zhcn,
+  ja: ja,
+  ko: ko,
+  hi: hi,
+  ar: ar,
+};
+const labels = new Map(
+  PREFIXED_LOCALES.filter((l) => BY_CODE[l.code]).map((l) => [l.lang, BY_CODE[l.code] ?? {}]),
+);
 
 /** A label in English, with its translation for every language that has one. */
 function label(key: Key) {
