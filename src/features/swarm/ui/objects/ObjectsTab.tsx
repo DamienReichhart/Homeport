@@ -18,8 +18,9 @@ import { swarmFeatureQueries } from '../../api/queries';
 import { ConfigContentDialog } from './ConfigContentDialog';
 import { CreateObjectDialog } from './CreateObjectDialog';
 import { t } from '@/shared/i18n';
+import { formatDateTime } from '@/shared/lib';
 
-const date = (value: string | null) => (value ? new Date(value).toLocaleString() : '—');
+const date = (value: string | null) => (value ? formatDateTime(value) : '—');
 
 /** A Swarm's secrets or configs: their metadata and the services using them. */
 export function ObjectsTab({ swarmId, kind }: { swarmId: string; kind: ObjectKind }) {

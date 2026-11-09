@@ -17,6 +17,7 @@ import {
 } from '@/shared/ui';
 import { usePreviewRestore, useRestoreData } from '../../api/backup';
 import { t } from '@/shared/i18n';
+import { formatDateTime } from '@/shared/lib';
 
 /**
  * Opens the backup at `path` with its passphrase, lists what it holds, and
@@ -55,7 +56,7 @@ export function RestoreDataDialog({ path, onClose }: { path: string; onClose: ()
             <p>
               {t('settings.restore.madeBy', {
                 version: contents.appVersion,
-                date: new Date(contents.createdAt).toLocaleString(),
+                date: formatDateTime(contents.createdAt),
               })}
             </p>
             <ul className="list-disc pl-5" aria-label={t('settings.restore.holds')}>

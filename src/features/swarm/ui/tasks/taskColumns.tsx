@@ -3,6 +3,7 @@ import type { HostView, SwarmTask } from '@/shared/api';
 import { Button, StatusDot, type ColumnDef } from '@/shared/ui';
 import { isFailed, taskName } from '../../model/tasks';
 import { t } from '@/shared/i18n';
+import { formatDateTime } from '@/shared/lib';
 
 const tone = (task: SwarmTask) =>
   isFailed(task) ? 'danger' : task.state === 'running' ? 'success' : 'warning';
@@ -66,7 +67,7 @@ export function taskColumns({
           </span>
           {row.original.since && (
             <span className="text-muted-foreground text-xs">
-              {new Date(row.original.since).toLocaleString()}
+              {formatDateTime(row.original.since)}
             </span>
           )}
         </span>

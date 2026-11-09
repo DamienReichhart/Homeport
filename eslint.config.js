@@ -65,7 +65,7 @@ export default tseslint.config(
     // Past 300 lines a file usually holds more than one thing: split it.
     files: ['src/**/*.{ts,tsx}'],
     // Catalogues are data: one line per message, however many there are.
-    ignores: ['**/*.test.{ts,tsx}', 'src/shared/i18n/en/**'],
+    ignores: ['**/*.test.{ts,tsx}', 'src/shared/i18n/*/**'],
     rules: { 'max-lines': ['warn', { max: 300, skipBlankLines: true, skipComments: true }] },
   },
   {
@@ -124,6 +124,22 @@ export default tseslint.config(
     ignores: ['**/*.test.{ts,tsx}', 'src/shared/ui/primitives/**', 'src/**/model/**'],
     plugins: { homeport: { rules: { 'no-literal-ui-string': noLiteralUiString } } },
     rules: { 'homeport/no-literal-ui-string': 'error' },
+  },
+  {
+    // Dates and numbers follow the app's language, not the webview's (ADR 0011).
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/shared/lib/format.ts', '**/*.test.{ts,tsx}'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            'CallExpression[callee.property.name=/^toLocale(String|DateString|TimeString)$/]',
+          message:
+            'Use formatDateTime, formatDate, formatTime or formatNumber from @/shared/lib, which follow the app’s language.',
+        },
+      ],
+    },
   },
   {
     // Test helpers are never hot-reloaded.

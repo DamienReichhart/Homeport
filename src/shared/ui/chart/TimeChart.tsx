@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react';
 import uPlot, { type AlignedData, type Options } from 'uplot';
 import 'uplot/dist/uPlot.min.css';
+import { formatTime } from '@/shared/lib/format';
 import { useResolvedTheme } from '@/shared/lib/theme';
+import { t } from '@/shared/i18n';
 
 export interface ChartSeries {
   label: string;
@@ -55,7 +57,13 @@ export function TimeChart({
       cursor: { drag: { x: false, y: false } },
       scales: { x: { time: true }, y: { range: (_u, _min, max) => [0, max > 0 ? max * 1.1 : 1] } },
       axes: [
-        { stroke: axis, grid: { stroke: grid }, ticks: { stroke: grid } },
+        {
+          stroke: axis,
+          grid: { stroke: grid },
+          ticks: { stroke: grid },
+          // In the app's language, not uPlot's English month names.
+          values: (_u, values) => values.map((v) => formatTime(v)),
+        },
         {
           stroke: axis,
           grid: { stroke: grid },
@@ -65,7 +73,10 @@ export function TimeChart({
         },
       ],
       series: [
-        {},
+        {
+          label: t('ui.chart.time'),
+          value: (_u: uPlot, v: number | null) => (v === null ? '—' : formatTime(v)),
+        },
         ...parsed.map((s) => ({
           label: s.label,
           stroke: resolveColour(s.colour),

@@ -20,6 +20,7 @@ import {
 } from '@/shared/ui';
 import type { ContainerInspect } from '../../../model/types';
 import { t } from '@/shared/i18n';
+import { formatDateTime, formatTime } from '@/shared/lib';
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -94,7 +95,7 @@ export function InspectTab({ inspect }: { inspect: ContainerInspect }) {
             items={[
               [t('containers.inspect.id'), mono(inspect.Id)],
               [t('containers.inspect.image'), inspect.Config.Image],
-              [t('containers.inspect.created'), new Date(inspect.Created).toLocaleString()],
+              [t('containers.inspect.created'), formatDateTime(inspect.Created)],
               [
                 t('containers.inspect.state'),
                 inspect.State.OOMKilled ? t('containers.inspect.outOfMemory', { state }) : state,
@@ -103,7 +104,7 @@ export function InspectTab({ inspect }: { inspect: ContainerInspect }) {
                 t('containers.inspect.started'),
                 inspect.State.StartedAt.startsWith('0001')
                   ? '—'
-                  : new Date(inspect.State.StartedAt).toLocaleString(),
+                  : formatDateTime(inspect.State.StartedAt),
               ],
               [
                 t('containers.inspect.entrypoint'),
@@ -147,11 +148,7 @@ export function InspectTab({ inspect }: { inspect: ContainerInspect }) {
                 rows={(health.Log ?? [])
                   .slice(-5)
                   .reverse()
-                  .map((l) => [
-                    new Date(l.Start).toLocaleTimeString(),
-                    String(l.ExitCode),
-                    mono(l.Output.trim()),
-                  ])}
+                  .map((l) => [formatTime(l.Start), String(l.ExitCode), mono(l.Output.trim())])}
               />
             </div>
           ) : (
