@@ -20,6 +20,7 @@ import { incusProfilesFeature } from '@/features/incus-profiles';
 import { incusStorageFeature } from '@/features/incus-storage';
 import { networkFeature } from '@/features/network';
 import { networksFeature } from '@/features/networks';
+import { nomadJobsFeature } from '@/features/nomad-jobs';
 import { nodesFeature } from '@/features/nodes';
 import { overviewFeature } from '@/features/overview';
 import { podmanPodsFeature } from '@/features/podman-pods';
@@ -65,6 +66,7 @@ export const features: FeatureManifest[] = [
   applyFeature,
   helmFeature,
   portForwardsFeature,
+  nomadJobsFeature,
   eventsFeature,
   settingsFeature,
   hostsFeature,

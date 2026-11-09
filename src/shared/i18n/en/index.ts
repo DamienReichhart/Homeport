@@ -18,6 +18,7 @@ import incus from './incus';
 import network from './network';
 import networks from './networks';
 import nodes from './nodes';
+import nomad from './nomad';
 import overview from './overview';
 import podmanpods from './podmanpods';
 import quadlets from './quadlets';
@@ -56,6 +57,7 @@ export const uiMessages = {
   ...network,
   ...networks,
   ...nodes,
+  ...nomad,
   ...overview,
   ...podmanpods,
   ...quadlets,
