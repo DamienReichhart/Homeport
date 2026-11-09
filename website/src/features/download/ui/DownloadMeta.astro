@@ -1,15 +1,24 @@
 ---
 /** "Version 0.2.0 · Windows x64 installer · All downloads", under a DownloadButton. */
+import { strings } from '@/core/i18n';
 import { getLatestRelease } from '@/core/release';
+import { type Locale, localePath } from '@/core/site';
 import { href } from '@/shared/lib/href';
+import { fill } from '@/shared/lib/template';
 
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
 const release = await getLatestRelease();
 ---
 
 <p class="download-meta">
-  {release && <>Version {release.version} · </>}
-  <span data-download-note>Windows, macOS and Linux</span> ·{' '}
-  <a href={href('/download/')}>All downloads</a>
+  {release && <>{fill(s['download.meta.version'], { version: release.version })} · </>}
+  <span data-download-note>{s['download.meta.everywhere']}</span> ·{' '}
+  <a href={href(localePath('/download/', locale))}>{s['download.meta.all']}</a>
 </p>
 
 <style>

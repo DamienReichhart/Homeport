@@ -1,0 +1,127 @@
+---
+title: Stacks synchronisées
+description: Déployer une stack à partir d’un dépôt git, voir ce qui a changé avant chaque synchronisation, et la laisser suivre sa branche tant que Homeport est ouvert.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+Une **stack synchronisée** est une [stack](/docs/guides/stacks/) dont le fichier compose vient d’un dépôt git. Homeport clone le dépôt sur cet ordinateur, récupère sa branche ou son tag quand vous le demandez (ou à intervalle régulier tant que Homeport est ouvert), montre ce qui a changé et déploie le nouveau commit sur l’hôte. Il ne modifie, ne commite et ne pousse jamais rien : les modifications passent par git.
+
+<Aside type="note" title="Homeport a besoin de git">
+  Les stacks synchronisées exécutent le `git` installé sur cet ordinateur. **Paramètres → Cette
+  machine** indique si Homeport l’a trouvé, et comment l’installer sinon. Tous les autres types de
+  stacks fonctionnent sans git.
+</Aside>
+
+## Dépôts
+
+Homeport lit les dépôts que vous ajoutez dans **Paramètres → Dépôts**, ou depuis la page **Nouvelle stack**. Un dépôt s’ajoute une seule fois et peut être utilisé par des stacks synchronisées sur tous les hôtes. Homeport le joint de l’une de ces trois façons :
+
+| Accès                  | URL                                                | Ce que Homeport enregistre                               |
+| ---------------------- | -------------------------------------------------- | -------------------------------------------------------- |
+| **Clé de déploiement** | SSH : `git@github.com:owner/repo.git` ou `ssh://…` | Une clé qu’il crée pour ce seul dépôt, **chiffrée**      |
+| **Jeton**              | HTTPS : `https://gitlab.com/owner/repo.git`        | Votre nom d’utilisateur, et le jeton d’accès **chiffré** |
+| **Public**             | HTTPS, pour un dépôt que tout le monde peut lire   | Rien de secret                                           |
+
+`http://` et les chemins locaux ne sont pas acceptés, si bien qu’un jeton n’est jamais envoyé en clair.
+
+### Avec une clé de déploiement
+
+<Steps>
+
+1. Choisissez **Ajouter un dépôt**, collez l’URL SSH du dépôt, gardez **Clé de déploiement** et choisissez **Ajouter et créer une clé de déploiement**.
+
+2. Copiez la clé que Homeport affiche, et ajoutez-la au dépôt **en lecture seule** :
+   - GitHub : **Settings → Deploy keys → Add deploy key** du dépôt.
+   - GitLab : **Settings → Repository → Deploy keys** du projet.
+   - Gitea et Forgejo : **Settings → Deploy keys → Add deploy key** du dépôt.
+
+3. Choisissez **Tester l’accès**. Homeport liste les branches et les tags du dépôt depuis cet ordinateur.
+
+</Steps>
+
+Chaque dépôt reçoit sa propre clé, si bien qu’une clé divulguée ne peut lire que ce seul dépôt, et vos propres clés SSH et votre `~/.ssh/config` ne sont jamais utilisés. **Nouvelle clé** la remplace : ajoutez la nouvelle au dépôt, et retirez-y l’ancienne.
+
+La première fois que Homeport joint un serveur SSH, il approuve la clé que le serveur présente et la retient, comme le fait `ssh` ; si la clé change ensuite, chaque récupération échoue jusqu’à ce que vous vérifiiez la nouvelle empreinte sur le site de la forge et choisissiez **Réinitialiser** à côté de la clé approuvée.
+
+### Avec un jeton
+
+Collez l’URL `https://` du dépôt, choisissez **Jeton**, puis saisissez le nom d’utilisateur et un jeton d’accès autorisé à lire le contenu du dépôt : sur GitHub, un jeton à granularité fine avec **Contents: Read-only**, sur GitLab, un jeton de projet ou personnel avec `read_repository`. **Tester l’accès** le vérifie. Quand il expire, saisissez-en un nouveau dans **Remplacer le jeton**.
+
+<Aside type="tip">
+  Sans trousseau du système, Homeport ne peut pas enregistrer de clés de déploiement ni de jetons,
+  si bien que seuls des dépôts publics peuvent être ajoutés. Voir la [configuration
+  requise](/docs/requirements/#facultatif-un-trousseau-du-système).
+</Aside>
+
+Supprimer un dépôt supprime sa clé ou son jeton et son clone sur cet ordinateur. C’est refusé tant qu’une stack synchronisée l’utilise.
+
+## Créer une stack synchronisée
+
+<Steps>
+
+1. Ouvrez **Stacks** sur l’hôte où déployer, choisissez **Nouvelle stack**, puis **Utiliser un dépôt git**.
+
+2. Choisissez le **Dépôt**, ou **Ajouter un dépôt** pour en ajouter un sur place.
+
+3. Choisissez une **Branche** ou un **Tag**. Homeport les liste depuis le serveur du dépôt, sa branche par défaut en premier.
+
+4. Saisissez le chemin du **Fichier compose**, relatif à la racine du dépôt : `compose.yaml`, ou `deploy/prod/compose.yaml`. Son dossier est le dossier du projet, si bien que `build:`, `env_file:` et les chemins relatifs qu’il contient fonctionnent comme dans votre propre clone.
+
+5. Vérifiez le **Nom** (il vient du nom du dépôt), et ajoutez un **Environnement** pour ce qui n’a pas sa place dans git, comme les mots de passe : des lignes `KEY=value`, chiffrées sur cet ordinateur et transmises à Compose sous forme de variables au déploiement.
+
+6. Choisissez **Enregistrer et déployer** — ou **Enregistrer** pour déployer plus tard.
+
+</Steps>
+
+Homeport récupère la branche ou le tag et lit le fichier compose avant d’enregistrer quoi que ce soit, si bien qu’un mauvais chemin, une mauvaise branche ou un mauvais tag, ou un fichier que Compose ne pourrait pas déployer, est signalé tout de suite. La stack est listée comme **Synchronisée** et **Non déployée** jusqu’à son premier déploiement ; son onglet **Définition** montre son dépôt, sa branche ou son tag, son fichier compose et le commit qu’elle a déployé.
+
+Le dépôt est cloné une seule fois sur cet ordinateur, dans un dossier `repositories` à côté de la base de données de Homeport, et partagé par toutes les stacks synchronisées créées à partir de lui. Chaque stack synchronisée se déploie depuis sa propre extraction du commit, dans un dossier `synced-stacks` au même endroit, qui reste en place entre les déploiements : les fichiers que vos conteneurs écrivent par des montages bind relatifs restent là où ils étaient. Les liens symboliques du dépôt sont extraits comme des fichiers ordinaires, si bien qu’un fichier compose ne peut pas faire pointer Compose vers un fichier situé ailleurs sur cet ordinateur. Les fichiers gardent les fins de ligne avec lesquelles le dépôt les contient, sur Windows aussi, si bien qu’un script copié dans une image Linux s’exécute toujours ; seul le `.gitattributes` du dépôt lui-même peut les changer.
+
+Une stack synchronisée peut être déployée sur un [Swarm](/docs/guides/swarm/) à la place : choisissez-le sous **Déployer sur** dans **Nouvelle stack**. Elle se synchronise, se déploie et se déploie automatiquement de la même façon, avec `docker stack deploy` exécuté depuis son extraction ; voir [Stacks liées et synchronisées sur un Swarm](/docs/guides/swarm/#stacks-liées-et-synchronisées-sur-un-swarm) pour ce qui change, `build:` en premier lieu.
+
+**Oublier** fait cesser à Homeport de suivre le dépôt. Ses conteneurs continuent de tourner et elle devient une stack externe ; son extraction est supprimée, sauf si des conteneurs y ont écrit des fichiers, et le clone du dépôt disparaît dès qu’aucune stack synchronisée ne l’utilise. Le dépôt reste dans **Paramètres → Dépôts**.
+
+## Synchronisation
+
+Choisissez **Synchroniser** sur la ligne ou la page d’une stack synchronisée. Homeport récupère sa branche ou son tag, puis montre ce que son déploiement changerait avant de faire quoi que ce soit :
+
+- les **nouveaux commits** depuis celui qui est déployé qui changent quelque chose dans le dossier du fichier compose, avec leur auteur et leur date ;
+- chaque **fichier modifié** dans ce dossier, le fichier compose en premier, avec les lignes supprimées barrées au-dessus de celles qui les remplacent. Un fichier qui n’est pas du texte est nommé mais pas affiché.
+
+Choisissez **Déployer** pour déployer ce commit précis : Homeport l’extrait dans l’extraction de la stack et exécute `docker compose up` depuis le dossier du fichier compose, en reconstruisant les services qui ont `build:`, si bien qu’un `Dockerfile` modifié s’applique. La sortie défile pendant l’exécution, et le déploiement est enregistré dans lâ**Historique** de la stack avec son commit.
+
+- Un push qui ne change rien dans le dossier du fichier compose — de la documentation ailleurs dans le dépôt, par exemple — affiche **À jour**. **Redéployer quand même** le déploie malgré tout.
+- Si un tag pointe désormais vers un autre commit que lors de la dernière récupération de Homeport, la vérification le signale d’abord.
+- Si la récupération échoue (la clé de déploiement a été retirée, le serveur est injoignable) ou si le déploiement échoue, Homeport indique pourquoi et quoi faire, et la stack garde son commit déployé.
+
+**Redéployer** déploie à nouveau le commit actuellement déployé, après avoir montré ce qui a changé dans son environnement ou ses profils. **Déployer** sur une stack qui n’a jamais été déployée déploie le commit récupéré lors de sa création. Une stack synchronisée ne peut pas revenir en arrière depuis Homeport : annulez la modification dans son dépôt, ou faites pointer la stack vers un tag antérieur, puis synchronisez.
+
+## Interrogation et déploiement automatique
+
+<Aside type="caution" title="Uniquement tant que Homeport est ouvert">
+  Homeport ne vérifie vos dépôts que tant qu’il est ouvert. **Rien ne se synchronise quand il est
+  fermé** : il n’y a ni agent sur vos serveurs ni webhook, puisque Homeport n’y installe rien. Quand
+  vous le rouvrez, il attend un intervalle avant sa première vérification.
+</Aside>
+
+Tant que Homeport est ouvert, il récupère la branche ou le tag de chaque stack synchronisée à intervalle régulier — toutes les 5 minutes par défaut, réglable dans **Paramètres → Stacks synchronisées** (au moins 1 minute). Chaque dépôt est récupéré une fois par tour, quel que soit le nombre de stacks qui l’utilisent, et un dépôt qui échoue sans cesse est réessayé de moins en moins souvent, jusqu’à une fois par heure.
+
+Quand un nouveau commit modifie le dossier du fichier compose, la stack affiche **Mise à jour disponible** dans la liste et sur sa page. **Synchroniser** montre ce qui a changé et le déploie. L’onglet **Définition** de la stack indique la **dernière vérification**, et pourquoi elle a échoué le cas échéant.
+
+Deux interrupteurs de l’onglet **Définition** règlent cela, stack par stack :
+
+- **Rechercher de nouveaux commits**, activé par défaut. Désactivez-le pour ne synchroniser que lorsque vous choisissez **Synchroniser**.
+- **Déployer automatiquement les nouveaux commits**, désactivé par défaut. Quand il est activé, Homeport déploie chaque nouveau commit dès qu’il le voit, **sans vous montrer d’abord ce qui a changé**, en suivant les mêmes étapes que **Synchroniser** ; le déploiement est enregistré comme automatique dans lâ**Historique**, et une notification signale quand il est terminé. Il attend tant que l’hôte est injoignable. S’il échoue, Homeport indique pourquoi et ne réessaie pas ce commit : le commit suivant, ou une **synchronisation** que vous déployez vous-même, s’en charge.
+
+## Pourquoi ne puis-je pas modifier une stack synchronisée ?
+
+Parce que son dépôt est le seul endroit où vit sa définition. Si Homeport modifiait le fichier compose, la synchronisation suivante écraserait cette modification ou entrerait en conflit avec elle, et personne en lisant le dépôt ne saurait ce qui est déployé. L’onglet **Définition** d’une stack synchronisée montre donc son fichier compose au commit récupéré **en lecture seule** — vous pouvez toujours le sélectionner et en copier des parties —, liste les autres fichiers de son dossier, et relie chacun à sa page sur GitHub, GitLab, Gitea ou Forgejo. Modifiez-les là-bas, poussez, puis **Synchronisez**.
+
+Ce que Homeport détient reste modifiable dans le même onglet :
+
+- son **Environnement**, chiffré sur cet ordinateur, pour les valeurs qui n’ont pas leur place dans git ;
+- ses **profils**, si le fichier compose en déclare ;
+- s’il **recherche de nouveaux commits** et s’il **les déploie automatiquement**.
+
+**Oublier** fait cesser à Homeport de suivre le dépôt ; les conteneurs de la stack continuent de tourner, et elle devient externe.

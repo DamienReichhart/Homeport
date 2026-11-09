@@ -23,6 +23,19 @@ interface UAData {
   getHighEntropyValues(hints: string[]): Promise<UADataValues>;
 }
 
+/** The download button's text for the script, in the page's language. */
+export interface DownloadText {
+  /** "Download for {os}". */
+  label: string;
+  windowsArm: string;
+  windowsX64: string;
+  macosArm: string;
+  macosX64: string;
+  /** A Mac whose architecture isn't known. */
+  macos: string;
+  linux: string;
+}
+
 export interface Platform {
   os: DetectedOs;
   arch: DetectedArch;

@@ -23,7 +23,7 @@ export function TypePicker({
       {groups.length === 0 && (
         <p className="text-muted-foreground text-sm">{t('apiresources.noMatch')}</p>
       )}
-      <div className="grid max-h-[70vh] gap-3 overflow-y-auto pr-1">
+      <div className="grid max-h-[70vh] gap-3 overflow-y-auto pe-1">
         {groups.map(({ group, types: list }) => (
           <section key={group} className="grid gap-0.5">
             <h2 className="text-muted-foreground px-2 text-xs font-medium">
@@ -52,7 +52,7 @@ export function TypePicker({
                   )}
                   {blocked && (
                     <LockIcon
-                      className="ml-auto size-3"
+                      className="ms-auto size-3"
                       aria-label={
                         blocked === 'verb'
                           ? t('apiresources.cantList')

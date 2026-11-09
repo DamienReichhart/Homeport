@@ -1,0 +1,75 @@
+---
+title: Istanze
+description: Esegui container di sistema e macchine virtuali Incus; apri la loro console e un terminale al loro interno; crea e ripristina snapshot; gestisci immagini, profili, pool di archiviazione e reti.
+---
+
+Un’**istanza** è ciò che esegue un [host Incus](/docs/hosts/incus/): un **container di sistema**, che avvia un’intera distribuzione Linux condividendo il kernel dell’host, oppure una **macchina virtuale**, con un proprio kernel. Ogni pagina descritta qui mostra il progetto scelto sotto il selettore degli host.
+
+## La pagina Istanze
+
+**Istanze** elenca le istanze del progetto con tipo, stato, immagine, indirizzi globali (prima IPv4), memoria ed età. Filtrale per nome, oppure mostra solo i container o solo le macchine virtuali.
+
+| Azione              | Cosa fa Incus                                                                                                                                     |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Avvia**           | La avvia.                                                                                                                                         |
+| **Arresta**         | Chiede al suo sistema di spegnersi e gli concede 30 secondi; se non lo fa, viene segnalato, con **Forza l’arresto** come via d’uscita.            |
+| **Forza l’arresto** | La interrompe subito, come staccare la spina.                                                                                                     |
+| **Riavvia**         | La spegne in modo ordinato e la avvia di nuovo.                                                                                                   |
+| **Congela**         | Mette in pausa tutti i suoi processi; **Scongela** li riprende.                                                                                   |
+| **Elimina**         | Chiede prima conferma, indicando gli snapshot eliminati con essa. Un’istanza in esecuzione viene eliminata solo se selezioni **Prima arrestala**. |
+
+L’elenco si aggiorna dagli eventi di Incus in un attimo, chiunque abbia fatto la modifica.
+
+La pagina di un’istanza ha una **Panoramica** (indirizzi, tempo di CPU, memoria, processi, snapshot e i suoi profili, ognuno collegato alla sua pagina), la sua **Configurazione** e i suoi **Dispositivi**, con ciò che impostano i suoi profili contrassegnato come **Da un profilo**, e la descrizione di Incus stesso sotto **Originale**.
+
+## Creare un’istanza
+
+**Nuova istanza** (o <kbd>n</kbd>) ne crea una da un’immagine:
+
+- **Da un server di immagini**: il server pubblico `https://images.linuxcontainers.org` per impostazione predefinita, o un altro server simplestreams. Homeport elenca ciò che pubblica per l’architettura dell’host, come container o come macchine virtuali, con una ricerca per sistema, release o alias; puoi anche digitare un alias come `debian/12` o `ubuntu/24.04/cloud`. Incus scarica l’immagine, come farebbe `incus launch images:debian/12`.
+- **Dalle immagini di questo host**: una che l’host conserva già.
+
+Scegli i suoi **profili** (in ordine: quelli successivi prevalgono sui precedenti) e, facoltativamente, le sue **CPU**, la **Memoria** (`2GiB`) e la dimensione del **Disco radice** (`20GiB`, nel pool in cui si trova il disco radice dei suoi profili). **Avviala una volta creata** è attivo per impostazione predefinita. La finestra di dialogo segue il download e la decompressione con le parole di Incus stesso, poi apre la nuova istanza.
+
+Un nome già in uso, un’immagine che il server non ha, un pool di archiviazione pieno o una macchina virtuale su un host senza virtualizzazione hardware (niente `/dev/kvm`): ognuno di questi casi viene segnalato, con cosa fare.
+
+## Console e terminale
+
+**Console** mostra ciò che l’istanza ha stampato finora sulla sua console di testo, poi vi si collega: il prompt di accesso, o un avvio mentre avviene, come lo mostra `incus console`. Funziona anche per le macchine virtuali, e quando la rete o l’SSH dell’istanza non funzionano. Lasciare la scheda, o **Ricollega**, si limita a scollegarsi.
+
+**Exec** apre una shell in un’istanza in esecuzione (bash se c’è, altrimenti sh), oppure esegue il comando che indichi, come utente numerico e in una cartella a tua scelta; **Apri** ne avvia una nuova con ciò che hai digitato. Chiudere la scheda interrompe il comando, così nulla di ciò che è stato avviato da lì continua a girare. In una macchina virtuale, exec richiede l’`incus-agent` che le immagini di Incus includono e avviano all’avvio; finché non è in esecuzione, Homeport lo segnala e la scheda Console è il modo per entrare.
+
+## Snapshot
+
+**Snapshot** elenca gli snapshot dell’istanza con quando è stato creato ciascuno, quando scade e se contiene lo stato di esecuzione.
+
+- **Crea snapshot** gli dà un nome (o lascia che Incus lo chiami `snap0`, `snap1`…) e lo conserva finché non viene eliminato, oppure per un giorno, una settimana o 30 giorni. Mentre l’istanza è in esecuzione, e quando la sua impostazione `migration.stateful` lo consente, lo snapshot può includere la sua memoria, così un ripristino riprende da dove era.
+- **Ripristina** riporta l’istanza com’era quando è stato creato lo snapshot. Tutto ciò che è cambiato da allora va perso, e un’istanza in esecuzione si riavvia, quindi Homeport chiede prima conferma.
+- **Elimina** rimuove uno snapshot, dopo aver chiesto conferma; l’istanza resta com’è.
+
+## Immagini
+
+**Immagini** elenca le immagini che il progetto conserva, con alias, descrizione, tipo, architettura, dimensione ed età. Le immagini che Incus ha scaricato per creare un’istanza sono contrassegnate come **in cache**: Incus le elimina quando nulla le usa da un po’.
+
+- **Ottieni immagine** ne scarica una in anticipo da un server di immagini, scelta come per una nuova istanza. **Mantienila aggiornata** fa sì che Incus la aggiorni dal server; **Assegnale lo stesso alias qui** permette alle nuove istanze di usarla per nome.
+- **Aggiorna** recupera una build più recente di un’immagine da dove proviene.
+- Il pulsante dell’etichetta aggiunge un alias; la croce su un alias lo rimuove.
+- **Elimina** rimuove un’immagine. Le istanze create da essa continuano a funzionare: ognuna ha la propria copia.
+
+## Profili
+
+**Profili** elenca i profili del progetto con quante chiavi e quanti dispositivi imposta ciascuno e le istanze che lo usano. La pagina di un profilo ne modifica descrizione, configurazione e dispositivi in YAML, come fa `incus profile edit`, e collega le istanze che lo usano. **Salva** applica le modifiche a quelle istanze, come fa Incus. Se qualcuno ha modificato il profilo dopo che la pagina lo ha caricato, il salvataggio viene rifiutato invece di sovrascrivere le sue modifiche: **Ricarica**, poi rifai le tue modifiche.
+
+**Nuovo profilo** ne crea uno vuoto e lo apre. `default`, e i profili usati da istanze, non si possono eliminare.
+
+## Archiviazione
+
+**Archiviazione** mostra ogni pool di archiviazione con il suo driver e quanto è pieno, e i volumi del pool selezionato nel progetto: quelli propri delle istanze e delle immagini, e quelli personalizzati, con contenuto, dimensione e cosa li usa.
+
+**Nuovo volume** crea un volume personalizzato, un file system o un dispositivo a blocchi, di una certa dimensione o di quella predefinita del pool, da collegare alle istanze per dati che sopravvivono a esse (`incus storage volume attach`). Un volume personalizzato si può eliminare quando nulla lo usa. I pool stessi si creano con `incus storage create`.
+
+## Reti
+
+**Reti** elenca le reti che il progetto vede, prima quelle gestite (create da Incus), con le impostazioni IPv4 e IPv6, il NAT e chi le usa. La pagina di una rete mostra i suoi indirizzi sull’host, l’MTU e l’indirizzo MAC, le istanze e i profili che la usano, e i lease DHCP di una rete gestita, come fa `incus network list-leases`.
+
+**Nuovo bridge** crea un bridge gestito. I suoi IPv4 e IPv6 sono `auto` (una sottorete libera), `none`, oppure l’indirizzo del bridge stesso con il suo prefisso, come `10.0.5.1/24`; **NAT** maschera il traffico IPv4 in uscita. Una rete in uso, o una delle interfacce della macchina stessa, non si elimina da qui.

@@ -1,0 +1,85 @@
+---
+title: Cluster
+description: Wie Homeport sich mit Kubernetes-Clustern aus Ihrer kubeconfig verbindet, was es speichert und was jeder Status bedeutet. Nomad-Cluster haben eine eigene Seite.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+Ein **Cluster** ist ein Kubernetes-Cluster oder ein [Nomad-Cluster](/docs/clusters/nomad/), mit dem Homeport sich über seine API verbindet. Dieser Abschnitt behandelt Kubernetes-Cluster; Nomad-Cluster haben [eine eigene Seite](/docs/clusters/nomad/). Ein Kubernetes-Cluster ist einer, den Homeport über seinen API-Server erreicht. Sie fügen ihn aus einem Kontext einer kubeconfig hinzu – der Datei, die `kubectl` bereits verwendet –, sodass keine neuen Zugangsdaten zu erstellen sind, und Homeport installiert nichts auf dem Cluster: Es spricht nur mit der Kubernetes-API, die Ihre kubeconfig bereits erreicht, mit den Rechten ihrer Zugangsdaten.
+
+<DocScreenshot
+  name="cluster-overview"
+  alt="Die Übersicht mit Karten für Hosts und Cluster und darunter das Dashboard des Clusters eks-prod."
+  caption="Cluster stehen in der Übersicht neben Ihren Hosts; der ausgewählte zeigt sein Dashboard."
+/>
+
+Cluster stehen neben Ihren Hosts im Umschalter oben in der Seitenleiste. Wenn Sie einen auswählen, erscheinen die Seiten dazu – **Workloads**, **Pods**, **Netzwerk**, **Konfiguration**, **Nodes**, **Events**, **API-Ressourcen**, **YAML anwenden**, **Helm** und **Portweiterleitungen** – und sein Dashboard in der [Übersicht](/docs/guides/overview/#der-ausgewählte-cluster); wenn Sie einen Host auswählen, erscheinen wieder die Seiten des Hosts.
+
+## Was Sie tun können
+
+Sie sehen live, was auf einem Cluster läuft und ob er gesund ist, und erledigen die alltäglichen `kubectl`-Aufgaben in Homeport:
+
+1. [Einen Cluster hinzufügen](#einen-cluster-hinzufügen) aus Ihrer kubeconfig oder einen [lokalen](/docs/clusters/local/) mit einem Klick; Cloud-Cluster melden sich über ihr [Exec-Plugin](/docs/clusters/exec-plugins/) an.
+2. Seine [Workloads und Pods](/docs/clusters/workloads/), seine [Services, Ingresses, ConfigMaps und Secrets](/docs/clusters/networking-config/), seine [Nodes und Events](/docs/clusters/nodes-events/) und [jede andere API-Ressource](/docs/clusters/api-resources/) durchsuchen, benutzerdefinierte Ressourcen eingeschlossen.
+3. Die [Logs eines Pods oder eines Workloads lesen und ein Terminal öffnen](/docs/clusters/logs-exec/) in einem Container und [einen Port](/docs/clusters/port-forward/) an diesen Rechner weiterleiten.
+4. [Skalieren, neu starten und löschen](/docs/clusters/actions/) und [YAML anwenden oder bearbeiten](/docs/clusters/yaml/), mit einer Vorschau dessen, was sich ändert.
+5. [Helm-Releases](/docs/clusters/helm/) auflisten, installieren, upgraden, zurücksetzen und deinstallieren und die Chart-Repositorys von helm verwalten, mit der `helm`-CLI auf diesem Rechner.
+
+Jede Änderung geht mit den Rechten Ihrer Zugangsdaten an die Kubernetes-API, und alles, was etwas entfernt oder ersetzt, fragt vorher nach und nennt dabei den Cluster.
+
+## Einen Cluster hinzufügen
+
+<DocScreenshot
+  name="add-cluster"
+  alt="Die Seite Cluster hinzufügen: oben die auf diesem Rechner gefundenen lokalen Cluster, dann die Kontexte von ~/.kube/config mit ihrem API-Server, ihrer Anmeldeart und welche bereits hinzugefügt sind."
+/>
+
+Wählen Sie **Cluster hinzufügen…** im Umschalter oder **Cluster hinzufügen** auf der Seite Cluster. [Lokale Cluster](/docs/clusters/local/) – Docker Desktop, OrbStack, Rancher Desktop, kind, k3d, minikube – werden oben angeboten, jeder mit einem Klick. Jeder Kontext, den Sie wählen, wird zu einem Cluster, benannt nach dem Kontext; Sie können ihn vor oder nach dem Import umbenennen.
+
+- **Aus der kubeconfig dieses Rechners** liest die in `KUBECONFIG` aufgeführten Dateien, zusammengeführt wie bei `kubectl`, oder `~/.kube/config`, wenn `KUBECONFIG` nicht gesetzt ist. Der aktuelle Kontext ist vorausgewählt.
+- **kubeconfig einfügen** liest Text, den Sie einfügen, nur im Arbeitsspeicher: Er wird nie als Datei gespeichert. Dateien, auf die er verweist (`certificate-authority: /…`), müssen vollständige Pfade sein; am einfachsten fügen Sie eine ein, in der alles eingebettet ist:
+
+  ```bash
+  kubectl config view --raw --flatten --minify
+  ```
+
+Jeder Kontext zeigt seinen API-Server, seinen Namespace und wie sein Benutzer sich anmeldet – **Client-Zertifikat**, **Token**, **OpenID Connect** oder **Exec-Plugin (aws)** für einen Cloud-Cluster –, sodass Sie einen lokalen Cluster vor dem Import von einem Produktionscluster unterscheiden können. Haken Sie die gewünschten an; jeder erhält ein Namensfeld, vorausgefüllt mit dem Namen des Kontexts. Lange ARNs wie `arn:aws:eks:…:cluster/prod` sollten Sie in etwas Kurzes wie `eks-prod` umbenennen: Der Name ist das, was der Umschalter und die Übersicht anzeigen.
+
+Ein Kontext, der bereits ein Cluster ist, kann nicht zweimal importiert werden: Homeport bietet stattdessen **Aktualisieren** an. Ein Kontext, der nicht verwendet werden kann, sagt warum, zum Beispiel ein Benutzer, dessen `auth-provider` `gcp` oder `azure` ist, was Kubernetes entfernt hat (stellen Sie ihn auf `gke-gcloud-auth-plugin` oder `kubelogin` um, wie `kubectl` es inzwischen verlangt).
+
+Benutzer können sich mit einem Client-Zertifikat, einem Token (oder `tokenFile`), Benutzername und Passwort, einem OpenID-Connect-`auth-provider` (sein ID-Token wird im Arbeitsspeicher erneuert) oder einem Exec-Plugin anmelden.
+
+## Was wo gespeichert wird
+
+| Im Klartext in der Datenbank von Homeport                                     | Nur verschlüsselt (wie SSH-Schlüssel)                                                 |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| der Name, die URL des API-Servers, der Namespace des Kontexts                 | das CA-Zertifikat, das Client-Zertifikat und der Schlüssel                            |
+| wie sein Benutzer sich anmeldet (Zertifikat, Token…), der importierte Kontext | das Token oder Passwort, die OIDC-Tokens, die Argumente und Umgebung des Exec-Plugins |
+
+Dateien, auf die die kubeconfig verweist, werden einmal gelesen, beim Import, und mit dem Rest verschlüsselt gespeichert. Ihre kubeconfig wird nie verändert. Ohne Schlüsselbund des Betriebssystems kann Homeport keine Zugangsdaten speichern und fügt keinen Cluster hinzu; siehe [Sicherheit und Ihre Daten](/docs/reference/security/).
+
+## Aus der kubeconfig aktualisieren
+
+kind, k3d und minikube geben einem Cluster bei jeder Neuerstellung neue Zertifikate, und Cloud-Zugangsdaten werden erneuert. **Aus kubeconfig aktualisieren** auf der Seite eines Clusters liest seinen Kontext erneut – aus der kubeconfig dieses Rechners oder, bei einem eingefügten, aus einer erneut eingefügten kubeconfig –, behält seinen Namen und verbindet neu.
+
+## Cluster verwalten
+
+- **Cluster verwalten** im Umschalter listet jeden Cluster mit seinem Status, seinem API-Server und seiner Anmeldeart auf.
+- Auf der Seite eines Clusters trennt der Schalter **Aktiviert** die Verbindung, ohne ihn zu vergessen, **Neu verbinden** versucht es sofort erneut, und **Umbenennen** ändert seinen Namen nur in Homeport.
+- **Cluster entfernen** vergisst den Cluster und seine gespeicherten Zugangsdaten. Auf dem Cluster und in Ihrer kubeconfig ändert sich nichts.
+
+Clusternamen müssen eindeutig sein, ohne Beachtung der Groß- und Kleinschreibung.
+
+## Status
+
+| Status                    | Bedeutung                                                                                                                          |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Verbunden**             | Der API-Server antwortet; seine Kubernetes-Version steht daneben.                                                                  |
+| **Wird verbunden**        | Homeport versucht, ihn zu erreichen.                                                                                               |
+| **Nicht erreichbar**      | Der API-Server hat nicht geantwortet. Homeport versucht es selbst erneut und wartet dabei 1 s bis zu einer Minute.                 |
+| **Zugriff verweigert**    | Der API-Server hat die Zugangsdaten abgelehnt. Prüfen Sie, ob `kubectl` mit dem Kontext funktioniert, und aktualisieren Sie dann.  |
+| **Falsch konfiguriert**   | Etwas, das nur Sie beheben können, etwa ein Zertifikat, das nicht passt. Homeport wartet, bis Sie es tun.                          |
+| **Zugangsdaten verloren** | Der Schlüssel im Schlüsselbund des Betriebssystems, der sie schützt, ist weg; aktualisieren Sie den Cluster aus seiner kubeconfig. |
+| **Deaktiviert**           | Mit dem Schalter **Aktiviert** ausgeschaltet.                                                                                      |
+
+Ein verbundener Cluster wird alle 15 Sekunden geprüft, sodass einer, der verschwindet, das anzeigt und sich von selbst neu verbindet, wenn er zurück ist, wie ein Host.

@@ -1,0 +1,47 @@
+---
+title: ローカルのクラスター
+description: Homeport がこのコンピューターで見つける Kubernetes クラスターと、Docker Desktop、OrbStack、Rancher Desktop で Kubernetes を有効にする方法。
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+Homeport は、このコンピューターの kubeconfig から、ここで動作しているクラスターを探し、それぞれの API サーバーにバージョンを問い合わせます。応答したものは **クラスターを追加** とウェルカムページに表示され、それぞれワンクリックで追加できます。Homeport がクラスターを起動、作成、インストールすることはありません。
+
+<DocScreenshot
+  name="add-cluster"
+  alt="このマシンのクラスター: 追加済みの kind-dev、「追加」ボタンの付いた Docker Desktop のクラスター、停止中の OrbStack のクラスター、kubeconfig に追加するためのコマンドが添えられた k3d のクラスター。"
+  caption="kind-dev はすでにクラスターになっており、Docker Desktop のクラスターはワンクリックで追加でき、OrbStack のクラスターは停止しています。動作中の k3d クラスターはまだ kubeconfig にありません。"
+/>
+
+## 見つかるもの
+
+| ツール              | kubeconfig のコンテキスト                        | 追加されるときの名前 |
+| ------------------- | ------------------------------------------------ | -------------------- |
+| **Docker Desktop**  | `docker-desktop`                                 | `Docker Desktop`     |
+| **OrbStack**        | `orbstack`                                       | `OrbStack`           |
+| **Rancher Desktop** | `rancher-desktop`                                | `Rancher Desktop`    |
+| **kind**            | `kind-<name>`                                    | コンテキスト名       |
+| **k3d**             | `k3d-<name>`                                     | コンテキスト名       |
+| **minikube**        | `minikube`、または minikube が書いたプロファイル | コンテキスト名       |
+
+コンテキストがローカルとみなされるのは、API サーバーがこのコンピューター上にある場合（`127.0.0.1`、`localhost`、`kubernetes.docker.internal`…）か、minikube と Rancher Desktop の場合はそれぞれの VM 内のプライベートアドレスにある場合だけです。リモートのコンテキストは、名前にかかわらず表示されません。応答しないローカルのクラスターは **停止中** と表示されます。そのツールでクラスターを起動してから、ページを開き直してください。
+
+### kubeconfig にない kind と k3d のクラスター
+
+[ローカルのホスト](/docs/hosts/local/)が接続されている場合、Homeport は動作中の kind と k3d のクラスターのコンテナも（`io.x-k8s.kind.cluster` と `k3d.cluster` のラベルで）見つけます。kubeconfig から到達できないクラスターは、知らないうちに追加されるのではなく、追加するためのコマンドとともに表示されます:
+
+```bash
+kind export kubeconfig --name <name>
+```
+
+```bash
+k3d kubeconfig merge <name> --kubeconfig-merge-default
+```
+
+## Kubernetes を有効にする
+
+- **Docker Desktop**: **Settings → Kubernetes → Enable Kubernetes** を選び、**Apply & restart** を選びます。`docker-desktop` コンテキストが追加されます。
+- **OrbStack**: **Settings → Kubernetes → Enable Kubernetes** を選ぶか、`orb start k8s` を実行します。`orbstack` コンテキストが追加されます。
+- **Rancher Desktop**: **Preferences → Kubernetes → Enable Kubernetes** を選びます。`rancher-desktop` コンテキストが追加されます。
+
+kind（`kind create cluster`）、k3d（`k3d cluster create`）、minikube（`minikube start`）は、クラスターを作成するときにコンテキストを追加します。これらはクラスターを作り直すたびに新しい証明書を発行するので、作り直した後はそのページで **kubeconfig から更新** を使ってください。

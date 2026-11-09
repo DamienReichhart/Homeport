@@ -78,7 +78,7 @@ function SwarmStackDetail({ swarm, name }: { swarm: SwarmView; name: string }) {
         title={
           <span className="flex items-center gap-2">
             <Button variant="ghost" size="icon-sm" aria-label={t('common.back')} onClick={back}>
-              <ArrowLeftIcon />
+              <ArrowLeftIcon className="rtl:-scale-x-100" />
             </Button>
             {stack.name}
             <Badge variant={KIND_BADGE[stack.kind]}>{t(KIND_LABEL[stack.kind])}</Badge>

@@ -19,13 +19,19 @@ import { t } from '@/shared/i18n';
 
 export type { ColumnDef } from '@tanstack/react-table';
 
+/** The keyboard focus ring of the table's own controls. */
+const FOCUS =
+  'rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 cursor-pointer';
+
 /** Brings a newly marked row into view (jsdom has no scrolling). */
 function scrollIntoView(row: HTMLTableRowElement | null) {
   row?.scrollIntoView?.({ block: 'nearest' });
 }
 
 /**
- * A sortable, filterable table. `filter` is matched against every column
+ * A sortable, filterable table. With `onRowClick`, the primary column's cell
+ * is a button, so rows open with Tab and Enter as well as a click; sortable
+ * headers are buttons with `aria-sort`. `filter` is matched against every column
  * with an accessor; `onSelectionChange` enables row checkboxes;
  * `selectedId` marks one row, such as one just made, and scrolls to it;
  * `pageSize` shows long lists a page at a time, so thousands of rows stay fast.
@@ -41,6 +47,7 @@ export function DataTable<T>({
   selectedId,
   initialSorting = [],
   pageSize,
+  primaryColumn,
 }: {
   columns: ColumnDef<T, unknown>[];
   data: T[];
@@ -52,6 +59,8 @@ export function DataTable<T>({
   selectedId?: string | null;
   initialSorting?: SortingState;
   pageSize?: number;
+  /** The id of the column whose cell opens the row from the keyboard; the first data column by default. */
+  primaryColumn?: string;
 }) {
   const [sorting, setSorting] = useState<SortingState>(initialSorting);
   const [selection, setSelection] = useState<RowSelectionState>({});
@@ -109,6 +118,10 @@ export function DataTable<T>({
       : {}),
   });
   const pages = pageSize ? table.getPageCount() : 1;
+  /** The column whose cell opens the row from the keyboard: the first one with data. */
+  const primary =
+    primaryColumn ??
+    table.getAllLeafColumns().find((c) => c.id !== 'select' && c.id !== 'actions')?.id;
 
   const rows = table.getRowModel().rows;
   return (
@@ -119,20 +132,39 @@ export function DataTable<T>({
             <TableRow key={group.id}>
               {group.headers.map((header) => {
                 const sorted = header.column.getIsSorted();
+                const label = (
+                  <>
+                    {flexRender(header.column.columnDef.header, header.getContext())}
+                    {sorted === 'asc' && <ArrowUpIcon className="size-3" />}
+                    {sorted === 'desc' && <ArrowDownIcon className="size-3" />}
+                  </>
+                );
                 return (
                   <TableHead
                     key={header.id}
-                    className={cn(
-                      header.column.getCanSort() && 'cursor-pointer select-none',
-                      header.id === 'select' && 'w-8',
-                    )}
-                    onClick={header.column.getToggleSortingHandler()}
+                    className={cn(header.id === 'select' && 'w-8')}
+                    aria-sort={
+                      !header.column.getCanSort()
+                        ? undefined
+                        : sorted === 'asc'
+                          ? 'ascending'
+                          : sorted === 'desc'
+                            ? 'descending'
+                            : 'none'
+                    }
                   >
-                    <span className="inline-flex items-center gap-1">
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                      {sorted === 'asc' && <ArrowUpIcon className="size-3" />}
-                      {sorted === 'desc' && <ArrowDownIcon className="size-3" />}
-                    </span>
+                    {header.column.getCanSort() ? (
+                      // A real button, so Tab reaches it and Enter or Space sorts.
+                      <button
+                        type="button"
+                        className={cn('inline-flex items-center gap-1 select-none', FOCUS)}
+                        onClick={header.column.getToggleSortingHandler()}
+                      >
+                        {label}
+                      </button>
+                    ) : (
+                      <span className="inline-flex items-center gap-1">{label}</span>
+                    )}
                   </TableHead>
                 );
               })}
@@ -159,11 +191,22 @@ export function DataTable<T>({
                 className={cn(onRowClick && 'cursor-pointer')}
                 onClick={() => onRowClick?.(row.original)}
               >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+                {row.getVisibleCells().map((cell) => {
+                  const content = flexRender(cell.column.columnDef.cell, cell.getContext());
+                  return (
+                    <TableCell key={cell.id}>
+                      {onRowClick && cell.column.id === primary ? (
+                        // The row's one keyboard stop: Enter or Space clicks it, and
+                        // the click reaches the row's handler like a mouse click.
+                        <button type="button" className={cn('max-w-full text-start', FOCUS)}>
+                          {content}
+                        </button>
+                      ) : (
+                        content
+                      )}
+                    </TableCell>
+                  );
+                })}
               </TableRow>
             ))
           )}
@@ -183,7 +226,7 @@ export function DataTable<T>({
             disabled={!table.getCanPreviousPage()}
             onClick={() => table.previousPage()}
           >
-            <ChevronLeftIcon />
+            <ChevronLeftIcon className="rtl:-scale-x-100" />
           </Button>
           <Button
             variant="ghost"
@@ -192,7 +235,7 @@ export function DataTable<T>({
             disabled={!table.getCanNextPage()}
             onClick={() => table.nextPage()}
           >
-            <ChevronRightIcon />
+            <ChevronRightIcon className="rtl:-scale-x-100" />
           </Button>
         </div>
       )}

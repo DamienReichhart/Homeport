@@ -20,7 +20,10 @@ describe('the English catalogue', () => {
     const intl = createIntl({ locale: 'en', messages: en, onError: (e) => errors.push(e.message) });
     for (const [key, message] of Object.entries(en)) {
       const text = intl.formatMessage({ id: key }, samples(message));
-      if (String(text).includes('{')) errors.push(`${key} left an argument`);
+      // A brace quoted in ICU ('{') is literal text, such as a shell variable.
+      const literal = (message.match(/'\{'/g) ?? []).length;
+      if ((String(text).match(/\{/g) ?? []).length > literal)
+        errors.push(`${key} left an argument`);
     }
     expect(errors).toEqual([]);
   });

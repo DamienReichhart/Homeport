@@ -4,12 +4,20 @@
  * is typeset, not a screenshot: every Engine on one board, healthy rows plain,
  * and one red signal where something needs you.
  */
-import { REPO_URL } from '@/core/site';
+import { strings } from '@/core/i18n';
 import { getLatestRelease } from '@/core/release';
+import { type Locale, localePath, REPO_URL } from '@/core/site';
 import { DownloadButton, DownloadMeta } from '@/features/download';
 import { href } from '@/shared/lib/href';
+import { fill } from '@/shared/lib/template';
 import { Icon } from '@/shared/ui';
 
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
 const release = await getLatestRelease();
 
 interface Row {
@@ -21,70 +29,59 @@ interface Row {
   needsYou?: boolean;
 }
 
+const running = s['home.board.allRunning'];
 const rows: Row[] = [
-  { host: 'laptop', engine: 'OrbStack', via: 'socket', stacks: 4, status: 'All running' },
-  { host: 'homelab', engine: 'Docker Engine 28.5', via: 'ssh', stacks: 9, status: 'All running' },
-  { host: 'nas', engine: 'Podman 5.2', via: 'ssh', stacks: 2, status: 'All running' },
+  { host: 'laptop', engine: 'OrbStack', via: 'socket', stacks: 4, status: running },
+  { host: 'homelab', engine: 'Docker Engine 28.5', via: 'ssh', stacks: 9, status: running },
+  { host: 'nas', engine: 'Podman 5.2', via: 'ssh', stacks: 2, status: running },
   {
     host: 'vps-fra-1',
     engine: 'Docker Engine 27.3',
     via: 'tls',
     stacks: 3,
-    status: '1 Stack needs you',
+    status: s['home.board.needsYou'],
     needsYou: true,
   },
-  {
-    host: 'client-prod',
-    engine: 'Docker Engine 28.1',
-    via: 'ssh',
-    stacks: 6,
-    status: 'All running',
-  },
+  { host: 'client-prod', engine: 'Docker Engine 28.1', via: 'ssh', stacks: 6, status: running },
 ];
 ---
 
 <section class="hero">
   <div class="container hero__inner">
     {release && (
-      <a class="pill" href={href('/changelog/')}>
-        <span class="pill__tag">New</span>
-        Homeport {release.version} is out
-        <Icon name="arrowRight" size={14} />
+      <a class="pill" href={href(localePath('/changelog/', locale))}>
+        <span class="pill__tag">{s['home.hero.new']}</span>
+        {fill(s['home.hero.release'], { version: release.version })}
+        <Icon name="arrowRight" size={14} class="flip-rtl" />
       </a>
     )}
-    <h1>Every Docker Engine, on one board.</h1>
-    <p class="hero__lead">
-      Homeport runs on your machine and reaches your Hosts over SSH, TLS or TCP. No agent on the
-      server. Free, open source, Windows, macOS, Linux.
-    </p>
+    <h1>{s['home.hero.title']}</h1>
+    <p class="hero__lead">{s['home.hero.lead']}</p>
     <div class="hero__actions">
-      <DownloadButton />
+      <DownloadButton locale={locale} />
       <a class="button button--secondary button--large" href={REPO_URL}>
         <Icon name="github" />
-        Read the source
+        {s['home.hero.source']}
       </a>
     </div>
-    <DownloadMeta />
+    <DownloadMeta locale={locale} />
   </div>
 
   <div class="container" data-reveal>
     <figure class="board">
       <table>
-        <caption class="visually-hidden">
-          An example board: five Hosts, their Engines and how Homeport reaches them. One needs
-          attention.
-        </caption>
+        <caption class="visually-hidden">{s['home.board.caption']}</caption>
         <thead>
           <tr>
-            <th scope="col">Host</th>
+            <th scope="col">{s['home.board.host']}</th>
             <th scope="col" class="board__engine">
-              Engine
+              {s['home.board.engine']}
             </th>
-            <th scope="col">Via</th>
+            <th scope="col">{s['home.board.via']}</th>
             <th scope="col" class="board__num">
-              Stacks
+              {s['home.board.stacks']}
             </th>
-            <th scope="col">Status</th>
+            <th scope="col">{s['home.board.status']}</th>
           </tr>
         </thead>
         <tbody>
@@ -104,7 +101,7 @@ const rows: Row[] = [
           ))}
         </tbody>
       </table>
-      <figcaption>Healthy is plain. Only what needs you turns red.</figcaption>
+      <figcaption>{s['home.board.note']}</figcaption>
     </figure>
   </div>
 </section>
@@ -161,7 +158,7 @@ const rows: Row[] = [
   .board td {
     padding: 1rem 1.25rem;
     border-bottom: 1px solid var(--hp-board-rule);
-    text-align: left;
+    text-align: start;
     white-space: nowrap;
   }
   .board tbody tr:last-child > * {
@@ -188,7 +185,7 @@ const rows: Row[] = [
     font-size: 0.85em;
   }
   .board__num {
-    text-align: right !important;
+    text-align: end !important;
     font-variant-numeric: tabular-nums;
   }
   .board__status > span {

@@ -1,19 +1,32 @@
 /**
  * Captures the website's screenshots of the real Homeport UI.
  *
- *   bun run screenshots [name…]
+ *   bun run screenshots [--locale <tag>…] [name…]
  *
  * Builds `scripts/screenshots/` (the app's frontend with mocked IPC and demo
  * data), serves it, and photographs each shot with headless Firefox at
- * 1440×900 into `website/src/assets/screenshots/<name>.png`. Pass shot names
- * to capture only those. Set FIREFOX to use another Firefox binary, or CHROMIUM
+ * 1440×900 into `website/src/assets/screenshots/<name>.png` (English) and
+ * `website/src/assets/screenshots/<tag>/<name>.png` for every other language,
+ * the tag in lower case (`fr`, `pt-br`). Every language with an app catalogue
+ * is captured, so each page of the website shows the app in its own language;
+ * `--locale` (one per flag) captures only those, for a quick retake. Pass shot
+ * names to capture only those. `website/src/features/docs/screenshots.test.ts`
+ * fails when a language lacks a shot English has. Set FIREFOX to use another Firefox binary, or CHROMIUM
  * to a Chrome or Chromium binary to use that instead.
  */
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { build } from 'vite';
-import { PROD, SWARM_ID, hexId, swarmServices } from './data';
+import { SHOTS } from './shots';
 
 const HERE = import.meta.dir;
 const ROOT = join(HERE, '..', '..');
@@ -48,118 +61,6 @@ function screenshotCommand(profile: string, png: string, url: string): string[] 
   ];
 }
 
-interface Shot {
-  name: string;
-  route: string;
-  theme?: 'light' | 'dark';
-  steps?: string[];
-  hold?: number;
-  fastClock?: boolean;
-  /**
-   * Demo data beyond the Hosts: `clusters` selects the demo EKS Cluster,
-   * `nomad` the demo Nomad Cluster.
-   */
-  demo?: 'clusters' | 'nomad';
-}
-
-const container = (name: string) => hexId(`${PROD}/${name}`);
-
-const SHOTS: Shot[] = [
-  { name: 'overview-light', route: '/' },
-  { name: 'overview-dark', route: '/', theme: 'dark' },
-  { name: 'board-light', route: '/board' },
-  { name: 'board-dark', route: '/board', theme: 'dark' },
-  { name: 'containers-light', route: '/containers' },
-  { name: 'containers-dark', route: '/containers', theme: 'dark' },
-  { name: 'container-logs', route: `/containers/${container('shop-api-1')}/logs`, theme: 'dark' },
-  { name: 'container-logs-light', route: `/containers/${container('shop-api-1')}/logs` },
-  {
-    name: 'container-terminal',
-    route: `/containers/${container('shop-db-1')}/exec`,
-    theme: 'dark',
-  },
-  {
-    name: 'container-stats',
-    route: `/containers/${container('shop-api-1')}/stats`,
-    hold: 8500,
-    fastClock: true,
-  },
-  { name: 'stacks', route: '/stacks' },
-  { name: 'stack-editor', route: '/stacks/shop', steps: ['click:Definition'], hold: 3500 },
-  {
-    name: 'stack-editor-dark',
-    route: '/stacks/shop',
-    theme: 'dark',
-    steps: ['click:Definition'],
-    hold: 3500,
-  },
-  { name: 'stack-logs', route: '/stacks/shop', theme: 'dark', steps: ['click:Logs'], hold: 3500 },
-  { name: 'images', route: '/images' },
-  { name: 'volumes', route: '/volumes' },
-  { name: 'networks', route: '/networks' },
-  { name: 'events', route: '/events' },
-  {
-    name: 'add-host-ssh',
-    route: '/hosts/new',
-    steps: [
-      'fill:production=backup-eu-2',
-      'fill:server.example.com=backup-eu-2.example.com',
-      'fill:deploy=deploy',
-    ],
-    hold: 3500,
-  },
-  {
-    name: 'add-host-ssh-dark',
-    route: '/hosts/new',
-    theme: 'dark',
-    steps: [
-      'fill:production=backup-eu-2',
-      'fill:server.example.com=backup-eu-2.example.com',
-      'fill:deploy=deploy',
-    ],
-    hold: 3500,
-  },
-  { name: 'host-ssh', route: `/hosts/${PROD}` },
-  { name: 'swarm-services', route: `/swarms/${SWARM_ID}/services` },
-  {
-    name: 'swarm-summary',
-    route: `/swarms/${SWARM_ID}`,
-    steps: ['click:Show the join commands'],
-    hold: 3500,
-  },
-  { name: 'swarm-nodes', route: `/swarms/${SWARM_ID}/nodes` },
-  { name: 'swarm-tasks', route: `/swarms/${SWARM_ID}/tasks` },
-  { name: 'swarm-stacks', route: `/swarms/${SWARM_ID}/stacks` },
-  { name: 'swarm-secrets', route: `/swarms/${SWARM_ID}/secrets` },
-  { name: 'swarm-service', route: `/swarms/${SWARM_ID}/services/${swarmServices[1]!.id}` },
-  { name: 'cluster-overview', route: '/', demo: 'clusters' },
-  { name: 'cluster-overview-dark', route: '/', theme: 'dark', demo: 'clusters' },
-  { name: 'add-cluster', route: '/clusters/new', demo: 'clusters' },
-  { name: 'cluster-workloads', route: '/workloads', demo: 'clusters' },
-  { name: 'cluster-workload', route: '/workloads/deployments/shop/api', demo: 'clusters' },
-  { name: 'cluster-pods', route: '/pods', demo: 'clusters' },
-  { name: 'cluster-pod', route: '/pods/shop/api-6b8f4d7c5-xr4np', demo: 'clusters' },
-  { name: 'cluster-services', route: '/services', demo: 'clusters' },
-  { name: 'cluster-ingress', route: '/ingresses/shop/storefront/rules', demo: 'clusters' },
-  {
-    name: 'cluster-secret',
-    route: '/secrets/shop/db-credentials',
-    demo: 'clusters',
-    steps: ['click:Reveal'],
-    hold: 3500,
-  },
-  { name: 'cluster-nodes', route: '/nodes', demo: 'clusters' },
-  { name: 'cluster-events', route: '/cluster-events', demo: 'clusters' },
-  { name: 'nomad-jobs', route: '/nomad/jobs', demo: 'nomad' },
-  {
-    name: 'nomad-run-plan',
-    route: '/nomad/jobs/shop/shop-api',
-    demo: 'nomad',
-    steps: ['click:Edit and run', 'wait:800', 'click:Plan'],
-    hold: 3500,
-  },
-];
-
 /** Snap Firefox can only reach non-hidden paths in the home directory. */
 function workDir(): string {
   const snap = join(homedir(), 'snap', 'firefox', 'common');
@@ -169,8 +70,30 @@ function workDir(): string {
 
 const GIF = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
 
+/** The app's languages: every catalogue folder with a meta.ts. */
+const CATALOGUES = readdirSync(join(ROOT, 'src', 'shared', 'i18n')).filter((d) =>
+  existsSync(join(ROOT, 'src', 'shared', 'i18n', d, 'meta.ts')),
+);
+
+/** Where a language's shots go: English at the top, others in their folder. */
+const outDir = (tag: string) => (tag === 'en' ? OUT : join(OUT, tag.toLowerCase()));
+
+/** The languages and shot names asked for on the command line. */
+function parseArgs(args: string[]): { locales: string[]; names: string[] } {
+  const asked: string[] = [];
+  const names: string[] = [];
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--locale') asked.push(args[++i] ?? '');
+    else names.push(args[i] ?? '');
+  }
+  const locales = asked.length === 0 || asked.includes('all') ? CATALOGUES : asked;
+  for (const tag of locales)
+    if (!CATALOGUES.includes(tag)) throw new Error(`No catalogue for ${tag} in src/shared/i18n`);
+  return { locales, names };
+}
+
 async function main() {
-  const only = process.argv.slice(2);
+  const { locales, names: only } = parseArgs(process.argv.slice(2));
   const shots = only.length ? SHOTS.filter((s) => only.includes(s.name)) : SHOTS;
   if (shots.length === 0) throw new Error(`No shot named ${only.join(', ')}`);
 
@@ -214,29 +137,33 @@ async function main() {
         'user_pref("ui.prefersReducedMotion", 1);',
       ].join('\n'),
     );
-    mkdirSync(OUT, { recursive: true });
-
-    for (const shot of shots) {
-      const query = new URLSearchParams({
-        route: shot.route,
-        theme: shot.theme ?? 'light',
-        hold: String(shot.hold ?? 2500),
-      });
-      if (shot.fastClock) query.set('clock', 'fast');
-      if (shot.demo) query.set('demo', shot.demo);
-      for (const step of shot.steps ?? []) query.append('step', step);
-      const url = `http://127.0.0.1:${server.port}/scripts/screenshots/index.html?${query}`;
-      const png = join(work, `${shot.name}.png`);
-      const proc = Bun.spawn(screenshotCommand(profile, png, url), {
-        stdout: 'ignore',
-        stderr: process.env.DEBUG_SHOTS ? 'inherit' : 'ignore',
-      });
-      const timer = setTimeout(() => proc.kill(), 90_000);
-      await proc.exited;
-      clearTimeout(timer);
-      if (!existsSync(png)) throw new Error(`The browser produced no screenshot for ${shot.name}`);
-      copyFileSync(png, join(OUT, `${shot.name}.png`));
-      console.log(`✓ ${shot.name}`);
+    for (const locale of locales) {
+      const out = outDir(locale);
+      mkdirSync(out, { recursive: true });
+      for (const shot of shots) {
+        const query = new URLSearchParams({
+          route: shot.route,
+          theme: shot.theme ?? 'light',
+          hold: String(shot.hold ?? 2500),
+          lang: locale,
+        });
+        if (shot.fastClock) query.set('clock', 'fast');
+        if (shot.demo) query.set('demo', shot.demo);
+        for (const step of shot.steps ?? []) query.append('step', step);
+        const url = `http://127.0.0.1:${server.port}/scripts/screenshots/index.html?${query}`;
+        const png = join(work, `${locale}-${shot.name}.png`);
+        const proc = Bun.spawn(screenshotCommand(profile, png, url), {
+          stdout: 'ignore',
+          stderr: process.env.DEBUG_SHOTS ? 'inherit' : 'ignore',
+        });
+        const timer = setTimeout(() => proc.kill(), 90_000);
+        await proc.exited;
+        clearTimeout(timer);
+        if (!existsSync(png))
+          throw new Error(`The browser produced no screenshot for ${shot.name}`);
+        copyFileSync(png, join(out, `${shot.name}.png`));
+        console.log(`✓ ${locale} ${shot.name}`);
+      }
     }
     await server.stop(true);
   } finally {

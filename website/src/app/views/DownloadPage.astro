@@ -1,0 +1,23 @@
+---
+/** The download page in one language; `pages/download.astro` and `pages/[locale]/download.astro` render it. */
+import SiteLayout from '@/app/layouts/SiteLayout.astro';
+import { strings } from '@/core/i18n';
+import type { Locale } from '@/core/site';
+import { DownloadHero, InfoCards, OtherWays, Platforms } from '@/features/download';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
+---
+
+<SiteLayout title={s['download.title']} description={s['download.description']} locale={locale}>
+  <DownloadHero locale={locale} />
+  <div class="container">
+    <Platforms locale={locale} />
+    <InfoCards locale={locale} />
+    <OtherWays locale={locale} />
+  </div>
+</SiteLayout>

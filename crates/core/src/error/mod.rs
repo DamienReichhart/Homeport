@@ -41,7 +41,7 @@ use crate::messages as msg;
 
 pub use code::ErrorCode;
 pub use local_file::local_file;
-pub use text::{arguments, render, Message, Param, Params, Text};
+pub use text::{arguments, localize, render, set_translations, Message, Param, Params, Text};
 
 pub type AppResult<T> = Result<T, AppError>;
 
@@ -86,6 +86,12 @@ impl AppError {
             hint: None,
             detail: None,
         }
+    }
+
+    /// The message in the app's language, for text the OS draws (a
+    /// notification); `message` stays English for the log.
+    pub fn localized_message(&self) -> String {
+        localize(&self.key, &self.params).unwrap_or_else(|| self.message.clone())
     }
 
     /// Bad input from the user; the message alone says what to fix.

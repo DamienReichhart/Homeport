@@ -1,0 +1,137 @@
+---
+title: Volumes und Netzwerke
+description: Sehen, welche Container welche Volumes und Netzwerke verwenden und wie groß Volumes sind; Volumes durchsuchen, sichern, wiederherstellen und klonen; beide sicher erstellen und entfernen.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+## Volumes
+
+Die Seite **Volumes** listet die Volumes des ausgewählten Hosts auf und wie viele davon unbenutzt sind.
+
+<DocScreenshot
+  name="volumes"
+  alt="Die Seite Volumes mit dem Stack, dem Treiber und den Containern, die jedes Volume verwenden."
+/>
+
+| Spalte            | Zeigt                                                                                  |
+| ----------------- | -------------------------------------------------------------------------------------- |
+| **Name**          | Den Namen des Volumes; eine lange ID bei anonymen Volumes.                             |
+| **Stack**         | Den Stack, der es erstellt hat, falls vorhanden.                                       |
+| **Treiber**       | Meist `local`.                                                                         |
+| **Größe**         | Wie viel Festplattenplatz seine Daten belegen, so wie `docker system df -v` es angibt. |
+| **Verwendet von** | Die Container, die es einhängen, oder **Unbenutzt**.                                   |
+| **Erstellt**      | Wann es erstellt wurde.                                                                |
+
+Ein Volume gilt als verwendet, wenn irgendein Container es einhängt, laufend oder gestoppt. Wählen Sie ein Volume aus, um seine Größe, die Container, die es verwenden, und alle Details zu sehen, einschließlich des Orts, an dem seine Daten auf dem Host liegen (`Mountpoint`).
+
+### Größen
+
+Die Engine misst jedes Volume, um die Größen anzugeben, was auf einem Host mit vielen Daten einige Sekunden dauern kann; die Liste erscheint daher sofort, und die Spalte **Größe** füllt sich danach. Sortieren Sie nach **Größe**, um das Volume zu finden, das eine Festplatte füllt. Größen werden erneut gemessen, wenn ein Volume erstellt oder entfernt wird und wenn Sie **Größen aktualisieren** wählen – nicht bei jedem Schreibvorgang eines Containers, daher kann eine Größe etwas hinterherhinken.
+
+Nur Volumes des Treibers `local` haben eine Größe; andere Treiber (NFS, Cloud-Speicher-Plugins) zeigen **—**.
+
+### Die Dateien eines Volumes durchsuchen
+
+Die Ordner-Schaltfläche in der Zeile eines Volumes öffnet seine Dateien: Öffnen Sie Ordner, gehen Sie über den Pfad über der Liste wieder nach oben und laden Sie eine Datei herunter oder einen Ordner als `.tar`-Archiv. Pfade beginnen an der Wurzel des Volumes (`/`).
+
+Das Durchsuchen ist schreibgeschützt. Nichts, was Sie hier tun, kann das Volume ändern, auch nicht, während ein Container es verwendet.
+
+#### Der Hilfscontainer
+
+Die Engine-API kann kein Volume lesen, daher öffnet Homeport es mit einem kurzlebigen **Hilfscontainer**: einem `busybox:1.37`-Container ohne Netzwerk und mit schreibgeschütztem Dateisystem, der das Volume schreibgeschützt einhängt. Homeport entfernt ihn, sobald Sie den Browser schließen oder Homeport beenden. Kann Homeport das nicht (es ist abgestürzt oder der Host ist weg), stoppt der Hilfscontainer und wird innerhalb einer Stunde von der Engine entfernt, und Homeport entfernt, was übrig ist, wenn sich dieser Computer das nächste Mal mit dem Host verbindet. Hilfscontainer erscheinen nie in der Liste der Container, unter **Verwendet von** eines Volumes oder auf der Seite Ereignisse.
+
+Hat der Host `busybox:1.37` (etwa 2 MB) nicht, sagt Homeport das und pullt es erst, wenn Sie **busybox:1.37 pullen** wählen, mit Ihren [Registry-Anmeldungen](/docs/guides/settings/#registrys). Danach entfernt es das Image wieder, sofern nichts anderes es verwendet. Ein Host ohne Internetzugang kann es nicht pullen; bringen Sie es selbst dorthin:
+
+```sh
+docker pull busybox:1.37
+```
+
+oder führen Sie auf einem Rechner, der es hat, `docker save busybox:1.37 -o busybox.tar` aus, kopieren Sie die Datei hinüber und führen Sie `docker load -i busybox.tar` auf dem Host aus.
+
+<Aside>
+  Engines, die Windows-Container ausführen, können den Hilfscontainer nicht ausführen, daher lassen
+  sich ihre Volumes nicht öffnen.
+</Aside>
+
+### Sichern und Wiederherstellen
+
+**In eine Datei sichern…** im Menü **⋯** der Zeile eines Volumes speichert seinen Inhalt in einer `.tar`-Datei auf diesem Computer. Das Archiv enthält die Dateien des Volumes mit ihren Besitzern und Berechtigungen, unter Pfaden relativ zu seiner Wurzel, so wie `tar -C <volume> -cf backup.tar .` sie erzeugen würde, sodass Sie es auch ohne Homeport öffnen oder wiederherstellen können.
+
+**Aus Datei wiederherstellen** stellt eine Sicherung wieder her:
+
+- Vom oberen Rand der Seite aus in **Ein neues Volume**, benannt nach der Datei, sofern Sie den Namen nicht ändern, oder in **Ein vorhandenes Volume**, das Sie wählen.
+- Aus dem Menü **⋯** eines Volumes in dieses Volume.
+
+Enthält das vorhandene Volume bereits Dateien, fragt Homeport nach, bevor es sie löscht und die der Sicherung an ihre Stelle legt. Eine Datei, die kein Tar-Archiv ist, wird abgelehnt, bevor sich etwas ändert.
+
+Beide zeigen ihren Fortschritt und lassen sich abbrechen. Eine abgebrochene Sicherung hinterlässt keine Datei; eine abgebrochene Wiederherstellung kann das Volume teilweise beschrieben zurücklassen, stellen Sie es daher erneut wieder her, bevor Sie es verwenden.
+
+#### Container, die das Volume verwenden
+
+Eine Sicherung eines Volumes, in das ein laufender Container schreibt – etwa eine Datenbank –, kann inkonsistent sein. Homeport nennt die laufenden Container, die es verwenden, und Sie wählen, **Trotzdem sichern** oder sie während der Sicherung zu stoppen. Eine Wiederherstellung stoppt sie immer zuerst. In beiden Fällen startet Homeport sie danach wieder.
+
+Sicherungen und Wiederherstellungen verwenden denselben [Hilfscontainer](#der-hilfscontainer) wie das Durchsuchen und hängen das Volume für eine Sicherung schreibgeschützt ein. Das Archiv wird über die Verbindung des Hosts übertragen und nie vollständig im Arbeitsspeicher gehalten, sodass auch große Volumes und entfernte Hosts funktionieren. Auf dem Host wird nichts geschrieben außer dem Volume, das wiederhergestellt wird.
+
+### Ein Volume klonen
+
+**Klonen…** im Menü **⋯** der Zeile eines Volumes kopiert es in ein neues Volume auf demselben Host – etwa um eine Migration oder eine neue Image-Version an einer Kopie echter Daten auszuprobieren. Die Kopie heißt `<name>-copy`, sofern Sie den Namen nicht ändern, und wird nach dem Erstellen in der Liste ausgewählt.
+
+Sie behält die Besitzer und Berechtigungen der Dateien sowie Treiber, Treiberoptionen und Labels der Quelle – außer denen von Compose, sodass die Kopie zu keinem Stack gehört. Die Quelle wird schreibgeschützt in den [Hilfscontainer](#der-hilfscontainer) eingehängt und ändert sich nie. Wie bei einer Sicherung nennt Homeport die laufenden Container, die die Quelle verwenden; kopieren Sie trotzdem, oder stoppen Sie sie während des Kopierens.
+
+Schlägt die Kopie fehl – etwa weil die Festplatte voll ist –, entfernt Homeport die unvollständige Kopie und sagt das, mit dem Fehler unter **Details**. Um ein Volume auf einen anderen Host zu kopieren, [sichern Sie es](#sichern-und-wiederherstellen) und stellen die Datei dort wieder her.
+
+### Ein Volume erstellen
+
+**Volume erstellen** fragt nach einem **Name** und einem optionalen **Treiber** (`local`, wenn leer).
+
+### Volumes löschen
+
+<Aside type="danger">Das Löschen eines Volumes löscht die Daten darin dauerhaft.</Aside>
+
+Die Löschen-Schaltfläche in jeder Zeile fragt nach einer Bestätigung und nennt die Container, die das Volume noch einhängen. Die Engine weigert sich, ein Volume zu löschen, das irgendein Container verwendet, auch ein gestoppter – entfernen Sie zuerst diese Container.
+
+**Aufräumen** entfernt mehrere auf einmal:
+
+- **Unbenutzte anonyme Volumes** – unbenannte Volumes, die kein Container verwendet.
+- **Alle unbenutzten Volumes** – jedes Volume, das kein Container verwendet, benannte eingeschlossen.
+
+## Netzwerke
+
+Die Seite **Netzwerke** listet die Netzwerke des ausgewählten Hosts auf, die integrierten `bridge`, `host` und `none` zuerst.
+
+<DocScreenshot
+  name="networks"
+  alt="Die Seite Netzwerke mit integrierten Netzwerken und Stack-Netzwerken, ihren Subnetzen und der Anzahl ihrer Container."
+/>
+
+| Spalte        | Zeigt                                                              |
+| ------------- | ------------------------------------------------------------------ |
+| **Name**      | Mit einem Abzeichen **integriert** oder **intern**, wo zutreffend. |
+| **Stack**     | Den Stack, der es erstellt hat, falls vorhanden.                   |
+| **Treiber**   | `bridge`, `overlay`, `macvlan`…                                    |
+| **Subnetz**   | Seinen IP-Bereich.                                                 |
+| **Container** | Wie viele Container verbunden sind, laufend oder gestoppt.         |
+
+### Container verbinden
+
+Wählen Sie ein Netzwerk aus, um seine verbundenen Container zu sehen. Bei Netzwerken, die Sie erstellt haben:
+
+- **Trennen** trennt einen Container.
+- **Container verbinden…** listet die noch nicht verbundenen Container auf; wählen Sie einen und dann **Verbinden**.
+
+Die integrierten Netzwerke lassen sich hier nicht ändern.
+
+### Ein Netzwerk erstellen
+
+**Netzwerk erstellen** nimmt einen **Name**, einen **Treiber** (`bridge`, wenn leer) und optional ein **Subnetz** und ein **Gateway** – lassen Sie sie leer, damit die Engine sie wählt. Zwei Schalter:
+
+- **Intern** – Container im Netzwerk können keine externen Netzwerke erreichen.
+- **Anfügbar** – eigenständige Container können einem `overlay`-Netzwerk beitreten.
+
+### Netzwerke entfernen
+
+Integrierte Netzwerke lassen sich nicht entfernen. Bei anderen Netzwerken sagt die Bestätigung, wie viele Container noch verbunden sind; die Engine weigert sich, ein Netzwerk mit laufenden Containern darin zu entfernen. Container, die ein entferntes Netzwerk über seinen Namen referenzieren, starten erst wieder, wenn es wieder existiert.
+
+**Aufräumen** entfernt alle benutzerdefinierten Netzwerke, mit denen kein Container verbunden ist.

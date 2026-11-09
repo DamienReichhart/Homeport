@@ -123,7 +123,12 @@ homeport_core::messages! {
     /// Starting a running pod, stopping a stopped one…
     POD_ALREADY = "errors.pods.already" => "The pod is already in that state.";
     /// Some containers of a pod failed to start, stop, restart, pause or resume.
-    POD_ACTION_FAILED = "errors.pods.actionFailed" => "Podman couldn't {action} every container of the pod.";
+    /// One message per action, so each language words its own verb.
+    POD_START_FAILED = "errors.pods.startFailed" => "Podman couldn't start every container of the pod.";
+    POD_STOP_FAILED = "errors.pods.stopFailed" => "Podman couldn't stop every container of the pod.";
+    POD_RESTART_FAILED = "errors.pods.restartFailed" => "Podman couldn't restart every container of the pod.";
+    POD_PAUSE_FAILED = "errors.pods.pauseFailed" => "Podman couldn't pause every container of the pod.";
+    POD_UNPAUSE_FAILED = "errors.pods.unpauseFailed" => "Podman couldn't unpause every container of the pod.";
     POD_ACTION_FAILED_HINT = "errors.pods.actionFailed.hint" => "Details names the containers and why. Open them on the Containers page to see their logs.";
     /// Removing a pod with running containers without stopping them.
     POD_RUNNING = "errors.pods.running" => "The pod has running containers.";
@@ -192,7 +197,10 @@ homeport_core::messages! {
     QUADLET_UNIT_NOT_LOADED = "errors.quadlets.unitNotLoaded" => "systemd doesn't know {unit}.";
     QUADLET_UNIT_NOT_LOADED_HINT = "errors.quadlets.unitNotLoaded.hint" => "Quadlet skips files it can't read. Check the unit file, then systemctl daemon-reload on the host shows why.";
     /// systemd failed to start, stop or restart a service.
-    QUADLET_ACTION_FAILED = "errors.quadlets.actionFailed" => "systemd couldn't {action} {unit}.";
+    /// One message per action, so each language words its own verb.
+    QUADLET_START_FAILED = "errors.quadlets.startFailed" => "systemd couldn't start {unit}.";
+    QUADLET_STOP_FAILED = "errors.quadlets.stopFailed" => "systemd couldn't stop {unit}.";
+    QUADLET_RESTART_FAILED = "errors.quadlets.restartFailed" => "systemd couldn't restart {unit}.";
     QUADLET_ACTION_FAILED_HINT = "errors.quadlets.actionFailed.hint" => "Details has what systemctl said. journalctl -u with the unit's name on the host shows its log.";
     /// systemctl didn't finish in time.
     QUADLET_TIMEOUT = "errors.quadlets.timeout" => "{unit} didn't finish in time.";

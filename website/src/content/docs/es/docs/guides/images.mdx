@@ -1,0 +1,122 @@
+---
+title: Imágenes
+description: Descarga, compila, sube, guarda, carga, etiqueta, inspecciona, ejecuta y elimina imágenes, y limpia lo que nada usa.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+La página **Imágenes** lista las imágenes guardadas en el host seleccionado, con su tamaño total.
+
+<DocScreenshot
+  name="images"
+  alt="La página Imágenes, con las imágenes, su tamaño y si están en uso."
+/>
+
+| Columna    | Muestra                                                                            |
+| ---------- | ---------------------------------------------------------------------------------- |
+| **Nombre** | La primera etiqueta y cuántas más tiene; `<none>` para las imágenes sin etiqueta.  |
+| **ID**     | El ID corto de la imagen.                                                          |
+| **Creada** | Hace cuánto se compiló la imagen.                                                  |
+| **Tamaño** | Su tamaño en disco.                                                                |
+| **Estado** | **En uso** con el número de contenedores creados a partir de ella, o **Sin usar**. |
+
+Los contenedores detenidos cuentan como usuarios de una imagen. Selecciona la cabecera de una columna para ordenar, y busca con **Buscar imágenes**.
+
+Una ⬆ junto al nombre significa que una de las etiquetas de la imagen apunta a una imagen más reciente en su registro; pasa el puntero por encima para ver cuál. Descarga la etiqueta para obtenerla. **Buscar imágenes más recientes** vuelve a preguntar a los registros en lugar de usar las respuestas guardadas durante 6 horas. Consulta [Imágenes más recientes](/docs/guides/containers/#imágenes-más-recientes) para saber cómo funciona la comprobación.
+
+## Descargar una imagen
+
+Elige **Descargar imagen** e introduce una referencia: `nginx` (que significa `nginx:latest`), `nginx:1.27`, `ghcr.io/org/app:v2`, `registry.example.com:5000/app` o un digest como `app@sha256:…`.
+
+Homeport muestra el progreso de la descarga capa por capa, y dice **Listo.** cuando termina. **Cancelar** deja de seguir la descarga.
+
+### Buscar en Docker Hub
+
+Al escribir un nombre sin más, como `postg`, se busca en Docker Hub mientras escribes, y se listan los repositorios que coinciden con su descripción, sus estrellas y una marca **Oficial**. Elige uno para ver sus etiquetas, primero las más recientes, con su tamaño y cuándo se subieron; **Filtrar etiquetas** acota la lista (`alpine`) y **Más etiquetas** carga la página siguiente. Al elegir una etiqueta se rellena la referencia, como `postgres:17-alpine`, lista para **Descargar**.
+
+La búsqueda se ejecuta en el host seleccionado, así que llega a Docker Hub a través de la red del host, igual que lo hará la descarga. Este equipo lee las etiquetas de Docker Hub; un [inicio de sesión](/docs/guides/settings/#registros) de Docker Hub guardado aumenta sus límites de peticiones. Escribir una etiqueta, un digest u otro registro (`ghcr.io/…`) omite la búsqueda, y si no se puede acceder a Docker Hub el cuadro de diálogo lo indica y descarga igualmente lo que escribas. Todavía no se puede buscar en otros registros.
+
+### Imágenes privadas
+
+Cuando hay un inicio de sesión para el registro de la imagen guardado en [**Ajustes → Registros**](/docs/guides/settings/#registros), Homeport se lo pasa al Engine con la descarga, así que las imágenes privadas se descargan en cualquier host — local, TCP, TLS o SSH — sin configurar nada allí. Bajo la referencia, el cuadro de diálogo indica cómo se descargará la imagen: **Descargada como alice en ghcr.io**, o **Descargada de forma anónima** cuando no coincide ningún inicio de sesión.
+
+Una imagen sin registro en su nombre (`nginx`, `bitnami/redis`) usa el inicio de sesión de Docker Hub. Un inicio de sesión de Docker Hub también aumenta el límite de descargas de Docker Hub.
+
+Si el registro rechaza la descarga, el mensaje indica qué hacer: añadir un inicio de sesión para ese registro si no había ninguno guardado, o revisar el guardado.
+
+<Aside>
+  El inicio de sesión viaja al Engine con la petición y no se guarda en el host. Homeport no lee las
+  credenciales de `docker login` de `~/.docker/config.json`.
+</Aside>
+
+## Compilar una imagen
+
+Elige **Compilar** y selecciona una **Carpeta** de este equipo que contenga un Dockerfile: el contexto de compilación. Homeport empaqueta la carpeta, deja fuera todo lo que excluye su `.dockerignore` (con las reglas de Docker: `*`, `**`, excepciones con `!`, la última línea que coincide gana) y la envía al host seleccionado, cuyo Engine la compila. La misma compilación funciona en un host remoto por SSH o TLS, sin instalar nada allí.
+
+| Campo                                     | Qué hace                                                                                                     |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Dockerfile**                            | Su ruta dentro de la carpeta; `Dockerfile` por defecto. Siempre se envía, aunque `.dockerignore` lo incluya. |
+| **Etapa de destino**                      | La etapa de un Dockerfile multietapa en la que detenerse (`--target`).                                       |
+| **Nombres**                               | Uno o varios nombres para el resultado, como `app:1.0, ghcr.io/me/app:1.0`.                                  |
+| **Argumentos de compilación**             | `NAME=value`, uno por línea, para los `ARG` del Dockerfile.                                                  |
+| **No usar la caché de compilación**       | Vuelve a ejecutar todos los pasos (`--no-cache`).                                                            |
+| **Descargar imágenes base más recientes** | Descarga las imágenes de `FROM` aunque el host ya las tenga (`--pull`).                                      |
+
+La salida de la compilación se muestra en directo; **Cancelar** la detiene. Cuando termina, los nombres aparecen en la página Imágenes. Si un paso falla, el mensaje lo nombra (**La compilación falló en el paso 3/5 (RUN make).**) y **Detalles** contiene el final de la salida. Las imágenes privadas de `FROM` se descargan con los [inicios de sesión de registros](/docs/guides/settings/#registros) que guardaste.
+
+<Aside>
+  Homeport usa el compilador clásico del Engine, el que ofrece su API. Las funciones de BuildKit
+  como `RUN --mount` y los secretos de compilación no están disponibles; compila esas imágenes desde
+  un terminal.
+</Aside>
+
+### Hacer commit de un contenedor en su lugar
+
+Una imagen también puede salir de un contenedor: **Hacer commit en una imagen…**, en el menú **⋮** de un contenedor, guarda sus archivos y sus ajustes tal como están ahora; consulta [Hacer commit de un contenedor](/docs/guides/containers/#hacer-commit-de-un-contenedor). Es la forma rápida de conservar lo que alguien instaló o cambió dentro de un contenedor en ejecución. Una compilación es la forma duradera: su Dockerfile dice cómo se hace la imagen, así que se puede volver a compilar, revisar y actualizar cuando avanza la imagen base. Una imagen creada con commit no.
+
+## Subir una imagen
+
+Elige **Subir** en el menú **⋮** de una imagen. **Nombre que subir** empieza con el primer nombre de la imagen; elige otro de sus nombres, o escribe uno nuevo como `ghcr.io/org/app:v2`: primero se le da ese nombre a la imagen, como hace **Etiquetar**. La primera parte del nombre indica a qué registro va: `ghcr.io/org/app` va a GHCR, `org/app` a Docker Hub.
+
+Homeport sube la imagen a través del Engine del host con el [inicio de sesión del registro](/docs/guides/settings/#registros) guardado para ese registro, e indica cuál bajo el nombre (**Subida como alice en ghcr.io**). Sin ningún inicio de sesión guardado, el cuadro de diálogo avisa antes de empezar, ya que la mayoría de los registros rechazan las subidas anónimas. Mientras se ejecuta, el cuadro de diálogo cuenta las capas subidas y las que el registro ya tenía, y muestra la subida en curso; **Cancelar** detiene la subida.
+
+Si el registro la rechaza, el mensaje indica si hay que añadir un inicio de sesión o comprobar que el guardado puede subir a ese repositorio.
+
+## Guardar y cargar imágenes
+
+Para llevar imágenes a un host que no puede acceder a un registro — un servidor aislado, una Raspberry Pi en una red doméstica —, guárdalas en un archivo en este equipo y carga el archivo en el otro host.
+
+- **Guardar…**, en el menú **⋮** de una imagen, la escribe, con todos sus nombres, en un archivo `.tar` que eliges. Para guardar varias a la vez, márcalas en la lista y elige **Guardar N imágenes…** en la parte superior de la página.
+- **Cargar…**, en la parte superior de la página, lee un `.tar` creado con **Guardar…** o con `docker save` — también un `.tar.gz` comprimido — en el host seleccionado. Cuando termina, el cuadro de diálogo nombra las imágenes que cargó, con sus etiquetas.
+
+El archivo viaja entre este equipo y el host por la propia conexión del host, así que esto también funciona con hosts remotos. El progreso muestra los bytes escritos o enviados; **Cancelar** lo detiene, y un guardado cancelado o fallido no deja ningún archivo a medias. Homeport nunca guarda el archivo entero en memoria, así que las imágenes de varios gigabytes no son un problema.
+
+### Importar un sistema de archivos
+
+**Importar desde tar…**, en la parte superior de la página, convierte un tar de un sistema de archivos raíz en una imagen, como `docker import`: uno creado con [**Exportar sistema de archivos…**](/docs/guides/containers/#exportar-el-sistema-de-archivos-de-un-contenedor) de un contenedor o con `docker export`, una salida de `debootstrap` o de Buildroot, o un appliance de un fabricante. Elige el archivo (sin comprimir o comprimido con gzip, xz o bzip2), dale un **nombre** a la imagen — parte del nombre del archivo — y, opcionalmente, **Cambios**: instrucciones de Dockerfile como `CMD ["/bin/sh"]` o `ENV LANG=C.UTF-8`, ya que una imagen importada no tiene comando propio. El progreso muestra los bytes enviados; después, la imagen aparece en la lista.
+
+### ¿Guardar y cargar, o exportar e importar?
+
+|            | **Guardar** / **Cargar**                                 | **Exportar sistema de archivos** / **Importar desde tar**                                              |
+| ---------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Parte de   | Una o varias imágenes                                    | Los archivos de un contenedor, tal como están ahora                                                    |
+| Conserva   | Todas las capas, el historial, los nombres y los ajustes | Solo los archivos, aplanados en una sola capa                                                          |
+| Pierde     | Nada                                                     | El historial, los nombres y ajustes como el comando y el entorno                                       |
+| Úsalo para | Llevar imágenes a un host sin registro                   | Hacer una copia de seguridad de los archivos de un contenedor o inspeccionarlos, o partir de un rootfs |
+
+## Trabajar con una imagen
+
+- **▶ Ejecutar** abre el [cuadro de diálogo Ejecutar](/docs/guides/containers/#ejecutar-un-contenedor) con la imagen ya indicada.
+- **Inspeccionar** — o seleccionar la fila — muestra **Capas**, las instrucciones que crearon cada capa y sus tamaños, y **JSON sin procesar**.
+- **Etiquetar** añade otro nombre, como `registry.example.com/app:v2`. No sube nada; eso lo hace **Subir**.
+- **Eliminar** borra la imagen y las capas que no usa ninguna otra imagen. Una imagen con varias etiquetas las pierde todas. El Engine se niega a eliminar una imagen que todavía usa un contenedor; elimina antes el contenedor.
+
+## Limpiar
+
+**Limpiar** ofrece dos niveles:
+
+- **Imágenes huérfanas** — imágenes sin etiqueta que dejan las compilaciones y las descargas. Se pueden eliminar sin riesgo.
+- **Todas las imágenes sin usar** — todas las imágenes que no usa ningún contenedor, incluidas las etiquetadas. Se pueden volver a descargar, pero eso lleva tiempo y ancho de banda.
+
+Homeport te indica cuántas se eliminaron y cuánto espacio se recuperó. La [limpieza del Resumen](/docs/guides/overview/#limpiar) también puede eliminar de una vez contenedores detenidos, redes, la caché de compilación y volúmenes.

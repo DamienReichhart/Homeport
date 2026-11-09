@@ -1,0 +1,194 @@
+---
+title: Clústeres de Nomad
+description: Cómo se conecta Homeport a la API HTTP de un clúster de Nomad con una dirección, un token ACL y material TLS, y qué guarda.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+Un clúster puede ser un clúster de **Nomad** además de uno de Kubernetes. Homeport se comunica con la API HTTP que ya sirve un agente de Nomad, servidor o cliente, desde tu equipo: no se instala nada en el clúster y no se necesita la CLI `nomad` en este equipo. Todo lo que hace pasa por la API con los permisos del token ACL que le das.
+
+Los clústeres de Nomad están junto a tus hosts y tus clústeres de Kubernetes en el selector. Al seleccionar uno se muestran su versión, su región y su dirección en el Resumen, y sus propias páginas en la barra lateral: **[Jobs](#jobs)**, donde [ejecutas jobs](#ejecutar-un-job) y abres los [logs y shells](#logs-y-shell) de sus allocations, y **[Nodos](#nodos)**. Las páginas de Kubernetes se ocultan mientras está seleccionado.
+
+Lo que puedes hacer, en el orden en que lo explica esta página:
+
+1. [Añadir un clúster](#añadir-un-clúster-de-nomad) por su dirección, con [TLS](#tls) y [un token ACL](#el-token-acl) cuando los usa.
+2. Ver sus [jobs](#jobs) y sus allocations, en directo; detenerlos, purgarlos y escalarlos.
+3. [Ejecutar un job](#ejecutar-un-job) desde HCL o JSON después de ver el plan de Nomad, o editar uno y volver a ejecutarlo.
+4. Seguir los [logs de una task y abrir un shell](#logs-y-shell) en ella.
+5. [Drenar nodos](#nodos) y cambiar su elegibilidad.
+6. Elegir un [namespace](#namespaces), o todos.
+
+## Añadir un clúster de Nomad
+
+Elige **Añadir clúster…** en el selector, luego la pestaña **Nomad**, y rellena:
+
+- **Nombre**: lo que muestran el selector y el Resumen, como `nomad-prod`.
+- **Dirección**: la API HTTP del agente, tal como `NOMAD_ADDR` se la da a la CLI `nomad`. `nomad.example.com` se convierte en `http://nomad.example.com:4646`: se añade el puerto 4646 cuando no se indica ninguno, y se usa `https://` cuando das material TLS.
+- **Región**: déjala vacía para usar la región del propio agente. Indícala para gestionar otra región a través de un agente federado, como hace `NOMAD_REGION`.
+- **Token ACL**: el secret ID del token, si el clúster tiene las ACL activadas. Consulta [el token](#el-token-acl) más abajo.
+
+**Probar conexión** se conecta una vez sin guardar y muestra la versión de Nomad y la región, o por qué no puede conectarse. **Añadir clúster** lo guarda y se conecta. Su página muestra entonces su estado, su versión y su región, y te permite cambiar cualquiera de estos ajustes: el token y la clave TLS no se vuelven a mostrar nunca, y un campo que se deja vacío conserva el guardado. **Quitar**, junto a una credencial guardada, la elimina al guardar.
+
+## TLS
+
+Un agente que sirve HTTPS con un certificado de una CA pública, o de una CA en la que tu equipo ya confía, no necesita nada más que una dirección `https://`. Abre **Ajustes de TLS** para el resto y pega el contenido de los archivos PEM que se le dan a la CLI `nomad`:
+
+| Campo                                             | La variable de la CLI `nomad`           | Cuándo lo necesitas                                                                                                                                    |
+| ------------------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Certificado de CA**                             | `NOMAD_CACERT`                          | El certificado del agente está firmado por tu propia CA, como `nomad-agent-ca.pem`.                                                                    |
+| **Certificado de cliente** y **Clave de cliente** | `NOMAD_CLIENT_CERT`, `NOMAD_CLIENT_KEY` | El agente pide certificados de cliente (`verify_https_client`). Indica los dos o ninguno.                                                              |
+| **Nombre del servidor TLS**                       | `NOMAD_TLS_SERVER_NAME`                 | El certificado no está hecho para el nombre de la dirección. Los de Nomad están hechos para `server.global.nomad`, con tu región en lugar de `global`. |
+
+Cuando se indica un certificado de CA, solo se confía en esa CA para este clúster, como con la CLI `nomad`.
+
+## El token ACL
+
+Homeport envía el token en la cabecera `X-Nomad-Token` de cada solicitud, nunca en una URL. Mientras está conectado, comprueba el token cada 15 segundos; un token que Nomad no conoce (eliminado, caducado o mal escrito) detiene la conexión con **Acceso denegado** hasta que pegues uno nuevo.
+
+Un token que no puede leer el agente (`agent:read`) se conecta igualmente: la página del clúster muestra entonces su región, pero no su versión.
+
+## Jobs
+
+**Jobs** lista los jobs del clúster seleccionado con su tipo (`service`, `batch`, `system` o `sysbatch`), su estado y cuántas allocations ejecutan sus task groups frente a cuántas quieren. La página se mantiene al día mientras está abierta: Homeport pregunta a Nomad con [consultas bloqueantes](https://developer.hashicorp.com/nomad/api-docs#blocking-queries), así que Nomad responde en cuanto algo cambia, y no se hace ningún sondeo. Salir de la página las termina.
+
+<DocScreenshot
+  name="nomad-jobs"
+  alt="La página Jobs del clúster nomad-prod: seis jobs del namespace shop con su tipo, su estado, las allocations en ejecución frente a las deseadas y cuándo se envió cada uno."
+/>
+
+Abre un job para ver sus ajustes (prioridad, centros de datos, node pool, versión), sus **task groups** con sus tasks y sus drivers, y sus **allocations**, las más recientes primero, con el nodo en el que se ejecuta cada una.
+
+- **Detener** pregunta antes, indicando el job y su namespace. Nomad detiene todas las allocations y conserva la definición del job hasta que se ejecuta su recolección de basura; marca **Purgarlo** para eliminar el job y su historial al instante, como hace `nomad job stop -purge`. La purga está desactivada de forma predeterminada.
+- **Escalar**, en un task group de un job `service` o `batch`, establece cuántas allocations ejecuta, como hace `nomad job scale`. Cuando el grupo tiene un bloque `scaling`, el número debe quedar entre su `min` y su `max`; Homeport rechaza uno fuera de ese rango antes de preguntar a Nomad, y muestra el motivo de Nomad cuando este lo rechaza, como un deployment en curso. Un autoescalador que actúe según la política puede volver a cambiar el número.
+
+Listar los jobs requiere las capacidades `list-jobs` y `read-job`; detener uno requiere `submit-job`, y escalar, `scale-job` (o `submit-job`), en el namespace del job.
+
+## Ejecutar un job
+
+**Ejecutar job**, en la página Jobs, acepta una especificación de job en HCL2 o JSON: escríbela, pégala o usa **Abrir archivo…** para leer un archivo `.nomad.hcl`, `.hcl` o `.json`. Homeport distingue los dos formatos por el primer carácter (`{` para JSON) y usa los propios endpoints de Nomad, así que aquí no se necesita ningún parser de HCL ni la CLI `nomad`.
+
+1. **Planificar** pide a Nomad que analice el HCL y luego qué cambiaría al ejecutarlo, como hace `nomad job plan`: para cada task group, las allocations que colocar, detener, actualizar en su sitio o sustituir, los campos que cambian (una imagen, un número, un argumento…) y las allocations que Nomad no puede colocar, con el motivo (nodos descartados por una restricción, o a los que les falta memoria o CPU). Aún no cambia nada en el clúster.
+2. **Ejecutar** envía el job tal como se planificó. Si otra persona ejecutó o detuvo el job entretanto, Nomad lo rechaza y Homeport lo indica en lugar de sobrescribir su cambio: vuelve a planificar para verlo. Un plan con allocations que no se pueden colocar ofrece **Ejecutar de todos modos**, que las pone en cola hasta que un nodo pueda aceptarlas.
+
+<DocScreenshot
+  name="nomad-run-plan"
+  alt="Editar y ejecutar shop-api, en su plan: el task group api está editado, con una allocation por colocar y tres sustituidas, su número pasa de 3 a 4 y su imagen de shop-api 2.5.0 a 2.6.0."
+  caption="El plan muestra lo que cambiaría al ejecutar un job antes de que cambie nada."
+/>
+
+Una especificación que no se puede analizar indica en qué línea y columna encontró Nomad el problema, con el mensaje de Nomad en **Detalles**. Una especificación JSON puede ser un job en el formato de la API de Nomad, ya sea `{"Job": {…}}` tal como lo escribe `nomad job inspect` o el propio objeto del job.
+
+Un job que indica un `namespace` va ahí; uno que no indica ninguno va al namespace seleccionado en la página Jobs, o a `default`. Los bloques `variable` funcionan cuando tienen valores predeterminados: Homeport no pasa archivos de variables (`-var-file`).
+
+**Editar y ejecutar**, en la página de un job, abre el mismo diálogo con la especificación del job tal como se envió, cuando Nomad la conservó (Nomad 1.6 y posteriores conservan el código fuente de los jobs enviados con ella), o su JSON en caso contrario. Homeport no guarda ninguna copia de ninguna especificación: Nomad la guarda con el job.
+
+Planificar y ejecutar requieren la capacidad `submit-job` en el namespace del job.
+
+## Logs y shell
+
+Abre una allocation desde la página de un job para ver sus tasks, sus estados y reinicios, y sus eventos recientes (recibida, iniciada, terminada, un fallo del driver…), que se mantienen al día mientras la página está abierta. Dos pestañas trabajan sobre una de sus tasks; elige cuál cuando el task group tiene varias.
+
+- **Logs** sigue la stdout y la stderr de la task en tiempo real, como hace `nomad alloc logs -f`, empezando por las últimas líneas; desactiva cualquiera de los dos flujos, busca o usa **Descargar** para lo que se muestra. Los logs siguen pudiéndose leer después de que la task se detenga, hasta que la recolección de basura elimina la allocation.
+- **Shell** abre un terminal interactivo en una task en ejecución, como hace `nomad alloc exec -t`: `/bin/sh` de forma predeterminada, o el comando que escribas (`/bin/bash`, `/busybox/sh` o cualquier programa). Se redimensiona con la ventana e informa del código de salida del comando; **Volver a conectar** inicia uno nuevo. Salir de la pestaña termina el comando en el nodo.
+
+Los dos pasan por la API HTTP de Nomad: los servidores los reenvían al nodo cliente que ejecuta la allocation, así que Homeport no necesita acceso SSH a tus nodos y no instala nada en ellos. El token viaja en una cabecera, nunca en la URL del WebSocket.
+
+| Para…              | el token necesita, en el namespace del job                                     |
+| ------------------ | ------------------------------------------------------------------------------ |
+| ver una allocation | `read-job`                                                                     |
+| leer sus logs      | `read-logs`                                                                    |
+| abrir un shell     | `alloc-exec`, y `alloc-node-exec` para las tasks que usan el driver `raw_exec` |
+
+Una task que no se está ejecutando, un nodo que los servidores no pueden alcanzar y un token sin la capacidad tienen cada uno su propio mensaje.
+
+## Nodos
+
+**Nodos** lista los nodos cliente del clúster con su estado (listo, inicializando, caído o desconectado), si aceptan allocations nuevas, su centro de datos y su node pool, cuántas allocations se ejecutan en cada uno, su dirección y su versión de Nomad. Abre un nodo para ver sus drivers y su salud, su sistema operativo y su CPU, y las allocations que ejecuta.
+
+- **Drenar** pregunta antes, como hace `nomad node drain -enable`: Nomad marca el nodo como no elegible y luego mueve sus allocations a otros nodos según lo permiten sus bloques `migrate`. La **Fecha límite** es de una hora de forma predeterminada (`30m`, `2h`, `1h30m`…); cuando pasa, las allocations que siguen ahí se detienen. Marca **Sin fecha límite** para esperar a que se muevan todas, y **Dejar en ejecución en él los jobs de sistema** para mantener ahí los jobs de sistema, como hace `-ignore-system`. La página del nodo muestra entonces el progreso del drenaje, cuántas allocations se siguen ejecutando ahí, hasta que no queda ninguna.
+- **Cancelar drenaje** detiene un drenaje en curso y vuelve a hacer elegible el nodo. Las allocations que ya se movieron se quedan donde fueron.
+- **Elegible para nuevas allocations** incluye o excluye un nodo de la programación sin mover lo que se ejecuta en él, como hacen `nomad node eligibility -enable` y `-disable`.
+
+Leer los nodos requiere una regla `node` con `policy = "read"`; drenar y cambiar la elegibilidad requieren `policy = "write"`. Homeport no gestiona los node pools, no purga nodos ni ejecuta la recolección de basura.
+
+## Namespaces
+
+Un clúster con namespaces muestra un selector de **Namespace** en su página Jobs: primero `default` y luego el que elijas, recordado para cada clúster entre reinicios. **Todos los namespaces** lista los jobs de todos los namespaces que el token puede leer, con una columna **Namespace**, como hace `nomad job status -namespace '*'`.
+
+**Ejecutar job** envía un job al namespace que indica su especificación; uno que no indica ninguno va al namespace elegido, o a `default` mientras se muestran todos. La propia página de un job, sus allocations y sus logs y shells siempre usan el namespace del job.
+
+Un token que no puede listar los namespaces, o un clúster sin ninguno, ve su namespace predeterminado sin selector y sin error. Homeport no crea, edita ni elimina namespaces.
+
+## Políticas ACL
+
+En un clúster con las ACL activadas, dale a Homeport un token propio con una política que conceda lo que vayas a usar. Esta cubre todo lo que hace Homeport:
+
+```hcl title="homeport.hcl"
+namespace "*" {
+  policy       = "read"
+  capabilities = ["submit-job", "scale-job", "read-logs", "alloc-exec"]
+}
+
+node {
+  policy = "write"
+}
+
+agent {
+  policy = "read"
+}
+```
+
+Esta solo deja mirar a Homeport: jobs, allocations, sus logs, nodos y namespaces, sin ningún cambio y sin shell:
+
+```hcl title="homeport-read.hcl"
+namespace "*" {
+  policy       = "read"
+  capabilities = ["read-logs"]
+}
+
+node {
+  policy = "read"
+}
+
+agent {
+  policy = "read"
+}
+```
+
+Aplica una y crea un token con ella; luego pega el secret ID del token en los ajustes del clúster:
+
+```bash
+nomad acl policy apply -description "Homeport" homeport homeport.hcl
+nomad acl token create -name=homeport -policy=homeport
+```
+
+Sustituye `"*"` por el nombre de un namespace para limitar Homeport a él, y añade `alloc-node-exec` a las capacidades para abrir shells en las tasks que usan el driver `raw_exec`. Lo que necesita cada parte:
+
+| Homeport…                                        | necesita                                       |
+| ------------------------------------------------ | ---------------------------------------------- |
+| muestra la versión del clúster                   | `agent` `read` (opcional: se conecta sin ella) |
+| lista los jobs, las allocations y los namespaces | `read` en el namespace                         |
+| planifica y ejecuta un job, detiene uno          | `submit-job` en el namespace                   |
+| escala un task group                             | `scale-job` (o `submit-job`) en el namespace   |
+| lee los logs de una task                         | `read-logs` en el namespace                    |
+| abre un shell                                    | `alloc-exec` en el namespace                   |
+| lista los nodos                                  | `node` `read`                                  |
+| drena un nodo, cambia su elegibilidad            | `node` `write`                                 |
+
+## Estados y problemas
+
+El estado sigue las mismas reglas que para los [clústeres de Kubernetes](/docs/clusters/#estados): Homeport vuelve a intentarlo por sí solo mientras no puede alcanzar el agente, y espera a que actúes cuando solo tú puedes corregirlo.
+
+- **La dirección es incorrecta**: un nombre que no se encuentra, una conexión rechazada o un tiempo de espera agotado indica cuál es el caso, con la dirección que se intentó.
+- **Un certificado caducado, una CA desconocida o un nombre incorrecto**: cada caso indica qué cambiar en **Ajustes de TLS**.
+- **El agente solo responde por HTTPS**, o no usa TLS en absoluto: cambia el `http://` o el `https://` de la dirección.
+- **Sin líder**: los servidores del clúster no se ponen de acuerdo en un líder, así que no se puede leer nada. Nomad necesita que la mayoría de sus servidores estén en ejecución; compruébalos con `nomad server members` en un servidor.
+
+## Qué se guarda y dónde
+
+| Se guarda sin cifrar en la base de datos de Homeport           | Se guarda solo cifrado (como las claves SSH)               |
+| -------------------------------------------------------------- | ---------------------------------------------------------- |
+| el nombre, la dirección, la región, el nombre del servidor TLS | el token ACL                                               |
+| si hay guardado un token, una CA o un certificado de cliente   | el certificado de CA, el certificado de cliente y su clave |
+
+La [copia de seguridad de los datos](/docs/reference/security/) de Homeport incluye los clústeres de Nomad con sus credenciales, igual que los clústeres de Kubernetes.

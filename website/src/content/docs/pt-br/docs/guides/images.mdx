@@ -1,0 +1,122 @@
+---
+title: Imagens
+description: Baixe, faça build, envie, salve, carregue, adicione tags, inspecione, execute e remova imagens, e limpe o que nada usa.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+A página **Imagens** lista as imagens guardadas no host selecionado, com o tamanho total delas.
+
+<DocScreenshot
+  name="images"
+  alt="A página Imagens, listando as imagens com o tamanho delas e se estão em uso."
+/>
+
+| Coluna      | Mostra                                                                           |
+| ----------- | -------------------------------------------------------------------------------- |
+| **Nome**    | A primeira tag e quantas mais ela tem; `<none>` para as imagens sem tag.         |
+| **ID**      | O ID curto da imagem.                                                            |
+| **Criada**  | Há quanto tempo a imagem passou pela build.                                      |
+| **Tamanho** | O tamanho dela em disco.                                                         |
+| **Status**  | **Em uso**, com o número de contêineres criados a partir dela, ou **Não usada**. |
+
+Os contêineres parados contam como usando uma imagem. Selecione o cabeçalho de uma coluna para ordenar e pesquise com **Pesquisar imagens**.
+
+Um ⬆ ao lado do nome significa que uma das tags da imagem aponta para uma imagem mais recente no registro dela; passe o ponteiro sobre ele para ver qual. Baixe a tag para buscá-la. **Verificar imagens mais recentes** pergunta de novo aos registros em vez de usar as respostas guardadas por 6 horas. Veja [imagens mais recentes](/docs/guides/containers/#imagens-mais-recentes) para saber como a verificação funciona.
+
+## Baixando uma imagem
+
+Escolha **Baixar imagem** e digite uma referência: `nginx` (que significa `nginx:latest`), `nginx:1.27`, `ghcr.io/org/app:v2`, `registry.example.com:5000/app`, ou um digest como `app@sha256:…`.
+
+O Homeport mostra o progresso do download camada por camada e diz **Concluído.** quando termina. **Cancelar** para de acompanhar o download.
+
+### Pesquisando no Docker Hub
+
+Digitar um nome simples como `postg` pesquisa no Docker Hub enquanto você digita e lista os repositórios correspondentes com a descrição, as estrelas e uma marca **Oficial**. Escolha um para ver as tags dele, das mais recentes às mais antigas, com o tamanho e quando foram enviadas; **Filtrar tags** restringe a lista (`alpine`), e **Mais tags** carrega a próxima página. Escolher uma tag preenche a referência, como `postgres:17-alpine`, pronta para **Baixar**.
+
+A pesquisa roda no host selecionado, então chega ao Docker Hub pela rede do host, como o download fará. As tags são lidas do Docker Hub por este computador; um [login](/docs/guides/settings/#registros) do Docker Hub guardado aumenta os limites de requisição. Digitar uma tag, um digest ou outro registro (`ghcr.io/…`) pula a pesquisa e, se o Docker Hub não puder ser alcançado, a caixa de diálogo avisa e mesmo assim baixa o que você digitar. Outros registros ainda não podem ser pesquisados.
+
+### Imagens privadas
+
+Quando um login para o registro da imagem está guardado em [**Configurações → Registros**](/docs/guides/settings/#registros), o Homeport o entrega ao Engine junto com o download, então as imagens privadas são baixadas em qualquer host — local, TCP, TLS ou SSH — sem nada configurado lá. Abaixo da referência, a caixa de diálogo diz como a imagem será baixada: **Baixado como alice em ghcr.io**, ou **Baixado anonimamente** quando nenhum login corresponde.
+
+Uma imagem sem registro no nome (`nginx`, `bitnami/redis`) usa o login do Docker Hub. Um login do Docker Hub também aumenta o limite de downloads do Docker Hub.
+
+Se o registro recusar o download, a mensagem diz o que fazer: adicionar um login para esse registro, quando nenhum estava guardado, ou verificar o login guardado.
+
+<Aside>
+  O login viaja até o Engine com a requisição e não é guardado no host. O Homeport não lê as
+  credenciais do `docker login` em `~/.docker/config.json`.
+</Aside>
+
+## Fazendo build de uma imagem
+
+Escolha **Build** e selecione uma **Pasta** neste computador que contenha um Dockerfile — o contexto de build. O Homeport empacota a pasta, deixa de fora tudo o que o `.dockerignore` dela exclui (com as regras do Docker: `*`, `**`, exceções com `!`, a última linha correspondente vence) e a transmite ao host selecionado, cujo Engine faz a build. A mesma build funciona em um host remoto por SSH ou TLS, sem nada instalado lá.
+
+| Campo                                 | O que faz                                                                                                           |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Dockerfile**                        | O caminho dele dentro da pasta; `Dockerfile` por padrão. Ele sempre é enviado, mesmo que o `.dockerignore` o liste. |
+| **Estágio de destino**                | O estágio de um Dockerfile multiestágio em que parar (`--target`).                                                  |
+| **Nomes**                             | Um ou mais nomes para o resultado, como `app:1.0, ghcr.io/me/app:1.0`.                                              |
+| **Argumentos de build**               | `NAME=value`, um por linha, para os `ARG`s do Dockerfile.                                                           |
+| **Não usar o cache de build**         | Executa todas as etapas de novo (`--no-cache`).                                                                     |
+| **Baixar imagens base mais recentes** | Baixa as imagens `FROM` mesmo que o host já as tenha (`--pull`).                                                    |
+
+A saída da build é transmitida ao vivo; **Cancelar** a interrompe. Quando ela termina, os nomes aparecem na página Imagens. Se uma etapa falhar, a mensagem a cita (**A build falhou na etapa 3/5 (RUN make)**) e **Detalhes** guarda o fim da saída. As imagens `FROM` privadas são baixadas com os [logins de registro](/docs/guides/settings/#registros) que você guardou.
+
+<Aside>
+  O Homeport usa o builder clássico do Engine, o que a API dele oferece. Os recursos do BuildKit,
+  como `RUN --mount` e os secrets de build, não estão disponíveis; faça a build desses em um
+  terminal.
+</Aside>
+
+### Fazendo commit de um contêiner em vez disso
+
+Uma imagem também pode vir de um contêiner: **Fazer commit em imagem…**, no menu **⋮** de um contêiner, salva os arquivos e as configurações dele como estão agora — veja [Fazendo commit de um contêiner](/docs/guides/containers/#fazendo-commit-de-um-contêiner). Essa é a forma rápida de manter o que alguém instalou ou mudou dentro de um contêiner em execução. Uma build é a forma duradoura: o Dockerfile dela diz como a imagem é feita, então ela pode passar por uma nova build, ser revisada e ser atualizada quando a imagem base evolui. Uma imagem de commit não pode.
+
+## Enviando uma imagem
+
+Escolha **Enviar** no menu **⋮** de uma imagem. **Nome a enviar** começa com o primeiro nome da imagem; escolha outro dos nomes dela ou digite um novo, como `ghcr.io/org/app:v2` — a imagem recebe esse nome antes, como faz **Adicionar tag**. A primeira parte do nome diz para qual registro ela vai: `ghcr.io/org/app` vai para o GHCR, `org/app` para o Docker Hub.
+
+O Homeport envia pelo Engine do host com o [login de registro](/docs/guides/settings/#registros) guardado para esse registro, e diz qual abaixo do nome (**Enviado como alice em ghcr.io**). Sem nenhum login guardado, a caixa de diálogo avisa antes de você começar, já que a maioria dos registros recusa envios anônimos. Enquanto ele roda, a caixa de diálogo conta as camadas enviadas e as que o registro já tinha, e mostra o upload em andamento; **Cancelar** interrompe o envio.
+
+Se o registro recusar, a mensagem diz se é preciso adicionar um login ou verificar se o login guardado pode enviar para esse repositório.
+
+## Salvando e carregando imagens
+
+Para levar imagens a um host que não alcança um registro — um servidor isolado da rede, um Raspberry Pi em uma rede doméstica —, salve-as em um arquivo neste computador e carregue o arquivo no outro host.
+
+- **Salvar…**, no menu **⋮** de uma imagem, a grava, com todos os nomes dela, em um arquivo `.tar` que você escolhe. Para salvar várias de uma vez, marque-as na lista e escolha **Salvar N imagens…** no topo da página.
+- **Carregar…**, no topo da página, lê um `.tar` feito por **Salvar…** ou `docker save` — também um `.tar.gz` compactado — para o host selecionado. Quando termina, a caixa de diálogo cita as imagens que carregou, com as tags delas.
+
+O arquivo trafega entre este computador e o host pela própria conexão do host, então isso também funciona para hosts remotos. O progresso mostra os bytes gravados ou enviados; **Cancelar** o interrompe, e um salvamento cancelado ou que falhou não deixa nenhum arquivo parcial para trás. O Homeport nunca guarda o arquivo inteiro na memória, então imagens de vários gigabytes não são problema.
+
+### Importando um sistema de arquivos
+
+**Importar de tar…**, no topo da página, transforma um tar de um sistema de arquivos raiz em uma imagem, como `docker import`: um feito por [**Exportar sistema de arquivos…**](/docs/guides/containers/#exportando-o-sistema-de-arquivos-de-um-contêiner) de um contêiner ou por `docker export`, uma saída do `debootstrap` ou do Buildroot, ou um appliance de um fornecedor. Escolha o arquivo (simples ou compactado com gzip, xz ou bzip2), dê à imagem um **nome** — ele parte do nome do arquivo — e, opcionalmente, **Alterações**: instruções de Dockerfile como `CMD ["/bin/sh"]` ou `ENV LANG=C.UTF-8`, já que uma imagem importada não tem um comando próprio. O progresso mostra os bytes enviados; depois a imagem aparece na lista.
+
+### Salvar e carregar, ou exportar e importar?
+
+|          | **Salvar** / **Carregar**                                  | **Exportar sistema de arquivos** / **Importar de tar**                              |
+| -------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Parte de | Uma ou mais imagens                                        | Os arquivos de um contêiner, como estão agora                                       |
+| Mantém   | Todas as camadas, o histórico, os nomes e as configurações | Só os arquivos, achatados em uma camada                                             |
+| Perde    | Nada                                                       | O histórico, os nomes e configurações como o comando e o ambiente                   |
+| Use para | Levar imagens a um host sem registro                       | Fazer backup dos arquivos de um contêiner ou inspecioná-los, ou partir de um rootfs |
+
+## Trabalhando com uma imagem
+
+- **▶ Executar** abre a [caixa de diálogo Executar](/docs/guides/containers/#executando-um-contêiner) com a imagem preenchida.
+- **Inspecionar** — ou selecionar a linha — mostra **Camadas**, as instruções que criaram cada camada e os tamanhos delas, e **JSON bruto**.
+- **Adicionar tag** adiciona outro nome, como `registry.example.com/app:v2`. Isso não envia nada; **Enviar** envia.
+- **Remover** exclui a imagem e as camadas que nenhuma outra imagem usa. Uma imagem com várias tags perde todas elas. O Engine se recusa a remover uma imagem que um contêiner ainda usa; remova o contêiner antes.
+
+## Fazendo limpeza
+
+**Limpar** oferece dois níveis:
+
+- **Imagens órfãs** — imagens sem tag deixadas por builds e downloads. Podem ser removidas com segurança.
+- **Todas as imagens não usadas** — todas as imagens que nenhum contêiner usa, incluindo as com tag. Elas podem ser baixadas de novo, mas isso leva tempo e consome banda.
+
+O Homeport diz quantas foram removidas e quanto espaço foi recuperado. A [limpeza da Visão geral](/docs/guides/overview/#fazendo-limpeza) também pode remover contêineres parados, redes, cache de build e volumes de uma vez.

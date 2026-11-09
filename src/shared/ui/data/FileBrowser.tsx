@@ -106,7 +106,7 @@ export function FileBrowser({
             </span>
           ))}
         </nav>
-        <div className="ml-auto flex gap-2">
+        <div className="ms-auto flex gap-2">
           <Button variant="outline" size="sm" onClick={onRefresh}>
             <RefreshCwIcon /> {t('common.refresh')}
           </Button>

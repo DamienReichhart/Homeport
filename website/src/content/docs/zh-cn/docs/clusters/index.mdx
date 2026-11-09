@@ -1,0 +1,85 @@
+---
+title: 集群
+description: Homeport 如何通过你的 kubeconfig 连接 Kubernetes 集群、保存哪些内容，以及每种状态的含义。Nomad 集群另有专页介绍。
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+**集群**是 Homeport 通过其 API 连接的 Kubernetes 集群或 [Nomad 集群](/docs/clusters/nomad/)。本节介绍 Kubernetes 集群；Nomad 集群另有[专页](/docs/clusters/nomad/)。Kubernetes 集群是 Homeport 通过其 API server 访问的集群。你可以从 kubeconfig（即 `kubectl` 已在使用的文件）中的某个上下文添加集群，因此无需创建新的凭据，Homeport 也不会在集群上安装任何内容：它只与你的 kubeconfig 已能访问的 Kubernetes API 通信，所用权限就是其凭据拥有的权限。
+
+<DocScreenshot
+  name="cluster-overview"
+  alt="概览页面上的主机卡片和集群卡片，下方是 eks-prod 集群的仪表板。"
+  caption="集群与主机并列显示在概览上；选中的集群会显示其仪表板。"
+/>
+
+集群与主机一起显示在侧边栏顶部的切换器中。选择一个集群后，会显示与它相关的页面——**工作负载**、**Pod**、**网络**、**配置**、**Node**、**事件**、**API 资源**、**应用 YAML**、**Helm** 和**端口转发**——以及它在[概览](/docs/guides/overview/#所选集群)上的仪表板；选择主机则会重新显示主机页面。
+
+## 能做什么
+
+你可以实时查看集群上运行的内容及其是否健康，并在 Homeport 中完成日常的 `kubectl` 任务：
+
+1. 从 kubeconfig [添加集群](#添加集群)，或一键添加[本地集群](/docs/clusters/local/)；云集群通过其 [exec 插件](/docs/clusters/exec-plugins/)登录。
+2. 浏览其[工作负载和 Pod](/docs/clusters/workloads/)、[Service、Ingress、ConfigMap 和 Secret](/docs/clusters/networking-config/)、[Node 和事件](/docs/clusters/nodes-events/)，以及[其他任何 API 资源](/docs/clusters/api-resources/)，包括自定义资源。
+3. 读取 Pod 或工作负载的[日志并在容器中打开终端](/docs/clusters/logs-exec/)，以及将端口[转发](/docs/clusters/port-forward/)到本机。
+4. [扩缩、重启和删除](/docs/clusters/actions/)，以及在预览更改内容后[应用或编辑 YAML](/docs/clusters/yaml/)。
+5. 借助本机上的 `helm` CLI 列出、安装、升级、回滚和卸载 [Helm Release](/docs/clusters/helm/)，并管理 helm 的 Chart 仓库。
+
+每项更改都以你的凭据所拥有的权限发送到 Kubernetes API，任何会删除或替换内容的操作都会先询问你，并注明集群名称。
+
+## 添加集群
+
+<DocScreenshot
+  name="add-cluster"
+  alt="添加集群页面：顶部是在本机上找到的本地集群，下方是 ~/.kube/config 中的上下文，显示其 API server、登录方式以及哪些已添加。"
+/>
+
+在切换器中选择**添加集群…**，或在集群页面上选择**添加集群**。[本地集群](/docs/clusters/local/)（Docker Desktop、OrbStack、Rancher Desktop、kind、k3d、minikube）会列在顶部，每个只需一键。你选择的每个上下文都会成为一个以该上下文命名的集群；导入之前或之后都可以重命名。
+
+- **来自本机的 kubeconfig** 读取 `KUBECONFIG` 中列出的文件，并按 `kubectl` 的方式合并；未设置 `KUBECONFIG` 时读取 `~/.kube/config`。当前上下文会被自动选中。
+- **粘贴 kubeconfig** 读取你粘贴的文本，只保存在内存中：它绝不会被保存为文件。其中引用的文件（`certificate-authority: /…`）必须使用完整路径；最简单的做法是粘贴一个所有内容都已内联的 kubeconfig：
+
+  ```bash
+  kubectl config view --raw --flatten --minify
+  ```
+
+每个上下文都会显示其 API server、其 namespace 以及其用户的登录方式——**客户端证书**、**令牌**、**OpenID Connect**，云集群则为 **Exec 插件 (aws)**——这样你在导入之前就能分辨本地集群和生产集群。勾选你需要的上下文；每个都有一个名称字段，预填为上下文的名称。像 `arn:aws:eks:…:cluster/prod` 这样的长 ARN 值得改成 `eks-prod` 之类的简短名称：切换器和概览显示的就是这个名称。
+
+已经是集群的上下文不能重复导入：Homeport 会改为提供**刷新它**。无法使用的上下文会说明原因，例如其用户的 `auth-provider` 为 `gcp` 或 `azure`，而 Kubernetes 已移除这两者（请改用 `gke-gcloud-auth-plugin` 或 `kubelogin`，`kubectl` 现在也要求如此）。
+
+用户可以通过客户端证书、令牌（或 `tokenFile`）、用户名和密码、OpenID Connect `auth-provider`（其 ID 令牌在内存中刷新）或 exec 插件登录。
+
+## 各项内容的保存位置
+
+| 以明文保存在 Homeport 的数据库中                    | 仅加密保存（与 SSH 密钥相同）                    |
+| --------------------------------------------------- | ------------------------------------------------ |
+| 名称、API server 的 URL、上下文的 namespace         | CA 证书、客户端证书和密钥                        |
+| 其用户的登录方式（证书、令牌…）、导入时所用的上下文 | 令牌或密码、OIDC 令牌、exec 插件的参数和环境变量 |
+
+kubeconfig 引用的文件只在导入时读取一次，并与其余内容一起加密保存。你的 kubeconfig 绝不会被更改。没有系统钥匙串时，Homeport 无法保存凭据，也不会添加集群；参见[安全与你的数据](/docs/reference/security/)。
+
+## 从 kubeconfig 刷新
+
+kind、k3d 和 minikube 每次重新创建集群时都会为其生成新证书，云凭据也会续期。集群页面上的**从 kubeconfig 刷新**会重新读取其上下文（来自本机的 kubeconfig；对于粘贴添加的集群，则来自你再次粘贴的 kubeconfig），保留其名称并重新连接。
+
+## 管理集群
+
+- 切换器中的**管理集群**会列出每个集群及其状态、API server 和登录方式。
+- 在集群页面上，**已启用**开关会断开集群连接但不会忘记它，**重新连接**会立即重试，**重命名**只在 Homeport 中更改其名称。
+- **删除集群**会忘记该集群及其已保存的凭据。集群上和你的 kubeconfig 中的内容都不会改变。
+
+集群名称必须唯一，不区分大小写。
+
+## 状态
+
+| 状态           | 含义                                                                      |
+| -------------- | ------------------------------------------------------------------------- |
+| **已连接**     | API server 有响应；其 Kubernetes 版本显示在旁边。                         |
+| **正在连接**   | Homeport 正在访问它。                                                     |
+| **无法访问**   | API server 没有响应。Homeport 会自行重试，等待时间从 1 秒起，最长一分钟。 |
+| **访问被拒绝** | API server 拒绝了凭据。请检查 `kubectl` 能否使用该上下文，然后刷新。      |
+| **配置错误**   | 只有你能修复的问题，例如证书不匹配。Homeport 会一直等到你修复为止。       |
+| **凭据丢失**   | 系统钥匙串中保护凭据的密钥已不存在；请从 kubeconfig 刷新该集群。          |
+| **已停用**     | 已通过**已启用**开关关闭。                                                |
+
+已连接的集群每 15 秒检查一次，因此集群消失时会显示出来，恢复后会自行重新连接，与主机相同。

@@ -50,6 +50,32 @@ The app's text lives in a catalogue, never inline, so it can be translated ([ADR
 
 Error messages are written in Rust: each crate declares its keys and English templates in its `messages!` block, and `bun run bindings` writes them to `src/shared/i18n/en/errors.json`. Don't edit that file by hand.
 
+## Translating Homeport
+
+The app and the website speak English, French, Spanish, German, Italian, Brazilian Portuguese, Russian, Simplified Chinese, Japanese, Korean, Hindi and Arabic. Each language uses one word per product term: look them up in [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n) before translating, and add a row there when you choose a new one.
+
+### Adding or changing a string
+
+Whatever the string, `bun run check` (and so CI) fails until every language has it, with the same `{arguments}` and tags, and with every plural form that language needs.
+
+- **App text**: add the key to `src/shared/i18n/en/<namespace>.ts` (see [Adding text to the app](#adding-text-to-the-app)), then to the file of the same name in every other language folder (`fr/`, `de/`, `zh-CN/`…). Translate it if you can. If you can't, copy the English text there and say so in the pull request, so a translator can follow up; never leave the key out.
+- **An error message or hint**: declare it in the crate's `messages!` block and run `bun run bindings`, which writes `en/errors.json`; then add the key to each language's `errors.json`. Text the operating system shows — the tray menu and notifications — works the same way with a `native.` key and `native.json`.
+- **Website text** (home, download, changelog, header and footer): add the key to the right file of `website/src/core/i18n/strings/en/` (`site`, `home`, `download` or `changelog`) and to the same file of every other language's folder; `astro check` fails when one lacks it. A docs sidebar label goes in `website/src/app/config/sidebar/<code>.ts`.
+- **A docs page**: the English page is in `website/src/content/docs/docs/`. When you change it, update the same page in every language, at the same path under `website/src/content/docs/<code>/docs/`, in the same pull request; a language whose page you can't update shows its older translation until a translator does. Keep translated pages' headings in the same order and at the same levels as English, and links exactly as English writes them, anchors included: after `bun run build`, `bun scripts/localize-anchors.ts <code>` points each anchor at the translated heading, and a second build's link check confirms it.
+
+Check one language with `bun run i18n:check --locale fr`.
+
+### Adding a language
+
+Files, plus one line for the website:
+
+1. **App**: copy `src/shared/i18n/en/` to `src/shared/i18n/<tag>/` (a BCP 47 tag such as `pl` or `zh-TW`), write its `meta.ts` (`{ name: 'Polski', dir: 'ltr' }`, the language's own name for itself; `rtl` for a right-to-left script) and translate every file, keeping each key and turning each `export default { … }` into `export default { … } satisfies Translation<typeof en>` as the other languages do. `bun run i18n:check --locale <tag>` lists what's missing. Settings lists the new language, and the OS's language picks it, with no other change.
+2. **Website**: add the language to `website/src/core/site/locales.ts`, then its strings in a copy of `website/src/core/i18n/strings/en/` named `<code>/` (registered in `TABLES` in `core/i18n/index.ts`), its sidebar labels in `website/src/app/config/sidebar/<code>.ts` (registered in `sidebar.ts`; these two lines are the only code a language needs, because those files load outside Vite, which is what finds folders), and Starlight's note for untranslated pages in `website/src/content/i18n/<tag>.json`. Its pages, URLs, language switcher entries, `hreflang` links and sitemap alternates follow from the list. Its docs go under `website/src/content/docs/<code>/docs/`: translate every page there (a missing one shows English with a note), then run `bun scripts/localize-anchors.ts <code>` after a build.
+3. **Screenshots**: `bun run screenshots` captures every shot in every language, the new one included, into `website/src/assets/screenshots/<tag>/`, so each page shows the app in its reader's language. The website's `bun test` fails while a language lacks a shot English has.
+4. **Terms**: add `docs/i18n/terms-<tag>.md`.
+
+If a test doesn't see a language you just added, delete `node_modules/.vitest-cache`: Vitest can keep an old list of catalogue files.
+
 ## Improving these docs
 
 Every docs page has an **Edit page** link at the bottom. The pages are Markdown files in [`website/src/content/docs`](https://github.com/DamienReichhart/Homeport/tree/main/website/src/content/docs).

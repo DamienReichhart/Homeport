@@ -65,7 +65,7 @@ function NetworksList({ hostId, project }: { hostId: string; project: string }) 
         <span className="font-mono text-xs">
           {row.original.ipv4 ?? '—'}
           {row.original.nat && (
-            <Badge variant="outline" className="ml-2">
+            <Badge variant="outline" className="ms-2">
               NAT
             </Badge>
           )}

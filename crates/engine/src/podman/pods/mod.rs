@@ -91,6 +91,17 @@ impl PodAction {
             Self::Unpause => "unpause",
         }
     }
+
+    /// What to say when some of the pod's containers refuse this action.
+    fn failed(self) -> homeport_core::error::Message {
+        match self {
+            Self::Start => msg::POD_START_FAILED,
+            Self::Stop => msg::POD_STOP_FAILED,
+            Self::Restart => msg::POD_RESTART_FAILED,
+            Self::Pause => msg::POD_PAUSE_FAILED,
+            Self::Unpause => msg::POD_UNPAUSE_FAILED,
+        }
+    }
 }
 
 /// A new pod, as the **New pod** dialog fills it.
@@ -330,12 +341,9 @@ pub async fn act(podman: &Podman, id: &str, action: PodAction) -> AppResult<()> 
         304 => Err(AppError::new(ErrorCode::AlreadyDone, msg::POD_ALREADY)),
         404 => Err(gone_error()),
         // Some of the pod's containers failed; Podman names them in the body.
-        409 => Err(AppError::new(
-            ErrorCode::Conflict,
-            msg::POD_ACTION_FAILED.with("action", action.verb()),
-        )
-        .with_hint(msg::POD_ACTION_FAILED_HINT)
-        .with_detail(String::from_utf8_lossy(&answer.body))),
+        409 => Err(AppError::new(ErrorCode::Conflict, action.failed())
+            .with_hint(msg::POD_ACTION_FAILED_HINT)
+            .with_detail(String::from_utf8_lossy(&answer.body))),
         _ => answer.ok().map(drop),
     }
 }

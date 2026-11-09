@@ -1,85 +1,45 @@
 ---
 /** What Homeport does, a card per area. */
-import { Icon, type IconName } from '@/shared/ui';
+import { strings } from '@/core/i18n';
+import type { Locale } from '@/core/site';
+import { Icon } from '@/shared/ui';
 
-const features: { icon: IconName; title: string; body: string }[] = [
-  {
-    icon: 'server',
-    title: 'Hosts, near and far',
-    body: 'Local Engines and Podman machines are found for you. Remote ones join over SSH, through bastions if need be, mutual TLS or TCP, or straight from your ~/.ssh/config and Docker contexts. Each Host reconnects on its own when the network blinks.',
-  },
-  {
-    icon: 'box',
-    title: 'Containers at a glance',
-    body: 'Grouped by Stack, with live CPU and memory and the reason behind an unhealthy one. Run with limits, devices and healthchecks, then edit, duplicate, commit or export a container.',
-  },
-  {
-    icon: 'boxes',
-    title: 'Compose Stacks',
-    body: 'Start from a template, link a project folder on this computer, or follow a git repository, then deploy to any Host — builds included. See what changes before each redeploy or sync, roll back, and update to newer images in one step.',
-  },
-  {
-    icon: 'network',
-    title: 'Docker Swarm',
-    body: 'Swarms show up through their manager Hosts. Manage nodes, services, tasks, secrets and configs, deploy Stacks to a Swarm, and start, join or leave one from a Host, with nothing installed on any node.',
-  },
-  {
-    icon: 'fileText',
-    title: 'Podman, as Podman',
-    body: 'Homeport recognises Podman when it connects and adds what only Podman has: pods, created with their ports and run containers in, and Quadlet units, installed, edited and started under systemd, through Podman’s own API.',
-  },
-  {
-    icon: 'box',
-    title: 'containerd, directly',
-    body: 'Connect to containerd on its socket, locally or over SSH, with no Docker: pick a namespace, start, stop and signal its containers’ tasks, read their logs, open a terminal, pull images with your registry logins, and find the snapshots eating your disk.',
-  },
-  {
-    icon: 'server',
-    title: 'Incus instances',
-    body: 'Add Incus over its socket, SSH or HTTPS with a trust token, and run its system containers and virtual machines: create them from a remote image, start, freeze and stop them, open their console or a shell, take and restore snapshots, and manage images, profiles, storage and networks.',
-  },
-  {
-    icon: 'shipWheel',
-    title: 'Kubernetes and Nomad clusters',
-    body: 'Add Kubernetes clusters from your kubeconfig — EKS, GKE and AKS included — or find local ones in one click. Browse workloads, Pods, Services, configuration and any API resource live; follow logs, open a terminal, forward ports, scale and apply YAML with a preview, and install, upgrade and roll back Helm charts. Add Nomad clusters by address to run jobs from HCL with their plan, scale and stop them, follow logs, open a shell and drain nodes. Nothing is installed on a cluster.',
-  },
-  {
-    icon: 'layers',
-    title: 'Images',
-    body: 'Search Docker Hub, pull and push with your registry logins, build from a folder on your computer, save and load archives, and see when a newer image is out.',
-  },
-  {
-    icon: 'hardDrive',
-    title: 'Volumes and networks',
-    body: 'See which containers use what. Create, connect and disconnect, with deletion that tells you exactly what you are about to lose.',
-  },
-  {
-    icon: 'activity',
-    title: 'One board for every Host',
-    body: 'Every container of every Host in one table, filtered and acted on together. Each Host on one page too: engine details, disk usage with a one-dialog clean-up, and a live stream of what the Engine is doing.',
-  },
-  {
-    icon: 'zap',
-    title: 'Keyboard first',
-    body: 'A command palette to go anywhere, switch Host or run a command, and to find any container, image or volume on whichever Host has it. Shortcuts for every page, listed with ?.',
-  },
-  {
-    icon: 'gauge',
-    title: 'Watching in the background',
-    body: 'Every Host’s status in the system tray, notifications when a container crashes or a Host drops, and Homeport starting at login, hidden until you need it.',
-  },
-];
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
+
+const features = (
+  [
+    ['hosts', 'server'],
+    ['containers', 'box'],
+    ['stacks', 'boxes'],
+    ['swarm', 'network'],
+    ['podman', 'fileText'],
+    ['containerd', 'box'],
+    ['incus', 'server'],
+    ['clusters', 'shipWheel'],
+    ['images', 'layers'],
+    ['volumes', 'hardDrive'],
+    ['board', 'activity'],
+    ['keyboard', 'zap'],
+    ['background', 'gauge'],
+  ] as const
+).map(([id, icon]) => ({
+  icon,
+  title: s[`home.features.${id}.title`],
+  body: s[`home.features.${id}.body`],
+}));
 ---
 
 <section class="section" id="features">
   <div class="container">
     <div class="section-heading section-heading--center" data-reveal>
-      <span class="eyebrow">Features</span>
-      <h2>Everything your Engines run, in one window</h2>
-      <p>
-        The day-to-day of Docker — what is running, what it says, what it costs — without
-        remembering which server it lives on.
-      </p>
+      <span class="eyebrow">{s['home.features.eyebrow']}</span>
+      <h2>{s['home.features.title']}</h2>
+      <p>{s['home.features.lead']}</p>
     </div>
     <div class="feature-grid">
       {features.map((feature) => (

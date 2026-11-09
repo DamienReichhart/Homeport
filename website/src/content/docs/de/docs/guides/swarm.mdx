@@ -1,0 +1,196 @@
+---
+title: Swarms
+description: Ihre Docker Swarms über ihre Manager-Hosts finden und ihre Nodes, Services, Tasks, Secrets, Configs und Swarm-Stacks verwalten.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+Ein **Swarm** ist ein Docker-Swarm-Cluster. Homeport fügt einen Swarm nicht eigenständig hinzu: Es findet ihn über die [Hosts](/docs/hosts/), die zu ihm gehören, und verwaltet ihn über einen beliebigen verbundenen Manager. Auf keinem Node wird etwas installiert, und über einen Swarm wird nichts auf diesem Computer gespeichert.
+
+Diese Seite begleitet einen Swarm vom Finden oder Erstellen bis zu seinen Nodes, Services und Tasks, Secrets und Configs und seinen [Stacks](/docs/guides/stacks/): denen, die aus einem Terminal bereitgestellt wurden, und denen, die Homeport bereitstellt.
+
+## Einen Swarm finden
+
+Fügen Sie einen Manager des Swarms als Host hinzu, so wie Sie jeden anderen Host hinzufügen (siehe [Hosts und Verbindungen](/docs/hosts/)). Sobald er verbunden ist, erscheint der Swarm:
+
+- in der Seitenleiste unter **Swarms**,
+- in der **Übersicht** als eigene Karte,
+- auf jedem seiner Hosts als **Manager von** oder **Worker von** dem Swarm.
+
+Docker gibt jedem Swarm denselben Namen, daher nennt Homeport einen Swarm **Swarm von** seinem ersten Manager-Host, mit dem Anfang seiner Swarm-ID. Das Hinzufügen eines zweiten Managers desselben Swarms zeigt ihn nicht doppelt: Swarms werden anhand ihrer Swarm-ID unterschieden. Ein Worker-Host zeigt, zu welchem Swarm er gehört, sobald auch einer der Manager dieses Swarms ein Host ist.
+
+Die Seite des Swarms beginnt mit seiner **Zusammenfassung**: seinen Manager- und Worker-Hosts, wie viele Nodes und Manager er hat, wie viele Services darauf laufen, und seiner Swarm-ID. Seine Tabs – **Nodes**, **Services**, **Tasks**, **Stacks**, **Secrets** und **Configs** – werden unten beschrieben.
+
+<DocScreenshot
+  name="swarm-summary"
+  alt="Der Tab Zusammenfassung eines Swarms: seine Manager-Hosts, die Anzahl der Nodes und Services, die Swarm-ID und die für einen Worker und einen Manager angezeigten Beitrittsbefehle."
+  caption="Die Zusammenfassung mit den angezeigten Beitrittsbefehlen für Rechner, die Homeport nicht verwaltet."
+/>
+
+### Wenn kein Manager verbunden ist
+
+Alles, was Homeport mit einem Swarm tut, läuft über einen seiner verbundenen Manager, je nachdem, welcher zuerst antwortet. Ist keiner verbunden, zeigt die Seite des Swarms **Kein Manager dieses Swarms ist verbunden** und nennt die Manager-Hosts, die sie zuletzt gesehen hat: Verbinden Sie einen davon neu oder fügen Sie einen anderen Manager als Host hinzu.
+
+## Einen Swarm erstellen
+
+Homeport kann einen Swarm aus Hosts einrichten, mit denen es sich bereits verbindet, ohne dass zwischen Terminals etwas kopiert werden muss. Die Seite jedes verbundenen Hosts hat eine Karte **Swarm**:
+
+1. Wählen Sie auf dem Host, der den Swarm verwalten soll, **Swarm initialisieren**. Homeport trägt die **Advertise-Adresse** (die Adresse, unter der andere Nodes ihn erreichen) ein, wenn es den Host über eine IP erreicht; lassen Sie sie leer, damit die Engine eine wählt, was funktioniert, wenn der Rechner nur eine Adresse hat. Der Host wird der erste Manager des Swarms, und der Swarm erscheint in der Seitenleiste.
+2. Wählen Sie auf jedem anderen Host **Swarm beitreten**, wählen Sie den Swarm und treten Sie als **Worker** oder **Manager** bei. Homeport holt das Join-Token von einem verbundenen Manager. Um einem Swarm beizutreten, den Homeport nicht kennt, wählen Sie **Ein anderer Swarm, über sein Token** und fügen das Token und die Adresse eines Managers aus `docker swarm join-token worker` ein.
+3. Für Rechner, die in Homeport keine Hosts sind, hat die **Zusammenfassung** des Swarms **Beitrittsbefehle**: Zeigen Sie sie an und kopieren Sie den Befehl `docker swarm join` für einen Worker oder einen Manager. Tokens werden beim Anzeigen abgerufen und nie gespeichert oder protokolliert.
+
+**Swarm verlassen** auf der Karte eines Hosts nimmt ihn heraus: Die Tasks eines Workers wandern auf andere Nodes. Ein Manager braucht **Erzwingen**; stufen Sie ihn zuerst herab, damit der Swarm gesund bleibt. Verlässt der letzte Manager den Swarm, nimmt er ihn mit allen Services, Secrets und Configs mit, daher bittet Homeport Sie, zuerst den Namen des Hosts einzugeben.
+
+### Ports zwischen Nodes
+
+Nodes sprechen direkt miteinander, nicht über Homeport, und Homeport installiert nichts auf ihnen, kann also keine Ports für Sie öffnen. Erlauben Sie zwischen allen Nodes eines Swarms, in deren Firewalls und in der Ihres Netzwerks:
+
+| Port | Protokoll | Wofür                                   |
+| ---- | --------- | --------------------------------------- |
+| 2377 | TCP       | Verwaltung des Swarms (zu den Managern) |
+| 7946 | TCP, UDP  | Gegenseitiges Finden der Nodes          |
+| 4789 | UDP       | Overlay-Netzwerkverkehr zwischen Nodes  |
+
+Kann ein Host die Manager nicht erreichen, schlägt der Beitritt mit **Dieser Host konnte die Manager des Swarms nicht erreichen** fehl, und der Hinweis listet diese Ports auf.
+
+## Nodes
+
+<DocScreenshot
+  name="swarm-nodes"
+  alt="Der Tab Nodes eines Swarms: drei Manager (einer davon der Leader) und zwei Worker, einer davon geleert, mit ihren Engine-Versionen, Adressen und Labels."
+/>
+
+Der Tab **Nodes** listet jeden Node des Swarms auf: seinen Hostnamen, ob er ein Manager ist (und der Leader, erreichbar oder nicht erreichbar) oder ein Worker, seine Verfügbarkeit, ob er läuft (`ready`) oder `down` ist, seine Engine-Version, Adresse und Labels. Ein Node, der auch einer Ihrer Hosts ist, verlinkt auf die Seite des Hosts, und die Seite des Hosts verlinkt zurück auf ihren Node. Die Liste aktualisiert sich von selbst, wenn sich Nodes ändern.
+
+Das Menü jedes Nodes ändert ihn:
+
+| Aktion                     | Was sie bewirkt                                                                                                                           |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **Aktivieren**             | Der Scheduler darf wieder neue Tasks darauf platzieren.                                                                                   |
+| **Pausieren**              | Er behält seine Tasks, bekommt aber keine neuen.                                                                                          |
+| **Leeren**                 | Seine Tasks wandern auf andere Nodes: Tun Sie das vor Wartungsarbeiten.                                                                   |
+| **Zum Manager befördern**  | Er tritt den Managern bei. Halten Sie eine ungerade Anzahl von ihnen (1, 3 oder 5), damit der Swarm den Ausfall eines Managers übersteht. |
+| **Zum Worker herabstufen** | Er verlässt die Manager, führt aber weiterhin Tasks aus.                                                                                  |
+| **Labels bearbeiten**      | Setzt die Labels, nach denen Platzierungsbedingungen Nodes auswählen, etwa `node.labels.zone==a`.                                         |
+| **Entfernen**              | Nimmt ihn aus dem Swarm heraus.                                                                                                           |
+
+Homeport lehnt es ab, noch bevor es die Engine fragt, den letzten erreichbaren Manager des Swarms herabzustufen (ein Swarm ohne Manager lässt sich überhaupt nicht verwalten) und seinen letzten aktiven Node zu leeren (seine Tasks hätten keinen Ort, an den sie gehen könnten). Das Entfernen eines Nodes, der noch läuft, braucht **Erzwingen**; ein Manager muss zuerst herabgestuft werden. Hat jemand anderes einen Node geändert, seit die Liste gelesen wurde, wird die Änderung mit **Dies wurde anderswo geändert** abgelehnt: Aktualisieren Sie und versuchen Sie es erneut, damit nichts überschrieben wird.
+
+## Services
+
+<DocScreenshot
+  name="swarm-services"
+  alt="Der Tab Services eines Swarms, der jeden Service mit Image, Modus, laufenden und gewünschten Tasks, Ports und Stack auflistet."
+/>
+
+Der Tab **Services** listet auf, was der Swarm ausführt: Name, Image und Modus jedes Services (repliziert mit seiner Anzahl an Replikaten oder global: ein Task auf jedem Node), wie viele seiner Tasks laufen gegenüber wie vielen laufen sollten (in Warnfarbe, solange weniger laufen), seine veröffentlichten Ports, den Swarm-Stack, zu dem er gehört, und den Zustand seines letzten Updates. Die Liste aktualisiert sich von selbst, wenn sich Services ändern.
+
+Das Menü jedes Services:
+
+- **Logs** öffnet seine Logs, zusammengeführt aus allen Tasks, jede Zeile mit ihrem Task und Node beschriftet, etwa `web.2@node-b`. Beim Mitverfolgen kommen die Tasks hinzu, die der Swarm später startet.
+- **Skalieren** legt fest, wie viele Replikate ein replizierter Service ausführt; 0 stoppt ihn, ohne ihn zu entfernen. Globale Services werden nicht skaliert: Sie führen einen Task pro Node aus.
+- **Zurücksetzen** stellt die Einstellungen wieder her, die der Service vor seinem letzten Update hatte (Image, Umgebung, Replikate…), so wie es `docker service rollback` tut. Ein Service, der nie aktualisiert wurde, hat nichts, worauf er zurückgesetzt werden könnte, und sagt das.
+- **Entfernen** stoppt und entfernt seine Tasks. Seine Volumes bleiben erhalten.
+
+Wählen Sie einen Service aus, um ihn zu öffnen. Seine Seite beginnt mit seinen **Tasks**, sodass ein laufender Rollout oder ein Replikat, das nicht startet, sofort sichtbar ist, mit **Bearbeiten**, **Skalieren**, **Zurücksetzen** und **Entfernen** oben.
+
+<DocScreenshot
+  name="swarm-service"
+  alt="Die Seite eines Services während eines Updates: drei seiner vier Replikate laufen, das vierte wird auf worker-eu-1 noch vorbereitet."
+  caption="shop_api mitten im Update: 3 von 4 Replikaten laufen, während das vierte vorbereitet wird."
+/>
+
+Der Tab **Logs** verfolgt seine Logs, und **Untersuchen** zeigt seine vollständige Definition, wie die Engine sie hat, einschließlich dessen, was Homeport nicht bearbeitet (Platzierungsbedingungen, Ressourcenlimits, Healthcheck, Update- und Rollback-Richtlinien).
+
+### Einen Service erstellen und aktualisieren
+
+**Service erstellen** im Tab Services startet einen Service aus einem Image: sein Name, ob er repliziert (und mit wie vielen Replikaten) oder global ist, wann seine Tasks neu starten, ein Befehl, der den des Images ersetzt, Umgebungsvariablen (ein `KEY=value` pro Zeile), veröffentlichte Ports, Volumes und Bind-Mounts, die Overlay-Netzwerke, denen er beitritt, und die Secrets und Configs, die er erhält, jeweils dort eingehängt, wo Sie es angeben (bei einem Secret standardmäßig `/run/secrets/<name>`). Ports laufen über das Routing-Mesh des Swarms und sind auf jedem Node erreichbar, sofern Sie nicht wählen, sie nur auf dem Node zu veröffentlichen, auf dem der jeweilige Task läuft. Bind-Mounts sind Pfade auf jedem Node, nicht auf diesem Computer. Homeport prüft das Formular, bevor es gesendet wird: ein gültiger Name, `KEY=value`-Einträge, ein doppelt veröffentlichter Port. Der neue Service öffnet sich in seinem Tab **Tasks**, wo Sie den Start seiner Replikate verfolgen.
+
+**Bearbeiten** auf der Seite eines Services ändert sein Image, seine Umgebung und seine Replikate, und nur diese: Seine Ports, Mounts, Netzwerke und alles andere werden unverändert zurückgesendet. Der Swarm überführt dann seine Tasks nach und nach in die neuen Einstellungen, und die Seite zeigt den Fortschritt des Updates. **Alle Tasks neu bereitstellen** startet sie neu, auch wenn sich nichts geändert hat, und pullt das Image erneut; so wird ein neuer Push desselben Tags ausgerollt. Hat jemand anderes den Service aktualisiert, seit Sie ihn geöffnet haben, sagt Homeport das, statt dessen Änderung zu überschreiben: Aktualisieren Sie und bearbeiten Sie erneut.
+
+Private Images: Die Nodes pullen Images selbst, daher braucht ein privates Image eine Anmeldung auf jedem Node (`docker login` dort) oder einen Stack, der mit Ihren Registry-Zugangsdaten bereitgestellt wird (siehe [Stacks bereitstellen](#stacks-in-einem-swarm-bereitstellen)).
+
+## Tasks
+
+Ein Service läuft als **Tasks**: einer pro Replikat (sein Slot, etwa `web.2`) oder einer pro Node bei einem globalen Service (`agent@node-b`). Jeder Task läuft als Container auf seinem Node. Wenn ein Service weniger laufende Tasks zeigt, als er sollte, liegt die Antwort in seinen Tasks.
+
+Der Tab **Tasks** listet die Tasks des Swarms auf, gruppiert nach Service und dann nach Slot, die neuesten zuerst: den Node, auf dem jeder läuft, was er tut und was der Swarm von ihm will (**sollte running sein**, wenn beides abweicht), seit wann, seine Meldung – rot, wenn es ein Fehler ist – und sein Image.
+
+<DocScreenshot
+  name="swarm-tasks"
+  alt="Der Tab Tasks eines Swarms: der Task eines globalen Services auf jedem Node, dann jedes Replikat von shop_api, eines noch in Vorbereitung."
+/>
+Die Seite eines Services hat denselben Tab nur für diesen Service, und das Menü eines Nodes hat
+**Seine Tasks anzeigen**. Standardmäßig zeigt jeder Slot nur den Task, den der Swarm laufen lassen
+will; schalten Sie **Verlauf anzeigen** ein, um die früheren Versuche zu sehen, die er
+heruntergefahren hat oder die fehlgeschlagen sind. Ein Task auf einem Node, der auch einer Ihrer
+Hosts ist, hat **Container öffnen**, das diesen Host auswählt und den Container öffnet.
+
+Häufige Fehler:
+
+| Fehler                                                    | Was er bedeutet                                                                                                                                                                |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `No such image`, `pull access denied`                     | Der Node kann das Image nicht pullen: Prüfen Sie seinen Namen oder ob die Registry auf diesem Node eine Anmeldung braucht.                                                     |
+| `no suitable node`                                        | Kein Node erfüllt die Bedingungen des Services, hat die Ressourcen, die er reserviert, oder ist aktiv: Prüfen Sie die Platzierungsbedingungen und die Verfügbarkeit der Nodes. |
+| `port is already allocated`, `address already in use`     | Ein im Modus `host` veröffentlichter Port ist auf diesem Node belegt.                                                                                                          |
+| `invalid mount config`, `bind source path does not exist` | Ein Bind-Mount nennt einen Pfad, den der Node nicht hat. Bind-Mounts sind Pfade auf jedem Node.                                                                                |
+| `task: non-zero exit (1)`                                 | Der Container ist gestartet und mit einem Fehler beendet worden: Öffnen Sie seine Logs im Tab **Logs** des Services.                                                           |
+
+## Secrets und Configs
+
+Services lesen Zugangsdaten aus **Secrets** und Konfigurationsdateien aus **Configs**, beide als Dateien in ihren Containern eingehängt (Secrets unter `/run/secrets/`). Die Tabs **Secrets** und **Configs** listen sie mit den Services auf, die sie verwenden, mit ihren Labels und mit dem Zeitpunkt, zu dem sie erstellt und aktualisiert wurden.
+
+<DocScreenshot
+  name="swarm-secrets"
+  alt="Der Tab Secrets eines Swarms, der drei Secrets mit den Services auflistet, die jedes verwenden."
+/>
+
+**Secret erstellen** fragt nach einem Namen und dem Wert, maskiert, sofern Sie nicht **Anzeigen** wählen, oder nach **Aus Datei laden…**, um stattdessen eine Datei von diesem Computer zu senden (einen Schlüssel, ein Zertifikat). Der Wert geht einmal an den Swarm: Homeport behält ihn nicht, und die Engine sendet ihn nie zurück, sodass niemand ihn aus dem Swarm lesen kann, auch Homeport nicht. **Config erstellen** funktioniert genauso, wobei der Inhalt beim Tippen angezeigt wird; der Inhalt einer Config lässt sich in ihrer Zeile erneut ansehen. Beide sind auf 500 KB begrenzt.
+
+Secrets und Configs lassen sich nach dem Erstellen nicht ändern. Um eines zu ändern, erstellen Sie ein neues unter einem neuen Namen, etwa `db_password_v2`, richten die Services darauf aus und entfernen dann das alte. Ein Secret oder eine Config, die ein Service verwendet, lässt sich nicht entfernen: Der Swarm lehnt ab, und Homeport nennt die Services, die es verwenden.
+
+## Swarm-Stacks
+
+Ein **Swarm-Stack** ist ein Stack, der in einem Swarm bereitgestellt ist: eine Compose-Datei, die in Services, Netzwerke, Secrets und Configs umgesetzt wurde, die sich einen Namespace teilen. Homeport findet jeden davon, wie auch immer er bereitgestellt wurde, über das Label `com.docker.stack.namespace`, das `docker stack deploy` an sie setzt. Der Tab **Stacks** des Swarms listet sie auf, wie die Seite **Stacks** die eines Hosts: ihre Art, ihren Zustand (laufend, wenn jeder Task jedes Services läuft, gestoppt, wenn jeder Service auf 0 skaliert ist) und ihre Services.
+
+Ein Stack, der aus einem Terminal mit `docker stack deploy` bereitgestellt wurde, ist **Extern**: Homeport hat keine Compose-Datei für ihn. Wählen Sie ihn aus, um seine Services zu sehen, jeder mit einem Link auf seine Seite, sowie seine Netzwerke, Secrets und Configs. **Entfernen** tut, was `docker stack rm` tut: Es entfernt die Services, wartet, bis ihre Tasks gestoppt sind, und entfernt dann die Netzwerke, Secrets und Configs des Namespace. Alles, dessen Entfernung der Swarm abgelehnt hat, wird aufgelistet. Volumes bleiben auf jedem Node erhalten.
+
+<DocScreenshot
+  name="swarm-stacks"
+  alt="Der Tab Stacks eines Swarms: der verwaltete Stack shop, teilweise laufend mit 9 von 10 Tasks, und der laufende externe Stack monitoring."
+/>
+
+Ein Swarm-Stack hat kein Starten oder Stoppen: Docker kennt diese Operation dafür nicht. Um einen Stack zu stoppen, ohne ihn zu entfernen, skalieren Sie seine Services auf ihren Seiten auf 0.
+
+Auf der Seite **Container** eines Hosts werden die Container, die die Tasks eines Swarm-Stacks dort ausführen, unter diesem Stack gruppiert und mit **Swarm** markiert, statt einzeln aufgelistet zu werden.
+
+## Stacks in einem Swarm bereitstellen
+
+Verwaltete, verknüpfte und synchronisierte Stacks können statt auf einem Host in einem Swarm bereitgestellt werden. Wählen Sie auf **Neuer Stack** (von der Seite Stacks aus oder über **Neuer Stack** im Tab **Stacks** eines Swarms) den Swarm unter **Bereitstellen auf** und schreiben Sie dann die Compose-Datei oder wählen Sie einen Ordner oder ein Repository wie bei einem Host. Der Tab **Stacks** des Swarms listet sie zusammen mit den externen auf; die Seite eines Stacks dort hat **Bereitstellen** oder **Neu bereitstellen**, seine **Definition** zum Bearbeiten und seinen **Verlauf** zum Zurücksetzen, wie bei einem Host.
+
+Homeport stellt mit `docker stack deploy` bereit, ausgeführt auf diesem Computer gegen den gerade verbundenen Manager des Swarms, über dieselbe private Verbindung pro Befehl wie bei Compose: Auf keinem Node wird etwas installiert oder geschrieben. Es braucht den Befehl `docker` auf diesem Computer (siehe [Voraussetzungen](/docs/requirements/)). Ist kein Manager verbunden, meldet die Bereitstellung das. Ein Stack eines Swarms gehört dem Swarm, nicht dem Manager, über den er erstellt wurde: Wird dieser Host entfernt, bleibt der Stack erhalten.
+
+Was sich in einem Swarm ändert:
+
+- **Images kommen aus einer Registry.** Jeder Node pullt die Images der Tasks, die er ausführt, daher wird ein aus lokalen Dateien gebauter Service (`build:` ohne `image:`) abgelehnt, bevor etwas läuft: Pushen Sie das Image zuerst und nennen Sie es in `image:`. **Meine Registry-Zugangsdaten senden** in der **Definition** eines Stacks lässt die Docker-CLI die Anmeldungen, die sie auf diesem Computer hat (`docker login`), an den Swarm senden, damit seine Nodes private Images pullen können. Es ist standardmäßig aus; die eigenen Registry-Anmeldungen von Homeport werden nie an die CLI übergeben.
+- **Einige Compose-Schlüssel werden ignoriert** von `docker stack deploy`: `container_name`, `restart` (verwenden Sie `deploy.restart_policy`), Bedingungen von `depends_on` und `profiles`. Der Editor warnt davor. Bind-Mounts sind Pfade auf dem Node, der den Task gerade ausführt.
+- **Entfernen** fährt den Stack herunter, wie es `docker stack rm` tut, und es gibt kein Starten oder Stoppen.
+
+### Verknüpfte und synchronisierte Stacks in einem Swarm
+
+Die meisten Swarm-Stacks liegen in einem Ordner oder einem Repository neben ihren Konfigurationsdateien, und genau dort spielen verknüpfte und synchronisierte Stacks in einem Swarm ihre Stärke aus. Homeport führt `docker stack deploy` aus dem Ordner des Stacks auf diesem Computer aus (dem eines verknüpften Stacks oder dem Checkout eines synchronisierten Stacks), sodass relative `env_file:`, `configs: file:` und `secrets: file:` hier gelesen und an den Swarm gesendet werden. Auch die `.env` des Ordners wird gelesen, wie Compose es täte (`docker stack deploy` tut es von sich aus nicht). Auf keinem Node wird etwas geschrieben, und aus Dateien gelesene Secrets gehen an den Swarm, ohne dass Homeport sie behält.
+
+- Ein Service mit `build:` braucht auch ein `image:`: Homeport kann den Nodes kein hier gebautes Image übergeben. Bauen und pushen Sie es und stellen Sie dann bereit.
+- Ein synchronisierter Stack in einem Swarm synchronisiert, stellt bereit und stellt automatisch bereit wie auf einem Host: Jede Bereitstellung verwendet den gerade abgerufenen Commit.
+- Ein externer Swarm-Stack, der aus einem Ordner bereitgestellt wurde, kann mit diesem verknüpft werden: Wählen Sie auf seiner Seite **Mit einem Ordner verknüpfen…**. Homeport prüft vor dem Verknüpfen, ob die Compose-Dateien des Ordners die Services deklarieren, die der Stack ausführt, damit ein Stack nicht an die Dateien eines anderen Projekts gebunden wird.
+
+Swarm-Configs und -Secrets lassen sich nach dem Erstellen nicht ändern. Ändert sich eine `file:`-Quelle, schlägt die erneute Bereitstellung mit **Eine Config oder ein Secret dieses Stacks hat sich geändert** fehl: Geben Sie dem Objekt einen versionierten Namen, zum Beispiel
+
+```yaml
+configs:
+  app_conf:
+    name: app_conf_${CONF_VERSION}
+    file: ./app.conf
+```
+
+und ändern Sie `CONF_VERSION` in der `.env` des Ordners (oder in der Umgebung des Stacks) jedes Mal, wenn sich die Datei ändert. Homeport entfernt und erstellt nie eines hinter Ihrem Rücken neu.

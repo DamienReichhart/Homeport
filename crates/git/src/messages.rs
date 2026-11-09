@@ -73,7 +73,8 @@ homeport_core::messages! {
     HOST_KEY_CHANGED = "errors.git.hostKeyChanged" => "{host} presented a different SSH key than the one Homeport trusts for it.";
     HOST_KEY_CHANGED_HINT = "errors.git.hostKeyChanged.hint" => "If the forge changed its key, check its new fingerprint on its website, then reset the trusted key in Settings → Repositories. Otherwise, someone may be intercepting the connection.";
     /// A branch or tag that isn't in the repository.
-    REF_MISSING = "errors.git.refMissing" => "The repository has no {kind} named {name}.";
+    REF_MISSING_BRANCH = "errors.git.refMissingBranch" => "The repository has no branch named {name}.";
+    REF_MISSING_TAG = "errors.git.refMissingTag" => "The repository has no tag named {name}.";
     REF_MISSING_HINT = "errors.git.refMissing.hint" => "Pick one of the repository's branches or tags.";
     /// `git` failed in a way Homeport has no better words for.
     FAILED = "errors.git.failed" => "git {verb} failed.";

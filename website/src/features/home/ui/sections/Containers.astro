@@ -1,23 +1,34 @@
 ---
 /** A container's tools: logs, terminal, files and stats. */
+import { strings } from '@/core/i18n';
+import { type Locale, localePath } from '@/core/site';
 import { href } from '@/shared/lib/href';
-import { Icon, type IconName, Screenshot, TextLink } from '@/shared/ui';
+import { Icon, Screenshot, TextLink } from '@/shared/ui';
 import Showcase from '../Showcase.astro';
 
-const containerTools: { icon: IconName; title: string; body: string }[] = [
-  { icon: 'fileText', title: 'Logs', body: 'Follow, search, filter by stream and time, download.' },
-  { icon: 'terminal', title: 'Terminal', body: 'Interactive shells, as many as you need.' },
-  { icon: 'folder', title: 'Files', body: 'Browse, upload and download, folders as .tar.' },
-  { icon: 'gauge', title: 'Stats', body: 'CPU, memory, network and disk I/O charts.' },
-];
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
+
+const containerTools = (
+  [
+    ['logs', 'fileText'],
+    ['terminal', 'terminal'],
+    ['files', 'folder'],
+    ['stats', 'gauge'],
+  ] as const
+).map(([id, icon]) => ({
+  icon,
+  title: s[`home.containers.${id}.title`],
+  body: s[`home.containers.${id}.body`],
+}));
 ---
 
-<Showcase eyebrow="Containers" title="Everything about a container, one click away" reverse>
-  <p>
-    Open a container and its logs are already streaming. Switch tabs for an interactive terminal,
-    its files, live charts, processes and the full inspect document — on a Host across the world as
-    easily as on your laptop.
-  </p>
+<Showcase eyebrow={s['home.containers.eyebrow']} title={s['home.containers.title']} reverse>
+  <p>{s['home.containers.body']}</p>
   <ul class="tool-grid">
     {containerTools.map((tool) => (
       <li>
@@ -29,11 +40,14 @@ const containerTools: { icon: IconName; title: string; body: string }[] = [
       </li>
     ))}
   </ul>
-  <TextLink href={href('/docs/guides/containers/')}>Working with containers</TextLink>
+  <TextLink href={href(localePath('/docs/guides/containers/', locale))}>
+    {s['home.containers.link']}
+  </TextLink>
   <Screenshot
     slot="media"
     name="container-logs"
-    alt="A container's Logs tab, streaming output with search, timestamps and stream filters."
+    folder={locale.code}
+    alt={s['home.containers.screenshot']}
     sizes="(min-width: 64rem) 760px, 100vw"
   />
 </Showcase>

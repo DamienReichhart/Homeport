@@ -1,0 +1,47 @@
+---
+title: लोकल क्लस्टर
+description: Homeport इस कंप्यूटर पर कौन-से Kubernetes क्लस्टर ढूँढता है, और Docker Desktop, OrbStack और Rancher Desktop में Kubernetes कैसे चालू करें।
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+Homeport इस कंप्यूटर के kubeconfig में यहाँ चल रहे क्लस्टर ढूँढता है, हर एक के API सर्वर से उसका संस्करण पूछता है, और जवाब देने वालों को **क्लस्टर जोड़ें** पर और स्वागत पेज पर देता है, हर एक बस एक क्लिक में। यह कभी कोई क्लस्टर शुरू, बनाता या इंस्टॉल नहीं करता।
+
+<DocScreenshot
+  name="add-cluster"
+  alt="इस मशीन पर क्लस्टर: kind-dev पहले से जोड़ा गया, जोड़ें बटन के साथ Docker Desktop का क्लस्टर, OrbStack का नहीं चल रहा, और एक k3d क्लस्टर उस कमांड के साथ जो उसे kubeconfig में जोड़ती है।"
+  caption="kind-dev पहले से एक क्लस्टर है, Docker Desktop वाला बस एक क्लिक दूर है, OrbStack वाला रुका हुआ है, और चल रहा एक k3d क्लस्टर अभी kubeconfig में नहीं है।"
+/>
+
+## क्या मिलता है
+
+| टूल                 | इसका kubeconfig context                       | इस नाम से जोड़ा जाता है |
+| ------------------- | --------------------------------------------- | ----------------------- |
+| **Docker Desktop**  | `docker-desktop`                              | `Docker Desktop`        |
+| **OrbStack**        | `orbstack`                                    | `OrbStack`              |
+| **Rancher Desktop** | `rancher-desktop`                             | `Rancher Desktop`       |
+| **kind**            | `kind-<name>`                                 | context का नाम          |
+| **k3d**             | `k3d-<name>`                                  | context का नाम          |
+| **minikube**        | `minikube`, या minikube का लिखा कोई प्रोफ़ाइल | context का नाम          |
+
+कोई context लोकल तभी माना जाता है जब उसका API सर्वर इस कंप्यूटर पर हो (`127.0.0.1`, `localhost`, `kubernetes.docker.internal`…) या, minikube और Rancher Desktop के लिए, उनकी VM में किसी निजी पते पर। रिमोट context कभी नहीं दिया जाता, उसका नाम चाहे जो हो। जो लोकल क्लस्टर जवाब नहीं देता, वह **नहीं चल रहा** दिखाता है; उसे उसके अपने टूल से शुरू करें और पेज फिर से खोलें।
+
+### kubeconfig में न मौजूद kind और k3d क्लस्टर
+
+जब कोई [लोकल होस्ट](/docs/hosts/local/) कनेक्ट होता है, तो Homeport चल रहे kind और k3d क्लस्टर के कंटेनर भी पहचान लेता है (उनके `io.x-k8s.kind.cluster` और `k3d.cluster` लेबल से)। जिस क्लस्टर तक आपका kubeconfig नहीं पहुँचता, वह आपकी जानकारी के बिना जोड़े जाने की बजाय उस कमांड के साथ दिखाया जाता है जो उसे जोड़ती है:
+
+```bash
+kind export kubeconfig --name <name>
+```
+
+```bash
+k3d kubeconfig merge <name> --kubeconfig-merge-default
+```
+
+## Kubernetes चालू करना
+
+- **Docker Desktop**: **Settings → Kubernetes → Enable Kubernetes**, फिर **Apply & restart**। यह `docker-desktop` context जोड़ता है।
+- **OrbStack**: **Settings → Kubernetes → Enable Kubernetes**, या `orb start k8s` चलाएँ। यह `orbstack` context जोड़ता है।
+- **Rancher Desktop**: **Preferences → Kubernetes → Enable Kubernetes**। यह `rancher-desktop` context जोड़ता है।
+
+kind (`kind create cluster`), k3d (`k3d cluster create`) और minikube (`minikube start`) क्लस्टर बनाते समय अपने contexts जोड़ते हैं। वे हर बार क्लस्टर दोबारा बनाने पर नए प्रमाणपत्र बनाते हैं: उसके बाद उसके पेज पर **kubeconfig से रीफ़्रेश करें** इस्तेमाल करें।

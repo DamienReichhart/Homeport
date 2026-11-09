@@ -1,0 +1,345 @@
+---
+title: Stacks
+description: Implante stacks Compose em qualquer host a partir do Homeport ou de uma pasta de projeto, mantenha o ambiente delas criptografado e adote stacks implantadas em outro lugar.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+Uma **stack** é um projeto Compose rodando em um host. O Homeport encontra todas as stacks do host selecionado pelos rótulos que o Compose coloca nos contêineres delas, seja como for que tenham sido implantadas.
+
+<DocScreenshot
+  name="stacks"
+  alt="A página Stacks, listando stacks gerenciadas e externas com o estado e os serviços delas."
+/>
+
+## Stacks gerenciadas, vinculadas, sincronizadas e externas
+
+Toda stack é de um destes quatro tipos:
+
+| Tipo             | Onde está o arquivo compose dela                               | Editar | Implantar | Build | Iniciar, parar, remover |
+| ---------------- | -------------------------------------------------------------- | ------ | --------- | ----- | ----------------------- |
+| **Gerenciada**   | No Homeport, com o ambiente criptografado                      | ✓      | ✓         | —     | ✓                       |
+| **Vinculada**    | Na pasta do projeto, **neste** computador                      | ✓      | ✓         | ✓     | ✓                       |
+| **Sincronizada** | Em um repositório git que o Homeport clona e acompanha         | git    | ✓         | ✓     | ✓                       |
+| **Externa**      | Em nenhum lugar que o Homeport veja: implantada de outra forma | —      | —         | —     | ✓                       |
+
+- Uma **stack gerenciada** é aquela cujo arquivo compose e cujo ambiente o Homeport guarda. Você pode editá-la, implantá-la e desativá-la pelo Homeport.
+- Uma **stack vinculada** é aquela cujos arquivos compose são uma pasta neste computador, onde você continua a editá-los. O Homeport lembra onde a pasta está, trabalha nos arquivos ali e implanta a partir dela. Veja [Stacks vinculadas](#stacks-vinculadas).
+- Uma **stack sincronizada** é aquela cujo arquivo compose vem de um repositório git. O Homeport busca a branch ou a tag dela, mostra o que mudou e implanta o novo commit; ela é editada pelo git, nunca no Homeport. Veja [Stacks sincronizadas](/docs/guides/synced-stacks/).
+- Uma **stack externa** foi implantada de outra forma — `docker compose up` no servidor, um job de CI, outra ferramenta, ou a partir de uma pasta em outro computador. O Homeport pode iniciar, parar, reiniciar e remover os contêineres dela, mas não tem nenhum arquivo compose a partir do qual reimplantá-la. Você pode [adotá-la](#adotando-uma-stack-externa) para torná-la gerenciada.
+
+Cada stack mostra um destes estados:
+
+| Estado                       | Significado                                                            |
+| ---------------------------- | ---------------------------------------------------------------------- |
+| **Em execução**              | Todos os contêineres dela estão rodando.                               |
+| **Parcialmente em execução** | Alguns estão.                                                          |
+| **Parada**                   | Nenhum está.                                                           |
+| **Não implantada**           | Uma stack gerenciada, vinculada ou sincronizada ainda sem contêineres. |
+
+As stacks gerenciadas, vinculadas e sincronizadas pertencem a um host, ou a um Swarm. Para executar o mesmo arquivo compose em dois hosts, crie uma stack em cada um.
+
+<Aside>
+  As stacks implantadas em um [Swarm](/docs/guides/swarm/), por um terminal ou pelo Homeport, são
+  listadas na própria página do Swarm, em **Stacks**, e não aqui. Para implantar uma, escolha o
+  Swarm em **Implantar em** na página **Nova stack**. Veja [Implantando stacks em um
+  Swarm](/docs/guides/swarm/#implantando-stacks-em-um-swarm).
+</Aside>
+
+## Stacks vinculadas
+
+Uma **stack vinculada** mantém os seus arquivos compose na pasta do projeto, neste computador, onde você os edita no seu próprio editor e os mantém sob controle de versão. O Homeport nunca os copia: ele lembra a pasta e os arquivos compose que ela usa, em ordem, e os lê onde estão. O `.env` da pasta fica na pasta.
+
+Uma stack vinculada também pode ser implantada em um Swarm, com os seus `configs: file:` e `secrets: file:` lidos da pasta; veja [Stacks vinculadas e sincronizadas em um Swarm](/docs/guides/swarm/#stacks-vinculadas-e-sincronizadas-em-um-swarm).
+
+### Criando uma stack vinculada
+
+Uma pasta de projeto que ainda não está rodando no host pode ser vinculada pelo Homeport:
+
+<Steps>
+
+1. Abra **Stacks**, escolha **Nova stack** e depois **Usar uma pasta neste computador**.
+
+2. Escolha **Escolher uma pasta…** e selecione a pasta que contém o projeto compose.
+
+3. O Homeport lista os arquivos compose que o Compose usaria ali, em ordem: o primeiro entre `compose.yaml`, `compose.yml`, `docker-compose.yml` e `docker-compose.yaml`, e depois o arquivo de override (`compose.override.yaml` e afins), se houver. Uma pasta sem nenhum deles não pode ser vinculada, e o Homeport avisa.
+
+4. Confira o **Nome**. Ele vem do `name:` de nível superior dos arquivos, ou do nome da pasta como o Compose o escreve (`My App` vira `myapp`).
+
+5. Escolha **Salvar e implantar** — ou **Salvar** para implantar depois.
+
+</Steps>
+
+Se uma stack com esse nome já roda no host como stack externa, criar a stack vinculada a assume, como faz a [adoção](#adotando-uma-stack-externa): reimplantar recria os contêineres dela para corresponder aos arquivos da pasta. Para usar arquivos com outros nomes, ou em outra ordem, veja [vários arquivos compose](#vários-arquivos-compose).
+
+### Como as stacks vinculadas são encontradas
+
+Quando você executa `docker compose up` em uma pasta, o Compose marca todos os contêineres com essa pasta e os seus arquivos compose — mesmo quando `DOCKER_HOST` aponta para um host remoto. Quando o Homeport lista as stacks de um host, uma stack encontrada em execução é mostrada como **Vinculada** se:
+
+1. os dois rótulos estão lá, e a pasta e todos os arquivos compose que eles citam existem neste computador, e
+2. esses arquivos definem os serviços que rodam: todo serviço em execução está nos arquivos, e todo serviço que os arquivos definem fora de um perfil tem um contêiner.
+
+A segunda regra impede que um caminho que existe aqui por coincidência vincule os arquivos errados — por exemplo, uma stack iniciada no próprio servidor em `/srv/app`, quando este computador também tem um `/srv/app`. Os arquivos que usam `include:` ou `extends:` não são seguidos, então uma stack assim continua externa por enquanto. Encontrar stacks vinculadas não precisa da CLI do Compose.
+
+A pasta aparece abaixo do nome da stack na lista e na página dela.
+
+### Editando uma stack vinculada
+
+A aba **Definição** de uma stack vinculada mostra cada um dos seus arquivos compose em uma aba própria, lidos da pasta, com o caminho da pasta acima deles. Edite-os e escolha **Salvar**: o Homeport grava cada arquivo alterado de volta onde ele está, para que o seu próprio editor e o seu controle de versão vejam a mudança. O arquivo é substituído em uma só etapa, mantendo as permissões, então nada nunca o lê pela metade.
+
+As verificações abaixo do editor seguem as regras das stacks vinculadas: `build:`, `env_file:` e caminhos relativos não são problema, já que a pasta está lá. Não há editor de ambiente: o Compose lê o `.env` da pasta quando é executado, e o Homeport não o mostra nem o altera.
+
+#### Alterado fora do Homeport
+
+O Homeport registra o estado dos arquivos sempre que os lê ou grava. Quando eles diferem — você os editou em outro editor, ou baixou uma nova versão —, a aba mostra **Alterado fora do Homeport**. Ele verifica quando a aba abre e sempre que você volta à janela do Homeport. Escolha **Recarregar** para ver os arquivos como estão agora; as edições que você não tinha salvado são descartadas.
+
+Se você salvar um arquivo que mudou no disco depois que você o abriu, o Homeport recusa: **compose.yaml mudou fora do Homeport desde que você o abriu**. Recarregue para ver a outra mudança, ou escolha **Sobrescrever** para substituí-la pela sua versão.
+
+Se a pasta sumiu, ou um arquivo não pode ser lido, a aba diz qual e o que fazer, no lugar do editor.
+
+### Implantando e fazendo build de uma stack vinculada
+
+**Implantar**, **Reimplantar**, **Baixar imagens** e **Desativar** também funcionam para stacks vinculadas. O Homeport executa `docker compose` na pasta da stack, com `--project-directory` apontando para ela e um `--file` para cada um dos seus arquivos compose, em ordem — o mesmo que executá-lo ali você mesmo —, ainda pela sua própria conexão no caso de hosts SSH e TLS. Então `build:`, `env_file:`, caminhos `./relative` e o `.env` da pasta funcionam.
+
+Um serviço com `build:` passa pela build quando ainda não tem imagem. Para refazer a build depois de mudar o código dele, escolha **Refazer a build e implantar** no menu **⋮** da stack (`up --build`). A build roda no Engine do **host**, com o contexto de build enviado deste computador. Os serviços com `build:` nunca são baixados; as imagens base deles são baixadas pela própria build, com o seu próprio `docker login`.
+
+**Salvar e reimplantar**, na aba **Definição**, grava os arquivos que você editou e depois implanta.
+
+<Aside type="caution" title="Caminhos relativos em um host remoto">
+  Um bind mount como `./data:/data` resolve para a pasta **neste** computador, por exemplo
+  `/home/me/site/data`. Em um host remoto esse caminho pode não existir, e o Engine cria uma pasta
+  vazia lá no lugar. Quando você implanta uma stack vinculada em um host que não é este computador,
+  a saída começa com um aviso para cada montagem desse tipo. Use um volume nomeado ou um caminho
+  absoluto no host para os dados que precisam ficar lá.
+</Aside>
+
+Se a pasta sumiu, a implantação para com **A pasta … não está mais neste computador**. Sem a CLI do Compose, as stacks vinculadas ainda podem ser iniciadas, paradas e removidas.
+
+### Quando a pasta muda de lugar ou desaparece
+
+Se os arquivos compose de uma stack vinculada não estão mais lá — a pasta foi movida, renomeada ou excluída —, a stack aparece como **Externa**, com ⚠ **Os arquivos compose dela não estão mais neste computador**. Nada é excluído do Homeport nem do host: coloque os arquivos de volta e ela fica vinculada de novo na próxima atualização. Para deixar de vinculá-la, abra a aba **Definição** dela e escolha **Esquecer**; isso só descarta a anotação do Homeport sobre a pasta, nunca a pasta nem os contêineres.
+
+Uma stack iniciada a partir de uma pasta em outro computador é externa neste, já que os rótulos dela apontam para um caminho que este computador não tem.
+
+## O que a implantação precisa
+
+O Homeport implanta as stacks gerenciadas, vinculadas e sincronizadas com o comando `docker compose` **deste** computador, apontado para o host. Instale a CLI do Docker com o plugin Compose, ou o `docker-compose` v2 avulso; **Configurações → Esta máquina** mostra se o Homeport o encontrou.
+
+Para uma stack gerenciada, o comando roda com o arquivo compose na entrada padrão, o ambiente da stack como variáveis e uma pasta de trabalho vazia, então nada é gravado em disco. Para uma stack vinculada, ele roda na pasta da stack com os arquivos compose dela, como se você o executasse ali. Para hosts SSH e TLS, o Homeport encaminha o comando pela sua própria conexão com o host, então o Compose nunca vê as suas chaves.
+
+Sem a CLI do Compose, você ainda pode iniciar, parar e remover stacks; só **Implantar**, **Baixar imagens** e **Desativar** precisam dela.
+
+### Imagens privadas
+
+Antes de `docker compose up`, o Homeport baixa as imagens que o host ainda não tem pela sua própria conexão com o host, com o [login de registro](/docs/guides/settings/#registros) guardado para o registro de cada imagem, então as imagens privadas são implantadas em qualquer host sem `docker login` neste computador. A saída da implantação mostra cada download e o login que ele usa — **Pulling ghcr.io/org/app:1 as alice on ghcr.io**, ou **anonymously** —, nunca a senha. Um serviço com `pull_policy: always` é baixado todas as vezes; `never` e `build` são deixados em paz.
+
+O próprio Compose nunca recebe um login: nenhum arquivo que o Homeport cria para a execução, e nenhuma das variáveis de ambiente do comando, contém um. O seu próprio `docker login` neste computador não se aplica a esses downloads; adicione o login em **Configurações → Registros**. Se um registro recusar uma imagem, a implantação para antes de o Compose rodar, e a mensagem diz para adicionar ou verificar o login.
+
+## Criando uma stack gerenciada
+
+<Steps>
+
+1. Abra **Stacks** e escolha **Nova stack**. **Escrever um arquivo compose** vem selecionado.
+
+2. Escolha um [modelo](#começando-a-partir-de-um-modelo) — ou **Vazio** para começar do zero.
+
+3. Digite um **Nome**: letras minúsculas, dígitos, `-` e `_`, começando com uma letra ou um dígito. O modelo sugere um. Ele vira o nome do projeto Compose e não pode ser mudado depois.
+
+4. Ajuste o arquivo compose no editor.
+
+5. Coloque as variáveis em **Ambiente**, um `KEY=value` por linha, como em um arquivo `.env`. O Compose as substitui por `${KEY}` no arquivo. Preencha as senhas que um modelo deixa vazias.
+
+6. Escolha **Salvar e implantar** — ou **Salvar** para implantar depois.
+
+</Steps>
+
+### Começando a partir de um modelo
+
+A página Nova stack abre em uma galeria de modelos. Cada um é um arquivo compose e um ambiente que seguem as boas práticas: tags de imagem fixadas em uma versão, dados em volumes nomeados e segredos no ambiente, e não no arquivo. Use **Tab** para passar de um cartão a outro e **Enter** para escolher um; **Escolher outro modelo** volta.
+
+| Modelo                    | O que executa                                                            |
+| ------------------------- | ------------------------------------------------------------------------ |
+| **Site estático**         | nginx servindo os arquivos de um volume nomeado, na porta `HTTP_PORT`.   |
+| **PostgreSQL e Adminer**  | PostgreSQL, e Adminer em `ADMINER_PORT` para navegar nele.               |
+| **MariaDB**               | MariaDB com um banco de dados e um usuário para o app.                   |
+| **Redis**                 | Redis com senha, salvando os dados em disco.                             |
+| **Proxy reverso (Caddy)** | Caddy encaminhando `SITE_ADDRESS` para `UPSTREAM`, com HTTPS automático. |
+| **Uptime Kuma**           | Uptime Kuma, para acompanhar sites e serviços, em `HTTP_PORT`.           |
+| **WordPress**             | WordPress com o próprio banco de dados MariaDB.                          |
+| **Vazio**                 | Uma seção `services:` para você mesmo preencher.                         |
+
+As senhas ficam vazias, com um comentário dizendo o que vai ali: preencha-as antes de implantar. Adotar uma stack externa pula a galeria e abre um editor vazio.
+
+<DocScreenshot
+  name="stack-editor"
+  alt="O editor de stacks com um arquivo compose, o ambiente dele e as verificações abaixo."
+/>
+
+### Verificações enquanto você digita
+
+O Homeport verifica a definição enquanto você digita e lista os problemas abaixo do editor. As regras que se aplicam dependem do tipo de stack.
+
+Os **erros** impedem uma implantação:
+
+- O YAML não pode ser interpretado, ou não tem `services:` — todos os tipos.
+- Um serviço não tem nem `image:` nem `build:` — todos os tipos.
+- Um serviço usa `build:` — só **stacks gerenciadas**. Não há uma pasta a partir da qual fazer a build, então use uma imagem que você enviou para um registro, ou [vincule a pasta](#criando-uma-stack-vinculada).
+
+Os **avisos**, só para **stacks gerenciadas**, deixam você implantar, mas apontam coisas que provavelmente não farão o que você espera, porque o Compose as lê deste computador, e não do host. A pasta de uma stack vinculada está lá, então para ela não são problema:
+
+- Um bind mount com um caminho relativo, como `./data:/data`. Use um caminho absoluto no host ou um volume nomeado.
+- `env_file:`, ou `configs` e `secrets` lidos de um `file:`. Coloque as variáveis no ambiente da stack.
+
+### O ambiente
+
+O ambiente é armazenado criptografado e passado direto ao Compose, nunca gravado em disco — o lugar certo para senhas e tokens. O arquivo compose em si é armazenado como texto simples, então mantenha os segredos fora dele:
+
+```yaml
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+```
+
+```ini
+DB_PASSWORD=correct-horse-battery-staple
+```
+
+Linhas em branco, `# comments` e prefixos `export` são permitidos. Os valores podem estar entre aspas; entre aspas duplas, `\n` é uma nova linha.
+
+<Aside>
+  Armazenar um ambiente requer um [chaveiro do
+  sistema](/docs/requirements/#opcional-um-chaveiro-do-sistema). Sem um, o campo fica desativado e
+  as stacks são implantadas sem ele.
+</Aside>
+
+## Vários arquivos compose
+
+Uma stack pode ser feita de vários arquivos compose mesclados em ordem, da mesma forma que `docker compose -f compose.yaml -f compose.prod.yaml` os mescla: um arquivo base e depois overrides que adicionam ou mudam chaves — `ports:` para produção, um serviço de depuração para desenvolvimento.
+
+As **stacks gerenciadas** mostram uma aba por arquivo acima do editor. Escolha **Adicionar arquivo** para adicionar um (o Homeport sugere `compose.override.yaml`, `compose.prod.yaml` e assim por diante), renomeie-o em **Nome do arquivo**, mova-o para antes ou depois com as setas, ou remova-o. O primeiro arquivo é a base e não pode ser removido. Os nomes terminam em `.yaml` ou `.yml`.
+
+Com um arquivo, o Homeport o envia ao Compose pela entrada padrão, como antes. Com vários, ele os grava em uma pasta privada que só o seu usuário pode abrir, pela duração do comando, e a remove depois. O ambiente nunca é gravado ali: ele continua indo para o Compose como variáveis.
+
+As **stacks vinculadas** listam os seus arquivos no painel lateral da aba **Definição**, em ordem. **Adicionar um arquivo…** escolhe outro arquivo compose da pasta da stack — `compose.prod.yaml` em vez do override padrão, por exemplo —, e as setas e o **✕** os reordenam e removem. Salve ou recarregue as suas edições antes: mudar os arquivos recarrega o editor.
+
+As verificações olham os arquivos mesclados, então um serviço definido na base e que recebe `ports:` em um override é verificado como um só serviço.
+
+## Perfis
+
+Os arquivos compose muitas vezes deixam serviços opcionais — ferramentas de depuração, workers, um banco de dados local — atrás de `profiles:`:
+
+```yaml
+services:
+  app:
+    image: ghcr.io/org/app:1.4
+  adminer:
+    image: adminer:4.8.1
+    profiles: [debug]
+```
+
+Os serviços sem perfil sempre rodam. Os que estão atrás de um só rodam quando a stack o ativa. Quando os arquivos de uma stack gerenciada, vinculada ou sincronizada declaram perfis, a aba **Definição** dela mostra **Perfis**, com uma caixa de seleção para cada um. Ative um e escolha **Salvar e reimplantar** — ou **Salvar perfis** para aplicá-lo na próxima implantação.
+
+Desativar um perfil e reimplantar remove os contêineres dos serviços dele: o Homeport os remove antes de `docker compose up`, já que o próprio Compose os deixa rodando. **Desativar** remove os serviços de todos os perfis que os arquivos declaram, ativados ou não.
+
+Os perfis da stack são os únicos que contam. Uma variável `COMPOSE_PROFILES` no seu shell, no ambiente de uma stack gerenciada ou no `.env` de uma stack vinculada não muda o que o Homeport implanta. Uma stack vinculada encontrada pelos seus rótulos compose começa sem nenhum perfil ativado, mesmo que tenha sido iniciada com `--profile`: ative-os na aba **Definição** dela. Se um perfil que você ativou desaparecer dos arquivos, o Homeport avisa e o desativa no próximo salvamento.
+
+## Implantando e reimplantando
+
+**Implantar** — ou **Reimplantar**, quando a stack já está rodando — executa `docker compose up --detach --remove-orphans`. Uma janela mostra a saída do Compose enquanto ele roda e termina com **✓ Concluído** ou com o código de saída com que ele falhou.
+
+<Aside type="caution">
+  Fechar a janela de saída enquanto o Compose está rodando o interrompe, o que pode deixar uma
+  implantação pela metade. Reimplante para concluí-la.
+</Aside>
+
+Para mudar uma stack gerenciada, abra-a, edite a **Definição** dela e escolha **Salvar e reimplantar**. O Compose recria só os serviços que mudaram e remove os serviços que você excluiu do arquivo.
+
+### Revisando as mudanças antes de uma reimplantação
+
+Antes de uma reimplantação rodar — **Reimplantar**, **Refazer a build e implantar**, ou **Salvar e reimplantar** para uma stack que está rodando —, o Homeport mostra **Revisar as alterações**: a definição implantada da última vez (a entrada bem-sucedida mais recente do [histórico](#histórico-de-implantações-e-reversão) dela) em comparação com a que está para ser implantada.
+
+- Cada arquivo compose mostra as linhas alteradas no próprio texto: as linhas removidas acima das que as substituem. Um arquivo inalterado fica recolhido; selecione-o para abri-lo. Os arquivos adicionados, removidos ou mesclados em outra ordem são citados.
+- As variáveis de ambiente mostram só os nomes, marcados como **Adicionado**, **Removido** ou **Alterado** — uma senha alterada aparece como **Alterado** sem mostrar nenhum dos valores —, e quantas outras estão inalteradas.
+- Ativar ou desativar um perfil também aparece.
+
+Escolha **Implantar** para seguir para a execução, ou **Voltar** para retornar ao editor sem mudar nada. Quando nada mudou, a revisão avisa e oferece **Reimplantar mesmo assim**. Quando o Homeport não sabe o que está implantado — a stack foi implantada antes de o Homeport manter um histórico, ou fora dele —, a revisão avisa e mostra a definição que será implantada. Uma primeira implantação, uma reversão e uma [atualização](#atualizando-uma-stack) pulam a revisão.
+
+A comparação é só entre definições, não com a configuração ao vivo dos contêineres no host.
+
+## Histórico de implantações e reversão
+
+Cada implantação de uma stack gerenciada, vinculada ou sincronizada feita pelo Homeport — **Implantar**, **Reimplantar**, **Refazer a build e implantar**, **Salvar e reimplantar**, uma [sincronização](/docs/guides/synced-stacks/#sincronizando) — é registrada com os arquivos compose, o ambiente e os perfis que usou, quando rodou e como terminou; a de uma stack sincronizada também mostra o commit dela e se a implantação automática a iniciou. A aba **Histórico** da página da stack lista as últimas 20, das mais recentes às mais antigas: **Concluída**, **Falhou** com o código de saída, ou **Não concluída** para uma execução cuja janela foi fechada antes de terminar. **Implantada agora** marca a mais recente que deu certo.
+
+Selecione uma implantação para ver os arquivos compose dela, somente leitura. O ambiente dela é armazenado criptografado como o da própria stack, e a aba mostra só os nomes das variáveis. Sem um chaveiro, a lista ainda funciona; uma implantação com ambiente apenas diz que ele não pode ser aberto.
+
+Para desfazer uma mudança ruim em uma stack **gerenciada**, selecione a implantação que funcionou e escolha **Reverter**. O Homeport coloca os arquivos compose, o ambiente e os perfis dela no lugar dos atuais e depois reimplanta, então a próxima entrada do histórico é a própria reversão.
+
+<Aside type="caution" title="O que uma reversão restaura">
+  Só a definição. As imagens são baixadas de novo pelas tags que ela cita, como essas tags estão
+  agora — se `app:1.4` foi enviada de novo desde então, você recebe a nova `app:1.4`. Os volumes e
+  os dados deles ficam como estão.
+</Aside>
+
+O histórico de uma stack **vinculada** é somente leitura: a pasta dela é a origem dela, então restaure os arquivos anteriores lá — com o seu controle de versão, por exemplo — e reimplante. Esquecer uma stack também exclui o histórico dela.
+
+## A página de uma stack
+
+- **Serviços** lista cada serviço com o seu contêiner, a imagem e o status. Selecione um contêiner para abri-lo.
+- **Logs** mostra os logs de todos os contêineres juntos, com cada linha marcada com o seu serviço.
+
+<DocScreenshot
+  name="stack-logs"
+  alt="A aba Logs de uma stack, com a saída de todos os serviços intercalada e marcada."
+/>
+
+- **Definição** contém o editor de uma stack gerenciada ou vinculada, a origem e os arquivos somente leitura de uma stack sincronizada, ou explica de onde veio uma stack externa.
+- **Histórico**, para as stacks gerenciadas, vinculadas e sincronizadas, lista as implantações delas. Veja [histórico de implantações](#histórico-de-implantações-e-reversão).
+
+## Atualizando uma stack
+
+**Atualização disponível** ao lado do estado de uma stack significa que um dos serviços dela roda uma imagem cuja tag aponta para uma versão mais recente no registro dela; passe o ponteiro sobre o aviso para ver quais serviços. Na página da stack, **Serviços** os cita e marca cada imagem desatualizada. **Verificar imagens mais recentes**, no topo da página Stacks, pergunta de novo aos registros. A verificação é a mesma que a página Contêineres usa — veja [imagens mais recentes](/docs/guides/containers/#imagens-mais-recentes) —, então abrir Stacks logo depois de Contêineres não pergunta mais nada aos registros. Uma imagem fixada por digest (`app@sha256:…`) nunca tem atualização, e um serviço com `build:` não é verificado.
+
+Para atualizar uma stack gerenciada, vinculada ou sincronizada, escolha **Atualizar**. Isso executa as duas etapas em uma janela: baixa a imagem de cada serviço com os logins guardados e depois executa `docker compose up` com o que baixou, então só os serviços cuja imagem mudou recebem novos contêineres. A janela diz quais imagens são mais recentes antes de começar, e não há [etapa de revisão](#revisando-as-mudanças-antes-de-uma-reimplantação), já que a definição não muda. Se um download falhar, a atualização para ali: os contêineres em execução ficam como estavam, e o erro diz por quê, com o que fazer.
+
+Uma stack externa também mostra **Atualização disponível**, mas o **Atualizar** dela fica desativado: o Homeport não tem nenhum arquivo compose a partir do qual reimplantá-la, então [adote-a](#adotando-uma-stack-externa) antes. Os serviços com `build:` em uma stack vinculada nunca são baixados; use **Refazer a build e implantar** para eles.
+
+## Ações das stacks
+
+| Ação                            | Stacks                | O que faz                                                                                                  |
+| ------------------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Implantar** / **Reimplantar** | Gerenciada, vinculada | `docker compose up` com a definição da stack.                                                              |
+| **Refazer a build e implantar** | Vinculada             | `docker compose up --build`: refaz antes a build de todos os serviços com `build:`.                        |
+| **Iniciar** / **Parar**         | Qualquer              | Inicia os contêineres parados, ou para os que estão em execução.                                           |
+| **Reiniciar**                   | Qualquer              | Reinicia todos os contêineres.                                                                             |
+| **Baixar imagens**              | Gerenciada, vinculada | Baixa a imagem de cada serviço com os logins guardados, para buscar as mais recentes antes de reimplantar. |
+| **Desativar**                   | Gerenciada, vinculada | `docker compose down`: remove os contêineres e as redes, mantém os volumes e a definição.                  |
+| **Desativar com os volumes**    | Gerenciada, vinculada | Também exclui os volumes da stack **e os dados deles**.                                                    |
+| **Remover contêineres**         | Externa               | Remove os contêineres e as redes dela. Os volumes são mantidos.                                            |
+| **Adotar**                      | Externa               | Dá ao Homeport o arquivo compose, tornando-a gerenciada.                                                   |
+
+**Esquecer definição**, na aba **Definição** de uma stack gerenciada, exclui o arquivo compose e o ambiente do Homeport, mas deixa os contêineres rodando; a stack se torna externa. **Esquecer**, na aba **Definição** de uma stack vinculada, descarta a anotação do Homeport sobre a pasta; a pasta, os arquivos dela e os contêineres não são afetados.
+
+## Adotando uma stack externa
+
+<Steps>
+
+1. Abra a stack externa e escolha **Adotar**.
+
+2. Cole o arquivo compose com que ela foi implantada. O nome é preenchido e bloqueado.
+
+3. Adicione as variáveis de ambiente dela, se ela usava alguma.
+
+4. Escolha **Salvar** para assumi-la sem mexer nos contêineres em execução, ou **Salvar e implantar** para reimplantá-la agora.
+
+</Steps>
+
+<Aside type="caution" title="Use a mesma definição">
+  Reimplantar com um arquivo diferente recria os contêineres para corresponder a ele e remove os
+  serviços que não estão mais listados. Os caminhos que eram relativos na máquina que a implantou
+  primeiro podem resolver de outra forma agora.
+</Aside>
+
+Criar uma nova stack com o mesmo nome de uma externa também a adota.

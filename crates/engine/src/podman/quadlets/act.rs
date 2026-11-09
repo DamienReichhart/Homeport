@@ -24,11 +24,21 @@ pub enum UnitAction {
 }
 
 impl UnitAction {
+    /// The `systemctl` subcommand.
     fn verb(self) -> &'static str {
         match self {
             Self::Start => "start",
             Self::Stop => "stop",
             Self::Restart => "restart",
+        }
+    }
+
+    /// What to say when systemd refuses this action.
+    fn failed(self) -> homeport_core::error::Message {
+        match self {
+            Self::Start => msg::QUADLET_START_FAILED,
+            Self::Stop => msg::QUADLET_STOP_FAILED,
+            Self::Restart => msg::QUADLET_RESTART_FAILED,
         }
     }
 }
@@ -96,9 +106,7 @@ pub(super) fn refused(unit: &str, action: UnitAction, out: &CommandOutput) -> Ap
     } else {
         AppError::new(
             ErrorCode::SystemdRefused,
-            msg::QUADLET_ACTION_FAILED
-                .with("unit", unit)
-                .with("action", action.verb()),
+            action.failed().with("unit", unit),
         )
         .with_hint(msg::QUADLET_ACTION_FAILED_HINT)
     };

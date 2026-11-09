@@ -1,16 +1,6 @@
 ---
-import SiteLayout from '@/app/layouts/SiteLayout.astro';
-import { DownloadHero, InfoCards, OtherWays, Platforms } from '@/features/download';
+import DownloadPage from '@/app/views/DownloadPage.astro';
+import { ROOT_LOCALE } from '@/core/site';
 ---
 
-<SiteLayout
-  title="Download Homeport"
-  description="Download Homeport for Windows, macOS and Linux — x64 and ARM installers and Linux package repositories, with checksums and build provenance."
->
-  <DownloadHero />
-  <div class="container">
-    <Platforms />
-    <InfoCards />
-    <OtherWays />
-  </div>
-</SiteLayout>
+<DownloadPage locale={ROOT_LOCALE} />

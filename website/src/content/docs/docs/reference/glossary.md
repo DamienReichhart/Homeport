@@ -144,3 +144,26 @@ Your operating system's secure store for passwords and keys — macOS Keychain, 
 ### Trust on first use
 
 How Homeport checks SSH servers: you confirm a server's key fingerprint on the first connection, and Homeport refuses to connect if the key later changes until you confirm again.
+
+## In French
+
+The French app, docs and website use these terms, so a screen and a page always say the same thing.
+
+| English        | French                   |
+| -------------- | ------------------------ |
+| Host           | hôte (m.)                |
+| Engine         | moteur (m.)              |
+| Instance       | instance (f.)            |
+| Swarm          | Swarm (m.)               |
+| Cluster        | cluster (m.)             |
+| Stack          | stack (f.)               |
+| Managed Stack  | stack gérée              |
+| Linked Stack   | stack liée               |
+| Synced Stack   | stack synchronisée       |
+| External Stack | stack externe            |
+| Adopt          | adopter                  |
+| Board          | Tableau                  |
+| Bastion        | bastion (m.)             |
+| Deploy key     | clé de déploiement (f.)  |
+| Port forward   | redirection de port (f.) |
+| Release (Helm) | release (f.)             |

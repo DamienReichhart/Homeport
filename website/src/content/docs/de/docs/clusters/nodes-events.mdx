@@ -1,0 +1,34 @@
+---
+title: Nodes und Events
+description: Die Nodes eines Clusters sehen, ihre Kapazität und die Pods auf jedem, und seine Events, Warnungen zuerst.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+## Nodes
+
+**Nodes** listet die Maschinen auf, auf denen der Cluster Pods ausführt, mit der Angabe, ob jede **Bereit** ist (und **Planung deaktiviert**, wenn sie abgesperrt ist), ihren Rollen, der kubelet-Version, der internen IP, der Plattform sowie zuweisbarer CPU und zuweisbarem Speicher.
+
+<DocScreenshot
+  name="cluster-nodes"
+  alt="Die Seite Nodes: fünf EKS-Nodes, einer nicht bereit mit deaktivierter Planung, mit ihrer kubelet-Version, interner IP, Plattform, CPUs und Speicher."
+/>
+
+CPUs werden in Kernen angezeigt (`3.92` für `3920m`) und Speicher in GB; Kubernetes meldet, was Pods **zuweisbar** ist, etwas weniger, als die Maschine hat, da kubelet und das System einen Teil behalten.
+
+Die Seite eines Nodes zeigt sein Betriebssystem-Image, den Kernel, die Container-Runtime, die Adressen, Taints, Labels und seine Kapazität neben dem, was Pods zuweisbar ist; dann die **Pods**, die darauf laufen, in jedem Namespace, seine **Bedingungen** (Speicher-, Festplatten- und PID-Druck), **Events** und **YAML**. Die Seite eines Pods verlinkt auf seinen Node.
+
+## Events
+
+<DocScreenshot
+  name="cluster-events"
+  alt="Die Seite Events: zuerst drei Warnungen (ein Pod im Back-off, ein Image, das sich nicht pullen lässt, ein Node, der nicht bereit ist), dann normale Events, jedes mit seinem Objekt, seiner Meldung, Anzahl und seinem Alter."
+/>
+
+**Events** listet auf, was Kubernetes im ausgewählten Namespace (oder in allen) gemeldet hat: Warnungen zuerst, dann die neuesten, jedes mit seinem Grund, dem betroffenen Objekt – verlinkt mit dessen Seite –, seiner Meldung, wie oft es aufgetreten ist und wann zuletzt. Filtern Sie nach **Warnungen** oder **Normal** und suchen Sie nach Grund, Objekt oder Meldung. Die Liste aktualisiert sich live.
+
+Kubernetes bewahrt Events etwa eine Stunde lang auf, daher ist eine leere Liste auf einem ruhigen Cluster normal. Die Seite jedes Objekts hat außerdem ihren eigenen Tab **Events**.
+
+## Wenn Ihre Zugangsdaten etwas nicht sehen können
+
+Nodes gehören zu keinem Namespace, daher braucht es zum Auflisten eine clusterweite Berechtigung, die viele Benutzer nicht haben. Die Seite sagt dann „Ihre Zugangsdaten erlauben ‚list‘ für nodes nicht.“, und jede andere Seite funktioniert weiter.

@@ -89,7 +89,7 @@ export function ManagedDefinition({
         </Button>
         <Button
           variant="ghost"
-          className="ml-auto"
+          className="ms-auto"
           onClick={() =>
             confirm({
               title: t('stacks.forget.title', { name: managed.name }),

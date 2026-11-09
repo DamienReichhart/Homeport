@@ -327,14 +327,17 @@ function statsSamples(): (n: number) => StatsSample {
 export interface MockOptions {
   theme: Theme;
   hostId: string;
+  /** The app's language, as Settings stores it. */
+  language?: string;
 }
 
 /** The page being photographed. */
 const routeOf = () => new URLSearchParams(window.location.search).get('route') ?? '/';
 
-export function installMocks({ theme, hostId }: MockOptions) {
+export function installMocks({ theme, hostId, language = 'en' }: MockOptions) {
   let settings: Settings = {
     theme,
+    language,
     lastHostId: hostId,
     checkForUpdates: true,
     ...clusterSettings(),
@@ -345,10 +348,17 @@ export function installMocks({ theme, hostId }: MockOptions) {
     get_app_info: () => ({ name: 'Homeport', version: '0.2.0', os: 'macos', arch: 'aarch64' }),
     get_capabilities: () => ({
       keychain: true,
+      tray: true,
       compose: {
         state: 'available',
         cli: { program: 'docker', prefix: ['compose'], version: '2.31.0' },
       },
+      stackDeploy: {
+        state: 'available',
+        cli: { program: 'docker', prefix: [], version: '28.5.1' },
+      },
+      git: { state: 'available', cli: { program: 'git', version: '2.47.1' } },
+      helm: { state: 'available', cli: { program: 'helm', version: 'v3.16.2' } },
     }),
     get_licenses: () => ({ app: 'GNU AFFERO GENERAL PUBLIC LICENSE', third_party: null }),
     // Up to date, so no update bar shows in the screenshots.
@@ -373,10 +383,16 @@ export function installMocks({ theme, hostId }: MockOptions) {
     // Nothing outdated, so no newer-image marks show in the screenshots.
     images_freshness: () => [],
     hosts_detect_local: () => [
-      { label: 'Docker Desktop', socketPath: '/var/run/docker.sock', engineVersion: '28.5.1' },
+      {
+        label: 'Docker Desktop',
+        socketPath: '/var/run/docker.sock',
+        engine: 'docker',
+        engineVersion: '28.5.1',
+      },
       {
         label: 'Colima',
         socketPath: '/Users/demo/.colima/default/docker.sock',
+        engine: 'docker',
         engineVersion: '27.4.0',
       },
     ],
@@ -444,6 +460,10 @@ export function installMocks({ theme, hostId }: MockOptions) {
     images_history: () => [],
     images_inspect: () => ({}),
     volumes_list: (a) => (a.hostId === PROD ? volumes : []),
+    volumes_sizes: (a) =>
+      Object.fromEntries(
+        (a.hostId === PROD ? volumes : []).map((v, i) => [v.name, (i + 1) * 187 * 1024 * 1024]),
+      ),
     networks_list: (a) => (a.hostId === PROD ? networks : networks.slice(0, 3)),
     system_info: (a) => engineInfo[a.hostId as string] ?? (engineInfo[LOCAL] as EngineInfo),
     system_disk_usage: () => diskUsage,

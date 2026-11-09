@@ -1,0 +1,180 @@
+---
+title: التثبيت
+description: ثبّت Homeport على Windows أو macOS أو Linux.
+---
+
+import { Aside, Code, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+import { COMING_LATER, INSTALL_COMMAND, MANUAL_SETUP } from '@/core/packages';
+
+يتوفر Homeport بأدوات تثبيت لـ Windows وmacOS وLinux، لكل منها إصدار لـ x64 وARM. احصل عليها من [صفحة التنزيل](/download/)، التي توجّهك إلى الملف المناسب لنظامك، أو من [أحدث إصدار على GitHub](https://github.com/DamienReichhart/Homeport/releases/latest). وعلى Linux، يثبّته مستودع حزم Homeport بأمر واحد.
+
+يبقى كل تثبيت محدّثًا: يحدّث Homeport نفسه على Windows وmacOS ومع AppImage، وتُحدَّث حزم Linux مع بقية نظامك. راجع [التحديث](/docs/reference/updating/).
+
+<Aside>
+  يدير Homeport محركات Docker لكنه لا يتضمن محركًا. إذا أردت حاويات على هذا الجهاز، فثبّت أيضًا
+  Docker Engine أو Docker Desktop أو Colima أو OrbStack أو Rancher Desktop أو Podman — أو وصّل
+  Homeport بخادم بعيد بدلًا من ذلك. راجع [متطلبات النظام](/docs/requirements/).
+</Aside>
+
+## Windows
+
+| الملف                                | استخدمه لـ                                        |
+| ------------------------------------ | ------------------------------------------------- |
+| `Homeport_<version>_x64-setup.exe`   | معظم أجهزة الكمبيوتر. يثبّت للمستخدم الحالي.      |
+| `Homeport_<version>_arm64-setup.exe` | Windows على ARM (Snapdragon وأجهزة ARM64 الأخرى). |
+| `Homeport_<version>_x64_en-US.msi`   | عمليات التثبيت المُدارة والصامتة على x64.         |
+
+<Steps>
+
+1. نزّل أداة التثبيت المناسبة لجهازك وافتحها.
+
+2. قد يعرض Windows SmartScreen رسالة **Windows protected your PC**، لأن أداة التثبيت ليست موقّعة بشهادة مدفوعة بعد. اختر **More info**، ثم **Run anyway**.
+
+3. اتبع أداة التثبيت. يُضاف Homeport إلى قائمة «ابدأ».
+
+</Steps>
+
+للتثبيت الصامت باستخدام حزمة MSI:
+
+```powershell
+msiexec /i Homeport_<version>_x64_en-US.msi /quiet
+```
+
+## macOS
+
+| الملف                            | استخدمه لـ                                    |
+| -------------------------------- | --------------------------------------------- |
+| `Homeport_<version>_aarch64.dmg` | أجهزة Mac بشرائح Apple silicon (M1 وما بعده). |
+| `Homeport_<version>_x64.dmg`     | أجهزة Mac بمعالج Intel.                       |
+
+لست متأكدًا أيها لديك؟ افتح قائمة Apple ← **About This Mac**: يعني سطر **Chip** أن جهازك يعمل بشريحة Apple silicon، ويعني سطر **Processor** يذكر Intel أنه يعمل بمعالج Intel.
+
+<Steps>
+
+1. افتح ملف `.dmg` واسحب **Homeport** إلى **Applications**.
+
+2. افتح Homeport من Applications أو من Launchpad.
+
+3. لم تُوثّق Apple تطبيق Homeport بعد، لذا قد يقول macOS إنه **can't be opened** أو إنه **can't check it for malicious software**. اختر **Done** (أو **OK**)، وافتح **System Settings → Privacy & Security**، ومرّر إلى قسم Security واختر **Open Anyway** بجانب Homeport. أكّد، وسيتذكر macOS اختيارك.
+
+</Steps>
+
+<Aside type="tip" title="من الطرفية">
+  يمكنك أيضًا مسح علامة الحجر التي يضعها macOS على التطبيقات التي تم تنزيلها:
+
+```sh
+xattr -dr com.apple.quarantine /Applications/Homeport.app
+```
+
+</Aside>
+
+## Linux
+
+يحتاج Homeport على Linux إلى glibc 2.35 أو أحدث — Ubuntu 22.04 أو Debian 12 أو Fedora 36 أو أي إصدار أحدث — على x64 أو ARM64.
+
+### التثبيت السريع
+
+يُعدّ هذا الأمر مستودع حزم Homeport ويثبّت Homeport، بحيث يبقيه `apt` أو `dnf` أو `zypper` محدّثًا مع بقية نظامك:
+
+<Code code={INSTALL_COMMAND} lang="sh" />
+
+يعمل السكربت على Debian وUbuntu ومشتقاتهما (`apt`)، وFedora وRHEL والتوزيعات القريبة منهما (`dnf`)، وopenSUSE (`zypper`). يخبرك بما سيفعله قبل أن يطلب `sudo`، ثم:
+
+1. يضيف مفتاح توقيع Homeport،
+2. يضيف مستودع Homeport،
+3. يثبّت حزمة `homeport`، أو يحدّثها إذا كانت مثبّتة مسبقًا.
+
+تشغيله مرة أخرى لا يضر. يمكنك [قراءة السكربت](https://github.com/DamienReichhart/Homeport/blob/main/packaging/linux/install.sh) أولًا، أو اتباع الإعداد اليدوي أدناه: فهو يفعل الشيء نفسه.
+
+### الإعداد اليدوي
+
+أضف مفتاح التوقيع والمستودع بنفسك، ثم ثبّت حزمة `homeport`:
+
+<Tabs syncKey="linux-format">
+  {MANUAL_SETUP.map((setup) => (
+    <TabItem label={setup.label}>
+      <p>{setup.distributions}:</p>
+      <Code code={setup.commands} lang="sh" />
+    </TabItem>
+  ))}
+</Tabs>
+
+قد يطلب منك `dnf` و`zypper` الوثوق بالمفتاح في أول مرة يستخدمان فيها المستودع. تحقق من أن بصمته تطابق البصمة الموجودة في [التحقق من التنزيلات](/docs/reference/verifying/#تواقيع-الحزم) قبل أن تقبل.
+
+### ملفات الحزم
+
+يمكنك أيضًا تنزيل حزمة `.deb` (`amd64` لـ x64، و`arm64` لـ ARM) أو `.rpm` (`x86_64` أو `aarch64`) وتثبيتها مباشرةً:
+
+<Tabs syncKey="linux-format">
+<TabItem label="Debian, Ubuntu">
+
+```sh
+sudo apt install ./Homeport_<version>_amd64.deb
+```
+
+</TabItem>
+<TabItem label="Fedora, RHEL">
+
+```sh
+sudo dnf install ./Homeport-<version>-1.x86_64.rpm
+```
+
+</TabItem>
+<TabItem label="openSUSE">
+
+```sh
+sudo zypper install ./Homeport-<version>-1.x86_64.rpm
+```
+
+</TabItem>
+</Tabs>
+
+في أول مرة تثبّت فيها إحدى هذه الحزم، تضيف مستودع Homeport أيضًا، فتحصل على التحديثات بالطريقة نفسها كما في التثبيت السريع. إذا كنت لا تريد ذلك، فاحذف ملف المستودع (`/etc/apt/sources.list.d/homeport.sources` أو `/etc/yum.repos.d/homeport.repo` أو `/etc/zypp/repos.d/homeport.repo`): لن تعيد تحديثات الحزمة اللاحقة إضافته.
+
+### AppImage
+
+يعمل AppImage على معظم التوزيعات دون تثبيت أي شيء، ويحدّث نفسه من داخل Homeport. اجعله قابلًا للتنفيذ وشغّله:
+
+```sh
+chmod +x Homeport_<version>_amd64.AppImage
+./Homeport_<version>_amd64.AppImage
+```
+
+في كل مرة يعمل فيها، يضيف Homeport إلى قائمة التطبيقات. إذا لم يبدأ وذكر FUSE، فثبّت `libfuse2` (`libfuse2t64` على Ubuntu 24.04 وما بعده).
+
+تضيف حزمتا `.deb` و`.rpm` تطبيق Homeport إلى قائمة التطبيقات، وتثبّتان إشعارات الترخيص الخاصة به في `/usr/share/doc/homeport/` أو `/usr/share/licenses/homeport/`.
+
+<Aside type="caution" title="هل تستخدم Docker على هذا الجهاز؟">
+  للوصول إلى مقبس Docker المحلي دون صلاحيات root، يجب أن يكون مستخدمك في مجموعة `docker`:
+
+```sh
+sudo usermod -aG docker $USER
+```
+
+سجّل الخروج ثم سجّل الدخول مجددًا ليسري التغيير. بدون ذلك، يظهر المضيف المحلي بحالة **يتعذّر الوصول إليه** مع
+_Permission denied_.
+
+</Aside>
+
+## قادم لاحقًا
+
+هناك طرق أخرى لتثبيت Homeport مخطط لها. تابع المشكلة المعنية لتعرف متى تتوفر:
+
+<ul>
+  {COMING_LATER.map((channel) => (
+    <li>
+      <a href={`https://github.com/DamienReichhart/Homeport/issues/${channel.issue}`}>
+        {channel.name}
+      </a>{' '}
+      — {channel.what}
+    </li>
+  ))}
+</ul>
+
+## تحقق من التنزيل
+
+يذكر كل إصدار مجموع تحقق SHA-256 لكل ملف وشهادة مصدر بناء موقّعة، كما أن حزم Linux ومستودعاتها موقّعة. يشرح [التحقق من التنزيلات](/docs/reference/verifying/) كيفية التحقق منها.
+
+## التالي
+
+افتح Homeport واتبع [البدء السريع](/docs/quick-start/) لتوصيل أول مضيف لك.

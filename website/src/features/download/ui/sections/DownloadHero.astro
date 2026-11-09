@@ -1,30 +1,55 @@
 ---
 /** The download page's title, the version on offer, and a note on the visitor's system. */
+import { strings } from '@/core/i18n';
 import { getLatestRelease } from '@/core/release';
-import { RELEASES_URL } from '@/core/site';
+import { type Locale, localePath, RELEASES_URL } from '@/core/site';
 import { formatDate } from '@/shared/lib/format';
 import { href } from '@/shared/lib/href';
+import { escapeHtml, fillHtml } from '@/shared/lib/template';
 import { Icon } from '@/shared/ui';
+import type { RecommendationText } from '../../model/recommendation';
 
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
 const release = await getLatestRelease();
+const recommendationText: RecommendationText = {
+  sentence: s['download.recommend'],
+  onArch: s['download.recommend.arch'],
+  appleSilicon: s['download.arch.appleSilicon'],
+  intel: s['download.arch.intel'],
+  arm64: s['download.arch.arm64'],
+  x64: s['download.arch.x64'],
+};
+const link = (url: string, text: string) => `<a href="${url}">${escapeHtml(text)}</a>`;
 ---
 
 <section class="download-hero">
   <div class="container">
-    <span class="eyebrow">Download</span>
-    <h1>Get Homeport</h1>
+    <span class="eyebrow">{s['download.hero.eyebrow']}</span>
+    <h1>{s['download.hero.title']}</h1>
     {release ? (
       <p class="lead">
-        Version <strong>{release.version}</strong>, released {formatDate(release.publishedAt)}.{' '}
-        <a href={href('/changelog/')}>What's new</a>
+        <Fragment
+          set:html={fillHtml(s['download.hero.release'], {
+            version: `<strong>${escapeHtml(release.version)}</strong>`,
+            date: escapeHtml(formatDate(release.publishedAt, locale.lang)),
+          })}
+        />{' '}
+        <a href={href(localePath('/changelog/', locale))}>{s['download.hero.whatsNew']}</a>
       </p>
     ) : (
-      <p class="lead">
-        Installers for every platform are on the{' '}
-        <a href={`${RELEASES_URL}/latest`}>GitHub releases page</a>.
-      </p>
+      <p
+        class="lead"
+        set:html={fillHtml(s['download.hero.noRelease'], {
+          link: link(`${RELEASES_URL}/latest`, s['download.hero.releasesPage']),
+        })}
+      />
     )}
-    <p class="recommend" data-recommend hidden>
+    <p class="recommend" data-recommend data-text={JSON.stringify(recommendationText)} hidden>
       <Icon name="check" size={16} /> <span></span>
     </p>
   </div>
@@ -32,14 +57,18 @@ const release = await getLatestRelease();
 
 <script>
   import { detectPlatform } from '../../model/platform';
-  import { recommendation } from '../../model/recommendation';
+  import { recommendation, type RecommendationText } from '../../model/recommendation';
 
   void detectPlatform().then(({ os, arch }) => {
     if (os === 'other') return;
     const note = document.querySelector<HTMLElement>('[data-recommend]');
     const text = note?.querySelector('span');
-    if (note && text) {
-      text.textContent = recommendation(os, arch);
+    if (note?.dataset.text && text) {
+      text.textContent = recommendation(
+        os,
+        arch,
+        JSON.parse(note.dataset.text) as RecommendationText,
+      );
       note.hidden = false;
     }
   });

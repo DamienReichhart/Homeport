@@ -19,7 +19,7 @@ export function SwarmStacksTab({ swarmId }: { swarmId: string }) {
     <div className="grid gap-3">
       <div className="flex flex-wrap items-center gap-2">
         <SearchInput value={query} onChange={setQuery} placeholder={t('swarm.stacks.search')} />
-        <Button asChild className="ml-auto">
+        <Button asChild className="ms-auto">
           <Link to={`/stacks/new?swarm=${encodeURIComponent(swarmId)}`}>
             <PlusIcon /> {t('swarm.stacks.new')}
           </Link>

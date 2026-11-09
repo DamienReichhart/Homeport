@@ -3,6 +3,7 @@
  * The frame of a legal document: its title, the date it last changed, links to
  * the other documents, then the text.
  */
+import { type Locale, ROOT_LOCALE } from '@/core/site';
 import { formatDate } from '@/shared/lib/format';
 import { href } from '@/shared/lib/href';
 import { LEGAL_DOCUMENTS } from '../data/documents';
@@ -13,9 +14,11 @@ interface Props {
   subtitle: string;
   /** When the document's content last changed, as `YYYY-MM-DD`. */
   updated: string;
+  /** The language its date is written in; the documents themselves are in English only. */
+  locale?: Locale;
 }
 
-const { title, subtitle, updated } = Astro.props;
+const { title, subtitle, updated, locale = ROOT_LOCALE } = Astro.props;
 const current = Astro.url.pathname;
 ---
 
@@ -27,7 +30,7 @@ const current = Astro.url.pathname;
       {subtitle}
     </p>
     <p class="legal-hero__updated">
-      Last updated: <time datetime={updated}>{formatDate(updated)}</time>
+      Last updated: <time datetime={updated}>{formatDate(updated, locale.lang)}</time>
     </p>
     <nav class="legal-nav" aria-label="Legal documents">
       {LEGAL_DOCUMENTS.map((document) => (
@@ -102,7 +105,7 @@ const current = Astro.url.pathname;
     scroll-margin-top: 5rem;
   }
   .legal :global(ul) {
-    padding-left: 1.2rem;
+    padding-inline-start: 1.2rem;
   }
   .legal :global(strong) {
     color: var(--hp-text);
@@ -141,7 +144,7 @@ const current = Astro.url.pathname;
   .legal :global(td) {
     padding: 0.6rem 0.75rem;
     border-bottom: 1px solid var(--hp-border);
-    text-align: left;
+    text-align: start;
     vertical-align: top;
   }
   .legal :global(th) {

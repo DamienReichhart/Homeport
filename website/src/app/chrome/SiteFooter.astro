@@ -1,40 +1,69 @@
 ---
 import mark from '@brand/mark.svg';
-import { ISSUES_URL, RELEASES_URL, REPO_URL, TAGLINE } from '@/core/site';
-import { legalLinks } from '@/features/legal';
+import { type StringKey, strings } from '@/core/i18n';
+import {
+  ISSUES_URL,
+  type Locale,
+  localePath,
+  RELEASES_URL,
+  REPO_URL,
+  ROOT_LOCALE,
+} from '@/core/site';
+import { LEGAL_DOCUMENTS } from '@/features/legal';
 import { href } from '@/shared/lib/href';
+import { escapeHtml, fillHtml } from '@/shared/lib/template';
 
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
+const url = (path: string) => href(localePath(path, locale));
 const year = new Date().getFullYear();
 
 const columns = [
   {
-    title: 'Product',
+    title: s['footer.product'],
     links: [
-      { label: 'Features', url: href('/#features') },
-      { label: 'Download', url: href('/download/') },
-      { label: 'Changelog', url: href('/changelog/') },
-      { label: 'All releases', url: RELEASES_URL },
+      { label: s['footer.features'], url: url('/#features') },
+      { label: s['footer.download'], url: url('/download/') },
+      { label: s['footer.changelog'], url: url('/changelog/') },
+      { label: s['footer.releases'], url: RELEASES_URL },
     ],
   },
   {
-    title: 'Documentation',
+    title: s['footer.documentation'],
     links: [
-      { label: 'Introduction', url: href('/docs/') },
-      { label: 'Installation', url: href('/docs/installation/') },
-      { label: 'Connecting Hosts', url: href('/docs/hosts/') },
-      { label: 'Troubleshooting', url: href('/docs/reference/troubleshooting/') },
+      { label: s['footer.introduction'], url: url('/docs/') },
+      { label: s['footer.installation'], url: url('/docs/installation/') },
+      { label: s['footer.hosts'], url: url('/docs/hosts/') },
+      { label: s['footer.troubleshooting'], url: url('/docs/reference/troubleshooting/') },
     ],
   },
   {
-    title: 'Project',
+    title: s['footer.project'],
     links: [
-      { label: 'Source code', url: REPO_URL },
-      { label: 'Report an issue', url: ISSUES_URL },
-      { label: 'Contributing', url: href('/docs/project/contributing/') },
-      { label: 'Security', url: href('/docs/reference/security/') },
+      { label: s['footer.source'], url: REPO_URL },
+      { label: s['footer.issue'], url: ISSUES_URL },
+      { label: s['footer.contributing'], url: url('/docs/project/contributing/') },
+      { label: s['footer.security'], url: url('/docs/reference/security/') },
     ],
   },
 ];
+
+/** The legal documents are in English only, so their links don't change with the page's language. */
+const legalLabels: Record<(typeof LEGAL_DOCUMENTS)[number]['path'], StringKey> = {
+  '/legal-notice/': 'footer.legalNotice',
+  '/privacy/': 'footer.privacy',
+  '/terms/': 'footer.terms',
+  '/cookies/': 'footer.cookies',
+};
+const legalLang = locale === ROOT_LOCALE ? undefined : ROOT_LOCALE.lang;
+const licence = fillHtml(s['footer.licence'], {
+  year: String(year),
+  licence: `<a href="${REPO_URL}/blob/main/LICENSE">${escapeHtml(s['footer.licenceName'])}</a>`,
+});
 ---
 
 <footer class="site-footer">
@@ -44,7 +73,7 @@ const columns = [
       <p>
         <strong>Homeport</strong>
         <br />
-        {TAGLINE}
+        {s['site.tagline']}
       </p>
     </div>
     {columns.map((column) => (
@@ -61,18 +90,14 @@ const columns = [
     ))}
   </div>
   <div class="site-footer__legal">
-    <nav class="site-footer__legal-links" aria-label="Legal">
-      {legalLinks().map((link) => (
-        <a href={link.url}>{link.label}</a>
+    <nav class="site-footer__legal-links" aria-label={s['footer.legal']}>
+      {LEGAL_DOCUMENTS.map((document) => (
+        <a href={href(document.path)} hreflang={legalLang}>
+          {s[legalLabels[document.path]]}
+        </a>
       ))}
     </nav>
-    <p>
-      © {year} Damien Reichhart. Homeport is open source under the{' '}
-      <a href={`${REPO_URL}/blob/main/LICENSE`}>GNU AGPL, version 3</a>.
-    </p>
-    <p>
-      Docker is a trademark of Docker, Inc. Homeport is an independent project, not affiliated with
-      or endorsed by Docker, Inc.
-    </p>
+    <p set:html={licence} />
+    <p>{s['footer.trademark']}</p>
   </div>
 </footer>

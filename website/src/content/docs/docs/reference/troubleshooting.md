@@ -155,7 +155,7 @@ The exec plugin ran and failed. **Details** shows the end of what it printed, of
 
 The `gcp` and `azure` auth providers were removed from Kubernetes. Fetch the credentials again with `gke-gcloud-auth-plugin` installed (GKE), or run `kubelogin convert-kubeconfig` (AKS), then add the context again.
 
-### "Your credentials can't list … in …"
+### "Your credentials don't allow “…” on … in …"
 
 The cluster's RBAC doesn't let your kubeconfig's user do that. Pick a namespace you're allowed to see in the picker at the top right, or ask the cluster's administrator. The message gives the `kubectl auth can-i` command that checks it. Other pages keep working.
 
@@ -169,7 +169,7 @@ kind, k3d and minikube make new certificates each time they recreate a cluster. 
 
 ### Nomad: "… doesn't know the ACL token Homeport sent"
 
-The token was mistyped, has expired, or was deleted. Make a new one with the policy from [ACL policies](/docs/clusters/nomad/#acl-policies) (`nomad acl token create -name=homeport -policy=homeport`) and paste its secret ID in the cluster's **Settings**. The cluster waits as **Unauthorized** until you do.
+The token was mistyped, has expired, or was deleted. Make a new one with the policy from [ACL policies](/docs/clusters/nomad/#acl-policies) (`nomad acl token create -name=homeport -policy=homeport`) and paste its secret ID in the cluster's **Settings**. The cluster waits as **Access refused** until you do.
 
 ### Nomad: "… refused: the ACL token lacks a permission this needs"
 

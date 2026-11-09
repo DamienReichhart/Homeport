@@ -99,7 +99,7 @@ function Loaded({
         </Button>
         <Button
           variant="ghost"
-          className="ml-auto"
+          className="ms-auto"
           onClick={() =>
             confirm({
               title: t('stacks.synced.forgetTitle', { name: stack.name }),

@@ -1,0 +1,47 @@
+---
+title: Clusters locais
+description: Os clusters Kubernetes que o Homeport encontra neste computador e como ativar o Kubernetes no Docker Desktop, no OrbStack e no Rancher Desktop.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+O Homeport procura no kubeconfig deste computador clusters em execução aqui, pergunta a versão ao servidor de API de cada um e oferece os que respondem em **Adicionar um cluster** e na página de boas-vindas, com um clique cada. Ele nunca inicia, cria nem instala um cluster.
+
+<DocScreenshot
+  name="add-cluster"
+  alt="Clusters nesta máquina: kind-dev já adicionado, o cluster do Docker Desktop com um botão Adicionar, o do OrbStack fora de execução e um cluster k3d com o comando que o adiciona ao kubeconfig."
+  caption="O kind-dev já é um cluster, o do Docker Desktop está a um clique, o do OrbStack está parado e um cluster k3d em execução ainda não está no kubeconfig."
+/>
+
+## O que é encontrado
+
+| Ferramenta          | O contexto do kubeconfig dela                  | Adicionado como    |
+| ------------------- | ---------------------------------------------- | ------------------ |
+| **Docker Desktop**  | `docker-desktop`                               | `Docker Desktop`   |
+| **OrbStack**        | `orbstack`                                     | `OrbStack`         |
+| **Rancher Desktop** | `rancher-desktop`                              | `Rancher Desktop`  |
+| **kind**            | `kind-<name>`                                  | o nome do contexto |
+| **k3d**             | `k3d-<name>`                                   | o nome do contexto |
+| **minikube**        | `minikube`, ou um perfil que o minikube gravou | o nome do contexto |
+
+Um contexto só conta como local quando o servidor de API dele está neste computador (`127.0.0.1`, `localhost`, `kubernetes.docker.internal`…) ou, para o minikube e o Rancher Desktop, na VM deles em um endereço privado. Um contexto remoto nunca é oferecido, seja qual for o nome dele. Um cluster local que não responde mostra **Não está em execução**; inicie-o com a própria ferramenta dele e abra a página de novo.
+
+### Clusters kind e k3d ausentes do kubeconfig
+
+Quando um [host local](/docs/hosts/local/) está conectado, o Homeport também identifica os contêineres dos clusters kind e k3d em execução (pelos rótulos `io.x-k8s.kind.cluster` e `k3d.cluster` deles). Um que o seu kubeconfig não alcança é mostrado com o comando que o adiciona, em vez de ser adicionado sem você saber:
+
+```bash
+kind export kubeconfig --name <name>
+```
+
+```bash
+k3d kubeconfig merge <name> --kubeconfig-merge-default
+```
+
+## Ativar o Kubernetes
+
+- **Docker Desktop**: **Settings → Kubernetes → Enable Kubernetes**, depois **Apply & restart**. Ele adiciona o contexto `docker-desktop`.
+- **OrbStack**: **Settings → Kubernetes → Enable Kubernetes**, ou execute `orb start k8s`. Ele adiciona o contexto `orbstack`.
+- **Rancher Desktop**: **Preferences → Kubernetes → Enable Kubernetes**. Ele adiciona o contexto `rancher-desktop`.
+
+O kind (`kind create cluster`), o k3d (`k3d cluster create`) e o minikube (`minikube start`) adicionam os contextos deles quando criam um cluster. Eles geram novos certificados cada vez que recriam um: use **Atualizar a partir do kubeconfig** na página dele em seguida.

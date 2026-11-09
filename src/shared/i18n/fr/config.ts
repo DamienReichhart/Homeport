@@ -1,0 +1,37 @@
+/** French text of the `config` namespace. */
+import type en from '../en/config';
+import type { Translation } from '../types';
+
+export default {
+  'config.nav': 'Configuration',
+  'config.title': 'Configuration',
+  'config.configMaps': 'ConfigMaps',
+  'config.secrets': 'Secrets',
+  'config.configMap': 'ConfigMap',
+  'config.secret': 'Secret',
+  'config.configMapsSummary': '{count, plural, one {# ConfigMap} other {# ConfigMaps}}',
+  'config.secretsSummary': '{count, plural, one {# Secret} other {# Secrets}}',
+  'config.searchConfigMaps': 'Rechercher des ConfigMaps',
+  'config.searchSecrets': 'Rechercher des Secrets',
+  'config.column.name': 'Nom',
+  'config.column.namespace': 'Namespace',
+  'config.column.type': 'Type',
+  'config.column.keys': 'Clés',
+  'config.column.age': 'Âge',
+  'config.tab.data': 'Données',
+  'config.tab.overview': 'Vue d’ensemble',
+  'config.tab.events': 'Événements',
+  'config.tab.source': 'YAML',
+  'config.detail.namespace': 'Namespace',
+  'config.detail.type': 'Type',
+  'config.detail.labels': 'Labels',
+  'config.detail.annotations': 'Annotations',
+  'config.noKeys': 'Aucune clé.',
+  'config.binary': '(données binaires)',
+  'config.base64': 'base64',
+  'config.reveal': 'Afficher',
+  'config.revealOne': 'Afficher {key}',
+  'config.hide': 'Masquer',
+  'config.copy': 'Copier {key}',
+  'config.reveal.failed': 'Homeport n’a pas pu afficher {key}',
+} satisfies Translation<typeof en>;

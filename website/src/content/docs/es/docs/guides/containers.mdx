@@ -1,0 +1,241 @@
+---
+title: Contenedores
+description: Lista, ejecuta y gestiona contenedores — logs, terminales, archivos, estadísticas y procesos.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+La página **Contenedores** lista todos los contenedores del host seleccionado, estén en ejecución o no.
+
+<DocScreenshot
+  name="containers"
+  alt="La página Contenedores, con los contenedores agrupados bajo sus stacks y la CPU y la memoria en directo."
+/>
+
+## La lista
+
+Los contenedores que pertenecen a un [stack](/docs/guides/stacks/) se agrupan bajo él; después vienen los contenedores independientes. La fila de un stack muestra cuántos de sus contenedores están en ejecución y su CPU y su memoria combinadas. Selecciónala para plegar el grupo, o elige **Abrir stack** para ir al stack.
+
+| Columna     | Muestra                                                                                                                     |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **Nombre**  | Un punto de estado, el nombre (el nombre del servicio dentro de un stack) y el ID corto.                                    |
+| **Imagen**  | La imagen a partir de la que se creó, con una marca ⬆ cuando se publica una [imagen más reciente](#imágenes-más-recientes). |
+| **Estado**  | Tal como lo indica el Engine, p. ej., _Up 3 hours (healthy)_, con una insignia de salud si hay una comprobación de salud.   |
+| **Puertos** | Hasta tres puertos, primero los publicados. Un puerto publicado es un enlace que lo abre en tu navegador.                   |
+| **CPU**     | En directo, como porcentaje de una CPU: `200%` significa dos CPU totalmente usadas.                                         |
+| **Memoria** | En directo, sin contar la caché de páginas que el kernel puede recuperar.                                                   |
+| **Creado**  | Hace cuánto.                                                                                                                |
+
+La CPU y la memoria se actualizan cada dos segundos. **Buscar contenedores** coincide con nombres, imágenes, stacks, servicios y prefijos de ID; **Solo en ejecución** oculta el resto.
+
+Selecciona un contenedor para abrirlo.
+
+### Imágenes más recientes
+
+Una ⬆ junto a la imagen significa que su registro tiene ahora una imagen distinta bajo la etiqueta a partir de la que se creó el contenedor: `nginx:1.27` avanzó desde que se descargó, o se descargó una más reciente pero el contenedor no se recreó. Pasa el puntero por encima para ver cuál. Para actualizar, descarga la imagen y recrea el contenedor; para un stack, **Descargar imágenes** y después **Volver a desplegar**.
+
+Homeport pregunta al registro a través del Engine del host, que compara los digests sin descargar nada, usando tus [inicios de sesión de registros](/docs/guides/settings/#registros) guardados para las imágenes privadas. Las respuestas se guardan durante 6 horas, así que volver a abrir la lista no pregunta nada; **Buscar imágenes más recientes**, en la parte superior de la página, vuelve a preguntar ahora a todos los registros. Las imágenes compiladas localmente, descargadas por digest (`app@sha256:…`) o cuyo registro no es accesible no muestran nada en lugar de una falsa alarma. La página del contenedor muestra la misma marca junto a su imagen.
+
+### Acciones
+
+El botón al final de cada fila inicia o detiene el contenedor. El menú **⋮** tiene el resto: **Logs**, **Abrir terminal**, **Reiniciar**, **Pausar** o **Reanudar**, **Matar**, **Cambiar nombre**, [**Editar**](#editar-un-contenedor), [**Duplicar**](#duplicar-un-contenedor), [**Hacer commit en una imagen…**](#hacer-commit-de-un-contenedor), [**Exportar sistema de archivos…**](#exportar-el-sistema-de-archivos-de-un-contenedor) y **Eliminar**.
+
+Marca contenedores para actuar sobre varios a la vez con **Iniciar**, **Detener**, **Reiniciar** o **Eliminar**. La casilla de la fila de un stack selecciona todos sus contenedores.
+
+<Aside type="caution" title="Qué borra Eliminar">
+  Eliminar un contenedor lo borra a él, su capa de escritura y sus volúmenes anónimos. Los volúmenes
+  con nombre se conservan. Un contenedor en ejecución se detiene inmediatamente, sin esperar a que
+  se cierre limpiamente.
+</Aside>
+
+**Matar** envía `SIGKILL` de inmediato, así que el proceso no tiene ocasión de limpiar. **Detener** le da antes el tiempo de espera de detención del contenedor.
+
+## La página de un contenedor
+
+La cabecera muestra la imagen y el estado, con **Iniciar** o **Detener**, **Reiniciar**, **Pausar** o **Reanudar**, y **Eliminar**; su menú **⋮** tiene **Cambiar nombre**, **Editar**, **Duplicar**, **Hacer commit en una imagen…** y **Exportar sistema de archivos…**. Las pestañas de debajo contienen todo lo demás.
+
+<Aside>
+  Salir de una pestaña cierra lo que estaba haciendo: los terminales se cierran cuando sales de
+  **Exec**, los gráficos vuelven a empezar cuando regresas a **Estadísticas** y los **Logs** se
+  vuelven a cargar.
+</Aside>
+
+### Logs
+
+<DocScreenshot
+  name="container-logs"
+  alt="La pestaña Logs de un contenedor, con historial, marcas de tiempo, filtros de flujo y búsqueda."
+/>
+
+Los logs se muestran a medida que el contenedor los escribe. La barra de herramientas controla lo que ves:
+
+- **Historial** — cuántas líneas anteriores cargar: las últimas 100, 1000 (el valor por defecto) o 10 000, o todo.
+- **Desde** — cualquier momento, o los últimos 5 minutos, la última hora o las últimas 24 horas.
+- **Marcas de tiempo** — muestra la marca de tiempo del Engine antes de cada línea.
+- **stdout** y **stderr** — muestran u ocultan cada flujo.
+- **Seguir** — sigue desplazándose hasta la línea más reciente. Las líneas nuevas siguen llegando aunque esté desactivado.
+- **Buscar en los logs** — resalta las coincidencias. Pulsa <kbd>Enter</kbd> para ir a la siguiente coincidencia y <kbd>Shift</kbd>+<kbd>Enter</kbd> para ir a la anterior.
+- **Borrar** vacía la vista; **Descargar logs** guarda lo que has cargado como archivo de texto, hasta las últimas 100 000 líneas.
+
+Cuando el contenedor se detiene, el log termina con _— fin de los logs —_.
+
+### Inspeccionar
+
+**Detalles** resume el contenedor en tarjetas: estado y código de salida, comando, política de reinicio, comprobaciones de salud, entorno, montajes, puertos, redes y etiquetas. **JSON sin procesar** muestra el documento de inspección completo del Engine.
+
+<Aside type="caution">
+  Las variables de entorno se muestran sin cifrar, tal como las guarda el Engine. Tenlo en cuenta
+  antes de compartir tu pantalla.
+</Aside>
+
+### Salud
+
+Se muestra para los contenedores con una comprobación de salud, propia o de su imagen. **Comprobación de salud** da el estado (_starting_, _healthy_ o _unhealthy_), el comando, sus tiempos (los valores por defecto del Engine completan lo que no está definido: cada 30 s, un tiempo de espera de 30 s, 3 reintentos) y cuántas comprobaciones han fallado seguidas. **Últimos resultados** lista las comprobaciones que guarda el Engine, primero las más recientes, con su código de salida, cuándo se ejecutaron, cuánto tardaron y lo que mostraron; las salidas largas se pliegan tras **Mostrar más**.
+
+Así, cuando la lista dice _unhealthy_, aquí está el motivo, sin leer el JSON sin procesar. La pestaña se actualiza sola una vez por intervalo de comprobación y cada vez que cambia el estado. Un contenedor cuya comprobación de salud está desactivada no tiene pestaña Salud; para añadir o cambiar una, [edita el contenedor](#editar-un-contenedor).
+
+### Exec
+
+<DocScreenshot
+  name="container-terminal"
+  alt="Un terminal interactivo en la pestaña Exec de un contenedor."
+/>
+
+Un terminal interactivo en el contenedor en ejecución. El primero, **Shell**, se abre solo y ejecuta `bash`, o `sh` cuando la imagen no tiene bash.
+
+**Nuevo terminal** abre otro con tu propio **Comando**, **Usuario** y **Directorio**, por ejemplo `psql -U postgres` como el usuario `postgres`. Puedes tener varios abiertos a la vez; cierra uno con su **×**. Los terminales cambian de tamaño con la ventana.
+
+Las imágenes sin shell — `scratch` o las imágenes distroless — no pueden abrir el terminal por defecto.
+
+### Archivos
+
+Explora el sistema de archivos del contenedor desde `/`. Selecciona una carpeta para abrirla, o usa la ruta de la parte superior para subir de nivel.
+
+- **Descarga** un archivo, o una carpeta entera como archivo `.tar`, con el botón al final de su fila.
+- **Subir aquí** copia archivos de tu equipo en la carpeta en la que estás, sustituyendo los archivos con el mismo nombre.
+
+Listar archivos ejecuta `find` y `stat` dentro del contenedor, así que las imágenes mínimas que no los tienen no se pueden explorar. Las transferencias se guardan en memoria, así que es mejor copiar los archivos muy grandes con `docker cp`.
+
+### Estadísticas
+
+Gráficos en directo de los últimos cinco minutos, actualizados cada segundo: **CPU**, **Memoria** (frente al límite del contenedor), **Red** recibida y enviada, y **E/S de disco** leída y escrita, con el número de procesos.
+
+<DocScreenshot
+  name="container-stats"
+  alt="La pestaña Estadísticas de un contenedor, con gráficos de CPU, memoria, red y E/S de disco."
+/>
+
+### Procesos
+
+Los procesos que se ejecutan en el contenedor, tal como los muestra `ps aux`, actualizados cada cinco segundos.
+
+## Ejecutar un contenedor
+
+**Ejecutar contenedor**, en la página Contenedores — o el botón ▶ junto a una imagen —, abre **Ejecutar un contenedor**:
+
+| Campo                                     | Notas                                                                                                                                                                              |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Imagen**                                | Obligatorio. Sugiere las imágenes del host. Se descarga primero si el host no la tiene, con el [inicio de sesión del registro](/docs/guides/settings/#registros) guardado.         |
+| **Nombre**                                | Opcional; el Engine genera uno si está vacío.                                                                                                                                      |
+| **Comando**                               | Sustituye al comando por defecto de la imagen (no a su entrypoint). Pon los argumentos entre comillas como en un shell.                                                            |
+| **Puertos**                               | **Puerto del host** → **Puerto del contenedor**, `tcp` o `udp`. Deja vacío el puerto del host para que el Engine elija uno libre. Los puertos se publican en todas las interfaces. |
+| **Volúmenes**                             | Un nombre de volumen o una `/host/path` absoluta, montados en una ruta absoluta del contenedor, opcionalmente en **solo lectura**. Un nombre que aún no existe crea un volumen.    |
+| **Entorno**                               | Una `KEY=value` por línea. Las líneas vacías y las que empiezan por `#` se ignoran.                                                                                                |
+| **Red**                                   | **Predeterminada (bridge)**, o cualquier red del host.                                                                                                                             |
+| **Reinicio**                              | **Nunca**, **Si falla**, **Salvo si se detiene** o **Siempre**.                                                                                                                    |
+| **Eliminar el contenedor cuando termine** | Como `docker run --rm`. Un contenedor que se elimina al terminar no puede además reiniciarse.                                                                                      |
+
+Elige **Ejecutar**: Homeport crea e inicia el contenedor y después abre sus logs.
+
+Si el contenedor no puede iniciarse — por ejemplo, porque un puerto ya está en uso —, Homeport lo vuelve a eliminar y el cuadro de diálogo se queda abierto con el motivo, para que puedas corregir el campo y ejecutarlo con el mismo nombre.
+
+### Opciones avanzadas
+
+**Opciones avanzadas**, bajo la política de reinicio, abre los ajustes que se usan con menos frecuencia, uno por pestaña. Un valor que Homeport no puede leer se explica bajo su campo, y **Ejecutar** espera hasta que se corrija. Todo lo que se define aquí aparece en la pestaña **Inspeccionar** del contenedor.
+
+**Recursos**
+
+| Campo                        | Notas                                                                                                                |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **Límite de CPU**            | Cuántas CPU puede usar, como `0.5` o `2` (`--cpus`). Vacío usa todas las CPU.                                        |
+| **CPU shares**               | Su peso frente a otros contenedores cuando las CPU están ocupadas; `1024` es el valor por defecto (`--cpu-shares`).  |
+| **Límite de memoria**        | Como `512m` o `2g` (`--memory`). Los tamaños se cuentan en potencias de 1024, como hace Docker. Como mínimo `6m`.    |
+| **Reserva de memoria**       | Un límite flexible que el Engine solo aplica cuando al host le falta memoria; como máximo, el límite.                |
+| **Límite de memoria y swap** | Memoria más swap, así que como mínimo el límite de memoria; `-1` para swap ilimitado. Requiere un límite de memoria. |
+
+**Etiquetas** — una `key=value` por línea, tal como las leen los proxies inversos como Traefik y Caddy y las herramientas de copia de seguridad. Las claves que empiezan por `com.docker.compose.` se rechazan: pertenecen a Docker Compose, y Homeport mostraría el contenedor como parte de un stack.
+
+**Seguridad** — capabilities que añadir y que quitar, escritas de una en una con sugerencias (`NET_ADMIN` y `CAP_NET_ADMIN` son lo mismo; `ALL` significa todas), y **Privilegiado**.
+
+<Aside type="danger" title="Modo privilegiado">
+  Un contenedor privilegiado puede usar todos los dispositivos y capabilities del host, y cualquier
+  cosa que se ejecute en él puede tomar el control del host. Cuando puedas, añade en su lugar solo
+  las capabilities y los dispositivos que necesita.
+</Aside>
+
+**Dispositivos** — dispositivos del host que pasar al contenedor, como `/dev/dri` para la transcodificación por hardware o `/dev/ttyUSB0` para una llave Zigbee, con la ruta dentro del contenedor (la misma si está vacía) y los permisos: algunos de `r` (lectura), `w` (escritura) y `m` (crear archivos de dispositivo). **GPU** pide todas, un número de ellas o algunas elegidas por índice o UUID, como `docker run --gpus`.
+
+<Aside type="note" title="Las GPU necesitan el toolkit del fabricante">
+  El host debe tener instalado el container toolkit del fabricante de su GPU — para NVIDIA, el
+  [NVIDIA Container
+  Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+  — y el Docker Engine reiniciado después. Homeport no lo instala. Sin él, la ejecución falla con
+  _Este host no puede dar una GPU a los contenedores._
+</Aside>
+
+**Comprobación de salud** — conserva **la de la propia imagen**, define **un comando** que se ejecuta con `/bin/sh -c` (el código de salida 0 significa saludable) o desactiva la de la imagen con **Ninguna**. **Intervalo**, **Tiempo de espera** y **Periodo inicial** admiten duraciones como `30s` o `1m30s`; **Reintentos** es cuántos fallos seguidos lo vuelven no saludable. Después, el estado aparece en la lista como _healthy_ o _unhealthy_.
+
+**Identidad de red** — el **Nombre de host** y el **Nombre de dominio** del contenedor, sus **Servidores DNS** (direcciones) y **dominios de búsqueda**, y los **Hosts adicionales**: líneas `name:address` que se añaden a su `/etc/hosts`, para nombres que el DNS de tu red no conoce. `host-gateway` representa la propia dirección del host, así que `host.docker.internal:host-gateway` llega a los servicios del host.
+
+**Logs** — el **Driver de logs**: `json-file`, `local`, `journald`, `syslog`, `none` o cualquier otro que tenga el Engine; vacío usa el predeterminado del Engine. Las **Opciones del driver** son líneas `key=value`; para `json-file`, `max-size=10m` y `max-file=3` evitan que los logs llenen el disco de un host pequeño. Con `journald`, `syslog` o `none`, la pestaña **Logs** puede quedarse vacía.
+
+## Duplicar un contenedor
+
+**Duplicar** abre el cuadro de diálogo Ejecutar rellenado a partir del contenedor — imagen, comando, entorno, puertos, volúmenes, red, política de reinicio y todas las opciones avanzadas — con el nombre `<name>-copy`. Cambia lo que necesites y elige **Ejecutar**.
+
+Los ajustes que el cuadro de diálogo no muestra, como los ulimits, los sysctls, las opciones de seguridad, los montajes tmpfs y las demás redes en las que está el contenedor (con sus alias), se copian tal cual. Solo lo que venía únicamente de la imagen se deja fuera del formulario, para que una etiqueta más reciente de la imagen traiga sus propios valores por defecto.
+
+La copia no toma lo que identifica al original: obtiene su propio nombre de host (salvo que definas uno), su dirección MAC y volúmenes anónimos nuevos, y un contenedor de un [stack](/docs/guides/stacks/) pierde sus etiquetas de stack y sus alias de servicio, así que la copia no se une al stack ni responde a su nombre de servicio. Si el original publica un puerto fijo del host, el cuadro de diálogo lo indica: dos contenedores no pueden usarlo a la vez mientras se ejecutan, así que cámbialo o déjalo vacío para que el Engine elija uno.
+
+## Editar un contenedor
+
+El Docker Engine no puede cambiar la mayoría de los ajustes de un contenedor existente, así que **Editar** lo recrea: abre el cuadro de diálogo Ejecutar rellenado a partir del contenedor, y **Aplicar** lo sustituye por uno creado con tus cambios. El nombre se mantiene (usa **Cambiar nombre** para cambiarlo).
+
+Antes de que ocurra nada, Homeport lista lo que no tendrá el nuevo contenedor:
+
+- **Volúmenes anónimos** — el nuevo contenedor empieza con volúmenes vacíos. Los anteriores no se borran: se conservan como volúmenes sin usar que aún puedes abrir o [limpiar](/docs/guides/volumes-networks/).
+- **Archivos cambiados dentro del contenedor** desde que se creó, como paquetes instalados o configuración editada. Para conservarlos, [haz antes commit del contenedor en una imagen](#hacer-commit-de-un-contenedor) — la confirmación tiene un botón para ello — y edita el contenedor para que use esa imagen.
+- **Tiempo de inactividad** — un contenedor en ejecución se detiene mientras se intercambian los dos, normalmente durante unos segundos.
+- **El próximo despliegue de un stack** — para un contenedor de un stack, el próximo despliegue del stack lo recrea a partir de su archivo compose, sin tu edición. Cambia el archivo compose para que el cambio perdure.
+
+Qué se conserva: el nombre, las redes con sus alias, los volúmenes con nombre y los bind mounts, y todos los ajustes que el cuadro de diálogo no muestra. Después, el contenedor se ejecuta si estaba en ejecución.
+
+<Aside type="note" title="Si algo sale mal">
+  Homeport crea el nuevo contenedor antes de tocar el original, y solo elimina el original cuando el
+  nuevo está en ejecución. Si falla algún paso — por ejemplo, porque el nuevo puerto está ocupado —,
+  el nuevo contenedor se elimina y el original se restaura tal como estaba, en ejecución si lo
+  estaba, y el cuadro de diálogo muestra el motivo. En el raro caso de que restaurarlo también
+  falle, el mensaje indica dónde está el original, como `web-old-1a2b3c4d`, para que puedas
+  devolverle su nombre e iniciarlo.
+</Aside>
+
+## Hacer commit de un contenedor
+
+**Hacer commit en una imagen…** guarda los archivos del contenedor tal como están ahora — incluido todo lo que cambió dentro desde que se creó — y sus ajustes como una imagen nueva en el host, como `docker commit`.
+
+| Campo                                      | Notas                                                                                                                                                                                               |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Nombre de la imagen**                    | `repo:tag`, que empieza con el nombre del contenedor y la fecha de hoy, como `web:2026-11-04`. Si una imagen ya tiene ese nombre, el cuadro de diálogo lo indica: el nombre pasa a la nueva imagen. |
+| **Mensaje**                                | Se muestra en el historial de la imagen (**Inspeccionar** → **Capas**).                                                                                                                             |
+| **Autor**                                  | Opcional.                                                                                                                                                                                           |
+| **Cambios**                                | Instrucciones de Dockerfile que se aplican a la nueva imagen, una por línea: `CMD`, `ENTRYPOINT`, `ENV`, `EXPOSE`, `LABEL`, `ONBUILD`, `USER`, `VOLUME` o `WORKDIR`, como `ENV MODE=prod`.          |
+| **Pausar el contenedor durante el commit** | Activado por defecto: sus procesos se congelan durante los pocos segundos que tarda, así que los archivos que se están escribiendo quedan coherentes. Después, el contenedor sigue funcionando.     |
+
+La nueva imagen aparece al momento en la [página Imágenes](/docs/guides/images/). Los volúmenes, con nombre o anónimos, no forman parte de ella: haz su copia de seguridad por separado. Para crear una imagen que puedas volver a compilar, es preferible [compilarla a partir de un Dockerfile](/docs/guides/images/#compilar-una-imagen).
+
+## Exportar el sistema de archivos de un contenedor
+
+**Exportar sistema de archivos…** guarda todos los archivos del contenedor — los de su imagen y todo lo que cambió desde entonces — en un único `.tar` en este equipo, como `docker export`. Elige dónde guardarlo; recibe el nombre del contenedor. El progreso muestra los bytes escritos, **Cancelar** lo detiene, y una exportación cancelada o fallida no deja ningún archivo a medias. El archivo se escribe directamente en el disco, así que los contenedores de varios gigabytes no son un problema.
+
+El archivo es un sistema de archivos plano y simple: sin capas, historial ni ajustes, y sin volúmenes. Ábrelo con cualquier herramienta tar, o vuelve a convertirlo en una imagen con [**Importar desde tar…**](/docs/guides/images/#importar-un-sistema-de-archivos), en la página Imágenes, o con `docker import`. Para conservar también los ajustes de un contenedor, [haz commit de él](#hacer-commit-de-un-contenedor) en su lugar.

@@ -15,8 +15,13 @@
 //! Templates are ICU MessageFormat, the frontend's catalogue format: `{name}`
 //! arguments, and an apostrophe before `{`, `}` or `'` quotes it (`'{'`).
 //! Plurals aren't rendered here: write two messages instead.
+//!
+//! Text the frontend can't draw itself (the tray menu, OS notifications) is
+//! rendered here in the app's language: the frontend hands over its active
+//! catalogue with [`set_translations`], and [`Text::localized`] reads it,
+//! falling back to English for a key it lacks.
 
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, sync::RwLock};
 
 use serde::{Deserialize, Serialize};
 
@@ -96,6 +101,11 @@ impl Message {
     pub fn with(self, name: &str, value: impl Into<Param>) -> Text {
         Text::from(self).with(name, value)
     }
+
+    /// This message, without parameters, in the app's language.
+    pub fn localized(self) -> String {
+        Text::from(self).localized()
+    }
 }
 
 impl Text {
@@ -110,6 +120,30 @@ impl Text {
     pub fn english(&self) -> String {
         render(self.template, &self.params)
     }
+
+    /// The text in the app's language, from the templates the frontend
+    /// handed over; English when it gave none for this key.
+    pub fn localized(&self) -> String {
+        localize(&self.key, &self.params).unwrap_or_else(|| self.english())
+    }
+}
+
+/// The active language's templates, by key; empty for English.
+static TRANSLATIONS: RwLock<BTreeMap<String, String>> = RwLock::new(BTreeMap::new());
+
+/// `key` rendered with `params` in the app's language; `None` when the
+/// frontend handed over no template for it (English, or an unknown key).
+pub fn localize(key: &str, params: &Params) -> Option<String> {
+    let translations = TRANSLATIONS.read().unwrap_or_else(|e| e.into_inner());
+    translations
+        .get(key)
+        .map(|template| render(template, params))
+}
+
+/// Replaces the templates [`Text::localized`] renders; an empty map means
+/// English.
+pub fn set_translations(templates: BTreeMap<String, String>) {
+    *TRANSLATIONS.write().unwrap_or_else(|e| e.into_inner()) = templates;
 }
 
 impl From<Message> for Text {
@@ -188,8 +222,9 @@ pub fn arguments(template: &str) -> Vec<String> {
     names
 }
 
-/// Declares a crate's error messages as `Message` constants, plus `ALL`
-/// listing them for the catalogue. Keys start with `errors.`.
+/// Declares a crate's messages as `Message` constants, plus `ALL` listing
+/// them for the catalogue. Error keys start with `errors.`; text drawn by the
+/// OS rather than the window (tray, notifications) with `native.`.
 #[macro_export]
 macro_rules! messages {
     ($($(#[$doc:meta])* $name:ident = $key:literal => $en:literal;)*) => {
@@ -228,6 +263,19 @@ mod tests {
         assert_eq!(render("Use '{'VAR'}' here", &none), "Use {VAR} here");
         assert_eq!(render("It''s fine, isn't it", &none), "It's fine, isn't it");
         assert_eq!(render("Missing {name}", &none), "Missing {name}");
+    }
+
+    #[test]
+    fn localized_text_reads_the_handed_over_templates() {
+        let text = SAMPLE.with("port", 8080).with("host", "prod");
+        assert_eq!(text.localized(), "Port 8080 on prod isn't free.");
+        set_translations(BTreeMap::from([(
+            SAMPLE.key.to_owned(),
+            "Le port {port} de {host} n’est pas libre.".to_owned(),
+        )]));
+        assert_eq!(text.localized(), "Le port 8080 de prod n’est pas libre.");
+        set_translations(BTreeMap::new());
+        assert_eq!(text.localized(), "Port 8080 on prod isn't free.");
     }
 
     #[test]

@@ -21,19 +21,19 @@ export function ConfigTable({
     return <p className="text-muted-foreground text-sm">{t('incus.instances.noConfig')}</p>;
   return (
     <table className="w-full text-sm">
-      <thead className="text-muted-foreground text-left text-xs">
+      <thead className="text-muted-foreground text-start text-xs">
         <tr>
-          <th className="py-1 pr-4 font-normal">{t('incus.instances.config.key')}</th>
-          <th className="py-1 pr-4 font-normal">{t('incus.instances.config.value')}</th>
+          <th className="py-1 pe-4 font-normal">{t('incus.instances.config.key')}</th>
+          <th className="py-1 pe-4 font-normal">{t('incus.instances.config.value')}</th>
           <th className="py-1 font-normal" />
         </tr>
       </thead>
       <tbody>
         {keys.map((key) => (
           <tr key={key} className="border-t align-top">
-            <td className="py-1.5 pr-4 font-mono text-xs">{key}</td>
-            <td className="py-1.5 pr-4 font-mono text-xs break-all">{expanded[key]}</td>
-            <td className="py-1.5 text-right">
+            <td className="py-1.5 pe-4 font-mono text-xs">{key}</td>
+            <td className="py-1.5 pe-4 font-mono text-xs break-all">{expanded[key]}</td>
+            <td className="py-1.5 text-end">
               {!(key in own) && (
                 <Badge variant="outline">{t('incus.instances.config.fromProfile')}</Badge>
               )}

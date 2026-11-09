@@ -1,0 +1,99 @@
+---
+title: التحديث وإلغاء التثبيت
+description: كيف يتحدث Homeport على كل نظام، وكيفية إزالته مع بياناته بالكامل.
+---
+
+import { Aside, Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import { MANUAL_SETUP, UPDATE_COMMANDS } from '@/core/packages';
+
+## التحديث
+
+تعتمد طريقة تحديث Homeport على طريقة تثبيته.
+
+### Windows وmacOS وAppImage
+
+يتحقق Homeport من وجود إصدار جديد عند بدء تشغيله وكل 6 ساعات. عند صدور إصدار جديد، يشير شريط أعلى النافذة إلى ذلك: اختر **ما الجديد** لقراءة [سجل التغييرات](/changelog/)، أو **تثبيت وإعادة التشغيل**. ينزّل Homeport التحديث، ويتحقق من توقيعه، ويثبّته ويُفتح مجددًا. لا يُثبَّت أي شيء إلى أن تختار ذلك، وتُحفظ مضيفاتك ومكدساتك وإعداداتك.
+
+يمكنك أيضًا التحقق الآن من **الإعدادات ← التحديثات ← التحقق الآن**.
+
+### حزم Linux
+
+تتحدث حزمتا `.deb` و`.rpm`، سواء ثُبّتتا عبر [التثبيت السريع](/docs/installation/#التثبيت-السريع) أو [الإعداد اليدوي](/docs/installation/#الإعداد-اليدوي) أو من ملف منزَّل، من مستودع حزم Homeport مع بقية نظامك: تتضمن تحديثات البرامج المعتادة لديك Homeport. لتحديث Homeport وحده:
+
+<Tabs syncKey="linux-format">
+  {MANUAL_SETUP.map((setup) => (
+    <TabItem label={setup.label}>
+      <Code code={UPDATE_COMMANDS[setup.id]} lang="sh" />
+    </TabItem>
+  ))}
+</Tabs>
+
+يخبرك Homeport عند صدور إصدار جديد ويعرض الأمر المناسب لنظامك، لكنه يترك تثبيته لمدير الحزم لديك.
+
+إذا أزلت مستودع Homeport، فلن يرى مدير الحزم الإصدارات الجديدة. أعد إعداده عبر [التثبيت السريع](/docs/installation/#التثبيت-السريع)، أو نزّل الحزمة الجديدة وثبّتها فوق القديمة.
+
+### إيقاف التحقق من التحديثات
+
+أوقف **الإعدادات ← التحديثات ← التحقق من وجود تحديثات تلقائيًا**. يظل **التحقق الآن** يعمل. ينزّل التحقق ملفًا صغيرًا واحدًا من هذا الموقع ولا يرسل أي شيء عنك أو عن مضيفاتك. راجع [الأمان وبياناتك](/docs/reference/security/#ما-يتصل-به-homeport).
+
+### التحديث من 0.2.0 أو ما قبله
+
+لا تحدّث الإصدارات السابقة لـ 0.3.0 نفسها، ولا تضيف حزم Linux الخاصة بها المستودع. ثبّت 0.3.0 أو أحدث مرة واحدة، بالطريقة نفسها التي ثبّت بها Homeport: من [صفحة التنزيل](/download/)، أو على Linux عبر [التثبيت السريع](/docs/installation/#التثبيت-السريع). بعد ذلك، تأتي التحديثات من تلقاء نفسها.
+
+ولتعرف بالإصدارات الجديدة على أي حال، راقب المستودع على GitHub (**Watch → Custom → Releases**)، أو تابع [موجز الإصدارات](https://github.com/DamienReichhart/Homeport/releases.atom).
+
+## إلغاء التثبيت
+
+<Tabs syncKey="os">
+<TabItem label="Windows">
+افتح **Settings → Apps → Installed apps**، وابحث عن **Homeport**، واختر **Uninstall**.
+</TabItem>
+<TabItem label="macOS">أنهِ Homeport واسحبه من Applications إلى سلة المهملات.</TabItem>
+<TabItem label="Linux">
+
+```sh
+sudo apt purge homeport       # Debian, Ubuntu
+sudo dnf remove homeport      # Fedora, RHEL
+sudo zypper remove homeport   # openSUSE
+```
+
+يزيل هذا أيضًا مستودع Homeport. على Debian وUbuntu، يُبقي `apt remove` عليه، مع بقية تكوين الحزمة، بينما يزيله `apt purge` مع مفتاحه. على Fedora وopenSUSE يبقى المفتاح في حلقة مفاتيح rpm؛ يسرد `rpm -q gpg-pubkey --qf '%{NAME}-%{VERSION}-%{RELEASE} %{SUMMARY}\n'` المفاتيح، ويزيل `sudo rpm -e gpg-pubkey-<version>-<release>` مفتاح Homeport.
+
+بالنسبة إلى AppImage، احذف الملف. يختفي مدخله في القائمة معه.
+
+</TabItem>
+</Tabs>
+
+يترك إلغاء التثبيت بياناتك في مكانها، لذا تعيد إعادة التثبيت كل شيء.
+
+### مدخل تسجيل الدخول
+
+إذا كان **البدء عند تسجيل الدخول** مفعّلًا، فأوقفه في **الإعدادات ← سطح المكتب** قبل إلغاء التثبيت: يترك إلغاء التثبيت مدخل تسجيل الدخول خلفه، مشيرًا إلى Homeport لم يعد موجودًا. لإزالته بعد ذلك:
+
+| النظام  | مدخل تسجيل الدخول                                                                                                                                   |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows | **Task Manager → Startup apps**: عطّل **Homeport**، أو احذف القيمة `Homeport` ضمن `HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run` |
+| macOS   | احذف `~/Library/LaunchAgents/Homeport.plist`                                                                                                        |
+| Linux   | احذف `~/.config/autostart/Homeport.desktop`                                                                                                         |
+
+## إزالة بياناتك
+
+<Aside type="caution">
+  يحذف هذا مضيفاتك، ومفاتيحها وشهاداتها المخزنة، وتعريفات مكدساتك المُدارة، ومكدساتك المرتبطة وسجل
+  نشرها. تبقى مجلدات المكدسات المرتبطة في مكانها. لا يُمسّ أي شيء على مضيفاتك.
+</Aside>
+
+1. احذف مجلدات البيانات والسجلات الخاصة بـ Homeport:
+
+   | النظام  | المجلدات                                                                              |
+   | ------- | ------------------------------------------------------------------------------------- |
+   | Linux   | `~/.local/share/com.homeport.app/`، `~/.config/com.homeport.app/`                     |
+   | macOS   | `~/Library/Application Support/com.homeport.app/`، `~/Library/Logs/com.homeport.app/` |
+   | Windows | `%APPDATA%\com.homeport.app\`، `%LOCALAPPDATA%\com.homeport.app\`                     |
+
+2. احذف مفتاح التشفير من سلسلة المفاتيح — المدخل الخاص بـ `com.homeport.app`:
+   - **macOS** — في **Keychain Access**، ابحث عن `com.homeport.app` واحذفه.
+   - **Windows** — في **Credential Manager → Windows Credentials**، أزل المدخل الذي يحتوي على `com.homeport.app`.
+   - **Linux** — في **Passwords and Keys** (Seahorse) أو KWallet، احذف المدخل الخاص بـ `com.homeport.app`.
+
+3. على خوادمك، أزل مفاتيح Homeport العامة من `~/.ssh/authorized_keys` — تبدأ تعليقاتها بـ `homeport@`.

@@ -6,6 +6,7 @@ import { Spinner } from '@/shared/ui';
 import { imageQueries } from '../../api/queries';
 import { shortRepository } from '../../model/hub';
 import { t } from '@/shared/i18n';
+import { formatNumber } from '@/shared/lib';
 
 /** Docker Hub repositories matching what's typed, searched from the Host. */
 export function HubSearch({
@@ -44,10 +45,10 @@ export function HubSearch({
         <li key={r.name}>
           <button
             type="button"
-            className="hover:bg-muted grid w-full gap-0.5 px-2 py-1.5 text-left"
+            className="hover:bg-muted grid w-full gap-0.5 px-2 py-1.5 text-start"
             aria-label={t(r.official ? 'images.hub.resultOfficial' : 'images.hub.result', {
               name: shortRepository(r.name),
-              stars: r.stars.toLocaleString(),
+              stars: formatNumber(r.stars),
             })}
             onClick={() => onChoose(shortRepository(r.name))}
           >
@@ -58,8 +59,8 @@ export function HubSearch({
                   <BadgeCheckIcon className="size-3.5" /> {t('images.hub.official')}
                 </span>
               )}
-              <span className="text-muted-foreground ml-auto inline-flex items-center gap-0.5 text-xs font-normal">
-                <StarIcon className="size-3" /> {r.stars.toLocaleString()}
+              <span className="text-muted-foreground ms-auto inline-flex items-center gap-0.5 text-xs font-normal">
+                <StarIcon className="size-3" /> {formatNumber(r.stars)}
               </span>
             </span>
             {r.description && (

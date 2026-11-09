@@ -33,7 +33,7 @@ export function EditConfirmation({
         ) : (
           <div className="grid gap-2">
             <p>{t('containers.edit.keptBut')}</p>
-            <ul className="list-disc space-y-1 pl-5">
+            <ul className="list-disc space-y-1 ps-5">
               {losses.data.map((loss) => (
                 <li key={JSON.stringify(loss)}>{lossText(loss)}</li>
               ))}

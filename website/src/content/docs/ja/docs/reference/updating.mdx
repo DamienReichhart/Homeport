@@ -1,0 +1,98 @@
+---
+title: アップデートとアンインストール
+description: 各システムでの Homeport のアップデート方法と、Homeport とそのデータを完全に削除する方法。
+---
+
+import { Aside, Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import { MANUAL_SETUP, UPDATE_COMMANDS } from '@/core/packages';
+
+## アップデート
+
+Homeport のアップデート方法は、インストールした方法によって異なります。
+
+### Windows、macOS、AppImage
+
+Homeport は起動時と 6 時間ごとに新しいバージョンを確認します。新しいバージョンが出ると、ウィンドウ上部のバーで知らせます。**新機能** を選ぶと[変更履歴](/changelog/)を読めます。**インストールして再起動** を選ぶと、Homeport はアップデートをダウンロードし、署名を確認してインストールし、再び開きます。選ぶまでは何もインストールされず、ホスト、スタック、設定は保持されます。
+
+**設定 → アップデート → 今すぐ確認** から、すぐに確認することもできます。
+
+### Linux のパッケージ
+
+`.deb` と `.rpm` のパッケージは、[クイックインストール](/docs/installation/#クイックインストール)、[手動セットアップ](/docs/installation/#手動セットアップ)、ダウンロードしたファイルのどれでインストールした場合も、Homeport のパッケージリポジトリから、システムのほかの部分と一緒にアップデートされます。普段のソフトウェアのアップデートに Homeport も含まれます。Homeport だけをアップデートするには:
+
+<Tabs syncKey="linux-format">
+  {MANUAL_SETUP.map((setup) => (
+    <TabItem label={setup.label}>
+      <Code code={UPDATE_COMMANDS[setup.id]} lang="sh" />
+    </TabItem>
+  ))}
+</Tabs>
+
+Homeport は新しいバージョンが出たことを知らせ、お使いのシステム向けのコマンドを表示しますが、インストールはパッケージマネージャーに任せます。
+
+Homeport のリポジトリを削除した場合、パッケージマネージャーは新しいバージョンを認識できません。[クイックインストール](/docs/installation/#クイックインストール)でもう一度設定するか、新しいパッケージをダウンロードして、古いものに上書きしてインストールしてください。
+
+### アップデートの確認をオフにする
+
+**設定 → アップデート → アップデートを自動で確認** をオフにします。**今すぐ確認** は引き続き使えます。確認では、この Web サイトから小さなファイルを 1 つダウンロードするだけで、ユーザーやホストについての情報は何も送りません。[セキュリティとデータ](/docs/reference/security/#homeport-の接続先)を参照してください。
+
+### 0.2.0 以前からのアップデート
+
+0.3.0 より前のバージョンは自身をアップデートせず、その Linux のパッケージはリポジトリを追加しません。Homeport をインストールしたときと同じ方法で、0.3.0 以降を一度インストールしてください。[ダウンロードページ](/download/)から、または Linux では[クイックインストール](/docs/installation/#クイックインストール)で行います。その後は、アップデートが自動で届きます。
+
+それでも新しいバージョンについて知りたい場合は、GitHub でリポジトリをウォッチする（**Watch → Custom → Releases**）か、[リリースのフィード](https://github.com/DamienReichhart/Homeport/releases.atom)をフォローしてください。
+
+## アンインストール
+
+<Tabs syncKey="os">
+<TabItem label="Windows">
+**設定 → アプリ → インストールされているアプリ** を開き、**Homeport** を見つけて **アンインストール** を選びます。
+</TabItem>
+<TabItem label="macOS">Homeport を終了し、アプリケーションフォルダーからゴミ箱にドラッグします。</TabItem>
+<TabItem label="Linux">
+
+```sh
+sudo apt purge homeport       # Debian, Ubuntu
+sudo dnf remove homeport      # Fedora, RHEL
+sudo zypper remove homeport   # openSUSE
+```
+
+これにより、Homeport のリポジトリも削除されます。Debian と Ubuntu では、`apt remove` はパッケージのほかの設定とともにリポジトリを残し、`apt purge` は鍵とともにリポジトリを削除します。Fedora と openSUSE では鍵が rpm のキーリングに残ります。`rpm -q gpg-pubkey --qf '%{NAME}-%{VERSION}-%{RELEASE} %{SUMMARY}\n'` で鍵を一覧表示でき、`sudo rpm -e gpg-pubkey-<version>-<release>` で Homeport の鍵を削除できます。
+
+AppImage の場合は、ファイルを削除します。メニューの項目も一緒に消えます。
+
+</TabItem>
+</Tabs>
+
+アンインストールしてもデータはそのまま残るため、再インストールするとすべてが元に戻ります。
+
+### ログイン項目
+
+**ログイン時に起動** がオンになっている場合は、アンインストールする前に **設定 → デスクトップ** でオフにしてください。アンインストールしてもログイン項目は残り、存在しない Homeport を指したままになります。後から削除するには:
+
+| システム | ログイン項目                                                                                                                                                                       |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows  | **タスク マネージャー → スタートアップ アプリ**: **Homeport** を無効にするか、`HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run` の下の `Homeport` の値を削除します |
+| macOS    | `~/Library/LaunchAgents/Homeport.plist` を削除します                                                                                                                               |
+| Linux    | `~/.config/autostart/Homeport.desktop` を削除します                                                                                                                                |
+
+## データの削除
+
+<Aside type="caution">
+  この操作は、ホスト、その保存されたキーと証明書、管理スタックの定義、リンクスタックとそのデプロイ履歴を削除します。リンクスタックのフォルダーはそのまま残ります。ホスト上のものには一切手を触れません。
+</Aside>
+
+1. Homeport のデータフォルダーとログフォルダーを削除します:
+
+   | システム | フォルダー                                                                            |
+   | -------- | ------------------------------------------------------------------------------------- |
+   | Linux    | `~/.local/share/com.homeport.app/`、`~/.config/com.homeport.app/`                     |
+   | macOS    | `~/Library/Application Support/com.homeport.app/`、`~/Library/Logs/com.homeport.app/` |
+   | Windows  | `%APPDATA%\com.homeport.app\`、`%LOCALAPPDATA%\com.homeport.app\`                     |
+
+2. キーチェーンから暗号化の鍵（`com.homeport.app` の項目）を削除します:
+   - **macOS** — **キーチェーンアクセス** で `com.homeport.app` を検索して削除します。
+   - **Windows** — **資格情報マネージャー → Windows 資格情報** で、`com.homeport.app` を含む項目を削除します。
+   - **Linux** — **パスワードと鍵**（Seahorse）か KWallet で、`com.homeport.app` の項目を削除します。
+
+3. サーバー上で、`~/.ssh/authorized_keys` から Homeport の公開鍵を削除します。コメントが `homeport@` で始まるものです。

@@ -60,6 +60,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             app::open_log_folder,
             settings::get_settings,
             settings::update_settings,
+            settings::set_native_text,
             registries::registries_list,
             registries::registries_save,
             registries::registries_remove,

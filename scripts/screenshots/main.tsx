@@ -5,7 +5,9 @@
  *   route=/containers   the page (default `/`)
  *   theme=dark          `light` or `dark` (default `light`)
  *   host=<id>           the selected Host (default prod-eu-1)
- *   step=click:Label    click the button or tab with that text (repeatable)
+ *   lang=fr             the app's language (default `en`)
+ *   step=click:Label    click the button or tab with that text (repeatable);
+ *                       `click:@key` uses the catalogue key's text
  *   step=fill:Placeholder=value   type into the field with that placeholder
  *   step=wait:500       pause between steps
  *   clock=fast          run time 25× faster, so stats charts fill quickly
@@ -28,7 +30,7 @@ hold.style.display = 'none';
 document.body.append(hold);
 
 // Imported after the clock patch, so module-level timestamps use it.
-const [{ StrictMode }, { createRoot }, { RouterProvider }, providers, router, mocks, data] =
+const [{ StrictMode }, { createRoot }, { RouterProvider }, providers, router, mocks, data, i18n] =
   await Promise.all([
     import('react'),
     import('react-dom/client'),
@@ -37,12 +39,15 @@ const [{ StrictMode }, { createRoot }, { RouterProvider }, providers, router, mo
     import('@/app/router/router'),
     import('./mocks'),
     import('./data'),
+    import('@/shared/i18n'),
   ]);
 await import('@/shared/styles/global.css');
 
 const theme = params.get('theme') === 'dark' ? 'dark' : 'light';
 document.documentElement.classList.toggle('dark', theme === 'dark');
-mocks.installMocks({ theme, hostId: params.get('host') ?? data.PROD });
+const language = params.get('lang') ?? 'en';
+mocks.installMocks({ theme, hostId: params.get('host') ?? data.PROD, language });
+await i18n.setLocale(language);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -61,8 +66,12 @@ function byText(text: string): HTMLElement | undefined {
   return [...candidates].find((el) => el.textContent?.trim() === text);
 }
 
+/** `@key` → that key's text in the app's language; anything else as written. */
+const label = (text: string) =>
+  text.startsWith('@') ? i18n.intl().formatMessage({ id: text.slice(1) }) : text;
+
 function click(text: string) {
-  const el = byText(text);
+  const el = byText(label(text));
   if (!el) return console.warn(`[screenshots] nothing to click labelled "${text}"`);
   // Radix triggers react to pointer/mouse down, plain buttons to click.
   const init = { bubbles: true, cancelable: true, button: 0, pointerType: 'mouse' };

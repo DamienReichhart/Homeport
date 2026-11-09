@@ -1,15 +1,25 @@
 ---
+/** The changelog's title, and a note that the release notes stay in English. */
+import { strings } from '@/core/i18n';
+import { type Locale, localePath, ROOT_LOCALE } from '@/core/site';
 import { href } from '@/shared/lib/href';
+import { escapeHtml, fillHtml } from '@/shared/lib/template';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
+const downloadPage = `<a href="${href(localePath('/download/', locale))}">${escapeHtml(s['changelog.downloadPage'])}</a>`;
 ---
 
 <section class="changelog-hero">
   <div class="container">
-    <span class="eyebrow">Changelog</span>
-    <h1>What's new in Homeport</h1>
-    <p>
-      Every release, newest first. Notes are generated from the project's commits; the files are on
-      the <a href={href('/download/')}>download page</a>.
-    </p>
+    <span class="eyebrow">{s['changelog.eyebrow']}</span>
+    <h1>{s['changelog.heading']}</h1>
+    <p set:html={fillHtml(s['changelog.lead'], { link: downloadPage })} />
+    {locale !== ROOT_LOCALE && <p class="changelog-hero__note">{s['changelog.notesInEnglish']}</p>}
   </div>
 </section>
 
@@ -28,5 +38,9 @@ import { href } from '@/shared/lib/href';
   .changelog-hero p {
     color: var(--hp-text-muted);
     font-size: 1.1rem;
+  }
+  .changelog-hero .changelog-hero__note {
+    color: var(--hp-text-faint);
+    font-size: 0.9rem;
   }
 </style>

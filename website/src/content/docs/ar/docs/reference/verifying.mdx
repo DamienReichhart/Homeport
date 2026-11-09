@@ -1,0 +1,79 @@
+---
+title: التحقق من التنزيلات
+description: تحقق من أداة تثبيت Homeport مقابل مجموع التحقق ومصدر البناء والتواقيع، وتعرّف على كيفية التحقق من التحديثات وحزم Linux.
+---
+
+import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import { KEY_URL } from '@/core/packages';
+import { SigningKeyFingerprint } from '@/features/docs';
+
+يُبنى كل إصدار من Homeport بواسطة GitHub Actions من المستودع العام. يمكنك التحقق من أن الملف الذي نزّلته هو الملف الذي بُني، بطريقتين. حزم Linux والتحديثات موقّعة أيضًا، ويُتحقق منها نيابةً عنك.
+
+## مجاميع التحقق
+
+يتضمن كل إصدار الملف `SHA256SUMS.txt`، مع مجموع تحقق SHA-256 لكل ملف. وتعرض [صفحة التنزيل](/download/) أيضًا مجموع التحقق لكل ملف. نزّل `SHA256SUMS.txt` في المجلد نفسه الذي توجد فيه أداة التثبيت، ثم:
+
+<Tabs syncKey="os">
+<TabItem label="Linux">
+
+```sh
+sha256sum --ignore-missing -c SHA256SUMS.txt
+```
+
+</TabItem>
+<TabItem label="macOS">
+
+```sh
+shasum -a 256 --ignore-missing -c SHA256SUMS.txt
+```
+
+</TabItem>
+<TabItem label="Windows">
+
+```powershell
+(Get-FileHash .\Homeport_0.2.0_x64-setup.exe -Algorithm SHA256).Hash.ToLower()
+```
+
+قارن النتيجة بسطر أداة التثبيت في `SHA256SUMS.txt`.
+
+</TabItem>
+</Tabs>
+
+تعني `OK` بجانب اسم الملف أنه مطابق.
+
+## مصدر البناء
+
+يثبت مجموع التحقق أن الملف لم يتلف أو يُستبدل بعد نشر مجموع التحقق. أما [شهادة مصدر البناء](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) فتذهب أبعد من ذلك: فهي موقّعة من GitHub وتسجّل المستودع والإيداع وسير العمل التي أنتجت الملف.
+
+مع تثبيت [GitHub CLI](https://cli.github.com):
+
+```sh
+gh attestation verify Homeport_0.2.0_x64-setup.exe --repo DamienReichhart/Homeport
+```
+
+يطبع التحقق الناجح سير العمل والإيداع اللذين بُني منهما الملف.
+
+## تواقيع الحزم
+
+مستودع حزم Homeport وكل حزمة `.rpm` موقّعة بمفتاح حزم Homeport (RSA 4096):
+
+**البصمة:** <SigningKeyFingerprint />
+
+يتحقق `apt` و`dnf` و`zypper` من هذه التواقيع عند كل تحديث، ويرفضون الحزم وبيانات المستودع التي لا تتطابق. للتحقق من المفتاح الذي نزّلته، أو من ملف `.rpm`:
+
+<Code code={`curl -fsSL ${KEY_URL} | gpg --show-keys --with-fingerprint`} lang="sh" />
+
+```sh
+sudo rpm --import homeport.asc   # once
+rpm -K Homeport-<version>-1.x86_64.rpm
+```
+
+يطبع `rpm -K` القيمة `digests signatures OK` للحزمة الموقّعة. ملف `.deb` غير موقّع بحد ذاته: يغطيه فهرس المستودع الموقّع، أما الملف المنزَّل فيغطيه مجموع التحقق والشهادة الخاصان به.
+
+## تواقيع التحديثات
+
+كل تحديث تثبّته أداة التحديث داخل التطبيق موقّع بمفتاح تحديث منفصل لـ Homeport، نصفه العام مدمج في Homeport. قبل التثبيت، يتحقق Homeport من التوقيع ومن أنه أُنشئ للإصدار المُعلن، ويرفض أي شيء آخر، حتى لو جاء من العنوان الصحيح.
+
+## توقيع الشيفرة
+
+تطبيق macOS موقّع توقيعًا مخصصًا (ad-hoc)، وأدوات تثبيت Windows غير موقّعة بشهادة تجارية بعد، لذا يطلب منك macOS وWindows تأكيد التشغيل الأول. يوضح [التثبيت](/docs/installation/) كيفية ذلك. التحديثات المثبّتة من داخل Homeport لا تطلب ذلك مجددًا.

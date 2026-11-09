@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { commands } from '@/shared/api';
+import { applyLanguage } from '@/core/settings';
 import { applyTheme } from '@/shared/lib';
 
 /** Backs up everything Homeport holds; the dialog shows a failure in place. */
@@ -32,7 +33,9 @@ export function useRestoreData() {
       commands.dataRestore(path, passphrase),
     onSuccess: async () => {
       await client.invalidateQueries();
-      applyTheme((await commands.getSettings()).theme ?? 'system');
+      const settings = await commands.getSettings();
+      applyTheme(settings.theme ?? 'system');
+      await applyLanguage(settings.language);
     },
   });
 }

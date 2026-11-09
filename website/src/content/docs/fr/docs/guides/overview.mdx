@@ -1,0 +1,140 @@
+---
+title: Vue d’ensemble et événements
+description: Voir tous les hôtes et clusters d’un coup, tous les conteneurs sur un seul tableau, vérifier l’utilisation du disque, nettoyer et suivre en direct les événements du moteur.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+## Vue d’ensemble
+
+La **Vue d’ensemble** est la seule page qui montre ensemble tous les hôtes et tous les [clusters](/docs/clusters/). Elle s’ouvre au démarrage de Homeport. **Ajouter un hôte** et **Ajouter un cluster**, en haut, mènent aux pages qui permettent de les ajouter.
+
+<DocScreenshot
+  name="overview"
+  alt="La page Vue d’ensemble avec les cartes des hôtes, la carte du moteur, l’utilisation du disque et les événements récents."
+/>
+
+### Cartes des hôtes
+
+Chaque hôte a une carte avec son nom, son adresse, son type et son état. Pour un hôte connecté, elle indique aussi :
+
+- les conteneurs en cours d’exécution et le total, ainsi que le nombre d’images ;
+- l’utilisation du CPU par ses conteneurs, en direct, en pourcentage d’un CPU — `250%` sur un hôte à 8 CPU signifie que deux CPU et demi sont occupés ;
+- la mémoire utilisée par ses conteneurs, sur le total de l’hôte.
+
+Sélectionnez une carte pour passer sur cet hôte. S’il est connecté, Homeport ouvre ses **Conteneurs**. **Ses conteneurs sur le tableau** ouvre le [Tableau](#tableau) en ne montrant que cet hôte.
+
+### Cartes des clusters
+
+Après les cartes des hôtes, chaque cluster a une carte avec son nom, son serveur d’API, son état et sa version de Kubernetes, et, une fois connecté, le nombre de ses Nodes prêts et de ses Pods en cours d’exécution (dans le namespace que montrent ses pages). Homeport les compte de son côté et redemande toutes les 30 secondes tant que la Vue d’ensemble est ouverte. Un nombre que vos identifiants ne sont pas autorisés à lire indique **Non autorisé.** à la place. Sélectionnez une carte pour passer sur ce cluster.
+
+### Le cluster sélectionné
+
+Quand un cluster est sélectionné, la section sous les cartes le montre à la place d’un hôte :
+
+<DocScreenshot
+  name="cluster-overview"
+  alt="La Vue d’ensemble avec trois cartes d’hôtes, deux cartes de clusters et le tableau du cluster EKS sélectionné : version, 4 Nodes prêts sur 5, Pods par phase, charges de travail non prêtes et avertissements récents."
+  caption="La Vue d’ensemble avec eks-prod sélectionné : un Node n’est pas prêt, et il manque des Pods à api et à search."
+/>
+
+- **Cluster** — sa version, sa plateforme, son serveur d’API et le namespace que montrent ses pages.
+- **Nodes** — combien sont prêts, et chacun de ceux qui ne le sont pas, avec un lien vers sa page.
+- **Pods** — combien sont en cours d’exécution, en attente, en échec (qui plantent, ou ne peuvent pas récupérer leur image) ou terminés.
+- **Charges de travail non prêtes** — les Deployments, StatefulSets et DaemonSets qui ont moins de Pods prêts que voulu, avec un lien vers leurs pages.
+- **Avertissements récents** — les derniers événements Warning, chacun avec un lien vers son objet. **Tous les événements** ouvre les événements du cluster.
+
+Une partie que vos identifiants ne peuvent pas lire le signale, et les autres s’affichent quand même.
+
+### L’hôte sélectionné
+
+Sous les cartes, une section consacrée à l’hôte sélectionné montre :
+
+- **Moteur** — nom, version, système d’exploitation, noyau, architecture, CPU et mémoire, pilote de stockage et répertoire racine.
+- **Utilisation du disque** — la place qu’occupent les images, les conteneurs, les volumes et le cache de build, la part utilisée et ce qui pourrait être récupéré. Les Docker Engines antérieurs à la version 29 en indiquent moins : la taille des images est alors estimée, celle des volumes et du cache de build s’affiche **—**, et la carte le signale.
+- **Événements récents** — les dernières choses signalées par le moteur. **Tous les événements** ouvre la page Événements.
+
+### Nettoyage
+
+**Nettoyer…**, dans la carte Utilisation du disque, supprime ce que rien n’utilise, sur l’hôte sélectionné uniquement. Choisissez ce qu’il faut supprimer :
+
+| Option                            | Par défaut | Supprime                                                                        |
+| --------------------------------- | :--------: | ------------------------------------------------------------------------------- |
+| **Conteneurs arrêtés**            |   Activé   | Tous les conteneurs qui ne sont pas en cours d’exécution.                       |
+| **Images orphelines**             |   Activé   | Les couches sans tag laissées par les builds et les récupérations.              |
+| **Toutes les images inutilisées** | Désactivé  | Les images taguées qu’aucun conteneur n’utilise, en plus des images orphelines. |
+| **Réseaux inutilisés**            |   Activé   | Les réseaux personnalisés auxquels aucun conteneur n’est rattaché.              |
+| **Cache de build**                |   Activé   | Les couches de build en cache.                                                  |
+| **Volumes inutilisés**            | Désactivé  | Tous les volumes qu’aucun conteneur n’utilise, **données comprises**.           |
+
+Les conteneurs partent en premier, si bien que les images, réseaux et volumes qu’ils retenaient comptent comme inutilisés. Homeport indique ensuite combien de place a été récupérée.
+
+<Aside type="danger">
+  **Volumes inutilisés** supprime des données, volumes nommés compris, et ne peut pas être annulé.
+  Quand cette option est cochée, le bouton indique **Supprimer, données des volumes comprises**,
+  comme un dernier rappel.
+</Aside>
+
+## Tableau
+
+Le **Tableau**, deuxième dans la barre latérale, liste les conteneurs de tous les hôtes connectés dans une seule table : ce qui tourne où, et ce qui est arrêté, sans changer d’hôte.
+
+<DocScreenshot
+  name="board"
+  alt="Le Tableau, qui liste les conteneurs de trois hôtes avec une colonne Hôte, des filtres, et le CPU et la mémoire en direct."
+/>
+
+- **Colonnes** — Hôte, Nom, Image, État (avec sa santé), Stack, Ports, CPU, Mémoire et Créé. Sélectionnez le nom d’une colonne pour trier selon elle, et à nouveau pour inverser l’ordre. Le CPU et la mémoire se mettent à jour en direct.
+- **Filtres** — les hôtes à montrer (tous par défaut), l’état (**En cours d’exécution**, **Arrêté** ou **En mauvaise santé**), une stack, et une recherche qui porte sur les noms, les ID courts, les images, les stacks et les noms d’hôtes. <kbd>/</kbd> mène à la recherche. **Effacer les filtres** affiche à nouveau tout. Les filtres restent tels quels quand vous ouvrez un conteneur puis revenez.
+- **Actions** — chaque ligne a le même bouton démarrer/arrêter et le même menu que sur la page Conteneurs, qui agissent sur l’hôte de cette ligne. Cochez plusieurs lignes, sur un ou plusieurs hôtes, pour les démarrer, les arrêter, les redémarrer ou les supprimer ensemble ; la suppression demande d’abord confirmation et liste les conteneurs hôte par hôte.
+- **Ouvrir un conteneur** — sélectionnez une ligne : Homeport passe sur son hôte et ouvre le conteneur. **Retour** ramène au Tableau.
+
+Pour trouver un conteneur parmi ceux de tous les hôtes sans ouvrir le Tableau, [cherchez depuis la palette de commandes](/docs/guides/keyboard/#rechercher-sur-tous-les-hôtes).
+
+Un hôte qui n’est pas connecté — injoignable, désactivé, qui attend une action de votre part — a droit à une ligne au-dessus de la table, comme _nas (Injoignable) n’est pas affiché._, avec un lien vers sa page ; les autres hôtes sont listés comme d’habitude. Au-delà de quelques centaines de conteneurs, seules les lignes visibles sont dessinées, pour que le Tableau reste rapide.
+
+## Zone de notification
+
+Homeport ajoute une icône dans la zone de notification — la barre des menus sur macOS, la zone de notification sur Windows. Son menu liste chaque hôte avec son état, comme **prod-server — Connecté**, et se met à jour dès qu’un état change :
+
+- Choisissez un hôte pour ramener la fenêtre au premier plan sur la Vue d’ensemble de cet hôte.
+- Un hôte **Injoignable** a un sous-menu avec **Ouvrir** et **Reconnecter**, qui réessaie aussitôt.
+- **Ouvrir Homeport** fait revenir la fenêtre, **Ajouter un hôte…** ouvre la page pour en ajouter un, et **Quitter** quitte toujours.
+
+L’infobulle de l’icône résume la situation : **Homeport — 3 hôtes connectés sur 4**. Sur Windows, double-cliquez sur l’icône pour ouvrir la fenêtre.
+
+Avec **Fermer dans la zone de notification** activé dans les [Paramètres](/docs/guides/settings/#bureau), fermer la fenêtre masque Homeport au lieu de le quitter, si bien que ses connexions aux hôtes restent ouvertes ; rouvrez-le depuis la zone de notification, ou en ouvrant à nouveau Homeport. Certains bureaux Linux masquent les icônes de la zone de notification ; voir la [configuration requise](/docs/requirements/#facultatif-une-zone-de-notification).
+
+### Notifications
+
+Tant que Homeport tourne, même masqué dans la zone de notification, il vous prévient par les notifications de votre système d’exploitation quand un conteneur s’arrête sur une erreur, manque de mémoire ou passe en mauvaise santé, et quand un hôte devient injoignable ou revient. Activez ou désactivez chaque type dans les [Paramètres](/docs/guides/settings/#notifications).
+
+## Événements
+
+La page **Événements** liste ce que le moteur de l’hôte sélectionné a signalé, du plus récent au plus ancien : des conteneurs qui démarrent et s’arrêtent, des images récupérées, des volumes créés, des réseaux connectés, etc. Homeport les conserve, si bien qu’ils sont toujours là après son redémarrage — « qu’est-ce qui a redémarré cette nuit ? » a une réponse.
+
+| Colonne    | Affiche                                            |
+| ---------- | -------------------------------------------------- |
+| **Heure**  | Le moment où c’est arrivé, à votre heure.          |
+| **Type**   | `container`, `image`, `volume`, `network`…         |
+| **Action** | `start`, `die`, `pull`, `create`…                  |
+| **Objet**  | Le nom de ce à quoi c’est arrivé.                  |
+| **Stack**  | La stack à laquelle il appartient, le cas échéant. |
+
+Cherchez par action ou par nom d’objet, ou filtrez par type. La liste se met à jour en direct.
+
+<DocScreenshot
+  name="events"
+  alt="La page Événements, qui liste les événements récents du moteur avec leur type, leur action, leur objet et leur stack."
+/>
+
+### Ce qui est conservé
+
+- **D’un redémarrage à l’autre.** Les événements sont enregistrés sur cet ordinateur à mesure qu’ils arrivent. La page montre les 1 000 derniers ; faites défiler jusqu’en bas, ou choisissez **Charger des événements plus anciens**, pour en obtenir 1 000 de plus à chaque fois.
+- **Pendant que Homeport était fermé.** Quand Homeport se reconnecte à un hôte, il demande au moteur les événements survenus depuis le dernier qu’il a conservé, si bien que ce qui s’est passé entre-temps est complété — aussi loin que le moteur s’en souvient, c’est-à-dire ses quelques centaines d’événements les plus récents. Rien n’est listé deux fois.
+- **Pendant 30 jours**, ou la durée indiquée par **Conserver les événements des moteurs pendant** dans [Paramètres → Données](/docs/guides/settings/#données), et au plus 10 000 par hôte. Les événements plus anciens sont supprimés toutes les heures.
+
+**Effacer l’historique** oublie tous les événements conservés pour l’hôte sélectionné ; les nouveaux continuent d’apparaître. Supprimer un hôte supprime ses événements. Les événements propres au moteur ne sont jamais modifiés.
+
+Les [conteneurs auxiliaires](/docs/guides/volumes-networks/#le-conteneur-auxiliaire) de Homeport, qui ouvrent les volumes, n’apparaissent jamais ici.

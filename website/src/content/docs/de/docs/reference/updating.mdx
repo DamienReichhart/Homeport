@@ -1,0 +1,100 @@
+---
+title: Aktualisieren und Deinstallieren
+description: Wie sich Homeport auf jedem System aktualisiert und wie Sie es und seine Daten vollständig entfernen.
+---
+
+import { Aside, Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import { MANUAL_SETUP, UPDATE_COMMANDS } from '@/core/packages';
+
+## Aktualisieren
+
+Wie sich Homeport aktualisiert, hängt davon ab, wie Sie es installiert haben.
+
+### Windows, macOS und das AppImage
+
+Homeport sucht beim Start und alle 6 Stunden nach einer neuen Version. Ist eine erschienen, weist eine Leiste oben im Fenster darauf hin: Wählen Sie **Neuerungen**, um die [Änderungen](/changelog/) zu lesen, oder **Installieren und neu starten**. Homeport lädt das Update herunter, prüft seine Signatur, installiert es und öffnet sich wieder. Nichts wird installiert, bevor Sie es wählen, und Ihre Hosts, Stacks und Einstellungen bleiben erhalten.
+
+Sie können auch sofort über **Einstellungen → Updates → Jetzt prüfen** suchen.
+
+### Linux-Pakete
+
+Die Pakete `.deb` und `.rpm`, ob mit der [Schnellinstallation](/docs/installation/#schnellinstallation), der [manuellen Einrichtung](/docs/installation/#manuelle-einrichtung) oder aus einer heruntergeladenen Datei installiert, werden aus dem Paket-Repository von Homeport zusammen mit dem Rest Ihres Systems aktualisiert: Ihre üblichen Software-Updates schließen Homeport ein. Um nur Homeport zu aktualisieren:
+
+<Tabs syncKey="linux-format">
+  {MANUAL_SETUP.map((setup) => (
+    <TabItem label={setup.label}>
+      <Code code={UPDATE_COMMANDS[setup.id]} lang="sh" />
+    </TabItem>
+  ))}
+</Tabs>
+
+Homeport sagt Ihnen, wenn eine neue Version erschienen ist, und zeigt den Befehl für Ihr System, überlässt die Installation aber Ihrem Paketmanager.
+
+Wenn Sie das Homeport-Repository entfernt haben, kann Ihr Paketmanager keine neuen Versionen sehen. Richten Sie es mit der [Schnellinstallation](/docs/installation/#schnellinstallation) erneut ein oder laden Sie das neue Paket herunter und installieren Sie es über das alte.
+
+### Update-Prüfungen ausschalten
+
+Schalten Sie **Einstellungen → Updates → Automatisch nach Updates suchen** aus. **Jetzt prüfen** funktioniert weiterhin. Eine Prüfung lädt eine kleine Datei von dieser Website herunter und sendet nichts über Sie oder Ihre Hosts. Siehe [Sicherheit und Ihre Daten](/docs/reference/security/#womit-sich-homeport-verbindet).
+
+### Aktualisieren von 0.2.0 oder älter
+
+Versionen vor 0.3.0 aktualisieren sich nicht selbst, und ihre Linux-Pakete fügen das Repository nicht hinzu. Installieren Sie einmal 0.3.0 oder neuer, auf dieselbe Weise, wie Sie Homeport installiert haben: von der [Download-Seite](/download/) oder unter Linux mit der [Schnellinstallation](/docs/installation/#schnellinstallation). Danach kommen Updates von selbst.
+
+Um trotzdem von neuen Versionen zu erfahren, beobachten Sie das Repository auf GitHub (**Watch → Custom → Releases**) oder folgen Sie dem [Release-Feed](https://github.com/DamienReichhart/Homeport/releases.atom).
+
+## Deinstallieren
+
+<Tabs syncKey="os">
+<TabItem label="Windows">
+Öffnen Sie **Einstellungen → Apps → Installierte Apps**, suchen Sie **Homeport** und wählen Sie **Deinstallieren**.
+</TabItem>
+<TabItem label="macOS">Beenden Sie Homeport und ziehen Sie es aus „Programme“ in den Papierkorb.</TabItem>
+<TabItem label="Linux">
+
+```sh
+sudo apt purge homeport       # Debian, Ubuntu
+sudo dnf remove homeport      # Fedora, RHEL
+sudo zypper remove homeport   # openSUSE
+```
+
+Dies entfernt auch das Homeport-Repository. Unter Debian und Ubuntu behält `apt remove` es, zusammen mit der restlichen Konfiguration des Pakets, und `apt purge` entfernt es mit seinem Schlüssel. Unter Fedora und openSUSE bleibt der Schlüssel im Schlüsselbund von rpm; `rpm -q gpg-pubkey --qf '%{NAME}-%{VERSION}-%{RELEASE} %{SUMMARY}\n'` listet die Schlüssel auf, und `sudo rpm -e gpg-pubkey-<version>-<release>` entfernt den von Homeport.
+
+Beim AppImage löschen Sie die Datei. Sein Menüeintrag verschwindet mit ihr.
+
+</TabItem>
+</Tabs>
+
+Die Deinstallation lässt Ihre Daten an Ort und Stelle, sodass eine Neuinstallation alles zurückbringt.
+
+### Der Anmeldeeintrag
+
+Wenn **Bei der Anmeldung starten** aktiviert ist, schalten Sie es vor der Deinstallation unter **Einstellungen → Desktop** aus: Die Deinstallation lässt den Anmeldeeintrag zurück, der dann auf ein nicht mehr vorhandenes Homeport verweist. Um ihn danach zu entfernen:
+
+| System  | Anmeldeeintrag                                                                                                                                                                |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows | **Task-Manager → Autostart-Apps**: Deaktivieren Sie **Homeport** oder löschen Sie den Wert `Homeport` unter `HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run` |
+| macOS   | Löschen Sie `~/Library/LaunchAgents/Homeport.plist`                                                                                                                           |
+| Linux   | Löschen Sie `~/.config/autostart/Homeport.desktop`                                                                                                                            |
+
+## Ihre Daten entfernen
+
+<Aside type="caution">
+  Dies löscht Ihre Hosts, ihre gespeicherten Schlüssel und Zertifikate, die Definitionen Ihrer
+  verwalteten Stacks, Ihre verknüpften Stacks und deren Bereitstellungsverlauf. Die Ordner
+  verknüpfter Stacks bleiben, wo sie sind. Nichts auf Ihren Hosts wird angetastet.
+</Aside>
+
+1. Löschen Sie die Daten- und Logordner von Homeport:
+
+   | System  | Ordner                                                                                |
+   | ------- | ------------------------------------------------------------------------------------- |
+   | Linux   | `~/.local/share/com.homeport.app/`, `~/.config/com.homeport.app/`                     |
+   | macOS   | `~/Library/Application Support/com.homeport.app/`, `~/Library/Logs/com.homeport.app/` |
+   | Windows | `%APPDATA%\com.homeport.app\`, `%LOCALAPPDATA%\com.homeport.app\`                     |
+
+2. Löschen Sie den Verschlüsselungsschlüssel aus Ihrem Schlüsselbund – den Eintrag für `com.homeport.app`:
+   - **macOS** – suchen Sie in der **Schlüsselbundverwaltung** nach `com.homeport.app` und löschen Sie den Eintrag.
+   - **Windows** – entfernen Sie in **Anmeldeinformationsverwaltung → Windows-Anmeldeinformationen** den Eintrag, der `com.homeport.app` enthält.
+   - **Linux** – löschen Sie in **Passwörter und Verschlüsselung** (Seahorse) oder KWallet den Eintrag für `com.homeport.app`.
+
+3. Entfernen Sie auf Ihren Servern die öffentlichen Schlüssel von Homeport aus `~/.ssh/authorized_keys` – ihre Kommentare beginnen mit `homeport@`.

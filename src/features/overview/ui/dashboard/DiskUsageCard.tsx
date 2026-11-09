@@ -53,24 +53,20 @@ export function DiskUsageCard({ hostId }: { hostId: string }) {
             <TableHeader>
               <TableRow>
                 <TableHead>{t('overview.disk.column.type')}</TableHead>
-                <TableHead className="text-right">{t('overview.disk.column.total')}</TableHead>
-                <TableHead className="text-right">{t('overview.disk.column.active')}</TableHead>
-                <TableHead className="text-right">{t('overview.disk.column.size')}</TableHead>
-                <TableHead className="text-right">
-                  {t('overview.disk.column.reclaimable')}
-                </TableHead>
+                <TableHead className="text-end">{t('overview.disk.column.total')}</TableHead>
+                <TableHead className="text-end">{t('overview.disk.column.active')}</TableHead>
+                <TableHead className="text-end">{t('overview.disk.column.size')}</TableHead>
+                <TableHead className="text-end">{t('overview.disk.column.reclaimable')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rows.map(([label, line, sized]) => (
                 <TableRow key={label}>
                   <TableCell>{label}</TableCell>
-                  <TableCell className="text-right">{line.total}</TableCell>
-                  <TableCell className="text-right">{line.active}</TableCell>
-                  <TableCell className="text-right">
-                    {sized ? formatBytes(line.size) : '—'}
-                  </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-end">{line.total}</TableCell>
+                  <TableCell className="text-end">{line.active}</TableCell>
+                  <TableCell className="text-end">{sized ? formatBytes(line.size) : '—'}</TableCell>
+                  <TableCell className="text-end">
                     {sized ? formatBytes(line.reclaimable) : '—'}
                   </TableCell>
                 </TableRow>

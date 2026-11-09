@@ -1,24 +1,37 @@
 ---
 /** A card per platform with its installers, the visitor's first, and a note on any newer prerelease. */
+import { strings } from '@/core/i18n';
 import { getLatestRelease, getReleases } from '@/core/release';
+import type { Locale } from '@/core/site';
+import { escapeHtml, fillHtml } from '@/shared/lib/template';
 import { PLATFORMS } from '../../data/platforms';
 import { newerPrerelease } from '../../model/prerelease';
 import PlatformCard from '../platform/PlatformCard.astro';
 
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
 const release = await getLatestRelease();
 const prerelease = newerPrerelease(await getReleases(), release);
 ---
 
 {prerelease && (
-  <aside class="notice">
-    <strong>Preview available:</strong> {prerelease.name} is a prerelease for testing.{' '}
-    <a href={prerelease.url}>Download it from GitHub</a>.
-  </aside>
+  <aside
+    class="notice"
+    set:html={fillHtml(s['download.preview'], {
+      label: `<strong>${escapeHtml(s['download.preview.label'])}</strong>`,
+      name: escapeHtml(prerelease.name),
+      link: `<a href="${escapeHtml(prerelease.url)}">${escapeHtml(s['download.preview.link'])}</a>`,
+    })}
+  />
 )}
 
 <div class="platforms">
   {PLATFORMS.map((platform) => (
-    <PlatformCard platform={platform} release={release} />
+    <PlatformCard platform={platform} release={release} locale={locale} />
   ))}
 </div>
 
@@ -49,7 +62,7 @@ const prerelease = newerPrerelease(await getReleases(), release);
     margin-bottom: 1.5rem;
     padding: 0.9rem 1.15rem;
     border: 1px solid var(--hp-border-strong);
-    border-left: 3px solid var(--hp-text);
+    border-inline-start: 3px solid var(--hp-text);
     border-radius: var(--hp-radius);
     background: var(--hp-bg-raised);
   }

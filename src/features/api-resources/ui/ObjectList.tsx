@@ -62,7 +62,7 @@ export function ObjectList({
         />
       )}
       {api.namespaced && (
-        <div className="ml-auto">
+        <div className="ms-auto">
           <NamespacePicker clusterId={id} value={namespace} onChange={onNamespace} />
         </div>
       )}

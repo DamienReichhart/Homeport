@@ -3,6 +3,8 @@
 
 use homeport_hosts::{registry::HostStatus, service::HostView};
 
+use crate::messages as msg;
+
 /// One entry of the tray's menu, in order.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Item {
@@ -73,14 +75,15 @@ impl Action {
 }
 
 /// The words for a Host's status, as the Hosts page puts them.
-fn status_label(status: &HostStatus) -> &'static str {
+fn status_label(status: &HostStatus) -> String {
     match status {
-        HostStatus::Connected { .. } => "Connected",
-        HostStatus::Connecting => "Connecting",
-        HostStatus::Unreachable { .. } => "Unreachable",
-        HostStatus::Disabled => "Disabled",
-        _ => "Needs attention",
+        HostStatus::Connected { .. } => msg::TRAY_CONNECTED,
+        HostStatus::Connecting => msg::TRAY_CONNECTING,
+        HostStatus::Unreachable { .. } => msg::TRAY_UNREACHABLE,
+        HostStatus::Disabled => msg::TRAY_DISABLED,
+        _ => msg::TRAY_NEEDS_ATTENTION,
     }
+    .localized()
 }
 
 /// The tray's menu for `hosts`, in the order they're listed.
@@ -90,15 +93,23 @@ pub fn menu(hosts: &[HostView]) -> TrayMenu {
         .filter(|h| matches!(h.status, HostStatus::Connected { .. }))
         .count();
     let tooltip = match hosts.len() {
-        0 => "Homeport — no Hosts yet".to_owned(),
-        1 => format!("Homeport — {connected} of 1 Host connected"),
-        n => format!("Homeport — {connected} of {n} Hosts connected"),
+        0 => msg::TRAY_NO_HOSTS.localized(),
+        1 => msg::TRAY_CONNECTED_ONE
+            .with("connected", connected)
+            .localized(),
+        n => msg::TRAY_CONNECTED_MANY
+            .with("connected", connected)
+            .with("total", n)
+            .localized(),
     };
     let mut items: Vec<Item> = hosts
         .iter()
         .map(|h| Item::Host {
             id: h.host.id.clone(),
-            label: format!("{} — {}", h.host.name, status_label(&h.status)),
+            label: msg::TRAY_HOST
+                .with("host", h.host.name.as_str())
+                .with("status", status_label(&h.status))
+                .localized(),
             reconnect: matches!(h.status, HostStatus::Unreachable { .. }),
         })
         .collect();

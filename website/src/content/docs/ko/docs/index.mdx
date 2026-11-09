@@ -1,0 +1,77 @@
+---
+title: 소개
+description: Homeport가 무엇이고 무엇을 하는지, 그리고 이 문서가 어떻게 구성되어 있는지 설명합니다.
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+**Homeport**는 이 컴퓨터의 Docker Engine이든 SSH, TLS, TCP로 연결하는 원격 Docker Engine이든 어디에 있는 Docker Engine이나 관리하고, kubeconfig로 접근할 수 있는 Kubernetes 클러스터도 관리하는 데스크톱 앱으로, Docker Desktop과 같은 방식을 따릅니다. Windows, macOS, Linux에서 실행되고, 무료이며, [GNU Affero General Public License 버전 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE)에 따른 오픈 소스입니다.
+
+Homeport는 컨테이너를 직접 실행하지 않습니다. 이미 가지고 있는 Docker Engine, 즉 **호스트**에 연결하여 그 위의 모든 것, 곧 컨테이너, 이미지, 볼륨, 네트워크, Compose **스택**을 하나의 창에서 다룰 수 있게 합니다. 또한 kubeconfig에 있는 Kubernetes **클러스터**에 연결하여 그 위에서 실행되는 것을 살펴볼 수 있습니다.
+
+<DocScreenshot
+  name="overview"
+  alt="호스트마다 카드가 하나씩 있고, 선택한 호스트의 엔진 세부 정보와 디스크 사용량이 표시된 Homeport의 개요 페이지."
+  caption="개요는 모든 호스트를 한눈에 보여 줍니다."
+/>
+
+## 할 수 있는 일
+
+<CardGrid>
+  <Card title="어떤 엔진에도 연결" icon="laptop">
+    로컬 엔진은 자동으로 감지됩니다. 원격 엔진은 SSH, 상호 TLS 또는 TCP로 연결하고, 연결이 끊기면
+    스스로 다시 연결합니다.
+  </Card>
+  <Card title="컨테이너 다루기" icon="seti:docker">
+    실시간 CPU와 메모리, 로그, 대화형 터미널, 파일 탐색기, 통계 차트, 프로세스, 실행 대화 상자를
+    제공합니다.
+  </Card>
+  <Card title="Compose 스택 배포" icon="rocket">
+    compose 파일과 암호화된 환경 변수를 Homeport에 보관하고, 어느 호스트에나 배포합니다.
+  </Card>
+  <Card title="Podman 고유 기능 사용" icon="seti:config">
+    Podman 호스트에서는 Pod를 관리하고 그 안에서 컨테이너를 실행하며, systemd에서 Quadlet 유닛을
+    설치, 편집, 시작할 수 있습니다.
+  </Card>
+  <Card title="containerd 관리" icon="seti:config">
+    containerd 호스트에서는 네임스페이스를 선택하고, 컨테이너의 태스크를 실행하고, 로그를 읽고,
+    터미널을 열고, 이미지를 풀하고, 사용하지 않는 스냅샷을 정리할 수 있습니다.
+  </Card>
+  <Card title="Incus 인스턴스 실행" icon="laptop">
+    Incus 호스트에서는 이미지로 시스템 컨테이너와 가상 머신을 만들고, 콘솔이나 셸을 열고, 스냅샷을
+    찍고 복원하며, 이미지, 프로필, 스토리지, 네트워크를 관리할 수 있습니다.
+  </Card>
+  <Card title="Kubernetes 살펴보기" icon="server">
+    EKS, GKE, AKS를 포함해 kubeconfig에서 클러스터를 추가하고, 워크로드, Pod, Service, 구성, Node,
+    Event를 실시간으로 확인합니다.
+  </Card>
+  <Card title="깔끔하게 유지" icon="seti:folder">
+    이미지, 볼륨, 네트워크의 사용 현황을 한눈에 보여 주고, 무엇을 삭제할지 알려 주는 정리 대화
+    상자를 제공합니다.
+  </Card>
+</CardGrid>
+
+## 이 문서의 구성
+
+- **시작하기** — [Homeport를 설치](/docs/installation/)한 다음 [빠른 시작](/docs/quick-start/)을 따라 첫 번째 호스트에 연결합니다.
+- **호스트** — 연결 종류별 작동 방식: [로컬 엔진](/docs/hosts/local/), [SSH](/docs/hosts/ssh/), [TLS와 TCP](/docs/hosts/tls-tcp/).
+- **클러스터** — kubeconfig에서 [Kubernetes 클러스터를 추가](/docs/clusters/)하고 살펴보는 방법.
+- **Homeport 사용하기** — 앱의 각 페이지에 대한 안내.
+- **참고 자료** — [보안](/docs/reference/security/), [문제 해결](/docs/reference/troubleshooting/), [자주 묻는 질문](/docs/reference/faq/), [용어집](/docs/reference/glossary/).
+
+## 이 문서에서 쓰는 용어
+
+Homeport는 대상을 정확한 이름으로 부르며, 이 문서도 그대로 따릅니다.
+
+- **호스트**는 Homeport가 연결하는 Docker Engine입니다. 모든 컨테이너, 이미지, 볼륨, 네트워크, 스택은 정확히 하나의 호스트에 속합니다.
+- **클러스터**는 Homeport가 연결하는 Kubernetes 클러스터로, kubeconfig의 컨텍스트에서 추가합니다.
+- **스택**은 호스트에서 실행되는 Compose 프로젝트입니다. **관리형 스택**은 Homeport가 compose 파일을 보관하는 스택이고, **링크된 스택**은 compose 파일을 이 컴퓨터의 폴더에 두는 스택이며, **외부 스택**은 다른 방법으로 배포된 스택입니다. 외부 스택을 **관리형으로 전환**하면 Homeport에서 관리할 수 있습니다.
+
+전체 목록은 [용어집](/docs/reference/glossary/)에 있습니다.
+
+<LinkCard
+  title="Homeport 설치"
+  description="x64와 ARM용 Windows, macOS, Linux 설치 프로그램."
+  href="/docs/installation/"
+/>

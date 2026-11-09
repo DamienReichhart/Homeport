@@ -1,0 +1,42 @@
+/** Arabic text of the `nodes` namespace. */
+import type en from '../en/nodes';
+import type { Translation } from '../types';
+
+export default {
+  'nodes.nav': 'Nodes',
+  'nodes.title': 'Nodes',
+  'nodes.summary':
+    '{count, plural, zero {لا Nodes} one {Node واحد} two {# Nodes} few {# Nodes} many {# Node} other {# Node}}',
+  'nodes.search': 'البحث في Nodes',
+  'nodes.ready': 'جاهز',
+  'nodes.notReady': 'غير جاهز',
+  'nodes.cordoned': 'الجدولة معطّلة',
+  'nodes.column.name': 'الاسم',
+  'nodes.column.status': 'الحالة',
+  'nodes.column.roles': 'الأدوار',
+  'nodes.column.version': 'الإصدار',
+  'nodes.column.ip': 'عنوان IP الداخلي',
+  'nodes.column.platform': 'النظام الأساسي',
+  'nodes.column.cpu': 'وحدات المعالجة',
+  'nodes.column.memory': 'الذاكرة',
+  'nodes.column.age': 'العمر',
+  'nodes.tab.overview': 'نظرة عامة',
+  'nodes.tab.pods': 'Pods',
+  'nodes.tab.conditions': 'الشروط',
+  'nodes.tab.events': 'الأحداث',
+  'nodes.tab.source': 'YAML',
+  'nodes.detail.roles': 'الأدوار',
+  'nodes.detail.version': 'Kubelet',
+  'nodes.detail.os': 'صورة نظام التشغيل',
+  'nodes.detail.kernel': 'النواة',
+  'nodes.detail.runtime': 'وقت تشغيل الحاويات',
+  'nodes.detail.addresses': 'العناوين',
+  'nodes.detail.taints': 'Taints',
+  'nodes.detail.noTaints': 'لا شيء',
+  'nodes.detail.age': 'العمر',
+  'nodes.detail.labels': 'التسميات',
+  'nodes.detail.resources': 'الموارد',
+  'nodes.resource.name': 'المورد',
+  'nodes.resource.capacity': 'السعة',
+  'nodes.resource.allocatable': 'القابل للتخصيص',
+} satisfies Translation<typeof en>;

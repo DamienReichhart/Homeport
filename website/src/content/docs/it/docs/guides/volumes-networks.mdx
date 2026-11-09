@@ -1,0 +1,137 @@
+---
+title: Volumi e reti
+description: Vedi quali container usano quali volumi e reti e quanto sono grandi i volumi; sfoglia, salva in backup, ripristina e clona i volumi; crea e rimuovi entrambi in sicurezza.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+## Volumi
+
+La pagina **Volumi** elenca i volumi dell’host selezionato e quanti sono inutilizzati.
+
+<DocScreenshot
+  name="volumes"
+  alt="La pagina Volumi, che mostra per ogni volume lo stack, il driver e i container che lo usano."
+/>
+
+| Colonna        | Mostra                                                                |
+| -------------- | --------------------------------------------------------------------- |
+| **Nome**       | Il nome del volume; un ID lungo per i volumi anonimi.                 |
+| **Stack**      | Lo stack che lo ha creato, se esiste.                                 |
+| **Driver**     | Di solito `local`.                                                    |
+| **Dimensione** | Quanto disco occupano i suoi dati, come indica `docker system df -v`. |
+| **Usato da**   | I container che lo montano, oppure **Inutilizzato**.                  |
+| **Creato**     | Quando è stato creato.                                                |
+
+Un volume conta come usato quando un container qualsiasi lo monta, in esecuzione o arrestato. Seleziona un volume per vederne la dimensione, quali container lo usano e tutti i dettagli, compreso dove si trovano i suoi dati sull’host (`Mountpoint`).
+
+### Dimensioni
+
+L’Engine misura ogni volume per fornirne la dimensione, il che può richiedere qualche secondo su un host con molti dati, quindi l’elenco compare subito e la colonna **Dimensione** si riempie dopo. Ordina per **Dimensione** per trovare il volume che riempie un disco. Le dimensioni vengono misurate di nuovo quando un volume viene creato o rimosso, e quando scegli **Aggiorna le dimensioni**, non ogni volta che un container scrive, quindi una dimensione può essere leggermente in ritardo.
+
+Solo i volumi del driver `local` hanno una dimensione; gli altri driver (NFS, plugin di archiviazione cloud) mostrano **—**.
+
+### Sfogliare i file di un volume
+
+Il pulsante della cartella nella riga di un volume ne apre i file: apri le cartelle, risali con il percorso sopra l’elenco, e scarica un file, o una cartella come archivio `.tar`. I percorsi partono dalla radice del volume (`/`).
+
+La navigazione è in sola lettura. Nulla di ciò che fai qui può modificare il volume, nemmeno mentre un container lo usa.
+
+#### Il container ausiliario
+
+L’API dell’Engine non può leggere un volume, quindi Homeport lo apre con un **container ausiliario** di breve durata: un container `busybox:1.37` senza rete e con un filesystem in sola lettura, che monta il volume in sola lettura. Homeport lo rimuove non appena chiudi il browser dei file o esci. Se Homeport non ci riesce (si è bloccato, o l’host è sparito), il container ausiliario si arresta e viene rimosso dall’Engine entro un’ora, e Homeport rimuove ciò che resta la volta successiva che questo computer si connette all’host. I container ausiliari non vengono mai mostrati nell’elenco Container, in **Usato da** di un volume o nella pagina Eventi.
+
+Se l’host non ha `busybox:1.37` (circa 2 MB), Homeport lo segnala e lo scarica solo quando scegli **Scarica busybox:1.37**, con i tuoi [accessi ai registri](/docs/guides/settings/#registri). Rimuove di nuovo l’immagine al termine, a meno che qualcos’altro la usi. Un host senza accesso a internet non può scaricarla; portacela tu:
+
+```sh
+docker pull busybox:1.37
+```
+
+oppure, da una macchina che ce l’ha, `docker save busybox:1.37 -o busybox.tar`, copia il file e poi `docker load -i busybox.tar` sull’host.
+
+<Aside>
+  Gli Engine che eseguono container Windows non possono eseguire il container ausiliario, quindi i
+  loro volumi non si possono aprire.
+</Aside>
+
+### Backup e ripristino
+
+**Esegui il backup su file…**, nel menu **⋯** della riga di un volume, salva il suo contenuto in un file `.tar` su questo computer. L’archivio contiene i file del volume con i loro proprietari e permessi, con percorsi relativi alla sua radice, come li creerebbe `tar -C <volume> -cf backup.tar .`, quindi puoi anche aprirlo o ripristinarlo senza Homeport.
+
+**Ripristina da file** ripristina un backup:
+
+- Dalla parte superiore della pagina, in **Un nuovo volume**, che prende il nome dal file se non lo cambi, oppure in **Un volume esistente** che scegli tu.
+- Dal menu **⋯** di un volume, in quel volume.
+
+Se il volume esistente contiene già dei file, Homeport chiede conferma prima di eliminarli e mettere al loro posto quelli del backup. Un file che non è un archivio tar viene rifiutato prima che cambi qualcosa.
+
+Entrambe le operazioni mostrano il loro avanzamento e si possono annullare. Un backup annullato non lascia alcun file; un ripristino annullato può lasciare il volume scritto in parte, quindi ripristinalo di nuovo prima di usarlo.
+
+#### Container che usano il volume
+
+Il backup di un volume su cui scrive un container in esecuzione (un database, per esempio) può essere incoerente. Homeport indica i container in esecuzione che lo usano, e tu scegli se **Esegui comunque il backup** o se arrestarli durante il backup. Un ripristino li arresta sempre prima. In entrambi i casi, Homeport li riavvia al termine.
+
+Backup e ripristini usano lo stesso [container ausiliario](#il-container-ausiliario) della navigazione, che monta il volume in sola lettura per un backup. L’archivio viaggia tramite la connessione dell’host e non viene mai tenuto per intero in memoria, quindi funzionano anche i volumi grandi e gli host remoti. Sull’host non viene scritto nulla tranne il volume da ripristinare.
+
+### Clonare un volume
+
+**Clona…**, nel menu **⋯** della riga di un volume, lo copia in un nuovo volume sullo stesso host, per esempio per provare una migrazione o una nuova versione di un’immagine su una copia di dati reali. La copia si chiama `<name>-copy` se non cambi il nome, e viene selezionata nell’elenco una volta creata.
+
+Conserva i proprietari e i permessi dei file, e il driver, le opzioni del driver e le etichette dell’originale, tranne quelle di Compose, così la copia non appartiene ad alcuno stack. L’originale viene montato in sola lettura nel [container ausiliario](#il-container-ausiliario) e non cambia mai. Come per un backup, Homeport indica i container in esecuzione che usano l’originale; copia comunque, oppure arrestali durante la copia.
+
+Se la copia non riesce (il disco è pieno, per esempio), Homeport rimuove la copia incompleta e lo segnala, con l’errore in **Dettagli**. Per copiare un volume su un altro host, [fanne il backup](#backup-e-ripristino) e ripristina il file lì.
+
+### Creare un volume
+
+**Crea volume** chiede un **Nome** e un **Driver** facoltativo (`local` se vuoto).
+
+### Eliminare i volumi
+
+<Aside type="danger">Eliminare un volume elimina definitivamente i dati che contiene.</Aside>
+
+Il pulsante di eliminazione su ogni riga chiede conferma e indica i container che montano ancora il volume. L’Engine si rifiuta di eliminare un volume usato da un container, anche arrestato: rimuovi prima quei container.
+
+**Ripulisci** ne rimuove diversi insieme:
+
+- **Volumi anonimi inutilizzati**: volumi senza nome che nessun container usa.
+- **Tutti i volumi inutilizzati**: ogni volume che nessun container usa, compresi quelli con nome.
+
+## Reti
+
+La pagina **Reti** elenca le reti dell’host selezionato, prima quelle predefinite `bridge`, `host` e `none`.
+
+<DocScreenshot
+  name="networks"
+  alt="La pagina Reti, con le reti predefinite e quelle degli stack, le loro sottoreti e il numero di container."
+/>
+
+| Colonna       | Mostra                                                           |
+| ------------- | ---------------------------------------------------------------- |
+| **Nome**      | Con un’etichetta **predefinita** o **interna** quando è il caso. |
+| **Stack**     | Lo stack che l’ha creata, se esiste.                             |
+| **Driver**    | `bridge`, `overlay`, `macvlan`…                                  |
+| **Sottorete** | Il suo intervallo di indirizzi IP.                               |
+| **Container** | Quanti container sono collegati, in esecuzione o arrestati.      |
+
+### Collegare i container
+
+Seleziona una rete per vedere i container collegati. Sulle reti che hai creato:
+
+- **Scollega** scollega un container.
+- **Collega un container…** elenca i container non ancora collegati; scegline uno e scegli **Collega**.
+
+Le reti predefinite non si possono modificare qui.
+
+### Creare una rete
+
+**Crea rete** richiede un **Nome**, un **Driver** (`bridge` se vuoto) e, facoltativamente, una **Sottorete** e un **Gateway**: lasciali vuoti perché sia l’Engine a sceglierli. Due interruttori:
+
+- **Interna**: i container sulla rete non possono raggiungere le reti esterne.
+- **Collegabile**: i container autonomi possono unirsi a una rete `overlay`.
+
+### Rimuovere le reti
+
+Le reti predefinite non si possono rimuovere. Per le altre reti, la conferma dice quanti container sono ancora collegati; l’Engine si rifiuta di rimuovere una rete con container in esecuzione. I container che fanno riferimento per nome a una rete rimossa non si avviano finché questa non esiste di nuovo.
+
+**Ripulisci** rimuove ogni rete personalizzata a cui non è collegato alcun container.

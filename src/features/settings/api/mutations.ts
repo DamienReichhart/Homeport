@@ -1,17 +1,20 @@
 import { useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query';
-import { patchSettings, saveSettings } from '@/core/settings';
+import { applyLanguage, patchSettings, saveSettings } from '@/core/settings';
 import { commands, type Settings } from '@/shared/api';
 import { applyTheme, type Theme } from '@/shared/lib';
 import { toastError } from '@/shared/ui';
 import { startAtLoginKey } from './queries';
 
-/** Saves the settings and applies the theme; the page shows a failure in place. */
+/** Saves the settings and applies the theme and language; the page shows a failure in place. */
 export function useSaveSettings() {
   const client = useQueryClient();
   return useMutation({
     meta: { silent: true },
     mutationFn: (next: Settings) => saveSettings(client, next),
-    onSuccess: (saved) => applyTheme(saved.theme ?? 'system'),
+    onSuccess: async (saved) => {
+      applyTheme(saved.theme ?? 'system');
+      await applyLanguage(saved.language);
+    },
   });
 }
 

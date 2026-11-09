@@ -22,8 +22,8 @@ const COLUMNS: { key: SortKey | null; label: MessageKey; className?: string }[] 
   { key: 'status', label: 'containers.column.status' },
   { key: 'stack', label: 'board.column.stack' },
   { key: null, label: 'containers.column.ports' },
-  { key: 'cpu', label: 'containers.column.cpu', className: 'text-right' },
-  { key: 'memory', label: 'containers.column.memory', className: 'text-right' },
+  { key: 'cpu', label: 'containers.column.cpu', className: 'text-end' },
+  { key: 'memory', label: 'containers.column.memory', className: 'text-end' },
   { key: 'created', label: 'containers.column.created' },
 ];
 /** Past this many rows, only those in view are drawn. */

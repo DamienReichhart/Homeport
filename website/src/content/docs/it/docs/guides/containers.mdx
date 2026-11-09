@@ -1,0 +1,240 @@
+---
+title: Container
+description: 'Elenca, esegui e gestisci i container: log, terminali, file, statistiche e processi.'
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+La pagina **Container** elenca tutti i container sull’host selezionato, in esecuzione o no.
+
+<DocScreenshot
+  name="containers"
+  alt="La pagina Container, con i container raggruppati sotto i loro stack e CPU e memoria in tempo reale."
+/>
+
+## L’elenco
+
+I container che appartengono a uno [stack](/docs/guides/stacks/) sono raggruppati sotto di esso; seguono i container autonomi. La riga di uno stack mostra quanti dei suoi container sono in esecuzione e la loro CPU e memoria complessive. Selezionala per comprimere il gruppo, oppure **Apri lo stack** per andare allo stack.
+
+| Colonna      | Mostra                                                                                                                         |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| **Nome**     | Un punto di stato, il nome (il nome del servizio all’interno di uno stack) e l’ID breve.                                       |
+| **Immagine** | L’immagine da cui è stato creato, con un segno ⬆ quando è pubblicata un’[immagine più recente](#immagini-più-recenti).         |
+| **Stato**    | Come lo riporta l’Engine, per esempio _Up 3 hours (healthy)_, con un indicatore di integrità se c’è un controllo di integrità. |
+| **Porte**    | Fino a tre porte, prima quelle pubblicate. Una porta pubblicata è un collegamento che la apre nel browser.                     |
+| **CPU**      | In tempo reale, come percentuale di una CPU: `200%` significa due CPU usate al massimo.                                        |
+| **Memoria**  | In tempo reale, senza contare la cache delle pagine che il kernel può recuperare.                                              |
+| **Creato**   | Quanto tempo fa.                                                                                                               |
+
+CPU e memoria si aggiornano ogni due secondi. **Cerca container** trova nomi, immagini, stack, servizi e prefissi di ID; **Solo in esecuzione** nasconde il resto.
+
+Seleziona un container per aprirlo.
+
+### Immagini più recenti
+
+Una ⬆ accanto all’immagine significa che il suo registro ha ora un’immagine diversa sotto il tag da cui è stato creato il container: `nginx:1.27` è andato avanti da quando è stato scaricato, oppure ne è stato scaricato uno più recente ma il container non è stato ricreato. Passaci sopra il puntatore per vedere quale. Per aggiornare, scarica l’immagine e ricrea il container; per uno stack, **Scarica immagini** e poi **Ridistribuisci**.
+
+Homeport interroga il registro tramite l’Engine dell’host, che confronta i digest senza scaricare nulla, usando i tuoi [accessi ai registri](/docs/guides/settings/#registri) memorizzati per le immagini private. Le risposte vengono conservate per 6 ore, quindi riaprire l’elenco non interroga nulla; **Cerca immagini più recenti**, in cima alla pagina, interroga subito di nuovo tutti i registri. Le immagini compilate localmente, scaricate tramite digest (`app@sha256:…`) o il cui registro non è raggiungibile non mostrano nulla invece di un falso allarme. La pagina del container mostra lo stesso segno accanto alla sua immagine.
+
+### Azioni
+
+Il pulsante alla fine di ogni riga avvia o arresta il container. Il menu **⋮** contiene il resto: **Log**, **Apri terminale**, **Riavvia**, **Sospendi** o **Riprendi**, **Termina**, **Rinomina**, [**Modifica**](#modificare-un-container), [**Duplica**](#duplicare-un-container), [**Commit in un’immagine…**](#eseguire-il-commit-di-un-container), [**Esporta il filesystem…**](#esportare-il-filesystem-di-un-container) e **Rimuovi**.
+
+Seleziona più container per agire su tutti insieme con **Avvia**, **Arresta**, **Riavvia** o **Rimuovi**. La casella di selezione nella riga di uno stack seleziona tutti i suoi container.
+
+<Aside type="caution" title="Cosa elimina Rimuovi">
+  Rimuovere un container elimina il container, il suo livello scrivibile e i suoi volumi anonimi. I
+  volumi con nome vengono conservati. Un container in esecuzione viene arrestato immediatamente,
+  senza attendere che si chiuda in modo ordinato.
+</Aside>
+
+**Termina** invia subito `SIGKILL`, quindi il processo non ha modo di fare pulizia. **Arresta** gli concede prima il timeout di arresto del container.
+
+## La pagina di un container
+
+L’intestazione mostra l’immagine e lo stato, con **Avvia** o **Arresta**, **Riavvia**, **Sospendi** o **Riprendi**, e **Rimuovi**; il suo menu **⋮** contiene **Rinomina**, **Modifica**, **Duplica**, **Commit in un’immagine…** ed **Esporta il filesystem…**. Le schede sottostanti contengono tutto il resto.
+
+<Aside>
+  Lasciare una scheda chiude ciò che stava facendo: i terminali si chiudono quando lasci **Exec**, i
+  grafici ripartono quando torni a **Statistiche**, e i **Log** si ricaricano.
+</Aside>
+
+### Log
+
+<DocScreenshot
+  name="container-logs"
+  alt="La scheda Log di un container, con cronologia, orari, filtri per flusso e ricerca."
+/>
+
+I log arrivano in tempo reale man mano che il container li scrive. La barra degli strumenti controlla cosa vedi:
+
+- **Cronologia**: quante righe passate caricare: le ultime 100, 1.000 (il valore predefinito) o 10.000, oppure tutte.
+- **Da**: qualsiasi momento, oppure gli ultimi 5 minuti, l’ultima ora o le ultime 24 ore.
+- **Orari**: mostra l’orario dell’Engine prima di ogni riga.
+- **stdout** e **stderr**: mostra o nasconde l’uno o l’altro flusso.
+- **Segui**: continua a scorrere fino alla riga più recente. Le nuove righe continuano ad arrivare anche quando è disattivato.
+- **Trova nei log**: evidenzia le corrispondenze. Premi <kbd>Enter</kbd> per la corrispondenza successiva e <kbd>Shift</kbd>+<kbd>Enter</kbd> per quella precedente.
+- **Cancella** svuota la vista; **Scarica i log** salva ciò che hai caricato come file di testo, fino alle ultime 100.000 righe.
+
+Quando il container si arresta, il log termina con _— fine dei log —_.
+
+### Ispeziona
+
+**Dettagli** riassume il container in schede: stato e codice di uscita, comando, criterio di riavvio, controlli di integrità, ambiente, montaggi, porte, reti ed etichette. **JSON originale** mostra il documento di ispezione completo dell’Engine.
+
+<Aside type="caution">
+  Le variabili d’ambiente sono mostrate in chiaro, come le memorizza l’Engine. Tienilo presente
+  prima di condividere lo schermo.
+</Aside>
+
+### Integrità
+
+Mostrata per i container con un controllo di integrità, proprio o della loro immagine. **Controllo di integrità** indica lo stato (_starting_, _healthy_ o _unhealthy_), il comando, i suoi tempi (i valori predefiniti dell’Engine completano ciò che non è impostato: ogni 30 s, un timeout di 30 s, 3 tentativi) e quanti controlli sono falliti di fila. **Ultimi risultati** elenca i controlli che l’Engine conserva, dal più recente, con il codice di uscita, quando sono stati eseguiti, quanto sono durati e cosa hanno stampato; l’output lungo è compresso dietro **Mostra altre righe**.
+
+Così, quando l’elenco dice _unhealthy_, è qui che trovi il motivo, senza leggere il JSON originale. La scheda si aggiorna da sola una volta per intervallo di controllo e ogni volta che lo stato cambia. Un container con il controllo di integrità disattivato non ha la scheda Integrità; per aggiungerne uno o modificarlo, [modifica il container](#modificare-un-container).
+
+### Exec
+
+<DocScreenshot
+  name="container-terminal"
+  alt="Un terminale interattivo nella scheda Exec di un container."
+/>
+
+Un terminale interattivo nel container in esecuzione. Il primo, **Shell**, si apre da solo ed esegue `bash`, oppure `sh` quando l’immagine non ha bash.
+
+**Nuovo terminale** ne apre un altro con il tuo **Comando**, **Utente** e **Directory**, per esempio `psql -U postgres` come utente `postgres`. Se ne possono aprire diversi insieme; chiudine uno con la sua **×**. I terminali si ridimensionano con la finestra.
+
+Le immagini senza shell, come `scratch` o le immagini distroless, non possono aprire il terminale predefinito.
+
+### File
+
+Sfoglia il file system del container a partire da `/`. Seleziona una cartella per aprirla, oppure usa il percorso in alto per risalire.
+
+- **Scarica** un file, o un’intera cartella come archivio `.tar`, con il pulsante alla fine della sua riga.
+- **Carica qui** copia i file dal tuo computer nella cartella in cui ti trovi, sostituendo i file con lo stesso nome.
+
+L’elenco dei file esegue `find` e `stat` all’interno del container, quindi le immagini minimali che non li hanno non si possono sfogliare. I trasferimenti vengono tenuti in memoria, quindi per i file molto grandi è meglio copiarli con `docker cp`.
+
+### Statistiche
+
+Grafici in tempo reale degli ultimi cinque minuti, aggiornati ogni secondo: **CPU**, **Memoria** (rispetto al limite del container), **Rete** in ricezione e in invio, e **I/O del disco** in lettura e scrittura, con il numero di processi.
+
+<DocScreenshot
+  name="container-stats"
+  alt="La scheda Statistiche di un container, con i grafici di CPU, memoria, rete e I/O del disco."
+/>
+
+### Processi
+
+I processi in esecuzione nel container, come li mostra `ps aux`, aggiornati ogni cinque secondi.
+
+## Eseguire un container
+
+**Esegui container** nella pagina Container, o il pulsante ▶ accanto a un’immagine, apre **Esegui un container**:
+
+| Campo                                   | Note                                                                                                                                                                                      |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Immagine**                            | Obbligatoria. Suggerisce le immagini dell’host. Viene prima scaricata se l’host non ce l’ha, con l’[accesso al registro](/docs/guides/settings/#registri) memorizzato.                    |
+| **Nome**                                | Facoltativo; se vuoto, l’Engine ne genera uno.                                                                                                                                            |
+| **Comando**                             | Sostituisce il comando predefinito dell’immagine (non il suo entrypoint). Metti gli argomenti tra virgolette come in una shell.                                                           |
+| **Porte**                               | **Porta dell’host** → **Porta del container**, `tcp` o `udp`. Lascia vuota la porta dell’host perché l’Engine ne scelga una libera. Le porte vengono pubblicate su ogni interfaccia.      |
+| **Volumi**                              | Un nome di volume o un percorso assoluto `/host/path`, montato in un percorso assoluto del container, facoltativamente in **sola lettura**. Un nome che non esiste ancora crea un volume. |
+| **Ambiente**                            | Una `KEY=value` per riga. Le righe vuote e quelle che iniziano con `#` vengono ignorate.                                                                                                  |
+| **Rete**                                | **Predefinita (bridge)**, o qualsiasi rete dell’host.                                                                                                                                     |
+| **Riavvio**                             | **Mai**, **In caso di errore**, **Se non arrestato** o **Sempre**.                                                                                                                        |
+| **Rimuovi il container quando termina** | Come `docker run --rm`. Un container rimosso all’uscita non può anche riavviarsi.                                                                                                         |
+
+Scegli **Esegui**: Homeport crea e avvia il container, poi ne apre i log.
+
+Se il container non riesce ad avviarsi (una porta già in uso, per esempio), Homeport lo rimuove di nuovo e la finestra resta aperta con il motivo, così puoi correggere il campo ed eseguirlo con lo stesso nome.
+
+### Opzioni avanzate
+
+**Opzioni avanzate**, sotto il criterio di riavvio, apre le impostazioni usate meno spesso, una scheda ciascuna. Un valore che Homeport non riesce a leggere viene spiegato sotto il suo campo, ed **Esegui** attende che venga corretto. Tutto ciò che imposti qui compare nella scheda **Ispeziona** del container.
+
+**Risorse**
+
+| Campo                        | Note                                                                                                                    |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **Limite di CPU**            | Quante CPU può usare, come `0.5` o `2` (`--cpus`). Se vuoto, usa tutte le CPU.                                          |
+| **Quote di CPU**             | Il suo peso rispetto agli altri container quando le CPU sono occupate; `1024` è il valore predefinito (`--cpu-shares`). |
+| **Limite di memoria**        | Come `512m` o `2g` (`--memory`). Le dimensioni si contano in potenze di 1024, come fa Docker. Almeno `6m`.              |
+| **Memoria riservata**        | Un limite flessibile che l’Engine applica solo quando l’host è a corto di memoria; al massimo pari al limite.           |
+| **Limite di memoria e swap** | Memoria più swap, quindi almeno pari al limite di memoria; `-1` per uno swap illimitato. Richiede un limite di memoria. |
+
+**Etichette**: una `key=value` per riga, come le leggono i reverse proxy quali Traefik e Caddy e gli strumenti di backup. Le chiavi che iniziano con `com.docker.compose.` vengono rifiutate: appartengono a Docker Compose, e Homeport mostrerebbe il container come parte di uno stack.
+
+**Sicurezza**: le capability da aggiungere e da togliere, digitate una alla volta con suggerimenti (`NET_ADMIN` e `CAP_NET_ADMIN` sono la stessa cosa; `ALL` le indica tutte), e **Privilegiato**.
+
+<Aside type="danger" title="Modalità privilegiata">
+  Un container privilegiato può usare tutti i dispositivi e tutte le capability dell’host, e
+  qualsiasi cosa vi giri può prendere il controllo dell’host. Quando puoi, aggiungi invece solo le
+  capability e i dispositivi di cui ha bisogno.
+</Aside>
+
+**Dispositivi**: i dispositivi dell’host da passare al container, come `/dev/dri` per la transcodifica hardware o `/dev/ttyUSB0` per una chiavetta Zigbee, con il percorso all’interno del container (lo stesso se vuoto) e i permessi: alcuni tra `r` (lettura), `w` (scrittura) e `m` (creazione di file di dispositivo). **GPU** le richiede tutte, un certo numero, oppure quelle scelte per indice o UUID, come `docker run --gpus`.
+
+<Aside type="note" title="Le GPU richiedono il toolkit del produttore">
+  Sull’host deve essere installato il container toolkit del produttore della GPU (per NVIDIA, il
+  [NVIDIA Container
+  Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html))
+  e il Docker Engine deve essere stato riavviato dopo. Homeport non lo installa. Senza di esso,
+  l’esecuzione non riesce con _Questo host non può assegnare una GPU ai container._
+</Aside>
+
+**Controllo di integrità**: mantieni **quello dell’immagine**, definisci **un comando** eseguito con `/bin/sh -c` (il codice di uscita 0 significa integro), oppure disattiva quello dell’immagine con **Nessuno**. **Intervallo**, **Timeout** e **Periodo iniziale** accettano durate come `30s` o `1m30s`; **Tentativi** è il numero di fallimenti di fila che lo rendono non integro. Lo stato compare poi nell’elenco come _healthy_ o _unhealthy_.
+
+**Identità di rete**: il **Nome host** e il **Nome di dominio** del container, i suoi **Server DNS** (indirizzi) e **domini di ricerca**, e gli **Host aggiuntivi**: righe `name:address` aggiunte al suo `/etc/hosts`, per i nomi che il DNS della tua rete non conosce. `host-gateway` sta per l’indirizzo dell’host stesso, quindi `host.docker.internal:host-gateway` raggiunge i servizi sull’host.
+
+**Log**: il **Driver dei log**: `json-file`, `local`, `journald`, `syslog`, `none`, o qualsiasi altro abbia l’Engine; se vuoto, usa quello predefinito dell’Engine. Le **Opzioni del driver** sono righe `key=value`; per `json-file`, `max-size=10m` e `max-file=3` evitano che i log riempiano il disco di un host piccolo. Con `journald`, `syslog` o `none`, la scheda **Log** potrebbe restare vuota.
+
+## Duplicare un container
+
+**Duplica** apre la finestra Esegui compilata a partire dal container (immagine, comando, ambiente, porte, volumi, rete, criterio di riavvio e ogni opzione avanzata) con il nome `<name>-copy`. Cambia ciò che ti serve e scegli **Esegui**.
+
+Le impostazioni che la finestra non mostra, come ulimit, sysctl, opzioni di sicurezza, montaggi tmpfs e le altre reti a cui il container è collegato (con i loro alias), vengono copiate così come sono. Viene escluso dal modulo solo ciò che proveniva esclusivamente dall’immagine, così un tag più recente dell’immagine porta i propri valori predefiniti.
+
+La copia non prende ciò che identifica l’originale: ottiene un proprio nome host (a meno che tu non ne imposti uno), un indirizzo MAC e nuovi volumi anonimi, e un container di uno [stack](/docs/guides/stacks/) perde le sue etichette di stack e gli alias del servizio, così la copia non si unisce allo stack né risponde al nome del suo servizio. Se l’originale pubblica una porta fissa dell’host, la finestra lo segnala: due container non possono usarla entrambi mentre sono in esecuzione, quindi cambiala o lasciala vuota perché l’Engine ne scelga una.
+
+## Modificare un container
+
+Il Docker Engine non può modificare la maggior parte delle impostazioni di un container esistente, quindi **Modifica** lo ricrea: apre la finestra Esegui compilata a partire dal container, e **Applica** lo sostituisce con uno creato dalle tue modifiche. Il nome resta (usa **Rinomina** per cambiarlo).
+
+Prima che succeda qualsiasi cosa, Homeport elenca ciò che il nuovo container non avrà:
+
+- **Volumi anonimi**: il nuovo container parte con volumi vuoti. Quelli vecchi non vengono eliminati: vengono conservati come volumi inutilizzati che puoi ancora aprire o [ripulire](/docs/guides/volumes-networks/).
+- **File modificati all’interno del container** da quando è stato creato, come pacchetti installati o configurazioni modificate. Per conservarli, [esegui prima il commit del container in un’immagine](#eseguire-il-commit-di-un-container) (la conferma ha un pulsante per farlo) e modifica il container perché usi quell’immagine.
+- **Interruzione del servizio**: un container in esecuzione si arresta mentre i due vengono scambiati, di solito per qualche secondo.
+- **La prossima distribuzione di uno stack**: per un container che fa parte di uno stack, la prossima distribuzione dello stack lo ricrea dal suo file compose, senza la tua modifica. Modifica il file compose per renderla permanente.
+
+Cosa viene conservato: il nome, le reti con i loro alias, i volumi con nome e i bind mount, e ogni impostazione che la finestra non mostra. Il container è in esecuzione dopo, se lo era prima.
+
+<Aside type="note" title="Se qualcosa va storto">
+  Homeport crea il nuovo container prima di toccare l’originale, e rimuove l’originale solo quando
+  quello nuovo è in esecuzione. Se un passaggio non riesce (la nuova porta è occupata, per esempio),
+  il nuovo container viene rimosso e l’originale rimesso com’era, in esecuzione se lo era, e la
+  finestra mostra il motivo. Nel raro caso in cui anche il ripristino non riesca, il messaggio
+  indica dove si trova l’originale, come `web-old-1a2b3c4d`, così puoi rinominarlo di nuovo e
+  avviarlo.
+</Aside>
+
+## Eseguire il commit di un container
+
+**Commit in un’immagine…** salva i file del container così come sono ora (compreso tutto ciò che è cambiato al suo interno da quando è stato creato) e le sue impostazioni come una nuova immagine sull’host, come `docker commit`.
+
+| Campo                                       | Note                                                                                                                                                                                  |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Nome dell’immagine**                      | `repo:tag`, che parte dal nome del container e dalla data di oggi, come `web:2026-11-04`. Se un’immagine ha già quel nome, la finestra lo segnala: il nome passa alla nuova immagine. |
+| **Messaggio**                               | Mostrato nella cronologia dell’immagine (**Ispeziona** → **Layer**).                                                                                                                  |
+| **Autore**                                  | Facoltativo.                                                                                                                                                                          |
+| **Modifiche**                               | Istruzioni Dockerfile applicate alla nuova immagine, una per riga: `CMD`, `ENTRYPOINT`, `ENV`, `EXPOSE`, `LABEL`, `ONBUILD`, `USER`, `VOLUME` o `WORKDIR`, come `ENV MODE=prod`.      |
+| **Sospendi il container durante il commit** | Attivo per impostazione predefinita: i suoi processi vengono congelati per i pochi secondi necessari, così i file in scrittura sono coerenti. Il container prosegue normalmente dopo. |
+
+La nuova immagine compare subito nella [pagina Immagini](/docs/guides/images/). I volumi, con nome o anonimi, non ne fanno parte: salvali in backup separatamente. Per ottenere un’immagine che puoi ricompilare, preferisci [crearne una da un Dockerfile](/docs/guides/images/#creare-unimmagine).
+
+## Esportare il filesystem di un container
+
+**Esporta il filesystem…** salva tutti i file del container (quelli della sua immagine e tutto ciò che è cambiato da allora) in un unico `.tar` su questo computer, come `docker export`. Scegli dove salvarlo; prende il nome del container. L’avanzamento mostra i byte scritti, **Annulla** interrompe, e un’esportazione annullata o non riuscita non lascia alcun file parziale. L’archivio viene scritto direttamente su disco, quindi i container di diversi gigabyte non sono un problema.
+
+L’archivio è un filesystem semplice e piatto: niente livelli, cronologia o impostazioni, e niente volumi. Aprilo con qualsiasi strumento tar, oppure trasformalo di nuovo in un’immagine con [**Importa da tar…**](/docs/guides/images/#importare-un-filesystem) nella pagina Immagini o con `docker import`. Per conservare anche le impostazioni di un container, [eseguine invece il commit](#eseguire-il-commit-di-un-container).

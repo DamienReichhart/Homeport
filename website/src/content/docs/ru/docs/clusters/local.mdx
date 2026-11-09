@@ -1,0 +1,47 @@
+---
+title: Локальные кластеры
+description: Кластеры Kubernetes, которые Homeport находит на этом компьютере, и как включить Kubernetes в Docker Desktop, OrbStack и Rancher Desktop.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+Homeport просматривает kubeconfig этого компьютера в поисках кластеров, работающих здесь, спрашивает у API-сервера каждого его версию и предлагает те, что отвечают, на странице **Добавить кластер** и на странице приветствия, каждый одним щелчком. Он никогда не запускает, не создаёт и не устанавливает кластер.
+
+<DocScreenshot
+  name="add-cluster"
+  alt="Кластеры на этом компьютере: kind-dev уже добавлен, кластер Docker Desktop с кнопкой добавления, OrbStack не запущен, а кластер k3d — с командой, которая добавляет его в kubeconfig."
+  caption="kind-dev уже стал кластером, кластер Docker Desktop добавляется одним щелчком, OrbStack остановлен, а работающего кластера k3d пока нет в kubeconfig."
+/>
+
+## Что находится
+
+| Инструмент          | Его контекст kubeconfig                     | Добавляется как   |
+| ------------------- | ------------------------------------------- | ----------------- |
+| **Docker Desktop**  | `docker-desktop`                            | `Docker Desktop`  |
+| **OrbStack**        | `orbstack`                                  | `OrbStack`        |
+| **Rancher Desktop** | `rancher-desktop`                           | `Rancher Desktop` |
+| **kind**            | `kind-<name>`                               | имя контекста     |
+| **k3d**             | `k3d-<name>`                                | имя контекста     |
+| **minikube**        | `minikube` или профиль, записанный minikube | имя контекста     |
+
+Контекст считается локальным, только если его API-сервер находится на этом компьютере (`127.0.0.1`, `localhost`, `kubernetes.docker.internal`…) или, для minikube и Rancher Desktop, в их виртуальной машине по частному адресу. Удалённый контекст никогда не предлагается, как бы он ни назывался. Локальный кластер, который не отвечает, показан как **Не запущен**; запустите его собственным инструментом и откройте страницу снова.
+
+### Кластеры kind и k3d, которых нет в kubeconfig
+
+Когда подключён [локальный хост](/docs/hosts/local/), Homeport также замечает контейнеры работающих кластеров kind и k3d (по их меткам `io.x-k8s.kind.cluster` и `k3d.cluster`). Кластер, до которого ваш kubeconfig не доходит, показан с командой, которая его добавляет, а не добавляется за вашей спиной:
+
+```bash
+kind export kubeconfig --name <name>
+```
+
+```bash
+k3d kubeconfig merge <name> --kubeconfig-merge-default
+```
+
+## Включение Kubernetes
+
+- **Docker Desktop**: **Settings → Kubernetes → Enable Kubernetes**, затем **Apply & restart**. Это добавляет контекст `docker-desktop`.
+- **OrbStack**: **Settings → Kubernetes → Enable Kubernetes** или выполните `orb start k8s`. Это добавляет контекст `orbstack`.
+- **Rancher Desktop**: **Preferences → Kubernetes → Enable Kubernetes**. Это добавляет контекст `rancher-desktop`.
+
+kind (`kind create cluster`), k3d (`k3d cluster create`) и minikube (`minikube start`) добавляют свои контексты, когда создают кластер. Каждый раз при пересоздании кластера они выпускают новые сертификаты: после этого нажмите **Обновить из kubeconfig** на его странице.

@@ -1,35 +1,6 @@
 ---
-import SiteLayout from '@/app/layouts/SiteLayout.astro';
-import { getLatestRelease } from '@/core/release';
-import { TAGLINE } from '@/core/site';
-import {
-  CallToAction,
-  Containers,
-  Desktops,
-  Features,
-  Hero,
-  Hosts,
-  Runtimes,
-  Security,
-  softwareApplication,
-  Stacks,
-  Visits,
-} from '@/features/home';
-import { ScrollReveal } from '@/shared/ui';
-
-const jsonLd = softwareApplication(Astro.site, await getLatestRelease());
+import HomePage from '@/app/views/HomePage.astro';
+import { ROOT_LOCALE } from '@/core/site';
 ---
 
-<SiteLayout title={`Homeport — ${TAGLINE}`} jsonLd={jsonLd}>
-  <Hero />
-  <Runtimes />
-  <Visits />
-  <Features />
-  <Hosts />
-  <Containers />
-  <Stacks />
-  <Security />
-  <Desktops />
-  <CallToAction />
-  <ScrollReveal />
-</SiteLayout>
+<HomePage locale={ROOT_LOCALE} />

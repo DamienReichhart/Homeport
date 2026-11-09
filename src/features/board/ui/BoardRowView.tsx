@@ -53,7 +53,7 @@ export function BoardRowView({
           {(c.status || c.state).replace(/\s*\((healthy|unhealthy|health: starting)\)/, '')}
         </span>
         {c.health && (
-          <Badge variant={c.health === 'unhealthy' ? 'destructive' : 'outline'} className="ml-1.5">
+          <Badge variant={c.health === 'unhealthy' ? 'destructive' : 'outline'} className="ms-1.5">
             {c.health}
           </Badge>
         )}
@@ -65,10 +65,10 @@ export function BoardRowView({
           {ports.length > 1 && ` +${ports.length - 1}`}
         </span>
       </TableCell>
-      <TableCell className="text-right tabular-nums">
+      <TableCell className="text-end tabular-nums">
         {usage ? formatPercent(usage.cpuPercent ?? 0) : '—'}
       </TableCell>
-      <TableCell className="text-right tabular-nums">
+      <TableCell className="text-end tabular-nums">
         {usage ? formatBytes(usage.memoryUsage) : '—'}
       </TableCell>
       <TableCell className="text-muted-foreground whitespace-nowrap">

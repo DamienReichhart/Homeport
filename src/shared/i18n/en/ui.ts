@@ -19,12 +19,15 @@ export default {
   'ui.files.path': 'Path',
   'ui.files.downloadOne': 'Download {name}',
   'ui.files.empty': 'This folder is empty.',
+  'ui.chart.time': 'Time',
   'ui.errorDetails.title': 'Error details',
   'ui.errorDetails.code': 'Code',
   'ui.errorDetails.command': 'Command',
   'ui.errorDetails.when': 'When',
   'ui.errorDetails.app': 'App',
   'ui.errorDetails.rawDetail': 'Raw detail',
+  'ui.errorDetails.rawDetailNote':
+    'As the system, the Engine or the library wrote it, so it isn’t translated.',
   'ui.errorDetails.openLogFolder': 'Open log folder',
   'ui.errorDetails.copyReport': 'Copy report',
 } as const;

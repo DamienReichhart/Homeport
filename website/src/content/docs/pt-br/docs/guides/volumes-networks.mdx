@@ -1,0 +1,137 @@
+---
+title: Volumes e redes
+description: Veja quais contêineres usam quais volumes e redes e o tamanho dos volumes; navegue, faça backup, restaure e clone volumes; crie e remova ambos com segurança.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+## Volumes
+
+A página **Volumes** lista os volumes do host selecionado e quantos não são usados.
+
+<DocScreenshot
+  name="volumes"
+  alt="A página Volumes, mostrando a stack, o driver e os contêineres que usam cada volume."
+/>
+
+| Coluna        | Mostra                                                             |
+| ------------- | ------------------------------------------------------------------ |
+| **Nome**      | O nome do volume; um ID longo para os volumes anônimos.            |
+| **Stack**     | A stack que o criou, se houver.                                    |
+| **Driver**    | Em geral, `local`.                                                 |
+| **Tamanho**   | Quanto disco os seus dados ocupam, como diz `docker system df -v`. |
+| **Usado por** | Os contêineres que o montam, ou **Não usado**.                     |
+| **Criado**    | Quando ele foi criado.                                             |
+
+Um volume conta como usado quando qualquer contêiner o monta, em execução ou parado. Selecione um volume para ver o tamanho dele, quais contêineres o usam e todos os seus detalhes, incluindo onde os seus dados ficam no host (`Mountpoint`).
+
+### Tamanhos
+
+O Engine mede todos os volumes para informar os tamanhos, o que pode levar alguns segundos em um host com muitos dados, então a lista aparece na hora e a coluna **Tamanho** é preenchida depois. Ordene por **Tamanho** para encontrar o volume que enche um disco. Os tamanhos são medidos de novo quando um volume é criado ou removido, e quando você escolhe **Atualizar tamanhos** — não a cada vez que um contêiner grava, então um tamanho pode estar um pouco atrasado.
+
+Só os volumes do driver `local` têm tamanho; os outros drivers (NFS, plugins de armazenamento em nuvem) mostram **—**.
+
+### Navegando pelos arquivos de um volume
+
+O botão de pasta na linha de um volume abre os arquivos dele: abra pastas, volte para cima pelo caminho acima da lista e baixe um arquivo, ou uma pasta como um arquivo `.tar`. Os caminhos começam na raiz do volume (`/`).
+
+A navegação é somente leitura. Nada do que você faz aqui pode alterar o volume, mesmo enquanto um contêiner o usa.
+
+#### O contêiner auxiliar
+
+A API do Engine não consegue ler um volume, então o Homeport o abre com um **contêiner auxiliar** de vida curta: um contêiner `busybox:1.37` sem rede e com um sistema de arquivos somente leitura, que monta o volume como somente leitura. O Homeport o remove assim que você fecha o navegador de arquivos ou encerra o aplicativo. Se o Homeport não conseguir (ele travou, ou o host sumiu), o auxiliar para e é removido pelo Engine em até uma hora, e o Homeport remove o que sobrou na próxima vez que este computador se conectar ao host. Os auxiliares nunca aparecem na lista de Contêineres, em **Usado por** de um volume nem na página Eventos.
+
+Se o host não tiver `busybox:1.37` (cerca de 2 MB), o Homeport avisa e só baixa a imagem quando você escolhe **Baixar busybox:1.37**, com os seus [logins de registro](/docs/guides/settings/#registros). Ele remove a imagem de novo quando termina, a menos que outra coisa a use. Um host sem acesso à internet não consegue baixá-la; leve-a até lá você mesmo:
+
+```sh
+docker pull busybox:1.37
+```
+
+ou, de uma máquina que a tenha, `docker save busybox:1.37 -o busybox.tar`, copie o arquivo e execute `docker load -i busybox.tar` no host.
+
+<Aside>
+  Os Engines que executam contêineres Windows não conseguem executar o auxiliar, então os volumes
+  deles não podem ser abertos.
+</Aside>
+
+### Fazendo backup e restaurando
+
+**Fazer backup em um arquivo…**, no menu **⋯** da linha de um volume, salva o conteúdo dele em um arquivo `.tar` neste computador. O arquivo guarda os arquivos do volume com os seus donos e permissões, em caminhos relativos à raiz dele, como `tar -C <volume> -cf backup.tar .` os criaria, então você também pode abri-lo ou restaurá-lo sem o Homeport.
+
+**Restaurar de arquivo** restaura um backup:
+
+- No topo da página, em **Um novo volume**, com o nome do arquivo, a menos que você o mude, ou em **Um volume existente** que você escolher.
+- No menu **⋯** de um volume, nesse volume.
+
+Se o volume existente já tiver arquivos, o Homeport pergunta antes de excluí-los e colocar os do backup no lugar. Um arquivo que não é um arquivo tar é recusado antes que qualquer coisa mude.
+
+Ambos mostram o progresso e podem ser cancelados. Um backup cancelado não deixa nenhum arquivo para trás; uma restauração cancelada pode deixar o volume parcialmente gravado, então restaure-o de novo antes de usá-lo.
+
+#### Contêineres que usam o volume
+
+Um backup de um volume em que um contêiner em execução grava — um banco de dados, por exemplo — pode ficar inconsistente. O Homeport cita os contêineres em execução que o usam, e você escolhe **Fazer backup mesmo assim** ou pará-los durante o backup. Uma restauração sempre os para antes. Em ambos os casos, o Homeport os inicia de novo depois.
+
+Os backups e as restaurações usam o mesmo [contêiner auxiliar](#o-contêiner-auxiliar) que a navegação, montando o volume como somente leitura para um backup. O arquivo trafega pela conexão do host e nunca fica inteiro na memória, então volumes grandes e hosts remotos também funcionam. Nada é gravado no host além do volume que está sendo restaurado.
+
+### Clonando um volume
+
+**Clonar…**, no menu **⋯** da linha de um volume, copia-o para um novo volume no mesmo host — para testar uma migração ou uma nova versão de imagem em uma cópia de dados reais, por exemplo. A cópia se chama `<name>-copy`, a menos que você mude, e fica selecionada na lista depois de criada.
+
+Ela mantém os donos e as permissões dos arquivos, e o driver, as opções do driver e os rótulos da origem — exceto os do Compose, para que a cópia não pertença a nenhuma stack. A origem é montada como somente leitura no [contêiner auxiliar](#o-contêiner-auxiliar) e nunca muda. Como em um backup, o Homeport cita os contêineres em execução que usam a origem; copie mesmo assim ou pare-os durante a cópia.
+
+Se a cópia falhar — o disco está cheio, por exemplo —, o Homeport remove a cópia incompleta e avisa, com o erro em **Detalhes**. Para copiar um volume para outro host, [faça backup dele](#fazendo-backup-e-restaurando) e restaure o arquivo lá.
+
+### Criando um volume
+
+**Criar volume** pede um **Nome** e um **Driver** opcional (`local` quando vazio).
+
+### Excluindo volumes
+
+<Aside type="danger">Excluir um volume exclui permanentemente os dados que ele contém.</Aside>
+
+O botão de excluir em cada linha pede confirmação e cita os contêineres que ainda montam o volume. O Engine se recusa a excluir um volume que algum contêiner usa, mesmo parado — remova esses contêineres antes.
+
+**Limpar** remove vários de uma vez:
+
+- **Volumes anônimos não usados** — volumes sem nome que nenhum contêiner usa.
+- **Todos os volumes não usados** — todos os volumes que nenhum contêiner usa, incluindo os nomeados.
+
+## Redes
+
+A página **Redes** lista as redes do host selecionado, com as integradas `bridge`, `host` e `none` primeiro.
+
+<DocScreenshot
+  name="networks"
+  alt="A página Redes, com as redes integradas e as de stacks, as suas sub-redes e o número de contêineres."
+/>
+
+| Coluna          | Mostra                                                        |
+| --------------- | ------------------------------------------------------------- |
+| **Nome**        | Com um selo **integrada** ou **interna**, quando for o caso.  |
+| **Stack**       | A stack que a criou, se houver.                               |
+| **Driver**      | `bridge`, `overlay`, `macvlan`…                               |
+| **Sub-rede**    | A faixa de IPs dela.                                          |
+| **Contêineres** | Quantos contêineres estão conectados, em execução ou parados. |
+
+### Conectando contêineres
+
+Selecione uma rede para ver os contêineres conectados a ela. Nas redes que você criou:
+
+- **Desconectar** desconecta um contêiner.
+- **Conectar um contêiner…** lista os contêineres ainda não conectados; escolha um e depois **Conectar**.
+
+As redes integradas não podem ser alteradas aqui.
+
+### Criando uma rede
+
+**Criar rede** recebe um **Nome**, um **Driver** (`bridge` quando vazio) e, opcionalmente, uma **Sub-rede** e um **Gateway** — deixe-os vazios para que o Engine escolha. Duas opções:
+
+- **Interna** — os contêineres da rede não conseguem alcançar redes externas.
+- **Conectável** — contêineres avulsos podem entrar em uma rede `overlay`.
+
+### Removendo redes
+
+As redes integradas não podem ser removidas. Para as outras redes, a confirmação diz quantos contêineres ainda estão conectados; o Engine se recusa a remover uma rede com contêineres em execução nela. Os contêineres que se referem a uma rede removida pelo nome não iniciam até ela existir de novo.
+
+**Limpar** remove todas as redes personalizadas às quais nenhum contêiner está conectado.

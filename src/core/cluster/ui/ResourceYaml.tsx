@@ -35,7 +35,7 @@ export function ResourceYaml({
   if (yaml.error) return <ErrorMessage error={yaml.error} onRetry={() => void yaml.refetch()} />;
   return (
     <div className="relative">
-      <div className="absolute top-2 right-2 flex items-center gap-1">
+      <div className="absolute top-2 end-2 flex items-center gap-1">
         {!NOT_EDITABLE.includes(kind) && (
           <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
             <PencilIcon /> {t('core.yaml.edit')}

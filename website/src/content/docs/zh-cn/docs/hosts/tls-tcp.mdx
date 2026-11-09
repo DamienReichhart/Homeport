@@ -1,0 +1,52 @@
+---
+title: TLS 和 TCP 主机
+description: 通过双向 TLS 或普通 TCP 连接暴露在网络上的 Docker Engine。
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Docker Engine 除了监听套接字，还可以监听 TCP 端口。Homeport 使用双向 TLS（Docker 称之为 `--tlsverify` 的设置）连接它们；在你完全信任的网络上，也可以使用普通 TCP。
+
+## TLS
+
+使用双向 TLS 时，Homeport 会根据你的 CA 检查服务器的证书，服务器也会检查 Homeport 的客户端证书。这是在网络上暴露引擎的安全方式。
+
+### 所需内容
+
+Docker TLS 设置中的三个文件，PEM 格式：
+
+| 字段           | 通常名为   | 内容                                             |
+| -------------- | ---------- | ------------------------------------------------ |
+| **CA 证书**    | `ca.pem`   | 签署服务器证书的证书颁发机构。可以包含多个证书。 |
+| **客户端证书** | `cert.pem` | Homeport 的证书，由服务器信任的 CA 签署。        |
+| **客户端密钥** | `key.pem`  | 客户端证书的私钥，未加密。                       |
+
+Docker 的指南 [Protect the Docker daemon socket](https://docs.docker.com/engine/security/protect-access/) 说明了如何创建它们。
+
+### 添加 TLS 主机
+
+1. 在主机切换器中选择**添加主机…**，然后选择 **TLS**。
+2. 输入**名称**和**地址**，格式为 `host:port`，例如 `docker.example.com:2376`。
+3. 对于每个证书和密钥，粘贴 PEM 文本或选择**从文件加载…**。
+4. 选择**添加主机**。
+
+服务器的证书必须包含你输入的主机名（其 DNS 名称或 IP 地址必须在证书的主题备用名称中），否则连接会失败，并提示 _TLS handshake failed_。
+
+证书和密钥会加密保存，这需要[系统钥匙串](/docs/requirements/#可选系统钥匙串)。编辑主机时，将字段留空即可保留已保存的内容。
+
+### 从 Docker 上下文导入
+
+如果 `docker context ls` 已列出该引擎，**添加主机**页面上的**导入 Docker 上下文**会使用上下文的地址及其 `ca.pem`、`cert.pem` 和 `key.pem` 创建主机，无需选择文件。跳过 TLS 验证的上下文不会被导入。参见 [Docker 上下文](/docs/hosts/#docker-上下文)。
+
+## TCP
+
+**TCP** 主机连接到 `tcp://host:port`，不加密，也不进行身份验证。
+
+<Aside type="danger" title="未加密且未经身份验证">
+  任何能访问该端口的人都能控制引擎，进而控制这台机器。只在你完全信任的网络上（例如本地虚拟机）使用普通
+  TCP。除此之外，请使用 [SSH](/docs/hosts/ssh/) 或 TLS。
+</Aside>
+
+1. 选择**添加主机…**，然后选择 **TCP**。
+2. 输入**名称**和**地址**，格式为 `host:port`，例如 `192.168.1.10:2375`。IPv6 地址需放在方括号中：`[fd00::10]:2375`。
+3. 选择**添加主机**。

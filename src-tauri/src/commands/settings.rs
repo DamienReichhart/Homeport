@@ -1,5 +1,7 @@
 //! The user's preferences.
 
+use std::collections::BTreeMap;
+
 use tauri::{AppHandle, State};
 
 use homeport_settings::Settings;
@@ -25,4 +27,14 @@ pub fn update_settings(
         crate::app::history::prune(&app);
     }
     Ok(updated)
+}
+
+/// Hands over the active language's templates (`native.*` and `errors.*`,
+/// by key) for the text the OS draws: the tray menu and notifications.
+/// An empty map means English (ADR 0011).
+#[tauri::command]
+#[specta::specta]
+pub fn set_native_text(app: AppHandle, templates: BTreeMap<String, String>) {
+    homeport_core::error::set_translations(templates);
+    crate::app::tray::refresh(&app);
 }

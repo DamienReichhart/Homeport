@@ -43,7 +43,7 @@ When a CA certificate is given, only that CA is trusted for this cluster, as wit
 
 ## The ACL token
 
-Homeport sends the token in the `X-Nomad-Token` header of each request, never in a URL. While connected it checks the token every 15 seconds; a token Nomad doesn't know (deleted, expired, or mistyped) stops the connection with **Unauthorized** until you paste a new one.
+Homeport sends the token in the `X-Nomad-Token` header of each request, never in a URL. While connected it checks the token every 15 seconds; a token Nomad doesn't know (deleted, expired, or mistyped) stops the connection with **Access refused** until you paste a new one.
 
 A token that can't read the agent (`agent:read`) still connects: the cluster's page then shows its region but not its version.
 

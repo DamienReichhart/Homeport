@@ -1,0 +1,128 @@
+---
+/*
+ * The language menu: the same page in every language, as plain links in a
+ * disclosure, each language named in itself. The choice is the URL: nothing is
+ * remembered and nothing redirects. Its styles use only the shared palette
+ * (app/styles/theme.css), so the docs header can show it too.
+ */
+import { strings } from '@/core/i18n';
+import { LOCALES, localeOf, localePath } from '@/core/site';
+import { href } from '@/shared/lib/href';
+import { Icon } from '@/shared/ui';
+
+interface Props {
+  /** The current page's path without the base path, in any language: `/fr/download/`. */
+  currentPath: string;
+}
+
+const { currentPath } = Astro.props;
+const current = localeOf(currentPath);
+const s = strings(current);
+---
+
+<details class="language-switcher">
+  <summary title={s['language.label']}>
+    <Icon name="globe" />
+    <span class="language-switcher__hidden">
+      {s['language.label']}: {current.label}
+    </span>
+  </summary>
+  <ul class="language-switcher__list">
+    {LOCALES.map((locale) => (
+      <li>
+        <a
+          href={href(localePath(currentPath, locale))}
+          lang={locale.lang}
+          hreflang={locale.lang}
+          dir={locale.dir}
+          aria-current={locale === current ? 'page' : undefined}
+        >
+          {locale.label}
+        </a>
+      </li>
+    ))}
+  </ul>
+</details>
+
+<script>
+  // Close an open menu on Escape or a click elsewhere; without this script it still works.
+  const menus = document.querySelectorAll<HTMLDetailsElement>('.language-switcher');
+  document.addEventListener('click', (event) => {
+    for (const menu of menus) {
+      if (!menu.contains(event.target as Node)) menu.open = false;
+    }
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    for (const menu of menus) {
+      if (menu.open) {
+        menu.open = false;
+        menu.querySelector('summary')?.focus();
+      }
+    }
+  });
+</script>
+
+<style>
+  .language-switcher {
+    position: relative;
+  }
+  .language-switcher summary {
+    display: inline-grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--hp-radius);
+    color: var(--hp-text-muted);
+    cursor: pointer;
+    list-style: none;
+  }
+  .language-switcher summary::-webkit-details-marker {
+    display: none;
+  }
+  .language-switcher summary:hover,
+  .language-switcher[open] summary {
+    background: var(--hp-bg-raised);
+    color: var(--hp-text);
+  }
+  .language-switcher__hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .language-switcher__list {
+    position: absolute;
+    inset-inline-end: 0;
+    top: calc(100% + 0.6rem);
+    z-index: 60;
+    display: grid;
+    min-width: 12rem;
+    max-height: min(70vh, 32rem);
+    margin: 0;
+    padding: 0.5rem;
+    overflow-y: auto;
+    border: 1px solid var(--hp-border-strong);
+    border-radius: var(--hp-radius);
+    background: var(--hp-surface);
+    list-style: none;
+  }
+  .language-switcher__list a {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--hp-radius);
+    color: var(--hp-text);
+    font-size: 0.925rem;
+    text-align: start;
+    text-decoration: none;
+  }
+  .language-switcher__list a:hover {
+    background: var(--hp-bg-raised);
+  }
+  .language-switcher__list a[aria-current='page'] {
+    background: var(--hp-bg-raised);
+    font-weight: 600;
+  }
+</style>

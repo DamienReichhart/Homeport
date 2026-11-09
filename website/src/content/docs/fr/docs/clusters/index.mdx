@@ -1,0 +1,85 @@
+---
+title: Clusters
+description: Comment Homeport se connecte aux clusters Kubernetes de votre kubeconfig, ce qu’il conserve et ce que signifie chaque état. Les clusters Nomad ont leur propre page.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+Un **cluster** est un cluster Kubernetes, ou un [cluster Nomad](/docs/clusters/nomad/), auquel Homeport se connecte par son API. Cette section traite des clusters Kubernetes ; les clusters Nomad ont [leur propre page](/docs/clusters/nomad/). Un cluster Kubernetes est un cluster que Homeport joint par son serveur d’API. Vous en ajoutez un à partir d’un contexte d’un kubeconfig, le fichier que `kubectl` utilise déjà. Il n’y a donc aucun nouvel identifiant à créer, et Homeport n’installe rien sur le cluster : il parle seulement à l’API Kubernetes que votre kubeconfig atteint déjà, avec les droits de ses identifiants.
+
+<DocScreenshot
+  name="cluster-overview"
+  alt="La Vue d’ensemble avec les cartes des hôtes et des clusters, et la synthèse du cluster eks-prod en dessous."
+  caption="Les clusters figurent sur la Vue d’ensemble à côté de vos hôtes ; celui qui est sélectionné affiche sa synthèse."
+/>
+
+Les clusters figurent à côté de vos hôtes dans le sélecteur en haut de la barre latérale. En sélectionner un affiche ses pages — **Charges de travail**, **Pods**, **Réseau**, **Configuration**, **Nodes**, **Événements**, **Ressources de l’API**, **Appliquer du YAML**, **Helm** et **Redirections de port** — et sa synthèse sur la [Vue d’ensemble](/docs/guides/overview/#le-cluster-sélectionné) ; sélectionner un hôte affiche à nouveau les pages de l’hôte.
+
+## Ce que vous pouvez faire
+
+Vous pouvez voir ce qui s’exécute sur un cluster et s’il est en bonne santé, en direct, et effectuer depuis Homeport les tâches `kubectl` du quotidien :
+
+1. [Ajouter un cluster](#ajouter-un-cluster) depuis votre kubeconfig, ou un [cluster local](/docs/clusters/local/) en un clic ; les clusters cloud se connectent par leur [plugin exec](/docs/clusters/exec-plugins/).
+2. Parcourir ses [charges de travail et ses Pods](/docs/clusters/workloads/), ses [Services, Ingress, ConfigMaps et Secrets](/docs/clusters/networking-config/), ses [Nodes et Events](/docs/clusters/nodes-events/), et [toute autre ressource de l’API](/docs/clusters/api-resources/), ressources personnalisées comprises.
+3. Lire les [journaux d’un Pod ou d’une charge de travail et ouvrir un terminal](/docs/clusters/logs-exec/) dans un conteneur, et [rediriger un port](/docs/clusters/port-forward/) vers cet ordinateur.
+4. [Mettre à l’échelle, redémarrer et supprimer](/docs/clusters/actions/), et [appliquer ou modifier du YAML](/docs/clusters/yaml/) en prévisualisant ce qui change.
+5. Lister, installer, mettre à niveau, revenir en arrière et désinstaller des [releases Helm](/docs/clusters/helm/), et gérer les dépôts de charts de helm, avec le CLI `helm` de cet ordinateur.
+
+Chaque changement est envoyé à l’API Kubernetes avec les droits de vos identifiants, et tout ce qui supprime ou remplace quelque chose demande d’abord confirmation, en nommant le cluster.
+
+## Ajouter un cluster
+
+<DocScreenshot
+  name="add-cluster"
+  alt="La page Ajouter un cluster : les clusters locaux trouvés sur cette machine en haut, puis les contextes de ~/.kube/config avec leur serveur d’API, leur façon de se connecter et ceux qui sont déjà ajoutés."
+/>
+
+Choisissez **Ajouter un cluster…** dans le sélecteur, ou **Ajouter un cluster** sur la page Clusters. Les [clusters locaux](/docs/clusters/local/) — Docker Desktop, OrbStack, Rancher Desktop, kind, k3d, minikube — sont proposés en haut, en un clic chacun. Chaque contexte que vous choisissez devient un cluster, nommé d’après le contexte ; vous pouvez le renommer avant ou après l’import.
+
+- **Depuis le kubeconfig de cette machine** lit les fichiers listés dans `KUBECONFIG`, fusionnés comme `kubectl` les fusionne, ou `~/.kube/config` quand `KUBECONFIG` n’est pas défini. Le contexte courant est choisi pour vous.
+- **Coller un kubeconfig** lit le texte que vous collez, en mémoire uniquement : il n’est jamais enregistré dans un fichier. Les fichiers auxquels il fait référence (`certificate-authority: /…`) doivent être des chemins complets ; le plus simple est d’en coller un où tout est intégré :
+
+  ```bash
+  kubectl config view --raw --flatten --minify
+  ```
+
+Chaque contexte affiche son serveur d’API, son namespace, et la façon dont son utilisateur se connecte — **Certificat client**, **Jeton**, **OpenID Connect**, ou **Plugin exec (aws)** pour un cluster cloud —, pour que vous puissiez distinguer un cluster local d’un cluster de production avant de l’importer. Cochez ceux que vous voulez ; chacun reçoit un champ de nom, rempli avec le nom du contexte. Les longs ARN comme `arn:aws:eks:…:cluster/prod` méritent d’être renommés en quelque chose de court comme `eks-prod` : le nom est ce qu’affichent le sélecteur et la Vue d’ensemble.
+
+Un contexte qui est déjà un cluster ne peut pas être importé deux fois : Homeport propose **L’actualiser** à la place. Un contexte inutilisable indique pourquoi, par exemple un utilisateur dont l’`auth-provider` est `gcp` ou `azure`, que Kubernetes a supprimés (passez-le à `gke-gcloud-auth-plugin` ou `kubelogin`, comme `kubectl` l’exige désormais).
+
+Les utilisateurs peuvent se connecter avec un certificat client, un jeton (ou `tokenFile`), un nom d’utilisateur et un mot de passe, un `auth-provider` OpenID Connect (son jeton d’identité est renouvelé en mémoire), ou un plugin exec.
+
+## Ce qui est conservé, et où
+
+| Conservé en clair dans la base de données de Homeport                               | Conservé uniquement chiffré (comme les clés SSH)                                              |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| le nom, l’URL du serveur d’API, le namespace du contexte                            | le certificat d’AC, le certificat client et sa clé                                            |
+| la façon dont son utilisateur se connecte (certificat, jeton…), le contexte importé | le jeton ou le mot de passe, les jetons OIDC, les arguments et l’environnement du plugin exec |
+
+Les fichiers auxquels le kubeconfig fait référence sont lus une seule fois, à l’import, et conservés chiffrés avec le reste. Votre kubeconfig n’est jamais modifié. Sans trousseau du système, Homeport ne peut pas conserver d’identifiants et n’ajoute pas de cluster ; voir [Sécurité et vos données](/docs/reference/security/).
+
+## Actualiser depuis le kubeconfig
+
+kind, k3d et minikube donnent de nouveaux certificats à un cluster chaque fois qu’ils le recréent, et les identifiants cloud sont renouvelés. **Actualiser depuis le kubeconfig**, sur la page d’un cluster, relit son contexte — depuis le kubeconfig de cette machine, ou depuis un kubeconfig que vous collez à nouveau pour un cluster qui avait été collé —, conserve son nom et se reconnecte.
+
+## Gérer les clusters
+
+- **Gérer les clusters**, dans le sélecteur, liste chaque cluster avec son état, son serveur d’API et sa façon de se connecter.
+- Sur la page d’un cluster, l’interrupteur **Activé** le déconnecte sans l’oublier, **Reconnecter** réessaie immédiatement, et **Renommer** change son nom dans Homeport uniquement.
+- **Supprimer le cluster** oublie le cluster et ses identifiants conservés. Rien ne change sur le cluster ni dans votre kubeconfig.
+
+Les noms de clusters doivent être uniques, sans tenir compte de la casse.
+
+## États
+
+| État                    | Signification                                                                                                                |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Connecté**            | Le serveur d’API répond ; sa version de Kubernetes s’affiche à côté.                                                         |
+| **Connexion**           | Homeport est en train de le joindre.                                                                                         |
+| **Injoignable**         | Le serveur d’API n’a pas répondu. Homeport réessaie de lui-même, en attendant 1 s puis jusqu’à une minute.                   |
+| **Accès refusé**        | Le serveur d’API a refusé les identifiants. Vérifiez que `kubectl` fonctionne avec le contexte, puis actualisez.             |
+| **Mal configuré**       | Quelque chose que vous seul pouvez corriger, comme un certificat qui ne correspond pas. Homeport attend que vous le fassiez. |
+| **Identifiants perdus** | La clé du trousseau du système qui les protège a disparu ; actualisez le cluster depuis son kubeconfig.                      |
+| **Désactivé**           | Désactivé avec l’interrupteur **Activé**.                                                                                    |
+
+Un cluster connecté est vérifié toutes les 15 secondes : un cluster qui disparaît l’indique et se reconnecte de lui-même quand il revient, comme un hôte.

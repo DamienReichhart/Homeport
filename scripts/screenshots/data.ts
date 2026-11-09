@@ -135,6 +135,7 @@ export const sshSetup = {
   fingerprint: 'SHA256:q3Vd8cXnR2mJ0k1yWf5tZp6oLhA9sBe4uGiC7vNwKxE',
   installCommand: `mkdir -p ~/.ssh && echo '${DEMO_KEY}' >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys`,
   dockerGroupCommand: 'sudo usermod -aG docker deploy',
+  servers: ['deploy@prod-eu-1.example.com'],
 };
 
 interface Spec {

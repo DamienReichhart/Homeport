@@ -47,7 +47,7 @@ export default {
   'pods.logs.previous': 'Previous instance',
   'pods.logs.noRestart': 'It hasn’t restarted, so there’s no previous instance.',
   'pods.logs.pod': 'Pod',
-  'pods.logs.allPods': 'All {count, plural, one {# Pod} other {# Pods}}',
+  'pods.logs.allPods': '{count, plural, one {The Pod} other {All # Pods}}',
   'pods.logs.noPods': 'It runs no Pod right now.',
   'pods.tab.terminal': 'Terminal',
   'pods.terminal.shell': 'Shell',

@@ -1,0 +1,16 @@
+---
+/** This page in every language but English, which is `pages/index.astro`. */
+import HomePage from '@/app/views/HomePage.astro';
+import { localeStaticPaths } from '@/core/i18n';
+import type { Locale } from '@/core/site';
+
+export const getStaticPaths = localeStaticPaths;
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+---
+
+<HomePage locale={locale} />

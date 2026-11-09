@@ -1,0 +1,36 @@
+/** Spanish text of the `ui` namespace. */
+import type en from '../en/ui';
+import type { Translation } from '../types';
+
+export default {
+  'ui.copy': 'Copiar',
+  'ui.copied': 'Copiado',
+  'ui.search': 'Buscar',
+  'ui.shortcuts.focusSearch': 'Buscar en esta página',
+  'ui.shortcuts.thisPage': 'Esta página',
+  'ui.table.selectAll': 'Seleccionar todo',
+  'ui.table.selectRow': 'Seleccionar fila',
+  'ui.table.empty': 'No hay nada aquí.',
+  'ui.table.page': 'Página {page} de {pages} · {rows, plural, one {# fila} other {# filas}}',
+  'ui.table.previous': 'Página anterior',
+  'ui.table.next': 'Página siguiente',
+  'ui.transfer.done': 'Listo.',
+  'ui.files.column.name': 'Nombre',
+  'ui.files.column.size': 'Tamaño',
+  'ui.files.column.modified': 'Modificado',
+  'ui.files.column.mode': 'Modo',
+  'ui.files.path': 'Ruta',
+  'ui.files.downloadOne': 'Descargar {name}',
+  'ui.files.empty': 'Esta carpeta está vacía.',
+  'ui.chart.time': 'Hora',
+  'ui.errorDetails.title': 'Detalles del error',
+  'ui.errorDetails.code': 'Código',
+  'ui.errorDetails.command': 'Comando',
+  'ui.errorDetails.when': 'Cuándo',
+  'ui.errorDetails.app': 'App',
+  'ui.errorDetails.rawDetail': 'Detalle original',
+  'ui.errorDetails.rawDetailNote':
+    'Tal como lo escribió el sistema, el Engine o la biblioteca, por eso no está traducido.',
+  'ui.errorDetails.openLogFolder': 'Abrir carpeta de logs',
+  'ui.errorDetails.copyReport': 'Copiar informe',
+} satisfies Translation<typeof en>;

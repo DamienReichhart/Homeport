@@ -53,7 +53,7 @@ export function InspectDialog({
                   <TableRow>
                     <TableHead>{t('images.inspect.created')}</TableHead>
                     <TableHead>{t('images.inspect.instruction')}</TableHead>
-                    <TableHead className="text-right">{t('images.inspect.size')}</TableHead>
+                    <TableHead className="text-end">{t('images.inspect.size')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -65,7 +65,7 @@ export function InspectDialog({
                       <TableCell className="max-w-xl font-mono text-xs break-all whitespace-normal">
                         {l.createdBy}
                       </TableCell>
-                      <TableCell className="text-right whitespace-nowrap">
+                      <TableCell className="text-end whitespace-nowrap">
                         {formatBytes(l.size)}
                       </TableCell>
                     </TableRow>

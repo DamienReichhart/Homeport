@@ -137,7 +137,7 @@ function ObjectView({ cluster, info }: { cluster: ClusterView; info: ApiResource
             label: t('apiresources.tab.source'),
             content: (
               <div className="relative">
-                <div className="absolute top-2 right-2">
+                <div className="absolute top-2 end-2">
                   <CopyButton text={d.yaml} label={t('apiresources.copyYaml')} />
                 </div>
                 <pre className="bg-muted max-h-[70vh] overflow-auto rounded-md p-3 font-mono text-xs">

@@ -1,0 +1,97 @@
+---
+title: Démarrage rapide
+description: Connectez votre premier hôte et repérez-vous dans Homeport en cinq minutes.
+---
+
+import { Aside, LinkCard, Steps } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+Ce guide vous mène d’une installation toute neuve à l’exécution d’un conteneur sur votre premier hôte.
+
+## 1. Ajouter un hôte
+
+La première fois que vous ouvrez Homeport, il affiche **Bienvenue dans Homeport**.
+
+Si un Docker Engine s’exécute sur cette machine, il apparaît sous **Trouvés sur cette machine** avec sa version, par exemple `Docker Desktop · Engine 27.3.1`. Choisissez **Ajouter** à côté et vous êtes connecté — passez à l’[étape 2](#2-faire-le-tour).
+
+Pour vous connecter plutôt à un moteur distant, choisissez **Ajouter un autre hôte** :
+
+<Steps>
+
+1. Choisissez comment vous connecter : **SSH**, **TLS**, **TCP** ou **Socket local**. SSH est le choix habituel pour un serveur.
+
+2. Donnez à l’hôte un **Nom** que vous reconnaîtrez, comme `production`.
+
+3. Remplissez les détails de connexion. Pour SSH, ce sont le **Serveur**, le **Port**, l’**Utilisateur** et, si Docker n’est pas à l’emplacement par défaut, le **Chemin du socket distant**.
+
+4. Choisissez **Ajouter un hôte**. Homeport ouvre la page de l’hôte et commence à se connecter.
+
+</Steps>
+
+<DocScreenshot
+  name="add-host-ssh"
+  alt="La page Ajouter un hôte avec SSH sélectionné."
+  caption="Ajout d’un hôte SSH. Homeport crée une clé rien que pour lui."
+/>
+
+Un hôte SSH demande deux choses de plus la première fois. [Hôtes SSH](/docs/hosts/ssh/) les détaille :
+
+- **Approuver la clé du serveur.** Homeport affiche l’empreinte du serveur ; comparez-la et choisissez **Approuver cette clé**.
+- **Autoriser la clé de Homeport.** Copiez la commande sous **Autoriser Homeport sur le serveur**, exécutez-la sur le serveur, puis choisissez **Reconnecter**.
+
+Quand l’état passe à **Connecté**, c’est terminé.
+
+## 2. Faire le tour
+
+La barre latérale a une page pour chaque type de ressource, et toutes montrent l’hôte choisi dans le **sélecteur d’hôte** en haut de la barre latérale :
+
+| Page               | Ce qu’elle montre                                                                                      |
+| ------------------ | ------------------------------------------------------------------------------------------------------ |
+| **Vue d’ensemble** | Une carte pour chaque hôte, le moteur, l’utilisation du disque et les événements de l’hôte sélectionné |
+| **Conteneurs**     | Chaque conteneur, groupé par stack, avec processeur et mémoire en direct                               |
+| **Images**         | Les images locales, ce qui les utilise, la récupération et le nettoyage                                |
+| **Volumes**        | Les volumes et les conteneurs qui les utilisent                                                        |
+| **Réseaux**        | Les réseaux, leurs sous-réseaux et les conteneurs connectés                                            |
+| **Stacks**         | Les projets Compose, gérés et externes                                                                 |
+| **Événements**     | Ce que le moteur a signalé depuis que Homeport s’est connecté                                          |
+| **Paramètres**     | Le thème, ce que cette machine prend en charge, et les licences                                        |
+
+Homeport se rafraîchit à mesure que le moteur signale des changements, donc vous n’avez jamais besoin d’un bouton d’actualisation — démarrez un conteneur dans un terminal et il apparaît aussitôt.
+
+## 3. Exécuter un conteneur
+
+<Steps>
+
+1. Ouvrez **Conteneurs** et choisissez **Exécuter un conteneur**.
+
+2. Saisissez une **Image**, comme `nginx:alpine`. Homeport la récupère d’abord si l’hôte ne l’a pas.
+
+3. Sous **Ports**, choisissez **Ajouter un port** et associez le port d’hôte `8080` au port de conteneur `80`.
+
+4. Choisissez **Exécuter**. Homeport ouvre le nouveau conteneur sur son onglet **Journaux**.
+
+</Steps>
+
+De retour sur la page Conteneurs, le port `8080:80/tcp` est un lien : sélectionnez-le pour ouvrir le site dans votre navigateur.
+
+## 4. Ajouter d’autres hôtes
+
+Ajoutez autant d’hôtes que vous le souhaitez avec **Ajouter un hôte…** dans le sélecteur d’hôte. La vue d’ensemble les montre tous ensemble ; sélectionnez une carte pour passer à cet hôte.
+
+<Aside type="tip">
+  Homeport se souvient de l’hôte que vous aviez sélectionné, et se reconnecte à chaque hôte au
+  démarrage.
+</Aside>
+
+## Et ensuite
+
+<LinkCard
+  title="Hôtes et connexions"
+  description="États, reconnexion, et chaque type de connexion en détail."
+  href="/docs/hosts/"
+/>
+<LinkCard
+  title="Stacks"
+  description="Déployez des fichiers compose sur n’importe quel hôte, et adoptez des stacks déployées ailleurs."
+  href="/docs/guides/stacks/"
+/>

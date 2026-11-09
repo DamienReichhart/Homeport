@@ -28,4 +28,11 @@ const { href } = Astro.props;
   .text-link:hover :global(svg) {
     transform: translateX(3px);
   }
+  /* In a right-to-left page the arrow points, and nudges, to the left. */
+  .text-link:dir(rtl) :global(svg) {
+    transform: scaleX(-1);
+  }
+  .text-link:dir(rtl):hover :global(svg) {
+    transform: scaleX(-1) translateX(3px);
+  }
 </style>

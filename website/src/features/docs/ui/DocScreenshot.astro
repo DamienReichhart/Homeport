@@ -1,5 +1,9 @@
 ---
-/** A screenshot in the docs, with a caption. See shared/ui/Screenshot.astro for where shots live. */
+/**
+ * A screenshot in the docs, with a caption, in the page's language when it was
+ * captured in it. See shared/ui/Screenshot.astro for where shots live.
+ */
+import { localeOf } from '@/core/site';
 import { Screenshot } from '@/shared/ui';
 
 interface Props {
@@ -9,9 +13,16 @@ interface Props {
 }
 
 const { name, alt, caption } = Astro.props;
+// `/fr/docs/…` is French; the path is read without the site's base.
+const path = Astro.url.pathname.slice(import.meta.env.BASE_URL.replace(/\/$/, '').length);
 ---
 
 <figure class="screenshot not-content">
-  <Screenshot name={name} alt={alt} sizes="(min-width: 50rem) 768px, 100vw" />
+  <Screenshot
+    name={name}
+    alt={alt}
+    folder={localeOf(path).code}
+    sizes="(min-width: 50rem) 768px, 100vw"
+  />
   {caption && <figcaption>{caption}</figcaption>}
 </figure>

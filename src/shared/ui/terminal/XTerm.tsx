@@ -4,6 +4,7 @@ import { SearchAddon } from '@xterm/addon-search';
 import { Terminal, type ITheme } from '@xterm/xterm';
 import '@xterm/xterm/css/xterm.css';
 import { useEffect, useRef } from 'react';
+import { prefersReducedMotion, usePrefersReducedMotion } from '@/shared/hooks';
 import { useResolvedTheme } from '@/shared/lib/theme';
 import { cn } from '@/shared/lib/utils';
 
@@ -94,6 +95,7 @@ export function XTerm({
   const host = useRef<HTMLDivElement>(null);
   const terminal = useRef<Terminal | null>(null);
   const resolved = useResolvedTheme();
+  const still = usePrefersReducedMotion();
   const callbacks = useRef({ onReady, onResize });
 
   useEffect(() => {
@@ -108,7 +110,8 @@ export function XTerm({
     const fontReady = fonts?.check(`${FONT_SIZE}px 'Fragment Mono'`) ?? true;
     const term = new Terminal({
       convertEol: readOnly,
-      cursorBlink: !readOnly,
+      // A blinking cursor is motion: none when the OS asks for less.
+      cursorBlink: !readOnly && !prefersReducedMotion(),
       disableStdin: readOnly,
       fontFamily: fontReady ? MONO : MONO_FALLBACK,
       fontSize: FONT_SIZE,
@@ -155,6 +158,10 @@ export function XTerm({
   useEffect(() => {
     if (terminal.current) terminal.current.options.theme = resolved === 'dark' ? DARK : LIGHT;
   }, [resolved]);
+
+  useEffect(() => {
+    if (terminal.current) terminal.current.options.cursorBlink = !readOnly && !still;
+  }, [readOnly, still]);
 
   return (
     <div

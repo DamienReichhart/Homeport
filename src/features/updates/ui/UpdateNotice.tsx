@@ -33,7 +33,7 @@ export function UpdateNotice() {
       <Button
         variant="ghost"
         size="icon-sm"
-        className="ml-auto"
+        className="ms-auto"
         aria-label={t('updates.notice.dismiss')}
         onClick={() => setDismissed(available.version)}
       >

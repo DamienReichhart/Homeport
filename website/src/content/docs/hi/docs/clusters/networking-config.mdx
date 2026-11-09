@@ -1,0 +1,45 @@
+---
+title: Services और कॉन्फ़िगरेशन
+description: किसी क्लस्टर के Services, Ingresses, ConfigMaps और Secrets देखें, Secret के मान एक बार में एक कुंजी करके दिखाए जाते हैं।
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+## Services और Ingresses
+
+**नेटवर्क** चुने गए Namespace के **Services** की सूची देता है — उनका type, cluster IP, बाहरी पते (load balancers के और `externalIPs`) और पोर्ट, जैसे `kubectl` उन्हें दिखाता है (node port के साथ `443:30443/TCP`) — और, अपने दूसरे टैब पर, **Ingresses** को उनकी class, hosts और उनके controller के प्रकाशित पतों के साथ।
+
+- Service का पेज उसके पोर्ट और target ports, उसकी session affinity, वे लेबल जिनसे वह Pods चुनता है, और उन Pods वाला एक **Pods** टैब दिखाता है। बिना selector वाला Service यह बताता है: उसके endpoints हाथ से प्रबंधित किए जाते हैं।
+- Ingress का पेज हर rule के paths (default backend सबसे पहले) सूचीबद्ध करता है, साथ में यह कि हर एक ट्रैफ़िक कहाँ भेजता है, Service के पेज से लिंक किया हुआ, और उसके TLS hosts और प्रमाणपत्र Secrets।
+
+<DocScreenshot
+  name="cluster-services"
+  alt="Services टैब पर नेटवर्क पेज: अपने cluster IP और पोर्ट के साथ ClusterIP services, अपने बाहरी hostname और node ports के साथ एक LoadBalancer, और बिना cluster IP वाली एक headless service।"
+/>
+
+Ingress का **नियम** टैब routing जाँचने की जगह है: कौन-सा host और path किस Service और पोर्ट पर जाता है।
+
+<DocScreenshot
+  name="cluster-ingress"
+  alt="storefront Ingress के नियम: shop.example.com और www.shop.example.com के लिए /api से api:8080, /checkout से checkout:8080, और / से web:http।"
+/>
+
+## ConfigMaps और Secrets
+
+**कॉन्फ़िगरेशन** **ConfigMaps** और **Secrets** को उनकी कुंजियों के साथ सूचीबद्ध करता है। ConfigMap का पेज हर मान दिखाता है; binary data सिर्फ़ अपना आकार दिखाता है।
+
+<DocScreenshot
+  name="cluster-secret"
+  alt="db-credentials Secret का Data टैब: password कॉपी करें और छिपाएँ बटन के साथ दिखाया गया, username अब भी दिखाएँ बटन के साथ छिपा हुआ।"
+  caption="एक कुंजी दिखाई गई; दूसरी तब तक छिपी रहती है जब तक आप न कहें।"
+/>
+
+Secret का पेज उसका type और हर कुंजी उसके आकार के साथ, छिपाकर दिखाता है। **दिखाएँ** क्लस्टर से वह एक मान लाता है और उसे decode करके दिखाता है (binary मान base64 के रूप में), **कॉपी करें** और **छिपाएँ** के साथ। मान कभी किसी सूची, Secret के पेज या उसके YAML का हिस्सा नहीं होते; दिखाया गया मान cache, सहेजा या लॉग नहीं किया जाता, और पेज छोड़ने पर फिर से छिप जाता है। [सुरक्षा और आपका डेटा](/docs/reference/security/#क्लस्टर) देखें।
+
+ConfigMap के **YAML** टैब में **संपादित करें** होता है, ताकि उसे पूर्वावलोकन और server-side apply के ज़रिए बदला जा सके ([YAML लागू और संपादित करना](/docs/clusters/yaml/))। Secrets Homeport में संपादित नहीं किए जाते, क्योंकि यह उनके सभी मान कभी एक साथ नहीं दिखाता; इसकी बजाय Secret का मैनिफ़ेस्ट लागू करें।
+
+## बाकी सब
+
+Endpoints और EndpointSlices, NetworkPolicies, PersistentVolumes और आपके CRDs के जोड़े गए रिसोर्स [API रिसोर्स](/docs/clusters/api-resources/) के तहत हैं।
+
+Service के पोर्ट में **फ़ॉरवर्ड करें…** होता है, ताकि उसके किसी तैयार Pod के ज़रिए [इस कंप्यूटर से उस तक पहुँचा जा सके](/docs/clusters/port-forward/); यहाँ हर पेज के हेडर में **हटाएँ** होता है।

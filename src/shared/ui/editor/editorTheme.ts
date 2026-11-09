@@ -87,3 +87,10 @@ const THEMES: Record<ResolvedTheme, Extension> = { light: build('light'), dark: 
 
 /** A CodeMirror theme in Homeport's colours, for the resolved app theme. */
 export const editorTheme = (theme: ResolvedTheme): Extension => THEMES[theme];
+
+/**
+ * Names the editor's text area for screen readers. The `aria-label` prop of
+ * `@uiw/react-codemirror` lands on a wrapper `div`, where it names nothing.
+ */
+export const editorLabel = (label: string): Extension =>
+  EditorView.contentAttributes.of({ 'aria-label': label, 'aria-multiline': 'true' });

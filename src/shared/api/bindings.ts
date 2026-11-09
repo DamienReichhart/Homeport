@@ -24,6 +24,12 @@ export const commands = {
 	openLogFolder: () => __TAURI_INVOKE<null>("open_log_folder"),
 	getSettings: () => __TAURI_INVOKE<Settings>("get_settings"),
 	updateSettings: (settings: Settings) => __TAURI_INVOKE<Settings>("update_settings", { settings }),
+	/**
+	 *  Hands over the active language's templates (`native.*` and `errors.*`,
+	 *  by key) for the text the OS draws: the tray menu and notifications.
+	 *  An empty map means English (ADR 0011).
+	 */
+	setNativeText: (templates: { [key in string]: string }) => __TAURI_INVOKE<void>("set_native_text", { templates }),
 	/**  Every stored login, never with its secret. */
 	registriesList: () => __TAURI_INVOKE<Registry[]>("registries_list"),
 	/**  Adds a login (`id: null`) or changes one; `draft.secret: null` keeps the stored one. */
@@ -3964,6 +3970,13 @@ export type ServiceView = {
 
 export type Settings = {
 	theme?: Theme,
+	/**
+	 *  The app's language: [`SYSTEM_LANGUAGE`] to follow the OS, or a
+	 *  language tag with a catalogue in the frontend (`en`, `fr`, `pt-BR`…).
+	 *  A tag the frontend has no catalogue for reads as the OS's language,
+	 *  so adding a language needs no change here.
+	 */
+	language?: string,
 	/**
 	 *  The Host selected when the app was last closed, kept in step with
 	 *  [`Settings::last_selection`] so an older Homeport opens on it too.

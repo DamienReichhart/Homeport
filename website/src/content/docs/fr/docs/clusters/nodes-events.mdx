@@ -1,0 +1,34 @@
+---
+title: Nodes et Events
+description: Voyez les Nodes d’un cluster, leur capacité et les Pods de chacun, ainsi que ses Events, les avertissements d’abord.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+## Nodes
+
+**Nodes** liste les machines sur lesquelles le cluster exécute des Pods, en indiquant si chacune est **Prêt** (et **planification désactivée** quand elle est isolée), ses rôles, sa version de kubelet, son IP interne, sa plateforme et le CPU et la mémoire allouables.
+
+<DocScreenshot
+  name="cluster-nodes"
+  alt="La page Nodes : cinq Nodes EKS, dont un pas prêt avec la planification désactivée, avec leur version de kubelet, leur IP interne, leur plateforme, leurs CPU et leur mémoire."
+/>
+
+Les CPU sont affichés en cœurs (`3.92` pour `3920m`) et la mémoire en Go ; Kubernetes indique ce qui est **allouable** aux Pods, un peu moins que ce dont dispose la machine, puisque le kubelet et le système en gardent une partie.
+
+La page d’un Node affiche son image d’OS, son noyau, son runtime de conteneurs, ses adresses, ses taints, ses labels, et sa capacité à côté de ce qui est allouable aux Pods ; puis les **Pods** qui s’y exécutent, dans tous les Namespaces, ses **Conditions** (pression sur la mémoire, le disque et les PID), ses **Événements** et son **YAML**. La page d’un Pod renvoie vers son Node.
+
+## Events
+
+<DocScreenshot
+  name="cluster-events"
+  alt="La page Événements : trois avertissements d’abord (un Pod en back-off, une image qui ne peut pas être récupérée, un Node pas prêt), puis les événements normaux, chacun avec son objet, son message, son nombre et son âge."
+/>
+
+**Événements** liste ce que Kubernetes a signalé dans le Namespace sélectionné (ou dans tous) : les avertissements d’abord, puis les plus récents, chacun avec sa raison, l’objet qu’il concerne — lié à la page de cet objet —, son message, le nombre de fois où il s’est produit et la dernière fois. Filtrez par **Avertissements** ou **Normal**, et recherchez par raison, objet ou message. La liste se met à jour en direct.
+
+Kubernetes conserve les Events environ une heure : une liste vide est donc normale sur un cluster calme. La page de chaque objet a aussi son propre onglet **Événements**.
+
+## Quand vos identifiants ne peuvent pas voir quelque chose
+
+Les Nodes ne sont dans aucun Namespace : les lister demande donc une permission sur tout le cluster, que beaucoup d’utilisateurs n’ont pas. La page indique alors « Vos identifiants n’autorisent pas “list” sur nodes. » et toutes les autres pages continuent de fonctionner.

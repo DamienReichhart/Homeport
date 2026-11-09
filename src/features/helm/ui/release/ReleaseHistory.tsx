@@ -3,6 +3,7 @@ import type { ReleaseRevision } from '@/shared/api';
 import { DataTable } from '@/shared/ui';
 import { ReleaseStatus } from '../ReleaseStatus';
 import { t } from '@/shared/i18n';
+import { formatDateTime } from '@/shared/lib';
 
 /** Every revision of a release, newest first, each with what `action` offers. */
 export function ReleaseHistory({
@@ -21,8 +22,7 @@ export function ReleaseHistory({
           id: 'updated',
           header: t('helm.column.updated'),
           accessorFn: (r) => r.updated ?? '',
-          cell: ({ row }) =>
-            row.original.updated ? new Date(row.original.updated).toLocaleString() : '—',
+          cell: ({ row }) => (row.original.updated ? formatDateTime(row.original.updated) : '—'),
         },
         {
           id: 'status',

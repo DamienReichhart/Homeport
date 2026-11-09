@@ -99,4 +99,16 @@ homeport_core::messages! {
     SWARM_UNREACHABLE_HINT = "errors.swarm.unreachable.hint" => "Connect one of its managers: {hosts}.";
     /// …when Homeport knows none of them.
     SWARM_UNREACHABLE_UNKNOWN_HINT = "errors.swarm.unreachable.hintUnknown" => "Add a manager of this Swarm as a host, or reconnect one.";
+
+    /// OS notifications (`native.`: drawn by the OS, not the window).
+    ALERT_HOST_BACK_TITLE = "native.alerts.hostBack.title" => "Host back";
+    ALERT_HOST_BACK = "native.alerts.hostBack.body" => "{host} is connected again.";
+    ALERT_HOST_UNREACHABLE_TITLE = "native.alerts.hostUnreachable.title" => "Host unreachable";
+    ALERT_HOST_UNREACHABLE = "native.alerts.hostUnreachable.body" => "{host} is unreachable: {reason}";
+    ALERT_OUT_OF_MEMORY_TITLE = "native.alerts.outOfMemory.title" => "Container out of memory";
+    ALERT_OUT_OF_MEMORY = "native.alerts.outOfMemory.body" => "{container} ran out of memory on {host}";
+    ALERT_STOPPED_TITLE = "native.alerts.stopped.title" => "Container stopped";
+    ALERT_STOPPED = "native.alerts.stopped.body" => "{container} stopped on {host} (exit code {code})";
+    ALERT_UNHEALTHY_TITLE = "native.alerts.unhealthy.title" => "Container unhealthy";
+    ALERT_UNHEALTHY = "native.alerts.unhealthy.body" => "{container} is unhealthy on {host}";
 }

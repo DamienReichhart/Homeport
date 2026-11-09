@@ -1,0 +1,37 @@
+/** Simplified Chinese text of the `config` namespace. */
+import type en from '../en/config';
+import type { Translation } from '../types';
+
+export default {
+  'config.nav': '配置',
+  'config.title': '配置',
+  'config.configMaps': 'ConfigMap',
+  'config.secrets': 'Secret',
+  'config.configMap': 'ConfigMap',
+  'config.secret': 'Secret',
+  'config.configMapsSummary': '{count, plural, other {# 个 ConfigMap}}',
+  'config.secretsSummary': '{count, plural, other {# 个 Secret}}',
+  'config.searchConfigMaps': '搜索 ConfigMap',
+  'config.searchSecrets': '搜索 Secret',
+  'config.column.name': '名称',
+  'config.column.namespace': 'Namespace',
+  'config.column.type': '类型',
+  'config.column.keys': '键',
+  'config.column.age': '存在时间',
+  'config.tab.data': '数据',
+  'config.tab.overview': '概览',
+  'config.tab.events': '事件',
+  'config.tab.source': 'YAML',
+  'config.detail.namespace': 'Namespace',
+  'config.detail.type': '类型',
+  'config.detail.labels': '标签',
+  'config.detail.annotations': '注解',
+  'config.noKeys': '没有键。',
+  'config.binary': '（二进制数据）',
+  'config.base64': 'base64',
+  'config.reveal': '显示',
+  'config.revealOne': '显示 {key}',
+  'config.hide': '隐藏',
+  'config.copy': '复制 {key}',
+  'config.reveal.failed': 'Homeport 无法显示 {key}',
+} satisfies Translation<typeof en>;

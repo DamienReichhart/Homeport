@@ -1,0 +1,47 @@
+---
+title: 로컬 클러스터
+description: Homeport가 이 컴퓨터에서 찾는 Kubernetes 클러스터와, Docker Desktop, OrbStack, Rancher Desktop에서 Kubernetes를 켜는 방법을 설명합니다.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+Homeport는 이 컴퓨터의 kubeconfig에서 여기서 실행 중인 클러스터를 찾아 각 API 서버에 버전을 묻고, 응답한 클러스터를 **클러스터 추가** 페이지와 시작 페이지에 표시하여 각각 클릭 한 번으로 추가할 수 있게 합니다. 클러스터를 시작하거나 만들거나 설치하는 일은 절대 하지 않습니다.
+
+<DocScreenshot
+  name="add-cluster"
+  alt="이 컴퓨터의 클러스터: 이미 추가된 kind-dev, 추가 버튼이 있는 Docker Desktop의 클러스터, 실행 중이 아닌 OrbStack의 클러스터, kubeconfig에 추가하는 명령이 함께 표시된 k3d 클러스터."
+  caption="kind-dev는 이미 클러스터이고, Docker Desktop의 클러스터는 클릭 한 번이면 추가되며, OrbStack의 클러스터는 중지되어 있고, 실행 중인 k3d 클러스터는 아직 kubeconfig에 없습니다."
+/>
+
+## 찾는 클러스터
+
+| 도구                | kubeconfig 컨텍스트                      | 추가될 때의 이름  |
+| ------------------- | ---------------------------------------- | ----------------- |
+| **Docker Desktop**  | `docker-desktop`                         | `Docker Desktop`  |
+| **OrbStack**        | `orbstack`                               | `OrbStack`        |
+| **Rancher Desktop** | `rancher-desktop`                        | `Rancher Desktop` |
+| **kind**            | `kind-<name>`                            | 컨텍스트 이름     |
+| **k3d**             | `k3d-<name>`                             | 컨텍스트 이름     |
+| **minikube**        | `minikube` 또는 minikube가 작성한 프로필 | 컨텍스트 이름     |
+
+컨텍스트는 API 서버가 이 컴퓨터에 있거나(`127.0.0.1`, `localhost`, `kubernetes.docker.internal`…), minikube와 Rancher Desktop의 경우 해당 VM 안의 사설 주소에 있을 때만 로컬로 간주됩니다. 원격 컨텍스트는 이름이 무엇이든 표시되지 않습니다. 응답하지 않는 로컬 클러스터에는 **실행 중이 아님** 상태가 표시됩니다. 해당 도구로 클러스터를 시작한 다음 페이지를 다시 여세요.
+
+### kubeconfig에 없는 kind 및 k3d 클러스터
+
+[로컬 호스트](/docs/hosts/local/)가 연결되어 있으면 Homeport는 실행 중인 kind 및 k3d 클러스터의 컨테이너도 (`io.x-k8s.kind.cluster` 및 `k3d.cluster` 레이블로) 찾아냅니다. kubeconfig로 연결할 수 없는 클러스터는 몰래 추가하지 않고, 추가하는 명령과 함께 표시합니다.
+
+```bash
+kind export kubeconfig --name <name>
+```
+
+```bash
+k3d kubeconfig merge <name> --kubeconfig-merge-default
+```
+
+## Kubernetes 켜기
+
+- **Docker Desktop**: **Settings → Kubernetes → Enable Kubernetes** 옵션을 켠 다음 **Apply & restart** 버튼을 누릅니다. `docker-desktop` 컨텍스트가 추가됩니다.
+- **OrbStack**: **Settings → Kubernetes → Enable Kubernetes** 옵션을 켜거나 `orb start k8s`를 실행합니다. `orbstack` 컨텍스트가 추가됩니다.
+- **Rancher Desktop**: **Preferences → Kubernetes → Enable Kubernetes** 옵션을 켭니다. `rancher-desktop` 컨텍스트가 추가됩니다.
+
+kind(`kind create cluster`), k3d(`k3d cluster create`), minikube(`minikube start`)는 클러스터를 만들 때 컨텍스트를 추가합니다. 클러스터를 다시 만들 때마다 새 인증서를 발급하므로, 그 후에는 클러스터 페이지에서 **kubeconfig에서 새로 고침** 기능을 사용하세요.

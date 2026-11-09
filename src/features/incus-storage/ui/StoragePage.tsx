@@ -38,7 +38,7 @@ function PoolCard({
       aria-pressed={selected}
       onClick={onSelect}
       className={cn(
-        'hover:bg-muted grid gap-2 rounded-lg border p-3 text-left',
+        'hover:bg-muted grid gap-2 rounded-lg border p-3 text-start',
         selected && 'border-primary bg-muted/60',
       )}
     >

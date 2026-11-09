@@ -1,0 +1,97 @@
+---
+title: Schnellstart
+description: Verbinden Sie Ihren ersten Host und finden Sie sich in fünf Minuten in Homeport zurecht.
+---
+
+import { Aside, LinkCard, Steps } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+Diese Anleitung führt Sie von einer frischen Installation bis zu einem laufenden Container auf Ihrem ersten Host.
+
+## 1. Einen Host hinzufügen
+
+Wenn Sie Homeport zum ersten Mal öffnen, zeigt es **Willkommen bei Homeport** an.
+
+Läuft auf diesem Rechner eine Docker Engine, erscheint sie unter **Auf diesem Rechner gefunden** mit ihrer Version, zum Beispiel `Docker Desktop · Engine 27.3.1`. Wählen Sie daneben **Hinzufügen**, und Sie sind verbunden – springen Sie zu [Schritt 2](#2-sich-umsehen).
+
+Um sich stattdessen mit einer entfernten Engine zu verbinden, wählen Sie **Weiteren Host hinzufügen**:
+
+<Steps>
+
+1. Wählen Sie, wie die Verbindung hergestellt wird: **SSH**, **TLS**, **TCP** oder **Lokaler Socket**. Für einen Server ist SSH die übliche Wahl.
+
+2. Geben Sie dem Host unter **Name** einen Namen, den Sie wiedererkennen, etwa `production`.
+
+3. Füllen Sie die Verbindungsdetails aus. Für SSH sind das **Server**, **Port**, **Benutzer** und, falls Docker nicht am Standardort liegt, **Entfernter Socket-Pfad**.
+
+4. Wählen Sie **Host hinzufügen**. Homeport öffnet die Seite des Hosts und beginnt mit dem Verbinden.
+
+</Steps>
+
+<DocScreenshot
+  name="add-host-ssh"
+  alt="Die Seite „Host hinzufügen“ mit ausgewähltem SSH."
+  caption="Einen SSH-Host hinzufügen. Homeport erstellt eigens dafür einen Schlüssel."
+/>
+
+Ein SSH-Host braucht beim ersten Mal zwei weitere Dinge. [SSH-Hosts](/docs/hosts/ssh/) führt Sie durch beide:
+
+- **Dem Schlüssel des Servers vertrauen.** Homeport zeigt den Fingerabdruck des Servers; vergleichen Sie ihn und wählen Sie **Diesem Schlüssel vertrauen**.
+- **Den Schlüssel von Homeport autorisieren.** Kopieren Sie den Befehl unter **Homeport auf dem Server autorisieren**, führen Sie ihn auf dem Server aus und wählen Sie dann **Neu verbinden**.
+
+Sobald der Status zu **Verbunden** wechselt, sind Sie fertig.
+
+## 2. Sich umsehen
+
+Die Seitenleiste hat eine Seite für jede Art von Ressource, und alle zeigen den Host, der im **Host-Umschalter** oben in der Seitenleiste gewählt ist:
+
+| Seite             | Was sie zeigt                                                                          |
+| ----------------- | -------------------------------------------------------------------------------------- |
+| **Übersicht**     | Eine Karte für jeden Host, Engine, Speicherbelegung und Ereignisse des gewählten Hosts |
+| **Container**     | Alle Container, nach Stack gruppiert, mit CPU und Arbeitsspeicher live                 |
+| **Images**        | Lokale Images, was sie verwendet, Pullen und Aufräumen                                 |
+| **Volumes**       | Volumes und die Container, die sie verwenden                                           |
+| **Netzwerke**     | Netzwerke, ihre Subnetze und angeschlossene Container                                  |
+| **Stacks**        | Compose-Projekte, verwaltete und externe                                               |
+| **Ereignisse**    | Was die Engine gemeldet hat, seit Homeport verbunden ist                               |
+| **Einstellungen** | Design, was dieser Rechner unterstützt, und Lizenzen                                   |
+
+Homeport aktualisiert sich, sobald die Engine Änderungen meldet, sodass Sie nie eine Schaltfläche zum Aktualisieren brauchen – starten Sie einen Container in einem Terminal, und er erscheint sofort.
+
+## 3. Einen Container ausführen
+
+<Steps>
+
+1. Öffnen Sie **Container** und wählen Sie **Container ausführen**.
+
+2. Geben Sie ein **Image** ein, etwa `nginx:alpine`. Homeport pullt es zuerst, wenn der Host es nicht hat.
+
+3. Wählen Sie unter **Ports** die Option **Port hinzufügen** und ordnen Sie den Host-Port `8080` dem Container-Port `80` zu.
+
+4. Wählen Sie **Ausführen**. Homeport öffnet den neuen Container auf seinem Tab **Logs**.
+
+</Steps>
+
+Zurück auf der Seite „Container“ ist der Port `8080:80/tcp` ein Link: Wählen Sie ihn aus, um die Website in Ihrem Browser zu öffnen.
+
+## 4. Weitere Hosts hinzufügen
+
+Fügen Sie mit **Host hinzufügen…** im Host-Umschalter so viele Hosts hinzu, wie Sie möchten. Die Übersicht zeigt sie alle zusammen; wählen Sie eine Karte aus, um zu diesem Host zu wechseln.
+
+<Aside type="tip">
+  Homeport merkt sich den Host, den Sie ausgewählt hatten, und verbindet sich beim Start wieder mit
+  jedem Host.
+</Aside>
+
+## Wie es weitergeht
+
+<LinkCard
+  title="Hosts und Verbindungen"
+  description="Status, Neuverbindung und jede Art von Verbindung im Detail."
+  href="/docs/hosts/"
+/>
+<LinkCard
+  title="Stacks"
+  description="Compose-Dateien auf jedem Host bereitstellen und anderswo bereitgestellte Stacks übernehmen."
+  href="/docs/guides/stacks/"
+/>

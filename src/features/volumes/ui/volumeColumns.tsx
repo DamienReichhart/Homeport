@@ -19,6 +19,7 @@ import {
 } from '@/shared/ui';
 import { VolumeSize, type VolumeSizes } from './VolumeSize';
 import { t } from '@/shared/i18n';
+import { formatDate } from '@/shared/lib';
 
 /** The volumes table's columns; the last one holds the row's actions. */
 export function volumeColumns({
@@ -75,8 +76,7 @@ export function volumeColumns({
       id: 'created',
       header: t('volumes.column.created'),
       accessorFn: (v) => v.createdAt ?? '',
-      cell: ({ row }) =>
-        row.original.createdAt ? new Date(row.original.createdAt).toLocaleDateString() : '—',
+      cell: ({ row }) => (row.original.createdAt ? formatDate(row.original.createdAt) : '—'),
     },
     {
       id: 'actions',

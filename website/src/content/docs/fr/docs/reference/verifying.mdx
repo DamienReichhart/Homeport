@@ -1,0 +1,79 @@
+---
+title: Vérifier les téléchargements
+description: Contrôler un programme d’installation de Homeport par rapport à sa somme de contrôle, sa provenance de build et ses signatures, et comment les mises à jour et les paquets Linux sont vérifiés.
+---
+
+import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import { KEY_URL } from '@/core/packages';
+import { SigningKeyFingerprint } from '@/features/docs';
+
+Chaque release de Homeport est construite par GitHub Actions à partir du dépôt public. Vous pouvez vérifier de deux façons que le fichier que vous avez téléchargé est bien celui qui a été construit. Les paquets Linux et les mises à jour sont aussi signés, et vérifiés pour vous.
+
+## Sommes de contrôle
+
+Chaque release inclut `SHA256SUMS.txt`, avec une somme de contrôle SHA-256 pour chaque fichier. La [page de téléchargement](/download/) affiche aussi la somme de contrôle de chaque fichier. Téléchargez `SHA256SUMS.txt` dans le même dossier que le programme d’installation, puis :
+
+<Tabs syncKey="os">
+<TabItem label="Linux">
+
+```sh
+sha256sum --ignore-missing -c SHA256SUMS.txt
+```
+
+</TabItem>
+<TabItem label="macOS">
+
+```sh
+shasum -a 256 --ignore-missing -c SHA256SUMS.txt
+```
+
+</TabItem>
+<TabItem label="Windows">
+
+```powershell
+(Get-FileHash .\Homeport_0.2.0_x64-setup.exe -Algorithm SHA256).Hash.ToLower()
+```
+
+Comparez le résultat avec la ligne du programme d’installation dans `SHA256SUMS.txt`.
+
+</TabItem>
+</Tabs>
+
+`OK` à côté du nom du fichier signifie qu’il correspond.
+
+## Provenance de build
+
+Une somme de contrôle prouve que le fichier n’a pas été endommagé ou remplacé après la publication de la somme. Une [attestation de provenance de build](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) va plus loin : elle est signée par GitHub et enregistre le dépôt, le commit et le workflow qui ont produit le fichier.
+
+Avec le [GitHub CLI](https://cli.github.com) installé :
+
+```sh
+gh attestation verify Homeport_0.2.0_x64-setup.exe --repo DamienReichhart/Homeport
+```
+
+Une vérification réussie affiche le workflow et le commit à partir desquels le fichier a été construit.
+
+## Signatures des paquets
+
+Le dépôt de paquets Homeport et chaque `.rpm` sont signés avec la clé de paquets Homeport (RSA 4096) :
+
+**Empreinte :** <SigningKeyFingerprint />
+
+`apt`, `dnf` et `zypper` vérifient ces signatures à chaque mise à jour, et refusent les paquets et les données de dépôt qui ne correspondent pas. Pour vérifier la clé que vous avez téléchargée, ou un fichier `.rpm` :
+
+<Code code={`curl -fsSL ${KEY_URL} | gpg --show-keys --with-fingerprint`} lang="sh" />
+
+```sh
+sudo rpm --import homeport.asc   # once
+rpm -K Homeport-<version>-1.x86_64.rpm
+```
+
+`rpm -K` affiche `digests signatures OK` pour un paquet signé. Un fichier `.deb` n’est pas signé lui-même : l’index signé du dépôt le couvre, et un `.deb` téléchargé est couvert par sa somme de contrôle et son attestation.
+
+## Signatures des mises à jour
+
+Chaque mise à jour qu’installe le système de mise à jour intégré est signée avec une clé de mise à jour Homeport distincte, dont la moitié publique est intégrée à Homeport. Avant d’installer, Homeport vérifie la signature et qu’elle a été faite pour la version annoncée, et refuse tout le reste, même quand cela vient de la bonne adresse.
+
+## Signature du code
+
+L’application macOS est signée ad hoc et les programmes d’installation Windows ne sont pas encore signés avec un certificat commercial, donc macOS et Windows vous demandent de confirmer le premier lancement. L’[installation](/docs/installation/) montre comment faire. Les mises à jour installées depuis Homeport ne le redemandent pas.

@@ -5,14 +5,14 @@ import { SwarmNav } from '@/features/swarm';
 import { cn } from '@/shared/lib';
 import { Logo, WithShortcut } from '@/shared/ui';
 import { useNavEntries } from '../shortcuts/navShortcuts';
-import { t } from '@/shared/i18n';
+import { direction, t } from '@/shared/i18n';
 
 export function Sidebar() {
   const { entries, shortcuts } = useNavEntries();
   return (
     <nav
       aria-label={t('app.nav.main')}
-      className="bg-sidebar text-sidebar-foreground border-sidebar-border flex w-56 shrink-0 flex-col gap-0.5 border-r p-3"
+      className="bg-sidebar text-sidebar-foreground border-sidebar-border flex w-56 shrink-0 flex-col gap-0.5 border-e p-3"
     >
       <Logo className="mb-3 px-1.5 pt-1" />
       <div className="mb-3 grid gap-1.5">
@@ -41,7 +41,12 @@ export function Sidebar() {
         );
         const keys = shortcuts.find((s) => s.entry.path === path)?.keys;
         return keys ? (
-          <WithShortcut key={path} keys={keys} label={t(label)} side="right">
+          <WithShortcut
+            key={path}
+            keys={keys}
+            label={t(label)}
+            side={direction() === 'rtl' ? 'left' : 'right'}
+          >
             {link}
           </WithShortcut>
         ) : (

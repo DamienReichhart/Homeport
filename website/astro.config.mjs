@@ -4,9 +4,10 @@ import sitemap from '@astrojs/sitemap';
 import starlight from '@astrojs/starlight';
 import { defineConfig } from 'astro/config';
 import starlightLinksValidator from 'starlight-links-validator';
-import baseLinks from './src/app/markdown/base-links.mjs';
+import { localizedBaseLinks } from './src/app/markdown/base-links.mjs';
 import { sidebar } from './src/app/config/sidebar.ts';
 import { REPO_URL } from './src/core/site/index.ts';
+import { LOCALES, PREFIXED_LOCALES } from './src/core/site/locales.ts';
 
 /*
  * The site is served from GitHub Pages. The Pages workflow passes the origin and
@@ -18,12 +19,18 @@ const site = process.env.SITE_URL || 'https://damienreichhart.github.io';
 const base = process.env.SITE_URL ? process.env.BASE_PATH || '/' : '/Homeport';
 /** The base without a trailing slash, for building paths: `/Homeport` or ``. */
 const root = base.replace(/\/$/, '');
+const codes = PREFIXED_LOCALES.map((l) => l.code);
+
+/** Starlight's locales: English at the root, every other language under its prefix. */
+const locales = Object.fromEntries(
+  LOCALES.map((l) => [l.code || 'root', { label: l.label, lang: l.lang, dir: l.dir }]),
+);
 
 export default defineConfig({
   site,
   base,
   trailingSlash: 'always',
-  markdown: { processor: satteri({ hastPlugins: [baseLinks(base)] }) },
+  markdown: { processor: satteri({ hastPlugins: [localizedBaseLinks(base, codes)] }) },
   // The brand assets live at the repo root (assets/brand); let Vite read them.
   vite: { server: { fs: { allow: ['..'] } } },
   integrations: [
@@ -37,6 +44,9 @@ export default defineConfig({
         replacesTitle: true,
       },
       favicon: '/favicon.svg',
+      // English URLs don't change; untranslated pages show English with a notice.
+      defaultLocale: 'root',
+      locales,
       social: [{ icon: 'github', label: 'GitHub', href: REPO_URL }],
       editLink: { baseUrl: `${REPO_URL}/edit/main/website/` },
       lastUpdated: true,
@@ -62,12 +72,15 @@ export default defineConfig({
       ],
       sidebar,
       plugins: [
-        // The marketing pages aren't Starlight pages, so the validator can't check links to them.
+        // The marketing pages aren't Starlight pages, so the validator can't check links to
+        // them; src/app/i18n's route test checks that each exists in every language.
         starlightLinksValidator({
           exclude: [
-            `${root}/`,
-            `${root}/download/**`,
-            `${root}/changelog/**`,
+            ...['', ...codes.map((c) => `/${c}`)].flatMap((prefix) => [
+              `${root}${prefix}/`,
+              `${root}${prefix}/download/**`,
+              `${root}${prefix}/changelog/**`,
+            ]),
             `${root}/legal-notice/**`,
             `${root}/privacy/**`,
             `${root}/terms/**`,
@@ -76,6 +89,12 @@ export default defineConfig({
         }),
       ],
     }),
-    sitemap(),
+    // Each page with its other languages as xhtml:link alternates.
+    sitemap({
+      i18n: {
+        defaultLocale: 'en',
+        locales: Object.fromEntries(LOCALES.map((l) => [l.code || 'en', l.lang])),
+      },
+    }),
   ],
 });

@@ -9,7 +9,7 @@ Yes. Homeport is free to use, for personal and commercial work, and open source 
 
 ### What does the AGPL mean for me?
 
-Nothing changes if you use Homeport: install it, run it at home or at work, on as many computers as you like. The AGPL only asks something of those who **distribute** Homeport, modified or not, or offer a modified version to others over a network: they must publish its full source code under the same licence. Every copy of Homeport links to the source of its exact version in **Settings → About → Licenses**.
+Nothing changes if you use Homeport: install it, run it at home or at work, on as many computers as you like. The AGPL only asks something of those who **distribute** Homeport, modified or not, or offer a modified version to others over a network: they must publish its full source code under the same licence. Every copy of Homeport links to the source of its exact version under **Licenses**, at the bottom of **Settings**.
 
 Versions up to 0.11 were released under the MIT licence and stay available under it.
 
@@ -115,6 +115,14 @@ On Windows, macOS and with the AppImage, Homeport tells you when a new version i
 ### Is Homeport on Homebrew, winget, Flathub or the AUR?
 
 Not yet. They're planned; the [installation page](/docs/installation/#coming-later) links to each one's issue.
+
+### Is Homeport available in my language?
+
+Homeport speaks English, French, Spanish, German, Italian, Brazilian Portuguese, Russian, Simplified Chinese, Japanese, Korean, Hindi and Arabic, and follows your operating system's language unless you pick one under [Settings → Appearance](/docs/guides/settings/#appearance). The website and this documentation are in all of them too; only the legal pages are in English. To add a language, see [Contributing](/docs/project/contributing/#translating-homeport).
+
+### Is Homeport accessible?
+
+It can be used with the keyboard alone, follows your system's reduced-motion setting, meets WCAG 2.2 AA contrast, and every page is checked with automated accessibility tools. A hands-on screen-reader audit is under way. See [Keyboard and accessibility](/docs/reference/accessibility/) for what works, the known limits and how to report a barrier.
 
 ### Is there a command-line interface?
 

@@ -1,5 +1,13 @@
 ---
 /** The Engines and clusters Homeport works with. */
+import { strings } from '@/core/i18n';
+import type { Locale } from '@/core/site';
+
+interface Props {
+  locale: Locale;
+}
+
+const s = strings(Astro.props.locale);
 const runtimes = [
   'Docker Engine',
   'Docker Desktop',
@@ -14,9 +22,9 @@ const runtimes = [
 ];
 ---
 
-<section class="runtimes" aria-label="Works with">
+<section class="runtimes" aria-label={s['home.runtimes.label']}>
   <div class="container runtimes__inner">
-    <p>Works with what you already run</p>
+    <p>{s['home.runtimes.title']}</p>
     <ul>
       {runtimes.map((name) => (
         <li>{name}</li>

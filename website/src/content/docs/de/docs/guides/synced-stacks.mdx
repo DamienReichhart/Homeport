@@ -1,0 +1,128 @@
+---
+title: Synchronisierte Stacks
+description: Einen Stack aus einem Git-Repository bereitstellen, vor jeder Synchronisierung sehen, was sich geändert hat, und ihn seinem Branch folgen lassen, solange Homeport geöffnet ist.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+Ein **synchronisierter Stack** ist ein [Stack](/docs/guides/stacks/), dessen Compose-Datei aus einem Git-Repository stammt. Homeport klont das Repository auf diesem Computer, ruft seinen Branch oder sein Tag ab, wenn Sie es verlangen (oder in einem Intervall, solange Homeport geöffnet ist), zeigt, was sich geändert hat, und stellt den neuen Commit auf dem Host bereit. Es bearbeitet, committet oder pusht nie: Änderungen laufen über Git.
+
+<Aside type="note" title="Homeport braucht git">
+  Synchronisierte Stacks verwenden das auf diesem Computer installierte `git`. **Einstellungen →
+  Dieser Rechner** sagt, ob Homeport es gefunden hat, und wenn nicht, wie es installiert wird. Alle
+  anderen Arten von Stacks funktionieren ohne git.
+</Aside>
+
+## Repositorys
+
+Homeport liest Repositorys, die Sie in **Einstellungen → Repositorys** oder auf der Seite **Neuer Stack** hinzufügen. Ein Repository wird einmal hinzugefügt und kann von synchronisierten Stacks auf jedem Host verwendet werden. Homeport erreicht es auf eine von drei Arten:
+
+| Zugriff        | URL                                                 | Was Homeport speichert                                                        |
+| -------------- | --------------------------------------------------- | ----------------------------------------------------------------------------- |
+| **Deploy-Key** | SSH: `git@github.com:owner/repo.git` oder `ssh://…` | Einen Schlüssel, den es nur für dieses Repository erstellt, **verschlüsselt** |
+| **Token**      | HTTPS: `https://gitlab.com/owner/repo.git`          | Ihren Benutzernamen und das Zugriffstoken **verschlüsselt**                   |
+| **Öffentlich** | HTTPS, für ein Repository, das jeder lesen kann     | Nichts Geheimes                                                               |
+
+`http://` und lokale Pfade werden nicht akzeptiert, sodass ein Token nie im Klartext gesendet wird.
+
+### Mit einem Deploy-Key
+
+<Steps>
+
+1. Wählen Sie **Repository hinzufügen**, fügen Sie die SSH-URL des Repositorys ein, behalten Sie **Deploy-Key** bei und wählen Sie **Hinzufügen und Deploy-Key erstellen**.
+
+2. Kopieren Sie den Schlüssel, den Homeport anzeigt, und fügen Sie ihn dem Repository **nur mit Lesezugriff** hinzu:
+   - GitHub: **Settings → Deploy keys → Add deploy key** des Repositorys.
+   - GitLab: **Settings → Repository → Deploy keys** des Projekts.
+   - Gitea und Forgejo: **Settings → Deploy keys → Add deploy key** des Repositorys.
+
+3. Wählen Sie **Zugriff testen**. Homeport listet die Branches und Tags des Repositorys von diesem Computer aus auf.
+
+</Steps>
+
+Jedes Repository erhält seinen eigenen Schlüssel, sodass ein geleakter Schlüssel nur dieses eine Repository lesen kann, und Ihre eigenen SSH-Schlüssel und `~/.ssh/config` werden nie verwendet. **Neuer Schlüssel** ersetzt ihn: Fügen Sie den neuen dem Repository hinzu und entfernen Sie dort den alten.
+
+Wenn Homeport einen SSH-Server zum ersten Mal erreicht, vertraut es dem Schlüssel, den der Server vorlegt, und merkt ihn sich, wie es `ssh` tut; ändert sich der Schlüssel später, schlägt jeder Abruf fehl, bis Sie den neuen Fingerabdruck auf der Website der Forge prüfen und neben dem vertrauenswürdigen Schlüssel **Zurücksetzen** wählen.
+
+### Mit einem Token
+
+Fügen Sie die `https://`-URL des Repositorys ein, wählen Sie **Token** und geben Sie dann den Benutzernamen und ein Zugriffstoken ein, das den Inhalt des Repositorys lesen darf: auf GitHub ein Fine-grained Token mit **Contents: Read-only**, auf GitLab ein Projekt- oder persönliches Token mit `read_repository`. **Zugriff testen** prüft es. Wenn es abläuft, geben Sie unter **Token ersetzen** ein neues ein.
+
+<Aside type="tip">
+  Ohne Schlüsselbund des Betriebssystems kann Homeport keine Deploy-Keys oder Tokens speichern,
+  daher lassen sich nur öffentliche Repositorys hinzufügen. Siehe
+  [Voraussetzungen](/docs/requirements/#optional-ein-schlüsselbund-des-betriebssystems).
+</Aside>
+
+Das Entfernen eines Repositorys löscht seinen Schlüssel oder sein Token und seinen Klon auf diesem Computer. Es wird abgelehnt, solange ein synchronisierter Stack das Repository verwendet.
+
+## Einen synchronisierten Stack erstellen
+
+<Steps>
+
+1. Öffnen Sie **Stacks** auf dem Host, auf dem bereitgestellt werden soll, wählen Sie **Neuer Stack** und dann **Git-Repository verwenden**.
+
+2. Wählen Sie das **Repository** oder **Repository hinzufügen**, um dort eines hinzuzufügen.
+
+3. Wählen Sie einen **Branch** oder ein **Tag**. Homeport listet sie vom Server des Repositorys auf, den Standard-Branch zuerst.
+
+4. Geben Sie den Pfad der **Compose-Datei** relativ zur Wurzel des Repositorys ein: `compose.yaml` oder `deploy/prod/compose.yaml`. Ihr Ordner ist der Projektordner, sodass `build:`, `env_file:` und relative Pfade darin so funktionieren wie in einem eigenen Klon.
+
+5. Prüfen Sie den **Name** (er stammt vom Namen des Repositorys) und fügen Sie eine **Umgebung** für das hinzu, was nicht in Git gehört, etwa Passwörter: `KEY=value`-Zeilen, auf diesem Computer verschlüsselt und Compose bei der Bereitstellung als Variablen übergeben.
+
+6. Wählen Sie **Speichern und bereitstellen** – oder **Speichern**, um später bereitzustellen.
+
+</Steps>
+
+Homeport ruft den Branch oder das Tag ab und liest die Compose-Datei, bevor es etwas speichert, sodass ein falscher Pfad, Branch oder Tag oder eine Datei, die Compose nicht bereitstellen könnte, sofort gemeldet wird. Der Stack wird bis zu seiner ersten Bereitstellung als **Synchronisiert** und **Nicht bereitgestellt** aufgeführt; sein Tab **Definition** zeigt sein Repository, seinen Branch oder sein Tag, seine Compose-Datei und den bereitgestellten Commit.
+
+Das Repository wird einmal auf diesem Computer geklont, in einen Ordner `repositories` neben der Datenbank von Homeport, und von allen synchronisierten Stacks geteilt, die daraus erstellt wurden. Jeder synchronisierte Stack stellt aus seinem eigenen Checkout des Commits bereit, in einem Ordner `synced-stacks` dort, der zwischen Bereitstellungen an Ort und Stelle bleibt: Dateien, die Ihre Container über relative Bind-Mounts schreiben, bleiben, wo sie waren. Symbolische Links im Repository werden als normale Dateien ausgecheckt, sodass eine Compose-Datei Compose nicht auf eine Datei an anderer Stelle auf diesem Computer verweisen kann. Dateien behalten die Zeilenenden, mit denen das Repository sie speichert, auch unter Windows, sodass ein in ein Linux-Image kopiertes Skript weiterhin läuft; nur die eigene `.gitattributes` des Repositorys kann sie ändern.
+
+Ein synchronisierter Stack kann stattdessen in einem [Swarm](/docs/guides/swarm/) bereitgestellt werden: Wählen Sie ihn unter **Bereitstellen auf** auf der Seite **Neuer Stack**. Er synchronisiert, stellt bereit und stellt automatisch bereit wie sonst auch, mit `docker stack deploy` aus seinem Checkout ausgeführt; unter [Verknüpfte und synchronisierte Stacks in einem Swarm](/docs/guides/swarm/#verknüpfte-und-synchronisierte-stacks-in-einem-swarm) steht, was sich ändert, allen voran `build:`.
+
+**Vergessen** sorgt dafür, dass Homeport dem Repository nicht mehr folgt. Seine Container laufen weiter, und er wird ein externer Stack; sein Checkout wird gelöscht, sofern Container keine Dateien hineingeschrieben haben, und der Klon des Repositorys verschwindet, sobald kein synchronisierter Stack es mehr verwendet. Das Repository bleibt in **Einstellungen → Repositorys**.
+
+## Synchronisieren
+
+Wählen Sie **Synchronisieren** in der Zeile oder auf der Seite eines synchronisierten Stacks. Homeport ruft seinen Branch oder sein Tag ab und zeigt dann, was eine Bereitstellung ändern würde, bevor es etwas tut:
+
+- die **neuen Commits** seit dem bereitgestellten, die etwas im Ordner der Compose-Datei ändern, mit ihrem Autor und dem Zeitpunkt ihrer Erstellung;
+- jede **geänderte Datei** in diesem Ordner, die Compose-Datei zuerst, mit den entfernten Zeilen durchgestrichen über denen, die sie ersetzen. Eine Datei, die kein Text ist, wird genannt, aber nicht angezeigt.
+
+Wählen Sie **Bereitstellen**, um genau diesen Commit bereitzustellen: Homeport checkt ihn im Checkout des Stacks aus und führt `docker compose up` aus dem Ordner der Compose-Datei aus, wobei die Services mit `build:` neu gebaut werden, sodass ein geändertes `Dockerfile` wirkt. Die Ausgabe wird während der Ausführung gestreamt, und die Bereitstellung wird mit ihrem Commit im **Verlauf** des Stacks festgehalten.
+
+- Ein Push, der nichts im Ordner der Compose-Datei ändert – etwa Dokumentation an anderer Stelle im Repository –, zeigt **Aktuell**. **Trotzdem neu bereitstellen** stellt ihn dennoch bereit.
+- Zeigt ein Tag jetzt auf einen anderen Commit als beim letzten Abruf durch Homeport, sagt die Prüfung das zuerst.
+- Schlägt der Abruf fehl (der Deploy-Key wurde entfernt, der Server ist nicht erreichbar) oder schlägt die Bereitstellung fehl, zeigt Homeport, warum und was zu tun ist, und der Stack behält seinen bereitgestellten Commit.
+
+**Neu bereitstellen** stellt den derzeit bereitgestellten Commit erneut bereit, nachdem gezeigt wurde, was sich in seiner Umgebung oder seinen Profilen geändert hat. **Bereitstellen** bei einem Stack, der nie bereitgestellt wurde, stellt den Commit bereit, der bei seiner Erstellung abgerufen wurde. Ein synchronisierter Stack lässt sich nicht aus Homeport zurücksetzen: Machen Sie die Änderung in seinem Repository rückgängig oder richten Sie den Stack auf ein früheres Tag aus und synchronisieren Sie dann.
+
+## Abfrage und automatische Bereitstellung
+
+<Aside type="caution" title="Nur solange Homeport geöffnet ist">
+  Homeport prüft Ihre Repositorys nur, solange es geöffnet ist. **Solange es geschlossen ist, wird
+  nichts synchronisiert**: Es gibt keinen Agent auf Ihren Servern und keinen Webhook, da Homeport
+  dort nichts installiert. Wenn Sie es wieder öffnen, wartet es ein Intervall bis zur ersten
+  Prüfung.
+</Aside>
+
+Solange Homeport geöffnet ist, ruft es den Branch oder das Tag jedes synchronisierten Stacks in einem Intervall ab – standardmäßig alle 5 Minuten, einstellbar unter **Einstellungen → Synchronisierte Stacks** (mindestens 1 Minute). Jedes Repository wird pro Runde einmal abgerufen, unabhängig davon, wie viele Stacks es verwenden, und eines, bei dem es immer wieder fehlschlägt, wird immer seltener versucht, bis zu einmal pro Stunde.
+
+Wenn ein neuer Commit den Ordner der Compose-Datei ändert, zeigt der Stack in der Liste und auf seiner Seite **Update verfügbar**. **Synchronisieren** zeigt, was sich geändert hat, und stellt es bereit. Der Tab **Definition** des Stacks sagt, wann er **zuletzt geprüft** wurde und warum die letzte Prüfung fehlgeschlagen ist, falls das der Fall war.
+
+Zwei Schalter im Tab **Definition** steuern das, pro Stack:
+
+- **Nach neuen Commits suchen**, standardmäßig eingeschaltet. Schalten Sie es aus, um nur zu synchronisieren, wenn Sie **Synchronisieren** wählen.
+- **Neue Commits automatisch bereitstellen**, standardmäßig ausgeschaltet. Ist es eingeschaltet, stellt Homeport jeden neuen Commit bereit, sobald es ihn sieht, **ohne Ihnen zuerst zu zeigen, was sich geändert hat**, mit denselben Schritten wie **Synchronisieren**; die Bereitstellung wird im **Verlauf** als automatisch festgehalten, und eine Benachrichtigung meldet, wenn sie fertig ist. Sie wartet, solange der Host nicht erreichbar ist. Schlägt sie fehl, zeigt Homeport, warum, und versucht diesen Commit nicht erneut: Das tut der nächste Commit oder ein **Synchronisieren**, das Sie selbst bereitstellen.
+
+## Warum kann ich einen synchronisierten Stack nicht bearbeiten?
+
+Weil sein Repository der einzige Ort ist, an dem seine Definition liegt. Würde Homeport die Compose-Datei ändern, würde die nächste Synchronisierung diese Änderung entweder überschreiben oder gegen sie ankämpfen, und niemand, der das Repository liest, wüsste, was bereitgestellt ist. Daher zeigt der Tab **Definition** eines synchronisierten Stacks seine Compose-Datei beim abgerufenen Commit **schreibgeschützt** – Sie können daraus weiterhin markieren und kopieren –, listet die anderen Dateien seines Ordners auf und verlinkt jede auf ihre Seite auf GitHub, GitLab, Gitea oder Forgejo. Ändern Sie sie dort, pushen Sie und wählen Sie dann **Synchronisieren**.
+
+Was Homeport selbst hält, bleibt im selben Tab bearbeitbar:
+
+- seine **Umgebung**, auf diesem Computer verschlüsselt, für Werte, die nicht in Git gehören;
+- seine **Profile**, wenn die Compose-Datei welche deklariert;
+- ob er **nach neuen Commits sucht** und **sie automatisch bereitstellt**.
+
+**Vergessen** sorgt dafür, dass Homeport dem Repository nicht mehr folgt; die Container des Stacks laufen weiter, und er wird extern.

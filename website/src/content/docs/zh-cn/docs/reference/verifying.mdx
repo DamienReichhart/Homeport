@@ -1,0 +1,79 @@
+---
+title: 验证下载
+description: 根据校验和、构建来源和签名检查 Homeport 安装程序，以及更新和 Linux 软件包是如何验证的。
+---
+
+import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import { KEY_URL } from '@/core/packages';
+import { SigningKeyFingerprint } from '@/features/docs';
+
+每个 Homeport 发布都由 GitHub Actions 从公开仓库构建。你可以通过两种方式确认你下载的文件就是构建出来的那个文件。Linux 软件包和更新也经过签名，并会自动为你检查。
+
+## 校验和
+
+每个发布都包含 `SHA256SUMS.txt`，其中有每个文件的 SHA-256 校验和。[下载页面](/download/)也会显示每个文件的校验和。将 `SHA256SUMS.txt` 下载到安装程序所在的文件夹，然后：
+
+<Tabs syncKey="os">
+<TabItem label="Linux">
+
+```sh
+sha256sum --ignore-missing -c SHA256SUMS.txt
+```
+
+</TabItem>
+<TabItem label="macOS">
+
+```sh
+shasum -a 256 --ignore-missing -c SHA256SUMS.txt
+```
+
+</TabItem>
+<TabItem label="Windows">
+
+```powershell
+(Get-FileHash .\Homeport_0.2.0_x64-setup.exe -Algorithm SHA256).Hash.ToLower()
+```
+
+将结果与 `SHA256SUMS.txt` 中该安装程序对应的行进行比较。
+
+</TabItem>
+</Tabs>
+
+文件名旁边显示 `OK` 表示一致。
+
+## 构建来源
+
+校验和能证明文件在校验和发布之后没有被损坏或替换。[构建来源证明](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations)则更进一步：它由 GitHub 签名，记录了生成该文件的仓库、提交和工作流。
+
+安装 [GitHub CLI](https://cli.github.com) 后：
+
+```sh
+gh attestation verify Homeport_0.2.0_x64-setup.exe --repo DamienReichhart/Homeport
+```
+
+检查成功时会输出构建该文件所用的工作流和提交。
+
+## 软件包签名
+
+Homeport 软件包仓库和每个 `.rpm` 都使用 Homeport 软件包密钥（RSA 4096）签名：
+
+**指纹：** <SigningKeyFingerprint />
+
+`apt`、`dnf` 和 `zypper` 每次更新时都会检查这些签名，并拒绝不匹配的软件包和仓库数据。要检查你下载的密钥或某个 `.rpm` 文件：
+
+<Code code={`curl -fsSL ${KEY_URL} | gpg --show-keys --with-fingerprint`} lang="sh" />
+
+```sh
+sudo rpm --import homeport.asc   # once
+rpm -K Homeport-<version>-1.x86_64.rpm
+```
+
+对于已签名的软件包，`rpm -K` 会输出 `digests signatures OK`。`.deb` 文件本身没有签名：仓库的签名索引涵盖了它，单独下载的 `.deb` 则由其校验和与来源证明保证。
+
+## 更新签名
+
+应用内更新程序安装的每个更新都使用单独的 Homeport 更新密钥签名，其公钥内置于 Homeport 中。安装之前，Homeport 会检查签名以及签名是否针对所宣布的版本，拒绝其他任何内容，即使它来自正确的地址。
+
+## 代码签名
+
+macOS 应用使用临时（ad-hoc）签名，Windows 安装程序目前尚未使用商业证书签名，因此 macOS 和 Windows 会在首次启动时要求你确认。[安装](/docs/installation/)中说明了如何操作。从 Homeport 内部安装的更新不会再次询问。

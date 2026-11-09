@@ -1,0 +1,79 @@
+---
+title: Downloads prüfen
+description: Ein Homeport-Installationsprogramm anhand seiner Prüfsumme, seiner Build-Provenienz und seiner Signaturen prüfen, und wie Updates und Linux-Pakete geprüft werden.
+---
+
+import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import { KEY_URL } from '@/core/packages';
+import { SigningKeyFingerprint } from '@/features/docs';
+
+Jedes Homeport-Release wird von GitHub Actions aus dem öffentlichen Repository gebaut. Sie können auf zwei Arten prüfen, dass die heruntergeladene Datei diejenige ist, die gebaut wurde. Linux-Pakete und Updates sind außerdem signiert und werden für Sie geprüft.
+
+## Prüfsummen
+
+Jedes Release enthält `SHA256SUMS.txt` mit einer SHA-256-Prüfsumme für jede Datei. Die [Download-Seite](/download/) zeigt ebenfalls die Prüfsumme jeder Datei. Laden Sie `SHA256SUMS.txt` in denselben Ordner wie das Installationsprogramm herunter und dann:
+
+<Tabs syncKey="os">
+<TabItem label="Linux">
+
+```sh
+sha256sum --ignore-missing -c SHA256SUMS.txt
+```
+
+</TabItem>
+<TabItem label="macOS">
+
+```sh
+shasum -a 256 --ignore-missing -c SHA256SUMS.txt
+```
+
+</TabItem>
+<TabItem label="Windows">
+
+```powershell
+(Get-FileHash .\Homeport_0.2.0_x64-setup.exe -Algorithm SHA256).Hash.ToLower()
+```
+
+Vergleichen Sie das Ergebnis mit der Zeile des Installationsprogramms in `SHA256SUMS.txt`.
+
+</TabItem>
+</Tabs>
+
+`OK` neben dem Dateinamen bedeutet, dass sie übereinstimmt.
+
+## Build-Provenienz
+
+Eine Prüfsumme beweist, dass die Datei nach der Veröffentlichung der Prüfsumme nicht beschädigt oder ausgetauscht wurde. Eine [Build-Provenienz-Attestierung](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) geht weiter: Sie ist von GitHub signiert und hält das Repository, den Commit und den Workflow fest, die die Datei erzeugt haben.
+
+Mit installierter [GitHub CLI](https://cli.github.com):
+
+```sh
+gh attestation verify Homeport_0.2.0_x64-setup.exe --repo DamienReichhart/Homeport
+```
+
+Eine erfolgreiche Prüfung gibt den Workflow und den Commit aus, aus denen die Datei gebaut wurde.
+
+## Paketsignaturen
+
+Das Paket-Repository von Homeport und jede `.rpm` sind mit dem Paketschlüssel von Homeport (RSA 4096) signiert:
+
+**Fingerabdruck:** <SigningKeyFingerprint />
+
+`apt`, `dnf` und `zypper` prüfen diese Signaturen bei jedem Update und lehnen Pakete und Repository-Daten ab, die nicht übereinstimmen. Um den heruntergeladenen Schlüssel oder eine `.rpm`-Datei zu prüfen:
+
+<Code code={`curl -fsSL ${KEY_URL} | gpg --show-keys --with-fingerprint`} lang="sh" />
+
+```sh
+sudo rpm --import homeport.asc   # once
+rpm -K Homeport-<version>-1.x86_64.rpm
+```
+
+`rpm -K` gibt für ein signiertes Paket `digests signatures OK` aus. Eine `.deb`-Datei ist selbst nicht signiert: Der signierte Index des Repositorys deckt sie ab, und eine heruntergeladene wird durch ihre Prüfsumme und Attestierung abgedeckt.
+
+## Update-Signaturen
+
+Jedes Update, das der In-App-Updater installiert, ist mit einem separaten Update-Schlüssel von Homeport signiert, dessen öffentliche Hälfte in Homeport eingebaut ist. Vor der Installation prüft Homeport die Signatur und dass sie für die angekündigte Version erstellt wurde, und lehnt alles andere ab, selbst wenn es von der richtigen Adresse kommt.
+
+## Codesignierung
+
+Die macOS-App ist ad hoc signiert, und die Windows-Installationsprogramme sind noch nicht mit einem kommerziellen Zertifikat signiert, daher bitten macOS und Windows Sie, den ersten Start zu bestätigen. [Installation](/docs/installation/) zeigt, wie. Updates, die aus Homeport heraus installiert werden, fragen nicht erneut.

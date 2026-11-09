@@ -162,15 +162,11 @@ pub async fn fetch(
 
 /// The error for a branch or tag the repository doesn't have.
 pub fn ref_missing(full: &str) -> AppError {
-    let (kind, name) = match full.strip_prefix("refs/tags/") {
-        Some(tag) => ("tag", tag),
-        None => ("branch", full.trim_start_matches("refs/heads/")),
+    let message = match full.strip_prefix("refs/tags/") {
+        Some(tag) => msg::REF_MISSING_TAG.with("name", tag),
+        None => msg::REF_MISSING_BRANCH.with("name", full.trim_start_matches("refs/heads/")),
     };
-    AppError::new(
-        ErrorCode::SyncedComposeFileMissing,
-        msg::REF_MISSING.with("kind", kind).with("name", name),
-    )
-    .with_hint(msg::REF_MISSING_HINT)
+    AppError::new(ErrorCode::SyncedComposeFileMissing, message).with_hint(msg::REF_MISSING_HINT)
 }
 
 /// The commit `kind`/`name` points at in the clone, if it has it.

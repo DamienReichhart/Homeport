@@ -96,7 +96,7 @@ homeport_core::messages! {
     DOCKER_CLI_MISSING_HINT = "errors.compose.dockerCliMissing.hint" => "Install the Docker CLI (Docker Desktop, or the docker-ce-cli package on Linux). Homeport runs docker stack deploy with it; no Engine is needed here.";
     /// A swarm deploy whose config or secret changed since the last one.
     SWARM_OBJECT_CHANGED = "errors.compose.swarmObjectChanged" => "A config or secret of this Stack changed, and the Swarm can't change one in place.";
-    SWARM_OBJECT_CHANGED_HINT = "errors.compose.swarmObjectChanged.hint" => "Give it a new name: for example name: app_conf_${CONF_VERSION} under configs:, and change CONF_VERSION in the environment each time its file changes.";
+    SWARM_OBJECT_CHANGED_HINT = "errors.compose.swarmObjectChanged.hint" => "Give it a new name: for example name: app_conf_$'{'CONF_VERSION'}' under configs:, and change CONF_VERSION in the environment each time its file changes.";
     /// Pulling a swarm stack's images, which its nodes do.
     SWARM_NO_PULL = "errors.compose.swarmNoPull" => "A Swarm's nodes pull their images themselves when a Stack is deployed. Redeploy it instead.";
     /// Linking a swarm stack to a folder that describes other services.
@@ -143,4 +143,7 @@ homeport_core::messages! {
     STOPPED = "errors.compose.stopped" => "docker compose {verb} was stopped.";
     /// For both of the above.
     FAILED_HINT = "errors.compose.failed.hint" => "The output above says why.";
+    /// A deploy's own output lines (`native.`: Rust writes them into the log, in the app's language).
+    LOG_PULLING_AS = "native.compose.pullingAs" => "Pulling {image} as {user} on {registry}";
+    LOG_PULLING_ANONYMOUSLY = "native.compose.pullingAnonymously" => "Pulling {image} anonymously";
 }

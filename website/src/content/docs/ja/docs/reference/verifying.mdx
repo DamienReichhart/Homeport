@@ -1,0 +1,79 @@
+---
+title: ダウンロードの検証
+description: Homeport のインストーラーをチェックサム、ビルド来歴、署名で確認する方法と、アップデートと Linux のパッケージの検証の仕組み。
+---
+
+import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import { KEY_URL } from '@/core/packages';
+import { SigningKeyFingerprint } from '@/features/docs';
+
+Homeport のすべてのリリースは、公開リポジトリから GitHub Actions によってビルドされます。ダウンロードしたファイルが実際にビルドされたものであることは、2 つの方法で確認できます。Linux のパッケージとアップデートは署名もされており、自動で確認されます。
+
+## チェックサム
+
+各リリースには、すべてのファイルの SHA-256 チェックサムを記載した `SHA256SUMS.txt` が含まれています。[ダウンロードページ](/download/)にも各ファイルのチェックサムが表示されます。`SHA256SUMS.txt` をインストーラーと同じフォルダーにダウンロードしてから、次を実行します:
+
+<Tabs syncKey="os">
+<TabItem label="Linux">
+
+```sh
+sha256sum --ignore-missing -c SHA256SUMS.txt
+```
+
+</TabItem>
+<TabItem label="macOS">
+
+```sh
+shasum -a 256 --ignore-missing -c SHA256SUMS.txt
+```
+
+</TabItem>
+<TabItem label="Windows">
+
+```powershell
+(Get-FileHash .\Homeport_0.2.0_x64-setup.exe -Algorithm SHA256).Hash.ToLower()
+```
+
+結果を、`SHA256SUMS.txt` にあるインストーラーの行と比較します。
+
+</TabItem>
+</Tabs>
+
+ファイル名の横に `OK` と表示されれば一致しています。
+
+## ビルド来歴
+
+チェックサムは、チェックサムの公開後にファイルが破損したり差し替えられたりしていないことを証明します。[ビルド来歴証明](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations)はさらに踏み込んだもので、GitHub によって署名され、ファイルを生成したリポジトリ、コミット、ワークフローを記録しています。
+
+[GitHub CLI](https://cli.github.com) をインストールしていれば、次を実行します:
+
+```sh
+gh attestation verify Homeport_0.2.0_x64-setup.exe --repo DamienReichhart/Homeport
+```
+
+確認に成功すると、ファイルのビルド元のワークフローとコミットが表示されます。
+
+## パッケージの署名
+
+Homeport のパッケージリポジトリとすべての `.rpm` は、Homeport のパッケージ鍵（RSA 4096）で署名されています:
+
+**フィンガープリント:** <SigningKeyFingerprint />
+
+`apt`、`dnf`、`zypper` はアップデートのたびにこれらの署名を確認し、一致しないパッケージやリポジトリのデータを拒否します。ダウンロードした鍵や `.rpm` ファイルを確認するには:
+
+<Code code={`curl -fsSL ${KEY_URL} | gpg --show-keys --with-fingerprint`} lang="sh" />
+
+```sh
+sudo rpm --import homeport.asc   # once
+rpm -K Homeport-<version>-1.x86_64.rpm
+```
+
+署名されたパッケージでは、`rpm -K` は `digests signatures OK` と表示します。`.deb` ファイル自体は署名されていません。リポジトリの署名付きインデックスがそれを保証し、ダウンロードしたものはチェックサムと来歴証明で保証されます。
+
+## アップデートの署名
+
+アプリ内のアップデーターがインストールするすべてのアップデートは、別の Homeport アップデートキーで署名されており、その公開鍵部分は Homeport に組み込まれています。インストールの前に、Homeport は署名と、それが告知されたバージョン向けに作られたものであることを確認し、正しいアドレスから届いたものであっても、それ以外はすべて拒否します。
+
+## コード署名
+
+macOS のアプリはアドホック署名で、Windows のインストーラーはまだ商用の証明書で署名されていないため、macOS と Windows は初回起動時に確認を求めます。方法は[インストール](/docs/installation/)で説明しています。Homeport の中からインストールしたアップデートでは、再び確認を求められることはありません。

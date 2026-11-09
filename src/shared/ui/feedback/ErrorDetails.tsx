@@ -14,6 +14,7 @@ import {
 } from '../primitives/dialog';
 import { HintView } from './HintView';
 import { t } from '@/shared/i18n';
+import { formatDateTime } from '@/shared/lib';
 
 let shown: AppError | null = null;
 const listeners = new Set<() => void>();
@@ -50,7 +51,7 @@ function ErrorDetailsDialog({ error, onClose }: { error: AppError; onClose: () =
     ...(error.context.command
       ? [[t('ui.errorDetails.command'), error.context.command] as [string, string]]
       : []),
-    [t('ui.errorDetails.when'), error.context.at.toLocaleString()],
+    [t('ui.errorDetails.when'), formatDateTime(error.context.at)],
     ...(app.data
       ? [
           [
@@ -79,7 +80,10 @@ function ErrorDetailsDialog({ error, onClose }: { error: AppError; onClose: () =
           </dl>
           {error.detail && (
             <div className="flex flex-col gap-1">
-              <p className="text-muted-foreground text-sm">{t('ui.errorDetails.rawDetail')}</p>
+              <p className="text-muted-foreground text-sm">
+                {t('ui.errorDetails.rawDetail')}
+                <span className="text-xs"> · {t('ui.errorDetails.rawDetailNote')}</span>
+              </p>
               <pre className="bg-muted max-h-64 overflow-auto rounded-md p-3 font-mono text-xs whitespace-pre-wrap">
                 {error.detail}
               </pre>

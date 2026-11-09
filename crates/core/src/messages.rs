@@ -97,7 +97,7 @@ crate::messages! {
     PUBLISHED_PORT_IN_USE = "errors.engine.publishedPortInUse" => "A published port is already in use.";
     /// The disk the Engine stores its data on is full.
     ENGINE_DISK_FULL = "errors.engine.diskFull" => "The Docker Engine is out of disk space.";
-    ENGINE_DISK_FULL_HINT = "errors.engine.diskFull.hint" => "Remove unused images, containers and volumes (Prune on the Overview page), or free space on the machine it runs on.";
+    ENGINE_DISK_FULL_HINT = "errors.engine.diskFull.hint" => "Remove unused images, containers and volumes (Clean up on the Overview page), or free space on the machine it runs on.";
     /// The registry's pull rate limit was reached.
     RATE_LIMITED = "errors.engine.rateLimited" => "The registry's pull limit was reached.";
     RATE_LIMITED_HINT = "errors.engine.rateLimited.hint" => "Docker Hub limits anonymous pulls. Wait for the limit to reset (up to 6 hours), or add a Docker Hub login in Settings → Registries, which raises the limit.";

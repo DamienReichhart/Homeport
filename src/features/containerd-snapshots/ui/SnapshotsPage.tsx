@@ -109,7 +109,7 @@ function SnapshotsList({ hostId, namespace }: { hostId: string; namespace: strin
             <TableRow>
               <TableHead>{t('containerd.snapshots.column.key')}</TableHead>
               <TableHead>{t('containerd.snapshots.column.kind')}</TableHead>
-              <TableHead className="text-right">{t('containerd.snapshots.column.size')}</TableHead>
+              <TableHead className="text-end">{t('containerd.snapshots.column.size')}</TableHead>
               <TableHead>{t('containerd.snapshots.column.usedBy')}</TableHead>
               <TableHead />
             </TableRow>
@@ -119,7 +119,7 @@ function SnapshotsList({ hostId, namespace }: { hostId: string; namespace: strin
               <TableRow key={snapshot.key}>
                 <TableCell>
                   <span
-                    className={cn('font-mono text-xs', depth > 0 && 'border-l pl-2')}
+                    className={cn('font-mono text-xs', depth > 0 && 'border-s ps-2')}
                     style={{ marginLeft: `${depth * 0.75}rem` }}
                     title={snapshot.key}
                   >
@@ -127,13 +127,13 @@ function SnapshotsList({ hostId, namespace }: { hostId: string; namespace: strin
                   </span>
                 </TableCell>
                 <TableCell>{t(KINDS[snapshot.kind])}</TableCell>
-                <TableCell className="text-right whitespace-nowrap">
+                <TableCell className="text-end whitespace-nowrap">
                   {snapshot.size === null ? '—' : formatBytes(snapshot.size)}
                 </TableCell>
                 <TableCell>
                   <UsedBy snapshot={snapshot} />
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-end">
                   <Button
                     variant="ghost"
                     size="icon-sm"

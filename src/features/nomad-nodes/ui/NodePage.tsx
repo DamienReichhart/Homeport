@@ -24,6 +24,7 @@ import { nomadNodeQueries } from '../api/queries';
 import { DrainDialog } from './DrainDialog';
 import { NodeStatus } from './NodesPage';
 import { t } from '@/shared/i18n';
+import { formatDateTime } from '@/shared/lib';
 
 function NodeDetail({ cluster, detail }: { cluster: ClusterView; detail: NomadNodeDetail }) {
   const id = cluster.cluster.id;
@@ -51,7 +52,7 @@ function NodeDetail({ cluster, detail }: { cluster: ClusterView; detail: NomadNo
           <>
             <Button asChild variant="ghost">
               <Link to="/nomad/nodes">
-                <ArrowLeftIcon /> {t('nomad.node.back')}
+                <ArrowLeftIcon className="rtl:-scale-x-100" /> {t('nomad.node.back')}
               </Link>
             </Button>
             <div className="flex items-center gap-2">
@@ -104,7 +105,7 @@ function NodeDetail({ cluster, detail }: { cluster: ClusterView; detail: NomadNo
                   detail.drain.forced
                     ? t('nomad.drain.forced')
                     : detail.drain.deadline
-                      ? new Date(detail.drain.deadline).toLocaleString()
+                      ? formatDateTime(detail.drain.deadline)
                       : t('nomad.drain.none'),
                 ],
                 [

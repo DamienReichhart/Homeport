@@ -1,0 +1,34 @@
+---
+title: Nodes e Events
+description: Veja os Nodes de um cluster, a capacidade deles e os Pods em cada um, e os Events dele, avisos primeiro.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+## Nodes
+
+**Nodes** lista as máquinas em que o cluster executa Pods, indicando se cada uma está **Pronto** (e **agendamento desativado** quando está isolada com cordon), as funções, a versão do kubelet, o IP interno, a plataforma e a CPU e a memória alocáveis.
+
+<DocScreenshot
+  name="cluster-nodes"
+  alt="A página Nodes: cinco Nodes EKS, um não pronto com agendamento desativado, com a versão do kubelet, o IP interno, a plataforma, as CPUs e a memória deles."
+/>
+
+As CPUs são mostradas em núcleos (`3.92` para `3920m`) e a memória em GB; o Kubernetes informa o que é **alocável** aos Pods, um pouco menos do que a máquina tem, já que o kubelet e o sistema reservam uma parte.
+
+A página de um Node mostra a imagem do sistema operacional, o kernel, o runtime de contêineres, os endereços, os taints, os rótulos e a capacidade ao lado do que é alocável aos Pods; depois os **Pods** em execução nele, em todos os Namespaces, as **Condições** dele (pressão de memória, de disco e de PID), os **Eventos** e o **YAML**. A página de um Pod tem link para o Node dele.
+
+## Events
+
+<DocScreenshot
+  name="cluster-events"
+  alt="A página Eventos: três avisos primeiro (um Pod em back-off, uma imagem que não pode ser baixada, um Node não pronto) e depois os eventos normais, cada um com o objeto, a mensagem, a contagem e a idade."
+/>
+
+**Eventos** lista o que o Kubernetes informou no Namespace selecionado (ou em todos): avisos primeiro, depois os mais recentes, cada um com o motivo, o objeto a que se refere — com link para a página desse objeto —, a mensagem, quantas vezes aconteceu e quando aconteceu pela última vez. Filtre por **Avisos** ou **Normal** e pesquise por motivo, objeto ou mensagem. A lista é atualizada em tempo real.
+
+O Kubernetes mantém os Events por cerca de uma hora, então uma lista vazia é normal em um cluster tranquilo. A página de todo objeto também tem a própria aba **Eventos**.
+
+## Quando as suas credenciais não conseguem ver algo
+
+Os Nodes não estão em um Namespace, então listá-los exige uma permissão em todo o cluster que muitos usuários não têm. A página então diz "Suas credenciais não permitem “list” em nodes." e todas as outras páginas continuam funcionando.

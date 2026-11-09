@@ -1,0 +1,345 @@
+---
+title: Stacks
+description: Déployer des stacks Compose sur n’importe quel hôte depuis Homeport ou depuis un dossier de projet, garder leur environnement chiffré, et adopter les stacks déployées ailleurs.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+Une **stack** est un projet Compose qui tourne sur un hôte. Homeport trouve chaque stack de l’hôte sélectionné grâce aux labels que Compose pose sur ses conteneurs, quelle que soit la façon dont elle a été déployée.
+
+<DocScreenshot
+  name="stacks"
+  alt="La page Stacks, qui liste les stacks gérées et externes avec leur état et leurs services."
+/>
+
+## Stacks gérées, liées, synchronisées et externes
+
+Chaque stack est de l’un de ces quatre types :
+
+| Type             | Où se trouve son fichier compose                         | Modifier | Déployer | Construire | Démarrer, arrêter, supprimer |
+| ---------------- | -------------------------------------------------------- | -------- | -------- | ---------- | ---------------------------- |
+| **Gérée**        | Dans Homeport, avec son environnement chiffré            | ✓        | ✓        | —          | ✓                            |
+| **Liée**         | Dans son dossier de projet sur **cet** ordinateur        | ✓        | ✓        | ✓          | ✓                            |
+| **Synchronisée** | Dans un dépôt git que Homeport clone et suit             | git      | ✓        | ✓          | ✓                            |
+| **Externe**      | Nulle part où Homeport peut le voir : déployée autrement | —        | —        | —          | ✓                            |
+
+- Une **stack gérée** est une stack dont Homeport conserve le fichier compose et l’environnement. Vous pouvez la modifier, la déployer et la retirer depuis Homeport.
+- Une **stack liée** est une stack dont les fichiers compose forment un dossier sur cet ordinateur, où vous continuez à les modifier. Homeport retient où se trouve le dossier, travaille sur les fichiers sur place et déploie à partir de lui. Voir [Stacks liées](#stacks-liées).
+- Une **stack synchronisée** est une stack dont le fichier compose vient d’un dépôt git. Homeport récupère sa branche ou son tag, montre ce qui a changé et déploie le nouveau commit ; elle se modifie par git, jamais dans Homeport. Voir [Stacks synchronisées](/docs/guides/synced-stacks/).
+- Une **stack externe** a été déployée autrement — `docker compose up` sur le serveur, un job de CI, un autre outil, ou depuis un dossier sur un autre ordinateur. Homeport peut démarrer, arrêter, redémarrer et supprimer ses conteneurs, mais n’a pas de fichier compose à partir duquel la redéployer. Vous pouvez lâ[adopter](#adopter-une-stack-externe) pour en faire une stack gérée.
+
+Chaque stack affiche l’un de ces états :
+
+| État                                   | Signification                                                        |
+| -------------------------------------- | -------------------------------------------------------------------- |
+| **En cours d’exécution**               | Tous ses conteneurs sont en cours d’exécution.                       |
+| **Partiellement en cours d’exécution** | Certains le sont.                                                    |
+| **Arrêtée**                            | Aucun ne l’est.                                                      |
+| **Non déployée**                       | Une stack gérée, liée ou synchronisée sans conteneur pour l’instant. |
+
+Les stacks gérées, liées et synchronisées appartiennent à un seul hôte, ou à un seul Swarm. Pour exécuter le même fichier compose sur deux hôtes, créez une stack sur chacun.
+
+<Aside>
+  Les stacks déployées sur un [Swarm](/docs/guides/swarm/), depuis un terminal ou depuis Homeport,
+  sont listées sur la page du Swarm, sous **Stacks**, plutôt qu’ici. Pour en déployer une,
+  choisissez le Swarm sous **Déployer sur** dans **Nouvelle stack**. Voir [Déployer des stacks sur
+  un Swarm](/docs/guides/swarm/#déployer-des-stacks-sur-un-swarm).
+</Aside>
+
+## Stacks liées
+
+Une **stack liée** garde ses fichiers compose dans leur dossier de projet sur cet ordinateur, où vous les modifiez dans votre propre éditeur et les gardez sous contrôle de version. Homeport ne les copie jamais : il retient le dossier et les fichiers compose qu’il utilise, dans l’ordre, et les lit là où ils sont. Le `.env` du dossier reste dans le dossier.
+
+Une stack liée peut aussi être déployée sur un Swarm, ses `configs: file:` et `secrets: file:` étant lus depuis le dossier ; voir [Stacks liées et synchronisées sur un Swarm](/docs/guides/swarm/#stacks-liées-et-synchronisées-sur-un-swarm).
+
+### Créer une stack liée
+
+Un dossier de projet qui ne tourne pas encore sur l’hôte peut être lié depuis Homeport :
+
+<Steps>
+
+1. Ouvrez **Stacks**, choisissez **Nouvelle stack**, puis **Utiliser un dossier de cet ordinateur**.
+
+2. Choisissez **Choisir un dossier…** et sélectionnez le dossier qui contient le projet compose.
+
+3. Homeport liste les fichiers compose que Compose y utiliserait, dans l’ordre : le premier de `compose.yaml`, `compose.yml`, `docker-compose.yml` et `docker-compose.yaml`, puis son fichier de surcharge (`compose.override.yaml` et équivalents), s’il y en a un. Un dossier qui n’en contient aucun ne peut pas être lié, et Homeport le signale.
+
+4. Vérifiez le **Nom**. Il vient du `name:` de premier niveau des fichiers, ou du nom du dossier tel que Compose l’écrit (`My App` devient `myapp`).
+
+5. Choisissez **Enregistrer et déployer** — ou **Enregistrer** pour déployer plus tard.
+
+</Steps>
+
+Si une stack de ce nom tourne déjà sur l’hôte en tant que stack externe, créer la stack liée la reprend, comme le fait lâ[adoption](#adopter-une-stack-externe) : un redéploiement recrée ses conteneurs pour qu’ils correspondent aux fichiers du dossier. Pour utiliser des fichiers qui portent d’autres noms, ou dans un autre ordre, voir [plusieurs fichiers compose](#plusieurs-fichiers-compose).
+
+### Comment les stacks liées sont trouvées
+
+Quand vous exécutez `docker compose up` dans un dossier, Compose pose sur chaque conteneur un label avec ce dossier et ses fichiers compose — même quand `DOCKER_HOST` pointe vers un hôte distant. Quand Homeport liste les stacks d’un hôte, une stack trouvée en cours d’exécution s’affiche comme **Liée** si :
+
+1. les deux labels sont présents, et le dossier ainsi que chaque fichier compose qu’ils nomment existent sur cet ordinateur, et
+2. ces fichiers définissent les services qui tournent : chaque service en cours d’exécution figure dans les fichiers, et chaque service que les fichiers définissent hors d’un profil a un conteneur.
+
+La seconde règle évite qu’un chemin qui existe ici par coïncidence ne lie les mauvais fichiers — par exemple une stack démarrée sur le serveur lui-même dans `/srv/app`, alors que cet ordinateur a aussi un `/srv/app`. Les fichiers qui utilisent `include:` ou `extends:` ne sont pas suivis, si bien qu’une telle stack reste externe pour l’instant. Trouver les stacks liées ne demande pas le CLI Compose.
+
+Le dossier s’affiche sous le nom de la stack dans la liste et sur sa page.
+
+### Modifier une stack liée
+
+L’onglet **Définition** d’une stack liée affiche chacun de ses fichiers compose dans un onglet à part, lu depuis le dossier, avec le chemin du dossier au-dessus. Modifiez-les et choisissez **Enregistrer** : Homeport réécrit chaque fichier modifié là où il se trouve, si bien que votre propre éditeur et votre contrôle de version voient le changement. Le fichier est remplacé en une seule étape, en gardant ses permissions, si bien que rien ne le lit jamais à moitié écrit.
+
+Les vérifications sous l’éditeur suivent les règles des stacks liées : `build:`, `env_file:` et les chemins relatifs sont acceptés, puisque le dossier est là. Il n’y a pas d’éditeur d’environnement : Compose lit le `.env` du dossier quand il s’exécute, et Homeport ne l’affiche ni ne le modifie.
+
+#### Modifiés en dehors de Homeport
+
+Homeport prend note des fichiers chaque fois qu’il les lit ou les écrit. Quand ils diffèrent — vous les avez modifiés dans un autre éditeur, ou avez récupéré une nouvelle version —, l’onglet affiche **Modifiés en dehors de Homeport**. Il vérifie à l’ouverture de l’onglet et chaque fois que vous revenez dans la fenêtre de Homeport. Choisissez **Recharger** pour voir les fichiers tels qu’ils sont maintenant ; les modifications que vous n’aviez pas enregistrées sont abandonnées.
+
+Si vous enregistrez un fichier qui a été modifié sur le disque depuis que vous l’avez ouvert, Homeport refuse : **compose.yaml a été modifié en dehors de Homeport depuis que vous l’avez ouvert.** Rechargez pour voir l’autre modification, ou choisissez **Écraser** pour la remplacer par votre version.
+
+Si le dossier a disparu, ou si un fichier ne peut pas être lu, l’onglet indique lequel et quoi faire, à la place de l’éditeur.
+
+### Déployer et construire une stack liée
+
+**Déployer**, **Redéployer**, **Récupérer les images** et **Retirer** fonctionnent aussi pour les stacks liées. Homeport exécute `docker compose` dans le dossier de la stack, avec `--project-directory` réglé sur lui et un `--file` pour chacun de ses fichiers compose, dans l’ordre — comme si vous l’exécutiez vous-même sur place —, toujours par sa propre connexion pour les hôtes SSH et TLS. Ainsi, `build:`, `env_file:`, les chemins `./relative` et le `.env` du dossier fonctionnent tous.
+
+Un service avec `build:` est construit quand il n’a pas encore d’image. Pour le reconstruire après avoir modifié son code, choisissez **Reconstruire et déployer** dans le menu **⋮** de la stack (`up --build`). Le build s’exécute sur le moteur de **l’hôte**, avec le contexte de build envoyé depuis cet ordinateur. Les services avec `build:` ne sont jamais récupérés ; leurs images de base sont récupérées par le build lui-même, avec votre propre `docker login`.
+
+**Enregistrer et redéployer**, dans l’onglet **Définition**, écrit les fichiers que vous avez modifiés, puis déploie.
+
+<Aside type="caution" title="Chemins relatifs sur un hôte distant">
+  Un montage bind comme `./data:/data` se résout vers le dossier sur **cet** ordinateur, par exemple
+  `/home/me/site/data`. Sur un hôte distant, ce chemin peut ne pas exister, et le moteur y crée un
+  dossier vide à la place. Quand vous déployez une stack liée sur un hôte qui n’est pas cet
+  ordinateur, la sortie commence par un avertissement pour chacun de ces montages. Utilisez un
+  volume nommé ou un chemin absolu sur l’hôte pour les données qui doivent y vivre.
+</Aside>
+
+Si le dossier a disparu, le déploiement s’arrête avec **Le dossier … n’est plus sur cet ordinateur.** Sans le CLI Compose, les stacks liées peuvent toujours être démarrées, arrêtées et supprimées.
+
+### Quand le dossier est déplacé ou disparaît
+
+Si les fichiers compose d’une stack liée ne sont plus là — le dossier a été déplacé, renommé ou supprimé —, la stack s’affiche comme **Externe**, avec ⚠ **Ses fichiers compose ne sont plus sur cet ordinateur.** Rien n’est supprimé de Homeport ni de l’hôte : remettez les fichiers en place et elle redevient liée à la prochaine actualisation. Pour ne plus la lier, ouvrez son onglet **Définition** et choisissez **Oublier** ; cela ne fait qu’effacer la note que Homeport a prise du dossier, jamais le dossier ni les conteneurs.
+
+Une stack démarrée depuis un dossier sur un autre ordinateur est externe sur celui-ci, puisque ses labels pointent vers un chemin que cet ordinateur n’a pas.
+
+## Ce dont le déploiement a besoin
+
+Homeport déploie les stacks gérées, liées et synchronisées avec la commande `docker compose` de **cet** ordinateur, dirigée vers l’hôte. Installez le CLI Docker avec le plugin Compose, ou `docker-compose` v2 autonome ; **Paramètres → Cette machine** indique si Homeport l’a trouvé.
+
+Pour une stack gérée, la commande s’exécute avec le fichier compose sur son entrée standard, l’environnement de la stack en variables, et un dossier de travail vide, si bien que rien n’est écrit sur le disque. Pour une stack liée, elle s’exécute dans le dossier de la stack avec ses fichiers compose, comme si vous l’exécutiez sur place. Pour les hôtes SSH et TLS, Homeport fait passer la commande par sa propre connexion à l’hôte, si bien que Compose ne voit jamais vos clés.
+
+Sans le CLI Compose, vous pouvez toujours démarrer, arrêter et supprimer des stacks ; seuls **Déployer**, **Récupérer les images** et **Retirer** en ont besoin.
+
+### Images privées
+
+Avant `docker compose up`, Homeport récupère les images que l’hôte n’a pas encore, par sa propre connexion à l’hôte, avec les [identifiants de registre](/docs/guides/settings/#registres) enregistrés pour le registre de chaque image, si bien que les images privées se déploient sur n’importe quel hôte sans `docker login` sur cet ordinateur. La sortie du déploiement montre chaque récupération et les identifiants qu’elle utilise — **Récupération de ghcr.io/org/app:1 en tant que alice sur ghcr.io**, ou **de façon anonyme** —, jamais le mot de passe. Un service avec `pull_policy: always` est récupéré à chaque fois ; `never` et `build` sont laissés tels quels.
+
+Compose lui-même ne reçoit jamais d’identifiants : aucun fichier que Homeport crée pour l’exécution, ni aucune des variables d’environnement de la commande, n’en contient. Votre propre `docker login` sur cet ordinateur ne s’applique pas à ces récupérations ; ajoutez plutôt les identifiants dans **Paramètres → Registres**. Si un registre refuse une image, le déploiement s’arrête avant que Compose ne s’exécute, et le message indique d’ajouter ou de vérifier les identifiants.
+
+## Créer une stack gérée
+
+<Steps>
+
+1. Ouvrez **Stacks** et choisissez **Nouvelle stack**. **Écrire un fichier compose** est sélectionné.
+
+2. Choisissez un [modèle](#partir-dun-modèle) — ou **Vide** pour partir de zéro.
+
+3. Saisissez un **Nom** : des lettres minuscules, des chiffres, `-` et `_`, en commençant par une lettre ou un chiffre. Le modèle en propose un. Il devient le nom du projet Compose et ne peut pas être changé plus tard.
+
+4. Ajustez le fichier compose dans l’éditeur.
+
+5. Mettez des variables dans **Environnement**, un `KEY=value` par ligne, comme dans un fichier `.env`. Compose les substitue à `${KEY}` dans le fichier. Remplissez les mots de passe qu’un modèle laisse vides.
+
+6. Choisissez **Enregistrer et déployer** — ou **Enregistrer** pour déployer plus tard.
+
+</Steps>
+
+### Partir d’un modèle
+
+La page Nouvelle stack s’ouvre sur une galerie de modèles. Chacun est un fichier compose et un environnement qui suivent les bonnes pratiques : tags d’image fixés sur une version, données dans des volumes nommés, et secrets dans l’environnement plutôt que dans le fichier. Utilisez **Tab** pour passer d’une carte à l’autre et **Enter** pour en choisir une ; **Choisir un autre modèle** revient en arrière.
+
+| Modèle                    | Ce qu’il exécute                                                           |
+| ------------------------- | -------------------------------------------------------------------------- |
+| **Site statique**         | nginx qui sert les fichiers d’un volume nommé, sur le port `HTTP_PORT`.    |
+| **PostgreSQL et Adminer** | PostgreSQL, et Adminer sur `ADMINER_PORT` pour le parcourir.               |
+| **MariaDB**               | MariaDB avec une base de données et un utilisateur pour l’application.     |
+| **Redis**                 | Redis avec un mot de passe, qui enregistre ses données sur le disque.      |
+| **Proxy inverse (Caddy)** | Caddy qui transmet `SITE_ADDRESS` vers `UPSTREAM`, avec HTTPS automatique. |
+| **Uptime Kuma**           | Uptime Kuma, pour surveiller des sites et des services, sur `HTTP_PORT`.   |
+| **WordPress**             | WordPress avec sa propre base de données MariaDB.                          |
+| **Vide**                  | Une section `services:` à remplir vous-même.                               |
+
+Les mots de passe sont laissés vides, avec un commentaire qui indique ce qu’il faut y mettre : remplissez-les avant de déployer. Adopter une stack externe passe la galerie et ouvre un éditeur vide.
+
+<DocScreenshot
+  name="stack-editor"
+  alt="L’éditeur de stack avec un fichier compose, son environnement et les vérifications en dessous."
+/>
+
+### Vérifications pendant la saisie
+
+Homeport vérifie la définition pendant que vous tapez et liste les problèmes sous l’éditeur. Les règles qui s’appliquent dépendent du type de stack.
+
+Les **erreurs** empêchent un déploiement :
+
+- Le YAML ne peut pas être analysé, ou n’a pas de `services:` — tous les types.
+- Un service n’a ni `image:` ni `build:` — tous les types.
+- Un service utilise `build:` — **stacks gérées** uniquement. Il n’y a pas de dossier à partir duquel construire, donc utilisez une image que vous avez poussée vers un registre, ou [liez plutôt le dossier](#créer-une-stack-liée).
+
+Les **avertissements**, pour les **stacks gérées** uniquement, vous laissent déployer mais signalent des choses qui ne feront probablement pas ce que vous attendez, parce que Compose les lit sur cet ordinateur plutôt que sur l’hôte. Le dossier d’une stack liée est là, donc elles ne posent pas de problème pour elle :
+
+- Un montage bind avec un chemin relatif comme `./data:/data`. Utilisez un chemin absolu sur l’hôte ou un volume nommé.
+- `env_file:`, ou des `configs` et des `secrets` lus depuis un `file:`. Mettez plutôt les variables dans l’environnement de la stack.
+
+### L’environnement
+
+L’environnement est enregistré chiffré et transmis directement à Compose, sans jamais être écrit sur le disque — c’est le bon endroit pour les mots de passe et les jetons. Le fichier compose lui-même est enregistré en clair, donc gardez les secrets hors de lui :
+
+```yaml
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+```
+
+```ini
+DB_PASSWORD=correct-horse-battery-staple
+```
+
+Les lignes vides, les `# comments` et les préfixes `export` sont autorisés. Les valeurs peuvent être entre guillemets ; entre guillemets doubles, `\n` est un saut de ligne.
+
+<Aside>
+  Enregistrer un environnement demande un [trousseau du
+  système](/docs/requirements/#facultatif-un-trousseau-du-système). Sans trousseau, le champ est
+  désactivé et les stacks se déploient sans environnement.
+</Aside>
+
+## Plusieurs fichiers compose
+
+Une stack peut se composer de plusieurs fichiers compose fusionnés dans l’ordre, comme `docker compose -f compose.yaml -f compose.prod.yaml` les fusionne : un fichier de base, puis des surcharges qui ajoutent ou modifient des clés — des `ports:` pour la production, un service de débogage pour le développement.
+
+Les **stacks gérées** affichent un onglet par fichier au-dessus de l’éditeur. Choisissez **Ajouter un fichier** pour en ajouter un (Homeport propose `compose.override.yaml`, `compose.prod.yaml`, etc.), renommez-le dans **Nom du fichier**, déplacez-le plus tôt ou plus tard avec les flèches, ou supprimez-le. Le premier fichier est la base et ne peut pas être supprimé. Les noms se terminent par `.yaml` ou `.yml`.
+
+Avec un seul fichier, Homeport l’envoie à Compose sur son entrée standard, comme avant. Avec plusieurs, il les écrit dans un dossier privé que seul votre utilisateur peut ouvrir, le temps de la commande, et le supprime ensuite. L’environnement n’y est jamais écrit : il est toujours transmis à Compose sous forme de variables.
+
+Les **stacks liées** listent leurs fichiers dans le panneau latéral de l’onglet **Définition**, dans l’ordre. **Ajouter un fichier…** choisit un autre fichier compose dans le dossier de la stack — `compose.prod.yaml` au lieu de la surcharge par défaut, par exemple —, et les flèches et **✕** les réordonnent et les retirent. Enregistrez ou rechargez d’abord vos modifications : changer les fichiers recharge l’éditeur.
+
+Les vérifications portent sur les fichiers fusionnés, si bien qu’un service défini dans la base et doté de `ports:` dans une surcharge est vérifié comme un seul service.
+
+## Profils
+
+Les fichiers compose gardent souvent des services facultatifs — outils de débogage, workers, base de données locale — derrière des `profiles:` :
+
+```yaml
+services:
+  app:
+    image: ghcr.io/org/app:1.4
+  adminer:
+    image: adminer:4.8.1
+    profiles: [debug]
+```
+
+Les services sans profil tournent toujours. Ceux qui sont derrière un profil ne tournent que lorsque la stack l’active. Quand les fichiers d’une stack gérée, liée ou synchronisée déclarent des profils, son onglet **Définition** affiche **Profils**, avec une case à cocher pour chacun. Activez-en un et choisissez **Enregistrer et redéployer** — ou **Enregistrer les profils** pour l’appliquer au prochain déploiement.
+
+Désactiver un profil puis redéployer supprime les conteneurs de ses services : Homeport les supprime avant `docker compose up`, puisque Compose lui-même les laisse tourner. **Retirer** supprime les services de tous les profils que déclarent les fichiers, activés ou non.
+
+Seuls les profils de la stack comptent. Une variable `COMPOSE_PROFILES` dans votre shell, dans l’environnement d’une stack gérée ou dans le `.env` d’une stack liée ne change pas ce que Homeport déploie. Une stack liée trouvée grâce à ses labels compose démarre sans aucun profil activé, même si elle a été démarrée avec `--profile` : activez-les dans son onglet **Définition**. Si un profil que vous avez activé disparaît des fichiers, Homeport le signale et le désactive au prochain enregistrement.
+
+## Déployer et redéployer
+
+**Déployer** — ou **Redéployer** une fois la stack en cours d’exécution — exécute `docker compose up --detach --remove-orphans`. Une fenêtre montre la sortie de Compose pendant son exécution et se termine par **✓ Terminé** ou par le code de sortie de l’échec.
+
+<Aside type="caution">
+  Fermer la fenêtre de sortie pendant que Compose s’exécute l’arrête, ce qui peut laisser un
+  déploiement à moitié fait. Redéployez pour le terminer.
+</Aside>
+
+Pour modifier une stack gérée, ouvrez-la, modifiez sa **Définition** et choisissez **Enregistrer et redéployer**. Compose ne recrée que les services qui ont changé, et supprime les services que vous avez retirés du fichier.
+
+### Vérifier les changements avant un redéploiement
+
+Avant qu’un redéploiement ne s’exécute — **Redéployer**, **Reconstruire et déployer**, ou **Enregistrer et redéployer** pour une stack en cours d’exécution —, Homeport affiche **Vérifier les changements de …** : la définition déployée la dernière fois (l’entrée réussie la plus récente de son [historique](#historique-des-déploiements-et-retour-arrière)) face à celle qui est sur le point de l’être.
+
+- Chaque fichier compose montre ses lignes modifiées en ligne : les lignes supprimées au-dessus des lignes qui les remplacent. Un fichier inchangé est replié ; sélectionnez-le pour l’ouvrir. Les fichiers ajoutés, supprimés ou fusionnés dans un autre ordre sont nommés.
+- Les variables d’environnement ne montrent que leur nom, marqué **Ajouté**, **Supprimé** ou **Modifié** — un mot de passe changé indique **Modifié** sans montrer aucune des deux valeurs —, et combien d’autres sont inchangées.
+- L’activation ou la désactivation d’un profil s’affiche aussi.
+
+Choisissez **Déployer** pour passer à l’exécution, ou **Retour** pour revenir à l’éditeur sans rien changer. Quand rien n’a changé, la vérification le signale et propose **Redéployer quand même**. Quand Homeport ne sait pas ce qui est déployé — la stack a été déployée avant que Homeport ne tienne un historique, ou en dehors de lui —, la vérification le signale et montre la définition qui va être déployée. Un premier déploiement, un retour arrière et une [mise à jour](#mettre-à-jour-une-stack) passent la vérification.
+
+La comparaison porte uniquement sur les définitions, pas sur la configuration réelle des conteneurs sur l’hôte.
+
+## Historique des déploiements et retour arrière
+
+Chaque déploiement d’une stack gérée, liée ou synchronisée depuis Homeport — **Déployer**, **Redéployer**, **Reconstruire et déployer**, **Enregistrer et redéployer**, une [synchronisation](/docs/guides/synced-stacks/#synchronisation) — est enregistré avec les fichiers compose, l’environnement et les profils qu’il a utilisés, le moment où il a eu lieu et la façon dont il s’est terminé ; celui d’une stack synchronisée indique aussi son commit, et si c’est le déploiement automatique qui l’a lancé. L’onglet **Historique** de la page de la stack liste les 20 derniers, du plus récent au plus ancien : **Réussi**, **Échoué** avec son code de sortie, ou **Non terminé** pour une exécution dont la fenêtre a été fermée avant la fin. **Déployé actuellement** marque le plus récent qui a réussi.
+
+Sélectionnez un déploiement pour voir ses fichiers compose, en lecture seule. Son environnement est enregistré chiffré comme celui de la stack, et l’onglet ne montre que le nom de ses variables. Sans trousseau, la liste fonctionne quand même ; un déploiement avec un environnement indique simplement qu’il ne peut pas être ouvert.
+
+Pour annuler une mauvaise modification d’une stack **gérée**, sélectionnez le déploiement qui fonctionnait et choisissez **Revenir à ce déploiement**. Homeport remet ses fichiers compose, son environnement et ses profils à la place des actuels, puis redéploie, si bien que la prochaine entrée de l’historique est le retour arrière lui-même.
+
+<Aside type="caution" title="Ce qu’un retour arrière restaure">
+  Uniquement la définition. Les images sont récupérées à nouveau pour les tags qu’elle nomme, tels
+  que ces tags sont maintenant — si `app:1.4` a été poussé à nouveau entre-temps, vous obtenez le
+  nouvel `app:1.4`. Les volumes et leurs données sont laissés tels quels.
+</Aside>
+
+L’historique d’une stack **liée** est en lecture seule : son dossier est sa source, donc restaurez-y les fichiers précédents — avec votre contrôle de version, par exemple — et redéployez. Oublier une stack supprime aussi son historique.
+
+## La page d’une stack
+
+- **Services** liste chaque service avec son conteneur, son image et son état. Sélectionnez un conteneur pour l’ouvrir.
+- **Journaux** montre ensemble les journaux de tous les conteneurs, chaque ligne étiquetée avec son service.
+
+<DocScreenshot
+  name="stack-logs"
+  alt="L’onglet Journaux d’une stack, avec la sortie de chaque service entremêlée et étiquetée."
+/>
+
+- **Définition** contient l’éditeur d’une stack gérée ou liée, la source et les fichiers en lecture seule d’une stack synchronisée, ou explique d’où vient une stack externe.
+- **Historique**, pour les stacks gérées, liées et synchronisées, liste leurs déploiements. Voir [historique des déploiements](#historique-des-déploiements-et-retour-arrière).
+
+## Mettre à jour une stack
+
+**Mise à jour disponible**, à côté de l’état d’une stack, signifie que l’un de ses services exécute une image dont le tag pointe vers une version plus récente dans son registre ; survolez-le pour voir quels services. Sur la page de la stack, **Services** les nomme et marque chaque image obsolète. **Rechercher des images plus récentes**, en haut de la page Stacks, interroge à nouveau les registres. La vérification est celle qu’utilise la page Conteneurs — voir [images plus récentes](/docs/guides/containers/#images-plus-récentes) —, si bien qu’ouvrir Stacks juste après Conteneurs ne redemande rien aux registres. Une image fixée par digest (`app@sha256:…`) n’a jamais de mise à jour, et un service avec `build:` n’est pas vérifié.
+
+Pour mettre à jour une stack gérée, liée ou synchronisée, choisissez **Mettre à jour**. Cela exécute les deux étapes dans une seule fenêtre : la récupération de l’image de chaque service avec les identifiants enregistrés, puis `docker compose up` avec ce qui a été récupéré, si bien que seuls les services dont l’image a changé reçoivent de nouveaux conteneurs. La fenêtre indique quelles images sont plus récentes avant de commencer, et il n’y a pas dâ[étape de vérification](#vérifier-les-changements-avant-un-redéploiement), puisque la définition ne change pas. Si une récupération échoue, la mise à jour s’arrête là : les conteneurs en cours d’exécution sont laissés tels quels, et l’erreur indique pourquoi, avec ce qu’il faut faire.
+
+Une stack externe affiche aussi **Mise à jour disponible**, mais son **Mettre à jour** est désactivé : Homeport n’a pas de fichier compose à partir duquel la redéployer, donc [adoptez-la](#adopter-une-stack-externe) d’abord. Les services avec `build:` d’une stack liée ne sont jamais récupérés ; utilisez **Reconstruire et déployer** pour eux.
+
+## Actions sur les stacks
+
+| Action                        | Stacks      | Ce qu’elle fait                                                                                                           |
+| ----------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Déployer** / **Redéployer** | Gérée, liée | `docker compose up` avec la définition de la stack.                                                                       |
+| **Reconstruire et déployer**  | Liée        | `docker compose up --build` : reconstruit d’abord chaque service qui a `build:`.                                          |
+| **Démarrer** / **Arrêter**    | Toutes      | Démarre les conteneurs arrêtés, ou arrête ceux qui tournent.                                                              |
+| **Redémarrer**                | Toutes      | Redémarre chaque conteneur.                                                                                               |
+| **Récupérer les images**      | Gérée, liée | Récupère l’image de chaque service avec les identifiants enregistrés, pour obtenir les plus récentes avant de redéployer. |
+| **Retirer**                   | Gérée, liée | `docker compose down` : supprime les conteneurs et les réseaux, garde les volumes et la définition.                       |
+| **Retirer avec les volumes**  | Gérée, liée | Supprime aussi les volumes de la stack **et leurs données**.                                                              |
+| **Supprimer les conteneurs**  | Externe     | Supprime ses conteneurs et ses réseaux. Les volumes sont conservés.                                                       |
+| **Adopter**                   | Externe     | Donne à Homeport le fichier compose, ce qui en fait une stack gérée.                                                      |
+
+**Oublier la définition**, dans l’onglet **Définition** d’une stack gérée, supprime le fichier compose et l’environnement de Homeport mais laisse les conteneurs tourner ; la stack devient externe. **Oublier**, dans l’onglet **Définition** d’une stack liée, efface la note que Homeport a prise du dossier ; le dossier, ses fichiers et les conteneurs sont laissés tels quels.
+
+## Adopter une stack externe
+
+<Steps>
+
+1. Ouvrez la stack externe et choisissez **Adopter**.
+
+2. Collez le fichier compose avec lequel elle a été déployée. Le nom est rempli et verrouillé.
+
+3. Ajoutez ses variables d’environnement, si elle en utilisait.
+
+4. Choisissez **Enregistrer** pour la reprendre sans toucher aux conteneurs en cours d’exécution, ou **Enregistrer et déployer** pour la redéployer maintenant.
+
+</Steps>
+
+<Aside type="caution" title="Utilisez la même définition">
+  Redéployer avec un autre fichier recrée les conteneurs pour qu’ils lui correspondent, et supprime
+  les services qui n’y figurent plus. Les chemins qui étaient relatifs sur la machine qui l’a
+  déployée la première fois peuvent se résoudre différemment maintenant.
+</Aside>
+
+Créer une nouvelle stack portant le même nom qu’une stack externe l’adopte aussi.

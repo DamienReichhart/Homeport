@@ -9,7 +9,7 @@ export function HintView({ hint }: { hint: Hint }) {
       {hint.commands.map((command) => (
         <div
           key={command}
-          className="bg-muted flex items-start justify-between gap-2 rounded-md py-1.5 pr-1.5 pl-3"
+          className="bg-muted flex items-start justify-between gap-2 rounded-md py-1.5 pe-1.5 ps-3"
         >
           <pre className="text-foreground overflow-x-auto py-1 font-mono text-xs whitespace-pre-wrap">
             {command}

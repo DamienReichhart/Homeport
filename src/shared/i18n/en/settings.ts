@@ -7,6 +7,8 @@ export default {
   'settings.theme.system': 'Match the system',
   'settings.theme.light': 'Light',
   'settings.theme.dark': 'Dark',
+  'settings.appearance.language': 'Language',
+  'settings.language.system': 'Match the system ({language})',
   'settings.desktop.title': 'Desktop',
   'settings.desktop.description': 'How Homeport runs on this computer.',
   'settings.desktop.closeToTray': 'Close to the system tray',

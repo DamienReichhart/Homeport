@@ -1,0 +1,75 @@
+---
+title: Instanzen
+description: Incus-Systemcontainer und virtuelle Maschinen ausführen; ihre Konsole und ein Terminal darin öffnen; Snapshots erstellen und wiederherstellen; Images, Profile, Speicherpools und Netzwerke verwalten.
+---
+
+Eine **Instanz** ist das, was ein [Incus-Host](/docs/hosts/incus/) ausführt: ein **Systemcontainer**, der eine ganze Linux-Distribution bootet und dabei den Kernel des Hosts teilt, oder eine **virtuelle Maschine** mit eigenem Kernel. Jede Seite hier zeigt das Projekt, das unter dem Host-Umschalter gewählt ist.
+
+## Die Seite Instanzen
+
+**Instanzen** listet die Instanzen des Projekts mit Typ, Status, Image, globalen Adressen (IPv4 zuerst), Arbeitsspeicher und Alter auf. Filtern Sie sie nach Name, oder zeigen Sie nur Container oder nur virtuelle Maschinen.
+
+| Aktion              | Was Incus tut                                                                                                                                            |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Starten**         | Bootet sie.                                                                                                                                              |
+| **Stoppen**         | Bittet ihr System, herunterzufahren, und gibt ihm 30 Sekunden; eine Instanz, die das nicht tut, wird gemeldet, mit **Stopp erzwingen** als Ausweg.       |
+| **Stopp erzwingen** | Schaltet sie sofort ab, wie beim Ziehen des Steckers.                                                                                                    |
+| **Neu starten**     | Fährt sie ordnungsgemäß herunter und bootet sie erneut.                                                                                                  |
+| **Einfrieren**      | Pausiert jeden Prozess darin; **Auftauen** setzt sie fort.                                                                                               |
+| **Löschen**         | Fragt zuerst nach und nennt die Snapshots, die mit ihr gelöscht werden. Eine laufende Instanz wird erst gelöscht, wenn Sie **Zuerst stoppen** ankreuzen. |
+
+Die Liste aktualisiert sich binnen eines Augenblicks über die Ereignisse von Incus, wer auch immer die Änderung vorgenommen hat.
+
+Die Seite einer Instanz hat eine **Übersicht** (Adressen, CPU-Zeit, Arbeitsspeicher, Prozesse, Snapshots und ihre Profile, jedes mit einem Link auf seine Seite), ihre **Konfiguration** und ihre **Geräte**, wobei das, was ihre Profile setzen, mit **Aus einem Profil** markiert ist, und unter **Roh** die eigene Beschreibung von Incus.
+
+## Eine Instanz erstellen
+
+**Neue Instanz** (oder <kbd>n</kbd>) erstellt eine aus einem Image:
+
+- **Von einem Image-Server**: standardmäßig der öffentliche `https://images.linuxcontainers.org` oder ein anderer simplestreams-Server. Homeport listet auf, was er für die Architektur des Hosts veröffentlicht, als Container oder als virtuelle Maschinen, durchsuchbar nach System, Release oder Alias; Sie können auch einen Alias wie `debian/12` oder `ubuntu/24.04/cloud` eingeben. Incus lädt das Image herunter, wie es `incus launch images:debian/12` tun würde.
+- **Aus den Images dieses Hosts**: eines, das der Host bereits aufbewahrt.
+
+Wählen Sie ihre **Profile** (der Reihe nach: spätere überschreiben frühere) und optional ihre **CPUs**, ihren **Arbeitsspeicher** (`2GiB`) und die Größe ihrer **Root-Festplatte** (`20GiB`, in dem Pool, in dem die Root-Festplatte ihrer Profile liegt). **Nach dem Erstellen starten** ist standardmäßig eingeschaltet. Der Dialog verfolgt Download und Entpacken in den Worten von Incus und öffnet dann die neue Instanz.
+
+Ein bereits verwendeter Name, ein Image, das der Server nicht hat, ein voller Speicherpool oder eine virtuelle Maschine auf einem Host ohne Hardwarevirtualisierung (kein `/dev/kvm`) – jeder dieser Fälle wird gemeldet, mit dem, was zu tun ist.
+
+## Konsole und Terminal
+
+**Konsole** zeigt, was die Instanz bisher auf ihrer Textkonsole ausgegeben hat, und verbindet sich dann mit ihr: die Anmeldeaufforderung oder einen Bootvorgang, während er läuft, so wie `incus console` sie zeigt. Das funktioniert auch bei virtuellen Maschinen und wenn das Netzwerk oder SSH der Instanz defekt ist. Das Verlassen des Tabs oder **Erneut verbinden** trennt nur die Verbindung.
+
+**Exec** öffnet eine Shell in einer laufenden Instanz (bash, wenn vorhanden, sonst sh) oder führt den Befehl aus, den Sie angeben, als numerischer Benutzer und in einem Ordner Ihrer Wahl; **Öffnen** startet eine neue mit dem, was Sie eingegeben haben. Das Schließen des Tabs beendet den Befehl, sodass nichts, was daraus gestartet wurde, weiterläuft. In einer virtuellen Maschine braucht Exec den `incus-agent`, den die eigenen Images von Incus enthalten und beim Booten starten; solange er nicht läuft, sagt Homeport das, und der Tab Konsole ist der Weg hinein.
+
+## Snapshots
+
+**Snapshots** listet die Snapshots der Instanz auf, mit dem Zeitpunkt der Erstellung, dem Ablaufzeitpunkt und der Angabe, ob sie den Laufzustand enthalten.
+
+- **Snapshot erstellen** benennt ihn (oder lässt Incus ihn `snap0`, `snap1`… nennen) und bewahrt ihn bis zum Löschen oder für einen Tag, eine Woche oder 30 Tage auf. Während die Instanz läuft und wenn ihre Einstellung `migration.stateful` es erlaubt, kann der Snapshot ihren Arbeitsspeicher enthalten, sodass eine Wiederherstellung dort fortsetzt, wo sie war.
+- **Wiederherstellen** versetzt die Instanz in den Zustand zum Zeitpunkt des Snapshots zurück. Alles, was sich seitdem geändert hat, geht verloren, und eine laufende Instanz startet neu, daher fragt Homeport zuerst nach.
+- **Löschen** entfernt einen Snapshot nach einer Rückfrage; die Instanz bleibt, wie sie ist.
+
+## Images
+
+**Images** listet die Images auf, die das Projekt aufbewahrt, mit ihren Aliassen, Beschreibung, Typ, Architektur, Größe und Alter. Images, die Incus heruntergeladen hat, um eine Instanz zu erstellen, sind als **zwischengespeichert** markiert: Incus löscht sie, sobald sie eine Weile nicht verwendet wurden.
+
+- **Image holen** lädt eines im Voraus von einem Image-Server herunter, ausgewählt wie bei einer neuen Instanz. **Vom Server aktuell halten** lässt Incus es vom Server aktualisieren; **Hier denselben Alias vergeben** erlaubt neuen Instanzen, es beim Namen zu verwenden.
+- **Aktualisieren** holt einen neueren Build eines Images von dort, woher es stammt.
+- Die Schaltfläche mit dem Etikett fügt einen Alias hinzu; das Kreuz an einem Alias entfernt ihn.
+- **Löschen** entfernt ein Image. Daraus erstellte Instanzen funktionieren weiter: Jede hat ihre eigene Kopie.
+
+## Profile
+
+**Profile** listet die Profile des Projekts auf, mit der Anzahl der Schlüssel und Geräte, die jedes setzt, und den Instanzen, die es verwenden. Die Seite eines Profils bearbeitet seine Beschreibung, Konfiguration und Geräte als YAML, wie es `incus profile edit` tut, und verlinkt die Instanzen, die es verwenden. **Speichern** wendet die Änderungen auf diese Instanzen an, so wie Incus es tut. Hat jemand das Profil geändert, seit die Seite es geladen hat, wird das Speichern abgelehnt, statt dessen Änderungen zu überschreiben: **Neu laden** und dann Ihre Änderungen erneut vornehmen.
+
+**Neues Profil** erstellt ein leeres und öffnet es. `default` und Profile, die Instanzen verwenden, können nicht gelöscht werden.
+
+## Speicher
+
+**Speicher** zeigt jeden Speicherpool mit seinem Treiber und wie voll er ist, sowie die Volumes des ausgewählten Pools im Projekt: die eigenen der Instanzen und Images und benutzerdefinierte, mit Inhalt, Größe und dem, was sie verwendet.
+
+**Neues Volume** erstellt ein benutzerdefiniertes Volume, ein Dateisystem oder ein Blockgerät, mit einer Größe oder der Standardgröße des Pools, um es an Instanzen anzuhängen, für Daten, die diese überdauern (`incus storage volume attach`). Ein benutzerdefiniertes Volume kann gelöscht werden, sobald es nichts mehr verwendet. Pools selbst werden mit `incus storage create` erstellt.
+
+## Netzwerke
+
+**Netzwerke** listet die Netzwerke auf, die das Projekt sieht, verwaltete (von Incus erstellte) zuerst, mit ihren IPv4- und IPv6-Einstellungen, NAT und Verwendern. Die Seite eines Netzwerks zeigt seine Adressen auf dem Host, MTU und MAC-Adresse, die Instanzen und Profile, die es verwenden, und bei einem verwalteten die DHCP-Leases, wie es `incus network list-leases` tut.
+
+**Neue Bridge** erstellt eine verwaltete Bridge. Ihr IPv4 und IPv6 sind `auto` (ein freies Subnetz), `none` oder die eigene Adresse der Bridge mit ihrem Präfix, etwa `10.0.5.1/24`; **NAT** maskiert ausgehenden IPv4-Verkehr. Ein verwendetes Netzwerk oder eine der eigenen Schnittstellen des Rechners wird hier nicht gelöscht.

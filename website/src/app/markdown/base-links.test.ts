@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import baseLinks from './base-links.mjs';
+import baseLinks, { localizedBaseLinks } from './base-links.mjs';
 
 /** The plugin's two visitors, as it defines them (the type also allows lists). */
 interface Visitors {
@@ -45,5 +45,45 @@ describe('baseLinks', () => {
 
   test('does nothing on a custom domain', () => {
     expect(link('/', '/docs/')).toBe('/docs/');
+  });
+});
+
+describe('baseLinks in a translated page', () => {
+  const fr = (href: string) => {
+    const node = { properties: { href } };
+    let result = href;
+    (baseLinks('/Homeport', 'fr') as unknown as Visitors).element.visit(node, {
+      setProperty: (_: unknown, _name: string, value: string) => (result = value),
+    });
+    return result;
+  };
+
+  test('keeps links to the docs and the translated pages in its language', () => {
+    expect(fr('/docs/hosts/')).toBe('/Homeport/fr/docs/hosts/');
+    expect(fr('/docs/hosts/ssh/#bastions')).toBe('/Homeport/fr/docs/hosts/ssh/#bastions');
+    expect(fr('/download/')).toBe('/Homeport/fr/download/');
+    expect(fr('/')).toBe('/Homeport/fr/');
+    expect(fr('/fr/docs/')).toBe('/Homeport/fr/docs/');
+  });
+
+  test('leaves the English-only pages and other links alone', () => {
+    expect(fr('/privacy/')).toBe('/Homeport/privacy/');
+    expect(fr('https://example.com/docs/')).toBe('https://example.com/docs/');
+  });
+
+  test('finds the page’s language from its path', () => {
+    const factory = localizedBaseLinks('', ['fr', 'pt-br']);
+    const plugin = (path: string) =>
+      factory({ fileURL: new URL(`file:///site/src/content/docs/${path}`) }) as unknown as Visitors;
+    const visit = (p: Visitors) => {
+      let out = '/docs/';
+      p.element.visit(
+        { properties: { href: '/docs/' } },
+        { setProperty: (_: unknown, _n: string, v: string) => (out = v) },
+      );
+      return out;
+    };
+    expect(visit(plugin('pt-br/docs/index.mdx'))).toBe('/pt-br/docs/');
+    expect(visit(plugin('docs/index.mdx'))).toBe('/docs/');
   });
 });

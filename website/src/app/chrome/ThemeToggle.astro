@@ -1,8 +1,18 @@
 ---
+/** Switches between the light and dark themes; its label is in the page's language. */
+import { pageLocale, strings } from '@/core/i18n';
 import { Icon } from '@/shared/ui';
+
+const s = strings(pageLocale(Astro.url));
 ---
 
-<button class="icon-button theme-toggle" type="button" aria-label="Switch to light theme">
+<button
+  class="icon-button theme-toggle"
+  type="button"
+  aria-label={s['theme.toLight']}
+  data-label-light={s['theme.toLight']}
+  data-label-dark={s['theme.toDark']}
+>
   <span class="only-dark">
     <Icon name="sun" />
   </span>
@@ -15,15 +25,17 @@ import { Icon } from '@/shared/ui';
   // Shares Starlight's storage key, so the docs open in the theme picked here.
   const KEY = 'starlight-theme';
   const root = document.documentElement;
+  const buttons = document.querySelectorAll<HTMLButtonElement>('.theme-toggle');
 
   function label() {
     const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
-    for (const button of document.querySelectorAll('.theme-toggle')) {
-      button.setAttribute('aria-label', `Switch to ${next} theme`);
+    for (const button of buttons) {
+      const text = next === 'light' ? button.dataset.labelLight : button.dataset.labelDark;
+      if (text) button.setAttribute('aria-label', text);
     }
   }
 
-  for (const button of document.querySelectorAll('.theme-toggle')) {
+  for (const button of buttons) {
     button.addEventListener('click', () => {
       const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
       root.dataset.theme = next;

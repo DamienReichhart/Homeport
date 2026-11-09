@@ -26,7 +26,7 @@ export function SearchInput({
   });
   return (
     <div className="relative w-64">
-      <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2" />
+      <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 start-2 size-4 -translate-y-1/2" />
       <Input
         ref={input}
         value={value}
@@ -35,7 +35,7 @@ export function SearchInput({
           if (e.key === 'Escape' && value === '') e.currentTarget.blur();
         }}
         placeholder={placeholder}
-        className="pl-8"
+        className="ps-8"
         aria-label={placeholder}
         aria-keyshortcuts="/"
       />

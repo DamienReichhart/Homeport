@@ -1,0 +1,37 @@
+/** Spanish text of the `config` namespace. */
+import type en from '../en/config';
+import type { Translation } from '../types';
+
+export default {
+  'config.nav': 'Configuración',
+  'config.title': 'Configuración',
+  'config.configMaps': 'ConfigMaps',
+  'config.secrets': 'Secrets',
+  'config.configMap': 'ConfigMap',
+  'config.secret': 'Secret',
+  'config.configMapsSummary': '{count, plural, one {# ConfigMap} other {# ConfigMaps}}',
+  'config.secretsSummary': '{count, plural, one {# Secret} other {# Secrets}}',
+  'config.searchConfigMaps': 'Buscar ConfigMaps',
+  'config.searchSecrets': 'Buscar Secrets',
+  'config.column.name': 'Nombre',
+  'config.column.namespace': 'Namespace',
+  'config.column.type': 'Tipo',
+  'config.column.keys': 'Claves',
+  'config.column.age': 'Antigüedad',
+  'config.tab.data': 'Datos',
+  'config.tab.overview': 'Resumen',
+  'config.tab.events': 'Eventos',
+  'config.tab.source': 'YAML',
+  'config.detail.namespace': 'Namespace',
+  'config.detail.type': 'Tipo',
+  'config.detail.labels': 'Etiquetas',
+  'config.detail.annotations': 'Anotaciones',
+  'config.noKeys': 'No hay claves.',
+  'config.binary': '(datos binarios)',
+  'config.base64': 'base64',
+  'config.reveal': 'Mostrar',
+  'config.revealOne': 'Mostrar {key}',
+  'config.hide': 'Ocultar',
+  'config.copy': 'Copiar {key}',
+  'config.reveal.failed': 'Homeport no pudo mostrar {key}',
+} satisfies Translation<typeof en>;

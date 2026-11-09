@@ -123,7 +123,7 @@ function AllocationLoader({ cluster }: { cluster: ClusterView }) {
         actions={
           <Button asChild variant="ghost">
             <Link to={jobPath(a.namespace, a.jobId)}>
-              <ArrowLeftIcon /> {a.jobId}
+              <ArrowLeftIcon className="rtl:-scale-x-100" /> {a.jobId}
             </Link>
           </Button>
         }

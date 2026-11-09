@@ -1,0 +1,127 @@
+---
+title: Stack sincronizzati
+description: Distribuisci uno stack da un repository git, vedi cosa è cambiato prima di ogni sincronizzazione e fagli seguire il suo branch finché Homeport è aperto.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+Uno **stack sincronizzato** è uno [stack](/docs/guides/stacks/) il cui file compose proviene da un repository git. Homeport clona il repository su questo computer, recupera il suo branch o tag quando lo chiedi (o a intervalli regolari finché Homeport è aperto), mostra cosa è cambiato e distribuisce il nuovo commit sull’host. Non modifica, non esegue commit e non invia mai nulla: le modifiche passano da git.
+
+<Aside type="note" title="Homeport richiede git">
+  Gli stack sincronizzati usano il `git` installato su questo computer. **Impostazioni → Questo
+  computer** indica se Homeport l’ha trovato, e come installarlo in caso contrario. Tutti gli altri
+  tipi di stack funzionano senza git.
+</Aside>
+
+## Repository
+
+Homeport legge i repository che aggiungi in **Impostazioni → Repository**, o dalla pagina **Nuovo stack**. Un repository si aggiunge una volta sola e può essere usato dagli stack sincronizzati su ogni host. Homeport lo raggiunge in uno di tre modi:
+
+| Accesso              | URL                                               | Cosa memorizza Homeport                                     |
+| -------------------- | ------------------------------------------------- | ----------------------------------------------------------- |
+| **Chiave di deploy** | SSH: `git@github.com:owner/repo.git` o `ssh://…`  | Una chiave che crea solo per questo repository, **cifrata** |
+| **Token**            | HTTPS: `https://gitlab.com/owner/repo.git`        | Il tuo nome utente, e il token di accesso **cifrato**       |
+| **Pubblico**         | HTTPS, per un repository che chiunque può leggere | Nulla di segreto                                            |
+
+`http://` e i percorsi locali non sono accettati, così un token non viene mai inviato in chiaro.
+
+### Con una chiave di deploy
+
+<Steps>
+
+1. Scegli **Aggiungi repository**, incolla l’URL SSH del repository, lascia **Chiave di deploy** e scegli **Aggiungi e crea una chiave di deploy**.
+
+2. Copia la chiave che Homeport mostra, e aggiungila al repository **con accesso in sola lettura**:
+   - GitHub: **Settings → Deploy keys → Add deploy key** del repository.
+   - GitLab: **Settings → Repository → Deploy keys** del progetto.
+   - Gitea e Forgejo: **Settings → Deploy keys → Add deploy key** del repository.
+
+3. Scegli **Verifica l’accesso**. Homeport elenca i branch e i tag del repository da questo computer.
+
+</Steps>
+
+Ogni repository ha la propria chiave, quindi una chiave trapelata può leggere solo quel repository, e le tue chiavi SSH e il tuo `~/.ssh/config` non vengono mai usati. **Nuova chiave** la sostituisce: aggiungi la nuova chiave al repository, e rimuovi lì quella vecchia.
+
+La prima volta che Homeport raggiunge un server SSH, considera attendibile la chiave che il server presenta e la ricorda, come fa `ssh`; se la chiave cambia in seguito, ogni recupero non riesce finché non controlli la nuova impronta sul sito della forge e scegli **Reimposta** accanto alla chiave attendibile.
+
+### Con un token
+
+Incolla l’URL `https://` del repository, scegli **Token**, poi inserisci il nome utente e un token di accesso che possa leggere il contenuto del repository: su GitHub un token fine-grained con **Contents: Read-only**, su GitLab un token di progetto o personale con `read_repository`. **Verifica l’accesso** lo controlla. Quando scade, inseriscine uno nuovo in **Sostituisci il token**.
+
+<Aside type="tip">
+  Senza un portachiavi del sistema operativo, Homeport non può memorizzare chiavi di deploy né
+  token, quindi si possono aggiungere solo repository pubblici. Vedi
+  [requisiti](/docs/requirements/#facoltativo-un-portachiavi-del-sistema-operativo).
+</Aside>
+
+Rimuovere un repository elimina la sua chiave o il suo token e il suo clone su questo computer. Viene rifiutato finché uno stack sincronizzato lo usa.
+
+## Creare uno stack sincronizzato
+
+<Steps>
+
+1. Apri **Stack** sull’host su cui distribuire, scegli **Nuovo stack**, poi **Usa un repository git**.
+
+2. Scegli il **Repository**, oppure **Aggiungi repository** per aggiungerne uno da lì.
+
+3. Scegli un **Branch** o un **Tag**. Homeport li elenca dal server del repository, con il branch predefinito per primo.
+
+4. Inserisci il percorso del **File compose**, relativo alla radice del repository: `compose.yaml`, o `deploy/prod/compose.yaml`. La sua cartella è la cartella del progetto, quindi `build:`, `env_file:` e i percorsi relativi al suo interno funzionano come in un tuo clone.
+
+5. Controlla il **Nome** (deriva dal nome del repository), e aggiungi un **Ambiente** per ciò che non deve stare in git, come le password: righe `KEY=value`, cifrate su questo computer e passate a Compose come variabili durante la distribuzione.
+
+6. Scegli **Salva e distribuisci**, oppure **Salva** per distribuire più tardi.
+
+</Steps>
+
+Homeport recupera il branch o il tag e legge il file compose prima di memorizzare qualsiasi cosa, quindi un percorso, un branch o un tag sbagliato, o un file che Compose non potrebbe distribuire, viene segnalato subito. Lo stack è elencato come **Sincronizzato** e **Non distribuito** fino alla sua prima distribuzione; la sua scheda **Definizione** mostra il repository, il branch o il tag, il file compose e il commit distribuito.
+
+Il repository viene clonato una sola volta su questo computer, in una cartella `repositories` accanto al database di Homeport, e condiviso da tutti gli stack sincronizzati creati da esso. Ogni stack sincronizzato distribuisce dalla propria copia di lavoro del commit, in una cartella `synced-stacks` lì accanto, che resta al suo posto tra una distribuzione e l’altra: i file che i tuoi container scrivono tramite bind mount relativi restano dov’erano. I link simbolici del repository vengono estratti come file normali, così un file compose non può far puntare Compose a un file altrove su questo computer. I file mantengono i fine riga con cui li conserva il repository, anche su Windows, così uno script copiato in un’immagine Linux funziona ancora; solo il `.gitattributes` del repository stesso può modificarli.
+
+Uno stack sincronizzato può invece essere distribuito su uno [Swarm](/docs/guides/swarm/): sceglilo in **Distribuisci su** nella pagina **Nuovo stack**. Si sincronizza, si distribuisce e si distribuisce automaticamente allo stesso modo, con `docker stack deploy` eseguito dalla sua copia di lavoro; vedi [Stack collegati e sincronizzati su uno Swarm](/docs/guides/swarm/#stack-collegati-e-sincronizzati-su-uno-swarm) per cosa cambia, a cominciare da `build:`.
+
+**Dimentica** fa sì che Homeport smetta di seguire il repository. I suoi container restano in esecuzione e diventa uno stack esterno; la sua copia di lavoro viene eliminata a meno che dei container vi abbiano scritto file, e il clone del repository viene eliminato quando nessuno stack sincronizzato lo usa più. Il repository resta in **Impostazioni → Repository**.
+
+## Sincronizzare
+
+Scegli **Sincronizza** nella riga o nella pagina di uno stack sincronizzato. Homeport recupera il suo branch o tag, poi mostra cosa cambierebbe distribuendolo, prima di fare qualsiasi cosa:
+
+- i **nuovi commit** rispetto a quello distribuito che modificano qualcosa nella cartella del file compose, con il loro autore e quando sono stati creati;
+- ogni **file modificato** in quella cartella, prima il file compose, con le righe rimosse barrate sopra quelle che le sostituiscono. Un file che non è testo viene nominato ma non mostrato.
+
+Scegli **Distribuisci** per distribuire esattamente quel commit: Homeport lo estrae nella copia di lavoro dello stack ed esegue `docker compose up` dalla cartella del file compose, ricompilando i servizi che hanno `build:`, così un `Dockerfile` modificato viene applicato. L’output viene trasmesso durante l’esecuzione, e la distribuzione viene registrata nella **Cronologia** dello stack con il suo commit.
+
+- Un push che non modifica nulla nella cartella del file compose (documentazione altrove nel repository, per esempio) mostra **Aggiornato**. **Ridistribuisci comunque** lo distribuisce lo stesso.
+- Se un tag ora punta a un commit diverso da quello dell’ultimo recupero di Homeport, la revisione lo indica per prima cosa.
+- Se il recupero non riesce (la chiave di deploy è stata rimossa, il server non è raggiungibile) o la distribuzione non riesce, Homeport mostra il motivo e cosa fare, e lo stack mantiene il commit distribuito.
+
+**Ridistribuisci** distribuisce di nuovo il commit attualmente distribuito, dopo aver mostrato cosa è cambiato nel suo ambiente o nei suoi profili. **Distribuisci** su uno stack mai distribuito distribuisce il commit recuperato al momento della sua creazione. Uno stack sincronizzato non può essere riportato indietro da Homeport: annulla la modifica nel suo repository, o fai puntare lo stack a un tag precedente, poi sincronizza.
+
+## Polling e distribuzione automatica
+
+<Aside type="caution" title="Solo mentre Homeport è aperto">
+  Homeport controlla i tuoi repository solo mentre è aperto. **Quando è chiuso non si sincronizza
+  nulla**: non c’è alcun agente sui tuoi server e nessun webhook, perché Homeport non vi installa
+  nulla. Quando lo riapri, attende un intervallo prima del primo controllo.
+</Aside>
+
+Finché Homeport è aperto, recupera il branch o il tag di ogni stack sincronizzato a intervalli regolari: ogni 5 minuti per impostazione predefinita, valore impostabile in **Impostazioni → Stack sincronizzati** (almeno 1 minuto). Ogni repository viene recuperato una volta per giro, qualunque sia il numero di stack che lo usano, e uno che continua a non riuscire viene ritentato sempre meno spesso, fino a una volta all’ora.
+
+Quando un nuovo commit modifica la cartella del file compose, lo stack mostra **Aggiornamento disponibile** nell’elenco e nella sua pagina. **Sincronizza** mostra cosa è cambiato e lo distribuisce. La scheda **Definizione** dello stack indica l’**ultimo controllo**, e perché l’ultimo controllo non è riuscito, se è il caso.
+
+Due interruttori nella scheda **Definizione** lo regolano, per ogni stack:
+
+- **Cerca nuovi commit**, attivo per impostazione predefinita. Disattivalo per sincronizzare solo quando scegli **Sincronizza**.
+- **Distribuisci automaticamente i nuovi commit**, disattivato per impostazione predefinita. Quando è attivo, Homeport distribuisce ogni nuovo commit appena lo vede, **senza mostrarti prima cosa è cambiato**, con gli stessi passaggi di **Sincronizza**; la distribuzione viene registrata nella **Cronologia** come automatica, e una notifica avvisa quando è terminata. Attende finché l’host non è raggiungibile. Se non riesce, Homeport mostra il motivo e non ritenta quel commit: ci penserà il commit successivo, o una **Sincronizza** che distribuisci tu.
+
+## Perché non posso modificare uno stack sincronizzato?
+
+Perché il suo repository è l’unico posto in cui vive la sua definizione. Se Homeport modificasse il file compose, la sincronizzazione successiva sovrascriverebbe quella modifica o entrerebbe in conflitto con essa, e nessuno leggendo il repository saprebbe cosa è distribuito. Quindi la scheda **Definizione** di uno stack sincronizzato mostra il suo file compose al commit recuperato in **sola lettura** (puoi comunque selezionarlo e copiarlo), elenca gli altri file della sua cartella e collega ciascuno alla sua pagina su GitHub, GitLab, Gitea o Forgejo. Modificali lì, esegui il push, poi **Sincronizza**.
+
+Ciò che Homeport conserva resta modificabile nella stessa scheda:
+
+- il suo **Ambiente**, cifrato su questo computer, per i valori che non devono stare in git;
+- i suoi **profili**, se il file compose ne dichiara;
+- se **cerca nuovi commit** e se **li distribuisce automaticamente**.
+
+**Dimentica** fa sì che Homeport smetta di seguire il repository; i container dello stack restano in esecuzione, e lo stack diventa esterno.

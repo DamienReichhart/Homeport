@@ -1,0 +1,181 @@
+---
+title: インストール
+description: Windows、macOS、Linux に Homeport をインストールします。
+---
+
+import { Aside, Code, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+import { COMING_LATER, INSTALL_COMMAND, MANUAL_SETUP } from '@/core/packages';
+
+Homeport には Windows、macOS、Linux 向けのインストーラーがあり、それぞれ x64 と ARM に対応しています。お使いのシステムに合ったファイルを案内する[ダウンロードページ](/download/)か、[GitHub の最新リリース](https://github.com/DamienReichhart/Homeport/releases/latest)から入手してください。Linux では、Homeport のパッケージリポジトリを使って 1 つのコマンドでインストールできます。
+
+どの方法でインストールしても最新の状態に保たれます。Windows、macOS、AppImage では Homeport が自身をアップデートし、Linux のパッケージはシステムのほかの部分と一緒にアップデートされます。[アップデート](/docs/reference/updating/)を参照してください。
+
+<Aside>
+  Homeport は Docker Engine を管理しますが、Docker Engine
+  自体は含んでいません。このマシンでコンテナを動かしたい場合は、Docker Engine、Docker
+  Desktop、Colima、OrbStack、Rancher Desktop、Podman のいずれかもインストールしてください。代わりに
+  Homeport
+  をリモートのサーバーに接続することもできます。[システム要件](/docs/requirements/)を参照してください。
+</Aside>
+
+## Windows
+
+| ファイル                             | 用途                                                     |
+| ------------------------------------ | -------------------------------------------------------- |
+| `Homeport_<version>_x64-setup.exe`   | ほとんどの PC。現在のユーザー向けにインストールします。  |
+| `Homeport_<version>_arm64-setup.exe` | Windows on ARM（Snapdragon などの ARM64 PC）。           |
+| `Homeport_<version>_x64_en-US.msi`   | x64 での管理されたインストールやサイレントインストール。 |
+
+<Steps>
+
+1. お使いの PC 用のインストーラーをダウンロードして開きます。
+
+2. インストーラーはまだ有償の証明書で署名されていないため、Windows SmartScreen が **Windows によって PC が保護されました** と表示することがあります。**詳細情報** を選び、**実行** を選びます。
+
+3. インストーラーの指示に従います。Homeport がスタートメニューに追加されます。
+
+</Steps>
+
+MSI パッケージでサイレントインストールするには:
+
+```powershell
+msiexec /i Homeport_<version>_x64_en-US.msi /quiet
+```
+
+## macOS
+
+| ファイル                         | 用途                                  |
+| -------------------------------- | ------------------------------------- |
+| `Homeport_<version>_aarch64.dmg` | Apple シリコン搭載の Mac（M1 以降）。 |
+| `Homeport_<version>_x64.dmg`     | Intel プロセッサ搭載の Mac。          |
+
+どちらかわからない場合は、Apple メニュー → **この Mac について** を開きます。**チップ** の行があれば Apple シリコン、**プロセッサ** の行に Intel とあれば Intel です。
+
+<Steps>
+
+1. `.dmg` を開き、**Homeport** を **アプリケーション** にドラッグします。
+
+2. アプリケーションフォルダーか Launchpad から Homeport を開きます。
+
+3. Homeport はまだ Apple の公証を受けていないため、macOS が **開けません** や **マルウェアが含まれていないことを検証できません** と表示することがあります。**完了**（または **OK**）を選び、**システム設定 → プライバシーとセキュリティ** を開いて「セキュリティ」までスクロールし、Homeport の横にある **このまま開く** を選びます。確認すると、macOS はその選択を記憶します。
+
+</Steps>
+
+<Aside type="tip" title="ターミナルから">
+  macOS がダウンロードしたアプリに付ける隔離フラグを消すこともできます:
+
+```sh
+xattr -dr com.apple.quarantine /Applications/Homeport.app
+```
+
+</Aside>
+
+## Linux
+
+Linux 版の Homeport には glibc 2.35 以降（Ubuntu 22.04、Debian 12、Fedora 36、またはそれより新しいもの）と、x64 または ARM64 が必要です。
+
+### クイックインストール
+
+次のコマンドは Homeport のパッケージリポジトリを設定して Homeport をインストールします。これにより、`apt`、`dnf`、`zypper` がシステムのほかの部分と一緒に Homeport を最新の状態に保ちます:
+
+<Code code={INSTALL_COMMAND} lang="sh" />
+
+このスクリプトは Debian、Ubuntu とその派生ディストリビューション（`apt`）、Fedora、RHEL とその同系統（`dnf`）、openSUSE（`zypper`）で動作します。`sudo` を求める前に何をするかを表示し、次のことを行います:
+
+1. Homeport の署名鍵を追加する
+2. Homeport のリポジトリを追加する
+3. `homeport` パッケージをインストールする（すでにインストールされている場合はアップデートする）
+
+何度実行しても問題ありません。先に[スクリプトを読む](https://github.com/DamienReichhart/Homeport/blob/main/packaging/linux/install.sh)こともできますし、下の手動セットアップに従うこともできます。どちらも同じことをします。
+
+### 手動セットアップ
+
+署名鍵とリポジトリを自分で追加してから、`homeport` パッケージをインストールします:
+
+<Tabs syncKey="linux-format">
+  {MANUAL_SETUP.map((setup) => (
+    <TabItem label={setup.label}>
+      <p>{setup.distributions}:</p>
+      <Code code={setup.commands} lang="sh" />
+    </TabItem>
+  ))}
+</Tabs>
+
+`dnf` と `zypper` は、初めてリポジトリを使うときに鍵を信頼するかどうかを尋ねることがあります。受け入れる前に、そのフィンガープリントが[ダウンロードの検証](/docs/reference/verifying/#パッケージの署名)に記載されたものと一致することを確認してください。
+
+### パッケージファイル
+
+`.deb`（x64 は `amd64`、ARM は `arm64`）や `.rpm`（`x86_64` または `aarch64`）をダウンロードして、直接インストールすることもできます:
+
+<Tabs syncKey="linux-format">
+<TabItem label="Debian, Ubuntu">
+
+```sh
+sudo apt install ./Homeport_<version>_amd64.deb
+```
+
+</TabItem>
+<TabItem label="Fedora, RHEL">
+
+```sh
+sudo dnf install ./Homeport-<version>-1.x86_64.rpm
+```
+
+</TabItem>
+<TabItem label="openSUSE">
+
+```sh
+sudo zypper install ./Homeport-<version>-1.x86_64.rpm
+```
+
+</TabItem>
+</Tabs>
+
+これらのパッケージを初めてインストールすると、Homeport のリポジトリも追加されるため、クイックインストールと同じ方法でアップデートを受け取れます。不要な場合はリポジトリのファイル（`/etc/apt/sources.list.d/homeport.sources`、`/etc/yum.repos.d/homeport.repo`、`/etc/zypp/repos.d/homeport.repo` のいずれか）を削除してください。以降のパッケージのアップデートで再び追加されることはありません。
+
+### AppImage
+
+AppImage は何もインストールせずにほとんどのディストリビューションで動作し、Homeport の中から自身をアップデートします。実行権限を付けて実行してください:
+
+```sh
+chmod +x Homeport_<version>_amd64.AppImage
+./Homeport_<version>_amd64.AppImage
+```
+
+実行するたびに、Homeport をアプリケーションメニューに追加します。起動せずに FUSE について表示される場合は、`libfuse2`（Ubuntu 24.04 以降では `libfuse2t64`）をインストールしてください。
+
+`.deb` と `.rpm` のパッケージは、Homeport をアプリケーションメニューに追加し、ライセンス表記を `/usr/share/doc/homeport/` または `/usr/share/licenses/homeport/` にインストールします。
+
+<Aside type="caution" title="このマシンで Docker を使っていますか？">
+  root にならずにローカルの Docker ソケットにアクセスするには、ユーザーが `docker` グループに属している必要があります:
+
+```sh
+sudo usermod -aG docker $USER
+```
+
+反映させるには、いったんログアウトしてログインし直してください。グループに属していないと、ローカルのホストは _Permission denied_ とともに **到達不能** と表示されます。
+
+</Aside>
+
+## 今後の予定
+
+Homeport をインストールする方法は今後さらに増える予定です。対応したときに知らせを受け取るには、issue をフォローしてください:
+
+<ul>
+  {COMING_LATER.map((channel) => (
+    <li>
+      <a href={`https://github.com/DamienReichhart/Homeport/issues/${channel.issue}`}>
+        {channel.name}
+      </a>{' '}
+      — {channel.what}
+    </li>
+  ))}
+</ul>
+
+## ダウンロードの確認
+
+各リリースには、ファイルごとの SHA-256 チェックサムと署名付きのビルド来歴証明が記載されており、Linux のパッケージとリポジトリは署名されています。確認方法は[ダウンロードの検証](/docs/reference/verifying/)で説明しています。
+
+## 次のステップ
+
+Homeport を開き、[クイックスタート](/docs/quick-start/)に沿って最初のホストに接続しましょう。

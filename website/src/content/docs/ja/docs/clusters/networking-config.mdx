@@ -1,0 +1,45 @@
+---
+title: Service と構成
+description: クラスターの Service、Ingress、ConfigMap、Secret を閲覧します。Secret の値はキーごとに 1 つずつ表示します。
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+## Service と Ingress
+
+**ネットワーク** には、選択した Namespace の **Service** が、種類、クラスター IP、外部アドレス（ロードバランサーのアドレスと `externalIPs`）、`kubectl` と同じ表示のポート（NodePort があれば `443:30443/TCP`）とともに一覧表示されます。2 つ目のタブには **Ingress** が、クラス、ホスト、コントローラーが公開したアドレスとともに一覧表示されます。
+
+- Service のページには、ポートとターゲットポート、セッションアフィニティ、Pod を選択するラベル、それらの Pod を表示する **Pod** タブがあります。セレクターのない Service には、その旨が表示されます。そのエンドポイントは手動で管理されています。
+- Ingress のページには、各ルールのパス（デフォルトバックエンドが先頭）と、それぞれのトラフィックの送り先が Service のページへのリンク付きで一覧表示され、TLS のホストと証明書の Secret も表示されます。
+
+<DocScreenshot
+  name="cluster-services"
+  alt="「Service」タブを開いた「ネットワーク」ページ: クラスター IP とポートを持つ ClusterIP の Service、外部ホスト名と NodePort を持つ LoadBalancer、クラスター IP のないヘッドレス Service。"
+/>
+
+ルーティングを確認するには、Ingress の **ルール** タブを使います。どのホストとパスがどの Service とポートに送られるかがわかります。
+
+<DocScreenshot
+  name="cluster-ingress"
+  alt="storefront Ingress のルール: shop.example.com と www.shop.example.com について、/api は api:8080、/checkout は checkout:8080、/ は web:http へ。"
+/>
+
+## ConfigMap と Secret
+
+**構成** には、**ConfigMap** と **Secret** がキーとともに一覧表示されます。ConfigMap のページには各値が表示されます。バイナリデータはサイズだけが表示されます。
+
+<DocScreenshot
+  name="cluster-secret"
+  alt="db-credentials Secret の「データ」タブ: password は「コピー」と「非表示」ボタン付きで表示され、username は「表示」ボタン付きでまだ伏せられている。"
+  caption="1 つのキーが表示されています。もう 1 つは求めるまで伏せられたままです。"
+/>
+
+Secret のページには、種類と、各キーがサイズとともに伏せた状態で表示されます。**表示** はその値 1 つだけをクラスターから取得し、デコードして（バイナリの値は base64 で）、**コピー** と **非表示** とともに表示します。値が一覧、Secret のページ、その YAML に含まれることはありません。表示した値はキャッシュも保存もログ記録もされず、ページを離れると再び伏せられます。[セキュリティとデータ](/docs/reference/security/#クラスター)を参照してください。
+
+ConfigMap の **YAML** タブには **編集** があり、プレビューとサーバーサイド適用を経て変更できます（[YAML の適用と編集](/docs/clusters/yaml/)）。Secret は、すべての値を一度に表示することがないため、Homeport では編集しません。代わりに Secret のマニフェストを適用してください。
+
+## その他すべて
+
+Endpoints と EndpointSlice、NetworkPolicy、PersistentVolume、CRD が追加するリソースは、[API リソース](/docs/clusters/api-resources/)にあります。
+
+Service のポートには **フォワード…** があり、準備完了の Pod の 1 つを経由して[このコンピューターからアクセス](/docs/clusters/port-forward/)できます。ここにあるどのページも、ヘッダーに **削除** があります。

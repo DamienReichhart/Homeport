@@ -1,0 +1,190 @@
+---
+title: SSH-Hosts
+description: Über SSH mit einer Docker Engine auf einem Server verbinden, mit einem Schlüssel, den Homeport erstellt, Ihrem eigenen Schlüssel oder ssh-agent.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+SSH ist der empfohlene Weg, eine Docker Engine auf einem Server zu erreichen. Über den SSH-Port hinaus muss nichts freigegeben werden, und der Socket der Engine bleibt auf dem Server privat.
+
+## Wie es funktioniert
+
+Homeport hat seinen eigenen SSH-Client. Er meldet sich am Server an und leitet einen Kanal an den Unix-Socket der Engine weiter – dasselbe, was `docker -H ssh://…` tut, ohne dass das Programm `ssh` oder `docker` auf Ihrem Rechner nötig ist.
+
+- Schlüssel werden nur im Arbeitsspeicher entschlüsselt und nie auf die Festplatte geschrieben, daher funktioniert es unter Windows, macOS und Linux gleich.
+- Homeport liest `~/.ssh/known_hosts` nicht: Serverschlüssel werden in Homeport vertraut, pro Host. Ein Server, der nur über einen Sprungserver erreichbar ist, wird mit [Bastionen](#über-eine-bastion) hinzugefügt, dem `ProxyJump` von Homeport.
+- Der Server muss die Weiterleitung an Unix-Sockets erlauben. OpenSSH tut das standardmäßig (`AllowStreamLocalForwarding yes`).
+
+## Einen SSH-Host hinzufügen
+
+<Steps>
+
+1. Wählen Sie **Host hinzufügen…** im Host-Umschalter und lassen Sie **SSH** ausgewählt.
+
+2. Füllen Sie die Verbindung aus:
+
+   | Feld                       | Was einzugeben ist                                                                                                                                                       |
+   | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+   | **Name**                   | Ein Name, den Sie wiedererkennen, etwa `production`.                                                                                                                     |
+   | **Server**                 | Der Hostname oder die IP-Adresse des Servers.                                                                                                                            |
+   | **Port**                   | Der SSH-Port; standardmäßig `22`.                                                                                                                                        |
+   | **Benutzer**               | Das Konto, mit dem die Anmeldung erfolgt. Es braucht Zugriff auf den Docker-Socket, meist über die Gruppe `docker`.                                                      |
+   | **Entfernter Socket-Pfad** | Wo die Engine auf dem Server lauscht: standardmäßig `/var/run/docker.sock`, `/run/user/<uid>/docker.sock` für rootless Docker oder `/run/podman/podman.sock` für Podman. |
+
+3. Wählen Sie unter **Authentifizierung**, wie die Anmeldung erfolgt (siehe unten).
+
+4. Wählen Sie **Host hinzufügen**. Homeport öffnet die Seite des Hosts und verbindet sich.
+
+</Steps>
+
+<DocScreenshot name="add-host-ssh" alt="Das Formular „Host hinzufügen“ mit ausgewähltem SSH." />
+
+## Aus ~/.ssh/config importieren
+
+Stehen Ihre Server bereits in `~/.ssh/config`, wählen Sie auf **Host hinzufügen** die Option **Aus ~/.ssh/config importieren**, statt jeden einzeln einzutippen. Homeport listet jeden Server auf, den die Datei nennt – folgt dabei `Include` und wendet die Standardwerte von `Host *` an –, und Sie wählen die hinzuzufügenden aus.
+
+| In `~/.ssh/config`  | In Homeport                                                                                                                          |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `Host prod`         | Ein Host namens `prod`. Einträge mit Platzhaltern (`Host *.example.com`) liefern nur Standardwerte.                                  |
+| `HostName`          | **Server**; der Alias selbst, wenn keiner angegeben ist.                                                                             |
+| `User`, `Port`      | **Benutzer** (standardmäßig Ihr lokaler Benutzername) und **Port** (`22`).                                                           |
+| `IdentityFile`      | **Vorhandener Schlüssel**: die erste lesbare Datei, mit erweitertem `~` und `%h`, `%r`, `%u`, `%p`.                                  |
+| kein `IdentityFile` | **ssh-agent**.                                                                                                                       |
+| `ProxyJump a,b`     | Zwei [Bastionen](#über-eine-bastion), in dieser Reihenfolge, jeweils in derselben Datei nachgeschlagen. Eine Schleife wird gemeldet. |
+
+Der **Entfernte Socket-Pfad** beginnt mit `/var/run/docker.sock`; ändern Sie ihn in der Vorschau für rootless Docker oder Podman. Ein verschlüsselter Schlüssel fragt dort nach seiner Passphrase.
+
+Die Vorschau markiert, was einen Blick braucht: einen Schlüssel, der nicht gelesen werden kann (der Host verwendet stattdessen ssh-agent), ein `ProxyCommand` (nicht unterstützt; fügen Sie seine Sprungserver als Bastionen hinzu) und einen Alias, der bereits der Name eines Hosts ist. Dieser wird nicht ausgewählt: Benennen Sie ihn um, um ihn zu importieren, sodass ein zweiter Import nie Duplikate erzeugt. Schlüssel werden einmal gelesen und verschlüsselt gespeichert; die Datei selbst wird nie verändert, und `Match`-Blöcke sowie Zertifikate (`CertificateFile`) werden ignoriert.
+
+## Authentifizierung
+
+### Neuer Schlüssel für diesen Host (empfohlen)
+
+Homeport erstellt eigens für diesen Host einen Ed25519-Schlüssel, speichert ihn verschlüsselt und zeigt Ihnen den Befehl, der ihn auf dem Server autorisiert. Ein Schlüssel pro Host bedeutet, dass Sie den Zugriff von Homeport auf einen Server widerrufen können, ohne etwas anderes anzutasten. Der Kommentar des Schlüssels nennt diesen Computer und den Host, zum Beispiel `homeport@laptop-production`, sodass Sie ihn in `authorized_keys` unterscheiden können.
+
+### Vorhandener Schlüssel
+
+Fügen Sie einen privaten Schlüssel ein oder wählen Sie **Aus Datei laden…**, und geben Sie seine **Passphrase** ein, falls er eine hat. Homeport liest OpenSSH-Schlüssel (`BEGIN OPENSSH PRIVATE KEY`), PKCS#8- und PEM-Schlüssel sowie PuTTY-Dateien `.ppk`, mit Ed25519-, ECDSA- oder RSA-Schlüsseln. Der Schlüssel und seine Passphrase werden verschlüsselt gespeichert, sodass Sie nicht erneut gefragt werden.
+
+### ssh-agent
+
+Homeport fragt Ihren laufenden SSH-Agenten nach Schlüsseln und speichert nichts. Unter macOS und Linux verwendet es den Agenten unter `$SSH_AUTH_SOCK`.
+
+Unter Windows fragt es zuerst den Dienst OpenSSH Authentication Agent, dann **Pageant** von PuTTY – oder ein Werkzeug, das an dessen Stelle tritt, etwa KeeAgent oder gpg-agent mit PuTTY-Unterstützung. Ein Schlüssel, den einer der beiden hält, funktioniert: Läuft der OpenSSH-Agent nicht oder hält er keinen Schlüssel, den der Server akzeptiert, probiert Homeport auch die Schlüssel von Pageant.
+
+<Aside>
+  ssh-agent ist die einzige SSH-Option, die ohne einen [Schlüsselbund des
+  Betriebssystems](/docs/requirements/#optional-ein-schlüsselbund-des-betriebssystems) funktioniert.
+  Wurde Homeport über ein Desktop-Menü gestartet, stellen Sie sicher, dass der Agent Ihrer Sitzung
+  dafür verfügbar ist.
+</Aside>
+
+## Erste Verbindung
+
+Wenn sich Homeport zum ersten Mal verbindet, führt die Seite des Hosts Sie durch zwei Schritte.
+
+### Dem Schlüssel des Servers vertrauen
+
+Der Status zeigt **Serverschlüssel nicht vertrauenswürdig**, und die Seite fragt **Ist das der richtige Server?** mit dem Fingerabdruck des Serverschlüssels, etwa `SHA256:Kx8f…`.
+
+Vergleichen Sie ihn mit dem Fingerabdruck auf dem Server:
+
+```sh
+ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
+```
+
+Stimmen sie überein, wählen Sie **Diesem Schlüssel vertrauen**. Homeport merkt ihn sich und verbindet sich. Das ist dieselbe Trust-on-First-Use-Prüfung, die `ssh` durchführt, wobei der Schlüssel in Homeport statt in `~/.ssh/known_hosts` gespeichert wird.
+
+### Den Schlüssel von Homeport autorisieren
+
+Für einen von Homeport erstellten oder einen von Ihnen importierten Schlüssel zeigt die Karte **Homeport auf dem Server autorisieren** zwei Befehle, jeweils mit einer Schaltfläche **Kopieren**. Führen Sie sie auf dem Server als SSH-Benutzer aus:
+
+<DocScreenshot
+  name="host-ssh"
+  alt="Die Seite eines SSH-Hosts mit den Befehlen, die den Schlüssel von Homeport auf dem Server autorisieren."
+/>
+
+<Steps>
+
+1. **Öffentlichen Schlüssel hinzufügen** zur `authorized_keys` des Benutzers:
+
+   ```sh
+   mkdir -p ~/.ssh && chmod 700 ~/.ssh && echo 'ssh-ed25519 AAAAC3Nza… homeport@laptop-production' >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys
+   ```
+
+2. **Dem Benutzer Zugriff auf Docker geben**, falls er ihn noch nicht hat:
+
+   ```sh
+   sudo usermod -aG docker deploy
+   ```
+
+3. Wählen Sie zurück in Homeport **Neu verbinden**.
+
+</Steps>
+
+Bis der Schlüssel autorisiert ist, zeigt der Host **Zugriff verweigert**: _Der Server hat den Schlüssel für deploy@server abgelehnt. Fügen Sie den öffentlichen Schlüssel zu seiner authorized_keys hinzu._ Er wartet auf Sie, statt es erneut zu versuchen.
+
+## Wenn sich der Schlüssel des Servers ändert
+
+Legt der Server später einen anderen Schlüssel vor, hält Homeport an und zeigt **Serverschlüssel geändert**, mit dem erwarteten und dem vorgelegten Fingerabdruck.
+
+<Aside type="caution">
+  Ein geänderter Schlüssel ist nach einer Neuinstallation des Servers oder einer Neuerzeugung seiner
+  Host-Schlüssel zu erwarten. Er kann aber auch bedeuten, dass jemand die Verbindung abfängt.
+  Vertrauen Sie dem neuen Schlüssel nur, wenn Sie wissen, warum er sich geändert hat.
+</Aside>
+
+Wenn Sie sicher sind, wählen Sie **Dem neuen Schlüssel vertrauen** und bestätigen Sie.
+
+Wenn Sie einen Host so bearbeiten, dass er auf einen anderen Server oder Port verweist, wird der vertraute Schlüssel vergessen, und Sie werden gebeten, dem neuen zu vertrauen. Das Umbenennen des Hosts oder das Ändern von Benutzer oder Socket-Pfad behält ihn bei.
+
+## Über eine Bastion
+
+Manche Server akzeptieren SSH nur von einem Sprungserver. Fügen Sie diesen Server unter **Bastionen** im Formular des Hosts hinzu, und Homeport meldet sich zuerst daran an und erreicht dann den Host darüber – was `ssh -J` oder `ProxyJump` tun, mit dem eigenen SSH-Client von Homeport. Auf der Bastion wird nichts installiert, und kein Schlüssel wird auf die Festplatte geschrieben.
+
+<Steps>
+
+1. Wählen Sie im Formular des SSH-Hosts **Bastion hinzufügen**.
+
+2. Geben Sie ihren **Server**, **Port** und **Benutzer** ein.
+
+3. Wählen Sie, wie sich Homeport an ihr anmeldet:
+
+   | Authentifizierung     | Wann sie zu verwenden ist                                                                                                                                                      |
+   | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+   | **Wie der Host**      | Die Bastion akzeptiert den Schlüssel, den der Host verwendet: den von Homeport erstellten, Ihren vorhandenen Schlüssel oder den Ihres Agenten.                                 |
+   | **Eigener Schlüssel** | Die Bastion braucht einen anderen Schlüssel. Fügen Sie ihn ein oder wählen Sie **Aus Datei laden…**; er wird mit den anderen Geheimnissen des Hosts verschlüsselt gespeichert. |
+   | **ssh-agent**         | Ihr Agent hält den Schlüssel der Bastion, während der Host einen anderen verwendet, zum Beispiel einen, den Homeport eigens dafür erstellt hat.                                |
+
+4. Für eine Kette von Sprungservern (`ProxyJump a,b`) fügen Sie eine Bastion pro Server hinzu, in der Reihenfolge, in der Homeport sie durchläuft. Die Pfeile verschieben eine Bastion nach oben oder unten.
+
+</Steps>
+
+Bei der ersten Verbindung bittet Homeport Sie, dem Schlüssel jedes Servers der Reihe nach zu vertrauen, beginnend mit der ersten Bastion: **Ist das die richtige Bastion?** nennt sie und zeigt ihren Fingerabdruck. Der Schlüssel jeder Bastion wird beim Host aufbewahrt, und ein geänderter Schlüssel stoppt die Verbindung mit **Der Schlüssel der Bastion … hat sich geändert**, wie beim Host selbst.
+
+Verwendet der Host einen von Homeport erstellten Schlüssel, listet die Karte **Homeport auf dem Server autorisieren** jeden Server auf, auf dem er hinzugefügt werden muss: jede auf **Wie der Host** eingestellte Bastion, dann den Host.
+
+Die Bastion muss die TCP-Weiterleitung zum Host erlauben (`AllowTcpForwarding yes`, der Standard von OpenSSH). Tut sie das nicht oder kann sie den Host nicht erreichen, zeigt der Host _Die Bastion … konnte keine Verbindung zu … öffnen._
+
+Das Verschieben einer Bastion in der Liste behält ihren vertrauten Schlüssel bei; das Ändern ihres Servers oder Ports vergisst nur diesen einen Schlüssel.
+
+## Einen Schlüssel neu erzeugen
+
+Für einen von Homeport erstellten Schlüssel ersetzt **Schlüssel neu erzeugen** auf der Seite des Hosts ihn. Der alte Schlüssel funktioniert nicht mehr, führen Sie also den neuen Befehl **Öffentlichen Schlüssel hinzufügen** auf dem Server aus und entfernen Sie die alte Zeile aus `~/.ssh/authorized_keys`.
+
+## Einen SSH-Host entfernen
+
+Das Entfernen des Hosts löscht seinen Schlüssel aus Homeport, aber nicht vom Server. Löschen Sie seine Zeile aus `~/.ssh/authorized_keys` des Benutzers – der Kommentar, der mit `homeport@` beginnt, kennzeichnet sie.
+
+## Häufige Probleme
+
+| Meldung                                                                                                         | Was zu tun ist                                                                                                                                                                                                                                                       |
+| --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _Der Server hat den Schlüssel für … abgelehnt_                                                                  | Führen Sie den Befehl **Öffentlichen Schlüssel hinzufügen** auf dem Server aus und wählen Sie dann **Neu verbinden**.                                                                                                                                                |
+| _Der SSH-Server konnte /var/run/docker.sock nicht öffnen … Prüfen Sie den Pfad und ob … Docker verwenden kann._ | Prüfen Sie den **Entfernten Socket-Pfad** und fügen Sie den Benutzer der Gruppe `docker` hinzu.                                                                                                                                                                      |
+| _Zeitüberschreitung der SSH-Verbindung_                                                                         | Prüfen Sie Servername, Port und jede Firewall dazwischen.                                                                                                                                                                                                            |
+| _Es läuft kein ssh-agent_                                                                                       | Starten Sie Ihren Agenten, fügen Sie mit `ssh-add` einen Schlüssel hinzu und stellen Sie sicher, dass Homeport `SSH_AUTH_SOCK` sehen kann. Öffnen Sie unter Windows Pageant und laden Sie Ihren Schlüssel, oder starten Sie den Dienst OpenSSH Authentication Agent. |
+| _Die Bastion … konnte keine Verbindung zu … öffnen._                                                            | Prüfen Sie, dass die Bastion den Host erreichen kann und dass ihr `sshd` `AllowTcpForwarding` erlaubt.                                                                                                                                                               |
+
+Mehr unter [Fehlerbehebung](/docs/reference/troubleshooting/).
