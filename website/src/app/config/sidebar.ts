@@ -64,6 +64,7 @@ export const sidebar: NonNullable<StarlightUserConfig['sidebar']> = [
       { label: 'Verifying downloads', slug: 'docs/reference/verifying' },
       { label: 'Updating and uninstalling', slug: 'docs/reference/updating' },
       { label: 'Troubleshooting', slug: 'docs/reference/troubleshooting' },
+      { label: 'Keyboard and accessibility', slug: 'docs/reference/accessibility' },
       { label: 'FAQ', slug: 'docs/reference/faq' },
       { label: 'Glossary', slug: 'docs/reference/glossary' },
     ],
