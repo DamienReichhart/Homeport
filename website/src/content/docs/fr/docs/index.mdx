@@ -1,0 +1,80 @@
+---
+title: Introduction
+description: Ce qu’est Homeport, ce qu’il fait, et comment cette documentation est organisée.
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+**Homeport** est une application de bureau pour gérer des Docker Engines où qu’ils soient — celui de cette machine, ou des moteurs distants via SSH, TLS ou TCP — ainsi que les clusters Kubernetes que votre kubeconfig atteint, dans l’esprit de Docker Desktop. Il fonctionne sous Windows, macOS et Linux, est gratuit, et est open source sous la [GNU Affero General Public License, version 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE).
+
+Homeport n’exécute pas de conteneurs lui-même. Il se connecte aux Docker Engines que vous avez déjà, appelés **hôtes**, et vous donne une seule fenêtre pour tout ce qu’ils contiennent : conteneurs, images, volumes, réseaux et **stacks** Compose. Il se connecte aussi aux **clusters** Kubernetes de votre kubeconfig, pour parcourir ce qui s’y exécute.
+
+<DocScreenshot
+  name="overview"
+  alt="La page Vue d’ensemble de Homeport, avec une carte pour chaque hôte, et les détails du moteur et l’utilisation du disque de l’hôte sélectionné."
+  caption="La vue d’ensemble montre tous les hôtes à la fois."
+/>
+
+## Ce que vous pouvez faire
+
+<CardGrid>
+  <Card title="Se connecter à n’importe quel moteur" icon="laptop">
+    Les moteurs locaux sont détectés pour vous. Les moteurs distants se rejoignent via SSH, TLS
+    mutuel ou TCP, et se reconnectent d’eux-mêmes.
+  </Card>
+  <Card title="Travailler avec les conteneurs" icon="seti:docker">
+    Processeur et mémoire en direct, journaux, terminaux interactifs, explorateur de fichiers,
+    graphiques de statistiques, processus et une boîte de dialogue d’exécution.
+  </Card>
+  <Card title="Déployer des stacks Compose" icon="rocket">
+    Conservez un fichier compose et son environnement chiffré dans Homeport, et déployez-le sur
+    n’importe quel hôte.
+  </Card>
+  <Card title="Utiliser les fonctions propres à Podman" icon="seti:config">
+    Sur un hôte Podman, gérez les pods et exécutez-y des conteneurs, et installez, modifiez et
+    démarrez des unités Quadlet sous systemd.
+  </Card>
+  <Card title="Gérer containerd" icon="seti:config">
+    Sur un hôte containerd, choisissez un espace de noms, exécutez les tâches de ses conteneurs,
+    lisez leurs journaux, ouvrez un terminal, récupérez des images et effacez les instantanés
+    inutilisés.
+  </Card>
+  <Card title="Exécuter des instances Incus" icon="laptop">
+    Sur un hôte Incus, créez des conteneurs système et des machines virtuelles à partir d’une image,
+    ouvrez leur console ou un shell, prenez et restaurez des instantanés, et gérez images, profils,
+    stockage et réseaux.
+  </Card>
+  <Card title="Parcourir Kubernetes" icon="server">
+    Ajoutez des clusters depuis votre kubeconfig, EKS, GKE et AKS compris, et voyez en direct leurs
+    charges de travail, Pods, Services, configuration, Nodes et Events.
+  </Card>
+  <Card title="Garder les choses en ordre" icon="seti:folder">
+    Images, volumes et réseaux avec leur utilisation d’un coup d’œil, et une boîte de dialogue de
+    nettoyage qui dit ce qu’elle va supprimer.
+  </Card>
+</CardGrid>
+
+## Organisation de cette documentation
+
+- **Premiers pas** — [installez Homeport](/docs/installation/), puis suivez le [démarrage rapide](/docs/quick-start/) pour connecter votre premier hôte.
+- **Hôtes** — comment fonctionne chaque type de connexion : [moteurs locaux](/docs/hosts/local/), [SSH](/docs/hosts/ssh/), et [TLS et TCP](/docs/hosts/tls-tcp/).
+- **Clusters** — [ajouter des clusters Kubernetes](/docs/clusters/) depuis un kubeconfig, et les parcourir.
+- **Utiliser Homeport** — un guide de chaque page de l’application.
+- **Référence** — [sécurité](/docs/reference/security/), [dépannage](/docs/reference/troubleshooting/), la [FAQ](/docs/reference/faq/) et le [glossaire](/docs/reference/glossary/).
+
+## Les mots que nous employons
+
+Homeport nomme les choses avec précision, et la documentation fait de même :
+
+- Un **hôte** est un Docker Engine auquel Homeport se connecte. Chaque conteneur, image, volume, réseau et stack appartient à exactement un hôte.
+- Un **cluster** est un cluster Kubernetes auquel Homeport se connecte, ajouté à partir d’un contexte de votre kubeconfig.
+- Une **stack** est un projet Compose qui s’exécute sur un hôte. Une **stack gérée** est une stack dont Homeport conserve le fichier compose ; une **stack liée** garde ses fichiers compose dans un dossier de cet ordinateur ; une **stack externe** a été déployée autrement. Vous pouvez **adopter** une stack externe pour la gérer.
+
+Le [glossaire](/docs/reference/glossary/) donne la liste complète.
+
+<LinkCard
+  title="Installer Homeport"
+  description="Des programmes d’installation pour Windows, macOS et Linux, sur x64 et ARM."
+  href="/docs/installation/"
+/>
