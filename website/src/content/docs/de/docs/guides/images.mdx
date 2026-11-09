@@ -13,13 +13,13 @@ Die Seite **Images** listet die auf dem ausgewählten Host gespeicherten Images 
   alt="Die Seite Images, die Images mit ihrer Größe und der Angabe auflistet, ob sie in Verwendung sind."
 />
 
-| Spalte       | Zeigt                                                                                      |
-| ------------ | ------------------------------------------------------------------------------------------ |
-| **Name**     | Das erste Tag und wie viele weitere es hat; `<none>` bei ungetaggten Images.               |
-| **ID**       | Die kurze Image-ID.                                                                        |
-| **Erstellt** | Wie lange es her ist, dass das Image gebaut wurde.                                         |
-| **Größe**    | Seine Größe auf der Festplatte.                                                            |
-| **Status**   | **In Verwendung** mit der Anzahl der daraus erstellten Container, oder **Unbenutzt**.      |
+| Spalte       | Zeigt                                                                                 |
+| ------------ | ------------------------------------------------------------------------------------- |
+| **Name**     | Das erste Tag und wie viele weitere es hat; `<none>` bei ungetaggten Images.          |
+| **ID**       | Die kurze Image-ID.                                                                   |
+| **Erstellt** | Wie lange es her ist, dass das Image gebaut wurde.                                    |
+| **Größe**    | Seine Größe auf der Festplatte.                                                       |
+| **Status**   | **In Verwendung** mit der Anzahl der daraus erstellten Container, oder **Unbenutzt**. |
 
 Gestoppte Container zählen als Verwender eines Images. Wählen Sie einen Spaltenkopf aus, um zu sortieren, und suchen Sie mit **Images durchsuchen**.
 
@@ -46,22 +46,22 @@ Ein Image ohne Registry im Namen (`nginx`, `bitnami/redis`) verwendet die Docker
 Lehnt die Registry den Pull ab, sagt die Meldung, was zu tun ist: eine Anmeldung für diese Registry hinzufügen, wenn keine gespeichert war, oder die gespeicherte prüfen.
 
 <Aside>
-  Die Anmeldung gelangt mit der Anfrage zur Engine und wird nicht auf dem Host gespeichert.
-  Homeport liest keine `docker login`-Zugangsdaten aus `~/.docker/config.json`.
+  Die Anmeldung gelangt mit der Anfrage zur Engine und wird nicht auf dem Host gespeichert. Homeport
+  liest keine `docker login`-Zugangsdaten aus `~/.docker/config.json`.
 </Aside>
 
 ## Ein Image bauen
 
 Wählen Sie **Bauen** und einen **Ordner** auf diesem Computer, der ein Dockerfile enthält – den Build-Kontext. Homeport packt den Ordner, lässt alles weg, was seine `.dockerignore` ausschließt (nach den Regeln von Docker: `*`, `**`, `!`-Ausnahmen, die letzte passende Zeile gewinnt), und streamt ihn an den ausgewählten Host, dessen Engine ihn baut. Derselbe Build funktioniert auf einem entfernten Host über SSH oder TLS, ohne dass dort etwas installiert ist.
 
-| Feld                              | Was es bewirkt                                                                                                      |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| **Dockerfile**                    | Sein Pfad im Ordner; standardmäßig `Dockerfile`. Es wird immer gesendet, auch wenn `.dockerignore` es aufführt.     |
-| **Ziel-Stage**                    | Die Stage eines mehrstufigen Dockerfiles, bei der angehalten wird (`--target`).                                     |
-| **Namen**                         | Ein oder mehrere Namen für das Ergebnis, etwa `app:1.0, ghcr.io/me/app:1.0`.                                        |
-| **Build-Argumente**               | `NAME=value`, eines pro Zeile, für die `ARG`s des Dockerfiles.                                                      |
-| **Build-Cache nicht verwenden**   | Führt jeden Schritt erneut aus (`--no-cache`).                                                                      |
-| **Neuere Basis-Images pullen**    | Pullt die `FROM`-Images, auch wenn der Host sie hat (`--pull`).                                                     |
+| Feld                            | Was es bewirkt                                                                                                  |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Dockerfile**                  | Sein Pfad im Ordner; standardmäßig `Dockerfile`. Es wird immer gesendet, auch wenn `.dockerignore` es aufführt. |
+| **Ziel-Stage**                  | Die Stage eines mehrstufigen Dockerfiles, bei der angehalten wird (`--target`).                                 |
+| **Namen**                       | Ein oder mehrere Namen für das Ergebnis, etwa `app:1.0, ghcr.io/me/app:1.0`.                                    |
+| **Build-Argumente**             | `NAME=value`, eines pro Zeile, für die `ARG`s des Dockerfiles.                                                  |
+| **Build-Cache nicht verwenden** | Führt jeden Schritt erneut aus (`--no-cache`).                                                                  |
+| **Neuere Basis-Images pullen**  | Pullt die `FROM`-Images, auch wenn der Host sie hat (`--pull`).                                                 |
 
 Die Ausgabe des Builds wird live gestreamt; **Abbrechen** stoppt ihn. Wenn er fertig ist, erscheinen die Namen auf der Seite Images. Schlägt ein Schritt fehl, nennt die Meldung ihn (**Der Build ist bei Schritt 3/5 (RUN make) fehlgeschlagen.**), und **Details** enthält das Ende der Ausgabe. Private `FROM`-Images werden mit den gespeicherten [Registry-Anmeldungen](/docs/guides/settings/#registries) gepullt.
 
@@ -97,12 +97,12 @@ Die Datei wird über die eigene Verbindung des Hosts zwischen diesem Computer un
 
 ### Speichern und Laden oder Exportieren und Importieren?
 
-|                 | **Speichern** / **Laden**                                      | **Dateisystem exportieren** / **Aus tar importieren**                        |
-| --------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Geht aus von    | Einem oder mehreren Images                                     | Den Dateien eines Containers, so wie sie jetzt sind                          |
-| Behält          | Jeden Layer, die Historie, die Namen und die Einstellungen     | Nur die Dateien, zu einem Layer zusammengefasst                              |
-| Verliert        | Nichts                                                         | Historie, Namen und Einstellungen wie Befehl und Umgebung                    |
-| Wofür           | Images auf einen Host ohne Registry bringen                    | Die Dateien eines Containers sichern oder untersuchen, oder von einem rootfs ausgehen |
+|              | **Speichern** / **Laden**                                  | **Dateisystem exportieren** / **Aus tar importieren**                                 |
+| ------------ | ---------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Geht aus von | Einem oder mehreren Images                                 | Den Dateien eines Containers, so wie sie jetzt sind                                   |
+| Behält       | Jeden Layer, die Historie, die Namen und die Einstellungen | Nur die Dateien, zu einem Layer zusammengefasst                                       |
+| Verliert     | Nichts                                                     | Historie, Namen und Einstellungen wie Befehl und Umgebung                             |
+| Wofür        | Images auf einen Host ohne Registry bringen                | Die Dateien eines Containers sichern oder untersuchen, oder von einem rootfs ausgehen |
 
 ## Mit einem Image arbeiten
 

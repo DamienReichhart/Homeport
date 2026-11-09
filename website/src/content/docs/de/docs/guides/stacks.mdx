@@ -1,0 +1,346 @@
+---
+title: Stacks
+description: Compose-Stacks aus Homeport oder aus einem Projektordner auf jedem Host bereitstellen, ihre Umgebung verschlüsselt aufbewahren und anderswo bereitgestellte Stacks übernehmen.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+Ein **Stack** ist ein Compose-Projekt, das auf einem Host läuft. Homeport findet jeden Stack auf dem ausgewählten Host über die Labels, die Compose an seine Container setzt, wie auch immer er bereitgestellt wurde.
+
+<DocScreenshot
+  name="stacks"
+  alt="Die Seite Stacks, die verwaltete und externe Stacks mit ihrem Zustand und ihren Services auflistet."
+/>
+
+## Verwaltete, verknüpfte, synchronisierte und externe Stacks
+
+Jeder Stack gehört zu einer von vier Arten:
+
+| Art                | Wo seine Compose-Datei liegt                               | Bearbeiten | Bereitstellen | Bauen | Starten, stoppen, entfernen |
+| ------------------ | ---------------------------------------------------------- | ---------- | ------------- | ----- | --------------------------- |
+| **Verwaltet**      | In Homeport, mit verschlüsselter Umgebung                  | ✓          | ✓             | —     | ✓                           |
+| **Verknüpft**      | In seinem Projektordner auf **diesem** Computer            | ✓          | ✓             | ✓     | ✓                           |
+| **Synchronisiert** | In einem Git-Repository, das Homeport klont und verfolgt   | git        | ✓             | ✓     | ✓                           |
+| **Extern**         | Nirgends, wo Homeport es sehen kann: anders bereitgestellt | —          | —             | —     | ✓                           |
+
+- Ein **verwalteter Stack** ist einer, dessen Compose-Datei und Umgebung Homeport aufbewahrt. Sie können ihn aus Homeport bearbeiten, bereitstellen und herunterfahren.
+- Ein **verknüpfter Stack** ist einer, dessen Compose-Dateien in einem Ordner auf diesem Computer liegen, wo Sie sie weiterhin bearbeiten. Homeport merkt sich, wo der Ordner ist, arbeitet mit den Dateien dort und stellt aus ihm bereit. Siehe [Verknüpfte Stacks](#linked-stacks).
+- Ein **synchronisierter Stack** ist einer, dessen Compose-Datei aus einem Git-Repository stammt. Homeport ruft seinen Branch oder sein Tag ab, zeigt, was sich geändert hat, und stellt den neuen Commit bereit; er wird über Git bearbeitet, nie in Homeport. Siehe [Synchronisierte Stacks](/docs/guides/synced-stacks/).
+- Ein **externer Stack** wurde auf andere Weise bereitgestellt – `docker compose up` auf dem Server, ein CI-Job, ein anderes Werkzeug oder aus einem Ordner auf einem anderen Computer. Homeport kann seine Container starten, stoppen, neu starten und entfernen, hat aber keine Compose-Datei, aus der es ihn neu bereitstellen könnte. Sie können ihn [übernehmen](#adopting-an-external-stack), um ihn zu einem verwalteten zu machen.
+
+Jeder Stack zeigt einen dieser Zustände:
+
+| Zustand                  | Bedeutung                                                                     |
+| ------------------------ | ----------------------------------------------------------------------------- |
+| **Läuft**                | Alle seine Container laufen.                                                  |
+| **Läuft teilweise**      | Einige laufen.                                                                |
+| **Gestoppt**             | Keiner läuft.                                                                 |
+| **Nicht bereitgestellt** | Ein verwalteter, verknüpfter oder synchronisierter Stack noch ohne Container. |
+
+Verwaltete, verknüpfte und synchronisierte Stacks gehören zu einem Host oder zu einem Swarm. Um dieselbe Compose-Datei auf zwei Hosts auszuführen, erstellen Sie auf jedem einen Stack.
+
+<Aside>
+  In einem [Swarm](/docs/guides/swarm/) bereitgestellte Stacks, ob aus einem Terminal oder aus
+  Homeport, werden auf der eigenen Seite des Swarms unter **Stacks** aufgelistet statt hier. Um
+  einen bereitzustellen, wählen Sie den Swarm unter **Bereitstellen auf** auf **Neuer Stack**. Siehe
+  [Stacks in einem Swarm bereitstellen](/docs/guides/swarm/#deploying-stacks-to-a-swarm).
+</Aside>
+
+## Verknüpfte Stacks
+
+Ein **verknüpfter Stack** hält seine Compose-Dateien in ihrem Projektordner auf diesem Computer, wo Sie sie in Ihrem eigenen Editor bearbeiten und unter Versionskontrolle halten. Homeport kopiert sie nie: Es merkt sich den Ordner und die Compose-Dateien, die er verwendet, der Reihe nach, und liest sie dort, wo sie liegen. Die `.env` des Ordners bleibt im Ordner.
+
+Ein verknüpfter Stack kann auch in einem Swarm bereitgestellt werden, wobei seine `configs: file:` und `secrets: file:` aus dem Ordner gelesen werden; siehe [Verknüpfte und synchronisierte Stacks in einem Swarm](/docs/guides/swarm/#linked-and-synced-stacks-on-a-swarm).
+
+### Einen verknüpften Stack erstellen
+
+Ein Projektordner, der noch nicht auf dem Host läuft, kann aus Homeport verknüpft werden:
+
+<Steps>
+
+1. Öffnen Sie **Stacks**, wählen Sie **Neuer Stack** und dann **Ordner auf diesem Computer verwenden**.
+
+2. Wählen Sie **Ordner wählen…** und dann den Ordner, der das Compose-Projekt enthält.
+
+3. Homeport listet die Compose-Dateien auf, die Compose dort verwenden würde, der Reihe nach: die erste von `compose.yaml`, `compose.yml`, `docker-compose.yml` und `docker-compose.yaml`, dann ihre Override-Datei (`compose.override.yaml` und ähnliche), falls es eine gibt. Ein Ordner ohne eine davon kann nicht verknüpft werden, und Homeport sagt das.
+
+4. Prüfen Sie den **Name**. Er stammt vom `name:` auf oberster Ebene der Dateien oder vom Namen des Ordners in der Schreibweise von Compose (`My App` wird zu `myapp`).
+
+5. Wählen Sie **Speichern und bereitstellen** – oder **Speichern**, um später bereitzustellen.
+
+</Steps>
+
+Läuft ein Stack mit diesem Namen bereits als externer Stack auf dem Host, übernimmt das Erstellen des verknüpften Stacks ihn, wie es das [Übernehmen](#adopting-an-external-stack) tut: Eine erneute Bereitstellung erstellt seine Container neu, passend zu den Dateien des Ordners. Um Dateien mit anderen Namen oder in einer anderen Reihenfolge zu verwenden, siehe [mehrere Compose-Dateien](#several-compose-files).
+
+### Wie verknüpfte Stacks gefunden werden
+
+Wenn Sie `docker compose up` in einem Ordner ausführen, versieht Compose jeden Container mit Labels für diesen Ordner und seine Compose-Dateien – auch wenn `DOCKER_HOST` auf einen entfernten Host zeigt. Wenn Homeport die Stacks eines Hosts auflistet, wird ein laufend gefundener Stack als **Verknüpft** angezeigt, wenn:
+
+1. beide Labels vorhanden sind und der Ordner und jede Compose-Datei, die sie nennen, auf diesem Computer existieren, und
+2. diese Dateien die laufenden Services definieren: Jeder laufende Service ist in den Dateien, und jeder Service, den die Dateien außerhalb eines Profils definieren, hat einen Container.
+
+Die zweite Regel verhindert, dass ein Pfad, der hier zufällig existiert, die falschen Dateien verknüpft – zum Beispiel ein Stack, der auf dem Server selbst in `/srv/app` gestartet wurde, während dieser Computer ebenfalls ein `/srv/app` hat. Dateien, die `include:` oder `extends:` verwenden, werden nicht verfolgt, daher bleibt ein solcher Stack vorerst extern. Das Finden verknüpfter Stacks braucht die Compose-CLI nicht.
+
+Der Ordner wird in der Liste und auf der Seite des Stacks unter dessen Namen angezeigt.
+
+### Einen verknüpften Stack bearbeiten
+
+Der Tab **Definition** eines verknüpften Stacks zeigt jede seiner Compose-Dateien in einem eigenen Tab, aus dem Ordner gelesen, mit dem Pfad des Ordners darüber. Bearbeiten Sie sie und wählen Sie **Speichern**: Homeport schreibt jede geänderte Datei dorthin zurück, wo sie liegt, sodass Ihr eigener Editor und Ihre Versionskontrolle die Änderung sehen. Die Datei wird in einem Schritt ersetzt, unter Beibehaltung ihrer Berechtigungen, sodass nichts sie je halb geschrieben liest.
+
+Die Prüfungen unter dem Editor folgen den Regeln für verknüpfte Stacks: `build:`, `env_file:` und relative Pfade sind in Ordnung, da der Ordner vorhanden ist. Es gibt keinen Umgebungseditor: Compose liest die `.env` des Ordners bei der Ausführung, und Homeport zeigt sie weder an noch ändert es sie.
+
+#### Außerhalb von Homeport geändert
+
+Homeport merkt sich die Dateien jedes Mal, wenn es sie liest oder schreibt. Weichen sie ab – Sie haben sie in einem anderen Editor bearbeitet oder eine neue Version gepullt –, zeigt der Tab **Außerhalb von Homeport geändert**. Er prüft das beim Öffnen des Tabs und jedes Mal, wenn Sie zum Fenster von Homeport zurückkehren. Wählen Sie **Neu laden**, um die Dateien so zu sehen, wie sie jetzt sind; nicht gespeicherte Änderungen werden verworfen.
+
+Speichern Sie eine Datei, die seit dem Öffnen auf der Festplatte geändert wurde, lehnt Homeport ab: **compose.yaml wurde außerhalb von Homeport geändert, seit Sie sie geöffnet haben.** Laden Sie neu, um die andere Änderung zu sehen, oder wählen Sie **Überschreiben**, um sie durch Ihre Version zu ersetzen.
+
+Ist der Ordner verschwunden oder lässt sich eine Datei nicht lesen, sagt der Tab statt des Editors, welche und was zu tun ist.
+
+### Einen verknüpften Stack bereitstellen und bauen
+
+**Bereitstellen**, **Neu bereitstellen**, **Images pullen** und **Herunterfahren** funktionieren auch für verknüpfte Stacks. Homeport führt `docker compose` im Ordner des Stacks aus, mit `--project-directory` auf diesen gesetzt und einem `--file` für jede seiner Compose-Dateien, der Reihe nach – genauso, als würden Sie es dort selbst ausführen –, bei SSH- und TLS-Hosts weiterhin über seine eigene Verbindung. Daher funktionieren `build:`, `env_file:`, `./relative`-Pfade und die `.env` des Ordners.
+
+Ein Service mit `build:` wird gebaut, wenn er noch kein Image hat. Um nach einer Änderung seines Codes neu zu bauen, wählen Sie **Neu bauen und bereitstellen** im Menü **⋮** des Stacks (`up --build`). Der Build läuft auf der Engine des **Hosts**, wobei der Build-Kontext von diesem Computer gesendet wird. Services mit `build:` werden nie gepullt; ihre Basis-Images pullt der Build selbst, mit Ihrem eigenen `docker login`.
+
+**Speichern und neu bereitstellen** im Tab **Definition** schreibt die bearbeiteten Dateien und stellt dann bereit.
+
+<Aside type="caution" title="Relative Pfade auf einem entfernten Host">
+  Ein Bind-Mount wie `./data:/data` wird zum Ordner auf **diesem** Computer aufgelöst, zum Beispiel
+  `/home/me/site/data`. Auf einem entfernten Host existiert dieser Pfad möglicherweise nicht, und
+  die Engine erstellt dort stattdessen einen leeren Ordner. Wenn Sie einen verknüpften Stack auf
+  einem Host bereitstellen, der nicht dieser Computer ist, beginnt die Ausgabe mit einer Warnung für
+  jeden solchen Mount. Verwenden Sie für Daten, die auf dem Host liegen müssen, ein benanntes Volume
+  oder einen absoluten Pfad auf dem Host.
+</Aside>
+
+Ist der Ordner verschwunden, bricht die Bereitstellung mit **Der Ordner … ist nicht mehr auf diesem Computer.** ab. Ohne die Compose-CLI lassen sich verknüpfte Stacks weiterhin starten, stoppen und entfernen.
+
+### Wenn der Ordner verschoben wird oder verschwindet
+
+Sind die Compose-Dateien eines verknüpften Stacks nicht mehr da – der Ordner wurde verschoben, umbenannt oder gelöscht –, wird der Stack als **Extern** angezeigt, mit ⚠ **Seine Compose-Dateien sind nicht mehr auf diesem Computer.** Weder in Homeport noch auf dem Host wird etwas gelöscht: Legen Sie die Dateien zurück, und er ist bei der nächsten Aktualisierung wieder verknüpft. Um die Verknüpfung aufzuheben, öffnen Sie seinen Tab **Definition** und wählen Sie **Vergessen**; das verwirft nur Homeports Notiz über den Ordner, nie den Ordner oder die Container.
+
+Ein aus einem Ordner auf einem anderen Computer gestarteter Stack ist auf diesem extern, da seine Labels auf einen Pfad zeigen, den dieser Computer nicht hat.
+
+## Was die Bereitstellung braucht
+
+Homeport stellt verwaltete, verknüpfte und synchronisierte Stacks mit dem Befehl `docker compose` auf **diesem** Computer bereit, auf den Host ausgerichtet. Installieren Sie die Docker-CLI mit dem Compose-Plugin oder das eigenständige `docker-compose` v2; **Einstellungen → Dieser Rechner** zeigt, ob Homeport es gefunden hat.
+
+Bei einem verwalteten Stack läuft der Befehl mit der Compose-Datei auf seiner Standardeingabe, der Umgebung des Stacks als Variablen und einem leeren Arbeitsordner, sodass nichts auf die Festplatte geschrieben wird. Bei einem verknüpften Stack läuft er im Ordner des Stacks mit dessen Compose-Dateien, als würden Sie ihn dort ausführen. Bei SSH- und TLS-Hosts leitet Homeport den Befehl über seine eigene Verbindung zum Host, sodass Compose Ihre Schlüssel nie sieht.
+
+Ohne die Compose-CLI können Sie Stacks weiterhin starten, stoppen und entfernen; nur **Bereitstellen**, **Images pullen** und **Herunterfahren** brauchen sie.
+
+### Private Images
+
+Vor `docker compose up` pullt Homeport die Images, die der Host noch nicht hat, über seine eigene Verbindung zum Host, mit der für die Registry jedes Images gespeicherten [Registry-Anmeldung](/docs/guides/settings/#registries), sodass private Images auf jedem Host ohne `docker login` auf diesem Computer bereitgestellt werden. Die Ausgabe der Bereitstellung zeigt jeden Pull und die verwendete Anmeldung – **ghcr.io/org/app:1 wird als alice von ghcr.io gepullt** oder **… wird anonym gepullt** –, nie das Passwort. Ein Service mit `pull_policy: always` wird jedes Mal gepullt; `never` und `build` bleiben unberührt.
+
+Compose selbst erhält nie eine Anmeldung: Weder eine Datei, die Homeport für die Ausführung erstellt, noch eine der Umgebungsvariablen des Befehls enthält eine. Ihr eigenes `docker login` auf diesem Computer gilt für diese Pulls nicht; fügen Sie die Anmeldung stattdessen unter **Einstellungen → Registrys** hinzu. Lehnt eine Registry ein Image ab, stoppt die Bereitstellung, bevor Compose läuft, und die Meldung sagt, dass die Anmeldung hinzugefügt oder geprüft werden muss.
+
+## Einen verwalteten Stack erstellen
+
+<Steps>
+
+1. Öffnen Sie **Stacks** und wählen Sie **Neuer Stack**. **Compose-Datei schreiben** ist ausgewählt.
+
+2. Wählen Sie eine [Vorlage](#starting-from-a-template) – oder **Leer**, um von vorn zu beginnen.
+
+3. Geben Sie einen **Name** ein: Kleinbuchstaben, Ziffern, `-` und `_`, beginnend mit einem Buchstaben oder einer Ziffer. Die Vorlage schlägt einen vor. Er wird zum Namen des Compose-Projekts und lässt sich später nicht ändern.
+
+4. Passen Sie die Compose-Datei im Editor an.
+
+5. Tragen Sie Variablen unter **Umgebung** ein, ein `KEY=value` pro Zeile, wie in einer `.env`-Datei. Compose setzt sie für `${KEY}` in der Datei ein. Füllen Sie die Passwörter aus, die eine Vorlage leer lässt.
+
+6. Wählen Sie **Speichern und bereitstellen** – oder **Speichern**, um später bereitzustellen.
+
+</Steps>
+
+### Mit einer Vorlage beginnen
+
+Die Seite Neuer Stack öffnet sich mit einer Galerie von Vorlagen. Jede ist eine Compose-Datei mit einer Umgebung, die bewährten Praktiken folgt: auf eine Version festgelegte Image-Tags, Daten in benannten Volumes und Geheimnisse in der Umgebung statt in der Datei. Verwenden Sie **Tab**, um zwischen den Karten zu wechseln, und **Enter**, um eine auszuwählen; **Andere Vorlage wählen** führt zurück.
+
+| Vorlage                    | Was sie ausführt                                                                 |
+| -------------------------- | -------------------------------------------------------------------------------- |
+| **Statische Website**      | nginx, das die Dateien eines benannten Volumes ausliefert, auf Port `HTTP_PORT`. |
+| **PostgreSQL und Adminer** | PostgreSQL und Adminer auf `ADMINER_PORT`, um es zu durchsuchen.                 |
+| **MariaDB**                | MariaDB mit einer Datenbank und einem App-Benutzer.                              |
+| **Redis**                  | Redis mit Passwort, das seine Daten auf die Festplatte speichert.                |
+| **Reverse Proxy (Caddy)**  | Caddy, das `SITE_ADDRESS` an `UPSTREAM` weiterleitet, mit automatischem HTTPS.   |
+| **Uptime Kuma**            | Uptime Kuma, um Websites und Services zu überwachen, auf `HTTP_PORT`.            |
+| **WordPress**              | WordPress mit eigener MariaDB-Datenbank.                                         |
+| **Leer**                   | Ein Abschnitt `services:`, den Sie selbst ausfüllen.                             |
+
+Passwörter bleiben leer, mit einem Kommentar, was dort hingehört: Füllen Sie sie vor der Bereitstellung aus. Das Übernehmen eines externen Stacks überspringt die Galerie und öffnet einen leeren Editor.
+
+<DocScreenshot
+  name="stack-editor"
+  alt="Der Stack-Editor mit einer Compose-Datei, ihrer Umgebung und den Prüfungen darunter."
+/>
+
+### Prüfungen beim Tippen
+
+Homeport prüft die Definition beim Tippen und listet Probleme unter dem Editor auf. Welche Regeln gelten, hängt von der Art des Stacks ab.
+
+**Fehler** verhindern eine Bereitstellung:
+
+- Das YAML lässt sich nicht parsen oder hat kein `services:` – jede Art.
+- Ein Service hat weder `image:` noch `build:` – jede Art.
+- Ein Service verwendet `build:` – nur **verwaltete Stacks**. Es gibt keinen Ordner, aus dem gebaut werden könnte, verwenden Sie daher ein Image, das Sie in eine Registry gepusht haben, oder [verknüpfen Sie stattdessen den Ordner](#creating-a-linked-stack).
+
+**Warnungen**, nur für **verwaltete Stacks**, erlauben die Bereitstellung, weisen aber auf Dinge hin, die wahrscheinlich nicht das tun, was Sie erwarten, weil Compose sie von diesem Computer statt vom Host liest. Der Ordner eines verknüpften Stacks ist vorhanden, daher sind sie dort in Ordnung:
+
+- Ein Bind-Mount mit einem relativen Pfad wie `./data:/data`. Verwenden Sie einen absoluten Pfad auf dem Host oder ein benanntes Volume.
+- `env_file:` oder `configs` und `secrets`, die aus einem `file:` gelesen werden. Tragen Sie Variablen stattdessen in die Umgebung des Stacks ein.
+
+### Die Umgebung
+
+Die Umgebung wird verschlüsselt gespeichert und direkt an Compose übergeben, nie auf die Festplatte geschrieben – der richtige Ort für Passwörter und Tokens. Die Compose-Datei selbst wird als Klartext gespeichert, halten Sie Geheimnisse daher aus ihr heraus:
+
+```yaml
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+```
+
+```ini
+DB_PASSWORD=correct-horse-battery-staple
+```
+
+Leere Zeilen, `# comments` und `export`-Präfixe sind erlaubt. Werte dürfen in Anführungszeichen stehen; in doppelten Anführungszeichen ist `\n` ein Zeilenumbruch.
+
+<Aside>
+  Das Speichern einer Umgebung erfordert einen [Schlüsselbund des
+  Betriebssystems](/docs/requirements/#optional-an-os-keychain). Ohne einen ist das Feld
+  deaktiviert, und Stacks werden ohne Umgebung bereitgestellt.
+</Aside>
+
+## Mehrere Compose-Dateien
+
+Ein Stack kann aus mehreren Compose-Dateien bestehen, die der Reihe nach zusammengeführt werden, so wie `docker compose -f compose.yaml -f compose.prod.yaml` sie zusammenführt: eine Basisdatei, dann Overrides, die Schlüssel hinzufügen oder ändern – `ports:` für die Produktion, ein Debug-Service für die Entwicklung.
+
+**Verwaltete Stacks** zeigen über dem Editor einen Tab pro Datei. Wählen Sie **Datei hinzufügen**, um eine hinzuzufügen (Homeport schlägt `compose.override.yaml`, `compose.prod.yaml` und so weiter vor), benennen Sie sie unter **Dateiname** um, verschieben Sie sie mit den Pfeilen nach vorn oder hinten oder entfernen Sie sie. Die erste Datei ist die Basis und lässt sich nicht entfernen. Namen enden auf `.yaml` oder `.yml`.
+
+Bei einer Datei sendet Homeport sie wie bisher über die Standardeingabe an Compose. Bei mehreren schreibt es sie für die Dauer des Befehls in einen privaten Ordner, den nur Ihr Benutzer öffnen kann, und entfernt ihn danach. Die Umgebung wird nie dorthin geschrieben: Sie geht weiterhin als Variablen an Compose.
+
+**Verknüpfte Stacks** listen ihre Dateien der Reihe nach in der Seitenleiste des Tabs **Definition** auf. **Datei hinzufügen…** wählt eine weitere Compose-Datei aus dem Ordner des Stacks – etwa `compose.prod.yaml` statt des Standard-Overrides –, und die Pfeile und **✕** ordnen sie um und entfernen sie. Speichern Sie Ihre Änderungen oder laden Sie sie zuerst neu: Eine Änderung der Dateien lädt den Editor neu.
+
+Die Prüfungen betrachten die zusammengeführten Dateien, sodass ein Service, der in der Basis definiert ist und in einem Override `ports:` erhält, als ein Service geprüft wird.
+
+## Profile
+
+Compose-Dateien halten optionale Services – Debug-Werkzeuge, Worker, eine lokale Datenbank – oft hinter `profiles:`:
+
+```yaml
+services:
+  app:
+    image: ghcr.io/org/app:1.4
+  adminer:
+    image: adminer:4.8.1
+    profiles: [debug]
+```
+
+Services ohne Profil laufen immer. Die hinter einem Profil laufen nur, wenn der Stack es einschaltet. Deklarieren die Dateien eines verwalteten, verknüpften oder synchronisierten Stacks Profile, zeigt sein Tab **Definition** **Profile**, mit einem Kontrollkästchen für jedes. Schalten Sie eines ein und wählen Sie **Speichern und neu bereitstellen** – oder **Profile speichern**, um es bei der nächsten Bereitstellung anzuwenden.
+
+Das Ausschalten eines Profils mit anschließender erneuter Bereitstellung entfernt die Container seiner Services: Homeport entfernt sie vor `docker compose up`, da Compose selbst sie weiterlaufen lässt. **Herunterfahren** entfernt die Services aller Profile, die die Dateien deklarieren, ob eingeschaltet oder nicht.
+
+Nur die Profile des Stacks zählen. Eine Variable `COMPOSE_PROFILES` in Ihrer Shell, in der Umgebung eines verwalteten Stacks oder in der `.env` eines verknüpften Stacks ändert nicht, was Homeport bereitstellt. Ein über seine Compose-Labels gefundener verknüpfter Stack beginnt ohne eingeschaltetes Profil, auch wenn er mit `--profile` gestartet wurde: Schalten Sie sie in seinem Tab **Definition** ein. Verschwindet ein eingeschaltetes Profil aus den Dateien, sagt Homeport das und schaltet es beim nächsten Speichern aus.
+
+## Bereitstellen und neu bereitstellen
+
+**Bereitstellen** – oder **Neu bereitstellen**, sobald der Stack läuft – führt `docker compose up --detach --remove-orphans` aus. Ein Fenster zeigt die Ausgabe von Compose während der Ausführung und endet mit **✓ Fertig** oder dem Exit-Code, mit dem es fehlgeschlagen ist.
+
+<Aside type="caution">
+  Das Schließen des Ausgabefensters, während Compose läuft, stoppt es, was eine Bereitstellung halb
+  fertig zurücklassen kann. Stellen Sie neu bereit, um sie abzuschließen.
+</Aside>
+
+Um einen verwalteten Stack zu ändern, öffnen Sie ihn, bearbeiten Sie seine **Definition** und wählen Sie **Speichern und neu bereitstellen**. Compose erstellt nur die geänderten Services neu und entfernt Services, die Sie aus der Datei gelöscht haben.
+
+### Änderungen vor einer erneuten Bereitstellung prüfen
+
+Bevor eine erneute Bereitstellung läuft – **Neu bereitstellen**, **Neu bauen und bereitstellen** oder **Speichern und neu bereitstellen** bei einem laufenden Stack –, zeigt Homeport **Änderungen an … prüfen**: die zuletzt bereitgestellte Definition (der neueste erfolgreiche Eintrag ihres [Verlaufs](#deploy-history-and-rolling-back)) gegenüber der, die bereitgestellt werden soll.
+
+- Jede Compose-Datei zeigt ihre geänderten Zeilen inline: entfernte Zeilen über den Zeilen, die sie ersetzen. Eine unveränderte Datei ist eingeklappt; wählen Sie sie aus, um sie zu öffnen. Hinzugefügte, entfernte oder in anderer Reihenfolge zusammengeführte Dateien werden genannt.
+- Umgebungsvariablen zeigen nur ihre Namen, markiert als **Hinzugefügt**, **Entfernt** oder **Geändert** – ein geändertes Passwort lautet **Geändert**, ohne einen der beiden Werte zu zeigen –, und wie viele andere unverändert sind.
+- Auch das Ein- oder Ausschalten eines Profils wird angezeigt.
+
+Wählen Sie **Bereitstellen**, um mit der Ausführung fortzufahren, oder **Zurück**, um ohne Änderung zum Editor zurückzukehren. Hat sich nichts geändert, sagt die Prüfung das und bietet **Trotzdem neu bereitstellen** an. Weiß Homeport nicht, was bereitgestellt ist – der Stack wurde bereitgestellt, bevor Homeport einen Verlauf führte, oder von außerhalb –, sagt die Prüfung das und zeigt die Definition, die bereitgestellt wird. Eine erste Bereitstellung, ein Zurücksetzen und ein [Update](#updating-a-stack) überspringen die Prüfung.
+
+Verglichen werden nur Definitionen, nicht die Live-Konfiguration der Container auf dem Host.
+
+## Bereitstellungsverlauf und Zurücksetzen
+
+Jede Bereitstellung eines verwalteten, verknüpften oder synchronisierten Stacks aus Homeport – **Bereitstellen**, **Neu bereitstellen**, **Neu bauen und bereitstellen**, **Speichern und neu bereitstellen**, eine [Synchronisierung](/docs/guides/synced-stacks/#syncing) – wird mit den verwendeten Compose-Dateien, der Umgebung und den Profilen festgehalten, mit dem Zeitpunkt und dem Ergebnis; bei einem synchronisierten Stack zusätzlich mit seinem Commit und der Angabe, ob die automatische Bereitstellung sie gestartet hat. Der Tab **Verlauf** auf der Seite des Stacks listet die letzten 20 auf, die neuesten zuerst: **Erfolgreich**, **Fehlgeschlagen** mit seinem Exit-Code oder **Nicht abgeschlossen** für eine Ausführung, deren Fenster vor dem Ende geschlossen wurde. **Derzeit bereitgestellt** markiert die neueste erfolgreiche.
+
+Wählen Sie eine Bereitstellung aus, um ihre Compose-Dateien schreibgeschützt zu sehen. Ihre Umgebung wird wie die des Stacks selbst verschlüsselt gespeichert, und der Tab zeigt nur die Namen ihrer Variablen. Ohne Schlüsselbund funktioniert die Liste weiterhin; eine Bereitstellung mit Umgebung sagt lediglich, dass sie nicht geöffnet werden kann.
+
+Um eine missglückte Änderung an einem **verwalteten** Stack rückgängig zu machen, wählen Sie die Bereitstellung aus, die funktioniert hat, und wählen Sie **Zurücksetzen**. Homeport setzt deren Compose-Dateien, Umgebung und Profile an die Stelle der aktuellen und stellt dann neu bereit, sodass der nächste Verlaufseintrag das Zurücksetzen selbst ist.
+
+<Aside type="caution" title="Was ein Zurücksetzen wiederherstellt">
+  Nur die Definition. Images werden für die genannten Tags erneut gepullt, so wie diese Tags jetzt
+  sind – wurde `app:1.4` seitdem erneut gepusht, erhalten Sie das neue `app:1.4`. Volumes und ihre
+  Daten bleiben, wie sie sind.
+</Aside>
+
+Der Verlauf eines **verknüpften** Stacks ist schreibgeschützt: Sein Ordner ist seine Quelle, stellen Sie die früheren Dateien daher dort wieder her – zum Beispiel mit Ihrer Versionskontrolle – und stellen Sie neu bereit. Das Vergessen eines Stacks löscht auch seinen Verlauf.
+
+## Die Seite eines Stacks
+
+- **Services** listet jeden Service mit seinem Container, Image und Status auf. Wählen Sie einen Container aus, um ihn zu öffnen.
+- **Logs** zeigt die Logs aller Container zusammen, jede Zeile mit ihrem Service beschriftet.
+
+<DocScreenshot
+  name="stack-logs"
+  alt="Der Tab Logs eines Stacks, mit der verschachtelten und beschrifteten Ausgabe aller Services."
+/>
+
+- **Definition** enthält den Editor eines verwalteten oder verknüpften Stacks, die Quelle und die schreibgeschützten Dateien eines synchronisierten Stacks oder erklärt, woher ein externer Stack stammt.
+- **Verlauf** listet bei verwalteten, verknüpften und synchronisierten Stacks ihre Bereitstellungen auf. Siehe [Bereitstellungsverlauf](#deploy-history-and-rolling-back).
+
+## Einen Stack aktualisieren
+
+**Update verfügbar** neben dem Zustand eines Stacks bedeutet, dass einer seiner Services ein Image ausführt, dessen Tag in seiner Registry auf eine neuere Version zeigt; fahren Sie mit dem Mauszeiger darüber, um zu sehen, welche Services. Auf der Seite des Stacks nennt **Services** sie und markiert jedes veraltete Image. **Nach neueren Images suchen** oben auf der Seite Stacks fragt die Registrys erneut. Die Prüfung ist dieselbe, die die Seite Container verwendet – siehe [neuere Images](/docs/guides/containers/#newer-images) –, sodass das Öffnen von Stacks direkt nach Container die Registrys nicht erneut abfragt. Ein per Digest festgelegtes Image (`app@sha256:…`) hat nie ein Update, und ein Service mit `build:` wird nicht geprüft.
+
+Um einen verwalteten, verknüpften oder synchronisierten Stack zu aktualisieren, wählen Sie **Aktualisieren**. Es führt beide Schritte in einem Fenster aus: Es pullt das Image jedes Services mit den gespeicherten Anmeldungen und führt dann `docker compose up` mit dem Gepullten aus, sodass nur die Services neue Container erhalten, deren Image sich geändert hat. Das Fenster sagt vor dem Start, welche Images neuer sind, und es gibt keinen [Prüfschritt](#reviewing-changes-before-a-redeploy), da sich die Definition nicht ändert. Schlägt ein Pull fehl, stoppt das Update dort: Die laufenden Container bleiben, wie sie waren, und der Fehler sagt, warum und was zu tun ist.
+
+Auch ein externer Stack zeigt **Update verfügbar**, aber sein **Aktualisieren** ist deaktiviert: Homeport hat keine Compose-Datei, aus der es ihn neu bereitstellen könnte, [übernehmen](#adopting-an-external-stack) Sie ihn daher zuerst. Services mit `build:` in einem verknüpften Stack werden nie gepullt; verwenden Sie für diese **Neu bauen und bereitstellen**.
+
+## Stack-Aktionen
+
+| Aktion                                    | Stacks               | Was sie bewirkt                                                                                                         |
+| ----------------------------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **Bereitstellen** / **Neu bereitstellen** | Verwaltet, verknüpft | `docker compose up` mit der Definition des Stacks.                                                                      |
+| **Neu bauen und bereitstellen**           | Verknüpft            | `docker compose up --build`: baut zuerst jeden Service mit `build:` neu.                                                |
+| **Starten** / **Stoppen**                 | Alle                 | Startet die gestoppten Container oder stoppt die laufenden.                                                             |
+| **Neu starten**                           | Alle                 | Startet jeden Container neu.                                                                                            |
+| **Images pullen**                         | Verwaltet, verknüpft | Pullt das Image jedes Services mit den gespeicherten Anmeldungen, um vor einer erneuten Bereitstellung neuere zu holen. |
+| **Herunterfahren**                        | Verwaltet, verknüpft | `docker compose down`: entfernt Container und Netzwerke, behält Volumes und die Definition.                             |
+| **Mit Volumes herunterfahren**            | Verwaltet, verknüpft | Löscht außerdem die Volumes des Stacks **und ihre Daten**.                                                              |
+| **Container entfernen**                   | Extern               | Entfernt seine Container und Netzwerke. Volumes bleiben erhalten.                                                       |
+| **Übernehmen**                            | Extern               | Gibt Homeport die Compose-Datei und macht ihn zu einem verwalteten Stack.                                               |
+
+**Definition vergessen** im Tab **Definition** eines verwalteten Stacks löscht die Compose-Datei und die Umgebung aus Homeport, lässt die Container aber weiterlaufen; der Stack wird extern. **Vergessen** im Tab **Definition** eines verknüpften Stacks verwirft Homeports Notiz über den Ordner; der Ordner, seine Dateien und die Container bleiben unberührt.
+
+## Einen externen Stack übernehmen
+
+<Steps>
+
+1. Öffnen Sie den externen Stack und wählen Sie **Übernehmen**.
+
+2. Fügen Sie die Compose-Datei ein, mit der er bereitgestellt wurde. Der Name ist ausgefüllt und gesperrt.
+
+3. Fügen Sie seine Umgebungsvariablen hinzu, falls er welche verwendet hat.
+
+4. Wählen Sie **Speichern**, um ihn zu übernehmen, ohne die laufenden Container anzurühren, oder **Speichern und bereitstellen**, um ihn jetzt neu bereitzustellen.
+
+</Steps>
+
+<Aside type="caution" title="Dieselbe Definition verwenden">
+  Eine erneute Bereitstellung mit einer anderen Datei erstellt Container passend zu ihr neu und
+  entfernt Services, die nicht mehr aufgeführt sind. Pfade, die auf dem Rechner, der ihn zuerst
+  bereitgestellt hat, relativ waren, werden jetzt möglicherweise anders aufgelöst.
+</Aside>
+
+Auch das Erstellen eines neuen Stacks mit demselben Namen wie ein externer übernimmt diesen.
