@@ -1,0 +1,45 @@
+---
+title: Service와 구성
+description: 클러스터의 Service, Ingress, ConfigMap, Secret을 살펴보고, Secret 값은 키 하나씩 표시합니다.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+## Service와 Ingress
+
+**네트워크** 페이지에는 선택한 Namespace의 **Service** 목록이 유형, 클러스터 IP, 외부 주소(로드 밸런서의 주소와 `externalIPs`), `kubectl`과 같은 형식의 포트(노드 포트가 있으면 `443:30443/TCP`)와 함께 표시되고, 두 번째 탭에는 **Ingress** 목록이 클래스, 호스트, 컨트롤러가 게시한 주소와 함께 표시됩니다.
+
+- Service 페이지에는 포트와 대상 포트, 세션 어피니티, Pod를 선택하는 레이블, 그리고 해당 Pod가 있는 **Pod** 탭이 표시됩니다. 셀렉터가 없는 Service는 엔드포인트를 수동으로 관리한다고 표시됩니다.
+- Ingress 페이지에는 모든 규칙의 경로(기본 백엔드가 먼저)가 각각 트래픽을 보내는 대상과 함께 나열되며 Service 페이지로 연결되고, TLS 호스트와 인증서 Secret도 표시됩니다.
+
+<DocScreenshot
+  name="cluster-services"
+  alt="Service 탭의 네트워크 페이지: 클러스터 IP와 포트가 표시된 ClusterIP Service, 외부 호스트 이름과 노드 포트가 표시된 LoadBalancer, 클러스터 IP가 없는 headless Service."
+/>
+
+라우팅을 확인하려면 Ingress의 **규칙** 탭을 보세요. 어떤 호스트와 경로가 어떤 Service와 포트로 가는지 알 수 있습니다.
+
+<DocScreenshot
+  name="cluster-ingress"
+  alt="storefront Ingress의 규칙: shop.example.com과 www.shop.example.com에 대해 /api는 api:8080으로, /checkout은 checkout:8080으로, /는 web:http로."
+/>
+
+## ConfigMap과 Secret
+
+**구성** 페이지에는 **ConfigMap** 목록과 **Secret** 목록이 키와 함께 나열됩니다. ConfigMap 페이지에는 각 값이 표시되며, 바이너리 데이터는 크기만 표시됩니다.
+
+<DocScreenshot
+  name="cluster-secret"
+  alt="db-credentials Secret의 데이터 탭: password는 복사 및 숨기기 버튼과 함께 표시되어 있고, username은 표시 버튼과 함께 아직 가려져 있습니다."
+  caption="키 하나만 표시되었고, 다른 키는 요청할 때까지 가려져 있습니다."
+/>
+
+Secret 페이지에는 유형과 각 키가 크기와 함께 가려진 상태로 표시됩니다. **표시** 버튼은 그 값 하나만 클러스터에서 가져와 디코딩하여 보여 주며(바이너리 값은 base64로), **복사** 버튼과 **숨기기** 버튼이 함께 나옵니다. 값은 목록, Secret 페이지, YAML 어디에도 포함되지 않습니다. 표시한 값은 캐시하거나 저장하거나 로그에 남기지 않으며, 페이지를 떠나면 다시 숨겨집니다. [보안과 데이터](/docs/reference/security/#clusters)를 참고하세요.
+
+ConfigMap의 **YAML** 탭에는 **편집** 버튼이 있어, 미리 보기와 서버 측 적용을 거쳐 변경할 수 있습니다([YAML 적용과 편집](/docs/clusters/yaml/)). Secret은 Homeport에서 편집하지 않습니다. Homeport는 Secret의 모든 값을 한 번에 보여 주지 않기 때문입니다. 대신 Secret의 매니페스트를 적용하세요.
+
+## 그 밖의 모든 것
+
+Endpoints와 EndpointSlice, NetworkPolicy, PersistentVolume, 그리고 CRD가 추가하는 리소스는 [API 리소스](/docs/clusters/api-resources/) 페이지에 있습니다.
+
+Service의 포트에는 **포워딩…** 버튼이 있어, 준비된 Pod 중 하나를 통해 [이 컴퓨터에서 연결](/docs/clusters/port-forward/)할 수 있습니다. 여기 있는 모든 페이지의 헤더에는 **삭제** 버튼이 있습니다.

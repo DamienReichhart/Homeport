@@ -1,0 +1,194 @@
+---
+title: Nomad 클러스터
+description: Homeport가 주소, ACL 토큰, TLS 자료로 Nomad 클러스터의 HTTP API에 연결하는 방식과 저장하는 정보를 설명합니다.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+클러스터는 Kubernetes 클러스터뿐 아니라 **Nomad** 클러스터일 수도 있습니다. Homeport는 Nomad 에이전트(서버 또는 클라이언트)가 이미 제공하는 HTTP API와 사용자의 컴퓨터에서 통신합니다. 클러스터에는 아무것도 설치하지 않으며, 이 컴퓨터에 `nomad` CLI도 필요하지 않습니다. 모든 작업은 지정한 ACL 토큰의 권한으로 API를 통해 이루어집니다.
+
+Nomad 클러스터는 전환기에서 호스트 및 Kubernetes 클러스터 옆에 표시됩니다. Nomad 클러스터를 선택하면 개요에 버전, 리전, 주소가 표시되고, 사이드바에 전용 페이지가 표시됩니다. [job을 실행](#run-a-job)하고 allocation의 [로그와 셸](#logs-and-shell)을 여는 **[job](#jobs)** 페이지와 **[노드](#nodes)** 페이지입니다. Nomad 클러스터를 선택한 동안에는 Kubernetes 페이지가 숨겨집니다.
+
+이 페이지에서 설명하는 순서대로, 할 수 있는 일은 다음과 같습니다.
+
+1. 주소로 [클러스터를 추가](#adding-a-nomad-cluster)하며, 클러스터가 사용한다면 [TLS](#tls)와 [ACL 토큰](#the-acl-token)도 지정합니다.
+2. [job](#jobs)과 그 allocation을 실시간으로 보고, job을 중지, 영구 삭제, 스케일합니다.
+3. Nomad의 계획을 확인한 다음 HCL이나 JSON으로 [job을 실행](#run-a-job)하거나, job을 편집하여 다시 실행합니다.
+4. 태스크의 [로그를 따라가고 셸을 엽니다](#logs-and-shell).
+5. [노드를 드레인](#nodes)하고 스케줄링 가능 여부를 바꿉니다.
+6. [네임스페이스](#namespaces) 하나 또는 전체를 선택합니다.
+
+## Nomad 클러스터 추가
+
+전환기에서 **클러스터 추가…** 항목을 선택하고 **Nomad** 탭에서 다음을 입력합니다.
+
+- **이름**: 전환기와 개요에 표시되는 이름입니다. 예: `nomad-prod`.
+- **주소**: 에이전트의 HTTP API로, `NOMAD_ADDR`가 `nomad` CLI에 주는 형식과 같습니다. `nomad.example.com`은 `http://nomad.example.com:4646`이 됩니다. 포트를 지정하지 않으면 4646이 추가되고, TLS 자료를 지정하면 `https://`가 사용됩니다.
+- **리전**: 비워 두면 에이전트 자체의 리전을 사용합니다. 페더레이션된 에이전트를 통해 다른 리전을 관리하려면 `NOMAD_REGION`처럼 설정하세요.
+- **ACL 토큰**: 클러스터에 ACL이 켜져 있다면 토큰의 secret ID입니다. 아래 [토큰](#the-acl-token) 설명을 참고하세요.
+
+**연결 테스트** 버튼은 저장하지 않고 한 번 연결해 Nomad 버전과 리전, 또는 연결할 수 없는 이유를 보여 줍니다. **클러스터 추가** 버튼은 클러스터를 저장하고 연결합니다. 그러면 클러스터 페이지에 상태, 버전, 리전이 표시되며 이 설정을 모두 바꿀 수 있습니다. 토큰과 TLS 키는 다시 표시되지 않으며, 비워 둔 필드는 저장된 값을 유지합니다. 저장된 자격 증명 옆의 **삭제** 버튼을 누르면 저장할 때 그 자격 증명이 삭제됩니다.
+
+## TLS
+
+공개 CA나 이 컴퓨터가 이미 신뢰하는 CA의 인증서로 HTTPS를 제공하는 에이전트라면 `https://` 주소만 있으면 됩니다. 그 밖의 경우에는 **TLS 설정** 항목을 열고, `nomad` CLI에 주는 PEM 파일의 내용을 붙여 넣으세요.
+
+| 필드                                     | `nomad` CLI의 변수                      | 필요한 경우                                                                                                                                 |
+| ---------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| **CA 인증서**                            | `NOMAD_CACERT`                          | 에이전트의 인증서가 `nomad-agent-ca.pem` 같은 자체 CA로 서명된 경우.                                                                        |
+| **클라이언트 인증서**, **클라이언트 키** | `NOMAD_CLIENT_CERT`, `NOMAD_CLIENT_KEY` | 에이전트가 클라이언트 인증서를 요구하는 경우(`verify_https_client`). 둘 다 지정하거나 둘 다 비워 두세요.                                    |
+| **TLS 서버 이름**                        | `NOMAD_TLS_SERVER_NAME`                 | 인증서가 주소의 이름용으로 발급되지 않은 경우. Nomad 자체 인증서는 `server.global.nomad`용으로 발급되며, `global` 자리에 리전이 들어갑니다. |
+
+CA 인증서를 지정하면 `nomad` CLI와 마찬가지로 이 클러스터에 대해서는 그 CA만 신뢰합니다.
+
+## ACL 토큰
+
+Homeport는 토큰을 URL이 아니라 각 요청의 `X-Nomad-Token` 헤더로 보냅니다. 연결된 동안 15초마다 토큰을 확인하며, Nomad가 모르는 토큰(삭제, 만료 또는 오타)이면 새 토큰을 붙여 넣을 때까지 **액세스 거부됨** 상태로 연결을 멈춥니다.
+
+에이전트를 읽을 수 없는(`agent:read`) 토큰도 연결은 됩니다. 이 경우 클러스터 페이지에 리전은 표시되지만 버전은 표시되지 않습니다.
+
+## job
+
+**job** 페이지에는 선택한 클러스터의 job이 유형(`service`, `batch`, `system`, `sysbatch`), 상태, 그리고 task group이 원하는 allocation 수 대비 실행 중인 allocation 수와 함께 나열됩니다. 페이지가 열려 있는 동안 내용이 최신으로 유지됩니다. Homeport가 [blocking query](https://developer.hashicorp.com/nomad/api-docs#blocking-queries)로 Nomad에 요청하므로 무언가 바뀌는 즉시 Nomad가 응답하며, 폴링하지 않습니다. 페이지를 떠나면 쿼리가 끝납니다.
+
+<DocScreenshot
+  name="nomad-jobs"
+  alt="nomad-prod 클러스터의 job 페이지: shop 네임스페이스의 job 여섯 개가 유형, 상태, 원하는 수 대비 실행 중인 allocation, 제출 시각과 함께 표시됩니다."
+/>
+
+job을 열면 설정(우선순위, 데이터센터, 노드 풀, 버전), 태스크와 드라이버가 표시된 **task group**, 그리고 각각 실행 중인 노드와 함께 최신순으로 표시된 **allocation** 목록을 볼 수 있습니다.
+
+- **중지** 버튼은 job과 그 네임스페이스를 밝히며 먼저 확인을 요청합니다. Nomad는 모든 allocation을 중지하고, 가비지 컬렉션이 실행될 때까지 job의 정의를 유지합니다. `nomad job stop -purge`처럼 job과 그 기록을 즉시 삭제하려면 **영구 삭제** 옵션에 체크하세요. 영구 삭제는 기본적으로 꺼져 있습니다.
+- `service` 또는 `batch` job의 task group에 있는 **스케일** 버튼은 `nomad job scale`처럼 실행할 allocation 수를 정합니다. 그룹에 `scaling` 블록이 있으면 개수는 `min`과 `max` 사이여야 합니다. Homeport는 범위를 벗어난 값을 Nomad에 묻기 전에 거부하며, Nomad가 거부하면 진행 중인 deployment 같은 Nomad 자체의 이유를 보여 줍니다. 이 정책에 따라 동작하는 오토스케일러가 개수를 다시 바꿀 수 있습니다.
+
+job 목록을 보려면 job의 네임스페이스에 대해 `list-jobs`와 `read-job` 기능이 필요하고, 중지하려면 `submit-job`, 스케일하려면 `scale-job`(또는 `submit-job`)이 필요합니다.
+
+## job 실행
+
+job 페이지의 **job 실행** 버튼은 HCL2 또는 JSON으로 된 job 명세를 받습니다. 직접 작성하거나, 붙여 넣거나, **파일 열기…** 버튼으로 `.nomad.hcl`, `.hcl`, `.json` 파일을 읽습니다. Homeport는 첫 문자(JSON이면 `{`)로 두 형식을 구별하고 Nomad 자체 엔드포인트를 사용하므로, 여기에는 HCL 파서나 `nomad` CLI가 필요 없습니다.
+
+1. **계획** 버튼은 Nomad에 HCL 파싱을 요청한 다음, `nomad job plan`처럼 실행하면 무엇이 바뀌는지 묻습니다. task group마다 배치, 중지, 제자리 업데이트, 교체할 allocation, 바뀌는 필드(이미지, 개수, 인수…), 그리고 Nomad가 배치할 수 없는 allocation과 그 이유(제약 조건으로 걸러진 노드, 메모리나 CPU 부족)가 표시됩니다. 아직 클러스터에서는 아무것도 바뀌지 않습니다.
+2. **실행** 버튼은 계획한 대로 job을 제출합니다. 그사이에 다른 사람이 job을 실행하거나 중지했다면 Nomad가 거부하며, Homeport는 그 변경을 덮어쓰지 않고 알려 줍니다. 다시 계획하여 변경 내용을 확인하세요. 배치할 수 없는 allocation이 있는 계획에는 **그래도 실행** 버튼이 나오며, 노드가 받을 수 있을 때까지 그 allocation을 대기열에 넣습니다.
+
+<DocScreenshot
+  name="nomad-run-plan"
+  alt="shop-api의 편집 후 실행 화면에서 계획 단계: task group api가 편집되었고, 배치할 allocation 하나와 교체할 allocation 세 개가 있으며, 개수는 3에서 4로, 이미지는 shop-api 2.5.0에서 2.6.0으로 바뀝니다."
+  caption="계획은 무엇이든 바뀌기 전에, job을 실행하면 무엇이 바뀌는지 보여 줍니다."
+/>
+
+파싱되지 않는 명세는 Nomad가 문제를 찾은 줄과 열을 알려 주며, Nomad의 메시지는 **세부 정보** 항목에 있습니다. JSON 명세는 Nomad API 형식의 job일 수 있으며, `nomad job inspect`가 출력하는 `{"Job": {…}}` 형식이나 job 객체 자체를 쓸 수 있습니다.
+
+`namespace`를 지정한 job은 그 네임스페이스로 가고, 지정하지 않은 job은 job 페이지에서 선택한 네임스페이스 또는 `default`로 갑니다. `variable` 블록은 기본값이 있으면 작동합니다. Homeport는 변수 파일(`-var-file`)을 전달하지 않습니다.
+
+job 페이지의 **편집 후 실행** 버튼은 같은 대화 상자를 엽니다. Nomad가 명세를 보관했다면(Nomad 1.6 이상은 함께 제출된 job의 소스를 보관함) 제출된 그대로의 명세가, 아니면 job의 JSON이 들어 있습니다. Homeport는 명세의 사본을 보관하지 않으며, Nomad가 job과 함께 저장합니다.
+
+계획하고 실행하려면 job의 네임스페이스에 대해 `submit-job` 기능이 필요합니다.
+
+## 로그와 셸
+
+job 페이지에서 allocation을 열면 태스크, 그 상태와 재시작 횟수, 최근 이벤트(수신, 시작, 종료, 드라이버 실패…)가 표시되며, 페이지가 열려 있는 동안 최신으로 유지됩니다. 두 탭은 태스크 하나를 대상으로 작동하며, task group에 태스크가 여러 개면 대상을 고릅니다.
+
+- **로그** 탭은 `nomad alloc logs -f`처럼 태스크의 stdout과 stderr를 마지막 몇 줄부터 실시간으로 따라갑니다. 스트림 하나를 끄거나, 검색하거나, **다운로드** 버튼으로 표시된 내용을 내려받을 수 있습니다. 로그는 태스크가 중지된 후에도 allocation이 가비지 컬렉션될 때까지 읽을 수 있습니다.
+- **셸** 탭은 `nomad alloc exec -t`처럼 실행 중인 태스크에서 대화형 터미널을 엽니다. 기본값은 `/bin/sh`이며, 입력한 명령(`/bin/bash`, `/busybox/sh` 또는 다른 프로그램)을 실행할 수도 있습니다. 창 크기에 맞춰 크기가 바뀌고 명령의 종료 코드를 보고하며, **다시 연결** 버튼으로 새 셸을 시작합니다. 탭을 떠나면 노드에서 명령이 종료됩니다.
+
+둘 다 Nomad의 HTTP API를 거칩니다. 서버가 allocation을 실행하는 클라이언트 노드로 전달하므로, Homeport는 노드에 SSH로 접근할 필요도, 아무것도 설치할 필요도 없습니다. 토큰은 WebSocket URL이 아니라 헤더로 전달됩니다.
+
+| 하려는 일       | job의 네임스페이스에서 토큰에 필요한 것                                      |
+| --------------- | ---------------------------------------------------------------------------- |
+| allocation 보기 | `read-job`                                                                   |
+| 로그 읽기       | `read-logs`                                                                  |
+| 셸 열기         | `alloc-exec`, 그리고 `raw_exec` 드라이버를 쓰는 태스크라면 `alloc-node-exec` |
+
+실행 중이 아닌 태스크, 서버가 연결할 수 없는 노드, 기능이 없는 토큰은 각각 별도의 메시지로 알려 줍니다.
+
+## 노드
+
+**노드** 페이지에는 클러스터의 클라이언트 노드가 상태(준비됨, 초기화 중, 다운, 연결 끊김), 새 allocation을 받는지 여부, 데이터센터와 노드 풀, 각 노드에서 실행 중인 allocation 수, 주소, Nomad 버전과 함께 나열됩니다. 노드를 열면 드라이버와 그 상태, 운영 체제와 CPU, 실행 중인 allocation을 볼 수 있습니다.
+
+- **드레인** 버튼은 `nomad node drain -enable`처럼 먼저 확인을 요청합니다. Nomad는 노드를 스케줄링 불가로 표시한 다음, `migrate` 블록이 허용하는 대로 allocation을 다른 노드로 옮깁니다. **기한** 값은 기본 1시간(`30m`, `2h`, `1h30m`…)이며, 기한이 지나면 남아 있는 allocation은 중지됩니다. 모든 allocation이 옮겨질 때까지 기다리려면 **기한 없음** 옵션에, `-ignore-system`처럼 시스템 job을 그 노드에 남기려면 **시스템 job은 이 노드에서 계속 실행** 옵션에 체크하세요. 그러면 노드 페이지에 드레인 진행 상황이, 남은 allocation이 없어질 때까지 몇 개가 아직 실행 중인지와 함께 표시됩니다.
+- **드레인 취소** 버튼은 진행 중인 드레인을 멈추고 노드를 다시 스케줄링 가능하게 만듭니다. 이미 옮겨진 allocation은 옮겨진 곳에 그대로 있습니다.
+- **새 allocation 스케줄링 가능** 스위치는 `nomad node eligibility -enable` 및 `-disable`처럼, 실행 중인 것을 옮기지 않고 노드를 스케줄링 대상에 넣거나 뺍니다.
+
+노드를 읽으려면 `policy = "read"`인 `node` 규칙이 필요하고, 드레인하거나 스케줄링 가능 여부를 바꾸려면 `policy = "write"`가 필요합니다. Homeport는 노드 풀을 관리하거나, 노드를 영구 삭제하거나, 가비지 컬렉션을 실행하지 않습니다.
+
+## 네임스페이스
+
+네임스페이스가 있는 클러스터의 job 페이지에는 **네임스페이스** 선택기가 있습니다. 처음에는 `default`이고, 그다음에는 선택한 네임스페이스가 클러스터별로 다시 시작해도 기억됩니다. **모든 네임스페이스** 항목은 `nomad job status -namespace '*'`처럼 토큰이 읽을 수 있는 모든 네임스페이스의 job을 **네임스페이스** 열과 함께 나열합니다.
+
+**job 실행** 버튼은 명세에 지정된 네임스페이스로 job을 보냅니다. 지정하지 않은 job은 선택한 네임스페이스로, 모든 네임스페이스를 표시하는 중이면 `default`로 갑니다. job 페이지, 그 allocation, 로그와 셸은 항상 job의 네임스페이스를 사용합니다.
+
+네임스페이스 목록을 볼 수 없는 토큰이나 네임스페이스가 없는 클러스터에서는 선택기도 오류도 없이 기본 네임스페이스가 표시됩니다. Homeport는 네임스페이스를 만들거나 편집하거나 삭제하지 않습니다.
+
+## ACL 정책
+
+ACL이 켜진 클러스터에서는, 사용할 기능을 허용하는 정책으로 Homeport 전용 토큰을 만들어 주세요. 다음 정책은 Homeport가 하는 모든 작업을 허용합니다.
+
+```hcl title="homeport.hcl"
+namespace "*" {
+  policy       = "read"
+  capabilities = ["submit-job", "scale-job", "read-logs", "alloc-exec"]
+}
+
+node {
+  policy = "write"
+}
+
+agent {
+  policy = "read"
+}
+```
+
+다음 정책은 Homeport가 job, allocation, 로그, 노드, 네임스페이스를 보기만 하도록 하며, 변경이나 셸은 허용하지 않습니다.
+
+```hcl title="homeport-read.hcl"
+namespace "*" {
+  policy       = "read"
+  capabilities = ["read-logs"]
+}
+
+node {
+  policy = "read"
+}
+
+agent {
+  policy = "read"
+}
+```
+
+정책 하나를 적용하고 그 정책으로 토큰을 만든 다음, 토큰의 secret ID를 클러스터 설정에 붙여 넣으세요.
+
+```bash
+nomad acl policy apply -description "Homeport" homeport homeport.hcl
+nomad acl token create -name=homeport -policy=homeport
+```
+
+Homeport를 특정 네임스페이스로 제한하려면 `"*"`를 그 네임스페이스 이름으로 바꾸고, `raw_exec` 드라이버를 쓰는 태스크에서 셸을 열려면 capabilities에 `alloc-node-exec`를 추가하세요. 각 작업에 필요한 권한은 다음과 같습니다.
+
+| Homeport가 하는 일                   | 필요한 권한                                        |
+| ------------------------------------ | -------------------------------------------------- |
+| 클러스터 버전 표시                   | `agent` `read`(선택 사항: 없어도 연결됨)           |
+| job, allocation, 네임스페이스 나열   | 네임스페이스에 대한 `read`                         |
+| job 계획 및 실행, job 중지           | 네임스페이스에 대한 `submit-job`                   |
+| task group 스케일                    | 네임스페이스에 대한 `scale-job`(또는 `submit-job`) |
+| 태스크 로그 읽기                     | 네임스페이스에 대한 `read-logs`                    |
+| 셸 열기                              | 네임스페이스에 대한 `alloc-exec`                   |
+| 노드 나열                            | `node` `read`                                      |
+| 노드 드레인, 스케줄링 가능 여부 변경 | `node` `write`                                     |
+
+## 상태와 문제
+
+상태는 [Kubernetes 클러스터](/docs/clusters/#statuses)와 같은 규칙을 따릅니다. 에이전트에 연결할 수 없는 동안에는 Homeport가 자동으로 다시 시도하고, 사용자만 고칠 수 있는 문제라면 사용자를 기다립니다.
+
+- **주소가 잘못됨**: 찾을 수 없는 이름, 거부된 연결, 시간 초과 중 무엇인지를 시도한 주소와 함께 알려 줍니다.
+- **만료된 인증서, 알 수 없는 CA, 잘못된 이름**: 각각 **TLS 설정** 항목에서 무엇을 바꿔야 하는지 알려 줍니다.
+- **에이전트가 HTTPS로만 응답함**, 또는 TLS를 전혀 쓰지 않음: 주소의 `http://` 또는 `https://`를 바꾸세요.
+- **리더 없음**: 클러스터의 서버들이 리더를 정하지 못해 아무것도 읽을 수 없습니다. Nomad는 서버의 과반수가 실행 중이어야 합니다. 서버에서 `nomad server members`로 확인하세요.
+
+## 어디에 무엇이 저장되는가
+
+| Homeport 데이터베이스에 평문으로 저장           | 암호화된 상태로만 저장(SSH 키와 같음) |
+| ----------------------------------------------- | ------------------------------------- |
+| 이름, 주소, 리전, TLS 서버 이름                 | ACL 토큰                              |
+| 토큰, CA, 클라이언트 인증서가 저장되었는지 여부 | CA 인증서, 클라이언트 인증서와 그 키  |
+
+Homeport의 [데이터 백업](/docs/reference/security/)에는 Kubernetes 클러스터와 마찬가지로 Nomad 클러스터와 그 자격 증명이 포함됩니다.

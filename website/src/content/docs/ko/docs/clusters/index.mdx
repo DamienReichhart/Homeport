@@ -1,0 +1,85 @@
+---
+title: 클러스터
+description: Homeport가 kubeconfig의 Kubernetes 클러스터에 연결하는 방식, 저장하는 정보, 각 상태의 의미를 설명합니다. Nomad 클러스터는 별도 페이지에서 다룹니다.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+**클러스터** 하나는 Homeport가 API를 통해 연결하는 Kubernetes 클러스터 또는 [Nomad 클러스터](/docs/clusters/nomad/)입니다. 이 섹션에서는 Kubernetes 클러스터를 다루며, Nomad 클러스터는 [별도 페이지](/docs/clusters/nomad/)에서 설명합니다. Kubernetes 클러스터는 Homeport가 API 서버를 통해 연결하는 클러스터입니다. `kubectl`이 이미 사용하는 파일인 kubeconfig의 컨텍스트에서 클러스터를 추가하므로 새 자격 증명을 만들 필요가 없고, Homeport는 클러스터에 아무것도 설치하지 않습니다. kubeconfig로 이미 연결할 수 있는 Kubernetes API와, 그 자격 증명이 가진 권한으로만 통신합니다.
+
+<DocScreenshot
+  name="cluster-overview"
+  alt="호스트와 클러스터 카드가 있는 개요 페이지와 그 아래의 eks-prod 클러스터 대시보드."
+  caption="클러스터는 개요 페이지에서 호스트 옆에 표시되며, 선택한 클러스터의 대시보드가 함께 나옵니다."
+/>
+
+클러스터는 사이드바 위쪽 전환기에서 호스트 옆에 표시됩니다. 클러스터를 선택하면 그 클러스터에 관한 페이지인 **워크로드**, **Pod**, **네트워크**, **구성**, **Node**, **이벤트**, **API 리소스**, **YAML 적용**, **Helm**, **포트 포워딩** 페이지와 [개요](/docs/guides/overview/#the-selected-cluster)의 대시보드가 표시됩니다. 호스트를 선택하면 다시 호스트 페이지가 표시됩니다.
+
+## 할 수 있는 일
+
+클러스터에서 무엇이 실행 중인지, 정상인지 실시간으로 확인하고, 매일 하는 `kubectl` 작업을 Homeport에서 할 수 있습니다.
+
+1. kubeconfig에서 [클러스터를 추가](#adding-a-cluster)하거나, [로컬 클러스터](/docs/clusters/local/)를 클릭 한 번으로 추가합니다. 클라우드 클러스터는 [exec 플러그인](/docs/clusters/exec-plugins/)으로 로그인합니다.
+2. [워크로드와 Pod](/docs/clusters/workloads/), [Service, Ingress, ConfigMap, Secret](/docs/clusters/networking-config/), [Node와 이벤트](/docs/clusters/nodes-events/), 사용자 지정 리소스를 포함한 [그 밖의 모든 API 리소스](/docs/clusters/api-resources/)를 살펴봅니다.
+3. Pod나 워크로드의 [로그를 읽고 컨테이너에서 터미널을 열며](/docs/clusters/logs-exec/), 이 컴퓨터로 [포트를 포워딩](/docs/clusters/port-forward/)합니다.
+4. [스케일, 다시 시작, 삭제](/docs/clusters/actions/)를 하고, 바뀔 내용을 미리 보면서 [YAML을 적용하거나 편집](/docs/clusters/yaml/)합니다.
+5. 이 컴퓨터의 `helm` CLI로 [Helm 릴리스](/docs/clusters/helm/)를 나열, 설치, 업그레이드, 롤백, 제거하고 helm의 차트 저장소를 관리합니다.
+
+모든 변경은 자격 증명의 권한으로 Kubernetes API에 전달되며, 무언가를 삭제하거나 교체하는 작업은 먼저 클러스터 이름을 밝히며 확인을 요청합니다.
+
+## 클러스터 추가
+
+<DocScreenshot
+  name="add-cluster"
+  alt="클러스터 추가 페이지. 위쪽에는 이 컴퓨터에서 찾은 로컬 클러스터가, 그 아래에는 ~/.kube/config의 컨텍스트가 API 서버, 로그인 방식, 이미 추가되었는지 여부와 함께 표시됩니다."
+/>
+
+전환기에서 **클러스터 추가…** 항목을 선택하거나, 클러스터 페이지에서 **클러스터 추가** 버튼을 선택합니다. Docker Desktop, OrbStack, Rancher Desktop, kind, k3d, minikube 같은 [로컬 클러스터](/docs/clusters/local/)는 맨 위에 표시되며 각각 클릭 한 번으로 추가됩니다. 선택한 각 컨텍스트는 컨텍스트 이름을 딴 클러스터가 됩니다. 이름은 가져오기 전이나 후에 바꿀 수 있습니다.
+
+- **이 컴퓨터의 kubeconfig에서** 옵션은 `KUBECONFIG`에 나열된 파일을 `kubectl`과 같은 방식으로 병합하여 읽고, `KUBECONFIG`가 설정되지 않았으면 `~/.kube/config`를 읽습니다. 현재 컨텍스트가 미리 선택됩니다.
+- **kubeconfig 붙여 넣기** 옵션은 붙여 넣은 텍스트를 메모리에서만 읽으며, 파일로 저장하지 않습니다. 그 안에서 참조하는 파일(`certificate-authority: /…`)은 전체 경로여야 합니다. 모든 내용이 인라인으로 들어간 kubeconfig를 붙여 넣는 것이 가장 간단합니다.
+
+  ```bash
+  kubectl config view --raw --flatten --minify
+  ```
+
+각 컨텍스트에는 API 서버, Namespace, 사용자의 로그인 방식(**클라이언트 인증서**, **토큰**, **OpenID Connect**, 클라우드 클러스터라면 **Exec 플러그인(aws)** 등)이 표시되므로, 가져오기 전에 로컬 클러스터와 프로덕션 클러스터를 구별할 수 있습니다. 원하는 컨텍스트에 체크하면 각각 컨텍스트 이름이 채워진 이름 필드가 생깁니다. `arn:aws:eks:…:cluster/prod` 같은 긴 ARN은 `eks-prod`처럼 짧은 이름으로 바꾸는 것이 좋습니다. 전환기와 개요에 표시되는 것이 이 이름입니다.
+
+이미 클러스터로 추가된 컨텍스트는 두 번 가져올 수 없으며, 대신 **새로 고치기** 버튼이 표시됩니다. 사용할 수 없는 컨텍스트는 그 이유를 알려 줍니다. 예를 들어 사용자의 `auth-provider`가 Kubernetes에서 제거된 `gcp`나 `azure`인 경우입니다(지금 `kubectl`이 요구하는 것처럼 `gke-gcloud-auth-plugin`이나 `kubelogin`으로 전환하세요).
+
+사용자는 클라이언트 인증서, 토큰(또는 `tokenFile`), 사용자 이름과 비밀번호, OpenID Connect `auth-provider`(ID 토큰은 메모리에서 갱신됨), exec 플러그인으로 로그인할 수 있습니다.
+
+## 어디에 무엇이 저장되는가
+
+| Homeport 데이터베이스에 평문으로 저장                     | 암호화된 상태로만 저장(SSH 키와 같음)                     |
+| --------------------------------------------------------- | --------------------------------------------------------- |
+| 이름, API 서버의 URL, 컨텍스트의 Namespace                | CA 인증서, 클라이언트 인증서와 키                         |
+| 사용자의 로그인 방식(인증서, 토큰…), 가져온 원본 컨텍스트 | 토큰 또는 비밀번호, OIDC 토큰, exec 플러그인의 인수와 env |
+
+kubeconfig가 참조하는 파일은 가져올 때 한 번 읽어서 나머지와 함께 암호화하여 저장합니다. kubeconfig 자체는 절대 바뀌지 않습니다. OS 키체인이 없으면 Homeport는 자격 증명을 저장할 수 없으므로 클러스터를 추가하지 않습니다. [보안과 데이터](/docs/reference/security/)를 참고하세요.
+
+## kubeconfig에서 새로 고침
+
+kind, k3d, minikube는 클러스터를 다시 만들 때마다 새 인증서를 발급하고, 클라우드 자격 증명은 갱신됩니다. 클러스터 페이지의 **kubeconfig에서 새로 고침** 기능은 컨텍스트를 다시 읽고(이 컴퓨터의 kubeconfig에서, 또는 붙여 넣어 추가한 클러스터라면 다시 붙여 넣은 kubeconfig에서) 이름을 유지한 채 다시 연결합니다.
+
+## 클러스터 관리
+
+- 전환기의 **클러스터 관리** 항목은 모든 클러스터를 상태, API 서버, 로그인 방식과 함께 나열합니다.
+- 클러스터 페이지에서 **사용** 스위치는 클러스터를 잊지 않고 연결을 끊고, **다시 연결** 버튼은 즉시 다시 시도하며, **이름 바꾸기** 버튼은 Homeport 안에서만 이름을 바꿉니다.
+- **클러스터 삭제** 버튼은 클러스터와 저장된 자격 증명을 잊습니다. 클러스터나 kubeconfig에서는 아무것도 바뀌지 않습니다.
+
+클러스터 이름은 대소문자를 구분하지 않고 고유해야 합니다.
+
+## 상태
+
+| 상태               | 의미                                                                                                  |
+| ------------------ | ----------------------------------------------------------------------------------------------------- |
+| **연결됨**         | API 서버가 응답합니다. 옆에 Kubernetes 버전이 표시됩니다.                                             |
+| **연결 중**        | Homeport가 연결하고 있습니다.                                                                         |
+| **연결할 수 없음** | API 서버가 응답하지 않았습니다. Homeport가 1초부터 최대 1분까지 간격을 두고 자동으로 다시 시도합니다. |
+| **액세스 거부됨**  | API 서버가 자격 증명을 거부했습니다. 이 컨텍스트로 `kubectl`이 작동하는지 확인한 다음 새로 고치세요.  |
+| **잘못 구성됨**    | 일치하지 않는 인증서처럼 사용자만 고칠 수 있는 문제입니다. 고칠 때까지 Homeport가 기다립니다.         |
+| **자격 증명 손실** | 자격 증명을 보호하는 OS 키체인의 키가 사라졌습니다. kubeconfig에서 클러스터를 새로 고치세요.          |
+| **사용 안 함**     | **사용** 스위치로 꺼져 있습니다.                                                                      |
+
+연결된 클러스터는 15초마다 확인하므로, 사라진 클러스터는 그 상태가 표시되고 다시 돌아오면 호스트처럼 자동으로 다시 연결됩니다.
