@@ -169,6 +169,8 @@ Homeport writes a small log file — a few dozen kilobytes, replaced when full �
 | macOS   | `~/Library/Logs/com.homeport.app/`      |
 | Windows | `%LOCALAPPDATA%\com.homeport.app\logs\` |
 
+Homeport has no telemetry and no crash reporting: a log never leaves your computer unless you send it. For a bug report, **Settings → About → Export diagnostics…** saves a zip with a summary of versions and these logs, after replacing anything shaped like a secret (keys, passwords, tokens, credentials in URLs) and, unless you ask otherwise, the names and addresses of your Hosts and Clusters. See [Exporting diagnostics](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report).
+
 ## Trusting a download
 
 Releases are built by GitHub Actions from the public source code. Each file comes with a SHA-256 checksum and a signed build provenance attestation that ties it to the exact commit and workflow that built it. See [verifying downloads](/docs/reference/verifying/).

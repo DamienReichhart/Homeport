@@ -7,12 +7,12 @@ Homeport is developed in the open at [github.com/DamienReichhart/Homeport](https
 
 ## Reporting a bug
 
-[Open an issue](https://github.com/DamienReichhart/Homeport/issues/new) with:
+[Open an issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) with:
 
-- your Homeport version and platform, from **Settings** (for example `v0.2.0 · macos/aarch64`);
-- the kind of Host (local, SSH, TLS or TCP) and its Engine version;
 - what you did, what you expected, and what happened — the exact message helps most;
-- anything relevant from the [log file](/docs/reference/security/#logs).
+- the [diagnostics bundle](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report) from **Settings → About → Export diagnostics…**: one zip with Homeport's version and platform, the kinds of Hosts, Engines and Clusters you use, and its logs with secrets removed. You read what's in it before saving it, and nothing is sent anywhere.
+
+If Homeport doesn't start, give its version and your operating system instead, and anything relevant from the [log file](/docs/reference/security/#logs).
 
 Please report security problems privately, through [GitHub's vulnerability reporting](https://github.com/DamienReichhart/Homeport/security/advisories/new).
 

@@ -3,7 +3,7 @@ title: Troubleshooting
 description: Fixes for the problems you're most likely to meet, by the message Homeport shows.
 ---
 
-If your problem isn't here, check the [log file](/docs/reference/security/#logs) and [open an issue](https://github.com/DamienReichhart/Homeport/issues) with your Homeport version from **Settings**.
+If your problem isn't here, [open an issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) with the [diagnostics bundle](#exporting-diagnostics-for-a-bug-report) from **Settings → About**.
 
 ## Installing and starting
 
@@ -336,3 +336,16 @@ Exec in a virtual machine goes through `incus-agent` inside it, which Incus's ow
 ### "host … is not connected"
 
 The action needed the Host, but it disconnected. Wait for it to reconnect, or choose **Retry now**.
+
+## Exporting diagnostics for a bug report
+
+**Settings → About → Export diagnostics…** makes one zip to attach to a GitHub issue. Homeport sends it nowhere: it saves the file where you choose, and sharing it is up to you.
+
+The dialog lists the files and shows `summary.json` before you save:
+
+- `summary.json`: Homeport's version and how it was installed, your operating system, the database's schema version, whether a keychain is available, your settings, and for each Host and Cluster its kind of connection, its Engine and version, its status and the code of its last error, plus how many Stacks of each kind you have.
+- `logs/`: Homeport's [log files](/docs/reference/security/#logs), with private keys and certificates, passwords, tokens, `Authorization` headers and the credentials in URLs replaced by `[redacted]`.
+
+Hosts and Clusters appear as `host-1`, `cluster-1`… and their names and addresses are replaced the same way in the logs, unless you tick **Include names and addresses**. Tick it when the name or address matters to the problem and you're comfortable sharing it.
+
+Stored secrets are never read for the bundle. Removing secrets from logs works by recognising their usual shapes, so look through the files before attaching them to a public issue if your logs may quote something unusual.
