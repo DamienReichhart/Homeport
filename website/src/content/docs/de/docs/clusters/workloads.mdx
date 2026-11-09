@@ -1,0 +1,79 @@
+---
+title: Workloads und Pods
+description: Die Namespaces, Deployments, StatefulSets, DaemonSets, Jobs, CronJobs und Pods eines Clusters live durchsuchen.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+Wählen Sie einen Cluster im Umschalter, und die Seitenleiste zeigt seine Seiten. **Workloads** und **Pods** listen auf, was darauf läuft; jede Liste folgt dem Cluster live über einen Kubernetes-Watch, sodass ein Deployment, das Sie skalieren, oder ein Pod, der abstürzt, seinen neuen Zustand innerhalb von Sekunden ohne Aktualisieren zeigt. Jede Seite lässt Sie außerdem mit dem arbeiten, was sie zeigt: [Logs und ein Terminal](/docs/clusters/logs-exec/), [Skalieren, Neustarten und Löschen](/docs/clusters/actions/) und [YAML bearbeiten](/docs/clusters/yaml/).
+
+## Namespaces
+
+Jede Seite eines Clusters zeigt einen Namespace oder **Alle Namespaces**, gewählt oben rechts. Sie beginnt mit dem Namespace des kubeconfig-Kontexts des Clusters (sonst `default`), und Homeport merkt sich Ihre Wahl pro Cluster.
+
+Wenn Ihre Zugangsdaten nur einige Namespaces sehen dürfen, wählen Sie einen davon: Dort funktionieren die Seiten. Wenn sie nicht einmal Namespaces auflisten können, wird die Auswahl zu einem Feld, in das Sie den Namespace eintippen, den Sie verwenden dürfen.
+
+## Workloads
+
+<DocScreenshot
+  name="cluster-workloads"
+  alt="Die Seite Workloads im Tab Deployments: api in Arbeit mit 2 von 3 und 1 aktuell, drei bereit, und search beeinträchtigt mit 0 von 1."
+  caption="api ist mitten im Rollout (1 Pod mit dem neuen Template), search kann nicht starten."
+/>
+
+**Workloads** hat einen Tab pro Art: **Deployments**, **StatefulSets**, **DaemonSets**, **Jobs** und **CronJobs**. Jede Zeile zeigt ihren Zustand, wie viele Pods von wie vielen gewünschten bereit sind, wie viele ihr neuestes Template ausführen, ihre Images und ihr Alter.
+
+| Zustand            | Bedeutet                                                                                  |
+| ------------------ | ----------------------------------------------------------------------------------------- |
+| **Bereit**         | Jeder gewünschte Pod ist bereit und aktuell; ein Job ist fertig; ein CronJob ist geplant. |
+| **In Arbeit**      | Rollout läuft, Planung läuft oder ein Job läuft noch.                                     |
+| **Beeinträchtigt** | Der Rollout eines Deployments hat seine Fortschrittsfrist überschritten.                  |
+| **Fehlgeschlagen** | Ein Job ist fehlgeschlagen.                                                               |
+| **Pausiert**       | Auf null skaliert, oder ein ausgesetzter Job oder CronJob.                                |
+
+### Einen Workload lesen
+
+**Bereit** zählt die Pods, die ihre Readiness-Probe bestehen, gegenüber denen, die der Workload möchte; **Aktuell** zählt die, die sein neuestes Template ausführen. Während eines Rollouts hinkt der zweite Wert dem ersten hinterher: `2/3` bereit mit `1` aktuell bedeutet, dass ein neuer Pod da ist und die alten noch bedienen. Wenn **Aktuell** zurückbleibt und der Zustand zu **Beeinträchtigt** wechselt, können die neuen Pods nicht starten – ihre Seite sagt, warum.
+
+<DocScreenshot
+  name="cluster-workload"
+  alt="Die Übersicht des Deployments api: Namespace, 2 von 3 bereit, 1 aktuell, Strategie RollingUpdate, der Selektor app=api, seine Labels und seine Container mit Images und Ports."
+/>
+
+Die Seite eines Workloads hat:
+
+- **Übersicht**: seinen Namespace, seine Replikas, die Rollout-Strategie, die Labels, nach denen er Pods auswählt, seine Labels und Annotationen und seine Container mit ihren Images und Ports.
+- **Pods**: die Pods, die er auswählt (bei einem CronJob **Jobs**: die Jobs, die er gestartet hat, die neuesten zuerst).
+- **Logs** seiner Pods, alle verschränkt oder einzeln (nicht bei einem CronJob; seine Jobs haben ihre eigenen).
+- **Bedingungen**, **Events** (Warnungen zuerst; Kubernetes bewahrt sie etwa eine Stunde lang auf) und **YAML**, ohne `managedFields`, mit **Bearbeiten**.
+
+Seine Kopfzeile hat seine Aktionen: **Skalieren**, **Neu starten**, **Aussetzen** oder **Fortsetzen** und **Jetzt ausführen**, wo sie zutreffen, und **Löschen**; siehe [Skalieren, neu starten und löschen](/docs/clusters/actions/).
+
+## Pods
+
+<DocScreenshot
+  name="cluster-pods"
+  alt="Die Seite Pods: Pods des Namespace shop mit ihrem Status, einer in CrashLoopBackOff mit 7 Neustarts und einer in ImagePullBackOff, ihre bereiten Container, ihr Node und ihr Alter."
+/>
+
+**Pods** listet jeden Pod mit seinem Status auf, wie `kubectl get pods` ihn zeigt – `Running`, `Pending`, `CrashLoopBackOff`, `ImagePullBackOff`, `Init:…`, `Terminating` –, seine bereiten Container, Neustarts, seinen Node und sein Alter. Lange Listen zeigen 100 Zeilen pro Seite, sodass ein Cluster mit Tausenden von Pods reaktionsschnell bleibt; das Suchfeld filtert alle.
+
+<DocScreenshot
+  name="cluster-pod"
+  alt="Die Seite eines abstürzenden Pods: ein abgeschlossener Init-Container, der Container api wartet nach 7 Neustarts in CrashLoopBackOff (zuletzt: Error), und ein laufender Envoy-Sidecar."
+  caption="Warum api-…-xr4np nicht bereit ist: Sein Container api stürzt immer wieder ab; sein Sidecar ist in Ordnung."
+/>
+
+Die Seite eines Pods zeigt seinen Node, seine IPs, seine QoS-Klasse, sein Service-Account und was ihn steuert, dann jeden Container (Init-Container zuerst) mit seinem Image, seinem Zustand, warum er wartet oder beendet wurde, seinen Neustarts und warum er zuletzt neu gestartet wurde. Jeder Container listet die Ports auf, die er deklariert, mit **Weiterleiten…**, um [einen davon von diesem Rechner aus zu erreichen](/docs/clusters/port-forward/). Es folgen **Logs** und **Terminal** ([Logs und Terminals](/docs/clusters/logs-exec/)), dann **Bedingungen**, **Events** und **YAML** wie bei Workloads und **Löschen** in der Kopfzeile.
+
+### Herausfinden, warum ein Pod nicht bereit ist
+
+1. Sortieren Sie unter **Pods** nach **Status** oder **Neustarts**: `CrashLoopBackOff`, `ImagePullBackOff` und `Error` werden rot angezeigt.
+2. Öffnen Sie den Pod. Der Container, der nicht bereit ist, sagt, warum er wartet oder beendet wurde, und **Neustarts** nennt den Grund seines letzten Endes – `Error`, `OOMKilled` (er hat sein Speicherlimit erreicht), `Completed`.
+3. **Logs** mit **Vorherige Instanz** zeigt, was der Container vor seinem Absturz ausgegeben hat.
+4. **Events** enthält, was kubelet und Scheduler gemeldet haben: ein Image, das sich nicht pullen lässt, eine Probe, die fehlschlägt, kein Node mit genug Speicher.
+5. **YAML** zeigt den Pod so, wie der Cluster ihn hat, mit seinen Probes, Limits und seiner Umgebung.
+
+## Wenn Ihre Zugangsdaten etwas nicht sehen können
+
+Eine Liste, die Ihre Zugangsdaten nicht lesen dürfen, sagt das – „Ihre Zugangsdaten erlauben ‚list‘ für daemonsets in shop nicht.“ – mit dem Befehl `kubectl auth can-i` zur Prüfung; die anderen Seiten funktionieren weiter.
