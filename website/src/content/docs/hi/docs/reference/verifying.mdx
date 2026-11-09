@@ -1,0 +1,79 @@
+---
+title: डाउनलोड सत्यापित करना
+description: किसी Homeport इंस्टॉलर को उसके चेकसम, बिल्ड प्रोवेनेंस और सिग्नेचर से जाँचें, और जानें कि अपडेट और Linux पैकेज कैसे सत्यापित होते हैं।
+---
+
+import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import { KEY_URL } from '@/core/packages';
+import { SigningKeyFingerprint } from '@/features/docs';
+
+हर Homeport रिलीज़ पब्लिक रिपॉज़िटरी से GitHub Actions द्वारा बनाई जाती है। आप दो तरीक़ों से जाँच सकते हैं कि आपकी डाउनलोड की गई फ़ाइल वही है जो बनाई गई थी। Linux पैकेज और अपडेट भी साइन किए जाते हैं, और आपके लिए जाँचे जाते हैं।
+
+## चेकसम
+
+हर रिलीज़ में `SHA256SUMS.txt` शामिल होती है, जिसमें हर फ़ाइल का SHA-256 चेकसम होता है। [डाउनलोड पेज](/download/) भी हर फ़ाइल का चेकसम दिखाता है। `SHA256SUMS.txt` को इंस्टॉलर वाले फ़ोल्डर में ही डाउनलोड करें, फिर:
+
+<Tabs syncKey="os">
+<TabItem label="Linux">
+
+```sh
+sha256sum --ignore-missing -c SHA256SUMS.txt
+```
+
+</TabItem>
+<TabItem label="macOS">
+
+```sh
+shasum -a 256 --ignore-missing -c SHA256SUMS.txt
+```
+
+</TabItem>
+<TabItem label="Windows">
+
+```powershell
+(Get-FileHash .\Homeport_0.2.0_x64-setup.exe -Algorithm SHA256).Hash.ToLower()
+```
+
+नतीजे की तुलना `SHA256SUMS.txt` में इंस्टॉलर की लाइन से करें।
+
+</TabItem>
+</Tabs>
+
+फ़ाइल के नाम के बगल में `OK` का मतलब है कि वह मेल खाती है।
+
+## बिल्ड प्रोवेनेंस
+
+चेकसम साबित करता है कि चेकसम प्रकाशित होने के बाद फ़ाइल न ख़राब हुई और न बदली गई। [बिल्ड प्रोवेनेंस अटेस्टेशन](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) इससे आगे जाता है: यह GitHub द्वारा साइन किया जाता है और उस रिपॉज़िटरी, कमिट और वर्कफ़्लो को दर्ज करता है जिसने फ़ाइल बनाई।
+
+[GitHub CLI](https://cli.github.com) इंस्टॉल होने पर:
+
+```sh
+gh attestation verify Homeport_0.2.0_x64-setup.exe --repo DamienReichhart/Homeport
+```
+
+सफल जाँच वह वर्कफ़्लो और कमिट प्रिंट करती है जिससे फ़ाइल बनाई गई थी।
+
+## पैकेज सिग्नेचर
+
+Homeport पैकेज रिपॉज़िटरी और हर `.rpm` Homeport पैकेज कुंजी (RSA 4096) से साइन किए जाते हैं:
+
+**फ़िंगरप्रिंट:** <SigningKeyFingerprint />
+
+`apt`, `dnf` और `zypper` हर अपडेट पर इन सिग्नेचर की जाँच करते हैं, और मेल न खाने वाले पैकेज और रिपॉज़िटरी डेटा को अस्वीकार कर देते हैं। आपकी डाउनलोड की गई कुंजी, या किसी `.rpm` फ़ाइल को जाँचने के लिए:
+
+<Code code={`curl -fsSL ${KEY_URL} | gpg --show-keys --with-fingerprint`} lang="sh" />
+
+```sh
+sudo rpm --import homeport.asc   # once
+rpm -K Homeport-<version>-1.x86_64.rpm
+```
+
+साइन किए गए पैकेज के लिए `rpm -K` `digests signatures OK` प्रिंट करता है। `.deb` फ़ाइल ख़ुद साइन नहीं की जाती: रिपॉज़िटरी का साइन किया हुआ इंडेक्स उसे कवर करता है, और डाउनलोड की गई `.deb` उसके चेकसम और अटेस्टेशन से कवर होती है।
+
+## अपडेट सिग्नेचर
+
+ऐप के अंदर का अपडेटर जो भी अपडेट इंस्टॉल करता है, वह एक अलग Homeport अपडेट कुंजी से साइन किया जाता है, जिसका पब्लिक हिस्सा Homeport में बना होता है। इंस्टॉल करने से पहले, Homeport सिग्नेचर की जाँच करता है और यह भी कि वह घोषित संस्करण के लिए बनाया गया था, और बाकी सब कुछ अस्वीकार कर देता है, भले ही वह सही पते से आया हो।
+
+## कोड साइनिंग
+
+macOS ऐप ad-hoc साइन किया गया है और Windows इंस्टॉलर अभी किसी व्यावसायिक प्रमाणपत्र से साइन नहीं किए गए हैं, इसलिए macOS और Windows आपसे पहले लॉन्च की पुष्टि करने के लिए कहते हैं। [इंस्टॉलेशन](/docs/installation/) बताता है कि कैसे। Homeport के अंदर से इंस्टॉल किए गए अपडेट फिर से नहीं पूछते।

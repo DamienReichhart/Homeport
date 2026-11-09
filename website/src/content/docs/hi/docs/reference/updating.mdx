@@ -1,0 +1,100 @@
+---
+title: अपडेट करना और अनइंस्टॉल करना
+description: हर सिस्टम पर Homeport कैसे अपडेट होता है, और उसे और उसके डेटा को पूरी तरह कैसे हटाएँ।
+---
+
+import { Aside, Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import { MANUAL_SETUP, UPDATE_COMMANDS } from '@/core/packages';
+
+## अपडेट करना
+
+Homeport कैसे अपडेट होता है, यह इस पर निर्भर करता है कि आपने उसे कैसे इंस्टॉल किया।
+
+### Windows, macOS और AppImage
+
+Homeport शुरू होने पर और हर 6 घंटे में नए संस्करण की जाँच करता है। जब कोई नया संस्करण आता है, तो विंडो के ऊपर एक बार यह बताता है: [changelog](/changelog/) पढ़ने के लिए **नया क्या है** चुनें, या **इंस्टॉल करें और रीस्टार्ट करें**। Homeport अपडेट डाउनलोड करता है, उसका सिग्नेचर जाँचता है, उसे इंस्टॉल करता है और फिर से खुलता है। जब तक आप न चुनें, कुछ भी इंस्टॉल नहीं होता, और आपके होस्ट, स्टैक और सेटिंग्स बने रहते हैं।
+
+आप **सेटिंग्स → अपडेट → अभी जाँचें** से अभी भी जाँच सकते हैं।
+
+### Linux पैकेज
+
+`.deb` और `.rpm` पैकेज, चाहे [क्विक इंस्टॉल](/docs/installation/#quick-install), [मैनुअल सेटअप](/docs/installation/#manual-setup) या डाउनलोड की गई फ़ाइल से इंस्टॉल किए गए हों, आपके बाकी सिस्टम के साथ Homeport पैकेज रिपॉज़िटरी से अपडेट होते हैं: आपके सामान्य सॉफ़्टवेयर अपडेट में Homeport शामिल होता है। सिर्फ़ Homeport को अपडेट करने के लिए:
+
+<Tabs syncKey="linux-format">
+  {MANUAL_SETUP.map((setup) => (
+    <TabItem label={setup.label}>
+      <Code code={UPDATE_COMMANDS[setup.id]} lang="sh" />
+    </TabItem>
+  ))}
+</Tabs>
+
+जब नया संस्करण आता है तो Homeport आपको बताता है और आपके सिस्टम के लिए कमांड दिखाता है, लेकिन उसे इंस्टॉल करने का काम आपके पैकेज मैनेजर पर छोड़ देता है।
+
+अगर आपने Homeport रिपॉज़िटरी हटा दी है, तो आपका पैकेज मैनेजर नए संस्करण नहीं देख सकता। उसे [क्विक इंस्टॉल](/docs/installation/#quick-install) से फिर से सेट अप करें, या नया पैकेज डाउनलोड करके पुराने के ऊपर इंस्टॉल करें।
+
+### अपडेट जाँच बंद करना
+
+**सेटिंग्स → अपडेट → अपडेट अपने आप जाँचें** बंद करें। **अभी जाँचें** फिर भी काम करता है। एक जाँच इस वेबसाइट से एक छोटी फ़ाइल डाउनलोड करती है और आपके या आपके होस्ट के बारे में कुछ नहीं भेजती। [सुरक्षा और आपका डेटा](/docs/reference/security/#what-homeport-connects-to) देखें।
+
+### 0.2.0 या उससे पहले के संस्करण से अपडेट करना
+
+0.3.0 से पहले के संस्करण ख़ुद को अपडेट नहीं करते, और उनके Linux पैकेज रिपॉज़िटरी नहीं जोड़ते। 0.3.0 या बाद का संस्करण एक बार इंस्टॉल करें, उसी तरह जैसे आपने Homeport इंस्टॉल किया था: [डाउनलोड पेज](/download/) से, या Linux पर [क्विक इंस्टॉल](/docs/installation/#quick-install) से। उसके बाद, अपडेट अपने-आप आते हैं।
+
+फिर भी नए संस्करणों के बारे में जानने के लिए, GitHub पर रिपॉज़िटरी को watch करें (**Watch → Custom → Releases**), या [releases feed](https://github.com/DamienReichhart/Homeport/releases.atom) फ़ॉलो करें।
+
+## अनइंस्टॉल करना
+
+<Tabs syncKey="os">
+<TabItem label="Windows">
+**Settings → Apps → Installed apps** खोलें, **Homeport** ढूँढें, और **Uninstall** चुनें।
+</TabItem>
+<TabItem label="macOS">Homeport बंद करें और उसे Applications से Bin में खींचें।</TabItem>
+<TabItem label="Linux">
+
+```sh
+sudo apt purge homeport       # Debian, Ubuntu
+sudo dnf remove homeport      # Fedora, RHEL
+sudo zypper remove homeport   # openSUSE
+```
+
+इससे Homeport रिपॉज़िटरी भी हट जाती है। Debian और Ubuntu पर, `apt remove` उसे पैकेज के बाकी कॉन्फ़िगरेशन के साथ रखता है, और `apt purge` उसे उसकी कुंजी के साथ हटा देता है। Fedora और openSUSE पर कुंजी rpm के keyring में रहती है; `rpm -q gpg-pubkey --qf '%{NAME}-%{VERSION}-%{RELEASE} %{SUMMARY}\n'` कुंजियों को सूचीबद्ध करता है, और `sudo rpm -e gpg-pubkey-<version>-<release>` Homeport की कुंजी हटाता है।
+
+AppImage के लिए, फ़ाइल मिटा दें। उसकी मेनू एंट्री उसके साथ ग़ायब हो जाती है।
+
+</TabItem>
+</Tabs>
+
+अनइंस्टॉल करने से आपका डेटा अपनी जगह पर रहता है, इसलिए फिर से इंस्टॉल करने पर सब कुछ वापस आ जाता है।
+
+### लॉगिन एंट्री
+
+अगर **लॉगिन पर शुरू करें** चालू है, तो अनइंस्टॉल करने से पहले उसे **सेटिंग्स → डेस्कटॉप** में बंद करें: अनइंस्टॉल करने से लॉगिन एंट्री पीछे रह जाती है, जो एक ऐसे Homeport की ओर इंगित करती है जो अब नहीं है। उसे बाद में हटाने के लिए:
+
+| सिस्टम  | लॉगिन एंट्री                                                                                                                                                     |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows | **Task Manager → Startup apps**: **Homeport** को अक्षम करें, या `HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run` के तहत `Homeport` मान मिटा दें |
+| macOS   | `~/Library/LaunchAgents/Homeport.plist` मिटा दें                                                                                                                 |
+| Linux   | `~/.config/autostart/Homeport.desktop` मिटा दें                                                                                                                  |
+
+## अपना डेटा हटाना
+
+<Aside type="caution">
+  इससे आपके होस्ट, उनकी सहेजी गई कुंजियाँ और प्रमाणपत्र, आपकी प्रबंधित स्टैक परिभाषाएँ, आपके लिंक्ड
+  स्टैक और उनका डिप्लॉय इतिहास मिट जाते हैं। लिंक्ड स्टैक के फ़ोल्डर जहाँ हैं वहीं रहते हैं। आपके
+  होस्ट पर किसी भी चीज़ को छुआ नहीं जाता।
+</Aside>
+
+1. Homeport के डेटा और लॉग फ़ोल्डर मिटा दें:
+
+   | सिस्टम  | फ़ोल्डर                                                                               |
+   | ------- | ------------------------------------------------------------------------------------- |
+   | Linux   | `~/.local/share/com.homeport.app/`, `~/.config/com.homeport.app/`                     |
+   | macOS   | `~/Library/Application Support/com.homeport.app/`, `~/Library/Logs/com.homeport.app/` |
+   | Windows | `%APPDATA%\com.homeport.app\`, `%LOCALAPPDATA%\com.homeport.app\`                     |
+
+2. अपने कीचेन से एन्क्रिप्शन कुंजी मिटा दें — `com.homeport.app` की एंट्री:
+   - **macOS** — **Keychain Access** में, `com.homeport.app` खोजें और उसे मिटा दें।
+   - **Windows** — **Credential Manager → Windows Credentials** में, `com.homeport.app` वाली एंट्री हटा दें।
+   - **Linux** — **Passwords and Keys** (Seahorse) या KWallet में, `com.homeport.app` की एंट्री मिटा दें।
+
+3. अपने सर्वर पर, `~/.ssh/authorized_keys` से Homeport की पब्लिक कुंजियाँ हटा दें — उनकी टिप्पणियाँ `homeport@` से शुरू होती हैं।

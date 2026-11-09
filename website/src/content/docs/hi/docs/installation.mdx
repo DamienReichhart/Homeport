@@ -1,0 +1,181 @@
+---
+title: इंस्टॉलेशन
+description: Windows, macOS या Linux पर Homeport इंस्टॉल करें।
+---
+
+import { Aside, Code, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+import { COMING_LATER, INSTALL_COMMAND, MANUAL_SETUP } from '@/core/packages';
+
+Homeport के पास Windows, macOS और Linux के लिए इंस्टॉलर हैं, हर एक x64 और ARM के लिए। उन्हें [डाउनलोड पेज](/download/) से पाएँ, जो आपको आपके सिस्टम के लिए सही फ़ाइल की ओर ले जाता है, या [नवीनतम GitHub रिलीज़](https://github.com/DamienReichhart/Homeport/releases/latest) से। Linux पर, Homeport पैकेज रिपॉज़िटरी इसे एक ही कमांड से इंस्टॉल करती है।
+
+हर इंस्टॉल अप-टू-डेट रहता है: Windows, macOS और AppImage पर Homeport ख़ुद को अपडेट करता है, और Linux पैकेज आपके बाकी सिस्टम के साथ अपडेट होते हैं। [अपडेट करना](/docs/reference/updating/) देखें।
+
+<Aside>
+  Homeport Docker Engine प्रबंधित करता है, लेकिन उसमें कोई इंजन शामिल नहीं है। अगर आप इस मशीन पर
+  कंटेनर चाहते हैं, तो Docker Engine, Docker Desktop, Colima, OrbStack, Rancher Desktop या Podman भी
+  इंस्टॉल करें — या इसके बजाय Homeport को किसी रिमोट सर्वर से कनेक्ट करें। [सिस्टम
+  आवश्यकताएँ](/docs/requirements/) देखें।
+</Aside>
+
+## Windows
+
+| फ़ाइल                                | इसका इस्तेमाल किसके लिए करें                       |
+| ------------------------------------ | -------------------------------------------------- |
+| `Homeport_<version>_x64-setup.exe`   | ज़्यादातर PC। मौजूदा यूज़र के लिए इंस्टॉल करता है। |
+| `Homeport_<version>_arm64-setup.exe` | ARM पर Windows (Snapdragon और दूसरे ARM64 PC)।     |
+| `Homeport_<version>_x64_en-US.msi`   | x64 पर प्रबंधित और साइलेंट इंस्टॉल।                |
+
+<Steps>
+
+1. अपने PC के लिए इंस्टॉलर डाउनलोड करें और उसे खोलें।
+
+2. Windows SmartScreen **Windows protected your PC** कह सकता है, क्योंकि इंस्टॉलर अभी किसी सशुल्क प्रमाणपत्र से साइन नहीं किया गया है। **More info** चुनें, फिर **Run anyway**।
+
+3. इंस्टॉलर के निर्देशों का पालन करें। Homeport स्टार्ट मेनू में जुड़ जाता है।
+
+</Steps>
+
+MSI पैकेज के साथ साइलेंट इंस्टॉल के लिए:
+
+```powershell
+msiexec /i Homeport_<version>_x64_en-US.msi /quiet
+```
+
+## macOS
+
+| फ़ाइल                            | इसका इस्तेमाल किसके लिए करें           |
+| -------------------------------- | -------------------------------------- |
+| `Homeport_<version>_aarch64.dmg` | Apple silicon वाले Mac (M1 और बाद के)। |
+| `Homeport_<version>_x64.dmg`     | Intel प्रोसेसर वाले Mac।               |
+
+पक्का नहीं कि आपके पास कौन-सा है? Apple मेनू → **About This Mac** खोलें: **Chip** लाइन का मतलब Apple silicon है, और Intel नाम वाली **Processor** लाइन का मतलब Intel है।
+
+<Steps>
+
+1. `.dmg` खोलें और **Homeport** को **Applications** में खींचें।
+
+2. Applications या Launchpad से Homeport खोलें।
+
+3. Homeport अभी Apple द्वारा नोटराइज़ नहीं किया गया है, इसलिए macOS कह सकता है कि यह **can't be opened** या **can't check it for malicious software**। **Done** (या **OK**) चुनें, **System Settings → Privacy & Security** खोलें, Security तक स्क्रॉल करें और Homeport के बगल में **Open Anyway** चुनें। पुष्टि करें, और macOS आपकी पसंद याद रखता है।
+
+</Steps>
+
+<Aside type="tip" title="टर्मिनल से">
+  आप वह क्वारंटीन फ़्लैग भी हटा सकते हैं जो macOS डाउनलोड किए गए ऐप पर लगाता है:
+
+```sh
+xattr -dr com.apple.quarantine /Applications/Homeport.app
+```
+
+</Aside>
+
+## Linux
+
+Linux के लिए Homeport को x64 या ARM64 पर glibc 2.35 या उसके बाद का संस्करण चाहिए — Ubuntu 22.04, Debian 12, Fedora 36 या कुछ भी नया।
+
+### क्विक इंस्टॉल
+
+यह Homeport पैकेज रिपॉज़िटरी सेट अप करता है और Homeport इंस्टॉल करता है, ताकि `apt`, `dnf` या `zypper` उसे आपके बाकी सिस्टम के साथ अप-टू-डेट रखे:
+
+<Code code={INSTALL_COMMAND} lang="sh" />
+
+यह स्क्रिप्ट Debian, Ubuntu और उनके डेरिवेटिव (`apt`), Fedora, RHEL और उनसे मिलते-जुलते सिस्टम (`dnf`) और openSUSE (`zypper`) पर काम करती है। `sudo` माँगने से पहले यह बताती है कि यह क्या करेगी, फिर:
+
+1. Homeport साइनिंग कुंजी जोड़ती है,
+2. Homeport रिपॉज़िटरी जोड़ती है,
+3. `homeport` पैकेज इंस्टॉल करती है, या अगर वह पहले से इंस्टॉल है तो उसे अपडेट करती है।
+
+इसे फिर से चलाने से कोई नुक़सान नहीं होता। आप पहले [स्क्रिप्ट पढ़ सकते हैं](https://github.com/DamienReichhart/Homeport/blob/main/packaging/linux/install.sh), या नीचे दिए गए मैनुअल सेटअप का पालन कर सकते हैं: वह भी यही करता है।
+
+### मैनुअल सेटअप
+
+साइनिंग कुंजी और रिपॉज़िटरी ख़ुद जोड़ें, फिर `homeport` पैकेज इंस्टॉल करें:
+
+<Tabs syncKey="linux-format">
+  {MANUAL_SETUP.map((setup) => (
+    <TabItem label={setup.label}>
+      <p>{setup.distributions}:</p>
+      <Code code={setup.commands} lang="sh" />
+    </TabItem>
+  ))}
+</Tabs>
+
+`dnf` और `zypper` पहली बार रिपॉज़िटरी का इस्तेमाल करते समय आपसे कुंजी पर भरोसा करने के लिए कह सकते हैं। स्वीकार करने से पहले जाँच लें कि उसका फ़िंगरप्रिंट [डाउनलोड सत्यापित करना](/docs/reference/verifying/#package-signatures) पर दिए गए फ़िंगरप्रिंट से मेल खाता है।
+
+### पैकेज फ़ाइलें
+
+आप `.deb` (x64 के लिए `amd64`, ARM के लिए `arm64`) या `.rpm` (`x86_64` या `aarch64`) डाउनलोड करके उसे सीधे इंस्टॉल भी कर सकते हैं:
+
+<Tabs syncKey="linux-format">
+<TabItem label="Debian, Ubuntu">
+
+```sh
+sudo apt install ./Homeport_<version>_amd64.deb
+```
+
+</TabItem>
+<TabItem label="Fedora, RHEL">
+
+```sh
+sudo dnf install ./Homeport-<version>-1.x86_64.rpm
+```
+
+</TabItem>
+<TabItem label="openSUSE">
+
+```sh
+sudo zypper install ./Homeport-<version>-1.x86_64.rpm
+```
+
+</TabItem>
+</Tabs>
+
+जब आप इनमें से कोई पैकेज पहली बार इंस्टॉल करते हैं, तो वह Homeport रिपॉज़िटरी भी जोड़ता है, ताकि आपको क्विक इंस्टॉल की तरह ही अपडेट मिलें। अगर आप ऐसा नहीं चाहते, तो रिपॉज़िटरी फ़ाइल (`/etc/apt/sources.list.d/homeport.sources`, `/etc/yum.repos.d/homeport.repo` या `/etc/zypp/repos.d/homeport.repo`) हटा दें: पैकेज के बाद के अपडेट उसे वापस नहीं जोड़ेंगे।
+
+### AppImage
+
+AppImage ज़्यादातर डिस्ट्रीब्यूशन पर बिना कुछ इंस्टॉल किए चलता है, और Homeport के अंदर से ख़ुद को अपडेट करता है। इसे एक्ज़ीक्यूटेबल बनाएँ और चलाएँ:
+
+```sh
+chmod +x Homeport_<version>_amd64.AppImage
+./Homeport_<version>_amd64.AppImage
+```
+
+हर बार चलने पर, यह Homeport को आपके ऐप्लिकेशन मेनू में जोड़ता है। अगर यह शुरू नहीं होता और FUSE का ज़िक्र करता है, तो `libfuse2` इंस्टॉल करें (Ubuntu 24.04 और बाद के संस्करण पर `libfuse2t64`)।
+
+`.deb` और `.rpm` पैकेज Homeport को आपके ऐप्लिकेशन मेनू में जोड़ते हैं और उसकी लाइसेंस सूचनाएँ `/usr/share/doc/homeport/` या `/usr/share/licenses/homeport/` में इंस्टॉल करते हैं।
+
+<Aside type="caution" title="इस मशीन पर Docker का इस्तेमाल कर रहे हैं?">
+  root के बिना लोकल Docker सॉकेट तक पहुँचने के लिए, आपका यूज़र `docker` ग्रुप में होना चाहिए:
+
+```sh
+sudo usermod -aG docker $USER
+```
+
+इसे लागू करने के लिए लॉग आउट करें और फिर से लॉग इन करें। इसके बिना, लोकल होस्ट _Permission denied_ के साथ
+**पहुँच से बाहर** दिखता है।
+
+</Aside>
+
+## बाद में आने वाले
+
+Homeport इंस्टॉल करने के और तरीक़ों की योजना है। यह जानने के लिए कि कोई तरीक़ा कब आता है, किसी issue को फ़ॉलो करें:
+
+<ul>
+  {COMING_LATER.map((channel) => (
+    <li>
+      <a href={`https://github.com/DamienReichhart/Homeport/issues/${channel.issue}`}>
+        {channel.name}
+      </a>{' '}
+      — {channel.what}
+    </li>
+  ))}
+</ul>
+
+## अपना डाउनलोड जाँचें
+
+हर रिलीज़ हर फ़ाइल के लिए एक SHA-256 चेकसम और एक साइन किया हुआ बिल्ड प्रोवेनेंस अटेस्टेशन सूचीबद्ध करती है, और Linux पैकेज और रिपॉज़िटरी साइन किए हुए होते हैं। [डाउनलोड सत्यापित करना](/docs/reference/verifying/) बताता है कि उन्हें कैसे जाँचें।
+
+## आगे
+
+Homeport खोलें और अपना पहला होस्ट कनेक्ट करने के लिए [क्विक स्टार्ट](/docs/quick-start/) का पालन करें।
