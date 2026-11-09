@@ -12,7 +12,10 @@ use homeport_git::{cli as git, GitCli};
 use homeport_stacks::compose::{self, ComposeCli};
 
 use crate::{
-    app::AppState,
+    app::{
+        startup::{Startup, StartupProblem},
+        AppState,
+    },
     error::{self, AppError, AppResult},
 };
 
@@ -34,6 +37,26 @@ pub fn get_app_info(app: AppHandle) -> AppInfo {
         os: std::env::consts::OS,
         arch: std::env::consts::ARCH,
     }
+}
+
+/// Why Homeport couldn't start, if it couldn't: the window then shows this
+/// instead of the app, and no other command works.
+#[tauri::command]
+#[specta::specta]
+pub fn startup_problem(startup: State<'_, Startup>) -> Option<StartupProblem> {
+    startup.0.clone()
+}
+
+/// Opens the folder holding Homeport's database in the file manager.
+#[tauri::command]
+#[specta::specta]
+pub fn open_data_folder(app: AppHandle) -> AppResult<()> {
+    use tauri_plugin_opener::OpenerExt;
+    let dir = app.path().app_data_dir().map_err(error::window)?;
+    local_files::ensure_folder(&dir)?;
+    app.opener()
+        .open_path(dir.to_string_lossy(), None::<&str>)
+        .map_err(|e| local_files::folder_not_opened(&dir, &e))
 }
 
 /// Whether Homeport starts when the user logs in, read from the OS each

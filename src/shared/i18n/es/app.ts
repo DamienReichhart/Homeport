@@ -9,6 +9,9 @@ export default {
   'app.nav.opensInBrowser': '{label} (se abre en el navegador)',
   'app.keychainMissing':
     'No hay ningún llavero del sistema disponible, así que no se pueden guardar claves SSH, certificados TLS ni entornos de stacks. Los hosts locales, TCP y con ssh-agent siguen funcionando.',
+  'app.startup.title': 'Homeport no puede abrir su base de datos',
+  'app.startup.description': 'No se ha iniciado nada más. La base de datos está en este archivo:',
+  'app.startup.openFolder': 'Abrir carpeta',
   'app.crash.title': 'Algo salió mal',
   'app.crash.description':
     'Homeport tuvo un problema inesperado en esta página. Volver a cargarla suele ayudar; si sigue pasando, copia el informe de Detalles en una incidencia.',

@@ -10,6 +10,7 @@ mod logging;
 mod notifications;
 mod polling;
 mod setup;
+pub mod startup;
 mod state;
 pub mod tray;
 pub mod window;
@@ -47,7 +48,19 @@ pub fn run() {
                 }
                 autostart::follow_appimage(app.handle());
             }
-            let state = setup::state(app)?;
+            let state = match setup::state(app) {
+                Ok(state) => state,
+                Err(setup::Failure::Database(error, database)) => {
+                    // Nothing that needs the database starts; the window
+                    // shows why, and where the file is.
+                    let error = error.logged("failed to open the database");
+                    app.manage(startup::Startup::failed(error, database));
+                    window::show(app.handle());
+                    return Ok(());
+                }
+                Err(setup::Failure::Other(e)) => return Err(e),
+            };
+            app.manage(startup::Startup::default());
             let start_hidden = state.settings.get().is_ok_and(|s| s.start_hidden);
             app.manage(state);
             tray::create(app.handle());

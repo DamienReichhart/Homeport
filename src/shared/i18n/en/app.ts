@@ -6,6 +6,9 @@ export default {
   'app.nav.opensInBrowser': '{label} (opens in your browser)',
   'app.keychainMissing':
     'No OS keychain is available, so SSH keys, TLS certificates and stack environments can’t be stored. Local, TCP and ssh-agent hosts still work.',
+  'app.startup.title': 'Homeport can’t open its database',
+  'app.startup.description': 'Nothing else was started. The database is in this file:',
+  'app.startup.openFolder': 'Open folder',
   'app.crash.title': 'Something went wrong',
   'app.crash.description':
     'Homeport hit an unexpected problem on this page. Reloading usually helps; if it keeps happening, copy the report from Details into an issue.',

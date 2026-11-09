@@ -51,6 +51,8 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
         .disable_serde_phases()
         .commands(collect_commands![
             app::get_app_info,
+            app::startup_problem,
+            app::open_data_folder,
             app::get_capabilities,
             app::app_start_at_login,
             app::app_set_start_at_login,

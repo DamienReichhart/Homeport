@@ -1,7 +1,7 @@
 //! Wiring the crates together once the app starts: opens the database and
 //! the keychain, then builds the [`AppState`] every command is given.
 
-use std::{error::Error, sync::Arc};
+use std::{error::Error, path::PathBuf, sync::Arc};
 
 use tauri::{App, Manager};
 
@@ -25,11 +25,29 @@ use super::{
     AppState,
 };
 
+/// Why the app's state couldn't be built.
+pub enum Failure {
+    /// The database at this path couldn't be opened: shown in the window.
+    Database(Box<crate::error::AppError>, PathBuf),
+    /// Anything else, which ends the app.
+    Other(Box<dyn Error>),
+}
+
+impl<E: Into<Box<dyn Error>>> From<E> for Failure {
+    fn from(e: E) -> Self {
+        Self::Other(e.into())
+    }
+}
+
 /// Builds the app's state and starts connecting to every Host.
-pub fn state(app: &App) -> Result<AppState, Box<dyn Error>> {
+pub fn state(app: &App) -> Result<AppState, Failure> {
     let config_dir = app.path().app_config_dir()?;
     let data_dir = app.path().app_data_dir()?;
-    let db = Arc::new(Db::open(&data_dir.join("homeport.db"))?);
+    let database = data_dir.join("homeport.db");
+    let db = match Db::open(&database) {
+        Ok(db) => Arc::new(db),
+        Err(e) => return Err(Failure::Database(Box::new(e), database)),
+    };
     let settings = SettingsService::new(db.clone(), &config_dir.join("settings.json"))?;
     // Keychain backends may block on D-Bus; keep that off the async runtime.
     let secrets = std::thread::spawn(|| {
