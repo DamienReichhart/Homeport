@@ -89,6 +89,14 @@ A task that isn't running, a node the servers can't reach, and a token without t
 
 Reading nodes needs a `node` rule with `policy = "read"`; draining and changing eligibility need `policy = "write"`. Homeport doesn't manage node pools, purge nodes or run garbage collection.
 
+## Namespaces
+
+A cluster with namespaces shows a **Namespace** picker on its Jobs page: `default` at first, then the one you pick, remembered for each cluster across restarts. **All namespaces** lists the jobs of every namespace the token can read, with a **Namespace** column, as `nomad job status -namespace '*'` does.
+
+**Run job** sends a job to the namespace its specification names; one that names none goes to the namespace picked, or `default` while all are shown. A job's own page, its allocations and their logs and shells always use the job's namespace.
+
+A token that can't list namespaces, or a cluster without any, sees its default namespace with no picker and no error. Homeport doesn't create, edit or delete namespaces.
+
 ## Statuses and problems
 
 The status follows the same rules as for [Kubernetes clusters](/docs/clusters/#statuses): Homeport retries on its own while the agent can't be reached, and waits for you when only you can fix it.
