@@ -1,0 +1,53 @@
+---
+title: Hosts TLS y TCP
+description: Conéctate a un Docker Engine expuesto en la red, con TLS mutuo o TCP sin cifrar.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Los Docker Engines pueden escuchar en un puerto TCP además de en su socket. Homeport se conecta a ellos con TLS mutuo —la configuración que Docker llama `--tlsverify`— o, en una red en la que confías por completo, con TCP sin cifrar.
+
+## TLS
+
+Con TLS mutuo, Homeport comprueba el certificado del servidor con tu CA, y el servidor comprueba el certificado de cliente de Homeport. Es la forma segura de exponer un Engine en una red.
+
+### Qué necesitas
+
+Los tres archivos de tu configuración TLS de Docker, en formato PEM:
+
+| Campo                      | Nombre habitual | Contiene                                                                                                 |
+| -------------------------- | --------------- | -------------------------------------------------------------------------------------------------------- |
+| **Certificado de CA**      | `ca.pem`        | La autoridad de certificación que firmó el certificado del servidor. Puede contener varios certificados. |
+| **Certificado de cliente** | `cert.pem`      | El certificado de Homeport, firmado por una CA en la que confía el servidor.                             |
+| **Clave de cliente**       | `key.pem`       | La clave privada del certificado de cliente, sin cifrar.                                                 |
+
+La guía de Docker [Protect the Docker daemon socket](https://docs.docker.com/engine/security/protect-access/) explica cómo crearlos.
+
+### Añadir un host TLS
+
+1. Elige **Añadir host…** en el selector de hosts y selecciona **TLS**.
+2. Introduce un **Nombre** y la **Dirección** como `host:port`, por ejemplo `docker.example.com:2376`.
+3. Para cada certificado y para la clave, pega el texto PEM o elige **Cargar desde archivo…**.
+4. Elige **Añadir host**.
+
+El certificado del servidor debe nombrar el host que introduces —su nombre DNS o su dirección IP debe figurar en los nombres alternativos del sujeto del certificado—; si no, la conexión falla con _Falló la conexión segura con …_.
+
+Los certificados y la clave se guardan cifrados, lo que necesita un [llavero del sistema](/docs/requirements/#optional-an-os-keychain). Al editar el host, deja un campo vacío para conservar lo guardado.
+
+### Desde un contexto de Docker
+
+Si `docker context ls` ya lista el Engine, **Importar contextos de Docker** en **Añadir host** crea el host con la dirección del contexto y sus `ca.pem`, `cert.pem` y `key.pem`, sin elegir archivos. Los contextos que omiten la verificación TLS no se importan. Consulta [Contextos de Docker](/docs/hosts/#docker-contexts).
+
+## TCP
+
+Un host **TCP** se conecta a `tcp://host:port` sin cifrado y sin autenticación.
+
+<Aside type="danger" title="Sin cifrar y sin autenticar">
+  Cualquiera que pueda llegar al puerto controla el Engine y, a través de él, la máquina. Usa TCP
+  sin cifrar solo en una red en la que confíes por completo, como una VM local. Fuera de ella, usa
+  [SSH](/docs/hosts/ssh/) o TLS.
+</Aside>
+
+1. Elige **Añadir host…** y selecciona **TCP**.
+2. Introduce un **Nombre** y la **Dirección** como `host:port`, por ejemplo `192.168.1.10:2375`. Las direcciones IPv6 van entre corchetes: `[fd00::10]:2375`.
+3. Elige **Añadir host**.

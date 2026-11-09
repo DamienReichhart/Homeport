@@ -1,0 +1,79 @@
+---
+title: Verificar descargas
+description: Comprueba un instalador de Homeport con su suma de comprobación, la procedencia de su compilación y sus firmas, y cómo se verifican las actualizaciones y los paquetes de Linux.
+---
+
+import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import { KEY_URL } from '@/core/packages';
+import { SigningKeyFingerprint } from '@/features/docs';
+
+Cada release de Homeport la compila GitHub Actions a partir del repositorio público. Puedes comprobar que el archivo que descargaste es el que se compiló, de dos formas. Los paquetes de Linux y las actualizaciones también están firmados, y se comprueban por ti.
+
+## Sumas de comprobación
+
+Cada release incluye `SHA256SUMS.txt`, con una suma de comprobación SHA-256 para cada archivo. La [página de descarga](/download/) también muestra la suma de comprobación de cada archivo. Descarga `SHA256SUMS.txt` en la misma carpeta que el instalador y luego:
+
+<Tabs syncKey="os">
+<TabItem label="Linux">
+
+```sh
+sha256sum --ignore-missing -c SHA256SUMS.txt
+```
+
+</TabItem>
+<TabItem label="macOS">
+
+```sh
+shasum -a 256 --ignore-missing -c SHA256SUMS.txt
+```
+
+</TabItem>
+<TabItem label="Windows">
+
+```powershell
+(Get-FileHash .\Homeport_0.2.0_x64-setup.exe -Algorithm SHA256).Hash.ToLower()
+```
+
+Compara el resultado con la línea del instalador en `SHA256SUMS.txt`.
+
+</TabItem>
+</Tabs>
+
+`OK` junto al nombre del archivo significa que coincide.
+
+## Procedencia de la compilación
+
+Una suma de comprobación demuestra que el archivo no se dañó ni se cambió por otro después de publicar la suma. Una [atestación de la procedencia de la compilación](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) va más allá: la firma GitHub y registra el repositorio, el commit y el workflow que produjeron el archivo.
+
+Con la [CLI de GitHub](https://cli.github.com) instalada:
+
+```sh
+gh attestation verify Homeport_0.2.0_x64-setup.exe --repo DamienReichhart/Homeport
+```
+
+Una comprobación correcta muestra el workflow y el commit a partir de los que se compiló el archivo.
+
+## Firmas de los paquetes
+
+El repositorio de paquetes de Homeport y cada `.rpm` están firmados con la clave de paquetes de Homeport (RSA 4096):
+
+**Huella:** <SigningKeyFingerprint />
+
+`apt`, `dnf` y `zypper` comprueban estas firmas en cada actualización, y rechazan los paquetes y los datos del repositorio que no coinciden. Para comprobar la clave que descargaste, o un archivo `.rpm`:
+
+<Code code={`curl -fsSL ${KEY_URL} | gpg --show-keys --with-fingerprint`} lang="sh" />
+
+```sh
+sudo rpm --import homeport.asc   # once
+rpm -K Homeport-<version>-1.x86_64.rpm
+```
+
+`rpm -K` muestra `digests signatures OK` para un paquete firmado. Un archivo `.deb` no está firmado en sí: lo cubre el índice firmado del repositorio, y uno descargado lo cubren su suma de comprobación y su atestación.
+
+## Firmas de las actualizaciones
+
+Cada actualización que instala el actualizador integrado está firmada con una clave de actualización de Homeport distinta, cuya mitad pública va integrada en Homeport. Antes de instalar, Homeport comprueba la firma y que se hizo para la versión anunciada, y rechaza cualquier otra cosa, aunque venga de la dirección correcta.
+
+## Firma de código
+
+La app de macOS tiene una firma ad hoc y los instaladores de Windows todavía no están firmados con un certificado comercial, así que macOS y Windows te piden que confirmes el primer arranque. [Instalación](/docs/installation/) explica cómo. Las actualizaciones instaladas desde Homeport no lo vuelven a pedir.
