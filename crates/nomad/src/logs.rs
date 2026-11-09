@@ -104,8 +104,8 @@ enum Read {
 impl Nomad {
     /// Sends `task`'s stdout and stderr, as `options` asks, to `sink` in
     /// batches, until both end, the sink refuses, or the task is cancelled
-    /// (which closes the requests). History from the end of a log starts at
-    /// a whole line and keeps at most `tail` lines.
+    /// (which closes the requests). Each stream's history keeps its last
+    /// `tail` lines.
     pub async fn stream_logs(
         &self,
         alloc_id: String,
@@ -137,7 +137,6 @@ impl Nomad {
 
         let mut open = streams.len();
         let mut batch: Vec<LogLine> = vec![];
-        let mut first = true;
         let mut tick = tokio::time::interval(BATCH_EVERY);
         while open > 0 {
             tokio::select! {
@@ -157,26 +156,12 @@ impl Nomad {
                     if batch.is_empty() {
                         continue;
                     }
-                    // The history read back holds about `tail` lines of each
-                    // stream: keep that many of each.
-                    if first {
-                        if let Some(tail) = options.tail {
-                            batch = last_of_each(batch, tail as usize);
-                        }
-                        first = false;
-                    }
                     for chunk in std::mem::take(&mut batch).chunks(BATCH_LINES) {
                         if !sink(LogEvent::Lines { lines: chunk.to_vec() }) {
                             return;
                         }
                     }
                 }
-            }
-        }
-        // Logs that ended before the first batch went are history too.
-        if first {
-            if let Some(tail) = options.tail {
-                batch = last_of_each(batch, tail as usize);
             }
         }
         for chunk in batch.chunks(BATCH_LINES) {
@@ -189,7 +174,10 @@ impl Nomad {
         let _ = sink(LogEvent::End);
     }
 
-    /// Reads one of `task`'s streams into `tx`, line by line.
+    /// Reads one of `task`'s streams into `tx`, line by line. With a tail,
+    /// the history is read whole first and only its last lines sent, then
+    /// new lines are followed from the end, so each stream keeps its own
+    /// history whatever order the streams answer in.
     async fn read_log(
         &self,
         alloc_id: &str,
@@ -198,10 +186,60 @@ impl Nomad {
         options: &LogOptions,
         tx: &mpsc::UnboundedSender<Read>,
     ) {
+        let Some(tail) = options.tail else {
+            self.read_lines(
+                alloc_id,
+                task,
+                stream,
+                &query(task, stream, options),
+                tx,
+                None,
+            )
+            .await;
+            return;
+        };
+        let history = LogOptions {
+            follow: false,
+            ..options.clone()
+        };
+        let complete = self
+            .read_lines(
+                alloc_id,
+                task,
+                stream,
+                &query(task, stream, &history),
+                tx,
+                Some(tail as usize),
+            )
+            .await;
+        if complete && options.follow {
+            let mut follow = query(task, stream, options);
+            for (key, value) in &mut follow {
+                if *key == "offset" {
+                    *value = "0".into();
+                }
+            }
+            self.read_lines(alloc_id, task, stream, &follow, tx, None)
+                .await;
+        }
+    }
+
+    /// Reads the log `query` asks for into `tx`: every line, or with `last`
+    /// only that many from the end once the answer is complete. `false`
+    /// when it failed or the receiver is gone.
+    async fn read_lines(
+        &self,
+        alloc_id: &str,
+        task: &str,
+        stream: &'static str,
+        query: &[(&'static str, String)],
+        tx: &mpsc::UnboundedSender<Read>,
+        last: Option<usize>,
+    ) -> bool {
         let request = self.streaming(
             Method::GET,
             &format!("/v1/client/fs/logs/{}", segment(alloc_id)),
-            &query(task, stream, options),
+            query,
         );
         let mut response = match self.send(request).await {
             Ok(response) => response,
@@ -214,22 +252,32 @@ impl Nomad {
                     msg::LOGS_DENIED_HINT,
                 );
                 let _ = tx.send(Read::Failed(error));
-                return;
+                return false;
             }
         };
         let mut frames = FrameDecoder::default();
         let mut lines = LineSplitter::default();
-        // History from the end starts mid-line: drop that part line.
-        let mut partial = options.tail.is_some();
+        let mut kept: std::collections::VecDeque<String> = std::collections::VecDeque::new();
+        let mut send = |line: String| -> bool {
+            match last {
+                // History from the end starts mid-line: keeping the last
+                // lines drops that part line along with the older ones.
+                Some(n) => {
+                    kept.push_back(line);
+                    if kept.len() > n {
+                        kept.pop_front();
+                    }
+                    true
+                }
+                None => tx.send(Read::Line(stream, line)).is_ok(),
+            }
+        };
         loop {
             match response.chunk().await {
                 Ok(Some(chunk)) => {
                     for line in lines.push(&frames.push(&chunk)) {
-                        if std::mem::take(&mut partial) {
-                            continue;
-                        }
-                        if tx.send(Read::Line(stream, line)).is_err() {
-                            return;
+                        if !send(line) {
+                            return false;
                         }
                     }
                 }
@@ -237,30 +285,18 @@ impl Nomad {
                 Err(e) => {
                     let error = crate::error::unreachable(self.name(), self.address(), &e);
                     let _ = tx.send(Read::Failed(error));
-                    return;
+                    return false;
                 }
             }
         }
         if let Some(rest) = lines.finish() {
-            let _ = tx.send(Read::Line(stream, rest));
+            if !send(rest) {
+                return false;
+            }
         }
+        kept.into_iter()
+            .all(|line| tx.send(Read::Line(stream, line)).is_ok())
     }
-}
-
-/// The last `tail` lines of each stream in `lines`, in their order.
-fn last_of_each(lines: Vec<LogLine>, tail: usize) -> Vec<LogLine> {
-    let mut seen: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
-    let mut kept: Vec<LogLine> = lines
-        .into_iter()
-        .rev()
-        .filter(|line| {
-            let count = seen.entry(line.stream.clone()).or_default();
-            *count += 1;
-            *count <= tail
-        })
-        .collect();
-    kept.reverse();
-    kept
 }
 
 /// Aborts its tasks when dropped.
@@ -371,6 +407,37 @@ mod tests {
         assert!(matches!(events.last(), Some(LogEvent::End)));
         let sent = fake.received();
         assert!(sent.iter().any(|r| r.target.contains("type=stderr")));
+    }
+
+    #[tokio::test]
+    async fn history_is_read_whole_before_following_from_the_end() {
+        let fake = agent(vec![(
+            "GET /v1/client/fs/logs/a1",
+            200,
+            vec![],
+            frame("old\nnew\n"),
+        )])
+        .await;
+        fake.client(None)
+            .stream_logs(
+                "a1".into(),
+                "server".into(),
+                LogOptions {
+                    tail: Some(10),
+                    timestamps: false,
+                    since: None,
+                    stdout: true,
+                    stderr: false,
+                    follow: true,
+                },
+                |_| true,
+            )
+            .await;
+        let sent = fake.received();
+        assert_eq!(sent.len(), 2);
+        assert!(sent[0].target.contains("follow=false") && sent[0].target.contains("offset=2560"));
+        assert!(sent[1].target.contains("follow=true") && sent[1].target.contains("offset=0"));
+        assert!(sent[1].target.contains("origin=end"));
     }
 
     #[tokio::test]
