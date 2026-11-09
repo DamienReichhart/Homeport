@@ -173,11 +173,33 @@ describe('releaseNotes', () => {
     );
   });
 
-  it('names every download', () => {
-    expect(notes).toContain('`Homeport_0.3.0_aarch64.dmg`');
-    expect(notes).toContain('`Homeport-0.3.0-1.x86_64.rpm`');
-    expect(notes).toContain('`Homeport_0.3.0_x64_en-US.msi`');
+  it('names every download by system and processor, one row each', () => {
+    const table = notes.split('\n').filter((l) => l.startsWith('| '));
+    expect(table).toEqual([
+      '| Your computer | File |',
+      '| --- | --- |',
+      '| Windows (Intel/AMD, x64) | `Homeport-0.3.0-windows-x64-setup.exe`, or `Homeport-0.3.0-windows-x64.msi` for managed and silent installs |',
+      '| Windows (ARM, arm64) | `Homeport-0.3.0-windows-arm64-setup.exe` |',
+      '| macOS (Apple silicon: M1 and later) | `Homeport-0.3.0-macos-arm64.dmg` |',
+      '| macOS (Intel) | `Homeport-0.3.0-macos-x64.dmg` |',
+      '| Linux (Intel/AMD, x64) | `Homeport-0.3.0-linux-x64.deb` (Debian, Ubuntu), `Homeport-0.3.0-linux-x64.rpm` (Fedora, RHEL, openSUSE) or `Homeport-0.3.0-linux-x64.AppImage` (any distribution) |',
+      '| Linux (ARM, arm64) | `Homeport-0.3.0-linux-arm64.deb` (Debian, Ubuntu), `Homeport-0.3.0-linux-arm64.rpm` (Fedora, RHEL, openSUSE) or `Homeport-0.3.0-linux-arm64.AppImage` (any distribution) |',
+    ]);
     expect(notes).toContain('[Homeport package repository]');
+  });
+
+  it('points at the download page first, and sets the updater files aside', () => {
+    const download = notes.slice(notes.indexOf('## Download'));
+    const which = download.indexOf(
+      '**Which file do I need?** The [download page](https://damienreichhart.github.io/Homeport/download/)',
+    );
+    expect(which).toBeGreaterThan(0);
+    expect(which).toBeLessThan(download.indexOf('| Your computer |'));
+    expect(download).toContain(
+      "Files ending in `.sig` and `-update.app.tar.gz` are used by the in-app updater; you don't need them.",
+    );
+    // No updater file is offered as a download.
+    expect(download.replace(/Files ending in.*/, '')).not.toMatch(/app\.tar\.gz|\.sig/);
   });
 
   it('offers no MSI for a prerelease', () => {
