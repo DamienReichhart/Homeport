@@ -51,7 +51,7 @@ Si tus servidores ya están en `~/.ssh/config`, elige **Importar desde ~/.ssh/co
 | `User`, `Port`     | **Usuario** (tu nombre de usuario local por defecto) y **Puerto** (`22`).                                       |
 | `IdentityFile`     | **Clave existente**: el primer archivo que se pueda leer, con `~` y `%h`, `%r`, `%u`, `%p` expandidos.          |
 | sin `IdentityFile` | **ssh-agent**.                                                                                                  |
-| `ProxyJump a,b`    | Dos [bastiones](#a-través-de-un-bastión), en orden, cada uno buscado en el mismo archivo. Un bucle se notifica.      |
+| `ProxyJump a,b`    | Dos [bastiones](#a-través-de-un-bastión), en orden, cada uno buscado en el mismo archivo. Un bucle se notifica. |
 
 La **Ruta del socket remoto** empieza como `/var/run/docker.sock`; cámbiala en la vista previa para Docker sin root o Podman. Una clave cifrada pide allí su frase de contraseña.
 
@@ -75,8 +75,8 @@ En Windows, pregunta primero al servicio OpenSSH Authentication Agent y luego a 
 
 <Aside>
   ssh-agent es la única opción SSH que funciona sin un [llavero del
-  sistema](/docs/requirements/#opcional-un-llavero-del-sistema). Si Homeport se inició desde un menú del
-  escritorio, asegúrate de que el agente de tu sesión esté a su alcance.
+  sistema](/docs/requirements/#opcional-un-llavero-del-sistema). Si Homeport se inició desde un menú
+  del escritorio, asegúrate de que el agente de tu sesión esté a su alcance.
 </Aside>
 
 ## Primera conexión

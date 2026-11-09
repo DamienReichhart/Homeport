@@ -44,13 +44,13 @@ Homeport 有自己的 SSH 客户端。它登录到服务器，并将一个通道
 
 如果你的服务器已在 `~/.ssh/config` 中，可以在**添加主机**页面选择**从 ~/.ssh/config 导入**，而不必逐个输入。Homeport 会列出该文件中的每台服务器（会跟随 `Include`，并应用 `Host *` 默认值），由你选择要添加哪些。
 
-| 在 `~/.ssh/config` 中 | 在 Homeport 中                                                                             |
-| --------------------- | ------------------------------------------------------------------------------------------ |
-| `Host prod`           | 一台名为 `prod` 的主机。带通配符的条目（`Host *.example.com`）只提供默认值。               |
-| `HostName`            | **服务器**；没有时使用别名本身。                                                           |
-| `User`、`Port`        | **用户**（默认为你的本地用户名）和**端口**（`22`）。                                       |
-| `IdentityFile`        | **现有密钥**：第一个可读取的文件，`~` 以及 `%h`、`%r`、`%u`、`%p` 会被展开。               |
-| 没有 `IdentityFile`   | **ssh-agent**。                                                                            |
+| 在 `~/.ssh/config` 中 | 在 Homeport 中                                                                      |
+| --------------------- | ----------------------------------------------------------------------------------- |
+| `Host prod`           | 一台名为 `prod` 的主机。带通配符的条目（`Host *.example.com`）只提供默认值。        |
+| `HostName`            | **服务器**；没有时使用别名本身。                                                    |
+| `User`、`Port`        | **用户**（默认为你的本地用户名）和**端口**（`22`）。                                |
+| `IdentityFile`        | **现有密钥**：第一个可读取的文件，`~` 以及 `%h`、`%r`、`%u`、`%p` 会被展开。        |
+| 没有 `IdentityFile`   | **ssh-agent**。                                                                     |
 | `ProxyJump a,b`       | 两台[堡垒机](#通过堡垒机)，按顺序排列，每台都在同一文件中查找。如有循环会报告出来。 |
 
 **远程套接字路径**初始为 `/var/run/docker.sock`；对于 rootless Docker 或 Podman，请在预览中修改。加密的密钥会在那里要求输入口令。
@@ -74,8 +74,8 @@ Homeport 向你正在运行的 SSH agent 请求密钥，不保存任何内容。
 在 Windows 上，它会先询问 OpenSSH Authentication Agent 服务，再询问 PuTTY 的 **Pageant**（或可替代它的工具，例如 KeeAgent 或支持 PuTTY 的 gpg-agent）。两者任一持有的密钥都可以使用：如果 OpenSSH agent 没有运行，或没有服务器接受的密钥，Homeport 也会尝试 Pageant 中的密钥。
 
 <Aside>
-  ssh-agent 是唯一无需[系统钥匙串](/docs/requirements/#可选系统钥匙串)即可使用的 SSH
-  选项。如果 Homeport 是从桌面菜单启动的，请确保它能访问你会话中的 agent。
+  ssh-agent 是唯一无需[系统钥匙串](/docs/requirements/#可选系统钥匙串)即可使用的 SSH 选项。如果
+  Homeport 是从桌面菜单启动的，请确保它能访问你会话中的 agent。
 </Aside>
 
 ## 首次连接

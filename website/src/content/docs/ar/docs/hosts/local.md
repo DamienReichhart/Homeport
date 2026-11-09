@@ -9,14 +9,14 @@ description: اتصل بـ Docker Engine أو Docker Desktop أو Colima أو Or
 
 يبحث Homeport عن المحركات العاملة في الأماكن المعتادة ويسرد المحركات التي تجيب ضمن **تم العثور عليها على هذا الجهاز**، في شاشة الترحيب وفي صفحة **إضافة مضيف**. اختر **إضافة** بجانب أحدها لإنشاء مضيف يحمل اسمه.
 
-| بيئة التشغيل             | macOS وLinux                                                                                                    | Windows                           |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| Docker Engine            | `/var/run/docker.sock`                                                                                          | —                                 |
-| Docker Engine (rootless) | `$XDG_RUNTIME_DIR/docker.sock`                                                                                  | —                                 |
-| Docker Desktop           | `~/.docker/desktop/docker.sock`، `~/.docker/run/docker.sock`                                                    | `//./pipe/docker_engine`          |
-| Colima                   | `~/.colima/default/docker.sock`                                                                                 | —                                 |
-| OrbStack                 | `~/.orbstack/run/docker.sock`                                                                                   | —                                 |
-| Rancher Desktop          | `~/.rd/docker.sock`                                                                                             | —                                 |
+| بيئة التشغيل             | macOS وLinux                                                                                                 | Windows                           |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------ | --------------------------------- |
+| Docker Engine            | `/var/run/docker.sock`                                                                                       | —                                 |
+| Docker Engine (rootless) | `$XDG_RUNTIME_DIR/docker.sock`                                                                               | —                                 |
+| Docker Desktop           | `~/.docker/desktop/docker.sock`، `~/.docker/run/docker.sock`                                                 | `//./pipe/docker_engine`          |
+| Colima                   | `~/.colima/default/docker.sock`                                                                              | —                                 |
+| OrbStack                 | `~/.orbstack/run/docker.sock`                                                                                | —                                 |
+| Rancher Desktop          | `~/.rd/docker.sock`                                                                                          | —                                 |
 | Podman                   | `$XDG_RUNTIME_DIR/podman/podman.sock`، `/run/podman/podman.sock`؛ [الآلات على macOS](#آلات-podman-على-macos) | `//./pipe/podman-machine-default` |
 
 يُفحص كل مرشح بسؤال المحرك عن إصداره، لذا لا تُسرد إلا المحركات العاملة. عندما تؤدي عدة مسارات إلى المقبس نفسه — على macOS، يشير `/var/run/docker.sock` عادةً إلى Docker Desktop أو OrbStack أو Rancher Desktop — يُسرد المحرك مرة واحدة، تحت أول اسم يُعثر عليه.

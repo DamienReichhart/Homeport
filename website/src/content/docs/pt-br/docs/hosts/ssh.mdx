@@ -44,14 +44,14 @@ O Homeport tem o seu próprio cliente SSH. Ele faz login no servidor e encaminha
 
 Se os seus servidores já estão em `~/.ssh/config`, escolha **Importar de ~/.ssh/config** em **Adicionar host** em vez de digitar cada um. O Homeport lista todos os servidores que o arquivo indica — seguindo `Include` e aplicando os padrões de `Host *` — e você escolhe os que quer adicionar.
 
-| Em `~/.ssh/config` | No Homeport                                                                                              |
-| ------------------ | -------------------------------------------------------------------------------------------------------- |
-| `Host prod`        | Um host chamado `prod`. Entradas com curingas (`Host *.example.com`) só fornecem padrões.                |
-| `HostName`         | **Servidor**; o próprio alias quando não há nenhum.                                                      |
-| `User`, `Port`     | **Usuário** (o seu nome de usuário local por padrão) e **Porta** (`22`).                                 |
-| `IdentityFile`     | **Chave existente**: o primeiro arquivo que puder ser lido, com `~` e `%h`, `%r`, `%u`, `%p` expandidos. |
-| sem `IdentityFile` | **ssh-agent**.                                                                                           |
-| `ProxyJump a,b`    | Dois [bastions](#por-meio-de-um-bastion), em ordem, cada um procurado no mesmo arquivo. Um laço é informado.  |
+| Em `~/.ssh/config` | No Homeport                                                                                                  |
+| ------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `Host prod`        | Um host chamado `prod`. Entradas com curingas (`Host *.example.com`) só fornecem padrões.                    |
+| `HostName`         | **Servidor**; o próprio alias quando não há nenhum.                                                          |
+| `User`, `Port`     | **Usuário** (o seu nome de usuário local por padrão) e **Porta** (`22`).                                     |
+| `IdentityFile`     | **Chave existente**: o primeiro arquivo que puder ser lido, com `~` e `%h`, `%r`, `%u`, `%p` expandidos.     |
+| sem `IdentityFile` | **ssh-agent**.                                                                                               |
+| `ProxyJump a,b`    | Dois [bastions](#por-meio-de-um-bastion), em ordem, cada um procurado no mesmo arquivo. Um laço é informado. |
 
 O **Caminho do socket remoto** começa como `/var/run/docker.sock`; mude-o na prévia para o Docker rootless ou o Podman. Uma chave criptografada pede a sua senha ali.
 
@@ -75,8 +75,8 @@ No Windows, ele consulta primeiro o serviço OpenSSH Authentication Agent e depo
 
 <Aside>
   O ssh-agent é a única opção SSH que funciona sem um [chaveiro do
-  sistema](/docs/requirements/#opcional-um-chaveiro-do-sistema). Se o Homeport foi iniciado a partir de um
-  menu do desktop, verifique se o agente da sua sessão está disponível para ele.
+  sistema](/docs/requirements/#opcional-um-chaveiro-do-sistema). Se o Homeport foi iniciado a partir
+  de um menu do desktop, verifique se o agente da sua sessão está disponível para ele.
 </Aside>
 
 ## Primeira conexão

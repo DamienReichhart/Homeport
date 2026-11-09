@@ -17,15 +17,15 @@ Die Seite **Container** listet jeden Container auf dem ausgewählten Host auf, o
 
 Container, die zu einem [Stack](/docs/guides/stacks/) gehören, sind unter ihm gruppiert; eigenständige Container folgen danach. Die Zeile eines Stacks zeigt, wie viele seiner Container laufen, und ihre zusammengerechnete CPU- und Speichernutzung. Wählen Sie sie aus, um die Gruppe einzuklappen, oder **Stack öffnen**, um zum Stack zu gehen.
 
-| Spalte              | Zeigt                                                                                                                     |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| **Name**            | Einen Statuspunkt, den Namen (den Service-Namen innerhalb eines Stacks) und die kurze ID.                                 |
+| Spalte              | Zeigt                                                                                                                      |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **Name**            | Einen Statuspunkt, den Namen (den Service-Namen innerhalb eines Stacks) und die kurze ID.                                  |
 | **Image**           | Das Image, aus dem er erstellt wurde, mit einer Markierung ⬆, wenn ein [neueres Image](#neuere-images) veröffentlicht ist. |
-| **Status**          | Wie die Engine ihn meldet, z. B. _Up 3 hours (healthy)_, mit einem Health-Abzeichen, wenn es einen Healthcheck gibt.      |
-| **Ports**           | Bis zu drei Ports, veröffentlichte zuerst. Ein veröffentlichter Port ist ein Link, der ihn in Ihrem Browser öffnet.       |
-| **CPU**             | Live, als Prozentsatz einer CPU: `200%` bedeutet zwei voll ausgelastete CPUs.                                             |
-| **Arbeitsspeicher** | Live, ohne den Seitencache, den der Kernel freigeben kann.                                                                |
-| **Erstellt**        | Wie lange es her ist.                                                                                                     |
+| **Status**          | Wie die Engine ihn meldet, z. B. _Up 3 hours (healthy)_, mit einem Health-Abzeichen, wenn es einen Healthcheck gibt.       |
+| **Ports**           | Bis zu drei Ports, veröffentlichte zuerst. Ein veröffentlichter Port ist ein Link, der ihn in Ihrem Browser öffnet.        |
+| **CPU**             | Live, als Prozentsatz einer CPU: `200%` bedeutet zwei voll ausgelastete CPUs.                                              |
+| **Arbeitsspeicher** | Live, ohne den Seitencache, den der Kernel freigeben kann.                                                                 |
+| **Erstellt**        | Wie lange es her ist.                                                                                                      |
 
 CPU und Arbeitsspeicher werden alle zwei Sekunden aktualisiert. **Container durchsuchen** vergleicht Namen, Images, Stacks, Services und ID-Präfixe; **Nur laufende** blendet den Rest aus.
 
@@ -136,7 +136,7 @@ Die im Container laufenden Prozesse, so wie `ps aux` sie zeigt, alle fünf Sekun
 
 | Feld                                 | Hinweise                                                                                                                                                                                |
 | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Image**                            | Erforderlich. Schlägt die Images des Hosts vor. Wird zuerst gepullt, wenn der Host es nicht hat, mit der gespeicherten [Registry-Anmeldung](/docs/guides/settings/#registrys).         |
+| **Image**                            | Erforderlich. Schlägt die Images des Hosts vor. Wird zuerst gepullt, wenn der Host es nicht hat, mit der gespeicherten [Registry-Anmeldung](/docs/guides/settings/#registrys).          |
 | **Name**                             | Optional; die Engine erzeugt einen, wenn er leer ist.                                                                                                                                   |
 | **Befehl**                           | Ersetzt den Standardbefehl des Images (nicht seinen Entrypoint). Setzen Sie Argumente wie in einer Shell in Anführungszeichen.                                                          |
 | **Ports**                            | **Host-Port** → **Container-Port**, `tcp` oder `udp`. Lassen Sie den Host-Port leer, damit die Engine einen freien wählt. Ports werden auf jeder Schnittstelle veröffentlicht.          |

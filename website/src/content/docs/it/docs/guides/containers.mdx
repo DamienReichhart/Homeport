@@ -20,7 +20,7 @@ I container che appartengono a uno [stack](/docs/guides/stacks/) sono raggruppat
 | Colonna      | Mostra                                                                                                                         |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------ |
 | **Nome**     | Un punto di stato, il nome (il nome del servizio all’interno di uno stack) e l’ID breve.                                       |
-| **Immagine** | L’immagine da cui è stato creato, con un segno ⬆ quando è pubblicata un’[immagine più recente](#immagini-più-recenti).                 |
+| **Immagine** | L’immagine da cui è stato creato, con un segno ⬆ quando è pubblicata un’[immagine più recente](#immagini-più-recenti).         |
 | **Stato**    | Come lo riporta l’Engine, per esempio _Up 3 hours (healthy)_, con un indicatore di integrità se c’è un controllo di integrità. |
 | **Porte**    | Fino a tre porte, prima quelle pubblicate. Una porta pubblicata è un collegamento che la apre nel browser.                     |
 | **CPU**      | In tempo reale, come percentuale di una CPU: `200%` significa due CPU usate al massimo.                                        |
@@ -135,7 +135,7 @@ I processi in esecuzione nel container, come li mostra `ps aux`, aggiornati ogni
 
 | Campo                                   | Note                                                                                                                                                                                      |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Immagine**                            | Obbligatoria. Suggerisce le immagini dell’host. Viene prima scaricata se l’host non ce l’ha, con l’[accesso al registro](/docs/guides/settings/#registri) memorizzato.                  |
+| **Immagine**                            | Obbligatoria. Suggerisce le immagini dell’host. Viene prima scaricata se l’host non ce l’ha, con l’[accesso al registro](/docs/guides/settings/#registri) memorizzato.                    |
 | **Nome**                                | Facoltativo; se vuoto, l’Engine ne genera uno.                                                                                                                                            |
 | **Comando**                             | Sostituisce il comando predefinito dell’immagine (non il suo entrypoint). Metti gli argomenti tra virgolette come in una shell.                                                           |
 | **Porte**                               | **Porta dell’host** → **Porta del container**, `tcp` o `udp`. Lascia vuota la porta dell’host perché l’Engine ne scelga una libera. Le porte vengono pubblicate su ogni interfaccia.      |

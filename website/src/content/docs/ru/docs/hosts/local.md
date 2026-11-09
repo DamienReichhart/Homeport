@@ -9,14 +9,14 @@ description: Подключение к Docker Engine, Docker Desktop, Colima, Or
 
 Homeport ищет работающие движки в обычных местах и показывает те, что ответили, в разделе **Найдено на этом компьютере** на экране приветствия и на странице **Добавить хост**. Выберите **Добавить** рядом с одним из них, чтобы создать хост, названный по нему.
 
-| Среда выполнения         | macOS и Linux                                                                                                 | Windows                           |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| Docker Engine            | `/var/run/docker.sock`                                                                                        | —                                 |
-| Docker Engine (rootless) | `$XDG_RUNTIME_DIR/docker.sock`                                                                                | —                                 |
-| Docker Desktop           | `~/.docker/desktop/docker.sock`, `~/.docker/run/docker.sock`                                                  | `//./pipe/docker_engine`          |
-| Colima                   | `~/.colima/default/docker.sock`                                                                               | —                                 |
-| OrbStack                 | `~/.orbstack/run/docker.sock`                                                                                 | —                                 |
-| Rancher Desktop          | `~/.rd/docker.sock`                                                                                           | —                                 |
+| Среда выполнения         | macOS и Linux                                                                                              | Windows                           |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| Docker Engine            | `/var/run/docker.sock`                                                                                     | —                                 |
+| Docker Engine (rootless) | `$XDG_RUNTIME_DIR/docker.sock`                                                                             | —                                 |
+| Docker Desktop           | `~/.docker/desktop/docker.sock`, `~/.docker/run/docker.sock`                                               | `//./pipe/docker_engine`          |
+| Colima                   | `~/.colima/default/docker.sock`                                                                            | —                                 |
+| OrbStack                 | `~/.orbstack/run/docker.sock`                                                                              | —                                 |
+| Rancher Desktop          | `~/.rd/docker.sock`                                                                                        | —                                 |
 | Podman                   | `$XDG_RUNTIME_DIR/podman/podman.sock`, `/run/podman/podman.sock`; [машины в macOS](#машины-podman-в-macos) | `//./pipe/podman-machine-default` |
 
 Каждый кандидат проверяется запросом версии у движка, поэтому в списке только работающие движки. Если несколько путей ведут к одному сокету — в macOS `/var/run/docker.sock` обычно указывает на Docker Desktop, OrbStack или Rancher Desktop, — движок показывается один раз, под первым найденным именем.

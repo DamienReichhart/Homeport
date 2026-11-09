@@ -9,14 +9,14 @@ description: 이 컴퓨터의 Docker Engine, Docker Desktop, Colima, OrbStack, R
 
 Homeport는 일반적인 위치에서 실행 중인 엔진을 찾고, 응답하는 엔진을 시작 화면과 **호스트 추가** 페이지의 **이 컴퓨터에서 찾음** 아래에 나열합니다. 옆의 **추가**를 선택하면 그 이름을 딴 호스트가 만들어집니다.
 
-| 런타임                  | macOS 및 Linux                                                                                              | Windows                           |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| Docker Engine           | `/var/run/docker.sock`                                                                                      | —                                 |
-| Docker Engine(rootless) | `$XDG_RUNTIME_DIR/docker.sock`                                                                              | —                                 |
-| Docker Desktop          | `~/.docker/desktop/docker.sock`, `~/.docker/run/docker.sock`                                                | `//./pipe/docker_engine`          |
-| Colima                  | `~/.colima/default/docker.sock`                                                                             | —                                 |
-| OrbStack                | `~/.orbstack/run/docker.sock`                                                                               | —                                 |
-| Rancher Desktop         | `~/.rd/docker.sock`                                                                                         | —                                 |
+| 런타임                  | macOS 및 Linux                                                                                         | Windows                           |
+| ----------------------- | ------------------------------------------------------------------------------------------------------ | --------------------------------- |
+| Docker Engine           | `/var/run/docker.sock`                                                                                 | —                                 |
+| Docker Engine(rootless) | `$XDG_RUNTIME_DIR/docker.sock`                                                                         | —                                 |
+| Docker Desktop          | `~/.docker/desktop/docker.sock`, `~/.docker/run/docker.sock`                                           | `//./pipe/docker_engine`          |
+| Colima                  | `~/.colima/default/docker.sock`                                                                        | —                                 |
+| OrbStack                | `~/.orbstack/run/docker.sock`                                                                          | —                                 |
+| Rancher Desktop         | `~/.rd/docker.sock`                                                                                    | —                                 |
 | Podman                  | `$XDG_RUNTIME_DIR/podman/podman.sock`, `/run/podman/podman.sock`. [macOS의 머신](#macos의-podman-머신) | `//./pipe/podman-machine-default` |
 
 각 후보는 엔진에 버전을 물어 확인하므로 실행 중인 엔진만 나열됩니다. 여러 경로가 같은 소켓으로 이어지는 경우(macOS에서는 `/var/run/docker.sock`이 보통 Docker Desktop, OrbStack 또는 Rancher Desktop을 가리킵니다) 엔진은 처음 찾은 이름으로 한 번만 나열됩니다.

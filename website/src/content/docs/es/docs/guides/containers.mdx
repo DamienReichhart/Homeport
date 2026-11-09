@@ -17,15 +17,15 @@ La página **Contenedores** lista todos los contenedores del host seleccionado, 
 
 Los contenedores que pertenecen a un [stack](/docs/guides/stacks/) se agrupan bajo él; después vienen los contenedores independientes. La fila de un stack muestra cuántos de sus contenedores están en ejecución y su CPU y su memoria combinadas. Selecciónala para plegar el grupo, o elige **Abrir stack** para ir al stack.
 
-| Columna     | Muestra                                                                                                                   |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------- |
-| **Nombre**  | Un punto de estado, el nombre (el nombre del servicio dentro de un stack) y el ID corto.                                  |
-| **Imagen**  | La imagen a partir de la que se creó, con una marca ⬆ cuando se publica una [imagen más reciente](#imágenes-más-recientes).         |
-| **Estado**  | Tal como lo indica el Engine, p. ej., _Up 3 hours (healthy)_, con una insignia de salud si hay una comprobación de salud. |
-| **Puertos** | Hasta tres puertos, primero los publicados. Un puerto publicado es un enlace que lo abre en tu navegador.                 |
-| **CPU**     | En directo, como porcentaje de una CPU: `200%` significa dos CPU totalmente usadas.                                       |
-| **Memoria** | En directo, sin contar la caché de páginas que el kernel puede recuperar.                                                 |
-| **Creado**  | Hace cuánto.                                                                                                              |
+| Columna     | Muestra                                                                                                                     |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **Nombre**  | Un punto de estado, el nombre (el nombre del servicio dentro de un stack) y el ID corto.                                    |
+| **Imagen**  | La imagen a partir de la que se creó, con una marca ⬆ cuando se publica una [imagen más reciente](#imágenes-más-recientes). |
+| **Estado**  | Tal como lo indica el Engine, p. ej., _Up 3 hours (healthy)_, con una insignia de salud si hay una comprobación de salud.   |
+| **Puertos** | Hasta tres puertos, primero los publicados. Un puerto publicado es un enlace que lo abre en tu navegador.                   |
+| **CPU**     | En directo, como porcentaje de una CPU: `200%` significa dos CPU totalmente usadas.                                         |
+| **Memoria** | En directo, sin contar la caché de páginas que el kernel puede recuperar.                                                   |
+| **Creado**  | Hace cuánto.                                                                                                                |
 
 La CPU y la memoria se actualizan cada dos segundos. **Buscar contenedores** coincide con nombres, imágenes, stacks, servicios y prefijos de ID; **Solo en ejecución** oculta el resto.
 
@@ -136,7 +136,7 @@ Los procesos que se ejecutan en el contenedor, tal como los muestra `ps aux`, ac
 
 | Campo                                     | Notas                                                                                                                                                                              |
 | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Imagen**                                | Obligatorio. Sugiere las imágenes del host. Se descarga primero si el host no la tiene, con el [inicio de sesión del registro](/docs/guides/settings/#registros) guardado.        |
+| **Imagen**                                | Obligatorio. Sugiere las imágenes del host. Se descarga primero si el host no la tiene, con el [inicio de sesión del registro](/docs/guides/settings/#registros) guardado.         |
 | **Nombre**                                | Opcional; el Engine genera uno si está vacío.                                                                                                                                      |
 | **Comando**                               | Sustituye al comando por defecto de la imagen (no a su entrypoint). Pon los argumentos entre comillas como en un shell.                                                            |
 | **Puertos**                               | **Puerto del host** → **Puerto del contenedor**, `tcp` o `udp`. Deja vacío el puerto del host para que el Engine elija uno libre. Los puertos se publican en todas las interfaces. |

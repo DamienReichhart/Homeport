@@ -9,14 +9,14 @@ description: 连接本机上的 Docker Engine、Docker Desktop、Colima、OrbSta
 
 Homeport 会在常见位置查找正在运行的引擎，并在欢迎屏幕和**添加主机**页面的**在本机上找到**下方列出有响应的引擎。选择其中一个旁边的**添加**，即可创建一台以它命名的主机。
 
-| 运行时                    | macOS 和 Linux                                                                                                    | Windows                           |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| Docker Engine             | `/var/run/docker.sock`                                                                                            | —                                 |
-| Docker Engine（rootless） | `$XDG_RUNTIME_DIR/docker.sock`                                                                                    | —                                 |
-| Docker Desktop            | `~/.docker/desktop/docker.sock`、`~/.docker/run/docker.sock`                                                      | `//./pipe/docker_engine`          |
-| Colima                    | `~/.colima/default/docker.sock`                                                                                   | —                                 |
-| OrbStack                  | `~/.orbstack/run/docker.sock`                                                                                     | —                                 |
-| Rancher Desktop           | `~/.rd/docker.sock`                                                                                               | —                                 |
+| 运行时                    | macOS 和 Linux                                                                                                     | Windows                           |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------- |
+| Docker Engine             | `/var/run/docker.sock`                                                                                             | —                                 |
+| Docker Engine（rootless） | `$XDG_RUNTIME_DIR/docker.sock`                                                                                     | —                                 |
+| Docker Desktop            | `~/.docker/desktop/docker.sock`、`~/.docker/run/docker.sock`                                                       | `//./pipe/docker_engine`          |
+| Colima                    | `~/.colima/default/docker.sock`                                                                                    | —                                 |
+| OrbStack                  | `~/.orbstack/run/docker.sock`                                                                                      | —                                 |
+| Rancher Desktop           | `~/.rd/docker.sock`                                                                                                | —                                 |
 | Podman                    | `$XDG_RUNTIME_DIR/podman/podman.sock`、`/run/podman/podman.sock`；[macOS 上的 machine](#macos-上的-podman-machine) | `//./pipe/podman-machine-default` |
 
 每个候选项都会通过向引擎查询版本来检查，因此只会列出正在运行的引擎。当多个路径指向同一个套接字时（在 macOS 上，`/var/run/docker.sock` 通常指向 Docker Desktop、OrbStack 或 Rancher Desktop），该引擎只会以最先找到的名称列出一次。

@@ -17,15 +17,15 @@ A página **Contêineres** lista todos os contêineres do host selecionado, em e
 
 Os contêineres que pertencem a uma [stack](/docs/guides/stacks/) são agrupados sob ela; os contêineres avulsos vêm depois. A linha de uma stack mostra quantos dos seus contêineres estão em execução e a CPU e a memória somadas deles. Selecione-a para recolher o grupo, ou **Abrir stack** para ir até a stack.
 
-| Coluna      | Mostra                                                                                                                 |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------- |
-| **Nome**    | Um ponto de status, o nome (o nome do serviço, dentro de uma stack) e o ID curto.                                      |
+| Coluna      | Mostra                                                                                                                          |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **Nome**    | Um ponto de status, o nome (o nome do serviço, dentro de uma stack) e o ID curto.                                               |
 | **Imagem**  | A imagem a partir da qual ele foi criado, com uma marca ⬆ quando uma [imagem mais recente](#imagens-mais-recentes) é publicada. |
-| **Status**  | Como o Engine o informa, por exemplo _Up 3 hours (healthy)_, com um selo de integridade se houver uma verificação.     |
-| **Portas**  | Até três portas, as publicadas primeiro. Uma porta publicada é um link que a abre no seu navegador.                    |
-| **CPU**     | Ao vivo, como uma porcentagem de uma CPU: `200%` significa duas CPUs totalmente usadas.                                |
-| **Memória** | Ao vivo, sem contar o cache de páginas que o kernel pode recuperar.                                                    |
-| **Criado**  | Há quanto tempo.                                                                                                       |
+| **Status**  | Como o Engine o informa, por exemplo _Up 3 hours (healthy)_, com um selo de integridade se houver uma verificação.              |
+| **Portas**  | Até três portas, as publicadas primeiro. Uma porta publicada é um link que a abre no seu navegador.                             |
+| **CPU**     | Ao vivo, como uma porcentagem de uma CPU: `200%` significa duas CPUs totalmente usadas.                                         |
+| **Memória** | Ao vivo, sem contar o cache de páginas que o kernel pode recuperar.                                                             |
+| **Criado**  | Há quanto tempo.                                                                                                                |
 
 A CPU e a memória se atualizam a cada dois segundos. **Pesquisar contêineres** compara nomes, imagens, stacks, serviços e prefixos de ID; **Somente em execução** esconde o resto.
 
@@ -135,7 +135,7 @@ Os processos rodando no contêiner, como `ps aux` os mostra, atualizados a cada 
 
 | Campo                                            | Observações                                                                                                                                                                 |
 | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Imagem**                                       | Obrigatório. Sugere as imagens do host. Baixada antes se o host não a tiver, com o [login de registro](/docs/guides/settings/#registros) guardado.                         |
+| **Imagem**                                       | Obrigatório. Sugere as imagens do host. Baixada antes se o host não a tiver, com o [login de registro](/docs/guides/settings/#registros) guardado.                          |
 | **Nome**                                         | Opcional; o Engine gera um se estiver vazio.                                                                                                                                |
 | **Comando**                                      | Substitui o comando padrão da imagem (não o entrypoint dela). Coloque os argumentos entre aspas como em um shell.                                                           |
 | **Portas**                                       | **Porta do host** → **Porta do contêiner**, `tcp` ou `udp`. Deixe a porta do host vazia para o Engine escolher uma livre. As portas são publicadas em todas as interfaces.  |

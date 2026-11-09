@@ -83,18 +83,18 @@ Cada página de recursos —Contenedores, Imágenes, Volúmenes, Redes, Stacks y
 
 Cada host muestra un estado junto a su nombre. Cuando el host seleccionado no está conectado, las páginas de recursos muestran su estado con **Reintentar ahora** y **Abrir ajustes del host**.
 
-| Estado                              | Significado                                                                         | Qué pasa después                                                                    |
-| ----------------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| **Conectado**                       | El Engine respondió. Se muestra su versión, o la de Podman, containerd o Incus.     | Homeport sigue vigilando la conexión.                                               |
-| **Conectando**                      | Homeport está accediendo al Engine.                                                 | —                                                                                   |
-| **Desactivado**                     | El interruptor **Activado** del host está apagado.                                  | Nada, hasta que lo actives.                                                         |
-| **Inaccesible**                     | La red, el socket o el Engine no respondieron.                                      | Lo vuelve a intentar solo, esperando cada vez más.                                  |
-| **Acceso denegado**                 | El servidor SSH rechazó la clave, ssh-agent falló o falló el handshake TLS.         | Corrige la causa y luego **Volver a conectar**.                                     |
+| Estado                              | Significado                                                                         | Qué pasa después                                                                              |
+| ----------------------------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| **Conectado**                       | El Engine respondió. Se muestra su versión, o la de Podman, containerd o Incus.     | Homeport sigue vigilando la conexión.                                                         |
+| **Conectando**                      | Homeport está accediendo al Engine.                                                 | —                                                                                             |
+| **Desactivado**                     | El interruptor **Activado** del host está apagado.                                  | Nada, hasta que lo actives.                                                                   |
+| **Inaccesible**                     | La red, el socket o el Engine no respondieron.                                      | Lo vuelve a intentar solo, esperando cada vez más.                                            |
+| **Acceso denegado**                 | El servidor SSH rechazó la clave, ssh-agent falló o falló el handshake TLS.         | Corrige la causa y luego **Volver a conectar**.                                               |
 | **Clave del servidor no confiable** | Primera conexión SSH: la clave del servidor o de un bastión necesita tu aprobación. | [Confía en la clave](/docs/hosts/ssh/#confía-en-la-clave-del-servidor) en la página del host. |
-| **La clave del servidor cambió**    | El servidor SSH presentó una clave distinta de la que aceptaste.                    | [Investiga primero](/docs/hosts/ssh/#cuando-cambia-la-clave-del-servidor).                 |
-| **Credenciales perdidas**           | Las credenciales guardadas no se pueden descifrar.                                  | [Vuelve a introducirlas](/docs/reference/troubleshooting/#credenciales-perdidas).        |
-| **Llavero no disponible**           | El host necesita secretos guardados, pero no hay llavero del sistema.               | Consulta los [requisitos](/docs/requirements/#opcional-un-llavero-del-sistema).             |
-| **Mal configurado**                 | Falta algo en los ajustes del host o no es válido.                                  | El mensaje dice qué; corrígelo y **Guardar**.                                       |
+| **La clave del servidor cambió**    | El servidor SSH presentó una clave distinta de la que aceptaste.                    | [Investiga primero](/docs/hosts/ssh/#cuando-cambia-la-clave-del-servidor).                    |
+| **Credenciales perdidas**           | Las credenciales guardadas no se pueden descifrar.                                  | [Vuelve a introducirlas](/docs/reference/troubleshooting/#credenciales-perdidas).             |
+| **Llavero no disponible**           | El host necesita secretos guardados, pero no hay llavero del sistema.               | Consulta los [requisitos](/docs/requirements/#opcional-un-llavero-del-sistema).               |
+| **Mal configurado**                 | Falta algo en los ajustes del host o no es válido.                                  | El mensaje dice qué; corrígelo y **Guardar**.                                                 |
 
 ## Reconexión
 

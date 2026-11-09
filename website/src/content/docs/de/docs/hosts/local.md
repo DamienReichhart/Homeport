@@ -9,14 +9,14 @@ Ein Host mit **Lokaler Socket** spricht mit einer Engine auf diesem Rechner übe
 
 Homeport sucht an den üblichen Orten nach laufenden Engines und listet die, die antworten, unter **Auf diesem Rechner gefunden** auf, auf dem Willkommensbildschirm und auf der Seite **Host hinzufügen**. Wählen Sie daneben **Hinzufügen**, um einen nach ihr benannten Host zu erstellen.
 
-| Laufzeitumgebung         | macOS und Linux                                                                                                      | Windows                           |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| Docker Engine            | `/var/run/docker.sock`                                                                                               | —                                 |
-| Docker Engine (rootless) | `$XDG_RUNTIME_DIR/docker.sock`                                                                                       | —                                 |
-| Docker Desktop           | `~/.docker/desktop/docker.sock`, `~/.docker/run/docker.sock`                                                         | `//./pipe/docker_engine`          |
-| Colima                   | `~/.colima/default/docker.sock`                                                                                      | —                                 |
-| OrbStack                 | `~/.orbstack/run/docker.sock`                                                                                        | —                                 |
-| Rancher Desktop          | `~/.rd/docker.sock`                                                                                                  | —                                 |
+| Laufzeitumgebung         | macOS und Linux                                                                                                          | Windows                           |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------ | --------------------------------- |
+| Docker Engine            | `/var/run/docker.sock`                                                                                                   | —                                 |
+| Docker Engine (rootless) | `$XDG_RUNTIME_DIR/docker.sock`                                                                                           | —                                 |
+| Docker Desktop           | `~/.docker/desktop/docker.sock`, `~/.docker/run/docker.sock`                                                             | `//./pipe/docker_engine`          |
+| Colima                   | `~/.colima/default/docker.sock`                                                                                          | —                                 |
+| OrbStack                 | `~/.orbstack/run/docker.sock`                                                                                            | —                                 |
+| Rancher Desktop          | `~/.rd/docker.sock`                                                                                                      | —                                 |
 | Podman                   | `$XDG_RUNTIME_DIR/podman/podman.sock`, `/run/podman/podman.sock`; [Maschinen unter macOS](#podman-maschinen-unter-macos) | `//./pipe/podman-machine-default` |
 
 Jeder Kandidat wird geprüft, indem die Engine nach ihrer Version gefragt wird, sodass nur laufende Engines aufgelistet werden. Führen mehrere Pfade zum selben Socket – unter macOS verweist `/var/run/docker.sock` meist auf Docker Desktop, OrbStack oder Rancher Desktop –, wird die Engine einmal aufgelistet, unter dem zuerst gefundenen Namen.

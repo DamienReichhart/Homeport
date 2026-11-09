@@ -9,14 +9,14 @@ description: このマシン上の Docker Engine、Docker Desktop、Colima、Orb
 
 Homeport は、動作しているエンジンを通常の場所で探し、応答したものをウェルカム画面と **ホストを追加** ページの **このマシンで見つかったもの** に一覧表示します。その横の **追加** を選ぶと、そのエンジンにちなんだ名前のホストが作成されます。
 
-| ランタイム                | macOS と Linux                                                                                                | Windows                           |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| Docker Engine             | `/var/run/docker.sock`                                                                                        | —                                 |
-| Docker Engine（rootless） | `$XDG_RUNTIME_DIR/docker.sock`                                                                                | —                                 |
-| Docker Desktop            | `~/.docker/desktop/docker.sock`、`~/.docker/run/docker.sock`                                                  | `//./pipe/docker_engine`          |
-| Colima                    | `~/.colima/default/docker.sock`                                                                               | —                                 |
-| OrbStack                  | `~/.orbstack/run/docker.sock`                                                                                 | —                                 |
-| Rancher Desktop           | `~/.rd/docker.sock`                                                                                           | —                                 |
+| ランタイム                | macOS と Linux                                                                                              | Windows                           |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| Docker Engine             | `/var/run/docker.sock`                                                                                      | —                                 |
+| Docker Engine（rootless） | `$XDG_RUNTIME_DIR/docker.sock`                                                                              | —                                 |
+| Docker Desktop            | `~/.docker/desktop/docker.sock`、`~/.docker/run/docker.sock`                                                | `//./pipe/docker_engine`          |
+| Colima                    | `~/.colima/default/docker.sock`                                                                             | —                                 |
+| OrbStack                  | `~/.orbstack/run/docker.sock`                                                                               | —                                 |
+| Rancher Desktop           | `~/.rd/docker.sock`                                                                                         | —                                 |
 | Podman                    | `$XDG_RUNTIME_DIR/podman/podman.sock`、`/run/podman/podman.sock`、[macOS のマシン](#macos-の-podman-マシン) | `//./pipe/podman-machine-default` |
 
 候補ごとにエンジンにバージョンを問い合わせて確認するため、一覧に表示されるのは動作中のエンジンだけです。複数のパスが同じソケットにつながっている場合（macOS では通常、`/var/run/docker.sock` が Docker Desktop、OrbStack、Rancher Desktop のいずれかを指しています）、そのエンジンは最初に見つかった名前で 1 回だけ表示されます。

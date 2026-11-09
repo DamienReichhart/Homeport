@@ -51,7 +51,7 @@ Se i tuoi server sono già in `~/.ssh/config`, scegli **Importa da ~/.ssh/config
 | `User`, `Port`        | **Utente** (il tuo nome utente locale per impostazione predefinita) e **Porta** (`22`).                         |
 | `IdentityFile`        | **Chiave esistente**: il primo file leggibile, con `~` e `%h`, `%r`, `%u`, `%p` espansi.                        |
 | nessun `IdentityFile` | **ssh-agent**.                                                                                                  |
-| `ProxyJump a,b`       | Due [bastion](#tramite-un-bastion), in ordine, ciascuno cercato nello stesso file. Un ciclo viene segnalato.     |
+| `ProxyJump a,b`       | Due [bastion](#tramite-un-bastion), in ordine, ciascuno cercato nello stesso file. Un ciclo viene segnalato.    |
 
 Il **Percorso del socket remoto** parte da `/var/run/docker.sock`; cambialo nell’anteprima per Docker rootless o Podman. Una chiave cifrata chiede lì la sua passphrase.
 
@@ -75,8 +75,9 @@ Su Windows chiede prima al servizio OpenSSH Authentication Agent, poi a **Pagean
 
 <Aside>
   ssh-agent è l’unica opzione SSH che funziona senza un [portachiavi del sistema
-  operativo](/docs/requirements/#facoltativo-un-portachiavi-del-sistema-operativo). Se Homeport è stato avviato da un menu
-  del desktop, assicurati che l’agente della tua sessione gli sia disponibile.
+  operativo](/docs/requirements/#facoltativo-un-portachiavi-del-sistema-operativo). Se Homeport è
+  stato avviato da un menu del desktop, assicurati che l’agente della tua sessione gli sia
+  disponibile.
 </Aside>
 
 ## Prima connessione
