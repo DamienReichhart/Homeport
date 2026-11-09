@@ -333,6 +333,10 @@ Incus needs KVM (`/dev/kvm`) and QEMU for virtual machines. Enable virtualizatio
 
 Exec in a virtual machine goes through `incus-agent` inside it, which Incus's own images start on boot. Wait for the boot to finish, or use the **Console** tab, which needs no agent.
 
+### "Something went wrong"
+
+A page of Homeport hit a problem it didn't expect and shows this instead of its content; the sidebar still works. **Reload** usually brings the page back, and **Back to overview** leaves it. If it keeps happening, copy the report from **Details** into [an issue](https://github.com/DamienReichhart/Homeport/issues/new/choose), with the [diagnostics bundle](#exporting-diagnostics-for-a-bug-report).
+
 ### "host … is not connected"
 
 The action needed the Host, but it disconnected. Wait for it to reconnect, or choose **Retry now**.
