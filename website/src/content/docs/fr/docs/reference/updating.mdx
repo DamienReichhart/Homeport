@@ -1,0 +1,100 @@
+---
+title: Mise à jour et désinstallation
+description: Comment Homeport se met à jour sur chaque système, et comment le supprimer complètement avec ses données.
+---
+
+import { Aside, Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import { MANUAL_SETUP, UPDATE_COMMANDS } from '@/core/packages';
+
+## Mise à jour
+
+La façon dont Homeport se met à jour dépend de la façon dont vous l’avez installé.
+
+### Windows, macOS et l’AppImage
+
+Homeport recherche une nouvelle version au démarrage et toutes les 6 heures. Quand une version est sortie, une barre en haut de la fenêtre l’indique : choisissez **Nouveautés** pour lire le [journal des modifications](/changelog/), ou **Installer et redémarrer**. Homeport télécharge la mise à jour, vérifie sa signature, l’installe et se rouvre. Rien n’est installé tant que vous ne l’avez pas choisi, et vos hôtes, vos stacks et vos paramètres sont conservés.
+
+Vous pouvez aussi vérifier tout de suite depuis **Paramètres → Mises à jour → Vérifier maintenant**.
+
+### Paquets Linux
+
+Les paquets `.deb` et `.rpm`, qu’ils aient été installés avec l’[installation rapide](/docs/installation/#installation-rapide), la [configuration manuelle](/docs/installation/#configuration-manuelle) ou un fichier téléchargé, se mettent à jour depuis le dépôt de paquets Homeport avec le reste de votre système : vos mises à jour logicielles habituelles incluent Homeport. Pour mettre à jour seulement Homeport :
+
+<Tabs syncKey="linux-format">
+  {MANUAL_SETUP.map((setup) => (
+    <TabItem label={setup.label}>
+      <Code code={UPDATE_COMMANDS[setup.id]} lang="sh" />
+    </TabItem>
+  ))}
+</Tabs>
+
+Homeport vous indique quand une nouvelle version est sortie et affiche la commande pour votre système, mais laisse son installation à votre gestionnaire de paquets.
+
+Si vous avez supprimé le dépôt Homeport, votre gestionnaire de paquets ne voit pas les nouvelles versions. Configurez-le de nouveau avec l’[installation rapide](/docs/installation/#installation-rapide), ou téléchargez le nouveau paquet et installez-le par-dessus l’ancien.
+
+### Désactiver la recherche de mises à jour
+
+Désactivez **Paramètres → Mises à jour → Rechercher automatiquement les mises à jour**. **Vérifier maintenant** fonctionne toujours. Une recherche télécharge un petit fichier depuis ce site web et n’envoie rien sur vous ou vos hôtes. Voir [sécurité et vos données](/docs/reference/security/#ce-à-quoi-homeport-se-connecte).
+
+### Mettre à jour depuis 0.2.0 ou antérieur
+
+Les versions antérieures à 0.3.0 ne se mettent pas à jour d’elles-mêmes, et leurs paquets Linux n’ajoutent pas le dépôt. Installez une fois 0.3.0 ou ultérieur, de la même façon que vous avez installé Homeport : depuis la [page de téléchargement](/download/), ou sous Linux avec l’[installation rapide](/docs/installation/#installation-rapide). Ensuite, les mises à jour arrivent d’elles-mêmes.
+
+Pour être informé des nouvelles versions malgré tout, suivez le dépôt sur GitHub (**Watch → Custom → Releases**), ou abonnez-vous au [flux des releases](https://github.com/DamienReichhart/Homeport/releases.atom).
+
+## Désinstallation
+
+<Tabs syncKey="os">
+<TabItem label="Windows">
+Ouvrez **Paramètres → Applications → Applications installées**, trouvez **Homeport**, et choisissez **Désinstaller**.
+</TabItem>
+<TabItem label="macOS">Quittez Homeport et faites-le glisser depuis Applications vers la Corbeille.</TabItem>
+<TabItem label="Linux">
+
+```sh
+sudo apt purge homeport       # Debian, Ubuntu
+sudo dnf remove homeport      # Fedora, RHEL
+sudo zypper remove homeport   # openSUSE
+```
+
+Cela supprime aussi le dépôt Homeport. Sous Debian et Ubuntu, `apt remove` le conserve, avec le reste de la configuration du paquet, et `apt purge` le supprime avec sa clé. Sous Fedora et openSUSE, la clé reste dans le trousseau de rpm ; `rpm -q gpg-pubkey --qf '%{NAME}-%{VERSION}-%{RELEASE} %{SUMMARY}\n'` liste les clés, et `sudo rpm -e gpg-pubkey-<version>-<release>` supprime celle de Homeport.
+
+Pour l’AppImage, supprimez le fichier. Son entrée de menu disparaît avec lui.
+
+</TabItem>
+</Tabs>
+
+La désinstallation laisse vos données en place, donc réinstaller restaure tout.
+
+### L’entrée de démarrage
+
+Si **Démarrer à l’ouverture de session** est activé, désactivez-le dans **Paramètres → Bureau** avant de désinstaller : la désinstallation laisse l’entrée de démarrage derrière elle, pointant vers un Homeport qui n’existe plus. Pour la supprimer après coup :
+
+| Système | Entrée de démarrage                                                                                                                                                                         |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Windows | **Gestionnaire des tâches → Applications de démarrage** : désactivez **Homeport**, ou supprimez la valeur `Homeport` sous `HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run` |
+| macOS   | Supprimez `~/Library/LaunchAgents/Homeport.plist`                                                                                                                                           |
+| Linux   | Supprimez `~/.config/autostart/Homeport.desktop`                                                                                                                                            |
+
+## Supprimer vos données
+
+<Aside type="caution">
+  Ceci supprime vos hôtes, leurs clés et certificats enregistrés, les définitions de vos stacks
+  gérées, vos stacks liées et leur historique de déploiement. Les dossiers des stacks liées restent
+  où ils sont. Rien sur vos hôtes n’est touché.
+</Aside>
+
+1. Supprimez les dossiers de données et de journaux de Homeport :
+
+   | Système | Dossiers                                                                              |
+   | ------- | ------------------------------------------------------------------------------------- |
+   | Linux   | `~/.local/share/com.homeport.app/`, `~/.config/com.homeport.app/`                     |
+   | macOS   | `~/Library/Application Support/com.homeport.app/`, `~/Library/Logs/com.homeport.app/` |
+   | Windows | `%APPDATA%\com.homeport.app\`, `%LOCALAPPDATA%\com.homeport.app\`                     |
+
+2. Supprimez la clé de chiffrement de votre trousseau — l’entrée de `com.homeport.app` :
+   - **macOS** — dans **Trousseaux d’accès**, recherchez `com.homeport.app` et supprimez-la.
+   - **Windows** — dans **Gestionnaire d’identification → Informations d’identification Windows**, supprimez l’entrée qui contient `com.homeport.app`.
+   - **Linux** — dans **Mots de passe et clés** (Seahorse) ou KWallet, supprimez l’entrée de `com.homeport.app`.
+
+3. Sur vos serveurs, retirez les clés publiques de Homeport de `~/.ssh/authorized_keys` — leurs commentaires commencent par `homeport@`.
