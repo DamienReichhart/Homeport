@@ -1,0 +1,34 @@
+---
+title: Nodes y Events
+description: Consulta los Nodes de un clúster, su capacidad y los Pods de cada uno, y sus Events, con las advertencias primero.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+## Nodes
+
+**Nodes** lista las máquinas en las que el clúster ejecuta Pods, indicando si cada Node está **Listo** (y **programación desactivada** cuando está acordonado), sus roles, su versión de kubelet, su IP interna, su plataforma y la CPU y la memoria asignables.
+
+<DocScreenshot
+  name="cluster-nodes"
+  alt="La página Nodes: cinco Nodes de EKS, uno no listo con la programación desactivada, con su versión de kubelet, su IP interna, su plataforma, sus CPU y su memoria."
+/>
+
+Las CPU se muestran en núcleos (`3.92` para `3920m`) y la memoria en GB; Kubernetes informa de lo que es **asignable** a los Pods, un poco menos de lo que tiene la máquina, ya que el kubelet y el sistema se reservan una parte.
+
+La página de un Node muestra su imagen del sistema, su kernel, su runtime de contenedores, sus direcciones, sus taints, sus etiquetas y su capacidad junto a lo que es asignable a los Pods; después, los **Pods** que se ejecutan en él, en todos los Namespaces, sus **Condiciones** (presión de memoria, de disco y de PID), sus **Eventos** y su **YAML**. La página de un Pod enlaza con su Node.
+
+## Events
+
+<DocScreenshot
+  name="cluster-events"
+  alt="La página Eventos: primero tres advertencias (un Pod en back-off, una imagen que no se puede descargar, un Node no listo) y después los eventos normales, cada uno con su objeto, su mensaje, su recuento y su antigüedad."
+/>
+
+**Eventos** lista lo que Kubernetes informó en el Namespace seleccionado (o en todos): primero las advertencias y después los más recientes, cada uno con su motivo, el objeto al que se refiere (con un enlace a la página de ese objeto), su mensaje, cuántas veces ocurrió y cuándo ocurrió por última vez. Filtra por **Advertencias** o **Normales**, y busca por motivo, objeto o mensaje. La lista se actualiza en directo.
+
+Kubernetes conserva los Events aproximadamente una hora, así que una lista vacía es normal en un clúster tranquilo. La página de cada objeto también tiene su propia pestaña **Eventos**.
+
+## Cuando tus credenciales no pueden ver algo
+
+Los Nodes no están en un Namespace, así que listarlos requiere un permiso para todo el clúster que muchos usuarios no tienen. La página dice entonces «Tus credenciales no pueden listar nodes.» y todas las demás páginas siguen funcionando.

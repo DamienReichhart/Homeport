@@ -1,0 +1,137 @@
+---
+title: Volúmenes y redes
+description: Ve qué contenedores usan qué volúmenes y redes y cuánto ocupan los volúmenes; explora, haz copias de seguridad, restaura y clona volúmenes; crea y elimina ambos con seguridad.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+## Volúmenes
+
+La página **Volúmenes** lista los volúmenes del host seleccionado y cuántos están sin usar.
+
+<DocScreenshot
+  name="volumes"
+  alt="La página Volúmenes, con el stack, el driver y los contenedores que usan cada volumen."
+/>
+
+| Columna       | Muestra                                                         |
+| ------------- | --------------------------------------------------------------- |
+| **Nombre**    | El nombre del volumen; un ID largo para los volúmenes anónimos. |
+| **Stack**     | El stack que lo creó, si lo hay.                                |
+| **Driver**    | Normalmente `local`.                                            |
+| **Tamaño**    | Cuánto disco ocupan sus datos, según `docker system df -v`.     |
+| **Usado por** | Los contenedores que lo montan, o **Sin usar**.                 |
+| **Creado**    | Cuándo se creó.                                                 |
+
+Un volumen cuenta como usado cuando algún contenedor lo monta, en ejecución o detenido. Selecciona un volumen para ver su tamaño, qué contenedores lo usan y todos sus detalles, incluido dónde están sus datos en el host (`Mountpoint`).
+
+### Tamaños
+
+El Engine mide todos los volúmenes para dar sus tamaños, lo que puede tardar unos segundos en un host con muchos datos, así que la lista aparece al momento y la columna **Tamaño** se completa después. Ordena por **Tamaño** para encontrar el volumen que llena un disco. Los tamaños se vuelven a medir cuando se crea o se elimina un volumen, y cuando eliges **Actualizar tamaños**; no cada vez que un contenedor escribe, así que un tamaño puede ir un poco por detrás.
+
+Solo los volúmenes del driver `local` tienen tamaño; los demás drivers (NFS, plugins de almacenamiento en la nube) muestran **—**.
+
+### Explorar los archivos de un volumen
+
+El botón de carpeta en la fila de un volumen abre sus archivos: abre carpetas, sube de nivel con la ruta que hay encima de la lista y descarga un archivo, o una carpeta como archivo `.tar`. Las rutas empiezan en la raíz del volumen (`/`).
+
+La exploración es de solo lectura. Nada de lo que hagas aquí puede cambiar el volumen, aunque lo esté usando un contenedor.
+
+#### El contenedor auxiliar
+
+La API del Engine no puede leer un volumen, así que Homeport lo abre con un **contenedor auxiliar** de corta duración: un contenedor `busybox:1.37` sin red y con un sistema de archivos de solo lectura, que monta el volumen en solo lectura. Homeport lo elimina en cuanto cierras el explorador o sales. Si Homeport no puede hacerlo (se bloqueó, o el host desapareció), el contenedor auxiliar se detiene y el Engine lo elimina en menos de una hora, y Homeport elimina lo que quede la próxima vez que este equipo se conecte al host. Los contenedores auxiliares nunca aparecen en la lista Contenedores, en el **Usado por** de un volumen ni en la página Eventos.
+
+Si el host no tiene `busybox:1.37` (unos 2 MB), Homeport lo indica y solo lo descarga cuando eliges **Descargar busybox:1.37**, con tus [inicios de sesión de registros](/docs/guides/settings/#registries). Vuelve a eliminar la imagen cuando termina, salvo que otra cosa la use. Un host sin acceso a internet no puede descargarla; llévala tú mismo:
+
+```sh
+docker pull busybox:1.37
+```
+
+o, desde una máquina que la tenga, `docker save busybox:1.37 -o busybox.tar`, copia el archivo y ejecuta `docker load -i busybox.tar` en el host.
+
+<Aside>
+  Los Engines que ejecutan contenedores de Windows no pueden ejecutar el contenedor auxiliar, así
+  que sus volúmenes no se pueden abrir.
+</Aside>
+
+### Hacer y restaurar copias de seguridad
+
+**Hacer copia de seguridad en un archivo…**, en el menú **⋯** de la fila de un volumen, guarda su contenido en un archivo `.tar` en este equipo. El archivo contiene los archivos del volumen con sus propietarios y permisos, en rutas relativas a su raíz, tal como los crearía `tar -C <volume> -cf backup.tar .`, así que también puedes abrirlo o restaurarlo sin Homeport.
+
+**Restaurar desde archivo** restaura una copia de seguridad:
+
+- Desde la parte superior de la página, en **Un volumen nuevo**, con el nombre del archivo salvo que lo cambies, o en **Un volumen existente** que elijas.
+- Desde el menú **⋯** de un volumen, en ese volumen.
+
+Si el volumen existente ya contiene archivos, Homeport pregunta antes de borrarlos y poner en su lugar los de la copia de seguridad. Un archivo que no es un archivo tar se rechaza antes de cambiar nada.
+
+Ambas operaciones muestran su progreso y se pueden cancelar. Una copia de seguridad cancelada no deja ningún archivo; una restauración cancelada puede dejar el volumen escrito en parte, así que vuelve a restaurarlo antes de usarlo.
+
+#### Contenedores que usan el volumen
+
+Una copia de seguridad de un volumen en el que escribe un contenedor en ejecución — una base de datos, por ejemplo — puede ser incoherente. Homeport nombra los contenedores en ejecución que lo usan, y eliges **Hacer la copia de seguridad de todos modos** o detenerlos durante la copia de seguridad. Una restauración siempre los detiene antes. En ambos casos, Homeport los vuelve a iniciar después.
+
+Las copias de seguridad y las restauraciones usan el mismo [contenedor auxiliar](#the-helper-container) que la exploración, que monta el volumen en solo lectura para una copia de seguridad. El archivo viaja por la conexión del host y nunca se guarda entero en memoria, así que los volúmenes grandes y los hosts remotos también funcionan. No se escribe nada en el host salvo el volumen que se restaura.
+
+### Clonar un volumen
+
+**Clonar…**, en el menú **⋯** de la fila de un volumen, lo copia en un volumen nuevo del mismo host, por ejemplo para probar una migración o una nueva versión de una imagen con una copia de datos reales. La copia se llama `<name>-copy` salvo que lo cambies, y queda seleccionada en la lista una vez creada.
+
+Conserva los propietarios y los permisos de los archivos, y el driver, las opciones del driver y las etiquetas del origen, salvo las de Compose, así que la copia no pertenece a ningún stack. El origen se monta en solo lectura en el [contenedor auxiliar](#the-helper-container) y nunca cambia. Como con una copia de seguridad, Homeport nombra los contenedores en ejecución que usan el origen; copia de todos modos, o detenlos durante la copia.
+
+Si la copia falla — por ejemplo, porque el disco está lleno —, Homeport elimina la copia incompleta y lo indica, con el error en **Detalles**. Para copiar un volumen a otro host, [haz una copia de seguridad](#backing-up-and-restoring) y restaura allí el archivo.
+
+### Crear un volumen
+
+**Crear volumen** pide un **Nombre** y, opcionalmente, un **Driver** (`local` si se deja vacío).
+
+### Eliminar volúmenes
+
+<Aside type="danger">Eliminar un volumen borra de forma permanente los datos que contiene.</Aside>
+
+El botón de eliminar de cada fila pide confirmación y nombra los contenedores que aún montan el volumen. El Engine se niega a eliminar un volumen que use cualquier contenedor, aunque esté detenido: elimina antes esos contenedores.
+
+**Limpiar** elimina varios a la vez:
+
+- **Volúmenes anónimos sin usar** — volúmenes sin nombre que no usa ningún contenedor.
+- **Todos los volúmenes sin usar** — todos los volúmenes que no usa ningún contenedor, incluidos los que tienen nombre.
+
+## Redes
+
+La página **Redes** lista las redes del host seleccionado, primero las integradas `bridge`, `host` y `none`.
+
+<DocScreenshot
+  name="networks"
+  alt="La página Redes, con las redes integradas y las de los stacks, sus subredes y el número de contenedores."
+/>
+
+| Columna          | Muestra                                                          |
+| ---------------- | ---------------------------------------------------------------- |
+| **Nombre**       | Con una insignia **integrada** o **interna** cuando corresponde. |
+| **Stack**        | El stack que la creó, si lo hay.                                 |
+| **Driver**       | `bridge`, `overlay`, `macvlan`…                                  |
+| **Subred**       | Su rango de IP.                                                  |
+| **Contenedores** | Cuántos contenedores están conectados, en ejecución o detenidos. |
+
+### Conectar contenedores
+
+Selecciona una red para ver sus contenedores conectados. En las redes que creaste:
+
+- **Desconectar** desconecta un contenedor.
+- **Conectar un contenedor…** lista los contenedores que aún no están conectados; elige uno y selecciona **Conectar**.
+
+Las redes integradas no se pueden cambiar aquí.
+
+### Crear una red
+
+**Crear red** pide un **Nombre**, un **Driver** (`bridge` si se deja vacío) y, opcionalmente, una **Subred** y una **Puerta de enlace**; déjalas vacías para que elija el Engine. Dos interruptores:
+
+- **Interna** — los contenedores de la red no pueden acceder a redes externas.
+- **Conectable** — los contenedores independientes pueden unirse a una red `overlay`.
+
+### Eliminar redes
+
+Las redes integradas no se pueden eliminar. Para las demás redes, la confirmación indica cuántos contenedores siguen conectados; el Engine se niega a eliminar una red con contenedores en ejecución. Los contenedores que mencionan una red eliminada por su nombre no se iniciarán hasta que vuelva a existir.
+
+**Limpiar** elimina todas las redes personalizadas a las que no está conectado ningún contenedor.

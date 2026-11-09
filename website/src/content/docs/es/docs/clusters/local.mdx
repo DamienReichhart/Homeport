@@ -1,0 +1,47 @@
+---
+title: Clústeres locales
+description: Los clústeres de Kubernetes que Homeport encuentra en este equipo, y cómo activar Kubernetes en Docker Desktop, OrbStack y Rancher Desktop.
+---
+
+import { DocScreenshot } from '@/features/docs';
+
+Homeport busca en el kubeconfig de este equipo clústeres que se ejecuten aquí, pregunta su versión al servidor de la API de cada uno y ofrece los que responden en **Añadir un clúster** y en la página de bienvenida, con un clic cada uno. Nunca inicia, crea ni instala un clúster.
+
+<DocScreenshot
+  name="add-cluster"
+  alt="Clústeres en este equipo: kind-dev ya añadido, el clúster de Docker Desktop con un botón Añadir, el de OrbStack sin ejecutarse y un clúster de k3d con el comando que lo añade al kubeconfig."
+  caption="kind-dev ya es un clúster, el de Docker Desktop está a un clic, el de OrbStack está detenido y un clúster de k3d en ejecución aún no está en el kubeconfig."
+/>
+
+## Qué se encuentra
+
+| Herramienta         | Su contexto del kubeconfig                    | Se añade como          |
+| ------------------- | --------------------------------------------- | ---------------------- |
+| **Docker Desktop**  | `docker-desktop`                              | `Docker Desktop`       |
+| **OrbStack**        | `orbstack`                                    | `OrbStack`             |
+| **Rancher Desktop** | `rancher-desktop`                             | `Rancher Desktop`      |
+| **kind**            | `kind-<name>`                                 | el nombre del contexto |
+| **k3d**             | `k3d-<name>`                                  | el nombre del contexto |
+| **minikube**        | `minikube`, o un perfil que escribió minikube | el nombre del contexto |
+
+Un contexto solo cuenta como local cuando su servidor de la API está en este equipo (`127.0.0.1`, `localhost`, `kubernetes.docker.internal`…) o, para minikube y Rancher Desktop, en su máquina virtual con una dirección privada. Nunca se ofrece un contexto remoto, sea cual sea su nombre. Un clúster local que no responde muestra **No se está ejecutando**; inícialo con su propia herramienta y vuelve a abrir la página.
+
+### Clústeres de kind y k3d que faltan en el kubeconfig
+
+Cuando hay un [host local](/docs/hosts/local/) conectado, Homeport también detecta los contenedores de los clústeres de kind y k3d en ejecución (por sus etiquetas `io.x-k8s.kind.cluster` y `k3d.cluster`). Uno que tu kubeconfig no alcanza se muestra con el comando que lo añade, en lugar de añadirse sin que lo sepas:
+
+```bash
+kind export kubeconfig --name <name>
+```
+
+```bash
+k3d kubeconfig merge <name> --kubeconfig-merge-default
+```
+
+## Activar Kubernetes
+
+- **Docker Desktop**: **Settings → Kubernetes → Enable Kubernetes** y luego **Apply & restart**. Añade el contexto `docker-desktop`.
+- **OrbStack**: **Settings → Kubernetes → Enable Kubernetes**, o ejecuta `orb start k8s`. Añade el contexto `orbstack`.
+- **Rancher Desktop**: **Preferences → Kubernetes → Enable Kubernetes**. Añade el contexto `rancher-desktop`.
+
+kind (`kind create cluster`), k3d (`k3d cluster create`) y minikube (`minikube start`) añaden sus contextos cuando crean un clúster. Crean certificados nuevos cada vez que vuelven a crear uno: después, usa **Actualizar desde el kubeconfig** en su página.

@@ -1,0 +1,140 @@
+---
+title: Resumen y eventos
+description: Ve todos los hosts y clústeres a la vez y todos los contenedores en un tablero, consulta el uso del disco, limpia y sigue los eventos en directo del Engine.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+## Resumen
+
+El **Resumen** es la única página que muestra juntos todos los hosts y [clústeres](/docs/clusters/). Se abre al iniciar Homeport. **Añadir host** y **Añadir clúster**, en la parte superior, llevan a las páginas para añadirlos.
+
+<DocScreenshot
+  name="overview"
+  alt="La página Resumen con las tarjetas de los hosts, la tarjeta del Engine, el uso del disco y los eventos recientes."
+/>
+
+### Tarjetas de host
+
+Cada host tiene una tarjeta con su nombre, dirección, tipo y estado. Para un host conectado, también muestra:
+
+- los contenedores en ejecución y el total, y el número de imágenes;
+- el uso de CPU en directo de sus contenedores, como porcentaje de una CPU: `250%` en un host de 8 CPU significa que dos CPU y media están ocupadas;
+- la memoria que usan sus contenedores, sobre el total del host.
+
+Selecciona una tarjeta para cambiar a ese host. Si está conectado, Homeport abre sus **Contenedores**. **Sus contenedores en el Tablero** abre el [Tablero](#board) mostrando solo ese host.
+
+### Tarjetas de clúster
+
+Después de las tarjetas de los hosts, cada clúster tiene una tarjeta con su nombre, servidor de la API, estado y versión de Kubernetes y, una vez conectado, cuántos de sus Nodes están listos y cuántos de sus Pods están en ejecución (en el Namespace que muestran sus páginas). Homeport los cuenta por su cuenta y vuelve a preguntar cada 30 segundos mientras el Resumen está abierto. Un recuento que tus credenciales no pueden leer muestra **no permitido** en su lugar. Selecciona una tarjeta para cambiar a ese clúster.
+
+### El clúster seleccionado
+
+Cuando hay un clúster seleccionado, la sección bajo las tarjetas lo muestra a él en lugar de un host:
+
+<DocScreenshot
+  name="cluster-overview"
+  alt="El Resumen con tres tarjetas de host, dos tarjetas de clúster y el panel del clúster EKS seleccionado: versión, 4 de 5 Nodes listos, Pods por fase, cargas de trabajo no listas y advertencias recientes."
+  caption="El Resumen con eks-prod seleccionado: un Node no está listo, y a api y search les faltan Pods."
+/>
+
+- **Clúster** — su versión, plataforma, servidor de la API y el Namespace que muestran sus páginas.
+- **Nodes** — cuántos están listos, y cada uno que no lo está, con un enlace a su página.
+- **Pods** — cuántos están en ejecución, en espera, con fallos (que se bloquean o no pueden descargar su imagen) o terminados.
+- **Cargas de trabajo no listas** — Deployments, StatefulSets y DaemonSets con menos Pods listos de los que quieren, con un enlace a sus páginas.
+- **Advertencias recientes** — los últimos eventos Warning, cada uno con un enlace a su objeto. **Todos los eventos** abre los Eventos del clúster.
+
+Una parte que tus credenciales no pueden leer lo indica, y las demás se siguen mostrando.
+
+### El host seleccionado
+
+Bajo las tarjetas, una sección para el host seleccionado muestra:
+
+- **Engine** — nombre, versión, sistema operativo, kernel, arquitectura, CPU y memoria, driver de almacenamiento y directorio raíz.
+- **Uso del disco** — cuánto espacio ocupan las imágenes, los contenedores, los volúmenes y la caché de compilación, cuánto está en uso y cuánto se podría recuperar. Los Docker Engines anteriores a la versión 29 informan de menos: los tamaños de las imágenes se estiman, los tamaños de los volúmenes y de la caché de compilación aparecen como **—**, y la tarjeta lo indica.
+- **Eventos recientes** — las últimas cosas que informó el Engine. **Todos los eventos** abre la página Eventos.
+
+### Limpiar
+
+**Limpiar…**, en la tarjeta Uso del disco, elimina lo que nada usa, solo en el host seleccionado. Elige qué eliminar:
+
+| Opción                          | Por defecto | Elimina                                                                         |
+| ------------------------------- | :---------: | ------------------------------------------------------------------------------- |
+| **Contenedores detenidos**      |  Activado   | Todos los contenedores que no están en ejecución.                               |
+| **Imágenes huérfanas**          |  Activado   | Capas sin etiqueta que dejan las compilaciones y las descargas.                 |
+| **Todas las imágenes sin usar** | Desactivado | Las imágenes etiquetadas que no usa ningún contenedor, además de las huérfanas. |
+| **Redes sin usar**              |  Activado   | Redes personalizadas a las que no está conectado ningún contenedor.             |
+| **Caché de compilación**        |  Activado   | Capas de compilación en caché.                                                  |
+| **Volúmenes sin usar**          | Desactivado | Todos los volúmenes que no usa ningún contenedor, **incluidos sus datos**.      |
+
+Los contenedores van primero, así que las imágenes, las redes y los volúmenes que usaban cuentan como sin usar. Después, Homeport te indica cuánto espacio se recuperó.
+
+<Aside type="danger">
+  **Volúmenes sin usar** elimina datos, incluidos los volúmenes con nombre, y no se puede deshacer.
+  Cuando está marcado, el botón dice **Eliminar, incluidos los datos de los volúmenes** como último
+  aviso.
+</Aside>
+
+## Tablero
+
+El **Tablero**, segundo en la barra lateral, lista en una sola tabla los contenedores de todos los hosts conectados: qué se ejecuta dónde, y qué está caído, sin cambiar de host.
+
+<DocScreenshot
+  name="board"
+  alt="El Tablero, con los contenedores de tres hosts, una columna Host, filtros y la CPU y la memoria en directo."
+/>
+
+- **Columnas** — Host, Nombre, Imagen, Estado (con su salud), Stack, Puertos, CPU, Memoria y Creado. Selecciona el nombre de una columna para ordenar por ella, y otra vez para invertir el orden. La CPU y la memoria se actualizan en directo.
+- **Filtros** — los hosts que mostrar (todos por defecto), el estado (**En ejecución**, **Detenidos** o **No saludables**), un stack y una búsqueda que coincide con nombres, ID cortos, imágenes, stacks y nombres de host. <kbd>/</kbd> salta a la búsqueda. **Borrar filtros** vuelve a mostrarlo todo. Los filtros se quedan como estaban cuando abres un contenedor y vuelves.
+- **Acciones** — cada fila tiene el mismo botón de iniciar/detener y el mismo menú que en la página Contenedores, y actúan sobre el host de esa fila. Marca varias filas, de un host o de varios, para iniciarlas, detenerlas, reiniciarlas o eliminarlas juntas; eliminar pide confirmación y lista los contenedores host por host.
+- **Abrir un contenedor** — selecciona una fila: Homeport cambia a su host y abre el contenedor. **Volver** regresa al Tablero.
+
+Para encontrar un contenedor entre los de todos los hosts sin abrir el Tablero, [busca desde la paleta de comandos](/docs/guides/keyboard/#searching-every-host).
+
+Un host que no está conectado — inaccesible, desactivado o esperándote — ocupa una línea encima de la tabla, como _nas (Inaccesible) no se muestra._, con un enlace a su página; los demás hosts se listan como siempre. A partir de unos cientos de contenedores, solo se dibujan las filas visibles, así que el Tablero sigue siendo rápido.
+
+## Bandeja del sistema
+
+Homeport añade un icono a la bandeja del sistema: la barra de menús en macOS, el área de notificación en Windows. Su menú lista todos los hosts con su estado, como **prod-server — Conectado**, y se actualiza en cuanto cambia un estado:
+
+- Elige un host para traer la ventana al frente en el Resumen de ese host.
+- Un host **Inaccesible** tiene un submenú con **Abrir** y **Volver a conectar**, que lo vuelve a intentar al momento.
+- **Abrir Homeport** recupera la ventana, **Añadir host…** abre la página para añadir uno y **Salir** siempre cierra la aplicación.
+
+La información sobre herramientas del icono lo resume: **Homeport — 3 de 4 hosts conectados**. En Windows, haz doble clic en el icono para abrir la ventana.
+
+Con **Cerrar a la bandeja del sistema** activado en [Ajustes](/docs/guides/settings/#desktop), cerrar la ventana oculta Homeport en lugar de cerrarlo, así que sus conexiones a los hosts siguen abiertas; vuelve a abrirlo desde la bandeja, o abriendo Homeport de nuevo. Algunos escritorios Linux ocultan los iconos de la bandeja; consulta [Requisitos](/docs/requirements/#optional-a-system-tray).
+
+### Notificaciones
+
+Mientras Homeport se ejecuta, incluso oculto en la bandeja, te avisa mediante las notificaciones de tu sistema operativo cuando un contenedor se detiene con un error, se queda sin memoria o pasa a no saludable, y cuando un host pasa a ser inaccesible o vuelve a estar disponible. Activa o desactiva cada tipo en [Ajustes](/docs/guides/settings/#notifications).
+
+## Eventos
+
+La página **Eventos** lista lo que informó el Engine del host seleccionado, primero lo más reciente: contenedores que se inician y se detienen, imágenes descargadas, volúmenes creados, redes conectadas, etc. Homeport los conserva, así que siguen ahí después de reiniciarlo: «¿qué se reinició durante la noche?» tiene respuesta.
+
+| Columna    | Muestra                                    |
+| ---------- | ------------------------------------------ |
+| **Hora**   | Cuándo ocurrió, en tu hora local.          |
+| **Tipo**   | `container`, `image`, `volume`, `network`… |
+| **Acción** | `start`, `die`, `pull`, `create`…          |
+| **Objeto** | El nombre de aquello a lo que le ocurrió.  |
+| **Stack**  | El stack al que pertenece, si lo hay.      |
+
+Busca por acción o por nombre de objeto, o filtra por tipo. La lista se actualiza en directo.
+
+<DocScreenshot
+  name="events"
+  alt="La página Eventos, con los eventos recientes del Engine y su tipo, acción, objeto y stack."
+/>
+
+### Qué se conserva
+
+- **Entre reinicios.** Los eventos se guardan en este equipo a medida que llegan. La página muestra los 1000 más recientes; desplázate hasta el final, o elige **Cargar eventos anteriores**, para ver 1000 más cada vez.
+- **Mientras Homeport estaba cerrado.** Cuando Homeport vuelve a conectarse a un host, pide al Engine los eventos posteriores al último que conservó, así que se completa lo que ocurrió entretanto, hasta donde recuerda el Engine, que son sus últimos cientos de eventos. Nada se lista dos veces.
+- **Durante 30 días**, o lo que indique **Conservar los eventos del Engine durante** en [Ajustes → Datos](/docs/guides/settings/#data), y como máximo 10.000 por host. Los eventos más antiguos se eliminan cada hora.
+
+**Borrar historial** olvida todos los eventos conservados para el host seleccionado; los nuevos siguen apareciendo. Quitar un host elimina sus eventos. Los eventos del propio Engine nunca se modifican.
+
+Los [contenedores auxiliares](/docs/guides/volumes-networks/#the-helper-container) propios de Homeport, que abren los volúmenes, nunca aparecen aquí.
