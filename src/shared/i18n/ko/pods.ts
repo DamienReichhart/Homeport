@@ -50,7 +50,7 @@ export default {
   'pods.logs.previous': '이전 실행',
   'pods.logs.noRestart': '다시 시작한 적이 없으므로 이전 실행이 없습니다.',
   'pods.logs.pod': 'Pod',
-  'pods.logs.allPods': '전체 {count, plural, other {Pod #개}}',
+  'pods.logs.allPods': '{count, plural, =1 {Pod} other {전체 Pod #개}}',
   'pods.logs.noPods': '지금 실행 중인 Pod가 없습니다.',
   'pods.tab.terminal': '터미널',
   'pods.terminal.shell': '셸',

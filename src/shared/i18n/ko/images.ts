@@ -23,7 +23,7 @@ export default {
   'images.column.created': '생성일',
   'images.column.size': '크기',
   'images.column.status': '상태',
-  'images.moreTags': '태그 {count}개 더 있음',
+  'images.moreTags': '{count, plural, other {태그 #개 더 있음}}',
   'images.inUse': '사용 중 · {count}',
   'images.unused': '사용 안 함',
   'images.runOne': '{name} 실행',
