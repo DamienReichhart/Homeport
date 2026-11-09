@@ -62,6 +62,23 @@ A job that names a `namespace` goes there; one that names none goes to the names
 
 Planning and running need the `submit-job` capability on the job's namespace.
 
+## Logs and shell
+
+Open an allocation from a job's page for its tasks, their states and restarts, and their recent events (received, started, terminated, a driver failure…), kept current while the page is open. Two tabs work on one of its tasks; pick which when the task group has several.
+
+- **Logs** follows the task's stdout and stderr in real time, as `nomad alloc logs -f` does, starting from the last lines; turn either stream off, search, or **Download** what's shown. Logs stay readable after the task stops, until the allocation is garbage-collected.
+- **Shell** opens an interactive terminal in a running task, as `nomad alloc exec -t` does: `/bin/sh` by default, or the command you type (`/bin/bash`, `/busybox/sh`, or any program). It resizes with the window and reports the command's exit code; **Reconnect** starts a new one. Leaving the tab ends the command on the node.
+
+Both go through Nomad's HTTP API: the servers forward them to the client node running the allocation, so Homeport needs no SSH access to your nodes and installs nothing on them. The token travels in a header, never in the WebSocket's URL.
+
+| To…               | the token needs, on the job's namespace                                   |
+| ----------------- | ------------------------------------------------------------------------- |
+| see an allocation | `read-job`                                                                |
+| read its logs     | `read-logs`                                                               |
+| open a shell      | `alloc-exec`, and `alloc-node-exec` for tasks using the `raw_exec` driver |
+
+A task that isn't running, a node the servers can't reach, and a token without the capability each get their own message.
+
 ## Statuses and problems
 
 The status follows the same rules as for [Kubernetes clusters](/docs/clusters/#statuses): Homeport retries on its own while the agent can't be reached, and waits for you when only you can fix it.
