@@ -6,16 +6,25 @@ const sums = parseSums(
   [
     `${hash('a')}  ${f.windowsX64}`,
     `${hash('b')}  ${f.windowsArm64}`,
-    `${hash('c')} *${f.debAmd64}`,
+    `${hash('c')} *${f.debX64}`,
     `${hash('d')}  ${f.debArm64}`,
-    `${hash('e')}  Homeport_0.7.0_x64.dmg`,
+    `${hash('e')}  Homeport-0.7.0-macos-x64.dmg`,
     'not a sum line',
   ].join('\n'),
 );
 
 describe('Scoop and AUR files', () => {
+  it('downloads the files under their release names', () => {
+    expect(f).toEqual({
+      windowsX64: 'Homeport-0.7.0-windows-x64-setup.exe',
+      windowsArm64: 'Homeport-0.7.0-windows-arm64-setup.exe',
+      debX64: 'Homeport-0.7.0-linux-x64.deb',
+      debArm64: 'Homeport-0.7.0-linux-arm64.deb',
+    });
+  });
+
   it('reads SHA256SUMS.txt', () => {
-    expect(sums.get(f.debAmd64)).toBe(hash('c'));
+    expect(sums.get(f.debX64)).toBe(hash('c'));
     expect(sums.size).toBe(5);
   });
 
@@ -28,8 +37,11 @@ describe('Scoop and AUR files', () => {
     });
     expect(manifest.architecture.arm64.hash).toBe(hash('b'));
     expect(manifest.installer.args.at(-1)).toBe('/D=$dir');
-    expect(manifest.autoupdate.architecture['64bit'].url).toContain(
-      'v$version/Homeport_$version_x64-setup.exe',
+    expect(manifest.autoupdate.architecture['64bit'].url).toBe(
+      'https://github.com/DamienReichhart/Homeport/releases/download/v$version/Homeport-$version-windows-x64-setup.exe',
+    );
+    expect(manifest.autoupdate.architecture.arm64.url).toContain(
+      'v$version/Homeport-$version-windows-arm64-setup.exe',
     );
   });
 
@@ -39,6 +51,14 @@ describe('Scoop and AUR files', () => {
     expect(pkgbuild).toContain(`sha256sums_x86_64=('${hash('c')}')`);
     expect(pkgbuild).toContain(`sha256sums_aarch64=('${hash('d')}')`);
     expect(pkgbuild).toContain('rm -rf "$pkgdir/usr/share/homeport"');
+    expect(pkgbuild).toContain(
+      'source_x86_64=("https://github.com/DamienReichhart/Homeport/releases/download/v${pkgver}/Homeport-${pkgver}-linux-x64.deb")',
+    );
+    expect(pkgbuild).toContain(
+      'noextract=("Homeport-${pkgver}-linux-x64.deb" "Homeport-${pkgver}-linux-arm64.deb")',
+    );
+    expect(pkgbuild).toContain('aarch64) deb="Homeport-${pkgver}-linux-arm64.deb" ;;');
+    expect(srcinfo).toContain('\tnoextract = Homeport-0.7.0-linux-x64.deb');
     expect(srcinfo).toContain('\tpkgver = 0.7.0');
     expect(srcinfo).toContain(`\tsha256sums_x86_64 = ${hash('c')}`);
     expect(srcinfo).toContain(
@@ -49,6 +69,6 @@ describe('Scoop and AUR files', () => {
 
   it('refuses prereleases and missing files', () => {
     expect(() => scoopManifest('0.7.0-beta.1', sums)).toThrow(ChannelError);
-    expect(() => aurPackage('0.8.0', sums)).toThrow(/no Homeport_0.8.0_amd64.deb/);
+    expect(() => aurPackage('0.8.0', sums)).toThrow(/no Homeport-0\.8\.0-linux-x64\.deb/);
   });
 });
