@@ -53,3 +53,5 @@ tokio.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true
+# The sample databases of released versions, for tests/upgrade.rs.
+homeport-storage = { workspace = true, features = ["test-support"] }

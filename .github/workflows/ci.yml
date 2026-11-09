@@ -69,6 +69,10 @@ jobs:
       - run: cargo fmt --all --check
         if: runner.os == 'Linux'
       - run: cargo clippy --workspace --all-targets -- -D warnings
+      # every_release_has_a_fixture compares the release tags with the
+      # database fixtures; a checkout has no tags.
+      - run: git fetch --tags --depth=1 origin
+        if: runner.os == 'Linux'
       - run: cargo test --workspace
 
   # The tests marked #[ignore = "needs a local Docker Engine…"] against the
