@@ -50,7 +50,7 @@ export default {
   'pods.logs.previous': '上一个实例',
   'pods.logs.noRestart': '它没有重启过，因此没有上一个实例。',
   'pods.logs.pod': 'Pod',
-  'pods.logs.allPods': '全部 {count, plural, other {# 个 Pod}}',
+  'pods.logs.allPods': '{count, plural, =1 {该 Pod} other {全部 # 个 Pod}}',
   'pods.logs.noPods': '它当前没有运行 Pod。',
   'pods.tab.terminal': '终端',
   'pods.terminal.shell': 'Shell',

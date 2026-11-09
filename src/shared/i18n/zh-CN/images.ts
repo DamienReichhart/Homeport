@@ -23,7 +23,7 @@ export default {
   'images.column.created': '创建时间',
   'images.column.size': '大小',
   'images.column.status': '状态',
-  'images.moreTags': '另有 {count} 个标签',
+  'images.moreTags': '{count, plural, other {另有 # 个标签}}',
   'images.inUse': '使用中 · {count}',
   'images.unused': '未使用',
   'images.runOne': '运行 {name}',
