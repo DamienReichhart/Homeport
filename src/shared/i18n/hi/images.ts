@@ -23,7 +23,7 @@ export default {
   'images.column.created': 'बनाई गई',
   'images.column.size': 'आकार',
   'images.column.status': 'स्थिति',
-  'images.moreTags': '+{count} और टैग',
+  'images.moreTags': '{count, plural, one {+# और टैग} other {+# और टैग}}',
   'images.inUse': 'इस्तेमाल में · {count}',
   'images.unused': 'अप्रयुक्त',
   'images.runOne': '{name} चलाएँ',

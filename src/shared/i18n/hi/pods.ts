@@ -50,7 +50,7 @@ export default {
   'pods.logs.previous': 'पिछला इंस्टेंस',
   'pods.logs.noRestart': 'यह रीस्टार्ट नहीं हुआ है, इसलिए कोई पिछला इंस्टेंस नहीं है।',
   'pods.logs.pod': 'Pod',
-  'pods.logs.allPods': 'सभी {count, plural, one {# Pod} other {# Pod}}',
+  'pods.logs.allPods': '{count, plural, one {Pod} other {सभी # Pods}}',
   'pods.logs.noPods': 'इस समय यह कोई Pod नहीं चला रहा।',
   'pods.tab.terminal': 'टर्मिनल',
   'pods.terminal.shell': 'शेल',
