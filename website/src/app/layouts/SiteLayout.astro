@@ -2,7 +2,8 @@
 /*
  * Layout for the marketing pages (home, download, changelog). The docs use
  * Starlight's own layout; both share the palette in app/styles/theme.css and the
- * theme the visitor picked (localStorage `starlight-theme`).
+ * theme the visitor picked (localStorage `starlight-theme`). The page's language
+ * sets `lang` and `dir` and the text of the header and footer.
  */
 import '@fontsource-variable/host-grotesk';
 import '@fontsource/fragment-mono/400.css';
@@ -11,29 +12,54 @@ import '@/app/styles/theme.css';
 import '@/app/styles/site/index.css';
 import SiteFooter from '@/app/chrome/SiteFooter.astro';
 import SiteHeader from '@/app/chrome/SiteHeader.astro';
-import { DESCRIPTION, REPO_URL, TAGLINE } from '@/core/site';
+import { strings } from '@/core/i18n';
+import { LOCALES, type Locale, localePath, REPO_URL, ROOT_LOCALE, unlocalized } from '@/core/site';
+import { href, unbased } from '@/shared/lib/href';
 
 interface Props {
   title: string;
   description?: string;
   /** Structured data (JSON-LD) for search engines. */
   jsonLd?: Record<string, unknown>;
+  /**
+   * The page's language, for a page that exists in every language: the page is
+   * then linked to its versions with `hreflang`. Without it, the page is in
+   * English only (the legal documents).
+   */
+  locale?: Locale;
 }
 
-const { title, description = DESCRIPTION, jsonLd } = Astro.props;
+const { title, jsonLd, locale } = Astro.props;
+const language = locale ?? ROOT_LOCALE;
+const s = strings(language);
+const description = Astro.props.description ?? s['site.description'];
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL(`${base}/og.png`, Astro.site);
+/** The page's path in English, without the base path. */
+const path = unlocalized(unbased(Astro.url.pathname));
+const alternates = locale
+  ? [
+      ...LOCALES.map((l) => ({
+        lang: l.lang,
+        url: new URL(href(localePath(path, l)), Astro.site),
+      })),
+      { lang: 'x-default', url: new URL(href(path), Astro.site) },
+    ]
+  : [];
 ---
 
 <!doctype html>
-<html lang="en-GB" data-theme="dark">
+<html lang={language.lang} dir={language.dir} data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    {alternates.map((alternate) => (
+      <link rel="alternate" hreflang={alternate.lang} href={alternate.url} />
+    ))}
     <link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
     <link rel="apple-touch-icon" href={`${base}/apple-touch-icon.png`} />
     <link rel="manifest" href={`${base}/site.webmanifest`} />
@@ -50,7 +76,7 @@ const ogImage = new URL(`${base}/og.png`, Astro.site);
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content={`Homeport — ${TAGLINE}`} />
+    <meta property="og:image:alt" content={s['site.ogImageAlt']} />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="me" href={REPO_URL} />
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
@@ -71,12 +97,12 @@ const ogImage = new URL(`${base}/og.png`, Astro.site);
   </head>
   <body>
     <a class="skip-link" href="#main">
-      Skip to content
+      {s['site.skipToContent']}
     </a>
-    <SiteHeader />
+    <SiteHeader locale={language} currentPath={locale ? unbased(Astro.url.pathname) : '/'} />
     <main id="main">
       <slot />
     </main>
-    <SiteFooter />
+    <SiteFooter locale={language} />
   </body>
 </html>

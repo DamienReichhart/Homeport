@@ -1,19 +1,4 @@
 // @ts-check
-/**
- * A Sätteri hast plugin that prefixes root-relative links in Markdown and MDX
- * with the site's base path, so docs can link to `/docs/installation/` and work
- * whether the site is served from `/Homeport/` (a GitHub Pages project site) or
- * from the root of a custom domain. Covers plain links and <LinkCard href>.
- *
- * In a translated page (`locale`, such as `fr`), links to the docs and to the
- * pages that exist in every language (home, download, changelog) also get the
- * language's prefix, so a French page links to French pages: translators keep
- * writing `/docs/hosts/`. Legal pages stay English.
- *
- * @param {string} base  Astro's `base`, e.g. `/Homeport`.
- * @param {string} [locale]  The page's language prefix; empty for English.
- * @returns {import('satteri').HastPluginDefinition}
- */
 /** Paths that exist in every language: the docs, home, download and changelog. */
 const LOCALIZED = /^\/(docs\/|download\/|changelog\/|$|#)/;
 
@@ -33,6 +18,21 @@ export function localizedBaseLinks(base, codes) {
   };
 }
 
+/**
+ * A Sätteri hast plugin that prefixes root-relative links in Markdown and MDX
+ * with the site's base path, so docs can link to `/docs/installation/` and work
+ * whether the site is served from `/Homeport/` (a GitHub Pages project site) or
+ * from the root of a custom domain. Covers plain links and <LinkCard href>.
+ *
+ * In a translated page (`locale`, such as `fr`), links to the docs and to the
+ * pages that exist in every language (home, download, changelog) also get the
+ * language's prefix, so a French page links to French pages: translators keep
+ * writing `/docs/hosts/`. Legal pages stay English.
+ *
+ * @param {string} base  Astro's `base`, e.g. `/Homeport`.
+ * @param {string} [locale]  The page's language prefix; empty for English.
+ * @returns {import('satteri').HastPluginDefinition}
+ */
 export default function baseLinks(base, locale = '') {
   const prefix = base.replace(/\/$/, '');
 

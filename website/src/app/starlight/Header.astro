@@ -1,18 +1,24 @@
 ---
 /*
  * Starlight's header, plus links back to the rest of the site so the docs don't
- * feel like a separate place.
+ * feel like a separate place, in the page's language, and the site's language
+ * menu (plain links to the same page in every language).
  */
 import Search from '@astrojs/starlight/components/Search.astro';
 import SiteTitle from '@astrojs/starlight/components/SiteTitle.astro';
 import SocialIcons from '@astrojs/starlight/components/SocialIcons.astro';
 import ThemeSelect from '@astrojs/starlight/components/ThemeSelect.astro';
-import { href } from '@/shared/lib/href';
+import LanguageSwitcher from '@/app/chrome/LanguageSwitcher.astro';
+import { pageLocale, strings } from '@/core/i18n';
+import { localePath } from '@/core/site';
+import { href, unbased } from '@/shared/lib/href';
 
+const locale = pageLocale(Astro.url);
+const s = strings(locale);
 const links = [
-  { label: 'Docs', path: '/docs/' },
-  { label: 'Download', path: '/download/' },
-  { label: 'Changelog', path: '/changelog/' },
+  { label: s['header.docs'], path: localePath('/docs/', locale) },
+  { label: s['header.download'], path: localePath('/download/', locale) },
+  { label: s['header.changelog'], path: localePath('/changelog/', locale) },
 ];
 const current = Astro.url.pathname;
 ---
@@ -25,7 +31,7 @@ const current = Astro.url.pathname;
     <Search />
   </div>
   <div class="sl-hidden md:sl-flex print:hidden right-group">
-    <nav class="site-nav" aria-label="Site">
+    <nav class="site-nav" aria-label={s['header.nav']}>
       {links.map((link) => (
         <a
           href={href(link.path)}
@@ -38,6 +44,7 @@ const current = Astro.url.pathname;
     <div class="sl-flex social-icons">
       <SocialIcons />
     </div>
+    <LanguageSwitcher currentPath={unbased(Astro.url.pathname)} />
     <ThemeSelect />
   </div>
 </div>
