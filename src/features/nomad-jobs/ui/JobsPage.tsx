@@ -1,11 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
-import { BriefcaseIcon } from 'lucide-react';
+import { BriefcaseIcon, PlayIcon } from 'lucide-react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { age, ClusterGate } from '@/core/cluster';
 import { usePageQuery } from '@/core/feature';
 import { jobTone, NomadStatus, nomadKeys, useNomadWatch } from '@/core/nomad';
 import type { ClusterView, NomadJobView } from '@/shared/api';
 import {
+  Button,
   DataTable,
   EmptyState,
   ErrorMessage,
@@ -16,6 +18,7 @@ import {
 } from '@/shared/ui';
 import { nomadJobQueries } from '../api/queries';
 import { jobCounts, jobPath } from '../model/jobs';
+import { RunJobDialog } from './RunJobDialog';
 import { t } from '@/shared/i18n';
 
 const columns: ColumnDef<NomadJobView, unknown>[] = [
@@ -72,6 +75,7 @@ function JobsList({ cluster }: { cluster: ClusterView }) {
   const namespace = null;
   const navigate = useNavigate();
   const [query, setQuery] = usePageQuery();
+  const [running, setRunning] = useState(false);
   const jobs = useQuery(nomadJobQueries.list(id, namespace));
   useNomadWatch(id, { topic: 'jobs', namespace }, nomadKeys.jobs(id, namespace));
   const shown = (jobs.data ?? []).filter((j) =>
@@ -82,7 +86,21 @@ function JobsList({ cluster }: { cluster: ClusterView }) {
       <PageHeader
         title={t('nomad.jobs.title')}
         description={jobs.data && t('nomad.jobs.summary', { count: jobs.data.length })}
+        actions={
+          <Button onClick={() => setRunning(true)}>
+            <PlayIcon /> {t('nomad.jobs.run')}
+          </Button>
+        }
       />
+      {running && (
+        <RunJobDialog
+          clusterId={id}
+          clusterName={cluster.cluster.name}
+          namespace={namespace}
+          onClose={() => setRunning(false)}
+          onRan={(result) => void navigate(jobPath(result.namespace, result.jobId))}
+        />
+      )}
       <div className="mb-3 flex flex-wrap items-center gap-3">
         <SearchInput value={query} onChange={setQuery} placeholder={t('nomad.jobs.search')} />
       </div>

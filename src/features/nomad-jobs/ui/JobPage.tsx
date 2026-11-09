@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeftIcon, SquareIcon } from 'lucide-react';
+import { ArrowLeftIcon, PencilIcon, SquareIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { age, ClusterGate } from '@/core/cluster';
 import { AllocationsTable, jobTone, NomadStatus, nomadKeys, useNomadWatch } from '@/core/nomad';
-import type { ClusterView, NomadJobDetail, NomadTaskGroupView } from '@/shared/api';
+import type { ClusterView, NomadJobDetail, NomadJobSource, NomadTaskGroupView } from '@/shared/api';
 import {
   Button,
   Card,
@@ -16,11 +16,13 @@ import {
   KeyValue,
   PageHeader,
   Spinner,
+  toastError,
   type ColumnDef,
 } from '@/shared/ui';
 import type { JobRef } from '../api/mutations';
-import { nomadJobQueries } from '../api/queries';
+import { jobSource, nomadJobQueries } from '../api/queries';
 import { shortOf } from '../model/jobs';
+import { RunJobDialog } from './RunJobDialog';
 import { ScaleGroupDialog } from './ScaleGroupDialog';
 import { StopJobDialog } from './StopJobDialog';
 import { t } from '@/shared/i18n';
@@ -111,6 +113,15 @@ function JobDetail({
 }) {
   const [stopping, setStopping] = useState(false);
   const [scaling, setScaling] = useState<NomadTaskGroupView | null>(null);
+  const [source, setSource] = useState<NomadJobSource | null>(null);
+  const [loadingSource, setLoadingSource] = useState(false);
+  const editAndRun = () => {
+    setLoadingSource(true);
+    jobSource(job)
+      .then(setSource)
+      .catch((e: unknown) => toastError(e, t('nomad.job.sourceFailed')))
+      .finally(() => setLoadingSource(false));
+  };
   const view = detail.job;
   // System jobs run one allocation per eligible node: they have no count to scale.
   const scalable = !view.stopped && (view.jobType === 'service' || view.jobType === 'batch');
@@ -138,6 +149,9 @@ function JobDetail({
               <Link to="/nomad/jobs">
                 <ArrowLeftIcon /> {t('nomad.job.back')}
               </Link>
+            </Button>
+            <Button variant="outline" disabled={loadingSource} onClick={editAndRun}>
+              <PencilIcon /> {t('nomad.job.editAndRun')}
             </Button>
             {!view.stopped && (
               <Button variant="outline" onClick={() => setStopping(true)}>
@@ -193,6 +207,17 @@ function JobDetail({
         />
       )}
       {scaling && <ScaleGroupDialog job={job} group={scaling} onClose={() => setScaling(null)} />}
+      {source && (
+        <RunJobDialog
+          clusterId={job.clusterId}
+          clusterName={cluster.cluster.name}
+          namespace={job.namespace}
+          initial={source.source}
+          title={t('nomad.run.editTitle', { job: job.jobId })}
+          onClose={() => setSource(null)}
+          onRan={() => {}}
+        />
+      )}
     </div>
   );
 }

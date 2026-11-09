@@ -15,3 +15,7 @@ export const nomadJobQueries = {
       queryFn: () => commands.clustersNomadJob(clusterId, namespace, jobId),
     }),
 };
+
+/** A job's specification to edit: as submitted when Nomad kept it, else its JSON. */
+export const jobSource = (job: { clusterId: string; namespace: string; jobId: string }) =>
+  commands.clustersNomadJobSource(job.clusterId, job.namespace, job.jobId);

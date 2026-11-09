@@ -148,5 +148,6 @@ export { SEARCH_DECORATIONS, XTerm, terminalError, type XTermHandle } from './te
 // editor
 export { editorTheme } from './editor/editorTheme';
 export { YamlDiff } from './editor/YamlDiff';
+export { JobSpecEditor } from './editor/JobSpecEditor';
 export { UnitFileEditor } from './editor/UnitFileEditor';
 export { YamlEditor } from './editor/YamlEditor';
