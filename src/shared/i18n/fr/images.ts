@@ -24,7 +24,7 @@ export default {
   'images.column.created': 'Créée',
   'images.column.size': 'Taille',
   'images.column.status': 'État',
-  'images.moreTags': '+{count} autres tags',
+  'images.moreTags': '{count, plural, one {+# autre tag} other {+# autres tags}}',
   'images.inUse': 'Utilisée · {count}',
   'images.unused': 'Inutilisée',
   'images.runOne': 'Exécuter {name}',
