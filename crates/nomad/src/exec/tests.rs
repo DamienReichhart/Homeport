@@ -63,6 +63,12 @@ fn frames_are_encoded_and_read_as_nomad_speaks_them() {
         Received::Exited(Some(3))
     );
     assert_eq!(
+        read_frame(r#"{"exited":true,"result":{}}"#),
+        Received::Exited(Some(0)),
+        "a missing exit code is 0, as Nomad's client reads it"
+    );
+    assert_eq!(read_frame(r#"{"exited":true}"#), Received::Exited(None));
+    assert_eq!(
         read_frame(r#"{"stdout":{"close":true}}"#),
         Received::Nothing
     );

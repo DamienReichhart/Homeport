@@ -124,10 +124,12 @@ struct Stream {
     data: Option<String>,
 }
 
+/// The command's result. Nomad's own client reads a missing `exit_code`
+/// as 0, as Go decodes an absent number.
 #[derive(Deserialize, Default)]
 #[serde(default)]
 struct ExitResult {
-    exit_code: Option<i64>,
+    exit_code: i64,
 }
 
 #[derive(Deserialize, Default)]
@@ -145,7 +147,7 @@ pub(crate) fn read_frame(text: &str) -> Received {
         return Received::Nothing;
     };
     if frame.exited {
-        return Received::Exited(frame.result.and_then(|r| r.exit_code));
+        return Received::Exited(frame.result.map(|r| r.exit_code));
     }
     let data = frame
         .stdout
