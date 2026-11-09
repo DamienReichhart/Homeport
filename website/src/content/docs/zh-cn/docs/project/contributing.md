@@ -61,7 +61,7 @@ Homeport 在 [github.com/DamienReichhart/Homeport](https://github.com/DamienReic
 - **应用文本**：将键添加到 `src/shared/i18n/en/<namespace>.ts`（参见[向应用添加文本](#向应用添加文本)），然后添加到其他每个语言文件夹（`fr/`、`de/`、`zh-CN/`…）中的同名文件。能翻译就翻译。如果不能，请把英文文本复制过去，并在 pull request 中说明，以便译者跟进；绝不要遗漏该键。
 - **错误消息或提示**：在 crate 的 `messages!` 块中声明它并运行 `bun run bindings`，它会写入 `en/errors.json`；然后将该键添加到每种语言的 `errors.json`。操作系统显示的文本（托盘菜单和通知）也以同样方式处理，使用 `native.` 键和 `native.json`。
 - **网站文本**（首页、下载、更新日志、页眉和页脚）：将键添加到 `website/src/core/i18n/strings/en/` 中相应的文件（`site`、`home`、`download` 或 `changelog`），以及其他每种语言文件夹中的同名文件；缺少时 `astro check` 会失败。文档侧边栏标签放在 `website/src/app/config/sidebar/<code>.ts` 中。
-- **文档页面**：英文页面位于 `website/src/content/docs/docs/`。修改英文页面时，请在同一个 pull request 中更新 `website/src/content/docs/fr/docs/` 下相同路径的法文页面。其他语言在有人翻译之前会显示英文页面，并附带一条说明。
+- **文档页面**：英文页面位于 `website/src/content/docs/docs/`。修改英文页面时，请在同一个 pull request 中更新每种语言的同一页面，即 `website/src/content/docs/<code>/docs/` 下相同路径的页面；你无法更新的语言会继续显示其较早的译文，直到有译者更新为止。译文页面的标题要与英文保持相同的顺序和层级，链接（包括锚点）要与英文的写法完全一致：在 `bun run build` 之后，`bun scripts/localize-anchors.ts <code>` 会把每个锚点指向翻译后的标题，第二次构建的链接检查会确认这一点。
 
 使用 `bun run i18n:check --locale fr` 检查一种语言。
 
@@ -70,7 +70,7 @@ Homeport 在 [github.com/DamienReichhart/Homeport](https://github.com/DamienReic
 需要添加一些文件，网站还需要一行代码：
 
 1. **应用**：将 `src/shared/i18n/en/` 复制到 `src/shared/i18n/<tag>/`（BCP 47 标签，例如 `pl` 或 `zh-TW`），编写其 `meta.ts`（`{ name: 'Polski', dir: 'ltr' }`，即该语言对自身的称呼；从右到左书写的文字使用 `rtl`），并翻译每个文件，保留每个键，并像其他语言一样将每个 `export default { … }` 改为 `export default { … } satisfies Translation<typeof en>`。`bun run i18n:check --locale <tag>` 会列出缺少的内容。“设置”中会列出新语言，操作系统的语言会自动选中它，无需其他更改。
-2. **网站**：将该语言添加到 `website/src/core/site/locales.ts`，然后在 `website/src/core/i18n/strings/en/` 的副本中（命名为 `<code>/`，并在 `core/i18n/index.ts` 的 `TABLES` 中注册）添加其字符串，在 `website/src/app/config/sidebar/<code>.ts` 中添加其侧边栏标签（在 `sidebar.ts` 中注册；这两行是添加一种语言唯一需要的代码，因为这些文件在 Vite 之外加载，而文件夹是由 Vite 发现的），并在 `website/src/content/i18n/<tag>.json` 中添加 Starlight 对未翻译页面的说明。其页面、URL、语言切换器条目、`hreflang` 链接和站点地图备用链接都会根据该列表自动生成。翻译后的文档放在 `website/src/content/docs/<code>/docs/` 下。
+2. **网站**：将该语言添加到 `website/src/core/site/locales.ts`，然后在 `website/src/core/i18n/strings/en/` 的副本中（命名为 `<code>/`，并在 `core/i18n/index.ts` 的 `TABLES` 中注册）添加其字符串，在 `website/src/app/config/sidebar/<code>.ts` 中添加其侧边栏标签（在 `sidebar.ts` 中注册；这两行是添加一种语言唯一需要的代码，因为这些文件在 Vite 之外加载，而文件夹是由 Vite 发现的），并在 `website/src/content/i18n/<tag>.json` 中添加 Starlight 对未翻译页面的说明。其页面、URL、语言切换器条目、`hreflang` 链接和站点地图备用链接都会根据该列表自动生成。其文档放在 `website/src/content/docs/<code>/docs/` 下：翻译其中的每个页面（缺少的页面会显示英文，并附带一条说明），然后在构建之后运行 `bun scripts/localize-anchors.ts <code>`。
 3. **截图**：`bun run screenshots --locale <tag>` 会以新语言截取每张截图，保存到 `website/src/assets/screenshots/<tag>/`；没有截图的页面会显示英文截图。
 4. **术语**：添加 `docs/i18n/terms-<tag>.md`。
 

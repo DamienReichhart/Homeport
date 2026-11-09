@@ -61,7 +61,7 @@ Homeport는 [github.com/DamienReichhart/Homeport](https://github.com/DamienReich
 - **앱 텍스트**: `src/shared/i18n/en/<namespace>.ts`에 키를 추가한 다음([앱에 텍스트 추가](#앱에-텍스트-추가) 참고), 다른 모든 언어 폴더(`fr/`, `de/`, `zh-CN/`…)의 같은 이름 파일에도 추가합니다. 할 수 있다면 번역하세요. 할 수 없다면 영어 텍스트를 그대로 복사하고 풀 리퀘스트에 그렇다고 적어 번역자가 이어서 작업할 수 있게 하세요. 키를 빠뜨려서는 안 됩니다.
 - **오류 메시지나 힌트**: 크레이트의 `messages!` 블록에 선언하고 `bun run bindings`를 실행하면 `en/errors.json`에 기록됩니다. 그다음 각 언어의 `errors.json`에 키를 추가합니다. 운영 체제가 표시하는 텍스트(트레이 메뉴와 알림)도 `native.` 키와 `native.json`으로 같은 방식으로 다룹니다.
 - **웹사이트 텍스트**(홈, 다운로드, 변경 내역, 헤더와 푸터): `website/src/core/i18n/strings/en/`의 알맞은 파일(`site`, `home`, `download` 또는 `changelog`)과 다른 모든 언어 폴더의 같은 파일에 키를 추가합니다. 하나라도 빠지면 `astro check`가 실패합니다. 문서 사이드바 레이블은 `website/src/app/config/sidebar/<code>.ts`에 둡니다.
-- **문서 페이지**: 영어 페이지는 `website/src/content/docs/docs/`에 있습니다. 영어 페이지를 바꾸면 같은 풀 리퀘스트에서 `website/src/content/docs/fr/docs/` 아래 같은 경로의 프랑스어 페이지도 업데이트하세요. 다른 언어는 누군가 번역할 때까지 안내 문구와 함께 영어 페이지를 보여 줍니다.
+- **문서 페이지**: 영어 페이지는 `website/src/content/docs/docs/`에 있습니다. 영어 페이지를 바꾸면 같은 풀 리퀘스트에서 모든 언어의 같은 페이지를 `website/src/content/docs/<code>/docs/` 아래 같은 경로에서 업데이트하세요. 페이지를 업데이트할 수 없는 언어는 번역자가 업데이트할 때까지 이전 번역을 보여 줍니다. 번역한 페이지의 제목은 영어와 같은 순서와 같은 수준으로 유지하고, 링크는 앵커를 포함해 영어에 쓰인 그대로 두세요. `bun run build` 후 `bun scripts/localize-anchors.ts <code>`가 각 앵커가 번역된 제목을 가리키게 하고, 두 번째 빌드의 링크 검사가 이를 확인합니다.
 
 언어 하나만 확인하려면 `bun run i18n:check --locale fr`을 실행하세요.
 
@@ -70,7 +70,7 @@ Homeport는 [github.com/DamienReichhart/Homeport](https://github.com/DamienReich
 파일을 추가하고, 웹사이트에 한 줄을 추가합니다.
 
 1. **앱**: `src/shared/i18n/en/`을 `src/shared/i18n/<tag>/`(`pl`이나 `zh-TW` 같은 BCP 47 태그)로 복사하고, `meta.ts`(`{ name: 'Polski', dir: 'ltr' }`처럼 그 언어로 쓴 언어 이름. 오른쪽에서 왼쪽으로 쓰는 문자라면 `rtl`)를 작성한 다음 모든 파일을 번역합니다. 다른 언어처럼 각 키는 그대로 두고, 각 `export default { … }`를 `export default { … } satisfies Translation<typeof en>`으로 바꿉니다. `bun run i18n:check --locale <tag>`가 빠진 항목을 나열합니다. 다른 변경 없이도 설정에 새 언어가 표시되고, OS 언어에 따라 선택됩니다.
-2. **웹사이트**: `website/src/core/site/locales.ts`에 언어를 추가한 다음, `website/src/core/i18n/strings/en/`을 복사한 `<code>/`에 문자열을(`core/i18n/index.ts`의 `TABLES`에 등록), `website/src/app/config/sidebar/<code>.ts`에 사이드바 레이블을(`sidebar.ts`에 등록. 이 파일들은 폴더를 찾아 주는 Vite 바깥에서 불러오므로, 이 두 줄이 언어에 필요한 유일한 코드입니다), `website/src/content/i18n/<tag>.json`에 번역되지 않은 페이지에 대한 Starlight 안내 문구를 추가합니다. 페이지, URL, 언어 전환기 항목, `hreflang` 링크, 사이트맵 대체 링크는 목록에 따라 자동으로 만들어집니다. 번역한 문서는 `website/src/content/docs/<code>/docs/` 아래에 둡니다.
+2. **웹사이트**: `website/src/core/site/locales.ts`에 언어를 추가한 다음, `website/src/core/i18n/strings/en/`을 복사한 `<code>/`에 문자열을(`core/i18n/index.ts`의 `TABLES`에 등록), `website/src/app/config/sidebar/<code>.ts`에 사이드바 레이블을(`sidebar.ts`에 등록. 이 파일들은 폴더를 찾아 주는 Vite 바깥에서 불러오므로, 이 두 줄이 언어에 필요한 유일한 코드입니다), `website/src/content/i18n/<tag>.json`에 번역되지 않은 페이지에 대한 Starlight 안내 문구를 추가합니다. 페이지, URL, 언어 전환기 항목, `hreflang` 링크, 사이트맵 대체 링크는 목록에 따라 자동으로 만들어집니다. 문서는 `website/src/content/docs/<code>/docs/` 아래에 둡니다. 그곳의 모든 페이지를 번역하고(없는 페이지는 안내 문구와 함께 영어로 보입니다), 빌드 후 `bun scripts/localize-anchors.ts <code>`를 실행합니다.
 3. **스크린숏**: `bun run screenshots --locale <tag>`는 새 언어로 모든 스크린숏을 `website/src/assets/screenshots/<tag>/`에 캡처합니다. 스크린숏이 없는 페이지는 영어 스크린숏을 보여 줍니다.
 4. **용어**: `docs/i18n/terms-<tag>.md`를 추가합니다.
 

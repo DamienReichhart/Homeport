@@ -61,7 +61,7 @@ Homeport は [github.com/DamienReichhart/Homeport](https://github.com/DamienReic
 - **アプリのテキスト**: キーを `src/shared/i18n/en/<namespace>.ts` に追加し（[アプリにテキストを追加する](#アプリにテキストを追加する)を参照）、続いてほかのすべての言語フォルダー（`fr/`、`de/`、`zh-CN/`…）の同名のファイルにも追加します。できれば翻訳してください。できない場合は英語のテキストをそこにコピーし、翻訳者が後で対応できるよう、プルリクエストでその旨を書いてください。キーを省くことは決してしないでください。
 - **エラーメッセージやヒント**: クレートの `messages!` ブロックで宣言して `bun run bindings` を実行すると、`en/errors.json` が書き出されます。その後、各言語の `errors.json` にキーを追加します。オペレーティングシステムが表示するテキスト（トレイのメニューと通知）も、`native.` キーと `native.json` で同じように扱います。
 - **Web サイトのテキスト**（ホーム、ダウンロード、変更履歴、ヘッダーとフッター）: `website/src/core/i18n/strings/en/` の適切なファイル（`site`、`home`、`download`、`changelog`）と、ほかのすべての言語のフォルダーの同じファイルにキーを追加します。どれかに欠けていると `astro check` が失敗します。ドキュメントのサイドバーのラベルは `website/src/app/config/sidebar/<code>.ts` に置きます。
-- **ドキュメントのページ**: 英語のページは `website/src/content/docs/docs/` にあります。変更したときは、同じプルリクエストで、`website/src/content/docs/fr/docs/` の同じパスにあるフランス語のページも更新してください。ほかの言語では、誰かが翻訳するまで、注記付きで英語のページが表示されます。
+- **ドキュメントのページ**: 英語のページは `website/src/content/docs/docs/` にあります。変更したときは、同じプルリクエストで、`website/src/content/docs/<code>/docs/` の同じパスにある、すべての言語の同じページも更新してください。ページを更新できない言語では、翻訳者が更新するまで以前の翻訳が表示されます。翻訳したページの見出しは英語と同じ順序・同じレベルに保ち、リンクはアンカーも含めて英語の書き方のままにしてください。`bun run build` の後、`bun scripts/localize-anchors.ts <code>` が各アンカーを翻訳後の見出しに向け、2 回目のビルドのリンクチェックでそれが確認されます。
 
 1 つの言語を確認するには `bun run i18n:check --locale fr` を使います。
 
@@ -70,7 +70,7 @@ Homeport は [github.com/DamienReichhart/Homeport](https://github.com/DamienReic
 必要なのはファイルと、Web サイト用の 1 行です:
 
 1. **アプリ**: `src/shared/i18n/en/` を `src/shared/i18n/<tag>/`（`pl` や `zh-TW` などの BCP 47 タグ）にコピーし、その `meta.ts`（`{ name: 'Polski', dir: 'ltr' }`。その言語自身による言語名。右から左に書く文字では `rtl`）を書き、すべてのファイルを翻訳します。各キーはそのまま残し、ほかの言語と同様に、各 `export default { … }` を `export default { … } satisfies Translation<typeof en>` にします。`bun run i18n:check --locale <tag>` で不足しているものが一覧表示されます。ほかに何も変更しなくても、設定に新しい言語が表示され、OS の言語に応じて選ばれます。
-2. **Web サイト**: `website/src/core/site/locales.ts` に言語を追加し、続いてその文字列を `website/src/core/i18n/strings/en/` のコピーである `<code>/` に（`core/i18n/index.ts` の `TABLES` に登録）、サイドバーのラベルを `website/src/app/config/sidebar/<code>.ts` に（`sidebar.ts` に登録。これらのファイルは、フォルダーを見つける役割の Vite の外で読み込まれるため、言語に必要なコードはこの 2 行だけです）、翻訳されていないページ用の Starlight の注記を `website/src/content/i18n/<tag>.json` に追加します。ページ、URL、言語切り替えの項目、`hreflang` のリンク、サイトマップの代替ページは、この一覧から自動で生成されます。翻訳したドキュメントは `website/src/content/docs/<code>/docs/` の下に置きます。
+2. **Web サイト**: `website/src/core/site/locales.ts` に言語を追加し、続いてその文字列を `website/src/core/i18n/strings/en/` のコピーである `<code>/` に（`core/i18n/index.ts` の `TABLES` に登録）、サイドバーのラベルを `website/src/app/config/sidebar/<code>.ts` に（`sidebar.ts` に登録。これらのファイルは、フォルダーを見つける役割の Vite の外で読み込まれるため、言語に必要なコードはこの 2 行だけです）、翻訳されていないページ用の Starlight の注記を `website/src/content/i18n/<tag>.json` に追加します。ページ、URL、言語切り替えの項目、`hreflang` のリンク、サイトマップの代替ページは、この一覧から自動で生成されます。ドキュメントは `website/src/content/docs/<code>/docs/` の下に置きます。そこにあるすべてのページを翻訳し（ないページは注記付きで英語が表示されます）、ビルドの後に `bun scripts/localize-anchors.ts <code>` を実行します。
 3. **スクリーンショット**: `bun run screenshots --locale <tag>` で、すべてのスクリーンショットを新しい言語で `website/src/assets/screenshots/<tag>/` に撮影します。スクリーンショットのないページには英語のものが表示されます。
 4. **用語**: `docs/i18n/terms-<tag>.md` を追加します。
 
