@@ -84,7 +84,7 @@ containerd はログを保持しません。タスクの出力先は、タスク
 | Kubernetes（`k8s.io`）   | `/var/log/pods/<pod>/<container>/N.log`。CRI の記録に名前があります                     | そのファイルを追跡表示                                  |
 | `ctr` などのクライアント | 指定された場所。通常はどこにも出力されません                                            | **このコンテナの出力は記録されていません。** とその理由 |
 
-別のドライバー（journald、fluentd）にログを出力する nerdctl のコンテナは、代わりにそのドライバー名が表示されます。Homeport はホストのマシン上で `tail` を使ってファイルを読み込みます（[下記](#what-runs-on-the-host)を参照）。ログファイルは通常 root が所有しているため、SSH のユーザーに読み取りを許可しておく必要があります。
+別のドライバー（journald、fluentd）にログを出力する nerdctl のコンテナは、代わりにそのドライバー名が表示されます。Homeport はホストのマシン上で `tail` を使ってファイルを読み込みます（[下記](#ホスト上で実行されるもの)を参照）。ログファイルは通常 root が所有しているため、SSH のユーザーに読み取りを許可しておく必要があります。
 
 ## コンテナ内のターミナル
 
@@ -115,7 +115,7 @@ containerd のディスク容量を使っているのはスナップショット
 | ログ       | `tail -n <lines> [-F] -- '<log file>'`。CRI の記録がない Kubernetes のコンテナでは、先にログフォルダーを `ls` |
 | ターミナル | `mktemp -d`、そのフォルダーに 2 つの FIFO を作る `mkfifo -m 600`、それらを通じた `cat`、フォルダーの `rm -rf` |
 
-macOS や Windows のローカルソケットではこれらを実行できないため、ログとターミナルには SSH が必要だと表示されます。Homeport がホスト上で実行するすべてのコマンドは、[セキュリティのページ](/docs/reference/security/#what-homeport-runs-on-your-hosts)に一覧があります。
+macOS や Windows のローカルソケットではこれらを実行できないため、ログとターミナルには SSH が必要だと表示されます。Homeport がホスト上で実行するすべてのコマンドは、[セキュリティのページ](/docs/reference/security/#homeport-がホスト上で実行するもの)に一覧があります。
 
 ## イベント
 

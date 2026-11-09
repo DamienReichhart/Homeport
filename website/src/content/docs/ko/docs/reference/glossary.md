@@ -11,15 +11,15 @@ Homeport가 연결하는 Docker Engine으로, 이름과 접근 방법(로컬 소
 
 ### Engine kind (_엔진 종류_)
 
-호스트가 가리키는 엔진의 종류입니다. Docker 호환(Docker Engine, 또는 호환 API를 통한 Podman), containerd, Incus가 있습니다. 엔진 종류에 따라 호스트에 표시되는 페이지가 정해지며, containerd와 Incus 호스트에는 전용 페이지가 있습니다. Podman은 별도의 종류가 아니며, Homeport가 연결할 때마다 인식합니다. [엔진 종류](/docs/hosts/#engine-kinds)를 참고하세요.
+호스트가 가리키는 엔진의 종류입니다. Docker 호환(Docker Engine, 또는 호환 API를 통한 Podman), containerd, Incus가 있습니다. 엔진 종류에 따라 호스트에 표시되는 페이지가 정해지며, containerd와 Incus 호스트에는 전용 페이지가 있습니다. Podman은 별도의 종류가 아니며, Homeport가 연결할 때마다 인식합니다. [엔진 종류](/docs/hosts/#엔진-종류)를 참고하세요.
 
 ### Namespace (containerd's) (_containerd 네임스페이스_)
 
-containerd 호스트에서 모든 컨테이너, 이미지, 스냅샷이 속하는 공간입니다. nerdctl은 `default`, Kubernetes는 `k8s.io`, Docker는 `moby`를 사용합니다. containerd 호스트의 페이지는 한 번에 하나씩 보여 줍니다. 클러스터의 Namespace는 Kubernetes의 Namespace입니다. [containerd 네임스페이스](/docs/hosts/containerd/#namespaces)를 참고하세요.
+containerd 호스트에서 모든 컨테이너, 이미지, 스냅샷이 속하는 공간입니다. nerdctl은 `default`, Kubernetes는 `k8s.io`, Docker는 `moby`를 사용합니다. containerd 호스트의 페이지는 한 번에 하나씩 보여 줍니다. 클러스터의 Namespace는 Kubernetes의 Namespace입니다. [containerd 네임스페이스](/docs/hosts/containerd/#네임스페이스)를 참고하세요.
 
 ### Snapshot (_스냅샷_)
 
-containerd 호스트에서는 디스크에 있는 파일 레이어입니다. 압축을 푼 이미지 레이어나 컨테이너의 쓰기 가능한 레이어가 해당합니다. [스냅샷](/docs/hosts/containerd/#snapshots)을 참고하세요. Incus 호스트에서는 인스턴스를 복원할 수 있도록 저장한 인스턴스의 상태입니다. [인스턴스 스냅샷](/docs/guides/instances/#snapshots)을 참고하세요.
+containerd 호스트에서는 디스크에 있는 파일 레이어입니다. 압축을 푼 이미지 레이어나 컨테이너의 쓰기 가능한 레이어가 해당합니다. [스냅샷](/docs/hosts/containerd/#스냅샷)을 참고하세요. Incus 호스트에서는 인스턴스를 복원할 수 있도록 저장한 인스턴스의 상태입니다. [인스턴스 스냅샷](/docs/guides/instances/#스냅샷)을 참고하세요.
 
 ### Instance (_인스턴스_)
 
@@ -27,15 +27,15 @@ Incus 호스트가 실행하는 것입니다. 호스트의 커널 위에서 Linu
 
 ### Project (Incus's) (_프로젝트_)
 
-Incus 호스트에서 인스턴스, 이미지, 프로필, 사용자 지정 볼륨, 네트워크가 속하는 공간입니다. Incus 호스트의 페이지는 호스트 전환기 아래에서 고른 프로젝트 하나만 보여 줍니다. [프로젝트](/docs/hosts/incus/#projects)를 참고하세요.
+Incus 호스트에서 인스턴스, 이미지, 프로필, 사용자 지정 볼륨, 네트워크가 속하는 공간입니다. Incus 호스트의 페이지는 호스트 전환기 아래에서 고른 프로젝트 하나만 보여 줍니다. [프로젝트](/docs/hosts/incus/#프로젝트)를 참고하세요.
 
 ### Profile (_프로필_)
 
-Incus 호스트에서, 프로필을 나열한 인스턴스들이 공유하는 구성과 장치입니다. [프로필](/docs/guides/instances/#profiles)을 참고하세요.
+Incus 호스트에서, 프로필을 나열한 인스턴스들이 공유하는 구성과 장치입니다. [프로필](/docs/guides/instances/#프로필)을 참고하세요.
 
 ### Trust token (_신뢰 토큰_)
 
-Incus 서버에서 `incus config trust add`가 출력하는 것으로, HTTPS로 그 서버를 추가할 때 Homeport에 한 번 붙여 넣습니다. [신뢰 토큰](/docs/hosts/incus/#over-https-with-a-trust-token)을 참고하세요.
+Incus 서버에서 `incus config trust add`가 출력하는 것으로, HTTPS로 그 서버를 추가할 때 Homeport에 한 번 붙여 넣습니다. [신뢰 토큰](/docs/hosts/incus/#신뢰-토큰을-사용한-https)을 참고하세요.
 
 ### Pod (_Podman Pod_)
 
@@ -51,7 +51,7 @@ Homeport가 API를 통해 연결하는 Kubernetes 클러스터 또는 Nomad 클�
 
 ### Allocation (_allocation_)
 
-Nomad 클러스터에서 job의 task group 하나를 클라이언트 노드에 배치한 것으로, 그 태스크들을 실행합니다. allocation의 로그와 셸은 Nomad 서버를 거쳐 노드로 갑니다. [로그와 셸](/docs/clusters/nomad/#logs-and-shell)을 참고하세요.
+Nomad 클러스터에서 job의 task group 하나를 클라이언트 노드에 배치한 것으로, 그 태스크들을 실행합니다. allocation의 로그와 셸은 Nomad 서버를 거쳐 노드로 갑니다. [로그와 셸](/docs/clusters/nomad/#로그와-셸)을 참고하세요.
 
 ### Swarm (_Swarm_)
 
@@ -67,7 +67,7 @@ Helm 릴리스입니다. 클러스터에 차트를 한 번 설치한 것으로, 
 
 ### Chart repository (_차트 저장소_)
 
-helm이 차트를 다운로드하는 서버로, 이 컴퓨터에 있는 helm 자체 목록(`helm repo list`가 보여 주는 목록)에 들어 있습니다. OCI 레지스트리의 차트는 대신 `oci://` 참조로 설치합니다. [차트 저장소](/docs/clusters/helm/#chart-repositories)를 참고하세요.
+helm이 차트를 다운로드하는 서버로, 이 컴퓨터에 있는 helm 자체 목록(`helm repo list`가 보여 주는 목록)에 들어 있습니다. OCI 레지스트리의 차트는 대신 `oci://` 참조로 설치합니다. [차트 저장소](/docs/clusters/helm/#차트-저장소)를 참고하세요.
 
 ### Node (_노드_)
 
@@ -83,7 +83,7 @@ Swarm이 실행하는 것입니다. 이미지, 설정, 레플리카 수로 구�
 
 ### Stack (_스택_)
 
-호스트에서 실행되는 Compose 프로젝트, 또는 Swarm에서 실행되는 Swarm 스택으로, 프로젝트 이름으로 식별합니다. 모든 스택은 관리형, 링크된, 동기화, 외부 스택 중 하나입니다. [스택](/docs/guides/stacks/)과 [Swarm 스택](/docs/guides/swarm/#swarm-stacks)을 참고하세요.
+호스트에서 실행되는 Compose 프로젝트, 또는 Swarm에서 실행되는 Swarm 스택으로, 프로젝트 이름으로 식별합니다. 모든 스택은 관리형, 링크된, 동기화, 외부 스택 중 하나입니다. [스택](/docs/guides/stacks/)과 [Swarm 스택](/docs/guides/swarm/#swarm-스택)을 참고하세요.
 
 ### Managed Stack (_관리형 스택_)
 
@@ -91,7 +91,7 @@ Homeport가 compose 정의와 환경 변수를 보관하는 스택으로, Homepo
 
 ### Linked Stack (_링크된 스택_)
 
-compose 파일이 이 컴퓨터의 폴더에 있는 스택입니다. Homeport는 폴더와 compose 파일의 위치를 기억하고, 파일을 그 자리에서 읽고 쓰며, 그 폴더를 프로젝트 디렉터리로 삼아 배포하므로 `build:`, `env_file:`, 상대 경로가 작동합니다. 실행 중인 컨테이너의 compose 레이블로 찾거나 폴더에서 만듭니다. 파일이 없는 동안에는 외부 스택이 됩니다. [링크된 스택](/docs/guides/stacks/#linked-stacks)을 참고하세요.
+compose 파일이 이 컴퓨터의 폴더에 있는 스택입니다. Homeport는 폴더와 compose 파일의 위치를 기억하고, 파일을 그 자리에서 읽고 쓰며, 그 폴더를 프로젝트 디렉터리로 삼아 배포하므로 `build:`, `env_file:`, 상대 경로가 작동합니다. 실행 중인 컨테이너의 compose 레이블로 찾거나 폴더에서 만듭니다. 파일이 없는 동안에는 외부 스택이 됩니다. [링크된 스택](/docs/guides/stacks/#링크된-스택)을 참고하세요.
 
 ### Synced Stack (_동기화 스택_)
 
@@ -115,19 +115,19 @@ compose 정의를 제공하여 외부 스택을 관리형 스택으로 바꾸는
 
 ### Registry login (_레지스트리 로그인_)
 
-Docker Hub나 GHCR 같은 컨테이너 레지스트리 하나에 대해 Homeport가 보관하는 사용자 이름과 비밀번호 또는 액세스 토큰으로, 모든 호스트에서 풀, 푸시, 빌드할 때 사용합니다. [설정](/docs/guides/settings/#registries)을 참고하세요.
+Docker Hub나 GHCR 같은 컨테이너 레지스트리 하나에 대해 Homeport가 보관하는 사용자 이름과 비밀번호 또는 액세스 토큰으로, 모든 호스트에서 풀, 푸시, 빌드할 때 사용합니다. [설정](/docs/guides/settings/#레지스트리)을 참고하세요.
 
 ### Helper container (_도우미 컨테이너_)
 
-엔진 API로는 볼륨을 읽을 수 없으므로, Homeport가 볼륨을 열기 위해(탐색, 백업, 복원, 복제) 호스트에 만드는 수명이 짧은 `busybox` 컨테이너입니다. 네트워크가 없고, 써야 하는 경우가 아니면 볼륨을 읽기 전용으로 마운트하며, 작업이 끝나면 삭제됩니다. 컨테이너 목록이나 이벤트 페이지에는 나타나지 않습니다. [볼륨 파일 탐색](/docs/guides/volumes-networks/#the-helper-container)을 참고하세요.
+엔진 API로는 볼륨을 읽을 수 없으므로, Homeport가 볼륨을 열기 위해(탐색, 백업, 복원, 복제) 호스트에 만드는 수명이 짧은 `busybox` 컨테이너입니다. 네트워크가 없고, 써야 하는 경우가 아니면 볼륨을 읽기 전용으로 마운트하며, 작업이 끝나면 삭제됩니다. 컨테이너 목록이나 이벤트 페이지에는 나타나지 않습니다. [볼륨 파일 탐색](/docs/guides/volumes-networks/#도우미-컨테이너)을 참고하세요.
 
 ### Board (_보드_)
 
-연결된 모든 호스트의 컨테이너를 표 하나에 나열하고, 각 행에 호스트를 표시하는 페이지입니다. [보드](/docs/guides/overview/#board)를 참고하세요.
+연결된 모든 호스트의 컨테이너를 표 하나에 나열하고, 각 행에 호스트를 표시하는 페이지입니다. [보드](/docs/guides/overview/#보드)를 참고하세요.
 
 ### Command palette (_명령 팔레트_)
 
-<kbd>Mod</kbd> <kbd>K</kbd>로 여는 검색 상자입니다. 페이지로 이동하고, 호스트를 전환하고, 명령을 실행하고, 연결된 모든 호스트에서 컨테이너, 이미지, 볼륨, 네트워크, 스택을 찾을 수 있습니다. [키보드](/docs/guides/keyboard/#command-palette)를 참고하세요.
+<kbd>Mod</kbd> <kbd>K</kbd>로 여는 검색 상자입니다. 페이지로 이동하고, 호스트를 전환하고, 명령을 실행하고, 연결된 모든 호스트에서 컨테이너, 이미지, 볼륨, 네트워크, 스택을 찾을 수 있습니다. [키보드](/docs/guides/keyboard/#명령-팔레트)를 참고하세요.
 
 ### Engine (_엔진_)
 

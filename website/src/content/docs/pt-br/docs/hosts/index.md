@@ -46,7 +46,7 @@ Os nomes dos hosts devem ser únicos, sem diferenciar maiúsculas de minúsculas
 
 **Adicionar host** oferece duas formas de adicionar muitos hosts de uma vez, a partir do que este computador já descreve. Cada uma abre uma prévia: escolha as entradas a importar, renomeie-as e escolha **Importar**.
 
-- **Importar de ~/.ssh/config** adiciona os servidores que a sua configuração SSH indica, com o usuário, a porta, a chave e os bastions `ProxyJump`. Veja [Importar de ~/.ssh/config](/docs/hosts/ssh/#import-from-sshconfig).
+- **Importar de ~/.ssh/config** adiciona os servidores que a sua configuração SSH indica, com o usuário, a porta, a chave e os bastions `ProxyJump`. Veja [Importar de ~/.ssh/config](/docs/hosts/ssh/#importar-de-sshconfig).
 - **Importar contextos Docker** adiciona os Engines dos contextos da Docker CLI (`docker context ls`), com os seus certificados TLS.
 
 As chaves e os certificados são lidos uma vez, quando você importa, e armazenados criptografados como qualquer outro; nem `~/.ssh` nem `~/.docker` são alterados.
@@ -73,11 +73,11 @@ Um contexto cujo nome já é o de um host é oferecido como `name (2)`.
 
 ## Mudar para outro computador
 
-**Exportar**, na página Hosts, salva os hosts que você escolher em um arquivo protegido por uma senha; **Importar**, na página Hosts do outro computador, abre esse arquivo e adiciona os hosts que você escolher, prontos para conectar. Um host cujo nome já está em uso lá é proposto como `name (2)`, e você pode renomeá-lo ou pulá-lo. Veja [mudar para outro computador](/docs/reference/security/#moving-to-another-computer) para saber como o arquivo é protegido.
+**Exportar**, na página Hosts, salva os hosts que você escolher em um arquivo protegido por uma senha; **Importar**, na página Hosts do outro computador, abre esse arquivo e adiciona os hosts que você escolher, prontos para conectar. Um host cujo nome já está em uso lá é proposto como `name (2)`, e você pode renomeá-lo ou pulá-lo. Veja [mudar para outro computador](/docs/reference/security/#mudar-para-outro-computador) para saber como o arquivo é protegido.
 
 ## Selecionar um host
 
-Toda página de recursos — Contêineres, Imagens, Volumes, Redes, Stacks e Eventos — mostra o host selecionado no **seletor de hosts**. As páginas de um host containerd também mostram um namespace de cada vez, escolhido [abaixo do seletor](/docs/hosts/containerd/#namespaces), e as de um host Incus, um [projeto](/docs/hosts/incus/#projects). Troque de host ali, ou selecione o cartão de um host na [Visão geral](/docs/guides/overview/). O Homeport lembra a sua escolha entre uma execução e outra.
+Toda página de recursos — Contêineres, Imagens, Volumes, Redes, Stacks e Eventos — mostra o host selecionado no **seletor de hosts**. As páginas de um host containerd também mostram um namespace de cada vez, escolhido [abaixo do seletor](/docs/hosts/containerd/#namespaces), e as de um host Incus, um [projeto](/docs/hosts/incus/#projetos). Troque de host ali, ou selecione o cartão de um host na [Visão geral](/docs/guides/overview/). O Homeport lembra a sua escolha entre uma execução e outra.
 
 ## Status
 
@@ -90,10 +90,10 @@ Cada host mostra um status ao lado do nome. Quando o host selecionado não está
 | **Desativado**                      | O interruptor **Ativado** do host está desligado.                                        | Nada até que você o ligue.                                                   |
 | **Inacessível**                     | A rede, o socket ou o Engine não respondeu.                                              | Tenta de novo sozinho, esperando mais a cada vez.                            |
 | **Acesso recusado**                 | O servidor SSH recusou a chave, o ssh-agent falhou ou o handshake TLS falhou.            | Corrija a causa e depois use **Reconectar**.                                 |
-| **Chave do servidor não confiável** | Primeira conexão SSH: a chave do servidor ou de um bastion precisa da sua aprovação.     | [Confie na chave](/docs/hosts/ssh/#trust-the-servers-key) na página do host. |
-| **A chave do servidor mudou**       | O servidor SSH apresentou uma chave diferente daquela em que você confiou.               | [Investigue primeiro](/docs/hosts/ssh/#when-the-servers-key-changes).        |
-| **Credenciais perdidas**            | As credenciais armazenadas não podem ser descriptografadas.                              | [Digite-as de novo](/docs/reference/troubleshooting/#credentials-lost).      |
-| **Chaveiro indisponível**           | O host precisa de segredos armazenados, mas não há chaveiro do sistema.                  | Veja os [requisitos](/docs/requirements/#optional-an-os-keychain).           |
+| **Chave do servidor não confiável** | Primeira conexão SSH: a chave do servidor ou de um bastion precisa da sua aprovação.     | [Confie na chave](/docs/hosts/ssh/#confie-na-chave-do-servidor) na página do host. |
+| **A chave do servidor mudou**       | O servidor SSH apresentou uma chave diferente daquela em que você confiou.               | [Investigue primeiro](/docs/hosts/ssh/#quando-a-chave-do-servidor-muda).        |
+| **Credenciais perdidas**            | As credenciais armazenadas não podem ser descriptografadas.                              | [Digite-as de novo](/docs/reference/troubleshooting/#credenciais-perdidas).      |
+| **Chaveiro indisponível**           | O host precisa de segredos armazenados, mas não há chaveiro do sistema.                  | Veja os [requisitos](/docs/requirements/#opcional-um-chaveiro-do-sistema).           |
 | **Configuração incorreta**          | Algo nas configurações do host está faltando ou é inválido.                              | A mensagem diz o quê; corrija e use **Salvar**.                              |
 
 ## Reconexão
@@ -106,4 +106,4 @@ Só o status **Inacessível** tenta de novo automaticamente. Todo outro problema
 
 ## Eventos e atualizações ao vivo
 
-O Homeport não faz polling. Quando o Engine informa uma mudança — um contêiner iniciando, uma imagem sendo baixada —, as páginas afetadas se atualizam em uma fração de segundo. A página [Eventos](/docs/guides/overview/#events) mostra o fluxo bruto.
+O Homeport não faz polling. Quando o Engine informa uma mudança — um contêiner iniciando, uma imagem sendo baixada —, as páginas afetadas se atualizam em uma fração de segundo. A página [Eventos](/docs/guides/overview/#eventos) mostra o fluxo bruto.

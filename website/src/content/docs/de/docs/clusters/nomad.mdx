@@ -7,14 +7,14 @@ import { DocScreenshot } from '@/features/docs';
 
 Ein Cluster kann neben einem Kubernetes-Cluster auch ein **Nomad**-Cluster sein. Homeport spricht von Ihrem Rechner aus mit der HTTP-API, die ein Nomad-Agent, ob Server oder Client, bereits bereitstellt: Auf dem Cluster wird nichts installiert, und auf diesem Rechner ist keine `nomad`-CLI nötig. Alles, was es tut, geht über die API, mit den Rechten des ACL-Tokens, das Sie ihm geben.
 
-Nomad-Cluster stehen neben Ihren Hosts und Kubernetes-Clustern im Umschalter. Wenn Sie einen auswählen, zeigt die Übersicht seine Version, Region und Adresse, und die Seitenleiste seine eigenen Seiten: **[Jobs](#jobs)**, wo Sie [Jobs ausführen](#run-a-job) und die [Logs und Shells](#logs-and-shell) ihrer Allocations öffnen, und **[Nodes](#nodes)**. Die Kubernetes-Seiten sind ausgeblendet, solange er ausgewählt ist.
+Nomad-Cluster stehen neben Ihren Hosts und Kubernetes-Clustern im Umschalter. Wenn Sie einen auswählen, zeigt die Übersicht seine Version, Region und Adresse, und die Seitenleiste seine eigenen Seiten: **[Jobs](#jobs)**, wo Sie [Jobs ausführen](#einen-job-ausführen) und die [Logs und Shells](#logs-und-shell) ihrer Allocations öffnen, und **[Nodes](#nodes)**. Die Kubernetes-Seiten sind ausgeblendet, solange er ausgewählt ist.
 
 Was Sie tun können, in der Reihenfolge, in der diese Seite es erklärt:
 
-1. [Einen Cluster hinzufügen](#adding-a-nomad-cluster) über seine Adresse, mit [TLS](#tls) und [einem ACL-Token](#the-acl-token), wenn er sie verwendet.
+1. [Einen Cluster hinzufügen](#einen-nomad-cluster-hinzufügen) über seine Adresse, mit [TLS](#tls) und [einem ACL-Token](#das-acl-token), wenn er sie verwendet.
 2. Seine [Jobs](#jobs) und ihre Allocations live sehen; sie stoppen, endgültig entfernen und skalieren.
-3. [Einen Job ausführen](#run-a-job) aus HCL oder JSON, nachdem Sie den Plan von Nomad gesehen haben, oder einen bearbeiten und erneut ausführen.
-4. Den [Logs eines Tasks folgen und eine Shell darin öffnen](#logs-and-shell).
+3. [Einen Job ausführen](#einen-job-ausführen) aus HCL oder JSON, nachdem Sie den Plan von Nomad gesehen haben, oder einen bearbeiten und erneut ausführen.
+4. Den [Logs eines Tasks folgen und eine Shell darin öffnen](#logs-und-shell).
 5. [Nodes leeren](#nodes) und ihre Zulässigkeit umschalten.
 6. Einen [Namespace](#namespaces) wählen oder alle.
 
@@ -25,7 +25,7 @@ Wählen Sie **Cluster hinzufügen…** im Umschalter, dann den Tab **Nomad**, un
 - **Name**: was der Umschalter und die Übersicht anzeigen, etwa `nomad-prod`.
 - **Adresse**: die HTTP-API des Agenten, wie `NOMAD_ADDR` sie der `nomad`-CLI angibt. `nomad.example.com` wird zu `http://nomad.example.com:4646`: Port 4646 wird ergänzt, wenn keiner angegeben ist, und `https://` wird verwendet, wenn Sie TLS-Material angeben.
 - **Region**: Lassen Sie sie leer, um die eigene Region des Agenten zu verwenden. Setzen Sie sie, um über einen föderierten Agenten eine andere Region zu verwalten, wie `NOMAD_REGION` es tut.
-- **ACL-Token**: die Secret-ID des Tokens, wenn der Cluster ACLs aktiviert hat. Siehe [das Token](#the-acl-token) unten.
+- **ACL-Token**: die Secret-ID des Tokens, wenn der Cluster ACLs aktiviert hat. Siehe [das Token](#das-acl-token) unten.
 
 **Verbindung testen** verbindet sich einmal, ohne zu speichern, und zeigt die Nomad-Version und Region oder warum keine Verbindung möglich ist. **Cluster hinzufügen** speichert ihn und verbindet sich. Seine Seite zeigt dann seinen Status, seine Version und Region und lässt Sie jede dieser Einstellungen ändern: Das Token und der TLS-Schlüssel werden nie wieder angezeigt, und ein leer gelassenes Feld behält den gespeicherten Wert. **Entfernen** neben gespeicherten Zugangsdaten löscht sie beim Speichern.
 
@@ -177,7 +177,7 @@ Ersetzen Sie `"*"` durch den Namen eines Namespace, um Homeport darauf zu beschr
 
 ## Status und Probleme
 
-Der Status folgt denselben Regeln wie bei [Kubernetes-Clustern](/docs/clusters/#statuses): Homeport versucht es selbst erneut, solange der Agent nicht erreichbar ist, und wartet auf Sie, wenn nur Sie das Problem beheben können.
+Der Status folgt denselben Regeln wie bei [Kubernetes-Clustern](/docs/clusters/#status): Homeport versucht es selbst erneut, solange der Agent nicht erreichbar ist, und wartet auf Sie, wenn nur Sie das Problem beheben können.
 
 - **Die Adresse ist falsch**: Ein Name, der nicht gefunden wird, eine abgelehnte Verbindung oder eine Zeitüberschreitung sagt, was davon, mit der versuchten Adresse.
 - **Ein abgelaufenes Zertifikat, eine unbekannte CA oder der falsche Name**: Jedes sagt, was unter **TLS-Einstellungen** zu ändern ist.

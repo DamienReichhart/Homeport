@@ -3,7 +3,7 @@ title: Tastiera
 description: Usa Homeport senza mouse — il riquadro comandi e la ricerca in tutti gli host, le scorciatoie per ogni pagina e host, e la scheda di aiuto che le elenca.
 ---
 
-Homeport si può usare dalla tastiera. Premi <kbd>Mod</kbd> <kbd>K</kbd> per aprire il [riquadro comandi](#command-palette), e <kbd>?</kbd> in qualsiasi pagina per vedere tutte le scorciatoie che funzionano lì.
+Homeport si può usare dalla tastiera. Premi <kbd>Mod</kbd> <kbd>K</kbd> per aprire il [riquadro comandi](#riquadro-comandi), e <kbd>?</kbd> in qualsiasi pagina per vedere tutte le scorciatoie che funzionano lì.
 
 **Mod**, più sotto, indica <kbd>⌘</kbd> su macOS e <kbd>Ctrl</kbd> su Windows e Linux; su macOS, <kbd>Alt</kbd> è <kbd>⌥</kbd>.
 

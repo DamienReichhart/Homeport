@@ -13,7 +13,7 @@ SSH 是访问服务器上 Docker Engine 的推荐方式。除了 SSH 端口之�
 Homeport 有自己的 SSH 客户端。它登录到服务器，并将一个通道转发到引擎的 Unix 套接字，效果与 `docker -H ssh://…` 相同，但你的机器上不需要 `ssh` 程序或 `docker`。
 
 - 密钥只在内存中解密，从不写入磁盘，因此在 Windows、macOS 和 Linux 上的工作方式完全相同。
-- Homeport 不读取 `~/.ssh/known_hosts`：服务器密钥在 Homeport 中按主机分别信任。只能通过跳板服务器访问的服务器，使用[堡垒机](#through-a-bastion)（即 Homeport 的 `ProxyJump`）添加。
+- Homeport 不读取 `~/.ssh/known_hosts`：服务器密钥在 Homeport 中按主机分别信任。只能通过跳板服务器访问的服务器，使用[堡垒机](#通过堡垒机)（即 Homeport 的 `ProxyJump`）添加。
 - 服务器必须允许转发到 Unix 套接字。OpenSSH 默认允许（`AllowStreamLocalForwarding yes`）。
 
 ## 添加 SSH 主机
@@ -51,7 +51,7 @@ Homeport 有自己的 SSH 客户端。它登录到服务器，并将一个通道
 | `User`、`Port`        | **用户**（默认为你的本地用户名）和**端口**（`22`）。                                       |
 | `IdentityFile`        | **现有密钥**：第一个可读取的文件，`~` 以及 `%h`、`%r`、`%u`、`%p` 会被展开。               |
 | 没有 `IdentityFile`   | **ssh-agent**。                                                                            |
-| `ProxyJump a,b`       | 两台[堡垒机](#through-a-bastion)，按顺序排列，每台都在同一文件中查找。如有循环会报告出来。 |
+| `ProxyJump a,b`       | 两台[堡垒机](#通过堡垒机)，按顺序排列，每台都在同一文件中查找。如有循环会报告出来。 |
 
 **远程套接字路径**初始为 `/var/run/docker.sock`；对于 rootless Docker 或 Podman，请在预览中修改。加密的密钥会在那里要求输入口令。
 
@@ -74,7 +74,7 @@ Homeport 向你正在运行的 SSH agent 请求密钥，不保存任何内容。
 在 Windows 上，它会先询问 OpenSSH Authentication Agent 服务，再询问 PuTTY 的 **Pageant**（或可替代它的工具，例如 KeeAgent 或支持 PuTTY 的 gpg-agent）。两者任一持有的密钥都可以使用：如果 OpenSSH agent 没有运行，或没有服务器接受的密钥，Homeport 也会尝试 Pageant 中的密钥。
 
 <Aside>
-  ssh-agent 是唯一无需[系统钥匙串](/docs/requirements/#optional-an-os-keychain)即可使用的 SSH
+  ssh-agent 是唯一无需[系统钥匙串](/docs/requirements/#可选系统钥匙串)即可使用的 SSH
   选项。如果 Homeport 是从桌面菜单启动的，请确保它能访问你会话中的 agent。
 </Aside>
 

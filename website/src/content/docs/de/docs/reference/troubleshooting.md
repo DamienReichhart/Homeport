@@ -35,11 +35,11 @@ Homeport öffnet sich wieder mit der Größe, Position und dem Maximierungszusta
 
 ### Ein erneutes Öffnen von Homeport öffnet kein zweites Fenster
 
-Es läuft immer nur ein Homeport: Wenn Sie es öffnen, während es bereits läuft, wird sein Fenster in den Vordergrund geholt, auch wenn es im [Infobereich](/docs/guides/overview/#system-tray) verborgen ist. Zwei Kopien würden sich mit jedem Host zweimal verbinden und in dieselben Daten schreiben.
+Es läuft immer nur ein Homeport: Wenn Sie es öffnen, während es bereits läuft, wird sein Fenster in den Vordergrund geholt, auch wenn es im [Infobereich](/docs/guides/overview/#infobereich) verborgen ist. Zwei Kopien würden sich mit jedem Host zweimal verbinden und in dieselben Daten schreiben.
 
 ### Es gibt kein Symbol im Infobereich
 
-Unter Linux benötigt der Infobereich die Bibliothek appindicator, und manche Desktops blenden Symbole im Infobereich aus: Installieren Sie unter GNOME die Erweiterung AppIndicator Support. Findet Homeport keine appindicator-Bibliothek, weist **Einstellungen → Desktop** darauf hin, und das Schließen des Fensters beendet es. Siehe [Voraussetzungen](/docs/requirements/#optional-a-system-tray).
+Unter Linux benötigt der Infobereich die Bibliothek appindicator, und manche Desktops blenden Symbole im Infobereich aus: Installieren Sie unter GNOME die Erweiterung AppIndicator Support. Findet Homeport keine appindicator-Bibliothek, weist **Einstellungen → Desktop** darauf hin, und das Schließen des Fensters beendet es. Siehe [Voraussetzungen](/docs/requirements/#optional-ein-infobereich).
 
 ### Ein rotes Banner meldet, dass kein Schlüsselbund des Betriebssystems verfügbar ist
 
@@ -57,11 +57,11 @@ Homeport installiert nur ein Update, dessen Signatur zu seinem Update-Schlüssel
 
 ### apt meldet „NO_PUBKEY“ oder „The repository is not signed“
 
-Der Homeport-Schlüssel fehlt in `/etc/apt/keyrings/homeport.asc`. Führen Sie die [Schnellinstallation](/docs/installation/#quick-install) erneut aus oder die ersten beiden Befehle der [manuellen Einrichtung](/docs/installation/#manual-setup).
+Der Homeport-Schlüssel fehlt in `/etc/apt/keyrings/homeport.asc`. Führen Sie die [Schnellinstallation](/docs/installation/#schnellinstallation) erneut aus oder die ersten beiden Befehle der [manuellen Einrichtung](/docs/installation/#manuelle-einrichtung).
 
 ### dnf oder zypper fragt, ob ein Schlüssel importiert werden soll
 
-Das ist der Paketschlüssel von Homeport, beim ersten Zugriff Ihres Paketmanagers auf das Repository. Prüfen Sie, dass der angezeigte Fingerabdruck mit dem auf [Downloads prüfen](/docs/reference/verifying/#package-signatures) übereinstimmt, und stimmen Sie dann zu.
+Das ist der Paketschlüssel von Homeport, beim ersten Zugriff Ihres Paketmanagers auf das Repository. Prüfen Sie, dass der angezeigte Fingerabdruck mit dem auf [Downloads prüfen](/docs/reference/verifying/#paketsignaturen) übereinstimmt, und stimmen Sie dann zu.
 
 ### apt meldet „Hash Sum mismatch“ direkt nach einem Release
 
@@ -69,7 +69,7 @@ Das Repository wurde aktualisiert, während apt es las. Führen Sie `sudo apt up
 
 ### Mein Paketmanager sieht die neue Version nicht
 
-Prüfen Sie, dass das Repository noch eingerichtet ist: `/etc/apt/sources.list.d/homeport.sources`, `/etc/yum.repos.d/homeport.repo` oder `/etc/zypp/repos.d/homeport.repo`. Wenn Sie es gelöscht haben, führen Sie die [Schnellinstallation](/docs/installation/#quick-install) aus, um es erneut hinzuzufügen. Wenn Sie 0.2.0 oder älter aus einer heruntergeladenen Datei installiert haben, wurde das Repository nie hinzugefügt: siehe [Aktualisieren von 0.2.0](/docs/reference/updating/#updating-from-020-or-earlier).
+Prüfen Sie, dass das Repository noch eingerichtet ist: `/etc/apt/sources.list.d/homeport.sources`, `/etc/yum.repos.d/homeport.repo` oder `/etc/zypp/repos.d/homeport.repo`. Wenn Sie es gelöscht haben, führen Sie die [Schnellinstallation](/docs/installation/#schnellinstallation) aus, um es erneut hinzuzufügen. Wenn Sie 0.2.0 oder älter aus einer heruntergeladenen Datei installiert haben, wurde das Repository nie hinzugefügt: siehe [Aktualisieren von 0.2.0](/docs/reference/updating/#aktualisieren-von-020-oder-älter).
 
 ## Verbinden
 
@@ -83,7 +83,7 @@ sudo usermod -aG docker $USER
 
 ### Nicht erreichbar: No such file or directory
 
-Unter dem Socket-Pfad lauscht nichts. Starten Sie Ihre Engine – Docker Desktop, Colima, OrbStack, Rancher Desktop – oder prüfen Sie den Pfad. Siehe [lokale Engines](/docs/hosts/local/#adding-a-socket-by-hand).
+Unter dem Socket-Pfad lauscht nichts. Starten Sie Ihre Engine – Docker Desktop, Colima, OrbStack, Rancher Desktop – oder prüfen Sie den Pfad. Siehe [lokale Engines](/docs/hosts/local/#einen-socket-von-hand-hinzufügen).
 
 ### „Die Engine hat nicht rechtzeitig geantwortet“ oder „Zeitüberschreitung der SSH-Verbindung“
 
@@ -91,7 +91,7 @@ Homeport wartet 10 Sekunden auf eine Verbindung. Prüfen Sie Adresse und Port, o
 
 ### Zugriff verweigert: „Der Server hat den Schlüssel für … abgelehnt“
 
-Der Server akzeptiert den Schlüssel von Homeport noch nicht. Führen Sie den Befehl **Öffentlichen Schlüssel hinzufügen** von der Seite des Hosts auf dem Server aus und wählen Sie dann **Neu verbinden**. Siehe [SSH-Hosts](/docs/hosts/ssh/#authorise-homeports-key).
+Der Server akzeptiert den Schlüssel von Homeport noch nicht. Führen Sie den Befehl **Öffentlichen Schlüssel hinzufügen** von der Seite des Hosts auf dem Server aus und wählen Sie dann **Neu verbinden**. Siehe [SSH-Hosts](/docs/hosts/ssh/#den-schlüssel-von-homeport-autorisieren).
 
 ### „Der SSH-Server konnte /var/run/docker.sock nicht öffnen“
 
@@ -121,11 +121,11 @@ ssh-add
 
 ### Serverschlüssel geändert
 
-Der SSH-Server hat einen anderen Schlüssel vorgelegt als den, dem Sie vertraut haben. Wenn Sie den Server neu installiert oder seine Schlüssel geändert haben, wählen Sie **Dem neuen Schlüssel vertrauen**. Wenn Sie nicht wissen, warum er sich geändert hat, verbinden Sie sich nicht: Fragen Sie, wer den Server betreibt. Siehe [SSH-Hosts](/docs/hosts/ssh/#when-the-servers-key-changes).
+Der SSH-Server hat einen anderen Schlüssel vorgelegt als den, dem Sie vertraut haben. Wenn Sie den Server neu installiert oder seine Schlüssel geändert haben, wählen Sie **Dem neuen Schlüssel vertrauen**. Wenn Sie nicht wissen, warum er sich geändert hat, verbinden Sie sich nicht: Fragen Sie, wer den Server betreibt. Siehe [SSH-Hosts](/docs/hosts/ssh/#wenn-sich-der-schlüssel-des-servers-ändert).
 
 ### Zugangsdaten verloren
 
-Der Schlüssel, der Ihre Geheimnisse verschlüsselt, fehlt im Schlüsselbund oder hat sich geändert – nach einem Zurücksetzen des Schlüsselbunds, einem neuen Benutzerprofil oder dem Kopieren der Daten von Homeport auf einen anderen Computer (verwenden Sie dafür [Exportieren und Importieren](/docs/reference/security/#moving-to-another-computer)). Homeport behält den Host; geben Sie seine Anmeldedaten auf der Seite des Hosts erneut ein:
+Der Schlüssel, der Ihre Geheimnisse verschlüsselt, fehlt im Schlüsselbund oder hat sich geändert – nach einem Zurücksetzen des Schlüsselbunds, einem neuen Benutzerprofil oder dem Kopieren der Daten von Homeport auf einen anderen Computer (verwenden Sie dafür [Exportieren und Importieren](/docs/reference/security/#auf-einen-anderen-computer-umziehen)). Homeport behält den Host; geben Sie seine Anmeldedaten auf der Seite des Hosts erneut ein:
 
 - **TLS** – laden Sie die drei Zertifikatsdateien erneut und wählen Sie **Speichern**.
 - **SSH mit einem importierten Schlüssel** – fügen Sie den privaten Schlüssel und die Passphrase erneut ein und wählen Sie **Speichern**.
@@ -229,17 +229,17 @@ Ist es installiert, wird aber nicht gefunden, hat Homeport möglicherweise einen
 
 ### Bereitstellen schlägt fehl: „verwendet build:“
 
-Ein verwalteter Stack hat keinen Ordner, aus dem gebaut werden könnte. [Verknüpfen Sie stattdessen den Projektordner](/docs/guides/stacks/#creating-a-linked-stack) – ein verknüpfter Stack baut –, oder bauen Sie das Image, pushen Sie es in eine Registry und verwenden Sie dann `image:`.
+Ein verwalteter Stack hat keinen Ordner, aus dem gebaut werden könnte. [Verknüpfen Sie stattdessen den Projektordner](/docs/guides/stacks/#einen-verknüpften-stack-erstellen) – ein verknüpfter Stack baut –, oder bauen Sie das Image, pushen Sie es in eine Registry und verwenden Sie dann `image:`.
 
 ### Mein Stack wurde extern
 
-Ein [verknüpfter Stack](/docs/guides/stacks/#when-the-folder-moves-or-disappears) erscheint als extern, markiert mit ⚠ **Seine Compose-Dateien sind nicht mehr auf diesem Computer**, wenn sein Ordner verschoben, umbenannt oder gelöscht wurde oder eine Compose-Datei darin. Nichts geht verloren: Legen Sie den Ordner zurück an seinen Platz, und der Stack ist bei der nächsten Aktualisierung wieder verknüpft. Ist der Ordner endgültig umgezogen, wählen Sie **Vergessen** im Tab **Definition** des Stacks und verknüpfen Sie ihn dann von seinem neuen Ort aus erneut mit **Neuer Stack → Ordner auf diesem Computer verwenden**.
+Ein [verknüpfter Stack](/docs/guides/stacks/#wenn-der-ordner-verschoben-wird-oder-verschwindet) erscheint als extern, markiert mit ⚠ **Seine Compose-Dateien sind nicht mehr auf diesem Computer**, wenn sein Ordner verschoben, umbenannt oder gelöscht wurde oder eine Compose-Datei darin. Nichts geht verloren: Legen Sie den Ordner zurück an seinen Platz, und der Stack ist bei der nächsten Aktualisierung wieder verknüpft. Ist der Ordner endgültig umgezogen, wählen Sie **Vergessen** im Tab **Definition** des Stacks und verknüpfen Sie ihn dann von seinem neuen Ort aus erneut mit **Neuer Stack → Ordner auf diesem Computer verwenden**.
 
 Ein aus einem Ordner auf einem anderen Computer gestarteter Stack ist hier immer extern, da dieser Computer den Pfad nicht hat.
 
 ### „Außerhalb von Homeport geändert“
 
-Die Compose-Dateien eines verknüpften Stacks wurden außerhalb von Homeport bearbeitet – in Ihrem Editor, durch `git pull` –, seit Homeport sie zuletzt gelesen hat. Wählen Sie **Neu laden**, um sie so zu sehen, wie sie sind. Wenn Sie gleichzeitig in Homeport bearbeitet haben, wird das Speichern mit **… wurde außerhalb von Homeport geändert, seit Sie sie geöffnet haben** abgelehnt, damit keine der Änderungen stillschweigend verloren geht: Laden Sie neu und wiederholen Sie Ihre Bearbeitung, oder wählen Sie **Überschreiben**, um Ihre zu behalten. Siehe [einen verknüpften Stack bearbeiten](/docs/guides/stacks/#editing-a-linked-stack).
+Die Compose-Dateien eines verknüpften Stacks wurden außerhalb von Homeport bearbeitet – in Ihrem Editor, durch `git pull` –, seit Homeport sie zuletzt gelesen hat. Wählen Sie **Neu laden**, um sie so zu sehen, wie sie sind. Wenn Sie gleichzeitig in Homeport bearbeitet haben, wird das Speichern mit **… wurde außerhalb von Homeport geändert, seit Sie sie geöffnet haben** abgelehnt, damit keine der Änderungen stillschweigend verloren geht: Laden Sie neu und wiederholen Sie Ihre Bearbeitung, oder wählen Sie **Überschreiben**, um Ihre zu behalten. Siehe [einen verknüpften Stack bearbeiten](/docs/guides/stacks/#einen-verknüpften-stack-bearbeiten).
 
 ### Das Pullen eines privaten Images schlägt fehl
 
@@ -287,7 +287,7 @@ System-Units (rootful Podman) können nur von einem Benutzer gestartet und gesto
 
 ### containerd: „darf containerd unter /run/containerd/containerd.sock nicht verwenden“
 
-Der Socket von containerd gehört root. Geben Sie einer Gruppe mit `gid` unter `[grpc]` in `/etc/containerd/config.toml` Zugriff darauf, fügen Sie Ihren Benutzer (oder den SSH-Benutzer) dieser Gruppe hinzu, starten Sie containerd neu und melden Sie sich erneut an; [die containerd-Seite](/docs/hosts/containerd/#letting-your-user-use-the-socket) enthält die Befehle. Rootless containerd ist überhaupt nicht erreichbar: Sein Socket existiert nur im Namespace von RootlessKit.
+Der Socket von containerd gehört root. Geben Sie einer Gruppe mit `gid` unter `[grpc]` in `/etc/containerd/config.toml` Zugriff darauf, fügen Sie Ihren Benutzer (oder den SSH-Benutzer) dieser Gruppe hinzu, starten Sie containerd neu und melden Sie sich erneut an; [die containerd-Seite](/docs/hosts/containerd/#ihrem-benutzer-die-verwendung-des-sockets-erlauben) enthält die Befehle. Rootless containerd ist überhaupt nicht erreichbar: Sein Socket existiert nur im Namespace von RootlessKit.
 
 ### containerd: „Die Ausgabe dieses Containers wird nicht aufgezeichnet“
 
@@ -303,7 +303,7 @@ Das Pullen läuft über den Transfer-Service von containerd, der ab containerd 2
 
 ### Incus: „darf Incus unter /var/lib/incus/unix.socket nicht verwenden“
 
-Der Admin-Socket von Incus ist für die Gruppe `incus-admin`, und der eingeschränkte `unix.socket.user` für die Gruppe `incus`. Fügen Sie Ihren Benutzer (oder den SSH-Benutzer) mit `sudo usermod -aG incus-admin "$USER"` hinzu, melden Sie sich dann ab und wieder an oder verbinden Sie sich über SSH neu. Siehe [die Sockets von Incus](/docs/hosts/incus/#its-sockets).
+Der Admin-Socket von Incus ist für die Gruppe `incus-admin`, und der eingeschränkte `unix.socket.user` für die Gruppe `incus`. Fügen Sie Ihren Benutzer (oder den SSH-Benutzer) mit `sudo usermod -aG incus-admin "$USER"` hinzu, melden Sie sich dann ab und wieder an oder verbinden Sie sich über SSH neu. Siehe [die Sockets von Incus](/docs/hosts/incus/#seine-sockets).
 
 ### Incus: „Homeport konnte Incus unter … nicht erreichen“ beim Hinzufügen mit einem Trust-Token
 
@@ -315,7 +315,7 @@ Ein Token funktioniert einmal und läuft ab. Erstellen Sie auf dem Server mit `i
 
 ### Incus: „… hat ein Zertifikat mit dem Fingerabdruck … vorgelegt, nicht den vertrauenswürdigen …“
 
-Das Zertifikat des Servers ist nicht das, dem Homeport vertraut hat: Incus wurde neu installiert, sein Zertifikat wurde erneuert, oder etwas anderes antwortet unter dieser Adresse. Prüfen Sie den Fingerabdruck auf dem Server mit `incus info`; ist es der angezeigte, entfernen Sie den Host und fügen Sie ihn mit einem neuen Token erneut hinzu. Siehe [fixierte Zertifikate](/docs/hosts/incus/#the-servers-certificate-is-pinned).
+Das Zertifikat des Servers ist nicht das, dem Homeport vertraut hat: Incus wurde neu installiert, sein Zertifikat wurde erneuert, oder etwas anderes antwortet unter dieser Adresse. Prüfen Sie den Fingerabdruck auf dem Server mit `incus info`; ist es der angezeigte, entfernen Sie den Host und fügen Sie ihn mit einem neuen Token erneut hinzu. Siehe [fixierte Zertifikate](/docs/hosts/incus/#das-zertifikat-des-servers-ist-fixiert).
 
 ### Incus: „Dieser Host kann keine virtuellen Maschinen ausführen“
 

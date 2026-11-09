@@ -19,9 +19,9 @@ Datumsangaben, Zahlen und Größen folgen ebenfalls der Sprache, im regionalen F
 
 Wie Homeport auf diesem Computer läuft.
 
-- **In den Infobereich schließen** – standardmäßig aus, sodass das Schließen des Fensters Homeport beendet. Schalten Sie es ein, um das Fenster stattdessen im [Infobereich](/docs/guides/overview/#system-tray) zu verbergen: Homeport läuft mit offenen Host-Verbindungen weiter. Holen Sie es über das Symbol im Infobereich zurück oder indem Sie Homeport erneut öffnen; beenden Sie es über **Beenden** im Infobereich. Auf einem Desktop ohne Infobereich ist der Schalter ausgegraut, mit einer Erklärung.
+- **In den Infobereich schließen** – standardmäßig aus, sodass das Schließen des Fensters Homeport beendet. Schalten Sie es ein, um das Fenster stattdessen im [Infobereich](/docs/guides/overview/#infobereich) zu verbergen: Homeport läuft mit offenen Host-Verbindungen weiter. Holen Sie es über das Symbol im Infobereich zurück oder indem Sie Homeport erneut öffnen; beenden Sie es über **Beenden** im Infobereich. Auf einem Desktop ohne Infobereich ist der Schalter ausgegraut, mit einer Erklärung.
 - **Bei der Anmeldung starten** – standardmäßig aus. Schalten Sie es ein, und Homeport startet, wenn Sie sich anmelden, und überwacht Ihre Hosts so von Anfang an. Der Schalter zeigt, was Ihr System eingetragen hat: Entfernen Sie Homeport selbst aus Ihren Anmeldeobjekten, erscheint er als aus. Unter Windows steht es in **Task-Manager → Autostart-Apps**, unter macOS in **Systemeinstellungen → Allgemein → Anmeldeobjekte**, unter Linux in `~/.config/autostart/`. Der Eintrag eines AppImage folgt der Datei, wenn Sie sie verschieben, ab dem nächsten Öffnen.
-- **Verborgen im Infobereich starten** – standardmäßig aus und nur verfügbar, solange **Bei der Anmeldung starten** eingeschaltet ist. Wenn Homeport bei der Anmeldung startet, bleibt es im [Infobereich](/docs/guides/overview/#system-tray), ohne sein Fenster zu öffnen. Wenn Sie Homeport selbst öffnen, zeigt es immer das Fenster, und ohne Infobereich öffnet es sich immer.
+- **Verborgen im Infobereich starten** – standardmäßig aus und nur verfügbar, solange **Bei der Anmeldung starten** eingeschaltet ist. Wenn Homeport bei der Anmeldung startet, bleibt es im [Infobereich](/docs/guides/overview/#infobereich), ohne sein Fenster zu öffnen. Wenn Sie Homeport selbst öffnen, zeigt es immer das Fenster, und ohne Infobereich öffnet es sich immer.
 
 ## Benachrichtigungen
 
@@ -72,11 +72,11 @@ Die Git-Repositorys, aus denen [synchronisierte Stacks](/docs/guides/synced-stac
 - Die Zahnrad-Schaltfläche zeigt den Deploy-Key eines Repositorys, mit dem Ort, an dem er auf GitHub, GitLab, Gitea und Forgejo hinzugefügt wird, und **Neuer Schlüssel**, um ihn zu ersetzen; oder **Token ersetzen**. **Zugriff testen** listet seine Branches und Tags von diesem Computer aus auf. Sobald Homeport dem Schlüssel eines SSH-Servers vertraut hat, erscheint dort sein Fingerabdruck, mit **Zurücksetzen** für den Fall, dass die Forge ihn wirklich geändert hat.
 - **Entfernen** vergisst das Repository und löscht seinen Klon auf diesem Computer; das wird abgelehnt, solange ein synchronisierter Stack es verwendet.
 
-Schlüssel und Tokens werden mit dem Schlüssel aus dem Schlüsselbund des Betriebssystems verschlüsselt und nie wieder angezeigt, protokolliert oder in Fehlerdetails aufgenommen. Ihre eigene Git-Konfiguration, Ihre Credential-Helper und Ihre SSH-Schlüssel werden nie verwendet. Siehe [Repositorys](/docs/guides/synced-stacks/#repositories).
+Schlüssel und Tokens werden mit dem Schlüssel aus dem Schlüsselbund des Betriebssystems verschlüsselt und nie wieder angezeigt, protokolliert oder in Fehlerdetails aufgenommen. Ihre eigene Git-Konfiguration, Ihre Credential-Helper und Ihre SSH-Schlüssel werden nie verwendet. Siehe [Repositorys](/docs/guides/synced-stacks/#repositorys).
 
 ## Synchronisierte Stacks
 
-**Repositorys prüfen alle** legt fest, wie viele Minuten Homeport zwischen den Prüfungen der Repositorys synchronisierter Stacks auf neue Commits wartet: standardmäßig 5, mindestens 1. Homeport prüft nur, solange es geöffnet ist; solange es geschlossen ist, wird nichts synchronisiert. Siehe [Abfrage und automatische Bereitstellung](/docs/guides/synced-stacks/#polling-and-auto-deploy).
+**Repositorys prüfen alle** legt fest, wie viele Minuten Homeport zwischen den Prüfungen der Repositorys synchronisierter Stacks auf neue Commits wartet: standardmäßig 5, mindestens 1. Homeport prüft nur, solange es geöffnet ist; solange es geschlossen ist, wird nichts synchronisiert. Siehe [Abfrage und automatische Bereitstellung](/docs/guides/synced-stacks/#abfrage-und-automatische-bereitstellung).
 
 ## Daten
 
@@ -89,7 +89,7 @@ Was Homeport auf diesem Computer aufbewahrt.
 **Wiederherstellen…** öffnet eine solche Datei mit ihrer Passphrase und listet auf, was sie enthält: ihre Hosts und Cluster mit Namen und wie viele Stacks, Registry-Anmeldungen und Repositorys. **Alles ersetzen** ersetzt dann alle Daten von Homeport durch die der Sicherung, auf diesem oder einem anderen Computer:
 
 - Alles verbindet sich und stellt sofort bereit: SSH- und TLS-Hosts, Registrys und Repositorys, ohne erneut nach einem Schlüssel oder Passwort zu fragen oder dem Schlüssel eines Servers erneut vertrauen zu müssen.
-- Ein [verknüpfter Stack](/docs/guides/stacks/#linked-stacks), dessen Ordner nicht auf diesem Computer liegt, erscheint als extern, bis der Ordner unter demselben Pfad vorhanden ist.
+- Ein [verknüpfter Stack](/docs/guides/stacks/#verknüpfte-stacks), dessen Ordner nicht auf diesem Computer liegt, erscheint als extern, bis der Ordner unter demselben Pfad vorhanden ist.
 - [Synchronisierte Stacks](/docs/guides/synced-stacks/) klonen ihr Repository bei ihrer nächsten Synchronisierung erneut.
 - Die aktuellen Daten werden zuvor nach `homeport.db.before-restore-<date>` im Datenordner von Homeport kopiert. Die Wiederherstellung einer falschen Datei, einer Datei eines neueren Homeport oder eine, die mittendrin fehlschlägt, ändert nichts.
 
@@ -97,14 +97,14 @@ Um stattdessen einige Hosts zu Ihren vorhandenen hinzuzufügen, verwenden Sie **
 
 ### Engine-Ereignisse aufbewahren
 
-**Engine-Ereignisse aufbewahren für** legt fest, wie viele Tage die [Engine-Ereignisse](/docs/guides/overview/#events) jedes Hosts aufbewahrt werden: standardmäßig 30, von 1 bis 365. Jeder Host bewahrt unabhängig davon höchstens 10.000 Ereignisse auf. Ältere werden beim Start von Homeport und stündlich entfernt, und sofort, wenn Sie die Zahl verringern.
+**Engine-Ereignisse aufbewahren für** legt fest, wie viele Tage die [Engine-Ereignisse](/docs/guides/overview/#ereignisse) jedes Hosts aufbewahrt werden: standardmäßig 30, von 1 bis 365. Jeder Host bewahrt unabhängig davon höchstens 10.000 Ereignisse auf. Ältere werden beim Start von Homeport und stündlich entfernt, und sofort, wenn Sie die Zahl verringern.
 
 ## Dieser Rechner
 
 Was Homeport auf diesem Computer nutzen kann:
 
-- **Schlüsselbund des Betriebssystems** – **Verfügbar**, wenn SSH-Schlüssel, Zertifikate, Stack-Umgebungen und Registry-Anmeldungen verschlüsselt gespeichert werden können; andernfalls **Nicht verfügbar**. Siehe [Voraussetzungen](/docs/requirements/#optional-an-os-keychain).
-- **Compose-CLI** – die gefundene Compose-Version, etwa `docker compose v2.29.1`, oder **Nicht gefunden**, wenn Stacks gestartet und gestoppt, aber nicht bereitgestellt werden können. Siehe [Stacks](/docs/guides/stacks/#what-deploying-needs).
+- **Schlüsselbund des Betriebssystems** – **Verfügbar**, wenn SSH-Schlüssel, Zertifikate, Stack-Umgebungen und Registry-Anmeldungen verschlüsselt gespeichert werden können; andernfalls **Nicht verfügbar**. Siehe [Voraussetzungen](/docs/requirements/#optional-ein-schlüsselbund-des-betriebssystems).
+- **Compose-CLI** – die gefundene Compose-Version, etwa `docker compose v2.29.1`, oder **Nicht gefunden**, wenn Stacks gestartet und gestoppt, aber nicht bereitgestellt werden können. Siehe [Stacks](/docs/guides/stacks/#was-die-bereitstellung-braucht).
 - **git** – das gefundene git, etwa `/usr/bin/git 2.43.0`, oder was zu installieren ist, wenn synchronisierte Stacks nicht verwendet werden können. Siehe [Voraussetzungen](/docs/requirements/#optional-git).
 - **Helm-CLI** – das gefundene helm, etwa `/usr/local/bin/helm v3.16.2`, oder was für dieses System zu installieren ist, wenn [Helm-Releases](/docs/clusters/helm/) nicht aufgelistet oder installiert werden können. Helm 2 wird als nicht unterstützt gemeldet. Siehe [Voraussetzungen](/docs/requirements/#optional-helm).
 

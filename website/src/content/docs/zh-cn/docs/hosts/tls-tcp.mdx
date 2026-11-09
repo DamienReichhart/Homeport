@@ -32,11 +32,11 @@ Docker 的指南 [Protect the Docker daemon socket](https://docs.docker.com/engi
 
 服务器的证书必须包含你输入的主机名（其 DNS 名称或 IP 地址必须在证书的主题备用名称中），否则连接会失败，并提示 _TLS handshake failed_。
 
-证书和密钥会加密保存，这需要[系统钥匙串](/docs/requirements/#optional-an-os-keychain)。编辑主机时，将字段留空即可保留已保存的内容。
+证书和密钥会加密保存，这需要[系统钥匙串](/docs/requirements/#可选系统钥匙串)。编辑主机时，将字段留空即可保留已保存的内容。
 
 ### 从 Docker 上下文导入
 
-如果 `docker context ls` 已列出该引擎，**添加主机**页面上的**导入 Docker 上下文**会使用上下文的地址及其 `ca.pem`、`cert.pem` 和 `key.pem` 创建主机，无需选择文件。跳过 TLS 验证的上下文不会被导入。参见 [Docker 上下文](/docs/hosts/#docker-contexts)。
+如果 `docker context ls` 已列出该引擎，**添加主机**页面上的**导入 Docker 上下文**会使用上下文的地址及其 `ca.pem`、`cert.pem` 和 `key.pem` 创建主机，无需选择文件。跳过 TLS 验证的上下文不会被导入。参见 [Docker 上下文](/docs/hosts/#docker-上下文)。
 
 ## TCP
 

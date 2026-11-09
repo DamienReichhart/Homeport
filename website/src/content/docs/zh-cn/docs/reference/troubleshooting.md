@@ -3,7 +3,7 @@ title: 故障排除
 description: 按 Homeport 显示的消息，列出你最可能遇到的问题及其解决方法。
 ---
 
-如果这里没有你遇到的问题，请查看[日志文件](/docs/reference/security/#logs)，并附上**设置**中显示的 Homeport 版本[创建 issue](https://github.com/DamienReichhart/Homeport/issues)。
+如果这里没有你遇到的问题，请查看[日志文件](/docs/reference/security/#日志)，并附上**设置**中显示的 Homeport 版本[创建 issue](https://github.com/DamienReichhart/Homeport/issues)。
 
 ## 安装与启动
 
@@ -35,11 +35,11 @@ Homeport 重新打开时，会恢复关闭时窗口的大小、位置和最大�
 
 ### 再次打开 Homeport 不会打开第二个窗口
 
-同一时间只运行一个 Homeport：在它已经运行时再次打开，会将其窗口带到最前面，即使它隐藏在[系统托盘](/docs/guides/overview/#system-tray)中。两个副本会对每台主机连接两次，并写入同一份数据。
+同一时间只运行一个 Homeport：在它已经运行时再次打开，会将其窗口带到最前面，即使它隐藏在[系统托盘](/docs/guides/overview/#系统托盘)中。两个副本会对每台主机连接两次，并写入同一份数据。
 
 ### 没有托盘图标
 
-在 Linux 上，托盘需要 appindicator 库，并且有些桌面环境会隐藏托盘图标：在 GNOME 上，请安装 AppIndicator Support 扩展。如果 Homeport 找不到 appindicator 库，**设置 → 桌面**会说明这一点，并且关闭窗口即退出应用。参见[系统要求](/docs/requirements/#optional-a-system-tray)。
+在 Linux 上，托盘需要 appindicator 库，并且有些桌面环境会隐藏托盘图标：在 GNOME 上，请安装 AppIndicator Support 扩展。如果 Homeport 找不到 appindicator 库，**设置 → 桌面**会说明这一点，并且关闭窗口即退出应用。参见[系统要求](/docs/requirements/#可选系统托盘)。
 
 ### 红色横幅提示没有可用的系统钥匙串
 
@@ -57,11 +57,11 @@ Homeport 只会安装签名与其更新密钥匹配的更新，如果下载不�
 
 ### apt 提示“NO_PUBKEY”或“The repository is not signed”
 
-`/etc/apt/keyrings/homeport.asc` 中缺少 Homeport 密钥。请再次运行[快速安装](/docs/installation/#quick-install)，或[手动设置](/docs/installation/#manual-setup)中的前两条命令。
+`/etc/apt/keyrings/homeport.asc` 中缺少 Homeport 密钥。请再次运行[快速安装](/docs/installation/#快速安装)，或[手动设置](/docs/installation/#手动设置)中的前两条命令。
 
 ### dnf 或 zypper 询问是否导入密钥
 
-那是 Homeport 软件包密钥，在包管理器首次使用该仓库时出现。请确认它显示的指纹与[验证下载](/docs/reference/verifying/#package-signatures)中的指纹一致，然后接受。
+那是 Homeport 软件包密钥，在包管理器首次使用该仓库时出现。请确认它显示的指纹与[验证下载](/docs/reference/verifying/#软件包签名)中的指纹一致，然后接受。
 
 ### 发布后 apt 立即提示“Hash Sum mismatch”
 
@@ -69,7 +69,7 @@ apt 读取仓库时，仓库正在更新。几分钟后再次运行 `sudo apt up
 
 ### 我的包管理器看不到新版本
 
-检查仓库是否仍已设置：`/etc/apt/sources.list.d/homeport.sources`、`/etc/yum.repos.d/homeport.repo` 或 `/etc/zypp/repos.d/homeport.repo`。如果你删除了它，请运行[快速安装](/docs/installation/#quick-install)重新添加。如果你是从下载的文件安装的 0.2.0 或更早版本，仓库从未被添加：参见[从 0.2.0 更新](/docs/reference/updating/#updating-from-020-or-earlier)。
+检查仓库是否仍已设置：`/etc/apt/sources.list.d/homeport.sources`、`/etc/yum.repos.d/homeport.repo` 或 `/etc/zypp/repos.d/homeport.repo`。如果你删除了它，请运行[快速安装](/docs/installation/#快速安装)重新添加。如果你是从下载的文件安装的 0.2.0 或更早版本，仓库从未被添加：参见[从 0.2.0 更新](/docs/reference/updating/#从-020-或更早版本更新)。
 
 ## 连接
 
@@ -83,7 +83,7 @@ sudo usermod -aG docker $USER
 
 ### 无法访问：No such file or directory
 
-套接字路径上没有任何程序在监听。请启动你的引擎（Docker Desktop、Colima、OrbStack、Rancher Desktop），或检查路径。参见[本地引擎](/docs/hosts/local/#adding-a-socket-by-hand)。
+套接字路径上没有任何程序在监听。请启动你的引擎（Docker Desktop、Colima、OrbStack、Rancher Desktop），或检查路径。参见[本地引擎](/docs/hosts/local/#手动添加套接字)。
 
 ### “Docker Engine 未及时响应。”或“SSH 连接超时”
 
@@ -91,7 +91,7 @@ Homeport 等待连接的时间为 10 秒。请检查地址和端口、服务器�
 
 ### 访问被拒绝：“SSH 服务器拒绝了 … 的密钥”
 
-服务器尚未接受 Homeport 的密钥。在服务器上运行主机页面中的**添加公钥**命令，然后选择**重新连接**。参见 [SSH 主机](/docs/hosts/ssh/#authorise-homeports-key)。
+服务器尚未接受 Homeport 的密钥。在服务器上运行主机页面中的**添加公钥**命令，然后选择**重新连接**。参见 [SSH 主机](/docs/hosts/ssh/#授权-homeport-的密钥)。
 
 ### “SSH 服务器无法打开 /var/run/docker.sock”
 
@@ -121,11 +121,11 @@ ssh-add
 
 ### 服务器密钥已更改
 
-SSH 服务器提供的密钥与你信任的不同。如果你重装了服务器或更改了其密钥，请选择**信任新密钥**。如果你不知道它为何更改，请不要连接：询问服务器的管理员。参见 [SSH 主机](/docs/hosts/ssh/#when-the-servers-key-changes)。
+SSH 服务器提供的密钥与你信任的不同。如果你重装了服务器或更改了其密钥，请选择**信任新密钥**。如果你不知道它为何更改，请不要连接：询问服务器的管理员。参见 [SSH 主机](/docs/hosts/ssh/#服务器密钥更改时)。
 
 ### 凭据丢失
 
-用于加密你的机密的密钥已从钥匙串中丢失或已更改：可能发生在重置钥匙串、使用新的用户配置文件，或将 Homeport 的数据复制到另一台计算机之后（后者请使用[导出和导入](/docs/reference/security/#moving-to-another-computer)）。Homeport 会保留该主机；请在主机页面上重新输入其凭据：
+用于加密你的机密的密钥已从钥匙串中丢失或已更改：可能发生在重置钥匙串、使用新的用户配置文件，或将 Homeport 的数据复制到另一台计算机之后（后者请使用[导出和导入](/docs/reference/security/#迁移到另一台计算机)）。Homeport 会保留该主机；请在主机页面上重新输入其凭据：
 
 - **TLS**：重新加载三个证书文件，然后选择**保存**。
 - **使用导入密钥的 SSH**：重新粘贴私钥和口令，然后选择**保存**。
@@ -169,11 +169,11 @@ kind、k3d 和 minikube 每次重新创建集群时都会生成新证书。请�
 
 ### Nomad：“… 不认识 Homeport 发送的 ACL 令牌。”
 
-令牌输入错误、已过期或已被删除。使用 [ACL 策略](/docs/clusters/nomad/#acl-policies)中的策略创建一个新令牌（`nomad acl token create -name=homeport -policy=homeport`），并将其 secret ID 粘贴到集群的**设置**中。在此之前，集群会保持**访问被拒绝**状态。
+令牌输入错误、已过期或已被删除。使用 [ACL 策略](/docs/clusters/nomad/#acl-策略)中的策略创建一个新令牌（`nomad acl token create -name=homeport -policy=homeport`），并将其 secret ID 粘贴到集群的**设置**中。在此之前，集群会保持**访问被拒绝**状态。
 
 ### Nomad：“… 拒绝了：该 ACL 令牌缺少此操作所需的权限。”
 
-令牌的策略没有授予此页面或操作所需的权限；消息会说明是哪一项（读取 job 或日志、运行或停止 job、扩缩、打开 shell、更改节点）。请将该能力添加到令牌的策略中；[ACL 策略](/docs/clusters/nomad/#acl-policies)列出了每项所需的内容。其他页面仍可正常使用。
+令牌的策略没有授予此页面或操作所需的权限；消息会说明是哪一项（读取 job 或日志、运行或停止 job、扩缩、打开 shell、更改节点）。请将该能力添加到令牌的策略中；[ACL 策略](/docs/clusters/nomad/#acl-策略)列出了每项所需的内容。其他页面仍可正常使用。
 
 ### Nomad：“… 没有 leader：其 server 无法就 leader 达成一致。”
 
@@ -229,17 +229,17 @@ Homeport 需要本机上的 `docker compose` 来部署堆栈。请安装 Docker 
 
 ### 部署失败：“使用了 build:”
 
-托管堆栈没有可用于构建的文件夹。可以改为[关联项目文件夹](/docs/guides/stacks/#creating-a-linked-stack)（关联堆栈可以构建），或者构建镜像并推送到镜像仓库，然后使用 `image:`。
+托管堆栈没有可用于构建的文件夹。可以改为[关联项目文件夹](/docs/guides/stacks/#创建关联堆栈)（关联堆栈可以构建），或者构建镜像并推送到镜像仓库，然后使用 `image:`。
 
 ### 我的堆栈变成了外部堆栈
 
-当[关联堆栈](/docs/guides/stacks/#when-the-folder-moves-or-disappears)的文件夹被移动、重命名或删除，或其中某个 compose 文件被移动、重命名或删除时，它会显示为外部堆栈，并标有 ⚠ **它的 compose 文件已不在本机上。** 什么都不会丢失：把文件夹放回原处，下次刷新时堆栈就会重新成为关联堆栈。如果文件夹已永久移动，请在堆栈的**定义**标签页中选择**忘记**，然后通过**新建堆栈 → 使用本机上的文件夹**从新位置重新关联它。
+当[关联堆栈](/docs/guides/stacks/#当文件夹被移动或消失时)的文件夹被移动、重命名或删除，或其中某个 compose 文件被移动、重命名或删除时，它会显示为外部堆栈，并标有 ⚠ **它的 compose 文件已不在本机上。** 什么都不会丢失：把文件夹放回原处，下次刷新时堆栈就会重新成为关联堆栈。如果文件夹已永久移动，请在堆栈的**定义**标签页中选择**忘记**，然后通过**新建堆栈 → 使用本机上的文件夹**从新位置重新关联它。
 
 从另一台计算机上的文件夹启动的堆栈在这里总是外部堆栈，因为本机上没有那个路径。
 
 ### “在 Homeport 之外被更改”
 
-自 Homeport 上次读取以来，关联堆栈的 compose 文件在 Homeport 之外（在你的编辑器中、被 `git pull`）被编辑过。选择**重新加载**查看其当前内容。如果你同时也在 Homeport 中编辑，保存会被拒绝，并提示**自你打开以来，… 已在 Homeport 之外被更改。**，这样任何一方的更改都不会被悄悄丢失：重新加载并重做你的编辑，或选择**覆盖**保留你的版本。参见[编辑关联堆栈](/docs/guides/stacks/#editing-a-linked-stack)。
+自 Homeport 上次读取以来，关联堆栈的 compose 文件在 Homeport 之外（在你的编辑器中、被 `git pull`）被编辑过。选择**重新加载**查看其当前内容。如果你同时也在 Homeport 中编辑，保存会被拒绝，并提示**自你打开以来，… 已在 Homeport 之外被更改。**，这样任何一方的更改都不会被悄悄丢失：重新加载并重做你的编辑，或选择**覆盖**保留你的版本。参见[编辑关联堆栈](/docs/guides/stacks/#编辑关联堆栈)。
 
 ### 拉取私有镜像失败
 
@@ -251,7 +251,7 @@ Homeport 需要本机上的 `docker compose` 来部署堆栈。请安装 Docker 
 
 ### 没有出现新版镜像标记
 
-只有在询问了镜像仓库并得到答复时，才会显示该标记。本地构建或按摘要拉取的镜像从不显示。如果某个镜像仓库无法访问或限制请求（Docker Hub 会将这些检查计入其拉取限制），Homeport 会在其[日志](/docs/reference/security/#logs)中写入一行，并且不显示任何内容；答案还会保留 6 小时，因此请选择**检查新版镜像**立即重新询问。在**设置 → 镜像仓库**中添加 Docker Hub 登录信息可以提高该限制。
+只有在询问了镜像仓库并得到答复时，才会显示该标记。本地构建或按摘要拉取的镜像从不显示。如果某个镜像仓库无法访问或限制请求（Docker Hub 会将这些检查计入其拉取限制），Homeport 会在其[日志](/docs/reference/security/#日志)中写入一行，并且不显示任何内容；答案还会保留 6 小时，因此请选择**检查新版镜像**立即重新询问。在**设置 → 镜像仓库**中添加 Docker Hub 登录信息可以提高该限制。
 
 ### 搜索 Docker Hub 时显示错误
 
@@ -287,11 +287,11 @@ Homeport 使用 `systemctl` 启动和停止单元的服务，它只能通过 SSH
 
 ### containerd：“无权使用 /run/containerd/containerd.sock 处的 containerd”
 
-containerd 的套接字属于 root。通过 `/etc/containerd/config.toml` 中 `[grpc]` 下的 `gid` 为某个组授予访问权限，将你的用户（或 SSH 用户）加入该组，重启 containerd 并重新登录；[containerd 页面](/docs/hosts/containerd/#letting-your-user-use-the-socket)中有相关命令。Rootless containerd 完全无法访问：其套接字只存在于 RootlessKit 的命名空间内。
+containerd 的套接字属于 root。通过 `/etc/containerd/config.toml` 中 `[grpc]` 下的 `gid` 为某个组授予访问权限，将你的用户（或 SSH 用户）加入该组，重启 containerd 并重新登录；[containerd 页面](/docs/hosts/containerd/#让你的用户使用套接字)中有相关命令。Rootless containerd 完全无法访问：其套接字只存在于 RootlessKit 的命名空间内。
 
 ### containerd：“此容器的输出未被记录。”
 
-containerd 不保存日志；启动任务的工具决定其输出去向。使用 `ctr` 创建的容器通常不会把输出发送到任何地方。nerdctl 和 Kubernetes 的容器会将日志写入 Homeport 可以读取的文件；参见[日志](/docs/hosts/containerd/#logs)。
+containerd 不保存日志；启动任务的工具决定其输出去向。使用 `ctr` 创建的容器通常不会把输出发送到任何地方。nerdctl 和 Kubernetes 的容器会将日志写入 Homeport 可以读取的文件；参见[日志](/docs/hosts/containerd/#日志)。
 
 ### containerd：日志或终端提示需要 SSH
 
@@ -303,7 +303,7 @@ containerd 不保存日志；启动任务的工具决定其输出去向。使用
 
 ### Incus：“无权使用 /var/lib/incus/unix.socket 处的 Incus”
 
-Incus 的管理套接字供 `incus-admin` 组使用，受限的 `unix.socket.user` 供 `incus` 组使用。使用 `sudo usermod -aG incus-admin "$USER"` 添加你的用户（或 SSH 用户），然后注销并重新登录，或重新通过 SSH 连接。参见 [Incus 的套接字](/docs/hosts/incus/#its-sockets)。
+Incus 的管理套接字供 `incus-admin` 组使用，受限的 `unix.socket.user` 供 `incus` 组使用。使用 `sudo usermod -aG incus-admin "$USER"` 添加你的用户（或 SSH 用户），然后注销并重新登录，或重新通过 SSH 连接。参见 [Incus 的套接字](/docs/hosts/incus/#它的套接字)。
 
 ### Incus：使用信任令牌添加时提示“Homeport 无法通过 … 访问 Incus。”
 
@@ -315,7 +315,7 @@ Incus 的管理套接字供 `incus-admin` 组使用，受限的 `unix.socket.use
 
 ### Incus：“… 出示的证书指纹为 …，而不是受信任的 …。”
 
-服务器的证书不是 Homeport 信任的那个：Incus 被重装、其证书被更新，或者该地址上有其他东西在响应。在服务器上使用 `incus info` 检查指纹；如果它就是显示的那个，请删除该主机，然后使用新令牌重新添加。参见[固定的证书](/docs/hosts/incus/#the-servers-certificate-is-pinned)。
+服务器的证书不是 Homeport 信任的那个：Incus 被重装、其证书被更新，或者该地址上有其他东西在响应。在服务器上使用 `incus info` 检查指纹；如果它就是显示的那个，请删除该主机，然后使用新令牌重新添加。参见[固定的证书](/docs/hosts/incus/#服务器证书被固定)。
 
 ### Incus：“此主机无法运行虚拟机。”
 

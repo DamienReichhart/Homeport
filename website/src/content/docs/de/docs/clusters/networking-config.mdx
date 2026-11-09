@@ -34,7 +34,7 @@ Im Tab **Regeln** eines Ingress prüfen Sie das Routing: welcher Host und welche
   caption="Ein Schlüssel angezeigt; der andere bleibt maskiert, bis Sie danach fragen."
 />
 
-Die Seite eines Secrets zeigt seinen Typ und jeden Schlüssel mit seiner Größe, maskiert. **Anzeigen** holt diesen einen Wert vom Cluster und zeigt ihn dekodiert an (Binärwerte als base64), mit **Kopieren** und **Verbergen**. Werte sind nie Teil einer Liste, der Seite eines Secrets oder seines YAML; ein angezeigter Wert wird weder zwischengespeichert noch gespeichert noch protokolliert und wird wieder verborgen, wenn Sie die Seite verlassen. Siehe [Sicherheit und Ihre Daten](/docs/reference/security/#clusters).
+Die Seite eines Secrets zeigt seinen Typ und jeden Schlüssel mit seiner Größe, maskiert. **Anzeigen** holt diesen einen Wert vom Cluster und zeigt ihn dekodiert an (Binärwerte als base64), mit **Kopieren** und **Verbergen**. Werte sind nie Teil einer Liste, der Seite eines Secrets oder seines YAML; ein angezeigter Wert wird weder zwischengespeichert noch gespeichert noch protokolliert und wird wieder verborgen, wenn Sie die Seite verlassen. Siehe [Sicherheit und Ihre Daten](/docs/reference/security/#cluster).
 
 Der Tab **YAML** einer ConfigMap hat **Bearbeiten**, um sie über eine Vorschau und Server-side Apply zu ändern ([YAML anwenden und bearbeiten](/docs/clusters/yaml/)). Secrets werden in Homeport nicht bearbeitet, da es nie alle ihre Werte auf einmal zeigt; wenden Sie stattdessen das Manifest eines Secrets an.
 

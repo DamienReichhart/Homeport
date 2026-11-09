@@ -51,7 +51,7 @@ Pega la URL `https://` del repositorio, elige **Token** e introduce el nombre de
 <Aside type="tip">
   Sin un llavero del sistema, Homeport no puede guardar claves de despliegue ni tokens, así que solo
   se pueden añadir repositorios públicos. Consulta
-  [Requisitos](/docs/requirements/#optional-an-os-keychain).
+  [Requisitos](/docs/requirements/#opcional-un-llavero-del-sistema).
 </Aside>
 
 Quitar un repositorio borra su clave o su token y su clon en este equipo. Se rechaza mientras lo use un stack sincronizado.
@@ -78,7 +78,7 @@ Homeport obtiene la rama o la etiqueta y lee el archivo compose antes de guardar
 
 El repositorio se clona una vez en este equipo, en una carpeta `repositories` junto a la base de datos de Homeport, y lo comparten todos los stacks sincronizados creados a partir de él. Cada stack sincronizado se despliega desde su propia copia de trabajo del commit, en una carpeta `synced-stacks` en ese mismo lugar, que se mantiene entre despliegues: los archivos que tus contenedores escriben mediante bind mounts relativos se quedan donde estaban. Los enlaces simbólicos del repositorio se extraen como archivos normales, así que un archivo compose no puede dirigir a Compose a un archivo de otra parte de este equipo. Los archivos conservan los finales de línea con los que los guarda el repositorio, también en Windows, así que un script copiado en una imagen Linux se sigue ejecutando; solo el propio `.gitattributes` del repositorio puede cambiarlos.
 
-Un stack sincronizado se puede desplegar en un [Swarm](/docs/guides/swarm/) en su lugar: elígelo en **Desplegar en**, en **Nuevo stack**. Se sincroniza, se despliega y se despliega automáticamente del mismo modo, con `docker stack deploy` ejecutado desde su copia de trabajo; consulta [Stacks vinculados y sincronizados en un Swarm](/docs/guides/swarm/#linked-and-synced-stacks-on-a-swarm) para ver qué cambia, empezando por `build:`.
+Un stack sincronizado se puede desplegar en un [Swarm](/docs/guides/swarm/) en su lugar: elígelo en **Desplegar en**, en **Nuevo stack**. Se sincroniza, se despliega y se despliega automáticamente del mismo modo, con `docker stack deploy` ejecutado desde su copia de trabajo; consulta [Stacks vinculados y sincronizados en un Swarm](/docs/guides/swarm/#stacks-vinculados-y-sincronizados-en-un-swarm) para ver qué cambia, empezando por `build:`.
 
 **Olvidar** hace que Homeport deje de seguir el repositorio. Sus contenedores siguen en ejecución y pasa a ser un stack externo; su copia de trabajo se borra salvo que los contenedores hayan escrito archivos en ella, y el clon del repositorio desaparece cuando ya no lo usa ningún stack sincronizado. El repositorio se queda en **Ajustes → Repositorios**.
 

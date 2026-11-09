@@ -3,7 +3,7 @@ title: 键盘
 description: 不用鼠标操作 Homeport：命令面板和跨所有主机的搜索、适用于每个页面和主机的快捷键，以及列出它们的帮助表。
 ---
 
-Homeport 可以完全用键盘操作。按 <kbd>Mod</kbd> <kbd>K</kbd> 打开[命令面板](#command-palette)，在任意页面按 <kbd>?</kbd> 可查看该页面可用的所有快捷键。
+Homeport 可以完全用键盘操作。按 <kbd>Mod</kbd> <kbd>K</kbd> 打开[命令面板](#命令面板)，在任意页面按 <kbd>?</kbd> 可查看该页面可用的所有快捷键。
 
 下文中的 **Mod** 在 macOS 上指 <kbd>⌘</kbd>，在 Windows 和 Linux 上指 <kbd>Ctrl</kbd>；在 macOS 上，<kbd>Alt</kbd> 即 <kbd>⌥</kbd>。
 

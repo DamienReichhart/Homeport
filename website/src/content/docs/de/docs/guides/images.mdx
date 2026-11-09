@@ -23,7 +23,7 @@ Die Seite **Images** listet die auf dem ausgewählten Host gespeicherten Images 
 
 Gestoppte Container zählen als Verwender eines Images. Wählen Sie einen Spaltenkopf aus, um zu sortieren, und suchen Sie mit **Images durchsuchen**.
 
-Ein ⬆ neben dem Namen bedeutet, dass eines der Tags des Images in seiner Registry auf ein neueres Image zeigt; fahren Sie mit dem Mauszeiger darüber, um zu sehen, welches. Pullen Sie das Tag, um es zu holen. **Nach neueren Images suchen** fragt die Registrys erneut, statt die 6 Stunden lang aufbewahrten Antworten zu verwenden. Unter [neuere Images](/docs/guides/containers/#newer-images) steht, wie die Prüfung funktioniert.
+Ein ⬆ neben dem Namen bedeutet, dass eines der Tags des Images in seiner Registry auf ein neueres Image zeigt; fahren Sie mit dem Mauszeiger darüber, um zu sehen, welches. Pullen Sie das Tag, um es zu holen. **Nach neueren Images suchen** fragt die Registrys erneut, statt die 6 Stunden lang aufbewahrten Antworten zu verwenden. Unter [neuere Images](/docs/guides/containers/#neuere-images) steht, wie die Prüfung funktioniert.
 
 ## Ein Image pullen
 
@@ -35,11 +35,11 @@ Homeport zeigt den Fortschritt des Pulls Layer für Layer und meldet **Fertig.**
 
 Die Eingabe eines bloßen Namens wie `postg` durchsucht Docker Hub schon beim Tippen und listet die passenden Repositorys mit ihrer Beschreibung, ihren Sternen und einer Markierung **Offiziell** auf. Wählen Sie eines, um seine Tags zu sehen, die neuesten zuerst, mit ihrer Größe und dem Zeitpunkt des Pushs; **Tags filtern** grenzt die Liste ein (`alpine`), und **Weitere Tags** lädt die nächste Seite. Die Wahl eines Tags füllt die Referenz aus, etwa `postgres:17-alpine`, bereit zum **Pullen**.
 
-Die Suche läuft auf dem ausgewählten Host und erreicht Docker Hub daher über das Netzwerk des Hosts, so wie der Pull es tun wird. Tags liest dieser Computer von Docker Hub; eine gespeicherte Docker-Hub-[Anmeldung](/docs/guides/settings/#registries) erhöht dessen Ratenlimits. Die Eingabe eines Tags, eines Digests oder einer anderen Registry (`ghcr.io/…`) überspringt die Suche, und ist Docker Hub nicht erreichbar, sagt der Dialog das und pullt trotzdem, was Sie eingeben. Andere Registrys lassen sich noch nicht durchsuchen.
+Die Suche läuft auf dem ausgewählten Host und erreicht Docker Hub daher über das Netzwerk des Hosts, so wie der Pull es tun wird. Tags liest dieser Computer von Docker Hub; eine gespeicherte Docker-Hub-[Anmeldung](/docs/guides/settings/#registrys) erhöht dessen Ratenlimits. Die Eingabe eines Tags, eines Digests oder einer anderen Registry (`ghcr.io/…`) überspringt die Suche, und ist Docker Hub nicht erreichbar, sagt der Dialog das und pullt trotzdem, was Sie eingeben. Andere Registrys lassen sich noch nicht durchsuchen.
 
 ### Private Images
 
-Ist in [**Einstellungen → Registrys**](/docs/guides/settings/#registries) eine Anmeldung für die Registry des Images gespeichert, übergibt Homeport sie mit dem Pull an die Engine, sodass private Images auf jedem Host gepullt werden – lokal, TCP, TLS oder SSH –, ohne dass dort etwas eingerichtet ist. Unter der Referenz sagt der Dialog, wie das Image gepullt wird: **Als alice auf ghcr.io gepullt** oder **Anonym gepullt**, wenn keine Anmeldung passt.
+Ist in [**Einstellungen → Registrys**](/docs/guides/settings/#registrys) eine Anmeldung für die Registry des Images gespeichert, übergibt Homeport sie mit dem Pull an die Engine, sodass private Images auf jedem Host gepullt werden – lokal, TCP, TLS oder SSH –, ohne dass dort etwas eingerichtet ist. Unter der Referenz sagt der Dialog, wie das Image gepullt wird: **Als alice auf ghcr.io gepullt** oder **Anonym gepullt**, wenn keine Anmeldung passt.
 
 Ein Image ohne Registry im Namen (`nginx`, `bitnami/redis`) verwendet die Docker-Hub-Anmeldung. Eine Docker-Hub-Anmeldung erhöht außerdem das Pull-Limit von Docker Hub.
 
@@ -63,7 +63,7 @@ Wählen Sie **Bauen** und einen **Ordner** auf diesem Computer, der ein Dockerfi
 | **Build-Cache nicht verwenden** | Führt jeden Schritt erneut aus (`--no-cache`).                                                                  |
 | **Neuere Basis-Images pullen**  | Pullt die `FROM`-Images, auch wenn der Host sie hat (`--pull`).                                                 |
 
-Die Ausgabe des Builds wird live gestreamt; **Abbrechen** stoppt ihn. Wenn er fertig ist, erscheinen die Namen auf der Seite Images. Schlägt ein Schritt fehl, nennt die Meldung ihn (**Der Build ist bei Schritt 3/5 (RUN make) fehlgeschlagen.**), und **Details** enthält das Ende der Ausgabe. Private `FROM`-Images werden mit den gespeicherten [Registry-Anmeldungen](/docs/guides/settings/#registries) gepullt.
+Die Ausgabe des Builds wird live gestreamt; **Abbrechen** stoppt ihn. Wenn er fertig ist, erscheinen die Namen auf der Seite Images. Schlägt ein Schritt fehl, nennt die Meldung ihn (**Der Build ist bei Schritt 3/5 (RUN make) fehlgeschlagen.**), und **Details** enthält das Ende der Ausgabe. Private `FROM`-Images werden mit den gespeicherten [Registry-Anmeldungen](/docs/guides/settings/#registrys) gepullt.
 
 <Aside>
   Homeport verwendet den klassischen Builder der Engine, den ihre API anbietet. BuildKit-Funktionen
@@ -72,13 +72,13 @@ Die Ausgabe des Builds wird live gestreamt; **Abbrechen** stoppt ihn. Wenn er fe
 
 ### Stattdessen einen Container committen
 
-Ein Image kann auch aus einem Container entstehen: **Als Image committen…** im Menü **⋮** eines Containers speichert seine Dateien und Einstellungen so, wie sie jetzt sind – siehe [Einen Container committen](/docs/guides/containers/#committing-a-container). Das ist der schnelle Weg, zu behalten, was jemand in einem laufenden Container installiert oder geändert hat. Ein Build ist der dauerhafte Weg: Sein Dockerfile sagt, wie das Image entsteht, sodass es neu gebaut, geprüft und aktualisiert werden kann, wenn sich das Basis-Image weiterentwickelt. Ein committetes Image kann das nicht.
+Ein Image kann auch aus einem Container entstehen: **Als Image committen…** im Menü **⋮** eines Containers speichert seine Dateien und Einstellungen so, wie sie jetzt sind – siehe [Einen Container committen](/docs/guides/containers/#einen-container-committen). Das ist der schnelle Weg, zu behalten, was jemand in einem laufenden Container installiert oder geändert hat. Ein Build ist der dauerhafte Weg: Sein Dockerfile sagt, wie das Image entsteht, sodass es neu gebaut, geprüft und aktualisiert werden kann, wenn sich das Basis-Image weiterentwickelt. Ein committetes Image kann das nicht.
 
 ## Ein Image pushen
 
 Wählen Sie **Pushen** im Menü **⋮** eines Images. **Zu pushender Name** beginnt mit dem ersten Namen des Images; wählen Sie einen anderen seiner Namen oder geben Sie einen neuen ein, etwa `ghcr.io/org/app:v2` – das Image erhält diesen Namen zuerst, wie bei **Taggen**. Der erste Teil des Namens sagt, in welche Registry es geht: `ghcr.io/org/app` geht zu GHCR, `org/app` zu Docker Hub.
 
-Homeport pusht über die Engine des Hosts mit der für diese Registry gespeicherten [Registry-Anmeldung](/docs/guides/settings/#registries) und sagt unter dem Namen, welche (**Als alice auf ghcr.io gepusht**). Ist keine Anmeldung gespeichert, warnt der Dialog vor dem Start, da die meisten Registrys anonyme Pushes ablehnen. Während er läuft, zählt der Dialog die gepushten Layer und die, die die Registry bereits hatte, und zeigt den laufenden Upload; **Abbrechen** stoppt den Push.
+Homeport pusht über die Engine des Hosts mit der für diese Registry gespeicherten [Registry-Anmeldung](/docs/guides/settings/#registrys) und sagt unter dem Namen, welche (**Als alice auf ghcr.io gepusht**). Ist keine Anmeldung gespeichert, warnt der Dialog vor dem Start, da die meisten Registrys anonyme Pushes ablehnen. Während er läuft, zählt der Dialog die gepushten Layer und die, die die Registry bereits hatte, und zeigt den laufenden Upload; **Abbrechen** stoppt den Push.
 
 Lehnt die Registry ab, sagt die Meldung, ob eine Anmeldung hinzugefügt oder geprüft werden muss, ob die gespeicherte in dieses Repository pushen darf.
 
@@ -93,7 +93,7 @@ Die Datei wird über die eigene Verbindung des Hosts zwischen diesem Computer un
 
 ### Ein Dateisystem importieren
 
-**Aus tar importieren…** oben auf der Seite macht aus einem tar eines Root-Dateisystems ein Image, wie `docker import`: eines, das mit [**Dateisystem exportieren…**](/docs/guides/containers/#exporting-a-containers-filesystem) eines Containers oder `docker export` erstellt wurde, eine Ausgabe von `debootstrap` oder Buildroot oder eine Appliance eines Herstellers. Wählen Sie die Datei (unkomprimiert oder mit gzip, xz oder bzip2 komprimiert), geben Sie dem Image einen **Namen** – er beginnt mit dem Dateinamen – und optional **Änderungen**: Dockerfile-Anweisungen wie `CMD ["/bin/sh"]` oder `ENV LANG=C.UTF-8`, da ein importiertes Image keinen eigenen Befehl hat. Der Fortschritt zeigt die gesendeten Bytes; das Image erscheint dann in der Liste.
+**Aus tar importieren…** oben auf der Seite macht aus einem tar eines Root-Dateisystems ein Image, wie `docker import`: eines, das mit [**Dateisystem exportieren…**](/docs/guides/containers/#das-dateisystem-eines-containers-exportieren) eines Containers oder `docker export` erstellt wurde, eine Ausgabe von `debootstrap` oder Buildroot oder eine Appliance eines Herstellers. Wählen Sie die Datei (unkomprimiert oder mit gzip, xz oder bzip2 komprimiert), geben Sie dem Image einen **Namen** – er beginnt mit dem Dateinamen – und optional **Änderungen**: Dockerfile-Anweisungen wie `CMD ["/bin/sh"]` oder `ENV LANG=C.UTF-8`, da ein importiertes Image keinen eigenen Befehl hat. Der Fortschritt zeigt die gesendeten Bytes; das Image erscheint dann in der Liste.
 
 ### Speichern und Laden oder Exportieren und Importieren?
 
@@ -106,7 +106,7 @@ Die Datei wird über die eigene Verbindung des Hosts zwischen diesem Computer un
 
 ## Mit einem Image arbeiten
 
-- **▶ Ausführen** öffnet den [Dialog zum Ausführen](/docs/guides/containers/#running-a-container) mit eingetragenem Image.
+- **▶ Ausführen** öffnet den [Dialog zum Ausführen](/docs/guides/containers/#einen-container-ausführen) mit eingetragenem Image.
 - **Untersuchen** – oder die Auswahl der Zeile – zeigt **Layer**, die Anweisungen, die jeden Layer gebaut haben, und ihre Größen, sowie **Rohes JSON**.
 - **Taggen** fügt einen weiteren Namen hinzu, etwa `registry.example.com/app:v2`. Es pusht nichts; das tut **Pushen**.
 - **Entfernen** löscht das Image und die Layer, die kein anderes Image verwendet. Ein Image mit mehreren Tags verliert alle. Die Engine weigert sich, ein Image zu entfernen, das ein Container noch verwendet; entfernen Sie zuerst den Container.
@@ -118,4 +118,4 @@ Die Datei wird über die eigene Verbindung des Hosts zwischen diesem Computer un
 - **Verwaiste Images** – ungetaggte Images, die Builds und Pulls hinterlassen haben. Sie können gefahrlos entfernt werden.
 - **Alle unbenutzten Images** – jedes Image, das kein Container verwendet, getaggte eingeschlossen. Sie lassen sich erneut pullen, aber das kostet Zeit und Bandbreite.
 
-Homeport sagt Ihnen, wie viele entfernt wurden und wie viel Platz frei wurde. Das [Aufräumen in der Übersicht](/docs/guides/overview/#cleaning-up) kann außerdem gestoppte Container, Netzwerke, Build-Cache und Volumes in einem Durchgang entfernen.
+Homeport sagt Ihnen, wie viele entfernt wurden und wie viel Platz frei wurde. Das [Aufräumen in der Übersicht](/docs/guides/overview/#aufräumen) kann außerdem gestoppte Container, Netzwerke, Build-Cache und Volumes in einem Durchgang entfernen.

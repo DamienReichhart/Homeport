@@ -108,7 +108,7 @@ La pestaña **Logs** sigue sus logs, e **Inspeccionar** muestra su definición c
 
 **Editar**, en la página de un servicio, cambia su imagen, su entorno y sus réplicas, y solo eso: sus puertos, montajes, redes y todo lo demás se devuelven tal cual. Después, el Swarm pasa sus tareas a los nuevos ajustes unas pocas cada vez, y la página muestra el progreso de la actualización. **Volver a desplegar todas las tareas** las reinicia aunque no haya cambiado nada, descargando de nuevo la imagen, que es como se despliega un nuevo push de la misma etiqueta. Si otra persona actualizó el servicio desde que lo abriste, Homeport lo indica en lugar de sobrescribir su cambio: actualiza y vuelve a editar.
 
-Imágenes privadas: los nodos descargan las imágenes ellos mismos, así que una imagen privada necesita un inicio de sesión en cada nodo (`docker login` allí), o un stack desplegado con tus credenciales de registro (consulta [Desplegar stacks](#deploying-stacks-to-a-swarm)).
+Imágenes privadas: los nodos descargan las imágenes ellos mismos, así que una imagen privada necesita un inicio de sesión en cada nodo (`docker login` allí), o un stack desplegado con tus credenciales de registro (consulta [Desplegar stacks](#desplegar-stacks-en-un-swarm)).
 
 ## Tareas
 

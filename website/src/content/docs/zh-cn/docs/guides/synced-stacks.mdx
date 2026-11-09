@@ -49,7 +49,7 @@ Homeport 第一次访问某个 SSH 服务器时，会信任该服务器出示的
 
 <Aside type="tip">
   没有系统钥匙串时，Homeport
-  无法保存部署密钥或令牌，因此只能添加公开仓库。请参阅[要求](/docs/requirements/#optional-an-os-keychain)。
+  无法保存部署密钥或令牌，因此只能添加公开仓库。请参阅[要求](/docs/requirements/#可选系统钥匙串)。
 </Aside>
 
 删除仓库会删除其密钥或令牌以及它在本机上的克隆。只要有同步堆栈在使用它，删除就会被拒绝。
@@ -76,7 +76,7 @@ Homeport 会在保存任何内容之前获取分支或标签并读取 compose �
 
 仓库只会在本机上克隆一次，位于 Homeport 数据库旁边的 `repositories` 文件夹中，并由从它创建的所有同步堆栈共享。每个同步堆栈从自己对该提交的检出副本进行部署，检出副本位于那里的 `synced-stacks` 文件夹中，在两次部署之间保持不动：容器通过相对绑定挂载写入的文件会留在原处。仓库中的符号链接会被检出为普通文件，因此 compose 文件无法让 Compose 指向本机上其他位置的文件。文件保留仓库中的换行符，在 Windows 上也是如此，因此复制到 Linux 镜像中的脚本仍然可以运行；只有仓库自己的 `.gitattributes` 能够更改它们。
 
-同步堆栈也可以部署到 [Swarm](/docs/guides/swarm/)：在**新建堆栈**的**部署到**下选择它。它会以相同的方式同步、部署和自动部署，并从其检出副本运行 `docker stack deploy`；有哪些不同（首先是 `build:`），请参阅 [Swarm 上的关联堆栈和同步堆栈](/docs/guides/swarm/#linked-and-synced-stacks-on-a-swarm)。
+同步堆栈也可以部署到 [Swarm](/docs/guides/swarm/)：在**新建堆栈**的**部署到**下选择它。它会以相同的方式同步、部署和自动部署，并从其检出副本运行 `docker stack deploy`；有哪些不同（首先是 `build:`），请参阅 [Swarm 上的关联堆栈和同步堆栈](/docs/guides/swarm/#swarm-上的关联堆栈和同步堆栈)。
 
 **忘记**会让 Homeport 停止跟踪该仓库。其容器会继续运行，它将成为外部堆栈；除非容器向其检出副本中写入了文件，否则检出副本会被删除，而仓库的克隆会在没有同步堆栈使用它时删除。该仓库仍保留在**设置 → 仓库**中。
 

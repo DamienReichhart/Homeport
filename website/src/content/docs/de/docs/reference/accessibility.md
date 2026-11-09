@@ -3,13 +3,13 @@ title: Tastatur und Barrierefreiheit
 description: Homeport mit der Tastatur, mit reduzierter Bewegung und mit einem Screenreader verwenden, der erreichte Kontrast, die heute bekannten Grenzen und wie Sie eine Barriere melden.
 ---
 
-Homeport soll allein mit der Tastatur, mit einem Screenreader und mit reduzierter Bewegung nutzbar sein, in jeder seiner [Sprachen](/docs/guides/settings/#appearance). Diese Seite sagt, was funktioniert, was noch nicht, und wie Sie uns mitteilen, wenn Ihnen etwas im Weg steht.
+Homeport soll allein mit der Tastatur, mit einem Screenreader und mit reduzierter Bewegung nutzbar sein, in jeder seiner [Sprachen](/docs/guides/settings/#darstellung). Diese Seite sagt, was funktioniert, was noch nicht, und wie Sie uns mitteilen, wenn Ihnen etwas im Weg steht.
 
 ## Sich bewegen
 
 Alles in Homeport ist mit <kbd>Tab</kbd> und <kbd>Shift</kbd> <kbd>Tab</kbd> erreichbar und mit <kbd>Enter</kbd> oder <kbd>Space</kbd> bedienbar. Ein sichtbarer Ring zeigt, wo der Fokus ist.
 
-- **Die Seitenleiste** listet jede Seite auf; jede ist ein Link. <kbd>Mod</kbd> <kbd>1</kbd> bis <kbd>9</kbd> öffnen sie der Reihe nach, und die [Befehlspalette](/docs/guides/keyboard/#command-palette) (<kbd>Mod</kbd> <kbd>K</kbd>) erreicht jede Seite, jeden Host und jede Aktion durch Tippen.
+- **Die Seitenleiste** listet jede Seite auf; jede ist ein Link. <kbd>Mod</kbd> <kbd>1</kbd> bis <kbd>9</kbd> öffnen sie der Reihe nach, und die [Befehlspalette](/docs/guides/keyboard/#befehlspalette) (<kbd>Mod</kbd> <kbd>K</kbd>) erreicht jede Seite, jeden Host und jede Aktion durch Tippen.
 - **Listen** (Container, Images, Volumes, Netzwerke, Stacks, Hosts, Pods…): Der Name jeder Zeile ist eine Schaltfläche oder ein Link. Springen Sie mit <kbd>Tab</kbd> dorthin und drücken Sie <kbd>Enter</kbd>, um das Element zu öffnen, wie es ein Klick auf die Zeile tut. Die Kontrollkästchen und das Menü der Zeile kommen davor und danach.
 - **Sortieren**: Die Kopfzeile einer sortierbaren Spalte ist eine Schaltfläche. Drücken Sie <kbd>Enter</kbd> oder <kbd>Space</kbd>, um danach zu sortieren, erneut, um umzukehren; Screenreader sagen die Reihenfolge an.
 - **Stacks in der Containerliste** öffnen und schließen sich mit der Schaltfläche vor ihrem Namen, die angibt, ob sie aufgeklappt sind.

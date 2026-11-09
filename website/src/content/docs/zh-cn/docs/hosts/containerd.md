@@ -84,7 +84,7 @@ containerd 不保存日志：启动任务的工具决定其输出去向。**日�
 | Kubernetes（`k8s.io`） | `/var/log/pods/<pod>/<container>/N.log`，由 CRI 的记录指明     | 该文件，持续跟踪                       |
 | `ctr` 和其他客户端     | 它们指定的任何位置，通常没有                                   | **此容器的输出未被记录。**，并说明原因 |
 
-使用其他驱动（journald、fluentd）记录日志的 nerdctl 容器会改为写明该驱动。Homeport 在主机所在的机器上用 `tail` 读取文件（见[下文](#what-runs-on-the-host)）；日志文件通常属于 root，因此 SSH 用户必须有权读取它们。
+使用其他驱动（journald、fluentd）记录日志的 nerdctl 容器会改为写明该驱动。Homeport 在主机所在的机器上用 `tail` 读取文件（见[下文](#在主机上运行的内容)）；日志文件通常属于 root，因此 SSH 用户必须有权读取它们。
 
 ## 容器中的终端
 
@@ -115,7 +115,7 @@ containerd 以其所在机器上的路径接收进程的输入和输出。因此
 | 日志 | `tail -n <lines> [-F] -- '<log file>'`；对于没有 CRI 记录的 Kubernetes 容器，先 `ls` 其日志文件夹 |
 | 终端 | `mktemp -d`，在该文件夹中用 `mkfifo -m 600` 创建两个 FIFO，通过它们 `cat`，最后 `rm -rf` 该文件夹 |
 
-macOS 或 Windows 上的本地套接字无法运行这些命令，此时日志和终端会说明需要 SSH。[安全页面](/docs/reference/security/#what-homeport-runs-on-your-hosts)列出了 Homeport 在主机上运行的每条命令。
+macOS 或 Windows 上的本地套接字无法运行这些命令，此时日志和终端会说明需要 SSH。[安全页面](/docs/reference/security/#homeport-在你的主机上运行的内容)列出了 Homeport 在主机上运行的每条命令。
 
 ## 事件
 

@@ -7,15 +7,15 @@ import { DocScreenshot } from '@/features/docs';
 
 Um cluster pode ser um cluster **Nomad**, além de um Kubernetes. O Homeport conversa com a API HTTP que um agente Nomad, servidor ou cliente, já serve, a partir do seu computador: nada é instalado no cluster, e nenhuma CLI `nomad` é necessária nesta máquina. Tudo o que ele faz passa pela API com os direitos do token ACL que você lhe dá.
 
-Os clusters Nomad ficam ao lado dos seus hosts e clusters Kubernetes no seletor. Selecionar um mostra a versão, a região e o endereço dele na Visão geral, e as páginas próprias dele na barra lateral: **[Jobs](#jobs)**, onde você [executa jobs](#run-a-job) e abre os [logs e shells](#logs-and-shell) das alocações deles, e **[Nós](#nodes)**. As páginas do Kubernetes ficam ocultas enquanto ele está selecionado.
+Os clusters Nomad ficam ao lado dos seus hosts e clusters Kubernetes no seletor. Selecionar um mostra a versão, a região e o endereço dele na Visão geral, e as páginas próprias dele na barra lateral: **[Jobs](#jobs)**, onde você [executa jobs](#executar-um-job) e abre os [logs e shells](#logs-e-shell) das alocações deles, e **[Nós](#nós)**. As páginas do Kubernetes ficam ocultas enquanto ele está selecionado.
 
 O que você pode fazer, na ordem em que esta página explica:
 
-1. [Adicionar um cluster](#adding-a-nomad-cluster) pelo endereço dele, com [TLS](#tls) e [um token ACL](#the-acl-token) quando ele os usa.
+1. [Adicionar um cluster](#adicionar-um-cluster-nomad) pelo endereço dele, com [TLS](#tls) e [um token ACL](#o-token-acl) quando ele os usa.
 2. Ver os [jobs](#jobs) dele e as alocações deles, em tempo real; pará-los, expurgá-los e escalá-los.
-3. [Executar um job](#run-a-job) a partir de HCL ou JSON depois de ver o plano do Nomad, ou editar e executar de novo um job.
-4. Acompanhar os [logs e abrir um shell](#logs-and-shell) em uma tarefa.
-5. [Drenar nós](#nodes) e mudar a elegibilidade deles.
+3. [Executar um job](#executar-um-job) a partir de HCL ou JSON depois de ver o plano do Nomad, ou editar e executar de novo um job.
+4. Acompanhar os [logs e abrir um shell](#logs-e-shell) em uma tarefa.
+5. [Drenar nós](#nós) e mudar a elegibilidade deles.
 6. Escolher um [namespace](#namespaces), ou todos.
 
 ## Adicionar um cluster Nomad
@@ -25,7 +25,7 @@ Escolha **Adicionar cluster…** no seletor, depois a aba **Nomad**, e preencha:
 - **Nome**: o que o seletor e a Visão geral mostram, como `nomad-prod`.
 - **Endereço**: a API HTTP do agente, como `NOMAD_ADDR` a informa à CLI `nomad`. `nomad.example.com` vira `http://nomad.example.com:4646`: a porta 4646 é adicionada quando nenhuma é informada, e `https://` é usado quando você fornece material TLS.
 - **Região**: deixe vazio para usar a própria região do agente. Defina-a para gerenciar outra região por um agente federado, como `NOMAD_REGION` faz.
-- **Token ACL**: o secret ID do token, quando o cluster tem as ACLs ativadas. Veja [o token](#the-acl-token) abaixo.
+- **Token ACL**: o secret ID do token, quando o cluster tem as ACLs ativadas. Veja [o token](#o-token-acl) abaixo.
 
 **Testar conexão** conecta uma vez sem salvar e mostra a versão e a região do Nomad, ou por que não consegue conectar. **Adicionar cluster** o salva e conecta. A página dele então mostra o status, a versão e a região, e permite alterar qualquer uma dessas configurações: o token e a chave TLS nunca são mostrados de novo, e um campo deixado vazio mantém o valor armazenado. **Remover**, ao lado de uma credencial armazenada, a exclui quando você salva.
 
@@ -177,7 +177,7 @@ Substitua `"*"` pelo nome de um namespace para limitar o Homeport a ele, e adici
 
 ## Status e problemas
 
-O status segue as mesmas regras que para os [clusters Kubernetes](/docs/clusters/#statuses): o Homeport tenta de novo sozinho enquanto o agente não pode ser alcançado, e aguarda você quando só você pode corrigir.
+O status segue as mesmas regras que para os [clusters Kubernetes](/docs/clusters/#status): o Homeport tenta de novo sozinho enquanto o agente não pode ser alcançado, e aguarda você quando só você pode corrigir.
 
 - **O endereço está errado**: um nome que não pode ser encontrado, uma conexão recusada ou um tempo esgotado diz qual, com o endereço que ele tentou.
 - **Um certificado expirado, uma CA desconhecida ou o nome errado**: cada um diz o que mudar em **Configurações de TLS**.

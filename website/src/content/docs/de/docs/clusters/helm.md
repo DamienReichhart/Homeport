@@ -25,7 +25,7 @@ Wenn Ihre Zugangsdaten Secrets nicht in jedem Namespace auflisten dürfen, liste
 
 **Chart installieren** (oder <kbd>n</kbd>) im Tab Releases installiert ein Chart auf dem ausgewählten Cluster:
 
-1. **Das Chart wählen.** Durchsuchen Sie die Charts der [Repositorys](#chart-repositories) von helm und klicken Sie auf **Verwenden**, oder geben Sie unter **Aus einer OCI-Registry** eine Referenz wie `oci://registry-1.docker.io/bitnamicharts/nginx` an, die ohne Hinzufügen eines Repositorys installiert.
+1. **Das Chart wählen.** Durchsuchen Sie die Charts der [Repositorys](#chart-repositorys) von helm und klicken Sie auf **Verwenden**, oder geben Sie unter **Aus einer OCI-Registry** eine Referenz wie `oci://registry-1.docker.io/bitnamicharts/nginx` an, die ohne Hinzufügen eines Repositorys installiert.
 2. **Version, Name und Namespace wählen.** Die Versionen eines Repository-Charts werden aufgelistet, die neueste zuerst; die Version eines OCI-Charts wird eingetippt oder für die neueste leer gelassen. Das Release wird zunächst nach dem Chart benannt: höchstens 53 Kleinbuchstaben, Ziffern, Bindestriche und Punkte. Der Namespace ist der, den die Seite zeigt (oder der Standard des Clusters), und wird erstellt, falls er nicht existiert, es sei denn, Sie entfernen dieses Häkchen.
 3. **Seine Values bearbeiten.** Der Editor beginnt mit den Standard-Values des Charts (`helm show values`); ändern Sie, was Sie brauchen, und **Auf die Standardwerte des Charts zurücksetzen** stellt sie wieder her. Values werden vor dem Lauf von helm als YAML geprüft und gehen über seine Standardeingabe an helm – nie in einer Datei.
 4. **Vorschau**, optional: helm rendert das Chart mit Ihren Values und mit Hilfe des Clusters (`--dry-run=server`), und Homeport zeigt das Manifest, das es anwenden würde, Hooks eingeschlossen, sowie die Hinweise des Charts. Auf dem Cluster ändert sich nichts.
@@ -85,7 +85,7 @@ Homeport fügt nur öffentliche Repositorys hinzu. Eines, das eine Anmeldung bra
 - **Nicht erlaubt**: helm liest Releases aus Secrets; um sie aufzulisten, braucht es `list` auf `secrets` im Namespace. Details nennt, was abgelehnt wurde.
 - **Eine andere Installation, ein Upgrade oder ein Zurücksetzen läuft noch**: Das Release ist durch einen ausstehenden Vorgang gesperrt. Warten Sie, bis er endet, oder setzen Sie es auf seine zuletzt bereitgestellte Revision zurück.
 - **Ein Release mit diesem Namen existiert bereits**: Release-Namen sind in einem Namespace eindeutig. Wählen Sie einen anderen oder upgraden Sie das bestehende Release.
-- **Chart oder Version nicht gefunden**: Prüfen Sie Name und Version; ein Repository-Chart braucht sein hinzugefügtes und [aktualisiertes](#chart-repositories) Repository. Um ein Release zu upgraden, dessen Chart in keinem Ihrer Repositorys ist, fügen Sie zuerst dieses Repository hinzu.
+- **Chart oder Version nicht gefunden**: Prüfen Sie Name und Version; ein Repository-Chart braucht sein hinzugefügtes und [aktualisiertes](#chart-repositorys) Repository. Um ein Release zu upgraden, dessen Chart in keinem Ihrer Repositorys ist, fügen Sie zuerst dieses Repository hinzu.
 - **Die Values sind kein gültiges YAML**: Die Meldung nennt die Zeile; korrigieren Sie sie und versuchen Sie es erneut.
 - **Warten aufgegeben**: Mit **Warten** war eine Ressource nicht rechtzeitig bereit. Sehen Sie sich die Pods und Events des Release an, um zu finden, was hängt.
 - **Kein Chart-Repository oder nicht erreichbar**: Die URL liefert keine `index.yaml`, oder dieser Rechner kann sie nicht erreichen. Details zeigt, was helm gemeldet hat.

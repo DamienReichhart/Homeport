@@ -46,7 +46,7 @@ Host-Namen müssen eindeutig sein, ohne Berücksichtigung der Groß- und Kleinsc
 
 **Host hinzufügen** bietet zwei Wege, viele Hosts auf einmal hinzuzufügen, aus dem, was dieser Computer bereits beschreibt. Jeder öffnet eine Vorschau: Wählen Sie die zu importierenden Einträge aus, benennen Sie sie um und wählen Sie **Importieren**.
 
-- **Aus ~/.ssh/config importieren** fügt die Server hinzu, die Ihre SSH-Konfiguration nennt, mit ihrem Benutzer, Port, Schlüssel und ihren `ProxyJump`-Bastionen. Siehe [Aus ~/.ssh/config importieren](/docs/hosts/ssh/#import-from-sshconfig).
+- **Aus ~/.ssh/config importieren** fügt die Server hinzu, die Ihre SSH-Konfiguration nennt, mit ihrem Benutzer, Port, Schlüssel und ihren `ProxyJump`-Bastionen. Siehe [Aus ~/.ssh/config importieren](/docs/hosts/ssh/#aus-sshconfig-importieren).
 - **Docker-Kontexte importieren** fügt die Engines der Kontexte der Docker CLI hinzu (`docker context ls`), mit ihren TLS-Zertifikaten.
 
 Schlüssel und Zertifikate werden einmal gelesen, beim Import, und wie alle anderen verschlüsselt gespeichert; weder `~/.ssh` noch `~/.docker` wird je verändert.
@@ -73,11 +73,11 @@ Ein Kontext, dessen Name bereits der eines Hosts ist, wird als `name (2)` angebo
 
 ## Auf einen anderen Computer umziehen
 
-**Exportieren** auf der Seite „Hosts“ speichert die von Ihnen gewählten Hosts in einer durch eine Passphrase geschützten Datei; **Importieren** auf der Seite „Hosts“ des anderen Computers öffnet sie und fügt die von Ihnen gewählten Hosts hinzu, bereit zum Verbinden. Ein Host, dessen Name dort vergeben ist, wird als `name (2)` vorgeschlagen, und Sie können ihn umbenennen oder überspringen. Siehe [Auf einen anderen Computer umziehen](/docs/reference/security/#moving-to-another-computer), wie die Datei geschützt ist.
+**Exportieren** auf der Seite „Hosts“ speichert die von Ihnen gewählten Hosts in einer durch eine Passphrase geschützten Datei; **Importieren** auf der Seite „Hosts“ des anderen Computers öffnet sie und fügt die von Ihnen gewählten Hosts hinzu, bereit zum Verbinden. Ein Host, dessen Name dort vergeben ist, wird als `name (2)` vorgeschlagen, und Sie können ihn umbenennen oder überspringen. Siehe [Auf einen anderen Computer umziehen](/docs/reference/security/#auf-einen-anderen-computer-umziehen), wie die Datei geschützt ist.
 
 ## Einen Host auswählen
 
-Jede Ressourcenseite – Container, Images, Volumes, Netzwerke, Stacks und Ereignisse – zeigt den im **Host-Umschalter** ausgewählten Host. Die Seiten eines containerd-Hosts zeigen außerdem jeweils einen Namespace, gewählt [unter dem Umschalter](/docs/hosts/containerd/#namespaces), und die eines Incus-Hosts ein [Projekt](/docs/hosts/incus/#projects). Wechseln Sie den Host dort, oder wählen Sie die Karte eines Hosts in der [Übersicht](/docs/guides/overview/). Homeport merkt sich Ihre Wahl zwischen den Starts.
+Jede Ressourcenseite – Container, Images, Volumes, Netzwerke, Stacks und Ereignisse – zeigt den im **Host-Umschalter** ausgewählten Host. Die Seiten eines containerd-Hosts zeigen außerdem jeweils einen Namespace, gewählt [unter dem Umschalter](/docs/hosts/containerd/#namespaces), und die eines Incus-Hosts ein [Projekt](/docs/hosts/incus/#projekte). Wechseln Sie den Host dort, oder wählen Sie die Karte eines Hosts in der [Übersicht](/docs/guides/overview/). Homeport merkt sich Ihre Wahl zwischen den Starts.
 
 ## Status
 
@@ -90,10 +90,10 @@ Jeder Host zeigt neben seinem Namen einen Status. Ist der ausgewählte Host nich
 | **Deaktiviert**                            | Der Schalter **Aktiviert** des Hosts ist aus.                                                                       | Nichts, bis Sie ihn einschalten.                                                           |
 | **Nicht erreichbar**                       | Netzwerk, Socket oder Engine haben nicht geantwortet.                                                               | Versucht es selbst erneut und wartet jedes Mal länger.                                     |
 | **Zugriff verweigert**                     | Der SSH-Server hat den Schlüssel abgelehnt, ssh-agent ist fehlgeschlagen oder der TLS-Handshake ist fehlgeschlagen. | Beheben Sie die Ursache und wählen Sie dann **Neu verbinden**.                             |
-| **Serverschlüssel nicht vertrauenswürdig** | Erste SSH-Verbindung: Der Schlüssel des Servers oder einer Bastion braucht Ihre Zustimmung.                         | [Dem Schlüssel vertrauen](/docs/hosts/ssh/#trust-the-servers-key) auf der Seite des Hosts. |
-| **Serverschlüssel geändert**               | Der SSH-Server hat einen anderen Schlüssel vorgelegt als den, dem Sie vertraut haben.                               | [Zuerst untersuchen](/docs/hosts/ssh/#when-the-servers-key-changes).                       |
-| **Zugangsdaten verloren**                  | Die gespeicherten Anmeldedaten lassen sich nicht entschlüsseln.                                                     | [Erneut eingeben](/docs/reference/troubleshooting/#credentials-lost).                      |
-| **Schlüsselbund nicht verfügbar**          | Der Host braucht gespeicherte Geheimnisse, aber es gibt keinen Schlüsselbund des Betriebssystems.                   | Siehe [Voraussetzungen](/docs/requirements/#optional-an-os-keychain).                      |
+| **Serverschlüssel nicht vertrauenswürdig** | Erste SSH-Verbindung: Der Schlüssel des Servers oder einer Bastion braucht Ihre Zustimmung.                         | [Dem Schlüssel vertrauen](/docs/hosts/ssh/#dem-schlüssel-des-servers-vertrauen) auf der Seite des Hosts. |
+| **Serverschlüssel geändert**               | Der SSH-Server hat einen anderen Schlüssel vorgelegt als den, dem Sie vertraut haben.                               | [Zuerst untersuchen](/docs/hosts/ssh/#wenn-sich-der-schlüssel-des-servers-ändert).                       |
+| **Zugangsdaten verloren**                  | Die gespeicherten Anmeldedaten lassen sich nicht entschlüsseln.                                                     | [Erneut eingeben](/docs/reference/troubleshooting/#zugangsdaten-verloren).                      |
+| **Schlüsselbund nicht verfügbar**          | Der Host braucht gespeicherte Geheimnisse, aber es gibt keinen Schlüsselbund des Betriebssystems.                   | Siehe [Voraussetzungen](/docs/requirements/#optional-ein-schlüsselbund-des-betriebssystems).                      |
 | **Falsch konfiguriert**                    | In den Einstellungen des Hosts fehlt etwas oder ist ungültig.                                                       | Die Meldung sagt, was; beheben Sie es und wählen Sie **Speichern**.                        |
 
 ## Neuverbindung
@@ -106,4 +106,4 @@ Nur **Nicht erreichbar** wird automatisch erneut versucht. Jedes andere Problem 
 
 ## Ereignisse und Live-Aktualisierungen
 
-Homeport fragt nicht regelmäßig ab. Wenn die Engine eine Änderung meldet – ein Container startet, ein Image wird gepullt –, aktualisieren sich die betroffenen Seiten innerhalb eines Sekundenbruchteils. Die Seite [Ereignisse](/docs/guides/overview/#events) zeigt den rohen Strom.
+Homeport fragt nicht regelmäßig ab. Wenn die Engine eine Änderung meldet – ein Container startet, ein Image wird gepullt –, aktualisieren sich die betroffenen Seiten innerhalb eines Sekundenbruchteils. Die Seite [Ereignisse](/docs/guides/overview/#ereignisse) zeigt den rohen Strom.

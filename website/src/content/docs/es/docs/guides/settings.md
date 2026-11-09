@@ -19,13 +19,13 @@ Las fechas, los números y los tamaños también siguen al idioma, con el estilo
 
 Cómo se ejecuta Homeport en este equipo.
 
-- **Cerrar a la bandeja del sistema** — desactivado por defecto, así que cerrar la ventana cierra Homeport. Actívalo para ocultar la ventana en la [bandeja del sistema](/docs/guides/overview/#system-tray) en su lugar: Homeport sigue en ejecución con sus conexiones a los hosts abiertas. Recupéralo desde el icono de la bandeja, o abriendo Homeport de nuevo; sal con **Salir** en la bandeja. El interruptor aparece atenuado, con una explicación, en un escritorio sin bandeja.
+- **Cerrar a la bandeja del sistema** — desactivado por defecto, así que cerrar la ventana cierra Homeport. Actívalo para ocultar la ventana en la [bandeja del sistema](/docs/guides/overview/#bandeja-del-sistema) en su lugar: Homeport sigue en ejecución con sus conexiones a los hosts abiertas. Recupéralo desde el icono de la bandeja, o abriendo Homeport de nuevo; sal con **Salir** en la bandeja. El interruptor aparece atenuado, con una explicación, en un escritorio sin bandeja.
 - **Iniciar al iniciar sesión** — desactivado por defecto. Actívalo y Homeport se inicia cuando inicias sesión, así vigila tus hosts desde el principio. El interruptor muestra lo que tiene tu sistema: si quitas tú mismo Homeport de los elementos de inicio, aparece desactivado. En Windows aparece en **Task Manager → Startup apps**, en macOS en **System Settings → General → Login Items** y en Linux en `~/.config/autostart/`. La entrada de una AppImage sigue al archivo cuando lo mueves, a partir de la siguiente vez que lo abres.
-- **Iniciar oculto en la bandeja** — desactivado por defecto, y solo disponible mientras **Iniciar al iniciar sesión** está activado. Cuando Homeport se inicia al iniciar sesión, se queda en la [bandeja del sistema](/docs/guides/overview/#system-tray) sin abrir su ventana. Si abres Homeport tú mismo, siempre muestra la ventana, y sin bandeja siempre se abre.
+- **Iniciar oculto en la bandeja** — desactivado por defecto, y solo disponible mientras **Iniciar al iniciar sesión** está activado. Cuando Homeport se inicia al iniciar sesión, se queda en la [bandeja del sistema](/docs/guides/overview/#bandeja-del-sistema) sin abrir su ventana. Si abres Homeport tú mismo, siempre muestra la ventana, y sin bandeja siempre se abre.
 
 ## Notificaciones
 
-Homeport muestra una notificación de tu sistema operativo cuando ocurre algo en un host, tanto si su ventana está abierta, minimizada o [cerrada a la bandeja](#desktop). Cada tipo tiene su propio interruptor, todos activados por defecto, y un interruptor surte efecto al momento:
+Homeport muestra una notificación de tu sistema operativo cuando ocurre algo en un host, tanto si su ventana está abierta, minimizada o [cerrada a la bandeja](#escritorio). Cada tipo tiene su propio interruptor, todos activados por defecto, y un interruptor surte efecto al momento:
 
 | Interruptor                                                      | Ejemplo                                                                                 |
 | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
@@ -72,11 +72,11 @@ Los repositorios git desde los que se despliegan los [stacks sincronizados](/doc
 - El botón del engranaje muestra la clave de despliegue de un repositorio, con dónde añadirla en GitHub, GitLab, Gitea y Forgejo, y **Nueva clave** para sustituirla; o **Sustituir el token**. **Probar acceso** lista sus ramas y etiquetas desde este equipo. Cuando Homeport ya confía en la clave de un servidor SSH, su huella aparece ahí, con **Restablecer** para cuando la forja la haya cambiado de verdad.
 - **Quitar** olvida el repositorio y borra su clon en este equipo; se rechaza mientras lo use un stack sincronizado.
 
-Las claves y los tokens se cifran con la clave del llavero del sistema y nunca se vuelven a mostrar, ni se escriben en los logs ni en los detalles de los errores. Tu propia configuración de git, tus asistentes de credenciales y tus claves SSH nunca se usan. Consulta [Repositorios](/docs/guides/synced-stacks/#repositories).
+Las claves y los tokens se cifran con la clave del llavero del sistema y nunca se vuelven a mostrar, ni se escriben en los logs ni en los detalles de los errores. Tu propia configuración de git, tus asistentes de credenciales y tus claves SSH nunca se usan. Consulta [Repositorios](/docs/guides/synced-stacks/#repositorios).
 
 ## Stacks sincronizados
 
-**Comprobar los repositorios cada** fija cuántos minutos espera Homeport entre comprobaciones de los repositorios de los stacks sincronizados en busca de commits nuevos: 5 por defecto, 1 como mínimo. Homeport solo comprueba mientras está abierto; nada se sincroniza mientras está cerrado. Consulta [Sondeo y despliegue automático](/docs/guides/synced-stacks/#polling-and-auto-deploy).
+**Comprobar los repositorios cada** fija cuántos minutos espera Homeport entre comprobaciones de los repositorios de los stacks sincronizados en busca de commits nuevos: 5 por defecto, 1 como mínimo. Homeport solo comprueba mientras está abierto; nada se sincroniza mientras está cerrado. Consulta [Sondeo y despliegue automático](/docs/guides/synced-stacks/#sondeo-y-despliegue-automático).
 
 ## Datos
 
@@ -89,7 +89,7 @@ Lo que Homeport guarda en este equipo.
 **Restaurar…** abre un archivo así con su frase de contraseña y lista lo que contiene: sus hosts y clústeres por nombre, y cuántos stacks, inicios de sesión de registros y repositorios. **Sustituirlo todo** sustituye entonces todos los datos de Homeport por los de la copia de seguridad, en este u otro equipo:
 
 - Todo se conecta y se despliega al momento: los hosts SSH y TLS, los registros y los repositorios, sin volver a pedir una clave o una contraseña, ni confiar en la clave de un servidor.
-- Un [stack vinculado](/docs/guides/stacks/#linked-stacks) cuya carpeta no está en este equipo aparece como externo hasta que la carpeta esté ahí, en la misma ruta.
+- Un [stack vinculado](/docs/guides/stacks/#stacks-vinculados) cuya carpeta no está en este equipo aparece como externo hasta que la carpeta esté ahí, en la misma ruta.
 - Los [stacks sincronizados](/docs/guides/synced-stacks/) vuelven a clonar su repositorio en su siguiente sincronización.
 - Antes, los datos actuales se copian en `homeport.db.before-restore-<date>`, en la carpeta de datos de Homeport. Restaurar un archivo equivocado, uno de un Homeport más reciente o uno que falla a mitad no cambia nada.
 
@@ -97,16 +97,16 @@ Para añadir algunos hosts a los que ya tienes, usa **Exportar** e **Importar** 
 
 ### Conservar los eventos del Engine
 
-**Conservar los eventos del Engine durante** fija cuántos días se conservan los [eventos del Engine](/docs/guides/overview/#events) de cada host: 30 por defecto, de 1 a 365. Cada host conserva como máximo 10.000 eventos, diga lo que diga este ajuste. Los más antiguos se eliminan cuando se inicia Homeport y cada hora, y al momento cuando bajas el número.
+**Conservar los eventos del Engine durante** fija cuántos días se conservan los [eventos del Engine](/docs/guides/overview/#eventos) de cada host: 30 por defecto, de 1 a 365. Cada host conserva como máximo 10.000 eventos, diga lo que diga este ajuste. Los más antiguos se eliminan cuando se inicia Homeport y cada hora, y al momento cuando bajas el número.
 
 ## Este equipo
 
 Lo que Homeport puede usar en este equipo:
 
-- **Llavero del sistema** — **Disponible** cuando las claves SSH, los certificados, los entornos de los stacks y los inicios de sesión de registros se pueden guardar cifrados; **No disponible** si no. Consulta [Requisitos](/docs/requirements/#optional-an-os-keychain).
-- **CLI de Compose** — la versión de Compose encontrada, como `docker compose v2.29.1`, o **No encontrado** si los stacks se pueden iniciar y detener, pero no desplegar. Consulta [Stacks](/docs/guides/stacks/#what-deploying-needs).
-- **git** — el git encontrado, como `/usr/bin/git 2.43.0`, o qué instalar si no se pueden usar los stacks sincronizados. Consulta [Requisitos](/docs/requirements/#optional-git).
-- **CLI de Helm** — el helm encontrado, como `/usr/local/bin/helm v3.16.2`, o qué instalar para este sistema si no se pueden listar ni instalar [releases de Helm](/docs/clusters/helm/). Helm 2 se indica como no compatible. Consulta [Requisitos](/docs/requirements/#optional-helm).
+- **Llavero del sistema** — **Disponible** cuando las claves SSH, los certificados, los entornos de los stacks y los inicios de sesión de registros se pueden guardar cifrados; **No disponible** si no. Consulta [Requisitos](/docs/requirements/#opcional-un-llavero-del-sistema).
+- **CLI de Compose** — la versión de Compose encontrada, como `docker compose v2.29.1`, o **No encontrado** si los stacks se pueden iniciar y detener, pero no desplegar. Consulta [Stacks](/docs/guides/stacks/#qué-necesita-el-despliegue).
+- **git** — el git encontrado, como `/usr/bin/git 2.43.0`, o qué instalar si no se pueden usar los stacks sincronizados. Consulta [Requisitos](/docs/requirements/#opcional-git).
+- **CLI de Helm** — el helm encontrado, como `/usr/local/bin/helm v3.16.2`, o qué instalar para este sistema si no se pueden listar ni instalar [releases de Helm](/docs/clusters/helm/). Helm 2 se indica como no compatible. Consulta [Requisitos](/docs/requirements/#opcional-helm).
 
 Homeport comprueba las CLI cada vez que se abre esta página, así que una instalada después del inicio aparece; después de instalar un llavero, cierra y vuelve a abrir Homeport.
 

@@ -20,7 +20,7 @@ Os contêineres que pertencem a uma [stack](/docs/guides/stacks/) são agrupados
 | Coluna      | Mostra                                                                                                                 |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------- |
 | **Nome**    | Um ponto de status, o nome (o nome do serviço, dentro de uma stack) e o ID curto.                                      |
-| **Imagem**  | A imagem a partir da qual ele foi criado, com uma marca ⬆ quando uma [imagem mais recente](#newer-images) é publicada. |
+| **Imagem**  | A imagem a partir da qual ele foi criado, com uma marca ⬆ quando uma [imagem mais recente](#imagens-mais-recentes) é publicada. |
 | **Status**  | Como o Engine o informa, por exemplo _Up 3 hours (healthy)_, com um selo de integridade se houver uma verificação.     |
 | **Portas**  | Até três portas, as publicadas primeiro. Uma porta publicada é um link que a abre no seu navegador.                    |
 | **CPU**     | Ao vivo, como uma porcentagem de uma CPU: `200%` significa duas CPUs totalmente usadas.                                |
@@ -35,11 +35,11 @@ Selecione um contêiner para abri-lo.
 
 Um ⬆ ao lado da imagem significa que o registro dela agora tem uma imagem diferente sob a tag a partir da qual o contêiner foi criado: `nginx:1.27` mudou desde que foi baixada, ou uma mais recente foi baixada, mas o contêiner não foi recriado. Passe o ponteiro sobre ele para ver qual. Para atualizar, baixe a imagem e recrie o contêiner — para uma stack, **Baixar imagens** e depois **Reimplantar**.
 
-O Homeport pergunta ao registro pelo Engine do host, que compara os digests sem baixar nada, usando os seus [logins de registro](/docs/guides/settings/#registries) guardados para as imagens privadas. As respostas são guardadas por 6 horas, então abrir a lista de novo não pergunta nada; **Verificar imagens mais recentes**, no topo da página, pergunta de novo a todos os registros agora. As imagens com build local, baixadas por digest (`app@sha256:…`) ou cujo registro não pode ser alcançado não mostram nada, em vez de um falso alarme. A página do contêiner mostra a mesma marca ao lado da imagem dele.
+O Homeport pergunta ao registro pelo Engine do host, que compara os digests sem baixar nada, usando os seus [logins de registro](/docs/guides/settings/#registros) guardados para as imagens privadas. As respostas são guardadas por 6 horas, então abrir a lista de novo não pergunta nada; **Verificar imagens mais recentes**, no topo da página, pergunta de novo a todos os registros agora. As imagens com build local, baixadas por digest (`app@sha256:…`) ou cujo registro não pode ser alcançado não mostram nada, em vez de um falso alarme. A página do contêiner mostra a mesma marca ao lado da imagem dele.
 
 ### Ações
 
-O botão no fim de cada linha inicia ou para o contêiner. O menu **⋮** tem o resto: **Logs**, **Abrir terminal**, **Reiniciar**, **Pausar** ou **Retomar**, **Encerrar à força**, **Renomear**, [**Editar**](#editing-a-container), [**Duplicar**](#duplicating-a-container), [**Fazer commit em imagem…**](#committing-a-container), [**Exportar sistema de arquivos…**](#exporting-a-containers-filesystem) e **Remover**.
+O botão no fim de cada linha inicia ou para o contêiner. O menu **⋮** tem o resto: **Logs**, **Abrir terminal**, **Reiniciar**, **Pausar** ou **Retomar**, **Encerrar à força**, **Renomear**, [**Editar**](#editando-um-contêiner), [**Duplicar**](#duplicando-um-contêiner), [**Fazer commit em imagem…**](#fazendo-commit-de-um-contêiner), [**Exportar sistema de arquivos…**](#exportando-o-sistema-de-arquivos-de-um-contêiner) e **Remover**.
 
 Marque contêineres para agir sobre vários de uma vez com **Iniciar**, **Parar**, **Reiniciar** ou **Remover**. A caixa de seleção na linha de uma stack seleciona todos os contêineres dela.
 
@@ -92,7 +92,7 @@ Quando o contêiner para, o log termina com _— fim dos logs —_.
 
 Mostrada para os contêineres com uma verificação de integridade — a deles mesmos ou a da imagem. **Verificação de integridade** dá o status (_starting_, _healthy_ ou _unhealthy_), o comando, os tempos (os padrões do Engine preenchem o que não está definido: a cada 30 s, um tempo limite de 30 s, 3 tentativas) e quantas verificações falharam seguidas. **Últimos resultados** lista as verificações que o Engine guarda, das mais recentes às mais antigas, com o código de saída, quando rodaram, quanto tempo levaram e o que imprimiram; uma saída longa fica recolhida atrás de **Mostrar mais**.
 
-Então, quando a lista diz _unhealthy_, é aqui que está o motivo, sem ler o JSON bruto. A aba se atualiza sozinha uma vez por intervalo de verificação e sempre que o status muda. Um contêiner cuja verificação de integridade está desativada não tem a aba Integridade; para adicionar ou mudar uma, [edite o contêiner](#editing-a-container).
+Então, quando a lista diz _unhealthy_, é aqui que está o motivo, sem ler o JSON bruto. A aba se atualiza sozinha uma vez por intervalo de verificação e sempre que o status muda. Um contêiner cuja verificação de integridade está desativada não tem a aba Integridade; para adicionar ou mudar uma, [edite o contêiner](#editando-um-contêiner).
 
 ### Exec
 
@@ -135,7 +135,7 @@ Os processos rodando no contêiner, como `ps aux` os mostra, atualizados a cada 
 
 | Campo                                            | Observações                                                                                                                                                                 |
 | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Imagem**                                       | Obrigatório. Sugere as imagens do host. Baixada antes se o host não a tiver, com o [login de registro](/docs/guides/settings/#registries) guardado.                         |
+| **Imagem**                                       | Obrigatório. Sugere as imagens do host. Baixada antes se o host não a tiver, com o [login de registro](/docs/guides/settings/#registros) guardado.                         |
 | **Nome**                                         | Opcional; o Engine gera um se estiver vazio.                                                                                                                                |
 | **Comando**                                      | Substitui o comando padrão da imagem (não o entrypoint dela). Coloque os argumentos entre aspas como em um shell.                                                           |
 | **Portas**                                       | **Porta do host** → **Porta do contêiner**, `tcp` ou `udp`. Deixe a porta do host vazia para o Engine escolher uma livre. As portas são publicadas em todas as interfaces.  |
@@ -204,7 +204,7 @@ O Docker Engine não consegue mudar a maioria das configurações de um contêin
 Antes que qualquer coisa aconteça, o Homeport lista o que o novo contêiner não terá:
 
 - **Volumes anônimos** — o novo contêiner começa com volumes vazios. Os antigos não são excluídos: são mantidos como volumes não usados que você ainda pode abrir ou [limpar](/docs/guides/volumes-networks/).
-- **Arquivos alterados dentro do contêiner** desde que ele foi criado, como pacotes instalados ou configurações editadas. Para mantê-los, [faça commit do contêiner em uma imagem](#committing-a-container) antes — a confirmação tem um botão para isso — e edite o contêiner para usar essa imagem.
+- **Arquivos alterados dentro do contêiner** desde que ele foi criado, como pacotes instalados ou configurações editadas. Para mantê-los, [faça commit do contêiner em uma imagem](#fazendo-commit-de-um-contêiner) antes — a confirmação tem um botão para isso — e edite o contêiner para usar essa imagem.
 - **Tempo fora do ar** — um contêiner em execução para enquanto os dois são trocados, normalmente por alguns segundos.
 - **A próxima implantação de uma stack** — para um contêiner em uma stack, a próxima implantação da stack o recria a partir do arquivo compose dela, sem a sua edição. Mude o arquivo compose para que a mudança dure.
 
@@ -230,10 +230,10 @@ O que é mantido: o nome, as redes com os aliases delas, os volumes nomeados e o
 | **Alterações**                          | Instruções de Dockerfile aplicadas à nova imagem, uma por linha: `CMD`, `ENTRYPOINT`, `ENV`, `EXPOSE`, `LABEL`, `ONBUILD`, `USER`, `VOLUME` ou `WORKDIR`, como `ENV MODE=prod`.     |
 | **Pausar o contêiner durante o commit** | Ativado por padrão: os processos dele ficam congelados pelos poucos segundos que isso leva, para que os arquivos sendo gravados fiquem consistentes. O contêiner continua depois.   |
 
-A nova imagem aparece na [página Imagens](/docs/guides/images/) na hora. Os volumes, nomeados ou anônimos, não fazem parte dela: faça backup deles separadamente. Para ter uma imagem cuja build possa ser refeita, prefira [fazer a build de uma a partir de um Dockerfile](/docs/guides/images/#building-an-image).
+A nova imagem aparece na [página Imagens](/docs/guides/images/) na hora. Os volumes, nomeados ou anônimos, não fazem parte dela: faça backup deles separadamente. Para ter uma imagem cuja build possa ser refeita, prefira [fazer a build de uma a partir de um Dockerfile](/docs/guides/images/#fazendo-build-de-uma-imagem).
 
 ## Exportando o sistema de arquivos de um contêiner
 
 **Exportar sistema de arquivos…** salva todos os arquivos do contêiner — os da imagem dele e tudo o que mudou desde então — em um único `.tar` neste computador, como `docker export`. Escolha onde salvá-lo; ele recebe o nome do contêiner. O progresso mostra os bytes gravados, **Cancelar** o interrompe, e uma exportação cancelada ou que falhou não deixa nenhum arquivo parcial para trás. O arquivo é transmitido direto para o disco, então contêineres de vários gigabytes não são problema.
 
-O arquivo é um sistema de arquivos simples e plano: sem camadas, histórico nem configurações, e sem volumes. Abra-o com qualquer ferramenta tar, ou transforme-o de novo em uma imagem com [**Importar de tar…**](/docs/guides/images/#importing-a-filesystem) na página Imagens ou com `docker import`. Para manter também as configurações de um contêiner, [faça commit dele](#committing-a-container) em vez disso.
+O arquivo é um sistema de arquivos simples e plano: sem camadas, histórico nem configurações, e sem volumes. Abra-o com qualquer ferramenta tar, ou transforme-o de novo em uma imagem com [**Importar de tar…**](/docs/guides/images/#importando-um-sistema-de-arquivos) na página Imagens ou com `docker import`. Para manter também as configurações de um contêiner, [faça commit dele](#fazendo-commit-de-um-contêiner) em vez disso.

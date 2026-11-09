@@ -25,7 +25,7 @@ Se le tue credenziali non possono elencare i Secret in ogni Namespace, Homeport 
 
 **Installa chart** (o <kbd>n</kbd>) nella scheda Release installa un chart sul cluster selezionato:
 
-1. **Scegli il chart.** Cerca tra i chart dei [repository](#chart-repositories) di helm e fai clic su **Usa**, oppure, in **Da un registro OCI**, indica un riferimento come `oci://registry-1.docker.io/bitnamicharts/nginx`, che si installa senza aggiungere un repository.
+1. **Scegli il chart.** Cerca tra i chart dei [repository](#repository-di-chart) di helm e fai clic su **Usa**, oppure, in **Da un registro OCI**, indica un riferimento come `oci://registry-1.docker.io/bitnamicharts/nginx`, che si installa senza aggiungere un repository.
 2. **Scegli la sua versione, il nome e il Namespace.** Le versioni di un chart di repository sono elencate, dalla più recente; la versione di un chart OCI si digita, o si lascia vuota per la più recente. La release prende inizialmente il nome del chart: al massimo 53 lettere minuscole, cifre, trattini e punti. Il Namespace è quello mostrato dalla pagina (o quello predefinito del cluster), e viene creato se non esiste, a meno che tu non tolga la spunta.
 3. **Modifica i suoi valori.** L’editor parte dai valori predefiniti del chart (`helm show values`); cambia ciò che ti serve, e **Ripristina i valori predefiniti del chart** li rimette. I valori vengono verificati come YAML prima che helm venga eseguito, e passano a helm tramite il suo standard input — mai in un file.
 4. **Anteprima**, facoltativa: helm esegue il rendering del chart con i tuoi valori e con l’aiuto del cluster (`--dry-run=server`), e Homeport mostra il manifest che applicherebbe, hook compresi, e le note del chart. Nulla cambia sul cluster.
@@ -85,7 +85,7 @@ Homeport aggiunge solo repository pubblici. Uno che richiede un accesso si aggiu
 - **Non consentito**: helm legge le release dai Secret; elencarli richiede `list` su `secrets` nel Namespace. Dettagli indica cosa è stato rifiutato.
 - **Un’altra installazione, aggiornamento o rollback è in corso**: la release è bloccata da un’operazione pending. Attendi che finisca, o riportala alla sua ultima revisione distribuita.
 - **Esiste già una release con questo nome**: i nomi delle release sono unici in un Namespace. Scegline un altro, o aggiorna la release esistente.
-- **Chart o versione non trovati**: controlla il nome e la versione; un chart di repository richiede che il suo repository sia aggiunto e [aggiornato](#chart-repositories). Per aggiornare una release il cui chart non è in nessuno dei tuoi repository, aggiungi prima quel repository.
+- **Chart o versione non trovati**: controlla il nome e la versione; un chart di repository richiede che il suo repository sia aggiunto e [aggiornato](#repository-di-chart). Per aggiornare una release il cui chart non è in nessuno dei tuoi repository, aggiungi prima quel repository.
 - **I valori non sono YAML valido**: il messaggio indica la riga; correggila e riprova.
 - **Attesa interrotta**: con **Attendi**, una risorsa non è stata pronta in tempo. Guarda i Pod e gli eventi della release per capire cosa è bloccato.
 - **Non è un repository di chart, o non è raggiungibile**: l’URL non serve alcun `index.yaml`, o questo computer non riesce a raggiungerlo. Dettagli mostra cosa ha detto helm.

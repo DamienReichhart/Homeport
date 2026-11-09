@@ -79,4 +79,4 @@ systemctl --user start 'web.service'
 loginctl enable-linger "$USER"
 ```
 
-Homeport がホストで実行するすべてのコマンドは、[セキュリティのページ](/docs/reference/security/#what-homeport-runs-on-your-hosts)に一覧があります。
+Homeport がホストで実行するすべてのコマンドは、[セキュリティのページ](/docs/reference/security/#homeport-がホスト上で実行するもの)に一覧があります。

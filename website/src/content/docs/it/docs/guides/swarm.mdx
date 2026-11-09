@@ -108,7 +108,7 @@ La scheda **Log** segue i suoi log, e **Ispeziona** mostra la sua definizione co
 
 **Modifica**, nella pagina di un servizio, cambia la sua immagine, il suo ambiente e le sue repliche, e solo questi: le sue porte, i montaggi, le reti e tutto il resto vengono rinviati come sono. Lo Swarm poi sposta i suoi task sulle nuove impostazioni qualcuno alla volta, e la pagina mostra l’avanzamento dell’aggiornamento. **Ridistribuisci ogni task** li riavvia anche quando nulla è cambiato, scaricando di nuovo l’immagine: è così che si distribuisce un nuovo push dello stesso tag. Se qualcun altro ha aggiornato il servizio dopo che lo hai aperto, Homeport lo segnala invece di sovrascrivere la sua modifica: aggiorna e modifica di nuovo.
 
-Immagini private: sono i nodi stessi a scaricare le immagini, quindi un’immagine privata richiede un accesso su ogni nodo (`docker login` lì), oppure uno stack distribuito con le tue credenziali dei registri (vedi [Distribuire stack](#deploying-stacks-to-a-swarm)).
+Immagini private: sono i nodi stessi a scaricare le immagini, quindi un’immagine privata richiede un accesso su ogni nodo (`docker login` lì), oppure uno stack distribuito con le tue credenziali dei registri (vedi [Distribuire stack](#distribuire-stack-su-uno-swarm)).
 
 ## Task
 

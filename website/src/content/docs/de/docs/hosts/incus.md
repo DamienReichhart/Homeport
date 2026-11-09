@@ -62,7 +62,7 @@ incus config trust remove <fingerprint>
 
 ### Das Zertifikat des Servers ist fixiert
 
-Das Zertifikat von Incus ist selbstsigniert, daher gibt es keine CA, gegen die es geprüft werden könnte. Homeport bewahrt das Zertifikat, dem es vertraut hat, beim Host auf und akzeptiert danach genau dieses, verglichen über seinen SHA-256-Fingerabdruck, unter welcher Adresse es auch erreicht wird. Wird Incus neu installiert oder sein Zertifikat erneuert, wird der Host mit dem erwarteten und dem erhaltenen Fingerabdruck abgelehnt: Prüfen Sie den neuen auf dem Server mit `incus info` und fügen Sie den Host dann mit einem neuen Token erneut hinzu. Der Client-Schlüssel und beide Zertifikate werden wie jedes andere Geheimnis verschlüsselt gespeichert; siehe [Sicherheit](/docs/reference/security/#incus-certificates).
+Das Zertifikat von Incus ist selbstsigniert, daher gibt es keine CA, gegen die es geprüft werden könnte. Homeport bewahrt das Zertifikat, dem es vertraut hat, beim Host auf und akzeptiert danach genau dieses, verglichen über seinen SHA-256-Fingerabdruck, unter welcher Adresse es auch erreicht wird. Wird Incus neu installiert oder sein Zertifikat erneuert, wird der Host mit dem erwarteten und dem erhaltenen Fingerabdruck abgelehnt: Prüfen Sie den neuen auf dem Server mit `incus info` und fügen Sie den Host dann mit einem neuen Token erneut hinzu. Der Client-Schlüssel und beide Zertifikate werden wie jedes andere Geheimnis verschlüsselt gespeichert; siehe [Sicherheit](/docs/reference/security/#incus-zertifikate).
 
 ## Projekte
 

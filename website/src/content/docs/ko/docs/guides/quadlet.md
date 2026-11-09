@@ -79,4 +79,4 @@ systemctl --user start 'web.service'
 loginctl enable-linger "$USER"
 ```
 
-[보안 페이지](/docs/reference/security/#what-homeport-runs-on-your-hosts)에 Homeport가 호스트에서 실행하는 모든 명령이 나열되어 있습니다.
+[보안 페이지](/docs/reference/security/#homeport가-호스트에서-실행하는-것)에 Homeport가 호스트에서 실행하는 모든 명령이 나열되어 있습니다.

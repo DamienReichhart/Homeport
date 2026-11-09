@@ -11,15 +11,15 @@ Homeport 连接的 Docker Engine，由一个名称和访问方式定义：本地
 
 ### Engine kind（引擎类型）
 
-主机所指向的引擎的类型：Docker 兼容（Docker Engine，或通过其兼容 API 的 Podman）、containerd 或 Incus。它决定主机显示哪些页面：containerd 主机和 Incus 主机有各自的页面。Podman 不是单独的类型：Homeport 每次连接时都会识别它。参见[引擎类型](/docs/hosts/#engine-kinds)。
+主机所指向的引擎的类型：Docker 兼容（Docker Engine，或通过其兼容 API 的 Podman）、containerd 或 Incus。它决定主机显示哪些页面：containerd 主机和 Incus 主机有各自的页面。Podman 不是单独的类型：Homeport 每次连接时都会识别它。参见[引擎类型](/docs/hosts/#引擎类型)。
 
 ### Namespace (containerd's)（containerd 命名空间）
 
-在 containerd 主机上，每个容器、镜像和快照所在的空间：nerdctl 使用 `default`，Kubernetes 使用 `k8s.io`，Docker 使用 `moby`。containerd 主机的页面一次显示一个命名空间。集群的 Namespace 是 Kubernetes 的 Namespace。参见 [containerd 命名空间](/docs/hosts/containerd/#namespaces)。
+在 containerd 主机上，每个容器、镜像和快照所在的空间：nerdctl 使用 `default`，Kubernetes 使用 `k8s.io`，Docker 使用 `moby`。containerd 主机的页面一次显示一个命名空间。集群的 Namespace 是 Kubernetes 的 Namespace。参见 [containerd 命名空间](/docs/hosts/containerd/#命名空间)。
 
 ### Snapshot（快照）
 
-在 containerd 主机上，磁盘上的一层文件：已解包的镜像层，或容器的可写层。参见[快照](/docs/hosts/containerd/#snapshots)。在 Incus 主机上，实例的一个已保存状态，实例可以恢复到该状态；参见[实例快照](/docs/guides/instances/#snapshots)。
+在 containerd 主机上，磁盘上的一层文件：已解包的镜像层，或容器的可写层。参见[快照](/docs/hosts/containerd/#快照)。在 Incus 主机上，实例的一个已保存状态，实例可以恢复到该状态；参见[实例快照](/docs/guides/instances/#快照)。
 
 ### Instance（实例）
 
@@ -27,15 +27,15 @@ Incus 主机运行的东西：在主机内核上启动完整 Linux 发行版的�
 
 ### Project (Incus's)（项目）
 
-在 Incus 主机上，其实例、镜像、配置文件、自定义卷和网络所在的空间。Incus 主机的页面一次显示一个项目，在主机切换器下方选择。参见[项目](/docs/hosts/incus/#projects)。
+在 Incus 主机上，其实例、镜像、配置文件、自定义卷和网络所在的空间。Incus 主机的页面一次显示一个项目，在主机切换器下方选择。参见[项目](/docs/hosts/incus/#项目)。
 
 ### Profile（配置文件）
 
-在 Incus 主机上，由列出它的实例共享的配置和设备。参见[配置文件](/docs/guides/instances/#profiles)。
+在 Incus 主机上，由列出它的实例共享的配置和设备。参见[配置文件](/docs/guides/instances/#配置文件)。
 
 ### Trust token（信任令牌）
 
-在 Incus 服务器上由 `incus config trust add` 输出的内容，粘贴到 Homeport 中一次，即可通过 HTTPS 添加该服务器。参见[信任令牌](/docs/hosts/incus/#over-https-with-a-trust-token)。
+在 Incus 服务器上由 `incus config trust add` 输出的内容，粘贴到 Homeport 中一次，即可通过 HTTPS 添加该服务器。参见[信任令牌](/docs/hosts/incus/#通过-https-使用信任令牌)。
 
 ### Pod（Pod）
 
@@ -51,7 +51,7 @@ Homeport 通过其 API 连接的 Kubernetes 集群或 Nomad 集群。Kubernetes 
 
 ### Allocation（allocation）
 
-在 Nomad 集群上，job 的某个 task group 在某个 client node 上的一次放置，运行其 task。其日志以及其中的 shell 会经过 Nomad 的服务器到达该节点。参见[日志和 shell](/docs/clusters/nomad/#logs-and-shell)。
+在 Nomad 集群上，job 的某个 task group 在某个 client node 上的一次放置，运行其 task。其日志以及其中的 shell 会经过 Nomad 的服务器到达该节点。参见[日志和 shell](/docs/clusters/nomad/#日志和-shell)。
 
 ### Swarm（Swarm）
 
@@ -67,7 +67,7 @@ Homeport 通过其 API 连接的 Kubernetes 集群或 Nomad 集群。Kubernetes 
 
 ### Chart repository（Chart 仓库）
 
-helm 从中下载 chart 的服务器，位于本机上 helm 自己的列表中，即 `helm repo list` 显示的列表。OCI 镜像仓库中的 chart 则通过其 `oci://` 引用安装。参见 [Chart 仓库](/docs/clusters/helm/#chart-repositories)。
+helm 从中下载 chart 的服务器，位于本机上 helm 自己的列表中，即 `helm repo list` 显示的列表。OCI 镜像仓库中的 chart 则通过其 `oci://` 引用安装。参见 [Chart 仓库](/docs/clusters/helm/#chart-仓库)。
 
 ### Node（节点）
 
@@ -83,7 +83,7 @@ Swarm 运行的东西：一个镜像、其设置和一定数量的副本；对�
 
 ### Stack（堆栈）
 
-在主机上运行的 Compose 项目，或在 Swarm 上运行的 swarm stack，由其项目名称标识。每个堆栈都是托管、关联、同步或外部堆栈之一。参见[堆栈](/docs/guides/stacks/)和 [Swarm 堆栈](/docs/guides/swarm/#swarm-stacks)。
+在主机上运行的 Compose 项目，或在 Swarm 上运行的 swarm stack，由其项目名称标识。每个堆栈都是托管、关联、同步或外部堆栈之一。参见[堆栈](/docs/guides/stacks/)和 [Swarm 堆栈](/docs/guides/swarm/#swarm-堆栈)。
 
 ### Managed Stack（托管堆栈）
 
@@ -91,7 +91,7 @@ compose 定义和环境变量由 Homeport 保存的堆栈，因此可以在 Home
 
 ### Linked Stack（关联堆栈）
 
-compose 文件位于本机某个文件夹中的堆栈。Homeport 记录该文件夹及其 compose 文件的位置，在原处读写这些文件，并以该文件夹作为项目目录进行部署，因此 `build:`、`env_file:` 和相对路径都能正常工作。可以从正在运行的容器的 compose 标签中发现，也可以从文件夹创建。其文件缺失期间，它会变为外部堆栈。参见[关联堆栈](/docs/guides/stacks/#linked-stacks)。
+compose 文件位于本机某个文件夹中的堆栈。Homeport 记录该文件夹及其 compose 文件的位置，在原处读写这些文件，并以该文件夹作为项目目录进行部署，因此 `build:`、`env_file:` 和相对路径都能正常工作。可以从正在运行的容器的 compose 标签中发现，也可以从文件夹创建。其文件缺失期间，它会变为外部堆栈。参见[关联堆栈](/docs/guides/stacks/#关联堆栈)。
 
 ### Synced Stack（同步堆栈）
 
@@ -115,19 +115,19 @@ Homeport 为某个仓库生成的 Ed25519 密钥，你需要在 git 托管平台
 
 ### Registry login（镜像仓库登录）
 
-Homeport 为某个容器镜像仓库（例如 Docker Hub 或 GHCR）保存的用户名和密码或访问令牌，在每台主机上拉取、推送和构建时使用。参见[设置](/docs/guides/settings/#registries)。
+Homeport 为某个容器镜像仓库（例如 Docker Hub 或 GHCR）保存的用户名和密码或访问令牌，在每台主机上拉取、推送和构建时使用。参见[设置](/docs/guides/settings/#镜像仓库)。
 
 ### Helper container（辅助容器）
 
-Homeport 在主机上创建的一个短期 `busybox` 容器，用于打开卷（浏览、备份、恢复或克隆卷），因为 Engine API 无法读取卷。它没有网络，除非必须写入，否则以只读方式挂载卷，并在操作结束时被删除。它从不会出现在容器列表或事件页面中。参见[浏览卷的文件](/docs/guides/volumes-networks/#the-helper-container)。
+Homeport 在主机上创建的一个短期 `busybox` 容器，用于打开卷（浏览、备份、恢复或克隆卷），因为 Engine API 无法读取卷。它没有网络，除非必须写入，否则以只读方式挂载卷，并在操作结束时被删除。它从不会出现在容器列表或事件页面中。参见[浏览卷的文件](/docs/guides/volumes-networks/#辅助容器)。
 
 ### Board（看板）
 
-在一个表格中列出所有已连接主机的容器的页面，每个容器都标有其主机。参见[看板](/docs/guides/overview/#board)。
+在一个表格中列出所有已连接主机的容器的页面，每个容器都标有其主机。参见[看板](/docs/guides/overview/#看板)。
 
 ### Command palette（命令面板）
 
-使用 <kbd>Mod</kbd> <kbd>K</kbd> 打开的搜索框：跳转到某个页面、切换主机、运行命令，或在任意已连接主机上查找容器、镜像、卷、网络或堆栈。参见[键盘](/docs/guides/keyboard/#command-palette)。
+使用 <kbd>Mod</kbd> <kbd>K</kbd> 打开的搜索框：跳转到某个页面、切换主机、运行命令，或在任意已连接主机上查找容器、镜像、卷、网络或堆栈。参见[键盘](/docs/guides/keyboard/#命令面板)。
 
 ### Engine（引擎）
 

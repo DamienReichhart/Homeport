@@ -13,7 +13,7 @@ import { DocScreenshot } from '@/features/docs';
 Homeport は独自の SSH クライアントを備えています。サーバーにログインし、エンジンの Unix ソケットへのチャネルをフォワードします。`docker -H ssh://…` と同じことを、手元のマシンに `ssh` プログラムや `docker` がなくても行えます。
 
 - キーはメモリ上でのみ復号され、ディスクに書き込まれることはないため、Windows、macOS、Linux のどれでも同じように動作します。
-- Homeport は `~/.ssh/known_hosts` を読みません。サーバーのキーは Homeport の中で、ホストごとに信頼します。踏み台サーバー経由でしか到達できないサーバーは、Homeport の `ProxyJump` である[踏み台](#through-a-bastion)を使って追加します。
+- Homeport は `~/.ssh/known_hosts` を読みません。サーバーのキーは Homeport の中で、ホストごとに信頼します。踏み台サーバー経由でしか到達できないサーバーは、Homeport の `ProxyJump` である[踏み台](#踏み台を経由する)を使って追加します。
 - サーバーは Unix ソケットへのフォワーディングを許可している必要があります。OpenSSH は既定で許可しています（`AllowStreamLocalForwarding yes`）。
 
 ## SSH のホストを追加する
@@ -51,7 +51,7 @@ Homeport は独自の SSH クライアントを備えています。サーバー
 | `User`、`Port`           | **ユーザー**（既定はローカルのユーザー名）と **ポート**（`22`）。                                               |
 | `IdentityFile`           | **既存のキー**: 読み込める最初のファイル。`~` と `%h`、`%r`、`%u`、`%p` は展開されます。                        |
 | `IdentityFile` なし      | **ssh-agent**。                                                                                                 |
-| `ProxyJump a,b`          | 2 つの[踏み台](#through-a-bastion)を順番どおりに。それぞれ同じファイル内で検索されます。ループは報告されます。  |
+| `ProxyJump a,b`          | 2 つの[踏み台](#踏み台を経由する)を順番どおりに。それぞれ同じファイル内で検索されます。ループは報告されます。  |
 
 **リモートソケットのパス** の初期値は `/var/run/docker.sock` です。rootless の Docker や Podman の場合はプレビューで変更してください。暗号化されたキーは、プレビューでパスフレーズを求めます。
 
@@ -74,7 +74,7 @@ Homeport は動作中の SSH エージェントにキーを要求し、何も保
 Windows では、まず OpenSSH Authentication Agent サービスに、次に PuTTY の **Pageant**（または KeeAgent や PuTTY 対応の gpg-agent など、その代わりになるツール）に要求します。どちらが持っているキーでも使えます。OpenSSH のエージェントが動作していないか、サーバーが受け付けるキーを持っていない場合、Homeport は Pageant のキーも試します。
 
 <Aside>
-  ssh-agent は、[OS のキーチェーン](/docs/requirements/#optional-an-os-keychain)なしで使える唯一の
+  ssh-agent は、[OS のキーチェーン](/docs/requirements/#任意-os-のキーチェーン)なしで使える唯一の
   SSH の選択肢です。Homeport をデスクトップのメニューから起動した場合は、セッションのエージェントを
   Homeport が使えることを確認してください。
 </Aside>

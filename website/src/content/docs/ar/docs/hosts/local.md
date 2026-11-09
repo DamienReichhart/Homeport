@@ -17,7 +17,7 @@ description: اتصل بـ Docker Engine أو Docker Desktop أو Colima أو Or
 | Colima                   | `~/.colima/default/docker.sock`                                                                                 | —                                 |
 | OrbStack                 | `~/.orbstack/run/docker.sock`                                                                                   | —                                 |
 | Rancher Desktop          | `~/.rd/docker.sock`                                                                                             | —                                 |
-| Podman                   | `$XDG_RUNTIME_DIR/podman/podman.sock`، `/run/podman/podman.sock`؛ [الآلات على macOS](#podman-machines-on-macos) | `//./pipe/podman-machine-default` |
+| Podman                   | `$XDG_RUNTIME_DIR/podman/podman.sock`، `/run/podman/podman.sock`؛ [الآلات على macOS](#آلات-podman-على-macos) | `//./pipe/podman-machine-default` |
 
 يُفحص كل مرشح بسؤال المحرك عن إصداره، لذا لا تُسرد إلا المحركات العاملة. عندما تؤدي عدة مسارات إلى المقبس نفسه — على macOS، يشير `/var/run/docker.sock` عادةً إلى Docker Desktop أو OrbStack أو Rancher Desktop — يُسرد المحرك مرة واحدة، تحت أول اسم يُعثر عليه.
 

@@ -46,7 +46,7 @@ I nomi degli host devono essere univoci, senza distinzione tra maiuscole e minus
 
 **Aggiungi host** offre due modi per aggiungere molti host in una volta, da ciò che questo computer descrive già. Ciascuno apre un’anteprima: scegli le voci da importare, rinominale e scegli **Importa**.
 
-- **Importa da ~/.ssh/config** aggiunge i server indicati nella tua configurazione SSH, con il loro utente, porta, chiave e bastion `ProxyJump`. Vedi [Importa da ~/.ssh/config](/docs/hosts/ssh/#import-from-sshconfig).
+- **Importa da ~/.ssh/config** aggiunge i server indicati nella tua configurazione SSH, con il loro utente, porta, chiave e bastion `ProxyJump`. Vedi [Importa da ~/.ssh/config](/docs/hosts/ssh/#importa-da-sshconfig).
 - **Importa i contesti Docker** aggiunge gli Engine dei contesti della Docker CLI (`docker context ls`), con i loro certificati TLS.
 
 Chiavi e certificati vengono letti una sola volta, al momento dell’importazione, e memorizzati cifrati come tutti gli altri; né `~/.ssh` né `~/.docker` vengono mai modificati.
@@ -73,11 +73,11 @@ Un contesto il cui nome è già quello di un host viene proposto come `name (2)`
 
 ## Passare a un altro computer
 
-**Esporta** nella pagina Host salva gli host che scegli in un file protetto da una passphrase; **Importa** nella pagina Host dell’altro computer lo apre e aggiunge gli host che scegli, pronti a connettersi. Un host il cui nome è già in uso lì viene proposto come `name (2)`, e puoi rinominarlo o saltarlo. Vedi [passare a un altro computer](/docs/reference/security/#moving-to-another-computer) per sapere come è protetto il file.
+**Esporta** nella pagina Host salva gli host che scegli in un file protetto da una passphrase; **Importa** nella pagina Host dell’altro computer lo apre e aggiunge gli host che scegli, pronti a connettersi. Un host il cui nome è già in uso lì viene proposto come `name (2)`, e puoi rinominarlo o saltarlo. Vedi [passare a un altro computer](/docs/reference/security/#passare-a-un-altro-computer) per sapere come è protetto il file.
 
 ## Selezionare un host
 
-Ogni pagina di risorse — Container, Immagini, Volumi, Reti, Stack ed Eventi — mostra l’host selezionato nel **selettore degli host**. Le pagine di un host containerd mostrano anche un namespace alla volta, scelto [sotto il selettore](/docs/hosts/containerd/#namespaces), e quelle di un host Incus un [progetto](/docs/hosts/incus/#projects). Cambia host lì, o seleziona la scheda di un host nella [Panoramica](/docs/guides/overview/). Homeport ricorda la tua scelta tra un avvio e l’altro.
+Ogni pagina di risorse — Container, Immagini, Volumi, Reti, Stack ed Eventi — mostra l’host selezionato nel **selettore degli host**. Le pagine di un host containerd mostrano anche un namespace alla volta, scelto [sotto il selettore](/docs/hosts/containerd/#namespace), e quelle di un host Incus un [progetto](/docs/hosts/incus/#progetti). Cambia host lì, o seleziona la scheda di un host nella [Panoramica](/docs/guides/overview/). Homeport ricorda la tua scelta tra un avvio e l’altro.
 
 ## Stati
 
@@ -90,10 +90,10 @@ Ogni host mostra uno stato accanto al suo nome. Quando l’host selezionato non 
 | **Disattivato**                       | L’interruttore **Attivato** dell’host è spento.                                                 | Nulla finché non lo attivi.                                                                       |
 | **Non raggiungibile**                 | La rete, il socket o l’Engine non ha risposto.                                                  | Riprova da solo, attendendo ogni volta più a lungo.                                               |
 | **Accesso negato**                    | Il server SSH ha rifiutato la chiave, ssh-agent non ha funzionato, o l’handshake TLS è fallito. | Correggi la causa, poi **Riconnetti**.                                                            |
-| **Chiave del server non attendibile** | Prima connessione SSH: la chiave del server o di un bastion richiede la tua approvazione.       | [Considera attendibile la chiave](/docs/hosts/ssh/#trust-the-servers-key) nella pagina dell’host. |
-| **Chiave del server cambiata**        | Il server SSH ha presentato una chiave diversa da quella che avevi considerato attendibile.     | [Indaga prima](/docs/hosts/ssh/#when-the-servers-key-changes).                                    |
-| **Credenziali perse**                 | Le credenziali memorizzate non possono essere decifrate.                                        | [Inseriscile di nuovo](/docs/reference/troubleshooting/#credentials-lost).                        |
-| **Portachiavi non disponibile**       | L’host richiede segreti memorizzati ma non c’è un portachiavi del sistema operativo.            | Vedi i [requisiti](/docs/requirements/#optional-an-os-keychain).                                  |
+| **Chiave del server non attendibile** | Prima connessione SSH: la chiave del server o di un bastion richiede la tua approvazione.       | [Considera attendibile la chiave](/docs/hosts/ssh/#considera-attendibile-la-chiave-del-server) nella pagina dell’host. |
+| **Chiave del server cambiata**        | Il server SSH ha presentato una chiave diversa da quella che avevi considerato attendibile.     | [Indaga prima](/docs/hosts/ssh/#quando-la-chiave-del-server-cambia).                                    |
+| **Credenziali perse**                 | Le credenziali memorizzate non possono essere decifrate.                                        | [Inseriscile di nuovo](/docs/reference/troubleshooting/#credenziali-perse).                        |
+| **Portachiavi non disponibile**       | L’host richiede segreti memorizzati ma non c’è un portachiavi del sistema operativo.            | Vedi i [requisiti](/docs/requirements/#facoltativo-un-portachiavi-del-sistema-operativo).                                  |
 | **Configurazione errata**             | Qualcosa nelle impostazioni dell’host manca o non è valido.                                     | Il messaggio dice cosa; correggilo e scegli **Salva**.                                            |
 
 ## Riconnessione
@@ -106,4 +106,4 @@ Solo **Non raggiungibile** riprova automaticamente. Ogni altro problema richiede
 
 ## Eventi e aggiornamenti in tempo reale
 
-Homeport non interroga periodicamente. Quando l’Engine segnala una modifica — un container che si avvia, un’immagine che viene scaricata — le pagine interessate si aggiornano in una frazione di secondo. La pagina [Eventi](/docs/guides/overview/#events) mostra il flusso grezzo.
+Homeport non interroga periodicamente. Quando l’Engine segnala una modifica — un container che si avvia, un’immagine che viene scaricata — le pagine interessate si aggiornano in una frazione di secondo. La pagina [Eventi](/docs/guides/overview/#eventi) mostra il flusso grezzo.

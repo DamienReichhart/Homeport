@@ -25,7 +25,7 @@ Helm 将其 Release 以 Secret 的形式保存在每个 Release 所在的 Namesp
 
 Release 标签页上的**安装 Chart**（或 <kbd>n</kbd>）会在所选集群上安装一个 Chart：
 
-1. **选择 Chart。** 搜索 helm 的[仓库](#chart-repositories)中的 Chart 并点击**使用**，或者在**来自 OCI 镜像仓库**下提供一个引用，例如 `oci://registry-1.docker.io/bitnamicharts/nginx`，这样无需添加仓库即可安装。
+1. **选择 Chart。** 搜索 helm 的[仓库](#chart-仓库)中的 Chart 并点击**使用**，或者在**来自 OCI 镜像仓库**下提供一个引用，例如 `oci://registry-1.docker.io/bitnamicharts/nginx`，这样无需添加仓库即可安装。
 2. **选择其版本、名称和 Namespace。** 仓库 Chart 的版本会被列出，最新的在最前；OCI Chart 的版本需手动输入，留空则使用最新版本。Release 起初以 Chart 命名：最多 53 个小写字母、数字、连字符和点。Namespace 为页面显示的那个（或集群的默认 Namespace），如果不存在则会被创建，除非你取消勾选该选项。
 3. **编辑其 Values。** 编辑器起初显示 Chart 的默认 Values（`helm show values`）；修改你需要的内容，**重置为 Chart 的默认值**可将其恢复。Values 在 helm 运行之前会作为 YAML 进行检查，并通过标准输入传给 helm——绝不会写入文件。
 4. **预览**（可选）：helm 借助集群（`--dry-run=server`）用你的 Values 渲染该 Chart，Homeport 会显示它将应用的清单（包括 hook）以及 Chart 的说明。集群上不会发生任何更改。
@@ -85,7 +85,7 @@ Homeport 只添加公开仓库。需要登录的仓库请在终端中用 `helm r
 - **无权限**：helm 从 Secret 中读取 Release；列出它们需要对该 Namespace 中的 `secrets` 拥有 `list` 权限。详细信息会注明被拒绝的内容。
 - **另一次安装、升级或回滚正在进行中**：该 Release 被一项等待中的操作锁定。请等待其完成，或回滚到上次部署的修订版本。
 - **已存在同名的 Release**：Release 名称在一个 Namespace 中是唯一的。请另选一个名称，或升级现有的 Release。
-- **找不到 Chart 或版本**：请检查名称和版本；仓库 Chart 需要先添加其仓库并[更新](#chart-repositories)。要升级其 Chart 不在你任何仓库中的 Release，请先添加该仓库。
+- **找不到 Chart 或版本**：请检查名称和版本；仓库 Chart 需要先添加其仓库并[更新](#chart-仓库)。要升级其 Chart 不在你任何仓库中的 Release，请先添加该仓库。
 - **Values 不是有效的 YAML**：消息会注明行号；修正后重试。
 - **放弃了等待**：勾选**等待**时，某个资源未能及时就绪。请查看该 Release 的 Pod 和事件，找出卡住的地方。
 - **不是 Chart 仓库，或无法访问**：该 URL 没有提供 `index.yaml`，或者本机无法访问它。详细信息会显示 helm 的输出。

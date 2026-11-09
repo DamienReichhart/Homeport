@@ -11,7 +11,7 @@ Eine Docker Engine, mit der sich Homeport verbindet, festgelegt durch einen Name
 
 ### Engine kind (dt. _Engine-Art_)
 
-Welche Art von Engine ein Host anspricht: Docker-kompatibel (Docker Engine oder Podman über seine kompatible API), containerd oder Incus. Sie bestimmt, welche Seiten ein Host zeigt: containerd- und Incus-Hosts erhalten eigene. Podman ist keine eigene Art: Homeport erkennt es bei jeder Verbindung. Siehe [Engine-Arten](/docs/hosts/#engine-kinds).
+Welche Art von Engine ein Host anspricht: Docker-kompatibel (Docker Engine oder Podman über seine kompatible API), containerd oder Incus. Sie bestimmt, welche Seiten ein Host zeigt: containerd- und Incus-Hosts erhalten eigene. Podman ist keine eigene Art: Homeport erkennt es bei jeder Verbindung. Siehe [Engine-Arten](/docs/hosts/#engine-arten).
 
 ### Namespace (containerd’s) (dt. _containerd-Namespace_)
 
@@ -27,15 +27,15 @@ Was ein Incus-Host ausführt: ein Systemcontainer, der eine ganze Linux-Distribu
 
 ### Project (Incus’s) (dt. _Projekt_)
 
-Auf einem Incus-Host der Raum, in dem seine Instanzen, Images, Profile, benutzerdefinierten Volumes und Netzwerke leben. Die Seiten eines Incus-Hosts zeigen jeweils eines, gewählt unter dem Host-Umschalter. Siehe [Projekte](/docs/hosts/incus/#projects).
+Auf einem Incus-Host der Raum, in dem seine Instanzen, Images, Profile, benutzerdefinierten Volumes und Netzwerke leben. Die Seiten eines Incus-Hosts zeigen jeweils eines, gewählt unter dem Host-Umschalter. Siehe [Projekte](/docs/hosts/incus/#projekte).
 
 ### Profile (dt. _Profil_)
 
-Auf einem Incus-Host Konfiguration und Geräte, die von den Instanzen geteilt werden, die es aufführen. Siehe [Profile](/docs/guides/instances/#profiles).
+Auf einem Incus-Host Konfiguration und Geräte, die von den Instanzen geteilt werden, die es aufführen. Siehe [Profile](/docs/guides/instances/#profile).
 
 ### Trust token (dt. _Trust-Token_)
 
-Was `incus config trust add` auf einem Incus-Server ausgibt und einmal in Homeport eingefügt wird, um diesen Server über HTTPS hinzuzufügen. Siehe [Trust-Tokens](/docs/hosts/incus/#over-https-with-a-trust-token).
+Was `incus config trust add` auf einem Incus-Server ausgibt und einmal in Homeport eingefügt wird, um diesen Server über HTTPS hinzuzufügen. Siehe [Trust-Tokens](/docs/hosts/incus/#über-https-mit-einem-trust-token).
 
 ### Pod (dt. _Pod_ / _Podman-Pod_)
 
@@ -51,7 +51,7 @@ Ein Kubernetes-Cluster oder ein Nomad-Cluster, mit dem sich Homeport über seine
 
 ### Allocation (dt. _Allocation_)
 
-Auf einem Nomad-Cluster eine Platzierung der Task Group eines Jobs auf einem Client-Node, die ihre Tasks ausführt. Ihre Logs und eine Shell darin laufen über die Server von Nomad zum Node. Siehe [Logs und Shell](/docs/clusters/nomad/#logs-and-shell).
+Auf einem Nomad-Cluster eine Platzierung der Task Group eines Jobs auf einem Client-Node, die ihre Tasks ausführt. Ihre Logs und eine Shell darin laufen über die Server von Nomad zum Node. Siehe [Logs und Shell](/docs/clusters/nomad/#logs-und-shell).
 
 ### Swarm (dt. _Swarm_)
 
@@ -67,7 +67,7 @@ Ein Helm-Release: eine Installation eines Charts auf einem Cluster, benannt in s
 
 ### Chart repository (dt. _Chart-Repository_)
 
-Ein Server, von dem helm Charts herunterlädt, in der eigenen Liste von helm auf diesem Computer – derjenigen, die `helm repo list` zeigt. Charts in einer OCI-Registry werden stattdessen über ihre `oci://`-Referenz installiert. Siehe [Chart-Repositorys](/docs/clusters/helm/#chart-repositories).
+Ein Server, von dem helm Charts herunterlädt, in der eigenen Liste von helm auf diesem Computer – derjenigen, die `helm repo list` zeigt. Charts in einer OCI-Registry werden stattdessen über ihre `oci://`-Referenz installiert. Siehe [Chart-Repositorys](/docs/clusters/helm/#chart-repositorys).
 
 ### Node (dt. _Node_)
 
@@ -91,7 +91,7 @@ Ein Stack, dessen Compose-Definition und Umgebung Homeport hält, sodass er aus 
 
 ### Linked Stack (dt. _verknüpfter Stack_)
 
-Ein Stack, dessen Compose-Dateien ein Ordner auf diesem Computer sind. Homeport merkt sich, wo der Ordner und seine Compose-Dateien liegen, liest und schreibt die Dateien an Ort und Stelle und stellt mit diesem Ordner als Projektverzeichnis bereit, sodass `build:`, `env_file:` und relative Pfade funktionieren. Gefunden über die Compose-Labels laufender Container oder aus einem Ordner erstellt. Er wird extern, solange seine Dateien fehlen. Siehe [verknüpfte Stacks](/docs/guides/stacks/#linked-stacks).
+Ein Stack, dessen Compose-Dateien ein Ordner auf diesem Computer sind. Homeport merkt sich, wo der Ordner und seine Compose-Dateien liegen, liest und schreibt die Dateien an Ort und Stelle und stellt mit diesem Ordner als Projektverzeichnis bereit, sodass `build:`, `env_file:` und relative Pfade funktionieren. Gefunden über die Compose-Labels laufender Container oder aus einem Ordner erstellt. Er wird extern, solange seine Dateien fehlen. Siehe [verknüpfte Stacks](/docs/guides/stacks/#verknüpfte-stacks).
 
 ### Synced Stack (dt. _synchronisierter Stack_)
 
@@ -115,11 +115,11 @@ Einen externen Stack in einen verwalteten Stack verwandeln, indem man seine Comp
 
 ### Registry login (dt. _Registry-Anmeldung_)
 
-Der Benutzername und das Passwort oder Zugriffstoken, die Homeport für eine Container-Registry wie Docker Hub oder GHCR aufbewahrt und auf jedem Host zum Pullen, Pushen und Bauen verwendet. Siehe [Einstellungen](/docs/guides/settings/#registries).
+Der Benutzername und das Passwort oder Zugriffstoken, die Homeport für eine Container-Registry wie Docker Hub oder GHCR aufbewahrt und auf jedem Host zum Pullen, Pushen und Bauen verwendet. Siehe [Einstellungen](/docs/guides/settings/#registrys).
 
 ### Helper container (dt. _Hilfscontainer_)
 
-Ein kurzlebiger `busybox`-Container, den Homeport auf einem Host erstellt, um ein Volume zu öffnen – um es zu durchsuchen, zu sichern, wiederherzustellen oder zu klonen –, da die Engine API keines lesen kann. Er hat kein Netzwerk, bindet das Volume schreibgeschützt ein, sofern er nicht hineinschreiben muss, und wird entfernt, wenn die Aktion endet. Er erscheint nie in der Containerliste oder auf der Seite „Ereignisse“. Siehe [Die Dateien eines Volumes durchsuchen](/docs/guides/volumes-networks/#the-helper-container).
+Ein kurzlebiger `busybox`-Container, den Homeport auf einem Host erstellt, um ein Volume zu öffnen – um es zu durchsuchen, zu sichern, wiederherzustellen oder zu klonen –, da die Engine API keines lesen kann. Er hat kein Netzwerk, bindet das Volume schreibgeschützt ein, sofern er nicht hineinschreiben muss, und wird entfernt, wenn die Aktion endet. Er erscheint nie in der Containerliste oder auf der Seite „Ereignisse“. Siehe [Die Dateien eines Volumes durchsuchen](/docs/guides/volumes-networks/#der-hilfscontainer).
 
 ### Board (dt. _Board_)
 
@@ -127,7 +127,7 @@ Die Seite, die die Container jedes verbundenen Hosts in einer Tabelle auflistet,
 
 ### Command palette (dt. _Befehlspalette_)
 
-Das mit <kbd>Mod</kbd> <kbd>K</kbd> geöffnete Suchfeld: zu einer Seite wechseln, den Host wechseln, einen Befehl ausführen oder einen Container, ein Image, ein Volume, ein Netzwerk oder einen Stack auf einem beliebigen verbundenen Host finden. Siehe [Tastatur](/docs/guides/keyboard/#command-palette).
+Das mit <kbd>Mod</kbd> <kbd>K</kbd> geöffnete Suchfeld: zu einer Seite wechseln, den Host wechseln, einen Befehl ausführen oder einen Container, ein Image, ein Volume, ein Netzwerk oder einen Stack auf einem beliebigen verbundenen Host finden. Siehe [Tastatur](/docs/guides/keyboard/#befehlspalette).
 
 ### Engine (dt. _Engine_)
 

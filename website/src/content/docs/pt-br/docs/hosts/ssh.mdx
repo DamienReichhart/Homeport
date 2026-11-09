@@ -13,7 +13,7 @@ SSH é a forma recomendada de acessar um Docker Engine em um servidor. Nada prec
 O Homeport tem o seu próprio cliente SSH. Ele faz login no servidor e encaminha um canal para o socket Unix do Engine — o mesmo que `docker -H ssh://…` faz, sem precisar do programa `ssh` nem do `docker` na sua máquina.
 
 - As chaves são descriptografadas apenas na memória e nunca gravadas em disco, então funciona da mesma forma no Windows, macOS e Linux.
-- O Homeport não lê `~/.ssh/known_hosts`: as chaves dos servidores são consideradas confiáveis no Homeport, por host. Um servidor acessível apenas por um servidor de salto é adicionado com [bastions](#through-a-bastion), o `ProxyJump` do Homeport.
+- O Homeport não lê `~/.ssh/known_hosts`: as chaves dos servidores são consideradas confiáveis no Homeport, por host. Um servidor acessível apenas por um servidor de salto é adicionado com [bastions](#por-meio-de-um-bastion), o `ProxyJump` do Homeport.
 - O servidor deve permitir o encaminhamento para sockets Unix. O OpenSSH permite por padrão (`AllowStreamLocalForwarding yes`).
 
 ## Adicionar um host SSH
@@ -51,7 +51,7 @@ Se os seus servidores já estão em `~/.ssh/config`, escolha **Importar de ~/.ss
 | `User`, `Port`     | **Usuário** (o seu nome de usuário local por padrão) e **Porta** (`22`).                                 |
 | `IdentityFile`     | **Chave existente**: o primeiro arquivo que puder ser lido, com `~` e `%h`, `%r`, `%u`, `%p` expandidos. |
 | sem `IdentityFile` | **ssh-agent**.                                                                                           |
-| `ProxyJump a,b`    | Dois [bastions](#through-a-bastion), em ordem, cada um procurado no mesmo arquivo. Um laço é informado.  |
+| `ProxyJump a,b`    | Dois [bastions](#por-meio-de-um-bastion), em ordem, cada um procurado no mesmo arquivo. Um laço é informado.  |
 
 O **Caminho do socket remoto** começa como `/var/run/docker.sock`; mude-o na prévia para o Docker rootless ou o Podman. Uma chave criptografada pede a sua senha ali.
 
@@ -75,7 +75,7 @@ No Windows, ele consulta primeiro o serviço OpenSSH Authentication Agent e depo
 
 <Aside>
   O ssh-agent é a única opção SSH que funciona sem um [chaveiro do
-  sistema](/docs/requirements/#optional-an-os-keychain). Se o Homeport foi iniciado a partir de um
+  sistema](/docs/requirements/#opcional-um-chaveiro-do-sistema). Se o Homeport foi iniciado a partir de um
   menu do desktop, verifique se o agente da sua sessão está disponível para ele.
 </Aside>
 

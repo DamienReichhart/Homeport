@@ -18,7 +18,7 @@ Homeport 会在启动时以及每 6 小时检查一次新版本。有新版本�
 
 ### Linux 软件包
 
-`.deb` 和 `.rpm` 软件包，无论是通过[快速安装](/docs/installation/#quick-install)、[手动设置](/docs/installation/#manual-setup)还是下载的文件安装的，都会随系统其余部分一起从 Homeport 软件包仓库更新：你平常的软件更新就会包含 Homeport。只更新 Homeport：
+`.deb` 和 `.rpm` 软件包，无论是通过[快速安装](/docs/installation/#快速安装)、[手动设置](/docs/installation/#手动设置)还是下载的文件安装的，都会随系统其余部分一起从 Homeport 软件包仓库更新：你平常的软件更新就会包含 Homeport。只更新 Homeport：
 
 <Tabs syncKey="linux-format">
   {MANUAL_SETUP.map((setup) => (
@@ -30,15 +30,15 @@ Homeport 会在启动时以及每 6 小时检查一次新版本。有新版本�
 
 有新版本时，Homeport 会告诉你，并显示适用于你的系统的命令，但安装交给你的包管理器完成。
 
-如果你删除了 Homeport 仓库，包管理器就看不到新版本。请通过[快速安装](/docs/installation/#quick-install)重新设置，或下载新的软件包并覆盖安装旧版本。
+如果你删除了 Homeport 仓库，包管理器就看不到新版本。请通过[快速安装](/docs/installation/#快速安装)重新设置，或下载新的软件包并覆盖安装旧版本。
 
 ### 关闭更新检查
 
-关闭**设置 → 更新 → 自动检查更新**。**立即检查**仍然可用。一次检查会从本网站下载一个小文件，不会发送任何关于你或你的主机的信息。参见[安全与你的数据](/docs/reference/security/#what-homeport-connects-to)。
+关闭**设置 → 更新 → 自动检查更新**。**立即检查**仍然可用。一次检查会从本网站下载一个小文件，不会发送任何关于你或你的主机的信息。参见[安全与你的数据](/docs/reference/security/#homeport-连接的对象)。
 
 ### 从 0.2.0 或更早版本更新
 
-0.3.0 之前的版本不会自行更新，其 Linux 软件包也不会添加仓库。请按照你安装 Homeport 的方式，安装一次 0.3.0 或更高版本：从[下载页面](/download/)，或者在 Linux 上使用[快速安装](/docs/installation/#quick-install)。之后，更新就会自动到来。
+0.3.0 之前的版本不会自行更新，其 Linux 软件包也不会添加仓库。请按照你安装 Homeport 的方式，安装一次 0.3.0 或更高版本：从[下载页面](/download/)，或者在 Linux 上使用[快速安装](/docs/installation/#快速安装)。之后，更新就会自动到来。
 
 如果仍想获知新版本，可以在 GitHub 上关注该仓库（**Watch → Custom → Releases**），或订阅[发布 feed](https://github.com/DamienReichhart/Homeport/releases.atom)。
 

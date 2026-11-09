@@ -12,7 +12,7 @@ Homeport 在 [github.com/DamienReichhart/Homeport](https://github.com/DamienReic
 - 你的 Homeport 版本和平台，可在**设置**中找到（例如 `v0.2.0 · macos/aarch64`）；
 - 主机的类型（本地、SSH、TLS 或 TCP）及其引擎版本；
 - 你做了什么、预期结果是什么、实际发生了什么，确切的消息最有帮助；
-- [日志文件](/docs/reference/security/#logs)中的任何相关内容。
+- [日志文件](/docs/reference/security/#日志)中的任何相关内容。
 
 请通过 [GitHub 的漏洞报告](https://github.com/DamienReichhart/Homeport/security/advisories/new)私下报告安全问题。
 
@@ -58,7 +58,7 @@ Homeport 在 [github.com/DamienReichhart/Homeport](https://github.com/DamienReic
 
 无论是什么字符串，在每种语言都具备它（包含相同的 `{arguments}` 和标签，以及该语言所需的每种复数形式）之前，`bun run check`（因而 CI）都会失败。
 
-- **应用文本**：将键添加到 `src/shared/i18n/en/<namespace>.ts`（参见[向应用添加文本](#adding-text-to-the-app)），然后添加到其他每个语言文件夹（`fr/`、`de/`、`zh-CN/`…）中的同名文件。能翻译就翻译。如果不能，请把英文文本复制过去，并在 pull request 中说明，以便译者跟进；绝不要遗漏该键。
+- **应用文本**：将键添加到 `src/shared/i18n/en/<namespace>.ts`（参见[向应用添加文本](#向应用添加文本)），然后添加到其他每个语言文件夹（`fr/`、`de/`、`zh-CN/`…）中的同名文件。能翻译就翻译。如果不能，请把英文文本复制过去，并在 pull request 中说明，以便译者跟进；绝不要遗漏该键。
 - **错误消息或提示**：在 crate 的 `messages!` 块中声明它并运行 `bun run bindings`，它会写入 `en/errors.json`；然后将该键添加到每种语言的 `errors.json`。操作系统显示的文本（托盘菜单和通知）也以同样方式处理，使用 `native.` 键和 `native.json`。
 - **网站文本**（首页、下载、更新日志、页眉和页脚）：将键添加到 `website/src/core/i18n/strings/en/` 中相应的文件（`site`、`home`、`download` 或 `changelog`），以及其他每种语言文件夹中的同名文件；缺少时 `astro check` 会失败。文档侧边栏标签放在 `website/src/app/config/sidebar/<code>.ts` 中。
 - **文档页面**：英文页面位于 `website/src/content/docs/docs/`。修改英文页面时，请在同一个 pull request 中更新 `website/src/content/docs/fr/docs/` 下相同路径的法文页面。其他语言在有人翻译之前会显示英文页面，并附带一条说明。

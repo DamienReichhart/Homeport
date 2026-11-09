@@ -3,13 +3,13 @@ title: Tastiera e accessibilità
 description: Usare Homeport con la tastiera, il movimento ridotto e uno screen reader, il contrasto che rispetta, i limiti noti oggi, e come segnalare una barriera.
 ---
 
-Homeport punta a essere utilizzabile con la sola tastiera, con uno screen reader e con il movimento ridotto, in ciascuna delle sue [lingue](/docs/guides/settings/#appearance). Questa pagina dice cosa funziona, cosa non ancora, e come farci sapere quando qualcosa ti ostacola.
+Homeport punta a essere utilizzabile con la sola tastiera, con uno screen reader e con il movimento ridotto, in ciascuna delle sue [lingue](/docs/guides/settings/#aspetto). Questa pagina dice cosa funziona, cosa non ancora, e come farci sapere quando qualcosa ti ostacola.
 
 ## Spostarsi
 
 Tutto in Homeport si raggiunge con <kbd>Tab</kbd> e <kbd>Shift</kbd> <kbd>Tab</kbd>, e si usa con <kbd>Enter</kbd> o <kbd>Space</kbd>. Un anello visibile mostra dove si trova lo stato attivo.
 
-- **La barra laterale** elenca ogni pagina; ciascuna è un link. Da <kbd>Mod</kbd> <kbd>1</kbd> a <kbd>9</kbd> le aprono in ordine, e il [riquadro comandi](/docs/guides/keyboard/#command-palette) (<kbd>Mod</kbd> <kbd>K</kbd>) raggiunge ogni pagina, host e azione digitando.
+- **La barra laterale** elenca ogni pagina; ciascuna è un link. Da <kbd>Mod</kbd> <kbd>1</kbd> a <kbd>9</kbd> le aprono in ordine, e il [riquadro comandi](/docs/guides/keyboard/#riquadro-comandi) (<kbd>Mod</kbd> <kbd>K</kbd>) raggiunge ogni pagina, host e azione digitando.
 - **Elenchi** (container, immagini, volumi, reti, stack, host, Pod…): il nome di ogni riga è un pulsante o un link. Raggiungilo con <kbd>Tab</kbd> e premi <kbd>Enter</kbd> per aprire l’elemento, come fa un clic sulla riga. Le caselle di controllo e il menu della riga vengono prima e dopo di esso.
 - **Ordinamento**: l’intestazione di una colonna ordinabile è un pulsante. Premi <kbd>Enter</kbd> o <kbd>Space</kbd> per ordinare in base ad essa, di nuovo per invertire; gli screen reader annunciano l’ordine.
 - **Gli stack nell’elenco dei container** si aprono e si chiudono con il pulsante prima del loro nome, che indica se sono espansi.

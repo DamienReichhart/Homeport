@@ -37,7 +37,7 @@ Para navegar por [clusters](/docs/clusters/), o Homeport precisa de um kubeconfi
 
 ## Opcional: clusters Nomad
 
-Para gerenciar [clusters Nomad](/docs/clusters/nomad/), o Homeport precisa de acesso de rede à API HTTP de um agente Nomad (porta 4646 por padrão) e, quando o cluster tem ACLs habilitadas, de um token; veja [a política de ACL](/docs/clusters/nomad/#acl-policies) de que ele precisa. Ele fala a API do Nomad por conta própria, então a CLI `nomad` não é necessária, e nada é instalado no cluster.
+Para gerenciar [clusters Nomad](/docs/clusters/nomad/), o Homeport precisa de acesso de rede à API HTTP de um agente Nomad (porta 4646 por padrão) e, quando o cluster tem ACLs habilitadas, de um token; veja [a política de ACL](/docs/clusters/nomad/#políticas-de-acl) de que ele precisa. Ele fala a API do Nomad por conta própria, então a CLI `nomad` não é necessária, e nada é instalado no cluster.
 
 - **Versões do Nomad**: Nomad 1.6 ou posterior. **Editar e executar** parte da especificação enviada de um job, que o Nomad guarda a partir da 1.6.
 

@@ -17,7 +17,7 @@ Homeport sucht an den üblichen Orten nach laufenden Engines und listet die, die
 | Colima                   | `~/.colima/default/docker.sock`                                                                                      | —                                 |
 | OrbStack                 | `~/.orbstack/run/docker.sock`                                                                                        | —                                 |
 | Rancher Desktop          | `~/.rd/docker.sock`                                                                                                  | —                                 |
-| Podman                   | `$XDG_RUNTIME_DIR/podman/podman.sock`, `/run/podman/podman.sock`; [Maschinen unter macOS](#podman-machines-on-macos) | `//./pipe/podman-machine-default` |
+| Podman                   | `$XDG_RUNTIME_DIR/podman/podman.sock`, `/run/podman/podman.sock`; [Maschinen unter macOS](#podman-maschinen-unter-macos) | `//./pipe/podman-machine-default` |
 
 Jeder Kandidat wird geprüft, indem die Engine nach ihrer Version gefragt wird, sodass nur laufende Engines aufgelistet werden. Führen mehrere Pfade zum selben Socket – unter macOS verweist `/var/run/docker.sock` meist auf Docker Desktop, OrbStack oder Rancher Desktop –, wird die Engine einmal aufgelistet, unter dem zuerst gefundenen Namen.
 

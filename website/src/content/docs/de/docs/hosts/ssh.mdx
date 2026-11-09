@@ -13,7 +13,7 @@ SSH ist der empfohlene Weg, eine Docker Engine auf einem Server zu erreichen. Ü
 Homeport hat seinen eigenen SSH-Client. Er meldet sich am Server an und leitet einen Kanal an den Unix-Socket der Engine weiter – dasselbe, was `docker -H ssh://…` tut, ohne dass das Programm `ssh` oder `docker` auf Ihrem Rechner nötig ist.
 
 - Schlüssel werden nur im Arbeitsspeicher entschlüsselt und nie auf die Festplatte geschrieben, daher funktioniert es unter Windows, macOS und Linux gleich.
-- Homeport liest `~/.ssh/known_hosts` nicht: Serverschlüssel werden in Homeport vertraut, pro Host. Ein Server, der nur über einen Sprungserver erreichbar ist, wird mit [Bastionen](#through-a-bastion) hinzugefügt, dem `ProxyJump` von Homeport.
+- Homeport liest `~/.ssh/known_hosts` nicht: Serverschlüssel werden in Homeport vertraut, pro Host. Ein Server, der nur über einen Sprungserver erreichbar ist, wird mit [Bastionen](#über-eine-bastion) hinzugefügt, dem `ProxyJump` von Homeport.
 - Der Server muss die Weiterleitung an Unix-Sockets erlauben. OpenSSH tut das standardmäßig (`AllowStreamLocalForwarding yes`).
 
 ## Einen SSH-Host hinzufügen
@@ -51,7 +51,7 @@ Stehen Ihre Server bereits in `~/.ssh/config`, wählen Sie auf **Host hinzufüge
 | `User`, `Port`      | **Benutzer** (standardmäßig Ihr lokaler Benutzername) und **Port** (`22`).                                                           |
 | `IdentityFile`      | **Vorhandener Schlüssel**: die erste lesbare Datei, mit erweitertem `~` und `%h`, `%r`, `%u`, `%p`.                                  |
 | kein `IdentityFile` | **ssh-agent**.                                                                                                                       |
-| `ProxyJump a,b`     | Zwei [Bastionen](#through-a-bastion), in dieser Reihenfolge, jeweils in derselben Datei nachgeschlagen. Eine Schleife wird gemeldet. |
+| `ProxyJump a,b`     | Zwei [Bastionen](#über-eine-bastion), in dieser Reihenfolge, jeweils in derselben Datei nachgeschlagen. Eine Schleife wird gemeldet. |
 
 Der **Entfernte Socket-Pfad** beginnt mit `/var/run/docker.sock`; ändern Sie ihn in der Vorschau für rootless Docker oder Podman. Ein verschlüsselter Schlüssel fragt dort nach seiner Passphrase.
 
@@ -75,7 +75,7 @@ Unter Windows fragt es zuerst den Dienst OpenSSH Authentication Agent, dann **Pa
 
 <Aside>
   ssh-agent ist die einzige SSH-Option, die ohne einen [Schlüsselbund des
-  Betriebssystems](/docs/requirements/#optional-an-os-keychain) funktioniert. Wurde Homeport über
+  Betriebssystems](/docs/requirements/#optional-ein-schlüsselbund-des-betriebssystems) funktioniert. Wurde Homeport über
   ein Desktop-Menü gestartet, stellen Sie sicher, dass der Agent Ihrer Sitzung dafür verfügbar ist.
 </Aside>
 

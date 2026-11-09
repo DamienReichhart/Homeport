@@ -28,4 +28,4 @@ Scrivi il kubeconfig come al solito — `aws eks update-kubeconfig`, `gcloud con
 - **«… richiede che tu effettui l’accesso, cosa che non può fare all’interno di Homeport»** — il plugin vuole un browser o un codice dispositivo (AWS SSO, accesso con dispositivo di Azure, una sessione `gcloud` scaduta). Esegui una volta `kubectl` in un terminale con quel contesto, accedi lì, poi scegli **Riconnetti**: il plugin troverà allora il suo accesso in cache.
 - **«… non è riuscito a ottenere le credenziali per …»** — è stato eseguito ma non è riuscito; **Dettagli** mostra la parte finale di ciò che ha stampato. Homeport riprova da solo.
 
-Vedi [Risoluzione dei problemi](/docs/reference/troubleshooting/#clusters) per gli altri messaggi.
+Vedi [Risoluzione dei problemi](/docs/reference/troubleshooting/#cluster) per gli altri messaggi.

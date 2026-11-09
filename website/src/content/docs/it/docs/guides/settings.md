@@ -19,9 +19,9 @@ Anche date, numeri e dimensioni seguono la lingua, nello stile regionale del sis
 
 Come funziona Homeport su questo computer.
 
-- **Chiudi nell’area di notifica**: disattivato per impostazione predefinita, quindi chiudere la finestra fa uscire Homeport. Attivalo per nascondere invece la finestra nell’[area di notifica](/docs/guides/overview/#system-tray): Homeport resta in esecuzione con le sue connessioni agli host aperte. Riaprilo dall’icona nell’area di notifica, o aprendo di nuovo Homeport; esci con **Esci** nell’area di notifica. L’interruttore è disattivato, con una spiegazione, su un desktop senza area di notifica.
+- **Chiudi nell’area di notifica**: disattivato per impostazione predefinita, quindi chiudere la finestra fa uscire Homeport. Attivalo per nascondere invece la finestra nell’[area di notifica](/docs/guides/overview/#area-di-notifica): Homeport resta in esecuzione con le sue connessioni agli host aperte. Riaprilo dall’icona nell’area di notifica, o aprendo di nuovo Homeport; esci con **Esci** nell’area di notifica. L’interruttore è disattivato, con una spiegazione, su un desktop senza area di notifica.
 - **Avvia all’accesso**: disattivato per impostazione predefinita. Attivalo e Homeport si avvia quando accedi, così controlla i tuoi host fin dall’inizio. L’interruttore mostra ciò che ha il tuo sistema: se rimuovi tu stesso Homeport dagli elementi di accesso, risulta disattivato. Su Windows è elencato in **Gestione attività → App di avvio**, su macOS in **System Settings → General → Login Items**, su Linux in `~/.config/autostart/`. La voce di un’AppImage segue il file quando lo sposti, a partire dalla volta successiva in cui lo apri.
-- **Avvia nascosto nell’area di notifica**: disattivato per impostazione predefinita, e disponibile solo quando **Avvia all’accesso** è attivo. Quando Homeport si avvia all’accesso, resta nell’[area di notifica](/docs/guides/overview/#system-tray) senza aprire la finestra. Aprire Homeport tu stesso mostra sempre la finestra, e senza un’area di notifica si apre sempre.
+- **Avvia nascosto nell’area di notifica**: disattivato per impostazione predefinita, e disponibile solo quando **Avvia all’accesso** è attivo. Quando Homeport si avvia all’accesso, resta nell’[area di notifica](/docs/guides/overview/#area-di-notifica) senza aprire la finestra. Aprire Homeport tu stesso mostra sempre la finestra, e senza un’area di notifica si apre sempre.
 
 ## Notifiche
 
@@ -72,11 +72,11 @@ I repository git da cui vengono distribuiti gli [stack sincronizzati](/docs/guid
 - Il pulsante con l’ingranaggio mostra la chiave di deploy di un repository, con dove aggiungerla su GitHub, GitLab, Gitea e Forgejo, e **Nuova chiave** per sostituirla; oppure **Sostituisci il token**. **Verifica l’accesso** ne elenca i branch e i tag da questo computer. Una volta che Homeport ha considerato attendibile la chiave di un server SSH, lì compare la sua impronta, con **Reimposta** per quando la forge l’ha cambiata davvero.
 - **Rimuovi** dimentica il repository ed elimina il suo clone su questo computer; viene rifiutato finché uno stack sincronizzato lo usa.
 
-Chiavi e token sono cifrati con la chiave del portachiavi del sistema operativo e non vengono mai più mostrati, registrati nei log o inseriti nei dettagli degli errori. La tua configurazione git, i credential helper e le chiavi SSH non vengono mai usati. Vedi [repository](/docs/guides/synced-stacks/#repositories).
+Chiavi e token sono cifrati con la chiave del portachiavi del sistema operativo e non vengono mai più mostrati, registrati nei log o inseriti nei dettagli degli errori. La tua configurazione git, i credential helper e le chiavi SSH non vengono mai usati. Vedi [repository](/docs/guides/synced-stacks/#repository).
 
 ## Stack sincronizzati
 
-**Controlla i repository ogni** imposta quanti minuti Homeport attende tra un controllo e l’altro dei repository degli stack sincronizzati alla ricerca di nuovi commit: 5 per impostazione predefinita, almeno 1. Homeport controlla solo mentre è aperto; quando è chiuso non si sincronizza nulla. Vedi [polling e distribuzione automatica](/docs/guides/synced-stacks/#polling-and-auto-deploy).
+**Controlla i repository ogni** imposta quanti minuti Homeport attende tra un controllo e l’altro dei repository degli stack sincronizzati alla ricerca di nuovi commit: 5 per impostazione predefinita, almeno 1. Homeport controlla solo mentre è aperto; quando è chiuso non si sincronizza nulla. Vedi [polling e distribuzione automatica](/docs/guides/synced-stacks/#polling-e-distribuzione-automatica).
 
 ## Dati
 
@@ -89,7 +89,7 @@ Cosa conserva Homeport su questo computer.
 **Ripristina…** apre un file del genere con la sua passphrase ed elenca ciò che contiene: i suoi host e cluster per nome, e quanti stack, accessi ai registri e repository. **Sostituisci tutto** sostituisce poi tutti i dati di Homeport con quelli del backup, su questo o su un altro computer:
 
 - Tutto si connette e distribuisce subito: host SSH e TLS, registri e repository, senza chiedere di nuovo una chiave o una password, né di considerare attendibile la chiave di un server.
-- Uno [stack collegato](/docs/guides/stacks/#linked-stacks) la cui cartella non è su questo computer appare come esterno finché la cartella non c’è, allo stesso percorso.
+- Uno [stack collegato](/docs/guides/stacks/#stack-collegati) la cui cartella non è su questo computer appare come esterno finché la cartella non c’è, allo stesso percorso.
 - Gli [stack sincronizzati](/docs/guides/synced-stacks/) clonano di nuovo il loro repository alla sincronizzazione successiva.
 - I dati attuali vengono prima copiati in `homeport.db.before-restore-<date>` nella cartella dei dati di Homeport. Ripristinare un file sbagliato, uno di un Homeport più recente o uno che fallisce a metà non cambia nulla.
 
@@ -97,16 +97,16 @@ Per aggiungere invece alcuni host a quelli che hai, usa **Esporta** e **Importa*
 
 ### Conservare gli eventi degli Engine
 
-**Conserva gli eventi degli Engine per** imposta per quanti giorni vengono conservati gli [eventi dell’Engine](/docs/guides/overview/#events) di ogni host: 30 per impostazione predefinita, da 1 a 365. Ogni host conserva al massimo 10.000 eventi, qualunque sia questo valore. Quelli più vecchi vengono rimossi all’avvio di Homeport e ogni ora, e subito quando abbassi il numero.
+**Conserva gli eventi degli Engine per** imposta per quanti giorni vengono conservati gli [eventi dell’Engine](/docs/guides/overview/#eventi) di ogni host: 30 per impostazione predefinita, da 1 a 365. Ogni host conserva al massimo 10.000 eventi, qualunque sia questo valore. Quelli più vecchi vengono rimossi all’avvio di Homeport e ogni ora, e subito quando abbassi il numero.
 
 ## Questo computer
 
 Cosa può usare Homeport su questo computer:
 
-- **Portachiavi del sistema operativo**: **Disponibile** quando chiavi SSH, certificati, ambienti degli stack e accessi ai registri possono essere memorizzati cifrati; **Non disponibile** altrimenti. Vedi [requisiti](/docs/requirements/#optional-an-os-keychain).
-- **CLI di Compose**: la versione di Compose trovata, come `docker compose v2.29.1`, oppure **Non trovata** se gli stack possono essere avviati e arrestati ma non distribuiti. Vedi [stack](/docs/guides/stacks/#what-deploying-needs).
-- **git**: il git trovato, come `/usr/bin/git 2.43.0`, oppure cosa installare se gli stack sincronizzati non si possono usare. Vedi [requisiti](/docs/requirements/#optional-git).
-- **CLI di Helm**: l’helm trovato, come `/usr/local/bin/helm v3.16.2`, oppure cosa installare per questo sistema se le [release Helm](/docs/clusters/helm/) non si possono elencare né installare. Helm 2 viene segnalato come non supportato. Vedi [requisiti](/docs/requirements/#optional-helm).
+- **Portachiavi del sistema operativo**: **Disponibile** quando chiavi SSH, certificati, ambienti degli stack e accessi ai registri possono essere memorizzati cifrati; **Non disponibile** altrimenti. Vedi [requisiti](/docs/requirements/#facoltativo-un-portachiavi-del-sistema-operativo).
+- **CLI di Compose**: la versione di Compose trovata, come `docker compose v2.29.1`, oppure **Non trovata** se gli stack possono essere avviati e arrestati ma non distribuiti. Vedi [stack](/docs/guides/stacks/#cosa-serve-per-distribuire).
+- **git**: il git trovato, come `/usr/bin/git 2.43.0`, oppure cosa installare se gli stack sincronizzati non si possono usare. Vedi [requisiti](/docs/requirements/#facoltativo-git).
+- **CLI di Helm**: l’helm trovato, come `/usr/local/bin/helm v3.16.2`, oppure cosa installare per questo sistema se le [release Helm](/docs/clusters/helm/) non si possono elencare né installare. Helm 2 viene segnalato come non supportato. Vedi [requisiti](/docs/requirements/#facoltativo-helm).
 
 Homeport controlla le CLI ogni volta che questa pagina si apre, quindi una installata dopo l’avvio compare; dopo aver installato un portachiavi, esci e riapri Homeport.
 

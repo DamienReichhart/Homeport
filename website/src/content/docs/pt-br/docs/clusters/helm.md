@@ -25,7 +25,7 @@ Se as suas credenciais não podem listar Secrets em todos os Namespaces, o Homep
 
 **Instalar chart** (ou <kbd>n</kbd>) na aba Releases instala um chart no cluster selecionado:
 
-1. **Escolha o chart.** Pesquise os charts dos [repositórios](#chart-repositories) do helm e clique em **Usar** ou, em **De um registro OCI**, informe uma referência como `oci://registry-1.docker.io/bitnamicharts/nginx`, que instala sem adicionar um repositório.
+1. **Escolha o chart.** Pesquise os charts dos [repositórios](#repositórios-de-charts) do helm e clique em **Usar** ou, em **De um registro OCI**, informe uma referência como `oci://registry-1.docker.io/bitnamicharts/nginx`, que instala sem adicionar um repositório.
 2. **Escolha a versão, o nome e o Namespace.** As versões de um chart de repositório são listadas, a mais recente primeiro; a versão de um chart OCI é digitada, ou deixada vazia para a mais recente. A release recebe de início o nome do chart: no máximo 53 letras minúsculas, dígitos, hifens e pontos. O Namespace é o que a página mostra (ou o padrão do cluster) e é criado se não existir, a menos que você desmarque essa opção.
 3. **Edite os valores.** O editor começa com os valores padrão do chart (`helm show values`); altere o que precisar, e **Redefinir para os padrões do chart** os restaura. Os valores são verificados como YAML antes de o helm ser executado e vão para o helm pela entrada padrão dele — nunca em um arquivo.
 4. **Pré-visualizar**, opcionalmente: o helm renderiza o chart com os seus valores e a ajuda do cluster (`--dry-run=server`), e o Homeport mostra o manifesto que ele aplicaria, hooks incluídos, e as notas do chart. Nada muda no cluster.
@@ -85,7 +85,7 @@ O Homeport só adiciona repositórios públicos. Um que exige login é adicionad
 - **Não permitido**: o helm lê as releases a partir de Secrets; listá-las exige `list` em `secrets` no Namespace. Detalhes indica o que foi recusado.
 - **Outra instalação, atualização ou reversão está em andamento**: a release está bloqueada por uma operação pendente. Aguarde até que ela termine, ou reverta para a última revisão implantada.
 - **Já existe uma release com este nome**: os nomes de release são únicos em um Namespace. Escolha outro, ou atualize a release existente.
-- **Chart ou versão não encontrado**: confira o nome e a versão; um chart de repositório precisa que o repositório dele esteja adicionado e [atualizado](#chart-repositories). Para atualizar uma release cujo chart não está em nenhum dos seus repositórios, adicione esse repositório primeiro.
+- **Chart ou versão não encontrado**: confira o nome e a versão; um chart de repositório precisa que o repositório dele esteja adicionado e [atualizado](#repositórios-de-charts). Para atualizar uma release cujo chart não está em nenhum dos seus repositórios, adicione esse repositório primeiro.
 - **Os valores não são YAML válido**: a mensagem indica a linha; corrija-a e tente de novo.
 - **Desistiu de aguardar**: com **Aguardar**, um recurso não ficou pronto a tempo. Veja os Pods e os Events da release para saber o que está travado.
 - **Não é um repositório de charts, ou não pode ser alcançado**: a URL não serve nenhum `index.yaml`, ou este computador não consegue alcançá-la. Detalhes mostra o que o helm disse.

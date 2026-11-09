@@ -17,7 +17,7 @@ Homeport सामान्य जगहों पर चल रहे इंज
 | Colima                   | `~/.colima/default/docker.sock`                                                                              | —                                 |
 | OrbStack                 | `~/.orbstack/run/docker.sock`                                                                                | —                                 |
 | Rancher Desktop          | `~/.rd/docker.sock`                                                                                          | —                                 |
-| Podman                   | `$XDG_RUNTIME_DIR/podman/podman.sock`, `/run/podman/podman.sock`; [macOS पर मशीन](#podman-machines-on-macos) | `//./pipe/podman-machine-default` |
+| Podman                   | `$XDG_RUNTIME_DIR/podman/podman.sock`, `/run/podman/podman.sock`; [macOS पर मशीन](#macos-पर-podman-मशीन) | `//./pipe/podman-machine-default` |
 
 हर उम्मीदवार की जाँच इंजन से उसका संस्करण पूछकर की जाती है, इसलिए सिर्फ़ चल रहे इंजन सूचीबद्ध होते हैं। जब कई पाथ एक ही सॉकेट तक ले जाते हैं — macOS पर, `/var/run/docker.sock` आम तौर पर Docker Desktop, OrbStack या Rancher Desktop की ओर इंगित करता है — तो इंजन एक बार, पहले मिले नाम के तहत सूचीबद्ध होता है।
 

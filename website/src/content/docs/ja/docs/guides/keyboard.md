@@ -3,7 +3,7 @@ title: キーボード
 description: マウスを使わずに Homeport を操作します。コマンドパレットとすべてのホストを対象にした検索、各ページとホストのショートカット、それらを一覧表示するヘルプ。
 ---
 
-Homeport はキーボードで操作できます。<kbd>Mod</kbd> <kbd>K</kbd> を押すと[コマンドパレット](#command-palette)が開き、どのページでも <kbd>?</kbd> を押すと、そこで使えるすべてのショートカットが表示されます。
+Homeport はキーボードで操作できます。<kbd>Mod</kbd> <kbd>K</kbd> を押すと[コマンドパレット](#コマンドパレット)が開き、どのページでも <kbd>?</kbd> を押すと、そこで使えるすべてのショートカットが表示されます。
 
 以下の **Mod** は、macOS では <kbd>⌘</kbd>、Windows と Linux では <kbd>Ctrl</kbd> を意味します。macOS では <kbd>Alt</kbd> は <kbd>⌥</kbd> です。
 

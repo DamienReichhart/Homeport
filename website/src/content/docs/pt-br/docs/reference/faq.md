@@ -31,7 +31,7 @@ Não como tal: o Homeport fala Incus, o fork comunitário do LXD, e recusa um se
 
 ### Ele funciona com o Podman?
 
-Sim, pelo socket da API compatível com Docker do Podman. O Homeport detecta os sockets habituais do Podman no Linux, todas as [máquinas Podman no macOS](/docs/hosts/local/#podman-machines-on-macos) em execução e o pipe da máquina Podman padrão no Windows. Qualquer outro pode ser [adicionado manualmente](/docs/hosts/local/#adding-a-socket-by-hand).
+Sim, pelo socket da API compatível com Docker do Podman. O Homeport detecta os sockets habituais do Podman no Linux, todas as [máquinas Podman no macOS](/docs/hosts/local/#máquinas-podman-no-macos) em execução e o pipe da máquina Podman padrão no Windows. Qualquer outro pode ser [adicionado manualmente](/docs/hosts/local/#adicionar-um-socket-manualmente).
 
 O Homeport também reconhece o Podman ao se conectar e então oferece o que só o Podman tem, pela API própria do Podman no mesmo socket: [pods](/docs/guides/podman-pods/), que você pode listar, iniciar, parar, criar e remover, e nos quais pode executar contêineres a partir da caixa de diálogo Executar; e [unidades Quadlet](/docs/guides/quadlet/), que você pode listar, ler, instalar, editar e remover, e iniciar ou parar via SSH.
 
@@ -51,7 +51,7 @@ Não. O Homeport lê o seu kubeconfig e conversa com a API do Kubernetes por con
 
 Não — apenas um Docker Engine e um servidor SSH, que você muito provavelmente já tem. O Homeport não instala agentes.
 
-Um Swarm também não precisa de nada além do Engine. Os nós dele, porém, devem se alcançar entre si, o que o Homeport não pode configurar para você: abra 2377/tcp (para os managers), 7946/tcp e 7946/udp, e 4789/udp entre eles. Veja [portas entre os nós](/docs/guides/swarm/#ports-between-nodes).
+Um Swarm também não precisa de nada além do Engine. Os nós dele, porém, devem se alcançar entre si, o que o Homeport não pode configurar para você: abra 2377/tcp (para os managers), 7946/tcp e 7946/udp, e 4789/udp entre eles. Veja [portas entre os nós](/docs/guides/swarm/#portas-entre-os-nós).
 
 ### Eu preciso do Docker instalado no meu computador para gerenciar servidores remotos?
 
@@ -61,11 +61,11 @@ Não. O Homeport fala a API do Engine e o SSH por conta própria. As únicas exc
 
 Não. As [stacks sincronizadas](/docs/guides/synced-stacks/) são verificadas em busca de novos commits, e implantadas automaticamente se você ativar isso, apenas enquanto o Homeport está aberto. O Homeport não instala nada nos seus servidores — nenhum agente, nenhum receptor de webhook —, então, quando ele está fechado, nada observa os seus repositórios. Quando você o abre de novo, ele espera um intervalo e depois verifica todos. Para implantações que devem acompanhar cada push o tempo todo, execute-as a partir da sua CI.
 
-Para manter o Homeport rodando sem a janela, ative **Fechar para a bandeja do sistema**, e **Iniciar ao fazer login** com **Iniciar oculto na bandeja**, em [Configurações → Área de trabalho](/docs/guides/settings/#desktop).
+Para manter o Homeport rodando sem a janela, ative **Fechar para a bandeja do sistema**, e **Iniciar ao fazer login** com **Iniciar oculto na bandeja**, em [Configurações → Área de trabalho](/docs/guides/settings/#área-de-trabalho).
 
 ### O Homeport pode me avisar quando um contêiner falha?
 
-Sim, enquanto ele está rodando — mesmo oculto na bandeja do sistema. Ele mostra uma notificação do sistema quando um contêiner para com um erro, fica sem memória ou deixa de ser íntegro, e quando um host fica inacessível ou volta. Cada tipo pode ser desativado em [Configurações → Notificações](/docs/guides/settings/#notifications). Ele fica sabendo disso pelo fluxo de eventos que já mantém com cada host, então nada é instalado nos seus servidores; quando o Homeport não está rodando, ninguém é avisado.
+Sim, enquanto ele está rodando — mesmo oculto na bandeja do sistema. Ele mostra uma notificação do sistema quando um contêiner para com um erro, fica sem memória ou deixa de ser íntegro, e quando um host fica inacessível ou volta. Cada tipo pode ser desativado em [Configurações → Notificações](/docs/guides/settings/#notificações). Ele fica sabendo disso pelo fluxo de eventos que já mantém com cada host, então nada é instalado nos seus servidores; quando o Homeport não está rodando, ninguém é avisado.
 
 ### O Homeport precisa do git?
 
@@ -79,26 +79,26 @@ Cada pessoa executa o seu próprio Homeport, com os seus próprios hosts e chave
 
 Sim, de duas formas:
 
-- **Tudo**: **Configurações → Dados → Fazer backup…** salva todos os hosts, clusters, stacks, logins de registro, repositórios e configurações, com os seus segredos, em um único arquivo protegido por uma senha de pelo menos 12 caracteres. No novo computador, **Restaurar…**, no mesmo lugar, abre o arquivo, lista o que ele contém e substitui o que está lá. Tudo se conecta e implanta sem pedir de novo uma chave ou uma senha. Veja [fazer backup e restaurar](/docs/guides/settings/#backing-up-and-restoring).
-- **Alguns hosts**: na página **Hosts**, use **Exportar** com os hosts que escolher e **Importar** no outro computador, junto com os hosts que ele já tem. Veja [mudar para outro computador](/docs/reference/security/#moving-to-another-computer).
+- **Tudo**: **Configurações → Dados → Fazer backup…** salva todos os hosts, clusters, stacks, logins de registro, repositórios e configurações, com os seus segredos, em um único arquivo protegido por uma senha de pelo menos 12 caracteres. No novo computador, **Restaurar…**, no mesmo lugar, abre o arquivo, lista o que ele contém e substitui o que está lá. Tudo se conecta e implanta sem pedir de novo uma chave ou uma senha. Veja [fazer backup e restaurar](/docs/guides/settings/#fazendo-backup-e-restaurando).
+- **Alguns hosts**: na página **Hosts**, use **Exportar** com os hosts que escolher e **Importar** no outro computador, junto com os hosts que ele já tem. Veja [mudar para outro computador](/docs/reference/security/#mudar-para-outro-computador).
 
 Copiar o `homeport.db` não funciona para os segredos: eles são criptografados com uma chave guardada no chaveiro deste computador e aparecem como **Credenciais perdidas** em outro lugar.
 
 ### Um backup inclui os meus contêineres e volumes?
 
-Não. Um backup contém o que o Homeport guarda — como acessar os seus hosts, as definições e os ambientes das suas stacks, os logins e as configurações —, não o que roda nos seus hosts. Os seus contêineres, imagens e volumes continuam nos hosts. Para copiar os dados de um volume, [faça backup dele em um arquivo](/docs/guides/volumes-networks/#backing-up-and-restoring) a partir da página Volumes.
+Não. Um backup contém o que o Homeport guarda — como acessar os seus hosts, as definições e os ambientes das suas stacks, os logins e as configurações —, não o que roda nos seus hosts. Os seus contêineres, imagens e volumes continuam nos hosts. Para copiar os dados de um volume, [faça backup dele em um arquivo](/docs/guides/volumes-networks/#fazendo-backup-e-restaurando) a partir da página Volumes.
 
 ### O Homeport pode fazer build de imagens?
 
-Sim, em dois lugares. A página **Imagens** faz build de uma imagem a partir de uma pasta deste computador. E uma [stack vinculada](/docs/guides/stacks/#linked-stacks) — uma stack cujos arquivos compose estão em uma pasta deste computador — pode usar `build:`: o Homeport executa `docker compose` nessa pasta, então o contexto de build é enviado de lá para o Engine do host, que faz a build. **Refazer a build e implantar** refaz a build depois de uma mudança no código. Uma stack gerenciada não pode fazer build, já que o Homeport guarda só o YAML dela e não há pasta a partir da qual fazer a build: vincule a pasta no lugar, ou envie a imagem para um registro.
+Sim, em dois lugares. A página **Imagens** faz build de uma imagem a partir de uma pasta deste computador. E uma [stack vinculada](/docs/guides/stacks/#stacks-vinculadas) — uma stack cujos arquivos compose estão em uma pasta deste computador — pode usar `build:`: o Homeport executa `docker compose` nessa pasta, então o contexto de build é enviado de lá para o Engine do host, que faz a build. **Refazer a build e implantar** refaz a build depois de uma mudança no código. Uma stack gerenciada não pode fazer build, já que o Homeport guarda só o YAML dela e não há pasta a partir da qual fazer a build: vincule a pasta no lugar, ou envie a imagem para um registro.
 
 ### Por que a minha stack aparece como externa no meu outro computador?
 
-Uma stack iniciada com `docker compose up` em uma pasta aparece como [vinculada](/docs/guides/stacks/#how-linked-stacks-are-found) apenas em um computador em que essa pasta e os seus arquivos compose existem, no mesmo caminho, e definem os serviços que rodam. Em outro computador o caminho não existe, então o Homeport não tem arquivo compose para ela e a mostra como externa. Para gerenciá-la também de lá, clone o projeto nesse computador e vincule-o com **Nova stack → Usar uma pasta neste computador**, ou adote-a como uma stack gerenciada.
+Uma stack iniciada com `docker compose up` em uma pasta aparece como [vinculada](/docs/guides/stacks/#como-as-stacks-vinculadas-são-encontradas) apenas em um computador em que essa pasta e os seus arquivos compose existem, no mesmo caminho, e definem os serviços que rodam. Em outro computador o caminho não existe, então o Homeport não tem arquivo compose para ela e a mostra como externa. Para gerenciá-la também de lá, clone o projeto nesse computador e vincule-o com **Nova stack → Usar uma pasta neste computador**, ou adote-a como uma stack gerenciada.
 
 ### O Homeport coleta dados sobre mim?
 
-Não. Não há conta, telemetria nem análise de uso. A única requisição que o Homeport faz por conta própria a partir do seu computador é a verificação de atualizações, que baixa um pequeno arquivo deste site e não envia nada sobre você; você pode desativá-la em **Configurações → Atualizações**. À parte disso, a verificação de imagens mais recentes pergunta aos registros das suas imagens, pelo Engine de cada host, para qual versão as tags deles apontam; para um host local, essa requisição também sai do seu computador. Veja [segurança e os seus dados](/docs/reference/security/#what-homeport-connects-to).
+Não. Não há conta, telemetria nem análise de uso. A única requisição que o Homeport faz por conta própria a partir do seu computador é a verificação de atualizações, que baixa um pequeno arquivo deste site e não envia nada sobre você; você pode desativá-la em **Configurações → Atualizações**. À parte disso, a verificação de imagens mais recentes pergunta aos registros das suas imagens, pelo Engine de cada host, para qual versão as tags deles apontam; para um host local, essa requisição também sai do seu computador. Veja [segurança e os seus dados](/docs/reference/security/#com-o-que-o-homeport-se-conecta).
 
 ### O Homeport pode usar os meus registros privados?
 
@@ -114,11 +114,11 @@ No Windows, no macOS e com o AppImage, o Homeport avisa quando sai uma nova vers
 
 ### O Homeport está no Homebrew, no winget, no Flathub ou no AUR?
 
-Ainda não. Estão planejados; a [página de instalação](/docs/installation/#coming-later) tem o link para a issue de cada um.
+Ainda não. Estão planejados; a [página de instalação](/docs/installation/#em-breve) tem o link para a issue de cada um.
 
 ### O Homeport está disponível no meu idioma?
 
-O Homeport fala inglês, francês, espanhol, alemão, italiano, português do Brasil, russo, chinês simplificado, japonês, coreano, hindi e árabe, e segue o idioma do seu sistema operacional, a menos que você escolha um em [Configurações → Aparência](/docs/guides/settings/#appearance). O site também está em todos eles; a documentação está totalmente traduzida para o francês, e os outros idiomas mostram a página em inglês onde ainda não existe tradução. Para adicionar um idioma, veja [Contribuir](/docs/project/contributing/#translating-homeport).
+O Homeport fala inglês, francês, espanhol, alemão, italiano, português do Brasil, russo, chinês simplificado, japonês, coreano, hindi e árabe, e segue o idioma do seu sistema operacional, a menos que você escolha um em [Configurações → Aparência](/docs/guides/settings/#aparência). O site também está em todos eles; a documentação está totalmente traduzida para o francês, e os outros idiomas mostram a página em inglês onde ainda não existe tradução. Para adicionar um idioma, veja [Contribuir](/docs/project/contributing/#traduzir-o-homeport).
 
 ### O Homeport é acessível?
 

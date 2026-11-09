@@ -42,11 +42,11 @@ Homeport 保存着能打开你的服务器的凭据。本页准确说明它保�
 | 你的主题、上次的选择以及每个集群的 Namespace | 明文     |
 | 每台主机的引擎事件，用于事件页面             | 明文     |
 
-Homeport 不会从你的引擎复制任何其他内容：容器、镜像、卷和日志都是实时读取的，从不保存，除非你自己下载日志或文件，或备份卷。它保留的引擎事件（哪个容器、镜像、卷或网络发生了什么，以及它们的标签）默认保留 30 天（[设置 → 数据](/docs/guides/settings/#data)），每台主机最多 10,000 条，并会随其主机一起删除，或通过**清除历史**删除。
+Homeport 不会从你的引擎复制任何其他内容：容器、镜像、卷和日志都是实时读取的，从不保存，除非你自己下载日志或文件，或备份卷。它保留的引擎事件（哪个容器、镜像、卷或网络发生了什么，以及它们的标签）默认保留 30 天（[设置 → 数据](/docs/guides/settings/#数据)），每台主机最多 10,000 条，并会随其主机一起删除，或通过**清除历史**删除。
 
 ### 关联堆栈的文件夹
 
-对于[关联堆栈](/docs/guides/stacks/#linked-stacks)，Homeport 只保存其文件夹和 compose 文件的位置，以及用于判断文件是否变化的文件指纹，从不保存文件副本。它在你打开堆栈时读取 compose 文件，只有在你在其**定义**标签页中选择**保存**时才写入，每个编辑过的文件一步替换，并保留其权限；除非你明确同意，否则它不会覆盖自你打开以来已发生变化的文件。Homeport 从不读写该文件夹的 `.env`：Compose 运行时会自己读取它。忘记关联堆栈从不会影响该文件夹。
+对于[关联堆栈](/docs/guides/stacks/#关联堆栈)，Homeport 只保存其文件夹和 compose 文件的位置，以及用于判断文件是否变化的文件指纹，从不保存文件副本。它在你打开堆栈时读取 compose 文件，只有在你在其**定义**标签页中选择**保存**时才写入，每个编辑过的文件一步替换，并保留其权限；除非你明确同意，否则它不会覆盖自你打开以来已发生变化的文件。Homeport 从不读写该文件夹的 `.env`：Compose 运行时会自己读取它。忘记关联堆栈从不会影响该文件夹。
 
 ### 仓库
 
@@ -76,11 +76,11 @@ Homeport 不保存关于 [Swarm](/docs/guides/swarm/) 的任何信息：每次�
 
 ### 没有钥匙串时
 
-Homeport 会显示一条横幅，并且不会保存机密。本地套接字、TCP 和 ssh-agent 主机仍可使用。参见[系统要求](/docs/requirements/#optional-an-os-keychain)。
+Homeport 会显示一条横幅，并且不会保存机密。本地套接字、TCP 和 ssh-agent 主机仍可使用。参见[系统要求](/docs/requirements/#可选系统钥匙串)。
 
 ### 如果钥匙串中的密钥丢失
 
-重置钥匙串，或将 `homeport.db` 移到另一台计算机或另一个用户下，会导致机密无法解密。Homeport 不会删除任何东西：受影响的主机会显示**凭据丢失**，直到你重新输入其凭据。参见[故障排除](/docs/reference/troubleshooting/#credentials-lost)。要迁移你的数据，请改为备份数据或导出主机。
+重置钥匙串，或将 `homeport.db` 移到另一台计算机或另一个用户下，会导致机密无法解密。Homeport 不会删除任何东西：受影响的主机会显示**凭据丢失**，直到你重新输入其凭据。参见[故障排除](/docs/reference/troubleshooting/#凭据丢失)。要迁移你的数据，请改为备份数据或导出主机。
 
 ### 迁移到另一台计算机
 
@@ -117,22 +117,22 @@ Homeport 有自己的 SSH 客户端，因此它从不会将私钥写入文件供
 
 ## 信任服务器
 
-Homeport 首次连接 SSH 服务器时，会要求你确认服务器的密钥指纹；之后如果该密钥发生变化，它会拒绝连接，直到你再次确认。TLS 主机会根据你的 CA 和服务器名称验证服务器证书；通过 HTTPS 连接的 Incus 主机只接受添加时使用的证书。参见 [SSH 主机](/docs/hosts/ssh/#first-connection)。
+Homeport 首次连接 SSH 服务器时，会要求你确认服务器的密钥指纹；之后如果该密钥发生变化，它会拒绝连接，直到你再次确认。TLS 主机会根据你的 CA 和服务器名称验证服务器证书；通过 HTTPS 连接的 Incus 主机只接受添加时使用的证书。参见 [SSH 主机](/docs/hosts/ssh/#首次连接)。
 
 ### Incus 证书
 
-[通过 HTTPS 添加 Incus 主机](/docs/hosts/incus/#over-https-with-a-trust-token)时，会在内存中生成客户端证书及其私钥（ECDSA P-384 密钥），并与主机的其他机密一起加密保存，从不以明文写入磁盘。Incus 自己的证书也以同样方式保存并被固定：Homeport 只接受来自服务器的这一个证书（按其 SHA-256 指纹比较），并拒绝不同的证书，同时显示两个指纹。信任令牌只使用一次，不会保留。要撤销访问权限，请在服务器上使用 `incus config trust remove` 删除 Homeport 的证书。
+[通过 HTTPS 添加 Incus 主机](/docs/hosts/incus/#通过-https-使用信任令牌)时，会在内存中生成客户端证书及其私钥（ECDSA P-384 密钥），并与主机的其他机密一起加密保存，从不以明文写入磁盘。Incus 自己的证书也以同样方式保存并被固定：Homeport 只接受来自服务器的这一个证书（按其 SHA-256 指纹比较），并拒绝不同的证书，同时显示两个指纹。信任令牌只使用一次，不会保留。要撤销访问权限，请在服务器上使用 `incus config trust remove` 删除 Homeport 的证书。
 
 ## Homeport 连接的对象
 
 - **你添加的主机。** 当你拉取、推送或构建镜像时，联系镜像仓库的是引擎，而不是 Homeport。Homeport 会通过主机的连接，随请求将该镜像仓库保存的登录信息交给引擎；引擎不会保留它。
-- **你的镜像所在的镜像仓库，通过每台主机的引擎**，用于判断是否发布了[更新的镜像](/docs/guides/containers/#newer-images)：在加载容器、镜像或堆栈页面时（每个答案保留 6 小时），以及你选择**检查新版镜像**时。引擎会向镜像仓库询问某个标签指向的摘要，对于私有镜像仓库会使用保存的登录信息，并且不会下载任何东西。对于本地主机，引擎在你的计算机上运行，因此请求从你的计算机发出。
+- **你的镜像所在的镜像仓库，通过每台主机的引擎**，用于判断是否发布了[更新的镜像](/docs/guides/containers/#新版镜像)：在加载容器、镜像或堆栈页面时（每个答案保留 6 小时），以及你选择**检查新版镜像**时。引擎会向镜像仓库询问某个标签指向的摘要，对于私有镜像仓库会使用保存的登录信息，并且不会下载任何东西。对于本地主机，引擎在你的计算机上运行，因此请求从你的计算机发出。
 - **Docker Hub，当你在拉取对话框中浏览标签时**：Homeport 从本机访问 `hub.docker.com` 列出仓库的标签，如果保存了 Docker Hub 登录信息，则会使用它。搜索仓库则通过主机的引擎进行。
 - **镜像仓库，当你在设置 → 镜像仓库中检查其登录信息时**：Homeport 从本机访问该镜像仓库的 `/v2/` 端点及其令牌服务，通过 HTTPS 发送用户名和密码或令牌（只有本机上的镜像仓库，例如 `localhost:5000`，才使用普通 HTTP）。
 - **你的仓库所在的服务器**，用于[同步堆栈](/docs/guides/synced-stacks/)：当你测试访问、创建或同步同步堆栈时，以及开启轮询时在 Homeport 打开期间按间隔访问。Homeport 从本机使用该仓库的部署密钥或令牌运行 `git`。
 - **你添加的集群**，通过其 kubeconfig 指定的 Kubernetes API 服务器（以及其代理，如果有的话），使用 kubeconfig 提供的凭据，并根据 kubeconfig 的 CA 检查服务器证书。exec 插件会从本机联系它们自己的云服务（AWS、Google Cloud、Azure），与在 `kubectl` 中一样。
 - **你添加的 Nomad 集群**，只通过你提供的 agent 地址，不连接其他任何地方：job 的日志和 shell 都经过该 agent，由它转发到 client node，因此 Homeport 从不直接连接节点。agent 的证书会根据你提供的 CA 或本机的 CA 进行检查。
-- **Incus 镜像服务器**，用于 [Incus 主机](/docs/guides/instances/#making-an-instance)上的镜像选择器：Homeport 从本机下载服务器的镜像列表（`streams/v1/images.json`，除非你选择其他服务器，否则来自 `images.linuxcontainers.org`），并保留十分钟。镜像本身由 Incus 下载。
+- **Incus 镜像服务器**，用于 [Incus 主机](/docs/guides/instances/#创建实例)上的镜像选择器：Homeport 从本机下载服务器的镜像列表（`streams/v1/images.json`，除非你选择其他服务器，否则来自 `images.linuxcontainers.org`），并保留十分钟。镜像本身由 Incus 下载。
 - **Chart 仓库和 OCI 镜像仓库，通过 helm**：当你添加或更新仓库、搜索 chart，或安装或升级 chart 时，`helm` 会从本机下载索引和 chart，与在终端中一样。
 - **本网站，用于检查更新**：在启动时以及每 6 小时，Homeport 会下载 `updates/latest.json`，这是一个列出最新版本的小文件。该请求不携带任何关于你、你的主机或你的容器的信息，但与任何网络请求一样，它会从你的 IP 地址到达托管本网站的 GitHub Pages。可以在**设置 → 更新**中关闭它。更新本身从 GitHub Releases 下载，Homeport 只会安装使用 Homeport 更新密钥签名的更新。参见[更新](/docs/reference/updating/)。
 
@@ -144,8 +144,8 @@ Homeport 通过 API 与主机的引擎通信，只有在 API 无法完成某件�
 | ---------------------------------------------------------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | SSH 主机的服务器拒绝打开其引擎套接字                                         | SSH 服务器                                      | 一个 POSIX shell 检查：套接字是否存在且可读，以及是否安装了引擎                                          |
 | [Quadlet 单元](/docs/guides/quadlet/)的**启动**、**停止**或**重启**          | SSH 服务器，或者对于 Linux 上的本地套接字为本机 | `systemctl [--user] start\|stop\|restart '<unit>.service'`                                               |
-| [containerd 容器的日志](/docs/hosts/containerd/#logs)                        | SSH 服务器，或者对于 Linux 上的本地套接字为本机 | `tail -n <lines> [-F] -- '<log file>'`；当 CRI 没有指明文件时，先对 Kubernetes 容器的日志文件夹执行 `ls` |
-| [containerd 容器中的终端](/docs/hosts/containerd/#a-terminal-in-a-container) | SSH 服务器，或者对于 Linux 上的本地套接字为本机 | `mktemp -d`，在该文件夹中用 `mkfifo -m 600` 创建两个 FIFO，通过它们 `cat`，然后 `rm -rf` 该文件夹        |
+| [containerd 容器的日志](/docs/hosts/containerd/#日志)                        | SSH 服务器，或者对于 Linux 上的本地套接字为本机 | `tail -n <lines> [-F] -- '<log file>'`；当 CRI 没有指明文件时，先对 Kubernetes 容器的日志文件夹执行 `ls` |
+| [containerd 容器中的终端](/docs/hosts/containerd/#容器中的终端) | SSH 服务器，或者对于 Linux 上的本地套接字为本机 | `mktemp -d`，在该文件夹中用 `mkfifo -m 600` 创建两个 FIFO，通过它们 `cat`，然后 `rm -rf` 该文件夹        |
 
 它们以 SSH 用户的权限（在本机上则是你的权限）运行，从不使用 `sudo`。值在放入命令之前都会经过检查和加引号处理。Quadlet 单元的安装、编辑和删除通过 Podman 的 API 进行，由 Podman 自己写入文件。Incus 主机上不运行任何东西：其控制台和终端通过 Incus 自己的 API 进行。Homeport 在主机上创建的唯一文件是 containerd 终端的两个 FIFO，位于私有临时文件夹中，终端关闭时会被删除。
 
@@ -154,7 +154,7 @@ Homeport 通过 API 与主机的引擎通信，只有在 API 无法完成某件�
 - **没有账户。** 无需注册任何东西。
 - **没有遥测、分析或崩溃报告。**
 - **不在你的集群上安装任何东西。** Homeport 只使用 Kubernetes API，只拥有你的凭据的权限，并且在你没有要求的情况下不做任何更改：任何删除或替换操作都会先询问，并写明集群名称。
-- **不在你的主机上安装任何东西。** Homeport 在主机上运行的命令只有[上面列出的那些](#what-homeport-runs-on-your-hosts)。Homeport 唯一会自行启动的容器，是在你打开、备份、恢复或克隆卷时使用的短期[辅助容器](/docs/guides/volumes-networks/#the-helper-container)；它没有网络，完成后即被删除。其镜像只有在你同意后才会拉取。
+- **不在你的主机上安装任何东西。** Homeport 在主机上运行的命令只有[上面列出的那些](#homeport-在你的主机上运行的内容)。Homeport 唯一会自行启动的容器，是在你打开、备份、恢复或克隆卷时使用的短期[辅助容器](/docs/guides/volumes-networks/#辅助容器)；它没有网络，完成后即被删除。其镜像只有在你同意后才会拉取。
 - **没有静默安装。** 只有在你选择**安装并重启**时才会安装更新；Linux 软件包只会由你的包管理器更新。
 
 [隐私政策](/privacy/)从法律角度阐明了这意味着什么：谁对你的数据负责、依据什么，以及如何行使你的权利。

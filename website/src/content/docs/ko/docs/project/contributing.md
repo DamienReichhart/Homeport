@@ -12,7 +12,7 @@ Homeport는 [github.com/DamienReichhart/Homeport](https://github.com/DamienReich
 - **설정**에 있는 Homeport 버전과 플랫폼(예: `v0.2.0 · macos/aarch64`)
 - 호스트 종류(로컬, SSH, TLS 또는 TCP)와 엔진 버전
 - 무엇을 했고, 무엇을 기대했고, 무슨 일이 일어났는지. 정확한 메시지가 가장 도움이 됩니다.
-- [로그 파일](/docs/reference/security/#logs)에서 관련 있는 내용
+- [로그 파일](/docs/reference/security/#로그)에서 관련 있는 내용
 
 보안 문제는 [GitHub의 취약점 보고](https://github.com/DamienReichhart/Homeport/security/advisories/new)를 통해 비공개로 보고해 주세요.
 
@@ -58,7 +58,7 @@ Homeport는 [github.com/DamienReichhart/Homeport](https://github.com/DamienReich
 
 어떤 문자열이든, 모든 언어에 같은 `{arguments}`와 태그, 그리고 그 언어에 필요한 모든 복수형이 갖춰질 때까지 `bun run check`(따라서 CI)가 실패합니다.
 
-- **앱 텍스트**: `src/shared/i18n/en/<namespace>.ts`에 키를 추가한 다음([앱에 텍스트 추가](#adding-text-to-the-app) 참고), 다른 모든 언어 폴더(`fr/`, `de/`, `zh-CN/`…)의 같은 이름 파일에도 추가합니다. 할 수 있다면 번역하세요. 할 수 없다면 영어 텍스트를 그대로 복사하고 풀 리퀘스트에 그렇다고 적어 번역자가 이어서 작업할 수 있게 하세요. 키를 빠뜨려서는 안 됩니다.
+- **앱 텍스트**: `src/shared/i18n/en/<namespace>.ts`에 키를 추가한 다음([앱에 텍스트 추가](#앱에-텍스트-추가) 참고), 다른 모든 언어 폴더(`fr/`, `de/`, `zh-CN/`…)의 같은 이름 파일에도 추가합니다. 할 수 있다면 번역하세요. 할 수 없다면 영어 텍스트를 그대로 복사하고 풀 리퀘스트에 그렇다고 적어 번역자가 이어서 작업할 수 있게 하세요. 키를 빠뜨려서는 안 됩니다.
 - **오류 메시지나 힌트**: 크레이트의 `messages!` 블록에 선언하고 `bun run bindings`를 실행하면 `en/errors.json`에 기록됩니다. 그다음 각 언어의 `errors.json`에 키를 추가합니다. 운영 체제가 표시하는 텍스트(트레이 메뉴와 알림)도 `native.` 키와 `native.json`으로 같은 방식으로 다룹니다.
 - **웹사이트 텍스트**(홈, 다운로드, 변경 내역, 헤더와 푸터): `website/src/core/i18n/strings/en/`의 알맞은 파일(`site`, `home`, `download` 또는 `changelog`)과 다른 모든 언어 폴더의 같은 파일에 키를 추가합니다. 하나라도 빠지면 `astro check`가 실패합니다. 문서 사이드바 레이블은 `website/src/app/config/sidebar/<code>.ts`에 둡니다.
 - **문서 페이지**: 영어 페이지는 `website/src/content/docs/docs/`에 있습니다. 영어 페이지를 바꾸면 같은 풀 리퀘스트에서 `website/src/content/docs/fr/docs/` 아래 같은 경로의 프랑스어 페이지도 업데이트하세요. 다른 언어는 누군가 번역할 때까지 안내 문구와 함께 영어 페이지를 보여 줍니다.

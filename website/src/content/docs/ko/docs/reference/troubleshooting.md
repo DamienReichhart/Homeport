@@ -3,7 +3,7 @@ title: 문제 해결
 description: 자주 겪는 문제의 해결 방법을 Homeport가 표시하는 메시지별로 정리했습니다.
 ---
 
-여기에 없는 문제라면 [로그 파일](/docs/reference/security/#logs)을 확인하고, **설정**에 있는 Homeport 버전과 함께 [이슈를 여세요](https://github.com/DamienReichhart/Homeport/issues).
+여기에 없는 문제라면 [로그 파일](/docs/reference/security/#로그)을 확인하고, **설정**에 있는 Homeport 버전과 함께 [이슈를 여세요](https://github.com/DamienReichhart/Homeport/issues).
 
 ## 설치와 시작
 
@@ -35,11 +35,11 @@ Homeport는 닫을 때의 창 크기, 위치, 최대화 상태로 다시 열립�
 
 ### Homeport를 다시 열어도 두 번째 창이 열리지 않음
 
-Homeport는 한 번에 하나만 실행됩니다. 이미 실행 중일 때 다시 열면, [시스템 트레이](/docs/guides/overview/#system-tray)에 숨겨져 있더라도 기존 창이 앞으로 나옵니다. 두 개가 실행되면 모든 호스트에 두 번 연결하고 같은 데이터에 기록하게 됩니다.
+Homeport는 한 번에 하나만 실행됩니다. 이미 실행 중일 때 다시 열면, [시스템 트레이](/docs/guides/overview/#시스템-트레이)에 숨겨져 있더라도 기존 창이 앞으로 나옵니다. 두 개가 실행되면 모든 호스트에 두 번 연결하고 같은 데이터에 기록하게 됩니다.
 
 ### 트레이 아이콘이 없음
 
-Linux에서 트레이에는 appindicator 라이브러리가 필요하며, 일부 데스크톱은 트레이 아이콘을 숨깁니다. GNOME에서는 AppIndicator Support 확장을 설치하세요. Homeport가 appindicator 라이브러리를 찾지 못하면 **설정 → 데스크톱**에 그렇게 표시되며, 창을 닫으면 종료됩니다. [요구 사항](/docs/requirements/#optional-a-system-tray)을 참고하세요.
+Linux에서 트레이에는 appindicator 라이브러리가 필요하며, 일부 데스크톱은 트레이 아이콘을 숨깁니다. GNOME에서는 AppIndicator Support 확장을 설치하세요. Homeport가 appindicator 라이브러리를 찾지 못하면 **설정 → 데스크톱**에 그렇게 표시되며, 창을 닫으면 종료됩니다. [요구 사항](/docs/requirements/#선택-사항-시스템-트레이)을 참고하세요.
 
 ### 사용할 수 있는 OS 키체인이 없다는 빨간 배너가 표시됨
 
@@ -57,11 +57,11 @@ Homeport는 서명이 업데이트 키와 일치하는 업데이트만 설치하
 
 ### apt에 “NO_PUBKEY” 또는 “The repository is not signed”가 표시됨
 
-`/etc/apt/keyrings/homeport.asc`에 Homeport 키가 없습니다. [빠른 설치](/docs/installation/#quick-install)를 다시 실행하거나, [수동 설정](/docs/installation/#manual-setup)의 처음 두 명령을 실행하세요.
+`/etc/apt/keyrings/homeport.asc`에 Homeport 키가 없습니다. [빠른 설치](/docs/installation/#빠른-설치)를 다시 실행하거나, [수동 설정](/docs/installation/#수동-설정)의 처음 두 명령을 실행하세요.
 
 ### dnf나 zypper가 키를 가져올지 물음
 
-패키지 관리자가 저장소를 처음 사용할 때 묻는 Homeport 패키지 키입니다. 표시된 지문이 [다운로드 확인](/docs/reference/verifying/#package-signatures)의 지문과 일치하는지 확인한 다음 수락하세요.
+패키지 관리자가 저장소를 처음 사용할 때 묻는 Homeport 패키지 키입니다. 표시된 지문이 [다운로드 확인](/docs/reference/verifying/#패키지-서명)의 지문과 일치하는지 확인한 다음 수락하세요.
 
 ### 릴리스 직후 apt에 “Hash Sum mismatch”가 표시됨
 
@@ -69,7 +69,7 @@ apt가 저장소를 읽는 동안 저장소가 업데이트되고 있었습니�
 
 ### 패키지 관리자에 새 버전이 보이지 않음
 
-저장소가 아직 설정되어 있는지 확인하세요: `/etc/apt/sources.list.d/homeport.sources`, `/etc/yum.repos.d/homeport.repo` 또는 `/etc/zypp/repos.d/homeport.repo`. 삭제했다면 [빠른 설치](/docs/installation/#quick-install)를 실행하여 다시 추가하세요. 0.2.0 이하 버전을 다운로드한 파일로 설치했다면 저장소가 추가된 적이 없습니다. [0.2.0 이하에서 업데이트](/docs/reference/updating/#updating-from-020-or-earlier)를 참고하세요.
+저장소가 아직 설정되어 있는지 확인하세요: `/etc/apt/sources.list.d/homeport.sources`, `/etc/yum.repos.d/homeport.repo` 또는 `/etc/zypp/repos.d/homeport.repo`. 삭제했다면 [빠른 설치](/docs/installation/#빠른-설치)를 실행하여 다시 추가하세요. 0.2.0 이하 버전을 다운로드한 파일로 설치했다면 저장소가 추가된 적이 없습니다. [0.2.0 이하에서 업데이트](/docs/reference/updating/#020-이하에서-업데이트)를 참고하세요.
 
 ## 연결
 
@@ -83,7 +83,7 @@ sudo usermod -aG docker $USER
 
 ### 연결할 수 없음: No such file or directory
 
-소켓 경로에서 수신 대기하는 것이 없습니다. 엔진(Docker Desktop, Colima, OrbStack, Rancher Desktop)을 시작하거나 경로를 확인하세요. [로컬 엔진](/docs/hosts/local/#adding-a-socket-by-hand)을 참고하세요.
+소켓 경로에서 수신 대기하는 것이 없습니다. 엔진(Docker Desktop, Colima, OrbStack, Rancher Desktop)을 시작하거나 경로를 확인하세요. [로컬 엔진](/docs/hosts/local/#소켓-직접-추가)을 참고하세요.
 
 ### “Docker Engine이 제시간에 응답하지 않았습니다” 또는 “SSH 연결 시간이 초과되었습니다”
 
@@ -91,7 +91,7 @@ Homeport는 연결을 10초 동안 기다립니다. 주소와 포트, 서버가 
 
 ### 액세스 거부됨: “서버가 …의 키를 거부했습니다”
 
-서버가 아직 Homeport의 키를 받아들이지 않습니다. 호스트 페이지의 **공개 키 추가** 명령을 서버에서 실행한 다음 **다시 연결**을 선택하세요. [SSH 호스트](/docs/hosts/ssh/#authorise-homeports-key)를 참고하세요.
+서버가 아직 Homeport의 키를 받아들이지 않습니다. 호스트 페이지의 **공개 키 추가** 명령을 서버에서 실행한 다음 **다시 연결**을 선택하세요. [SSH 호스트](/docs/hosts/ssh/#homeport의-키-승인)를 참고하세요.
 
 ### “SSH 서버가 /var/run/docker.sock을 열지 못했습니다”
 
@@ -121,11 +121,11 @@ ssh-add
 
 ### 서버 키가 변경됨
 
-SSH 서버가 신뢰한 키와 다른 키를 제시했습니다. 서버를 다시 설치했거나 키를 바꿨다면 **새 키 신뢰**를 선택하세요. 왜 바뀌었는지 모른다면 연결하지 말고 서버 관리자에게 문의하세요. [SSH 호스트](/docs/hosts/ssh/#when-the-servers-key-changes)를 참고하세요.
+SSH 서버가 신뢰한 키와 다른 키를 제시했습니다. 서버를 다시 설치했거나 키를 바꿨다면 **새 키 신뢰**를 선택하세요. 왜 바뀌었는지 모른다면 연결하지 말고 서버 관리자에게 문의하세요. [SSH 호스트](/docs/hosts/ssh/#서버-키가-바뀌었을-때)를 참고하세요.
 
 ### 자격 증명 손실
 
-비밀 정보를 암호화하는 키가 키체인에 없거나 바뀌었습니다. 키체인을 초기화했거나, 새 사용자 프로필을 만들었거나, Homeport의 데이터를 다른 컴퓨터로 복사한 경우입니다(이때는 [내보내기와 가져오기](/docs/reference/security/#moving-to-another-computer)를 사용하세요). Homeport는 호스트를 유지합니다. 호스트 페이지에서 자격 증명을 다시 입력하세요.
+비밀 정보를 암호화하는 키가 키체인에 없거나 바뀌었습니다. 키체인을 초기화했거나, 새 사용자 프로필을 만들었거나, Homeport의 데이터를 다른 컴퓨터로 복사한 경우입니다(이때는 [내보내기와 가져오기](/docs/reference/security/#다른-컴퓨터로-옮기기)를 사용하세요). Homeport는 호스트를 유지합니다. 호스트 페이지에서 자격 증명을 다시 입력하세요.
 
 - **TLS** — 인증서 파일 세 개를 다시 불러오고 **저장**을 선택합니다.
 - **가져온 키를 쓰는 SSH** — 개인 키와 암호 문구를 다시 붙여 넣고 **저장**을 선택합니다.
@@ -169,11 +169,11 @@ kind, k3d, minikube는 클러스터를 다시 만들 때마다 새 인증서를 
 
 ### Nomad: “… 클러스터가 Homeport가 보낸 ACL 토큰을 알지 못합니다”
 
-토큰을 잘못 입력했거나, 만료되었거나, 삭제되었습니다. [ACL 정책](/docs/clusters/nomad/#acl-policies)의 정책으로 새 토큰을 만들고(`nomad acl token create -name=homeport -policy=homeport`) 그 secret ID를 클러스터의 **설정**에 붙여 넣으세요. 그때까지 클러스터는 **액세스 거부됨** 상태로 기다립니다.
+토큰을 잘못 입력했거나, 만료되었거나, 삭제되었습니다. [ACL 정책](/docs/clusters/nomad/#acl-정책)의 정책으로 새 토큰을 만들고(`nomad acl token create -name=homeport -policy=homeport`) 그 secret ID를 클러스터의 **설정**에 붙여 넣으세요. 그때까지 클러스터는 **액세스 거부됨** 상태로 기다립니다.
 
 ### Nomad: “… 클러스터가 거부했습니다. ACL 토큰에 이 작업에 필요한 권한이 없습니다”
 
-토큰의 정책이 이 페이지나 작업에 필요한 권한을 부여하지 않습니다. 메시지가 어떤 권한인지 알려 줍니다(job이나 로그 읽기, job 실행이나 중지, 스케일, 셸 열기, 노드 변경). 토큰의 정책에 해당 capability를 추가하세요. [ACL 정책](/docs/clusters/nomad/#acl-policies)에 각각 필요한 것이 나와 있습니다. 다른 페이지는 계속 작동합니다.
+토큰의 정책이 이 페이지나 작업에 필요한 권한을 부여하지 않습니다. 메시지가 어떤 권한인지 알려 줍니다(job이나 로그 읽기, job 실행이나 중지, 스케일, 셸 열기, 노드 변경). 토큰의 정책에 해당 capability를 추가하세요. [ACL 정책](/docs/clusters/nomad/#acl-정책)에 각각 필요한 것이 나와 있습니다. 다른 페이지는 계속 작동합니다.
 
 ### Nomad: “… 클러스터에 리더가 없습니다. 서버들이 리더를 합의하지 못합니다”
 
@@ -229,17 +229,17 @@ Homeport가 스택을 배포하려면 이 컴퓨터에 `docker compose`가 있�
 
 ### 배포 실패: “… 서비스가 build:를 사용하는데”
 
-관리형 스택에는 빌드할 폴더가 없습니다. 대신 [프로젝트 폴더를 링크](/docs/guides/stacks/#creating-a-linked-stack)하거나(링크된 스택은 빌드할 수 있습니다), 이미지를 빌드하여 레지스트리에 푸시한 다음 `image:`를 사용하세요.
+관리형 스택에는 빌드할 폴더가 없습니다. 대신 [프로젝트 폴더를 링크](/docs/guides/stacks/#링크된-스택-만들기)하거나(링크된 스택은 빌드할 수 있습니다), 이미지를 빌드하여 레지스트리에 푸시한 다음 `image:`를 사용하세요.
 
 ### 스택이 외부 스택이 됨
 
-[링크된 스택](/docs/guides/stacks/#when-the-folder-moves-or-disappears)은 폴더가 옮겨지거나, 이름이 바뀌거나, 삭제되었을 때, 또는 그 안의 compose 파일이 그렇게 되었을 때 ⚠ **compose 파일이 더 이상 이 컴퓨터에 없습니다** 표시와 함께 외부 스택으로 표시됩니다. 잃어버린 것은 없습니다. 폴더를 원래 자리로 되돌리면 다음 새로 고침 때 다시 링크된 스택이 됩니다. 폴더를 영구적으로 옮겼다면 스택의 **정의** 탭에서 **잊기**를 선택한 다음, **새 스택 → 이 컴퓨터의 폴더 사용**으로 새 위치에서 다시 링크하세요.
+[링크된 스택](/docs/guides/stacks/#폴더가-이동하거나-사라졌을-때)은 폴더가 옮겨지거나, 이름이 바뀌거나, 삭제되었을 때, 또는 그 안의 compose 파일이 그렇게 되었을 때 ⚠ **compose 파일이 더 이상 이 컴퓨터에 없습니다** 표시와 함께 외부 스택으로 표시됩니다. 잃어버린 것은 없습니다. 폴더를 원래 자리로 되돌리면 다음 새로 고침 때 다시 링크된 스택이 됩니다. 폴더를 영구적으로 옮겼다면 스택의 **정의** 탭에서 **잊기**를 선택한 다음, **새 스택 → 이 컴퓨터의 폴더 사용**으로 새 위치에서 다시 링크하세요.
 
 다른 컴퓨터의 폴더에서 시작한 스택은 이 컴퓨터에 그 경로가 없으므로 여기서는 항상 외부 스택입니다.
 
 ### “Homeport 밖에서 변경됨”
 
-Homeport가 마지막으로 읽은 이후 링크된 스택의 compose 파일이 Homeport 밖에서(편집기나 `git pull`로) 편집되었습니다. **다시 불러오기**를 선택하면 현재 상태를 볼 수 있습니다. 동시에 Homeport에서 편집하고 있었다면, 어느 쪽 변경도 모르게 사라지지 않도록 **파일을 연 이후 Homeport 밖에서 … 파일이 변경되었습니다**와 함께 저장이 거부됩니다. 다시 불러와서 편집을 다시 하거나, **덮어쓰기**를 선택하여 내 변경을 유지하세요. [링크된 스택 편집](/docs/guides/stacks/#editing-a-linked-stack)을 참고하세요.
+Homeport가 마지막으로 읽은 이후 링크된 스택의 compose 파일이 Homeport 밖에서(편집기나 `git pull`로) 편집되었습니다. **다시 불러오기**를 선택하면 현재 상태를 볼 수 있습니다. 동시에 Homeport에서 편집하고 있었다면, 어느 쪽 변경도 모르게 사라지지 않도록 **파일을 연 이후 Homeport 밖에서 … 파일이 변경되었습니다**와 함께 저장이 거부됩니다. 다시 불러와서 편집을 다시 하거나, **덮어쓰기**를 선택하여 내 변경을 유지하세요. [링크된 스택 편집](/docs/guides/stacks/#링크된-스택-편집)을 참고하세요.
 
 ### 비공개 이미지 풀이 실패함
 
@@ -251,7 +251,7 @@ Homeport가 마지막으로 읽은 이후 링크된 스택의 compose 파일이 
 
 ### 새 이미지 표시가 나타나지 않음
 
-표시는 레지스트리에 물어서 응답을 받았을 때만 나타납니다. 로컬에서 빌드했거나 다이제스트로 풀한 이미지에는 표시가 나타나지 않습니다. 레지스트리에 연결할 수 없거나 요청이 제한되면(Docker Hub는 이 확인을 풀 제한에 포함합니다) Homeport는 [로그](/docs/reference/security/#logs)에 한 줄을 기록하고 아무것도 표시하지 않습니다. 응답은 6시간 동안 보관되므로, 지금 다시 물으려면 **새 이미지 확인**을 선택하세요. **설정 → 레지스트리**에 Docker Hub 로그인을 추가하면 제한이 늘어납니다.
+표시는 레지스트리에 물어서 응답을 받았을 때만 나타납니다. 로컬에서 빌드했거나 다이제스트로 풀한 이미지에는 표시가 나타나지 않습니다. 레지스트리에 연결할 수 없거나 요청이 제한되면(Docker Hub는 이 확인을 풀 제한에 포함합니다) Homeport는 [로그](/docs/reference/security/#로그)에 한 줄을 기록하고 아무것도 표시하지 않습니다. 응답은 6시간 동안 보관되므로, 지금 다시 물으려면 **새 이미지 확인**을 선택하세요. **설정 → 레지스트리**에 Docker Hub 로그인을 추가하면 제한이 늘어납니다.
 
 ### Docker Hub 검색 시 오류가 표시됨
 
@@ -287,11 +287,11 @@ Homeport는 `systemctl`로 유닛의 서비스를 시작하고 중지하는데, 
 
 ### containerd: “/run/containerd/containerd.sock의 containerd를 사용할 권한이 없습니다”
 
-containerd의 소켓은 root 소유입니다. `/etc/containerd/config.toml`의 `[grpc]` 아래 `gid`로 그룹에 접근 권한을 주고, 사용자(또는 SSH 사용자)를 그 그룹에 추가한 다음, containerd를 다시 시작하고 다시 로그인하세요. 명령은 [containerd 페이지](/docs/hosts/containerd/#letting-your-user-use-the-socket)에 있습니다. rootless containerd에는 전혀 연결할 수 없습니다. 소켓이 RootlessKit의 네임스페이스 안에만 있기 때문입니다.
+containerd의 소켓은 root 소유입니다. `/etc/containerd/config.toml`의 `[grpc]` 아래 `gid`로 그룹에 접근 권한을 주고, 사용자(또는 SSH 사용자)를 그 그룹에 추가한 다음, containerd를 다시 시작하고 다시 로그인하세요. 명령은 [containerd 페이지](/docs/hosts/containerd/#사용자가-소켓을-쓸-수-있게-하기)에 있습니다. rootless containerd에는 전혀 연결할 수 없습니다. 소켓이 RootlessKit의 네임스페이스 안에만 있기 때문입니다.
 
 ### containerd: “이 컨테이너의 출력은 기록되지 않습니다”
 
-containerd는 로그를 보관하지 않으며, 태스크를 시작한 도구가 출력의 행방을 정합니다. `ctr`로 만든 컨테이너는 보통 출력을 아무 데도 보내지 않습니다. nerdctl과 Kubernetes의 컨테이너는 Homeport가 읽는 파일에 로그를 남깁니다. [로그](/docs/hosts/containerd/#logs)를 참고하세요.
+containerd는 로그를 보관하지 않으며, 태스크를 시작한 도구가 출력의 행방을 정합니다. `ctr`로 만든 컨테이너는 보통 출력을 아무 데도 보내지 않습니다. nerdctl과 Kubernetes의 컨테이너는 Homeport가 읽는 파일에 로그를 남깁니다. [로그](/docs/hosts/containerd/#로그)를 참고하세요.
 
 ### containerd: 로그나 터미널에 SSH가 필요하다고 표시됨
 
@@ -303,7 +303,7 @@ containerd는 로그를 보관하지 않으며, 태스크를 시작한 도구가
 
 ### Incus: “/var/lib/incus/unix.socket의 Incus를 사용할 권한이 없습니다”
 
-Incus의 관리자 소켓은 `incus-admin` 그룹용이고, 제한된 `unix.socket.user`는 `incus` 그룹용입니다. `sudo usermod -aG incus-admin "$USER"`로 사용자(또는 SSH 사용자)를 추가한 다음, 로그아웃했다가 다시 로그인하거나 SSH로 다시 연결하세요. [Incus의 소켓](/docs/hosts/incus/#its-sockets)을 참고하세요.
+Incus의 관리자 소켓은 `incus-admin` 그룹용이고, 제한된 `unix.socket.user`는 `incus` 그룹용입니다. `sudo usermod -aG incus-admin "$USER"`로 사용자(또는 SSH 사용자)를 추가한 다음, 로그아웃했다가 다시 로그인하거나 SSH로 다시 연결하세요. [Incus의 소켓](/docs/hosts/incus/#incus의-소켓)을 참고하세요.
 
 ### Incus: 신뢰 토큰으로 추가할 때 “Homeport가 …에서 Incus에 연결하지 못했습니다”
 
@@ -315,7 +315,7 @@ Incus의 관리자 소켓은 `incus-admin` 그룹용이고, 제한된 `unix.sock
 
 ### Incus: “…에서 제시한 인증서의 지문은 …입니다. 신뢰하는 지문은 …입니다”
 
-서버의 인증서가 Homeport가 신뢰한 인증서가 아닙니다. Incus를 다시 설치했거나, 인증서를 갱신했거나, 그 주소에서 다른 무언가가 응답하고 있습니다. 서버에서 `incus info`로 지문을 확인하고, 표시된 지문과 같다면 호스트를 삭제한 다음 새 토큰으로 다시 추가하세요. [고정된 인증서](/docs/hosts/incus/#the-servers-certificate-is-pinned)를 참고하세요.
+서버의 인증서가 Homeport가 신뢰한 인증서가 아닙니다. Incus를 다시 설치했거나, 인증서를 갱신했거나, 그 주소에서 다른 무언가가 응답하고 있습니다. 서버에서 `incus info`로 지문을 확인하고, 표시된 지문과 같다면 호스트를 삭제한 다음 새 토큰으로 다시 추가하세요. [고정된 인증서](/docs/hosts/incus/#서버-인증서-고정)를 참고하세요.
 
 ### Incus: “이 호스트는 가상 머신을 실행할 수 없습니다”
 

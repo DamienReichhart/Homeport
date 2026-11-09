@@ -23,7 +23,7 @@ Cada host tem um cartão com o seu nome, endereço, tipo e status. Para um host 
 - o uso de CPU ao vivo dos seus contêineres, como uma porcentagem de uma CPU — `250%` em um host com 8 CPUs significa que duas CPUs e meia estão ocupadas;
 - a memória usada pelos seus contêineres, do total do host.
 
-Selecione um cartão para mudar para esse host. Se ele estiver conectado, o Homeport abre os seus **Contêineres**. **Os contêineres dele no Quadro** abre o [Quadro](#board) mostrando só esse host.
+Selecione um cartão para mudar para esse host. Se ele estiver conectado, o Homeport abre os seus **Contêineres**. **Os contêineres dele no Quadro** abre o [Quadro](#quadro) mostrando só esse host.
 
 ### Cartões dos clusters
 
@@ -90,7 +90,7 @@ O **Quadro**, segundo na barra lateral, lista os contêineres de todos os hosts 
 - **Ações** — cada linha tem o mesmo botão de iniciar/parar e o mesmo menu que na página Contêineres, agindo sobre o host dessa linha. Marque várias linhas, em um host ou em vários, para iniciá-las, pará-las, reiniciá-las ou removê-las juntas; remover pergunta antes e lista os contêineres host por host.
 - **Abrindo um contêiner** — selecione uma linha: o Homeport muda para o host dela e abre o contêiner. **Voltar** retorna ao Quadro.
 
-Para encontrar um contêiner entre os de todos os hosts sem abrir o Quadro, [pesquise na paleta de comandos](/docs/guides/keyboard/#searching-every-host).
+Para encontrar um contêiner entre os de todos os hosts sem abrir o Quadro, [pesquise na paleta de comandos](/docs/guides/keyboard/#pesquisando-em-todos-os-hosts).
 
 Um host que não está conectado — inacessível, desativado, esperando por você — ganha uma linha acima da tabela, como _nas (Inacessível) não é mostrado._, com um link para a página dele; os outros hosts são listados normalmente. Acima de algumas centenas de contêineres, só as linhas visíveis são desenhadas, para que o Quadro continue rápido.
 
@@ -104,11 +104,11 @@ O Homeport adiciona um ícone à bandeja do sistema — a barra de menus no macO
 
 A dica do ícone resume tudo: **Homeport — 3 de 4 hosts conectados**. No Windows, clique duas vezes no ícone para abrir a janela.
 
-Com **Fechar para a bandeja do sistema** ativado em [Configurações](/docs/guides/settings/#desktop), fechar a janela esconde o Homeport em vez de encerrá-lo, então as conexões com os hosts continuam abertas; reabra-o pela bandeja ou abrindo o Homeport de novo. Alguns ambientes de desktop Linux escondem os ícones da bandeja; veja os [requisitos](/docs/requirements/#optional-a-system-tray).
+Com **Fechar para a bandeja do sistema** ativado em [Configurações](/docs/guides/settings/#área-de-trabalho), fechar a janela esconde o Homeport em vez de encerrá-lo, então as conexões com os hosts continuam abertas; reabra-o pela bandeja ou abrindo o Homeport de novo. Alguns ambientes de desktop Linux escondem os ícones da bandeja; veja os [requisitos](/docs/requirements/#opcional-uma-bandeja-do-sistema).
 
 ### Notificações
 
-Enquanto o Homeport roda, mesmo escondido na bandeja, ele avisa pelas notificações do seu sistema operacional quando um contêiner para com um erro, fica sem memória ou deixa de estar íntegro, e quando um host fica inacessível ou volta. Ative ou desative cada tipo em [Configurações](/docs/guides/settings/#notifications).
+Enquanto o Homeport roda, mesmo escondido na bandeja, ele avisa pelas notificações do seu sistema operacional quando um contêiner para com um erro, fica sem memória ou deixa de estar íntegro, e quando um host fica inacessível ou volta. Ative ou desative cada tipo em [Configurações](/docs/guides/settings/#notificações).
 
 ## Eventos
 
@@ -133,8 +133,8 @@ Pesquise pela ação ou pelo nome do objeto, ou filtre pelo tipo. A lista se atu
 
 - **Entre reinicializações.** Os eventos são salvos neste computador à medida que chegam. A página mostra os 1.000 mais recentes; role até o fim, ou escolha **Carregar eventos mais antigos**, para mais 1.000 de cada vez.
 - **Enquanto o Homeport estava fechado.** Quando o Homeport se conecta a um host de novo, ele pede ao Engine os eventos desde o último que guardou, então o que aconteceu nesse meio-tempo é preenchido — até onde o Engine se lembra, que são as suas últimas centenas de eventos. Nada é listado duas vezes.
-- **Por 30 dias**, ou pelo tempo que **Manter eventos do Engine por** em [Configurações → Dados](/docs/guides/settings/#data) indicar, e no máximo 10.000 por host. Os eventos mais antigos são removidos a cada hora.
+- **Por 30 dias**, ou pelo tempo que **Manter eventos do Engine por** em [Configurações → Dados](/docs/guides/settings/#dados) indicar, e no máximo 10.000 por host. Os eventos mais antigos são removidos a cada hora.
 
 **Limpar histórico** esquece todos os eventos guardados para o host selecionado; os novos continuam aparecendo. Remover um host remove os eventos dele. Os eventos do próprio Engine nunca são alterados.
 
-Os [contêineres auxiliares](/docs/guides/volumes-networks/#the-helper-container) do próprio Homeport, que abrem volumes, nunca aparecem aqui.
+Os [contêineres auxiliares](/docs/guides/volumes-networks/#o-contêiner-auxiliar) do próprio Homeport, que abrem volumes, nunca aparecem aqui.

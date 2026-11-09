@@ -90,7 +90,7 @@ Das **Board**, an zweiter Stelle in der Seitenleiste, listet die Container aller
 - **Aktionen** – jede Zeile hat dieselbe Start-/Stopp-Schaltfläche und dasselbe Menü wie auf der Seite Container, die auf den Host dieser Zeile wirken. Kreuzen Sie mehrere Zeilen an, auf einem Host oder mehreren, um sie gemeinsam zu starten, zu stoppen, neu zu starten oder zu entfernen; das Entfernen fragt zuerst nach und listet die Container Host für Host auf.
 - **Einen Container öffnen** – wählen Sie eine Zeile aus: Homeport wechselt zu ihrem Host und öffnet den Container. **Zurück** führt zum Board zurück.
 
-Um einen Container unter denen aller Hosts zu finden, ohne das Board zu öffnen, [suchen Sie über die Befehlspalette](/docs/guides/keyboard/#searching-every-host).
+Um einen Container unter denen aller Hosts zu finden, ohne das Board zu öffnen, [suchen Sie über die Befehlspalette](/docs/guides/keyboard/#alle-hosts-durchsuchen).
 
 Ein Host, der nicht verbunden ist – nicht erreichbar, deaktiviert, auf Sie wartend –, erhält eine Zeile über der Tabelle, etwa _nas (Nicht erreichbar) wird nicht angezeigt._, mit einem Link auf seine Seite; die anderen Hosts werden wie gewohnt aufgelistet. Ab einigen hundert Containern werden nur die sichtbaren Zeilen gezeichnet, sodass das Board schnell bleibt.
 
@@ -104,11 +104,11 @@ Homeport fügt dem Infobereich ein Symbol hinzu – der Menüleiste unter macOS,
 
 Der Tooltip des Symbols fasst es zusammen: **Homeport — 3 von 4 Hosts verbunden**. Unter Windows öffnet ein Doppelklick auf das Symbol das Fenster.
 
-Ist **In den Infobereich schließen** in den [Einstellungen](/docs/guides/settings/#desktop) eingeschaltet, verbirgt das Schließen des Fensters Homeport, statt es zu beenden, sodass seine Host-Verbindungen offen bleiben; öffnen Sie es wieder über den Infobereich oder indem Sie Homeport erneut öffnen. Manche Linux-Desktops blenden Infobereich-Symbole aus; siehe [Voraussetzungen](/docs/requirements/#optional-a-system-tray).
+Ist **In den Infobereich schließen** in den [Einstellungen](/docs/guides/settings/#desktop) eingeschaltet, verbirgt das Schließen des Fensters Homeport, statt es zu beenden, sodass seine Host-Verbindungen offen bleiben; öffnen Sie es wieder über den Infobereich oder indem Sie Homeport erneut öffnen. Manche Linux-Desktops blenden Infobereich-Symbole aus; siehe [Voraussetzungen](/docs/requirements/#optional-ein-infobereich).
 
 ### Benachrichtigungen
 
-Während Homeport läuft, auch im Infobereich verborgen, informiert es Sie über die Benachrichtigungen Ihres Betriebssystems, wenn ein Container mit einem Fehler stoppt, keinen Speicher mehr hat oder fehlerhaft wird und wenn ein Host nicht mehr erreichbar ist oder wieder da ist. Schalten Sie jede Art in den [Einstellungen](/docs/guides/settings/#notifications) ein oder aus.
+Während Homeport läuft, auch im Infobereich verborgen, informiert es Sie über die Benachrichtigungen Ihres Betriebssystems, wenn ein Container mit einem Fehler stoppt, keinen Speicher mehr hat oder fehlerhaft wird und wenn ein Host nicht mehr erreichbar ist oder wieder da ist. Schalten Sie jede Art in den [Einstellungen](/docs/guides/settings/#benachrichtigungen) ein oder aus.
 
 ## Ereignisse
 
@@ -133,8 +133,8 @@ Suchen Sie nach Aktion oder Objektname, oder filtern Sie nach Typ. Die Liste wir
 
 - **Über Neustarts hinweg.** Ereignisse werden beim Eintreffen auf diesem Computer gespeichert. Die Seite zeigt die neuesten 1.000; scrollen Sie nach unten oder wählen Sie **Ältere Ereignisse laden**, um jeweils 1.000 weitere zu sehen.
 - **Während Homeport geschlossen war.** Wenn Homeport sich erneut mit einem Host verbindet, fragt es die Engine nach den Ereignissen seit dem letzten aufbewahrten, sodass ergänzt wird, was in der Zwischenzeit passiert ist – so weit zurück, wie die Engine sich erinnert, also ihre letzten paar hundert Ereignisse. Nichts wird doppelt aufgelistet.
-- **30 Tage lang** oder so lange, wie **Engine-Ereignisse aufbewahren für** in [Einstellungen → Daten](/docs/guides/settings/#data) angibt, und höchstens 10.000 pro Host. Ältere Ereignisse werden stündlich entfernt.
+- **30 Tage lang** oder so lange, wie **Engine-Ereignisse aufbewahren für** in [Einstellungen → Daten](/docs/guides/settings/#daten) angibt, und höchstens 10.000 pro Host. Ältere Ereignisse werden stündlich entfernt.
 
 **Verlauf löschen** vergisst alle für den ausgewählten Host aufbewahrten Ereignisse; neue erscheinen weiterhin. Das Entfernen eines Hosts entfernt seine Ereignisse. Die eigenen Ereignisse der Engine werden nie verändert.
 
-Die eigenen [Hilfscontainer](/docs/guides/volumes-networks/#the-helper-container) von Homeport, die Volumes öffnen, erscheinen hier nie.
+Die eigenen [Hilfscontainer](/docs/guides/volumes-networks/#der-hilfscontainer) von Homeport, die Volumes öffnen, erscheinen hier nie.

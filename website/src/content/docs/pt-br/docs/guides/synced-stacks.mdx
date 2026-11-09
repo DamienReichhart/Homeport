@@ -51,7 +51,7 @@ Cole a URL `https://` do repositório, escolha **Token** e digite o nome de usu�
 <Aside type="tip">
   Sem um chaveiro do sistema, o Homeport não consegue armazenar chaves de deploy nem tokens, então
   só repositórios públicos podem ser adicionados. Veja os
-  [requisitos](/docs/requirements/#optional-an-os-keychain).
+  [requisitos](/docs/requirements/#opcional-um-chaveiro-do-sistema).
 </Aside>
 
 Remover um repositório exclui a chave ou o token dele e o clone neste computador. Isso é recusado enquanto uma stack sincronizada o usa.
@@ -78,7 +78,7 @@ O Homeport busca a branch ou a tag e lê o arquivo compose antes de armazenar qu
 
 O repositório é clonado uma vez neste computador, em uma pasta `repositories` ao lado do banco de dados do Homeport, e compartilhado por todas as stacks sincronizadas criadas a partir dele. Cada stack sincronizada implanta a partir do seu próprio checkout do commit, em uma pasta `synced-stacks` ali, que fica no lugar entre as implantações: os arquivos que os seus contêineres gravam por bind mounts relativos ficam onde estavam. Os links simbólicos do repositório passam pelo checkout como arquivos comuns, então um arquivo compose não pode apontar o Compose para um arquivo em outro lugar deste computador. Os arquivos mantêm as quebras de linha com que o repositório os guarda, no Windows também, então um script copiado para uma imagem Linux continua rodando; só o próprio `.gitattributes` do repositório pode mudá-las.
 
-Uma stack sincronizada pode ser implantada em um [Swarm](/docs/guides/swarm/): escolha-o em **Implantar em** na página **Nova stack**. Ela sincroniza, implanta e implanta automaticamente da mesma forma, com `docker stack deploy` executado a partir do seu checkout; veja [Stacks vinculadas e sincronizadas em um Swarm](/docs/guides/swarm/#linked-and-synced-stacks-on-a-swarm) para saber o que muda, a começar pelo `build:`.
+Uma stack sincronizada pode ser implantada em um [Swarm](/docs/guides/swarm/): escolha-o em **Implantar em** na página **Nova stack**. Ela sincroniza, implanta e implanta automaticamente da mesma forma, com `docker stack deploy` executado a partir do seu checkout; veja [Stacks vinculadas e sincronizadas em um Swarm](/docs/guides/swarm/#stacks-vinculadas-e-sincronizadas-em-um-swarm) para saber o que muda, a começar pelo `build:`.
 
 **Esquecer** faz o Homeport deixar de acompanhar o repositório. Os contêineres dela continuam rodando e ela se torna uma stack externa; o checkout dela é excluído, a menos que contêineres tenham gravado arquivos nele, e o clone do repositório vai embora quando nenhuma stack sincronizada o usa. O repositório permanece em **Configurações → Repositórios**.
 

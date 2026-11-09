@@ -5,7 +5,7 @@ description: Liste, inicie, pare e remova pods do Podman, crie um com as suas po
 
 Um **pod** é a forma do Podman de agrupar contêineres: eles compartilham uma rede (e o hostname e o IPC), então se alcançam em `localhost`, e iniciam e param juntos. Cada pod tem um **contêiner infra** que guarda o que eles compartilham e as portas que o pod publica. O Homeport mostra os pods nos hosts cujo Engine é o Podman, pela própria API do Podman no socket que o host já usa; nada é instalado no host.
 
-A página **Pods** só aparece na barra lateral enquanto um host Podman está selecionado. Em qualquer outro Engine compatível com Docker ela não existe, e um link para ela diz por quê. Veja [Tipos de Engine](/docs/hosts/#engine-kinds) para saber como o Homeport distingue o Podman.
+A página **Pods** só aparece na barra lateral enquanto um host Podman está selecionado. Em qualquer outro Engine compatível com Docker ela não existe, e um link para ela diz por quê. Veja [Tipos de Engine](/docs/hosts/#tipos-de-engine) para saber como o Homeport distingue o Podman.
 
 ## A página Pods
 

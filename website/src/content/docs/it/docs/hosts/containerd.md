@@ -84,7 +84,7 @@ containerd non conserva log: lo strumento che avvia un task decide dove va il su
 | Kubernetes (`k8s.io`) | `/var/log/pods/<pod>/<container>/N.log`, indicato nel record CRI che lo riguarda                | quel file, seguito                                              |
 | `ctr` e altri client  | dove lo hanno indirizzato, di solito da nessuna parte                                           | **L’output di questo container non viene registrato**, e perché |
 
-I container nerdctl che scrivono i log con un altro driver (journald, fluentd) lo indicano invece. Homeport legge il file con `tail` sul computer dell’host (vedi [sotto](#what-runs-on-the-host)); i file di log di solito appartengono a root, quindi l’utente SSH deve avere il permesso di leggerli.
+I container nerdctl che scrivono i log con un altro driver (journald, fluentd) lo indicano invece. Homeport legge il file con `tail` sul computer dell’host (vedi [sotto](#cosa-viene-eseguito-sullhost)); i file di log di solito appartengono a root, quindi l’utente SSH deve avere il permesso di leggerli.
 
 ## Un terminale in un container
 
@@ -115,7 +115,7 @@ Tutto quanto sopra passa per l’API di containerd, tranne log e terminali, che 
 | Log          | `tail -n <lines> [-F] -- '<log file>'`; per un container Kubernetes senza il record CRI, prima un `ls` della sua cartella di log |
 | Un terminale | `mktemp -d`, `mkfifo -m 600` per due FIFO in quella cartella, `cat` attraverso di esse, e `rm -rf` della cartella                |
 
-Un socket locale su macOS o Windows non può eseguirli, e log e terminali dicono allora che richiedono SSH. La [pagina sulla sicurezza](/docs/reference/security/#what-homeport-runs-on-your-hosts) elenca ogni comando che Homeport esegue su un host.
+Un socket locale su macOS o Windows non può eseguirli, e log e terminali dicono allora che richiedono SSH. La [pagina sulla sicurezza](/docs/reference/security/#cosa-esegue-homeport-sui-tuoi-host) elenca ogni comando che Homeport esegue su un host.
 
 ## Eventi
 

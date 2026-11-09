@@ -27,4 +27,4 @@ Homeport 为工作负载、Pod、Service、Ingress、ConfigMap、Secret、Node �
 - **条件**：当其 `status` 中有条件时显示，与 Homeport 自己的页面相同。
 - 关于它的**事件**，以及其 **YAML**（不含 `managedFields`）。
 
-当其类型允许时，**编辑**会打开其 YAML，以便通过预览和服务器端应用来更改它（参见[应用和编辑 YAML](/docs/clusters/yaml/)），**删除**会在一次注明该对象和集群的确认之后将其删除（参见[删除](/docs/clusters/actions/#deleting)）。在列表中，勾选多个对象可将它们一起删除。
+当其类型允许时，**编辑**会打开其 YAML，以便通过预览和服务器端应用来更改它（参见[应用和编辑 YAML](/docs/clusters/yaml/)），**删除**会在一次注明该对象和集群的确认之后将其删除（参见[删除](/docs/clusters/actions/#删除)）。在列表中，勾选多个对象可将它们一起删除。

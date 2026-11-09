@@ -62,7 +62,7 @@ incus config trust remove <fingerprint>
 
 ### O certificado do servidor é fixado
 
-O certificado do Incus é autoassinado, então não há CA com a qual verificá-lo. O Homeport guarda com o host o certificado em que confiou e aceita exatamente esse depois, comparado pela impressão digital SHA-256, seja qual for o endereço pelo qual é acessado. Se o Incus for reinstalado ou o certificado dele renovado, o host é recusado com a impressão digital esperada e a recebida: confira a nova no servidor com `incus info` e depois adicione o host de novo com um novo token. A chave de cliente e os dois certificados são armazenados criptografados como qualquer outro segredo; veja [segurança](/docs/reference/security/#incus-certificates).
+O certificado do Incus é autoassinado, então não há CA com a qual verificá-lo. O Homeport guarda com o host o certificado em que confiou e aceita exatamente esse depois, comparado pela impressão digital SHA-256, seja qual for o endereço pelo qual é acessado. Se o Incus for reinstalado ou o certificado dele renovado, o host é recusado com a impressão digital esperada e a recebida: confira a nova no servidor com `incus info` e depois adicione o host de novo com um novo token. A chave de cliente e os dois certificados são armazenados criptografados como qualquer outro segredo; veja [segurança](/docs/reference/security/#certificados-do-incus).
 
 ## Projetos
 

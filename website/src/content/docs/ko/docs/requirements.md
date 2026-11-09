@@ -37,7 +37,7 @@ Podman 호스트에서는 Podman 자체 API도 사용합니다. [Pod](/docs/guid
 
 ## 선택 사항: Nomad 클러스터
 
-[Nomad 클러스터](/docs/clusters/nomad/)를 관리하려면 Nomad 에이전트의 HTTP API(기본 포트 4646)에 대한 네트워크 접근이 필요하고, 클러스터에서 ACL이 켜져 있으면 토큰도 필요합니다. 필요한 [ACL 정책](/docs/clusters/nomad/#acl-policies)을 참고하세요. Homeport는 Nomad API와 직접 통신하므로 `nomad` CLI는 필요하지 않으며, 클러스터에는 아무것도 설치하지 않습니다.
+[Nomad 클러스터](/docs/clusters/nomad/)를 관리하려면 Nomad 에이전트의 HTTP API(기본 포트 4646)에 대한 네트워크 접근이 필요하고, 클러스터에서 ACL이 켜져 있으면 토큰도 필요합니다. 필요한 [ACL 정책](/docs/clusters/nomad/#acl-정책)을 참고하세요. Homeport는 Nomad API와 직접 통신하므로 `nomad` CLI는 필요하지 않으며, 클러스터에는 아무것도 설치하지 않습니다.
 
 - **Nomad 버전**: Nomad 1.6 이상. **편집 후 실행**은 job의 제출된 명세에서 시작하는데, Nomad는 1.6부터 이 명세를 보관합니다.
 

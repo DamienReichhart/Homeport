@@ -42,7 +42,7 @@ La navigazione è in sola lettura. Nulla di ciò che fai qui può modificare il 
 
 L’API dell’Engine non può leggere un volume, quindi Homeport lo apre con un **container ausiliario** di breve durata: un container `busybox:1.37` senza rete e con un filesystem in sola lettura, che monta il volume in sola lettura. Homeport lo rimuove non appena chiudi il browser dei file o esci. Se Homeport non ci riesce (si è bloccato, o l’host è sparito), il container ausiliario si arresta e viene rimosso dall’Engine entro un’ora, e Homeport rimuove ciò che resta la volta successiva che questo computer si connette all’host. I container ausiliari non vengono mai mostrati nell’elenco Container, in **Usato da** di un volume o nella pagina Eventi.
 
-Se l’host non ha `busybox:1.37` (circa 2 MB), Homeport lo segnala e lo scarica solo quando scegli **Scarica busybox:1.37**, con i tuoi [accessi ai registri](/docs/guides/settings/#registries). Rimuove di nuovo l’immagine al termine, a meno che qualcos’altro la usi. Un host senza accesso a internet non può scaricarla; portacela tu:
+Se l’host non ha `busybox:1.37` (circa 2 MB), Homeport lo segnala e lo scarica solo quando scegli **Scarica busybox:1.37**, con i tuoi [accessi ai registri](/docs/guides/settings/#registri). Rimuove di nuovo l’immagine al termine, a meno che qualcos’altro la usi. Un host senza accesso a internet non può scaricarla; portacela tu:
 
 ```sh
 docker pull busybox:1.37
@@ -72,15 +72,15 @@ Entrambe le operazioni mostrano il loro avanzamento e si possono annullare. Un b
 
 Il backup di un volume su cui scrive un container in esecuzione (un database, per esempio) può essere incoerente. Homeport indica i container in esecuzione che lo usano, e tu scegli se **Esegui comunque il backup** o se arrestarli durante il backup. Un ripristino li arresta sempre prima. In entrambi i casi, Homeport li riavvia al termine.
 
-Backup e ripristini usano lo stesso [container ausiliario](#the-helper-container) della navigazione, che monta il volume in sola lettura per un backup. L’archivio viaggia tramite la connessione dell’host e non viene mai tenuto per intero in memoria, quindi funzionano anche i volumi grandi e gli host remoti. Sull’host non viene scritto nulla tranne il volume da ripristinare.
+Backup e ripristini usano lo stesso [container ausiliario](#il-container-ausiliario) della navigazione, che monta il volume in sola lettura per un backup. L’archivio viaggia tramite la connessione dell’host e non viene mai tenuto per intero in memoria, quindi funzionano anche i volumi grandi e gli host remoti. Sull’host non viene scritto nulla tranne il volume da ripristinare.
 
 ### Clonare un volume
 
 **Clona…**, nel menu **⋯** della riga di un volume, lo copia in un nuovo volume sullo stesso host, per esempio per provare una migrazione o una nuova versione di un’immagine su una copia di dati reali. La copia si chiama `<name>-copy` se non cambi il nome, e viene selezionata nell’elenco una volta creata.
 
-Conserva i proprietari e i permessi dei file, e il driver, le opzioni del driver e le etichette dell’originale, tranne quelle di Compose, così la copia non appartiene ad alcuno stack. L’originale viene montato in sola lettura nel [container ausiliario](#the-helper-container) e non cambia mai. Come per un backup, Homeport indica i container in esecuzione che usano l’originale; copia comunque, oppure arrestali durante la copia.
+Conserva i proprietari e i permessi dei file, e il driver, le opzioni del driver e le etichette dell’originale, tranne quelle di Compose, così la copia non appartiene ad alcuno stack. L’originale viene montato in sola lettura nel [container ausiliario](#il-container-ausiliario) e non cambia mai. Come per un backup, Homeport indica i container in esecuzione che usano l’originale; copia comunque, oppure arrestali durante la copia.
 
-Se la copia non riesce (il disco è pieno, per esempio), Homeport rimuove la copia incompleta e lo segnala, con l’errore in **Dettagli**. Per copiare un volume su un altro host, [fanne il backup](#backing-up-and-restoring) e ripristina il file lì.
+Se la copia non riesce (il disco è pieno, per esempio), Homeport rimuove la copia incompleta e lo segnala, con l’errore in **Dettagli**. Per copiare un volume su un altro host, [fanne il backup](#backup-e-ripristino) e ripristina il file lì.
 
 ### Creare un volume
 

@@ -17,7 +17,7 @@ Homeport は、動作しているエンジンを通常の場所で探し、応�
 | Colima                    | `~/.colima/default/docker.sock`                                                                               | —                                 |
 | OrbStack                  | `~/.orbstack/run/docker.sock`                                                                                 | —                                 |
 | Rancher Desktop           | `~/.rd/docker.sock`                                                                                           | —                                 |
-| Podman                    | `$XDG_RUNTIME_DIR/podman/podman.sock`、`/run/podman/podman.sock`、[macOS のマシン](#podman-machines-on-macos) | `//./pipe/podman-machine-default` |
+| Podman                    | `$XDG_RUNTIME_DIR/podman/podman.sock`、`/run/podman/podman.sock`、[macOS のマシン](#macos-の-podman-マシン) | `//./pipe/podman-machine-default` |
 
 候補ごとにエンジンにバージョンを問い合わせて確認するため、一覧に表示されるのは動作中のエンジンだけです。複数のパスが同じソケットにつながっている場合（macOS では通常、`/var/run/docker.sock` が Docker Desktop、OrbStack、Rancher Desktop のいずれかを指しています）、そのエンジンは最初に見つかった名前で 1 回だけ表示されます。
 

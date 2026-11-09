@@ -3,7 +3,7 @@ title: Tastatur
 description: Homeport ohne Maus bedienen – die Befehlspalette und die Suche über alle Hosts, Tastenkürzel für jede Seite und jeden Host und die Hilfeübersicht, die sie auflistet.
 ---
 
-Homeport lässt sich mit der Tastatur bedienen. Drücken Sie <kbd>Mod</kbd> <kbd>K</kbd>, um die [Befehlspalette](#command-palette) zu öffnen, und auf jeder Seite <kbd>?</kbd>, um alle Tastenkürzel zu sehen, die dort funktionieren.
+Homeport lässt sich mit der Tastatur bedienen. Drücken Sie <kbd>Mod</kbd> <kbd>K</kbd>, um die [Befehlspalette](#befehlspalette) zu öffnen, und auf jeder Seite <kbd>?</kbd>, um alle Tastenkürzel zu sehen, die dort funktionieren.
 
 **Mod** steht im Folgenden für <kbd>⌘</kbd> unter macOS und für <kbd>Ctrl</kbd> unter Windows und Linux; unter macOS ist <kbd>Alt</kbd> die Taste <kbd>⌥</kbd>.
 

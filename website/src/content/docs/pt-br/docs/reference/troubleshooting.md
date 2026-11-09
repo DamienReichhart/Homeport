@@ -35,11 +35,11 @@ O Homeport reabre com o tamanho, a posição e o estado maximizado que a janela 
 
 ### Abrir o Homeport de novo não abre uma segunda janela
 
-Só um Homeport roda de cada vez: abri-lo enquanto ele já está rodando traz a janela dele para a frente, mesmo quando ele está oculto na [bandeja do sistema](/docs/guides/overview/#system-tray). Duas cópias se conectariam duas vezes a cada host e gravariam nos mesmos dados.
+Só um Homeport roda de cada vez: abri-lo enquanto ele já está rodando traz a janela dele para a frente, mesmo quando ele está oculto na [bandeja do sistema](/docs/guides/overview/#bandeja-do-sistema). Duas cópias se conectariam duas vezes a cada host e gravariam nos mesmos dados.
 
 ### Não há ícone na bandeja
 
-No Linux, a bandeja precisa da biblioteca appindicator, e alguns ambientes de desktop ocultam os ícones da bandeja: no GNOME, instale a extensão AppIndicator Support. Se o Homeport não encontrar nenhuma biblioteca appindicator, **Configurações → Área de trabalho** diz isso, e fechar a janela encerra o aplicativo. Veja os [requisitos](/docs/requirements/#optional-a-system-tray).
+No Linux, a bandeja precisa da biblioteca appindicator, e alguns ambientes de desktop ocultam os ícones da bandeja: no GNOME, instale a extensão AppIndicator Support. Se o Homeport não encontrar nenhuma biblioteca appindicator, **Configurações → Área de trabalho** diz isso, e fechar a janela encerra o aplicativo. Veja os [requisitos](/docs/requirements/#opcional-uma-bandeja-do-sistema).
 
 ### Um banner vermelho diz que nenhum chaveiro do sistema está disponível
 
@@ -57,11 +57,11 @@ O Homeport só instala uma atualização cuja assinatura corresponda à sua chav
 
 ### O apt diz "NO_PUBKEY" ou "The repository is not signed"
 
-A chave do Homeport está faltando em `/etc/apt/keyrings/homeport.asc`. Execute de novo a [instalação rápida](/docs/installation/#quick-install), ou os dois primeiros comandos da [configuração manual](/docs/installation/#manual-setup).
+A chave do Homeport está faltando em `/etc/apt/keyrings/homeport.asc`. Execute de novo a [instalação rápida](/docs/installation/#instalação-rápida), ou os dois primeiros comandos da [configuração manual](/docs/installation/#configuração-manual).
 
 ### O dnf ou o zypper pergunta se deve importar uma chave
 
-É a chave de pacotes do Homeport, na primeira vez que o seu gerenciador de pacotes usa o repositório. Confira se a impressão digital que ele mostra corresponde à de [verificar downloads](/docs/reference/verifying/#package-signatures) e depois aceite.
+É a chave de pacotes do Homeport, na primeira vez que o seu gerenciador de pacotes usa o repositório. Confira se a impressão digital que ele mostra corresponde à de [verificar downloads](/docs/reference/verifying/#assinaturas-dos-pacotes) e depois aceite.
 
 ### O apt diz "Hash Sum mismatch" logo depois de uma release
 
@@ -69,7 +69,7 @@ O repositório estava sendo atualizado enquanto o apt o lia. Execute `sudo apt u
 
 ### O meu gerenciador de pacotes não vê a nova versão
 
-Confira se o repositório ainda está configurado: `/etc/apt/sources.list.d/homeport.sources`, `/etc/yum.repos.d/homeport.repo` ou `/etc/zypp/repos.d/homeport.repo`. Se você o excluiu, execute a [instalação rápida](/docs/installation/#quick-install) para adicioná-lo de novo. Se você instalou a 0.2.0 ou anterior a partir de um arquivo baixado, o repositório nunca foi adicionado: veja [atualizar a partir da 0.2.0](/docs/reference/updating/#updating-from-020-or-earlier).
+Confira se o repositório ainda está configurado: `/etc/apt/sources.list.d/homeport.sources`, `/etc/yum.repos.d/homeport.repo` ou `/etc/zypp/repos.d/homeport.repo`. Se você o excluiu, execute a [instalação rápida](/docs/installation/#instalação-rápida) para adicioná-lo de novo. Se você instalou a 0.2.0 ou anterior a partir de um arquivo baixado, o repositório nunca foi adicionado: veja [atualizar a partir da 0.2.0](/docs/reference/updating/#atualizar-a-partir-da-020-ou-anterior).
 
 ## Conexão
 
@@ -83,7 +83,7 @@ sudo usermod -aG docker $USER
 
 ### Inacessível: No such file or directory
 
-Nada está escutando no caminho do socket. Inicie o seu Engine — Docker Desktop, Colima, OrbStack, Rancher Desktop — ou confira o caminho. Veja [Engines locais](/docs/hosts/local/#adding-a-socket-by-hand).
+Nada está escutando no caminho do socket. Inicie o seu Engine — Docker Desktop, Colima, OrbStack, Rancher Desktop — ou confira o caminho. Veja [Engines locais](/docs/hosts/local/#adicionar-um-socket-manualmente).
 
 ### "O Docker Engine não respondeu a tempo" ou "A conexão SSH expirou"
 
@@ -91,7 +91,7 @@ O Homeport espera 10 segundos por uma conexão. Confira o endereço e a porta, s
 
 ### Acesso recusado: "O servidor recusou a chave para …"
 
-O servidor ainda não aceita a chave do Homeport. Execute no servidor o comando **Adicione a chave pública** da página do host e depois escolha **Reconectar**. Veja [Hosts SSH](/docs/hosts/ssh/#authorise-homeports-key).
+O servidor ainda não aceita a chave do Homeport. Execute no servidor o comando **Adicione a chave pública** da página do host e depois escolha **Reconectar**. Veja [Hosts SSH](/docs/hosts/ssh/#autorize-a-chave-do-homeport).
 
 ### "O servidor SSH não conseguiu abrir /var/run/docker.sock"
 
@@ -121,11 +121,11 @@ ssh-add
 
 ### A chave do servidor mudou
 
-O servidor SSH apresentou uma chave diferente daquela em que você confiou. Se você reinstalou o servidor ou mudou as chaves dele, escolha **Confiar na nova chave**. Se você não sabe por que ela mudou, não se conecte: pergunte a quem administra o servidor. Veja [Hosts SSH](/docs/hosts/ssh/#when-the-servers-key-changes).
+O servidor SSH apresentou uma chave diferente daquela em que você confiou. Se você reinstalou o servidor ou mudou as chaves dele, escolha **Confiar na nova chave**. Se você não sabe por que ela mudou, não se conecte: pergunte a quem administra o servidor. Veja [Hosts SSH](/docs/hosts/ssh/#quando-a-chave-do-servidor-muda).
 
 ### Credenciais perdidas
 
-A chave que criptografa os seus segredos está faltando no chaveiro ou mudou — depois de uma redefinição do chaveiro, de um novo perfil de usuário ou de copiar os dados do Homeport para outro computador (use [Exportar e Importar](/docs/reference/security/#moving-to-another-computer) para isso). O Homeport mantém o host; digite de novo as credenciais dele na página do host:
+A chave que criptografa os seus segredos está faltando no chaveiro ou mudou — depois de uma redefinição do chaveiro, de um novo perfil de usuário ou de copiar os dados do Homeport para outro computador (use [Exportar e Importar](/docs/reference/security/#mudar-para-outro-computador) para isso). O Homeport mantém o host; digite de novo as credenciais dele na página do host:
 
 - **TLS** — carregue de novo os três arquivos de certificado e escolha **Salvar**.
 - **SSH com uma chave importada** — cole de novo a chave privada e a senha e escolha **Salvar**.
@@ -169,11 +169,11 @@ O kind, o k3d e o minikube criam novos certificados cada vez que recriam um clus
 
 ### Nomad: "… não conhece o token ACL que o Homeport enviou"
 
-O token foi digitado errado, expirou ou foi excluído. Crie um novo com a política de [políticas de ACL](/docs/clusters/nomad/#acl-policies) (`nomad acl token create -name=homeport -policy=homeport`) e cole o secret ID dele nas **Configurações** do cluster. O cluster espera como **Acesso recusado** até que você faça isso.
+O token foi digitado errado, expirou ou foi excluído. Crie um novo com a política de [políticas de ACL](/docs/clusters/nomad/#políticas-de-acl) (`nomad acl token create -name=homeport -policy=homeport`) e cole o secret ID dele nas **Configurações** do cluster. O cluster espera como **Acesso recusado** até que você faça isso.
 
 ### Nomad: "… recusou: falta ao token ACL uma permissão de que isto precisa"
 
-As políticas do token não concedem o que esta página ou ação precisa; a mensagem diz o quê (ler jobs ou logs, executar ou parar jobs, escalar, abrir um shell, alterar nós). Adicione a capacidade à política do token; [políticas de ACL](/docs/clusters/nomad/#acl-policies) lista do que cada uma precisa. As outras páginas continuam funcionando.
+As políticas do token não concedem o que esta página ou ação precisa; a mensagem diz o quê (ler jobs ou logs, executar ou parar jobs, escalar, abrir um shell, alterar nós). Adicione a capacidade à política do token; [políticas de ACL](/docs/clusters/nomad/#políticas-de-acl) lista do que cada uma precisa. As outras páginas continuam funcionando.
 
 ### Nomad: "… não tem líder: os servidores dele não conseguem chegar a um acordo"
 
@@ -229,17 +229,17 @@ Se ele estiver instalado, mas não for encontrado, o Homeport pode ter um `PATH`
 
 ### A implantação falha: "usa build:"
 
-Uma stack gerenciada não tem pasta a partir da qual fazer a build. [Vincule a pasta do projeto](/docs/guides/stacks/#creating-a-linked-stack) no lugar — uma stack vinculada faz build —, ou faça a build e envie a imagem para um registro e depois use `image:`.
+Uma stack gerenciada não tem pasta a partir da qual fazer a build. [Vincule a pasta do projeto](/docs/guides/stacks/#criando-uma-stack-vinculada) no lugar — uma stack vinculada faz build —, ou faça a build e envie a imagem para um registro e depois use `image:`.
 
 ### A minha stack virou externa
 
-Uma [stack vinculada](/docs/guides/stacks/#when-the-folder-moves-or-disappears) aparece como externa, marcada com ⚠ **Os arquivos compose dela não estão mais neste computador**, quando a pasta dela foi movida, renomeada ou excluída, ou quando um arquivo compose nela foi. Nada é perdido: coloque a pasta de volta onde estava e a stack volta a ser vinculada na próxima atualização. Se a pasta mudou de lugar de vez, escolha **Esquecer** na aba **Definição** da stack e depois vincule-a de novo a partir do novo lugar com **Nova stack → Usar uma pasta neste computador**.
+Uma [stack vinculada](/docs/guides/stacks/#quando-a-pasta-muda-de-lugar-ou-desaparece) aparece como externa, marcada com ⚠ **Os arquivos compose dela não estão mais neste computador**, quando a pasta dela foi movida, renomeada ou excluída, ou quando um arquivo compose nela foi. Nada é perdido: coloque a pasta de volta onde estava e a stack volta a ser vinculada na próxima atualização. Se a pasta mudou de lugar de vez, escolha **Esquecer** na aba **Definição** da stack e depois vincule-a de novo a partir do novo lugar com **Nova stack → Usar uma pasta neste computador**.
 
 Uma stack iniciada a partir de uma pasta em outro computador é sempre externa aqui, já que este computador não tem esse caminho.
 
 ### "Alterado fora do Homeport"
 
-Os arquivos compose de uma stack vinculada foram editados fora do Homeport — no seu editor, por um `git pull` — desde a última vez que o Homeport os leu. Escolha **Recarregar** para vê-los como estão. Se você estava editando no Homeport ao mesmo tempo, salvar é recusado com **… mudou fora do Homeport desde que você o abriu**, para que nenhuma das mudanças seja perdida em silêncio: recarregue e refaça a sua edição, ou escolha **Sobrescrever** para manter a sua. Veja [editar uma stack vinculada](/docs/guides/stacks/#editing-a-linked-stack).
+Os arquivos compose de uma stack vinculada foram editados fora do Homeport — no seu editor, por um `git pull` — desde a última vez que o Homeport os leu. Escolha **Recarregar** para vê-los como estão. Se você estava editando no Homeport ao mesmo tempo, salvar é recusado com **… mudou fora do Homeport desde que você o abriu**, para que nenhuma das mudanças seja perdida em silêncio: recarregue e refaça a sua edição, ou escolha **Sobrescrever** para manter a sua. Veja [editar uma stack vinculada](/docs/guides/stacks/#editando-uma-stack-vinculada).
 
 ### Baixar uma imagem privada falha
 
@@ -287,7 +287,7 @@ As unidades de sistema (Podman rootful) só podem ser iniciadas e paradas por um
 
 ### containerd: "não tem permissão para usar o containerd em /run/containerd/containerd.sock"
 
-O socket do containerd pertence ao root. Dê acesso a ele a um grupo com `gid` em `[grpc]` em `/etc/containerd/config.toml`, adicione o seu usuário (ou o usuário SSH) a esse grupo, reinicie o containerd e faça login de novo; [a página do containerd](/docs/hosts/containerd/#letting-your-user-use-the-socket) tem os comandos. O containerd rootless não pode ser acessado de forma alguma: o socket dele só existe dentro do namespace do RootlessKit.
+O socket do containerd pertence ao root. Dê acesso a ele a um grupo com `gid` em `[grpc]` em `/etc/containerd/config.toml`, adicione o seu usuário (ou o usuário SSH) a esse grupo, reinicie o containerd e faça login de novo; [a página do containerd](/docs/hosts/containerd/#permitir-que-o-seu-usuário-use-o-socket) tem os comandos. O containerd rootless não pode ser acessado de forma alguma: o socket dele só existe dentro do namespace do RootlessKit.
 
 ### containerd: "A saída deste contêiner não é registrada"
 
@@ -303,7 +303,7 @@ O download passa pelo serviço Transfer do containerd, estável a partir do cont
 
 ### Incus: "não tem permissão para usar o Incus em /var/lib/incus/unix.socket"
 
-O socket de administração do Incus é para o grupo `incus-admin`, e o `unix.socket.user` restrito, para o grupo `incus`. Adicione o seu usuário (ou o usuário SSH) com `sudo usermod -aG incus-admin "$USER"` e depois saia da sessão e entre de novo, ou reconecte via SSH. Veja [os sockets do Incus](/docs/hosts/incus/#its-sockets).
+O socket de administração do Incus é para o grupo `incus-admin`, e o `unix.socket.user` restrito, para o grupo `incus`. Adicione o seu usuário (ou o usuário SSH) com `sudo usermod -aG incus-admin "$USER"` e depois saia da sessão e entre de novo, ou reconecte via SSH. Veja [os sockets do Incus](/docs/hosts/incus/#os-sockets-dele).
 
 ### Incus: "O Homeport não conseguiu acessar o Incus em …" ao adicionar com um token de confiança
 
@@ -315,7 +315,7 @@ Um token funciona uma vez e expira. Crie um novo no servidor com `incus config t
 
 ### Incus: "… apresentou um certificado com impressão digital …, e não a … confiável"
 
-O certificado do servidor não é aquele em que o Homeport confiou: o Incus foi reinstalado, o certificado dele foi renovado, ou outra coisa responde nesse endereço. Confira a impressão digital no servidor com `incus info`; se for a mostrada, remova o host e adicione-o de novo com um novo token. Veja [certificados fixados](/docs/hosts/incus/#the-servers-certificate-is-pinned).
+O certificado do servidor não é aquele em que o Homeport confiou: o Incus foi reinstalado, o certificado dele foi renovado, ou outra coisa responde nesse endereço. Confira a impressão digital no servidor com `incus info`; se for a mostrada, remova o host e adicione-o de novo com um novo token. Veja [certificados fixados](/docs/hosts/incus/#o-certificado-do-servidor-é-fixado).
 
 ### Incus: "Este host não consegue executar máquinas virtuais"
 

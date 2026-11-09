@@ -37,7 +37,7 @@ Para explorar [clústeres](/docs/clusters/), Homeport necesita un kubeconfig que
 
 ## Opcional: clústeres de Nomad
 
-Para gestionar [clústeres de Nomad](/docs/clusters/nomad/), Homeport necesita acceso de red a la API HTTP de un agente de Nomad (puerto 4646 por defecto) y, cuando el clúster tiene las ACL activadas, un token; consulta [la política de ACL](/docs/clusters/nomad/#acl-policies) que necesita. Habla la API de Nomad por sí mismo, así que la CLI `nomad` no hace falta, y no se instala nada en el clúster.
+Para gestionar [clústeres de Nomad](/docs/clusters/nomad/), Homeport necesita acceso de red a la API HTTP de un agente de Nomad (puerto 4646 por defecto) y, cuando el clúster tiene las ACL activadas, un token; consulta [la política de ACL](/docs/clusters/nomad/#políticas-acl) que necesita. Habla la API de Nomad por sí mismo, así que la CLI `nomad` no hace falta, y no se instala nada en el clúster.
 
 - **Versiones de Nomad**: Nomad 1.6 o posterior. **Editar y ejecutar** parte de la especificación enviada de un job, que Nomad conserva a partir de 1.6.
 

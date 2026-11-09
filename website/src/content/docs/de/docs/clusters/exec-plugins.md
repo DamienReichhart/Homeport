@@ -28,4 +28,4 @@ Schreiben Sie die kubeconfig wie gewohnt – `aws eks update-kubeconfig`, `gclou
 - **„… erfordert eine Anmeldung, die innerhalb von Homeport nicht möglich ist“** – das Plugin möchte einen Browser oder einen Gerätecode (AWS SSO, Azure-Geräteanmeldung, eine abgelaufene `gcloud`-Sitzung). Führen Sie `kubectl` einmal in einem Terminal mit diesem Kontext aus, melden Sie sich dort an und wählen Sie dann **Neu verbinden**: Das Plugin findet dann seine zwischengespeicherte Anmeldung.
 - **„… konnte keine Zugangsdaten für … abrufen“** – es lief, ist aber fehlgeschlagen; **Details** zeigt das Ende seiner Ausgabe. Homeport versucht es von selbst erneut.
 
-Siehe [Fehlerbehebung](/docs/reference/troubleshooting/#clusters) für die anderen Meldungen.
+Siehe [Fehlerbehebung](/docs/reference/troubleshooting/#cluster) für die anderen Meldungen.

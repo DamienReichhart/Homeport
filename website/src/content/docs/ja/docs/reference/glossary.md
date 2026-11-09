@@ -11,15 +11,15 @@ Homeport が接続する Docker Engine で、名前と到達方法（ローカ�
 
 ### Engine kind（エンジンの種類）
 
-ホストが指しているエンジンの種類です。Docker 互換（Docker Engine、または互換 API を通じた Podman）、containerd、Incus のいずれかです。これによってホストに表示されるページが決まり、containerd と Incus のホストには専用のページがあります。Podman は独立した種類ではなく、Homeport が接続のたびに識別します。[エンジンの種類](/docs/hosts/#engine-kinds)を参照してください。
+ホストが指しているエンジンの種類です。Docker 互換（Docker Engine、または互換 API を通じた Podman）、containerd、Incus のいずれかです。これによってホストに表示されるページが決まり、containerd と Incus のホストには専用のページがあります。Podman は独立した種類ではなく、Homeport が接続のたびに識別します。[エンジンの種類](/docs/hosts/#エンジンの種類)を参照してください。
 
 ### Namespace (containerd's)（名前空間）
 
-containerd のホストで、すべてのコンテナ、イメージ、スナップショットが属する空間です。nerdctl は `default`、Kubernetes は `k8s.io`、Docker は `moby` を使います。containerd のホストのページは、名前空間を 1 つずつ表示します。クラスターの Namespace は Kubernetes のものです。[containerd の名前空間](/docs/hosts/containerd/#namespaces)を参照してください。
+containerd のホストで、すべてのコンテナ、イメージ、スナップショットが属する空間です。nerdctl は `default`、Kubernetes は `k8s.io`、Docker は `moby` を使います。containerd のホストのページは、名前空間を 1 つずつ表示します。クラスターの Namespace は Kubernetes のものです。[containerd の名前空間](/docs/hosts/containerd/#名前空間)を参照してください。
 
 ### Snapshot（スナップショット）
 
-containerd のホストでは、ディスク上のファイルのレイヤーです。展開されたイメージのレイヤー、またはコンテナの書き込み可能なレイヤーです。[スナップショット](/docs/hosts/containerd/#snapshots)を参照してください。Incus のホストでは、インスタンスを復元できる保存済みの状態です。[インスタンスのスナップショット](/docs/guides/instances/#snapshots)を参照してください。
+containerd のホストでは、ディスク上のファイルのレイヤーです。展開されたイメージのレイヤー、またはコンテナの書き込み可能なレイヤーです。[スナップショット](/docs/hosts/containerd/#スナップショット)を参照してください。Incus のホストでは、インスタンスを復元できる保存済みの状態です。[インスタンスのスナップショット](/docs/guides/instances/#スナップショット)を参照してください。
 
 ### Instance（インスタンス）
 
@@ -27,15 +27,15 @@ Incus のホストが実行するものです。ホストのカーネル上で L
 
 ### Project (Incus's)（プロジェクト）
 
-Incus のホストで、インスタンス、イメージ、プロファイル、カスタムボリューム、ネットワークが属する空間です。Incus のホストのページはプロジェクトを 1 つずつ表示し、ホストの切り替えメニューの下で選びます。[プロジェクト](/docs/hosts/incus/#projects)を参照してください。
+Incus のホストで、インスタンス、イメージ、プロファイル、カスタムボリューム、ネットワークが属する空間です。Incus のホストのページはプロジェクトを 1 つずつ表示し、ホストの切り替えメニューの下で選びます。[プロジェクト](/docs/hosts/incus/#プロジェクト)を参照してください。
 
 ### Profile（プロファイル）
 
-Incus のホストで、それを指定したインスタンスが共有する構成とデバイスです。[プロファイル](/docs/guides/instances/#profiles)を参照してください。
+Incus のホストで、それを指定したインスタンスが共有する構成とデバイスです。[プロファイル](/docs/guides/instances/#プロファイル)を参照してください。
 
 ### Trust token（信頼トークン）
 
-Incus サーバーで `incus config trust add` が出力するもので、HTTPS 経由でそのサーバーを追加するために、Homeport に一度だけ貼り付けます。[信頼トークン](/docs/hosts/incus/#over-https-with-a-trust-token)を参照してください。
+Incus サーバーで `incus config trust add` が出力するもので、HTTPS 経由でそのサーバーを追加するために、Homeport に一度だけ貼り付けます。[信頼トークン](/docs/hosts/incus/#信頼トークンを使った-https-経由)を参照してください。
 
 ### Pod（Podman Pod）
 
@@ -51,7 +51,7 @@ Homeport が API を通じて接続する Kubernetes クラスターまたは No
 
 ### Allocation（アロケーション）
 
-Nomad クラスターで、ジョブのタスクグループをクライアントノードに 1 回配置したもので、そのタスクを実行します。ログとシェルは Nomad のサーバーを経由してノードに届きます。[ログとシェル](/docs/clusters/nomad/#logs-and-shell)を参照してください。
+Nomad クラスターで、ジョブのタスクグループをクライアントノードに 1 回配置したもので、そのタスクを実行します。ログとシェルは Nomad のサーバーを経由してノードに届きます。[ログとシェル](/docs/clusters/nomad/#ログとシェル)を参照してください。
 
 ### Swarm（Swarm）
 
@@ -67,7 +67,7 @@ Helm のリリースです。クラスター上へのチャートの 1 回のイ
 
 ### Chart repository（チャートリポジトリ）
 
-helm がチャートをダウンロードするサーバーで、このコンピューター上の helm 自身の一覧（`helm repo list` が表示するもの）にあります。OCI レジストリ上のチャートは、代わりに `oci://` の参照でインストールします。[チャートリポジトリ](/docs/clusters/helm/#chart-repositories)を参照してください。
+helm がチャートをダウンロードするサーバーで、このコンピューター上の helm 自身の一覧（`helm repo list` が表示するもの）にあります。OCI レジストリ上のチャートは、代わりに `oci://` の参照でインストールします。[チャートリポジトリ](/docs/clusters/helm/#チャートリポジトリ)を参照してください。
 
 ### Node（ノード）
 
@@ -83,7 +83,7 @@ Swarm が実行するものです。イメージ、その設定、レプリカ�
 
 ### Stack（スタック）
 
-ホスト上で動いている Compose プロジェクト、または Swarm 上で動いている Swarm のスタックで、プロジェクト名で識別されます。どのスタックも、管理スタック、リンクスタック、同期スタック、外部スタックのいずれかです。[スタック](/docs/guides/stacks/)と [Swarm のスタック](/docs/guides/swarm/#swarm-stacks)を参照してください。
+ホスト上で動いている Compose プロジェクト、または Swarm 上で動いている Swarm のスタックで、プロジェクト名で識別されます。どのスタックも、管理スタック、リンクスタック、同期スタック、外部スタックのいずれかです。[スタック](/docs/guides/stacks/)と [Swarm のスタック](/docs/guides/swarm/#swarm-スタック)を参照してください。
 
 ### Managed Stack（管理スタック）
 
@@ -91,7 +91,7 @@ compose の定義と環境変数を Homeport が保持しているスタック�
 
 ### Linked Stack（リンクスタック）
 
-compose ファイルがこのコンピューター上のフォルダーにあるスタックです。Homeport はフォルダーと compose ファイルの場所を保持し、ファイルをその場で読み書きし、そのフォルダーをプロジェクトディレクトリとしてデプロイするため、`build:`、`env_file:`、相対パスが使えます。動作中のコンテナの compose ラベルから見つかるか、フォルダーから作成されます。ファイルが見つからない間は外部スタックになります。[リンクスタック](/docs/guides/stacks/#linked-stacks)を参照してください。
+compose ファイルがこのコンピューター上のフォルダーにあるスタックです。Homeport はフォルダーと compose ファイルの場所を保持し、ファイルをその場で読み書きし、そのフォルダーをプロジェクトディレクトリとしてデプロイするため、`build:`、`env_file:`、相対パスが使えます。動作中のコンテナの compose ラベルから見つかるか、フォルダーから作成されます。ファイルが見つからない間は外部スタックになります。[リンクスタック](/docs/guides/stacks/#リンクスタック)を参照してください。
 
 ### Synced Stack（同期スタック）
 
@@ -115,19 +115,19 @@ compose の定義を与えて、外部スタックを管理スタックにする
 
 ### Registry login（レジストリのログイン情報）
 
-Docker Hub や GHCR など 1 つのコンテナレジストリのために Homeport が保持するユーザー名とパスワードまたはアクセストークンで、すべてのホストでプル、プッシュ、ビルドに使われます。[設定](/docs/guides/settings/#registries)を参照してください。
+Docker Hub や GHCR など 1 つのコンテナレジストリのために Homeport が保持するユーザー名とパスワードまたはアクセストークンで、すべてのホストでプル、プッシュ、ビルドに使われます。[設定](/docs/guides/settings/#レジストリ)を参照してください。
 
 ### Helper container（ヘルパーコンテナ）
 
-エンジン API ではボリュームを読み込めないため、ボリュームを開く（閲覧、バックアップ、復元、複製する）ために Homeport がホスト上に作成する短命の `busybox` コンテナです。ネットワークを持たず、書き込む必要がない限りボリュームを読み取り専用でマウントし、操作が終わると削除されます。「コンテナ」の一覧や「イベント」ページに表示されることはありません。[ボリュームのファイルの閲覧](/docs/guides/volumes-networks/#the-helper-container)を参照してください。
+エンジン API ではボリュームを読み込めないため、ボリュームを開く（閲覧、バックアップ、復元、複製する）ために Homeport がホスト上に作成する短命の `busybox` コンテナです。ネットワークを持たず、書き込む必要がない限りボリュームを読み取り専用でマウントし、操作が終わると削除されます。「コンテナ」の一覧や「イベント」ページに表示されることはありません。[ボリュームのファイルの閲覧](/docs/guides/volumes-networks/#ヘルパーコンテナ)を参照してください。
 
 ### Board（ボード）
 
-接続中のすべてのホストのコンテナを 1 つの表にまとめ、それぞれにホストのラベルを付けて表示するページです。[ボード](/docs/guides/overview/#board)を参照してください。
+接続中のすべてのホストのコンテナを 1 つの表にまとめ、それぞれにホストのラベルを付けて表示するページです。[ボード](/docs/guides/overview/#ボード)を参照してください。
 
 ### Command palette（コマンドパレット）
 
-<kbd>Mod</kbd> <kbd>K</kbd> で開く検索ボックスです。ページへの移動、ホストの切り替え、コマンドの実行、接続中のどのホストにあるコンテナ、イメージ、ボリューム、ネットワーク、スタックの検索もできます。[キーボード](/docs/guides/keyboard/#command-palette)を参照してください。
+<kbd>Mod</kbd> <kbd>K</kbd> で開く検索ボックスです。ページへの移動、ホストの切り替え、コマンドの実行、接続中のどのホストにあるコンテナ、イメージ、ボリューム、ネットワーク、スタックの検索もできます。[キーボード](/docs/guides/keyboard/#コマンドパレット)を参照してください。
 
 ### Engine（エンジン）
 

@@ -13,7 +13,7 @@ import { DocScreenshot } from '@/features/docs';
 Homeport에는 자체 SSH 클라이언트가 있습니다. 서버에 로그인한 다음 엔진의 Unix 소켓으로 채널을 포워딩합니다. `docker -H ssh://…`와 같은 일을 하지만, 이 컴퓨터에 `ssh` 프로그램이나 `docker`가 필요하지 않습니다.
 
 - 키는 메모리에서만 복호화되고 디스크에 기록되지 않으므로 Windows, macOS, Linux에서 똑같이 작동합니다.
-- Homeport는 `~/.ssh/known_hosts`를 읽지 않습니다. 서버 키는 Homeport 안에서 호스트별로 신뢰합니다. 점프 서버를 거쳐야만 접근할 수 있는 서버는 Homeport의 `ProxyJump`인 [배스천](#through-a-bastion)으로 추가합니다.
+- Homeport는 `~/.ssh/known_hosts`를 읽지 않습니다. 서버 키는 Homeport 안에서 호스트별로 신뢰합니다. 점프 서버를 거쳐야만 접근할 수 있는 서버는 Homeport의 `ProxyJump`인 [배스천](#배스천을-통한-연결)으로 추가합니다.
 - 서버가 Unix 소켓으로의 포워딩을 허용해야 합니다. OpenSSH는 기본적으로 허용합니다(`AllowStreamLocalForwarding yes`).
 
 ## SSH 호스트 추가
@@ -51,7 +51,7 @@ Homeport에는 자체 SSH 클라이언트가 있습니다. 서버에 로그인�
 | `User`, `Port`      | **사용자**(기본값은 로컬 사용자 이름)와 **포트**(`22`).                                        |
 | `IdentityFile`      | **기존 키**: 읽을 수 있는 첫 번째 파일. `~`와 `%h`, `%r`, `%u`, `%p`를 확장합니다.             |
 | `IdentityFile` 없음 | **ssh-agent**.                                                                                 |
-| `ProxyJump a,b`     | [배스천](#through-a-bastion) 두 개를 순서대로. 각각 같은 파일에서 찾습니다. 순환은 보고됩니다. |
+| `ProxyJump a,b`     | [배스천](#배스천을-통한-연결) 두 개를 순서대로. 각각 같은 파일에서 찾습니다. 순환은 보고됩니다. |
 
 **원격 소켓 경로**는 `/var/run/docker.sock`으로 시작합니다. rootless Docker나 Podman이라면 미리 보기에서 바꾸세요. 암호화된 키는 미리 보기에서 암호 문구를 묻습니다.
 
@@ -74,7 +74,7 @@ Homeport는 실행 중인 SSH 에이전트에 키를 요청하며, 아무것도 
 Windows에서는 먼저 OpenSSH Authentication Agent 서비스에 요청하고, 그다음 PuTTY의 **Pageant**나 KeeAgent, PuTTY 지원을 켠 gpg-agent처럼 Pageant를 대신하는 도구에 요청합니다. 어느 쪽에 있는 키든 작동합니다. OpenSSH 에이전트가 실행 중이 아니거나 서버가 받아들이는 키가 없으면 Homeport는 Pageant의 키도 시도합니다.
 
 <Aside>
-  ssh-agent는 [OS 키체인](/docs/requirements/#optional-an-os-keychain) 없이 작동하는 유일한 SSH
+  ssh-agent는 [OS 키체인](/docs/requirements/#선택-사항-os-키체인) 없이 작동하는 유일한 SSH
   방식입니다. Homeport를 데스크톱 메뉴에서 시작했다면 세션의 에이전트를 Homeport가 사용할 수 있는지
   확인하세요.
 </Aside>

@@ -84,7 +84,7 @@ containerd no guarda logs: la herramienta que inicia una tarea decide adónde va
 | Kubernetes (`k8s.io`)  | `/var/log/pods/<pod>/<container>/N.log`, indicado en el registro que CRI guarda de él            | ese archivo, en seguimiento                                |
 | `ctr` y otros clientes | adonde lo dirigieran, normalmente a ninguna parte                                                | **La salida de este contenedor no se registra**, y por qué |
 
-Los contenedores de nerdctl que registran con otro driver (journald, fluentd) lo nombran en su lugar. Homeport lee el archivo con `tail` en la máquina del host (consulta [más abajo](#what-runs-on-the-host)); los archivos de log suelen pertenecer a root, así que el usuario SSH debe tener permiso para leerlos.
+Los contenedores de nerdctl que registran con otro driver (journald, fluentd) lo nombran en su lugar. Homeport lee el archivo con `tail` en la máquina del host (consulta [más abajo](#lo-que-se-ejecuta-en-el-host)); los archivos de log suelen pertenecer a root, así que el usuario SSH debe tener permiso para leerlos.
 
 ## Un terminal en un contenedor
 
@@ -115,7 +115,7 @@ Todo lo anterior pasa por la API de containerd, salvo los logs y los terminales,
 | Logs        | `tail -n <lines> [-F] -- '<log file>'`; para un contenedor de Kubernetes sin registro de CRI, antes un `ls` de su carpeta de logs |
 | Un terminal | `mktemp -d`, `mkfifo -m 600` para dos FIFO en esa carpeta, `cat` a través de ellos, y `rm -rf` de la carpeta                      |
 
-Un socket local en macOS o Windows no puede ejecutarlos, y entonces los logs y los terminales indican que necesitan SSH. La [página de seguridad](/docs/reference/security/#what-homeport-runs-on-your-hosts) lista todos los comandos que Homeport ejecuta en un host.
+Un socket local en macOS o Windows no puede ejecutarlos, y entonces los logs y los terminales indican que necesitan SSH. La [página de seguridad](/docs/reference/security/#lo-que-homeport-ejecuta-en-tus-hosts) lista todos los comandos que Homeport ejecuta en un host.
 
 ## Eventos
 

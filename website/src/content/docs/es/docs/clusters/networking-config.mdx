@@ -34,7 +34,7 @@ La pestaña **Reglas** de un Ingress es donde se comprueba el enrutamiento: qué
   caption="Una clave mostrada; la otra sigue oculta hasta que lo pidas."
 />
 
-La página de un Secret muestra su tipo y cada clave con su tamaño, oculta. **Mostrar** obtiene ese único valor del clúster y lo muestra descodificado (los valores binarios en base64), con **Copiar** y **Ocultar**. Los valores nunca forman parte de una lista, de la página de un Secret ni de su YAML; uno mostrado no se almacena en caché, no se guarda ni se registra en los logs, y vuelve a ocultarse cuando sales de la página. Consulta [Seguridad y tus datos](/docs/reference/security/#clusters).
+La página de un Secret muestra su tipo y cada clave con su tamaño, oculta. **Mostrar** obtiene ese único valor del clúster y lo muestra descodificado (los valores binarios en base64), con **Copiar** y **Ocultar**. Los valores nunca forman parte de una lista, de la página de un Secret ni de su YAML; uno mostrado no se almacena en caché, no se guarda ni se registra en los logs, y vuelve a ocultarse cuando sales de la página. Consulta [Seguridad y tus datos](/docs/reference/security/#clústeres).
 
 La pestaña **YAML** de un ConfigMap tiene **Editar**, para cambiarlo mediante una previsualización y server-side apply ([Aplicar y editar YAML](/docs/clusters/yaml/)). Los Secrets no se editan en Homeport, ya que nunca muestra todos sus valores a la vez; aplica en su lugar el manifiesto del Secret.
 

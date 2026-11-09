@@ -108,7 +108,7 @@ Der Tab **Logs** verfolgt seine Logs, und **Untersuchen** zeigt seine vollständ
 
 **Bearbeiten** auf der Seite eines Services ändert sein Image, seine Umgebung und seine Replikate, und nur diese: Seine Ports, Mounts, Netzwerke und alles andere werden unverändert zurückgesendet. Der Swarm überführt dann seine Tasks nach und nach in die neuen Einstellungen, und die Seite zeigt den Fortschritt des Updates. **Alle Tasks neu bereitstellen** startet sie neu, auch wenn sich nichts geändert hat, und pullt das Image erneut; so wird ein neuer Push desselben Tags ausgerollt. Hat jemand anderes den Service aktualisiert, seit Sie ihn geöffnet haben, sagt Homeport das, statt dessen Änderung zu überschreiben: Aktualisieren Sie und bearbeiten Sie erneut.
 
-Private Images: Die Nodes pullen Images selbst, daher braucht ein privates Image eine Anmeldung auf jedem Node (`docker login` dort) oder einen Stack, der mit Ihren Registry-Zugangsdaten bereitgestellt wird (siehe [Stacks bereitstellen](#deploying-stacks-to-a-swarm)).
+Private Images: Die Nodes pullen Images selbst, daher braucht ein privates Image eine Anmeldung auf jedem Node (`docker login` dort) oder einen Stack, der mit Ihren Registry-Zugangsdaten bereitgestellt wird (siehe [Stacks bereitstellen](#stacks-in-einem-swarm-bereitstellen)).
 
 ## Tasks
 

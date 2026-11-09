@@ -11,7 +11,7 @@ Um Docker Engine ao qual o Homeport se conecta, definido por um nome e pela form
 
 ### Engine kind (pt-BR: _tipo de Engine_)
 
-O tipo de Engine para o qual um host aponta: compatível com Docker (Docker Engine, ou Podman pela sua API compatível), containerd ou Incus. Ele decide quais páginas um host mostra: os hosts containerd e Incus ganham páginas próprias. O Podman não é um tipo à parte: o Homeport o reconhece cada vez que se conecta. Veja [Tipos de Engine](/docs/hosts/#engine-kinds).
+O tipo de Engine para o qual um host aponta: compatível com Docker (Docker Engine, ou Podman pela sua API compatível), containerd ou Incus. Ele decide quais páginas um host mostra: os hosts containerd e Incus ganham páginas próprias. O Podman não é um tipo à parte: o Homeport o reconhece cada vez que se conecta. Veja [Tipos de Engine](/docs/hosts/#tipos-de-engine).
 
 ### Namespace (containerd's) (pt-BR: _namespace do containerd_)
 
@@ -27,15 +27,15 @@ O que um host Incus executa: um contêiner de sistema, que inicializa uma distri
 
 ### Project (Incus's) (pt-BR: _projeto_)
 
-Em um host Incus, o espaço em que vivem as suas instâncias, imagens, perfis, volumes personalizados e redes. As páginas de um host Incus mostram um de cada vez, escolhido abaixo do seletor de hosts. Veja [projetos](/docs/hosts/incus/#projects).
+Em um host Incus, o espaço em que vivem as suas instâncias, imagens, perfis, volumes personalizados e redes. As páginas de um host Incus mostram um de cada vez, escolhido abaixo do seletor de hosts. Veja [projetos](/docs/hosts/incus/#projetos).
 
 ### Profile (pt-BR: _perfil_)
 
-Em um host Incus, configurações e dispositivos compartilhados pelas instâncias que o listam. Veja [perfis](/docs/guides/instances/#profiles).
+Em um host Incus, configurações e dispositivos compartilhados pelas instâncias que o listam. Veja [perfis](/docs/guides/instances/#perfis).
 
 ### Trust token (pt-BR: _token de confiança_)
 
-O que `incus config trust add` exibe em um servidor Incus, colado uma vez no Homeport para adicionar esse servidor via HTTPS. Veja [tokens de confiança](/docs/hosts/incus/#over-https-with-a-trust-token).
+O que `incus config trust add` exibe em um servidor Incus, colado uma vez no Homeport para adicionar esse servidor via HTTPS. Veja [tokens de confiança](/docs/hosts/incus/#via-https-com-um-token-de-confiança).
 
 ### Pod (pt-BR: _pod do Podman_)
 
@@ -51,7 +51,7 @@ Um cluster Kubernetes ou um cluster Nomad ao qual o Homeport se conecta pela API
 
 ### Allocation (pt-BR: _alocação_)
 
-Em um cluster Nomad, uma colocação do grupo de tarefas de um job em um nó cliente, que executa as suas tarefas. Os logs dela e um shell nela passam pelos servidores do Nomad até o nó. Veja [logs e shell](/docs/clusters/nomad/#logs-and-shell).
+Em um cluster Nomad, uma colocação do grupo de tarefas de um job em um nó cliente, que executa as suas tarefas. Os logs dela e um shell nela passam pelos servidores do Nomad até o nó. Veja [logs e shell](/docs/clusters/nomad/#logs-e-shell).
 
 ### Swarm (pt-BR: _Swarm_)
 
@@ -67,7 +67,7 @@ Uma release do Helm: uma instalação de um chart em um cluster, com um nome no 
 
 ### Chart repository (pt-BR: _repositório de charts_)
 
-Um servidor do qual o helm baixa charts, na lista própria do helm neste computador — a que `helm repo list` mostra. Os charts em um registro OCI são instalados pela sua referência `oci://`. Veja [repositórios de charts](/docs/clusters/helm/#chart-repositories).
+Um servidor do qual o helm baixa charts, na lista própria do helm neste computador — a que `helm repo list` mostra. Os charts em um registro OCI são instalados pela sua referência `oci://`. Veja [repositórios de charts](/docs/clusters/helm/#repositórios-de-charts).
 
 ### Node (pt-BR: _nó_)
 
@@ -83,7 +83,7 @@ Uma vaga de um serviço em um nó, executada ali como um contêiner. Quando um s
 
 ### Stack (pt-BR: _stack_)
 
-Um projeto Compose em execução em um host, ou uma stack swarm em execução em um Swarm, identificada pelo nome do projeto. Toda stack é gerenciada, vinculada, sincronizada ou externa. Veja [Stacks](/docs/guides/stacks/) e [stacks swarm](/docs/guides/swarm/#swarm-stacks).
+Um projeto Compose em execução em um host, ou uma stack swarm em execução em um Swarm, identificada pelo nome do projeto. Toda stack é gerenciada, vinculada, sincronizada ou externa. Veja [Stacks](/docs/guides/stacks/) e [stacks swarm](/docs/guides/swarm/#stacks-do-swarm).
 
 ### Managed Stack (pt-BR: _stack gerenciada_)
 
@@ -91,7 +91,7 @@ Uma stack cuja definição compose e cujo ambiente o Homeport guarda, para que e
 
 ### Linked Stack (pt-BR: _stack vinculada_)
 
-Uma stack cujos arquivos compose são uma pasta deste computador. O Homeport guarda onde estão a pasta e os seus arquivos compose, lê e grava os arquivos no lugar e implanta com essa pasta como diretório do projeto, para que `build:`, `env_file:` e os caminhos relativos funcionem. É encontrada pelos rótulos compose dos contêineres em execução, ou criada a partir de uma pasta. Ela se torna externa enquanto os seus arquivos estão faltando. Veja [Stacks vinculadas](/docs/guides/stacks/#linked-stacks).
+Uma stack cujos arquivos compose são uma pasta deste computador. O Homeport guarda onde estão a pasta e os seus arquivos compose, lê e grava os arquivos no lugar e implanta com essa pasta como diretório do projeto, para que `build:`, `env_file:` e os caminhos relativos funcionem. É encontrada pelos rótulos compose dos contêineres em execução, ou criada a partir de uma pasta. Ela se torna externa enquanto os seus arquivos estão faltando. Veja [Stacks vinculadas](/docs/guides/stacks/#stacks-vinculadas).
 
 ### Synced Stack (pt-BR: _stack sincronizada_)
 
@@ -115,19 +115,19 @@ Transformar uma stack externa em uma stack gerenciada, fornecendo a sua definiç
 
 ### Registry login (pt-BR: _login de registro_)
 
-O nome de usuário e a senha ou o token de acesso que o Homeport guarda para um registro de contêineres, como o Docker Hub ou o GHCR, e usa em todos os hosts para baixar, enviar e fazer build. Veja [Configurações](/docs/guides/settings/#registries).
+O nome de usuário e a senha ou o token de acesso que o Homeport guarda para um registro de contêineres, como o Docker Hub ou o GHCR, e usa em todos os hosts para baixar, enviar e fazer build. Veja [Configurações](/docs/guides/settings/#registros).
 
 ### Helper container (pt-BR: _contêiner auxiliar_)
 
-Um contêiner `busybox` de curta duração que o Homeport cria em um host para abrir um volume — para navegar por ele, fazer backup, restaurá-lo ou cloná-lo —, já que a API do Engine não consegue ler um. Ele não tem rede, monta o volume como somente leitura, a menos que precise gravar nele, e é removido quando a ação termina. Ele nunca aparece na lista Contêineres nem na página Eventos. Veja [Navegar pelos arquivos de um volume](/docs/guides/volumes-networks/#the-helper-container).
+Um contêiner `busybox` de curta duração que o Homeport cria em um host para abrir um volume — para navegar por ele, fazer backup, restaurá-lo ou cloná-lo —, já que a API do Engine não consegue ler um. Ele não tem rede, monta o volume como somente leitura, a menos que precise gravar nele, e é removido quando a ação termina. Ele nunca aparece na lista Contêineres nem na página Eventos. Veja [Navegar pelos arquivos de um volume](/docs/guides/volumes-networks/#o-contêiner-auxiliar).
 
 ### Board (pt-BR: _Quadro_)
 
-A página que lista os contêineres de todos os hosts conectados em uma única tabela, cada um marcado com o seu host. Veja [Quadro](/docs/guides/overview/#board).
+A página que lista os contêineres de todos os hosts conectados em uma única tabela, cada um marcado com o seu host. Veja [Quadro](/docs/guides/overview/#quadro).
 
 ### Command palette (pt-BR: _paleta de comandos_)
 
-A caixa de busca aberta com <kbd>Mod</kbd> <kbd>K</kbd>: ir para uma página, trocar de host, executar um comando ou encontrar um contêiner, imagem, volume, rede ou stack em qualquer host conectado. Veja [Teclado](/docs/guides/keyboard/#command-palette).
+A caixa de busca aberta com <kbd>Mod</kbd> <kbd>K</kbd>: ir para uma página, trocar de host, executar um comando ou encontrar um contêiner, imagem, volume, rede ou stack em qualquer host conectado. Veja [Teclado](/docs/guides/keyboard/#paleta-de-comandos).
 
 ### Engine (pt-BR: _Engine_)
 

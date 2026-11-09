@@ -42,7 +42,7 @@ La exploración es de solo lectura. Nada de lo que hagas aquí puede cambiar el 
 
 La API del Engine no puede leer un volumen, así que Homeport lo abre con un **contenedor auxiliar** de corta duración: un contenedor `busybox:1.37` sin red y con un sistema de archivos de solo lectura, que monta el volumen en solo lectura. Homeport lo elimina en cuanto cierras el explorador o sales. Si Homeport no puede hacerlo (se bloqueó, o el host desapareció), el contenedor auxiliar se detiene y el Engine lo elimina en menos de una hora, y Homeport elimina lo que quede la próxima vez que este equipo se conecte al host. Los contenedores auxiliares nunca aparecen en la lista Contenedores, en el **Usado por** de un volumen ni en la página Eventos.
 
-Si el host no tiene `busybox:1.37` (unos 2 MB), Homeport lo indica y solo lo descarga cuando eliges **Descargar busybox:1.37**, con tus [inicios de sesión de registros](/docs/guides/settings/#registries). Vuelve a eliminar la imagen cuando termina, salvo que otra cosa la use. Un host sin acceso a internet no puede descargarla; llévala tú mismo:
+Si el host no tiene `busybox:1.37` (unos 2 MB), Homeport lo indica y solo lo descarga cuando eliges **Descargar busybox:1.37**, con tus [inicios de sesión de registros](/docs/guides/settings/#registros). Vuelve a eliminar la imagen cuando termina, salvo que otra cosa la use. Un host sin acceso a internet no puede descargarla; llévala tú mismo:
 
 ```sh
 docker pull busybox:1.37
@@ -72,15 +72,15 @@ Ambas operaciones muestran su progreso y se pueden cancelar. Una copia de seguri
 
 Una copia de seguridad de un volumen en el que escribe un contenedor en ejecución — una base de datos, por ejemplo — puede ser incoherente. Homeport nombra los contenedores en ejecución que lo usan, y eliges **Hacer la copia de seguridad de todos modos** o detenerlos durante la copia de seguridad. Una restauración siempre los detiene antes. En ambos casos, Homeport los vuelve a iniciar después.
 
-Las copias de seguridad y las restauraciones usan el mismo [contenedor auxiliar](#the-helper-container) que la exploración, que monta el volumen en solo lectura para una copia de seguridad. El archivo viaja por la conexión del host y nunca se guarda entero en memoria, así que los volúmenes grandes y los hosts remotos también funcionan. No se escribe nada en el host salvo el volumen que se restaura.
+Las copias de seguridad y las restauraciones usan el mismo [contenedor auxiliar](#el-contenedor-auxiliar) que la exploración, que monta el volumen en solo lectura para una copia de seguridad. El archivo viaja por la conexión del host y nunca se guarda entero en memoria, así que los volúmenes grandes y los hosts remotos también funcionan. No se escribe nada en el host salvo el volumen que se restaura.
 
 ### Clonar un volumen
 
 **Clonar…**, en el menú **⋯** de la fila de un volumen, lo copia en un volumen nuevo del mismo host, por ejemplo para probar una migración o una nueva versión de una imagen con una copia de datos reales. La copia se llama `<name>-copy` salvo que lo cambies, y queda seleccionada en la lista una vez creada.
 
-Conserva los propietarios y los permisos de los archivos, y el driver, las opciones del driver y las etiquetas del origen, salvo las de Compose, así que la copia no pertenece a ningún stack. El origen se monta en solo lectura en el [contenedor auxiliar](#the-helper-container) y nunca cambia. Como con una copia de seguridad, Homeport nombra los contenedores en ejecución que usan el origen; copia de todos modos, o detenlos durante la copia.
+Conserva los propietarios y los permisos de los archivos, y el driver, las opciones del driver y las etiquetas del origen, salvo las de Compose, así que la copia no pertenece a ningún stack. El origen se monta en solo lectura en el [contenedor auxiliar](#el-contenedor-auxiliar) y nunca cambia. Como con una copia de seguridad, Homeport nombra los contenedores en ejecución que usan el origen; copia de todos modos, o detenlos durante la copia.
 
-Si la copia falla — por ejemplo, porque el disco está lleno —, Homeport elimina la copia incompleta y lo indica, con el error en **Detalles**. Para copiar un volumen a otro host, [haz una copia de seguridad](#backing-up-and-restoring) y restaura allí el archivo.
+Si la copia falla — por ejemplo, porque el disco está lleno —, Homeport elimina la copia incompleta y lo indica, con el error en **Detalles**. Para copiar un volumen a otro host, [haz una copia de seguridad](#hacer-y-restaurar-copias-de-seguridad) y restaura allí el archivo.
 
 ### Crear un volumen
 

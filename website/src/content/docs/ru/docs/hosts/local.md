@@ -17,7 +17,7 @@ Homeport ищет работающие движки в обычных места
 | Colima                   | `~/.colima/default/docker.sock`                                                                               | —                                 |
 | OrbStack                 | `~/.orbstack/run/docker.sock`                                                                                 | —                                 |
 | Rancher Desktop          | `~/.rd/docker.sock`                                                                                           | —                                 |
-| Podman                   | `$XDG_RUNTIME_DIR/podman/podman.sock`, `/run/podman/podman.sock`; [машины в macOS](#podman-machines-on-macos) | `//./pipe/podman-machine-default` |
+| Podman                   | `$XDG_RUNTIME_DIR/podman/podman.sock`, `/run/podman/podman.sock`; [машины в macOS](#машины-podman-в-macos) | `//./pipe/podman-machine-default` |
 
 Каждый кандидат проверяется запросом версии у движка, поэтому в списке только работающие движки. Если несколько путей ведут к одному сокету — в macOS `/var/run/docker.sock` обычно указывает на Docker Desktop, OrbStack или Rancher Desktop, — движок показывается один раз, под первым найденным именем.
 

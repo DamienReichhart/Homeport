@@ -12,7 +12,7 @@ Homeport は [github.com/DamienReichhart/Homeport](https://github.com/DamienReic
 - **設定** に表示される Homeport のバージョンとプラットフォーム（例: `v0.2.0 · macos/aarch64`）
 - ホストの種類（ローカル、SSH、TLS、TCP）とエンジンのバージョン
 - 何をしたか、何を期待したか、何が起きたか（正確なメッセージが最も役に立ちます）
-- [ログファイル](/docs/reference/security/#logs)の中の関連する部分
+- [ログファイル](/docs/reference/security/#ログ)の中の関連する部分
 
 セキュリティの問題は、[GitHub の脆弱性報告](https://github.com/DamienReichhart/Homeport/security/advisories/new)を通じて非公開で報告してください。
 
@@ -58,7 +58,7 @@ Homeport は [github.com/DamienReichhart/Homeport](https://github.com/DamienReic
 
 どの文字列でも、すべての言語に、同じ `{arguments}` とタグ、そしてその言語が必要とするすべての複数形がそろうまで、`bun run check`（したがって CI）は失敗します。
 
-- **アプリのテキスト**: キーを `src/shared/i18n/en/<namespace>.ts` に追加し（[アプリにテキストを追加する](#adding-text-to-the-app)を参照）、続いてほかのすべての言語フォルダー（`fr/`、`de/`、`zh-CN/`…）の同名のファイルにも追加します。できれば翻訳してください。できない場合は英語のテキストをそこにコピーし、翻訳者が後で対応できるよう、プルリクエストでその旨を書いてください。キーを省くことは決してしないでください。
+- **アプリのテキスト**: キーを `src/shared/i18n/en/<namespace>.ts` に追加し（[アプリにテキストを追加する](#アプリにテキストを追加する)を参照）、続いてほかのすべての言語フォルダー（`fr/`、`de/`、`zh-CN/`…）の同名のファイルにも追加します。できれば翻訳してください。できない場合は英語のテキストをそこにコピーし、翻訳者が後で対応できるよう、プルリクエストでその旨を書いてください。キーを省くことは決してしないでください。
 - **エラーメッセージやヒント**: クレートの `messages!` ブロックで宣言して `bun run bindings` を実行すると、`en/errors.json` が書き出されます。その後、各言語の `errors.json` にキーを追加します。オペレーティングシステムが表示するテキスト（トレイのメニューと通知）も、`native.` キーと `native.json` で同じように扱います。
 - **Web サイトのテキスト**（ホーム、ダウンロード、変更履歴、ヘッダーとフッター）: `website/src/core/i18n/strings/en/` の適切なファイル（`site`、`home`、`download`、`changelog`）と、ほかのすべての言語のフォルダーの同じファイルにキーを追加します。どれかに欠けていると `astro check` が失敗します。ドキュメントのサイドバーのラベルは `website/src/app/config/sidebar/<code>.ts` に置きます。
 - **ドキュメントのページ**: 英語のページは `website/src/content/docs/docs/` にあります。変更したときは、同じプルリクエストで、`website/src/content/docs/fr/docs/` の同じパスにあるフランス語のページも更新してください。ほかの言語では、誰かが翻訳するまで、注記付きで英語のページが表示されます。

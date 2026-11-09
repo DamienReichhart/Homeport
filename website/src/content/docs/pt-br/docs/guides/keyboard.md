@@ -3,7 +3,7 @@ title: Teclado
 description: Use o Homeport sem o mouse — a paleta de comandos e a pesquisa em todos os hosts, atalhos para cada página e cada host, e a folha de ajuda que os lista.
 ---
 
-O Homeport pode ser usado pelo teclado. Pressione <kbd>Mod</kbd> <kbd>K</kbd> para abrir a [paleta de comandos](#command-palette) e <kbd>?</kbd> em qualquer página para ver todos os atalhos que funcionam ali.
+O Homeport pode ser usado pelo teclado. Pressione <kbd>Mod</kbd> <kbd>K</kbd> para abrir a [paleta de comandos](#paleta-de-comandos) e <kbd>?</kbd> em qualquer página para ver todos os atalhos que funcionam ali.
 
 **Mod**, abaixo, significa <kbd>⌘</kbd> no macOS e <kbd>Ctrl</kbd> no Windows e no Linux; no macOS, <kbd>Alt</kbd> é <kbd>⌥</kbd>.
 

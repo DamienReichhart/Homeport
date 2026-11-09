@@ -84,7 +84,7 @@ containerd bewahrt keine Logs auf: Das Werkzeug, das einen Task startet, entsche
 | Kubernetes (`k8s.io`)    | `/var/log/pods/<pod>/<container>/N.log`, genannt im CRI-Eintrag dazu                  | diese Datei, fortlaufend verfolgt                                     |
 | `ctr` und andere Clients | wohin auch immer sie sie geleitet haben, meist nirgendwohin                           | **Die Ausgabe dieses Containers wird nicht aufgezeichnet**, und warum |
 
-nerdctl-Container, die an einen anderen Treiber loggen (journald, fluentd), nennen stattdessen diesen. Homeport liest die Datei mit `tail` auf dem Rechner des Hosts (siehe [unten](#what-runs-on-the-host)); Logdateien gehören meist root, daher muss der SSH-Benutzer sie lesen dürfen.
+nerdctl-Container, die an einen anderen Treiber loggen (journald, fluentd), nennen stattdessen diesen. Homeport liest die Datei mit `tail` auf dem Rechner des Hosts (siehe [unten](#was-auf-dem-host-ausgeführt-wird)); Logdateien gehören meist root, daher muss der SSH-Benutzer sie lesen dürfen.
 
 ## Ein Terminal in einem Container
 
@@ -115,7 +115,7 @@ Alles oben Genannte läuft über die API von containerd, außer Logs und Termina
 | Logs         | `tail -n <lines> [-F] -- '<log file>'`; für einen Kubernetes-Container ohne CRI-Eintrag zuerst `ls` seines Logordners |
 | Ein Terminal | `mktemp -d`, `mkfifo -m 600` für zwei FIFOs in diesem Ordner, `cat` durch sie hindurch und `rm -rf` des Ordners       |
 
-Ein lokaler Socket unter macOS oder Windows kann sie nicht ausführen, und Logs und Terminals sagen dann, dass sie SSH brauchen. Die [Sicherheitsseite](/docs/reference/security/#what-homeport-runs-on-your-hosts) listet jeden Befehl auf, den Homeport auf einem Host ausführt.
+Ein lokaler Socket unter macOS oder Windows kann sie nicht ausführen, und Logs und Terminals sagen dann, dass sie SSH brauchen. Die [Sicherheitsseite](/docs/reference/security/#was-homeport-auf-ihren-hosts-ausführt) listet jeden Befehl auf, den Homeport auf einem Host ausführt.
 
 ## Ereignisse
 

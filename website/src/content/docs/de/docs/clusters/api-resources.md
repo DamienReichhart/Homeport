@@ -27,4 +27,4 @@ Klicken Sie auf ein Objekt, um seine Seite zu öffnen:
 - **Bedingungen**, wenn sein `status` welche hat, wie auf den eigenen Seiten von Homeport.
 - **Events** dazu und sein **YAML**, ohne `managedFields`.
 
-Wenn seine Art es erlaubt, öffnet **Bearbeiten** sein YAML, um es über eine Vorschau und Server-side Apply zu ändern (siehe [YAML anwenden und bearbeiten](/docs/clusters/yaml/)), und **Löschen** entfernt es nach einer Bestätigung, die es und den Cluster nennt (siehe [Löschen](/docs/clusters/actions/#deleting)). In der Liste haken Sie mehrere Objekte an, um sie zusammen zu löschen.
+Wenn seine Art es erlaubt, öffnet **Bearbeiten** sein YAML, um es über eine Vorschau und Server-side Apply zu ändern (siehe [YAML anwenden und bearbeiten](/docs/clusters/yaml/)), und **Löschen** entfernt es nach einer Bestätigung, die es und den Cluster nennt (siehe [Löschen](/docs/clusters/actions/#löschen)). In der Liste haken Sie mehrere Objekte an, um sie zusammen zu löschen.

@@ -42,7 +42,7 @@ Das Durchsuchen ist schreibgeschützt. Nichts, was Sie hier tun, kann das Volume
 
 Die Engine-API kann kein Volume lesen, daher öffnet Homeport es mit einem kurzlebigen **Hilfscontainer**: einem `busybox:1.37`-Container ohne Netzwerk und mit schreibgeschütztem Dateisystem, der das Volume schreibgeschützt einhängt. Homeport entfernt ihn, sobald Sie den Browser schließen oder Homeport beenden. Kann Homeport das nicht (es ist abgestürzt oder der Host ist weg), stoppt der Hilfscontainer und wird innerhalb einer Stunde von der Engine entfernt, und Homeport entfernt, was übrig ist, wenn sich dieser Computer das nächste Mal mit dem Host verbindet. Hilfscontainer erscheinen nie in der Liste der Container, unter **Verwendet von** eines Volumes oder auf der Seite Ereignisse.
 
-Hat der Host `busybox:1.37` (etwa 2 MB) nicht, sagt Homeport das und pullt es erst, wenn Sie **busybox:1.37 pullen** wählen, mit Ihren [Registry-Anmeldungen](/docs/guides/settings/#registries). Danach entfernt es das Image wieder, sofern nichts anderes es verwendet. Ein Host ohne Internetzugang kann es nicht pullen; bringen Sie es selbst dorthin:
+Hat der Host `busybox:1.37` (etwa 2 MB) nicht, sagt Homeport das und pullt es erst, wenn Sie **busybox:1.37 pullen** wählen, mit Ihren [Registry-Anmeldungen](/docs/guides/settings/#registrys). Danach entfernt es das Image wieder, sofern nichts anderes es verwendet. Ein Host ohne Internetzugang kann es nicht pullen; bringen Sie es selbst dorthin:
 
 ```sh
 docker pull busybox:1.37
@@ -72,15 +72,15 @@ Beide zeigen ihren Fortschritt und lassen sich abbrechen. Eine abgebrochene Sich
 
 Eine Sicherung eines Volumes, in das ein laufender Container schreibt – etwa eine Datenbank –, kann inkonsistent sein. Homeport nennt die laufenden Container, die es verwenden, und Sie wählen, **Trotzdem sichern** oder sie während der Sicherung zu stoppen. Eine Wiederherstellung stoppt sie immer zuerst. In beiden Fällen startet Homeport sie danach wieder.
 
-Sicherungen und Wiederherstellungen verwenden denselben [Hilfscontainer](#the-helper-container) wie das Durchsuchen und hängen das Volume für eine Sicherung schreibgeschützt ein. Das Archiv wird über die Verbindung des Hosts übertragen und nie vollständig im Arbeitsspeicher gehalten, sodass auch große Volumes und entfernte Hosts funktionieren. Auf dem Host wird nichts geschrieben außer dem Volume, das wiederhergestellt wird.
+Sicherungen und Wiederherstellungen verwenden denselben [Hilfscontainer](#der-hilfscontainer) wie das Durchsuchen und hängen das Volume für eine Sicherung schreibgeschützt ein. Das Archiv wird über die Verbindung des Hosts übertragen und nie vollständig im Arbeitsspeicher gehalten, sodass auch große Volumes und entfernte Hosts funktionieren. Auf dem Host wird nichts geschrieben außer dem Volume, das wiederhergestellt wird.
 
 ### Ein Volume klonen
 
 **Klonen…** im Menü **⋯** der Zeile eines Volumes kopiert es in ein neues Volume auf demselben Host – etwa um eine Migration oder eine neue Image-Version an einer Kopie echter Daten auszuprobieren. Die Kopie heißt `<name>-copy`, sofern Sie den Namen nicht ändern, und wird nach dem Erstellen in der Liste ausgewählt.
 
-Sie behält die Besitzer und Berechtigungen der Dateien sowie Treiber, Treiberoptionen und Labels der Quelle – außer denen von Compose, sodass die Kopie zu keinem Stack gehört. Die Quelle wird schreibgeschützt in den [Hilfscontainer](#the-helper-container) eingehängt und ändert sich nie. Wie bei einer Sicherung nennt Homeport die laufenden Container, die die Quelle verwenden; kopieren Sie trotzdem, oder stoppen Sie sie während des Kopierens.
+Sie behält die Besitzer und Berechtigungen der Dateien sowie Treiber, Treiberoptionen und Labels der Quelle – außer denen von Compose, sodass die Kopie zu keinem Stack gehört. Die Quelle wird schreibgeschützt in den [Hilfscontainer](#der-hilfscontainer) eingehängt und ändert sich nie. Wie bei einer Sicherung nennt Homeport die laufenden Container, die die Quelle verwenden; kopieren Sie trotzdem, oder stoppen Sie sie während des Kopierens.
 
-Schlägt die Kopie fehl – etwa weil die Festplatte voll ist –, entfernt Homeport die unvollständige Kopie und sagt das, mit dem Fehler unter **Details**. Um ein Volume auf einen anderen Host zu kopieren, [sichern Sie es](#backing-up-and-restoring) und stellen die Datei dort wieder her.
+Schlägt die Kopie fehl – etwa weil die Festplatte voll ist –, entfernt Homeport die unvollständige Kopie und sagt das, mit dem Fehler unter **Details**. Um ein Volume auf einen anderen Host zu kopieren, [sichern Sie es](#sichern-und-wiederherstellen) und stellen die Datei dort wieder her.
 
 ### Ein Volume erstellen
 

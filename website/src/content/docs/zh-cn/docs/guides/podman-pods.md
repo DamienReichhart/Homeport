@@ -5,7 +5,7 @@ description: 列出、启动、停止和删除 Podman Pod，创建带有发布�
 
 **Pod** 是 Podman 组合容器的方式：其中的容器共享同一网络（以及主机名和 IPC），因此可以通过 `localhost` 互相访问，并且一起启动和停止。每个 Pod 都有一个 **infra 容器**，它持有共享的内容以及 Pod 发布的端口。对于引擎为 Podman 的主机，Homeport 会通过 Podman 自己的 API，在主机已使用的套接字上显示 Pod；主机上不会安装任何东西。
 
-**Pod** 页面只在选择了 Podman 主机时出现在侧边栏中。在其他 Docker 兼容引擎上没有这个页面，指向它的链接会说明原因。Homeport 如何识别 Podman，请参阅[引擎类型](/docs/hosts/#engine-kinds)。
+**Pod** 页面只在选择了 Podman 主机时出现在侧边栏中。在其他 Docker 兼容引擎上没有这个页面，指向它的链接会说明原因。Homeport 如何识别 Podman，请参阅[引擎类型](/docs/hosts/#引擎类型)。
 
 ## Pod 页面
 

@@ -13,7 +13,7 @@ SSH è il modo consigliato per raggiungere un Docker Engine su un server. Non se
 Homeport ha un proprio client SSH. Accede al server e inoltra un canale verso il socket Unix dell’Engine — la stessa cosa che fa `docker -H ssh://…`, senza bisogno del programma `ssh` né di `docker` sul tuo computer.
 
 - Le chiavi vengono decifrate solo in memoria e mai scritte su disco, quindi funziona allo stesso modo su Windows, macOS e Linux.
-- Homeport non legge `~/.ssh/known_hosts`: le chiavi dei server sono considerate attendibili in Homeport, per ogni host. Un server raggiungibile solo tramite un server di salto si aggiunge con i [bastion](#through-a-bastion), il `ProxyJump` di Homeport.
+- Homeport non legge `~/.ssh/known_hosts`: le chiavi dei server sono considerate attendibili in Homeport, per ogni host. Un server raggiungibile solo tramite un server di salto si aggiunge con i [bastion](#tramite-un-bastion), il `ProxyJump` di Homeport.
 - Il server deve consentire l’inoltro verso i socket Unix. OpenSSH lo fa per impostazione predefinita (`AllowStreamLocalForwarding yes`).
 
 ## Aggiungere un host SSH
@@ -51,7 +51,7 @@ Se i tuoi server sono già in `~/.ssh/config`, scegli **Importa da ~/.ssh/config
 | `User`, `Port`        | **Utente** (il tuo nome utente locale per impostazione predefinita) e **Porta** (`22`).                         |
 | `IdentityFile`        | **Chiave esistente**: il primo file leggibile, con `~` e `%h`, `%r`, `%u`, `%p` espansi.                        |
 | nessun `IdentityFile` | **ssh-agent**.                                                                                                  |
-| `ProxyJump a,b`       | Due [bastion](#through-a-bastion), in ordine, ciascuno cercato nello stesso file. Un ciclo viene segnalato.     |
+| `ProxyJump a,b`       | Due [bastion](#tramite-un-bastion), in ordine, ciascuno cercato nello stesso file. Un ciclo viene segnalato.     |
 
 Il **Percorso del socket remoto** parte da `/var/run/docker.sock`; cambialo nell’anteprima per Docker rootless o Podman. Una chiave cifrata chiede lì la sua passphrase.
 
@@ -75,7 +75,7 @@ Su Windows chiede prima al servizio OpenSSH Authentication Agent, poi a **Pagean
 
 <Aside>
   ssh-agent è l’unica opzione SSH che funziona senza un [portachiavi del sistema
-  operativo](/docs/requirements/#optional-an-os-keychain). Se Homeport è stato avviato da un menu
+  operativo](/docs/requirements/#facoltativo-un-portachiavi-del-sistema-operativo). Se Homeport è stato avviato da un menu
   del desktop, assicurati che l’agente della tua sessione gli sia disponibile.
 </Aside>
 

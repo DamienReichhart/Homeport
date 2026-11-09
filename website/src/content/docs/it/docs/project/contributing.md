@@ -12,7 +12,7 @@ Homeport è sviluppato apertamente su [github.com/DamienReichhart/Homeport](http
 - la tua versione di Homeport e la piattaforma, da **Impostazioni** (per esempio `v0.2.0 · macos/aarch64`);
 - il tipo di host (locale, SSH, TLS o TCP) e la versione del suo Engine;
 - cosa hai fatto, cosa ti aspettavi e cosa è successo — il messaggio esatto è ciò che aiuta di più;
-- qualsiasi elemento pertinente del [file di log](/docs/reference/security/#logs).
+- qualsiasi elemento pertinente del [file di log](/docs/reference/security/#log).
 
 Segnala i problemi di sicurezza in privato, tramite la [segnalazione delle vulnerabilità di GitHub](https://github.com/DamienReichhart/Homeport/security/advisories/new).
 
@@ -58,7 +58,7 @@ L’app e il sito parlano inglese, francese, spagnolo, tedesco, italiano, portog
 
 Qualunque sia la stringa, `bun run check` (e quindi la CI) fallisce finché ogni lingua non la contiene, con gli stessi `{arguments}` e tag, e con ogni forma plurale di cui quella lingua ha bisogno.
 
-- **Testo dell’app**: aggiungi la chiave a `src/shared/i18n/en/<namespace>.ts` (vedi [Aggiungere testo all’app](#adding-text-to-the-app)), poi al file con lo stesso nome nella cartella di ogni altra lingua (`fr/`, `de/`, `zh-CN/`…). Traducila se puoi. Se non puoi, copia lì il testo inglese e segnalalo nella pull request, così un traduttore potrà occuparsene; non omettere mai la chiave.
+- **Testo dell’app**: aggiungi la chiave a `src/shared/i18n/en/<namespace>.ts` (vedi [Aggiungere testo all’app](#aggiungere-testo-allapp)), poi al file con lo stesso nome nella cartella di ogni altra lingua (`fr/`, `de/`, `zh-CN/`…). Traducila se puoi. Se non puoi, copia lì il testo inglese e segnalalo nella pull request, così un traduttore potrà occuparsene; non omettere mai la chiave.
 - **Un messaggio di errore o un suggerimento**: dichiaralo nel blocco `messages!` del crate ed esegui `bun run bindings`, che scrive `en/errors.json`; poi aggiungi la chiave al file `errors.json` di ogni lingua. Il testo mostrato dal sistema operativo — il menu dell’area di notifica e le notifiche — funziona allo stesso modo con una chiave `native.` e `native.json`.
 - **Testo del sito** (home, download, changelog, intestazione e piè di pagina): aggiungi la chiave al file giusto di `website/src/core/i18n/strings/en/` (`site`, `home`, `download` o `changelog`) e allo stesso file nella cartella di ogni altra lingua; `astro check` fallisce quando ne manca una. Un’etichetta della barra laterale della documentazione va in `website/src/app/config/sidebar/<code>.ts`.
 - **Una pagina della documentazione**: la pagina inglese è in `website/src/content/docs/docs/`. Quando la modifichi, aggiorna la sua pagina francese allo stesso percorso sotto `website/src/content/docs/fr/docs/` nella stessa pull request. Le altre lingue mostrano la pagina inglese, con una nota, finché qualcuno non la traduce.

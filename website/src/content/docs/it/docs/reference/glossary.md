@@ -11,15 +11,15 @@ Un Docker Engine a cui Homeport si connette, definito da un nome e da un modo pe
 
 ### Engine kind (it. _tipo di Engine_)
 
-Il tipo di Engine a cui punta un host: compatibile con Docker (Docker Engine, o Podman tramite la sua API compatibile), containerd o Incus. Decide quali pagine mostra un host: gli host containerd e Incus hanno le loro. Podman non è un tipo a sé: Homeport lo riconosce a ogni connessione. Vedi [Tipi di Engine](/docs/hosts/#engine-kinds).
+Il tipo di Engine a cui punta un host: compatibile con Docker (Docker Engine, o Podman tramite la sua API compatibile), containerd o Incus. Decide quali pagine mostra un host: gli host containerd e Incus hanno le loro. Podman non è un tipo a sé: Homeport lo riconosce a ogni connessione. Vedi [Tipi di Engine](/docs/hosts/#tipi-di-engine).
 
 ### Namespace (containerd’s) (it. _namespace containerd_)
 
-Su un host containerd, lo spazio in cui vive ogni container, immagine e snapshot: nerdctl usa `default`, Kubernetes `k8s.io`, Docker `moby`. Le pagine di un host containerd ne mostrano uno alla volta. I Namespace di un cluster sono quelli di Kubernetes. Vedi [namespace di containerd](/docs/hosts/containerd/#namespaces).
+Su un host containerd, lo spazio in cui vive ogni container, immagine e snapshot: nerdctl usa `default`, Kubernetes `k8s.io`, Docker `moby`. Le pagine di un host containerd ne mostrano uno alla volta. I Namespace di un cluster sono quelli di Kubernetes. Vedi [namespace di containerd](/docs/hosts/containerd/#namespace).
 
 ### Snapshot (it. _snapshot_)
 
-Su un host containerd, un layer di file su disco: un layer di un’immagine decompressa, o il layer scrivibile di un container. Vedi [snapshot](/docs/hosts/containerd/#snapshots). Su un host Incus, uno stato salvato di un’istanza a cui può essere ripristinata; vedi [snapshot delle istanze](/docs/guides/instances/#snapshots).
+Su un host containerd, un layer di file su disco: un layer di un’immagine decompressa, o il layer scrivibile di un container. Vedi [snapshot](/docs/hosts/containerd/#snapshot). Su un host Incus, uno stato salvato di un’istanza a cui può essere ripristinata; vedi [snapshot delle istanze](/docs/guides/instances/#snapshot).
 
 ### Instance (it. _istanza_)
 
@@ -27,15 +27,15 @@ Ciò che esegue un host Incus: un container di sistema, che avvia un’intera di
 
 ### Project (Incus’s) (it. _progetto_)
 
-Su un host Incus, lo spazio in cui vivono le sue istanze, immagini, profili, volumi personalizzati e reti. Le pagine di un host Incus ne mostrano uno alla volta, scelto sotto il selettore degli host. Vedi [progetti](/docs/hosts/incus/#projects).
+Su un host Incus, lo spazio in cui vivono le sue istanze, immagini, profili, volumi personalizzati e reti. Le pagine di un host Incus ne mostrano uno alla volta, scelto sotto il selettore degli host. Vedi [progetti](/docs/hosts/incus/#progetti).
 
 ### Profile (it. _profilo_)
 
-Su un host Incus, configurazione e dispositivi condivisi dalle istanze che lo elencano. Vedi [profili](/docs/guides/instances/#profiles).
+Su un host Incus, configurazione e dispositivi condivisi dalle istanze che lo elencano. Vedi [profili](/docs/guides/instances/#profili).
 
 ### Trust token (it. _token di fiducia_)
 
-Ciò che `incus config trust add` stampa su un server Incus, incollato una volta in Homeport per aggiungere quel server tramite HTTPS. Vedi [token di fiducia](/docs/hosts/incus/#over-https-with-a-trust-token).
+Ciò che `incus config trust add` stampa su un server Incus, incollato una volta in Homeport per aggiungere quel server tramite HTTPS. Vedi [token di fiducia](/docs/hosts/incus/#tramite-https-con-un-token-di-fiducia).
 
 ### Pod (it. _pod Podman_)
 
@@ -51,7 +51,7 @@ Un cluster Kubernetes o un cluster Nomad a cui Homeport si connette tramite la s
 
 ### Allocation (it. _allocation_)
 
-Su un cluster Nomad, un posizionamento del task group di un job su un client node, che esegue i suoi task. I suoi log e una shell al suo interno passano dai server di Nomad al nodo. Vedi [log e shell](/docs/clusters/nomad/#logs-and-shell).
+Su un cluster Nomad, un posizionamento del task group di un job su un client node, che esegue i suoi task. I suoi log e una shell al suo interno passano dai server di Nomad al nodo. Vedi [log e shell](/docs/clusters/nomad/#log-e-shell).
 
 ### Swarm (it. _Swarm_)
 
@@ -67,7 +67,7 @@ Una release Helm: un’installazione di un chart su un cluster, con un nome nel 
 
 ### Chart repository (it. _repository di chart_)
 
-Un server da cui helm scarica i chart, nell’elenco di helm su questo computer — quello mostrato da `helm repo list`. I chart in un registro OCI si installano invece tramite il loro riferimento `oci://`. Vedi [repository di chart](/docs/clusters/helm/#chart-repositories).
+Un server da cui helm scarica i chart, nell’elenco di helm su questo computer — quello mostrato da `helm repo list`. I chart in un registro OCI si installano invece tramite il loro riferimento `oci://`. Vedi [repository di chart](/docs/clusters/helm/#repository-di-chart).
 
 ### Node (it. _nodo_)
 
@@ -83,7 +83,7 @@ Uno slot di un servizio su un nodo, eseguito lì come container. Quando un servi
 
 ### Stack (it. _stack_)
 
-Un progetto Compose in esecuzione su un host, o uno stack swarm in esecuzione su uno Swarm, identificato dal nome del suo progetto. Ogni stack è gestito, collegato, sincronizzato o esterno. Vedi [Stack](/docs/guides/stacks/) e [stack swarm](/docs/guides/swarm/#swarm-stacks).
+Un progetto Compose in esecuzione su un host, o uno stack swarm in esecuzione su uno Swarm, identificato dal nome del suo progetto. Ogni stack è gestito, collegato, sincronizzato o esterno. Vedi [Stack](/docs/guides/stacks/) e [stack swarm](/docs/guides/swarm/#stack-swarm).
 
 ### Managed Stack (it. _stack gestito_)
 
@@ -91,7 +91,7 @@ Uno stack la cui definizione compose e il cui ambiente sono conservati da Homepo
 
 ### Linked Stack (it. _stack collegato_)
 
-Uno stack i cui file compose sono una cartella di questo computer. Homeport conserva dove si trovano la cartella e i suoi file compose, legge e scrive i file sul posto, e distribuisce con quella cartella come directory del progetto, così `build:`, `env_file:` e i percorsi relativi funzionano. Viene trovato dalle etichette compose dei container in esecuzione, o creato da una cartella. Diventa esterno finché i suoi file mancano. Vedi [Stack collegati](/docs/guides/stacks/#linked-stacks).
+Uno stack i cui file compose sono una cartella di questo computer. Homeport conserva dove si trovano la cartella e i suoi file compose, legge e scrive i file sul posto, e distribuisce con quella cartella come directory del progetto, così `build:`, `env_file:` e i percorsi relativi funzionano. Viene trovato dalle etichette compose dei container in esecuzione, o creato da una cartella. Diventa esterno finché i suoi file mancano. Vedi [Stack collegati](/docs/guides/stacks/#stack-collegati).
 
 ### Synced Stack (it. _stack sincronizzato_)
 
@@ -115,19 +115,19 @@ Trasformare uno stack esterno in uno stack gestito fornendone la definizione com
 
 ### Registry login (it. _accesso al registro_)
 
-Il nome utente e la password o il token di accesso che Homeport conserva per un registro di container, come Docker Hub o GHCR, e usa su ogni host per scaricare, inviare e compilare. Vedi [Impostazioni](/docs/guides/settings/#registries).
+Il nome utente e la password o il token di accesso che Homeport conserva per un registro di container, come Docker Hub o GHCR, e usa su ogni host per scaricare, inviare e compilare. Vedi [Impostazioni](/docs/guides/settings/#registri).
 
 ### Helper container (it. _container ausiliario_)
 
-Un container `busybox` di breve durata che Homeport crea su un host per aprire un volume — per sfogliarlo, eseguirne il backup, ripristinarlo o clonarlo — poiché la Engine API non può leggerne uno. Non ha rete, monta il volume in sola lettura a meno che non debba scriverci, e viene rimosso al termine dell’azione. Non compare mai nell’elenco dei container né nella pagina Eventi. Vedi [Sfogliare i file di un volume](/docs/guides/volumes-networks/#the-helper-container).
+Un container `busybox` di breve durata che Homeport crea su un host per aprire un volume — per sfogliarlo, eseguirne il backup, ripristinarlo o clonarlo — poiché la Engine API non può leggerne uno. Non ha rete, monta il volume in sola lettura a meno che non debba scriverci, e viene rimosso al termine dell’azione. Non compare mai nell’elenco dei container né nella pagina Eventi. Vedi [Sfogliare i file di un volume](/docs/guides/volumes-networks/#il-container-ausiliario).
 
 ### Board (it. _Bacheca_)
 
-La pagina che elenca i container di ogni host connesso in un’unica tabella, ciascuno etichettato con il suo host. Vedi [Bacheca](/docs/guides/overview/#board).
+La pagina che elenca i container di ogni host connesso in un’unica tabella, ciascuno etichettato con il suo host. Vedi [Bacheca](/docs/guides/overview/#bacheca).
 
 ### Command palette (it. _riquadro comandi_)
 
-La casella di ricerca che si apre con <kbd>Mod</kbd> <kbd>K</kbd>: vai a una pagina, cambia host, esegui un comando, o trova un container, un’immagine, un volume, una rete o uno stack su qualsiasi host connesso. Vedi [Tastiera](/docs/guides/keyboard/#command-palette).
+La casella di ricerca che si apre con <kbd>Mod</kbd> <kbd>K</kbd>: vai a una pagina, cambia host, esegui un comando, o trova un container, un’immagine, un volume, una rete o uno stack su qualsiasi host connesso. Vedi [Tastiera](/docs/guides/keyboard/#riquadro-comandi).
 
 ### Engine (it. _Engine_)
 

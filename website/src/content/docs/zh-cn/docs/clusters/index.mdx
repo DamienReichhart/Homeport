@@ -13,13 +13,13 @@ import { DocScreenshot } from '@/features/docs';
   caption="集群与主机并列显示在概览上；选中的集群会显示其仪表板。"
 />
 
-集群与主机一起显示在侧边栏顶部的切换器中。选择一个集群后，会显示与它相关的页面——**工作负载**、**Pod**、**网络**、**配置**、**Node**、**事件**、**API 资源**、**应用 YAML**、**Helm** 和**端口转发**——以及它在[概览](/docs/guides/overview/#the-selected-cluster)上的仪表板；选择主机则会重新显示主机页面。
+集群与主机一起显示在侧边栏顶部的切换器中。选择一个集群后，会显示与它相关的页面——**工作负载**、**Pod**、**网络**、**配置**、**Node**、**事件**、**API 资源**、**应用 YAML**、**Helm** 和**端口转发**——以及它在[概览](/docs/guides/overview/#所选集群)上的仪表板；选择主机则会重新显示主机页面。
 
 ## 能做什么
 
 你可以实时查看集群上运行的内容及其是否健康，并在 Homeport 中完成日常的 `kubectl` 任务：
 
-1. 从 kubeconfig [添加集群](#adding-a-cluster)，或一键添加[本地集群](/docs/clusters/local/)；云集群通过其 [exec 插件](/docs/clusters/exec-plugins/)登录。
+1. 从 kubeconfig [添加集群](#添加集群)，或一键添加[本地集群](/docs/clusters/local/)；云集群通过其 [exec 插件](/docs/clusters/exec-plugins/)登录。
 2. 浏览其[工作负载和 Pod](/docs/clusters/workloads/)、[Service、Ingress、ConfigMap 和 Secret](/docs/clusters/networking-config/)、[Node 和事件](/docs/clusters/nodes-events/)，以及[其他任何 API 资源](/docs/clusters/api-resources/)，包括自定义资源。
 3. 读取 Pod 或工作负载的[日志并在容器中打开终端](/docs/clusters/logs-exec/)，以及将端口[转发](/docs/clusters/port-forward/)到本机。
 4. [扩缩、重启和删除](/docs/clusters/actions/)，以及在预览更改内容后[应用或编辑 YAML](/docs/clusters/yaml/)。

@@ -7,15 +7,15 @@ import { DocScreenshot } from '@/features/docs';
 
 Un clúster puede ser un clúster de **Nomad** además de uno de Kubernetes. Homeport se comunica con la API HTTP que ya sirve un agente de Nomad, servidor o cliente, desde tu equipo: no se instala nada en el clúster y no se necesita la CLI `nomad` en este equipo. Todo lo que hace pasa por la API con los permisos del token ACL que le das.
 
-Los clústeres de Nomad están junto a tus hosts y tus clústeres de Kubernetes en el selector. Al seleccionar uno se muestran su versión, su región y su dirección en el Resumen, y sus propias páginas en la barra lateral: **[Jobs](#jobs)**, donde [ejecutas jobs](#run-a-job) y abres los [logs y shells](#logs-and-shell) de sus allocations, y **[Nodos](#nodes)**. Las páginas de Kubernetes se ocultan mientras está seleccionado.
+Los clústeres de Nomad están junto a tus hosts y tus clústeres de Kubernetes en el selector. Al seleccionar uno se muestran su versión, su región y su dirección en el Resumen, y sus propias páginas en la barra lateral: **[Jobs](#jobs)**, donde [ejecutas jobs](#ejecutar-un-job) y abres los [logs y shells](#logs-y-shell) de sus allocations, y **[Nodos](#nodos)**. Las páginas de Kubernetes se ocultan mientras está seleccionado.
 
 Lo que puedes hacer, en el orden en que lo explica esta página:
 
-1. [Añadir un clúster](#adding-a-nomad-cluster) por su dirección, con [TLS](#tls) y [un token ACL](#the-acl-token) cuando los usa.
+1. [Añadir un clúster](#añadir-un-clúster-de-nomad) por su dirección, con [TLS](#tls) y [un token ACL](#el-token-acl) cuando los usa.
 2. Ver sus [jobs](#jobs) y sus allocations, en directo; detenerlos, purgarlos y escalarlos.
-3. [Ejecutar un job](#run-a-job) desde HCL o JSON después de ver el plan de Nomad, o editar uno y volver a ejecutarlo.
-4. Seguir los [logs de una task y abrir un shell](#logs-and-shell) en ella.
-5. [Drenar nodos](#nodes) y cambiar su elegibilidad.
+3. [Ejecutar un job](#ejecutar-un-job) desde HCL o JSON después de ver el plan de Nomad, o editar uno y volver a ejecutarlo.
+4. Seguir los [logs de una task y abrir un shell](#logs-y-shell) en ella.
+5. [Drenar nodos](#nodos) y cambiar su elegibilidad.
 6. Elegir un [namespace](#namespaces), o todos.
 
 ## Añadir un clúster de Nomad
@@ -25,7 +25,7 @@ Elige **Añadir clúster…** en el selector, luego la pestaña **Nomad**, y rel
 - **Nombre**: lo que muestran el selector y el Resumen, como `nomad-prod`.
 - **Dirección**: la API HTTP del agente, tal como `NOMAD_ADDR` se la da a la CLI `nomad`. `nomad.example.com` se convierte en `http://nomad.example.com:4646`: se añade el puerto 4646 cuando no se indica ninguno, y se usa `https://` cuando das material TLS.
 - **Región**: déjala vacía para usar la región del propio agente. Indícala para gestionar otra región a través de un agente federado, como hace `NOMAD_REGION`.
-- **Token ACL**: el secret ID del token, si el clúster tiene las ACL activadas. Consulta [el token](#the-acl-token) más abajo.
+- **Token ACL**: el secret ID del token, si el clúster tiene las ACL activadas. Consulta [el token](#el-token-acl) más abajo.
 
 **Probar conexión** se conecta una vez sin guardar y muestra la versión de Nomad y la región, o por qué no puede conectarse. **Añadir clúster** lo guarda y se conecta. Su página muestra entonces su estado, su versión y su región, y te permite cambiar cualquiera de estos ajustes: el token y la clave TLS no se vuelven a mostrar nunca, y un campo que se deja vacío conserva el guardado. **Quitar**, junto a una credencial guardada, la elimina al guardar.
 
@@ -177,7 +177,7 @@ Sustituye `"*"` por el nombre de un namespace para limitar Homeport a él, y añ
 
 ## Estados y problemas
 
-El estado sigue las mismas reglas que para los [clústeres de Kubernetes](/docs/clusters/#statuses): Homeport vuelve a intentarlo por sí solo mientras no puede alcanzar el agente, y espera a que actúes cuando solo tú puedes corregirlo.
+El estado sigue las mismas reglas que para los [clústeres de Kubernetes](/docs/clusters/#estados): Homeport vuelve a intentarlo por sí solo mientras no puede alcanzar el agente, y espera a que actúes cuando solo tú puedes corregirlo.
 
 - **La dirección es incorrecta**: un nombre que no se encuentra, una conexión rechazada o un tiempo de espera agotado indica cuál es el caso, con la dirección que se intentó.
 - **Un certificado caducado, una CA desconocida o un nombre incorrecto**: cada caso indica qué cambiar en **Ajustes de TLS**.

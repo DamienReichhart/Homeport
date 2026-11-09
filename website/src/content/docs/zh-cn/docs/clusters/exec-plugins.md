@@ -28,4 +28,4 @@ description: Homeport 如何通过 kubeconfig 中指定的 exec 凭据插件登�
 - **“… 需要你登录，但它无法在 Homeport 中完成登录。”**——插件需要浏览器或设备代码（AWS SSO、Azure 设备登录、已过期的 `gcloud` 会话）。请在终端中用该上下文运行一次 `kubectl`，在那里登录，然后选择**重新连接**：插件随后会找到其缓存的登录信息。
 - **“… 无法获取 … 的凭据。”**——它运行了但失败了；**详细信息**会显示它最后输出的内容。Homeport 会自行重试。
 
-其他消息参见[故障排除](/docs/reference/troubleshooting/#clusters)。
+其他消息参见[故障排除](/docs/reference/troubleshooting/#集群)。

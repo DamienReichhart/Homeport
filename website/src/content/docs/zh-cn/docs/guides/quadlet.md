@@ -79,4 +79,4 @@ systemctl --user start 'web.service'
 loginctl enable-linger "$USER"
 ```
 
-[安全页面](/docs/reference/security/#what-homeport-runs-on-your-hosts)列出了 Homeport 在主机上运行的每一条命令。
+[安全页面](/docs/reference/security/#homeport-在你的主机上运行的内容)列出了 Homeport 在主机上运行的每一条命令。

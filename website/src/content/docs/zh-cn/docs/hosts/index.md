@@ -46,7 +46,7 @@ description: Homeport 如何连接 Docker Engine、containerd 和 Incus，每种
 
 **添加主机**提供两种方式，根据本机上已有的描述一次添加多台主机。每种方式都会打开预览：选择要导入的条目，重命名它们，然后选择**导入**。
 
-- **从 ~/.ssh/config 导入**会添加你的 SSH 配置中列出的服务器，包括其用户、端口、密钥和 `ProxyJump` 堡垒机。参见[从 ~/.ssh/config 导入](/docs/hosts/ssh/#import-from-sshconfig)。
+- **从 ~/.ssh/config 导入**会添加你的 SSH 配置中列出的服务器，包括其用户、端口、密钥和 `ProxyJump` 堡垒机。参见[从 ~/.ssh/config 导入](/docs/hosts/ssh/#从-sshconfig-导入)。
 - **导入 Docker 上下文**会添加 Docker CLI 上下文（`docker context ls`）中的引擎，包括其 TLS 证书。
 
 密钥和证书只在导入时读取一次，并像其他密钥和证书一样加密保存；`~/.ssh` 和 `~/.docker` 都不会被修改。
@@ -73,11 +73,11 @@ Homeport 会读取 `~/.docker/contexts`（如果设置了 `$DOCKER_CONFIG`，则
 
 ## 迁移到另一台计算机
 
-“主机”页面上的**导出**会将你选择的主机保存到一个受口令保护的文件中；在另一台计算机的“主机”页面上使用**导入**打开该文件，即可添加你选择的主机，随时可以连接。如果某台主机的名称在那边已被使用，会建议改为 `name (2)`，你可以重命名或跳过它。关于该文件如何受保护，参见[迁移到另一台计算机](/docs/reference/security/#moving-to-another-computer)。
+“主机”页面上的**导出**会将你选择的主机保存到一个受口令保护的文件中；在另一台计算机的“主机”页面上使用**导入**打开该文件，即可添加你选择的主机，随时可以连接。如果某台主机的名称在那边已被使用，会建议改为 `name (2)`，你可以重命名或跳过它。关于该文件如何受保护，参见[迁移到另一台计算机](/docs/reference/security/#迁移到另一台计算机)。
 
 ## 选择主机
 
-每个资源页面（容器、镜像、卷、网络、堆栈和事件）都显示在**主机切换器**中选中的主机。containerd 主机的页面一次只显示一个命名空间（[在切换器下方](/docs/hosts/containerd/#namespaces)选择），Incus 主机的页面一次只显示一个[项目](/docs/hosts/incus/#projects)。可以在那里切换主机，或在[概览](/docs/guides/overview/)中选择主机的卡片。Homeport 会在每次启动之间记住你的选择。
+每个资源页面（容器、镜像、卷、网络、堆栈和事件）都显示在**主机切换器**中选中的主机。containerd 主机的页面一次只显示一个命名空间（[在切换器下方](/docs/hosts/containerd/#命名空间)选择），Incus 主机的页面一次只显示一个[项目](/docs/hosts/incus/#项目)。可以在那里切换主机，或在[概览](/docs/guides/overview/)中选择主机的卡片。Homeport 会在每次启动之间记住你的选择。
 
 ## 状态
 
@@ -90,10 +90,10 @@ Homeport 会读取 `~/.docker/contexts`（如果设置了 `$DOCKER_CONFIG`，则
 | **已停用**             | 主机的**已启用**开关已关闭。                                    | 在你打开开关之前不会有任何动作。                                   |
 | **无法访问**           | 网络、套接字或引擎没有响应。                                    | 自动重试，每次等待的时间更长。                                     |
 | **访问被拒绝**         | SSH 服务器拒绝了密钥、ssh-agent 失败，或 TLS 握手失败。         | 修复原因，然后选择**重新连接**。                                   |
-| **服务器密钥未受信任** | 首次 SSH 连接：服务器或堡垒机的密钥需要你批准。                 | 在主机页面上[信任该密钥](/docs/hosts/ssh/#trust-the-servers-key)。 |
-| **服务器密钥已更改**   | SSH 服务器提供的密钥与你信任的不同。                            | [先进行调查](/docs/hosts/ssh/#when-the-servers-key-changes)。      |
-| **凭据丢失**           | 保存的凭据无法解密。                                            | [重新输入](/docs/reference/troubleshooting/#credentials-lost)。    |
-| **钥匙串不可用**       | 主机需要保存的机密，但没有系统钥匙串。                          | 参见[系统要求](/docs/requirements/#optional-an-os-keychain)。      |
+| **服务器密钥未受信任** | 首次 SSH 连接：服务器或堡垒机的密钥需要你批准。                 | 在主机页面上[信任该密钥](/docs/hosts/ssh/#信任服务器的密钥)。 |
+| **服务器密钥已更改**   | SSH 服务器提供的密钥与你信任的不同。                            | [先进行调查](/docs/hosts/ssh/#服务器密钥更改时)。      |
+| **凭据丢失**           | 保存的凭据无法解密。                                            | [重新输入](/docs/reference/troubleshooting/#凭据丢失)。    |
+| **钥匙串不可用**       | 主机需要保存的机密，但没有系统钥匙串。                          | 参见[系统要求](/docs/requirements/#可选系统钥匙串)。      |
 | **配置错误**           | 主机设置中有缺失或无效的内容。                                  | 消息会说明是什么；修复后选择**保存**。                             |
 
 ## 重新连接
@@ -106,4 +106,4 @@ Homeport 启动时会连接每台已启用的主机，每台主机都有自己�
 
 ## 事件与实时更新
 
-Homeport 不进行轮询。当引擎报告变化（容器启动、镜像被拉取）时，受影响的页面会在不到一秒内刷新。[事件](/docs/guides/overview/#events)页面会显示原始事件流。
+Homeport 不进行轮询。当引擎报告变化（容器启动、镜像被拉取）时，受影响的页面会在不到一秒内刷新。[事件](/docs/guides/overview/#事件)页面会显示原始事件流。

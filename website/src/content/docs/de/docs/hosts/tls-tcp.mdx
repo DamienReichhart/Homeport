@@ -32,11 +32,11 @@ Die Docker-Anleitung [Protect the Docker daemon socket](https://docs.docker.com/
 
 Das Zertifikat des Servers muss den eingegebenen Host nennen – sein DNS-Name oder seine IP-Adresse muss in den alternativen Antragstellernamen (SAN) des Zertifikats stehen –, sonst schlägt die Verbindung mit _TLS-Handshake fehlgeschlagen_ fehl.
 
-Die Zertifikate und der Schlüssel werden verschlüsselt gespeichert, was einen [Schlüsselbund des Betriebssystems](/docs/requirements/#optional-an-os-keychain) erfordert. Wenn Sie den Host bearbeiten, lassen Sie ein Feld leer, um das Gespeicherte zu behalten.
+Die Zertifikate und der Schlüssel werden verschlüsselt gespeichert, was einen [Schlüsselbund des Betriebssystems](/docs/requirements/#optional-ein-schlüsselbund-des-betriebssystems) erfordert. Wenn Sie den Host bearbeiten, lassen Sie ein Feld leer, um das Gespeicherte zu behalten.
 
 ### Aus einem Docker-Kontext
 
-Listet `docker context ls` die Engine bereits auf, erstellt **Docker-Kontexte importieren** auf **Host hinzufügen** den Host mit der Adresse des Kontexts und seinen `ca.pem`, `cert.pem` und `key.pem`, ohne dass Sie Dateien auswählen. Kontexte, die die TLS-Prüfung überspringen, werden nicht importiert. Siehe [Docker-Kontexte](/docs/hosts/#docker-contexts).
+Listet `docker context ls` die Engine bereits auf, erstellt **Docker-Kontexte importieren** auf **Host hinzufügen** den Host mit der Adresse des Kontexts und seinen `ca.pem`, `cert.pem` und `key.pem`, ohne dass Sie Dateien auswählen. Kontexte, die die TLS-Prüfung überspringen, werden nicht importiert. Siehe [Docker-Kontexte](/docs/hosts/#docker-kontexte).
 
 ## TCP
 

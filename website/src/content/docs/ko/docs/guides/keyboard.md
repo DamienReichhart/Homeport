@@ -3,7 +3,7 @@ title: 키보드
 description: 마우스 없이 Homeport를 다룹니다. 명령 팔레트와 모든 호스트 검색, 모든 페이지와 호스트의 단축키, 그리고 단축키를 나열하는 도움말 시트를 소개합니다.
 ---
 
-Homeport는 키보드로 사용할 수 있습니다. <kbd>Mod</kbd> <kbd>K</kbd> 키를 누르면 [명령 팔레트](#command-palette)가 열리고, 어느 페이지에서든 <kbd>?</kbd> 키를 누르면 그 페이지에서 쓸 수 있는 모든 단축키를 볼 수 있습니다.
+Homeport는 키보드로 사용할 수 있습니다. <kbd>Mod</kbd> <kbd>K</kbd> 키를 누르면 [명령 팔레트](#명령-팔레트)가 열리고, 어느 페이지에서든 <kbd>?</kbd> 키를 누르면 그 페이지에서 쓸 수 있는 모든 단축키를 볼 수 있습니다.
 
 아래에서 **Mod** 키는 macOS에서는 <kbd>⌘</kbd>, Windows와 Linux에서는 <kbd>Ctrl</kbd>을 뜻합니다. macOS에서 <kbd>Alt</kbd>는 <kbd>⌥</kbd>입니다.
 

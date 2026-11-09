@@ -25,9 +25,9 @@ Cada stack es de uno de estos cuatro tipos:
 | **Externo**      | En ningún sitio que Homeport pueda ver: se desplegó de otra forma | —      | —         | —        | ✓                          |
 
 - Un **stack gestionado** es uno cuyo archivo compose y cuyo entorno guarda Homeport. Puedes editarlo, desplegarlo y desmontarlo desde Homeport.
-- Un **stack vinculado** es uno cuyos archivos compose están en una carpeta de este equipo, donde los sigues editando. Homeport recuerda dónde está la carpeta, trabaja con los archivos allí y despliega desde ella. Consulta [Stacks vinculados](#linked-stacks).
+- Un **stack vinculado** es uno cuyos archivos compose están en una carpeta de este equipo, donde los sigues editando. Homeport recuerda dónde está la carpeta, trabaja con los archivos allí y despliega desde ella. Consulta [Stacks vinculados](#stacks-vinculados).
 - Un **stack sincronizado** es uno cuyo archivo compose procede de un repositorio git. Homeport obtiene su rama o su etiqueta, muestra lo que cambió y despliega el nuevo commit; se edita a través de git, nunca en Homeport. Consulta [Stacks sincronizados](/docs/guides/synced-stacks/).
-- Un **stack externo** se desplegó de otra forma: `docker compose up` en el servidor, un job de CI, otra herramienta o desde una carpeta de otro equipo. Homeport puede iniciar, detener, reiniciar y eliminar sus contenedores, pero no tiene ningún archivo compose a partir del que volver a desplegarlo. Puedes [adoptarlo](#adopting-an-external-stack) para convertirlo en gestionado.
+- Un **stack externo** se desplegó de otra forma: `docker compose up` en el servidor, un job de CI, otra herramienta o desde una carpeta de otro equipo. Homeport puede iniciar, detener, reiniciar y eliminar sus contenedores, pero no tiene ningún archivo compose a partir del que volver a desplegarlo. Puedes [adoptarlo](#adoptar-un-stack-externo) para convertirlo en gestionado.
 
 Cada stack muestra uno de estos estados:
 
@@ -44,14 +44,14 @@ Los stacks gestionados, vinculados y sincronizados pertenecen a un host, o a un 
   Los stacks desplegados en un [Swarm](/docs/guides/swarm/), desde un terminal o desde Homeport,
   aparecen en la propia página del Swarm, en **Stacks**, y no aquí. Para desplegar uno, elige el
   Swarm en **Desplegar en**, en **Nuevo stack**. Consulta [Desplegar stacks en un
-  Swarm](/docs/guides/swarm/#deploying-stacks-to-a-swarm).
+  Swarm](/docs/guides/swarm/#desplegar-stacks-en-un-swarm).
 </Aside>
 
 ## Stacks vinculados
 
 Un **stack vinculado** guarda sus archivos compose en su carpeta de proyecto en este equipo, donde los editas con tu propio editor y los mantienes bajo control de versiones. Homeport nunca los copia: recuerda la carpeta y los archivos compose que usa, en orden, y los lee donde están. El `.env` de la carpeta se queda en la carpeta.
 
-Un stack vinculado también se puede desplegar en un Swarm, con sus `configs: file:` y `secrets: file:` leídos de la carpeta; consulta [Stacks vinculados y sincronizados en un Swarm](/docs/guides/swarm/#linked-and-synced-stacks-on-a-swarm).
+Un stack vinculado también se puede desplegar en un Swarm, con sus `configs: file:` y `secrets: file:` leídos de la carpeta; consulta [Stacks vinculados y sincronizados en un Swarm](/docs/guides/swarm/#stacks-vinculados-y-sincronizados-en-un-swarm).
 
 ### Crear un stack vinculado
 
@@ -71,7 +71,7 @@ Una carpeta de proyecto que aún no se ejecuta en el host se puede vincular desd
 
 </Steps>
 
-Si un stack con ese nombre ya se ejecuta en el host como stack externo, crear el stack vinculado lo toma a su cargo, como hace [adoptarlo](#adopting-an-external-stack): volver a desplegar recrea sus contenedores para que coincidan con los archivos de la carpeta. Para usar archivos con otros nombres, o en otro orden, consulta [Varios archivos compose](#several-compose-files).
+Si un stack con ese nombre ya se ejecuta en el host como stack externo, crear el stack vinculado lo toma a su cargo, como hace [adoptarlo](#adoptar-un-stack-externo): volver a desplegar recrea sus contenedores para que coincidan con los archivos de la carpeta. Para usar archivos con otros nombres, o en otro orden, consulta [Varios archivos compose](#varios-archivos-compose).
 
 ### Cómo se encuentran los stacks vinculados
 
@@ -132,7 +132,7 @@ Sin la CLI de Compose puedes seguir iniciando, deteniendo y eliminando stacks; s
 
 ### Imágenes privadas
 
-Antes de `docker compose up`, Homeport descarga las imágenes que el host aún no tiene a través de su propia conexión al host, con el [inicio de sesión del registro](/docs/guides/settings/#registries) guardado para el registro de cada imagen, así que las imágenes privadas se despliegan en cualquier host sin `docker login` en este equipo. La salida del despliegue muestra cada descarga y el inicio de sesión que usa — **Pulling ghcr.io/org/app:1 as alice on ghcr.io**, o **anonymously** —, nunca la contraseña. Un servicio con `pull_policy: always` se descarga cada vez; `never` y `build` se dejan como están.
+Antes de `docker compose up`, Homeport descarga las imágenes que el host aún no tiene a través de su propia conexión al host, con el [inicio de sesión del registro](/docs/guides/settings/#registros) guardado para el registro de cada imagen, así que las imágenes privadas se despliegan en cualquier host sin `docker login` en este equipo. La salida del despliegue muestra cada descarga y el inicio de sesión que usa — **Pulling ghcr.io/org/app:1 as alice on ghcr.io**, o **anonymously** —, nunca la contraseña. Un servicio con `pull_policy: always` se descarga cada vez; `never` y `build` se dejan como están.
 
 A Compose nunca se le da un inicio de sesión: ningún archivo que Homeport cree para la ejecución, ni ninguna de las variables de entorno del comando, lo contiene. Tu propio `docker login` en este equipo no se aplica a estas descargas; añade el inicio de sesión en **Ajustes → Registros** en su lugar. Si un registro rechaza una imagen, el despliegue se detiene antes de que se ejecute Compose, y el mensaje indica que hay que añadir o revisar el inicio de sesión.
 
@@ -142,7 +142,7 @@ A Compose nunca se le da un inicio de sesión: ningún archivo que Homeport cree
 
 1. Abre **Stacks** y elige **Nuevo stack**. **Escribir un archivo compose** está seleccionado.
 
-2. Elige una [plantilla](#starting-from-a-template), o **Vacío** para empezar desde cero.
+2. Elige una [plantilla](#empezar-desde-una-plantilla), o **Vacío** para empezar desde cero.
 
 3. Introduce un **Nombre**: letras minúsculas, dígitos, `-` y `_`, empezando por una letra o un dígito. La plantilla sugiere uno. Pasa a ser el nombre del proyecto de Compose y no se puede cambiar después.
 
@@ -184,7 +184,7 @@ Los **errores** impiden un despliegue:
 
 - El YAML no se puede analizar o no tiene `services:`: todos los tipos.
 - Un servicio no tiene ni `image:` ni `build:`: todos los tipos.
-- Un servicio usa `build:`: solo los **stacks gestionados**. No hay ninguna carpeta desde la que compilar, así que usa una imagen que hayas subido a un registro, o [vincula la carpeta](#creating-a-linked-stack) en su lugar.
+- Un servicio usa `build:`: solo los **stacks gestionados**. No hay ninguna carpeta desde la que compilar, así que usa una imagen que hayas subido a un registro, o [vincula la carpeta](#crear-un-stack-vinculado) en su lugar.
 
 Las **advertencias**, solo para los **stacks gestionados**, te dejan desplegar pero señalan cosas que probablemente no harán lo que esperas, porque Compose las lee de este equipo en lugar del host. La carpeta de un stack vinculado está ahí, así que para él son correctas:
 
@@ -210,7 +210,7 @@ DB_PASSWORD=correct-horse-battery-staple
 Se permiten las líneas vacías, los `# comments` y los prefijos `export`. Los valores pueden ir entre comillas; entre comillas dobles, `\n` es un salto de línea.
 
 <Aside>
-  Guardar un entorno necesita un [llavero del sistema](/docs/requirements/#optional-an-os-keychain).
+  Guardar un entorno necesita un [llavero del sistema](/docs/requirements/#opcional-un-llavero-del-sistema).
   Sin él, el campo está desactivado y los stacks se despliegan sin entorno.
 </Aside>
 
@@ -258,19 +258,19 @@ Para cambiar un stack gestionado, ábrelo, edita su **Definición** y elige **Gu
 
 ### Revisar los cambios antes de volver a desplegar
 
-Antes de que se ejecute un nuevo despliegue — **Volver a desplegar**, **Recompilar y desplegar** o **Guardar y volver a desplegar** para un stack en ejecución —, Homeport muestra **Revisar los cambios**: la definición desplegada la última vez (la entrada correcta más reciente de su [historial](#deploy-history-and-rolling-back)) frente a la que se va a desplegar.
+Antes de que se ejecute un nuevo despliegue — **Volver a desplegar**, **Recompilar y desplegar** o **Guardar y volver a desplegar** para un stack en ejecución —, Homeport muestra **Revisar los cambios**: la definición desplegada la última vez (la entrada correcta más reciente de su [historial](#historial-de-despliegues-y-reversión)) frente a la que se va a desplegar.
 
 - Cada archivo compose muestra sus líneas modificadas en línea: las líneas eliminadas encima de las que las sustituyen. Un archivo sin cambios aparece plegado; selecciónalo para abrirlo. Se nombran los archivos añadidos, eliminados o combinados en otro orden.
 - Las variables de entorno solo muestran sus nombres, marcados como **Añadido**, **Eliminado** o **Modificado** — una contraseña cambiada aparece como **Modificado** sin mostrar ninguno de los dos valores —, y cuántas otras no cambian.
 - También se muestra la activación o desactivación de un perfil.
 
-Elige **Desplegar** para pasar a la ejecución, o **Atrás** para volver al editor sin cambiar nada. Cuando no ha cambiado nada, la revisión lo indica y ofrece **Volver a desplegar de todos modos**. Cuando Homeport no sabe qué está desplegado — el stack se desplegó antes de que Homeport guardara un historial, o desde fuera —, la revisión lo indica y muestra la definición que se desplegará. Un primer despliegue, una reversión y una [actualización](#updating-a-stack) se saltan la revisión.
+Elige **Desplegar** para pasar a la ejecución, o **Atrás** para volver al editor sin cambiar nada. Cuando no ha cambiado nada, la revisión lo indica y ofrece **Volver a desplegar de todos modos**. Cuando Homeport no sabe qué está desplegado — el stack se desplegó antes de que Homeport guardara un historial, o desde fuera —, la revisión lo indica y muestra la definición que se desplegará. Un primer despliegue, una reversión y una [actualización](#actualizar-un-stack) se saltan la revisión.
 
 La comparación es solo entre definiciones, no con la configuración en vivo de los contenedores en el host.
 
 ## Historial de despliegues y reversión
 
-Cada despliegue de un stack gestionado, vinculado o sincronizado desde Homeport — **Desplegar**, **Volver a desplegar**, **Recompilar y desplegar**, **Guardar y volver a desplegar**, una [sincronización](/docs/guides/synced-stacks/#syncing) — se registra con los archivos compose, el entorno y los perfiles que usó, cuándo se ejecutó y cómo terminó; el de un stack sincronizado muestra también su commit y si lo inició el despliegue automático. La pestaña **Historial** de la página del stack lista los 20 últimos, primero los más recientes: **Correcto**, **Con errores** con su código de salida, o **Sin terminar** para una ejecución cuya ventana se cerró antes de que acabara. **Desplegado ahora** marca el más reciente que fue correcto.
+Cada despliegue de un stack gestionado, vinculado o sincronizado desde Homeport — **Desplegar**, **Volver a desplegar**, **Recompilar y desplegar**, **Guardar y volver a desplegar**, una [sincronización](/docs/guides/synced-stacks/#sincronizar) — se registra con los archivos compose, el entorno y los perfiles que usó, cuándo se ejecutó y cómo terminó; el de un stack sincronizado muestra también su commit y si lo inició el despliegue automático. La pestaña **Historial** de la página del stack lista los 20 últimos, primero los más recientes: **Correcto**, **Con errores** con su código de salida, o **Sin terminar** para una ejecución cuya ventana se cerró antes de que acabara. **Desplegado ahora** marca el más reciente que fue correcto.
 
 Selecciona un despliegue para ver sus archivos compose, de solo lectura. Su entorno se guarda cifrado como el del propio stack, y la pestaña solo muestra los nombres de sus variables. Sin llavero, la lista sigue funcionando; un despliegue con entorno simplemente indica que no se puede abrir.
 
@@ -295,15 +295,15 @@ El historial de un stack **vinculado** es de solo lectura: su carpeta es su orig
 />
 
 - **Definición** contiene el editor de un stack gestionado o vinculado, el origen y los archivos de solo lectura de un stack sincronizado, o explica de dónde procede un stack externo.
-- **Historial**, para los stacks gestionados, vinculados y sincronizados, lista sus despliegues. Consulta [Historial de despliegues](#deploy-history-and-rolling-back).
+- **Historial**, para los stacks gestionados, vinculados y sincronizados, lista sus despliegues. Consulta [Historial de despliegues](#historial-de-despliegues-y-reversión).
 
 ## Actualizar un stack
 
-**Actualización disponible** junto al estado de un stack significa que uno de sus servicios ejecuta una imagen cuya etiqueta apunta a una versión más reciente en su registro; pasa el puntero por encima para ver qué servicios. En la página del stack, **Servicios** los nombra y marca cada imagen desactualizada. **Buscar imágenes más recientes**, en la parte superior de la página Stacks, vuelve a preguntar a los registros. La comprobación es la misma que usa la página Contenedores — consulta [Imágenes más recientes](/docs/guides/containers/#newer-images) —, así que abrir Stacks justo después de Contenedores no vuelve a preguntar nada a los registros. Una imagen fijada por digest (`app@sha256:…`) nunca tiene actualización, y un servicio con `build:` no se comprueba.
+**Actualización disponible** junto al estado de un stack significa que uno de sus servicios ejecuta una imagen cuya etiqueta apunta a una versión más reciente en su registro; pasa el puntero por encima para ver qué servicios. En la página del stack, **Servicios** los nombra y marca cada imagen desactualizada. **Buscar imágenes más recientes**, en la parte superior de la página Stacks, vuelve a preguntar a los registros. La comprobación es la misma que usa la página Contenedores — consulta [Imágenes más recientes](/docs/guides/containers/#imágenes-más-recientes) —, así que abrir Stacks justo después de Contenedores no vuelve a preguntar nada a los registros. Una imagen fijada por digest (`app@sha256:…`) nunca tiene actualización, y un servicio con `build:` no se comprueba.
 
-Para actualizar un stack gestionado, vinculado o sincronizado, elige **Actualizar**. Ejecuta ambos pasos en una sola ventana: descarga la imagen de cada servicio con los inicios de sesión guardados y después ejecuta `docker compose up` con lo que descargó, así que solo los servicios cuya imagen cambió reciben contenedores nuevos. La ventana indica qué imágenes son más recientes antes de empezar, y no hay [paso de revisión](#reviewing-changes-before-a-redeploy), ya que la definición no cambia. Si una descarga falla, la actualización se detiene ahí: los contenedores en ejecución se quedan como estaban, y el error indica el motivo y qué hacer.
+Para actualizar un stack gestionado, vinculado o sincronizado, elige **Actualizar**. Ejecuta ambos pasos en una sola ventana: descarga la imagen de cada servicio con los inicios de sesión guardados y después ejecuta `docker compose up` con lo que descargó, así que solo los servicios cuya imagen cambió reciben contenedores nuevos. La ventana indica qué imágenes son más recientes antes de empezar, y no hay [paso de revisión](#revisar-los-cambios-antes-de-volver-a-desplegar), ya que la definición no cambia. Si una descarga falla, la actualización se detiene ahí: los contenedores en ejecución se quedan como estaban, y el error indica el motivo y qué hacer.
 
-Un stack externo también muestra **Actualización disponible**, pero su **Actualizar** está desactivado: Homeport no tiene ningún archivo compose a partir del que volver a desplegarlo, así que [adóptalo](#adopting-an-external-stack) antes. Los servicios con `build:` de un stack vinculado nunca se descargan; usa **Recompilar y desplegar** para ellos.
+Un stack externo también muestra **Actualización disponible**, pero su **Actualizar** está desactivado: Homeport no tiene ningún archivo compose a partir del que volver a desplegarlo, así que [adóptalo](#adoptar-un-stack-externo) antes. Los servicios con `build:` de un stack vinculado nunca se descargan; usa **Recompilar y desplegar** para ellos.
 
 ## Acciones de los stacks
 

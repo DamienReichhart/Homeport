@@ -32,11 +32,11 @@ La guía de Docker [Protect the Docker daemon socket](https://docs.docker.com/en
 
 El certificado del servidor debe nombrar el host que introduces —su nombre DNS o su dirección IP debe figurar en los nombres alternativos del sujeto del certificado—; si no, la conexión falla con _Falló la conexión segura con …_.
 
-Los certificados y la clave se guardan cifrados, lo que necesita un [llavero del sistema](/docs/requirements/#optional-an-os-keychain). Al editar el host, deja un campo vacío para conservar lo guardado.
+Los certificados y la clave se guardan cifrados, lo que necesita un [llavero del sistema](/docs/requirements/#opcional-un-llavero-del-sistema). Al editar el host, deja un campo vacío para conservar lo guardado.
 
 ### Desde un contexto de Docker
 
-Si `docker context ls` ya lista el Engine, **Importar contextos de Docker** en **Añadir host** crea el host con la dirección del contexto y sus `ca.pem`, `cert.pem` y `key.pem`, sin elegir archivos. Los contextos que omiten la verificación TLS no se importan. Consulta [Contextos de Docker](/docs/hosts/#docker-contexts).
+Si `docker context ls` ya lista el Engine, **Importar contextos de Docker** en **Añadir host** crea el host con la dirección del contexto y sus `ca.pem`, `cert.pem` y `key.pem`, sin elegir archivos. Los contextos que omiten la verificación TLS no se importan. Consulta [Contextos de Docker](/docs/hosts/#contextos-de-docker).
 
 ## TCP
 

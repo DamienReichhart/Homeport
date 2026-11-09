@@ -20,7 +20,7 @@ Container, die zu einem [Stack](/docs/guides/stacks/) gehören, sind unter ihm g
 | Spalte              | Zeigt                                                                                                                     |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | **Name**            | Einen Statuspunkt, den Namen (den Service-Namen innerhalb eines Stacks) und die kurze ID.                                 |
-| **Image**           | Das Image, aus dem er erstellt wurde, mit einer Markierung ⬆, wenn ein [neueres Image](#newer-images) veröffentlicht ist. |
+| **Image**           | Das Image, aus dem er erstellt wurde, mit einer Markierung ⬆, wenn ein [neueres Image](#neuere-images) veröffentlicht ist. |
 | **Status**          | Wie die Engine ihn meldet, z. B. _Up 3 hours (healthy)_, mit einem Health-Abzeichen, wenn es einen Healthcheck gibt.      |
 | **Ports**           | Bis zu drei Ports, veröffentlichte zuerst. Ein veröffentlichter Port ist ein Link, der ihn in Ihrem Browser öffnet.       |
 | **CPU**             | Live, als Prozentsatz einer CPU: `200%` bedeutet zwei voll ausgelastete CPUs.                                             |
@@ -35,11 +35,11 @@ Wählen Sie einen Container aus, um ihn zu öffnen.
 
 Ein ⬆ neben dem Image bedeutet, dass seine Registry unter dem Tag, aus dem der Container erstellt wurde, jetzt ein anderes Image hat: `nginx:1.27` hat sich seit dem Pull weiterentwickelt, oder ein neueres wurde gepullt, aber der Container wurde nicht neu erstellt. Fahren Sie mit dem Mauszeiger darüber, um zu sehen, welches. Zum Aktualisieren pullen Sie das Image und erstellen den Container neu – bei einem Stack **Images pullen** und dann **Neu bereitstellen**.
 
-Homeport fragt die Registry über die Engine des Hosts, die Digests vergleicht, ohne etwas zu pullen, und verwendet für private Images Ihre gespeicherten [Registry-Anmeldungen](/docs/guides/settings/#registries). Antworten werden 6 Stunden lang aufbewahrt, sodass ein erneutes Öffnen der Liste nichts abfragt; **Nach neueren Images suchen** oben auf der Seite fragt jetzt jede Registry erneut. Lokal gebaute Images, per Digest gepullte (`app@sha256:…`) oder solche, deren Registry nicht erreichbar ist, zeigen nichts statt eines Fehlalarms. Die Seite des Containers zeigt dieselbe Markierung neben seinem Image.
+Homeport fragt die Registry über die Engine des Hosts, die Digests vergleicht, ohne etwas zu pullen, und verwendet für private Images Ihre gespeicherten [Registry-Anmeldungen](/docs/guides/settings/#registrys). Antworten werden 6 Stunden lang aufbewahrt, sodass ein erneutes Öffnen der Liste nichts abfragt; **Nach neueren Images suchen** oben auf der Seite fragt jetzt jede Registry erneut. Lokal gebaute Images, per Digest gepullte (`app@sha256:…`) oder solche, deren Registry nicht erreichbar ist, zeigen nichts statt eines Fehlalarms. Die Seite des Containers zeigt dieselbe Markierung neben seinem Image.
 
 ### Aktionen
 
-Die Schaltfläche am Ende jeder Zeile startet oder stoppt den Container. Das Menü **⋮** enthält den Rest: **Logs**, **Terminal öffnen**, **Neu starten**, **Pausieren** oder **Fortsetzen**, **Beenden erzwingen**, **Umbenennen**, [**Bearbeiten**](#editing-a-container), [**Duplizieren**](#duplicating-a-container), [**Als Image committen…**](#committing-a-container), [**Dateisystem exportieren…**](#exporting-a-containers-filesystem) und **Entfernen**.
+Die Schaltfläche am Ende jeder Zeile startet oder stoppt den Container. Das Menü **⋮** enthält den Rest: **Logs**, **Terminal öffnen**, **Neu starten**, **Pausieren** oder **Fortsetzen**, **Beenden erzwingen**, **Umbenennen**, [**Bearbeiten**](#einen-container-bearbeiten), [**Duplizieren**](#einen-container-duplizieren), [**Als Image committen…**](#einen-container-committen), [**Dateisystem exportieren…**](#das-dateisystem-eines-containers-exportieren) und **Entfernen**.
 
 Kreuzen Sie Container an, um mit **Starten**, **Stoppen**, **Neu starten** oder **Entfernen** auf mehrere gleichzeitig zu wirken. Das Kästchen in der Zeile eines Stacks wählt alle seine Container aus.
 
@@ -93,7 +93,7 @@ Wenn der Container stoppt, endet das Log mit _— Ende der Logs —_.
 
 Wird bei Containern mit einem Healthcheck angezeigt – ihrem eigenen oder dem ihres Images. **Healthcheck** gibt den Status (_starting_, _healthy_ oder _unhealthy_), den Befehl, seine Zeitsteuerung (die Standardwerte der Engine füllen aus, was nicht gesetzt ist: alle 30 s, ein Timeout von 30 s, 3 Wiederholungen) und wie viele Prüfungen in Folge fehlgeschlagen sind. **Letzte Ergebnisse** listet die Prüfungen auf, die die Engine aufbewahrt, die neuesten zuerst, mit Exit-Code, Zeitpunkt, Dauer und Ausgabe; lange Ausgaben werden hinter **Weitere Zeilen anzeigen** eingeklappt.
 
-Wenn die Liste also _unhealthy_ sagt, steht hier der Grund, ohne das rohe JSON zu lesen. Der Tab aktualisiert sich von selbst einmal pro Prüfintervall und immer dann, wenn sich der Status ändert. Ein Container, dessen Healthcheck abgeschaltet ist, hat keinen Tab Zustand; um einen hinzuzufügen oder zu ändern, [bearbeiten Sie den Container](#editing-a-container).
+Wenn die Liste also _unhealthy_ sagt, steht hier der Grund, ohne das rohe JSON zu lesen. Der Tab aktualisiert sich von selbst einmal pro Prüfintervall und immer dann, wenn sich der Status ändert. Ein Container, dessen Healthcheck abgeschaltet ist, hat keinen Tab Zustand; um einen hinzuzufügen oder zu ändern, [bearbeiten Sie den Container](#einen-container-bearbeiten).
 
 ### Exec
 
@@ -136,7 +136,7 @@ Die im Container laufenden Prozesse, so wie `ps aux` sie zeigt, alle fünf Sekun
 
 | Feld                                 | Hinweise                                                                                                                                                                                |
 | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Image**                            | Erforderlich. Schlägt die Images des Hosts vor. Wird zuerst gepullt, wenn der Host es nicht hat, mit der gespeicherten [Registry-Anmeldung](/docs/guides/settings/#registries).         |
+| **Image**                            | Erforderlich. Schlägt die Images des Hosts vor. Wird zuerst gepullt, wenn der Host es nicht hat, mit der gespeicherten [Registry-Anmeldung](/docs/guides/settings/#registrys).         |
 | **Name**                             | Optional; die Engine erzeugt einen, wenn er leer ist.                                                                                                                                   |
 | **Befehl**                           | Ersetzt den Standardbefehl des Images (nicht seinen Entrypoint). Setzen Sie Argumente wie in einer Shell in Anführungszeichen.                                                          |
 | **Ports**                            | **Host-Port** → **Container-Port**, `tcp` oder `udp`. Lassen Sie den Host-Port leer, damit die Engine einen freien wählt. Ports werden auf jeder Schnittstelle veröffentlicht.          |
@@ -205,7 +205,7 @@ Die Docker Engine kann die meisten Einstellungen eines bestehenden Containers ni
 Bevor etwas geschieht, listet Homeport auf, was der neue Container nicht haben wird:
 
 - **Anonyme Volumes** – der neue Container startet mit leeren. Die alten werden nicht gelöscht: Sie bleiben als unbenutzte Volumes erhalten, die Sie weiterhin öffnen oder [aufräumen](/docs/guides/volumes-networks/) können.
-- **Im Container geänderte Dateien** seit seiner Erstellung, etwa installierte Pakete oder bearbeitete Konfiguration. Um sie zu behalten, [committen Sie den Container zuerst als Image](#committing-a-container) – die Bestätigung hat dafür eine Schaltfläche – und bearbeiten Sie den Container so, dass er dieses Image verwendet.
+- **Im Container geänderte Dateien** seit seiner Erstellung, etwa installierte Pakete oder bearbeitete Konfiguration. Um sie zu behalten, [committen Sie den Container zuerst als Image](#einen-container-committen) – die Bestätigung hat dafür eine Schaltfläche – und bearbeiten Sie den Container so, dass er dieses Image verwendet.
 - **Ausfallzeit** – ein laufender Container stoppt, während die beiden ausgetauscht werden, meist für einige Sekunden.
 - **Die nächste Bereitstellung eines Stacks** – bei einem Container in einem Stack erstellt die nächste Bereitstellung des Stacks ihn aus seiner Compose-Datei neu, ohne Ihre Änderung. Ändern Sie die Compose-Datei, damit sie bestehen bleibt.
 
@@ -232,10 +232,10 @@ Was erhalten bleibt: der Name, die Netzwerke mit ihren Aliassen, benannte Volume
 | **Änderungen**                              | Dockerfile-Anweisungen, die auf das neue Image angewendet werden, eine pro Zeile: `CMD`, `ENTRYPOINT`, `ENV`, `EXPOSE`, `LABEL`, `ONBUILD`, `USER`, `VOLUME` oder `WORKDIR`, etwa `ENV MODE=prod`.  |
 | **Container während des Commits pausieren** | Standardmäßig ein: Seine Prozesse werden für die wenigen Sekunden eingefroren, die es dauert, sodass gerade geschriebene Dateien konsistent sind. Der Container läuft danach weiter.                |
 
-Das neue Image erscheint sofort auf der [Seite Images](/docs/guides/images/). Volumes, benannte wie anonyme, gehören nicht dazu: Sichern Sie sie separat. Um ein Image zu erhalten, das Sie neu bauen können, [bauen Sie es besser aus einem Dockerfile](/docs/guides/images/#building-an-image).
+Das neue Image erscheint sofort auf der [Seite Images](/docs/guides/images/). Volumes, benannte wie anonyme, gehören nicht dazu: Sichern Sie sie separat. Um ein Image zu erhalten, das Sie neu bauen können, [bauen Sie es besser aus einem Dockerfile](/docs/guides/images/#ein-image-bauen).
 
 ## Das Dateisystem eines Containers exportieren
 
 **Dateisystem exportieren…** speichert jede Datei des Containers – die seines Images und alles, was sich seitdem geändert hat – in einer einzigen `.tar` auf diesem Computer, wie `docker export`. Wählen Sie, wo sie gespeichert werden soll; sie ist nach dem Container benannt. Der Fortschritt zeigt die geschriebenen Bytes, **Abbrechen** stoppt den Vorgang, und ein abgebrochener oder fehlgeschlagener Export hinterlässt keine unvollständige Datei. Das Archiv wird direkt auf die Festplatte gestreamt, daher sind Container von mehreren Gigabyte kein Problem.
 
-Das Archiv ist ein einfaches, flaches Dateisystem: keine Layer, keine Historie, keine Einstellungen und keine Volumes. Öffnen Sie es mit einem beliebigen tar-Werkzeug oder machen Sie es mit [**Aus tar importieren…**](/docs/guides/images/#importing-a-filesystem) auf der Seite Images oder mit `docker import` wieder zu einem Image. Um auch die Einstellungen eines Containers zu behalten, [committen Sie ihn](#committing-a-container) stattdessen.
+Das Archiv ist ein einfaches, flaches Dateisystem: keine Layer, keine Historie, keine Einstellungen und keine Volumes. Öffnen Sie es mit einem beliebigen tar-Werkzeug oder machen Sie es mit [**Aus tar importieren…**](/docs/guides/images/#ein-dateisystem-importieren) auf der Seite Images oder mit `docker import` wieder zu einem Image. Um auch die Einstellungen eines Containers zu behalten, [committen Sie ihn](#einen-container-committen) stattdessen.

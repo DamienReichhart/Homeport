@@ -84,7 +84,7 @@ containerd는 로그를 보관하지 않습니다. 태스크를 시작한 도구
 | Kubernetes(`k8s.io`)     | `/var/log/pods/<pod>/<container>/N.log`. CRI의 기록에 이름이 있음     | 그 파일을 실시간으로                                 |
 | `ctr` 및 기타 클라이언트 | 클라이언트가 지정한 곳. 보통 아무 데도 없음                           | **이 컨테이너의 출력은 기록되지 않습니다**와 그 이유 |
 
-다른 드라이버(journald, fluentd)로 로그를 보내는 nerdctl 컨테이너는 대신 그 드라이버 이름을 표시합니다. Homeport는 호스트의 컴퓨터에서 `tail`로 파일을 읽습니다([아래](#what-runs-on-the-host) 참고). 로그 파일은 보통 root 소유이므로 SSH 사용자에게 읽기 권한이 있어야 합니다.
+다른 드라이버(journald, fluentd)로 로그를 보내는 nerdctl 컨테이너는 대신 그 드라이버 이름을 표시합니다. Homeport는 호스트의 컴퓨터에서 `tail`로 파일을 읽습니다([아래](#호스트에서-실행되는-것) 참고). 로그 파일은 보통 root 소유이므로 SSH 사용자에게 읽기 권한이 있어야 합니다.
 
 ## 컨테이너 안의 터미널
 
@@ -115,7 +115,7 @@ containerd가 디스크를 쓰는 곳이 스냅샷입니다. 압축을 푼 이�
 | 로그   | `tail -n <lines> [-F] -- '<log file>'`. CRI의 기록이 없는 Kubernetes 컨테이너는 먼저 로그 폴더를 `ls`합니다 |
 | 터미널 | `mktemp -d`, 그 폴더에 FIFO 두 개를 만드는 `mkfifo -m 600`, 이를 통한 `cat`, 그리고 폴더의 `rm -rf`         |
 
-macOS나 Windows의 로컬 소켓에서는 이 명령을 실행할 수 없으므로 로그와 터미널에 SSH가 필요하다고 표시됩니다. Homeport가 호스트에서 실행하는 모든 명령은 [보안 페이지](/docs/reference/security/#what-homeport-runs-on-your-hosts)에 나와 있습니다.
+macOS나 Windows의 로컬 소켓에서는 이 명령을 실행할 수 없으므로 로그와 터미널에 SSH가 필요하다고 표시됩니다. Homeport가 호스트에서 실행하는 모든 명령은 [보안 페이지](/docs/reference/security/#homeport가-호스트에서-실행하는-것)에 나와 있습니다.
 
 ## 이벤트
 

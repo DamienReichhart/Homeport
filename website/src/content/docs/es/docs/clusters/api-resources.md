@@ -27,4 +27,4 @@ Haz clic en un objeto para abrir su página:
 - **Condiciones**, cuando su `status` las tiene, como en las páginas propias de Homeport.
 - Los **Eventos** sobre él, y su **YAML**, sin `managedFields`.
 
-Cuando su tipo lo permite, **Editar** abre su YAML para cambiarlo mediante una previsualización y server-side apply (consulta [Aplicar y editar YAML](/docs/clusters/yaml/)), y **Eliminar** lo elimina tras una confirmación que indica su nombre y el del clúster (consulta [Eliminar](/docs/clusters/actions/#deleting)). En la lista, marca varios objetos para eliminarlos a la vez.
+Cuando su tipo lo permite, **Editar** abre su YAML para cambiarlo mediante una previsualización y server-side apply (consulta [Aplicar y editar YAML](/docs/clusters/yaml/)), y **Eliminar** lo elimina tras una confirmación que indica su nombre y el del clúster (consulta [Eliminar](/docs/clusters/actions/#eliminar)). En la lista, marca varios objetos para eliminarlos a la vez.

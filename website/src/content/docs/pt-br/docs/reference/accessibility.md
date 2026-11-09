@@ -3,13 +3,13 @@ title: Teclado e acessibilidade
 description: Como usar o Homeport com o teclado, com movimento reduzido e com um leitor de tela, o contraste que ele atende, os limites conhecidos hoje e como relatar uma barreira.
 ---
 
-O Homeport pretende ser utilizável só com o teclado, com um leitor de tela e com movimento reduzido, em cada um dos seus [idiomas](/docs/guides/settings/#appearance). Esta página diz o que funciona, o que ainda não funciona e como nos avisar quando algo atrapalha você.
+O Homeport pretende ser utilizável só com o teclado, com um leitor de tela e com movimento reduzido, em cada um dos seus [idiomas](/docs/guides/settings/#aparência). Esta página diz o que funciona, o que ainda não funciona e como nos avisar quando algo atrapalha você.
 
 ## Como se mover
 
 Tudo no Homeport pode ser alcançado com <kbd>Tab</kbd> e <kbd>Shift</kbd> <kbd>Tab</kbd> e usado com <kbd>Enter</kbd> ou <kbd>Space</kbd>. Um anel visível mostra onde está o foco.
 
-- **A barra lateral** lista todas as páginas; cada uma é um link. <kbd>Mod</kbd> <kbd>1</kbd> a <kbd>9</kbd> as abrem em ordem, e a [paleta de comandos](/docs/guides/keyboard/#command-palette) (<kbd>Mod</kbd> <kbd>K</kbd>) alcança todas as páginas, hosts e ações digitando.
+- **A barra lateral** lista todas as páginas; cada uma é um link. <kbd>Mod</kbd> <kbd>1</kbd> a <kbd>9</kbd> as abrem em ordem, e a [paleta de comandos](/docs/guides/keyboard/#paleta-de-comandos) (<kbd>Mod</kbd> <kbd>K</kbd>) alcança todas as páginas, hosts e ações digitando.
 - **Listas** (contêineres, imagens, volumes, redes, stacks, hosts, Pods…): o nome de cada linha é um botão ou um link. Vá até ele com <kbd>Tab</kbd> e pressione <kbd>Enter</kbd> para abrir o item, como um clique na linha faz. As caixas de seleção e o menu da linha vêm antes e depois dele.
 - **Ordenação**: o cabeçalho de uma coluna ordenável é um botão. Pressione <kbd>Enter</kbd> ou <kbd>Space</kbd> para ordenar por ela, e de novo para inverter; os leitores de tela anunciam a ordem.
 - **As stacks na lista de contêineres** abrem e fecham com o botão antes do nome delas, que diz se ela está expandida.

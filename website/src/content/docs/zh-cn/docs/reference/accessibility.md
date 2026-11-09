@@ -3,13 +3,13 @@ title: 键盘与无障碍
 description: 通过键盘、减弱动态效果和屏幕阅读器使用 Homeport，它满足的对比度标准、目前已知的局限，以及如何报告障碍。
 ---
 
-Homeport 的目标是在其所有[语言](/docs/guides/settings/#appearance)中，都能仅用键盘、配合屏幕阅读器以及在减弱动态效果的情况下使用。本页说明哪些功能可用、哪些尚不可用，以及当某些东西妨碍你使用时如何告诉我们。
+Homeport 的目标是在其所有[语言](/docs/guides/settings/#外观)中，都能仅用键盘、配合屏幕阅读器以及在减弱动态效果的情况下使用。本页说明哪些功能可用、哪些尚不可用，以及当某些东西妨碍你使用时如何告诉我们。
 
 ## 导航
 
 Homeport 中的一切都可以用 <kbd>Tab</kbd> 和 <kbd>Shift</kbd> <kbd>Tab</kbd> 访问，并用 <kbd>Enter</kbd> 或 <kbd>Space</kbd> 操作。一个可见的焦点环会显示焦点所在位置。
 
-- **侧边栏**列出每个页面；每个页面都是一个链接。<kbd>Mod</kbd> <kbd>1</kbd> 到 <kbd>9</kbd> 按顺序打开它们，[命令面板](/docs/guides/keyboard/#command-palette)（<kbd>Mod</kbd> <kbd>K</kbd>）可以通过输入访问每个页面、主机和操作。
+- **侧边栏**列出每个页面；每个页面都是一个链接。<kbd>Mod</kbd> <kbd>1</kbd> 到 <kbd>9</kbd> 按顺序打开它们，[命令面板](/docs/guides/keyboard/#命令面板)（<kbd>Mod</kbd> <kbd>K</kbd>）可以通过输入访问每个页面、主机和操作。
 - **列表**（容器、镜像、卷、网络、堆栈、主机、Pod…）：每一行的名称都是一个按钮或链接。用 <kbd>Tab</kbd> 移到它上面并按 <kbd>Enter</kbd> 即可打开该项，效果与点击该行相同。复选框和该行的菜单分别位于它之前和之后。
 - **排序**：可排序列的标题是一个按钮。按 <kbd>Enter</kbd> 或 <kbd>Space</kbd> 按该列排序，再按一次则反向排序；屏幕阅读器会播报排序顺序。
 - **容器列表中的堆栈**通过其名称前的按钮展开和折叠，该按钮会说明当前是否已展开。

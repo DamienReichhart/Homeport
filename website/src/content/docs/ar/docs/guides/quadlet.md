@@ -79,4 +79,4 @@ systemctl --user start 'web.service'
 loginctl enable-linger "$USER"
 ```
 
-تسرد [صفحة الأمان](/docs/reference/security/#what-homeport-runs-on-your-hosts) كل أمر يشغّله Homeport على مضيف.
+تسرد [صفحة الأمان](/docs/reference/security/#ما-يشغّله-homeport-على-مضيفاتك) كل أمر يشغّله Homeport على مضيف.

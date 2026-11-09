@@ -23,7 +23,7 @@ La pagina **Immagini** elenca le immagini memorizzate sull’host selezionato, c
 
 I container arrestati contano come utilizzatori di un’immagine. Seleziona l’intestazione di una colonna per ordinare, e cerca con **Cerca immagini**.
 
-Una ⬆ accanto al nome indica che uno dei tag dell’immagine punta a un’immagine più recente nel suo registro; passaci sopra il puntatore per vedere quale. Scarica il tag per ottenerla. **Cerca immagini più recenti** interroga di nuovo i registri invece di usare le risposte conservate per 6 ore. Vedi [immagini più recenti](/docs/guides/containers/#newer-images) per come funziona il controllo.
+Una ⬆ accanto al nome indica che uno dei tag dell’immagine punta a un’immagine più recente nel suo registro; passaci sopra il puntatore per vedere quale. Scarica il tag per ottenerla. **Cerca immagini più recenti** interroga di nuovo i registri invece di usare le risposte conservate per 6 ore. Vedi [immagini più recenti](/docs/guides/containers/#immagini-più-recenti) per come funziona il controllo.
 
 ## Scaricare un’immagine
 
@@ -35,11 +35,11 @@ Homeport mostra l’avanzamento del download livello per livello, e dice **Fatto
 
 Digitando un nome semplice come `postg` si cerca su Docker Hub mentre scrivi, e vengono elencati i repository corrispondenti con descrizione, stelle e un contrassegno **Ufficiale**. Scegline uno per vedere i suoi tag, dal più recente, con la loro dimensione e quando sono stati inviati; **Filtra i tag** restringe l’elenco (`alpine`), e **Altri tag** carica la pagina successiva. Scegliere un tag compila il riferimento, come `postgres:17-alpine`, pronto per **Scarica**.
 
-La ricerca viene eseguita sull’host selezionato, quindi raggiunge Docker Hub tramite la rete dell’host, come farà il download. I tag vengono letti da Docker Hub da questo computer; un [accesso](/docs/guides/settings/#registries) a Docker Hub memorizzato ne alza i limiti di frequenza. Digitare un tag, un digest o un altro registro (`ghcr.io/…`) salta la ricerca, e se Docker Hub non è raggiungibile la finestra lo dice e scarica comunque ciò che digiti. Gli altri registri non si possono ancora cercare.
+La ricerca viene eseguita sull’host selezionato, quindi raggiunge Docker Hub tramite la rete dell’host, come farà il download. I tag vengono letti da Docker Hub da questo computer; un [accesso](/docs/guides/settings/#registri) a Docker Hub memorizzato ne alza i limiti di frequenza. Digitare un tag, un digest o un altro registro (`ghcr.io/…`) salta la ricerca, e se Docker Hub non è raggiungibile la finestra lo dice e scarica comunque ciò che digiti. Gli altri registri non si possono ancora cercare.
 
 ### Immagini private
 
-Quando un accesso per il registro dell’immagine è memorizzato in [**Impostazioni → Registri**](/docs/guides/settings/#registries), Homeport lo passa all’Engine con il download, così le immagini private si scaricano su qualsiasi host (locale, TCP, TLS o SSH) senza nulla da configurare lì. Sotto il riferimento, la finestra dice come verrà scaricata l’immagine: **Scaricata come alice su ghcr.io**, oppure **Scaricata in forma anonima** quando nessun accesso corrisponde.
+Quando un accesso per il registro dell’immagine è memorizzato in [**Impostazioni → Registri**](/docs/guides/settings/#registri), Homeport lo passa all’Engine con il download, così le immagini private si scaricano su qualsiasi host (locale, TCP, TLS o SSH) senza nulla da configurare lì. Sotto il riferimento, la finestra dice come verrà scaricata l’immagine: **Scaricata come alice su ghcr.io**, oppure **Scaricata in forma anonima** quando nessun accesso corrisponde.
 
 Un’immagine senza un registro nel nome (`nginx`, `bitnami/redis`) usa l’accesso a Docker Hub. Un accesso a Docker Hub alza anche il limite di download di Docker Hub.
 
@@ -63,7 +63,7 @@ Scegli **Compila** e scegli una **Cartella** su questo computer che contiene un 
 | **Non usare la cache di build**          | Esegue di nuovo ogni passaggio (`--no-cache`).                                                                                                   |
 | **Scarica immagini di base più recenti** | Scarica le immagini `FROM` anche se l’host le ha già (`--pull`).                                                                                 |
 
-L’output della build viene trasmesso in tempo reale; **Annulla** la interrompe. Al termine, i nomi compaiono nella pagina Immagini. Se un passaggio non riesce, il messaggio lo indica (**La build non è riuscita al passaggio 3/5 (RUN make)**) e **Dettagli** contiene la parte finale dell’output. Le immagini `FROM` private si scaricano con gli [accessi ai registri](/docs/guides/settings/#registries) che hai memorizzato.
+L’output della build viene trasmesso in tempo reale; **Annulla** la interrompe. Al termine, i nomi compaiono nella pagina Immagini. Se un passaggio non riesce, il messaggio lo indica (**La build non è riuscita al passaggio 3/5 (RUN make)**) e **Dettagli** contiene la parte finale dell’output. Le immagini `FROM` private si scaricano con gli [accessi ai registri](/docs/guides/settings/#registri) che hai memorizzato.
 
 <Aside>
   Homeport usa il builder classico dell’Engine, quello offerto dalla sua API. Le funzionalità di
@@ -73,13 +73,13 @@ L’output della build viene trasmesso in tempo reale; **Annulla** la interrompe
 
 ### In alternativa, eseguire il commit di un container
 
-Un’immagine può anche nascere da un container: **Commit in un’immagine…**, nel menu **⋮** di un container, salva i suoi file e le sue impostazioni come sono ora; vedi [Eseguire il commit di un container](/docs/guides/containers/#committing-a-container). È il modo rapido per conservare ciò che qualcuno ha installato o modificato all’interno di un container in esecuzione. Una build è il modo duraturo: il suo Dockerfile dice come è fatta l’immagine, quindi si può ricompilare, revisionare e aggiornare quando l’immagine di base evolve. Un’immagine ottenuta con un commit no.
+Un’immagine può anche nascere da un container: **Commit in un’immagine…**, nel menu **⋮** di un container, salva i suoi file e le sue impostazioni come sono ora; vedi [Eseguire il commit di un container](/docs/guides/containers/#eseguire-il-commit-di-un-container). È il modo rapido per conservare ciò che qualcuno ha installato o modificato all’interno di un container in esecuzione. Una build è il modo duraturo: il suo Dockerfile dice come è fatta l’immagine, quindi si può ricompilare, revisionare e aggiornare quando l’immagine di base evolve. Un’immagine ottenuta con un commit no.
 
 ## Inviare un’immagine
 
 Scegli **Invia** nel menu **⋮** di un’immagine. **Nome da inviare** parte dal primo nome dell’immagine; scegli un altro dei suoi nomi, o digitane uno nuovo come `ghcr.io/org/app:v2`: all’immagine viene prima assegnato quel nome, come fa **Tag**. La prima parte del nome dice a quale registro va: `ghcr.io/org/app` va su GHCR, `org/app` su Docker Hub.
 
-Homeport invia tramite l’Engine dell’host con l’[accesso al registro](/docs/guides/settings/#registries) memorizzato per quel registro, e dice quale sotto il nome (**Inviata come alice su ghcr.io**). Senza alcun accesso memorizzato, la finestra avvisa prima di iniziare, perché la maggior parte dei registri rifiuta gli invii anonimi. Durante l’invio, la finestra conta i livelli inviati e quelli che il registro aveva già, e mostra il caricamento in corso; **Annulla** interrompe l’invio.
+Homeport invia tramite l’Engine dell’host con l’[accesso al registro](/docs/guides/settings/#registri) memorizzato per quel registro, e dice quale sotto il nome (**Inviata come alice su ghcr.io**). Senza alcun accesso memorizzato, la finestra avvisa prima di iniziare, perché la maggior parte dei registri rifiuta gli invii anonimi. Durante l’invio, la finestra conta i livelli inviati e quelli che il registro aveva già, e mostra il caricamento in corso; **Annulla** interrompe l’invio.
 
 Se il registro rifiuta, il messaggio dice se aggiungere un accesso o verificare che quello memorizzato possa inviare a quel repository.
 
@@ -94,7 +94,7 @@ Il file viaggia tra questo computer e l’host tramite la connessione dell’hos
 
 ### Importare un filesystem
 
-**Importa da tar…** in cima alla pagina trasforma il tar di un filesystem radice in un’immagine, come `docker import`: uno creato da [**Esporta il filesystem…**](/docs/guides/containers/#exporting-a-containers-filesystem) di un container o da `docker export`, l’output di `debootstrap` o di Buildroot, oppure un’appliance di un fornitore. Scegli il file (semplice o compresso con gzip, xz o bzip2), dai all’immagine un **nome** (si parte dal nome del file) e, facoltativamente, delle **Modifiche**: istruzioni Dockerfile come `CMD ["/bin/sh"]` o `ENV LANG=C.UTF-8`, perché un’immagine importata non ha un comando proprio. L’avanzamento mostra i byte inviati; l’immagine compare poi nell’elenco.
+**Importa da tar…** in cima alla pagina trasforma il tar di un filesystem radice in un’immagine, come `docker import`: uno creato da [**Esporta il filesystem…**](/docs/guides/containers/#esportare-il-filesystem-di-un-container) di un container o da `docker export`, l’output di `debootstrap` o di Buildroot, oppure un’appliance di un fornitore. Scegli il file (semplice o compresso con gzip, xz o bzip2), dai all’immagine un **nome** (si parte dal nome del file) e, facoltativamente, delle **Modifiche**: istruzioni Dockerfile come `CMD ["/bin/sh"]` o `ENV LANG=C.UTF-8`, perché un’immagine importata non ha un comando proprio. L’avanzamento mostra i byte inviati; l’immagine compare poi nell’elenco.
 
 ### Salvare e caricare, o esportare e importare?
 
@@ -107,7 +107,7 @@ Il file viaggia tra questo computer e l’host tramite la connessione dell’hos
 
 ## Lavorare con un’immagine
 
-- **▶ Esegui** apre la [finestra Esegui](/docs/guides/containers/#running-a-container) con l’immagine già compilata.
+- **▶ Esegui** apre la [finestra Esegui](/docs/guides/containers/#eseguire-un-container) con l’immagine già compilata.
 - **Ispeziona**, o la selezione della riga, mostra **Layer**, le istruzioni che hanno creato ogni livello e le loro dimensioni, e **JSON originale**.
 - **Tag** aggiunge un altro nome, come `registry.example.com/app:v2`. Non invia nulla; lo fa **Invia**.
 - **Rimuovi** elimina l’immagine e i livelli che nessun’altra immagine usa. Un’immagine con più tag li perde tutti. L’Engine si rifiuta di rimuovere un’immagine ancora usata da un container; rimuovi prima il container.
@@ -119,4 +119,4 @@ Il file viaggia tra questo computer e l’host tramite la connessione dell’hos
 - **Immagini orfane**: immagini senza tag lasciate da build e download. Si possono rimuovere senza rischi.
 - **Tutte le immagini inutilizzate**: ogni immagine che nessun container usa, comprese quelle con tag. Si possono scaricare di nuovo, ma ciò richiede tempo e banda.
 
-Homeport ti dice quante ne sono state rimosse e quanto spazio è stato recuperato. La [pulizia della Panoramica](/docs/guides/overview/#cleaning-up) può anche rimuovere in un colpo solo container arrestati, reti, cache di build e volumi.
+Homeport ti dice quante ne sono state rimosse e quanto spazio è stato recuperato. La [pulizia della Panoramica](/docs/guides/overview/#fare-pulizia) può anche rimuovere in un colpo solo container arrestati, reti, cache di build e volumi.

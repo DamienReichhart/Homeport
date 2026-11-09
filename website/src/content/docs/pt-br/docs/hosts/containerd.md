@@ -84,7 +84,7 @@ O containerd não mantém logs: a ferramenta que inicia uma tarefa decide para o
 | Kubernetes (`k8s.io`)   | `/var/log/pods/<pod>/<container>/N.log`, indicado no registro do CRI sobre ele          | esse arquivo, acompanhado                                |
 | `ctr` e outros clientes | para onde eles a apontaram, normalmente para lugar nenhum                               | **A saída deste contêiner não é registrada**, e o motivo |
 
-Os contêineres do nerdctl que registram logs em outro driver (journald, fluentd) indicam esse driver no lugar. O Homeport lê o arquivo com `tail` na máquina do host (veja [abaixo](#what-runs-on-the-host)); os arquivos de log normalmente pertencem ao root, então o usuário SSH precisa ter permissão para lê-los.
+Os contêineres do nerdctl que registram logs em outro driver (journald, fluentd) indicam esse driver no lugar. O Homeport lê o arquivo com `tail` na máquina do host (veja [abaixo](#o-que-roda-no-host)); os arquivos de log normalmente pertencem ao root, então o usuário SSH precisa ter permissão para lê-los.
 
 ## Um terminal em um contêiner
 
@@ -115,7 +115,7 @@ Tudo o que está acima passa pela API do containerd, exceto os logs e os termina
 | Logs        | `tail -n <lines> [-F] -- '<log file>'`; para um contêiner do Kubernetes sem o registro do CRI, antes um `ls` da sua pasta de logs |
 | Um terminal | `mktemp -d`, `mkfifo -m 600` para dois FIFOs nessa pasta, `cat` por eles e `rm -rf` da pasta                                      |
 
-Um socket local no macOS ou no Windows não pode executá-los, e os logs e terminais então dizem que precisam de SSH. A [página de segurança](/docs/reference/security/#what-homeport-runs-on-your-hosts) lista todos os comandos que o Homeport executa em um host.
+Um socket local no macOS ou no Windows não pode executá-los, e os logs e terminais então dizem que precisam de SSH. A [página de segurança](/docs/reference/security/#o-que-o-homeport-executa-nos-seus-hosts) lista todos os comandos que o Homeport executa em um host.
 
 ## Eventos
 

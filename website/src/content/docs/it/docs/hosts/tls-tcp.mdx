@@ -32,11 +32,11 @@ La guida di Docker [Protect the Docker daemon socket](https://docs.docker.com/en
 
 Il certificato del server deve nominare l’host che inserisci — il suo nome DNS o indirizzo IP deve essere tra i nomi alternativi del soggetto del certificato — altrimenti la connessione fallisce con _Handshake TLS non riuscito_.
 
-I certificati e la chiave vengono memorizzati cifrati, il che richiede un [portachiavi del sistema operativo](/docs/requirements/#optional-an-os-keychain). Quando modifichi l’host, lascia un campo vuoto per conservare ciò che è memorizzato.
+I certificati e la chiave vengono memorizzati cifrati, il che richiede un [portachiavi del sistema operativo](/docs/requirements/#facoltativo-un-portachiavi-del-sistema-operativo). Quando modifichi l’host, lascia un campo vuoto per conservare ciò che è memorizzato.
 
 ### Da un contesto Docker
 
-Se `docker context ls` elenca già l’Engine, **Importa i contesti Docker** in **Aggiungi host** crea l’host con l’indirizzo del contesto e i suoi `ca.pem`, `cert.pem` e `key.pem`, senza scegliere file. I contesti che saltano la verifica TLS non vengono importati. Vedi [Contesti Docker](/docs/hosts/#docker-contexts).
+Se `docker context ls` elenca già l’Engine, **Importa i contesti Docker** in **Aggiungi host** crea l’host con l’indirizzo del contesto e i suoi `ca.pem`, `cert.pem` e `key.pem`, senza scegliere file. I contesti che saltano la verifica TLS non vengono importati. Vedi [Contesti Docker](/docs/hosts/#contesti-docker).
 
 ## TCP
 

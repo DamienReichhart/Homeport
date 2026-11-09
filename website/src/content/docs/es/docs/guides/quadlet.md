@@ -79,4 +79,4 @@ systemctl --user start 'web.service'
 loginctl enable-linger "$USER"
 ```
 
-La [página de seguridad](/docs/reference/security/#what-homeport-runs-on-your-hosts) lista todos los comandos que Homeport ejecuta en un host.
+La [página de seguridad](/docs/reference/security/#lo-que-homeport-ejecuta-en-tus-hosts) lista todos los comandos que Homeport ejecuta en un host.

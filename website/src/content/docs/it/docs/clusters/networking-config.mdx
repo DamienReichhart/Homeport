@@ -34,7 +34,7 @@ La scheda **Regole** di un Ingress è dove controllare l’instradamento: quale 
   caption="Una chiave mostrata; l’altra resta mascherata finché non lo chiedi."
 />
 
-La pagina di un Secret mostra il suo tipo e ogni chiave con la sua dimensione, mascherata. **Mostra** recupera quel singolo valore dal cluster e lo mostra, decodificato (i valori binari in base64), con **Copia** e **Nascondi**. I valori non fanno mai parte di un elenco, della pagina di un Secret o del suo YAML; uno mostrato non viene messo in cache, memorizzato o registrato, e viene nascosto di nuovo quando lasci la pagina. Vedi [Sicurezza e i tuoi dati](/docs/reference/security/#clusters).
+La pagina di un Secret mostra il suo tipo e ogni chiave con la sua dimensione, mascherata. **Mostra** recupera quel singolo valore dal cluster e lo mostra, decodificato (i valori binari in base64), con **Copia** e **Nascondi**. I valori non fanno mai parte di un elenco, della pagina di un Secret o del suo YAML; uno mostrato non viene messo in cache, memorizzato o registrato, e viene nascosto di nuovo quando lasci la pagina. Vedi [Sicurezza e i tuoi dati](/docs/reference/security/#cluster).
 
 La scheda **YAML** di una ConfigMap ha **Modifica**, per cambiarla tramite un’anteprima e il server-side apply ([Applicare e modificare YAML](/docs/clusters/yaml/)). I Secret non si modificano in Homeport, poiché non mostra mai tutti i loro valori insieme; applica invece il manifest di un Secret.
 

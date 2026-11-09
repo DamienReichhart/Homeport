@@ -37,7 +37,7 @@ Podman のホストでは、Homeport は Podman 独自の API も使います。
 
 ## 任意: Nomad クラスター
 
-[Nomad クラスター](/docs/clusters/nomad/)を管理するには、Nomad エージェントの HTTP API（既定ではポート 4646）へのネットワークアクセスと、クラスターで ACL が有効な場合はトークンが必要です。必要な [ACL ポリシー](/docs/clusters/nomad/#acl-policies)を参照してください。Homeport は Nomad の API を自分で話すため、`nomad` CLI は必要なく、クラスターには何もインストールされません。
+[Nomad クラスター](/docs/clusters/nomad/)を管理するには、Nomad エージェントの HTTP API（既定ではポート 4646）へのネットワークアクセスと、クラスターで ACL が有効な場合はトークンが必要です。必要な [ACL ポリシー](/docs/clusters/nomad/#acl-ポリシー)を参照してください。Homeport は Nomad の API を自分で話すため、`nomad` CLI は必要なく、クラスターには何もインストールされません。
 
 - **Nomad のバージョン**: Nomad 1.6 以降。**編集して実行** はジョブの送信済み仕様から始まります。Nomad は 1.6 以降、これを保持しています。
 

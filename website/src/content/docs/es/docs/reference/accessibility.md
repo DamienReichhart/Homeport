@@ -3,13 +3,13 @@ title: Teclado y accesibilidad
 description: Usar Homeport con el teclado, con movimiento reducido y con un lector de pantalla, el contraste que cumple, los límites conocidos hoy y cómo notificar una barrera.
 ---
 
-Homeport busca poder usarse solo con el teclado, con un lector de pantalla y con movimiento reducido, en cada uno de sus [idiomas](/docs/guides/settings/#appearance). Esta página explica qué funciona, qué no funciona todavía y cómo avisarnos cuando algo te impide avanzar.
+Homeport busca poder usarse solo con el teclado, con un lector de pantalla y con movimiento reducido, en cada uno de sus [idiomas](/docs/guides/settings/#apariencia). Esta página explica qué funciona, qué no funciona todavía y cómo avisarnos cuando algo te impide avanzar.
 
 ## Moverse por la app
 
 Todo en Homeport se alcanza con <kbd>Tab</kbd> y <kbd>Shift</kbd> <kbd>Tab</kbd>, y se usa con <kbd>Enter</kbd> o <kbd>Space</kbd>. Un anillo visible muestra dónde está el foco.
 
-- **La barra lateral** lista todas las páginas; cada una es un enlace. <kbd>Mod</kbd> <kbd>1</kbd> a <kbd>9</kbd> las abren en orden, y la [paleta de comandos](/docs/guides/keyboard/#command-palette) (<kbd>Mod</kbd> <kbd>K</kbd>) llega a cualquier página, host o acción escribiendo.
+- **La barra lateral** lista todas las páginas; cada una es un enlace. <kbd>Mod</kbd> <kbd>1</kbd> a <kbd>9</kbd> las abren en orden, y la [paleta de comandos](/docs/guides/keyboard/#paleta-de-comandos) (<kbd>Mod</kbd> <kbd>K</kbd>) llega a cualquier página, host o acción escribiendo.
 - **Listas** (contenedores, imágenes, volúmenes, redes, stacks, hosts, Pods…): el nombre de cada fila es un botón o un enlace. Llega a él con <kbd>Tab</kbd> y pulsa <kbd>Enter</kbd> para abrir el elemento, como al hacer clic en la fila. Las casillas y el menú de la fila van antes y después.
 - **Ordenación**: el encabezado de una columna ordenable es un botón. Pulsa <kbd>Enter</kbd> o <kbd>Space</kbd> para ordenar por ella, y otra vez para invertir el orden; los lectores de pantalla anuncian el orden.
 - **Los stacks de la lista de contenedores** se abren y se cierran con el botón que hay antes de su nombre, que indica si está desplegado.

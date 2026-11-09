@@ -7,16 +7,16 @@ import { DocScreenshot } from '@/features/docs';
 
 集群既可以是 Kubernetes 集群，也可以是 **Nomad** 集群。Homeport 从你的计算机与 Nomad agent（server 或 client）本就提供的 HTTP API 通信：集群上不会安装任何内容，本机上也不需要 `nomad` CLI。它所做的一切都通过 API 完成，所用权限就是你提供的 ACL 令牌所拥有的权限。
 
-Nomad 集群与你的主机和 Kubernetes 集群一起显示在切换器中。选择一个 Nomad 集群后，概览上会显示其版本、区域和地址，侧边栏中会显示它自己的页面：**[Job](#jobs)**（你可以在这里[运行 job](#run-a-job)，并打开其 allocation 的[日志和 shell](#logs-and-shell)）和 **[Node](#nodes)**。选中它时，Kubernetes 页面会被隐藏。
+Nomad 集群与你的主机和 Kubernetes 集群一起显示在切换器中。选择一个 Nomad 集群后，概览上会显示其版本、区域和地址，侧边栏中会显示它自己的页面：**[Job](#job)**（你可以在这里[运行 job](#运行-job)，并打开其 allocation 的[日志和 shell](#日志和-shell)）和 **[Node](#node)**。选中它时，Kubernetes 页面会被隐藏。
 
 你可以做的事情，按本页介绍的顺序：
 
-1. 通过地址[添加集群](#adding-a-nomad-cluster)，如果它使用 [TLS](#tls) 和 [ACL 令牌](#the-acl-token)，也一并提供。
-2. 实时查看其 [job](#jobs) 及其 allocation；停止、清除和扩缩它们。
-3. 在查看 Nomad 的规划之后，用 HCL 或 JSON [运行 job](#run-a-job)，或者编辑并重新运行 job。
-4. 跟随查看 task 的[日志并在其中打开 shell](#logs-and-shell)。
-5. [腾空 node](#nodes) 并切换其调度资格。
-6. 选择一个 [namespace](#namespaces)，或选择全部。
+1. 通过地址[添加集群](#添加-nomad-集群)，如果它使用 [TLS](#tls) 和 [ACL 令牌](#acl-令牌)，也一并提供。
+2. 实时查看其 [job](#job) 及其 allocation；停止、清除和扩缩它们。
+3. 在查看 Nomad 的规划之后，用 HCL 或 JSON [运行 job](#运行-job)，或者编辑并重新运行 job。
+4. 跟随查看 task 的[日志并在其中打开 shell](#日志和-shell)。
+5. [腾空 node](#node) 并切换其调度资格。
+6. 选择一个 [namespace](#namespace)，或选择全部。
 
 ## 添加 Nomad 集群
 
@@ -25,7 +25,7 @@ Nomad 集群与你的主机和 Kubernetes 集群一起显示在切换器中。�
 - **名称**：切换器和概览中显示的名称，例如 `nomad-prod`。
 - **地址**：agent 的 HTTP API，与 `NOMAD_ADDR` 提供给 `nomad` CLI 的相同。`nomad.example.com` 会变成 `http://nomad.example.com:4646`：未指定端口时会加上 4646 端口，提供了 TLS 材料时则使用 `https://`。
 - **区域**：留空则使用 agent 自身的区域。设置它可以通过联邦 agent 管理另一个区域，与 `NOMAD_REGION` 的作用相同。
-- **ACL 令牌**：集群启用 ACL 时所用令牌的 Secret ID。参见下文的[令牌](#the-acl-token)。
+- **ACL 令牌**：集群启用 ACL 时所用令牌的 Secret ID。参见下文的[令牌](#acl-令牌)。
 
 **测试连接**会在不保存的情况下连接一次，并显示 Nomad 版本和区域，或无法连接的原因。**添加集群**会保存并连接。之后其页面会显示其状态、版本和区域，并允许你更改上述任何设置：令牌和 TLS 密钥不会再次显示，留空的字段会保留已保存的值。已保存凭据旁边的**删除**会在你保存时将其删除。
 
@@ -177,7 +177,7 @@ nomad acl token create -name=homeport -policy=homeport
 
 ## 状态和问题
 
-状态遵循与 [Kubernetes 集群](/docs/clusters/#statuses)相同的规则：agent 无法访问时，Homeport 会自行重试；只有你能修复的问题，它会等你修复。
+状态遵循与 [Kubernetes 集群](/docs/clusters/#状态)相同的规则：agent 无法访问时，Homeport 会自行重试；只有你能修复的问题，它会等你修复。
 
 - **地址错误**：找不到的名称、被拒绝的连接或超时都会说明是哪一种，并附上它尝试的地址。
 - **证书已过期、CA 未知或名称不符**：每种情况都会说明需要在 **TLS 设置**中更改什么。

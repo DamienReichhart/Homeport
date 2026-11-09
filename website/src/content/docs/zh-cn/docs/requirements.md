@@ -37,7 +37,7 @@ Homeport 不包含容器运行时。它管理已经在某处运行的 Docker Eng
 
 ## 可选：Nomad 集群
 
-要管理 [Nomad 集群](/docs/clusters/nomad/)，Homeport 需要到某个 Nomad agent 的 HTTP API（默认端口 4646）的网络访问；如果集群启用了 ACL，还需要一个令牌，参见它所需的 [ACL 策略](/docs/clusters/nomad/#acl-policies)。Homeport 自己实现了 Nomad API 通信，因此不需要 `nomad` CLI，也不会在集群上安装任何东西。
+要管理 [Nomad 集群](/docs/clusters/nomad/)，Homeport 需要到某个 Nomad agent 的 HTTP API（默认端口 4646）的网络访问；如果集群启用了 ACL，还需要一个令牌，参见它所需的 [ACL 策略](/docs/clusters/nomad/#acl-策略)。Homeport 自己实现了 Nomad API 通信，因此不需要 `nomad` CLI，也不会在集群上安装任何东西。
 
 - **Nomad 版本**：Nomad 1.6 或更高版本。**编辑并运行**从 job 提交时的规范开始，Nomad 从 1.6 起会保存该规范。
 

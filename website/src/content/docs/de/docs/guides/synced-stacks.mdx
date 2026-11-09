@@ -51,7 +51,7 @@ Fügen Sie die `https://`-URL des Repositorys ein, wählen Sie **Token** und geb
 <Aside type="tip">
   Ohne Schlüsselbund des Betriebssystems kann Homeport keine Deploy-Keys oder Tokens speichern,
   daher lassen sich nur öffentliche Repositorys hinzufügen. Siehe
-  [Voraussetzungen](/docs/requirements/#optional-an-os-keychain).
+  [Voraussetzungen](/docs/requirements/#optional-ein-schlüsselbund-des-betriebssystems).
 </Aside>
 
 Das Entfernen eines Repositorys löscht seinen Schlüssel oder sein Token und seinen Klon auf diesem Computer. Es wird abgelehnt, solange ein synchronisierter Stack das Repository verwendet.
@@ -78,7 +78,7 @@ Homeport ruft den Branch oder das Tag ab und liest die Compose-Datei, bevor es e
 
 Das Repository wird einmal auf diesem Computer geklont, in einen Ordner `repositories` neben der Datenbank von Homeport, und von allen synchronisierten Stacks geteilt, die daraus erstellt wurden. Jeder synchronisierte Stack stellt aus seinem eigenen Checkout des Commits bereit, in einem Ordner `synced-stacks` dort, der zwischen Bereitstellungen an Ort und Stelle bleibt: Dateien, die Ihre Container über relative Bind-Mounts schreiben, bleiben, wo sie waren. Symbolische Links im Repository werden als normale Dateien ausgecheckt, sodass eine Compose-Datei Compose nicht auf eine Datei an anderer Stelle auf diesem Computer verweisen kann. Dateien behalten die Zeilenenden, mit denen das Repository sie speichert, auch unter Windows, sodass ein in ein Linux-Image kopiertes Skript weiterhin läuft; nur die eigene `.gitattributes` des Repositorys kann sie ändern.
 
-Ein synchronisierter Stack kann stattdessen in einem [Swarm](/docs/guides/swarm/) bereitgestellt werden: Wählen Sie ihn unter **Bereitstellen auf** auf der Seite **Neuer Stack**. Er synchronisiert, stellt bereit und stellt automatisch bereit wie sonst auch, mit `docker stack deploy` aus seinem Checkout ausgeführt; unter [Verknüpfte und synchronisierte Stacks in einem Swarm](/docs/guides/swarm/#linked-and-synced-stacks-on-a-swarm) steht, was sich ändert, allen voran `build:`.
+Ein synchronisierter Stack kann stattdessen in einem [Swarm](/docs/guides/swarm/) bereitgestellt werden: Wählen Sie ihn unter **Bereitstellen auf** auf der Seite **Neuer Stack**. Er synchronisiert, stellt bereit und stellt automatisch bereit wie sonst auch, mit `docker stack deploy` aus seinem Checkout ausgeführt; unter [Verknüpfte und synchronisierte Stacks in einem Swarm](/docs/guides/swarm/#verknüpfte-und-synchronisierte-stacks-in-einem-swarm) steht, was sich ändert, allen voran `build:`.
 
 **Vergessen** sorgt dafür, dass Homeport dem Repository nicht mehr folgt. Seine Container laufen weiter, und er wird ein externer Stack; sein Checkout wird gelöscht, sofern Container keine Dateien hineingeschrieben haben, und der Klon des Repositorys verschwindet, sobald kein synchronisierter Stack es mehr verwendet. Das Repository bleibt in **Einstellungen → Repositorys**.
 

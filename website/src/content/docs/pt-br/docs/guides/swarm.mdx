@@ -108,7 +108,7 @@ A aba **Logs** acompanha os logs dele, e **Inspecionar** mostra a definição co
 
 **Editar**, na página de um serviço, muda a imagem, o ambiente e as réplicas dele, e só isso: as portas, as montagens, as redes e todo o resto são enviados de volta como estão. O Swarm então passa as tarefas dele para as novas configurações algumas de cada vez, e a página mostra o progresso da atualização. **Reimplantar todas as tarefas** as reinicia mesmo quando nada mudou, baixando a imagem de novo, que é como um novo envio da mesma tag é distribuído. Se outra pessoa atualizou o serviço desde que você o abriu, o Homeport avisa em vez de sobrescrever a mudança dela: atualize e edite de novo.
 
-Imagens privadas: os próprios nós baixam as imagens, então uma imagem privada precisa de um login em cada nó (`docker login` lá), ou de uma stack implantada com as suas credenciais de registro (veja [Implantando stacks](#deploying-stacks-to-a-swarm)).
+Imagens privadas: os próprios nós baixam as imagens, então uma imagem privada precisa de um login em cada nó (`docker login` lá), ou de uma stack implantada com as suas credenciais de registro (veja [Implantando stacks](#implantando-stacks-em-um-swarm)).
 
 ## Tarefas
 

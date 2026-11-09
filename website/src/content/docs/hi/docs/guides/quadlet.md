@@ -79,4 +79,4 @@ systemctl --user start 'web.service'
 loginctl enable-linger "$USER"
 ```
 
-[सुरक्षा पेज](/docs/reference/security/#what-homeport-runs-on-your-hosts) हर उस कमांड की सूची देता है जिसे Homeport किसी होस्ट पर चलाता है।
+[सुरक्षा पेज](/docs/reference/security/#homeport-आपके-होस्ट-पर-क्या-चलाता-है) हर उस कमांड की सूची देता है जिसे Homeport किसी होस्ट पर चलाता है।

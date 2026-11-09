@@ -23,7 +23,7 @@ Ogni host ha una scheda con nome, indirizzo, tipo e stato. Per un host connesso 
 - l’uso della CPU dei suoi container in tempo reale, come percentuale di una CPU: `250%` su un host con 8 CPU significa che due CPU e mezza sono occupate;
 - la memoria usata dai suoi container, sul totale dell’host.
 
-Seleziona una scheda per passare a quell’host. Se è connesso, Homeport apre i suoi **Container**. **I suoi container nella bacheca** apre la [Bacheca](#board) con solo quell’host.
+Seleziona una scheda per passare a quell’host. Se è connesso, Homeport apre i suoi **Container**. **I suoi container nella bacheca** apre la [Bacheca](#bacheca) con solo quell’host.
 
 ### Schede dei cluster
 
@@ -89,7 +89,7 @@ La **Bacheca**, seconda nella barra laterale, elenca in un’unica tabella i con
 - **Azioni**: ogni riga ha lo stesso pulsante di avvio/arresto e lo stesso menu della pagina Container, che agiscono sull’host di quella riga. Seleziona più righe, su uno o più host, per avviarle, arrestarle, riavviarle o rimuoverle insieme; la rimozione chiede prima conferma ed elenca i container host per host.
 - **Aprire un container**: seleziona una riga; Homeport passa al suo host e apre il container. **Indietro** torna alla Bacheca.
 
-Per trovare un container tra quelli di tutti gli host senza aprire la Bacheca, [cerca dal riquadro comandi](/docs/guides/keyboard/#searching-every-host).
+Per trovare un container tra quelli di tutti gli host senza aprire la Bacheca, [cerca dal riquadro comandi](/docs/guides/keyboard/#cercare-in-tutti-gli-host).
 
 Un host non connesso (non raggiungibile, disattivato, in attesa di un tuo intervento) ha una riga sopra la tabella, come _nas (Non raggiungibile) non è mostrato._, con un collegamento alla sua pagina; gli altri host sono elencati come al solito. Oltre qualche centinaio di container, vengono disegnate solo le righe visibili, così la Bacheca resta veloce.
 
@@ -103,11 +103,11 @@ Homeport aggiunge un’icona all’area di notifica: la barra dei menu su macOS,
 
 Il suggerimento dell’icona riassume la situazione: **Homeport — 3 di 4 host connessi**. Su Windows, fai doppio clic sull’icona per aprire la finestra.
 
-Con **Chiudi nell’area di notifica** attivo nelle [Impostazioni](/docs/guides/settings/#desktop), chiudere la finestra nasconde Homeport invece di farlo uscire, così le sue connessioni agli host restano aperte; riaprilo dall’area di notifica, o aprendo di nuovo Homeport. Alcuni desktop Linux nascondono le icone dell’area di notifica; vedi i [requisiti](/docs/requirements/#optional-a-system-tray).
+Con **Chiudi nell’area di notifica** attivo nelle [Impostazioni](/docs/guides/settings/#desktop), chiudere la finestra nasconde Homeport invece di farlo uscire, così le sue connessioni agli host restano aperte; riaprilo dall’area di notifica, o aprendo di nuovo Homeport. Alcuni desktop Linux nascondono le icone dell’area di notifica; vedi i [requisiti](/docs/requirements/#facoltativo-unarea-di-notifica).
 
 ### Notifiche
 
-Finché Homeport è in esecuzione, anche se nascosto nell’area di notifica, ti avvisa tramite le notifiche del sistema operativo quando un container si arresta con un errore, esaurisce la memoria o diventa non integro, e quando un host diventa non raggiungibile o torna disponibile. Attiva o disattiva ogni tipo nelle [Impostazioni](/docs/guides/settings/#notifications).
+Finché Homeport è in esecuzione, anche se nascosto nell’area di notifica, ti avvisa tramite le notifiche del sistema operativo quando un container si arresta con un errore, esaurisce la memoria o diventa non integro, e quando un host diventa non raggiungibile o torna disponibile. Attiva o disattiva ogni tipo nelle [Impostazioni](/docs/guides/settings/#notifiche).
 
 ## Eventi
 
@@ -132,8 +132,8 @@ Cerca per azione o nome dell’oggetto, oppure filtra per tipo. L’elenco si ag
 
 - **Tra un riavvio e l’altro.** Gli eventi vengono salvati su questo computer man mano che arrivano. La pagina mostra gli ultimi 1.000; scorri fino in fondo, o scegli **Carica eventi precedenti**, per altri 1.000 alla volta.
 - **Mentre Homeport era chiuso.** Quando Homeport si riconnette a un host, chiede all’Engine gli eventi successivi all’ultimo conservato, così ciò che è successo nel frattempo viene recuperato, fin dove l’Engine se lo ricorda, cioè i suoi ultimi qualche centinaio di eventi. Nulla viene elencato due volte.
-- **Per 30 giorni**, o per il tempo indicato da **Conserva gli eventi degli Engine per** in [Impostazioni → Dati](/docs/guides/settings/#data), e al massimo 10.000 per host. Gli eventi più vecchi vengono rimossi ogni ora.
+- **Per 30 giorni**, o per il tempo indicato da **Conserva gli eventi degli Engine per** in [Impostazioni → Dati](/docs/guides/settings/#dati), e al massimo 10.000 per host. Gli eventi più vecchi vengono rimossi ogni ora.
 
 **Cancella la cronologia** dimentica tutti gli eventi conservati per l’host selezionato; quelli nuovi continuano ad apparire. Rimuovere un host rimuove i suoi eventi. Gli eventi dell’Engine stesso non vengono mai modificati.
 
-I [container ausiliari](/docs/guides/volumes-networks/#the-helper-container) di Homeport, che aprono i volumi, non compaiono mai qui.
+I [container ausiliari](/docs/guides/volumes-networks/#il-container-ausiliario) di Homeport, che aprono i volumi, non compaiono mai qui.

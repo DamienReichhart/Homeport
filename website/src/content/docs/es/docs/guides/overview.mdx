@@ -23,7 +23,7 @@ Cada host tiene una tarjeta con su nombre, dirección, tipo y estado. Para un ho
 - el uso de CPU en directo de sus contenedores, como porcentaje de una CPU: `250%` en un host de 8 CPU significa que dos CPU y media están ocupadas;
 - la memoria que usan sus contenedores, sobre el total del host.
 
-Selecciona una tarjeta para cambiar a ese host. Si está conectado, Homeport abre sus **Contenedores**. **Sus contenedores en el Tablero** abre el [Tablero](#board) mostrando solo ese host.
+Selecciona una tarjeta para cambiar a ese host. Si está conectado, Homeport abre sus **Contenedores**. **Sus contenedores en el Tablero** abre el [Tablero](#tablero) mostrando solo ese host.
 
 ### Tarjetas de clúster
 
@@ -90,7 +90,7 @@ El **Tablero**, segundo en la barra lateral, lista en una sola tabla los contene
 - **Acciones** — cada fila tiene el mismo botón de iniciar/detener y el mismo menú que en la página Contenedores, y actúan sobre el host de esa fila. Marca varias filas, de un host o de varios, para iniciarlas, detenerlas, reiniciarlas o eliminarlas juntas; eliminar pide confirmación y lista los contenedores host por host.
 - **Abrir un contenedor** — selecciona una fila: Homeport cambia a su host y abre el contenedor. **Volver** regresa al Tablero.
 
-Para encontrar un contenedor entre los de todos los hosts sin abrir el Tablero, [busca desde la paleta de comandos](/docs/guides/keyboard/#searching-every-host).
+Para encontrar un contenedor entre los de todos los hosts sin abrir el Tablero, [busca desde la paleta de comandos](/docs/guides/keyboard/#buscar-en-todos-los-hosts).
 
 Un host que no está conectado — inaccesible, desactivado o esperándote — ocupa una línea encima de la tabla, como _nas (Inaccesible) no se muestra._, con un enlace a su página; los demás hosts se listan como siempre. A partir de unos cientos de contenedores, solo se dibujan las filas visibles, así que el Tablero sigue siendo rápido.
 
@@ -104,11 +104,11 @@ Homeport añade un icono a la bandeja del sistema: la barra de menús en macOS, 
 
 La información sobre herramientas del icono lo resume: **Homeport — 3 de 4 hosts conectados**. En Windows, haz doble clic en el icono para abrir la ventana.
 
-Con **Cerrar a la bandeja del sistema** activado en [Ajustes](/docs/guides/settings/#desktop), cerrar la ventana oculta Homeport en lugar de cerrarlo, así que sus conexiones a los hosts siguen abiertas; vuelve a abrirlo desde la bandeja, o abriendo Homeport de nuevo. Algunos escritorios Linux ocultan los iconos de la bandeja; consulta [Requisitos](/docs/requirements/#optional-a-system-tray).
+Con **Cerrar a la bandeja del sistema** activado en [Ajustes](/docs/guides/settings/#escritorio), cerrar la ventana oculta Homeport en lugar de cerrarlo, así que sus conexiones a los hosts siguen abiertas; vuelve a abrirlo desde la bandeja, o abriendo Homeport de nuevo. Algunos escritorios Linux ocultan los iconos de la bandeja; consulta [Requisitos](/docs/requirements/#opcional-una-bandeja-del-sistema).
 
 ### Notificaciones
 
-Mientras Homeport se ejecuta, incluso oculto en la bandeja, te avisa mediante las notificaciones de tu sistema operativo cuando un contenedor se detiene con un error, se queda sin memoria o pasa a no saludable, y cuando un host pasa a ser inaccesible o vuelve a estar disponible. Activa o desactiva cada tipo en [Ajustes](/docs/guides/settings/#notifications).
+Mientras Homeport se ejecuta, incluso oculto en la bandeja, te avisa mediante las notificaciones de tu sistema operativo cuando un contenedor se detiene con un error, se queda sin memoria o pasa a no saludable, y cuando un host pasa a ser inaccesible o vuelve a estar disponible. Activa o desactiva cada tipo en [Ajustes](/docs/guides/settings/#notificaciones).
 
 ## Eventos
 
@@ -133,8 +133,8 @@ Busca por acción o por nombre de objeto, o filtra por tipo. La lista se actuali
 
 - **Entre reinicios.** Los eventos se guardan en este equipo a medida que llegan. La página muestra los 1000 más recientes; desplázate hasta el final, o elige **Cargar eventos anteriores**, para ver 1000 más cada vez.
 - **Mientras Homeport estaba cerrado.** Cuando Homeport vuelve a conectarse a un host, pide al Engine los eventos posteriores al último que conservó, así que se completa lo que ocurrió entretanto, hasta donde recuerda el Engine, que son sus últimos cientos de eventos. Nada se lista dos veces.
-- **Durante 30 días**, o lo que indique **Conservar los eventos del Engine durante** en [Ajustes → Datos](/docs/guides/settings/#data), y como máximo 10.000 por host. Los eventos más antiguos se eliminan cada hora.
+- **Durante 30 días**, o lo que indique **Conservar los eventos del Engine durante** en [Ajustes → Datos](/docs/guides/settings/#datos), y como máximo 10.000 por host. Los eventos más antiguos se eliminan cada hora.
 
 **Borrar historial** olvida todos los eventos conservados para el host seleccionado; los nuevos siguen apareciendo. Quitar un host elimina sus eventos. Los eventos del propio Engine nunca se modifican.
 
-Los [contenedores auxiliares](/docs/guides/volumes-networks/#the-helper-container) propios de Homeport, que abren los volúmenes, nunca aparecen aquí.
+Los [contenedores auxiliares](/docs/guides/volumes-networks/#el-contenedor-auxiliar) propios de Homeport, que abren los volúmenes, nunca aparecen aquí.

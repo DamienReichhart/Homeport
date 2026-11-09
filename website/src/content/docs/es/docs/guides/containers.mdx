@@ -20,7 +20,7 @@ Los contenedores que pertenecen a un [stack](/docs/guides/stacks/) se agrupan ba
 | Columna     | Muestra                                                                                                                   |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------- |
 | **Nombre**  | Un punto de estado, el nombre (el nombre del servicio dentro de un stack) y el ID corto.                                  |
-| **Imagen**  | La imagen a partir de la que se creó, con una marca ⬆ cuando se publica una [imagen más reciente](#newer-images).         |
+| **Imagen**  | La imagen a partir de la que se creó, con una marca ⬆ cuando se publica una [imagen más reciente](#imágenes-más-recientes).         |
 | **Estado**  | Tal como lo indica el Engine, p. ej., _Up 3 hours (healthy)_, con una insignia de salud si hay una comprobación de salud. |
 | **Puertos** | Hasta tres puertos, primero los publicados. Un puerto publicado es un enlace que lo abre en tu navegador.                 |
 | **CPU**     | En directo, como porcentaje de una CPU: `200%` significa dos CPU totalmente usadas.                                       |
@@ -35,11 +35,11 @@ Selecciona un contenedor para abrirlo.
 
 Una ⬆ junto a la imagen significa que su registro tiene ahora una imagen distinta bajo la etiqueta a partir de la que se creó el contenedor: `nginx:1.27` avanzó desde que se descargó, o se descargó una más reciente pero el contenedor no se recreó. Pasa el puntero por encima para ver cuál. Para actualizar, descarga la imagen y recrea el contenedor; para un stack, **Descargar imágenes** y después **Volver a desplegar**.
 
-Homeport pregunta al registro a través del Engine del host, que compara los digests sin descargar nada, usando tus [inicios de sesión de registros](/docs/guides/settings/#registries) guardados para las imágenes privadas. Las respuestas se guardan durante 6 horas, así que volver a abrir la lista no pregunta nada; **Buscar imágenes más recientes**, en la parte superior de la página, vuelve a preguntar ahora a todos los registros. Las imágenes compiladas localmente, descargadas por digest (`app@sha256:…`) o cuyo registro no es accesible no muestran nada en lugar de una falsa alarma. La página del contenedor muestra la misma marca junto a su imagen.
+Homeport pregunta al registro a través del Engine del host, que compara los digests sin descargar nada, usando tus [inicios de sesión de registros](/docs/guides/settings/#registros) guardados para las imágenes privadas. Las respuestas se guardan durante 6 horas, así que volver a abrir la lista no pregunta nada; **Buscar imágenes más recientes**, en la parte superior de la página, vuelve a preguntar ahora a todos los registros. Las imágenes compiladas localmente, descargadas por digest (`app@sha256:…`) o cuyo registro no es accesible no muestran nada en lugar de una falsa alarma. La página del contenedor muestra la misma marca junto a su imagen.
 
 ### Acciones
 
-El botón al final de cada fila inicia o detiene el contenedor. El menú **⋮** tiene el resto: **Logs**, **Abrir terminal**, **Reiniciar**, **Pausar** o **Reanudar**, **Matar**, **Cambiar nombre**, [**Editar**](#editing-a-container), [**Duplicar**](#duplicating-a-container), [**Hacer commit en una imagen…**](#committing-a-container), [**Exportar sistema de archivos…**](#exporting-a-containers-filesystem) y **Eliminar**.
+El botón al final de cada fila inicia o detiene el contenedor. El menú **⋮** tiene el resto: **Logs**, **Abrir terminal**, **Reiniciar**, **Pausar** o **Reanudar**, **Matar**, **Cambiar nombre**, [**Editar**](#editar-un-contenedor), [**Duplicar**](#duplicar-un-contenedor), [**Hacer commit en una imagen…**](#hacer-commit-de-un-contenedor), [**Exportar sistema de archivos…**](#exportar-el-sistema-de-archivos-de-un-contenedor) y **Eliminar**.
 
 Marca contenedores para actuar sobre varios a la vez con **Iniciar**, **Detener**, **Reiniciar** o **Eliminar**. La casilla de la fila de un stack selecciona todos sus contenedores.
 
@@ -93,7 +93,7 @@ Cuando el contenedor se detiene, el log termina con _— fin de los logs —_.
 
 Se muestra para los contenedores con una comprobación de salud, propia o de su imagen. **Comprobación de salud** da el estado (_starting_, _healthy_ o _unhealthy_), el comando, sus tiempos (los valores por defecto del Engine completan lo que no está definido: cada 30 s, un tiempo de espera de 30 s, 3 reintentos) y cuántas comprobaciones han fallado seguidas. **Últimos resultados** lista las comprobaciones que guarda el Engine, primero las más recientes, con su código de salida, cuándo se ejecutaron, cuánto tardaron y lo que mostraron; las salidas largas se pliegan tras **Mostrar más**.
 
-Así, cuando la lista dice _unhealthy_, aquí está el motivo, sin leer el JSON sin procesar. La pestaña se actualiza sola una vez por intervalo de comprobación y cada vez que cambia el estado. Un contenedor cuya comprobación de salud está desactivada no tiene pestaña Salud; para añadir o cambiar una, [edita el contenedor](#editing-a-container).
+Así, cuando la lista dice _unhealthy_, aquí está el motivo, sin leer el JSON sin procesar. La pestaña se actualiza sola una vez por intervalo de comprobación y cada vez que cambia el estado. Un contenedor cuya comprobación de salud está desactivada no tiene pestaña Salud; para añadir o cambiar una, [edita el contenedor](#editar-un-contenedor).
 
 ### Exec
 
@@ -136,7 +136,7 @@ Los procesos que se ejecutan en el contenedor, tal como los muestra `ps aux`, ac
 
 | Campo                                     | Notas                                                                                                                                                                              |
 | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Imagen**                                | Obligatorio. Sugiere las imágenes del host. Se descarga primero si el host no la tiene, con el [inicio de sesión del registro](/docs/guides/settings/#registries) guardado.        |
+| **Imagen**                                | Obligatorio. Sugiere las imágenes del host. Se descarga primero si el host no la tiene, con el [inicio de sesión del registro](/docs/guides/settings/#registros) guardado.        |
 | **Nombre**                                | Opcional; el Engine genera uno si está vacío.                                                                                                                                      |
 | **Comando**                               | Sustituye al comando por defecto de la imagen (no a su entrypoint). Pon los argumentos entre comillas como en un shell.                                                            |
 | **Puertos**                               | **Puerto del host** → **Puerto del contenedor**, `tcp` o `udp`. Deja vacío el puerto del host para que el Engine elija uno libre. Los puertos se publican en todas las interfaces. |
@@ -205,7 +205,7 @@ El Docker Engine no puede cambiar la mayoría de los ajustes de un contenedor ex
 Antes de que ocurra nada, Homeport lista lo que no tendrá el nuevo contenedor:
 
 - **Volúmenes anónimos** — el nuevo contenedor empieza con volúmenes vacíos. Los anteriores no se borran: se conservan como volúmenes sin usar que aún puedes abrir o [limpiar](/docs/guides/volumes-networks/).
-- **Archivos cambiados dentro del contenedor** desde que se creó, como paquetes instalados o configuración editada. Para conservarlos, [haz antes commit del contenedor en una imagen](#committing-a-container) — la confirmación tiene un botón para ello — y edita el contenedor para que use esa imagen.
+- **Archivos cambiados dentro del contenedor** desde que se creó, como paquetes instalados o configuración editada. Para conservarlos, [haz antes commit del contenedor en una imagen](#hacer-commit-de-un-contenedor) — la confirmación tiene un botón para ello — y edita el contenedor para que use esa imagen.
 - **Tiempo de inactividad** — un contenedor en ejecución se detiene mientras se intercambian los dos, normalmente durante unos segundos.
 - **El próximo despliegue de un stack** — para un contenedor de un stack, el próximo despliegue del stack lo recrea a partir de su archivo compose, sin tu edición. Cambia el archivo compose para que el cambio perdure.
 
@@ -232,10 +232,10 @@ Qué se conserva: el nombre, las redes con sus alias, los volúmenes con nombre 
 | **Cambios**                                | Instrucciones de Dockerfile que se aplican a la nueva imagen, una por línea: `CMD`, `ENTRYPOINT`, `ENV`, `EXPOSE`, `LABEL`, `ONBUILD`, `USER`, `VOLUME` o `WORKDIR`, como `ENV MODE=prod`.          |
 | **Pausar el contenedor durante el commit** | Activado por defecto: sus procesos se congelan durante los pocos segundos que tarda, así que los archivos que se están escribiendo quedan coherentes. Después, el contenedor sigue funcionando.     |
 
-La nueva imagen aparece al momento en la [página Imágenes](/docs/guides/images/). Los volúmenes, con nombre o anónimos, no forman parte de ella: haz su copia de seguridad por separado. Para crear una imagen que puedas volver a compilar, es preferible [compilarla a partir de un Dockerfile](/docs/guides/images/#building-an-image).
+La nueva imagen aparece al momento en la [página Imágenes](/docs/guides/images/). Los volúmenes, con nombre o anónimos, no forman parte de ella: haz su copia de seguridad por separado. Para crear una imagen que puedas volver a compilar, es preferible [compilarla a partir de un Dockerfile](/docs/guides/images/#compilar-una-imagen).
 
 ## Exportar el sistema de archivos de un contenedor
 
 **Exportar sistema de archivos…** guarda todos los archivos del contenedor — los de su imagen y todo lo que cambió desde entonces — en un único `.tar` en este equipo, como `docker export`. Elige dónde guardarlo; recibe el nombre del contenedor. El progreso muestra los bytes escritos, **Cancelar** lo detiene, y una exportación cancelada o fallida no deja ningún archivo a medias. El archivo se escribe directamente en el disco, así que los contenedores de varios gigabytes no son un problema.
 
-El archivo es un sistema de archivos plano y simple: sin capas, historial ni ajustes, y sin volúmenes. Ábrelo con cualquier herramienta tar, o vuelve a convertirlo en una imagen con [**Importar desde tar…**](/docs/guides/images/#importing-a-filesystem), en la página Imágenes, o con `docker import`. Para conservar también los ajustes de un contenedor, [haz commit de él](#committing-a-container) en su lugar.
+El archivo es un sistema de archivos plano y simple: sin capas, historial ni ajustes, y sin volúmenes. Ábrelo con cualquier herramienta tar, o vuelve a convertirlo en una imagen con [**Importar desde tar…**](/docs/guides/images/#importar-un-sistema-de-archivos), en la página Imágenes, o con `docker import`. Para conservar también los ajustes de un contenedor, [haz commit de él](#hacer-commit-de-un-contenedor) en su lugar.

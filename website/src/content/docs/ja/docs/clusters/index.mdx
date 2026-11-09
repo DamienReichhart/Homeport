@@ -13,13 +13,13 @@ import { DocScreenshot } from '@/features/docs';
   caption="クラスターは概要でホストの隣に並び、選択したクラスターのダッシュボードが表示されます。"
 />
 
-クラスターは、サイドバー上部の切り替えメニューでホストの隣に並びます。クラスターを選ぶと、そのクラスターについてのページ（**ワークロード**、**Pod**、**ネットワーク**、**構成**、**Node**、**イベント**、**API リソース**、**YAML を適用**、**Helm**、**ポートフォワード**）と、[概要](/docs/guides/overview/#the-selected-cluster)のダッシュボードが表示されます。ホストを選ぶと、ホストのページに戻ります。
+クラスターは、サイドバー上部の切り替えメニューでホストの隣に並びます。クラスターを選ぶと、そのクラスターについてのページ（**ワークロード**、**Pod**、**ネットワーク**、**構成**、**Node**、**イベント**、**API リソース**、**YAML を適用**、**Helm**、**ポートフォワード**）と、[概要](/docs/guides/overview/#選択したクラスター)のダッシュボードが表示されます。ホストを選ぶと、ホストのページに戻ります。
 
 ## できること
 
 クラスターで何が動いていて、正常かどうかをリアルタイムで確認でき、日常的な `kubectl` の作業を Homeport から行えます:
 
-1. kubeconfig から[クラスターを追加](#adding-a-cluster)するか、[ローカルのクラスター](/docs/clusters/local/)をワンクリックで追加します。クラウドのクラスターは [exec プラグイン](/docs/clusters/exec-plugins/)でサインインします。
+1. kubeconfig から[クラスターを追加](#クラスターの追加)するか、[ローカルのクラスター](/docs/clusters/local/)をワンクリックで追加します。クラウドのクラスターは [exec プラグイン](/docs/clusters/exec-plugins/)でサインインします。
 2. [ワークロードと Pod](/docs/clusters/workloads/)、[Service、Ingress、ConfigMap、Secret](/docs/clusters/networking-config/)、[Node とイベント](/docs/clusters/nodes-events/)、そしてカスタムリソースを含む[その他すべての API リソース](/docs/clusters/api-resources/)を閲覧します。
 3. Pod やワークロードの[ログを読み、コンテナでターミナルを開き](/docs/clusters/logs-exec/)、[ポートをこのコンピューターにフォワード](/docs/clusters/port-forward/)します。
 4. [スケール、再起動、削除](/docs/clusters/actions/)を行い、変更内容をプレビューしながら [YAML を適用または編集](/docs/clusters/yaml/)します。
