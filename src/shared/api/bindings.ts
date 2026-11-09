@@ -104,6 +104,66 @@ export const commands = {
 	 *  kind and k3d clusters running on a connected local Host that it doesn't.
 	 */
 	clustersDetectLocal: () => __TAURI_INVOKE<LocalClusters>("clusters_detect_local"),
+	/**
+	 *  Adds a Nomad Cluster, its ACL token and TLS key sealed, and starts
+	 *  connecting to it.
+	 */
+	clustersNomadAdd: (form: NomadForm) => __TAURI_INVOKE<ClusterView>("clusters_nomad_add", { form }),
+	/**
+	 *  Changes a Nomad Cluster's name, address and credentials (those left
+	 *  out are kept), then reconnects.
+	 */
+	clustersNomadUpdate: (id: string, form: NomadForm) => __TAURI_INVOKE<ClusterView>("clusters_nomad_update", { id, form }),
+	/**
+	 *  Connects once to the Nomad Cluster the form describes, without saving
+	 *  it. With `id`, the credentials left out are that Cluster's.
+	 */
+	clustersNomadTest: (form: NomadForm, id: string | null) => __TAURI_INVOKE<NomadAgent>("clusters_nomad_test", { form, id }),
+	clustersNomadJobs: (id: string, namespace: string | null) => __TAURI_INVOKE<NomadJobView[]>("clusters_nomad_jobs", { id, namespace }),
+	clustersNomadJob: (id: string, namespace: string | null, jobId: string) => __TAURI_INVOKE<NomadJobDetail>("clusters_nomad_job", { id, namespace, jobId }),
+	/**  Stops a job; with `purge`, Nomad forgets it at once. */
+	clustersNomadJobStop: (id: string, namespace: string | null, jobId: string, purge: boolean) => __TAURI_INVOKE<null>("clusters_nomad_job_stop", { id, namespace, jobId, purge }),
+	/**  Sets how many allocations a task group runs, within its scaling policy. */
+	clustersNomadJobScale: (id: string, namespace: string | null, jobId: string, group: string, count: number) => __TAURI_INVOKE<null>("clusters_nomad_job_scale", { id, namespace, jobId, group, count }),
+	/**
+	 *  Sends `true` each time what `topic` covers changes, through Nomad's
+	 *  blocking queries, until the stream is cancelled.
+	 */
+	clustersNomadWatchSubscribe: (id: string, topic: NomadWatch, onEvent: Channel<boolean>) => __TAURI_INVOKE<number>("clusters_nomad_watch_subscribe", { id, topic, onEvent }),
+	/**
+	 *  Parses `spec` (HCL2 by Nomad itself, or JSON) and asks Nomad what
+	 *  running it would change. A job naming no namespace goes to `namespace`.
+	 */
+	clustersNomadJobPlan: (id: string, namespace: string | null, spec: string) => __TAURI_INVOKE<NomadPlan>("clusters_nomad_job_plan", { id, namespace, spec }),
+	/**  Runs a planned job unless it changed since, keeping `source` with it. */
+	clustersNomadJobRun: (id: string, plan: NomadPlanToRun, source: string | null) => __TAURI_INVOKE<NomadRunResult>("clusters_nomad_job_run", { id, plan, source }),
+	/**  A job's specification to edit: as submitted when Nomad kept it, else its JSON. */
+	clustersNomadJobSource: (id: string, namespace: string | null, jobId: string) => __TAURI_INVOKE<NomadJobSource>("clusters_nomad_job_source", { id, namespace, jobId }),
+	clustersNomadAllocation: (id: string, allocId: string) => __TAURI_INVOKE<NomadAllocationDetail>("clusters_nomad_allocation", { id, allocId }),
+	/**
+	 *  Streams a task's stdout and stderr, as `options` asks, until cancelled
+	 *  or they end.
+	 */
+	clustersNomadLogsSubscribe: (id: string, allocId: string, task: string, options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("clusters_nomad_logs_subscribe", { id, allocId, task, options, onEvent }),
+	/**  Opens a terminal in a task, like `nomad alloc exec -t`. */
+	clustersNomadExecStart: (id: string, allocId: string, options: NomadExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("clusters_nomad_exec_start", { id, allocId, options, onEvent }),
+	clustersNomadExecInput: (terminal: number, data: string) => __TAURI_INVOKE<null>("clusters_nomad_exec_input", { terminal, data }),
+	clustersNomadExecResize: (terminal: number, cols: number, rows: number) => __TAURI_INVOKE<null>("clusters_nomad_exec_resize", { terminal, cols, rows }),
+	/**  Ends a terminal and its command. */
+	clustersNomadExecClose: (terminal: number) => __TAURI_INVOKE<null>("clusters_nomad_exec_close", { terminal }),
+	clustersNomadNodes: (id: string) => __TAURI_INVOKE<NomadNodeView[]>("clusters_nomad_nodes", { id }),
+	clustersNomadNode: (id: string, nodeId: string) => __TAURI_INVOKE<NomadNodeDetail>("clusters_nomad_node", { id, nodeId }),
+	/**
+	 *  Starts draining a node with `spec`; with none, cancels its drain and,
+	 *  with `mark_eligible`, makes it eligible again.
+	 */
+	clustersNomadNodeDrain: (id: string, nodeId: string, spec: NomadDrainSpec | null, markEligible: boolean) => __TAURI_INVOKE<null>("clusters_nomad_node_drain", { id, nodeId, spec, markEligible }),
+	clustersNomadNodeEligibility: (id: string, nodeId: string, eligible: boolean) => __TAURI_INVOKE<null>("clusters_nomad_node_eligibility", { id, nodeId, eligible }),
+	/**
+	 *  The namespaces the Jobs page picks from; unlistable rather than an
+	 *  error when the token can't list them.
+	 */
+	clustersNomadNamespaces: (id: string) => __TAURI_INVOKE<NomadNamespaces>("clusters_nomad_namespaces", { id }),
 	clustersNamespaces: (id: string) => __TAURI_INVOKE<NamespaceView[]>("clusters_namespaces", { id }),
 	/**  The workloads of `kind` in `namespace`, or in every Namespace without one. */
 	clustersWorkloadsList: (id: string, kind: WorkloadKind, namespace: string | null) => __TAURI_INVOKE<WorkloadView[]>("clusters_workloads_list", { id, kind, namespace }),
@@ -871,7 +931,7 @@ export type ApplyResult = {
 	documents: ApplyDocument[],
 };
 
-/**  How a Cluster's user authenticates, as its kubeconfig says. */
+/**  How a Kubernetes Cluster's user authenticates, as its kubeconfig says. */
 export type AuthMethod = 
 /**  No credential: the API server sees an anonymous user. */
 { method: "none" } | { method: "clientCertificate" } | { method: "token" } | { method: "basic"; username: string } | 
@@ -1065,32 +1125,29 @@ export type CliEvent = { type: "line"; text: string } |
 export type Cluster = {
 	id: string,
 	name: string,
+	/**  Always its connection's kind, which the store keeps in its own column. */
 	kind: ClusterKind,
 	connection: ClusterConnection,
 	enabled: boolean,
 	createdAt: string,
 };
 
-/**  How to reach a Cluster's API, without any credential. */
+/**
+ *  How to reach a Cluster's API, by kind, without any credential. Stored
+ *  as the variant's own JSON, its kind in a column of its own; sent to the
+ *  frontend tagged with `kind`.
+ */
 export type ClusterConnection = {
-	/**  The API server's URL, such as `https://127.0.0.1:6443`. */
-	server?: string,
-	/**  The name to check the server's certificate against, when not the URL's. */
-	tlsServerName?: string | null,
-	/**  The kubeconfig turns off checking the server's certificate. */
-	insecureSkipTlsVerify?: boolean,
-	/**  An HTTP proxy in front of the API server. */
-	proxyUrl?: string | null,
-	/**  The Namespace the kubeconfig context defaults to. */
-	namespace?: string | null,
-	/**  How Homeport authenticates, to tell the user; the credentials themselves are sealed. */
-	auth?: AuthMethod,
-	/**  The kubeconfig context it was imported from, for refreshing it. */
-	source?: KubeconfigSource | null,
-};
+	kind: "kubernetes",
+} & KubernetesConnection | {
+	kind: "nomad",
+} & NomadConnection;
 
-/**  The orchestrator a Cluster runs. Nomad Clusters will share the table. */
-export type ClusterKind = "kubernetes";
+/**
+ *  What a Cluster runs, which decides what Homeport can show and do on it.
+ *  Both kinds share the `clusters` table, told apart by its `kind` column.
+ */
+export type ClusterKind = "kubernetes" | "nomad";
 
 export type ClusterNodeDetail = {
 	view: ClusterNodeView,
@@ -1163,10 +1220,15 @@ export type ClusterServiceView = {
 };
 
 export type ClusterStatus = { state: "disabled" } | { state: "connecting" } | { state: "connected"; 
-/**  The API server's version, such as `v1.33.1`. */
+/**
+ *  The API's version, such as `v1.33.1` or Nomad's `1.10.3`; empty
+ *  when a Nomad token can't read it.
+ */
 serverVersion: string; 
-/**  Its OS and architecture, such as `linux/arm64`. */
-platform: string } | 
+/**  A Kubernetes API server's OS and architecture, such as `linux/arm64`. */
+platform: string | null; 
+/**  A Nomad Cluster's region, such as `global`. */
+region: string | null } | 
 /**  Retrying on its own in `retry_in_secs`. */
 { state: "unreachable"; error: AppError; retryInSecs: number } | 
 /**  The API server refused the credentials; waits for the user. */
@@ -1723,6 +1785,26 @@ export type ErrorCode =
 "exec_plugin_interactive" | 
 /**  The private local proxy a CLI reaches a Cluster through couldn't open (ADR 0009). */
 "cluster_proxy_failed" | 
+/**  A Nomad Cluster that doesn't know the ACL token: wrong, expired or deleted. */
+"nomad_token_invalid" | 
+/**  A Nomad ACL token that lacks a capability or policy an action needs. */
+"nomad_permission_denied" | 
+/**  A Nomad Cluster whose servers have no leader, so nothing can be changed or read. */
+"nomad_no_leader" | 
+/**  A Nomad job that doesn't exist, or not in the namespace asked. */
+"nomad_job_not_found" | 
+/**  A task group count outside its scaling policy's minimum and maximum. */
+"nomad_scale_out_of_bounds" | 
+/**  A Nomad job specification Nomad couldn't parse. */
+"nomad_parse_failed" | 
+/**  A planned Nomad job some of whose allocations can't be placed. */
+"nomad_placement_failed" | 
+/**  A Nomad job changed by someone else since it was planned. */
+"nomad_job_modified" | 
+/**  Logs or exec in a Nomad allocation, or task, that isn't running. */
+"nomad_allocation_not_running" | 
+/**  A Nomad client node the servers can't reach, to forward logs or exec to. */
+"nomad_node_unreachable" | 
 /**  The `helm` CLI isn't installed on this computer. */
 "helm_missing" | 
 /**  The `helm` CLI found is Helm 2, which Homeport doesn't support. */
@@ -2493,6 +2575,24 @@ export type KubeconfigSource = {
 	pasted: boolean,
 };
 
+/**  How to reach a Kubernetes Cluster's API server, without any credential. */
+export type KubernetesConnection = {
+	/**  The API server's URL, such as `https://127.0.0.1:6443`. */
+	server?: string,
+	/**  The name to check the server's certificate against, when not the URL's. */
+	tlsServerName?: string | null,
+	/**  The kubeconfig turns off checking the server's certificate. */
+	insecureSkipTlsVerify?: boolean,
+	/**  An HTTP proxy in front of the API server. */
+	proxyUrl?: string | null,
+	/**  The Namespace the kubeconfig context defaults to. */
+	namespace?: string | null,
+	/**  How Homeport authenticates, to tell the user; the credentials themselves are sealed. */
+	auth?: AuthMethod,
+	/**  The kubeconfig context it was imported from, for refreshing it. */
+	source?: KubeconfigSource | null,
+};
+
 export type Licenses = {
 	/**  Homeport's own license (`LICENSE`). */
 	app: string,
@@ -2740,6 +2840,349 @@ export type NodeView = {
 	labels: { [key in string]: string },
 	created: string | null,
 };
+
+/**  What Homeport shows of a connected Nomad Cluster. */
+export type NomadAgent = {
+	/**  Such as `1.10.3`; `None` when the token can't read the agent. */
+	version: string | null,
+	/**  The region Homeport asks, such as `global`. */
+	region: string | null,
+	/**  The agent's datacenter, such as `dc1`. */
+	datacenter: string | null,
+	/**  The leading server's RPC address, such as `10.0.0.5:4647`. */
+	leader: string,
+};
+
+/**
+ *  An allocation's detail: what the job pages list, its tasks' events,
+ *  newest first, and why the client gave it its status.
+ */
+export type NomadAllocationDetail = {
+	allocation: NomadAllocationView,
+	clientDescription: string | null,
+	events: NomadTaskEvent[],
+};
+
+/**  An allocation: one placement of a task group on a client node. */
+export type NomadAllocationView = {
+	id: string,
+	/**  Such as `web.api[0]`. */
+	name: string,
+	namespace: string,
+	jobId: string,
+	taskGroup: string,
+	nodeId: string,
+	nodeName: string,
+	/**  `pending`, `running`, `complete`, `failed`, `lost` or `unknown`. */
+	clientStatus: string,
+	/**  `run`, `stop` or `evict`. */
+	desiredStatus: string,
+	jobVersion: number,
+	created: string | null,
+	modified: string | null,
+	tasks: NomadTaskState[],
+};
+
+/**  How to reach a Nomad Cluster's HTTP API, without any credential. */
+export type NomadConnection = {
+	/**  The API's URL, such as `https://nomad.example.com:4646`. */
+	address?: string,
+	/**  The region to ask, when not the agent's own. */
+	region?: string | null,
+	/**
+	 *  The name to check the agent's certificate against, such as
+	 *  `server.global.nomad`, when not the address's.
+	 */
+	tlsServerName?: string | null,
+	/**  Whether an ACL token is sealed with it, to tell the user. */
+	aclToken?: boolean,
+	/**  Whether a CA certificate of its own is sealed with it. */
+	customCa?: boolean,
+	/**  Whether a client certificate and key are sealed with it. */
+	clientCertificate?: boolean,
+};
+
+/**  A drain in progress. */
+export type NomadDrain = {
+	/**  When remaining allocations are stopped regardless; `None` for no deadline. */
+	deadline: string | null,
+	forced: boolean,
+	ignoreSystemJobs: boolean,
+	started: string | null,
+};
+
+/**  How to drain a node, as the Drain dialog asks. */
+export type NomadDrainSpec = {
+	/**  Seconds before remaining allocations are stopped; `None` for no deadline. */
+	deadlineSecs: number | null,
+	/**  Leave system jobs' allocations running. */
+	ignoreSystemJobs: boolean,
+};
+
+export type NomadDriverView = {
+	name: string,
+	detected: boolean,
+	healthy: boolean,
+};
+
+/**  What the Shell tab asks for. */
+export type NomadExecOptions = {
+	task: string,
+	/**  A command line, split like a shell would; `/bin/sh` when empty. */
+	command: string | null,
+	cols: number,
+	rows: number,
+};
+
+/**  A field a plan changes, in a task group or one of its tasks. */
+export type NomadFieldChange = {
+	/**  Such as `Task "server" › Config › image`. */
+	path: string,
+	/**  `Added`, `Deleted` or `Edited`. */
+	change: string,
+	old: string | null,
+	new: string | null,
+};
+
+/**
+ *  A Nomad Cluster as the add and edit form describe it. When editing, a
+ *  credential left `None` keeps the stored one and an empty one removes it.
+ */
+export type NomadForm = {
+	name?: string,
+	/**  Such as `nomad.example.com:4646`, `10.0.0.5` or `https://nomad:4646`. */
+	address?: string,
+	region?: string | null,
+	tlsServerName?: string | null,
+	/**  The ACL token's secret ID. */
+	token?: string | null,
+	certificateAuthority?: string | null,
+	clientCertificate?: string | null,
+	clientKey?: string | null,
+};
+
+/**  A task group's counts of allocations by state, and how many it wants. */
+export type NomadGroupCounts = {
+	name: string,
+	/**  The count in the job's definition; `None` when it couldn't be read. */
+	desired: number | null,
+	running: number,
+	starting: number,
+	queued: number,
+	failed: number,
+	lost: number,
+	complete: number,
+};
+
+/**  A job's detail: its definition's main settings, its task groups and its allocations. */
+export type NomadJobDetail = {
+	job: NomadJobView,
+	version: number,
+	datacenters: string[],
+	nodePool: string | null,
+	groups: NomadTaskGroupView[],
+	allocations: NomadAllocationView[],
+};
+
+/**
+ *  A job's specification for editing: as submitted when Nomad kept it,
+ *  else its JSON.
+ */
+export type NomadJobSource = {
+	source: string,
+	format: SpecFormat,
+	/**  Nomad kept the specification as it was submitted. */
+	submitted: boolean,
+};
+
+/**  A job as the Jobs page lists it. */
+export type NomadJobView = {
+	id: string,
+	name: string,
+	namespace: string,
+	/**  `service`, `batch`, `system` or `sysbatch`. */
+	jobType: string,
+	/**  `pending`, `running` or `dead`. */
+	status: string,
+	statusDescription: string | null,
+	/**  Stopped by a user, and not yet garbage-collected. */
+	stopped: boolean,
+	priority: number,
+	periodic: boolean,
+	parameterized: boolean,
+	/**  The periodic or parameterized job that launched this one. */
+	parentId: string | null,
+	submitted: string | null,
+	groups: NomadGroupCounts[],
+};
+
+export type NomadNamespaceView = {
+	name: string,
+	description: string | null,
+};
+
+/**  The namespaces a page can pick from. */
+export type NomadNamespaces = {
+	/**  By name, `default` first. */
+	namespaces: NomadNamespaceView[],
+	/**
+	 *  `false` when the token can't list them or Nomad has none to list:
+	 *  pages then show the token's default namespace, with no picker.
+	 */
+	listable: boolean,
+};
+
+/**
+ *  A node's detail: what the list shows, its drain, drivers, a few
+ *  attributes, and its allocations.
+ */
+export type NomadNodeDetail = {
+	node: NomadNodeView,
+	drain: NomadDrain | null,
+	/**  How the last drain ended, such as `complete` or `canceled`. */
+	lastDrain: string | null,
+	drivers: NomadDriverView[],
+	/**  The operating system, kernel, CPU architecture and the like. */
+	attributes: ([string, string])[],
+	allocations: NomadAllocationView[],
+};
+
+/**  A client node as the Nodes page lists it. */
+export type NomadNodeView = {
+	id: string,
+	name: string,
+	datacenter: string,
+	nodePool: string | null,
+	nodeClass: string | null,
+	address: string | null,
+	/**  The Nomad version its agent runs. */
+	version: string | null,
+	/**  `initializing`, `ready`, `down` or `disconnected`. */
+	status: string,
+	statusDescription: string | null,
+	/**  Takes new allocations. */
+	eligible: boolean,
+	draining: boolean,
+	/**  Allocations running on it now; `None` when the token can't list them. */
+	running: number | null,
+};
+
+/**  Why some allocations of a task group can't be placed. */
+export type NomadPlacementFailure = {
+	nodesEvaluated: number,
+	nodesFiltered: number,
+	nodesExhausted: number,
+	/**  The resources no node had enough of, such as `memory`. */
+	exhausted: string[],
+	/**  The constraints that filtered nodes out, with how many each did. */
+	constraints: string[],
+	/**  More allocations failing the same way. */
+	coalesced: number,
+};
+
+/**  Nomad's plan of a job, and what running it needs. */
+export type NomadPlan = {
+	jobId: string,
+	namespace: string,
+	format: SpecFormat,
+	/**  The job as Nomad's JSON, run as it was planned. */
+	job: Value,
+	/**  The job's index when planned: running fails if it moved since. */
+	jobModifyIndex: number,
+	/**  A job no Nomad has yet. */
+	newJob: boolean,
+	/**  `Added`, `Deleted`, `Edited` or `None`, for the job as a whole. */
+	change: string,
+	groups: NomadPlanGroup[],
+	warnings: string | null,
+	/**  Allocations that can't be placed, explained; running still queues them. */
+	placement: AppError | null,
+};
+
+/**  What a plan does to one task group. */
+export type NomadPlanGroup = {
+	name: string,
+	/**  `Added`, `Deleted`, `Edited` or `None`. */
+	change: string,
+	place: number,
+	stop: number,
+	inPlace: number,
+	destructive: number,
+	migrate: number,
+	canary: number,
+	ignore: number,
+	fields: NomadFieldChange[],
+	failure: NomadPlacementFailure | null,
+};
+
+/**  What running a planned job needs from its plan, as the frontend sends it back. */
+export type NomadPlanToRun = {
+	jobId: string,
+	namespace: string,
+	format: SpecFormat,
+	job: Value,
+	jobModifyIndex: number,
+};
+
+/**  What running a job started. */
+export type NomadRunResult = {
+	jobId: string,
+	namespace: string,
+	evalId: string | null,
+	warnings: string | null,
+};
+
+/**  A task group's scaling bounds, from its `scaling` block. */
+export type NomadScaling = {
+	min: number | null,
+	max: number | null,
+	/**  Whether an autoscaler acts on the policy. */
+	enabled: boolean,
+};
+
+/**  Something that happened to a task, as Nomad records it. */
+export type NomadTaskEvent = {
+	task: string,
+	/**  Such as `Started`, `Terminated` or `Driver Failure`. */
+	kind: string,
+	message: string,
+	time: string | null,
+};
+
+/**  A task group of a job's detail. */
+export type NomadTaskGroupView = {
+	counts: NomadGroupCounts,
+	scaling: NomadScaling | null,
+	tasks: NomadTaskView[],
+};
+
+/**  A task's state in an allocation. */
+export type NomadTaskState = {
+	name: string,
+	/**  `pending`, `running` or `dead`. */
+	state: string,
+	failed: boolean,
+	restarts: number,
+	started: string | null,
+};
+
+export type NomadTaskView = {
+	name: string,
+	driver: string,
+};
+
+/**  What a page watches. */
+export type NomadWatch = 
+/**  The jobs of a namespace (the token's default without one, all with `*`). */
+{ topic: "jobs"; namespace: string | null } | 
+/**  One job, its summary and its allocations. */
+{ topic: "job"; namespace: string | null; jobId: string } | 
+/**  One allocation and its tasks' states. */
+{ topic: "allocation"; allocId: string } | 
+/**  The client nodes. */
+{ topic: "nodes" } | 
+/**  One node and its allocations, as a drain empties it. */
+{ topic: "node"; nodeId: string };
 
 /**
  *  The OS notifications Homeport shows, one switch per kind; all on unless
@@ -3595,6 +4038,9 @@ export type SnapshotUser = { kind: "container"; id: string } | { kind: "image"; 
 
 /**  The kinds of source, for the rules a definition is checked against. */
 export type SourceKind = "managed" | "linked" | "synced";
+
+/**  How a job specification is written. */
+export type SpecFormat = "hcl2" | "json";
 
 export type SshAuth = 
 /**  A keypair Homeport generated for this Host. */

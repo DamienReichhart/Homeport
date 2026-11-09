@@ -9,8 +9,19 @@ describe('describeClusterStatus', () => {
       state: 'connected',
       serverVersion: 'v1.33.1',
       platform: 'linux/arm64',
+      region: null,
     });
     expect(s).toMatchObject({ label: 'Connected', tone: 'success', detail: 'Kubernetes v1.33.1' });
+  });
+
+  it('names a Nomad Cluster’s version and region, or only its region', () => {
+    const connected = (serverVersion: string) =>
+      describeClusterStatus(
+        { state: 'connected', serverVersion, platform: null, region: 'eu' },
+        'nomad',
+      ).detail;
+    expect(connected('1.10.3')).toBe('Nomad 1.10.3, region eu');
+    expect(connected('')).toBe('Nomad, region eu');
   });
 
   it('says when it retries on its own', () => {

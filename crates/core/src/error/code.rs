@@ -149,6 +149,27 @@ pub enum ErrorCode {
     ExecPluginInteractive,
     /// The private local proxy a CLI reaches a Cluster through couldn't open (ADR 0009).
     ClusterProxyFailed,
+    // Nomad Clusters.
+    /// A Nomad Cluster that doesn't know the ACL token: wrong, expired or deleted.
+    NomadTokenInvalid,
+    /// A Nomad ACL token that lacks a capability or policy an action needs.
+    NomadPermissionDenied,
+    /// A Nomad Cluster whose servers have no leader, so nothing can be changed or read.
+    NomadNoLeader,
+    /// A Nomad job that doesn't exist, or not in the namespace asked.
+    NomadJobNotFound,
+    /// A task group count outside its scaling policy's minimum and maximum.
+    NomadScaleOutOfBounds,
+    /// A Nomad job specification Nomad couldn't parse.
+    NomadParseFailed,
+    /// A planned Nomad job some of whose allocations can't be placed.
+    NomadPlacementFailed,
+    /// A Nomad job changed by someone else since it was planned.
+    NomadJobModified,
+    /// Logs or exec in a Nomad allocation, or task, that isn't running.
+    NomadAllocationNotRunning,
+    /// A Nomad client node the servers can't reach, to forward logs or exec to.
+    NomadNodeUnreachable,
     // Helm (ADR 0009).
     /// The `helm` CLI isn't installed on this computer.
     HelmMissing,

@@ -167,6 +167,50 @@ The API server isn't reachable from this computer: the cluster is stopped (a loc
 
 kind, k3d and minikube make new certificates each time they recreate a cluster. Use **Refresh from kubeconfig** on the Cluster's page.
 
+### Nomad: "… doesn't know the ACL token Homeport sent"
+
+The token was mistyped, has expired, or was deleted. Make a new one with the policy from [ACL policies](/docs/clusters/nomad/#acl-policies) (`nomad acl token create -name=homeport -policy=homeport`) and paste its secret ID in the cluster's **Settings**. The cluster waits as **Unauthorized** until you do.
+
+### Nomad: "… refused: the ACL token lacks a permission this needs"
+
+The token's policies don't grant what this page or action needs; the message says which (reading jobs or logs, running or stopping jobs, scaling, opening a shell, changing nodes). Add the capability to the token's policy; [ACL policies](/docs/clusters/nomad/#acl-policies) lists what each needs. Other pages keep working.
+
+### Nomad: "… has no leader: its servers can't agree on one"
+
+Fewer than a majority of the cluster's servers are running or can reach each other, so Nomad can't answer. Check them with `nomad server members` on a server, and bring enough back. Homeport keeps retrying.
+
+### Nomad: "… has no job …"
+
+The job was stopped and purged, or garbage-collected, or it lives in another namespace than the one picked. Open the Jobs page again, with **All namespaces** if need be.
+
+### Nomad: "Task group … can't run more than …" or "fewer than …"
+
+The task group's `scaling` block sets a `min` and a `max`, and the count asked is outside them. Change the bounds in the job's specification and run it again to go further.
+
+### Nomad: "Nomad won't scale … while a deployment of it is in progress"
+
+Running a new version of a service job starts a deployment, and Nomad refuses to change its count until every allocation of the new version is healthy. Wait for the job's allocations to settle, then scale again.
+
+### Nomad: "The job specification doesn't parse, at line …, column …"
+
+Nomad's parser found a problem at that place; **Details** has its message. `variable` blocks need a default, since Homeport doesn't pass variable files. A JSON specification must be a job in Nomad's API format, as `nomad job inspect` prints it.
+
+### Nomad: "Nomad can't place every allocation of …"
+
+The plan found no eligible node with the resources the task group asks for, or matching its constraints; the plan says which. **Run anyway** queues what can't be placed until a node can take it, or lower the resources, change the constraints, or add nodes.
+
+### Nomad: "… changed since it was planned, so it wasn't run"
+
+Someone else ran or stopped the job between your plan and **Run**, and Homeport doesn't overwrite their change. Go back, plan again, and check the new diff before running.
+
+### Nomad: "Task … of allocation … isn't running"
+
+A shell needs a running task: this one hasn't started, has finished, or failed. Its logs stay readable until the allocation is garbage-collected.
+
+### Nomad: "… can't reach the node allocation … runs on"
+
+Logs and shells go through the servers to the client node, and the servers can't reach it: the node is down, disconnected, or its agent stopped. Check it on the Nodes page or with `nomad node status`.
+
 ### Helm: "The helm CLI isn't installed on this computer"
 
 [Helm releases](/docs/clusters/helm/) need `helm` 3 or later on this computer. Install it (`brew install helm`, `winget install Helm.Helm`, or `snap install helm --classic`), then reopen the Helm page; **Settings → This machine** shows the one Homeport found. A `helm` 2 is reported as unsupported.

@@ -9,6 +9,7 @@ export function clusterView(name: string, overrides: Record<string, unknown> = {
       name,
       kind: 'kubernetes',
       connection: {
+        kind: 'kubernetes',
         server: 'https://127.0.0.1:6443',
         tlsServerName: null,
         insecureSkipTlsVerify: false,
@@ -20,10 +21,40 @@ export function clusterView(name: string, overrides: Record<string, unknown> = {
       enabled: true,
       createdAt: '2026-11-01T10:00:00Z',
     },
-    status: { state: 'connected', serverVersion: 'v1.33.1', platform: 'linux/arm64' },
+    status: { state: 'connected', serverVersion: 'v1.33.1', platform: 'linux/arm64', region: null },
     ...overrides,
   };
 }
+
+/** A Nomad Cluster connected to its agent, as `clusters_list` returns it. */
+export function nomadClusterView(name: string, overrides: Record<string, unknown> = {}) {
+  return {
+    cluster: {
+      id: 'n1',
+      name,
+      kind: 'nomad',
+      connection: {
+        kind: 'nomad',
+        address: 'http://127.0.0.1:4646',
+        region: null,
+        tlsServerName: null,
+        aclToken: true,
+        customCa: false,
+        clientCertificate: false,
+      },
+      enabled: true,
+      createdAt: '2026-11-01T10:00:00Z',
+    },
+    status: { state: 'connected', serverVersion: '1.10.3', platform: null, region: 'global' },
+    ...overrides,
+  };
+}
+
+/** The settings with the Nomad Cluster `n1` selected. */
+export const nomadSelected = () => ({
+  ...baseCommands.get_settings(),
+  lastSelection: { kind: 'cluster', id: 'n1' },
+});
 
 /** The settings with `cluster` selected. */
 export const clusterSelected = () => ({

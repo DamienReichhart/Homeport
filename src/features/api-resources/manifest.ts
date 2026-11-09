@@ -18,4 +18,5 @@ export const apiResourcesFeature = defineFeature({
     icon: BlocksIcon,
     scope: 'cluster',
   },
+  clusterKind: 'kubernetes',
 });

@@ -2429,7 +2429,7 @@ dependencies = [
 
 [[package]]
 name = "homeport"
-version = "0.20.0"
+version = "0.21.0"
 dependencies = [
  "homeport-clusters",
  "homeport-containerd",
@@ -2438,6 +2438,7 @@ dependencies = [
  "homeport-git",
  "homeport-hosts",
  "homeport-incus",
+ "homeport-nomad",
  "homeport-registries",
  "homeport-settings",
  "homeport-stacks",
@@ -2466,13 +2467,14 @@ dependencies = [
 
 [[package]]
 name = "homeport-clusters"
-version = "0.20.0"
+version = "0.21.0"
 dependencies = [
  "base64 0.22.1",
  "bytes",
  "futures-util",
  "getrandom 0.3.4",
  "homeport-core",
+ "homeport-nomad",
  "homeport-storage",
  "homeport-transport",
  "http",
@@ -2499,7 +2501,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-containerd"
-version = "0.20.0"
+version = "0.21.0"
 dependencies = [
  "futures-util",
  "homeport-core",
@@ -2525,7 +2527,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-core"
-version = "0.20.0"
+version = "0.21.0"
 dependencies = [
  "bollard",
  "log",
@@ -2540,7 +2542,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-engine"
-version = "0.20.0"
+version = "0.21.0"
 dependencies = [
  "base64 0.22.1",
  "bollard",
@@ -2562,7 +2564,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-git"
-version = "0.20.0"
+version = "0.21.0"
 dependencies = [
  "base64 0.22.1",
  "futures-util",
@@ -2582,7 +2584,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-hosts"
-version = "0.20.0"
+version = "0.21.0"
 dependencies = [
  "bollard",
  "futures-util",
@@ -2605,7 +2607,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-incus"
-version = "0.20.0"
+version = "0.21.0"
 dependencies = [
  "base64 0.22.1",
  "futures-util",
@@ -2630,8 +2632,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "homeport-nomad"
+version = "0.21.0"
+dependencies = [
+ "base64 0.22.1",
+ "futures-util",
+ "homeport-core",
+ "homeport-transport",
+ "http",
+ "jiff",
+ "log",
+ "reqwest",
+ "rustls",
+ "rustls-pki-types",
+ "rustls-platform-verifier",
+ "serde",
+ "serde_json",
+ "shell-words",
+ "specta",
+ "tokio",
+ "tokio-rustls",
+ "tokio-tungstenite",
+]
+
+[[package]]
 name = "homeport-registries"
-version = "0.20.0"
+version = "0.21.0"
 dependencies = [
  "homeport-core",
  "homeport-engine",
@@ -2649,7 +2675,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-settings"
-version = "0.20.0"
+version = "0.21.0"
 dependencies = [
  "homeport-core",
  "homeport-storage",
@@ -2663,7 +2689,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-stacks"
-version = "0.20.0"
+version = "0.21.0"
 dependencies = [
  "bollard",
  "homeport-core",
@@ -2686,7 +2712,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-storage"
-version = "0.20.0"
+version = "0.21.0"
 dependencies = [
  "argon2",
  "chacha20poly1305",
@@ -2703,7 +2729,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-transport"
-version = "0.20.0"
+version = "0.21.0"
 dependencies = [
  "base64 0.22.1",
  "bollard",
@@ -2730,7 +2756,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-updates"
-version = "0.20.0"
+version = "0.21.0"
 dependencies = [
  "serde",
  "specta",

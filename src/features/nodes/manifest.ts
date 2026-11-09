@@ -9,4 +9,5 @@ export const nodesFeature = defineFeature({
     { path: 'nodes/:name/:tab?', Component: NodeDetailPage },
   ],
   nav: { path: '/nodes', label: 'nodes.nav', icon: ServerIcon, scope: 'cluster' },
+  clusterKind: 'kubernetes',
 });

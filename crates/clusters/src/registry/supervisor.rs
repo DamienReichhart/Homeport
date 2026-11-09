@@ -7,8 +7,11 @@ use homeport_core::{
     error::{AppError, ErrorCode},
 };
 
-use super::{ClusterRegistry, ClusterStatus};
-use crate::{classify, messages as msg, model::ClusterId};
+use super::{ClusterClient, ClusterRegistry, ClusterStatus};
+use crate::{
+    classify, messages as msg,
+    model::{Cluster, ClusterId, ClusterKind, ClusterSecrets},
+};
 
 const CHECK_INTERVAL: Duration = Duration::from_secs(15);
 
@@ -53,12 +56,17 @@ pub(super) async fn supervise(registry: Weak<ClusterRegistry>, id: ClusterId) {
         };
         // An exec plugin's token refused while connected: connecting again
         // asks the plugin for a new one before giving up.
-        if was_connected && error.is(ErrorCode::ClusterUnauthorized) && secrets.exec.is_some() {
+        if was_connected && error.is(ErrorCode::ClusterUnauthorized) && has_exec_plugin(&secrets) {
             continue;
         }
-        if classify::needs_user(&error) {
+        let needs_user = match cluster.kind {
+            ClusterKind::Kubernetes => classify::needs_user(&error),
+            ClusterKind::Nomad => homeport_nomad::error::needs_user(&error),
+        };
+        if needs_user {
             let status = if error.is(ErrorCode::ClusterUnauthorized)
                 || error.is(ErrorCode::ExecPluginInteractive)
+                || error.is(ErrorCode::NomadTokenInvalid)
             {
                 ClusterStatus::Unauthorized { error }
             } else {
@@ -80,27 +88,28 @@ pub(super) async fn supervise(registry: Weak<ClusterRegistry>, id: ClusterId) {
     }
 }
 
-/// Asks the API server its version every 15 s until it stops answering, and
-/// returns why. Exec credentials about to expire are renewed on the way.
+/// Whether a Kubernetes Cluster's credentials come from an exec plugin.
+fn has_exec_plugin(secrets: &ClusterSecrets) -> bool {
+    matches!(secrets, ClusterSecrets::Kubernetes(s) if s.exec.is_some())
+}
+
+/// Asks the API its version every 15 s until it stops answering, and
+/// returns why. Credentials about to expire are renewed on the way.
 async fn check(
     registry: &Weak<ClusterRegistry>,
-    cluster: &crate::model::Cluster,
-    secrets: &crate::model::ClusterSecrets,
-    mut client: kube::Client,
+    cluster: &Cluster,
+    secrets: &ClusterSecrets,
+    mut client: ClusterClient,
 ) -> AppError {
     loop {
         tokio::time::sleep(CHECK_INTERVAL).await;
         let Some(reg) = registry.upgrade() else {
             return lost(&cluster.name);
         };
-        match reg.renewed(cluster, secrets).await {
+        match reg.check(cluster, secrets, &client).await {
             Ok(Some(renewed)) => client = renewed,
             Ok(None) => {}
             Err(error) => return error,
-        }
-        drop(reg);
-        if let Err(error) = super::version(cluster, &client).await {
-            return error;
         }
     }
 }

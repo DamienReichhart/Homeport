@@ -40,7 +40,7 @@ export function ClusterGate({ children }: { children: (cluster: ClusterView) => 
   if (status.state === 'connecting')
     return <Spinner label={t('core.gate.connecting', { name: cluster.cluster.name })} />;
 
-  const { label, detail } = describeClusterStatus(status);
+  const { label, detail } = describeClusterStatus(status, cluster.cluster.kind);
   const error = clusterStatusError(status);
   const retry = () => reconnect.mutate(cluster.cluster.id);
   return (

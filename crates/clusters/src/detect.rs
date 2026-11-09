@@ -12,7 +12,7 @@ use serde::Serialize;
 use crate::{
     client,
     kubeconfig::{self, AddedCluster, Source},
-    model::{Cluster, ClusterKind},
+    model::{Cluster, ClusterConnection, ClusterKind},
 };
 
 /// How long a local API server may take to say its version.
@@ -167,9 +167,8 @@ pub async fn detect(clusters: &[Cluster]) -> Vec<LocalCluster> {
                     added: clusters
                         .iter()
                         .find(|c| {
-                            c.connection
-                                .source
-                                .as_ref()
+                            c.kubernetes()
+                                .and_then(|k| k.source.as_ref())
                                 .is_some_and(|s| s.context == context)
                         })
                         .map(|c| AddedCluster {
@@ -195,7 +194,7 @@ async fn probe(source: &Source, context: &str) -> Option<String> {
         id: String::new(),
         name: context.to_owned(),
         kind: ClusterKind::Kubernetes,
-        connection,
+        connection: ClusterConnection::Kubernetes(connection),
         enabled: true,
         created_at: String::new(),
     };

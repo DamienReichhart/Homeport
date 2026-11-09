@@ -42,6 +42,7 @@ export const clusters: ClusterView[] = [
       name: 'eks-prod',
       kind: 'kubernetes',
       connection: {
+        kind: 'kubernetes',
         server: EKS_SERVER,
         tlsServerName: null,
         insecureSkipTlsVerify: false,
@@ -53,7 +54,12 @@ export const clusters: ClusterView[] = [
       enabled: true,
       createdAt: iso(20 * DAY),
     },
-    status: { state: 'connected', serverVersion: 'v1.33.4-eks-3a8b2c1', platform: 'linux/amd64' },
+    status: {
+      state: 'connected',
+      serverVersion: 'v1.33.4-eks-3a8b2c1',
+      platform: 'linux/amd64',
+      region: null,
+    },
   },
   {
     cluster: {
@@ -61,6 +67,7 @@ export const clusters: ClusterView[] = [
       name: 'kind-dev',
       kind: 'kubernetes',
       connection: {
+        kind: 'kubernetes',
         server: 'https://127.0.0.1:41235',
         tlsServerName: null,
         insecureSkipTlsVerify: false,
@@ -72,7 +79,7 @@ export const clusters: ClusterView[] = [
       enabled: true,
       createdAt: iso(3 * DAY),
     },
-    status: { state: 'connected', serverVersion: 'v1.34.0', platform: 'linux/arm64' },
+    status: { state: 'connected', serverVersion: 'v1.34.0', platform: 'linux/arm64', region: null },
   },
 ];
 

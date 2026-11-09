@@ -73,11 +73,11 @@ fn cluster() -> Cluster {
         id: "c".into(),
         name: "kind-dev".into(),
         kind: ClusterKind::Kubernetes,
-        connection: ClusterConnection {
+        connection: ClusterConnection::Kubernetes(crate::model::KubernetesConnection {
             server: "http://127.0.0.1:1".into(),
             namespace: Some("shop".into()),
             ..Default::default()
-        },
+        }),
         enabled: true,
         created_at: String::new(),
     }

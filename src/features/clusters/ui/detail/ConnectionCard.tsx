@@ -1,15 +1,17 @@
 import type { ReactNode } from 'react';
+import { kubernetesConnection } from '@/core/cluster';
 import type { ClusterView } from '@/shared/api';
 import { Card, CardContent, CardHeader, CardTitle, KeyValue } from '@/shared/ui';
 import { authLabel } from '../../model/labels';
 import { t } from '@/shared/i18n';
 
-/** Where a Cluster's API server is and how Homeport authenticates; never a credential. */
+/** Where a Kubernetes Cluster's API server is and how Homeport authenticates; never a credential. */
 export function ConnectionCard({ view }: { view: ClusterView }) {
-  const c = view.cluster.connection;
+  const c = kubernetesConnection(view.cluster);
   const status = view.status;
+  if (!c) return null;
   const items: [string, ReactNode][] = [
-    [t('clusters.connection.server'), <span className="font-mono">{c.server}</span>],
+    [t('clusters.connection.server'), <span className="font-mono">{c.server ?? ''}</span>],
   ];
   if (status.state === 'connected') {
     items.push([t('clusters.connection.version'), status.serverVersion]);

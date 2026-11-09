@@ -11,7 +11,8 @@ use crate::{
     forward::PortForwards,
     kubeconfig::{self, ContextChoice, KubeContexts, Source},
     messages as msg,
-    model::{Cluster, ClusterKind},
+    model::{Cluster, ClusterConnection, ClusterSecrets, NomadSecrets},
+    nomad::NomadForm,
     proxy::ClusterAccess,
     registry::{ClusterNotifier, ClusterRegistry, ClusterStatus},
     store::{ClusterDraft, ClusterStore},
@@ -103,6 +104,65 @@ impl ClusterService {
         Ok(self.view(cluster))
     }
 
+    /// Adds the Nomad Cluster `form` describes, its credentials sealed, and
+    /// starts connecting to it.
+    pub fn add_nomad(&self, form: &NomadForm) -> AppResult<ClusterView> {
+        let (connection, secrets) = form.draft(None)?;
+        let cluster = self.store.create(ClusterDraft {
+            name: form.name()?.to_owned(),
+            connection: ClusterConnection::Nomad(connection),
+            secrets: ClusterSecrets::Nomad(secrets),
+        })?;
+        self.registry.restart(&cluster.id);
+        Ok(self.view(cluster))
+    }
+
+    /// Changes a Nomad Cluster's name, address and credentials; those the
+    /// form leaves out are kept. Reconnects.
+    pub fn update_nomad(&self, id: &str, form: &NomadForm) -> AppResult<ClusterView> {
+        let cluster = self.store.get(id)?;
+        cluster.nomad_or_refuse()?;
+        let stored = self.nomad_secrets(id)?;
+        let (connection, secrets) = form.draft(Some(&stored))?;
+        if form.name()? != cluster.name {
+            self.store.rename(id, form.name()?)?;
+        }
+        let cluster = self.store.replace_connection(
+            id,
+            &ClusterConnection::Nomad(connection),
+            &ClusterSecrets::Nomad(secrets),
+        )?;
+        self.registry.restart(id);
+        Ok(self.view(cluster))
+    }
+
+    /// Connects once to the Nomad Cluster `form` describes, without saving
+    /// it: its status, or why it can't be reached. When editing the Cluster
+    /// `id`, the credentials the form leaves out are its stored ones.
+    pub async fn test_nomad(
+        &self,
+        form: &NomadForm,
+        id: Option<&str>,
+    ) -> AppResult<homeport_nomad::NomadAgent> {
+        let stored = match id {
+            Some(id) => Some(self.nomad_secrets(id)?),
+            None => None,
+        };
+        let (connection, secrets) = form.draft(stored.as_ref())?;
+        let name = form.name().unwrap_or(&connection.address).to_owned();
+        crate::nomad::client(&name, &connection, &secrets)?
+            .agent()
+            .await
+    }
+
+    /// The stored credentials of the Nomad Cluster `id`.
+    fn nomad_secrets(&self, id: &str) -> AppResult<NomadSecrets> {
+        match self.store.secrets(id)? {
+            ClusterSecrets::Nomad(secrets) => Ok(secrets),
+            ClusterSecrets::Kubernetes(_) => Err(self.store.get(id)?.wrong_kind()),
+        }
+    }
+
     /// The contexts of the pasted kubeconfig `text`, or of this machine's.
     pub fn kubeconfig_contexts(&self, text: Option<&str>) -> AppResult<KubeContexts> {
         let source = Source::of(text)?;
@@ -134,9 +194,8 @@ impl ClusterService {
             let (connection, secrets) = kubeconfig::resolve(&source, &choice.context)?;
             drafts.push(ClusterDraft {
                 name: name.to_owned(),
-                kind: ClusterKind::Kubernetes,
-                connection,
-                secrets,
+                connection: ClusterConnection::Kubernetes(connection),
+                secrets: ClusterSecrets::Kubernetes(secrets),
             });
         }
         let existing = self.store.list()?;
@@ -166,7 +225,7 @@ impl ClusterService {
     /// certificates; keeps its name and reconnects.
     pub fn refresh(&self, id: &str, text: Option<&str>) -> AppResult<ClusterView> {
         let cluster = self.store.get(id)?;
-        let Some(origin) = &cluster.connection.source else {
+        let Some(origin) = &cluster.kubernetes_or_refuse()?.source else {
             return Err(AppError::validation(
                 msg::NO_SOURCE.with("name", &cluster.name),
             ));
@@ -179,7 +238,11 @@ impl ClusterService {
         }
         let source = Source::of(text)?;
         let (connection, secrets) = kubeconfig::resolve(&source, &origin.context)?;
-        let cluster = self.store.replace_connection(id, &connection, &secrets)?;
+        let cluster = self.store.replace_connection(
+            id,
+            &ClusterConnection::Kubernetes(connection),
+            &ClusterSecrets::Kubernetes(secrets),
+        )?;
         self.registry.restart(id);
         Ok(self.view(cluster))
     }
@@ -218,6 +281,148 @@ mod tests {
             context: context.into(),
             name: name.into(),
         }
+    }
+
+    /// A Nomad agent answering its status endpoints, and 403 to an ACL
+    /// token other than `token`.
+    async fn fake_nomad(token: &'static str) -> String {
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let address = format!("http://{}", listener.local_addr().unwrap());
+        tokio::spawn(async move {
+            while let Ok((mut socket, _)) = listener.accept().await {
+                tokio::spawn(async move {
+                    let mut buf = [0; 8192];
+                    while let Ok(n) = socket.read(&mut buf).await {
+                        if n == 0 {
+                            return;
+                        }
+                        let head = String::from_utf8_lossy(&buf[..n]).to_lowercase();
+                        let path = head.split(' ').nth(1).unwrap_or_default().to_owned();
+                        let authorised = head.contains(&format!("x-nomad-token: {token}"));
+                        let (status, body) = if path.starts_with("/v1/status/leader") {
+                            ("200 OK", r#""10.0.0.5:4647""#)
+                        } else if !authorised {
+                            ("403 Forbidden", "ACL token not found")
+                        } else if path.starts_with("/v1/agent/self") {
+                            (
+                                "200 OK",
+                                r#"{"config":{"Region":"global","Version":{"Version":"1.10.3"}}}"#,
+                            )
+                        } else {
+                            ("200 OK", "{}")
+                        };
+                        let reply = format!(
+                            "HTTP/1.1 {status}\r\ncontent-length: {}\r\n\r\n{body}",
+                            body.len()
+                        );
+                        if socket.write_all(reply.as_bytes()).await.is_err() {
+                            return;
+                        }
+                    }
+                });
+            }
+        });
+        address
+    }
+
+    fn nomad_form(address: &str, token: Option<&str>) -> NomadForm {
+        NomadForm {
+            name: "nomad-dev".into(),
+            address: address.into(),
+            token: token.map(str::to_owned),
+            ..Default::default()
+        }
+    }
+
+    async fn settled(svc: &ClusterService, id: &str) -> ClusterStatus {
+        for _ in 0..100 {
+            let status = svc.registry.status(id);
+            if !matches!(status, ClusterStatus::Connecting) {
+                return status;
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+        }
+        svc.registry.status(id)
+    }
+
+    #[tokio::test]
+    async fn a_nomad_cluster_connects_with_its_version_and_region() {
+        let svc = service();
+        let address = fake_nomad("good").await;
+        let view = svc.add_nomad(&nomad_form(&address, Some("good"))).unwrap();
+        assert_eq!(view.cluster.kind, crate::ClusterKind::Nomad);
+        assert_eq!(
+            settled(&svc, &view.cluster.id).await,
+            ClusterStatus::Connected {
+                server_version: "1.10.3".into(),
+                platform: None,
+                region: Some("global".into()),
+            }
+        );
+        assert!(svc.registry.nomad(&view.cluster.id).is_ok());
+        let Err(e) = svc.registry.client(&view.cluster.id) else {
+            panic!("a Nomad Cluster gave a kube-rs client");
+        };
+        assert!(e.is(ErrorCode::Validation));
+        assert!(svc
+            .refresh(&view.cluster.id, None)
+            .unwrap_err()
+            .is(ErrorCode::Validation));
+    }
+
+    #[tokio::test]
+    async fn a_wrong_token_waits_for_the_user() {
+        let svc = service();
+        let address = fake_nomad("good").await;
+        let view = svc.add_nomad(&nomad_form(&address, Some("bad"))).unwrap();
+        let status = settled(&svc, &view.cluster.id).await;
+        let ClusterStatus::Unauthorized { error } = status else {
+            panic!("{status:?}");
+        };
+        assert!(error.is(ErrorCode::NomadTokenInvalid));
+
+        // Testing the fix before saving it, then saving it, connects.
+        let fixed = nomad_form(&address, Some("good"));
+        assert!(svc
+            .test_nomad(&nomad_form(&address, None), Some(&view.cluster.id))
+            .await
+            .unwrap_err()
+            .is(ErrorCode::NomadTokenInvalid));
+        let agent = svc
+            .test_nomad(&fixed, Some(&view.cluster.id))
+            .await
+            .unwrap();
+        assert_eq!(agent.version.as_deref(), Some("1.10.3"));
+        svc.update_nomad(&view.cluster.id, &fixed).unwrap();
+        assert!(settled(&svc, &view.cluster.id).await.is_connected());
+    }
+
+    #[tokio::test]
+    async fn editing_a_nomad_cluster_keeps_its_token_and_renames_it() {
+        let svc = service();
+        let view = svc
+            .add_nomad(&nomad_form("http://127.0.0.1:1", Some("t0ken")))
+            .unwrap();
+        let edited = svc
+            .update_nomad(
+                &view.cluster.id,
+                &NomadForm {
+                    name: "nomad-prod".into(),
+                    ..nomad_form("127.0.0.1:2", None)
+                },
+            )
+            .unwrap();
+        assert_eq!(edited.cluster.name, "nomad-prod");
+        assert_eq!(edited.cluster.address(), "http://127.0.0.1:2");
+        assert!(edited.cluster.nomad().unwrap().acl_token);
+        assert_eq!(
+            svc.nomad_secrets(&view.cluster.id)
+                .unwrap()
+                .token
+                .as_deref(),
+            Some("t0ken")
+        );
     }
 
     #[tokio::test]
@@ -280,6 +485,6 @@ mod tests {
             .refresh(&id, Some(&kubeconfig("https://127.0.0.1:2")))
             .unwrap();
         assert_eq!(next.cluster.name, "dev");
-        assert_eq!(next.cluster.connection.server, "https://127.0.0.1:2");
+        assert_eq!(next.cluster.address(), "https://127.0.0.1:2");
     }
 }

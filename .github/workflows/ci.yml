@@ -91,7 +91,7 @@ jobs:
       # The helper image that opens volumes (ADR 0015).
       - run: docker pull busybox:1.37
       # containerd's and Incus's sockets are root's; the jobs below run those tests.
-      - run: cargo test --workspace --exclude homeport -- --ignored --skip containerd_live --skip incus_live
+      - run: cargo test --workspace --exclude homeport -- --ignored --skip containerd_live --skip incus_live --skip nomad_live
       - name: Check that the tests cleaned up after themselves
         if: always()
         run: scripts/ci/engine-test-leftovers.sh
@@ -150,3 +150,31 @@ jobs:
         run: |
           left=$(sudo incus list --format csv --columns n | grep homeport- || true)
           if [ -n "$left" ]; then echo "instances left behind: $left"; exit 1; fi
+
+  # The Nomad live tests talk to a Nomad dev agent (nomad agent -dev), from
+  # HashiCorp's APT repository, through its HTTP API only, as the app does.
+  # The agent runs as root so the docker driver can run the tests' jobs.
+  nomad-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: nomad-tests
+      - name: Install and start a Nomad dev agent
+        run: |
+          wget -qO- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+          sudo apt-get update
+          sudo apt-get install -y nomad
+          sudo nomad agent -dev -bind 127.0.0.1 > "$RUNNER_TEMP/nomad.log" 2>&1 &
+          for _ in $(seq 1 60); do
+            curl -sf http://127.0.0.1:4646/v1/status/leader | grep -q : && break
+            sleep 1
+          done
+          nomad version
+      - run: cargo test -p homeport-nomad -- --ignored nomad_live
+      - name: Show the agent's log
+        if: failure()
+        run: cat "$RUNNER_TEMP/nomad.log"

@@ -1,6 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { chosenNamespace, ClusterStatusBadge, useClusterSelection } from '@/core/cluster';
+import {
+  chosenNamespace,
+  CLUSTER_KIND_LABELS,
+  clusterAddress,
+  ClusterStatusBadge,
+  useClusterSelection,
+} from '@/core/cluster';
 import { settingsQuery } from '@/core/settings';
 import type { ClusterView } from '@/shared/api';
 import { cn } from '@/shared/lib';
@@ -43,10 +49,10 @@ export function ClusterCard({ view, selected }: { view: ClusterView; selected: b
       <CardHeader>
         <CardTitle className="truncate">{view.cluster.name}</CardTitle>
         <CardDescription className="truncate font-mono text-xs">
-          {view.cluster.connection.server}
+          {clusterAddress(view.cluster)}
         </CardDescription>
         <CardAction>
-          <Badge variant="outline">{t('overview.cluster.kind')}</Badge>
+          <Badge variant="outline">{t(CLUSTER_KIND_LABELS[view.cluster.kind])}</Badge>
         </CardAction>
       </CardHeader>
       <CardContent className="grid gap-3">

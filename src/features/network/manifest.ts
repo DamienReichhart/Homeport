@@ -13,4 +13,5 @@ export const networkFeature = defineFeature({
     { path: 'ingresses/:namespace/:name/:tab?', Component: IngressDetailPage },
   ],
   nav: { path: '/services', label: 'network.nav', icon: WaypointsIcon, scope: 'cluster' },
+  clusterKind: 'kubernetes',
 });

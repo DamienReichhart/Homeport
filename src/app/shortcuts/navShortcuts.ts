@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { visibleNavEntries, type HostCapability, type NavEntry } from '@/core/feature';
+import { useClusterSelection } from '@/core/cluster';
 import { supports, useHostSelection } from '@/core/host';
 import { useSelection } from '@/core/selection';
 import { navEntries } from '../router/features';
@@ -22,9 +23,10 @@ export function useNavEntries(): { entries: NavEntry[]; shortcuts: NavShortcut[]
   const podman = supports(host, 'podman');
   const containerd = supports(host, 'containerd');
   const incus = supports(host, 'incus');
+  const clusterKind = useClusterSelection().cluster?.cluster.kind ?? null;
   return useMemo(() => {
     const offered: Record<HostCapability, boolean> = { docker, podman, containerd, incus };
-    const entries = visibleNavEntries(navEntries, kind, (c) => offered[c]);
+    const entries = visibleNavEntries(navEntries, kind, (c) => offered[c], clusterKind);
     return { entries, shortcuts: navShortcuts(entries) };
-  }, [kind, docker, podman, containerd, incus]);
+  }, [kind, docker, podman, containerd, incus, clusterKind]);
 }

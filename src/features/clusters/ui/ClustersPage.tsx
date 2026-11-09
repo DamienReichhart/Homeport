@@ -1,8 +1,14 @@
 import { PlusIcon, ShipWheelIcon } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ClusterStatusBadge, useClusters } from '@/core/cluster';
+import {
+  CLUSTER_KIND_LABELS,
+  clusterAddress,
+  ClusterStatusBadge,
+  useClusters,
+} from '@/core/cluster';
 import type { ClusterView } from '@/shared/api';
 import {
+  Badge,
   Button,
   DataTable,
   EmptyState,
@@ -11,7 +17,7 @@ import {
   Spinner,
   type ColumnDef,
 } from '@/shared/ui';
-import { authLabel } from '../model/labels';
+import { clusterAuthLabel } from '../model/labels';
 import { t } from '@/shared/i18n';
 
 const columns: ColumnDef<ClusterView, unknown>[] = [
@@ -28,17 +34,25 @@ const columns: ColumnDef<ClusterView, unknown>[] = [
     cell: ({ row }) => <ClusterStatusBadge status={row.original.status} />,
   },
   {
+    id: 'kind',
+    header: t('clusters.column.kind'),
+    accessorFn: (c) => t(CLUSTER_KIND_LABELS[c.cluster.kind]),
+    cell: ({ row }) => (
+      <Badge variant="outline">{t(CLUSTER_KIND_LABELS[row.original.cluster.kind])}</Badge>
+    ),
+  },
+  {
     id: 'server',
     header: t('clusters.column.server'),
-    accessorFn: (c) => c.cluster.connection.server,
+    accessorFn: (c) => clusterAddress(c.cluster),
     cell: ({ row }) => (
-      <span className="font-mono text-xs">{row.original.cluster.connection.server}</span>
+      <span className="font-mono text-xs">{clusterAddress(row.original.cluster)}</span>
     ),
   },
   {
     id: 'auth',
     header: t('clusters.column.auth'),
-    accessorFn: (c) => authLabel(c.cluster.connection.auth),
+    accessorFn: (c) => clusterAuthLabel(c.cluster),
   },
 ];
 

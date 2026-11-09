@@ -10,4 +10,5 @@ export const portForwardsFeature = defineFeature({
     icon: ArrowRightLeftIcon,
     scope: 'cluster',
   },
+  clusterKind: 'kubernetes',
 });

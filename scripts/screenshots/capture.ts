@@ -55,8 +55,11 @@ interface Shot {
   steps?: string[];
   hold?: number;
   fastClock?: boolean;
-  /** Demo data beyond the Hosts: `clusters` selects the demo EKS Cluster. */
-  demo?: 'clusters';
+  /**
+   * Demo data beyond the Hosts: `clusters` selects the demo EKS Cluster,
+   * `nomad` the demo Nomad Cluster.
+   */
+  demo?: 'clusters' | 'nomad';
 }
 
 const container = (name: string) => hexId(`${PROD}/${name}`);
@@ -147,6 +150,14 @@ const SHOTS: Shot[] = [
   },
   { name: 'cluster-nodes', route: '/nodes', demo: 'clusters' },
   { name: 'cluster-events', route: '/cluster-events', demo: 'clusters' },
+  { name: 'nomad-jobs', route: '/nomad/jobs', demo: 'nomad' },
+  {
+    name: 'nomad-run-plan',
+    route: '/nomad/jobs/shop/shop-api',
+    demo: 'nomad',
+    steps: ['click:Edit and run', 'wait:800', 'click:Plan'],
+    hold: 3500,
+  },
 ];
 
 /** Snap Firefox can only reach non-hidden paths in the home directory. */

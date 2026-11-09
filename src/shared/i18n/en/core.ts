@@ -17,6 +17,11 @@ export default {
   'core.unsupported.incus':
     'This page is for Incus, and {name} runs {engine}. Pick an Incus host in the switcher to use it.',
   'core.unsupported.overview': 'Go to the Overview',
+  'core.cluster.kind.kubernetes': 'Kubernetes',
+  'core.cluster.kind.nomad': 'Nomad',
+  'core.cluster.unsupported.title': '{name} can’t show this page',
+  'core.cluster.unsupported.description':
+    'This page is for {kind} clusters, and {name} is a {current} cluster. Pick a {kind} cluster in the switcher to use it.',
   'core.containerd.namespace': 'Namespace',
   'core.containerd.holds':
     '{containers, plural, one {# container} other {# containers}}, {images, plural, one {# image} other {# images}}',
@@ -50,6 +55,8 @@ export default {
   'core.swarm.gone.description':
     'None of the hosts Homeport connects to belongs to it now. Add one of its managers as a host to manage it.',
   'core.cluster.serverVersion': 'Kubernetes {version}',
+  'core.cluster.nomadVersion': 'Nomad {version}, region {region}',
+  'core.cluster.nomadRegion': 'Nomad, region {region}',
   'core.cluster.credentialsLostDetail':
     'The stored credentials can’t be decrypted. Refresh the cluster from its kubeconfig.',
   'core.cluster.reconnectFailed': 'Homeport couldn’t reconnect to the cluster',

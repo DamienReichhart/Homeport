@@ -1,4 +1,4 @@
-import type { AppErrorPayload, ClusterStatus } from '@/shared/api';
+import type { AppErrorPayload, ClusterKind, ClusterStatus } from '@/shared/api';
 import type { Tone } from '@/shared/ui';
 import { t } from '@/shared/i18n';
 
@@ -13,14 +13,30 @@ export function clusterStatusError(status: ClusterStatus): AppErrorPayload | nul
   return 'error' in status ? status.error : null;
 }
 
-/** A short label, a colour and the reason, for showing a Cluster's status. */
-export function describeClusterStatus(status: ClusterStatus): ClusterStatusSummary {
+/** What a connected Cluster of `kind` runs: its version, and a Nomad Cluster's region. */
+function connectedDetail(
+  status: Extract<ClusterStatus, { state: 'connected' }>,
+  kind: ClusterKind,
+): string | undefined {
+  if (kind === 'kubernetes')
+    return t('core.cluster.serverVersion', { version: status.serverVersion });
+  const region = status.region ?? 'global';
+  return status.serverVersion
+    ? t('core.cluster.nomadVersion', { version: status.serverVersion, region })
+    : t('core.cluster.nomadRegion', { region });
+}
+
+/** A short label, a colour and the reason, for showing the status of a Cluster of `kind`. */
+export function describeClusterStatus(
+  status: ClusterStatus,
+  kind: ClusterKind = 'kubernetes',
+): ClusterStatusSummary {
   switch (status.state) {
     case 'connected':
       return {
         label: t('core.status.connected'),
         tone: 'success',
-        detail: t('core.cluster.serverVersion', { version: status.serverVersion }),
+        detail: connectedDetail(status, kind),
       };
     case 'connecting':
       return { label: t('core.status.connecting'), tone: 'info' };

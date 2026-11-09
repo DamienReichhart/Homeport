@@ -35,11 +35,13 @@ Yes, through Podman's Docker-compatible API socket. Homeport detects the usual P
 
 Homeport also recognises Podman when it connects, and then offers what only Podman has, through Podman's own API on the same socket: [pods](/docs/guides/podman-pods/), which you can list, start, stop, create and remove, and run containers in from the Run dialog; and [Quadlet units](/docs/guides/quadlet/), which you can list, read, install, edit and remove, and start or stop over SSH.
 
-### Does it work with Kubernetes or Docker Swarm?
+### Does it work with Kubernetes, Nomad or Docker Swarm?
 
 Docker Swarm, yes. Homeport finds a Swarm through its manager hosts, once one of them is a host, and manages it fully: its nodes, services, tasks, secrets, configs and swarm stacks, including Managed, Linked and Synced Stacks deployed to it. It can also start a Swarm on a host, and join or leave one. Everything goes through a connected manager's Engine API; nothing is installed on the nodes. See [Swarms](/docs/guides/swarm/).
 
 Kubernetes, yes. Add a cluster from your kubeconfig — this computer's or one you paste — and Homeport finds local ones (Docker Desktop, OrbStack, Rancher Desktop, kind, k3d, minikube) for you. EKS, GKE and AKS work through the exec plugin their kubeconfig names. You can browse Namespaces, workloads, Pods, Services, Ingresses, ConfigMaps, Secrets, Nodes, Events and any other API resource, custom ones included, live; follow logs, open a terminal in a Pod, forward ports, scale, restart and delete, and apply or edit YAML with a preview. Nothing is installed on the cluster: Homeport only talks to the Kubernetes API your kubeconfig already reaches, with its credentials' rights. With the `helm` CLI on this computer, Homeport also lists, installs, upgrades, rolls back and uninstalls [Helm releases](/docs/clusters/helm/), and manages helm's chart repositories. See [Clusters](/docs/clusters/).
+
+Nomad, yes. Add a cluster by its agent's address, with an ACL token and TLS material when it uses them. You can list jobs and their allocations, live; run a job from HCL or JSON after seeing Nomad's plan; edit and re-run one, stop or purge it, and scale its task groups; follow a task's logs and open a shell in it; drain nodes and switch their eligibility; and pick a namespace. Nothing is installed on the cluster and no `nomad` CLI is needed: Homeport talks to Nomad's HTTP API with the token's rights. See [Nomad clusters](/docs/clusters/nomad/).
 
 ### Do I need kubectl?
 

@@ -8,13 +8,16 @@ use homeport_core::error::{AppError, AppResult, ErrorCode};
 use super::{read_referenced, Source};
 use crate::{
     messages as msg,
-    model::{AuthMethod, ClusterConnection, ClusterSecrets, ExecConfig, KubeconfigSource},
+    model::{AuthMethod, ExecConfig, KubeconfigSource, KubernetesConnection, KubernetesSecrets},
 };
 
 /// The connection and credentials of the context `name`: what reaches the
 /// API server in the first, every credential in the second, the files the
 /// kubeconfig refers to read and inlined.
-pub fn resolve(source: &Source, name: &str) -> AppResult<(ClusterConnection, ClusterSecrets)> {
+pub fn resolve(
+    source: &Source,
+    name: &str,
+) -> AppResult<(KubernetesConnection, KubernetesSecrets)> {
     let config = &source.config;
     let context = config
         .contexts
@@ -39,7 +42,7 @@ pub fn resolve(source: &Source, name: &str) -> AppResult<(ClusterConnection, Clu
         .filter(|s| !s.trim().is_empty())
         .ok_or_else(|| AppError::validation(msg::CONTEXT_NO_SERVER))?;
 
-    let mut secrets = ClusterSecrets {
+    let mut secrets = KubernetesSecrets {
         certificate_authority: match (
             &cluster.certificate_authority_data,
             &cluster.certificate_authority,
@@ -127,7 +130,7 @@ pub fn resolve(source: &Source, name: &str) -> AppResult<(ClusterConnection, Clu
         }
     }
 
-    let connection = ClusterConnection {
+    let connection = KubernetesConnection {
         server,
         tls_server_name: cluster.tls_server_name.clone(),
         insecure_skip_tls_verify: cluster.insecure_skip_tls_verify.unwrap_or(false),

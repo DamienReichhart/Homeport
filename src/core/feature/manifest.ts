@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import type { RouteObject } from 'react-router-dom';
+import type { ClusterKind } from '@/shared/api';
 import type { MessageKey } from '@/shared/i18n';
 import type { PaletteCommand } from './command';
 
@@ -27,6 +28,8 @@ export interface NavEntry {
   scope: NavScope;
   /** What the selected Host must offer for the entry to show; its feature's `requires`. */
   requires?: HostCapability;
+  /** The kind the selected Cluster must be for the entry to show; its feature's `clusterKind`. */
+  clusterKind?: ClusterKind;
 }
 
 /**
@@ -38,19 +41,29 @@ export function visibleNavEntries(
   entries: NavEntry[],
   kind: 'host' | 'cluster' | null,
   supported: (capability: HostCapability) => boolean = () => true,
+  clusterKind: ClusterKind | null = null,
 ) {
   const selected = kind ?? 'host';
   return entries.filter(
     (e) =>
       (e.scope === 'app' || e.scope === selected) &&
-      (e.scope !== 'host' || !e.requires || supported(e.requires)),
+      (e.scope !== 'host' || !e.requires || supported(e.requires)) &&
+      (e.scope !== 'cluster' || !e.clusterKind || !clusterKind || e.clusterKind === clusterKind),
   );
 }
 
 /** The sidebar entries of `features`, each carrying what its feature requires. */
 export const navEntriesOf = (features: FeatureManifest[]): NavEntry[] =>
   features.flatMap((f) =>
-    f.nav ? [{ ...f.nav, ...(f.requires && { requires: f.requires }) }] : [],
+    f.nav
+      ? [
+          {
+            ...f.nav,
+            ...(f.requires && { requires: f.requires }),
+            ...(f.clusterKind && { clusterKind: f.clusterKind }),
+          },
+        ]
+      : [],
   );
 
 /** The scope of a feature's pages: its sidebar entry's, else the app's. */
@@ -69,6 +82,11 @@ export interface FeatureManifest {
    * sidebar hides their entry otherwise, and opening one explains why.
    */
   requires?: HostCapability;
+  /**
+   * The kind of Cluster the Cluster pages are for: the sidebar hides their
+   * entry for a Cluster of another kind, and opening one explains why.
+   */
+  clusterKind?: ClusterKind;
   commands?: PaletteCommand[];
 }
 

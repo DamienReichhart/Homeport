@@ -10,4 +10,5 @@ export const clusterEventsFeature = defineFeature({
     icon: ActivityIcon,
     scope: 'cluster',
   },
+  clusterKind: 'kubernetes',
 });

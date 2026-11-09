@@ -31,9 +31,8 @@ pub async fn clusters_helm_releases(
     let access = state.clusters.access(&id)?;
     let fallback = access
         .cluster
-        .connection
-        .namespace
-        .clone()
+        .kubernetes()
+        .and_then(|c| c.namespace.clone())
         .unwrap_or_else(|| "default".into());
     Helm::on(access)?
         .releases(namespace.as_deref(), Some(&fallback))

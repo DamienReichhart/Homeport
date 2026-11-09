@@ -200,7 +200,7 @@ impl On {
 }
 
 fn classify_discovery(on: &On, error: &kube::Error) -> AppError {
-    crate::classify::classify(&on.cluster.name, &on.cluster.connection.server, error)
+    crate::classify::classify(&on.cluster.name, on.cluster.address(), error)
 }
 
 #[cfg(test)]

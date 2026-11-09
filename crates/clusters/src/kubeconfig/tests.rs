@@ -162,13 +162,13 @@ fn contexts_list_every_one_with_its_problem() {
         id: "c1".into(),
         name: "Prod shop".into(),
         kind: crate::ClusterKind::Kubernetes,
-        connection: ClusterConnection {
+        connection: ClusterConnection::Kubernetes(crate::model::KubernetesConnection {
             source: Some(crate::model::KubeconfigSource {
                 context: "prod".into(),
                 pasted: false,
             }),
             ..Default::default()
-        },
+        }),
         enabled: true,
         created_at: String::new(),
     }];

@@ -1,8 +1,8 @@
 //! Live connections to every Cluster, each supervised by its own task.
 //!
-//! A supervisor builds a kube-rs client from the Cluster's stored connection
-//! and credentials, asks the API server its version, then asks again every
-//! 15 s. Transient failures retry with backoff (1 s doubling to 60 s);
+//! A supervisor builds a client of the Cluster's kind from its stored
+//! connection and credentials (kube-rs for Kubernetes), asks the API its
+//! version, then asks again every 15 s. Transient failures retry with backoff (1 s doubling to 60 s);
 //! failures that need the user (refused credentials, lost credentials, an
 //! unusable certificate) stop until [`ClusterRegistry::restart`] is called.
 mod notifier;
@@ -24,7 +24,7 @@ use crate::{
     client::{self, IssuedCredentials, CONNECT_TIMEOUT},
     exec::{self, ClusterInfo, Issued},
     messages as msg,
-    model::{Cluster, ClusterId, ClusterSecrets},
+    model::{Cluster, ClusterId, ClusterKind, ClusterSecrets, KubernetesSecrets},
     store::ClusterStore,
 };
 
@@ -32,9 +32,16 @@ pub use self::{notifier::ClusterNotifier, status::ClusterStatus};
 
 use self::supervisor::supervise;
 
+/// The live client of a connected Cluster, of its kind.
+#[derive(Clone)]
+pub enum ClusterClient {
+    Kubernetes(kube::Client),
+    Nomad(homeport_nomad::Nomad),
+}
+
 struct Entry {
     status: ClusterStatus,
-    client: Option<kube::Client>,
+    client: Option<ClusterClient>,
     task: Option<JoinHandle<()>>,
 }
 
@@ -92,6 +99,8 @@ impl ClusterRegistry {
         if let Some(old) = entry.task.replace(task) {
             old.abort();
         }
+        // Not the old status, which the edit that restarted it may have fixed.
+        entry.status = ClusterStatus::Connecting;
         entry.client = None;
     }
 
@@ -110,23 +119,37 @@ impl ClusterRegistry {
             .map_or(ClusterStatus::Connecting, |e| e.status.clone())
     }
 
-    /// The client of a connected Cluster, and the Cluster itself for naming
-    /// it in errors.
+    /// The kube-rs client of a connected Kubernetes Cluster, and the Cluster
+    /// itself for naming it in errors. Refused for a Cluster of another kind.
     pub fn client(&self, id: &str) -> AppResult<(kube::Client, Cluster)> {
-        let status = {
-            let entries = self.lock();
-            match entries.get(id) {
-                Some(Entry {
-                    client: Some(client),
-                    ..
-                }) => {
-                    let client = client.clone();
-                    drop(entries);
-                    return Ok((client, self.store.get(id)?));
-                }
-                Some(entry) => entry.status.clone(),
-                None => ClusterStatus::Connecting,
-            }
+        match self.live(id, ClusterKind::Kubernetes)? {
+            (ClusterClient::Kubernetes(client), cluster) => Ok((client, cluster)),
+            (ClusterClient::Nomad(_), cluster) => Err(cluster.wrong_kind()),
+        }
+    }
+
+    /// The client of a connected Nomad Cluster, and the Cluster itself.
+    /// Refused for a Cluster of another kind.
+    pub fn nomad(&self, id: &str) -> AppResult<(homeport_nomad::Nomad, Cluster)> {
+        match self.live(id, ClusterKind::Nomad)? {
+            (ClusterClient::Nomad(client), cluster) => Ok((client, cluster)),
+            (ClusterClient::Kubernetes(_), cluster) => Err(cluster.wrong_kind()),
+        }
+    }
+
+    /// The live client of a connected Cluster of `kind`.
+    fn live(&self, id: &str, kind: ClusterKind) -> AppResult<(ClusterClient, Cluster)> {
+        let cluster = self.store.get(id)?;
+        if cluster.kind != kind {
+            return Err(cluster.wrong_kind());
+        }
+        let status = match self.lock().get(id) {
+            Some(Entry {
+                client: Some(client),
+                ..
+            }) => return Ok((client.clone(), cluster)),
+            Some(entry) => entry.status.clone(),
+            None => ClusterStatus::Connecting,
         };
         Err(self.not_connected(id, &status))
     }
@@ -155,13 +178,55 @@ impl ClusterRegistry {
         }
     }
 
-    /// Builds a client for `cluster` and checks that its API server answers.
-    /// Credentials from an exec plugin that the API refuses are asked for
-    /// once more before giving up.
+    /// Builds a client of `cluster`'s kind and checks that its API answers.
     async fn connect(
         &self,
         cluster: &Cluster,
         secrets: &ClusterSecrets,
+    ) -> AppResult<(ClusterClient, ClusterStatus)> {
+        match secrets {
+            ClusterSecrets::Kubernetes(secrets) => {
+                let (client, status) = self.connect_kubernetes(cluster, secrets).await?;
+                Ok((ClusterClient::Kubernetes(client), status))
+            }
+            ClusterSecrets::Nomad(secrets) => {
+                let connection = cluster.nomad_or_refuse()?;
+                let client = crate::nomad::client(&cluster.name, connection, secrets)?;
+                let status = nomad_status(cluster, &client).await?;
+                Ok((ClusterClient::Nomad(client), status))
+            }
+        }
+    }
+
+    /// Checks that a connected Cluster still answers: its status, and a
+    /// renewed client when its credentials had to be renewed on the way.
+    async fn check(
+        &self,
+        cluster: &Cluster,
+        secrets: &ClusterSecrets,
+        client: &ClusterClient,
+    ) -> AppResult<Option<ClusterClient>> {
+        match (secrets, client) {
+            (ClusterSecrets::Kubernetes(secrets), ClusterClient::Kubernetes(client)) => {
+                let renewed = self.renewed(cluster, secrets).await?;
+                version(cluster, renewed.as_ref().unwrap_or(client)).await?;
+                Ok(renewed.map(ClusterClient::Kubernetes))
+            }
+            (_, ClusterClient::Nomad(client)) => {
+                nomad_status(cluster, client).await?;
+                Ok(None)
+            }
+            (ClusterSecrets::Nomad(_), ClusterClient::Kubernetes(_)) => Err(cluster.wrong_kind()),
+        }
+    }
+
+    /// Builds a kube-rs client for `cluster` and checks that its API server
+    /// answers. Credentials from an exec plugin that the API refuses are
+    /// asked for once more before giving up.
+    async fn connect_kubernetes(
+        &self,
+        cluster: &Cluster,
+        secrets: &KubernetesSecrets,
     ) -> AppResult<(kube::Client, ClusterStatus)> {
         let issued = self.credentials(cluster, secrets, false).await?;
         let client = client::client(cluster, secrets, issued.as_ref())?;
@@ -181,7 +246,7 @@ impl ClusterRegistry {
     async fn renewed(
         &self,
         cluster: &Cluster,
-        secrets: &ClusterSecrets,
+        secrets: &KubernetesSecrets,
     ) -> AppResult<Option<kube::Client>> {
         if secrets.exec.is_none() {
             return Ok(None);
@@ -196,7 +261,7 @@ impl ClusterRegistry {
         let issued = self.credentials(cluster, secrets, true).await?;
         let client = client::client(cluster, secrets, issued.as_ref())?;
         if let Some(entry) = self.lock().get_mut(&cluster.id) {
-            entry.client = Some(client.clone());
+            entry.client = Some(ClusterClient::Kubernetes(client.clone()));
         }
         Ok(Some(client))
     }
@@ -206,12 +271,13 @@ impl ClusterRegistry {
     async fn credentials(
         &self,
         cluster: &Cluster,
-        secrets: &ClusterSecrets,
+        secrets: &KubernetesSecrets,
         force: bool,
     ) -> AppResult<Option<IssuedCredentials>> {
         let Some(plugin) = &secrets.exec else {
             return Ok(None);
         };
+        let connection = cluster.kubernetes_or_refuse()?;
         if !force {
             if let Some(issued) = self.lock_issued().get(&cluster.id) {
                 if !issued.is_due(SystemTime::now()) {
@@ -220,16 +286,12 @@ impl ClusterRegistry {
             }
         }
         let info = ClusterInfo {
-            server: cluster.connection.server.clone(),
-            tls_server_name: cluster.connection.tls_server_name.clone(),
-            insecure_skip_tls_verify: cluster.connection.insecure_skip_tls_verify,
+            server: connection.server.clone(),
+            tls_server_name: connection.tls_server_name.clone(),
+            insecure_skip_tls_verify: connection.insecure_skip_tls_verify,
             certificate_authority: secrets.certificate_authority.clone(),
         };
-        let context = cluster
-            .connection
-            .source
-            .as_ref()
-            .map(|s| s.context.as_str());
+        let context = connection.source.as_ref().map(|s| s.context.as_str());
         let issued = exec::run(&cluster.name, context, plugin, &info).await?;
         let credentials = issued.credentials.clone();
         self.lock_issued().insert(cluster.id.clone(), issued);
@@ -250,7 +312,7 @@ impl ClusterRegistry {
         self.entries.lock().expect("cluster registry lock poisoned")
     }
 
-    fn set_status(&self, id: &str, status: ClusterStatus, client: Option<kube::Client>) {
+    fn set_status(&self, id: &str, status: ClusterStatus, client: Option<ClusterClient>) {
         if let Some(entry) = self.lock().get_mut(id) {
             entry.status = status.clone();
             entry.client = client;
@@ -264,7 +326,7 @@ async fn version(cluster: &Cluster, client: &kube::Client) -> AppResult<ClusterS
     let answer = tokio::time::timeout(CONNECT_TIMEOUT, client.apiserver_version()).await;
     let info = match answer {
         Ok(Ok(info)) => info,
-        Ok(Err(e)) => return Err(classify(&cluster.name, &cluster.connection.server, &e)),
+        Ok(Err(e)) => return Err(classify(&cluster.name, cluster.address(), &e)),
         Err(elapsed) => {
             return Err(
                 AppError::new(ErrorCode::Timeout, msg::TIMEOUT.with("name", &cluster.name))
@@ -275,7 +337,27 @@ async fn version(cluster: &Cluster, client: &kube::Client) -> AppResult<ClusterS
     };
     Ok(ClusterStatus::Connected {
         server_version: info.git_version,
-        platform: info.platform,
+        platform: Some(info.platform),
+        region: None,
+    })
+}
+
+/// Asks a Nomad Cluster its leader, version and region.
+async fn nomad_status(
+    cluster: &Cluster,
+    client: &homeport_nomad::Nomad,
+) -> AppResult<ClusterStatus> {
+    let agent = tokio::time::timeout(CONNECT_TIMEOUT + CONNECT_TIMEOUT, client.agent())
+        .await
+        .map_err(|elapsed| {
+            AppError::new(ErrorCode::Timeout, msg::TIMEOUT.with("name", &cluster.name))
+                .with_hint(msg::TIMEOUT_HINT)
+                .with_cause(&elapsed)
+        })??;
+    Ok(ClusterStatus::Connected {
+        server_version: agent.version.unwrap_or_default(),
+        platform: None,
+        region: agent.region,
     })
 }
 

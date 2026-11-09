@@ -1,4 +1,5 @@
 import type { ClusterView } from '@/shared/api';
+import { kubernetesConnection } from './kind';
 
 /** All Namespaces, as the settings store the choice. */
 export const ALL_NAMESPACES = '';
@@ -13,5 +14,5 @@ export function chosenNamespace(
 ): string | null {
   const value = remembered?.[cluster.cluster.id];
   if (value === ALL_NAMESPACES) return null;
-  return value ?? cluster.cluster.connection.namespace ?? 'default';
+  return value ?? kubernetesConnection(cluster.cluster)?.namespace ?? 'default';
 }

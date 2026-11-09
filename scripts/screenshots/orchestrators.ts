@@ -1,10 +1,12 @@
 /**
  * The IPC answers for the Swarm and Cluster screenshots, spread into the
- * mocks of `mocks.ts`. Cluster data only shows with `demo=clusters`, so the
- * Host shots stay as they were.
+ * mocks of `mocks.ts`. Cluster data only shows with `demo=clusters`, and
+ * the demo Nomad Cluster's with `demo=nomad`, so the Host shots stay as they
+ * were.
  */
 import type { ResourceKind, WorkloadKind } from '@/shared/api';
 import * as k from './clusters';
+import * as n from './nomad';
 import {
   joinInfo,
   serviceInspect,
@@ -19,6 +21,9 @@ type Handler = (args: Record<string, unknown>) => unknown;
 
 /** Whether this capture shows the demo Clusters. */
 export const clusterDemo = () => new URLSearchParams(location.search).get('demo') === 'clusters';
+
+/** Whether this capture shows the demo Nomad Cluster. */
+export const nomadDemo = () => new URLSearchParams(location.search).get('demo') === 'nomad';
 
 export const swarmHandlers: Record<string, Handler> = {
   swarm_nodes_list: () => swarmNodes,
@@ -75,8 +80,16 @@ const KINDS: Partial<Record<ResourceKind, string>> = {
 
 export function clusterHandlers(): Record<string, Handler> {
   const on = clusterDemo();
+  const nomad = nomadDemo();
   return {
-    clusters_list: () => (on ? k.clusters : []),
+    clusters_list: () => (on ? k.clusters : nomad ? [n.nomadCluster] : []),
+    clusters_nomad_namespaces: () => n.nomadNamespaces,
+    clusters_nomad_jobs: () => n.nomadJobs,
+    clusters_nomad_job: () => n.shopApi,
+    clusters_nomad_job_source: () => n.shopApiSource,
+    clusters_nomad_job_plan: () => n.shopApiPlan,
+    clusters_nomad_nodes: () => n.nomadNodes,
+    clusters_nomad_watch_subscribe: () => 1,
     clusters_detect_local: () => (on ? k.localClusters : { found: [], missing: [] }),
     clusters_kubeconfig_contexts: () => k.kubeContexts,
     clusters_namespaces: () => k.namespaces,
@@ -119,10 +132,18 @@ export function clusterHandlers(): Record<string, Handler> {
 }
 
 /** The settings of a Cluster capture: the EKS Cluster selected, on its `shop` namespace. */
-export const clusterSettings = () =>
+export const clusterSettings = (): {
+  lastSelection?: { kind: 'cluster'; id: string };
+  clusterNamespaces?: Record<string, string>;
+} =>
   clusterDemo()
     ? {
         lastSelection: { kind: 'cluster' as const, id: k.EKS },
         clusterNamespaces: { [k.EKS]: 'shop' },
       }
-    : {};
+    : nomadDemo()
+      ? {
+          lastSelection: { kind: 'cluster' as const, id: n.NOMAD },
+          clusterNamespaces: { [n.NOMAD]: 'shop' },
+        }
+      : {};
