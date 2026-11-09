@@ -24,7 +24,7 @@ Homeport looks through this computer's kubeconfig for clusters running here, ask
 | **k3d**             | `k3d-<name>`                            | the context name  |
 | **minikube**        | `minikube`, or a profile minikube wrote | the context name  |
 
-A context counts as local only when its API server is on this computer (`127.0.0.1`, `localhost`, `kubernetes.docker.internal`…) or, for minikube and Rancher Desktop, in their VM on a private address. A remote context is never offered, whatever its name. A local cluster that doesn't answer shows **Not running**; start it with its own tool and open the page again.
+A context counts as local only when its API server is on this computer (`127.0.0.1`, `localhost`, `kubernetes.docker.internal`…) or, for minikube and Rancher Desktop, in their virtual machine on a private address. A remote context is never offered, whatever its name. A local cluster that doesn't answer shows **Not running**; start it with its own tool and open the page again.
 
 ### kind and k3d clusters missing from the kubeconfig
 
