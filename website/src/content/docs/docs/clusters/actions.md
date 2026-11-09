@@ -46,6 +46,6 @@ The confirmation says what happens next:
 
 ## When it doesn't work
 
-- **Not allowed**: a change your credentials may not make says so with its verb and resource — "Your credentials can't patch deployments in shop." — and the `kubectl auth can-i` command to check.
+- **Not allowed**: a change your credentials may not make says so with its verb and resource — "Your credentials don't allow “patch” on deployments in shop." — and the `kubectl auth can-i` command to check.
 - **Changed meanwhile**: when someone else changed the object between your look and your action, Homeport says so; look at it again and retry.
 - **Already gone**: deleting something already deleted says it no longer exists.
