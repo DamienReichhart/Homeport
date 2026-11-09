@@ -9,6 +9,7 @@ import { ClusterDashboard } from './dashboard/ClusterDashboard';
 import { ContainerdDashboard } from './dashboard/ContainerdDashboard';
 import { HostDashboard } from './dashboard/HostDashboard';
 import { IncusDashboard } from './dashboard/IncusDashboard';
+import { NomadDashboard } from './dashboard/NomadDashboard';
 import { HostCard } from './hosts/HostCard';
 import { t } from '@/shared/i18n';
 
@@ -57,7 +58,13 @@ export function OverviewPage() {
           <>
             {cluster && <h2 className="text-lg font-semibold">{cluster.cluster.name}</h2>}
             <ClusterGate>
-              {(view) => <ClusterDashboard key={view.cluster.id} cluster={view} />}
+              {(view) =>
+                view.cluster.kind === 'nomad' ? (
+                  <NomadDashboard key={view.cluster.id} cluster={view} />
+                ) : (
+                  <ClusterDashboard key={view.cluster.id} cluster={view} />
+                )
+              }
             </ClusterGate>
           </>
         ) : (

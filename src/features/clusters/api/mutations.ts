@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { clusterKeys } from '@/core/cluster';
-import { commands, type ClusterView, type ContextChoice } from '@/shared/api';
+import { commands, type ClusterView, type ContextChoice, type NomadForm } from '@/shared/api';
 import { t } from '@/shared/i18n';
 
 function useRefreshClusters() {
@@ -91,5 +91,43 @@ export function useRefreshFromImport() {
       await refresh();
       toast.success(t('clusters.refresh.done'));
     },
+  });
+}
+
+/** Adds a Nomad Cluster; the form shows a failure in place. */
+export function useAddNomadCluster(onDone: (added: ClusterView) => void) {
+  const refresh = useRefreshClusters();
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: (form: NomadForm) => commands.clustersNomadAdd(form),
+    onSuccess: async (added) => {
+      await refresh();
+      toast.success(t('clusters.nomad.added', { name: added.cluster.name }));
+      onDone(added);
+    },
+  });
+}
+
+/** Changes a Nomad Cluster's settings and credentials; the form shows a failure in place. */
+export function useUpdateNomadCluster(clusterId: string) {
+  const refresh = useRefreshClusters();
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: (form: NomadForm) => commands.clustersNomadUpdate(clusterId, form),
+    onSuccess: async () => {
+      await refresh();
+      toast.success(t('clusters.nomad.saved'));
+    },
+  });
+}
+
+/**
+ * Connects once to the Nomad Cluster a form describes, without saving it;
+ * with `clusterId`, the credentials left empty are that Cluster's.
+ */
+export function useTestNomadCluster(clusterId: string | null) {
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: (form: NomadForm) => commands.clustersNomadTest(form, clusterId),
   });
 }

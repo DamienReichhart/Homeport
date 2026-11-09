@@ -23,5 +23,5 @@ export function authLabel(auth: AuthMethod | null | undefined): string {
 export function clusterAuthLabel(cluster: Cluster): string {
   const c = cluster.connection;
   if (c.kind === 'kubernetes') return authLabel(c.auth);
-  return t('clusters.auth.none');
+  return c.aclToken ? t('clusters.auth.aclToken') : t('clusters.auth.none');
 }

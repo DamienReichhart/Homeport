@@ -13,6 +13,8 @@ export default {
   'overview.cluster.version': 'Version',
   'overview.cluster.platform': 'Platform',
   'overview.cluster.server': 'API server',
+  'overview.nomad.region': 'Region',
+  'overview.nomad.address': 'Address',
   'overview.cluster.namespace': 'Namespace',
   'overview.cluster.allNamespaces': 'All namespaces',
   'overview.cluster.nodesTitle': 'Nodes',
