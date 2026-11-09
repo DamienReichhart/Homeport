@@ -50,7 +50,8 @@ export default {
   'pods.logs.previous': 'Предыдущий запуск',
   'pods.logs.noRestart': 'Он не перезапускался, поэтому предыдущего запуска нет.',
   'pods.logs.pod': 'Pod',
-  'pods.logs.allPods': 'Все Pod ({count, plural, one {#} few {#} many {#} other {#}})',
+  'pods.logs.allPods':
+    '{count, plural, =1 {Pod} one {Все # объект Pod} few {Все # объекта Pod} many {Все # объектов Pod} other {Все # объекта Pod}}',
   'pods.logs.noPods': 'Сейчас в нём не работает ни один Pod.',
   'pods.tab.terminal': 'Терминал',
   'pods.terminal.shell': 'Оболочка',

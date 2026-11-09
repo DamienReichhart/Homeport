@@ -25,7 +25,8 @@ export default {
   'images.column.created': 'Создан',
   'images.column.size': 'Размер',
   'images.column.status': 'Состояние',
-  'images.moreTags': 'Ещё теги: +{count}',
+  'images.moreTags':
+    '{count, plural, one {ещё # тег} few {ещё # тега} many {ещё # тегов} other {ещё # тега}}',
   'images.inUse': 'Используется · {count}',
   'images.unused': 'Не используется',
   'images.runOne': 'Запустить {name}',
