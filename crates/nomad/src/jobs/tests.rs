@@ -192,7 +192,7 @@ async fn nomads_refusal_to_scale_keeps_its_reason() {
             "POST /v1/job/web/scale",
             400,
             vec![],
-            "job scaling blocked due to active deployment".into(),
+            "group \"api\" has no count to scale".into(),
         ),
     ])
     .await;
@@ -202,6 +202,29 @@ async fn nomads_refusal_to_scale_keeps_its_reason() {
         .await
         .unwrap_err();
     assert!(e.is(ErrorCode::BadRequest));
-    assert!(e.detail.unwrap().contains("active deployment"));
+    assert!(e.detail.unwrap().contains("no count"));
     assert_eq!(e.hint.unwrap().key, "errors.nomad.scaleRefused.hint");
+}
+
+/// What Nomad 2.1 answers when a job is re-run, then scaled at once.
+#[tokio::test]
+async fn scaling_during_a_deployment_says_to_wait_for_it() {
+    let fake = agent(vec![
+        ok("GET /v1/job/web", WEB),
+        (
+            "POST /v1/job/web/scale",
+            400,
+            vec![],
+            "job scaling blocked due to active deployment".into(),
+        ),
+    ])
+    .await;
+    let e = fake
+        .client(None)
+        .scale_task_group(None, "web", "api", 2)
+        .await
+        .unwrap_err();
+    assert!(e.is(ErrorCode::Conflict));
+    assert_eq!(e.key, "errors.nomad.scaleDeploying");
+    assert!(e.message.contains("web"));
 }

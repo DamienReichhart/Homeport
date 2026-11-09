@@ -614,6 +614,8 @@
   "errors.nomad.scaleBounds.hint": "Its scaling policy sets the bounds. Change them in the job's definition to go further.",
   "errors.nomad.scaleDenied": "{name} refused: the ACL token can't scale jobs in this namespace.",
   "errors.nomad.scaleDenied.hint": "Scaling needs the scale-job capability, which the write policy also grants, on the job's namespace.",
+  "errors.nomad.scaleDeploying": "Nomad won't scale {job} while a deployment of it is in progress.",
+  "errors.nomad.scaleDeploying.hint": "Wait for the deployment to finish, when every allocation of the new version is healthy, then scale again.",
   "errors.nomad.scaleRefused.hint": "Details has Nomad's reason.",
   "errors.nomad.serverNameInvalid": "\"{serverName}\" isn't a name a certificate can be checked against.",
   "errors.nomad.specEmpty": "Paste or open a job specification first.",

@@ -578,6 +578,12 @@ impl Nomad {
         .await
         .map(drop)
         .map_err(|e| {
+            let text = e.detail.clone().unwrap_or_default();
+            if crate::error::mentions(&text, &["active deployment"]) {
+                return AppError::new(ErrorCode::Conflict, msg::SCALE_DEPLOYING.with("job", id))
+                    .with_hint(msg::SCALE_DEPLOYING_HINT)
+                    .with_detail(text);
+            }
             if e.is(ErrorCode::BadRequest) {
                 AppError {
                     hint: AppError::new(ErrorCode::BadRequest, msg::BAD_REQUEST)

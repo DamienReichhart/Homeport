@@ -137,7 +137,15 @@ async fn nomad_live_a_job_runs_is_rerun_changed_scaled_and_stopped() {
         "{e:?}"
     );
 
-    nomad.scale_task_group(None, name, "web", 2).await.unwrap();
+    // The re-runs started a deployment: Nomad won't scale until it's done.
+    until("the deployment to let the job scale", || async {
+        match nomad.scale_task_group(None, name, "web", 2).await {
+            Ok(()) => true,
+            Err(e) if e.is(homeport_core::error::ErrorCode::Conflict) => false,
+            Err(e) => panic!("{e:?}"),
+        }
+    })
+    .await;
     until("two allocations", || async {
         nomad
             .job(None, name)
@@ -245,10 +253,10 @@ async fn nomad_live_a_tasks_log_is_read_and_a_command_runs_through_exec() {
     assert!(events
         .iter()
         .any(|e| matches!(e, ExecEvent::Output { data } if data.contains("exec-from-homeport"))));
-    assert!(matches!(
-        events.last(),
-        Some(ExecEvent::Exit { code: Some(0), .. })
-    ));
+    assert!(
+        matches!(events.last(), Some(ExecEvent::Exit { code: Some(0), .. })),
+        "{events:?}"
+    );
 
     nomad.stop_job(None, name, true).await.unwrap();
 }

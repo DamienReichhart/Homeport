@@ -187,6 +187,10 @@ The job was stopped and purged, or garbage-collected, or it lives in another nam
 
 The task group's `scaling` block sets a `min` and a `max`, and the count asked is outside them. Change the bounds in the job's specification and run it again to go further.
 
+### Nomad: "Nomad won't scale … while a deployment of it is in progress"
+
+Running a new version of a service job starts a deployment, and Nomad refuses to change its count until every allocation of the new version is healthy. Wait for the job's allocations to settle, then scale again.
+
 ### Nomad: "The job specification doesn't parse, at line …, column …"
 
 Nomad's parser found a problem at that place; **Details** has its message. `variable` blocks need a default, since Homeport doesn't pass variable files. A JSON specification must be a job in Nomad's API format, as `nomad job inspect` prints it.

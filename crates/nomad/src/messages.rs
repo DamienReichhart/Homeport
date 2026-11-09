@@ -77,6 +77,9 @@ homeport_core::messages! {
     SCALE_BOUNDS_HINT = "errors.nomad.scaleBounds.hint" => "Its scaling policy sets the bounds. Change them in the job's definition to go further.";
     /// Nomad refused a scale for a reason of its own.
     SCALE_REFUSED_HINT = "errors.nomad.scaleRefused.hint" => "Details has Nomad's reason.";
+    /// A deployment of the job is still rolling out.
+    SCALE_DEPLOYING = "errors.nomad.scaleDeploying" => "Nomad won't scale {job} while a deployment of it is in progress.";
+    SCALE_DEPLOYING_HINT = "errors.nomad.scaleDeploying.hint" => "Wait for the deployment to finish, when every allocation of the new version is healthy, then scale again.";
     /// The token lacks submit-job or scale-job.
     SCALE_DENIED = "errors.nomad.scaleDenied" => "{name} refused: the ACL token can't scale jobs in this namespace.";
     SCALE_DENIED_HINT = "errors.nomad.scaleDenied.hint" => "Scaling needs the scale-job capability, which the write policy also grants, on the job's namespace.";
