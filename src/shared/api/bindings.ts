@@ -119,6 +119,17 @@ export const commands = {
 	 *  it. With `id`, the credentials left out are that Cluster's.
 	 */
 	clustersNomadTest: (form: NomadForm, id: string | null) => __TAURI_INVOKE<NomadAgent>("clusters_nomad_test", { form, id }),
+	clustersNomadJobs: (id: string, namespace: string | null) => __TAURI_INVOKE<NomadJobView[]>("clusters_nomad_jobs", { id, namespace }),
+	clustersNomadJob: (id: string, namespace: string | null, jobId: string) => __TAURI_INVOKE<NomadJobDetail>("clusters_nomad_job", { id, namespace, jobId }),
+	/**  Stops a job; with `purge`, Nomad forgets it at once. */
+	clustersNomadJobStop: (id: string, namespace: string | null, jobId: string, purge: boolean) => __TAURI_INVOKE<null>("clusters_nomad_job_stop", { id, namespace, jobId, purge }),
+	/**  Sets how many allocations a task group runs, within its scaling policy. */
+	clustersNomadJobScale: (id: string, namespace: string | null, jobId: string, group: string, count: number) => __TAURI_INVOKE<null>("clusters_nomad_job_scale", { id, namespace, jobId, group, count }),
+	/**
+	 *  Sends `true` each time what `topic` covers changes, through Nomad's
+	 *  blocking queries, until the stream is cancelled.
+	 */
+	clustersNomadWatchSubscribe: (id: string, topic: NomadWatch, onEvent: Channel<boolean>) => __TAURI_INVOKE<number>("clusters_nomad_watch_subscribe", { id, topic, onEvent }),
 	clustersNamespaces: (id: string) => __TAURI_INVOKE<NamespaceView[]>("clusters_namespaces", { id }),
 	/**  The workloads of `kind` in `namespace`, or in every Namespace without one. */
 	clustersWorkloadsList: (id: string, kind: WorkloadKind, namespace: string | null) => __TAURI_INVOKE<WorkloadView[]>("clusters_workloads_list", { id, kind, namespace }),
@@ -1746,6 +1757,10 @@ export type ErrorCode =
 "nomad_permission_denied" | 
 /**  A Nomad Cluster whose servers have no leader, so nothing can be changed or read. */
 "nomad_no_leader" | 
+/**  A Nomad job that doesn't exist, or not in the namespace asked. */
+"nomad_job_not_found" | 
+/**  A task group count outside its scaling policy's minimum and maximum. */
+"nomad_scale_out_of_bounds" | 
 /**  The `helm` CLI isn't installed on this computer. */
 "helm_missing" | 
 /**  The `helm` CLI found is Helm 2, which Homeport doesn't support. */
@@ -2794,6 +2809,26 @@ export type NomadAgent = {
 	leader: string,
 };
 
+/**  An allocation: one placement of a task group on a client node. */
+export type NomadAllocationView = {
+	id: string,
+	/**  Such as `web.api[0]`. */
+	name: string,
+	namespace: string,
+	jobId: string,
+	taskGroup: string,
+	nodeId: string,
+	nodeName: string,
+	/**  `pending`, `running`, `complete`, `failed`, `lost` or `unknown`. */
+	clientStatus: string,
+	/**  `run`, `stop` or `evict`. */
+	desiredStatus: string,
+	jobVersion: number,
+	created: string | null,
+	modified: string | null,
+	tasks: NomadTaskState[],
+};
+
 /**  How to reach a Nomad Cluster's HTTP API, without any credential. */
 export type NomadConnection = {
 	/**  The API's URL, such as `https://nomad.example.com:4646`. */
@@ -2819,7 +2854,7 @@ export type NomadConnection = {
  */
 export type NomadForm = {
 	name?: string,
-	/**  Such as `nomad.example.com`, `10.0.0.5:4646` or `https://nomad:4646`. */
+	/**  Such as `nomad.example.com:4646`, `10.0.0.5` or `https://nomad:4646`. */
 	address?: string,
 	region?: string | null,
 	tlsServerName?: string | null,
@@ -2829,6 +2864,87 @@ export type NomadForm = {
 	clientCertificate?: string | null,
 	clientKey?: string | null,
 };
+
+/**  A task group's counts of allocations by state, and how many it wants. */
+export type NomadGroupCounts = {
+	name: string,
+	/**  The count in the job's definition; `None` when it couldn't be read. */
+	desired: number | null,
+	running: number,
+	starting: number,
+	queued: number,
+	failed: number,
+	lost: number,
+	complete: number,
+};
+
+/**  A job's detail: its definition's main settings, its task groups and its allocations. */
+export type NomadJobDetail = {
+	job: NomadJobView,
+	version: number,
+	datacenters: string[],
+	nodePool: string | null,
+	groups: NomadTaskGroupView[],
+	allocations: NomadAllocationView[],
+};
+
+/**  A job as the Jobs page lists it. */
+export type NomadJobView = {
+	id: string,
+	name: string,
+	namespace: string,
+	/**  `service`, `batch`, `system` or `sysbatch`. */
+	jobType: string,
+	/**  `pending`, `running` or `dead`. */
+	status: string,
+	statusDescription: string | null,
+	/**  Stopped by a user, and not yet garbage-collected. */
+	stopped: boolean,
+	priority: number,
+	periodic: boolean,
+	parameterized: boolean,
+	/**  The periodic or parameterized job that launched this one. */
+	parentId: string | null,
+	submitted: string | null,
+	groups: NomadGroupCounts[],
+};
+
+/**  A task group's scaling bounds, from its `scaling` block. */
+export type NomadScaling = {
+	min: number | null,
+	max: number | null,
+	/**  Whether an autoscaler acts on the policy. */
+	enabled: boolean,
+};
+
+/**  A task group of a job's detail. */
+export type NomadTaskGroupView = {
+	counts: NomadGroupCounts,
+	scaling: NomadScaling | null,
+	tasks: NomadTaskView[],
+};
+
+/**  A task's state in an allocation. */
+export type NomadTaskState = {
+	name: string,
+	/**  `pending`, `running` or `dead`. */
+	state: string,
+	failed: boolean,
+	restarts: number,
+	started: string | null,
+};
+
+export type NomadTaskView = {
+	name: string,
+	driver: string,
+};
+
+/**  What a page watches. */
+export type NomadWatch = 
+/**  The jobs of a namespace (the token's default without one, all with `*`). */
+{ topic: "jobs"; namespace: string | null } | 
+/**  One job, its summary and its allocations. */
+{ topic: "job"; namespace: string | null; jobId: string };
 
 /**
  *  The OS notifications Homeport shows, one switch per kind; all on unless
