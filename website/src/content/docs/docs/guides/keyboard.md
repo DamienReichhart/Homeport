@@ -13,7 +13,7 @@ Homeport can be used from the keyboard. Press <kbd>Mod</kbd> <kbd>K</kbd> to ope
 
 - **Go to** — every page in the sidebar: type `vol` and press <kbd>Enter</kbd> to open Volumes.
 - **Hosts** — every Host with its status: type part of a Host's name to switch to it.
-- **Actions** — **Run a container**, **Pull an image**, **New Stack**, **Clean up the selected host**, **Add host**, **Manage hosts**, **Check for updates** and **Show keyboard shortcuts**.
+- **Actions** — **Run a container**, **Pull an image**, **New Stack**, **Clean up the selected host**, **Add host**, **Manage hosts**, **Add a cluster**, **Manage clusters**, **Check for updates** and **Show keyboard shortcuts**. A Podman Host adds **New pod** and **New unit**, a containerd Host **Pull image** and **New namespace**, and an Incus Host **New instance** and **Get image**.
 - **Settings** — **Theme: Light**, **Theme: Dark** and **Theme: Match the system**.
 
 Actions that need a Host — running a container, pulling, a new Stack, cleaning up — are listed only while the selected Host is connected.
@@ -35,7 +35,7 @@ Homeport loads the lists only once you've typed two characters, and keeps them f
 | Keys                                       | Does                                                                              |
 | ------------------------------------------ | --------------------------------------------------------------------------------- |
 | <kbd>?</kbd>                               | Show the keyboard shortcuts                                                       |
-| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Open the sidebar's pages in order: Overview, Containers, Images…                  |
+| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Open the sidebar's pages in order: Overview, Board, Containers…                   |
 | <kbd>Mod</kbd> <kbd>,</kbd>                | Open Settings                                                                     |
 | <kbd>Alt</kbd> <kbd>↑</kbd> / <kbd>↓</kbd> | Select the previous or next Host, in the order the Hosts page lists them          |
 | <kbd>Mod</kbd> <kbd>R</kbd>                | Refresh the selected Host's lists: containers, images, volumes, networks, Stacks… |
@@ -44,10 +44,10 @@ Hover a page in the sidebar to see its keys.
 
 ### On a page
 
-| Keys         | Does                                                                                                                            |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| <kbd>/</kbd> | Focus the page's search field. <kbd>Esc</kbd> in an empty field leaves it.                                                      |
-| <kbd>N</kbd> | Start the page's main action: **Run container**, **Pull**, **Create volume**, **Create network**, **New Stack** or **Add host** |
+| Keys         | Does                                                                                                                                                                                                                                        |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <kbd>/</kbd> | Focus the page's search field. <kbd>Esc</kbd> in an empty field leaves it.                                                                                                                                                                  |
+| <kbd>N</kbd> | Start the page's main action: **Run container**, **Pull**, **Create volume**, **Create network**, **New Stack** or **Add host**; and on the pages of Podman, containerd, Incus and Helm, their own, such as **New pod** or **New instance** |
 
 The button of a page's main action shows <kbd>N</kbd> when you hover it.
 
