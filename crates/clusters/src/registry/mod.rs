@@ -36,6 +36,7 @@ use self::supervisor::supervise;
 #[derive(Clone)]
 pub enum ClusterClient {
     Kubernetes(kube::Client),
+    Nomad(homeport_nomad::Nomad),
 }
 
 struct Entry {
@@ -98,6 +99,8 @@ impl ClusterRegistry {
         if let Some(old) = entry.task.replace(task) {
             old.abort();
         }
+        // Not the old status, which the edit that restarted it may have fixed.
+        entry.status = ClusterStatus::Connecting;
         entry.client = None;
     }
 
@@ -121,6 +124,16 @@ impl ClusterRegistry {
     pub fn client(&self, id: &str) -> AppResult<(kube::Client, Cluster)> {
         match self.live(id, ClusterKind::Kubernetes)? {
             (ClusterClient::Kubernetes(client), cluster) => Ok((client, cluster)),
+            (ClusterClient::Nomad(_), cluster) => Err(cluster.wrong_kind()),
+        }
+    }
+
+    /// The client of a connected Nomad Cluster, and the Cluster itself.
+    /// Refused for a Cluster of another kind.
+    pub fn nomad(&self, id: &str) -> AppResult<(homeport_nomad::Nomad, Cluster)> {
+        match self.live(id, ClusterKind::Nomad)? {
+            (ClusterClient::Nomad(client), cluster) => Ok((client, cluster)),
+            (ClusterClient::Kubernetes(_), cluster) => Err(cluster.wrong_kind()),
         }
     }
 
@@ -176,7 +189,12 @@ impl ClusterRegistry {
                 let (client, status) = self.connect_kubernetes(cluster, secrets).await?;
                 Ok((ClusterClient::Kubernetes(client), status))
             }
-            ClusterSecrets::Nomad(_) => Err(AppError::validation(msg::NOMAD_UNSUPPORTED)),
+            ClusterSecrets::Nomad(secrets) => {
+                let connection = cluster.nomad_or_refuse()?;
+                let client = crate::nomad::client(&cluster.name, connection, secrets)?;
+                let status = nomad_status(cluster, &client).await?;
+                Ok((ClusterClient::Nomad(client), status))
+            }
         }
     }
 
@@ -194,7 +212,11 @@ impl ClusterRegistry {
                 version(cluster, renewed.as_ref().unwrap_or(client)).await?;
                 Ok(renewed.map(ClusterClient::Kubernetes))
             }
-            (ClusterSecrets::Nomad(_), _) => Err(AppError::validation(msg::NOMAD_UNSUPPORTED)),
+            (_, ClusterClient::Nomad(client)) => {
+                nomad_status(cluster, client).await?;
+                Ok(None)
+            }
+            (ClusterSecrets::Nomad(_), ClusterClient::Kubernetes(_)) => Err(cluster.wrong_kind()),
         }
     }
 
@@ -315,7 +337,27 @@ async fn version(cluster: &Cluster, client: &kube::Client) -> AppResult<ClusterS
     };
     Ok(ClusterStatus::Connected {
         server_version: info.git_version,
-        platform: info.platform,
+        platform: Some(info.platform),
+        region: None,
+    })
+}
+
+/// Asks a Nomad Cluster its leader, version and region.
+async fn nomad_status(
+    cluster: &Cluster,
+    client: &homeport_nomad::Nomad,
+) -> AppResult<ClusterStatus> {
+    let agent = tokio::time::timeout(CONNECT_TIMEOUT + CONNECT_TIMEOUT, client.agent())
+        .await
+        .map_err(|elapsed| {
+            AppError::new(ErrorCode::Timeout, msg::TIMEOUT.with("name", &cluster.name))
+                .with_hint(msg::TIMEOUT_HINT)
+                .with_cause(&elapsed)
+        })??;
+    Ok(ClusterStatus::Connected {
+        server_version: agent.version.unwrap_or_default(),
+        platform: None,
+        region: agent.region,
     })
 }
 

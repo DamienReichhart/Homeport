@@ -55,6 +55,8 @@ export default {
   'core.swarm.gone.description':
     'None of the hosts Homeport connects to belongs to it now. Add one of its managers as a host to manage it.',
   'core.cluster.serverVersion': 'Kubernetes {version}',
+  'core.cluster.nomadVersion': 'Nomad {version}, region {region}',
+  'core.cluster.nomadRegion': 'Nomad, region {region}',
   'core.cluster.credentialsLostDetail':
     'The stored credentials can’t be decrypted. Refresh the cluster from its kubeconfig.',
   'core.cluster.reconnectFailed': 'Homeport couldn’t reconnect to the cluster',

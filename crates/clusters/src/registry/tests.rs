@@ -97,7 +97,8 @@ async fn a_cluster_that_answers_is_connected() {
         settled(&registry, &id).await,
         ClusterStatus::Connected {
             server_version: "v1.33.1".into(),
-            platform: "linux/arm64".into(),
+            platform: Some("linux/arm64".into()),
+            region: None,
         }
     );
     assert!(registry.client(&id).is_ok());
@@ -119,6 +120,7 @@ async fn kubernetes_commands_refuse_a_cluster_of_another_kind() {
             name: "nomad-dev".into(),
             connection: ClusterConnection::Nomad(crate::model::NomadConnection {
                 address: "http://127.0.0.1:4646".into(),
+                ..Default::default()
             }),
             secrets: ClusterSecrets::none(ClusterKind::Nomad),
         })

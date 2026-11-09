@@ -366,6 +366,7 @@ mod tests {
         assert_eq!(c.kind, ClusterKind::Kubernetes);
         let nomad = ClusterConnection::Nomad(crate::model::NomadConnection {
             address: "http://127.0.0.1:4646".into(),
+            ..Default::default()
         });
         let secrets = ClusterSecrets::none(ClusterKind::Nomad);
         assert!(store

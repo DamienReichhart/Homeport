@@ -54,7 +54,12 @@ export const clusters: ClusterView[] = [
       enabled: true,
       createdAt: iso(20 * DAY),
     },
-    status: { state: 'connected', serverVersion: 'v1.33.4-eks-3a8b2c1', platform: 'linux/amd64' },
+    status: {
+      state: 'connected',
+      serverVersion: 'v1.33.4-eks-3a8b2c1',
+      platform: 'linux/amd64',
+      region: null,
+    },
   },
   {
     cluster: {
@@ -74,7 +79,7 @@ export const clusters: ClusterView[] = [
       enabled: true,
       createdAt: iso(3 * DAY),
     },
-    status: { state: 'connected', serverVersion: 'v1.34.0', platform: 'linux/arm64' },
+    status: { state: 'connected', serverVersion: 'v1.34.0', platform: 'linux/arm64', region: null },
   },
 ];
 

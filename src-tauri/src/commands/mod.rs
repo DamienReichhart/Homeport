@@ -27,6 +27,7 @@ pub mod hosts;
 pub mod images;
 pub mod incus;
 pub mod networks;
+pub mod nomad;
 pub mod podman;
 pub mod registries;
 pub mod repositories;
@@ -96,6 +97,9 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             clusters::clusters_import,
             clusters::clusters_refresh,
             clusters::clusters_detect_local,
+            nomad::clusters_nomad_add,
+            nomad::clusters_nomad_update,
+            nomad::clusters_nomad_test,
             clusters::clusters_namespaces,
             clusters::clusters_workloads_list,
             clusters::clusters_workload_get,

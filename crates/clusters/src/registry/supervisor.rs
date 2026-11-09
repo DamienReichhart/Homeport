@@ -10,7 +10,7 @@ use homeport_core::{
 use super::{ClusterClient, ClusterRegistry, ClusterStatus};
 use crate::{
     classify, messages as msg,
-    model::{Cluster, ClusterId, ClusterSecrets},
+    model::{Cluster, ClusterId, ClusterKind, ClusterSecrets},
 };
 
 const CHECK_INTERVAL: Duration = Duration::from_secs(15);
@@ -59,9 +59,14 @@ pub(super) async fn supervise(registry: Weak<ClusterRegistry>, id: ClusterId) {
         if was_connected && error.is(ErrorCode::ClusterUnauthorized) && has_exec_plugin(&secrets) {
             continue;
         }
-        if classify::needs_user(&error) {
+        let needs_user = match cluster.kind {
+            ClusterKind::Kubernetes => classify::needs_user(&error),
+            ClusterKind::Nomad => homeport_nomad::error::needs_user(&error),
+        };
+        if needs_user {
             let status = if error.is(ErrorCode::ClusterUnauthorized)
                 || error.is(ErrorCode::ExecPluginInteractive)
+                || error.is(ErrorCode::NomadTokenInvalid)
             {
                 ClusterStatus::Unauthorized { error }
             } else {

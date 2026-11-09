@@ -14,10 +14,13 @@ pub enum ClusterStatus {
     Disabled,
     Connecting,
     Connected {
-        /// The API server's version, such as `v1.33.1`.
+        /// The API's version, such as `v1.33.1` or Nomad's `1.10.3`; empty
+        /// when a Nomad token can't read it.
         server_version: String,
-        /// Its OS and architecture, such as `linux/arm64`.
-        platform: String,
+        /// A Kubernetes API server's OS and architecture, such as `linux/arm64`.
+        platform: Option<String>,
+        /// A Nomad Cluster's region, such as `global`.
+        region: Option<String>,
     },
     /// Retrying on its own in `retry_in_secs`.
     Unreachable {

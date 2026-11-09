@@ -136,6 +136,41 @@ mod tests {
         assert_eq!(restored.token.as_deref(), Some("t0ken"));
     }
 
+    #[test]
+    fn nomad_clusters_round_trip_with_their_token_and_key() {
+        let db = Arc::new(Db::open_in_memory().unwrap());
+        let laptop = ClusterStore::new(db, Arc::new(SecretBox::from_key(&[1; 32])));
+        let id = laptop
+            .create(ClusterDraft {
+                name: "nomad-prod".into(),
+                connection: ClusterConnection::Nomad(crate::model::NomadConnection {
+                    address: "https://nomad.example.com:4646".into(),
+                    acl_token: true,
+                    ..Default::default()
+                }),
+                secrets: ClusterSecrets::Nomad(crate::model::NomadSecrets {
+                    token: Some("n0mad-t0ken".into()),
+                    client_key: Some("NOMAD KEY".into()),
+                    ..Default::default()
+                }),
+            })
+            .unwrap()
+            .id;
+        let backed_up = laptop.backup(&mut vec![]).unwrap();
+        assert!(!format!("{backed_up:?}").contains("n0mad-t0ken"));
+
+        let db = Arc::new(Db::open_in_memory().unwrap());
+        let key = Arc::new(SecretBox::from_key(&[2; 32]));
+        db.transaction(|tx| restore(tx, &key, &backed_up)).unwrap();
+        let desktop = ClusterStore::new(db, key);
+        assert_eq!(desktop.get(&id).unwrap().kind, ClusterKind::Nomad);
+        let ClusterSecrets::Nomad(restored) = desktop.secrets(&id).unwrap() else {
+            panic!("not Nomad credentials");
+        };
+        assert_eq!(restored.token.as_deref(), Some("n0mad-t0ken"));
+        assert_eq!(restored.client_key.as_deref(), Some("NOMAD KEY"));
+    }
+
     /// A backup's Cluster as Homeport wrote it before Clusters had kinds.
     #[test]
     fn backups_made_before_kinds_restore() {

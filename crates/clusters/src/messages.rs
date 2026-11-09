@@ -17,8 +17,6 @@ homeport_core::messages! {
     KIND_CHANGED = "errors.clusters.kindChanged" => "A cluster can't change kind; add a new one instead.";
     /// A command of one kind of Cluster sent to a Cluster of another.
     WRONG_KIND = "errors.clusters.wrongKind" => "{name} is a {kind} cluster, which this doesn't work with.";
-    /// A Nomad Cluster stored by a Homeport that can reach it.
-    NOMAD_UNSUPPORTED = "errors.clusters.nomadUnsupported" => "This version of Homeport can't connect to Nomad clusters.";
     WRONG_KIND_HINT = "errors.clusters.wrongKind.hint" => "Select a cluster of the right kind in the switcher.";
 
     // Reaching a Cluster.

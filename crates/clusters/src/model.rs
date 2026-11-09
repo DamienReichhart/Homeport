@@ -145,13 +145,38 @@ impl ClusterConnection {
 pub struct NomadConnection {
     /// The API's URL, such as `https://nomad.example.com:4646`.
     pub address: String,
+    /// The region to ask, when not the agent's own.
+    pub region: Option<String>,
+    /// The name to check the agent's certificate against, such as
+    /// `server.global.nomad`, when not the address's.
+    pub tls_server_name: Option<String>,
+    /// Whether an ACL token is sealed with it, to tell the user.
+    pub acl_token: bool,
+    /// Whether a CA certificate of its own is sealed with it.
+    pub custom_ca: bool,
+    /// Whether a client certificate and key are sealed with it.
+    pub client_certificate: bool,
 }
 
-/// A Nomad Cluster's credentials. Never sent to the frontend, never written
-/// to disk unsealed.
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+/// A Nomad Cluster's credentials: its ACL token and TLS material. Never
+/// sent to the frontend, never written to disk unsealed.
+#[derive(Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", default)]
-pub struct NomadSecrets {}
+pub struct NomadSecrets {
+    /// The token's secret ID.
+    pub token: Option<String>,
+    /// PEM certificates of the CAs the agent's certificate is checked against.
+    pub certificate_authority: Option<String>,
+    /// PEM client certificate and key, for an agent that asks for one.
+    pub client_certificate: Option<String>,
+    pub client_key: Option<String>,
+}
+
+impl std::fmt::Debug for NomadSecrets {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("NomadSecrets").finish_non_exhaustive()
+    }
+}
 
 /// How to reach a Kubernetes Cluster's API server, without any credential.
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, specta::Type)]

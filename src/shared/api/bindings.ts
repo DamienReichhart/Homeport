@@ -104,6 +104,21 @@ export const commands = {
 	 *  kind and k3d clusters running on a connected local Host that it doesn't.
 	 */
 	clustersDetectLocal: () => __TAURI_INVOKE<LocalClusters>("clusters_detect_local"),
+	/**
+	 *  Adds a Nomad Cluster, its ACL token and TLS key sealed, and starts
+	 *  connecting to it.
+	 */
+	clustersNomadAdd: (form: NomadForm) => __TAURI_INVOKE<ClusterView>("clusters_nomad_add", { form }),
+	/**
+	 *  Changes a Nomad Cluster's name, address and credentials (those left
+	 *  out are kept), then reconnects.
+	 */
+	clustersNomadUpdate: (id: string, form: NomadForm) => __TAURI_INVOKE<ClusterView>("clusters_nomad_update", { id, form }),
+	/**
+	 *  Connects once to the Nomad Cluster the form describes, without saving
+	 *  it. With `id`, the credentials left out are that Cluster's.
+	 */
+	clustersNomadTest: (form: NomadForm, id: string | null) => __TAURI_INVOKE<NomadAgent>("clusters_nomad_test", { form, id }),
 	clustersNamespaces: (id: string) => __TAURI_INVOKE<NamespaceView[]>("clusters_namespaces", { id }),
 	/**  The workloads of `kind` in `namespace`, or in every Namespace without one. */
 	clustersWorkloadsList: (id: string, kind: WorkloadKind, namespace: string | null) => __TAURI_INVOKE<WorkloadView[]>("clusters_workloads_list", { id, kind, namespace }),
@@ -1160,10 +1175,15 @@ export type ClusterServiceView = {
 };
 
 export type ClusterStatus = { state: "disabled" } | { state: "connecting" } | { state: "connected"; 
-/**  The API server's version, such as `v1.33.1`. */
+/**
+ *  The API's version, such as `v1.33.1` or Nomad's `1.10.3`; empty
+ *  when a Nomad token can't read it.
+ */
 serverVersion: string; 
-/**  Its OS and architecture, such as `linux/arm64`. */
-platform: string } | 
+/**  A Kubernetes API server's OS and architecture, such as `linux/arm64`. */
+platform: string | null; 
+/**  A Nomad Cluster's region, such as `global`. */
+region: string | null } | 
 /**  Retrying on its own in `retry_in_secs`. */
 { state: "unreachable"; error: AppError; retryInSecs: number } | 
 /**  The API server refused the credentials; waits for the user. */
@@ -1720,6 +1740,12 @@ export type ErrorCode =
 "exec_plugin_interactive" | 
 /**  The private local proxy a CLI reaches a Cluster through couldn't open (ADR 0009). */
 "cluster_proxy_failed" | 
+/**  A Nomad Cluster that doesn't know the ACL token: wrong, expired or deleted. */
+"nomad_token_invalid" | 
+/**  A Nomad ACL token that lacks a capability or policy an action needs. */
+"nomad_permission_denied" | 
+/**  A Nomad Cluster whose servers have no leader, so nothing can be changed or read. */
+"nomad_no_leader" | 
 /**  The `helm` CLI isn't installed on this computer. */
 "helm_missing" | 
 /**  The `helm` CLI found is Helm 2, which Homeport doesn't support. */
@@ -2756,10 +2782,52 @@ export type NodeView = {
 	created: string | null,
 };
 
+/**  What Homeport shows of a connected Nomad Cluster. */
+export type NomadAgent = {
+	/**  Such as `1.10.3`; `None` when the token can't read the agent. */
+	version: string | null,
+	/**  The region Homeport asks, such as `global`. */
+	region: string | null,
+	/**  The agent's datacenter, such as `dc1`. */
+	datacenter: string | null,
+	/**  The leading server's RPC address, such as `10.0.0.5:4647`. */
+	leader: string,
+};
+
 /**  How to reach a Nomad Cluster's HTTP API, without any credential. */
 export type NomadConnection = {
 	/**  The API's URL, such as `https://nomad.example.com:4646`. */
 	address?: string,
+	/**  The region to ask, when not the agent's own. */
+	region?: string | null,
+	/**
+	 *  The name to check the agent's certificate against, such as
+	 *  `server.global.nomad`, when not the address's.
+	 */
+	tlsServerName?: string | null,
+	/**  Whether an ACL token is sealed with it, to tell the user. */
+	aclToken?: boolean,
+	/**  Whether a CA certificate of its own is sealed with it. */
+	customCa?: boolean,
+	/**  Whether a client certificate and key are sealed with it. */
+	clientCertificate?: boolean,
+};
+
+/**
+ *  A Nomad Cluster as the add and edit form describe it. When editing, a
+ *  credential left `None` keeps the stored one and an empty one removes it.
+ */
+export type NomadForm = {
+	name?: string,
+	/**  Such as `nomad.example.com`, `10.0.0.5:4646` or `https://nomad:4646`. */
+	address?: string,
+	region?: string | null,
+	tlsServerName?: string | null,
+	/**  The ACL token's secret ID. */
+	token?: string | null,
+	certificateAuthority?: string | null,
+	clientCertificate?: string | null,
+	clientKey?: string | null,
 };
 
 /**
