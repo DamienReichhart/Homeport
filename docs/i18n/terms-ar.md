@@ -4,7 +4,7 @@ Register: Modern Standard Arabic as in Windows/macOS Arabic UIs. The user is add
 masculine singular imperative ("اختر"، "انقر"، "أضف"), as mainstream Arabic desktop software does.
 Buttons and menu items: verbal nouns (مصدر) — "حذف"، "إزالة"، "إعادة النشر"، "حفظ". Arabic punctuation
 (، ؛ ؟) in Arabic text; Latin names, commands and values stay in Latin script; no bidi control
-characters. Quotation marks inside text: «…». Units after numbers (B, KB, MB…) stay Latin.
+characters. Quotation marks inside text: «…». Size units are Arabic words (بايت، كيلوبايت، ميغابايت، غيغابايت، تيرابايت): Latin units after a number get reordered by the bidi algorithm ("MB 683.0").
 Plurals use zero / one / two / few / many / other: zero «لا … » or «0 …», one «… واحد/واحدة»,
 two dual (nominative), few «# + plural», many/other «# + singular (tamyiz)».
 
