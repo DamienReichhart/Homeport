@@ -1,0 +1,99 @@
+---
+title: 업데이트와 제거
+description: 시스템별로 Homeport가 업데이트되는 방식과, Homeport 및 데이터를 완전히 제거하는 방법.
+---
+
+import { Aside, Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import { MANUAL_SETUP, UPDATE_COMMANDS } from '@/core/packages';
+
+## 업데이트
+
+Homeport가 업데이트되는 방식은 설치 방법에 따라 다릅니다.
+
+### Windows, macOS, AppImage
+
+Homeport는 시작할 때와 6시간마다 새 버전을 확인합니다. 새 버전이 나오면 창 위쪽의 막대가 알려 줍니다. **새로운 기능**을 선택하면 [변경 내역](/changelog/)을 읽을 수 있고, **설치 후 다시 시작**을 선택하면 Homeport가 업데이트를 다운로드하고, 서명을 확인하고, 설치한 다음 다시 엽니다. 사용자가 선택하기 전에는 아무것도 설치되지 않으며, 호스트, 스택, 설정은 그대로 유지됩니다.
+
+**설정 → 업데이트 → 지금 확인**에서 바로 확인할 수도 있습니다.
+
+### Linux 패키지
+
+`.deb`와 `.rpm` 패키지는 [빠른 설치](/docs/installation/#quick-install), [수동 설정](/docs/installation/#manual-setup), 다운로드한 파일 중 어느 방법으로 설치했든 Homeport 패키지 저장소에서 시스템의 다른 패키지와 함께 업데이트됩니다. 평소의 소프트웨어 업데이트에 Homeport도 포함됩니다. Homeport만 업데이트하려면 다음을 실행합니다.
+
+<Tabs syncKey="linux-format">
+  {MANUAL_SETUP.map((setup) => (
+    <TabItem label={setup.label}>
+      <Code code={UPDATE_COMMANDS[setup.id]} lang="sh" />
+    </TabItem>
+  ))}
+</Tabs>
+
+Homeport는 새 버전이 나오면 알려 주고 시스템에 맞는 명령을 보여 주지만, 설치는 패키지 관리자에게 맡깁니다.
+
+Homeport 저장소를 삭제했다면 패키지 관리자가 새 버전을 볼 수 없습니다. [빠른 설치](/docs/installation/#quick-install)로 다시 설정하거나, 새 패키지를 다운로드하여 기존 버전 위에 설치하세요.
+
+### 업데이트 확인 끄기
+
+**설정 → 업데이트 → 자동으로 업데이트 확인**을 끄세요. **지금 확인**은 계속 작동합니다. 확인할 때는 이 웹사이트에서 작은 파일 하나를 다운로드할 뿐이며, 사용자나 호스트에 대한 정보는 보내지 않습니다. [보안과 데이터](/docs/reference/security/#what-homeport-connects-to)를 참고하세요.
+
+### 0.2.0 이하에서 업데이트
+
+0.3.0 이전 버전은 스스로 업데이트하지 않으며, 그 Linux 패키지는 저장소를 추가하지 않습니다. Homeport를 설치한 것과 같은 방법으로 0.3.0 이상을 한 번 설치하세요. [다운로드 페이지](/download/)에서 받거나, Linux에서는 [빠른 설치](/docs/installation/#quick-install)를 사용하세요. 그 뒤로는 업데이트가 저절로 이루어집니다.
+
+그래도 새 버전 소식을 받고 싶다면 GitHub에서 저장소를 구독하거나(**Watch → Custom → Releases**), [릴리스 피드](https://github.com/DamienReichhart/Homeport/releases.atom)를 구독하세요.
+
+## 제거
+
+<Tabs syncKey="os">
+<TabItem label="Windows">
+**설정 → 앱 → 설치된 앱**을 열고, **Homeport**를 찾아 **제거**를 선택하세요.
+</TabItem>
+<TabItem label="macOS">Homeport를 종료하고 응용 프로그램 폴더에서 휴지통으로 드래그하세요.</TabItem>
+<TabItem label="Linux">
+
+```sh
+sudo apt purge homeport       # Debian, Ubuntu
+sudo dnf remove homeport      # Fedora, RHEL
+sudo zypper remove homeport   # openSUSE
+```
+
+이렇게 하면 Homeport 저장소도 삭제됩니다. Debian과 Ubuntu에서 `apt remove`는 패키지의 나머지 설정과 함께 저장소를 남기고, `apt purge`는 저장소를 키와 함께 삭제합니다. Fedora와 openSUSE에서는 키가 rpm의 키링에 남습니다. `rpm -q gpg-pubkey --qf '%{NAME}-%{VERSION}-%{RELEASE} %{SUMMARY}\n'`으로 키를 나열하고, `sudo rpm -e gpg-pubkey-<version>-<release>`로 Homeport의 키를 삭제하세요.
+
+AppImage는 파일을 삭제하세요. 메뉴 항목도 함께 사라집니다.
+
+</TabItem>
+</Tabs>
+
+제거해도 데이터는 그대로 남으므로, 다시 설치하면 모든 것이 돌아옵니다.
+
+### 로그인 항목
+
+**로그인 시 시작**이 켜져 있다면 제거하기 전에 **설정 → 데스크톱**에서 끄세요. 제거해도 로그인 항목이 남아, 사라진 Homeport를 가리키게 됩니다. 나중에 삭제하려면 다음과 같이 합니다.
+
+| 시스템  | 로그인 항목                                                                                                                                                        |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Windows | **작업 관리자 → 시작 앱**: **Homeport**를 사용 안 함으로 설정하거나, `HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run` 아래의 `Homeport` 값을 삭제 |
+| macOS   | `~/Library/LaunchAgents/Homeport.plist` 삭제                                                                                                                       |
+| Linux   | `~/.config/autostart/Homeport.desktop` 삭제                                                                                                                        |
+
+## 데이터 삭제
+
+<Aside type="caution">
+  호스트, 저장된 키와 인증서, 관리형 스택 정의, 링크된 스택과 그 배포 기록이 삭제됩니다. 링크된
+  스택의 폴더는 그대로 남습니다. 호스트에 있는 것은 건드리지 않습니다.
+</Aside>
+
+1. Homeport의 데이터 폴더와 로그 폴더를 삭제합니다.
+
+   | 시스템  | 폴더                                                                                  |
+   | ------- | ------------------------------------------------------------------------------------- |
+   | Linux   | `~/.local/share/com.homeport.app/`, `~/.config/com.homeport.app/`                     |
+   | macOS   | `~/Library/Application Support/com.homeport.app/`, `~/Library/Logs/com.homeport.app/` |
+   | Windows | `%APPDATA%\com.homeport.app\`, `%LOCALAPPDATA%\com.homeport.app\`                     |
+
+2. 키체인에서 암호화 키, 즉 `com.homeport.app` 항목을 삭제합니다.
+   - **macOS** — **키체인 접근**에서 `com.homeport.app`을 검색하여 삭제합니다.
+   - **Windows** — **자격 증명 관리자 → Windows 자격 증명**에서 `com.homeport.app`이 들어 있는 항목을 제거합니다.
+   - **Linux** — **암호 및 키**(Seahorse)나 KWallet에서 `com.homeport.app` 항목을 삭제합니다.
+
+3. 서버에서 `~/.ssh/authorized_keys`의 Homeport 공개 키를 삭제합니다. 주석이 `homeport@`로 시작합니다.
