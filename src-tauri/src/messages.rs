@@ -34,15 +34,33 @@ homeport_core::messages! {
     AUTOSTART_FAILED_HINT = "errors.desktop.autostartFailed.hint" => "Check that you may add login items on this computer, then try again.";
     /// An automatic deploy of a Synced Stack that ended without saying why.
     AUTO_DEPLOY_FAILED = "errors.stacks.autoDeployFailed" => "The automatic deploy didn't finish.";
+    /// The tray menu (`native.`: drawn by the OS, not the window).
+    TRAY_NO_HOSTS = "native.tray.noHosts" => "Homeport — no Hosts yet";
+    TRAY_CONNECTED_ONE = "native.tray.connectedOfOne" => "Homeport — {connected} of 1 Host connected";
+    TRAY_CONNECTED_MANY = "native.tray.connectedOfMany" => "Homeport — {connected} of {total} Hosts connected";
+    TRAY_HOST = "native.tray.host" => "{host} — {status}";
+    TRAY_CONNECTED = "native.tray.status.connected" => "Connected";
+    TRAY_CONNECTING = "native.tray.status.connecting" => "Connecting";
+    TRAY_UNREACHABLE = "native.tray.status.unreachable" => "Unreachable";
+    TRAY_DISABLED = "native.tray.status.disabled" => "Disabled";
+    TRAY_NEEDS_ATTENTION = "native.tray.status.needsAttention" => "Needs attention";
+    TRAY_OPEN_HOST = "native.tray.openHost" => "Open";
+    TRAY_RECONNECT = "native.tray.reconnect" => "Reconnect";
+    TRAY_OPEN = "native.tray.open" => "Open Homeport";
+    TRAY_ADD_HOST = "native.tray.addHost" => "Add host…";
+    TRAY_QUIT = "native.tray.quit" => "Quit";
 }
 
 /// Where `bun run bindings` writes the English error catalogue.
 #[cfg(test)]
 const CATALOGUE_PATH: &str = "../src/shared/i18n/en/errors.json";
+/// …and the English text the OS draws (tray, notifications).
+#[cfg(test)]
+const NATIVE_CATALOGUE_PATH: &str = "../src/shared/i18n/en/native.json";
 
 /// Every crate's messages, by key; fails on a key declared twice with
-/// different text, a key outside `errors.`, or an argument that isn't a
-/// plain name (Rust renders `{name}` arguments only).
+/// different text, a key outside `errors.` and `native.`, or an argument
+/// that isn't a plain name (Rust renders `{name}` arguments only).
 #[cfg(test)]
 fn catalogue() -> Result<BTreeMap<&'static str, &'static str>, String> {
     let all: [&[Message]; 13] = [
@@ -62,8 +80,8 @@ fn catalogue() -> Result<BTreeMap<&'static str, &'static str>, String> {
     ];
     let mut catalogue = BTreeMap::new();
     for m in all.into_iter().flatten() {
-        if !m.key.starts_with("errors.") {
-            return Err(format!("{} doesn't start with errors.", m.key));
+        if !m.key.starts_with("errors.") && !m.key.starts_with("native.") {
+            return Err(format!("{} doesn't start with errors. or native.", m.key));
         }
         for arg in arguments(m.en) {
             if arg.is_empty() || !arg.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
@@ -79,10 +97,14 @@ fn catalogue() -> Result<BTreeMap<&'static str, &'static str>, String> {
     Ok(catalogue)
 }
 
-/// The catalogue as the JSON file the frontend imports.
+/// The messages under `prefix` as the JSON file the frontend imports.
 #[cfg(test)]
-fn catalogue_json() -> String {
-    let catalogue = catalogue().unwrap_or_else(|e| panic!("{e}"));
+fn catalogue_json(prefix: &str) -> String {
+    let catalogue: BTreeMap<_, _> = catalogue()
+        .unwrap_or_else(|e| panic!("{e}"))
+        .into_iter()
+        .filter(|(key, _)| key.starts_with(prefix))
+        .collect();
     format!(
         "{}\n",
         serde_json::to_string_pretty(&catalogue).expect("strings serialise")
@@ -93,10 +115,9 @@ fn catalogue_json() -> String {
 mod tests {
     use std::path::Path;
 
-    #[test]
-    fn bindings_are_up_to_date_for_errors() {
-        let committed = Path::new(env!("CARGO_MANIFEST_DIR")).join(super::CATALOGUE_PATH);
-        let fresh = super::catalogue_json();
+    fn check(path: &str, prefix: &str) {
+        let committed = Path::new(env!("CARGO_MANIFEST_DIR")).join(path);
+        let fresh = super::catalogue_json(prefix);
         if std::env::var_os("UPDATE_BINDINGS").is_some() {
             std::fs::write(&committed, fresh).unwrap();
             return;
@@ -104,7 +125,17 @@ mod tests {
         assert_eq!(
             std::fs::read_to_string(&committed).unwrap_or_default(),
             fresh,
-            "the error catalogue is stale: run `bun run bindings`"
+            "{path} is stale: run `bun run bindings`"
         );
+    }
+
+    #[test]
+    fn bindings_are_up_to_date_for_errors() {
+        check(super::CATALOGUE_PATH, "errors.");
+    }
+
+    #[test]
+    fn bindings_are_up_to_date_for_native_text() {
+        check(super::NATIVE_CATALOGUE_PATH, "native.");
     }
 }

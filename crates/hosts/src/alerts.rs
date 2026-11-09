@@ -6,6 +6,7 @@
 use std::collections::HashMap;
 
 use crate::{
+    messages as msg,
     registry::{EngineEvent, HostStatus},
     HostId,
 };
@@ -102,8 +103,8 @@ impl Alerts {
                 self.raise(host_id, "", AlertKind::HostBack, now)?;
                 Some(Alert {
                     kind: AlertKind::HostBack,
-                    title: "Host back".to_owned(),
-                    body: format!("{host_name} is connected again."),
+                    title: msg::ALERT_HOST_BACK_TITLE.localized(),
+                    body: msg::ALERT_HOST_BACK.with("host", host_name).localized(),
                 })
             }
             HostStatus::Unreachable { error, .. } => {
@@ -117,8 +118,11 @@ impl Alerts {
                     .outage_alerted = true;
                 Some(Alert {
                     kind: AlertKind::HostUnreachable,
-                    title: "Host unreachable".to_owned(),
-                    body: format!("{host_name} is unreachable: {}", error.message),
+                    title: msg::ALERT_HOST_UNREACHABLE_TITLE.localized(),
+                    body: msg::ALERT_HOST_UNREACHABLE
+                        .with("host", host_name)
+                        .with("reason", error.localized_message())
+                        .localized(),
                 })
             }
             HostStatus::Disabled => {
@@ -164,8 +168,10 @@ impl Alerts {
             }
             "oom" => Some((
                 AlertKind::ContainerDied,
-                "Container out of memory",
-                format!("{name} ran out of memory on {host_name}"),
+                msg::ALERT_OUT_OF_MEMORY_TITLE,
+                msg::ALERT_OUT_OF_MEMORY
+                    .with("container", name.as_str())
+                    .with("host", host_name),
             )),
             "die" => {
                 let asked = container
@@ -180,8 +186,11 @@ impl Alerts {
                 (!asked && code != 0).then(|| {
                     (
                         AlertKind::ContainerDied,
-                        "Container stopped",
-                        format!("{name} stopped on {host_name} (exit code {code})"),
+                        msg::ALERT_STOPPED_TITLE,
+                        msg::ALERT_STOPPED
+                            .with("container", name.as_str())
+                            .with("host", host_name)
+                            .with("code", code),
                     )
                 })
             }
@@ -196,8 +205,10 @@ impl Alerts {
                 (health == Health::Unhealthy && was != Health::Unhealthy).then(|| {
                     (
                         AlertKind::ContainerUnhealthy,
-                        "Container unhealthy",
-                        format!("{name} is unhealthy on {host_name}"),
+                        msg::ALERT_UNHEALTHY_TITLE,
+                        msg::ALERT_UNHEALTHY
+                            .with("container", name.as_str())
+                            .with("host", host_name),
                     )
                 })
             }
@@ -206,8 +217,8 @@ impl Alerts {
         self.raise(host_id, &event.actor_id, kind, now)?;
         Some(Alert {
             kind,
-            title: title.to_owned(),
-            body,
+            title: title.localized(),
+            body: body.localized(),
         })
     }
 

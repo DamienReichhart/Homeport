@@ -15,6 +15,7 @@ use super::{
     events::{TrayAddHostChosen, TrayHostChosen},
     window, AppState,
 };
+use crate::messages as msg;
 use menu::{Action, Item, TrayMenu};
 
 /// The tray icon's id.
@@ -104,15 +105,23 @@ fn build_menu(app: &AppHandle, model: &TrayMenu) -> tauri::Result<Menu<Wry>> {
                 reconnect: false,
             } => menu.append(&item(Action::ChooseHost(id.clone()), label)?)?,
             Item::Host { id, label, .. } => {
-                let open = item(Action::ChooseHost(id.clone()), "Open")?;
-                let reconnect = item(Action::Reconnect(id.clone()), "Reconnect")?;
+                let open = item(
+                    Action::ChooseHost(id.clone()),
+                    &msg::TRAY_OPEN_HOST.localized(),
+                )?;
+                let reconnect = item(
+                    Action::Reconnect(id.clone()),
+                    &msg::TRAY_RECONNECT.localized(),
+                )?;
                 let items: [&dyn IsMenuItem<Wry>; 2] = [&open, &reconnect];
                 menu.append(&Submenu::with_items(app, label, true, &items)?)?;
             }
             Item::Separator => menu.append(&PredefinedMenuItem::separator(app)?)?,
-            Item::Open => menu.append(&item(Action::Open, "Open Homeport")?)?,
-            Item::AddHost => menu.append(&item(Action::AddHost, "Add host…")?)?,
-            Item::Quit => menu.append(&item(Action::Quit, "Quit")?)?,
+            Item::Open => menu.append(&item(Action::Open, &msg::TRAY_OPEN.localized())?)?,
+            Item::AddHost => {
+                menu.append(&item(Action::AddHost, &msg::TRAY_ADD_HOST.localized())?)?
+            }
+            Item::Quit => menu.append(&item(Action::Quit, &msg::TRAY_QUIT.localized())?)?,
         }
     }
     Ok(menu)

@@ -24,6 +24,12 @@ export const commands = {
 	openLogFolder: () => __TAURI_INVOKE<null>("open_log_folder"),
 	getSettings: () => __TAURI_INVOKE<Settings>("get_settings"),
 	updateSettings: (settings: Settings) => __TAURI_INVOKE<Settings>("update_settings", { settings }),
+	/**
+	 *  Hands over the active language's templates (`native.*` and `errors.*`,
+	 *  by key) for the text the OS draws: the tray menu and notifications.
+	 *  An empty map means English (ADR 0011).
+	 */
+	setNativeText: (templates: { [key in string]: string }) => __TAURI_INVOKE<void>("set_native_text", { templates }),
 	/**  Every stored login, never with its secret. */
 	registriesList: () => __TAURI_INVOKE<Registry[]>("registries_list"),
 	/**  Adds a login (`id: null`) or changes one; `draft.secret: null` keeps the stored one. */
