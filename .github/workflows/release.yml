@@ -139,31 +139,19 @@ jobs:
           fi
           # WiX only takes numeric prerelease identifiers, so prereleases ship no MSI.
           [ "$PRERELEASE" = true ] && BUNDLES="${BUNDLES/msi,/}"
+          echo "BUILT_BUNDLES=$BUNDLES" >> "$GITHUB_ENV" # what "Collect the installers" expects
           # Updater files only in release builds, so local builds need no signing key.
           bun tauri build --ci --target "$TARGET" --bundles "$BUNDLES" \
             --config '{"bundle":{"createUpdaterArtifacts":true}}'
+      # Tauri names each bundle in its format's own words (amd64, aarch64, x86_64…);
+      # the release names them all Homeport-<version>-<os>-<arch>, and fails here
+      # if a bundle or an updater signature is missing (scripts/release-assets-plan.ts).
       - name: Collect the installers
         env:
           VERSION: ${{ needs.prepare.outputs.version }}
         run: |
-          bundle="target/$TARGET/release/bundle"
-          shopt -s nullglob
-          files=("$bundle"/deb/*.deb "$bundle"/rpm/*.rpm "$bundle"/appimage/*.AppImage \
-            "$bundle"/msi/*.msi "$bundle"/nsis/*-setup.exe "$bundle"/dmg/*.dmg)
-          [ ${#files[@]} -gt 0 ] || { echo "::error::No installers in $bundle"; exit 1; }
-          mkdir -p installers
-          cp "${files[@]}" installers/
-          # The updater's signature of each installer it can apply.
-          for file in "${files[@]}"; do
-            [ ! -f "$file.sig" ] || cp "$file.sig" installers/
-          done
-          # macOS updates from the zipped app, named the same for both architectures: name it like the .dmg.
-          app="$bundle/macos/Homeport.app.tar.gz"
-          if [ -f "$app" ]; then
-            [[ "$TARGET" == aarch64-* ]] && arch=aarch64 || arch=x64
-            cp "$app" "installers/Homeport_${VERSION}_${arch}.app.tar.gz"
-            cp "$app.sig" "installers/Homeport_${VERSION}_${arch}.app.tar.gz.sig"
-          fi
+          bun scripts/release-assets.ts --version "$VERSION" --target "$TARGET" --bundles "$BUILT_BUNDLES" \
+            --from "target/$TARGET/release/bundle" --out installers
           ls -l installers
       - uses: actions/upload-artifact@v7
         with:
