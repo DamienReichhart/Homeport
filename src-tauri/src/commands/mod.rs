@@ -20,6 +20,7 @@ pub mod cluster_streams;
 pub mod clusters;
 pub mod containerd;
 pub mod containers;
+pub mod diagnostics;
 pub mod exec;
 pub mod files;
 pub mod helm;
@@ -60,6 +61,8 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             app::read_text_file,
             app::write_text_file,
             app::open_log_folder,
+            diagnostics::diagnostics_preview,
+            diagnostics::diagnostics_export,
             settings::get_settings,
             settings::update_settings,
             settings::set_native_text,

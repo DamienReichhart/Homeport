@@ -29,6 +29,10 @@ export const commands = {
 	writeTextFile: (path: string, contents: string) => __TAURI_INVOKE<null>("write_text_file", { path, contents }),
 	/**  Opens the folder holding Homeport's log files in the file manager. */
 	openLogFolder: () => __TAURI_INVOKE<null>("open_log_folder"),
+	/**  What the bundle would hold: its files and `summary.json`. */
+	diagnosticsPreview: (includeNames: boolean) => __TAURI_INVOKE<DiagnosticsPreview>("diagnostics_preview", { includeNames }),
+	/**  Writes the bundle to `path`, which the user picked in a save dialog. */
+	diagnosticsExport: (path: string, includeNames: boolean) => __TAURI_INVOKE<null>("diagnostics_export", { path, includeNames }),
 	getSettings: () => __TAURI_INVOKE<Settings>("get_settings"),
 	updateSettings: (settings: Settings) => __TAURI_INVOKE<Settings>("update_settings", { settings }),
 	/**
@@ -1644,6 +1648,21 @@ export type DeviceSpec = {
 	containerPath: string | null,
 	/**  Some of `r`, `w` and `m`. */
 	permissions: string,
+};
+
+/**  One file of the bundle, as the preview lists it. */
+export type DiagnosticsFile = {
+	/**  Its path in the zip, such as `logs/Homeport.log`. */
+	name: string,
+	/**  Its size once secrets are removed, in bytes. */
+	size: number,
+};
+
+/**  What the bundle would hold, for the user to read before saving it. */
+export type DiagnosticsPreview = {
+	files: DiagnosticsFile[],
+	/**  `summary.json`, as it would be written. */
+	summary: string,
 };
 
 export type DiskUsage = {

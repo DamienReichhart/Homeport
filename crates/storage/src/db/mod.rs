@@ -105,6 +105,11 @@ impl Db {
         })
     }
 
+    /// The schema version: the number of migrations this database has run.
+    pub fn schema_version(&self) -> AppResult<u32> {
+        self.with(|c| c.query_row("PRAGMA user_version", [], |r| r.get(0)))
+    }
+
     /// Runs `f` with exclusive access to the connection.
     pub fn with<T>(&self, f: impl FnOnce(&mut Connection) -> rusqlite::Result<T>) -> AppResult<T> {
         let mut conn = self.conn.lock().expect("db lock poisoned");
