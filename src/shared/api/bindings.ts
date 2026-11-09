@@ -3971,6 +3971,13 @@ export type ServiceView = {
 export type Settings = {
 	theme?: Theme,
 	/**
+	 *  The app's language: [`SYSTEM_LANGUAGE`] to follow the OS, or a
+	 *  language tag with a catalogue in the frontend (`en`, `fr`, `pt-BR`…).
+	 *  A tag the frontend has no catalogue for reads as the OS's language,
+	 *  so adding a language needs no change here.
+	 */
+	language?: string,
+	/**
 	 *  The Host selected when the app was last closed, kept in step with
 	 *  [`Settings::last_selection`] so an older Homeport opens on it too.
 	 */

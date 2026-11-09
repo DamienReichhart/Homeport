@@ -1,5 +1,5 @@
-//! The user's preferences (theme, last Host, update checks, the desktop), kept as one JSON
-//! document in the database.
+//! The user's preferences (theme, language, last Host, update checks, the desktop), kept as
+//! one JSON document in the database.
 
 use std::{collections::BTreeMap, fs, path::Path, sync::Arc};
 
@@ -10,6 +10,9 @@ use homeport_core::error::AppResult;
 use homeport_storage::Db;
 
 const SETTINGS_KEY: &str = "settings";
+
+/// [`Settings::language`] when the app follows the OS's language.
+pub const SYSTEM_LANGUAGE: &str = "system";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "lowercase")]
@@ -24,6 +27,11 @@ pub enum Theme {
 #[serde(default, rename_all = "camelCase")]
 pub struct Settings {
     pub theme: Theme,
+    /// The app's language: [`SYSTEM_LANGUAGE`] to follow the OS, or a
+    /// language tag with a catalogue in the frontend (`en`, `fr`, `pt-BR`…).
+    /// A tag the frontend has no catalogue for reads as the OS's language,
+    /// so adding a language needs no change here.
+    pub language: String,
     /// The Host selected when the app was last closed, kept in step with
     /// [`Settings::last_selection`] so an older Homeport opens on it too.
     pub last_host_id: Option<String>,
@@ -108,6 +116,7 @@ impl Default for Settings {
     fn default() -> Self {
         Self {
             theme: Theme::default(),
+            language: SYSTEM_LANGUAGE.to_owned(),
             last_host_id: None,
             last_selection: None,
             cluster_namespaces: BTreeMap::new(),
@@ -153,6 +162,9 @@ impl SettingsService {
     }
 
     pub fn update(&self, mut settings: Settings) -> AppResult<Settings> {
+        if settings.language.trim().is_empty() {
+            SYSTEM_LANGUAGE.clone_into(&mut settings.language);
+        }
         settings.sync_interval_minutes = settings.sync_interval_minutes.clamp(1, 24 * 60);
         settings.keep_events_days = settings.keep_events_days.clamp(1, 365);
         let raw = serde_json::to_string(&settings)?;
@@ -211,6 +223,33 @@ mod tests {
     fn empty_store_yields_defaults() {
         let dir = tempfile::tempdir().unwrap();
         assert_eq!(service(dir.path()).get().unwrap(), Settings::default());
+    }
+
+    #[test]
+    fn the_language_follows_the_os_unless_chosen() {
+        let dir = tempfile::tempdir().unwrap();
+        let svc = service(dir.path());
+        // Settings saved before 0.22 have no language and keep the rest.
+        let saved: Settings =
+            serde_json::from_str(r#"{ "theme": "dark", "checkForUpdates": false }"#).unwrap();
+        assert_eq!(saved.language, SYSTEM_LANGUAGE);
+        assert_eq!(saved.theme, Theme::Dark);
+        assert!(!saved.check_for_updates);
+        let set = svc
+            .update(Settings {
+                language: "fr".to_owned(),
+                ..Default::default()
+            })
+            .unwrap();
+        assert_eq!(set.language, "fr");
+        assert_eq!(svc.get().unwrap().language, "fr");
+        let blank = svc
+            .update(Settings {
+                language: String::new(),
+                ..Default::default()
+            })
+            .unwrap();
+        assert_eq!(blank.language, SYSTEM_LANGUAGE);
     }
 
     #[test]
