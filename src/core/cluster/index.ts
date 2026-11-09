@@ -25,6 +25,7 @@ export {
 export { useClusterSelection, type ClusterSelection } from './selection/useClusterSelection';
 export { useNamespace } from './selection/useNamespace';
 export { ClusterGate } from './ui/ClusterGate';
+export { ClusterKindGuard } from './ui/ClusterKindGuard';
 export { ClusterStatusBadge } from './ui/ClusterStatusBadge';
 export { ConditionList } from './ui/ConditionList';
 export { DeleteObjectButton } from './ui/DeleteObjectButton';

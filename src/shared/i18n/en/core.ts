@@ -19,6 +19,9 @@ export default {
   'core.unsupported.overview': 'Go to the Overview',
   'core.cluster.kind.kubernetes': 'Kubernetes',
   'core.cluster.kind.nomad': 'Nomad',
+  'core.cluster.unsupported.title': '{name} can’t show this page',
+  'core.cluster.unsupported.description':
+    'This page is for {kind} clusters, and {name} is a {current} cluster. Pick a {kind} cluster in the switcher to use it.',
   'core.containerd.namespace': 'Namespace',
   'core.containerd.holds':
     '{containers, plural, one {# container} other {# containers}}, {images, plural, one {# image} other {# images}}',

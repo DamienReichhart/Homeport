@@ -11,4 +11,5 @@ export const helmFeature = defineFeature({
     { path: 'helm/:namespace/:name/:tab?', Component: ReleasePage },
   ],
   nav: { path: '/helm', label: 'helm.nav', icon: ShipWheelIcon, scope: 'cluster' },
+  clusterKind: 'kubernetes',
 });

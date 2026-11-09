@@ -59,6 +59,26 @@ describe('what a Host page requires', () => {
   });
 });
 
+describe('what a Cluster page requires', () => {
+  const nomad = { ...entry('/nomad/jobs', 'cluster'), clusterKind: 'nomad' as const };
+  const pods = { ...entry('/pods', 'cluster'), clusterKind: 'kubernetes' as const };
+  const all = [entry('/', 'app'), pods, nomad];
+
+  it('shows only the pages of the selected Cluster’s kind', () => {
+    const paths = (kind: 'kubernetes' | 'nomad' | null) =>
+      visibleNavEntries(all, 'cluster', undefined, kind).map((e) => e.path);
+    expect(paths('kubernetes')).toEqual(['/', '/pods']);
+    expect(paths('nomad')).toEqual(['/', '/nomad/jobs']);
+  });
+
+  it('carries each feature’s kind onto its sidebar entry', () => {
+    const navs = navEntriesOf([
+      defineFeature({ routes: [], nav: entry('/a', 'cluster'), clusterKind: 'nomad' }),
+    ]);
+    expect(navs[0]?.clusterKind).toBe('nomad');
+  });
+});
+
 describe('featureScope', () => {
   it('is the sidebar entry’s, or the app’s without one', () => {
     expect(featureScope(defineFeature({ routes: [], nav: entry('/x', 'host') }))).toBe('host');

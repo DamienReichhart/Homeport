@@ -9,4 +9,5 @@ export const workloadsFeature = defineFeature({
     { path: 'workloads/:kind/:namespace/:name/:tab?', Component: WorkloadDetailPage },
   ],
   nav: { path: '/workloads', label: 'workloads.nav', icon: LayersIcon, scope: 'cluster' },
+  clusterKind: 'kubernetes',
 });

@@ -12,4 +12,5 @@ export const configFeature = defineFeature({
     { path: 'secrets/:namespace/:name/:tab?', Component: SecretDetailPage },
   ],
   nav: { path: '/configmaps', label: 'config.nav', icon: FileCogIcon, scope: 'cluster' },
+  clusterKind: 'kubernetes',
 });

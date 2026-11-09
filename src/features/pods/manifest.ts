@@ -9,4 +9,5 @@ export const podsFeature = defineFeature({
     { path: 'pods/:namespace/:name/:tab?', Component: PodDetailPage },
   ],
   nav: { path: '/pods', label: 'pods.nav', icon: ContainerIcon, scope: 'cluster' },
+  clusterKind: 'kubernetes',
 });

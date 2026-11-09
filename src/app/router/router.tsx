@@ -1,5 +1,6 @@
 import { createMemoryRouter, Outlet, type RouteObject } from 'react-router-dom';
 import { featureScope, type FeatureManifest } from '@/core/feature';
+import { ClusterKindGuard } from '@/core/cluster';
 import { HostCapabilityGuard } from '@/core/host';
 import { AppLayout } from '../layout/AppLayout';
 import { CrashPage } from './CrashPage';
@@ -8,7 +9,8 @@ import { ScopeGuard } from './ScopeGuard';
 
 /**
  * A feature's routes, behind a guard when its pages need a Host or a
- * Cluster, and one more when they need something of the Host's Engine.
+ * Cluster, and one more when they need something of the Host's Engine or a
+ * kind of Cluster.
  */
 function scopedRoutes(feature: FeatureManifest): RouteObject[] {
   const scope = featureScope(feature);
@@ -18,6 +20,10 @@ function scopedRoutes(feature: FeatureManifest): RouteObject[] {
       <HostCapabilityGuard requires={feature.requires}>
         <Outlet />
       </HostCapabilityGuard>
+    ) : scope === 'cluster' && feature.clusterKind ? (
+      <ClusterKindGuard kind={feature.clusterKind}>
+        <Outlet />
+      </ClusterKindGuard>
     ) : (
       <Outlet />
     );
