@@ -25,7 +25,8 @@ export default {
   'images.column.created': 'تاريخ الإنشاء',
   'images.column.size': 'الحجم',
   'images.column.status': 'الحالة',
-  'images.moreTags': '+{count} وسوم أخرى',
+  'images.moreTags':
+    '{count, plural, zero {لا وسوم أخرى} one {+وسم واحد آخر} two {+وسمان آخران} few {+# وسوم أخرى} many {+# وسمًا آخر} other {+# وسم آخر}}',
   'images.inUse': 'قيد الاستخدام · {count}',
   'images.unused': 'غير مستخدمة',
   'images.runOne': 'تشغيل {name}',

@@ -52,7 +52,7 @@ export default {
   'pods.logs.noRestart': 'لم يُعَد تشغيلها، لذا لا توجد نسخة سابقة.',
   'pods.logs.pod': 'Pod',
   'pods.logs.allPods':
-    '{count, plural, zero {لا Pods} one {الـ Pod الوحيد} two {كلا الـ Pods (#)} few {كل الـ Pods (#)} many {كل الـ Pods (#)} other {كل الـ Pods (#)}}',
+    '{count, plural, zero {لا Pods} one {الـ Pod} two {كلا الـ Pods (#)} few {كل الـ Pods (#)} many {كل الـ Pods (#)} other {كل الـ Pods (#)}}',
   'pods.logs.noPods': 'لا يشغّل أي Pod حاليًا.',
   'pods.tab.terminal': 'الطرفية',
   'pods.terminal.shell': 'الصدفة',
