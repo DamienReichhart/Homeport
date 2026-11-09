@@ -1,168 +1,172 @@
 import type { Translation } from '../../types';
 import type en from '../en/home';
 
-/** The home page, in Italian. Still in English: translate each value of ../en/home.ts. */
+/** The home page, in Italian. */
 export default {
   // Home: the hero and its board.
-  'home.title': 'Homeport — Every Docker Engine, on one board.',
-  'home.hero.new': 'New',
-  'home.hero.release': 'Homeport {version} is out',
-  'home.hero.title': 'Every Docker Engine, on one board.',
+  'home.title': 'Homeport — Ogni Docker Engine, in un’unica bacheca.',
+  'home.hero.new': 'Novità',
+  'home.hero.release': 'È uscito Homeport {version}',
+  'home.hero.title': 'Ogni Docker Engine, in un’unica bacheca.',
   'home.hero.lead':
-    'Homeport runs on your machine and reaches your Hosts over SSH, TLS or TCP. No agent on the server. Free, open source, Windows, macOS, Linux.',
-  'home.hero.source': 'Read the source',
+    'Homeport funziona sul tuo computer e raggiunge i tuoi host tramite SSH, TLS o TCP. Nessun agente sul server. Gratuito, open source, Windows, macOS, Linux.',
+  'home.hero.source': 'Leggi il codice sorgente',
   'home.board.caption':
-    'An example board: five Hosts, their Engines and how Homeport reaches them. One needs attention.',
+    'Una bacheca di esempio: cinque host, i loro Engine e come Homeport li raggiunge. Uno richiede attenzione.',
   'home.board.host': 'Host',
   'home.board.engine': 'Engine',
-  'home.board.via': 'Via',
-  'home.board.stacks': 'Stacks',
-  'home.board.status': 'Status',
-  'home.board.allRunning': 'All running',
-  'home.board.needsYou': '1 Stack needs you',
-  'home.board.note': 'Healthy is plain. Only what needs you turns red.',
-  'home.runtimes.label': 'Works with',
-  'home.runtimes.title': 'Works with what you already run',
+  'home.board.via': 'Tramite',
+  'home.board.stacks': 'Stack',
+  'home.board.status': 'Stato',
+  'home.board.allRunning': 'Tutti in esecuzione',
+  'home.board.needsYou': '1 stack richiede attenzione',
+  'home.board.note':
+    'Ciò che è integro resta neutro. Diventa rosso solo ciò che richiede attenzione.',
+  'home.runtimes.label': 'Funziona con',
+  'home.runtimes.title': 'Funziona con ciò che usi già',
 
   // Home: where it lives.
-  'home.visits.eyebrow': 'Where it lives',
-  'home.visits.title': 'Homeport stays on your machine and visits your servers. It never moves in.',
-  'home.visits.agent.title': 'No agent',
+  'home.visits.eyebrow': 'Dove si trova',
+  'home.visits.title':
+    'Homeport resta sul tuo computer e fa visita ai tuoi server. Non vi si trasferisce mai.',
+  'home.visits.agent.title': 'Nessun agente',
   'home.visits.agent.body':
-    'Nothing to install, update or secure on the server. Homeport talks to the Engine that is already there.',
-  'home.visits.panel.title': 'No web panel',
+    'Niente da installare, aggiornare o proteggere sul server. Homeport parla con l’Engine che è già lì.',
+  'home.visits.panel.title': 'Nessun pannello web',
   'home.visits.panel.body':
-    'No dashboard deployed on your servers, and no login page waiting for someone to find it.',
-  'home.visits.account.title': 'No account',
+    'Nessuna dashboard distribuita sui tuoi server, e nessuna pagina di accesso in attesa che qualcuno la trovi.',
+  'home.visits.account.title': 'Nessun account',
   'home.visits.account.body':
-    'No sign-in, no seat, no subscription and no telemetry. It shows you your containers, and that is all.',
-  'home.visits.ports.title': 'What it needs on the server, honestly',
+    'Nessun accesso, nessuna licenza per utente, nessun abbonamento e nessuna telemetria. Ti mostra i tuoi container, e niente altro.',
+  'home.visits.ports.title': 'Cosa richiede sul server, onestamente',
   'home.visits.ports.ssh':
-    'The port you already have open. With the key Homeport makes, one line in {file}.',
-  'home.visits.ports.tls': 'The Engine’s own API port (usually {port}), which you expose yourself.',
+    'La porta che hai già aperta. Con la chiave che crea Homeport, una riga in {file}.',
+  'home.visits.ports.tls':
+    'La porta dell’API dell’Engine (di solito {port}), che esponi tu stesso.',
   'home.visits.ports.tcp':
-    'The Engine’s API port (usually {port}), unencrypted. Only on a network you trust.',
+    'La porta dell’API dell’Engine (di solito {port}), senza cifratura. Solo su una rete di cui ti fidi.',
   'home.visits.ports.advice':
-    'When you can, use SSH: it adds nothing to the server you’re not already running.',
-  'home.visits.link': 'How connections work',
+    'Quando puoi, usa SSH: non aggiunge al server nulla che tu non stia già eseguendo.',
+  'home.visits.link': 'Come funzionano le connessioni',
 
   // Home: the features.
-  'home.features.eyebrow': 'Features',
-  'home.features.title': 'Everything your Engines run, in one window',
+  'home.features.eyebrow': 'Funzionalità',
+  'home.features.title': 'Tutto ciò che eseguono i tuoi Engine, in un’unica finestra',
   'home.features.lead':
-    'The day-to-day of Docker — what is running, what it says, what it costs — without remembering which server it lives on.',
-  'home.features.hosts.title': 'Hosts, near and far',
+    'La quotidianità di Docker — cosa è in esecuzione, cosa dice, quanto consuma — senza dover ricordare su quale server si trova.',
+  'home.features.hosts.title': 'Host, vicini e lontani',
   'home.features.hosts.body':
-    'Local Engines and Podman machines are found for you. Remote ones join over SSH, through bastions if need be, mutual TLS or TCP, or straight from your ~/.ssh/config and Docker contexts. Each Host reconnects on its own when the network blinks.',
-  'home.features.containers.title': 'Containers at a glance',
+    'Gli Engine locali e le macchine Podman vengono trovati per te. Quelli remoti si aggiungono tramite SSH, attraverso dei bastion se serve, TLS reciproco o TCP, oppure direttamente dal tuo ~/.ssh/config e dai contesti Docker. Ogni host si riconnette da solo quando la rete ha un’interruzione.',
+  'home.features.containers.title': 'Container a colpo d’occhio',
   'home.features.containers.body':
-    'Grouped by Stack, with live CPU and memory and the reason behind an unhealthy one. Run with limits, devices and healthchecks, then edit, duplicate, commit or export a container.',
-  'home.features.stacks.title': 'Compose Stacks',
+    'Raggruppati per stack, con CPU e memoria in tempo reale e il motivo per cui uno non è integro. Eseguili con limiti, dispositivi e controlli di integrità, poi modifica, duplica, esegui il commit o esporta un container.',
+  'home.features.stacks.title': 'Stack Compose',
   'home.features.stacks.body':
-    'Start from a template, link a project folder on this computer, or follow a git repository, then deploy to any Host — builds included. See what changes before each redeploy or sync, roll back, and update to newer images in one step.',
+    'Parti da un modello, collega una cartella di progetto di questo computer o segui un repository git, poi distribuisci su qualsiasi host, build comprese. Vedi cosa cambia prima di ogni ridistribuzione o sincronizzazione, ripristina, e aggiorna a immagini più recenti in un solo passaggio.',
   'home.features.swarm.title': 'Docker Swarm',
   'home.features.swarm.body':
-    'Swarms show up through their manager Hosts. Manage nodes, services, tasks, secrets and configs, deploy Stacks to a Swarm, and start, join or leave one from a Host, with nothing installed on any node.',
-  'home.features.podman.title': 'Podman, as Podman',
+    'Gli Swarm compaiono tramite i loro host manager. Gestisci nodi, servizi, task, segreti e config, distribuisci stack su uno Swarm, e da un host crea uno Swarm, entra in uno esistente o lascialo, senza installare nulla su alcun nodo.',
+  'home.features.podman.title': 'Podman, da Podman',
   'home.features.podman.body':
-    'Homeport recognises Podman when it connects and adds what only Podman has: pods, created with their ports and run containers in, and Quadlet units, installed, edited and started under systemd, through Podman’s own API.',
-  'home.features.containerd.title': 'containerd, directly',
+    'Homeport riconosce Podman quando si connette e aggiunge ciò che solo Podman ha: i pod, creati con le loro porte e con i container da eseguirvi, e le unità Quadlet, installate, modificate e avviate sotto systemd, tramite l’API di Podman stesso.',
+  'home.features.containerd.title': 'containerd, direttamente',
   'home.features.containerd.body':
-    'Connect to containerd on its socket, locally or over SSH, with no Docker: pick a namespace, start, stop and signal its containers’ tasks, read their logs, open a terminal, pull images with your registry logins, and find the snapshots eating your disk.',
-  'home.features.incus.title': 'Incus instances',
+    'Connettiti a containerd sul suo socket, in locale o tramite SSH, senza Docker: scegli un namespace, avvia, arresta e invia segnali ai task dei suoi container, leggine i log, apri un terminale, scarica immagini con i tuoi accessi ai registri, e trova gli snapshot che occupano il tuo disco.',
+  'home.features.incus.title': 'Istanze Incus',
   'home.features.incus.body':
-    'Add Incus over its socket, SSH or HTTPS with a trust token, and run its system containers and virtual machines: create them from a remote image, start, freeze and stop them, open their console or a shell, take and restore snapshots, and manage images, profiles, storage and networks.',
-  'home.features.clusters.title': 'Kubernetes and Nomad clusters',
+    'Aggiungi Incus tramite il suo socket, SSH o HTTPS con un token di fiducia, ed esegui i suoi container di sistema e le sue macchine virtuali: creali da un’immagine remota, avviali, congelali e arrestali, apri la loro console o una shell, crea e ripristina snapshot, e gestisci immagini, profili, storage e reti.',
+  'home.features.clusters.title': 'Cluster Kubernetes e Nomad',
   'home.features.clusters.body':
-    'Add Kubernetes clusters from your kubeconfig — EKS, GKE and AKS included — or find local ones in one click. Browse workloads, Pods, Services, configuration and any API resource live; follow logs, open a terminal, forward ports, scale and apply YAML with a preview, and install, upgrade and roll back Helm charts. Add Nomad clusters by address to run jobs from HCL with their plan, scale and stop them, follow logs, open a shell and drain nodes. Nothing is installed on a cluster.',
-  'home.features.images.title': 'Images',
+    'Aggiungi cluster Kubernetes dal tuo kubeconfig — compresi EKS, GKE e AKS — o trova quelli locali con un clic. Esplora in tempo reale carichi di lavoro, Pod, Service, configurazione e qualsiasi risorsa dell’API; segui i log, apri un terminale, inoltra porte, ridimensiona e applica YAML con un’anteprima, e installa, aggiorna e ripristina chart Helm. Aggiungi cluster Nomad tramite indirizzo per eseguire job da HCL con il loro piano, ridimensionarli e arrestarli, seguire i log, aprire una shell e svuotare i nodi. Non viene installato nulla su alcun cluster.',
+  'home.features.images.title': 'Immagini',
   'home.features.images.body':
-    'Search Docker Hub, pull and push with your registry logins, build from a folder on your computer, save and load archives, and see when a newer image is out.',
-  'home.features.volumes.title': 'Volumes and networks',
+    'Cerca su Docker Hub, scarica e invia con i tuoi accessi ai registri, esegui build da una cartella del tuo computer, salva e carica archivi, e scopri quando esce un’immagine più recente.',
+  'home.features.volumes.title': 'Volumi e reti',
   'home.features.volumes.body':
-    'See which containers use what. Create, connect and disconnect, with deletion that tells you exactly what you are about to lose.',
-  'home.features.board.title': 'One board for every Host',
+    'Vedi quali container usano cosa. Crea, collega e scollega, con un’eliminazione che ti dice esattamente cosa stai per perdere.',
+  'home.features.board.title': 'Un’unica bacheca per tutti gli host',
   'home.features.board.body':
-    'Every container of every Host in one table, filtered and acted on together. Each Host on one page too: engine details, disk usage with a one-dialog clean-up, and a live stream of what the Engine is doing.',
-  'home.features.keyboard.title': 'Keyboard first',
+    'Tutti i container di tutti gli host in un’unica tabella, da filtrare e su cui agire insieme. E ogni host anche in una sua pagina: dettagli dell’Engine, uso del disco con una pulizia in un’unica finestra di dialogo, e un flusso in tempo reale di ciò che sta facendo l’Engine.',
+  'home.features.keyboard.title': 'Prima la tastiera',
   'home.features.keyboard.body':
-    'A command palette to go anywhere, switch Host or run a command, and to find any container, image or volume on whichever Host has it. Shortcuts for every page, listed with ?.',
-  'home.features.background.title': 'Watching in the background',
+    'Un riquadro comandi per andare ovunque, cambiare host o eseguire un comando, e per trovare qualsiasi container, immagine o volume su qualunque host si trovi. Scorciatoie per ogni pagina, elencate con ?.',
+  'home.features.background.title': 'Sorveglianza in background',
   'home.features.background.body':
-    'Every Host’s status in the system tray, notifications when a container crashes or a Host drops, and Homeport starting at login, hidden until you need it.',
+    'Lo stato di ogni host nell’area di notifica, notifiche quando un container si arresta in modo anomalo o un host si disconnette, e Homeport che si avvia all’accesso, nascosto finché non ti serve.',
 
   // Home: Hosts.
-  'home.hosts.eyebrow': 'Hosts',
-  'home.hosts.title': 'Remote Engines without the ceremony',
+  'home.hosts.eyebrow': 'Host',
+  'home.hosts.title': 'Engine remoti senza complicazioni',
   'home.hosts.body':
-    "Add a server once and it stays on the board. For SSH, Homeport makes a key just for that Host and hands you the one command that authorises it. It checks the server's fingerprint on first contact, and warns you if it ever changes.",
+    'Aggiungi un server una volta e resta nella bacheca. Per SSH, Homeport crea una chiave solo per quell’host e ti fornisce l’unico comando che la autorizza. Controlla l’impronta digitale del server al primo contatto, e ti avvisa se dovesse cambiare.',
   'home.hosts.import':
-    'Already described them? Import your servers from {file}, jump servers included, or your Docker contexts, certificates included. Moving to a new computer, take them along in one file locked with a passphrase.',
-  'home.hosts.socket.name': 'Local socket',
-  'home.hosts.socket.detail': 'Unix sockets and Windows named pipes, detected automatically.',
+    'Li hai già descritti? Importa i tuoi server da {file}, compresi i bastion, o i tuoi contesti Docker, compresi i certificati. Se passi a un nuovo computer, portali con te in un unico file protetto da una passphrase.',
+  'home.hosts.socket.name': 'Socket locale',
+  'home.hosts.socket.detail': 'Socket Unix e named pipe di Windows, rilevati automaticamente.',
   'home.hosts.ssh.detail':
-    'A dedicated Ed25519 key per Host, your own key, ssh-agent or Pageant; through bastions too.',
-  'home.hosts.tls.detail': 'Mutual TLS with your CA, client certificate and key.',
-  'home.hosts.tcp.detail': 'Plain, unencrypted TCP, only for an Engine on a network you trust.',
-  'home.hosts.link': 'How connections work',
+    'Una chiave Ed25519 dedicata per ogni host, la tua chiave, ssh-agent o Pageant; anche attraverso dei bastion.',
+  'home.hosts.tls.detail': 'TLS reciproco con la tua CA, il certificato client e la chiave.',
+  'home.hosts.tcp.detail':
+    'TCP semplice, senza cifratura, solo per un Engine su una rete di cui ti fidi.',
+  'home.hosts.link': 'Come funzionano le connessioni',
   'home.hosts.screenshot':
-    'The Add host page with SSH selected: server, port, user, remote socket path and a new key for this Host.',
+    'La pagina Aggiungi host con SSH selezionato: server, porta, utente, percorso del socket remoto e una nuova chiave per questo host.',
 
   // Home: containers.
-  'home.containers.eyebrow': 'Containers',
-  'home.containers.title': 'Everything about a container, one click away',
+  'home.containers.eyebrow': 'Container',
+  'home.containers.title': 'Tutto di un container, a un clic di distanza',
   'home.containers.body':
-    'Open a container and its logs are already streaming. Switch tabs for an interactive terminal, its files, live charts, processes and the full inspect document — on a Host across the world as easily as on your laptop.',
-  'home.containers.logs.title': 'Logs',
-  'home.containers.logs.body': 'Follow, search, filter by stream and time, download.',
-  'home.containers.terminal.title': 'Terminal',
-  'home.containers.terminal.body': 'Interactive shells, as many as you need.',
-  'home.containers.files.title': 'Files',
-  'home.containers.files.body': 'Browse, upload and download, folders as .tar.',
-  'home.containers.stats.title': 'Stats',
-  'home.containers.stats.body': 'CPU, memory, network and disk I/O charts.',
-  'home.containers.link': 'Working with containers',
+    'Apri un container e i suoi log sono già in streaming. Cambia scheda per un terminale interattivo, i suoi file, grafici in tempo reale, i processi e il documento inspect completo — su un host dall’altra parte del mondo con la stessa facilità che sul tuo portatile.',
+  'home.containers.logs.title': 'Log',
+  'home.containers.logs.body': 'Segui, cerca, filtra per flusso e per ora, scarica.',
+  'home.containers.terminal.title': 'Terminale',
+  'home.containers.terminal.body': 'Shell interattive, quante ne servono.',
+  'home.containers.files.title': 'File',
+  'home.containers.files.body': 'Sfoglia, carica e scarica, le cartelle come .tar.',
+  'home.containers.stats.title': 'Statistiche',
+  'home.containers.stats.body': 'Grafici di CPU, memoria, rete e I/O del disco.',
+  'home.containers.link': 'Lavorare con i container',
   'home.containers.screenshot':
-    "A container's Logs tab, streaming output with search, timestamps and stream filters.",
+    'La scheda Log di un container, con l’output in streaming, la ricerca, gli orari e i filtri per flusso.',
 
   // Home: Stacks.
-  'home.stacks.eyebrow': 'Stacks',
-  'home.stacks.title': 'Compose Stacks, managed, linked, synced or found',
+  'home.stacks.eyebrow': 'Stack',
+  'home.stacks.title': 'Stack Compose, gestiti, collegati, sincronizzati o trovati',
   'home.stacks.body':
-    'Keep a compose file and its environment in Homeport and deploy it to any Host — start from a template, combine several files, choose profiles; variables are stored encrypted, never written to disk. Or link a project folder on this computer: Homeport edits its files in place and deploys from it, builds included. Or follow a branch of a git repository, with a deploy key or a token: each sync shows the new commits and what they change before deploying, and while Homeport is open it checks for them, deploying on its own if you ask. Every redeploy shows what changes first, each deploy is kept so you can roll back, and Update pulls newer images and redeploys in one step. Stacks someone deployed by hand show up too: start, stop or remove them, or adopt them.',
-  'home.stacks.link': 'Managing Stacks',
+    'Conserva un file compose e il suo ambiente in Homeport e distribuiscilo su qualsiasi host — parti da un modello, combina più file, scegli i profili; le variabili sono archiviate cifrate, mai scritte su disco. Oppure collega una cartella di progetto di questo computer: Homeport ne modifica i file sul posto e distribuisce da lì, build comprese. Oppure segui un branch di un repository git, con una chiave di deploy o un token: ogni sincronizzazione mostra i nuovi commit e cosa cambiano prima di distribuire, e mentre Homeport è aperto li cerca, distribuendo da solo se lo chiedi. Ogni ridistribuzione mostra prima cosa cambia, ogni distribuzione viene conservata per poterla ripristinare, e Aggiorna scarica le immagini più recenti e ridistribuisce in un solo passaggio. Compaiono anche gli stack che qualcuno ha distribuito a mano: avviali, arrestali o rimuovili, oppure adottali.',
+  'home.stacks.link': 'Gestire gli stack',
   'home.stacks.screenshot':
-    "A Managed Stack's definition: the compose.yaml editor, its environment and the Save and redeploy button.",
+    'La definizione di uno stack gestito: l’editor di compose.yaml, il suo ambiente e il pulsante Salva e ridistribuisci.',
 
   // Home: security.
-  'home.security.eyebrow': 'Security',
-  'home.security.title': 'Your keys stay sealed',
+  'home.security.eyebrow': 'Sicurezza',
+  'home.security.title': 'Le tue chiavi restano sigillate',
   'home.security.lead':
-    'Homeport handles the credentials that open your servers, so it treats them that way.',
-  'home.security.rest.title': 'Encrypted at rest',
+    'Homeport gestisce le credenziali che aprono i tuoi server, quindi le tratta come tali.',
+  'home.security.rest.title': 'Cifrate a riposo',
   'home.security.rest.body':
-    'SSH keys, TLS certificates, Stack environments and repository tokens are sealed with XChaCha20-Poly1305. The key lives in your OS keychain, not next to the data.',
-  'home.security.disk.title': 'Never on disk in clear',
+    'Chiavi SSH, certificati TLS, ambienti degli stack e token dei repository sono sigillati con XChaCha20-Poly1305. La chiave si trova nel portachiavi del tuo sistema operativo, non accanto ai dati.',
+  'home.security.disk.title': 'Mai in chiaro su disco',
   'home.security.disk.body':
-    'Homeport speaks SSH itself, so decrypted keys stay in memory. No key files, no changes to your {dir}.',
-  'home.security.home.title': 'Nothing phones home',
+    'Homeport parla SSH da solo, quindi le chiavi decifrate restano in memoria. Nessun file di chiave, nessuna modifica alla tua cartella {dir}.',
+  'home.security.home.title': 'Nessun dato inviato a casa',
   'home.security.home.body':
-    'No account, no telemetry, no tracking. Homeport talks to your Engines and nothing else. Every release is built in the open, with checksums and build provenance.',
-  'home.security.link': 'Security and your data',
+    'Nessun account, nessuna telemetria, nessun tracciamento. Homeport parla con i tuoi Engine e con nient’altro. Ogni release viene compilata pubblicamente, con checksum e provenienza della build.',
+  'home.security.link': 'La sicurezza e i tuoi dati',
 
   // Home: desktops and the closing call.
   'home.desktops.eyebrow': 'Download',
-  'home.desktops.title': 'Native on every desktop',
+  'home.desktops.title': 'Nativo su ogni desktop',
   'home.desktops.lead':
-    'A small, fast app built with Tauri and Rust — not a browser tab in disguise. Installers for x64 and ARM that keep Homeport up to date.',
-  'home.desktops.windows.versions': '10 and 11 · x64 and ARM64',
-  'home.desktops.windows.formats': 'Installer (.exe) · MSI',
-  'home.desktops.macos.versions': 'Apple silicon and Intel',
-  'home.desktops.macos.formats': 'Disk image (.dmg)',
-  'home.desktops.linux.versions': 'x64 and ARM64',
+    'Un’app piccola e veloce, costruita con Tauri e Rust — non una scheda del browser travestita. Programmi di installazione per x64 e ARM che mantengono Homeport aggiornato.',
+  'home.desktops.windows.versions': '10 e 11 · x64 e ARM64',
+  'home.desktops.windows.formats': 'Programma di installazione (.exe) · MSI',
+  'home.desktops.macos.versions': 'Apple silicon e Intel',
+  'home.desktops.macos.formats': 'Immagine disco (.dmg)',
+  'home.desktops.linux.versions': 'x64 e ARM64',
   'home.desktops.linux.formats': 'apt · dnf · zypper · AppImage',
-  'home.cta.title': 'Nothing to install on your servers.',
+  'home.cta.title': 'Niente da installare sui tuoi server.',
   'home.cta.body':
-    'Download Homeport on the machine you work from and add your Hosts. It’s free, open source under the GNU AGPL, and built in the open on GitHub.',
-  'home.cta.github': 'View on GitHub',
+    'Scarica Homeport sul computer da cui lavori e aggiungi i tuoi host. È gratuito, open source con licenza GNU AGPL, e sviluppato pubblicamente su GitHub.',
+  'home.cta.github': 'Vedi su GitHub',
 } satisfies Translation<typeof en>;

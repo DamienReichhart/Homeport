@@ -1,21 +1,22 @@
 import type { Translation } from '../../types';
 import type en from '../en/changelog';
 
-/** The changelog page, in Italian. Still in English: translate each value of ../en/changelog.ts. */
+/** The changelog page, in Italian. */
 export default {
-  'changelog.title': 'Changelog — Homeport',
+  'changelog.title': 'Novità — Homeport',
   'changelog.description':
-    "What's new in each Homeport release: features, fixes and other changes.",
-  'changelog.eyebrow': 'Changelog',
-  'changelog.heading': "What's new in Homeport",
+    'Le novità di ogni release di Homeport: funzionalità, correzioni e altre modifiche.',
+  'changelog.eyebrow': 'Novità',
+  'changelog.heading': 'Le novità di Homeport',
   'changelog.lead':
-    "Every release, newest first. Notes are generated from the project's commits; the files are on the {link}.",
-  'changelog.downloadPage': 'download page',
-  'changelog.notesInEnglish': 'The release notes below are in English, as published on GitHub.',
-  'changelog.empty': 'The release history is on {link}.',
+    'Ogni release, dalla più recente. Le note sono generate dai commit del progetto; i file sono nella {link}.',
+  'changelog.downloadPage': 'pagina di download',
+  'changelog.notesInEnglish':
+    'Le note di rilascio qui sotto sono in inglese, come pubblicate su GitHub.',
+  'changelog.empty': 'La cronologia delle release è su {link}.',
   'changelog.github': 'GitHub',
-  'changelog.latest': 'Latest',
-  'changelog.prerelease': 'Prerelease',
-  'changelog.onGitHub': 'Release on GitHub',
-  'changelog.download': 'Download',
+  'changelog.latest': 'Più recente',
+  'changelog.prerelease': 'Versione preliminare',
+  'changelog.onGitHub': 'Release su GitHub',
+  'changelog.download': 'Scarica',
 } satisfies Translation<typeof en>;
