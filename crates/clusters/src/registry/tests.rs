@@ -323,7 +323,8 @@ mod exec_plugins {
     }
 }
 
-/// The Kubernetes credentials stored for `id`.
+/// The Kubernetes credentials stored for `id`, for the exec plugins' tests.
+#[cfg(unix)]
 fn kubernetes_secrets(registry: &ClusterRegistry, id: &str) -> KubernetesSecrets {
     match registry.store.secrets(id).unwrap() {
         ClusterSecrets::Kubernetes(s) => s,
