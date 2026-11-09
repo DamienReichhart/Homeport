@@ -10,7 +10,9 @@ import containerd from './containerd';
 import containers from './containers';
 import core from './core';
 import errors from './errors.json';
+import native from './native.json';
 import events from './events';
+import format from './format';
 import helm from './helm';
 import hosts from './hosts';
 import images from './images';
@@ -50,6 +52,7 @@ export const uiMessages = {
   ...containerd,
   ...containers,
   ...events,
+  ...format,
   ...helm,
   ...hosts,
   ...images,
@@ -80,5 +83,11 @@ export const uiMessages = {
  */
 export const errorMessages: Record<string, string> = errors;
 
+/**
+ * Text Rust renders for the OS (tray menu, notifications), generated like
+ * the errors; the frontend hands its translations over (ADR 0011).
+ */
+export const nativeMessages: Record<string, string> = native;
+
 /** Every English message, by key. */
-export const en: Record<string, string> = { ...uiMessages, ...errorMessages };
+export const en: Record<string, string> = { ...uiMessages, ...errorMessages, ...nativeMessages };

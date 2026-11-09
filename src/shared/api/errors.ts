@@ -56,22 +56,35 @@ export class AppError extends Error {
 
   constructor(payload: ErrorFields, context?: Partial<ErrorContext>) {
     const english = payload.english ?? payload.message;
-    super(render(payload, english));
+    super(english);
     this.name = 'AppError';
     this.code = payload.code;
     this.key = payload.key ?? '';
     this.params = payload.params ?? {};
     this.english = english;
-    // `text` is shown; the key stays so the hint renders again in context.
-    this.hint = payload.hint
-      ? {
-          key: payload.hint.key ?? '',
-          params: payload.hint.params ?? {},
-          text: render(payload.hint, payload.hint.english ?? payload.hint.text),
-          commands: payload.hint.commands,
-          english: payload.hint.english ?? payload.hint.text,
-        }
-      : null;
+    // Rendered on every read, so an error on screen follows a change of language.
+    const keyed = { key: this.key, params: this.params };
+    Object.defineProperty(this, 'message', {
+      get: () => render(keyed, english),
+      enumerable: true,
+      configurable: true,
+    });
+    const hint = payload.hint;
+    if (hint) {
+      const hintEnglish = hint.english ?? hint.text;
+      const hintKeyed = { key: hint.key ?? '', params: hint.params ?? {} };
+      this.hint = {
+        ...hintKeyed,
+        // `text` is shown; the key stays so the hint renders again in context.
+        get text() {
+          return render(hintKeyed, hintEnglish);
+        },
+        commands: hint.commands,
+        english: hintEnglish,
+      };
+    } else {
+      this.hint = null;
+    }
     this.detail = payload.detail ?? null;
     this.context = { at: new Date(), ...context };
   }
