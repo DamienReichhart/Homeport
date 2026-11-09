@@ -7,7 +7,7 @@ Homeport names things precisely. These terms appear throughout the app and these
 
 ### Host
 
-A Docker Engine that Homeport connects to, defined by a name and how to reach it: a local socket, TCP, TLS or SSH. Every container, image, volume, network and Stack belongs to exactly one Host. See [Hosts and connections](/docs/hosts/).
+An Engine that Homeport connects to, defined by a name and how to reach it: a local socket, TCP, TLS or SSH. Every container, image, volume, network and Stack belongs to exactly one Host. See [Hosts and connections](/docs/hosts/).
 
 ### Engine kind
 
@@ -44,6 +44,10 @@ On a Podman host, a group of containers that share one network and start and sto
 ### Quadlet unit
 
 A file on a Podman host, such as `web.container`, that systemd turns into a service, `web.service`, so Podman's containers start at boot and systemd keeps them running. See [Quadlet units](/docs/guides/quadlet/).
+
+### Bastion
+
+An SSH server an SSH Host is reached through, when the Host's own SSH server only accepts connections from it: what OpenSSH calls `ProxyJump`. A Host can have several, in order, each with its own trusted server key. A bastion isn't a Host: it runs no Engine Homeport talks to. See [Through a bastion](/docs/hosts/ssh/#through-a-bastion).
 
 ### Cluster
 
@@ -131,7 +135,7 @@ The search box opened with <kbd>Mod</kbd> <kbd>K</kbd>: go to a page, switch Hos
 
 ### Engine
 
-The Docker Engine (`dockerd`), or a compatible one such as Podman, that runs containers on a machine. Homeport talks to it through the Docker Engine API.
+The software a Host points to, the one that gets installed, started and stopped: the Docker Engine (`dockerd`) or a compatible one such as Docker Desktop, Podman, Colima or OrbStack, which Homeport talks to through the Docker Engine API; or containerd or Incus, through their own. Not a synonym for Host: "start the Docker Engine" is about the Engine, "Homeport can't reach prod-server" is about the Host.
 
 ### Socket
 
@@ -147,7 +151,7 @@ How Homeport checks SSH servers: you confirm a server's key fingerprint on the f
 
 ## In French
 
-The French app, docs and website use these terms, so a screen and a page always say the same thing.
+The French app, docs and website use these terms, so a screen and a page always say the same thing. Every other language has its own table in [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n).
 
 | English        | French                   |
 | -------------- | ------------------------ |
