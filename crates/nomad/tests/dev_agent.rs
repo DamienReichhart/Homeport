@@ -252,3 +252,15 @@ async fn nomad_live_a_tasks_log_is_read_and_a_command_runs_through_exec() {
 
     nomad.stop_job(None, name, true).await.unwrap();
 }
+
+#[tokio::test]
+#[ignore = "needs a local Nomad agent"]
+async fn nomad_live_a_nodes_eligibility_is_switched_both_ways() {
+    let nomad = dev_agent();
+    let node = nomad.nodes().await.unwrap().remove(0);
+    assert!(node.eligible);
+    nomad.set_eligibility(&node.id, false).await.unwrap();
+    assert!(!nomad.node(&node.id).await.unwrap().node.eligible);
+    nomad.set_eligibility(&node.id, true).await.unwrap();
+    assert!(nomad.nodes().await.unwrap()[0].eligible);
+}

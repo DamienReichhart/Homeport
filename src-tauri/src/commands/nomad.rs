@@ -13,6 +13,7 @@ use homeport_nomad::{
     allocations::NomadAllocationDetail,
     exec::{NomadExecOptions, NomadTerminal, TerminalId},
     jobs::{NomadJobDetail, NomadJobView},
+    nodes::{NomadDrainSpec, NomadNodeDetail, NomadNodeView},
     run::{NomadJobSource, NomadPlan, NomadPlanToRun, NomadRunResult},
     watch::{watch, NomadWatch},
     NomadAgent,
@@ -263,4 +264,54 @@ pub async fn clusters_nomad_exec_close(
 ) -> AppResult<()> {
     state.nomad_terminals.close(terminal);
     Ok(())
+}
+
+// Client nodes.
+
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_nomad_nodes(
+    state: State<'_, AppState>,
+    id: String,
+) -> AppResult<Vec<NomadNodeView>> {
+    nomad(&state, &id)?.nodes().await
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_nomad_node(
+    state: State<'_, AppState>,
+    id: String,
+    node_id: String,
+) -> AppResult<NomadNodeDetail> {
+    nomad(&state, &id)?.node(&node_id).await
+}
+
+/// Starts draining a node with `spec`; with none, cancels its drain and,
+/// with `mark_eligible`, makes it eligible again.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_nomad_node_drain(
+    state: State<'_, AppState>,
+    id: String,
+    node_id: String,
+    spec: Option<NomadDrainSpec>,
+    mark_eligible: bool,
+) -> AppResult<()> {
+    nomad(&state, &id)?
+        .drain_node(&node_id, spec.as_ref(), mark_eligible)
+        .await
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_nomad_node_eligibility(
+    state: State<'_, AppState>,
+    id: String,
+    node_id: String,
+    eligible: bool,
+) -> AppResult<()> {
+    nomad(&state, &id)?
+        .set_eligibility(&node_id, eligible)
+        .await
 }

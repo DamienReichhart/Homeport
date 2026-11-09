@@ -32,6 +32,10 @@ pub enum NomadWatch {
     },
     /// One allocation and its tasks' states.
     Allocation { alloc_id: String },
+    /// The client nodes.
+    Nodes,
+    /// One node and its allocations, as a drain empties it.
+    Node { node_id: String },
 }
 
 impl NomadWatch {
@@ -52,6 +56,14 @@ impl NomadWatch {
             }
             Self::Allocation { alloc_id } => {
                 vec![(format!("/v1/allocation/{}", segment(alloc_id)), vec![])]
+            }
+            Self::Nodes => vec![("/v1/nodes".into(), vec![])],
+            Self::Node { node_id } => {
+                let base = format!("/v1/node/{}", segment(node_id));
+                vec![
+                    (base.clone(), vec![]),
+                    (format!("{base}/allocations"), vec![]),
+                ]
             }
         }
     }

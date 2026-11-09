@@ -151,6 +151,14 @@ export const commands = {
 	clustersNomadExecResize: (terminal: number, cols: number, rows: number) => __TAURI_INVOKE<null>("clusters_nomad_exec_resize", { terminal, cols, rows }),
 	/**  Ends a terminal and its command. */
 	clustersNomadExecClose: (terminal: number) => __TAURI_INVOKE<null>("clusters_nomad_exec_close", { terminal }),
+	clustersNomadNodes: (id: string) => __TAURI_INVOKE<NomadNodeView[]>("clusters_nomad_nodes", { id }),
+	clustersNomadNode: (id: string, nodeId: string) => __TAURI_INVOKE<NomadNodeDetail>("clusters_nomad_node", { id, nodeId }),
+	/**
+	 *  Starts draining a node with `spec`; with none, cancels its drain and,
+	 *  with `mark_eligible`, makes it eligible again.
+	 */
+	clustersNomadNodeDrain: (id: string, nodeId: string, spec: NomadDrainSpec | null, markEligible: boolean) => __TAURI_INVOKE<null>("clusters_nomad_node_drain", { id, nodeId, spec, markEligible }),
+	clustersNomadNodeEligibility: (id: string, nodeId: string, eligible: boolean) => __TAURI_INVOKE<null>("clusters_nomad_node_eligibility", { id, nodeId, eligible }),
 	clustersNamespaces: (id: string) => __TAURI_INVOKE<NamespaceView[]>("clusters_namespaces", { id }),
 	/**  The workloads of `kind` in `namespace`, or in every Namespace without one. */
 	clustersWorkloadsList: (id: string, kind: WorkloadKind, namespace: string | null) => __TAURI_INVOKE<WorkloadView[]>("clusters_workloads_list", { id, kind, namespace }),
@@ -2889,6 +2897,29 @@ export type NomadConnection = {
 	clientCertificate?: boolean,
 };
 
+/**  A drain in progress. */
+export type NomadDrain = {
+	/**  When remaining allocations are stopped regardless; `None` for no deadline. */
+	deadline: string | null,
+	forced: boolean,
+	ignoreSystemJobs: boolean,
+	started: string | null,
+};
+
+/**  How to drain a node, as the Drain dialog asks. */
+export type NomadDrainSpec = {
+	/**  Seconds before remaining allocations are stopped; `None` for no deadline. */
+	deadlineSecs: number | null,
+	/**  Leave system jobs' allocations running. */
+	ignoreSystemJobs: boolean,
+};
+
+export type NomadDriverView = {
+	name: string,
+	detected: boolean,
+	healthy: boolean,
+};
+
 /**  What the Shell tab asks for. */
 export type NomadExecOptions = {
 	task: string,
@@ -2978,6 +3009,41 @@ export type NomadJobView = {
 	parentId: string | null,
 	submitted: string | null,
 	groups: NomadGroupCounts[],
+};
+
+/**
+ *  A node's detail: what the list shows, its drain, drivers, a few
+ *  attributes, and its allocations.
+ */
+export type NomadNodeDetail = {
+	node: NomadNodeView,
+	drain: NomadDrain | null,
+	/**  How the last drain ended, such as `complete` or `canceled`. */
+	lastDrain: string | null,
+	drivers: NomadDriverView[],
+	/**  The operating system, kernel, CPU architecture and the like. */
+	attributes: ([string, string])[],
+	allocations: NomadAllocationView[],
+};
+
+/**  A client node as the Nodes page lists it. */
+export type NomadNodeView = {
+	id: string,
+	name: string,
+	datacenter: string,
+	nodePool: string | null,
+	nodeClass: string | null,
+	address: string | null,
+	/**  The Nomad version its agent runs. */
+	version: string | null,
+	/**  `initializing`, `ready`, `down` or `disconnected`. */
+	status: string,
+	statusDescription: string | null,
+	/**  Takes new allocations. */
+	eligible: boolean,
+	draining: boolean,
+	/**  Allocations running on it now; `None` when the token can't list them. */
+	running: number | null,
 };
 
 /**  Why some allocations of a task group can't be placed. */
@@ -3091,7 +3157,11 @@ export type NomadWatch =
 /**  One job, its summary and its allocations. */
 { topic: "job"; namespace: string | null; jobId: string } | 
 /**  One allocation and its tasks' states. */
-{ topic: "allocation"; allocId: string };
+{ topic: "allocation"; allocId: string } | 
+/**  The client nodes. */
+{ topic: "nodes" } | 
+/**  One node and its allocations, as a drain empties it. */
+{ topic: "node"; nodeId: string };
 
 /**
  *  The OS notifications Homeport shows, one switch per kind; all on unless

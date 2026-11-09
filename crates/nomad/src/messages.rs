@@ -136,6 +136,18 @@ homeport_core::messages! {
     /// The terminal ended.
     TERMINAL_ENDED = "errors.nomad.terminalEnded" => "The terminal ended.";
 
+    // Nodes.
+
+    /// No such node.
+    NODE_NOT_FOUND = "errors.nomad.nodeNotFound" => "{name} has no node {node}.";
+    NODE_NOT_FOUND_HINT = "errors.nomad.nodeNotFound.hint" => "It may have been garbage-collected after it went down. Open the Nodes page again.";
+    /// The token lacks node:write.
+    NODE_WRITE_DENIED = "errors.nomad.nodeWriteDenied" => "{name} refused: the ACL token can't change nodes.";
+    NODE_WRITE_DENIED_HINT = "errors.nomad.nodeWriteDenied.hint" => "Draining a node and changing its eligibility need node write permission. Attach a policy with this rule to the token:";
+    /// The token lacks node:read.
+    NODE_READ_DENIED = "errors.nomad.nodeReadDenied" => "{name} refused: the ACL token can't read nodes.";
+    NODE_READ_DENIED_HINT = "errors.nomad.nodeReadDenied.hint" => "Listing nodes needs node read permission, which a policy's node rule grants with policy read.";
+
     /// An answer that isn't the JSON Nomad sends.
     UNREADABLE = "errors.nomad.unreadable" => "{name} sent an answer Homeport couldn't read.";
     UNREADABLE_HINT = "errors.nomad.unreadable.hint" => "Check that the address points to a Nomad agent's HTTP API, usually on port 4646.";

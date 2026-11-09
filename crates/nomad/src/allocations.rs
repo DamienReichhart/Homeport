@@ -42,7 +42,7 @@ struct JobVersion {
 
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "PascalCase", default)]
-struct Allocation {
+pub(crate) struct Allocation {
     #[serde(rename = "ID")]
     id: String,
     name: String,
@@ -127,6 +127,11 @@ fn detail(a: Allocation) -> NomadAllocationDetail {
         client_description: Some(a.client_description).filter(|d| !d.is_empty()),
         events,
     }
+}
+
+/// What the job and node pages list of a full allocation.
+pub(crate) fn full_view(a: Allocation) -> NomadAllocationView {
+    detail(a).allocation
 }
 
 impl Nomad {
