@@ -1,0 +1,127 @@
+---
+title: Stacks sincronizadas
+description: Implante uma stack a partir de um repositório git, veja o que mudou antes de cada sincronização e mantenha-a acompanhando a branch enquanto o Homeport está aberto.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+Uma **stack sincronizada** é uma [stack](/docs/guides/stacks/) cujo arquivo compose vem de um repositório git. O Homeport clona o repositório neste computador, busca a branch ou a tag dele quando você pede (ou em um intervalo, enquanto o Homeport está aberto), mostra o que mudou e implanta o novo commit no host. Ele nunca edita, faz commit nem envia nada: as mudanças passam pelo git.
+
+<Aside type="note" title="O Homeport precisa do git">
+  As stacks sincronizadas executam o `git` instalado neste computador. **Configurações → Esta
+  máquina** diz se o Homeport o encontrou e, se não, como instalá-lo. Todos os outros tipos de stack
+  funcionam sem o git.
+</Aside>
+
+## Repositórios
+
+O Homeport lê os repositórios que você adiciona em **Configurações → Repositórios** ou na página **Nova stack**. Um repositório é adicionado uma vez e pode ser usado por stacks sincronizadas em todos os hosts. O Homeport o alcança de uma de três formas:
+
+| Acesso              | URL                                                     | O que o Homeport armazena                                          |
+| ------------------- | ------------------------------------------------------- | ------------------------------------------------------------------ |
+| **Chave de deploy** | SSH: `git@github.com:owner/repo.git` ou `ssh://…`       | Uma chave que ele cria só para este repositório, **criptografada** |
+| **Token**           | HTTPS: `https://gitlab.com/owner/repo.git`              | O seu nome de usuário e o token de acesso **criptografado**        |
+| **Público**         | HTTPS, para um repositório que qualquer pessoa pode ler | Nada secreto                                                       |
+
+`http://` e caminhos locais não são aceitos, então um token nunca é enviado sem criptografia.
+
+### Com uma chave de deploy
+
+<Steps>
+
+1. Escolha **Adicionar repositório**, cole a URL SSH do repositório, mantenha **Chave de deploy** e escolha **Adicionar e criar uma chave de deploy**.
+
+2. Copie a chave que o Homeport mostra e adicione-a ao repositório **somente com acesso de leitura**:
+   - GitHub: **Settings → Deploy keys → Add deploy key** do repositório.
+   - GitLab: **Settings → Repository → Deploy keys** do projeto.
+   - Gitea e Forgejo: **Settings → Deploy keys → Add deploy key** do repositório.
+
+3. Escolha **Testar acesso**. O Homeport lista as branches e as tags do repositório a partir deste computador.
+
+</Steps>
+
+Cada repositório recebe a sua própria chave, então uma chave vazada só consegue ler esse repositório, e as suas próprias chaves SSH e o `~/.ssh/config` nunca são usados. **Nova chave** a substitui: adicione a nova ao repositório e remova a antiga de lá.
+
+Na primeira vez que o Homeport alcança um servidor SSH, ele confia na chave que o servidor apresenta e a memoriza, como faz o `ssh`; se a chave mudar depois, todas as buscas falham até você conferir a nova impressão digital no site da forja e escolher **Redefinir** ao lado da chave confiável.
+
+### Com um token
+
+Cole a URL `https://` do repositório, escolha **Token** e digite o nome de usuário e um token de acesso que possa ler o conteúdo do repositório: no GitHub, um token fine-grained com **Contents: Read-only**; no GitLab, um token de projeto ou pessoal com `read_repository`. **Testar acesso** o verifica. Quando ele expirar, digite um novo em **Substituir o token**.
+
+<Aside type="tip">
+  Sem um chaveiro do sistema, o Homeport não consegue armazenar chaves de deploy nem tokens, então
+  só repositórios públicos podem ser adicionados. Veja os
+  [requisitos](/docs/requirements/#optional-an-os-keychain).
+</Aside>
+
+Remover um repositório exclui a chave ou o token dele e o clone neste computador. Isso é recusado enquanto uma stack sincronizada o usa.
+
+## Criando uma stack sincronizada
+
+<Steps>
+
+1. Abra **Stacks** no host em que vai implantar, escolha **Nova stack** e depois **Usar um repositório git**.
+
+2. Escolha o **Repositório**, ou **Adicionar repositório** para adicionar um ali mesmo.
+
+3. Escolha uma **Branch** ou uma **Tag**. O Homeport as lista a partir do servidor do repositório, com a branch padrão primeiro.
+
+4. Digite o caminho do **Arquivo compose**, relativo à raiz do repositório: `compose.yaml` ou `deploy/prod/compose.yaml`. A pasta dele é a pasta do projeto, então `build:`, `env_file:` e os caminhos relativos nele funcionam como funcionariam em um clone seu.
+
+5. Confira o **Nome** (ele vem do nome do repositório) e adicione um **Ambiente** para o que não deve ficar no git, como senhas: linhas `KEY=value`, criptografadas neste computador e passadas ao Compose como variáveis quando ele implanta.
+
+6. Escolha **Salvar e implantar** — ou **Salvar** para implantar depois.
+
+</Steps>
+
+O Homeport busca a branch ou a tag e lê o arquivo compose antes de armazenar qualquer coisa, então um caminho, uma branch ou uma tag errados, ou um arquivo que o Compose não conseguiria implantar, são informados na hora. A stack é listada como **Sincronizada** e **Não implantada** até a primeira implantação; a aba **Definição** mostra o repositório, a branch ou a tag, o arquivo compose e o commit que ela implantou.
+
+O repositório é clonado uma vez neste computador, em uma pasta `repositories` ao lado do banco de dados do Homeport, e compartilhado por todas as stacks sincronizadas criadas a partir dele. Cada stack sincronizada implanta a partir do seu próprio checkout do commit, em uma pasta `synced-stacks` ali, que fica no lugar entre as implantações: os arquivos que os seus contêineres gravam por bind mounts relativos ficam onde estavam. Os links simbólicos do repositório passam pelo checkout como arquivos comuns, então um arquivo compose não pode apontar o Compose para um arquivo em outro lugar deste computador. Os arquivos mantêm as quebras de linha com que o repositório os guarda, no Windows também, então um script copiado para uma imagem Linux continua rodando; só o próprio `.gitattributes` do repositório pode mudá-las.
+
+Uma stack sincronizada pode ser implantada em um [Swarm](/docs/guides/swarm/): escolha-o em **Implantar em** na página **Nova stack**. Ela sincroniza, implanta e implanta automaticamente da mesma forma, com `docker stack deploy` executado a partir do seu checkout; veja [Stacks vinculadas e sincronizadas em um Swarm](/docs/guides/swarm/#linked-and-synced-stacks-on-a-swarm) para saber o que muda, a começar pelo `build:`.
+
+**Esquecer** faz o Homeport deixar de acompanhar o repositório. Os contêineres dela continuam rodando e ela se torna uma stack externa; o checkout dela é excluído, a menos que contêineres tenham gravado arquivos nele, e o clone do repositório vai embora quando nenhuma stack sincronizada o usa. O repositório permanece em **Configurações → Repositórios**.
+
+## Sincronizando
+
+Escolha **Sincronizar** na linha ou na página de uma stack sincronizada. O Homeport busca a branch ou a tag dela e mostra o que a implantação mudaria antes de fazer qualquer coisa:
+
+- os **novos commits** desde o implantado que mudam algo na pasta do arquivo compose, com o autor e quando foram feitos;
+- cada **arquivo alterado** nessa pasta, o arquivo compose primeiro, com as linhas removidas riscadas acima das que as substituem. Um arquivo que não é texto é citado, mas não mostrado.
+
+Escolha **Implantar** para implantar exatamente esse commit: o Homeport faz o checkout dele no checkout da stack e executa `docker compose up` a partir da pasta do arquivo compose, refazendo a build dos serviços que têm `build:`, para que um `Dockerfile` alterado seja aplicado. A saída é transmitida enquanto roda, e a implantação é registrada no **Histórico** da stack com o seu commit.
+
+- Um envio que não muda nada na pasta do arquivo compose — documentação em outro lugar do repositório, por exemplo — mostra **Atualizada**. **Reimplantar mesmo assim** a implanta de qualquer forma.
+- Se uma tag agora aponta para um commit diferente daquele da última vez que o Homeport a buscou, a revisão diz isso primeiro.
+- Se a busca falhar (a chave de deploy foi removida, o servidor não pode ser alcançado) ou a implantação falhar, o Homeport mostra por quê e o que fazer, e a stack mantém o commit implantado.
+
+**Reimplantar** implanta de novo o commit que está implantado agora, depois de mostrar o que mudou no ambiente ou nos perfis dela. **Implantar** em uma stack que nunca foi implantada implanta o commit buscado quando ela foi criada. Uma stack sincronizada não pode ser revertida pelo Homeport: reverta a mudança no repositório dela, ou aponte a stack para uma tag anterior, e depois sincronize.
+
+## Polling e implantação automática
+
+<Aside type="caution" title="Só enquanto o Homeport está aberto">
+  O Homeport só verifica os seus repositórios enquanto está aberto. **Nada é sincronizado enquanto
+  ele está fechado**: não há agente nos seus servidores nem webhook, já que o Homeport não instala
+  nada lá. Quando você o abre de novo, ele espera um intervalo antes da primeira verificação.
+</Aside>
+
+Enquanto o Homeport está aberto, ele busca a branch ou a tag de cada stack sincronizada em um intervalo — a cada 5 minutos por padrão, definido em **Configurações → Stacks sincronizadas** (no mínimo 1 minuto). Cada repositório é buscado uma vez por rodada, seja qual for o número de stacks que o usam, e um que continua falhando é tentado com cada vez menos frequência, até uma vez por hora.
+
+Quando um novo commit muda a pasta do arquivo compose, a stack mostra **Atualização disponível** na lista e na página dela. **Sincronizar** mostra o que mudou e o implanta. A aba **Definição** da stack diz quando foi a **última verificação** e por que a última verificação falhou, se falhou.
+
+Duas opções na aba **Definição** controlam isso, por stack:
+
+- **Verificar novos commits**, ativada por padrão. Desative-a para sincronizar só quando você escolher **Sincronizar**.
+- **Implantar novos commits automaticamente**, desativada por padrão. Quando ativada, o Homeport implanta cada novo commit assim que o vê, **sem mostrar antes o que mudou**, pelas mesmas etapas de **Sincronizar**; a implantação é registrada no **Histórico** como automática, e uma notificação avisa quando termina. Ela espera enquanto o host não pode ser alcançado. Se falhar, o Homeport mostra por quê e não tenta esse commit de novo: o próximo commit, ou um **Sincronizar** que você mesmo implanta, tenta.
+
+## Por que não consigo editar uma stack sincronizada?
+
+Porque o repositório dela é o único lugar onde a definição dela vive. Se o Homeport mudasse o arquivo compose, a próxima sincronização sobrescreveria essa mudança ou brigaria com ela, e ninguém lendo o repositório saberia o que está implantado. Então a aba **Definição** de uma stack sincronizada mostra o arquivo compose dela no commit buscado **somente leitura** — você ainda pode selecionar e copiar dele —, lista os outros arquivos da pasta dele e liga cada um à sua página no GitHub, GitLab, Gitea ou Forgejo. Mude-os lá, envie, e depois **Sincronizar**.
+
+O que o Homeport guarda continua editável na mesma aba:
+
+- o **Ambiente** dela, criptografado neste computador, para valores que não devem ficar no git;
+- os **perfis** dela, se o arquivo compose declarar alguns;
+- se ela **verifica novos commits** e **os implanta automaticamente**.
+
+**Esquecer** faz o Homeport deixar de acompanhar o repositório; os contêineres da stack continuam rodando, e ela se torna externa.
