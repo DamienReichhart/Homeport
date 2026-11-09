@@ -264,3 +264,13 @@ async fn nomad_live_a_nodes_eligibility_is_switched_both_ways() {
     nomad.set_eligibility(&node.id, true).await.unwrap();
     assert!(nomad.nodes().await.unwrap()[0].eligible);
 }
+
+#[tokio::test]
+#[ignore = "needs a local Nomad agent"]
+async fn nomad_live_the_default_namespace_is_listed_and_every_namespace_reads_jobs() {
+    let nomad = dev_agent();
+    let listed = nomad.namespaces().await.unwrap();
+    assert!(listed.listable);
+    assert_eq!(listed.namespaces[0].name, "default");
+    assert!(nomad.jobs(Some("*")).await.is_ok());
+}

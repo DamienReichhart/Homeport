@@ -159,6 +159,11 @@ export const commands = {
 	 */
 	clustersNomadNodeDrain: (id: string, nodeId: string, spec: NomadDrainSpec | null, markEligible: boolean) => __TAURI_INVOKE<null>("clusters_nomad_node_drain", { id, nodeId, spec, markEligible }),
 	clustersNomadNodeEligibility: (id: string, nodeId: string, eligible: boolean) => __TAURI_INVOKE<null>("clusters_nomad_node_eligibility", { id, nodeId, eligible }),
+	/**
+	 *  The namespaces the Jobs page picks from; unlistable rather than an
+	 *  error when the token can't list them.
+	 */
+	clustersNomadNamespaces: (id: string) => __TAURI_INVOKE<NomadNamespaces>("clusters_nomad_namespaces", { id }),
 	clustersNamespaces: (id: string) => __TAURI_INVOKE<NamespaceView[]>("clusters_namespaces", { id }),
 	/**  The workloads of `kind` in `namespace`, or in every Namespace without one. */
 	clustersWorkloadsList: (id: string, kind: WorkloadKind, namespace: string | null) => __TAURI_INVOKE<WorkloadView[]>("clusters_workloads_list", { id, kind, namespace }),
@@ -3009,6 +3014,22 @@ export type NomadJobView = {
 	parentId: string | null,
 	submitted: string | null,
 	groups: NomadGroupCounts[],
+};
+
+export type NomadNamespaceView = {
+	name: string,
+	description: string | null,
+};
+
+/**  The namespaces a page can pick from. */
+export type NomadNamespaces = {
+	/**  By name, `default` first. */
+	namespaces: NomadNamespaceView[],
+	/**
+	 *  `false` when the token can't list them or Nomad has none to list:
+	 *  pages then show the token's default namespace, with no picker.
+	 */
+	listable: boolean,
 };
 
 /**

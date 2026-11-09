@@ -13,6 +13,7 @@ use homeport_nomad::{
     allocations::NomadAllocationDetail,
     exec::{NomadExecOptions, NomadTerminal, TerminalId},
     jobs::{NomadJobDetail, NomadJobView},
+    namespaces::NomadNamespaces,
     nodes::{NomadDrainSpec, NomadNodeDetail, NomadNodeView},
     run::{NomadJobSource, NomadPlan, NomadPlanToRun, NomadRunResult},
     watch::{watch, NomadWatch},
@@ -314,4 +315,15 @@ pub async fn clusters_nomad_node_eligibility(
     nomad(&state, &id)?
         .set_eligibility(&node_id, eligible)
         .await
+}
+
+/// The namespaces the Jobs page picks from; unlistable rather than an
+/// error when the token can't list them.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_nomad_namespaces(
+    state: State<'_, AppState>,
+    id: String,
+) -> AppResult<NomadNamespaces> {
+    nomad(&state, &id)?.namespaces().await
 }

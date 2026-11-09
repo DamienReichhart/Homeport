@@ -13,6 +13,7 @@
 //! - [`allocations`], [`logs`] and [`exec`] show an allocation, stream its
 //!   tasks' logs and open terminals in them, through the servers.
 //! - [`nodes`] lists client nodes, drains them and sets their eligibility.
+//! - [`namespaces`] lists the namespaces the Jobs page picks from.
 
 pub mod address;
 pub mod agent;
@@ -23,6 +24,7 @@ pub mod exec;
 pub mod jobs;
 pub mod logs;
 pub mod messages;
+pub mod namespaces;
 pub mod nodes;
 pub mod run;
 mod time;

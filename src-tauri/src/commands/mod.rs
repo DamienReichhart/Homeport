@@ -118,6 +118,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             nomad::clusters_nomad_node,
             nomad::clusters_nomad_node_drain,
             nomad::clusters_nomad_node_eligibility,
+            nomad::clusters_nomad_namespaces,
             clusters::clusters_namespaces,
             clusters::clusters_workloads_list,
             clusters::clusters_workload_get,
