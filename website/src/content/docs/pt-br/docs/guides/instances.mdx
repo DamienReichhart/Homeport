@@ -1,0 +1,75 @@
+---
+title: Instâncias
+description: Execute contêineres de sistema e máquinas virtuais do Incus; abra o console e um terminal neles; crie e restaure snapshots; gerencie imagens, perfis, pools de armazenamento e redes.
+---
+
+Uma **instância** é o que um [host Incus](/docs/hosts/incus/) executa: um **contêiner de sistema**, que inicializa uma distribuição Linux inteira compartilhando o kernel do host, ou uma **máquina virtual**, com um kernel próprio. Cada página aqui mostra o projeto escolhido no seletor de hosts.
+
+## A página Instâncias
+
+**Instâncias** lista as instâncias do projeto com o tipo, o status, a imagem, os endereços globais (IPv4 primeiro), a memória e a idade de cada uma. Filtre-as pelo nome, ou mostre só os contêineres ou só as máquinas virtuais.
+
+| Ação              | O que o Incus faz                                                                                                                     |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **Iniciar**       | Inicializa a instância.                                                                                                               |
+| **Parar**         | Pede ao sistema dela que desligue e dá a ela 30 segundos; uma que não desliga é informada, com **Forçar parada** como saída.          |
+| **Forçar parada** | Desliga a instância na hora, como puxar o cabo da tomada.                                                                             |
+| **Reiniciar**     | Desliga a instância de forma ordenada e a inicializa de novo.                                                                         |
+| **Congelar**      | Pausa todos os processos dela; **Descongelar** os retoma.                                                                             |
+| **Excluir**       | Pergunta antes, citando os snapshots excluídos junto. Uma instância em execução só é excluída depois que você marca **Pare-a antes**. |
+
+A lista se atualiza a partir dos eventos do Incus em instantes, seja quem for que fez a mudança.
+
+A página de uma instância tem uma **Visão geral** (endereços, tempo de CPU, memória, processos, snapshots e os seus perfis, cada um com link para a página dele), a sua **Configuração** e os seus **Dispositivos**, com o que os perfis definem marcado como **De um perfil**, e a descrição do próprio Incus em **Bruto**.
+
+## Criando uma instância
+
+**Nova instância** (ou <kbd>n</kbd>) cria uma a partir de uma imagem:
+
+- **De um servidor de imagens**: o público `https://images.linuxcontainers.org` por padrão, ou outro servidor simplestreams. O Homeport lista o que ele publica para a arquitetura do host, como contêineres ou como máquinas virtuais, pesquisável por sistema, versão ou alias; você também pode digitar um alias como `debian/12` ou `ubuntu/24.04/cloud`. O Incus baixa a imagem, como faria `incus launch images:debian/12`.
+- **Das imagens deste host**: uma que o host já guarda.
+
+Escolha os seus **perfis** (em ordem: os posteriores sobrescrevem os anteriores) e, opcionalmente, as **CPUs**, a **Memória** (`2GiB`) e o tamanho do **Disco raiz** (`20GiB`, no pool em que está o disco raiz dos seus perfis). **Iniciá-la depois de criada** vem ativado por padrão. A caixa de diálogo acompanha o download e a descompactação nas palavras do próprio Incus e depois abre a nova instância.
+
+Um nome já em uso, uma imagem que o servidor não tem, um pool de armazenamento cheio ou uma máquina virtual em um host sem virtualização de hardware (sem `/dev/kvm`): cada caso é informado, com o que fazer.
+
+## Console e terminal
+
+**Console** mostra o que a instância imprimiu até agora no seu console de texto e depois se conecta a ele: o prompt de login, ou uma inicialização enquanto acontece, como mostra `incus console`. Funciona também para máquinas virtuais e quando a rede ou o SSH da instância estão quebrados. Sair da aba, ou **Reconectar**, apenas desconecta.
+
+**Exec** abre um shell em uma instância em execução (bash quando ela tem, sh caso contrário), ou executa o comando que você informar, como um usuário numérico e em uma pasta de sua escolha; **Abrir** inicia um novo com o que você digitou. Fechar a aba encerra o comando, então nada iniciado por ela continua rodando. Em uma máquina virtual, o exec precisa do `incus-agent`, que as próprias imagens do Incus incluem e iniciam na inicialização; enquanto ele não roda, o Homeport avisa e a aba Console é o caminho de entrada.
+
+## Snapshots
+
+**Snapshots** lista os snapshots da instância com quando cada um foi criado, quando expira e se guarda o estado em execução.
+
+- **Criar snapshot** dá um nome a ele (ou deixa o Incus chamá-lo de `snap0`, `snap1`…) e o mantém até ser excluído, ou por um dia, uma semana ou 30 dias. Enquanto a instância roda, e quando a configuração `migration.stateful` dela permite, o snapshot pode incluir a memória, para que uma restauração retome de onde estava.
+- **Restaurar** devolve a instância ao estado em que estava quando o snapshot foi criado. Tudo o que mudou desde então se perde, e uma instância em execução reinicia, então o Homeport pergunta antes.
+- **Excluir** remove um snapshot, depois de perguntar; a instância fica como está.
+
+## Imagens
+
+**Imagens** lista as imagens que o projeto guarda, com os aliases, a descrição, o tipo, a arquitetura, o tamanho e a idade. As imagens que o Incus baixou para criar uma instância são marcadas como **em cache**: ele as exclui quando nada as usa há algum tempo.
+
+- **Obter imagem** baixa uma com antecedência de um servidor de imagens, escolhida como para uma nova instância. **Mantê-la atualizada** faz o Incus atualizá-la a partir do servidor; **Dar a ela o mesmo alias aqui** permite que novas instâncias a usem pelo nome.
+- **Atualizar** busca uma build mais nova de uma imagem de onde ela veio.
+- O botão de etiqueta adiciona um alias; o x em um alias o remove.
+- **Excluir** remove uma imagem. As instâncias criadas a partir dela continuam funcionando: cada uma tem a sua própria cópia.
+
+## Perfis
+
+**Perfis** lista os perfis do projeto com quantas chaves e dispositivos cada um define e as instâncias que o usam. A página de um perfil edita a descrição, a configuração e os dispositivos dele como YAML, como faz `incus profile edit`, e tem links para as instâncias que o usam. **Salvar** aplica as mudanças a essas instâncias, como faz o Incus. Se alguém mudou o perfil depois que a página o carregou, salvar é recusado em vez de sobrescrever as mudanças dessa pessoa: **Recarregar** e depois refaça as suas mudanças.
+
+**Novo perfil** cria um vazio e o abre. `default`, e os perfis que as instâncias usam, não podem ser excluídos.
+
+## Armazenamento
+
+**Armazenamento** mostra cada pool de armazenamento com o seu driver e o quanto está cheio, e os volumes do pool selecionado no projeto: os das próprias instâncias e imagens, e os personalizados, com o conteúdo, o tamanho e o que os usa.
+
+**Novo volume** cria um volume personalizado, um sistema de arquivos ou um dispositivo de bloco, de um tamanho ou do padrão do pool, para anexar a instâncias, para dados que sobrevivem a elas (`incus storage volume attach`). Um volume personalizado pode ser excluído quando nada o usa. Os próprios pools são criados com `incus storage create`.
+
+## Redes
+
+**Redes** lista as redes que o projeto vê, as gerenciadas (criadas pelo Incus) primeiro, com as configurações de IPv4 e IPv6, o NAT e quem as usa. A página de uma rede mostra os endereços dela no host, o MTU e o endereço MAC, as instâncias e os perfis que a usam, e as concessões DHCP de uma rede gerenciada, como faz `incus network list-leases`.
+
+**Nova bridge** cria uma bridge gerenciada. O IPv4 e o IPv6 dela são `auto` (uma sub-rede livre), `none`, ou o próprio endereço da bridge com o prefixo, como `10.0.5.1/24`; **NAT** mascara o tráfego IPv4 de saída. Uma rede em uso, ou uma das próprias interfaces da máquina, não é excluída por aqui.
