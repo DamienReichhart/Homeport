@@ -3,6 +3,7 @@
  * contain, from Homeport's GitHub releases (ADR 0003). Pure functions only;
  * `repositories.ts` downloads the files and builds the repositories from them.
  */
+import { describeAsset } from './release-assets-plan';
 
 /** How many stable releases the APT and RPM repositories keep. */
 export const KEEP_RELEASES = 5;
@@ -69,7 +70,10 @@ export function selectReleases(
     }));
 }
 
-/** The `.deb` and `.rpm` files of a release. */
+/**
+ * The `.deb` and `.rpm` files of a release, by extension alone: the
+ * repositories keep releases from before and after their files were renamed.
+ */
 export function packagesOf(release: Release): { deb: Asset[]; rpm: Asset[] } {
   return {
     deb: release.assets.filter((a) => a.name.endsWith('.deb')),
@@ -77,26 +81,31 @@ export function packagesOf(release: Release): { deb: Asset[]; rpm: Asset[] } {
   };
 }
 
+const UPDATER_OS = { windows: 'windows', macos: 'darwin', linux: 'linux' } as const;
+const UPDATER_ARCH = { x64: 'x86_64', arm64: 'aarch64' } as const;
+
 /**
  * The updater targets (`{os}-{arch}` and `{os}-{arch}-{installer}`) a release
- * file serves. `{os}-{arch}` is the fallback for any other install type: on
- * Linux that's the AppImage, which a .deb or .rpm install only uses to learn
- * that a new version exists, never to install it.
+ * file serves, whichever way the release names its files (`describeAsset`):
+ * installed copies of every version read this manifest. `{os}-{arch}` is the
+ * fallback for any other install type: on Linux that's the AppImage, which a
+ * .deb or .rpm install only uses to learn that a new version exists, never to
+ * install it.
  */
 export function updaterTargets(file: string): string[] | undefined {
-  const rules: [RegExp, string, string][] = [
-    [/_amd64\.AppImage$/, 'linux-x86_64', 'appimage'],
-    [/_aarch64\.AppImage$/, 'linux-aarch64', 'appimage'],
-    [/_x64-setup\.exe$/, 'windows-x86_64', 'nsis'],
-    [/_arm64-setup\.exe$/, 'windows-aarch64', 'nsis'],
-    [/_aarch64\.app\.tar\.gz$/, 'darwin-aarch64', 'app'],
-    [/_x64\.app\.tar\.gz$/, 'darwin-x86_64', 'app'],
-  ];
-  for (const [pattern, target, installer] of rules) {
-    if (pattern.test(file)) return [target, `${target}-${installer}`];
+  const asset = describeAsset(file);
+  if (!asset) return undefined;
+  const target = `${UPDATER_OS[asset.os]}-${UPDATER_ARCH[asset.arch]}`;
+  switch (asset.kind) {
+    case 'appimage':
+    case 'nsis':
+    case 'app':
+      return [target, `${target}-${asset.kind}`];
+    case 'msi':
+      return [`${target}-msi`];
+    default:
+      return undefined; // the package managers' files and the .dmg, which the updater never installs
   }
-  if (/_x64_[\w-]+\.msi$/.test(file)) return ['windows-x86_64-msi'];
-  return undefined;
 }
 
 export interface UpdateManifest {

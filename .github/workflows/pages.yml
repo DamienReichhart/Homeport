@@ -15,6 +15,7 @@ on:
       - assets/brand/**
       - packaging/linux/**
       - scripts/repositories*.ts
+      - scripts/release-assets-plan.ts # the file names repositories-plan.ts reads
       - .github/workflows/pages.yml
   pull_request:
     paths: *paths

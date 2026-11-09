@@ -93,7 +93,8 @@ async function githubReleases(): Promise<GitHubRelease[]> {
 /** Treats the files in `dir` as one release, for testing. */
 function localRelease(dir: string): Release {
   const files = readdirSync(dir);
-  const version = /_(\d+\.\d+\.\d+)_/.exec(files.join(' '))?.[1] ?? '0.0.0';
+  // Tauri's own names (`Homeport_1.0.0_amd64.deb`) or a release's (`Homeport-1.0.0-linux-x64.deb`).
+  const version = /Homeport[_-](\d+\.\d+\.\d+)[_-]/.exec(files.join(' '))?.[1] ?? '0.0.0';
   return {
     tag: `v${version}`,
     version,
