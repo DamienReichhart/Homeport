@@ -78,7 +78,8 @@
   --accent-foreground: #141414;
   --destructive: #c8102e;
   --border: #dadad3;
-  --input: #cacac2;
+  /* A field's only boundary: 3:1 against cards and the page (WCAG 1.4.11). */
+  --input: #8f8f87;
   --ring: #141414;
   --signal: #c8102e;
   --success: #141414;
@@ -118,7 +119,7 @@
   --accent-foreground: #f7f7f4;
   --destructive: #ff5c5c;
   --border: rgb(247 247 244 / 10%);
-  --input: rgb(247 247 244 / 16%);
+  --input: rgb(247 247 244 / 35%);
   --ring: #f7f7f4;
   --signal: #ff5c5c;
   --success: #f7f7f4;

@@ -70,6 +70,23 @@ There is deliberately no green. If testing with real users shows that "all ink" 
 
 Charts are neutral: series are Ink or grey, and a second series in the same chart is dashed (`ChartSeries.dashed`), never a status colour.
 
+### Contrast
+
+Every pair the app and the website use meets WCAG 2.2 AA in both themes: **4.5:1 for text**, **3:1 for what isn't text but must be seen** — a field's border, the focus ring, status shapes, a chart's grey series (WCAG 1.4.3, 1.4.11). `src/shared/styles/contrast.test.ts` measures each pair from the tokens in `global.css` and `website/src/app/styles/theme.css`, so a token change that fails one fails `bun run test`. Borders of buttons, cards and panels whose text identifies them aren't held to 3:1.
+
+| Pair (app)                                        | Light             | Dark              |
+| ------------------------------------------------- | ----------------- | ----------------- |
+| Text on the page (`--foreground`)                 | 17.2:1            | 17.2:1            |
+| Muted text on the page / a card / `--muted`       | 6.3 / 6.7 / 5.6:1 | 7.5 / 7.0 / 6.2:1 |
+| Muted text on the sidebar                         | 5.8:1             | 7.8:1             |
+| Signal red (`--destructive`) on the page / a card | 5.5 / 5.9:1       | 6.1 / 5.6:1       |
+| Amber (`--warning`) on the page / a card          | 5.1 / 5.4:1       | 9.2 / 8.5:1       |
+| A field's border (`--input`) on the page / a card | 3.0 / 3.3:1       | 3.1 / 3.1:1       |
+| The focus ring (`--ring` at 50 %)                 | 3.4:1             | 5.1:1             |
+| The grey chart series (`--chart-4`) on a card     | 3.4:1             | 5.0:1             |
+
+The terminal's default text is 18.4:1 (light) and 17.9:1 (dark); its ANSI colours are 5.3:1 or more on its background, except light **white** (3.4:1) and dark **black** (1.3:1), which programs use for faint or background text as in every terminal. The editor's strings, numbers and comments are 5.0:1 or more in both themes.
+
 Libraries that can't read CSS variables carry hex copies: `src/shared/ui/terminal/XTerm.tsx` (the 16 ANSI colours stay distinct because they belong to the programs that print them; red is Signal red) and `src/shared/ui/editor/editorTheme.ts` (keys in the text colour, values in two quiet hues, comments italic; red, amber and green never mean syntax).
 
 ## Shape
