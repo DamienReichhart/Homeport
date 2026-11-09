@@ -24,16 +24,24 @@ A version with a suffix (`1.0.0-beta.1`) is published as a prerelease and isn't 
 
 ## Platforms
 
-| Runner             | Target                      | Installers                         |
-| ------------------ | --------------------------- | ---------------------------------- |
-| `ubuntu-22.04`     | `x86_64-unknown-linux-gnu`  | `.deb`, `.rpm`, `.AppImage`        |
-| `ubuntu-22.04-arm` | `aarch64-unknown-linux-gnu` | `.deb`, `.rpm`, `.AppImage`        |
-| `windows-latest`   | `x86_64-pc-windows-msvc`    | NSIS `-setup.exe`, `.msi`          |
-| `windows-latest`   | `aarch64-pc-windows-msvc`   | NSIS `-setup.exe` (cross-compiled) |
-| `macos-latest`     | `aarch64-apple-darwin`      | `.dmg`                             |
-| `macos-latest`     | `x86_64-apple-darwin`       | `.dmg` (cross-compiled)            |
+| Runner             | Target                      | Files in the release                                                                 |
+| ------------------ | --------------------------- | ------------------------------------------------------------------------------------ |
+| `ubuntu-22.04`     | `x86_64-unknown-linux-gnu`  | `Homeport-<version>-linux-x64.deb`, `…-linux-x64.rpm`, `…-linux-x64.AppImage`        |
+| `ubuntu-22.04-arm` | `aarch64-unknown-linux-gnu` | `Homeport-<version>-linux-arm64.deb`, `…-linux-arm64.rpm`, `…-linux-arm64.AppImage`  |
+| `windows-latest`   | `x86_64-pc-windows-msvc`    | `Homeport-<version>-windows-x64-setup.exe` (NSIS), `…-windows-x64.msi`               |
+| `windows-latest`   | `aarch64-pc-windows-msvc`   | `Homeport-<version>-windows-arm64-setup.exe` (NSIS, cross-compiled)                  |
+| `macos-latest`     | `aarch64-apple-darwin`      | `Homeport-<version>-macos-arm64.dmg`, `…-macos-arm64-update.app.tar.gz`              |
+| `macos-latest`     | `x86_64-apple-darwin`       | `Homeport-<version>-macos-x64.dmg`, `…-macos-x64-update.app.tar.gz` (cross-compiled) |
 
-Each build also uploads the in-app updater's files: a `.sig` next to each installer, and on macOS `Homeport_<version>_<arch>.app.tar.gz` (the updater installs the zipped app, not the `.dmg`) with its `.sig`.
+### File names
+
+Every file in a release is named `Homeport-<version>-<os>-<arch>[-<variant>].<ext>`, with `<os>` one of `windows`, `macos`, `linux` and `<arch>` one of `x64`, `arm64`, so a download says which system and processor it is for in the same words everywhere. Tauri names its bundles in each format's own vocabulary (`Homeport_1.0.0_amd64.deb`, `Homeport-1.0.0-1.x86_64.rpm`, `Homeport_1.0.0_aarch64.dmg`); the **Collect the installers** step of each build copies them under the release names with `bun scripts/release-assets.ts`. It fails the build when a bundle it was asked for is missing, when an updater file has no `.sig`, or when two files would get the same name. The names and those checks are in `scripts/release-assets-plan.ts`.
+
+The in-app updater's files are named so that nobody takes them for an installer: each `.sig` sits next to the file it signs (`<file>.sig`), and on macOS the zipped app the updater installs (it can't apply a `.dmg`) is `Homeport-<version>-macos-<arch>-update.app.tar.gz`, with its `.sig`. The release notes say that neither is a download, and the website never offers them.
+
+The `.deb` and `.rpm` files follow the same pattern, not `dpkg`'s or `rpm`'s (`homeport_1.0.0_amd64.deb`, `homeport-1.0.0-1.x86_64.rpm`). Nothing reads a package's name or architecture from its file name: `apt install ./<file>`, `dnf install ./<file>` and `zypper install ./<file>` read them from inside the package, as do `apt-ftparchive` and `createrepo_c` when `scripts/repositories.ts` indexes the repositories, which lists each file under whatever name it has. Only the file name changes; the package inside is the one Tauri built.
+
+Releases up to 0.22 carry Tauri's names. Everything that reads a release reads both: the update manifest and the package repositories (`scripts/repositories-plan.ts`), and the website's download page and changelog (`website/src/core/release/model.ts`). Keep it so: installed copies of every version read the same `updates/latest.json`, and the repositories keep older releases. The Scoop manifest and the AUR package (`scripts/channels-plan.ts`) are only ever rendered for the release being published, so they use the release names alone.
 
 Linux builds on Ubuntu 22.04 so that they run on distributions with glibc 2.35 or later. These are the same targets as `about.toml > targets`. Add a platform to both.
 
@@ -73,7 +81,7 @@ The website's GitHub Pages site also serves, at a permanent URL ([ADR 0003](adr/
 | `install.sh`           | The quick install script (`packaging/linux/install.sh`)                                   |
 | `updates/latest.json`  | The in-app updater's manifest                                                             |
 
-The Pages workflow builds them on every deploy with `bun scripts/repositories.ts --out website/dist`: it downloads the `.deb` and `.rpm` files of the latest 5 stable releases from GitHub Releases (from 0.3.0, the first built for them), indexes them with `apt-ftparchive` and `createrepo_c`, signs the metadata with the package key, and writes `updates/latest.json` from the latest release's signed installers. GitHub Releases stay the only source: nothing is committed. Pull requests build everything with a throwaway key.
+The Pages workflow builds them on every deploy with `bun scripts/repositories.ts --out website/dist`: it downloads the `.deb` and `.rpm` files of the latest 5 stable releases from GitHub Releases (from 0.3.0, the first built for them), indexes them with `apt-ftparchive` and `createrepo_c`, signs the metadata with the package key, and writes `updates/latest.json` from the latest release's signed installers. It takes the packages by their extension and the updater files under [either naming](#file-names), so a repository can hold releases from before and after the rename. GitHub Releases stay the only source: nothing is committed. Pull requests build everything with a throwaway key.
 
 **The packages register the repository.** On their first install (or first upgrade from a version without this), the `.deb` and `.rpm` add `homeport.sources` or `homeport.repo` unless it's already there, so a downloaded package still gets updates. A marker in `/var/lib/homeport/` keeps a removed repository from coming back. `apt purge` and `dnf`/`zypper remove` remove it. The scripts are in `packaging/linux/`.
 
