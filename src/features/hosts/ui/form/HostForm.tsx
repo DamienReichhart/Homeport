@@ -19,11 +19,13 @@ import {
   engineForSocket,
   engineReachableOver,
   HOST_KINDS,
+  usesTrustToken,
   withEngine,
   type HostFormState,
   type HostKind,
 } from '../../model/form';
 import { Field } from './Field';
+import { IncusTlsFields } from './IncusTlsFields';
 import { SshFields } from './SshFields';
 import { TlsFields } from './TlsFields';
 import { t } from '@/shared/i18n';
@@ -64,7 +66,9 @@ export function HostForm({
               title={
                 engineReachableOver(form.engine, kind)
                   ? undefined
-                  : t('hosts.form.socketOnly', { engine: t(ENGINE_LABELS[form.engine]) })
+                  : t(form.engine === 'incus' ? 'hosts.form.noPlainTcp' : 'hosts.form.socketOnly', {
+                      engine: t(ENGINE_LABELS[form.engine]),
+                    })
               }
             >
               {t(label)}
@@ -90,11 +94,9 @@ export function HostForm({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {ENGINE_KINDS.map(({ engine, available }) => (
-              <SelectItem key={engine} value={engine} disabled={!available}>
-                {available
-                  ? t(ENGINE_LABELS[engine])
-                  : t('hosts.form.engineSoon', { engine: t(ENGINE_LABELS[engine]) })}
+            {ENGINE_KINDS.map((engine) => (
+              <SelectItem key={engine} value={engine}>
+                {t(ENGINE_LABELS[engine])}
               </SelectItem>
             ))}
           </SelectContent>
@@ -119,7 +121,7 @@ export function HostForm({
         </Field>
       )}
 
-      {(form.kind === 'tcp' || form.kind === 'tls') && (
+      {(form.kind === 'tcp' || (form.kind === 'tls' && !usesTrustToken(form))) && (
         <Field
           label={t('hosts.form.address')}
           hint={t('hosts.form.addressHint', { example: '192.168.1.10:2376' })}
@@ -140,7 +142,17 @@ export function HostForm({
         </Alert>
       )}
 
-      {form.kind === 'tls' && (
+      {form.kind === 'tls' && form.engine === 'incus' && (
+        <IncusTlsFields
+          form={form}
+          set={set}
+          editing={editing}
+          keychain={keychain}
+          keepHint={keepHint}
+        />
+      )}
+
+      {form.kind === 'tls' && form.engine !== 'incus' && (
         <TlsFields form={form} set={set} keychain={keychain} keepHint={keepHint} />
       )}
 

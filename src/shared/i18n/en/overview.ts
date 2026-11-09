@@ -34,6 +34,19 @@ export default {
   'overview.host.images': '{count, plural, one {# image} other {# images}}',
   'overview.host.containerdContainers':
     '{count, plural, one {# container} other {# containers}} in {namespaces, plural, one {# namespace} other {# namespaces}}',
+  'overview.host.incusInstances':
+    '{count, plural, one {# instance} other {# instances}} in {projects, plural, one {# project} other {# projects}}',
+  'overview.incus.title': 'Incus',
+  'overview.incus.version': 'Version',
+  'overview.incus.os': 'System',
+  'overview.incus.arch': 'Architecture',
+  'overview.incus.projects': 'Projects',
+  'overview.incus.shown': 'Shown',
+  'overview.incus.holds':
+    '{instances, plural, one {# instance} other {# instances}}, {images, plural, one {# image} other {# images}}',
+  'overview.incus.instances': 'Instances',
+  'overview.incus.images': 'Images',
+  'overview.incus.storage': 'Storage',
   'overview.containerd.title': 'containerd',
   'overview.containerd.version': 'Version',
   'overview.containerd.revision': 'Revision',

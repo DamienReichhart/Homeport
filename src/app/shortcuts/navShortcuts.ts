@@ -21,9 +21,10 @@ export function useNavEntries(): { entries: NavEntry[]; shortcuts: NavShortcut[]
   const docker = !host || supports(host, 'docker');
   const podman = supports(host, 'podman');
   const containerd = supports(host, 'containerd');
+  const incus = supports(host, 'incus');
   return useMemo(() => {
-    const offered: Record<HostCapability, boolean> = { docker, podman, containerd };
+    const offered: Record<HostCapability, boolean> = { docker, podman, containerd, incus };
     const entries = visibleNavEntries(navEntries, kind, (c) => offered[c]);
     return { entries, shortcuts: navShortcuts(entries) };
-  }, [kind, docker, podman, containerd]);
+  }, [kind, docker, podman, containerd, incus]);
 }

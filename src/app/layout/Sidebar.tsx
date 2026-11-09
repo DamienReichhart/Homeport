@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { ContainerdNamespacePicker } from '@/core/host';
+import { ContainerdNamespacePicker, IncusProjectPicker } from '@/core/host';
 import { HostSwitcher } from '@/features/hosts';
 import { SwarmNav } from '@/features/swarm';
 import { cn } from '@/shared/lib';
@@ -18,6 +18,7 @@ export function Sidebar() {
       <div className="mb-3 grid gap-1.5">
         <HostSwitcher />
         <ContainerdNamespacePicker />
+        <IncusProjectPicker />
       </div>
       {entries.map(({ path, label, icon: Icon }) => {
         const link = (

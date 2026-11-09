@@ -7,10 +7,36 @@ import { appendEvent } from '../model/events';
 /**
  * Which cached lists an Engine event makes stale. containerd's events
  * (`task`, `snapshot`, `namespace`, `content`, and its own `container` and
- * `image`) refresh its pages in every namespace.
+ * `image`) refresh its pages in every namespace, and Incus's lifecycle
+ * events (named after the object: `instance`, `image`, `profile`…) its pages
+ * in every project.
  */
 export function staleKeys(hostId: string, kind: string): QueryKey[] {
   switch (kind) {
+    case 'instance':
+    case 'instance-snapshot':
+    case 'instance-backup':
+      return [
+        hostKeys.incus(hostId, 'instances'),
+        hostKeys.incusProjects(hostId),
+        // Profiles, volumes and networks say which Instances use them.
+        hostKeys.incus(hostId, 'profiles'),
+        hostKeys.incus(hostId, 'storage'),
+        hostKeys.incus(hostId, 'networks'),
+      ];
+    case 'image-alias':
+      return [hostKeys.incus(hostId, 'images')];
+    case 'profile':
+      return [hostKeys.incus(hostId, 'profiles')];
+    case 'storage-pool':
+    case 'storage-volume':
+    case 'storage-volume-snapshot':
+      return [hostKeys.incus(hostId, 'storage')];
+    case 'network-acl':
+    case 'network-zone':
+      return [hostKeys.incus(hostId, 'networks')];
+    case 'project':
+      return [hostKeys.incusProjects(hostId)];
     case 'task':
       return [hostKeys.containerdContainers(hostId)];
     case 'snapshot':
@@ -41,11 +67,13 @@ export function staleKeys(hostId: string, kind: string): QueryKey[] {
         hostKeys.system(hostId),
         hostKeys.containerdImages(hostId),
         hostKeys.containerdNamespaces(hostId),
+        hostKeys.incus(hostId, 'images'),
+        hostKeys.incusProjects(hostId),
       ];
     case 'volume':
       return [hostKeys.volumes(hostId), hostKeys.volumeSizes(hostId), hostKeys.system(hostId)];
     case 'network':
-      return [hostKeys.networks(hostId)];
+      return [hostKeys.networks(hostId), hostKeys.incus(hostId, 'networks')];
     default:
       return [];
   }

@@ -45,12 +45,13 @@ const CATALOGUE_PATH: &str = "../src/shared/i18n/en/errors.json";
 /// plain name (Rust renders `{name}` arguments only).
 #[cfg(test)]
 fn catalogue() -> Result<BTreeMap<&'static str, &'static str>, String> {
-    let all: [&[Message]; 11] = [
+    let all: [&[Message]; 12] = [
         homeport_core::messages::ALL,
         homeport_storage::messages::ALL,
         homeport_transport::messages::ALL,
         homeport_engine::messages::ALL,
         homeport_containerd::messages::ALL,
+        homeport_incus::messages::ALL,
         homeport_hosts::messages::ALL,
         homeport_clusters::messages::ALL,
         homeport_stacks::messages::ALL,

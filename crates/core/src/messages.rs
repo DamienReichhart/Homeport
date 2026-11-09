@@ -26,10 +26,10 @@ crate::messages! {
     BASTION_USER_MISSING = "errors.core.bastionUserMissing" => "Enter the user of bastion {n}.";
     /// A bastion on port 0.
     BASTION_PORT_INVALID = "errors.core.bastionPortInvalid" => "The port of bastion {n} must be between 1 and 65535.";
-    /// A Host whose kind of Engine this version can't connect to yet.
-    ENGINE_NOT_YET_SUPPORTED = "errors.core.engineNotYetSupported" => "Homeport can't connect to {engine} yet. Choose a Docker-compatible Engine or containerd.";
     /// A containerd Host saved with TCP or TLS, which containerd doesn't serve.
     CONTAINERD_NEEDS_SOCKET = "errors.core.containerdNeedsSocket" => "containerd only answers on its socket. Connect through its socket on this computer, or over SSH.";
+    /// An Incus Host saved with plain TCP, which Incus doesn't serve.
+    INCUS_NEEDS_SOCKET = "errors.core.incusNeedsSocket" => "Incus doesn't answer over plain TCP. Connect through its socket on this computer, over SSH, or over HTTPS with a trust token.";
     /// Two hops of one Host at the same address.
     BASTION_REPEATED = "errors.core.bastionRepeated" => "{address} appears twice on the way to this host.";
 

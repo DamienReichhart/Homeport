@@ -257,6 +257,30 @@ They need the files of containerd's machine, which Homeport reaches over SSH, or
 
 Pulling goes through containerd's Transfer service, stable from containerd 2.0. Update containerd, or pull with `ctr images pull` or `nerdctl pull` on the Host; the image then shows on the Images page.
 
+### Incus: "isn't allowed to use Incus at /var/lib/incus/unix.socket"
+
+Incus's admin socket is for the `incus-admin` group, and the restricted `unix.socket.user` for the `incus` group. Add your user (or the SSH user) with `sudo usermod -aG incus-admin "$USER"`, then log out and in again, or reconnect over SSH. See [Incus's sockets](/docs/hosts/incus/#its-sockets).
+
+### Incus: "Homeport couldn't reach Incus at …" when adding with a trust token
+
+Incus doesn't listen on the network until `core.https_address` is set. On the server, run `incus config set core.https_address :8443`, check that a firewall lets port 8443 through, and make a new token: the token lists the addresses Incus listened on when it was made.
+
+### Incus: "Incus refused the trust token"
+
+A token works once, and expires. Make a new one on the server with `incus config trust add homeport` and paste it within its lifetime.
+
+### Incus: "… presented a certificate with fingerprint …, not the trusted …"
+
+The server's certificate isn't the one Homeport trusted: Incus was reinstalled, its certificate was renewed, or something else answers at that address. Check the fingerprint on the server with `incus info`; if it's the one shown, remove the Host and add it again with a new token. See [pinned certificates](/docs/hosts/incus/#the-servers-certificate-is-pinned).
+
+### Incus: "This host can't run virtual machines"
+
+Incus needs KVM (`/dev/kvm`) and QEMU for virtual machines. Enable virtualization in the server's firmware (or nested virtualization for a virtual server), or create a system container instead.
+
+### Incus: "The virtual machine's Incus agent isn't running"
+
+Exec in a virtual machine goes through `incus-agent` inside it, which Incus's own images start on boot. Wait for the boot to finish, or use the **Console** tab, which needs no agent.
+
 ### "host … is not connected"
 
 The action needed the Host, but it disconnected. Wait for it to reconnect, or choose **Retry now**.

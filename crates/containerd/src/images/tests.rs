@@ -112,18 +112,43 @@ mod live {
             .lines()
             .any(|l| l == reference));
 
-        // A tag the registry doesn't have.
-        let missing = std::sync::Arc::new(Mutex::new(None));
-        let sink = missing.clone();
+        // A tag the registry doesn't have. Shared runners share the
+        // registry's rate limit, so a throttled answer is retried; one that
+        // stays throttled only shows Homeport saying so, and the not-found
+        // path is checked by pull's own tests.
         let nope = format!("{}-homeport-nope", reference);
-        pull(client, NAMESPACE.into(), nope, None, move |e| {
-            if let homeport_core::pull::PullEvent::Error { error } = e {
-                *sink.lock().unwrap() = Some(error);
+        let mut error = None;
+        for wait in [0, 10, 30] {
+            tokio::time::sleep(std::time::Duration::from_secs(wait)).await;
+            let missing = std::sync::Arc::new(Mutex::new(None));
+            let sink = missing.clone();
+            pull(
+                client.clone(),
+                NAMESPACE.into(),
+                nope.clone(),
+                None,
+                move |e| {
+                    if let homeport_core::pull::PullEvent::Error { error } = e {
+                        *sink.lock().unwrap() = Some(error);
+                    }
+                    true
+                },
+            )
+            .await;
+            let failed = missing.lock().unwrap().clone().expect("the pull failed");
+            let throttled = failed.is(ErrorCode::RegistryRateLimited);
+            error = Some(failed);
+            if !throttled {
+                break;
             }
-            true
-        })
-        .await;
-        let error = missing.lock().unwrap().clone().expect("the pull failed");
+        }
+        let error = error.expect("a pull ran");
+        if error.is(ErrorCode::RegistryRateLimited) {
+            eprintln!(
+                "the registry kept throttling the missing tag; skipping its check: {error:?}"
+            );
+            return;
+        }
         assert_eq!(error.code, ErrorCode::ImageNotFound, "{error:?}");
     }
 }

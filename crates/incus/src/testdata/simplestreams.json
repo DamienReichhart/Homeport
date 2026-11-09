@@ -1,0 +1,247 @@
+{
+  "content_id": "images",
+  "datatype": "image-downloads",
+  "format": "products:1.0",
+  "products": {
+    "debian:bookworm:amd64:default": {
+      "aliases": "debian/bookworm/default,debian/12/default,debian/bookworm,debian/12",
+      "arch": "amd64",
+      "os": "Debian",
+      "release": "bookworm",
+      "release_title": "bookworm",
+      "requirements": {},
+      "variant": "default",
+      "versions": {
+        "20261107_05:24": {
+          "items": {
+            "incus.tar.xz": {
+              "ftype": "incus.tar.xz",
+              "sha256": "a92ce9cc5094be0ff6ef2b2b3b94780422955cda8393f42f367b690c449a3220",
+              "size": 684
+            },
+            "root.tar.xz": {
+              "ftype": "root.tar.xz",
+              "sha256": "6cd27a9399abf47244561b4f764cb5f64498cde57103553c249fb26b3482faf1",
+              "size": 98711100
+            },
+            "root.squashfs": {
+              "ftype": "squashfs",
+              "sha256": "ccd00e44ae02ee2fd6312d5a1c462344355ccdabca9e31502fe6d1ee4b36874e",
+              "size": 111509504
+            },
+            "disk.qcow2": {
+              "ftype": "disk-kvm.img",
+              "sha256": "677a9a729f30b4e0514b191d1965a45337f7091ce574bb77b2f4c80487e07749",
+              "size": 376415744
+            }
+          }
+        },
+        "20261108_05:24": {
+          "items": {
+            "incus.tar.xz": {
+              "ftype": "incus.tar.xz",
+              "sha256": "7138b74935afe76913009fcb96f6f90a5f0ed191abdcd9ea5534d1782742ce5f",
+              "size": 684
+            },
+            "root.tar.xz": {
+              "ftype": "root.tar.xz",
+              "sha256": "1a55a1dde878371d7727fe7a64a174a3c126c8d41579a675d1da04f3d72668ad",
+              "size": 98727272
+            },
+            "root.squashfs": {
+              "ftype": "squashfs",
+              "sha256": "dae302e2638ba4f4bd9bf0b5729bea04625cc379ec55e416b880bc23725206c4",
+              "size": 111509504
+            },
+            "disk.qcow2": {
+              "ftype": "disk-kvm.img",
+              "sha256": "a9a90960a426a1ef6956cb0e8f6a1cbd3f7bddfe01afa7ea2c02d8c239d03d42",
+              "size": 376488448
+            }
+          }
+        }
+      }
+    },
+    "debian:bookworm:arm64:default": {
+      "aliases": "debian/bookworm/default,debian/12/default,debian/bookworm,debian/12",
+      "arch": "arm64",
+      "os": "Debian",
+      "release": "bookworm",
+      "release_title": "bookworm",
+      "requirements": {},
+      "variant": "default",
+      "versions": {
+        "20261107_05:24": {
+          "items": {
+            "incus.tar.xz": {
+              "ftype": "incus.tar.xz",
+              "sha256": "a3a5f3de016fe75fe4a3a54c4df62b28ea83dfa6d0006327e681f53cd75a54f2",
+              "size": 696
+            },
+            "root.tar.xz": {
+              "ftype": "root.tar.xz",
+              "sha256": "9505af8e73482a1659b75c1a75463a32080eec122619f7bcb8f41a57dd69efac",
+              "size": 94989176
+            },
+            "root.squashfs": {
+              "ftype": "squashfs",
+              "sha256": "0a2397aaf5b7aa5379f46e4abfe4ed4872023c85a67b4539d988073b45e43541",
+              "size": 108146688
+            },
+            "disk.qcow2": {
+              "ftype": "disk-kvm.img",
+              "sha256": "ccb964316cb5a738dbb1a83006f8df2095317bf155b1c18f17a19e82ff6fa47e",
+              "size": 365583360
+            }
+          }
+        },
+        "20261108_05:24": {
+          "items": {
+            "incus.tar.xz": {
+              "ftype": "incus.tar.xz",
+              "sha256": "696d47ce5c8e8081a39492ac571acdfe38608f1795acfe59e403a2f85c370c79",
+              "size": 700
+            },
+            "root.tar.xz": {
+              "ftype": "root.tar.xz",
+              "sha256": "0a2be2b74cada82c35c776ae5daf533fb2a316901b728dfbd98f35b46fb87d85",
+              "size": 94994904
+            },
+            "root.squashfs": {
+              "ftype": "squashfs",
+              "sha256": "a5595efee6104c9e35b38cc000905f998cc0354e50f1c2ae119a1eba1f6637c9",
+              "size": 108146688
+            },
+            "disk.qcow2": {
+              "ftype": "disk-kvm.img",
+              "sha256": "0732e822fcac1766ad706abeb3f049ab3538634578b9510048cfc450a2a5b4f0",
+              "size": 365578752
+            }
+          }
+        }
+      }
+    },
+    "alpine:3.21:amd64:default": {
+      "aliases": "alpine/3.21/default,alpine/3.21",
+      "arch": "amd64",
+      "os": "Alpine",
+      "release": "3.21",
+      "release_title": "3.21",
+      "requirements": {
+        "secureboot": "false"
+      },
+      "variant": "default",
+      "versions": {
+        "20261107_13:00": {
+          "items": {
+            "incus.tar.xz": {
+              "ftype": "incus.tar.xz",
+              "sha256": "3100ebd0999fb3adf9cf52724b4cf57c95a10fe437660614911aae5f6b236ea7",
+              "size": 900
+            },
+            "root.tar.xz": {
+              "ftype": "root.tar.xz",
+              "sha256": "029dd2361cd5ce035ca5435f05bd2d84c53987e318ecfb46425895d0ada7b801",
+              "size": 3268676
+            },
+            "root.squashfs": {
+              "ftype": "squashfs",
+              "sha256": "5f4503fbfa10e24634e972e2646e243648c66c3bb64ad48615eb60cb0c69cd6e",
+              "size": 3366912
+            },
+            "disk.qcow2": {
+              "ftype": "disk-kvm.img",
+              "sha256": "979f8ff60a781598f34f9218918f31bba0572b9e7f111891c4b12b5efb2727c6",
+              "size": 71041024
+            }
+          }
+        },
+        "20261108_13:00": {
+          "items": {
+            "incus.tar.xz": {
+              "ftype": "incus.tar.xz",
+              "sha256": "5c3ea99b0a87c909a8d7d156bc693e6e49098576863e74ba546ac44a63c6f618",
+              "size": 880
+            },
+            "root.tar.xz": {
+              "ftype": "root.tar.xz",
+              "sha256": "201414978f1c757881c65e020f794f7a70b497a98d1c66a36e628cf5f7128839",
+              "size": 3270492
+            },
+            "root.squashfs": {
+              "ftype": "squashfs",
+              "sha256": "82a65a5fdc0067a35cad17993bcf96dff94a775662e65a44935cf4cee252ed52",
+              "size": 3366912
+            },
+            "disk.qcow2": {
+              "ftype": "disk-kvm.img",
+              "sha256": "b3d191ae282cde3a6209ff92d4afb6d32db455c674a5c8cef948d4a828962f77",
+              "size": 70844416
+            }
+          }
+        }
+      }
+    },
+    "alpine:3.21:amd64:cloud": {
+      "aliases": "alpine/3.21/cloud",
+      "arch": "amd64",
+      "os": "Alpine",
+      "release": "3.21",
+      "release_title": "3.21",
+      "requirements": {
+        "secureboot": "false"
+      },
+      "variant": "cloud",
+      "versions": {
+        "20261107_13:00": {
+          "items": {
+            "incus.tar.xz": {
+              "ftype": "incus.tar.xz",
+              "sha256": "b961876ac9305eb52cc90f3eccdf9db467d67958ba681c012227d02492b66d74",
+              "size": 1356
+            },
+            "root.tar.xz": {
+              "ftype": "root.tar.xz",
+              "sha256": "4805d508d260c4ea024e45a125ac6873dfc3b8c8c4a1c354016101d9f5402c39",
+              "size": 19007684
+            },
+            "root.squashfs": {
+              "ftype": "squashfs",
+              "sha256": "8f32e3d9fcfa25e8c5dd1310b8c2bcffc8c985575506deaef9f8e5a6089dce67",
+              "size": 20185088
+            },
+            "disk.qcow2": {
+              "ftype": "disk-kvm.img",
+              "sha256": "c9f351fd0528962c610eca40e9d0251f054f290dfbe9498cecfe922a29d33c6b",
+              "size": 93388800
+            }
+          }
+        },
+        "20261108_13:00": {
+          "items": {
+            "incus.tar.xz": {
+              "ftype": "incus.tar.xz",
+              "sha256": "4ccdf762a3572796734755a3d04e191f47651e93a304919206db8418da3d59b8",
+              "size": 1328
+            },
+            "root.tar.xz": {
+              "ftype": "root.tar.xz",
+              "sha256": "1d5aeb57272bd5d1ca7865170e01e4b17255a1d7c0b6fc53a5bf346ea1fa2301",
+              "size": 19017908
+            },
+            "root.squashfs": {
+              "ftype": "squashfs",
+              "sha256": "03362dbb166ae257502409eaf628c5132e49537c0375c24e5a958f6269a74505",
+              "size": 20185088
+            },
+            "disk.qcow2": {
+              "ftype": "disk-kvm.img",
+              "sha256": "cff12cb034804d2c2bb527fb44567912d313928bed5e6035529d78cf8f876af8",
+              "size": 93462528
+            }
+          }
+        }
+      }
+    }
+  }
+}

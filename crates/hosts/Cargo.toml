@@ -16,6 +16,7 @@ homeport-storage.workspace = true
 homeport-transport.workspace = true
 homeport-engine.workspace = true
 homeport-containerd.workspace = true
+homeport-incus.workspace = true
 bollard.workspace = true
 tokio.workspace = true
 futures-util.workspace = true

@@ -29,12 +29,19 @@ export function supports(host: HostView | null | undefined, capability: HostCapa
       return docker && podmanVersion(host) !== null;
     case 'containerd':
       return host.host.engine === 'containerd';
+    case 'incus':
+      return host.host.engine === 'incus';
   }
 }
 
 /** The containerd version a connected Host runs, `null` for any other Engine or state. */
 export function containerdVersion(host: HostView | null | undefined): string | null {
   return host?.status.state === 'connected' ? host.status.containerdVersion : null;
+}
+
+/** The Incus version a connected Host runs, `null` for any other Engine or state. */
+export function incusVersion(host: HostView | null | undefined): string | null {
+  return host?.status.state === 'connected' ? host.status.incusVersion : null;
 }
 
 /** `version`'s leading numbers, so "5.8.1-dev" reads as [5, 8, 1]. */
@@ -56,7 +63,8 @@ export function versionAtLeast(version: string, minimum: string): boolean {
 
 /**
  * Whether what `host` offers is known yet: its Engine kind always is (the
- * Docker Engine API, containerd), and Podman once it's connected. Until then a page can't say it's unsupported.
+ * Docker Engine API, containerd, Incus), and Podman once it's connected.
+ * Until then a page can't say it's unsupported.
  */
 export function capabilityKnown(host: HostView, capability: HostCapability): boolean {
   return capability !== 'podman' || host.status.state === 'connected';

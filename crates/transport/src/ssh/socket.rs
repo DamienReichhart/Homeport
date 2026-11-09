@@ -11,7 +11,10 @@ use homeport_core::{
 };
 
 use super::{dialer::SshTarget, host_key::ServerKeyCheck};
-use crate::{messages as msg, reach::containerd_group_commands};
+use crate::{
+    messages as msg,
+    reach::{containerd_group_commands, incus_group_command, is_restricted_incus_socket},
+};
 
 /// How long the server may take to describe its Engine socket.
 const PROBE_TIMEOUT: Duration = Duration::from_secs(5);
@@ -47,6 +50,7 @@ fn probe_script(socket: &str, engine: EngineKind) -> String {
     let q = format!("'{}'", socket.replace('\'', r"'\''"));
     let installed = match engine {
         EngineKind::Containerd => "command -v containerd >/dev/null 2>&1 || command -v k3s >/dev/null 2>&1",
+        EngineKind::Incus => "command -v incusd >/dev/null 2>&1 || command -v incus >/dev/null 2>&1 || [ -x /usr/libexec/incus/incusd ] || [ -x /opt/incus/bin/incusd ]",
         _ => "command -v dockerd >/dev/null 2>&1 || command -v docker >/dev/null 2>&1 || command -v podman >/dev/null 2>&1",
     };
     format!(
@@ -95,6 +99,9 @@ pub(super) fn socket_unavailable(
         e,
         russh::Error::ChannelOpenFailure(russh::ChannelOpenFailure::AdministrativelyProhibited)
     );
+    if t.engine == EngineKind::Incus {
+        return incus_unavailable(t, probe, prohibited).with_cause(e);
+    }
     if t.engine == EngineKind::Containerd {
         let error = match probe {
             _ if prohibited => forwarding_disabled(host),
@@ -175,6 +182,46 @@ pub(super) fn socket_unavailable(
         .with_command(format!("sudo usermod -aG docker {user}")),
     };
     error.with_cause(e)
+}
+
+/// [`socket_unavailable`] for an Incus Host.
+fn incus_unavailable(t: &SshTarget, probe: Option<RemoteSocket>, prohibited: bool) -> AppError {
+    let (host, user, socket) = (&t.host, &t.user, &t.socket_path);
+    let restricted = is_restricted_incus_socket(socket);
+    match probe {
+        _ if prohibited => forwarding_disabled(host),
+        Some(RemoteSocket::Usable) => forwarding_disabled(host),
+        Some(RemoteSocket::Missing) => AppError::new(
+            ErrorCode::EngineNotInstalled,
+            msg::SSH_INCUS_NOT_INSTALLED.with("host", host),
+        )
+        .with_hint(msg::SSH_INCUS_NOT_INSTALLED_HINT.with("host", host)),
+        Some(RemoteSocket::Stopped) => AppError::new(
+            ErrorCode::EngineNotRunning,
+            msg::SSH_INCUS_NOT_RUNNING
+                .with("host", host)
+                .with("path", socket),
+        )
+        .with_hint(msg::SSH_INCUS_NOT_RUNNING_HINT.with("host", host))
+        .with_command(if restricted {
+            "sudo systemctl enable --now incus-user.socket"
+        } else {
+            "sudo systemctl enable --now incus.socket incus.service"
+        }),
+        Some(RemoteSocket::Denied) | None => AppError::new(
+            ErrorCode::PermissionDenied,
+            msg::SSH_INCUS_PERMISSION_DENIED
+                .with("user", user)
+                .with("host", host)
+                .with("path", socket),
+        )
+        .with_hint(
+            msg::SSH_INCUS_PERMISSION_DENIED_HINT
+                .with("host", host)
+                .with("user", user),
+        )
+        .with_command(incus_group_command(restricted, user)),
+    }
 }
 
 fn forwarding_disabled(host: &str) -> AppError {
@@ -305,5 +352,39 @@ mod tests {
         let missing = socket_unavailable(&t, Some(RemoteSocket::Missing), &refused());
         assert_eq!(missing.code, ErrorCode::EngineNotInstalled);
         assert!(missing.message.contains("containerd"), "{missing:?}");
+    }
+
+    #[test]
+    fn incus_hosts_are_probed_and_explained_as_incus() {
+        let script = probe_script("/var/lib/incus/unix.socket", EngineKind::Incus);
+        assert!(script.contains("command -v incusd"), "{script}");
+        assert!(!script.contains("dockerd"), "{script}");
+        let mut t = target();
+        t.engine = EngineKind::Incus;
+        t.socket_path = "/var/lib/incus/unix.socket".into();
+        for (probe, code, command) in [
+            (
+                Some(RemoteSocket::Stopped),
+                ErrorCode::EngineNotRunning,
+                "systemctl enable --now incus.socket",
+            ),
+            (
+                Some(RemoteSocket::Denied),
+                ErrorCode::PermissionDenied,
+                "usermod -aG incus-admin deploy",
+            ),
+        ] {
+            let e = socket_unavailable(&t, probe, &refused());
+            assert_eq!(e.code, code, "{probe:?}");
+            let hint = e.hint.unwrap();
+            assert!(!hint.text.contains("docker group"), "{hint:?}");
+            assert!(hint.commands.join("\n").contains(command), "{hint:?}");
+        }
+        t.socket_path = "/var/lib/incus/unix.socket.user".into();
+        let e = socket_unavailable(&t, Some(RemoteSocket::Denied), &refused());
+        assert!(e.hint.unwrap().commands[0].contains("-aG incus deploy"));
+        let missing = socket_unavailable(&t, Some(RemoteSocket::Missing), &refused());
+        assert_eq!(missing.code, ErrorCode::EngineNotInstalled);
+        assert!(missing.message.contains("Incus"), "{missing:?}");
     }
 }

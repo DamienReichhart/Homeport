@@ -1,3 +1,6 @@
+/** What an Incus Host's pages list, each under its own key. */
+export type IncusResource = 'instances' | 'images' | 'profiles' | 'storage' | 'networks';
+
 /**
  * Query keys of the Hosts and of the Engine resources each one has. Every key
  * of a Host starts with `hostKeys.scope(hostId)`, so one invalidation
@@ -37,6 +40,17 @@ export const hostKeys = {
     namespace === undefined
       ? (['host', hostId, 'containerd-images'] as const)
       : (['host', hostId, 'containerd-images', namespace] as const),
+  /** An Incus Host's projects, with what each holds. */
+  incusProjects: (hostId: string) => ['host', hostId, 'incus-projects'] as const,
+  /**
+   * An Incus Host's `resource` (instances, images, profiles, storage,
+   * networks) in `project`; without it, every project's, for invalidating
+   * them all.
+   */
+  incus: (hostId: string, resource: IncusResource, project?: string) =>
+    project === undefined
+      ? (['host', hostId, 'incus', resource] as const)
+      : (['host', hostId, 'incus', resource, project] as const),
   /** A containerd Host's snapshots in `namespace`, or every namespace's. */
   containerdSnapshots: (hostId: string, namespace?: string) =>
     namespace === undefined

@@ -16,7 +16,7 @@ use crate::{
             containers::v1::{
                 Container, DeleteContainerRequest, GetContainerRequest, ListContainersRequest,
             },
-            snapshots::v1::{MountsRequest, RemoveSnapshotRequest},
+            snapshots::v1::{Info, MountsRequest, RemoveSnapshotRequest, UpdateSnapshotRequest},
             tasks::v1::{
                 CreateTaskRequest, DeleteTaskRequest, GetRequest, KillRequest, ListTasksRequest,
                 PauseTaskRequest, ResumeTaskRequest, StartRequest, WaitRequest,
@@ -536,9 +536,43 @@ fn not_running_or(s: &tonic::Status, id: &str) -> AppError {
     }
 }
 
+/// The label that makes containerd's garbage collector keep a snapshot
+/// nothing else references.
+pub(crate) const GC_ROOT: &str = "containerd.io/gc.root";
+
+/// Marks the snapshot `key` as a garbage-collection root, so it outlives
+/// the container about to be removed: once nothing references it,
+/// containerd's collector would otherwise delete it at its next run.
+async fn keep(client: &Containerd, namespace: &str, snapshotter: &str, key: &str) -> AppResult<()> {
+    let labels = HashMap::from([(GC_ROOT.to_owned(), jiff::Timestamp::now().to_string())]);
+    let updated = client
+        .snapshots()
+        .update(call(
+            namespace,
+            UpdateSnapshotRequest {
+                snapshotter: snapshotter.to_owned(),
+                info: Some(Info {
+                    name: key.to_owned(),
+                    labels,
+                    ..Default::default()
+                }),
+                update_mask: Some(prost_types::FieldMask {
+                    paths: vec![format!("labels.{GC_ROOT}")],
+                }),
+            },
+        )?)
+        .await;
+    match updated {
+        Ok(_) => Ok(()),
+        // Nothing left to keep.
+        Err(s) if s.code() == tonic::Code::NotFound => Ok(()),
+        Err(s) => Err(error::status(&s)),
+    }
+}
+
 /// Removes a container: its stopped task, the container, and its snapshot
-/// unless `keep_snapshot`. A running task is refused unless `force`, which
-/// kills it first.
+/// unless `keep_snapshot`, which marks the snapshot so containerd keeps it.
+/// A running task is refused unless `force`, which kills it first.
 pub async fn remove(
     client: &Containerd,
     namespace: &str,
@@ -569,6 +603,15 @@ pub async fn remove(
             }
         }
         delete_task(client, namespace, id).await?;
+    }
+    if keep_snapshot && !container.snapshot_key.is_empty() {
+        keep(
+            client,
+            namespace,
+            &container.snapshotter,
+            &container.snapshot_key,
+        )
+        .await?;
     }
     client
         .containers()

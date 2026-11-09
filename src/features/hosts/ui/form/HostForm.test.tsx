@@ -36,6 +36,36 @@ function Harness({
 describe('host form', () => {
   beforeEach(() => mockCommands(baseCommands));
 
+  it('adds Incus over HTTPS with a trust token, or with an existing certificate', async () => {
+    const user = userEvent.setup();
+    let last: HostFormState | null = null;
+    mockCommands({
+      ...baseCommands,
+      incus_trust_token_read: () => ({
+        clientName: 'homeport',
+        fingerprint: '8d6a1f0a3c',
+        addresses: ['10.0.0.5:8443'],
+        expiresAt: null,
+      }),
+    });
+    renderWithProviders(
+      <Harness initial={{ ...emptyForm('tls'), engine: 'incus' }} onChange={(f) => (last = f)} />,
+    );
+    // The token names the addresses; there's nothing else to fill in.
+    expect(screen.queryByText('Address')).toBeNull();
+    await user.type(screen.getByRole('textbox', { name: 'Trust token' }), 'eyJjbGllbnRfbmFtZSI6');
+    expect(await screen.findByText('For homeport, at 10.0.0.5:8443')).toBeInTheDocument();
+    expect(screen.getByText('Server certificate 8d6a1f0a3c')).toBeInTheDocument();
+    expect(last!.trustToken).toBe('eyJjbGllbnRfbmFtZSI6');
+
+    await user.click(screen.getByRole('radio', { name: 'Existing certificate' }));
+    expect(screen.getByText('Address')).toBeInTheDocument();
+    expect(screen.getByText('Server certificate to trust')).toBeInTheDocument();
+    expect(screen.getByText('Client key')).toBeInTheDocument();
+    // Plain TCP isn't offered for Incus.
+    expect(screen.getByRole('radio', { name: 'TCP' })).toBeDisabled();
+  });
+
   it('shows the fields of the kind of Host picked', async () => {
     const user = userEvent.setup();
     renderWithProviders(<Harness />);
@@ -56,14 +86,14 @@ describe('host form', () => {
     expect(screen.queryByText('Address')).toBeNull();
   });
 
-  it('offers Docker-compatible Engines and containerd, preset from the socket', async () => {
+  it('offers Docker-compatible Engines, containerd and Incus, preset from the socket', async () => {
     const user = userEvent.setup();
     let last: HostFormState | null = null;
     renderWithProviders(<Harness initial={emptyForm('local')} onChange={(f) => (last = f)} />);
     const engine = screen.getByRole('combobox', { name: 'Engine' });
     expect(engine).toHaveTextContent('Docker-compatible');
     await user.click(engine);
-    expect(await screen.findByRole('option', { name: /Incus/ })).toHaveAttribute(
+    expect(await screen.findByRole('option', { name: 'Incus' })).not.toHaveAttribute(
       'aria-disabled',
       'true',
     );
@@ -76,6 +106,9 @@ describe('host form', () => {
     await user.clear(socket);
     await user.type(socket, '/run/containerd/containerd.sock');
     expect(last!.engine).toBe('containerd');
+    await user.clear(socket);
+    await user.type(socket, '/var/lib/incus/unix.socket');
+    expect(last!.engine).toBe('incus');
   });
 
   it('reaches containerd only through its socket, here or over SSH', async () => {

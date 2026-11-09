@@ -460,6 +460,93 @@ export const commands = {
 	containerdSnapshots: (hostId: string, namespace: string, snapshotter: string | null) => __TAURI_INVOKE<ContainerdSnapshots>("containerd_snapshots", { hostId, namespace, snapshotter }),
 	/**  Removes a snapshot nothing uses and nothing is built on. */
 	containerdSnapshotRemove: (hostId: string, namespace: string, snapshotter: string, key: string) => __TAURI_INVOKE<null>("containerd_snapshot_remove", { hostId, namespace, snapshotter, key }),
+	/**  What a pasted trust token says, for the Host form to show before adding. */
+	incusTrustTokenRead: (token: string) => __TAURI_INVOKE<TrustTokenSummary>("incus_trust_token_read", { token }),
+	/**
+	 *  Adds an Incus Host over HTTPS with a trust token from
+	 *  `incus config trust add`: Homeport makes a client certificate, registers
+	 *  it with the token, and keeps the server's certificate pinned (ADR 0021).
+	 */
+	incusTrustAdd: (name: string, token: string) => __TAURI_INVOKE<HostView>("incus_trust_add", { name, token }),
+	/**  The projects the Host's connection may use, with what each holds. */
+	incusProjects: (hostId: string) => __TAURI_INVOKE<IncusProject[]>("incus_projects", { hostId }),
+	/**  The Instances of `project`, with their state. */
+	incusInstances: (hostId: string, project: string) => __TAURI_INVOKE<IncusInstance[]>("incus_instances", { hostId, project }),
+	/**  One Instance with its configuration, devices and snapshots' names. */
+	incusInstance: (hostId: string, project: string, name: string) => __TAURI_INVOKE<IncusInstanceDetail>("incus_instance", { hostId, project, name }),
+	/**
+	 *  Starts, stops, restarts, freezes or unfreezes an Instance; `force` stops
+	 *  or restarts it without waiting for its system to shut down.
+	 */
+	incusInstanceAct: (hostId: string, project: string, name: string, action: InstanceAction, force: boolean) => __TAURI_INVOKE<null>("incus_instance_act", { hostId, project, name, action, force }),
+	/**  Deletes an Instance with its snapshots; `stop_first` stops a running one. */
+	incusInstanceDelete: (hostId: string, project: string, name: string, stopFirst: boolean) => __TAURI_INVOKE<null>("incus_instance_delete", { hostId, project, name, stopFirst }),
+	/**
+	 *  Makes an Instance from an image, streaming the image download's
+	 *  progress until it's made (and started, if asked).
+	 */
+	incusInstanceCreateSubscribe: (hostId: string, project: string, spec: InstanceSpec, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("incus_instance_create_subscribe", { hostId, project, spec, onEvent }),
+	/**  The images of `project`, newest first. */
+	incusImages: (hostId: string, project: string) => __TAURI_INVOKE<IncusImage[]>("incus_images", { hostId, project }),
+	/**
+	 *  What `server` (a simplestreams image server) publishes for the Host's
+	 *  architecture, read from this computer and kept a few minutes.
+	 */
+	incusRemoteImages: (hostId: string, server: string) => __TAURI_INVOKE<RemoteImage[]>("incus_remote_images", { hostId, server }),
+	/**
+	 *  Copies an image from a remote server into `project`, streaming the
+	 *  download's progress.
+	 */
+	incusImageCopySubscribe: (hostId: string, project: string, copy: ImageCopy, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("incus_image_copy_subscribe", { hostId, project, copy, onEvent }),
+	/**  Fetches a newer build of an image from where it came from. */
+	incusImageRefresh: (hostId: string, project: string, fingerprint: string) => __TAURI_INVOKE<null>("incus_image_refresh", { hostId, project, fingerprint }),
+	/**  Deletes an image; Instances made from it keep their own copy. */
+	incusImageDelete: (hostId: string, project: string, fingerprint: string) => __TAURI_INVOKE<null>("incus_image_delete", { hostId, project, fingerprint }),
+	incusImageAliasAdd: (hostId: string, project: string, fingerprint: string, name: string) => __TAURI_INVOKE<null>("incus_image_alias_add", { hostId, project, fingerprint, name }),
+	incusImageAliasRemove: (hostId: string, project: string, name: string) => __TAURI_INVOKE<null>("incus_image_alias_remove", { hostId, project, name }),
+	/**
+	 *  Runs a command (a shell by default) in a running Instance, with a
+	 *  terminal, through Incus's exec websockets.
+	 */
+	incusExecStart: (hostId: string, project: string, name: string, options: IncusExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("incus_exec_start", { hostId, project, name, options, onEvent }),
+	/**  Attaches to a running Instance's text console. */
+	incusConsoleStart: (hostId: string, project: string, name: string, cols: number, rows: number, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("incus_console_start", { hostId, project, name, cols, rows, onEvent }),
+	/**  What an Instance printed on its console, if Incus kept it. */
+	incusConsoleLog: (hostId: string, project: string, name: string) => __TAURI_INVOKE<string>("incus_console_log", { hostId, project, name }),
+	incusTerminalInput: (session: number, data: string) => __TAURI_INVOKE<null>("incus_terminal_input", { session, data }),
+	incusTerminalResize: (session: number, cols: number, rows: number) => __TAURI_INVOKE<null>("incus_terminal_resize", { session, cols, rows }),
+	/**  Closes a terminal: hangs up an exec's command, detaches from a console. */
+	incusTerminalClose: (session: number) => __TAURI_INVOKE<null>("incus_terminal_close", { session }),
+	/**  The snapshots of an Instance, oldest first. */
+	incusSnapshots: (hostId: string, project: string, instance: string) => __TAURI_INVOKE<IncusSnapshot[]>("incus_snapshots", { hostId, project, instance }),
+	/**  Takes a snapshot of an Instance, stateful and expiring if asked. */
+	incusSnapshotCreate: (hostId: string, project: string, instance: string, request: SnapshotRequest) => __TAURI_INVOKE<null>("incus_snapshot_create", { hostId, project, instance, request }),
+	/**  Restores an Instance to one of its snapshots; what changed since is lost. */
+	incusSnapshotRestore: (hostId: string, project: string, instance: string, snapshot: string, stateful: boolean) => __TAURI_INVOKE<null>("incus_snapshot_restore", { hostId, project, instance, snapshot, stateful }),
+	incusSnapshotDelete: (hostId: string, project: string, instance: string, snapshot: string) => __TAURI_INVOKE<null>("incus_snapshot_delete", { hostId, project, instance, snapshot }),
+	/**  Every storage pool, with how full it is. */
+	incusStoragePools: (hostId: string, project: string) => __TAURI_INVOKE<IncusStoragePool[]>("incus_storage_pools", { hostId, project }),
+	/**  The volumes of a pool in `project`, with what uses each. */
+	incusStorageVolumes: (hostId: string, project: string, pool: string) => __TAURI_INVOKE<IncusVolume[]>("incus_storage_volumes", { hostId, project, pool }),
+	incusVolumeCreate: (hostId: string, project: string, pool: string, request: VolumeRequest) => __TAURI_INVOKE<null>("incus_volume_create", { hostId, project, pool, request }),
+	/**  Deletes a custom volume nothing uses. */
+	incusVolumeDelete: (hostId: string, project: string, pool: string, name: string) => __TAURI_INVOKE<null>("incus_volume_delete", { hostId, project, pool, name }),
+	/**  The networks `project` sees, managed ones first. */
+	incusNetworks: (hostId: string, project: string) => __TAURI_INVOKE<IncusNetwork[]>("incus_networks", { hostId, project }),
+	/**  A network's addresses on the host and its DHCP leases. */
+	incusNetworkState: (hostId: string, project: string, name: string) => __TAURI_INVOKE<IncusNetworkState>("incus_network_state", { hostId, project, name }),
+	incusBridgeCreate: (hostId: string, project: string, request: BridgeRequest) => __TAURI_INVOKE<null>("incus_bridge_create", { hostId, project, request }),
+	/**  Deletes a managed network nothing uses. */
+	incusNetworkDelete: (hostId: string, project: string, name: string) => __TAURI_INVOKE<null>("incus_network_delete", { hostId, project, name }),
+	/**  The profiles of `project`, with the Instances using each. */
+	incusProfiles: (hostId: string, project: string) => __TAURI_INVOKE<IncusProfile[]>("incus_profiles", { hostId, project }),
+	/**  One profile, with its YAML and the ETag to save it with. */
+	incusProfile: (hostId: string, project: string, name: string) => __TAURI_INVOKE<IncusProfileDetail>("incus_profile", { hostId, project, name }),
+	/**  Saves a profile's YAML; refused if it changed since `etag` was read. */
+	incusProfileUpdate: (hostId: string, project: string, name: string, yaml: string, etag: string | null) => __TAURI_INVOKE<null>("incus_profile_update", { hostId, project, name, yaml, etag }),
+	incusProfileCreate: (hostId: string, project: string, name: string, description: string) => __TAURI_INVOKE<null>("incus_profile_create", { hostId, project, name, description }),
+	/**  Deletes an unused profile other than `default`. */
+	incusProfileDelete: (hostId: string, project: string, name: string) => __TAURI_INVOKE<null>("incus_profile_delete", { hostId, project, name }),
 	podsList: (hostId: string) => __TAURI_INVOKE<PodmanPod[]>("pods_list", { hostId }),
 	podsInspect: (hostId: string, id: string) => __TAURI_INVOKE<PodmanPodDetail>("pods_inspect", { hostId, id }),
 	podsAct: (hostId: string, id: string, action: PodmanPodAction) => __TAURI_INVOKE<null>("pods_act", { hostId, id, action }),
@@ -867,6 +954,16 @@ export type BastionKeyInput = {
 	index: number,
 	privateKey: string,
 	passphrase: string | null,
+};
+
+/**  What the New bridge dialog asks for. */
+export type BridgeRequest = {
+	name: string,
+	/**  `auto`, `none`, or an address with its prefix: "10.0.5.1/24". */
+	ipv4: string,
+	ipv6: string,
+	nat: boolean,
+	description: string,
 };
 
 export type BuildArg = {
@@ -1458,8 +1555,8 @@ export type DetectedEngine = {
 	engineVersion: string,
 	/**
 	 *  Why the Engine found there can't be added as it is, and how to fix
-	 *  it: a containerd socket the user may not use, or one only RootlessKit
-	 *  reaches.
+	 *  it: a containerd or Incus socket the user may not use, or one only
+	 *  RootlessKit reaches.
 	 */
 	problem: AppError | null,
 };
@@ -1534,7 +1631,7 @@ export type EngineKind =
 "docker" | 
 /**  containerd, through its own gRPC API (ADR 0020). */
 "containerd" | 
-/**  Incus, through its REST API (not supported yet). */
+/**  Incus, through its REST API (ADR 0021). */
 "incus";
 
 /**  What happened to one environment variable. */
@@ -1586,6 +1683,24 @@ export type ErrorCode =
 "namespace_not_empty" | 
 /**  A containerd task that didn't stop after SIGKILL. */
 "task_wont_stop" | 
+/**  An Incus without an API extension Homeport or an action needs. */
+"incus_extension_missing" | 
+/**  An Incus trust token that can't be read, or has expired. */
+"incus_token_invalid" | 
+/**  An Incus trust token Incus refused: already used, or revoked. */
+"incus_token_refused" | 
+/**  A server that presented another certificate than the one pinned. */
+"certificate_mismatch" | 
+/**  An Incus that doesn't listen on the network. */
+"incus_not_listening" | 
+/**  A virtual machine on a Host without hardware virtualization. */
+"virtualization_unavailable" | 
+/**  Exec in a virtual machine whose Incus agent isn't running. */
+"incus_agent_not_running" | 
+/**  A stateful snapshot an Instance can't take. */
+"stateful_unsupported" | 
+/**  An object changed since the page loaded it. */
+"changed_since_loaded" | 
 /**  No manager Host of a Swarm is connected. */
 "swarm_unreachable" | 
 /**  A node couldn't reach the managers of the Swarm it was joining. */
@@ -1908,6 +2023,11 @@ podmanVersion: string | null;
  *  which is then also `engine_version`.
  */
 containerdVersion: string | null; 
+/**
+ *  The version of Incus when the Host's Engine is Incus, which is
+ *  then also `engine_version`.
+ */
+incusVersion: string | null; 
 /**  The Host's place in a Swarm, `None` outside one. */
 swarm: SwarmMembership | null } | { state: "unreachable"; error: AppError; retryInSecs: number } | { state: "unauthorized"; error: AppError } | 
 /**
@@ -1957,6 +2077,17 @@ export type Image = {
 	labels: { [key in string]: string },
 };
 
+/**  What to copy from a remote image server. */
+export type ImageCopy = {
+	server: string,
+	alias: string,
+	type: InstanceType,
+	/**  Keep it up to date from the server. */
+	autoUpdate: boolean,
+	/**  Also give it the remote alias here, so Instances can be made from it by name. */
+	addAlias: boolean,
+};
+
 export type ImageLayer = {
 	id: string,
 	created: number,
@@ -1964,6 +2095,12 @@ export type ImageLayer = {
 	size: number,
 	comment: string,
 	tags: string[],
+};
+
+/**  Where an image came from. */
+export type ImageSource = {
+	server: string,
+	alias: string,
 };
 
 /**  A draft the user picked, with what they changed in the preview. */
@@ -2013,6 +2150,205 @@ export type ImportSpec = {
 	reference: string,
 	/**  Dockerfile instructions, one per entry, like `CMD ["/bin/sh"]`. */
 	changes: string[],
+};
+
+/**  What the Exec tab asks for. */
+export type IncusExecOptions = {
+	/**  A command line, split like a shell would; a shell when empty. */
+	command: string | null,
+	/**  A numeric user ID; root when empty. */
+	user: number | null,
+	cwd: string | null,
+	cols: number,
+	rows: number,
+};
+
+/**  One image kept on the Host. */
+export type IncusImage = {
+	fingerprint: string,
+	aliases: string[],
+	/**  "Debian 12 amd64 (20261108_05:24)". */
+	description: string,
+	type: InstanceType,
+	architecture: string,
+	size: number,
+	os: string,
+	release: string,
+	variant: string,
+	/**  RFC 3339. */
+	uploadedAt: string,
+	lastUsedAt: string | null,
+	/**  Whether Incus keeps it up to date from where it came from. */
+	autoUpdate: boolean,
+	/**  Whether Incus downloaded it to make an Instance, and deletes it once unused. */
+	cached: boolean,
+	public: boolean,
+	/**  The server and alias it was copied from, if any. */
+	source: ImageSource | null,
+};
+
+/**  One Instance, as the list shows it. */
+export type IncusInstance = {
+	name: string,
+	type: InstanceType,
+	status: InstanceStatus,
+	description: string,
+	/**
+	 *  The image it was made from, as its description says: "Debian 12
+	 *  amd64 (20261108_05:24)"; empty when unknown.
+	 */
+	image: string,
+	architecture: string,
+	profiles: string[],
+	/**  Its global addresses, IPv4 first, without loopback. */
+	addresses: string[],
+	/**  CPU time used since it started, in nanoseconds. */
+	cpuUsageNs: number | null,
+	memoryBytes: number | null,
+	processes: number | null,
+	/**  RFC 3339. */
+	createdAt: string,
+	lastUsedAt: string | null,
+	/**  How many snapshots it has: deleting it deletes them too. */
+	snapshots: number,
+	ephemeral: boolean,
+	/**  Its cluster member, `none` outside a cluster. */
+	location: string,
+};
+
+/**  One Instance with what its page shows. */
+export type IncusInstanceDetail = {
+	instance: IncusInstance,
+	/**  Its own configuration, then with its profiles' applied. */
+	config: { [key in string]: string },
+	expandedConfig: { [key in string]: string },
+	/**  Its own devices, then with its profiles' applied. */
+	devices: { [key in string]: { [key in string]: string } },
+	expandedDevices: { [key in string]: { [key in string]: string } },
+	/**  The names of its snapshots, oldest first. */
+	snapshotNames: string[],
+	/**  Whether it can take stateful snapshots (`migration.stateful`). */
+	statefulSnapshots: boolean,
+	/**  Incus's own description of it, for the Raw tab. */
+	raw: Value,
+};
+
+/**  An address the network's DHCP server handed out, or holds for its gateway. */
+export type IncusLease = {
+	hostname: string,
+	hwaddr: string,
+	address: string,
+	/**  `dynamic`, `static` or `gateway`. */
+	type: string,
+};
+
+/**  One network. */
+export type IncusNetwork = {
+	name: string,
+	/**  `bridge`, `macvlan`, `ovn`, `physical`, `loopback`… */
+	type: string,
+	/**  Whether Incus made and runs it, or it's the machine's own. */
+	managed: boolean,
+	description: string,
+	status: string,
+	/**  Its configured IPv4 and IPv6 addresses: "10.42.71.1/24". */
+	ipv4: string | null,
+	ipv6: string | null,
+	/**  Whether it masquerades outgoing IPv4 traffic. */
+	nat: boolean,
+	config: { [key in string]: string },
+	usedBy: IncusUser[],
+};
+
+/**  A network's live state and DHCP leases. */
+export type IncusNetworkState = {
+	/**  `up` or `down`. */
+	state: string,
+	hwaddr: string,
+	mtu: number,
+	/**  Its addresses on the host, with their prefix: "10.42.71.1/24". */
+	addresses: string[],
+	leases: IncusLease[],
+};
+
+/**  One profile. */
+export type IncusProfile = {
+	name: string,
+	description: string,
+	config: { [key in string]: string },
+	devices: { [key in string]: { [key in string]: string } },
+	/**  The Instances using it, by name. */
+	usedBy: string[],
+};
+
+/**  A profile with what editing it needs. */
+export type IncusProfileDetail = {
+	profile: IncusProfile,
+	/**  Its description, configuration and devices, as `incus profile edit` shows them. */
+	yaml: string,
+	/**  What it was when read, so saving refuses changes made since. */
+	etag: string | null,
+};
+
+/**  A project, with how many Instances and images it holds. */
+export type IncusProject = {
+	name: string,
+	description: string,
+	instances: number,
+	images: number,
+};
+
+/**  One snapshot of an Instance. */
+export type IncusSnapshot = {
+	name: string,
+	/**  RFC 3339. */
+	createdAt: string,
+	/**  When Incus deletes it on its own; `None` for never. */
+	expiresAt: string | null,
+	/**  Whether it holds the running state (memory) too. */
+	stateful: boolean,
+	/**  Its size in bytes, when the storage driver can tell. */
+	size: number | null,
+};
+
+/**  One storage pool. */
+export type IncusStoragePool = {
+	name: string,
+	description: string,
+	/**  `dir`, `zfs`, `btrfs`, `lvm`, `ceph`… */
+	driver: string,
+	/**  `Created`, or what went wrong with it. */
+	status: string,
+	/**  Bytes used and in all, when the driver can tell. */
+	used: number | null,
+	total: number | null,
+	usedBy: IncusUser[],
+};
+
+/**  One user of an object: an Instance, a profile, a network… */
+export type IncusUser = {
+	/**
+	 *  `instance`, `profile`, `network`, `volume`, `image`, `project`, or
+	 *  the collection's own name for anything else.
+	 */
+	kind: string,
+	name: string,
+	/**  The project it's in, when Incus says. */
+	project: string | null,
+};
+
+/**  One volume of a pool. */
+export type IncusVolume = {
+	name: string,
+	/**  `container`, `virtual-machine`, `image` or `custom`. */
+	type: string,
+	/**  `filesystem`, `block` or `iso`. */
+	contentType: string,
+	description: string,
+	/**  Its size limit, as configured: "10GiB". */
+	size: string | null,
+	createdAt: string | null,
+	usedBy: IncusUser[],
 };
 
 export type IngressDetail = {
@@ -2072,6 +2408,39 @@ export type InstallRequest = {
 	/**  How long `wait` may take, in seconds; helm's default (5 min) without. */
 	timeoutSeconds: number | null,
 };
+
+/**  A change of state an Instance can be asked for. */
+export type InstanceAction = "start" | "stop" | "restart" | "freeze" | "unfreeze";
+
+/**  Where a new Instance's image comes from. */
+export type InstanceSource = 
+/**  An image the Host keeps, by fingerprint. */
+{ kind: "local"; fingerprint: string } | 
+/**  An image of a simplestreams server, by alias: "debian/12". */
+{ kind: "remote"; server: string; alias: string };
+
+/**  What the New Instance dialog asks for. */
+export type InstanceSpec = {
+	name: string,
+	type: InstanceType,
+	source: InstanceSource,
+	/**  In order: later ones override earlier ones. */
+	profiles: string[],
+	/**  `limits.cpu`: how many CPUs. */
+	cpu: number | null,
+	/**  `limits.memory`: "2GiB". */
+	memory: string | null,
+	/**  The root disk's size: "20GiB". */
+	disk: string | null,
+	/**  Start it once it's made. */
+	start: boolean,
+};
+
+/**  What an Instance is doing, from Incus's status code. */
+export type InstanceStatus = "running" | "stopped" | "frozen" | "starting" | "stopping" | "freezing" | "error" | "unknown";
+
+/**  What an Instance is. */
+export type InstanceType = "container" | "virtual-machine";
 
 /**  What `docker swarm join` needs for each role. `Debug` hides the tokens. */
 export type JoinInfo = {
@@ -2859,6 +3228,34 @@ export type ReleaseSummary = {
 	appVersion: string,
 };
 
+/**  One image a remote server publishes for an architecture. */
+export type RemoteImage = {
+	/**
+	 *  Its shortest alias, what `incus launch images:<alias>` takes:
+	 *  "debian/12".
+	 */
+	alias: string,
+	/**  Every alias, shortest first. */
+	aliases: string[],
+	os: string,
+	release: string,
+	/**  The release's name when it has one: "bookworm". */
+	releaseTitle: string,
+	/**  "default", "cloud" (with cloud-init)… */
+	variant: string,
+	/**  Its architecture as the server names it: "amd64". */
+	arch: string,
+	/**  Whether it's published as a system container image. */
+	container: boolean,
+	/**  Whether it's published as a virtual machine image. */
+	virtualMachine: boolean,
+	/**  The latest build: "20261108_05:24". */
+	serial: string,
+	/**  Bytes of the container and virtual machine root filesystems. */
+	containerSize: number | null,
+	virtualMachineSize: number | null,
+};
+
 /**  A remote's branches and tags, as "Test access" lists them. */
 export type RemoteRefs = {
 	branches: string[],
@@ -3144,6 +3541,11 @@ export type Settings = {
 	 *  without one shows `default`, or the only namespace holding something.
 	 */
 	containerdNamespaces?: { [key in string]: string },
+	/**
+	 *  The project each Incus Host's pages show, by Host id. A Host without
+	 *  one shows `default`, or the first project it may use.
+	 */
+	incusProjects?: { [key in string]: string },
 	/**  Look for a new version at launch and every few hours. */
 	checkForUpdates?: boolean,
 	/**
@@ -3179,6 +3581,15 @@ export type SnapshotKind =
 /**  A read-only mount of another snapshot. */
 "view" | "unknown";
 
+/**  What the Take snapshot dialog asks for. */
+export type SnapshotRequest = {
+	/**  Empty lets Incus name it `snapN`. */
+	name: string,
+	stateful: boolean,
+	/**  RFC 3339; `None` keeps it until deleted. */
+	expiresAt: string | null,
+};
+
 /**  What uses a snapshot. */
 export type SnapshotUser = { kind: "container"; id: string } | { kind: "image"; name: string };
 
@@ -3199,7 +3610,10 @@ export type SshSetup = {
 	fingerprint: string,
 	/**  Appends the key to `~/.ssh/authorized_keys`, run on the server. */
 	installCommand: string,
-	/**  Lets the SSH user reach the Docker socket, run on the server. */
+	/**
+	 *  Lets the SSH user reach the Engine's socket (Docker's, or Incus's),
+	 *  run on the server.
+	 */
 	dockerGroupCommand: string,
 	/**
 	 *  Every server the key must be authorised on, as `user@host`: the
@@ -3559,6 +3973,15 @@ export type TrayHostChosen = {
 	hostId: string,
 };
 
+/**  What the Host form shows about a pasted token before adding the Host. */
+export type TrustTokenSummary = {
+	clientName: string,
+	fingerprint: string,
+	addresses: string[],
+	/**  RFC 3339, `None` for a token that doesn't expire. */
+	expiresAt: string | null,
+};
+
 /**  Uninstalling a release, which deletes the objects it created. */
 export type UninstallRequest = {
 	name: string,
@@ -3635,6 +4058,15 @@ export type VolumeInput = {
 	/**  Defaults to `local`. */
 	driver: string | null,
 	labels: { [key in string]: string },
+};
+
+/**  What the New volume dialog asks for. */
+export type VolumeRequest = {
+	name: string,
+	/**  "10GiB"; the pool's default when `None`. */
+	size: string | null,
+	/**  `filesystem` or `block`. */
+	contentType: string,
 };
 
 export type VolumeView = {

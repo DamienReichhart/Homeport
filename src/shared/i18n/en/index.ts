@@ -14,6 +14,7 @@ import events from './events';
 import helm from './helm';
 import hosts from './hosts';
 import images from './images';
+import incus from './incus';
 import network from './network';
 import networks from './networks';
 import nodes from './nodes';
@@ -51,6 +52,7 @@ export const uiMessages = {
   ...helm,
   ...hosts,
   ...images,
+  ...incus,
   ...network,
   ...networks,
   ...nodes,

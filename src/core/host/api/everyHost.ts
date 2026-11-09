@@ -16,7 +16,7 @@ export interface HostResult<T> {
  * Runs `query` (one of `resourceQueries`) for every connected Host whose
  * Engine speaks the Docker Engine API, while `enabled`. Hosts that aren't
  * connected are `skipped`, not failures, so one down Host never blocks the
- * others; Hosts of another Engine (containerd) aren't asked at all.
+ * others; Hosts of another Engine (containerd, Incus) aren't asked at all.
  */
 export function useEveryHost<T, K extends readonly unknown[]>(
   query: (hostId: string) => UseQueryOptions<T, Error, T, K>,

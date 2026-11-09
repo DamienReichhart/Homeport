@@ -19,6 +19,7 @@ export const sidebar: NonNullable<StarlightUserConfig['sidebar']> = [
       { label: 'SSH', slug: 'docs/hosts/ssh' },
       { label: 'TLS and TCP', slug: 'docs/hosts/tls-tcp' },
       { label: 'containerd', slug: 'docs/hosts/containerd' },
+      { label: 'Incus', slug: 'docs/hosts/incus' },
     ],
   },
   {
@@ -50,6 +51,7 @@ export const sidebar: NonNullable<StarlightUserConfig['sidebar']> = [
       { label: 'Swarms', slug: 'docs/guides/swarm' },
       { label: 'Podman pods', slug: 'docs/guides/podman-pods' },
       { label: 'Quadlet units', slug: 'docs/guides/quadlet' },
+      { label: 'Instances (Incus)', slug: 'docs/guides/instances' },
       { label: 'Settings', slug: 'docs/guides/settings' },
       { label: 'Keyboard', slug: 'docs/guides/keyboard' },
     ],

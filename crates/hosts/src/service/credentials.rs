@@ -10,7 +10,7 @@ use homeport_core::error::{AppError, AppResult, ErrorCode};
 use crate::messages as msg;
 use homeport_transport::{self as transport, ConnectError};
 
-use crate::{Bastion, BastionAuth, HostConnection, HostSecrets, SshAuth, SshKeySecret};
+use crate::{Bastion, BastionAuth, EngineKind, HostConnection, HostSecrets, SshAuth, SshKeySecret};
 
 /// Credentials typed by the user. Absent on update means "keep the stored ones".
 #[derive(Deserialize, specta::Type)]
@@ -58,6 +58,7 @@ pub(super) struct Current<'a> {
 /// Secrets of `None` mean "keep the stored ones".
 pub(super) fn prepare(
     name: &str,
+    engine: EngineKind,
     connection: HostConnection,
     credentials: Option<CredentialsInput>,
     bastion_keys: Vec<BastionKeyInput>,
@@ -71,9 +72,16 @@ pub(super) fn prepare(
                     cert_pem,
                     key_pem,
                 }) => {
-                    transport::tls::TlsDialer::new(
-                        &address, &address, &ca_pem, &cert_pem, &key_pem,
-                    )
+                    // An Incus Host's "CA" is its own certificate, pinned (ADR 0021).
+                    if engine == EngineKind::Incus {
+                        transport::tls::TlsDialer::pinned(
+                            &address, &address, &ca_pem, &cert_pem, &key_pem,
+                        )
+                    } else {
+                        transport::tls::TlsDialer::new(
+                            &address, &address, &ca_pem, &cert_pem, &key_pem,
+                        )
+                    }
                     .map_err(invalid)?;
                     Some(HostSecrets::Tls {
                         ca_pem,

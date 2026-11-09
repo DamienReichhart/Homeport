@@ -1,0 +1,75 @@
+---
+title: Instances
+description: Run Incus system containers and virtual machines; open their console and a terminal in them; take and restore snapshots; manage images, profiles, storage pools and networks.
+---
+
+An **Instance** is what an [Incus Host](/docs/hosts/incus/) runs: a **system container**, which boots a whole Linux distribution sharing the host's kernel, or a **virtual machine**, with a kernel of its own. Every page here shows the project picked under the Host switcher.
+
+## The Instances page
+
+**Instances** lists the project's Instances with their type, status, image, global addresses (IPv4 first), memory and age. Filter them by name, or show only containers or virtual machines.
+
+| Action         | What Incus does                                                                                                          |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Start**      | Boots it.                                                                                                                |
+| **Stop**       | Asks its system to shut down, and gives it 30 seconds; one that doesn't is reported, with **Force stop** as the way out. |
+| **Force stop** | Cuts it off at once, like pulling the plug.                                                                              |
+| **Restart**    | Shuts it down gracefully and boots it again.                                                                             |
+| **Freeze**     | Pauses every process in it; **Unfreeze** resumes them.                                                                   |
+| **Delete**     | Asks first, naming the snapshots deleted with it. A running Instance is only deleted once you tick **Stop it first**.    |
+
+The list refreshes from Incus's events within a moment, whoever made the change.
+
+An Instance's page has an **Overview** (addresses, CPU time, memory, processes, snapshots, and its profiles, each linking to its page), its **Configuration** and **Devices** with what its profiles set marked **From a profile**, and Incus's own description of it under **Raw**.
+
+## Making an Instance
+
+**New instance** (or <kbd>n</kbd>) makes one from an image:
+
+- **From an image server**: the public `https://images.linuxcontainers.org` by default, or another simplestreams server. Homeport lists what it publishes for the Host's architecture, as containers or as virtual machines, searchable by system, release or alias; you can also type an alias such as `debian/12` or `ubuntu/24.04/cloud`. Incus downloads the image, as `incus launch images:debian/12` would.
+- **From this host's images**: one the Host already keeps.
+
+Pick its **profiles** (in order: later ones override earlier ones), and optionally its **CPUs**, **Memory** (`2GiB`) and **Root disk** size (`20GiB`, in the pool its profiles' root disk is on). **Start it once it's made** is on by default. The dialog follows the download and unpack in Incus's own words, then opens the new Instance.
+
+A name already in use, an image the server doesn't have, a full storage pool, or a virtual machine on a host without hardware virtualization (no `/dev/kvm`) each says so, with what to do.
+
+## Console and terminal
+
+**Console** shows what the Instance printed on its text console so far, then attaches to it: the login prompt, or a boot as it happens, as `incus console` shows it. It works for virtual machines too, and when the Instance's network or SSH is broken. Leaving the tab, or **Reattach**, only detaches.
+
+**Exec** opens a shell in a running Instance (bash when it has it, sh otherwise), or runs the command you give, as a numeric user and in a folder of your choice; **Open** starts a fresh one with what you typed. Closing the tab hangs the command up, so nothing started from it keeps running. In a virtual machine, exec needs the `incus-agent` Incus's own images include and start on boot; until it runs, Homeport says so and the Console tab is the way in.
+
+## Snapshots
+
+**Snapshots** lists the Instance's snapshots with when each was taken, when it expires and whether it holds the running state.
+
+- **Take snapshot** names it (or lets Incus name it `snap0`, `snap1`…) and keeps it until deleted or for a day, a week or 30 days. While the Instance runs, and when its `migration.stateful` setting allows it, the snapshot can include its memory, so a restore resumes where it was.
+- **Restore** puts the Instance back as it was when the snapshot was taken. Everything that changed since is lost, and a running Instance restarts, so Homeport asks first.
+- **Delete** removes a snapshot, after asking; the Instance stays as it is.
+
+## Images
+
+**Images** lists the images the project keeps, with their aliases, description, type, architecture, size and age. Images Incus downloaded to make an Instance are marked **cached**: it deletes them once nothing has used them for a while.
+
+- **Get image** downloads one ahead of time from an image server, picked as for a new Instance. **Keep it up to date** has Incus refresh it from the server; **Give it the same alias here** lets new Instances use it by name.
+- **Refresh** fetches a newer build of an image from where it came from.
+- The tag button adds an alias; the cross on an alias removes it.
+- **Delete** removes an image. Instances made from it keep working: each has its own copy.
+
+## Profiles
+
+**Profiles** lists the project's profiles with how many keys and devices each sets and the Instances using it. A profile's page edits its description, configuration and devices as YAML, as `incus profile edit` does, and links the Instances using it. **Save** applies the changes to those Instances, as Incus does. If someone changed the profile since the page loaded it, saving is refused rather than overwriting theirs: **Reload**, then make your changes again.
+
+**New profile** makes an empty one and opens it. `default`, and profiles Instances use, can't be deleted.
+
+## Storage
+
+**Storage** shows each storage pool with its driver and how full it is, and the selected pool's volumes in the project: the Instances' and images' own, and custom ones, with their content, size and what uses them.
+
+**New volume** makes a custom volume, a filesystem or a block device, of a size or the pool's default, to attach to Instances for data that outlives them (`incus storage volume attach`). A custom volume can be deleted once nothing uses it. Pools themselves are made with `incus storage create`.
+
+## Networks
+
+**Networks** lists the networks the project sees, managed ones (made by Incus) first, with their IPv4 and IPv6 settings, NAT and users. A network's page shows its addresses on the host, MTU and MAC address, the Instances and profiles using it, and the DHCP leases of a managed one, as `incus network list-leases` does.
+
+**New bridge** makes a managed bridge. Its IPv4 and IPv6 are `auto` (a free subnet), `none`, or the bridge's own address with its prefix, like `10.0.5.1/24`; **NAT** masquerades outgoing IPv4 traffic. A network in use, or one of the machine's own interfaces, isn't deleted from here.

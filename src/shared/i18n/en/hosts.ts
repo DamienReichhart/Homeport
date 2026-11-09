@@ -37,7 +37,7 @@ export default {
     'Homeport logs in to each of these with the same key. Add it on every one, as its SSH user, then reconnect.',
   'hosts.sshSetup.servers': 'Add it on:',
   'hosts.sshSetup.addKey': '1. Add the public key',
-  'hosts.sshSetup.dockerGroup': '2. Let the user reach Docker (if needed)',
+  'hosts.sshSetup.dockerGroup': '2. Let the user reach the Engine’s socket (if needed)',
   'hosts.sshSetup.fingerprint': 'Key fingerprint <mono>{fingerprint}</mono>',
   'hosts.regenerate.button': 'Regenerate key',
   'hosts.regenerate.title': 'Regenerate the SSH key?',
@@ -68,9 +68,9 @@ export default {
   'hosts.form.name': 'Name',
   'hosts.form.engine': 'Engine',
   'hosts.form.engineHint':
-    'Docker-compatible covers Docker and Podman; Homeport tells them apart when it connects. containerd is reached through its socket, here or over SSH.',
+    'Docker-compatible covers Docker and Podman; Homeport tells them apart when it connects. containerd is reached through its socket, here or over SSH; Incus also over HTTPS (TLS).',
   'hosts.form.socketOnly': '{engine} only answers on its socket: connect locally or over SSH.',
-  'hosts.form.engineSoon': '{engine} (coming in a later version)',
+  'hosts.form.noPlainTcp': '{engine} doesn’t answer over plain TCP: use TLS, SSH or its socket.',
   'hosts.form.socketPath': 'Socket path',
   'hosts.form.socketPathHint': 'A Unix socket, or a named pipe like {pipe} on Windows.',
   'hosts.form.address': 'Address',
@@ -79,6 +79,22 @@ export default {
   'hosts.form.tcpWarning.description':
     'Anyone who can reach this port controls the Engine. Prefer SSH or TLS outside a trusted network.',
   'hosts.form.loadFromFile': 'Load from file…',
+  'hosts.incus.trust': 'Trust',
+  'hosts.incus.trust.token': 'Trust token',
+  'hosts.incus.trust.certificate': 'Existing certificate',
+  'hosts.incus.token': 'Trust token',
+  'hosts.incus.tokenHint':
+    'Run this on the Incus server and paste what it prints. Homeport makes its own certificate, checks the server’s against the token, and registers itself.',
+  'hosts.incus.tokenReads': 'For {name}, at {addresses}',
+  'hosts.incus.tokenFingerprint': 'Server certificate {fingerprint}',
+  'hosts.incus.tokenExpires': 'Expires {time}',
+  'hosts.incus.serverCert': 'Server certificate to trust',
+  'hosts.incus.serverCert.choose': 'Choose the server certificate',
+  'hosts.incus.serverCertHint':
+    'Incus’s own certificate (/var/lib/incus/server.crt). Homeport accepts exactly this one, whatever the address.',
+  'hosts.incus.clientCert': 'Client certificate',
+  'hosts.incus.clientCertHint': 'Already trusted by Incus: incus config trust add-certificate.',
+  'hosts.incus.clientKey': 'Client key',
   'hosts.keychain.title': 'No OS keychain',
   'hosts.keychain.description':
     'Keys and certificates are encrypted with a key kept in the OS keychain, and none is available. Use ssh-agent, a local socket or TCP instead.',

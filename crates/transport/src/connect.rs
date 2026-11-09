@@ -192,9 +192,11 @@ fn ssh_dialer(
     })))
 }
 
-/// A connected dialer to the Engine socket of a Host whose Engine bollard
-/// doesn't speak, such as containerd (ADR 0020): its local socket, or its
-/// socket through SSH. TCP and TLS aren't offered for these Engines.
+/// A connected dialer to a Host whose Engine bollard doesn't speak, such as
+/// containerd (ADR 0020) and Incus (ADR 0021): its local socket, or its
+/// socket through SSH; and Incus over HTTPS, pinned to the server
+/// certificate kept with the Host's TLS material. Plain TCP isn't offered
+/// for these Engines.
 pub async fn dial_engine(
     name: &str,
     connection: &HostConnection,
@@ -208,6 +210,29 @@ pub async fn dial_engine(
         }
         HostConnection::Ssh { .. } => {
             ssh_dialer(name, connection, secrets.as_ref(), trusted_host_key, engine)?
+        }
+        HostConnection::Tls { address } if engine == EngineKind::Incus => {
+            let Some(HostSecrets::Tls {
+                ca_pem,
+                cert_pem,
+                key_pem,
+            }) = secrets
+            else {
+                return Err(ConnectError::Invalid(
+                    AppError::new(
+                        ErrorCode::TlsMaterialInvalid,
+                        msg::CONNECT_TLS_MATERIAL_MISSING,
+                    )
+                    .with_hint(msg::CONNECT_INCUS_MATERIAL_MISSING_HINT),
+                ));
+            };
+            Arc::new(tls::TlsDialer::pinned(
+                &format!("{name} ({address})"),
+                address,
+                &ca_pem,
+                &cert_pem,
+                &key_pem,
+            )?)
         }
         HostConnection::Tcp { .. } | HostConnection::Tls { .. } => {
             return Err(ConnectError::Invalid(AppError::validation(

@@ -56,7 +56,8 @@ pub struct SshSetup {
     pub fingerprint: String,
     /// Appends the key to `~/.ssh/authorized_keys`, run on the server.
     pub install_command: String,
-    /// Lets the SSH user reach the Docker socket, run on the server.
+    /// Lets the SSH user reach the Engine's socket (Docker's, or Incus's),
+    /// run on the server.
     pub docker_group_command: String,
     /// Every server the key must be authorised on, as `user@host`: the
     /// bastions that use the Host's key, in order, then the Host.
@@ -103,6 +104,7 @@ impl HostService {
     pub fn create(&self, input: HostInput) -> AppResult<HostView> {
         let (connection, secrets) = prepare(
             &input.name,
+            input.engine,
             input.connection,
             input.credentials,
             input.bastion_keys,
@@ -122,6 +124,7 @@ impl HostService {
         let current = self.store.get(id)?;
         let (connection, secrets) = prepare(
             &input.name,
+            input.engine,
             input.connection,
             input.credentials,
             input.bastion_keys,
@@ -236,6 +239,7 @@ impl HostService {
             user,
             host: server,
             bastions,
+            socket_path,
             ..
         } = host.connection
         else {
@@ -250,7 +254,14 @@ impl HostService {
         Ok(SshSetup {
             fingerprint: transport::ssh::fingerprint(&public_key).unwrap_or_default(),
             install_command: transport::ssh::authorized_keys_command(&public_key),
-            docker_group_command: format!("sudo usermod -aG docker {user}"),
+            docker_group_command: match host.engine {
+                // The restricted socket is the incus group's (ADR 0021).
+                EngineKind::Incus if socket_path.ends_with(".user") => {
+                    format!("sudo usermod -aG incus {user}")
+                }
+                EngineKind::Incus => format!("sudo usermod -aG incus-admin {user}"),
+                _ => format!("sudo usermod -aG docker {user}"),
+            },
             public_key,
             servers,
         })

@@ -42,7 +42,16 @@ export interface HostFormState {
   passphrase: string;
   /** The servers to go through first, in order. */
   bastions: BastionFormState[];
+  /**
+   * How a new Incus Host over HTTPS is trusted: with a token from
+   * `incus config trust add` (Homeport makes its certificate), or with a
+   * client certificate the user has, `caPem` holding the server's to pin.
+   */
+  incusTrust: IncusTrust;
+  trustToken: string;
 }
+
+export type IncusTrust = 'token' | 'certificate';
 
 export const emptyBastion = (): BastionFormState => ({
   host: '',
@@ -71,10 +80,18 @@ export const emptyForm = (kind: HostKind = 'ssh'): HostFormState => ({
   privateKey: '',
   passphrase: '',
   bastions: [],
+  incusTrust: 'token',
+  trustToken: '',
 });
 
 export function formFromHost(host: Host): HostFormState {
-  const form = { ...emptyForm(host.connection.kind), name: host.name, engine: host.engine };
+  const form: HostFormState = {
+    ...emptyForm(host.connection.kind),
+    name: host.name,
+    engine: host.engine,
+    // A trust token only adds a Host; a stored one keeps its certificates.
+    incusTrust: 'certificate',
+  };
   const c = host.connection;
   switch (c.kind) {
     case 'local':
@@ -208,12 +225,8 @@ export function engineForSocket(path: string): EngineKind {
   return 'docker';
 }
 
-/** The kinds of Engine the form offers; Incus connects in a later version. */
-export const ENGINE_KINDS: { engine: EngineKind; available: boolean }[] = [
-  { engine: 'docker', available: true },
-  { engine: 'containerd', available: true },
-  { engine: 'incus', available: false },
-];
+/** The kinds of Engine the form offers, in the order it shows them. */
+export const ENGINE_KINDS: EngineKind[] = ['docker', 'containerd', 'incus'];
 
 /** Where each kind of Engine's socket usually is, on this computer or over SSH. */
 export const DEFAULT_SOCKETS: Record<EngineKind, string> = {
@@ -222,9 +235,18 @@ export const DEFAULT_SOCKETS: Record<EngineKind, string> = {
   incus: '/var/lib/incus/unix.socket',
 };
 
-/** Whether `engine` can be reached over `kind`: containerd only answers on its socket. */
+/**
+ * Whether `engine` can be reached over `kind`: containerd only answers on
+ * its socket, Incus on its socket or over HTTPS (TLS).
+ */
 export function engineReachableOver(engine: EngineKind, kind: HostKind): boolean {
-  return engine !== 'containerd' || kind === 'local' || kind === 'ssh';
+  if (engine === 'docker' || kind === 'local' || kind === 'ssh') return true;
+  return engine === 'incus' && kind === 'tls';
+}
+
+/** Whether the form adds an Incus Host with a trust token instead of a `HostInput`. */
+export function usesTrustToken(form: HostFormState): boolean {
+  return form.engine === 'incus' && form.kind === 'tls' && form.incusTrust === 'token';
 }
 
 /**

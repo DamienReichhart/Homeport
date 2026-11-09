@@ -62,13 +62,13 @@ The **Namespaces** page creates empty namespaces and removes empty ones. contain
 
 In containerd, a **container** is only metadata: its image, its spec, its snapshot. What runs is its **task**. The **Containers** page lists the namespace's containers with their task: **Running**, **Paused**, **Stopped** with its exit code, or **No task**. Each says which tool made it — **Kubernetes** (with its Pod), **nerdctl**, **Docker** or **ctr or other** — and Pods' pause containers are hidden unless you ask for them.
 
-| Action          | What Homeport does                                                                                                                                   |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Start**       | Creates the task on the container's snapshot, logging where nerdctl logs, and starts it. A stopped task is replaced, as `ctr task start` needs.      |
-| **Stop**        | Sends the image's stop signal (SIGTERM unless it names another), then SIGKILL after 10 seconds. A task still alive after that is reported.           |
-| **Pause**       | Freezes the task; **Resume** thaws it.                                                                                                               |
-| **Send signal** | Sends any signal, by name (`SIGHUP`) or number, to the task's main process.                                                                          |
-| **Remove**      | Asks first; kills a running task, removes the task and the container, and its snapshot with the files it changed, unless you untick **Also remove**. |
+| Action          | What Homeport does                                                                                                                                                                                                                                  |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Start**       | Creates the task on the container's snapshot, logging where nerdctl logs, and starts it. A stopped task is replaced, as `ctr task start` needs.                                                                                                     |
+| **Stop**        | Sends the image's stop signal (SIGTERM unless it names another), then SIGKILL after 10 seconds. A task still alive after that is reported.                                                                                                          |
+| **Pause**       | Freezes the task; **Resume** thaws it.                                                                                                                                                                                                              |
+| **Send signal** | Sends any signal, by name (`SIGHUP`) or number, to the task's main process.                                                                                                                                                                         |
+| **Remove**      | Asks first; kills a running task, removes the task and the container, and its snapshot with the files it changed, unless you untick **Also remove**: a kept snapshot is marked `containerd.io/gc.root`, so containerd's garbage collector keeps it. |
 
 A container's page shows its runtime, snapshot, labels and OCI spec. Homeport doesn't create containers on containerd: containerd has no networking of its own, which nerdctl and CNI add.
 
@@ -104,7 +104,7 @@ An image a container of the namespace was made from can't be removed; remove the
 
 Snapshots are where containerd's disk goes: the layers of unpacked images, and each container's writable layer. The **Snapshots** page shows one snapshotter's (`overlayfs` first, or any other the Host loaded) as a tree by parent, largest first, with their usage as `ctr snapshot usage` counts it and the total at the top.
 
-Each says what uses it: a container, by its snapshot, or an image, by its layers. Snapshots nothing uses and nothing is built on — such as the one left behind by a container removed with `ctr containers rm --keep-snapshot` — can be shown alone with **Only unused**, and removed. The others can't be removed from here.
+Each says what uses it: a container, by its snapshot, or an image, by its layers. Snapshots nothing uses and nothing is built on — such as one kept when its container was removed here — can be shown alone with **Only unused**, and removed. The others can't be removed from here. A snapshot nothing references and nothing marks as a root, such as one `ctr containers rm --keep-snapshot` leaves, doesn't last: containerd's garbage collector removes it on its next run.
 
 ## What runs on the Host
 

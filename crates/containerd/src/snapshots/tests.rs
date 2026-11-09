@@ -53,9 +53,12 @@ mod live {
             testing::Cleanup(orphan.clone()),
         );
         testing::ctr(&["containers", "create", &image, &used, "true"]);
-        // A container removed with ctr's metadata only leaves its snapshot behind.
+        // A container removed with its snapshot kept leaves it behind,
+        // marked so containerd's garbage collector doesn't take it.
         testing::ctr(&["containers", "create", &image, &orphan, "true"]);
-        testing::ctr(&["containers", "rm", "--keep-snapshot", &orphan]);
+        crate::containers::remove(&client, NAMESPACE, &orphan, false, true)
+            .await
+            .unwrap();
 
         let listed = list(&client, NAMESPACE, None).await.unwrap();
         let find = |key: &str| listed.snapshots.iter().find(|s| s.key == key).cloned();

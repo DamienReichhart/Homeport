@@ -1,7 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { hostKeys } from '@/core/host';
-import { commands, type BundleChoice, type ImportChoice, type ImportOutcome } from '@/shared/api';
+import {
+  commands,
+  type BundleChoice,
+  type HostView,
+  type ImportChoice,
+  type ImportOutcome,
+} from '@/shared/api';
 import { t } from '@/shared/i18n';
 import { toHostInput, type HostFormState } from '../model/form';
 import type { ImportSource } from '../model/importRows';
@@ -20,6 +26,23 @@ export function useUpdateHost(hostId: string) {
     onSuccess: async () => {
       await refresh();
       toast.success(t('hosts.saved'));
+    },
+  });
+}
+
+/**
+ * Adds an Incus Host over HTTPS with a trust token; `onAdded` runs once the
+ * Host list has it. The page shows a failure in place.
+ */
+export function useTrustIncusHost(onAdded: (view: HostView) => void) {
+  const refresh = useRefreshHosts();
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: ({ name, token }: { name: string; token: string }) =>
+      commands.incusTrustAdd(name, token),
+    onSuccess: async (view) => {
+      await refresh();
+      onAdded(view);
     },
   });
 }

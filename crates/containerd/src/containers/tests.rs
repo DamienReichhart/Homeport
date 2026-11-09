@@ -187,6 +187,10 @@ mod live {
         assert_eq!(state(&client, &id).await, TaskState::None);
         remove(&client, NAMESPACE, &id, false, true).await.unwrap();
         assert!(testing::ctr(&["snapshots", "ls"]).contains(&id));
+        // Marked so containerd's garbage collector keeps it, now that no
+        // container references it.
+        let info = testing::ctr(&["snapshots", "info", &id]);
+        assert!(info.contains(GC_ROOT), "{info}");
         testing::ctr(&["snapshots", "rm", &id]);
     }
 }

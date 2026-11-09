@@ -38,6 +38,7 @@ impl LocalDialer {
     fn classify(&self, e: &io::Error) -> AppError {
         match self.engine {
             EngineKind::Containerd => reach::local_containerd(&self.socket_path, e),
+            EngineKind::Incus => reach::local_incus(&self.socket_path, e),
             _ => reach::local_socket(&self.socket_path, e),
         }
     }

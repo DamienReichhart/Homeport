@@ -11,6 +11,7 @@ homeport_core::messages! {
     CONNECT_TCP_ADDRESS_INVALID = "errors.transport.connect.tcpAddressInvalid" => "The TCP address isn't valid.";
     /// A TLS Host has no certificates stored.
     CONNECT_TLS_MATERIAL_MISSING = "errors.transport.connect.tlsMaterialMissing" => "The TLS certificates are missing.";
+    CONNECT_INCUS_MATERIAL_MISSING_HINT = "errors.transport.connect.incusMaterialMissing.hint" => "Add the host again with a new trust token from incus config trust add.";
     CONNECT_TLS_MATERIAL_MISSING_HINT = "errors.transport.connect.tlsMaterialMissing.hint" => "Add the CA certificate, client certificate and client key on the host page.";
     /// A containerd (or other socket-only) Host saved with TCP or TLS.
     CONNECT_ENGINE_NEEDS_SOCKET = "errors.transport.connect.engineNeedsSocket" => "Homeport reaches {engine} through its socket, on this computer or over SSH.";
@@ -65,6 +66,22 @@ homeport_core::messages! {
     /// containerd's socket belongs to root unless `[grpc] gid` names a group.
     CONTAINERD_GID_HINT = "errors.transport.containerdGid.hint" => "containerd's socket belongs to root. Make a group for it, set gid under [grpc] in /etc/containerd/config.toml to the ID this prints, restart containerd, then log in again:";
 
+    // A local Incus socket (ADR 0021).
+
+    /// The local Incus socket didn't answer in time.
+    LOCAL_INCUS_TIMEOUT = "errors.transport.local.incusTimeout" => "Incus at {path} didn't answer in time.";
+    /// The local Incus socket failed in a way not told apart.
+    LOCAL_INCUS_UNREACHABLE = "errors.transport.local.incusUnreachable" => "Homeport can't talk to Incus at {path}.";
+    LOCAL_INCUS_UNREACHABLE_HINT = "errors.transport.local.incusUnreachable.hint" => "Check that Incus is running, then reconnect.";
+    /// Nothing listens on the local Incus socket.
+    LOCAL_INCUS_NOT_RUNNING = "errors.transport.local.incusNotRunning" => "No Incus is running at {path}.";
+    LOCAL_INCUS_NOT_RUNNING_HINT = "errors.transport.local.incusNotRunning.hint" => "Start Incus, and have it start with the computer:";
+    LOCAL_INCUS_USER_NOT_RUNNING_HINT = "errors.transport.local.incusUserNotRunning.hint" => "This is the restricted socket incus-user serves. Start it, and have it start with the computer:";
+    /// The user may not use the local Incus socket.
+    LOCAL_INCUS_PERMISSION_DENIED = "errors.transport.local.incusPermissionDenied" => "Homeport isn't allowed to use Incus at {path}.";
+    INCUS_ADMIN_GROUP_HINT = "errors.transport.incusAdminGroup.hint" => "Incus's socket is for the incus-admin group. Add your user to it, then log in again:";
+    INCUS_USER_GROUP_HINT = "errors.transport.incusUserGroup.hint" => "The restricted socket is for the incus group, and only reaches your own project. Add your user to it, then log in again:";
+
     // The network to a remote Host.
 
     /// The Host's name doesn't resolve.
@@ -96,6 +113,12 @@ homeport_core::messages! {
     TLS_CLIENT_CERT_EMPTY = "errors.transport.tls.clientCertEmpty" => "The client certificate contains no certificate.";
     TLS_MATERIAL_INVALID_HINT = "errors.transport.tls.materialInvalid.hint" => "Paste PEM files (ca.pem, cert.pem, key.pem) made for this Engine on the host page.";
     /// The Engine refused Homeport's client certificate.
+    /// A pinned server certificate that can't be read.
+    TLS_PINNED_UNUSABLE = "errors.transport.tls.pinnedUnusable" => "The server certificate to trust can't be used.";
+    TLS_PINNED_EMPTY = "errors.transport.tls.pinnedEmpty" => "The server certificate to trust contains no certificate.";
+    /// The server presented another certificate than the pinned one.
+    TLS_PIN_MISMATCH = "errors.transport.tls.pinMismatch" => "{host} presented a certificate with fingerprint {presented}, not the trusted {expected}.";
+    TLS_PIN_MISMATCH_HINT = "errors.transport.tls.pinMismatch.hint" => "The server's certificate changed: it was renewed or reinstalled, or something else answers at this address. If you trust the change, check the fingerprint on the server with incus info, then add the host again with a new trust token.";
     TLS_CLIENT_REJECTED = "errors.transport.tls.clientRejected" => "{host} rejected Homeport's client certificate.";
     TLS_CLIENT_REJECTED_HINT = "errors.transport.tls.clientRejected.hint" => "Use a client certificate (cert.pem and key.pem) signed by the CA the Engine trusts, its --tlscacert.";
     /// The Engine's certificate has expired.
@@ -184,6 +207,15 @@ homeport_core::messages! {
     /// The SSH user may not use the remote containerd socket.
     SSH_CONTAINERD_PERMISSION_DENIED = "errors.transport.ssh.containerdPermissionDenied" => "{user} isn't allowed to use containerd at {path} on {host}.";
     SSH_CONTAINERD_PERMISSION_DENIED_HINT = "errors.transport.ssh.containerdPermissionDenied.hint" => "containerd's socket belongs to root. On {host}, make a group for it, set gid under [grpc] in /etc/containerd/config.toml to the ID this prints, restart containerd, then reconnect:";
+    /// Incus isn't installed on the SSH server.
+    SSH_INCUS_NOT_INSTALLED = "errors.transport.ssh.incusNotInstalled" => "Incus isn't installed on {host}.";
+    SSH_INCUS_NOT_INSTALLED_HINT = "errors.transport.ssh.incusNotInstalled.hint" => "Install Incus on {host} from its package (incus) and initialise it with incus admin init, or check the socket path on the host page.";
+    /// Incus is installed on the SSH server but its socket is missing.
+    SSH_INCUS_NOT_RUNNING = "errors.transport.ssh.incusNotRunning" => "Incus isn't running on {host}: nothing listens at {path}.";
+    SSH_INCUS_NOT_RUNNING_HINT = "errors.transport.ssh.incusNotRunning.hint" => "Start it on {host}, and have it start with the machine:";
+    /// The SSH user may not use the remote Incus socket.
+    SSH_INCUS_PERMISSION_DENIED = "errors.transport.ssh.incusPermissionDenied" => "{user} isn't allowed to use Incus at {path} on {host}.";
+    SSH_INCUS_PERMISSION_DENIED_HINT = "errors.transport.ssh.incusPermissionDenied.hint" => "On {host}, add {user} to the incus-admin group (or to incus for the restricted socket, which only reaches the user's own project). It applies to new logins, so reconnect afterwards:";
     /// sshd refuses to forward to the remote Engine socket.
     SSH_FORWARDING_DISABLED = "errors.transport.ssh.forwardingDisabled" => "The SSH server on {host} doesn't allow forwarding to the Docker Engine socket.";
     SSH_FORWARDING_DISABLED_HINT = "errors.transport.ssh.forwardingDisabled.hint" => "Allow it in sshd's configuration on {host}, then restart sshd (the service is \"sshd\" on some systems):";

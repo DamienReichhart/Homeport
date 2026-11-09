@@ -21,6 +21,14 @@ Not entirely. Homeport is a manager: it doesn't run a Docker Engine itself. On L
 
 Yes, directly, without Docker: a Host's Engine can be [containerd](/docs/hosts/containerd/), reached through its socket on this machine or over SSH — k3s's, Docker Engine's own, or containerd's service on a server. Homeport lists its namespaces, its containers and their tasks (start, stop, pause, signal, remove), their logs where nerdctl or Kubernetes wrote them, a terminal in them, its images (pull, remove) and its snapshots. It doesn't create containers or deploy Stacks there; nerdctl does that.
 
+### Does it work with Incus?
+
+Yes: a Host's Engine can be [Incus](/docs/hosts/incus/) 6.0 or later, reached through its socket on this machine or over SSH, or over HTTPS with a trust token from `incus config trust add`. Homeport lists the [Instances](/docs/guides/instances/) of a project, system containers and virtual machines, starts, stops, freezes, deletes and creates them, opens their console and a terminal in them, takes and restores snapshots, and manages images, profiles, storage pools and networks. It doesn't deploy Stacks there, and installs nothing on the Host.
+
+### Does it work with LXD?
+
+Not as such: Homeport speaks Incus, the community fork of LXD, and refuses an LXD server, whose API has drifted. Migrate it with `lxd-to-incus`, then add it as an Incus Host.
+
 ### Does it work with Podman?
 
 Yes, through Podman's Docker-compatible API socket. Homeport detects the usual Podman sockets on Linux, every running [Podman machine on macOS](/docs/hosts/local/#podman-machines-on-macos), and the default Podman machine pipe on Windows. Anything else can be [added by hand](/docs/hosts/local/#adding-a-socket-by-hand).

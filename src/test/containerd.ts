@@ -17,6 +17,7 @@ export const containerdHost: HostView = {
     os: 'linux',
     arch: 'amd64',
     podmanVersion: null,
+    incusVersion: null,
     containerdVersion: '2.1.4',
     swarm: null,
   },
