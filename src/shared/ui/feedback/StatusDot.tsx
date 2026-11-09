@@ -1,3 +1,4 @@
+import { usePrefersReducedMotion } from '@/shared/hooks';
 import { cn } from '@/shared/lib/utils';
 
 export type Tone = 'success' | 'warning' | 'danger' | 'muted' | 'info';
@@ -19,12 +20,14 @@ const TONES: Record<Tone, string> = {
   info: 'size-2 rounded-full border-[1.5px] border-foreground',
 };
 
+/** `pulse` animates "connecting", unless the OS asks for reduced motion: the shape says it. */
 export function StatusDot({ tone, pulse }: { tone: Tone; pulse?: boolean }) {
+  const still = usePrefersReducedMotion();
   return (
     <span
       aria-hidden
       data-tone={tone}
-      className={cn('inline-block shrink-0', TONES[tone], pulse && 'animate-pulse')}
+      className={cn('inline-block shrink-0', TONES[tone], pulse && !still && 'animate-pulse')}
     />
   );
 }

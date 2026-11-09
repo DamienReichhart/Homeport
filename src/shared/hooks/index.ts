@@ -1,6 +1,7 @@
 export { useAsync } from './useAsync';
 export type { AsyncState } from './useAsync';
 export { useDebounced } from './useDebounced';
+export { prefersReducedMotion, usePrefersReducedMotion } from './usePrefersReducedMotion';
 export {
   formatKeys,
   isMac,
