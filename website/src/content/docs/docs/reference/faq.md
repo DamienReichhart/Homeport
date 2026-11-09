@@ -118,7 +118,7 @@ Not yet. They're planned; the [installation page](/docs/installation/#coming-lat
 
 ### Is Homeport available in my language?
 
-Homeport speaks English, French, Spanish, German, Italian, Brazilian Portuguese, Russian, Simplified Chinese, Japanese, Korean, Hindi and Arabic, and follows your operating system's language unless you pick one under [Settings → Appearance](/docs/guides/settings/#appearance). The website is in all of them too; the documentation is fully translated into French, and other languages show the English page where a translation doesn't exist yet. To add a language, see [Contributing](/docs/project/contributing/#translating-homeport).
+Homeport speaks English, French, Spanish, German, Italian, Brazilian Portuguese, Russian, Simplified Chinese, Japanese, Korean, Hindi and Arabic, and follows your operating system's language unless you pick one under [Settings → Appearance](/docs/guides/settings/#appearance). The website and this documentation are in all of them too; only the legal pages are in English. To add a language, see [Contributing](/docs/project/contributing/#translating-homeport).
 
 ### Is Homeport accessible?
 
