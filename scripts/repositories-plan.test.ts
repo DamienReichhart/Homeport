@@ -1,4 +1,5 @@
 import {
+  aptPoolName,
   compareVersions,
   type GitHubRelease,
   packagesOf,
@@ -98,6 +99,22 @@ describe('packagesOf', () => {
       'Homeport-1.0.0-linux-x64.rpm',
       'Homeport-1.0.0-linux-arm64.rpm',
     ]);
+  });
+});
+
+describe('aptPoolName', () => {
+  const [r] = selectReleases([release('v1.0.0')]);
+  const pooled = (name: string) => aptPoolName(r!, { name, url: '' });
+
+  // apt-ftparchive --arch amd64 only indexes *_amd64.deb.
+  it('names a .deb by its Debian architecture, as apt-ftparchive selects them', () => {
+    expect(pooled('Homeport-1.0.0-linux-x64.deb')).toBe('Homeport_1.0.0_amd64.deb');
+    expect(pooled('Homeport-1.0.0-linux-arm64.deb')).toBe('Homeport_1.0.0_arm64.deb');
+  });
+
+  it('keeps the name older releases gave it', () => {
+    expect(pooled('Homeport_1.0.0_amd64.deb')).toBe('Homeport_1.0.0_amd64.deb');
+    expect(pooled('Homeport_1.0.0_arm64.deb')).toBe('Homeport_1.0.0_arm64.deb');
   });
 });
 

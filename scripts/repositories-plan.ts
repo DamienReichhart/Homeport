@@ -81,6 +81,22 @@ export function packagesOf(release: Release): { deb: Asset[]; rpm: Asset[] } {
   };
 }
 
+const DEB_ARCH = { x64: 'amd64', arm64: 'arm64' } as const;
+
+/**
+ * The name a release's `.deb` takes in the APT repository's pool:
+ * `Homeport_<version>_<amd64|arm64>.deb`, whichever way the release names it.
+ * `apt-ftparchive --arch <arch>` indexes only the files named `*_<arch>.deb`,
+ * so a `.deb` kept under its release name (`Homeport-1.0.0-linux-x64.deb`)
+ * would be left out of the repository without an error.
+ */
+export function aptPoolName(release: Release, asset: Asset): string {
+  const kind = describeAsset(asset.name);
+  return kind?.kind === 'deb'
+    ? `Homeport_${release.version}_${DEB_ARCH[kind.arch]}.deb`
+    : asset.name;
+}
+
 const UPDATER_OS = { windows: 'windows', macos: 'darwin', linux: 'linux' } as const;
 const UPDATER_ARCH = { x64: 'x86_64', arm64: 'aarch64' } as const;
 

@@ -22,6 +22,7 @@
 import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 import {
+  aptPoolName,
   type GitHubRelease,
   packagesOf,
   type Release,
@@ -126,6 +127,7 @@ function buildApt(dir: string, fpr: string) {
     const binary = join(dist, `main/binary-${arch}`);
     mkdirSync(binary, { recursive: true });
     // Run from the repository root so each `Filename:` is relative to it.
+    // `--arch` takes the files named `*_<arch>.deb`: see `aptPoolName`.
     run(['apt-ftparchive', '--arch', arch, 'packages', 'pool'], {
       cwd: dir,
       stdout: join(binary, 'Packages'),
@@ -190,7 +192,7 @@ async function build(args: string[]) {
     const { deb, rpm: rpmFiles } = packagesOf(release);
     console.log(`${release.tag}: ${deb.length} .deb, ${rpmFiles.length} .rpm`);
     await Promise.all([
-      ...deb.map((a) => download(a.url, join(pool, a.name))),
+      ...deb.map((a) => download(a.url, join(pool, aptPoolName(release, a)))),
       ...rpmFiles.map((a) => download(a.url, join(rpms, a.name))),
     ]);
   }
