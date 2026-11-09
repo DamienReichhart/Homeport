@@ -46,6 +46,6 @@ La confirmación dice lo que pasará después:
 
 ## Cuando no funciona
 
-- **No permitido**: un cambio que tus credenciales no pueden hacer lo indica con su verbo y su recurso («Tus credenciales no pueden aplicar patch a deployments en shop.») y con el comando `kubectl auth can-i` para comprobarlo.
+- **No permitido**: un cambio que tus credenciales no pueden hacer lo indica con su verbo y su recurso («Tus credenciales no permiten «patch» sobre deployments en shop.») y con el comando `kubectl auth can-i` para comprobarlo.
 - **Modificado mientras tanto**: cuando otra persona cambió el objeto entre que lo miraste y tu acción, Homeport lo indica; vuelve a mirarlo y reinténtalo.
 - **Ya no existe**: eliminar algo que ya se eliminó indica que ya no existe.
