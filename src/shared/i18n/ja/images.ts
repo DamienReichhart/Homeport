@@ -23,7 +23,7 @@ export default {
   'images.column.created': '作成日時',
   'images.column.size': 'サイズ',
   'images.column.status': 'ステータス',
-  'images.moreTags': 'ほか {count} 個のタグ',
+  'images.moreTags': '{count, plural, other {ほか # 個のタグ}}',
   'images.inUse': '使用中 · {count}',
   'images.unused': '未使用',
   'images.runOne': '{name} を実行',

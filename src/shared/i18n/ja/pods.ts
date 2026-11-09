@@ -50,7 +50,7 @@ export default {
   'pods.logs.previous': '前回のインスタンス',
   'pods.logs.noRestart': '再起動していないため、前回のインスタンスはありません。',
   'pods.logs.pod': 'Pod',
-  'pods.logs.allPods': 'すべての Pod（{count, plural, other {# 個}}）',
+  'pods.logs.allPods': '{count, plural, =1 {Pod} other {すべての Pod（# 個）}}',
   'pods.logs.noPods': '現在実行中の Pod はありません。',
   'pods.tab.terminal': 'ターミナル',
   'pods.terminal.shell': 'シェル',
