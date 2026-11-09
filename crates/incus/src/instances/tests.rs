@@ -175,6 +175,14 @@ pub(crate) fn live_image() -> String {
     std::env::var("HOMEPORT_INCUS_IMAGE").unwrap_or_else(|_| "images:alpine/3.21".into())
 }
 
+/// Held shared by every live test while it creates an Instance from the
+/// live image, and alone by the images test while it deletes that image.
+/// A creation unpacks Incus's cached copy of the image, so deleting it
+/// mid-creation fails the creation with "Image is missing a rootfs" or "no
+/// such file or directory": the images test must wait for creations in
+/// flight, and creations started after it pull the image again.
+pub(crate) static LIVE_IMAGE: tokio::sync::RwLock<()> = tokio::sync::RwLock::const_new(());
+
 /// Makes a small container Instance named `name` from the live image,
 /// stopped, through Homeport's own create.
 pub(crate) async fn live_instance(incus: &Incus, name: &str) {
@@ -194,11 +202,14 @@ pub(crate) async fn live_instance(incus: &Incus, name: &str) {
         start: false,
     };
     let mut events = Vec::new();
-    create(incus, "default", &spec, |e| {
-        events.push(e);
-        true
-    })
-    .await;
+    {
+        let _creating = LIVE_IMAGE.read().await;
+        create(incus, "default", &spec, |e| {
+            events.push(e);
+            true
+        })
+        .await;
+    }
     assert_eq!(events.last(), Some(&PullEvent::Done), "{events:?}");
 }
 
@@ -217,11 +228,14 @@ async fn incus_live_instances_start_freeze_stop_and_delete() {
     taken.name = name.clone();
     taken.disk = None;
     let mut events = Vec::new();
-    create(&incus, "default", &taken, |e| {
-        events.push(e);
-        true
-    })
-    .await;
+    {
+        let _creating = LIVE_IMAGE.read().await;
+        create(&incus, "default", &taken, |e| {
+            events.push(e);
+            true
+        })
+        .await;
+    }
     assert!(
         matches!(events.last(), Some(PullEvent::Error { error }) if error.code == ErrorCode::NameInUse),
         "{events:?}"

@@ -417,8 +417,10 @@ mod tests {
             .unwrap_err();
         assert_eq!(again.code, ErrorCode::NameInUse, "{again:?}");
         remove_alias(&incus, "default", &name).await.unwrap();
-        // Instances in use keep their own copy, so a cached image may stay
-        // in use by the live tests' Instances: deleting must still work.
+        // This is the image the other live tests make Instances from:
+        // Instances made keep their own copy, so deleting it must work, but
+        // not while one is being created from it, which would lose its file.
+        let _deleting = crate::instances::tests::LIVE_IMAGE.write().await;
         delete(&incus, "default", &image.fingerprint).await.unwrap();
     }
 }
