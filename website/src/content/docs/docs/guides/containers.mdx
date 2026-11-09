@@ -89,7 +89,7 @@ When the container stops, the log ends with _— end of logs —_.
 
 ### Health
 
-Shown for containers with a healthcheck — their own, or their image's. **Healthcheck** gives the status (_starting_, _healthy_ or _unhealthy_), the command, its timing (the Engine's defaults fill what isn't set: every 30 s, a 30 s timeout, 3 retries) and how many checks have failed in a row. **Last results** lists the checks the Engine keeps, newest first, with their exit code, when they ran, how long they took and what they printed; long output folds behind **Show more**.
+Shown for containers with a healthcheck — their own, or their image's. **Healthcheck** gives the status (_starting_, _healthy_ or _unhealthy_), the command, its timing (the Engine's defaults fill what isn't set: every 30 s, a 30 s timeout, 3 retries) and how many checks have failed in a row. **Last results** lists the checks the Engine keeps, newest first, with their exit code, when they ran, how long they took and what they printed; long output folds behind **Show N more lines**.
 
 So when the list says _unhealthy_, this is where the reason is, without reading the raw JSON. The tab refreshes on its own once per check interval and whenever the status changes. A container whose healthcheck is turned off has no Health tab; to add or change one, [edit the container](#editing-a-container).
 
