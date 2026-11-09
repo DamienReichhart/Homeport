@@ -4,6 +4,9 @@ import type { Translation } from '../types';
 
 export default {
   'app.nav.main': 'Principal',
+  'app.nav.docs': 'Documentation',
+  'app.nav.github': 'GitHub',
+  'app.nav.opensInBrowser': '{label} (s’ouvre dans votre navigateur)',
   'app.keychainMissing':
     'Aucun trousseau du système n’est disponible : les clés SSH, les certificats TLS et les environnements des stacks ne peuvent pas être enregistrés. Les hôtes locaux, TCP et ssh-agent fonctionnent toujours.',
   'app.crash.title': 'Un problème est survenu',

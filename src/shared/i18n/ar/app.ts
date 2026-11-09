@@ -4,6 +4,9 @@ import type { Translation } from '../types';
 
 export default {
   'app.nav.main': 'الرئيسية',
+  'app.nav.docs': 'الوثائق',
+  'app.nav.github': 'GitHub',
+  'app.nav.opensInBrowser': '{label} (يُفتح في المتصفح)',
   'app.keychainMissing':
     'لا تتوفر سلسلة مفاتيح في نظام التشغيل، لذا لا يمكن تخزين مفاتيح SSH وشهادات TLS وبيئات المكدسات. تظل المضيفات المحلية ومضيفات TCP وssh-agent تعمل.',
   'app.crash.title': 'حدث خطأ ما',

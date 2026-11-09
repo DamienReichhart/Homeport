@@ -4,6 +4,9 @@ import type { Translation } from '../types';
 
 export default {
   'app.nav.main': 'Основное',
+  'app.nav.docs': 'Документация',
+  'app.nav.github': 'GitHub',
+  'app.nav.opensInBrowser': '{label} (откроется в браузере)',
   'app.keychainMissing':
     'Связка ключей ОС недоступна, поэтому SSH-ключи, TLS-сертификаты и окружения стеков сохранить нельзя. Локальные хосты, хосты TCP и ssh-agent по-прежнему работают.',
   'app.crash.title': 'Что-то пошло не так',

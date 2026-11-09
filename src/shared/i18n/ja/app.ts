@@ -4,6 +4,9 @@ import type { Translation } from '../types';
 
 export default {
   'app.nav.main': 'メイン',
+  'app.nav.docs': 'ドキュメント',
+  'app.nav.github': 'GitHub',
+  'app.nav.opensInBrowser': '{label}（ブラウザーで開きます）',
   'app.keychainMissing':
     'OS のキーチェーンを利用できないため、SSH キー、TLS 証明書、スタックの環境変数を保存できません。ローカル、TCP、ssh-agent のホストは引き続き使えます。',
   'app.crash.title': '問題が発生しました',

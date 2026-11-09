@@ -4,6 +4,9 @@ import type { Translation } from '../types';
 
 export default {
   'app.nav.main': '主菜单',
+  'app.nav.docs': '文档',
+  'app.nav.github': 'GitHub',
+  'app.nav.opensInBrowser': '{label}（在浏览器中打开）',
   'app.keychainMissing':
     '没有可用的系统钥匙串，因此无法保存 SSH 密钥、TLS 证书和堆栈环境变量。本地、TCP 和 ssh-agent 主机仍可使用。',
   'app.crash.title': '出现问题',

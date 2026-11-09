@@ -4,6 +4,9 @@ import type { Translation } from '../types';
 
 export default {
   'app.nav.main': 'Hauptmenü',
+  'app.nav.docs': 'Dokumentation',
+  'app.nav.github': 'GitHub',
+  'app.nav.opensInBrowser': '{label} (wird im Browser geöffnet)',
   'app.keychainMissing':
     'Es ist kein Schlüsselbund des Betriebssystems verfügbar, daher können SSH-Schlüssel, TLS-Zertifikate und Stack-Umgebungen nicht gespeichert werden. Lokale, TCP- und ssh-agent-Hosts funktionieren weiterhin.',
   'app.crash.title': 'Etwas ist schiefgelaufen',

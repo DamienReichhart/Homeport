@@ -4,6 +4,9 @@ import type { Translation } from '../types';
 
 export default {
   'app.nav.main': 'मुख्य',
+  'app.nav.docs': 'दस्तावेज़',
+  'app.nav.github': 'GitHub',
+  'app.nav.opensInBrowser': '{label} (आपके ब्राउज़र में खुलता है)',
   'app.keychainMissing':
     'कोई OS कीचेन उपलब्ध नहीं है, इसलिए SSH कुंजियाँ, TLS प्रमाणपत्र और स्टैक के परिवेश सहेजे नहीं जा सकते। लोकल, TCP और ssh-agent होस्ट फिर भी काम करते हैं।',
   'app.crash.title': 'कुछ गलत हो गया',

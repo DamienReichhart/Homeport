@@ -4,6 +4,9 @@ import type { Translation } from '../types';
 
 export default {
   'app.nav.main': '기본',
+  'app.nav.docs': '문서',
+  'app.nav.github': 'GitHub',
+  'app.nav.opensInBrowser': '{label}(브라우저에서 열림)',
   'app.keychainMissing':
     'OS 키체인을 사용할 수 없어 SSH 키, TLS 인증서, 스택 환경을 저장할 수 없습니다. 로컬, TCP, ssh-agent 호스트는 계속 작동합니다.',
   'app.crash.title': '문제가 발생했습니다',

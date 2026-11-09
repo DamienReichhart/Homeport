@@ -1,6 +1,9 @@
 /** English text of the `app` namespace; every key starts with `app.`. */
 export default {
   'app.nav.main': 'Main',
+  'app.nav.docs': 'Documentation',
+  'app.nav.github': 'GitHub',
+  'app.nav.opensInBrowser': '{label} (opens in your browser)',
   'app.keychainMissing':
     'No OS keychain is available, so SSH keys, TLS certificates and stack environments can’t be stored. Local, TCP and ssh-agent hosts still work.',
   'app.crash.title': 'Something went wrong',

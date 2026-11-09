@@ -4,6 +4,9 @@ import type { Translation } from '../types';
 
 export default {
   'app.nav.main': 'Principal',
+  'app.nav.docs': 'Documentación',
+  'app.nav.github': 'GitHub',
+  'app.nav.opensInBrowser': '{label} (se abre en el navegador)',
   'app.keychainMissing':
     'No hay ningún llavero del sistema disponible, así que no se pueden guardar claves SSH, certificados TLS ni entornos de stacks. Los hosts locales, TCP y con ssh-agent siguen funcionando.',
   'app.crash.title': 'Algo salió mal',
