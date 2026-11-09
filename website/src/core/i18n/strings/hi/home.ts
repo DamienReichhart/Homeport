@@ -1,168 +1,171 @@
 import type { Translation } from '../../types';
 import type en from '../en/home';
 
-/** The home page, in Hindi. Still in English: translate each value of ../en/home.ts. */
+/** The home page, in Hindi. */
 export default {
   // Home: the hero and its board.
-  'home.title': 'Homeport — Every Docker Engine, on one board.',
-  'home.hero.new': 'New',
-  'home.hero.release': 'Homeport {version} is out',
-  'home.hero.title': 'Every Docker Engine, on one board.',
+  'home.title': 'Homeport — हर Docker Engine, एक ही बोर्ड पर।',
+  'home.hero.new': 'नया',
+  'home.hero.release': 'Homeport {version} आ गया है',
+  'home.hero.title': 'हर Docker Engine, एक ही बोर्ड पर।',
   'home.hero.lead':
-    'Homeport runs on your machine and reaches your Hosts over SSH, TLS or TCP. No agent on the server. Free, open source, Windows, macOS, Linux.',
-  'home.hero.source': 'Read the source',
+    'Homeport आपकी मशीन पर चलता है और SSH, TLS या TCP से आपके होस्ट तक पहुँचता है। सर्वर पर कोई एजेंट नहीं। मुफ़्त, ओपन सोर्स, Windows, macOS, Linux।',
+  'home.hero.source': 'सोर्स कोड पढ़ें',
   'home.board.caption':
-    'An example board: five Hosts, their Engines and how Homeport reaches them. One needs attention.',
-  'home.board.host': 'Host',
-  'home.board.engine': 'Engine',
-  'home.board.via': 'Via',
-  'home.board.stacks': 'Stacks',
-  'home.board.status': 'Status',
-  'home.board.allRunning': 'All running',
-  'home.board.needsYou': '1 Stack needs you',
-  'home.board.note': 'Healthy is plain. Only what needs you turns red.',
-  'home.runtimes.label': 'Works with',
-  'home.runtimes.title': 'Works with what you already run',
+    'एक उदाहरण बोर्ड: पाँच होस्ट, उनके इंजन और Homeport उन तक कैसे पहुँचता है। एक पर ध्यान देने की ज़रूरत है।',
+  'home.board.host': 'होस्ट',
+  'home.board.engine': 'इंजन',
+  'home.board.via': 'माध्यम',
+  'home.board.stacks': 'स्टैक',
+  'home.board.status': 'स्थिति',
+  'home.board.allRunning': 'सभी चल रहे हैं',
+  'home.board.needsYou': '1 स्टैक को आपकी ज़रूरत है',
+  'home.board.note': 'जो ठीक है, वह सादा दिखता है। सिर्फ़ वही लाल होता है जिसे आपकी ज़रूरत है।',
+  'home.runtimes.label': 'इनके साथ काम करता है',
+  'home.runtimes.title': 'जो आप पहले से चलाते हैं, उसी के साथ काम करता है',
 
   // Home: where it lives.
-  'home.visits.eyebrow': 'Where it lives',
-  'home.visits.title': 'Homeport stays on your machine and visits your servers. It never moves in.',
-  'home.visits.agent.title': 'No agent',
+  'home.visits.eyebrow': 'यह कहाँ रहता है',
+  'home.visits.title':
+    'Homeport आपकी मशीन पर रहता है और आपके सर्वरों पर सिर्फ़ आता-जाता है। वहाँ यह कभी बसता नहीं।',
+  'home.visits.agent.title': 'कोई एजेंट नहीं',
   'home.visits.agent.body':
-    'Nothing to install, update or secure on the server. Homeport talks to the Engine that is already there.',
-  'home.visits.panel.title': 'No web panel',
+    'सर्वर पर इंस्टॉल, अपडेट या सुरक्षित करने के लिए कुछ नहीं। Homeport उसी इंजन से बात करता है जो वहाँ पहले से है।',
+  'home.visits.panel.title': 'कोई वेब पैनल नहीं',
   'home.visits.panel.body':
-    'No dashboard deployed on your servers, and no login page waiting for someone to find it.',
-  'home.visits.account.title': 'No account',
+    'आपके सर्वरों पर कोई डैशबोर्ड डिप्लॉय नहीं होता, और कोई लॉगिन पेज नहीं जो किसी के ढूँढ लेने का इंतज़ार करे।',
+  'home.visits.account.title': 'कोई खाता नहीं',
   'home.visits.account.body':
-    'No sign-in, no seat, no subscription and no telemetry. It shows you your containers, and that is all.',
-  'home.visits.ports.title': 'What it needs on the server, honestly',
+    'न साइन-इन, न सीट, न सब्सक्रिप्शन और न टेलीमेट्री। यह आपको आपके कंटेनर दिखाता है, बस इतना ही।',
+  'home.visits.ports.title': 'सर्वर पर इसे क्या चाहिए, साफ़-साफ़',
   'home.visits.ports.ssh':
-    'The port you already have open. With the key Homeport makes, one line in {file}.',
-  'home.visits.ports.tls': 'The Engine’s own API port (usually {port}), which you expose yourself.',
+    'वही पोर्ट जो आपके पास पहले से खुला है। Homeport जो कुंजी बनाता है, उसके साथ {file} में एक पंक्ति।',
+  'home.visits.ports.tls':
+    'इंजन का अपना API पोर्ट (आमतौर पर {port}), जिसे आप खुद एक्सपोज़ करते हैं।',
   'home.visits.ports.tcp':
-    'The Engine’s API port (usually {port}), unencrypted. Only on a network you trust.',
+    'इंजन का API पोर्ट (आमतौर पर {port}), बिना एन्क्रिप्शन के। सिर्फ़ ऐसे नेटवर्क पर जिस पर आप भरोसा करते हैं।',
   'home.visits.ports.advice':
-    'When you can, use SSH: it adds nothing to the server you’re not already running.',
-  'home.visits.link': 'How connections work',
+    'जब हो सके, SSH इस्तेमाल करें: यह सर्वर पर ऐसा कुछ नहीं जोड़ता जो आप पहले से नहीं चला रहे।',
+  'home.visits.link': 'कनेक्शन कैसे काम करते हैं',
 
   // Home: the features.
-  'home.features.eyebrow': 'Features',
-  'home.features.title': 'Everything your Engines run, in one window',
+  'home.features.eyebrow': 'सुविधाएँ',
+  'home.features.title': 'आपके इंजन जो कुछ चलाते हैं, सब एक विंडो में',
   'home.features.lead':
-    'The day-to-day of Docker — what is running, what it says, what it costs — without remembering which server it lives on.',
-  'home.features.hosts.title': 'Hosts, near and far',
+    'Docker का रोज़ का काम — क्या चल रहा है, वह क्या कह रहा है, उसकी लागत क्या है — यह याद रखे बिना कि वह किस सर्वर पर है।',
+  'home.features.hosts.title': 'होस्ट, पास के और दूर के',
   'home.features.hosts.body':
-    'Local Engines and Podman machines are found for you. Remote ones join over SSH, through bastions if need be, mutual TLS or TCP, or straight from your ~/.ssh/config and Docker contexts. Each Host reconnects on its own when the network blinks.',
-  'home.features.containers.title': 'Containers at a glance',
+    'लोकल इंजन और Podman मशीनें आपके लिए खोज ली जाती हैं। रिमोट इंजन SSH से जुड़ते हैं, ज़रूरत हो तो बैस्टियन के ज़रिए, या mutual TLS या TCP से, या सीधे आपकी ~/.ssh/config और Docker contexts से। नेटवर्क पल भर के लिए टूटे, तो हर होस्ट अपने आप फिर से कनेक्ट हो जाता है।',
+  'home.features.containers.title': 'कंटेनर, एक नज़र में',
   'home.features.containers.body':
-    'Grouped by Stack, with live CPU and memory and the reason behind an unhealthy one. Run with limits, devices and healthchecks, then edit, duplicate, commit or export a container.',
-  'home.features.stacks.title': 'Compose Stacks',
+    'स्टैक के हिसाब से समूहों में, लाइव CPU और मेमोरी के साथ, और अस्वस्थ कंटेनर के पीछे की वजह के साथ। सीमाओं, डिवाइस और हेल्थ चेक के साथ चलाएँ, फिर किसी कंटेनर को संपादित, डुप्लिकेट, commit या एक्सपोर्ट करें।',
+  'home.features.stacks.title': 'Compose स्टैक',
   'home.features.stacks.body':
-    'Start from a template, link a project folder on this computer, or follow a git repository, then deploy to any Host — builds included. See what changes before each redeploy or sync, roll back, and update to newer images in one step.',
+    'किसी टेम्पलेट से शुरू करें, इस कंप्यूटर के किसी प्रोजेक्ट फ़ोल्डर को लिंक करें, या किसी git रिपॉज़िटरी को फ़ॉलो करें, फिर किसी भी होस्ट पर डिप्लॉय करें — बिल्ड सहित। हर बार फिर से डिप्लॉय या सिंक करने से पहले देखें कि क्या बदलेगा, पिछले डिप्लॉय पर वापस जाएँ, और एक ही कदम में नई इमेज पर अपडेट करें।',
   'home.features.swarm.title': 'Docker Swarm',
   'home.features.swarm.body':
-    'Swarms show up through their manager Hosts. Manage nodes, services, tasks, secrets and configs, deploy Stacks to a Swarm, and start, join or leave one from a Host, with nothing installed on any node.',
-  'home.features.podman.title': 'Podman, as Podman',
+    'Swarm अपने मैनेजर होस्ट के ज़रिए दिखते हैं। नोड, सर्विस, टास्क, सीक्रेट और कॉन्फ़िग प्रबंधित करें, किसी Swarm पर स्टैक डिप्लॉय करें, और किसी होस्ट से Swarm शुरू करें, उसमें शामिल हों या उसे छोड़ें, किसी भी नोड पर कुछ इंस्टॉल किए बिना।',
+  'home.features.podman.title': 'Podman, Podman की तरह',
   'home.features.podman.body':
-    'Homeport recognises Podman when it connects and adds what only Podman has: pods, created with their ports and run containers in, and Quadlet units, installed, edited and started under systemd, through Podman’s own API.',
-  'home.features.containerd.title': 'containerd, directly',
+    'Homeport कनेक्ट होते ही Podman को पहचान लेता है और वह जोड़ता है जो सिर्फ़ Podman में है: पॉड, जो अपने पोर्ट के साथ बनाए जाते हैं और जिनमें कंटेनर चलाए जाते हैं, और Quadlet यूनिट, जो systemd के तहत इंस्टॉल, संपादित और शुरू की जाती हैं, Podman के अपने API के ज़रिए।',
+  'home.features.containerd.title': 'containerd, सीधे',
   'home.features.containerd.body':
-    'Connect to containerd on its socket, locally or over SSH, with no Docker: pick a namespace, start, stop and signal its containers’ tasks, read their logs, open a terminal, pull images with your registry logins, and find the snapshots eating your disk.',
-  'home.features.incus.title': 'Incus instances',
+    'containerd से उसके सॉकेट पर कनेक्ट करें, लोकल रूप से या SSH से, बिना Docker के: एक नेमस्पेस चुनें, उसके कंटेनरों के टास्क शुरू करें, रोकें और उन्हें सिग्नल भेजें, उनके लॉग पढ़ें, टर्मिनल खोलें, अपने रजिस्ट्री लॉगिन से इमेज पुल करें, और वे स्नैपशॉट ढूँढें जो आपकी डिस्क भर रहे हैं।',
+  'home.features.incus.title': 'Incus इंस्टेंस',
   'home.features.incus.body':
-    'Add Incus over its socket, SSH or HTTPS with a trust token, and run its system containers and virtual machines: create them from a remote image, start, freeze and stop them, open their console or a shell, take and restore snapshots, and manage images, profiles, storage and networks.',
-  'home.features.clusters.title': 'Kubernetes and Nomad clusters',
+    'Incus को उसके सॉकेट, SSH या ट्रस्ट टोकन के साथ HTTPS से जोड़ें, और उसके सिस्टम कंटेनर और वर्चुअल मशीनें चलाएँ: उन्हें किसी रिमोट इमेज से बनाएँ, शुरू करें, फ़्रीज़ करें और रोकें, उनका कंसोल या शेल खोलें, स्नैपशॉट लें और रीस्टोर करें, और इमेज, प्रोफ़ाइल, स्टोरेज और नेटवर्क प्रबंधित करें।',
+  'home.features.clusters.title': 'Kubernetes और Nomad क्लस्टर',
   'home.features.clusters.body':
-    'Add Kubernetes clusters from your kubeconfig — EKS, GKE and AKS included — or find local ones in one click. Browse workloads, Pods, Services, configuration and any API resource live; follow logs, open a terminal, forward ports, scale and apply YAML with a preview, and install, upgrade and roll back Helm charts. Add Nomad clusters by address to run jobs from HCL with their plan, scale and stop them, follow logs, open a shell and drain nodes. Nothing is installed on a cluster.',
-  'home.features.images.title': 'Images',
+    'अपनी kubeconfig से Kubernetes क्लस्टर जोड़ें — EKS, GKE और AKS सहित — या लोकल क्लस्टर एक क्लिक में खोजें। वर्कलोड, Pods, Services, कॉन्फ़िगरेशन और कोई भी API रिसोर्स लाइव देखें; लॉग फ़ॉलो करें, टर्मिनल खोलें, पोर्ट फ़ॉरवर्ड करें, स्केल करें और प्रीव्यू के साथ YAML लागू करें, और Helm चार्ट इंस्टॉल, अपग्रेड और रोलबैक करें। Nomad क्लस्टर उनके पते से जोड़ें: HCL से जॉब उनके प्लान के साथ चलाएँ, उन्हें स्केल करें और रोकें, लॉग फ़ॉलो करें, शेल खोलें और Nodes ड्रेन करें। किसी क्लस्टर पर कुछ इंस्टॉल नहीं होता।',
+  'home.features.images.title': 'इमेज',
   'home.features.images.body':
-    'Search Docker Hub, pull and push with your registry logins, build from a folder on your computer, save and load archives, and see when a newer image is out.',
-  'home.features.volumes.title': 'Volumes and networks',
+    'Docker Hub में खोजें, अपने रजिस्ट्री लॉगिन से पुल और पुश करें, अपने कंप्यूटर के किसी फ़ोल्डर से बिल्ड करें, आर्काइव सहेजें और लोड करें, और देखें कि कब कोई नई इमेज आई है।',
+  'home.features.volumes.title': 'वॉल्यूम और नेटवर्क',
   'home.features.volumes.body':
-    'See which containers use what. Create, connect and disconnect, with deletion that tells you exactly what you are about to lose.',
-  'home.features.board.title': 'One board for every Host',
+    'देखें कि कौन-सा कंटेनर क्या इस्तेमाल करता है। बनाएँ, कनेक्ट और डिस्कनेक्ट करें; हटाते समय आपको ठीक-ठीक बताया जाता है कि आप क्या खोने वाले हैं।',
+  'home.features.board.title': 'हर होस्ट के लिए एक बोर्ड',
   'home.features.board.body':
-    'Every container of every Host in one table, filtered and acted on together. Each Host on one page too: engine details, disk usage with a one-dialog clean-up, and a live stream of what the Engine is doing.',
-  'home.features.keyboard.title': 'Keyboard first',
+    'हर होस्ट का हर कंटेनर एक ही टेबल में, जिसे फ़िल्टर करके एक साथ कार्रवाई की जा सकती है। हर होस्ट का अपना पेज भी: इंजन का विवरण, डिस्क का उपयोग और एक ही डायलॉग में सफ़ाई, और इंजन जो कर रहा है उसकी लाइव स्ट्रीम।',
+  'home.features.keyboard.title': 'कीबोर्ड सबसे पहले',
   'home.features.keyboard.body':
-    'A command palette to go anywhere, switch Host or run a command, and to find any container, image or volume on whichever Host has it. Shortcuts for every page, listed with ?.',
-  'home.features.background.title': 'Watching in the background',
+    'एक कमांड पैलेट, जिससे आप कहीं भी जा सकते हैं, होस्ट बदल सकते हैं या कोई कमांड चला सकते हैं, और कोई भी कंटेनर, इमेज या वॉल्यूम ढूँढ सकते हैं, चाहे वह किसी भी होस्ट पर हो। हर पेज के लिए शॉर्टकट, जिनकी सूची ? से दिखती है।',
+  'home.features.background.title': 'बैकग्राउंड में निगरानी',
   'home.features.background.body':
-    'Every Host’s status in the system tray, notifications when a container crashes or a Host drops, and Homeport starting at login, hidden until you need it.',
+    'सिस्टम ट्रे में हर होस्ट की स्थिति, किसी कंटेनर के क्रैश होने या किसी होस्ट का कनेक्शन टूटने पर सूचनाएँ, और लॉगिन पर Homeport का शुरू होना, तब तक छिपा हुआ जब तक आपको उसकी ज़रूरत न हो।',
 
   // Home: Hosts.
-  'home.hosts.eyebrow': 'Hosts',
-  'home.hosts.title': 'Remote Engines without the ceremony',
+  'home.hosts.eyebrow': 'होस्ट',
+  'home.hosts.title': 'रिमोट इंजन, बिना किसी झंझट के',
   'home.hosts.body':
-    "Add a server once and it stays on the board. For SSH, Homeport makes a key just for that Host and hands you the one command that authorises it. It checks the server's fingerprint on first contact, and warns you if it ever changes.",
+    'एक बार सर्वर जोड़ें और वह बोर्ड पर बना रहता है। SSH के लिए, Homeport सिर्फ़ उसी होस्ट के लिए एक कुंजी बनाता है और आपको वह एक कमांड देता है जो उसे अधिकृत करती है। पहले संपर्क पर यह सर्वर का फ़िंगरप्रिंट जाँचता है, और अगर वह कभी बदले तो आपको चेतावनी देता है।',
   'home.hosts.import':
-    'Already described them? Import your servers from {file}, jump servers included, or your Docker contexts, certificates included. Moving to a new computer, take them along in one file locked with a passphrase.',
-  'home.hosts.socket.name': 'Local socket',
-  'home.hosts.socket.detail': 'Unix sockets and Windows named pipes, detected automatically.',
+    'उनका विवरण पहले से लिखा है? अपने सर्वर {file} से इम्पोर्ट करें, जंप सर्वर सहित, या अपने Docker contexts, प्रमाणपत्रों सहित। नए कंप्यूटर पर जा रहे हैं, तो उन्हें पासफ़्रेज़ से लॉक की गई एक फ़ाइल में साथ ले जाएँ।',
+  'home.hosts.socket.name': 'लोकल सॉकेट',
+  'home.hosts.socket.detail': 'Unix सॉकेट और Windows named pipe, अपने आप पहचाने जाते हैं।',
   'home.hosts.ssh.detail':
-    'A dedicated Ed25519 key per Host, your own key, ssh-agent or Pageant; through bastions too.',
-  'home.hosts.tls.detail': 'Mutual TLS with your CA, client certificate and key.',
-  'home.hosts.tcp.detail': 'Plain, unencrypted TCP, only for an Engine on a network you trust.',
-  'home.hosts.link': 'How connections work',
+    'हर होस्ट के लिए एक अलग Ed25519 कुंजी, आपकी अपनी कुंजी, ssh-agent या Pageant; बैस्टियन के ज़रिए भी।',
+  'home.hosts.tls.detail': 'आपके CA, क्लाइंट प्रमाणपत्र और कुंजी के साथ mutual TLS।',
+  'home.hosts.tcp.detail':
+    'सादा, बिना एन्क्रिप्शन का TCP, सिर्फ़ ऐसे नेटवर्क पर मौजूद इंजन के लिए जिस पर आप भरोसा करते हैं।',
+  'home.hosts.link': 'कनेक्शन कैसे काम करते हैं',
   'home.hosts.screenshot':
-    'The Add host page with SSH selected: server, port, user, remote socket path and a new key for this Host.',
+    '“होस्ट जोड़ें” पेज, जिसमें SSH चुना गया है: सर्वर, पोर्ट, यूज़र, रिमोट सॉकेट पाथ और इस होस्ट के लिए एक नई कुंजी।',
 
   // Home: containers.
-  'home.containers.eyebrow': 'Containers',
-  'home.containers.title': 'Everything about a container, one click away',
+  'home.containers.eyebrow': 'कंटेनर',
+  'home.containers.title': 'किसी कंटेनर के बारे में सब कुछ, बस एक क्लिक दूर',
   'home.containers.body':
-    'Open a container and its logs are already streaming. Switch tabs for an interactive terminal, its files, live charts, processes and the full inspect document — on a Host across the world as easily as on your laptop.',
-  'home.containers.logs.title': 'Logs',
-  'home.containers.logs.body': 'Follow, search, filter by stream and time, download.',
-  'home.containers.terminal.title': 'Terminal',
-  'home.containers.terminal.body': 'Interactive shells, as many as you need.',
-  'home.containers.files.title': 'Files',
-  'home.containers.files.body': 'Browse, upload and download, folders as .tar.',
-  'home.containers.stats.title': 'Stats',
-  'home.containers.stats.body': 'CPU, memory, network and disk I/O charts.',
-  'home.containers.link': 'Working with containers',
+    'कोई कंटेनर खोलें और उसके लॉग पहले से स्ट्रीम हो रहे होते हैं। इंटरैक्टिव टर्मिनल, उसकी फ़ाइलें, लाइव चार्ट, प्रोसेस और पूरा निरीक्षण दस्तावेज़ देखने के लिए टैब बदलें — दुनिया के दूसरे छोर पर मौजूद होस्ट पर भी उतनी ही आसानी से जितना आपके लैपटॉप पर।',
+  'home.containers.logs.title': 'लॉग',
+  'home.containers.logs.body': 'फ़ॉलो करें, खोजें, स्ट्रीम और समय से फ़िल्टर करें, डाउनलोड करें।',
+  'home.containers.terminal.title': 'टर्मिनल',
+  'home.containers.terminal.body': 'इंटरैक्टिव शेल, जितने आपको चाहिए।',
+  'home.containers.files.title': 'फ़ाइलें',
+  'home.containers.files.body': 'ब्राउज़ करें, अपलोड और डाउनलोड करें, फ़ोल्डर .tar के रूप में।',
+  'home.containers.stats.title': 'आँकड़े',
+  'home.containers.stats.body': 'CPU, मेमोरी, नेटवर्क और डिस्क I/O के चार्ट।',
+  'home.containers.link': 'कंटेनरों के साथ काम करना',
   'home.containers.screenshot':
-    "A container's Logs tab, streaming output with search, timestamps and stream filters.",
+    'किसी कंटेनर का “लॉग” टैब, जो खोज, टाइमस्टैम्प और स्ट्रीम फ़िल्टर के साथ आउटपुट स्ट्रीम कर रहा है।',
 
   // Home: Stacks.
-  'home.stacks.eyebrow': 'Stacks',
-  'home.stacks.title': 'Compose Stacks, managed, linked, synced or found',
+  'home.stacks.eyebrow': 'स्टैक',
+  'home.stacks.title': 'Compose स्टैक: प्रबंधित, लिंक्ड, सिंक्ड या खोजे गए',
   'home.stacks.body':
-    'Keep a compose file and its environment in Homeport and deploy it to any Host — start from a template, combine several files, choose profiles; variables are stored encrypted, never written to disk. Or link a project folder on this computer: Homeport edits its files in place and deploys from it, builds included. Or follow a branch of a git repository, with a deploy key or a token: each sync shows the new commits and what they change before deploying, and while Homeport is open it checks for them, deploying on its own if you ask. Every redeploy shows what changes first, each deploy is kept so you can roll back, and Update pulls newer images and redeploys in one step. Stacks someone deployed by hand show up too: start, stop or remove them, or adopt them.',
-  'home.stacks.link': 'Managing Stacks',
+    'एक compose फ़ाइल और उसका परिवेश Homeport में रखें और उसे किसी भी होस्ट पर डिप्लॉय करें — किसी टेम्पलेट से शुरू करें, कई फ़ाइलें मिलाएँ, profiles चुनें; वेरिएबल एन्क्रिप्ट करके रखे जाते हैं, डिस्क पर कभी नहीं लिखे जाते। या इस कंप्यूटर के किसी प्रोजेक्ट फ़ोल्डर को लिंक करें: Homeport उसकी फ़ाइलें वहीं संपादित करता है और वहीं से डिप्लॉय करता है, बिल्ड सहित। या डिप्लॉय कुंजी या टोकन के साथ किसी git रिपॉज़िटरी की ब्रांच को फ़ॉलो करें: हर सिंक डिप्लॉय करने से पहले नए कमिट और उनसे होने वाले बदलाव दिखाता है, और जब तक Homeport खुला है, वह नए कमिट जाँचता रहता है, और आप चाहें तो अपने आप डिप्लॉय करता है। हर बार फिर से डिप्लॉय करने से पहले दिखता है कि क्या बदलेगा, हर डिप्लॉय सहेजा जाता है ताकि आप उस पर वापस जा सकें, और “अपडेट करें” नई इमेज पुल करके एक ही कदम में फिर से डिप्लॉय करता है। जिन स्टैक को किसी ने हाथ से डिप्लॉय किया है, वे भी दिखते हैं: उन्हें शुरू करें, रोकें या हटाएँ, या उन्हें अपनाएँ।',
+  'home.stacks.link': 'स्टैक प्रबंधित करना',
   'home.stacks.screenshot':
-    "A Managed Stack's definition: the compose.yaml editor, its environment and the Save and redeploy button.",
+    'किसी प्रबंधित स्टैक की परिभाषा: compose.yaml एडिटर, उसका परिवेश और “सहेजें और फिर से डिप्लॉय करें” बटन।',
 
   // Home: security.
-  'home.security.eyebrow': 'Security',
-  'home.security.title': 'Your keys stay sealed',
+  'home.security.eyebrow': 'सुरक्षा',
+  'home.security.title': 'आपकी कुंजियाँ सील रहती हैं',
   'home.security.lead':
-    'Homeport handles the credentials that open your servers, so it treats them that way.',
-  'home.security.rest.title': 'Encrypted at rest',
+    'Homeport वे क्रेडेंशियल संभालता है जिनसे आपके सर्वर खुलते हैं, इसलिए वह उन्हें उतनी ही सावधानी से रखता है।',
+  'home.security.rest.title': 'सहेजा गया डेटा एन्क्रिप्टेड',
   'home.security.rest.body':
-    'SSH keys, TLS certificates, Stack environments and repository tokens are sealed with XChaCha20-Poly1305. The key lives in your OS keychain, not next to the data.',
-  'home.security.disk.title': 'Never on disk in clear',
+    'SSH कुंजियाँ, TLS प्रमाणपत्र, स्टैक के परिवेश और रिपॉज़िटरी टोकन XChaCha20-Poly1305 से सील किए जाते हैं। कुंजी आपके OS कीचेन में रहती है, डेटा के पास नहीं।',
+  'home.security.disk.title': 'डिस्क पर कभी खुले रूप में नहीं',
   'home.security.disk.body':
-    'Homeport speaks SSH itself, so decrypted keys stay in memory. No key files, no changes to your {dir}.',
-  'home.security.home.title': 'Nothing phones home',
+    'Homeport खुद SSH बोलता है, इसलिए डिक्रिप्ट की गई कुंजियाँ मेमोरी में ही रहती हैं। कोई कुंजी फ़ाइल नहीं, आपके {dir} में कोई बदलाव नहीं।',
+  'home.security.home.title': 'कुछ भी बाहर नहीं भेजा जाता',
   'home.security.home.body':
-    'No account, no telemetry, no tracking. Homeport talks to your Engines and nothing else. Every release is built in the open, with checksums and build provenance.',
-  'home.security.link': 'Security and your data',
+    'न खाता, न टेलीमेट्री, न ट्रैकिंग। Homeport आपके इंजनों से बात करता है और किसी और से नहीं। हर रिलीज़ खुले में बनाई जाती है, चेकसम और बिल्ड प्रोवेनेंस के साथ।',
+  'home.security.link': 'सुरक्षा और आपका डेटा',
 
   // Home: desktops and the closing call.
-  'home.desktops.eyebrow': 'Download',
-  'home.desktops.title': 'Native on every desktop',
+  'home.desktops.eyebrow': 'डाउनलोड',
+  'home.desktops.title': 'हर डेस्कटॉप पर नेटिव',
   'home.desktops.lead':
-    'A small, fast app built with Tauri and Rust — not a browser tab in disguise. Installers for x64 and ARM that keep Homeport up to date.',
-  'home.desktops.windows.versions': '10 and 11 · x64 and ARM64',
-  'home.desktops.windows.formats': 'Installer (.exe) · MSI',
-  'home.desktops.macos.versions': 'Apple silicon and Intel',
-  'home.desktops.macos.formats': 'Disk image (.dmg)',
-  'home.desktops.linux.versions': 'x64 and ARM64',
+    'Tauri और Rust से बना एक छोटा, तेज़ ऐप — भेस बदले हुए ब्राउज़र टैब नहीं। x64 और ARM के लिए इंस्टॉलर, जो Homeport को अप-टू-डेट रखते हैं।',
+  'home.desktops.windows.versions': '10 और 11 · x64 और ARM64',
+  'home.desktops.windows.formats': 'इंस्टॉलर (.exe) · MSI',
+  'home.desktops.macos.versions': 'Apple silicon और Intel',
+  'home.desktops.macos.formats': 'डिस्क इमेज (.dmg)',
+  'home.desktops.linux.versions': 'x64 और ARM64',
   'home.desktops.linux.formats': 'apt · dnf · zypper · AppImage',
-  'home.cta.title': 'Nothing to install on your servers.',
+  'home.cta.title': 'आपके सर्वरों पर इंस्टॉल करने के लिए कुछ नहीं।',
   'home.cta.body':
-    'Download Homeport on the machine you work from and add your Hosts. It’s free, open source under the GNU AGPL, and built in the open on GitHub.',
-  'home.cta.github': 'View on GitHub',
+    'जिस मशीन से आप काम करते हैं, उस पर Homeport डाउनलोड करें और अपने होस्ट जोड़ें। यह मुफ़्त है, GNU AGPL के तहत ओपन सोर्स है, और GitHub पर खुले में बनाया जाता है।',
+  'home.cta.github': 'GitHub पर देखें',
 } satisfies Translation<typeof en>;
