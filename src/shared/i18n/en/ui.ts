@@ -26,6 +26,8 @@ export default {
   'ui.errorDetails.when': 'When',
   'ui.errorDetails.app': 'App',
   'ui.errorDetails.rawDetail': 'Raw detail',
+  'ui.errorDetails.rawDetailNote':
+    'As the system, the Engine or the library wrote it, so it isn’t translated.',
   'ui.errorDetails.openLogFolder': 'Open log folder',
   'ui.errorDetails.copyReport': 'Copy report',
 } as const;

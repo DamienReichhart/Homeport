@@ -80,7 +80,10 @@ function ErrorDetailsDialog({ error, onClose }: { error: AppError; onClose: () =
           </dl>
           {error.detail && (
             <div className="flex flex-col gap-1">
-              <p className="text-muted-foreground text-sm">{t('ui.errorDetails.rawDetail')}</p>
+              <p className="text-muted-foreground text-sm">
+                {t('ui.errorDetails.rawDetail')}
+                <span className="text-xs"> · {t('ui.errorDetails.rawDetailNote')}</span>
+              </p>
               <pre className="bg-muted max-h-64 overflow-auto rounded-md p-3 font-mono text-xs whitespace-pre-wrap">
                 {error.detail}
               </pre>
