@@ -45,14 +45,14 @@ Las compilaciones locales no están firmadas para el actualizador integrado y de
 
 ## Comandos útiles
 
-| Comando               | Qué hace                                                                                    |
-| --------------------- | ------------------------------------------------------------------------------------------- |
-| `bun run check`       | Comprobación de tipos, lint, comprobación de formato y pruebas del frontend                 |
-| `bun run rust:lint`   | `cargo clippy` con los avisos tratados como errores                                         |
-| `bun run rust:test`   | Pruebas unitarias de Rust                                                                   |
-| `bun run bindings`    | Vuelve a generar los bindings de TypeScript para el IPC                                     |
-| `bun run licenses`    | Genera los avisos de licencia de terceros                                                   |
-| `bun run screenshots` | Vuelve a capturar las capturas de pantalla de este sitio web (`--locale fr` para un idioma) |
+| Comando               | Qué hace                                                                                                            |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `bun run check`       | Comprobación de tipos, lint, comprobación de formato y pruebas del frontend                                         |
+| `bun run rust:lint`   | `cargo clippy` con los avisos tratados como errores                                                                 |
+| `bun run rust:test`   | Pruebas unitarias de Rust                                                                                           |
+| `bun run bindings`    | Vuelve a generar los bindings de TypeScript para el IPC                                                             |
+| `bun run licenses`    | Genera los avisos de licencia de terceros                                                                           |
+| `bun run screenshots` | Vuelve a capturar las capturas de pantalla de este sitio web, en todos los idiomas (`--locale fr` para rehacer uno) |
 
 Las pruebas de integración hablan con el Docker Engine local y con la CLI de Compose. Están marcadas con `#[ignore = "needs a local Docker Engine"]` (o `"… and the compose CLI"`, y unas pocas con `"… access to Docker Hub"`), solo crean recursos llamados `homeport-test-*` y los eliminan después. Ejecútalas con un Engine y el plugin compose en este equipo:
 

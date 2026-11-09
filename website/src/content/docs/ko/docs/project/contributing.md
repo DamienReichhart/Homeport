@@ -71,7 +71,7 @@ Homeport는 [github.com/DamienReichhart/Homeport](https://github.com/DamienReich
 
 1. **앱**: `src/shared/i18n/en/`을 `src/shared/i18n/<tag>/`(`pl`이나 `zh-TW` 같은 BCP 47 태그)로 복사하고, `meta.ts`(`{ name: 'Polski', dir: 'ltr' }`처럼 그 언어로 쓴 언어 이름. 오른쪽에서 왼쪽으로 쓰는 문자라면 `rtl`)를 작성한 다음 모든 파일을 번역합니다. 다른 언어처럼 각 키는 그대로 두고, 각 `export default { … }`를 `export default { … } satisfies Translation<typeof en>`으로 바꿉니다. `bun run i18n:check --locale <tag>`가 빠진 항목을 나열합니다. 다른 변경 없이도 설정에 새 언어가 표시되고, OS 언어에 따라 선택됩니다.
 2. **웹사이트**: `website/src/core/site/locales.ts`에 언어를 추가한 다음, `website/src/core/i18n/strings/en/`을 복사한 `<code>/`에 문자열을(`core/i18n/index.ts`의 `TABLES`에 등록), `website/src/app/config/sidebar/<code>.ts`에 사이드바 레이블을(`sidebar.ts`에 등록. 이 파일들은 폴더를 찾아 주는 Vite 바깥에서 불러오므로, 이 두 줄이 언어에 필요한 유일한 코드입니다), `website/src/content/i18n/<tag>.json`에 번역되지 않은 페이지에 대한 Starlight 안내 문구를 추가합니다. 페이지, URL, 언어 전환기 항목, `hreflang` 링크, 사이트맵 대체 링크는 목록에 따라 자동으로 만들어집니다. 문서는 `website/src/content/docs/<code>/docs/` 아래에 둡니다. 그곳의 모든 페이지를 번역하고(없는 페이지는 안내 문구와 함께 영어로 보입니다), 빌드 후 `bun scripts/localize-anchors.ts <code>`를 실행합니다.
-3. **스크린숏**: `bun run screenshots --locale <tag>`는 새 언어로 모든 스크린숏을 `website/src/assets/screenshots/<tag>/`에 캡처합니다. 스크린숏이 없는 페이지는 영어 스크린숏을 보여 줍니다.
+3. **스크린숏**: `bun run screenshots`는 새 언어를 포함한 모든 언어로 모든 스크린숏을 `website/src/assets/screenshots/<tag>/`에 캡처하므로, 각 페이지는 읽는 사람의 언어로 앱을 보여 줍니다. 영어에 있는 스크린숏이 어떤 언어에 없는 동안에는 웹사이트의 `bun test`가 실패합니다.
 4. **용어**: `docs/i18n/terms-<tag>.md`를 추가합니다.
 
 방금 추가한 언어를 테스트가 인식하지 못하면 `node_modules/.vitest-cache`를 삭제하세요. Vitest가 카탈로그 파일의 이전 목록을 가지고 있을 수 있습니다.

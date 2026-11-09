@@ -71,7 +71,7 @@ Homeport は [github.com/DamienReichhart/Homeport](https://github.com/DamienReic
 
 1. **アプリ**: `src/shared/i18n/en/` を `src/shared/i18n/<tag>/`（`pl` や `zh-TW` などの BCP 47 タグ）にコピーし、その `meta.ts`（`{ name: 'Polski', dir: 'ltr' }`。その言語自身による言語名。右から左に書く文字では `rtl`）を書き、すべてのファイルを翻訳します。各キーはそのまま残し、ほかの言語と同様に、各 `export default { … }` を `export default { … } satisfies Translation<typeof en>` にします。`bun run i18n:check --locale <tag>` で不足しているものが一覧表示されます。ほかに何も変更しなくても、設定に新しい言語が表示され、OS の言語に応じて選ばれます。
 2. **Web サイト**: `website/src/core/site/locales.ts` に言語を追加し、続いてその文字列を `website/src/core/i18n/strings/en/` のコピーである `<code>/` に（`core/i18n/index.ts` の `TABLES` に登録）、サイドバーのラベルを `website/src/app/config/sidebar/<code>.ts` に（`sidebar.ts` に登録。これらのファイルは、フォルダーを見つける役割の Vite の外で読み込まれるため、言語に必要なコードはこの 2 行だけです）、翻訳されていないページ用の Starlight の注記を `website/src/content/i18n/<tag>.json` に追加します。ページ、URL、言語切り替えの項目、`hreflang` のリンク、サイトマップの代替ページは、この一覧から自動で生成されます。ドキュメントは `website/src/content/docs/<code>/docs/` の下に置きます。そこにあるすべてのページを翻訳し（ないページは注記付きで英語が表示されます）、ビルドの後に `bun scripts/localize-anchors.ts <code>` を実行します。
-3. **スクリーンショット**: `bun run screenshots --locale <tag>` で、すべてのスクリーンショットを新しい言語で `website/src/assets/screenshots/<tag>/` に撮影します。スクリーンショットのないページには英語のものが表示されます。
+3. **スクリーンショット**: `bun run screenshots` で、すべてのスクリーンショットを新しい言語も含むすべての言語で `website/src/assets/screenshots/<tag>/` に撮影し、各ページで読者の言語のアプリを表示します。英語にあるスクリーンショットがどれかの言語に欠けている間は、Web サイトの `bun test` が失敗します。
 4. **用語**: `docs/i18n/terms-<tag>.md` を追加します。
 
 追加したばかりの言語がテストで認識されない場合は、`node_modules/.vitest-cache` を削除してください。Vitest がカタログファイルの古い一覧を保持していることがあります。

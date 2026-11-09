@@ -71,7 +71,7 @@ Homeport 在 [github.com/DamienReichhart/Homeport](https://github.com/DamienReic
 
 1. **应用**：将 `src/shared/i18n/en/` 复制到 `src/shared/i18n/<tag>/`（BCP 47 标签，例如 `pl` 或 `zh-TW`），编写其 `meta.ts`（`{ name: 'Polski', dir: 'ltr' }`，即该语言对自身的称呼；从右到左书写的文字使用 `rtl`），并翻译每个文件，保留每个键，并像其他语言一样将每个 `export default { … }` 改为 `export default { … } satisfies Translation<typeof en>`。`bun run i18n:check --locale <tag>` 会列出缺少的内容。“设置”中会列出新语言，操作系统的语言会自动选中它，无需其他更改。
 2. **网站**：将该语言添加到 `website/src/core/site/locales.ts`，然后在 `website/src/core/i18n/strings/en/` 的副本中（命名为 `<code>/`，并在 `core/i18n/index.ts` 的 `TABLES` 中注册）添加其字符串，在 `website/src/app/config/sidebar/<code>.ts` 中添加其侧边栏标签（在 `sidebar.ts` 中注册；这两行是添加一种语言唯一需要的代码，因为这些文件在 Vite 之外加载，而文件夹是由 Vite 发现的），并在 `website/src/content/i18n/<tag>.json` 中添加 Starlight 对未翻译页面的说明。其页面、URL、语言切换器条目、`hreflang` 链接和站点地图备用链接都会根据该列表自动生成。其文档放在 `website/src/content/docs/<code>/docs/` 下：翻译其中的每个页面（缺少的页面会显示英文，并附带一条说明），然后在构建之后运行 `bun scripts/localize-anchors.ts <code>`。
-3. **截图**：`bun run screenshots --locale <tag>` 会以新语言截取每张截图，保存到 `website/src/assets/screenshots/<tag>/`；没有截图的页面会显示英文截图。
+3. **截图**：`bun run screenshots` 会以每种语言（包括新语言）截取每张截图，保存到 `website/src/assets/screenshots/<tag>/`，让每个页面都以读者的语言展示应用。只要某种语言缺少英文已有的截图，网站的 `bun test` 就会失败。
 4. **术语**：添加 `docs/i18n/terms-<tag>.md`。
 
 如果某个测试看不到你刚添加的语言，请删除 `node_modules/.vitest-cache`：Vitest 可能会保留旧的目录文件列表。

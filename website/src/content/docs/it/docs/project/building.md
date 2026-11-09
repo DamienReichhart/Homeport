@@ -45,14 +45,14 @@ Le build locali non sono firmate per l’aggiornamento integrato nell’app e la
 
 ## Comandi utili
 
-| Comando               | Cosa fa                                                                           |
-| --------------------- | --------------------------------------------------------------------------------- |
-| `bun run check`       | Controllo dei tipi, lint, controllo della formattazione e test del frontend       |
-| `bun run rust:lint`   | `cargo clippy` con gli avvisi trattati come errori                                |
-| `bun run rust:test`   | Test unitari Rust                                                                 |
-| `bun run bindings`    | Rigenera i binding TypeScript per l’IPC                                           |
-| `bun run licenses`    | Genera le note di licenza di terze parti                                          |
-| `bun run screenshots` | Ricattura gli screenshot usati in questo sito (`--locale fr` per una sola lingua) |
+| Comando               | Cosa fa                                                                                       |
+| --------------------- | --------------------------------------------------------------------------------------------- |
+| `bun run check`       | Controllo dei tipi, lint, controllo della formattazione e test del frontend                   |
+| `bun run rust:lint`   | `cargo clippy` con gli avvisi trattati come errori                                            |
+| `bun run rust:test`   | Test unitari Rust                                                                             |
+| `bun run bindings`    | Rigenera i binding TypeScript per l’IPC                                                       |
+| `bun run licenses`    | Genera le note di licenza di terze parti                                                      |
+| `bun run screenshots` | Ricattura gli screenshot usati in questo sito, in ogni lingua (`--locale fr` per rifarne una) |
 
 I test di integrazione comunicano con il Docker Engine locale e con la CLI Compose. Sono marcati `#[ignore = "needs a local Docker Engine"]` (o `"… and the compose CLI"`, e alcuni `"… access to Docker Hub"`), creano solo risorse chiamate `homeport-test-*` e le rimuovono al termine. Eseguili con un Engine e il plugin compose su questo computer:
 
