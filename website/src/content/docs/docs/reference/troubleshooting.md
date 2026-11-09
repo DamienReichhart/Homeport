@@ -45,6 +45,14 @@ On Linux, the tray needs the appindicator library, and some desktops hide tray i
 
 Homeport couldn't reach your keychain. On Linux this usually means no Secret Service is running — common on minimal desktops and window managers. Install and start GNOME Keyring (`gnome-keyring`) or enable KWallet's Secret Service, then restart Homeport. Until then, use local socket, TCP or ssh-agent Hosts.
 
+### "This database was last used by Homeport … or later"
+
+You installed an older Homeport than the one that last opened your data, for example by reinstalling an earlier release. Each version upgrades the database to its own format when it starts, and an older version can't read a newer format, so Homeport stops before it changes anything: the window shows this message, the path of the database and **Open folder**, and nothing else starts.
+
+Your Hosts, Stacks and secrets are intact. Install the version the message names, or any newer one, from the [download page](/download/), and Homeport opens them as before. Don't delete or move `homeport.db`: that is the only way to lose what's in it. Downgrading isn't supported; see [Your data across versions](/docs/reference/updating/#your-data-across-versions).
+
+The same window appears for any other failure to open the database (damaged file, full disk, another Homeport holding it), with that failure's own message and what to do about it.
+
 ## Updates and the package repository
 
 ### "Couldn't check for updates"
