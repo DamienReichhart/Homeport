@@ -79,6 +79,16 @@ Both go through Nomad's HTTP API: the servers forward them to the client node ru
 
 A task that isn't running, a node the servers can't reach, and a token without the capability each get their own message.
 
+## Nodes
+
+**Nodes** lists the cluster's client nodes with their status (ready, initializing, down or disconnected), whether they take new allocations, their datacenter and node pool, how many allocations run on each, their address and Nomad version. Open a node for its drivers and their health, its operating system and CPU, and the allocations it runs.
+
+- **Drain** asks first, as `nomad node drain -enable` does: Nomad marks the node ineligible, then moves its allocations to other nodes as their `migrate` blocks allow. The **Deadline** is an hour by default (`30m`, `2h`, `1h30m`…); when it passes, the allocations still there are stopped. Tick **No deadline** to wait for every one to move, and **Leave system jobs running on it** to keep system jobs there, as `-ignore-system` does. The node's page then shows the drain's progress, how many allocations still run there, until none does.
+- **Cancel drain** stops a drain in progress and makes the node eligible again. Allocations already moved stay where they went.
+- **Eligible for new allocations** switches a node in or out of scheduling without moving what runs on it, as `nomad node eligibility -enable` and `-disable` do.
+
+Reading nodes needs a `node` rule with `policy = "read"`; draining and changing eligibility need `policy = "write"`. Homeport doesn't manage node pools, purge nodes or run garbage collection.
+
 ## Statuses and problems
 
 The status follows the same rules as for [Kubernetes clusters](/docs/clusters/#statuses): Homeport retries on its own while the agent can't be reached, and waits for you when only you can fix it.
