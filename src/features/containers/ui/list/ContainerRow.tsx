@@ -69,7 +69,14 @@ export function ContainerRow({
           <StatusDot tone={containerTone(c.state, c.health)} />
           <div className="min-w-0">
             <p className="flex items-center gap-1.5 font-medium">
-              <span className="truncate">{nested && c.service ? c.service : c.name}</span>
+              {/* The row's keyboard stop; a click anywhere else on the row goes there too. */}
+              <Link
+                to={`/containers/${c.id}/logs`}
+                className="focus-visible:ring-ring/50 truncate rounded-sm outline-none focus-visible:ring-[3px]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {nested && c.service ? c.service : c.name}
+              </Link>
               {c.labels[QUADLET_UNIT] && (
                 <Badge asChild variant="secondary">
                   <Link

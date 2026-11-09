@@ -37,4 +37,19 @@ describe('containers page', () => {
     expect(screen.queryByText('shop')).not.toBeInTheDocument();
     expect(screen.getByText('redis')).toBeInTheDocument();
   });
+
+  it('opens a container and toggles a stack from the keyboard', async () => {
+    const user = userEvent.setup();
+    renderApp('/containers');
+    const toggle = await screen.findByRole('button', { name: 'shop' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    toggle.focus();
+    await user.keyboard('{Enter}');
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByText('web')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'redis' })).toHaveAttribute(
+      'href',
+      expect.stringMatching(/\/containers\/.+\/logs$/),
+    );
+  });
 });

@@ -44,11 +44,19 @@ export function StackGroupRows({
         </TableCell>
         <TableCell colSpan={4}>
           <span className="flex items-center gap-2 font-medium">
-            {open ? (
-              <ChevronDownIcon className="size-4" />
-            ) : (
-              <ChevronRightIcon className="size-4 rtl:-scale-x-100" />
-            )}
+            {/* The row's keyboard stop: Enter or Space toggles it, as a click on the row does. */}
+            <button
+              type="button"
+              aria-expanded={open}
+              aria-label={g.stack}
+              className="focus-visible:ring-ring/50 rounded-sm outline-none focus-visible:ring-[3px]"
+            >
+              {open ? (
+                <ChevronDownIcon className="size-4" />
+              ) : (
+                <ChevronRightIcon className="size-4 rtl:-scale-x-100" />
+              )}
+            </button>
             <StatusDot
               tone={
                 g.running === 0
