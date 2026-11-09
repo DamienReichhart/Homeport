@@ -1,0 +1,183 @@
+---
+title: SSH 主机
+description: 通过 SSH 连接服务器上的 Docker Engine，可使用 Homeport 创建的密钥、你自己的密钥或 ssh-agent。
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import { DocScreenshot } from '@/features/docs';
+
+SSH 是访问服务器上 Docker Engine 的推荐方式。除了 SSH 端口之外无需暴露任何东西，引擎的套接字也始终只对服务器本身可见。
+
+## 工作原理
+
+Homeport 有自己的 SSH 客户端。它登录到服务器，并将一个通道转发到引擎的 Unix 套接字，效果与 `docker -H ssh://…` 相同，但你的机器上不需要 `ssh` 程序或 `docker`。
+
+- 密钥只在内存中解密，从不写入磁盘，因此在 Windows、macOS 和 Linux 上的工作方式完全相同。
+- Homeport 不读取 `~/.ssh/known_hosts`：服务器密钥在 Homeport 中按主机分别信任。只能通过跳板服务器访问的服务器，使用[堡垒机](#through-a-bastion)（即 Homeport 的 `ProxyJump`）添加。
+- 服务器必须允许转发到 Unix 套接字。OpenSSH 默认允许（`AllowStreamLocalForwarding yes`）。
+
+## 添加 SSH 主机
+
+<Steps>
+
+1. 在主机切换器中选择**添加主机…**，保持选中 **SSH**。
+
+2. 填写连接信息：
+
+   | 字段               | 填写内容                                                                                                                                         |
+   | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+   | **名称**           | 一个你能认出的名称，例如 `production`。                                                                                                          |
+   | **服务器**         | 服务器的主机名或 IP 地址。                                                                                                                       |
+   | **端口**           | SSH 端口；默认为 `22`。                                                                                                                          |
+   | **用户**           | 用于登录的账户。它需要能访问 Docker 套接字，通常通过 `docker` 组。                                                                               |
+   | **远程套接字路径** | 引擎在服务器上监听的位置：默认为 `/var/run/docker.sock`，rootless Docker 为 `/run/user/<uid>/docker.sock`，Podman 为 `/run/podman/podman.sock`。 |
+
+3. 在**认证**下选择登录方式（见下文）。
+
+4. 选择**添加主机**。Homeport 会打开该主机的页面并开始连接。
+
+</Steps>
+
+<DocScreenshot name="add-host-ssh" alt="选中了 SSH 的“添加主机”表单。" />
+
+## 从 ~/.ssh/config 导入
+
+如果你的服务器已在 `~/.ssh/config` 中，可以在**添加主机**页面选择**从 ~/.ssh/config 导入**，而不必逐个输入。Homeport 会列出该文件中的每台服务器（会跟随 `Include`，并应用 `Host *` 默认值），由你选择要添加哪些。
+
+| 在 `~/.ssh/config` 中 | 在 Homeport 中                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| `Host prod`           | 一台名为 `prod` 的主机。带通配符的条目（`Host *.example.com`）只提供默认值。               |
+| `HostName`            | **服务器**；没有时使用别名本身。                                                           |
+| `User`、`Port`        | **用户**（默认为你的本地用户名）和**端口**（`22`）。                                       |
+| `IdentityFile`        | **现有密钥**：第一个可读取的文件，`~` 以及 `%h`、`%r`、`%u`、`%p` 会被展开。               |
+| 没有 `IdentityFile`   | **ssh-agent**。                                                                            |
+| `ProxyJump a,b`       | 两台[堡垒机](#through-a-bastion)，按顺序排列，每台都在同一文件中查找。如有循环会报告出来。 |
+
+**远程套接字路径**初始为 `/var/run/docker.sock`；对于 rootless Docker 或 Podman，请在预览中修改。加密的密钥会在那里要求输入口令。
+
+预览会标出需要注意的内容：无法读取的密钥（该主机会改用 ssh-agent）、`ProxyCommand`（不支持；请将其跳板服务器添加为堡垒机），以及已被某台主机用作名称的别名。后者不会被选中：重命名后才能导入，因此重复导入绝不会产生重复的主机。密钥只读取一次并加密保存；文件本身从不会被修改，`Match` 块和证书（`CertificateFile`）会被忽略。
+
+## 认证
+
+### 为此主机生成新密钥（推荐）
+
+Homeport 会专门为这台主机创建一个 Ed25519 密钥，加密保存，并显示在服务器上授权它的命令。每台主机一个密钥，意味着你可以撤销 Homeport 对某台服务器的访问权限，而不影响其他任何东西。密钥的注释会写明这台计算机和该主机，例如 `homeport@laptop-production`，便于你在 `authorized_keys` 中区分它。
+
+### 现有密钥
+
+粘贴私钥，或选择**从文件加载…**；如果有口令，请输入**口令**。Homeport 可读取 OpenSSH 密钥（`BEGIN OPENSSH PRIVATE KEY`）、PKCS#8 和 PEM 密钥，以及 PuTTY `.ppk` 文件，支持 Ed25519、ECDSA 或 RSA 密钥。密钥及其口令会加密保存，因此不会再次询问。
+
+### ssh-agent
+
+Homeport 向你正在运行的 SSH agent 请求密钥，不保存任何内容。在 macOS 和 Linux 上，它使用 `$SSH_AUTH_SOCK` 处的 agent。
+
+在 Windows 上，它会先询问 OpenSSH Authentication Agent 服务，再询问 PuTTY 的 **Pageant**（或可替代它的工具，例如 KeeAgent 或支持 PuTTY 的 gpg-agent）。两者任一持有的密钥都可以使用：如果 OpenSSH agent 没有运行，或没有服务器接受的密钥，Homeport 也会尝试 Pageant 中的密钥。
+
+<Aside>
+  ssh-agent 是唯一无需[系统钥匙串](/docs/requirements/#optional-an-os-keychain)即可使用的 SSH
+  选项。如果 Homeport 是从桌面菜单启动的，请确保它能访问你会话中的 agent。
+</Aside>
+
+## 首次连接
+
+Homeport 首次连接时，主机页面会引导你完成两个步骤。
+
+### 信任服务器的密钥
+
+状态显示**服务器密钥未受信任**，页面会询问**这是正确的服务器吗？**，并显示服务器的密钥指纹，例如 `SHA256:Kx8f…`。
+
+将其与服务器上的指纹进行比较：
+
+```sh
+ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
+```
+
+如果一致，选择**信任此密钥**。Homeport 会记住它并开始连接。这与 `ssh` 的首次使用即信任检查相同，只是密钥保存在 Homeport 中，而不是 `~/.ssh/known_hosts` 中。
+
+### 授权 Homeport 的密钥
+
+对于 Homeport 创建的密钥或你导入的密钥，**在服务器上授权 Homeport** 卡片会显示两条命令，每条都有一个**复制**按钮。以 SSH 用户身份在服务器上运行它们：
+
+<DocScreenshot name="host-ssh" alt="SSH 主机的页面，显示在服务器上授权 Homeport 密钥的命令。" />
+
+<Steps>
+
+1. **添加公钥**到该用户的 `authorized_keys`：
+
+   ```sh
+   mkdir -p ~/.ssh && chmod 700 ~/.ssh && echo 'ssh-ed25519 AAAAC3Nza… homeport@laptop-production' >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys
+   ```
+
+2. **允许该用户访问 Docker**（如果还不能访问）：
+
+   ```sh
+   sudo usermod -aG docker deploy
+   ```
+
+3. 回到 Homeport，选择**重新连接**。
+
+</Steps>
+
+在密钥获得授权之前，主机会显示**访问被拒绝**：_SSH 服务器拒绝了 deploy@server 的密钥。请将公钥添加到其 authorized_keys 中。_ 它会等待你处理，而不会重试。
+
+## 服务器密钥更改时
+
+如果服务器之后提供了不同的密钥，Homeport 会停止并显示**服务器密钥已更改**，以及预期的指纹和实际提供的指纹。
+
+<Aside type="caution">
+  重装服务器或重新生成其主机密钥后，密钥更改是正常的。但这也可能意味着有人正在拦截连接。只有在你知道密钥为何更改时，才信任新密钥。
+</Aside>
+
+确认无误后，选择**信任新密钥**并确认。
+
+编辑主机使其指向其他服务器或端口时，会忘记已信任的密钥，并要求你信任新的密钥。重命名主机或更改用户、套接字路径则会保留它。
+
+## 通过堡垒机
+
+有些服务器只接受来自跳板服务器的 SSH 连接。在主机表单的**堡垒机**下添加该服务器，Homeport 会先登录它，再通过它访问主机，效果与 `ssh -J` 或 `ProxyJump` 相同，使用的是 Homeport 自己的 SSH 客户端。堡垒机上不会安装任何东西，也不会有密钥写入磁盘。
+
+<Steps>
+
+1. 在 SSH 主机的表单中，选择**添加堡垒机**。
+
+2. 输入其**服务器**、**端口**和**用户**。
+
+3. 选择 Homeport 登录它的方式：
+
+   | 认证           | 适用情况                                                                              |
+   | -------------- | ------------------------------------------------------------------------------------- |
+   | **与主机相同** | 堡垒机接受主机使用的密钥：Homeport 创建的密钥、你的现有密钥或你的 agent 中的密钥。    |
+   | **自己的密钥** | 堡垒机需要不同的密钥。粘贴它或选择**从文件加载…**；它会与主机的其他机密一起加密保存。 |
+   | **ssh-agent**  | 你的 agent 持有堡垒机的密钥，而主机使用另一个密钥，例如 Homeport 专门为它创建的密钥。 |
+
+4. 对于跳板服务器链（`ProxyJump a,b`），每台服务器添加一台堡垒机，顺序与 Homeport 经过它们的顺序一致。箭头可以上移或下移堡垒机。
+
+</Steps>
+
+首次连接时，Homeport 会从第一台堡垒机开始，依次要求你信任每台服务器的密钥：**这是正确的堡垒机吗？**会写明是哪一台并显示其指纹。每台堡垒机的密钥都与主机一起保存，密钥更改时连接会停止并显示**堡垒机 … 的密钥已更改**，与主机本身相同。
+
+当主机使用 Homeport 创建的密钥时，**在服务器上授权 Homeport** 卡片会列出必须添加该密钥的每台服务器：每台设为**与主机相同**的堡垒机，然后是主机。
+
+堡垒机必须允许到主机的 TCP 转发（`AllowTcpForwarding yes`，OpenSSH 的默认值）。如果不允许，或无法访问主机，主机会显示 _堡垒机 … 无法打开到 … 的连接。_
+
+在列表中移动堡垒机会保留其已信任的密钥；更改其服务器或端口只会忘记那一个密钥。
+
+## 重新生成密钥
+
+对于 Homeport 创建的密钥，主机页面上的**重新生成密钥**会替换它。旧密钥会失效，因此请在服务器上运行新的**添加公钥**命令，并从 `~/.ssh/authorized_keys` 中删除旧的那一行。
+
+## 删除 SSH 主机
+
+删除主机会从 Homeport 中删除其密钥，但不会从服务器上删除。请从该用户的 `~/.ssh/authorized_keys` 中删除对应的行，以 `homeport@` 开头的注释可以帮你找到它。
+
+## 常见问题
+
+| 消息                                                                               | 解决方法                                                                                                                                                                |
+| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _SSH 服务器拒绝了 … 的密钥_                                                        | 在服务器上运行**添加公钥**命令，然后选择**重新连接**。                                                                                                                  |
+| _SSH 服务器无法打开 /var/run/docker.sock … 请检查路径，并确认 … 可以使用 Docker。_ | 检查**远程套接字路径**，并将该用户加入 `docker` 组。                                                                                                                    |
+| _SSH 连接超时_                                                                     | 检查服务器名称、端口，以及你与服务器之间的防火墙。                                                                                                                      |
+| _没有正在运行的 ssh-agent_                                                         | 启动你的 agent，使用 `ssh-add` 添加密钥，并确保 Homeport 能看到 `SSH_AUTH_SOCK`。在 Windows 上，打开 Pageant 并加载你的密钥，或启动 OpenSSH Authentication Agent 服务。 |
+| _堡垒机 … 无法打开到 … 的连接_                                                     | 检查堡垒机能否访问主机，以及其 `sshd` 是否允许 `AllowTcpForwarding`。                                                                                                   |
+
+更多内容见[故障排除](/docs/reference/troubleshooting/)。

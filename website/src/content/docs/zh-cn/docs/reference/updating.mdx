@@ -1,0 +1,98 @@
+---
+title: 更新与卸载
+description: Homeport 在各系统上如何更新，以及如何彻底删除它及其数据。
+---
+
+import { Aside, Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import { MANUAL_SETUP, UPDATE_COMMANDS } from '@/core/packages';
+
+## 更新
+
+Homeport 的更新方式取决于你的安装方式。
+
+### Windows、macOS 和 AppImage
+
+Homeport 会在启动时以及每 6 小时检查一次新版本。有新版本时，窗口顶部会出现一个提示栏：选择**新功能**阅读[更新日志](/changelog/)，或选择**安装并重启**。Homeport 会下载更新、检查其签名、安装并重新打开。在你选择之前不会安装任何东西，你的主机、堆栈和设置都会保留。
+
+你也可以通过**设置 → 更新 → 立即检查**立即检查。
+
+### Linux 软件包
+
+`.deb` 和 `.rpm` 软件包，无论是通过[快速安装](/docs/installation/#quick-install)、[手动设置](/docs/installation/#manual-setup)还是下载的文件安装的，都会随系统其余部分一起从 Homeport 软件包仓库更新：你平常的软件更新就会包含 Homeport。只更新 Homeport：
+
+<Tabs syncKey="linux-format">
+  {MANUAL_SETUP.map((setup) => (
+    <TabItem label={setup.label}>
+      <Code code={UPDATE_COMMANDS[setup.id]} lang="sh" />
+    </TabItem>
+  ))}
+</Tabs>
+
+有新版本时，Homeport 会告诉你，并显示适用于你的系统的命令，但安装交给你的包管理器完成。
+
+如果你删除了 Homeport 仓库，包管理器就看不到新版本。请通过[快速安装](/docs/installation/#quick-install)重新设置，或下载新的软件包并覆盖安装旧版本。
+
+### 关闭更新检查
+
+关闭**设置 → 更新 → 自动检查更新**。**立即检查**仍然可用。一次检查会从本网站下载一个小文件，不会发送任何关于你或你的主机的信息。参见[安全与你的数据](/docs/reference/security/#what-homeport-connects-to)。
+
+### 从 0.2.0 或更早版本更新
+
+0.3.0 之前的版本不会自行更新，其 Linux 软件包也不会添加仓库。请按照你安装 Homeport 的方式，安装一次 0.3.0 或更高版本：从[下载页面](/download/)，或者在 Linux 上使用[快速安装](/docs/installation/#quick-install)。之后，更新就会自动到来。
+
+如果仍想获知新版本，可以在 GitHub 上关注该仓库（**Watch → Custom → Releases**），或订阅[发布 feed](https://github.com/DamienReichhart/Homeport/releases.atom)。
+
+## 卸载
+
+<Tabs syncKey="os">
+<TabItem label="Windows">
+打开**设置 → 应用 → 安装的应用**（Settings → Apps → Installed apps），找到 **Homeport**，然后选择**卸载**。
+</TabItem>
+<TabItem label="macOS">退出 Homeport，然后将它从“应用程序”拖到废纸篓。</TabItem>
+<TabItem label="Linux">
+
+```sh
+sudo apt purge homeport       # Debian, Ubuntu
+sudo dnf remove homeport      # Fedora, RHEL
+sudo zypper remove homeport   # openSUSE
+```
+
+这也会删除 Homeport 仓库。在 Debian 和 Ubuntu 上，`apt remove` 会保留仓库以及该软件包的其余配置，`apt purge` 则会将仓库连同其密钥一起删除。在 Fedora 和 openSUSE 上，密钥会保留在 rpm 的密钥环中；`rpm -q gpg-pubkey --qf '%{NAME}-%{VERSION}-%{RELEASE} %{SUMMARY}\n'` 可列出密钥，`sudo rpm -e gpg-pubkey-<version>-<release>` 可删除 Homeport 的密钥。
+
+对于 AppImage，删除该文件即可。其菜单项会随之消失。
+
+</TabItem>
+</Tabs>
+
+卸载会保留你的数据，因此重新安装后一切都会恢复。
+
+### 登录项
+
+如果打开了**登录时启动**，请在卸载之前在**设置 → 桌面**中关闭它：卸载会留下登录项，指向一个已不存在的 Homeport。之后要删除它：
+
+| 系统    | 登录项                                                                                                                                                                   |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Windows | **任务管理器 → 启动应用**（Task Manager → Startup apps）：禁用 **Homeport**，或删除 `HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run` 下的 `Homeport` 值 |
+| macOS   | 删除 `~/Library/LaunchAgents/Homeport.plist`                                                                                                                             |
+| Linux   | 删除 `~/.config/autostart/Homeport.desktop`                                                                                                                              |
+
+## 删除你的数据
+
+<Aside type="caution">
+  这会删除你的主机、它们保存的密钥和证书、你的托管堆栈定义、你的关联堆栈及其部署历史。关联堆栈的文件夹会保留在原处。你的主机上的任何内容都不受影响。
+</Aside>
+
+1. 删除 Homeport 的数据文件夹和日志文件夹：
+
+   | 系统    | 文件夹                                                                                |
+   | ------- | ------------------------------------------------------------------------------------- |
+   | Linux   | `~/.local/share/com.homeport.app/`、`~/.config/com.homeport.app/`                     |
+   | macOS   | `~/Library/Application Support/com.homeport.app/`、`~/Library/Logs/com.homeport.app/` |
+   | Windows | `%APPDATA%\com.homeport.app\`、`%LOCALAPPDATA%\com.homeport.app\`                     |
+
+2. 从钥匙串中删除加密密钥，即 `com.homeport.app` 对应的条目：
+   - **macOS**：在**钥匙串访问**中搜索 `com.homeport.app` 并删除它。
+   - **Windows**：在**凭据管理器 → Windows 凭据**中，删除包含 `com.homeport.app` 的条目。
+   - **Linux**：在**密码和密钥**（Seahorse）或 KWallet 中，删除 `com.homeport.app` 对应的条目。
+
+3. 在你的服务器上，从 `~/.ssh/authorized_keys` 中删除 Homeport 的公钥，它们的注释以 `homeport@` 开头。
