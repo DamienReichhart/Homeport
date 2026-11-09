@@ -1,0 +1,35 @@
+/** Simplified Chinese text of the `ui` namespace. */
+import type en from '../en/ui';
+import type { Translation } from '../types';
+
+export default {
+  'ui.copy': '复制',
+  'ui.copied': '已复制',
+  'ui.search': '搜索',
+  'ui.shortcuts.focusSearch': '搜索此页面',
+  'ui.shortcuts.thisPage': '此页面',
+  'ui.table.selectAll': '全选',
+  'ui.table.selectRow': '选择行',
+  'ui.table.empty': '这里什么都没有。',
+  'ui.table.page': '第 {page} 页，共 {pages} 页 · {rows, plural, other {# 行}}',
+  'ui.table.previous': '上一页',
+  'ui.table.next': '下一页',
+  'ui.transfer.done': '完成。',
+  'ui.files.column.name': '名称',
+  'ui.files.column.size': '大小',
+  'ui.files.column.modified': '修改时间',
+  'ui.files.column.mode': '权限',
+  'ui.files.path': '路径',
+  'ui.files.downloadOne': '下载 {name}',
+  'ui.files.empty': '此文件夹为空。',
+  'ui.chart.time': '时间',
+  'ui.errorDetails.title': '错误详细信息',
+  'ui.errorDetails.code': '代码',
+  'ui.errorDetails.command': '命令',
+  'ui.errorDetails.when': '时间',
+  'ui.errorDetails.app': '应用',
+  'ui.errorDetails.rawDetail': '原始详细信息',
+  'ui.errorDetails.rawDetailNote': '按系统、引擎或库的原文显示，因此未翻译。',
+  'ui.errorDetails.openLogFolder': '打开日志文件夹',
+  'ui.errorDetails.copyReport': '复制报告',
+} satisfies Translation<typeof en>;
