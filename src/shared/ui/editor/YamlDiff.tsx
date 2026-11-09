@@ -5,7 +5,7 @@ import { EditorView } from '@codemirror/view';
 import CodeMirror from '@uiw/react-codemirror';
 import { useMemo } from 'react';
 import { useResolvedTheme } from '@/shared/lib';
-import { editorTheme } from './editorTheme';
+import { editorLabel, editorTheme } from './editorTheme';
 
 /**
  * A read-only YAML file with what changed from `before` shown inline:
@@ -30,8 +30,9 @@ export function YamlDiff({
       EditorState.readOnly.of(true),
       EditorView.editable.of(false),
       unifiedMergeView({ original: before, mergeControls: false, gutter: true }),
+      editorLabel(label),
     ],
-    [before],
+    [before, label],
   );
   return (
     <div className="overflow-hidden rounded-md border">
@@ -41,7 +42,6 @@ export function YamlDiff({
         theme={editorTheme(theme)}
         maxHeight={maxHeight}
         basicSetup={{ foldGutter: false, highlightActiveLine: false }}
-        aria-label={label}
       />
     </div>
   );

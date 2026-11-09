@@ -1,6 +1,6 @@
 import CodeMirror from '@uiw/react-codemirror';
 import { useResolvedTheme } from '@/shared/lib';
-import { editorTheme } from './editorTheme';
+import { editorLabel, editorTheme } from './editorTheme';
 import { unitFile } from './unitFile';
 
 /** A systemd or Quadlet unit file in an editor; `readOnly` still lets it be selected and copied. */
@@ -25,11 +25,10 @@ export function UnitFileEditor({
         value={value}
         onChange={onChange}
         readOnly={readOnly}
-        extensions={[unitFile]}
+        extensions={[unitFile, editorLabel(label)]}
         theme={editorTheme(theme)}
         height={height}
         basicSetup={{ foldGutter: false, highlightActiveLine: !readOnly }}
-        aria-label={label}
       />
     </div>
   );

@@ -1,7 +1,7 @@
 import { yaml } from '@codemirror/lang-yaml';
 import CodeMirror from '@uiw/react-codemirror';
 import { useResolvedTheme } from '@/shared/lib';
-import { editorTheme } from './editorTheme';
+import { editorLabel, editorTheme } from './editorTheme';
 
 /** A YAML file in an editor (a compose file, Kubernetes manifests); `readOnly` still lets it be selected and copied. */
 export function YamlEditor({
@@ -25,11 +25,10 @@ export function YamlEditor({
         value={value}
         onChange={onChange}
         readOnly={readOnly}
-        extensions={[yaml()]}
+        extensions={[yaml(), editorLabel(label)]}
         theme={editorTheme(theme)}
         height={height}
         basicSetup={{ foldGutter: true, highlightActiveLine: true }}
-        aria-label={label}
       />
     </div>
   );

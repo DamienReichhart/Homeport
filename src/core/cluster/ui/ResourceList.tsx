@@ -91,7 +91,12 @@ export function ResourceList<T>({
           <Tabs value={current} onValueChange={(path) => void navigate(path, { replace: true })}>
             <TabsList>
               {sections.map((s) => (
-                <TabsTrigger key={s.path} value={s.path}>
+                <TabsTrigger
+                  key={s.path}
+                  value={s.path}
+                  // A tab that switches what one view shows, without a panel of its own.
+                  aria-controls={undefined}
+                >
                   {s.label}
                 </TabsTrigger>
               ))}

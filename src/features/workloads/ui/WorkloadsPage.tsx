@@ -56,7 +56,12 @@ function WorkloadsList({ cluster }: { cluster: ClusterView }) {
         >
           <TabsList>
             {WORKLOAD_KINDS.map((k) => (
-              <TabsTrigger key={k.kind} value={k.kind}>
+              <TabsTrigger
+                key={k.kind}
+                value={k.kind}
+                // A tab that switches what one view shows, without a panel of its own.
+                aria-controls={undefined}
+              >
                 {t(k.label)}
               </TabsTrigger>
             ))}

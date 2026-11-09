@@ -55,7 +55,12 @@ export function StackEditor({
           <Tabs value={String(index)} onValueChange={(v) => setActive(Number(v))}>
             <TabsList aria-label={t('stacks.editor.files')}>
               {files.map((f, i) => (
-                <TabsTrigger key={i} value={String(i)}>
+                <TabsTrigger
+                  key={i}
+                  value={String(i)}
+                  // A tab that switches what one view shows, without a panel of its own.
+                  aria-controls={undefined}
+                >
                   {f.name}
                 </TabsTrigger>
               ))}

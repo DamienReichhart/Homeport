@@ -1,6 +1,6 @@
 import CodeMirror from '@uiw/react-codemirror';
 import { useResolvedTheme } from '@/shared/lib';
-import { editorTheme } from './editorTheme';
+import { editorLabel, editorTheme } from './editorTheme';
 import { jobSpec } from './jobSpec';
 
 /** A Nomad job specification, HCL2 or JSON, in an editor. */
@@ -25,11 +25,10 @@ export function JobSpecEditor({
         value={value}
         onChange={onChange}
         readOnly={readOnly}
-        extensions={[jobSpec]}
+        extensions={[jobSpec, editorLabel(label)]}
         theme={editorTheme(theme)}
         height={height}
         basicSetup={{ foldGutter: true, highlightActiveLine: !readOnly }}
-        aria-label={label}
       />
     </div>
   );

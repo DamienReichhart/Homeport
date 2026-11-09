@@ -1,7 +1,10 @@
-import type { ReactNode } from 'react';
+import { cloneElement, isValidElement, useId, type ReactElement, type ReactNode } from 'react';
 import { Label } from '@/shared/ui';
 
-/** A labelled form field with an optional hint below it. */
+/**
+ * A labelled form field. When its child is a single control, the label names
+ * it and the hint describes it, so screen readers announce both.
+ */
 export function Field({
   label,
   hint,
@@ -11,11 +14,26 @@ export function Field({
   hint?: ReactNode;
   children: ReactNode;
 }) {
+  const id = useId();
+  const hintId = `${id}-hint`;
+  const control = isValidElement<{ id?: string; 'aria-describedby'?: string }>(children)
+    ? (children as ReactElement<{ id?: string; 'aria-describedby'?: string }>)
+    : null;
+  const controlId = control ? (control.props.id ?? id) : undefined;
   return (
     <div className="grid gap-1.5">
-      <Label>{label}</Label>
-      {children}
-      {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
+      <Label htmlFor={controlId}>{label}</Label>
+      {control
+        ? cloneElement(control, {
+            id: controlId,
+            'aria-describedby': hint ? hintId : control.props['aria-describedby'],
+          })
+        : children}
+      {hint && (
+        <p id={hintId} className="text-muted-foreground text-xs">
+          {hint}
+        </p>
+      )}
     </div>
   );
 }

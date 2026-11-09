@@ -190,7 +190,13 @@ function LinkedEditor({
           <Tabs value={file?.path ?? ''} onValueChange={setActive}>
             <TabsList aria-label={t('stacks.linked.files')}>
               {base.files.map((f) => (
-                <TabsTrigger key={f.path} value={f.path} title={f.path}>
+                <TabsTrigger
+                  key={f.path}
+                  value={f.path}
+                  // A tab that switches what one view shows, without a panel of its own.
+                  aria-controls={undefined}
+                  title={f.path}
+                >
                   {fileName(f.path)}
                   {dirty.includes(f) && ' •'}
                 </TabsTrigger>
