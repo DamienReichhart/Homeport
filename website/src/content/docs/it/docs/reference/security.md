@@ -82,6 +82,8 @@ Homeport mostra un banner e non memorizza segreti. Gli host con socket locale, T
 
 Reimpostare il portachiavi, o spostare `homeport.db` su un altro computer o utente, lascia segreti che non possono essere decifrati. Homeport non elimina nulla: gli host e i cluster interessati mostrano **Credenziali perse** finché non inserisci di nuovo le loro credenziali; [Se i segreti vanno persi](/docs/reference/data-and-backups/#se-i-segreti-vanno-persi) elenca cosa inserire di nuovo, e dove. Per spostare i tuoi dati, [esegui invece un backup](#backup) o [esporta i tuoi host](#passare-a-un-altro-computer).
 
+Homeport non crea mai una nuova chiave sopra i segreti che ha già. Quando il portachiavi risponde ma non ha la voce `com.homeport.app` mentre il database contiene segreti cifrati — questa volta risponde un altro portachiavi, come il Secret Service di KeePassXC invece di GNOME Keyring —, Homeport non memorizza alcun segreto e segnala che **manca la voce del portachiavi con cui sono stati sigillati i segreti di Homeport**. Torna al portachiavi che contiene la voce e riavvia Homeport. Se la voce è sparita definitivamente, scegli **Ricomincia con una nuova chiave** in **Impostazioni → Questo computer**: i segreti sigillati con la vecchia chiave appaiono allora come **Credenziali perse**, da inserire di nuovo o da ripristinare da un backup.
+
 ### Passare a un altro computer
 
 **Esporta** nella pagina Host scrive gli host che scegli in un unico file, con le loro chiavi, i certificati e le chiavi dei server considerate attendibili, cifrato con una passphrase che scegli tu:

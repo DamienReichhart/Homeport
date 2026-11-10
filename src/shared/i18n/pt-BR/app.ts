@@ -9,6 +9,8 @@ export default {
   'app.nav.opensInBrowser': '{label} (abre no navegador)',
   'app.keychainMissing':
     'Nenhum chaveiro do sistema está disponível, então chaves SSH, certificados TLS e ambientes de stacks não podem ser armazenados. Hosts locais, TCP e via ssh-agent continuam funcionando.',
+  'app.keychainEntryMissing':
+    'O chaveiro não tem uma entrada para a chave com que os segredos do Homeport foram selados, então eles não podem ser abertos nem armazenados. Veja Configurações → Esta máquina.',
   'app.startup.title': 'O Homeport não consegue abrir o banco de dados dele',
   'app.startup.description': 'Nada mais foi iniciado. O banco de dados está neste arquivo:',
   'app.startup.openFolder': 'Abrir pasta',

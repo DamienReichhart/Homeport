@@ -9,6 +9,8 @@ export default {
   'app.nav.opensInBrowser': '{label} (s’ouvre dans votre navigateur)',
   'app.keychainMissing':
     'Aucun trousseau du système n’est disponible : les clés SSH, les certificats TLS et les environnements des stacks ne peuvent pas être enregistrés. Les hôtes locaux, TCP et ssh-agent fonctionnent toujours.',
+  'app.keychainEntryMissing':
+    'Le trousseau n’a pas d’entrée pour la clé qui a scellé les secrets de Homeport : ils ne peuvent donc être ni ouverts ni enregistrés. Voir Paramètres → Cette machine.',
   'app.startup.title': 'Homeport ne peut pas ouvrir sa base de données',
   'app.startup.description':
     'Rien d’autre n’a été démarré. La base de données se trouve dans ce fichier :',

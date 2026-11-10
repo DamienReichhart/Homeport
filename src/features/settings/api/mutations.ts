@@ -47,3 +47,16 @@ export function useExportDiagnostics() {
       commands.diagnosticsExport(path, includeNames),
   });
 }
+
+/**
+ * Gives up on the key the stored secrets were sealed with, whose keychain
+ * entry is missing, then refreshes everything that depends on secrets.
+ */
+export function useKeychainStartOver() {
+  const client = useQueryClient();
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: () => commands.keychainStartOver(),
+    onSuccess: () => client.invalidateQueries(),
+  });
+}

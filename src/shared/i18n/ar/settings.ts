@@ -41,6 +41,14 @@ export default {
     'متاحة — تُخزَّن مفاتيح SSH والشهادات وبيئات المكدسات وعمليات تسجيل الدخول إلى السجلات مشفّرة.',
   'settings.machine.keychainUnavailable':
     'غير متاحة — لا يمكن تخزين مفاتيح SSH وشهادات TLS وبيئات المكدسات وعمليات تسجيل الدخول إلى السجلات.',
+  'settings.machine.keychainEntryMissing':
+    'الإدخال مفقود — لا تحتوي سلسلة المفاتيح على إدخال للمفتاح الذي خُتمت به أسرار Homeport، لذا لا يمكن فتحها ولا تخزينها.',
+  'settings.machine.startOverDescription':
+    'إذا كان Homeport يستخدم سلسلة مفاتيح غير التي كان يستخدمها، فارجع إليها وأعد تشغيل Homeport. وإذا ضاع الإدخال نهائيًا، فابدأ من جديد بمفتاح جديد.',
+  'settings.machine.startOver': 'البدء من جديد بمفتاح جديد',
+  'settings.machine.startOverTitle': 'البدء من جديد بمفتاح جديد؟',
+  'settings.machine.startOverConfirmDescription':
+    'لا يستطيع المفتاح الجديد فتح ما خُتم بالمفتاح المفقود: ستعيد إدخال بيانات اعتماد كل مضيف وعنقود وسجل ومستودع، وبيئة كل مكدس، أو تستعيد نسخة احتياطية.',
   'settings.machine.compose': 'واجهة سطر أوامر Compose',
   'settings.machine.composeMissing': 'يمكن تشغيل المكدسات وإيقافها، لكن لا يمكن نشرها.',
   'settings.machine.stackDeploy': 'Docker CLI، لـ Swarm',

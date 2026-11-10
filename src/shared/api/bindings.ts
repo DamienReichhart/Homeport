@@ -16,6 +16,13 @@ export const commands = {
 	openDataFolder: () => __TAURI_INVOKE<null>("open_data_folder"),
 	getCapabilities: () => __TAURI_INVOKE<Capabilities>("get_capabilities"),
 	/**
+	 *  Gives up on the key the stored secrets were sealed with, whose keychain
+	 *  entry is missing: uses the entry if it came back, or stores a new key.
+	 *  Secrets sealed under the old key then show as lost, to re-enter or
+	 *  restore from a backup. Refused while the keychain's key works.
+	 */
+	keychainStartOver: () => __TAURI_INVOKE<null>("keychain_start_over"),
+	/**
 	 *  Whether Homeport starts when the user logs in, read from the OS each
 	 *  time, so removing the entry by hand shows here.
 	 */
@@ -1172,6 +1179,11 @@ export type Candidate = {
 export type Capabilities = {
 	/**  An OS keychain is reachable, so SSH, TLS, stack `.env` and registry secrets can be stored. */
 	keychain: boolean,
+	/**
+	 *  The keychain has no entry for the key the stored secrets were sealed
+	 *  with, and Homeport made no new one over them: `keychain_start_over`.
+	 */
+	keychainEntryMissing: boolean,
 	/**  Whether Managed Stacks can be deployed here. */
 	compose: ComposeSupport,
 	/**

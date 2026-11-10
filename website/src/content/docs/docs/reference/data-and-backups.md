@@ -159,6 +159,8 @@ After a keychain reset, a new user account, or a copied database opened on anoth
 
 Local socket, TCP and ssh-agent Hosts hold no secret and keep working. The environments recorded in the deploy history can't be entered again; the history's compose files stay readable.
 
+If Homeport says instead that the keychain entry its secrets were sealed with is missing, it hasn't given up on them yet: switch back to the keychain that holds the entry, or choose **Start over with a new key** in **Settings → This machine** before entering them again.
+
 See [Credentials lost](/docs/reference/troubleshooting/#credentials-lost) in troubleshooting.
 
 ## Removing your data

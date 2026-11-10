@@ -159,6 +159,8 @@ Après une réinitialisation du trousseau, un nouveau compte utilisateur, ou une
 
 Les hôtes socket local, TCP et ssh-agent ne détiennent aucun secret et continuent de fonctionner. Les environnements enregistrés dans l’historique des déploiements ne peuvent pas être saisis de nouveau ; les fichiers compose de l’historique restent lisibles.
 
+Si Homeport indique plutôt que l’entrée du trousseau avec laquelle ses secrets ont été scellés est manquante, il n’y a pas encore renoncé : revenez au trousseau qui contient l’entrée, ou choisissez **Repartir avec une nouvelle clé** dans **Paramètres → Cette machine** avant de les saisir à nouveau.
+
 Voir [Identifiants perdus](/docs/reference/troubleshooting/#identifiants-perdus) dans le dépannage.
 
 ## Supprimer vos données

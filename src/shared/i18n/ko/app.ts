@@ -9,6 +9,8 @@ export default {
   'app.nav.opensInBrowser': '{label}(브라우저에서 열림)',
   'app.keychainMissing':
     'OS 키체인을 사용할 수 없어 SSH 키, TLS 인증서, 스택 환경을 저장할 수 없습니다. 로컬, TCP, ssh-agent 호스트는 계속 작동합니다.',
+  'app.keychainEntryMissing':
+    'Homeport의 비밀 정보를 봉인한 키의 항목이 키체인에 없어 비밀 정보를 열거나 저장할 수 없습니다. 설정 → 이 컴퓨터를 확인하세요.',
   'app.startup.title': 'Homeport가 데이터베이스를 열 수 없습니다',
   'app.startup.description': '다른 것은 시작되지 않았습니다. 데이터베이스는 다음 파일에 있습니다:',
   'app.startup.openFolder': '폴더 열기',

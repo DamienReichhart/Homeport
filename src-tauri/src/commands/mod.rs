@@ -56,6 +56,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             app::startup_problem,
             app::open_data_folder,
             app::get_capabilities,
+            app::keychain_start_over,
             app::app_start_at_login,
             app::app_set_start_at_login,
             app::get_licenses,

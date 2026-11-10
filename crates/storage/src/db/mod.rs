@@ -129,6 +129,25 @@ impl Db {
         Ok(value)
     }
 
+    /// Whether any secret is stored sealed under the keychain's key: a
+    /// missing keychain entry then means a lost key, not a first run.
+    pub fn holds_sealed_data(&self) -> AppResult<bool> {
+        self.with(|c| {
+            c.query_row(
+                "SELECT EXISTS (SELECT 1 FROM hosts WHERE secrets IS NOT NULL)
+                     OR EXISTS (SELECT 1 FROM stacks WHERE env IS NOT NULL)
+                     OR EXISTS (SELECT 1 FROM synced_stacks WHERE env IS NOT NULL)
+                     OR EXISTS (SELECT 1 FROM stack_deploys WHERE env IS NOT NULL)
+                     OR EXISTS (SELECT 1 FROM registries)
+                     OR EXISTS (SELECT 1 FROM git_repositories
+                                WHERE private_key IS NOT NULL OR token IS NOT NULL)
+                     OR EXISTS (SELECT 1 FROM clusters WHERE secrets IS NOT NULL)",
+                [],
+                |r| r.get(0),
+            )
+        })
+    }
+
     /// Writes a copy of the database as it is now to `path`, which must not
     /// exist (`VACUUM INTO`): a consistent snapshot, whatever is in the WAL.
     pub fn copy_to(&self, path: &Path) -> AppResult<()> {
@@ -184,6 +203,33 @@ mod tests {
             })
             .unwrap();
         assert_eq!(value, "1");
+    }
+
+    #[test]
+    fn sealed_secrets_are_found_wherever_they_are_kept() {
+        let local = r#"{"kind":"local","socketPath":"/var/run/docker.sock"}"#;
+        let rows = [
+            format!("INSERT INTO hosts (id, name, connection, secrets) VALUES ('s', 's', '{local}', x'01')"),
+            "INSERT INTO stacks (id, host_id, name, env) VALUES ('m', 'h', 'shop', x'01')".into(),
+            "INSERT INTO registries (id, address, username, secret) VALUES ('r', 'ghcr.io', 'me', x'01')".into(),
+            "INSERT INTO git_repositories (id, url, auth, token) VALUES ('g', 'https://e.com/a.git', 'https_token', x'01')".into(),
+            "INSERT INTO clusters (id, name, connection, secrets) VALUES ('c', 'c', '{}', x'01')".into(),
+        ];
+        for row in rows {
+            let db = Db::open_in_memory().unwrap();
+            db.with(|c| {
+                c.execute(
+                    &format!(
+                        "INSERT INTO hosts (id, name, connection) VALUES ('h', 'h', '{local}')"
+                    ),
+                    [],
+                )
+            })
+            .unwrap();
+            assert!(!db.holds_sealed_data().unwrap(), "a Host without secrets");
+            db.with(|c| c.execute(&row, [])).unwrap();
+            assert!(db.holds_sealed_data().unwrap(), "{row}");
+        }
     }
 
     #[test]

@@ -25,6 +25,12 @@ use super::{
     AppState,
 };
 
+/// The OS keychain entry holding the key every secret is sealed with.
+pub const KEYCHAIN: Keychain = Keychain {
+    service: "com.homeport.app",
+    account: "secrets-key",
+};
+
 /// Why the app's state couldn't be built.
 pub enum Failure {
     /// The database at this path couldn't be opened: shown in the window.
@@ -49,15 +55,12 @@ pub fn state(app: &App) -> Result<AppState, Failure> {
         Err(e) => return Err(Failure::Database(Box::new(e), database)),
     };
     let settings = SettingsService::new(db.clone(), &config_dir.join("settings.json"))?;
+    // A missing keychain entry makes a new key only when nothing is sealed yet.
+    let holds_sealed = db.holds_sealed_data()?;
     // Keychain backends may block on D-Bus; keep that off the async runtime.
-    let secrets = std::thread::spawn(|| {
-        SecretBox::from_store(&Keychain {
-            service: "com.homeport.app",
-            account: "secrets-key",
-        })
-    })
-    .join()
-    .expect("keychain thread panicked");
+    let secrets = std::thread::spawn(move || SecretBox::from_store(&KEYCHAIN, holds_sealed))
+        .join()
+        .expect("keychain thread panicked");
     let secrets = Arc::new(secrets);
     let store = Arc::new(HostStore::new(db.clone(), secrets.clone()));
     let events = EventStore::new(db.clone());

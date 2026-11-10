@@ -9,6 +9,8 @@ export default {
   'app.nav.opensInBrowser': '{label} (يُفتح في المتصفح)',
   'app.keychainMissing':
     'لا تتوفر سلسلة مفاتيح في نظام التشغيل، لذا لا يمكن تخزين مفاتيح SSH وشهادات TLS وبيئات المكدسات. تظل المضيفات المحلية ومضيفات TCP وssh-agent تعمل.',
+  'app.keychainEntryMissing':
+    'لا تحتوي سلسلة المفاتيح على إدخال للمفتاح الذي خُتمت به أسرار Homeport، لذا لا يمكن فتحها ولا تخزينها. راجع الإعدادات ← هذا الجهاز.',
   'app.startup.title': 'يتعذّر على Homeport فتح قاعدة بياناته',
   'app.startup.description': 'لم يُشغَّل أي شيء آخر. قاعدة البيانات موجودة في هذا الملف:',
   'app.startup.openFolder': 'فتح المجلد',

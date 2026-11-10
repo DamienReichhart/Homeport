@@ -141,6 +141,7 @@ export const baseCommands = {
   update_settings: ({ settings }: Record<string, unknown>) => settings,
   get_capabilities: () => ({
     keychain: true,
+    keychainEntryMissing: false,
     tray: true,
     git: { state: 'available', cli: { program: 'git', version: '2.43.0' } },
     helm: { state: 'available', cli: { program: '/usr/local/bin/helm', version: 'v3.16.2' } },

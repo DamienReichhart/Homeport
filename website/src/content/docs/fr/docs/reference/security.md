@@ -82,6 +82,8 @@ Homeport affiche un bandeau et n’enregistre aucun secret. Les hôtes socket lo
 
 Réinitialiser le trousseau, ou déplacer `homeport.db` vers un autre ordinateur ou un autre utilisateur, laisse des secrets qui ne peuvent plus être déchiffrés. Homeport ne supprime rien : les hôtes et les clusters concernés affichent **Identifiants perdus** jusqu’à ce que vous saisissiez de nouveau leurs identifiants ; [Si les secrets sont perdus](/docs/reference/data-and-backups/#si-les-secrets-sont-perdus) liste ce qu’il faut saisir de nouveau, et où. Pour déplacer vos données, [sauvegardez-les](#sauvegardes) ou [exportez plutôt vos hôtes](#passer-à-un-autre-ordinateur).
 
+Homeport ne crée jamais de nouvelle clé par-dessus des secrets qu’il détient déjà. Quand le trousseau répond mais n’a pas d’entrée `com.homeport.app` alors que la base de données contient des secrets chiffrés — un autre trousseau répond cette fois, comme le Secret Service de KeePassXC au lieu de GNOME Keyring —, Homeport n’enregistre aucun secret et indique que **l’entrée du trousseau avec laquelle les secrets de Homeport ont été scellés est manquante**. Revenez au trousseau qui contient l’entrée et redémarrez Homeport. Si l’entrée a disparu pour de bon, choisissez **Repartir avec une nouvelle clé** dans **Paramètres → Cette machine** : les secrets scellés avec l’ancienne clé apparaissent alors comme **Identifiants perdus**, à saisir à nouveau ou à restaurer depuis une sauvegarde.
+
 ### Passer à un autre ordinateur
 
 **Exporter** sur la page Hôtes écrit les hôtes que vous choisissez dans un fichier, avec leurs clés, leurs certificats et les clés de serveur approuvées, chiffré avec une phrase secrète que vous choisissez :

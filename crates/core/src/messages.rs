@@ -66,6 +66,10 @@ crate::messages! {
     KEYCHAIN_UNAVAILABLE_HINT_LINUX = "errors.secrets.keychainUnavailable.hint.linux" => "Install and unlock a Secret Service keyring, such as GNOME Keyring or KWallet, then restart Homeport.";
     KEYCHAIN_UNAVAILABLE_HINT_MACOS = "errors.secrets.keychainUnavailable.hint.macos" => "Unlock the login keychain in Keychain Access, then restart Homeport.";
     KEYCHAIN_UNAVAILABLE_HINT_WINDOWS = "errors.secrets.keychainUnavailable.hint.windows" => "Make sure Windows Credential Manager is available, then restart Homeport.";
+    /// The keychain answers, but has no entry for the key the database's
+    /// secrets were sealed with: Homeport doesn't make a new one over them.
+    KEYCHAIN_ENTRY_MISSING = "errors.secrets.keychainEntryMissing" => "The keychain entry Homeport's secrets were sealed with is missing, so they can't be opened or stored.";
+    KEYCHAIN_ENTRY_MISSING_HINT = "errors.secrets.keychainEntryMissing.hint" => "If Homeport is using another keychain than before, switch back to that one and restart Homeport. If the entry is gone for good, start over with a new key in Settings → This machine, then re-enter the credentials or restore a backup.";
 
     // Reaching an Engine.
 

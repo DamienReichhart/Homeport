@@ -9,6 +9,8 @@ export default {
   'app.nav.opensInBrowser': '{label} (wird im Browser geöffnet)',
   'app.keychainMissing':
     'Es ist kein Schlüsselbund des Betriebssystems verfügbar, daher können SSH-Schlüssel, TLS-Zertifikate und Stack-Umgebungen nicht gespeichert werden. Lokale, TCP- und ssh-agent-Hosts funktionieren weiterhin.',
+  'app.keychainEntryMissing':
+    'Der Schlüsselbund hat keinen Eintrag für den Schlüssel, mit dem Homeports Geheimnisse versiegelt wurden. Sie können daher weder geöffnet noch gespeichert werden. Siehe Einstellungen → Dieser Rechner.',
   'app.startup.title': 'Homeport kann seine Datenbank nicht öffnen',
   'app.startup.description': 'Sonst wurde nichts gestartet. Die Datenbank liegt in dieser Datei:',
   'app.startup.openFolder': 'Ordner öffnen',

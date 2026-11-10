@@ -37,6 +37,14 @@ export default {
     '可用——SSH 密钥、证书、堆栈环境变量和镜像仓库登录信息均加密保存。',
   'settings.machine.keychainUnavailable':
     '不可用——无法保存 SSH 密钥、TLS 证书、堆栈环境变量和镜像仓库登录信息。',
+  'settings.machine.keychainEntryMissing':
+    '条目缺失：钥匙串中没有用于密封 Homeport 机密信息的密钥条目，因此无法打开或保存机密信息。',
+  'settings.machine.startOverDescription':
+    '如果 Homeport 使用的钥匙串与之前不同，请切换回原来的钥匙串并重启 Homeport。如果该条目已永久丢失，请使用新密钥重新开始。',
+  'settings.machine.startOver': '使用新密钥重新开始',
+  'settings.machine.startOverTitle': '使用新密钥重新开始？',
+  'settings.machine.startOverConfirmDescription':
+    '新密钥无法打开用丢失的密钥密封的内容：你需要重新输入每个主机、集群、镜像仓库和代码仓库的凭据以及每个堆栈的环境变量，或恢复一个备份。',
   'settings.machine.compose': 'Compose CLI',
   'settings.machine.composeMissing': '堆栈可以启动和停止，但无法部署。',
   'settings.machine.stackDeploy': 'Docker CLI（用于 Swarm）',

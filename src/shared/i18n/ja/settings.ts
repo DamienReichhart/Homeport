@@ -42,6 +42,14 @@ export default {
     '利用可能 — SSH キー、証明書、スタックの環境変数、レジストリのログイン情報は暗号化して保存されます。',
   'settings.machine.keychainUnavailable':
     '利用不可 — SSH キー、TLS 証明書、スタックの環境変数、レジストリのログイン情報を保存できません。',
+  'settings.machine.keychainEntryMissing':
+    'エントリーがありません — Homeport のシークレットを封印したキーのエントリーがキーチェーンにないため、シークレットを開くことも保存することもできません。',
+  'settings.machine.startOverDescription':
+    'Homeport が以前とは別のキーチェーンを使っている場合は、元のキーチェーンに戻して Homeport を再起動してください。エントリーが完全に失われた場合は、新しいキーでやり直してください。',
+  'settings.machine.startOver': '新しいキーでやり直す',
+  'settings.machine.startOverTitle': '新しいキーでやり直しますか？',
+  'settings.machine.startOverConfirmDescription':
+    '失われたキーで封印されたものは、新しいキーでは開けません。各ホスト、クラスター、レジストリー、リポジトリーの認証情報と各スタックの環境を入力し直すか、バックアップを復元してください。',
   'settings.machine.compose': 'Compose CLI',
   'settings.machine.composeMissing': 'スタックの起動と停止はできますが、デプロイはできません。',
   'settings.machine.stackDeploy': 'Docker CLI（Swarm 用）',

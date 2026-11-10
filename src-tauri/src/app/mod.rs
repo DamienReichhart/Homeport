@@ -9,7 +9,7 @@ pub mod history;
 mod logging;
 mod notifications;
 mod polling;
-mod setup;
+pub mod setup;
 pub mod startup;
 mod state;
 pub mod tray;

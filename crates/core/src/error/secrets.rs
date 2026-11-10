@@ -23,4 +23,10 @@ impl AppError {
             .with_hint(hint)
             .with_detail(reason)
     }
+
+    /// The keychain has no entry for the key the stored secrets were sealed with.
+    pub fn keychain_entry_missing() -> Self {
+        Self::new(ErrorCode::KeychainUnavailable, msg::KEYCHAIN_ENTRY_MISSING)
+            .with_hint(msg::KEYCHAIN_ENTRY_MISSING_HINT)
+    }
 }

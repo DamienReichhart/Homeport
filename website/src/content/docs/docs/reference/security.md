@@ -82,6 +82,8 @@ Homeport shows a banner and won't store secrets. Local socket, TCP and ssh-agent
 
 Resetting the keychain, or moving `homeport.db` to another computer or user, leaves secrets that can't be decrypted. Homeport doesn't delete anything: affected Hosts and Clusters show **Credentials lost** until you re-enter their credentials; [If the secrets are lost](/docs/reference/data-and-backups/#if-the-secrets-are-lost) lists what to enter again, and where. To move your data, [back it up](#backups) or [export your Hosts](#moving-to-another-computer) instead.
 
+Homeport never makes a new key over secrets it already holds. When the keychain answers but has no `com.homeport.app` entry while the database holds encrypted secrets — another keychain answering this time, such as KeePassXC's Secret Service instead of GNOME Keyring — Homeport stores no secret and says that **the keychain entry Homeport's secrets were sealed with is missing**. Switch back to the keychain that holds the entry and restart Homeport. If the entry is gone for good, choose **Start over with a new key** in **Settings → This machine**: the secrets sealed with the old key then show as **Credentials lost**, to enter again or restore from a backup.
+
 ### Moving to another computer
 
 **Export** on the Hosts page writes the Hosts you pick to one file, with their keys, certificates and trusted server keys, encrypted with a passphrase you choose:

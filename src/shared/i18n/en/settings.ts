@@ -38,6 +38,14 @@ export default {
     'Available — SSH keys, certificates, stack environments and registry logins are stored encrypted.',
   'settings.machine.keychainUnavailable':
     'Unavailable — SSH keys, TLS certificates, stack environments and registry logins can’t be stored.',
+  'settings.machine.keychainEntryMissing':
+    'Entry missing — the keychain has no entry for the key Homeport’s secrets were sealed with, so they can’t be opened or stored.',
+  'settings.machine.startOverDescription':
+    'If Homeport is using another keychain than before, switch back to it and restart Homeport. If the entry is gone for good, start over with a new key.',
+  'settings.machine.startOver': 'Start over with a new key',
+  'settings.machine.startOverTitle': 'Start over with a new key?',
+  'settings.machine.startOverConfirmDescription':
+    'A new key can’t open what was sealed with the missing one: you’ll re-enter the credentials of each host, cluster, registry and repository, and each stack’s environment, or restore a backup.',
   'settings.machine.compose': 'Compose CLI',
   'settings.machine.composeMissing': 'Stacks can be started and stopped, but not deployed.',
   'settings.machine.stackDeploy': 'Docker CLI, for Swarms',

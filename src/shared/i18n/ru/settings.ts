@@ -42,6 +42,14 @@ export default {
     'Доступна — SSH-ключи, сертификаты, окружения стеков и входы в реестры хранятся в зашифрованном виде.',
   'settings.machine.keychainUnavailable':
     'Недоступна — SSH-ключи, TLS-сертификаты, окружения стеков и входы в реестры сохранить нельзя.',
+  'settings.machine.keychainEntryMissing':
+    'Запись отсутствует — в связке ключей нет записи для ключа, которым запечатаны секреты Homeport, поэтому их нельзя ни открыть, ни сохранить.',
+  'settings.machine.startOverDescription':
+    'Если Homeport использует не ту связку ключей, что раньше, вернитесь к прежней и перезапустите Homeport. Если запись пропала навсегда, начните заново с новым ключом.',
+  'settings.machine.startOver': 'Начать заново с новым ключом',
+  'settings.machine.startOverTitle': 'Начать заново с новым ключом?',
+  'settings.machine.startOverConfirmDescription':
+    'Новый ключ не откроет то, что запечатано отсутствующим: придётся заново ввести учётные данные каждого хоста, кластера, реестра и репозитория и окружение каждого стека или восстановить резервную копию.',
   'settings.machine.compose': 'Compose CLI',
   'settings.machine.composeMissing': 'Стеки можно запускать и останавливать, но не развёртывать.',
   'settings.machine.stackDeploy': 'Docker CLI, для Swarm',

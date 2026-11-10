@@ -159,6 +159,8 @@ Dopo un ripristino del portachiavi, un nuovo account utente, o un database copia
 
 Gli host con socket locale, TCP e ssh-agent non contengono alcun segreto e continuano a funzionare. Gli ambienti registrati nella cronologia delle distribuzioni non possono essere inseriti di nuovo; i file compose della cronologia restano leggibili.
 
+Se invece Homeport segnala che manca la voce del portachiavi con cui sono stati sigillati i suoi segreti, non vi ha ancora rinunciato: torna al portachiavi che contiene la voce, oppure scegli **Ricomincia con una nuova chiave** in **Impostazioni → Questo computer** prima di inserirli di nuovo.
+
 Vedi [Credenziali perse](/docs/reference/troubleshooting/#credenziali-perse) nella risoluzione dei problemi.
 
 ## Rimuovere i tuoi dati

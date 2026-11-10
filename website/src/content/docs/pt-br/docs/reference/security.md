@@ -82,6 +82,8 @@ O Homeport mostra um banner e não armazena segredos. Os hosts de socket local, 
 
 Redefinir o chaveiro, ou mover `homeport.db` para outro computador ou usuário, deixa segredos que não podem ser descriptografados. O Homeport não exclui nada: os hosts e clusters afetados mostram **Credenciais perdidas** até que você digite as credenciais deles de novo; [Se os segredos forem perdidos](/docs/reference/data-and-backups/#se-os-segredos-forem-perdidos) lista o que digitar de novo, e onde. Para mover os seus dados, [faça um backup](#backups) ou [exporte os seus hosts](#mudar-para-outro-computador).
 
+O Homeport nunca cria uma chave nova por cima de segredos que já guarda. Quando o chaveiro responde mas não tem a entrada `com.homeport.app` enquanto o banco de dados tem segredos criptografados — desta vez outro chaveiro responde, como o Secret Service do KeePassXC em vez do GNOME Keyring —, o Homeport não armazena nenhum segredo e avisa que **a entrada do chaveiro com que os segredos do Homeport foram selados está faltando**. Volte para o chaveiro que tem a entrada e reinicie o Homeport. Se a entrada sumiu de vez, escolha **Recomeçar com uma nova chave** em **Configurações → Esta máquina**: os segredos selados com a chave antiga passam a aparecer como **Credenciais perdidas**, para digitar de novo ou restaurar de um backup.
+
 ### Mudar para outro computador
 
 **Exportar**, na página Hosts, grava os hosts que você escolher em um único arquivo, com as chaves, os certificados e as chaves de servidor confiáveis deles, criptografados com uma senha que você escolhe:

@@ -82,6 +82,8 @@ Homeport muestra un aviso y no guarda secretos. Los hosts de socket local, TCP y
 
 Restablecer el llavero, o mover `homeport.db` a otro equipo o a otro usuario, deja secretos que no se pueden descifrar. Homeport no borra nada: los hosts y clústeres afectados muestran **Credenciales perdidas** hasta que vuelvas a introducir sus credenciales; [Si se pierden los secretos](/docs/reference/data-and-backups/#si-se-pierden-los-secretos) lista qué volver a introducir, y dónde. Para mover tus datos, [haz una copia de seguridad](#copias-de-seguridad) o [exporta tus hosts](#pasar-a-otro-equipo).
 
+Homeport nunca crea una clave nueva encima de secretos que ya tiene. Cuando el llavero responde pero no tiene la entrada `com.homeport.app` mientras la base de datos contiene secretos cifrados —esta vez responde otro llavero, como el Secret Service de KeePassXC en lugar de GNOME Keyring—, Homeport no guarda ningún secreto e indica que **falta la entrada del llavero con la que se sellaron los secretos de Homeport**. Vuelve al llavero que tiene la entrada y reinicia Homeport. Si la entrada ha desaparecido para siempre, elige **Empezar de nuevo con una clave nueva** en **Ajustes → Este equipo**: los secretos sellados con la clave antigua aparecen entonces como **Credenciales perdidas**, para introducirlos de nuevo o restaurarlos desde una copia de seguridad.
+
 ### Pasar a otro equipo
 
 **Exportar**, en la página Hosts, escribe los hosts que elijas en un archivo, con sus claves, certificados y claves de servidor aceptadas, cifrado con una frase de contraseña que tú eliges:

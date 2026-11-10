@@ -159,6 +159,8 @@ Tras restablecer el llavero, con una cuenta de usuario nueva o al abrir en otro 
 
 Los hosts de socket local, TCP y ssh-agent no tienen ningún secreto y siguen funcionando. Los entornos registrados en el historial de despliegues no se pueden volver a introducir; los archivos compose del historial siguen siendo legibles.
 
+Si Homeport indica en cambio que falta la entrada del llavero con la que se sellaron sus secretos, aún no ha renunciado a ellos: vuelve al llavero que tiene la entrada, o elige **Empezar de nuevo con una clave nueva** en **Ajustes → Este equipo** antes de volver a introducirlos.
+
 Consulta [Credenciales perdidas](/docs/reference/troubleshooting/#credenciales-perdidas) en la solución de problemas.
 
 ## Eliminar tus datos

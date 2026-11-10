@@ -535,11 +535,14 @@ mod tests {
     fn without_a_keychain_only_public_repositories_can_be_added() {
         struct NoKeychain;
         impl KeyStore for NoKeychain {
-            fn load_or_create(&self) -> Result<homeport_storage::crypto::Key, String> {
+            fn load(&self) -> Result<Option<homeport_storage::crypto::Key>, String> {
+                Err("none".into())
+            }
+            fn create(&self) -> Result<homeport_storage::crypto::Key, String> {
                 Err("none".into())
             }
         }
-        let (store, _) = store(SecretBox::from_store(&NoKeychain));
+        let (store, _) = store(SecretBox::from_store(&NoKeychain, false));
         for (url, auth) in [
             ("git@github.com:o/r.git", RepoAuth::SshKey),
             ("https://gitlab.com/o/r.git", RepoAuth::HttpsToken),

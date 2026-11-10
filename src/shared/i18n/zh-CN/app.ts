@@ -9,6 +9,8 @@ export default {
   'app.nav.opensInBrowser': '{label}（在浏览器中打开）',
   'app.keychainMissing':
     '没有可用的系统钥匙串，因此无法保存 SSH 密钥、TLS 证书和堆栈环境变量。本地、TCP 和 ssh-agent 主机仍可使用。',
+  'app.keychainEntryMissing':
+    '钥匙串中没有用于密封 Homeport 机密信息的密钥条目，因此无法打开或保存机密信息。请参阅 设置 → 本机。',
   'app.startup.title': 'Homeport 无法打开其数据库',
   'app.startup.description': '未启动任何其他内容。数据库位于此文件中：',
   'app.startup.openFolder': '打开文件夹',

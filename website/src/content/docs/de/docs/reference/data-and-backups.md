@@ -159,6 +159,8 @@ Nach einem Zurücksetzen des Schlüsselbunds, einem neuen Benutzerkonto oder ein
 
 Hosts mit lokalem Socket, TCP und ssh-agent enthalten kein Geheimnis und funktionieren weiter. Die im Bereitstellungsverlauf aufgezeichneten Umgebungen können nicht erneut eingegeben werden; die Compose-Dateien des Verlaufs bleiben lesbar.
 
+Meldet Homeport stattdessen, dass der Schlüsselbund-Eintrag fehlt, mit dem seine Geheimnisse versiegelt wurden, hat es sie noch nicht aufgegeben: Wechseln Sie zurück zu dem Schlüsselbund mit dem Eintrag, oder wählen Sie **Mit neuem Schlüssel neu beginnen** unter **Einstellungen → Dieser Rechner**, bevor Sie sie erneut eingeben.
+
 Siehe [Zugangsdaten verloren](/docs/reference/troubleshooting/#zugangsdaten-verloren) in der Fehlerbehebung.
 
 ## Ihre Daten entfernen

@@ -159,6 +159,8 @@ sqlite3 ~/homeport-backup.db "PRAGMA integrity_check;"
 
 本地套接字、TCP 和 ssh-agent 主机不保存机密，会继续正常工作。部署历史中记录的环境变量无法重新输入；历史中的 compose 文件仍可读取。
 
+如果 Homeport 提示的是用于密封其机密信息的钥匙串条目缺失，它还没有放弃这些机密信息：请切换回包含该条目的钥匙串，或在重新输入之前，在**设置 → 本机**中选择**使用新密钥重新开始**。
+
 参见故障排除中的[凭据丢失](/docs/reference/troubleshooting/#凭据丢失)。
 
 ## 删除你的数据

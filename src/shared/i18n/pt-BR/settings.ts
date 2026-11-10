@@ -41,6 +41,14 @@ export default {
     'Disponível — chaves SSH, certificados, ambientes de stacks e logins de registro são armazenados criptografados.',
   'settings.machine.keychainUnavailable':
     'Indisponível — chaves SSH, certificados TLS, ambientes de stacks e logins de registro não podem ser armazenados.',
+  'settings.machine.keychainEntryMissing':
+    'Entrada ausente — o chaveiro não tem uma entrada para a chave com que os segredos do Homeport foram selados, então eles não podem ser abertos nem armazenados.',
+  'settings.machine.startOverDescription':
+    'Se o Homeport está usando outro chaveiro que antes, volte para aquele e reinicie o Homeport. Se a entrada sumiu de vez, recomece com uma nova chave.',
+  'settings.machine.startOver': 'Recomeçar com uma nova chave',
+  'settings.machine.startOverTitle': 'Recomeçar com uma nova chave?',
+  'settings.machine.startOverConfirmDescription':
+    'Uma nova chave não abre o que foi selado com a que está faltando: você vai digitar de novo as credenciais de cada host, cluster, registro e repositório, e o ambiente de cada stack, ou restaurar um backup.',
   'settings.machine.compose': 'CLI do Compose',
   'settings.machine.composeMissing':
     'As stacks podem ser iniciadas e paradas, mas não implantadas.',

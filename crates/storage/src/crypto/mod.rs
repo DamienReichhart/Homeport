@@ -3,6 +3,8 @@
 //! Each secret is sealed separately with XChaCha20-Poly1305 under one random
 //! 256-bit key held in the OS keychain. Sealed format: `version || nonce || ciphertext`.
 
+use std::sync::RwLock;
+
 use chacha20poly1305::{
     aead::{Aead, KeyInit},
     XChaCha20Poly1305, XNonce,
@@ -17,39 +19,108 @@ mod keystore;
 pub use self::keystore::{random_key, Key, KeyStore, Keychain};
 
 const FORMAT_V1: u8 = 1;
+
+fn cipher_of(key: &Key) -> XChaCha20Poly1305 {
+    XChaCha20Poly1305::new(key.into())
+}
+
+fn unavailable(why: &Unavailable) -> AppError {
+    match why {
+        Unavailable::Keychain(reason) => AppError::keychain_unavailable(reason),
+        Unavailable::EntryMissing => AppError::keychain_entry_missing(),
+    }
+}
 const NONCE_LEN: usize = 24;
 
-/// Seals and opens secrets. Without a key (no keychain), sealing and opening fail
+/// Seals and opens secrets. Without a key (no keychain, or no entry for the
+/// key the database's secrets were sealed with), sealing and opening fail
 /// with `keychain_unavailable` while everything else keeps working.
 pub struct SecretBox {
-    cipher: Result<XChaCha20Poly1305, String>,
+    cipher: RwLock<Result<XChaCha20Poly1305, Unavailable>>,
+}
+
+/// Why there's no key.
+#[derive(Debug, Clone)]
+enum Unavailable {
+    /// The keychain can't be used: its reason.
+    Keychain(String),
+    /// The keychain answers but has no entry, and the database holds
+    /// secrets sealed under a key: a new one would orphan them for good if
+    /// the entry comes back (another Secret Service answering this time).
+    EntryMissing,
 }
 
 impl SecretBox {
-    pub fn from_store(store: &dyn KeyStore) -> Self {
-        match store.load_or_create() {
-            Ok(key) => Self::from_key(&key),
+    /// The key of `store`, or a new one when it has none and nothing is
+    /// sealed yet (`holds_sealed` false): the first run. When secrets are
+    /// sealed and the entry is missing, no key is made over them; the box
+    /// stays unavailable until [`SecretBox::start_over`].
+    pub fn from_store(store: &dyn KeyStore, holds_sealed: bool) -> Self {
+        let cipher = match store.load() {
+            Ok(Some(key)) => Ok(cipher_of(&key)),
+            Ok(None) if holds_sealed => {
+                log::warn!(
+                    "the OS keychain has no entry for the key Homeport's secrets were sealed with; \
+                     not making a new one over them"
+                );
+                Err(Unavailable::EntryMissing)
+            }
+            Ok(None) => store.create().map(|key| cipher_of(&key)).map_err(|reason| {
+                log::warn!("couldn't store a new key in the OS keychain: {reason}");
+                Unavailable::Keychain(reason)
+            }),
             Err(reason) => {
                 log::warn!("OS keychain unavailable, secrets are disabled: {reason}");
-                Self {
-                    cipher: Err(reason),
-                }
+                Err(Unavailable::Keychain(reason))
             }
+        };
+        Self {
+            cipher: RwLock::new(cipher),
         }
     }
 
     pub fn from_key(key: &Key) -> Self {
         Self {
-            cipher: Ok(XChaCha20Poly1305::new(key.into())),
+            cipher: RwLock::new(Ok(cipher_of(key))),
         }
     }
 
     pub fn is_available(&self) -> bool {
-        self.cipher.is_ok()
+        self.read().is_ok()
     }
 
-    fn cipher(&self) -> AppResult<&XChaCha20Poly1305> {
-        self.cipher.as_ref().map_err(AppError::keychain_unavailable)
+    /// The keychain has no entry for the key the stored secrets were sealed with.
+    pub fn entry_missing(&self) -> bool {
+        matches!(*self.read(), Err(Unavailable::EntryMissing))
+    }
+
+    /// Gives up on the missing key, as the user asked: uses the keychain's
+    /// entry if it is back, or stores a new key. Secrets sealed under the
+    /// old one then read as `credentials_lost`, to re-enter or restore.
+    /// Refused unless the entry is what's missing, so a working key is
+    /// never replaced.
+    pub fn start_over(&self, store: &dyn KeyStore) -> AppResult<()> {
+        if !self.entry_missing() {
+            return Err(match &*self.read() {
+                Ok(_) => AppError::validation(crate::messages::KEY_IN_USE),
+                Err(e) => unavailable(e),
+            });
+        }
+        let key = match store.load() {
+            Ok(Some(key)) => key,
+            Ok(None) => store.create().map_err(AppError::keychain_unavailable)?,
+            Err(reason) => return Err(AppError::keychain_unavailable(reason)),
+        };
+        *self.cipher.write().expect("secret box poisoned") = Ok(cipher_of(&key));
+        Ok(())
+    }
+
+    fn read(&self) -> std::sync::RwLockReadGuard<'_, Result<XChaCha20Poly1305, Unavailable>> {
+        self.cipher.read().expect("secret box poisoned")
+    }
+
+    fn cipher(&self) -> AppResult<XChaCha20Poly1305> {
+        self.read().clone().map_err(|e| unavailable(&e))
     }
 
     pub fn seal(&self, plaintext: &[u8]) -> AppResult<Vec<u8>> {
@@ -95,11 +166,89 @@ mod tests {
     use super::*;
     use homeport_core::error::ErrorCode;
 
-    struct Unavailable;
-    impl KeyStore for Unavailable {
-        fn load_or_create(&self) -> Result<Key, String> {
+    struct NoSecretService;
+    impl KeyStore for NoSecretService {
+        fn load(&self) -> Result<Option<Key>, String> {
             Err("no secret service".into())
         }
+        fn create(&self) -> Result<Key, String> {
+            Err("no secret service".into())
+        }
+    }
+
+    /// A keychain in memory, counting the keys it was asked to make.
+    #[derive(Default)]
+    struct Memory {
+        key: std::sync::Mutex<Option<Key>>,
+        created: std::sync::atomic::AtomicU32,
+    }
+    impl Memory {
+        fn created(&self) -> u32 {
+            self.created.load(std::sync::atomic::Ordering::SeqCst)
+        }
+    }
+    impl KeyStore for Memory {
+        fn load(&self) -> Result<Option<Key>, String> {
+            Ok(*self.key.lock().unwrap())
+        }
+        fn create(&self) -> Result<Key, String> {
+            self.created
+                .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            let key = random_key();
+            *self.key.lock().unwrap() = Some(key);
+            Ok(key)
+        }
+    }
+
+    #[test]
+    fn the_first_run_makes_a_key_and_later_runs_reuse_it() {
+        let keychain = Memory::default();
+        let first = SecretBox::from_store(&keychain, false);
+        let sealed = first.seal(b"secret").unwrap();
+        let again = SecretBox::from_store(&keychain, true);
+        assert_eq!(again.open(&sealed).unwrap(), b"secret");
+        assert_eq!(keychain.created(), 1);
+    }
+
+    #[test]
+    fn a_missing_entry_never_gets_a_new_key_over_sealed_secrets() {
+        // Another Secret Service answers this time and has no entry: the
+        // database still holds secrets sealed under the key it lacks.
+        let keychain = Memory::default();
+        let secrets = SecretBox::from_store(&keychain, true);
+        assert!(!secrets.is_available());
+        assert!(secrets.entry_missing());
+        assert_eq!(keychain.created(), 0);
+        assert!(keychain.key.lock().unwrap().is_none(), "nothing written");
+        let refused = secrets.seal(b"x").unwrap_err();
+        assert!(refused.is(ErrorCode::KeychainUnavailable));
+        assert_eq!(refused.key, "errors.secrets.keychainEntryMissing");
+
+        // Starting over, as the user asks, makes one.
+        secrets.start_over(&keychain).unwrap();
+        assert!(secrets.is_available() && !secrets.entry_missing());
+        assert_eq!(keychain.created(), 1);
+        let sealed = secrets.seal(b"again").unwrap();
+        assert_eq!(secrets.open(&sealed).unwrap(), b"again");
+    }
+
+    #[test]
+    fn starting_over_uses_an_entry_that_came_back_and_never_replaces_a_working_key() {
+        let keychain = Memory::default();
+        let secrets = SecretBox::from_store(&keychain, true);
+        let old = [9; 32];
+        let sealed = SecretBox::from_key(&old).seal(b"kept").unwrap();
+        *keychain.key.lock().unwrap() = Some(old);
+        secrets.start_over(&keychain).unwrap();
+        assert_eq!(secrets.open(&sealed).unwrap(), b"kept");
+        assert_eq!(keychain.created(), 0);
+
+        let refused = secrets.start_over(&keychain).unwrap_err();
+        assert!(refused.is(ErrorCode::Validation));
+        assert_eq!(*keychain.key.lock().unwrap(), Some(old));
+        assert!(SecretBox::from_store(&NoSecretService, false)
+            .start_over(&keychain)
+            .is_err());
     }
 
     #[test]
@@ -142,7 +291,7 @@ mod tests {
 
     #[test]
     fn without_a_keychain_secrets_are_unavailable() {
-        let sb = SecretBox::from_store(&Unavailable);
+        let sb = SecretBox::from_store(&NoSecretService, false);
         assert!(!sb.is_available());
         assert!(matches!(
             sb.seal(b"x"),

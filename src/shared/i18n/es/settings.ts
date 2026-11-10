@@ -42,6 +42,14 @@ export default {
     'Disponible: las claves SSH, los certificados, los entornos de los stacks y los inicios de sesión de los registros se guardan cifrados.',
   'settings.machine.keychainUnavailable':
     'No disponible: no se pueden guardar claves SSH, certificados TLS, entornos de stacks ni inicios de sesión de registros.',
+  'settings.machine.keychainEntryMissing':
+    'Falta la entrada: el llavero no tiene ninguna entrada para la clave con la que se sellaron los secretos de Homeport, así que no se pueden abrir ni guardar.',
+  'settings.machine.startOverDescription':
+    'Si Homeport está usando otro llavero que antes, vuelve a ese y reinicia Homeport. Si la entrada ha desaparecido para siempre, empieza de nuevo con una clave nueva.',
+  'settings.machine.startOver': 'Empezar de nuevo con una clave nueva',
+  'settings.machine.startOverTitle': '¿Empezar de nuevo con una clave nueva?',
+  'settings.machine.startOverConfirmDescription':
+    'Una clave nueva no puede abrir lo que se selló con la que falta: tendrás que volver a introducir las credenciales de cada host, clúster, registro y repositorio, y el entorno de cada stack, o restaurar una copia de seguridad.',
   'settings.machine.compose': 'CLI de Compose',
   'settings.machine.composeMissing': 'Los stacks se pueden iniciar y detener, pero no desplegar.',
   'settings.machine.stackDeploy': 'CLI de Docker, para Swarms',

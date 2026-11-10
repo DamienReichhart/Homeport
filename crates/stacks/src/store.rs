@@ -426,11 +426,14 @@ mod tests {
     fn env_needs_the_keychain_but_empty_env_does_not() {
         struct NoKeychain;
         impl KeyStore for NoKeychain {
-            fn load_or_create(&self) -> Result<homeport_storage::crypto::Key, String> {
+            fn load(&self) -> Result<Option<homeport_storage::crypto::Key>, String> {
+                Err("none".into())
+            }
+            fn create(&self) -> Result<homeport_storage::crypto::Key, String> {
                 Err("none".into())
             }
         }
-        let (store, _, host) = setup(SecretBox::from_store(&NoKeychain));
+        let (store, _, host) = setup(SecretBox::from_store(&NoKeychain, false));
         assert!(store.create(&host, "plain", &one(COMPOSE), "  \n").is_ok());
         assert!(matches!(
             store.create(&host, "secret", &one(COMPOSE), "A=1"),

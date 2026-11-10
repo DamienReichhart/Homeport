@@ -37,4 +37,6 @@ homeport_core::messages! {
     /// An export written by a newer Homeport.
     BUNDLE_TOO_NEW = "errors.storage.bundle.tooNew" => "This file comes from a newer Homeport.";
     BUNDLE_TOO_NEW_HINT = "errors.storage.bundle.tooNew.hint" => "Update Homeport on this computer, then import it again.";
+    /// Starting over with a new key while the keychain's one works.
+    KEY_IN_USE = "errors.storage.keyInUse" => "The keychain still holds the key Homeport's secrets are sealed with, so it isn't replaced.";
 }

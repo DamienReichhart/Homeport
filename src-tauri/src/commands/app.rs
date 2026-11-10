@@ -108,6 +108,9 @@ pub fn get_licenses(app: AppHandle) -> AppResult<Licenses> {
 pub struct Capabilities {
     /// An OS keychain is reachable, so SSH, TLS, stack `.env` and registry secrets can be stored.
     keychain: bool,
+    /// The keychain has no entry for the key the stored secrets were sealed
+    /// with, and Homeport made no new one over them: `keychain_start_over`.
+    keychain_entry_missing: bool,
     /// Whether Managed Stacks can be deployed here.
     compose: ComposeSupport,
     /// Whether Stacks can be deployed to a Swarm from here: the `docker`
@@ -181,6 +184,7 @@ pub async fn get_capabilities(
 ) -> Result<Capabilities, ()> {
     Ok(Capabilities {
         keychain: state.secrets.is_available(),
+        keychain_entry_missing: state.secrets.entry_missing(),
         compose: match compose::detect().await {
             Ok(cli) => ComposeSupport::Available { cli },
             Err(problem) => ComposeSupport::Unavailable { problem },
@@ -199,6 +203,23 @@ pub async fn get_capabilities(
         },
         tray: crate::app::tray::is_available(&app),
     })
+}
+
+/// Gives up on the key the stored secrets were sealed with, whose keychain
+/// entry is missing: uses the entry if it came back, or stores a new key.
+/// Secrets sealed under the old key then show as lost, to re-enter or
+/// restore from a backup. Refused while the keychain's key works.
+#[tauri::command]
+#[specta::specta]
+pub async fn keychain_start_over(state: State<'_, AppState>) -> AppResult<()> {
+    let secrets = state.secrets.clone();
+    // Keychain backends may block on D-Bus; keep that off the async runtime.
+    tauri::async_runtime::spawn_blocking(move || secrets.start_over(&crate::app::setup::KEYCHAIN))
+        .await
+        .expect("keychain task panicked")?;
+    state.hosts.registry.reload()?;
+    state.clusters.registry.reload()?;
+    Ok(())
 }
 
 /// Reads a file the user picked in an open dialog (certificates, keys, compose files).

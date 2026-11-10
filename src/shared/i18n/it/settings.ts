@@ -42,6 +42,14 @@ export default {
     'Disponibile — chiavi SSH, certificati, ambienti degli stack e accessi ai registri vengono memorizzati cifrati.',
   'settings.machine.keychainUnavailable':
     'Non disponibile — chiavi SSH, certificati TLS, ambienti degli stack e accessi ai registri non possono essere memorizzati.',
+  'settings.machine.keychainEntryMissing':
+    'Voce mancante: il portachiavi non ha una voce per la chiave con cui sono stati sigillati i segreti di Homeport, quindi non possono essere aperti né memorizzati.',
+  'settings.machine.startOverDescription':
+    'Se Homeport sta usando un portachiavi diverso da prima, torna a quello e riavvia Homeport. Se la voce è sparita definitivamente, ricomincia con una nuova chiave.',
+  'settings.machine.startOver': 'Ricomincia con una nuova chiave',
+  'settings.machine.startOverTitle': 'Ricominciare con una nuova chiave?',
+  'settings.machine.startOverConfirmDescription':
+    'Una nuova chiave non può aprire ciò che è stato sigillato con quella mancante: dovrai inserire di nuovo le credenziali di ogni host, cluster, registro e repository, e l’ambiente di ogni stack, oppure ripristinare un backup.',
   'settings.machine.compose': 'CLI di Compose',
   'settings.machine.composeMissing':
     'Gli stack possono essere avviati e arrestati, ma non distribuiti.',

@@ -42,6 +42,14 @@ export default {
     'Disponible — les clés SSH, les certificats, les environnements des stacks et les identifiants de registre sont enregistrés chiffrés.',
   'settings.machine.keychainUnavailable':
     'Indisponible — les clés SSH, les certificats TLS, les environnements des stacks et les identifiants de registre ne peuvent pas être enregistrés.',
+  'settings.machine.keychainEntryMissing':
+    'Entrée manquante — le trousseau n’a pas d’entrée pour la clé qui a scellé les secrets de Homeport : ils ne peuvent donc être ni ouverts ni enregistrés.',
+  'settings.machine.startOverDescription':
+    'Si Homeport utilise un autre trousseau qu’avant, revenez à celui-ci et redémarrez Homeport. Si l’entrée a disparu pour de bon, repartez avec une nouvelle clé.',
+  'settings.machine.startOver': 'Repartir avec une nouvelle clé',
+  'settings.machine.startOverTitle': 'Repartir avec une nouvelle clé ?',
+  'settings.machine.startOverConfirmDescription':
+    'Une nouvelle clé ne peut pas ouvrir ce qui a été scellé avec celle qui manque : vous saisirez à nouveau les identifiants de chaque hôte, cluster, registre et dépôt, et l’environnement de chaque stack, ou vous restaurerez une sauvegarde.',
   'settings.machine.compose': 'CLI Compose',
   'settings.machine.composeMissing':
     'Les stacks peuvent être démarrées et arrêtées, mais pas déployées.',

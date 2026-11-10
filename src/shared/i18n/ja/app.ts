@@ -9,6 +9,8 @@ export default {
   'app.nav.opensInBrowser': '{label}（ブラウザーで開きます）',
   'app.keychainMissing':
     'OS のキーチェーンを利用できないため、SSH キー、TLS 証明書、スタックの環境変数を保存できません。ローカル、TCP、ssh-agent のホストは引き続き使えます。',
+  'app.keychainEntryMissing':
+    'Homeport のシークレットを封印したキーのエントリーがキーチェーンにないため、シークレットを開くことも保存することもできません。設定 → このマシンを参照してください。',
   'app.startup.title': 'Homeport はデータベースを開けません',
   'app.startup.description': 'ほかには何も起動していません。データベースは次のファイルにあります:',
   'app.startup.openFolder': 'フォルダーを開く',

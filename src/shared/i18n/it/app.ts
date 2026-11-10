@@ -9,6 +9,8 @@ export default {
   'app.nav.opensInBrowser': '{label} (si apre nel browser)',
   'app.keychainMissing':
     'Non è disponibile alcun portachiavi del sistema operativo, quindi non è possibile memorizzare chiavi SSH, certificati TLS e ambienti degli stack. Gli host locali, TCP e ssh-agent funzionano comunque.',
+  'app.keychainEntryMissing':
+    'Il portachiavi non ha una voce per la chiave con cui sono stati sigillati i segreti di Homeport, quindi non possono essere aperti né memorizzati. Vedi Impostazioni → Questo computer.',
   'app.startup.title': 'Homeport non riesce ad aprire il suo database',
   'app.startup.description':
     'Non è stato avviato nient’altro. Il database si trova in questo file:',

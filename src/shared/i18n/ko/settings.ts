@@ -41,6 +41,14 @@ export default {
     '사용 가능 — SSH 키, 인증서, 스택 환경, 레지스트리 로그인이 암호화되어 저장됩니다.',
   'settings.machine.keychainUnavailable':
     '사용할 수 없음 — SSH 키, TLS 인증서, 스택 환경, 레지스트리 로그인을 저장할 수 없습니다.',
+  'settings.machine.keychainEntryMissing':
+    '항목 없음 — Homeport의 비밀 정보를 봉인한 키의 항목이 키체인에 없어 비밀 정보를 열거나 저장할 수 없습니다.',
+  'settings.machine.startOverDescription':
+    'Homeport가 이전과 다른 키체인을 쓰고 있다면 원래 키체인으로 돌아간 뒤 Homeport를 다시 시작하세요. 항목이 완전히 사라졌다면 새 키로 다시 시작하세요.',
+  'settings.machine.startOver': '새 키로 다시 시작',
+  'settings.machine.startOverTitle': '새 키로 다시 시작할까요?',
+  'settings.machine.startOverConfirmDescription':
+    '사라진 키로 봉인한 것은 새 키로 열 수 없습니다. 각 호스트, 클러스터, 레지스트리, 저장소의 자격 증명과 각 스택의 환경을 다시 입력하거나 백업을 복원해야 합니다.',
   'settings.machine.compose': 'Compose CLI',
   'settings.machine.composeMissing': '스택을 시작하고 중지할 수는 있지만 배포할 수는 없습니다.',
   'settings.machine.stackDeploy': 'Docker CLI(Swarm용)',

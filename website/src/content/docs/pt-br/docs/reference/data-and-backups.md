@@ -159,6 +159,8 @@ Depois de uma redefinição do chaveiro, de uma nova conta de usuário ou de um 
 
 Os hosts de socket local, TCP e ssh-agent não guardam nenhum segredo e continuam funcionando. Os ambientes registrados no histórico de implantações não podem ser digitados de novo; os arquivos compose do histórico continuam legíveis.
 
+Se em vez disso o Homeport avisar que a entrada do chaveiro com que seus segredos foram selados está faltando, ele ainda não desistiu deles: volte para o chaveiro que tem a entrada, ou escolha **Recomeçar com uma nova chave** em **Configurações → Esta máquina** antes de digitá-los de novo.
+
 Veja [Credenciais perdidas](/docs/reference/troubleshooting/#credenciais-perdidas) na solução de problemas.
 
 ## Removendo os seus dados

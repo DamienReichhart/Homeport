@@ -450,13 +450,16 @@ mod tests {
     fn without_a_keychain_logins_cant_be_stored() {
         struct NoKeychain;
         impl homeport_storage::KeyStore for NoKeychain {
-            fn load_or_create(&self) -> Result<homeport_storage::crypto::Key, String> {
+            fn load(&self) -> Result<Option<homeport_storage::crypto::Key>, String> {
+                Err("no secret service".into())
+            }
+            fn create(&self) -> Result<homeport_storage::crypto::Key, String> {
                 Err("no secret service".into())
             }
         }
         let store = RegistryStore::new(
             Arc::new(Db::open_in_memory().unwrap()),
-            Arc::new(SecretBox::from_store(&NoKeychain)),
+            Arc::new(SecretBox::from_store(&NoKeychain, false)),
         );
         let err = store
             .save(None, draft("ghcr.io", "a", Some("x")))

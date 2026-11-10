@@ -516,7 +516,10 @@ mod tests {
     fn without_a_keychain_the_list_still_works() {
         struct NoKeychain;
         impl KeyStore for NoKeychain {
-            fn load_or_create(&self) -> Result<homeport_storage::crypto::Key, String> {
+            fn load(&self) -> Result<Option<homeport_storage::crypto::Key>, String> {
+                Err("none".into())
+            }
+            fn create(&self) -> Result<homeport_storage::crypto::Key, String> {
                 Err("none".into())
             }
         }
@@ -538,7 +541,7 @@ mod tests {
         let id = DeployHistory::new(db.clone(), with_key)
             .start(&deploy(&StackOwner::Host(host), &f, "A=1"))
             .unwrap();
-        let without = DeployHistory::new(db, Arc::new(SecretBox::from_store(&NoKeychain)));
+        let without = DeployHistory::new(db, Arc::new(SecretBox::from_store(&NoKeychain, false)));
         assert_eq!(without.list("s1").unwrap().len(), 1);
         assert!(without.get(&id).unwrap().summary.has_env);
         assert_eq!(without.env_keys(&id).unwrap(), None);
