@@ -50,7 +50,7 @@ podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}'
 
 ## Linux での権限
 
-既定のソケット `/var/run/docker.sock` は `docker` グループに属しています。ユーザーがこのグループに属していない場合、ホストは _Permission denied_ とともに **到達不能** と表示されます。自分をグループに追加して、ログインし直してください:
+既定のソケット `/var/run/docker.sock` は `docker` グループに属しています。ユーザーがこのグループに属していない場合、ホストは _Homeport には /var/run/docker.sock の Docker Engine の使用が許可されていません。_ とともに **到達不能** と表示されます。自分をグループに追加して、ログインし直してください:
 
 ```sh
 sudo usermod -aG docker $USER

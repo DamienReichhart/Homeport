@@ -7,7 +7,7 @@ Homeport は物事を正確に呼び分けています。ここに挙げる用�
 
 ### Host（ホスト）
 
-Homeport が接続する Docker Engine で、名前と到達方法（ローカルソケット、TCP、TLS、SSH）で定義されます。すべてのコンテナ、イメージ、ボリューム、ネットワーク、スタックは、ちょうど 1 つのホストに属します。[ホストと接続](/docs/hosts/)を参照してください。
+Homeport が接続するエンジンで、名前と到達方法（ローカルソケット、TCP、TLS、SSH）で定義されます。すべてのコンテナ、イメージ、ボリューム、ネットワーク、スタックは、ちょうど 1 つのホストに属します。[ホストと接続](/docs/hosts/)を参照してください。
 
 ### Engine kind（エンジンの種類）
 
@@ -44,6 +44,10 @@ Podman のホストで、1 つのネットワークを共有し、一緒に起�
 ### Quadlet unit（Quadlet ユニット）
 
 Podman のホスト上のファイル（`web.container` など）で、systemd がこれをサービス（`web.service`）に変換します。これにより、Podman のコンテナが起動時に開始され、systemd がそれを動かし続けます。[Quadlet ユニット](/docs/guides/quadlet/)を参照してください。
+
+### Bastion（踏み台）
+
+SSH のホストに到達するために経由する SSH サーバーで、ホスト自身の SSH サーバーがそこからの接続しか受け付けない場合に使います。OpenSSH で `ProxyJump` と呼ばれるものです。1 つのホストに複数の踏み台を順番に設定でき、それぞれが信頼したサーバーのキーを持ちます。踏み台はホストではありません。Homeport が通信するエンジンは動いていません。[踏み台を経由する](/docs/hosts/ssh/#through-a-bastion)を参照してください。
 
 ### Cluster（クラスター）
 
@@ -131,7 +135,7 @@ Docker Hub や GHCR など 1 つのコンテナレジストリのために Homep
 
 ### Engine（エンジン）
 
-マシン上でコンテナを実行する Docker Engine（`dockerd`）、または Podman などの互換エンジンです。Homeport は Docker Engine API を通じてそれと通信します。
+ホストが指すソフトウェアで、インストール、起動、停止の対象になるものです。Docker Engine（`dockerd`）か、Docker Desktop、Podman、Colima、OrbStack などの互換エンジンで、Homeport は Docker Engine API を通じてそれと通信します。または containerd か Incus で、それぞれ独自の API を通じて通信します。ホストの同義語ではありません。「Docker Engine を起動する」はエンジンについて、「Homeport が prod-server に到達できない」はホストについての話です。
 
 ### Socket（ソケット）
 
@@ -147,7 +151,7 @@ Homeport が SSH サーバーを確認する方法です。初回接続時にサ
 
 ## 日本語では
 
-日本語のアプリ、ドキュメント、Web サイトはこれらの用語を使うため、画面とページの言葉は常に一致します。
+日本語のアプリ、ドキュメント、Web サイトはこれらの用語を使うため、画面とページの言葉は常に一致します。ほかの言語にはそれぞれの表が [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n) にあります。
 
 | 英語           | 日本語           |
 | -------------- | ---------------- |
