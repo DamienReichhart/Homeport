@@ -14,9 +14,9 @@ import { DocScreenshot } from '@/features/docs';
   alt="Node 页面：五个 EKS Node，其中一个未就绪且已禁止调度，显示其 kubelet 版本、内部 IP、平台、CPU 和内存。"
 />
 
-CPU 以核数显示（`3920m` 显示为 `3.92`），内存以 GB 显示；Kubernetes 报告的是**可分配**给 Pod 的量，比机器实际拥有的略少，因为 kubelet 和系统会保留一部分。
+CPU 以核数显示（`3920m` 显示为 `3.92`），内存以 GB 显示；Kubernetes 报告的是**可分配**给 Pod 的量，比机器实际拥有的略少，因为 kubelet 和系统会保留一部分。 当集群运行 metrics-server 时，**CPU 已用** 和 **内存已用** 会显示每个 Node 用了其中多少（[CPU 和内存](/docs/clusters/metrics/)）。
 
-Node 的页面显示其操作系统镜像、内核、容器运行时、地址、污点、标签，以及其容量与可分配给 Pod 的量的对比；然后是在其上运行的 **Pod**（涵盖所有 Namespace）、其**条件**（内存、磁盘和 PID 压力）、**事件**和 **YAML**。Pod 的页面会链接到其 Node。
+Node 的页面显示其操作系统镜像、内核、容器运行时、地址、污点、标签，以及其容量与可分配给 Pod 的量的对比；然后是在其上运行的 **Pod**（涵盖所有 Namespace）、其**条件**（内存、磁盘和 PID 压力）、**事件**和 **YAML**。Pod 的页面会链接到其 Node。 有了 metrics-server，**指标** 会对照可分配量绘出它的 CPU 和内存（[CPU 和内存](/docs/clusters/metrics/)）。
 
 ## 事件
 

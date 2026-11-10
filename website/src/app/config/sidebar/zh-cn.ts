@@ -24,6 +24,7 @@ export default {
   'docs/clusters/workloads': '工作负载与 Pod',
   'docs/clusters/networking-config': 'Service 与配置',
   'docs/clusters/nodes-events': 'Node 与事件',
+  'docs/clusters/metrics': 'CPU 和内存',
   'docs/clusters/api-resources': 'API 资源',
   'docs/clusters/logs-exec': '日志与终端',
   'docs/clusters/port-forward': '端口转发',
