@@ -7,7 +7,7 @@ use serde_json::Value;
 
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 
-use crate::{client::Nomad, messages as msg};
+use crate::{api::client::Nomad, messages as msg};
 
 /// What Homeport shows of a connected Nomad Cluster.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
@@ -101,7 +101,7 @@ impl Nomad {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::client::testing::{agent, ok};
+    use crate::api::client::testing::{agent, ok};
 
     const AGENT: &str = r#"{
         "config": { "Region": "global", "Datacenter": "dc1",

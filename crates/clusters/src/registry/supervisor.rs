@@ -63,7 +63,7 @@ pub(super) async fn supervise(registry: Weak<ClusterRegistry>, id: ClusterId) {
         }
         let needs_user = match cluster.kind {
             ClusterKind::Kubernetes => classify::needs_user(&error),
-            ClusterKind::Nomad => homeport_nomad::error::needs_user(&error),
+            ClusterKind::Nomad => homeport_nomad::api::error::needs_user(&error),
         };
         if needs_user {
             let status = if error.is(ErrorCode::ClusterUnauthorized)

@@ -12,8 +12,10 @@ use serde_json::{json, Value};
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 
 use crate::{
-    client::{segment, Nomad},
-    error::mentions,
+    api::{
+        client::{segment, Nomad},
+        error::mentions,
+    },
     jobs::namespace_query,
     messages as msg,
 };

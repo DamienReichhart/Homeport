@@ -70,12 +70,12 @@ where
 }
 
 /// Runs `spec` through Nomad's parse, plan and run, as the app does.
-async fn run(nomad: &Nomad, spec: &str) -> homeport_nomad::run::NomadPlan {
+async fn run(nomad: &Nomad, spec: &str) -> homeport_nomad::jobs::run::NomadPlan {
     let (job, format) = nomad.parse_job(spec).await.unwrap();
     let plan = nomad.plan_job(job, format, None).await.unwrap();
     nomad
         .run_job(
-            &homeport_nomad::run::NomadPlanToRun {
+            &homeport_nomad::jobs::run::NomadPlanToRun {
                 job_id: plan.job_id.clone(),
                 namespace: plan.namespace.clone(),
                 format: plan.format,
@@ -121,7 +121,7 @@ async fn nomad_live_a_job_runs_is_rerun_changed_scaled_and_stopped() {
     run(&nomad, &web_job(name, "fourth")).await;
     let e = nomad
         .run_job(
-            &homeport_nomad::run::NomadPlanToRun {
+            &homeport_nomad::jobs::run::NomadPlanToRun {
                 job_id: stale.job_id.clone(),
                 namespace: stale.namespace.clone(),
                 format: stale.format,
@@ -172,7 +172,7 @@ async fn nomad_live_a_tasks_log_is_read_and_a_command_runs_through_exec() {
     use std::sync::{Arc, Mutex};
 
     use homeport_core::{logs::LogEvent, logs::LogOptions, terminal::ExecEvent};
-    use homeport_nomad::exec::{pump, NomadExecOptions, NomadTerminal};
+    use homeport_nomad::allocations::exec::{pump, NomadExecOptions, NomadTerminal};
 
     let nomad = dev_agent();
     let name = "homeport-live-logs";

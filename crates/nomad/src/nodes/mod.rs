@@ -11,7 +11,7 @@ use homeport_core::error::{AppError, AppResult, ErrorCode};
 
 use crate::{
     allocations::{full_view, Allocation},
-    client::{segment, Nomad},
+    api::client::{segment, Nomad},
     jobs::NomadAllocationView,
     messages as msg,
 };

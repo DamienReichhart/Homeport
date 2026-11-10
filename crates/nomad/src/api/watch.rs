@@ -8,7 +8,7 @@ use std::{sync::Arc, time::Duration};
 use futures_util::future::join_all;
 use serde::Deserialize;
 
-use crate::{client::segment, jobs::namespace_query, Nomad};
+use crate::{api::client::segment, jobs::namespace_query, Nomad};
 
 /// How long Nomad may hold a blocking query before answering unchanged.
 const WAIT: Duration = Duration::from_secs(60);
@@ -127,7 +127,7 @@ mod tests {
     };
 
     use super::*;
-    use crate::client::testing::agent;
+    use crate::api::client::testing::agent;
 
     #[test]
     fn a_job_is_watched_through_its_three_endpoints() {

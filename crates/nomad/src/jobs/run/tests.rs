@@ -1,5 +1,5 @@
 use super::*;
-use crate::client::testing::{agent, ok};
+use crate::api::client::testing::{agent, ok};
 
 const PARSED: &str = r#"{ "ID": "web", "Name": "web", "Type": "service",
   "TaskGroups": [ { "Name": "api", "Count": 2 } ] }"#;

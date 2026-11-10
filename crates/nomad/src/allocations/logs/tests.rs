@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use super::*;
-use crate::client::testing::agent;
+use crate::api::client::testing::agent;
 
 fn frame(text: &str) -> String {
     format!(

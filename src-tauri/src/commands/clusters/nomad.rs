@@ -10,13 +10,17 @@ use homeport_core::{
     terminal::ExecEvent,
 };
 use homeport_nomad::{
-    allocations::NomadAllocationDetail,
-    exec::{NomadExecOptions, NomadTerminal, TerminalId},
-    jobs::{NomadJobDetail, NomadJobView},
+    allocations::{
+        exec::{NomadExecOptions, NomadTerminal, TerminalId},
+        NomadAllocationDetail,
+    },
+    api::watch::{watch, NomadWatch},
+    jobs::{
+        run::{NomadJobSource, NomadPlan, NomadPlanToRun, NomadRunResult},
+        NomadJobDetail, NomadJobView,
+    },
     namespaces::NomadNamespaces,
     nodes::{NomadDrainSpec, NomadNodeDetail, NomadNodeView},
-    run::{NomadJobSource, NomadPlan, NomadPlanToRun, NomadRunResult},
-    watch::{watch, NomadWatch},
     NomadAgent,
 };
 

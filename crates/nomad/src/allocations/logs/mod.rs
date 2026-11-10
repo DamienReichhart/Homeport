@@ -13,7 +13,7 @@ use homeport_core::{
     logs::{LineSplitter, LogEvent, LogLine, LogOptions, BATCH_EVERY, BATCH_LINES},
 };
 
-use crate::{client::segment, messages as msg, Nomad};
+use crate::{api::client::segment, messages as msg, Nomad};
 
 /// Bytes read back from the end of a log per line of history asked for.
 const BYTES_PER_LINE: u64 = 256;
@@ -283,7 +283,7 @@ impl Nomad {
                 }
                 Ok(None) => break,
                 Err(e) => {
-                    let error = crate::error::unreachable(self.name(), self.address(), &e);
+                    let error = crate::api::error::unreachable(self.name(), self.address(), &e);
                     let _ = tx.send(Read::Failed(error));
                     return false;
                 }

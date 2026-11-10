@@ -11,9 +11,11 @@ use serde_json::json;
 use homeport_core::error::{AppError, AppResult, ErrorCode, Message, Text};
 
 use crate::{
-    client::{segment, Nomad},
+    api::{
+        client::{segment, Nomad},
+        time::iso,
+    },
     messages as msg,
-    time::iso,
 };
 
 /// How many jobs' definitions are read at once to learn their desired counts.
@@ -579,7 +581,7 @@ impl Nomad {
         .map(drop)
         .map_err(|e| {
             let text = e.detail.clone().unwrap_or_default();
-            if crate::error::mentions(&text, &["active deployment"]) {
+            if crate::api::error::mentions(&text, &["active deployment"]) {
                 return AppError::new(ErrorCode::Conflict, msg::SCALE_DEPLOYING.with("job", id))
                     .with_hint(msg::SCALE_DEPLOYING_HINT)
                     .with_detail(text);
@@ -602,5 +604,6 @@ impl Nomad {
     }
 }
 
+pub mod run;
 #[cfg(test)]
 mod tests;

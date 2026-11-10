@@ -1,5 +1,5 @@
 use super::*;
-use crate::client::testing::{agent, ok};
+use crate::api::client::testing::{agent, ok};
 
 const JOBS: &str = r#"[
   { "ID": "web", "ParentID": "", "Name": "web", "Namespace": "default", "Type": "service",

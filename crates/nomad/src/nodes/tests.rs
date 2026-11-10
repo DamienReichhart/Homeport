@@ -1,5 +1,5 @@
 use super::*;
-use crate::client::testing::{agent, ok};
+use crate::api::client::testing::{agent, ok};
 
 const NODES: &str = r#"[
   { "ID": "f00d0001-0000-0000-0000-000000000000", "Name": "client-2", "Datacenter": "dc1",

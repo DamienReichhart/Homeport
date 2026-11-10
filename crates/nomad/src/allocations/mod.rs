@@ -1,6 +1,9 @@
 //! One allocation of a Nomad job: its tasks, their states and recent
 //! events, and the errors its logs and terminals share.
 
+pub mod exec;
+pub mod logs;
+
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
@@ -8,11 +11,13 @@ use serde::{Deserialize, Serialize};
 use homeport_core::error::{AppError, AppResult, ErrorCode, Message, Text};
 
 use crate::{
-    client::{segment, Nomad},
-    error::mentions,
+    api::{
+        client::{segment, Nomad},
+        error::mentions,
+        time::iso,
+    },
     jobs::{NomadAllocationView, NomadTaskState},
     messages as msg,
-    time::iso,
 };
 
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -220,7 +225,7 @@ impl Nomad {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::client::testing::{agent, ok};
+    use crate::api::client::testing::{agent, ok};
 
     const ALLOCATION: &str = r#"{
       "ID": "a1b2c3d4-0000-0000-0000-000000000001", "Name": "web.api[0]", "Namespace": "default",
@@ -277,7 +282,7 @@ mod tests {
         .unwrap();
         let classify = |status: u16, text: &str| {
             nomad.allocation_error(
-                crate::error::answer("prod", status, text),
+                crate::api::error::answer("prod", status, text),
                 "a1b2c3d4-0000",
                 Some("server"),
                 msg::EXEC_DENIED,

@@ -35,8 +35,10 @@ use homeport_core::{
 use homeport_transport::BoxStream;
 
 use crate::{
-    client::{segment, CONNECT_TIMEOUT, TOKEN_HEADER},
-    error::{answer, mentions, unreachable},
+    api::{
+        client::{segment, CONNECT_TIMEOUT, TOKEN_HEADER},
+        error::{answer, mentions, unreachable},
+    },
     messages as msg, Nomad,
 };
 
@@ -242,7 +244,7 @@ async fn connect(nomad: &Nomad, url: &str) -> AppResult<Socket> {
             TOKEN_HEADER,
             token
                 .parse()
-                .map_err(|_| crate::error::token_invalid(nomad.name()))?,
+                .map_err(|_| crate::api::error::token_invalid(nomad.name()))?,
         );
     }
     let uri = request.uri().clone();

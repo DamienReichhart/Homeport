@@ -8,7 +8,7 @@ use std::error::Error as StdError;
 use homeport_core::error::{chain, reach::as_io, AppError, ErrorCode};
 use homeport_transport::reach::network;
 
-use crate::{address::host_port, messages as msg};
+use crate::{api::address::host_port, messages as msg};
 
 /// What Nomad's servers print, and Homeport's docs suggest, for a new token.
 pub const TOKEN_COMMAND: &str = "nomad acl token create -name=homeport -policy=homeport";

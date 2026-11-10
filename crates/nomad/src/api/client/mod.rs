@@ -10,9 +10,11 @@ use serde::{de::DeserializeOwned, Serialize};
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 
 use crate::{
-    error::{answer, unreachable, unreadable},
+    api::{
+        error::{answer, unreachable, unreadable},
+        tls::{self, TlsMaterial},
+    },
     messages as msg,
-    tls::{self, TlsMaterial},
 };
 
 /// How long connecting to the agent may take.

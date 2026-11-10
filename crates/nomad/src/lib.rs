@@ -15,22 +15,14 @@
 //! - [`nodes`] lists client nodes, drains them and sets their eligibility.
 //! - [`namespaces`] lists the namespaces the Jobs page picks from.
 
-pub mod address;
 pub mod agent;
 pub mod allocations;
-pub mod client;
-pub mod error;
-pub mod exec;
+pub mod api;
 pub mod jobs;
-pub mod logs;
 pub mod messages;
 pub mod namespaces;
 pub mod nodes;
-pub mod run;
-mod time;
-mod tls;
-pub mod watch;
 
-pub use address::{normalize_address, DEFAULT_PORT};
 pub use agent::NomadAgent;
-pub use client::{Nomad, NomadConfig};
+pub use api::address::{normalize_address, DEFAULT_PORT};
+pub use api::client::{Nomad, NomadConfig};

@@ -70,7 +70,7 @@ impl Nomad {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::client::testing::{agent, ok};
+    use crate::api::client::testing::{agent, ok};
 
     #[tokio::test]
     async fn namespaces_are_listed_default_first() {
