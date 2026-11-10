@@ -79,10 +79,14 @@ Chaque personne exécute son propre Homeport avec ses propres hôtes et clés. A
 
 Oui, de deux façons :
 
-- **Tout** : **Paramètres → Données → Sauvegarder…** enregistre chaque hôte, cluster, stack, identifiant de registre, dépôt et paramètre, avec leurs secrets, dans un fichier protégé par une phrase secrète d’au moins 12 caractères. Sur le nouvel ordinateur, **Restaurer…** au même endroit l’ouvre, liste ce qu’il contient, et remplace ce qui s’y trouve. Tout se connecte et se déploie sans vous redemander de clé ni de mot de passe. Voir [sauvegarder et restaurer](/docs/guides/settings/#sauvegarder-et-restaurer).
+- **Tout** : **Paramètres → Données → Sauvegarder…** enregistre chaque hôte, cluster, stack, identifiant de registre, dépôt et paramètre, avec leurs secrets, dans un fichier protégé par une phrase secrète d’au moins 12 caractères. Sur le nouvel ordinateur, **Restaurer…** au même endroit l’ouvre, liste ce qu’il contient, et remplace ce qui s’y trouve. Tout se connecte et se déploie sans vous redemander de clé ni de mot de passe. Voir [Vos données et sauvegardes](/docs/reference/data-and-backups/#backing-up-in-homeport).
 - **Certains hôtes** : sur la page **Hôtes**, **Exportez** les hôtes que vous choisissez, et **Importez**-les sur l’autre ordinateur, à côté des hôtes qu’il a déjà. Voir [passer à un autre ordinateur](/docs/reference/security/#passer-à-un-autre-ordinateur).
 
-Copier `homeport.db` ne fonctionne pas pour les secrets : ils sont chiffrés avec une clé conservée dans le trousseau de cet ordinateur, et apparaissent comme **Identifiants perdus** ailleurs.
+Copier `homeport.db` ne fonctionne pas pour les secrets : ils sont chiffrés avec une clé conservée dans le trousseau de cet ordinateur, et apparaissent comme **Identifiants perdus** ailleurs. Voir [copier vous-même les fichiers](/docs/reference/data-and-backups/#copying-the-files-yourself).
+
+### Où Homeport conserve-t-il ses données ?
+
+Dans une seule base de données SQLite, `homeport.db`, dans le dossier de données d’application de votre utilisateur, avec la clé qui chiffre ses secrets dans le trousseau de votre système d’exploitation. Rien n’est conservé sur vos serveurs ni nulle part en ligne. [Vos données et sauvegardes](/docs/reference/data-and-backups/) donne le dossier sur chaque système, ce qu’il faut sauvegarder et comment le restaurer.
 
 ### Une sauvegarde inclut-elle mes conteneurs et mes volumes ?
 
@@ -98,7 +102,7 @@ Une stack démarrée avec `docker compose up` dans un dossier n’apparaît comm
 
 ### Homeport collecte-t-il des données sur moi ?
 
-Non. Il n’y a ni compte, ni télémétrie, ni analyse d’usage. La seule requête que Homeport fait de lui-même depuis votre ordinateur est la recherche de mises à jour, qui télécharge un petit fichier depuis ce site web et n’envoie rien sur vous ; vous pouvez la désactiver dans **Paramètres → Mises à jour**. Par ailleurs, la recherche d’images plus récentes demande aux registres de vos images, via le moteur de chaque hôte, vers quelle version pointent leurs tags ; pour un hôte local, cette requête part aussi de votre ordinateur. Voir [sécurité et vos données](/docs/reference/security/#ce-à-quoi-homeport-se-connecte).
+Non. Il n’y a ni compte, ni télémétrie, ni analyse d’usage, ni rapport de plantage. La seule requête que Homeport fait de lui-même depuis votre ordinateur est la recherche de mises à jour, qui télécharge un petit fichier depuis ce site web et n’envoie rien sur vous ; vous pouvez la désactiver dans **Paramètres → Mises à jour**. Par ailleurs, la recherche d’images plus récentes demande aux registres de vos images, via le moteur de chaque hôte, vers quelle version pointent leurs tags ; pour un hôte local, cette requête part aussi de votre ordinateur. Voir [sécurité et vos données](/docs/reference/security/#ce-à-quoi-homeport-se-connecte).
 
 ### Homeport peut-il utiliser mes registres privés ?
 
@@ -112,9 +116,13 @@ Il demande au registre de l’image, via le moteur de l’hôte, vers quel diges
 
 Sous Windows, sous macOS et avec l’AppImage, Homeport vous indique quand une nouvelle version est sortie : choisissez **Installer et redémarrer**. Sous Linux, les paquets `.deb` et `.rpm` se mettent à jour avec le reste de votre système depuis le dépôt de paquets Homeport. Voir [mise à jour](/docs/reference/updating/).
 
+### Une mise à jour me fera-t-elle perdre mes hôtes ?
+
+Non. Chaque version de Homeport ouvre les données de toutes les versions antérieures, jusqu’à 0.1.0, et les met à niveau sans rien perdre : hôtes, stacks, clusters, paramètres et secrets. Revenir à une version plus ancienne est la seule chose qui n’est pas prise en charge : l’ancien Homeport s’arrête avec un message au lieu de modifier quoi que ce soit. Voir [Vos données d’une version à l’autre](/docs/reference/updating/#your-data-across-versions).
+
 ### Homeport est-il sur Homebrew, winget, Flathub ou l’AUR ?
 
-Pas encore. C’est prévu ; la [page d’installation](/docs/installation/#prochainement) renvoie vers l’issue de chacun.
+Pas encore. Sous Linux, Homeport a ses propres dépôts APT et RPM, donc `apt`, `dnf` et `zypper` l’installent et le mettent à jour. Homebrew, winget, Scoop, l’AUR, Flathub et Snap sont prévus ; la [page d’installation](/docs/installation/#prochainement) renvoie vers l’issue de chacun.
 
 ### Homeport est-il disponible dans ma langue ?
 

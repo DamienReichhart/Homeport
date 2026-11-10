@@ -73,7 +73,7 @@ Un contexte dont le nom est déjà celui d’un hôte est proposé sous la forme
 
 ## Passer à un autre ordinateur
 
-**Exporter** sur la page Hôtes enregistre les hôtes que vous choisissez dans un fichier protégé par une phrase secrète ; **Importer** sur la page Hôtes de l’autre ordinateur l’ouvre et ajoute les hôtes que vous choisissez, prêts à se connecter. Un hôte dont le nom y est déjà pris est proposé sous la forme `name (2)`, et vous pouvez le renommer ou l’ignorer. Voir [passer à un autre ordinateur](/docs/reference/security/#passer-à-un-autre-ordinateur) pour la façon dont le fichier est protégé.
+**Exporter** sur la page Hôtes enregistre les hôtes que vous choisissez dans un fichier protégé par une phrase secrète ; **Importer** sur la page Hôtes de l’autre ordinateur l’ouvre et ajoute les hôtes que vous choisissez, prêts à se connecter. Un hôte dont le nom y est déjà pris est proposé sous la forme `name (2)`, et vous pouvez le renommer ou l’ignorer. Voir [passer à un autre ordinateur](/docs/reference/security/#passer-à-un-autre-ordinateur) pour la façon dont le fichier est protégé. Pour tout déplacer d’un coup, clusters, stacks, identifiants de registre, dépôts et paramètres compris, utilisez plutôt une [sauvegarde](/docs/reference/data-and-backups/#backing-up-in-homeport).
 
 ## Sélectionner un hôte
 

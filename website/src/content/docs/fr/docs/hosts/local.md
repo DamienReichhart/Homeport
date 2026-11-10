@@ -50,7 +50,7 @@ podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}'
 
 ## Permissions sous Linux
 
-Le socket par défaut `/var/run/docker.sock` appartient au groupe `docker`. Si votre utilisateur n’en fait pas partie, l’hôte affiche **Injoignable** avec _Permission denied_. Ajoutez-vous au groupe et reconnectez-vous :
+Le socket par défaut `/var/run/docker.sock` appartient au groupe `docker`. Si votre utilisateur n’en fait pas partie, l’hôte affiche **Injoignable** avec _Homeport n’est pas autorisé à utiliser le Docker Engine à /var/run/docker.sock._ Ajoutez-vous au groupe et reconnectez-vous :
 
 ```sh
 sudo usermod -aG docker $USER

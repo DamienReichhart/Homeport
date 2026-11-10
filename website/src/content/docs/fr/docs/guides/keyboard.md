@@ -13,7 +13,7 @@ Homeport peut s’utiliser au clavier. Appuyez sur <kbd>Mod</kbd> <kbd>K</kbd> p
 
 - **Aller à** — chaque page de la barre latérale : tapez `vol` et appuyez sur <kbd>Enter</kbd> pour ouvrir Volumes.
 - **Hôtes** — chaque hôte avec son état : tapez une partie du nom d’un hôte pour passer dessus.
-- **Actions** — **Exécuter un conteneur**, **Récupérer une image**, **Nouvelle stack**, **Nettoyer l’hôte sélectionné**, **Ajouter un hôte**, **Gérer les hôtes**, **Rechercher des mises à jour** et **Afficher les raccourcis clavier**.
+- **Actions** — **Exécuter un conteneur**, **Récupérer une image**, **Nouvelle stack**, **Nettoyer l’hôte sélectionné**, **Ajouter un hôte**, **Gérer les hôtes**, **Ajouter un cluster**, **Gérer les clusters**, **Rechercher des mises à jour** et **Afficher les raccourcis clavier**. Un hôte Podman ajoute **Nouveau pod** et **Nouvelle unité**, un hôte containerd **Récupérer une image** et **Nouvel espace de noms**, et un hôte Incus **Nouvelle instance** et **Obtenir une image**.
 - **Paramètres** — **Thème : clair**, **Thème : sombre** et **Thème : suivre le système**.
 
 Les actions qui ont besoin d’un hôte — exécuter un conteneur, récupérer une image, créer une stack, nettoyer — ne sont listées que si l’hôte sélectionné est connecté.
@@ -35,7 +35,7 @@ Homeport ne charge les listes qu’une fois deux caractères tapés, puis les ti
 | Touches                                    | Effet                                                                                       |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------- |
 | <kbd>?</kbd>                               | Afficher les raccourcis clavier                                                             |
-| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Ouvrir les pages de la barre latérale dans l’ordre : Vue d’ensemble, Conteneurs, Images…    |
+| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Ouvrir les pages de la barre latérale dans l’ordre : Vue d’ensemble, Tableau, Conteneurs…   |
 | <kbd>Mod</kbd> <kbd>,</kbd>                | Ouvrir les Paramètres                                                                       |
 | <kbd>Alt</kbd> <kbd>↑</kbd> / <kbd>↓</kbd> | Sélectionner l’hôte précédent ou suivant, dans l’ordre où la page Hôtes les liste           |
 | <kbd>Mod</kbd> <kbd>R</kbd>                | Actualiser les listes de l’hôte sélectionné : conteneurs, images, volumes, réseaux, stacks… |
@@ -44,10 +44,10 @@ Survolez une page dans la barre latérale pour voir ses touches.
 
 ### Sur une page
 
-| Touches      | Effet                                                                                                                                                                     |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <kbd>/</kbd> | Placer le curseur dans le champ de recherche de la page. <kbd>Esc</kbd> dans un champ vide le quitte.                                                                     |
-| <kbd>N</kbd> | Déclencher l’action principale de la page : **Exécuter un conteneur**, **Récupérer**, **Créer un volume**, **Créer un réseau**, **Nouvelle stack** ou **Ajouter un hôte** |
+| Touches      | Effet                                                                                                                                                                                                                                                                                      |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <kbd>/</kbd> | Placer le curseur dans le champ de recherche de la page. <kbd>Esc</kbd> dans un champ vide le quitte.                                                                                                                                                                                      |
+| <kbd>N</kbd> | Déclencher l’action principale de la page : **Exécuter un conteneur**, **Récupérer**, **Créer un volume**, **Créer un réseau**, **Nouvelle stack** ou **Ajouter un hôte** ; et sur les pages de Podman, containerd, Incus et Helm, la leur, comme **Nouveau pod** ou **Nouvelle instance** |
 
 Le bouton de l’action principale d’une page affiche <kbd>N</kbd> quand vous le survolez.
 

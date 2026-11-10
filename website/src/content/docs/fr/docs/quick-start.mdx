@@ -48,15 +48,18 @@ La barre latérale a une page pour chaque type de ressource, et toutes montrent 
 | Page               | Ce qu’elle montre                                                                                      |
 | ------------------ | ------------------------------------------------------------------------------------------------------ |
 | **Vue d’ensemble** | Une carte pour chaque hôte, le moteur, l’utilisation du disque et les événements de l’hôte sélectionné |
+| **Tableau**        | Les conteneurs de tous les hôtes connectés dans un seul tableau                                        |
 | **Conteneurs**     | Chaque conteneur, groupé par stack, avec processeur et mémoire en direct                               |
 | **Images**         | Les images locales, ce qui les utilise, la récupération et le nettoyage                                |
 | **Volumes**        | Les volumes et les conteneurs qui les utilisent                                                        |
 | **Réseaux**        | Les réseaux, leurs sous-réseaux et les conteneurs connectés                                            |
-| **Stacks**         | Les projets Compose, gérés et externes                                                                 |
-| **Événements**     | Ce que le moteur a signalé depuis que Homeport s’est connecté                                          |
-| **Paramètres**     | Le thème, ce que cette machine prend en charge, et les licences                                        |
+| **Stacks**         | Les projets Compose : gérés, liés, synchronisés et externes                                            |
+| **Événements**     | Ce que le moteur a signalé, conservé 30 jours                                                          |
+| **Paramètres**     | Le thème et la langue, les identifiants de registre, les sauvegardes, et ce que cette machine possède  |
 
 Homeport se rafraîchit à mesure que le moteur signale des changements, donc vous n’avez jamais besoin d’un bouton d’actualisation — démarrez un conteneur dans un terminal et il apparaît aussitôt.
+
+Un hôte containerd, Incus ou Podman, un Swarm et un cluster apportent chacun leurs propres pages à la barre latérale. En bas de celle-ci, **Documentation** et **GitHub** ouvrent cette documentation et le dépôt du projet dans votre navigateur.
 
 ## 3. Exécuter un conteneur
 

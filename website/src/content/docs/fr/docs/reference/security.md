@@ -3,7 +3,7 @@ title: Sécurité et vos données
 description: Ce que Homeport enregistre, où, comment les secrets sont chiffrés, et ce qu’il ne fait jamais.
 ---
 
-Homeport détient des identifiants qui ouvrent vos serveurs. Cette page explique exactement ce qu’il conserve, et comment.
+Homeport détient des identifiants qui ouvrent vos serveurs. Cette page explique exactement ce qu’il conserve, et comment c’est protégé. [Vos données et sauvegardes](/docs/reference/data-and-backups/) indique ce qu’il faut copier pour le sauvegarder, et comment le restaurer.
 
 ## Ce que Homeport enregistre
 
@@ -80,7 +80,7 @@ Homeport affiche un bandeau et n’enregistre aucun secret. Les hôtes socket lo
 
 ### Si la clé du trousseau est perdue
 
-Réinitialiser le trousseau, ou déplacer `homeport.db` vers un autre ordinateur ou un autre utilisateur, laisse des secrets qui ne peuvent plus être déchiffrés. Homeport ne supprime rien : les hôtes concernés affichent **Identifiants perdus** jusqu’à ce que vous saisissiez de nouveau leurs identifiants. Voir le [dépannage](/docs/reference/troubleshooting/#identifiants-perdus). Pour déplacer vos données, sauvegardez-les ou exportez plutôt vos hôtes.
+Réinitialiser le trousseau, ou déplacer `homeport.db` vers un autre ordinateur ou un autre utilisateur, laisse des secrets qui ne peuvent plus être déchiffrés. Homeport ne supprime rien : les hôtes et les clusters concernés affichent **Identifiants perdus** jusqu’à ce que vous saisissiez de nouveau leurs identifiants ; [Si les secrets sont perdus](/docs/reference/data-and-backups/#if-the-secrets-are-lost) liste ce qu’il faut saisir de nouveau, et où. Pour déplacer vos données, [sauvegardez-les](#backups) ou [exportez plutôt vos hôtes](#moving-to-another-computer).
 
 ### Passer à un autre ordinateur
 
@@ -103,7 +103,7 @@ Traitez le fichier comme les clés qu’il contient : supprimez-le une fois imp
 2. remplace chaque hôte, cluster, stack, identifiant, dépôt et paramètre en une seule étape, donc un échec laisse vos données telles qu’elles étaient ;
 3. chiffre de nouveau chaque secret avec la clé de trousseau de cet ordinateur.
 
-Une sauvegarde faite par un Homeport plus récent est refusée ; une sauvegarde faite par un Homeport plus ancien se restaure. La sauvegarde contient tous les secrets de Homeport : gardez-la, ainsi que sa phrase secrète, aussi précieusement que les clés elles-mêmes.
+Une sauvegarde faite par un Homeport plus récent est refusée ; une sauvegarde faite par un Homeport plus ancien se restaure. La sauvegarde contient tous les secrets de Homeport : gardez-la, ainsi que sa phrase secrète, aussi précieusement que les clés elles-mêmes. [Vos données et sauvegardes](/docs/reference/data-and-backups/) donne les étapes, ce qu’une sauvegarde inclut et laisse de côté, et comment copier vous-même la base de données.
 
 ## Les clés ne touchent jamais le disque en clair
 
@@ -152,7 +152,7 @@ Elles s’exécutent avec les droits de l’utilisateur SSH (ou les vôtres, sur
 ## Ce que Homeport ne fait jamais
 
 - **Aucun compte.** Il n’y a rien à quoi s’inscrire.
-- **Aucune télémétrie, aucune analyse d’usage, aucun rapport de plantage.**
+- **Aucune télémétrie, aucune analyse d’usage, aucun rapport de plantage.** Quand vous signalez un bug, l’[archive de diagnostic](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report) est un fichier que vous exportez, lisez et joignez vous-même.
 - **Rien d’installé sur vos clusters.** Homeport n’utilise que l’API Kubernetes, avec les droits de vos identifiants, et ne modifie rien sans que vous le demandiez : tout ce qui supprime ou remplace quelque chose demande d’abord, en nommant le cluster.
 - **Rien d’installé sur vos hôtes.** Les seules commandes que Homeport exécute sur un hôte sont [listées ci-dessus](#ce-que-homeport-exécute-sur-vos-hôtes). Le seul conteneur que Homeport démarre de lui-même est un [conteneur auxiliaire](/docs/guides/volumes-networks/#le-conteneur-auxiliaire) éphémère quand vous ouvrez, sauvegardez, restaurez ou clonez un volume ; il n’a pas de réseau et est supprimé une fois terminé. Son image n’est récupérée qu’une fois que vous avez accepté.
 - **Aucune installation silencieuse.** Une mise à jour n’est installée que quand vous choisissez **Installer et redémarrer** ; les paquets Linux ne sont jamais mis à jour que par votre gestionnaire de paquets.
@@ -168,6 +168,8 @@ Homeport écrit un petit fichier journal — quelques dizaines de kilo-octets, r
 | Linux   | `~/.local/share/com.homeport.app/logs/` |
 | macOS   | `~/Library/Logs/com.homeport.app/`      |
 | Windows | `%LOCALAPPDATA%\com.homeport.app\logs\` |
+
+Homeport n’a ni télémétrie ni rapport de plantage : un journal ne quitte jamais votre ordinateur sauf si vous l’envoyez. Pour un rapport de bug, **Paramètres → À propos → Exporter le diagnostic…** enregistre un zip avec un résumé des versions et ces journaux, après avoir remplacé tout ce qui a la forme d’un secret (clés, mots de passe, jetons, identifiants dans les URL) et, sauf si vous demandez le contraire, les noms et adresses de vos hôtes et de vos clusters. Voir [Exporter le diagnostic](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report).
 
 ## Faire confiance à un téléchargement
 

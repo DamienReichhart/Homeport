@@ -24,7 +24,7 @@ Homeport parcourt le kubeconfig de cet ordinateur à la recherche des clusters q
 | **k3d**             | `k3d-<name>`                                | le nom du contexte |
 | **minikube**        | `minikube`, ou un profil écrit par minikube | le nom du contexte |
 
-Un contexte ne compte comme local que si son serveur d’API est sur cet ordinateur (`127.0.0.1`, `localhost`, `kubernetes.docker.internal`…) ou, pour minikube et Rancher Desktop, dans leur VM à une adresse privée. Un contexte distant n’est jamais proposé, quel que soit son nom. Un cluster local qui ne répond pas affiche **Arrêté** ; démarrez-le avec son propre outil et rouvrez la page.
+Un contexte ne compte comme local que si son serveur d’API est sur cet ordinateur (`127.0.0.1`, `localhost`, `kubernetes.docker.internal`…) ou, pour minikube et Rancher Desktop, dans leur machine virtuelle à une adresse privée. Un contexte distant n’est jamais proposé, quel que soit son nom. Un cluster local qui ne répond pas affiche **Arrêté** ; démarrez-le avec son propre outil et rouvrez la page.
 
 ### Clusters kind et k3d absents du kubeconfig
 

@@ -7,7 +7,7 @@ Homeport nomme les choses avec précision. Ces termes apparaissent dans toute l�
 
 ### Host (fr. _hôte_)
 
-Un Docker Engine auquel Homeport se connecte, défini par un nom et une façon de le joindre : un socket local, TCP, TLS ou SSH. Chaque conteneur, image, volume, réseau et stack appartient à exactement un hôte. Voir [Hôtes et connexions](/docs/hosts/).
+Un moteur auquel Homeport se connecte, défini par un nom et une façon de le joindre : un socket local, TCP, TLS ou SSH. Chaque conteneur, image, volume, réseau et stack appartient à exactement un hôte. Voir [Hôtes et connexions](/docs/hosts/).
 
 ### Engine kind (fr. _type de moteur_)
 
@@ -44,6 +44,10 @@ Sur un hôte Podman, un groupe de conteneurs qui partagent un même réseau et d
 ### Quadlet unit (fr. _unité Quadlet_)
 
 Un fichier sur un hôte Podman, comme `web.container`, que systemd transforme en service, `web.service`, pour que les conteneurs de Podman démarrent au boot et que systemd les maintienne en marche. Voir [Unités Quadlet](/docs/guides/quadlet/).
+
+### Bastion (fr. _bastion_)
+
+Un serveur SSH par lequel on joint un hôte SSH, quand le propre serveur SSH de l’hôte n’accepte que les connexions venant de lui : ce qu’OpenSSH appelle `ProxyJump`. Un hôte peut en avoir plusieurs, dans l’ordre, chacun avec sa propre clé de serveur approuvée. Un bastion n’est pas un hôte : il n’exécute aucun moteur auquel Homeport parle. Voir [Via un bastion](/docs/hosts/ssh/#through-a-bastion).
 
 ### Cluster (fr. _cluster_)
 
@@ -131,7 +135,7 @@ Le champ de recherche ouvert avec <kbd>Mod</kbd> <kbd>K</kbd> : aller à une pa
 
 ### Engine (fr. _moteur_)
 
-Le Docker Engine (`dockerd`), ou un moteur compatible comme Podman, qui exécute des conteneurs sur une machine. Homeport lui parle via l’API Docker Engine.
+Le logiciel vers lequel pointe un hôte, celui qu’on installe, démarre et arrête : le Docker Engine (`dockerd`) ou un moteur compatible comme Docker Desktop, Podman, Colima ou OrbStack, auquel Homeport parle via l’API Docker Engine ; ou containerd ou Incus, via leur propre API. Pas un synonyme d’hôte : « démarrer le Docker Engine » parle du moteur, « Homeport ne peut pas joindre prod-server » parle de l’hôte.
 
 ### Socket (fr. _socket_)
 
@@ -147,7 +151,7 @@ La façon dont Homeport vérifie les serveurs SSH : vous confirmez l’empreint
 
 ## En français
 
-L’application, la documentation et le site web en français emploient ces termes, pour qu’un écran et une page disent toujours la même chose.
+L’application, la documentation et le site web en français emploient ces termes, pour qu’un écran et une page disent toujours la même chose. Chaque autre langue a sa propre table dans [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n).
 
 | Anglais        | Français                 |
 | -------------- | ------------------------ |
