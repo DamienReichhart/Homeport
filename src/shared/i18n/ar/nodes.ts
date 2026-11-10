@@ -39,4 +39,7 @@ export default {
   'nodes.resource.name': 'المورد',
   'nodes.resource.capacity': 'السعة',
   'nodes.resource.allocatable': 'القابل للتخصيص',
+  'nodes.column.cpuUsed': 'المعالج المستخدم',
+  'nodes.column.memoryUsed': 'الذاكرة المستخدمة',
+  'nodes.tab.metrics': 'المقاييس',
 } satisfies Translation<typeof en>;

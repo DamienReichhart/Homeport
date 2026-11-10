@@ -38,4 +38,7 @@ export default {
   'nodes.resource.name': '资源',
   'nodes.resource.capacity': '容量',
   'nodes.resource.allocatable': '可分配',
+  'nodes.column.cpuUsed': 'CPU 已用',
+  'nodes.column.memoryUsed': '内存已用',
+  'nodes.tab.metrics': '指标',
 } satisfies Translation<typeof en>;

@@ -10,6 +10,7 @@ import {
   objectPath,
   ResourceTabs,
   ResourceYaml,
+  useMetrics,
   useResourceWatch,
 } from '@/core/cluster';
 import { RelatedPods } from '@/features/pods';
@@ -17,6 +18,7 @@ import type { ClusterNodeDetail, ClusterView } from '@/shared/api';
 import { Card, CardContent, CardHeader, CardTitle, DataTable, KeyValue } from '@/shared/ui';
 import { nodeQueries } from '../api/queries';
 import { readableQuantity } from '../model/quantity';
+import { NodeMetrics } from './NodeMetrics';
 import { NodeStatus } from './NodeStatus';
 import { t } from '@/shared/i18n';
 
@@ -79,6 +81,8 @@ function NodeDetailView({ cluster }: { cluster: ClusterView }) {
   const id = cluster.cluster.id;
   const detail = useQuery(nodeQueries.detail(id, name));
   useResourceWatch(id, 'node', null);
+  // Read while the page is open, so the charts have the samples since then.
+  const metrics = useMetrics(id, { type: 'node', name });
   return (
     <ResourceTabs
       detail={detail}
@@ -96,6 +100,11 @@ function NodeDetailView({ cluster }: { cluster: ClusterView }) {
           value: 'pods',
           label: t('nodes.tab.pods'),
           content: <RelatedPods clusterId={id} namespace={null} node={name} />,
+        },
+        {
+          value: 'metrics',
+          label: t('nodes.tab.metrics'),
+          content: <NodeMetrics node={n.view} metrics={metrics} />,
         },
         {
           value: 'conditions',
