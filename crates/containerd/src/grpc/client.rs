@@ -14,17 +14,21 @@ use homeport_core::error::{AppError, ErrorCode};
 use homeport_transport::{Dialer, CONNECT_TIMEOUT};
 
 use crate::{
-    api::containerd::services::{
-        containers::v1::containers_client::ContainersClient,
-        content::v1::content_client::ContentClient, events::v1::events_client::EventsClient,
-        images::v1::images_client::ImagesClient,
-        introspection::v1::introspection_client::IntrospectionClient,
-        namespaces::v1::namespaces_client::NamespacesClient,
-        snapshots::v1::snapshots_client::SnapshotsClient,
-        streaming::v1::streaming_client::StreamingClient, tasks::v1::tasks_client::TasksClient,
-        transfer::v1::transfer_client::TransferClient, version::v1::version_client::VersionClient,
+    grpc::{
+        api::containerd::services::{
+            containers::v1::containers_client::ContainersClient,
+            content::v1::content_client::ContentClient, events::v1::events_client::EventsClient,
+            images::v1::images_client::ImagesClient,
+            introspection::v1::introspection_client::IntrospectionClient,
+            namespaces::v1::namespaces_client::NamespacesClient,
+            snapshots::v1::snapshots_client::SnapshotsClient,
+            streaming::v1::streaming_client::StreamingClient, tasks::v1::tasks_client::TasksClient,
+            transfer::v1::transfer_client::TransferClient,
+            version::v1::version_client::VersionClient,
+        },
+        error,
     },
-    error, messages as msg,
+    messages as msg,
 };
 
 /// The oldest containerd Homeport connects to, the oldest still supported

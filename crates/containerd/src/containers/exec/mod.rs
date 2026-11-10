@@ -25,15 +25,19 @@ use homeport_core::{
 use homeport_transport::{shell_quote, BoxStream};
 
 use crate::{
-    api::containerd::{
-        services::tasks::v1::{
-            DeleteProcessRequest, ExecProcessRequest, GetRequest, KillRequest, ResizePtyRequest,
-            StartRequest, WaitRequest,
+    containers,
+    grpc::{
+        api::containerd::{
+            services::tasks::v1::{
+                DeleteProcessRequest, ExecProcessRequest, GetRequest, KillRequest,
+                ResizePtyRequest, StartRequest, WaitRequest,
+            },
+            v1::types::Status,
         },
-        v1::types::Status,
+        client::{call, stream},
+        error,
     },
-    client::{call, stream},
-    containers, error, messages as msg, Containerd,
+    messages as msg, Containerd,
 };
 
 /// The type containerd reads a process spec's JSON as.

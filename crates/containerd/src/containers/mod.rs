@@ -11,21 +11,27 @@ use serde::{Deserialize, Serialize};
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 
 use crate::{
-    api::containerd::{
-        services::{
-            containers::v1::{
-                Container, DeleteContainerRequest, GetContainerRequest, ListContainersRequest,
+    grpc::{
+        api::containerd::{
+            services::{
+                containers::v1::{
+                    Container, DeleteContainerRequest, GetContainerRequest, ListContainersRequest,
+                },
+                snapshots::v1::{
+                    Info, MountsRequest, RemoveSnapshotRequest, UpdateSnapshotRequest,
+                },
+                tasks::v1::{
+                    CreateTaskRequest, DeleteTaskRequest, GetRequest, KillRequest,
+                    ListTasksRequest, PauseTaskRequest, ResumeTaskRequest, StartRequest,
+                    WaitRequest,
+                },
             },
-            snapshots::v1::{Info, MountsRequest, RemoveSnapshotRequest, UpdateSnapshotRequest},
-            tasks::v1::{
-                CreateTaskRequest, DeleteTaskRequest, GetRequest, KillRequest, ListTasksRequest,
-                PauseTaskRequest, ResumeTaskRequest, StartRequest, WaitRequest,
-            },
+            v1::types::{Process, Status},
         },
-        v1::types::{Process, Status},
+        client::{call, stream},
+        error,
     },
-    client::{call, stream},
-    error, messages as msg, Containerd,
+    messages as msg, Containerd,
 };
 
 pub use signals::signal_number;
@@ -641,5 +647,7 @@ pub async fn remove(
     Ok(())
 }
 
+pub mod exec;
+pub mod logs;
 #[cfg(test)]
 mod tests;

@@ -8,15 +8,18 @@ use serde::Serialize;
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 
 use crate::{
-    api::containerd::services::{
-        containers::v1::ListContainersRequest,
-        images::v1::ListImagesRequest,
-        namespaces::v1::{
-            CreateNamespaceRequest, DeleteNamespaceRequest, ListNamespacesRequest, Namespace,
+    grpc::{
+        api::containerd::services::{
+            containers::v1::ListContainersRequest,
+            images::v1::ListImagesRequest,
+            namespaces::v1::{
+                CreateNamespaceRequest, DeleteNamespaceRequest, ListNamespacesRequest, Namespace,
+            },
         },
+        client::call,
+        error,
     },
-    client::call,
-    error, messages as msg, Containerd,
+    messages as msg, Containerd,
 };
 
 /// The namespace nerdctl and `ctr` use when none is named.

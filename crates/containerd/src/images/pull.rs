@@ -14,21 +14,24 @@ use homeport_core::{
 };
 
 use crate::{
-    api::containerd::{
-        services::{
-            streaming::v1::StreamInit,
-            transfer::v1::{TransferOptions, TransferRequest},
-        },
-        types::{
-            transfer::{
-                AuthRequest, AuthResponse, AuthType, ImageStore, OciRegistry, Progress,
-                RegistryResolver, UnpackConfiguration,
+    grpc::{
+        api::containerd::{
+            services::{
+                streaming::v1::StreamInit,
+                transfer::v1::{TransferOptions, TransferRequest},
             },
-            Platform,
+            types::{
+                transfer::{
+                    AuthRequest, AuthResponse, AuthType, ImageStore, OciRegistry, Progress,
+                    RegistryResolver, UnpackConfiguration,
+                },
+                Platform,
+            },
         },
+        client::stream,
+        error,
     },
-    client::stream,
-    error, introspection, messages as msg, Containerd, PULL_VERSION,
+    introspection, messages as msg, Containerd, PULL_VERSION,
 };
 
 use super::qualify;
@@ -288,7 +291,7 @@ pub async fn pull(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::containerd::types::Descriptor;
+    use crate::grpc::api::containerd::types::Descriptor;
 
     fn progress(event: &str, name: &str, media_type: &str, done: i64, total: i64) -> Progress {
         Progress {

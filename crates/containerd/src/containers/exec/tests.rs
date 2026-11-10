@@ -87,7 +87,7 @@ fn a_missing_program_is_told_apart() {
 mod live {
     use std::sync::Mutex as StdMutex;
 
-    use super::super::*;
+    use crate::containers::exec::*;
     use crate::testing::{self, NAMESPACE};
 
     async fn output_until(output: &StdMutex<String>, needle: &str) -> bool {

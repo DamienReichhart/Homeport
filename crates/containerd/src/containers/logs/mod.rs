@@ -13,7 +13,8 @@ use homeport_core::{
 use homeport_transport::shell_quote;
 
 use crate::{
-    api::containerd::services::containers::v1::Container, containers, messages as msg, Containerd,
+    containers, grpc::api::containerd::services::containers::v1::Container, messages as msg,
+    Containerd,
 };
 
 /// Where nerdctl keeps a container's files, and how it logs.

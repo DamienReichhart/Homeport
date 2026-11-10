@@ -5,8 +5,11 @@ use serde::Serialize;
 use homeport_core::error::AppResult;
 
 use crate::{
-    api::containerd::services::introspection::v1::{Plugin, PluginsRequest},
-    error, Containerd,
+    grpc::{
+        api::containerd::services::introspection::v1::{Plugin, PluginsRequest},
+        error,
+    },
+    Containerd,
 };
 
 const SNAPSHOTTER: &str = "io.containerd.snapshotter.v1";
@@ -87,7 +90,7 @@ fn info(plugins: &[Plugin]) -> ServerInfo {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::{containerd::types::Platform, google::rpc::Status};
+    use crate::grpc::api::{containerd::types::Platform, google::rpc::Status};
 
     fn plugin(kind: &str, id: &str, platform: Option<(&str, &str)>, failed: bool) -> Plugin {
         Plugin {

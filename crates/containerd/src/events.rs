@@ -8,12 +8,15 @@ use prost::Message;
 use homeport_core::error::AppResult;
 
 use crate::{
-    api::containerd::{
-        events as ev,
-        services::{events::v1::SubscribeRequest, images::v1 as images},
-        types::Envelope,
+    grpc::{
+        api::containerd::{
+            events as ev,
+            services::{events::v1::SubscribeRequest, images::v1 as images},
+            types::Envelope,
+        },
+        error,
     },
-    error, Containerd,
+    Containerd,
 };
 
 /// One event, in every namespace.

@@ -4,7 +4,7 @@
 use std::sync::{Arc, Mutex};
 
 use homeport_clusters::service::ClusterService;
-use homeport_containerd::exec::ContainerdExecSessions;
+use homeport_containerd::containers::exec::ContainerdExecSessions;
 use homeport_core::streams::Streams;
 use homeport_engine::{
     containers::exec::ExecSessions, images::freshness::FreshnessCache,

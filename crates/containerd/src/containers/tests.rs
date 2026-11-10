@@ -1,5 +1,5 @@
 use super::*;
-use crate::api::containerd::services::containers::v1::container::Runtime;
+use crate::grpc::api::containerd::services::containers::v1::container::Runtime;
 
 fn container(id: &str, labels: &[(&str, &str)]) -> Container {
     Container {
@@ -104,7 +104,7 @@ fn the_tool_that_made_a_container_is_told_from_its_labels() {
 }
 
 mod live {
-    use super::super::*;
+    use crate::containers::*;
     use crate::testing::{self, NAMESPACE};
 
     async fn state(client: &Containerd, id: &str) -> TaskState {

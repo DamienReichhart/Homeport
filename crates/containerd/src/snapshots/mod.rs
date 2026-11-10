@@ -11,14 +11,19 @@ use serde::Serialize;
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 
 use crate::{
-    api::containerd::services::{
-        containers::v1::ListContainersRequest,
-        content::v1::InfoRequest,
-        snapshots::v1::{Info, Kind, ListSnapshotsRequest, RemoveSnapshotRequest, UsageRequest},
-    },
-    client::{call, stream},
     containers::timestamp,
-    error, images, introspection, messages as msg, Containerd,
+    grpc::{
+        api::containerd::services::{
+            containers::v1::ListContainersRequest,
+            content::v1::InfoRequest,
+            snapshots::v1::{
+                Info, Kind, ListSnapshotsRequest, RemoveSnapshotRequest, UsageRequest,
+            },
+        },
+        client::{call, stream},
+        error,
+    },
+    images, introspection, messages as msg, Containerd,
 };
 
 /// The label on an image's config naming the snapshot of its top layer.

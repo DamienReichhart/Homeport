@@ -13,13 +13,15 @@ use serde::{Deserialize, Serialize};
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 
 use crate::{
-    api::containerd::services::{
-        containers::v1::ListContainersRequest,
-        content::v1::ReadContentRequest,
-        images::v1::{DeleteImageRequest, Image, ListImagesRequest},
+    grpc::{
+        api::containerd::services::{
+            containers::v1::ListContainersRequest,
+            content::v1::ReadContentRequest,
+            images::v1::{DeleteImageRequest, Image, ListImagesRequest},
+        },
+        client::{call, stream},
+        error,
     },
-    client::{call, stream},
-    error,
     introspection::{self, ServerInfo},
     messages as msg, Containerd,
 };
