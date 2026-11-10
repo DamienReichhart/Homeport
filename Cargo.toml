@@ -13,6 +13,10 @@ rust-version = "1.89"
 unsafe_code = "forbid"
 unreachable_pub = "warn"
 
+[workspace.lints.clippy]
+# The threshold is in clippy.toml.
+too_many_lines = "warn"
+
 # One version of each dependency for the whole workspace; crates opt in with
 # `name.workspace = true` and add the features they need.
 [workspace.dependencies]

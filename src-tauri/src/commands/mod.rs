@@ -23,6 +23,8 @@ pub mod stacks;
 #[cfg(any(debug_assertions, test))]
 pub const BINDINGS_PATH: &str = "../src/shared/api/bindings.ts";
 
+// One list of every command, which the bindings are generated from.
+#[allow(clippy::too_many_lines)]
 pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
     tauri_specta::Builder::<tauri::Wry>::new()
         .error_handling(ErrorHandlingMode::Throw)
