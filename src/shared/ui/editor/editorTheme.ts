@@ -2,6 +2,7 @@ import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { EditorView } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
 import type { Extension } from '@codemirror/state';
+import { styleNonce } from '@/shared/lib/csp';
 import type { ResolvedTheme } from '@/shared/lib/theme';
 
 // Syntax colours (docs/BRAND.md): keys in the text colour, so the structure reads
@@ -26,9 +27,19 @@ const SYNTAX = {
   },
 };
 
+/**
+ * CodeMirror adds its styles in a `<style>` element; in a built app it must
+ * carry the CSP's nonce, or the editor loses its layout (see `styleNonce`).
+ */
+function nonce(): Extension {
+  const value = styleNonce();
+  return value ? EditorView.cspNonce.of(value) : [];
+}
+
 function build(theme: ResolvedTheme): Extension {
   const c = SYNTAX[theme];
   return [
+    nonce(),
     EditorView.theme(
       {
         '&': { backgroundColor: 'var(--card)', color: 'var(--card-foreground)' },
