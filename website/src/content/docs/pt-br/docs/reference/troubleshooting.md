@@ -3,7 +3,7 @@ title: Solução de problemas
 description: Correções para os problemas que você tem mais chance de encontrar, pela mensagem que o Homeport mostra.
 ---
 
-Se o seu problema não estiver aqui, confira o [arquivo de log](/docs/reference/security/#logs) e [abra uma issue](https://github.com/DamienReichhart/Homeport/issues) com a sua versão do Homeport, que aparece em **Configurações**.
+Se o seu problema não estiver aqui, [abra uma issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) com o [pacote de diagnóstico](#exporting-diagnostics-for-a-bug-report) de **Configurações → Sobre**.
 
 ## Instalação e inicialização
 
@@ -45,11 +45,19 @@ No Linux, a bandeja precisa da biblioteca appindicator, e alguns ambientes de de
 
 O Homeport não conseguiu acessar o seu chaveiro. No Linux, isso normalmente significa que nenhum Secret Service está rodando — comum em desktops mínimos e gerenciadores de janelas. Instale e inicie o GNOME Keyring (`gnome-keyring`) ou ative o Secret Service do KWallet e depois reinicie o Homeport. Até lá, use hosts de socket local, TCP ou ssh-agent.
 
+### "Este banco de dados foi usado pela última vez pelo Homeport … ou por uma versão mais recente"
+
+Você instalou um Homeport mais antigo do que o que abriu os seus dados por último, por exemplo ao reinstalar uma release anterior. Cada versão atualiza o banco de dados para o seu próprio formato quando inicia, e uma versão mais antiga não consegue ler um formato mais novo, então o Homeport para antes de alterar qualquer coisa: a janela mostra esta mensagem, o caminho do banco de dados e **Abrir pasta**, e nada mais é iniciado.
+
+Os seus hosts, stacks e segredos estão intactos. Instale a versão que a mensagem indica, ou qualquer uma mais recente, a partir da [página de download](/download/), e o Homeport os abre como antes. Não exclua nem mova o `homeport.db`: essa é a única forma de perder o que há nele. Voltar para uma versão anterior não é suportado; veja [Os seus dados entre versões](/docs/reference/updating/#your-data-across-versions).
+
+A mesma janela aparece para qualquer outra falha ao abrir o banco de dados (arquivo danificado, disco cheio, outro Homeport usando-o), com a mensagem dessa falha e o que fazer a respeito.
+
 ## Atualizações e o repositório de pacotes
 
-### "Não foi possível verificar atualizações"
+### "O Homeport não conseguiu baixar a atualização"
 
-O Homeport não conseguiu baixar as informações de atualização deste site: você pode estar offline, ou atrás de um proxy ou firewall que bloqueia `damienreichhart.github.io`. O Homeport continua funcionando; ele verifica de novo mais tarde, ou escolha **Configurações → Atualizações → Verificar agora**. Você sempre pode baixar a versão mais recente na [página de download](/download/).
+Quando ela aparece durante a verificação, o Homeport não conseguiu baixar as informações de atualização deste site: você pode estar offline, ou atrás de um proxy ou firewall que bloqueia `damienreichhart.github.io`. O Homeport continua funcionando; ele verifica de novo mais tarde, ou escolha **Configurações → Atualizações → Verificar agora**. Você sempre pode baixar a versão mais recente na [página de download](/download/).
 
 ### Uma atualização não consegue ser instalada
 
@@ -73,7 +81,7 @@ Confira se o repositório ainda está configurado: `/etc/apt/sources.list.d/home
 
 ## Conexão
 
-### Inacessível: Permission denied
+### "O Homeport não tem permissão para usar o Docker Engine em …"
 
 O seu usuário não consegue abrir o socket do Docker. No Linux, adicione-o ao grupo `docker` e faça login de novo:
 
@@ -81,21 +89,21 @@ O seu usuário não consegue abrir o socket do Docker. No Linux, adicione-o ao g
 sudo usermod -aG docker $USER
 ```
 
-### Inacessível: No such file or directory
+### "Nenhum Docker Engine está em execução em …"
 
-Nada está escutando no caminho do socket. Inicie o seu Engine — Docker Desktop, Colima, OrbStack, Rancher Desktop — ou confira o caminho. Veja [Engines locais](/docs/hosts/local/#adicionar-um-socket-manualmente).
+Nada está escutando no caminho do socket. Quando não existe absolutamente nada lá, a mensagem é _O Docker Engine não parece estar instalado_. Inicie o seu Engine — Docker Desktop, Colima, OrbStack, Rancher Desktop — ou confira o caminho. Veja [Engines locais](/docs/hosts/local/#adicionar-um-socket-manualmente).
 
-### "O Docker Engine não respondeu a tempo" ou "A conexão SSH expirou"
+### "O Docker Engine não respondeu a tempo" ou "… não respondeu a tempo"
 
 O Homeport espera 10 segundos por uma conexão. Confira o endereço e a porta, se o servidor está ligado e se nenhum firewall está no caminho. O Homeport continua tentando sozinho.
 
-### Acesso recusado: "O servidor recusou a chave para …"
+### Acesso recusado: "O servidor SSH não permitiu que … fizesse login"
 
 O servidor ainda não aceita a chave do Homeport. Execute no servidor o comando **Adicione a chave pública** da página do host e depois escolha **Reconectar**. Veja [Hosts SSH](/docs/hosts/ssh/#autorize-a-chave-do-homeport).
 
-### "O servidor SSH não conseguiu abrir /var/run/docker.sock"
+### "… não consegue abrir o socket do Docker Engine em /var/run/docker.sock em …"
 
-O Homeport fez login, mas não conseguiu acessar o Docker. Confira:
+O Homeport fez login, mas não conseguiu acessar o Docker. Quando consegue saber o motivo, a mensagem o diz: o Engine não está instalado ou não está em execução no servidor, o usuário não tem permissão para usá-lo, ou o servidor SSH não permite o encaminhamento para o socket dele. Confira:
 
 - o **Caminho do socket remoto** — o Docker rootless usa `/run/user/<uid>/docker.sock`;
 - se o usuário pode usar o Docker: `sudo usermod -aG docker <user>` no servidor;
@@ -125,13 +133,13 @@ O servidor SSH apresentou uma chave diferente daquela em que você confiou. Se v
 
 ### Credenciais perdidas
 
-A chave que criptografa os seus segredos está faltando no chaveiro ou mudou — depois de uma redefinição do chaveiro, de um novo perfil de usuário ou de copiar os dados do Homeport para outro computador (use [Exportar e Importar](/docs/reference/security/#mudar-para-outro-computador) para isso). O Homeport mantém o host; digite de novo as credenciais dele na página do host:
+A chave que criptografa os seus segredos está faltando no chaveiro ou mudou — depois de uma redefinição do chaveiro, de um novo perfil de usuário ou de copiar os dados do Homeport para outro computador (use um [backup](/docs/reference/data-and-backups/#backing-up-in-homeport), ou [Exportar e Importar](/docs/reference/security/#mudar-para-outro-computador), para isso). O Homeport mantém o host; digite de novo as credenciais dele na página do host:
 
 - **TLS** — carregue de novo os três arquivos de certificado e escolha **Salvar**.
 - **SSH com uma chave importada** — cole de novo a chave privada e a senha e escolha **Salvar**.
 - **SSH com uma chave do Homeport** — escolha **Gerar nova chave** e depois autorize a nova chave no servidor.
 
-Os ambientes das stacks gerenciadas selados com a chave antiga também precisam ser digitados de novo.
+Os ambientes das stacks gerenciadas e sincronizadas, os logins de registro e as chaves e tokens dos repositórios criptografados com a chave antiga também precisam ser digitados de novo, e os clusters precisam ser atualizados a partir do kubeconfig deles; [Se os segredos forem perdidos](/docs/reference/data-and-backups/#if-the-secrets-are-lost) lista cada um.
 
 ## Clusters
 
@@ -151,7 +159,7 @@ O plugin exec quer um navegador ou um código de dispositivo. Execute `kubectl -
 
 O plugin exec rodou e falhou. **Detalhes** mostra o fim do que ele exibiu, muitas vezes um perfil expirado ou uma região errada. O Homeport tenta de novo sozinho.
 
-### "… faz login com o auth provider gcp, que o Kubernetes não suporta mais"
+### "O usuário dele faz login com o auth provider gcp, que o Kubernetes não suporta mais"
 
 Os auth providers `gcp` e `azure` foram removidos do Kubernetes. Busque as credenciais de novo com o `gke-gcloud-auth-plugin` instalado (GKE), ou execute `kubelogin convert-kubeconfig` (AKS), e depois adicione o contexto de novo.
 
@@ -221,7 +229,7 @@ A release está em `pending-…`: uma instalação, atualização ou reversão n
 
 ## Usar o Homeport
 
-### Implantar fica desativado: "A CLI docker compose não está instalada"
+### Implantar fica desativado: "A CLI docker compose não está instalada neste computador"
 
 O Homeport precisa do `docker compose` neste computador para implantar stacks. Instale o Docker Desktop ou a Docker CLI com o plugin Compose e depois reinicie o Homeport. **Configurações → Esta máquina** mostra se ele foi encontrado.
 
@@ -325,6 +333,23 @@ O Incus precisa do KVM (`/dev/kvm`) e do QEMU para máquinas virtuais. Ative a v
 
 O exec em uma máquina virtual passa pelo `incus-agent` dentro dela, que as próprias imagens do Incus iniciam na inicialização. Espere a inicialização terminar, ou use a aba **Console**, que não precisa de agente.
 
-### "o host … não está conectado"
+### "Algo deu errado"
+
+Uma página do Homeport encontrou um problema inesperado e mostra isto no lugar do conteúdo dela; a barra lateral continua funcionando. **Recarregar** normalmente traz a página de volta, e **Voltar à visão geral** sai dela. Se continuar acontecendo, copie o relatório de **Detalhes** para [uma issue](https://github.com/DamienReichhart/Homeport/issues/new/choose), com o [pacote de diagnóstico](#exporting-diagnostics-for-a-bug-report).
+
+### "… não está conectado"
 
 A ação precisava do host, mas ele se desconectou. Espere que ele se reconecte, ou escolha **Tentar agora**.
+
+## Exportando o diagnóstico para um relatório de bug
+
+**Configurações → Sobre → Exportar diagnóstico…** cria um único zip para anexar a uma issue do GitHub. O Homeport não o envia para lugar nenhum: ele salva o arquivo onde você escolher, e compartilhá-lo fica a seu critério.
+
+A caixa de diálogo lista os arquivos e mostra o `summary.json` antes de você salvar:
+
+- `summary.json`: a versão do Homeport e como ele foi instalado, o seu sistema operacional, a versão do esquema do banco de dados, se há um chaveiro disponível, as suas configurações e, para cada host e cluster, o tipo de conexão, o Engine e a versão dele, o status e o código do último erro, além de quantas stacks de cada tipo você tem.
+- `logs/`: os [arquivos de log](/docs/reference/security/#logs) do Homeport, com as chaves privadas e os certificados, senhas, tokens, cabeçalhos `Authorization` e as credenciais em URLs substituídos por `[redacted]`.
+
+Hosts e clusters aparecem como `host-1`, `cluster-1`… e os nomes e endereços deles são substituídos da mesma forma nos logs, a menos que você marque **Incluir nomes e endereços**. Marque essa opção quando o nome ou o endereço importar para o problema e você não se importar em compartilhá-lo.
+
+Os segredos armazenados nunca são lidos para o pacote. A remoção de segredos dos logs funciona reconhecendo os formatos habituais deles, então revise os arquivos antes de anexá-los a uma issue pública se os seus logs puderem citar algo incomum.

@@ -3,7 +3,7 @@ title: Configurações
 description: Tema e idioma, a bandeja do sistema, iniciar ao fazer login, notificações, atualizações, logins de registro, repositórios, a frequência de verificação das stacks sincronizadas, o que esta máquina suporta, versão e licenças.
 ---
 
-**Configurações** é o último item da barra lateral.
+**Configurações** é a última página da barra lateral, acima dos links **Documentação** e **GitHub**, que abrem no seu navegador.
 
 ## Aparência
 
@@ -93,7 +93,7 @@ O que o Homeport guarda neste computador.
 - As [stacks sincronizadas](/docs/guides/synced-stacks/) clonam o repositório de novo na próxima sincronização.
 - Os dados atuais são copiados antes para `homeport.db.before-restore-<date>` na pasta de dados do Homeport. Restaurar um arquivo errado, um de um Homeport mais recente, ou um que falha no meio do caminho não muda nada.
 
-Para adicionar alguns hosts aos que você já tem, use **Exportar** e **Importar** na página Hosts.
+Para adicionar alguns hosts aos que você já tem, use **Exportar** e **Importar** na página Hosts. [Os seus dados e backups](/docs/reference/data-and-backups/) diz onde ficam os arquivos do Homeport, o que um backup inclui e como copiar o banco de dados você mesmo.
 
 ### Mantendo os eventos do Engine
 
@@ -112,6 +112,10 @@ O Homeport verifica as CLIs sempre que esta página abre, então uma instalada d
 
 ## Sobre
 
-Mostra a versão do Homeport e a plataforma para a qual a build dele foi feita, por exemplo `v0.2.0 · macos/aarch64`. Inclua-a quando você [relatar um problema](https://github.com/DamienReichhart/Homeport/issues).
+Mostra a versão do Homeport e a plataforma para a qual a build dele foi feita, por exemplo `v1.0.0 · macos/aarch64`.
+
+**Abrir pasta de logs** mostra onde o Homeport grava o [log](/docs/reference/security/#logs) dele.
+
+**Exportar diagnóstico…** salva um zip para anexar quando você [relatar um problema](https://github.com/DamienReichhart/Homeport/issues/new/choose): um resumo das versões e dos tipos de hosts e clusters que você usa, e os logs com os segredos removidos. A caixa de diálogo mostra o que há nele primeiro, e nada é enviado para lugar nenhum. Veja [Exportando o diagnóstico](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report).
 
 **Licenças** mostra a licença do Homeport (a GNU AGPL, versão 3), um link para o código-fonte da versão que você executa e os avisos de todos os pacotes de código aberto com que ele é construído.

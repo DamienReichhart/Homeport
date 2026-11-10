@@ -12,7 +12,7 @@ A forma como o Homeport se atualiza depende de como você o instalou.
 
 ### Windows, macOS e o AppImage
 
-O Homeport verifica se há uma nova versão quando inicia e a cada 6 horas. Quando sai uma, uma barra no topo da janela avisa: escolha **Novidades** para ler o [changelog](/changelog/), ou **Instalar e reiniciar**. O Homeport baixa a atualização, verifica a assinatura dela, instala-a e abre de novo. Nada é instalado até que você escolha, e os seus hosts, stacks e configurações são mantidos.
+O Homeport verifica se há uma nova versão quando inicia e a cada 6 horas. Quando sai uma, uma barra no topo da janela avisa: escolha **Novidades** para ler o [changelog](/changelog/), ou **Instalar e reiniciar**. O Homeport baixa a atualização, verifica a assinatura dela, instala-a e abre de novo. Nada é instalado até que você escolha, e [os seus dados são mantidos](#your-data-across-versions).
 
 Você também pode verificar agora em **Configurações → Atualizações → Verificar agora**.
 
@@ -42,6 +42,14 @@ As versões anteriores à 0.3.0 não se atualizam sozinhas, e os pacotes Linux d
 
 Para ficar sabendo das novas versões mesmo assim, acompanhe o repositório no GitHub (**Watch → Custom → Releases**), ou siga o [feed de releases](https://github.com/DamienReichhart/Homeport/releases.atom).
 
+## Os seus dados entre versões
+
+Cada versão do Homeport abre os dados de todas as versões anteriores, até a 0.1.0, e os atualiza sem perder nada: hosts, stacks, clusters, configurações e segredos. Uma atualização nunca pede que você configure algo de novo: na primeira vez que uma nova versão inicia, ela atualiza o banco de dados no lugar em que ele está, e tudo se conecta como antes. Cada release é testada com um banco de dados de exemplo de cada release anterior.
+
+**Voltar para uma versão anterior não é suportado.** Depois que uma versão mais nova abriu os seus dados, uma mais antiga não consegue lê-los, e nem tenta: ela para com [uma mensagem que indica a versão a instalar](/docs/reference/troubleshooting/#this-database-was-last-used-by-homeport--or-later) em vez de alterar qualquer coisa. Os seus dados ficam como a versão mais nova os deixou; instale essa versão, ou uma mais nova, e o Homeport os abre de novo.
+
+**Faça backup antes de experimentar uma prerelease.** Uma prerelease atualiza o banco de dados como qualquer outra versão, então a release estável da qual você veio não consegue mais abri-lo. Escolha antes **Configurações → Dados → Fazer backup…**; veja [Os seus dados e backups](/docs/reference/data-and-backups/#backing-up-in-homeport). Para voltar à release estável, saia do Homeport, tire o `homeport.db` da [pasta de dados](/docs/reference/data-and-backups/#the-data-folder), instale de novo a release estável e use **Restaurar…** com esse backup.
+
 ## Desinstalação
 
 <Tabs syncKey="os">
@@ -64,7 +72,7 @@ Para o AppImage, exclua o arquivo. A entrada de menu dele desaparece junto.
 </TabItem>
 </Tabs>
 
-Desinstalar deixa os seus dados no lugar, então reinstalar traz tudo de volta.
+Desinstalar deixa os seus dados no lugar, então reinstalar traz tudo de volta. [Os seus dados e backups](/docs/reference/data-and-backups/) diz onde eles ficam.
 
 ### A entrada de login
 
@@ -79,9 +87,11 @@ Se **Iniciar ao fazer login** estiver ativado, desative-o em **Configurações �
 ## Remover os seus dados
 
 <Aside type="caution">
-  Isto exclui os seus hosts, as chaves e os certificados armazenados deles, as definições das suas
-  stacks gerenciadas, as suas stacks vinculadas e o histórico de implantação delas. As pastas das
-  stacks vinculadas ficam onde estão. Nada nos seus hosts é tocado.
+  Isto exclui os seus hosts e clusters com as chaves, os certificados e os tokens armazenados deles,
+  as suas stacks gerenciadas, vinculadas e sincronizadas com os ambientes e o histórico de
+  implantação delas, os seus logins de registro, repositórios e configurações. As pastas das stacks
+  vinculadas ficam onde estão. Nada nos seus hosts e clusters é tocado. Para guardar uma cópia
+  antes, [faça um backup](/docs/reference/data-and-backups/).
 </Aside>
 
 1. Exclua as pastas de dados e de logs do Homeport:
@@ -92,9 +102,9 @@ Se **Iniciar ao fazer login** estiver ativado, desative-o em **Configurações �
    | macOS   | `~/Library/Application Support/com.homeport.app/`, `~/Library/Logs/com.homeport.app/` |
    | Windows | `%APPDATA%\com.homeport.app\`, `%LOCALAPPDATA%\com.homeport.app\`                     |
 
-2. Exclua a chave de criptografia do seu chaveiro — a entrada de `com.homeport.app`:
+2. Exclua a chave de criptografia do seu chaveiro — a entrada de `com.homeport.app`, conta `secrets-key`:
    - **macOS** — no **Acesso às Chaves**, procure `com.homeport.app` e exclua-a.
    - **Windows** — no **Gerenciador de Credenciais → Credenciais do Windows**, remova a entrada que contém `com.homeport.app`.
    - **Linux** — em **Senhas e chaves** (Seahorse) ou no KWallet, exclua a entrada de `com.homeport.app`.
 
-3. Nos seus servidores, remova as chaves públicas do Homeport de `~/.ssh/authorized_keys` — os comentários delas começam com `homeport@`.
+3. Nos seus servidores, remova as chaves públicas do Homeport de `~/.ssh/authorized_keys` — os comentários delas começam com `homeport@`. Nas suas forjas git, remova as chaves de deploy que o Homeport criou para os seus repositórios e, nos servidores Incus adicionados via HTTPS, o certificado do Homeport (`incus config trust list`, depois `incus config trust remove`).

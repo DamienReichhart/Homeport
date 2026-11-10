@@ -90,7 +90,7 @@ Quando o contêiner para, o log termina com _— fim dos logs —_.
 
 ### Integridade
 
-Mostrada para os contêineres com uma verificação de integridade — a deles mesmos ou a da imagem. **Verificação de integridade** dá o status (_starting_, _healthy_ ou _unhealthy_), o comando, os tempos (os padrões do Engine preenchem o que não está definido: a cada 30 s, um tempo limite de 30 s, 3 tentativas) e quantas verificações falharam seguidas. **Últimos resultados** lista as verificações que o Engine guarda, das mais recentes às mais antigas, com o código de saída, quando rodaram, quanto tempo levaram e o que imprimiram; uma saída longa fica recolhida atrás de **Mostrar mais**.
+Mostrada para os contêineres com uma verificação de integridade — a deles mesmos ou a da imagem. **Verificação de integridade** dá o status (_starting_, _healthy_ ou _unhealthy_), o comando, os tempos (os padrões do Engine preenchem o que não está definido: a cada 30 s, um tempo limite de 30 s, 3 tentativas) e quantas verificações falharam seguidas. **Últimos resultados** lista as verificações que o Engine guarda, das mais recentes às mais antigas, com o código de saída, quando rodaram, quanto tempo levaram e o que imprimiram; uma saída longa fica recolhida atrás de **Mostrar mais N linhas**.
 
 Então, quando a lista diz _unhealthy_, é aqui que está o motivo, sem ler o JSON bruto. A aba se atualiza sozinha uma vez por intervalo de verificação e sempre que o status muda. Um contêiner cuja verificação de integridade está desativada não tem a aba Integridade; para adicionar ou mudar uma, [edite o contêiner](#editando-um-contêiner).
 
