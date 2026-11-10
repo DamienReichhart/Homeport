@@ -3,7 +3,7 @@ title: Ajustes
 description: Tema e idioma, la bandeja del sistema, el inicio al iniciar sesión, las notificaciones, las actualizaciones, los inicios de sesión de registros, los repositorios, cada cuánto se comprueban los stacks sincronizados, lo que admite este equipo, la versión y las licencias.
 ---
 
-**Ajustes** es el último elemento de la barra lateral.
+**Ajustes** es la última página de la barra lateral, encima de los enlaces **Documentación** y **GitHub**, que se abren en tu navegador.
 
 ## Apariencia
 
@@ -93,7 +93,7 @@ Lo que Homeport guarda en este equipo.
 - Los [stacks sincronizados](/docs/guides/synced-stacks/) vuelven a clonar su repositorio en su siguiente sincronización.
 - Antes, los datos actuales se copian en `homeport.db.before-restore-<date>`, en la carpeta de datos de Homeport. Restaurar un archivo equivocado, uno de un Homeport más reciente o uno que falla a mitad no cambia nada.
 
-Para añadir algunos hosts a los que ya tienes, usa **Exportar** e **Importar** en la página Hosts.
+Para añadir algunos hosts a los que ya tienes, usa **Exportar** e **Importar** en la página Hosts. [Tus datos y copias de seguridad](/docs/reference/data-and-backups/) explica dónde están los archivos de Homeport, qué incluye una copia de seguridad y cómo copiar tú mismo la base de datos.
 
 ### Conservar los eventos del Engine
 
@@ -112,6 +112,10 @@ Homeport comprueba las CLI cada vez que se abre esta página, así que una insta
 
 ## Acerca de
 
-Muestra la versión de Homeport y la plataforma para la que se compiló, por ejemplo `v0.2.0 · macos/aarch64`. Inclúyela cuando [informes de un problema](https://github.com/DamienReichhart/Homeport/issues).
+Muestra la versión de Homeport y la plataforma para la que se compiló, por ejemplo `v1.0.0 · macos/aarch64`.
+
+**Abrir carpeta de logs** muestra dónde escribe Homeport su [log](/docs/reference/security/#logs).
+
+**Exportar diagnóstico…** guarda un zip para adjuntar cuando [informes de un problema](https://github.com/DamienReichhart/Homeport/issues/new/choose): un resumen de las versiones y de los tipos de hosts y clústeres que usas, y los logs sin sus secretos. El diálogo muestra antes lo que contiene, y no se envía nada a ninguna parte. Consulta [Exportar el diagnóstico](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report).
 
 **Licencias** muestra la licencia de Homeport (la GNU AGPL, versión 3), un enlace al código fuente de la versión que ejecutas y los avisos de todos los paquetes de código abierto con los que está creado.

@@ -91,7 +91,7 @@ Cuando el contenedor se detiene, el log termina con _— fin de los logs —_.
 
 ### Salud
 
-Se muestra para los contenedores con una comprobación de salud, propia o de su imagen. **Comprobación de salud** da el estado (_starting_, _healthy_ o _unhealthy_), el comando, sus tiempos (los valores por defecto del Engine completan lo que no está definido: cada 30 s, un tiempo de espera de 30 s, 3 reintentos) y cuántas comprobaciones han fallado seguidas. **Últimos resultados** lista las comprobaciones que guarda el Engine, primero las más recientes, con su código de salida, cuándo se ejecutaron, cuánto tardaron y lo que mostraron; las salidas largas se pliegan tras **Mostrar más**.
+Se muestra para los contenedores con una comprobación de salud, propia o de su imagen. **Comprobación de salud** da el estado (_starting_, _healthy_ o _unhealthy_), el comando, sus tiempos (los valores por defecto del Engine completan lo que no está definido: cada 30 s, un tiempo de espera de 30 s, 3 reintentos) y cuántas comprobaciones han fallado seguidas. **Últimos resultados** lista las comprobaciones que guarda el Engine, primero las más recientes, con su código de salida, cuándo se ejecutaron, cuánto tardaron y lo que mostraron; las salidas largas se pliegan tras **Mostrar … líneas más**.
 
 Así, cuando la lista dice _unhealthy_, aquí está el motivo, sin leer el JSON sin procesar. La pestaña se actualiza sola una vez por intervalo de comprobación y cada vez que cambia el estado. Un contenedor cuya comprobación de salud está desactivada no tiene pestaña Salud; para añadir o cambiar una, [edita el contenedor](#editar-un-contenedor).
 

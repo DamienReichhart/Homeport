@@ -3,7 +3,7 @@ title: Seguridad y tus datos
 description: Qué guarda Homeport, dónde, cómo se cifran los secretos y qué no hace nunca.
 ---
 
-Homeport guarda credenciales que abren tus servidores. Esta página explica exactamente qué guarda y cómo.
+Homeport guarda credenciales que abren tus servidores. Esta página explica exactamente qué guarda y cómo se protege. [Tus datos y copias de seguridad](/docs/reference/data-and-backups/) explica qué copiar para hacer una copia de seguridad, y cómo restaurarla.
 
 ## Qué guarda Homeport
 
@@ -80,7 +80,7 @@ Homeport muestra un aviso y no guarda secretos. Los hosts de socket local, TCP y
 
 ### Si se pierde la clave del llavero
 
-Restablecer el llavero, o mover `homeport.db` a otro equipo o a otro usuario, deja secretos que no se pueden descifrar. Homeport no borra nada: los hosts afectados muestran **Credenciales perdidas** hasta que vuelvas a introducir sus credenciales. Consulta [solución de problemas](/docs/reference/troubleshooting/#credenciales-perdidas). Para mover tus datos, haz una copia de seguridad o exporta tus hosts.
+Restablecer el llavero, o mover `homeport.db` a otro equipo o a otro usuario, deja secretos que no se pueden descifrar. Homeport no borra nada: los hosts y clústeres afectados muestran **Credenciales perdidas** hasta que vuelvas a introducir sus credenciales; [Si se pierden los secretos](/docs/reference/data-and-backups/#if-the-secrets-are-lost) lista qué volver a introducir, y dónde. Para mover tus datos, [haz una copia de seguridad](#backups) o [exporta tus hosts](#moving-to-another-computer).
 
 ### Pasar a otro equipo
 
@@ -103,7 +103,7 @@ Trata el archivo como las claves que contiene: bórralo una vez importado. El fo
 2. sustituye todos los hosts, clústeres, stacks, inicios de sesión, repositorios y ajustes de una sola vez, de modo que un fallo deja tus datos como estaban;
 3. vuelve a cifrar cada secreto con la clave del llavero de este equipo.
 
-Una copia de seguridad hecha por un Homeport más reciente se rechaza; una hecha por un Homeport más antiguo se restaura. La copia de seguridad contiene todos los secretos que tiene Homeport: guárdala, junto con su frase de contraseña, con el mismo cuidado que las propias claves.
+Una copia de seguridad hecha por un Homeport más reciente se rechaza; una hecha por un Homeport más antiguo se restaura. La copia de seguridad contiene todos los secretos que tiene Homeport: guárdala, junto con su frase de contraseña, con el mismo cuidado que las propias claves. [Tus datos y copias de seguridad](/docs/reference/data-and-backups/) tiene los pasos, lo que incluye y lo que deja fuera una copia de seguridad, y cómo copiar tú mismo la base de datos.
 
 ## Las claves nunca tocan el disco sin cifrar
 
@@ -152,7 +152,7 @@ Se ejecutan con los permisos del usuario SSH (o con los tuyos, en este equipo) y
 ## Lo que Homeport no hace nunca
 
 - **Ninguna cuenta.** No hay nada en lo que registrarse.
-- **Ni telemetría, ni analíticas, ni informes de fallos.**
+- **Ni telemetría, ni analíticas, ni informes de fallos.** Cuando informas de un error, el [archivo de diagnóstico](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report) es un archivo que exportas, lees y adjuntas tú mismo.
 - **Nada instalado en tus clústeres.** Homeport solo usa la API de Kubernetes, con los permisos de tus credenciales, y no cambia nada sin que se lo pidas: todo lo que elimina o sustituye algo pregunta antes, nombrando el clúster.
 - **Nada instalado en tus hosts.** Los únicos comandos que Homeport ejecuta en un host están [listados arriba](#lo-que-homeport-ejecuta-en-tus-hosts). El único contenedor que Homeport inicia por su cuenta es un [contenedor auxiliar](/docs/guides/volumes-networks/#el-contenedor-auxiliar) de corta duración cuando abres, haces una copia de seguridad, restauras o clonas un volumen; no tiene red y se elimina cuando termina. Su imagen solo se descarga cuando das tu aprobación.
 - **Ninguna instalación silenciosa.** Una actualización solo se instala cuando eliges **Instalar y reiniciar**; los paquetes de Linux solo los actualiza tu gestor de paquetes.
@@ -168,6 +168,8 @@ Homeport escribe un archivo de log pequeño —unas pocas decenas de kilobytes, 
 | Linux   | `~/.local/share/com.homeport.app/logs/` |
 | macOS   | `~/Library/Logs/com.homeport.app/`      |
 | Windows | `%LOCALAPPDATA%\com.homeport.app\logs\` |
+
+Homeport no tiene telemetría ni informes de fallos: un log nunca sale de tu equipo a menos que lo envíes tú. Para un informe de error, **Ajustes → Acerca de → Exportar diagnóstico…** guarda un zip con un resumen de las versiones y estos logs, después de sustituir todo lo que tenga forma de secreto (claves, contraseñas, tokens, credenciales en URL) y, salvo que pidas lo contrario, los nombres y las direcciones de tus hosts y clústeres. Consulta [Exportar el diagnóstico](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report).
 
 ## Confiar en una descarga
 

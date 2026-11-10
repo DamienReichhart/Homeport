@@ -6,9 +6,9 @@ description: Qué es Homeport, qué hace y cómo está organizada esta documenta
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import { DocScreenshot } from '@/features/docs';
 
-**Homeport** es una app de escritorio para gestionar Docker Engines estén donde estén —el de este equipo o remotos por SSH, TLS o TCP— y los clústeres de Kubernetes a los que llega tu kubeconfig, en la línea de Docker Desktop. Funciona en Windows, macOS y Linux, es gratuita y es de código abierto bajo la [GNU Affero General Public License, versión 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE).
+**Homeport** es una app de escritorio para gestionar Docker Engines, containerd e Incus estén donde estén —los de este equipo o remotos por SSH, TLS o TCP—, los Swarms que forman, los clústeres de Kubernetes a los que llega tu kubeconfig y los clústeres de Nomad que indiques, en la línea de Docker Desktop. Funciona en Windows, macOS y Linux, es gratuita y es de código abierto bajo la [GNU Affero General Public License, versión 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE).
 
-Homeport no ejecuta contenedores por sí mismo. Se conecta a los Docker Engines que ya tienes, llamados **hosts**, y te da una sola ventana para todo lo que hay en ellos: contenedores, imágenes, volúmenes, redes y **stacks** de Compose. También se conecta a **clústeres** de Kubernetes de tu kubeconfig, para explorar lo que se ejecuta en ellos.
+Homeport no ejecuta contenedores por sí mismo. Se conecta a los Engines que ya tienes, llamados **hosts**, y te da una sola ventana para todo lo que hay en ellos: contenedores, imágenes, volúmenes, redes y **stacks** de Compose. También se conecta a **clústeres** de Kubernetes y de Nomad, para ver lo que se ejecuta en ellos y gestionarlo. No se instala nada en ningún host ni clúster.
 
 <DocScreenshot
   name="overview"
@@ -28,7 +28,12 @@ Homeport no ejecuta contenedores por sí mismo. Se conecta a los Docker Engines 
     estadísticas, procesos y un diálogo para ejecutar contenedores.
   </Card>
   <Card title="Desplegar stacks de Compose" icon="rocket">
-    Guarda un archivo compose y su entorno cifrado en Homeport, y despliégalo en cualquier host.
+    Guarda un archivo compose y su entorno cifrado en Homeport, despliega desde una carpeta de
+    proyecto o sigue un repositorio git, y despliega en cualquier host o Swarm.
+  </Card>
+  <Card title="Gestionar Swarms" icon="seti:docker">
+    Encuentra un Docker Swarm a través de sus hosts manager y gestiona sus nodos, servicios, tareas,
+    secretos, configs y stacks de Swarm.
   </Card>
   <Card title="Usar las funciones propias de Podman" icon="seti:config">
     En un host de Podman, gestiona pods y ejecuta contenedores en ellos, e instala, edita e inicia
@@ -45,7 +50,12 @@ Homeport no ejecuta contenedores por sí mismo. Se conecta a los Docker Engines 
   </Card>
   <Card title="Explorar Kubernetes" icon="server">
     Añade clústeres desde tu kubeconfig, EKS, GKE y AKS incluidos, y consulta en directo sus cargas
-    de trabajo, Pods, Services, configuración, Nodes y eventos.
+    de trabajo, Pods, Services, configuración, Nodes y eventos. Lee logs, abre un terminal, reenvía
+    puertos, escala, aplica YAML y gestiona releases de Helm.
+  </Card>
+  <Card title="Ejecutar jobs de Nomad" icon="server">
+    Añade un clúster de Nomad por la dirección de su agente, planifica y ejecuta jobs, sigue sus
+    allocations y sus logs, abre un shell en una task y drena nodos.
   </Card>
   <Card title="Mantener todo en orden" icon="seti:folder">
     Imágenes, volúmenes y redes con su uso de un vistazo, y un diálogo de limpieza que dice qué va a
@@ -56,18 +66,19 @@ Homeport no ejecuta contenedores por sí mismo. Se conecta a los Docker Engines 
 ## Cómo está organizada esta documentación
 
 - **Primeros pasos**: [instala Homeport](/docs/installation/) y sigue el [inicio rápido](/docs/quick-start/) para conectar tu primer host.
-- **Hosts**: cómo funciona cada tipo de conexión: [Engines locales](/docs/hosts/local/), [SSH](/docs/hosts/ssh/), y [TLS y TCP](/docs/hosts/tls-tcp/).
-- **Clústeres**: [añadir clústeres de Kubernetes](/docs/clusters/) desde un kubeconfig, y explorarlos.
+- **Hosts**: cómo funciona cada tipo de conexión: [Engines locales](/docs/hosts/local/), [SSH](/docs/hosts/ssh/), y [TLS y TCP](/docs/hosts/tls-tcp/); y los Engines que tienen páginas propias, [containerd](/docs/hosts/containerd/) e [Incus](/docs/hosts/incus/).
+- **Clústeres**: [añadir clústeres de Kubernetes](/docs/clusters/) desde un kubeconfig, explorarlos y modificarlos, los [releases de Helm](/docs/clusters/helm/) y los [clústeres de Nomad](/docs/clusters/nomad/).
 - **Usar Homeport**: una guía de cada página de la app.
-- **Referencia**: [seguridad](/docs/reference/security/), [solución de problemas](/docs/reference/troubleshooting/), las [preguntas frecuentes](/docs/reference/faq/) y el [glosario](/docs/reference/glossary/).
+- **Referencia**: [seguridad](/docs/reference/security/), [tus datos y copias de seguridad](/docs/reference/data-and-backups/), [actualizar](/docs/reference/updating/), [solución de problemas](/docs/reference/troubleshooting/), las [preguntas frecuentes](/docs/reference/faq/) y el [glosario](/docs/reference/glossary/).
 
 ## Las palabras que usamos
 
 Homeport nombra las cosas con precisión, y la documentación lo sigue:
 
-- Un **host** es un Docker Engine al que se conecta Homeport. Cada contenedor, imagen, volumen, red y stack pertenece exactamente a un host.
-- Un **clúster** es un clúster de Kubernetes al que se conecta Homeport, añadido desde un contexto de tu kubeconfig.
-- Un **stack** es un proyecto de Compose que se ejecuta en un host. Un **stack gestionado** es aquel cuyo archivo compose guarda Homeport; un **stack vinculado** guarda sus archivos compose en una carpeta de este equipo; un **stack externo** se desplegó de otra forma. Puedes **adoptar** un stack externo para gestionarlo.
+- Un **host** es un Engine al que se conecta Homeport: un Docker Engine o uno compatible como Podman, containerd o Incus. Cada contenedor, imagen, volumen, red y stack pertenece exactamente a un host.
+- Un **clúster** es un clúster de Kubernetes, añadido desde un contexto de tu kubeconfig, o un clúster de Nomad, añadido por la dirección de uno de sus agentes.
+- Un **Swarm** es un Docker Swarm, que se encuentra a través de los hosts que forman parte de él y que nunca se añade por sí solo.
+- Un **stack** es un proyecto de Compose que se ejecuta en un host, o un stack de Swarm que se ejecuta en un Swarm. Un **stack gestionado** es aquel cuyo archivo compose guarda Homeport; un **stack vinculado** guarda sus archivos compose en una carpeta de este equipo; un **stack sincronizado** sigue un repositorio git; un **stack externo** se desplegó de otra forma. Puedes **adoptar** un stack externo para gestionarlo.
 
 El [glosario](/docs/reference/glossary/) tiene la lista completa.
 

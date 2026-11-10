@@ -13,7 +13,7 @@ SSH es la forma recomendada de acceder a un Docker Engine en un servidor. No hac
 Homeport tiene su propio cliente SSH. Inicia sesión en el servidor y reenvía un canal al socket Unix del Engine —lo mismo que hace `docker -H ssh://…`—, sin necesitar el programa `ssh` ni `docker` en tu equipo.
 
 - Las claves se descifran solo en memoria y nunca se escriben en el disco, así que funciona igual en Windows, macOS y Linux.
-- Homeport no lee `~/.ssh/known_hosts`: las claves de los servidores se aceptan en Homeport, para cada host. Un servidor al que solo se llega a través de un servidor de salto se añade con [bastiones](#a-través-de-un-bastión), el `ProxyJump` de Homeport.
+- Homeport no lee `~/.ssh/known_hosts`: las claves de los servidores se aceptan en Homeport, para cada host. Un servidor al que solo se llega a través de otro servidor SSH se añade con [bastiones](#a-través-de-un-bastión), el `ProxyJump` de Homeport.
 - El servidor debe permitir el reenvío a sockets Unix. OpenSSH lo permite por defecto (`AllowStreamLocalForwarding yes`).
 
 ## Añadir un host SSH
@@ -55,7 +55,7 @@ Si tus servidores ya están en `~/.ssh/config`, elige **Importar desde ~/.ssh/co
 
 La **Ruta del socket remoto** empieza como `/var/run/docker.sock`; cámbiala en la vista previa para Docker sin root o Podman. Una clave cifrada pide allí su frase de contraseña.
 
-La vista previa marca lo que merece una revisión: una clave que no se puede leer (el host usa ssh-agent en su lugar), un `ProxyCommand` (no compatible; añade sus servidores de salto como bastiones) y un alias que ya es el nombre de un host. Este último no se selecciona: cámbiale el nombre para importarlo, de modo que importar dos veces nunca crea duplicados. Las claves se leen una sola vez y se guardan cifradas; el archivo en sí nunca se modifica, y los bloques `Match` y los certificados (`CertificateFile`) se ignoran.
+La vista previa marca lo que merece una revisión: una clave que no se puede leer (el host usa ssh-agent en su lugar), un `ProxyCommand` (no compatible; añade como bastiones los servidores por los que pasa) y un alias que ya es el nombre de un host. Este último no se selecciona: cámbiale el nombre para importarlo, de modo que importar dos veces nunca crea duplicados. Las claves se leen una sola vez y se guardan cifradas; el archivo en sí nunca se modifica, y los bloques `Match` y los certificados (`CertificateFile`) se ignoran.
 
 ## Autenticación
 
@@ -122,7 +122,7 @@ Para una clave creada por Homeport, o una que importaste, la tarjeta **Autorizar
 
 </Steps>
 
-Hasta que la clave esté autorizada, el host muestra **Acceso denegado**: _El servidor rechazó la clave para deploy@server. Añade la clave pública a su authorized_keys._ Espera a que actúes en lugar de reintentarlo.
+Hasta que la clave esté autorizada, el host muestra **Acceso denegado**: _El servidor SSH no permitió que deploy@server iniciara sesión._, con el comando que autoriza la clave de Homeport. Espera a que actúes en lugar de reintentarlo.
 
 ## Cuando cambia la clave del servidor
 
@@ -140,7 +140,7 @@ Editar un host para que apunte a otro servidor o puerto olvida la clave aceptada
 
 ## A través de un bastión
 
-Algunos servidores solo aceptan SSH desde un servidor de salto. Añade ese servidor en **Bastiones** en el formulario del host, y Homeport inicia sesión primero en él y luego llega al host a través de él: lo que hacen `ssh -J` o `ProxyJump`, con el propio cliente SSH de Homeport. No se instala nada en el bastión y no se escribe ninguna clave en el disco.
+Algunos servidores solo aceptan SSH desde otro servidor, un bastión. Añádelo en **Bastiones** en el formulario del host, y Homeport inicia sesión primero en él y luego llega al host a través de él: lo que hacen `ssh -J` o `ProxyJump`, con el propio cliente SSH de Homeport. No se instala nada en el bastión y no se escribe ninguna clave en el disco.
 
 <Steps>
 
@@ -156,7 +156,7 @@ Algunos servidores solo aceptan SSH desde un servidor de salto. Añade ese servi
    | **Su propia clave**      | El bastión necesita otra clave. Pégala o elige **Cargar desde archivo…**; se guarda cifrada con los demás secretos del host. |
    | **ssh-agent**            | Tu agente tiene la clave del bastión, mientras que el host usa otra, por ejemplo una clave que Homeport creó solo para él.   |
 
-4. Para una cadena de servidores de salto (`ProxyJump a,b`), añade un bastión por servidor, en el orden en que Homeport los atraviesa. Las flechas suben o bajan un bastión.
+4. Para una cadena de bastiones (`ProxyJump a,b`), añade uno por servidor, en el orden en que Homeport los atraviesa. Las flechas suben o bajan un bastión.
 
 </Steps>
 
@@ -178,12 +178,12 @@ Quitar el host borra su clave de Homeport, pero no del servidor. Elimina su lín
 
 ## Problemas habituales
 
-| Mensaje                                                                                             | Qué hacer                                                                                                                                                                                     |
-| --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _El servidor rechazó la clave para …_                                                               | Ejecuta el comando **Añade la clave pública** en el servidor y luego **Volver a conectar**.                                                                                                   |
-| _El servidor SSH no pudo abrir /var/run/docker.sock … Comprueba la ruta y que … pueda usar Docker._ | Comprueba la **Ruta del socket remoto** y añade el usuario al grupo `docker`.                                                                                                                 |
-| _Se agotó el tiempo de espera de la conexión SSH_                                                   | Comprueba el nombre del servidor, el puerto y cualquier cortafuegos entre medias.                                                                                                             |
-| _No hay ningún ssh-agent en ejecución._                                                             | Inicia tu agente, añade una clave con `ssh-add` y asegúrate de que Homeport ve `SSH_AUTH_SOCK`. En Windows, abre Pageant y carga tu clave, o inicia el servicio OpenSSH Authentication Agent. |
-| _El bastión … no pudo abrir una conexión con …_                                                     | Comprueba que el bastión puede llegar al host y que su `sshd` permite `AllowTcpForwarding`.                                                                                                   |
+| Mensaje                                                                     | Qué hacer                                                                                                                                                                                     |
+| --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _El servidor SSH no permitió que … iniciara sesión._                        | Ejecuta el comando **Añade la clave pública** en el servidor y luego **Volver a conectar**.                                                                                                   |
+| _… no puede abrir el socket del Docker Engine en /var/run/docker.sock en …_ | Comprueba la **Ruta del socket remoto** y añade el usuario al grupo `docker`.                                                                                                                 |
+| _… no respondió a tiempo._                                                  | Comprueba el nombre del servidor, el puerto y cualquier cortafuegos entre medias.                                                                                                             |
+| _No hay ningún ssh-agent en ejecución._                                     | Inicia tu agente, añade una clave con `ssh-add` y asegúrate de que Homeport ve `SSH_AUTH_SOCK`. En Windows, abre Pageant y carga tu clave, o inicia el servicio OpenSSH Authentication Agent. |
+| _El bastión … no pudo abrir una conexión con …_                             | Comprueba que el bastión puede llegar al host y que su `sshd` permite `AllowTcpForwarding`.                                                                                                   |
 
 Más en [Solución de problemas](/docs/reference/troubleshooting/).
