@@ -667,6 +667,8 @@
   "errors.pods.unpauseFailed": "Podman couldn't unpause every container of the pod.",
   "errors.quadlets.actionFailed.hint": "Details has what systemctl said. journalctl -u with the unit's name on the host shows its log.",
   "errors.quadlets.app": "\"{app}\" isn't a valid application name. Use letters, digits, _, ., @ or -.",
+  "errors.quadlets.changed": "{name} changed on the Host since you opened it.",
+  "errors.quadlets.changed.hint": "Close the editor and open it again to see the change, or overwrite it with your version.",
   "errors.quadlets.commandFailed": "Homeport couldn't run systemctl for {unit} on the host.",
   "errors.quadlets.exists": "A unit named {name} is already installed.",
   "errors.quadlets.exists.hint": "Choose another name, or edit the installed unit instead.",

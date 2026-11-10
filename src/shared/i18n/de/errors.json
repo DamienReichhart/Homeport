@@ -667,6 +667,8 @@
   "errors.pods.unpauseFailed": "Podman konnte nicht alle Container des Pods fortsetzen.",
   "errors.quadlets.actionFailed.hint": "Unter „Details“ steht, was systemctl gemeldet hat. journalctl -u mit dem Namen der Unit zeigt auf dem Host ihr Log.",
   "errors.quadlets.app": "„{app}“ ist kein gültiger Anwendungsname. Verwenden Sie Buchstaben, Ziffern, _, ., @ oder -.",
+  "errors.quadlets.changed": "{name} wurde auf dem Host geändert, seit Sie sie geöffnet haben.",
+  "errors.quadlets.changed.hint": "Schließen Sie den Editor und öffnen Sie ihn erneut, um die Änderung zu sehen, oder überschreiben Sie sie mit Ihrer Version.",
   "errors.quadlets.commandFailed": "Homeport konnte systemctl für {unit} auf dem Host nicht ausführen.",
   "errors.quadlets.exists": "Eine Unit namens {name} ist bereits installiert.",
   "errors.quadlets.exists.hint": "Wählen Sie einen anderen Namen oder bearbeiten Sie stattdessen die installierte Unit.",

@@ -86,7 +86,9 @@ pub async fn quadlets_file(
 }
 
 /// Installs a unit with its extra files; `replace` edits an installed one.
-/// Returns where the files went on the Host.
+/// `expected` is the unit file as the edit opened it: a file changed on the
+/// Host since is refused, unless `None` overwrites it. Returns where the
+/// files went on the Host.
 #[tauri::command]
 #[specta::specta]
 pub async fn quadlets_install(
@@ -94,8 +96,15 @@ pub async fn quadlets_install(
     host_id: String,
     install: QuadletInstall,
     replace: bool,
+    expected: Option<String>,
 ) -> AppResult<Vec<String>> {
-    quadlets::install(&state.hosts.registry.podman(&host_id)?, &install, replace).await
+    quadlets::install(
+        &state.hosts.registry.podman(&host_id)?,
+        &install,
+        replace,
+        expected.as_deref(),
+    )
+    .await
 }
 
 /// Removes a unit; `force` stops its service first.

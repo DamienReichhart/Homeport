@@ -177,6 +177,9 @@ homeport_core::messages! {
     QUADLET_NO_SYSTEMD = "errors.quadlets.noSystemd" => "Podman couldn't reach systemd on the host.";
     QUADLET_NO_SYSTEMD_HINT = "errors.quadlets.noSystemd.hint" => "Quadlet units need systemd to run the Podman service the host's socket belongs to. Details has Podman's words.";
     /// Removing a running unit without stopping it.
+    /// Saving an edit of a unit file that changed on the Host since it was opened.
+    QUADLET_CHANGED = "errors.quadlets.changed" => "{name} changed on the Host since you opened it.";
+    QUADLET_CHANGED_HINT = "errors.quadlets.changed.hint" => "Close the editor and open it again to see the change, or overwrite it with your version.";
     QUADLET_RUNNING = "errors.quadlets.running" => "{name} is running.";
     QUADLET_RUNNING_HINT = "errors.quadlets.running.hint" => "Choose to stop it as it's removed, or stop it first.";
     /// Podman reported an error removing a unit.

@@ -667,6 +667,8 @@
   "errors.pods.unpauseFailed": "Podman पॉड के हर कंटेनर को जारी नहीं रख सका।",
   "errors.quadlets.actionFailed.hint": "systemctl ने क्या कहा, यह विवरण में है। होस्ट पर यूनिट के नाम के साथ journalctl -u इसका लॉग दिखाता है।",
   "errors.quadlets.app": "“{app}” मान्य एप्लिकेशन नाम नहीं है। अक्षर, अंक, _, ., @ या - इस्तेमाल करें।",
+  "errors.quadlets.changed": "आपके खोलने के बाद {name} होस्ट पर बदल गई है।",
+  "errors.quadlets.changed.hint": "बदलाव देखने के लिए एडिटर बंद करके फिर से खोलें, या उसे अपने संस्करण से ओवरराइट करें।",
   "errors.quadlets.commandFailed": "Homeport होस्ट पर {unit} के लिए systemctl नहीं चला सका।",
   "errors.quadlets.exists": "{name} नाम की यूनिट पहले से इंस्टॉल है।",
   "errors.quadlets.exists.hint": "कोई दूसरा नाम चुनें, या इसकी बजाय इंस्टॉल की गई यूनिट संपादित करें।",

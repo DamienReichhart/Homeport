@@ -88,6 +88,7 @@ export default {
   'quadlets.form.removeExtra': 'Rimuovi {name}',
   'quadlets.form.install': 'Installa',
   'quadlets.form.save': 'Salva',
+  'quadlets.form.overwrite': 'Sovrascrivi',
   'quadlets.form.nameInvalid':
     'Chiamala come web.container, con estensione .container, .pod, .volume, .network, .kube, .image, .build o .artifact.',
   'quadlets.form.sectionMissing':

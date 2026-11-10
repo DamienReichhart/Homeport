@@ -58,7 +58,7 @@ Podman écrit les fichiers là où vont les unités de son utilisateur et rechar
 
 ## Modifier et supprimer
 
-**Modifier** ouvre le fichier de l’unité. **Enregistrer** l’écrit sur place et recharge systemd ; les fichiers installés à côté restent. Un service en cours d’exécution garde ses anciens réglages jusqu’à ce que vous le **Redémarriez**.
+**Modifier** ouvre le fichier de l’unité. **Enregistrer** l’écrit sur place et recharge systemd ; les fichiers installés à côté restent. Un service en cours d’exécution garde ses anciens réglages jusqu’à ce que vous le **Redémarriez**. Si le fichier a changé sur l’hôte depuis que vous l’avez ouvert, **Enregistrer** est refusé et le dit, plutôt que d’écraser cette modification : rouvrez l’unité pour la voir, ou choisissez **Écraser**.
 
 **Supprimer** efface le fichier de l’unité et recharge systemd. **Arrêter d’abord son service en cours d’exécution** est activé par défaut ; sans cela, Podman refuse de supprimer une unité en cours d’exécution. Les conteneurs, volumes et images créés par l’unité sont conservés.
 

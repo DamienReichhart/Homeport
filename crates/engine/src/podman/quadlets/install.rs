@@ -154,16 +154,30 @@ struct Installed {
 
 /// Installs a unit and its files, and has Podman reload systemd. With
 /// `replace`, the files already there under those names are overwritten
-/// (Edit); others in the application folder stay. Returns where the files went.
+/// (Edit); others in the application folder stay. `expected` is the unit
+/// file as the edit read it: when the Host's file is no longer that, it
+/// changed there since, and the edit is refused rather than overwrite it.
+/// `None` overwrites whatever is there. Returns where the files went.
 pub async fn install(
     podman: &Podman,
     install: &QuadletInstall,
     replace: bool,
+    expected: Option<&str>,
 ) -> AppResult<Vec<String>> {
     if !podman.at_least(FILES_SINCE) {
         return Err(too_old(podman, FILES_SINCE));
     }
     let app = validate(install)?;
+    if let (true, Some(expected)) = (replace, expected) {
+        let name = &install.unit.name;
+        if super::file(podman, name).await? != expected {
+            return Err(AppError::new(
+                ErrorCode::Conflict,
+                msg::QUADLET_CHANGED.with("name", name),
+            )
+            .with_hint(msg::QUADLET_CHANGED_HINT));
+        }
+    }
     let mut path = format!("/quadlets?replace={replace}&reload-systemd=true");
     if let Some(app) = &app {
         path.push_str(&format!("&application={}", http::encode(app)));

@@ -34,13 +34,24 @@ export function useUnitAction(hostId: string) {
   });
 }
 
-/** Installs a unit, or replaces an installed one's file (Edit); the dialog shows a failure. */
+/**
+ * Installs a unit, or replaces an installed one's file (Edit), refused when
+ * it changed on the Host since `expected`; the dialog shows a failure.
+ */
 export function useInstallUnit(hostId: string, onDone: () => void) {
   const refresh = useRefreshUnits(hostId);
   return useMutation({
     meta: { silent: true },
-    mutationFn: ({ install, replace }: { install: QuadletInstall; replace: boolean }) =>
-      commands.quadletsInstall(hostId, install, replace),
+    mutationFn: ({
+      install,
+      replace,
+      expected,
+    }: {
+      install: QuadletInstall;
+      replace: boolean;
+      /** The unit file as the edit opened it; null overwrites what the Host has now. */
+      expected: string | null;
+    }) => commands.quadletsInstall(hostId, install, replace, expected),
     onSuccess: async (_, { install, replace }) => {
       await refresh();
       toast.success(

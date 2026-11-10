@@ -667,6 +667,8 @@
   "errors.pods.unpauseFailed": "Podman 无法恢复该 Pod 的所有容器。",
   "errors.quadlets.actionFailed.hint": "systemctl 的输出见“详细信息”。在主机上使用 journalctl -u 加单元名称可查看其日志。",
   "errors.quadlets.app": "“{app}”不是有效的应用名称。请使用字母、数字、_、.、@ 或 -。",
+  "errors.quadlets.changed": "自你打开 {name} 以来，它已在主机上被更改。",
+  "errors.quadlets.changed.hint": "关闭编辑器后重新打开以查看更改，或用你的版本覆盖它。",
   "errors.quadlets.commandFailed": "Homeport 无法在主机上为 {unit} 运行 systemctl。",
   "errors.quadlets.exists": "名为 {name} 的单元已安装。",
   "errors.quadlets.exists.hint": "请换一个名称，或改为编辑已安装的单元。",

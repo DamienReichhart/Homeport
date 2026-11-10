@@ -86,6 +86,7 @@ export default {
   'quadlets.form.removeExtra': 'إزالة {name}',
   'quadlets.form.install': 'تثبيت',
   'quadlets.form.save': 'حفظ',
+  'quadlets.form.overwrite': 'الكتابة فوقها',
   'quadlets.form.nameInvalid':
     'سمّها مثل web.container، بحيث تنتهي بـ .container أو .pod أو .volume أو .network أو .kube أو .image أو .build أو .artifact.',
   'quadlets.form.sectionMissing': 'يحتاج الملف إلى قسم {section} ليتمكن Quadlet من قراءته.',

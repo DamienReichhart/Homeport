@@ -667,6 +667,8 @@
   "errors.pods.unpauseFailed": "Podman は Pod のすべてのコンテナを再開できませんでした。",
   "errors.quadlets.actionFailed.hint": "systemctl の出力は「詳細」にあります。ホストでユニット名を指定して journalctl -u を実行すると、そのログが表示されます。",
   "errors.quadlets.app": "「{app}」は有効なアプリケーション名ではありません。英字、数字、_、.、@、- を使ってください。",
+  "errors.quadlets.changed": "{name} は、開いた後にホスト上で変更されました。",
+  "errors.quadlets.changed.hint": "エディターを閉じて開き直すと変更を確認できます。または、自分の版で上書きしてください。",
   "errors.quadlets.commandFailed": "Homeport はホストで {unit} の systemctl を実行できませんでした。",
   "errors.quadlets.exists": "{name} という名前のユニットはすでにインストールされています。",
   "errors.quadlets.exists.hint": "別の名前を選ぶか、代わりにインストール済みのユニットを編集してください。",

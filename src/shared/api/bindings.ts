@@ -660,9 +660,11 @@ export const commands = {
 	quadletsFile: (hostId: string, name: string) => __TAURI_INVOKE<string>("quadlets_file", { hostId, name }),
 	/**
 	 *  Installs a unit with its extra files; `replace` edits an installed one.
-	 *  Returns where the files went on the Host.
+	 *  `expected` is the unit file as the edit opened it: a file changed on the
+	 *  Host since is refused, unless `None` overwrites it. Returns where the
+	 *  files went on the Host.
 	 */
-	quadletsInstall: (hostId: string, install: QuadletInstall, replace: boolean) => __TAURI_INVOKE<string[]>("quadlets_install", { hostId, install, replace }),
+	quadletsInstall: (hostId: string, install: QuadletInstall, replace: boolean, expected: string | null) => __TAURI_INVOKE<string[]>("quadlets_install", { hostId, install, replace, expected }),
 	/**  Removes a unit; `force` stops its service first. */
 	quadletsRemove: (hostId: string, name: string, force: boolean) => __TAURI_INVOKE<null>("quadlets_remove", { hostId, name, force }),
 	/**  Starts, stops or restarts a unit's service with `systemctl`. */

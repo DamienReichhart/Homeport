@@ -667,6 +667,8 @@
   "errors.pods.unpauseFailed": "تعذّر على Podman استئناف كل حاويات الـ Pod.",
   "errors.quadlets.actionFailed.hint": "تحتوي «التفاصيل» على ما قاله systemctl. يعرض journalctl -u مع اسم الوحدة على المضيف سجلها.",
   "errors.quadlets.app": "«{app}» ليس اسم تطبيق صالحًا. استخدم حروفًا أو أرقامًا أو _ أو . أو @ أو -.",
+  "errors.quadlets.changed": "تغيّرت {name} على المضيف منذ فتحتها.",
+  "errors.quadlets.changed.hint": "أغلق المحرر وافتحه من جديد لترى التغيير، أو اكتب فوقها بنسختك.",
   "errors.quadlets.commandFailed": "تعذّر على Homeport تشغيل systemctl لـ {unit} على المضيف.",
   "errors.quadlets.exists": "توجد بالفعل وحدة مثبّتة باسم {name}.",
   "errors.quadlets.exists.hint": "اختر اسمًا آخر، أو حرّر الوحدة المثبّتة بدلًا من ذلك.",

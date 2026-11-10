@@ -667,6 +667,8 @@
   "errors.pods.unpauseFailed": "Podman не удалось возобновить все контейнеры пода.",
   "errors.quadlets.actionFailed.hint": "Что сообщил systemctl — в разделе «Подробности». Журнал юнита на хосте показывает journalctl -u с его именем.",
   "errors.quadlets.app": "«{app}» — недопустимое имя приложения. Используйте буквы, цифры, _, ., @ или -.",
+  "errors.quadlets.changed": "{name} изменился на хосте с тех пор, как вы его открыли.",
+  "errors.quadlets.changed.hint": "Закройте редактор и откройте его снова, чтобы увидеть изменение, или перезапишите его своей версией.",
   "errors.quadlets.commandFailed": "Homeport не удалось выполнить systemctl для {unit} на хосте.",
   "errors.quadlets.exists": "Юнит с именем {name} уже установлен.",
   "errors.quadlets.exists.hint": "Выберите другое имя или вместо этого измените установленный юнит.",

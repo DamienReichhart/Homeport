@@ -58,7 +58,7 @@ Podman scrive i file dove vanno le unità del suo utente e ricarica systemd, cos
 
 ## Modificare e rimuovere
 
-**Modifica** apre il file dell’unità. **Salva** lo scrive al suo posto e ricarica systemd; i file installati accanto restano. Un servizio in esecuzione mantiene le vecchie impostazioni finché non scegli **Riavvia**.
+**Modifica** apre il file dell’unità. **Salva** lo scrive al suo posto e ricarica systemd; i file installati accanto restano. Un servizio in esecuzione mantiene le vecchie impostazioni finché non scegli **Riavvia**. Se il file è cambiato sull’host da quando l’hai aperto, **Salva** viene rifiutato e lo dice, invece di sovrascrivere quella modifica: riapri l’unità per vederla, oppure scegli **Sovrascrivi**.
 
 **Rimuovi** elimina il file dell’unità e ricarica systemd. **Arresta prima il suo servizio in esecuzione** è attivo per impostazione predefinita; senza, Podman si rifiuta di rimuovere un’unità in esecuzione. I container, i volumi e le immagini creati dall’unità vengono conservati.
 

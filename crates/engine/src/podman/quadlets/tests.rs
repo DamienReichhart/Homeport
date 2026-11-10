@@ -266,7 +266,7 @@ async fn installs_through_the_api_and_reloads_systemd() {
         extra: vec![unit("web.env", "A=1\n")],
         app: None,
     };
-    let installed = install(&fake.podman, &request, true).await.unwrap();
+    let installed = install(&fake.podman, &request, true, None).await.unwrap();
     assert_eq!(
         installed,
         ["/home/me/.config/containers/systemd/shop/web.container"]
@@ -285,6 +285,48 @@ async fn installs_through_the_api_and_reloads_systemd() {
 }
 
 #[tokio::test]
+async fn an_edit_never_overwrites_a_file_changed_on_the_host_since_it_was_opened() {
+    // Someone edited web.container on the Host after the editor read it.
+    let fake = testing::podman("5.8.1", |req| {
+        if req.path.ends_with("/quadlets/web.container/file") {
+            (200, "[Container]\nImage=nginx:edited-on-the-host\n".into())
+        } else {
+            (200, r#"{"InstalledQuadlets":{},"QuadletErrors":{}}"#.into())
+        }
+    });
+    let request = QuadletInstall {
+        unit: unit("web.container", "[Container]\nImage=nginx:mine\n"),
+        extra: vec![],
+        app: None,
+    };
+    let opened = "[Container]\nImage=nginx\n";
+    let err = install(&fake.podman, &request, true, Some(opened))
+        .await
+        .unwrap_err();
+    assert!(err.is(ErrorCode::Conflict), "{err:?}");
+    assert_eq!(err.key, "errors.quadlets.changed");
+    assert!(err.hint.is_some());
+    assert!(
+        fake.requests().iter().all(|r| r.method != "POST"),
+        "nothing is written"
+    );
+
+    // As it is on the Host now, or overwritten on purpose, it's saved.
+    let now = "[Container]\nImage=nginx:edited-on-the-host\n";
+    install(&fake.podman, &request, true, Some(now))
+        .await
+        .unwrap();
+    install(&fake.podman, &request, true, None).await.unwrap();
+    assert_eq!(
+        fake.requests()
+            .iter()
+            .filter(|r| r.method == "POST")
+            .count(),
+        2
+    );
+}
+
+#[tokio::test]
 async fn a_taken_name_and_an_old_podman_are_refused() {
     let fake = testing::podman("5.8.1", |_| {
         (
@@ -297,12 +339,16 @@ async fn a_taken_name_and_an_old_podman_are_refused() {
         extra: vec![],
         app: None,
     };
-    let err = install(&fake.podman, &request, false).await.unwrap_err();
+    let err = install(&fake.podman, &request, false, None)
+        .await
+        .unwrap_err();
     assert!(err.is(ErrorCode::QuadletExists), "{err:?}");
     assert!(err.hint.is_some());
 
     let old = testing::podman("5.7.1", |_| (200, "{}".into()));
-    let err = install(&old.podman, &request, false).await.unwrap_err();
+    let err = install(&old.podman, &request, false, None)
+        .await
+        .unwrap_err();
     assert!(err.is(ErrorCode::PodmanTooOld));
     assert!(old.requests().is_empty(), "nothing is sent");
 }
@@ -442,7 +488,7 @@ async fn installs_edits_lists_and_removes_a_unit_on_podman() {
         extra: vec![],
         app: None,
     };
-    install(&podman, &request(crate::testing::IMAGE), false)
+    install(&podman, &request(crate::testing::IMAGE), false, None)
         .await
         .unwrap();
     let result = async {
@@ -451,7 +497,7 @@ async fn installs_edits_lists_and_removes_a_unit_on_podman() {
             .units
             .iter()
             .any(|u| u.name.as_deref() == Some(&name)));
-        install(&podman, &request("busybox:1.37"), true).await?;
+        install(&podman, &request("busybox:1.37"), true, None).await?;
         assert!(file(&podman, &name).await?.contains("busybox:1.37"));
         AppResult::Ok(())
     }

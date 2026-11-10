@@ -85,6 +85,7 @@ export default {
   'quadlets.form.removeExtra': '{name} 삭제',
   'quadlets.form.install': '설치',
   'quadlets.form.save': '저장',
+  'quadlets.form.overwrite': '덮어쓰기',
   'quadlets.form.nameInvalid':
     'web.container처럼 .container, .pod, .volume, .network, .kube, .image, .build 또는 .artifact로 끝나는 이름을 지정하세요.',
   'quadlets.form.sectionMissing': 'Quadlet이 파일을 읽으려면 {section} 섹션이 있어야 합니다.',

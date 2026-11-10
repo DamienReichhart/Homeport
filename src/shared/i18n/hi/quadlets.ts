@@ -86,6 +86,7 @@ export default {
   'quadlets.form.removeExtra': '{name} हटाएँ',
   'quadlets.form.install': 'इंस्टॉल करें',
   'quadlets.form.save': 'सहेजें',
+  'quadlets.form.overwrite': 'ओवरराइट करें',
   'quadlets.form.nameInvalid':
     'इसका नाम web.container जैसा रखें, जो .container, .pod, .volume, .network, .kube, .image, .build या .artifact पर खत्म हो।',
   'quadlets.form.sectionMissing':

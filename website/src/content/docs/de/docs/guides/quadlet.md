@@ -58,7 +58,7 @@ Podman schreibt die Dateien dorthin, wo die Units seines Benutzers liegen, und l
 
 ## Bearbeiten und Entfernen
 
-**Bearbeiten** öffnet die Datei der Unit. **Speichern** schreibt sie an Ort und Stelle und lädt systemd neu; die daneben installierten Dateien bleiben. Ein laufender Service behält seine alten Einstellungen, bis Sie ihn mit **Neu starten** neu starten.
+**Bearbeiten** öffnet die Datei der Unit. **Speichern** schreibt sie an Ort und Stelle und lädt systemd neu; die daneben installierten Dateien bleiben. Ein laufender Service behält seine alten Einstellungen, bis Sie ihn mit **Neu starten** neu starten. Wurde die Datei auf dem Host geändert, seit Sie sie geöffnet haben, wird **Speichern** abgelehnt und meldet das, statt diese Änderung zu überschreiben: Öffnen Sie die Unit erneut, um sie zu sehen, oder wählen Sie **Überschreiben**.
 
 **Entfernen** löscht die Datei der Unit und lädt systemd neu. **Zuerst ihren laufenden Service stoppen** ist standardmäßig eingeschaltet; ohne diese Option lehnt Podman es ab, eine laufende Unit zu entfernen. Container, Volumes und Images, die die Unit erstellt hat, bleiben erhalten.
 

@@ -667,6 +667,8 @@
   "errors.pods.unpauseFailed": "Podman n’a pas pu reprendre tous les conteneurs du pod.",
   "errors.quadlets.actionFailed.hint": "Détails contient ce qu’a indiqué systemctl. journalctl -u suivi du nom de l’unité, sur l’hôte, affiche son journal.",
   "errors.quadlets.app": "« {app} » n’est pas un nom d’application valide. Utilisez des lettres, des chiffres, _, ., @ ou -.",
+  "errors.quadlets.changed": "{name} a changé sur l’hôte depuis que vous l’avez ouverte.",
+  "errors.quadlets.changed.hint": "Fermez l’éditeur et rouvrez-le pour voir la modification, ou écrasez-la avec votre version.",
   "errors.quadlets.commandFailed": "Homeport n’a pas pu exécuter systemctl pour {unit} sur l’hôte.",
   "errors.quadlets.exists": "Une unité nommée {name} est déjà installée.",
   "errors.quadlets.exists.hint": "Choisissez un autre nom, ou modifiez plutôt l’unité installée.",

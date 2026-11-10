@@ -667,6 +667,8 @@
   "errors.pods.unpauseFailed": "Podman이 Pod의 모든 컨테이너를 재개하지 못했습니다.",
   "errors.quadlets.actionFailed.hint": "systemctl의 출력은 세부 정보에 있습니다. 호스트에서 유닛 이름과 함께 journalctl -u를 실행하면 로그를 볼 수 있습니다.",
   "errors.quadlets.app": "“{app}” 이름은 올바른 애플리케이션 이름이 아닙니다. 문자, 숫자, _, ., @, - 를 사용하세요.",
+  "errors.quadlets.changed": "{name} 유닛이 연 뒤에 호스트에서 바뀌었습니다.",
+  "errors.quadlets.changed.hint": "편집기를 닫고 다시 열어 바뀐 내용을 확인하거나, 내 버전으로 덮어쓰세요.",
   "errors.quadlets.commandFailed": "Homeport가 호스트에서 {unit} 유닛에 대해 systemctl을 실행하지 못했습니다.",
   "errors.quadlets.exists": "이름이 {name}인 유닛이 이미 설치되어 있습니다.",
   "errors.quadlets.exists.hint": "다른 이름을 선택하거나, 대신 설치된 유닛을 편집하세요.",
