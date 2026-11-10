@@ -131,6 +131,64 @@ fn protocol(name: &str) -> AppResult<EndpointPortConfigProtocolEnum> {
     }
 }
 
+/// The ports a service publishes, checked: a port is published once per
+/// protocol, and a host-mode one names the port it takes.
+fn ports(inputs: &[PortInput]) -> AppResult<Vec<EndpointPortConfig>> {
+    let mut ports = Vec::new();
+    let mut published = Vec::new();
+    for p in inputs {
+        if p.target == 0 {
+            return Err(invalid(msg::SERVICE_PORT_TARGET));
+        }
+        let protocol = protocol(p.protocol.trim())?;
+        if let Some(port) = p.published.filter(|p| *p > 0) {
+            if published.contains(&(port, protocol)) {
+                return Err(invalid(msg::SERVICE_PORT_TWICE.with("port", port)));
+            }
+            published.push((port, protocol));
+        } else if p.host_mode {
+            return Err(invalid(msg::SERVICE_HOST_PORT_NEEDED));
+        }
+        ports.push(EndpointPortConfig {
+            protocol: Some(protocol),
+            target_port: Some(p.target.into()),
+            published_port: p.published.filter(|p| *p > 0).map(i64::from),
+            publish_mode: Some(if p.host_mode {
+                EndpointPortConfigPublishModeEnum::HOST
+            } else {
+                EndpointPortConfigPublishModeEnum::INGRESS
+            }),
+            ..Default::default()
+        });
+    }
+    Ok(ports)
+}
+
+/// The mounts of a service's containers, checked: a source that is a path
+/// is bound, any other names a volume.
+fn mounts(inputs: &[MountInput]) -> AppResult<Vec<Mount>> {
+    let mut mounts = Vec::new();
+    for m in inputs {
+        let (source, target) = (m.source.trim(), m.target.trim());
+        if source.is_empty() || !target.starts_with('/') {
+            return Err(invalid(msg::RUN_MOUNT));
+        }
+        let bind = source.starts_with('/') || source.contains(':') && source.contains('\\');
+        mounts.push(Mount {
+            source: Some(source.to_owned()),
+            target: Some(target.to_owned()),
+            typ: Some(if bind {
+                MountType::BIND
+            } else {
+                MountType::VOLUME
+            }),
+            read_only: Some(m.read_only),
+            ..Default::default()
+        });
+    }
+    Ok(mounts)
+}
+
 /// The bollard `ServiceSpec` for `input`, checked first; secrets and configs
 /// are resolved to their IDs through `ids`.
 pub fn spec_body(input: &ServiceSpecInput, ids: &ObjectIds) -> AppResult<ServiceSpec> {
@@ -165,53 +223,8 @@ pub fn spec_body(input: &ServiceSpecInput, ids: &ObjectIds) -> AppResult<Service
         },
     };
 
-    let mut ports = Vec::new();
-    let mut published = Vec::new();
-    for p in &input.ports {
-        if p.target == 0 {
-            return Err(invalid(msg::SERVICE_PORT_TARGET));
-        }
-        let protocol = protocol(p.protocol.trim())?;
-        if let Some(port) = p.published.filter(|p| *p > 0) {
-            if published.contains(&(port, protocol)) {
-                return Err(invalid(msg::SERVICE_PORT_TWICE.with("port", port)));
-            }
-            published.push((port, protocol));
-        } else if p.host_mode {
-            return Err(invalid(msg::SERVICE_HOST_PORT_NEEDED));
-        }
-        ports.push(EndpointPortConfig {
-            protocol: Some(protocol),
-            target_port: Some(p.target.into()),
-            published_port: p.published.filter(|p| *p > 0).map(i64::from),
-            publish_mode: Some(if p.host_mode {
-                EndpointPortConfigPublishModeEnum::HOST
-            } else {
-                EndpointPortConfigPublishModeEnum::INGRESS
-            }),
-            ..Default::default()
-        });
-    }
-
-    let mut mounts = Vec::new();
-    for m in &input.mounts {
-        let (source, target) = (m.source.trim(), m.target.trim());
-        if source.is_empty() || !target.starts_with('/') {
-            return Err(invalid(msg::RUN_MOUNT));
-        }
-        let bind = source.starts_with('/') || source.contains(':') && source.contains('\\');
-        mounts.push(Mount {
-            source: Some(source.to_owned()),
-            target: Some(target.to_owned()),
-            typ: Some(if bind {
-                MountType::BIND
-            } else {
-                MountType::VOLUME
-            }),
-            read_only: Some(m.read_only),
-            ..Default::default()
-        });
-    }
+    let ports = ports(&input.ports)?;
+    let mounts = mounts(&input.mounts)?;
 
     let id_of = |map: &HashMap<String, String>, name: &str| {
         map.get(name)
