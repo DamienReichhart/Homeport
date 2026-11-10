@@ -3,7 +3,7 @@
 
 use std::sync::{Arc, Mutex};
 
-use homeport_clusters::{service::ClusterService, terminal::PodTerminals};
+use homeport_clusters::service::ClusterService;
 use homeport_containerd::exec::ContainerdExecSessions;
 use homeport_core::streams::Streams;
 use homeport_engine::{
@@ -12,6 +12,7 @@ use homeport_engine::{
 use homeport_git::Repositories;
 use homeport_hosts::service::HostService;
 use homeport_incus::terminal::IncusTerminals;
+use homeport_kubernetes::terminal::PodTerminals;
 use homeport_nomad::exec::NomadTerminals;
 use homeport_registries::RegistryStore;
 use homeport_settings::SettingsService;

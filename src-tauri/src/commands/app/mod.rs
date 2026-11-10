@@ -12,9 +12,9 @@ use std::path::Path;
 use serde::Serialize;
 use tauri::{AppHandle, Manager, State};
 
-use homeport_clusters::helm::{self, HelmCli};
 use homeport_core::local_files;
 use homeport_git::{cli as git, GitCli};
+use homeport_kubernetes::helm::{self, HelmCli};
 use homeport_stacks::compose::{self, ComposeCli};
 
 use crate::{

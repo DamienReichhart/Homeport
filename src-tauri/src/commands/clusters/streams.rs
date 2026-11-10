@@ -3,15 +3,15 @@
 
 use tauri::{ipc::Channel, State};
 
-use homeport_clusters::{
-    logs::{PodLogSource, PodLogTarget},
-    metrics::{MetricsEvent, MetricsTarget},
-    terminal::{PodExecOptions, TerminalId},
-};
 use homeport_core::{
     logs::{LogEvent, LogOptions},
     streams::StreamId,
     terminal::ExecEvent,
+};
+use homeport_kubernetes::{
+    logs::{PodLogSource, PodLogTarget},
+    metrics::{MetricsEvent, MetricsTarget},
+    terminal::{PodExecOptions, TerminalId},
 };
 
 use super::on;

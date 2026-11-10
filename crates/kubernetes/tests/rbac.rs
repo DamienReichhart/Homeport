@@ -6,12 +6,12 @@
 //!
 //! Each test makes its own Namespaces and ServiceAccount and deletes them.
 
-use homeport_clusters::{
+use homeport_kubernetes::{
     client,
     kubeconfig::{self, Source},
     rbac::{AccessCheck, Subject, SubjectKind},
     resources::On,
-    Cluster, ClusterConnection, ClusterKind, KubernetesSecrets,
+    KubeCluster, KubernetesConnection, KubernetesSecrets,
 };
 use k8s_openapi::api::{
     authentication::v1::TokenRequest,
@@ -24,14 +24,11 @@ fn context() -> String {
     std::env::var("HOMEPORT_TEST_CONTEXT").unwrap_or_else(|_| "kind-homeport".into())
 }
 
-fn cluster(connection: ClusterConnection) -> Cluster {
-    Cluster {
+fn cluster(connection: KubernetesConnection) -> KubeCluster {
+    KubeCluster {
         id: "test".into(),
         name: context(),
-        kind: ClusterKind::Kubernetes,
         connection,
-        enabled: true,
-        created_at: String::new(),
     }
 }
 
@@ -45,7 +42,7 @@ fn connect() -> Option<(On, KubernetesSecrets)> {
         eprintln!("skipped: no kubeconfig context {}", context());
         return None;
     };
-    let cluster = cluster(ClusterConnection::Kubernetes(connection));
+    let cluster = cluster(connection);
     let client = client::client(&cluster, &secrets, None).unwrap();
     Some((On { client, cluster }, secrets))
 }

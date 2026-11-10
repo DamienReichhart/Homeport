@@ -6,7 +6,7 @@ use tokio::{
 };
 
 use super::*;
-use crate::model::{ClusterConnection, ClusterKind};
+use crate::model::KubeCluster;
 
 /// The credential the Cluster's own client sends; it must never reach the
 /// kubeconfig, and the proxy's token must never reach the Cluster.
@@ -68,18 +68,15 @@ async fn api_server() -> (SocketAddr, Seen) {
     (address, seen)
 }
 
-fn cluster() -> Cluster {
-    Cluster {
+fn cluster() -> KubeCluster {
+    KubeCluster {
         id: "c".into(),
         name: "kind-dev".into(),
-        kind: ClusterKind::Kubernetes,
-        connection: ClusterConnection::Kubernetes(crate::model::KubernetesConnection {
+        connection: crate::model::KubernetesConnection {
             server: "http://127.0.0.1:1".into(),
             namespace: Some("shop".into()),
             ..Default::default()
-        }),
-        enabled: true,
-        created_at: String::new(),
+        },
     }
 }
 

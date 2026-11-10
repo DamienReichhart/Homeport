@@ -33,7 +33,7 @@ use tokio::{net::TcpListener, task::JoinHandle};
 
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 
-use crate::{messages as msg, model::Cluster};
+use crate::{messages as msg, model::KubeCluster};
 
 pub use self::cli::{output, run_cli, CliCommand, CliEvent, ClusterAccess, Failure};
 
@@ -80,7 +80,7 @@ struct Shared {
 /// Opens a proxy to `cluster`, whose requests go through the client
 /// `clients` returns, and writes its kubeconfig. Must run inside a Tokio
 /// runtime.
-pub async fn open(cluster: &Cluster, clients: ClientSource) -> AppResult<ClusterProxy> {
+pub async fn open(cluster: &KubeCluster, clients: ClientSource) -> AppResult<ClusterProxy> {
     let failed = |e: &io::Error| {
         AppError::new(
             ErrorCode::ClusterProxyFailed,
@@ -96,10 +96,7 @@ pub async fn open(cluster: &Cluster, clients: ClientSource) -> AppResult<Cluster
     let token = token();
     let dir = private_dir().map_err(|e| failed(&e))?;
     let kubeconfig = dir.path().join("kubeconfig");
-    let namespace = cluster
-        .kubernetes()
-        .and_then(|c| c.namespace.as_deref())
-        .unwrap_or("default");
+    let namespace = cluster.connection.namespace.as_deref().unwrap_or("default");
     write_private(&kubeconfig, &kubeconfig_yaml(address, &token, namespace))
         .map_err(|e| failed(&e))?;
 

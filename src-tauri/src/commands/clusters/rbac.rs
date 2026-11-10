@@ -4,7 +4,7 @@
 
 use tauri::State;
 
-use homeport_clusters::rbac::{
+use homeport_kubernetes::rbac::{
     AccessAnswer, AccessCheck, OwnPermissions, RbacIndex, Subject, SubjectPermissions,
 };
 

@@ -15,7 +15,7 @@ use homeport_core::{
     programs,
 };
 
-use crate::{messages as msg, model::Cluster, AuthMethod, ClusterId};
+use crate::{messages as msg, model::KubeCluster, AuthMethod};
 
 pub use self::resolve::resolve;
 
@@ -128,7 +128,7 @@ pub struct KubeContext {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
 pub struct AddedCluster {
-    pub id: ClusterId,
+    pub id: String,
     pub name: String,
 }
 
@@ -150,7 +150,7 @@ pub struct ContextChoice {
 }
 
 /// Every context of `source`, each with the Cluster made from it, if any.
-pub fn contexts(source: &Source, clusters: &[Cluster]) -> KubeContexts {
+pub fn contexts(source: &Source, clusters: &[KubeCluster]) -> KubeContexts {
     let config = &source.config;
     let contexts = config
         .contexts
@@ -188,12 +188,13 @@ pub fn contexts(source: &Source, clusters: &[Cluster]) -> KubeContexts {
 }
 
 /// The Cluster made from the context `name`.
-fn added_from(clusters: &[Cluster], name: &str) -> Option<AddedCluster> {
+fn added_from(clusters: &[KubeCluster], name: &str) -> Option<AddedCluster> {
     clusters
         .iter()
         .find(|c| {
-            c.kubernetes()
-                .and_then(|k| k.source.as_ref())
+            c.connection
+                .source
+                .as_ref()
                 .is_some_and(|s| s.context == name)
         })
         .map(|c| AddedCluster {

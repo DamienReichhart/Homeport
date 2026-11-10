@@ -10,8 +10,9 @@ use std::{
 };
 
 use homeport_clusters::{
-    model::{AuthMethod, ClusterConnection, ClusterKind, ClusterSecrets},
+    model::{ClusterConnection, ClusterKind, ClusterSecrets},
     store::ClusterStore,
+    AuthMethod,
 };
 use homeport_core::{
     error::ErrorCode,

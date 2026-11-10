@@ -15,7 +15,7 @@ use homeport_core::{
 };
 
 use super::{open, ClientSource, ClusterProxy};
-use crate::model::Cluster;
+use crate::model::KubeCluster;
 
 /// Lines of stderr kept to explain a failed run.
 const STDERR_TAIL: usize = 40;
@@ -63,7 +63,7 @@ pub enum CliEvent {
 /// The Cluster a command runs against, and where its client comes from.
 #[derive(Clone)]
 pub struct ClusterAccess {
-    pub cluster: Cluster,
+    pub cluster: KubeCluster,
     pub clients: ClientSource,
 }
 

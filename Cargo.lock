@@ -2460,6 +2460,7 @@ dependencies = [
  "homeport-git",
  "homeport-hosts",
  "homeport-incus",
+ "homeport-kubernetes",
  "homeport-nomad",
  "homeport-registries",
  "homeport-settings",
@@ -2496,6 +2497,7 @@ dependencies = [
  "homeport-core",
  "homeport-git",
  "homeport-hosts",
+ "homeport-kubernetes",
  "homeport-registries",
  "homeport-settings",
  "homeport-stacks",
@@ -2511,34 +2513,18 @@ dependencies = [
 name = "homeport-clusters"
 version = "1.0.0-rc.1"
 dependencies = [
- "base64 0.22.1",
- "bytes",
- "futures-util",
- "getrandom 0.3.4",
  "homeport-core",
+ "homeport-kubernetes",
  "homeport-nomad",
  "homeport-storage",
- "homeport-transport",
  "http",
- "http-body-util",
- "hyper",
- "hyper-util",
- "jiff",
- "k8s-openapi",
  "kube",
- "log",
  "rusqlite",
- "rustls",
- "rustls-pki-types",
- "secrecy",
  "serde",
  "serde_json",
- "serde_yaml_ng",
- "shell-words",
  "specta",
  "tempfile",
  "tokio",
- "tower",
  "uuid",
 ]
 
@@ -2682,6 +2668,38 @@ dependencies = [
  "tokio",
  "tokio-rustls",
  "tokio-tungstenite",
+]
+
+[[package]]
+name = "homeport-kubernetes"
+version = "1.0.0-rc.1"
+dependencies = [
+ "base64 0.22.1",
+ "bytes",
+ "futures-util",
+ "getrandom 0.3.4",
+ "homeport-core",
+ "homeport-transport",
+ "http",
+ "http-body-util",
+ "hyper",
+ "hyper-util",
+ "jiff",
+ "k8s-openapi",
+ "kube",
+ "log",
+ "rustls",
+ "rustls-pki-types",
+ "secrecy",
+ "serde",
+ "serde_json",
+ "serde_yaml_ng",
+ "shell-words",
+ "specta",
+ "tempfile",
+ "tokio",
+ "tower",
+ "uuid",
 ]
 
 [[package]]

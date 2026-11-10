@@ -110,6 +110,7 @@ homeport-containerd = { path = "crates/containerd" }
 homeport-incus = { path = "crates/incus" }
 homeport-hosts = { path = "crates/hosts" }
 homeport-nomad = { path = "crates/nomad" }
+homeport-kubernetes = { path = "crates/kubernetes" }
 homeport-clusters = { path = "crates/clusters" }
 homeport-git = { path = "crates/git" }
 homeport-stacks = { path = "crates/stacks" }

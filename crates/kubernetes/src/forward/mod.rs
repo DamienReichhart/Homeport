@@ -24,11 +24,14 @@ use homeport_core::error::{AppError, AppResult, ErrorCode};
 
 use crate::{
     messages as msg,
-    registry::ClusterNotifier,
     resources::{forbidden_on, ApiType, On, ResourceKind},
 };
 
 pub type ForwardId = u32;
+
+/// Hears of the port forwards that end on their own: one that failed, or
+/// whose target is gone. The app tells the frontend.
+pub type OnForwardEnded = Arc<dyn Fn(&ForwardEvent) + Send + Sync>;
 
 /// What a forward reaches.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
@@ -105,15 +108,15 @@ type Open = Arc<Mutex<HashMap<ForwardId, Running>>>;
 pub struct PortForwards {
     next: AtomicU32,
     open: Open,
-    notifier: Arc<dyn ClusterNotifier>,
+    on_ended: OnForwardEnded,
 }
 
 impl PortForwards {
-    pub fn new(notifier: Arc<dyn ClusterNotifier>) -> Arc<Self> {
+    pub fn new(on_ended: OnForwardEnded) -> Arc<Self> {
         Arc::new(Self {
             next: AtomicU32::new(0),
             open: Arc::default(),
-            notifier,
+            on_ended,
         })
     }
 
@@ -155,7 +158,7 @@ impl PortForwards {
             connections: connections.clone(),
             pod: pod.clone(),
             open: self.open.clone(),
-            notifier: self.notifier.clone(),
+            on_ended: self.on_ended.clone(),
         };
         let mut open = self.open.lock().expect("port forwards lock poisoned");
         let tasks = listeners
@@ -229,7 +232,7 @@ struct Shared {
     /// The Pod and port connections go to, until it goes away.
     pod: Arc<Mutex<Option<(String, u16)>>>,
     open: Open,
-    notifier: Arc<dyn ClusterNotifier>,
+    on_ended: OnForwardEnded,
 }
 
 impl Shared {
@@ -240,7 +243,7 @@ impl Shared {
                 .expect("port forwards lock poisoned")
                 .remove(&self.id);
         }
-        self.notifier.port_forward(&ForwardEvent {
+        (self.on_ended)(&ForwardEvent {
             id: self.id,
             cluster_id: self.on.cluster.id.clone(),
             error,

@@ -1,5 +1,5 @@
 use super::*;
-use crate::model::{AuthMethod, ExecConfig, KubernetesConnection, KubernetesSecrets};
+use homeport_kubernetes::{AuthMethod, ExecConfig, KubernetesConnection, KubernetesSecrets};
 
 fn store() -> (Arc<Db>, ClusterStore) {
     let db = Arc::new(Db::open_in_memory().unwrap());

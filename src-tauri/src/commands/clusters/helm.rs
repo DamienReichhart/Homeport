@@ -3,14 +3,14 @@
 
 use tauri::{ipc::Channel, State};
 
-use homeport_clusters::{
+use homeport_core::streams::StreamId;
+use homeport_kubernetes::{
     helm::{
         ChartRepository, ChartVersion, Helm, InstallRequest, ReleaseDetails, ReleaseList,
         ReleasePreview, ReleaseRevision, RollbackRequest, UninstallRequest, UpgradeRequest,
     },
     proxy::CliEvent,
 };
-use homeport_core::streams::StreamId;
 
 use crate::{app::AppState, error::AppResult};
 
@@ -31,8 +31,9 @@ pub async fn clusters_helm_releases(
     let access = state.clusters.access(&id)?;
     let fallback = access
         .cluster
-        .kubernetes()
-        .and_then(|c| c.namespace.clone())
+        .connection
+        .namespace
+        .clone()
         .unwrap_or_else(|| "default".into());
     Helm::on(access)?
         .releases(namespace.as_deref(), Some(&fallback))

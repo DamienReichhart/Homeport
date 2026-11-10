@@ -3,13 +3,13 @@
 
 use tauri::{ipc::Channel, State};
 
-use homeport_clusters::resources::{
+use homeport_core::streams::StreamId;
+use homeport_kubernetes::resources::{
     self, ClusterNodeDetail, ClusterNodeView, ClusterServiceDetail, ClusterServiceView,
     ClusterSummary, ConfigMapDetail, ConfigMapView, EventView, IngressDetail, IngressView,
     NamespaceView, PodDetail, PodView, ResourceKind, RevealedValue, SecretDetail, SecretView,
     WorkloadDetail, WorkloadKind, WorkloadView,
 };
-use homeport_core::streams::StreamId;
 
 use super::on;
 use crate::{app::AppState, error::AppResult};

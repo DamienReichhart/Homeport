@@ -1,5 +1,5 @@
 use super::*;
-use crate::model::{AuthMethod, KubernetesConnection, KubernetesSecrets};
+use homeport_kubernetes::{AuthMethod, KubernetesConnection, KubernetesSecrets};
 
 #[test]
 fn clusters_round_trip_through_a_backup_under_another_key() {

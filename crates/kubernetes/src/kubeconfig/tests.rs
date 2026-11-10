@@ -1,7 +1,7 @@
 use base64::Engine as _;
 
 use super::*;
-use crate::model::ClusterConnection;
+use crate::model::KubeCluster;
 
 const CA: &str = "-----BEGIN CERTIFICATE-----\nMIIB\n-----END CERTIFICATE-----\n";
 
@@ -158,19 +158,16 @@ fn removed_auth_providers_say_how_to_switch() {
 
 #[test]
 fn contexts_list_every_one_with_its_problem() {
-    let clusters = [Cluster {
+    let clusters = [KubeCluster {
         id: "c1".into(),
         name: "Prod shop".into(),
-        kind: crate::ClusterKind::Kubernetes,
-        connection: ClusterConnection::Kubernetes(crate::model::KubernetesConnection {
+        connection: crate::model::KubernetesConnection {
             source: Some(crate::model::KubeconfigSource {
                 context: "prod".into(),
                 pasted: false,
             }),
             ..Default::default()
-        }),
-        enabled: true,
-        created_at: String::new(),
+        },
     }];
     let listed = contexts(&source(), &clusters);
     assert!(listed.paths.is_empty(), "pasted");

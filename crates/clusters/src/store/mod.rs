@@ -53,7 +53,7 @@ impl ClusterStore {
                 )
                 .optional()
             })?
-            .ok_or_else(|| AppError::not_found(msg::GONE))?
+            .ok_or_else(|| AppError::not_found(homeport_kubernetes::messages::GONE))?
     }
 
     pub fn create(&self, draft: ClusterDraft) -> AppResult<Cluster> {
@@ -108,7 +108,7 @@ impl ClusterStore {
             )
         })?;
         if n == 0 {
-            return Err(AppError::not_found(msg::GONE));
+            return Err(AppError::not_found(homeport_kubernetes::messages::GONE));
         }
         self.get(id)
     }
@@ -126,7 +126,7 @@ impl ClusterStore {
             .db
             .with(|c| c.execute("DELETE FROM clusters WHERE id = ?1", [id]))?;
         if n == 0 {
-            return Err(AppError::not_found(msg::GONE));
+            return Err(AppError::not_found(homeport_kubernetes::messages::GONE));
         }
         Ok(())
     }
@@ -143,7 +143,7 @@ impl ClusterStore {
                 )
                 .optional()
             })?
-            .ok_or_else(|| AppError::not_found(msg::GONE))?;
+            .ok_or_else(|| AppError::not_found(homeport_kubernetes::messages::GONE))?;
         let kind = parse_kind(kind)?;
         match sealed {
             Some(sealed) => Ok(ClusterSecrets::from_value(
@@ -161,7 +161,7 @@ impl ClusterStore {
     fn exec(&self, id: &str, sql: &str, value: impl rusqlite::ToSql) -> AppResult<Cluster> {
         let n = self.db.with(|c| c.execute(sql, (id, value)))?;
         if n == 0 {
-            return Err(AppError::not_found(msg::GONE));
+            return Err(AppError::not_found(homeport_kubernetes::messages::GONE));
         }
         self.get(id)
     }

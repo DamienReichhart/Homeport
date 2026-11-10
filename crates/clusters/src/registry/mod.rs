@@ -19,12 +19,16 @@ use tokio::task::JoinHandle;
 
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 
-use crate::{
+use homeport_kubernetes::{
     classify::classify,
     client::{self, IssuedCredentials, CONNECT_TIMEOUT},
     exec::{self, ClusterInfo, Issued},
+    messages as kube_msg, KubeCluster, KubernetesSecrets,
+};
+
+use crate::{
     messages as msg,
-    model::{Cluster, ClusterId, ClusterKind, ClusterSecrets, KubernetesSecrets},
+    model::{Cluster, ClusterId, ClusterKind, ClusterSecrets},
     store::ClusterStore,
 };
 
@@ -121,9 +125,9 @@ impl ClusterRegistry {
 
     /// The kube-rs client of a connected Kubernetes Cluster, and the Cluster
     /// itself for naming it in errors. Refused for a Cluster of another kind.
-    pub fn client(&self, id: &str) -> AppResult<(kube::Client, Cluster)> {
+    pub fn client(&self, id: &str) -> AppResult<(kube::Client, KubeCluster)> {
         match self.live(id, ClusterKind::Kubernetes)? {
-            (ClusterClient::Kubernetes(client), cluster) => Ok((client, cluster)),
+            (ClusterClient::Kubernetes(client), cluster) => Ok((client, cluster.kube()?)),
             (ClusterClient::Nomad(_), cluster) => Err(cluster.wrong_kind()),
         }
     }
@@ -229,11 +233,11 @@ impl ClusterRegistry {
         secrets: &KubernetesSecrets,
     ) -> AppResult<(kube::Client, ClusterStatus)> {
         let issued = self.credentials(cluster, secrets, false).await?;
-        let client = client::client(cluster, secrets, issued.as_ref())?;
+        let client = client::client(&cluster.kube()?, secrets, issued.as_ref())?;
         match version(cluster, &client).await {
             Err(e) if e.is(ErrorCode::ClusterUnauthorized) && secrets.exec.is_some() => {
                 let issued = self.credentials(cluster, secrets, true).await?;
-                let client = client::client(cluster, secrets, issued.as_ref())?;
+                let client = client::client(&cluster.kube()?, secrets, issued.as_ref())?;
                 let status = version(cluster, &client).await?;
                 Ok((client, status))
             }
@@ -259,7 +263,7 @@ impl ClusterRegistry {
             return Ok(None);
         }
         let issued = self.credentials(cluster, secrets, true).await?;
-        let client = client::client(cluster, secrets, issued.as_ref())?;
+        let client = client::client(&cluster.kube()?, secrets, issued.as_ref())?;
         if let Some(entry) = self.lock().get_mut(&cluster.id) {
             entry.client = Some(ClusterClient::Kubernetes(client.clone()));
         }
@@ -328,11 +332,12 @@ async fn version(cluster: &Cluster, client: &kube::Client) -> AppResult<ClusterS
         Ok(Ok(info)) => info,
         Ok(Err(e)) => return Err(classify(&cluster.name, cluster.address(), &e)),
         Err(elapsed) => {
-            return Err(
-                AppError::new(ErrorCode::Timeout, msg::TIMEOUT.with("name", &cluster.name))
-                    .with_hint(msg::TIMEOUT_HINT)
-                    .with_cause(&elapsed),
+            return Err(AppError::new(
+                ErrorCode::Timeout,
+                kube_msg::TIMEOUT.with("name", &cluster.name),
             )
+            .with_hint(kube_msg::TIMEOUT_HINT)
+            .with_cause(&elapsed))
         }
     };
     Ok(ClusterStatus::Connected {
@@ -350,9 +355,12 @@ async fn nomad_status(
     let agent = tokio::time::timeout(CONNECT_TIMEOUT + CONNECT_TIMEOUT, client.agent())
         .await
         .map_err(|elapsed| {
-            AppError::new(ErrorCode::Timeout, msg::TIMEOUT.with("name", &cluster.name))
-                .with_hint(msg::TIMEOUT_HINT)
-                .with_cause(&elapsed)
+            AppError::new(
+                ErrorCode::Timeout,
+                kube_msg::TIMEOUT.with("name", &cluster.name),
+            )
+            .with_hint(kube_msg::TIMEOUT_HINT)
+            .with_cause(&elapsed)
         })??;
     Ok(ClusterStatus::Connected {
         server_version: agent.version.unwrap_or_default(),

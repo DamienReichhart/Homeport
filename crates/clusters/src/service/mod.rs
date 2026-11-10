@@ -7,13 +7,17 @@ use serde::Serialize;
 
 use homeport_core::error::{AppError, AppResult};
 
-use crate::{
+use homeport_kubernetes::{
     forward::PortForwards,
     kubeconfig::{self, ContextChoice, KubeContexts, Source},
+    proxy::ClusterAccess,
+    KubeCluster,
+};
+
+use crate::{
     messages as msg,
     model::{Cluster, ClusterConnection, ClusterSecrets, NomadSecrets},
     nomad::NomadForm,
-    proxy::ClusterAccess,
     registry::{ClusterNotifier, ClusterRegistry, ClusterStatus},
     store::{ClusterDraft, ClusterStore},
 };
@@ -39,7 +43,10 @@ impl ClusterService {
     pub fn new(store: Arc<ClusterStore>, notifier: Arc<dyn ClusterNotifier>) -> Self {
         Self {
             registry: ClusterRegistry::new(store.clone(), notifier.clone()),
-            forwards: PortForwards::new(notifier),
+            forwards: PortForwards::new({
+                let notifier = notifier.clone();
+                Arc::new(move |event| notifier.port_forward(event))
+            }),
             store,
         }
     }
@@ -163,10 +170,21 @@ impl ClusterService {
         }
     }
 
+    /// The Kubernetes Clusters Homeport knows, as the Kubernetes crate takes
+    /// them.
+    pub fn kubernetes(&self) -> AppResult<Vec<KubeCluster>> {
+        Ok(self
+            .store
+            .list()?
+            .iter()
+            .filter_map(|c| c.kube().ok())
+            .collect())
+    }
+
     /// The contexts of the pasted kubeconfig `text`, or of this machine's.
     pub fn kubeconfig_contexts(&self, text: Option<&str>) -> AppResult<KubeContexts> {
         let source = Source::of(text)?;
-        Ok(kubeconfig::contexts(&source, &self.store.list()?))
+        Ok(kubeconfig::contexts(&source, &self.kubernetes()?))
     }
 
     /// Makes a Cluster of each context picked, under the name given, and

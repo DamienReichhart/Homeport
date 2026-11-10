@@ -10,7 +10,7 @@ use secrecy::SecretString;
 use homeport_core::error::AppResult;
 
 use crate::classify::{classify, credentials_unusable};
-use crate::model::{Cluster, KubernetesSecrets};
+use crate::model::{KubeCluster, KubernetesSecrets};
 
 /// How long connecting to an API server may take.
 pub const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
@@ -25,11 +25,11 @@ pub struct IssuedCredentials {
 
 /// The kube-rs configuration of `cluster`.
 pub fn config(
-    cluster: &Cluster,
+    cluster: &KubeCluster,
     secrets: &KubernetesSecrets,
     issued: Option<&IssuedCredentials>,
 ) -> AppResult<kube::Config> {
-    let connection = cluster.kubernetes_or_refuse()?;
+    let connection = &cluster.connection;
     let uri: http::Uri = connection
         .server
         .parse()
@@ -103,7 +103,7 @@ pub fn config(
 
 /// A client for `cluster`. Must run inside a Tokio runtime.
 pub fn client(
-    cluster: &Cluster,
+    cluster: &KubeCluster,
     secrets: &KubernetesSecrets,
     issued: Option<&IssuedCredentials>,
 ) -> AppResult<kube::Client> {
@@ -117,20 +117,17 @@ pub fn client(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::{ClusterConnection, ClusterKind, KubernetesConnection};
+    use crate::model::{KubeCluster, KubernetesConnection};
 
-    fn cluster() -> Cluster {
-        Cluster {
+    fn cluster() -> KubeCluster {
+        KubeCluster {
             id: "c".into(),
             name: "kind-dev".into(),
-            kind: ClusterKind::Kubernetes,
-            connection: ClusterConnection::Kubernetes(KubernetesConnection {
+            connection: KubernetesConnection {
                 server: "https://127.0.0.1:6443".into(),
                 namespace: Some("shop".into()),
                 ..Default::default()
-            }),
-            enabled: true,
-            created_at: String::new(),
+            },
         }
     }
 

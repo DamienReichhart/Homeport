@@ -24,5 +24,6 @@ serde_json.workspace = true
 specta.workspace = true
 
 [dev-dependencies]
+homeport-kubernetes.workspace = true
 tempfile.workspace = true
 tokio.workspace = true

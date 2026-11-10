@@ -15,7 +15,7 @@ use serde_json::{json, Value};
 use homeport_core::{error::ErrorCode, streams::Streams};
 
 use super::*;
-use crate::model::{Cluster, ClusterConnection, ClusterKind, KubernetesConnection};
+use crate::model::{KubeCluster, KubernetesConnection};
 
 /// A tick short enough for tests. They run on Tokio's paused clock, which
 /// moves only when every task waits, so ticks and timeouts are exact whatever
@@ -108,16 +108,13 @@ fn fake(answer: impl Fn(&str, usize) -> (u16, Value) + Send + Sync + 'static) ->
             )
         }
     });
-    let cluster = Cluster {
+    let cluster = KubeCluster {
         id: "c".into(),
         name: "kind-dev".into(),
-        kind: ClusterKind::Kubernetes,
-        connection: ClusterConnection::Kubernetes(KubernetesConnection {
+        connection: KubernetesConnection {
             server: "https://127.0.0.1:6443".into(),
             ..Default::default()
-        }),
-        enabled: true,
-        created_at: String::new(),
+        },
     };
     let on = On {
         client: kube::Client::new(service, "default"),

@@ -12,7 +12,7 @@ use serde::Serialize;
 use crate::{
     client,
     kubeconfig::{self, AddedCluster, Source},
-    model::{Cluster, ClusterConnection, ClusterKind},
+    model::KubeCluster,
 };
 
 /// How long a local API server may take to say its version.
@@ -151,7 +151,7 @@ fn candidates(config: &Kubeconfig) -> Vec<(LocalTool, String, String)> {
 
 /// The local clusters this computer's kubeconfig reaches, each probed; an
 /// empty list without a kubeconfig.
-pub async fn detect(clusters: &[Cluster]) -> Vec<LocalCluster> {
+pub async fn detect(clusters: &[KubeCluster]) -> Vec<LocalCluster> {
     let Ok(source) = Source::local() else {
         return vec![];
     };
@@ -167,8 +167,9 @@ pub async fn detect(clusters: &[Cluster]) -> Vec<LocalCluster> {
                     added: clusters
                         .iter()
                         .find(|c| {
-                            c.kubernetes()
-                                .and_then(|k| k.source.as_ref())
+                            c.connection
+                                .source
+                                .as_ref()
                                 .is_some_and(|s| s.context == context)
                         })
                         .map(|c| AddedCluster {
@@ -190,13 +191,10 @@ async fn probe(source: &Source, context: &str) -> Option<String> {
         // Local clusters don't sign in with plugins; don't run one to probe.
         return None;
     }
-    let cluster = Cluster {
+    let cluster = KubeCluster {
         id: String::new(),
         name: context.to_owned(),
-        kind: ClusterKind::Kubernetes,
-        connection: ClusterConnection::Kubernetes(connection),
-        enabled: true,
-        created_at: String::new(),
+        connection,
     };
     let client = client::client(&cluster, &secrets, None).ok()?;
     match tokio::time::timeout(PROBE_TIMEOUT, client.apiserver_version()).await {

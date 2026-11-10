@@ -4,11 +4,11 @@
 //! Without that context in the kubeconfig (as in CI, which runs the
 //! ignored Engine tests), it says so and passes.
 
-use homeport_clusters::{
+use homeport_kubernetes::{
     client,
     kubeconfig::{self, Source},
     resources::{On, ResourceKind, WorkloadKind},
-    Cluster, ClusterKind,
+    KubeCluster,
 };
 
 fn context() -> String {
@@ -24,13 +24,10 @@ fn connect() -> Option<On> {
         eprintln!("skipped: no kubeconfig context {}", context());
         return None;
     };
-    let cluster = Cluster {
+    let cluster = KubeCluster {
         id: "test".into(),
         name: context(),
-        kind: ClusterKind::Kubernetes,
-        connection: homeport_clusters::ClusterConnection::Kubernetes(connection),
-        enabled: true,
-        created_at: String::new(),
+        connection,
     };
     Some(On {
         client: client::client(&cluster, &secrets, None).unwrap(),
@@ -86,13 +83,13 @@ async fn a_pod_gives_its_logs_and_a_terminal_then_is_deleted() {
         time::Duration,
     };
 
-    use homeport_clusters::{
-        logs::{PodLogSource, PodLogTarget},
-        terminal::{self, PodExecOptions},
-    };
     use homeport_core::{
         logs::{LogEvent, LogOptions},
         terminal::ExecEvent,
+    };
+    use homeport_kubernetes::{
+        logs::{PodLogSource, PodLogTarget},
+        terminal::{self, PodExecOptions},
     };
     use k8s_openapi::api::core::v1::Pod;
     use kube::api::{Api, PostParams};
@@ -206,18 +203,10 @@ async fn a_pod_gives_its_logs_and_a_terminal_then_is_deleted() {
 async fn a_forwarded_port_reaches_the_pod_until_stopped() {
     use std::{sync::Arc, time::Duration};
 
-    use homeport_clusters::{
-        forward::{ForwardTarget, PortForwards},
-        registry::{ClusterNotifier, ClusterStatus},
-    };
+    use homeport_kubernetes::forward::{ForwardTarget, PortForwards};
     use k8s_openapi::api::core::v1::Pod;
     use kube::api::{Api, PostParams};
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
-
-    struct Silent;
-    impl ClusterNotifier for Silent {
-        fn cluster_status(&self, _: &str, _: &ClusterStatus) {}
-    }
 
     let Some(on) = connect() else { return };
     let name = format!("homeport-forward-{}", std::process::id());
@@ -242,7 +231,7 @@ async fn a_forwarded_port_reaches_the_pod_until_stopped() {
         tokio::time::sleep(Duration::from_millis(500)).await;
     }
 
-    let forwards = PortForwards::new(Arc::new(Silent));
+    let forwards = PortForwards::new(Arc::new(|_| {}));
     let target = ForwardTarget::Pod {
         namespace: "default".into(),
         name: name.clone(),
@@ -286,7 +275,7 @@ async fn a_forwarded_port_reaches_the_pod_until_stopped() {
 #[tokio::test]
 #[ignore = "needs a kind cluster"]
 async fn applying_the_same_manifest_twice_changes_nothing_the_second_time() {
-    use homeport_clusters::apply::ApplyAction;
+    use homeport_kubernetes::apply::ApplyAction;
 
     let Some(on) = connect() else { return };
     let name = format!("homeport-apply-{}", std::process::id());
@@ -332,16 +321,16 @@ async fn kubectl_reaches_the_cluster_through_the_private_proxy() {
         return;
     };
     let client = on.client.clone();
-    let access = homeport_clusters::proxy::ClusterAccess {
+    let access = homeport_kubernetes::proxy::ClusterAccess {
         cluster: on.cluster.clone(),
         clients: std::sync::Arc::new(move || Ok(client.clone())),
     };
-    let command = homeport_clusters::proxy::CliCommand {
+    let command = homeport_kubernetes::proxy::CliCommand {
         program: kubectl,
         args: vec!["get".into(), "ns".into(), "-o".into(), "name".into()],
         ..Default::default()
     };
-    let out = homeport_clusters::proxy::output(&command, Some(&access), |f| {
+    let out = homeport_kubernetes::proxy::output(&command, Some(&access), |f| {
         panic!("kubectl failed: {f:?}")
     })
     .await
@@ -357,7 +346,7 @@ async fn metrics_come_from_metrics_server_or_say_it_isnt_installed() {
         time::Duration,
     };
 
-    use homeport_clusters::metrics::{MetricsEvent, MetricsTarget, EVERY};
+    use homeport_kubernetes::metrics::{MetricsEvent, MetricsTarget, EVERY};
 
     let Some(on) = connect() else { return };
     let served = on.serves_metrics().await.unwrap();

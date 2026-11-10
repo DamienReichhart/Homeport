@@ -35,7 +35,7 @@ use serde::de::DeserializeOwned;
 
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 
-use crate::{classify::classify, messages as msg, model::Cluster};
+use crate::{classify::classify, messages as msg, model::KubeCluster};
 
 pub use self::{
     api_type::ApiType,
@@ -65,7 +65,7 @@ const PAGE: u32 = 500;
 #[derive(Clone)]
 pub struct On {
     pub client: kube::Client,
-    pub cluster: Cluster,
+    pub cluster: KubeCluster,
 }
 
 impl On {

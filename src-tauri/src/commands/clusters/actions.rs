@@ -4,7 +4,7 @@
 
 use tauri::State;
 
-use homeport_clusters::{
+use homeport_kubernetes::{
     apply::ApplyResult,
     resources::{ApiType, ResourceKind, WorkloadKind},
 };

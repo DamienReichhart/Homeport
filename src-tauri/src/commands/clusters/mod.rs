@@ -12,14 +12,14 @@ pub mod streams;
 
 use tauri::State;
 
-use homeport_clusters::resources::On;
-use homeport_clusters::{
-    detect::{self, LocalClusters},
-    kubeconfig::{ContextChoice, KubeContexts},
-    service::ClusterView,
-};
+use homeport_clusters::service::ClusterView;
 use homeport_core::host::HostConnection;
 use homeport_engine::containers;
+use homeport_kubernetes::resources::On;
+use homeport_kubernetes::{
+    detect::{self, LocalClusters},
+    kubeconfig::{ContextChoice, KubeContexts},
+};
 
 use crate::{app::AppState, error::AppResult};
 
@@ -109,7 +109,7 @@ pub async fn clusters_refresh(
 #[tauri::command]
 #[specta::specta]
 pub async fn clusters_detect_local(state: State<'_, AppState>) -> AppResult<LocalClusters> {
-    let found = detect::detect(&state.clusters.store.list()?).await;
+    let found = detect::detect(&state.clusters.kubernetes()?).await;
     let mut labels = vec![];
     for host in state.hosts.store.list()? {
         if !matches!(host.connection, HostConnection::Local { .. }) {

@@ -4,13 +4,11 @@ use serde::Serialize;
 use tauri::{AppHandle, Manager};
 use tauri_specta::Event;
 
-use homeport_clusters::{
-    forward::ForwardEvent,
-    registry::{ClusterNotifier, ClusterStatus},
-};
+use homeport_clusters::registry::{ClusterNotifier, ClusterStatus};
 use homeport_core::error::AppError;
 use homeport_engine::volumes::helper;
 use homeport_hosts::registry::{EngineEvent, HostStatus, Notifier};
+use homeport_kubernetes::forward::ForwardEvent;
 use homeport_stacks::StackOwner;
 
 use super::{notifications::Notifications, AppState};

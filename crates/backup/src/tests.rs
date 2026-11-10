@@ -4,7 +4,7 @@ use homeport_clusters::{
     registry::{ClusterNotifier, ClusterStatus},
     service::ClusterService,
     store::{ClusterDraft, ClusterStore},
-    ClusterConnection, ClusterSecrets, KubernetesConnection, KubernetesSecrets,
+    ClusterConnection, ClusterSecrets,
 };
 use homeport_core::{
     error::ErrorCode,
@@ -21,6 +21,7 @@ use homeport_hosts::{
     service::HostService,
     store::{HostDraft, HostStore},
 };
+use homeport_kubernetes::{KubernetesConnection, KubernetesSecrets};
 use homeport_registries::{RegistryDraft, RegistryStore};
 use homeport_settings::Theme;
 use homeport_stacks::{

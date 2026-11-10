@@ -3,7 +3,7 @@
 
 use tauri::State;
 
-use homeport_clusters::forward::{self, ForwardId, ForwardTarget, PortForward};
+use homeport_kubernetes::forward::{self, ForwardId, ForwardTarget, PortForward};
 
 use super::on;
 use crate::{app::AppState, error::AppResult};

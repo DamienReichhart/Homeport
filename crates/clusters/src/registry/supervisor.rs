@@ -8,8 +8,10 @@ use homeport_core::{
 };
 
 use super::{ClusterClient, ClusterRegistry, ClusterStatus};
+use homeport_kubernetes::classify;
+
 use crate::{
-    classify, messages as msg,
+    messages as msg,
     model::{Cluster, ClusterId, ClusterKind, ClusterSecrets},
 };
 

@@ -1,7 +1,7 @@
 //! What the registry reports as it happens.
 
 use super::ClusterStatus;
-use crate::forward::ForwardEvent;
+use homeport_kubernetes::forward::ForwardEvent;
 
 /// Receives each Cluster's status changes; the app forwards them to the frontend.
 pub trait ClusterNotifier: Send + Sync + 'static {

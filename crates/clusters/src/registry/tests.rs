@@ -5,13 +5,11 @@ use tokio::{
     net::TcpListener,
 };
 
+use homeport_kubernetes::KubernetesConnection;
 use homeport_storage::{Db, SecretBox};
 
 use super::*;
-use crate::{
-    model::{ClusterConnection, KubernetesConnection, KubernetesSecrets},
-    store::ClusterDraft,
-};
+use crate::{model::ClusterConnection, store::ClusterDraft};
 
 #[derive(Default)]
 struct Recorder(Mutex<Vec<(String, ClusterStatus)>>);
@@ -191,7 +189,7 @@ mod exec_plugins {
     use std::os::unix::fs::PermissionsExt;
 
     use super::*;
-    use crate::model::ExecConfig;
+    use homeport_kubernetes::ExecConfig;
 
     /// A plugin that counts its runs in `runs` and issues a token expiring at `expiry`.
     fn counting_plugin(dir: &std::path::Path, expiry: &str) -> ExecConfig {
