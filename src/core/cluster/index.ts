@@ -5,9 +5,18 @@ export { clusterQueries, useClusters } from './api/queries';
 export { clusterResourceQueries } from './api/resources';
 export { useHelm } from './helm/useHelm';
 export { useClusterStatusUpdates } from './live/useClusterStatusUpdates';
+export { useMetrics } from './live/useMetrics';
 export { useResourceWatch } from './live/useResourceWatch';
 export { age, podTone, workloadHealth } from './model/health';
 export { deleteConfirmation, targetKind, type DeleteTarget } from './model/deletion';
+export {
+  formatCpu,
+  measureOf,
+  podKey,
+  usageFormat,
+  type Measure,
+  type MetricsState,
+} from './model/metrics';
 export { chosenNamespace } from './model/namespace';
 export { stillListed } from './model/selection';
 export {
@@ -33,6 +42,9 @@ export { DeleteSelected } from './ui/DeleteSelected';
 export { HealthBadge } from './ui/HealthBadge';
 export { Labels } from './ui/Labels';
 export { LocalClusters } from './ui/LocalClusters';
+export { MetricsNotice } from './ui/metrics/MetricsNotice';
+export { UsageCell } from './ui/metrics/UsageCell';
+export { UsageChart, type ChartLine } from './ui/metrics/UsageChart';
 export { NamespacePicker } from './ui/NamespacePicker';
 export { ObjectEvents } from './ui/ObjectEvents';
 export { ResourceList, type Section } from './ui/ResourceList';

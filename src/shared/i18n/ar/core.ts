@@ -169,4 +169,21 @@ export default {
   'core.yaml.edit': 'تحرير',
   'core.yaml.editTitle': 'تحرير {kind} {name}',
   'core.yaml.editDescription': 'على {cluster}. غيّر YAML، وعاين ما يغيّره، ثم طبّقه.',
+  'core.metrics.cpu': 'المعالج',
+  'core.metrics.memory': 'الذاكرة',
+  'core.metrics.used': 'المستخدم',
+  'core.metrics.request': 'الطلب',
+  'core.metrics.limit': 'الحد',
+  'core.metrics.allocatable': 'القابل للتخصيص',
+  'core.metrics.ofLimit': '{percent} من الحد',
+  'core.metrics.ofRequest': '{percent} من الطلب',
+  'core.metrics.ofAllocatable': '{percent} من القابل للتخصيص',
+  'core.metrics.notInstalled.title': 'metrics-server غير مثبّت',
+  'core.metrics.notInstalled.body':
+    'لا يقدّم هذا العنقود Metrics API التي تأتي منها بيانات المعالج والذاكرة. لا يثبّت Homeport أي شيء على العنقود: بعد تثبيت metrics-server تظهر هنا.',
+  'core.metrics.notInstalled.link': 'كيفية تثبيت metrics-server',
+  'core.metrics.notResponding':
+    'لا تستجيب Metrics API: ربما يكون metrics-server قيد البدء أو لا يعمل. يعيد Homeport المحاولة كل 15 ثانية.',
+  'core.metrics.waiting': 'في انتظار أول عيّنة من metrics-server…',
+  'core.metrics.kept': 'عيّنة كل 15 ثانية، تُحفظ ما دامت هذه الصفحة مفتوحة، 15 دقيقة على الأكثر.',
 } satisfies Translation<typeof en>;

@@ -168,4 +168,22 @@ export default {
   'core.yaml.editTitle': 'Edit {kind} {name}',
   'core.yaml.editDescription':
     'On {cluster}. Change the YAML, preview what it changes, then apply it.',
+  'core.metrics.cpu': 'CPU',
+  'core.metrics.memory': 'Memory',
+  'core.metrics.used': 'Used',
+  'core.metrics.request': 'Request',
+  'core.metrics.limit': 'Limit',
+  'core.metrics.allocatable': 'Allocatable',
+  'core.metrics.ofLimit': '{percent} of limit',
+  'core.metrics.ofRequest': '{percent} of request',
+  'core.metrics.ofAllocatable': '{percent} of allocatable',
+  'core.metrics.notInstalled.title': 'metrics-server isn’t installed',
+  'core.metrics.notInstalled.body':
+    'This cluster doesn’t serve the Metrics API, which CPU and memory come from. Homeport installs nothing on a cluster: once metrics-server is installed, they show here.',
+  'core.metrics.notInstalled.link': 'How to install metrics-server',
+  'core.metrics.notResponding':
+    'The Metrics API doesn’t answer: metrics-server may be starting, or not running. Homeport tries again every 15 seconds.',
+  'core.metrics.waiting': 'Waiting for the first sample from metrics-server…',
+  'core.metrics.kept':
+    'A sample every 15 seconds, kept while this page is open, for 15 minutes at most.',
 } as const;

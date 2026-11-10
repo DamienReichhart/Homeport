@@ -172,4 +172,22 @@ export default {
   'core.yaml.editTitle': '{kind} {name} 편집',
   'core.yaml.editDescription':
     '{cluster} 클러스터에서. YAML을 변경하고, 무엇이 바뀌는지 미리 본 다음 적용하세요.',
+  'core.metrics.cpu': 'CPU',
+  'core.metrics.memory': '메모리',
+  'core.metrics.used': '사용량',
+  'core.metrics.request': '요청',
+  'core.metrics.limit': '제한',
+  'core.metrics.allocatable': '할당 가능',
+  'core.metrics.ofLimit': '제한의 {percent}',
+  'core.metrics.ofRequest': '요청의 {percent}',
+  'core.metrics.ofAllocatable': '할당 가능량의 {percent}',
+  'core.metrics.notInstalled.title': 'metrics-server가 설치되어 있지 않습니다',
+  'core.metrics.notInstalled.body':
+    '이 클러스터는 CPU와 메모리 값을 가져오는 Metrics API를 제공하지 않습니다. Homeport는 클러스터에 아무것도 설치하지 않습니다. metrics-server를 설치하면 여기에 표시됩니다.',
+  'core.metrics.notInstalled.link': 'metrics-server 설치 방법',
+  'core.metrics.notResponding':
+    'Metrics API가 응답하지 않습니다. metrics-server가 시작 중이거나 실행되고 있지 않을 수 있습니다. Homeport는 15초마다 다시 시도합니다.',
+  'core.metrics.waiting': 'metrics-server의 첫 샘플을 기다리는 중…',
+  'core.metrics.kept':
+    '15초마다 샘플을 받아, 이 페이지가 열려 있는 동안 최대 15분 동안 보관합니다.',
 } satisfies Translation<typeof en>;

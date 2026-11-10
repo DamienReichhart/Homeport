@@ -172,4 +172,22 @@ export default {
   'core.yaml.editTitle': '{kind} {name} संपादित करें',
   'core.yaml.editDescription':
     '{cluster} पर। YAML बदलें, देखें कि यह क्या बदलता है, फिर इसे लागू करें।',
+  'core.metrics.cpu': 'CPU',
+  'core.metrics.memory': 'मेमोरी',
+  'core.metrics.used': 'इस्तेमाल',
+  'core.metrics.request': 'रिक्वेस्ट',
+  'core.metrics.limit': 'लिमिट',
+  'core.metrics.allocatable': 'आवंटन योग्य',
+  'core.metrics.ofLimit': 'लिमिट का {percent}',
+  'core.metrics.ofRequest': 'रिक्वेस्ट का {percent}',
+  'core.metrics.ofAllocatable': 'आवंटन योग्य का {percent}',
+  'core.metrics.notInstalled.title': 'metrics-server इंस्टॉल नहीं है',
+  'core.metrics.notInstalled.body':
+    'यह क्लस्टर Metrics API नहीं देता, जिससे CPU और मेमोरी की जानकारी आती है। Homeport किसी क्लस्टर पर कुछ भी इंस्टॉल नहीं करता: metrics-server इंस्टॉल होने के बाद वे यहाँ दिखेंगे।',
+  'core.metrics.notInstalled.link': 'metrics-server कैसे इंस्टॉल करें',
+  'core.metrics.notResponding':
+    'Metrics API जवाब नहीं दे रहा: हो सकता है metrics-server शुरू हो रहा हो, या चल न रहा हो। Homeport हर 15 सेकंड में फिर कोशिश करता है।',
+  'core.metrics.waiting': 'metrics-server के पहले सैंपल का इंतज़ार है…',
+  'core.metrics.kept':
+    'हर 15 सेकंड में एक सैंपल, जो इस पेज के खुले रहने तक, ज़्यादा से ज़्यादा 15 मिनट तक रखा जाता है।',
 } satisfies Translation<typeof en>;
