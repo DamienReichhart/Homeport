@@ -49,9 +49,10 @@ fn a_new_snapshot_may_expire_but_not_in_the_past() {
 #[tokio::test]
 #[ignore = "needs a local Incus"]
 async fn incus_live_snapshots_are_taken_restored_and_deleted() {
-    use crate::{
-        instances::{tests::live_instance, InstanceAction},
+    use crate::instances::{
         terminal::{IncusExecOptions, IncusTerminal},
+        tests::live_instance,
+        InstanceAction,
     };
     let incus = crate::instances::tests::live().await;
     let name = format!("homeport-snap-{}", std::process::id());
@@ -74,9 +75,11 @@ async fn incus_live_snapshots_are_taken_restored_and_deleted() {
                 .await
                 .unwrap();
             let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
-            tokio::spawn(crate::terminal::pump(session, output, move |e| {
-                tx.send(e).is_ok()
-            }));
+            tokio::spawn(crate::instances::terminal::pump(
+                session,
+                output,
+                move |e| tx.send(e).is_ok(),
+            ));
             let mut text = String::new();
             while let Some(e) = rx.recv().await {
                 match e {

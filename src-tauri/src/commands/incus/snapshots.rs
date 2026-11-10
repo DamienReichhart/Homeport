@@ -2,7 +2,7 @@
 
 use tauri::State;
 
-use homeport_incus::snapshots::{self, IncusSnapshot, SnapshotRequest};
+use homeport_incus::instances::snapshots::{self, IncusSnapshot, SnapshotRequest};
 
 use crate::{app::AppState, error::AppResult};
 

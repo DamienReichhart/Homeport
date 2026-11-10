@@ -11,10 +11,12 @@ use homeport_core::{
 use homeport_transport::http::Request;
 
 use crate::{
-    client::{scoped, segment, Incus},
+    api::{
+        client::{scoped, segment, Incus},
+        operations::{self, Operation},
+    },
     instances::InstanceType,
     messages as msg,
-    operations::{self, Operation},
 };
 
 /// One image kept on the Host.
@@ -300,5 +302,6 @@ fn not_found(error: AppError, fingerprint: &str) -> AppError {
     }
 }
 
+pub mod simplestreams;
 #[cfg(test)]
 mod tests;

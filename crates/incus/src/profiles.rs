@@ -10,7 +10,7 @@ use homeport_core::error::{AppError, AppResult, ErrorCode};
 use homeport_transport::http::Request;
 
 use crate::{
-    client::{if_match, scoped, segment, Incus},
+    api::client::{if_match, scoped, segment, Incus},
     messages as msg,
 };
 

@@ -9,8 +9,11 @@ use homeport_core::error::{AppError, AppResult, ErrorCode};
 use homeport_transport::http::Request;
 
 use crate::{
-    client::{scoped, segment, Incus},
-    error, messages as msg,
+    api::{
+        client::{scoped, segment, Incus},
+        error,
+    },
+    messages as msg,
 };
 
 /// How often a running operation is asked about.

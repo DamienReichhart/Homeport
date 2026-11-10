@@ -3,7 +3,7 @@
 use tauri::{ipc::Channel, State};
 
 use homeport_core::terminal::ExecEvent;
-use homeport_incus::terminal::{self, IncusExecOptions, IncusTerminal, SessionId};
+use homeport_incus::instances::terminal::{self, IncusExecOptions, IncusTerminal, SessionId};
 
 use crate::{app::AppState, error::AppResult};
 

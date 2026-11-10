@@ -9,9 +9,9 @@ use homeport_core::error::{AppError, AppResult, ErrorCode};
 use homeport_transport::http::Request;
 
 use crate::{
-    client::{scoped, segment, Incus},
+    api::client::{scoped, segment, Incus},
+    instances::usage::{self, IncusUser},
     messages as msg,
-    usage::{self, IncusUser},
 };
 
 /// One storage pool.
@@ -198,7 +198,7 @@ pub async fn create_volume(
         .run(
             project,
             Request::post(path).json(&volume_body(request))?,
-            crate::operations::LONG,
+            crate::api::operations::LONG,
         )
         .await
         .map(drop)
@@ -223,7 +223,7 @@ pub async fn delete_volume(incus: &Incus, project: &str, pool: &str, name: &str)
         .with_hint(msg::VOLUME_IN_USE_HINT));
     }
     incus
-        .run(project, Request::delete(path), crate::operations::LONG)
+        .run(project, Request::delete(path), crate::api::operations::LONG)
         .await
         .map(drop)
 }

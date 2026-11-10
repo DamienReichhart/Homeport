@@ -218,7 +218,7 @@ mod tests {
     use super::*;
 
     /// Four products of images.linuxcontainers.org's index, two builds each.
-    const INDEX: &[u8] = include_bytes!("testdata/simplestreams.json");
+    const INDEX: &[u8] = include_bytes!("../testdata/simplestreams.json");
 
     #[test]
     fn images_are_read_for_the_hosts_architecture() {

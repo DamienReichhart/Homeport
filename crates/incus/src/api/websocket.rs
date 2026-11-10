@@ -12,7 +12,10 @@ use tokio_tungstenite::{
 use homeport_core::error::{reach::classified_cause, AppError, AppResult, ErrorCode};
 use homeport_transport::{BoxStream, CONNECT_TIMEOUT};
 
-use crate::{client::Incus, error, messages as msg};
+use crate::{
+    api::{client::Incus, error},
+    messages as msg,
+};
 
 pub(crate) type Socket = WebSocketStream<BoxStream>;
 

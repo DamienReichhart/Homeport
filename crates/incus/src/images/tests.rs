@@ -87,7 +87,7 @@ async fn incus_live_images_are_copied_aliased_and_deleted() {
     let alias = std::env::var("HOMEPORT_INCUS_ALIAS").unwrap_or_else(|_| "alpine/3.21".into());
     let mut events = Vec::new();
     let copy_of = ImageCopy {
-        server: crate::simplestreams::DEFAULT_SERVER.into(),
+        server: crate::images::simplestreams::DEFAULT_SERVER.into(),
         alias: alias.clone(),
         kind: InstanceType::Container,
         auto_update: false,

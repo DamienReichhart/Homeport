@@ -11,7 +11,10 @@ use homeport_transport::{
     Dialer, CONNECT_TIMEOUT,
 };
 
-use crate::{error, messages as msg, operations::Operation};
+use crate::{
+    api::{error, operations::Operation},
+    messages as msg,
+};
 
 /// The API extensions every Incus Homeport connects to has: Incus 6.0
 /// and later have them all.
@@ -259,7 +262,7 @@ impl Incus {
     ) -> AppResult<Operation> {
         match self.start(request).await? {
             Some(operation) => {
-                crate::operations::wait(self, project, operation, timeout, progress).await
+                crate::api::operations::wait(self, project, operation, timeout, progress).await
             }
             None => Ok(Operation::done()),
         }

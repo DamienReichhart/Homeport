@@ -8,7 +8,7 @@ use tokio_tungstenite::tungstenite::Message;
 
 use homeport_core::error::AppResult;
 
-use crate::{client::Incus, websocket};
+use crate::api::{client::Incus, websocket};
 
 /// One lifecycle event, in the shape the Host's event history keeps.
 #[derive(Debug, Clone, PartialEq, Eq)]

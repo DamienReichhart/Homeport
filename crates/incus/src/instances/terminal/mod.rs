@@ -26,9 +26,12 @@ use homeport_core::{
 use homeport_transport::http::{self, Request};
 
 use crate::{
-    client::{scoped, Incus},
-    instances, messages as msg, operations,
-    websocket::{self, Socket},
+    api::{
+        client::{scoped, Incus},
+        operations,
+        websocket::{self, Socket},
+    },
+    instances, messages as msg,
 };
 
 /// What the Exec tab asks for.
@@ -117,7 +120,7 @@ async fn attach(
     project: &str,
     operation: &operations::Operation,
 ) -> AppResult<(Socket, Socket)> {
-    let fds: Fds = crate::client::metadata(operation.metadata.clone().unwrap_or_default())?;
+    let fds: Fds = crate::api::client::metadata(operation.metadata.clone().unwrap_or_default())?;
     let path = |secret: &str| {
         scoped(
             &format!(

@@ -13,8 +13,11 @@ use homeport_core::{
 use homeport_transport::http::Request;
 
 use crate::{
-    client::{scoped, segment, Incus},
-    messages as msg, operations,
+    api::{
+        client::{scoped, segment, Incus},
+        operations,
+    },
+    messages as msg,
 };
 
 /// What an Instance is.
@@ -302,7 +305,7 @@ pub async fn get(incus: &Incus, project: &str, name: &str) -> AppResult<IncusIns
         )))
         .await
         .map_err(|e| not_found(e, name))?;
-    let mut raw: RawInstance = crate::client::metadata(value.clone())?;
+    let mut raw: RawInstance = crate::api::client::metadata(value.clone())?;
     let state: RawState = incus
         .sync(Request::get(scoped(
             &format!("{}/state", path(name)),
@@ -621,5 +624,8 @@ pub async fn create(
     }
 }
 
+pub mod snapshots;
+pub mod terminal;
 #[cfg(test)]
 pub(crate) mod tests;
+pub mod usage;

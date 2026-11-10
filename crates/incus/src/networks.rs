@@ -9,9 +9,9 @@ use homeport_core::error::{AppError, AppResult, ErrorCode};
 use homeport_transport::http::Request;
 
 use crate::{
-    client::{scoped, segment, Incus},
+    api::client::{scoped, segment, Incus},
+    instances::usage::{self, IncusUser},
     messages as msg,
-    usage::{self, IncusUser},
 };
 
 /// One network.

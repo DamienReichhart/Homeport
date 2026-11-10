@@ -7,8 +7,11 @@ use homeport_core::error::{AppError, AppResult, ErrorCode};
 use homeport_transport::http::Request;
 
 use crate::{
-    client::{scoped, segment, Incus},
-    instances, messages as msg, operations,
+    api::{
+        client::{scoped, segment, Incus},
+        operations,
+    },
+    instances, messages as msg,
 };
 
 /// One snapshot of an Instance.

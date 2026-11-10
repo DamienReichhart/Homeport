@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use homeport_core::error::AppResult;
 use homeport_transport::http::Request;
 
-use crate::client::Incus;
+use crate::api::client::Incus;
 
 /// A project, with how many Instances and images it holds.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]

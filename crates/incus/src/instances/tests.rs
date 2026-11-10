@@ -192,7 +192,7 @@ pub(crate) async fn live_instance(incus: &Incus, name: &str) {
         name: name.to_owned(),
         kind: InstanceType::Container,
         source: InstanceSource::Remote {
-            server: crate::simplestreams::DEFAULT_SERVER.into(),
+            server: crate::images::simplestreams::DEFAULT_SERVER.into(),
             alias,
         },
         profiles: vec!["default".into()],
@@ -222,7 +222,7 @@ async fn incus_live_instances_start_freeze_stop_and_delete() {
     // Its name is taken now.
     let alias = live_image();
     let mut taken = spec(InstanceSource::Remote {
-        server: crate::simplestreams::DEFAULT_SERVER.into(),
+        server: crate::images::simplestreams::DEFAULT_SERVER.into(),
         alias: alias.strip_prefix("images:").unwrap_or(&alias).to_owned(),
     });
     taken.name = name.clone();

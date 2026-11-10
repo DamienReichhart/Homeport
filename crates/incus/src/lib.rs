@@ -6,22 +6,15 @@
 //! Every call about a project-scoped object names its project
 //! ([`client::scoped`]); the frontend remembers which one each Host shows.
 
-mod client;
-mod error;
+pub mod api;
 pub mod events;
 pub mod images;
 pub mod instances;
 pub mod messages;
 pub mod networks;
-pub mod operations;
 pub mod profiles;
 pub mod projects;
-pub mod simplestreams;
-pub mod snapshots;
 pub mod storage;
-pub mod terminal;
 pub mod trust;
-pub mod usage;
-mod websocket;
 
-pub use client::{Incus, IncusServer, DEFAULT_PROJECT, REQUIRED_EXTENSIONS};
+pub use api::client::{Incus, IncusServer, DEFAULT_PROJECT, REQUIRED_EXTENSIONS};

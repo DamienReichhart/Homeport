@@ -15,7 +15,7 @@ use homeport_transport::{
     Dialer,
 };
 
-use crate::{client, messages as msg};
+use crate::{api::client, messages as msg};
 
 /// What a trust token holds, as Incus encodes it (`api.CertificateAddToken`).
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
