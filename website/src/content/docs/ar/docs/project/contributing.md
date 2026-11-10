@@ -7,12 +7,12 @@ description: كيفية الإبلاغ عن المشكلات واقتراح ال
 
 ## الإبلاغ عن خطأ
 
-[افتح مشكلة](https://github.com/DamienReichhart/Homeport/issues/new) تتضمن:
+[افتح مشكلة](https://github.com/DamienReichhart/Homeport/issues/new/choose) تتضمن:
 
-- إصدار Homeport ومنصتك، من **الإعدادات** (مثل `v0.2.0 · macos/aarch64`)؛
-- نوع المضيف (محلي، أو SSH، أو TLS، أو TCP) وإصدار محركه؛
 - ما فعلته، وما توقعته، وما حدث — الرسالة الحرفية هي الأكثر فائدة؛
-- أي شيء ذي صلة من [ملف السجل](/docs/reference/security/#السجلات).
+- [حزمة التشخيص](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report) من **الإعدادات ← حول ← تصدير التشخيص…**: ملف zip واحد فيه إصدار Homeport ومنصته، وأنواع المضيفات والمحركات والعناقيد التي تستخدمها، وسجلاته بعد إزالة الأسرار منها. تقرأ محتواه قبل حفظه، ولا يُرسَل أي شيء إلى أي مكان.
+
+إذا لم يبدأ Homeport، فاذكر إصداره ونظام تشغيلك بدلًا من ذلك، وأي شيء ذي صلة من [ملف السجل](/docs/reference/security/#السجلات).
 
 يُرجى الإبلاغ عن المشكلات الأمنية بشكل خاص، عبر [الإبلاغ عن الثغرات في GitHub](https://github.com/DamienReichhart/Homeport/security/advisories/new).
 
@@ -33,8 +33,9 @@ description: كيفية الإبلاغ عن المشكلات واقتراح ال
    bun run rust:test
    ```
 
-5. اكتب رسائل الإيداع بصيغة [Conventional Commits](https://www.conventionalcommits.org) — `feat(stacks): …`، `fix(hosts): …`. تُنشأ ملاحظات الإصدار منها.
-6. افتح طلب سحب على الفرع `dev`. يشغّل CI فحوصات الواجهة الأمامية وفحص التراخيص على Linux، و`cargo clippy` و`cargo test` على Linux وmacOS وWindows، لذا تُصرَّف الشيفرة الموجودة خلف `#[cfg(windows)]` أو `#[cfg(target_os = "macos")]` قبل دمجها. الاختبار الذي يحتاج إلى محرك Docker يُوسم بـ `#[ignore = "needs a local Docker Engine"]`؛ وتشغّل مهمة Linux منفصلة تلك الاختبارات على محرك المشغّل.
+5. حافظ على وعد البيانات: يفتح كل إصدار من Homeport بيانات كل إصدار سابق، حتى 0.1.0، ويرقّيها دون فقدان أي شيء: المضيفات والمكدسات والعناقيد والإعدادات والأسرار. أي تغيير في المخطط هو ترحيل جديد، وليس تعديلًا لترحيل صدر من قبل أبدًا، ويتحقق CI منه مقابل قاعدة بيانات نموذجية من كل إصدار. راجع [Data compatibility](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md#data-compatibility).
+6. اكتب رسائل الإيداع بصيغة [Conventional Commits](https://www.conventionalcommits.org) — `feat(stacks): …`، `fix(hosts): …`. تُنشأ ملاحظات الإصدار منها.
+7. افتح طلب سحب على الفرع `dev`. يشغّل CI فحوصات الواجهة الأمامية وفحص التراخيص على Linux، و`cargo clippy` و`cargo test` على Linux وmacOS وWindows، لذا تُصرَّف الشيفرة الموجودة خلف `#[cfg(windows)]` أو `#[cfg(target_os = "macos")]` قبل دمجها. الاختبار الذي يحتاج إلى محرك Docker يُوسم بـ `#[ignore = "needs a local Docker Engine"]`؛ وتشغّل مهمة Linux منفصلة تلك الاختبارات على محرك المشغّل.
 
 راجع [البناء من الشيفرة المصدرية](/docs/project/building/) لتجهيز بيئتك.
 

@@ -50,7 +50,7 @@ podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}'
 
 ## الأذونات على Linux
 
-ينتمي المقبس الافتراضي `/var/run/docker.sock` إلى مجموعة `docker`. إذا لم يكن مستخدمك فيها، يعرض المضيف **يتعذّر الوصول إليه** مع _Permission denied_. أضف نفسك وسجّل الدخول مجددًا:
+ينتمي المقبس الافتراضي `/var/run/docker.sock` إلى مجموعة `docker`. إذا لم يكن مستخدمك فيها، يعرض المضيف **يتعذّر الوصول إليه** مع _لا يُسمح لـ Homeport باستخدام محرك Docker على /var/run/docker.sock._ أضف نفسك وسجّل الدخول مجددًا:
 
 ```sh
 sudo usermod -aG docker $USER
