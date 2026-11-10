@@ -50,7 +50,7 @@ podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}'
 
 ## Linux 上的权限
 
-默认套接字 `/var/run/docker.sock` 属于 `docker` 组。如果你的用户不在该组中，主机会显示**无法访问**，并提示 _Permission denied_。将自己加入该组并重新登录：
+默认套接字 `/var/run/docker.sock` 属于 `docker` 组。如果你的用户不在该组中，主机会显示**无法访问**，并提示 _Homeport 无权使用 /var/run/docker.sock 处的 Docker Engine。_将自己加入该组并重新登录：
 
 ```sh
 sudo usermod -aG docker $USER

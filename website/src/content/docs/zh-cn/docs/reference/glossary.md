@@ -7,7 +7,7 @@ Homeport 对事物的命名很精确。这些术语贯穿整个应用和本文�
 
 ### Host（主机）
 
-Homeport 连接的 Docker Engine，由一个名称和访问方式定义：本地套接字、TCP、TLS 或 SSH。每个容器、镜像、卷、网络和堆栈都只属于一台主机。参见[主机与连接](/docs/hosts/)。
+Homeport 连接的引擎，由一个名称和访问方式定义：本地套接字、TCP、TLS 或 SSH。每个容器、镜像、卷、网络和堆栈都只属于一台主机。参见[主机与连接](/docs/hosts/)。
 
 ### Engine kind（引擎类型）
 
@@ -44,6 +44,10 @@ Incus 主机运行的东西：在主机内核上启动完整 Linux 发行版的�
 ### Quadlet unit（Quadlet 单元）
 
 Podman 主机上的一个文件，例如 `web.container`，systemd 会将它转换为一个服务 `web.service`，从而让 Podman 的容器在开机时启动，并由 systemd 保持运行。参见 [Quadlet 单元](/docs/guides/quadlet/)。
+
+### Bastion（堡垒机）
+
+访问 SSH 主机时经过的 SSH 服务器，用于主机自身的 SSH 服务器只接受来自它的连接的情况，即 OpenSSH 所说的 `ProxyJump`。一台主机可以按顺序设置多台堡垒机，每台都有自己受信任的服务器密钥。堡垒机不是主机：它上面没有运行 Homeport 与之通信的引擎。参见[通过堡垒机](/docs/hosts/ssh/#through-a-bastion)。
 
 ### Cluster（集群）
 
@@ -131,7 +135,7 @@ Homeport 在主机上创建的一个短期 `busybox` 容器，用于打开卷（
 
 ### Engine（引擎）
 
-在机器上运行容器的 Docker Engine（`dockerd`），或与之兼容的引擎，例如 Podman。Homeport 通过 Docker Engine API 与它通信。
+主机所指向的软件，也就是被安装、启动和停止的那个：Docker Engine（`dockerd`）或与之兼容的引擎，例如 Docker Desktop、Podman、Colima 或 OrbStack，Homeport 通过 Docker Engine API 与它们通信；或者 containerd 或 Incus，通过它们自己的 API 通信。它不是主机的同义词：“启动 Docker Engine”说的是引擎，“Homeport 无法访问 prod-server”说的是主机。
 
 ### Socket（套接字）
 
@@ -147,7 +151,7 @@ Homeport 检查 SSH 服务器的方式：首次连接时由你确认服务器的
 
 ## 中文术语
 
-简体中文的应用、文档和网站都使用以下术语，因此界面和页面上的说法始终一致。
+简体中文的应用、文档和网站都使用以下术语，因此界面和页面上的说法始终一致。其他每种语言在 [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n) 中都有自己的表格。
 
 | 英文           | 简体中文 |
 | -------------- | -------- |

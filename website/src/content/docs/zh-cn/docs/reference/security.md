@@ -3,7 +3,7 @@ title: 安全与你的数据
 description: Homeport 保存什么、保存在哪里、机密如何加密，以及它从不做的事情。
 ---
 
-Homeport 保存着能打开你的服务器的凭据。本页准确说明它保存了什么，以及如何保存。
+Homeport 保存着能打开你的服务器的凭据。本页准确说明它保存了什么，以及如何保护这些内容。[数据与备份](/docs/reference/data-and-backups/)说明了备份时要复制什么，以及如何恢复。
 
 ## Homeport 保存的内容
 
@@ -80,7 +80,7 @@ Homeport 会显示一条横幅，并且不会保存机密。本地套接字、TC
 
 ### 如果钥匙串中的密钥丢失
 
-重置钥匙串，或将 `homeport.db` 移到另一台计算机或另一个用户下，会导致机密无法解密。Homeport 不会删除任何东西：受影响的主机会显示**凭据丢失**，直到你重新输入其凭据。参见[故障排除](/docs/reference/troubleshooting/#凭据丢失)。要迁移你的数据，请改为备份数据或导出主机。
+重置钥匙串，或将 `homeport.db` 移到另一台计算机或另一个用户下，会导致机密无法解密。Homeport 不会删除任何东西：受影响的主机和集群会显示**凭据丢失**，直到你重新输入其凭据；[机密丢失时](/docs/reference/data-and-backups/#if-the-secrets-are-lost)列出了要重新输入什么以及在哪里输入。要迁移你的数据，请改为[备份数据](#backups)或[导出主机](#moving-to-another-computer)。
 
 ### 迁移到另一台计算机
 
@@ -103,7 +103,7 @@ Homeport 会显示一条横幅，并且不会保存机密。本地套接字、TC
 2. 一步替换每台主机、每个集群、堆栈、登录信息、仓库和设置，因此一旦失败，你的数据会保持原样；
 3. 使用本机的钥匙串密钥重新加密每个机密。
 
-由更新版本的 Homeport 制作的备份会被拒绝；由旧版本制作的备份可以恢复。备份包含 Homeport 拥有的每个机密：请像保管密钥本身一样妥善保管它及其口令。
+由更新版本的 Homeport 制作的备份会被拒绝；由旧版本制作的备份可以恢复。备份包含 Homeport 拥有的每个机密：请像保管密钥本身一样妥善保管它及其口令。[数据与备份](/docs/reference/data-and-backups/)给出了操作步骤、备份包含和不包含的内容，以及如何自己复制数据库。
 
 ## 密钥从不以明文落盘
 
@@ -152,7 +152,7 @@ Homeport 通过 API 与主机的引擎通信，只有在 API 无法完成某件�
 ## Homeport 从不做的事情
 
 - **没有账户。** 无需注册任何东西。
-- **没有遥测、分析或崩溃报告。**
+- **没有遥测、分析或崩溃报告。** 报告 bug 时，[诊断包](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report)是你自己导出、查看并附上的文件。
 - **不在你的集群上安装任何东西。** Homeport 只使用 Kubernetes API，只拥有你的凭据的权限，并且在你没有要求的情况下不做任何更改：任何删除或替换操作都会先询问，并写明集群名称。
 - **不在你的主机上安装任何东西。** Homeport 在主机上运行的命令只有[上面列出的那些](#homeport-在你的主机上运行的内容)。Homeport 唯一会自行启动的容器，是在你打开、备份、恢复或克隆卷时使用的短期[辅助容器](/docs/guides/volumes-networks/#辅助容器)；它没有网络，完成后即被删除。其镜像只有在你同意后才会拉取。
 - **没有静默安装。** 只有在你选择**安装并重启**时才会安装更新；Linux 软件包只会由你的包管理器更新。
@@ -168,6 +168,8 @@ Homeport 会写入一个小日志文件（几十 KB，写满时会被替换）�
 | Linux   | `~/.local/share/com.homeport.app/logs/` |
 | macOS   | `~/Library/Logs/com.homeport.app/`      |
 | Windows | `%LOCALAPPDATA%\com.homeport.app\logs\` |
+
+Homeport 没有遥测，也没有崩溃报告：除非你自己发送，否则日志永远不会离开你的计算机。报告 bug 时，**设置 → 关于 → 导出诊断信息…**会保存一个 zip，其中包含版本摘要和这些日志，并会替换掉任何形似机密的内容（密钥、密码、令牌、URL 中的凭据），以及（除非你另有选择）你的主机和集群的名称和地址。参见[导出诊断信息](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report)。
 
 ## 信任下载
 

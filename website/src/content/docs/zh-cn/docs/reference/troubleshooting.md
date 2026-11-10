@@ -3,7 +3,7 @@ title: 故障排除
 description: 按 Homeport 显示的消息，列出你最可能遇到的问题及其解决方法。
 ---
 
-如果这里没有你遇到的问题，请查看[日志文件](/docs/reference/security/#日志)，并附上**设置**中显示的 Homeport 版本[创建 issue](https://github.com/DamienReichhart/Homeport/issues)。
+如果这里没有你遇到的问题，请附上从**设置 → 关于**导出的[诊断包](#exporting-diagnostics-for-a-bug-report)[创建 issue](https://github.com/DamienReichhart/Homeport/issues/new/choose)。
 
 ## 安装与启动
 
@@ -45,11 +45,19 @@ Homeport 重新打开时，会恢复关闭时窗口的大小、位置和最大�
 
 Homeport 无法访问你的钥匙串。在 Linux 上，这通常意味着没有运行 Secret Service，这在精简桌面环境和窗口管理器中很常见。请安装并启动 GNOME Keyring（`gnome-keyring`），或启用 KWallet 的 Secret Service，然后重启 Homeport。在此之前，请使用本地套接字、TCP 或 ssh-agent 主机。
 
+### “此数据库上次由 Homeport … 或更高版本使用。”
+
+你安装的 Homeport 比上次打开你数据的版本更旧，例如重新安装了较早的版本。每个版本启动时都会将数据库升级为自己的格式，而旧版本无法读取较新的格式，因此 Homeport 会在更改任何内容之前停止：窗口会显示这条消息、数据库的路径和**打开文件夹**，其他任何内容都不会启动。
+
+你的主机、堆栈和机密都完好无损。从[下载页面](/download/)安装消息中指出的版本或任何更新的版本，Homeport 就会像以前一样打开它们。不要删除或移动 `homeport.db`：这是丢失其中内容的唯一方式。不支持降级；参见[跨版本的数据](/docs/reference/updating/#your-data-across-versions)。
+
+打开数据库的其他失败（文件损坏、磁盘已满、另一个 Homeport 正在使用它）也会显示同一个窗口，并附上该失败自己的消息和处理方法。
+
 ## 更新与软件包仓库
 
-### “无法检查更新”
+### “Homeport 无法下载更新。”
 
-Homeport 无法从本网站下载更新信息：你可能处于离线状态，或位于阻止 `damienreichhart.github.io` 的代理或防火墙之后。Homeport 会继续正常工作；它稍后会再次检查，你也可以选择**设置 → 更新 → 立即检查**。你随时可以从[下载页面](/download/)下载最新版本。
+如果它在检查时出现，说明 Homeport 无法从本网站下载更新信息：你可能处于离线状态，或位于阻止 `damienreichhart.github.io` 的代理或防火墙之后。Homeport 会继续正常工作；它稍后会再次检查，你也可以选择**设置 → 更新 → 立即检查**。你随时可以从[下载页面](/download/)下载最新版本。
 
 ### 更新安装失败
 
@@ -73,7 +81,7 @@ apt 读取仓库时，仓库正在更新。几分钟后再次运行 `sudo apt up
 
 ## 连接
 
-### 无法访问：Permission denied
+### “Homeport 无权使用 … 处的 Docker Engine。”
 
 你的用户无法打开 Docker 套接字。在 Linux 上，将它加入 `docker` 组并重新登录：
 
@@ -81,21 +89,21 @@ apt 读取仓库时，仓库正在更新。几分钟后再次运行 `sudo apt up
 sudo usermod -aG docker $USER
 ```
 
-### 无法访问：No such file or directory
+### “… 处没有正在运行的 Docker Engine。”
 
-套接字路径上没有任何程序在监听。请启动你的引擎（Docker Desktop、Colima、OrbStack、Rancher Desktop），或检查路径。参见[本地引擎](/docs/hosts/local/#手动添加套接字)。
+套接字路径上没有任何程序在监听。如果那里什么都不存在，消息会改为 _Docker Engine 似乎未安装_。请启动你的引擎（Docker Desktop、Colima、OrbStack、Rancher Desktop），或检查路径。参见[本地引擎](/docs/hosts/local/#手动添加套接字)。
 
-### “Docker Engine 未及时响应。”或“SSH 连接超时”
+### “Docker Engine 未及时响应。”或“… 未及时响应。”
 
 Homeport 等待连接的时间为 10 秒。请检查地址和端口、服务器是否正常运行，以及是否有防火墙阻挡。Homeport 会自动持续重试。
 
-### 访问被拒绝：“SSH 服务器拒绝了 … 的密钥”
+### 访问被拒绝：“SSH 服务器拒绝了 … 登录。”
 
 服务器尚未接受 Homeport 的密钥。在服务器上运行主机页面中的**添加公钥**命令，然后选择**重新连接**。参见 [SSH 主机](/docs/hosts/ssh/#授权-homeport-的密钥)。
 
-### “SSH 服务器无法打开 /var/run/docker.sock”
+### “… 无法打开 … 上 /var/run/docker.sock 处的 Docker Engine 套接字。”
 
-Homeport 已登录，但无法访问 Docker。请检查：
+Homeport 已登录，但无法访问 Docker。如果能判断原因，消息会改为说明原因：服务器上没有安装或没有运行引擎、该用户无权使用它，或 SSH 服务器不允许转发到其套接字。请检查：
 
 - **远程套接字路径**：rootless Docker 使用 `/run/user/<uid>/docker.sock`；
 - 该用户能否使用 Docker：在服务器上运行 `sudo usermod -aG docker <user>`；
@@ -113,7 +121,7 @@ Start-Service ssh-agent
 ssh-add
 ```
 
-### 访问被拒绝：“TLS handshake failed”
+### 访问被拒绝：“与 … 的安全连接失败。”
 
 - CA 证书必须是签发服务器证书的那个。
 - 你输入的地址必须与服务器证书中的某个名称或 IP 地址匹配。
@@ -125,13 +133,13 @@ SSH 服务器提供的密钥与你信任的不同。如果你重装了服务器�
 
 ### 凭据丢失
 
-用于加密你的机密的密钥已从钥匙串中丢失或已更改：可能发生在重置钥匙串、使用新的用户配置文件，或将 Homeport 的数据复制到另一台计算机之后（后者请使用[导出和导入](/docs/reference/security/#迁移到另一台计算机)）。Homeport 会保留该主机；请在主机页面上重新输入其凭据：
+用于加密你的机密的密钥已从钥匙串中丢失或已更改：可能发生在重置钥匙串、使用新的用户配置文件，或将 Homeport 的数据复制到另一台计算机之后（后者请使用[备份](/docs/reference/data-and-backups/#backing-up-in-homeport)或[导出和导入](/docs/reference/security/#迁移到另一台计算机)）。Homeport 会保留该主机；请在主机页面上重新输入其凭据：
 
 - **TLS**：重新加载三个证书文件，然后选择**保存**。
 - **使用导入密钥的 SSH**：重新粘贴私钥和口令，然后选择**保存**。
 - **使用 Homeport 密钥的 SSH**：选择**重新生成密钥**，然后在服务器上授权新密钥。
 
-使用旧密钥加密的托管堆栈环境变量也需要重新输入。
+使用旧密钥加密的托管堆栈和同步堆栈的环境变量、镜像仓库登录，以及仓库的密钥和令牌也需要重新输入，从 kubeconfig 刷新的集群也是如此；[机密丢失时](/docs/reference/data-and-backups/#if-the-secrets-are-lost)逐一列出了它们。
 
 ## 集群
 
@@ -325,6 +333,23 @@ Incus 运行虚拟机需要 KVM（`/dev/kvm`）和 QEMU。请在服务器的固�
 
 在虚拟机中执行命令需要经过其中的 `incus-agent`，Incus 自己的镜像会在启动时运行它。请等待启动完成，或使用不需要 agent 的**控制台**标签页。
 
-### “主机 … 未连接”
+### “出现问题”
+
+Homeport 的某个页面遇到了意外问题，因此显示这条消息而不是其内容；侧边栏仍可使用。**重新加载**通常能让页面恢复，**返回概览**则会离开该页面。如果问题反复出现，请从**详细信息**中复制报告，连同[诊断包](#exporting-diagnostics-for-a-bug-report)一起提交到 [issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) 中。
+
+### “… 未连接。”
 
 该操作需要主机，但主机已断开连接。等待它重新连接，或选择**立即重试**。
+
+## 为 bug 报告导出诊断信息
+
+**设置 → 关于 → 导出诊断信息…**会生成一个 zip，用于附加到 GitHub issue。Homeport 不会把它发送到任何地方：它只会把文件保存到你选择的位置，是否分享由你决定。
+
+保存之前，对话框会列出其中的文件并显示 `summary.json`：
+
+- `summary.json`：Homeport 的版本及其安装方式、你的操作系统、数据库的架构版本、是否有可用的钥匙串、你的设置，以及每台主机和每个集群的连接类型、其引擎和版本、状态和最近一次错误的代码，另外还有每种堆栈各有多少个。
+- `logs/`：Homeport 的[日志文件](/docs/reference/security/#logs)，其中的私钥和证书、密码、令牌、`Authorization` 标头以及 URL 中的凭据都会被替换为 `[redacted]`。
+
+主机和集群显示为 `host-1`、`cluster-1`…，日志中它们的名称和地址也会以同样方式替换，除非你勾选**包含名称和地址**。当名称或地址与问题有关、并且你愿意分享时，再勾选它。
+
+生成诊断包时从不读取已保存的机密。从日志中移除机密是通过识别其常见形式来完成的，因此如果你的日志可能引用了不寻常的内容，请在将文件附加到公开 issue 之前先检查一遍。

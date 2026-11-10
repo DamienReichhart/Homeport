@@ -3,7 +3,7 @@ title: 设置
 description: 主题和语言、系统托盘、登录时启动、通知、更新、镜像仓库登录、仓库、同步堆栈的检查频率、本机支持的功能、版本和许可证。
 ---
 
-**设置**是侧边栏中的最后一项。
+**设置**是侧边栏中的最后一个页面，位于**文档**和 **GitHub** 链接上方，这两个链接会在浏览器中打开。
 
 ## 外观
 
@@ -93,7 +93,7 @@ Homeport 在本机上保存的内容。
 - [同步堆栈](/docs/guides/synced-stacks/)会在下次同步时重新克隆其仓库。
 - 当前数据会先复制到 Homeport 数据文件夹中的 `homeport.db.before-restore-<date>`。恢复错误的文件、较新版本 Homeport 的文件，或中途失败的恢复，都不会更改任何内容。
 
-如果只想把一些主机添加到现有主机中，请使用“主机”页面上的**导出**和**导入**。
+如果只想把一些主机添加到现有主机中，请使用“主机”页面上的**导出**和**导入**。[数据与备份](/docs/reference/data-and-backups/)说明了 Homeport 的文件在哪里、备份包含什么，以及如何自己复制数据库。
 
 ### 保留引擎事件
 
@@ -112,6 +112,10 @@ Homeport 在本机上可以使用的内容：
 
 ## 关于
 
-显示 Homeport 的版本及其构建所针对的平台，例如 `v0.2.0 · macos/aarch64`。[报告问题](https://github.com/DamienReichhart/Homeport/issues)时请附上它。
+显示 Homeport 的版本及其构建所针对的平台，例如 `v1.0.0 · macos/aarch64`。
+
+**打开日志文件夹**会显示 Homeport 写入其[日志](/docs/reference/security/#logs)的位置。
+
+**导出诊断信息…**会保存一个 zip，供你在[报告问题](https://github.com/DamienReichhart/Homeport/issues/new/choose)时附上：其中包含版本以及你所用主机和集群类型的摘要，以及已移除机密的日志。对话框会先显示其中的内容，且不会向任何地方发送任何东西。参见[导出诊断信息](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report)。
 
 **许可证**显示 Homeport 的许可证（GNU AGPL 第 3 版）、你所运行版本的源代码链接，以及构建它所用的每个开源软件包的声明。

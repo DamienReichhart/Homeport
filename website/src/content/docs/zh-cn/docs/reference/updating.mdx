@@ -12,7 +12,7 @@ Homeport 的更新方式取决于你的安装方式。
 
 ### Windows、macOS 和 AppImage
 
-Homeport 会在启动时以及每 6 小时检查一次新版本。有新版本时，窗口顶部会出现一个提示栏：选择**新功能**阅读[更新日志](/changelog/)，或选择**安装并重启**。Homeport 会下载更新、检查其签名、安装并重新打开。在你选择之前不会安装任何东西，你的主机、堆栈和设置都会保留。
+Homeport 会在启动时以及每 6 小时检查一次新版本。有新版本时，窗口顶部会出现一个提示栏：选择**新功能**阅读[更新日志](/changelog/)，或选择**安装并重启**。Homeport 会下载更新、检查其签名、安装并重新打开。在你选择之前不会安装任何东西，并且[你的数据会保留](#your-data-across-versions)。
 
 你也可以通过**设置 → 更新 → 立即检查**立即检查。
 
@@ -42,6 +42,14 @@ Homeport 会在启动时以及每 6 小时检查一次新版本。有新版本�
 
 如果仍想获知新版本，可以在 GitHub 上关注该仓库（**Watch → Custom → Releases**），或订阅[发布 feed](https://github.com/DamienReichhart/Homeport/releases.atom)。
 
+## 跨版本的数据
+
+Homeport 的每个版本都能打开之前每个版本（一直到 0.1.0）的数据，并在升级时不丢失任何内容：主机、堆栈、集群、设置和机密。更新从不要求你重新设置任何东西：新版本第一次启动时会就地升级其数据库，一切都会像以前一样连接。每个版本在发布前都会用之前每个版本的示例数据库进行测试。
+
+**不支持降级。** 一旦较新的版本打开了你的数据，旧版本就无法读取它，也不会尝试读取：它会显示[一条指出应安装哪个版本的消息](/docs/reference/troubleshooting/#this-database-was-last-used-by-homeport--or-later)并停止，而不会更改任何内容。你的数据保持较新版本留下的状态；安装该版本或更新的版本，Homeport 就会再次打开它。
+
+**试用预发布版之前请先备份。** 预发布版会像其他版本一样升级数据库，因此你原来使用的稳定版将无法再打开它。请先选择**设置 → 数据 → 备份…**；参见[数据与备份](/docs/reference/data-and-backups/#backing-up-in-homeport)。要回到稳定版，请退出 Homeport，将 `homeport.db` 移出[数据文件夹](/docs/reference/data-and-backups/#the-data-folder)，重新安装稳定版，然后用**恢复…**恢复那个备份。
+
 ## 卸载
 
 <Tabs syncKey="os">
@@ -64,7 +72,7 @@ sudo zypper remove homeport   # openSUSE
 </TabItem>
 </Tabs>
 
-卸载会保留你的数据，因此重新安装后一切都会恢复。
+卸载会保留你的数据，因此重新安装后一切都会恢复。[数据与备份](/docs/reference/data-and-backups/)说明了数据所在的位置。
 
 ### 登录项
 
@@ -79,7 +87,7 @@ sudo zypper remove homeport   # openSUSE
 ## 删除你的数据
 
 <Aside type="caution">
-  这会删除你的主机、它们保存的密钥和证书、你的托管堆栈定义、你的关联堆栈及其部署历史。关联堆栈的文件夹会保留在原处。你的主机上的任何内容都不受影响。
+  这会删除你的主机和集群及其保存的密钥、证书和令牌，你的托管、关联和同步堆栈及其环境变量和部署历史，以及你的镜像仓库登录、仓库和设置。关联堆栈的文件夹会保留在原处。你的主机和集群上的任何内容都不受影响。要先保留一份副本，请[备份它](/docs/reference/data-and-backups/)。
 </Aside>
 
 1. 删除 Homeport 的数据文件夹和日志文件夹：
@@ -90,9 +98,9 @@ sudo zypper remove homeport   # openSUSE
    | macOS   | `~/Library/Application Support/com.homeport.app/`、`~/Library/Logs/com.homeport.app/` |
    | Windows | `%APPDATA%\com.homeport.app\`、`%LOCALAPPDATA%\com.homeport.app\`                     |
 
-2. 从钥匙串中删除加密密钥，即 `com.homeport.app` 对应的条目：
+2. 从钥匙串中删除加密密钥，即 `com.homeport.app` 下账户为 `secrets-key` 的条目：
    - **macOS**：在**钥匙串访问**中搜索 `com.homeport.app` 并删除它。
    - **Windows**：在**凭据管理器 → Windows 凭据**中，删除包含 `com.homeport.app` 的条目。
    - **Linux**：在**密码和密钥**（Seahorse）或 KWallet 中，删除 `com.homeport.app` 对应的条目。
 
-3. 在你的服务器上，从 `~/.ssh/authorized_keys` 中删除 Homeport 的公钥，它们的注释以 `homeport@` 开头。
+3. 在你的服务器上，从 `~/.ssh/authorized_keys` 中删除 Homeport 的公钥，它们的注释以 `homeport@` 开头。在你的 git 托管平台上，删除 Homeport 为你的仓库创建的部署密钥；在通过 HTTPS 添加的 Incus 服务器上，删除 Homeport 的证书（先 `incus config trust list`，再 `incus config trust remove`）。
