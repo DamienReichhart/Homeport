@@ -14,9 +14,9 @@ import { DocScreenshot } from '@/features/docs';
   alt="La página Nodes: cinco Nodes de EKS, uno no listo con la programación desactivada, con su versión de kubelet, su IP interna, su plataforma, sus CPU y su memoria."
 />
 
-Las CPU se muestran en núcleos (`3.92` para `3920m`) y la memoria en GB; Kubernetes informa de lo que es **asignable** a los Pods, un poco menos de lo que tiene la máquina, ya que el kubelet y el sistema se reservan una parte.
+Las CPU se muestran en núcleos (`3.92` para `3920m`) y la memoria en GB; Kubernetes informa de lo que es **asignable** a los Pods, un poco menos de lo que tiene la máquina, ya que el kubelet y el sistema se reservan una parte. Cuando el clúster ejecuta metrics-server, **CPU usada** y **Memoria usada** muestran cuánto usa de ello cada Node ([CPU y memoria](/docs/clusters/metrics/)).
 
-La página de un Node muestra su imagen del sistema, su kernel, su runtime de contenedores, sus direcciones, sus taints, sus etiquetas y su capacidad junto a lo que es asignable a los Pods; después, los **Pods** que se ejecutan en él, en todos los Namespaces, sus **Condiciones** (presión de memoria, de disco y de PID), sus **Eventos** y su **YAML**. La página de un Pod enlaza con su Node.
+La página de un Node muestra su imagen del sistema, su kernel, su runtime de contenedores, sus direcciones, sus taints, sus etiquetas y su capacidad junto a lo que es asignable a los Pods; después, los **Pods** que se ejecutan en él, en todos los Namespaces, sus **Condiciones** (presión de memoria, de disco y de PID), sus **Eventos** y su **YAML**. La página de un Pod enlaza con su Node. Con metrics-server, **Métricas** traza su CPU y su memoria frente a lo asignable ([CPU y memoria](/docs/clusters/metrics/)).
 
 ## Events
 
