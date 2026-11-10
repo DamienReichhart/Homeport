@@ -24,6 +24,7 @@ export default {
   'docs/clusters/workloads': 'वर्कलोड और Pods',
   'docs/clusters/networking-config': 'Services और कॉन्फ़िगरेशन',
   'docs/clusters/nodes-events': 'Nodes और इवेंट',
+  'docs/clusters/metrics': 'CPU और मेमोरी',
   'docs/clusters/api-resources': 'API रिसोर्स',
   'docs/clusters/logs-exec': 'लॉग और टर्मिनल',
   'docs/clusters/port-forward': 'पोर्ट फ़ॉरवर्डिंग',
