@@ -90,6 +90,9 @@ export default {
     '{count, plural, one {# registry login} other {# registry logins}}',
   'settings.restore.repositories': '{count, plural, one {# repository} other {# repositories}}',
   'settings.restore.settings': 'Your settings',
+  'settings.restore.withoutSecrets':
+    "These were backed up without their secrets, which couldn't be opened then. They come back without them, replacing the secrets they have here, and registry logins among them don't come back at all:",
+  'settings.restore.withoutSecretsList': 'Backed up without their secrets',
   'settings.restore.replaces':
     "Restoring replaces every Host, Stack, registry login, repository and setting you have now, and forgets the Engine events and deploy history. A copy of the current data is kept in Homeport's data folder first.",
   'settings.restore.confirm': 'Replace everything',

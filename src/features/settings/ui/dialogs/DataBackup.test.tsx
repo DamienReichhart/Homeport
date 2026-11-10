@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { baseCommands } from '@/test/fixtures';
 import { mockCommands } from '@/test/ipc';
@@ -19,6 +19,7 @@ const contents = {
   registries: 1,
   repositories: 1,
   settings: true,
+  withoutSecrets: [] as string[],
 };
 
 function settingsPage(extra: Record<string, (args: Record<string, unknown>) => unknown>) {
@@ -79,6 +80,7 @@ describe('backing up and restoring Homeport', () => {
     expect(await screen.findByText('2 Hosts: prod, lab')).toBeInTheDocument();
     expect(screen.getByText('3 Stacks')).toBeInTheDocument();
     expect(screen.getByText(/Restoring replaces every Host/)).toBeInTheDocument();
+    expect(screen.queryByRole('list', { name: 'Backed up without their secrets' })).toBeNull();
     expect(restored).toEqual([]);
     await user.click(screen.getByRole('button', { name: 'Replace everything' }));
     await waitFor(() =>
@@ -87,6 +89,26 @@ describe('backing up and restoring Homeport', () => {
       ]),
     );
     expect(await screen.findByText('Restored 2 Hosts and 3 Stacks')).toBeInTheDocument();
+  });
+
+  it('names what the backup holds without its secrets before replacing anything', async () => {
+    settingsPage({
+      data_restore_preview: () => ({ ...contents, withoutSecrets: ['prod', 'ghcr.io'] }),
+      data_restore: () => contents,
+    });
+    dialogs.pickFile.mockResolvedValue('/home/me/homeport.homeport');
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Restore…' }));
+    await user.type(await screen.findByLabelText('Passphrase'), 'correct horse battery');
+    await user.click(screen.getByRole('button', { name: 'Open' }));
+
+    const list = await screen.findByRole('list', { name: 'Backed up without their secrets' });
+    expect(
+      within(list)
+        .getAllByRole('listitem')
+        .map((i) => i.textContent),
+    ).toEqual(['prod', 'ghcr.io']);
+    expect(screen.getByText(/replacing the secrets they have here/)).toBeInTheDocument();
   });
 
   it('says why a backup can’t be opened, and restores nothing', async () => {

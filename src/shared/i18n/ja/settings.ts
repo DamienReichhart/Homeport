@@ -94,6 +94,9 @@ export default {
   'settings.restore.registries': '{count, plural, other {# 件のレジストリのログイン情報}}',
   'settings.restore.repositories': '{count, plural, other {# 個のリポジトリ}}',
   'settings.restore.settings': '設定',
+  'settings.restore.withoutSecrets':
+    '次のものは、その時点でシークレットを開けなかったため、シークレットなしでバックアップされています。復元するとシークレットなしで戻り、ここにあるシークレットは置き換えられます。このうちレジストリーのログインはまったく戻りません:',
+  'settings.restore.withoutSecretsList': 'シークレットなしでバックアップされたもの',
   'settings.restore.replaces':
     '復元すると、現在のすべてのホスト、スタック、レジストリのログイン情報、リポジトリ、設定が置き換えられ、エンジンのイベントとデプロイ履歴は破棄されます。その前に、現在のデータのコピーが Homeport のデータフォルダーに保存されます。',
   'settings.restore.confirm': 'すべて置き換え',

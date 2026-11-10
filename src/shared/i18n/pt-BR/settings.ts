@@ -94,6 +94,9 @@ export default {
     '{count, plural, one {# login de registro} other {# logins de registro}}',
   'settings.restore.repositories': '{count, plural, one {# repositório} other {# repositórios}}',
   'settings.restore.settings': 'Suas configurações',
+  'settings.restore.withoutSecrets':
+    'Estes foram copiados sem os segredos, que não puderam ser abertos na hora. Eles voltam sem eles, substituindo os segredos que têm aqui, e os logins de registro entre eles não voltam de forma alguma:',
+  'settings.restore.withoutSecretsList': 'Copiados sem os segredos',
   'settings.restore.replaces':
     'Restaurar substitui todos os hosts, stacks, logins de registro, repositórios e configurações que você tem agora, e esquece os eventos do Engine e o histórico de implantações. Uma cópia dos dados atuais é guardada antes na pasta de dados do Homeport.',
   'settings.restore.confirm': 'Substituir tudo',

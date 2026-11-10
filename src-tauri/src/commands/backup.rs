@@ -54,6 +54,11 @@ struct Backup {
     stacks: StacksBackup,
     #[serde(default)]
     settings: Option<Settings>,
+    /// What was backed up without its secret, which couldn't be opened, by
+    /// name: restoring it brings it back without one. Backups from before
+    /// 1.0 don't have it.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    without_secrets: Vec<String>,
 }
 
 /// What a backup holds, as the restore's confirmation lists it.
@@ -72,6 +77,10 @@ pub struct BackupContents {
     pub registries: u32,
     pub repositories: u32,
     pub settings: bool,
+    /// What it holds without its secret, by name: Hosts, Clusters, Stacks,
+    /// registry logins (left out altogether) and repositories. Restoring
+    /// replaces the secrets they have here with none.
+    pub without_secrets: Vec<String>,
 }
 
 /// What a backup wrote.
@@ -95,7 +104,23 @@ impl Backup {
             registries: self.registries.len() as u32,
             repositories: self.repositories.len() as u32,
             settings: self.settings.is_some(),
+            without_secrets: self.without_secrets(),
         }
+    }
+
+    /// What the backup says it holds without secrets, and the Hosts that
+    /// need secrets but have none, which backups from before the list say.
+    fn without_secrets(&self) -> Vec<String> {
+        let mut names = self.without_secrets.clone();
+        for host in &self.hosts {
+            if host.connection.needs_secrets()
+                && host.secrets.is_none()
+                && !names.contains(&host.name)
+            {
+                names.push(host.name.clone());
+            }
+        }
+        names
     }
 
     fn read(path: &Path, passphrase: &str) -> AppResult<Self> {
@@ -157,6 +182,7 @@ fn collect(state: &AppState) -> AppResult<(Backup, Vec<String>)> {
         repositories,
         stacks,
         settings: Some(state.settings.get()?),
+        without_secrets: without_secrets.clone(),
     };
     Ok((backup, without_secrets))
 }
@@ -577,6 +603,36 @@ mod tests {
         let refused = restore_from(&state, &file, PASS).await.unwrap_err();
         assert_eq!(refused.code, ErrorCode::BundleTooNew);
         assert_eq!(state.hosts.store.list().unwrap().len(), 1);
+    }
+
+    #[tokio::test]
+    async fn the_preview_names_what_comes_back_without_its_secrets() {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("homeport.backup");
+        fill(&computer(dir.path(), 1));
+        // Backed up while the keychain had another key: nothing opens.
+        let locked = computer(dir.path(), 2);
+        let outcome = backup_to(&locked, &file, PASS).unwrap();
+        assert!(!outcome.without_secrets.is_empty());
+        let preview = Backup::read(&file, PASS).unwrap().contents();
+        for name in ["prod", "shop", "infra", "ghcr.io", "kind-dev"] {
+            assert!(
+                preview.without_secrets.iter().any(|n| n == name),
+                "{name} in {:?}",
+                preview.without_secrets
+            );
+        }
+
+        // A backup from before the list was kept still names its Hosts.
+        let older = r#"{"version":1,"createdAt":"2026-01-01T00:00:00Z","appVersion":"0.12.0",
+            "backup":true,
+            "hosts":[{"id":"h1","name":"tls","connection":{"kind":"tls","address":"h:2376"},
+                      "enabled":true,"hostKey":null,"secrets":null},
+                     {"id":"h2","name":"lab","connection":{"kind":"tcp","address":"lab:2375"},
+                      "enabled":true,"hostKey":null,"secrets":null}]}"#;
+        std::fs::write(&file, bundle::seal(PASS, older.as_bytes()).unwrap()).unwrap();
+        let preview = Backup::read(&file, PASS).unwrap().contents();
+        assert_eq!(preview.without_secrets, ["tls"]);
     }
 
     #[tokio::test]

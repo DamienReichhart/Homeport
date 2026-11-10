@@ -96,6 +96,9 @@ export default {
   'settings.restore.repositories':
     '{count, plural, zero {لا مستودعات} one {مستودع واحد} two {مستودعان} few {# مستودعات} many {# مستودعًا} other {# مستودع}}',
   'settings.restore.settings': 'إعداداتك',
+  'settings.restore.withoutSecrets':
+    'نُسخت هذه احتياطيًا بلا أسرارها، إذ تعذّر فتحها حينها. ستعود بلا أسرار، مستبدلةً الأسرار التي لديها هنا، أما تسجيلات دخول السجلات بينها فلن تعود إطلاقًا:',
+  'settings.restore.withoutSecretsList': 'نُسخت احتياطيًا بلا أسرارها',
   'settings.restore.replaces':
     'تستبدل الاستعادة كل مضيف ومكدس وتسجيل دخول إلى سجل ومستودع وإعداد لديك الآن، وتنسى أحداث المحرك وسجل النشر. يُحتفظ أولًا بنسخة من البيانات الحالية في مجلد بيانات Homeport.',
   'settings.restore.confirm': 'استبدال كل شيء',

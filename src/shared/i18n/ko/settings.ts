@@ -92,6 +92,9 @@ export default {
   'settings.restore.registries': '{count, plural, other {레지스트리 로그인 #개}}',
   'settings.restore.repositories': '{count, plural, other {저장소 #개}}',
   'settings.restore.settings': '설정',
+  'settings.restore.withoutSecrets':
+    '다음 항목은 당시 비밀 정보를 열 수 없어 비밀 정보 없이 백업되었습니다. 복원하면 비밀 정보 없이 돌아오며 여기에 있는 비밀 정보를 대체합니다. 이 중 레지스트리 로그인은 전혀 돌아오지 않습니다:',
+  'settings.restore.withoutSecretsList': '비밀 정보 없이 백업된 항목',
   'settings.restore.replaces':
     '복원하면 현재 있는 모든 호스트, 스택, 레지스트리 로그인, 저장소, 설정이 교체되고 엔진 이벤트와 배포 기록은 삭제됩니다. 먼저 현재 데이터의 사본이 Homeport 데이터 폴더에 보관됩니다.',
   'settings.restore.confirm': '모두 교체',

@@ -1050,6 +1050,12 @@ export type BackupContents = {
 	registries: number,
 	repositories: number,
 	settings: boolean,
+	/**
+	 *  What it holds without its secret, by name: Hosts, Clusters, Stacks,
+	 *  registry logins (left out altogether) and repositories. Restoring
+	 *  replaces the secrets they have here with none.
+	 */
+	withoutSecrets: string[],
 };
 
 /**  What a backup wrote. */

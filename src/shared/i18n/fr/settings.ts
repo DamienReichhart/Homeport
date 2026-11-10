@@ -95,6 +95,9 @@ export default {
     '{count, plural, one {# identifiant de registre} other {# identifiants de registre}}',
   'settings.restore.repositories': '{count, plural, one {# dépôt} other {# dépôts}}',
   'settings.restore.settings': 'Vos paramètres',
+  'settings.restore.withoutSecrets':
+    'Ces éléments ont été sauvegardés sans leurs secrets, qui n’ont pas pu être ouverts à ce moment-là. Ils reviennent sans eux, à la place des secrets qu’ils ont ici, et les identifiants de registre parmi eux ne reviennent pas du tout :',
+  'settings.restore.withoutSecretsList': 'Sauvegardés sans leurs secrets',
   'settings.restore.replaces':
     'La restauration remplace chaque hôte, stack, identifiant de registre, dépôt et paramètre que vous avez actuellement, et oublie les événements des moteurs et l’historique des déploiements. Une copie des données actuelles est d’abord conservée dans le dossier de données de Homeport.',
   'settings.restore.confirm': 'Tout remplacer',

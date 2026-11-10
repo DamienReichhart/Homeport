@@ -86,6 +86,9 @@ export default {
   'settings.restore.registries': '{count, plural, other {# 个镜像仓库登录}}',
   'settings.restore.repositories': '{count, plural, other {# 个仓库}}',
   'settings.restore.settings': '你的设置',
+  'settings.restore.withoutSecrets':
+    '以下内容在备份时无法打开其机密信息，因此备份中不含机密信息。恢复后它们不带机密信息，并会替换它们在此处已有的机密信息；其中的镜像仓库登录则完全不会恢复：',
+  'settings.restore.withoutSecretsList': '备份中不含机密信息的内容',
   'settings.restore.replaces':
     '恢复会替换你当前的所有主机、堆栈、镜像仓库登录、仓库和设置，并清除引擎事件和部署历史。恢复前会先在 Homeport 的数据文件夹中保留一份当前数据的副本。',
   'settings.restore.confirm': '全部替换',

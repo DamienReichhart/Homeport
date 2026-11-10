@@ -96,6 +96,9 @@ export default {
     '{count, plural, one {# Registry-Anmeldung} other {# Registry-Anmeldungen}}',
   'settings.restore.repositories': '{count, plural, one {# Repository} other {# Repositorys}}',
   'settings.restore.settings': 'Ihre Einstellungen',
+  'settings.restore.withoutSecrets':
+    'Diese wurden ohne ihre Geheimnisse gesichert, die sich damals nicht öffnen ließen. Sie kommen ohne sie zurück und ersetzen die Geheimnisse, die sie hier haben; Registry-Anmeldungen darunter kommen gar nicht zurück:',
+  'settings.restore.withoutSecretsList': 'Ohne ihre Geheimnisse gesichert',
   'settings.restore.replaces':
     'Die Wiederherstellung ersetzt alle Hosts, Stacks, Registry-Anmeldungen, Repositorys und Einstellungen, die Sie jetzt haben, und vergisst die Engine-Ereignisse und den Bereitstellungsverlauf. Zuvor wird eine Kopie der aktuellen Daten im Datenordner von Homeport abgelegt.',
   'settings.restore.confirm': 'Alles ersetzen',

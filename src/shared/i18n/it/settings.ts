@@ -95,6 +95,9 @@ export default {
     '{count, plural, one {# accesso al registro} other {# accessi ai registri}}',
   'settings.restore.repositories': '{count, plural, one {# repository} other {# repository}}',
   'settings.restore.settings': 'Le tue impostazioni',
+  'settings.restore.withoutSecrets':
+    'Questi sono stati salvati senza i loro segreti, che allora non è stato possibile aprire. Tornano senza di essi, al posto dei segreti che hanno qui, e gli accessi ai registri tra questi non tornano affatto:',
+  'settings.restore.withoutSecretsList': 'Salvati senza i loro segreti',
   'settings.restore.replaces':
     'Il ripristino sostituisce tutti gli host, gli stack, gli accessi ai registri, i repository e le impostazioni che hai ora, e dimentica gli eventi degli Engine e la cronologia delle distribuzioni. Prima viene conservata una copia dei dati attuali nella cartella dei dati di Homeport.',
   'settings.restore.confirm': 'Sostituisci tutto',

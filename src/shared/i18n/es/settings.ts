@@ -94,6 +94,9 @@ export default {
     '{count, plural, one {# inicio de sesión de registro} other {# inicios de sesión de registros}}',
   'settings.restore.repositories': '{count, plural, one {# repositorio} other {# repositorios}}',
   'settings.restore.settings': 'Tus ajustes',
+  'settings.restore.withoutSecrets':
+    'Estos se guardaron sin sus secretos, que no se pudieron abrir entonces. Vuelven sin ellos, reemplazando los secretos que tienen aquí, y los inicios de sesión de registro entre ellos no vuelven en absoluto:',
+  'settings.restore.withoutSecretsList': 'Guardados sin sus secretos',
   'settings.restore.replaces':
     'Restaurar sustituye todos los hosts, stacks, inicios de sesión de registros, repositorios y ajustes que tienes ahora, y olvida los eventos del Engine y el historial de despliegues. Antes se guarda una copia de los datos actuales en la carpeta de datos de Homeport.',
   'settings.restore.confirm': 'Sustituirlo todo',
