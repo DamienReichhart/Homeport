@@ -1,9 +1,14 @@
 //! Kubernetes Events: what happened to a resource, and why.
 
 use k8s_openapi::api::core::v1::Event;
+use kube::api::ListParams;
 use serde::Serialize;
 
+use homeport_core::error::AppResult;
+
+use super::events;
 use crate::resources::common::time;
+use crate::resources::{On, ResourceKind};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -72,4 +77,45 @@ pub fn sort(events: &mut [EventView]) {
             .cmp(&(a.kind == "Warning"))
             .then_with(|| b.last_seen.cmp(&a.last_seen))
     });
+}
+
+impl On {
+    /// The Events in `namespace` (every one with `None`), warnings first.
+    pub async fn events(&self, namespace: Option<&str>) -> AppResult<Vec<EventView>> {
+        let items: Vec<Event> = self
+            .list(
+                self.api(namespace),
+                ResourceKind::Event,
+                namespace,
+                ListParams::default(),
+            )
+            .await?;
+        let mut views: Vec<_> = items.iter().map(events::view).collect();
+        events::sort(&mut views);
+        Ok(views)
+    }
+
+    /// The Events about one object, warnings first.
+    pub async fn object_events(
+        &self,
+        kind: ResourceKind,
+        namespace: Option<&str>,
+        name: &str,
+    ) -> AppResult<Vec<EventView>> {
+        let fields = format!(
+            "involvedObject.kind={},involvedObject.name={name}",
+            kind.kind()
+        );
+        let items: Vec<Event> = self
+            .list(
+                self.api(namespace),
+                ResourceKind::Event,
+                namespace,
+                ListParams::default().fields(&fields),
+            )
+            .await?;
+        let mut views: Vec<_> = items.iter().map(events::view).collect();
+        events::sort(&mut views);
+        Ok(views)
+    }
 }

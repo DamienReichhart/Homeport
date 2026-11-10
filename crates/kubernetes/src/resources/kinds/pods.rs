@@ -3,15 +3,18 @@
 use std::collections::BTreeMap;
 
 use k8s_openapi::api::core::v1::{Container, ContainerStatus, Namespace, Pod};
+use k8s_openapi::apimachinery::pkg::api::resource::Quantity;
+use kube::api::ListParams;
 use serde::Serialize;
 
+use homeport_core::error::AppResult;
+
+use super::pods;
 use crate::metrics::quantity;
-
-use k8s_openapi::apimachinery::pkg::api::resource::Quantity;
-
 use crate::resources::common::{
     annotations, conditions, created, labels, owner, time, ConditionView, OwnerView,
 };
+use crate::resources::{On, ResourceKind};
 
 /// How a Pod is doing, for its colour.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, specta::Type)]
@@ -393,5 +396,55 @@ pub fn namespace(ns: &Namespace) -> NamespaceView {
             .unwrap_or_else(|| "Active".into()),
         created: created(&ns.metadata),
         labels: labels(&ns.metadata),
+    }
+}
+
+impl On {
+    pub async fn namespaces(&self) -> AppResult<Vec<NamespaceView>> {
+        let items: Vec<Namespace> = self
+            .list(
+                self.cluster_api(),
+                ResourceKind::Namespace,
+                None,
+                ListParams::default(),
+            )
+            .await?;
+        let mut views: Vec<_> = items.iter().map(pods::namespace).collect();
+        views.sort_by(|a, b| a.name.cmp(&b.name));
+        Ok(views)
+    }
+
+    /// The Pods in `namespace` (every one with `None`), those matching a
+    /// label `selector` or on a `node` when given.
+    pub async fn pods(
+        &self,
+        namespace: Option<&str>,
+        selector: Option<&str>,
+        node: Option<&str>,
+    ) -> AppResult<Vec<PodView>> {
+        let mut params = ListParams::default();
+        if let Some(selector) = selector.filter(|s| !s.is_empty()) {
+            params = params.labels(selector);
+        }
+        if let Some(node) = node {
+            params = params.fields(&format!("spec.nodeName={node}"));
+        }
+        let items: Vec<Pod> = self
+            .list(self.api(namespace), ResourceKind::Pod, namespace, params)
+            .await?;
+        let mut views: Vec<_> = items.iter().map(pods::view).collect();
+        views.sort_by(|a, b| (&a.namespace, &a.name).cmp(&(&b.namespace, &b.name)));
+        Ok(views)
+    }
+
+    pub async fn pod(&self, namespace: &str, name: &str) -> AppResult<PodDetail> {
+        let ns = Some(namespace);
+        let pod: Pod = self.get(self.api(ns), ResourceKind::Pod, ns, name).await?;
+        Ok(pods::detail(&pod))
+    }
+
+    pub(crate) async fn get_pod(&self, namespace: &str, name: &str) -> AppResult<Pod> {
+        let ns = Some(namespace);
+        self.get(self.api(ns), ResourceKind::Pod, ns, name).await
     }
 }

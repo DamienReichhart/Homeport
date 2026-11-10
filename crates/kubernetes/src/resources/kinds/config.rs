@@ -4,9 +4,17 @@
 use std::collections::BTreeMap;
 
 use k8s_openapi::api::core::v1::{ConfigMap, Secret};
+use kube::api::ListParams;
 use serde::Serialize;
 
+use homeport_core::error::{AppError, AppResult, ErrorCode};
+
+use super::config;
 use crate::resources::common::{annotations, created, labels};
+use crate::{
+    messages as msg,
+    resources::{sorted, On, ResourceKind},
+};
 
 /// One key of a ConfigMap or Secret, and how big its value is.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
@@ -175,4 +183,66 @@ pub fn value(s: &Secret, key: &str) -> Option<RevealedValue> {
             binary: true,
         },
     })
+}
+
+impl On {
+    pub async fn config_maps(&self, namespace: Option<&str>) -> AppResult<Vec<ConfigMapView>> {
+        let items: Vec<ConfigMap> = self
+            .list(
+                self.api(namespace),
+                ResourceKind::ConfigMap,
+                namespace,
+                ListParams::default(),
+            )
+            .await?;
+        Ok(sorted(
+            items.iter().map(config::config_map).collect(),
+            |c| (c.namespace.clone(), c.name.clone()),
+        ))
+    }
+
+    pub async fn config_map(&self, namespace: &str, name: &str) -> AppResult<ConfigMapDetail> {
+        let ns = Some(namespace);
+        let c: ConfigMap = self
+            .get(self.api(ns), ResourceKind::ConfigMap, ns, name)
+            .await?;
+        Ok(config::config_map_detail(&c))
+    }
+
+    /// Secrets' names, types and keys; never a value.
+    pub async fn secrets(&self, namespace: Option<&str>) -> AppResult<Vec<SecretView>> {
+        let items: Vec<Secret> = self
+            .list(
+                self.api(namespace),
+                ResourceKind::Secret,
+                namespace,
+                ListParams::default(),
+            )
+            .await?;
+        Ok(sorted(items.iter().map(config::secret).collect(), |s| {
+            (s.namespace.clone(), s.name.clone())
+        }))
+    }
+
+    pub async fn secret(&self, namespace: &str, name: &str) -> AppResult<SecretDetail> {
+        let ns = Some(namespace);
+        let s: Secret = self
+            .get(self.api(ns), ResourceKind::Secret, ns, name)
+            .await?;
+        Ok(config::secret_detail(&s))
+    }
+
+    /// One value of a Secret, decoded, for the user who asked to see it.
+    pub async fn reveal(&self, namespace: &str, name: &str, key: &str) -> AppResult<RevealedValue> {
+        let ns = Some(namespace);
+        let s: Secret = self
+            .get(self.api(ns), ResourceKind::Secret, ns, name)
+            .await?;
+        config::value(&s, key).ok_or_else(|| {
+            AppError::new(
+                ErrorCode::NotFound,
+                msg::SECRET_KEY_GONE.with("key", key).with("name", name),
+            )
+        })
+    }
 }

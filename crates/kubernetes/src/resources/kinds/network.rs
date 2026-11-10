@@ -9,9 +9,14 @@ use k8s_openapi::{
     },
     apimachinery::pkg::util::intstr::IntOrString,
 };
+use kube::api::ListParams;
 use serde::Serialize;
 
+use homeport_core::error::AppResult;
+
+use super::network;
 use crate::resources::common::{annotations, created, labels, selector_string};
+use crate::resources::{sorted, On, ResourceKind};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -266,5 +271,57 @@ pub fn ingress_detail(i: &Ingress) -> IngressDetail {
                 secret: t.secret_name.clone(),
             })
             .collect(),
+    }
+}
+
+impl On {
+    pub(crate) async fn get_service(&self, namespace: &str, name: &str) -> AppResult<Service> {
+        let ns = Some(namespace);
+        self.get(self.api(ns), ResourceKind::Service, ns, name)
+            .await
+    }
+
+    pub async fn services(&self, namespace: Option<&str>) -> AppResult<Vec<ClusterServiceView>> {
+        let items: Vec<Service> = self
+            .list(
+                self.api(namespace),
+                ResourceKind::Service,
+                namespace,
+                ListParams::default(),
+            )
+            .await?;
+        Ok(sorted(items.iter().map(network::service).collect(), |s| {
+            (s.namespace.clone(), s.name.clone())
+        }))
+    }
+
+    pub async fn service(&self, namespace: &str, name: &str) -> AppResult<ClusterServiceDetail> {
+        let ns = Some(namespace);
+        let s: Service = self
+            .get(self.api(ns), ResourceKind::Service, ns, name)
+            .await?;
+        Ok(network::service_detail(&s))
+    }
+
+    pub async fn ingresses(&self, namespace: Option<&str>) -> AppResult<Vec<IngressView>> {
+        let items: Vec<Ingress> = self
+            .list(
+                self.api(namespace),
+                ResourceKind::Ingress,
+                namespace,
+                ListParams::default(),
+            )
+            .await?;
+        Ok(sorted(items.iter().map(network::ingress).collect(), |i| {
+            (i.namespace.clone(), i.name.clone())
+        }))
+    }
+
+    pub async fn ingress(&self, namespace: &str, name: &str) -> AppResult<IngressDetail> {
+        let ns = Some(namespace);
+        let i: Ingress = self
+            .get(self.api(ns), ResourceKind::Ingress, ns, name)
+            .await?;
+        Ok(network::ingress_detail(&i))
     }
 }

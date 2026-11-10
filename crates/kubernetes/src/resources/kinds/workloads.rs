@@ -8,11 +8,16 @@ use k8s_openapi::api::{
     batch::v1::{CronJob, Job},
     core::v1::PodTemplateSpec,
 };
+use kube::api::ListParams;
 use serde::{Deserialize, Serialize};
 
+use homeport_core::error::AppResult;
+
+use super::workloads;
 use crate::resources::common::{
     annotations, conditions, created, labels, owner, time, ConditionView, OwnerView,
 };
+use crate::resources::On;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -366,5 +371,92 @@ pub fn cron_job_detail(c: &CronJob) -> WorkloadDetail {
         conditions: vec![],
         containers: containers(template),
         strategy: c.spec.as_ref().and_then(|s| s.concurrency_policy.clone()),
+    }
+}
+
+impl On {
+    /// The workloads of `kind` in `namespace` (every one with `None`).
+    pub async fn workloads(
+        &self,
+        kind: WorkloadKind,
+        namespace: Option<&str>,
+    ) -> AppResult<Vec<WorkloadView>> {
+        let r = kind.resource();
+        let p = ListParams::default;
+        let mut views: Vec<WorkloadView> = match kind {
+            WorkloadKind::Deployment => self
+                .list::<Deployment>(self.api(namespace), r, namespace, p())
+                .await?
+                .iter()
+                .map(workloads::deployment)
+                .collect(),
+            WorkloadKind::StatefulSet => self
+                .list::<StatefulSet>(self.api(namespace), r, namespace, p())
+                .await?
+                .iter()
+                .map(workloads::stateful_set)
+                .collect(),
+            WorkloadKind::DaemonSet => self
+                .list::<DaemonSet>(self.api(namespace), r, namespace, p())
+                .await?
+                .iter()
+                .map(workloads::daemon_set)
+                .collect(),
+            WorkloadKind::Job => self
+                .list::<Job>(self.api(namespace), r, namespace, p())
+                .await?
+                .iter()
+                .map(workloads::job)
+                .collect(),
+            WorkloadKind::CronJob => self
+                .list::<CronJob>(self.api(namespace), r, namespace, p())
+                .await?
+                .iter()
+                .map(workloads::cron_job)
+                .collect(),
+        };
+        views.sort_by(|a, b| (&a.namespace, &a.name).cmp(&(&b.namespace, &b.name)));
+        Ok(views)
+    }
+
+    pub async fn workload(
+        &self,
+        kind: WorkloadKind,
+        namespace: &str,
+        name: &str,
+    ) -> AppResult<WorkloadDetail> {
+        let r = kind.resource();
+        let ns = Some(namespace);
+        Ok(match kind {
+            WorkloadKind::Deployment => {
+                workloads::deployment_detail(&self.get(self.api(ns), r, ns, name).await?)
+            }
+            WorkloadKind::StatefulSet => {
+                workloads::stateful_set_detail(&self.get(self.api(ns), r, ns, name).await?)
+            }
+            WorkloadKind::DaemonSet => {
+                workloads::daemon_set_detail(&self.get(self.api(ns), r, ns, name).await?)
+            }
+            WorkloadKind::Job => workloads::job_detail(&self.get(self.api(ns), r, ns, name).await?),
+            WorkloadKind::CronJob => {
+                workloads::cron_job_detail(&self.get(self.api(ns), r, ns, name).await?)
+            }
+        })
+    }
+
+    /// The Jobs a CronJob started, newest first.
+    pub async fn jobs_of(&self, namespace: &str, cron_job: &str) -> AppResult<Vec<WorkloadView>> {
+        let mut jobs: Vec<WorkloadView> = self
+            .workloads(WorkloadKind::Job, Some(namespace))
+            .await?
+            .into_iter()
+            .filter(|j| {
+                j.owner
+                    .as_ref()
+                    .is_some_and(|o| o.kind == "CronJob" && o.name == cron_job)
+            })
+            .collect();
+        jobs.sort_by(|a, b| b.created.cmp(&a.created));
+        Ok(jobs)
     }
 }

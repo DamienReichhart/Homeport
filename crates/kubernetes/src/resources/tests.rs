@@ -1,5 +1,6 @@
 use k8s_openapi::api::{apps::v1::Deployment, batch::v1::Job, core::v1::Pod};
 
+use super::kinds::{config, events, network, nodes, pods, workloads};
 use super::*;
 
 fn from<K: DeserializeOwned>(json: serde_json::Value) -> K {

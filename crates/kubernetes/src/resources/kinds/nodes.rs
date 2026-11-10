@@ -3,11 +3,15 @@
 use std::collections::BTreeMap;
 
 use k8s_openapi::api::core::v1::Node;
+use kube::api::ListParams;
 use serde::Serialize;
 
-use crate::metrics::quantity;
+use homeport_core::error::AppResult;
 
+use super::nodes;
+use crate::metrics::quantity;
 use crate::resources::common::{annotations, conditions, created, labels, ConditionView};
+use crate::resources::{sorted, On, ResourceKind};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]
@@ -149,5 +153,28 @@ pub fn detail(n: &Node) -> ClusterNodeDetail {
             .flatten()
             .map(|a| format!("{} {}", a.type_, a.address))
             .collect(),
+    }
+}
+
+impl On {
+    pub async fn nodes(&self) -> AppResult<Vec<ClusterNodeView>> {
+        let items: Vec<Node> = self
+            .list(
+                self.cluster_api(),
+                ResourceKind::Node,
+                None,
+                ListParams::default(),
+            )
+            .await?;
+        Ok(sorted(items.iter().map(nodes::view).collect(), |n| {
+            n.name.clone()
+        }))
+    }
+
+    pub async fn node(&self, name: &str) -> AppResult<ClusterNodeDetail> {
+        let n: Node = self
+            .get(self.cluster_api(), ResourceKind::Node, None, name)
+            .await?;
+        Ok(nodes::detail(&n))
     }
 }
