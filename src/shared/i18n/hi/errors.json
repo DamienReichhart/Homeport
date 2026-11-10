@@ -701,6 +701,7 @@
   "errors.quadlets.unitName": "“{name}” systemd सर्विस का नाम नहीं है।",
   "errors.quadlets.unitNotLoaded": "systemd, {unit} को नहीं जानता।",
   "errors.quadlets.unitNotLoaded.hint": "Quadlet उन फ़ाइलों को छोड़ देता है जिन्हें वह पढ़ नहीं सकता। यूनिट फ़ाइल जाँचें, फिर होस्ट पर systemctl daemon-reload कारण दिखाता है।",
+  "errors.rbac.checkIncomplete": "जाँचने के लिए एक वर्ब और एक रिसोर्स बताएँ।",
   "errors.reach.connectionLost": "{address} से कनेक्शन कट गया।",
   "errors.reach.connectionLost.hint": "हो सकता है मशीन या नेटवर्क रीस्टार्ट हुआ हो। Homeport कोशिश करता रहता है।",
   "errors.reach.engineConnectionLost": "Docker Engine से कनेक्शन कट गया।",

@@ -701,6 +701,7 @@
   "errors.quadlets.unitName": "\"{name}\" isn't a systemd service name.",
   "errors.quadlets.unitNotLoaded": "systemd doesn't know {unit}.",
   "errors.quadlets.unitNotLoaded.hint": "Quadlet skips files it can't read. Check the unit file, then systemctl daemon-reload on the host shows why.",
+  "errors.rbac.checkIncomplete": "Name a verb and a resource to check.",
   "errors.reach.connectionLost": "The connection to {address} was cut.",
   "errors.reach.connectionLost.hint": "The machine or the network may have restarted. Homeport keeps retrying.",
   "errors.reach.engineConnectionLost": "The connection to the Docker Engine was cut.",

@@ -143,6 +143,8 @@ homeport_core::messages! {
     /// …on a resource that isn't in a Namespace.
     FORBIDDEN = "errors.clusters.forbidden" => "Your credentials don't allow “{verb}” on {resource}.";
     FORBIDDEN_HINT = "errors.clusters.forbidden.hint" => "Ask the cluster's administrator for this permission. Check with:";
+    /// A "Can I …?" check without a verb or a resource.
+    RBAC_CHECK_INCOMPLETE = "errors.rbac.checkIncomplete" => "Name a verb and a resource to check.";
     /// The resource was deleted while it was open.
     RESOURCE_GONE = "errors.clusters.resourceGone" => "{kind} {name} no longer exists.";
     /// Scaling to fewer than no Pods.

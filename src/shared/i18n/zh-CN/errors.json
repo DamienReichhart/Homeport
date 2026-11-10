@@ -701,6 +701,7 @@
   "errors.quadlets.unitName": "“{name}”不是有效的 systemd 服务名称。",
   "errors.quadlets.unitNotLoaded": "systemd 不认识 {unit}。",
   "errors.quadlets.unitNotLoaded.hint": "Quadlet 会跳过无法读取的文件。请检查单元文件，然后在主机上运行 systemctl daemon-reload 查看原因。",
+  "errors.rbac.checkIncomplete": "请指定要检查的动词和资源。",
   "errors.reach.connectionLost": "与 {address} 的连接已中断。",
   "errors.reach.connectionLost.hint": "机器或网络可能已重启。Homeport 会持续重试。",
   "errors.reach.engineConnectionLost": "与 Docker Engine 的连接已中断。",

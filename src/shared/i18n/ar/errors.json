@@ -701,6 +701,7 @@
   "errors.quadlets.unitName": "«{name}» ليس اسم خدمة systemd.",
   "errors.quadlets.unitNotLoaded": "لا يعرف systemd {unit}.",
   "errors.quadlets.unitNotLoaded.hint": "يتخطى Quadlet الملفات التي لا يستطيع قراءتها. تحقق من ملف الوحدة، ثم يوضح systemctl daemon-reload على المضيف السبب.",
+  "errors.rbac.checkIncomplete": "حدّد فعلًا وموردًا للتحقق منهما.",
   "errors.reach.connectionLost": "انقطع الاتصال بـ {address}.",
   "errors.reach.connectionLost.hint": "ربما أُعيد تشغيل الجهاز أو الشبكة. يواصل Homeport إعادة المحاولة.",
   "errors.reach.engineConnectionLost": "انقطع الاتصال بمحرك Docker.",

@@ -701,6 +701,7 @@
   "errors.quadlets.unitName": "«{name}» — недопустимое имя сервиса systemd.",
   "errors.quadlets.unitNotLoaded": "systemd не знает {unit}.",
   "errors.quadlets.unitNotLoaded.hint": "Quadlet пропускает файлы, которые не может прочитать. Проверьте файл юнита; почему он пропущен, покажет systemctl daemon-reload на хосте.",
+  "errors.rbac.checkIncomplete": "Укажите глагол и ресурс для проверки.",
   "errors.reach.connectionLost": "Соединение с {address} прервано.",
   "errors.reach.connectionLost.hint": "Возможно, машина или сеть перезапустились. Homeport продолжает попытки.",
   "errors.reach.engineConnectionLost": "Соединение с Docker Engine прервано.",

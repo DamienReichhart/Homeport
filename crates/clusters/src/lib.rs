@@ -9,6 +9,7 @@
 //! - [`metrics`] reads Pods' and Nodes' CPU and memory from the Metrics API
 //!   metrics-server serves, polled while a page is open.
 //! - [`service`] holds the use cases the app exposes.
+//! - [`rbac`] reads RBAC objects and computes what a subject may do.
 //! - [`proxy`] lets a CLI reach a Cluster with no credential on disk, which
 //!   [`helm`] runs through (ADR 0009).
 //!
@@ -30,6 +31,7 @@ pub mod metrics;
 pub mod model;
 pub mod nomad;
 pub mod proxy;
+pub mod rbac;
 pub mod registry;
 pub mod resources;
 pub mod service;

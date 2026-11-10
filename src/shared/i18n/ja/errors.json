@@ -701,6 +701,7 @@
   "errors.quadlets.unitName": "「{name}」は systemd のサービス名ではありません。",
   "errors.quadlets.unitNotLoaded": "systemd は {unit} を認識していません。",
   "errors.quadlets.unitNotLoaded.hint": "Quadlet は読み取れないファイルをスキップします。ユニットファイルを確認してください。ホストで systemctl daemon-reload を実行すると、理由が表示されます。",
+  "errors.rbac.checkIncomplete": "確認する動詞とリソースを指定してください。",
   "errors.reach.connectionLost": "{address} への接続が切断されました。",
   "errors.reach.connectionLost.hint": "マシンまたはネットワークが再起動した可能性があります。Homeport は再試行を続けます。",
   "errors.reach.engineConnectionLost": "Docker Engine への接続が切断されました。",

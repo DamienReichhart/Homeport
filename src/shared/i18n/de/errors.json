@@ -701,6 +701,7 @@
   "errors.quadlets.unitName": "„{name}“ ist kein systemd-Service-Name.",
   "errors.quadlets.unitNotLoaded": "systemd kennt {unit} nicht.",
   "errors.quadlets.unitNotLoaded.hint": "Quadlet überspringt Dateien, die es nicht lesen kann. Prüfen Sie die Unit-Datei; systemctl daemon-reload auf dem Host zeigt dann den Grund.",
+  "errors.rbac.checkIncomplete": "Geben Sie ein Verb und eine Ressource zum Prüfen an.",
   "errors.reach.connectionLost": "Die Verbindung zu {address} wurde unterbrochen.",
   "errors.reach.connectionLost.hint": "Der Rechner oder das Netzwerk wurde möglicherweise neu gestartet. Homeport versucht es weiter.",
   "errors.reach.engineConnectionLost": "Die Verbindung zur Docker Engine wurde unterbrochen.",

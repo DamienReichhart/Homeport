@@ -7,7 +7,7 @@
 
 pub mod actions;
 mod api_type;
-mod common;
+pub(crate) mod common;
 pub mod config;
 pub mod dynamic;
 pub mod events;
