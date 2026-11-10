@@ -79,10 +79,10 @@ Chaque personne exécute son propre Homeport avec ses propres hôtes et clés. A
 
 Oui, de deux façons :
 
-- **Tout** : **Paramètres → Données → Sauvegarder…** enregistre chaque hôte, cluster, stack, identifiant de registre, dépôt et paramètre, avec leurs secrets, dans un fichier protégé par une phrase secrète d’au moins 12 caractères. Sur le nouvel ordinateur, **Restaurer…** au même endroit l’ouvre, liste ce qu’il contient, et remplace ce qui s’y trouve. Tout se connecte et se déploie sans vous redemander de clé ni de mot de passe. Voir [Vos données et sauvegardes](/docs/reference/data-and-backups/#backing-up-in-homeport).
+- **Tout** : **Paramètres → Données → Sauvegarder…** enregistre chaque hôte, cluster, stack, identifiant de registre, dépôt et paramètre, avec leurs secrets, dans un fichier protégé par une phrase secrète d’au moins 12 caractères. Sur le nouvel ordinateur, **Restaurer…** au même endroit l’ouvre, liste ce qu’il contient, et remplace ce qui s’y trouve. Tout se connecte et se déploie sans vous redemander de clé ni de mot de passe. Voir [Vos données et sauvegardes](/docs/reference/data-and-backups/#sauvegarder-dans-homeport).
 - **Certains hôtes** : sur la page **Hôtes**, **Exportez** les hôtes que vous choisissez, et **Importez**-les sur l’autre ordinateur, à côté des hôtes qu’il a déjà. Voir [passer à un autre ordinateur](/docs/reference/security/#passer-à-un-autre-ordinateur).
 
-Copier `homeport.db` ne fonctionne pas pour les secrets : ils sont chiffrés avec une clé conservée dans le trousseau de cet ordinateur, et apparaissent comme **Identifiants perdus** ailleurs. Voir [copier vous-même les fichiers](/docs/reference/data-and-backups/#copying-the-files-yourself).
+Copier `homeport.db` ne fonctionne pas pour les secrets : ils sont chiffrés avec une clé conservée dans le trousseau de cet ordinateur, et apparaissent comme **Identifiants perdus** ailleurs. Voir [copier vous-même les fichiers](/docs/reference/data-and-backups/#copier-vous-même-les-fichiers).
 
 ### Où Homeport conserve-t-il ses données ?
 
@@ -118,7 +118,7 @@ Sous Windows, sous macOS et avec l’AppImage, Homeport vous indique quand une n
 
 ### Une mise à jour me fera-t-elle perdre mes hôtes ?
 
-Non. Chaque version de Homeport ouvre les données de toutes les versions antérieures, jusqu’à 0.1.0, et les met à niveau sans rien perdre : hôtes, stacks, clusters, paramètres et secrets. Revenir à une version plus ancienne est la seule chose qui n’est pas prise en charge : l’ancien Homeport s’arrête avec un message au lieu de modifier quoi que ce soit. Voir [Vos données d’une version à l’autre](/docs/reference/updating/#your-data-across-versions).
+Non. Chaque version de Homeport ouvre les données de toutes les versions antérieures, jusqu’à 0.1.0, et les met à niveau sans rien perdre : hôtes, stacks, clusters, paramètres et secrets. Revenir à une version plus ancienne est la seule chose qui n’est pas prise en charge : l’ancien Homeport s’arrête avec un message au lieu de modifier quoi que ce soit. Voir [Vos données d’une version à l’autre](/docs/reference/updating/#vos-données-dune-version-à-lautre).
 
 ### Homeport est-il sur Homebrew, winget, Flathub ou l’AUR ?
 

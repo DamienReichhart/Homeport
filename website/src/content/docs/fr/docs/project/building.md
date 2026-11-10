@@ -66,7 +66,7 @@ La CI les exécute aussi, dans le job `engine-tests` de `.github/workflows/ci.ym
 
 `e2e/` pilote la vraie application — le backend Rust, la webview et les appels entre les deux — avec [WebdriverIO](https://webdriver.io) via `tauri-driver`, contre le Docker Engine local. Les scénarios : l’application démarre et se connecte au moteur local ; les journaux d’un conteneur défilent et il s’arrête depuis l’application ; une image est récupérée ; une stack gérée est déployée avec un environnement chiffré ; un redémarrage conserve les hôtes, la stack et son secret ; et un hôte SSH est ajouté avec une clé existante, sa clé de serveur approuvée, puis connecté. Ils trouvent les éléments par leur rôle, leur libellé et leur texte, jamais par une classe CSS.
 
-Ils ne tournent que sous Linux : macOS n’a pas de WebDriver pour sa webview. En plus des [prérequis](#prerequisites) et d’un Docker Engine, ils ont besoin de `tauri-driver` (`cargo install tauri-driver --locked`), du pilote de WebKit, d’un écran virtuel et d’un trousseau : sous Debian et Ubuntu, `webkit2gtk-driver`, `xvfb`, `dbus-x11` et `gnome-keyring`.
+Ils ne tournent que sous Linux : macOS n’a pas de WebDriver pour sa webview. En plus des [prérequis](#prérequis) et d’un Docker Engine, ils ont besoin de `tauri-driver` (`cargo install tauri-driver --locked`), du pilote de WebKit, d’un écran virtuel et d’un trousseau : sous Debian et Ubuntu, `webkit2gtk-driver`, `xvfb`, `dbus-x11` et `gnome-keyring`.
 
 ```sh
 bun tauri build --debug --no-bundle

@@ -3,7 +3,7 @@ title: Dépannage
 description: Les solutions aux problèmes que vous rencontrerez le plus probablement, classées selon le message qu’affiche Homeport.
 ---
 
-Si votre problème n’est pas ici, [ouvrez une issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) avec l’[archive de diagnostic](#exporting-diagnostics-for-a-bug-report) de **Paramètres → À propos**.
+Si votre problème n’est pas ici, [ouvrez une issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) avec l’[archive de diagnostic](#exporter-le-diagnostic-pour-un-rapport-de-bug) de **Paramètres → À propos**.
 
 ## Installation et démarrage
 
@@ -49,7 +49,7 @@ Homeport n’a pas pu joindre votre trousseau. Sous Linux, cela signifie en gén
 
 Vous avez installé un Homeport plus ancien que celui qui a ouvert vos données en dernier, par exemple en réinstallant une version antérieure. Chaque version met la base de données à niveau vers son propre format au démarrage, et une version plus ancienne ne peut pas lire un format plus récent ; Homeport s’arrête donc avant de modifier quoi que ce soit : la fenêtre affiche ce message, le chemin de la base de données et **Ouvrir le dossier**, et rien d’autre ne démarre.
 
-Vos hôtes, vos stacks et vos secrets sont intacts. Installez la version que nomme le message, ou n’importe quelle version plus récente, depuis la [page de téléchargement](/download/), et Homeport les ouvre comme avant. Ne supprimez pas et ne déplacez pas `homeport.db` : c’est la seule façon de perdre ce qu’elle contient. Revenir à une version antérieure n’est pas pris en charge ; voir [Vos données d’une version à l’autre](/docs/reference/updating/#your-data-across-versions).
+Vos hôtes, vos stacks et vos secrets sont intacts. Installez la version que nomme le message, ou n’importe quelle version plus récente, depuis la [page de téléchargement](/download/), et Homeport les ouvre comme avant. Ne supprimez pas et ne déplacez pas `homeport.db` : c’est la seule façon de perdre ce qu’elle contient. Revenir à une version antérieure n’est pas pris en charge ; voir [Vos données d’une version à l’autre](/docs/reference/updating/#vos-données-dune-version-à-lautre).
 
 La même fenêtre apparaît pour tout autre échec d’ouverture de la base de données (fichier endommagé, disque plein, un autre Homeport qui la tient ouverte), avec le message propre à cet échec et ce qu’il faut faire.
 
@@ -133,13 +133,13 @@ Le serveur SSH a présenté une clé différente de celle que vous avez approuv�
 
 ### Identifiants perdus
 
-La clé qui chiffre vos secrets manque dans le trousseau ou a changé — après une réinitialisation du trousseau, un nouveau profil utilisateur, ou la copie des données de Homeport vers un autre ordinateur (utilisez plutôt une [sauvegarde](/docs/reference/data-and-backups/#backing-up-in-homeport), ou [Exporter et Importer](/docs/reference/security/#passer-à-un-autre-ordinateur), pour cela). Homeport conserve l’hôte ; saisissez de nouveau ses identifiants sur la page de l’hôte :
+La clé qui chiffre vos secrets manque dans le trousseau ou a changé — après une réinitialisation du trousseau, un nouveau profil utilisateur, ou la copie des données de Homeport vers un autre ordinateur (utilisez plutôt une [sauvegarde](/docs/reference/data-and-backups/#sauvegarder-dans-homeport), ou [Exporter et Importer](/docs/reference/security/#passer-à-un-autre-ordinateur), pour cela). Homeport conserve l’hôte ; saisissez de nouveau ses identifiants sur la page de l’hôte :
 
 - **TLS** — chargez de nouveau les trois fichiers de certificat et choisissez **Enregistrer**.
 - **SSH avec une clé importée** — collez de nouveau la clé privée et la phrase secrète et choisissez **Enregistrer**.
 - **SSH avec une clé Homeport** — choisissez **Régénérer la clé**, puis autorisez la nouvelle clé sur le serveur.
 
-Les environnements des stacks gérées et synchronisées, les identifiants de registre et les clés et jetons des dépôts chiffrés avec l’ancienne clé doivent aussi être saisis de nouveau, et les clusters actualisés depuis leur kubeconfig ; [Si les secrets sont perdus](/docs/reference/data-and-backups/#if-the-secrets-are-lost) liste chacun d’eux.
+Les environnements des stacks gérées et synchronisées, les identifiants de registre et les clés et jetons des dépôts chiffrés avec l’ancienne clé doivent aussi être saisis de nouveau, et les clusters actualisés depuis leur kubeconfig ; [Si les secrets sont perdus](/docs/reference/data-and-backups/#si-les-secrets-sont-perdus) liste chacun d’eux.
 
 ## Clusters
 
@@ -335,7 +335,7 @@ Exec dans une machine virtuelle passe par l’`incus-agent` qu’elle contient, 
 
 ### « Un problème est survenu »
 
-Une page de Homeport a rencontré un problème inattendu et affiche ceci à la place de son contenu ; la barre latérale fonctionne toujours. **Recharger** ramène en général la page, et **Retour à la vue d’ensemble** la quitte. Si cela se reproduit, copiez le rapport de **Détails** dans [une issue](https://github.com/DamienReichhart/Homeport/issues/new/choose), avec l’[archive de diagnostic](#exporting-diagnostics-for-a-bug-report).
+Une page de Homeport a rencontré un problème inattendu et affiche ceci à la place de son contenu ; la barre latérale fonctionne toujours. **Recharger** ramène en général la page, et **Retour à la vue d’ensemble** la quitte. Si cela se reproduit, copiez le rapport de **Détails** dans [une issue](https://github.com/DamienReichhart/Homeport/issues/new/choose), avec l’[archive de diagnostic](#exporter-le-diagnostic-pour-un-rapport-de-bug).
 
 ### « … n’est pas connecté »
 
@@ -348,7 +348,7 @@ L’action avait besoin de l’hôte, mais il s’est déconnecté. Attendez qu�
 La boîte de dialogue liste les fichiers et montre `summary.json` avant que vous enregistriez :
 
 - `summary.json` : la version de Homeport et la façon dont il a été installé, votre système d’exploitation, la version du schéma de la base de données, si un trousseau est disponible, vos paramètres, et pour chaque hôte et chaque cluster son type de connexion, son moteur et sa version, son état et le code de sa dernière erreur, ainsi que le nombre de stacks de chaque type que vous avez.
-- `logs/` : les [fichiers journaux](/docs/reference/security/#logs) de Homeport, où les clés privées et les certificats, les mots de passe, les jetons, les en-têtes `Authorization` et les identifiants dans les URL sont remplacés par `[redacted]`.
+- `logs/` : les [fichiers journaux](/docs/reference/security/#journaux) de Homeport, où les clés privées et les certificats, les mots de passe, les jetons, les en-têtes `Authorization` et les identifiants dans les URL sont remplacés par `[redacted]`.
 
 Les hôtes et les clusters apparaissent sous la forme `host-1`, `cluster-1`… et leurs noms et adresses sont remplacés de la même façon dans les journaux, sauf si vous cochez **Inclure les noms et les adresses**. Cochez cette case quand le nom ou l’adresse compte pour le problème et que vous acceptez de le partager.
 

@@ -308,18 +308,18 @@ Uma stack externa também mostra **Atualização disponível**, mas o **Atualiza
 
 ## Ações das stacks
 
-| Ação                            | Stacks                              | O que faz                                                                                                                             |
-| ------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| **Implantar** / **Reimplantar** | Gerenciada, vinculada, sincronizada | `docker compose up` com a definição da stack.                                                                                         |
-| **Sincronizar**                 | Sincronizada                        | Busca a branch ou a tag dela, mostra o que mudou e implanta o novo commit. Veja [Sincronizando](/docs/guides/synced-stacks/#syncing). |
-| **Refazer a build e implantar** | Vinculada, sincronizada             | `docker compose up --build`: refaz antes a build de todos os serviços com `build:`.                                                   |
-| **Iniciar** / **Parar**         | Qualquer                            | Inicia os contêineres parados, ou para os que estão em execução.                                                                      |
-| **Reiniciar**                   | Qualquer                            | Reinicia todos os contêineres.                                                                                                        |
-| **Baixar imagens**              | Gerenciada, vinculada, sincronizada | Baixa a imagem de cada serviço com os logins guardados, para buscar as mais recentes antes de reimplantar.                            |
-| **Desativar**                   | Gerenciada, vinculada, sincronizada | `docker compose down`: remove os contêineres e as redes, mantém os volumes e a definição.                                             |
-| **Desativar com os volumes**    | Gerenciada, vinculada, sincronizada | Também exclui os volumes da stack **e os dados deles**.                                                                               |
-| **Remover contêineres**         | Externa                             | Remove os contêineres e as redes dela. Os volumes são mantidos.                                                                       |
-| **Adotar**                      | Externa                             | Dá ao Homeport o arquivo compose, tornando-a gerenciada.                                                                              |
+| Ação                            | Stacks                              | O que faz                                                                                                                                   |
+| ------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Implantar** / **Reimplantar** | Gerenciada, vinculada, sincronizada | `docker compose up` com a definição da stack.                                                                                               |
+| **Sincronizar**                 | Sincronizada                        | Busca a branch ou a tag dela, mostra o que mudou e implanta o novo commit. Veja [Sincronizando](/docs/guides/synced-stacks/#sincronizando). |
+| **Refazer a build e implantar** | Vinculada, sincronizada             | `docker compose up --build`: refaz antes a build de todos os serviços com `build:`.                                                         |
+| **Iniciar** / **Parar**         | Qualquer                            | Inicia os contêineres parados, ou para os que estão em execução.                                                                            |
+| **Reiniciar**                   | Qualquer                            | Reinicia todos os contêineres.                                                                                                              |
+| **Baixar imagens**              | Gerenciada, vinculada, sincronizada | Baixa a imagem de cada serviço com os logins guardados, para buscar as mais recentes antes de reimplantar.                                  |
+| **Desativar**                   | Gerenciada, vinculada, sincronizada | `docker compose down`: remove os contêineres e as redes, mantém os volumes e a definição.                                                   |
+| **Desativar com os volumes**    | Gerenciada, vinculada, sincronizada | Também exclui os volumes da stack **e os dados deles**.                                                                                     |
+| **Remover contêineres**         | Externa                             | Remove os contêineres e as redes dela. Os volumes são mantidos.                                                                             |
+| **Adotar**                      | Externa                             | Dá ao Homeport o arquivo compose, tornando-a gerenciada.                                                                                    |
 
 **Esquecer definição**, na aba **Definição** de uma stack gerenciada, exclui o arquivo compose e o ambiente do Homeport, mas deixa os contêineres rodando; a stack se torna externa. **Esquecer**, na aba **Definição** de uma stack vinculada, descarta a anotação do Homeport sobre a pasta; a pasta, os arquivos dela e os contêineres não são afetados.
 

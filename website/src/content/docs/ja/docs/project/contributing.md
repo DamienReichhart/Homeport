@@ -10,7 +10,7 @@ Homeport は [github.com/DamienReichhart/Homeport](https://github.com/DamienReic
 次の内容を添えて [issue を作成](https://github.com/DamienReichhart/Homeport/issues/new/choose)してください:
 
 - 何をしたか、何を期待したか、何が起きたか（正確なメッセージが最も役に立ちます）
-- **設定 → Homeport について → 診断情報をエクスポート…** で作成する[診断情報のバンドル](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report)。Homeport のバージョンとプラットフォーム、使用しているホスト、エンジン、クラスターの種類、シークレットを取り除いたログを 1 つの zip にまとめたものです。保存する前に中身を確認でき、どこにも何も送信されません。
+- **設定 → Homeport について → 診断情報をエクスポート…** で作成する[診断情報のバンドル](/docs/reference/troubleshooting/#バグ報告用の診断情報のエクスポート)。Homeport のバージョンとプラットフォーム、使用しているホスト、エンジン、クラスターの種類、シークレットを取り除いたログを 1 つの zip にまとめたものです。保存する前に中身を確認でき、どこにも何も送信されません。
 
 Homeport が起動しない場合は、代わりにそのバージョンとオペレーティングシステム、そして[ログファイル](/docs/reference/security/#ログ)の中の関連する部分を添えてください。
 

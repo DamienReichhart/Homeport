@@ -66,7 +66,7 @@ CI도 `dev`로의 모든 푸시, 모든 풀 리퀘스트, 모든 릴리스에서
 
 `e2e/`는 실제 앱, 즉 Rust 백엔드, 웹뷰, 그 사이의 호출을 `tauri-driver`를 거쳐 [WebdriverIO](https://webdriver.io)로 로컬 Docker Engine에서 구동합니다. 시나리오는 다음과 같습니다. 앱이 시작되어 로컬 엔진에 연결합니다. 컨테이너의 로그가 스트리밍되고 앱에서 컨테이너를 중지합니다. 이미지를 풀합니다. 암호화된 환경 변수가 있는 관리형 스택을 배포합니다. 다시 시작해도 호스트, 스택, 그 비밀 정보가 유지됩니다. 기존 키로 SSH 호스트를 추가하고, 서버 키를 신뢰하고, 연결합니다. 요소는 CSS 클래스가 아니라 역할, 레이블, 텍스트로 찾습니다.
 
-이 테스트는 Linux에서만 실행됩니다. macOS에는 웹뷰용 WebDriver가 없기 때문입니다. [사전 요구 사항](#prerequisites)과 Docker Engine 외에 `tauri-driver`(`cargo install tauri-driver --locked`), WebKit의 드라이버, 가상 디스플레이, 키링이 필요합니다. Debian과 Ubuntu에서는 `webkit2gtk-driver`, `xvfb`, `dbus-x11`, `gnome-keyring`입니다.
+이 테스트는 Linux에서만 실행됩니다. macOS에는 웹뷰용 WebDriver가 없기 때문입니다. [사전 요구 사항](#사전-요구-사항)과 Docker Engine 외에 `tauri-driver`(`cargo install tauri-driver --locked`), WebKit의 드라이버, 가상 디스플레이, 키링이 필요합니다. Debian과 Ubuntu에서는 `webkit2gtk-driver`, `xvfb`, `dbus-x11`, `gnome-keyring`입니다.
 
 ```sh
 bun tauri build --debug --no-bundle

@@ -80,7 +80,7 @@ Homeport affiche un bandeau et n’enregistre aucun secret. Les hôtes socket lo
 
 ### Si la clé du trousseau est perdue
 
-Réinitialiser le trousseau, ou déplacer `homeport.db` vers un autre ordinateur ou un autre utilisateur, laisse des secrets qui ne peuvent plus être déchiffrés. Homeport ne supprime rien : les hôtes et les clusters concernés affichent **Identifiants perdus** jusqu’à ce que vous saisissiez de nouveau leurs identifiants ; [Si les secrets sont perdus](/docs/reference/data-and-backups/#if-the-secrets-are-lost) liste ce qu’il faut saisir de nouveau, et où. Pour déplacer vos données, [sauvegardez-les](#backups) ou [exportez plutôt vos hôtes](#moving-to-another-computer).
+Réinitialiser le trousseau, ou déplacer `homeport.db` vers un autre ordinateur ou un autre utilisateur, laisse des secrets qui ne peuvent plus être déchiffrés. Homeport ne supprime rien : les hôtes et les clusters concernés affichent **Identifiants perdus** jusqu’à ce que vous saisissiez de nouveau leurs identifiants ; [Si les secrets sont perdus](/docs/reference/data-and-backups/#si-les-secrets-sont-perdus) liste ce qu’il faut saisir de nouveau, et où. Pour déplacer vos données, [sauvegardez-les](#sauvegardes) ou [exportez plutôt vos hôtes](#passer-à-un-autre-ordinateur).
 
 ### Passer à un autre ordinateur
 
@@ -152,7 +152,7 @@ Elles s’exécutent avec les droits de l’utilisateur SSH (ou les vôtres, sur
 ## Ce que Homeport ne fait jamais
 
 - **Aucun compte.** Il n’y a rien à quoi s’inscrire.
-- **Aucune télémétrie, aucune analyse d’usage, aucun rapport de plantage.** Quand vous signalez un bug, l’[archive de diagnostic](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report) est un fichier que vous exportez, lisez et joignez vous-même.
+- **Aucune télémétrie, aucune analyse d’usage, aucun rapport de plantage.** Quand vous signalez un bug, l’[archive de diagnostic](/docs/reference/troubleshooting/#exporter-le-diagnostic-pour-un-rapport-de-bug) est un fichier que vous exportez, lisez et joignez vous-même.
 - **Rien d’installé sur vos clusters.** Homeport n’utilise que l’API Kubernetes, avec les droits de vos identifiants, et ne modifie rien sans que vous le demandiez : tout ce qui supprime ou remplace quelque chose demande d’abord, en nommant le cluster.
 - **Rien d’installé sur vos hôtes.** Les seules commandes que Homeport exécute sur un hôte sont [listées ci-dessus](#ce-que-homeport-exécute-sur-vos-hôtes). Le seul conteneur que Homeport démarre de lui-même est un [conteneur auxiliaire](/docs/guides/volumes-networks/#le-conteneur-auxiliaire) éphémère quand vous ouvrez, sauvegardez, restaurez ou clonez un volume ; il n’a pas de réseau et est supprimé une fois terminé. Son image n’est récupérée qu’une fois que vous avez accepté.
 - **Aucune installation silencieuse.** Une mise à jour n’est installée que quand vous choisissez **Installer et redémarrer** ; les paquets Linux ne sont jamais mis à jour que par votre gestionnaire de paquets.
@@ -169,7 +169,7 @@ Homeport écrit un petit fichier journal — quelques dizaines de kilo-octets, r
 | macOS   | `~/Library/Logs/com.homeport.app/`      |
 | Windows | `%LOCALAPPDATA%\com.homeport.app\logs\` |
 
-Homeport n’a ni télémétrie ni rapport de plantage : un journal ne quitte jamais votre ordinateur sauf si vous l’envoyez. Pour un rapport de bug, **Paramètres → À propos → Exporter le diagnostic…** enregistre un zip avec un résumé des versions et ces journaux, après avoir remplacé tout ce qui a la forme d’un secret (clés, mots de passe, jetons, identifiants dans les URL) et, sauf si vous demandez le contraire, les noms et adresses de vos hôtes et de vos clusters. Voir [Exporter le diagnostic](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report).
+Homeport n’a ni télémétrie ni rapport de plantage : un journal ne quitte jamais votre ordinateur sauf si vous l’envoyez. Pour un rapport de bug, **Paramètres → À propos → Exporter le diagnostic…** enregistre un zip avec un résumé des versions et ces journaux, après avoir remplacé tout ce qui a la forme d’un secret (clés, mots de passe, jetons, identifiants dans les URL) et, sauf si vous demandez le contraire, les noms et adresses de vos hôtes et de vos clusters. Voir [Exporter le diagnostic](/docs/reference/troubleshooting/#exporter-le-diagnostic-pour-un-rapport-de-bug).
 
 ## Faire confiance à un téléchargement
 

@@ -5,7 +5,7 @@ description: Dove Homeport conserva i suoi dati su ogni sistema, come farne il b
 
 Homeport conserva ciò che sa sul tuo computer: come raggiungere i tuoi host e cluster, le definizioni e gli ambienti dei tuoi stack, i tuoi accessi ai registri, i repository e le impostazioni. Questa pagina dice dove si trova tutto questo, cosa copiare e come recuperarlo. Per come è protetto, vedi [La sicurezza e i tuoi dati](/docs/reference/security/).
 
-Ciò che è in esecuzione sui tuoi host e cluster non fa parte dei dati di Homeport: container, immagini, volumi e oggetti Kubernetes o Nomad restano dove sono, e nessun backup di Homeport li contiene. Per copiare il contenuto di un volume, [esegui il backup in un file](/docs/guides/volumes-networks/#backing-up-and-restoring) dalla pagina Volumi.
+Ciò che è in esecuzione sui tuoi host e cluster non fa parte dei dati di Homeport: container, immagini, volumi e oggetti Kubernetes o Nomad restano dove sono, e nessun backup di Homeport li contiene. Per copiare il contenuto di un volume, [esegui il backup in un file](/docs/guides/volumes-networks/#backup-e-ripristino) dalla pagina Volumi.
 
 ## Cosa si trova dove
 
@@ -23,16 +23,16 @@ Su Linux la cartella si trova sotto `$XDG_DATA_HOME` quando è impostata. Se Hom
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `homeport.db`                        | Il database: ogni host, cluster, stack, accesso al registro, repository e impostazione, la cronologia delle distribuzioni e gli eventi degli Engine. I segreti al suo interno sono cifrati. |
 | `homeport.db-wal`, `homeport.db-shm` | Il write-ahead log di SQLite e il suo indice, presenti mentre Homeport è in esecuzione. Le modifiche più recenti possono trovarsi solo nel file `-wal` finché Homeport non viene chiuso.    |
-| `homeport.db.before-restore-<date>`  | Una copia del database fatta subito prima di ogni [ripristino](#restoring-a-backup). Elimina quelle che non ti servono più.                                                                 |
+| `homeport.db.before-restore-<date>`  | Una copia del database fatta subito prima di ogni [ripristino](#ripristinare-un-backup). Elimina quelle che non ti servono più.                                                             |
 | `repositories/` e `synced-stacks/`   | I cloni e le copie di lavoro dei repository degli [stack sincronizzati](/docs/guides/synced-stacks/). Homeport li ricrea dai repository stessi.                                             |
 
-[Cosa memorizza Homeport](/docs/reference/security/#what-homeport-stores) elenca cosa contiene il database, e quali parti sono cifrate.
+[Cosa memorizza Homeport](/docs/reference/security/#cosa-memorizza-homeport) elenca cosa contiene il database, e quali parti sono cifrate.
 
 ### La voce del portachiavi
 
 La chiave che cifra i segreti non si trova nella cartella. È una voce nel portachiavi del tuo sistema operativo, con il servizio `com.homeport.app` e l’account `secrets-key`: in **Accesso Portachiavi** su macOS, **Gestione credenziali → Credenziali di Windows** su Windows, e **Password e chiavi** (Seahorse) o KWallet su Linux. Appartiene al tuo account utente su questo computer.
 
-Il database e quella voce vanno insieme. Un database senza la sua chiave si apre comunque, con ogni nome, indirizzo e file compose, ma nessuno dei suoi segreti può essere decifrato: host e cluster mostrano **Credenziali perse**. Per questo una copia della cartella non basta per passare a un altro computer, e per questo il [backup nell’app](#backing-up-in-homeport) è quello consigliato.
+Il database e quella voce vanno insieme. Un database senza la sua chiave si apre comunque, con ogni nome, indirizzo e file compose, ma nessuno dei suoi segreti può essere decifrato: host e cluster mostrano **Credenziali perse**. Per questo una copia della cartella non basta per passare a un altro computer, e per questo il [backup nell’app](#eseguire-il-backup-in-homeport) è quello consigliato.
 
 ### I log e la posizione della finestra
 
@@ -46,7 +46,7 @@ Non vale la pena fare il backup di nessuno dei due. **Impostazioni → Informazi
 
 ### Cosa resta tuo
 
-- **Le cartelle degli stack collegati.** Homeport conserva solo dove si trovano la cartella e i file compose di uno [stack collegato](/docs/guides/stacks/#linked-stacks). La cartella, i suoi file compose e il suo `.env` sono tuoi: fanne il backup come fai con gli altri tuoi progetti, di solito con git.
+- **Le cartelle degli stack collegati.** Homeport conserva solo dove si trovano la cartella e i file compose di uno [stack collegato](/docs/guides/stacks/#stack-collegati). La cartella, i suoi file compose e il suo `.env` sono tuoi: fanne il backup come fai con gli altri tuoi progetti, di solito con git.
 - **Il tuo kubeconfig, `~/.ssh` e `~/.docker`.** Homeport li legge quando importi da essi e non li modifica mai.
 - **I repository di chart e gli accessi di helm.** Sono di helm, condivisi con il tuo terminale.
 
@@ -72,7 +72,7 @@ Homeport dice poi cosa ha salvato, e nomina ciò che ha dovuto salvare senza il 
 | I repository, con le loro chiavi di deploy e i loro token                                                     | Gli inoltri di porta, che terminano quando Homeport viene chiuso      |
 | Le tue impostazioni                                                                                           |                                                                       |
 
-L’intero file è cifrato con la passphrase, quindi senza di essa il file non rivela nulla, nemmeno il nome di un host. Contiene ogni segreto di Homeport: conservalo, insieme alla sua passphrase, al sicuro quanto le chiavi stesse. [Backup](/docs/reference/security/#backups) descrive la cifratura.
+L’intero file è cifrato con la passphrase, quindi senza di essa il file non rivela nulla, nemmeno il nome di un host. Contiene ogni segreto di Homeport: conservalo, insieme alla sua passphrase, al sicuro quanto le chiavi stesse. [Backup](/docs/reference/security/#backup) descrive la cifratura.
 
 Esegui un backup prima di provare una prerelease, prima di reinstallare il sistema, e ogni volta che hai aggiunto host che non vorresti configurare di nuovo.
 
@@ -97,11 +97,11 @@ Per tornare a ciò che avevi prima di un ripristino, esci da Homeport, rinomina 
 
 ### Spostare solo alcuni host
 
-**Esporta** e **Importa** nella pagina Host spostano gli host che scegli, con i loro segreti, in un file dello stesso tipo, e li aggiungono agli host che l’altro computer ha già. Vedi [passare a un altro computer](/docs/reference/security/#moving-to-another-computer).
+**Esporta** e **Importa** nella pagina Host spostano gli host che scegli, con i loro segreti, in un file dello stesso tipo, e li aggiungono agli host che l’altro computer ha già. Vedi [passare a un altro computer](/docs/reference/security/#passare-a-un-altro-computer).
 
 ## Copiare tu stesso i file
 
-Una copia del database è adatta a un backup di sistema di questo computer, come Time Machine, Cronologia file o un tuo script. Conserva ciò che il backup nell’app esclude, gli eventi degli Engine e la cronologia delle distribuzioni, ma **non la chiave del portachiavi**: si ripristina con i suoi segreti solo per lo stesso utente sullo stesso computer, o su uno il cui portachiavi è stato ripristinato insieme a essa. Altrove, ogni nome, indirizzo e file compose torna, e i segreti vanno [inseriti di nuovo](#if-the-secrets-are-lost).
+Una copia del database è adatta a un backup di sistema di questo computer, come Time Machine, Cronologia file o un tuo script. Conserva ciò che il backup nell’app esclude, gli eventi degli Engine e la cronologia delle distribuzioni, ma **non la chiave del portachiavi**: si ripristina con i suoi segreti solo per lo stesso utente sullo stesso computer, o su uno il cui portachiavi è stato ripristinato insieme a essa. Altrove, ogni nome, indirizzo e file compose torna, e i segreti vanno [inseriti di nuovo](#se-i-segreti-vanno-persi).
 
 ### Mentre Homeport è chiuso
 
@@ -139,7 +139,7 @@ Stampa `ok`.
 3. Metti lì la tua copia, con il nome `homeport.db`. Se hai copiato l’intera cartella, rimetti invece la cartella.
 4. Apri Homeport.
 
-Homeport aggiorna una copia creata da una versione più vecchia quando la apre. Una copia usata per ultima da un Homeport più recente viene rifiutata, intatta, con [un messaggio che indica la versione da installare](/docs/reference/troubleshooting/#this-database-was-last-used-by-homeport--or-later).
+Homeport aggiorna una copia creata da una versione più vecchia quando la apre. Una copia usata per ultima da un Homeport più recente viene rifiutata, intatta, con [un messaggio che indica la versione da installare](/docs/reference/troubleshooting/#questo-database-è-stato-usato-lultima-volta-da-homeport--o-da-una-versione-successiva).
 
 ## Se i segreti vanno persi
 
@@ -149,8 +149,8 @@ Dopo un ripristino del portachiavi, un nuovo account utente, o un database copia
 | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Host TLS**                            | Nella pagina dell’host, carica di nuovo il certificato della CA, il certificato client e la chiave client, e scegli **Salva**.                                                          |
 | **Host SSH con una chiave importata**   | Incolla di nuovo la chiave privata e la sua passphrase, e scegli **Salva**.                                                                                                             |
-| **Host SSH con una chiave di Homeport** | Scegli **Rigenera la chiave**, poi [autorizza la nuova chiave](/docs/hosts/ssh/#authorise-homeports-key) sul server. Rimuovi lì la vecchia riga `homeport@`.                            |
-| **Host Incus tramite HTTPS**            | Rimuovi l’host e [aggiungilo di nuovo con un nuovo token di fiducia](/docs/hosts/incus/#over-https-with-a-trust-token).                                                                 |
+| **Host SSH con una chiave di Homeport** | Scegli **Rigenera la chiave**, poi [autorizza la nuova chiave](/docs/hosts/ssh/#autorizza-la-chiave-di-homeport) sul server. Rimuovi lì la vecchia riga `homeport@`.                    |
+| **Host Incus tramite HTTPS**            | Rimuovi l’host e [aggiungilo di nuovo con un nuovo token di fiducia](/docs/hosts/incus/#tramite-https-con-un-token-di-fiducia).                                                         |
 | **Cluster Kubernetes**                  | **Aggiorna dal kubeconfig** nella pagina del cluster.                                                                                                                                   |
 | **Cluster Nomad**                       | Incolla il token ACL, e i certificati se li usa, nelle **Impostazioni** del cluster.                                                                                                    |
 | **Ambienti degli stack**                | Digita di nuovo l’ambiente di uno stack gestito o sincronizzato nella sua pagina. Gli stack collegati conservano il loro nel `.env` della loro cartella, che Homeport non ha mai avuto. |
@@ -159,8 +159,8 @@ Dopo un ripristino del portachiavi, un nuovo account utente, o un database copia
 
 Gli host con socket locale, TCP e ssh-agent non contengono alcun segreto e continuano a funzionare. Gli ambienti registrati nella cronologia delle distribuzioni non possono essere inseriti di nuovo; i file compose della cronologia restano leggibili.
 
-Vedi [Credenziali perse](/docs/reference/troubleshooting/#credentials-lost) nella risoluzione dei problemi.
+Vedi [Credenziali perse](/docs/reference/troubleshooting/#credenziali-perse) nella risoluzione dei problemi.
 
 ## Rimuovere i tuoi dati
 
-[Rimuovere i tuoi dati](/docs/reference/updating/#removing-your-data) elenca le cartelle e la voce del portachiavi da eliminare, e le chiavi da rimuovere dai tuoi server.
+[Rimuovere i tuoi dati](/docs/reference/updating/#rimuovere-i-tuoi-dati) elenca le cartelle e la voce del portachiavi da eliminare, e le chiavi da rimuovere dai tuoi server.

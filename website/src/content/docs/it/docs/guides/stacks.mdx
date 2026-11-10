@@ -308,18 +308,18 @@ Anche uno stack esterno mostra **Aggiornamento disponibile**, ma il suo **Aggior
 
 ## Azioni sugli stack
 
-| Azione                                | Stack                             | Cosa fa                                                                                                                                         |
-| ------------------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Distribuisci** / **Ridistribuisci** | Gestiti, collegati, sincronizzati | `docker compose up` con la definizione dello stack.                                                                                             |
-| **Sincronizza**                       | Sincronizzati                     | Recupera il suo branch o tag, mostra cosa è cambiato e distribuisce il nuovo commit. Vedi [Sincronizzare](/docs/guides/synced-stacks/#syncing). |
-| **Ricompila e distribuisci**          | Collegati, sincronizzati          | `docker compose up --build`: ricompila prima ogni servizio con `build:`.                                                                        |
-| **Avvia** / **Arresta**               | Tutti                             | Avvia i container arrestati, o arresta quelli in esecuzione.                                                                                    |
-| **Riavvia**                           | Tutti                             | Riavvia ogni container.                                                                                                                         |
-| **Scarica immagini**                  | Gestiti, collegati, sincronizzati | Scarica l’immagine di ogni servizio con gli accessi memorizzati, per ottenere quelle più recenti prima di ridistribuire.                        |
-| **Smonta**                            | Gestiti, collegati, sincronizzati | `docker compose down`: rimuove container e reti, conserva i volumi e la definizione.                                                            |
-| **Smonta con i volumi**               | Gestiti, collegati, sincronizzati | Elimina anche i volumi dello stack **e i loro dati**.                                                                                           |
-| **Rimuovi i container**               | Esterni                           | Rimuove i suoi container e le sue reti. I volumi vengono conservati.                                                                            |
-| **Adotta**                            | Esterni                           | Fornisce a Homeport il file compose, rendendolo gestito.                                                                                        |
+| Azione                                | Stack                             | Cosa fa                                                                                                                                               |
+| ------------------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Distribuisci** / **Ridistribuisci** | Gestiti, collegati, sincronizzati | `docker compose up` con la definizione dello stack.                                                                                                   |
+| **Sincronizza**                       | Sincronizzati                     | Recupera il suo branch o tag, mostra cosa è cambiato e distribuisce il nuovo commit. Vedi [Sincronizzare](/docs/guides/synced-stacks/#sincronizzare). |
+| **Ricompila e distribuisci**          | Collegati, sincronizzati          | `docker compose up --build`: ricompila prima ogni servizio con `build:`.                                                                              |
+| **Avvia** / **Arresta**               | Tutti                             | Avvia i container arrestati, o arresta quelli in esecuzione.                                                                                          |
+| **Riavvia**                           | Tutti                             | Riavvia ogni container.                                                                                                                               |
+| **Scarica immagini**                  | Gestiti, collegati, sincronizzati | Scarica l’immagine di ogni servizio con gli accessi memorizzati, per ottenere quelle più recenti prima di ridistribuire.                              |
+| **Smonta**                            | Gestiti, collegati, sincronizzati | `docker compose down`: rimuove container e reti, conserva i volumi e la definizione.                                                                  |
+| **Smonta con i volumi**               | Gestiti, collegati, sincronizzati | Elimina anche i volumi dello stack **e i loro dati**.                                                                                                 |
+| **Rimuovi i container**               | Esterni                           | Rimuove i suoi container e le sue reti. I volumi vengono conservati.                                                                                  |
+| **Adotta**                            | Esterni                           | Fornisce a Homeport il file compose, rendendolo gestito.                                                                                              |
 
 **Dimentica la definizione**, nella scheda **Definizione** di uno stack gestito, elimina il file compose e l’ambiente da Homeport ma lascia i container in esecuzione; lo stack diventa esterno. **Dimentica**, nella scheda **Definizione** di uno stack collegato, elimina la nota di Homeport sulla cartella; la cartella, i suoi file e i container restano intatti.
 

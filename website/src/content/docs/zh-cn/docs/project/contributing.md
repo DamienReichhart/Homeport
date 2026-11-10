@@ -10,7 +10,7 @@ Homeport 在 [github.com/DamienReichhart/Homeport](https://github.com/DamienReic
 [创建 issue](https://github.com/DamienReichhart/Homeport/issues/new/choose)，并附上：
 
 - 你做了什么、预期结果是什么、实际发生了什么，确切的消息最有帮助；
-- 通过**设置 → 关于 → 导出诊断信息…**得到的[诊断包](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report)：一个 zip，包含 Homeport 的版本和平台、你所用的主机、引擎和集群的类型，以及已移除机密的日志。保存前你可以查看其中的内容，且不会向任何地方发送任何东西。
+- 通过**设置 → 关于 → 导出诊断信息…**得到的[诊断包](/docs/reference/troubleshooting/#为-bug-报告导出诊断信息)：一个 zip，包含 Homeport 的版本和平台、你所用的主机、引擎和集群的类型，以及已移除机密的日志。保存前你可以查看其中的内容，且不会向任何地方发送任何东西。
 
 如果 Homeport 无法启动，请改为提供它的版本和你的操作系统，以及[日志文件](/docs/reference/security/#日志)中的任何相关内容。
 

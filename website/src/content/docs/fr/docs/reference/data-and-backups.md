@@ -5,7 +5,7 @@ description: Où Homeport conserve ses données sur chaque système, comment les
 
 Homeport conserve ce qu’il sait sur votre ordinateur : comment joindre vos hôtes et vos clusters, les définitions et les environnements de vos stacks, vos identifiants de registre, vos dépôts et vos paramètres. Cette page indique où cela se trouve, ce qu’il faut copier, et comment le récupérer. Pour la façon dont c’est protégé, voir [Sécurité et vos données](/docs/reference/security/).
 
-Ce qui s’exécute sur vos hôtes et vos clusters ne fait pas partie des données de Homeport : les conteneurs, les images, les volumes et les objets Kubernetes ou Nomad restent où ils sont, et aucune sauvegarde de Homeport ne les contient. Pour copier le contenu d’un volume, [sauvegardez-le dans un fichier](/docs/guides/volumes-networks/#backing-up-and-restoring) depuis la page Volumes.
+Ce qui s’exécute sur vos hôtes et vos clusters ne fait pas partie des données de Homeport : les conteneurs, les images, les volumes et les objets Kubernetes ou Nomad restent où ils sont, et aucune sauvegarde de Homeport ne les contient. Pour copier le contenu d’un volume, [sauvegardez-le dans un fichier](/docs/guides/volumes-networks/#sauvegarder-et-restaurer) depuis la page Volumes.
 
 ## Ce qui se trouve où
 
@@ -23,16 +23,16 @@ Sous Linux, le dossier se trouve sous `$XDG_DATA_HOME` quand cette variable est 
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `homeport.db`                        | La base de données : chaque hôte, cluster, stack, identifiant de registre, dépôt et paramètre, l’historique des déploiements et les événements des moteurs. Les secrets qu’elle contient sont chiffrés.       |
 | `homeport.db-wal`, `homeport.db-shm` | Le journal d’écriture anticipée de SQLite et son index, présents pendant que Homeport s’exécute. Les dernières modifications peuvent ne se trouver que dans le fichier `-wal` jusqu’à ce que Homeport quitte. |
-| `homeport.db.before-restore-<date>`  | Une copie de la base de données faite juste avant chaque [restauration](#restoring-a-backup). Supprimez celles dont vous ne voulez plus.                                                                      |
+| `homeport.db.before-restore-<date>`  | Une copie de la base de données faite juste avant chaque [restauration](#restaurer-une-sauvegarde). Supprimez celles dont vous ne voulez plus.                                                                |
 | `repositories/` et `synced-stacks/`  | Les clones et les copies de travail des dépôts des [stacks synchronisées](/docs/guides/synced-stacks/). Homeport les recrée à partir des dépôts eux-mêmes.                                                    |
 
-[Ce que Homeport enregistre](/docs/reference/security/#what-homeport-stores) liste ce que contient la base de données, et quelles parties sont chiffrées.
+[Ce que Homeport enregistre](/docs/reference/security/#ce-que-homeport-enregistre) liste ce que contient la base de données, et quelles parties sont chiffrées.
 
 ### L’entrée du trousseau
 
 La clé qui chiffre les secrets n’est pas dans le dossier. C’est une entrée du trousseau de votre système d’exploitation, avec le service `com.homeport.app` et le compte `secrets-key` : dans **Trousseaux d’accès** sous macOS, **Gestionnaire d’identification → Informations d’identification Windows** sous Windows, et **Mots de passe et clés** (Seahorse) ou KWallet sous Linux. Elle appartient à votre compte utilisateur sur cet ordinateur.
 
-La base de données et cette entrée vont ensemble. Une base de données sans sa clé s’ouvre quand même, avec chaque nom, adresse et fichier compose, mais aucun de ses secrets ne peut être déchiffré : les hôtes et les clusters affichent **Identifiants perdus**. C’est pourquoi une copie du dossier ne suffit pas pour passer à un autre ordinateur, et pourquoi la [sauvegarde dans l’application](#backing-up-in-homeport) est celle qui est recommandée.
+La base de données et cette entrée vont ensemble. Une base de données sans sa clé s’ouvre quand même, avec chaque nom, adresse et fichier compose, mais aucun de ses secrets ne peut être déchiffré : les hôtes et les clusters affichent **Identifiants perdus**. C’est pourquoi une copie du dossier ne suffit pas pour passer à un autre ordinateur, et pourquoi la [sauvegarde dans l’application](#sauvegarder-dans-homeport) est celle qui est recommandée.
 
 ### Les journaux et l’emplacement de la fenêtre
 
@@ -46,7 +46,7 @@ Ni les uns ni l’autre ne valent la peine d’être sauvegardés. **Paramètres
 
 ### Ce qui reste à vous
 
-- **Les dossiers des stacks liées.** Homeport ne retient que l’emplacement du dossier et des fichiers compose d’une [stack liée](/docs/guides/stacks/#linked-stacks). Le dossier, ses fichiers compose et son `.env` sont à vous : sauvegardez-les comme vos autres projets, en général avec git.
+- **Les dossiers des stacks liées.** Homeport ne retient que l’emplacement du dossier et des fichiers compose d’une [stack liée](/docs/guides/stacks/#stacks-liées). Le dossier, ses fichiers compose et son `.env` sont à vous : sauvegardez-les comme vos autres projets, en général avec git.
 - **Votre kubeconfig, `~/.ssh` et `~/.docker`.** Homeport les lit quand vous importez depuis eux et ne les modifie jamais.
 - **Les dépôts de charts et les identifiants de helm.** Ils appartiennent à helm, et sont partagés avec votre terminal.
 
@@ -72,7 +72,7 @@ Homeport indique ensuite ce qu’il a enregistré, et nomme tout ce qu’il a d�
 | Les dépôts, avec leurs clés de déploiement et leurs jetons                                                          | Les redirections de port, qui prennent fin quand Homeport quitte                  |
 | Vos paramètres                                                                                                      |                                                                                   |
 
-Le fichier entier est chiffré avec la phrase secrète, donc sans elle il ne révèle rien, pas même le nom d’un hôte. Il contient tous les secrets de Homeport : gardez-le, ainsi que sa phrase secrète, aussi précieusement que les clés elles-mêmes. [Sauvegardes](/docs/reference/security/#backups) décrit le chiffrement.
+Le fichier entier est chiffré avec la phrase secrète, donc sans elle il ne révèle rien, pas même le nom d’un hôte. Il contient tous les secrets de Homeport : gardez-le, ainsi que sa phrase secrète, aussi précieusement que les clés elles-mêmes. [Sauvegardes](/docs/reference/security/#sauvegardes) décrit le chiffrement.
 
 Sauvegardez avant d’essayer une préversion, avant de réinstaller votre système, et chaque fois que vous avez ajouté des hôtes que vous ne voudriez pas configurer de nouveau.
 
@@ -97,15 +97,15 @@ Pour revenir à ce que vous aviez avant une restauration, quittez Homeport, reno
 
 ### Ne déplacer que certains hôtes
 
-**Exporter** et **Importer** sur la page Hôtes déplacent les hôtes que vous choisissez, avec leurs secrets, dans un fichier du même genre, et les ajoutent aux hôtes que l’autre ordinateur a déjà. Voir [passer à un autre ordinateur](/docs/reference/security/#moving-to-another-computer).
+**Exporter** et **Importer** sur la page Hôtes déplacent les hôtes que vous choisissez, avec leurs secrets, dans un fichier du même genre, et les ajoutent aux hôtes que l’autre ordinateur a déjà. Voir [passer à un autre ordinateur](/docs/reference/security/#passer-à-un-autre-ordinateur).
 
 ## Copier vous-même les fichiers
 
-Une copie de la base de données convient à une sauvegarde système de cet ordinateur, comme Time Machine, l’Historique des fichiers ou votre propre script. Elle conserve ce que la sauvegarde dans l’application laisse de côté, les événements des moteurs et l’historique des déploiements, mais **pas la clé du trousseau** : elle ne se restaure avec ses secrets que pour le même utilisateur sur le même ordinateur, ou sur un ordinateur dont le trousseau a été restauré avec elle. Partout ailleurs, chaque nom, adresse et fichier compose revient, et les secrets doivent être [saisis de nouveau](#if-the-secrets-are-lost).
+Une copie de la base de données convient à une sauvegarde système de cet ordinateur, comme Time Machine, l’Historique des fichiers ou votre propre script. Elle conserve ce que la sauvegarde dans l’application laisse de côté, les événements des moteurs et l’historique des déploiements, mais **pas la clé du trousseau** : elle ne se restaure avec ses secrets que pour le même utilisateur sur le même ordinateur, ou sur un ordinateur dont le trousseau a été restauré avec elle. Partout ailleurs, chaque nom, adresse et fichier compose revient, et les secrets doivent être [saisis de nouveau](#si-les-secrets-sont-perdus).
 
 ### Pendant que Homeport est fermé
 
-Quittez Homeport, depuis **Quitter** sur son icône s’il se [ferme dans la zone de notification](/docs/guides/settings/#desktop), puis copiez tout le dossier de données. Une fois Homeport quitté, `homeport.db` contient tout et les fichiers `-wal` et `-shm` ont disparu.
+Quittez Homeport, depuis **Quitter** sur son icône s’il se [ferme dans la zone de notification](/docs/guides/settings/#bureau), puis copiez tout le dossier de données. Une fois Homeport quitté, `homeport.db` contient tout et les fichiers `-wal` et `-shm` ont disparu.
 
 ### Pendant que Homeport s’exécute
 
@@ -139,7 +139,7 @@ La commande affiche `ok`.
 3. Placez-y votre copie, nommée `homeport.db`. Si vous avez copié tout le dossier, remettez plutôt le dossier en place.
 4. Ouvrez Homeport.
 
-Homeport met à niveau une copie faite par une version plus ancienne quand il l’ouvre. Une copie utilisée en dernier par un Homeport plus récent est refusée, sans être modifiée, avec [un message qui nomme la version à installer](/docs/reference/troubleshooting/#this-database-was-last-used-by-homeport--or-later).
+Homeport met à niveau une copie faite par une version plus ancienne quand il l’ouvre. Une copie utilisée en dernier par un Homeport plus récent est refusée, sans être modifiée, avec [un message qui nomme la version à installer](/docs/reference/troubleshooting/#cette-base-de-données-a-été-utilisée-en-dernier-par-homeport--ou-une-version-plus-récente).
 
 ## Si les secrets sont perdus
 
@@ -149,8 +149,8 @@ Après une réinitialisation du trousseau, un nouveau compte utilisateur, ou une
 | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Hôtes TLS**                       | Sur la page de l’hôte, chargez de nouveau le certificat d’AC, le certificat client et la clé client, et choisissez **Enregistrer**.                                              |
 | **Hôtes SSH avec une clé importée** | Collez de nouveau la clé privée et sa phrase secrète, et choisissez **Enregistrer**.                                                                                             |
-| **Hôtes SSH avec une clé Homeport** | Choisissez **Régénérer la clé**, puis [autorisez la nouvelle clé](/docs/hosts/ssh/#authorise-homeports-key) sur le serveur. Retirez-y l’ancienne ligne `homeport@`.              |
-| **Hôtes Incus via HTTPS**           | Supprimez l’hôte et [ajoutez-le de nouveau avec un nouveau jeton de confiance](/docs/hosts/incus/#over-https-with-a-trust-token).                                                |
+| **Hôtes SSH avec une clé Homeport** | Choisissez **Régénérer la clé**, puis [autorisez la nouvelle clé](/docs/hosts/ssh/#autoriser-la-clé-de-homeport) sur le serveur. Retirez-y l’ancienne ligne `homeport@`.         |
+| **Hôtes Incus via HTTPS**           | Supprimez l’hôte et [ajoutez-le de nouveau avec un nouveau jeton de confiance](/docs/hosts/incus/#via-https-avec-un-jeton-de-confiance).                                         |
 | **Clusters Kubernetes**             | **Actualiser depuis le kubeconfig** sur la page du cluster.                                                                                                                      |
 | **Clusters Nomad**                  | Collez le jeton ACL, et les certificats s’il en utilise, dans les **Paramètres** du cluster.                                                                                     |
 | **Environnements des stacks**       | Tapez de nouveau l’environnement d’une stack gérée ou synchronisée sur sa page. Les stacks liées gardent le leur dans le `.env` de leur dossier, que Homeport n’a jamais détenu. |
@@ -159,8 +159,8 @@ Après une réinitialisation du trousseau, un nouveau compte utilisateur, ou une
 
 Les hôtes socket local, TCP et ssh-agent ne détiennent aucun secret et continuent de fonctionner. Les environnements enregistrés dans l’historique des déploiements ne peuvent pas être saisis de nouveau ; les fichiers compose de l’historique restent lisibles.
 
-Voir [Identifiants perdus](/docs/reference/troubleshooting/#credentials-lost) dans le dépannage.
+Voir [Identifiants perdus](/docs/reference/troubleshooting/#identifiants-perdus) dans le dépannage.
 
 ## Supprimer vos données
 
-[Supprimer vos données](/docs/reference/updating/#removing-your-data) liste les dossiers et l’entrée du trousseau à supprimer, et les clés à retirer de vos serveurs.
+[Supprimer vos données](/docs/reference/updating/#supprimer-vos-données) liste les dossiers et l’entrée du trousseau à supprimer, et les clés à retirer de vos serveurs.

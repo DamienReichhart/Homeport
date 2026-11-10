@@ -3,7 +3,7 @@ title: Solução de problemas
 description: Correções para os problemas que você tem mais chance de encontrar, pela mensagem que o Homeport mostra.
 ---
 
-Se o seu problema não estiver aqui, [abra uma issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) com o [pacote de diagnóstico](#exporting-diagnostics-for-a-bug-report) de **Configurações → Sobre**.
+Se o seu problema não estiver aqui, [abra uma issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) com o [pacote de diagnóstico](#exportando-o-diagnóstico-para-um-relatório-de-bug) de **Configurações → Sobre**.
 
 ## Instalação e inicialização
 
@@ -49,7 +49,7 @@ O Homeport não conseguiu acessar o seu chaveiro. No Linux, isso normalmente sig
 
 Você instalou um Homeport mais antigo do que o que abriu os seus dados por último, por exemplo ao reinstalar uma release anterior. Cada versão atualiza o banco de dados para o seu próprio formato quando inicia, e uma versão mais antiga não consegue ler um formato mais novo, então o Homeport para antes de alterar qualquer coisa: a janela mostra esta mensagem, o caminho do banco de dados e **Abrir pasta**, e nada mais é iniciado.
 
-Os seus hosts, stacks e segredos estão intactos. Instale a versão que a mensagem indica, ou qualquer uma mais recente, a partir da [página de download](/download/), e o Homeport os abre como antes. Não exclua nem mova o `homeport.db`: essa é a única forma de perder o que há nele. Voltar para uma versão anterior não é suportado; veja [Os seus dados entre versões](/docs/reference/updating/#your-data-across-versions).
+Os seus hosts, stacks e segredos estão intactos. Instale a versão que a mensagem indica, ou qualquer uma mais recente, a partir da [página de download](/download/), e o Homeport os abre como antes. Não exclua nem mova o `homeport.db`: essa é a única forma de perder o que há nele. Voltar para uma versão anterior não é suportado; veja [Os seus dados entre versões](/docs/reference/updating/#os-seus-dados-entre-versões).
 
 A mesma janela aparece para qualquer outra falha ao abrir o banco de dados (arquivo danificado, disco cheio, outro Homeport usando-o), com a mensagem dessa falha e o que fazer a respeito.
 
@@ -133,13 +133,13 @@ O servidor SSH apresentou uma chave diferente daquela em que você confiou. Se v
 
 ### Credenciais perdidas
 
-A chave que criptografa os seus segredos está faltando no chaveiro ou mudou — depois de uma redefinição do chaveiro, de um novo perfil de usuário ou de copiar os dados do Homeport para outro computador (use um [backup](/docs/reference/data-and-backups/#backing-up-in-homeport), ou [Exportar e Importar](/docs/reference/security/#mudar-para-outro-computador), para isso). O Homeport mantém o host; digite de novo as credenciais dele na página do host:
+A chave que criptografa os seus segredos está faltando no chaveiro ou mudou — depois de uma redefinição do chaveiro, de um novo perfil de usuário ou de copiar os dados do Homeport para outro computador (use um [backup](/docs/reference/data-and-backups/#fazendo-backup-no-homeport), ou [Exportar e Importar](/docs/reference/security/#mudar-para-outro-computador), para isso). O Homeport mantém o host; digite de novo as credenciais dele na página do host:
 
 - **TLS** — carregue de novo os três arquivos de certificado e escolha **Salvar**.
 - **SSH com uma chave importada** — cole de novo a chave privada e a senha e escolha **Salvar**.
 - **SSH com uma chave do Homeport** — escolha **Gerar nova chave** e depois autorize a nova chave no servidor.
 
-Os ambientes das stacks gerenciadas e sincronizadas, os logins de registro e as chaves e tokens dos repositórios criptografados com a chave antiga também precisam ser digitados de novo, e os clusters precisam ser atualizados a partir do kubeconfig deles; [Se os segredos forem perdidos](/docs/reference/data-and-backups/#if-the-secrets-are-lost) lista cada um.
+Os ambientes das stacks gerenciadas e sincronizadas, os logins de registro e as chaves e tokens dos repositórios criptografados com a chave antiga também precisam ser digitados de novo, e os clusters precisam ser atualizados a partir do kubeconfig deles; [Se os segredos forem perdidos](/docs/reference/data-and-backups/#se-os-segredos-forem-perdidos) lista cada um.
 
 ## Clusters
 
@@ -335,7 +335,7 @@ O exec em uma máquina virtual passa pelo `incus-agent` dentro dela, que as pró
 
 ### "Algo deu errado"
 
-Uma página do Homeport encontrou um problema inesperado e mostra isto no lugar do conteúdo dela; a barra lateral continua funcionando. **Recarregar** normalmente traz a página de volta, e **Voltar à visão geral** sai dela. Se continuar acontecendo, copie o relatório de **Detalhes** para [uma issue](https://github.com/DamienReichhart/Homeport/issues/new/choose), com o [pacote de diagnóstico](#exporting-diagnostics-for-a-bug-report).
+Uma página do Homeport encontrou um problema inesperado e mostra isto no lugar do conteúdo dela; a barra lateral continua funcionando. **Recarregar** normalmente traz a página de volta, e **Voltar à visão geral** sai dela. Se continuar acontecendo, copie o relatório de **Detalhes** para [uma issue](https://github.com/DamienReichhart/Homeport/issues/new/choose), com o [pacote de diagnóstico](#exportando-o-diagnóstico-para-um-relatório-de-bug).
 
 ### "… não está conectado"
 

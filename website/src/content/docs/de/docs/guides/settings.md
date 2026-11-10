@@ -116,6 +116,6 @@ Zeigt die Version von Homeport und die Plattform, für die es gebaut wurde, zum 
 
 **Protokollordner öffnen** zeigt, wohin Homeport sein [Log](/docs/reference/security/#logs) schreibt.
 
-**Diagnose exportieren…** speichert ein Zip, das Sie anhängen, wenn Sie [ein Problem melden](https://github.com/DamienReichhart/Homeport/issues/new/choose): eine Übersicht der Versionen und der Arten von Hosts und Clustern, die Sie verwenden, und die Logs ohne Geheimnisse. Der Dialog zeigt zuerst, was darin ist, und nichts wird irgendwohin gesendet. Siehe [Diagnose exportieren](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report).
+**Diagnose exportieren…** speichert ein Zip, das Sie anhängen, wenn Sie [ein Problem melden](https://github.com/DamienReichhart/Homeport/issues/new/choose): eine Übersicht der Versionen und der Arten von Hosts und Clustern, die Sie verwenden, und die Logs ohne Geheimnisse. Der Dialog zeigt zuerst, was darin ist, und nichts wird irgendwohin gesendet. Siehe [Diagnose exportieren](/docs/reference/troubleshooting/#diagnose-für-einen-fehlerbericht-exportieren).
 
 **Lizenzen** zeigt die Lizenz von Homeport (die GNU AGPL, Version 3), einen Link zum Quellcode der Version, die Sie verwenden, und die Hinweise aller Open-Source-Pakete, mit denen es gebaut ist.

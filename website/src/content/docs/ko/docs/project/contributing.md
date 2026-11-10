@@ -10,7 +10,7 @@ Homeport는 [github.com/DamienReichhart/Homeport](https://github.com/DamienReich
 다음 내용을 담아 [이슈를 여세요](https://github.com/DamienReichhart/Homeport/issues/new/choose).
 
 - 무엇을 했고, 무엇을 기대했고, 무슨 일이 일어났는지. 정확한 메시지가 가장 도움이 됩니다.
-- **설정 → 정보 → 진단 정보 내보내기…**에서 만드는 [진단 정보 번들](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report). Homeport의 버전과 플랫폼, 사용 중인 호스트, 엔진, 클러스터의 종류, 비밀 정보를 제거한 로그를 담은 zip 하나입니다. 저장하기 전에 내용을 확인할 수 있으며, 어디로도 아무것도 전송되지 않습니다.
+- **설정 → 정보 → 진단 정보 내보내기…**에서 만드는 [진단 정보 번들](/docs/reference/troubleshooting/#버그-보고용-진단-정보-내보내기). Homeport의 버전과 플랫폼, 사용 중인 호스트, 엔진, 클러스터의 종류, 비밀 정보를 제거한 로그를 담은 zip 하나입니다. 저장하기 전에 내용을 확인할 수 있으며, 어디로도 아무것도 전송되지 않습니다.
 
 Homeport가 시작되지 않으면 대신 버전과 운영 체제, 그리고 [로그 파일](/docs/reference/security/#로그)에서 관련 있는 내용을 적어 주세요.
 

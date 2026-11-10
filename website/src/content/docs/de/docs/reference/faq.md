@@ -79,10 +79,10 @@ Jede Person führt ihr eigenes Homeport mit ihren eigenen Hosts und Schlüsseln 
 
 Ja, auf zwei Arten:
 
-- **Alles**: **Einstellungen → Daten → Sichern…** speichert jeden Host, Cluster, Stack, jede Registry-Anmeldung, jedes Repository und jede Einstellung, mit ihren Geheimnissen, in eine Datei, die durch eine Passphrase mit mindestens 12 Zeichen geschützt ist. Auf dem neuen Computer öffnet **Wiederherstellen…** an derselben Stelle sie, listet auf, was sie enthält, und ersetzt, was dort ist. Alles verbindet sich und wird bereitgestellt, ohne Sie erneut nach einem Schlüssel oder Passwort zu fragen. Siehe [Ihre Daten und Sicherungen](/docs/reference/data-and-backups/#backing-up-in-homeport).
+- **Alles**: **Einstellungen → Daten → Sichern…** speichert jeden Host, Cluster, Stack, jede Registry-Anmeldung, jedes Repository und jede Einstellung, mit ihren Geheimnissen, in eine Datei, die durch eine Passphrase mit mindestens 12 Zeichen geschützt ist. Auf dem neuen Computer öffnet **Wiederherstellen…** an derselben Stelle sie, listet auf, was sie enthält, und ersetzt, was dort ist. Alles verbindet sich und wird bereitgestellt, ohne Sie erneut nach einem Schlüssel oder Passwort zu fragen. Siehe [Ihre Daten und Sicherungen](/docs/reference/data-and-backups/#in-homeport-sichern).
 - **Einige Hosts**: Auf der Seite **Hosts** **exportieren** Sie die gewählten Hosts und **importieren** sie auf dem anderen Computer, neben den Hosts, die er bereits hat. Siehe [Auf einen anderen Computer umziehen](/docs/reference/security/#auf-einen-anderen-computer-umziehen).
 
-Das Kopieren von `homeport.db` funktioniert für Geheimnisse nicht: Sie sind mit einem Schlüssel verschlüsselt, der im Schlüsselbund dieses Computers liegt, und erscheinen anderswo als **Zugangsdaten verloren**. Siehe [Die Dateien selbst kopieren](/docs/reference/data-and-backups/#copying-the-files-yourself).
+Das Kopieren von `homeport.db` funktioniert für Geheimnisse nicht: Sie sind mit einem Schlüssel verschlüsselt, der im Schlüsselbund dieses Computers liegt, und erscheinen anderswo als **Zugangsdaten verloren**. Siehe [Die Dateien selbst kopieren](/docs/reference/data-and-backups/#die-dateien-selbst-kopieren).
 
 ### Wo bewahrt Homeport seine Daten auf?
 
@@ -118,7 +118,7 @@ Unter Windows, macOS und mit dem AppImage sagt Homeport Ihnen, wenn eine neue Ve
 
 ### Verliere ich durch ein Update meine Hosts?
 
-Nein. Jede Version von Homeport öffnet die Daten jeder früheren Version, zurück bis 0.1.0, und aktualisiert sie, ohne etwas zu verlieren: Hosts, Stacks, Cluster, Einstellungen und Geheimnisse. Der Wechsel zurück zu einer älteren Version ist das Einzige, was nicht unterstützt wird: Das ältere Homeport hält mit einer Meldung an, statt etwas zu ändern. Siehe [Ihre Daten über Versionen hinweg](/docs/reference/updating/#your-data-across-versions).
+Nein. Jede Version von Homeport öffnet die Daten jeder früheren Version, zurück bis 0.1.0, und aktualisiert sie, ohne etwas zu verlieren: Hosts, Stacks, Cluster, Einstellungen und Geheimnisse. Der Wechsel zurück zu einer älteren Version ist das Einzige, was nicht unterstützt wird: Das ältere Homeport hält mit einer Meldung an, statt etwas zu ändern. Siehe [Ihre Daten über Versionen hinweg](/docs/reference/updating/#ihre-daten-über-versionen-hinweg).
 
 ### Gibt es Homeport bei Homebrew, winget, Flathub oder im AUR?
 

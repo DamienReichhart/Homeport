@@ -114,8 +114,8 @@ Homeport controlla le CLI ogni volta che questa pagina si apre, quindi una insta
 
 Mostra la versione di Homeport e la piattaforma per cui è stato compilato, per esempio `v1.0.0 · macos/aarch64`.
 
-**Apri la cartella dei log** mostra dove Homeport scrive il suo [log](/docs/reference/security/#logs).
+**Apri la cartella dei log** mostra dove Homeport scrive il suo [log](/docs/reference/security/#log).
 
-**Esporta diagnostica…** salva uno zip da allegare quando [segnali un problema](https://github.com/DamienReichhart/Homeport/issues/new/choose): un riepilogo delle versioni e dei tipi di host e di cluster che usi, e i log con i segreti rimossi. La finestra di dialogo ne mostra prima il contenuto, e nulla viene inviato da nessuna parte. Vedi [Esportare la diagnostica](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report).
+**Esporta diagnostica…** salva uno zip da allegare quando [segnali un problema](https://github.com/DamienReichhart/Homeport/issues/new/choose): un riepilogo delle versioni e dei tipi di host e di cluster che usi, e i log con i segreti rimossi. La finestra di dialogo ne mostra prima il contenuto, e nulla viene inviato da nessuna parte. Vedi [Esportare la diagnostica](/docs/reference/troubleshooting/#esportare-la-diagnostica-per-una-segnalazione-di-bug).
 
 **Licenze** mostra la licenza di Homeport (la GNU AGPL, versione 3), un collegamento al codice sorgente della versione che usi e le note di ogni pacchetto open source con cui è costruito.

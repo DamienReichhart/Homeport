@@ -308,18 +308,18 @@ Une stack externe affiche aussi **Mise à jour disponible**, mais son **Mettre �
 
 ## Actions sur les stacks
 
-| Action                        | Stacks                    | Ce qu’elle fait                                                                                                                                 |
-| ----------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Déployer** / **Redéployer** | Gérée, liée, synchronisée | `docker compose up` avec la définition de la stack.                                                                                             |
-| **Synchroniser**              | Synchronisée              | Récupère sa branche ou son tag, montre ce qui a changé, et déploie le nouveau commit. Voir [Synchroniser](/docs/guides/synced-stacks/#syncing). |
-| **Reconstruire et déployer**  | Liée, synchronisée        | `docker compose up --build` : reconstruit d’abord chaque service qui a `build:`.                                                                |
-| **Démarrer** / **Arrêter**    | Toutes                    | Démarre les conteneurs arrêtés, ou arrête ceux qui tournent.                                                                                    |
-| **Redémarrer**                | Toutes                    | Redémarre chaque conteneur.                                                                                                                     |
-| **Récupérer les images**      | Gérée, liée, synchronisée | Récupère l’image de chaque service avec les identifiants enregistrés, pour obtenir les plus récentes avant de redéployer.                       |
-| **Retirer**                   | Gérée, liée, synchronisée | `docker compose down` : supprime les conteneurs et les réseaux, garde les volumes et la définition.                                             |
-| **Retirer avec les volumes**  | Gérée, liée, synchronisée | Supprime aussi les volumes de la stack **et leurs données**.                                                                                    |
-| **Supprimer les conteneurs**  | Externe                   | Supprime ses conteneurs et ses réseaux. Les volumes sont conservés.                                                                             |
-| **Adopter**                   | Externe                   | Donne à Homeport le fichier compose, ce qui en fait une stack gérée.                                                                            |
+| Action                        | Stacks                    | Ce qu’elle fait                                                                                                                                         |
+| ----------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Déployer** / **Redéployer** | Gérée, liée, synchronisée | `docker compose up` avec la définition de la stack.                                                                                                     |
+| **Synchroniser**              | Synchronisée              | Récupère sa branche ou son tag, montre ce qui a changé, et déploie le nouveau commit. Voir [Synchroniser](/docs/guides/synced-stacks/#synchronisation). |
+| **Reconstruire et déployer**  | Liée, synchronisée        | `docker compose up --build` : reconstruit d’abord chaque service qui a `build:`.                                                                        |
+| **Démarrer** / **Arrêter**    | Toutes                    | Démarre les conteneurs arrêtés, ou arrête ceux qui tournent.                                                                                            |
+| **Redémarrer**                | Toutes                    | Redémarre chaque conteneur.                                                                                                                             |
+| **Récupérer les images**      | Gérée, liée, synchronisée | Récupère l’image de chaque service avec les identifiants enregistrés, pour obtenir les plus récentes avant de redéployer.                               |
+| **Retirer**                   | Gérée, liée, synchronisée | `docker compose down` : supprime les conteneurs et les réseaux, garde les volumes et la définition.                                                     |
+| **Retirer avec les volumes**  | Gérée, liée, synchronisée | Supprime aussi les volumes de la stack **et leurs données**.                                                                                            |
+| **Supprimer les conteneurs**  | Externe                   | Supprime ses conteneurs et ses réseaux. Les volumes sont conservés.                                                                                     |
+| **Adopter**                   | Externe                   | Donne à Homeport le fichier compose, ce qui en fait une stack gérée.                                                                                    |
 
 **Oublier la définition**, dans l’onglet **Définition** d’une stack gérée, supprime le fichier compose et l’environnement de Homeport mais laisse les conteneurs tourner ; la stack devient externe. **Oublier**, dans l’onglet **Définition** d’une stack liée, efface la note que Homeport a prise du dossier ; le dossier, ses fichiers et les conteneurs sont laissés tels quels.
 

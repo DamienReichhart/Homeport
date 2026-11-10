@@ -80,7 +80,7 @@ Homeport zeigt ein Banner an und speichert keine Geheimnisse. Hosts mit lokalem 
 
 ### Wenn der Schlüssel im Schlüsselbund verloren geht
 
-Das Zurücksetzen des Schlüsselbunds oder das Verschieben von `homeport.db` auf einen anderen Computer oder zu einem anderen Benutzer hinterlässt Geheimnisse, die nicht entschlüsselt werden können. Homeport löscht nichts: Betroffene Hosts und Cluster zeigen **Zugangsdaten verloren**, bis Sie ihre Anmeldedaten erneut eingeben; [Wenn die Geheimnisse verloren sind](/docs/reference/data-and-backups/#if-the-secrets-are-lost) listet auf, was Sie wo erneut eingeben. Um Ihre Daten umzuziehen, [sichern Sie sie](#backups) oder [exportieren Sie Ihre Hosts](#moving-to-another-computer) stattdessen.
+Das Zurücksetzen des Schlüsselbunds oder das Verschieben von `homeport.db` auf einen anderen Computer oder zu einem anderen Benutzer hinterlässt Geheimnisse, die nicht entschlüsselt werden können. Homeport löscht nichts: Betroffene Hosts und Cluster zeigen **Zugangsdaten verloren**, bis Sie ihre Anmeldedaten erneut eingeben; [Wenn die Geheimnisse verloren sind](/docs/reference/data-and-backups/#wenn-die-geheimnisse-verloren-sind) listet auf, was Sie wo erneut eingeben. Um Ihre Daten umzuziehen, [sichern Sie sie](#sicherungen) oder [exportieren Sie Ihre Hosts](#auf-einen-anderen-computer-umziehen) stattdessen.
 
 ### Auf einen anderen Computer umziehen
 
@@ -152,7 +152,7 @@ Sie laufen mit den Rechten des SSH-Benutzers (oder Ihren, auf diesem Computer) u
 ## Was Homeport nie tut
 
 - **Kein Konto.** Es gibt nichts, wofür Sie sich registrieren müssten.
-- **Keine Telemetrie, keine Analysen und keine Absturzberichte.** Wenn Sie einen Fehler melden, ist das [Diagnosepaket](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report) eine Datei, die Sie selbst exportieren, lesen und anhängen.
+- **Keine Telemetrie, keine Analysen und keine Absturzberichte.** Wenn Sie einen Fehler melden, ist das [Diagnosepaket](/docs/reference/troubleshooting/#diagnose-für-einen-fehlerbericht-exportieren) eine Datei, die Sie selbst exportieren, lesen und anhängen.
 - **Nichts wird auf Ihren Clustern installiert.** Homeport verwendet nur die Kubernetes-API, mit den Rechten Ihrer Anmeldedaten, und ändert nichts, ohne dass Sie es verlangen: Alles, was etwas entfernt oder ersetzt, fragt zuerst und nennt dabei den Cluster.
 - **Nichts wird auf Ihren Hosts installiert.** Die einzigen Befehle, die Homeport auf einem Host ausführt, sind [oben aufgeführt](#was-homeport-auf-ihren-hosts-ausführt). Der einzige Container, den Homeport je von sich aus startet, ist ein kurzlebiger [Hilfscontainer](/docs/guides/volumes-networks/#der-hilfscontainer), wenn Sie ein Volume öffnen, sichern, wiederherstellen oder klonen; er hat kein Netzwerk und wird entfernt, wenn er fertig ist. Sein Image wird erst gepullt, wenn Sie zustimmen.
 - **Keine stillen Installationen.** Ein Update wird nur installiert, wenn Sie **Installieren und neu starten** wählen; Linux-Pakete werden nur von Ihrem Paketmanager aktualisiert.
@@ -169,7 +169,7 @@ Homeport schreibt eine kleine Logdatei – einige Dutzend Kilobyte, ersetzt, wen
 | macOS   | `~/Library/Logs/com.homeport.app/`      |
 | Windows | `%LOCALAPPDATA%\com.homeport.app\logs\` |
 
-Homeport hat keine Telemetrie und keine Absturzberichte: Ein Log verlässt Ihren Computer nie, es sei denn, Sie senden es. Für einen Fehlerbericht speichert **Einstellungen → Über → Diagnose exportieren…** ein Zip mit einer Übersicht der Versionen und diesen Logs, nachdem alles ersetzt wurde, was wie ein Geheimnis aussieht (Schlüssel, Passwörter, Tokens, Anmeldedaten in URLs), und, sofern Sie nichts anderes wählen, die Namen und Adressen Ihrer Hosts und Cluster. Siehe [Diagnose exportieren](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report).
+Homeport hat keine Telemetrie und keine Absturzberichte: Ein Log verlässt Ihren Computer nie, es sei denn, Sie senden es. Für einen Fehlerbericht speichert **Einstellungen → Über → Diagnose exportieren…** ein Zip mit einer Übersicht der Versionen und diesen Logs, nachdem alles ersetzt wurde, was wie ein Geheimnis aussieht (Schlüssel, Passwörter, Tokens, Anmeldedaten in URLs), und, sofern Sie nichts anderes wählen, die Namen und Adressen Ihrer Hosts und Cluster. Siehe [Diagnose exportieren](/docs/reference/troubleshooting/#diagnose-für-einen-fehlerbericht-exportieren).
 
 ## Einem Download vertrauen
 

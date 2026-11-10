@@ -12,7 +12,7 @@ La façon dont Homeport se met à jour dépend de la façon dont vous l’avez i
 
 ### Windows, macOS et l’AppImage
 
-Homeport recherche une nouvelle version au démarrage et toutes les 6 heures. Quand une version est sortie, une barre en haut de la fenêtre l’indique : choisissez **Nouveautés** pour lire le [journal des modifications](/changelog/), ou **Installer et redémarrer**. Homeport télécharge la mise à jour, vérifie sa signature, l’installe et se rouvre. Rien n’est installé tant que vous ne l’avez pas choisi, et [vos données sont conservées](#your-data-across-versions).
+Homeport recherche une nouvelle version au démarrage et toutes les 6 heures. Quand une version est sortie, une barre en haut de la fenêtre l’indique : choisissez **Nouveautés** pour lire le [journal des modifications](/changelog/), ou **Installer et redémarrer**. Homeport télécharge la mise à jour, vérifie sa signature, l’installe et se rouvre. Rien n’est installé tant que vous ne l’avez pas choisi, et [vos données sont conservées](#vos-données-dune-version-à-lautre).
 
 Vous pouvez aussi vérifier tout de suite depuis **Paramètres → Mises à jour → Vérifier maintenant**.
 
@@ -46,9 +46,9 @@ Pour être informé des nouvelles versions malgré tout, suivez le dépôt sur G
 
 Chaque version de Homeport ouvre les données de toutes les versions antérieures, jusqu’à 0.1.0, et les met à niveau sans rien perdre : hôtes, stacks, clusters, paramètres et secrets. Une mise à jour ne vous demande jamais de reconfigurer quoi que ce soit : la première fois qu’une nouvelle version démarre, elle met à niveau sa base de données sur place, et tout se connecte comme avant. Chaque version est testée avec une base de données d’exemple de chacune des versions qui la précèdent.
 
-**Revenir à une version antérieure n’est pas pris en charge.** Une fois qu’une version plus récente a ouvert vos données, une version plus ancienne ne peut pas les lire, et n’essaie pas : elle s’arrête avec [un message qui nomme la version à installer](/docs/reference/troubleshooting/#this-database-was-last-used-by-homeport--or-later) au lieu de modifier quoi que ce soit. Vos données restent telles que la version plus récente les a laissées ; installez cette version, ou une plus récente, et Homeport les ouvre de nouveau.
+**Revenir à une version antérieure n’est pas pris en charge.** Une fois qu’une version plus récente a ouvert vos données, une version plus ancienne ne peut pas les lire, et n’essaie pas : elle s’arrête avec [un message qui nomme la version à installer](/docs/reference/troubleshooting/#cette-base-de-données-a-été-utilisée-en-dernier-par-homeport--ou-une-version-plus-récente) au lieu de modifier quoi que ce soit. Vos données restent telles que la version plus récente les a laissées ; installez cette version, ou une plus récente, et Homeport les ouvre de nouveau.
 
-**Sauvegardez avant d’essayer une préversion.** Une préversion met la base de données à niveau comme n’importe quelle autre version, si bien que la version stable dont vous venez ne peut plus l’ouvrir. Choisissez d’abord **Paramètres → Données → Sauvegarder…** ; voir [Vos données et sauvegardes](/docs/reference/data-and-backups/#backing-up-in-homeport). Pour revenir à la version stable, quittez Homeport, sortez `homeport.db` du [dossier de données](/docs/reference/data-and-backups/#the-data-folder), réinstallez la version stable, puis restaurez cette sauvegarde avec **Restaurer…**.
+**Sauvegardez avant d’essayer une préversion.** Une préversion met la base de données à niveau comme n’importe quelle autre version, si bien que la version stable dont vous venez ne peut plus l’ouvrir. Choisissez d’abord **Paramètres → Données → Sauvegarder…** ; voir [Vos données et sauvegardes](/docs/reference/data-and-backups/#sauvegarder-dans-homeport). Pour revenir à la version stable, quittez Homeport, sortez `homeport.db` du [dossier de données](/docs/reference/data-and-backups/#le-dossier-de-données), réinstallez la version stable, puis restaurez cette sauvegarde avec **Restaurer…**.
 
 ## Désinstallation
 

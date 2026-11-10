@@ -47,7 +47,7 @@ Un file su un host Podman, come `web.container`, che systemd trasforma in un ser
 
 ### Bastion (it. _bastion_)
 
-Un server SSH attraverso cui si raggiunge un host SSH, quando il server SSH dell’host accetta connessioni solo da esso: ciò che OpenSSH chiama `ProxyJump`. Un host può averne diversi, in ordine, ciascuno con la propria chiave del server considerata attendibile. Un bastion non è un host: non esegue alcun Engine con cui Homeport comunica. Vedi [Tramite un bastion](/docs/hosts/ssh/#through-a-bastion).
+Un server SSH attraverso cui si raggiunge un host SSH, quando il server SSH dell’host accetta connessioni solo da esso: ciò che OpenSSH chiama `ProxyJump`. Un host può averne diversi, in ordine, ciascuno con la propria chiave del server considerata attendibile. Un bastion non è un host: non esegue alcun Engine con cui Homeport comunica. Vedi [Tramite un bastion](/docs/hosts/ssh/#tramite-un-bastion).
 
 ### Cluster (it. _cluster_)
 

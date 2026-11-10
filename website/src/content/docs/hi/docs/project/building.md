@@ -66,7 +66,7 @@ CI भी उन्हें चलाता है, `.github/workflows/ci.yml` 
 
 `e2e/` असली ऐप को चलाता है — Rust बैकएंड, webview और उनके बीच की कॉल — [WebdriverIO](https://webdriver.io) के साथ `tauri-driver` के ज़रिए, लोकल Docker Engine पर। परिदृश्य: ऐप शुरू होता है और लोकल इंजन से कनेक्ट होता है; किसी कंटेनर के लॉग स्ट्रीम होते हैं और वह ऐप से रुकता है; एक इमेज पुल की जाती है; एक प्रबंधित स्टैक एन्क्रिप्टेड परिवेश के साथ डिप्लॉय किया जाता है; रीस्टार्ट के बाद होस्ट, स्टैक और उसका सीक्रेट बने रहते हैं; और एक SSH होस्ट मौजूदा कुंजी के साथ जोड़ा जाता है, उसकी सर्वर कुंजी पर भरोसा किया जाता है, और वह कनेक्ट होता है। वे एलिमेंट को role, label और टेक्स्ट से ढूँढ़ते हैं, कभी CSS class से नहीं।
 
-वे सिर्फ़ Linux पर चलते हैं: macOS पर उसके webview के लिए कोई WebDriver नहीं है। [पूर्व-आवश्यकताओं](#prerequisites) और एक Docker Engine के अलावा, उन्हें `tauri-driver` (`cargo install tauri-driver --locked`), WebKit का ड्राइवर, एक वर्चुअल डिस्प्ले और एक keyring चाहिए: Debian और Ubuntu पर, `webkit2gtk-driver`, `xvfb`, `dbus-x11` और `gnome-keyring`।
+वे सिर्फ़ Linux पर चलते हैं: macOS पर उसके webview के लिए कोई WebDriver नहीं है। [पूर्व-आवश्यकताओं](#पूर्व-आवश्यकताएँ) और एक Docker Engine के अलावा, उन्हें `tauri-driver` (`cargo install tauri-driver --locked`), WebKit का ड्राइवर, एक वर्चुअल डिस्प्ले और एक keyring चाहिए: Debian और Ubuntu पर, `webkit2gtk-driver`, `xvfb`, `dbus-x11` और `gnome-keyring`।
 
 ```sh
 bun tauri build --debug --no-bundle

@@ -47,7 +47,7 @@ Podman 主机上的一个文件，例如 `web.container`，systemd 会将它转�
 
 ### Bastion（堡垒机）
 
-访问 SSH 主机时经过的 SSH 服务器，用于主机自身的 SSH 服务器只接受来自它的连接的情况，即 OpenSSH 所说的 `ProxyJump`。一台主机可以按顺序设置多台堡垒机，每台都有自己受信任的服务器密钥。堡垒机不是主机：它上面没有运行 Homeport 与之通信的引擎。参见[通过堡垒机](/docs/hosts/ssh/#through-a-bastion)。
+访问 SSH 主机时经过的 SSH 服务器，用于主机自身的 SSH 服务器只接受来自它的连接的情况，即 OpenSSH 所说的 `ProxyJump`。一台主机可以按顺序设置多台堡垒机，每台都有自己受信任的服务器密钥。堡垒机不是主机：它上面没有运行 Homeport 与之通信的引擎。参见[通过堡垒机](/docs/hosts/ssh/#通过堡垒机)。
 
 ### Cluster（集群）
 

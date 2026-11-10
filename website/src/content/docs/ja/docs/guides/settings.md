@@ -114,8 +114,8 @@ Homeport はこのページを開くたびに CLI を確認するため、起動
 
 Homeport のバージョンと、ビルド対象のプラットフォームを表示します（例: `v1.0.0 · macos/aarch64`）。
 
-**ログフォルダーを開く** は、Homeport が[ログ](/docs/reference/security/#logs)を書き込む場所を表示します。
+**ログフォルダーを開く** は、Homeport が[ログ](/docs/reference/security/#ログ)を書き込む場所を表示します。
 
-**診断情報をエクスポート…** は、[問題を報告する](https://github.com/DamienReichhart/Homeport/issues/new/choose)ときに添付する zip を保存します。バージョンと、使用しているホストやクラスターの種類の概要、そしてシークレットを取り除いたログが含まれます。ダイアログには先に中身が表示され、どこにも何も送信されません。[診断情報のエクスポート](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report)を参照してください。
+**診断情報をエクスポート…** は、[問題を報告する](https://github.com/DamienReichhart/Homeport/issues/new/choose)ときに添付する zip を保存します。バージョンと、使用しているホストやクラスターの種類の概要、そしてシークレットを取り除いたログが含まれます。ダイアログには先に中身が表示され、どこにも何も送信されません。[診断情報のエクスポート](/docs/reference/troubleshooting/#バグ報告用の診断情報のエクスポート)を参照してください。
 
 **ライセンス** には、Homeport のライセンス（GNU AGPL バージョン 3）、実行中のバージョンのソースコードへのリンク、そして Homeport が使っているすべてのオープンソースパッケージの通知が表示されます。

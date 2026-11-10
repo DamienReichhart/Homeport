@@ -3,7 +3,7 @@ title: Fehlerbehebung
 description: Lösungen für die Probleme, auf die Sie am ehesten stoßen, geordnet nach der Meldung, die Homeport anzeigt.
 ---
 
-Steht Ihr Problem nicht hier, [eröffnen Sie ein Issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) mit dem [Diagnosepaket](#exporting-diagnostics-for-a-bug-report) aus **Einstellungen → Über**.
+Steht Ihr Problem nicht hier, [eröffnen Sie ein Issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) mit dem [Diagnosepaket](#diagnose-für-einen-fehlerbericht-exportieren) aus **Einstellungen → Über**.
 
 ## Installieren und Starten
 
@@ -49,7 +49,7 @@ Homeport konnte Ihren Schlüsselbund nicht erreichen. Unter Linux bedeutet das m
 
 Sie haben ein älteres Homeport installiert als das, das Ihre Daten zuletzt geöffnet hat, zum Beispiel durch die Neuinstallation einer früheren Version. Jede Version aktualisiert die Datenbank beim Start auf ihr eigenes Format, und eine ältere Version kann ein neueres Format nicht lesen, daher hält Homeport an, bevor es etwas ändert: Das Fenster zeigt diese Meldung, den Pfad der Datenbank und **Ordner öffnen**, und sonst startet nichts.
 
-Ihre Hosts, Stacks und Geheimnisse sind unversehrt. Installieren Sie die Version, die die Meldung nennt, oder eine neuere von der [Download-Seite](/download/), und Homeport öffnet sie wie zuvor. Löschen oder verschieben Sie `homeport.db` nicht: Nur so ginge verloren, was darin ist. Ein Downgrade wird nicht unterstützt; siehe [Ihre Daten über Versionen hinweg](/docs/reference/updating/#your-data-across-versions).
+Ihre Hosts, Stacks und Geheimnisse sind unversehrt. Installieren Sie die Version, die die Meldung nennt, oder eine neuere von der [Download-Seite](/download/), und Homeport öffnet sie wie zuvor. Löschen oder verschieben Sie `homeport.db` nicht: Nur so ginge verloren, was darin ist. Ein Downgrade wird nicht unterstützt; siehe [Ihre Daten über Versionen hinweg](/docs/reference/updating/#ihre-daten-über-versionen-hinweg).
 
 Dasselbe Fenster erscheint bei jedem anderen Fehler beim Öffnen der Datenbank (beschädigte Datei, volle Festplatte, ein anderes Homeport, das sie belegt), mit der eigenen Meldung dieses Fehlers und dem, was zu tun ist.
 
@@ -133,13 +133,13 @@ Der SSH-Server hat einen anderen Schlüssel vorgelegt als den, dem Sie vertraut 
 
 ### Zugangsdaten verloren
 
-Der Schlüssel, der Ihre Geheimnisse verschlüsselt, fehlt im Schlüsselbund oder hat sich geändert – nach einem Zurücksetzen des Schlüsselbunds, einem neuen Benutzerprofil oder dem Kopieren der Daten von Homeport auf einen anderen Computer (verwenden Sie dafür eine [Sicherung](/docs/reference/data-and-backups/#backing-up-in-homeport) oder [Exportieren und Importieren](/docs/reference/security/#auf-einen-anderen-computer-umziehen)). Homeport behält den Host; geben Sie seine Anmeldedaten auf der Seite des Hosts erneut ein:
+Der Schlüssel, der Ihre Geheimnisse verschlüsselt, fehlt im Schlüsselbund oder hat sich geändert – nach einem Zurücksetzen des Schlüsselbunds, einem neuen Benutzerprofil oder dem Kopieren der Daten von Homeport auf einen anderen Computer (verwenden Sie dafür eine [Sicherung](/docs/reference/data-and-backups/#in-homeport-sichern) oder [Exportieren und Importieren](/docs/reference/security/#auf-einen-anderen-computer-umziehen)). Homeport behält den Host; geben Sie seine Anmeldedaten auf der Seite des Hosts erneut ein:
 
 - **TLS** – laden Sie die drei Zertifikatsdateien erneut und wählen Sie **Speichern**.
 - **SSH mit einem importierten Schlüssel** – fügen Sie den privaten Schlüssel und die Passphrase erneut ein und wählen Sie **Speichern**.
 - **SSH mit einem Homeport-Schlüssel** – wählen Sie **Schlüssel neu erzeugen** und autorisieren Sie dann den neuen Schlüssel auf dem Server.
 
-Auch Umgebungen verwalteter und synchronisierter Stacks, Registry-Anmeldungen sowie Schlüssel und Tokens von Repositorys, die mit dem alten Schlüssel verschlüsselt wurden, müssen neu eingegeben werden, und Cluster aus ihrer kubeconfig aktualisiert werden; [Wenn die Geheimnisse verloren sind](/docs/reference/data-and-backups/#if-the-secrets-are-lost) listet jedes davon auf.
+Auch Umgebungen verwalteter und synchronisierter Stacks, Registry-Anmeldungen sowie Schlüssel und Tokens von Repositorys, die mit dem alten Schlüssel verschlüsselt wurden, müssen neu eingegeben werden, und Cluster aus ihrer kubeconfig aktualisiert werden; [Wenn die Geheimnisse verloren sind](/docs/reference/data-and-backups/#wenn-die-geheimnisse-verloren-sind) listet jedes davon auf.
 
 ## Cluster
 
@@ -335,7 +335,7 @@ Exec in einer virtuellen Maschine läuft über den `incus-agent` darin, den die 
 
 ### „Etwas ist schiefgelaufen“
 
-Eine Seite von Homeport ist auf ein unerwartetes Problem gestoßen und zeigt dies statt ihres Inhalts; die Seitenleiste funktioniert weiter. **Neu laden** bringt die Seite meist zurück, und **Zurück zur Übersicht** verlässt sie. Wenn es immer wieder passiert, kopieren Sie den Bericht aus **Details** in [ein Issue](https://github.com/DamienReichhart/Homeport/issues/new/choose), zusammen mit dem [Diagnosepaket](#exporting-diagnostics-for-a-bug-report).
+Eine Seite von Homeport ist auf ein unerwartetes Problem gestoßen und zeigt dies statt ihres Inhalts; die Seitenleiste funktioniert weiter. **Neu laden** bringt die Seite meist zurück, und **Zurück zur Übersicht** verlässt sie. Wenn es immer wieder passiert, kopieren Sie den Bericht aus **Details** in [ein Issue](https://github.com/DamienReichhart/Homeport/issues/new/choose), zusammen mit dem [Diagnosepaket](#diagnose-für-einen-fehlerbericht-exportieren).
 
 ### „… ist nicht verbunden“
 

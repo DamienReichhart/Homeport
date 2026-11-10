@@ -79,10 +79,10 @@ Cada persona ejecuta su propio Homeport con sus propios hosts y claves. Con una 
 
 Sí, de dos formas:
 
-- **Todo**: **Ajustes → Datos → Hacer copia de seguridad…** guarda todos los hosts, clústeres, stacks, inicios de sesión de registros, repositorios y ajustes, con sus secretos, en un archivo protegido con una frase de contraseña de al menos 12 caracteres. En el equipo nuevo, **Restaurar…**, en el mismo lugar, lo abre, lista lo que contiene y sustituye lo que haya. Todo se conecta y se despliega sin volver a pedirte ninguna clave ni contraseña. Consulta [Tus datos y copias de seguridad](/docs/reference/data-and-backups/#backing-up-in-homeport).
+- **Todo**: **Ajustes → Datos → Hacer copia de seguridad…** guarda todos los hosts, clústeres, stacks, inicios de sesión de registros, repositorios y ajustes, con sus secretos, en un archivo protegido con una frase de contraseña de al menos 12 caracteres. En el equipo nuevo, **Restaurar…**, en el mismo lugar, lo abre, lista lo que contiene y sustituye lo que haya. Todo se conecta y se despliega sin volver a pedirte ninguna clave ni contraseña. Consulta [Tus datos y copias de seguridad](/docs/reference/data-and-backups/#hacer-una-copia-de-seguridad-en-homeport).
 - **Algunos hosts**: en la página **Hosts**, **Exporta** los hosts que elijas e **impórtalos** en el otro equipo, junto a los hosts que ya tenga. Consulta [pasar a otro equipo](/docs/reference/security/#pasar-a-otro-equipo).
 
-Copiar `homeport.db` no sirve para los secretos: están cifrados con una clave guardada en el llavero de este equipo, y en otro lugar aparecen como **Credenciales perdidas**. Consulta [copiar tú mismo los archivos](/docs/reference/data-and-backups/#copying-the-files-yourself).
+Copiar `homeport.db` no sirve para los secretos: están cifrados con una clave guardada en el llavero de este equipo, y en otro lugar aparecen como **Credenciales perdidas**. Consulta [copiar tú mismo los archivos](/docs/reference/data-and-backups/#copiar-tú-mismo-los-archivos).
 
 ### ¿Dónde guarda Homeport sus datos?
 
@@ -118,7 +118,7 @@ En Windows, en macOS y con la AppImage, Homeport te avisa cuando sale una versi�
 
 ### ¿Perderé mis hosts con una actualización?
 
-No. Cada versión de Homeport abre los datos de todas las versiones anteriores, hasta la 0.1.0, y los actualiza sin perder nada: hosts, stacks, clústeres, ajustes y secretos. Volver a una versión más antigua es lo único que no se admite: el Homeport más antiguo se detiene con un mensaje en lugar de cambiar nada. Consulta [Tus datos entre versiones](/docs/reference/updating/#your-data-across-versions).
+No. Cada versión de Homeport abre los datos de todas las versiones anteriores, hasta la 0.1.0, y los actualiza sin perder nada: hosts, stacks, clústeres, ajustes y secretos. Volver a una versión más antigua es lo único que no se admite: el Homeport más antiguo se detiene con un mensaje en lugar de cambiar nada. Consulta [Tus datos entre versiones](/docs/reference/updating/#tus-datos-entre-versiones).
 
 ### ¿Está Homeport en Homebrew, winget, Flathub o el AUR?
 

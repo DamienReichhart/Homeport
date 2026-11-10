@@ -3,7 +3,7 @@ title: 故障排除
 description: 按 Homeport 显示的消息，列出你最可能遇到的问题及其解决方法。
 ---
 
-如果这里没有你遇到的问题，请附上从**设置 → 关于**导出的[诊断包](#exporting-diagnostics-for-a-bug-report)[创建 issue](https://github.com/DamienReichhart/Homeport/issues/new/choose)。
+如果这里没有你遇到的问题，请附上从**设置 → 关于**导出的[诊断包](#为-bug-报告导出诊断信息)[创建 issue](https://github.com/DamienReichhart/Homeport/issues/new/choose)。
 
 ## 安装与启动
 
@@ -49,7 +49,7 @@ Homeport 无法访问你的钥匙串。在 Linux 上，这通常意味着没有�
 
 你安装的 Homeport 比上次打开你数据的版本更旧，例如重新安装了较早的版本。每个版本启动时都会将数据库升级为自己的格式，而旧版本无法读取较新的格式，因此 Homeport 会在更改任何内容之前停止：窗口会显示这条消息、数据库的路径和**打开文件夹**，其他任何内容都不会启动。
 
-你的主机、堆栈和机密都完好无损。从[下载页面](/download/)安装消息中指出的版本或任何更新的版本，Homeport 就会像以前一样打开它们。不要删除或移动 `homeport.db`：这是丢失其中内容的唯一方式。不支持降级；参见[跨版本的数据](/docs/reference/updating/#your-data-across-versions)。
+你的主机、堆栈和机密都完好无损。从[下载页面](/download/)安装消息中指出的版本或任何更新的版本，Homeport 就会像以前一样打开它们。不要删除或移动 `homeport.db`：这是丢失其中内容的唯一方式。不支持降级；参见[跨版本的数据](/docs/reference/updating/#跨版本的数据)。
 
 打开数据库的其他失败（文件损坏、磁盘已满、另一个 Homeport 正在使用它）也会显示同一个窗口，并附上该失败自己的消息和处理方法。
 
@@ -133,13 +133,13 @@ SSH 服务器提供的密钥与你信任的不同。如果你重装了服务器�
 
 ### 凭据丢失
 
-用于加密你的机密的密钥已从钥匙串中丢失或已更改：可能发生在重置钥匙串、使用新的用户配置文件，或将 Homeport 的数据复制到另一台计算机之后（后者请使用[备份](/docs/reference/data-and-backups/#backing-up-in-homeport)或[导出和导入](/docs/reference/security/#迁移到另一台计算机)）。Homeport 会保留该主机；请在主机页面上重新输入其凭据：
+用于加密你的机密的密钥已从钥匙串中丢失或已更改：可能发生在重置钥匙串、使用新的用户配置文件，或将 Homeport 的数据复制到另一台计算机之后（后者请使用[备份](/docs/reference/data-and-backups/#在-homeport-中备份)或[导出和导入](/docs/reference/security/#迁移到另一台计算机)）。Homeport 会保留该主机；请在主机页面上重新输入其凭据：
 
 - **TLS**：重新加载三个证书文件，然后选择**保存**。
 - **使用导入密钥的 SSH**：重新粘贴私钥和口令，然后选择**保存**。
 - **使用 Homeport 密钥的 SSH**：选择**重新生成密钥**，然后在服务器上授权新密钥。
 
-使用旧密钥加密的托管堆栈和同步堆栈的环境变量、镜像仓库登录，以及仓库的密钥和令牌也需要重新输入，从 kubeconfig 刷新的集群也是如此；[机密丢失时](/docs/reference/data-and-backups/#if-the-secrets-are-lost)逐一列出了它们。
+使用旧密钥加密的托管堆栈和同步堆栈的环境变量、镜像仓库登录，以及仓库的密钥和令牌也需要重新输入，从 kubeconfig 刷新的集群也是如此；[机密丢失时](/docs/reference/data-and-backups/#机密丢失时)逐一列出了它们。
 
 ## 集群
 
@@ -335,7 +335,7 @@ Incus 运行虚拟机需要 KVM（`/dev/kvm`）和 QEMU。请在服务器的固�
 
 ### “出现问题”
 
-Homeport 的某个页面遇到了意外问题，因此显示这条消息而不是其内容；侧边栏仍可使用。**重新加载**通常能让页面恢复，**返回概览**则会离开该页面。如果问题反复出现，请从**详细信息**中复制报告，连同[诊断包](#exporting-diagnostics-for-a-bug-report)一起提交到 [issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) 中。
+Homeport 的某个页面遇到了意外问题，因此显示这条消息而不是其内容；侧边栏仍可使用。**重新加载**通常能让页面恢复，**返回概览**则会离开该页面。如果问题反复出现，请从**详细信息**中复制报告，连同[诊断包](#为-bug-报告导出诊断信息)一起提交到 [issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) 中。
 
 ### “… 未连接。”
 
@@ -348,7 +348,7 @@ Homeport 的某个页面遇到了意外问题，因此显示这条消息而不�
 保存之前，对话框会列出其中的文件并显示 `summary.json`：
 
 - `summary.json`：Homeport 的版本及其安装方式、你的操作系统、数据库的架构版本、是否有可用的钥匙串、你的设置，以及每台主机和每个集群的连接类型、其引擎和版本、状态和最近一次错误的代码，另外还有每种堆栈各有多少个。
-- `logs/`：Homeport 的[日志文件](/docs/reference/security/#logs)，其中的私钥和证书、密码、令牌、`Authorization` 标头以及 URL 中的凭据都会被替换为 `[redacted]`。
+- `logs/`：Homeport 的[日志文件](/docs/reference/security/#日志)，其中的私钥和证书、密码、令牌、`Authorization` 标头以及 URL 中的凭据都会被替换为 `[redacted]`。
 
 主机和集群显示为 `host-1`、`cluster-1`…，日志中它们的名称和地址也会以同样方式替换，除非你勾选**包含名称和地址**。当名称或地址与问题有关、并且你愿意分享时，再勾选它。
 

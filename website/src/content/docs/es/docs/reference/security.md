@@ -80,7 +80,7 @@ Homeport muestra un aviso y no guarda secretos. Los hosts de socket local, TCP y
 
 ### Si se pierde la clave del llavero
 
-Restablecer el llavero, o mover `homeport.db` a otro equipo o a otro usuario, deja secretos que no se pueden descifrar. Homeport no borra nada: los hosts y clústeres afectados muestran **Credenciales perdidas** hasta que vuelvas a introducir sus credenciales; [Si se pierden los secretos](/docs/reference/data-and-backups/#if-the-secrets-are-lost) lista qué volver a introducir, y dónde. Para mover tus datos, [haz una copia de seguridad](#backups) o [exporta tus hosts](#moving-to-another-computer).
+Restablecer el llavero, o mover `homeport.db` a otro equipo o a otro usuario, deja secretos que no se pueden descifrar. Homeport no borra nada: los hosts y clústeres afectados muestran **Credenciales perdidas** hasta que vuelvas a introducir sus credenciales; [Si se pierden los secretos](/docs/reference/data-and-backups/#si-se-pierden-los-secretos) lista qué volver a introducir, y dónde. Para mover tus datos, [haz una copia de seguridad](#copias-de-seguridad) o [exporta tus hosts](#pasar-a-otro-equipo).
 
 ### Pasar a otro equipo
 
@@ -152,7 +152,7 @@ Se ejecutan con los permisos del usuario SSH (o con los tuyos, en este equipo) y
 ## Lo que Homeport no hace nunca
 
 - **Ninguna cuenta.** No hay nada en lo que registrarse.
-- **Ni telemetría, ni analíticas, ni informes de fallos.** Cuando informas de un error, el [archivo de diagnóstico](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report) es un archivo que exportas, lees y adjuntas tú mismo.
+- **Ni telemetría, ni analíticas, ni informes de fallos.** Cuando informas de un error, el [archivo de diagnóstico](/docs/reference/troubleshooting/#exportar-el-diagnóstico-para-un-informe-de-error) es un archivo que exportas, lees y adjuntas tú mismo.
 - **Nada instalado en tus clústeres.** Homeport solo usa la API de Kubernetes, con los permisos de tus credenciales, y no cambia nada sin que se lo pidas: todo lo que elimina o sustituye algo pregunta antes, nombrando el clúster.
 - **Nada instalado en tus hosts.** Los únicos comandos que Homeport ejecuta en un host están [listados arriba](#lo-que-homeport-ejecuta-en-tus-hosts). El único contenedor que Homeport inicia por su cuenta es un [contenedor auxiliar](/docs/guides/volumes-networks/#el-contenedor-auxiliar) de corta duración cuando abres, haces una copia de seguridad, restauras o clonas un volumen; no tiene red y se elimina cuando termina. Su imagen solo se descarga cuando das tu aprobación.
 - **Ninguna instalación silenciosa.** Una actualización solo se instala cuando eliges **Instalar y reiniciar**; los paquetes de Linux solo los actualiza tu gestor de paquetes.
@@ -169,7 +169,7 @@ Homeport escribe un archivo de log pequeño —unas pocas decenas de kilobytes, 
 | macOS   | `~/Library/Logs/com.homeport.app/`      |
 | Windows | `%LOCALAPPDATA%\com.homeport.app\logs\` |
 
-Homeport no tiene telemetría ni informes de fallos: un log nunca sale de tu equipo a menos que lo envíes tú. Para un informe de error, **Ajustes → Acerca de → Exportar diagnóstico…** guarda un zip con un resumen de las versiones y estos logs, después de sustituir todo lo que tenga forma de secreto (claves, contraseñas, tokens, credenciales en URL) y, salvo que pidas lo contrario, los nombres y las direcciones de tus hosts y clústeres. Consulta [Exportar el diagnóstico](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report).
+Homeport no tiene telemetría ni informes de fallos: un log nunca sale de tu equipo a menos que lo envíes tú. Para un informe de error, **Ajustes → Acerca de → Exportar diagnóstico…** guarda un zip con un resumen de las versiones y estos logs, después de sustituir todo lo que tenga forma de secreto (claves, contraseñas, tokens, credenciales en URL) y, salvo que pidas lo contrario, los nombres y las direcciones de tus hosts y clústeres. Consulta [Exportar el diagnóstico](/docs/reference/troubleshooting/#exportar-el-diagnóstico-para-un-informe-de-error).
 
 ## Confiar en una descarga
 

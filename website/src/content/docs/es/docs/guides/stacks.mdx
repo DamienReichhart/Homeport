@@ -308,18 +308,18 @@ Un stack externo también muestra **Actualización disponible**, pero su **Actua
 
 ## Acciones de los stacks
 
-| Acción                                 | Stacks                              | Qué hace                                                                                                                                       |
-| -------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Desplegar** / **Volver a desplegar** | Gestionado, vinculado, sincronizado | `docker compose up` con la definición del stack.                                                                                               |
-| **Sincronizar**                        | Sincronizado                        | Obtiene su rama o su etiqueta, muestra lo que cambió y despliega el nuevo commit. Consulta [Sincronizar](/docs/guides/synced-stacks/#syncing). |
-| **Recompilar y desplegar**             | Vinculado, sincronizado             | `docker compose up --build`: vuelve a compilar antes todos los servicios con `build:`.                                                         |
-| **Iniciar** / **Detener**              | Cualquiera                          | Inicia los contenedores detenidos, o detiene los que están en ejecución.                                                                       |
-| **Reiniciar**                          | Cualquiera                          | Reinicia todos los contenedores.                                                                                                               |
-| **Descargar imágenes**                 | Gestionado, vinculado, sincronizado | Descarga la imagen de cada servicio con los inicios de sesión guardados, para obtener las más recientes antes de volver a desplegar.           |
-| **Desmontar**                          | Gestionado, vinculado, sincronizado | `docker compose down`: elimina los contenedores y las redes, y conserva los volúmenes y la definición.                                         |
-| **Desmontar con volúmenes**            | Gestionado, vinculado, sincronizado | También borra los volúmenes del stack **y sus datos**.                                                                                         |
-| **Eliminar contenedores**              | Externo                             | Elimina sus contenedores y sus redes. Los volúmenes se conservan.                                                                              |
-| **Adoptar**                            | Externo                             | Da a Homeport el archivo compose y lo convierte en gestionado.                                                                                 |
+| Acción                                 | Stacks                              | Qué hace                                                                                                                                           |
+| -------------------------------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Desplegar** / **Volver a desplegar** | Gestionado, vinculado, sincronizado | `docker compose up` con la definición del stack.                                                                                                   |
+| **Sincronizar**                        | Sincronizado                        | Obtiene su rama o su etiqueta, muestra lo que cambió y despliega el nuevo commit. Consulta [Sincronizar](/docs/guides/synced-stacks/#sincronizar). |
+| **Recompilar y desplegar**             | Vinculado, sincronizado             | `docker compose up --build`: vuelve a compilar antes todos los servicios con `build:`.                                                             |
+| **Iniciar** / **Detener**              | Cualquiera                          | Inicia los contenedores detenidos, o detiene los que están en ejecución.                                                                           |
+| **Reiniciar**                          | Cualquiera                          | Reinicia todos los contenedores.                                                                                                                   |
+| **Descargar imágenes**                 | Gestionado, vinculado, sincronizado | Descarga la imagen de cada servicio con los inicios de sesión guardados, para obtener las más recientes antes de volver a desplegar.               |
+| **Desmontar**                          | Gestionado, vinculado, sincronizado | `docker compose down`: elimina los contenedores y las redes, y conserva los volúmenes y la definición.                                             |
+| **Desmontar con volúmenes**            | Gestionado, vinculado, sincronizado | También borra los volúmenes del stack **y sus datos**.                                                                                             |
+| **Eliminar contenedores**              | Externo                             | Elimina sus contenedores y sus redes. Los volúmenes se conservan.                                                                                  |
+| **Adoptar**                            | Externo                             | Da a Homeport el archivo compose y lo convierte en gestionado.                                                                                     |
 
 **Olvidar definición**, en la pestaña **Definición** de un stack gestionado, borra de Homeport el archivo compose y el entorno, pero deja los contenedores en ejecución; el stack pasa a ser externo. **Olvidar**, en la pestaña **Definición** de un stack vinculado, descarta la nota de Homeport sobre la carpeta; la carpeta, sus archivos y los contenedores no se tocan.
 

@@ -79,10 +79,10 @@ Ogni persona esegue il proprio Homeport con i propri host e le proprie chiavi. C
 
 Sì, in due modi:
 
-- **Tutto**: **Impostazioni → Dati → Esegui backup…** salva ogni host, cluster, stack, accesso al registro, repository e impostazione, con i loro segreti, in un unico file protetto da una passphrase di almeno 12 caratteri. Sul nuovo computer, **Ripristina…** nello stesso punto lo apre, elenca ciò che contiene e sostituisce ciò che c’è. Tutto si connette e si distribuisce senza chiederti di nuovo una chiave o una password. Vedi [I tuoi dati e i backup](/docs/reference/data-and-backups/#backing-up-in-homeport).
+- **Tutto**: **Impostazioni → Dati → Esegui backup…** salva ogni host, cluster, stack, accesso al registro, repository e impostazione, con i loro segreti, in un unico file protetto da una passphrase di almeno 12 caratteri. Sul nuovo computer, **Ripristina…** nello stesso punto lo apre, elenca ciò che contiene e sostituisce ciò che c’è. Tutto si connette e si distribuisce senza chiederti di nuovo una chiave o una password. Vedi [I tuoi dati e i backup](/docs/reference/data-and-backups/#eseguire-il-backup-in-homeport).
 - **Alcuni host**: nella pagina **Host**, **Esporta** gli host che scegli, e **Importa**li sull’altro computer, accanto agli host che ha già. Vedi [passare a un altro computer](/docs/reference/security/#passare-a-un-altro-computer).
 
-Copiare `homeport.db` non funziona per i segreti: sono cifrati con una chiave conservata nel portachiavi di questo computer, e altrove appaiono come **Credenziali perse**. Vedi [copiare tu stesso i file](/docs/reference/data-and-backups/#copying-the-files-yourself).
+Copiare `homeport.db` non funziona per i segreti: sono cifrati con una chiave conservata nel portachiavi di questo computer, e altrove appaiono come **Credenziali perse**. Vedi [copiare tu stesso i file](/docs/reference/data-and-backups/#copiare-tu-stesso-i-file).
 
 ### Dove conserva Homeport i suoi dati?
 
@@ -118,7 +118,7 @@ Su Windows, macOS e con l’AppImage, Homeport ti avvisa quando esce una nuova v
 
 ### Un aggiornamento mi farà perdere i miei host?
 
-No. Ogni versione di Homeport apre i dati di ogni versione precedente, fino alla 0.1.0, e li aggiorna senza perdere nulla: host, stack, cluster, impostazioni e segreti. Tornare a una versione più vecchia è l’unica cosa non supportata: la versione più vecchia di Homeport si ferma con un messaggio invece di modificare qualcosa. Vedi [I tuoi dati tra una versione e l’altra](/docs/reference/updating/#your-data-across-versions).
+No. Ogni versione di Homeport apre i dati di ogni versione precedente, fino alla 0.1.0, e li aggiorna senza perdere nulla: host, stack, cluster, impostazioni e segreti. Tornare a una versione più vecchia è l’unica cosa non supportata: la versione più vecchia di Homeport si ferma con un messaggio invece di modificare qualcosa. Vedi [I tuoi dati tra una versione e l’altra](/docs/reference/updating/#i-tuoi-dati-tra-una-versione-e-laltra).
 
 ### Homeport è su Homebrew, winget, Flathub o AUR?
 

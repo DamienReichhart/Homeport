@@ -10,7 +10,7 @@ O Homeport é desenvolvido abertamente em [github.com/DamienReichhart/Homeport](
 [Abra uma issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) com:
 
 - o que você fez, o que esperava e o que aconteceu — a mensagem exata é o que mais ajuda;
-- o [pacote de diagnóstico](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report) de **Configurações → Sobre → Exportar diagnóstico…**: um único zip com a versão e a plataforma do Homeport, os tipos de hosts, Engines e clusters que você usa, e os logs dele com os segredos removidos. Você lê o que há nele antes de salvá-lo, e nada é enviado para lugar nenhum.
+- o [pacote de diagnóstico](/docs/reference/troubleshooting/#exportando-o-diagnóstico-para-um-relatório-de-bug) de **Configurações → Sobre → Exportar diagnóstico…**: um único zip com a versão e a plataforma do Homeport, os tipos de hosts, Engines e clusters que você usa, e os logs dele com os segredos removidos. Você lê o que há nele antes de salvá-lo, e nada é enviado para lugar nenhum.
 
 Se o Homeport não iniciar, informe a versão dele e o seu sistema operacional, e qualquer coisa relevante do [arquivo de log](/docs/reference/security/#logs).
 

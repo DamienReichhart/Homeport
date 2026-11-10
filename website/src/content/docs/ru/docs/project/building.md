@@ -66,7 +66,7 @@ CI тоже запускает их — в задании `engine-tests` фай�
 
 `e2e/` управляет настоящим приложением — бэкендом на Rust, webview и вызовами между ними — с помощью [WebdriverIO](https://webdriver.io) через `tauri-driver`, с локальным Docker Engine. Сценарии: приложение запускается и подключается к локальному движку; журналы контейнера передаются потоком, и контейнер останавливается из приложения; образ скачивается; управляемый стек разворачивается с зашифрованным окружением; после перезапуска сохраняются хосты, стек и его секрет; SSH-хост добавляется с существующим ключом, ключ его сервера принимается как доверенный, и хост подключается. Тесты находят элементы по роли, подписи и тексту, но никогда по CSS-классу.
 
-Они работают только в Linux: в macOS нет WebDriver для его webview. Помимо [того, что нужно заранее](#prerequisites), и Docker Engine, им нужны `tauri-driver` (`cargo install tauri-driver --locked`), драйвер WebKit, виртуальный дисплей и связка ключей: в Debian и Ubuntu — `webkit2gtk-driver`, `xvfb`, `dbus-x11` и `gnome-keyring`.
+Они работают только в Linux: в macOS нет WebDriver для его webview. Помимо [того, что нужно заранее](#что-нужно-заранее), и Docker Engine, им нужны `tauri-driver` (`cargo install tauri-driver --locked`), драйвер WebKit, виртуальный дисплей и связка ключей: в Debian и Ubuntu — `webkit2gtk-driver`, `xvfb`, `dbus-x11` и `gnome-keyring`.
 
 ```sh
 bun tauri build --debug --no-bundle

@@ -66,7 +66,7 @@ CI でも、`.github/workflows/ci.yml` の `engine-tests` ジョブで、`dev` �
 
 `e2e/` は、実際のアプリ（Rust のバックエンド、Web ビュー、その間の呼び出し）を、`tauri-driver` を介して [WebdriverIO](https://webdriver.io) で、ローカルの Docker Engine に対して操作します。シナリオは次のとおりです。アプリが起動してローカルのエンジンに接続する。コンテナのログがストリーミングされ、アプリからそのコンテナを停止する。イメージをプルする。暗号化された環境変数を持つ管理スタックをデプロイする。再起動してもホスト、スタック、そのシークレットが保持される。既存のキーで SSH のホストを追加し、サーバーのキーを信頼して接続する。要素は CSS クラスではなく、ロール、ラベル、テキストで探します。
 
-これらは Linux でのみ動作します。macOS にはその Web ビュー用の WebDriver がないためです。[前提条件](#prerequisites)と Docker Engine に加えて、`tauri-driver`（`cargo install tauri-driver --locked`）、WebKit のドライバー、仮想ディスプレイ、キーリングが必要です。Debian と Ubuntu では、`webkit2gtk-driver`、`xvfb`、`dbus-x11`、`gnome-keyring` です。
+これらは Linux でのみ動作します。macOS にはその Web ビュー用の WebDriver がないためです。[前提条件](#前提条件)と Docker Engine に加えて、`tauri-driver`（`cargo install tauri-driver --locked`）、WebKit のドライバー、仮想ディスプレイ、キーリングが必要です。Debian と Ubuntu では、`webkit2gtk-driver`、`xvfb`、`dbus-x11`、`gnome-keyring` です。
 
 ```sh
 bun tauri build --debug --no-bundle

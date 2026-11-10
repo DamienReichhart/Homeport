@@ -114,8 +114,8 @@ Homeport vérifie les CLI à chaque ouverture de cette page, si bien qu’une CL
 
 Affiche la version de Homeport et la plateforme pour laquelle il a été compilé, par exemple `v1.0.0 · macos/aarch64`.
 
-**Ouvrir le dossier des journaux** montre où Homeport écrit son [journal](/docs/reference/security/#logs).
+**Ouvrir le dossier des journaux** montre où Homeport écrit son [journal](/docs/reference/security/#journaux).
 
-**Exporter le diagnostic…** enregistre un zip à joindre quand vous [signalez un problème](https://github.com/DamienReichhart/Homeport/issues/new/choose) : un résumé des versions et des types d’hôtes et de clusters que vous utilisez, et les journaux sans leurs secrets. La boîte de dialogue montre d’abord ce qu’il contient, et rien n’est envoyé nulle part. Voir [Exporter le diagnostic](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report).
+**Exporter le diagnostic…** enregistre un zip à joindre quand vous [signalez un problème](https://github.com/DamienReichhart/Homeport/issues/new/choose) : un résumé des versions et des types d’hôtes et de clusters que vous utilisez, et les journaux sans leurs secrets. La boîte de dialogue montre d’abord ce qu’il contient, et rien n’est envoyé nulle part. Voir [Exporter le diagnostic](/docs/reference/troubleshooting/#exporter-le-diagnostic-pour-un-rapport-de-bug).
 
 **Licences** montre la licence de Homeport (la GNU AGPL, version 3), un lien vers le code source de la version que vous utilisez, et les mentions de chaque paquet open source avec lequel il est construit.

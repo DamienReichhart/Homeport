@@ -73,7 +73,7 @@ Un contesto il cui nome è già quello di un host viene proposto come `name (2)`
 
 ## Passare a un altro computer
 
-**Esporta** nella pagina Host salva gli host che scegli in un file protetto da una passphrase; **Importa** nella pagina Host dell’altro computer lo apre e aggiunge gli host che scegli, pronti a connettersi. Un host il cui nome è già in uso lì viene proposto come `name (2)`, e puoi rinominarlo o saltarlo. Vedi [passare a un altro computer](/docs/reference/security/#passare-a-un-altro-computer) per sapere come è protetto il file. Per spostare tutto in una volta, cluster, stack, accessi ai registri, repository e impostazioni compresi, usa invece un [backup](/docs/reference/data-and-backups/#backing-up-in-homeport).
+**Esporta** nella pagina Host salva gli host che scegli in un file protetto da una passphrase; **Importa** nella pagina Host dell’altro computer lo apre e aggiunge gli host che scegli, pronti a connettersi. Un host il cui nome è già in uso lì viene proposto come `name (2)`, e puoi rinominarlo o saltarlo. Vedi [passare a un altro computer](/docs/reference/security/#passare-a-un-altro-computer) per sapere come è protetto il file. Per spostare tutto in una volta, cluster, stack, accessi ai registri, repository e impostazioni compresi, usa invece un [backup](/docs/reference/data-and-backups/#eseguire-il-backup-in-homeport).
 
 ## Selezionare un host
 

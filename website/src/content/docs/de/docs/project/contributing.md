@@ -10,7 +10,7 @@ Homeport wird öffentlich unter [github.com/DamienReichhart/Homeport](https://gi
 [Eröffnen Sie ein Issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) mit:
 
 - dem, was Sie getan haben, was Sie erwartet haben und was passiert ist – die genaue Meldung hilft am meisten;
-- dem [Diagnosepaket](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report) aus **Einstellungen → Über → Diagnose exportieren…**: ein Zip mit der Version und Plattform von Homeport, den Arten von Hosts, Engines und Clustern, die Sie verwenden, und seinen Logs ohne Geheimnisse. Sie lesen, was darin ist, bevor Sie es speichern, und nichts wird irgendwohin gesendet.
+- dem [Diagnosepaket](/docs/reference/troubleshooting/#diagnose-für-einen-fehlerbericht-exportieren) aus **Einstellungen → Über → Diagnose exportieren…**: ein Zip mit der Version und Plattform von Homeport, den Arten von Hosts, Engines und Clustern, die Sie verwenden, und seinen Logs ohne Geheimnisse. Sie lesen, was darin ist, bevor Sie es speichern, und nichts wird irgendwohin gesendet.
 
 Wenn Homeport nicht startet, geben Sie stattdessen seine Version und Ihr Betriebssystem an, und alles Relevante aus der [Logdatei](/docs/reference/security/#logs).
 

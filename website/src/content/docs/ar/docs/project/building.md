@@ -66,7 +66,7 @@ cargo test --workspace --exclude homeport -- --ignored
 
 يقود `e2e/` التطبيق الحقيقي — الواجهة الخلفية بلغة Rust، وwebview، والاستدعاءات بينهما — باستخدام [WebdriverIO](https://webdriver.io) عبر `tauri-driver`، مقابل محرك Docker المحلي. السيناريوهات: يبدأ التطبيق ويتصل بالمحرك المحلي؛ وتتدفق سجلات حاوية وتتوقف من التطبيق؛ وتُسحب صورة؛ ويُنشر مكدس مُدار ببيئة مشفّرة؛ وتُبقي إعادة التشغيل المضيفات والمكدس وسرّه؛ ويُضاف مضيف SSH بمفتاح موجود، ويُوثق بمفتاح خادمه، ويتصل. وهي تعثر على العناصر حسب الدور والتسمية والنص، ولا تعتمد أبدًا على فئات CSS.
 
-لا تعمل إلا على Linux: لا يوجد على macOS برنامج WebDriver لـ webview الخاص به. وإلى جانب [المتطلبات المسبقة](#prerequisites) ومحرك Docker، تحتاج إلى `tauri-driver` (`cargo install tauri-driver --locked`)، وبرنامج تشغيل WebKit، وشاشة افتراضية، وسلسلة مفاتيح: على Debian وUbuntu، `webkit2gtk-driver` و`xvfb` و`dbus-x11` و`gnome-keyring`.
+لا تعمل إلا على Linux: لا يوجد على macOS برنامج WebDriver لـ webview الخاص به. وإلى جانب [المتطلبات المسبقة](#المتطلبات-المسبقة) ومحرك Docker، تحتاج إلى `tauri-driver` (`cargo install tauri-driver --locked`)، وبرنامج تشغيل WebKit، وشاشة افتراضية، وسلسلة مفاتيح: على Debian وUbuntu، `webkit2gtk-driver` و`xvfb` و`dbus-x11` و`gnome-keyring`.
 
 ```sh
 bun tauri build --debug --no-bundle

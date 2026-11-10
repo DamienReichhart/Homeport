@@ -5,7 +5,7 @@ description: Onde o Homeport guarda os dados dele em cada sistema, como fazer ba
 
 O Homeport guarda o que sabe no seu computador: como acessar os seus hosts e clusters, as definições e os ambientes das suas stacks, os seus logins de registro, repositórios e configurações. Esta página diz onde isso fica, o que copiar e como recuperar. Para saber como tudo isso é protegido, veja [A segurança e os seus dados](/docs/reference/security/).
 
-O que roda nos seus hosts e clusters não faz parte dos dados do Homeport: contêineres, imagens, volumes e objetos do Kubernetes ou do Nomad ficam onde estão, e nenhum backup do Homeport os contém. Para copiar o conteúdo de um volume, [faça backup dele em um arquivo](/docs/guides/volumes-networks/#backing-up-and-restoring) a partir da página Volumes.
+O que roda nos seus hosts e clusters não faz parte dos dados do Homeport: contêineres, imagens, volumes e objetos do Kubernetes ou do Nomad ficam onde estão, e nenhum backup do Homeport os contém. Para copiar o conteúdo de um volume, [faça backup dele em um arquivo](/docs/guides/volumes-networks/#fazendo-backup-e-restaurando) a partir da página Volumes.
 
 ## O que fica onde
 
@@ -23,16 +23,16 @@ No Linux, a pasta fica em `$XDG_DATA_HOME` quando essa variável está definida.
 | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `homeport.db`                        | O banco de dados: todos os hosts, clusters, stacks, logins de registro, repositórios e configurações, o histórico de implantações e os eventos do Engine. Os segredos nele são criptografados. |
 | `homeport.db-wal`, `homeport.db-shm` | O write-ahead log do SQLite e o índice dele, presentes enquanto o Homeport está em execução. As mudanças mais recentes podem estar só no arquivo `-wal` até o Homeport ser fechado.            |
-| `homeport.db.before-restore-<date>`  | Uma cópia do banco de dados feita logo antes de cada [restauração](#restoring-a-backup). Exclua as que você não quiser mais.                                                                   |
+| `homeport.db.before-restore-<date>`  | Uma cópia do banco de dados feita logo antes de cada [restauração](#restaurando-um-backup). Exclua as que você não quiser mais.                                                                |
 | `repositories/` e `synced-stacks/`   | Os clones e as cópias de trabalho dos repositórios das [stacks sincronizadas](/docs/guides/synced-stacks/). O Homeport os cria de novo a partir dos próprios repositórios.                     |
 
-[O que o Homeport armazena](/docs/reference/security/#what-homeport-stores) lista o que o banco de dados contém e quais partes são criptografadas.
+[O que o Homeport armazena](/docs/reference/security/#o-que-o-homeport-armazena) lista o que o banco de dados contém e quais partes são criptografadas.
 
 ### A entrada no chaveiro
 
 A chave que criptografa os segredos não fica na pasta. Ela é uma entrada no chaveiro do seu sistema operacional, com o serviço `com.homeport.app` e a conta `secrets-key`: no **Acesso às Chaves** no macOS, no **Gerenciador de Credenciais → Credenciais do Windows** no Windows, e em **Senhas e chaves** (Seahorse) ou no KWallet no Linux. Ela pertence à sua conta de usuário neste computador.
 
-O banco de dados e essa entrada andam juntos. Um banco de dados sem a sua chave ainda abre, com todos os nomes, endereços e arquivos compose, mas nenhum dos segredos dele pode ser descriptografado: hosts e clusters mostram **Credenciais perdidas**. É por isso que uma cópia da pasta não basta para mudar para outro computador, e é por isso que o [backup no aplicativo](#backing-up-in-homeport) é o recomendado.
+O banco de dados e essa entrada andam juntos. Um banco de dados sem a sua chave ainda abre, com todos os nomes, endereços e arquivos compose, mas nenhum dos segredos dele pode ser descriptografado: hosts e clusters mostram **Credenciais perdidas**. É por isso que uma cópia da pasta não basta para mudar para outro computador, e é por isso que o [backup no aplicativo](#fazendo-backup-no-homeport) é o recomendado.
 
 ### Os logs e a posição da janela
 
@@ -46,7 +46,7 @@ Não vale a pena fazer backup de nenhum dos dois. **Configurações → Sobre �
 
 ### O que continua sendo seu
 
-- **As pastas das stacks vinculadas.** O Homeport guarda apenas onde ficam a pasta e os arquivos compose de uma [stack vinculada](/docs/guides/stacks/#linked-stacks). A pasta, os arquivos compose e o `.env` dela são seus: faça backup deles como faz com os seus outros projetos, normalmente com git.
+- **As pastas das stacks vinculadas.** O Homeport guarda apenas onde ficam a pasta e os arquivos compose de uma [stack vinculada](/docs/guides/stacks/#stacks-vinculadas). A pasta, os arquivos compose e o `.env` dela são seus: faça backup deles como faz com os seus outros projetos, normalmente com git.
 - **O seu kubeconfig, `~/.ssh` e `~/.docker`.** O Homeport os lê quando você importa a partir deles e nunca os altera.
 - **Os repositórios de charts e os logins do helm.** Eles são do próprio helm, compartilhados com o seu terminal.
 
@@ -97,15 +97,15 @@ Para voltar ao que você tinha antes de uma restauração, saia do Homeport, ren
 
 ### Levando só alguns hosts
 
-**Exportar** e **Importar** na página Hosts levam os hosts que você escolher, com os segredos deles, em um arquivo do mesmo tipo, e os adicionam aos hosts que o outro computador já tem. Veja [mudar para outro computador](/docs/reference/security/#moving-to-another-computer).
+**Exportar** e **Importar** na página Hosts levam os hosts que você escolher, com os segredos deles, em um arquivo do mesmo tipo, e os adicionam aos hosts que o outro computador já tem. Veja [mudar para outro computador](/docs/reference/security/#mudar-para-outro-computador).
 
 ## Copiando os arquivos você mesmo
 
-Uma cópia do banco de dados serve para um backup do sistema deste computador, como o Time Machine, o Histórico de Arquivos ou um script seu. Ela mantém o que o backup no aplicativo deixa de fora, os eventos do Engine e o histórico de implantações, mas **não a chave do chaveiro**: ela é restaurada com os segredos apenas para o mesmo usuário no mesmo computador, ou em um cujo chaveiro foi restaurado junto com ela. Em qualquer outro lugar, todos os nomes, endereços e arquivos compose voltam, e os segredos precisam ser [digitados de novo](#if-the-secrets-are-lost).
+Uma cópia do banco de dados serve para um backup do sistema deste computador, como o Time Machine, o Histórico de Arquivos ou um script seu. Ela mantém o que o backup no aplicativo deixa de fora, os eventos do Engine e o histórico de implantações, mas **não a chave do chaveiro**: ela é restaurada com os segredos apenas para o mesmo usuário no mesmo computador, ou em um cujo chaveiro foi restaurado junto com ela. Em qualquer outro lugar, todos os nomes, endereços e arquivos compose voltam, e os segredos precisam ser [digitados de novo](#se-os-segredos-forem-perdidos).
 
 ### Com o Homeport fechado
 
-Saia do Homeport, pelo **Sair** da bandeja se ele estiver [fechado para a bandeja do sistema](/docs/guides/settings/#desktop), e depois copie a pasta de dados inteira. Depois que o Homeport sai, o `homeport.db` contém tudo e os arquivos `-wal` e `-shm` deixam de existir.
+Saia do Homeport, pelo **Sair** da bandeja se ele estiver [fechado para a bandeja do sistema](/docs/guides/settings/#área-de-trabalho), e depois copie a pasta de dados inteira. Depois que o Homeport sai, o `homeport.db` contém tudo e os arquivos `-wal` e `-shm` deixam de existir.
 
 ### Com o Homeport em execução
 
@@ -139,7 +139,7 @@ Ele imprime `ok`.
 3. Coloque a sua cópia lá, com o nome `homeport.db`. Se você copiou a pasta inteira, coloque a pasta de volta.
 4. Abra o Homeport.
 
-O Homeport atualiza uma cópia feita por uma versão mais antiga quando a abre. Uma cópia usada por último por um Homeport mais novo é recusada, intacta, com [uma mensagem que indica a versão a instalar](/docs/reference/troubleshooting/#this-database-was-last-used-by-homeport--or-later).
+O Homeport atualiza uma cópia feita por uma versão mais antiga quando a abre. Uma cópia usada por último por um Homeport mais novo é recusada, intacta, com [uma mensagem que indica a versão a instalar](/docs/reference/troubleshooting/#este-banco-de-dados-foi-usado-pela-última-vez-pelo-homeport--ou-por-uma-versão-mais-recente).
 
 ## Se os segredos forem perdidos
 
@@ -149,8 +149,8 @@ Depois de uma redefinição do chaveiro, de uma nova conta de usuário ou de um 
 | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Hosts TLS**                           | Na página do host, carregue de novo o certificado da CA, o certificado do cliente e a chave do cliente, e escolha **Salvar**.                                         |
 | **Hosts SSH com uma chave importada**   | Cole de novo a chave privada e a senha dela, e escolha **Salvar**.                                                                                                    |
-| **Hosts SSH com uma chave do Homeport** | Escolha **Gerar nova chave** e depois [autorize a nova chave](/docs/hosts/ssh/#authorise-homeports-key) no servidor. Remova lá a linha `homeport@` antiga.            |
-| **Hosts Incus via HTTPS**               | Remova o host e [adicione-o de novo com um novo token de confiança](/docs/hosts/incus/#over-https-with-a-trust-token).                                                |
+| **Hosts SSH com uma chave do Homeport** | Escolha **Gerar nova chave** e depois [autorize a nova chave](/docs/hosts/ssh/#autorize-a-chave-do-homeport) no servidor. Remova lá a linha `homeport@` antiga.       |
+| **Hosts Incus via HTTPS**               | Remova o host e [adicione-o de novo com um novo token de confiança](/docs/hosts/incus/#via-https-com-um-token-de-confiança).                                          |
 | **Clusters Kubernetes**                 | **Atualizar a partir do kubeconfig** na página do cluster.                                                                                                            |
 | **Clusters Nomad**                      | Cole o token ACL, e os certificados se ele os usar, nas **Configurações** do cluster.                                                                                 |
 | **Ambientes das stacks**                | Digite de novo o ambiente de uma stack gerenciada ou sincronizada na página dela. As stacks vinculadas guardam o delas no `.env` da pasta, que o Homeport nunca teve. |
@@ -159,8 +159,8 @@ Depois de uma redefinição do chaveiro, de uma nova conta de usuário ou de um 
 
 Os hosts de socket local, TCP e ssh-agent não guardam nenhum segredo e continuam funcionando. Os ambientes registrados no histórico de implantações não podem ser digitados de novo; os arquivos compose do histórico continuam legíveis.
 
-Veja [Credenciais perdidas](/docs/reference/troubleshooting/#credentials-lost) na solução de problemas.
+Veja [Credenciais perdidas](/docs/reference/troubleshooting/#credenciais-perdidas) na solução de problemas.
 
 ## Removendo os seus dados
 
-[Remover os seus dados](/docs/reference/updating/#removing-your-data) lista as pastas e a entrada do chaveiro a excluir, e as chaves a remover dos seus servidores.
+[Remover os seus dados](/docs/reference/updating/#remover-os-seus-dados) lista as pastas e a entrada do chaveiro a excluir, e as chaves a remover dos seus servidores.

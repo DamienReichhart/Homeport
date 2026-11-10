@@ -80,7 +80,7 @@ O Homeport mostra um banner e não armazena segredos. Os hosts de socket local, 
 
 ### Se a chave do chaveiro for perdida
 
-Redefinir o chaveiro, ou mover `homeport.db` para outro computador ou usuário, deixa segredos que não podem ser descriptografados. O Homeport não exclui nada: os hosts e clusters afetados mostram **Credenciais perdidas** até que você digite as credenciais deles de novo; [Se os segredos forem perdidos](/docs/reference/data-and-backups/#if-the-secrets-are-lost) lista o que digitar de novo, e onde. Para mover os seus dados, [faça um backup](#backups) ou [exporte os seus hosts](#moving-to-another-computer).
+Redefinir o chaveiro, ou mover `homeport.db` para outro computador ou usuário, deixa segredos que não podem ser descriptografados. O Homeport não exclui nada: os hosts e clusters afetados mostram **Credenciais perdidas** até que você digite as credenciais deles de novo; [Se os segredos forem perdidos](/docs/reference/data-and-backups/#se-os-segredos-forem-perdidos) lista o que digitar de novo, e onde. Para mover os seus dados, [faça um backup](#backups) ou [exporte os seus hosts](#mudar-para-outro-computador).
 
 ### Mudar para outro computador
 
@@ -152,7 +152,7 @@ Eles rodam com os direitos do usuário SSH (ou os seus, neste computador) e nunc
 ## O que o Homeport nunca faz
 
 - **Nenhuma conta.** Não há nada em que se cadastrar.
-- **Nenhuma telemetria, análise de uso ou relatório de falhas.** Quando você relata um bug, o [pacote de diagnóstico](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report) é um arquivo que você mesmo exporta, lê e anexa.
+- **Nenhuma telemetria, análise de uso ou relatório de falhas.** Quando você relata um bug, o [pacote de diagnóstico](/docs/reference/troubleshooting/#exportando-o-diagnóstico-para-um-relatório-de-bug) é um arquivo que você mesmo exporta, lê e anexa.
 - **Nada instalado nos seus clusters.** O Homeport só usa a API do Kubernetes, com os direitos das suas credenciais, e não muda nada sem que você peça: tudo o que remove ou substitui algo pergunta antes, indicando o cluster.
 - **Nada instalado nos seus hosts.** Os únicos comandos que o Homeport executa em um host estão [listados acima](#o-que-o-homeport-executa-nos-seus-hosts). O único contêiner que o Homeport inicia por conta própria é um [contêiner auxiliar](/docs/guides/volumes-networks/#o-contêiner-auxiliar) de curta duração quando você abre, faz backup, restaura ou clona um volume; ele não tem rede e é removido quando termina. A imagem dele só é baixada depois que você concorda.
 - **Nenhuma instalação silenciosa.** Uma atualização só é instalada quando você escolhe **Instalar e reiniciar**; os pacotes Linux só são atualizados pelo seu gerenciador de pacotes.
@@ -169,7 +169,7 @@ O Homeport grava um pequeno arquivo de log — algumas dezenas de kilobytes, sub
 | macOS   | `~/Library/Logs/com.homeport.app/`      |
 | Windows | `%LOCALAPPDATA%\com.homeport.app\logs\` |
 
-O Homeport não tem telemetria nem relatório de falhas: um log nunca sai do seu computador, a menos que você o envie. Para um relatório de bug, **Configurações → Sobre → Exportar diagnóstico…** salva um zip com um resumo das versões e estes logs, depois de substituir tudo o que tem cara de segredo (chaves, senhas, tokens, credenciais em URLs) e, a menos que você peça o contrário, os nomes e endereços dos seus hosts e clusters. Veja [Exportando o diagnóstico](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report).
+O Homeport não tem telemetria nem relatório de falhas: um log nunca sai do seu computador, a menos que você o envie. Para um relatório de bug, **Configurações → Sobre → Exportar diagnóstico…** salva um zip com um resumo das versões e estes logs, depois de substituir tudo o que tem cara de segredo (chaves, senhas, tokens, credenciais em URLs) e, a menos que você peça o contrário, os nomes e endereços dos seus hosts e clusters. Veja [Exportando o diagnóstico](/docs/reference/troubleshooting/#exportando-o-diagnóstico-para-um-relatório-de-bug).
 
 ## Confiar em um download
 

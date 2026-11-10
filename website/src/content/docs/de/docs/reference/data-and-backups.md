@@ -5,7 +5,7 @@ description: Wo Homeport seine Daten auf jedem System aufbewahrt, wie Sie sie si
 
 Homeport bewahrt, was es weiß, auf Ihrem Computer auf: wie Ihre Hosts und Cluster erreicht werden, die Definitionen und Umgebungen Ihrer Stacks, Ihre Registry-Anmeldungen, Repositorys und Einstellungen. Diese Seite sagt, wo das liegt, was Sie kopieren und wie Sie es zurückbekommen. Wie es geschützt ist, steht unter [Sicherheit und Ihre Daten](/docs/reference/security/).
 
-Was auf Ihren Hosts und Clustern läuft, sind keine Daten von Homeport: Container, Images, Volumes und Kubernetes- oder Nomad-Objekte bleiben, wo sie sind, und keine Sicherung von Homeport enthält sie. Um den Inhalt eines Volumes zu kopieren, [sichern Sie es in eine Datei](/docs/guides/volumes-networks/#backing-up-and-restoring), auf der Seite Volumes.
+Was auf Ihren Hosts und Clustern läuft, sind keine Daten von Homeport: Container, Images, Volumes und Kubernetes- oder Nomad-Objekte bleiben, wo sie sind, und keine Sicherung von Homeport enthält sie. Um den Inhalt eines Volumes zu kopieren, [sichern Sie es in eine Datei](/docs/guides/volumes-networks/#sichern-und-wiederherstellen), auf der Seite Volumes.
 
 ## Was wo liegt
 
@@ -23,16 +23,16 @@ Unter Linux liegt der Ordner unter `$XDG_DATA_HOME`, wenn diese Variable gesetzt
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `homeport.db`                        | Die Datenbank: jeder Host, Cluster, Stack, jede Registry-Anmeldung, jedes Repository und jede Einstellung, der Bereitstellungsverlauf und die Engine-Ereignisse. Geheimnisse darin sind verschlüsselt. |
 | `homeport.db-wal`, `homeport.db-shm` | Das Write-Ahead-Log von SQLite und sein Index, vorhanden, solange Homeport läuft. Die letzten Änderungen stehen möglicherweise nur in der `-wal`-Datei, bis Homeport beendet wird.                     |
-| `homeport.db.before-restore-<date>`  | Eine Kopie der Datenbank, die direkt vor jeder [Wiederherstellung](#restoring-a-backup) angelegt wird. Löschen Sie die, die Sie nicht mehr brauchen.                                                   |
+| `homeport.db.before-restore-<date>`  | Eine Kopie der Datenbank, die direkt vor jeder [Wiederherstellung](#eine-sicherung-wiederherstellen) angelegt wird. Löschen Sie die, die Sie nicht mehr brauchen.                                      |
 | `repositories/` und `synced-stacks/` | Die Klone und Arbeitskopien der Repositorys von [synchronisierten Stacks](/docs/guides/synced-stacks/). Homeport erstellt sie aus den Repositorys selbst neu.                                          |
 
-[Was Homeport speichert](/docs/reference/security/#what-homeport-stores) listet auf, was die Datenbank enthält und welche Teile verschlüsselt sind.
+[Was Homeport speichert](/docs/reference/security/#was-homeport-speichert) listet auf, was die Datenbank enthält und welche Teile verschlüsselt sind.
 
 ### Der Eintrag im Schlüsselbund
 
 Der Schlüssel, der die Geheimnisse verschlüsselt, liegt nicht im Ordner. Er ist ein Eintrag im Schlüsselbund Ihres Betriebssystems, mit dem Dienst `com.homeport.app` und dem Konto `secrets-key`: in der **Schlüsselbundverwaltung** unter macOS, in **Anmeldeinformationsverwaltung → Windows-Anmeldeinformationen** unter Windows und in **Passwörter und Verschlüsselung** (Seahorse) oder KWallet unter Linux. Er gehört zu Ihrem Benutzerkonto auf diesem Computer.
 
-Die Datenbank und dieser Eintrag gehören zusammen. Eine Datenbank ohne ihren Schlüssel lässt sich trotzdem öffnen, mit jedem Namen, jeder Adresse und jeder Compose-Datei, aber keines ihrer Geheimnisse kann entschlüsselt werden: Hosts und Cluster zeigen **Zugangsdaten verloren**. Deshalb reicht eine Kopie des Ordners nicht, um auf einen anderen Computer umzuziehen, und deshalb ist die [Sicherung in der App](#backing-up-in-homeport) die empfohlene.
+Die Datenbank und dieser Eintrag gehören zusammen. Eine Datenbank ohne ihren Schlüssel lässt sich trotzdem öffnen, mit jedem Namen, jeder Adresse und jeder Compose-Datei, aber keines ihrer Geheimnisse kann entschlüsselt werden: Hosts und Cluster zeigen **Zugangsdaten verloren**. Deshalb reicht eine Kopie des Ordners nicht, um auf einen anderen Computer umzuziehen, und deshalb ist die [Sicherung in der App](#in-homeport-sichern) die empfohlene.
 
 ### Logs und die Position des Fensters
 
@@ -46,7 +46,7 @@ Keines davon lohnt eine Sicherung. **Einstellungen → Über → Protokollordner
 
 ### Was Ihnen gehört
 
-- **Die Ordner verknüpfter Stacks.** Homeport merkt sich nur, wo der Ordner und die Compose-Dateien eines [verknüpften Stacks](/docs/guides/stacks/#linked-stacks) liegen. Der Ordner, seine Compose-Dateien und seine `.env` gehören Ihnen: Sichern Sie sie wie Ihre anderen Projekte, meist mit Git.
+- **Die Ordner verknüpfter Stacks.** Homeport merkt sich nur, wo der Ordner und die Compose-Dateien eines [verknüpften Stacks](/docs/guides/stacks/#verknüpfte-stacks) liegen. Der Ordner, seine Compose-Dateien und seine `.env` gehören Ihnen: Sichern Sie sie wie Ihre anderen Projekte, meist mit Git.
 - **Ihre kubeconfig, `~/.ssh` und `~/.docker`.** Homeport liest sie, wenn Sie daraus importieren, und ändert sie nie.
 - **Die Chart-Repositorys und Anmeldungen von helm.** Sie gehören helm selbst und werden mit Ihrem Terminal geteilt.
 
@@ -72,7 +72,7 @@ Homeport sagt dann, was es gespeichert hat, und nennt alles, was es ohne sein Ge
 | Repositorys, mit ihren Deploy-Keys und Tokens                                                                        | Portweiterleitungen, die enden, wenn Homeport beendet wird                     |
 | Ihre Einstellungen                                                                                                   |                                                                                |
 
-Die ganze Datei ist mit der Passphrase verschlüsselt, sodass sie ohne diese nichts preisgibt, nicht einmal den Namen eines Hosts. Sie enthält jedes Geheimnis, das Homeport hat: Bewahren Sie sie und ihre Passphrase so sicher auf wie die Schlüssel selbst. [Sicherungen](/docs/reference/security/#backups) beschreibt die Verschlüsselung.
+Die ganze Datei ist mit der Passphrase verschlüsselt, sodass sie ohne diese nichts preisgibt, nicht einmal den Namen eines Hosts. Sie enthält jedes Geheimnis, das Homeport hat: Bewahren Sie sie und ihre Passphrase so sicher auf wie die Schlüssel selbst. [Sicherungen](/docs/reference/security/#sicherungen) beschreibt die Verschlüsselung.
 
 Sichern Sie, bevor Sie eine Vorabversion ausprobieren, bevor Sie Ihr System neu installieren und immer dann, wenn Sie Hosts hinzugefügt haben, die Sie nicht noch einmal einrichten möchten.
 
@@ -97,11 +97,11 @@ Um zum Stand vor einer Wiederherstellung zurückzukehren, beenden Sie Homeport, 
 
 ### Nur einige Hosts umziehen
 
-**Exportieren** und **Importieren** auf der Seite Hosts ziehen die von Ihnen gewählten Hosts mit ihren Geheimnissen in einer Datei derselben Art um und fügen sie zu den Hosts hinzu, die der andere Computer bereits hat. Siehe [Auf einen anderen Computer umziehen](/docs/reference/security/#moving-to-another-computer).
+**Exportieren** und **Importieren** auf der Seite Hosts ziehen die von Ihnen gewählten Hosts mit ihren Geheimnissen in einer Datei derselben Art um und fügen sie zu den Hosts hinzu, die der andere Computer bereits hat. Siehe [Auf einen anderen Computer umziehen](/docs/reference/security/#auf-einen-anderen-computer-umziehen).
 
 ## Die Dateien selbst kopieren
 
-Eine Kopie der Datenbank eignet sich für eine Systemsicherung dieses Computers, etwa mit Time Machine, dem Dateiversionsverlauf oder Ihrem eigenen Skript. Sie behält, was die Sicherung in der App auslässt, die Engine-Ereignisse und den Bereitstellungsverlauf, aber **nicht den Schlüssel aus dem Schlüsselbund**: Mit ihren Geheimnissen lässt sie sich nur für denselben Benutzer auf demselben Computer wiederherstellen, oder auf einem, dessen Schlüsselbund mit ihr wiederhergestellt wurde. Überall sonst kommen alle Namen, Adressen und Compose-Dateien zurück, und die Geheimnisse müssen [erneut eingegeben](#if-the-secrets-are-lost) werden.
+Eine Kopie der Datenbank eignet sich für eine Systemsicherung dieses Computers, etwa mit Time Machine, dem Dateiversionsverlauf oder Ihrem eigenen Skript. Sie behält, was die Sicherung in der App auslässt, die Engine-Ereignisse und den Bereitstellungsverlauf, aber **nicht den Schlüssel aus dem Schlüsselbund**: Mit ihren Geheimnissen lässt sie sich nur für denselben Benutzer auf demselben Computer wiederherstellen, oder auf einem, dessen Schlüsselbund mit ihr wiederhergestellt wurde. Überall sonst kommen alle Namen, Adressen und Compose-Dateien zurück, und die Geheimnisse müssen [erneut eingegeben](#wenn-die-geheimnisse-verloren-sind) werden.
 
 ### Während Homeport geschlossen ist
 
@@ -139,28 +139,28 @@ Es gibt `ok` aus.
 3. Legen Sie Ihre Kopie dort ab, mit dem Namen `homeport.db`. Haben Sie den ganzen Ordner kopiert, legen Sie stattdessen den Ordner zurück.
 4. Öffnen Sie Homeport.
 
-Homeport aktualisiert eine von einer älteren Version erstellte Kopie, wenn es sie öffnet. Eine Kopie, die zuletzt von einem neueren Homeport verwendet wurde, wird unverändert abgelehnt, mit [einer Meldung, die die zu installierende Version nennt](/docs/reference/troubleshooting/#this-database-was-last-used-by-homeport--or-later).
+Homeport aktualisiert eine von einer älteren Version erstellte Kopie, wenn es sie öffnet. Eine Kopie, die zuletzt von einem neueren Homeport verwendet wurde, wird unverändert abgelehnt, mit [einer Meldung, die die zu installierende Version nennt](/docs/reference/troubleshooting/#diese-datenbank-wurde-zuletzt-von-homeport--oder-neuer-verwendet).
 
 ## Wenn die Geheimnisse verloren sind
 
 Nach einem Zurücksetzen des Schlüsselbunds, einem neuen Benutzerkonto oder einer kopierten Datenbank, die auf einem anderen Computer geöffnet wird, behält Homeport alles, was es noch lesen kann, und markiert, was es nicht lesen kann. Nichts wird gelöscht, und was kein Geheimnis ist (Namen, Adressen, Compose-Dateien, Ordnerpfade), ist unversehrt. Geben Sie erneut ein:
 
-| Was                                        | Wie                                                                                                                                                                                            |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **TLS-Hosts**                              | Laden Sie auf der Seite des Hosts das CA-Zertifikat, das Client-Zertifikat und den Client-Schlüssel erneut und wählen Sie **Speichern**.                                                       |
-| **SSH-Hosts mit importiertem Schlüssel**   | Fügen Sie den privaten Schlüssel und seine Passphrase erneut ein und wählen Sie **Speichern**.                                                                                                 |
-| **SSH-Hosts mit einem Homeport-Schlüssel** | Wählen Sie **Schlüssel neu erzeugen** und [autorisieren Sie den neuen Schlüssel](/docs/hosts/ssh/#authorise-homeports-key) dann auf dem Server. Entfernen Sie dort die alte Zeile `homeport@`. |
-| **Incus-Hosts über HTTPS**                 | Entfernen Sie den Host und [fügen Sie ihn mit einem neuen Trust-Token erneut hinzu](/docs/hosts/incus/#over-https-with-a-trust-token).                                                         |
-| **Kubernetes-Cluster**                     | **Aus kubeconfig aktualisieren** auf der Seite des Clusters.                                                                                                                                   |
-| **Nomad-Cluster**                          | Fügen Sie das ACL-Token und, falls verwendet, die Zertifikate in den **Einstellungen** des Clusters ein.                                                                                       |
-| **Stack-Umgebungen**                       | Geben Sie die Umgebung eines verwalteten oder synchronisierten Stacks auf seiner Seite erneut ein. Verknüpfte Stacks behalten ihre in der `.env` ihres Ordners, die Homeport nie hatte.        |
-| **Registry-Anmeldungen**                   | Bearbeiten Sie unter **Einstellungen → Registrys** jede Anmeldung und geben Sie ihr Passwort oder Token ein.                                                                                   |
-| **Repositorys**                            | Wählen Sie unter **Einstellungen → Repositorys** **Neuer Schlüssel** und fügen Sie den Schlüssel dem Repository auf Ihrer Forge hinzu, oder wählen Sie **Token ersetzen**.                     |
+| Was                                        | Wie                                                                                                                                                                                                            |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **TLS-Hosts**                              | Laden Sie auf der Seite des Hosts das CA-Zertifikat, das Client-Zertifikat und den Client-Schlüssel erneut und wählen Sie **Speichern**.                                                                       |
+| **SSH-Hosts mit importiertem Schlüssel**   | Fügen Sie den privaten Schlüssel und seine Passphrase erneut ein und wählen Sie **Speichern**.                                                                                                                 |
+| **SSH-Hosts mit einem Homeport-Schlüssel** | Wählen Sie **Schlüssel neu erzeugen** und [autorisieren Sie den neuen Schlüssel](/docs/hosts/ssh/#den-schlüssel-von-homeport-autorisieren) dann auf dem Server. Entfernen Sie dort die alte Zeile `homeport@`. |
+| **Incus-Hosts über HTTPS**                 | Entfernen Sie den Host und [fügen Sie ihn mit einem neuen Trust-Token erneut hinzu](/docs/hosts/incus/#über-https-mit-einem-trust-token).                                                                      |
+| **Kubernetes-Cluster**                     | **Aus kubeconfig aktualisieren** auf der Seite des Clusters.                                                                                                                                                   |
+| **Nomad-Cluster**                          | Fügen Sie das ACL-Token und, falls verwendet, die Zertifikate in den **Einstellungen** des Clusters ein.                                                                                                       |
+| **Stack-Umgebungen**                       | Geben Sie die Umgebung eines verwalteten oder synchronisierten Stacks auf seiner Seite erneut ein. Verknüpfte Stacks behalten ihre in der `.env` ihres Ordners, die Homeport nie hatte.                        |
+| **Registry-Anmeldungen**                   | Bearbeiten Sie unter **Einstellungen → Registrys** jede Anmeldung und geben Sie ihr Passwort oder Token ein.                                                                                                   |
+| **Repositorys**                            | Wählen Sie unter **Einstellungen → Repositorys** **Neuer Schlüssel** und fügen Sie den Schlüssel dem Repository auf Ihrer Forge hinzu, oder wählen Sie **Token ersetzen**.                                     |
 
 Hosts mit lokalem Socket, TCP und ssh-agent enthalten kein Geheimnis und funktionieren weiter. Die im Bereitstellungsverlauf aufgezeichneten Umgebungen können nicht erneut eingegeben werden; die Compose-Dateien des Verlaufs bleiben lesbar.
 
-Siehe [Zugangsdaten verloren](/docs/reference/troubleshooting/#credentials-lost) in der Fehlerbehebung.
+Siehe [Zugangsdaten verloren](/docs/reference/troubleshooting/#zugangsdaten-verloren) in der Fehlerbehebung.
 
 ## Ihre Daten entfernen
 
-[Ihre Daten entfernen](/docs/reference/updating/#removing-your-data) listet die Ordner und den Eintrag im Schlüsselbund auf, die Sie löschen, und die Schlüssel, die Sie von Ihren Servern entfernen.
+[Ihre Daten entfernen](/docs/reference/updating/#ihre-daten-entfernen) listet die Ordner und den Eintrag im Schlüsselbund auf, die Sie löschen, und die Schlüssel, die Sie von Ihren Servern entfernen.
