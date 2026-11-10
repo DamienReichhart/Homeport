@@ -12,7 +12,7 @@ use homeport_engine::{
 use homeport_git::Repositories;
 use homeport_hosts::service::HostService;
 use homeport_incus::instances::terminal::IncusTerminals;
-use homeport_kubernetes::terminal::PodTerminals;
+use homeport_kubernetes::streams::terminal::PodTerminals;
 use homeport_nomad::allocations::exec::NomadTerminals;
 use homeport_registries::RegistryStore;
 use homeport_settings::SettingsService;

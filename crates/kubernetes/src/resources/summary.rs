@@ -7,9 +7,11 @@ use serde::Serialize;
 use homeport_core::error::AppError;
 
 use super::{
-    events::EventView,
-    pods::PodHealth,
-    workloads::{WorkloadHealth, WorkloadKind, WorkloadView},
+    kinds::{
+        events::EventView,
+        pods::PodHealth,
+        workloads::{WorkloadHealth, WorkloadKind, WorkloadView},
+    },
     On,
 };
 
@@ -199,9 +201,9 @@ mod tests {
     fn a_part_is_read_or_says_why_not() {
         let read: Part<u32> = Ok(3).into();
         assert_eq!(read, Part::Read { value: 3 });
-        let failed: Part<u32> = Err(super::super::forbidden(
+        let failed: Part<u32> = Err(crate::resources::forbidden(
             "list",
-            super::super::ResourceKind::Node,
+            crate::resources::ResourceKind::Node,
             None,
         ))
         .into();

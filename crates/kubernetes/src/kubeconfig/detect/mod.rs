@@ -10,7 +10,7 @@ use kube::config::{Kubeconfig, NamedExtension};
 use serde::Serialize;
 
 use crate::{
-    client,
+    api::client,
     kubeconfig::{self, AddedCluster, Source},
     model::KubeCluster,
 };

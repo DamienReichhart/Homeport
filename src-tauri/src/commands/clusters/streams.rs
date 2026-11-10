@@ -9,9 +9,11 @@ use homeport_core::{
     terminal::ExecEvent,
 };
 use homeport_kubernetes::{
-    logs::{PodLogSource, PodLogTarget},
     metrics::{MetricsEvent, MetricsTarget},
-    terminal::{PodExecOptions, TerminalId},
+    streams::{
+        logs::{PodLogSource, PodLogTarget},
+        terminal::{PodExecOptions, TerminalId},
+    },
 };
 
 use super::on;

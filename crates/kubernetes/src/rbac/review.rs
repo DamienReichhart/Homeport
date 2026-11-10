@@ -21,7 +21,7 @@ use homeport_core::error::{AppError, AppResult};
 
 use super::rules::{merge, Grants, Rule};
 use crate::{
-    discovery::{types_of, ApiResourceInfo},
+    api::discovery::{types_of, ApiResourceInfo},
     messages as msg,
     resources::{ApiType, On},
 };

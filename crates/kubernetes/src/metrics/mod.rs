@@ -265,7 +265,7 @@ impl On {
     /// document (`/apis`).
     pub async fn serves_metrics(&self) -> Result<bool, AppError> {
         let groups = self.client.list_api_groups().await.map_err(|e| {
-            crate::classify::classify(&self.cluster.name, self.cluster.address(), &e)
+            crate::api::classify::classify(&self.cluster.name, self.cluster.address(), &e)
         })?;
         Ok(serves_metrics(&groups))
     }

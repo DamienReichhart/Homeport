@@ -17,7 +17,7 @@ use homeport_core::{
     programs,
 };
 
-use crate::{client::IssuedCredentials, messages as msg, model::ExecConfig};
+use crate::{api::client::IssuedCredentials, messages as msg, model::ExecConfig};
 
 /// How long a plugin may take; one waiting on a browser sign-in never ends.
 pub const TIMEOUT: Duration = Duration::from_secs(60);

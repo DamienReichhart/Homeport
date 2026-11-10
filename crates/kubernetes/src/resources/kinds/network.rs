@@ -11,7 +11,7 @@ use k8s_openapi::{
 };
 use serde::Serialize;
 
-use super::common::{annotations, created, labels, selector_string};
+use crate::resources::common::{annotations, created, labels, selector_string};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]

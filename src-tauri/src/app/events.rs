@@ -8,7 +8,7 @@ use homeport_clusters::registry::{ClusterNotifier, ClusterStatus};
 use homeport_core::error::AppError;
 use homeport_engine::volumes::helper;
 use homeport_hosts::registry::{EngineEvent, HostStatus, Notifier};
-use homeport_kubernetes::forward::ForwardEvent;
+use homeport_kubernetes::streams::forward::ForwardEvent;
 use homeport_stacks::StackOwner;
 
 use super::{notifications::Notifications, AppState};

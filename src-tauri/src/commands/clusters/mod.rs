@@ -15,11 +15,11 @@ use tauri::State;
 use homeport_clusters::service::ClusterView;
 use homeport_core::host::HostConnection;
 use homeport_engine::containers;
-use homeport_kubernetes::resources::On;
-use homeport_kubernetes::{
+use homeport_kubernetes::kubeconfig::{
     detect::{self, LocalClusters},
-    kubeconfig::{ContextChoice, KubeContexts},
+    ContextChoice, KubeContexts,
 };
+use homeport_kubernetes::resources::On;
 
 use crate::{app::AppState, error::AppResult};
 

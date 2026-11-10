@@ -7,7 +7,7 @@ use serde::Serialize;
 
 use crate::metrics::quantity;
 
-use super::common::{annotations, conditions, created, labels, ConditionView};
+use crate::resources::common::{annotations, conditions, created, labels, ConditionView};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]

@@ -225,5 +225,6 @@ fn read_referenced(source: &Source, path: &str) -> AppResult<String> {
     std::fs::read_to_string(path).map_err(|e| local_file(path, e))
 }
 
+pub mod detect;
 #[cfg(test)]
 mod tests;

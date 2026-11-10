@@ -9,7 +9,7 @@ use crate::metrics::quantity;
 
 use k8s_openapi::apimachinery::pkg::api::resource::Quantity;
 
-use super::common::{
+use crate::resources::common::{
     annotations, conditions, created, labels, owner, time, ConditionView, OwnerView,
 };
 

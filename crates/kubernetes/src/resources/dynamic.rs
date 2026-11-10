@@ -16,7 +16,7 @@ use homeport_core::error::{AppError, AppResult, ErrorCode};
 
 use super::{
     common::ConditionView,
-    events::{self, EventView},
+    kinds::events::{self, EventView},
     tidy, ApiType, On, ResourceKind, PAGE,
 };
 

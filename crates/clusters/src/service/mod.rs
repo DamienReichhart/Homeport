@@ -8,9 +8,9 @@ use serde::Serialize;
 use homeport_core::error::{AppError, AppResult};
 
 use homeport_kubernetes::{
-    forward::PortForwards,
     kubeconfig::{self, ContextChoice, KubeContexts, Source},
     proxy::ClusterAccess,
+    streams::forward::PortForwards,
     KubeCluster,
 };
 

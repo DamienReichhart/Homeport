@@ -5,7 +5,7 @@
 //! ignored Engine tests), it says so and passes.
 
 use homeport_kubernetes::{
-    client,
+    api::client,
     kubeconfig::{self, Source},
     resources::{On, ResourceKind, WorkloadKind},
     KubeCluster,
@@ -87,7 +87,7 @@ async fn a_pod_gives_its_logs_and_a_terminal_then_is_deleted() {
         logs::{LogEvent, LogOptions},
         terminal::ExecEvent,
     };
-    use homeport_kubernetes::{
+    use homeport_kubernetes::streams::{
         logs::{PodLogSource, PodLogTarget},
         terminal::{self, PodExecOptions},
     };
@@ -203,7 +203,7 @@ async fn a_pod_gives_its_logs_and_a_terminal_then_is_deleted() {
 async fn a_forwarded_port_reaches_the_pod_until_stopped() {
     use std::{sync::Arc, time::Duration};
 
-    use homeport_kubernetes::forward::{ForwardTarget, PortForwards};
+    use homeport_kubernetes::streams::forward::{ForwardTarget, PortForwards};
     use k8s_openapi::api::core::v1::Pod;
     use kube::api::{Api, PostParams};
     use tokio::io::{AsyncReadExt, AsyncWriteExt};

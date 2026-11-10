@@ -1,5 +1,5 @@
 use super::*;
-use crate::classify::needs_user;
+use crate::api::classify::needs_user;
 
 const TOKEN: &str = r#"{"apiVersion":"client.authentication.k8s.io/v1","kind":"ExecCredential","status":{"token":"k8s-aws-v1.abc","expirationTimestamp":"2099-01-01T00:00:00Z"}}"#;
 

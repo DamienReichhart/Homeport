@@ -20,9 +20,11 @@ use tokio::task::JoinHandle;
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 
 use homeport_kubernetes::{
-    classify::classify,
-    client::{self, IssuedCredentials, CONNECT_TIMEOUT},
-    exec::{self, ClusterInfo, Issued},
+    api::{
+        classify::classify,
+        client::{self, IssuedCredentials, CONNECT_TIMEOUT},
+        credentials::{self, ClusterInfo, Issued},
+    },
     messages as kube_msg, KubeCluster, KubernetesSecrets,
 };
 
@@ -296,7 +298,7 @@ impl ClusterRegistry {
             certificate_authority: secrets.certificate_authority.clone(),
         };
         let context = connection.source.as_ref().map(|s| s.context.as_str());
-        let issued = exec::run(&cluster.name, context, plugin, &info).await?;
+        let issued = credentials::run(&cluster.name, context, plugin, &info).await?;
         let credentials = issued.credentials.clone();
         self.lock_issued().insert(cluster.id.clone(), issued);
         Ok(Some(credentials))

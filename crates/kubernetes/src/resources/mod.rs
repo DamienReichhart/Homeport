@@ -8,16 +8,10 @@
 pub mod actions;
 mod api_type;
 pub(crate) mod common;
-pub mod config;
 pub mod dynamic;
-pub mod events;
 mod kind;
-pub mod network;
-pub mod nodes;
-pub mod pods;
 pub mod summary;
 mod watch;
-pub mod workloads;
 
 use std::fmt::Debug;
 
@@ -35,27 +29,34 @@ use serde::de::DeserializeOwned;
 
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 
-use crate::{classify::classify, messages as msg, model::KubeCluster};
+use crate::{api::classify::classify, messages as msg, model::KubeCluster};
 
+use self::kinds::{config, events, network, nodes, pods, workloads};
 pub use self::{
     api_type::ApiType,
     common::{ConditionView, OwnerView},
-    config::{
-        ConfigMapDetail, ConfigMapView, ConfigValue, DataKey, RevealedValue, SecretDetail,
-        SecretView,
-    },
     dynamic::{ObjectDetail, ObjectTable, OwnerRef, TableColumn, TableRow},
-    events::{EventObject, EventView},
     kind::ResourceKind,
-    network::{
-        ClusterServiceDetail, ClusterServicePort, ClusterServiceView, IngressDetail, IngressPath,
-        IngressTls, IngressView,
+    kinds::{
+        config::{
+            ConfigMapDetail, ConfigMapView, ConfigValue, DataKey, RevealedValue, SecretDetail,
+            SecretView,
+        },
+        events::{EventObject, EventView},
+        network::{
+            ClusterServiceDetail, ClusterServicePort, ClusterServiceView, IngressDetail,
+            IngressPath, IngressTls, IngressView,
+        },
+        nodes::{ClusterNodeDetail, ClusterNodeView, NodeTaint},
+        pods::{
+            NamespaceView, PodContainer, PodDetail, PodHealth, PodPort, PodView, ResourceBounds,
+        },
+        workloads::{
+            TemplateContainer, WorkloadDetail, WorkloadHealth, WorkloadKind, WorkloadView,
+        },
     },
-    nodes::{ClusterNodeDetail, ClusterNodeView, NodeTaint},
-    pods::{NamespaceView, PodContainer, PodDetail, PodHealth, PodPort, PodView, ResourceBounds},
     summary::{ClusterSummary, NodeCounts, Part, PodCounts},
     watch::{watch, watch_api},
-    workloads::{TemplateContainer, WorkloadDetail, WorkloadHealth, WorkloadKind, WorkloadView},
 };
 
 /// Items fetched per request of a long list.
@@ -616,5 +617,6 @@ const BUILT_IN_GROUPS: &[&str] = &[
     "storage.k8s.io",
 ];
 
+pub mod kinds;
 #[cfg(test)]
 mod tests;

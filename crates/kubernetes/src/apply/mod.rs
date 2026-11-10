@@ -12,7 +12,7 @@ use serde_json::Value;
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 
 use crate::{
-    discovery::ApiResourceInfo,
+    api::discovery::ApiResourceInfo,
     messages as msg,
     resources::{actions::FIELD_MANAGER, strip, tidy, ApiType, On, ResourceKind},
 };

@@ -181,7 +181,7 @@ mod tests {
 
     #[test]
     fn having_no_repository_isnt_an_error() {
-        let e = super::super::failure(
+        let e = crate::helm::failure(
             "repo",
             None,
             crate::proxy::Failure::Exit {

@@ -5,7 +5,7 @@ use tauri::{ipc::Channel, State};
 
 use homeport_core::streams::StreamId;
 use homeport_kubernetes::{
-    discovery::ApiResourceInfo,
+    api::discovery::ApiResourceInfo,
     resources::{self, ApiType, EventView, ObjectDetail, ObjectTable},
 };
 

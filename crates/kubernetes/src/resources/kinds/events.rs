@@ -3,7 +3,7 @@
 use k8s_openapi::api::core::v1::Event;
 use serde::Serialize;
 
-use super::common::time;
+use crate::resources::common::time;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]

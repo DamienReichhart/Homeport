@@ -8,7 +8,7 @@ use homeport_core::{
 };
 
 use super::{ClusterClient, ClusterRegistry, ClusterStatus};
-use homeport_kubernetes::classify;
+use homeport_kubernetes::api::classify;
 
 use crate::{
     messages as msg,

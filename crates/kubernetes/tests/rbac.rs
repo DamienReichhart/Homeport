@@ -7,7 +7,7 @@
 //! Each test makes its own Namespaces and ServiceAccount and deletes them.
 
 use homeport_kubernetes::{
-    client,
+    api::client,
     kubeconfig::{self, Source},
     rbac::{AccessCheck, Subject, SubjectKind},
     resources::On,

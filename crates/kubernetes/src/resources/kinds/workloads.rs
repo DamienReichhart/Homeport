@@ -10,7 +10,7 @@ use k8s_openapi::api::{
 };
 use serde::{Deserialize, Serialize};
 
-use super::common::{
+use crate::resources::common::{
     annotations, conditions, created, labels, owner, time, ConditionView, OwnerView,
 };
 
@@ -25,8 +25,8 @@ pub enum WorkloadKind {
 }
 
 impl WorkloadKind {
-    pub fn resource(self) -> super::ResourceKind {
-        use super::ResourceKind as R;
+    pub fn resource(self) -> crate::resources::ResourceKind {
+        use crate::resources::ResourceKind as R;
         match self {
             Self::Deployment => R::Deployment,
             Self::StatefulSet => R::StatefulSet,
@@ -296,7 +296,7 @@ pub fn cron_job(c: &CronJob) -> WorkloadView {
 
 fn selector(s: Option<&k8s_openapi::apimachinery::pkg::apis::meta::v1::LabelSelector>) -> String {
     s.and_then(|s| s.match_labels.as_ref())
-        .map(super::common::selector_string)
+        .map(crate::resources::common::selector_string)
         .unwrap_or_default()
 }
 

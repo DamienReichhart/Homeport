@@ -1,12 +1,12 @@
 //! ConfigMaps and Secrets. A Secret's values never leave the backend in a
-//! list or a detail: only [`super::On::reveal`] returns one, for one key.
+//! list or a detail: only [`crate::resources::On::reveal`] returns one, for one key.
 
 use std::collections::BTreeMap;
 
 use k8s_openapi::api::core::v1::{ConfigMap, Secret};
 use serde::Serialize;
 
-use super::common::{annotations, created, labels};
+use crate::resources::common::{annotations, created, labels};
 
 /// One key of a ConfigMap or Secret, and how big its value is.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]

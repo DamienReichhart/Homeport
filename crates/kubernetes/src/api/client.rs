@@ -9,7 +9,7 @@ use secrecy::SecretString;
 
 use homeport_core::error::AppResult;
 
-use crate::classify::{classify, credentials_unusable};
+use crate::api::classify::{classify, credentials_unusable};
 use crate::model::{KubeCluster, KubernetesSecrets};
 
 /// How long connecting to an API server may take.
