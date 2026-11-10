@@ -107,16 +107,13 @@ src/                 React frontend
   shared/            feature-agnostic api / ui / hooks / lib / styles
 src-tauri/           Rust app shell (Tauri)
   src/app/           bootstrap, managed state, events pushed to the webview
-  src/commands/      thin IPC handlers, one module per feature
+  src/commands/      thin IPC handlers, one folder per domain
   capabilities/      Tauri permission sets
-crates/              Rust backend logic, one crate per layer (no Tauri types)
-  core/              AppError, the Host model, helpers for this computer
-  storage/           SQLite database and sealed secrets
-  transport/         reaching a Host: local, TCP, TLS, SSH, compose proxy
-  engine/            containers, images, volumes, networks… over bollard
-  hosts/  stacks/    the two domains: Hosts and Stacks
-  git/               Synced Stacks' repositories and the git CLI
-  settings/ updates/ preferences, and how Homeport updates itself
+crates/              Rust backend logic, one crate each, by layer (no Tauri types)
+  foundation/        core (AppError, the Host model), storage, transport
+  runtimes/          engine, containerd, incus, kubernetes, nomad: each API
+  domains/           hosts, clusters, stacks, git, registries, settings
+  app/               backup, diagnostics, updates: across domains
 packaging/linux/     repository definitions, signing key, install script and
                      .deb/.rpm maintainer scripts
 scripts/             release planning, repository builder, signing-key wizard,
