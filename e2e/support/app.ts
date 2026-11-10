@@ -101,7 +101,7 @@ export async function shown(element: Element, timeout = 20_000): Promise<void> {
   await browser.waitUntil(() => displayed(element), {
     timeout,
     interval: 250,
-    timeoutMsg: `${element.selector} still not displayed after ${timeout}ms`,
+    timeoutMsg: `${await element.selector} still not displayed after ${timeout}ms`,
   });
 }
 
@@ -110,6 +110,6 @@ export async function gone(element: Element, timeout = 20_000): Promise<void> {
   await browser.waitUntil(async () => !(await displayed(element)), {
     timeout,
     interval: 250,
-    timeoutMsg: `${element.selector} still displayed after ${timeout}ms`,
+    timeoutMsg: `${await element.selector} still displayed after ${timeout}ms`,
   });
 }

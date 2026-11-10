@@ -16,7 +16,8 @@ set -eu
 
 here=$(cd "$(dirname "$0")" && pwd)
 home=$(mktemp -d "${TMPDIR:-/tmp}/homeport-e2e.XXXXXX")
-trap 'rm -rf "$home"' EXIT
+# The document portal may have mounted itself in the runtime folder.
+trap 'fusermount -u "$home/runtime/doc" 2>/dev/null; rm -rf "$home" 2>/dev/null || true' EXIT
 
 # Tauri puts the app's data, config and logs under these.
 export XDG_DATA_HOME="$home/data" XDG_CONFIG_HOME="$home/config" XDG_CACHE_HOME="$home/cache"
@@ -24,6 +25,11 @@ export XDG_RUNTIME_DIR="$home/runtime"
 mkdir -p "$XDG_DATA_HOME/keyrings" "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME" "$XDG_RUNTIME_DIR"
 chmod 700 "$XDG_RUNTIME_DIR"
 export HOMEPORT_E2E_HOME="$home"
+# The specs read the app's English labels, so the OS's language is pinned:
+# a C locale, as on CI runners, which WebKitGTK reports as the invalid tag
+# "C" and the app must turn into English (src/shared/lib/languages.ts).
+export LANG=C.UTF-8
+unset LANGUAGE LC_ALL LC_MESSAGES
 # Xvfb has no GPU: WebKit renders without compositing or DMA-BUF buffers.
 export WEBKIT_DISABLE_COMPOSITING_MODE=1 WEBKIT_DISABLE_DMABUF_RENDERER=1
 
