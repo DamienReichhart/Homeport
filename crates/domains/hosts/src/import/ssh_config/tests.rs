@@ -1,7 +1,8 @@
 use super::*;
 
 /// A throwaway key made for these tests; its passphrase is "secret".
-const ENCRYPTED: &str = include_str!("../../../../transport/src/ssh/testdata/encrypted_ed25519");
+const ENCRYPTED: &str =
+    include_str!("../../../../../foundation/transport/src/ssh/testdata/encrypted_ed25519");
 
 struct Home {
     dir: tempfile::TempDir,

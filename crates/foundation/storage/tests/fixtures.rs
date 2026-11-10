@@ -105,6 +105,6 @@ fn every_release_has_a_fixture() {
         missing.is_empty(),
         "no database fixture for {missing:?}. Make them with:\n  \
          cargo run -p homeport-storage --features test-support --example db_fixture -- --missing\n\
-         and commit crates/storage/tests/fixtures/ (docs/RELEASING.md, Data compatibility)"
+         and commit crates/foundation/storage/tests/fixtures/ (docs/RELEASING.md, Data compatibility)"
     );
 }

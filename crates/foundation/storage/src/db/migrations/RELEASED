@@ -8,7 +8,7 @@
 # database from a newer Homeport.
 #
 # Releasing adds a line for each new migration (docs/RELEASING.md):
-#   sha256sum crates/storage/src/db/migrations/00NN_name.sql
+#   sha256sum crates/foundation/storage/src/db/migrations/00NN_name.sql
 0001_settings.sql c01515710d5b43429c74c65eb5d463275d1594919b3f108ca21c4b0779b76fc8 0.1.0
 0002_hosts.sql 7c4b61157752ed830e4d0f0dd1945bcdf39dec99f6b60b92ca7fa470b6c8c7c8 0.1.0
 0003_stacks.sql 8258db433f7944a0f2cfbe18c83dd956f72d7ca0f91a438abbc17fb033951683 0.1.0

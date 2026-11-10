@@ -1,5 +1,5 @@
 [workspace]
-members = ["src-tauri", "crates/*"]
+members = ["src-tauri", "crates/*/*"]
 resolver = "2"
 
 [workspace.package]
@@ -100,24 +100,29 @@ tauri-plugin-single-instance = "2"
 tauri-plugin-window-state = "2"
 tauri-plugin-autostart = "2"
 tauri-plugin-notification = "2"
-# Homeport's own crates, from the bottom of the dependency graph up.
-homeport-core = { path = "crates/core" }
-homeport-diagnostics = { path = "crates/diagnostics" }
-homeport-storage = { path = "crates/storage" }
-homeport-transport = { path = "crates/transport" }
-homeport-engine = { path = "crates/engine" }
-homeport-containerd = { path = "crates/containerd" }
-homeport-incus = { path = "crates/incus" }
-homeport-hosts = { path = "crates/hosts" }
-homeport-nomad = { path = "crates/nomad" }
-homeport-kubernetes = { path = "crates/kubernetes" }
-homeport-clusters = { path = "crates/clusters" }
-homeport-git = { path = "crates/git" }
-homeport-stacks = { path = "crates/stacks" }
-homeport-registries = { path = "crates/registries" }
-homeport-backup = { path = "crates/backup" }
-homeport-settings = { path = "crates/settings" }
-homeport-updates = { path = "crates/updates" }
+# Homeport's own crates, by layer under crates/, from the bottom of the
+# dependency graph up (docs/ARCHITECTURE.md).
+# Foundation: errors and the Host model, storage, reaching a Host.
+homeport-core = { path = "crates/foundation/core" }
+homeport-storage = { path = "crates/foundation/storage" }
+homeport-transport = { path = "crates/foundation/transport" }
+# Runtimes: the API of each thing Homeport manages.
+homeport-engine = { path = "crates/runtimes/engine" }
+homeport-containerd = { path = "crates/runtimes/containerd" }
+homeport-incus = { path = "crates/runtimes/incus" }
+homeport-nomad = { path = "crates/runtimes/nomad" }
+homeport-kubernetes = { path = "crates/runtimes/kubernetes" }
+# Domains: what Homeport keeps, and the use cases on it.
+homeport-hosts = { path = "crates/domains/hosts" }
+homeport-clusters = { path = "crates/domains/clusters" }
+homeport-git = { path = "crates/domains/git" }
+homeport-stacks = { path = "crates/domains/stacks" }
+homeport-registries = { path = "crates/domains/registries" }
+homeport-settings = { path = "crates/domains/settings" }
+# The app: what it does across domains.
+homeport-diagnostics = { path = "crates/app/diagnostics" }
+homeport-backup = { path = "crates/app/backup" }
+homeport-updates = { path = "crates/app/updates" }
 
 [profile.release]
 codegen-units = 1

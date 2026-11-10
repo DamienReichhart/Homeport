@@ -41,4 +41,4 @@ Options 1 and 2 below together: **containerd's gRPC API for everything it covers
 - containerd 1.7 Hosts can do everything but pull. The containerd page has a table of what each version and kind of connection allows.
 - Homeport now runs `tail`, `mktemp`, `mkfifo`, `cat` and `rm` on SSH Hosts, for logs and exec, beside `systemctl` (ADR 0019) and the socket probe; the security page lists them all.
 - No file is written on a Host except the exec FIFOs, in a private temporary folder removed when the session closes.
-- Building Homeport needs no `protoc`: the vendored one runs at build time. Updating the API means replacing the `.proto` files in `crates/containerd/proto/`.
+- Building Homeport needs no `protoc`: the vendored one runs at build time. Updating the API means replacing the `.proto` files in `crates/runtimes/containerd/proto/`.

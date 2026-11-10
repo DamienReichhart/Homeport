@@ -108,7 +108,7 @@ async fn an_encrypted_key_imports_with_its_passphrase_only() {
     let (dir, env) = home("Host box\n  HostName 192.0.2.2\n  IdentityFile ~/.ssh/enc\n");
     std::fs::write(
         dir.path().join(".ssh/enc"),
-        include_str!("../../../../transport/src/ssh/testdata/encrypted_ed25519"),
+        include_str!("../../../../../foundation/transport/src/ssh/testdata/encrypted_ed25519"),
     )
     .unwrap();
     let svc = service();

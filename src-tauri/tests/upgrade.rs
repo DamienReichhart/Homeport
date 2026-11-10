@@ -1,5 +1,5 @@
 //! Databases from every released version open in today's Homeport with
-//! everything they held: each fixture of `crates/storage/tests/fixtures/` is
+//! everything they held: each fixture of `crates/foundation/storage/tests/fixtures/` is
 //! migrated, then read back through the stores the app uses, down to every
 //! secret. A migration that drops a column's data, or a stored shape today's
 //! code no longer reads, fails here.
@@ -39,7 +39,8 @@ use homeport_storage::{
 };
 
 fn fixtures() -> Vec<PathBuf> {
-    let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../crates/storage/tests/fixtures");
+    let dir =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../crates/foundation/storage/tests/fixtures");
     let mut files: Vec<PathBuf> = std::fs::read_dir(dir)
         .unwrap()
         .map(|entry| entry.unwrap().path())

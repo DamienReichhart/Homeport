@@ -3,7 +3,7 @@
 //!   cargo run -p homeport-storage --features test-support --example db_fixture -- 1.2.0
 //!   cargo run -p homeport-storage --features test-support --example db_fixture -- --missing
 //!
-//! Writes `crates/storage/tests/fixtures/<version>.db` from that release's
+//! Writes `crates/foundation/storage/tests/fixtures/<version>.db` from that release's
 //! own migrations: those of the `v<version>` tag when it exists, or the
 //! working tree's for a version about to be released. `--missing` makes one
 //! for every release tag that has none. A fixture is never overwritten: it
@@ -18,12 +18,13 @@ use homeport_storage::fixtures;
 
 /// Where the migrations have lived, newest first.
 const MIGRATION_DIRS: &[&str] = &[
+    "crates/foundation/storage/src/db/migrations",
     "crates/storage/src/db/migrations",
     "src-tauri/src/services/db_migrations",
 ];
 
 fn root() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..")
 }
 
 fn git(args: &[&str]) -> Option<String> {
@@ -68,7 +69,7 @@ fn migrations_here() -> Vec<String> {
 
 fn make(version: &str) {
     let path = root()
-        .join("crates/storage/tests/fixtures")
+        .join("crates/foundation/storage/tests/fixtures")
         .join(format!("{version}.db"));
     if path.exists() {
         println!("{version}: already there, left as it is");
