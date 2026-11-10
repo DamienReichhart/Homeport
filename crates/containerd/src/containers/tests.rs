@@ -106,7 +106,7 @@ fn the_tool_that_made_a_container_is_told_from_its_labels() {
 mod live {
     use std::time::Duration;
 
-    use crate::containers::*;
+    use super::super::*;
     use crate::testing::{self, NAMESPACE};
 
     async fn state(client: &Containerd, id: &str) -> TaskState {

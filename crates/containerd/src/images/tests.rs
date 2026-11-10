@@ -54,7 +54,7 @@ fn a_manifest_lists_its_config_and_layers() {
 mod live {
     use std::sync::Mutex;
 
-    use crate::images::*;
+    use super::super::*;
     use crate::testing::{self, NAMESPACE};
 
     #[tokio::test]

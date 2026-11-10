@@ -38,7 +38,7 @@ fn a_chain_with_a_loop_ends() {
 }
 
 mod live {
-    use crate::snapshots::*;
+    use super::super::*;
     use crate::testing::{self, NAMESPACE};
 
     #[tokio::test]

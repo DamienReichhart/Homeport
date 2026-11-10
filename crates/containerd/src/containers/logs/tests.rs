@@ -155,7 +155,7 @@ fn files_are_followed_with_tail() {
 }
 
 mod live {
-    use crate::containers::logs::*;
+    use super::super::*;
     use crate::testing::{self, NAMESPACE};
 
     #[tokio::test]
