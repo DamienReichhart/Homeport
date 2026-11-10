@@ -16,6 +16,7 @@ pub mod backup;
 pub mod cluster_actions;
 pub mod cluster_api;
 pub mod cluster_forwards;
+pub mod cluster_rbac;
 pub mod cluster_streams;
 pub mod clusters;
 pub mod containerd;
@@ -167,6 +168,10 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             cluster_forwards::clusters_forward_list,
             cluster_forwards::clusters_forward_stop,
             cluster_forwards::clusters_forward_port_free,
+            cluster_rbac::clusters_rbac_index,
+            cluster_rbac::clusters_rbac_subject,
+            cluster_rbac::clusters_rbac_own,
+            cluster_rbac::clusters_rbac_can_i,
             helm::clusters_helm_releases,
             helm::clusters_helm_history,
             helm::clusters_helm_release_details,

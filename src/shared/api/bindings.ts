@@ -284,6 +284,17 @@ export const commands = {
 	/**  Whether `port` is free on this computer, to propose it as the local port. */
 	clustersForwardPortFree: (port: number) => __TAURI_INVOKE<boolean>("clusters_forward_port_free", { port }),
 	/**
+	 *  The Roles and RoleBindings of `namespace` (every one without), the
+	 *  ClusterRoles and ClusterRoleBindings, and the subjects they name.
+	 */
+	clustersRbacIndex: (id: string, namespace: string | null) => __TAURI_INVOKE<RbacIndex>("clusters_rbac_index", { id, namespace }),
+	/**  What `subject` may do, from the bindings naming it or its groups. */
+	clustersRbacSubject: (id: string, subject: Subject, namespace: string | null) => __TAURI_INVOKE<SubjectPermissions>("clusters_rbac_subject", { id, subject, namespace }),
+	/**  What the credentials may do in `namespace` (the default one without). */
+	clustersRbacOwn: (id: string, namespace: string | null) => __TAURI_INVOKE<OwnPermissions>("clusters_rbac_own", { id, namespace }),
+	/**  Whether the credentials may do what `check` asks. */
+	clustersRbacCanI: (id: string, check: AccessCheck) => __TAURI_INVOKE<AccessAnswer>("clusters_rbac_can_i", { id, check }),
+	/**
 	 *  The releases in `namespace`, or every Namespace; when the credentials
 	 *  can't list every Namespace, those of the Cluster's default one.
 	 */
@@ -868,6 +879,36 @@ export const events = {
 };
 
 /* Types */
+/**  The API server's answer. */
+export type AccessAnswer = {
+	allowed: boolean,
+	/**  Explicitly denied, so no other authorizer was asked. */
+	denied: boolean,
+	reason: string | null,
+	evaluationError: string | null,
+	/**  The resource checked, as kubectl names it (`deployments.apps`). */
+	resource: string,
+	/**  `false` when the Cluster serves no type of that name: it was asked as typed. */
+	known: boolean,
+	/**  The same question for a terminal. */
+	command: string,
+};
+
+/**  "Can I …?": a verb on a resource, as `kubectl auth can-i` asks it. */
+export type AccessCheck = {
+	verb: string,
+	/**  `secrets`, `deploy`, `deployments.apps`, or `*`. */
+	resource: string,
+	/**  Its API group, when `resource` doesn't name it. */
+	group: string | null,
+	/**  `log`, `exec`, `scale`… */
+	subresource: string | null,
+	/**  One object, by name. */
+	name: string | null,
+	/**  Every Namespace (or none, for a cluster-wide resource) with `None`. */
+	namespace: string | null,
+};
+
 export type AddedCluster = {
 	id: string,
 	name: string,
@@ -926,6 +967,13 @@ export type AppInfo = {
 	version: string,
 	os: string,
 	arch: string,
+};
+
+/**  A binding that applies to a subject, and how. */
+export type AppliedBinding = {
+	binding: BindingView,
+	/**  The group it names, when it doesn't name the subject itself. */
+	throughGroup: string | null,
 };
 
 /**  What applying a document does, or did. */
@@ -1036,6 +1084,22 @@ export type BastionKeyInput = {
 	index: number,
 	privateKey: string,
 	passphrase: string | null,
+};
+
+export type BindingKind = "RoleBinding" | "ClusterRoleBinding";
+
+/**  A RoleBinding (in its Namespace) or a ClusterRoleBinding. */
+export type BindingView = {
+	kind: BindingKind,
+	name: string,
+	namespace: string | null,
+	roleKind: RoleKind,
+	roleName: string,
+	/**  Whether that role was found among those listed. */
+	roleFound: boolean,
+	/**  ServiceAccounts' Namespaces filled in as Kubernetes reads them. */
+	subjects: Subject[],
+	created: string | null,
 };
 
 /**  What the New bridge dialog asks for. */
@@ -2024,6 +2088,12 @@ export type GitSupport = { state: "available"; cli: GitCli } |
 
 /**  GPUs requested from the vendor's container toolkit (`--gpus`). */
 export type GpuSpec = { kind: "all" } | { kind: "count"; count: number } | { kind: "ids"; ids: string[] };
+
+/**  What a set of rules grants, one row per resource and per URL. */
+export type Grants = {
+	resources: ResourceGrant[],
+	urls: UrlGrant[],
+};
 
 export type Health = {
 	/**  `starting`, `healthy` or `unhealthy`. */
@@ -3335,6 +3405,22 @@ export type ObjectValue =
  */
 { kind: "file"; path: string };
 
+/**  What the credentials may do in a Namespace, as the API server says. */
+export type OwnPermissions = {
+	/**  The Namespace asked about: the page's, or the Cluster's default one. */
+	namespace: string,
+	/**  `None` when the Cluster can't say (before Kubernetes 1.28). */
+	user: UserView | null,
+	/**  Its rules there, cluster-wide ones included, merged. */
+	grants: Grants,
+	/**
+	 *  The API server's own caveat: an authorizer (a webhook, ABAC) that
+	 *  can't list rules may allow more than this.
+	 */
+	incomplete: boolean,
+	evaluationError: string | null,
+};
+
 /**  An object it refers to as its owner. */
 export type OwnerRef = {
 	apiVersion: string,
@@ -3356,6 +3442,16 @@ export type Param = string | number;
 
 /**  One part of the summary, or why it couldn't be read. */
 export type Part<T> = { state: "read"; value: T } | { state: "failed"; error: AppError };
+
+/**  What a set of bindings grants in one Namespace, or cluster-wide. */
+export type PermissionScope = {
+	/**
+	 *  `None` cluster-wide: in every Namespace, on cluster-scoped resources
+	 *  and non-resource URLs.
+	 */
+	namespace: string | null,
+	grants: Grants,
+};
 
 /**  A container of a Pod and its state. */
 export type PodContainer = {
@@ -3687,6 +3783,23 @@ export type QuadletUnits = {
 	runsSystemctl: boolean,
 };
 
+/**  The RBAC objects of a Cluster, in a Namespace (with the cluster-wide ones). */
+export type RbacIndex = {
+	/**  The Namespace whose Roles and RoleBindings these are; every one with `None`. */
+	namespace: string | null,
+	/**  ClusterRoles first, then Roles by Namespace. */
+	roles: RoleView[],
+	/**  ClusterRoleBindings first, then RoleBindings by Namespace. */
+	bindings: BindingView[],
+	/**  Everyone a binding names, Users, then Groups, then ServiceAccounts. */
+	subjects: SubjectEntry[],
+	/**
+	 *  The lists the credentials may not read, each as why: what is shown
+	 *  is computed without them.
+	 */
+	refused: AppError[],
+};
+
 /**  What a Synced Stack follows. */
 export type RefKind = "branch" | "tag";
 
@@ -3886,6 +3999,19 @@ export type ResourceBounds = {
 	limit: number | null,
 };
 
+/**  What a set of rules grants on one resource (or a wildcard of them). */
+export type ResourceGrant = {
+	apiGroup: string,
+	/**  `pods`, `pods/log`, `*` or `*\/scale`. */
+	resource: string,
+	/**  Only on these objects, when not empty. */
+	resourceNames: string[],
+	/**  In the order the matrix shows them; `["*"]` for every verb. */
+	verbs: string[],
+	/**  The bindings granting it, by their index in the list given with it. */
+	bindings: number[],
+};
+
 export type ResourceKind = "namespace" | "deployment" | "statefulSet" | "daemonSet" | "job" | "cronJob" | "pod" | "service" | "ingress" | "configMap" | "secret" | "node" | "event";
 
 /**  What a container, Pod or Node uses. */
@@ -3924,6 +4050,27 @@ export type RevealedValue = {
 	binary: boolean,
 };
 
+export type RoleKind = "Role" | "ClusterRole";
+
+/**  A Role (in its Namespace) or a ClusterRole. */
+export type RoleView = {
+	kind: RoleKind,
+	name: string,
+	/**  A Role's; `None` for a ClusterRole. */
+	namespace: string | null,
+	/**  With aggregation resolved, for an aggregated ClusterRole. */
+	rules: Rule[],
+	/**
+	 *  The label selectors of its `aggregationRule`, as kubectl writes them;
+	 *  empty when it isn't aggregated.
+	 */
+	aggregation: string[],
+	/**  The ClusterRoles those selectors match, whose rules it holds. */
+	aggregatedFrom: string[],
+	labels: { [key in string]: string },
+	created: string | null,
+};
+
 /**  Rolling a release back to one of its revisions. */
 export type RollbackRequest = {
 	name: string,
@@ -3931,6 +4078,22 @@ export type RollbackRequest = {
 	revision: number,
 	wait: boolean,
 	timeoutSeconds: number | null,
+};
+
+/**
+ *  One rule of a Role or ClusterRole, as RBAC writes it: `*` stands for
+ *  every verb, API group, resource or URL.
+ */
+export type Rule = {
+	verbs: string[],
+	/**  `""` for the core group. */
+	apiGroups: string[],
+	/**  `pods`, `pods/log` (a subresource), `*\/scale`. */
+	resources: string[],
+	/**  Only these objects, by name, when not empty. */
+	resourceNames: string[],
+	/**  Paths that aren't resources (`/healthz`, `/api/*`). */
+	nonResourceUrls: string[],
 };
 
 export type RunSpec = {
@@ -4289,6 +4452,37 @@ export type StatsSample = {
 	pids: number,
 };
 
+/**  Who a binding grants its role to. */
+export type Subject = {
+	kind: SubjectKind,
+	name: string,
+	/**  A ServiceAccount's; `None` for a User or Group. */
+	namespace: string | null,
+};
+
+/**  A subject named by at least one binding. */
+export type SubjectEntry = {
+	subject: Subject,
+	/**  How many bindings name it directly. */
+	bindings: number,
+};
+
+export type SubjectKind = "User" | "Group" | "ServiceAccount";
+
+/**  What a subject may do, as its bindings grant it. */
+export type SubjectPermissions = {
+	subject: Subject,
+	/**  The Namespace its RoleBindings were read in; every one with `None`. */
+	namespace: string | null,
+	/**  The groups Kubernetes puts it in by itself, whose bindings count too. */
+	groups: string[],
+	/**  The bindings that apply, which grants refer to by index. */
+	bindings: AppliedBinding[],
+	/**  Cluster-wide first, then by Namespace. */
+	scopes: PermissionScope[],
+	refused: AppError[],
+};
+
 /**  A Host's place in a Swarm. */
 export type SwarmMembership = {
 	/**
@@ -4632,6 +4826,13 @@ export type UpgradeRequest = {
 	timeoutSeconds: number | null,
 };
 
+/**  What a set of rules grants on one non-resource URL. */
+export type UrlGrant = {
+	url: string,
+	verbs: string[],
+	bindings: number[],
+};
+
 export type UsageLine = {
 	total: number,
 	active: number,
@@ -4643,6 +4844,12 @@ export type UsageLine = {
 export type UsageSample = {
 	time: number,
 	usage: ResourceUsage,
+};
+
+/**  Who the credentials sign in as. */
+export type UserView = {
+	username: string,
+	groups: string[],
 };
 
 export type Value = null | boolean | number | string | Value[] | { [key in string]: Value };
