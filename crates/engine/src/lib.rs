@@ -18,6 +18,9 @@ pub mod volumes;
 #[cfg(any(test, feature = "test-support"))]
 pub mod testing;
 
+/// The client of a Host's Docker Engine, as the crates above name it.
+pub use bollard::Docker;
+
 /// Compose labels that tie a container to its Stack.
 pub const COMPOSE_PROJECT: &str = "com.docker.compose.project";
 pub const COMPOSE_SERVICE: &str = "com.docker.compose.service";

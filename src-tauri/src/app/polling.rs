@@ -24,7 +24,7 @@ use super::{
     events::{SyncedAutoDeployed, SyncedUpdateAvailable},
     AppState,
 };
-use crate::{commands::stacks::recorded_job, messages as msg};
+use crate::{commands::stacks::target, messages as msg};
 
 pub struct TauriPollEvents(pub AppHandle);
 
@@ -96,7 +96,7 @@ async fn deploy(state: &AppState, stack: &SyncedStack, commit: &str) -> Result<(
     } else {
         ComposeAction::Up
     };
-    let (job, _) = recorded_job(
+    let (job, _) = target::job(
         state,
         SourceKind::Synced,
         &stack.id,
