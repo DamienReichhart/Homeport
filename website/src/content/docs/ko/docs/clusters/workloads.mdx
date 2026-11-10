@@ -56,7 +56,7 @@ import { DocScreenshot } from '@/features/docs';
   alt="Pod 페이지: shop Namespace의 Pod와 상태. 하나는 재시작 7회로 CrashLoopBackOff, 하나는 ImagePullBackOff이며, 준비된 컨테이너, Node, 생성 후 경과 시간이 표시됩니다."
 />
 
-**Pod** 페이지는 각 Pod를 `kubectl get pods`와 같은 형식의 상태(`Running`, `Pending`, `CrashLoopBackOff`, `ImagePullBackOff`, `Init:…`, `Terminating`), 준비된 컨테이너, 재시작 횟수, Node, 생성 후 경과 시간과 함께 나열합니다. 긴 목록은 페이지당 100행씩 표시하므로 Pod가 수천 개인 클러스터에서도 반응이 느려지지 않으며, 검색 상자는 모든 Pod를 대상으로 필터링합니다.
+**Pod** 페이지는 각 Pod를 `kubectl get pods`와 같은 형식의 상태(`Running`, `Pending`, `CrashLoopBackOff`, `ImagePullBackOff`, `Init:…`, `Terminating`), 준비된 컨테이너, 재시작 횟수, Node, 생성 후 경과 시간과 함께 나열합니다. 긴 목록은 페이지당 100행씩 표시하므로 Pod가 수천 개인 클러스터에서도 반응이 느려지지 않으며, 검색 상자는 모든 Pod를 대상으로 필터링합니다. 클러스터에서 metrics-server가 실행 중이면 **CPU**와 **메모리**에 각 Pod가 제한 대비 얼마나 사용하는지 표시됩니다([CPU와 메모리](/docs/clusters/metrics/)).
 
 <DocScreenshot
   name="cluster-pod"
@@ -64,7 +64,7 @@ import { DocScreenshot } from '@/features/docs';
   caption="api-…-xr4np가 준비되지 않은 이유: api 컨테이너가 계속 크래시합니다. 사이드카는 정상입니다."
 />
 
-Pod 페이지에는 Node, IP, QoS 클래스, 서비스 계정, Pod를 제어하는 대상이 표시되고, 그다음 각 컨테이너(init 컨테이너가 먼저)가 이미지, 상태, 대기 중이거나 종료된 이유, 재시작 횟수, 마지막으로 다시 시작한 이유와 함께 표시됩니다. 각 컨테이너에는 선언한 포트가 나열되며, **포워딩…** 버튼으로 [이 컴퓨터에서 포트에 연결](/docs/clusters/port-forward/)할 수 있습니다. 이어서 **로그** 탭과 **터미널** 탭([로그와 터미널](/docs/clusters/logs-exec/)), 워크로드와 같은 **조건**, **이벤트**, **YAML** 탭이 있고, 헤더에 **삭제** 버튼이 있습니다.
+Pod 페이지에는 Node, IP, QoS 클래스, 서비스 계정, Pod를 제어하는 대상이 표시되고, 그다음 각 컨테이너(init 컨테이너가 먼저)가 이미지, 상태, 대기 중이거나 종료된 이유, 재시작 횟수, 마지막으로 다시 시작한 이유와 함께 표시됩니다. 각 컨테이너에는 선언한 포트가 나열되며, **포워딩…** 버튼으로 [이 컴퓨터에서 포트에 연결](/docs/clusters/port-forward/)할 수 있습니다. 이어서 **로그** 탭과 **터미널** 탭([로그와 터미널](/docs/clusters/logs-exec/)), 워크로드와 같은 **조건**, **이벤트**, **YAML** 탭이 있고, 헤더에 **삭제** 버튼이 있습니다. metrics-server가 있으면 **메트릭**에 각 컨테이너의 CPU와 메모리가 요청과 제한 대비 그래프로 표시됩니다([CPU와 메모리](/docs/clusters/metrics/)).
 
 ### Pod가 준비되지 않은 이유 찾기
 
