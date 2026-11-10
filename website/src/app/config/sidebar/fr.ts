@@ -26,6 +26,7 @@ export default {
   'docs/clusters/nodes-events': 'Nodes et événements',
   'docs/clusters/metrics': 'CPU et mémoire',
   'docs/clusters/api-resources': 'Ressources de l’API',
+  'docs/clusters/rbac': 'RBAC et permissions',
   'docs/clusters/logs-exec': 'Journaux et terminaux',
   'docs/clusters/port-forward': 'Redirection de port',
   'docs/clusters/actions': 'Mise à l’échelle, redémarrage et suppression',

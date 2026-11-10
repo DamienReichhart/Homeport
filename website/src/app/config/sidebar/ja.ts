@@ -26,6 +26,7 @@ export default {
   'docs/clusters/nodes-events': 'Node とイベント',
   'docs/clusters/metrics': 'CPU とメモリ',
   'docs/clusters/api-resources': 'API リソース',
+  'docs/clusters/rbac': 'RBAC と権限',
   'docs/clusters/logs-exec': 'ログとターミナル',
   'docs/clusters/port-forward': 'ポートフォワード',
   'docs/clusters/actions': 'スケール、再起動、削除',

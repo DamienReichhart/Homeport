@@ -72,7 +72,7 @@ A Kubernetes cluster or a Nomad cluster Homeport connects to through its API; it
 _Avoid_: Context (for a Cluster), kube cluster, k8s, environment, orchestrator
 _French_: cluster (m.); _avoid_ contexte, grappe, environnement
 
-Kubernetes' own objects (Namespace, Pod, Deployment, StatefulSet, DaemonSet, Job, CronJob, Service, Ingress, ConfigMap, Secret, Node, Event) keep their Kubernetes names and capitals. A Cluster's Node, Service or Secret is the Kubernetes one, never a Swarm's.
+Kubernetes' own objects (Namespace, Pod, Deployment, StatefulSet, DaemonSet, Job, CronJob, Service, Ingress, ConfigMap, Secret, Node, Event, ServiceAccount, Role, ClusterRole, RoleBinding, ClusterRoleBinding) keep their Kubernetes names and capitals. A Cluster's Node, Service or Secret is the Kubernetes one, never a Swarm's.
 
 Nomad's own objects (job, task group, task, allocation, evaluation, deployment, client node, node pool, namespace, ACL token and policy) keep Nomad's names, in lower case as Nomad writes them. A Nomad job is never a Stack, and an allocation is never a container: it runs one or more tasks, each with its driver.
 

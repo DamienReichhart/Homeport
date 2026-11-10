@@ -26,6 +26,7 @@ export default {
   'docs/clusters/nodes-events': 'Node и события',
   'docs/clusters/metrics': 'ЦП и память',
   'docs/clusters/api-resources': 'Ресурсы API',
+  'docs/clusters/rbac': 'RBAC и права доступа',
   'docs/clusters/logs-exec': 'Журналы и терминалы',
   'docs/clusters/port-forward': 'Проброс портов',
   'docs/clusters/actions': 'Масштабирование, перезапуск и удаление',

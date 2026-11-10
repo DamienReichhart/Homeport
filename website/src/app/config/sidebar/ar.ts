@@ -26,6 +26,7 @@ export default {
   'docs/clusters/nodes-events': 'Nodes والأحداث',
   'docs/clusters/metrics': 'المعالج والذاكرة',
   'docs/clusters/api-resources': 'موارد API',
+  'docs/clusters/rbac': 'RBAC والصلاحيات',
   'docs/clusters/logs-exec': 'السجلات والطرفيات',
   'docs/clusters/port-forward': 'إعادة توجيه المنافذ',
   'docs/clusters/actions': 'تغيير عدد النسخ وإعادة التشغيل والحذف',

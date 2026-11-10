@@ -26,6 +26,7 @@ export default {
   'docs/clusters/nodes-events': 'Node 与事件',
   'docs/clusters/metrics': 'CPU 和内存',
   'docs/clusters/api-resources': 'API 资源',
+  'docs/clusters/rbac': 'RBAC 与权限',
   'docs/clusters/logs-exec': '日志与终端',
   'docs/clusters/port-forward': '端口转发',
   'docs/clusters/actions': '扩缩、重启与删除',

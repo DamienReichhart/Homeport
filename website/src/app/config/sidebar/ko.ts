@@ -26,6 +26,7 @@ export default {
   'docs/clusters/nodes-events': 'Node와 이벤트',
   'docs/clusters/metrics': 'CPU와 메모리',
   'docs/clusters/api-resources': 'API 리소스',
+  'docs/clusters/rbac': 'RBAC와 권한',
   'docs/clusters/logs-exec': '로그와 터미널',
   'docs/clusters/port-forward': '포트 포워딩',
   'docs/clusters/actions': '스케일, 다시 시작, 삭제',

@@ -82,6 +82,7 @@ export const sidebar: NonNullable<StarlightUserConfig['sidebar']> = [
       { ...entry('docs/clusters/nodes-events'), slug: 'docs/clusters/nodes-events' },
       { ...entry('docs/clusters/metrics'), slug: 'docs/clusters/metrics' },
       { ...entry('docs/clusters/api-resources'), slug: 'docs/clusters/api-resources' },
+      { ...entry('docs/clusters/rbac'), slug: 'docs/clusters/rbac' },
       { ...entry('docs/clusters/logs-exec'), slug: 'docs/clusters/logs-exec' },
       { ...entry('docs/clusters/port-forward'), slug: 'docs/clusters/port-forward' },
       { ...entry('docs/clusters/actions'), slug: 'docs/clusters/actions' },
