@@ -40,6 +40,8 @@ export default tseslint.config(
       'node_modules',
       'src/shared/api/bindings.ts',
       'website',
+      // The end-to-end tests: their own package, checked by their own tsc.
+      'e2e',
       // Claude Code's local worktrees and settings.
       '.claude',
     ],
