@@ -17,7 +17,9 @@ use homeport_core::{error::ErrorCode, streams::Streams};
 use super::*;
 use crate::model::{Cluster, ClusterConnection, ClusterKind, KubernetesConnection};
 
-/// A tick short enough for tests.
+/// A tick short enough for tests. They run on Tokio's paused clock, which
+/// moves only when every task waits, so ticks and timeouts are exact whatever
+/// the machine's load.
 const TICK: Duration = Duration::from_millis(10);
 const PACE: Pace = Pace {
     every: TICK,
@@ -202,7 +204,7 @@ fn discovery_says_whether_the_metrics_api_is_served() {
     assert!(!super::serves_metrics(&read(other_version)));
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn without_metrics_server_the_stream_says_so_once_and_ends() {
     let (on, seen) = fake(|path, _| match path {
         "/apis" => (200, groups(false)),
@@ -222,7 +224,7 @@ async fn without_metrics_server_the_stream_says_so_once_and_ends() {
     assert_eq!(*seen.lock().unwrap(), ["/apis"]);
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn a_pod_list_gets_every_pods_latest_sample() {
     let (on, seen) = fake(|path, _| match path {
         "/apis" => (200, groups(true)),
@@ -259,7 +261,7 @@ async fn a_pod_list_gets_every_pods_latest_sample() {
     assert_eq!(requests(&seen), 2, "discovery once, then one read");
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn a_pods_page_keeps_the_samples_read_since_it_opened() {
     let (on, seen) = fake(|path, before| match path {
         "/apis" => (200, groups(true)),
@@ -300,7 +302,7 @@ async fn a_pods_page_keeps_the_samples_read_since_it_opened() {
     assert_eq!(requests(&seen), 5);
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn a_pod_with_no_sample_yet_has_an_empty_history_and_polling_goes_on() {
     let (on, _) = fake(|path, _| match path {
         "/apis" => (200, groups(true)),
@@ -326,7 +328,7 @@ async fn a_pod_with_no_sample_yet_has_an_empty_history_and_polling_goes_on() {
         .all(|e| matches!(e, MetricsEvent::Pod { containers } if containers.is_empty())));
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn a_nodes_page_keeps_its_samples_and_the_list_has_every_node() {
     let (on, _) = fake(|path, before| match path {
         "/apis" => (200, groups(true)),
@@ -367,7 +369,7 @@ async fn a_nodes_page_keeps_its_samples_and_the_list_has_every_node() {
     assert_eq!(samples[0].usage.cpu, 500.0);
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn forbidden_metrics_are_said_once_and_polling_stops() {
     let (on, seen) = fake(|path, _| match path {
         "/apis" => (200, groups(true)),
@@ -399,7 +401,7 @@ async fn forbidden_metrics_are_said_once_and_polling_stops() {
     assert_eq!(requests(&seen), 2);
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn a_metrics_server_that_doesnt_answer_yet_keeps_the_stream_going() {
     let (on, _) = fake(|path, before| match (path, before) {
         ("/apis", _) => (200, groups(true)),
@@ -425,7 +427,7 @@ async fn a_metrics_server_that_doesnt_answer_yet_keeps_the_stream_going() {
     );
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn a_read_the_api_server_holds_counts_as_not_answering() {
     // The API server holds a request for a registered metrics-server it
     // can't reach until its own timeout.
@@ -469,7 +471,7 @@ async fn a_read_the_api_server_holds_counts_as_not_answering() {
     assert_eq!(*held.lock().unwrap(), 2, "each tick reads again");
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn a_failed_discovery_is_tried_again() {
     let (on, seen) = fake(|path, before| match (path, before) {
         ("/apis", 0) => (500, status(500, "InternalError", "etcd is down")),
@@ -489,7 +491,7 @@ async fn a_failed_discovery_is_tried_again() {
     assert_eq!(*seen.lock().unwrap(), ["/apis", "/apis"]);
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn polling_stops_when_the_stream_is_cancelled() {
     let (on, seen) = fake(|path, _| match path {
         "/apis" => (200, groups(true)),
@@ -517,7 +519,7 @@ async fn polling_stops_when_the_stream_is_cancelled() {
     );
 }
 
-#[tokio::test]
+#[tokio::test(start_paused = true)]
 async fn polling_stops_when_the_channel_is_dropped() {
     let (on, seen) = fake(|path, _| match path {
         "/apis" => (200, groups(true)),

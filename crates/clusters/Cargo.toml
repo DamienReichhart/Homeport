@@ -44,3 +44,5 @@ tempfile.workspace = true
 [dev-dependencies]
 # A fake API server for kube's client, in memory.
 tower.workspace = true
+# Paused time, so the metrics stream's ticks and timeouts are exact in tests.
+tokio = { workspace = true, features = ["test-util"] }
