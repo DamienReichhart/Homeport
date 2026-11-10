@@ -1,5 +1,7 @@
 //! Hosts: adding, editing and connecting to them.
 
+pub mod registries;
+
 use std::path::PathBuf;
 
 use tauri::{AppHandle, State};

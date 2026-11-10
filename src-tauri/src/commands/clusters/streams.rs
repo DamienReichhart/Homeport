@@ -14,7 +14,7 @@ use homeport_core::{
     terminal::ExecEvent,
 };
 
-use super::clusters::on;
+use super::on;
 use crate::{app::AppState, error::AppResult};
 
 /// Streams the logs of one Pod, or of several in one stream with each

@@ -1,6 +1,12 @@
 //! Homeport itself: what it is, what this computer lets it do, and the files
 //! the user picks in its dialogs.
 
+pub mod backup;
+pub mod diagnostics;
+pub mod settings;
+pub mod streams;
+pub mod updates;
+
 use std::path::Path;
 
 use serde::Serialize;
@@ -97,7 +103,7 @@ pub fn get_licenses(app: AppHandle) -> AppResult<Licenses> {
         Err(e) => return Err(e.into()),
     };
     Ok(Licenses {
-        app: include_str!("../../../LICENSE"),
+        app: include_str!("../../../../LICENSE"),
         third_party,
     })
 }

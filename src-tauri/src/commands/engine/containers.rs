@@ -15,7 +15,7 @@ use homeport_engine::containers::{
 };
 use homeport_engine::podman;
 
-use crate::{app::AppState, commands::registries, error::AppResult};
+use crate::{app::AppState, commands::hosts::registries, error::AppResult};
 
 #[tauri::command]
 #[specta::specta]

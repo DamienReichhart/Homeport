@@ -9,7 +9,7 @@ use homeport_clusters::{
     resources::{ApiType, ResourceKind, WorkloadKind},
 };
 
-use super::clusters::on;
+use super::on;
 use crate::{app::AppState, error::AppResult};
 
 /// Sets how many Pods a Deployment or a StatefulSet runs.

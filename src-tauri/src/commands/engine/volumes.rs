@@ -18,7 +18,7 @@ use homeport_engine::{
     },
 };
 
-use crate::{app::AppState, commands::registries, error::AppResult};
+use crate::{app::AppState, commands::hosts::registries, error::AppResult};
 
 #[tauri::command]
 #[specta::specta]

@@ -2,6 +2,8 @@
 //! definitions, deploying through the runtime, their deploy history and what
 //! a redeploy would change.
 
+pub mod repositories;
+
 use tauri::{ipc::Channel, State};
 
 use homeport_core::streams::StreamId;
@@ -27,7 +29,7 @@ use homeport_stacks::{
     Stack, StackOwner,
 };
 
-use crate::{app::AppState, commands::registries, error::AppResult};
+use crate::{app::AppState, commands::hosts::registries, error::AppResult};
 
 /// Every Stack on a Host: those running there plus undeployed Managed,
 /// Linked and Synced Stacks. Stacks started from compose files on this machine are

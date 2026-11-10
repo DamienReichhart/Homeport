@@ -259,7 +259,7 @@ pub async fn containerd_images_pull_subscribe(
             username: c.username,
             secret: c.secret,
         });
-    let explained = super::registries::explainer(&state, &qualified);
+    let explained = super::hosts::registries::explainer(&state, &qualified);
     Ok(state.streams.spawn(images::pull(
         client,
         namespace,

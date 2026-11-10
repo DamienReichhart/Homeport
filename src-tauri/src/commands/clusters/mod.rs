@@ -1,6 +1,14 @@
 //! Clusters: the Kubernetes APIs Homeport connects to, each supervised
 //! like a Host.
 
+pub mod actions;
+pub mod api;
+pub mod forwards;
+pub mod helm;
+pub mod nomad;
+pub mod rbac;
+pub mod streams;
+
 use tauri::{ipc::Channel, State};
 
 use homeport_clusters::resources::{

@@ -11,7 +11,7 @@ use homeport_engine::{
     transfer::{self, ImportSpec, TransferEvent},
 };
 
-use crate::{app::AppState, commands::registries, error::AppResult};
+use crate::{app::AppState, commands::hosts::registries, error::AppResult};
 
 #[tauri::command]
 #[specta::specta]
