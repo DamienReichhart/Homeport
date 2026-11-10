@@ -62,11 +62,13 @@ fn every_fixture_migrates_without_losing_a_row() {
 
         let db = Db::open(&path).unwrap_or_else(|e| panic!("{name} doesn't open: {e:?}"));
         let after = db.with(|c| Ok(row_counts(c))).unwrap();
+        // Opening may add rows (database_info records the version it needs),
+        // never remove one.
         for (table, count) in &before {
-            assert_eq!(
-                after.get(table),
-                Some(count),
-                "{name}: rows of {table} after migrating"
+            let kept = after.get(table).copied().unwrap_or(0);
+            assert!(
+                kept >= *count,
+                "{name}: {table} had {count} rows, {kept} after migrating"
             );
         }
     }
