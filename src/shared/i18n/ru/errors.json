@@ -792,6 +792,8 @@
   "errors.stacks.hostNotConnected.hint": "Дождитесь подключения, затем повторите.",
   "errors.stacks.name": "Имена стеков состоят из строчных букв, цифр, - и _ и начинаются с буквы или цифры.",
   "errors.stacks.nameInUse": "На этом хосте уже есть стек с именем «{name}».",
+  "errors.stacks.nameRunsExternal": "Стек с именем «{name}» уже работает там вне Homeport. Развёртывание этого стека удалит или заменит его контейнеры.",
+  "errors.stacks.nameRunsExternal.hint": "Чтобы управлять {name} в Homeport, откройте его в разделе «Стеки» и выберите «Взять под управление». Иначе выберите другое имя.",
   "errors.stacks.noComposeFile": "В {folder} нет файла compose. Homeport ищет compose.yaml, compose.yml, docker-compose.yml или docker-compose.yaml.",
   "errors.stacks.noFiles": "Стеку нужен хотя бы один файл compose.",
   "errors.stacks.notAStackFile": "{file} — не один из файлов compose этого стека.",

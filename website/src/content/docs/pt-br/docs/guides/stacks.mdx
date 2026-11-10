@@ -71,7 +71,7 @@ Uma pasta de projeto que ainda não está rodando no host pode ser vinculada pel
 
 </Steps>
 
-Se uma stack com esse nome já roda no host como stack externa, criar a stack vinculada a assume, como faz a [adoção](#adotando-uma-stack-externa): reimplantar recria os contêineres dela para corresponder aos arquivos da pasta. Para usar arquivos com outros nomes, ou em outra ordem, veja [vários arquivos compose](#vários-arquivos-compose).
+Se uma stack com esse nome já roda no host como stack externa que o Compose iniciou a partir desta mesma pasta, criar a stack vinculada a assume, como faz a [adoção](#adotando-uma-stack-externa): reimplantar recria os contêineres dela para corresponder aos arquivos da pasta. Uma stack com esse nome iniciada de outro lugar é recusada: adote-a ou escolha outro nome. Para usar arquivos com outros nomes, ou em outra ordem, veja [vários arquivos compose](#vários-arquivos-compose).
 
 ### Como as stacks vinculadas são encontradas
 
@@ -343,4 +343,4 @@ Uma stack externa também mostra **Atualização disponível**, mas o **Atualiza
   primeiro podem resolver de outra forma agora.
 </Aside>
 
-Criar uma nova stack com o mesmo nome de uma externa também a adota.
+Uma nova stack não pode usar o nome de uma externa: implantá-la removeria ou substituiria os contêineres dela, então o Homeport recusa o nome e indica **Adotar**.

@@ -71,7 +71,7 @@ Una cartella di progetto che non è ancora in esecuzione sull’host può essere
 
 </Steps>
 
-Se uno stack con quel nome è già in esecuzione sull’host come stack esterno, la creazione dello stack collegato lo rileva, come fa l’[adozione](#adottare-uno-stack-esterno): la ridistribuzione ricrea i suoi container in base ai file della cartella. Per usare file con altri nomi, o in un altro ordine, vedi [più file compose](#più-file-compose).
+Se uno stack con quel nome è già in esecuzione sull’host come stack esterno che Compose ha avviato da questa stessa cartella, la creazione dello stack collegato lo rileva, come fa l’[adozione](#adottare-uno-stack-esterno): la ridistribuzione ricrea i suoi container in base ai file della cartella. Uno stack con quel nome avviato altrove viene rifiutato: adottalo, oppure scegli un altro nome. Per usare file con altri nomi, o in un altro ordine, vedi [più file compose](#più-file-compose).
 
 ### Come vengono trovati gli stack collegati
 
@@ -343,4 +343,4 @@ Anche uno stack esterno mostra **Aggiornamento disponibile**, ma il suo **Aggior
   potrebbero ora risolversi diversamente.
 </Aside>
 
-Anche creare un nuovo stack con lo stesso nome di uno esterno lo adotta.
+Un nuovo stack non può prendere il nome di uno esterno: distribuirlo ne rimuoverebbe o sostituirebbe i container, quindi Homeport rifiuta il nome e ti rimanda ad **Adotta**.

@@ -683,10 +683,11 @@ export const commands = {
 	 */
 	stacksCheck: (files: string[], kind: SourceKind, swarm: boolean) => __TAURI_INVOKE<ComposeCheck>("stacks_check", { files, kind, swarm }),
 	/**
-	 *  Creates a Managed Stack on a Host or a Swarm. Using the name of an
-	 *  External Stack adopts it.
+	 *  Creates a Managed Stack on a Host or a Swarm. With `adopt`, it takes
+	 *  over the External Stack of that name; otherwise a name that runs there
+	 *  outside Homeport is refused, since deploying would replace it.
 	 */
-	stacksCreate: (owner: StackOwner, name: string, files: ComposeFile[], env: string) => __TAURI_INVOKE<ManagedStack>("stacks_create", { owner, name, files, env }),
+	stacksCreate: (owner: StackOwner, name: string, files: ComposeFile[], env: string, adopt: boolean) => __TAURI_INVOKE<ManagedStack>("stacks_create", { owner, name, files, env, adopt }),
 	stacksUpdate: (id: string, files: ComposeFile[], env: string) => __TAURI_INVOKE<ManagedStack>("stacks_update", { id, files, env }),
 	/**
 	 *  Forgets a Managed Stack's definition; its containers keep running and it
@@ -707,7 +708,8 @@ export const commands = {
 	stacksLinkedInspect: (path: string) => __TAURI_INVOKE<FolderProject>("stacks_linked_inspect", { path }),
 	/**
 	 *  Records a Linked Stack of a Host or a Swarm for the folder `working_dir`
-	 *  and its compose files. Using the name of an External Stack takes it over.
+	 *  and its compose files. It may take the name of an External Stack only
+	 *  when compose started that one from this folder: it is the same project.
 	 */
 	stacksLinkedCreate: (owner: StackOwner, name: string, workingDir: string, configFiles: string[]) => __TAURI_INVOKE<LinkedStack>("stacks_linked_create", { owner, name, workingDir, configFiles }),
 	/**

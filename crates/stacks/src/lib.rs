@@ -18,6 +18,8 @@
 //! - [`runtime`] is the one way a Stack runs: its source (where the compose
 //!   definition comes from) and its target (where it runs). Every command
 //!   that deploys, pulls, takes down, starts, stops or removes goes through it.
+//! - [`external`] keeps a new Stack from taking over one that runs
+//!   outside Homeport, which only Adopt does.
 //! - [`lifecycle`] starts, stops and removes any Stack through the Engine API.
 //! - [`compose`] runs the `docker compose` CLI for a runtime job.
 //! - [`swarm`] finds the Stacks deployed to a Swarm and removes them (ADR 0016).
@@ -26,6 +28,7 @@ pub mod backup;
 pub mod compose;
 pub mod definition;
 pub mod diff;
+pub mod external;
 pub mod history;
 pub mod lifecycle;
 pub mod linked;

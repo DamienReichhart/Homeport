@@ -5,13 +5,14 @@
 use tauri::{ipc::Channel, State};
 
 use homeport_core::streams::StreamId;
-use homeport_engine::containers;
+use homeport_engine::{containers, swarm::services};
 use homeport_git::cli as git;
 use homeport_stacks::{
     self as stacks,
     compose::{self, ComposeAction, ComposeEvent},
     definition::{self, ComposeCheck},
     diff::{self, Candidate, DeployDiff},
+    external,
     history::{self, DeployDetail, DeploySummary},
     lifecycle::StackAction,
     linked::{
@@ -76,18 +77,60 @@ fn known(state: &AppState, owner: &StackOwner) -> AppResult<()> {
     }
 }
 
-/// Creates a Managed Stack on a Host or a Swarm. Using the name of an
-/// External Stack adopts it.
+/// Refuses a new Stack named like one that runs on `owner` outside
+/// Homeport: deploying it would remove or replace that Stack's containers
+/// (`external`). A Linked Stack for `folder` may take the project compose
+/// started from that folder. The owner's Engine must answer: a Host that
+/// isn't connected can't say what runs there.
+async fn refuse_taking_over(
+    state: &AppState,
+    owner: &StackOwner,
+    name: &str,
+    folder: Option<&str>,
+) -> AppResult<()> {
+    let running = match owner {
+        StackOwner::Host(id) => {
+            external::on_host(&containers::list(&state.hosts.registry.docker(id)?).await?)
+        }
+        StackOwner::Swarm(id) => {
+            external::on_swarm(&services::list(&state.hosts.registry.manager(id)?).await?)
+        }
+    };
+    let mut known: Vec<String> = state
+        .stacks
+        .list_of(owner)?
+        .into_iter()
+        .map(|s| s.name)
+        .collect();
+    known.extend(state.linked.list_of(owner)?.into_iter().map(|s| s.name));
+    known.extend(
+        state
+            .synced
+            .store
+            .list_of(owner)?
+            .into_iter()
+            .map(|s| s.name),
+    );
+    external::refuse_taking_over(name, &running, &known, folder)
+}
+
+/// Creates a Managed Stack on a Host or a Swarm. With `adopt`, it takes
+/// over the External Stack of that name; otherwise a name that runs there
+/// outside Homeport is refused, since deploying would replace it.
 #[tauri::command]
 #[specta::specta]
-pub fn stacks_create(
+pub async fn stacks_create(
     state: State<'_, AppState>,
     owner: StackOwner,
     name: String,
     files: Vec<ComposeFile>,
     env: String,
+    adopt: bool,
 ) -> AppResult<ManagedStack> {
     known(&state, &owner)?;
+    if !adopt {
+        refuse_taking_over(&state, &owner, &name, None).await?;
+    }
     state.stacks.create(&owner, &name, &files, &env)
 }
 
@@ -135,10 +178,11 @@ pub fn stacks_linked_inspect(path: String) -> AppResult<FolderProject> {
 }
 
 /// Records a Linked Stack of a Host or a Swarm for the folder `working_dir`
-/// and its compose files. Using the name of an External Stack takes it over.
+/// and its compose files. It may take the name of an External Stack only
+/// when compose started that one from this folder: it is the same project.
 #[tauri::command]
 #[specta::specta]
-pub fn stacks_linked_create(
+pub async fn stacks_linked_create(
     state: State<'_, AppState>,
     owner: StackOwner,
     name: String,
@@ -157,6 +201,7 @@ pub fn stacks_linked_create(
             config_files.first().map_or("", String::as_str),
         ));
     }
+    refuse_taking_over(&state, &owner, &name, Some(&found.working_dir)).await?;
     let fingerprint = linked::files::files_fingerprint(&config_files);
     state
         .linked
@@ -235,6 +280,7 @@ pub async fn stacks_synced_create(
     env: String,
 ) -> AppResult<SyncedStack> {
     known(&state, &owner)?;
+    refuse_taking_over(&state, &owner, &draft.name, None).await?;
     let cli = git::detect().await?;
     state.synced.create(&cli, &owner, &draft, &env).await
 }

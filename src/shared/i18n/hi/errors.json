@@ -792,6 +792,8 @@
   "errors.stacks.hostNotConnected.hint": "इसके कनेक्ट होने की प्रतीक्षा करें, फिर दोबारा कोशिश करें।",
   "errors.stacks.name": "स्टैक के नाम में छोटे अक्षर, अंक, - और _ होते हैं, और यह किसी अक्षर या अंक से शुरू होता है।",
   "errors.stacks.nameInUse": "इस होस्ट पर “{name}” नाम का स्टैक पहले से है।",
+  "errors.stacks.nameRunsExternal": "“{name}” नाम का स्टैक वहाँ पहले से Homeport के बाहर चल रहा है। इसे डिप्लॉय करने से उसके कंटेनर हट जाएँगे या बदल जाएँगे।",
+  "errors.stacks.nameRunsExternal.hint": "{name} को Homeport में मैनेज करने के लिए उसे स्टैक में खोलें और अपनाएँ चुनें। नहीं तो कोई दूसरा नाम चुनें।",
   "errors.stacks.noComposeFile": "{folder} में कोई compose फ़ाइल नहीं है। Homeport compose.yaml, compose.yml, docker-compose.yml या docker-compose.yaml खोजता है।",
   "errors.stacks.noFiles": "स्टैक को कम से कम एक compose फ़ाइल चाहिए।",
   "errors.stacks.notAStackFile": "{file} इस स्टैक की compose फ़ाइलों में से नहीं है।",

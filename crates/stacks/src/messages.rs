@@ -27,6 +27,10 @@ homeport_core::messages! {
     GONE = "errors.stacks.gone" => "This stack no longer exists.";
     /// Creating a Stack under a name the Host already has.
     NAME_IN_USE = "errors.stacks.nameInUse" => "This host already has a stack named \"{name}\".";
+    /// Creating a Stack under the name of one that runs outside Homeport,
+    /// whose containers deploying it would remove or replace.
+    NAME_RUNS_EXTERNAL = "errors.stacks.nameRunsExternal" => "A stack named \"{name}\" already runs there, outside Homeport. Deploying this one would remove or replace its containers.";
+    NAME_RUNS_EXTERNAL_HINT = "errors.stacks.nameRunsExternal.hint" => "To manage {name} in Homeport, open it in Stacks and choose Adopt. Otherwise, pick another name.";
     /// Creating a Stack for a Host that was removed.
     HOST_GONE = "errors.stacks.hostGone" => "This host no longer exists.";
     /// Running compose for a Host that isn't connected.

@@ -792,6 +792,8 @@
   "errors.stacks.hostNotConnected.hint": "接続されるまで待ってから、もう一度試してください。",
   "errors.stacks.name": "スタック名には英小文字、数字、-、_ を使い、英字または数字で始めてください。",
   "errors.stacks.nameInUse": "このホストには「{name}」という名前のスタックがすでにあります。",
+  "errors.stacks.nameRunsExternal": "「{name}」という名前のスタックが、Homeport の外ですでに実行されています。このスタックをデプロイすると、そのコンテナーが削除または置き換えられます。",
+  "errors.stacks.nameRunsExternal.hint": "{name} を Homeport で管理するには、スタックで開いて「引き継ぎ」を選んでください。そうでなければ、別の名前を選んでください。",
   "errors.stacks.noComposeFile": "{folder} に compose ファイルがありません。Homeport は compose.yaml、compose.yml、docker-compose.yml、docker-compose.yaml を探します。",
   "errors.stacks.noFiles": "スタックには compose ファイルが 1 つ以上必要です。",
   "errors.stacks.notAStackFile": "{file} はこのスタックの compose ファイルではありません。",

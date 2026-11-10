@@ -792,6 +792,8 @@
   "errors.stacks.hostNotConnected.hint": "请等待它连接，然后重试。",
   "errors.stacks.name": "堆栈名称使用小写字母、数字、- 和 _，并以字母或数字开头。",
   "errors.stacks.nameInUse": "此主机上已有名为“{name}”的堆栈。",
+  "errors.stacks.nameRunsExternal": "名为“{name}”的堆栈已在 Homeport 之外运行。部署此堆栈会移除或替换它的容器。",
+  "errors.stacks.nameRunsExternal.hint": "要在 Homeport 中管理 {name}，请在“堆栈”中打开它并选择“接管”。否则，请换一个名称。",
   "errors.stacks.noComposeFile": "{folder} 中没有 compose 文件。Homeport 会查找 compose.yaml、compose.yml、docker-compose.yml 或 docker-compose.yaml。",
   "errors.stacks.noFiles": "堆栈至少需要一个 compose 文件。",
   "errors.stacks.notAStackFile": "{file} 不是此堆栈的 compose 文件之一。",

@@ -792,6 +792,8 @@
   "errors.stacks.hostNotConnected.hint": "Wait for it to connect, then try again.",
   "errors.stacks.name": "Stack names use lowercase letters, digits, - and _, and start with a letter or digit.",
   "errors.stacks.nameInUse": "This host already has a stack named \"{name}\".",
+  "errors.stacks.nameRunsExternal": "A stack named \"{name}\" already runs there, outside Homeport. Deploying this one would remove or replace its containers.",
+  "errors.stacks.nameRunsExternal.hint": "To manage {name} in Homeport, open it in Stacks and choose Adopt. Otherwise, pick another name.",
   "errors.stacks.noComposeFile": "{folder} has no compose file. Homeport looks for compose.yaml, compose.yml, docker-compose.yml or docker-compose.yaml.",
   "errors.stacks.noFiles": "A stack needs at least one compose file.",
   "errors.stacks.notAStackFile": "{file} isn't one of this Stack's compose files.",

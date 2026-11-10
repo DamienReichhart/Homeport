@@ -71,7 +71,7 @@ A project folder that isn't running on the Host yet can be linked from Homeport:
 
 </Steps>
 
-If a Stack with that name already runs on the Host as an External Stack, creating the Linked Stack takes it over, as [adopting](#adopting-an-external-stack) does: redeploying recreates its containers to match the folder's files. To use files with other names, or in another order, see [several compose files](#several-compose-files).
+If a Stack with that name already runs on the Host as an External Stack that Compose started from this same folder, creating the Linked Stack takes it over, as [adopting](#adopting-an-external-stack) does: redeploying recreates its containers to match the folder's files. A Stack of that name started from anywhere else is refused: adopt it, or pick another name. To use files with other names, or in another order, see [several compose files](#several-compose-files).
 
 ### How Linked Stacks are found
 
@@ -342,4 +342,4 @@ An External Stack shows **Update available** too, but its **Update** is disabled
   differently now.
 </Aside>
 
-Creating a new Stack with the same name as an External one adopts it too.
+A new Stack can't take the name of an External one: deploying it would remove or replace that Stack's containers, so Homeport refuses the name and points you to **Adopt**.

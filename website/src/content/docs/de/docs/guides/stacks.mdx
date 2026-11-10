@@ -71,7 +71,7 @@ Ein Projektordner, der noch nicht auf dem Host läuft, kann aus Homeport verknü
 
 </Steps>
 
-Läuft ein Stack mit diesem Namen bereits als externer Stack auf dem Host, übernimmt das Erstellen des verknüpften Stacks ihn, wie es das [Übernehmen](#einen-externen-stack-übernehmen) tut: Eine erneute Bereitstellung erstellt seine Container neu, passend zu den Dateien des Ordners. Um Dateien mit anderen Namen oder in einer anderen Reihenfolge zu verwenden, siehe [mehrere Compose-Dateien](#mehrere-compose-dateien).
+Läuft ein Stack mit diesem Namen bereits als externer Stack auf dem Host, den Compose aus genau diesem Ordner gestartet hat, übernimmt das Erstellen des verknüpften Stacks ihn, wie es das [Übernehmen](#einen-externen-stack-übernehmen) tut: Eine erneute Bereitstellung erstellt seine Container neu, passend zu den Dateien des Ordners. Ein Stack dieses Namens, der anderswo gestartet wurde, wird abgelehnt: Übernehmen Sie ihn oder wählen Sie einen anderen Namen. Um Dateien mit anderen Namen oder in einer anderen Reihenfolge zu verwenden, siehe [mehrere Compose-Dateien](#mehrere-compose-dateien).
 
 ### Wie verknüpfte Stacks gefunden werden
 
@@ -344,4 +344,4 @@ Auch ein externer Stack zeigt **Update verfügbar**, aber sein **Aktualisieren**
   bereitgestellt hat, relativ waren, werden jetzt möglicherweise anders aufgelöst.
 </Aside>
 
-Auch das Erstellen eines neuen Stacks mit demselben Namen wie ein externer übernimmt diesen.
+Ein neuer Stack kann nicht den Namen eines externen Stacks bekommen: Seine Bereitstellung würde dessen Container entfernen oder ersetzen. Homeport lehnt den Namen daher ab und verweist auf **Übernehmen**.

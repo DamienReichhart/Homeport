@@ -71,7 +71,7 @@ Un dossier de projet qui ne tourne pas encore sur l’hôte peut être lié depu
 
 </Steps>
 
-Si une stack de ce nom tourne déjà sur l’hôte en tant que stack externe, créer la stack liée la reprend, comme le fait lâ[adoption](#adopter-une-stack-externe) : un redéploiement recrée ses conteneurs pour qu’ils correspondent aux fichiers du dossier. Pour utiliser des fichiers qui portent d’autres noms, ou dans un autre ordre, voir [plusieurs fichiers compose](#plusieurs-fichiers-compose).
+Si une stack de ce nom tourne déjà sur l’hôte en tant que stack externe que Compose a démarrée depuis ce même dossier, créer la stack liée la reprend, comme le fait l’[adoption](#adopter-une-stack-externe) : un redéploiement recrée ses conteneurs pour qu’ils correspondent aux fichiers du dossier. Une stack de ce nom démarrée ailleurs est refusée : adoptez-la, ou choisissez un autre nom. Pour utiliser des fichiers qui portent d’autres noms, ou dans un autre ordre, voir [plusieurs fichiers compose](#plusieurs-fichiers-compose).
 
 ### Comment les stacks liées sont trouvées
 
@@ -343,4 +343,4 @@ Une stack externe affiche aussi **Mise à jour disponible**, mais son **Mettre �
   déployée la première fois peuvent se résoudre différemment maintenant.
 </Aside>
 
-Créer une nouvelle stack portant le même nom qu’une stack externe l’adopte aussi.
+Une nouvelle stack ne peut pas prendre le nom d’une stack externe : la déployer supprimerait ou remplacerait les conteneurs de celle-ci, donc Homeport refuse ce nom et vous renvoie vers **Adopter**.

@@ -71,7 +71,7 @@ Una carpeta de proyecto que aún no se ejecuta en el host se puede vincular desd
 
 </Steps>
 
-Si un stack con ese nombre ya se ejecuta en el host como stack externo, crear el stack vinculado lo toma a su cargo, como hace [adoptarlo](#adoptar-un-stack-externo): volver a desplegar recrea sus contenedores para que coincidan con los archivos de la carpeta. Para usar archivos con otros nombres, o en otro orden, consulta [Varios archivos compose](#varios-archivos-compose).
+Si un stack con ese nombre ya se ejecuta en el host como stack externo que Compose inició desde esta misma carpeta, crear el stack vinculado lo toma a su cargo, como hace [adoptarlo](#adoptar-un-stack-externo): volver a desplegar recrea sus contenedores para que coincidan con los archivos de la carpeta. Un stack con ese nombre iniciado desde otro lugar se rechaza: adóptalo o elige otro nombre. Para usar archivos con otros nombres, o en otro orden, consulta [Varios archivos compose](#varios-archivos-compose).
 
 ### Cómo se encuentran los stacks vinculados
 
@@ -343,4 +343,4 @@ Un stack externo también muestra **Actualización disponible**, pero su **Actua
   desplegó primero pueden resolverse de otra forma ahora.
 </Aside>
 
-Crear un stack nuevo con el mismo nombre que uno externo también lo adopta.
+Un stack nuevo no puede tomar el nombre de uno externo: desplegarlo eliminaría o reemplazaría los contenedores de ese stack, así que Homeport rechaza el nombre y te remite a **Adoptar**.

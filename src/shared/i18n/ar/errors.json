@@ -792,6 +792,8 @@
   "errors.stacks.hostNotConnected.hint": "انتظر حتى يتصل، ثم أعد المحاولة.",
   "errors.stacks.name": "تستخدم أسماء المكدسات حروفًا صغيرة وأرقامًا و- و_، وتبدأ بحرف أو رقم.",
   "errors.stacks.nameInUse": "يحتوي هذا المضيف بالفعل على مكدس باسم «{name}».",
+  "errors.stacks.nameRunsExternal": "يعمل هناك بالفعل مكدس باسم «{name}» خارج Homeport. سيؤدي نشر هذا المكدس إلى إزالة حاوياته أو استبدالها.",
+  "errors.stacks.nameRunsExternal.hint": "لإدارة {name} في Homeport، افتحه في المكدسات واختر تبنّي. وإلا فاختر اسمًا آخر.",
   "errors.stacks.noComposeFile": "لا يحتوي {folder} على ملف compose. يبحث Homeport عن compose.yaml أو compose.yml أو docker-compose.yml أو docker-compose.yaml.",
   "errors.stacks.noFiles": "يحتاج المكدس إلى ملف compose واحد على الأقل.",
   "errors.stacks.notAStackFile": "{file} ليس من ملفات compose الخاصة بهذا المكدس.",
