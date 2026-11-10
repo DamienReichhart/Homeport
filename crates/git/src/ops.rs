@@ -348,17 +348,17 @@ fn split_nul(text: &str) -> Vec<String> {
         .collect()
 }
 
-/// Checks `commit` out in the worktree at `worktree`, making it first. Files
-/// git doesn't track (what containers wrote through relative bind mounts)
-/// are left alone.
+/// Checks `commit` out in the worktree at `worktree`, making it first. What
+/// containers wrote through relative bind mounts is left alone: files git
+/// doesn't track, and changes to tracked ones, which carry over. A commit
+/// that changes a file changed here too is refused, keeping the file.
 pub async fn checkout(cli: &GitCli, repo: &Path, worktree: &Path, commit: &str) -> AppResult<()> {
     let dir = git_dir(repo);
     if worktree.join(".git").exists() {
-        cli.local(
-            worktree,
-            &["checkout", "--detach", "--force", "--quiet", commit],
-        )
-        .await?;
+        // Never `--force`: it would put back every tracked file a container
+        // wrote to, such as a committed `acme.json` holding certificates.
+        cli.local(worktree, &["checkout", "--detach", "--quiet", commit])
+            .await?;
         return Ok(());
     }
     if let Some(parent) = worktree.parent() {
@@ -666,6 +666,61 @@ mod tests {
         std::fs::remove_file(worktree.join("app/data.db")).unwrap();
         assert!(remove_worktree(&cli, &repo, &worktree).await.unwrap());
         assert!(!worktree.exists());
+    }
+
+    #[tokio::test]
+    async fn checking_out_never_discards_what_a_container_wrote_to_a_tracked_file() {
+        let cli = cli::detect().await.unwrap();
+        let up = Upstream::new();
+        // Traefik's `acme.json` is often committed empty, then filled with
+        // certificates by the container through a relative bind mount.
+        let first = up.commit(
+            "First",
+            &[
+                ("compose.yaml", "services:\n  web:\n    image: nginx:1\n"),
+                ("acme.json", ""),
+            ],
+        );
+        let data = tempfile::tempdir().unwrap();
+        let repo = data.path().join("r.git");
+        let url = up.url();
+        fetch(&cli, &repo, &remote(&url), &[(RefKind::Branch, "main")])
+            .await
+            .unwrap();
+        let worktree = data.path().join("synced-stacks/s1");
+        checkout(&cli, &repo, &worktree, &first).await.unwrap();
+        let acme = worktree.join("acme.json");
+        std::fs::write(&acme, "{\"certificates\": [\"written by a container\"]}").unwrap();
+
+        // Redeploying the same commit, then a commit that leaves the file alone.
+        checkout(&cli, &repo, &worktree, &first).await.unwrap();
+        assert!(std::fs::read_to_string(&acme)
+            .unwrap()
+            .contains("written by a container"));
+        let second = up.commit(
+            "Bump nginx",
+            &[("compose.yaml", "services:\n  web:\n    image: nginx:2\n")],
+        );
+        fetch(&cli, &repo, &remote(&url), &[(RefKind::Branch, "main")])
+            .await
+            .unwrap();
+        checkout(&cli, &repo, &worktree, &second).await.unwrap();
+        assert!(std::fs::read_to_string(worktree.join("compose.yaml"))
+            .unwrap()
+            .contains("nginx:2"));
+        assert!(std::fs::read_to_string(&acme)
+            .unwrap()
+            .contains("written by a container"));
+
+        // A commit that changes the file too is refused, and the file kept.
+        let third = up.commit("Reset acme", &[("acme.json", "{}")]);
+        fetch(&cli, &repo, &remote(&url), &[(RefKind::Branch, "main")])
+            .await
+            .unwrap();
+        assert!(checkout(&cli, &repo, &worktree, &third).await.is_err());
+        assert!(std::fs::read_to_string(&acme)
+            .unwrap()
+            .contains("written by a container"));
     }
 
     #[tokio::test]
