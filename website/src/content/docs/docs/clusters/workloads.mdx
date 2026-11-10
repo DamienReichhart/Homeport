@@ -56,7 +56,7 @@ Its header has its actions: **Scale**, **Restart**, **Suspend** or **Resume** an
   alt="The Pods page: Pods of the shop namespace with their status, one in CrashLoopBackOff with 7 restarts and one in ImagePullBackOff, their ready containers, Node and age."
 />
 
-**Pods** lists each Pod with its status as `kubectl get pods` shows it — `Running`, `Pending`, `CrashLoopBackOff`, `ImagePullBackOff`, `Init:…`, `Terminating` — its ready containers, restarts, Node and age. Long lists show 100 rows a page, so a cluster with thousands of Pods stays responsive; the search box filters all of them.
+**Pods** lists each Pod with its status as `kubectl get pods` shows it — `Running`, `Pending`, `CrashLoopBackOff`, `ImagePullBackOff`, `Init:…`, `Terminating` — its ready containers, restarts, Node and age. Long lists show 100 rows a page, so a cluster with thousands of Pods stays responsive; the search box filters all of them. When the Cluster runs metrics-server, **CPU** and **Memory** show what each Pod uses against its limits ([CPU and memory](/docs/clusters/metrics/)).
 
 <DocScreenshot
   name="cluster-pod"
@@ -64,7 +64,7 @@ Its header has its actions: **Scale**, **Restart**, **Suspend** or **Resume** an
   caption="Why api-…-xr4np isn't ready: its api container keeps crashing; its sidecar is fine."
 />
 
-A Pod's page shows its Node, IPs, QoS class, service account and what controls it, then each container (init containers first) with its image, state, why it waits or ended, its restarts and why it last restarted. Each container lists the ports it declares, with **Forward…** to [reach one from this computer](/docs/clusters/port-forward/). **Logs** and **Terminal** follow ([Logs and terminals](/docs/clusters/logs-exec/)), then **Conditions**, **Events** and **YAML**, as for workloads, and **Delete** in the header.
+A Pod's page shows its Node, IPs, QoS class, service account and what controls it, then each container (init containers first) with its image, state, why it waits or ended, its restarts and why it last restarted. Each container lists the ports it declares, with **Forward…** to [reach one from this computer](/docs/clusters/port-forward/). **Logs** and **Terminal** follow ([Logs and terminals](/docs/clusters/logs-exec/)), then **Conditions**, **Events** and **YAML**, as for workloads, and **Delete** in the header. With metrics-server, **Metrics** charts each container's CPU and memory against its request and limit ([CPU and memory](/docs/clusters/metrics/)).
 
 ### Finding out why a Pod isn't ready
 

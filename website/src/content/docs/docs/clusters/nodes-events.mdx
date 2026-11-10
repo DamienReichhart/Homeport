@@ -14,9 +14,9 @@ import { DocScreenshot } from '@/features/docs';
   alt="The Nodes page: five EKS Nodes, one not ready with scheduling disabled, with their kubelet version, internal IP, platform, CPUs and memory."
 />
 
-CPUs are shown in cores (`3.92` for `3920m`) and memory in GB; Kubernetes reports what is **allocatable** to Pods, a little less than the machine has, since the kubelet and the system keep some.
+CPUs are shown in cores (`3.92` for `3920m`) and memory in GB; Kubernetes reports what is **allocatable** to Pods, a little less than the machine has, since the kubelet and the system keep some. When the Cluster runs metrics-server, **CPU used** and **Memory used** show what each Node uses of it ([CPU and memory](/docs/clusters/metrics/)).
 
-A Node's page shows its OS image, kernel, container runtime, addresses, taints, labels, and its capacity next to what's allocatable to Pods; then the **Pods** running on it, in every Namespace, its **Conditions** (memory, disk and PID pressure), **Events** and **YAML**. A Pod's page links to its Node.
+A Node's page shows its OS image, kernel, container runtime, addresses, taints, labels, and its capacity next to what's allocatable to Pods; then the **Pods** running on it, in every Namespace, its **Conditions** (memory, disk and PID pressure), **Events** and **YAML**. A Pod's page links to its Node. With metrics-server, **Metrics** charts its CPU and memory against what's allocatable ([CPU and memory](/docs/clusters/metrics/)).
 
 ## Events
 
