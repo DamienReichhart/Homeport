@@ -97,6 +97,8 @@ export function podView(name: string, overrides: Record<string, unknown> = {}) {
     created: '2026-11-01T10:00:00Z',
     owner: null,
     images: ['nginx'],
+    cpu: { request: 250, limit: 1000 },
+    memory: { request: 256 * 1024 ** 2, limit: null },
     ...overrides,
   };
 }
@@ -110,5 +112,6 @@ export const clusterCommands = {
     { name: 'shop', phase: 'Active', created: null, labels: {} },
   ],
   clusters_watch_subscribe: () => 1,
+  clusters_metrics_subscribe: () => 1,
   stream_cancel: () => null,
 };

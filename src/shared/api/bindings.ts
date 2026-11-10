@@ -336,6 +336,11 @@ export const commands = {
 	 *  line labelled, until cancelled or they end.
 	 */
 	clustersPodLogsSubscribe: (id: string, namespace: string, sources: PodLogSource[], target: PodLogTarget, options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("clusters_pod_logs_subscribe", { id, namespace, sources, target, options, onEvent }),
+	/**
+	 *  Polls the Metrics API for `target` every 15 s while its page is open,
+	 *  until cancelled; says once and ends when metrics-server isn't there.
+	 */
+	clustersMetricsSubscribe: (id: string, target: MetricsTarget, onEvent: Channel<MetricsEvent>) => __TAURI_INVOKE<number>("clusters_metrics_subscribe", { id, target, onEvent }),
 	/**  Opens a terminal in a Pod's container, like `kubectl exec -it`. */
 	clustersExecStart: (id: string, namespace: string, pod: string, options: PodExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("clusters_exec_start", { id, namespace, pod, options, onEvent }),
 	clustersExecInput: (terminal: number, data: string) => __TAURI_INVOKE<null>("clusters_exec_input", { terminal, data }),
@@ -1197,6 +1202,9 @@ export type ClusterNodeView = {
 	/**  Allocatable CPU and memory, as Kubernetes writes them (`4`, `16302048Ki`). */
 	cpu: string | null,
 	memory: string | null,
+	/**  The same in millicores and bytes, to set what it uses against. */
+	cpuMillicores: number | null,
+	memoryBytes: number | null,
 	taints: number,
 	created: string | null,
 };
@@ -1411,6 +1419,12 @@ export type Container = {
 };
 
 export type ContainerAction = "start" | "stop" | "restart" | "pause" | "unpause" | "kill";
+
+/**  A container's samples since its Pod's page opened. */
+export type ContainerHistory = {
+	name: string,
+	samples: UsageSample[],
+};
 
 export type ContainerUsage = {
 	id: string,
@@ -2766,6 +2780,42 @@ export type ManagedStack = {
 /**  How a manager node takes part in the Swarm's Raft. */
 export type ManagerStatus = "leader" | "reachable" | "unreachable";
 
+/**  What a metrics stream sends, every 15 s. */
+export type MetricsEvent = 
+/**
+ *  The Cluster serves no Metrics API: metrics-server isn't installed.
+ *  Sent once; the stream ends.
+ */
+{ type: "notInstalled" } | 
+/**  The credentials may not read metrics. Sent once; the stream ends. */
+{ type: "forbidden"; error: AppError } | 
+/**
+ *  The Metrics API is registered but doesn't answer, as while
+ *  metrics-server starts. The stream goes on.
+ */
+{ type: "notResponding"; error: AppError } | 
+/**  Any other failure, such as the Cluster being unreachable. The stream goes on. */
+{ type: "failed"; error: AppError } | 
+/**  Every Pod's latest sample. */
+{ type: "pods"; pods: PodUsage[] } | 
+/**  Every Node's latest sample. */
+{ type: "nodes"; nodes: NodeUsage[] } | 
+/**  Each container's samples since the page opened. */
+{ type: "pod"; containers: ContainerHistory[] } | 
+/**  The Node's samples since the page opened. */
+{ type: "node"; samples: UsageSample[] };
+
+/**  What a page shows metrics of. */
+export type MetricsTarget = 
+/**  The Pods of a Namespace, or of every one: for the Pods list. */
+{ type: "pods"; namespace: string | null } | 
+/**  Every Node: for the Nodes list. */
+{ type: "nodes" } | 
+/**  One Pod, its containers' samples kept while its page is open. */
+{ type: "pod"; namespace: string; name: string } | 
+/**  One Node, its samples kept while its page is open. */
+{ type: "node"; name: string };
+
 /**
  *  A kind or k3d cluster whose containers run on a local Host, but that
  *  the kubeconfig doesn't reach yet.
@@ -2852,6 +2902,13 @@ export type NodeTaint = {
 	key: string,
 	value: string | null,
 	effect: string,
+};
+
+export type NodeUsage = {
+	name: string,
+	/**  When metrics-server read it, in Unix seconds. */
+	time: number,
+	usage: ResourceUsage,
 };
 
 export type NodeView = {
@@ -3318,6 +3375,13 @@ export type PodContainer = {
 	lastReason: string | null,
 	/**  The ports it declares. */
 	ports: PodPort[],
+	cpu: ResourceBounds,
+	memory: ResourceBounds,
+};
+
+export type PodContainerUsage = {
+	name: string,
+	usage: ResourceUsage,
 };
 
 export type PodCounts = {
@@ -3379,6 +3443,16 @@ export type PodPort = {
 	name: string | null,
 };
 
+/**  A Pod's latest sample: the sum of its containers, and each of them. */
+export type PodUsage = {
+	namespace: string,
+	name: string,
+	/**  When metrics-server read it, in Unix seconds. */
+	time: number,
+	usage: ResourceUsage,
+	containers: PodContainerUsage[],
+};
+
 export type PodView = {
 	namespace: string,
 	name: string,
@@ -3399,6 +3473,9 @@ export type PodView = {
 	created: string | null,
 	owner: OwnerView | null,
 	images: string[],
+	/**  What its containers request and are limited to, summed. */
+	cpu: ResourceBounds,
+	memory: ResourceBounds,
 };
 
 /**  A pod as the Pods page lists it. */
@@ -3800,7 +3877,24 @@ export type RepositoryDraft = {
 	token: string | null,
 };
 
+/**
+ *  What containers request of a resource and are limited to: CPU in
+ *  millicores, memory in bytes. `None` when unset.
+ */
+export type ResourceBounds = {
+	request: number | null,
+	limit: number | null,
+};
+
 export type ResourceKind = "namespace" | "deployment" | "statefulSet" | "daemonSet" | "job" | "cronJob" | "pod" | "service" | "ingress" | "configMap" | "secret" | "node" | "event";
+
+/**  What a container, Pod or Node uses. */
+export type ResourceUsage = {
+	/**  In millicores: 1000 is one CPU core. */
+	cpu: number | null,
+	/**  In bytes: the working set, which is what the kubelet evicts on. */
+	memory: number,
+};
 
 /**  Told when the resources a list shows changed. */
 export type ResourcesChanged = {
@@ -4543,6 +4637,12 @@ export type UsageLine = {
 	active: number,
 	size: number,
 	reclaimable: number,
+};
+
+/**  One reading, at its Unix time in seconds. */
+export type UsageSample = {
+	time: number,
+	usage: ResourceUsage,
 };
 
 export type Value = null | boolean | number | string | Value[] | { [key in string]: Value };

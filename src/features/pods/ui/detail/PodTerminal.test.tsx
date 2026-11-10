@@ -26,6 +26,8 @@ const container = (name: string) => ({
   restarts: 0,
   lastReason: null,
   ports: [],
+  cpu: { request: null, limit: null },
+  memory: { request: null, limit: null },
 });
 
 const pod = {

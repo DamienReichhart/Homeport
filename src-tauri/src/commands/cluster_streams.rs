@@ -1,9 +1,11 @@
-//! What streams from a Cluster's Pods: their logs, and terminals in their containers.
+//! What streams from a Cluster's Pods: their logs, terminals in their
+//! containers, and their Nodes' and their CPU and memory.
 
 use tauri::{ipc::Channel, State};
 
 use homeport_clusters::{
     logs::{PodLogSource, PodLogTarget},
+    metrics::{MetricsEvent, MetricsTarget},
     terminal::{PodExecOptions, TerminalId},
 };
 use homeport_core::{
@@ -34,6 +36,22 @@ pub async fn clusters_pod_logs_subscribe(
             on_event.send(e).is_ok()
         }),
     ))
+}
+
+/// Polls the Metrics API for `target` every 15 s while its page is open,
+/// until cancelled; says once and ends when metrics-server isn't there.
+#[tauri::command]
+#[specta::specta]
+pub async fn clusters_metrics_subscribe(
+    state: State<'_, AppState>,
+    id: String,
+    target: MetricsTarget,
+    on_event: Channel<MetricsEvent>,
+) -> AppResult<StreamId> {
+    let on = on(&state, &id)?;
+    Ok(state
+        .streams
+        .spawn(on.stream_metrics(target, move |e| on_event.send(e).is_ok())))
 }
 
 /// Opens a terminal in a Pod's container, like `kubectl exec -it`.

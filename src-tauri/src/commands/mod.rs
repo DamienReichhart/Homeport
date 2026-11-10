@@ -185,6 +185,7 @@ pub fn builder() -> tauri_specta::Builder<tauri::Wry> {
             helm::clusters_helm_rollback_subscribe,
             helm::clusters_helm_uninstall_subscribe,
             cluster_streams::clusters_pod_logs_subscribe,
+            cluster_streams::clusters_metrics_subscribe,
             cluster_streams::clusters_exec_start,
             cluster_streams::clusters_exec_input,
             cluster_streams::clusters_exec_resize,

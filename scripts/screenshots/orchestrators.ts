@@ -94,6 +94,7 @@ export function clusterHandlers(): Record<string, Handler> {
     clusters_kubeconfig_contexts: () => k.kubeContexts,
     clusters_namespaces: () => k.namespaces,
     clusters_watch_subscribe: () => 1,
+    clusters_metrics_subscribe: () => 1,
     clusters_summary: (a) => (a.id === k.KIND ? k.kindSummary : k.summary),
     clusters_workloads_list: (a) => inNamespace(k.workloads[a.kind as WorkloadKind], a.namespace),
     clusters_workload_get: (a) => k.workloadDetail(a.kind as WorkloadKind, a.name as string),
