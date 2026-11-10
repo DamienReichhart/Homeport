@@ -4,6 +4,7 @@ import { strings } from '@/core/i18n';
 import { type Locale, localePath } from '@/core/site';
 import { href } from '@/shared/lib/href';
 import { Screenshot, TextLink } from '@/shared/ui';
+import { SHOWCASE_SIZES } from '../../model/showcase';
 import Showcase from '../Showcase.astro';
 
 interface Props {
@@ -24,6 +25,6 @@ const s = strings(locale);
     name="stack-editor"
     folder={locale.code}
     alt={s['home.stacks.screenshot']}
-    sizes="(min-width: 64rem) 760px, 100vw"
+    sizes={SHOWCASE_SIZES}
   />
 </Showcase>

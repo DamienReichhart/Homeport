@@ -15,14 +15,22 @@ interface Props {
 const { name, alt, caption } = Astro.props;
 // `/fr/docs/…` is French; the path is read without the site's base.
 const path = Astro.url.pathname.slice(import.meta.env.BASE_URL.replace(/\/$/, '').length);
+
+/*
+ * How wide Starlight's content column is: the window less 2rem of padding on a
+ * phone; less the sidebar too from 50rem (20.75rem in all), up to the 48rem the
+ * column stops at; and from 72rem less the table of contents as well (40.5rem).
+ */
+const SIZES = [
+  '(min-width: 88.5rem) 768px',
+  '(min-width: 72rem) calc(100vw - 40.5rem)',
+  '(min-width: 68.75rem) 768px',
+  '(min-width: 50rem) calc(100vw - 20.75rem)',
+  'calc(100vw - 2rem)',
+].join(', ');
 ---
 
 <figure class="screenshot not-content">
-  <Screenshot
-    name={name}
-    alt={alt}
-    folder={localeOf(path).code}
-    sizes="(min-width: 50rem) 768px, 100vw"
-  />
+  <Screenshot name={name} alt={alt} folder={localeOf(path).code} sizes={SIZES} />
   {caption && <figcaption>{caption}</figcaption>}
 </figure>
