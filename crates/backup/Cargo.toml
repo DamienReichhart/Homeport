@@ -1,0 +1,28 @@
+[package]
+name = "homeport-backup"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Backing up everything Homeport holds to one passphrase-protected file, and restoring it"
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+homeport-core.workspace = true
+homeport-storage.workspace = true
+homeport-hosts.workspace = true
+homeport-clusters.workspace = true
+homeport-stacks.workspace = true
+homeport-git.workspace = true
+homeport-registries.workspace = true
+homeport-settings.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+specta.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+tokio.workspace = true

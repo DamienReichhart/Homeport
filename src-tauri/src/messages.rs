@@ -8,9 +8,6 @@ use std::collections::BTreeMap;
 use homeport_core::error::{arguments, Message};
 
 homeport_core::messages! {
-    /// Restoring Homeport's data from an export of some Hosts.
-    BACKUP_IS_AN_EXPORT = "errors.backup.isAnExport" => "{path} is an export of Hosts, not a backup of Homeport's data.";
-    BACKUP_IS_AN_EXPORT_HINT = "errors.backup.isAnExport.hint" => "Import its Hosts from the Hosts page instead, which adds them to the ones you have.";
     /// The webview or a Tauri plugin failed.
     WINDOW_FAILED = "errors.shell.windowFailed" => "The app window failed.";
     UPDATE_DOWNLOAD = "errors.updates.download" => "Homeport couldn't download the update.";
@@ -63,7 +60,7 @@ const NATIVE_CATALOGUE_PATH: &str = "../src/shared/i18n/en/native.json";
 /// that isn't a plain name (Rust renders `{name}` arguments only).
 #[cfg(test)]
 fn catalogue() -> Result<BTreeMap<&'static str, &'static str>, String> {
-    let all: [&[Message]; 13] = [
+    let all: [&[Message]; 14] = [
         homeport_core::messages::ALL,
         homeport_storage::messages::ALL,
         homeport_transport::messages::ALL,
@@ -76,6 +73,7 @@ fn catalogue() -> Result<BTreeMap<&'static str, &'static str>, String> {
         homeport_stacks::messages::ALL,
         homeport_registries::messages::ALL,
         homeport_git::messages::ALL,
+        homeport_backup::messages::ALL,
         ALL,
     ];
     let mut catalogue = BTreeMap::new();

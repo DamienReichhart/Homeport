@@ -2,8 +2,8 @@
 //! logins, repositories, settings and their secrets — to one passphrase-protected
 //! file, and restoring it on this or another computer (ADR 0013's format).
 //!
-//! Domain crates don't depend on each other (ADR 0005), so only the shell
-//! combines their sections. Each section is domain JSON, not table rows, so
+//! Every domain crate backs up and restores its own section; this crate,
+//! which sits on all of them, puts the sections in one file. Each section is domain JSON, not table rows, so
 //! a backup from an older Homeport restores into a newer one; one from a
 //! newer Homeport is refused. Engine event and deploy histories aren't
 //! kept.
@@ -11,21 +11,55 @@
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
-use tauri::State;
 
-use homeport_clusters::store::backup::{self as clusters, BackedUpCluster};
+use homeport_clusters::{
+    service::ClusterService,
+    store::backup::{self as clusters, BackedUpCluster},
+};
 use homeport_core::{
     error::{local_file, AppError, AppResult},
     local_files,
 };
-use homeport_git::store::backup::{self as repositories, BackedUpRepository};
-use homeport_hosts::bundle::{self as hosts, ExportedHost, PAYLOAD_VERSION};
-use homeport_registries::store::backup::{self as registries, BackedUpLogin};
+use homeport_git::{
+    store::backup::{self as repositories, BackedUpRepository},
+    Repositories,
+};
+use homeport_hosts::{
+    bundle::{self as hosts, ExportedHost, PAYLOAD_VERSION},
+    service::HostService,
+};
+use homeport_registries::{
+    store::backup::{self as registries, BackedUpLogin},
+    RegistryStore,
+};
 use homeport_settings::{Settings, SettingsService};
-use homeport_stacks::backup::{self as stacks, StacksBackup, Stores};
-use homeport_storage::{crypto::bundle, db::sqlite_error};
+use homeport_stacks::{
+    backup::{self as stacks, StacksBackup, Stores},
+    linked::LinkedStore,
+    store::StackStore,
+    synced::SyncedStacks,
+};
+use homeport_storage::{crypto::bundle, db::sqlite_error, Db, SecretBox};
 
-use crate::{app::AppState, error::AppResult as ShellResult, messages as msg};
+pub mod messages;
+
+use messages as msg;
+
+/// Everything Homeport holds: what a backup reads and a restore replaces.
+pub struct Data<'a> {
+    pub db: &'a Db,
+    /// Where the database is, and where a restore leaves its copy of it.
+    pub data_dir: &'a Path,
+    pub secrets: &'a SecretBox,
+    pub settings: &'a SettingsService,
+    pub hosts: &'a HostService,
+    pub clusters: &'a ClusterService,
+    pub stacks: &'a StackStore,
+    pub linked: &'a LinkedStore,
+    pub synced: &'a SyncedStacks,
+    pub registries: &'a RegistryStore,
+    pub repositories: &'a Repositories,
+}
 
 /// Larger files aren't backups: they hold compose files and keys, not data.
 const MAX_BACKUP_BYTES: u64 = 64 * 1024 * 1024;
@@ -155,22 +189,22 @@ impl Backup {
 }
 
 /// Everything Homeport holds, with its secrets opened.
-fn collect(state: &AppState) -> AppResult<(Backup, Vec<String>)> {
+fn collect(data: &Data<'_>) -> AppResult<(Backup, Vec<String>)> {
     let mut without_secrets = Vec::new();
-    let hosts = state.hosts.backup_hosts(&mut without_secrets)?;
+    let hosts = data.hosts.backup_hosts(&mut without_secrets)?;
     let host_ids: Vec<String> = hosts.iter().filter_map(|h| h.id.clone()).collect();
     let stacks = stacks::backup(
         &Stores {
-            managed: &state.stacks,
-            linked: &state.linked,
-            synced: &state.synced.store,
+            managed: data.stacks,
+            linked: data.linked,
+            synced: &data.synced.store,
         },
         &host_ids,
         &mut without_secrets,
     )?;
-    let clusters = state.clusters.store.backup(&mut without_secrets)?;
-    let registries = state.registries.backup(&mut without_secrets)?;
-    let repositories = state.repositories.store.backup(&mut without_secrets)?;
+    let clusters = data.clusters.store.backup(&mut without_secrets)?;
+    let registries = data.registries.backup(&mut without_secrets)?;
+    let repositories = data.repositories.store.backup(&mut without_secrets)?;
     let backup = Backup {
         version: PAYLOAD_VERSION,
         created_at: hosts::now_rfc3339(),
@@ -181,7 +215,7 @@ fn collect(state: &AppState) -> AppResult<(Backup, Vec<String>)> {
         registries,
         repositories,
         stacks,
-        settings: Some(state.settings.get()?),
+        settings: Some(data.settings.get()?),
         without_secrets: without_secrets.clone(),
     };
     Ok((backup, without_secrets))
@@ -190,9 +224,9 @@ fn collect(state: &AppState) -> AppResult<(Backup, Vec<String>)> {
 /// Replaces everything Homeport holds with `backup`'s, in one transaction:
 /// on any failure, nothing changes. Secrets are sealed with this
 /// computer's key.
-fn replace(state: &AppState, backup: &Backup) -> AppResult<()> {
-    let secrets = &*state.secrets;
-    state.db.transaction(|tx| {
+fn replace(data: &Data<'_>, backup: &Backup) -> AppResult<()> {
+    let secrets = data.secrets;
+    data.db.transaction(|tx| {
         // Stacks first: Synced Stacks keep their repository from being deleted.
         tx.execute_batch(
             "DELETE FROM synced_stacks;
@@ -218,10 +252,11 @@ fn replace(state: &AppState, backup: &Backup) -> AppResult<()> {
     })
 }
 
-fn backup_to(state: &AppState, path: &Path, passphrase: &str) -> AppResult<BackupOutcome> {
-    let (backup, without_secrets) = collect(state)?;
+/// Backs up everything Homeport holds to `path`, sealed with `passphrase`.
+/// Written beside the file first: a failure keeps the backup that was there.
+pub fn write(data: &Data<'_>, path: &Path, passphrase: &str) -> AppResult<BackupOutcome> {
+    let (backup, without_secrets) = collect(data)?;
     let sealed = bundle::seal(passphrase, &serde_json::to_vec(&backup)?)?;
-    // Written beside it first: a failure keeps the backup that was there.
     local_files::write_replacing(path, &sealed)?;
     Ok(BackupOutcome {
         contents: backup.contents(),
@@ -229,55 +264,28 @@ fn backup_to(state: &AppState, path: &Path, passphrase: &str) -> AppResult<Backu
     })
 }
 
-async fn restore_from(
-    state: &AppState,
-    path: &Path,
-    passphrase: &str,
-) -> AppResult<BackupContents> {
-    let backup = Backup::read(path, passphrase)?;
-    let stamp = hosts::now_rfc3339().replace(':', "-");
-    let copy = state
-        .data_dir
-        .join(format!("homeport.db.before-restore-{stamp}"));
-    state.db.copy_to(&copy)?;
-    // Whatever was still being written belongs to the data being replaced.
-    state.hosts.events.flush().await;
-    replace(state, &backup)?;
-    state.hosts.registry.reload()?;
-    state.clusters.forwards.stop_all();
-    state.clusters.registry.reload()?;
-    Ok(backup.contents())
-}
-
-/// Backs up everything Homeport holds to `path`, sealed with `passphrase`.
-#[tauri::command]
-#[specta::specta]
-pub async fn data_backup(
-    state: State<'_, AppState>,
-    path: String,
-    passphrase: String,
-) -> ShellResult<BackupOutcome> {
-    backup_to(&state, Path::new(&path), &passphrase)
-}
-
 /// What the backup at `path` holds, for the restore's confirmation.
-#[tauri::command]
-#[specta::specta]
-pub async fn data_restore_preview(path: String, passphrase: String) -> ShellResult<BackupContents> {
-    Ok(Backup::read(Path::new(&path), &passphrase)?.contents())
+pub fn preview(path: &Path, passphrase: &str) -> AppResult<BackupContents> {
+    Ok(Backup::read(path, passphrase)?.contents())
 }
 
 /// Replaces everything Homeport holds with the backup at `path`, after
 /// copying the database to `homeport.db.before-restore-<time>` next to it,
 /// then reconnects to the restored Hosts and Clusters.
-#[tauri::command]
-#[specta::specta]
-pub async fn data_restore(
-    state: State<'_, AppState>,
-    path: String,
-    passphrase: String,
-) -> ShellResult<BackupContents> {
-    restore_from(&state, Path::new(&path), &passphrase).await
+pub async fn restore(data: &Data<'_>, path: &Path, passphrase: &str) -> AppResult<BackupContents> {
+    let backup = Backup::read(path, passphrase)?;
+    let stamp = hosts::now_rfc3339().replace(':', "-");
+    let copy = data
+        .data_dir
+        .join(format!("homeport.db.before-restore-{stamp}"));
+    data.db.copy_to(&copy)?;
+    // Whatever was still being written belongs to the data being replaced.
+    data.hosts.events.flush().await;
+    replace(data, &backup)?;
+    data.hosts.registry.reload()?;
+    data.clusters.forwards.stop_all();
+    data.clusters.registry.reload()?;
+    Ok(backup.contents())
 }
 
 #[cfg(test)]

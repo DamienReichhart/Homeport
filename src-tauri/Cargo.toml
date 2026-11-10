@@ -32,6 +32,7 @@ homeport-nomad.workspace = true
 homeport-stacks.workspace = true
 homeport-git.workspace = true
 homeport-registries.workspace = true
+homeport-backup.workspace = true
 homeport-settings.workspace = true
 homeport-updates.workspace = true
 homeport-diagnostics.workspace = true

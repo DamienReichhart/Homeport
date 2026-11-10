@@ -24,8 +24,7 @@ use homeport_hosts::{
 use homeport_registries::{RegistryDraft, RegistryStore};
 use homeport_settings::Theme;
 use homeport_stacks::{
-    history::DeployHistory,
-    linked::{FileCache, LinkedStore},
+    linked::LinkedStore,
     store::{ComposeFile, StackStore},
     synced::{
         store::{SyncedDraft, SyncedStore},
@@ -48,7 +47,39 @@ impl ClusterNotifier for Silent {
 }
 
 /// A computer: its own data folder, database and keychain key.
-fn computer(dir: &Path, key: u8) -> AppState {
+struct Computer {
+    db: Arc<Db>,
+    data_dir: std::path::PathBuf,
+    secrets: Arc<SecretBox>,
+    settings: SettingsService,
+    hosts: HostService,
+    clusters: ClusterService,
+    stacks: StackStore,
+    linked: LinkedStore,
+    synced: SyncedStacks,
+    registries: RegistryStore,
+    repositories: Arc<Repositories>,
+}
+
+impl Computer {
+    fn data(&self) -> Data<'_> {
+        Data {
+            db: &self.db,
+            data_dir: &self.data_dir,
+            secrets: &self.secrets,
+            settings: &self.settings,
+            hosts: &self.hosts,
+            clusters: &self.clusters,
+            stacks: &self.stacks,
+            linked: &self.linked,
+            synced: &self.synced,
+            registries: &self.registries,
+            repositories: &self.repositories,
+        }
+    }
+}
+
+fn computer(dir: &Path, key: u8) -> Computer {
     let db = Arc::new(Db::open(&dir.join("homeport.db")).unwrap());
     let secrets = Arc::new(SecretBox::from_key(&[key; 32]));
     let store = Arc::new(HostStore::new(db.clone(), secrets.clone()));
@@ -59,7 +90,7 @@ fn computer(dir: &Path, key: u8) -> AppState {
         dir.join("repositories"),
     ));
     let cluster_store = Arc::new(ClusterStore::new(db.clone(), secrets.clone()));
-    AppState {
+    Computer {
         clusters: ClusterService::new(cluster_store, Arc::new(Silent)),
         settings: SettingsService::new(db.clone(), &dir.join("settings.json")).unwrap(),
         hosts: HostService {
@@ -69,32 +100,21 @@ fn computer(dir: &Path, key: u8) -> AppState {
         },
         stacks: StackStore::new(db.clone(), secrets.clone()),
         linked: LinkedStore::new(db.clone()),
-        linked_files: FileCache::new(),
-        history: Arc::new(DeployHistory::new(db.clone(), secrets.clone())),
         registries: RegistryStore::new(db.clone(), secrets.clone()),
-        synced: Arc::new(SyncedStacks::new(
+        synced: SyncedStacks::new(
             SyncedStore::new(db.clone(), secrets.clone()),
             repositories.clone(),
             dir.join("synced-stacks"),
-        )),
+        ),
         repositories,
         secrets,
-        streams: Default::default(),
-        exec: Default::default(),
-        containerd_exec: Default::default(),
-        incus_terminals: Default::default(),
-        pod_terminals: Default::default(),
-        nomad_terminals: Default::default(),
-        volume_browser: Default::default(),
-        freshness: Default::default(),
-        update: Default::default(),
         db,
         data_dir: dir.to_owned(),
     }
 }
 
 /// Fills `state` with one of everything; returns the TLS Host's id.
-fn fill(state: &AppState) -> String {
+fn fill(state: &Computer) -> String {
     let tls = state
         .hosts
         .store
@@ -199,7 +219,7 @@ async fn a_backup_restores_everything_on_another_computer() {
     let file = a.path().join("homeport.backup");
     let laptop = computer(a.path(), 1);
     let tls = fill(&laptop);
-    let outcome = backup_to(&laptop, &file, PASS).unwrap();
+    let outcome = write(&laptop.data(), &file, PASS).unwrap();
     assert_eq!(outcome.contents.hosts, ["prod"]);
     assert_eq!(outcome.contents.stacks, 3);
     assert!(outcome.without_secrets.is_empty());
@@ -218,7 +238,7 @@ async fn a_backup_restores_everything_on_another_computer() {
             secrets: None,
         })
         .unwrap();
-    let restored = restore_from(&desktop, &file, PASS).await.unwrap();
+    let restored = restore(&desktop.data(), &file, PASS).await.unwrap();
     assert_eq!(restored.registries, 1);
     assert_eq!(restored.clusters, ["kind-dev"]);
     let cluster = &desktop.clusters.store.list().unwrap()[0];
@@ -278,19 +298,19 @@ async fn a_failed_restore_changes_nothing() {
     let file = a.path().join("homeport.backup");
     let laptop = computer(a.path(), 1);
     fill(&laptop);
-    backup_to(&laptop, &file, PASS).unwrap();
+    write(&laptop.data(), &file, PASS).unwrap();
 
     let desktop = computer(b.path(), 2);
     let mine = fill(&desktop);
-    let wrong = restore_from(&desktop, &file, "not the passphrase at all").await;
+    let wrong = restore(&desktop.data(), &file, "not the passphrase at all").await;
     assert_eq!(wrong.unwrap_err().code, ErrorCode::BundleUnreadable);
     assert_eq!(desktop.hosts.store.list().unwrap()[0].id, mine);
 
     // A backup that breaks halfway (a Stack of a Host it doesn't hold)
     // rolls back whatever it had written.
-    let mut broken = collect(&laptop).unwrap().0;
+    let mut broken = collect(&laptop.data()).unwrap().0;
     broken.stacks.linked[0].host_id = "nowhere".into();
-    assert!(replace(&desktop, &broken).is_err());
+    assert!(replace(&desktop.data(), &broken).is_err());
     assert_eq!(desktop.hosts.store.list().unwrap()[0].id, mine);
     assert_eq!(desktop.stacks.list(&mine).unwrap().len(), 1);
 }
@@ -308,14 +328,14 @@ async fn backups_from_an_older_homeport_restore_and_newer_ones_are_refused() {
             "stacks":{"managed":[{"id":"s1","hostId":"h1","name":"web",
                       "files":[{"name":"compose.yaml","content":"services: {}"}]}]}}"#;
     std::fs::write(&file, bundle::seal(PASS, older.as_bytes()).unwrap()).unwrap();
-    let contents = restore_from(&state, &file, PASS).await.unwrap();
+    let contents = restore(&state.data(), &file, PASS).await.unwrap();
     assert_eq!((contents.hosts.len(), contents.stacks), (1, 1));
     assert_eq!(state.stacks.list("h1").unwrap()[0].name, "web");
     assert_eq!(state.settings.get().unwrap().keep_events_days, 30);
 
     let newer = r#"{"version":2,"backup":true}"#;
     std::fs::write(&file, bundle::seal(PASS, newer.as_bytes()).unwrap()).unwrap();
-    let refused = restore_from(&state, &file, PASS).await.unwrap_err();
+    let refused = restore(&state.data(), &file, PASS).await.unwrap_err();
     assert_eq!(refused.code, ErrorCode::BundleTooNew);
     assert_eq!(state.hosts.store.list().unwrap().len(), 1);
 }
@@ -327,7 +347,7 @@ async fn the_preview_names_what_comes_back_without_its_secrets() {
     fill(&computer(dir.path(), 1));
     // Backed up while the keychain had another key: nothing opens.
     let locked = computer(dir.path(), 2);
-    let outcome = backup_to(&locked, &file, PASS).unwrap();
+    let outcome = write(&locked.data(), &file, PASS).unwrap();
     assert!(!outcome.without_secrets.is_empty());
     let preview = Backup::read(&file, PASS).unwrap().contents();
     for name in ["prod", "shop", "infra", "ghcr.io", "kind-dev"] {
@@ -357,7 +377,7 @@ async fn an_export_of_hosts_is_not_a_backup() {
     let id = fill(&state);
     let file = dir.path().join("hosts.homeport");
     state.hosts.export_hosts(&[id], &file, PASS).unwrap();
-    let refused = restore_from(&state, &file, PASS).await.unwrap_err();
+    let refused = restore(&state.data(), &file, PASS).await.unwrap_err();
     assert_eq!(refused.code, ErrorCode::Validation);
     assert_eq!(
         state

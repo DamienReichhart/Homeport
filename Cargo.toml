@@ -114,6 +114,7 @@ homeport-clusters = { path = "crates/clusters" }
 homeport-git = { path = "crates/git" }
 homeport-stacks = { path = "crates/stacks" }
 homeport-registries = { path = "crates/registries" }
+homeport-backup = { path = "crates/backup" }
 homeport-settings = { path = "crates/settings" }
 homeport-updates = { path = "crates/updates" }
 

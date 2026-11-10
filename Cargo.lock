@@ -2451,6 +2451,7 @@ dependencies = [
 name = "homeport"
 version = "1.0.0-rc.1"
 dependencies = [
+ "homeport-backup",
  "homeport-clusters",
  "homeport-containerd",
  "homeport-core",
@@ -2485,6 +2486,25 @@ dependencies = [
  "tempfile",
  "tokio",
  "zip 2.6.1",
+]
+
+[[package]]
+name = "homeport-backup"
+version = "1.0.0-rc.1"
+dependencies = [
+ "homeport-clusters",
+ "homeport-core",
+ "homeport-git",
+ "homeport-hosts",
+ "homeport-registries",
+ "homeport-settings",
+ "homeport-stacks",
+ "homeport-storage",
+ "serde",
+ "serde_json",
+ "specta",
+ "tempfile",
+ "tokio",
 ]
 
 [[package]]
