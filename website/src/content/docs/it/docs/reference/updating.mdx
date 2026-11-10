@@ -12,7 +12,7 @@ Il modo in cui Homeport si aggiorna dipende da come l’hai installato.
 
 ### Windows, macOS e l’AppImage
 
-Homeport controlla se c’è una nuova versione all’avvio e ogni 6 ore. Quando ne esce una, una barra in cima alla finestra lo segnala: scegli **Novità** per leggere il [changelog](/changelog/), o **Installa e riavvia**. Homeport scarica l’aggiornamento, ne verifica la firma, lo installa e si riapre. Nulla viene installato finché non lo scegli tu, e i tuoi host, stack e impostazioni vengono conservati.
+Homeport controlla se c’è una nuova versione all’avvio e ogni 6 ore. Quando ne esce una, una barra in cima alla finestra lo segnala: scegli **Novità** per leggere il [changelog](/changelog/), o **Installa e riavvia**. Homeport scarica l’aggiornamento, ne verifica la firma, lo installa e si riapre. Nulla viene installato finché non lo scegli tu, e [i tuoi dati vengono conservati](#your-data-across-versions).
 
 Puoi anche controllare subito da **Impostazioni → Aggiornamenti → Controlla ora**.
 
@@ -42,6 +42,14 @@ Le versioni precedenti alla 0.3.0 non si aggiornano da sole, e i loro pacchetti 
 
 Per essere comunque avvisato delle nuove versioni, segui il repository su GitHub (**Watch → Custom → Releases**), o segui il [feed delle release](https://github.com/DamienReichhart/Homeport/releases.atom).
 
+## I tuoi dati tra una versione e l’altra
+
+Ogni versione di Homeport apre i dati di ogni versione precedente, fino alla 0.1.0, e li aggiorna senza perdere nulla: host, stack, cluster, impostazioni e segreti. Un aggiornamento non ti chiede mai di configurare di nuovo qualcosa: la prima volta che una nuova versione si avvia, aggiorna il suo database dove si trova, e tutto si connette come prima. Ogni release viene testata su un database di esempio di ogni release precedente.
+
+**Il downgrade non è supportato.** Una volta che una versione più recente ha aperto i tuoi dati, una più vecchia non sa leggerli, e non ci prova: si ferma con [un messaggio che indica la versione da installare](/docs/reference/troubleshooting/#this-database-was-last-used-by-homeport--or-later) invece di modificare qualcosa. I tuoi dati restano come li ha lasciati la versione più recente; installa quella versione, o una più recente, e Homeport li apre di nuovo.
+
+**Esegui un backup prima di provare una prerelease.** Una prerelease aggiorna il database come qualsiasi altra versione, quindi la release stabile da cui provieni non riesce più ad aprirlo. Scegli prima **Impostazioni → Dati → Esegui backup…**; vedi [I tuoi dati e i backup](/docs/reference/data-and-backups/#backing-up-in-homeport). Per tornare alla release stabile, esci da Homeport, sposta `homeport.db` fuori dalla [cartella dei dati](/docs/reference/data-and-backups/#the-data-folder), installa di nuovo la release stabile e usa **Ripristina…** con quel backup.
+
 ## Disinstallare
 
 <Tabs syncKey="os">
@@ -64,7 +72,7 @@ Per l’AppImage, elimina il file. La sua voce di menu scompare con esso.
 </TabItem>
 </Tabs>
 
-La disinstallazione lascia i tuoi dati dove sono, quindi reinstallare riporta tutto.
+La disinstallazione lascia i tuoi dati dove sono, quindi reinstallare riporta tutto. [I tuoi dati e i backup](/docs/reference/data-and-backups/) indica dove si trovano.
 
 ### La voce di avvio all’accesso
 
@@ -79,9 +87,11 @@ Se **Avvia all’accesso** è attivo, disattivalo in **Impostazioni → Desktop*
 ## Rimuovere i tuoi dati
 
 <Aside type="caution">
-  Questo elimina i tuoi host, le loro chiavi e i loro certificati memorizzati, le definizioni dei
-  tuoi stack gestiti, i tuoi stack collegati e la loro cronologia delle distribuzioni. Le cartelle
-  degli stack collegati restano dove sono. Nulla sui tuoi host viene toccato.
+  Questo elimina i tuoi host e cluster con le chiavi, i certificati e i token memorizzati, i tuoi
+  stack gestiti, collegati e sincronizzati con i loro ambienti e la cronologia delle distribuzioni,
+  i tuoi accessi ai registri, i repository e le impostazioni. Le cartelle degli stack collegati
+  restano dove sono. Nulla sui tuoi host e cluster viene toccato. Per conservarne prima una copia,
+  [esegui un backup](/docs/reference/data-and-backups/).
 </Aside>
 
 1. Elimina le cartelle dei dati e dei log di Homeport:
@@ -92,9 +102,9 @@ Se **Avvia all’accesso** è attivo, disattivalo in **Impostazioni → Desktop*
    | macOS   | `~/Library/Application Support/com.homeport.app/`, `~/Library/Logs/com.homeport.app/` |
    | Windows | `%APPDATA%\com.homeport.app\`, `%LOCALAPPDATA%\com.homeport.app\`                     |
 
-2. Elimina la chiave di cifratura dal tuo portachiavi — la voce di `com.homeport.app`:
+2. Elimina la chiave di cifratura dal tuo portachiavi — la voce di `com.homeport.app`, account `secrets-key`:
    - **macOS** — in **Accesso Portachiavi**, cerca `com.homeport.app` ed eliminala.
    - **Windows** — in **Gestione credenziali → Credenziali di Windows**, rimuovi la voce che contiene `com.homeport.app`.
    - **Linux** — in **Password e chiavi** (Seahorse) o KWallet, elimina la voce di `com.homeport.app`.
 
-3. Sui tuoi server, rimuovi le chiavi pubbliche di Homeport da `~/.ssh/authorized_keys` — i loro commenti iniziano con `homeport@`.
+3. Sui tuoi server, rimuovi le chiavi pubbliche di Homeport da `~/.ssh/authorized_keys` — i loro commenti iniziano con `homeport@`. Sulle tue forge git, rimuovi le chiavi di deploy che Homeport ha creato per i tuoi repository, e sui server Incus aggiunti tramite HTTPS, il certificato di Homeport (`incus config trust list`, poi `incus config trust remove`).

@@ -90,7 +90,7 @@ Quando il container si arresta, il log termina con _— fine dei log —_.
 
 ### Integrità
 
-Mostrata per i container con un controllo di integrità, proprio o della loro immagine. **Controllo di integrità** indica lo stato (_starting_, _healthy_ o _unhealthy_), il comando, i suoi tempi (i valori predefiniti dell’Engine completano ciò che non è impostato: ogni 30 s, un timeout di 30 s, 3 tentativi) e quanti controlli sono falliti di fila. **Ultimi risultati** elenca i controlli che l’Engine conserva, dal più recente, con il codice di uscita, quando sono stati eseguiti, quanto sono durati e cosa hanno stampato; l’output lungo è compresso dietro **Mostra altre righe**.
+Mostrata per i container con un controllo di integrità, proprio o della loro immagine. **Controllo di integrità** indica lo stato (_starting_, _healthy_ o _unhealthy_), il comando, i suoi tempi (i valori predefiniti dell’Engine completano ciò che non è impostato: ogni 30 s, un timeout di 30 s, 3 tentativi) e quanti controlli sono falliti di fila. **Ultimi risultati** elenca i controlli che l’Engine conserva, dal più recente, con il codice di uscita, quando sono stati eseguiti, quanto sono durati e cosa hanno stampato; l’output lungo è compresso dietro **Mostra altre N righe**.
 
 Così, quando l’elenco dice _unhealthy_, è qui che trovi il motivo, senza leggere il JSON originale. La scheda si aggiorna da sola una volta per intervallo di controllo e ogni volta che lo stato cambia. Un container con il controllo di integrità disattivato non ha la scheda Integrità; per aggiungerne uno o modificarlo, [modifica il container](#modificare-un-container).
 

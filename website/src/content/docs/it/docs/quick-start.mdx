@@ -48,15 +48,18 @@ La barra laterale ha una pagina per ogni tipo di risorsa, e tutte mostrano l’h
 | Pagina           | Cosa mostra                                                                            |
 | ---------------- | -------------------------------------------------------------------------------------- |
 | **Panoramica**   | Una scheda per ogni host, l’Engine, l’uso del disco e gli eventi dell’host selezionato |
+| **Bacheca**      | I container di ogni host connesso in un’unica tabella                                  |
 | **Container**    | Ogni container, raggruppato per stack, con CPU e memoria in tempo reale                |
 | **Immagini**     | Le immagini locali, cosa le usa, il download e la pulizia                              |
 | **Volumi**       | I volumi e i container che li usano                                                    |
 | **Reti**         | Le reti, le loro sottoreti e i container collegati                                     |
-| **Stack**        | I progetti Compose, gestiti ed esterni                                                 |
-| **Eventi**       | Ciò che l’Engine ha segnalato da quando Homeport si è connesso                         |
-| **Impostazioni** | Il tema, ciò che questo computer supporta e le licenze                                 |
+| **Stack**        | I progetti Compose: gestiti, collegati, sincronizzati ed esterni                       |
+| **Eventi**       | Ciò che l’Engine ha segnalato, conservato per 30 giorni                                |
+| **Impostazioni** | Tema e lingua, accessi ai registri, backup e ciò che ha questo computer                |
 
 Homeport si aggiorna man mano che l’Engine segnala modifiche, quindi non ti serve mai un pulsante di aggiornamento — avvia un container in un terminale e compare subito.
+
+Un host containerd, Incus o Podman, uno Swarm e un cluster aggiungono ciascuno pagine proprie alla barra laterale. In fondo, **Documentazione** e **GitHub** aprono questa documentazione e il repository del progetto nel browser.
 
 ## 3. Esegui un container
 

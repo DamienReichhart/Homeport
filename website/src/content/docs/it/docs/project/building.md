@@ -62,6 +62,23 @@ cargo test --workspace --exclude homeport -- --ignored
 
 Anche la CI li esegue, nel job `engine-tests` di `.github/workflows/ci.yml`, a ogni push su `dev`, a ogni pull request e a ogni release. Il job esegue poi `scripts/ci/engine-test-leftovers.sh`, che fallisce se un test ha lasciato un container, un’immagine, un volume o una rete `homeport-test-*`; eseguilo in locale dopo i test per controllare la stessa cosa.
 
+### Test end-to-end
+
+`e2e/` guida la vera app — il backend Rust, la webview e le chiamate tra loro — con [WebdriverIO](https://webdriver.io) tramite `tauri-driver`, contro il Docker Engine locale. Gli scenari: l’app si avvia e si connette all’Engine locale; i log di un container scorrono e il container si arresta dall’app; un’immagine viene scaricata; uno stack gestito viene distribuito con un ambiente cifrato; un riavvio conserva gli host, lo stack e il suo segreto; e un host SSH viene aggiunto con una chiave esistente, la sua chiave del server considerata attendibile, e connesso. Trovano gli elementi per ruolo, etichetta e testo, mai per classe CSS.
+
+Funzionano solo su Linux: macOS non ha un WebDriver per la sua webview. Oltre ai [prerequisiti](#prerequisites) e a un Docker Engine, richiedono `tauri-driver` (`cargo install tauri-driver --locked`), il driver di WebKit, un display virtuale e un portachiavi: su Debian e Ubuntu, `webkit2gtk-driver`, `xvfb`, `dbus-x11` e `gnome-keyring`.
+
+```sh
+bun tauri build --debug --no-bundle
+cd e2e
+bun install
+./run.sh
+```
+
+La build incorpora il frontend, come fa una release, quindi un comando mancante da `commands::builder()`, un permesso mancante da `src-tauri/capabilities/` o uno stile bloccato dalla Content Security Policy fallisce qui. `run.sh` dà a ogni esecuzione una cartella dei dati nuova, un proprio portachiavi e un proprio display, così non tocca mai il tuo Homeport. Passa le opzioni di WebdriverIO dopo di esso, per esempio `./run.sh --spec specs/ssh.e2e.ts`. Lo scenario SSH compila una piccola immagine di server SSH da `e2e/support/sshd/`; imposta `HOMEPORT_E2E_SSHD_IMAGE` per usarne una compilata in precedenza. I container avviati dai test si chiamano `homeport-e2e-*` e vengono rimossi al termine.
+
+Un errore lascia uno screenshot e il log dell’app in `e2e/artifacts/`. La CI esegue i test nel job `e2e` di `.github/workflows/ci.yml`, a ogni push su `dev` e a ogni pull request, e conserva quella cartella quando uno fallisce.
+
 ## Questo sito
 
 Il sito si trova in `website/` ed è costruito con [Astro](https://astro.build) e [Starlight](https://starlight.astro.build):

@@ -3,7 +3,7 @@ title: La sicurezza e i tuoi dati
 description: Cosa memorizza Homeport, dove, come vengono cifrati i segreti, e cosa non fa mai.
 ---
 
-Homeport conserva credenziali che aprono i tuoi server. Questa pagina spiega esattamente cosa conserva, e come.
+Homeport conserva credenziali che aprono i tuoi server. Questa pagina spiega esattamente cosa conserva, e come è protetto. [I tuoi dati e i backup](/docs/reference/data-and-backups/) spiega cosa copiare per farne un backup, e come ripristinarlo.
 
 ## Cosa memorizza Homeport
 
@@ -80,7 +80,7 @@ Homeport mostra un banner e non memorizza segreti. Gli host con socket locale, T
 
 ### Se la chiave del portachiavi va persa
 
-Reimpostare il portachiavi, o spostare `homeport.db` su un altro computer o utente, lascia segreti che non possono essere decifrati. Homeport non elimina nulla: gli host interessati mostrano **Credenziali perse** finché non inserisci di nuovo le loro credenziali. Vedi [risoluzione dei problemi](/docs/reference/troubleshooting/#credenziali-perse). Per spostare i tuoi dati, esegui invece un backup o esporta i tuoi host.
+Reimpostare il portachiavi, o spostare `homeport.db` su un altro computer o utente, lascia segreti che non possono essere decifrati. Homeport non elimina nulla: gli host e i cluster interessati mostrano **Credenziali perse** finché non inserisci di nuovo le loro credenziali; [Se i segreti vanno persi](/docs/reference/data-and-backups/#if-the-secrets-are-lost) elenca cosa inserire di nuovo, e dove. Per spostare i tuoi dati, [esegui invece un backup](#backups) o [esporta i tuoi host](#moving-to-another-computer).
 
 ### Passare a un altro computer
 
@@ -103,7 +103,7 @@ Tratta il file come le chiavi che contiene: eliminalo dopo l’importazione. Il 
 2. sostituisce ogni host, cluster, stack, accesso, repository e impostazione in un solo passaggio, così un errore lascia i tuoi dati com’erano;
 3. cifra di nuovo ogni segreto con la chiave del portachiavi di questo computer.
 
-Un backup creato da un Homeport più recente viene rifiutato; uno creato da un Homeport più vecchio viene ripristinato. Il backup contiene ogni segreto di Homeport: conservalo, insieme alla sua passphrase, al sicuro quanto le chiavi stesse.
+Un backup creato da un Homeport più recente viene rifiutato; uno creato da un Homeport più vecchio viene ripristinato. Il backup contiene ogni segreto di Homeport: conservalo, insieme alla sua passphrase, al sicuro quanto le chiavi stesse. [I tuoi dati e i backup](/docs/reference/data-and-backups/) contiene i passaggi, cosa include e cosa esclude un backup, e come copiare tu stesso il database.
 
 ## Le chiavi non toccano mai il disco in chiaro
 
@@ -152,7 +152,7 @@ Vengono eseguiti con i diritti dell’utente SSH (o i tuoi, su questo computer) 
 ## Cosa Homeport non fa mai
 
 - **Nessun account.** Non c’è nulla a cui iscriversi.
-- **Nessuna telemetria, analisi o segnalazione degli arresti anomali.**
+- **Nessuna telemetria, analisi o segnalazione degli arresti anomali.** Quando segnali un bug, il [pacchetto di diagnostica](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report) è un file che esporti, leggi e alleghi tu stesso.
 - **Nulla installato sui tuoi cluster.** Homeport usa solo l’API di Kubernetes, con i diritti delle tue credenziali, e non cambia nulla senza che tu lo chieda: tutto ciò che rimuove o sostituisce qualcosa chiede prima conferma, indicando il cluster.
 - **Nulla installato sui tuoi host.** Gli unici comandi che Homeport esegue su un host sono [elencati sopra](#cosa-esegue-homeport-sui-tuoi-host). L’unico container che Homeport avvia di sua iniziativa è un [container ausiliario](/docs/guides/volumes-networks/#il-container-ausiliario) di breve durata quando apri, esegui il backup, ripristini o cloni un volume; non ha rete e viene rimosso al termine. La sua immagine viene scaricata solo dopo il tuo consenso.
 - **Nessuna installazione silenziosa.** Un aggiornamento viene installato solo quando scegli **Installa e riavvia**; i pacchetti Linux vengono aggiornati solo dal tuo gestore di pacchetti.
@@ -168,6 +168,8 @@ Homeport scrive un piccolo file di log — qualche decina di kilobyte, sostituit
 | Linux   | `~/.local/share/com.homeport.app/logs/` |
 | macOS   | `~/Library/Logs/com.homeport.app/`      |
 | Windows | `%LOCALAPPDATA%\com.homeport.app\logs\` |
+
+Homeport non ha telemetria né segnalazione degli arresti anomali: un log non lascia mai il tuo computer a meno che non sia tu a inviarlo. Per una segnalazione di bug, **Impostazioni → Informazioni → Esporta diagnostica…** salva uno zip con un riepilogo delle versioni e questi log, dopo aver sostituito tutto ciò che ha l’aspetto di un segreto (chiavi, password, token, credenziali negli URL) e, salvo diversa indicazione, i nomi e gli indirizzi dei tuoi host e cluster. Vedi [Esportare la diagnostica](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report).
 
 ## Fidarsi di un download
 

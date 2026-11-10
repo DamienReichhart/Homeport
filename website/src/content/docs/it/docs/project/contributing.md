@@ -7,12 +7,12 @@ Homeport è sviluppato apertamente su [github.com/DamienReichhart/Homeport](http
 
 ## Segnalare un bug
 
-[Apri una issue](https://github.com/DamienReichhart/Homeport/issues/new) con:
+[Apri una issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) con:
 
-- la tua versione di Homeport e la piattaforma, da **Impostazioni** (per esempio `v0.2.0 · macos/aarch64`);
-- il tipo di host (locale, SSH, TLS o TCP) e la versione del suo Engine;
 - cosa hai fatto, cosa ti aspettavi e cosa è successo — il messaggio esatto è ciò che aiuta di più;
-- qualsiasi elemento pertinente del [file di log](/docs/reference/security/#log).
+- il [pacchetto di diagnostica](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report) da **Impostazioni → Informazioni → Esporta diagnostica…**: un unico zip con la versione e la piattaforma di Homeport, i tipi di host, di Engine e di cluster che usi, e i suoi log con i segreti rimossi. Leggi cosa contiene prima di salvarlo, e nulla viene inviato da nessuna parte.
+
+Se Homeport non si avvia, indica invece la sua versione e il tuo sistema operativo, e qualsiasi elemento pertinente del [file di log](/docs/reference/security/#log).
 
 Segnala i problemi di sicurezza in privato, tramite la [segnalazione delle vulnerabilità di GitHub](https://github.com/DamienReichhart/Homeport/security/advisories/new).
 
@@ -33,8 +33,9 @@ Apri una issue che descriva il problema che vuoi risolvere, non solo la soluzion
    bun run rust:test
    ```
 
-5. Scrivi i messaggi di commit secondo i [Conventional Commits](https://www.conventionalcommits.org) — `feat(stacks): …`, `fix(hosts): …`. Le note di rilascio vengono generate da essi.
-6. Apri una pull request sul branch `dev`. La CI esegue i controlli del frontend e il controllo delle licenze su Linux, e `cargo clippy` e `cargo test` su Linux, macOS e Windows, così il codice dietro `#[cfg(windows)]` o `#[cfg(target_os = "macos")]` viene compilato prima di essere unito. Un test che richiede un Docker Engine è marcato `#[ignore = "needs a local Docker Engine"]`; un job Linux separato li esegue sull’Engine del runner.
+5. Rispetta la promessa sui dati: ogni versione di Homeport apre i dati di ogni versione precedente, fino alla 0.1.0, e li aggiorna senza perdere nulla: host, stack, cluster, impostazioni e segreti. Una modifica dello schema è una nuova migrazione, mai una modifica a una già rilasciata, e la CI la verifica su un database di esempio di ogni release. Vedi [Data compatibility](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md#data-compatibility).
+6. Scrivi i messaggi di commit secondo i [Conventional Commits](https://www.conventionalcommits.org) — `feat(stacks): …`, `fix(hosts): …`. Le note di rilascio vengono generate da essi.
+7. Apri una pull request sul branch `dev`. La CI esegue i controlli del frontend e il controllo delle licenze su Linux, e `cargo clippy` e `cargo test` su Linux, macOS e Windows, così il codice dietro `#[cfg(windows)]` o `#[cfg(target_os = "macos")]` viene compilato prima di essere unito. Un test che richiede un Docker Engine è marcato `#[ignore = "needs a local Docker Engine"]`; un job Linux separato li esegue sull’Engine del runner.
 
 Vedi [compilare dal codice sorgente](/docs/project/building/) per prepararti.
 
