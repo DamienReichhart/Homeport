@@ -24,7 +24,7 @@ Homeport durchsucht die kubeconfig dieses Rechners nach Clustern, die hier laufe
 | **k3d**             | `k3d-<name>`                                     | der Name des Kontexts |
 | **minikube**        | `minikube` oder ein Profil, das minikube schrieb | der Name des Kontexts |
 
-Ein Kontext gilt nur als lokal, wenn sein API-Server auf diesem Rechner liegt (`127.0.0.1`, `localhost`, `kubernetes.docker.internal`…) oder, bei minikube und Rancher Desktop, in deren VM unter einer privaten Adresse. Ein entfernter Kontext wird nie angeboten, egal wie er heißt. Ein lokaler Cluster, der nicht antwortet, zeigt **Läuft nicht**; starten Sie ihn mit seinem eigenen Werkzeug und öffnen Sie die Seite erneut.
+Ein Kontext gilt nur als lokal, wenn sein API-Server auf diesem Rechner liegt (`127.0.0.1`, `localhost`, `kubernetes.docker.internal`…) oder, bei minikube und Rancher Desktop, in deren virtueller Maschine unter einer privaten Adresse. Ein entfernter Kontext wird nie angeboten, egal wie er heißt. Ein lokaler Cluster, der nicht antwortet, zeigt **Läuft nicht**; starten Sie ihn mit seinem eigenen Werkzeug und öffnen Sie die Seite erneut.
 
 ### kind- und k3d-Cluster, die in der kubeconfig fehlen
 

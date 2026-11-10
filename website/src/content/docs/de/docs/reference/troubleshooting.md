@@ -3,7 +3,7 @@ title: Fehlerbehebung
 description: Lösungen für die Probleme, auf die Sie am ehesten stoßen, geordnet nach der Meldung, die Homeport anzeigt.
 ---
 
-Steht Ihr Problem nicht hier, prüfen Sie die [Logdatei](/docs/reference/security/#logs) und [eröffnen Sie ein Issue](https://github.com/DamienReichhart/Homeport/issues) mit Ihrer Homeport-Version aus den **Einstellungen**.
+Steht Ihr Problem nicht hier, [eröffnen Sie ein Issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) mit dem [Diagnosepaket](#exporting-diagnostics-for-a-bug-report) aus **Einstellungen → Über**.
 
 ## Installieren und Starten
 
@@ -45,11 +45,19 @@ Unter Linux benötigt der Infobereich die Bibliothek appindicator, und manche De
 
 Homeport konnte Ihren Schlüsselbund nicht erreichen. Unter Linux bedeutet das meist, dass kein Secret Service läuft – häufig bei minimalen Desktops und Fenstermanagern. Installieren und starten Sie GNOME Keyring (`gnome-keyring`) oder aktivieren Sie den Secret Service von KWallet und starten Sie Homeport dann neu. Bis dahin verwenden Sie Hosts mit lokalem Socket, TCP oder ssh-agent.
 
+### „Diese Datenbank wurde zuletzt von Homeport … oder neuer verwendet“
+
+Sie haben ein älteres Homeport installiert als das, das Ihre Daten zuletzt geöffnet hat, zum Beispiel durch die Neuinstallation einer früheren Version. Jede Version aktualisiert die Datenbank beim Start auf ihr eigenes Format, und eine ältere Version kann ein neueres Format nicht lesen, daher hält Homeport an, bevor es etwas ändert: Das Fenster zeigt diese Meldung, den Pfad der Datenbank und **Ordner öffnen**, und sonst startet nichts.
+
+Ihre Hosts, Stacks und Geheimnisse sind unversehrt. Installieren Sie die Version, die die Meldung nennt, oder eine neuere von der [Download-Seite](/download/), und Homeport öffnet sie wie zuvor. Löschen oder verschieben Sie `homeport.db` nicht: Nur so ginge verloren, was darin ist. Ein Downgrade wird nicht unterstützt; siehe [Ihre Daten über Versionen hinweg](/docs/reference/updating/#your-data-across-versions).
+
+Dasselbe Fenster erscheint bei jedem anderen Fehler beim Öffnen der Datenbank (beschädigte Datei, volle Festplatte, ein anderes Homeport, das sie belegt), mit der eigenen Meldung dieses Fehlers und dem, was zu tun ist.
+
 ## Updates und das Paket-Repository
 
-### „Homeport konnte nicht nach Updates suchen“
+### „Homeport konnte das Update nicht herunterladen“
 
-Homeport konnte die Update-Informationen nicht von dieser Website herunterladen: Sie sind möglicherweise offline oder hinter einem Proxy oder einer Firewall, die `damienreichhart.github.io` blockiert. Homeport funktioniert weiter; es prüft später erneut, oder wählen Sie **Einstellungen → Updates → Jetzt prüfen**. Sie können die neueste Version jederzeit von der [Download-Seite](/download/) herunterladen.
+Erscheint die Meldung bei der Prüfung, konnte Homeport die Update-Informationen nicht von dieser Website herunterladen: Sie sind möglicherweise offline oder hinter einem Proxy oder einer Firewall, die `damienreichhart.github.io` blockiert. Homeport funktioniert weiter; es prüft später erneut, oder wählen Sie **Einstellungen → Updates → Jetzt prüfen**. Sie können die neueste Version jederzeit von der [Download-Seite](/download/) herunterladen.
 
 ### Ein Update lässt sich nicht installieren
 
@@ -73,7 +81,7 @@ Prüfen Sie, dass das Repository noch eingerichtet ist: `/etc/apt/sources.list.d
 
 ## Verbinden
 
-### Nicht erreichbar: Permission denied
+### „Homeport darf die Docker Engine unter … nicht verwenden“
 
 Ihr Benutzer kann den Docker-Socket nicht öffnen. Fügen Sie ihn unter Linux der Gruppe `docker` hinzu und melden Sie sich erneut an:
 
@@ -81,21 +89,21 @@ Ihr Benutzer kann den Docker-Socket nicht öffnen. Fügen Sie ihn unter Linux de
 sudo usermod -aG docker $USER
 ```
 
-### Nicht erreichbar: No such file or directory
+### „Unter … läuft keine Docker Engine“
 
-Unter dem Socket-Pfad lauscht nichts. Starten Sie Ihre Engine – Docker Desktop, Colima, OrbStack, Rancher Desktop – oder prüfen Sie den Pfad. Siehe [lokale Engines](/docs/hosts/local/#einen-socket-von-hand-hinzufügen).
+Unter dem Socket-Pfad lauscht nichts. Existiert dort überhaupt nichts, lautet die Meldung stattdessen _Die Docker Engine scheint nicht installiert zu sein_. Starten Sie Ihre Engine – Docker Desktop, Colima, OrbStack, Rancher Desktop – oder prüfen Sie den Pfad. Siehe [lokale Engines](/docs/hosts/local/#einen-socket-von-hand-hinzufügen).
 
-### „Die Engine hat nicht rechtzeitig geantwortet“ oder „Zeitüberschreitung der SSH-Verbindung“
+### „Die Docker Engine hat nicht rechtzeitig geantwortet“ oder „… hat nicht rechtzeitig geantwortet“
 
 Homeport wartet 10 Sekunden auf eine Verbindung. Prüfen Sie Adresse und Port, ob der Server läuft und ob keine Firewall im Weg ist. Homeport versucht es von selbst weiter.
 
-### Zugriff verweigert: „Der Server hat den Schlüssel für … abgelehnt“
+### Zugriff verweigert: „Der SSH-Server hat die Anmeldung von … abgelehnt“
 
 Der Server akzeptiert den Schlüssel von Homeport noch nicht. Führen Sie den Befehl **Öffentlichen Schlüssel hinzufügen** von der Seite des Hosts auf dem Server aus und wählen Sie dann **Neu verbinden**. Siehe [SSH-Hosts](/docs/hosts/ssh/#den-schlüssel-von-homeport-autorisieren).
 
-### „Der SSH-Server konnte /var/run/docker.sock nicht öffnen“
+### „… kann den Socket der Docker Engine unter /var/run/docker.sock auf … nicht öffnen“
 
-Homeport hat sich angemeldet, konnte Docker aber nicht erreichen. Prüfen Sie:
+Homeport hat sich angemeldet, konnte Docker aber nicht erreichen. Wenn es den Grund erkennen kann, nennt die Meldung ihn stattdessen: Die Engine ist auf dem Server nicht installiert oder läuft nicht, der Benutzer darf sie nicht verwenden, oder der SSH-Server erlaubt keine Weiterleitung zu ihrem Socket. Prüfen Sie:
 
 - den **Entfernten Socket-Pfad** – rootless Docker verwendet `/run/user/<uid>/docker.sock`;
 - dass der Benutzer Docker verwenden kann: `sudo usermod -aG docker <user>` auf dem Server;
@@ -113,7 +121,7 @@ Start-Service ssh-agent
 ssh-add
 ```
 
-### Zugriff verweigert: „TLS-Handshake fehlgeschlagen“
+### Zugriff verweigert: „Die sichere Verbindung zu … ist fehlgeschlagen“
 
 - Das CA-Zertifikat muss dasjenige sein, das das Zertifikat des Servers signiert hat.
 - Die eingegebene Adresse muss mit einem Namen oder einer IP-Adresse im Zertifikat des Servers übereinstimmen.
@@ -125,13 +133,13 @@ Der SSH-Server hat einen anderen Schlüssel vorgelegt als den, dem Sie vertraut 
 
 ### Zugangsdaten verloren
 
-Der Schlüssel, der Ihre Geheimnisse verschlüsselt, fehlt im Schlüsselbund oder hat sich geändert – nach einem Zurücksetzen des Schlüsselbunds, einem neuen Benutzerprofil oder dem Kopieren der Daten von Homeport auf einen anderen Computer (verwenden Sie dafür [Exportieren und Importieren](/docs/reference/security/#auf-einen-anderen-computer-umziehen)). Homeport behält den Host; geben Sie seine Anmeldedaten auf der Seite des Hosts erneut ein:
+Der Schlüssel, der Ihre Geheimnisse verschlüsselt, fehlt im Schlüsselbund oder hat sich geändert – nach einem Zurücksetzen des Schlüsselbunds, einem neuen Benutzerprofil oder dem Kopieren der Daten von Homeport auf einen anderen Computer (verwenden Sie dafür eine [Sicherung](/docs/reference/data-and-backups/#backing-up-in-homeport) oder [Exportieren und Importieren](/docs/reference/security/#auf-einen-anderen-computer-umziehen)). Homeport behält den Host; geben Sie seine Anmeldedaten auf der Seite des Hosts erneut ein:
 
 - **TLS** – laden Sie die drei Zertifikatsdateien erneut und wählen Sie **Speichern**.
 - **SSH mit einem importierten Schlüssel** – fügen Sie den privaten Schlüssel und die Passphrase erneut ein und wählen Sie **Speichern**.
 - **SSH mit einem Homeport-Schlüssel** – wählen Sie **Schlüssel neu erzeugen** und autorisieren Sie dann den neuen Schlüssel auf dem Server.
 
-Auch Umgebungen verwalteter Stacks, die mit dem alten Schlüssel versiegelt wurden, müssen neu eingegeben werden.
+Auch Umgebungen verwalteter und synchronisierter Stacks, Registry-Anmeldungen sowie Schlüssel und Tokens von Repositorys, die mit dem alten Schlüssel verschlüsselt wurden, müssen neu eingegeben werden, und Cluster aus ihrer kubeconfig aktualisiert werden; [Wenn die Geheimnisse verloren sind](/docs/reference/data-and-backups/#if-the-secrets-are-lost) listet jedes davon auf.
 
 ## Cluster
 
@@ -151,7 +159,7 @@ Das Exec-Plugin möchte einen Browser oder einen Gerätecode. Führen Sie `kubec
 
 Das Exec-Plugin lief und ist fehlgeschlagen. **Details** zeigt das Ende seiner Ausgabe, oft ein abgelaufenes Profil oder eine falsche Region. Homeport versucht es von selbst erneut.
 
-### „… meldet sich mit dem Auth-Provider gcp an, den Kubernetes nicht mehr unterstützt“
+### „Sein Benutzer meldet sich mit dem Auth-Provider gcp an, den Kubernetes nicht mehr unterstützt“
 
 Die Auth-Provider `gcp` und `azure` wurden aus Kubernetes entfernt. Rufen Sie die Anmeldedaten mit installiertem `gke-gcloud-auth-plugin` erneut ab (GKE) oder führen Sie `kubelogin convert-kubeconfig` aus (AKS) und fügen Sie den Kontext dann erneut hinzu.
 
@@ -325,6 +333,23 @@ Incus braucht für virtuelle Maschinen KVM (`/dev/kvm`) und QEMU. Aktivieren Sie
 
 Exec in einer virtuellen Maschine läuft über den `incus-agent` darin, den die eigenen Images von Incus beim Booten starten. Warten Sie, bis der Bootvorgang abgeschlossen ist, oder verwenden Sie den Tab **Konsole**, der keinen Agenten braucht.
 
-### „Host … ist nicht verbunden“
+### „Etwas ist schiefgelaufen“
+
+Eine Seite von Homeport ist auf ein unerwartetes Problem gestoßen und zeigt dies statt ihres Inhalts; die Seitenleiste funktioniert weiter. **Neu laden** bringt die Seite meist zurück, und **Zurück zur Übersicht** verlässt sie. Wenn es immer wieder passiert, kopieren Sie den Bericht aus **Details** in [ein Issue](https://github.com/DamienReichhart/Homeport/issues/new/choose), zusammen mit dem [Diagnosepaket](#exporting-diagnostics-for-a-bug-report).
+
+### „… ist nicht verbunden“
 
 Die Aktion brauchte den Host, aber er hat die Verbindung verloren. Warten Sie, bis er sich neu verbindet, oder wählen Sie **Jetzt erneut versuchen**.
+
+## Diagnose für einen Fehlerbericht exportieren
+
+**Einstellungen → Über → Diagnose exportieren…** erstellt ein Zip, das Sie an ein GitHub-Issue anhängen. Homeport sendet es nirgendwohin: Es speichert die Datei, wo Sie wählen, und ob Sie sie weitergeben, entscheiden Sie.
+
+Der Dialog listet die Dateien auf und zeigt `summary.json`, bevor Sie speichern:
+
+- `summary.json`: die Version von Homeport und wie es installiert wurde, Ihr Betriebssystem, die Schemaversion der Datenbank, ob ein Schlüsselbund verfügbar ist, Ihre Einstellungen und für jeden Host und Cluster seine Verbindungsart, seine Engine und deren Version, sein Status und der Code seines letzten Fehlers, dazu wie viele Stacks jeder Art Sie haben.
+- `logs/`: die [Logdateien](/docs/reference/security/#logs) von Homeport, in denen private Schlüssel und Zertifikate, Passwörter, Tokens, `Authorization`-Header und die Anmeldedaten in URLs durch `[redacted]` ersetzt sind.
+
+Hosts und Cluster erscheinen als `host-1`, `cluster-1` …, und ihre Namen und Adressen werden in den Logs ebenso ersetzt, sofern Sie nicht **Namen und Adressen einschließen** ankreuzen. Kreuzen Sie es an, wenn der Name oder die Adresse für das Problem wichtig ist und Sie sie ohne Bedenken teilen.
+
+Gespeicherte Geheimnisse werden für das Paket nie gelesen. Das Entfernen von Geheimnissen aus Logs funktioniert, indem ihre üblichen Formen erkannt werden; sehen Sie die Dateien daher durch, bevor Sie sie an ein öffentliches Issue anhängen, falls Ihre Logs etwas Ungewöhnliches enthalten könnten.

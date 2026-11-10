@@ -73,7 +73,7 @@ Ein Kontext, dessen Name bereits der eines Hosts ist, wird als `name (2)` angebo
 
 ## Auf einen anderen Computer umziehen
 
-**Exportieren** auf der Seite „Hosts“ speichert die von Ihnen gewählten Hosts in einer durch eine Passphrase geschützten Datei; **Importieren** auf der Seite „Hosts“ des anderen Computers öffnet sie und fügt die von Ihnen gewählten Hosts hinzu, bereit zum Verbinden. Ein Host, dessen Name dort vergeben ist, wird als `name (2)` vorgeschlagen, und Sie können ihn umbenennen oder überspringen. Siehe [Auf einen anderen Computer umziehen](/docs/reference/security/#auf-einen-anderen-computer-umziehen), wie die Datei geschützt ist.
+**Exportieren** auf der Seite „Hosts“ speichert die von Ihnen gewählten Hosts in einer durch eine Passphrase geschützten Datei; **Importieren** auf der Seite „Hosts“ des anderen Computers öffnet sie und fügt die von Ihnen gewählten Hosts hinzu, bereit zum Verbinden. Ein Host, dessen Name dort vergeben ist, wird als `name (2)` vorgeschlagen, und Sie können ihn umbenennen oder überspringen. Siehe [Auf einen anderen Computer umziehen](/docs/reference/security/#auf-einen-anderen-computer-umziehen), wie die Datei geschützt ist. Um alles auf einmal umzuziehen, Cluster, Stacks, Registry-Anmeldungen, Repositorys und Einstellungen eingeschlossen, verwenden Sie stattdessen eine [Sicherung](/docs/reference/data-and-backups/#backing-up-in-homeport).
 
 ## Einen Host auswählen
 

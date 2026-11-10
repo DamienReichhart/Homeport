@@ -3,7 +3,7 @@ title: Einstellungen
 description: Design und Sprache, der Infobereich, der Start bei der Anmeldung, Benachrichtigungen, Updates, Registry-Anmeldungen, Repositorys, wie oft synchronisierte Stacks geprüft werden, was dieser Rechner unterstützt, Version und Lizenzen.
 ---
 
-**Einstellungen** ist der letzte Eintrag in der Seitenleiste.
+**Einstellungen** ist die letzte Seite in der Seitenleiste, über den Links **Dokumentation** und **GitHub**, die sich in Ihrem Browser öffnen.
 
 ## Darstellung
 
@@ -93,7 +93,7 @@ Was Homeport auf diesem Computer aufbewahrt.
 - [Synchronisierte Stacks](/docs/guides/synced-stacks/) klonen ihr Repository bei ihrer nächsten Synchronisierung erneut.
 - Die aktuellen Daten werden zuvor nach `homeport.db.before-restore-<date>` im Datenordner von Homeport kopiert. Die Wiederherstellung einer falschen Datei, einer Datei eines neueren Homeport oder eine, die mittendrin fehlschlägt, ändert nichts.
 
-Um stattdessen einige Hosts zu Ihren vorhandenen hinzuzufügen, verwenden Sie **Exportieren** und **Importieren** auf der Seite Hosts.
+Um stattdessen einige Hosts zu Ihren vorhandenen hinzuzufügen, verwenden Sie **Exportieren** und **Importieren** auf der Seite Hosts. [Ihre Daten und Sicherungen](/docs/reference/data-and-backups/) erklärt, wo die Dateien von Homeport liegen, was eine Sicherung enthält und wie Sie die Datenbank selbst kopieren.
 
 ### Engine-Ereignisse aufbewahren
 
@@ -112,6 +112,10 @@ Homeport prüft die CLIs bei jedem Öffnen dieser Seite, sodass eine seit dem St
 
 ## Über
 
-Zeigt die Version von Homeport und die Plattform, für die es gebaut wurde, zum Beispiel `v0.2.0 · macos/aarch64`. Geben Sie sie an, wenn Sie [ein Problem melden](https://github.com/DamienReichhart/Homeport/issues).
+Zeigt die Version von Homeport und die Plattform, für die es gebaut wurde, zum Beispiel `v1.0.0 · macos/aarch64`.
+
+**Protokollordner öffnen** zeigt, wohin Homeport sein [Log](/docs/reference/security/#logs) schreibt.
+
+**Diagnose exportieren…** speichert ein Zip, das Sie anhängen, wenn Sie [ein Problem melden](https://github.com/DamienReichhart/Homeport/issues/new/choose): eine Übersicht der Versionen und der Arten von Hosts und Clustern, die Sie verwenden, und die Logs ohne Geheimnisse. Der Dialog zeigt zuerst, was darin ist, und nichts wird irgendwohin gesendet. Siehe [Diagnose exportieren](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report).
 
 **Lizenzen** zeigt die Lizenz von Homeport (die GNU AGPL, Version 3), einen Link zum Quellcode der Version, die Sie verwenden, und die Hinweise aller Open-Source-Pakete, mit denen es gebaut ist.

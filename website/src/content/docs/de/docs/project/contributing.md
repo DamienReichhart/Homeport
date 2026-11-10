@@ -7,12 +7,12 @@ Homeport wird öffentlich unter [github.com/DamienReichhart/Homeport](https://gi
 
 ## Einen Fehler melden
 
-[Eröffnen Sie ein Issue](https://github.com/DamienReichhart/Homeport/issues/new) mit:
+[Eröffnen Sie ein Issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) mit:
 
-- Ihrer Homeport-Version und Plattform aus den **Einstellungen** (zum Beispiel `v0.2.0 · macos/aarch64`);
-- der Art des Hosts (lokal, SSH, TLS oder TCP) und der Version seiner Engine;
 - dem, was Sie getan haben, was Sie erwartet haben und was passiert ist – die genaue Meldung hilft am meisten;
-- allem Relevanten aus der [Logdatei](/docs/reference/security/#logs).
+- dem [Diagnosepaket](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report) aus **Einstellungen → Über → Diagnose exportieren…**: ein Zip mit der Version und Plattform von Homeport, den Arten von Hosts, Engines und Clustern, die Sie verwenden, und seinen Logs ohne Geheimnisse. Sie lesen, was darin ist, bevor Sie es speichern, und nichts wird irgendwohin gesendet.
+
+Wenn Homeport nicht startet, geben Sie stattdessen seine Version und Ihr Betriebssystem an, und alles Relevante aus der [Logdatei](/docs/reference/security/#logs).
 
 Bitte melden Sie Sicherheitsprobleme vertraulich über die [Meldung von Sicherheitslücken auf GitHub](https://github.com/DamienReichhart/Homeport/security/advisories/new).
 
@@ -33,8 +33,9 @@ Eröffnen Sie ein Issue, das das Problem beschreibt, das Sie gelöst haben möch
    bun run rust:test
    ```
 
-5. Schreiben Sie Commit-Nachrichten als [Conventional Commits](https://www.conventionalcommits.org) – `feat(stacks): …`, `fix(hosts): …`. Die Release Notes werden daraus erzeugt.
-6. Eröffnen Sie einen Pull Request gegen den Branch `dev`. Die CI führt die Frontend-Prüfungen und die Lizenzprüfung unter Linux aus sowie `cargo clippy` und `cargo test` unter Linux, macOS und Windows, sodass Code hinter `#[cfg(windows)]` oder `#[cfg(target_os = "macos")]` kompiliert wird, bevor er gemergt wird. Ein Test, der eine Docker Engine braucht, ist mit `#[ignore = "needs a local Docker Engine"]` markiert; ein separater Linux-Job führt diese gegen die Engine des Runners aus.
+5. Halten Sie das Datenversprechen: Jede Version von Homeport öffnet die Daten jeder früheren Version, zurück bis 0.1.0, und aktualisiert sie, ohne etwas zu verlieren: Hosts, Stacks, Cluster, Einstellungen und Geheimnisse. Eine Schemaänderung ist eine neue Migration, nie eine Änderung an einer veröffentlichten, und die CI prüft sie gegen eine Beispieldatenbank jedes Releases. Siehe [Data compatibility](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md#data-compatibility).
+6. Schreiben Sie Commit-Nachrichten als [Conventional Commits](https://www.conventionalcommits.org) – `feat(stacks): …`, `fix(hosts): …`. Die Release Notes werden daraus erzeugt.
+7. Eröffnen Sie einen Pull Request gegen den Branch `dev`. Die CI führt die Frontend-Prüfungen und die Lizenzprüfung unter Linux aus sowie `cargo clippy` und `cargo test` unter Linux, macOS und Windows, sodass Code hinter `#[cfg(windows)]` oder `#[cfg(target_os = "macos")]` kompiliert wird, bevor er gemergt wird. Ein Test, der eine Docker Engine braucht, ist mit `#[ignore = "needs a local Docker Engine"]` markiert; ein separater Linux-Job führt diese gegen die Engine des Runners aus.
 
 Siehe [Aus dem Quellcode bauen](/docs/project/building/), um alles einzurichten.
 

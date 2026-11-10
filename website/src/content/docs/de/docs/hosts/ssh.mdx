@@ -13,7 +13,7 @@ SSH ist der empfohlene Weg, eine Docker Engine auf einem Server zu erreichen. Ü
 Homeport hat seinen eigenen SSH-Client. Er meldet sich am Server an und leitet einen Kanal an den Unix-Socket der Engine weiter – dasselbe, was `docker -H ssh://…` tut, ohne dass das Programm `ssh` oder `docker` auf Ihrem Rechner nötig ist.
 
 - Schlüssel werden nur im Arbeitsspeicher entschlüsselt und nie auf die Festplatte geschrieben, daher funktioniert es unter Windows, macOS und Linux gleich.
-- Homeport liest `~/.ssh/known_hosts` nicht: Serverschlüssel werden in Homeport vertraut, pro Host. Ein Server, der nur über einen Sprungserver erreichbar ist, wird mit [Bastionen](#über-eine-bastion) hinzugefügt, dem `ProxyJump` von Homeport.
+- Homeport liest `~/.ssh/known_hosts` nicht: Serverschlüssel werden in Homeport vertraut, pro Host. Ein Server, der nur über einen anderen SSH-Server erreichbar ist, wird mit [Bastionen](#über-eine-bastion) hinzugefügt, dem `ProxyJump` von Homeport.
 - Der Server muss die Weiterleitung an Unix-Sockets erlauben. OpenSSH tut das standardmäßig (`AllowStreamLocalForwarding yes`).
 
 ## Einen SSH-Host hinzufügen
@@ -55,7 +55,7 @@ Stehen Ihre Server bereits in `~/.ssh/config`, wählen Sie auf **Host hinzufüge
 
 Der **Entfernte Socket-Pfad** beginnt mit `/var/run/docker.sock`; ändern Sie ihn in der Vorschau für rootless Docker oder Podman. Ein verschlüsselter Schlüssel fragt dort nach seiner Passphrase.
 
-Die Vorschau markiert, was einen Blick braucht: einen Schlüssel, der nicht gelesen werden kann (der Host verwendet stattdessen ssh-agent), ein `ProxyCommand` (nicht unterstützt; fügen Sie seine Sprungserver als Bastionen hinzu) und einen Alias, der bereits der Name eines Hosts ist. Dieser wird nicht ausgewählt: Benennen Sie ihn um, um ihn zu importieren, sodass ein zweiter Import nie Duplikate erzeugt. Schlüssel werden einmal gelesen und verschlüsselt gespeichert; die Datei selbst wird nie verändert, und `Match`-Blöcke sowie Zertifikate (`CertificateFile`) werden ignoriert.
+Die Vorschau markiert, was einen Blick braucht: einen Schlüssel, der nicht gelesen werden kann (der Host verwendet stattdessen ssh-agent), ein `ProxyCommand` (nicht unterstützt; fügen Sie die Server, über die es geht, als Bastionen hinzu) und einen Alias, der bereits der Name eines Hosts ist. Dieser wird nicht ausgewählt: Benennen Sie ihn um, um ihn zu importieren, sodass ein zweiter Import nie Duplikate erzeugt. Schlüssel werden einmal gelesen und verschlüsselt gespeichert; die Datei selbst wird nie verändert, und `Match`-Blöcke sowie Zertifikate (`CertificateFile`) werden ignoriert.
 
 ## Authentifizierung
 
@@ -123,7 +123,7 @@ Für einen von Homeport erstellten oder einen von Ihnen importierten Schlüssel 
 
 </Steps>
 
-Bis der Schlüssel autorisiert ist, zeigt der Host **Zugriff verweigert**: _Der Server hat den Schlüssel für deploy@server abgelehnt. Fügen Sie den öffentlichen Schlüssel zu seiner authorized_keys hinzu._ Er wartet auf Sie, statt es erneut zu versuchen.
+Bis der Schlüssel autorisiert ist, zeigt der Host **Zugriff verweigert**: _Der SSH-Server hat die Anmeldung von deploy@server abgelehnt._, mit dem Befehl, der den Schlüssel von Homeport autorisiert. Er wartet auf Sie, statt es erneut zu versuchen.
 
 ## Wenn sich der Schlüssel des Servers ändert
 
@@ -141,7 +141,7 @@ Wenn Sie einen Host so bearbeiten, dass er auf einen anderen Server oder Port ve
 
 ## Über eine Bastion
 
-Manche Server akzeptieren SSH nur von einem Sprungserver. Fügen Sie diesen Server unter **Bastionen** im Formular des Hosts hinzu, und Homeport meldet sich zuerst daran an und erreicht dann den Host darüber – was `ssh -J` oder `ProxyJump` tun, mit dem eigenen SSH-Client von Homeport. Auf der Bastion wird nichts installiert, und kein Schlüssel wird auf die Festplatte geschrieben.
+Manche Server akzeptieren SSH nur von einem anderen Server, einer Bastion. Fügen Sie diese unter **Bastionen** im Formular des Hosts hinzu, und Homeport meldet sich zuerst daran an und erreicht dann den Host darüber – was `ssh -J` oder `ProxyJump` tun, mit dem eigenen SSH-Client von Homeport. Auf der Bastion wird nichts installiert, und kein Schlüssel wird auf die Festplatte geschrieben.
 
 <Steps>
 
@@ -157,7 +157,7 @@ Manche Server akzeptieren SSH nur von einem Sprungserver. Fügen Sie diesen Serv
    | **Eigener Schlüssel** | Die Bastion braucht einen anderen Schlüssel. Fügen Sie ihn ein oder wählen Sie **Aus Datei laden…**; er wird mit den anderen Geheimnissen des Hosts verschlüsselt gespeichert. |
    | **ssh-agent**         | Ihr Agent hält den Schlüssel der Bastion, während der Host einen anderen verwendet, zum Beispiel einen, den Homeport eigens dafür erstellt hat.                                |
 
-4. Für eine Kette von Sprungservern (`ProxyJump a,b`) fügen Sie eine Bastion pro Server hinzu, in der Reihenfolge, in der Homeport sie durchläuft. Die Pfeile verschieben eine Bastion nach oben oder unten.
+4. Für eine Kette von Bastionen (`ProxyJump a,b`) fügen Sie eine pro Server hinzu, in der Reihenfolge, in der Homeport sie durchläuft. Die Pfeile verschieben eine Bastion nach oben oder unten.
 
 </Steps>
 
@@ -179,12 +179,12 @@ Das Entfernen des Hosts löscht seinen Schlüssel aus Homeport, aber nicht vom S
 
 ## Häufige Probleme
 
-| Meldung                                                                                                         | Was zu tun ist                                                                                                                                                                                                                                                       |
-| --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _Der Server hat den Schlüssel für … abgelehnt_                                                                  | Führen Sie den Befehl **Öffentlichen Schlüssel hinzufügen** auf dem Server aus und wählen Sie dann **Neu verbinden**.                                                                                                                                                |
-| _Der SSH-Server konnte /var/run/docker.sock nicht öffnen … Prüfen Sie den Pfad und ob … Docker verwenden kann._ | Prüfen Sie den **Entfernten Socket-Pfad** und fügen Sie den Benutzer der Gruppe `docker` hinzu.                                                                                                                                                                      |
-| _Zeitüberschreitung der SSH-Verbindung_                                                                         | Prüfen Sie Servername, Port und jede Firewall dazwischen.                                                                                                                                                                                                            |
-| _Es läuft kein ssh-agent_                                                                                       | Starten Sie Ihren Agenten, fügen Sie mit `ssh-add` einen Schlüssel hinzu und stellen Sie sicher, dass Homeport `SSH_AUTH_SOCK` sehen kann. Öffnen Sie unter Windows Pageant und laden Sie Ihren Schlüssel, oder starten Sie den Dienst OpenSSH Authentication Agent. |
-| _Die Bastion … konnte keine Verbindung zu … öffnen._                                                            | Prüfen Sie, dass die Bastion den Host erreichen kann und dass ihr `sshd` `AllowTcpForwarding` erlaubt.                                                                                                                                                               |
+| Meldung                                                                              | Was zu tun ist                                                                                                                                                                                                                                                       |
+| ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _Der SSH-Server hat die Anmeldung von … abgelehnt._                                  | Führen Sie den Befehl **Öffentlichen Schlüssel hinzufügen** auf dem Server aus und wählen Sie dann **Neu verbinden**.                                                                                                                                                |
+| _… kann den Socket der Docker Engine unter /var/run/docker.sock auf … nicht öffnen._ | Prüfen Sie den **Entfernten Socket-Pfad** und fügen Sie den Benutzer der Gruppe `docker` hinzu.                                                                                                                                                                      |
+| _… hat nicht rechtzeitig geantwortet._                                               | Prüfen Sie Servername, Port und jede Firewall dazwischen.                                                                                                                                                                                                            |
+| _Es läuft kein ssh-agent_                                                            | Starten Sie Ihren Agenten, fügen Sie mit `ssh-add` einen Schlüssel hinzu und stellen Sie sicher, dass Homeport `SSH_AUTH_SOCK` sehen kann. Öffnen Sie unter Windows Pageant und laden Sie Ihren Schlüssel, oder starten Sie den Dienst OpenSSH Authentication Agent. |
+| _Die Bastion … konnte keine Verbindung zu … öffnen._                                 | Prüfen Sie, dass die Bastion den Host erreichen kann und dass ihr `sshd` `AllowTcpForwarding` erlaubt.                                                                                                                                                               |
 
 Mehr unter [Fehlerbehebung](/docs/reference/troubleshooting/).

@@ -13,7 +13,7 @@ Homeport lässt sich mit der Tastatur bedienen. Drücken Sie <kbd>Mod</kbd> <kbd
 
 - **Gehe zu** – jede Seite der Seitenleiste: Tippen Sie `vol` und drücken Sie <kbd>Enter</kbd>, um Volumes zu öffnen.
 - **Hosts** – jeden Host mit seinem Status: Tippen Sie einen Teil des Namens eines Hosts, um zu ihm zu wechseln.
-- **Aktionen** – **Container ausführen**, **Image pullen**, **Neuer Stack**, **Ausgewählten Host aufräumen**, **Host hinzufügen**, **Hosts verwalten**, **Nach Updates suchen** und **Tastenkürzel anzeigen**.
+- **Aktionen** – **Container ausführen**, **Image pullen**, **Neuer Stack**, **Ausgewählten Host aufräumen**, **Host hinzufügen**, **Hosts verwalten**, **Cluster hinzufügen**, **Cluster verwalten**, **Nach Updates suchen** und **Tastenkürzel anzeigen**. Ein Podman-Host ergänzt **Neuer Pod** und **Neue Unit**, ein containerd-Host **Image pullen** und **Neuer Namespace** und ein Incus-Host **Neue Instanz** und **Image holen**.
 - **Einstellungen** – **Design: Hell**, **Design: Dunkel** und **Design: Wie das System**.
 
 Aktionen, die einen Host brauchen – einen Container ausführen, pullen, ein neuer Stack, aufräumen –, werden nur aufgelistet, solange der ausgewählte Host verbunden ist.
@@ -35,7 +35,7 @@ Homeport lädt die Listen erst, wenn Sie zwei Zeichen getippt haben, und hält s
 | Tasten                                     | Bewirkt                                                                                         |
 | ------------------------------------------ | ----------------------------------------------------------------------------------------------- |
 | <kbd>?</kbd>                               | Die Tastenkürzel anzeigen                                                                       |
-| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Die Seiten der Seitenleiste der Reihe nach öffnen: Übersicht, Container, Images…                |
+| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Die Seiten der Seitenleiste der Reihe nach öffnen: Übersicht, Board, Container…                 |
 | <kbd>Mod</kbd> <kbd>,</kbd>                | Einstellungen öffnen                                                                            |
 | <kbd>Alt</kbd> <kbd>↑</kbd> / <kbd>↓</kbd> | Den vorherigen oder nächsten Host auswählen, in der Reihenfolge der Seite Hosts                 |
 | <kbd>Mod</kbd> <kbd>R</kbd>                | Die Listen des ausgewählten Hosts aktualisieren: Container, Images, Volumes, Netzwerke, Stacks… |
@@ -44,10 +44,10 @@ Fahren Sie in der Seitenleiste mit dem Mauszeiger über eine Seite, um ihre Tast
 
 ### Auf einer Seite
 
-| Tasten       | Bewirkt                                                                                                                                                        |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <kbd>/</kbd> | Das Suchfeld der Seite fokussieren. <kbd>Esc</kbd> in einem leeren Feld verlässt es.                                                                           |
-| <kbd>N</kbd> | Die Hauptaktion der Seite starten: **Container ausführen**, **Pullen**, **Volume erstellen**, **Netzwerk erstellen**, **Neuer Stack** oder **Host hinzufügen** |
+| Tasten       | Bewirkt                                                                                                                                                                                                                                                                          |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <kbd>/</kbd> | Das Suchfeld der Seite fokussieren. <kbd>Esc</kbd> in einem leeren Feld verlässt es.                                                                                                                                                                                             |
+| <kbd>N</kbd> | Die Hauptaktion der Seite starten: **Container ausführen**, **Pullen**, **Volume erstellen**, **Netzwerk erstellen**, **Neuer Stack** oder **Host hinzufügen**; und auf den Seiten von Podman, containerd, Incus und Helm deren eigene, etwa **Neuer Pod** oder **Neue Instanz** |
 
 Die Schaltfläche der Hauptaktion einer Seite zeigt <kbd>N</kbd>, wenn Sie mit dem Mauszeiger darüberfahren.
 

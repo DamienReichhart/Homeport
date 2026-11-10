@@ -50,7 +50,7 @@ podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}'
 
 ## Berechtigungen unter Linux
 
-Der Standard-Socket `/var/run/docker.sock` gehört der Gruppe `docker`. Ist Ihr Benutzer nicht darin, zeigt der Host **Nicht erreichbar** mit _Permission denied_. Fügen Sie sich hinzu und melden Sie sich erneut an:
+Der Standard-Socket `/var/run/docker.sock` gehört der Gruppe `docker`. Ist Ihr Benutzer nicht darin, zeigt der Host **Nicht erreichbar** mit _Homeport darf die Docker Engine unter /var/run/docker.sock nicht verwenden._ Fügen Sie sich hinzu und melden Sie sich erneut an:
 
 ```sh
 sudo usermod -aG docker $USER

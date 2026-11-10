@@ -91,7 +91,7 @@ Wenn der Container stoppt, endet das Log mit _— Ende der Logs —_.
 
 ### Zustand
 
-Wird bei Containern mit einem Healthcheck angezeigt – ihrem eigenen oder dem ihres Images. **Healthcheck** gibt den Status (_starting_, _healthy_ oder _unhealthy_), den Befehl, seine Zeitsteuerung (die Standardwerte der Engine füllen aus, was nicht gesetzt ist: alle 30 s, ein Timeout von 30 s, 3 Wiederholungen) und wie viele Prüfungen in Folge fehlgeschlagen sind. **Letzte Ergebnisse** listet die Prüfungen auf, die die Engine aufbewahrt, die neuesten zuerst, mit Exit-Code, Zeitpunkt, Dauer und Ausgabe; lange Ausgaben werden hinter **Weitere Zeilen anzeigen** eingeklappt.
+Wird bei Containern mit einem Healthcheck angezeigt – ihrem eigenen oder dem ihres Images. **Healthcheck** gibt den Status (_starting_, _healthy_ oder _unhealthy_), den Befehl, seine Zeitsteuerung (die Standardwerte der Engine füllen aus, was nicht gesetzt ist: alle 30 s, ein Timeout von 30 s, 3 Wiederholungen) und wie viele Prüfungen in Folge fehlgeschlagen sind. **Letzte Ergebnisse** listet die Prüfungen auf, die die Engine aufbewahrt, die neuesten zuerst, mit Exit-Code, Zeitpunkt, Dauer und Ausgabe; lange Ausgaben werden hinter **… weitere Zeilen anzeigen** eingeklappt.
 
 Wenn die Liste also _unhealthy_ sagt, steht hier der Grund, ohne das rohe JSON zu lesen. Der Tab aktualisiert sich von selbst einmal pro Prüfintervall und immer dann, wenn sich der Status ändert. Ein Container, dessen Healthcheck abgeschaltet ist, hat keinen Tab Zustand; um einen hinzuzufügen oder zu ändern, [bearbeiten Sie den Container](#einen-container-bearbeiten).
 

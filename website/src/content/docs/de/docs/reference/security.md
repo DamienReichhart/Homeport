@@ -3,7 +3,7 @@ title: Sicherheit und Ihre Daten
 description: Was Homeport speichert, wo, wie Geheimnisse verschlüsselt werden und was es nie tut.
 ---
 
-Homeport verwahrt Anmeldedaten, die Ihre Server öffnen. Diese Seite erklärt genau, was es aufbewahrt und wie.
+Homeport verwahrt Anmeldedaten, die Ihre Server öffnen. Diese Seite erklärt genau, was es aufbewahrt und wie es geschützt ist. [Ihre Daten und Sicherungen](/docs/reference/data-and-backups/) erklärt, was Sie zum Sichern kopieren und wie Sie es wiederherstellen.
 
 ## Was Homeport speichert
 
@@ -80,7 +80,7 @@ Homeport zeigt ein Banner an und speichert keine Geheimnisse. Hosts mit lokalem 
 
 ### Wenn der Schlüssel im Schlüsselbund verloren geht
 
-Das Zurücksetzen des Schlüsselbunds oder das Verschieben von `homeport.db` auf einen anderen Computer oder zu einem anderen Benutzer hinterlässt Geheimnisse, die nicht entschlüsselt werden können. Homeport löscht nichts: Betroffene Hosts zeigen **Zugangsdaten verloren**, bis Sie ihre Anmeldedaten erneut eingeben. Siehe [Fehlerbehebung](/docs/reference/troubleshooting/#zugangsdaten-verloren). Um Ihre Daten umzuziehen, sichern Sie sie stattdessen oder exportieren Sie Ihre Hosts.
+Das Zurücksetzen des Schlüsselbunds oder das Verschieben von `homeport.db` auf einen anderen Computer oder zu einem anderen Benutzer hinterlässt Geheimnisse, die nicht entschlüsselt werden können. Homeport löscht nichts: Betroffene Hosts und Cluster zeigen **Zugangsdaten verloren**, bis Sie ihre Anmeldedaten erneut eingeben; [Wenn die Geheimnisse verloren sind](/docs/reference/data-and-backups/#if-the-secrets-are-lost) listet auf, was Sie wo erneut eingeben. Um Ihre Daten umzuziehen, [sichern Sie sie](#backups) oder [exportieren Sie Ihre Hosts](#moving-to-another-computer) stattdessen.
 
 ### Auf einen anderen Computer umziehen
 
@@ -103,7 +103,7 @@ Behandeln Sie die Datei wie die Schlüssel, die sie enthält: Löschen Sie sie n
 2. ersetzt jeden Host, Cluster, Stack, jede Anmeldung, jedes Repository und jede Einstellung in einem Schritt, sodass ein Fehler Ihre Daten unverändert lässt;
 3. verschlüsselt jedes Geheimnis erneut mit dem Schlüsselbund-Schlüssel dieses Computers.
 
-Eine von einem neueren Homeport erstellte Sicherung wird abgelehnt; eine von einem älteren Homeport erstellte wird wiederhergestellt. Die Sicherung enthält jedes Geheimnis, das Homeport hat: Bewahren Sie sie und ihre Passphrase so sicher auf wie die Schlüssel selbst.
+Eine von einem neueren Homeport erstellte Sicherung wird abgelehnt; eine von einem älteren Homeport erstellte wird wiederhergestellt. Die Sicherung enthält jedes Geheimnis, das Homeport hat: Bewahren Sie sie und ihre Passphrase so sicher auf wie die Schlüssel selbst. [Ihre Daten und Sicherungen](/docs/reference/data-and-backups/) enthält die Schritte, was eine Sicherung enthält und auslässt und wie Sie die Datenbank selbst kopieren.
 
 ## Schlüssel berühren die Festplatte nie im Klartext
 
@@ -152,7 +152,7 @@ Sie laufen mit den Rechten des SSH-Benutzers (oder Ihren, auf diesem Computer) u
 ## Was Homeport nie tut
 
 - **Kein Konto.** Es gibt nichts, wofür Sie sich registrieren müssten.
-- **Keine Telemetrie, keine Analysen und keine Absturzberichte.**
+- **Keine Telemetrie, keine Analysen und keine Absturzberichte.** Wenn Sie einen Fehler melden, ist das [Diagnosepaket](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report) eine Datei, die Sie selbst exportieren, lesen und anhängen.
 - **Nichts wird auf Ihren Clustern installiert.** Homeport verwendet nur die Kubernetes-API, mit den Rechten Ihrer Anmeldedaten, und ändert nichts, ohne dass Sie es verlangen: Alles, was etwas entfernt oder ersetzt, fragt zuerst und nennt dabei den Cluster.
 - **Nichts wird auf Ihren Hosts installiert.** Die einzigen Befehle, die Homeport auf einem Host ausführt, sind [oben aufgeführt](#was-homeport-auf-ihren-hosts-ausführt). Der einzige Container, den Homeport je von sich aus startet, ist ein kurzlebiger [Hilfscontainer](/docs/guides/volumes-networks/#der-hilfscontainer), wenn Sie ein Volume öffnen, sichern, wiederherstellen oder klonen; er hat kein Netzwerk und wird entfernt, wenn er fertig ist. Sein Image wird erst gepullt, wenn Sie zustimmen.
 - **Keine stillen Installationen.** Ein Update wird nur installiert, wenn Sie **Installieren und neu starten** wählen; Linux-Pakete werden nur von Ihrem Paketmanager aktualisiert.
@@ -168,6 +168,8 @@ Homeport schreibt eine kleine Logdatei – einige Dutzend Kilobyte, ersetzt, wen
 | Linux   | `~/.local/share/com.homeport.app/logs/` |
 | macOS   | `~/Library/Logs/com.homeport.app/`      |
 | Windows | `%LOCALAPPDATA%\com.homeport.app\logs\` |
+
+Homeport hat keine Telemetrie und keine Absturzberichte: Ein Log verlässt Ihren Computer nie, es sei denn, Sie senden es. Für einen Fehlerbericht speichert **Einstellungen → Über → Diagnose exportieren…** ein Zip mit einer Übersicht der Versionen und diesen Logs, nachdem alles ersetzt wurde, was wie ein Geheimnis aussieht (Schlüssel, Passwörter, Tokens, Anmeldedaten in URLs), und, sofern Sie nichts anderes wählen, die Namen und Adressen Ihrer Hosts und Cluster. Siehe [Diagnose exportieren](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report).
 
 ## Einem Download vertrauen
 
