@@ -14,9 +14,9 @@ import { DocScreenshot } from '@/features/docs';
   alt="A página Nodes: cinco Nodes EKS, um não pronto com agendamento desativado, com a versão do kubelet, o IP interno, a plataforma, as CPUs e a memória deles."
 />
 
-As CPUs são mostradas em núcleos (`3.92` para `3920m`) e a memória em GB; o Kubernetes informa o que é **alocável** aos Pods, um pouco menos do que a máquina tem, já que o kubelet e o sistema reservam uma parte.
+As CPUs são mostradas em núcleos (`3.92` para `3920m`) e a memória em GB; o Kubernetes informa o que é **alocável** aos Pods, um pouco menos do que a máquina tem, já que o kubelet e o sistema reservam uma parte. Quando o cluster executa o metrics-server, **CPU usada** e **Memória usada** mostram quanto cada Node usa disso ([CPU e memória](/docs/clusters/metrics/)).
 
-A página de um Node mostra a imagem do sistema operacional, o kernel, o runtime de contêineres, os endereços, os taints, os rótulos e a capacidade ao lado do que é alocável aos Pods; depois os **Pods** em execução nele, em todos os Namespaces, as **Condições** dele (pressão de memória, de disco e de PID), os **Eventos** e o **YAML**. A página de um Pod tem link para o Node dele.
+A página de um Node mostra a imagem do sistema operacional, o kernel, o runtime de contêineres, os endereços, os taints, os rótulos e a capacidade ao lado do que é alocável aos Pods; depois os **Pods** em execução nele, em todos os Namespaces, as **Condições** dele (pressão de memória, de disco e de PID), os **Eventos** e o **YAML**. A página de um Pod tem link para o Node dele. Com o metrics-server, **Métricas** traça a CPU e a memória do Node em relação ao alocável ([CPU e memória](/docs/clusters/metrics/)).
 
 ## Events
 

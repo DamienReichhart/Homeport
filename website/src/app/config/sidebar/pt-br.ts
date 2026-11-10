@@ -24,6 +24,7 @@ export default {
   'docs/clusters/workloads': 'Cargas de trabalho e Pods',
   'docs/clusters/networking-config': 'Services e configuração',
   'docs/clusters/nodes-events': 'Nodes e Eventos',
+  'docs/clusters/metrics': 'CPU e memória',
   'docs/clusters/api-resources': 'Recursos da API',
   'docs/clusters/logs-exec': 'Logs e terminais',
   'docs/clusters/port-forward': 'Encaminhamento de porta',
