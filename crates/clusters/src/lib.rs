@@ -6,6 +6,8 @@
 //!   status through a [`registry::ClusterNotifier`].
 //! - [`client`] builds a kube-rs client in memory; [`classify`] explains its failures.
 //! - [`nomad`] turns the Nomad form into a connection and a `homeport-nomad` client.
+//! - [`metrics`] reads Pods' and Nodes' CPU and memory from the Metrics API
+//!   metrics-server serves, polled while a page is open.
 //! - [`service`] holds the use cases the app exposes.
 //! - [`proxy`] lets a CLI reach a Cluster with no credential on disk, which
 //!   [`helm`] runs through (ADR 0009).
@@ -24,6 +26,7 @@ pub mod helm;
 pub mod kubeconfig;
 pub mod logs;
 pub mod messages;
+pub mod metrics;
 pub mod model;
 pub mod nomad;
 pub mod proxy;

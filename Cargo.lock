@@ -2518,6 +2518,7 @@ dependencies = [
  "specta",
  "tempfile",
  "tokio",
+ "tower",
  "uuid",
 ]
 

@@ -388,6 +388,10 @@ fn a_nodes_readiness_roles_and_capacity_are_read() {
     );
     assert_eq!(view.internal_ip.as_deref(), Some("10.0.0.4"));
     assert_eq!((view.cpu.as_deref(), view.taints), (Some("4"), 1));
+    assert_eq!(
+        (view.cpu_millicores, view.memory_bytes),
+        (Some(4000), Some(16_693_297_152))
+    );
     let detail = nodes::detail(&node);
     assert_eq!(detail.allocatable["pods"], "110");
     assert_eq!(detail.taints[0].effect, "NoSchedule");
@@ -397,4 +401,61 @@ fn a_nodes_readiness_roles_and_capacity_are_read() {
         "status": { "conditions": [{ "type": "Ready", "status": "Unknown" }] }
     }));
     assert!(!nodes::view(&not_ready).ready);
+}
+
+#[test]
+fn a_pod_sums_what_its_containers_request_and_are_limited_to() {
+    let pod = |containers: serde_json::Value, init: serde_json::Value| -> Pod {
+        from(serde_json::json!({
+            "metadata": { "name": "web-1", "namespace": "shop" },
+            "spec": { "containers": containers, "initContainers": init }
+        }))
+    };
+    let both = pod(
+        serde_json::json!([
+            { "name": "web", "resources": {
+                "requests": { "cpu": "250m", "memory": "256Mi" },
+                "limits": { "cpu": "1", "memory": "512Mi" } } },
+            { "name": "proxy", "resources": {
+                "requests": { "cpu": "50m", "memory": "64Mi" },
+                "limits": { "cpu": "200m", "memory": "128Mi" } } }
+        ]),
+        serde_json::json!([
+            // A sidecar runs alongside the containers; a plain init container doesn't.
+            { "name": "log-shipper", "restartPolicy": "Always", "resources": {
+                "requests": { "cpu": "10m" }, "limits": { "cpu": "100m", "memory": "32Mi" } } },
+            { "name": "migrate", "resources": { "requests": { "cpu": "2" } } }
+        ]),
+    );
+    let view = pods::view(&both);
+    assert_eq!(
+        view.cpu,
+        ResourceBounds {
+            request: Some(310),
+            limit: Some(1300)
+        }
+    );
+    assert_eq!(
+        view.memory,
+        ResourceBounds {
+            request: Some(320 * 1024 * 1024),
+            limit: Some(672 * 1024 * 1024)
+        }
+    );
+    let detail = pods::detail(&both);
+    let web = detail.containers.iter().find(|c| c.name == "web").unwrap();
+    assert_eq!(web.cpu.request, Some(250));
+    assert_eq!(web.memory.limit, Some(512 * 1024 * 1024));
+
+    // One container without a limit may use the whole Node: so may the Pod.
+    let partly = pods::view(&pod(
+        serde_json::json!([
+            { "name": "web", "resources": { "limits": { "memory": "512Mi" }, "requests": { "memory": "1Gi" } } },
+            { "name": "proxy" }
+        ]),
+        serde_json::json!([]),
+    ));
+    assert_eq!(partly.memory.limit, None);
+    assert_eq!(partly.memory.request, Some(1024 * 1024 * 1024));
+    assert_eq!(partly.cpu, ResourceBounds::default());
 }

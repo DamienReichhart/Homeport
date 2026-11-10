@@ -2,8 +2,12 @@
 
 use std::collections::BTreeMap;
 
-use k8s_openapi::api::core::v1::{ContainerStatus, Namespace, Pod};
+use k8s_openapi::api::core::v1::{Container, ContainerStatus, Namespace, Pod};
 use serde::Serialize;
+
+use crate::metrics::quantity;
+
+use k8s_openapi::apimachinery::pkg::api::resource::Quantity;
 
 use super::common::{
     annotations, conditions, created, labels, owner, time, ConditionView, OwnerView,
@@ -43,6 +47,72 @@ pub struct PodView {
     pub created: Option<String>,
     pub owner: Option<OwnerView>,
     pub images: Vec<String>,
+    /// What its containers request and are limited to, summed.
+    pub cpu: ResourceBounds,
+    pub memory: ResourceBounds,
+}
+
+/// What containers request of a resource and are limited to: CPU in
+/// millicores, memory in bytes. `None` when unset.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct ResourceBounds {
+    pub request: Option<u64>,
+    pub limit: Option<u64>,
+}
+
+impl ResourceBounds {
+    /// A container's, for `resource` (`cpu` or `memory`).
+    pub fn of(container: &Container, resource: &str) -> Self {
+        let read = |map: Option<&BTreeMap<String, Quantity>>| {
+            let q = map?.get(resource)?;
+            if resource == "cpu" {
+                quantity::whole_millicores(&q.0)
+            } else {
+                quantity::bytes(&q.0)
+            }
+        };
+        let resources = container.resources.as_ref();
+        Self {
+            request: read(resources.and_then(|r| r.requests.as_ref())),
+            limit: read(resources.and_then(|r| r.limits.as_ref())),
+        }
+    }
+
+    /// A Pod's, from its containers': the requests that are set, summed,
+    /// and a limit only when every container has one, since one without
+    /// may use the whole Node.
+    pub fn sum(containers: impl IntoIterator<Item = Self>) -> Self {
+        let mut sum = Self::default();
+        let mut unlimited = false;
+        let mut any = false;
+        for c in containers {
+            any = true;
+            if let Some(request) = c.request {
+                sum.request = Some(sum.request.unwrap_or(0).saturating_add(request));
+            }
+            match c.limit {
+                Some(limit) => sum.limit = Some(sum.limit.unwrap_or(0).saturating_add(limit)),
+                None => unlimited = true,
+            }
+        }
+        if unlimited || !any {
+            sum.limit = None;
+        }
+        sum
+    }
+}
+
+/// The containers that run alongside each other for the Pod's life: its
+/// containers, and its sidecars (init containers that restart always).
+fn running_containers(pod: &Pod) -> impl Iterator<Item = &Container> {
+    let spec = pod.spec.as_ref();
+    let sidecars = spec
+        .and_then(|s| s.init_containers.as_ref())
+        .into_iter()
+        .flatten()
+        .filter(|c| c.restart_policy.as_deref() == Some("Always"));
+    spec.into_iter().flat_map(|s| &s.containers).chain(sidecars)
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
@@ -78,6 +148,8 @@ pub struct PodContainer {
     pub last_reason: Option<String>,
     /// The ports it declares.
     pub ports: Vec<PodPort>,
+    pub cpu: ResourceBounds,
+    pub memory: ResourceBounds,
 }
 
 /// A port a container declares.
@@ -191,14 +263,14 @@ pub fn view(pod: &Pod) -> PodView {
                     .collect()
             })
             .unwrap_or_default(),
+        cpu: ResourceBounds::sum(running_containers(pod).map(|c| ResourceBounds::of(c, "cpu"))),
+        memory: ResourceBounds::sum(
+            running_containers(pod).map(|c| ResourceBounds::of(c, "memory")),
+        ),
     }
 }
 
-fn container(
-    c: &k8s_openapi::api::core::v1::Container,
-    status: Option<&ContainerStatus>,
-    init: bool,
-) -> PodContainer {
+fn container(c: &Container, status: Option<&ContainerStatus>, init: bool) -> PodContainer {
     let state = status.and_then(|s| s.state.as_ref());
     let (kind, reason, message, started, exit_code) = match state {
         Some(s) if s.running.is_some() => (
@@ -255,6 +327,8 @@ fn container(
                 })
             })
             .collect(),
+        cpu: ResourceBounds::of(c, "cpu"),
+        memory: ResourceBounds::of(c, "memory"),
     }
 }
 

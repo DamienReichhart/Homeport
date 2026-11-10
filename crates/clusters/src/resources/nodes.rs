@@ -5,6 +5,8 @@ use std::collections::BTreeMap;
 use k8s_openapi::api::core::v1::Node;
 use serde::Serialize;
 
+use crate::metrics::quantity;
+
 use super::common::{annotations, conditions, created, labels, ConditionView};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
@@ -25,6 +27,9 @@ pub struct ClusterNodeView {
     /// Allocatable CPU and memory, as Kubernetes writes them (`4`, `16302048Ki`).
     pub cpu: Option<String>,
     pub memory: Option<String>,
+    /// The same in millicores and bytes, to set what it uses against.
+    pub cpu_millicores: Option<u64>,
+    pub memory_bytes: Option<u64>,
     pub taints: u32,
     pub created: Option<String>,
 }
@@ -91,6 +96,12 @@ pub fn view(n: &Node) -> ClusterNodeView {
         memory: allocatable
             .and_then(|a| a.get("memory"))
             .map(|q| q.0.clone()),
+        cpu_millicores: allocatable
+            .and_then(|a| a.get("cpu"))
+            .and_then(|q| quantity::whole_millicores(&q.0)),
+        memory_bytes: allocatable
+            .and_then(|a| a.get("memory"))
+            .and_then(|q| quantity::bytes(&q.0)),
         taints: n
             .spec
             .as_ref()

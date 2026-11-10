@@ -52,7 +52,7 @@ pub use self::{
         IngressTls, IngressView,
     },
     nodes::{ClusterNodeDetail, ClusterNodeView, NodeTaint},
-    pods::{NamespaceView, PodContainer, PodDetail, PodHealth, PodPort, PodView},
+    pods::{NamespaceView, PodContainer, PodDetail, PodHealth, PodPort, PodView, ResourceBounds},
     summary::{ClusterSummary, NodeCounts, Part, PodCounts},
     watch::{watch, watch_api},
     workloads::{TemplateContainer, WorkloadDetail, WorkloadHealth, WorkloadKind, WorkloadView},
