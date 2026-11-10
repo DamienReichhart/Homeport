@@ -6,15 +6,42 @@
  * `<name>.png`), each language's in its own folder (`fr/<name>.png`); a shot a
  * language lacks falls back to English. Regenerate them with
  * `bun run screenshots [--locale <tag>]` at the repo root.
+ *
+ * Shots are captured at twice the pixel density (2880×1800 for a 1440×900
+ * window) and served as AVIF, with WebP for browsers without it, at each of
+ * WIDTHS up to the shot's own. `sizes` must say how wide the shot is drawn, so
+ * a HiDPI screen gets a file with at least as many pixels as it shows and a
+ * phone doesn't download the largest one: `bun run test:images` checks both on
+ * the built site.
  */
 import type { ImageMetadata } from 'astro';
-import { Picture } from 'astro:assets';
+import { getImage } from 'astro:assets';
+import { scaleSizes } from '@/shared/lib/sizes';
+
+/**
+ * The widths offered, chosen for where shots are drawn: 655 CSS px on the home
+ * page (898 for a crop) and up to 768 in the docs. At a pixel density of 2
+ * those need 1310, 1796 and 1536 px, which 1600 and 1920 give. There is no
+ * 1440: Chrome takes the smaller of two neighbouring widths when the density it
+ * needs is under their geometric mean, so between 1440 and 1920 it would show
+ * the docs' shots from 1440 px, slightly upscaled. 2880 is the shot itself, for
+ * a density of 3 and zoomed pages; a phone takes 640 or 960.
+ */
+const WIDTHS = [640, 960, 1600, 1920, 2880];
+
+/*
+ * Encoder quality, set here and not left to sharp's defaults (AVIF 50, WebP 80),
+ * which smear the app's 12–13 px text and thin borders once a shot is scaled
+ * down. They are part of each file's name, so changing one converts the shots
+ * again whatever the image cache holds.
+ */
+const QUALITY = { avif: 70, webp: 90 } as const;
 
 interface Props {
   name: string;
   alt: string;
-  /** Rendered width hints for responsive images. */
-  sizes?: string;
+  /** How wide the shot is drawn, as `<img sizes>`: the browser picks its file by it. */
+  sizes: string;
   eager?: boolean;
   class?: string;
   /** Show only the top-left part of the shot, at this aspect ratio (e.g. `960 / 900`). */
@@ -23,17 +50,12 @@ interface Props {
   folder?: string;
 }
 
-const {
-  name,
-  alt,
-  sizes = '(min-width: 72rem) 1100px, 100vw',
-  eager = false,
-  crop,
-  folder = '',
-} = Astro.props;
+const { name, alt, sizes, eager = false, crop, folder = '' } = Astro.props;
 const cropStyle = crop
   ? `aspect-ratio: ${crop}; object-fit: cover; object-position: left top;`
   : undefined;
+/** A crop's width over its height: `960 / 820` is 1.17. */
+const [cropWidth = 0, cropHeight = 0] = (crop ?? '').split('/').map(Number);
 
 const shots = import.meta.glob<{ default: ImageMetadata }>('/src/assets/screenshots/**/*.png', {
   eager: true,
@@ -60,21 +82,42 @@ const variants: { image: ImageMetadata; theme: string }[] =
         .map((image) => ({ image, theme: '' }));
 
 if (variants.length === 0) console.warn(`[screenshot] missing src/assets/screenshots/${name}*.png`);
+
+const pictures = await Promise.all(
+  variants.map(async ({ image, theme }) => {
+    const widths = WIDTHS.filter((w) => w <= image.width);
+    const [avif, webp] = await Promise.all(
+      (['avif', 'webp'] as const).map((format) =>
+        getImage({ src: image, format, widths, quality: QUALITY[format] }),
+      ),
+    );
+    // A crop narrower than the shot fills its box by height, so the shot is
+    // drawn wider than the box: by the ratio of the two shapes.
+    const zoom = cropHeight
+      ? Math.max(1, image.width / image.height / (cropWidth / cropHeight))
+      : 1;
+    return { avif: avif!, webp: webp!, theme, sizes: scaleSizes(sizes, zoom) };
+  }),
+);
 ---
 
 <div class:list={['window', Astro.props.class]}>
-  {variants.map(({ image, theme }) => (
-    <Picture
-      src={image}
-      alt={alt}
-      class={theme || undefined}
-      formats={['avif', 'webp']}
-      widths={[640, 960, 1440, 2160].filter((w) => w <= image.width)}
-      sizes={sizes}
-      loading={eager ? 'eager' : 'lazy'}
-      fetchpriority={eager ? 'high' : undefined}
-      decoding="async"
-      style={cropStyle}
-    />
+  {pictures.map(({ avif, webp, theme, sizes }) => (
+    <picture>
+      <source type="image/avif" srcset={avif.srcSet.attribute} sizes={sizes} />
+      <img
+        src={webp.src}
+        srcset={webp.srcSet.attribute}
+        sizes={sizes}
+        alt={alt}
+        class={theme || undefined}
+        width={webp.attributes.width}
+        height={webp.attributes.height}
+        loading={eager ? 'eager' : 'lazy'}
+        fetchpriority={eager ? 'high' : undefined}
+        decoding="async"
+        style={cropStyle}
+      />
+    </picture>
   ))}
 </div>
