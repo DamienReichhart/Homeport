@@ -36,5 +36,5 @@ pub fn update_settings(
 #[specta::specta]
 pub fn set_native_text(app: AppHandle, templates: BTreeMap<String, String>) {
     homeport_core::error::set_translations(templates);
-    crate::app::tray::refresh(&app);
+    crate::app::desktop::tray::refresh(&app);
 }

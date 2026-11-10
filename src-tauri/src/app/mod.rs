@@ -1,23 +1,22 @@
 //! The desktop shell: the Tauri app, its plugins, and the state and events
 //! that connect the backend's crates to the webview.
 
-#[cfg(target_os = "linux")]
-mod appimage;
-pub mod autostart;
+pub mod desktop;
 pub mod events;
 pub mod history;
 mod logging;
-mod notifications;
 mod polling;
 pub mod setup;
 pub mod startup;
 mod state;
-pub mod tray;
-pub mod window;
 
 use tauri::Manager;
 
 pub use self::state::AppState;
+
+#[cfg(target_os = "linux")]
+use self::desktop::appimage;
+use self::desktop::{autostart, tray, window};
 
 use crate::commands;
 

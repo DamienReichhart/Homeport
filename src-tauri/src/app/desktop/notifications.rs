@@ -18,7 +18,7 @@ use homeport_hosts::{
 };
 use homeport_settings::NotificationSettings;
 
-use super::AppState;
+use crate::app::AppState;
 
 /// Turns what the registry reports into notifications, as Settings allows.
 #[derive(Default)]

@@ -70,14 +70,14 @@ pub fn open_data_folder(app: AppHandle) -> AppResult<()> {
 #[tauri::command]
 #[specta::specta]
 pub fn app_start_at_login(app: AppHandle) -> AppResult<bool> {
-    crate::app::autostart::is_enabled(&app)
+    crate::app::desktop::autostart::is_enabled(&app)
 }
 
 /// Adds or removes the login entry; returns whether it's there now.
 #[tauri::command]
 #[specta::specta]
 pub fn app_set_start_at_login(app: AppHandle, enabled: bool) -> AppResult<bool> {
-    crate::app::autostart::set_enabled(&app, enabled)
+    crate::app::desktop::autostart::set_enabled(&app, enabled)
 }
 
 #[derive(Debug, Serialize, specta::Type)]
@@ -207,7 +207,7 @@ pub async fn get_capabilities(
             Ok(cli) => HelmSupport::Available { cli },
             Err(problem) => HelmSupport::Unavailable { problem },
         },
-        tray: crate::app::tray::is_available(&app),
+        tray: crate::app::desktop::tray::is_available(&app),
     })
 }
 

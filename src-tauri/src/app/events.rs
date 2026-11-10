@@ -11,7 +11,7 @@ use homeport_hosts::registry::{EngineEvent, HostStatus, Notifier};
 use homeport_kubernetes::streams::forward::ForwardEvent;
 use homeport_stacks::StackOwner;
 
-use super::{notifications::Notifications, AppState};
+use super::{desktop::notifications::Notifications, AppState};
 
 #[derive(Debug, Clone, Serialize, specta::Type, tauri_specta::Event)]
 #[serde(rename_all = "camelCase")]
@@ -102,7 +102,7 @@ impl Notifier for TauriNotifier {
         if let Err(e) = event.emit(&self.app) {
             log::warn!("failed to emit host status: {e}");
         }
-        super::tray::refresh(&self.app);
+        super::desktop::tray::refresh(&self.app);
         self.notifications.host_status(&self.app, host_id, status);
     }
 

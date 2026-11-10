@@ -11,9 +11,10 @@ use tauri::{
 };
 use tauri_specta::Event;
 
-use super::{
+use super::window;
+use crate::app::{
     events::{TrayAddHostChosen, TrayHostChosen},
-    window, AppState,
+    AppState,
 };
 use crate::messages as msg;
 use menu::{Action, Item, TrayMenu};

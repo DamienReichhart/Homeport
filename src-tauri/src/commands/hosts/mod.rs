@@ -43,7 +43,7 @@ pub async fn hosts_update(
     input: HostInput,
 ) -> AppResult<HostView> {
     let view = state.hosts.update(&id, input)?;
-    crate::app::tray::refresh(&app);
+    crate::app::desktop::tray::refresh(&app);
     Ok(view)
 }
 
@@ -51,7 +51,7 @@ pub async fn hosts_update(
 #[specta::specta]
 pub fn hosts_delete(app: AppHandle, state: State<'_, AppState>, id: String) -> AppResult<()> {
     state.hosts.delete(&id)?;
-    crate::app::tray::refresh(&app);
+    crate::app::desktop::tray::refresh(&app);
     Ok(())
 }
 
