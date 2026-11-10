@@ -24,6 +24,7 @@ export default {
   'docs/clusters/workloads': 'ワークロードと Pod',
   'docs/clusters/networking-config': 'Service と構成',
   'docs/clusters/nodes-events': 'Node とイベント',
+  'docs/clusters/metrics': 'CPU とメモリ',
   'docs/clusters/api-resources': 'API リソース',
   'docs/clusters/logs-exec': 'ログとターミナル',
   'docs/clusters/port-forward': 'ポートフォワード',
