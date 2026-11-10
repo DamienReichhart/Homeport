@@ -104,6 +104,8 @@ fn the_tool_that_made_a_container_is_told_from_its_labels() {
 }
 
 mod live {
+    use std::time::Duration;
+
     use crate::containers::*;
     use crate::testing::{self, NAMESPACE};
 

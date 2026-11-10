@@ -2,14 +2,23 @@
 //! tasks, which are what runs: listing them, and starting, stopping,
 //! killing, pausing, resuming and removing them.
 
+pub mod exec;
+pub mod logs;
+mod model;
 mod signals;
+mod task;
 
-use std::{collections::HashMap, time::Duration};
+use std::collections::HashMap;
 
-use serde::{Deserialize, Serialize};
+pub use signals::signal_number;
 
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 
+use self::task::{delete_task, exited_within, resume, KILL_GRACE};
+pub use self::{
+    model::{ContainerdContainer, ContainerdContainerDetail, CreatedBy, TaskAction, TaskState},
+    task::{act, kill, kill_named, stop},
+};
 use crate::{
     grpc::{
         api::containerd::{
@@ -17,127 +26,31 @@ use crate::{
                 containers::v1::{
                     Container, DeleteContainerRequest, GetContainerRequest, ListContainersRequest,
                 },
-                snapshots::v1::{
-                    Info, MountsRequest, RemoveSnapshotRequest, UpdateSnapshotRequest,
-                },
-                tasks::v1::{
-                    CreateTaskRequest, DeleteTaskRequest, GetRequest, KillRequest,
-                    ListTasksRequest, PauseTaskRequest, ResumeTaskRequest, StartRequest,
-                    WaitRequest,
-                },
+                snapshots::v1::{Info, RemoveSnapshotRequest, UpdateSnapshotRequest},
+                tasks::v1::{GetRequest, ListTasksRequest},
             },
             v1::types::{Process, Status},
         },
-        client::{call, stream},
+        client::call,
         error,
     },
     messages as msg, Containerd,
 };
 
-pub use signals::signal_number;
-
 /// The labels a container made by Kubernetes' CRI carries.
 const KUBERNETES_POD: &str = "io.kubernetes.pod.name";
+
 const KUBERNETES_CONTAINER: &str = "io.kubernetes.container.name";
+
 const KUBERNETES_POD_NAMESPACE: &str = "io.kubernetes.pod.namespace";
+
 /// `sandbox` for a Pod's pause container, `container` for the others.
 const CRI_KIND: &str = "io.cri-containerd.kind";
+
 /// nerdctl's name for a container, and where its output goes.
 const NERDCTL_NAME: &str = "nerdctl/name";
+
 pub(crate) const NERDCTL_LOG_URI: &str = "nerdctl/log-uri";
-/// The signal an image asks to be stopped with.
-const STOP_SIGNAL: &str = "io.containerd.image.config.stop-signal";
-
-/// How long a stop waits after SIGKILL before saying the task won't die.
-const KILL_GRACE: Duration = Duration::from_secs(10);
-
-/// What a container's task is doing; `none` when it has no task.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, specta::Type)]
-#[serde(rename_all = "lowercase")]
-pub enum TaskState {
-    None,
-    Created,
-    Running,
-    Paused,
-    Pausing,
-    Stopped,
-    Unknown,
-}
-
-impl From<Status> for TaskState {
-    fn from(status: Status) -> Self {
-        match status {
-            Status::Created => Self::Created,
-            Status::Running => Self::Running,
-            Status::Paused => Self::Paused,
-            Status::Pausing => Self::Pausing,
-            Status::Stopped => Self::Stopped,
-            Status::Unknown => Self::Unknown,
-        }
-    }
-}
-
-/// Which tool made a container, which decides what Homeport can show of it.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, specta::Type)]
-#[serde(rename_all = "lowercase")]
-pub enum CreatedBy {
-    /// Kubernetes' CRI: the kubelet undoes stops and removals.
-    Kubernetes,
-    Nerdctl,
-    /// Docker's own containers, in the `moby` namespace.
-    Docker,
-    /// `ctr` or another client.
-    Other,
-}
-
-/// A container and its task, as the list shows them.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
-#[serde(rename_all = "camelCase")]
-pub struct ContainerdContainer {
-    pub id: String,
-    /// nerdctl's name, or the Pod's container's, or the id.
-    pub name: String,
-    pub image: String,
-    pub labels: HashMap<String, String>,
-    pub runtime: String,
-    pub snapshotter: String,
-    pub snapshot_key: String,
-    /// RFC 3339.
-    pub created_at: Option<String>,
-    pub created_by: CreatedBy,
-    /// The Kubernetes Pod it belongs to, as `namespace/name`.
-    pub pod: Option<String>,
-    /// A Pod's pause container, which holds its namespaces.
-    pub sandbox: bool,
-    pub state: TaskState,
-    /// The task's main process.
-    pub pid: Option<u32>,
-    /// How a stopped task ended.
-    pub exit_status: Option<u32>,
-    pub exited_at: Option<String>,
-}
-
-/// A container with everything containerd holds about it.
-#[derive(Debug, Clone, PartialEq, Serialize, specta::Type)]
-#[serde(rename_all = "camelCase")]
-pub struct ContainerdContainerDetail {
-    pub container: ContainerdContainer,
-    /// Its OCI runtime spec, as containerd stores it.
-    pub spec: Option<serde_json::Value>,
-    /// The names of its extensions, such as CRI's metadata.
-    pub extensions: Vec<String>,
-    pub updated_at: Option<String>,
-}
-
-/// What can be done to a container's task.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
-#[serde(rename_all = "lowercase")]
-pub enum TaskAction {
-    Start,
-    Stop,
-    Pause,
-    Resume,
-}
 
 pub(crate) fn timestamp(t: Option<&prost_types::Timestamp>) -> Option<String> {
     let t = t?;
@@ -307,241 +220,6 @@ pub async fn inspect(
     })
 }
 
-/// Starts a container's task: creates it on the container's snapshot, with
-/// nerdctl's logging when nerdctl made it and no I/O otherwise, then starts
-/// it. A stopped task is deleted first, as `ctr task start` would need.
-async fn start(client: &Containerd, namespace: &str, id: &str) -> AppResult<()> {
-    let container = get(client, namespace, id).await?;
-    match task(client, namespace, id).await?.map(|t| t.status()) {
-        Some(Status::Running | Status::Pausing) => {
-            return Err(AppError::new(
-                ErrorCode::AlreadyDone,
-                msg::TASK_ALREADY_RUNNING.with("id", id),
-            ))
-        }
-        Some(Status::Paused) => return resume(client, namespace, id).await,
-        Some(Status::Created) => {}
-        Some(Status::Stopped | Status::Unknown) => delete_task(client, namespace, id).await?,
-        None => {}
-    }
-    if task(client, namespace, id).await?.is_none() {
-        let rootfs = if container.snapshot_key.is_empty() {
-            vec![]
-        } else {
-            client
-                .snapshots()
-                .mounts(call(
-                    namespace,
-                    MountsRequest {
-                        snapshotter: container.snapshotter.clone(),
-                        key: container.snapshot_key.clone(),
-                    },
-                )?)
-                .await
-                .map_err(|s| error::status(&s))?
-                .into_inner()
-                .mounts
-        };
-        let log = container
-            .labels
-            .get(NERDCTL_LOG_URI)
-            .cloned()
-            .unwrap_or_default();
-        client
-            .tasks()
-            .create(call(
-                namespace,
-                CreateTaskRequest {
-                    container_id: id.to_owned(),
-                    rootfs,
-                    stdout: log.clone(),
-                    stderr: log,
-                    ..Default::default()
-                },
-            )?)
-            .await
-            .map_err(|s| error::status(&s))?;
-    }
-    client
-        .tasks()
-        .start(call(
-            namespace,
-            StartRequest {
-                container_id: id.to_owned(),
-                exec_id: String::new(),
-            },
-        )?)
-        .await
-        .map_err(|s| error::status(&s))?;
-    Ok(())
-}
-
-async fn delete_task(client: &Containerd, namespace: &str, id: &str) -> AppResult<()> {
-    match client
-        .tasks()
-        .delete(call(
-            namespace,
-            DeleteTaskRequest {
-                container_id: id.to_owned(),
-            },
-        )?)
-        .await
-    {
-        Ok(_) => Ok(()),
-        Err(s) if s.code() == tonic::Code::NotFound => Ok(()),
-        Err(s) => Err(error::status(&s)),
-    }
-}
-
-/// Sends `signal` to a container's task, or to every process of it.
-pub async fn kill(client: &Containerd, namespace: &str, id: &str, signal: u32) -> AppResult<()> {
-    client
-        .tasks()
-        .kill(call(
-            namespace,
-            KillRequest {
-                container_id: id.to_owned(),
-                exec_id: String::new(),
-                signal,
-                all: false,
-            },
-        )?)
-        .await
-        .map_err(|s| match s.code() {
-            tonic::Code::NotFound => AppError::new(
-                ErrorCode::ContainerNotRunning,
-                msg::TASK_NOT_RUNNING.with("id", id),
-            )
-            .with_detail(error::detail(&s)),
-            _ => error::status(&s),
-        })?;
-    Ok(())
-}
-
-/// Sends the signal named `signal` (`SIGHUP`, `hup` or `1`) to a container's task.
-pub async fn kill_named(
-    client: &Containerd,
-    namespace: &str,
-    id: &str,
-    signal: &str,
-) -> AppResult<()> {
-    let number = signal_number(signal)
-        .ok_or_else(|| AppError::validation(msg::SIGNAL_UNKNOWN.with("signal", signal)))?;
-    kill(client, namespace, id, number).await
-}
-
-/// Waits for a container's task to exit, at most `limit`; whether it did.
-async fn exited_within(
-    client: &Containerd,
-    namespace: &str,
-    id: &str,
-    limit: Duration,
-) -> AppResult<bool> {
-    let mut tasks = client.tasks();
-    let wait = tasks.wait(stream(
-        namespace,
-        WaitRequest {
-            container_id: id.to_owned(),
-            exec_id: String::new(),
-        },
-    )?);
-    match tokio::time::timeout(limit, wait).await {
-        Ok(Ok(_)) => Ok(true),
-        Ok(Err(s)) if s.code() == tonic::Code::NotFound => Ok(true),
-        Ok(Err(s)) => Err(error::status(&s)),
-        Err(_) => Ok(false),
-    }
-}
-
-/// Stops a container's task: its stop signal (SIGTERM unless the image
-/// says otherwise), then SIGKILL once `timeout` has passed.
-pub async fn stop(
-    client: &Containerd,
-    namespace: &str,
-    id: &str,
-    timeout: Duration,
-) -> AppResult<()> {
-    let container = get(client, namespace, id).await?;
-    match task(client, namespace, id).await?.map(|t| t.status()) {
-        None | Some(Status::Stopped) => {
-            return Err(AppError::new(
-                ErrorCode::AlreadyDone,
-                msg::TASK_NOT_RUNNING.with("id", id),
-            ))
-        }
-        // A paused task can't act on SIGTERM until it runs again.
-        Some(Status::Paused | Status::Pausing) => resume(client, namespace, id).await?,
-        _ => {}
-    }
-    let signal = container
-        .labels
-        .get(STOP_SIGNAL)
-        .and_then(|s| signal_number(s))
-        .unwrap_or(signals::SIGTERM);
-    kill(client, namespace, id, signal).await?;
-    if exited_within(client, namespace, id, timeout).await? {
-        return Ok(());
-    }
-    kill(client, namespace, id, signals::SIGKILL).await?;
-    if exited_within(client, namespace, id, KILL_GRACE).await? {
-        return Ok(());
-    }
-    Err(
-        AppError::new(ErrorCode::TaskWontStop, msg::TASK_WONT_STOP.with("id", id))
-            .with_hint(msg::TASK_WONT_STOP_HINT),
-    )
-}
-
-/// Starts, pauses or resumes a container's task; stops it with a 10 s grace.
-pub async fn act(
-    client: &Containerd,
-    namespace: &str,
-    id: &str,
-    action: TaskAction,
-) -> AppResult<()> {
-    match action {
-        TaskAction::Start => start(client, namespace, id).await,
-        TaskAction::Stop => stop(client, namespace, id, Duration::from_secs(10)).await,
-        TaskAction::Pause => client
-            .tasks()
-            .pause(call(
-                namespace,
-                PauseTaskRequest {
-                    container_id: id.to_owned(),
-                },
-            )?)
-            .await
-            .map(drop)
-            .map_err(|s| not_running_or(&s, id)),
-        TaskAction::Resume => resume(client, namespace, id).await,
-    }
-}
-
-async fn resume(client: &Containerd, namespace: &str, id: &str) -> AppResult<()> {
-    client
-        .tasks()
-        .resume(call(
-            namespace,
-            ResumeTaskRequest {
-                container_id: id.to_owned(),
-            },
-        )?)
-        .await
-        .map(drop)
-        .map_err(|s| not_running_or(&s, id))
-}
-
-fn not_running_or(s: &tonic::Status, id: &str) -> AppError {
-    match s.code() {
-        tonic::Code::NotFound => AppError::new(
-            ErrorCode::ContainerNotRunning,
-            msg::TASK_NOT_RUNNING.with("id", id),
-        )
-        .with_detail(error::detail(s)),
-        _ => error::status(s),
-    }
-}
-
 /// The label that makes containerd's garbage collector keep a snapshot
 /// nothing else references.
 pub(crate) const GC_ROOT: &str = "containerd.io/gc.root";
@@ -647,7 +325,5 @@ pub async fn remove(
     Ok(())
 }
 
-pub mod exec;
-pub mod logs;
 #[cfg(test)]
 mod tests;
