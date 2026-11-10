@@ -36,6 +36,11 @@ pub fn config(
         .map_err(|e| credentials_unusable(&cluster.name, e))?;
     let mut config = kube::Config::new(uri);
     config.connect_timeout = Some(CONNECT_TIMEOUT);
+    // kube-rs retries 429, 503 and 504 up to 15 times, backing off to 1000 s
+    // between tries: a Cluster with one broken aggregated API (a metrics-server
+    // that isn't running) froze discovery and its page for minutes. Homeport
+    // shows the failure with a retry and reconnects on its own instead.
+    config.default_retry = false;
     if let Some(ns) = &connection.namespace {
         config.default_namespace.clone_from(ns);
     }
@@ -159,5 +164,11 @@ mod tests {
         };
         let e = config(&cluster(), &secrets, None).unwrap_err();
         assert!(e.is(homeport_core::error::ErrorCode::TlsMaterialInvalid));
+    }
+
+    #[test]
+    fn failed_requests_are_reported_not_retried_for_minutes() {
+        let config = config(&cluster(), &KubernetesSecrets::default(), None).unwrap();
+        assert!(!config.default_retry);
     }
 }
