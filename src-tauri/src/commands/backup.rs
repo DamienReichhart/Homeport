@@ -14,7 +14,10 @@ use serde::{Deserialize, Serialize};
 use tauri::State;
 
 use homeport_clusters::store::backup::{self as clusters, BackedUpCluster};
-use homeport_core::error::{local_file, AppError, AppResult};
+use homeport_core::{
+    error::{local_file, AppError, AppResult},
+    local_files,
+};
 use homeport_git::store::backup::{self as repositories, BackedUpRepository};
 use homeport_hosts::bundle::{self as hosts, ExportedHost, PAYLOAD_VERSION};
 use homeport_registries::store::backup::{self as registries, BackedUpLogin};
@@ -192,7 +195,8 @@ fn replace(state: &AppState, backup: &Backup) -> AppResult<()> {
 fn backup_to(state: &AppState, path: &Path, passphrase: &str) -> AppResult<BackupOutcome> {
     let (backup, without_secrets) = collect(state)?;
     let sealed = bundle::seal(passphrase, &serde_json::to_vec(&backup)?)?;
-    std::fs::write(path, sealed).map_err(|e| local_file(path, e))?;
+    // Written beside it first: a failure keeps the backup that was there.
+    local_files::write_replacing(path, &sealed)?;
     Ok(BackupOutcome {
         contents: backup.contents(),
         without_secrets,

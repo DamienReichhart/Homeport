@@ -18,7 +18,10 @@ use futures_util::StreamExt;
 use serde::Serialize;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
-use homeport_core::error::{engine, local_file, AppError, AppResult, ErrorCode};
+use homeport_core::{
+    error::{engine, local_file, AppError, AppResult, ErrorCode},
+    local_files::Replacement,
+};
 
 use crate::messages as msg;
 
@@ -79,18 +82,21 @@ async fn save_to(
 }
 
 /// Writes what the Engine streams into `destination`, reporting the bytes.
-/// The file is removed unless the stream completes, also when the task is
-/// cancelled, so nothing half-written is left behind.
+/// It's written beside `destination` and only takes its place once the
+/// stream completes: on a failure or a cancel nothing half-written is left
+/// behind, and a file that was already there (last week's backup, picked
+/// again in the save dialog) stays as it was.
 pub(crate) async fn write_file(
     mut stream: impl futures_util::Stream<Item = Result<Bytes, bollard::errors::Error>> + Unpin,
     destination: &Path,
     sink: &impl Fn(TransferEvent) -> bool,
 ) -> AppResult<()> {
-    let file = tokio::fs::File::create(destination)
-        .await
+    let replacement = Replacement::new(destination)?;
+    let file = replacement
+        .file()
+        .try_clone()
         .map_err(|e| local_file(destination, e))?;
-    let mut partial = Partial(Some(destination.to_owned()));
-    let mut file = tokio::io::BufWriter::new(file);
+    let mut file = tokio::io::BufWriter::new(tokio::fs::File::from_std(file));
     let mut written = 0u64;
     let mut reported = 0u64;
     while let Some(chunk) = stream.next().await {
@@ -110,21 +116,18 @@ pub(crate) async fn write_file(
         }
     }
     file.flush().await.map_err(|e| local_file(destination, e))?;
-    file.into_inner()
-        .sync_all()
-        .await
-        .map_err(|e| local_file(destination, e))?;
+    drop(file);
     if written == 0 {
         return Err(AppError::new(
             ErrorCode::EngineError,
             msg::TRANSFER_EMPTY_ARCHIVE,
         ));
     }
+    replacement.commit()?;
     sink(TransferEvent::Progress {
         bytes: written,
         total: Some(written),
     });
-    partial.keep();
     Ok(())
 }
 
@@ -370,24 +373,6 @@ pub(crate) fn finish(
 }
 
 /// A file being written, removed when dropped unless kept.
-struct Partial(Option<PathBuf>);
-
-impl Partial {
-    fn keep(&mut self) {
-        self.0 = None;
-    }
-}
-
-impl Drop for Partial {
-    fn drop(&mut self) {
-        if let Some(path) = self.0.take() {
-            if let Err(e) = std::fs::remove_file(&path) {
-                log::warn!("couldn't remove the partial file {}: {e}", path.display());
-            }
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use std::sync::Mutex;
@@ -411,20 +396,6 @@ mod tests {
     }
 
     #[test]
-    fn partial_files_are_removed_unless_kept() {
-        let dir = tempfile::tempdir().unwrap();
-        let path = dir.path().join("a.tar");
-        std::fs::write(&path, "x").unwrap();
-        drop(Partial(Some(path.clone())));
-        assert!(!path.exists());
-        std::fs::write(&path, "x").unwrap();
-        let mut kept = Partial(Some(path.clone()));
-        kept.keep();
-        drop(kept);
-        assert!(path.exists());
-    }
-
-    #[test]
     fn unreadable_archives_are_explained() {
         let e = invalid_archive(
             AppError::new(ErrorCode::EngineError, msg::TRANSFER_EMPTY_ARCHIVE)
@@ -436,6 +407,32 @@ mod tests {
         let other = AppError::new(ErrorCode::DiskFull, msg::TRANSFER_EMPTY_ARCHIVE)
             .with_detail("no space left on device");
         assert_eq!(invalid_archive(other.clone(), Path::new("x")), other);
+    }
+
+    #[tokio::test]
+    async fn a_failed_save_over_a_file_leaves_that_file_as_it_was() {
+        let dir = tempfile::tempdir().unwrap();
+        // Last week's backup of a volume, picked again in the save dialog.
+        let path = dir.path().join("db.tar");
+        std::fs::write(&path, "last week's backup").unwrap();
+        let broken = futures_util::stream::iter(vec![
+            Ok(Bytes::from_static(b"the first part")),
+            Err(bollard::errors::Error::IOError {
+                err: io::Error::from(io::ErrorKind::ConnectionReset),
+            }),
+        ]);
+        let (sink, _) = recorder();
+        assert!(write_file(broken, &path, &sink).await.is_err());
+        assert_eq!(
+            std::fs::read_to_string(&path).unwrap(),
+            "last week's backup"
+        );
+        assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 1);
+
+        let whole = futures_util::stream::iter(vec![Ok(Bytes::from_static(b"this week's"))]);
+        write_file(whole, &path, &sink).await.unwrap();
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), "this week's");
+        assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 1);
     }
 
     #[tokio::test]

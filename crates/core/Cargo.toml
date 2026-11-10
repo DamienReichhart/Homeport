@@ -25,6 +25,5 @@ log.workspace = true
 tokio.workspace = true
 bollard = { workspace = true, optional = true }
 russh = { workspace = true, optional = true }
-
-[dev-dependencies]
+# Files saved over one the user picked are written beside it first.
 tempfile.workspace = true

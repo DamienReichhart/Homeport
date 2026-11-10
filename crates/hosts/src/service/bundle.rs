@@ -68,7 +68,8 @@ impl HostService {
             hosts.push(host);
         }
         let sealed = Payload::new(hosts).seal(passphrase)?;
-        std::fs::write(path, sealed).map_err(|e| local_file(path, e))?;
+        // Written beside it first: a failure keeps the export that was there.
+        homeport_core::local_files::write_replacing(path, &sealed)?;
         Ok(ExportOutcome {
             exported: ids.len() as u32,
             without_secrets,
