@@ -14,9 +14,9 @@ import { DocScreenshot } from '@/features/docs';
   alt="Die Seite Nodes: fünf EKS-Nodes, einer nicht bereit mit deaktivierter Planung, mit ihrer kubelet-Version, interner IP, Plattform, CPUs und Speicher."
 />
 
-CPUs werden in Kernen angezeigt (`3.92` für `3920m`) und Speicher in GB; Kubernetes meldet, was Pods **zuweisbar** ist, etwas weniger, als die Maschine hat, da kubelet und das System einen Teil behalten.
+CPUs werden in Kernen angezeigt (`3.92` für `3920m`) und Speicher in GB; Kubernetes meldet, was Pods **zuweisbar** ist, etwas weniger, als die Maschine hat, da kubelet und das System einen Teil behalten. Wenn auf dem Cluster metrics-server läuft, zeigen **CPU belegt** und **Arbeitsspeicher belegt**, wie viel davon jeder Node nutzt ([CPU und Arbeitsspeicher](/docs/clusters/metrics/)).
 
-Die Seite eines Nodes zeigt sein Betriebssystem-Image, den Kernel, die Container-Runtime, die Adressen, Taints, Labels und seine Kapazität neben dem, was Pods zuweisbar ist; dann die **Pods**, die darauf laufen, in jedem Namespace, seine **Bedingungen** (Speicher-, Festplatten- und PID-Druck), **Events** und **YAML**. Die Seite eines Pods verlinkt auf seinen Node.
+Die Seite eines Nodes zeigt sein Betriebssystem-Image, den Kernel, die Container-Runtime, die Adressen, Taints, Labels und seine Kapazität neben dem, was Pods zuweisbar ist; dann die **Pods**, die darauf laufen, in jedem Namespace, seine **Bedingungen** (Speicher-, Festplatten- und PID-Druck), **Events** und **YAML**. Die Seite eines Pods verlinkt auf seinen Node. Mit metrics-server zeichnet **Metriken** seine CPU und seinen Arbeitsspeicher gegenüber dem Zuweisbaren auf ([CPU und Arbeitsspeicher](/docs/clusters/metrics/)).
 
 ## Events
 
