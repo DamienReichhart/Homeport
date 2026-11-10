@@ -57,4 +57,9 @@ export default {
   'pods.terminal.notRunning': 'This container isn’t running.',
   'pods.terminal.exited': 'The process exited.',
   'pods.terminal.exitedWithCode': 'The process exited with code {code}.',
+  'pods.column.cpu': 'CPU',
+  'pods.column.memory': 'Memory',
+  'pods.tab.metrics': 'Metrics',
+  'pods.metrics.noSample':
+    'metrics-server has no sample of this Pod yet: it may have just started, or not be running.',
 } as const;

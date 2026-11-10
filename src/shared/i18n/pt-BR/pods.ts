@@ -60,4 +60,9 @@ export default {
   'pods.terminal.notRunning': 'Este contêiner não está em execução.',
   'pods.terminal.exited': 'O processo foi encerrado.',
   'pods.terminal.exitedWithCode': 'O processo foi encerrado com o código {code}.',
+  'pods.column.cpu': 'CPU',
+  'pods.column.memory': 'Memória',
+  'pods.tab.metrics': 'Métricas',
+  'pods.metrics.noSample':
+    'O metrics-server ainda não tem amostra deste Pod: ele pode ter acabado de iniciar ou não estar em execução.',
 } satisfies Translation<typeof en>;

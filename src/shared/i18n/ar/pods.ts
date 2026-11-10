@@ -62,4 +62,9 @@ export default {
   'pods.terminal.notRunning': 'هذه الحاوية لا تعمل.',
   'pods.terminal.exited': 'انتهت العملية.',
   'pods.terminal.exitedWithCode': 'انتهت العملية بالرمز {code}.',
+  'pods.column.cpu': 'المعالج',
+  'pods.column.memory': 'الذاكرة',
+  'pods.tab.metrics': 'المقاييس',
+  'pods.metrics.noSample':
+    'ليس لدى metrics-server عيّنة من هذا الـ Pod بعد: ربما بدأ للتو أو لا يعمل.',
 } satisfies Translation<typeof en>;

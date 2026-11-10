@@ -60,4 +60,9 @@ export default {
   'pods.terminal.notRunning': 'このコンテナは実行されていません。',
   'pods.terminal.exited': 'プロセスが終了しました。',
   'pods.terminal.exitedWithCode': 'プロセスがコード {code} で終了しました。',
+  'pods.column.cpu': 'CPU',
+  'pods.column.memory': 'メモリ',
+  'pods.tab.metrics': 'メトリクス',
+  'pods.metrics.noSample':
+    'metrics-server にはこの Pod のサンプルがまだありません。起動したばかりか、実行されていない可能性があります。',
 } satisfies Translation<typeof en>;
