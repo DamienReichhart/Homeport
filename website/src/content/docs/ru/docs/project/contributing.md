@@ -7,12 +7,12 @@ Homeport разрабатывается открыто на [github.com/DamienRe
 
 ## Сообщение об ошибке
 
-[Создайте issue](https://github.com/DamienReichhart/Homeport/issues/new), указав:
+[Создайте issue](https://github.com/DamienReichhart/Homeport/issues/new/choose), указав:
 
-- версию Homeport и платформу из раздела **Настройки** (например, `v0.2.0 · macos/aarch64`);
-- тип хоста (локальный, SSH, TLS или TCP) и версию его движка;
 - что вы сделали, чего ожидали и что произошло — точный текст сообщения помогает больше всего;
-- всё существенное из [файла журнала](/docs/reference/security/#журналы).
+- [пакет диагностики](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report) из **Настройки → О программе → Экспортировать диагностику…**: один zip-архив с версией и платформой Homeport, типами хостов, движков и кластеров, которые вы используете, и его журналами с удалёнными секретами. Вы видите его содержимое до сохранения, и ничего никуда не отправляется.
+
+Если Homeport не запускается, укажите вместо этого его версию и вашу операционную систему, а также всё существенное из [файла журнала](/docs/reference/security/#журналы).
 
 О проблемах безопасности сообщайте, пожалуйста, конфиденциально, через [механизм сообщений об уязвимостях GitHub](https://github.com/DamienReichhart/Homeport/security/advisories/new).
 
@@ -33,8 +33,9 @@ Homeport разрабатывается открыто на [github.com/DamienRe
    bun run rust:test
    ```
 
-5. Пишите сообщения коммитов в формате [Conventional Commits](https://www.conventionalcommits.org) — `feat(stacks): …`, `fix(hosts): …`. Из них формируются примечания к выпуску.
-6. Откройте pull request в ветку `dev`. CI запускает проверки фронтенда и проверку лицензий в Linux, а `cargo clippy` и `cargo test` — в Linux, macOS и Windows, так что код под `#[cfg(windows)]` или `#[cfg(target_os = "macos")]` компилируется до слияния. Тест, которому нужен Docker Engine, помечается `#[ignore = "needs a local Docker Engine"]`; такие тесты запускает отдельное задание в Linux на движке исполнителя.
+5. Соблюдайте обещание о данных: каждая версия Homeport открывает данные всех предыдущих версий, вплоть до 0.1.0, и обновляет их, ничего не теряя: хосты, стеки, кластеры, настройки и секреты. Изменение схемы — это новая миграция, а не правка уже выпущенной, и CI проверяет её на образце базы данных каждого релиза. См. [Data compatibility](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md#data-compatibility).
+6. Пишите сообщения коммитов в формате [Conventional Commits](https://www.conventionalcommits.org) — `feat(stacks): …`, `fix(hosts): …`. Из них формируются примечания к выпуску.
+7. Откройте pull request в ветку `dev`. CI запускает проверки фронтенда и проверку лицензий в Linux, а `cargo clippy` и `cargo test` — в Linux, macOS и Windows, так что код под `#[cfg(windows)]` или `#[cfg(target_os = "macos")]` компилируется до слияния. Тест, которому нужен Docker Engine, помечается `#[ignore = "needs a local Docker Engine"]`; такие тесты запускает отдельное задание в Linux на движке исполнителя.
 
 Чтобы подготовить окружение, см. [сборку из исходного кода](/docs/project/building/).
 
