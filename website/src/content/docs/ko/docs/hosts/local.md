@@ -50,7 +50,7 @@ podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}'
 
 ## Linux의 권한
 
-기본 소켓 `/var/run/docker.sock`은 `docker` 그룹에 속합니다. 사용자가 이 그룹에 없으면 호스트가 _Permission denied_ 오류와 함께 **연결할 수 없음**으로 표시됩니다. 그룹에 자신을 추가하고 다시 로그인하세요.
+기본 소켓 `/var/run/docker.sock`은 `docker` 그룹에 속합니다. 사용자가 이 그룹에 없으면 호스트가 _Homeport에 /var/run/docker.sock의 Docker Engine을 사용할 권한이 없습니다._ 메시지와 함께 **연결할 수 없음**으로 표시됩니다. 그룹에 자신을 추가하고 다시 로그인하세요.
 
 ```sh
 sudo usermod -aG docker $USER

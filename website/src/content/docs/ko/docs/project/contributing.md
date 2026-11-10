@@ -7,12 +7,12 @@ Homeport는 [github.com/DamienReichhart/Homeport](https://github.com/DamienReich
 
 ## 버그 보고
 
-다음 내용을 담아 [이슈를 여세요](https://github.com/DamienReichhart/Homeport/issues/new).
+다음 내용을 담아 [이슈를 여세요](https://github.com/DamienReichhart/Homeport/issues/new/choose).
 
-- **설정**에 있는 Homeport 버전과 플랫폼(예: `v0.2.0 · macos/aarch64`)
-- 호스트 종류(로컬, SSH, TLS 또는 TCP)와 엔진 버전
 - 무엇을 했고, 무엇을 기대했고, 무슨 일이 일어났는지. 정확한 메시지가 가장 도움이 됩니다.
-- [로그 파일](/docs/reference/security/#로그)에서 관련 있는 내용
+- **설정 → 정보 → 진단 정보 내보내기…**에서 만드는 [진단 정보 번들](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report). Homeport의 버전과 플랫폼, 사용 중인 호스트, 엔진, 클러스터의 종류, 비밀 정보를 제거한 로그를 담은 zip 하나입니다. 저장하기 전에 내용을 확인할 수 있으며, 어디로도 아무것도 전송되지 않습니다.
+
+Homeport가 시작되지 않으면 대신 버전과 운영 체제, 그리고 [로그 파일](/docs/reference/security/#로그)에서 관련 있는 내용을 적어 주세요.
 
 보안 문제는 [GitHub의 취약점 보고](https://github.com/DamienReichhart/Homeport/security/advisories/new)를 통해 비공개로 보고해 주세요.
 
@@ -33,8 +33,9 @@ Homeport는 [github.com/DamienReichhart/Homeport](https://github.com/DamienReich
    bun run rust:test
    ```
 
-5. 커밋 메시지는 [Conventional Commits](https://www.conventionalcommits.org) 형식(`feat(stacks): …`, `fix(hosts): …`)으로 작성하세요. 릴리스 노트가 커밋 메시지에서 생성됩니다.
-6. `dev` 브랜치를 대상으로 풀 리퀘스트를 여세요. CI는 Linux에서 프런트엔드 검사와 라이선스 검사를, Linux, macOS, Windows에서 `cargo clippy`와 `cargo test`를 실행하므로 `#[cfg(windows)]`나 `#[cfg(target_os = "macos")]` 뒤의 코드도 병합 전에 컴파일됩니다. Docker Engine이 필요한 테스트에는 `#[ignore = "needs a local Docker Engine"]` 표시가 붙으며, 별도의 Linux 작업이 러너의 엔진으로 이 테스트를 실행합니다.
+5. 데이터 약속을 지키세요. Homeport의 모든 버전은 0.1.0까지 거슬러 올라가는 모든 이전 버전의 데이터를 열고, 호스트, 스택, 클러스터, 설정, 비밀 정보를 하나도 잃지 않고 업그레이드합니다. 스키마 변경은 새 마이그레이션으로 하며, 이미 릴리스된 마이그레이션을 고치지 않습니다. CI가 모든 릴리스의 샘플 데이터베이스로 이를 확인합니다. [데이터 호환성](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md#data-compatibility)을 참고하세요.
+6. 커밋 메시지는 [Conventional Commits](https://www.conventionalcommits.org) 형식(`feat(stacks): …`, `fix(hosts): …`)으로 작성하세요. 릴리스 노트가 커밋 메시지에서 생성됩니다.
+7. `dev` 브랜치를 대상으로 풀 리퀘스트를 여세요. CI는 Linux에서 프런트엔드 검사와 라이선스 검사를, Linux, macOS, Windows에서 `cargo clippy`와 `cargo test`를 실행하므로 `#[cfg(windows)]`나 `#[cfg(target_os = "macos")]` 뒤의 코드도 병합 전에 컴파일됩니다. Docker Engine이 필요한 테스트에는 `#[ignore = "needs a local Docker Engine"]` 표시가 붙으며, 별도의 Linux 작업이 러너의 엔진으로 이 테스트를 실행합니다.
 
 개발 환경 설정은 [소스에서 빌드](/docs/project/building/)를 참고하세요.
 

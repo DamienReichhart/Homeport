@@ -12,7 +12,7 @@ Homeport가 업데이트되는 방식은 설치 방법에 따라 다릅니다.
 
 ### Windows, macOS, AppImage
 
-Homeport는 시작할 때와 6시간마다 새 버전을 확인합니다. 새 버전이 나오면 창 위쪽의 막대가 알려 줍니다. **새로운 기능**을 선택하면 [변경 내역](/changelog/)을 읽을 수 있고, **설치 후 다시 시작**을 선택하면 Homeport가 업데이트를 다운로드하고, 서명을 확인하고, 설치한 다음 다시 엽니다. 사용자가 선택하기 전에는 아무것도 설치되지 않으며, 호스트, 스택, 설정은 그대로 유지됩니다.
+Homeport는 시작할 때와 6시간마다 새 버전을 확인합니다. 새 버전이 나오면 창 위쪽의 막대가 알려 줍니다. **새로운 기능**을 선택하면 [변경 내역](/changelog/)을 읽을 수 있고, **설치 후 다시 시작**을 선택하면 Homeport가 업데이트를 다운로드하고, 서명을 확인하고, 설치한 다음 다시 엽니다. 사용자가 선택하기 전에는 아무것도 설치되지 않으며, [데이터는 그대로 유지됩니다](#your-data-across-versions).
 
 **설정 → 업데이트 → 지금 확인**에서 바로 확인할 수도 있습니다.
 
@@ -42,6 +42,14 @@ Homeport 저장소를 삭제했다면 패키지 관리자가 새 버전을 볼 �
 
 그래도 새 버전 소식을 받고 싶다면 GitHub에서 저장소를 구독하거나(**Watch → Custom → Releases**), [릴리스 피드](https://github.com/DamienReichhart/Homeport/releases.atom)를 구독하세요.
 
+## 버전 간 데이터
+
+Homeport의 모든 버전은 0.1.0까지 거슬러 올라가는 모든 이전 버전의 데이터를 열고, 호스트, 스택, 클러스터, 설정, 비밀 정보를 하나도 잃지 않고 업그레이드합니다. 업데이트 후에 무엇을 다시 설정할 필요가 없습니다. 새 버전이 처음 시작될 때 데이터베이스를 그 자리에서 업그레이드하고, 모든 것이 전처럼 연결됩니다. 각 릴리스는 그 이전의 모든 릴리스의 샘플 데이터베이스로 테스트됩니다.
+
+**다운그레이드는 지원하지 않습니다.** 더 새로운 버전이 데이터를 연 뒤에는 이전 버전이 그 데이터를 읽을 수 없으며, 읽으려고 하지도 않습니다. 아무것도 바꾸지 않고 [설치할 버전을 알려 주는 메시지](/docs/reference/troubleshooting/#this-database-was-last-used-by-homeport--or-later)를 표시하며 멈춥니다. 데이터는 새 버전이 남긴 그대로 있습니다. 그 버전이나 더 새로운 버전을 설치하면 Homeport가 다시 데이터를 엽니다.
+
+**사전 릴리스를 써 보기 전에 백업하세요.** 사전 릴리스도 다른 버전처럼 데이터베이스를 업그레이드하므로, 원래 쓰던 안정 릴리스는 더 이상 그 데이터베이스를 열 수 없습니다. 먼저 **설정 → 데이터 → 백업…**을 선택하세요. [데이터와 백업](/docs/reference/data-and-backups/#backing-up-in-homeport)을 참고하세요. 안정 릴리스로 돌아가려면 Homeport를 종료하고, `homeport.db`를 [데이터 폴더](/docs/reference/data-and-backups/#the-data-folder) 밖으로 옮기고, 안정 릴리스를 다시 설치한 다음 그 백업을 **복원…**하세요.
+
 ## 제거
 
 <Tabs syncKey="os">
@@ -64,7 +72,7 @@ AppImage는 파일을 삭제하세요. 메뉴 항목도 함께 사라집니다.
 </TabItem>
 </Tabs>
 
-제거해도 데이터는 그대로 남으므로, 다시 설치하면 모든 것이 돌아옵니다.
+제거해도 데이터는 그대로 남으므로, 다시 설치하면 모든 것이 돌아옵니다. 데이터가 어디에 있는지는 [데이터와 백업](/docs/reference/data-and-backups/)에서 설명합니다.
 
 ### 로그인 항목
 
@@ -79,8 +87,10 @@ AppImage는 파일을 삭제하세요. 메뉴 항목도 함께 사라집니다.
 ## 데이터 삭제
 
 <Aside type="caution">
-  호스트, 저장된 키와 인증서, 관리형 스택 정의, 링크된 스택과 그 배포 기록이 삭제됩니다. 링크된
-  스택의 폴더는 그대로 남습니다. 호스트에 있는 것은 건드리지 않습니다.
+  호스트와 클러스터, 저장된 키, 인증서, 토큰, 관리형, 링크된, 동기화 스택과 그 환경 변수 및 배포
+  기록, 레지스트리 로그인, 저장소, 설정이 삭제됩니다. 링크된 스택의 폴더는 그대로 남습니다. 호스트와
+  클러스터에 있는 것은 건드리지 않습니다. 먼저 사본을 남기려면
+  [백업하세요](/docs/reference/data-and-backups/).
 </Aside>
 
 1. Homeport의 데이터 폴더와 로그 폴더를 삭제합니다.
@@ -91,9 +101,9 @@ AppImage는 파일을 삭제하세요. 메뉴 항목도 함께 사라집니다.
    | macOS   | `~/Library/Application Support/com.homeport.app/`, `~/Library/Logs/com.homeport.app/` |
    | Windows | `%APPDATA%\com.homeport.app\`, `%LOCALAPPDATA%\com.homeport.app\`                     |
 
-2. 키체인에서 암호화 키, 즉 `com.homeport.app` 항목을 삭제합니다.
+2. 키체인에서 암호화 키, 즉 `com.homeport.app`의 `secrets-key` 계정 항목을 삭제합니다.
    - **macOS** — **키체인 접근**에서 `com.homeport.app`을 검색하여 삭제합니다.
    - **Windows** — **자격 증명 관리자 → Windows 자격 증명**에서 `com.homeport.app`이 들어 있는 항목을 제거합니다.
    - **Linux** — **암호 및 키**(Seahorse)나 KWallet에서 `com.homeport.app` 항목을 삭제합니다.
 
-3. 서버에서 `~/.ssh/authorized_keys`의 Homeport 공개 키를 삭제합니다. 주석이 `homeport@`로 시작합니다.
+3. 서버에서 `~/.ssh/authorized_keys`의 Homeport 공개 키를 삭제합니다. 주석이 `homeport@`로 시작합니다. git 포지에서는 Homeport가 저장소용으로 만든 배포 키를 삭제하고, HTTPS로 추가한 Incus 서버에서는 Homeport의 인증서를 삭제합니다(`incus config trust list` 다음 `incus config trust remove`).

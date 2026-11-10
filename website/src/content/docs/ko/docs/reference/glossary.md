@@ -7,7 +7,7 @@ Homeport는 대상을 정확한 이름으로 부릅니다. 이 용어들은 앱�
 
 ### Host (_호스트_)
 
-Homeport가 연결하는 Docker Engine으로, 이름과 접근 방법(로컬 소켓, TCP, TLS 또는 SSH)으로 정의됩니다. 모든 컨테이너, 이미지, 볼륨, 네트워크, 스택은 정확히 하나의 호스트에 속합니다. [호스트와 연결](/docs/hosts/)을 참고하세요.
+Homeport가 연결하는 엔진으로, 이름과 접근 방법(로컬 소켓, TCP, TLS 또는 SSH)으로 정의됩니다. 모든 컨테이너, 이미지, 볼륨, 네트워크, 스택은 정확히 하나의 호스트에 속합니다. [호스트와 연결](/docs/hosts/)을 참고하세요.
 
 ### Engine kind (_엔진 종류_)
 
@@ -44,6 +44,10 @@ Podman 호스트에서 네트워크 하나를 공유하고 함께 시작하고 �
 ### Quadlet unit (_Quadlet 유닛_)
 
 `web.container`처럼 Podman 호스트에 있는 파일로, systemd가 `web.service`라는 서비스로 바꿉니다. 그래서 Podman의 컨테이너가 부팅할 때 시작되고 systemd가 계속 실행되도록 관리합니다. [Quadlet 유닛](/docs/guides/quadlet/)을 참고하세요.
+
+### Bastion (_배스천_)
+
+SSH 호스트의 SSH 서버가 특정 서버에서 오는 연결만 받아들일 때, 그 호스트에 연결하기 위해 거쳐 가는 SSH 서버입니다. OpenSSH에서 `ProxyJump`라고 부르는 것입니다. 호스트 하나에 여러 개를 순서대로 둘 수 있고, 각각 신뢰한 서버 키를 가집니다. 배스천은 호스트가 아닙니다. Homeport가 통신하는 엔진이 실행되지 않습니다. [배스천을 통한 연결](/docs/hosts/ssh/#through-a-bastion)을 참고하세요.
 
 ### Cluster (_클러스터_)
 
@@ -131,7 +135,7 @@ Docker Hub나 GHCR 같은 컨테이너 레지스트리 하나에 대해 Homeport
 
 ### Engine (_엔진_)
 
-컴퓨터에서 컨테이너를 실행하는 Docker Engine(`dockerd`) 또는 Podman 같은 호환 엔진입니다. Homeport는 Docker Engine API로 엔진과 통신합니다.
+호스트가 가리키는 소프트웨어로, 설치하고 시작하고 중지하는 대상입니다. Docker Engine(`dockerd`)이나 Docker Desktop, Podman, Colima, OrbStack 같은 호환 엔진이며 Homeport는 Docker Engine API로 이들과 통신합니다. 또는 containerd나 Incus이며 각자의 API로 통신합니다. 호스트와 같은 말이 아닙니다. “Docker Engine을 시작하세요”는 엔진에 관한 말이고, “Homeport가 prod-server에 연결할 수 없습니다”는 호스트에 관한 말입니다.
 
 ### Socket (_소켓_)
 
@@ -147,7 +151,7 @@ Homeport가 SSH 서버를 확인하는 방식입니다. 첫 연결에서 서버 
 
 ## 한국어
 
-한국어 앱, 문서, 웹사이트는 화면과 페이지가 항상 같은 말을 하도록 다음 용어를 씁니다.
+한국어 앱, 문서, 웹사이트는 화면과 페이지가 항상 같은 말을 하도록 다음 용어를 씁니다. 다른 언어마다 [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n)에 각자의 표가 있습니다.
 
 | 영어           | 한국어          |
 | -------------- | --------------- |

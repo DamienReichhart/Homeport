@@ -6,9 +6,9 @@ description: Homeport가 무엇이고 무엇을 하는지, 그리고 이 문서�
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import { DocScreenshot } from '@/features/docs';
 
-**Homeport**는 이 컴퓨터의 Docker Engine이든 SSH, TLS, TCP로 연결하는 원격 Docker Engine이든 어디에 있는 Docker Engine이나 관리하고, kubeconfig로 접근할 수 있는 Kubernetes 클러스터도 관리하는 데스크톱 앱으로, Docker Desktop과 같은 방식을 따릅니다. Windows, macOS, Linux에서 실행되고, 무료이며, [GNU Affero General Public License 버전 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE)에 따른 오픈 소스입니다.
+**Homeport**는 이 컴퓨터의 것이든 SSH, TLS, TCP로 연결하는 원격의 것이든 어디에 있는 Docker Engine, containerd, Incus를 관리하고, 이들이 이루는 Swarm, kubeconfig로 접근할 수 있는 Kubernetes 클러스터, 직접 지정한 Nomad 클러스터도 관리하는 데스크톱 앱으로, Docker Desktop과 같은 방식을 따릅니다. Windows, macOS, Linux에서 실행되고, 무료이며, [GNU Affero General Public License 버전 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE)에 따른 오픈 소스입니다.
 
-Homeport는 컨테이너를 직접 실행하지 않습니다. 이미 가지고 있는 Docker Engine, 즉 **호스트**에 연결하여 그 위의 모든 것, 곧 컨테이너, 이미지, 볼륨, 네트워크, Compose **스택**을 하나의 창에서 다룰 수 있게 합니다. 또한 kubeconfig에 있는 Kubernetes **클러스터**에 연결하여 그 위에서 실행되는 것을 살펴볼 수 있습니다.
+Homeport는 컨테이너를 직접 실행하지 않습니다. 이미 가지고 있는 엔진, 즉 **호스트**에 연결하여 그 위의 모든 것, 곧 컨테이너, 이미지, 볼륨, 네트워크, Compose **스택**을 하나의 창에서 다룰 수 있게 합니다. 또한 Kubernetes와 Nomad **클러스터**에 연결하여 그 위에서 실행되는 것을 확인하고 관리할 수 있습니다. 호스트나 클러스터에는 아무것도 설치하지 않습니다.
 
 <DocScreenshot
   name="overview"
@@ -28,7 +28,12 @@ Homeport는 컨테이너를 직접 실행하지 않습니다. 이미 가지고 �
     제공합니다.
   </Card>
   <Card title="Compose 스택 배포" icon="rocket">
-    compose 파일과 암호화된 환경 변수를 Homeport에 보관하고, 어느 호스트에나 배포합니다.
+    compose 파일과 암호화된 환경 변수를 Homeport에 보관하거나, 프로젝트 폴더에서 배포하거나, git
+    저장소를 따라가며, 어느 호스트나 Swarm에나 배포합니다.
+  </Card>
+  <Card title="Swarm 관리" icon="seti:docker">
+    매니저 호스트를 통해 Docker Swarm을 찾고, 그 노드, 서비스, 태스크, 시크릿, config, Swarm 스택을
+    관리합니다.
   </Card>
   <Card title="Podman 고유 기능 사용" icon="seti:config">
     Podman 호스트에서는 Pod를 관리하고 그 안에서 컨테이너를 실행하며, systemd에서 Quadlet 유닛을
@@ -44,7 +49,12 @@ Homeport는 컨테이너를 직접 실행하지 않습니다. 이미 가지고 �
   </Card>
   <Card title="Kubernetes 살펴보기" icon="server">
     EKS, GKE, AKS를 포함해 kubeconfig에서 클러스터를 추가하고, 워크로드, Pod, Service, 구성, Node,
-    Event를 실시간으로 확인합니다.
+    Event를 실시간으로 확인합니다. 로그를 읽고, 터미널을 열고, 포트를 포워딩하고, 스케일을 조정하고,
+    YAML을 적용하고, Helm 릴리스를 관리합니다.
+  </Card>
+  <Card title="Nomad job 실행" icon="server">
+    에이전트 주소로 Nomad 클러스터를 추가하고, job을 계획하고 실행하며, allocation과 로그를
+    따라가고, 태스크에서 셸을 열고, 노드를 드레인합니다.
   </Card>
   <Card title="깔끔하게 유지" icon="seti:folder">
     이미지, 볼륨, 네트워크의 사용 현황을 한눈에 보여 주고, 무엇을 삭제할지 알려 주는 정리 대화
@@ -55,18 +65,19 @@ Homeport는 컨테이너를 직접 실행하지 않습니다. 이미 가지고 �
 ## 이 문서의 구성
 
 - **시작하기** — [Homeport를 설치](/docs/installation/)한 다음 [빠른 시작](/docs/quick-start/)을 따라 첫 번째 호스트에 연결합니다.
-- **호스트** — 연결 종류별 작동 방식: [로컬 엔진](/docs/hosts/local/), [SSH](/docs/hosts/ssh/), [TLS와 TCP](/docs/hosts/tls-tcp/).
-- **클러스터** — kubeconfig에서 [Kubernetes 클러스터를 추가](/docs/clusters/)하고 살펴보는 방법.
+- **호스트** — 연결 종류별 작동 방식: [로컬 엔진](/docs/hosts/local/), [SSH](/docs/hosts/ssh/), [TLS와 TCP](/docs/hosts/tls-tcp/). 그리고 전용 페이지가 있는 엔진인 [containerd](/docs/hosts/containerd/)와 [Incus](/docs/hosts/incus/).
+- **클러스터** — kubeconfig에서 [Kubernetes 클러스터를 추가](/docs/clusters/)하고 살펴보고 변경하는 방법, [Helm 릴리스](/docs/clusters/helm/), [Nomad 클러스터](/docs/clusters/nomad/).
 - **Homeport 사용하기** — 앱의 각 페이지에 대한 안내.
-- **참고 자료** — [보안](/docs/reference/security/), [문제 해결](/docs/reference/troubleshooting/), [자주 묻는 질문](/docs/reference/faq/), [용어집](/docs/reference/glossary/).
+- **참고 자료** — [보안](/docs/reference/security/), [데이터와 백업](/docs/reference/data-and-backups/), [업데이트](/docs/reference/updating/), [문제 해결](/docs/reference/troubleshooting/), [자주 묻는 질문](/docs/reference/faq/), [용어집](/docs/reference/glossary/).
 
 ## 이 문서에서 쓰는 용어
 
 Homeport는 대상을 정확한 이름으로 부르며, 이 문서도 그대로 따릅니다.
 
-- **호스트**는 Homeport가 연결하는 Docker Engine입니다. 모든 컨테이너, 이미지, 볼륨, 네트워크, 스택은 정확히 하나의 호스트에 속합니다.
-- **클러스터**는 Homeport가 연결하는 Kubernetes 클러스터로, kubeconfig의 컨텍스트에서 추가합니다.
-- **스택**은 호스트에서 실행되는 Compose 프로젝트입니다. **관리형 스택**은 Homeport가 compose 파일을 보관하는 스택이고, **링크된 스택**은 compose 파일을 이 컴퓨터의 폴더에 두는 스택이며, **외부 스택**은 다른 방법으로 배포된 스택입니다. 외부 스택을 **관리형으로 전환**하면 Homeport에서 관리할 수 있습니다.
+- **호스트**는 Homeport가 연결하는 엔진으로, Docker Engine이거나 Podman, containerd, Incus 같은 호환 엔진입니다. 모든 컨테이너, 이미지, 볼륨, 네트워크, 스택은 정확히 하나의 호스트에 속합니다.
+- **클러스터**는 kubeconfig의 컨텍스트에서 추가하는 Kubernetes 클러스터이거나, 에이전트 중 하나의 주소로 추가하는 Nomad 클러스터입니다.
+- **Swarm**은 Docker Swarm으로, 그에 속한 호스트를 통해 찾으며 따로 추가하지 않습니다.
+- **스택**은 호스트에서 실행되는 Compose 프로젝트이거나 Swarm에서 실행되는 Swarm 스택입니다. **관리형 스택**은 Homeport가 compose 파일을 보관하는 스택이고, **링크된 스택**은 compose 파일을 이 컴퓨터의 폴더에 두는 스택이며, **동기화 스택**은 git 저장소를 따라가는 스택이고, **외부 스택**은 다른 방법으로 배포된 스택입니다. 외부 스택을 **관리형으로 전환**하면 Homeport에서 관리할 수 있습니다.
 
 전체 목록은 [용어집](/docs/reference/glossary/)에 있습니다.
 
