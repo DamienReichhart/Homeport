@@ -7,7 +7,8 @@ use homeport_clusters::service::ClusterService;
 use homeport_containerd::exec::ContainerdExecSessions;
 use homeport_core::streams::Streams;
 use homeport_engine::{
-    containers::exec::ExecSessions, freshness::FreshnessCache, volumes::browse::BrowseSessions,
+    containers::exec::ExecSessions, images::freshness::FreshnessCache,
+    volumes::browse::BrowseSessions,
 };
 use homeport_git::Repositories;
 use homeport_hosts::service::HostService;

@@ -329,5 +329,6 @@ pub async fn prune(docker: &Docker, all: bool) -> AppResult<PruneReport> {
     })
 }
 
+pub mod freshness;
 #[cfg(test)]
 mod tests;

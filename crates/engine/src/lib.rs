@@ -5,7 +5,6 @@
 pub mod auth;
 pub mod build;
 pub mod containers;
-pub mod freshness;
 pub mod images;
 pub mod messages;
 pub mod networks;
