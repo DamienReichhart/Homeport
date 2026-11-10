@@ -348,3 +348,43 @@ async fn kubectl_reaches_the_cluster_through_the_private_proxy() {
     .unwrap();
     assert!(out.lines().any(|l| l == "namespace/kube-system"), "{out}");
 }
+
+#[tokio::test]
+#[ignore = "needs a kind cluster"]
+async fn metrics_come_from_metrics_server_or_say_it_isnt_installed() {
+    use std::{
+        sync::{Arc, Mutex},
+        time::Duration,
+    };
+
+    use homeport_clusters::metrics::{MetricsEvent, MetricsTarget, EVERY};
+
+    let Some(on) = connect() else { return };
+    let served = on.serves_metrics().await.unwrap();
+    eprintln!("serves the Metrics API: {served}");
+    let events: Arc<Mutex<Vec<MetricsEvent>>> = Arc::default();
+    let sink = {
+        let events = events.clone();
+        move |e| {
+            events.lock().unwrap().push(e);
+            false
+        }
+    };
+    tokio::time::timeout(
+        Duration::from_secs(30),
+        on.poll_metrics(MetricsTarget::Nodes, EVERY, sink),
+    )
+    .await
+    .unwrap();
+    let events = events.lock().unwrap();
+    match &events[..] {
+        [MetricsEvent::NotInstalled] => assert!(!served),
+        [MetricsEvent::Nodes { nodes }] => {
+            assert!(served);
+            assert!(nodes.iter().all(|n| n.usage.memory > 0), "{nodes:?}");
+        }
+        // metrics-server just installed, still starting.
+        [MetricsEvent::NotResponding { .. }] => assert!(served),
+        other => panic!("{other:?}"),
+    }
+}
