@@ -45,14 +45,14 @@ Lokale Builds sind nicht für den In-App-Updater signiert und lassen die `.rpm` 
 
 ## Nützliche Befehle
 
-| Befehl                | Was er tut                                                                                                             |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `bun run check`       | Typprüfung, Lint, Formatprüfung und Frontend-Tests                                                                     |
-| `bun run rust:lint`   | `cargo clippy` mit Warnungen als Fehler                                                                                |
-| `bun run rust:test`   | Rust-Unit-Tests                                                                                                        |
-| `bun run bindings`    | Die TypeScript-Bindings für die IPC neu erzeugen                                                                       |
-| `bun run licenses`    | Die Lizenzhinweise für Drittanbieter erzeugen                                                                          |
-| `bun run screenshots` | Die auf dieser Website verwendeten Screenshots in jeder Sprache neu aufnehmen (`--locale fr`, um eine neu aufzunehmen) |
+| Befehl                | Was er tut                                                                                                                                                                                                                                                     |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bun run check`       | Typprüfung, Lint, Formatprüfung und Frontend-Tests                                                                                                                                                                                                             |
+| `bun run rust:lint`   | `cargo clippy` mit Warnungen als Fehler                                                                                                                                                                                                                        |
+| `bun run rust:test`   | Rust-Unit-Tests                                                                                                                                                                                                                                                |
+| `bun run bindings`    | Die TypeScript-Bindings für die IPC neu erzeugen                                                                                                                                                                                                               |
+| `bun run licenses`    | Die Lizenzhinweise für Drittanbieter erzeugen                                                                                                                                                                                                                  |
+| `bun run screenshots` | Die auf dieser Website verwendeten Screenshots in jeder Sprache neu aufnehmen (`--locale fr`, um eine neu aufzunehmen), in 2880×1800, der doppelten Pixeldichte. Vorher oxipng installieren (`cargo install oxipng`), damit sie verlustfrei komprimiert werden |
 
 Integrationstests sprechen mit der lokalen Docker Engine und der Compose-CLI. Sie sind mit `#[ignore = "needs a local Docker Engine"]` markiert (oder `"… and the compose CLI"`, und einige mit `"… access to Docker Hub"`), erstellen nur Ressourcen namens `homeport-test-*` und entfernen sie danach. Führen Sie sie mit einer Engine und dem Compose-Plugin auf diesem Rechner aus:
 

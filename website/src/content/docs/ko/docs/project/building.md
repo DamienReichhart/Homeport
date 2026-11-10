@@ -45,14 +45,14 @@ bun run tauri:build
 
 ## 유용한 명령
 
-| 명령                  | 하는 일                                                                                          |
-| --------------------- | ------------------------------------------------------------------------------------------------ |
-| `bun run check`       | 타입 검사, 린트, 포맷 검사, 프런트엔드 테스트                                                    |
-| `bun run rust:lint`   | 경고를 오류로 처리하는 `cargo clippy`                                                            |
-| `bun run rust:test`   | Rust 단위 테스트                                                                                 |
-| `bun run bindings`    | IPC용 TypeScript 바인딩 다시 생성                                                                |
-| `bun run licenses`    | 서드파티 라이선스 고지 생성                                                                      |
-| `bun run screenshots` | 이 웹사이트에 쓰이는 스크린숏을 모든 언어로 다시 캡처(언어 하나만 다시 캡처하려면 `--locale fr`) |
+| 명령                  | 하는 일                                                                                                                                                                                                  |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bun run check`       | 타입 검사, 린트, 포맷 검사, 프런트엔드 테스트                                                                                                                                                            |
+| `bun run rust:lint`   | 경고를 오류로 처리하는 `cargo clippy`                                                                                                                                                                    |
+| `bun run rust:test`   | Rust 단위 테스트                                                                                                                                                                                         |
+| `bun run bindings`    | IPC용 TypeScript 바인딩 다시 생성                                                                                                                                                                        |
+| `bun run licenses`    | 서드파티 라이선스 고지 생성                                                                                                                                                                              |
+| `bun run screenshots` | 이 웹사이트에 쓰이는 스크린숏을 모든 언어로 다시 캡처(언어 하나만 다시 캡처하려면 `--locale fr`). 크기는 2880×1800으로 픽셀 밀도의 두 배. 무손실로 압축되도록 먼저 oxipng를 설치(`cargo install oxipng`) |
 
 통합 테스트는 로컬 Docker Engine 및 Compose CLI와 통신합니다. 이 테스트에는 `#[ignore = "needs a local Docker Engine"]`(또는 `"… and the compose CLI"`, 일부는 `"… access to Docker Hub"`) 표시가 붙어 있으며, `homeport-test-*`라는 이름의 리소스만 만들고 끝나면 삭제합니다. 이 컴퓨터에 엔진과 compose 플러그인을 두고 실행하세요.
 

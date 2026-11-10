@@ -45,14 +45,14 @@ As builds locais não são assinadas para o atualizador do aplicativo e deixam o
 
 ## Comandos úteis
 
-| Comando               | O que faz                                                                                                  |
-| --------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `bun run check`       | Verificação de tipos, lint, verificação de formatação e testes do frontend                                 |
-| `bun run rust:lint`   | `cargo clippy` com avisos tratados como erros                                                              |
-| `bun run rust:test`   | Testes unitários em Rust                                                                                   |
-| `bun run bindings`    | Gera de novo os bindings TypeScript para o IPC                                                             |
-| `bun run licenses`    | Gera os avisos de licença de terceiros                                                                     |
-| `bun run screenshots` | Captura de novo as capturas de tela usadas neste site, em todos os idiomas (`--locale fr` para refazer um) |
+| Comando               | O que faz                                                                                                                                                                                                                                      |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bun run check`       | Verificação de tipos, lint, verificação de formatação e testes do frontend                                                                                                                                                                     |
+| `bun run rust:lint`   | `cargo clippy` com avisos tratados como erros                                                                                                                                                                                                  |
+| `bun run rust:test`   | Testes unitários em Rust                                                                                                                                                                                                                       |
+| `bun run bindings`    | Gera de novo os bindings TypeScript para o IPC                                                                                                                                                                                                 |
+| `bun run licenses`    | Gera os avisos de licença de terceiros                                                                                                                                                                                                         |
+| `bun run screenshots` | Captura de novo as capturas de tela usadas neste site, em todos os idiomas (`--locale fr` para refazer um), em 2880×1800, o dobro da densidade de pixels. Instale antes o oxipng (`cargo install oxipng`) para que sejam comprimidas sem perda |
 
 Os testes de integração conversam com o Docker Engine local e com a CLI do Compose. Eles são marcados com `#[ignore = "needs a local Docker Engine"]` (ou `"… and the compose CLI"`, e alguns com `"… access to Docker Hub"`), criam apenas recursos chamados `homeport-test-*` e os removem depois. Execute-os com um Engine e o plugin compose nesta máquina:
 

@@ -90,9 +90,11 @@ bun run dev     # http://localhost:4321/Homeport/
 bun run lint    # checks the layers (docs/ARCHITECTURE.md#website-layout) and file sizes
 bun run test    # unit tests (bun test), next to the code they test
 bun run build   # type-checks, validates links and builds into website/dist/
+bun run test:images   # after a build, in Chromium (bunx playwright install chromium):
+                      # every image is sharp at a pixel density of 2, small on a phone
 ```
 
-User docs are Markdown in `website/src/content/docs/docs/`. The app screenshots in `website/src/assets/screenshots/` come from the real UI with demo data: `bun run screenshots` (at the repo root, needs Firefox) retakes them, and `bun scripts/brand-images.ts` (in `website/`) regenerates the social card and icons.
+User docs are Markdown in `website/src/content/docs/docs/`. The app screenshots in `website/src/assets/screenshots/` come from the real UI with demo data: `bun run screenshots` (at the repo root, needs Firefox) retakes them at 2880×1800, twice the pixel density of the 1440×900 window, and compresses them without loss when oxipng is installed (`cargo install oxipng`), and `bun scripts/brand-images.ts` (in `website/`) regenerates the social card and icons.
 
 ## Layout
 

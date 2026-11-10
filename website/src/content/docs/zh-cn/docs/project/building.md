@@ -45,14 +45,14 @@ bun run tauri:build
 
 ## 常用命令
 
-| 命令                  | 作用                                                               |
-| --------------------- | ------------------------------------------------------------------ |
-| `bun run check`       | 类型检查、lint、格式检查和前端测试                                 |
-| `bun run rust:lint`   | 将警告视为错误的 `cargo clippy`                                    |
-| `bun run rust:test`   | Rust 单元测试                                                      |
-| `bun run bindings`    | 重新生成 IPC 的 TypeScript 绑定                                    |
-| `bun run licenses`    | 生成第三方许可证声明                                               |
-| `bun run screenshots` | 以每种语言重新截取本网站使用的截图（`--locale fr` 只重新截取一种） |
+| 命令                  | 作用                                                                                                                                                              |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bun run check`       | 类型检查、lint、格式检查和前端测试                                                                                                                                |
+| `bun run rust:lint`   | 将警告视为错误的 `cargo clippy`                                                                                                                                   |
+| `bun run rust:test`   | Rust 单元测试                                                                                                                                                     |
+| `bun run bindings`    | 重新生成 IPC 的 TypeScript 绑定                                                                                                                                   |
+| `bun run licenses`    | 生成第三方许可证声明                                                                                                                                              |
+| `bun run screenshots` | 以每种语言重新截取本网站使用的截图（`--locale fr` 只重新截取一种），尺寸为 2880×1800，即两倍像素密度。请先安装 oxipng（`cargo install oxipng`），以便无损压缩截图 |
 
 集成测试会与本地 Docker Engine 和 Compose CLI 通信。它们被标记为 `#[ignore = "needs a local Docker Engine"]`（或 `"… and the compose CLI"`，少数为 `"… access to Docker Hub"`），只创建名为 `homeport-test-*` 的资源，并在之后删除它们。在本机上有引擎和 compose 插件时运行它们：
 
