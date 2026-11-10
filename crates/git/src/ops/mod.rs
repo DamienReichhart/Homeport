@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 
-use crate::{access::Remote, cli::GitCli, errors, messages as msg};
+use crate::{access::Remote, cli::GitCli, error, messages as msg};
 
 /// What a Synced Stack follows.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
@@ -289,7 +289,7 @@ pub async fn commit(cli: &GitCli, repo: &Path, commit: &str) -> AppResult<Commit
     parse_log(&out.text())
         .into_iter()
         .next()
-        .ok_or_else(|| errors::failure("log", "no such commit", None))
+        .ok_or_else(|| error::failure("log", "no such commit", None))
 }
 
 /// The commits after `from` up to `to` that change something under

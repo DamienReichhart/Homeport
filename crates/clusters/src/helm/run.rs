@@ -5,7 +5,7 @@ use serde::de::DeserializeOwned;
 
 use homeport_core::error::{AppError, AppResult};
 
-use super::{errors, program, FOREIGN_ENV};
+use super::{error, program, FOREIGN_ENV};
 use crate::{
     messages as msg,
     proxy::{self, CliCommand, CliEvent, ClusterAccess},
@@ -54,7 +54,7 @@ impl Helm {
         let command = self.command(args, stdin);
         let name = self.cluster_name();
         proxy::output(&command, self.access.as_ref(), |f| {
-            errors::failure(&verb, name, f)
+            error::failure(&verb, name, f)
         })
         .await
     }
@@ -86,7 +86,7 @@ impl Helm {
         proxy::run_cli(
             command,
             self.access,
-            |f| errors::failure(&verb, name.as_deref(), f),
+            |f| error::failure(&verb, name.as_deref(), f),
             sink,
         )
         .await;

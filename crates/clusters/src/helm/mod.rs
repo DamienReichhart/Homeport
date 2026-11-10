@@ -4,7 +4,7 @@
 //! user's.
 
 mod change;
-mod errors;
+mod error;
 mod install;
 mod releases;
 mod repos;
@@ -19,7 +19,7 @@ use homeport_core::{error::AppResult, programs};
 
 pub use self::{
     change::{RollbackRequest, UninstallRequest, UpgradeRequest},
-    errors::{failure, missing},
+    error::{failure, missing},
     install::{InstallRequest, ReleasePreview},
     releases::{ReleaseDetails, ReleaseList, ReleaseResource, ReleaseRevision, ReleaseSummary},
     repos::{ChartRepository, ChartVersion},
@@ -87,7 +87,7 @@ pub async fn detect() -> AppResult<HelmCli> {
             program: program.to_string_lossy().into_owned(),
             version,
         }),
-        Version::Outdated(version) => Err(errors::outdated(&version)),
+        Version::Outdated(version) => Err(error::outdated(&version)),
         _ => Err(missing()),
     }
 }

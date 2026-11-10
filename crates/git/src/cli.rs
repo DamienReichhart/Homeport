@@ -13,7 +13,7 @@ use homeport_core::{
 
 use crate::{
     access::{Remote, Session},
-    errors::{self, Context},
+    error::{self, Context},
     messages as msg,
 };
 
@@ -91,7 +91,7 @@ impl GitCli {
             .await
             .map_err(|f| match f {
                 Failure::Error(e) => e,
-                Failure::Exited { stderr } => errors::failure(args[0], &stderr, None),
+                Failure::Exited { stderr } => error::failure(args[0], &stderr, None),
             })
     }
 
@@ -103,7 +103,7 @@ impl GitCli {
 
     /// Runs `git <args>` reaching `remote`, in `cwd`. Returns what it printed
     /// and the server key it trusted for the first time, if any; a failure
-    /// is classified from what git printed (see [`errors::failure`]).
+    /// is classified from what git printed (see [`error::failure`]).
     pub(crate) async fn remote(
         &self,
         remote: &Remote<'_>,
@@ -114,7 +114,7 @@ impl GitCli {
         match self.output(&session, cwd, args, NETWORK_TIMEOUT).await {
             Ok(out) => Ok((out, session.learned_host_key())),
             Err(Failure::Error(error)) => Err(error),
-            Err(Failure::Exited { stderr }) => Err(errors::failure(
+            Err(Failure::Exited { stderr }) => Err(error::failure(
                 args[0],
                 &stderr,
                 Some(&Context {

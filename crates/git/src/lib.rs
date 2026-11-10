@@ -17,7 +17,7 @@
 mod access;
 mod agent;
 pub mod cli;
-mod errors;
+mod error;
 pub mod messages;
 pub mod ops;
 mod service;
