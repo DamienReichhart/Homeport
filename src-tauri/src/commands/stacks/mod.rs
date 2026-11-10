@@ -42,24 +42,24 @@ pub async fn stacks_list(state: State<'_, AppState>, host_id: String) -> AppResu
     stacks::list(
         &host_id,
         &running,
-        &state.stacks,
-        &state.linked,
-        &state.synced.store,
-        &state.linked_files,
+        &state.stacks.managed,
+        &state.stacks.linked,
+        &state.stacks.synced.store,
+        &state.stacks.linked_files,
     )
 }
 
 #[tauri::command]
 #[specta::specta]
 pub fn stacks_get(state: State<'_, AppState>, id: String) -> AppResult<ManagedStack> {
-    state.stacks.get(&id)
+    state.stacks.managed.get(&id)
 }
 
 /// The decrypted environment of a Managed Stack, for editing.
 #[tauri::command]
 #[specta::specta]
 pub fn stacks_get_env(state: State<'_, AppState>, id: String) -> AppResult<String> {
-    state.stacks.env(&id)
+    state.stacks.managed.env(&id)
 }
 
 /// Checks a definition made of `files` (their YAML, merged in order) against
@@ -100,13 +100,22 @@ async fn refuse_taking_over(
     };
     let mut known: Vec<String> = state
         .stacks
+        .managed
         .list_of(owner)?
         .into_iter()
         .map(|s| s.name)
         .collect();
-    known.extend(state.linked.list_of(owner)?.into_iter().map(|s| s.name));
     known.extend(
         state
+            .stacks
+            .linked
+            .list_of(owner)?
+            .into_iter()
+            .map(|s| s.name),
+    );
+    known.extend(
+        state
+            .stacks
             .synced
             .store
             .list_of(owner)?
@@ -133,7 +142,7 @@ pub async fn stacks_create(
     if !adopt {
         refuse_taking_over(&state, &owner, &name, None).await?;
     }
-    state.stacks.create(&owner, &name, &files, &env)
+    state.stacks.managed.create(&owner, &name, &files, &env)
 }
 
 /// Whether deploying a Stack to a Swarm sends the docker CLI's own registry
@@ -147,9 +156,28 @@ pub fn stacks_set_registry_auth(
     on: bool,
 ) -> AppResult<bool> {
     Ok(match kind {
-        SourceKind::Managed => state.stacks.set_registry_auth(&id, on)?.registry_auth,
-        SourceKind::Linked => state.linked.set_registry_auth(&id, on)?.registry_auth,
-        SourceKind::Synced => state.synced.store.set_registry_auth(&id, on)?.registry_auth,
+        SourceKind::Managed => {
+            state
+                .stacks
+                .managed
+                .set_registry_auth(&id, on)?
+                .registry_auth
+        }
+        SourceKind::Linked => {
+            state
+                .stacks
+                .linked
+                .set_registry_auth(&id, on)?
+                .registry_auth
+        }
+        SourceKind::Synced => {
+            state
+                .stacks
+                .synced
+                .store
+                .set_registry_auth(&id, on)?
+                .registry_auth
+        }
     })
 }
 
@@ -161,7 +189,7 @@ pub fn stacks_update(
     files: Vec<ComposeFile>,
     env: String,
 ) -> AppResult<ManagedStack> {
-    state.stacks.update(&id, &files, &env)
+    state.stacks.managed.update(&id, &files, &env)
 }
 
 /// Forgets a Managed Stack's definition; its containers keep running and it
@@ -169,7 +197,7 @@ pub fn stacks_update(
 #[tauri::command]
 #[specta::specta]
 pub fn stacks_forget(state: State<'_, AppState>, id: String) -> AppResult<()> {
-    state.stacks.delete(&id)
+    state.stacks.managed.delete(&id)
 }
 
 /// What Compose would make of a folder picked for a new Linked Stack.
@@ -206,6 +234,7 @@ pub async fn stacks_linked_create(
     refuse_taking_over(&state, &owner, &name, Some(&found.working_dir)).await?;
     let fingerprint = linked::files::files_fingerprint(&config_files);
     state
+        .stacks
         .linked
         .create(&owner, &name, &working_dir, &config_files, &fingerprint)
 }
@@ -219,10 +248,13 @@ pub fn stacks_linked_read(
     id: String,
     acknowledge: bool,
 ) -> AppResult<LinkedFiles> {
-    let stack = state.linked.get(&id)?;
+    let stack = state.stacks.linked.get(&id)?;
     let mut files = linked::files::read(&stack)?;
     if acknowledge && files.changed_outside {
-        state.linked.set_fingerprint(&id, &files.fingerprint)?;
+        state
+            .stacks
+            .linked
+            .set_fingerprint(&id, &files.fingerprint)?;
         files.changed_outside = false;
     }
     Ok(files)
@@ -240,9 +272,10 @@ pub fn stacks_linked_write(
     content: String,
     expected: Option<String>,
 ) -> AppResult<LinkedFiles> {
-    let stack = state.linked.get(&id)?;
+    let stack = state.stacks.linked.get(&id)?;
     linked::files::write(&stack, &path, &content, expected.as_deref())?;
     let stack = state
+        .stacks
         .linked
         .set_fingerprint(&id, &linked::files::files_fingerprint(&stack.config_files))?;
     linked::files::read(&stack)
@@ -256,10 +289,13 @@ pub fn stacks_linked_set_files(
     id: String,
     config_files: Vec<String>,
 ) -> AppResult<LinkedFiles> {
-    let stack = state.linked.get(&id)?;
+    let stack = state.stacks.linked.get(&id)?;
     linked::files::validate_choice(&stack.working_dir, &config_files)?;
     let fingerprint = linked::files::files_fingerprint(&config_files);
-    let stack = state.linked.set_files(&id, &config_files, &fingerprint)?;
+    let stack = state
+        .stacks
+        .linked
+        .set_files(&id, &config_files, &fingerprint)?;
     linked::files::read(&stack)
 }
 
@@ -267,7 +303,7 @@ pub fn stacks_linked_set_files(
 #[tauri::command]
 #[specta::specta]
 pub fn stacks_linked_forget(state: State<'_, AppState>, id: String) -> AppResult<()> {
-    state.linked.delete(&id)
+    state.stacks.linked.delete(&id)
 }
 
 /// Creates a Synced Stack on a Host or a Swarm from a repository's branch or
@@ -284,13 +320,13 @@ pub async fn stacks_synced_create(
     known(&state, &owner)?;
     refuse_taking_over(&state, &owner, &draft.name, None).await?;
     let cli = git::detect().await?;
-    state.synced.create(&cli, &owner, &draft, &env).await
+    state.stacks.synced.create(&cli, &owner, &draft, &env).await
 }
 
 #[tauri::command]
 #[specta::specta]
 pub fn stacks_synced_get(state: State<'_, AppState>, id: String) -> AppResult<SyncedStack> {
-    state.synced.store.get(&id)
+    state.stacks.synced.store.get(&id)
 }
 
 /// A Synced Stack's files at its fetched commit, read-only: no command
@@ -298,16 +334,16 @@ pub fn stacks_synced_get(state: State<'_, AppState>, id: String) -> AppResult<Sy
 #[tauri::command]
 #[specta::specta]
 pub async fn stacks_synced_files(state: State<'_, AppState>, id: String) -> AppResult<SyncedFiles> {
-    let stack = state.synced.store.get(&id)?;
+    let stack = state.stacks.synced.store.get(&id)?;
     let cli = git::detect().await?;
-    state.synced.files(&cli, &stack).await
+    state.stacks.synced.files(&cli, &stack).await
 }
 
 /// The decrypted environment of a Synced Stack, for editing.
 #[tauri::command]
 #[specta::specta]
 pub fn stacks_synced_get_env(state: State<'_, AppState>, id: String) -> AppResult<String> {
-    state.synced.store.env(&id)
+    state.stacks.synced.store.env(&id)
 }
 
 /// Replaces a Synced Stack's environment, the one part of its definition
@@ -319,7 +355,7 @@ pub fn stacks_synced_set_env(
     id: String,
     env: String,
 ) -> AppResult<SyncedStack> {
-    state.synced.store.set_env(&id, &env)
+    state.stacks.synced.store.set_env(&id, &env)
 }
 
 /// "Sync": fetches a Synced Stack's branch or tag, and says what deploying
@@ -328,7 +364,7 @@ pub fn stacks_synced_set_env(
 #[specta::specta]
 pub async fn stacks_synced_sync(state: State<'_, AppState>, id: String) -> AppResult<SyncReview> {
     let cli = git::detect().await?;
-    state.synced.sync(&cli, &id).await
+    state.stacks.synced.sync(&cli, &id).await
 }
 
 /// Deploys `commit` of a Synced Stack, the one its sync review showed, with
@@ -363,7 +399,7 @@ pub fn stacks_synced_set_sync(
     poll: bool,
     auto_deploy: bool,
 ) -> AppResult<SyncedStack> {
-    state.synced.store.set_sync(&id, poll, auto_deploy)
+    state.stacks.synced.store.set_sync(&id, poll, auto_deploy)
 }
 
 /// Forgets a Synced Stack: its record, history and worktree go, its
@@ -372,7 +408,7 @@ pub fn stacks_synced_set_sync(
 #[specta::specta]
 pub async fn stacks_synced_forget(state: State<'_, AppState>, id: String) -> AppResult<()> {
     let cli = git::detect().await.ok();
-    state.synced.forget(cli.as_ref(), &id).await
+    state.stacks.synced.forget(cli.as_ref(), &id).await
 }
 
 /// Sets the Compose profiles a Managed, Linked or Synced Stack deploys; they
@@ -386,9 +422,16 @@ pub fn stacks_set_profiles(
     profiles: Vec<String>,
 ) -> AppResult<Vec<String>> {
     Ok(match kind {
-        SourceKind::Managed => state.stacks.set_profiles(&id, &profiles)?.profiles,
-        SourceKind::Linked => state.linked.set_profiles(&id, &profiles)?.profiles,
-        SourceKind::Synced => state.synced.store.set_profiles(&id, &profiles)?.profiles,
+        SourceKind::Managed => state.stacks.managed.set_profiles(&id, &profiles)?.profiles,
+        SourceKind::Linked => state.stacks.linked.set_profiles(&id, &profiles)?.profiles,
+        SourceKind::Synced => {
+            state
+                .stacks
+                .synced
+                .store
+                .set_profiles(&id, &profiles)?
+                .profiles
+        }
     })
 }
 
@@ -441,7 +484,7 @@ async fn spawn(
     on_event: Channel<ComposeEvent>,
 ) -> AppResult<StreamId> {
     let (job, commit) = job(state, kind, &id, action, commit.as_deref()).await?;
-    let synced = state.synced.clone();
+    let synced = state.stacks.synced.clone();
     Ok(state.streams.spawn(runtime::run(job, move |e| {
         if let (Some(commit), ComposeEvent::Exit { success: true, .. }) = (&commit, &e) {
             if action.deploys() {
@@ -490,7 +533,7 @@ pub(crate) async fn recorded_job(
         action,
         profiles: stack.profiles,
         record: Some(Recorder {
-            history: state.history.clone(),
+            history: state.stacks.history.clone(),
             owner: stack.owner,
             stack_id: id.to_owned(),
             commit: stack.commit.clone(),
@@ -516,15 +559,15 @@ pub async fn stacks_diff(
 ) -> AppResult<DeployDiff> {
     let (stored_files, stored_env, profiles) = match kind {
         SourceKind::Managed => {
-            let stack = state.stacks.get(&id)?;
+            let stack = state.stacks.managed.get(&id)?;
             let env = match &candidate {
                 Some(Candidate { env: Some(_), .. }) => String::new(),
-                _ => state.stacks.env(&id)?,
+                _ => state.stacks.managed.env(&id)?,
             };
             (stack.files, env, stack.profiles)
         }
         SourceKind::Linked => {
-            let stack = state.linked.get(&id)?;
+            let stack = state.stacks.linked.get(&id)?;
             let files = match &candidate {
                 Some(_) => vec![],
                 None => linked::files::read(&stack)?
@@ -536,7 +579,7 @@ pub async fn stacks_diff(
             (files, String::new(), stack.profiles)
         }
         SourceKind::Synced => {
-            let stack = state.synced.store.get(&id)?;
+            let stack = state.stacks.synced.store.get(&id)?;
             // A redeploy runs the deployed commit again; a first deploy, the fetched one.
             let commit = stack
                 .deployed_commit
@@ -546,25 +589,30 @@ pub async fn stacks_diff(
                 (None, Some(commit)) => {
                     let cli = git::detect().await?;
                     let text = state
+                        .stacks
                         .synced
                         .compose_file(&cli, &stack.repository_id, commit, &stack.compose_path)
                         .await?;
-                    let path = state.synced.worktree(&stack.id).join(&stack.compose_path);
+                    let path = state
+                        .stacks
+                        .synced
+                        .worktree(&stack.id)
+                        .join(&stack.compose_path);
                     vec![ComposeFile::new(path.to_string_lossy(), text)]
                 }
                 _ => vec![],
             };
-            (files, state.synced.store.env(&id)?, stack.profiles)
+            (files, state.stacks.synced.store.env(&id)?, stack.profiles)
         }
     };
     let (files, env) = match candidate {
         Some(c) => (c.files, c.env.unwrap_or(stored_env)),
         None => (stored_files, stored_env),
     };
-    let latest = state.history.latest_successful(&id)?;
+    let latest = state.stacks.history.latest_successful(&id)?;
     let deployed_env = match &latest {
         // An environment the keychain can't open compares as empty.
-        Some(d) => state.history.env(&d.summary.id).unwrap_or_default(),
+        Some(d) => state.stacks.history.env(&d.summary.id).unwrap_or_default(),
         None => String::new(),
     };
     let deployed = latest.as_ref().map(|d| {
@@ -591,7 +639,7 @@ pub async fn stacks_diff(
 #[tauri::command]
 #[specta::specta]
 pub fn stacks_history(state: State<'_, AppState>, id: String) -> AppResult<Vec<DeploySummary>> {
-    state.history.list(&id)
+    state.stacks.history.list(&id)
 }
 
 /// One recorded deploy, with its definition and the names of its variables.
@@ -599,8 +647,8 @@ pub fn stacks_history(state: State<'_, AppState>, id: String) -> AppResult<Vec<D
 #[specta::specta]
 pub fn stacks_deploy(state: State<'_, AppState>, id: String) -> AppResult<DeployDetail> {
     Ok(DeployDetail {
-        deploy: state.history.get(&id)?,
-        env_keys: state.history.env_keys(&id)?,
+        deploy: state.stacks.history.get(&id)?,
+        env_keys: state.stacks.history.env_keys(&id)?,
     })
 }
 
@@ -614,7 +662,7 @@ pub async fn stacks_rollback_subscribe(
     deploy_id: String,
     on_event: Channel<ComposeEvent>,
 ) -> AppResult<StreamId> {
-    let stack = history::restore(&state.history, &state.stacks, &deploy_id)?;
+    let stack = history::restore(&state.stacks.history, &state.stacks.managed, &deploy_id)?;
     let (job, _) = job(
         &state,
         SourceKind::Managed,
@@ -650,10 +698,10 @@ async fn resolve(
 ) -> AppResult<Resolved> {
     Ok(match kind {
         SourceKind::Managed => {
-            let stack = state.stacks.get(id)?;
+            let stack = state.stacks.managed.get(id)?;
             Resolved {
                 source: StackSource::Managed {
-                    env: state.stacks.env(id)?,
+                    env: state.stacks.managed.env(id)?,
                     files: stack.files,
                 },
                 owner: stack.owner,
@@ -664,7 +712,7 @@ async fn resolve(
             }
         }
         SourceKind::Linked => {
-            let stack = state.linked.get(id)?;
+            let stack = state.stacks.linked.get(id)?;
             Resolved {
                 source: StackSource::Linked {
                     working_dir: stack.working_dir.into(),
@@ -678,9 +726,13 @@ async fn resolve(
             }
         }
         SourceKind::Synced => {
-            let stack = state.synced.store.get(id)?;
+            let stack = state.stacks.synced.store.get(id)?;
             let cli = git::detect().await?;
-            let (source, commit) = state.synced.source(&cli, &stack, action, commit).await?;
+            let (source, commit) = state
+                .stacks
+                .synced
+                .source(&cli, &stack, action, commit)
+                .await?;
             Resolved {
                 source,
                 owner: stack.owner,

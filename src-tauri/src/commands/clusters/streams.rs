@@ -67,7 +67,8 @@ pub async fn clusters_exec_start(
 ) -> AppResult<TerminalId> {
     let (terminal, process) = on(&state, &id)?.exec(&namespace, &pod, options).await?;
     Ok(state
-        .pod_terminals
+        .terminals
+        .pods
         .open(terminal, process, move |e| on_event.send(e).is_ok()))
 }
 
@@ -79,7 +80,8 @@ pub async fn clusters_exec_input(
     data: String,
 ) -> AppResult<()> {
     state
-        .pod_terminals
+        .terminals
+        .pods
         .get(terminal)?
         .write(data.as_bytes())
         .await
@@ -93,12 +95,12 @@ pub async fn clusters_exec_resize(
     cols: u16,
     rows: u16,
 ) -> AppResult<()> {
-    state.pod_terminals.get(terminal)?.resize(cols, rows).await
+    state.terminals.pods.get(terminal)?.resize(cols, rows).await
 }
 
 /// Ends a Pod terminal and its process.
 #[tauri::command]
 #[specta::specta]
 pub fn clusters_exec_close(state: State<'_, AppState>, terminal: TerminalId) {
-    state.pod_terminals.close(terminal);
+    state.terminals.pods.close(terminal);
 }

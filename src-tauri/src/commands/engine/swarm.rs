@@ -448,10 +448,10 @@ pub async fn swarm_stacks_list(
     stacks_swarm::list(
         &swarm_id,
         &services,
-        &state.stacks,
-        &state.linked,
-        &state.synced.store,
-        &state.linked_files,
+        &state.stacks.managed,
+        &state.stacks.linked,
+        &state.stacks.synced.store,
+        &state.stacks.linked_files,
     )
 }
 
@@ -493,7 +493,7 @@ pub async fn swarm_stacks_link(
     stacks_swarm::check_link(&name, &services, &texts)?;
     let config_files: Vec<String> = found.files.iter().map(|f| f.path.clone()).collect();
     let fingerprint = linked_files::files_fingerprint(&config_files);
-    state.linked.create(
+    state.stacks.linked.create(
         StackOwner::Swarm(swarm_id),
         &name,
         &found.working_dir,

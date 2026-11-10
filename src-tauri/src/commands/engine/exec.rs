@@ -18,7 +18,8 @@ pub async fn exec_start(
     let docker = state.hosts.registry.docker(&host_id)?;
     let (session, output) = exec::start(&docker, &container_id, options).await?;
     Ok(state
-        .exec
+        .terminals
+        .engine
         .open(session, output, move |e| on_event.send(e).is_ok()))
 }
 
@@ -29,7 +30,12 @@ pub async fn exec_input(
     session: SessionId,
     data: String,
 ) -> AppResult<()> {
-    state.exec.get(session)?.write(data.as_bytes()).await
+    state
+        .terminals
+        .engine
+        .get(session)?
+        .write(data.as_bytes())
+        .await
 }
 
 #[tauri::command]
@@ -40,11 +46,16 @@ pub async fn exec_resize(
     cols: u16,
     rows: u16,
 ) -> AppResult<()> {
-    state.exec.get(session)?.resize(cols, rows).await
+    state
+        .terminals
+        .engine
+        .get(session)?
+        .resize(cols, rows)
+        .await
 }
 
 #[tauri::command]
 #[specta::specta]
 pub fn exec_close(state: State<'_, AppState>, session: SessionId) {
-    state.exec.close(session);
+    state.terminals.engine.close(session);
 }

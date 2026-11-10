@@ -17,6 +17,7 @@ use homeport_stacks::{
     linked::{FileCache, LinkedStore},
     store::StackStore,
     synced::{SyncedStacks, SyncedStore},
+    Stacks,
 };
 use homeport_storage::{Db, Keychain, SecretBox};
 
@@ -96,13 +97,15 @@ pub fn state(app: &App) -> Result<AppState, Failure> {
         data_dir.join("synced-stacks"),
     ));
     Ok(AppState {
-        stacks: StackStore::new(db.clone(), secrets.clone()),
-        linked: LinkedStore::new(db.clone()),
-        linked_files: FileCache::new(),
-        history: Arc::new(DeployHistory::new(db.clone(), secrets.clone())),
+        stacks: Stacks {
+            managed: StackStore::new(db.clone(), secrets.clone()),
+            linked: LinkedStore::new(db.clone()),
+            linked_files: FileCache::new(),
+            history: Arc::new(DeployHistory::new(db.clone(), secrets.clone())),
+            synced,
+        },
         registries: RegistryStore::new(db.clone(), secrets.clone()),
         repositories,
-        synced,
         secrets,
         settings,
         hosts: HostService {
@@ -112,11 +115,7 @@ pub fn state(app: &App) -> Result<AppState, Failure> {
         },
         clusters,
         streams: Default::default(),
-        exec: Default::default(),
-        containerd_exec: Default::default(),
-        incus_terminals: Default::default(),
-        pod_terminals: Default::default(),
-        nomad_terminals: Default::default(),
+        terminals: Default::default(),
         volume_browser: Default::default(),
         freshness: Default::default(),
         update: Default::default(),

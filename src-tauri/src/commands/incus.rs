@@ -324,7 +324,8 @@ pub async fn incus_exec_start(
     let (session, output) = IncusTerminal::exec(&incus, &project, &name, &options).await?;
     session.resize(options.cols, options.rows).await.ok();
     Ok(state
-        .incus_terminals
+        .terminals
+        .incus
         .open(session, output, move |e| on_event.send(e).is_ok()))
 }
 
@@ -343,7 +344,8 @@ pub async fn incus_console_start(
     let incus = state.hosts.registry.incus(&host_id)?;
     let (session, output) = IncusTerminal::console(&incus, &project, &name, cols, rows).await?;
     Ok(state
-        .incus_terminals
+        .terminals
+        .incus
         .open(session, output, move |e| on_event.send(e).is_ok()))
 }
 
@@ -368,7 +370,8 @@ pub async fn incus_terminal_input(
     data: String,
 ) -> AppResult<()> {
     state
-        .incus_terminals
+        .terminals
+        .incus
         .get(session)?
         .write(data.as_bytes())
         .await
@@ -382,14 +385,14 @@ pub async fn incus_terminal_resize(
     cols: u16,
     rows: u16,
 ) -> AppResult<()> {
-    state.incus_terminals.get(session)?.resize(cols, rows).await
+    state.terminals.incus.get(session)?.resize(cols, rows).await
 }
 
 /// Closes a terminal: hangs up an exec's command, detaches from a console.
 #[tauri::command]
 #[specta::specta]
 pub async fn incus_terminal_close(state: State<'_, AppState>, session: SessionId) -> AppResult<()> {
-    state.incus_terminals.close(session);
+    state.terminals.incus.close(session);
     Ok(())
 }
 

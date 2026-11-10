@@ -36,6 +36,7 @@ mod listing;
 pub mod messages;
 pub mod owner;
 pub mod runtime;
+mod service;
 pub mod stack;
 pub mod store;
 pub mod swarm;
@@ -44,5 +45,6 @@ pub mod synced;
 pub use self::{
     listing::list,
     owner::StackOwner,
+    service::Stacks,
     stack::{derive, Stack, StackKind, StackProblem, StackRecord, StackService, StackState},
 };

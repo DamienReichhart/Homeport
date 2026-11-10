@@ -18,9 +18,9 @@ fn data(state: &AppState) -> Data<'_> {
         settings: &state.settings,
         hosts: &state.hosts,
         clusters: &state.clusters,
-        stacks: &state.stacks,
-        linked: &state.linked,
-        synced: &state.synced,
+        stacks: &state.stacks.managed,
+        linked: &state.stacks.linked,
+        synced: &state.stacks.synced,
         registries: &state.registries,
         repositories: &state.repositories,
     }

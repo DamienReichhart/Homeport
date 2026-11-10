@@ -221,7 +221,8 @@ pub async fn clusters_nomad_exec_start(
     let nomad = nomad(&state, &id)?;
     let (terminal, output) = NomadTerminal::open(&nomad, &alloc_id, &options).await?;
     Ok(state
-        .nomad_terminals
+        .terminals
+        .nomad
         .open(nomad, alloc_id, options.task, terminal, output, move |e| {
             on_event.send(e).is_ok()
         }))
@@ -235,7 +236,8 @@ pub async fn clusters_nomad_exec_input(
     data: String,
 ) -> AppResult<()> {
     state
-        .nomad_terminals
+        .terminals
+        .nomad
         .get(terminal)?
         .write(data.as_bytes())
         .await
@@ -250,7 +252,8 @@ pub async fn clusters_nomad_exec_resize(
     rows: u16,
 ) -> AppResult<()> {
     state
-        .nomad_terminals
+        .terminals
+        .nomad
         .get(terminal)?
         .resize(cols, rows)
         .await
@@ -263,7 +266,7 @@ pub async fn clusters_nomad_exec_close(
     state: State<'_, AppState>,
     terminal: TerminalId,
 ) -> AppResult<()> {
-    state.nomad_terminals.close(terminal);
+    state.terminals.nomad.close(terminal);
     Ok(())
 }
 
