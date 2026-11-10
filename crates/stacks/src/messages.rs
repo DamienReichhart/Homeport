@@ -52,6 +52,9 @@ homeport_core::messages! {
     /// A Linked Stack's compose file Homeport may not read or write.
     FILE_UNREADABLE = "errors.stacks.fileUnreadable" => "Homeport can't read or write {file}.";
     FILE_UNREADABLE_HINT = "errors.stacks.fileUnreadable.hint" => "Check that your user may read and write it, then try again.";
+    /// Saving a Linked Stack's file that isn't UTF-8 text.
+    FILE_NOT_UTF8 = "errors.stacks.fileNotUtf8" => "{file} isn't UTF-8 text, so saving it from Homeport would change characters you didn't edit.";
+    FILE_NOT_UTF8_HINT = "errors.stacks.fileNotUtf8.hint" => "Edit it in your own editor, or convert it to UTF-8 first.";
     /// Saving a compose file that was edited elsewhere since it was opened.
     FILES_CHANGED = "errors.stacks.filesChanged" => "{file} changed outside Homeport since you opened it.";
     FILES_CHANGED_HINT = "errors.stacks.filesChanged.hint" => "Reload it to see the change, or overwrite it with your version.";

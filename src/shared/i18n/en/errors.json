@@ -784,6 +784,8 @@
   "errors.stacks.fileMissing.hint": "Put it back, or remove it from the Stack's compose files.",
   "errors.stacks.fileName": "\"{name}\" isn't a compose file name. Use a name such as compose.prod.yaml, without folders.",
   "errors.stacks.fileNameTwice": "Two compose files are named {name}.",
+  "errors.stacks.fileNotUtf8": "{file} isn't UTF-8 text, so saving it from Homeport would change characters you didn't edit.",
+  "errors.stacks.fileNotUtf8.hint": "Edit it in your own editor, or convert it to UTF-8 first.",
   "errors.stacks.fileUnreadable": "Homeport can't read or write {file}.",
   "errors.stacks.fileUnreadable.hint": "Check that your user may read and write it, then try again.",
   "errors.stacks.filesChanged": "{file} changed outside Homeport since you opened it.",

@@ -113,6 +113,12 @@ pub fn write(
     folder_present(stack)?;
     let target = Path::new(path);
     let current = std::fs::read(target).map_err(|e| file_error(path, &e))?;
+    // The editor showed it with U+FFFD for what isn't UTF-8; writing that
+    // back would change bytes the user never touched.
+    if std::str::from_utf8(&current).is_err() {
+        return Err(AppError::validation(msg::FILE_NOT_UTF8.with("file", path))
+            .with_hint(msg::FILE_NOT_UTF8_HINT));
+    }
     if let Some(expected) = expected {
         if content_fingerprint(&current) != expected {
             return Err(AppError::new(
@@ -324,6 +330,31 @@ mod tests {
         );
         assert_eq!(std::fs::read_to_string(&real).unwrap(), edited);
         assert_eq!(std::fs::read_dir(dotfiles.path()).unwrap().count(), 1);
+    }
+
+    #[test]
+    fn a_file_that_isnt_utf8_is_never_written_back_with_replacement_characters() {
+        let dir = tempfile::tempdir().unwrap();
+        let s = stack(dir.path(), &["compose.yaml"]);
+        let path = &s.config_files[0];
+        // A Latin-1 "é" in a comment: the editor shows it as U+FFFD.
+        let latin1 = b"# caf\xe9\nservices:\n  web:\n    image: nginx\n".to_vec();
+        std::fs::write(path, &latin1).unwrap();
+        let opened = read(&s).unwrap();
+        assert!(opened.files[0].content.contains('\u{fffd}'));
+
+        let edited = opened.files[0].content.replace("nginx", "nginx:1.27");
+        for expected in [Some(opened.files[0].fingerprint.as_str()), None] {
+            let refused = write(&s, path, &edited, expected).unwrap_err();
+            assert!(refused.is(ErrorCode::Validation), "{refused:?}");
+            assert_eq!(refused.key, "errors.stacks.fileNotUtf8");
+            assert!(refused.hint.is_some());
+            assert_eq!(
+                std::fs::read(path).unwrap(),
+                latin1,
+                "the bytes stay as they were"
+            );
+        }
     }
 
     #[test]

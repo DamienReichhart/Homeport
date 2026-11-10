@@ -784,6 +784,8 @@
   "errors.stacks.fileMissing.hint": "Верните его или уберите из файлов compose стека.",
   "errors.stacks.fileName": "«{name}» — недопустимое имя файла compose. Используйте имя вроде compose.prod.yaml, без папок.",
   "errors.stacks.fileNameTwice": "Два файла compose называются {name}.",
+  "errors.stacks.fileNotUtf8": "{file} — не текст в UTF-8, поэтому сохранение из Homeport изменило бы символы, которые вы не редактировали.",
+  "errors.stacks.fileNotUtf8.hint": "Отредактируйте его в своём редакторе или сначала преобразуйте в UTF-8.",
   "errors.stacks.fileUnreadable": "Homeport не может прочитать или записать {file}.",
   "errors.stacks.fileUnreadable.hint": "Проверьте, что вашему пользователю разрешено его читать и записывать, затем повторите.",
   "errors.stacks.filesChanged": "{file} изменился вне Homeport после того, как вы его открыли.",

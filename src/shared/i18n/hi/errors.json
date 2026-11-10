@@ -784,6 +784,8 @@
   "errors.stacks.fileMissing.hint": "इसे वापस रखें, या इसे स्टैक की compose फ़ाइलों से हटाएँ।",
   "errors.stacks.fileName": "“{name}” compose फ़ाइल का नाम नहीं है। compose.prod.yaml जैसा नाम इस्तेमाल करें, बिना फ़ोल्डर के।",
   "errors.stacks.fileNameTwice": "दो compose फ़ाइलों का नाम {name} है।",
+  "errors.stacks.fileNotUtf8": "{file} UTF-8 टेक्स्ट नहीं है, इसलिए Homeport से इसे सहेजने पर वे अक्षर बदल जाएँगे जिन्हें आपने संपादित नहीं किया।",
+  "errors.stacks.fileNotUtf8.hint": "इसे अपने एडिटर में संपादित करें, या पहले इसे UTF-8 में बदलें।",
   "errors.stacks.fileUnreadable": "Homeport, {file} को पढ़ या लिख नहीं सकता।",
   "errors.stacks.fileUnreadable.hint": "जाँचें कि आपका यूज़र इसे पढ़ और लिख सकता है, फिर दोबारा कोशिश करें।",
   "errors.stacks.filesChanged": "आपके खोलने के बाद {file} Homeport के बाहर बदल गई।",

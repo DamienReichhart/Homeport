@@ -784,6 +784,8 @@
   "errors.stacks.fileMissing.hint": "أعِده، أو أزله من ملفات compose الخاصة بالمكدس.",
   "errors.stacks.fileName": "«{name}» ليس اسم ملف compose. استخدم اسمًا مثل compose.prod.yaml، دون مجلدات.",
   "errors.stacks.fileNameTwice": "يحمل ملفا compose الاسم {name}.",
+  "errors.stacks.fileNotUtf8": "{file} ليس نصًا بترميز UTF-8، لذا فإن حفظه من Homeport سيغيّر أحرفًا لم تحرّرها.",
+  "errors.stacks.fileNotUtf8.hint": "حرّره في محررك الخاص، أو حوّله إلى UTF-8 أولًا.",
   "errors.stacks.fileUnreadable": "لا يستطيع Homeport قراءة {file} أو الكتابة فيه.",
   "errors.stacks.fileUnreadable.hint": "تحقق من أن مستخدمك يمكنه قراءته والكتابة فيه، ثم أعد المحاولة.",
   "errors.stacks.filesChanged": "تغيّر {file} خارج Homeport منذ أن فتحته.",

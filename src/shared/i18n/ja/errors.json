@@ -784,6 +784,8 @@
   "errors.stacks.fileMissing.hint": "元に戻すか、スタックの compose ファイルから外してください。",
   "errors.stacks.fileName": "「{name}」は compose ファイルの名前として使えません。compose.prod.yaml のような、フォルダーを含まない名前を使ってください。",
   "errors.stacks.fileNameTwice": "2 つの compose ファイルが {name} という名前になっています。",
+  "errors.stacks.fileNotUtf8": "{file} は UTF-8 のテキストではないため、Homeport から保存すると、編集していない文字が変わってしまいます。",
+  "errors.stacks.fileNotUtf8.hint": "ご自身のエディターで編集するか、先に UTF-8 に変換してください。",
   "errors.stacks.fileUnreadable": "Homeport は {file} を読み書きできません。",
   "errors.stacks.fileUnreadable.hint": "ご自身のユーザーで読み書きできることを確認してから、もう一度試してください。",
   "errors.stacks.filesChanged": "開いた後に、{file} が Homeport の外部で変更されました。",

@@ -784,6 +784,8 @@
   "errors.stacks.fileMissing.hint": "Legen Sie sie zurück oder entfernen Sie sie aus den Compose-Dateien des Stacks.",
   "errors.stacks.fileName": "„{name}“ ist kein Compose-Dateiname. Verwenden Sie einen Namen wie compose.prod.yaml, ohne Ordner.",
   "errors.stacks.fileNameTwice": "Zwei Compose-Dateien heißen {name}.",
+  "errors.stacks.fileNotUtf8": "{file} ist kein UTF-8-Text. Beim Speichern aus Homeport würden sich Zeichen ändern, die Sie nicht bearbeitet haben.",
+  "errors.stacks.fileNotUtf8.hint": "Bearbeiten Sie die Datei in Ihrem eigenen Editor oder wandeln Sie sie zuerst in UTF-8 um.",
   "errors.stacks.fileUnreadable": "Homeport kann {file} nicht lesen oder schreiben.",
   "errors.stacks.fileUnreadable.hint": "Prüfen Sie, ob Ihr Benutzer sie lesen und schreiben darf, und versuchen Sie es dann erneut.",
   "errors.stacks.filesChanged": "{file} wurde außerhalb von Homeport geändert, seit Sie sie geöffnet haben.",

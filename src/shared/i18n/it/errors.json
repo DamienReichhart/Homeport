@@ -784,6 +784,8 @@
   "errors.stacks.fileMissing.hint": "Rimettilo al suo posto, o rimuovilo dai file compose dello stack.",
   "errors.stacks.fileName": "«{name}» non è un nome di file compose valido. Usa un nome come compose.prod.yaml, senza cartelle.",
   "errors.stacks.fileNameTwice": "Due file compose si chiamano {name}.",
+  "errors.stacks.fileNotUtf8": "{file} non è testo UTF-8, quindi salvarlo da Homeport cambierebbe caratteri che non hai modificato.",
+  "errors.stacks.fileNotUtf8.hint": "Modificalo nel tuo editor, oppure convertilo prima in UTF-8.",
   "errors.stacks.fileUnreadable": "Homeport non può leggere o scrivere {file}.",
   "errors.stacks.fileUnreadable.hint": "Controlla che il tuo utente possa leggerlo e scriverlo, poi riprova.",
   "errors.stacks.filesChanged": "{file} è cambiato fuori da Homeport da quando l’hai aperto.",

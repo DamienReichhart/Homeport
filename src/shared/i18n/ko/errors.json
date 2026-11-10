@@ -784,6 +784,8 @@
   "errors.stacks.fileMissing.hint": "파일을 되돌려 놓거나, 스택의 compose 파일에서 삭제하세요.",
   "errors.stacks.fileName": "“{name}” 이름은 compose 파일 이름으로 쓸 수 없습니다. 폴더 없이 compose.prod.yaml 같은 이름을 사용하세요.",
   "errors.stacks.fileNameTwice": "두 compose 파일의 이름이 모두 {name}입니다.",
+  "errors.stacks.fileNotUtf8": "{file} 파일은 UTF-8 텍스트가 아니어서 Homeport에서 저장하면 편집하지 않은 문자가 바뀝니다.",
+  "errors.stacks.fileNotUtf8.hint": "직접 쓰는 편집기에서 편집하거나 먼저 UTF-8로 변환하세요.",
   "errors.stacks.fileUnreadable": "Homeport가 {file} 파일을 읽거나 쓸 수 없습니다.",
   "errors.stacks.fileUnreadable.hint": "사용자에게 읽기 및 쓰기 권한이 있는지 확인한 다음 다시 시도하세요.",
   "errors.stacks.filesChanged": "파일을 연 이후 Homeport 밖에서 {file} 파일이 변경되었습니다.",

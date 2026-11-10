@@ -784,6 +784,8 @@
   "errors.stacks.fileMissing.hint": "请将它放回，或从堆栈的 compose 文件中移除它。",
   "errors.stacks.fileName": "“{name}”不是有效的 compose 文件名。请使用 compose.prod.yaml 这样的名称，不要包含文件夹。",
   "errors.stacks.fileNameTwice": "有两个 compose 文件都名为 {name}。",
+  "errors.stacks.fileNotUtf8": "{file} 不是 UTF-8 文本，从 Homeport 保存会改动你未编辑的字符。",
+  "errors.stacks.fileNotUtf8.hint": "请在你自己的编辑器中编辑它，或先将它转换为 UTF-8。",
   "errors.stacks.fileUnreadable": "Homeport 无法读取或写入 {file}。",
   "errors.stacks.fileUnreadable.hint": "请确认你的用户有权读写该文件，然后重试。",
   "errors.stacks.filesChanged": "自你打开以来，{file} 已在 Homeport 之外被更改。",
