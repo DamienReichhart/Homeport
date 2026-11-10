@@ -9,7 +9,11 @@ use serde::Serialize;
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 use homeport_storage::Db;
 
-use crate::{definition, messages as msg, owner::StackOwner, store::name_taken};
+use crate::{
+    messages as msg,
+    model::{definition, owner::StackOwner},
+    store::name_taken,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "camelCase")]

@@ -5,7 +5,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::{definition, store::ComposeFile};
+use crate::{model::definition, store::ComposeFile};
 
 /// What happened to one environment variable.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, specta::Type)]

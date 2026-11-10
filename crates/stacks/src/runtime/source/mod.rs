@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use homeport_core::error::{AppError, AppResult, ErrorCode};
 
 use super::StackSource;
-use crate::{compose::ComposeAction, definition, linked::files, messages as msg};
+use crate::{compose::ComposeAction, linked::files, messages as msg, model::definition};
 
 /// The working directory of a run.
 #[derive(Debug)]

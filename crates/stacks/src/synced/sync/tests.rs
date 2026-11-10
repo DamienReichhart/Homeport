@@ -162,8 +162,7 @@ async fn a_synced_stack_deploys_then_syncs_to_a_new_commit_with_a_build() {
 
     use crate::{
         compose::{detect, ComposeEvent},
-        lifecycle,
-        runtime::{ComposeJob, StackTarget},
+        runtime::{lifecycle, ComposeJob, StackTarget},
     };
 
     let git = cli::detect().await.unwrap();

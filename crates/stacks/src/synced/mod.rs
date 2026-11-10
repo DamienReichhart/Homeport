@@ -22,7 +22,10 @@ use homeport_core::error::{AppError, AppResult, ErrorCode};
 use homeport_git::{ops, GitCli, Repositories};
 
 use crate::{
-    compose::ComposeAction, definition, messages as msg, runtime::SourceKind, runtime::StackSource,
+    compose::ComposeAction,
+    messages as msg,
+    model::definition,
+    runtime::{SourceKind, StackSource},
 };
 
 pub use self::{

@@ -10,6 +10,7 @@
 //! A new kind of source or target is a new variant here and its arm below;
 //! the commands only resolve a Stack's source and target and hand them in.
 
+pub mod lifecycle;
 mod source;
 
 use std::sync::Arc;
@@ -25,13 +26,16 @@ use homeport_transport::Dialer;
 
 use crate::{
     compose::{self, ComposeAction, ComposeCli, ComposeEvent},
-    history::{DeployHistory, NewDeploy},
-    lifecycle::{self, StackAction},
     messages as msg,
-    owner::StackOwner,
-    store::ComposeFile,
+    model::owner::StackOwner,
+    store::{
+        history::{DeployHistory, NewDeploy},
+        ComposeFile,
+    },
     swarm,
 };
+
+use self::lifecycle::StackAction;
 
 pub(crate) use self::source::{Prepared, WorkDir};
 

@@ -28,8 +28,8 @@ use homeport_transport::proxy;
 
 use self::error as errors;
 use crate::{
-    definition, lifecycle,
-    runtime::{ComposeJob, Prepared, Reach, Recorder, StackTarget, WorkDir},
+    model::definition,
+    runtime::{lifecycle, ComposeJob, Prepared, Reach, Recorder, StackTarget, WorkDir},
 };
 
 /// Lines of stderr kept to explain a failed run.

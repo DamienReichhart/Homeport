@@ -20,7 +20,8 @@ use super::{
     docker_host, errors, write_stdin, ComposeAction, ComposeCli, ComposeEvent, STDERR_TAIL,
 };
 use crate::{
-    definition, messages as msg,
+    messages as msg,
+    model::definition,
     runtime::{ComposeJob, Prepared, Recorder, StackTarget, WorkDir},
     swarm,
 };

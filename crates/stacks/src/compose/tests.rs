@@ -6,7 +6,10 @@ use homeport_engine::{auth::Logins, testing};
 use homeport_transport::testing::UnixDialer;
 use homeport_transport::Dialer;
 
-use crate::{lifecycle, runtime::StackSource, store::ComposeFile};
+use crate::{
+    runtime::{lifecycle, StackSource},
+    store::ComposeFile,
+};
 
 #[test]
 fn direct_hosts_are_passed_to_the_cli() {
@@ -621,7 +624,10 @@ async fn deploys_are_recorded_and_rolled_back() {
     use homeport_hosts::store::{HostDraft, HostStore};
     use homeport_storage::{Db, SecretBox};
 
-    use crate::{history::DeployHistory, runtime::Recorder, store::StackStore};
+    use crate::{
+        runtime::Recorder,
+        store::{history::DeployHistory, StackStore},
+    };
 
     let docker = testing::docker();
     testing::ensure_image(&docker).await;
@@ -704,7 +710,7 @@ async fn deploys_are_recorded_and_rolled_back() {
     assert_eq!(deploys.len(), 2);
     assert!(deploys.iter().all(|d| d.success == Some(true)));
 
-    crate::history::restore(&history, &stacks, &deploys[1].id).unwrap();
+    crate::store::history::restore(&history, &stacks, &deploys[1].id).unwrap();
     deploy().await;
     assert_eq!(greeting().await, "GREETING=one");
     assert_eq!(history.list(&stack.id).unwrap().len(), 3);

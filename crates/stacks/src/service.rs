@@ -11,13 +11,14 @@ use homeport_git::cli as git;
 
 use crate::{
     compose::{self, ComposeAction},
-    diff::{self, Candidate, DeployDiff},
-    external,
-    history::DeployHistory,
     linked::{self, files::LinkedFiles, folder, FileCache, LinkedStack, LinkedStore},
-    owner::StackOwner,
+    model::{
+        diff::{self, Candidate, DeployDiff},
+        external,
+        owner::StackOwner,
+    },
     runtime::{ComposeJob, Recorder, SourceKind, StackSource, StackTarget},
-    store::{ComposeFile, StackStore},
+    store::{history::DeployHistory, ComposeFile, StackStore},
     synced::SyncedStacks,
 };
 

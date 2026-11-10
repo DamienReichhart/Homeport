@@ -10,7 +10,7 @@ use homeport_core::error::{AppError, AppResult, ErrorCode};
 use crate::messages as msg;
 use homeport_storage::{Db, SecretBox};
 
-use crate::{definition, owner::StackOwner};
+use crate::model::{definition, owner::StackOwner};
 
 /// One compose file of a Managed Stack.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, specta::Type)]
@@ -296,5 +296,7 @@ fn read_row(row: &Row<'_>) -> rusqlite::Result<ManagedStack> {
     })
 }
 
+pub mod backup;
+pub mod history;
 #[cfg(test)]
 mod tests;

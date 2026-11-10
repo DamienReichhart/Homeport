@@ -19,8 +19,10 @@ use homeport_engine::swarm::services::{ServiceView, STACK_NAMESPACE};
 
 use crate::{
     linked::{detect, FileCache, LinkedStore},
-    owner::StackOwner,
-    stack::{Stack, StackKind, StackRecord, StackService, StackState},
+    model::{
+        owner::StackOwner,
+        stack::{Stack, StackKind, StackRecord, StackService, StackState},
+    },
     store::StackStore,
     synced::SyncedStore,
 };
@@ -146,7 +148,7 @@ pub fn list(
             .find(|r| r.name == stack.name && r.files_missing)
         {
             stack.kind = StackKind::External;
-            stack.problem = Some(crate::stack::StackProblem::FilesMissing);
+            stack.problem = Some(crate::model::stack::StackProblem::FilesMissing);
             stack.id = Some(record.id.clone());
         }
     }
@@ -164,7 +166,7 @@ pub fn check_link(name: &str, services: &[ServiceView], texts: &[&str]) -> AppRe
         .map(|s| short_name(name, &s.name).to_owned())
         .collect();
     running.sort();
-    let declared = crate::definition::service_names(texts);
+    let declared = crate::model::definition::service_names(texts);
     if running == declared {
         return Ok(());
     }

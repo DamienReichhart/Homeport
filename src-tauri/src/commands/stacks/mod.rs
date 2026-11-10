@@ -14,9 +14,8 @@ use tauri::State;
 use homeport_engine::containers;
 use homeport_stacks::{
     self as stacks,
-    definition::{self, ComposeCheck},
-    lifecycle::StackAction,
-    runtime::{self, SourceKind},
+    model::definition::{self, ComposeCheck},
+    runtime::{self, lifecycle::StackAction, SourceKind},
     Stack, StackOwner,
 };
 

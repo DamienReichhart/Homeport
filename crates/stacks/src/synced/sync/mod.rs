@@ -192,7 +192,7 @@ impl SyncedStacks {
             },
             files,
             tag_moved: false,
-            builds: crate::definition::builds(&[&compose]),
+            builds: crate::model::definition::builds(&[&compose]),
         })
     }
 }

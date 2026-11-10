@@ -203,7 +203,9 @@ async fn a_stack_started_in_a_folder_here_is_linked() {
         &s.cache,
     )
     .unwrap();
-    crate::lifecycle::remove(&docker, &project).await.unwrap();
+    crate::runtime::lifecycle::remove(&docker, &project)
+        .await
+        .unwrap();
     let stack = stacks.iter().find(|st| st.name == project).unwrap();
     assert_eq!(stack.kind, StackKind::Linked, "{stack:?}");
 }

@@ -27,11 +27,10 @@ use homeport_registries::RegistryStore;
 use homeport_settings::{SettingsService, Theme};
 use homeport_stacks::{
     compose::ComposeAction,
-    history::DeployHistory,
     linked::LinkedStore,
-    owner::StackOwner,
+    model::owner::StackOwner,
     runtime::SourceKind,
-    store::{ComposeFile, StackStore},
+    store::{history::DeployHistory, ComposeFile, StackStore},
     synced::SyncedStore,
 };
 use homeport_storage::{

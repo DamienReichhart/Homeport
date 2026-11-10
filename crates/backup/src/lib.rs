@@ -34,9 +34,11 @@ use homeport_registries::{
 };
 use homeport_settings::{Settings, SettingsService};
 use homeport_stacks::{
-    backup::{self as stacks, StacksBackup, Stores},
     linked::LinkedStore,
-    store::StackStore,
+    store::{
+        backup::{self as stacks, StacksBackup, Stores},
+        StackStore,
+    },
     synced::SyncedStacks,
 };
 use homeport_storage::{crypto::bundle, db::sqlite_error, Db, SecretBox};

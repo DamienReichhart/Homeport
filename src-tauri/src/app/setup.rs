@@ -13,9 +13,8 @@ use homeport_hosts::{
 use homeport_registries::RegistryStore;
 use homeport_settings::SettingsService;
 use homeport_stacks::{
-    history::DeployHistory,
     linked::{FileCache, LinkedStore},
-    store::StackStore,
+    store::{history::DeployHistory, StackStore},
     synced::{SyncedStacks, SyncedStore},
     Stacks,
 };

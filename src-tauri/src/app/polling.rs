@@ -11,7 +11,7 @@ use homeport_core::error::{AppError, ErrorCode};
 use homeport_hosts::registry::HostStatus;
 use homeport_stacks::{
     compose::{ComposeAction, ComposeEvent},
-    definition,
+    model::definition,
     runtime::{self, SourceKind},
     synced::{
         poller::{AutoDeploy, PollEvents, Poller},

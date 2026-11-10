@@ -13,7 +13,7 @@ use homeport_storage::{db::sqlite_error, SecretBox};
 
 use crate::{
     linked::store::LinkedStore,
-    owner::StackOwner,
+    model::owner::StackOwner,
     store::{ComposeFile, StackStore},
     synced::store::SyncedStore,
 };

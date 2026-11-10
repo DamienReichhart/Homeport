@@ -6,9 +6,9 @@ use tauri::{ipc::Channel, State};
 use homeport_core::streams::StreamId;
 use homeport_stacks::{
     compose::{ComposeAction, ComposeEvent},
-    diff::{Candidate, DeployDiff},
-    history::{self, DeployDetail, DeploySummary},
+    model::diff::{Candidate, DeployDiff},
     runtime::{self, SourceKind},
+    store::history::{self, DeployDetail, DeploySummary},
 };
 
 use super::target;

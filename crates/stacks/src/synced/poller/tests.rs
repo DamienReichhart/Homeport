@@ -168,8 +168,8 @@ async fn polled_lab(fail: bool, auto: bool) -> (Lab, Arc<Recorded>, Poller, Sync
         ..Default::default()
     });
     // The poller needs its own handle on the same stores.
-    let synced = Arc::new(super::super::SyncedStacks::new(
-        super::super::SyncedStore::new(lab.db.clone(), lab.secrets.clone()),
+    let synced = Arc::new(crate::synced::SyncedStacks::new(
+        crate::synced::SyncedStore::new(lab.db.clone(), lab.secrets.clone()),
         lab.synced.repositories.clone(),
         lab.dir.path().join("data/synced-stacks"),
     ));

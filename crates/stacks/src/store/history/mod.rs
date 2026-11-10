@@ -12,8 +12,8 @@ use homeport_storage::{Db, SecretBox};
 
 use crate::{
     compose::ComposeAction,
-    definition, messages as msg,
-    owner::StackOwner,
+    messages as msg,
+    model::{definition, owner::StackOwner},
     runtime::SourceKind,
     store::{ComposeFile, ManagedStack, StackStore},
 };

@@ -8,7 +8,7 @@ use homeport_engine::containers::Container;
 
 use crate::{
     linked::{detect, files, FileCache, LinkedStore},
-    stack::{derive, Stack, StackRecord},
+    model::stack::{derive, Stack, StackRecord},
     store::StackStore,
     synced::SyncedStore,
 };
