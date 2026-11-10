@@ -126,8 +126,9 @@ describe('host form', () => {
   it('asks for a TLS Host’s three PEM files', async () => {
     const user = userEvent.setup();
     renderWithProviders(<Harness initial={emptyForm('tls')} />);
+    // Each label names its textarea, so a screen reader announces it.
     for (const label of ['CA certificate', 'Client certificate', 'Client key']) {
-      expect(screen.getByText(label)).toBeInTheDocument();
+      expect(screen.getByLabelText(label).tagName).toBe('TEXTAREA');
     }
     expect(screen.getAllByRole('button', { name: /Load from file/ })).toHaveLength(3);
     await user.click(screen.getByRole('radio', { name: 'SSH' }));
@@ -142,7 +143,9 @@ describe('host form', () => {
     expect(screen.queryByText('Private key')).toBeNull();
 
     await user.click(screen.getByRole('radio', { name: 'Existing key' }));
-    expect(screen.getByText('Private key')).toBeInTheDocument();
+    const key = screen.getByLabelText('Private key');
+    expect(key.tagName).toBe('TEXTAREA');
+    expect(key).toHaveAccessibleDescription(/Stored encrypted/);
     expect(screen.getByText('Passphrase')).toBeInTheDocument();
 
     await user.click(screen.getByRole('radio', { name: 'ssh-agent' }));
