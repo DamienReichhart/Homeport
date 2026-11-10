@@ -131,7 +131,10 @@ pub fn write(
 }
 
 /// Replaces `target` with `bytes` without a moment where it's half written.
+/// A symbolic link stays one: the file it points to is replaced, as an
+/// editor would, instead of the link becoming a copy.
 fn replace(target: &Path, bytes: &[u8]) -> io::Result<()> {
+    let target = &std::fs::canonicalize(target)?;
     let dir = target
         .parent()
         .ok_or_else(|| io::Error::from(io::ErrorKind::NotFound))?;
@@ -295,6 +298,32 @@ mod tests {
         }
         // Only the file, no temporary left behind.
         assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 1);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn writing_through_a_symbolic_link_keeps_the_link_and_edits_its_file() {
+        let dir = tempfile::tempdir().unwrap();
+        let dotfiles = tempfile::tempdir().unwrap();
+        let real = dotfiles.path().join("compose.yaml");
+        std::fs::write(&real, BASE).unwrap();
+        let link = dir.path().join("compose.yaml");
+        std::os::unix::fs::symlink(&real, &link).unwrap();
+        let mut s = stack(dir.path(), &[]);
+        s.config_files = vec![link.to_string_lossy().into_owned()];
+
+        let edited = "services:\n  web:\n    image: nginx:1.27\n";
+        let base = content_fingerprint(BASE.as_bytes());
+        write(&s, &s.config_files[0], edited, Some(&base)).unwrap();
+        assert!(
+            std::fs::symlink_metadata(&link)
+                .unwrap()
+                .file_type()
+                .is_symlink(),
+            "the user's link is still a link"
+        );
+        assert_eq!(std::fs::read_to_string(&real).unwrap(), edited);
+        assert_eq!(std::fs::read_dir(dotfiles.path()).unwrap().count(), 1);
     }
 
     #[test]
