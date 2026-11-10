@@ -131,6 +131,20 @@ export function clusterHandlers(): Record<string, Handler> {
     clusters_helm_releases: () => ({ releases: [], onlyNamespace: null }),
     clusters_forward_list: () => [],
     clusters_api_resources: () => [],
+    clusters_rbac_index: (a) => ({
+      namespace: a.namespace ?? null,
+      roles: [],
+      bindings: [],
+      subjects: [],
+      refused: [],
+    }),
+    clusters_rbac_own: (a) => ({
+      namespace: a.namespace ?? 'default',
+      user: null,
+      grants: { resources: [], urls: [] },
+      incomplete: false,
+      evaluationError: null,
+    }),
     clusters_node_get: (a) => k.nodeDetail(a.name as string),
     clusters_events_list: (a) => inNamespace(k.events, a.namespace),
   };

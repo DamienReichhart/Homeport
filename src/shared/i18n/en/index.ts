@@ -26,6 +26,7 @@ import podmanpods from './podmanpods';
 import quadlets from './quadlets';
 import pods from './pods';
 import portforwards from './portforwards';
+import rbac from './rbac';
 import registries from './registries';
 import repositories from './repositories';
 import search from './search';
@@ -66,6 +67,7 @@ export const uiMessages = {
   ...quadlets,
   ...pods,
   ...portforwards,
+  ...rbac,
   ...registries,
   ...repositories,
   ...search,
