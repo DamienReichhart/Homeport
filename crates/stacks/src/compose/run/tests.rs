@@ -1,4 +1,5 @@
 use super::*;
+use crate::compose::{detect, ComposeCli};
 use std::sync::Arc;
 
 use homeport_engine::{auth::Logins, testing};

@@ -17,7 +17,9 @@ use homeport_core::{
 };
 
 use super::{
-    docker_host, errors, write_stdin, ComposeAction, ComposeCli, ComposeEvent, STDERR_TAIL,
+    error as errors,
+    run::{docker_host, write_stdin, STDERR_TAIL},
+    ComposeAction, ComposeCli, ComposeEvent,
 };
 use crate::{
     messages as msg,
