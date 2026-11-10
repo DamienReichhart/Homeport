@@ -1036,6 +1036,8 @@
   "errors.volumes.cloneFailed": "Homeport no pudo copiar {source}.",
   "errors.volumes.cloneFailed.leftHint": "La copia incompleta, {target}, no se pudo eliminar; bórrala antes de usarla. La salida en Detalles indica qué falló.",
   "errors.volumes.cloneFailed.removedHint": "La copia incompleta, {target}, se eliminó. La salida en Detalles indica qué falló.",
+  "errors.volumes.cloneSharedStorage": "{source} guarda sus archivos en un almacenamiento que indican sus opciones, una carpeta del host o un recurso compartido de red, así que una copia hecha igual serían los mismos archivos.",
+  "errors.volumes.cloneSharedStorage.hint": "Copia esa carpeta o recurso compartido con las herramientas del host, o haz una copia de seguridad del volumen en un archivo y restáurala en un volumen nuevo.",
   "errors.volumes.exists": "Ya existe un volumen llamado {volume}.",
   "errors.volumes.exists.cloneHint": "Elige otro nombre para la copia.",
   "errors.volumes.exists.hint": "Elige otro nombre o restaura en el volumen existente desde su fila.",

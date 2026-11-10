@@ -241,6 +241,10 @@ homeport_core::messages! {
     VOLUME_EXISTS_HINT = "errors.volumes.exists.hint" => "Choose another name, or restore into the existing volume from its row.";
     VOLUME_EXISTS_CLONE_HINT = "errors.volumes.exists.cloneHint" => "Choose another name for the copy.";
     /// The copy into a clone failed; the reason is in Details.
+    /// Cloning a volume whose driver options name its storage, which a clone
+    /// with the same options would share.
+    CLONE_SHARED_STORAGE = "errors.volumes.cloneSharedStorage" => "{source} keeps its files in storage its options name, a folder of the Host or a network share, so a copy made the same way would be the same files.";
+    CLONE_SHARED_STORAGE_HINT = "errors.volumes.cloneSharedStorage.hint" => "Copy that folder or share with the Host's own tools, or back the volume up to a file and restore it into a new volume.";
     CLONE_FAILED = "errors.volumes.cloneFailed" => "Homeport couldn't copy {source}.";
     CLONE_REMOVED_HINT = "errors.volumes.cloneFailed.removedHint" => "The incomplete copy, {target}, was removed. The output in Details says what went wrong.";
     CLONE_LEFT_HINT = "errors.volumes.cloneFailed.leftHint" => "The incomplete copy, {target}, couldn't be removed; delete it before using it. The output in Details says what went wrong.";

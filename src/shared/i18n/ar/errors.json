@@ -1036,6 +1036,8 @@
   "errors.volumes.cloneFailed": "تعذّر على Homeport نسخ {source}.",
   "errors.volumes.cloneFailed.leftHint": "تعذّرت إزالة النسخة غير المكتملة، {target}؛ احذفها قبل استخدامها. يوضح الإخراج في «التفاصيل» ما حدث من خطأ.",
   "errors.volumes.cloneFailed.removedHint": "أُزيلت النسخة غير المكتملة، {target}. يوضح الإخراج في «التفاصيل» ما حدث من خطأ.",
+  "errors.volumes.cloneSharedStorage": "يحفظ {source} ملفاته في تخزين تحدّده خياراته، مجلد على المضيف أو مشاركة شبكية، لذا فإن نسخة تُنشأ بالطريقة نفسها ستكون الملفات نفسها.",
+  "errors.volumes.cloneSharedStorage.hint": "انسخ ذلك المجلد أو المشاركة بأدوات المضيف نفسه، أو انسخ وحدة التخزين احتياطيًا إلى ملف واستعدها في وحدة تخزين جديدة.",
   "errors.volumes.exists": "توجد بالفعل وحدة تخزين باسم {volume}.",
   "errors.volumes.exists.cloneHint": "اختر اسمًا آخر للنسخة.",
   "errors.volumes.exists.hint": "اختر اسمًا آخر، أو استعد إلى وحدة التخزين الموجودة من صفها.",

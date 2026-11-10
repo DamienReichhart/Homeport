@@ -1036,6 +1036,8 @@
   "errors.volumes.cloneFailed": "Homeport가 {source} 볼륨을 복사하지 못했습니다.",
   "errors.volumes.cloneFailed.leftHint": "불완전한 복사본({target})을 삭제하지 못했습니다. 사용하기 전에 삭제하세요. 무엇이 잘못되었는지는 세부 정보의 출력에 나와 있습니다.",
   "errors.volumes.cloneFailed.removedHint": "불완전한 복사본({target})을 삭제했습니다. 무엇이 잘못되었는지는 세부 정보의 출력에 나와 있습니다.",
+  "errors.volumes.cloneSharedStorage": "{source} 볼륨은 옵션에 지정된 저장소(호스트의 폴더나 네트워크 공유)에 파일을 두므로, 같은 방식으로 만든 복사본은 같은 파일이 됩니다.",
+  "errors.volumes.cloneSharedStorage.hint": "그 폴더나 공유는 호스트의 도구로 복사하거나, 볼륨을 파일로 백업한 뒤 새 볼륨에 복원하세요.",
   "errors.volumes.exists": "이름이 {volume}인 볼륨이 이미 있습니다.",
   "errors.volumes.exists.cloneHint": "복사본에 다른 이름을 지정하세요.",
   "errors.volumes.exists.hint": "다른 이름을 선택하거나, 기존 볼륨의 행에서 해당 볼륨으로 복원하세요.",

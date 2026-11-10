@@ -1036,6 +1036,8 @@
   "errors.volumes.cloneFailed": "Homeport konnte {source} nicht kopieren.",
   "errors.volumes.cloneFailed.leftHint": "Die unvollständige Kopie {target} konnte nicht entfernt werden; löschen Sie sie, bevor Sie sie verwenden. Die Ausgabe unter „Details“ sagt, was schiefgelaufen ist.",
   "errors.volumes.cloneFailed.removedHint": "Die unvollständige Kopie {target} wurde entfernt. Die Ausgabe unter „Details“ sagt, was schiefgelaufen ist.",
+  "errors.volumes.cloneSharedStorage": "{source} speichert seine Dateien in einem Speicher, den seine Optionen angeben – einem Ordner des Hosts oder einer Netzwerkfreigabe. Eine auf dieselbe Weise erstellte Kopie wären dieselben Dateien.",
+  "errors.volumes.cloneSharedStorage.hint": "Kopieren Sie diesen Ordner oder diese Freigabe mit den Werkzeugen des Hosts, oder sichern Sie das Volume in eine Datei und stellen Sie es in einem neuen Volume wieder her.",
   "errors.volumes.exists": "Ein Volume namens {volume} existiert bereits.",
   "errors.volumes.exists.cloneHint": "Wählen Sie einen anderen Namen für die Kopie.",
   "errors.volumes.exists.hint": "Wählen Sie einen anderen Namen oder stellen Sie über seine Zeile in das vorhandene Volume wieder her.",

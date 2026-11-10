@@ -44,6 +44,12 @@ async fn copy(docker: &Docker, source: &str, target: &str) -> AppResult<String> 
         .with_hint(msg::VOLUME_EXISTS_CLONE_HINT));
     }
     let original = docker.inspect_volume(source).await?;
+    if shares_storage(&original.driver, &original.options) {
+        return Err(
+            AppError::validation(msg::CLONE_SHARED_STORAGE.with("source", source))
+                .with_hint(msg::CLONE_SHARED_STORAGE_HINT),
+        );
+    }
     docker
         .create_volume(VolumeCreateRequest {
             name: Some(target.to_owned()),
@@ -85,6 +91,16 @@ async fn copy(docker: &Docker, source: &str, target: &str) -> AppResult<String> 
     }
 }
 
+/// Whether a volume of `driver` with `options` keeps its files in storage
+/// those options name: the local driver's `device` (a folder of the Host
+/// bound with `o=bind`, an NFS or CIFS share, a disk). A clone made with
+/// the same options would be that same storage, so copying into it would
+/// copy files onto themselves, and removing it on a failure would be
+/// removing the source's storage.
+fn shares_storage(driver: &str, options: &HashMap<String, String>) -> bool {
+    driver == "local" && options.contains_key("device")
+}
+
 /// `labels` without Compose's.
 fn own_labels(labels: HashMap<String, String>) -> HashMap<String, String> {
     labels
@@ -108,6 +124,73 @@ mod tests {
         assert_eq!(
             own_labels(labels),
             HashMap::from([("backup".to_owned(), "nightly".to_owned())])
+        );
+    }
+
+    #[test]
+    fn volumes_whose_options_name_their_storage_share_it_with_a_clone() {
+        let opts = |pairs: &[(&str, &str)]| -> HashMap<String, String> {
+            pairs
+                .iter()
+                .map(|(k, v)| ((*k).to_owned(), (*v).to_owned()))
+                .collect()
+        };
+        let bind = opts(&[("type", "none"), ("o", "bind"), ("device", "/srv/db")]);
+        let nfs = opts(&[
+            ("type", "nfs"),
+            ("o", "addr=10.0.0.2"),
+            ("device", ":/export"),
+        ]);
+        assert!(shares_storage("local", &bind));
+        assert!(shares_storage("local", &nfs));
+        assert!(!shares_storage("local", &HashMap::new()));
+        assert!(!shares_storage("local", &opts(&[("size", "1G")])));
+    }
+
+    #[tokio::test]
+    #[ignore = "needs a local Docker Engine and busybox:1.37"]
+    async fn a_volume_on_a_folder_of_the_host_is_never_cloned_onto_itself() {
+        let _serial = testing::HELPERS.lock().await;
+        let docker = testing::docker();
+        let folder = tempfile::tempdir().unwrap();
+        std::fs::write(folder.path().join("data.txt"), "precious").unwrap();
+        let source = testing::VolumeGuard {
+            docker: docker.clone(),
+            name: testing::unique("bind"),
+        };
+        docker
+            .create_volume(VolumeCreateRequest {
+                name: Some(source.name.clone()),
+                driver: Some("local".into()),
+                driver_opts: Some(HashMap::from([
+                    ("type".to_owned(), "none".to_owned()),
+                    ("o".to_owned(), "bind".to_owned()),
+                    (
+                        "device".to_owned(),
+                        folder.path().to_string_lossy().into_owned(),
+                    ),
+                ])),
+                ..Default::default()
+            })
+            .await
+            .unwrap();
+        let target = testing::VolumeGuard {
+            docker: docker.clone(),
+            name: testing::unique("bind-copy"),
+        };
+
+        let refused = clone(&docker, &source.name, &target.name, false)
+            .await
+            .unwrap_err();
+        assert!(refused.is(ErrorCode::Validation), "{refused:?}");
+        assert_eq!(refused.key, "errors.volumes.cloneSharedStorage");
+        assert!(
+            docker.inspect_volume(&target.name).await.is_err(),
+            "nothing made"
+        );
+        assert_eq!(
+            std::fs::read_to_string(folder.path().join("data.txt")).unwrap(),
+            "precious"
         );
     }
 

@@ -1036,6 +1036,8 @@
   "errors.volumes.cloneFailed": "Homeport 无法复制 {source}。",
   "errors.volumes.cloneFailed.leftHint": "未完成的副本 {target} 无法删除；请在使用前删除它。出错原因见“详细信息”中的输出。",
   "errors.volumes.cloneFailed.removedHint": "未完成的副本 {target} 已删除。出错原因见“详细信息”中的输出。",
+  "errors.volumes.cloneSharedStorage": "{source} 的文件存放在其选项指定的存储中（主机上的文件夹或网络共享），以相同方式创建的副本将是同一批文件。",
+  "errors.volumes.cloneSharedStorage.hint": "请使用主机自身的工具复制该文件夹或共享，或将该卷备份到文件后恢复到一个新卷中。",
   "errors.volumes.exists": "名为 {volume} 的卷已存在。",
   "errors.volumes.exists.cloneHint": "请为副本换一个名称。",
   "errors.volumes.exists.hint": "请换一个名称，或从现有卷所在的行恢复到该卷。",

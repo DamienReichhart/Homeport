@@ -1036,6 +1036,8 @@
   "errors.volumes.cloneFailed": "Homeport は {source} をコピーできませんでした。",
   "errors.volumes.cloneFailed.leftHint": "不完全なコピー（{target}）を削除できませんでした。使う前に削除してください。問題の内容は「詳細」の出力にあります。",
   "errors.volumes.cloneFailed.removedHint": "不完全なコピー（{target}）は削除されました。問題の内容は「詳細」の出力にあります。",
+  "errors.volumes.cloneSharedStorage": "{source} は、オプションで指定されたストレージ（ホストのフォルダーやネットワーク共有）にファイルを置いているため、同じ方法で作ったコピーは同じファイルになってしまいます。",
+  "errors.volumes.cloneSharedStorage.hint": "そのフォルダーや共有はホストのツールでコピーするか、ボリュームをファイルにバックアップして新しいボリュームに復元してください。",
   "errors.volumes.exists": "{volume} という名前のボリュームはすでに存在します。",
   "errors.volumes.exists.cloneHint": "コピーには別の名前を選んでください。",
   "errors.volumes.exists.hint": "別の名前を選ぶか、既存のボリュームの行から、そのボリュームに復元してください。",
