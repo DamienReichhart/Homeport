@@ -1,1 +1,7 @@
-//! Use cases for the Docker Engine of a Host: containers, images, volumes, networks, Podman and Swarm.
+//! The Docker Engine of a Host: what runs on it, Podman's own API and Swarm
+//! mode.
+
+mod registries;
+
+#[cfg(test)]
+mod testing;
