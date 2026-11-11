@@ -25,8 +25,9 @@
     "rust:fmt": "cargo fmt --all",
     "rust:lint": "cargo clippy --workspace --all-targets -- -D warnings",
     "rust:test": "cargo test --workspace",
-    "check": "bun run typecheck && bun run lint && bun run format:check && bun run i18n:check && bun run test",
+    "check": "bun run typecheck && bun run lint && bun run format:check && bun run i18n:check && bun run i18n:fluent --check && bun run test",
     "i18n:check": "bun scripts/i18n/check-keys.ts",
+    "i18n:fluent": "bun scripts/i18n/to-fluent.ts",
     "bindings": "cd src-tauri && UPDATE_BINDINGS=1 cargo test --lib bindings_are_up_to_date",
     "licenses": "bun scripts/licenses.ts",
     "screenshots": "bun scripts/screenshots/capture.ts"

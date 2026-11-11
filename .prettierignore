@@ -7,3 +7,4 @@ bun.lock
 src/shared/api/bindings.ts
 .astro
 .claude
+app/tests/fixtures/i18n-golden.json
