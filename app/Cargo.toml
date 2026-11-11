@@ -1,0 +1,19 @@
+[package]
+name = "homeport-app"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Homeport desktop application, built on iced"
+publish = false
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "homeport-iced"
+path = "src/main.rs"
+
+[dependencies]
+iced = { workspace = true }
+tokio.workspace = true
