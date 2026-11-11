@@ -11,7 +11,10 @@ use iced::{
 };
 use tokio::sync::mpsc::{self, UnboundedReceiver};
 
-use crate::app::{events::{Event, Events}, setup, AppState};
+use crate::app::{
+    events::{Event, Events},
+    setup, AppState,
+};
 
 pub fn run() -> iced::Result {
     iced::application(Homeport::boot, Homeport::update, Homeport::view)
@@ -110,9 +113,7 @@ impl Homeport {
 }
 
 fn backend_events() -> impl Stream<Item = Event> {
-    let receiver = EVENTS
-        .get()
-        .and_then(|slot| slot.lock().ok()?.take());
+    let receiver = EVENTS.get().and_then(|slot| slot.lock().ok()?.take());
     stream::unfold(receiver, |receiver| async move {
         let mut receiver = receiver?;
         let event = receiver.recv().await?;

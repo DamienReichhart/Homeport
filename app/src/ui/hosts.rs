@@ -63,7 +63,8 @@ impl Hosts {
             rows = rows.push(text(e.as_str()));
         }
         for view in &self.list {
-            rows = rows.push(row![text(view.host.name.as_str()), text(label(&view.status))].spacing(16));
+            rows = rows
+                .push(row![text(view.host.name.as_str()), text(label(&view.status))].spacing(16));
         }
         rows.into()
     }

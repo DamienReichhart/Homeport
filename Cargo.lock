@@ -3234,7 +3234,26 @@ dependencies = [
 name = "homeport-app"
 version = "1.0.0-rc.1"
 dependencies = [
+ "dirs 6.0.0",
+ "homeport-backup",
+ "homeport-clusters",
+ "homeport-containerd",
+ "homeport-core",
+ "homeport-diagnostics",
+ "homeport-engine",
+ "homeport-git",
+ "homeport-hosts",
+ "homeport-incus",
+ "homeport-kubernetes",
+ "homeport-nomad",
+ "homeport-registries",
+ "homeport-settings",
+ "homeport-stacks",
+ "homeport-storage",
+ "homeport-transport",
+ "homeport-updates",
  "iced",
+ "log",
  "tokio",
 ]
 

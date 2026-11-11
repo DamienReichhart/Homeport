@@ -5,4 +5,4 @@ pub mod events;
 pub mod setup;
 mod state;
 
-pub use self::state::{AppState, Terminals};
+pub use self::state::AppState;

@@ -80,11 +80,7 @@ pub fn state(events: &Events) -> Result<AppState, Failure> {
     let secrets = Arc::new(secrets);
     let store = Arc::new(HostStore::new(db.clone(), secrets.clone()));
     let host_events = EventStore::new(db.clone());
-    let registry = HostRegistry::new(
-        store.clone(),
-        host_events.clone(),
-        Arc::new(events.clone()),
-    );
+    let registry = HostRegistry::new(store.clone(), host_events.clone(), Arc::new(events.clone()));
     let start = registry.clone();
     tokio::spawn(async move {
         if let Err(e) = start.start_all() {
