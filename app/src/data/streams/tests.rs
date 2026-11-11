@@ -23,7 +23,7 @@ use homeport_hosts::{service::HostInput, EngineKind, HostConnection};
 
 use super::{
     shapes::{self, log_lines, Lines},
-    subscription, Sink, Update, FRAME, UPDATES_PER_SECOND,
+    Sink, Update, FRAME, UPDATES_PER_SECOND,
 };
 use crate::{
     api::{
@@ -301,16 +301,6 @@ fn a_batch_of_log_events_is_its_lines_in_order() {
     assert_eq!(log_lines(vec![]), Lines::default());
 }
 
-#[tokio::test]
-async fn a_subscription_is_told_apart_by_its_parameters() {
-    let (state, _app) = state();
-    // Compiles with a stream opened from the parameters alone.
-    let _stats = subscription(&state, ("h1".to_owned(), "c1".to_owned()), |source| {
-        let (host_id, container_id) = source.params.clone();
-        shapes::stats(source.state.clone(), host_id, container_id)
-    });
-}
-
 /// This machine's Engine as a connected Host of `state`; `None`, with a
 /// note, where no Engine listens (CI on macOS and Windows).
 async fn local_host(state: &Arc<AppState>) -> Option<String> {
@@ -328,7 +318,11 @@ async fn local_host(state: &Arc<AppState>) -> Option<String> {
         credentials: None,
         bastion_keys: Vec::new(),
     };
-    let id = hosts_create(state, input).await.ok()?.host.id;
+    let id = hosts_create(state, input)
+        .await
+        .expect("a local Host is created")
+        .host
+        .id;
     for _ in 0..100 {
         if state.hosts.registry.docker(&id).is_ok() {
             return Some(id);

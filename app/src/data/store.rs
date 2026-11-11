@@ -139,7 +139,8 @@ impl Data {
     /// Files `value` under `key` as if it had just been read: what a use
     /// case returned needs no second read.
     pub fn set<T: Send + Sync + 'static>(&mut self, key: &Key, value: T) {
-        self.cache.set(key, value, Instant::now());
+        let aborted = self.cache.set(key, value, Instant::now());
+        self.stop(aborted.into_iter().collect());
     }
 
     /// Changes the value of type `T` filed under `key`, if there is one:
@@ -150,7 +151,9 @@ impl Data {
         key: &Key,
         change: impl FnOnce(&T) -> Option<T>,
     ) -> bool {
-        self.cache.update(key, change)
+        let (changed, aborted) = self.cache.update(key, change);
+        self.stop(aborted.into_iter().collect());
+        changed
     }
 
     /// The window was hidden in the tray, or shown again: nothing is polled

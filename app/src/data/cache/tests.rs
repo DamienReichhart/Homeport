@@ -392,7 +392,7 @@ fn a_value_can_be_set_and_changed_by_hand() {
     let mut cache = Cache::default();
     let key = host::events("h1");
     // Nothing to change yet.
-    assert!(!cache.update::<Vec<&str>>(&key, |list| Some(list.clone())));
+    assert!(!cache.update::<Vec<&str>>(&key, |list| Some(list.clone())).0);
     cache.set(&key, vec!["start"], now);
     assert_eq!(read(&cache, &key), Resource::Loaded(vec!["start"]));
 
@@ -401,10 +401,56 @@ fn a_value_can_be_set_and_changed_by_hand() {
         list.push("die");
         Some(list)
     });
-    assert!(appended);
+    assert!(appended.0);
     assert_eq!(read(&cache, &key), Resource::Loaded(vec!["start", "die"]));
     // Leaving it, or naming another type, changes nothing.
-    assert!(!cache.update::<Vec<&str>>(&key, |_| None));
-    assert!(!cache.update::<u8>(&key, |n| Some(n + 1)));
+    assert!(!cache.update::<Vec<&str>>(&key, |_| None).0);
+    assert!(!cache.update::<u8>(&key, |n| Some(n + 1)).0);
     assert_eq!(cache.keys_in(&host::scope("h1")), [key]);
+}
+
+#[test]
+fn a_read_on_its_way_never_undoes_what_was_set_or_changed_since() {
+    let now = Instant::now();
+    let mut cache = Cache::default();
+    let query = containers("h1");
+    let key = query.key().clone();
+    let reading = flight(&cache.watch(&query, now));
+
+    // Saved while the read was on its way: the read is aborted, and its
+    // older answer is ignored when it lands.
+    let aborted = cache.set(&key, vec!["saved"], now);
+    assert_eq!(aborts(&aborted.into_iter().collect::<Vec<_>>()), [reading]);
+    assert!(cache.settle(&key, reading, value(&["old"]), now).is_empty());
+    assert_eq!(read(&cache, &key), Resource::Loaded(vec!["saved"]));
+
+    // The same for a change made by hand, which leaves it out of date.
+    let reading = flight(&cache.invalidate(&key));
+    let (changed, aborted) = cache.update::<Vec<&str>>(&key, |_| Some(vec!["changed"]));
+    assert!(changed);
+    assert_eq!(aborts(&aborted.into_iter().collect::<Vec<_>>()), [reading]);
+    cache.settle(&key, reading, value(&["old"]), now);
+    assert_eq!(read(&cache, &key), Resource::Loaded(vec!["changed"]));
+    assert_eq!(loads(&cache.invalidate(&key)).len(), 1);
+}
+
+#[test]
+fn a_change_is_only_taken_back_while_it_is_still_there() {
+    let now = Instant::now();
+    let mut cache = Cache::default();
+    let key = host::events("h1");
+    cache.set(&key, vec!["start"], now);
+    let before = cache.value(&key).unwrap();
+    cache.update::<Vec<&str>>(&key, |_| Some(vec!["changed"]));
+    let changed = cache.value(&key).unwrap();
+
+    // Newer data arrived since the change: it stays.
+    cache.set(&key, vec!["newer"], now);
+    cache.restore(&key, &changed, before.clone());
+    assert_eq!(read(&cache, &key), Resource::Loaded(vec!["newer"]));
+
+    cache.update::<Vec<&str>>(&key, |_| Some(vec!["changed"]));
+    let changed = cache.value(&key).unwrap();
+    cache.restore(&key, &changed, before);
+    assert_eq!(read(&cache, &key), Resource::Loaded(vec!["start"]));
 }

@@ -133,6 +133,8 @@ impl<T> Action<T> {
 pub struct Rollback {
     key: Key,
     before: Value,
+    /// What the change put there: only this is taken back.
+    changed: Value,
 }
 
 impl Data {
@@ -164,9 +166,13 @@ impl Data {
         change: impl FnOnce(&T) -> Option<T>,
     ) -> Option<Rollback> {
         let before = self.cache.value(key)?;
-        self.change(key, change).then(|| Rollback {
+        if !self.change(key, change) {
+            return None;
+        }
+        Some(Rollback {
             key: key.clone(),
             before,
+            changed: self.cache.value(key)?,
         })
     }
 
@@ -189,7 +195,8 @@ impl Data {
         }
         let touched = rollback.as_ref().map(|rollback| rollback.key.clone());
         if let (false, Some(rollback)) = (succeeded, rollback) {
-            self.cache.restore(&rollback.key, rollback.before);
+            self.cache
+                .restore(&rollback.key, &rollback.changed, rollback.before);
         }
         let scopes = invalidates
             .into_iter()

@@ -270,28 +270,41 @@ impl Cache {
     }
 
     /// Files `value` under `key` as if it had just been read: what a use
-    /// case returned (the saved settings) needs no second read.
-    pub fn set<T: Send + Sync + 'static>(&mut self, key: &Key, value: T, now: Instant) {
+    /// case returned (the saved settings) needs no second read. A read on
+    /// its way started before `value` existed, so it is aborted rather than
+    /// left to put the older answer back.
+    pub fn set<T: Send + Sync + 'static>(
+        &mut self,
+        key: &Key,
+        value: T,
+        now: Instant,
+    ) -> Option<Effect> {
         let entry = self
             .entries
             .entry(key.clone())
             .or_insert_with(|| Entry::new(now));
+        let aborted = abort(entry);
         entry.value = Some(Arc::new(value));
         entry.error = None;
         entry.loaded_at = Some(now);
         entry.invalidated = false;
+        aborted
     }
 
     /// Changes what is filed under `key`, if something of type `T` is:
     /// `change` gives the new value, or `None` to leave it. Returns whether
     /// it changed. Its age stays what it was.
+    ///
+    /// A read on its way would undo the change when it lands, so it is
+    /// aborted and the resource left out of date: whoever changed it has
+    /// it read again once the backend holds the change.
     pub fn update<T: Send + Sync + 'static>(
         &mut self,
         key: &Key,
         change: impl FnOnce(&T) -> Option<T>,
-    ) -> bool {
+    ) -> (bool, Option<Effect>) {
         let Some(entry) = self.entries.get_mut(key) else {
-            return false;
+            return (false, None);
         };
         let changed = entry
             .value
@@ -301,9 +314,11 @@ impl Cache {
         match changed {
             Some(value) => {
                 entry.value = Some(Arc::new(value));
-                true
+                let aborted = abort(entry);
+                entry.invalidated |= aborted.is_some();
+                (true, aborted)
             }
-            None => false,
+            None => (false, None),
         }
     }
 
@@ -330,10 +345,17 @@ impl Cache {
         self.entries.get(key)?.value.clone()
     }
 
-    /// Puts back under `key` a value [`Cache::value`] gave.
-    pub fn restore(&mut self, key: &Key, value: Value) {
+    /// Puts `before` back under `key` if `changed` is still what is filed
+    /// there: a read that landed since knows better than either.
+    pub fn restore(&mut self, key: &Key, changed: &Value, before: Value) {
         if let Some(entry) = self.entries.get_mut(key) {
-            entry.value = Some(value);
+            if entry
+                .value
+                .as_ref()
+                .is_some_and(|value| Arc::ptr_eq(value, changed))
+            {
+                entry.value = Some(before);
+            }
         }
     }
 

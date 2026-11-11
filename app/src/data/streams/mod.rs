@@ -198,6 +198,10 @@ impl<P: Hash> Hash for Source<P> {
 /// with the same `params`, and is dropped (so stopped) when it no longer
 /// does. `open` can't capture anything; what it needs is in `params`.
 ///
+/// For views only (logs, stats, watches). A job is started once, with
+/// `Task::run`: as a subscription it would start again each time the page
+/// showing it came back.
+///
 /// ```ignore
 /// streams::subscription(&state, (host_id, container_id), |source| {
 ///     let (host_id, container_id) = source.params.clone();

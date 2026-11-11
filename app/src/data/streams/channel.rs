@@ -113,12 +113,23 @@ impl<T> Sink<T> {
         queue.items.push_back(item);
         queue.weight += weight;
         if let Some(backlog) = shared.backlog {
-            // The newest item always waits, however heavy.
-            while queue.weight > backlog.max && queue.items.len() > 1 {
-                let Some(oldest) = queue.items.pop_front() else {
+            // What weighs nothing (an error, the end) costs no memory and
+            // the window must not miss it; the newest of what weighs
+            // something always waits, however heavy.
+            while queue.weight > backlog.max {
+                let mut weighted = queue
+                    .items
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, item)| (backlog.weight)(item) > 0)
+                    .map(|(at, _)| at);
+                let (Some(oldest), Some(_)) = (weighted.next(), weighted.next()) else {
                     break;
                 };
-                let weight = (backlog.weight)(&oldest);
+                let Some(item) = queue.items.remove(oldest) else {
+                    break;
+                };
+                let weight = (backlog.weight)(&item);
                 queue.weight -= weight;
                 queue.dropped += weight as u64;
             }
@@ -210,6 +221,27 @@ mod tests {
         let taken = receiver.take().await;
         assert_eq!(taken.items, [vec![2; 50]]);
         assert_eq!(taken.dropped, 3);
+    }
+
+    #[tokio::test]
+    async fn what_weighs_nothing_is_never_dropped() {
+        let lines = Backlog {
+            max: 10,
+            weight: |lines: &Vec<u8>| lines.len(),
+        };
+        let (sink, receiver) = channel(Some(lines), true);
+        // An error weighs nothing; the lines after it overflow the backlog.
+        sink.send(vec![1; 8]);
+        sink.send(vec![]);
+        sink.send(vec![2; 8]);
+        sink.send(vec![3; 8]);
+        let taken = receiver.take().await;
+        assert_eq!(taken.items, [vec![], vec![3; 8]]);
+        assert_eq!(taken.dropped, 16);
+        // Lines heavier than the backlog survive the end that follows them.
+        sink.send(vec![4; 50]);
+        sink.send(vec![]);
+        assert_eq!(receiver.take().await.items, [vec![4; 50], vec![]]);
     }
 
     #[tokio::test]
