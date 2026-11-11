@@ -8,8 +8,10 @@
 //! 1. its use cases, against [`crate::app::testing::app`];
 //! 2. its `update`, by sending messages and running the tasks it returns
 //!    with [`tasks::messages`];
-//! 3. its `view`, with [`snapshot::assert_snapshot`], in English and Arabic.
+//! 3. its `view`, with [`snapshot::assert_snapshot`], in English and Arabic,
+//!    and with [`window::drive`] where the test presses and types.
 
 pub mod fixtures;
 pub mod snapshot;
 pub mod tasks;
+pub mod window;

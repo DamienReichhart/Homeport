@@ -37,3 +37,7 @@ ui-errorDetails-rawDetail = Исходный текст
 ui-errorDetails-rawDetailNote = В том виде, в каком его выдали система, движок или библиотека, поэтому он не переведён.
 ui-errorDetails-openLogFolder = Открыть папку журналов
 ui-errorDetails-copyReport = Скопировать отчёт
+ui-confirm-typeName = Введите { $name } для подтверждения
+ui-select-noMatch = Ничего не найдено.
+ui-password-show = Показать пароль
+ui-password-hide = Скрыть пароль

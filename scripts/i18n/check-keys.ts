@@ -48,7 +48,19 @@ if (!only) {
     }
     return out;
   };
-  problems.push(...checkKeys(namespaces, walk(join(root, 'src'), [], /\.(ts|tsx)$/)));
+  const sources = walk(join(root, 'src'), [], /\.(ts|tsx)$/);
+  // The iced app reads the same keys (`t!("ui.copy")`), some of them before
+  // the React app does: a key only Rust names is used too. Whether Rust
+  // names a key that exists is `app/src/i18n/check.rs`'s to say, so only
+  // the keys of the catalogue count here.
+  const rust = walk(join(root, 'app', 'src'), [], /\.rs$/)
+    .map((source) => source.text)
+    .join('\n');
+  const named = namespaces
+    .flatMap((ns) => ns.keys)
+    .filter((key) => rust.includes(`"${key}"`));
+  sources.push({ path: 'app/src', text: named.map((key) => `'${key}'`).join('\n') });
+  problems.push(...checkKeys(namespaces, sources));
 }
 
 const locales = readdirSync(i18n).filter(

@@ -33,4 +33,8 @@ export default {
   'ui.errorDetails.rawDetailNote': 'كما كتبها النظام أو المحرك أو المكتبة، لذا لم تُترجم.',
   'ui.errorDetails.openLogFolder': 'فتح مجلد السجلات',
   'ui.errorDetails.copyReport': 'نسخ التقرير',
+  'ui.confirm.typeName': 'اكتب {name} للتأكيد',
+  'ui.select.noMatch': 'لا توجد نتائج مطابقة.',
+  'ui.password.show': 'إظهار كلمة المرور',
+  'ui.password.hide': 'إخفاء كلمة المرور',
 } satisfies Translation<typeof en>;

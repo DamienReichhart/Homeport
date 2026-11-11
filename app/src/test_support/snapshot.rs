@@ -49,6 +49,17 @@ impl Drop for InLanguage {
     }
 }
 
+/// What a view is drawn with in a test: in software, whatever the machine
+/// has, and with the app's own fonts, so it is drawn as the window draws it.
+pub fn settings() -> Settings {
+    std::env::set_var("ICED_TEST_BACKEND", "tiny-skia");
+    Settings {
+        fonts: theme::font::files().chain([ARABIC.into()]).collect(),
+        default_font: theme::font::DEFAULT,
+        ..Settings::default()
+    }
+}
+
 /// A decoded picture: its size and its RGBA bytes.
 struct Picture {
     width: u32,
@@ -114,15 +125,7 @@ pub fn assert_snapshot<'a, Message: 'a, Theme: Base + 'a>(
     view: impl FnOnce() -> Element<'a, Message, Theme>,
 ) {
     let _language = in_language(tag);
-    // Every snapshot is drawn in software, whatever the machine has.
-    std::env::set_var("ICED_TEST_BACKEND", "tiny-skia");
-    // The app's own fonts, so a page is drawn as the window draws it.
-    let settings = Settings {
-        fonts: theme::font::files().chain([ARABIC.into()]).collect(),
-        default_font: theme::font::DEFAULT,
-        ..Settings::default()
-    };
-    let mut ui = Simulator::with_size(settings, size, view());
+    let mut ui = Simulator::with_size(settings(), size, view());
     let snapshot = ui.snapshot(theme).expect("the page draws without a window");
 
     // iced_test only writes a picture where none exists, and only compares

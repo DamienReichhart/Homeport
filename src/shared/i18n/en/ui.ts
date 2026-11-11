@@ -30,4 +30,8 @@ export default {
     'As the system, the Engine or the library wrote it, so it isn’t translated.',
   'ui.errorDetails.openLogFolder': 'Open log folder',
   'ui.errorDetails.copyReport': 'Copy report',
+  'ui.confirm.typeName': 'Type {name} to confirm',
+  'ui.select.noMatch': 'Nothing matches.',
+  'ui.password.show': 'Show password',
+  'ui.password.hide': 'Hide password',
 } as const;

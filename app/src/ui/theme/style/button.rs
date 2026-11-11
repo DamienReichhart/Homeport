@@ -264,3 +264,15 @@ pub mod part {
         }
     }
 }
+
+/// The button that confirms a destructive action in a dialog: the one red
+/// slab of the app (`bg-destructive text-white hover:bg-destructive/90`).
+pub fn destructive_solid(theme: &Theme, status: Status) -> Style {
+    let tokens = theme.tokens();
+    let look = |opacity| Look {
+        background: Some(alpha(tokens.destructive, opacity)),
+        text: Color::WHITE,
+        border: Color::TRANSPARENT,
+    };
+    build(status, look(1.0), look(0.9))
+}

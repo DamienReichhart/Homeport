@@ -33,4 +33,8 @@ export default {
     'जैसा सिस्टम, इंजन या लाइब्रेरी ने लिखा, वैसा ही; इसलिए इसका अनुवाद नहीं किया गया है।',
   'ui.errorDetails.openLogFolder': 'लॉग फ़ोल्डर खोलें',
   'ui.errorDetails.copyReport': 'रिपोर्ट कॉपी करें',
+  'ui.confirm.typeName': 'पुष्टि के लिए {name} टाइप करें',
+  'ui.select.noMatch': 'कुछ भी मेल नहीं खाता।',
+  'ui.password.show': 'पासवर्ड दिखाएँ',
+  'ui.password.hide': 'पासवर्ड छिपाएँ',
 } satisfies Translation<typeof en>;

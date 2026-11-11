@@ -8,6 +8,7 @@ use iced::{
 };
 
 use super::{alpha, edge, floating, hairline, radius, Theme};
+use crate::ui::theme::color::mix;
 
 impl Catalog for Theme {
     type Class<'a> = StyleFn<'a, Self>;
@@ -100,6 +101,38 @@ pub fn dialog_footer(theme: &Theme) -> Style {
             ..Border::default()
         },
         ..card_footer(theme)
+    }
+}
+
+/// `Alert`: a card with a field's corners and the page's border.
+pub fn alert(theme: &Theme) -> Style {
+    let tokens = theme.tokens();
+    Style {
+        border: hairline(tokens.border, radius::LG),
+        ..surface(tokens.card, tokens.card_foreground)
+    }
+}
+
+/// A toast: the popover tinted with the colour of what it reports (Sonner's
+/// `richColors`: a tenth of it in the fill, three tenths in the border).
+pub fn toast(colour: fn(&super::Tokens) -> Color) -> impl Fn(&Theme) -> Style {
+    move |theme| {
+        let tokens = theme.tokens();
+        let colour = colour(tokens);
+        Style {
+            border: hairline(mix(tokens.popover, colour, 0.3), radius::LG),
+            shadow: floating(),
+            ..surface(mix(tokens.popover, colour, 0.1), colour)
+        }
+    }
+}
+
+/// `Skeleton`: where something is still loading.
+pub fn skeleton(theme: &Theme) -> Style {
+    Style {
+        background: Some(theme.tokens().muted.into()),
+        border: Border::default().rounded(radius::MD),
+        ..Style::default()
     }
 }
 

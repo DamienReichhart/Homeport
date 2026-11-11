@@ -33,4 +33,8 @@ export default {
     'Como o sistema, o Engine ou a biblioteca o escreveu, por isso não é traduzido.',
   'ui.errorDetails.openLogFolder': 'Abrir pasta de logs',
   'ui.errorDetails.copyReport': 'Copiar relatório',
+  'ui.confirm.typeName': 'Digite {name} para confirmar',
+  'ui.select.noMatch': 'Nada corresponde.',
+  'ui.password.show': 'Mostrar a senha',
+  'ui.password.hide': 'Ocultar a senha',
 } satisfies Translation<typeof en>;

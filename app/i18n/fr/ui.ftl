@@ -35,3 +35,7 @@ ui-errorDetails-rawDetail = Détail brut
 ui-errorDetails-rawDetailNote = Tel que le système, le moteur ou la bibliothèque l’a écrit ; il n’est donc pas traduit.
 ui-errorDetails-openLogFolder = Ouvrir le dossier des journaux
 ui-errorDetails-copyReport = Copier le rapport
+ui-confirm-typeName = Saisissez { $name } pour confirmer
+ui-select-noMatch = Aucun résultat.
+ui-password-show = Afficher le mot de passe
+ui-password-hide = Masquer le mot de passe

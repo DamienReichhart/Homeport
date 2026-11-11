@@ -34,3 +34,7 @@ ui-errorDetails-rawDetail = 元の詳細
 ui-errorDetails-rawDetailNote = システム、エンジン、またはライブラリが出力したままの内容のため、翻訳されません。
 ui-errorDetails-openLogFolder = ログフォルダーを開く
 ui-errorDetails-copyReport = レポートをコピー
+ui-confirm-typeName = 確認のため { $name } と入力してください
+ui-select-noMatch = 一致するものはありません。
+ui-password-show = パスワードを表示
+ui-password-hide = パスワードを非表示

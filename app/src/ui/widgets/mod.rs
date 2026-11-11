@@ -50,3 +50,14 @@ pub fn start() -> Horizontal {
 pub fn end() -> Horizontal {
     i18n::direction().pick(Horizontal::Right, Horizontal::Left)
 }
+
+/// A paragraph of body text: as wide as it may be, starting where text
+/// starts, wrapped.
+pub fn paragraph<'a>(body: impl Into<String>) -> iced::widget::Text<'a, Theme> {
+    use crate::ui::theme::metrics::text as size;
+    iced::widget::text(body.into())
+        .size(size::SM)
+        .line_height(size::LEADING_SM)
+        .width(Length::Fill)
+        .align_x(start())
+}

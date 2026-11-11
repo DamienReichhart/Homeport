@@ -174,7 +174,7 @@ icons! {
 /// (on a primary button, in muted or red text) say so:
 /// `icon(Icon::Trash).style(theme::svg::destructive)`; resize it with
 /// `.width(..).height(..)` and the sizes of `metrics::icon`.
-pub fn icon(icon: Icon) -> Svg<'static, Theme> {
+pub fn icon<'a>(icon: Icon) -> Svg<'a, Theme> {
     Svg::new(Handle::from_memory(icon.bytes()))
         .width(metrics::icon::MD)
         .height(metrics::icon::MD)
