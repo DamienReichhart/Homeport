@@ -61,8 +61,22 @@ fn data_dir() -> Result<PathBuf, Failure> {
 /// Builds the app's state and starts connecting to every Host. Must run
 /// inside the Tokio runtime.
 pub fn state(events: &Events) -> Result<AppState, Failure> {
-    let config_dir = config_dir()?;
-    let data_dir = data_dir()?;
+    state_in(config_dir()?, data_dir()?, events, |holds_sealed| {
+        // Keychain backends may block on D-Bus; keep that off the async runtime.
+        std::thread::spawn(move || SecretBox::from_store(&KEYCHAIN, holds_sealed))
+            .join()
+            .expect("keychain thread panicked")
+    })
+}
+
+/// [`state`] with its folders and the key its secrets are sealed with given,
+/// so tests build one in a temporary folder without the OS keychain.
+pub fn state_in(
+    config_dir: PathBuf,
+    data_dir: PathBuf,
+    events: &Events,
+    secrets: impl FnOnce(bool) -> SecretBox,
+) -> Result<AppState, Failure> {
     std::fs::create_dir_all(&config_dir)?;
     std::fs::create_dir_all(&data_dir)?;
     let database = data_dir.join("homeport.db");
@@ -73,11 +87,7 @@ pub fn state(events: &Events) -> Result<AppState, Failure> {
     let settings = SettingsService::new(db.clone(), &config_dir.join("settings.json"))?;
     // A missing keychain entry makes a new key only when nothing is sealed yet.
     let holds_sealed = db.holds_sealed_data()?;
-    // Keychain backends may block on D-Bus; keep that off the async runtime.
-    let secrets = std::thread::spawn(move || SecretBox::from_store(&KEYCHAIN, holds_sealed))
-        .join()
-        .expect("keychain thread panicked");
-    let secrets = Arc::new(secrets);
+    let secrets = Arc::new(secrets(holds_sealed));
     let store = Arc::new(HostStore::new(db.clone(), secrets.clone()));
     let host_events = EventStore::new(db.clone());
     let registry = HostRegistry::new(store.clone(), host_events.clone(), Arc::new(events.clone()));
@@ -126,7 +136,9 @@ pub fn state(events: &Events) -> Result<AppState, Failure> {
         terminals: Default::default(),
         volume_browser: Default::default(),
         freshness: Default::default(),
+        events: events.clone(),
         db,
         data_dir,
+        config_dir,
     })
 }

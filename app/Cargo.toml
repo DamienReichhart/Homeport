@@ -10,6 +10,11 @@ publish = false
 [lints]
 workspace = true
 
+# The library holds everything, so tests, examples and the binary share it.
+[lib]
+name = "homeport_app"
+path = "src/lib.rs"
+
 [[bin]]
 name = "homeport-iced"
 path = "src/main.rs"
@@ -37,4 +42,14 @@ homeport-diagnostics.workspace = true
 iced.workspace = true
 tokio.workspace = true
 log.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+zip.workspace = true
 dirs = "6"
+
+[dev-dependencies]
+tempfile.workspace = true
+# Throwaway Engine resources and sample databases, for the use cases' tests.
+homeport-storage = { workspace = true, features = ["test-support"] }
+homeport-engine = { workspace = true, features = ["test-support"] }
+homeport-transport = { workspace = true, features = ["test-support"] }

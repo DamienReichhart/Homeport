@@ -3254,7 +3254,11 @@ dependencies = [
  "homeport-updates",
  "iced",
  "log",
+ "serde",
+ "serde_json",
+ "tempfile",
  "tokio",
+ "zip 2.6.1",
 ]
 
 [[package]]

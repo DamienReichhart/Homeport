@@ -24,6 +24,10 @@ pub struct AppState {
     pub db: Arc<Db>,
     /// The app data folder, where `homeport.db` lives.
     pub data_dir: std::path::PathBuf,
+    /// The folder of `settings.json`.
+    pub config_dir: std::path::PathBuf,
+    /// Where use cases publish what the rest of the UI must hear of.
+    pub events: super::events::Events,
     pub secrets: Arc<SecretBox>,
     pub settings: SettingsService,
     pub hosts: HostService,

@@ -7,8 +7,10 @@ use std::sync::Arc;
 use tokio::sync::mpsc::UnboundedSender;
 
 use homeport_clusters::registry::{ClusterNotifier, ClusterStatus};
+use homeport_core::error::AppError;
 use homeport_hosts::registry::{EngineEvent, HostStatus, Notifier};
 use homeport_kubernetes::streams::forward::ForwardEvent;
+use homeport_stacks::StackOwner;
 
 #[derive(Debug, Clone)]
 pub enum Event {
@@ -25,6 +27,28 @@ pub enum Event {
         host_id: String,
         event: Arc<EngineEvent>,
     },
+    /// A Host was added, changed, removed, enabled or disabled: the tray and
+    /// every list of Hosts are out of date.
+    HostsChanged,
+    /// The text the OS draws (tray menu, notifications) was given in another
+    /// language.
+    NativeTextChanged,
+    /// A Synced Stack's poll found a new commit that changes its compose
+    /// file's folder.
+    SyncedUpdateAvailable {
+        /// The Host or Swarm it's deployed to.
+        owner: StackOwner,
+        stack_id: String,
+        name: String,
+    },
+    /// A Synced Stack's automatic deploy ended; `error` says why it failed.
+    SyncedAutoDeployed {
+        owner: StackOwner,
+        stack_id: String,
+        name: String,
+        commit: String,
+        error: Option<Box<AppError>>,
+    },
 }
 
 /// The sending half, cloned into each registry.
@@ -36,7 +60,8 @@ impl Events {
         Self(sender)
     }
 
-    fn send(&self, event: Event) {
+    /// Tells the UI of `event`.
+    pub fn send(&self, event: Event) {
         // The receiver only goes away when the app is closing.
         let _ = self.0.send(event);
     }

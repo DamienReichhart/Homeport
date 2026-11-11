@@ -4,5 +4,7 @@
 pub mod events;
 pub mod setup;
 mod state;
+#[cfg(test)]
+pub mod testing;
 
 pub use self::state::AppState;
