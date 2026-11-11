@@ -19,8 +19,6 @@ use homeport_core::{
     messages as msg,
 };
 use iced::{
-    event,
-    keyboard::{self, key::Named, Key},
     widget::{container, rule, scrollable, text, text_editor},
     Length, Subscription, Task,
 };
@@ -331,17 +329,7 @@ impl Gallery {
 
     pub fn subscription(&self) -> Subscription<Message> {
         // Tab moves focus when nothing (a dialog, a panel) kept it.
-        let tab = event::listen_with(|event, status, _window| match (event, status) {
-            (
-                iced::Event::Keyboard(keyboard::Event::KeyPressed {
-                    key: Key::Named(Named::Tab),
-                    modifiers,
-                    ..
-                }),
-                event::Status::Ignored,
-            ) => Some(Message::Tab(modifiers.shift())),
-            _ => None,
-        });
+        let tab = focus::tab_presses().map(Message::Tab);
         Subscription::batch([tab, self.toasts.subscription().map(Message::Toast)])
     }
 

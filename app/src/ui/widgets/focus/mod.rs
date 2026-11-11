@@ -211,6 +211,23 @@ pub fn traverse<Message: Send + 'static>(back: bool) -> Task<Message> {
     }
 }
 
+/// Tab and Shift+Tab (`true`) that nothing captured, for the window to
+/// answer with [`traverse`]: a dialog or an open panel captures its own.
+pub fn tab_presses() -> iced::Subscription<bool> {
+    use iced::keyboard::{self, key::Named, Key};
+    iced::event::listen_with(|event, status, _window| match (event, status) {
+        (
+            iced::Event::Keyboard(keyboard::Event::KeyPressed {
+                key: Key::Named(Named::Tab),
+                modifiers,
+                ..
+            }),
+            iced::event::Status::Ignored,
+        ) => Some(modifiers.shift()),
+        _ => None,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
