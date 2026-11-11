@@ -1,4 +1,4 @@
-import { checkKeys } from './keys';
+import { checkKeys, rustKeys } from './keys';
 
 const catalogue = [
   { name: 'common', keys: ['common.cancel'] },
@@ -29,6 +29,40 @@ describe('i18n key check', () => {
       'images.remove.title is in the catalogue but nothing uses it',
       'images.pull.done is in the catalogue but nothing uses it',
       'images.stray is in the catalogue but nothing uses it',
+    ]);
+  });
+
+  it('counts a key as read by Rust only where shipped code shows it', () => {
+    const page = [
+      '//! `t!("images.only.doc")` names a message here.',
+      'pub const UNITS: [&str; 2] = ["format.bytes.b", "format.bytes.kb"];',
+      'const TITLE: &\'static str = "images.title";',
+      'fn view() -> String {',
+      '    // t!("images.only.comment")',
+      '    let id = "images.only.string";',
+      '    t!("images.remove.title", name = id) + &rich!(',
+      '        "images.pull.done"',
+      '    )',
+      '}',
+      '#[cfg(test)]',
+      'mod tests {',
+      '    fn it() { t!("images.only.inline.test"); }',
+      '}',
+    ].join('\n');
+    const test = 'fn it() { t!("images.only.test"); }';
+    const keys = rustKeys([
+      { path: 'app/src/ui/images/view.rs', text: page },
+      { path: 'app/src/ui/images/tests.rs', text: test },
+      { path: 'app/src/ui/images/stage_tests.rs', text: test },
+      { path: 'app/src/test_support/fixtures.rs', text: test },
+      { path: 'app/src/ui/widgets/gallery/mod.rs', text: test },
+    ]);
+    expect(keys.sort()).toEqual([
+      'format.bytes.b',
+      'format.bytes.kb',
+      'images.pull.done',
+      'images.remove.title',
+      'images.title',
     ]);
   });
 });

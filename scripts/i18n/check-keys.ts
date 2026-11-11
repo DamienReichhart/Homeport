@@ -3,7 +3,7 @@
 // `bun run i18n:check --locale fr` checks one language only.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
-import { checkKeys, type Namespace, type Source } from './keys';
+import { checkKeys, rustKeys, type Namespace, type Source } from './keys';
 import { compareMessages, type Messages } from './locales';
 
 const root = join(import.meta.dir, '..', '..');
@@ -50,13 +50,15 @@ if (!only) {
   };
   const sources = walk(join(root, 'src'), [], /\.(ts|tsx)$/);
   // The iced app reads the same keys (`t!("ui.copy")`), some of them before
-  // the React app does: a key only Rust names is used too. Whether Rust
-  // names a key that exists is `app/src/i18n/check.rs`'s to say, so only
-  // the keys of the catalogue count here.
-  const rust = walk(join(root, 'app', 'src'), [], /\.rs$/)
-    .map((source) => source.text)
-    .join('\n');
-  const named = namespaces.flatMap((ns) => ns.keys).filter((key) => rust.includes(`"${key}"`));
+  // the React app does: a key only Rust reads is used too. Only where Rust
+  // shows the message, though (`rustKeys`): a key quoted in a comment, a
+  // test or the widget gallery doesn't count. Whether Rust names a key that
+  // exists is `app/src/i18n/check.rs`'s to say, so only the keys of the
+  // catalogue count here.
+  const known = new Set(namespaces.flatMap((ns) => ns.keys));
+  const named = rustKeys(walk(join(root, 'app', 'src'), [], /\.rs$/)).filter((key) =>
+    known.has(key),
+  );
   sources.push({ path: 'app/src', text: named.map((key) => `'${key}'`).join('\n') });
   problems.push(...checkKeys(namespaces, sources));
 }
