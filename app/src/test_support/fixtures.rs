@@ -3,6 +3,12 @@
 
 use std::collections::HashMap;
 
+use homeport_clusters::{
+    model::{Cluster, ClusterConnection, ClusterKind, NomadConnection},
+    registry::ClusterStatus,
+    service::ClusterView,
+    AuthMethod, KubernetesConnection,
+};
 use homeport_core::host::{EngineKind, Host, HostConnection, SshAuth};
 use homeport_engine::{
     containers::{
@@ -87,6 +93,52 @@ pub fn host_view(name: &str, status: HostStatus) -> HostView {
             created_at: String::new(),
         },
         status,
+    }
+}
+
+/// A Kubernetes Cluster connected to its API server (`clusterView`).
+pub fn cluster_view(name: &str) -> ClusterView {
+    ClusterView {
+        cluster: Cluster {
+            id: "c1".to_owned(),
+            name: name.to_owned(),
+            kind: ClusterKind::Kubernetes,
+            connection: ClusterConnection::Kubernetes(KubernetesConnection {
+                server: "https://127.0.0.1:6443".to_owned(),
+                namespace: Some("default".to_owned()),
+                auth: AuthMethod::ClientCertificate,
+                ..KubernetesConnection::default()
+            }),
+            enabled: true,
+            created_at: "2026-11-01T10:00:00Z".to_owned(),
+        },
+        status: ClusterStatus::Connected {
+            server_version: "v1.33.1".to_owned(),
+            platform: Some("linux/arm64".to_owned()),
+            region: None,
+        },
+    }
+}
+
+/// A Nomad Cluster connected to its agent (`nomadClusterView`).
+pub fn nomad_cluster_view(name: &str) -> ClusterView {
+    ClusterView {
+        cluster: Cluster {
+            id: "n1".to_owned(),
+            name: name.to_owned(),
+            kind: ClusterKind::Nomad,
+            connection: ClusterConnection::Nomad(NomadConnection {
+                address: "http://127.0.0.1:4646".to_owned(),
+                ..NomadConnection::default()
+            }),
+            enabled: true,
+            created_at: "2026-11-01T10:00:00Z".to_owned(),
+        },
+        status: ClusterStatus::Connected {
+            server_version: "1.10.3".to_owned(),
+            platform: None,
+            region: Some("global".to_owned()),
+        },
     }
 }
 

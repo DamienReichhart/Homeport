@@ -7,22 +7,31 @@
 use std::{collections::HashMap, time::Duration};
 
 use homeport_clusters::service::ClusterView;
+use homeport_containerd::namespaces::ContainerdNamespace;
 use homeport_engine::{
     containers::Container,
     images::{freshness::FreshnessResult, Image},
     networks::NetworkView,
     podman::pods::Pod,
+    swarm::SwarmSummary,
     system::{DiskUsage, EngineInfo},
     volumes::VolumeView,
 };
-use homeport_hosts::{events::PAGE, registry::EngineEvent, service::HostView};
+use homeport_hosts::{
+    events::PAGE,
+    registry::{EngineEvent, SwarmView},
+    service::HostView,
+};
+use homeport_incus::projects::IncusProject;
+use homeport_kubernetes::resources::{kinds::pods::NamespaceView, ResourceKind};
+use homeport_nomad::namespaces::NomadNamespaces;
 use homeport_stacks::Stack;
 
 use super::{
-    keys::{cluster, host},
+    keys::{app, cluster, host, nomad, swarm},
     Query,
 };
-use crate::api;
+use crate::api::{self, app::Capabilities};
 
 /// The Hosts, with their statuses; status events keep them in step.
 pub fn hosts() -> Query<Vec<HostView>> {
@@ -139,6 +148,70 @@ pub fn events(host_id: &str) -> Query<Vec<EngineEvent>> {
     Query::new(host::events(host_id), move |state| {
         let id = id.clone();
         async move { api::hosts::hosts_events(&state, id, Some(PAGE), None).await }
+    })
+    .never_stale()
+}
+
+/// The Swarms the Hosts belong to, found through their managers.
+pub fn swarms() -> Query<Vec<SwarmView>> {
+    Query::new(swarm::list(), |state| async move {
+        api::engine::swarm::swarms_list(&state).await
+    })
+}
+
+/// What a manager of the Swarm says about it.
+pub fn swarm_summary(swarm_id: &str) -> Query<SwarmSummary> {
+    let id = swarm_id.to_owned();
+    Query::new(swarm::summary(swarm_id), move |state| {
+        let id = id.clone();
+        async move { api::engine::swarm::swarm_inspect(&state, id).await }
+    })
+}
+
+/// A containerd Host's namespaces, with what each holds.
+pub fn containerd_namespaces(host_id: &str) -> Query<Vec<ContainerdNamespace>> {
+    let id = host_id.to_owned();
+    Query::new(host::containerd_namespaces(host_id), move |state| {
+        let id = id.clone();
+        async move { api::containerd::containerd_namespaces(&state, id).await }
+    })
+}
+
+/// The projects an Incus Host's connection may use, with what each holds.
+pub fn incus_projects(host_id: &str) -> Query<Vec<IncusProject>> {
+    let id = host_id.to_owned();
+    Query::new(host::incus_projects(host_id), move |state| {
+        let id = id.clone();
+        async move { api::incus::incus_projects(&state, id).await }
+    })
+}
+
+/// A Kubernetes Cluster's Namespaces. Credentials that can't list them is
+/// an answer, not retried.
+pub fn cluster_namespaces(cluster_id: &str) -> Query<Vec<NamespaceView>> {
+    let id = cluster_id.to_owned();
+    let key = cluster::kind(cluster_id, ResourceKind::Namespace).with("list");
+    Query::new(key, move |state| {
+        let id = id.clone();
+        async move { api::clusters::resources::clusters_namespaces(&state, id).await }
+    })
+    .no_retry()
+}
+
+/// The namespaces a Nomad Cluster's token can see.
+pub fn nomad_namespaces(cluster_id: &str) -> Query<NomadNamespaces> {
+    let id = cluster_id.to_owned();
+    Query::new(nomad::namespaces(cluster_id), move |state| {
+        let id = id.clone();
+        async move { api::clusters::nomad::clusters_nomad_namespaces(&state, id).await }
+    })
+}
+
+/// What this machine has that Homeport uses; it doesn't change while the
+/// app runs.
+pub fn capabilities() -> Query<Capabilities> {
+    Query::new(app::capabilities(), |state| async move {
+        Ok(api::app::get_capabilities(&state, false).await)
     })
     .never_stale()
 }
