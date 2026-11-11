@@ -46,6 +46,18 @@ serde.workspace = true
 serde_json.workspace = true
 zip.workspace = true
 dirs = "6"
+fluent-bundle.workspace = true
+fluent-syntax.workspace = true
+unic-langid.workspace = true
+intl-memoizer.workspace = true
+intl_pluralrules.workspace = true
+sys-locale.workspace = true
+include_dir.workspace = true
+icu.workspace = true
+icu_experimental.workspace = true
+fixed_decimal.workspace = true
+writeable.workspace = true
+jiff.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true

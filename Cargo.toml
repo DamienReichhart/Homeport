@@ -95,6 +95,19 @@ shell-words = "1"
 tempfile = "3"
 # The desktop shell: iced draws the UI (tokio drives its tasks).
 iced = { version = "0.14", default-features = false, features = ["tokio", "wgpu", "tiny-skia", "canvas", "image", "svg", "advanced", "lazy", "x11", "wayland", "thread-pool"] }
+# The iced app's text: Fluent catalogues, the OS's languages, and ICU4X for
+# numbers, dates and relative times in each language.
+fluent-bundle = "0.16"
+fluent-syntax = "0.12"
+unic-langid = "0.9"
+intl-memoizer = "0.5"
+intl_pluralrules = "7"
+sys-locale = "0.3"
+include_dir = "0.7"
+icu = { version = "2", default-features = false, features = ["compiled_data", "sync"] }
+icu_experimental = { version = "0.7", default-features = false, features = ["compiled_data"] }
+fixed_decimal = { version = "0.7", features = ["ryu"] }
+writeable = "0.6"
 # The desktop shell (Tauri, until the iced app replaces it).
 tauri = { version = "2", features = ["tray-icon"] }
 tauri-build = { version = "2", features = [] }

@@ -1,0 +1,139 @@
+//! The catalogues: one folder of Fluent files per language under
+//! `app/i18n`, built into the binary, and the bundle that renders one
+//! language's messages.
+
+use std::{borrow::Cow, sync::LazyLock};
+
+use fluent_bundle::{concurrent::FluentBundle, FluentArgs, FluentResource, FluentValue};
+use icu::decimal::DecimalFormatter;
+use include_dir::{include_dir, Dir};
+use unic_langid::LanguageIdentifier;
+
+use super::{direction::Direction, number};
+
+static FILES: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/i18n");
+
+/// The language every other falls back to, and the one keys are written in.
+pub const DEFAULT_LOCALE: &str = "en";
+
+/// A language the app has a catalogue for.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Locale {
+    /// Its tag, as stored in Settings: `en`, `fr`, `pt-BR`.
+    pub tag: &'static str,
+    /// The language's own name for itself: `Français`, `日本語`.
+    pub name: String,
+    pub direction: Direction,
+}
+
+/// The app's languages: English first, then by tag. Every folder of
+/// `app/i18n` is one, so adding a language needs no code.
+pub static LOCALES: LazyLock<Vec<Locale>> = LazyLock::new(|| {
+    let mut locales: Vec<Locale> = FILES
+        .dirs()
+        .filter_map(|dir| {
+            let tag = dir.path().file_name()?.to_str()?;
+            let meta = Catalogue::of(tag, &["meta"]);
+            Some(Locale {
+                tag,
+                name: meta.own("meta-name", None)?,
+                direction: match meta.own("meta-dir", None)?.as_str() {
+                    "rtl" => Direction::Rtl,
+                    _ => Direction::Ltr,
+                },
+            })
+        })
+        .collect();
+    locales.sort_by_key(|l| (l.tag != DEFAULT_LOCALE, l.tag));
+    locales
+});
+
+/// The Fluent files of a language, as (namespace, text).
+pub fn files(tag: &str) -> Vec<(&'static str, &'static str)> {
+    let Some(dir) = FILES.get_dir(tag) else {
+        return vec![];
+    };
+    let mut files: Vec<_> = dir
+        .files()
+        .filter(|f| f.path().extension().is_some_and(|e| e == "ftl"))
+        .filter_map(|f| Some((f.path().file_stem()?.to_str()?, f.contents_utf8()?)))
+        .collect();
+    files.sort_unstable();
+    files
+}
+
+/// One language's messages.
+pub struct Catalogue {
+    bundle: FluentBundle<FluentResource>,
+}
+
+impl Catalogue {
+    /// Every namespace of `tag`.
+    pub fn load(tag: &str) -> Self {
+        Self::build(tag, files(tag).into_iter().map(|(_, text)| text))
+    }
+
+    /// Only the `namespaces` of `tag`.
+    fn of(tag: &str, namespaces: &[&str]) -> Self {
+        let wanted = files(tag)
+            .into_iter()
+            .filter(|(name, _)| namespaces.contains(name));
+        Self::build(tag, wanted.map(|(_, text)| text))
+    }
+
+    fn build(tag: &str, texts: impl Iterator<Item = &'static str>) -> Self {
+        let language: LanguageIdentifier = tag.parse().unwrap_or_default();
+        let mut bundle = FluentBundle::new_concurrent(vec![language]);
+        // The window lays out each text run itself; the marks would only
+        // show as boxes in fonts that lack them.
+        bundle.set_use_isolating(false);
+        let numbers = number::formatter(tag);
+        let added = bundle.add_function("NUM", move |positional, _named| {
+            num(numbers.as_ref(), positional)
+        });
+        if added.is_err() {
+            log::error!("the {tag} catalogue has no NUM function");
+        }
+        for text in texts {
+            // What parses is kept; the catalogue check fails on the rest.
+            let resource = FluentResource::try_new(text.to_owned()).unwrap_or_else(|(r, _)| r);
+            if let Err(errors) = bundle.add_resource(resource) {
+                log::error!("the {tag} catalogue names a message twice: {errors:?}");
+            }
+        }
+        Self { bundle }
+    }
+
+    /// Whether this language has `id` itself.
+    pub fn has(&self, id: &str) -> bool {
+        self.bundle.has_message(id)
+    }
+
+    /// The text of `id` with `args`, if this language has it.
+    pub fn own(&self, id: &str, args: Option<&FluentArgs<'_>>) -> Option<String> {
+        let pattern = self.bundle.get_message(id)?.value()?;
+        let mut errors = vec![];
+        let text = self.bundle.format_pattern(pattern, args, &mut errors);
+        if !errors.is_empty() {
+            log::warn!("the message {id} was rendered with problems: {errors:?}");
+        }
+        Some(text.into_owned())
+    }
+}
+
+/// `NUM($count)`: the count as the language writes it.
+fn num<'a>(numbers: Option<&DecimalFormatter>, positional: &[FluentValue<'a>]) -> FluentValue<'a> {
+    match positional.first() {
+        Some(FluentValue::Number(n)) => match numbers {
+            Some(numbers) => FluentValue::String(Cow::Owned(number::format(numbers, n.value))),
+            None => FluentValue::Number(n.clone()),
+        },
+        Some(other) => other.clone(),
+        None => FluentValue::Error,
+    }
+}
+
+/// `containers.empty.title` as Fluent names it: its ids have no dots.
+pub fn id(key: &str) -> String {
+    key.replace('.', "-")
+}
