@@ -2,6 +2,7 @@
 //! mode.
 
 pub mod containers;
+pub mod exec;
 mod registries;
 
 #[cfg(test)]
