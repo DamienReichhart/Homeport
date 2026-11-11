@@ -1,6 +1,7 @@
 //! The window: its state, its messages and what it draws.
 
 mod hosts;
+pub mod shell;
 #[cfg(test)]
 mod tests;
 pub mod theme;

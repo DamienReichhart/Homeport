@@ -1,0 +1,47 @@
+//! Every feature with pages or palette commands, in sidebar order
+//! (`src/app/router/features.ts`). Add one line per new feature.
+
+use super::{
+    defs::{app, cluster, docker, engines},
+    Feature,
+};
+
+pub static FEATURES: &[&Feature] = &[
+    &app::OVERVIEW,
+    &app::BOARD,
+    &docker::CONTAINERS,
+    &docker::IMAGES,
+    &docker::VOLUMES,
+    &docker::NETWORKS,
+    &docker::STACKS,
+    &engines::PODMAN_PODS,
+    &engines::QUADLETS,
+    &engines::CONTAINERD_CONTAINERS,
+    &engines::CONTAINERD_IMAGES,
+    &engines::CONTAINERD_SNAPSHOTS,
+    &engines::CONTAINERD_NAMESPACES,
+    &engines::INCUS_INSTANCES,
+    &engines::INCUS_IMAGES,
+    &engines::INCUS_PROFILES,
+    &engines::INCUS_STORAGE,
+    &engines::INCUS_NETWORKS,
+    &docker::SWARM,
+    &cluster::WORKLOADS,
+    &cluster::PODS,
+    &cluster::NETWORK,
+    &cluster::CONFIG,
+    &cluster::NODES,
+    &cluster::CLUSTER_EVENTS,
+    &cluster::API_RESOURCES,
+    &cluster::RBAC,
+    &cluster::APPLY,
+    &cluster::HELM,
+    &cluster::PORT_FORWARDS,
+    &cluster::NOMAD_JOBS,
+    &cluster::NOMAD_NODES,
+    &docker::EVENTS,
+    &app::SETTINGS,
+    &app::HOSTS,
+    &app::CLUSTERS,
+    &app::UPDATES,
+];
