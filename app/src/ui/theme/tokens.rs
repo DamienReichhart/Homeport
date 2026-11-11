@@ -31,6 +31,9 @@ pub struct Tokens {
     pub accent: Color,
     pub accent_foreground: Color,
     pub destructive: Color,
+    /// Text on a slab of `destructive`: the button that confirms a removal
+    /// (`text-white`).
+    pub on_destructive: Color,
     pub border: Color,
     /// A field's only boundary: 3:1 against cards and the page (WCAG 1.4.11).
     pub input: Color,
@@ -39,6 +42,12 @@ pub struct Tokens {
     pub success: Color,
     pub warning: Color,
     pub info: Color,
+    /// What dims the page behind a dialog. The React app dims by a tenth
+    /// and blurs; iced has no blur, so this dims more to set the dialog
+    /// apart.
+    pub scrim: Color,
+    /// Tailwind's `shadow-md`, the only shadow: under what floats.
+    pub shadow: Color,
     /// Charts stay neutral: a series is ink or grey (dashed), never a status
     /// colour. `chart[0]` is `--chart-1`.
     pub chart: [Color; 5],
@@ -97,6 +106,7 @@ const PAPER: Color = hex(0xf7_f7_f4);
 const WHITE: Color = hex(0xff_ff_ff);
 /// The grey chart series and the terminal's search matches, in both themes.
 const GREY: Color = hex(0x8c_8c_86);
+const BLACK: u32 = 0x00_00_00;
 
 pub const LIGHT: Tokens = Tokens {
     background: PAPER,
@@ -114,6 +124,7 @@ pub const LIGHT: Tokens = Tokens {
     accent: hex(0xe6_e6_e0),
     accent_foreground: INK,
     destructive: hex(0xc8_10_2e),
+    on_destructive: WHITE,
     border: hex(0xda_da_d3),
     input: hex(0x8f_8f_87),
     ring: INK,
@@ -121,6 +132,8 @@ pub const LIGHT: Tokens = Tokens {
     success: INK,
     warning: hex(0x9a_5b_00),
     info: hex(0x5c_5c_57),
+    scrim: hex_alpha(BLACK, 0.25),
+    shadow: hex_alpha(BLACK, 0.1),
     chart: [INK, INK, INK, GREY, GREY],
     sidebar: Sidebar {
         background: hex(0xef_ef_ea),
@@ -185,6 +198,7 @@ pub const DARK: Tokens = Tokens {
     accent: hex(0x2a_2a_28),
     accent_foreground: PAPER,
     destructive: hex(0xff_5c_5c),
+    on_destructive: WHITE,
     border: hex_alpha(0xf7_f7_f4, 0.10),
     input: hex_alpha(0xf7_f7_f4, 0.35),
     ring: PAPER,
@@ -192,6 +206,8 @@ pub const DARK: Tokens = Tokens {
     success: PAPER,
     warning: hex(0xf2_a9_3b),
     info: hex(0xa6_a6_a0),
+    scrim: hex_alpha(BLACK, 0.25),
+    shadow: hex_alpha(BLACK, 0.1),
     chart: [PAPER, PAPER, PAPER, GREY, GREY],
     sidebar: Sidebar {
         background: hex(0x0f_0f_0f),

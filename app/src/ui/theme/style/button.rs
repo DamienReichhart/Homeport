@@ -290,7 +290,7 @@ pub fn destructive_solid(theme: &Theme, status: Status) -> Style {
     let tokens = theme.tokens();
     let look = |opacity| Look {
         background: Some(alpha(tokens.destructive, opacity)),
-        text: Color::WHITE,
+        text: tokens.on_destructive,
         border: Color::TRANSPARENT,
     };
     build(status, look(1.0), look(0.9))

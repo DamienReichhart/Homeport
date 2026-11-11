@@ -78,7 +78,7 @@ pub fn popover(theme: &Theme) -> Style {
     let tokens = theme.tokens();
     Style {
         border: hairline(edge(tokens), radius::LG),
-        shadow: floating(),
+        shadow: floating(tokens),
         ..surface(tokens.popover, tokens.popover_foreground)
     }
 }
@@ -121,7 +121,7 @@ pub fn toast(colour: fn(&super::Tokens) -> Color) -> impl Fn(&Theme) -> Style {
         let colour = colour(tokens);
         Style {
             border: hairline(mix(tokens.popover, colour, 0.3), radius::LG),
-            shadow: floating(),
+            shadow: floating(tokens),
             ..surface(mix(tokens.popover, colour, 0.1), colour)
         }
     }

@@ -42,7 +42,7 @@ pub fn area(theme: &Theme, _status: Status) -> Style {
         auto_scroll: AutoScroll {
             background: tokens.popover.into(),
             border: hairline(edge(tokens), radius::FULL),
-            shadow: floating(),
+            shadow: floating(tokens),
             icon: tokens.popover_foreground,
         },
     }

@@ -60,9 +60,9 @@ fn edge(tokens: &Tokens) -> Color {
 }
 
 /// Tailwind's `shadow-md`, the only shadow: what floats over the page.
-fn floating() -> Shadow {
+fn floating(tokens: &Tokens) -> Shadow {
     Shadow {
-        color: Color::from_rgba(0.0, 0.0, 0.0, 0.1),
+        color: tokens.shadow,
         offset: Vector::new(0.0, 4.0),
         blur_radius: 6.0,
     }
@@ -190,7 +190,7 @@ pub mod menu {
             text_color: tokens.popover_foreground,
             selected_text_color: tokens.accent_foreground,
             selected_background: tokens.accent.into(),
-            shadow: floating(),
+            shadow: floating(tokens),
         }
     }
 }
