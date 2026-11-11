@@ -21,7 +21,7 @@ Until the React app is removed, **the formatjs catalogues in `src/shared/i18n` s
 
 4. `cargo test -p homeport-app --lib i18n` must pass (see _The check_).
 
-`bun run check` runs `i18n:fluent --check`, so a formatjs change without step 2 fails.
+`bun run check` runs `i18n:fluent --check`, so a formatjs change without step 2 fails, as does a Fluent file whose namespace or language is gone from the source.
 
 ## Add a language
 
@@ -31,19 +31,22 @@ Until the React app is removed, **the formatjs catalogues in `src/shared/i18n` s
 
 ## How formatjs maps to Fluent
 
-| formatjs (ICU)                          | Fluent                                                                                               |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `containers.empty.title`                | `containers-empty-title` (ids have no dots; code keeps dots)                                         |
-| `{name}`                                | `{ $name }`                                                                                          |
-| `{n, plural, =0 {…} one {…} other {…}}` | `{ $n -> [0] … [one] … *[other] … }`, exact numbers first                                            |
-| `#` in a plural                         | `{ NUM($n) }`: the count in the language's digits and grouping                                       |
-| `{kind, select, a {…} other {…}}`       | `{ $kind -> [a] … *[other] … }`                                                                      |
-| `<strong>…</strong>`                    | kept in the text; `rich!` splits it into spans                                                       |
-| `{n, number}`, dates, ordinals, offsets | not converted: the converter refuses them. Format the value with `i18n::format` and pass it as text. |
+| formatjs (ICU)                            | Fluent                                                                                               |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `containers.empty.title`                  | `containers-empty-title` (ids have no dots; code keeps dots)                                         |
+| `{name}`                                  | `{ $name }`                                                                                          |
+| `{n, plural, =0 {…} one {…} other {…}}`   | `{ $n -> [0] … [one] … *[other] … }`, exact numbers first                                            |
+| `#` in a plural                           | `{ NUM($n) }`: the count in the language's digits and grouping                                       |
+| `{kind, select, a {…} other {…}}`         | `{ $kind -> [a] … *[other] … }`                                                                      |
+| `<strong>…</strong>`                      | kept in the text; `rich!` splits it into spans                                                       |
+| `{n, number}`, dates, ordinals, offsets   | not converted: the converter refuses them. Format the value with `i18n::format` and pass it as text. |
+| `{0}`, a select on `1` or on `one`/`few`… | refused: Fluent can't name the first and would match the others as a number or a plural category.    |
 
 ## Language and direction
 
-- `i18n::set_language(setting, &i18n::locale::preferred())` shows the app in the language the Settings value stands for (`system` or a tag), with the same rules as the React app: exact tag, then base language, never Simplified Chinese for a Traditional Chinese system, else English. The window sends itself `Message::LanguageChanged` and the next draw is in the new language; nothing restarts.
+- `i18n::set_language(setting, &i18n::locale::preferred())` shows the app in the language the Settings value stands for (`system` or a tag), with the same rules as the React app: exact tag, then base language, never Simplified Chinese for a Traditional Chinese system, else English. The window calls it at boot with `system`, again once the Settings are read, and on `Message::LanguageChanged`, which the Settings page sends when it is ported (#267). Nothing restarts: the next draw is in the new language.
+- For that to hold, **state keeps what it was told, not the text**: an `AppError`, a count, a status, never a string from `t!`. `view` turns it into text each time it draws.
+- The language belongs to the whole process. A test that reads or sets it holds `test_support::snapshot::in_language(tag)` (snapshots do it themselves), so tests running side by side don't draw in each other's language.
 - Layouts never ask which language it is. They take `i18n::direction()` and use `Direction::ordered` (the order of a row's children), `pick` (start/end alignment) and `sides` (start/end paddings). Arabic is the only right-to-left language today.
 
 ## Numbers, dates, sizes, relative times
@@ -51,6 +54,10 @@ Until the React app is removed, **the formatjs catalogues in `src/shared/i18n` s
 `i18n::format` is the only place that formats them (ICU4X, CLDR data built into the binary): `number`, `percent`, `bytes`, `relative`, `date_time`, `date`, `time`, `short_id`. They format in the OS's variant of the app's language when it has one (`en-GB`, `fr-CA`).
 
 The output is CLDR's, as the webview's `Intl` was, but not byte-for-byte what a given browser printed: for example the medium date in Arabic and Korean is numeric here.
+
+## Text the OS draws
+
+The tray menu and the notifications are written by the crates (`homeport_core::error`), from the `native.*` and `errors.*` messages. `set_language` hands them the templates of the new language, built from the same Fluent files, so they follow the window. A message of those two namespaces with a plural or a select has no such template and stays in English there; none has one today.
 
 ## Errors from the crates
 
@@ -63,6 +70,8 @@ An `AppError` carries the key of its message and hint (`errors.*`) and their par
 - every `.ftl` file parses, and holds only messages of its namespace, each once;
 - every language has exactly the English messages, with the same arguments and tags;
 - every plural has the categories its language needs (Russian `few` and `many`, Arabic `zero` and `two`…);
-- every key a `t!` or `rich!` names exists;
-- for the namespaces listed in `PORTED`, every message is named by the code (an unused key fails). A namespace joins the list when its last page is ported; the cleanup ticket checks them all;
-- the catalogues render what formatjs renders: 4,000+ renderings of every message with a plural or a select, in every language, are compared with `app/tests/fixtures/i18n-golden.json`.
+- every key a `t!` or `rich!` names exists, is given exactly the arguments the message takes, and is read with `rich!` if and only if it has tags; the catalogue is reached through those two macros only (a key built at run time can't be checked, so there is none);
+- every tag is one the app can draw (`strong`, `mono`, `code`, `link`);
+- a translation counts what English counts: it can't drop a plural;
+- for the namespaces listed in `PORTED`, every message is named by code outside tests (an unused key fails). **The list is empty today**, since no namespace has all its pages ported: an unused key is not caught yet. A namespace joins the list when its last page is ported; the cleanup ticket (#283) checks them all;
+- the catalogues render what formatjs renders: 16,000 renderings, in every language, of every message the converter rewrites (an argument, a plural, a select, a tag, a quote, an edge space) are compared with `app/tests/fixtures/i18n-golden.json`.
