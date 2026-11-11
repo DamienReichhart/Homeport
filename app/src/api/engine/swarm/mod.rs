@@ -1,6 +1,7 @@
 //! Swarms, found through their manager Hosts and reached through any
 //! connected one (ADR 0016).
 
+pub mod nodes;
 
 use homeport_core::error::AppResult;
 use homeport_engine::swarm::{
