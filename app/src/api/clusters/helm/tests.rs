@@ -80,8 +80,8 @@ async fn an_unknown_cluster_has_no_release() {
     ));
 }
 
-/// With helm installed, only a repository that can't exist is asked
-/// for, so this machine's helm configuration is left as it is.
+/// With helm installed, only what can't touch this machine's helm
+/// configuration is run: a refused name, and a repository that can't exist.
 #[tokio::test]
 async fn chart_repositories_need_helm_on_this_machine() {
     let app = app();
@@ -91,14 +91,9 @@ async fn chart_repositories_need_helm_on_this_machine() {
     if helm::program().is_ok() {
         let invalid = helm_repos_add("not a name".into(), url()).await;
         assert!(failed(invalid, ErrorCode::Validation));
-        let _ = helm_repos_list().await;
+        // Nothing else is run here: the rest reads or refreshes this
+        // machine's own repositories, some of it over the network.
         assert!(helm_repos_remove(nowhere()).await.is_err());
-        let _ = helm_charts_search(nowhere(), false).await;
-        assert!(helm_chart_values(chart(), None).await.is_err());
-        let _ = helm_chart_versions(chart()).await;
-        let _ = helm_chart_candidates(chart(), "1.0.0".into()).await;
-        let update = helm_repos_update_subscribe(&app.state, vec![nowhere()], |_| true).await;
-        app.state.streams.cancel(update.unwrap());
         return;
     }
     let missing = ErrorCode::HelmMissing;
