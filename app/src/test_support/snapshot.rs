@@ -18,8 +18,14 @@ use iced_test::Simulator;
 use crate::{i18n, ui::theme};
 
 /// A font with the Arabic letters, which the app's fonts lack: without
-/// it Arabic would be drawn in whatever the machine has installed.
-const ARABIC: &[u8] = include_bytes!("../../tests/fonts/NotoSansArabic.ttf");
+/// it Arabic would be drawn in whatever the machine has installed. Regular
+/// and Bold, the two weights an OS has for the script and the only two the
+/// app asks for in such a language (`theme::font::medium`): a weight with
+/// no face here would be drawn by another font, its letters apart.
+const ARABIC: [&[u8]; 2] = [
+    include_bytes!("../../tests/fonts/NotoSansArabic.ttf"),
+    include_bytes!("../../tests/fonts/NotoSansArabic-Bold.ttf"),
+];
 
 /// How far a colour channel may be off before a pixel counts as different.
 const CHANNEL_TOLERANCE: u8 = 24;
@@ -54,7 +60,7 @@ impl Drop for InLanguage {
 pub fn settings() -> Settings {
     std::env::set_var("ICED_TEST_BACKEND", "tiny-skia");
     Settings {
-        fonts: theme::font::files().chain([ARABIC.into()]).collect(),
+        fonts: theme::font::files().chain(ARABIC.map(Into::into)).collect(),
         default_font: theme::font::DEFAULT,
         ..Settings::default()
     }

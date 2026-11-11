@@ -60,6 +60,57 @@ pub const MONO_ITALIC: Font = Font {
     ..MONO
 };
 
+/// Emphasis in the app's language: [`SANS_MEDIUM`], [`SANS_SEMIBOLD`] and
+/// [`SANS_BOLD`] where the bundled face has the language's script, and
+/// otherwise the nearest weight every OS has for that script.
+///
+/// cosmic-text 0.15 falls back to a script's font (Noto Sans Arabic, Segoe
+/// UI, Geeza Pro…) only when it has a face at *exactly* the weight asked
+/// for; without one it takes any font that holds the code points, and for
+/// Arabic that may be one that draws the letters apart. The OS's fonts for
+/// other scripts come in Regular and Bold, seldom in 500 or 600. So text in
+/// such a language asks for 400 where Latin text asks for 500, and for 700
+/// where it asks for 600: a label loses a shade of weight, never its
+/// letters. Text that is Latin whatever the language (the wordmark, machine
+/// text) keeps the constants.
+pub fn medium() -> Font {
+    in_language(Weight::Medium)
+}
+
+/// Titles: see [`medium`].
+pub fn semibold() -> Font {
+    in_language(Weight::Semibold)
+}
+
+/// Display headlines: see [`medium`].
+pub fn bold() -> Font {
+    in_language(Weight::Bold)
+}
+
+fn in_language(weight: Weight) -> Font {
+    let language = crate::i18n::current();
+    sans(if is_bundled_script(&language.locale.name) {
+        weight
+    } else {
+        fallback_weight(weight)
+    })
+}
+
+/// Whether text like `sample` is drawn by the bundled face, which has
+/// Latin and nothing else: a language is judged by its own name.
+pub fn is_bundled_script(sample: &str) -> bool {
+    // Up to Latin Extended-B; everything past it is another script.
+    sample.chars().all(|c| (c as u32) < 0x0250)
+}
+
+/// The weight to ask a fallback font for in place of `weight`.
+pub const fn fallback_weight(weight: Weight) -> Weight {
+    match weight {
+        Weight::Semibold | Weight::Bold | Weight::ExtraBold | Weight::Black => Weight::Bold,
+        _ => Weight::Normal,
+    }
+}
+
 /// What the application draws text in unless told otherwise.
 pub const DEFAULT: Font = SANS;
 
@@ -97,7 +148,31 @@ pub fn files() -> impl Iterator<Item = Cow<'static, [u8]>> {
 
 #[cfg(test)]
 mod tests {
-    use super::FILES;
+    use super::*;
+    use crate::{i18n::LOCALES, test_support::snapshot::in_language as language};
+
+    #[test]
+    fn a_language_in_another_script_asks_for_weights_its_fonts_have() {
+        {
+            let _french = language("fr");
+            assert_eq!(medium(), SANS_MEDIUM);
+            assert_eq!(semibold(), SANS_SEMIBOLD);
+            assert_eq!(bold(), SANS_BOLD);
+        }
+        for tag in ["ar", "hi", "ja", "ko", "ru", "zh-CN"] {
+            let _other = language(tag);
+            assert_eq!(medium(), SANS, "{tag}");
+            assert_eq!(semibold(), SANS_BOLD, "{tag}");
+            assert_eq!(bold(), SANS_BOLD, "{tag}");
+        }
+        // Every language is on one side or the other by its own name.
+        let latin: Vec<&str> = LOCALES
+            .iter()
+            .filter(|l| is_bundled_script(&l.name))
+            .map(|l| l.tag)
+            .collect();
+        assert_eq!(latin, ["en", "de", "es", "fr", "it", "pt-BR"]);
+    }
 
     /// A woff2 (`wOF2`) copied here by mistake would load nothing, silently:
     /// cosmic-text reads TrueType, whose files start with version 1.0.

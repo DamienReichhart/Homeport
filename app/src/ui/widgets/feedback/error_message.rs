@@ -46,7 +46,7 @@ pub fn error_message<'a, Message: Clone + 'a>(
     let title = text(i18n::errors::message(error))
         .size(size::SM)
         .line_height(size::LEADING_SM)
-        .font(font::SANS_MEDIUM)
+        .font(font::medium())
         .style(theme::text::destructive);
     let mut body: Vec<Element<'a, Message>> = vec![title.into()];
     if let Some(hint) = &error.hint {

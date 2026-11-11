@@ -87,7 +87,7 @@ impl<'a, Message: 'a> EmptyState<'a, Message> {
         parts = parts.push(
             text(self.title)
                 .size(size::BASE)
-                .font(font::SANS_MEDIUM)
+                .font(font::medium())
                 .align_x(Horizontal::Center),
         );
         if let Some(description) = self.description {

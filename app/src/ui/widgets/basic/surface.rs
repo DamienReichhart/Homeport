@@ -8,6 +8,7 @@ use iced::{
     Length,
 };
 
+use crate::i18n;
 use crate::ui::{
     theme::{
         self, font,
@@ -38,7 +39,7 @@ pub fn badge<'a, Message: 'a>(
         BadgeVariant::Destructive => theme::container::badge::destructive,
         BadgeVariant::Outline => theme::container::badge::outline,
     };
-    container(text(label.into()).size(size::XS).font(font::SANS_MEDIUM))
+    container(text(label.into()).size(size::XS).font(font::medium()))
         .padding([0.0, space::S2])
         .center_y(control::BADGE)
         .style(style)
@@ -91,7 +92,7 @@ impl<'a, Message: 'a> Card<'a, Message> {
         header.extend(self.title.map(|title| {
             paragraph(title)
                 .size(size::BASE)
-                .font(font::SANS_MEDIUM)
+                .font(font::medium())
                 .into()
         }));
         header.extend(
@@ -146,17 +147,53 @@ pub fn progress<'a>(percent: f32, tone: Option<Tone>) -> ProgressBar<'a, Theme> 
         Some(Tone::Danger) => theme::progress_bar::destructive,
         _ => theme::progress_bar::progress,
     };
-    progress_bar(0.0..=100.0, percent.clamp(0.0, 100.0))
+    let percent = percent.clamp(0.0, 100.0);
+    let (filled, rtl) = filled_from_the_left(percent, i18n::direction());
+    progress_bar(0.0..=100.0, filled)
         .girth(control::PROGRESS)
-        .style(style)
+        .style(move |theme| {
+            let mut style = style(theme);
+            if rtl {
+                std::mem::swap(&mut style.background, &mut style.bar);
+            }
+            style
+        })
+}
+
+/// iced's bar fills from the left. Right to left, progress starts on the
+/// right: the bar is drawn as what is left to do, in the track's colour,
+/// over a track in the bar's colour. Returns what to fill from the left and
+/// whether the two colours swap.
+fn filled_from_the_left(percent: f32, direction: i18n::Direction) -> (f32, bool) {
+    if direction.is_rtl() {
+        (100.0 - percent, true)
+    } else {
+        (percent, false)
+    }
 }
 
 /// `ScrollArea`: `content` behind the theme's thin scrollbar, shown only
-/// when there is something to scroll.
+/// when there is something to scroll. iced draws the bar on the right in
+/// every language; right to left that is where text starts, so the bar is
+/// then given room of its own instead of lying over the text.
 pub fn scroll_area<'a, Message: 'a>(
     content: impl Into<Element<'a, Message>>,
 ) -> Scrollable<'a, Message, Theme> {
-    scrollable(content).width(Length::Fill)
+    use iced::widget::scrollable::{Direction, Scrollbar};
+    let bar = Scrollbar::new();
+    let bar = match bar_room(i18n::direction()) {
+        Some(room) => bar.spacing(room),
+        None => bar,
+    };
+    scrollable(content)
+        .direction(Direction::Vertical(bar))
+        .width(Length::Fill)
+}
+
+/// The room kept between the text and the scrollbar, where the bar would
+/// otherwise lie over the text.
+fn bar_room(direction: i18n::Direction) -> Option<f32> {
+    direction.is_rtl().then_some(space::S2)
 }
 
 /// `Collapsible`: a line that shows or hides what is under it. Enter and
@@ -181,7 +218,7 @@ pub fn collapsible<'a, Message: Clone + 'a>(
             icon(chevron).style(theme::svg::muted).into(),
             text(title.into())
                 .size(size::SM)
-                .font(font::SANS_MEDIUM)
+                .font(font::medium())
                 .into(),
         ])
         .spacing(space::S1_5),
@@ -194,4 +231,24 @@ pub fn collapsible<'a, Message: Clone + 'a>(
         parts.push(content());
     }
     stack(parts).spacing(space::S2).into()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{bar_room, filled_from_the_left};
+    use crate::i18n::Direction;
+
+    #[test]
+    fn progress_starts_where_text_starts() {
+        assert_eq!(filled_from_the_left(30.0, Direction::Ltr), (30.0, false));
+        // Right to left, the 70 % still to do are drawn from the left in
+        // the track's colour: the 30 % done show on the right.
+        assert_eq!(filled_from_the_left(30.0, Direction::Rtl), (70.0, true));
+    }
+
+    #[test]
+    fn the_scrollbar_keeps_off_text_that_starts_on_its_side() {
+        assert_eq!(bar_room(Direction::Ltr), None);
+        assert!(bar_room(Direction::Rtl).is_some());
+    }
 }

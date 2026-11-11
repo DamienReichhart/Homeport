@@ -49,6 +49,13 @@ pub static LOCALES: LazyLock<Vec<Locale>> = LazyLock::new(|| {
     locales
 });
 
+/// Whether a Fluent file says its language is written right to left.
+fn is_rtl(text: &str) -> bool {
+    text.lines()
+        .filter_map(|line| line.split_once('='))
+        .any(|(key, value)| key.trim() == "meta-dir" && value.trim() == "rtl")
+}
+
 /// The Fluent files of a language, as (namespace, text).
 pub fn files(tag: &str) -> Vec<(&'static str, &'static str)> {
     let Some(dir) = FILES.get_dir(tag) else {
@@ -83,11 +90,15 @@ impl Catalogue {
     }
 
     fn build(tag: &str, texts: impl Iterator<Item = &'static str>) -> Self {
+        let texts: Vec<&'static str> = texts.collect();
         let language: LanguageIdentifier = tag.parse().unwrap_or_default();
         let mut bundle = FluentBundle::new_concurrent(vec![language]);
-        // The window lays out each text run itself; the marks would only
-        // show as boxes in fonts that lack them.
-        bundle.set_use_isolating(false);
+        // What is put into a sentence (a path, a name, a number) is told
+        // apart from it with Unicode's isolates in a right-to-left
+        // language, or the bidi algorithm reorders it with the sentence:
+        // `/var/run/docker.sock` in Arabic read `.var/run/docker.sock/`.
+        // Left to right, nothing needs them and the text stays as written.
+        bundle.set_use_isolating(texts.iter().any(|text| is_rtl(text)));
         let numbers = number::formatter(tag);
         let added = bundle.add_function("NUM", move |positional, _named| {
             num(numbers.as_ref(), positional)

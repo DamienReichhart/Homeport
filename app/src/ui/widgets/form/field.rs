@@ -64,10 +64,8 @@ impl<'a, Message: 'a> Field<'a, Message> {
     }
 
     pub fn view(self) -> Element<'a, Message> {
-        let mut label: Vec<Element<'a, Message>> = vec![text(self.label)
-            .size(size::SM)
-            .font(font::SANS_MEDIUM)
-            .into()];
+        let mut label: Vec<Element<'a, Message>> =
+            vec![text(self.label).size(size::SM).font(font::medium()).into()];
         if self.optional {
             label.push(
                 text(t!("common.optional"))

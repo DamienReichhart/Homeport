@@ -230,7 +230,8 @@ fn every_language_formats_numbers_dates_sizes_and_relative_times() {
 fn every_language_writes_sizes_and_percentages() {
     let expected = [
         ("en", "1.5 KB", "3.5%"),
-        ("ar", "1.5 كيلوبايت", "3.5\u{200e}%\u{200e}"),
+        // What Arabic is given is isolated from the sentence around it.
+        ("ar", "\u{2068}1.5\u{2069} كيلوبايت", "3.5\u{200e}%\u{200e}"),
         ("de", "1,5 KB", "3,5\u{a0}%"),
         ("es", "1,5 KB", "3,5\u{a0}%"),
         ("fr", "1,5 Ko", "3,5\u{a0}%"),
@@ -243,6 +244,13 @@ fn every_language_writes_sizes_and_percentages() {
         ("zh-CN", "1.5 KB", "3.5%"),
     ];
     assert_eq!(expected.len(), LOCALES.len());
+    // Only a right-to-left language is given the marks.
+    let marked: Vec<&str> = expected
+        .iter()
+        .filter(|(_, size, _)| size.contains('\u{2068}'))
+        .map(|(tag, ..)| *tag)
+        .collect();
+    assert_eq!(marked, ["ar"]);
     for (tag, size, percent) in expected {
         let language = language(tag);
         let (unit, value) = language.formats.bytes_parts(1536.0, 1);

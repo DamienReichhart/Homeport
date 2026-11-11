@@ -67,7 +67,7 @@ impl<'a, Message: 'a> Dialog<'a, Message> {
     }
 
     pub fn view(self) -> Element<'a, Message> {
-        let title = text(self.title).size(size::BASE).font(font::SANS_MEDIUM);
+        let title = text(self.title).size(size::BASE).font(font::medium());
         let title = if self.destructive {
             title.style(theme::text::destructive)
         } else {

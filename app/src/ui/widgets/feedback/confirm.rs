@@ -145,7 +145,7 @@ pub fn confirm_dialog<'a>(ask: &Ask, state: &State) -> Modal<'a, Message> {
         content = content.push(
             stack(vec![
                 paragraph(t!("ui.confirm.typeName", name = name.as_str()))
-                    .font(font::SANS_MEDIUM)
+                    .font(font::medium())
                     .into(),
                 field.into(),
             ])
@@ -161,7 +161,7 @@ pub fn confirm_dialog<'a>(ask: &Ask, state: &State) -> Modal<'a, Message> {
         pressable(
             text(ask.confirm_label.clone())
                 .size(size::SM)
-                .font(font::SANS_MEDIUM)
+                .font(font::medium())
                 .height(iced::Length::Fill)
                 .align_y(iced::alignment::Vertical::Center),
         )

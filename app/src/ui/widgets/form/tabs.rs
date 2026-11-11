@@ -49,7 +49,7 @@ pub fn tabs<'a, Message: Clone + 'a>(
 ) -> Element<'a, Message> {
     let tab = |(index, label): (usize, String)| -> Element<'a, Message> {
         let chosen = index == selected;
-        let label = text(label).size(size::SM).font(font::SANS_MEDIUM);
+        let label = text(label).size(size::SM).font(font::medium());
         match variant {
             TabsVariant::Default => pressable(container(label).center_y(Length::Fill))
                 .height(control::HEIGHT - 6.0)
@@ -152,7 +152,7 @@ pub fn toggle_group<'a, Message: Clone + 'a>(
         parts.extend(
             toggle
                 .label
-                .map(|label| text(label).size(size::SM).font(font::SANS_MEDIUM).into()),
+                .map(|label| text(label).size(size::SM).font(font::medium()).into()),
         );
         let on = is_on(index);
         let style = theme::button::part::toggle(on, outlined);

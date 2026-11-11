@@ -367,8 +367,7 @@ fn tinted(colour: fn(&Tokens) -> iced::Color) -> impl Fn(&Theme, svg::Status) ->
 fn toast(toast: &Toast) -> Element<'_, Message> {
     let colour = toast.kind.colour();
     let (title, description) = toast.text();
-    let mut words: Vec<Element<'_, Message>> =
-        vec![paragraph(title).font(font::SANS_MEDIUM).into()];
+    let mut words: Vec<Element<'_, Message>> = vec![paragraph(title).font(font::medium()).into()];
     words.extend(description.map(|description| paragraph(description).into()));
     let mut parts: Vec<Element<'_, Message>> = vec![
         container(icon(toast.kind.glyph()).style(tinted(colour)))

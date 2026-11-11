@@ -272,7 +272,7 @@ fn panel<'a, Message: Clone + 'a>(
             Item::Label(label) => container(
                 text(label)
                     .size(size::XS)
-                    .font(theme::font::SANS_MEDIUM)
+                    .font(theme::font::medium())
                     .style(theme::text::muted),
             )
             .padding([space::S1, space::S1_5])

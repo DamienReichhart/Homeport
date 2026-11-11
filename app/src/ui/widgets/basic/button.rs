@@ -181,7 +181,7 @@ impl<'a, Message: Clone + 'a> Button<'a, Message> {
         let label = self.label.map(|label| {
             label_text(label)
                 .size(size.text())
-                .font(font::SANS_MEDIUM)
+                .font(font::medium())
                 .into()
         });
         let square = label.is_none();

@@ -421,7 +421,11 @@ fn the_catalogues_render_what_formatjs_renders() {
                 };
                 args.set_owned(name.clone(), value);
             }
-            let text = language.text(key, Some(&args.0));
+            // FormatJS isolates nothing; Arabic here isolates what it is
+            // given, which changes no letter.
+            let text = language
+                .text(key, Some(&args.0))
+                .replace(['\u{2068}', '\u{2069}'], "");
             if &text != expected {
                 problems.push(format!(
                     "{tag} {key} {values:?}: {text:?}, formatjs {expected:?}"
