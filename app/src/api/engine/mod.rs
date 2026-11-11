@@ -4,6 +4,7 @@
 pub mod containers;
 pub mod exec;
 pub mod files;
+pub mod images;
 mod registries;
 
 #[cfg(test)]
