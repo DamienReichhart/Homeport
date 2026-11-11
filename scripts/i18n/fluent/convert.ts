@@ -18,7 +18,30 @@ const literal = (text: string) => `{"${text}"}`;
 
 /** Text as Fluent takes it: braces and line breaks as string literals. */
 function escapeText(text: string): string {
-  return text.replace(/[{}]/g, (brace) => literal(brace)).replace(/\r?\n/g, literal('\\u000A'));
+  return text
+    .replace(/[{}]/g, (brace) => literal(brace))
+    .replace(/\r\n|\r|\n/g, literal('\\u000A'));
+}
+
+/** A Fluent variable: ICU also takes `{0}`, which Fluent can't name. */
+function variable(name: string): string {
+  if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(name))
+    throw new Error(`the argument {${name}} can't be a Fluent variable`);
+  return `$${name}`;
+}
+
+const CATEGORIES = ['zero', 'one', 'two', 'few', 'many'];
+
+/**
+ * A select's options Fluent would match differently: it reads a number as a
+ * number and `one`, `few`… as plural categories, where ICU compares text.
+ */
+function refuseAmbiguous(argument: string, options: string[]) {
+  const odd = options.find((o) => /^-?[0-9]/.test(o) || CATEGORIES.includes(o));
+  if (odd)
+    throw new Error(
+      `{${argument}, select} has the option "${odd}", which Fluent reads as a number or a plural category`,
+    );
 }
 
 /** A pattern whose first and last spaces Fluent would otherwise trim. */
@@ -55,7 +78,7 @@ function select(
     const marker = name === 'other' ? '   *' : '    ';
     return `${pad}${marker}[${variantKey(name)}] ${body}`;
   });
-  return `{ $${argument} ->\n${variants.join('\n')}\n${pad}}`;
+  return `{ ${variable(argument)} ->\n${variants.join('\n')}\n${pad}}`;
 }
 
 function emit(elements: MessageFormatElement[], depth: number, pound?: string): string {
@@ -66,12 +89,12 @@ function emit(elements: MessageFormatElement[], depth: number, pound?: string): 
         out += escapeText(el.value);
         break;
       case TYPE.argument:
-        out += `{ $${el.value} }`;
+        out += `{ ${variable(el.value)} }`;
         break;
       case TYPE.pound:
         if (!pound) throw new Error('"#" outside a plural');
         // The count in the language's digits and grouping, as ICU's `#` is.
-        out += `{ NUM($${pound}) }`;
+        out += `{ NUM(${variable(pound)}) }`;
         break;
       case TYPE.plural:
         if (el.pluralType === 'ordinal' || el.offset)
@@ -79,6 +102,7 @@ function emit(elements: MessageFormatElement[], depth: number, pound?: string): 
         out += select(el.value, el.options, depth, el.value);
         break;
       case TYPE.select:
+        refuseAmbiguous(el.value, Object.keys(el.options));
         out += select(el.value, el.options, depth, pound);
         break;
       case TYPE.tag:

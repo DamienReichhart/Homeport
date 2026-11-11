@@ -51,6 +51,17 @@ describe('fluentPattern', () => {
   it('refuses what it does not convert', () => {
     expect(() => fluentPattern('{n, number}')).toThrow();
     expect(() => fluentPattern('{n, selectordinal, other {#}}')).toThrow();
+    expect(() => fluentPattern('{0} positional')).toThrow();
+  });
+
+  it('refuses a select Fluent would match as a number or a plural', () => {
+    expect(() => fluentPattern('{x, select, 1 {a} other {b}}')).toThrow();
+    expect(() => fluentPattern('{x, select, one {a} other {b}}')).toThrow();
+    expect(fluentPattern('{x, select, yes {a} other {b}}')).toContain('[yes] a');
+  });
+
+  it('keeps every kind of line break', () => {
+    expect(fluentPattern('a\r\nb\rc')).toBe('a{"\\u000A"}b{"\\u000A"}c');
   });
 });
 

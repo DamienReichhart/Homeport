@@ -6,7 +6,15 @@
 // It also writes `app/tests/fixtures/i18n-golden.json`: what formatjs renders
 // for every message with a plural or a select, with sample arguments, so the
 // Rust test can hold the Fluent catalogues to the same output.
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, join } from 'node:path';
 import { IntlMessageFormat } from 'intl-messageformat';
 import { parse, TYPE, type MessageFormatElement } from '@formatjs/icu-messageformat-parser';
@@ -77,7 +85,9 @@ function choices(elements: MessageFormatElement[], locale: string, found: Choice
 function samples(locale: string, key: string, message: string): Sample[] {
   const ast = parse(message, { requiresOtherClause: true });
   const found = choices(ast, locale, []);
-  if (!found.some((c) => c.values.length > 0)) return [];
+  // Text that converts to itself needs no witness; anything with an
+  // argument, a tag, a quote or an edge the converter rewrites does.
+  if (found.length === 0 && !/['{}<>\n\r]|^\s|\s$/.test(message)) return [];
   const base = Object.fromEntries(found.map((c) => [c.name, c.values[0] ?? `<${c.name}>`]));
   // Tags render as themselves, as the Fluent text keeps them.
   const tags = new Set<string>();
@@ -96,6 +106,8 @@ function samples(locale: string, key: string, message: string): Sample[] {
     [...tags].map((tag) => [tag, (chunks: string[]) => `<${tag}>${chunks.join('')}</${tag}>`]),
   );
   const format = new IntlMessageFormat(ast, locale);
+  if (!found.some((c) => c.values.length > 0))
+    return [[key, base, String(format.format({ ...base, ...tagValues }))]];
   const out: Sample[] = [];
   const seen = new Set<string>();
   for (const choice of found) {
@@ -111,7 +123,10 @@ function samples(locale: string, key: string, message: string): Sample[] {
 }
 
 const stale: string[] = [];
+/** Every file this run writes, to tell the ones a removed namespace left. */
+const written = new Set<string>();
 function write(path: string, text: string) {
+  written.add(path);
   if (check) {
     if (!existsSync(path) || readFileSync(path, 'utf8') !== text)
       stale.push(path.slice(root.length + 1));
@@ -158,6 +173,21 @@ for (const locale of locales) {
   }
 }
 write(golden, JSON.stringify(rendered) + '\n');
+
+// A namespace or a language removed from the source leaves its files here,
+// which the app would still build in.
+const walk = (dir: string): string[] =>
+  existsSync(dir)
+    ? readdirSync(dir).flatMap((entry) => {
+        const path = join(dir, entry);
+        return statSync(path).isDirectory() ? walk(path) : [path];
+      })
+    : [];
+for (const path of walk(target)) {
+  if (written.has(path)) continue;
+  if (check) stale.push(`${path.slice(root.length + 1)} (no longer written: remove it)`);
+  else unlinkSync(path);
+}
 
 if (stale.length > 0) {
   console.error(stale.join('\n'));
