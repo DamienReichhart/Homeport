@@ -4,11 +4,19 @@
 //! the clocks. A failure's toast stays longer and has a Details button.
 //!
 //! The window keeps one [`Toasts`], adds to it, gives it the messages of
-//! [`Toasts::view`] and runs [`Toasts::subscription`]. A toast keeps what
+//! [`Toasts::view`] and runs [`Toasts::subscription`]. It lays them over
+//! everything, a dialog included (`toast::over(overlay::over(page, dialog),
+//! toasts)`): what a dialog's action failed with is said while the dialog
+//! is still up, and Sonner's toasts were above Radix's dialogs too. The
+//! dialog keeps Tab to itself, so those toasts are for the pointer. A toast keeps what
 //! it was told, not its text: it is said again in the language of the
 //! moment every time it is drawn.
 
-use std::{fmt, sync::Arc, time::Duration};
+use std::{
+    fmt,
+    sync::Arc,
+    time::{Duration, Instant},
+};
 
 use iced::{
     alignment::Vertical,
@@ -38,7 +46,9 @@ pub const LIFETIME: Duration = Duration::from_secs(4);
 pub const ERROR_LIFETIME: Duration = Duration::from_secs(10);
 /// How many show at once; the others wait their turn underneath.
 pub const VISIBLE: usize = 3;
-/// How often the clocks move.
+/// How often the clocks are read. A toast's time is what passed between
+/// two readings, not their number: a window that was busy or asleep loses
+/// no tick.
 const TICK: Duration = Duration::from_millis(100);
 /// Sonner's width.
 const WIDTH: f32 = 356.0;
@@ -144,9 +154,12 @@ impl Toast {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Message {
     Dismiss(u64),
-    /// The pointer came over the toasts, or left them.
-    Hovered(bool),
-    Tick,
+    /// The pointer came over this toast.
+    Entered(u64),
+    /// The pointer left this toast.
+    Left(u64),
+    /// The clock, read at this instant.
+    Tick(Instant),
     /// The Details button of a failure's toast.
     Details(u64),
 }
@@ -156,13 +169,20 @@ pub enum Message {
 pub struct Toasts {
     list: Vec<Toast>,
     next: u64,
-    hovered: bool,
+    /// The toast the pointer rests on, which stops every clock.
+    hovered: Option<u64>,
+    /// When the clocks were last read.
+    read: Option<Instant>,
 }
 
 impl Toasts {
     fn add(&mut self, kind: Kind, body: Body, left: Duration) -> u64 {
         let id = self.next;
         self.next += 1;
+        if self.list.is_empty() {
+            // The clock starts with the first toast.
+            self.read = None;
+        }
         self.list.push(Toast {
             id,
             kind,
@@ -232,7 +252,7 @@ impl Toasts {
     /// rests on them, and drops those whose time is up. One that waits
     /// underneath keeps its whole time for when it shows.
     pub fn advance(&mut self, by: Duration) {
-        if self.hovered {
+        if self.hovered.is_some() {
             return;
         }
         let first = self.list.len().saturating_sub(VISIBLE);
@@ -246,8 +266,21 @@ impl Toasts {
     /// open the dialog; the toast goes, as its job is done.
     pub fn update(&mut self, message: Message) -> Option<Surfaced> {
         match message {
-            Message::Tick => self.advance(TICK),
-            Message::Hovered(hovered) => self.hovered = hovered,
+            Message::Tick(now) => {
+                let passed = self
+                    .read
+                    .map_or(Duration::ZERO, |read| now.saturating_duration_since(read));
+                self.read = Some(now);
+                self.advance(passed);
+            }
+            Message::Entered(id) => self.hovered = Some(id),
+            Message::Left(id) => {
+                // Leaving one for its neighbour: the neighbour's enter may
+                // have come first.
+                if self.hovered == Some(id) {
+                    self.hovered = None;
+                }
+            }
             Message::Dismiss(id) => self.remove(id),
             Message::Details(id) => {
                 let surfaced = self
@@ -267,9 +300,10 @@ impl Toasts {
 
     fn remove(&mut self, id: u64) {
         self.list.retain(|toast| toast.id != id);
-        if self.list.is_empty() {
-            // Nothing is left for the pointer to leave.
-            self.hovered = false;
+        if self.hovered == Some(id) {
+            // It is gone from under the pointer, which will never leave
+            // it: the others go on.
+            self.hovered = None;
         }
     }
 
@@ -278,7 +312,7 @@ impl Toasts {
         if self.list.is_empty() {
             Subscription::none()
         } else {
-            iced::time::every(TICK).map(|_| Message::Tick)
+            iced::time::every(TICK).map(Message::Tick)
         }
     }
 
@@ -287,14 +321,16 @@ impl Toasts {
         if self.list.is_empty() {
             return None;
         }
-        let toasts = self.visible().iter().map(toast);
-        let column = Column::with_children(toasts)
-            .spacing(space::S2)
-            .width(WIDTH);
+        let toasts = self.visible().iter().map(|shown| {
+            mouse_area(toast(shown))
+                .on_enter(Message::Entered(shown.id))
+                .on_exit(Message::Left(shown.id))
+                .into()
+        });
         Some(
-            mouse_area(column)
-                .on_enter(Message::Hovered(true))
-                .on_exit(Message::Hovered(false))
+            Column::with_children(toasts)
+                .spacing(space::S2)
+                .width(WIDTH)
                 .into(),
         )
     }
@@ -305,17 +341,18 @@ pub fn over<'a, Message: 'a>(
     page: impl Into<Element<'a, Message>>,
     toasts: Option<Element<'a, Message>>,
 ) -> Element<'a, Message> {
-    let page = page.into();
-    let Some(toasts) = toasts else {
-        return page;
-    };
-    let corner = container(toasts)
-        .padding(space::S4)
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .align_x(end())
-        .align_y(Vertical::Bottom);
-    iced::widget::Stack::with_children([page, corner.into()])
+    // The same stack with or without toasts, so the page keeps its state
+    // (what is scrolled, what has focus) when the first one shows.
+    let corner = toasts.map(|toasts| {
+        container(toasts)
+            .padding(space::S4)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .align_x(end())
+            .align_y(Vertical::Bottom)
+            .into()
+    });
+    iced::widget::Stack::with_children(std::iter::once(page.into()).chain(corner))
         .width(Length::Fill)
         .height(Length::Fill)
         .into()
@@ -368,95 +405,4 @@ fn toast(toast: &Toast) -> Element<'_, Message> {
 }
 
 #[cfg(test)]
-mod tests {
-    use homeport_core::{
-        error::{AppError, ErrorCode},
-        messages as msg,
-    };
-
-    use super::*;
-
-    fn failure() -> Surfaced {
-        let error = AppError::new(ErrorCode::Io, msg::IO_FAILED).with_hint(msg::UNREADABLE_DATA);
-        Surfaced::at(error, Some("containers_act"), jiff::Timestamp::UNIX_EPOCH)
-    }
-
-    fn ids(toasts: &Toasts) -> Vec<u64> {
-        toasts.visible().iter().map(|toast| toast.id).collect()
-    }
-
-    #[test]
-    fn the_newest_three_show_and_the_others_wait_their_turn() {
-        let mut toasts = Toasts::default();
-        for n in 0..5 {
-            toasts.say(Kind::Info, move || format!("toast {n}"));
-        }
-        assert_eq!(ids(&toasts), [2, 3, 4]);
-        // Those on screen go together; the two that waited then show, with
-        // their whole time ahead of them.
-        toasts.advance(LIFETIME);
-        assert_eq!(ids(&toasts), [0, 1]);
-        toasts.advance(LIFETIME - TICK);
-        assert_eq!(ids(&toasts), [0, 1]);
-        toasts.advance(TICK);
-        assert!(toasts.is_empty());
-    }
-
-    #[test]
-    fn a_failure_stays_longer_than_the_rest() {
-        let mut toasts = Toasts::default();
-        let failed = toasts.failure(failure());
-        toasts.say(Kind::Success, || "done".to_owned());
-        toasts.advance(LIFETIME);
-        assert_eq!(ids(&toasts), [failed]);
-        toasts.advance(ERROR_LIFETIME - LIFETIME - TICK);
-        assert_eq!(ids(&toasts), [failed]);
-        toasts.update(Message::Tick);
-        assert!(toasts.is_empty());
-    }
-
-    #[test]
-    fn the_pointer_resting_on_them_stops_the_clocks() {
-        let mut toasts = Toasts::default();
-        let id = toasts.say(Kind::Success, || "done".to_owned());
-        toasts.update(Message::Hovered(true));
-        toasts.advance(LIFETIME * 3);
-        assert_eq!(ids(&toasts), [id]);
-        toasts.update(Message::Hovered(false));
-        toasts.advance(LIFETIME);
-        assert!(toasts.is_empty());
-        // Dismissing the last one under the pointer leaves no stopped clock.
-        toasts.say(Kind::Info, || "one".to_owned());
-        toasts.update(Message::Hovered(true));
-        toasts.update(Message::Dismiss(1));
-        toasts.say(Kind::Info, || "two".to_owned());
-        toasts.advance(LIFETIME);
-        assert!(toasts.is_empty());
-    }
-
-    #[test]
-    fn details_hands_the_failure_over_and_the_toast_goes() {
-        let mut toasts = Toasts::default();
-        let said = toasts.say(Kind::Info, || "one".to_owned());
-        let failed = toasts.failure_of(|| "Could not start web".to_owned(), failure());
-        assert_eq!(toasts.update(Message::Details(said)), None);
-        assert_eq!(toasts.update(Message::Details(failed)), Some(failure()));
-        assert!(toasts.is_empty());
-    }
-
-    #[test]
-    fn a_failure_says_its_message_and_its_hint_or_what_failed_and_its_message() {
-        let _english = crate::test_support::snapshot::in_language("en");
-        let mut toasts = Toasts::default();
-        toasts.failure(failure());
-        toasts.failure_of(|| "Could not start web".to_owned(), failure());
-        let error = failure().error;
-        let hint = error.hint.as_ref().map(|hint| i18n::errors::hint(hint));
-        let message = i18n::errors::message(&error);
-        assert_eq!(toasts.visible()[0].text(), (message.clone(), hint));
-        assert_eq!(
-            toasts.visible()[1].text(),
-            ("Could not start web".to_owned(), Some(message))
-        );
-    }
-}
+mod tests;
