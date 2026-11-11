@@ -1,6 +1,12 @@
 //! What the backend's crates tell the UI as it happens, and the notifiers
 //! that carry it: each crate calls a trait, this one puts an [`Event`] on a
 //! channel the UI listens to.
+//!
+//! The channel only carries the news. What the Tauri shell did on hearing
+//! it is the listener's to do: the window removes leftover helper
+//! containers (`api::app::lifecycle`), the tray redraws on every Host
+//! status (#250), and the OS notifications of Host and container events,
+//! with their settings and their once-per-outage rule, are #251's.
 
 use std::sync::Arc;
 
@@ -27,8 +33,10 @@ pub enum Event {
         host_id: String,
         event: Arc<EngineEvent>,
     },
-    /// A Host was added, changed, removed, enabled or disabled: the tray and
-    /// every list of Hosts are out of date.
+    /// A Host was renamed, otherwise changed, or removed: the tray and every
+    /// list of Hosts are out of date. A Host that is added, imported,
+    /// enabled or disabled is only told through its [`Event::HostStatus`],
+    /// so a list of Hosts follows both.
     HostsChanged,
     /// The text the OS draws (tray menu, notifications) was given in another
     /// language.

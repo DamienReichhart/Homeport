@@ -6,8 +6,15 @@
 //!
 //! Where a command took a Tauri `Channel<T>`, the function takes
 //! `impl Fn(T) -> bool + Send + Sync + 'static`: it is called for each item
-//! and returns `false` once nobody listens, as the crates expect. The data
-//! layer turns those into iced subscriptions.
+//! and its answer is whether to go on.
+//!
+//! `false` ends the stream, and for a job that is an abort: a deploy, a
+//! build, a push or a backup stops being followed and its outcome is never
+//! recorded. The webview's channel never said `false` while the app ran, so
+//! a job only ended through `stream_cancel`. Whoever turns these into iced
+//! subscriptions must keep that: answer `false` for a view that went away
+//! only where the stream is a view (logs, stats, watches), and keep
+//! answering `true` for a job the user left the page of.
 
 pub mod app;
 pub mod clusters;

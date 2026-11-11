@@ -12,6 +12,7 @@ use iced::{
 use tokio::sync::mpsc::{self, UnboundedReceiver};
 
 use crate::{
+    api::app::lifecycle,
     app::{
         events::{Event, Events},
         setup, AppState,
@@ -23,6 +24,8 @@ pub fn run() -> iced::Result {
     iced::application(Homeport::boot, Homeport::update, Homeport::view)
         .title("Homeport")
         .subscription(Homeport::subscription)
+        // The window asks first, so the app can tidy up its Hosts.
+        .exit_on_close_request(false)
         .window_size((1100.0, 720.0))
         .run()
 }
@@ -46,6 +49,12 @@ pub enum Message {
     Started(Result<Arc<AppState>, String>),
     Backend(Event),
     Hosts(hosts::Message),
+    /// The window was asked to close.
+    CloseRequested,
+    /// The Hosts were tidied up: the app may exit.
+    ShutDown,
+    /// Something done on the side ended; nothing to show.
+    Done,
     /// The Settings value of the language changed: `system` or a tag.
     LanguageChanged(String),
 }
@@ -93,8 +102,30 @@ impl Homeport {
             }
             Message::Backend(event) => {
                 self.hosts.on_event(&event);
-                Task::none()
+                match (&self.phase, event) {
+                    (Phase::Ready(state), Event::HostStatus { host_id, status }) => {
+                        let state = state.clone();
+                        Task::perform(
+                            async move {
+                                lifecycle::host_status_changed(&state, &host_id, &status).await;
+                            },
+                            |()| Message::Done,
+                        )
+                    }
+                    _ => Task::none(),
+                }
             }
+            Message::CloseRequested => match &self.phase {
+                Phase::Ready(state) => {
+                    let state = state.clone();
+                    Task::perform(async move { lifecycle::shutdown(&state).await }, |()| {
+                        Message::ShutDown
+                    })
+                }
+                _ => iced::exit(),
+            },
+            Message::ShutDown => iced::exit(),
+            Message::Done => Task::none(),
             Message::LanguageChanged(language) => {
                 // Every view reads the app's language, so the next draw is in it.
                 i18n::set_language(&language, &i18n::locale::preferred());
@@ -128,7 +159,10 @@ impl Homeport {
     }
 
     fn subscription(&self) -> Subscription<Message> {
-        Subscription::run(backend_events).map(Message::Backend)
+        Subscription::batch([
+            Subscription::run(backend_events).map(Message::Backend),
+            iced::window::close_requests().map(|_| Message::CloseRequested),
+        ])
     }
 }
 

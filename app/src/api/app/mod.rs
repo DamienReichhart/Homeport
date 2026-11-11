@@ -9,6 +9,7 @@
 pub mod backup;
 pub mod diagnostics;
 pub mod history;
+pub mod lifecycle;
 pub mod settings;
 pub mod startup;
 pub mod streams;
