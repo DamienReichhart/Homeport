@@ -3,6 +3,7 @@
 
 pub mod containers;
 pub mod exec;
+pub mod files;
 mod registries;
 
 #[cfg(test)]
