@@ -4,6 +4,7 @@
 pub mod nodes;
 pub mod objects;
 pub mod services;
+pub mod stacks;
 
 use homeport_core::error::AppResult;
 use homeport_engine::swarm::{
