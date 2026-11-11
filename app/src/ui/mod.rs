@@ -1,6 +1,7 @@
 //! The window: its state, its messages and what it draws.
 
 mod hosts;
+pub mod theme;
 
 use std::{
     path::PathBuf,
@@ -10,7 +11,7 @@ use std::{
 use iced::{
     futures::{stream, Stream},
     widget::{column, container, text},
-    Element, Length, Subscription, Task,
+    Length, Subscription, Task,
 };
 use tokio::sync::mpsc::{self, UnboundedReceiver};
 
@@ -25,14 +26,20 @@ use crate::{
     },
     i18n,
 };
+use theme::{Element, Theme};
 
 pub fn run() -> iced::Result {
-    iced::application(Homeport::boot, Homeport::update, Homeport::view)
+    let app = iced::application(Homeport::boot, Homeport::update, Homeport::view)
         .title("Homeport")
         .subscription(Homeport::subscription)
         // The window asks first, so the app can tidy up its Hosts.
         .exit_on_close_request(false)
-        .window_size((1100.0, 720.0))
+        .theme(Homeport::theme)
+        .scale_factor(|app| app.scale.factor())
+        .default_font(theme::font::DEFAULT)
+        .window_size((1100.0, 720.0));
+    theme::font::files()
+        .fold(app, |app, font| app.font(font))
         .run()
 }
 
@@ -52,6 +59,9 @@ enum Phase {
 struct Homeport {
     phase: Phase,
     hosts: hosts::Hosts,
+    /// The Settings value of the theme; `System` until they are read.
+    mode: theme::Mode,
+    scale: theme::Scale,
 }
 
 /// Why the app didn't start, kept as it is so it reads in the language of
@@ -103,6 +113,8 @@ impl Homeport {
             Self {
                 phase: Phase::Starting,
                 hosts: hosts::Hosts::default(),
+                mode: theme::Mode::default(),
+                scale: theme::Scale::default(),
             },
             start,
         )
@@ -113,6 +125,7 @@ impl Homeport {
             Message::Started(Ok(state)) => {
                 if let Ok(settings) = state.settings.get() {
                     i18n::set_language(&settings.language, &i18n::locale::preferred());
+                    self.mode = settings.theme.into();
                 }
                 self.phase = Phase::Ready(state.clone());
                 if std::env::var_os(EXIT_WHEN_READY).is_some() {
@@ -184,6 +197,11 @@ impl Homeport {
             .width(Length::Fill)
             .height(Length::Fill)
             .into()
+    }
+
+    /// `None` while the user follows the OS: iced then tracks it, live.
+    fn theme(&self) -> Option<Theme> {
+        self.mode.theme()
     }
 
     fn subscription(&self) -> Subscription<Message> {

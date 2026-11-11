@@ -12,12 +12,12 @@ use std::{
     sync::{Mutex, MutexGuard},
 };
 
-use iced::{Element, Settings, Size, Theme};
+use iced::{theme::Base, Element, Settings, Size};
 use iced_test::Simulator;
 
-use crate::i18n;
+use crate::{i18n, ui::theme};
 
-/// A font with the Arabic letters, which the default font lacks: without
+/// A font with the Arabic letters, which the app's fonts lack: without
 /// it Arabic would be drawn in whatever the machine has installed.
 const ARABIC: &[u8] = include_bytes!("../../tests/fonts/NotoSansArabic.ttf");
 
@@ -106,18 +106,20 @@ fn snapshots() -> PathBuf {
 /// and holds it to `tests/snapshots/<name>.png`.
 ///
 /// `view` runs once the language is set, so its text is in that language.
-pub fn assert_snapshot<'a, Message: 'a>(
+pub fn assert_snapshot<'a, Message: 'a, Theme: Base + 'a>(
     name: &str,
     tag: &str,
     theme: &Theme,
     size: impl Into<Size>,
-    view: impl FnOnce() -> Element<'a, Message>,
+    view: impl FnOnce() -> Element<'a, Message, Theme>,
 ) {
     let _language = in_language(tag);
     // Every snapshot is drawn in software, whatever the machine has.
     std::env::set_var("ICED_TEST_BACKEND", "tiny-skia");
+    // The app's own fonts, so a page is drawn as the window draws it.
     let settings = Settings {
-        fonts: vec![ARABIC.into()],
+        fonts: theme::font::files().chain([ARABIC.into()]).collect(),
+        default_font: theme::font::DEFAULT,
         ..Settings::default()
     };
     let mut ui = Simulator::with_size(settings, size, view());

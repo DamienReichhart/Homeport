@@ -94,7 +94,11 @@ zip = { version = "2", default-features = false, features = ["deflate"] }
 shell-words = "1"
 tempfile = "3"
 # The desktop shell: iced draws the UI (tokio drives its tasks).
-iced = { version = "0.14", default-features = false, features = ["tokio", "wgpu", "tiny-skia", "canvas", "image", "svg", "advanced", "lazy", "x11", "wayland", "thread-pool"] }
+iced = { version = "0.14", default-features = false, features = ["tokio", "wgpu", "tiny-skia", "canvas", "image", "svg", "advanced", "lazy", "x11", "wayland", "thread-pool", "linux-theme-detection"] }
+# The app's tests: iced's headless window, and the parser iced's `svg`
+# feature draws the embedded icons with.
+iced_test = "0.14"
+usvg = { version = "0.45", default-features = false }
 # The iced app's text: Fluent catalogues, the OS's languages, and ICU4X for
 # numbers, dates and relative times in each language.
 fluent-bundle = "0.16"
@@ -109,7 +113,6 @@ icu_experimental = { version = "0.7", default-features = false, features = ["com
 fixed_decimal = { version = "0.7", features = ["ryu"] }
 writeable = "0.6"
 # Headless runs of the iced app in tests: simulated input and snapshots.
-iced_test = "0.14"
 iced_runtime = "0.14"
 png = "0.18"
 # The desktop shell (Tauri, until the iced app replaces it).

@@ -64,6 +64,7 @@ tempfile.workspace = true
 iced_test.workspace = true
 iced_runtime.workspace = true
 png.workspace = true
+usvg.workspace = true
 # Throwaway Engine resources and sample databases, for the use cases' tests.
 homeport-storage = { workspace = true, features = ["test-support"] }
 homeport-engine = { workspace = true, features = ["test-support"] }

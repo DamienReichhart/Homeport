@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use iced::{
     widget::{column, text, Row},
-    Alignment, Element, Length, Task,
+    Alignment, Length, Task,
 };
 
 use homeport_core::error::AppError;
@@ -13,6 +13,7 @@ use homeport_hosts::{registry::HostStatus, service::HostView};
 use crate::{
     app::{events::Event, AppState},
     i18n, t,
+    ui::theme::Element,
 };
 
 #[derive(Default)]
@@ -97,9 +98,9 @@ fn label(status: &HostStatus) -> String {
 
 #[cfg(test)]
 mod tests {
-    use iced::Theme;
-
     use homeport_core::error::ErrorCode;
+
+    use crate::ui::theme::Theme;
 
     use crate::test_support::{
         fixtures::{connected, host_view},
