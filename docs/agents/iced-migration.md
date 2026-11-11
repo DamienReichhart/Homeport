@@ -61,6 +61,19 @@ Rules, enforced by `app/tests/layout.rs`:
 6. Tests: `update` tests for every message that does something; a headless `iced_test` snapshot for each page state (empty, loading, error, populated) in English, and one RTL snapshot (Arabic) for each page with a table or a form.
 7. Compare against the running Tauri app on the same data. Anything different is a bug unless the PR says why.
 
+## Reading data and following streams
+
+`app/src/data/` is to the iced app what TanStack Query and `subscribe()` were to React; a feature never loads, caches or refreshes by itself.
+
+- **Keys** (`data::keys`): one module per family of the React query keys, with the same parts (`hostKeys.containers(hostId)` is `keys::host::containers(host_id)`). Every key of a Host is in `keys::host::scope(id)`, of a Cluster in `keys::cluster::scope(id)` (Nomad: `keys::nomad::scope(id)`), of a Swarm in `keys::swarm::scope(id)`. What only your feature reads is filed under one of them with `.with(part)`.
+- **Queries** (`data::Query`): a key, the use case that reads it, and its policy (`stale_after`, `no_retry`, `poll`, `keep`: React Query's `staleTime`, `retry`, `refetchInterval`, `gcTime`, with the same defaults). The lists several features read are in `data::resources`.
+- **`Data`**, in the window's state: `data.watch(state, &query)` when the page opens (a cached read is shown at once and read again only if stale; two pages share one read), `data.read::<T>(&key)` in the view (a `Resource`: `Idle`, `Loading`, `Loaded`, `Refreshing`, `Failed` with the previous data), `data.unwatch(&key)` when it closes and `data.release(&scope)` when the selection moves, which abort the reads nobody waits for. Map its `Task<data::Message>` into your message and give them back to `Data::update`.
+- **Live updates**: `Data::on_event` already puts statuses in the cached lists, marks what a Host or Cluster that went down holds as `Failed` (data kept), reads it again when it comes back, and makes Engine lists stale from Engine events, 250 ms after the last of a burst. A feature adds nothing for that; polling (`.poll(interval)`) is for what no event tells, and pauses while the window is minimised or hidden.
+- **Actions** (`data::Action`): `action.start(state, |state| use_case(...))`, then `data.settle(state, &mut action, finished, [keys…])`, which invalidates on success. The view reads `is_pending()` and `error()`.
+- **Streams** (`data::streams`): `shapes::lines`, `view`, `job` and `terminal` turn a `*_subscribe` use case into a stream of `Update`s (`Started`, `Batch`, `Ended`, `Failed`) for `Task::run`, or for `streams::subscription`. Batches come at most 60 times a second; a view's stream is cancelled when dropped, a terminal's session closed, and a job goes on until `stream_cancel`.
+
+Their tests need no window: a paused tokio clock (`#[tokio::test(start_paused = true)]`) and loaders that count their calls (`app/src/data/tests.rs`).
+
 ## Testing a feature
 
 `app/src/test_support/` (built for tests only) replaces vitest, Testing Library and the IPC mocks. A feature is tested in three layers:
