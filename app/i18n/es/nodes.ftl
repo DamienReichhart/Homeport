@@ -1,0 +1,46 @@
+### The `nodes` namespace, in Español (es).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/es/nodes.ts:
+### change the text there, then run it again.
+
+nodes-nav = Nodes
+nodes-title = Nodes
+nodes-summary = { $count ->
+        [one] { NUM($count) } Node
+       *[other] { NUM($count) } Nodes
+    }
+nodes-search = Buscar Nodes
+nodes-ready = Listo
+nodes-notReady = No listo
+nodes-cordoned = programación desactivada
+nodes-column-name = Nombre
+nodes-column-status = Estado
+nodes-column-roles = Roles
+nodes-column-version = Versión
+nodes-column-ip = IP interna
+nodes-column-platform = Plataforma
+nodes-column-cpu = CPU
+nodes-column-memory = Memoria
+nodes-column-age = Antigüedad
+nodes-tab-overview = Resumen
+nodes-tab-pods = Pods
+nodes-tab-conditions = Condiciones
+nodes-tab-events = Eventos
+nodes-tab-source = YAML
+nodes-detail-roles = Roles
+nodes-detail-version = Kubelet
+nodes-detail-os = Imagen del sistema
+nodes-detail-kernel = Kernel
+nodes-detail-runtime = Runtime de contenedores
+nodes-detail-addresses = Direcciones
+nodes-detail-taints = Taints
+nodes-detail-noTaints = Ninguno
+nodes-detail-age = Antigüedad
+nodes-detail-labels = Etiquetas
+nodes-detail-resources = Recursos
+nodes-resource-name = Recurso
+nodes-resource-capacity = Capacidad
+nodes-resource-allocatable = Asignable
+nodes-column-cpuUsed = CPU usada
+nodes-column-memoryUsed = Memoria usada
+nodes-tab-metrics = Métricas

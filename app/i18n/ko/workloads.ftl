@@ -1,0 +1,88 @@
+### The `workloads` namespace, in 한국어 (ko).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/ko/workloads.ts:
+### change the text there, then run it again.
+
+workloads-nav = 워크로드
+workloads-title = 워크로드
+workloads-summary = { $count ->
+       *[other] 워크로드 { NUM($count) }개
+    }
+workloads-search = 워크로드 검색
+workloads-empty = 항목이 없습니다.
+workloads-kind-deployment = Deployment
+workloads-kind-statefulSet = StatefulSet
+workloads-kind-daemonSet = DaemonSet
+workloads-kind-job = Job
+workloads-kind-cronJob = CronJob
+workloads-one-deployment = Deployment
+workloads-one-statefulSet = StatefulSet
+workloads-one-daemonSet = DaemonSet
+workloads-one-job = Job
+workloads-one-cronJob = CronJob
+workloads-column-name = 이름
+workloads-column-namespace = Namespace
+workloads-column-health = 상태
+workloads-column-ready = 준비
+workloads-column-completions = 완료
+workloads-column-active = 활성
+workloads-column-upToDate = 최신
+workloads-column-schedule = 일정
+workloads-column-lastSchedule = 마지막 실행
+workloads-column-images = 이미지
+workloads-column-age = 경과 시간
+workloads-tab-overview = 개요
+workloads-tab-pods = Pod
+workloads-tab-jobs = Job
+workloads-tab-logs = 로그
+workloads-tab-conditions = 조건
+workloads-tab-events = 이벤트
+workloads-tab-source = YAML
+workloads-detail-namespace = Namespace
+workloads-detail-ready = 준비
+workloads-detail-upToDate = 최신
+workloads-detail-schedule = 일정
+workloads-detail-lastSchedule = 마지막 실행
+workloads-detail-strategy = 전략
+workloads-detail-selector = Pod 선택 기준
+workloads-detail-owner = 제어 주체
+workloads-detail-age = 경과 시간
+workloads-detail-labels = 레이블
+workloads-detail-annotations = 어노테이션
+workloads-detail-containers = 컨테이너
+workloads-detail-noJobs = 시작한 Job 중 아직 보관된 Job이 없습니다.
+workloads-container-name = 컨테이너
+workloads-container-image = 이미지
+workloads-container-ports = 포트
+workloads-action-menu = { $name } 작업
+workloads-action-scale = 스케일
+workloads-action-restart = 다시 시작
+workloads-action-trigger = 지금 실행
+workloads-action-suspend = 일시 중단
+workloads-action-resume = 재개
+workloads-scale-title = { $name } 스케일
+workloads-scale-description = { $cluster } 클러스터의 { $namespace } Namespace에 있습니다. 지금 { $current ->
+       *[other] Pod { NUM($current) }개
+    }를 실행합니다.
+workloads-scale-replicas = Pod
+workloads-scale-autoscaled = 오토스케일러 { $autoscaler }에서 Pod를 관리하므로 다음 확인 때 개수를 다시 되돌립니다.
+workloads-scale-toZero = Pod가 0개이면 다시 스케일 업할 때까지 서비스하지 않습니다.
+workloads-scale-submit = 스케일
+workloads-scale-done = { $name } 항목을 { $replicas ->
+       *[other] Pod { NUM($replicas) }개
+    }로 스케일했습니다
+workloads-scale-failed = Homeport가 { $name } 항목을 스케일하지 못했습니다
+workloads-restart-title = { $name } 항목을 다시 시작하시겠습니까?
+workloads-restart-description = kubectl rollout restart처럼, { $cluster } 클러스터의 { $namespace } Namespace에 있는 Pod가 롤아웃 전략에 따라 하나씩 교체됩니다.
+workloads-restart-confirm = 다시 시작
+workloads-restart-done = { $name } 다시 시작하는 중
+workloads-restart-failed = Homeport가 { $name } 항목을 다시 시작하지 못했습니다
+workloads-suspend-title = { $name } 항목을 일시 중단하시겠습니까?
+workloads-suspend-description = 재개할 때까지 { $cluster } 클러스터의 { $namespace } Namespace에서 더 이상 Job을 시작하지 않습니다. 이미 실행 중인 Job은 계속됩니다.
+workloads-suspend-confirm = 일시 중단
+workloads-suspend-done = { $name } 일시 중단됨
+workloads-suspend-failed = Homeport가 { $name } 항목을 일시 중단하지 못했습니다
+workloads-resume-done = { $name } 재개됨
+workloads-resume-failed = Homeport가 { $name } 항목을 재개하지 못했습니다
+workloads-trigger-done = Job 시작됨: { $job }
+workloads-trigger-failed = Homeport가 { $name }에서 Job을 시작하지 못했습니다

@@ -1,0 +1,377 @@
+### The `containers` namespace, in 简体中文 (zh-CN).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/zh-CN/containers.ts:
+### change the text there, then run it again.
+
+containers-nav = 容器
+containers-title = 容器
+containers-summary = { $count } 个中有 { $running } 个正在运行
+containers-runContainer = 运行容器
+containers-search = 搜索容器
+containers-onlyRunning = 仅运行中
+containers-empty-title = 没有容器
+containers-empty-description = 从镜像运行一个容器，或部署一个堆栈。
+containers-noMatch = 没有匹配的容器。
+containers-column-name = 名称
+containers-column-image = 镜像
+containers-column-status = 状态
+containers-column-ports = 端口
+containers-column-cpu = CPU
+containers-column-memory = 内存
+containers-column-created = 创建时间
+containers-selectOne = 选择 { $name }
+containers-selectStack = 选择堆栈 { $stack }
+containers-stack-running = { $running }/{ $count } 运行中
+containers-stack-swarm = Swarm
+containers-stack-open = 打开堆栈
+containers-inPod = 位于 Podman Pod { $pod } 中
+containers-fromUnit = 由 Quadlet 单元 { $unit } 创建
+containers-selected = 已选择 { $count } 个
+containers-action-start = 启动
+containers-action-stop = 停止
+containers-action-restart = 重启
+containers-action-pause = 暂停
+containers-action-resume = 恢复
+containers-action-kill = 强制终止
+containers-action-rename = 重命名
+containers-action-edit = 编辑
+containers-action-duplicate = 复制
+containers-action-logs = 日志
+containers-action-terminal = 打开终端
+containers-action-commit = 提交为镜像…
+containers-action-export = 导出文件系统…
+containers-kill-title = 强制终止 { $name }？
+containers-kill-description = 主进程会立即收到 SIGKILL，没有机会正常关闭。
+containers-done-start = 已启动{ $count ->
+        [1] 容器
+       *[other] {" "}{ NUM($count) } 个容器
+    }
+containers-done-stop = 已停止{ $count ->
+        [1] 容器
+       *[other] {" "}{ NUM($count) } 个容器
+    }
+containers-done-restart = 已重启{ $count ->
+        [1] 容器
+       *[other] {" "}{ NUM($count) } 个容器
+    }
+containers-done-pause = 已暂停{ $count ->
+        [1] 容器
+       *[other] {" "}{ NUM($count) } 个容器
+    }
+containers-done-unpause = 已恢复{ $count ->
+        [1] 容器
+       *[other] {" "}{ NUM($count) } 个容器
+    }
+containers-done-kill = 已强制终止{ $count ->
+        [1] 容器
+       *[other] {" "}{ NUM($count) } 个容器
+    }
+containers-done-remove = 已删除{ $count ->
+        [1] 容器
+       *[other] {" "}{ NUM($count) } 个容器
+    }
+containers-remove-title = 删除 { $name }？
+containers-remove-titleMany = 删除 { $count ->
+       *[other] { NUM($count) } 个容器
+    }？
+containers-remove-deleted = { $count ->
+        [1] 该容器及其可写层和匿名卷会被删除。
+       *[other] 这些容器及其可写层和匿名卷会被删除。
+    }
+containers-remove-running = { $count } 个正在运行的容器会先被停止。
+containers-remove-namedKept = 命名卷会保留。
+containers-detail-gone = 此容器已不存在。
+containers-detail-backToList = 返回容器
+containers-tab-logs = 日志
+containers-tab-inspect = 检查
+containers-tab-health = 健康
+containers-tab-exec = Exec
+containers-tab-files = 文件
+containers-tab-stats = 统计
+containers-tab-processes = 进程
+containers-notRunning = 容器未在运行。
+containers-logs-tail-100 = 最后 100 行
+containers-logs-tail-1000 = 最后 1 000 行
+containers-logs-tail-10000 = 最后 10 000 行
+containers-logs-tail-all = 全部
+containers-logs-since-all = 任意时间
+containers-logs-since-300 = 最近 5 分钟
+containers-logs-since-3600 = 最近 1 小时
+containers-logs-since-86400 = 最近 24 小时
+containers-logs-history = 历史
+containers-logs-sinceLabel = 起始时间
+containers-logs-timestamps = 时间戳
+containers-logs-follow = 跟随
+containers-logs-find = 在日志中查找
+containers-logs-previous = 上一个匹配项
+containers-logs-next = 下一个匹配项
+containers-logs-clear = 清除
+containers-logs-download = 下载日志
+containers-logs-saveTitle = 保存日志
+containers-logs-saved = 日志已保存
+containers-logs-end = — 日志结束 —
+containers-inspect-raw = 原始 JSON
+containers-inspect-container = 容器
+containers-inspect-health = 健康
+containers-inspect-environment = 环境变量
+containers-inspect-mounts = 挂载
+containers-inspect-ports = 端口
+containers-inspect-networks = 网络
+containers-inspect-labels = 标签
+containers-inspect-id = ID
+containers-inspect-image = 镜像
+containers-inspect-created = 创建时间
+containers-inspect-state = 状态
+containers-inspect-started = 启动时间
+containers-inspect-entrypoint = 入口点
+containers-inspect-command = 命令
+containers-inspect-workingDir = 工作目录
+containers-inspect-user = 用户
+containers-inspect-restartPolicy = 重启策略
+containers-inspect-networkMode = 网络模式
+containers-inspect-exited = { $status }（退出码 { $code }）
+containers-inspect-outOfMemory = { $state }，内存耗尽
+containers-inspect-restarted = { $policy } · 已重启 { $count } 次
+containers-inspect-restartedMax = { $policy }（最多 { $max } 次）· 已重启 { $count } 次
+containers-inspect-imageDefault = 镜像默认值
+containers-inspect-notPublished = 未发布
+containers-inspect-readWrite = 读写
+containers-inspect-readOnly = 只读
+containers-inspect-failingStreak = 连续失败 { $count } 次
+containers-inspect-noHealthcheck = 该镜像未定义健康检查。
+containers-inspect-column-started = 开始时间
+containers-inspect-column-exit = 退出码
+containers-inspect-column-output = 输出
+containers-inspect-column-variable = 变量
+containers-inspect-column-value = 值
+containers-inspect-column-type = 类型
+containers-inspect-column-source = 源
+containers-inspect-column-destination = 目标
+containers-inspect-column-mode = 模式
+containers-inspect-column-container = 容器
+containers-inspect-column-publishedOn = 发布于
+containers-inspect-column-network = 网络
+containers-inspect-column-ip = IP
+containers-inspect-column-gateway = 网关
+containers-inspect-column-aliases = 别名
+containers-inspect-column-label = 标签
+containers-health-none = 此容器没有健康检查。
+containers-health-title = 健康检查
+containers-health-command = 命令
+containers-health-timingLabel = 时间设置
+containers-health-timing = 每 { $interval } 一次，超时 { $timeout }，{ $retries ->
+       *[other] 重试 { NUM($retries) } 次
+    }，启动期 { $start }
+containers-health-failingStreak = 连续失败
+containers-health-lastResults = 最近结果
+containers-health-noRuns = 尚未运行任何检查。
+containers-health-noOutput = 没有输出。
+containers-health-showLess = 收起
+containers-health-showMore = 再显示 { $count ->
+       *[other] { NUM($count) } 行
+    }
+containers-health-exit = 退出码 { $code }
+containers-health-took = · 耗时 { $duration }
+containers-exec-startFirst = 启动容器后才能打开终端。
+containers-exec-shell = Shell
+containers-exec-shellNumber = Shell { $number }
+containers-exec-closeOne = 关闭 { $title }
+containers-exec-new = 新建终端
+containers-exec-command = 命令
+containers-exec-commandPlaceholder = bash，若没有则使用 sh
+containers-exec-user = 用户
+containers-exec-directory = 目录
+containers-exec-default = 默认
+containers-exec-open = 打开
+containers-exec-none = 没有打开的终端。
+containers-exec-exited = [进程已退出]
+containers-exec-exitedWithCode = [进程已退出，退出码为 { $code }]
+containers-files-startFirst = 启动容器后才能浏览其文件。
+containers-files-saveOne = 保存 { $name }
+containers-files-uploadTo = 上传到 { $path }
+containers-files-uploadHere = 上传到此处
+containers-files-saved = 已保存 { $name }
+containers-files-savedArchive = 已将 { $name } 保存为 .tar 归档
+containers-files-uploaded = 已将 { $count ->
+       *[other] { NUM($count) } 个文件
+    }上传到 { $path }
+containers-stats-startFirst = 启动容器后才能查看其资源使用情况。
+containers-stats-cpu = CPU
+containers-stats-memory = 内存
+containers-stats-memoryNow = · { $used } / { $limit }
+containers-stats-used = 已用
+containers-stats-network = 网络
+containers-stats-networkNow = · 接收 { $received }，发送 { $sent }
+containers-stats-received = 已接收
+containers-stats-sent = 已发送
+containers-stats-disk = 磁盘 I/O
+containers-stats-processes = · { $count ->
+       *[other] { NUM($count) } 个进程
+    }
+containers-stats-read = 读取
+containers-stats-written = 写入
+containers-run-title = 运行容器
+containers-run-description = 如果此主机上没有该镜像，会先拉取它。
+containers-run-submit = 运行
+containers-run-starting = 正在启动…
+containers-run-started = 容器已启动
+containers-run-image = 镜像
+containers-run-name = 名称
+containers-run-namePlaceholder = 留空则自动生成
+containers-run-nameKept = 保持不变。请使用“重命名”更改它。
+containers-run-command = 命令
+containers-run-commandPlaceholder = 镜像默认值
+containers-run-environment = 环境变量
+containers-run-network = 网络
+containers-run-pod = Pod
+containers-run-noPod = 无
+containers-run-podOwnsNetwork = { $pod } 中的容器共享其网络：端口、网络、主机名和 DNS 都属于该 Pod。
+containers-run-defaultNetwork = 默认 (bridge)
+containers-run-restart = 重启
+containers-run-restartPolicy = 重启策略
+containers-run-restart-no = 从不
+containers-run-restart-onFailure = 失败时
+containers-run-restart-unlessStopped = 除非手动停止
+containers-run-restart-always = 始终
+containers-run-autoRemove = 容器退出时将其删除
+containers-run-ports = 端口
+containers-run-hostPort = 主机端口
+containers-run-hostPortPlaceholder = 主机端口（任意）
+containers-run-containerPort = 容器端口
+containers-run-protocol = 协议
+containers-run-removePort = 移除端口
+containers-run-addPort = 添加端口
+containers-run-volumes = 卷
+containers-run-source = 源
+containers-run-sourcePlaceholder = 卷名称或 /host/path
+containers-run-containerPath = 容器路径
+containers-run-readOnly = 只读
+containers-run-removeVolume = 移除卷
+containers-run-addVolume = 添加卷
+containers-run-removeValue = 移除 { $value }
+containers-run-error-size = 请填写大小，例如 512m 或 2g。
+containers-run-error-cpus = 请填写 CPU 数量，例如 0.5 或 2。
+containers-run-error-cpuShares = 请填写整数，例如 512。
+containers-run-error-memorySwap = 请填写大小，例如 1g；填写 -1 表示不限制交换空间。
+containers-run-error-gpuCount = 请填写 GPU 数量，例如 1。
+containers-run-error-duration = 请填写时长，例如 30s 或 1m30s。
+containers-run-error-retries = 请填写整数，例如 3。
+containers-advanced-title = 高级选项
+containers-advanced-hasErrors = 有错误
+containers-advanced-resources = 资源
+containers-advanced-labels = 标签
+containers-advanced-security = 安全
+containers-advanced-devices = 设备
+containers-advanced-healthcheck = 健康检查
+containers-advanced-network = 网络标识
+containers-advanced-logging = 日志记录
+containers-advanced-cpus = CPU 限制
+containers-advanced-cpusHint = CPU 数量，例如 0.5 或 2。
+containers-advanced-cpusPlaceholder = 所有 CPU
+containers-advanced-cpuShares = CPU 份额
+containers-advanced-cpuSharesHint = 相对于其他容器的权重；默认为 1024。
+containers-advanced-memory = 内存限制
+containers-advanced-memoryHint = 例如 512m 或 2g。
+containers-advanced-memoryPlaceholder = 不限制
+containers-advanced-memoryReservation = 内存预留
+containers-advanced-memoryReservationHint = 软限制，在主机资源紧张时生效。
+containers-advanced-memorySwap = 内存和交换空间限制
+containers-advanced-memorySwapHint = 内存加交换空间；-1 表示不限制交换空间。
+containers-advanced-memorySwapPlaceholder = 内存限制的两倍
+containers-advanced-none = 无
+containers-advanced-labelsHint = 每行一个 key=value，供反向代理和备份工具读取。
+containers-advanced-capAdd = 添加能力
+containers-advanced-capAddHint = 例如为 VPN 添加 NET_ADMIN。
+containers-advanced-capDrop = 移除能力
+containers-advanced-capDropHint = ALL 会移除所有能力。
+containers-advanced-privileged = 特权模式
+containers-advanced-privilegedTitle = 容器将获得对主机的完全访问权限
+containers-advanced-privilegedWarning = 它可以使用所有设备和能力，其中运行的任何程序都可能接管主机。请优先只添加它需要的能力和设备。
+containers-advanced-hostDevice = 主机设备
+containers-advanced-containerDevice = 容器设备
+containers-advanced-samePath = 相同路径
+containers-advanced-permissions = 权限
+containers-advanced-removeDevice = 移除设备
+containers-advanced-addDevice = 添加设备
+containers-advanced-gpus = GPU
+containers-advanced-gpusHint = 需要在主机上安装 GPU 厂商的容器工具包。
+containers-advanced-gpus-all = 所有 GPU
+containers-advanced-gpus-count = 指定数量的 GPU
+containers-advanced-gpus-ids = 指定的 GPU
+containers-advanced-gpuCount = 数量
+containers-advanced-gpuIds = GPU 索引或 UUID
+containers-advanced-gpuIdsHint = 用逗号分隔。
+containers-advanced-health-image = 镜像自身的（如有）
+containers-advanced-health-custom = 命令
+containers-advanced-health-disabled = 无（关闭镜像自身的）
+containers-advanced-healthCommand = 检查命令
+containers-advanced-healthCommandHint = 使用 /bin/sh -c 运行；退出码 0 表示健康。
+containers-advanced-interval = 间隔
+containers-advanced-timeout = 超时
+containers-advanced-retries = 重试次数
+containers-advanced-startPeriod = 启动期
+containers-advanced-hostname = 主机名
+containers-advanced-hostnamePlaceholder = 容器 ID
+containers-advanced-domainname = 域名
+containers-advanced-dns = DNS 服务器
+containers-advanced-dnsHint = 每行一个地址。
+containers-advanced-dnsSearch = DNS 搜索域
+containers-advanced-dnsSearchHint = 每行一个。
+containers-advanced-extraHosts = 额外的 hosts 条目
+containers-advanced-extraHostsHint = 每行一个 name:address；host-gateway 代表主机的地址。
+containers-advanced-logDriver = 日志驱动
+containers-advanced-logDriverHint = 设为 none 时，“日志”标签页保持为空。
+containers-advanced-logDriverPlaceholder = 引擎默认值
+containers-advanced-logOptions = 驱动选项
+containers-advanced-logOptionsHint = 每行一个 key=value；max-size 和 max-file 用于轮转 json-file 日志。
+containers-rename-title = 重命名 { $name }
+containers-rename-newName = 新名称
+containers-duplicate-title = 复制 { $name }
+containers-duplicate-sharedPorts = { $name } 已发布 { $count ->
+       *[other] 主机端口
+    } { $ports }。
+containers-duplicate-sharedPortsFix = { $count ->
+        [1] 两者同时使用该端口时，副本无法启动
+       *[other] 两者同时使用这些端口时，副本无法启动
+    }：请更改主机端口，或留空由引擎选择。
+containers-edit-title = 编辑 { $name }
+containers-edit-description = 应用后会使用这些设置重新创建容器，并保留其名称、网络和命名卷。
+containers-edit-apply = 应用
+containers-edit-recreating = 正在重新创建…
+containers-edit-recreated = 容器已重新创建
+containers-edit-confirmTitle = 重新创建 { $name }？
+containers-edit-nothingLost = 不会丢失其他内容：其名称、网络和命名卷都会保留。
+containers-edit-keptBut = 其名称、网络和命名卷会保留，但以下内容不会：
+containers-edit-commitFirst = 先提交为镜像…
+containers-edit-recreate = 重新创建
+containers-loss-anonymousVolume = 位于 { $path } 的匿名卷：新容器将使用一个空卷启动。旧卷会作为未使用的卷保留。
+containers-loss-filesystemChanges = 自容器创建以来，其中有 { $count ->
+       *[other] { NUM($count) } 个文件
+    }被更改。请先将其提交为镜像以保留这些更改。
+containers-loss-downtime = 在两者交换期间它会停止，通常持续几秒钟。
+containers-loss-stackRedeploy = 它属于堆栈 { $stack }：该堆栈下次部署时会根据其 compose 文件重新创建它，不包含此次编辑。
+containers-commit-title = 将 { $name } 提交为镜像
+containers-commit-description = 新镜像包含容器当前的文件（包括在容器内所做的更改）及其设置。不包括卷。
+containers-commit-imageName = 镜像名称
+containers-commit-imageNameHint = 例如 repo:tag。
+containers-commit-nameTaken = 已有镜像名为 { $name }。该名称会移到新镜像上；旧镜像保留其其他名称，或变为无标签。
+containers-commit-message = 消息
+containers-commit-messagePlaceholder = 升级前
+containers-commit-author = 作者
+containers-commit-changes = 更改
+containers-commit-changesHint = Dockerfile 指令，每行一条：CMD、ENTRYPOINT、ENV、EXPOSE、LABEL、ONBUILD、USER、VOLUME 或 WORKDIR。
+containers-commit-pause = 提交时暂停容器
+containers-commit-pauseOn = 在提交所需的几秒钟内冻结其进程，使正在写入的文件保持一致。
+containers-commit-pauseOff = 它会继续运行，因此正在写入的文件可能只写了一半。
+containers-commit-submit = 提交
+containers-commit-committing = 正在提交…
+containers-commit-done = 已提交为 { $reference }
+containers-commit-openImages = 打开镜像
+containers-export-tarArchive = Tar 归档
+containers-export-pick = 导出 { $name } 的文件系统
+containers-export-title = 正在导出 { $name }
+containers-export-to = 到 { $path }
+containers-export-written = 已写入
+containers-export-finished = 完成。可在“镜像”页面或使用 docker import 导入它。
+containers-export-done = 已导出到 { $destination }
+containers-palette-run = 运行容器

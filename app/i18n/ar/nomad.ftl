@@ -1,0 +1,209 @@
+### The `nomad` namespace, in العربية (ar).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/ar/nomad.ts:
+### change the text there, then run it again.
+
+nomad-status-running = قيد التشغيل
+nomad-status-pending = قيد الانتظار
+nomad-status-dead = منتهٍ
+nomad-status-complete = مكتمل
+nomad-status-failed = فشل
+nomad-status-lost = مفقود
+nomad-status-unknown = غير معروف
+nomad-status-stopped = متوقف
+nomad-namespace-label = Namespace
+nomad-namespace-all = كل namespaces
+nomad-jobs-nav = Jobs
+nomad-jobs-title = Jobs
+nomad-jobs-summary = { $count ->
+        [zero] لا jobs
+        [one] job واحد
+        [two] { NUM($count) } jobs
+        [few] { NUM($count) } jobs
+        [many] { NUM($count) } job
+       *[other] { NUM($count) } job
+    }
+nomad-jobs-search = تصفية jobs
+nomad-jobs-empty-title = لا توجد jobs
+nomad-jobs-empty-description = لا يعمل شيء على هذا العنقود بعد، أو لا يستطيع الرمز رؤيته.
+nomad-jobs-column-name = الاسم
+nomad-jobs-column-namespace = Namespace
+nomad-jobs-column-type = النوع
+nomad-jobs-column-status = الحالة
+nomad-jobs-column-groups = Allocations
+nomad-jobs-column-submitted = تاريخ الإرسال
+nomad-jobs-running = { $running } قيد التشغيل
+nomad-jobs-runningOf = { $running } من { $desired } قيد التشغيل
+nomad-jobs-run = تشغيل job
+nomad-job-description = job من نوع { $type } في الـ namespace { $namespace }، الإصدار { $version }
+nomad-job-back = Jobs
+nomad-job-stop = إيقاف
+nomad-job-editAndRun = تحرير وتشغيل
+nomad-job-sourceFailed = تعذّر على Homeport قراءة مواصفات الـ job
+nomad-job-settings = Job
+nomad-job-type = النوع
+nomad-job-priority = الأولوية
+nomad-job-datacenters = مراكز البيانات
+nomad-job-nodePool = Node pool
+nomad-job-submitted = تاريخ الإرسال
+nomad-job-parent = أطلقه
+nomad-job-statusDescription = الحالة
+nomad-job-groups = Task groups
+nomad-job-allocations = Allocations
+nomad-groups-column-name = Task group
+nomad-groups-column-running = قيد التشغيل
+nomad-groups-column-others = قيد البدء، في قائمة الانتظار، فاشلة، مفقودة
+nomad-groups-column-tasks = المهام
+nomad-groups-column-scaling = التحجيم
+nomad-groups-ofDesired = { $running } من { $desired }
+nomad-groups-others = { $starting } · { $queued } · { $failed } · { $lost }
+nomad-groups-bounds = من { $min } إلى { $max }
+nomad-groups-scale = تغيير العدد
+nomad-alloc-none = لا توجد allocations.
+nomad-alloc-column-id = المعرّف
+nomad-alloc-column-name = الاسم
+nomad-alloc-column-status = الحالة
+nomad-alloc-column-node = العقدة
+nomad-alloc-column-version = الإصدار
+nomad-alloc-column-restarts = مرات إعادة التشغيل
+nomad-alloc-column-created = تاريخ الإنشاء
+nomad-alloc-title = Allocation
+nomad-alloc-headline = الـ allocation { $id } على { $node }
+nomad-alloc-job = Job
+nomad-alloc-group = Task group
+nomad-alloc-node = العقدة
+nomad-alloc-version = إصدار الـ job
+nomad-alloc-desired = المطلوب
+nomad-alloc-description = يقول العميل
+nomad-alloc-created = تاريخ الإنشاء
+nomad-alloc-tasks = المهام
+nomad-alloc-task = المهمة
+nomad-alloc-restarts = { $count ->
+        [zero] لا إعادة تشغيل
+        [one] إعادة تشغيل واحدة
+        [two] إعادتا تشغيل
+        [few] { NUM($count) } مرات إعادة تشغيل
+        [many] { NUM($count) } مرة إعادة تشغيل
+       *[other] { NUM($count) } مرة إعادة تشغيل
+    }
+nomad-alloc-events = الأحداث الأخيرة
+nomad-alloc-tab-overview = نظرة عامة
+nomad-alloc-tab-logs = السجلات
+nomad-alloc-tab-shell = الصدفة
+nomad-shell-command = الأمر
+nomad-shell-connect = اتصال
+nomad-shell-reconnect = إعادة الاتصال
+nomad-shell-notRunning = هذه المهمة لا تعمل، لذا لا يمكن فتح صدفة فيها.
+nomad-shell-exited = انتهى الأمر.
+nomad-shell-exitedWithCode = انتهى الأمر بالرمز { $code }.
+nomad-stop-title = هل تريد إيقاف { $job }؟
+nomad-stop-description = يوقف Nomad كل allocation من { $job } في الـ namespace { $namespace } على { $cluster }. يبقى تعريفه، لذا يمكن تشغيله مجددًا إلى أن يزيله جمع البيانات المهملة في Nomad.
+nomad-stop-purge = محوه نهائيًا
+nomad-stop-purgeHelp = يزيل الـ job وسجله من Nomad فورًا. لا يمكن أن يعود إلا بتشغيل تعريفه مجددًا.
+nomad-stop-confirm = إيقاف الـ job
+nomad-stop-confirmPurge = إيقاف ومحو
+nomad-stop-done = تم إيقاف { $job }
+nomad-stop-purged = تم إيقاف { $job } ومحوه
+nomad-scale-title = تغيير عدد { $group }
+nomad-scale-description = عدد allocations هذا الـ task group التي يشغّلها { $job }؛ والمطلوب حاليًا { $current }.
+nomad-scale-count = العدد
+nomad-scale-bounds = تسمح سياسة التحجيم الخاصة به بما بين { $min } و{ $max }.
+nomad-scale-autoscaled = قد تعمل أداة تحجيم تلقائي وفق هذه السياسة، وتغيّر العدد مجددًا.
+nomad-scale-submit = تطبيق
+nomad-scale-done = تم تغيير عدد { $group } إلى { $count }
+nomad-run-title = تشغيل job
+nomad-run-editTitle = تحرير { $job } وتشغيله
+nomad-run-description = اكتب مواصفات job بتنسيق HCL أو JSON، أو الصقها أو افتحها. يخطط Nomad لها أولًا؛ ولا يتغير شيء على { $cluster } حتى تشغّلها. يذهب الـ job الذي لا يحدد namespace إلى { $namespace }.
+nomad-run-formatHcl = HCL
+nomad-run-formatJson = JSON
+nomad-run-open = فتح ملف…
+nomad-run-openTitle = فتح مواصفات job
+nomad-run-specFiles = مواصفات jobs
+nomad-run-openFailed = تعذّر على Homeport قراءة الملف
+nomad-run-editor = مواصفات الـ job
+nomad-run-plan = تخطيط
+nomad-run-planning = جارٍ التخطيط…
+nomad-run-back = العودة إلى المواصفات
+nomad-run-run = تشغيل
+nomad-run-runAnyway = التشغيل على أي حال
+nomad-run-done = تم تشغيل { $job }
+nomad-plan-new = ينشئ هذا الـ job { $job } في الـ namespace { $namespace }.
+nomad-plan-edited = يغيّر هذا الـ job { $job } في الـ namespace { $namespace }.
+nomad-plan-noChange = الـ job { $job } في الـ namespace { $namespace } يشغّل هذه المواصفات بالفعل.
+nomad-plan-unchanged = لا تغيير
+nomad-plan-place = { $count } للوضع
+nomad-plan-stop = { $count } للإيقاف
+nomad-plan-inPlace = { $count } محدّثة في مكانها
+nomad-plan-destructive = { $count } مستبدلة
+nomad-plan-migrate = { $count } للترحيل
+nomad-plan-canary = { $count } من نوع canary
+nomad-plan-failure = يتعذّر الوضع: قُيّمت { $evaluated } عقدة، واستُبعدت { $filtered } بالتصفية، و{ $exhausted } تنقصها الموارد.
+nomad-plan-exhausted = نقص في { $resources }.
+nomad-plan-constraints = مُصفّاة بواسطة { $constraints }.
+nomad-plan-warnings = تحذيرات Nomad: { $warnings }
+nomad-nodes-nav = العقد
+nomad-nodes-title = العقد
+nomad-nodes-summary = { $count ->
+        [zero] لا عقد عملاء
+        [one] عقدة عميل واحدة
+        [two] عقدتا عميل
+        [few] { NUM($count) } عقد عملاء
+        [many] { NUM($count) } عقدة عميل
+       *[other] { NUM($count) } عقدة عميل
+    }
+nomad-nodes-empty = لا توجد عقد عملاء
+nomad-nodes-draining = جارٍ التفريغ
+nomad-nodes-status-ready = جاهزة
+nomad-nodes-status-down = متوقفة
+nomad-nodes-status-initializing = جارٍ التهيئة
+nomad-nodes-status-disconnected = غير متصلة
+nomad-nodes-eligible = مؤهلة
+nomad-nodes-ineligible = غير مؤهلة
+nomad-nodes-column-name = الاسم
+nomad-nodes-column-status = الحالة
+nomad-nodes-column-eligibility = الجدولة
+nomad-nodes-column-datacenter = مركز البيانات
+nomad-nodes-column-pool = Node pool
+nomad-nodes-column-running = قيد التشغيل
+nomad-nodes-column-address = العنوان
+nomad-nodes-column-version = الإصدار
+nomad-nodes-drainStarted = بدأ التفريغ
+nomad-nodes-drainCancelled = أُلغي التفريغ
+nomad-node-description = عقدة عميل في { $datacenter }، الـ node pool { $pool }
+nomad-node-back = العقد
+nomad-node-eligible = مؤهلة لـ allocations جديدة
+nomad-node-drain = تفريغ
+nomad-node-settings = العقدة
+nomad-node-address = العنوان
+nomad-node-version = إصدار Nomad
+nomad-node-class = فئة العقدة
+nomad-node-lastDrain = آخر تفريغ
+nomad-node-drivers = برامج التشغيل
+nomad-node-unhealthy = { $driver } (غير سليم)
+nomad-node-allocations = Allocations
+nomad-drain-title = هل تريد تفريغ { $node }؟
+nomad-drain-description = يضع Nomad علامة «غير مؤهلة» على العقدة وينقل allocations الخاصة بها إلى مكان آخر، بضعًا في كل مرة كما تسمح كتل migrate الخاصة بها. عند انقضاء المهلة، تُوقف الباقية.
+nomad-drain-deadline = المهلة
+nomad-drain-deadlineHelp = مثل 1h أو 30m أو 1h30m.
+nomad-drain-noDeadline = بلا مهلة: الانتظار حتى تنتقل كل allocation
+nomad-drain-ignoreSystemJobs = إبقاء jobs النظام قيد التشغيل عليها
+nomad-drain-submit = تفريغ
+nomad-drain-cancel = إلغاء التفريغ
+nomad-drain-cancelTitle = هل تريد إلغاء تفريغ { $node }؟
+nomad-drain-cancelDescription = تبقى allocations التي نُقلت بالفعل حيث هي. تصبح العقدة مؤهلة لـ allocations جديدة مجددًا.
+nomad-drain-progressTitle = جارٍ التفريغ
+nomad-drain-remaining = { $count ->
+        [zero] لا تعمل أي allocation هنا.
+        [one] لا تزال allocation واحدة تعمل هنا.
+        [two] لا تزال { NUM($count) } allocations تعمل هنا.
+        [few] لا تزال { NUM($count) } allocations تعمل هنا.
+        [many] لا تزال { NUM($count) } allocation تعمل هنا.
+       *[other] لا تزال { NUM($count) } allocation تعمل هنا.
+    }
+nomad-drain-empty = لم تعد أي allocation تعمل هنا.
+nomad-drain-started = وقت البدء
+nomad-drain-forced = قسري: يجري إيقافها الآن
+nomad-drain-none = لا شيء
+nomad-drain-systemJobs = Jobs النظام
+nomad-drain-systemJobsKept = تُركت قيد التشغيل
+nomad-drain-systemJobsMoved = أُوقفت مع البقية

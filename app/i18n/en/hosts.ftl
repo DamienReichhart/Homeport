@@ -1,0 +1,193 @@
+### The `hosts` namespace, in English (en).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/en/hosts.ts:
+### change the text there, then run it again.
+
+hosts-title = Hosts
+hosts-description = The Docker Engines Homeport connects to.
+hosts-add = Add host
+hosts-empty = No hosts yet.
+hosts-column-name = Name
+hosts-column-type = Type
+hosts-column-address = Address
+hosts-column-status = Status
+hosts-statusTitle = { $label }: { $detail }
+hosts-saved = Host saved
+hosts-notFound = This host no longer exists.
+hosts-addPage-description = Connect Homeport to a Docker Engine.
+hosts-switcher-label = Host
+hosts-switcher-placeholder = No host
+hosts-switcher-add = Add host…
+hosts-switcher-manage = Manage hosts
+hosts-switcher-hosts = Hosts
+hosts-switcher-clusters = Clusters
+hosts-switcher-addCluster = Add cluster…
+hosts-switcher-manageClusters = Manage clusters
+hosts-switcher-whyUnusable = Why { $name } can’t be used
+hosts-detail-enabled = Enabled
+hosts-detail-reconnect = Reconnect
+hosts-connection-title = Connection
+hosts-remove-title = Remove host
+hosts-remove-description = Homeport forgets this host, its credentials and its Managed Stack definitions. Nothing running on the host is touched.
+hosts-remove-confirmTitle = Remove { $name }?
+hosts-remove-confirmDescription = Deletes the stored connection, SSH key or certificates, and the compose definitions of its Managed Stacks. Containers, images and volumes on the host stay as they are.
+hosts-sshSetup-title = Authorize Homeport on the server
+hosts-sshSetup-description = Run these on <mono>{ $server }</mono> as the SSH user, then reconnect.
+hosts-sshSetup-descriptionBastions = Homeport logs in to each of these with the same key. Add it on every one, as its SSH user, then reconnect.
+hosts-sshSetup-servers = Add it on:
+hosts-sshSetup-addKey = 1. Add the public key
+hosts-sshSetup-dockerGroup = 2. Let the user reach the Engine’s socket (if needed)
+hosts-sshSetup-fingerprint = Key fingerprint <mono>{ $fingerprint }</mono>
+hosts-regenerate-button = Regenerate key
+hosts-regenerate-title = Regenerate the SSH key?
+hosts-regenerate-description = The current key stops working. You will need to add the new public key to the server.
+hosts-regenerate-confirm = Regenerate
+hosts-trust-untrusted-title = Is this the right server?
+hosts-trust-untrusted-description = First connection. The server identifies itself with key fingerprint <mono>{ $fingerprint }</mono>. Compare it with <mono>{ $command }</mono> on the server.
+hosts-trust-untrusted-button = Trust this key
+hosts-trust-untrusted-bastionTitle = Is this the right bastion?
+hosts-trust-untrusted-bastionDescription = First connection to bastion <mono>{ $bastion }</mono>. It identifies itself with key fingerprint <mono>{ $fingerprint }</mono>. Compare it with <mono>{ $command }</mono> on the bastion.
+hosts-trust-mismatch-bastionTitle = Bastion { $bastion }'s key changed
+hosts-trust-mismatch-title = The server's key changed
+hosts-trust-mismatch-description = Expected <mono>{ $expected }</mono> but the server presented <mono>{ $fingerprint }</mono>. This happens after reinstalling the server, but can also mean someone is intercepting the connection.
+hosts-trust-mismatch-button = Trust the new key
+hosts-trust-mismatch-confirmTitle = Trust the new server key?
+hosts-trust-mismatch-confirmDescription = Only do this if you know why the key changed. New fingerprint: { $fingerprint }.
+hosts-trust-mismatch-confirm = Trust new key
+hosts-kind-ssh = SSH
+hosts-kind-tls = TLS
+hosts-kind-tcp = TCP
+hosts-kind-local = Local socket
+hosts-form-keepHint = Leave blank to keep the stored value.
+hosts-form-name = Name
+hosts-form-engine = Engine
+hosts-form-engineHint = Docker-compatible covers Docker and Podman; Homeport tells them apart when it connects. containerd is reached through its socket, here or over SSH; Incus also over HTTPS (TLS).
+hosts-form-socketOnly = { $engine } only answers on its socket: connect locally or over SSH.
+hosts-form-noPlainTcp = { $engine } doesn’t answer over plain TCP: use TLS, SSH or its socket.
+hosts-form-socketPath = Socket path
+hosts-form-socketPathHint = A Unix socket, or a named pipe like { $pipe } on Windows.
+hosts-form-address = Address
+hosts-form-addressHint = host:port, for example { $example }.
+hosts-form-tcpWarning-title = Unencrypted and unauthenticated
+hosts-form-tcpWarning-description = Anyone who can reach this port controls the Engine. Prefer SSH or TLS outside a trusted network.
+hosts-form-loadFromFile = Load from file…
+hosts-incus-trust = Trust
+hosts-incus-trust-token = Trust token
+hosts-incus-trust-certificate = Existing certificate
+hosts-incus-token = Trust token
+hosts-incus-tokenHint = Run this on the Incus server and paste what it prints. Homeport makes its own certificate, checks the server’s against the token, and registers itself.
+hosts-incus-tokenReads = For { $name }, at { $addresses }
+hosts-incus-tokenFingerprint = Server certificate { $fingerprint }
+hosts-incus-tokenExpires = Expires { $time }
+hosts-incus-serverCert = Server certificate to trust
+hosts-incus-serverCert-choose = Choose the server certificate
+hosts-incus-serverCertHint = Incus’s own certificate (/var/lib/incus/server.crt). Homeport accepts exactly this one, whatever the address.
+hosts-incus-clientCert = Client certificate
+hosts-incus-clientCertHint = Already trusted by Incus: incus config trust add-certificate.
+hosts-incus-clientKey = Client key
+hosts-keychain-title = No OS keychain
+hosts-keychain-description = Keys and certificates are encrypted with a key kept in the OS keychain, and none is available. Use ssh-agent, a local socket or TCP instead.
+hosts-ssh-server = Server
+hosts-ssh-port = Port
+hosts-ssh-user = User
+hosts-ssh-userHint = Needs access to the Docker socket, usually by being in the docker group.
+hosts-ssh-socketPath = Remote socket path
+hosts-ssh-socketPathHint = Rootless Docker uses { $path }.
+hosts-ssh-auth = Authentication
+hosts-ssh-auth-generated = New key for this host
+hosts-ssh-auth-imported = Existing key
+hosts-ssh-generated-editing = This host keeps its key. Regenerate it from the host page.
+hosts-ssh-generated-new = Homeport creates an Ed25519 key for this host and shows you the command that authorizes it on the server.
+hosts-ssh-privateKey = Private key
+hosts-ssh-privateKey-choose = Choose the private key
+hosts-ssh-privateKeyHint = Stored encrypted; it never leaves this machine.
+hosts-ssh-passphrase = Passphrase
+hosts-bastions-title = Bastions
+hosts-bastions-description = Servers Homeport logs in to first, in order, when this one only accepts SSH from them (ProxyJump).
+hosts-bastions-add = Add bastion
+hosts-bastions-one = Bastion { $n }
+hosts-bastions-server = Server of bastion { $n }
+hosts-bastions-port = Port of bastion { $n }
+hosts-bastions-user = User of bastion { $n }
+hosts-bastions-moveUp = Move bastion { $n } up
+hosts-bastions-moveDown = Move bastion { $n } down
+hosts-bastions-remove = Remove bastion { $n }
+hosts-bastions-auth-sameAsHost = Same as the host
+hosts-bastions-auth-imported = Its own key
+hosts-bastions-auth-agent = ssh-agent
+hosts-import-title = Import
+hosts-import-description = Add the servers your SSH config describes, or the Engines of your Docker contexts.
+hosts-import-sshConfig-button = Import from ~/.ssh/config
+hosts-import-sshConfig-title = Import from ~/.ssh/config
+hosts-import-sshConfig-description = Every server your SSH config names, with its user, port, key and ProxyJump bastions. Keys are read once and stored encrypted; the file isn’t changed.
+hosts-import-sshConfig-empty = Your SSH config names no server without wildcards.
+hosts-import-dockerContexts-button = Import Docker contexts
+hosts-import-dockerContexts-title = Import Docker contexts
+hosts-import-dockerContexts-description = The Docker CLI’s contexts, with their TLS certificates. Certificates are read once and stored encrypted; ~/.docker isn’t changed.
+hosts-import-dockerContexts-empty = The Docker CLI has no context besides default.
+hosts-import-column-name = Host name
+hosts-import-column-address = Address and socket
+hosts-import-column-auth = Signs in with
+hosts-import-column-notes = Notes
+hosts-import-pick = Import { $name }
+hosts-import-name = Host name for { $name }
+hosts-import-passphrase = Passphrase for the key of { $name }
+hosts-import-socket = Remote socket path of { $name }
+hosts-import-via = through { $bastions }
+hosts-import-nameTaken = A host has this name already; rename it to import it.
+hosts-import-auth-key = its key
+hosts-import-auth-agent = ssh-agent
+hosts-import-auth-certificates = TLS certificates
+hosts-import-auth-none = nothing
+hosts-import-problem-nameEmpty = Give it a name.
+hosts-import-problem-nameTwice = Two hosts would get this name.
+hosts-import-problem-nameTaken = Pick another name.
+hosts-import-problem-passphrase = Enter the key’s passphrase.
+hosts-import-problem-socket = The socket path must be absolute.
+hosts-import-submit = { $count ->
+        [0] Import
+        [one] Import { NUM($count) } host
+       *[other] Import { NUM($count) } hosts
+    }
+hosts-import-failed = { $name } wasn’t imported:
+hosts-import-done = { $count ->
+        [one] Imported { NUM($count) } host
+       *[other] Imported { NUM($count) } hosts
+    }
+hosts-bundle-fileType = Homeport export
+hosts-bundle-passphrase = Passphrase
+hosts-bundle-passphraseHint = At least { $min } characters. Homeport doesn’t keep it: without it, the file can’t be opened.
+hosts-bundle-confirmation = Passphrase again
+hosts-bundle-problem-short = Use at least { $min } characters.
+hosts-bundle-problem-mismatch = The two passphrases differ.
+hosts-bundle-export-button = Export
+hosts-bundle-export-title = Export hosts
+hosts-bundle-export-description = Writes the hosts you pick, with their keys, certificates and trusted server keys, to one file encrypted with a passphrase. Import it on another computer to use them there.
+hosts-bundle-export-hosts = Hosts to export
+hosts-bundle-export-saveTitle = Save the export
+hosts-bundle-export-submit = { $count ->
+        [0] Export
+        [one] Export { NUM($count) } host…
+       *[other] Export { NUM($count) } hosts…
+    }
+hosts-bundle-export-done = { $count ->
+        [one] Exported { NUM($count) } host
+       *[other] Exported { NUM($count) } hosts
+    }
+hosts-bundle-export-withoutSecrets = These were exported without their credentials, which can’t be opened on this computer:
+hosts-bundle-import-button = Import
+hosts-bundle-import-title = Import hosts from an export
+hosts-bundle-import-description = Open a file exported from Homeport with its passphrase, then pick the hosts to add. Their credentials are stored encrypted on this computer.
+hosts-bundle-import-choose = Choose file…
+hosts-bundle-import-chooseTitle = Choose a Homeport export
+hosts-bundle-import-open = Open
+hosts-bundle-import-renamed = A host is named { $name } already, so this one is renamed.
+hosts-bundle-import-secretsMissing = Exported without its credentials; enter them on its page after importing.
+hosts-tls-ca = CA certificate
+hosts-tls-ca-choose = Choose the CA certificate
+hosts-tls-cert = Client certificate
+hosts-tls-cert-choose = Choose the client certificate
+hosts-tls-key = Client key
+hosts-tls-key-choose = Choose the client key
+hosts-palette-add = Add host
+hosts-palette-manage = Manage hosts

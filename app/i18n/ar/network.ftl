@@ -1,0 +1,65 @@
+### The `network` namespace, in العربية (ar).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/ar/network.ts:
+### change the text there, then run it again.
+
+network-nav = الشبكة
+network-title = الشبكة
+network-services = Services
+network-ingresses = Ingresses
+network-service = Service
+network-ingress = Ingress
+network-servicesSummary = { $count ->
+        [zero] لا Services
+        [one] Service واحد
+        [two] { NUM($count) } Services
+        [few] { NUM($count) } Services
+        [many] { NUM($count) } Service
+       *[other] { NUM($count) } Service
+    }
+network-ingressesSummary = { $count ->
+        [zero] لا Ingresses
+        [one] Ingress واحد
+        [two] { NUM($count) } Ingresses
+        [few] { NUM($count) } Ingresses
+        [many] { NUM($count) } Ingress
+       *[other] { NUM($count) } Ingress
+    }
+network-searchServices = البحث في Services
+network-searchIngresses = البحث في Ingresses
+network-column-name = الاسم
+network-column-namespace = Namespace
+network-column-type = النوع
+network-column-clusterIp = عنوان IP للعنقود
+network-column-external = خارجي
+network-column-ports = المنافذ
+network-column-class = الفئة
+network-column-hosts = أسماء المضيفين
+network-column-addresses = العناوين
+network-column-age = العمر
+network-tab-overview = نظرة عامة
+network-tab-pods = Pods
+network-tab-rules = القواعد
+network-tab-events = الأحداث
+network-tab-source = YAML
+network-detail-namespace = Namespace
+network-detail-type = النوع
+network-detail-clusterIp = عنوان IP للعنقود
+network-detail-external = العناوين الخارجية
+network-detail-selector = يرسل إلى Pods التي تحمل
+network-detail-noSelector = لا يحدد أي Pods؛ تُدار نقاط نهايته يدويًا.
+network-detail-affinity = تقارب الجلسة
+network-detail-class = الفئة
+network-detail-addresses = العناوين
+network-detail-tls = TLS
+network-detail-age = العمر
+network-detail-labels = التسميات
+network-detail-annotations = التعليقات التوضيحية
+network-port-name = الاسم
+network-port-port = المنفذ
+network-port-target = المنفذ الهدف
+network-port-node = منفذ Node
+network-rule-host = اسم المضيف
+network-rule-path = المسار
+network-rule-type = المطابقة
+network-rule-backend = الواجهة الخلفية

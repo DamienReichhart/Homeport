@@ -1,0 +1,161 @@
+### The `helm` namespace, in Русский (ru).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/ru/helm.ts:
+### change the text there, then run it again.
+
+helm-nav = Helm
+helm-title = Релизы Helm
+helm-summary = { $count ->
+        [one] { NUM($count) } релиз
+        [few] { NUM($count) } релиза
+        [many] { NUM($count) } релизов
+       *[other] { NUM($count) } релиза
+    }
+helm-section-releases = Релизы
+helm-search = Поиск релизов
+helm-refresh = Обновить
+helm-empty = Здесь нет релизов Helm.
+helm-onlyNamespace = Ваши учётные данные не позволяют получить список релизов во всех пространствах имён, поэтому показаны только релизы в { $namespace }. Выберите другое пространство имён, чтобы увидеть его релизы.
+helm-missing-title = CLI helm недоступен
+helm-missing-description = Homeport управляет релизами Helm с помощью CLI helm на этом компьютере. Всё остальное для кластеров работает без него.
+helm-column-name = Имя
+helm-column-namespace = Пространство имён
+helm-column-chart = Чарт
+helm-column-appVersion = Версия приложения
+helm-column-revision = Ревизия
+helm-column-status = Состояние
+helm-column-updated = Обновлён
+helm-column-description = Описание
+helm-release = Релиз Helm
+helm-detail-chart = Чарт { $chart }
+helm-detail-namespace = Пространство имён { $namespace }
+helm-detail-revision = Ревизия { $revision }
+helm-tab-history = История
+helm-tab-values = Значения
+helm-tab-notes = Заметки
+helm-tab-manifest = Манифест
+helm-tab-resources = Ресурсы
+helm-revision-pick = Ревизия
+helm-revision-option = Ревизия { $revision } · { $chart } · { $status }
+helm-values-user = Заданные пользователем
+helm-values-computed = Итоговые, со значениями чарта по умолчанию
+helm-values-label = Значения в YAML
+helm-values-none = Значения не задавались; использованы значения чарта по умолчанию.
+helm-notes-label = Заметки
+helm-notes-none = У этого чарта нет заметок.
+helm-manifest-label = Манифест
+helm-manifest-none = Манифест этой ревизии пуст.
+helm-resource-kind = Kind
+helm-resource-name = Имя
+helm-resource-namespace = Пространство имён
+helm-resource-apiVersion = Версия API
+helm-resource-empty = Эта ревизия не создаёт объектов.
+helm-copy = Копировать
+helm-section-repositories = Репозитории чартов
+helm-run-done = Готово.
+helm-run-failed = helm завершился с кодом { $code }.
+helm-repos-description = Репозитории чартов, которые знает helm на этом компьютере, — общие с helm в терминале. Репозитории, требующие входа, добавляются там командой helm repo add --username и затем появляются здесь.
+helm-repos-name = Имя
+helm-repos-url = URL
+helm-repos-add = Добавить репозиторий
+helm-repos-addTitle = Добавить репозиторий чартов
+helm-repos-addDescription = helm сразу скачает его индекс. Здесь можно добавлять только публичные репозитории.
+helm-repos-added = Репозиторий чартов { $name } добавлен
+helm-repos-update = Обновить
+helm-repos-updateAll = Обновить все
+helm-repos-updatingAll = Обновление всех репозиториев чартов
+helm-repos-updating = Обновление { $name }
+helm-repos-remove = Удалить
+helm-repos-removeNamed = Удалить { $name }
+helm-repos-removeTitle = Удалить { $name }?
+helm-repos-removeDescription = helm забудет репозиторий { $url } на этом компьютере, в том числе в терминале. Установленные из него релизы продолжат работать; для их обновления он понадобится снова.
+helm-repos-removeFailed = helm не удалось удалить репозиторий
+helm-repos-empty = У helm пока нет репозиториев чартов. Добавьте репозиторий, например https://charts.bitnami.com/bitnami.
+helm-repos-problem-noName = Дайте репозиторию имя.
+helm-repos-problem-name = Используйте в имени буквы, цифры, точки, дефисы и подчёркивания.
+helm-repos-problem-noUrl = Укажите URL репозитория.
+helm-repos-problem-oci = Реестр OCI не добавляется как репозиторий: устанавливайте его чарт по ссылке oci://.
+helm-repos-problem-url = Используйте URL http:// или https://.
+helm-repos-problem-credentials = Репозитории, требующие входа, добавляются в терминале, где helm хранит пароль.
+helm-charts-title = Поиск чартов
+helm-charts-description = Ищите чарты этих репозиториев по имени или описанию.
+helm-charts-search = Поиск чартов, например postgres
+helm-charts-hint = Введите часть имени или описания чарта.
+helm-charts-name = Чарт
+helm-charts-version = Версия чарта
+helm-charts-pick = Выбрать
+helm-charts-none = Подходящих чартов нет. Обновите репозитории или добавьте тот, в котором он есть.
+helm-install-open = Установить чарт
+helm-install-title = Установить чарт в { $cluster }
+helm-install-titleChart = Установить { $chart } в { $cluster }
+helm-install-description = Выберите чарт из репозиториев helm или укажите ссылку на чарт в реестре OCI.
+helm-install-fromRepository = Из репозитория
+helm-install-fromOci = Из реестра OCI
+helm-install-ociReference = Ссылка OCI
+helm-install-ociHint = Чарт из публичного реестра OCI устанавливается без добавления репозитория. В реестры, требующие входа, входите командой helm registry login в терминале.
+helm-install-next = Далее
+helm-install-version = Версия чарта
+helm-install-versionLatest = Последняя
+helm-install-versionOption = { $version } (приложение { $app })
+helm-install-name = Имя релиза
+helm-install-namespace = Пространство имён
+helm-install-createNamespace = Создать пространство имён, если его нет
+helm-install-wait = Ждать, пока его ресурсы не будут готовы
+helm-install-timeout = не дольше
+helm-install-minutes = мин
+helm-install-values = Значения
+helm-install-valuesLabel = Значения для установки
+helm-install-resetDefaults = Сбросить к значениям чарта по умолчанию
+helm-install-changeChart = Сменить чарт
+helm-install-back = Назад
+helm-install-preview = Предпросмотр
+helm-install-previewing = Отрисовка…
+helm-install-install = Установить
+helm-install-running = Установка { $chart } как { $name } в { $cluster }
+helm-install-openRelease = Открыть релиз
+helm-install-problem-noName = Дайте релизу имя.
+helm-install-problem-nameLong = Имя релиза — не более 53 символов.
+helm-install-problem-name = Используйте в имени релиза строчные буквы, цифры, дефисы и точки; начинаться и заканчиваться оно должно буквой или цифрой.
+helm-install-problem-noNamespace = Укажите пространство имён.
+helm-install-problem-namespace = Используйте в имени пространства имён не более 63 строчных букв, цифр и дефисов; начинаться и заканчиваться оно должно буквой или цифрой.
+helm-install-problem-oci = Укажите ссылку, например oci://registry-1.docker.io/bitnamicharts/nginx.
+helm-preview-description = Что применил бы helm, отрисовано с помощью кластера. Пока ничего не изменено.
+helm-preview-manifest = Отрисованный манифест
+helm-upgrade-open = Обновить
+helm-upgrade-title = Обновить { $name } в { $cluster }
+helm-upgrade-current = Сейчас работает чарт { $chart }, приложение { $app }.
+helm-upgrade-chart = Чарт
+helm-upgrade-otherChart = Другой чарт…
+helm-upgrade-chartPlaceholder = repository/{ $chart } или oci://…/{ $chart }
+helm-upgrade-noCandidate = Ни в одном репозитории helm нет чарта с именем { $chart }. Добавьте его репозиторий в разделе «Репозитории чартов» или укажите ссылку OCI.
+helm-upgrade-editValues = Изменить значения
+helm-upgrade-valuesDiff = Изменения значений
+helm-upgrade-resetValues = Сбросить к текущим значениям
+helm-upgrade-valuesNote = Эти значения заменяют заданные пользователем значения релиза; остальное дополняют значения чарта по умолчанию.
+helm-upgrade-manifestDiff = Изменения манифеста
+helm-upgrade-upgrade = Обновить
+helm-upgrade-running = Обновление { $name } в { $cluster }
+helm-rollback-open = Откатить к ревизии { $revision }
+helm-rollback-title = Откатить { $name } к ревизии { $revision }?
+helm-rollback-description = helm вернёт чарт и значения ревизии { $revision } релиза { $name } в { $namespace } в { $cluster } в виде новой ревизии.
+helm-rollback-from = Сейчас (ревизия { $revision })
+helm-rollback-to = После (ревизия { $revision })
+helm-rollback-versions = Чарт { $chart }, приложение { $app }
+helm-rollback-confirm = Откатить к ревизии { $revision }
+helm-rollback-running = Откат { $name } к ревизии { $revision }
+helm-uninstall-open = Удалить
+helm-uninstall-title = Удалить { $name }?
+helm-uninstall-description = helm удалит релиз { $name } из пространства имён { $namespace } в { $cluster } вместе с созданными им объектами.
+helm-uninstall-resources = { $count ->
+        [one] Будет удалён { NUM($count) } объект:
+        [few] Будут удалены { NUM($count) } объекта:
+        [many] Будут удалены { NUM($count) } объектов:
+       *[other] Будут удалены { NUM($count) } объекта:
+    }
+helm-uninstall-resourcesLabel = Объекты, которые будут удалены
+helm-uninstall-kept = Объекты, которые чарт помечает для сохранения, и PersistentVolumeClaim, созданные StatefulSet, остаются в кластере.
+helm-uninstall-keepHistory = Сохранить его историю, чтобы можно было откатиться
+helm-uninstall-wait = Ждать, пока его объекты не будут удалены
+helm-uninstall-confirm = Удалить { $name }
+helm-uninstall-running = Удаление { $name } из { $cluster }
+helm-uninstall-backToReleases = Назад к релизам

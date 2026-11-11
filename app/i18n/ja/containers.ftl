@@ -1,0 +1,375 @@
+### The `containers` namespace, in 日本語 (ja).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/ja/containers.ts:
+### change the text there, then run it again.
+
+containers-nav = コンテナ
+containers-title = コンテナ
+containers-summary = { $count } 個中 { $running } 個が実行中
+containers-runContainer = コンテナを実行
+containers-search = コンテナを検索
+containers-onlyRunning = 実行中のみ
+containers-empty-title = コンテナはありません
+containers-empty-description = イメージからコンテナを実行するか、スタックをデプロイしてください。
+containers-noMatch = 一致するコンテナはありません。
+containers-column-name = 名前
+containers-column-image = イメージ
+containers-column-status = ステータス
+containers-column-ports = ポート
+containers-column-cpu = CPU
+containers-column-memory = メモリ
+containers-column-created = 作成日時
+containers-selectOne = { $name } を選択
+containers-selectStack = スタック { $stack } を選択
+containers-stack-running = { $running }/{ $count } 実行中
+containers-stack-swarm = Swarm
+containers-stack-open = スタックを開く
+containers-inPod = Podman Pod { $pod } 内
+containers-fromUnit = Quadlet ユニット { $unit } が作成
+containers-selected = { $count } 個を選択中
+containers-action-start = 起動
+containers-action-stop = 停止
+containers-action-restart = 再起動
+containers-action-pause = 一時停止
+containers-action-resume = 再開
+containers-action-kill = 強制終了
+containers-action-rename = 名前を変更
+containers-action-edit = 編集
+containers-action-duplicate = 複製
+containers-action-logs = ログ
+containers-action-terminal = ターミナルを開く
+containers-action-commit = イメージにコミット…
+containers-action-export = ファイルシステムをエクスポート…
+containers-kill-title = { $name } を強制終了しますか？
+containers-kill-description = メインプロセスにすぐに SIGKILL が送られ、正常に終了する機会はありません。
+containers-done-start = { $count ->
+        [one] コンテナを起動しました
+       *[other] { NUM($count) } 個のコンテナを起動しました
+    }
+containers-done-stop = { $count ->
+        [one] コンテナを停止しました
+       *[other] { NUM($count) } 個のコンテナを停止しました
+    }
+containers-done-restart = { $count ->
+        [one] コンテナを再起動しました
+       *[other] { NUM($count) } 個のコンテナを再起動しました
+    }
+containers-done-pause = { $count ->
+        [one] コンテナを一時停止しました
+       *[other] { NUM($count) } 個のコンテナを一時停止しました
+    }
+containers-done-unpause = { $count ->
+        [one] コンテナを再開しました
+       *[other] { NUM($count) } 個のコンテナを再開しました
+    }
+containers-done-kill = { $count ->
+        [one] コンテナを強制終了しました
+       *[other] { NUM($count) } 個のコンテナを強制終了しました
+    }
+containers-done-remove = { $count ->
+        [one] コンテナを削除しました
+       *[other] { NUM($count) } 個のコンテナを削除しました
+    }
+containers-remove-title = { $name } を削除しますか？
+containers-remove-titleMany = { $count ->
+       *[other] { NUM($count) } 個のコンテナ
+    }を削除しますか？
+containers-remove-deleted = { $count ->
+       *[other] コンテナと、その書き込み可能レイヤーおよび匿名ボリュームが削除されます。
+    }
+containers-remove-running = 実行中の { $count } 個は先に停止されます。
+containers-remove-namedKept = 名前付きボリュームは残ります。
+containers-detail-gone = このコンテナはもう存在しません。
+containers-detail-backToList = コンテナに戻る
+containers-tab-logs = ログ
+containers-tab-inspect = 検査
+containers-tab-health = ヘルス
+containers-tab-exec = Exec
+containers-tab-files = ファイル
+containers-tab-stats = 統計
+containers-tab-processes = プロセス
+containers-notRunning = コンテナは実行されていません。
+containers-logs-tail-100 = 最後の 100 行
+containers-logs-tail-1000 = 最後の 1,000 行
+containers-logs-tail-10000 = 最後の 10,000 行
+containers-logs-tail-all = すべて
+containers-logs-since-all = 全期間
+containers-logs-since-300 = 過去 5 分
+containers-logs-since-3600 = 過去 1 時間
+containers-logs-since-86400 = 過去 24 時間
+containers-logs-history = 履歴
+containers-logs-sinceLabel = 期間
+containers-logs-timestamps = タイムスタンプ
+containers-logs-follow = 追従
+containers-logs-find = ログ内を検索
+containers-logs-previous = 前の一致
+containers-logs-next = 次の一致
+containers-logs-clear = クリア
+containers-logs-download = ログをダウンロード
+containers-logs-saveTitle = ログを保存
+containers-logs-saved = ログを保存しました
+containers-logs-end = — ログの終わり —
+containers-inspect-raw = 生の JSON
+containers-inspect-container = コンテナ
+containers-inspect-health = ヘルス
+containers-inspect-environment = 環境変数
+containers-inspect-mounts = マウント
+containers-inspect-ports = ポート
+containers-inspect-networks = ネットワーク
+containers-inspect-labels = ラベル
+containers-inspect-id = ID
+containers-inspect-image = イメージ
+containers-inspect-created = 作成日時
+containers-inspect-state = 状態
+containers-inspect-started = 開始日時
+containers-inspect-entrypoint = エントリーポイント
+containers-inspect-command = コマンド
+containers-inspect-workingDir = 作業ディレクトリ
+containers-inspect-user = ユーザー
+containers-inspect-restartPolicy = 再起動ポリシー
+containers-inspect-networkMode = ネットワークモード
+containers-inspect-exited = { $status }（終了コード { $code }）
+containers-inspect-outOfMemory = { $state }、メモリ不足
+containers-inspect-restarted = { $policy } · 再起動 { $count } 回
+containers-inspect-restartedMax = { $policy }（最大 { $max }）· 再起動 { $count } 回
+containers-inspect-imageDefault = イメージのデフォルト
+containers-inspect-notPublished = 非公開
+containers-inspect-readWrite = 読み書き
+containers-inspect-readOnly = 読み取り専用
+containers-inspect-failingStreak = { $count } 回連続で失敗
+containers-inspect-noHealthcheck = イメージはヘルスチェックを定義していません。
+containers-inspect-column-started = 開始
+containers-inspect-column-exit = 終了コード
+containers-inspect-column-output = 出力
+containers-inspect-column-variable = 変数
+containers-inspect-column-value = 値
+containers-inspect-column-type = タイプ
+containers-inspect-column-source = ソース
+containers-inspect-column-destination = マウント先
+containers-inspect-column-mode = モード
+containers-inspect-column-container = コンテナ
+containers-inspect-column-publishedOn = 公開先
+containers-inspect-column-network = ネットワーク
+containers-inspect-column-ip = IP
+containers-inspect-column-gateway = ゲートウェイ
+containers-inspect-column-aliases = エイリアス
+containers-inspect-column-label = ラベル
+containers-health-none = このコンテナにはヘルスチェックがありません。
+containers-health-title = ヘルスチェック
+containers-health-command = コマンド
+containers-health-timingLabel = タイミング
+containers-health-timing = 間隔 { $interval }、タイムアウト { $timeout }、リトライ { $retries ->
+       *[other] { NUM($retries) } 回
+    }、開始猶予期間 { $start }
+containers-health-failingStreak = 連続失敗
+containers-health-lastResults = 最近の結果
+containers-health-noRuns = まだチェックは実行されていません。
+containers-health-noOutput = 出力はありません。
+containers-health-showLess = 折りたたむ
+containers-health-showMore = さらに { $count ->
+       *[other] { NUM($count) } 行
+    }を表示
+containers-health-exit = 終了コード { $code }
+containers-health-took = · 所要時間 { $duration }
+containers-exec-startFirst = ターミナルを開くには、コンテナを起動してください。
+containers-exec-shell = シェル
+containers-exec-shellNumber = シェル { $number }
+containers-exec-closeOne = { $title } を閉じる
+containers-exec-new = 新しいターミナル
+containers-exec-command = コマンド
+containers-exec-commandPlaceholder = bash、なければ sh
+containers-exec-user = ユーザー
+containers-exec-directory = ディレクトリ
+containers-exec-default = デフォルト
+containers-exec-open = 開く
+containers-exec-none = 開いているターミナルはありません。
+containers-exec-exited = [プロセスが終了しました]
+containers-exec-exitedWithCode = [プロセスがコード { $code } で終了しました]
+containers-files-startFirst = ファイルを参照するには、コンテナを起動してください。
+containers-files-saveOne = { $name } を保存
+containers-files-uploadTo = { $path } にアップロード
+containers-files-uploadHere = ここにアップロード
+containers-files-saved = { $name } を保存しました
+containers-files-savedArchive = { $name } を .tar アーカイブとして保存しました
+containers-files-uploaded = { $count ->
+       *[other] { NUM($count) } 個のファイル
+    }を { $path } にアップロードしました
+containers-stats-startFirst = リソース使用量を見るには、コンテナを起動してください。
+containers-stats-cpu = CPU
+containers-stats-memory = メモリ
+containers-stats-memoryNow = · { $limit } 中 { $used }
+containers-stats-used = 使用量
+containers-stats-network = ネットワーク
+containers-stats-networkNow = · 受信 { $received }、送信 { $sent }
+containers-stats-received = 受信
+containers-stats-sent = 送信
+containers-stats-disk = ディスク I/O
+containers-stats-processes = · { $count ->
+       *[other] { NUM($count) } 個のプロセス
+    }
+containers-stats-read = 読み取り
+containers-stats-written = 書き込み
+containers-run-title = コンテナを実行
+containers-run-description = このホストにイメージがない場合は、先にプルされます。
+containers-run-submit = 実行
+containers-run-starting = 起動中…
+containers-run-started = コンテナを起動しました
+containers-run-image = イメージ
+containers-run-name = 名前
+containers-run-namePlaceholder = 空欄の場合は自動生成
+containers-run-nameKept = 変更されません。変更するには「名前を変更」を使ってください。
+containers-run-command = コマンド
+containers-run-commandPlaceholder = イメージのデフォルト
+containers-run-environment = 環境変数
+containers-run-network = ネットワーク
+containers-run-pod = Pod
+containers-run-noPod = なし
+containers-run-podOwnsNetwork = { $pod } 内のコンテナはそのネットワークを共有します。ポート、ネットワーク、ホスト名、DNS は Pod のものが使われます。
+containers-run-defaultNetwork = デフォルト（bridge）
+containers-run-restart = 再起動
+containers-run-restartPolicy = 再起動ポリシー
+containers-run-restart-no = しない
+containers-run-restart-onFailure = 失敗時
+containers-run-restart-unlessStopped = 停止されていない限り
+containers-run-restart-always = 常に
+containers-run-autoRemove = 終了時にコンテナを削除
+containers-run-ports = ポート
+containers-run-hostPort = ホストポート
+containers-run-hostPortPlaceholder = ホストポート（任意）
+containers-run-containerPort = コンテナポート
+containers-run-protocol = プロトコル
+containers-run-removePort = ポートを削除
+containers-run-addPort = ポートを追加
+containers-run-volumes = ボリューム
+containers-run-source = ソース
+containers-run-sourcePlaceholder = ボリューム名または /host/path
+containers-run-containerPath = コンテナ内のパス
+containers-run-readOnly = 読み取り専用
+containers-run-removeVolume = ボリュームを削除
+containers-run-addVolume = ボリュームを追加
+containers-run-removeValue = { $value } を削除
+containers-run-error-size = 512m や 2g のようにサイズを書いてください。
+containers-run-error-cpus = 0.5 や 2 のように CPU の数を書いてください。
+containers-run-error-cpuShares = 512 のように整数を書いてください。
+containers-run-error-memorySwap = 1g のようにサイズを書くか、スワップを無制限にする場合は -1 を書いてください。
+containers-run-error-gpuCount = 1 のように GPU の数を書いてください。
+containers-run-error-duration = 30s や 1m30s のように期間を書いてください。
+containers-run-error-retries = 3 のように整数を書いてください。
+containers-advanced-title = 詳細オプション
+containers-advanced-hasErrors = エラーがあります
+containers-advanced-resources = リソース
+containers-advanced-labels = ラベル
+containers-advanced-security = セキュリティ
+containers-advanced-devices = デバイス
+containers-advanced-healthcheck = ヘルスチェック
+containers-advanced-network = ネットワーク ID
+containers-advanced-logging = ログ
+containers-advanced-cpus = CPU の上限
+containers-advanced-cpusHint = CPU の数。0.5 や 2 など。
+containers-advanced-cpusPlaceholder = すべての CPU
+containers-advanced-cpuShares = CPU シェア
+containers-advanced-cpuSharesHint = ほかのコンテナに対する重み。デフォルトは 1024 です。
+containers-advanced-memory = メモリの上限
+containers-advanced-memoryHint = 512m や 2g など。
+containers-advanced-memoryPlaceholder = 上限なし
+containers-advanced-memoryReservation = メモリの予約
+containers-advanced-memoryReservationHint = ソフトリミットで、ホストのメモリが不足したときに守られます。
+containers-advanced-memorySwap = メモリとスワップの上限
+containers-advanced-memorySwapHint = メモリとスワップの合計。-1 でスワップ無制限。
+containers-advanced-memorySwapPlaceholder = メモリ上限の 2 倍
+containers-advanced-none = なし
+containers-advanced-labelsHint = リバースプロキシやバックアップツールが読み取る形式で、1 行に 1 つ key=value を書きます。
+containers-advanced-capAdd = ケーパビリティを追加
+containers-advanced-capAddHint = VPN 用の NET_ADMIN など。
+containers-advanced-capDrop = ケーパビリティを削除
+containers-advanced-capDropHint = ALL ですべて削除します。
+containers-advanced-privileged = 特権
+containers-advanced-privilegedTitle = コンテナはホストへの完全なアクセス権を得ます
+containers-advanced-privilegedWarning = すべてのデバイスとケーパビリティを使えるようになり、その中で動作するものがホストを乗っ取る可能性があります。必要なケーパビリティとデバイスだけを追加することをおすすめします。
+containers-advanced-hostDevice = ホストのデバイス
+containers-advanced-containerDevice = コンテナのデバイス
+containers-advanced-samePath = 同じパス
+containers-advanced-permissions = 権限
+containers-advanced-removeDevice = デバイスを削除
+containers-advanced-addDevice = デバイスを追加
+containers-advanced-gpus = GPU
+containers-advanced-gpusHint = ホストに GPU ベンダーのコンテナツールキットがインストールされている必要があります。
+containers-advanced-gpus-all = すべての GPU
+containers-advanced-gpus-count = 指定した数の GPU
+containers-advanced-gpus-ids = 選択した GPU
+containers-advanced-gpuCount = 数
+containers-advanced-gpuIds = GPU のインデックスまたは UUID
+containers-advanced-gpuIdsHint = カンマ区切り。
+containers-advanced-health-image = イメージ独自のもの（ある場合）
+containers-advanced-health-custom = コマンド
+containers-advanced-health-disabled = なし（イメージのものを無効にする）
+containers-advanced-healthCommand = チェックコマンド
+containers-advanced-healthCommandHint = /bin/sh -c で実行されます。終了コード 0 が正常を意味します。
+containers-advanced-interval = 間隔
+containers-advanced-timeout = タイムアウト
+containers-advanced-retries = リトライ
+containers-advanced-startPeriod = 開始猶予期間
+containers-advanced-hostname = ホスト名
+containers-advanced-hostnamePlaceholder = コンテナ ID
+containers-advanced-domainname = ドメイン名
+containers-advanced-dns = DNS サーバー
+containers-advanced-dnsHint = 1 行に 1 つのアドレス。
+containers-advanced-dnsSearch = DNS 検索ドメイン
+containers-advanced-dnsSearchHint = 1 行に 1 つ。
+containers-advanced-extraHosts = 追加のホスト
+containers-advanced-extraHostsHint = 1 行に 1 つ name:address を書きます。host-gateway はホストのアドレスを表します。
+containers-advanced-logDriver = ログドライバー
+containers-advanced-logDriverHint = none にすると、「ログ」タブは空のままになります。
+containers-advanced-logDriverPlaceholder = エンジンのデフォルト
+containers-advanced-logOptions = ドライバーのオプション
+containers-advanced-logOptionsHint = 1 行に 1 つ key=value を書きます。max-size と max-file で json-file ログをローテーションします。
+containers-rename-title = { $name } の名前を変更
+containers-rename-newName = 新しい名前
+containers-duplicate-title = { $name } を複製
+containers-duplicate-sharedPorts = { $name } はすでにホストポート { $ports } を公開しています（{ $count ->
+       *[other] { NUM($count) } 個
+    }）。
+containers-duplicate-sharedPortsFix = { $count ->
+       *[other] 両方が使っている間はコピーを起動できません
+    }。ホストポートを変更するか、空欄にしてエンジンに選ばせてください。
+containers-edit-title = { $name } を編集
+containers-edit-description = 適用すると、名前、ネットワーク、名前付きボリュームを保ったまま、これらの設定でコンテナが再作成されます。
+containers-edit-apply = 適用
+containers-edit-recreating = 再作成中…
+containers-edit-recreated = コンテナを再作成しました
+containers-edit-confirmTitle = { $name } を再作成しますか？
+containers-edit-nothingLost = ほかに失われるものはありません。名前、ネットワーク、名前付きボリュームは保たれます。
+containers-edit-keptBut = 名前、ネットワーク、名前付きボリュームは保たれますが、次のものは失われます:
+containers-edit-commitFirst = 先にイメージにコミット…
+containers-edit-recreate = 再作成
+containers-loss-anonymousVolume = { $path } の匿名ボリューム: 新しいコンテナは空のボリュームで起動します。古いボリュームは未使用のボリュームとして残ります。
+containers-loss-filesystemChanges = 作成後にコンテナ内で { $count ->
+       *[other] { NUM($count) } 個のファイル
+    }が変更されています。残すには、先にイメージにコミットしてください。
+containers-loss-downtime = 入れ替えの間、通常は数秒間停止します。
+containers-loss-stackRedeploy = これはスタック { $stack } に属しています。スタックの次回のデプロイでは、この編集を含まない compose ファイルから再作成されます。
+containers-commit-title = { $name } をイメージにコミット
+containers-commit-description = 新しいイメージには、コンテナ内での変更を含む現在のファイルと、その設定が含まれます。ボリュームは含まれません。
+containers-commit-imageName = イメージ名
+containers-commit-imageNameHint = repo:tag の形式。
+containers-commit-nameTaken = { $name } という名前のイメージはすでにあります。名前は新しいイメージに移り、古いイメージはほかの名前を保つか、タグなしになります。
+containers-commit-message = メッセージ
+containers-commit-messagePlaceholder = アップグレード前
+containers-commit-author = 作成者
+containers-commit-changes = 変更
+containers-commit-changesHint = Dockerfile の命令を 1 行に 1 つ: CMD、ENTRYPOINT、ENV、EXPOSE、LABEL、ONBUILD、USER、VOLUME、WORKDIR。
+containers-commit-pause = コミット中はコンテナを一時停止
+containers-commit-pauseOn = コミットにかかる数秒間プロセスがフリーズされるため、書き込み中のファイルの整合性が保たれます。
+containers-commit-pauseOff = 実行し続けるため、書き込み中のファイルが途中の状態で取り込まれる可能性があります。
+containers-commit-submit = コミット
+containers-commit-committing = コミット中…
+containers-commit-done = { $reference } にコミットしました
+containers-commit-openImages = イメージを開く
+containers-export-tarArchive = tar アーカイブ
+containers-export-pick = { $name } のファイルシステムをエクスポート
+containers-export-title = { $name } をエクスポート中
+containers-export-to = 保存先: { $path }
+containers-export-written = 書き込み済み
+containers-export-finished = 完了しました。「イメージ」ページまたは docker import でインポートしてください。
+containers-export-done = { $destination } にエクスポートしました
+containers-palette-run = コンテナを実行

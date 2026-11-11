@@ -1,0 +1,139 @@
+### The `settings` namespace, in Deutsch (de).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/de/settings.ts:
+### change the text there, then run it again.
+
+settings-nav = Einstellungen
+settings-title = Einstellungen
+settings-appearance-title = Darstellung
+settings-appearance-theme = Design
+settings-theme-system = Wie das System
+settings-theme-light = Hell
+settings-theme-dark = Dunkel
+settings-appearance-language = Sprache
+settings-language-system = Wie das System ({ $language })
+settings-desktop-title = Desktop
+settings-desktop-description = Wie Homeport auf diesem Computer läuft.
+settings-desktop-closeToTray = In den Infobereich schließen
+settings-desktop-closeToTrayHint = Beim Schließen des Fensters laufen Homeport und seine Host-Verbindungen im Infobereich weiter. Beenden Sie es über das Symbol im Infobereich. Auf Desktops, die Infobereich-Symbole ausblenden, etwa GNOME ohne Erweiterung, wird das Symbol möglicherweise nicht angezeigt.
+settings-desktop-noTray = Dieser Desktop hat keinen Infobereich, den Homeport nutzen kann, daher beendet das Schließen des Fensters die App.
+settings-desktop-startAtLogin = Bei der Anmeldung starten
+settings-desktop-startAtLoginHint = Homeport startet, wenn Sie sich an diesem Computer anmelden, und überwacht Ihre Hosts so von Anfang an.
+settings-desktop-startHidden = Verborgen im Infobereich starten
+settings-desktop-startHiddenHint = Wenn Homeport bei der Anmeldung startet, bleibt es im Infobereich, ohne sein Fenster zu öffnen.
+settings-desktop-startHiddenNoTray = Erfordert einen Infobereich, aus dem das Fenster geöffnet werden kann, und den hat dieser Desktop nicht.
+settings-notifications-title = Benachrichtigungen
+settings-notifications-description = Homeport benachrichtigt Sie, auch wenn sein Fenster in den Infobereich geschlossen ist, wenn:
+settings-notifications-containerDied = Ein Container mit einem Fehler stoppt oder keinen Speicher mehr hat
+settings-notifications-containerUnhealthy = Ein Container fehlerhaft wird
+settings-notifications-hostUnreachable = Ein verbundener Host nicht mehr erreichbar ist
+settings-notifications-hostBack = Ein nicht erreichbarer Host wieder da ist
+settings-machine-title = Dieser Rechner
+settings-machine-description = Was Homeport hier nutzen kann.
+settings-machine-keychain = Schlüsselbund des Betriebssystems
+settings-machine-keychainAvailable = Verfügbar — SSH-Schlüssel, Zertifikate, Stack-Umgebungen und Registry-Anmeldungen werden verschlüsselt gespeichert.
+settings-machine-keychainUnavailable = Nicht verfügbar — SSH-Schlüssel, TLS-Zertifikate, Stack-Umgebungen und Registry-Anmeldungen können nicht gespeichert werden.
+settings-machine-keychainEntryMissing = Eintrag fehlt — der Schlüsselbund hat keinen Eintrag für den Schlüssel, mit dem Homeports Geheimnisse versiegelt wurden. Sie können daher weder geöffnet noch gespeichert werden.
+settings-machine-startOverDescription = Nutzt Homeport einen anderen Schlüsselbund als zuvor, wechseln Sie zu diesem zurück und starten Sie Homeport neu. Ist der Eintrag endgültig weg, beginnen Sie mit einem neuen Schlüssel neu.
+settings-machine-startOver = Mit neuem Schlüssel neu beginnen
+settings-machine-startOverTitle = Mit neuem Schlüssel neu beginnen?
+settings-machine-startOverConfirmDescription = Ein neuer Schlüssel kann nicht öffnen, was mit dem fehlenden versiegelt wurde: Sie geben die Zugangsdaten jedes Hosts, Clusters, jeder Registry und jedes Repositorys sowie die Umgebung jedes Stacks erneut ein oder stellen eine Sicherung wieder her.
+settings-machine-compose = Compose-CLI
+settings-machine-composeMissing = Stacks können gestartet und gestoppt, aber nicht bereitgestellt werden.
+settings-machine-stackDeploy = Docker-CLI, für Swarms
+settings-machine-stackDeployMissing = Stacks können nicht in einem Swarm bereitgestellt werden; alles andere an Swarms funktioniert.
+settings-machine-git = git
+settings-machine-helm = Helm-CLI
+settings-sync-title = Synchronisierte Stacks
+settings-sync-interval = Repositorys prüfen alle
+settings-sync-minutes = Minuten
+settings-data-title = Daten
+settings-data-description = Was Homeport auf diesem Computer aufbewahrt.
+settings-data-backup = Sichern…
+settings-data-restore = Wiederherstellen…
+settings-data-backupHint = Speichern Sie alle Hosts, Stacks, Registry-Anmeldungen, Repositorys und Einstellungen samt ihren Geheimnissen in einer passphrasengeschützten Datei und stellen Sie sie auf diesem oder einem anderen Computer wieder her.
+settings-backup-title = Daten von Homeport sichern
+settings-backup-description = Die Datei enthält alle Hosts, Cluster, Stacks, Registry-Anmeldungen, Repositorys und Einstellungen sowie deren Schlüssel, Zertifikate, Tokens, Passwörter und Umgebungen. Wer die Datei und ihre Passphrase hat, kann sie verwenden, bewahren Sie daher beides sicher auf. Engine-Ereignisse und der Bereitstellungsverlauf sind nicht enthalten.
+settings-backup-passphrase = Passphrase
+settings-backup-passphraseHint = Mindestens { $min } Zeichen. Sie lässt sich nicht wiederherstellen.
+settings-backup-confirmation = Passphrase wiederholen
+settings-backup-problem-short = Verwenden Sie mindestens { $min } Zeichen.
+settings-backup-problem-mismatch = Die beiden Passphrasen unterscheiden sich.
+settings-backup-start = Sichern…
+settings-backup-saveTitle = Sicherung speichern unter
+settings-backup-fileType = Homeport-Sicherung
+settings-backup-done = { $hosts ->
+        [one] { NUM($hosts) } Host
+       *[other] { NUM($hosts) } Hosts
+    } und { $stacks ->
+        [one] { NUM($stacks) } Stack
+       *[other] { NUM($stacks) } Stacks
+    } gesichert
+settings-backup-withoutSecrets = Diese wurden ohne ihre Geheimnisse gesichert, da diese sich nicht öffnen ließen:
+settings-restore-pick = Wiederherstellen aus
+settings-restore-title = Daten von Homeport wiederherstellen
+settings-restore-from = Aus { $path }
+settings-restore-open = Öffnen
+settings-restore-madeBy = Gesichert von Homeport { $version } am { $date }. Sie enthält:
+settings-restore-holds = Was die Sicherung enthält
+settings-restore-hosts = { $count ->
+        [one] { NUM($count) } Host
+       *[other] { NUM($count) } Hosts
+    }
+settings-restore-clusters = { $count ->
+        [one] { NUM($count) } Cluster
+       *[other] { NUM($count) } Cluster
+    }
+settings-restore-stacks = { $count ->
+        [one] { NUM($count) } Stack
+       *[other] { NUM($count) } Stacks
+    }
+settings-restore-registries = { $count ->
+        [one] { NUM($count) } Registry-Anmeldung
+       *[other] { NUM($count) } Registry-Anmeldungen
+    }
+settings-restore-repositories = { $count ->
+        [one] { NUM($count) } Repository
+       *[other] { NUM($count) } Repositorys
+    }
+settings-restore-settings = Ihre Einstellungen
+settings-restore-withoutSecrets = Diese wurden ohne ihre Geheimnisse gesichert, die sich damals nicht öffnen ließen. Sie kommen ohne sie zurück und ersetzen die Geheimnisse, die sie hier haben; Registry-Anmeldungen darunter kommen gar nicht zurück:
+settings-restore-withoutSecretsList = Ohne ihre Geheimnisse gesichert
+settings-restore-replaces = Die Wiederherstellung ersetzt alle Hosts, Stacks, Registry-Anmeldungen, Repositorys und Einstellungen, die Sie jetzt haben, und vergisst die Engine-Ereignisse und den Bereitstellungsverlauf. Zuvor wird eine Kopie der aktuellen Daten im Datenordner von Homeport abgelegt.
+settings-restore-confirm = Alles ersetzen
+settings-restore-done = { $hosts ->
+        [one] { NUM($hosts) } Host
+       *[other] { NUM($hosts) } Hosts
+    } und { $stacks ->
+        [one] { NUM($stacks) } Stack
+       *[other] { NUM($stacks) } Stacks
+    } wiederhergestellt
+settings-data-keepEvents = Engine-Ereignisse aufbewahren für
+settings-data-days = Tage
+settings-data-keepEventsHint = Jeder Host bewahrt für die Seite „Ereignisse“ höchstens 10.000 Ereignisse auf. Ältere werden stündlich entfernt.
+settings-machine-gitMissing = Synchronisierte Stacks benötigen es; alle anderen Arten von Stacks funktionieren ohne.
+settings-machine-helmMissing = Helm-Releases können nicht aufgelistet oder installiert werden; alles andere an Clustern funktioniert.
+settings-about-tagline = Jede Docker Engine, auf einem Board.
+settings-about-openLogFolder = Protokollordner öffnen
+settings-about-licenses = Lizenzen
+settings-about-exportDiagnostics = Diagnose exportieren…
+settings-diagnostics-title = Diagnose exportieren
+settings-diagnostics-description = Eine Zip-Datei für einen Fehlerbericht: eine Übersicht der Versionen und der Arten von Hosts und Clustern, die Sie verwenden, sowie die Protokolle von Homeport ohne Geheimnisse. Es wird nichts versendet: Sie entscheiden, ob Sie die Datei weitergeben.
+settings-diagnostics-includeNames = Namen und Adressen einschließen
+settings-diagnostics-includeNamesHelp = Wenn deaktiviert, erscheinen Hosts und Cluster in der Übersicht und in den Protokollen als host-1, cluster-1 …
+settings-diagnostics-files = Dateien im Zip
+settings-diagnostics-save = Speichern…
+settings-diagnostics-saveTitle = Diagnose speichern
+settings-diagnostics-fileType = Zip-Archiv
+settings-diagnostics-done = Diagnose in { $path } gespeichert.
+settings-licenses-title = Lizenzen
+settings-licenses-description = Homeport ist freie Software unter der GNU Affero General Public License, Version 3, und baut auf den unten aufgeführten Open-Source-Paketen auf.
+settings-licenses-source = Der Quellcode dieser Version ist unter derselben Lizenz veröffentlicht.
+settings-licenses-sourceLink = Quellcode von v{ $version }
+settings-licenses-thirdParty = Software von Drittanbietern
+settings-licenses-missing-title = In diesem Build nicht enthalten
+settings-licenses-missing-description = Release-Builds bringen sie mit; führen Sie <code>{ $command }</code> aus, um sie für einen Entwicklungs-Build zu erzeugen.
+settings-palette-group = Einstellungen
+settings-palette-themeLight = Design: Hell
+settings-palette-themeDark = Design: Dunkel
+settings-palette-themeSystem = Design: Wie das System

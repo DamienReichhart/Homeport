@@ -1,0 +1,55 @@
+### The `network` namespace, in 简体中文 (zh-CN).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/zh-CN/network.ts:
+### change the text there, then run it again.
+
+network-nav = 网络
+network-title = 网络
+network-services = Service
+network-ingresses = Ingress
+network-service = Service
+network-ingress = Ingress
+network-servicesSummary = { $count ->
+       *[other] { NUM($count) } 个 Service
+    }
+network-ingressesSummary = { $count ->
+       *[other] { NUM($count) } 个 Ingress
+    }
+network-searchServices = 搜索 Service
+network-searchIngresses = 搜索 Ingress
+network-column-name = 名称
+network-column-namespace = Namespace
+network-column-type = 类型
+network-column-clusterIp = 集群 IP
+network-column-external = 外部
+network-column-ports = 端口
+network-column-class = 类
+network-column-hosts = 主机名
+network-column-addresses = 地址
+network-column-age = 存在时间
+network-tab-overview = 概览
+network-tab-pods = Pod
+network-tab-rules = 规则
+network-tab-events = 事件
+network-tab-source = YAML
+network-detail-namespace = Namespace
+network-detail-type = 类型
+network-detail-clusterIp = 集群 IP
+network-detail-external = 外部地址
+network-detail-selector = 发送到带有以下标签的 Pod
+network-detail-noSelector = 它不选择任何 Pod；其端点由手动管理。
+network-detail-affinity = 会话亲和性
+network-detail-class = 类
+network-detail-addresses = 地址
+network-detail-tls = TLS
+network-detail-age = 存在时间
+network-detail-labels = 标签
+network-detail-annotations = 注解
+network-port-name = 名称
+network-port-port = 端口
+network-port-target = 目标端口
+network-port-node = Node 端口
+network-rule-host = 主机名
+network-rule-path = 路径
+network-rule-type = 匹配方式
+network-rule-backend = 后端

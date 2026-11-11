@@ -1,0 +1,255 @@
+### The `swarm` namespace, in English (en).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/en/swarm.ts:
+### change the text there, then run it again.
+
+swarm-nav = Swarms
+swarm-badge = Swarm
+swarm-reachable = A manager is connected
+swarm-unreachable = No manager connected
+swarm-hostCounts = { $managers ->
+        [one] { NUM($managers) } manager host
+       *[other] { NUM($managers) } manager hosts
+    }, { $workers ->
+        [one] { NUM($workers) } worker host
+       *[other] { NUM($workers) } worker hosts
+    }
+swarm-host-managerOf = Manager of { $swarm }
+swarm-host-workerOf = Worker of { $swarm }
+swarm-role-manager = Manager
+swarm-role-worker = Worker
+swarm-tab-summary = Summary
+swarm-tab-nodes = Nodes
+swarm-tab-services = Services
+swarm-tab-tasks = Tasks
+swarm-tab-stacks = Stacks
+swarm-tab-secrets = Secrets
+swarm-tab-configs = Configs
+swarm-summary-title = This Swarm
+swarm-summary-managerHosts = Manager hosts
+swarm-summary-workerHosts = Worker hosts
+swarm-summary-nodes = Nodes
+swarm-summary-nodeCounts = { $nodes ->
+        [one] { NUM($nodes) } node
+       *[other] { NUM($nodes) } nodes
+    }, { $managers ->
+        [one] { NUM($managers) } manager
+       *[other] { NUM($managers) } managers
+    }
+swarm-summary-services = Services
+swarm-summary-created = Created
+swarm-summary-id = Swarm ID
+swarm-nodes-search = Search nodes
+swarm-nodes-column-hostname = Node
+swarm-nodes-column-role = Role
+swarm-nodes-column-availability = Availability
+swarm-nodes-column-state = State
+swarm-nodes-column-engine = Engine
+swarm-nodes-column-address = Address
+swarm-nodes-column-labels = Labels
+swarm-nodes-isHost = host { $name }
+swarm-nodes-availability-active = Active
+swarm-nodes-availability-pause = Paused
+swarm-nodes-availability-drain = Drained
+swarm-nodes-manager-leader = leader
+swarm-nodes-manager-reachable = reachable
+swarm-nodes-manager-unreachable = unreachable
+swarm-nodes-actionsFor = Actions for { $name }
+swarm-nodes-action-activate = Activate
+swarm-nodes-action-pause = Pause
+swarm-nodes-action-drain = Drain
+swarm-nodes-action-promote = Promote to manager
+swarm-nodes-action-demote = Demote to worker
+swarm-nodes-action-labels = Edit labels
+swarm-nodes-action-tasks = Show its tasks
+swarm-nodes-updated = { $name } updated
+swarm-nodes-removed = { $name } removed from the Swarm
+swarm-nodes-labels-title = Labels of { $name }
+swarm-nodes-labels-description = Placement constraints such as node.labels.zone==a choose nodes by these labels.
+swarm-nodes-labels-key = Key
+swarm-nodes-labels-value = Value
+swarm-nodes-labels-add = Add a label
+swarm-nodes-labels-removeOne = Remove the label { $key }
+swarm-nodes-remove-title = Remove { $name } from the Swarm?
+swarm-nodes-remove-ready = This node is still up. Removing it by force leaves its Engine believing it’s in the Swarm until it leaves on its own; its tasks are rescheduled elsewhere.
+swarm-nodes-remove-down = This node is down. Its tasks are rescheduled on the other nodes.
+swarm-nodes-remove-force = Force: remove it although it’s up
+swarm-services-search = Search services
+swarm-services-empty = No services run on this Swarm
+swarm-services-column-name = Name
+swarm-services-column-image = Image
+swarm-services-column-mode = Mode
+swarm-services-column-replicas = Running
+swarm-services-column-ports = Ports
+swarm-services-column-stack = Stack
+swarm-services-column-update = Update
+swarm-services-mode-replicated = Replicated
+swarm-services-mode-replicatedCount = Replicated ({ $count })
+swarm-services-mode-global = Global
+swarm-services-mode-replicatedJob = Job
+swarm-services-mode-globalJob = Global job
+swarm-services-actionsFor = Actions for { $name }
+swarm-services-action-logs = Logs
+swarm-services-action-scale = Scale
+swarm-services-action-rollback = Roll back
+swarm-services-scaled = { $name } scaled to { $count ->
+        [one] { NUM($count) } replica
+       *[other] { NUM($count) } replicas
+    }
+swarm-services-rolledBack = { $name } is rolling back
+swarm-services-removed = { $name } removed
+swarm-services-scale-title = Scale { $name }
+swarm-services-scale-description = The Swarm starts or stops tasks until this many run. 0 stops the service without removing it.
+swarm-services-scale-replicas = Replicas
+swarm-services-scale-invalid = Enter a whole number from 0 to 10000.
+swarm-services-rollback-title = Roll { $name } back?
+swarm-services-rollback-description = Its previous settings (image, environment, replicas…) are put back, and its tasks roll over to them the way an update does.
+swarm-services-remove-title = Remove the service { $name }?
+swarm-services-remove-description = { $count ->
+        [0] It runs no task now.
+        [one] Its running task is stopped and removed.
+       *[other] Its { NUM($count) } running tasks are stopped and removed.
+    } Its volumes are kept.
+swarm-service-tab-tasks = Tasks
+swarm-service-tab-logs = Logs
+swarm-service-tab-inspect = Inspect
+swarm-service-gone = This service no longer exists.
+swarm-service-backToList = Back to the services
+swarm-tasks-column-task = Task
+swarm-tasks-column-node = Node
+swarm-tasks-column-state = State
+swarm-tasks-column-error = Message
+swarm-tasks-column-image = Image
+swarm-tasks-desired = should be { $state }
+swarm-tasks-openContainer = Open container
+swarm-tasks-history = Show history
+swarm-tasks-onNode = Tasks on { $name }
+swarm-tasks-allNodes = Show every node
+swarm-tasks-empty = No tasks
+swarm-objects-searchSecrets = Search secrets
+swarm-objects-searchConfigs = Search configs
+swarm-objects-createSecret = Create secret
+swarm-objects-createConfig = Create config
+swarm-objects-secretNote = A secret’s value goes to the Swarm once and can’t be read back, by Homeport or anyone: only the services it’s given to see it.
+swarm-objects-noSecrets = No secrets
+swarm-objects-noConfigs = No configs
+swarm-objects-column-name = Name
+swarm-objects-column-services = Used by
+swarm-objects-column-labels = Labels
+swarm-objects-column-created = Created
+swarm-objects-column-updated = Updated
+swarm-objects-unused = Unused
+swarm-objects-viewOne = View { $name }
+swarm-objects-removeOne = Remove { $name }
+swarm-objects-removed = { $name } removed
+swarm-objects-remove-title = Remove { $name }?
+swarm-objects-remove-used = The Swarm refuses while services use it: { $services }. Remove it from them first.
+swarm-objects-remove-unused = No service uses it. This can’t be undone.
+swarm-objects-binary = Binary content, { $size ->
+        [one] { NUM($size) } byte
+       *[other] { NUM($size) } bytes
+    }.
+swarm-objects-create-secretTitle = Create a secret
+swarm-objects-create-configTitle = Create a config
+swarm-objects-create-secretDescription = The value is sent to the Swarm and never kept by Homeport. Services read it as a file under /run/secrets/.
+swarm-objects-create-configDescription = Services read it as a file wherever they mount it. Configs can be viewed again later.
+swarm-objects-create-name = Name
+swarm-objects-create-secretPlaceholder = db_password
+swarm-objects-create-configPlaceholder = nginx_conf
+swarm-objects-create-value = Value
+swarm-objects-create-content = Content
+swarm-objects-create-show = Show
+swarm-objects-create-hide = Hide
+swarm-objects-create-loadFile = Load from file…
+swarm-objects-create-pickFile = Choose the file to send
+swarm-objects-create-clearFile = Type the value instead
+swarm-objects-create-fileNote = The file is read when you create it, sent to the Swarm and not kept.
+swarm-services-created = { $name } created
+swarm-services-updating = { $name } is rolling over to its new settings
+swarm-service-update = update { $state }
+swarm-create-open = Create service
+swarm-create-title = Create a service
+swarm-create-description = The Swarm pulls the image on the nodes it picks and keeps this many tasks running. Placement, resource limits and health checks can be set with the docker CLI and are shown in Inspect.
+swarm-create-image = Image
+swarm-create-imagePlaceholder = nginx:1.27
+swarm-create-name = Name
+swarm-create-mode = Mode
+swarm-create-restart = Restart
+swarm-create-restart-default = Always (default)
+swarm-create-restart-onFailure = On failure
+swarm-create-restart-none = Never
+swarm-create-command = Command
+swarm-create-commandPlaceholder = The image’s own command
+swarm-create-env = Environment
+swarm-create-hostMode = Publish on the node running each task only, instead of on every node
+swarm-create-networks = Overlay networks
+swarm-create-secrets = Secrets
+swarm-create-configs = Configs
+swarm-create-mountedAt = Where { $name } is mounted
+swarm-create-secretTarget = /run/secrets/{ $name }
+swarm-create-configTarget = /{ $name }
+swarm-create-submit = Create
+swarm-edit-open = Edit
+swarm-edit-title = Edit { $name }
+swarm-edit-description = Only what you change here is sent; the rest of the service is kept. The Swarm replaces its tasks a few at a time with the new settings.
+swarm-edit-redeploy = Redeploy every task, pulling the image again even if its tag is the same
+swarm-edit-submit = Update
+swarm-membership-card-title = Swarm
+swarm-membership-card-none = This host isn’t in a Swarm.
+swarm-membership-card-state = Its node is { $state }.
+swarm-membership-card-ports = Start a Swarm here, or join one. The nodes of a Swarm must reach each other on 2377/tcp, 7946/tcp and udp, and 4789/udp; Homeport can’t open those ports for you.
+swarm-membership-created = Swarm created
+swarm-membership-joined = Joined the Swarm
+swarm-membership-left = Left the Swarm
+swarm-membership-advertise = Advertise address
+swarm-membership-advertisePlaceholder = Picked by the Engine
+swarm-membership-advertiseHelp = The address other nodes reach this host at. Leave it empty to let the Engine pick, which works when the machine has one address.
+swarm-membership-listen = Listen address
+swarm-membership-init-open = Init a Swarm
+swarm-membership-init-title = Start a Swarm on { $name }
+swarm-membership-init-description = This host becomes the first manager of a new Swarm. Other hosts can then join it as workers or managers.
+swarm-membership-init-submit = Start the Swarm
+swarm-membership-join-open = Join a Swarm
+swarm-membership-join-title = Join { $name } to a Swarm
+swarm-membership-join-description = Pick a Swarm Homeport knows, and Homeport fetches its join token from a connected manager. For another Swarm, paste the token and a manager’s address from docker swarm join-token.
+swarm-membership-join-swarm = Swarm
+swarm-membership-join-paste = Another Swarm, by its token
+swarm-membership-join-token = Join token
+swarm-membership-join-address = Manager address
+swarm-membership-join-addressPlaceholder = 192.168.1.10:2377
+swarm-membership-join-as = Join as
+swarm-membership-join-submit = Join
+swarm-membership-leave-open = Leave the Swarm
+swarm-membership-leave-title = Have { $name } leave its Swarm?
+swarm-membership-leave-worker = Its tasks stop here and are rescheduled on the other nodes. Its node stays listed as down until a manager removes it.
+swarm-membership-leave-manager = It stops being a manager and a node. The other managers keep the Swarm going; demoting it first is gentler.
+swarm-membership-leave-last = This is the Swarm’s last manager: the Swarm goes with it, with every service, secret and config. Other nodes are left in a Swarm with no manager.
+swarm-membership-leave-force = Force: leave although it’s a manager
+swarm-membership-leave-typeName = Type { $name } to confirm
+swarm-membership-leave-submit = Leave
+swarm-join-title = Join commands
+swarm-join-description = For machines Homeport doesn’t manage: run one of these there. Hosts Homeport manages join from their page instead, without copying anything.
+swarm-join-reveal = Show the join commands
+swarm-join-hide = Hide them
+swarm-join-worker = As a worker
+swarm-join-manager = As a manager
+swarm-stacks-search = Search stacks
+swarm-stacks-new = New Stack
+swarm-stacks-deploy = Deploy
+swarm-stacks-redeploy = Redeploy
+swarm-stacks-adopt = Adopt
+swarm-stacks-link = Link to a folder…
+swarm-stacks-linkTitle = Choose the folder with the compose files of { $name }
+swarm-stacks-linked = { $name } is now a Linked Stack
+swarm-stacks-empty = No Stacks on this Swarm
+swarm-stacks-emptyHint = Stacks deployed with docker stack deploy show here, as do those you deploy to this Swarm from Homeport.
+swarm-stacks-backToList = Back to the Stacks
+swarm-stacks-services = Services
+swarm-stacks-noServices = Nothing is deployed yet.
+swarm-stacks-parts = Networks, secrets and configs
+swarm-stacks-networks = Networks
+swarm-stacks-noStartStop = A swarm stack can’t be stopped or started as a whole: scale its services to 0 instead, from their pages.
+swarm-stacks-removed = { $name } removed
+swarm-stacks-removedPartly = { $name } removed, except for:
+swarm-stacks-remove-title = Remove the Stack { $name }?
+swarm-stacks-remove-description = Its services are removed, then its networks, secrets and configs, as docker stack rm does. Its volumes are kept on each node.

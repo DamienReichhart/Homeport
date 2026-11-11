@@ -1,0 +1,148 @@
+### The `images` namespace, in Español (es).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/es/images.ts:
+### change the text there, then run it again.
+
+images-nav = Imágenes
+images-title = Imágenes
+images-summary = { $count ->
+        [one] { NUM($count) } imagen
+       *[other] { NUM($count) } imágenes
+    } · { $size }
+images-cleanUp = Limpiar
+images-cleanUp-dangling = Imágenes huérfanas
+images-cleanUp-all = Todas las imágenes sin usar
+images-saveSelected = { $count ->
+        [one] Guardar imagen…
+       *[other] Guardar { NUM($count) } imágenes…
+    }
+images-load = Cargar…
+images-importTar = Importar desde tar…
+images-build = Compilar
+images-pull = Descargar imagen
+images-search = Buscar imágenes
+images-empty-title = No hay imágenes
+images-empty-description = Descarga una de un registro para empezar.
+images-column-name = Nombre
+images-column-id = ID
+images-column-created = Creada
+images-column-size = Tamaño
+images-column-status = Estado
+images-moreTags = { $count ->
+        [one] +{ NUM($count) } etiqueta más
+       *[other] +{ NUM($count) } etiquetas más
+    }
+images-inUse = En uso · { $count }
+images-unused = Sin usar
+images-runOne = Ejecutar { $name }
+images-action-inspect = Inspeccionar
+images-action-tag = Etiquetar
+images-action-push = Subir
+images-action-save = Guardar…
+images-remove-title = ¿Eliminar { $name }?
+images-remove-everyName = Esto elimina todos los nombres de la imagen ({ $names }) y sus capas que no use nada más.
+images-remove-description = Se eliminan la imagen y las capas que no use ninguna otra imagen. Se puede volver a descargar más adelante.
+images-prune-allTitle = ¿Eliminar todas las imágenes sin usar?
+images-prune-danglingTitle = ¿Eliminar las imágenes huérfanas?
+images-prune-allDescription = Se eliminan todas las imágenes que no usa ningún contenedor, incluidas las etiquetadas.
+images-prune-danglingDescription = Se eliminan las imágenes sin etiqueta que dejan las compilaciones y las descargas.
+images-removed = Se eliminó { $name }
+images-pruned = { $count ->
+        [one] Se eliminó { NUM($count) } imagen
+       *[other] Se eliminaron { NUM($count) } imágenes
+    }, { $space } recuperados
+images-pulled = Se descargó { $reference }
+images-pushed = Se subió { $reference }
+images-built = Se compiló { $name }
+images-builtUnnamed = Se compiló la imagen
+images-saved = Se guardó { $path }
+images-loadedOne = Se cargó { $name }
+images-loaded = { $count ->
+        [one] Se cargó { NUM($count) } imagen
+       *[other] Se cargaron { NUM($count) } imágenes
+    }
+images-imported = Se importó { $name }
+images-files-save = Guardar imágenes como
+images-files-load = Cargar imágenes desde
+images-files-import = Importar un sistema de archivos desde
+images-files-imageArchives = Archivos de imagen
+images-files-imageArchive = Archivo de imagen
+images-files-filesystemArchives = Archivos de sistema de archivos
+images-buildDialog-title = Compilar una imagen
+images-buildDialog-description = Desde una carpeta de este equipo. Homeport la envía al host, sin lo que excluye su .dockerignore, y el Engine del host la compila.
+images-buildDialog-built = ✓ Compilada
+images-buildDialog-folder = Carpeta
+images-buildDialog-chooseFolder = Elegir la carpeta que compilar
+images-buildDialog-choose = Elegir…
+images-buildDialog-dockerfile = Dockerfile
+images-buildDialog-target = Etapa de destino
+images-buildDialog-targetPlaceholder = La última etapa
+images-buildDialog-names = Nombres
+images-buildDialog-buildArgs = Argumentos de compilación
+images-buildDialog-buildArgsPlaceholder = VERSION=1.0, uno por línea
+images-buildDialog-noCache = No usar la caché de compilación
+images-buildDialog-pull = Descargar imágenes base más recientes
+images-buildForm-noFolder = Elige la carpeta que compilar.
+images-buildForm-argNeedsName = «{ $line }» necesita un nombre antes de «=».
+images-hub-unavailable = Ahora mismo no se puede buscar en Docker Hub: { $error } Un nombre completo como nginx:1.27 se sigue descargando.
+images-hub-noMatch = Nada en Docker Hub coincide con «{ $term }».
+images-hub-results = Resultados de Docker Hub
+images-hub-result = { $name }, { $stars } estrellas
+images-hub-resultOfficial = { $name }, imagen oficial, { $stars } estrellas
+images-hub-official = Oficial
+images-hub-backToSearch = Buscar
+images-hub-tagCount = { $count ->
+        [one] { NUM($count) } etiqueta
+       *[other] { NUM($count) } etiquetas
+    }
+images-hub-filterTags = Filtrar etiquetas
+images-hub-tags = Etiquetas
+images-hub-noTagMatch = Ninguna etiqueta coincide con «{ $filter }».
+images-hub-moreTags = Más etiquetas
+images-importDialog-title = Importar un sistema de archivos como imagen
+images-importDialog-description = { $path } se convierte en una imagen de una sola capa sin historial ni ajustes propios; dale un comando abajo para que se pueda ejecutar.
+images-importDialog-name = Nombre de la imagen
+images-importDialog-changes = Cambios
+images-importDialog-changesHint = Instrucciones de Dockerfile, una por línea: CMD, ENTRYPOINT, ENV, EXPOSE, LABEL, ONBUILD, USER, VOLUME o WORKDIR.
+images-importDialog-import = Importar
+images-inspect-layers = Capas
+images-inspect-raw = JSON sin procesar
+images-inspect-created = Creada
+images-inspect-instruction = Instrucción
+images-inspect-size = Tamaño
+images-pullDialog-title = Descargar una imagen
+images-pullDialog-description = Busca en Docker Hub por nombre o escribe cualquier referencia a la que llegue el host, p. ej., nginx:1.27 o ghcr.io/org/app:v2.
+images-pullDialog-placeholder = postgres, o nginx:1.27
+images-pullDialog-reference = Referencia de la imagen
+images-pullDialog-pull = Descargar
+images-done = Listo.
+images-pushDialog-title = Subir { $name }
+images-pushDialog-description = Al registro con el que empieza su nombre, p. ej., ghcr.io/org/app:v2, o a Docker Hub para nombres como org/app:v2.
+images-pushDialog-target = Nombre que subir
+images-pushDialog-push = Subir
+images-pushDialog-tagsFirst = Primero se le da este nombre a la imagen, como hace Etiquetar.
+images-pushDialog-uploading = Subiendo { $current } / { $total }
+images-push-pushed = { $pushed ->
+        [one] { NUM($pushed) } capa subida
+       *[other] { NUM($pushed) } capas subidas
+    }
+images-push-pushedAndExisting = { $pushed ->
+        [one] { NUM($pushed) } capa subida
+       *[other] { NUM($pushed) } capas subidas
+    }, { $existing } ya en el registro
+images-tagDialog-title = Etiquetar { $name }
+images-tagDialog-newName = Nombre nuevo
+images-tagDialog-add = Añadir etiqueta
+images-transfer-savingOne = Guardando { $name }
+images-transfer-saving = Guardando { $count ->
+        [one] { NUM($count) } imagen
+       *[other] { NUM($count) } imágenes
+    }
+images-transfer-to = En { $path }
+images-transfer-from = Desde { $path }
+images-transfer-written = Escrito
+images-transfer-sent = Enviado
+images-transfer-loading = Cargando imágenes
+images-transfer-importing = Importando { $reference }
+images-transfer-doneWith = Listo: { $images }
+images-palette-pull = Descargar una imagen

@@ -1,0 +1,89 @@
+### The `quadlets` namespace, in 简体中文 (zh-CN).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/zh-CN/quadlets.ts:
+### change the text there, then run it again.
+
+quadlets-nav = Quadlet
+quadlets-title = Quadlet 单元
+quadlets-summary = { $count ->
+       *[other] { NUM($count) } 个单元
+    }
+quadlets-search = 搜索单元
+quadlets-empty = 没有 Quadlet 单元
+quadlets-emptyDescription = Quadlet 单元是 Podman 转换为 systemd 服务的文件，因此容器会随主机启动，并由 systemd 保持运行。安装一个单元后即可在此处看到它。
+quadlets-new = 新建单元
+quadlets-edit = 编辑
+quadlets-notGenerated = 尚未生成
+quadlets-gone = { $name } 已不再安装
+quadlets-column-name = 单元
+quadlets-column-kind = 类型
+quadlets-column-service = 服务
+quadlets-column-status = 状态
+quadlets-column-containers = 容器
+quadlets-status-running = 运行中
+quadlets-status-starting = 正在启动
+quadlets-status-stopping = 正在停止
+quadlets-status-stopped = 已停止
+quadlets-status-failed = 失败
+quadlets-status-notLoaded = 未被 systemd 加载
+quadlets-status-template = 模板
+quadlets-action-start = 启动
+quadlets-action-stop = 停止
+quadlets-action-restart = 重启
+quadlets-actionOne-start = 启动 { $name }
+quadlets-actionOne-stop = 停止 { $name }
+quadlets-actionOne-restart = 重启 { $name }
+quadlets-done-start = { $name } 已启动
+quadlets-done-stop = { $name } 已停止
+quadlets-done-restart = { $name } 已重启
+quadlets-installed = { $name } 已安装
+quadlets-saved = { $name } 已保存
+quadlets-removed = { $name } 已删除
+quadlets-blocked-noCommands = Homeport 使用 systemctl 启动和停止单元，而它只能通过 SSH 运行 systemctl，或用于本机上的 Podman。
+quadlets-blocked-notLoaded = systemd 尚未生成此单元的服务，因此没有可启动的内容。
+quadlets-blocked-podmanTooOld = 读取、安装、编辑和删除单元需要 Podman 5.8 或更高版本；此主机运行的是 Podman { $version }。
+quadlets-blocked-noFile = 此单元仅通过其容器得知，因此无法更改其文件。
+quadlets-note-labels = Podman { $version } 无法列出 Quadlet 单元，因此这些单元来自它们创建的容器。在 Podman 5.7 及更高版本上，会显示它们的文件以及未创建容器的单元。
+quadlets-note-readOnly = Podman { $version } 能列出单元，但无法读取、安装、编辑或删除它们；这需要 Podman 5.8 或更高版本。
+quadlets-note-noCommands = 启动和停止单元需要通过 SSH 访问此主机，或使用本机上的 Podman。
+quadlets-detail-service = 服务
+quadlets-detail-unit = systemd 单元
+quadlets-detail-scope = 运行身份
+quadlets-detail-path = 文件
+quadlets-detail-app = 应用
+quadlets-detail-pod = Pod
+quadlets-detail-containers = { $count ->
+        [0] 容器
+       *[other] { NUM($count) } 个容器
+    }
+quadlets-detail-noContainers = 它尚未创建容器，或其服务已停止。
+quadlets-scope-user = 用户单元 (systemctl --user)
+quadlets-scope-system = 系统单元
+quadlets-file-title = 单元文件
+quadlets-file-unknown = 此单元仅通过其容器的标签得知。
+quadlets-file-tooOld = Podman { $version } 无法读取单元文件；显示它们需要 Podman 5.8 或更高版本。
+quadlets-form-newTitle = 新建 Quadlet 单元
+quadlets-form-newDescription = Podman 会将文件写入其用户的单元目录并重新加载 systemd。安装后请启动该单元。
+quadlets-form-editTitle = 编辑 { $name }
+quadlets-form-editDescription = 保存会替换该文件并重新加载 systemd；重启该单元，正在运行的服务才会使用新文件。安装在它旁边的文件会保留。
+quadlets-form-name = 文件名
+quadlets-form-kind = 类型
+quadlets-form-openFile = 打开文件…
+quadlets-form-openTitle = 打开 Quadlet 单元文件
+quadlets-form-unitFiles = Quadlet 单元文件
+quadlets-form-content = 单元文件
+quadlets-form-extra = 附带文件
+quadlets-form-extraHint = 该单元使用的 Containerfile、kube YAML 或 env 文件，安装在其应用文件夹中。
+quadlets-form-extraTitle = 选择要与单元一起安装的文件
+quadlets-form-addExtra = 添加文件…
+quadlets-form-removeExtra = 移除 { $name }
+quadlets-form-install = 安装
+quadlets-form-save = 保存
+quadlets-form-overwrite = 覆盖
+quadlets-form-nameInvalid = 按 web.container 的形式命名，以 .container、.pod、.volume、.network、.kube、.image、.build 或 .artifact 结尾。
+quadlets-form-sectionMissing = 该文件需要一个 { $section } 节，Quadlet 才能读取它。
+quadlets-form-extraInvalid = 单元旁的每个文件都需要一个独立的纯文件名，不能包含文件夹。
+quadlets-remove-title = 删除 { $name }？
+quadlets-remove-description = Podman 会删除该单元文件并重新加载 systemd。它创建的容器、卷和镜像会保留。
+quadlets-remove-stop = 如果其服务正在运行，则停止它
+quadlets-remove-stopRunning = 先停止其正在运行的服务

@@ -1,0 +1,255 @@
+### The `swarm` namespace, in हिन्दी (hi).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/hi/swarm.ts:
+### change the text there, then run it again.
+
+swarm-nav = Swarm
+swarm-badge = Swarm
+swarm-reachable = एक मैनेजर कनेक्ट है
+swarm-unreachable = कोई मैनेजर कनेक्ट नहीं
+swarm-hostCounts = { $managers ->
+        [one] { NUM($managers) } मैनेजर होस्ट
+       *[other] { NUM($managers) } मैनेजर होस्ट
+    }, { $workers ->
+        [one] { NUM($workers) } वर्कर होस्ट
+       *[other] { NUM($workers) } वर्कर होस्ट
+    }
+swarm-host-managerOf = { $swarm } का मैनेजर
+swarm-host-workerOf = { $swarm } का वर्कर
+swarm-role-manager = मैनेजर
+swarm-role-worker = वर्कर
+swarm-tab-summary = सारांश
+swarm-tab-nodes = नोड
+swarm-tab-services = सर्विस
+swarm-tab-tasks = टास्क
+swarm-tab-stacks = स्टैक
+swarm-tab-secrets = सीक्रेट
+swarm-tab-configs = कॉन्फ़िग
+swarm-summary-title = यह Swarm
+swarm-summary-managerHosts = मैनेजर होस्ट
+swarm-summary-workerHosts = वर्कर होस्ट
+swarm-summary-nodes = नोड
+swarm-summary-nodeCounts = { $nodes ->
+        [one] { NUM($nodes) } नोड
+       *[other] { NUM($nodes) } नोड
+    }, { $managers ->
+        [one] { NUM($managers) } मैनेजर
+       *[other] { NUM($managers) } मैनेजर
+    }
+swarm-summary-services = सर्विस
+swarm-summary-created = बनाया गया
+swarm-summary-id = Swarm ID
+swarm-nodes-search = नोड खोजें
+swarm-nodes-column-hostname = नोड
+swarm-nodes-column-role = भूमिका
+swarm-nodes-column-availability = उपलब्धता
+swarm-nodes-column-state = स्थिति
+swarm-nodes-column-engine = इंजन
+swarm-nodes-column-address = पता
+swarm-nodes-column-labels = लेबल
+swarm-nodes-isHost = होस्ट { $name }
+swarm-nodes-availability-active = सक्रिय
+swarm-nodes-availability-pause = विराम में
+swarm-nodes-availability-drain = ड्रेन किया गया
+swarm-nodes-manager-leader = लीडर
+swarm-nodes-manager-reachable = पहुँच में
+swarm-nodes-manager-unreachable = पहुँच से बाहर
+swarm-nodes-actionsFor = { $name } के लिए कार्रवाइयाँ
+swarm-nodes-action-activate = सक्रिय करें
+swarm-nodes-action-pause = विराम दें
+swarm-nodes-action-drain = ड्रेन करें
+swarm-nodes-action-promote = मैनेजर बनाएँ
+swarm-nodes-action-demote = वर्कर बनाएँ
+swarm-nodes-action-labels = लेबल संपादित करें
+swarm-nodes-action-tasks = इसके टास्क दिखाएँ
+swarm-nodes-updated = { $name } अपडेट किया गया
+swarm-nodes-removed = { $name } को Swarm से हटाया गया
+swarm-nodes-labels-title = { $name } के लेबल
+swarm-nodes-labels-description = node.labels.zone==a जैसी placement constraints इन लेबल से नोड चुनती हैं।
+swarm-nodes-labels-key = कुंजी
+swarm-nodes-labels-value = मान
+swarm-nodes-labels-add = लेबल जोड़ें
+swarm-nodes-labels-removeOne = लेबल { $key } हटाएँ
+swarm-nodes-remove-title = { $name } को Swarm से हटाएँ?
+swarm-nodes-remove-ready = यह नोड अभी भी चालू है। इसे बलपूर्वक हटाने पर इसका इंजन तब तक यही मानता रहेगा कि वह Swarm में है, जब तक वह खुद न छोड़ दे; इसके टास्क कहीं और दोबारा शेड्यूल किए जाते हैं।
+swarm-nodes-remove-down = यह नोड बंद है। इसके टास्क दूसरे नोड पर दोबारा शेड्यूल किए जाते हैं।
+swarm-nodes-remove-force = बलपूर्वक: चालू होने पर भी इसे हटाएँ
+swarm-services-search = सर्विस खोजें
+swarm-services-empty = इस Swarm पर कोई सर्विस नहीं चल रही
+swarm-services-column-name = नाम
+swarm-services-column-image = इमेज
+swarm-services-column-mode = मोड
+swarm-services-column-replicas = चल रहे हैं
+swarm-services-column-ports = पोर्ट
+swarm-services-column-stack = स्टैक
+swarm-services-column-update = अपडेट
+swarm-services-mode-replicated = Replicated
+swarm-services-mode-replicatedCount = Replicated ({ $count })
+swarm-services-mode-global = Global
+swarm-services-mode-replicatedJob = Job
+swarm-services-mode-globalJob = Global job
+swarm-services-actionsFor = { $name } के लिए कार्रवाइयाँ
+swarm-services-action-logs = लॉग
+swarm-services-action-scale = स्केल करें
+swarm-services-action-rollback = वापस लें
+swarm-services-scaled = { $name } को { $count ->
+        [one] { NUM($count) } रेप्लिका
+       *[other] { NUM($count) } रेप्लिका
+    } पर स्केल किया गया
+swarm-services-rolledBack = { $name } वापस ली जा रही है
+swarm-services-removed = { $name } हटाई गई
+swarm-services-scale-title = { $name } स्केल करें
+swarm-services-scale-description = Swarm तब तक टास्क शुरू या बंद करता है जब तक इतने न चलने लगें। 0 सर्विस को हटाए बिना रोक देता है।
+swarm-services-scale-replicas = रेप्लिका
+swarm-services-scale-invalid = 0 से 10000 तक की पूर्ण संख्या डालें।
+swarm-services-rollback-title = { $name } वापस लें?
+swarm-services-rollback-description = इसकी पिछली सेटिंग्स (इमेज, परिवेश, रेप्लिका…) वापस लगाई जाती हैं, और इसके टास्क उसी तरह उन पर बदलते हैं जैसे किसी अपडेट में।
+swarm-services-remove-title = सर्विस { $name } हटाएँ?
+swarm-services-remove-description = { $count ->
+        [0] अभी यह कोई टास्क नहीं चला रही।
+        [one] इसका चल रहा टास्क रोका और हटाया जाता है।
+       *[other] इसके { NUM($count) } चल रहे टास्क रोके और हटाए जाते हैं।
+    } इसके वॉल्यूम रखे जाते हैं।
+swarm-service-tab-tasks = टास्क
+swarm-service-tab-logs = लॉग
+swarm-service-tab-inspect = निरीक्षण
+swarm-service-gone = यह सर्विस अब मौजूद नहीं है।
+swarm-service-backToList = सर्विस पर वापस जाएँ
+swarm-tasks-column-task = टास्क
+swarm-tasks-column-node = नोड
+swarm-tasks-column-state = स्थिति
+swarm-tasks-column-error = संदेश
+swarm-tasks-column-image = इमेज
+swarm-tasks-desired = { $state } होना चाहिए
+swarm-tasks-openContainer = कंटेनर खोलें
+swarm-tasks-history = इतिहास दिखाएँ
+swarm-tasks-onNode = { $name } पर टास्क
+swarm-tasks-allNodes = हर नोड दिखाएँ
+swarm-tasks-empty = कोई टास्क नहीं
+swarm-objects-searchSecrets = सीक्रेट खोजें
+swarm-objects-searchConfigs = कॉन्फ़िग खोजें
+swarm-objects-createSecret = सीक्रेट बनाएँ
+swarm-objects-createConfig = कॉन्फ़िग बनाएँ
+swarm-objects-secretNote = सीक्रेट का मान एक बार Swarm को जाता है और वापस पढ़ा नहीं जा सकता, न Homeport द्वारा न किसी और द्वारा: इसे सिर्फ़ वे सर्विस देखती हैं जिन्हें यह दिया गया है।
+swarm-objects-noSecrets = कोई सीक्रेट नहीं
+swarm-objects-noConfigs = कोई कॉन्फ़िग नहीं
+swarm-objects-column-name = नाम
+swarm-objects-column-services = इस्तेमालकर्ता
+swarm-objects-column-labels = लेबल
+swarm-objects-column-created = बनाया गया
+swarm-objects-column-updated = अपडेट किया गया
+swarm-objects-unused = अप्रयुक्त
+swarm-objects-viewOne = { $name } देखें
+swarm-objects-removeOne = { $name } हटाएँ
+swarm-objects-removed = { $name } हटाया गया
+swarm-objects-remove-title = { $name } हटाएँ?
+swarm-objects-remove-used = जब तक सर्विस इसका इस्तेमाल करती हैं, Swarm मना करता है: { $services }। पहले इसे उनसे हटाएँ।
+swarm-objects-remove-unused = कोई सर्विस इसका इस्तेमाल नहीं करती। इसे पूर्ववत नहीं किया जा सकता।
+swarm-objects-binary = बाइनरी सामग्री, { $size ->
+        [one] { NUM($size) } बाइट
+       *[other] { NUM($size) } बाइट
+    }।
+swarm-objects-create-secretTitle = सीक्रेट बनाएँ
+swarm-objects-create-configTitle = कॉन्फ़िग बनाएँ
+swarm-objects-create-secretDescription = मान Swarm को भेजा जाता है और Homeport इसे कभी नहीं रखता। सर्विस इसे /run/secrets/ के अंदर एक फ़ाइल के रूप में पढ़ती हैं।
+swarm-objects-create-configDescription = सर्विस इसे एक फ़ाइल के रूप में पढ़ती हैं, जहाँ भी वे इसे माउंट करें। कॉन्फ़िग बाद में फिर से देखे जा सकते हैं।
+swarm-objects-create-name = नाम
+swarm-objects-create-secretPlaceholder = db_password
+swarm-objects-create-configPlaceholder = nginx_conf
+swarm-objects-create-value = मान
+swarm-objects-create-content = सामग्री
+swarm-objects-create-show = दिखाएँ
+swarm-objects-create-hide = छिपाएँ
+swarm-objects-create-loadFile = फ़ाइल से लोड करें…
+swarm-objects-create-pickFile = भेजने के लिए फ़ाइल चुनें
+swarm-objects-create-clearFile = इसकी बजाय मान टाइप करें
+swarm-objects-create-fileNote = फ़ाइल बनाते समय पढ़ी जाती है, Swarm को भेजी जाती है और रखी नहीं जाती।
+swarm-services-created = { $name } बनाई गई
+swarm-services-updating = { $name } अपनी नई सेटिंग्स पर बदल रही है
+swarm-service-update = अपडेट { $state }
+swarm-create-open = सर्विस बनाएँ
+swarm-create-title = सर्विस बनाएँ
+swarm-create-description = Swarm अपने चुने नोड पर इमेज पुल करता है और इतने टास्क चलाता रहता है। Placement, रिसोर्स सीमाएँ और हेल्थ चेक docker CLI से सेट किए जा सकते हैं और निरीक्षण में दिखाए जाते हैं।
+swarm-create-image = इमेज
+swarm-create-imagePlaceholder = nginx:1.27
+swarm-create-name = नाम
+swarm-create-mode = मोड
+swarm-create-restart = रीस्टार्ट
+swarm-create-restart-default = हमेशा (डिफ़ॉल्ट)
+swarm-create-restart-onFailure = विफल होने पर
+swarm-create-restart-none = कभी नहीं
+swarm-create-command = कमांड
+swarm-create-commandPlaceholder = इमेज की अपनी कमांड
+swarm-create-env = परिवेश
+swarm-create-hostMode = हर नोड की बजाय सिर्फ़ उस नोड पर पब्लिश करें जो हर टास्क चलाता है
+swarm-create-networks = Overlay नेटवर्क
+swarm-create-secrets = सीक्रेट
+swarm-create-configs = कॉन्फ़िग
+swarm-create-mountedAt = { $name } कहाँ माउंट होता है
+swarm-create-secretTarget = /run/secrets/{ $name }
+swarm-create-configTarget = /{ $name }
+swarm-create-submit = बनाएँ
+swarm-edit-open = संपादित करें
+swarm-edit-title = { $name } संपादित करें
+swarm-edit-description = सिर्फ़ वही भेजा जाता है जो आप यहाँ बदलते हैं; सर्विस का बाकी हिस्सा वैसा ही रहता है। Swarm इसके टास्क को एक बार में कुछ-कुछ करके नई सेटिंग्स से बदलता है।
+swarm-edit-redeploy = हर टास्क फिर से डिप्लॉय करें, इमेज फिर से पुल करते हुए भले उसका टैग वही हो
+swarm-edit-submit = अपडेट करें
+swarm-membership-card-title = Swarm
+swarm-membership-card-none = यह होस्ट किसी Swarm में नहीं है।
+swarm-membership-card-state = इसका नोड { $state } है।
+swarm-membership-card-ports = यहाँ एक Swarm शुरू करें, या किसी में शामिल हों। Swarm के नोड को 2377/tcp, 7946/tcp और udp, और 4789/udp पर एक-दूसरे तक पहुँचना चाहिए; Homeport आपके लिए ये पोर्ट नहीं खोल सकता।
+swarm-membership-created = Swarm बनाया गया
+swarm-membership-joined = Swarm में शामिल हुआ
+swarm-membership-left = Swarm छोड़ा
+swarm-membership-advertise = Advertise पता
+swarm-membership-advertisePlaceholder = इंजन द्वारा चुना गया
+swarm-membership-advertiseHelp = वह पता जिस पर दूसरे नोड इस होस्ट तक पहुँचते हैं। इंजन को चुनने देने के लिए इसे खाली छोड़ें, जो तब काम करता है जब मशीन का एक ही पता हो।
+swarm-membership-listen = Listen पता
+swarm-membership-init-open = Swarm शुरू करें
+swarm-membership-init-title = { $name } पर Swarm शुरू करें
+swarm-membership-init-description = यह होस्ट एक नए Swarm का पहला मैनेजर बन जाता है। फिर दूसरे होस्ट इसमें वर्कर या मैनेजर के रूप में शामिल हो सकते हैं।
+swarm-membership-init-submit = Swarm शुरू करें
+swarm-membership-join-open = Swarm में शामिल हों
+swarm-membership-join-title = { $name } को Swarm में शामिल करें
+swarm-membership-join-description = Homeport जिस Swarm को जानता है उसे चुनें, और Homeport किसी कनेक्ट किए गए मैनेजर से उसका join token लाता है। किसी दूसरे Swarm के लिए, docker swarm join-token से token और किसी मैनेजर का पता पेस्ट करें।
+swarm-membership-join-swarm = Swarm
+swarm-membership-join-paste = कोई दूसरा Swarm, उसके token से
+swarm-membership-join-token = Join token
+swarm-membership-join-address = मैनेजर का पता
+swarm-membership-join-addressPlaceholder = 192.168.1.10:2377
+swarm-membership-join-as = इस रूप में शामिल हों
+swarm-membership-join-submit = शामिल हों
+swarm-membership-leave-open = Swarm छोड़ें
+swarm-membership-leave-title = { $name } से उसका Swarm छुड़वाएँ?
+swarm-membership-leave-worker = इसके टास्क यहाँ रुक जाते हैं और दूसरे नोड पर दोबारा शेड्यूल किए जाते हैं। इसका नोड तब तक बंद के रूप में सूची में रहता है जब तक कोई मैनेजर उसे हटा न दे।
+swarm-membership-leave-manager = यह मैनेजर और नोड नहीं रहता। दूसरे मैनेजर Swarm को चलाते रहते हैं; पहले इसे वर्कर बनाना ज़्यादा सौम्य तरीका है।
+swarm-membership-leave-last = यह Swarm का आखिरी मैनेजर है: Swarm भी इसके साथ चला जाता है, हर सर्विस, सीक्रेट और कॉन्फ़िग के साथ। दूसरे नोड बिना मैनेजर वाले Swarm में रह जाते हैं।
+swarm-membership-leave-force = बलपूर्वक: मैनेजर होने पर भी छोड़ें
+swarm-membership-leave-typeName = पुष्टि के लिए { $name } टाइप करें
+swarm-membership-leave-submit = छोड़ें
+swarm-join-title = Join कमांड
+swarm-join-description = उन मशीनों के लिए जिन्हें Homeport प्रबंधित नहीं करता: इनमें से कोई एक वहाँ चलाएँ। Homeport द्वारा प्रबंधित होस्ट इसकी बजाय अपने पेज से, कुछ भी कॉपी किए बिना, शामिल होते हैं।
+swarm-join-reveal = Join कमांड दिखाएँ
+swarm-join-hide = उन्हें छिपाएँ
+swarm-join-worker = वर्कर के रूप में
+swarm-join-manager = मैनेजर के रूप में
+swarm-stacks-search = स्टैक खोजें
+swarm-stacks-new = नया स्टैक
+swarm-stacks-deploy = डिप्लॉय करें
+swarm-stacks-redeploy = फिर से डिप्लॉय करें
+swarm-stacks-adopt = अपनाएँ
+swarm-stacks-link = किसी फ़ोल्डर से लिंक करें…
+swarm-stacks-linkTitle = { $name } की compose फ़ाइलों वाला फ़ोल्डर चुनें
+swarm-stacks-linked = { $name } अब एक लिंक्ड स्टैक है
+swarm-stacks-empty = इस Swarm पर कोई स्टैक नहीं
+swarm-stacks-emptyHint = docker stack deploy से डिप्लॉय किए गए स्टैक यहाँ दिखते हैं, और वे भी जिन्हें आप Homeport से इस Swarm पर डिप्लॉय करते हैं।
+swarm-stacks-backToList = स्टैक पर वापस जाएँ
+swarm-stacks-services = सर्विस
+swarm-stacks-noServices = अभी कुछ भी डिप्लॉय नहीं किया गया है।
+swarm-stacks-parts = नेटवर्क, सीक्रेट और कॉन्फ़िग
+swarm-stacks-networks = नेटवर्क
+swarm-stacks-noStartStop = Swarm स्टैक को पूरे रूप में रोका या शुरू नहीं किया जा सकता: इसकी बजाय इसकी सर्विस को उनके पेज से 0 पर स्केल करें।
+swarm-stacks-removed = { $name } हटाया गया
+swarm-stacks-removedPartly = { $name } हटाया गया, सिवाय इनके:
+swarm-stacks-remove-title = स्टैक { $name } हटाएँ?
+swarm-stacks-remove-description = इसकी सर्विस हटाई जाती हैं, फिर इसके नेटवर्क, सीक्रेट और कॉन्फ़िग, जैसा docker stack rm करता है। इसके वॉल्यूम हर नोड पर रखे जाते हैं।

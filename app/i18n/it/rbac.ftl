@@ -1,0 +1,93 @@
+### The `rbac` namespace, in Italiano (it).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/it/rbac.ts:
+### change the text there, then run it again.
+
+rbac-nav = RBAC
+rbac-title = RBAC
+rbac-summary = { $roles ->
+        [one] { NUM($roles) } ruolo
+       *[other] { NUM($roles) } ruoli
+    }, { $bindings ->
+        [one] { NUM($bindings) } binding
+       *[other] { NUM($bindings) } binding
+    }
+rbac-refresh = Aggiorna
+rbac-tab-roles = Roles
+rbac-tab-bindings = Binding
+rbac-tab-subjects = Soggetti
+rbac-tab-access = Cosa posso fare qui?
+rbac-search-roles = Cerca ruoli
+rbac-search-bindings = Cerca binding
+rbac-search-subjects = Cerca soggetti
+rbac-column-kind = Kind
+rbac-column-name = Nome
+rbac-column-namespace = Namespace
+rbac-column-rules = Regole
+rbac-column-role = Ruolo
+rbac-column-subjects = Soggetti
+rbac-column-bindings = Binding
+rbac-column-how = Come
+rbac-column-age = Età
+rbac-clusterWide = Tutto il cluster
+rbac-aggregated = aggregato
+rbac-roleMissing = non trovato
+rbac-empty = Niente qui.
+rbac-refused = Le tue credenziali non permettono di elencare alcuni oggetti RBAC, quindi ciò che è mostrato li esclude:
+rbac-forbidden = Le tue credenziali non permettono di elencare gli oggetti RBAC di questo cluster: è mostrato solo ciò che ti permettono, come lo riporta il server API.
+rbac-role-kind = Kind
+rbac-role-namespace = Namespace
+rbac-role-aggregation = Aggrega i ClusterRole che corrispondono a
+rbac-role-aggregatedFrom = Contiene le regole di
+rbac-role-labels = Etichette
+rbac-role-age = Età
+rbac-role-rules = Regole
+rbac-role-noRules = Nessuna regola.
+rbac-role-bindings = Binding che lo usano
+rbac-role-noBindings = Nessun binding elencato qui lo usa.
+rbac-role-gone = Questo ruolo non è (più) tra quelli elencati.
+rbac-rule-resources = Risorse
+rbac-rule-apiGroups = Gruppi API
+rbac-rule-resourceNames = Nomi delle risorse
+rbac-rule-urls = URL non di risorse
+rbac-rule-verbs = Verbi
+rbac-coreGroup = core
+rbac-subject-bestEffort = Calcolato dai binding che Homeport può leggere: una vista approssimativa. Può non vedere ciò che permettono gli autorizzatori webhook o ABAC, né i gruppi che un autenticatore dà a un utente.
+rbac-subject-groups = Contano anche i binding a questi gruppi:
+rbac-subject-onlyNamespace = Sono contati solo i RoleBinding in { $namespace }. Scegli tutti i namespace per vedere gli altri.
+rbac-subject-cluster = Tutto il cluster
+rbac-subject-clusterHint = In ogni namespace, sulle risorse a livello di cluster e sugli URL non di risorse.
+rbac-subject-inNamespace = In { $namespace }
+rbac-subject-none = Nessun binding elencato qui gli concede qualcosa.
+rbac-subject-bindings = Binding
+rbac-subject-direct = Lo nomina
+rbac-subject-through = Tramite il gruppo { $group }
+rbac-subject-via = Concesso da { $bindings }
+rbac-matrix-resource = Risorsa
+rbac-matrix-names = Solo
+rbac-matrix-yes = Permesso
+rbac-matrix-all = Permesso: ogni verbo (*)
+rbac-matrix-url = URL non di risorsa
+rbac-matrix-verbs = Verbi
+rbac-matrix-empty = Niente.
+rbac-access-about = Ciò che le credenziali usate da Homeport su { $name } possono fare in { $namespace }, secondo la risposta del server API.
+rbac-access-user = Connesso come
+rbac-access-groups = Gruppi
+rbac-access-myBindings = Binding che mi nominano
+rbac-access-incomplete = Il server API indica che questo elenco può essere incompleto: un autorizzatore che non sa elencare le sue regole, come un webhook o ABAC, può permettere di più. Chiedi «Posso…?» qui sotto per esserne certo.
+rbac-canI-title = Posso…?
+rbac-canI-verb = Verbo
+rbac-canI-resource = Risorsa
+rbac-canI-resourcePlaceholder = secrets, deploy, deployments.apps
+rbac-canI-namespace = Namespace
+rbac-canI-allNamespaces = Tutti i namespace
+rbac-canI-group = Gruppo API
+rbac-canI-subresource = Sottorisorsa
+rbac-canI-name = Nome
+rbac-canI-optional = Facoltativo
+rbac-canI-ask = Chiedi
+rbac-canI-yes = Sì
+rbac-canI-no = No
+rbac-canI-denied = Negato esplicitamente
+rbac-canI-checked = per { $resource }
+rbac-canI-unknown = Questo cluster non serve alcuna risorsa chiamata { $resource }, quindi è stato chiesto così come scritto.

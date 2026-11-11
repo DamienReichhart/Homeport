@@ -1,0 +1,91 @@
+### The `workloads` namespace, in English (en).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/en/workloads.ts:
+### change the text there, then run it again.
+
+workloads-nav = Workloads
+workloads-title = Workloads
+workloads-summary = { $count ->
+        [one] { NUM($count) } workload
+       *[other] { NUM($count) } workloads
+    }
+workloads-search = Search workloads
+workloads-empty = None here.
+workloads-kind-deployment = Deployments
+workloads-kind-statefulSet = StatefulSets
+workloads-kind-daemonSet = DaemonSets
+workloads-kind-job = Jobs
+workloads-kind-cronJob = CronJobs
+workloads-one-deployment = Deployment
+workloads-one-statefulSet = StatefulSet
+workloads-one-daemonSet = DaemonSet
+workloads-one-job = Job
+workloads-one-cronJob = CronJob
+workloads-column-name = Name
+workloads-column-namespace = Namespace
+workloads-column-health = Health
+workloads-column-ready = Ready
+workloads-column-completions = Completions
+workloads-column-active = Active
+workloads-column-upToDate = Up to date
+workloads-column-schedule = Schedule
+workloads-column-lastSchedule = Last run
+workloads-column-images = Images
+workloads-column-age = Age
+workloads-tab-overview = Overview
+workloads-tab-pods = Pods
+workloads-tab-jobs = Jobs
+workloads-tab-logs = Logs
+workloads-tab-conditions = Conditions
+workloads-tab-events = Events
+workloads-tab-source = YAML
+workloads-detail-namespace = Namespace
+workloads-detail-ready = Ready
+workloads-detail-upToDate = Up to date
+workloads-detail-schedule = Schedule
+workloads-detail-lastSchedule = Last run
+workloads-detail-strategy = Strategy
+workloads-detail-selector = Selects Pods by
+workloads-detail-owner = Controlled by
+workloads-detail-age = Age
+workloads-detail-labels = Labels
+workloads-detail-annotations = Annotations
+workloads-detail-containers = Containers
+workloads-detail-noJobs = It hasn’t started any Job that’s still kept.
+workloads-container-name = Container
+workloads-container-image = Image
+workloads-container-ports = Ports
+workloads-action-menu = Actions for { $name }
+workloads-action-scale = Scale
+workloads-action-restart = Restart
+workloads-action-trigger = Run now
+workloads-action-suspend = Suspend
+workloads-action-resume = Resume
+workloads-scale-title = Scale { $name }
+workloads-scale-description = In the namespace { $namespace } on { $cluster }. It runs { $current ->
+        [one] { NUM($current) } Pod
+       *[other] { NUM($current) } Pods
+    } now.
+workloads-scale-replicas = Pods
+workloads-scale-autoscaled = The autoscaler { $autoscaler } manages its Pods, so it will set the number back on its next check.
+workloads-scale-toZero = With 0 Pods it stops serving until you scale it up again.
+workloads-scale-submit = Scale
+workloads-scale-done = { $name } scaled to { $replicas ->
+        [one] { NUM($replicas) } Pod
+       *[other] { NUM($replicas) } Pods
+    }
+workloads-scale-failed = Homeport couldn’t scale { $name }
+workloads-restart-title = Restart { $name }?
+workloads-restart-description = Its Pods in the namespace { $namespace } on { $cluster } are replaced one after the other, as its rollout strategy says, like kubectl rollout restart.
+workloads-restart-confirm = Restart
+workloads-restart-done = Restarting { $name }
+workloads-restart-failed = Homeport couldn’t restart { $name }
+workloads-suspend-title = Suspend { $name }?
+workloads-suspend-description = It starts no more Jobs in the namespace { $namespace } on { $cluster } until you resume it. Jobs already running go on.
+workloads-suspend-confirm = Suspend
+workloads-suspend-done = { $name } suspended
+workloads-suspend-failed = Homeport couldn’t suspend { $name }
+workloads-resume-done = { $name } resumed
+workloads-resume-failed = Homeport couldn’t resume { $name }
+workloads-trigger-done = Started the Job { $job }
+workloads-trigger-failed = Homeport couldn’t start a Job from { $name }

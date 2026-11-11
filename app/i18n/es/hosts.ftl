@@ -1,0 +1,193 @@
+### The `hosts` namespace, in Español (es).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/es/hosts.ts:
+### change the text there, then run it again.
+
+hosts-title = Hosts
+hosts-description = Los Docker Engines a los que se conecta Homeport.
+hosts-add = Añadir host
+hosts-empty = Aún no hay hosts.
+hosts-column-name = Nombre
+hosts-column-type = Tipo
+hosts-column-address = Dirección
+hosts-column-status = Estado
+hosts-statusTitle = { $label }: { $detail }
+hosts-saved = Se guardó el host
+hosts-notFound = Este host ya no existe.
+hosts-addPage-description = Conecta Homeport a un Docker Engine.
+hosts-switcher-label = Host
+hosts-switcher-placeholder = Ningún host
+hosts-switcher-add = Añadir host…
+hosts-switcher-manage = Gestionar hosts
+hosts-switcher-hosts = Hosts
+hosts-switcher-clusters = Clústeres
+hosts-switcher-addCluster = Añadir clúster…
+hosts-switcher-manageClusters = Gestionar clústeres
+hosts-switcher-whyUnusable = Por qué no se puede usar { $name }
+hosts-detail-enabled = Activado
+hosts-detail-reconnect = Volver a conectar
+hosts-connection-title = Conexión
+hosts-remove-title = Quitar host
+hosts-remove-description = Homeport olvida este host, sus credenciales y las definiciones de sus stacks gestionados. No se toca nada de lo que se ejecuta en el host.
+hosts-remove-confirmTitle = ¿Quitar { $name }?
+hosts-remove-confirmDescription = Borra la conexión guardada, la clave SSH o los certificados y las definiciones compose de sus stacks gestionados. Los contenedores, imágenes y volúmenes del host se quedan como están.
+hosts-sshSetup-title = Autorizar a Homeport en el servidor
+hosts-sshSetup-description = Ejecuta esto en <mono>{ $server }</mono> como el usuario SSH y luego vuelve a conectar.
+hosts-sshSetup-descriptionBastions = Homeport inicia sesión en cada uno de estos con la misma clave. Añádela en todos ellos, como su usuario SSH, y luego vuelve a conectar.
+hosts-sshSetup-servers = Añádela en:
+hosts-sshSetup-addKey = 1. Añade la clave pública
+hosts-sshSetup-dockerGroup = 2. Permite que el usuario acceda al socket del Engine (si hace falta)
+hosts-sshSetup-fingerprint = Huella de la clave <mono>{ $fingerprint }</mono>
+hosts-regenerate-button = Regenerar clave
+hosts-regenerate-title = ¿Regenerar la clave SSH?
+hosts-regenerate-description = La clave actual deja de funcionar. Tendrás que añadir la nueva clave pública al servidor.
+hosts-regenerate-confirm = Regenerar
+hosts-trust-untrusted-title = ¿Es este el servidor correcto?
+hosts-trust-untrusted-description = Primera conexión. El servidor se identifica con la huella de clave <mono>{ $fingerprint }</mono>. Compárala con <mono>{ $command }</mono> en el servidor.
+hosts-trust-untrusted-button = Confiar en esta clave
+hosts-trust-untrusted-bastionTitle = ¿Es este el bastión correcto?
+hosts-trust-untrusted-bastionDescription = Primera conexión con el bastión <mono>{ $bastion }</mono>. Se identifica con la huella de clave <mono>{ $fingerprint }</mono>. Compárala con <mono>{ $command }</mono> en el bastión.
+hosts-trust-mismatch-bastionTitle = La clave del bastión { $bastion } cambió
+hosts-trust-mismatch-title = La clave del servidor cambió
+hosts-trust-mismatch-description = Se esperaba <mono>{ $expected }</mono>, pero el servidor presentó <mono>{ $fingerprint }</mono>. Esto pasa después de reinstalar el servidor, pero también puede significar que alguien está interceptando la conexión.
+hosts-trust-mismatch-button = Confiar en la clave nueva
+hosts-trust-mismatch-confirmTitle = ¿Confiar en la nueva clave del servidor?
+hosts-trust-mismatch-confirmDescription = Hazlo solo si sabes por qué cambió la clave. Nueva huella: { $fingerprint }.
+hosts-trust-mismatch-confirm = Confiar en la clave nueva
+hosts-kind-ssh = SSH
+hosts-kind-tls = TLS
+hosts-kind-tcp = TCP
+hosts-kind-local = Socket local
+hosts-form-keepHint = Déjalo en blanco para conservar el valor guardado.
+hosts-form-name = Nombre
+hosts-form-engine = Engine
+hosts-form-engineHint = Compatible con Docker abarca Docker y Podman; Homeport los distingue al conectarse. A containerd se accede por su socket, aquí o por SSH; a Incus también por HTTPS (TLS).
+hosts-form-socketOnly = { $engine } solo responde en su socket: conéctate localmente o por SSH.
+hosts-form-noPlainTcp = { $engine } no responde por TCP sin cifrar: usa TLS, SSH o su socket.
+hosts-form-socketPath = Ruta del socket
+hosts-form-socketPathHint = Un socket Unix o una named pipe como { $pipe } en Windows.
+hosts-form-address = Dirección
+hosts-form-addressHint = host:puerto, por ejemplo { $example }.
+hosts-form-tcpWarning-title = Sin cifrar y sin autenticar
+hosts-form-tcpWarning-description = Cualquiera que pueda alcanzar este puerto controla el Engine. Fuera de una red de confianza, es preferible SSH o TLS.
+hosts-form-loadFromFile = Cargar desde archivo…
+hosts-incus-trust = Confianza
+hosts-incus-trust-token = Token de confianza
+hosts-incus-trust-certificate = Certificado existente
+hosts-incus-token = Token de confianza
+hosts-incus-tokenHint = Ejecuta esto en el servidor Incus y pega lo que imprime. Homeport crea su propio certificado, comprueba el del servidor con el token y se registra.
+hosts-incus-tokenReads = Para { $name }, en { $addresses }
+hosts-incus-tokenFingerprint = Certificado del servidor { $fingerprint }
+hosts-incus-tokenExpires = Caduca { $time }
+hosts-incus-serverCert = Certificado del servidor en el que confiar
+hosts-incus-serverCert-choose = Elegir el certificado del servidor
+hosts-incus-serverCertHint = El propio certificado de Incus (/var/lib/incus/server.crt). Homeport acepta exactamente este, sea cual sea la dirección.
+hosts-incus-clientCert = Certificado de cliente
+hosts-incus-clientCertHint = Ya aceptado como de confianza por Incus: incus config trust add-certificate.
+hosts-incus-clientKey = Clave de cliente
+hosts-keychain-title = No hay llavero del sistema
+hosts-keychain-description = Las claves y los certificados se cifran con una clave guardada en el llavero del sistema, y no hay ninguno disponible. Usa ssh-agent, un socket local o TCP en su lugar.
+hosts-ssh-server = Servidor
+hosts-ssh-port = Puerto
+hosts-ssh-user = Usuario
+hosts-ssh-userHint = Necesita acceso al socket de Docker, normalmente por pertenecer al grupo docker.
+hosts-ssh-socketPath = Ruta del socket remoto
+hosts-ssh-socketPathHint = Docker sin root usa { $path }.
+hosts-ssh-auth = Autenticación
+hosts-ssh-auth-generated = Clave nueva para este host
+hosts-ssh-auth-imported = Clave existente
+hosts-ssh-generated-editing = Este host conserva su clave. Regenérala desde la página del host.
+hosts-ssh-generated-new = Homeport crea una clave Ed25519 para este host y te muestra el comando que la autoriza en el servidor.
+hosts-ssh-privateKey = Clave privada
+hosts-ssh-privateKey-choose = Elegir la clave privada
+hosts-ssh-privateKeyHint = Se guarda cifrada; nunca sale de este equipo.
+hosts-ssh-passphrase = Frase de contraseña
+hosts-bastions-title = Bastiones
+hosts-bastions-description = Servidores en los que Homeport inicia sesión primero, en orden, cuando este solo acepta SSH desde ellos (ProxyJump).
+hosts-bastions-add = Añadir bastión
+hosts-bastions-one = Bastión { $n }
+hosts-bastions-server = Servidor del bastión { $n }
+hosts-bastions-port = Puerto del bastión { $n }
+hosts-bastions-user = Usuario del bastión { $n }
+hosts-bastions-moveUp = Subir el bastión { $n }
+hosts-bastions-moveDown = Bajar el bastión { $n }
+hosts-bastions-remove = Quitar el bastión { $n }
+hosts-bastions-auth-sameAsHost = La misma que el host
+hosts-bastions-auth-imported = Su propia clave
+hosts-bastions-auth-agent = ssh-agent
+hosts-import-title = Importar
+hosts-import-description = Añade los servidores que describe tu configuración SSH o los Engines de tus contextos de Docker.
+hosts-import-sshConfig-button = Importar desde ~/.ssh/config
+hosts-import-sshConfig-title = Importar desde ~/.ssh/config
+hosts-import-sshConfig-description = Todos los servidores que nombra tu configuración SSH, con su usuario, puerto, clave y bastiones ProxyJump. Las claves se leen una vez y se guardan cifradas; el archivo no se modifica.
+hosts-import-sshConfig-empty = Tu configuración SSH no nombra ningún servidor sin comodines.
+hosts-import-dockerContexts-button = Importar contextos de Docker
+hosts-import-dockerContexts-title = Importar contextos de Docker
+hosts-import-dockerContexts-description = Los contextos de la CLI de Docker, con sus certificados TLS. Los certificados se leen una vez y se guardan cifrados; ~/.docker no se modifica.
+hosts-import-dockerContexts-empty = La CLI de Docker no tiene ningún contexto aparte de default.
+hosts-import-column-name = Nombre del host
+hosts-import-column-address = Dirección y socket
+hosts-import-column-auth = Inicia sesión con
+hosts-import-column-notes = Notas
+hosts-import-pick = Importar { $name }
+hosts-import-name = Nombre del host para { $name }
+hosts-import-passphrase = Frase de contraseña de la clave de { $name }
+hosts-import-socket = Ruta del socket remoto de { $name }
+hosts-import-via = a través de { $bastions }
+hosts-import-nameTaken = Ya hay un host con este nombre; cámbiale el nombre para importarlo.
+hosts-import-auth-key = su clave
+hosts-import-auth-agent = ssh-agent
+hosts-import-auth-certificates = certificados TLS
+hosts-import-auth-none = nada
+hosts-import-problem-nameEmpty = Ponle un nombre.
+hosts-import-problem-nameTwice = Dos hosts tendrían este nombre.
+hosts-import-problem-nameTaken = Elige otro nombre.
+hosts-import-problem-passphrase = Introduce la frase de contraseña de la clave.
+hosts-import-problem-socket = La ruta del socket debe ser absoluta.
+hosts-import-submit = { $count ->
+        [0] Importar
+        [one] Importar { NUM($count) } host
+       *[other] Importar { NUM($count) } hosts
+    }
+hosts-import-failed = { $name } no se importó:
+hosts-import-done = { $count ->
+        [one] Se importó { NUM($count) } host
+       *[other] Se importaron { NUM($count) } hosts
+    }
+hosts-bundle-fileType = Exportación de Homeport
+hosts-bundle-passphrase = Frase de contraseña
+hosts-bundle-passphraseHint = Al menos { $min } caracteres. Homeport no la guarda: sin ella, el archivo no se puede abrir.
+hosts-bundle-confirmation = Repite la frase de contraseña
+hosts-bundle-problem-short = Usa al menos { $min } caracteres.
+hosts-bundle-problem-mismatch = Las dos frases de contraseña no coinciden.
+hosts-bundle-export-button = Exportar
+hosts-bundle-export-title = Exportar hosts
+hosts-bundle-export-description = Escribe los hosts que elijas, con sus claves, certificados y claves de servidor de confianza, en un archivo cifrado con una frase de contraseña. Impórtalo en otro equipo para usarlos allí.
+hosts-bundle-export-hosts = Hosts que exportar
+hosts-bundle-export-saveTitle = Guardar la exportación
+hosts-bundle-export-submit = { $count ->
+        [0] Exportar
+        [one] Exportar { NUM($count) } host…
+       *[other] Exportar { NUM($count) } hosts…
+    }
+hosts-bundle-export-done = { $count ->
+        [one] Se exportó { NUM($count) } host
+       *[other] Se exportaron { NUM($count) } hosts
+    }
+hosts-bundle-export-withoutSecrets = Estos se exportaron sin sus credenciales, que no se pueden abrir en este equipo:
+hosts-bundle-import-button = Importar
+hosts-bundle-import-title = Importar hosts desde una exportación
+hosts-bundle-import-description = Abre un archivo exportado desde Homeport con su frase de contraseña y luego elige los hosts que añadir. Sus credenciales se guardan cifradas en este equipo.
+hosts-bundle-import-choose = Elegir archivo…
+hosts-bundle-import-chooseTitle = Elegir una exportación de Homeport
+hosts-bundle-import-open = Abrir
+hosts-bundle-import-renamed = Ya hay un host llamado { $name }, así que a este se le cambia el nombre.
+hosts-bundle-import-secretsMissing = Exportado sin sus credenciales; introdúcelas en su página después de importarlo.
+hosts-tls-ca = Certificado de CA
+hosts-tls-ca-choose = Elegir el certificado de CA
+hosts-tls-cert = Certificado de cliente
+hosts-tls-cert-choose = Elegir el certificado de cliente
+hosts-tls-key = Clave de cliente
+hosts-tls-key-choose = Elegir la clave de cliente
+hosts-palette-add = Añadir host
+hosts-palette-manage = Gestionar hosts

@@ -1,0 +1,108 @@
+### The `podmanpods` namespace, in العربية (ar).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/ar/podmanpods.ts:
+### change the text there, then run it again.
+
+podmanpods-nav = Pods
+podmanpods-title = Pods
+podmanpods-summary = { $count ->
+        [zero] لا Pods
+        [one] Pod واحد
+        [two] { NUM($count) } Pods
+        [few] { NUM($count) } Pods
+        [many] { NUM($count) } Pod
+       *[other] { NUM($count) } Pod
+    }
+podmanpods-search = البحث في Pods
+podmanpods-empty = لا توجد Pods
+podmanpods-emptyDescription = يجمع الـ Pod حاويات تتشارك شبكة واحدة وتبدأ وتتوقف معًا. أنشئ واحدًا، ثم شغّل حاويات فيه.
+podmanpods-new = Pod جديد
+podmanpods-column-name = الاسم
+podmanpods-column-status = الحالة
+podmanpods-column-containers = الحاويات
+podmanpods-column-networks = الشبكات
+podmanpods-column-created = تاريخ الإنشاء
+podmanpods-running = { $running } من { $count } قيد التشغيل
+podmanpods-status-running = قيد التشغيل
+podmanpods-status-degraded = قيد التشغيل جزئيًا
+podmanpods-status-paused = متوقف مؤقتًا
+podmanpods-status-created = تم الإنشاء
+podmanpods-status-stopped = متوقف
+podmanpods-status-failed = فشل
+podmanpods-action-start = تشغيل
+podmanpods-action-stop = إيقاف
+podmanpods-action-restart = إعادة التشغيل
+podmanpods-action-pause = إيقاف مؤقت
+podmanpods-action-unpause = استئناف
+podmanpods-actionOne-start = تشغيل { $name }
+podmanpods-actionOne-stop = إيقاف { $name }
+podmanpods-actionOne-restart = إعادة تشغيل { $name }
+podmanpods-actionOne-pause = إيقاف { $name } مؤقتًا
+podmanpods-actionOne-unpause = استئناف { $name }
+podmanpods-removeOne = إزالة { $name }
+podmanpods-done-start = تم تشغيل { $name }
+podmanpods-done-stop = تم إيقاف { $name }
+podmanpods-done-restart = تمت إعادة تشغيل { $name }
+podmanpods-done-pause = تم إيقاف { $name } مؤقتًا
+podmanpods-done-unpause = تم استئناف { $name }
+podmanpods-removed = تمت إزالة { $name }، { $count ->
+        [0] دون حاويات
+        [zero] دون حاويات
+        [one] مع حاوية واحدة
+        [two] مع حاويتين
+        [few] مع { NUM($count) } حاويات
+        [many] مع { NUM($count) } حاوية
+       *[other] مع { NUM($count) } حاوية
+    }
+podmanpods-created = تم إنشاء { $name }
+podmanpods-remove-title = هل تريد إزالة { $name }؟
+podmanpods-remove-stopped = { $count ->
+        [0] يُزال الـ Pod وحاوية infra الخاصة به.
+        [zero] يُزال الـ Pod وحاوية infra الخاصة به.
+        [one] يُزال الـ Pod وحاوية infra الخاصة به وحاويته الوحيدة.
+        [two] يُزال الـ Pod وحاوية infra الخاصة به وحاويتاه.
+        [few] يُزال الـ Pod وحاوية infra الخاصة به وحاوياته الـ { NUM($count) }.
+        [many] يُزال الـ Pod وحاوية infra الخاصة به وحاوياته الـ { NUM($count) }.
+       *[other] يُزال الـ Pod وحاوية infra الخاصة به وحاوياته الـ { NUM($count) }.
+    } يُحتفظ بوحدات التخزين الخاصة بها.
+podmanpods-remove-running = { $count ->
+        [0] الـ Pod قيد التشغيل: سيُوقف، ثم يُزال مع حاوية infra الخاصة به.
+        [zero] الـ Pod قيد التشغيل: سيُوقف، ثم يُزال مع حاوية infra الخاصة به.
+        [one] الـ Pod قيد التشغيل: ستُوقف حاويته الوحيدة، ثم تُزال مع الـ Pod وحاوية infra الخاصة به.
+        [two] الـ Pod قيد التشغيل: ستُوقف حاويتاه، ثم تُزالان مع الـ Pod وحاوية infra الخاصة به.
+        [few] الـ Pod قيد التشغيل: ستُوقف حاوياته الـ { NUM($count) }، ثم تُزال مع الـ Pod وحاوية infra الخاصة به.
+        [many] الـ Pod قيد التشغيل: ستُوقف حاوياته الـ { NUM($count) }، ثم تُزال مع الـ Pod وحاوية infra الخاصة به.
+       *[other] الـ Pod قيد التشغيل: ستُوقف حاوياته الـ { NUM($count) }، ثم تُزال مع الـ Pod وحاوية infra الخاصة به.
+    } يُحتفظ بوحدات التخزين الخاصة بها.
+podmanpods-remove-stopAndRemove = إيقاف وإزالة
+podmanpods-detail-containers = { $count ->
+        [0] الحاويات
+        [zero] الحاويات
+        [one] حاوية واحدة
+        [two] حاويتان
+        [few] { NUM($count) } حاويات
+        [many] { NUM($count) } حاوية
+       *[other] { NUM($count) } حاوية
+    }
+podmanpods-detail-noContainers = لا يعمل شيء في هذا الـ Pod بعد سوى حاوية infra الخاصة به.
+podmanpods-detail-infra = Infra
+podmanpods-detail-settings = الإعدادات
+podmanpods-detail-ports = المنافذ المنشورة
+podmanpods-detail-noPorts = لا شيء
+podmanpods-detail-shared = مساحات الأسماء المشتركة
+podmanpods-detail-networks = الشبكات
+podmanpods-detail-hostname = اسم المضيف
+podmanpods-detail-created = تاريخ الإنشاء
+podmanpods-detail-labels = التسميات
+podmanpods-detail-command = أُنشئ باستخدام
+podmanpods-detail-runContainer = تشغيل حاوية
+podmanpods-detail-runContainerIn = تشغيل حاوية في { $name }
+podmanpods-newDialog-title = Pod جديد
+podmanpods-newDialog-description = تتشارك حاوياته شبكة واحدة، لذا تُنشر المنافذ على الـ Pod، لها جميعًا.
+podmanpods-newDialog-name = الاسم
+podmanpods-newDialog-portsHint = اترك منفذ المضيف فارغًا ليختار Podman منفذًا متاحًا. لا يمكن للحاويات التي تعمل في الـ Pod نشر منافذ خاصة بها.
+podmanpods-newDialog-labels = التسميات
+podmanpods-newDialog-create = إنشاء Pod
+podmanpods-form-nameInvalid = ابدأ بحرف أو رقم، ثم استخدم حروفًا أو أرقامًا أو _ أو . أو -.
+podmanpods-form-portInvalid = المنافذ أرقام من 1 إلى 65535.
+podmanpods-form-labelInvalid = اكتب تسمية واحدة بصيغة key=value في كل سطر.

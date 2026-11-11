@@ -1,0 +1,313 @@
+### The `incus` namespace, in Español (es).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/es/incus.ts:
+### change the text there, then run it again.
+
+incus-delete = Eliminar
+incus-status-running = En ejecución
+incus-status-stopped = Detenida
+incus-status-frozen = Congelada
+incus-status-starting = Iniciando
+incus-status-stopping = Deteniendo
+incus-status-freezing = Congelando
+incus-status-error = Error
+incus-status-unknown = Desconocido
+incus-type-container = Contenedor
+incus-type-virtualMachine = Máquina virtual
+incus-action-start = Iniciar
+incus-action-stop = Detener
+incus-action-restart = Reiniciar
+incus-action-freeze = Congelar
+incus-action-unfreeze = Descongelar
+incus-action-forceStop = Forzar detención
+incus-actionOne-start = Iniciar { $name }
+incus-actionOne-stop = Detener { $name }
+incus-actionOne-restart = Reiniciar { $name }
+incus-actionOne-freeze = Congelar { $name }
+incus-actionOne-unfreeze = Descongelar { $name }
+incus-instances-nav = Instancias
+incus-instances-title = Instancias
+incus-instances-summary = { $count ->
+        [one] { NUM($count) } instancia
+       *[other] { NUM($count) } instancias
+    }, { $running } en ejecución, en el proyecto { $project }.
+incus-instances-search = Filtrar por nombre o descripción
+incus-instances-filter-all = Todas
+incus-instances-empty = No hay instancias en { $project }
+incus-instances-emptyDescription = Aquí aparecen los contenedores de sistema y las máquinas virtuales de este proyecto. Elige otro proyecto bajo el selector de hosts para ver otros.
+incus-instances-more = Más acciones para { $name }
+incus-instances-column-name = Nombre
+incus-instances-column-type = Tipo
+incus-instances-column-status = Estado
+incus-instances-column-image = Imagen
+incus-instances-column-addresses = Direcciones
+incus-instances-column-memory = Memoria
+incus-instances-column-created = Creada
+incus-instances-done-start = Se inició { $name }
+incus-instances-done-stop = Se detuvo { $name }
+incus-instances-done-restart = Se reinició { $name }
+incus-instances-done-freeze = Se congeló { $name }
+incus-instances-done-unfreeze = Se descongeló { $name }
+incus-instances-deleted = Se eliminó { $name }
+incus-instances-delete-title = ¿Eliminar { $name }?
+incus-instances-delete-description = La instancia y su disco se eliminan del proyecto { $project }. Esta acción no se puede deshacer.
+incus-instances-delete-snapshots = { $count ->
+        [one] Su instantánea se elimina
+       *[other] Sus { NUM($count) } instantáneas se eliminan
+    } con ella.
+incus-instances-delete-snapshotsNamed = { $count ->
+        [one] Su instantánea { $names } se elimina
+       *[other] Sus instantáneas { $names } se eliminan
+    } con ella.
+incus-instances-delete-stopFirst = Detenla antes: está en ejecución
+incus-instances-delete-stopAndDelete = Detener y eliminar
+incus-instances-backToList = Volver a las instancias
+incus-instances-tab-overview = Resumen
+incus-instances-tab-console = Consola
+incus-instances-tab-exec = Exec
+incus-instances-tab-snapshots = Instantáneas
+incus-instances-tab-config = Configuración
+incus-instances-tab-devices = Dispositivos
+incus-instances-tab-raw = Sin procesar
+incus-instances-field-project = Proyecto
+incus-instances-field-architecture = Arquitectura
+incus-instances-field-addresses = Direcciones
+incus-instances-field-cpu = Tiempo de CPU
+incus-instances-field-memory = Memoria
+incus-instances-field-processes = Procesos
+incus-instances-field-created = Creada
+incus-instances-field-lastUsed = Último uso
+incus-instances-field-snapshots = Instantáneas
+incus-instances-field-location = Miembro del clúster
+incus-instances-field-description = Descripción
+incus-instances-cpuSeconds = { $seconds } s
+incus-instances-profiles = Perfiles
+incus-instances-noConfig = Sin configuración.
+incus-instances-noDevices = Sin dispositivos.
+incus-instances-config-key = Clave
+incus-instances-config-value = Valor
+incus-instances-config-fromProfile = De un perfil
+incus-progress-waiting = Esperando a Incus…
+incus-remote-server = Servidor de imágenes
+incus-remote-search = Filtrar por sistema, versión o alias
+incus-remote-list = Imágenes del servidor
+incus-remote-none = Ninguna imagen coincide.
+incus-remote-alias = Alias
+incus-images-nav = Imágenes
+incus-images-title = Imágenes
+incus-images-summary = { $count ->
+        [one] { NUM($count) } imagen
+       *[other] { NUM($count) } imágenes
+    } en el proyecto { $project }.
+incus-images-search = Filtrar por alias, huella o descripción
+incus-images-empty = No hay imágenes en { $project }
+incus-images-emptyDescription = Las imágenes se descargan cuando se crea una instancia a partir de una, o por adelantado con Obtener imagen.
+incus-images-get = Obtener imagen
+incus-images-get-title = Obtener una imagen
+incus-images-get-description = Incus la descarga en el proyecto { $project } desde el servidor de imágenes, para que las instancias se inicien rápido a partir de ella.
+incus-images-get-autoUpdate = Mantenerla al día desde el servidor
+incus-images-get-keepAlias = Darle aquí el mismo alias
+incus-images-get-confirm = Obtener imagen
+incus-images-get-done = La imagen está lista.
+incus-images-copied = Se copió { $alias } en { $project }
+incus-images-column-aliases = Alias
+incus-images-column-description = Descripción
+incus-images-column-type = Tipo
+incus-images-column-arch = Arquitectura
+incus-images-column-size = Tamaño
+incus-images-column-uploaded = Añadida
+incus-images-cached = en caché
+incus-images-cachedHint = Se descargó para crear una instancia; Incus la elimina cuando nada la ha usado durante un tiempo.
+incus-images-aliasAdd = Añadir un alias a { $name }
+incus-images-aliasRemove = Quitar el alias { $name }
+incus-images-aliasRemoved = Se quitó el alias { $name }
+incus-images-alias-title = Añadir un alias a { $name }
+incus-images-alias-name = Alias
+incus-images-alias-add = Añadir alias
+incus-images-refreshOne = Actualizar { $name } desde su servidor
+incus-images-refreshed = Se actualizó { $name }
+incus-images-deleteOne = Eliminar { $name }
+incus-images-deleted = Se eliminó { $name }
+incus-images-delete-title = ¿Eliminar la imagen { $name }?
+incus-images-delete-description = Las instancias creadas a partir de ella siguen funcionando: cada una tiene su propia copia. Las nuevas necesitarán que se vuelva a descargar.
+incus-profiles-nav = Perfiles
+incus-profiles-title = Perfiles
+incus-profiles-summary = { $count ->
+        [one] { NUM($count) } perfil
+       *[other] { NUM($count) } perfiles
+    } en el proyecto { $project }.
+incus-profiles-search = Filtrar por nombre o descripción
+incus-profiles-empty = No hay perfiles en { $project }
+incus-profiles-new = Nuevo perfil
+incus-profiles-new-title = Nuevo perfil
+incus-profiles-new-description = Un perfil vacío en el proyecto { $project }. Añade su configuración y sus dispositivos cuando esté creado.
+incus-profiles-new-name = Nombre
+incus-profiles-new-descriptionField = Descripción
+incus-profiles-created = Se creó el perfil { $name }
+incus-profiles-column-name = Nombre
+incus-profiles-column-description = Descripción
+incus-profiles-column-settings = Ajustes
+incus-profiles-column-usedBy = Usado por
+incus-profiles-settings = { $config ->
+        [one] { NUM($config) } clave
+       *[other] { NUM($config) } claves
+    }, { $devices ->
+        [one] { NUM($devices) } dispositivo
+       *[other] { NUM($devices) } dispositivos
+    }
+incus-profiles-defaultKept = Incus conserva el perfil default.
+incus-profiles-inUse = Lo usan { $names }: quítalo antes de ellas.
+incus-profiles-deleteOne = Eliminar { $name }
+incus-profiles-deleted = Se eliminó el perfil { $name }
+incus-profiles-delete-title = ¿Eliminar el perfil { $name }?
+incus-profiles-delete-description = Se elimina del proyecto { $project }. Ninguna instancia lo usa.
+incus-profiles-backToList = Volver a los perfiles
+incus-profiles-noDescription = Sin descripción
+incus-profiles-reload = Volver a cargar
+incus-profiles-saved = Se guardó el perfil { $name }
+incus-profiles-usedBy = Usado por
+incus-profiles-editHint = Su descripción, su configuración y sus dispositivos, tal como los muestra incus profile edit. Al guardar se aplican a las instancias que lo usan, como hace Incus; si alguien lo cambió desde que se cargó, Homeport se niega en lugar de sobrescribirlo.
+incus-profiles-yamlOf = YAML de { $name }
+incus-new-action = Nueva instancia
+incus-new-title = Nueva instancia
+incus-new-description = Un contenedor de sistema o una máquina virtual en el proyecto { $project }, a partir de una imagen.
+incus-new-name = Nombre
+incus-new-image = Imagen
+incus-new-origin-remote = Desde un servidor de imágenes
+incus-new-origin-local = Desde las imágenes de este host
+incus-new-localImage = Imagen en este host
+incus-new-localImagePlaceholder = Elige una imagen
+incus-new-profiles = Perfiles
+incus-new-cpu = CPU
+incus-new-memory = Memoria
+incus-new-disk = Disco raíz
+incus-new-limitsHint = Opcional: si se deja vacío, deciden los perfiles. Los tamaños se escriben como 512MiB o 20GiB.
+incus-new-start = Iniciarla cuando esté creada
+incus-new-confirm = Crear
+incus-new-open = Abrirla
+incus-new-made = Se creó { $name }
+incus-new-done = { $name } está lista.
+incus-new-problem-name = Ponle un nombre con letras, dígitos y guiones, que empiece por una letra, de hasta 63 caracteres.
+incus-new-problem-image = Elige una imagen o escribe su alias.
+incus-new-problem-cpu = CPU es un número entero a partir de 1.
+incus-new-problem-memory = La memoria se escribe como 512MiB o 2GiB.
+incus-new-problem-disk = El disco raíz se escribe como 20GiB.
+incus-exec-startFirst = Inicia la instancia para ejecutar comandos en ella.
+incus-exec-command = Comando
+incus-exec-commandPlaceholder = Un shell (bash o, si no, sh)
+incus-exec-user = ID de usuario
+incus-exec-cwd = Carpeta
+incus-exec-open = Abrir
+incus-exec-exited = El comando terminó.
+incus-exec-exitedWithCode = El comando terminó con el código { $code }.
+incus-console-startFirst = Inicia la instancia para conectarte a su consola.
+incus-console-hint = Su consola de texto, tal como la muestra incus console: la petición de inicio de sesión o un arranque en directo. Salir de la pestaña te desconecta sin detener nada.
+incus-console-reattach = Volver a conectar
+incus-console-detached = Desconectado de la consola.
+incus-snapshots-take = Crear instantánea
+incus-snapshots-take-title = Crear una instantánea de { $name }
+incus-snapshots-take-description = Una copia de su disco tal como está ahora, para restaurarla más adelante: antes de una actualización o de un cambio arriesgado.
+incus-snapshots-take-name = Nombre
+incus-snapshots-take-namePlaceholder = snap0, snap1… si se deja vacío
+incus-snapshots-take-expiry = Conservarla
+incus-snapshots-take-stateful = Incluir su estado de ejecución (memoria)
+incus-snapshots-expiry-never = Hasta que se elimine
+incus-snapshots-expiry-1d = Un día
+incus-snapshots-expiry-7d = Una semana
+incus-snapshots-expiry-30d = 30 días
+incus-snapshots-taken = Se creó una instantánea de { $name }
+incus-snapshots-empty = No hay instantáneas
+incus-snapshots-emptyDescription = Crea una antes de cambiar algo que quizá quieras deshacer.
+incus-snapshots-column-name = Nombre
+incus-snapshots-column-created = Creada
+incus-snapshots-column-expires = Caduca
+incus-snapshots-column-size = Tamaño
+incus-snapshots-stateful = con estado
+incus-snapshots-restore = Restaurar
+incus-snapshots-restore-title = ¿Restaurar { $name } a { $snapshot }?
+incus-snapshots-restore-description = Se pierde todo lo que cambió en su disco desde { $time }, cuando se creó { $snapshot }. Una instancia en ejecución se reinicia.
+incus-snapshots-restored = Se restauró { $name } a { $snapshot }
+incus-snapshots-deleteOne = Eliminar { $snapshot }
+incus-snapshots-delete-title = ¿Eliminar la instantánea { $snapshot }?
+incus-snapshots-delete-description = La instancia se queda como está; esta instantánea ya no se podrá restaurar.
+incus-snapshots-deleted = Se eliminó la instantánea { $snapshot }
+incus-storage-nav = Almacenamiento
+incus-storage-title = Almacenamiento
+incus-storage-summary = { $count ->
+        [one] { NUM($count) } pool de almacenamiento
+       *[other] { NUM($count) } pools de almacenamiento
+    }; volúmenes del proyecto { $project }.
+incus-storage-empty = No hay pools de almacenamiento
+incus-storage-emptyDescription = Crea uno con incus storage create o incus admin init.
+incus-storage-usage = Espacio usado en { $pool }
+incus-storage-space = { $used } de { $total } usados ({ $percent })
+incus-storage-spaceUnknown = Su driver no indica cuánto está lleno.
+incus-storage-volumesOf = Volúmenes en { $pool }
+incus-storage-noVolumes = No hay volúmenes de este proyecto en el pool.
+incus-storage-new = Nuevo volumen
+incus-storage-new-title = Nuevo volumen en { $pool }
+incus-storage-new-description = Un volumen personalizado del proyecto { $project }, para conectarlo a instancias y guardar datos que las sobrevivan.
+incus-storage-new-name = Nombre
+incus-storage-new-size = Tamaño
+incus-storage-new-content = Contenido
+incus-storage-content-filesystem = Sistema de archivos
+incus-storage-content-block = Dispositivo de bloques
+incus-storage-created = Se creó el volumen { $name }
+incus-storage-column-name = Nombre
+incus-storage-column-type = Tipo
+incus-storage-column-content = Contenido
+incus-storage-column-size = Tamaño
+incus-storage-column-usedBy = Usado por
+incus-storage-inUse = Lo usan { $names }: desconéctalo antes.
+incus-storage-deleteOne = Eliminar { $name }
+incus-storage-delete-title = ¿Eliminar el volumen { $name }?
+incus-storage-delete-description = Sus datos se eliminan de { $pool }. Nada lo usa.
+incus-storage-deleted = Se eliminó el volumen { $name }
+incus-networks-nav = Redes
+incus-networks-title = Redes
+incus-networks-summary = { $count ->
+        [one] { NUM($count) } red que ve
+       *[other] { NUM($count) } redes que ve
+    } el proyecto { $project }.
+incus-networks-search = Filtrar por nombre o tipo
+incus-networks-empty = No hay redes
+incus-networks-new = Nuevo bridge
+incus-networks-new-title = Nuevo bridge
+incus-networks-new-description = Un bridge gestionado: Incus le da direcciones, DHCP y DNS, para que las instancias se unan a él mediante un perfil o un dispositivo.
+incus-networks-new-name = Nombre
+incus-networks-new-ipv4 = IPv4
+incus-networks-new-ipv6 = IPv6
+incus-networks-new-addressHint = auto elige una subred libre, none la desactiva; o indica la dirección del bridge con su prefijo, como 10.0.5.1/24.
+incus-networks-new-nat = Enmascarar el tráfico IPv4 saliente (NAT)
+incus-networks-created = Se creó el bridge { $name }
+incus-networks-column-name = Nombre
+incus-networks-column-type = Tipo
+incus-networks-column-ipv4 = IPv4
+incus-networks-column-ipv6 = IPv6
+incus-networks-column-usedBy = Usada por
+incus-networks-managed = Gestionada por Incus
+incus-networks-unmanaged = De este equipo
+incus-networks-inUse = La usan { $names }: quítala antes de ellas.
+incus-networks-deleteOne = Eliminar { $name }
+incus-networks-delete-title = ¿Eliminar la red { $name }?
+incus-networks-delete-description = Incus elimina el bridge y su DHCP y DNS. Nada la usa.
+incus-networks-deleted = Se eliminó la red { $name }
+incus-networks-gone = Ya no existe la red { $name }.
+incus-networks-backToList = Volver a las redes
+incus-networks-field-managed = Creada por
+incus-networks-field-state = Estado
+incus-networks-field-addresses = Direcciones en el host
+incus-networks-field-ipv4 = Ajuste de IPv4
+incus-networks-field-ipv6 = Ajuste de IPv6
+incus-networks-field-nat = NAT
+incus-networks-field-mtu = MTU
+incus-networks-field-hwaddr = Dirección MAC
+incus-networks-yes = Sí
+incus-networks-no = No
+incus-networks-usedBy = Usada por
+incus-networks-leases = Concesiones DHCP
+incus-networks-noLeases = No hay concesiones.
+incus-networks-lease-hostname = Nombre de host
+incus-networks-lease-address = Dirección
+incus-networks-lease-hwaddr = Dirección MAC
+incus-networks-lease-type = Tipo

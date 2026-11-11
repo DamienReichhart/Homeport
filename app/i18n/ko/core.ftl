@@ -1,0 +1,180 @@
+### The `core` namespace, in 한국어 (ko).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/ko/core.ts:
+### change the text there, then run it again.
+
+core-host-engineVersion = 엔진 { $version }
+core-host-podmanVersion = Podman { $version }
+core-host-containerdVersion = containerd { $version }
+core-host-incusVersion = Incus { $version }
+core-engine-docker = Docker 호환
+core-engine-containerd = containerd
+core-engine-incus = Incus
+core-unsupported-title = { $name } 호스트에서는 이 페이지를 표시할 수 없습니다
+core-unsupported-docker = 이 페이지에는 Docker 호환 엔진이 필요하지만 { $name } 호스트의 엔진은 { $engine }입니다.
+core-unsupported-podman = 이 페이지는 Podman용이지만 { $name } 호스트는 다른 Docker 호환 엔진을 실행합니다. 사용하려면 전환기에서 Podman 호스트를 선택하세요.
+core-unsupported-containerd = 이 페이지는 containerd용이지만 { $name } 호스트의 엔진은 { $engine }입니다. 사용하려면 전환기에서 containerd 호스트를 선택하세요.
+core-unsupported-incus = 이 페이지는 Incus용이지만 { $name } 호스트의 엔진은 { $engine }입니다. 사용하려면 전환기에서 Incus 호스트를 선택하세요.
+core-unsupported-overview = 개요로 이동
+core-cluster-kind-kubernetes = Kubernetes
+core-cluster-kind-nomad = Nomad
+core-cluster-unsupported-title = { $name } 클러스터에서는 이 페이지를 표시할 수 없습니다
+core-cluster-unsupported-description = 이 페이지는 { $kind } 클러스터용이지만 { $name } 클러스터는 { $current } 클러스터입니다. 사용하려면 전환기에서 { $kind } 클러스터를 선택하세요.
+core-containerd-namespace = 네임스페이스
+core-containerd-holds = { $containers ->
+       *[other] 컨테이너 { NUM($containers) }개
+    }, { $images ->
+       *[other] 이미지 { NUM($images) }개
+    }
+core-containerd-manage = 네임스페이스 관리
+core-containerd-rememberFailed = Homeport가 선택한 네임스페이스를 기억하지 못했습니다
+core-incus-project = 프로젝트
+core-incus-holds = { $instances ->
+       *[other] 인스턴스 { NUM($instances) }개
+    }, { $images ->
+       *[other] 이미지 { NUM($images) }개
+    }
+core-incus-rememberFailed = Homeport가 선택한 프로젝트를 기억하지 못했습니다
+core-selection-rememberFailed = Homeport가 선택한 항목을 기억하지 못했습니다
+core-connection-local = 로컬
+core-status-connected = 연결됨
+core-status-connecting = 연결 중
+core-status-disabled = 사용 안 함
+core-status-unreachable = 연결할 수 없음
+core-status-unreachableDetail = { $message } — { $secs }초 후 다시 시도
+core-status-unauthorized = 액세스 거부됨
+core-status-hostKeyUntrusted = 신뢰하지 않는 서버 키
+core-status-hostKeyUntrustedDetail = 지문({ $fingerprint })을 확인하고 신뢰하면 연결됩니다.
+core-status-hostKeyMismatch = 서버 키가 변경됨
+core-status-hostKeyMismatchDetail = 예상 값은 { $expected }이지만 받은 값은 { $actual }입니다.
+core-status-credentialsLost = 자격 증명 손실
+core-status-credentialsLostDetail = 저장된 자격 증명을 복호화할 수 없습니다. 다시 입력하거나 키를 다시 생성하세요.
+core-status-keychainUnavailable = 키체인을 사용할 수 없음
+core-status-invalid = 잘못 구성됨
+core-swarm-label = { $host }의 Swarm
+core-swarm-labelUnknown = Swarm { $id }
+core-swarm-gone-title = 이 Swarm을 더 이상 알 수 없습니다
+core-swarm-gone-description = Homeport가 연결하는 호스트 중 이제 이 Swarm에 속한 호스트가 없습니다. 관리하려면 이 Swarm의 매니저 중 하나를 호스트로 추가하세요.
+core-cluster-serverVersion = Kubernetes { $version }
+core-cluster-nomadVersion = Nomad { $version }, 리전 { $region }
+core-cluster-nomadRegion = Nomad, 리전 { $region }
+core-cluster-credentialsLostDetail = 저장된 자격 증명을 복호화할 수 없습니다. kubeconfig에서 클러스터를 새로 고치세요.
+core-cluster-reconnectFailed = Homeport가 클러스터에 다시 연결하지 못했습니다
+core-cluster-gate-none = 선택한 클러스터 없음
+core-cluster-gate-noneDescription = 사이드바에서 클러스터를 선택하거나 kubeconfig에서 클러스터를 추가하세요.
+core-cluster-gate-add = 클러스터 추가
+core-cluster-gate-openSettings = 클러스터 설정 열기
+core-localClusters-title = 이 컴퓨터의 클러스터
+core-localClusters-description = kubeconfig로 연결할 수 있는, 로컬에서 실행 중인 Kubernetes입니다.
+core-localClusters-add = 추가
+core-localClusters-added = 추가됨
+core-localClusters-notRunning = 실행 중이 아님
+core-localClusters-addFailed = Homeport가 클러스터를 추가하지 못했습니다
+core-localClusters-missing = { $tool } 클러스터({ $name })가 실행 중이지만 kubeconfig로는 연결할 수 없습니다. 다음 명령으로 추가하세요.
+core-localClusters-tool-dockerDesktop = Docker Desktop
+core-localClusters-tool-orbstack = OrbStack
+core-localClusters-tool-rancherDesktop = Rancher Desktop
+core-localClusters-tool-kind = kind
+core-localClusters-tool-k3d = k3d
+core-localClusters-tool-minikube = minikube
+core-namespace-label = Namespace
+core-namespace-all = 모든 Namespace
+core-namespace-type = Namespace
+core-namespace-cantList = 자격 증명으로 Namespace 목록을 볼 수 없습니다. 사용이 허용된 Namespace를 입력하세요.
+core-namespace-rememberFailed = Homeport가 Namespace를 기억하지 못했습니다
+core-health-ready = 준비됨
+core-health-progressing = 진행 중
+core-health-degraded = 성능 저하
+core-health-failed = 실패
+core-health-paused = 일시 중지됨
+core-events-type = 유형
+core-events-reason = 사유
+core-events-message = 메시지
+core-events-count = 횟수
+core-events-lastSeen = 마지막 발생
+core-events-none = 이벤트가 없습니다. Kubernetes는 이벤트를 약 1시간 동안 보관합니다.
+core-conditions-type = 조건
+core-conditions-status = 상태
+core-conditions-reason = 사유
+core-conditions-message = 메시지
+core-conditions-since = 시작 시각
+core-conditions-none = 보고된 조건이 없습니다.
+core-labels-none = 없음
+core-yaml-label = YAML
+core-list-empty = 항목이 없습니다.
+core-yaml-copy = YAML 복사
+core-gate-welcome-title = Homeport에 오신 것을 환영합니다
+core-gate-welcome-description = 시작하려면 Docker Engine을 추가하세요. 이 컴퓨터의 엔진이나 SSH 또는 TLS로 연결하는 원격 엔진, 또는 kubeconfig의 Kubernetes 클러스터를 추가할 수 있습니다.
+core-gate-addAnother = 다른 호스트 추가
+core-gate-addCluster = 클러스터 추가
+core-gate-connecting = { $name }에 연결하는 중…
+core-gate-statusTitle = { $name }: { $status }
+core-gate-retryingOnItsOwn = Homeport가 { $secs }초 후 자동으로 다시 시도합니다.
+core-gate-retryNow = 지금 다시 시도
+core-gate-openSettings = 호스트 설정 열기
+core-localEngines-title = 이 컴퓨터에서 찾음
+core-localEngines-description = 로컬 소켓에서 응답하는 엔진입니다.
+core-localEngines-add = 추가
+core-freshness-check = 새 이미지 확인
+core-freshness-checking = 확인하는 중…
+core-freshness-allUpToDate = 모든 이미지가 최신입니다
+core-freshness-newerCount = { $count ->
+       *[other] 이미지 { NUM($count) }개
+    }에 새 버전이 있습니다
+core-freshness-newerOne = { $reference }의 새 버전이 게시되었습니다
+core-freshness-newerMany = 새 이미지가 게시되었습니다: { $references }
+core-delete-title = { $kind } { $name } 항목을 삭제하시겠습니까?
+core-delete-titleMany = { $kind } 객체 { $count }개를 삭제하시겠습니까?
+core-delete-titleObjects = 객체 { $count }개를 삭제하시겠습니까?
+core-delete-one = { $kind } { $name } 항목이 { $cluster } 클러스터에서 삭제됩니다.
+core-delete-oneIn = { $kind } { $name } 항목이 { $cluster } 클러스터의 { $namespace } Namespace에서 삭제됩니다.
+core-delete-many = 다음 항목이 { $cluster } 클러스터에서 삭제됩니다: { $names }.
+core-delete-manyIn = 다음 항목이 { $cluster } 클러스터의 { $namespace } Namespace에서 삭제됩니다: { $names }.
+core-delete-namespace = Namespace 안의 모든 항목, 즉 워크로드, Pod, Service, ConfigMap, Secret이 함께 삭제됩니다.
+core-delete-recreated = { $kind } { $name }에서 이 Pod를 제어하므로 그 자리에 새 Pod를 시작합니다.
+core-delete-pods = 이 객체의 Pod도 함께 삭제됩니다.
+core-delete-cronJob = 더 이상 Job을 시작하지 않으며, 이미 시작한 Job은 함께 삭제됩니다.
+core-delete-node = Homeport는 먼저 드레인하지 않습니다. 이 Node의 Pod는 Node가 다시 등록되거나 다른 곳에 다시 스케줄될 때까지 남아 있습니다.
+core-delete-confirm = 삭제
+core-delete-failed = Homeport가 { $name } 항목을 삭제하지 못했습니다
+core-delete-done = { $count ->
+        [1] { $name } 항목을 삭제했습니다
+       *[other] 객체 { NUM($count) }개를 삭제했습니다
+    }
+core-delete-action = 삭제
+core-delete-selected = { $count }개 삭제
+core-apply-preview = 변경 사항 미리 보기
+core-apply-apply = 적용
+core-apply-force = 그래도 적용
+core-apply-stale = 이 미리 보기 이후 YAML이 변경되었습니다.
+core-apply-noChanges = 변경 사항 없음: 클러스터에 이미 이 내용이 있습니다.
+core-apply-confirmTitle = { $cluster } 클러스터에 { $count ->
+       *[other] 변경 사항 { NUM($count) }개
+    }를 적용하시겠습니까?
+core-apply-confirmDescription = Homeport는 미리 보기에 표시된 대로 homeport 필드 매니저로서 server-side apply로 적용합니다.
+core-apply-forceTitle = 충돌하는 필드를 넘겨받으시겠습니까?
+core-apply-forceDescription = { $cluster } 클러스터에서 이 필드를 관리하는 도구가 값을 되돌리거나 관리를 중단할 수 있습니다. Homeport가 이 필드의 매니저가 됩니다.
+core-apply-done = { $cluster } 클러스터에 적용했습니다
+core-apply-diffOf = { $kind } { $name }의 변경 사항
+core-apply-action-created = 생성됨
+core-apply-action-changed = 변경됨
+core-apply-action-unchanged = 변경 사항 없음
+core-apply-action-failed = 적용할 수 없음
+core-yaml-edit = 편집
+core-yaml-editTitle = { $kind } { $name } 편집
+core-yaml-editDescription = { $cluster } 클러스터에서. YAML을 변경하고, 무엇이 바뀌는지 미리 본 다음 적용하세요.
+core-metrics-cpu = CPU
+core-metrics-memory = 메모리
+core-metrics-used = 사용량
+core-metrics-request = 요청
+core-metrics-limit = 제한
+core-metrics-allocatable = 할당 가능
+core-metrics-ofLimit = 제한의 { $percent }
+core-metrics-ofRequest = 요청의 { $percent }
+core-metrics-ofAllocatable = 할당 가능량의 { $percent }
+core-metrics-notInstalled-title = metrics-server가 설치되어 있지 않습니다
+core-metrics-notInstalled-body = 이 클러스터는 CPU와 메모리 값을 가져오는 Metrics API를 제공하지 않습니다. Homeport는 클러스터에 아무것도 설치하지 않습니다. metrics-server를 설치하면 여기에 표시됩니다.
+core-metrics-notInstalled-link = metrics-server 설치 방법
+core-metrics-notResponding = Metrics API가 응답하지 않습니다. metrics-server가 시작 중이거나 실행되고 있지 않을 수 있습니다. Homeport는 15초마다 다시 시도합니다.
+core-metrics-waiting = metrics-server의 첫 샘플을 기다리는 중…
+core-metrics-kept = 15초마다 샘플을 받아, 이 페이지가 열려 있는 동안 최대 15분 동안 보관합니다.

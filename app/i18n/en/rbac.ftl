@@ -1,0 +1,93 @@
+### The `rbac` namespace, in English (en).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/en/rbac.ts:
+### change the text there, then run it again.
+
+rbac-nav = RBAC
+rbac-title = RBAC
+rbac-summary = { $roles ->
+        [one] { NUM($roles) } role
+       *[other] { NUM($roles) } roles
+    }, { $bindings ->
+        [one] { NUM($bindings) } binding
+       *[other] { NUM($bindings) } bindings
+    }
+rbac-refresh = Refresh
+rbac-tab-roles = Roles
+rbac-tab-bindings = Bindings
+rbac-tab-subjects = Subjects
+rbac-tab-access = What can I do here?
+rbac-search-roles = Search roles
+rbac-search-bindings = Search bindings
+rbac-search-subjects = Search subjects
+rbac-column-kind = Kind
+rbac-column-name = Name
+rbac-column-namespace = Namespace
+rbac-column-rules = Rules
+rbac-column-role = Role
+rbac-column-subjects = Subjects
+rbac-column-bindings = Bindings
+rbac-column-how = How
+rbac-column-age = Age
+rbac-clusterWide = Cluster-wide
+rbac-aggregated = aggregated
+rbac-roleMissing = not found
+rbac-empty = None here.
+rbac-refused = Some RBAC objects can’t be listed with your credentials, so what is shown leaves them out:
+rbac-forbidden = Your credentials can’t list this cluster’s RBAC objects, so only what they allow you is shown, as the API server reports it.
+rbac-role-kind = Kind
+rbac-role-namespace = Namespace
+rbac-role-aggregation = Aggregates the ClusterRoles matching
+rbac-role-aggregatedFrom = Holds the rules of
+rbac-role-labels = Labels
+rbac-role-age = Age
+rbac-role-rules = Rules
+rbac-role-noRules = No rules.
+rbac-role-bindings = Bindings using it
+rbac-role-noBindings = No binding listed here uses it.
+rbac-role-gone = This role isn’t among those listed (any more).
+rbac-rule-resources = Resources
+rbac-rule-apiGroups = API groups
+rbac-rule-resourceNames = Resource names
+rbac-rule-urls = Non-resource URLs
+rbac-rule-verbs = Verbs
+rbac-coreGroup = core
+rbac-subject-bestEffort = Computed from the bindings Homeport can read: a best-effort view. It can miss what webhook or ABAC authorizers allow, and the groups an authenticator gives a user.
+rbac-subject-groups = Bindings to these groups count too:
+rbac-subject-onlyNamespace = Only RoleBindings in { $namespace } are counted. Pick every namespace to see the others.
+rbac-subject-cluster = Cluster-wide
+rbac-subject-clusterHint = In every namespace, on cluster-scoped resources and on non-resource URLs.
+rbac-subject-inNamespace = In { $namespace }
+rbac-subject-none = No binding listed here grants it anything.
+rbac-subject-bindings = Bindings
+rbac-subject-direct = Names it
+rbac-subject-through = Through the group { $group }
+rbac-subject-via = Granted by { $bindings }
+rbac-matrix-resource = Resource
+rbac-matrix-names = Only
+rbac-matrix-yes = Allowed
+rbac-matrix-all = Allowed: every verb (*)
+rbac-matrix-url = Non-resource URL
+rbac-matrix-verbs = Verbs
+rbac-matrix-empty = Nothing.
+rbac-access-about = What the credentials Homeport uses on { $name } may do in { $namespace }, as the API server answers it.
+rbac-access-user = Signed in as
+rbac-access-groups = Groups
+rbac-access-myBindings = Bindings that name me
+rbac-access-incomplete = The API server says this list may be incomplete: an authorizer that can’t list its rules, such as a webhook or ABAC, may allow more. Ask “Can I…?” below to be sure.
+rbac-canI-title = Can I…?
+rbac-canI-verb = Verb
+rbac-canI-resource = Resource
+rbac-canI-resourcePlaceholder = secrets, deploy, deployments.apps
+rbac-canI-namespace = Namespace
+rbac-canI-allNamespaces = Every namespace
+rbac-canI-group = API group
+rbac-canI-subresource = Subresource
+rbac-canI-name = Name
+rbac-canI-optional = Optional
+rbac-canI-ask = Ask
+rbac-canI-yes = Yes
+rbac-canI-no = No
+rbac-canI-denied = Explicitly denied
+rbac-canI-checked = for { $resource }
+rbac-canI-unknown = This cluster serves no resource named { $resource }, so it was asked as typed.

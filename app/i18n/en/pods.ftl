@@ -1,0 +1,72 @@
+### The `pods` namespace, in English (en).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/en/pods.ts:
+### change the text there, then run it again.
+
+pods-nav = Pods
+pods-title = Pods
+pods-summary = { $count ->
+        [one] { NUM($count) } pod
+       *[other] { NUM($count) } pods
+    }
+pods-search = Search pods
+pods-empty = No pods here.
+pods-column-name = Name
+pods-column-namespace = Namespace
+pods-column-status = Status
+pods-column-ready = Ready
+pods-column-restarts = Restarts
+pods-column-node = Node
+pods-column-age = Age
+pods-tab-overview = Overview
+pods-tab-conditions = Conditions
+pods-tab-events = Events
+pods-tab-source = YAML
+pods-detail-readyOf = { $ready } of { $total } containers ready
+pods-detail-namespace = Namespace
+pods-detail-node = Node
+pods-detail-ip = Pod IP
+pods-detail-hostIp = Node IP
+pods-detail-qos = QoS class
+pods-detail-serviceAccount = Service account
+pods-detail-owner = Controlled by
+pods-detail-age = Age
+pods-detail-labels = Labels
+pods-detail-annotations = Annotations
+pods-container-name = Container
+pods-container-init = init
+pods-container-image = Image
+pods-container-state = State
+pods-container-ready = Ready
+pods-container-isReady = Yes
+pods-container-notReady = No
+pods-container-restarts = Restarts
+pods-container-restartsWhy = { $count } (last: { $reason })
+pods-container-started = Started
+pods-container-ports = Ports
+pods-state-running = Running
+pods-state-waiting = Waiting
+pods-state-terminated = Terminated
+pods-tab-logs = Logs
+pods-logs-container = Container
+pods-logs-initContainer = { $name } (init)
+pods-logs-previous = Previous instance
+pods-logs-noRestart = It hasn’t restarted, so there’s no previous instance.
+pods-logs-pod = Pod
+pods-logs-allPods = { $count ->
+        [one] The Pod
+       *[other] All { NUM($count) } Pods
+    }
+pods-logs-noPods = It runs no Pod right now.
+pods-tab-terminal = Terminal
+pods-terminal-shell = Shell
+pods-terminal-command = Command
+pods-terminal-connect = Connect
+pods-terminal-reconnect = Reconnect
+pods-terminal-notRunning = This container isn’t running.
+pods-terminal-exited = The process exited.
+pods-terminal-exitedWithCode = The process exited with code { $code }.
+pods-column-cpu = CPU
+pods-column-memory = Memory
+pods-tab-metrics = Metrics
+pods-metrics-noSample = metrics-server has no sample of this Pod yet: it may have just started, or not be running.

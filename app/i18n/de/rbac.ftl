@@ -1,0 +1,93 @@
+### The `rbac` namespace, in Deutsch (de).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/de/rbac.ts:
+### change the text there, then run it again.
+
+rbac-nav = RBAC
+rbac-title = RBAC
+rbac-summary = { $roles ->
+        [one] { NUM($roles) } Role
+       *[other] { NUM($roles) } Roles
+    }, { $bindings ->
+        [one] { NUM($bindings) } Binding
+       *[other] { NUM($bindings) } Bindings
+    }
+rbac-refresh = Aktualisieren
+rbac-tab-roles = Roles
+rbac-tab-bindings = Bindings
+rbac-tab-subjects = Subjekte
+rbac-tab-access = Was darf ich hier?
+rbac-search-roles = Roles suchen
+rbac-search-bindings = Bindings suchen
+rbac-search-subjects = Subjekte suchen
+rbac-column-kind = Kind
+rbac-column-name = Name
+rbac-column-namespace = Namespace
+rbac-column-rules = Regeln
+rbac-column-role = Role
+rbac-column-subjects = Subjekte
+rbac-column-bindings = Bindings
+rbac-column-how = Wie
+rbac-column-age = Alter
+rbac-clusterWide = Clusterweit
+rbac-aggregated = aggregiert
+rbac-roleMissing = nicht gefunden
+rbac-empty = Hier ist nichts.
+rbac-refused = Ihre Zugangsdaten dürfen einige RBAC-Objekte nicht auflisten; was angezeigt wird, lässt sie aus:
+rbac-forbidden = Ihre Zugangsdaten dürfen die RBAC-Objekte dieses Clusters nicht auflisten. Angezeigt wird nur, was sie Ihnen erlauben, wie der API-Server es meldet.
+rbac-role-kind = Kind
+rbac-role-namespace = Namespace
+rbac-role-aggregation = Aggregiert die ClusterRoles, die passen zu
+rbac-role-aggregatedFrom = Enthält die Regeln von
+rbac-role-labels = Labels
+rbac-role-age = Alter
+rbac-role-rules = Regeln
+rbac-role-noRules = Keine Regeln.
+rbac-role-bindings = Bindings, die sie verwenden
+rbac-role-noBindings = Kein hier aufgelistetes Binding verwendet sie.
+rbac-role-gone = Diese Role ist nicht (mehr) unter den aufgelisteten.
+rbac-rule-resources = Ressourcen
+rbac-rule-apiGroups = API-Gruppen
+rbac-rule-resourceNames = Ressourcennamen
+rbac-rule-urls = Nicht-Ressourcen-URLs
+rbac-rule-verbs = Verben
+rbac-coreGroup = core
+rbac-subject-bestEffort = Berechnet aus den Bindings, die Homeport lesen kann: eine Näherung nach bestem Wissen. Was Webhook- oder ABAC-Autorisierer erlauben und welche Gruppen ein Authentifizierer einem Benutzer gibt, kann fehlen.
+rbac-subject-groups = Bindings an diese Gruppen zählen auch:
+rbac-subject-onlyNamespace = Nur RoleBindings in { $namespace } werden gezählt. Wählen Sie alle Namespaces, um die anderen zu sehen.
+rbac-subject-cluster = Clusterweit
+rbac-subject-clusterHint = In jedem Namespace, auf clusterweiten Ressourcen und auf Nicht-Ressourcen-URLs.
+rbac-subject-inNamespace = In { $namespace }
+rbac-subject-none = Kein hier aufgelistetes Binding gewährt ihm etwas.
+rbac-subject-bindings = Bindings
+rbac-subject-direct = Nennt es direkt
+rbac-subject-through = Über die Gruppe { $group }
+rbac-subject-via = Gewährt durch { $bindings }
+rbac-matrix-resource = Ressource
+rbac-matrix-names = Nur
+rbac-matrix-yes = Erlaubt
+rbac-matrix-all = Erlaubt: jedes Verb (*)
+rbac-matrix-url = Nicht-Ressourcen-URL
+rbac-matrix-verbs = Verben
+rbac-matrix-empty = Nichts.
+rbac-access-about = Was die Zugangsdaten, die Homeport auf { $name } verwendet, in { $namespace } dürfen, laut Antwort des API-Servers.
+rbac-access-user = Angemeldet als
+rbac-access-groups = Gruppen
+rbac-access-myBindings = Bindings, die mich nennen
+rbac-access-incomplete = Laut API-Server ist diese Liste womöglich unvollständig: Ein Autorisierer, der seine Regeln nicht auflisten kann, etwa ein Webhook oder ABAC, erlaubt eventuell mehr. Fragen Sie unten „Darf ich …?“, um sicherzugehen.
+rbac-canI-title = Darf ich …?
+rbac-canI-verb = Verb
+rbac-canI-resource = Ressource
+rbac-canI-resourcePlaceholder = secrets, deploy, deployments.apps
+rbac-canI-namespace = Namespace
+rbac-canI-allNamespaces = Alle Namespaces
+rbac-canI-group = API-Gruppe
+rbac-canI-subresource = Unterressource
+rbac-canI-name = Name
+rbac-canI-optional = Optional
+rbac-canI-ask = Fragen
+rbac-canI-yes = Ja
+rbac-canI-no = Nein
+rbac-canI-denied = Ausdrücklich verweigert
+rbac-canI-checked = für { $resource }
+rbac-canI-unknown = Dieser Cluster bietet keine Ressource namens { $resource }; gefragt wurde wie eingegeben.

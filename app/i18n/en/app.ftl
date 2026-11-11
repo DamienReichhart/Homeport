@@ -1,0 +1,39 @@
+### The `app` namespace, in English (en).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/en/app.ts:
+### change the text there, then run it again.
+
+app-nav-main = Main
+app-nav-docs = Documentation
+app-nav-github = GitHub
+app-nav-opensInBrowser = { $label } (opens in your browser)
+app-keychainMissing = No OS keychain is available, so SSH keys, TLS certificates and stack environments can’t be stored. Local, TCP and ssh-agent hosts still work.
+app-keychainEntryMissing = The keychain has no entry for the key Homeport’s secrets were sealed with, so they can’t be opened or stored. See Settings → This machine.
+app-startup-title = Homeport can’t open its database
+app-startup-description = Nothing else was started. The database is in this file:
+app-startup-openFolder = Open folder
+app-crash-title = Something went wrong
+app-crash-description = Homeport hit an unexpected problem on this page. Reloading usually helps; if it keeps happening, copy the report from Details into an issue.
+app-crash-reload = Reload
+app-crash-backToOverview = Back to overview
+app-shortcuts-title = Keyboard shortcuts
+app-shortcuts-description = The shortcuts that work here. Keys like N and / don’t fire while you type in a field.
+app-shortcuts-general = General
+app-shortcuts-navigation = Go to
+app-shortcuts-hosts = Hosts
+app-shortcuts-help = Show keyboard shortcuts
+app-shortcuts-settings = Open Settings
+app-shortcuts-goTo = Go to { $page }
+app-shortcuts-previousHost = Previous host
+app-shortcuts-nextHost = Next host
+app-shortcuts-refresh = Refresh this host’s lists
+app-palette-title = Command palette
+app-palette-description = Go to a page, switch host, or run a command.
+app-palette-open = Open the command palette
+app-palette-placeholder = Type a page, a host or a command…
+app-palette-empty = Nothing matches.
+app-palette-recent = Recent
+app-palette-goTo = Go to
+app-palette-hosts = Hosts
+app-palette-actions = Actions
+app-palette-switchTo = Switch to { $name }

@@ -1,0 +1,384 @@
+### The `containers` namespace, in Français (fr).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/fr/containers.ts:
+### change the text there, then run it again.
+
+containers-nav = Conteneurs
+containers-title = Conteneurs
+containers-summary = { $running } en cours d’exécution sur { $count }
+containers-runContainer = Exécuter un conteneur
+containers-search = Rechercher des conteneurs
+containers-onlyRunning = En cours d’exécution seulement
+containers-empty-title = Aucun conteneur
+containers-empty-description = Exécutez-en un à partir d’une image, ou déployez une stack.
+containers-noMatch = Aucun conteneur ne correspond.
+containers-column-name = Nom
+containers-column-image = Image
+containers-column-status = État
+containers-column-ports = Ports
+containers-column-cpu = CPU
+containers-column-memory = Mémoire
+containers-column-created = Créé
+containers-selectOne = Sélectionner { $name }
+containers-selectStack = Sélectionner la stack { $stack }
+containers-stack-running = { $running }/{ $count } en cours d’exécution
+containers-stack-swarm = Swarm
+containers-stack-open = Ouvrir la stack
+containers-inPod = Dans le pod Podman { $pod }
+containers-fromUnit = Créé par l’unité Quadlet { $unit }
+containers-selected = { $count } sélectionné(s)
+containers-action-start = Démarrer
+containers-action-stop = Arrêter
+containers-action-restart = Redémarrer
+containers-action-pause = Mettre en pause
+containers-action-resume = Reprendre
+containers-action-kill = Forcer l’arrêt
+containers-action-rename = Renommer
+containers-action-edit = Modifier
+containers-action-duplicate = Dupliquer
+containers-action-logs = Journaux
+containers-action-terminal = Ouvrir un terminal
+containers-action-commit = Créer une image…
+containers-action-export = Exporter le système de fichiers…
+containers-kill-title = Forcer l’arrêt de { $name } ?
+containers-kill-description = Le processus principal reçoit SIGKILL immédiatement, sans possibilité de s’arrêter proprement.
+containers-done-start = { $count ->
+        [one] Conteneur démarré
+       *[other] { NUM($count) } conteneurs démarrés
+    }
+containers-done-stop = { $count ->
+        [one] Conteneur arrêté
+       *[other] { NUM($count) } conteneurs arrêtés
+    }
+containers-done-restart = { $count ->
+        [one] Conteneur redémarré
+       *[other] { NUM($count) } conteneurs redémarrés
+    }
+containers-done-pause = { $count ->
+        [one] Conteneur mis en pause
+       *[other] { NUM($count) } conteneurs mis en pause
+    }
+containers-done-unpause = { $count ->
+        [one] Conteneur repris
+       *[other] { NUM($count) } conteneurs repris
+    }
+containers-done-kill = { $count ->
+        [one] Arrêt forcé du conteneur
+       *[other] Arrêt forcé de { NUM($count) } conteneurs
+    }
+containers-done-remove = { $count ->
+        [one] Conteneur supprimé
+       *[other] { NUM($count) } conteneurs supprimés
+    }
+containers-remove-title = Supprimer { $name } ?
+containers-remove-titleMany = Supprimer { $count ->
+        [one] { NUM($count) } conteneur
+       *[other] { NUM($count) } conteneurs
+    } ?
+containers-remove-deleted = { $count ->
+        [one] Le conteneur, sa couche inscriptible et ses volumes anonymes sont supprimés.
+       *[other] Les conteneurs, leur couche inscriptible et leurs volumes anonymes sont supprimés.
+    }
+containers-remove-running = { $count } en cours d’exécution seront d’abord arrêtés.
+containers-remove-namedKept = Les volumes nommés sont conservés.
+containers-detail-gone = Ce conteneur n’existe plus.
+containers-detail-backToList = Retour aux conteneurs
+containers-tab-logs = Journaux
+containers-tab-inspect = Inspecter
+containers-tab-health = Santé
+containers-tab-exec = Exec
+containers-tab-files = Fichiers
+containers-tab-stats = Statistiques
+containers-tab-processes = Processus
+containers-notRunning = Le conteneur n’est pas en cours d’exécution.
+containers-logs-tail-100 = 100 dernières
+containers-logs-tail-1000 = 1 000 dernières
+containers-logs-tail-10000 = 10 000 dernières
+containers-logs-tail-all = Tout
+containers-logs-since-all = Depuis toujours
+containers-logs-since-300 = 5 dernières min
+containers-logs-since-3600 = Dernière heure
+containers-logs-since-86400 = Dernières 24 h
+containers-logs-history = Historique
+containers-logs-sinceLabel = Depuis
+containers-logs-timestamps = Horodatage
+containers-logs-follow = Suivre
+containers-logs-find = Rechercher dans les journaux
+containers-logs-previous = Occurrence précédente
+containers-logs-next = Occurrence suivante
+containers-logs-clear = Effacer
+containers-logs-download = Télécharger les journaux
+containers-logs-saveTitle = Enregistrer les journaux
+containers-logs-saved = Journaux enregistrés
+containers-logs-end = — fin des journaux —
+containers-inspect-raw = JSON brut
+containers-inspect-container = Conteneur
+containers-inspect-health = Santé
+containers-inspect-environment = Environnement
+containers-inspect-mounts = Montages
+containers-inspect-ports = Ports
+containers-inspect-networks = Réseaux
+containers-inspect-labels = Labels
+containers-inspect-id = ID
+containers-inspect-image = Image
+containers-inspect-created = Créé
+containers-inspect-state = État
+containers-inspect-started = Démarré
+containers-inspect-entrypoint = Point d’entrée
+containers-inspect-command = Commande
+containers-inspect-workingDir = Répertoire de travail
+containers-inspect-user = Utilisateur
+containers-inspect-restartPolicy = Politique de redémarrage
+containers-inspect-networkMode = Mode réseau
+containers-inspect-exited = { $status } (code { $code })
+containers-inspect-outOfMemory = { $state }, mémoire épuisée
+containers-inspect-restarted = { $policy } · redémarré { $count } fois
+containers-inspect-restartedMax = { $policy } (max. { $max }) · redémarré { $count } fois
+containers-inspect-imageDefault = valeur par défaut de l’image
+containers-inspect-notPublished = non publié
+containers-inspect-readWrite = lecture-écriture
+containers-inspect-readOnly = lecture seule
+containers-inspect-failingStreak = { $count } échecs consécutifs
+containers-inspect-noHealthcheck = L’image ne définit aucun health check.
+containers-inspect-column-started = Démarré
+containers-inspect-column-exit = Sortie
+containers-inspect-column-output = Sortie produite
+containers-inspect-column-variable = Variable
+containers-inspect-column-value = Valeur
+containers-inspect-column-type = Type
+containers-inspect-column-source = Source
+containers-inspect-column-destination = Destination
+containers-inspect-column-mode = Mode
+containers-inspect-column-container = Conteneur
+containers-inspect-column-publishedOn = Publié sur
+containers-inspect-column-network = Réseau
+containers-inspect-column-ip = IP
+containers-inspect-column-gateway = Passerelle
+containers-inspect-column-aliases = Alias
+containers-inspect-column-label = Label
+containers-health-none = Ce conteneur n’a pas de health check.
+containers-health-title = Health check
+containers-health-command = Commande
+containers-health-timingLabel = Cadence
+containers-health-timing = toutes les { $interval }, délai { $timeout }, { $retries ->
+        [one] { NUM($retries) } nouvel essai
+       *[other] { NUM($retries) } nouveaux essais
+    }, période de démarrage { $start }
+containers-health-failingStreak = Échecs consécutifs
+containers-health-lastResults = Derniers résultats
+containers-health-noRuns = Aucune vérification n’a encore été exécutée.
+containers-health-noOutput = Aucune sortie.
+containers-health-showLess = Afficher moins
+containers-health-showMore = Afficher { $count ->
+        [one] { NUM($count) } ligne de plus
+       *[other] { NUM($count) } lignes de plus
+    }
+containers-health-exit = code { $code }
+containers-health-took = · a pris { $duration }
+containers-exec-startFirst = Démarrez le conteneur pour ouvrir un terminal.
+containers-exec-shell = Shell
+containers-exec-shellNumber = Shell { $number }
+containers-exec-closeOne = Fermer { $title }
+containers-exec-new = Nouveau terminal
+containers-exec-command = Commande
+containers-exec-commandPlaceholder = bash, ou sh s’il est absent
+containers-exec-user = Utilisateur
+containers-exec-directory = Répertoire
+containers-exec-default = par défaut
+containers-exec-open = Ouvrir
+containers-exec-none = Aucun terminal ouvert.
+containers-exec-exited = [processus terminé]
+containers-exec-exitedWithCode = [processus terminé avec le code { $code }]
+containers-files-startFirst = Démarrez le conteneur pour parcourir ses fichiers.
+containers-files-saveOne = Enregistrer { $name }
+containers-files-uploadTo = Envoyer vers { $path }
+containers-files-uploadHere = Envoyer ici
+containers-files-saved = { $name } enregistré
+containers-files-savedArchive = { $name } enregistré en archive .tar
+containers-files-uploaded = { $count ->
+        [one] { NUM($count) } fichier envoyé
+       *[other] { NUM($count) } fichiers envoyés
+    } vers { $path }
+containers-stats-startFirst = Démarrez le conteneur pour voir son utilisation des ressources.
+containers-stats-cpu = CPU
+containers-stats-memory = Mémoire
+containers-stats-memoryNow = · { $used } sur { $limit }
+containers-stats-used = Utilisée
+containers-stats-network = Réseau
+containers-stats-networkNow = · { $received } reçus, { $sent } envoyés
+containers-stats-received = Reçu
+containers-stats-sent = Envoyé
+containers-stats-disk = E/S disque
+containers-stats-processes = · { $count ->
+        [one] { NUM($count) } processus
+       *[other] { NUM($count) } processus
+    }
+containers-stats-read = Lu
+containers-stats-written = Écrit
+containers-run-title = Exécuter un conteneur
+containers-run-description = L’image est d’abord récupérée si cet hôte ne l’a pas.
+containers-run-submit = Exécuter
+containers-run-starting = Démarrage…
+containers-run-started = Conteneur démarré
+containers-run-image = Image
+containers-run-name = Nom
+containers-run-namePlaceholder = Généré si vide
+containers-run-nameKept = Conservé. Utilisez Renommer pour le changer.
+containers-run-command = Commande
+containers-run-commandPlaceholder = Celle de l’image par défaut
+containers-run-environment = Environnement
+containers-run-network = Réseau
+containers-run-pod = Pod
+containers-run-noPod = Aucun
+containers-run-podOwnsNetwork = Les conteneurs de { $pod } partagent son réseau : les ports, le réseau, le nom d’hôte et le DNS sont ceux du pod.
+containers-run-defaultNetwork = Par défaut (bridge)
+containers-run-restart = Redémarrage
+containers-run-restartPolicy = Politique de redémarrage
+containers-run-restart-no = Jamais
+containers-run-restart-onFailure = En cas d’échec
+containers-run-restart-unlessStopped = Sauf s’il est arrêté
+containers-run-restart-always = Toujours
+containers-run-autoRemove = Supprimer le conteneur quand il se termine
+containers-run-ports = Ports
+containers-run-hostPort = Port de l’hôte
+containers-run-hostPortPlaceholder = Port de l’hôte (quelconque)
+containers-run-containerPort = Port du conteneur
+containers-run-protocol = Protocole
+containers-run-removePort = Retirer le port
+containers-run-addPort = Ajouter un port
+containers-run-volumes = Volumes
+containers-run-source = Source
+containers-run-sourcePlaceholder = Nom du volume ou /chemin/hôte
+containers-run-containerPath = Chemin dans le conteneur
+containers-run-readOnly = lecture seule
+containers-run-removeVolume = Retirer le volume
+containers-run-addVolume = Ajouter un volume
+containers-run-removeValue = Retirer { $value }
+containers-run-error-size = Écrivez une taille comme 512m ou 2g.
+containers-run-error-cpus = Écrivez un nombre de CPU comme 0.5 ou 2.
+containers-run-error-cpuShares = Écrivez un nombre entier comme 512.
+containers-run-error-memorySwap = Écrivez une taille comme 1g, ou -1 pour un swap illimité.
+containers-run-error-gpuCount = Écrivez le nombre de GPU, comme 1.
+containers-run-error-duration = Écrivez une durée comme 30s ou 1m30s.
+containers-run-error-retries = Écrivez un nombre entier comme 3.
+containers-advanced-title = Options avancées
+containers-advanced-hasErrors = Contient des erreurs
+containers-advanced-resources = Ressources
+containers-advanced-labels = Labels
+containers-advanced-security = Sécurité
+containers-advanced-devices = Périphériques
+containers-advanced-healthcheck = Health check
+containers-advanced-network = Identité réseau
+containers-advanced-logging = Journalisation
+containers-advanced-cpus = Limite de CPU
+containers-advanced-cpusHint = En CPU, comme 0.5 ou 2.
+containers-advanced-cpusPlaceholder = Tous les CPU
+containers-advanced-cpuShares = Parts de CPU
+containers-advanced-cpuSharesHint = Poids par rapport aux autres conteneurs ; 1024 par défaut.
+containers-advanced-memory = Limite de mémoire
+containers-advanced-memoryHint = Comme 512m ou 2g.
+containers-advanced-memoryPlaceholder = Aucune limite
+containers-advanced-memoryReservation = Réservation de mémoire
+containers-advanced-memoryReservationHint = Une limite souple, appliquée quand l’hôte manque de mémoire.
+containers-advanced-memorySwap = Limite de mémoire et de swap
+containers-advanced-memorySwapHint = Mémoire plus swap ; -1 pour un swap illimité.
+containers-advanced-memorySwapPlaceholder = Le double de la limite de mémoire
+containers-advanced-none = Aucune
+containers-advanced-labelsHint = Une paire clé=valeur par ligne, telle que les proxys inverses et les outils de sauvegarde les lisent.
+containers-advanced-capAdd = Ajouter des capabilities
+containers-advanced-capAddHint = Comme NET_ADMIN pour un VPN.
+containers-advanced-capDrop = Retirer des capabilities
+containers-advanced-capDropHint = ALL les retire toutes.
+containers-advanced-privileged = Privilégié
+containers-advanced-privilegedTitle = Le conteneur obtient un accès complet à l’hôte
+containers-advanced-privilegedWarning = Il peut utiliser tous les périphériques et toutes les capabilities, et tout ce qui s’y exécute peut prendre le contrôle de l’hôte. Préférez ajouter les capabilities et les périphériques dont il a besoin.
+containers-advanced-hostDevice = Périphérique de l’hôte
+containers-advanced-containerDevice = Périphérique du conteneur
+containers-advanced-samePath = Même chemin
+containers-advanced-permissions = Permissions
+containers-advanced-removeDevice = Retirer le périphérique
+containers-advanced-addDevice = Ajouter un périphérique
+containers-advanced-gpus = GPU
+containers-advanced-gpusHint = Nécessite que le toolkit conteneur du fabricant du GPU soit installé sur l’hôte.
+containers-advanced-gpus-all = Tous les GPU
+containers-advanced-gpus-count = Un nombre de GPU
+containers-advanced-gpus-ids = GPU choisis
+containers-advanced-gpuCount = Combien
+containers-advanced-gpuIds = Index ou UUID des GPU
+containers-advanced-gpuIdsHint = Séparés par des virgules.
+containers-advanced-health-image = Celui de l’image, s’il existe
+containers-advanced-health-custom = Une commande
+containers-advanced-health-disabled = Aucun (désactiver celui de l’image)
+containers-advanced-healthCommand = Commande de vérification
+containers-advanced-healthCommandHint = Exécutée avec /bin/sh -c ; le code de sortie 0 signifie en bonne santé.
+containers-advanced-interval = Intervalle
+containers-advanced-timeout = Délai
+containers-advanced-retries = Nouveaux essais
+containers-advanced-startPeriod = Période de démarrage
+containers-advanced-hostname = Nom d’hôte
+containers-advanced-hostnamePlaceholder = L’ID du conteneur
+containers-advanced-domainname = Nom de domaine
+containers-advanced-dns = Serveurs DNS
+containers-advanced-dnsHint = Une adresse par ligne.
+containers-advanced-dnsSearch = Domaines de recherche DNS
+containers-advanced-dnsSearchHint = Un par ligne.
+containers-advanced-extraHosts = Hôtes supplémentaires
+containers-advanced-extraHostsHint = Une paire nom:adresse par ligne ; host-gateway désigne l’adresse de l’hôte.
+containers-advanced-logDriver = Pilote de journalisation
+containers-advanced-logDriverHint = Avec none, l’onglet Journaux reste vide.
+containers-advanced-logDriverPlaceholder = Celui du moteur par défaut
+containers-advanced-logOptions = Options du pilote
+containers-advanced-logOptionsHint = Une paire clé=valeur par ligne ; max-size et max-file font tourner les journaux json-file.
+containers-rename-title = Renommer { $name }
+containers-rename-newName = Nouveau nom
+containers-duplicate-title = Dupliquer { $name }
+containers-duplicate-sharedPorts = { $name } publie déjà { $count ->
+        [one] le port d’hôte
+       *[other] les ports d’hôte
+    } { $ports }.
+containers-duplicate-sharedPortsFix = { $count ->
+        [one] La copie ne peut pas démarrer tant que les deux l’utilisent
+       *[other] La copie ne peut pas démarrer tant que les deux les utilisent
+    } : changez le port de l’hôte, ou laissez-le vide pour que le moteur en choisisse un.
+containers-edit-title = Modifier { $name }
+containers-edit-description = Appliquer recrée le conteneur avec ces paramètres, en conservant son nom, ses réseaux et ses volumes nommés.
+containers-edit-apply = Appliquer
+containers-edit-recreating = Recréation…
+containers-edit-recreated = Conteneur recréé
+containers-edit-confirmTitle = Recréer { $name } ?
+containers-edit-nothingLost = Rien d’autre n’est perdu : son nom, ses réseaux et ses volumes nommés sont conservés.
+containers-edit-keptBut = Son nom, ses réseaux et ses volumes nommés sont conservés, mais pas :
+containers-edit-commitFirst = Créer d’abord une image…
+containers-edit-recreate = Recréer
+containers-loss-anonymousVolume = Le volume anonyme sur { $path } : le nouveau conteneur démarre avec un volume vide. L’ancien est conservé comme volume inutilisé.
+containers-loss-filesystemChanges = { $count ->
+        [one] { NUM($count) } fichier modifié
+       *[other] { NUM($count) } fichiers modifiés
+    } dans le conteneur depuis sa création. Créez d’abord une image à partir de lui pour les conserver.
+containers-loss-downtime = Il s’arrête pendant l’échange des deux, en général quelques secondes.
+containers-loss-stackRedeploy = Il appartient à la stack { $stack } : le prochain déploiement de la stack le recréera depuis son fichier compose, sans cette modification.
+containers-commit-title = Créer une image à partir de { $name }
+containers-commit-description = La nouvelle image contient les fichiers du conteneur dans leur état actuel, y compris les modifications faites à l’intérieur, ainsi que ses paramètres. Les volumes ne sont pas inclus.
+containers-commit-imageName = Nom de l’image
+containers-commit-imageNameHint = Comme dépôt:tag.
+containers-commit-nameTaken = Une image porte déjà le nom { $name }. Le nom passe à la nouvelle image ; l’ancienne conserve ses autres noms, ou se retrouve sans tag.
+containers-commit-message = Message
+containers-commit-messagePlaceholder = Avant la mise à niveau
+containers-commit-author = Auteur
+containers-commit-changes = Modifications
+containers-commit-changesHint = Instructions Dockerfile, une par ligne : CMD, ENTRYPOINT, ENV, EXPOSE, LABEL, ONBUILD, USER, VOLUME ou WORKDIR.
+containers-commit-pause = Mettre le conteneur en pause pendant la création
+containers-commit-pauseOn = Ses processus sont figés pendant les quelques secondes de la création, afin que les fichiers en cours d’écriture soient cohérents.
+containers-commit-pauseOff = Il continue de s’exécuter : des fichiers en cours d’écriture peuvent donc être capturés à moitié.
+containers-commit-submit = Créer l’image
+containers-commit-committing = Création de l’image…
+containers-commit-done = Image { $reference } créée
+containers-commit-openImages = Ouvrir les images
+containers-export-tarArchive = Archive tar
+containers-export-pick = Exporter le système de fichiers de { $name }
+containers-export-title = Exportation de { $name }
+containers-export-to = Vers { $path }
+containers-export-written = Écrit
+containers-export-finished = Terminé. Importez-le depuis la page Images, ou avec docker import.
+containers-export-done = Exporté vers { $destination }
+containers-palette-run = Exécuter un conteneur

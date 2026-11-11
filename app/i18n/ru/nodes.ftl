@@ -1,0 +1,48 @@
+### The `nodes` namespace, in Русский (ru).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/ru/nodes.ts:
+### change the text there, then run it again.
+
+nodes-nav = Node
+nodes-title = Node
+nodes-summary = { $count ->
+        [one] { NUM($count) } Node
+        [few] { NUM($count) } Node
+        [many] { NUM($count) } Node
+       *[other] { NUM($count) } Node
+    }
+nodes-search = Поиск Node
+nodes-ready = Готов
+nodes-notReady = Не готов
+nodes-cordoned = размещение отключено
+nodes-column-name = Имя
+nodes-column-status = Состояние
+nodes-column-roles = Роли
+nodes-column-version = Версия
+nodes-column-ip = Внутренний IP
+nodes-column-platform = Платформа
+nodes-column-cpu = ЦП
+nodes-column-memory = Память
+nodes-column-age = Возраст
+nodes-tab-overview = Обзор
+nodes-tab-pods = Pod
+nodes-tab-conditions = Условия
+nodes-tab-events = События
+nodes-tab-source = YAML
+nodes-detail-roles = Роли
+nodes-detail-version = Kubelet
+nodes-detail-os = Образ ОС
+nodes-detail-kernel = Ядро
+nodes-detail-runtime = Среда выполнения контейнеров
+nodes-detail-addresses = Адреса
+nodes-detail-taints = Taints
+nodes-detail-noTaints = Нет
+nodes-detail-age = Возраст
+nodes-detail-labels = Метки
+nodes-detail-resources = Ресурсы
+nodes-resource-name = Ресурс
+nodes-resource-capacity = Ёмкость
+nodes-resource-allocatable = Доступно для размещения
+nodes-column-cpuUsed = Использование ЦП
+nodes-column-memoryUsed = Использование памяти
+nodes-tab-metrics = Метрики

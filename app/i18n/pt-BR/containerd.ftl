@@ -1,0 +1,168 @@
+### The `containerd` namespace, in Português (Brasil) (pt-BR).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/pt-BR/containerd.ts:
+### change the text there, then run it again.
+
+containerd-state-none = Sem tarefa
+containerd-state-created = Criada
+containerd-state-running = Em execução
+containerd-state-paused = Pausada
+containerd-state-pausing = Pausando
+containerd-state-stopped = Parada
+containerd-state-unknown = Desconhecido
+containerd-state-exited = Encerrada ({ $code })
+containerd-createdBy-kubernetes = Kubernetes
+containerd-createdBy-nerdctl = nerdctl
+containerd-createdBy-docker = Docker
+containerd-createdBy-other = ctr ou outro
+containerd-containers-nav = Contêineres
+containerd-containers-title = Contêineres
+containerd-containers-summary = { $count ->
+        [one] { NUM($count) } contêiner
+       *[other] { NUM($count) } contêineres
+    }, { $running } em execução, no namespace { $namespace }.
+containerd-containers-search = Filtrar por nome, ID ou imagem
+containerd-containers-showSandboxes = Mostrar os contêineres pause dos Pods
+containerd-containers-sandbox = pause
+containerd-containers-empty = Nenhum contêiner em { $namespace }
+containerd-containers-emptyDescription = Contêineres criados com nerdctl, ctr ou Kubernetes aparecem aqui. Escolha outro namespace abaixo do seletor de hosts para ver outros.
+containerd-containers-column-name = Nome
+containerd-containers-column-image = Imagem
+containerd-containers-column-state = Tarefa
+containerd-containers-column-createdBy = Criado por
+containerd-containers-column-created = Criado
+containerd-containers-action-start = Iniciar
+containerd-containers-action-stop = Parar
+containerd-containers-action-pause = Pausar
+containerd-containers-action-resume = Retomar
+containerd-containers-action-kill = Enviar sinal
+containerd-containers-actionOne-start = Iniciar { $name }
+containerd-containers-actionOne-stop = Parar { $name }
+containerd-containers-actionOne-pause = Pausar { $name }
+containerd-containers-actionOne-resume = Retomar { $name }
+containerd-containers-removeOne = Remover { $name }
+containerd-containers-done-start = { $name } iniciado
+containerd-containers-done-stop = { $name } parado
+containerd-containers-done-pause = { $name } pausado
+containerd-containers-done-resume = { $name } retomado
+containerd-containers-done-kill = { $signal } enviado para { $name }
+containerd-containers-removed = { $name } removido
+containerd-containers-kubelet = O Kubernetes gerencia este contêiner: o kubelet o inicia de novo após uma parada e o recria após uma remoção. Altere o Pod dele no cluster em vez disso.
+containerd-containers-remove-title = Remover { $name }?
+containerd-containers-remove-running = A tarefa dele está em execução: o Homeport a encerra e depois remove a tarefa e o contêiner.
+containerd-containers-remove-stopped = O Homeport remove a tarefa dele e o contêiner.
+containerd-containers-remove-snapshot = Remover também o snapshot dele ({ $key }), com os arquivos que ele alterou
+containerd-containers-remove-killAndRemove = Encerrar e remover
+containerd-containers-kill-title = Enviar um sinal para { $name }
+containerd-containers-kill-description = Para o processo principal da tarefa dele, como faz ctr task kill -s. Um nome como SIGHUP ou um número.
+containerd-containers-kill-signal = Sinal
+containerd-containers-kill-send = Enviar
+containerd-containers-backToList = Voltar aos contêineres
+containerd-containers-tab-overview = Visão geral
+containerd-containers-tab-logs = Logs
+containerd-containers-tab-exec = Exec
+containerd-containers-tab-spec = Spec
+containerd-logs-from = De { $path }
+containerd-logs-none-title = A saída deste contêiner não é registrada
+containerd-logs-none-description = O containerd não mantém logs: a ferramenta que inicia uma tarefa decide para onde vai a saída dela. Contêineres criados com ctr e com a maioria dos outros clientes não a enviam para lugar nenhum; o nerdctl e o Kubernetes a gravam em um arquivo, que o Homeport lê.
+containerd-logs-driver-title = O nerdctl envia a saída deste contêiner para { $driver }
+containerd-logs-driver-description = O Homeport lê apenas os logs json-file padrão do nerdctl. Leia estes onde { $driver } os guarda, ou execute o contêiner de novo com o driver json-file.
+containerd-exec-startFirst = Inicie o contêiner para abrir um terminal nele.
+containerd-exec-command = Comando
+containerd-exec-commandPlaceholder = Um shell, a menos que você informe um comando
+containerd-exec-user = ID do usuário
+containerd-exec-workingDir = Pasta
+containerd-exec-open = Abrir novamente
+containerd-exec-exited = O processo foi encerrado.
+containerd-exec-exitedWithCode = O processo foi encerrado com o código { $code }.
+containerd-containers-field-id = ID
+containerd-containers-field-namespace = Namespace
+containerd-containers-field-image = Imagem
+containerd-containers-field-runtime = Runtime
+containerd-containers-field-snapshot = Snapshot
+containerd-containers-field-pid = PID
+containerd-containers-field-exit = Última saída
+containerd-containers-field-pod = Pod do Kubernetes
+containerd-containers-field-created = Criado
+containerd-containers-field-updated = Atualizado
+containerd-containers-field-extensions = Extensões
+containerd-containers-labels = Rótulos
+containerd-containers-noSpec = O containerd não tem nenhuma spec de runtime para este contêiner.
+containerd-images-nav = Imagens
+containerd-images-title = Imagens
+containerd-images-summary = { $count ->
+        [one] { NUM($count) } imagem
+       *[other] { NUM($count) } imagens
+    } no namespace { $namespace }.
+containerd-images-pull = Baixar imagem
+containerd-images-pulled = { $reference } baixada em { $namespace }
+containerd-images-removed = { $name } removida
+containerd-images-search = Filtrar por nome
+containerd-images-empty = Nenhuma imagem em { $namespace }
+containerd-images-emptyDescription = Baixe uma: o containerd a busca e depois a descompacta para a plataforma deste host, para que os contêineres dela possam ser executados.
+containerd-images-column-name = Nome
+containerd-images-column-platforms = Plataformas
+containerd-images-column-size = Tamanho
+containerd-images-column-containers = Contêineres
+containerd-images-column-created = Criada
+containerd-images-sizeUnknown = O conteúdo dela para a plataforma deste host não está todo aqui.
+containerd-images-removeOne = Remover { $name }
+containerd-images-inUse = Contêineres deste namespace foram criados a partir dela. Remova-os antes.
+containerd-images-remove-title = Remover { $name }?
+containerd-images-remove-description = O containerd remove o nome e libera o conteúdo e os snapshots dela quando nada mais os retém.
+containerd-snapshots-nav = Snapshots
+containerd-snapshots-title = Snapshots
+containerd-snapshots-summary = { $count ->
+        [one] { NUM($count) } snapshot
+       *[other] { NUM($count) } snapshots
+    } em { $namespace } usam { $total }; { $unused ->
+        [0] nenhum está sem uso
+        [one] { NUM($unused) } está sem uso
+       *[other] { NUM($unused) } estão sem uso
+    } ({ $unusedSize }).
+containerd-snapshots-snapshotter = Snapshotter
+containerd-snapshots-unusedOnly = Somente sem uso
+containerd-snapshots-unused = Sem uso
+containerd-snapshots-usedByContainer = contêiner { $id }
+containerd-snapshots-usedByImage = imagem { $name }
+containerd-snapshots-empty = Nenhum snapshot em { $snapshotter }
+containerd-snapshots-emptyDescription = Snapshots são as camadas das imagens descompactadas e as camadas graváveis dos contêineres.
+containerd-snapshots-column-key = Chave
+containerd-snapshots-column-kind = Tipo
+containerd-snapshots-column-size = Tamanho
+containerd-snapshots-column-usedBy = Usado por
+containerd-snapshots-kind-committed = Camada
+containerd-snapshots-kind-active = Gravável
+containerd-snapshots-kind-view = Visualização
+containerd-snapshots-kind-unknown = Desconhecido
+containerd-snapshots-removeOne = Remover { $key }
+containerd-snapshots-removed = Snapshot { $key } removido
+containerd-snapshots-inUse = Algo o usa ou é construído sobre ele. Remova o contêiner ou a imagem antes.
+containerd-snapshots-remove-title = Remover o snapshot { $key }?
+containerd-snapshots-remove-description = Nada o usa. Os arquivos dele, { $size }, são excluídos do host.
+containerd-namespaces-nav = Namespaces
+containerd-namespaces-title = Namespaces
+containerd-namespaces-summary = { $count ->
+        [one] { NUM($count) } namespace
+       *[other] { NUM($count) } namespaces
+    }. Todo objeto do containerd fica em um: o nerdctl usa default, o Kubernetes k8s.io, o Docker moby.
+containerd-namespaces-new = Novo namespace
+containerd-namespaces-created = Namespace { $name } criado
+containerd-namespaces-removed = Namespace { $name } removido
+containerd-namespaces-shown = Mostrado
+containerd-namespaces-show = Mostrar
+containerd-namespaces-removeOne = Remover { $name }
+containerd-namespaces-notEmpty = Só namespaces vazios podem ser removidos. Remova os contêineres e as imagens dele antes.
+containerd-namespaces-remove-title = Remover o namespace { $name }?
+containerd-namespaces-remove-description = O containerd recusa se ele ainda contiver snapshots ou conteúdo que as contagens não mostram.
+containerd-namespaces-column-name = Nome
+containerd-namespaces-column-containers = Contêineres
+containerd-namespaces-column-images = Imagens
+containerd-namespaces-column-labels = Rótulos
+containerd-namespaces-empty = Nenhum namespace
+containerd-namespaces-emptyDescription = O containerd cria o default na primeira vez que algo é criado nele.
+containerd-namespaces-newDialog-title = Novo namespace
+containerd-namespaces-newDialog-description = Um namespace vazio, para manter contêineres e imagens separados dos outros.
+containerd-namespaces-newDialog-name = Nome
+containerd-namespaces-newDialog-invalid = Use letras e dígitos, separados por pontos, hifens ou sublinhados simples.
+containerd-namespaces-newDialog-create = Criar

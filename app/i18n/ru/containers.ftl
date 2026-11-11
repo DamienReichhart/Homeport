@@ -1,0 +1,426 @@
+### The `containers` namespace, in Русский (ru).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/ru/containers.ts:
+### change the text there, then run it again.
+
+containers-nav = Контейнеры
+containers-title = Контейнеры
+containers-summary = Работает { $running } из { $count }
+containers-runContainer = Запустить контейнер
+containers-search = Поиск контейнеров
+containers-onlyRunning = Только работающие
+containers-empty-title = Контейнеров нет
+containers-empty-description = Запустите контейнер из образа или разверните стек.
+containers-noMatch = Подходящих контейнеров нет.
+containers-column-name = Имя
+containers-column-image = Образ
+containers-column-status = Состояние
+containers-column-ports = Порты
+containers-column-cpu = ЦП
+containers-column-memory = Память
+containers-column-created = Создан
+containers-selectOne = Выбрать { $name }
+containers-selectStack = Выбрать стек { $stack }
+containers-stack-running = { $running }/{ $count } работают
+containers-stack-swarm = Swarm
+containers-stack-open = Открыть стек
+containers-inPod = В поде Podman { $pod }
+containers-fromUnit = Создан юнитом Quadlet { $unit }
+containers-selected = Выбрано: { $count }
+containers-action-start = Запустить
+containers-action-stop = Остановить
+containers-action-restart = Перезапустить
+containers-action-pause = Приостановить
+containers-action-resume = Возобновить
+containers-action-kill = Принудительно завершить
+containers-action-rename = Переименовать
+containers-action-edit = Изменить
+containers-action-duplicate = Дублировать
+containers-action-logs = Журналы
+containers-action-terminal = Открыть терминал
+containers-action-commit = Зафиксировать в образ…
+containers-action-export = Экспортировать файловую систему…
+containers-kill-title = Принудительно завершить { $name }?
+containers-kill-description = Главный процесс сразу получит SIGKILL, без возможности корректно завершиться.
+containers-done-start = { $count ->
+        [1] Контейнер запущен
+        [one] Запущен { NUM($count) } контейнер
+        [few] Запущено { NUM($count) } контейнера
+        [many] Запущено { NUM($count) } контейнеров
+       *[other] Запущено { NUM($count) } контейнера
+    }
+containers-done-stop = { $count ->
+        [1] Контейнер остановлен
+        [one] Остановлен { NUM($count) } контейнер
+        [few] Остановлено { NUM($count) } контейнера
+        [many] Остановлено { NUM($count) } контейнеров
+       *[other] Остановлено { NUM($count) } контейнера
+    }
+containers-done-restart = { $count ->
+        [1] Контейнер перезапущен
+        [one] Перезапущен { NUM($count) } контейнер
+        [few] Перезапущено { NUM($count) } контейнера
+        [many] Перезапущено { NUM($count) } контейнеров
+       *[other] Перезапущено { NUM($count) } контейнера
+    }
+containers-done-pause = { $count ->
+        [1] Контейнер приостановлен
+        [one] Приостановлен { NUM($count) } контейнер
+        [few] Приостановлено { NUM($count) } контейнера
+        [many] Приостановлено { NUM($count) } контейнеров
+       *[other] Приостановлено { NUM($count) } контейнера
+    }
+containers-done-unpause = { $count ->
+        [1] Контейнер возобновлён
+        [one] Возобновлён { NUM($count) } контейнер
+        [few] Возобновлено { NUM($count) } контейнера
+        [many] Возобновлено { NUM($count) } контейнеров
+       *[other] Возобновлено { NUM($count) } контейнера
+    }
+containers-done-kill = { $count ->
+        [1] Контейнер принудительно завершён
+        [one] Принудительно завершён { NUM($count) } контейнер
+        [few] Принудительно завершено { NUM($count) } контейнера
+        [many] Принудительно завершено { NUM($count) } контейнеров
+       *[other] Принудительно завершено { NUM($count) } контейнера
+    }
+containers-done-remove = { $count ->
+        [1] Контейнер удалён
+        [one] Удалён { NUM($count) } контейнер
+        [few] Удалено { NUM($count) } контейнера
+        [many] Удалено { NUM($count) } контейнеров
+       *[other] Удалено { NUM($count) } контейнера
+    }
+containers-remove-title = Удалить { $name }?
+containers-remove-titleMany = Удалить { $count ->
+        [one] { NUM($count) } контейнер
+        [few] { NUM($count) } контейнера
+        [many] { NUM($count) } контейнеров
+       *[other] { NUM($count) } контейнера
+    }?
+containers-remove-deleted = { $count ->
+        [1] Контейнер будет удалён вместе с его записываемым слоем и анонимными томами.
+        [one] Контейнеры будут удалены вместе с их записываемым слоем и анонимными томами.
+        [few] Контейнеры будут удалены вместе с их записываемым слоем и анонимными томами.
+        [many] Контейнеры будут удалены вместе с их записываемым слоем и анонимными томами.
+       *[other] Контейнеры будут удалены вместе с их записываемым слоем и анонимными томами.
+    }
+containers-remove-running = Работающие ({ $count }) будут сначала остановлены.
+containers-remove-namedKept = Именованные тома сохраняются.
+containers-detail-gone = Этого контейнера больше не существует.
+containers-detail-backToList = Назад к контейнерам
+containers-tab-logs = Журналы
+containers-tab-inspect = Просмотр
+containers-tab-health = Здоровье
+containers-tab-exec = Exec
+containers-tab-files = Файлы
+containers-tab-stats = Статистика
+containers-tab-processes = Процессы
+containers-notRunning = Контейнер не запущен.
+containers-logs-tail-100 = Последние 100
+containers-logs-tail-1000 = Последние 1 000
+containers-logs-tail-10000 = Последние 10 000
+containers-logs-tail-all = Всё
+containers-logs-since-all = За всё время
+containers-logs-since-300 = Последние 5 мин
+containers-logs-since-3600 = Последний час
+containers-logs-since-86400 = Последние 24 ч
+containers-logs-history = История
+containers-logs-sinceLabel = С
+containers-logs-timestamps = Метки времени
+containers-logs-follow = Следить
+containers-logs-find = Найти в журналах
+containers-logs-previous = Предыдущее совпадение
+containers-logs-next = Следующее совпадение
+containers-logs-clear = Очистить
+containers-logs-download = Скачать журналы
+containers-logs-saveTitle = Сохранить журналы
+containers-logs-saved = Журналы сохранены
+containers-logs-end = — конец журнала —
+containers-inspect-raw = Исходный JSON
+containers-inspect-container = Контейнер
+containers-inspect-health = Здоровье
+containers-inspect-environment = Окружение
+containers-inspect-mounts = Монтирования
+containers-inspect-ports = Порты
+containers-inspect-networks = Сети
+containers-inspect-labels = Метки
+containers-inspect-id = ID
+containers-inspect-image = Образ
+containers-inspect-created = Создан
+containers-inspect-state = Состояние
+containers-inspect-started = Запущен
+containers-inspect-entrypoint = Точка входа
+containers-inspect-command = Команда
+containers-inspect-workingDir = Рабочий каталог
+containers-inspect-user = Пользователь
+containers-inspect-restartPolicy = Политика перезапуска
+containers-inspect-networkMode = Сетевой режим
+containers-inspect-exited = { $status } (код выхода { $code })
+containers-inspect-outOfMemory = { $state }, не хватило памяти
+containers-inspect-restarted = { $policy } · перезапусков: { $count }
+containers-inspect-restartedMax = { $policy } (не более { $max }) · перезапусков: { $count }
+containers-inspect-imageDefault = по умолчанию из образа
+containers-inspect-notPublished = не опубликован
+containers-inspect-readWrite = чтение и запись
+containers-inspect-readOnly = только чтение
+containers-inspect-failingStreak = Сбоев подряд: { $count }
+containers-inspect-noHealthcheck = Образ не задаёт проверку здоровья.
+containers-inspect-column-started = Запущена
+containers-inspect-column-exit = Код выхода
+containers-inspect-column-output = Вывод
+containers-inspect-column-variable = Переменная
+containers-inspect-column-value = Значение
+containers-inspect-column-type = Тип
+containers-inspect-column-source = Источник
+containers-inspect-column-destination = Назначение
+containers-inspect-column-mode = Режим
+containers-inspect-column-container = Контейнер
+containers-inspect-column-publishedOn = Опубликован на
+containers-inspect-column-network = Сеть
+containers-inspect-column-ip = IP
+containers-inspect-column-gateway = Шлюз
+containers-inspect-column-aliases = Псевдонимы
+containers-inspect-column-label = Метка
+containers-health-none = У этого контейнера нет проверки здоровья.
+containers-health-title = Проверка здоровья
+containers-health-command = Команда
+containers-health-timingLabel = Расписание
+containers-health-timing = каждые { $interval }, тайм-аут { $timeout }, { $retries ->
+        [one] { NUM($retries) } повтор
+        [few] { NUM($retries) } повтора
+        [many] { NUM($retries) } повторов
+       *[other] { NUM($retries) } повтора
+    }, период запуска { $start }
+containers-health-failingStreak = Сбоев подряд
+containers-health-lastResults = Последние результаты
+containers-health-noRuns = Проверка ещё не выполнялась.
+containers-health-noOutput = Вывода нет.
+containers-health-showLess = Свернуть
+containers-health-showMore = Показать ещё { $count ->
+        [one] { NUM($count) } строку
+        [few] { NUM($count) } строки
+        [many] { NUM($count) } строк
+       *[other] { NUM($count) } строки
+    }
+containers-health-exit = код выхода { $code }
+containers-health-took = · заняло { $duration }
+containers-exec-startFirst = Запустите контейнер, чтобы открыть терминал.
+containers-exec-shell = Оболочка
+containers-exec-shellNumber = Оболочка { $number }
+containers-exec-closeOne = Закрыть { $title }
+containers-exec-new = Новый терминал
+containers-exec-command = Команда
+containers-exec-commandPlaceholder = bash или sh, если его нет
+containers-exec-user = Пользователь
+containers-exec-directory = Каталог
+containers-exec-default = по умолчанию
+containers-exec-open = Открыть
+containers-exec-none = Нет открытых терминалов.
+containers-exec-exited = [процесс завершился]
+containers-exec-exitedWithCode = [процесс завершился с кодом { $code }]
+containers-files-startFirst = Запустите контейнер, чтобы просматривать его файлы.
+containers-files-saveOne = Сохранить { $name }
+containers-files-uploadTo = Загрузить в { $path }
+containers-files-uploadHere = Загрузить сюда
+containers-files-saved = { $name } сохранён
+containers-files-savedArchive = { $name } сохранён как архив .tar
+containers-files-uploaded = Загружено в { $path }: { $count ->
+        [one] { NUM($count) } файл
+        [few] { NUM($count) } файла
+        [many] { NUM($count) } файлов
+       *[other] { NUM($count) } файла
+    }
+containers-stats-startFirst = Запустите контейнер, чтобы увидеть использование ресурсов.
+containers-stats-cpu = ЦП
+containers-stats-memory = Память
+containers-stats-memoryNow = · { $used } из { $limit }
+containers-stats-used = Использовано
+containers-stats-network = Сеть
+containers-stats-networkNow = · получено { $received }, отправлено { $sent }
+containers-stats-received = Получено
+containers-stats-sent = Отправлено
+containers-stats-disk = Дисковый ввод-вывод
+containers-stats-processes = · { $count ->
+        [one] { NUM($count) } процесс
+        [few] { NUM($count) } процесса
+        [many] { NUM($count) } процессов
+       *[other] { NUM($count) } процесса
+    }
+containers-stats-read = Прочитано
+containers-stats-written = Записано
+containers-run-title = Запустить контейнер
+containers-run-description = Если на этом хосте нет образа, сначала он будет скачан.
+containers-run-submit = Запустить
+containers-run-starting = Запуск…
+containers-run-started = Контейнер запущен
+containers-run-image = Образ
+containers-run-name = Имя
+containers-run-namePlaceholder = Создаётся автоматически, если пусто
+containers-run-nameKept = Сохраняется. Чтобы изменить, используйте «Переименовать».
+containers-run-command = Команда
+containers-run-commandPlaceholder = Команда образа по умолчанию
+containers-run-environment = Окружение
+containers-run-network = Сеть
+containers-run-pod = Под
+containers-run-noPod = Нет
+containers-run-podOwnsNetwork = Контейнеры в { $pod } используют его сеть: порты, сеть, имя хоста и DNS принадлежат поду.
+containers-run-defaultNetwork = По умолчанию (bridge)
+containers-run-restart = Перезапуск
+containers-run-restartPolicy = Политика перезапуска
+containers-run-restart-no = Никогда
+containers-run-restart-onFailure = При сбое
+containers-run-restart-unlessStopped = Если не остановлен вручную
+containers-run-restart-always = Всегда
+containers-run-autoRemove = Удалить контейнер, когда он завершится
+containers-run-ports = Порты
+containers-run-hostPort = Порт хоста
+containers-run-hostPortPlaceholder = Порт хоста (любой)
+containers-run-containerPort = Порт контейнера
+containers-run-protocol = Протокол
+containers-run-removePort = Удалить порт
+containers-run-addPort = Добавить порт
+containers-run-volumes = Тома
+containers-run-source = Источник
+containers-run-sourcePlaceholder = Имя тома или /путь/на/хосте
+containers-run-containerPath = Путь в контейнере
+containers-run-readOnly = только чтение
+containers-run-removeVolume = Удалить том
+containers-run-addVolume = Добавить том
+containers-run-removeValue = Удалить { $value }
+containers-run-error-size = Укажите размер, например 512m или 2g.
+containers-run-error-cpus = Укажите число ЦП, например 0.5 или 2.
+containers-run-error-cpuShares = Укажите целое число, например 512.
+containers-run-error-memorySwap = Укажите размер, например 1g, или -1 для неограниченного swap.
+containers-run-error-gpuCount = Укажите, сколько GPU, например 1.
+containers-run-error-duration = Укажите длительность, например 30s или 1m30s.
+containers-run-error-retries = Укажите целое число, например 3.
+containers-advanced-title = Дополнительные параметры
+containers-advanced-hasErrors = Есть ошибки
+containers-advanced-resources = Ресурсы
+containers-advanced-labels = Метки
+containers-advanced-security = Безопасность
+containers-advanced-devices = Устройства
+containers-advanced-healthcheck = Проверка здоровья
+containers-advanced-network = Сетевая идентификация
+containers-advanced-logging = Журналирование
+containers-advanced-cpus = Лимит ЦП
+containers-advanced-cpusHint = Число ЦП, например 0.5 или 2.
+containers-advanced-cpusPlaceholder = Все ЦП
+containers-advanced-cpuShares = Доли ЦП
+containers-advanced-cpuSharesHint = Вес относительно других контейнеров; по умолчанию 1024.
+containers-advanced-memory = Лимит памяти
+containers-advanced-memoryHint = Например, 512m или 2g.
+containers-advanced-memoryPlaceholder = Без лимита
+containers-advanced-memoryReservation = Резерв памяти
+containers-advanced-memoryReservationHint = Мягкий лимит, соблюдаемый, когда хосту не хватает памяти.
+containers-advanced-memorySwap = Лимит памяти и swap
+containers-advanced-memorySwapHint = Память плюс swap; -1 для неограниченного swap.
+containers-advanced-memorySwapPlaceholder = Вдвое больше лимита памяти
+containers-advanced-none = Нет
+containers-advanced-labelsHint = Одна пара key=value на строку — в том виде, в каком их читают обратные прокси и инструменты резервного копирования.
+containers-advanced-capAdd = Добавить capabilities
+containers-advanced-capAddHint = Например, NET_ADMIN для VPN.
+containers-advanced-capDrop = Убрать capabilities
+containers-advanced-capDropHint = ALL убирает все.
+containers-advanced-privileged = Привилегированный
+containers-advanced-privilegedTitle = Контейнер получает полный доступ к хосту
+containers-advanced-privilegedWarning = Он может использовать любые устройства и capabilities, а всё, что в нём работает, может захватить хост. Лучше добавьте нужные ему capabilities и устройства.
+containers-advanced-hostDevice = Устройство хоста
+containers-advanced-containerDevice = Устройство в контейнере
+containers-advanced-samePath = Тот же путь
+containers-advanced-permissions = Права
+containers-advanced-removeDevice = Удалить устройство
+containers-advanced-addDevice = Добавить устройство
+containers-advanced-gpus = GPU
+containers-advanced-gpusHint = На хосте должен быть установлен контейнерный инструментарий производителя GPU.
+containers-advanced-gpus-all = Все GPU
+containers-advanced-gpus-count = Несколько GPU
+containers-advanced-gpus-ids = Выбранные GPU
+containers-advanced-gpuCount = Сколько
+containers-advanced-gpuIds = Индексы или UUID GPU
+containers-advanced-gpuIdsHint = Через запятую.
+containers-advanced-health-image = Из образа, если есть
+containers-advanced-health-custom = Команда
+containers-advanced-health-disabled = Нет (отключить проверку образа)
+containers-advanced-healthCommand = Команда проверки
+containers-advanced-healthCommandHint = Выполняется через /bin/sh -c; код выхода 0 означает «здоров».
+containers-advanced-interval = Интервал
+containers-advanced-timeout = Тайм-аут
+containers-advanced-retries = Повторы
+containers-advanced-startPeriod = Период запуска
+containers-advanced-hostname = Имя хоста
+containers-advanced-hostnamePlaceholder = ID контейнера
+containers-advanced-domainname = Доменное имя
+containers-advanced-dns = DNS-серверы
+containers-advanced-dnsHint = Один адрес на строку.
+containers-advanced-dnsSearch = Домены поиска DNS
+containers-advanced-dnsSearchHint = По одному на строку.
+containers-advanced-extraHosts = Дополнительные хосты
+containers-advanced-extraHostsHint = Одна пара name:address на строку; host-gateway обозначает адрес хоста.
+containers-advanced-logDriver = Драйвер журналов
+containers-advanced-logDriverHint = С none вкладка «Журналы» остаётся пустой.
+containers-advanced-logDriverPlaceholder = По умолчанию движка
+containers-advanced-logOptions = Параметры драйвера
+containers-advanced-logOptionsHint = Одна пара key=value на строку; max-size и max-file задают ротацию журналов json-file.
+containers-rename-title = Переименовать { $name }
+containers-rename-newName = Новое имя
+containers-duplicate-title = Дублировать { $name }
+containers-duplicate-sharedPorts = { $name } уже публикует { $count ->
+        [1] порт хоста
+        [one] порты хоста
+        [few] порты хоста
+        [many] порты хоста
+       *[other] порты хоста
+    } { $ports }.
+containers-duplicate-sharedPortsFix = { $count ->
+        [1] Копия не сможет запуститься, пока его используют оба
+        [one] Копия не сможет запуститься, пока их используют оба
+        [few] Копия не сможет запуститься, пока их используют оба
+        [many] Копия не сможет запуститься, пока их используют оба
+       *[other] Копия не сможет запуститься, пока их используют оба
+    }: измените порт хоста или оставьте его пустым, чтобы движок выбрал порт сам.
+containers-edit-title = Изменить { $name }
+containers-edit-description = При применении контейнер пересоздаётся с этими параметрами, сохраняя имя, сети и именованные тома.
+containers-edit-apply = Применить
+containers-edit-recreating = Пересоздание…
+containers-edit-recreated = Контейнер пересоздан
+containers-edit-confirmTitle = Пересоздать { $name }?
+containers-edit-nothingLost = Больше ничего не теряется: имя, сети и именованные тома сохраняются.
+containers-edit-keptBut = Имя, сети и именованные тома сохраняются, но не:
+containers-edit-commitFirst = Сначала зафиксировать в образ…
+containers-edit-recreate = Пересоздать
+containers-loss-anonymousVolume = Анонимный том в { $path }: новый контейнер начнёт с пустого. Старый сохранится как неиспользуемый том.
+containers-loss-filesystemChanges = С момента создания внутри контейнера { $count ->
+        [one] изменён { NUM($count) } файл
+        [few] изменено { NUM($count) } файла
+        [many] изменено { NUM($count) } файлов
+       *[other] изменено { NUM($count) } файла
+    }. Чтобы сохранить изменения, сначала зафиксируйте его в образ.
+containers-loss-downtime = Он останавливается на время подмены, обычно на несколько секунд.
+containers-loss-stackRedeploy = Он входит в стек { $stack }: следующее развёртывание стека пересоздаст его из файла compose, без этой правки.
+containers-commit-title = Зафиксировать { $name } в образ
+containers-commit-description = Новый образ содержит файлы контейнера в их текущем виде, включая изменения, сделанные внутри, и его параметры. Тома не включаются.
+containers-commit-imageName = Имя образа
+containers-commit-imageNameHint = Например, repo:tag.
+containers-commit-nameTaken = Образ с именем { $name } уже есть. Имя перейдёт к новому образу; старый сохранит другие свои имена или останется без тега.
+containers-commit-message = Сообщение
+containers-commit-messagePlaceholder = Перед обновлением
+containers-commit-author = Автор
+containers-commit-changes = Изменения
+containers-commit-changesHint = Инструкции Dockerfile, по одной на строку: CMD, ENTRYPOINT, ENV, EXPOSE, LABEL, ONBUILD, USER, VOLUME или WORKDIR.
+containers-commit-pause = Приостановить контейнер на время фиксации
+containers-commit-pauseOn = Его процессы замораживаются на несколько секунд, пока идёт фиксация, поэтому записываемые файлы будут согласованными.
+containers-commit-pauseOff = Он продолжает работать, поэтому записываемые файлы могут попасть в образ наполовину.
+containers-commit-submit = Зафиксировать
+containers-commit-committing = Фиксация…
+containers-commit-done = Зафиксировано в { $reference }
+containers-commit-openImages = Открыть образы
+containers-export-tarArchive = Архив tar
+containers-export-pick = Экспортировать файловую систему { $name }
+containers-export-title = Экспорт { $name }
+containers-export-to = В { $path }
+containers-export-written = Записано
+containers-export-finished = Готово. Импортируйте его на странице «Образы» или командой docker import.
+containers-export-done = Экспортировано в { $destination }
+containers-palette-run = Запустить контейнер

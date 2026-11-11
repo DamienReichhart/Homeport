@@ -1,0 +1,101 @@
+### The `rbac` namespace, in العربية (ar).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/ar/rbac.ts:
+### change the text there, then run it again.
+
+rbac-nav = RBAC
+rbac-title = RBAC
+rbac-summary = { $roles ->
+        [zero] لا أدوار
+        [one] دور واحد
+        [two] دوران
+        [few] { NUM($roles) } أدوار
+        [many] { NUM($roles) } دورًا
+       *[other] { NUM($roles) } دور
+    }، { $bindings ->
+        [zero] لا ربط
+        [one] ربط واحد
+        [two] ربطان
+        [few] { NUM($bindings) } عمليات ربط
+        [many] { NUM($bindings) } عملية ربط
+       *[other] { NUM($bindings) } عملية ربط
+    }
+rbac-refresh = تحديث
+rbac-tab-roles = Roles
+rbac-tab-bindings = Bindings
+rbac-tab-subjects = الجهات
+rbac-tab-access = ماذا يمكنني أن أفعل هنا؟
+rbac-search-roles = البحث في الأدوار
+rbac-search-bindings = البحث في عمليات الربط
+rbac-search-subjects = البحث في الجهات
+rbac-column-kind = النوع
+rbac-column-name = الاسم
+rbac-column-namespace = Namespace
+rbac-column-rules = القواعد
+rbac-column-role = الدور
+rbac-column-subjects = الجهات
+rbac-column-bindings = عمليات الربط
+rbac-column-how = الطريقة
+rbac-column-age = العمر
+rbac-clusterWide = العنقود كله
+rbac-aggregated = مجمّع
+rbac-roleMissing = غير موجود
+rbac-empty = لا شيء هنا.
+rbac-refused = لا تسمح بيانات اعتمادك بسرد بعض كائنات RBAC، لذا لا يشملها ما يُعرض:
+rbac-forbidden = لا تسمح بيانات اعتمادك بسرد كائنات RBAC في هذا العنقود، لذا لا يُعرض إلا ما تسمح لك به، كما يُبلغ عنه خادم API.
+rbac-role-kind = النوع
+rbac-role-namespace = Namespace
+rbac-role-aggregation = يجمع ClusterRoles المطابقة لـ
+rbac-role-aggregatedFrom = يحوي قواعد
+rbac-role-labels = التسميات
+rbac-role-age = العمر
+rbac-role-rules = القواعد
+rbac-role-noRules = لا قواعد.
+rbac-role-bindings = عمليات الربط التي تستخدمه
+rbac-role-noBindings = لا تستخدمه أي عملية ربط مسرودة هنا.
+rbac-role-gone = هذا الدور ليس (أو لم يعد) بين المسرودة.
+rbac-rule-resources = الموارد
+rbac-rule-apiGroups = مجموعات API
+rbac-rule-resourceNames = أسماء الموارد
+rbac-rule-urls = عناوين URL غير الموارد
+rbac-rule-verbs = الأفعال
+rbac-coreGroup = core
+rbac-subject-bestEffort = محسوب من عمليات الربط التي يستطيع Homeport قراءتها: عرض تقريبي. قد يفوته ما تسمح به مُخوِّلات webhook أو ABAC، والمجموعات التي يمنحها المُصادِق لمستخدم.
+rbac-subject-groups = تُحتسب أيضًا عمليات الربط إلى هذه المجموعات:
+rbac-subject-onlyNamespace = لا تُحتسب إلا RoleBindings في { $namespace }. اختر كل Namespaces لرؤية البقية.
+rbac-subject-cluster = العنقود كله
+rbac-subject-clusterHint = في كل Namespace، وعلى الموارد على مستوى العنقود، وعلى عناوين URL غير الموارد.
+rbac-subject-inNamespace = في { $namespace }
+rbac-subject-none = لا تمنحه أي عملية ربط مسرودة هنا شيئًا.
+rbac-subject-bindings = عمليات الربط
+rbac-subject-direct = تسمّيه مباشرة
+rbac-subject-through = عبر المجموعة { $group }
+rbac-subject-via = تمنحه { $bindings }
+rbac-matrix-resource = المورد
+rbac-matrix-names = فقط
+rbac-matrix-yes = مسموح
+rbac-matrix-all = مسموح: كل الأفعال (*)
+rbac-matrix-url = عنوان URL غير مورد
+rbac-matrix-verbs = الأفعال
+rbac-matrix-empty = لا شيء.
+rbac-access-about = ما يمكن لبيانات الاعتماد التي يستخدمها Homeport على { $name } فعله في { $namespace }، كما يجيب خادم API.
+rbac-access-user = مسجَّل الدخول باسم
+rbac-access-groups = المجموعات
+rbac-access-myBindings = عمليات الربط التي تسمّيني
+rbac-access-incomplete = يقول خادم API إن هذه القائمة قد تكون ناقصة: قد يسمح مُخوِّل لا يستطيع سرد قواعده، مثل webhook أو ABAC، بالمزيد. اسأل «هل يمكنني…؟» أدناه لتتأكد.
+rbac-canI-title = هل يمكنني…؟
+rbac-canI-verb = الفعل
+rbac-canI-resource = المورد
+rbac-canI-resourcePlaceholder = secrets, deploy, deployments.apps
+rbac-canI-namespace = Namespace
+rbac-canI-allNamespaces = كل Namespaces
+rbac-canI-group = مجموعة API
+rbac-canI-subresource = المورد الفرعي
+rbac-canI-name = الاسم
+rbac-canI-optional = اختياري
+rbac-canI-ask = اسأل
+rbac-canI-yes = نعم
+rbac-canI-no = لا
+rbac-canI-denied = مرفوض صراحةً
+rbac-canI-checked = لـ { $resource }
+rbac-canI-unknown = لا يقدّم هذا العنقود موردًا باسم { $resource }، لذا طُرح السؤال كما كُتب.

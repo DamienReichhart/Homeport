@@ -1,0 +1,93 @@
+### The `rbac` namespace, in हिन्दी (hi).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/hi/rbac.ts:
+### change the text there, then run it again.
+
+rbac-nav = RBAC
+rbac-title = RBAC
+rbac-summary = { $roles ->
+        [one] { NUM($roles) } रोल
+       *[other] { NUM($roles) } रोल
+    }, { $bindings ->
+        [one] { NUM($bindings) } बाइंडिंग
+       *[other] { NUM($bindings) } बाइंडिंग
+    }
+rbac-refresh = रीफ़्रेश करें
+rbac-tab-roles = Roles
+rbac-tab-bindings = Bindings
+rbac-tab-subjects = सब्जेक्ट
+rbac-tab-access = मैं यहाँ क्या कर सकता हूँ?
+rbac-search-roles = रोल खोजें
+rbac-search-bindings = बाइंडिंग खोजें
+rbac-search-subjects = सब्जेक्ट खोजें
+rbac-column-kind = Kind
+rbac-column-name = नाम
+rbac-column-namespace = Namespace
+rbac-column-rules = नियम
+rbac-column-role = रोल
+rbac-column-subjects = सब्जेक्ट
+rbac-column-bindings = बाइंडिंग
+rbac-column-how = कैसे
+rbac-column-age = उम्र
+rbac-clusterWide = पूरा क्लस्टर
+rbac-aggregated = संयोजित
+rbac-roleMissing = नहीं मिला
+rbac-empty = यहाँ कुछ नहीं है।
+rbac-refused = आपके क्रेडेंशियल कुछ RBAC ऑब्जेक्ट की सूची नहीं देख सकते, इसलिए दिखाई गई जानकारी में वे शामिल नहीं हैं:
+rbac-forbidden = आपके क्रेडेंशियल इस क्लस्टर के RBAC ऑब्जेक्ट की सूची नहीं देख सकते, इसलिए केवल वही दिखाया गया है जिसकी वे आपको अनुमति देते हैं, जैसा API सर्वर बताता है।
+rbac-role-kind = Kind
+rbac-role-namespace = Namespace
+rbac-role-aggregation = इनसे मेल खाने वाले ClusterRole को संयोजित करता है
+rbac-role-aggregatedFrom = इनके नियम रखता है
+rbac-role-labels = लेबल
+rbac-role-age = उम्र
+rbac-role-rules = नियम
+rbac-role-noRules = कोई नियम नहीं।
+rbac-role-bindings = इसका उपयोग करने वाली बाइंडिंग
+rbac-role-noBindings = यहाँ सूचीबद्ध कोई बाइंडिंग इसका उपयोग नहीं करती।
+rbac-role-gone = यह रोल सूचीबद्ध रोल में नहीं है (अब नहीं)।
+rbac-rule-resources = रिसोर्स
+rbac-rule-apiGroups = API समूह
+rbac-rule-resourceNames = रिसोर्स के नाम
+rbac-rule-urls = नॉन-रिसोर्स URL
+rbac-rule-verbs = वर्ब
+rbac-coreGroup = core
+rbac-subject-bestEffort = Homeport जिन बाइंडिंग को पढ़ सकता है उनसे गणना की गई: एक सर्वोत्तम-प्रयास दृश्य। इसमें वह छूट सकता है जिसकी webhook या ABAC ऑथराइज़र अनुमति देते हैं, और वे समूह जो कोई ऑथेंटिकेटर किसी उपयोगकर्ता को देता है।
+rbac-subject-groups = इन समूहों की बाइंडिंग भी गिनी जाती हैं:
+rbac-subject-onlyNamespace = केवल { $namespace } की RoleBinding गिनी गई हैं। बाकी देखने के लिए सभी Namespace चुनें।
+rbac-subject-cluster = पूरा क्लस्टर
+rbac-subject-clusterHint = हर Namespace में, क्लस्टर-स्तर के रिसोर्स पर और नॉन-रिसोर्स URL पर।
+rbac-subject-inNamespace = { $namespace } में
+rbac-subject-none = यहाँ सूचीबद्ध कोई बाइंडिंग इसे कुछ नहीं देती।
+rbac-subject-bindings = बाइंडिंग
+rbac-subject-direct = सीधे नाम देती है
+rbac-subject-through = समूह { $group } के ज़रिए
+rbac-subject-via = { $bindings } द्वारा दी गई
+rbac-matrix-resource = रिसोर्स
+rbac-matrix-names = केवल
+rbac-matrix-yes = अनुमति है
+rbac-matrix-all = अनुमति है: हर वर्ब (*)
+rbac-matrix-url = नॉन-रिसोर्स URL
+rbac-matrix-verbs = वर्ब
+rbac-matrix-empty = कुछ नहीं।
+rbac-access-about = Homeport जो क्रेडेंशियल { $name } पर उपयोग करता है, वे { $namespace } में क्या कर सकते हैं, जैसा API सर्वर जवाब देता है।
+rbac-access-user = इस रूप में साइन इन
+rbac-access-groups = समूह
+rbac-access-myBindings = मुझे नाम देने वाली बाइंडिंग
+rbac-access-incomplete = API सर्वर के अनुसार यह सूची अधूरी हो सकती है: जो ऑथराइज़र अपने नियमों की सूची नहीं दे सकता, जैसे webhook या ABAC, वह और अधिक की अनुमति दे सकता है। पक्का करने के लिए नीचे “क्या मैं… कर सकता हूँ?” पूछें।
+rbac-canI-title = क्या मैं… कर सकता हूँ?
+rbac-canI-verb = वर्ब
+rbac-canI-resource = रिसोर्स
+rbac-canI-resourcePlaceholder = secrets, deploy, deployments.apps
+rbac-canI-namespace = Namespace
+rbac-canI-allNamespaces = सभी Namespace
+rbac-canI-group = API समूह
+rbac-canI-subresource = सब-रिसोर्स
+rbac-canI-name = नाम
+rbac-canI-optional = वैकल्पिक
+rbac-canI-ask = पूछें
+rbac-canI-yes = हाँ
+rbac-canI-no = नहीं
+rbac-canI-denied = स्पष्ट रूप से अस्वीकृत
+rbac-canI-checked = { $resource } के लिए
+rbac-canI-unknown = यह क्लस्टर { $resource } नाम का कोई रिसोर्स नहीं देता, इसलिए जैसा लिखा था वैसे ही पूछा गया।

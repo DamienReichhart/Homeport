@@ -1,0 +1,31 @@
+### The `native` namespace, in العربية (ar).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/ar/native.json:
+### change the text there, then run it again.
+
+native-alerts-hostBack-body = { $host } متصل مجددًا.
+native-alerts-hostBack-title = عاد المضيف
+native-alerts-hostUnreachable-body = يتعذّر الوصول إلى { $host }: { $reason }
+native-alerts-hostUnreachable-title = يتعذّر الوصول إلى المضيف
+native-alerts-outOfMemory-body = نفدت ذاكرة { $container } على { $host }
+native-alerts-outOfMemory-title = نفدت ذاكرة الحاوية
+native-alerts-stopped-body = توقفت { $container } على { $host } (رمز الخروج { $code })
+native-alerts-stopped-title = توقفت الحاوية
+native-alerts-unhealthy-body = { $container } غير سليمة على { $host }
+native-alerts-unhealthy-title = الحاوية غير سليمة
+native-compose-pullingAnonymously = جارٍ سحب { $image } دون تسجيل دخول
+native-compose-pullingAs = جارٍ سحب { $image } باسم { $user } من { $registry }
+native-tray-addHost = إضافة مضيف…
+native-tray-connectedOfMany = Homeport — { $connected } من { $total } مضيفات متصلة
+native-tray-connectedOfOne = Homeport — { $connected } من مضيف واحد متصل
+native-tray-host = { $host } — { $status }
+native-tray-noHosts = Homeport — لا توجد مضيفات بعد
+native-tray-open = فتح Homeport
+native-tray-openHost = فتح
+native-tray-quit = إنهاء
+native-tray-reconnect = إعادة الاتصال
+native-tray-status-connected = متصل
+native-tray-status-connecting = جارٍ الاتصال
+native-tray-status-disabled = معطّل
+native-tray-status-needsAttention = يحتاج إلى انتباه
+native-tray-status-unreachable = يتعذّر الوصول إليه

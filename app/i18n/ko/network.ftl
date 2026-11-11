@@ -1,0 +1,55 @@
+### The `network` namespace, in 한국어 (ko).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/ko/network.ts:
+### change the text there, then run it again.
+
+network-nav = 네트워크
+network-title = 네트워크
+network-services = Service
+network-ingresses = Ingress
+network-service = Service
+network-ingress = Ingress
+network-servicesSummary = { $count ->
+       *[other] Service { NUM($count) }개
+    }
+network-ingressesSummary = { $count ->
+       *[other] Ingress { NUM($count) }개
+    }
+network-searchServices = Service 검색
+network-searchIngresses = Ingress 검색
+network-column-name = 이름
+network-column-namespace = Namespace
+network-column-type = 유형
+network-column-clusterIp = 클러스터 IP
+network-column-external = 외부
+network-column-ports = 포트
+network-column-class = 클래스
+network-column-hosts = 호스트
+network-column-addresses = 주소
+network-column-age = 경과 시간
+network-tab-overview = 개요
+network-tab-pods = Pod
+network-tab-rules = 규칙
+network-tab-events = 이벤트
+network-tab-source = YAML
+network-detail-namespace = Namespace
+network-detail-type = 유형
+network-detail-clusterIp = 클러스터 IP
+network-detail-external = 외부 주소
+network-detail-selector = 전송 대상 Pod
+network-detail-noSelector = 선택하는 Pod가 없습니다. 엔드포인트는 수동으로 관리됩니다.
+network-detail-affinity = 세션 어피니티
+network-detail-class = 클래스
+network-detail-addresses = 주소
+network-detail-tls = TLS
+network-detail-age = 경과 시간
+network-detail-labels = 레이블
+network-detail-annotations = 어노테이션
+network-port-name = 이름
+network-port-port = 포트
+network-port-target = 대상 포트
+network-port-node = Node 포트
+network-rule-host = 호스트
+network-rule-path = 경로
+network-rule-type = 일치 방식
+network-rule-backend = 백엔드

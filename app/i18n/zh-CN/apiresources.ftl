@@ -1,0 +1,36 @@
+### The `apiresources` namespace, in 简体中文 (zh-CN).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/zh-CN/apiresources.ts:
+### change the text there, then run it again.
+
+apiresources-nav = API 资源
+apiresources-title = API 资源
+apiresources-summary = 此集群提供 { $count ->
+       *[other] { NUM($count) } 种类型
+    }
+apiresources-refresh = 刷新
+apiresources-types = 资源类型
+apiresources-search = Kind 或简称 (pvc)
+apiresources-searchObjects = 搜索
+apiresources-noMatch = 没有匹配的类型。
+apiresources-coreGroup = core
+apiresources-pick = 选择一种类型以列出其对象：包括内置类型，以及你的 CRD 添加的类型。
+apiresources-typeGone = 此集群（已）不提供该类型。
+apiresources-cantList = 无法列出
+apiresources-notAllowed = 你的凭据无法列出它
+apiresources-cantListWhy = 无法列出 { $kind } 对象：它的 API 只允许逐个创建或读取。
+apiresources-empty = 这里没有内容。
+apiresources-column-name = 名称
+apiresources-column-namespace = Namespace
+apiresources-column-age = 存在时间
+apiresources-tab-overview = 概览
+apiresources-tab-conditions = 条件
+apiresources-tab-events = 事件
+apiresources-tab-source = YAML
+apiresources-detail-namespace = Namespace
+apiresources-detail-owners = 所有者
+apiresources-detail-age = 存在时间
+apiresources-detail-labels = 标签
+apiresources-detail-annotations = 注解
+apiresources-edit = 编辑
+apiresources-copyYaml = 复制 YAML

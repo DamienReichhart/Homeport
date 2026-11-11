@@ -1,0 +1,77 @@
+### The `pods` namespace, in Русский (ru).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/ru/pods.ts:
+### change the text there, then run it again.
+
+pods-nav = Pod
+pods-title = Pod
+pods-summary = { $count ->
+        [one] { NUM($count) } Pod
+        [few] { NUM($count) } Pod
+        [many] { NUM($count) } Pod
+       *[other] { NUM($count) } Pod
+    }
+pods-search = Поиск Pod
+pods-empty = Здесь нет Pod.
+pods-column-name = Имя
+pods-column-namespace = Пространство имён
+pods-column-status = Состояние
+pods-column-ready = Готовы
+pods-column-restarts = Перезапуски
+pods-column-node = Node
+pods-column-age = Возраст
+pods-tab-overview = Обзор
+pods-tab-conditions = Условия
+pods-tab-events = События
+pods-tab-source = YAML
+pods-detail-readyOf = Готово контейнеров: { $ready } из { $total }
+pods-detail-namespace = Пространство имён
+pods-detail-node = Node
+pods-detail-ip = IP Pod
+pods-detail-hostIp = IP Node
+pods-detail-qos = Класс QoS
+pods-detail-serviceAccount = Сервисный аккаунт
+pods-detail-owner = Управляется
+pods-detail-age = Возраст
+pods-detail-labels = Метки
+pods-detail-annotations = Аннотации
+pods-container-name = Контейнер
+pods-container-init = init
+pods-container-image = Образ
+pods-container-state = Состояние
+pods-container-ready = Готов
+pods-container-isReady = Да
+pods-container-notReady = Нет
+pods-container-restarts = Перезапуски
+pods-container-restartsWhy = { $count } (последний: { $reason })
+pods-container-started = Запущен
+pods-container-ports = Порты
+pods-state-running = Работает
+pods-state-waiting = Ожидает
+pods-state-terminated = Завершён
+pods-tab-logs = Журналы
+pods-logs-container = Контейнер
+pods-logs-initContainer = { $name } (init)
+pods-logs-previous = Предыдущий запуск
+pods-logs-noRestart = Он не перезапускался, поэтому предыдущего запуска нет.
+pods-logs-pod = Pod
+pods-logs-allPods = { $count ->
+        [1] Pod
+        [one] Все { NUM($count) } объект Pod
+        [few] Все { NUM($count) } объекта Pod
+        [many] Все { NUM($count) } объектов Pod
+       *[other] Все { NUM($count) } объекта Pod
+    }
+pods-logs-noPods = Сейчас в нём не работает ни один Pod.
+pods-tab-terminal = Терминал
+pods-terminal-shell = Оболочка
+pods-terminal-command = Команда
+pods-terminal-connect = Подключиться
+pods-terminal-reconnect = Переподключиться
+pods-terminal-notRunning = Этот контейнер не запущен.
+pods-terminal-exited = Процесс завершился.
+pods-terminal-exitedWithCode = Процесс завершился с кодом { $code }.
+pods-column-cpu = ЦП
+pods-column-memory = Память
+pods-tab-metrics = Метрики
+pods-metrics-noSample = У metrics-server ещё нет замера этого Pod: возможно, он только что запустился или не работает.

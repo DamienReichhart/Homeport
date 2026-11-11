@@ -1,0 +1,186 @@
+### The `core` namespace, in Français (fr).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/fr/core.ts:
+### change the text there, then run it again.
+
+core-host-engineVersion = Moteur { $version }
+core-host-podmanVersion = Podman { $version }
+core-host-containerdVersion = containerd { $version }
+core-host-incusVersion = Incus { $version }
+core-engine-docker = Compatible Docker
+core-engine-containerd = containerd
+core-engine-incus = Incus
+core-unsupported-title = { $name } ne peut pas afficher cette page
+core-unsupported-docker = Cette page nécessite un moteur compatible Docker, et { $name } exécute { $engine }.
+core-unsupported-podman = Cette page est destinée à Podman, et { $name } exécute un autre moteur compatible Docker. Choisissez un hôte Podman dans le sélecteur pour l’utiliser.
+core-unsupported-containerd = Cette page est destinée à containerd, et { $name } exécute { $engine }. Choisissez un hôte containerd dans le sélecteur pour l’utiliser.
+core-unsupported-incus = Cette page est destinée à Incus, et { $name } exécute { $engine }. Choisissez un hôte Incus dans le sélecteur pour l’utiliser.
+core-unsupported-overview = Aller à la vue d’ensemble
+core-cluster-kind-kubernetes = Kubernetes
+core-cluster-kind-nomad = Nomad
+core-cluster-unsupported-title = { $name } ne peut pas afficher cette page
+core-cluster-unsupported-description = Cette page est destinée aux clusters { $kind }, et { $name } est un cluster { $current }. Choisissez un cluster { $kind } dans le sélecteur pour l’utiliser.
+core-containerd-namespace = Espace de noms
+core-containerd-holds = { $containers ->
+        [one] { NUM($containers) } conteneur
+       *[other] { NUM($containers) } conteneurs
+    }, { $images ->
+        [one] { NUM($images) } image
+       *[other] { NUM($images) } images
+    }
+core-containerd-manage = Gérer les espaces de noms
+core-containerd-rememberFailed = Homeport n’a pas pu mémoriser l’espace de noms choisi
+core-incus-project = Projet
+core-incus-holds = { $instances ->
+        [one] { NUM($instances) } instance
+       *[other] { NUM($instances) } instances
+    }, { $images ->
+        [one] { NUM($images) } image
+       *[other] { NUM($images) } images
+    }
+core-incus-rememberFailed = Homeport n’a pas pu mémoriser le projet choisi
+core-selection-rememberFailed = Homeport n’a pas pu mémoriser votre sélection
+core-connection-local = Local
+core-status-connected = Connecté
+core-status-connecting = Connexion
+core-status-disabled = Désactivé
+core-status-unreachable = Injoignable
+core-status-unreachableDetail = { $message } — nouvel essai dans { $secs } s
+core-status-unauthorized = Accès refusé
+core-status-hostKeyUntrusted = Clé du serveur non approuvée
+core-status-hostKeyUntrustedDetail = Vérifiez l’empreinte { $fingerprint } et approuvez-la pour vous connecter.
+core-status-hostKeyMismatch = Clé du serveur modifiée
+core-status-hostKeyMismatchDetail = { $expected } attendue, { $actual } reçue.
+core-status-credentialsLost = Identifiants perdus
+core-status-credentialsLostDetail = Les identifiants enregistrés ne peuvent pas être déchiffrés. Saisissez-les à nouveau ou régénérez la clé.
+core-status-keychainUnavailable = Trousseau indisponible
+core-status-invalid = Mal configuré
+core-swarm-label = Swarm de { $host }
+core-swarm-labelUnknown = Swarm { $id }
+core-swarm-gone-title = Ce Swarm n’est plus connu
+core-swarm-gone-description = Aucun des hôtes auxquels Homeport se connecte n’en fait plus partie. Ajoutez l’un de ses managers comme hôte pour le gérer.
+core-cluster-serverVersion = Kubernetes { $version }
+core-cluster-nomadVersion = Nomad { $version }, région { $region }
+core-cluster-nomadRegion = Nomad, région { $region }
+core-cluster-credentialsLostDetail = Les identifiants enregistrés ne peuvent pas être déchiffrés. Actualisez le cluster depuis son kubeconfig.
+core-cluster-reconnectFailed = Homeport n’a pas pu se reconnecter au cluster
+core-cluster-gate-none = Aucun cluster sélectionné
+core-cluster-gate-noneDescription = Choisissez un cluster dans la barre latérale, ou ajoutez-en un depuis votre kubeconfig.
+core-cluster-gate-add = Ajouter un cluster
+core-cluster-gate-openSettings = Ouvrir les paramètres du cluster
+core-localClusters-title = Clusters sur cette machine
+core-localClusters-description = Kubernetes exécuté localement, tel que votre kubeconfig l’atteint.
+core-localClusters-add = Ajouter
+core-localClusters-added = Ajouté
+core-localClusters-notRunning = Arrêté
+core-localClusters-addFailed = Homeport n’a pas pu ajouter le cluster
+core-localClusters-missing = Le cluster { $tool } { $name } est en cours d’exécution, mais votre kubeconfig ne l’atteint pas. Ajoutez-le avec :
+core-localClusters-tool-dockerDesktop = Docker Desktop
+core-localClusters-tool-orbstack = OrbStack
+core-localClusters-tool-rancherDesktop = Rancher Desktop
+core-localClusters-tool-kind = kind
+core-localClusters-tool-k3d = k3d
+core-localClusters-tool-minikube = minikube
+core-namespace-label = Namespace
+core-namespace-all = Tous les namespaces
+core-namespace-type = Namespace
+core-namespace-cantList = Vos identifiants ne permettent pas de lister les namespaces. Saisissez celui que vous êtes autorisé à utiliser.
+core-namespace-rememberFailed = Homeport n’a pas pu mémoriser le namespace
+core-health-ready = Prêt
+core-health-progressing = En cours
+core-health-degraded = Dégradé
+core-health-failed = En échec
+core-health-paused = En pause
+core-events-type = Type
+core-events-reason = Motif
+core-events-message = Message
+core-events-count = Nombre
+core-events-lastSeen = Vu pour la dernière fois
+core-events-none = Aucun événement. Kubernetes les conserve environ une heure.
+core-conditions-type = Condition
+core-conditions-status = État
+core-conditions-reason = Motif
+core-conditions-message = Message
+core-conditions-since = Depuis
+core-conditions-none = Aucune condition signalée.
+core-labels-none = Aucun
+core-yaml-label = YAML
+core-list-empty = Rien ici.
+core-yaml-copy = Copier le YAML
+core-gate-welcome-title = Bienvenue dans Homeport
+core-gate-welcome-description = Ajoutez un Docker Engine pour commencer — celui de cette machine, ou un moteur distant via SSH ou TLS — ou un cluster Kubernetes depuis votre kubeconfig.
+core-gate-addAnother = Ajouter un autre hôte
+core-gate-addCluster = Ajouter un cluster
+core-gate-connecting = Connexion à { $name }…
+core-gate-statusTitle = { $name } : { $status }
+core-gate-retryingOnItsOwn = Homeport réessaiera de lui-même dans { $secs } s.
+core-gate-retryNow = Réessayer maintenant
+core-gate-openSettings = Ouvrir les paramètres de l’hôte
+core-localEngines-title = Trouvés sur cette machine
+core-localEngines-description = Moteurs qui répondent sur des sockets locaux.
+core-localEngines-add = Ajouter
+core-freshness-check = Rechercher des images plus récentes
+core-freshness-checking = Vérification…
+core-freshness-allUpToDate = Toutes les images sont à jour
+core-freshness-newerCount = { $count ->
+        [one] { NUM($count) } image a une version plus récente
+       *[other] { NUM($count) } images ont une version plus récente
+    }
+core-freshness-newerOne = Une version plus récente de { $reference } a été publiée
+core-freshness-newerMany = Des images plus récentes ont été publiées : { $references }
+core-delete-title = Supprimer { $kind } { $name } ?
+core-delete-titleMany = Supprimer { $count } objets { $kind } ?
+core-delete-titleObjects = Supprimer { $count } objets ?
+core-delete-one = { $kind } { $name } sera supprimé de { $cluster }.
+core-delete-oneIn = { $kind } { $name } sera supprimé du namespace { $namespace } sur { $cluster }.
+core-delete-many = Ces objets seront supprimés de { $cluster } : { $names }.
+core-delete-manyIn = Ces objets seront supprimés du namespace { $namespace } sur { $cluster } : { $names }.
+core-delete-namespace = Tout ce que contient le namespace est supprimé avec lui : ses charges de travail, Pods, Services, ConfigMaps et Secrets.
+core-delete-recreated = { $kind } { $name } le contrôle : il démarrera donc un nouveau Pod à sa place.
+core-delete-pods = Ses Pods sont supprimés avec lui.
+core-delete-cronJob = Il ne démarre plus de Jobs ; ceux qu’il a démarrés sont supprimés avec lui.
+core-delete-node = Homeport ne le draine pas d’abord : ses Pods restent jusqu’à ce que le Node s’enregistre à nouveau ou qu’ils soient replanifiés.
+core-delete-confirm = Supprimer
+core-delete-failed = Homeport n’a pas pu supprimer { $name }
+core-delete-done = { $count ->
+        [one] { $name } supprimé
+       *[other] { NUM($count) } objets supprimés
+    }
+core-delete-action = Supprimer
+core-delete-selected = Supprimer { $count }
+core-apply-preview = Prévisualiser les changements
+core-apply-apply = Appliquer
+core-apply-force = Appliquer quand même
+core-apply-stale = Le YAML a changé depuis cette prévisualisation.
+core-apply-noChanges = Aucun changement : le cluster contient déjà ceci.
+core-apply-confirmTitle = Appliquer { $count ->
+        [one] { NUM($count) } changement
+       *[other] { NUM($count) } changements
+    } à { $cluster } ?
+core-apply-confirmDescription = Homeport l’applique par server-side apply en tant que gestionnaire de champs homeport, comme le montre la prévisualisation.
+core-apply-forceTitle = Prendre le contrôle des champs en conflit ?
+core-apply-forceDescription = Les outils qui les gèrent sur { $cluster } risquent de les rétablir, ou de cesser de les gérer. Homeport devient leur gestionnaire.
+core-apply-done = Appliqué à { $cluster }
+core-apply-diffOf = Changements de { $kind } { $name }
+core-apply-action-created = Créé
+core-apply-action-changed = Modifié
+core-apply-action-unchanged = Aucun changement
+core-apply-action-failed = Impossible d’appliquer
+core-yaml-edit = Modifier
+core-yaml-editTitle = Modifier { $kind } { $name }
+core-yaml-editDescription = Sur { $cluster }. Modifiez le YAML, prévisualisez ce qu’il change, puis appliquez-le.
+core-metrics-cpu = CPU
+core-metrics-memory = Mémoire
+core-metrics-used = Utilisation
+core-metrics-request = Demande
+core-metrics-limit = Limite
+core-metrics-allocatable = Allouable
+core-metrics-ofLimit = { $percent } de la limite
+core-metrics-ofRequest = { $percent } de la demande
+core-metrics-ofAllocatable = { $percent } de l’allouable
+core-metrics-notInstalled-title = metrics-server n’est pas installé
+core-metrics-notInstalled-body = Ce cluster ne sert pas l’API Metrics, d’où viennent le CPU et la mémoire. Homeport n’installe rien sur un cluster : une fois metrics-server installé, ils s’affichent ici.
+core-metrics-notInstalled-link = Comment installer metrics-server
+core-metrics-notResponding = L’API Metrics ne répond pas : metrics-server démarre peut-être, ou ne tourne pas. Homeport réessaie toutes les 15 secondes.
+core-metrics-waiting = En attente du premier échantillon de metrics-server…
+core-metrics-kept = Un échantillon toutes les 15 secondes, gardé tant que cette page est ouverte, 15 minutes au plus.

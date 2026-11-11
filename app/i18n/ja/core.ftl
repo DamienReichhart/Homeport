@@ -1,0 +1,180 @@
+### The `core` namespace, in 日本語 (ja).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/ja/core.ts:
+### change the text there, then run it again.
+
+core-host-engineVersion = エンジン { $version }
+core-host-podmanVersion = Podman { $version }
+core-host-containerdVersion = containerd { $version }
+core-host-incusVersion = Incus { $version }
+core-engine-docker = Docker 互換
+core-engine-containerd = containerd
+core-engine-incus = Incus
+core-unsupported-title = { $name } ではこのページを表示できません
+core-unsupported-docker = このページには Docker 互換のエンジンが必要ですが、{ $name } で動作しているのは { $engine } です。
+core-unsupported-podman = このページは Podman 用ですが、{ $name } では別の Docker 互換エンジンが動作しています。使うには、切り替えメニューで Podman のホストを選んでください。
+core-unsupported-containerd = このページは containerd 用ですが、{ $name } で動作しているのは { $engine } です。使うには、切り替えメニューで containerd のホストを選んでください。
+core-unsupported-incus = このページは Incus 用ですが、{ $name } で動作しているのは { $engine } です。使うには、切り替えメニューで Incus のホストを選んでください。
+core-unsupported-overview = 概要に移動
+core-cluster-kind-kubernetes = Kubernetes
+core-cluster-kind-nomad = Nomad
+core-cluster-unsupported-title = { $name } ではこのページを表示できません
+core-cluster-unsupported-description = このページは { $kind } クラスター用ですが、{ $name } は { $current } クラスターです。使うには、切り替えメニューで { $kind } クラスターを選んでください。
+core-containerd-namespace = 名前空間
+core-containerd-holds = コンテナ { $containers ->
+       *[other] { NUM($containers) } 個
+    }、イメージ { $images ->
+       *[other] { NUM($images) } 個
+    }
+core-containerd-manage = 名前空間を管理
+core-containerd-rememberFailed = Homeport は選択した名前空間を記憶できませんでした
+core-incus-project = プロジェクト
+core-incus-holds = インスタンス { $instances ->
+       *[other] { NUM($instances) } 個
+    }、イメージ { $images ->
+       *[other] { NUM($images) } 個
+    }
+core-incus-rememberFailed = Homeport は選択したプロジェクトを記憶できませんでした
+core-selection-rememberFailed = Homeport は選択内容を記憶できませんでした
+core-connection-local = ローカル
+core-status-connected = 接続済み
+core-status-connecting = 接続中
+core-status-disabled = 無効
+core-status-unreachable = 到達不能
+core-status-unreachableDetail = { $message } — { $secs } 秒後に再試行します
+core-status-unauthorized = アクセスが拒否されました
+core-status-hostKeyUntrusted = サーバーキーが信頼されていません
+core-status-hostKeyUntrustedDetail = フィンガープリント { $fingerprint } を確認し、信頼して接続してください。
+core-status-hostKeyMismatch = サーバーキーが変更されました
+core-status-hostKeyMismatchDetail = { $expected } のはずが、{ $actual } でした。
+core-status-credentialsLost = 認証情報が失われました
+core-status-credentialsLostDetail = 保存されている認証情報を復号できません。入力し直すか、キーを再生成してください。
+core-status-keychainUnavailable = キーチェーンを利用できません
+core-status-invalid = 設定に誤りがあります
+core-swarm-label = { $host } の Swarm
+core-swarm-labelUnknown = Swarm { $id }
+core-swarm-gone-title = この Swarm はもう認識されていません
+core-swarm-gone-description = Homeport が接続しているホストのうち、現在この Swarm に属しているものはありません。管理するには、そのマネージャーのいずれかをホストとして追加してください。
+core-cluster-serverVersion = Kubernetes { $version }
+core-cluster-nomadVersion = Nomad { $version }、リージョン { $region }
+core-cluster-nomadRegion = Nomad、リージョン { $region }
+core-cluster-credentialsLostDetail = 保存されている認証情報を復号できません。kubeconfig からクラスターを更新してください。
+core-cluster-reconnectFailed = Homeport はクラスターに再接続できませんでした
+core-cluster-gate-none = クラスターが選択されていません
+core-cluster-gate-noneDescription = サイドバーでクラスターを選ぶか、kubeconfig から追加してください。
+core-cluster-gate-add = クラスターを追加
+core-cluster-gate-openSettings = クラスターの設定を開く
+core-localClusters-title = このマシン上のクラスター
+core-localClusters-description = ローカルで動作し、kubeconfig から到達できる Kubernetes です。
+core-localClusters-add = 追加
+core-localClusters-added = 追加済み
+core-localClusters-notRunning = 停止中
+core-localClusters-addFailed = Homeport はクラスターを追加できませんでした
+core-localClusters-missing = { $tool } のクラスター { $name } は動作していますが、kubeconfig から到達できません。次のコマンドで追加してください:
+core-localClusters-tool-dockerDesktop = Docker Desktop
+core-localClusters-tool-orbstack = OrbStack
+core-localClusters-tool-rancherDesktop = Rancher Desktop
+core-localClusters-tool-kind = kind
+core-localClusters-tool-k3d = k3d
+core-localClusters-tool-minikube = minikube
+core-namespace-label = Namespace
+core-namespace-all = すべての Namespace
+core-namespace-type = Namespace
+core-namespace-cantList = この認証情報では Namespace を一覧表示できません。使用を許可されている Namespace を入力してください。
+core-namespace-rememberFailed = Homeport は Namespace を記憶できませんでした
+core-health-ready = 準備完了
+core-health-progressing = 進行中
+core-health-degraded = 低下
+core-health-failed = 失敗
+core-health-paused = 一時停止
+core-events-type = 種類
+core-events-reason = 理由
+core-events-message = メッセージ
+core-events-count = 回数
+core-events-lastSeen = 最終確認
+core-events-none = イベントはありません。Kubernetes はイベントを約 1 時間保持します。
+core-conditions-type = 状態
+core-conditions-status = ステータス
+core-conditions-reason = 理由
+core-conditions-message = メッセージ
+core-conditions-since = 開始
+core-conditions-none = 報告されている状態はありません。
+core-labels-none = なし
+core-yaml-label = YAML
+core-list-empty = ここには何もありません。
+core-yaml-copy = YAML をコピー
+core-gate-welcome-title = Homeport へようこそ
+core-gate-welcome-description = まずは Docker エンジン（このマシンのもの、または SSH や TLS 経由のリモートのもの）か、kubeconfig の Kubernetes クラスターを追加してください。
+core-gate-addAnother = 別のホストを追加
+core-gate-addCluster = クラスターを追加
+core-gate-connecting = { $name } に接続中…
+core-gate-statusTitle = { $name }: { $status }
+core-gate-retryingOnItsOwn = Homeport は { $secs } 秒後に自動で再試行します。
+core-gate-retryNow = 今すぐ再試行
+core-gate-openSettings = ホストの設定を開く
+core-localEngines-title = このマシンで見つかったもの
+core-localEngines-description = ローカルソケットで応答しているエンジンです。
+core-localEngines-add = 追加
+core-freshness-check = 新しいイメージを確認
+core-freshness-checking = 確認中…
+core-freshness-allUpToDate = すべてのイメージが最新です
+core-freshness-newerCount = { $count ->
+       *[other] { NUM($count) } 個のイメージ
+    }に新しいバージョンがあります
+core-freshness-newerOne = 新しい { $reference } が公開されました
+core-freshness-newerMany = 新しいイメージが公開されました: { $references }
+core-delete-title = { $kind } { $name } を削除しますか？
+core-delete-titleMany = { $count } 個の { $kind } オブジェクトを削除しますか？
+core-delete-titleObjects = { $count } 個のオブジェクトを削除しますか？
+core-delete-one = { $kind } { $name } は { $cluster } から削除されます。
+core-delete-oneIn = { $kind } { $name } は { $cluster } の Namespace { $namespace } から削除されます。
+core-delete-many = 次のものが { $cluster } から削除されます: { $names }。
+core-delete-manyIn = 次のものが { $cluster } の Namespace { $namespace } から削除されます: { $names }。
+core-delete-namespace = Namespace 内のもの（ワークロード、Pod、Service、ConfigMap、Secret）はすべて一緒に削除されます。
+core-delete-recreated = { $kind } { $name } がこれを制御しているため、代わりに新しい Pod が起動されます。
+core-delete-pods = その Pod も一緒に削除されます。
+core-delete-cronJob = 新しい Job は起動されなくなり、起動済みの Job は一緒に削除されます。
+core-delete-node = Homeport は事前にドレインしません。Pod は、Node が再登録されるか再スケジュールされるまで残ります。
+core-delete-confirm = 削除
+core-delete-failed = Homeport は { $name } を削除できませんでした
+core-delete-done = { $count ->
+        [one] { $name } を削除しました
+       *[other] { NUM($count) } 個のオブジェクトを削除しました
+    }
+core-delete-action = 削除
+core-delete-selected = { $count } 個を削除
+core-apply-preview = 変更をプレビュー
+core-apply-apply = 適用
+core-apply-force = それでも適用
+core-apply-stale = このプレビューの後に YAML が変更されました。
+core-apply-noChanges = 変更はありません。クラスターはすでにこの内容です。
+core-apply-confirmTitle = { $cluster } に { $count ->
+       *[other] { NUM($count) } 件の変更
+    }を適用しますか？
+core-apply-confirmDescription = Homeport は、プレビューのとおり、homeport フィールドマネージャーとして server-side apply で適用します。
+core-apply-forceTitle = 競合するフィールドを引き継ぎますか？
+core-apply-forceDescription = { $cluster } でそれらを管理しているツールが値を元に戻したり、管理をやめたりする可能性があります。Homeport がそれらのマネージャーになります。
+core-apply-done = { $cluster } に適用しました
+core-apply-diffOf = { $kind } { $name } への変更
+core-apply-action-created = 作成
+core-apply-action-changed = 変更
+core-apply-action-unchanged = 変更なし
+core-apply-action-failed = 適用できません
+core-yaml-edit = 編集
+core-yaml-editTitle = { $kind } { $name } を編集
+core-yaml-editDescription = { $cluster } 上。YAML を変更し、何が変わるかをプレビューしてから適用します。
+core-metrics-cpu = CPU
+core-metrics-memory = メモリ
+core-metrics-used = 使用量
+core-metrics-request = リクエスト
+core-metrics-limit = リミット
+core-metrics-allocatable = 割り当て可能
+core-metrics-ofLimit = リミットの { $percent }
+core-metrics-ofRequest = リクエストの { $percent }
+core-metrics-ofAllocatable = 割り当て可能量の { $percent }
+core-metrics-notInstalled-title = metrics-server がインストールされていません
+core-metrics-notInstalled-body = このクラスターは、CPU とメモリの値の取得元である Metrics API を提供していません。Homeport はクラスターに何もインストールしません。metrics-server をインストールすると、ここに表示されます。
+core-metrics-notInstalled-link = metrics-server のインストール方法
+core-metrics-notResponding = Metrics API が応答しません。metrics-server が起動中か、動作していない可能性があります。Homeport は 15 秒ごとに再試行します。
+core-metrics-waiting = metrics-server からの最初のサンプルを待っています…
+core-metrics-kept = 15 秒ごとのサンプルを、このページを開いている間、最大 15 分間保持します。

@@ -1,0 +1,72 @@
+### The `pods` namespace, in Français (fr).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/fr/pods.ts:
+### change the text there, then run it again.
+
+pods-nav = Pods
+pods-title = Pods
+pods-summary = { $count ->
+        [one] { NUM($count) } Pod
+       *[other] { NUM($count) } Pods
+    }
+pods-search = Rechercher des Pods
+pods-empty = Aucun Pod ici.
+pods-column-name = Nom
+pods-column-namespace = Namespace
+pods-column-status = État
+pods-column-ready = Prêts
+pods-column-restarts = Redémarrages
+pods-column-node = Node
+pods-column-age = Âge
+pods-tab-overview = Vue d’ensemble
+pods-tab-conditions = Conditions
+pods-tab-events = Événements
+pods-tab-source = YAML
+pods-detail-readyOf = { $ready } conteneurs prêts sur { $total }
+pods-detail-namespace = Namespace
+pods-detail-node = Node
+pods-detail-ip = IP du Pod
+pods-detail-hostIp = IP du Node
+pods-detail-qos = Classe QoS
+pods-detail-serviceAccount = Compte de service
+pods-detail-owner = Contrôlé par
+pods-detail-age = Âge
+pods-detail-labels = Labels
+pods-detail-annotations = Annotations
+pods-container-name = Conteneur
+pods-container-init = init
+pods-container-image = Image
+pods-container-state = État
+pods-container-ready = Prêt
+pods-container-isReady = Oui
+pods-container-notReady = Non
+pods-container-restarts = Redémarrages
+pods-container-restartsWhy = { $count } (dernier : { $reason })
+pods-container-started = Démarré
+pods-container-ports = Ports
+pods-state-running = En cours d’exécution
+pods-state-waiting = En attente
+pods-state-terminated = Terminé
+pods-tab-logs = Journaux
+pods-logs-container = Conteneur
+pods-logs-initContainer = { $name } (init)
+pods-logs-previous = Instance précédente
+pods-logs-noRestart = Il n’a pas redémarré : il n’y a donc pas d’instance précédente.
+pods-logs-pod = Pod
+pods-logs-allPods = { $count ->
+        [one] Le Pod
+       *[other] Tous les { NUM($count) } Pods
+    }
+pods-logs-noPods = Il n’exécute aucun Pod pour le moment.
+pods-tab-terminal = Terminal
+pods-terminal-shell = Shell
+pods-terminal-command = Commande
+pods-terminal-connect = Connecter
+pods-terminal-reconnect = Reconnecter
+pods-terminal-notRunning = Ce conteneur n’est pas en cours d’exécution.
+pods-terminal-exited = Le processus s’est terminé.
+pods-terminal-exitedWithCode = Le processus s’est terminé avec le code { $code }.
+pods-column-cpu = CPU
+pods-column-memory = Mémoire
+pods-tab-metrics = Métriques
+pods-metrics-noSample = metrics-server n’a pas encore d’échantillon de ce Pod : il vient peut-être de démarrer, ou ne tourne pas.

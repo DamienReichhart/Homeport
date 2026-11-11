@@ -1,0 +1,276 @@
+### The `stacks` namespace, in Русский (ru).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/ru/stacks.ts:
+### change the text there, then run it again.
+
+stacks-nav = Стеки
+stacks-title = Стеки
+stacks-description = Проекты Compose на этом хосте. Управляемые стеки хранят своё определение в Homeport, связанные — в папке на этом компьютере; внешние были развёрнуты в другом месте.
+stacks-new = Новый стек
+stacks-search = Поиск стеков
+stacks-empty-title = Стеков нет
+stacks-empty-description = Напишите определение compose и разверните его на этом хосте.
+stacks-column-name = Имя
+stacks-column-kind = Вид
+stacks-column-state = Состояние
+stacks-column-services = Сервисы
+stacks-kind-managed = Управляемый
+stacks-kind-linked = Связанный
+stacks-kind-synced = Синхронизируемый
+stacks-kind-external = Внешний
+stacks-state-running = Работает
+stacks-state-partial = Работает частично
+stacks-state-stopped = Остановлен
+stacks-state-notDeployed = Не развёрнут
+stacks-newerImagesFor = Новые версии образов для { $services }
+stacks-removed = Контейнеры { $name } удалены
+stacks-definitionSaved = Определение сохранено
+stacks-notFound = На этом хосте нет стека с именем { $name }.
+stacks-detail-running = Работает { $running } из { $total ->
+        [one] { NUM($total) } контейнера
+        [few] { NUM($total) } контейнеров
+        [many] { NUM($total) } контейнеров
+       *[other] { NUM($total) } контейнера
+    }
+stacks-tab-services = Сервисы
+stacks-tab-logs = Журналы
+stacks-tab-definition = Определение
+stacks-tab-history = История
+stacks-review-title = Проверьте изменения в { $name }
+stacks-review-description = Что изменит повторное развёртывание по сравнению с определением, развёрнутым { $when }.
+stacks-review-unknownTitle = Неизвестно, что развёрнуто сейчас
+stacks-review-unknownDescription = Этот стек был развёрнут до того, как Homeport начал вести историю развёртываний, или не из Homeport. Будет развёрнуто вот это определение.
+stacks-review-noChanges = С последнего развёртывания ничего не изменилось.
+stacks-review-redeployAnyway = Всё равно развернуть заново
+stacks-review-deploy = Развернуть
+stacks-review-back = Назад
+stacks-review-added = Добавлено
+stacks-review-removed = Удалено
+stacks-review-changed = Изменено
+stacks-review-unchanged = Без изменений
+stacks-review-removedFile = Compose больше не использует этот файл.
+stacks-review-reordered = Файлы объединяются в другом порядке.
+stacks-review-environment = Окружение
+stacks-review-envUnchanged = { $count ->
+        [one] Ещё { NUM($count) } переменная не изменилась.
+        [few] Ещё { NUM($count) } переменные не изменились.
+        [many] Ещё { NUM($count) } переменных не изменились.
+       *[other] Ещё { NUM($count) } переменной не изменились.
+    }
+stacks-review-profiles = Профили: { $before } → { $after }
+stacks-review-noProfile = нет
+stacks-history-empty = Развёртываний пока не записано. Здесь перечисляется каждое развёртывание из Homeport вместе с использованным определением.
+stacks-history-column-started = Развёрнут
+stacks-history-column-action = Действие
+stacks-history-column-outcome = Результат
+stacks-history-succeeded = Успешно
+stacks-history-failed = Сбой
+stacks-history-failedCode = Сбой (код выхода { $code })
+stacks-history-unfinished = Не завершено
+stacks-history-current = Развёрнуто сейчас
+stacks-history-select = Выберите развёртывание, чтобы увидеть использованное определение.
+stacks-history-envKeys = Окружение: { $keys }
+stacks-history-noEnv = Окружения нет.
+stacks-history-envLocked = У него было окружение, но связка ключей этого компьютера не может его открыть, поэтому откатиться к нему здесь нельзя.
+stacks-history-profiles = Профили: { $profiles }
+stacks-history-rollBack = Откатить
+stacks-history-rollBackTitle = Откатить { $name } к этому развёртыванию?
+stacks-history-rollBackDescription = Его файлы compose, окружение и профили заменят текущие, затем стек будет развёрнут заново. Образы снова скачиваются для их тегов в нынешнем виде; тома остаются как есть.
+stacks-history-linkedNote = Источник связанного стека — его папка: восстановите в ней прежние файлы, например с помощью системы контроля версий, затем разверните заново.
+stacks-services-notDeployed = Ещё не развёрнут.
+stacks-services-outdated = { $count ->
+        [1] { $services } использует устаревший образ.
+        [one] { $services } используют устаревшие образы.
+        [few] { $services } используют устаревшие образы.
+        [many] { $services } используют устаревшие образы.
+       *[other] { $services } используют устаревшие образы.
+    }
+stacks-services-howToUpdate = Выберите «Обновить», чтобы скачать их и развернуть заново.
+stacks-services-adoptToUpdate = Возьмите его под управление, чтобы обновлять из Homeport.
+stacks-services-column-service = Сервис
+stacks-services-column-container = Контейнер
+stacks-services-column-image = Образ
+stacks-services-column-status = Состояние
+stacks-action-checkingCompose = Проверка наличия CLI docker compose…
+stacks-action-deploy = Развернуть
+stacks-action-redeploy = Развернуть заново
+stacks-action-adopt = Взять под управление
+stacks-action-stop = Остановить
+stacks-action-start = Запустить
+stacks-action-more = Другие действия со стеком
+stacks-action-restart = Перезапустить
+stacks-action-pull = Скачать образы
+stacks-action-rebuild = Пересобрать и развернуть
+stacks-down-title = Свернуть { $name }?
+stacks-down-description = Его контейнеры и сети будут удалены. Тома и определение сохраняются, так что его можно развернуть снова.
+stacks-down-confirm = Свернуть
+stacks-downWithVolumes-title = Свернуть { $name } и удалить его тома?
+stacks-downWithVolumes-warning = Контейнеры, сети и все тома этого стека будут удалены вместе со всеми данными.
+stacks-downWithVolumes-confirm = Удалить вместе с томами
+stacks-downWithVolumes-action = Свернуть вместе с томами
+stacks-remove-title = Удалить { $name }?
+stacks-remove-description = Его { $count ->
+        [one] { NUM($count) } контейнер
+        [few] { NUM($count) } контейнера
+        [many] { NUM($count) } контейнеров
+       *[other] { NUM($count) } контейнера
+    } и сети будут удалены. Тома сохраняются. У Homeport нет файла compose для этого стека, поэтому развернуть его заново отсюда нельзя.
+stacks-remove-action = Удалить контейнеры
+stacks-compose-up = Развёртывание { $name }
+stacks-compose-rebuild = Пересборка и развёртывание { $name }
+stacks-compose-rollback = Откат { $name }
+stacks-compose-update = Обновление { $name }
+stacks-compose-updating = Новые версии образов: { $images }
+stacks-update-available = Доступно обновление
+stacks-update-action = Обновить
+stacks-update-adoptFirst = Сначала возьмите этот стек под управление: чтобы развернуть его заново, Homeport нужен его файл compose.
+stacks-compose-pull = Скачивание образов для { $name }
+stacks-compose-down = Сворачивание { $name }
+stacks-compose-downWithVolumes = Сворачивание { $name } (вместе с томами)
+stacks-compose-done = ✓ Готово
+stacks-compose-failed = ✗ Сбой, код выхода { $code }
+stacks-newPage-adoptTitle = Взять { $name } под управление
+stacks-newPage-adoptDescription = Вставьте файл compose, с которым был развёрнут этот стек. После этого им управляет Homeport: его можно изменять и разворачивать заново отсюда.
+stacks-newPage-description = Определение compose, которое Homeport хранит и разворачивает на этом хосте.
+stacks-newPage-sameDefinition-title = Используйте то же определение
+stacks-newPage-sameDefinition-description = Повторное развёртывание с другим файлом пересоздаёт контейнеры под него и удаляет сервисы, которых в нём больше нет.
+stacks-newPage-target = Куда развернуть
+stacks-registryAuth-label = Передавать мои учётные данные реестров
+stacks-registryAuth-description = Развёртывание с --with-registry-auth: docker CLI на этом компьютере передаёт в Swarm свои входы в реестры (из docker login), чтобы его узлы могли скачивать закрытые образы. Если выключено, узлы скачивают со своими собственными входами.
+stacks-newPage-targetHost = Хост { $name }
+stacks-newPage-name = Имя
+stacks-newPage-otherTemplate = Выбрать другой шаблон
+stacks-templates-title = Начать с шаблона
+stacks-templates-staticSite-title = Статический сайт
+stacks-templates-staticSite-description = nginx, отдающий файлы из именованного тома.
+stacks-templates-postgres-title = PostgreSQL и Adminer
+stacks-templates-postgres-description = База данных PostgreSQL с Adminer для просмотра в веб-странице.
+stacks-templates-mariadb-title = MariaDB
+stacks-templates-mariadb-description = База данных MariaDB с пользователем для приложения.
+stacks-templates-redis-title = Redis
+stacks-templates-redis-description = Redis с паролем, сохраняющий данные на диск.
+stacks-templates-caddy-title = Обратный прокси (Caddy)
+stacks-templates-caddy-description = Caddy перед сервисом, с автоматическим HTTPS для домена.
+stacks-templates-uptimeKuma-title = Uptime Kuma
+stacks-templates-uptimeKuma-description = Следите за своими сайтами и сервисами и получайте оповещения.
+stacks-templates-wordpress-title = WordPress
+stacks-templates-wordpress-description = WordPress с собственной базой данных MariaDB.
+stacks-templates-empty-title = Пустой
+stacks-templates-empty-description = Секция services:, которую вы заполните сами.
+stacks-newPage-source = Где находится файл compose
+stacks-newPage-writeCompose = Написать файл compose
+stacks-newPage-useFolder = Использовать папку на этом компьютере
+stacks-newPage-useRepository = Использовать git-репозиторий
+stacks-newSynced-description = Файл compose в git-репозитории. Homeport клонирует его на этот компьютер, показывает изменения и разворачивает из него коммит. Репозиторий он никогда не изменяет.
+stacks-newSynced-repository = Репозиторий
+stacks-newSynced-pickRepository = Выберите репозиторий
+stacks-newSynced-addRepository = Добавить репозиторий
+stacks-newSynced-ref = Ветка или тег
+stacks-newSynced-refKind = Следовать за веткой или тегом
+stacks-newSynced-branch = Ветка
+stacks-newSynced-tag = Тег
+stacks-newSynced-noBranches = Веток нет
+stacks-newSynced-noTags = Тегов нет
+stacks-newSynced-path = Файл compose
+stacks-newSynced-pathHelp = Относительно корня репозитория. Его папка — это папка проекта, поэтому build: и относительные пути работают.
+stacks-newSynced-env = Окружение
+stacks-newSynced-envHelp = Строки KEY=value для того, чему не место в git, например паролей. Шифруются на этом компьютере и передаются compose при развёртывании.
+stacks-newSynced-fetching = Получение репозитория…
+stacks-synced-whileOpen = Homeport проверяет, только пока он открыт. Пока он закрыт, ничего не синхронизируется.
+stacks-synced-source = Источник
+stacks-synced-repository = Репозиторий
+stacks-synced-deployedCommit = Развёрнутый коммит
+stacks-synced-fetchedCommit = Полученный коммит
+stacks-synced-never = Ещё не развёрнут
+stacks-synced-envSaved = Окружение сохранено. Оно применится при следующем развёртывании.
+stacks-synced-forget = Забыть
+stacks-action-sync = Синхронизировать
+stacks-syncedFiles-editInGit = { $path } в { $commit }, только чтение. Изменяйте его в git: Homeport разворачивает то, что содержит репозиторий.
+stacks-syncedFiles-openOnForge = Открыть на git-хостинге
+stacks-syncedFiles-composeLabel = { $path }, только чтение
+stacks-syncedFiles-others = Другие файлы в его папке
+stacks-synced-sourceDescription = Изменяется в git. Homeport получает его и разворачивает его коммиты.
+stacks-syncUpdate-available = Доступно обновление
+stacks-syncUpdate-description = Новый коммит изменяет папку его файла compose. Синхронизируйте, чтобы увидеть изменения.
+stacks-syncSettings-poll = Проверять новые коммиты
+stacks-syncSettings-lastChecked = Последняя проверка: { $when }
+stacks-syncSettings-notChecked = Ещё не проверялось
+stacks-syncSettings-autoDeploy = Автоматически разворачивать новые коммиты
+stacks-syncSettings-autoDeployHelp = Разворачивает каждый новый коммит, как только Homeport его увидит, не показывая сначала изменения.
+stacks-syncSettings-autoDeployFailed = Автоматическое развёртывание { $commit } завершилось сбоем и для этого коммита больше не повторится:
+stacks-autoDeploy-done = { $commit } стека { $name } развёрнут автоматически
+stacks-autoDeploy-failed = Автоматическое развёртывание { $commit } стека { $name } завершилось сбоем
+stacks-sync-title = Синхронизировать { $name }
+stacks-sync-fetching = Получение репозитория…
+stacks-sync-from = Развёртывание { $to } вместо { $from }.
+stacks-sync-first = Первое развёртывание { $commit }.
+stacks-sync-upToDate = Актуально: в папке файла compose ничего не изменилось с тех пор, как был развёрнут { $commit }.
+stacks-sync-redeployAnyway = Всё равно развернуть заново
+stacks-sync-deploy = Развернуть { $commit }
+stacks-sync-commits = Новые коммиты
+stacks-sync-by = { $author }, { $when }
+stacks-sync-added = новый
+stacks-sync-deleted = удалён
+stacks-sync-binary = Изменён. Это не текст или он слишком велик для показа.
+stacks-sync-tagMoved-title = Тег { $tag } перемещён
+stacks-sync-tagMoved-description = Теперь он указывает на другой коммит, чем при последнем получении в Homeport. Перед развёртыванием проверьте изменения ниже.
+stacks-synced-forgetTitle = Забыть { $name }?
+stacks-synced-forgetDescription = Homeport перестанет следить за его репозиторием и удалит его рабочую копию на этом компьютере. Его контейнеры продолжат работать, и он станет внешним стеком. Репозиторий останется в «Настройки → Репозитории».
+stacks-newLinked-description = Проект compose в папке на этом компьютере. Homeport работает с его файлами там, где они лежат, и разворачивает из этой папки.
+stacks-newLinked-choose = Выбрать папку…
+stacks-newLinked-pickTitle = Выберите папку проекта compose
+stacks-newLinked-files = Файлы compose по порядку
+stacks-newLinked-takeOver-title = { $name } уже работает на этом хосте
+stacks-newPage-saveAndDeploy = Сохранить и развернуть
+stacks-editor-compose = Определение compose
+stacks-editor-files = Файлы compose, объединяемые в этом порядке
+stacks-editor-addFile = Добавить файл
+stacks-editor-fileName = Имя файла
+stacks-editor-moveEarlier = Объединять этот файл раньше
+stacks-editor-moveLater = Объединять этот файл позже
+stacks-editor-removeFile = Удалить { $name }
+stacks-editor-baseFile = Первый файл — основа определения, он остаётся.
+stacks-editor-environment = Окружение
+stacks-editor-envNoKeychain = Нужна связка ключей ОС
+stacks-editor-envHint = Как файл .env: хранится в зашифрованном виде, передаётся compose для подстановки { $variable }, никогда не записывается на диск.
+stacks-editor-envHintNoKeychain = Связка ключей ОС недоступна, поэтому окружение стека сохранить нельзя.
+stacks-editor-problems = Проблемы
+stacks-managed-saveAndRedeploy = Сохранить и развернуть заново
+stacks-profiles-title = Профили
+stacks-profiles-hint = Сервисы с профилем работают, только когда он включён. Сервисы без профиля работают всегда.
+stacks-profiles-dropped = { $count ->
+        [1] { $profiles } больше нет в определении, поэтому при сохранении он будет выключен.
+        [one] { $profiles } больше нет в определении, поэтому при сохранении они будут выключены.
+        [few] { $profiles } больше нет в определении, поэтому при сохранении они будут выключены.
+        [many] { $profiles } больше нет в определении, поэтому при сохранении они будут выключены.
+       *[other] { $profiles } больше нет в определении, поэтому при сохранении они будут выключены.
+    }
+stacks-profiles-save = Сохранить профили
+stacks-profiles-saveAndRedeploy = Сохранить и развернуть заново
+stacks-profiles-saved = Профили сохранены
+stacks-forget-title = Забыть определение { $name }?
+stacks-forget-description = Homeport удалит сохранённый файл compose и окружение. Работающие контейнеры не затрагиваются, а стек становится внешним.
+stacks-forget-confirm = Забыть определение
+stacks-linked-description = Его файлы compose находятся в <mono>{ $folder }</mono> на этом компьютере. Homeport читает их там и никогда не хранит копию.
+stacks-linked-missingTitle = Файлы compose отсутствуют
+stacks-linked-missingDescription = Этот стек связан с <mono>{ $folder }</mono>, но его файлов compose там больше нет, поэтому он показан как внешний. Верните их, чтобы снова связать его, или забудьте его.
+stacks-problem-filesMissing = Его файлов compose больше нет на этом компьютере.
+stacks-linked-changedTitle = Изменено вне Homeport
+stacks-linked-changedDescription = Эти файлы были изменены в другом месте после того, как Homeport их прочитал. Перезагрузите, чтобы увидеть изменения, прежде чем сохранять поверх них.
+stacks-linked-reload = Перезагрузить
+stacks-linked-overwrite = Перезаписать
+stacks-linked-saved = Файлы compose сохранены
+stacks-linked-saveAndRedeploy = Сохранить и развернуть заново
+stacks-linked-envNote = Compose читает файл .env из папки при запуске. Homeport его не показывает и не изменяет.
+stacks-linked-files = Файлы compose
+stacks-linked-order = Файлы compose, объединяемые в этом порядке
+stacks-linked-addFile = Добавить файл…
+stacks-linked-pickFile = Выберите файл compose в папке стека
+stacks-linked-saveFirst = Сохраните или перезагрузите правки, прежде чем менять файлы.
+stacks-linked-forget = Забыть
+stacks-linked-forgetTitle = Забыть { $name }?
+stacks-linked-forgetDescription = Homeport забудет, где находятся его файлы compose. Папка, её файлы и работающие контейнеры не затрагиваются.
+stacks-external-title = Внешний стек
+stacks-external-description = Он был развёрнут вне Homeport. Его можно запускать, останавливать и удалять; возьмите его под управление с его файлом compose, чтобы изменять и разворачивать заново.
+stacks-external-descriptionFrom = Он был развёрнут вне Homeport из <mono>{ $files }</mono> на той машине. Его можно запускать, останавливать и удалять; возьмите его под управление с его файлом compose, чтобы изменять и разворачивать заново.
+stacks-palette-new = Новый стек

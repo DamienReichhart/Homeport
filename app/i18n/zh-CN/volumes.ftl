@@ -1,0 +1,119 @@
+### The `volumes` namespace, in 简体中文 (zh-CN).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/zh-CN/volumes.ts:
+### change the text there, then run it again.
+
+volumes-nav = 卷
+volumes-title = 卷
+volumes-summary = { $count ->
+       *[other] { NUM($count) } 个卷
+    } · { $unused } 个未使用
+volumes-cleanUp = 清理
+volumes-cleanUp-anonymous = 未使用的匿名卷
+volumes-cleanUp-all = 所有未使用的卷
+volumes-create = 创建卷
+volumes-search = 搜索卷
+volumes-empty-title = 没有卷
+volumes-empty-description = 卷会在容器重启和重新创建后保留其数据。
+volumes-column-name = 名称
+volumes-column-stack = 堆栈
+volumes-column-driver = 驱动
+volumes-column-size = 大小
+volumes-size-label = 大小：
+volumes-size-measuring = 正在计算
+volumes-size-unknown = 此卷的驱动不报告其大小。
+volumes-size-refresh = 刷新大小
+volumes-column-usedBy = 使用者
+volumes-column-created = 创建时间
+volumes-unused = 未使用
+volumes-inspectOne = 检查 { $name }
+volumes-deleteOne = 删除 { $name }
+volumes-browseOne = 浏览 { $name } 的文件
+volumes-browse-title = { $name } 的文件
+volumes-browse-description = 只读：即使有容器正在使用，此处的任何操作也不会更改该卷。
+volumes-browse-saveOne = 保存 { $name }
+volumes-browse-saved = 已保存 { $name }
+volumes-browse-savedArchive = 已将 { $name } 保存为 .tar 归档
+volumes-helper-needed = Homeport 通过一个短暂运行的辅助容器打开卷，它需要 { $image } 镜像（约 { $size }）。此主机上没有该镜像。
+volumes-helper-removed = Homeport 只有在你同意后才会拉取它，并在完成后再次删除，除非有其他对象在使用它。
+volumes-helper-pull = 拉取 { $image }
+volumes-helper-pulling = 正在拉取 { $image }…
+volumes-helper-progress = 拉取进度
+volumes-moreActions = { $name } 的更多操作
+volumes-backupMenu = 备份到文件…
+volumes-restoreMenu = 从文件恢复…
+volumes-cloneMenu = 克隆…
+volumes-clone-title = 克隆 { $volume }
+volumes-clone-description = 将其文件连同所有者和权限复制到此主机上的一个新卷中。副本不属于任何堆栈。
+volumes-clone-name = 副本名称
+volumes-clone-start = 克隆
+volumes-clone-into = 复制到 { $target }
+volumes-clone-copying = 正在复制…
+volumes-clone-done = 已将 { $source } 克隆到 { $target }
+volumes-restoreFromFile = 从文件恢复
+volumes-backup-title = 备份 { $volume }
+volumes-backup-saveAs = 将 { $volume } 备份到
+volumes-backup-to = 到 { $path }
+volumes-backup-done = 已将 { $volume } 备份到 { $path }
+volumes-restore-pick = 从以下文件恢复卷
+volumes-restore-title = 恢复卷
+volumes-restore-titleInto = 恢复 { $volume }
+volumes-restore-from = 来自 { $path }
+volumes-restore-into = 恢复到
+volumes-restore-newVolume = 新卷
+volumes-restore-existingVolume = 现有卷
+volumes-restore-volume = 卷
+volumes-restore-chooseVolume = 选择卷
+volumes-restore-nameTaken = 名为 { $volume } 的卷已存在。
+volumes-restore-start = 恢复
+volumes-restore-done = 已恢复 { $volume }
+volumes-restore-cancelled = { $volume } 的恢复已取消；该卷可能已被部分写入。
+volumes-transfer-written = 已写入
+volumes-transfer-sent = 已发送
+volumes-transfer-archives = Tar 归档
+volumes-flow-running-backup = { $containers } 正在运行并使用 { $volume }。在{ $count ->
+        [1] 它
+       *[other] 它们
+    }写入时进行的备份可能不一致，例如数据库正写到一半。
+volumes-flow-running-restore = { $containers } 正在运行并使用 { $volume }。Homeport 会在恢复期间停止{ $count ->
+        [1] 它
+       *[other] 它们
+    }，并在之后重新启动{ $count ->
+        [1] 它
+       *[other] 它们
+    }。
+volumes-flow-running-clone = { $containers } 正在运行并使用 { $volume }。在{ $count ->
+        [1] 它
+       *[other] 它们
+    }写入时进行的复制可能不一致，例如数据库正写到一半。
+volumes-flow-anyway-backup = 仍然备份
+volumes-flow-anyway-clone = 仍然复制
+volumes-flow-stopDuring-backup = 备份期间停止{ $count ->
+        [1] 它
+       *[other] 它们
+    }
+volumes-flow-stopDuring-restore = 停止并恢复
+volumes-flow-stopDuring-clone = 复制期间停止{ $count ->
+        [1] 它
+       *[other] 它们
+    }
+volumes-flow-replace = { $volume } 中已有文件。恢复会删除这些文件，并用备份中的文件替换。
+volumes-flow-replaceConfirm = 替换其内容
+volumes-usedBy = 由 { $containers } 使用。
+volumes-notUsed = 没有容器使用此卷。
+volumes-createDialog-title = 创建卷
+volumes-createDialog-name = 名称
+volumes-createDialog-driver = 驱动
+volumes-deleted = 已删除 { $name }
+volumes-pruned = 已删除 { $count ->
+       *[other] { NUM($count) } 个卷
+    }，回收了 { $space }
+volumes-remove-title = 删除卷 { $name }？
+volumes-remove-warning = <strong>此卷中的所有数据都将被永久删除。</strong>
+volumes-remove-mounted = 它已被 { $containers } 挂载；请先删除这些容器。
+volumes-remove-confirm = 删除卷和数据
+volumes-prune-allTitle = 删除所有未使用的卷？
+volumes-prune-anonymousTitle = 删除未使用的匿名卷？
+volumes-prune-allWarning = 所有未被容器使用的卷（包括命名卷）中的数据都将被永久删除。
+volumes-prune-anonymousWarning = 所有未被容器使用的匿名卷中的数据都将被永久删除。
+volumes-prune-confirm = 删除卷和数据

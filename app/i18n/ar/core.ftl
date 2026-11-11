@@ -1,0 +1,214 @@
+### The `core` namespace, in العربية (ar).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/ar/core.ts:
+### change the text there, then run it again.
+
+core-host-engineVersion = المحرك { $version }
+core-host-podmanVersion = Podman { $version }
+core-host-containerdVersion = containerd { $version }
+core-host-incusVersion = Incus { $version }
+core-engine-docker = متوافق مع Docker
+core-engine-containerd = containerd
+core-engine-incus = Incus
+core-unsupported-title = لا يمكن لـ { $name } عرض هذه الصفحة
+core-unsupported-docker = تحتاج هذه الصفحة إلى محرك متوافق مع Docker، بينما يشغّل { $name } { $engine }.
+core-unsupported-podman = هذه الصفحة مخصصة لـ Podman، بينما يشغّل { $name } محركًا آخر متوافقًا مع Docker. اختر مضيف Podman في أداة التبديل لاستخدامها.
+core-unsupported-containerd = هذه الصفحة مخصصة لـ containerd، بينما يشغّل { $name } { $engine }. اختر مضيف containerd في أداة التبديل لاستخدامها.
+core-unsupported-incus = هذه الصفحة مخصصة لـ Incus، بينما يشغّل { $name } { $engine }. اختر مضيف Incus في أداة التبديل لاستخدامها.
+core-unsupported-overview = الانتقال إلى النظرة العامة
+core-cluster-kind-kubernetes = Kubernetes
+core-cluster-kind-nomad = Nomad
+core-cluster-unsupported-title = لا يمكن لـ { $name } عرض هذه الصفحة
+core-cluster-unsupported-description = هذه الصفحة مخصصة لعناقيد { $kind }، بينما { $name } عنقود { $current }. اختر عنقود { $kind } في أداة التبديل لاستخدامها.
+core-containerd-namespace = مساحة الأسماء
+core-containerd-holds = { $containers ->
+        [zero] لا حاويات
+        [one] حاوية واحدة
+        [two] حاويتان
+        [few] { NUM($containers) } حاويات
+        [many] { NUM($containers) } حاوية
+       *[other] { NUM($containers) } حاوية
+    }، { $images ->
+        [zero] لا صور
+        [one] صورة واحدة
+        [two] صورتان
+        [few] { NUM($images) } صور
+        [many] { NUM($images) } صورة
+       *[other] { NUM($images) } صورة
+    }
+core-containerd-manage = إدارة مساحات الأسماء
+core-containerd-rememberFailed = تعذّر على Homeport تذكّر مساحة الأسماء التي اخترتها
+core-incus-project = المشروع
+core-incus-holds = { $instances ->
+        [zero] لا مثيلات
+        [one] مثيل واحد
+        [two] مثيلان
+        [few] { NUM($instances) } مثيلات
+        [many] { NUM($instances) } مثيلًا
+       *[other] { NUM($instances) } مثيل
+    }، { $images ->
+        [zero] لا صور
+        [one] صورة واحدة
+        [two] صورتان
+        [few] { NUM($images) } صور
+        [many] { NUM($images) } صورة
+       *[other] { NUM($images) } صورة
+    }
+core-incus-rememberFailed = تعذّر على Homeport تذكّر المشروع الذي اخترته
+core-selection-rememberFailed = تعذّر على Homeport تذكّر ما حددته
+core-connection-local = محلي
+core-status-connected = متصل
+core-status-connecting = جارٍ الاتصال
+core-status-disabled = معطّل
+core-status-unreachable = يتعذّر الوصول إليه
+core-status-unreachableDetail = { $message } — إعادة المحاولة خلال { $secs } ث
+core-status-unauthorized = تم رفض الوصول
+core-status-hostKeyUntrusted = مفتاح الخادم غير موثوق
+core-status-hostKeyUntrustedDetail = تحقّق من البصمة { $fingerprint } ثم اعتمدها كموثوقة للاتصال.
+core-status-hostKeyMismatch = تغيّر مفتاح الخادم
+core-status-hostKeyMismatchDetail = المتوقع { $expected }، والمستلم { $actual }.
+core-status-credentialsLost = فُقدت بيانات الاعتماد
+core-status-credentialsLostDetail = لا يمكن فك تشفير بيانات الاعتماد المخزنة. أعد إدخالها أو أعد إنشاء المفتاح.
+core-status-keychainUnavailable = سلسلة المفاتيح غير متاحة
+core-status-invalid = إعداد غير صحيح
+core-swarm-label = Swarm الخاص بـ { $host }
+core-swarm-labelUnknown = Swarm { $id }
+core-swarm-gone-title = لم يعد هذا الـ Swarm معروفًا
+core-swarm-gone-description = لم يعد أي من المضيفات التي يتصل بها Homeport ينتمي إليه. أضف أحد مديريه كمضيف لإدارته.
+core-cluster-serverVersion = Kubernetes { $version }
+core-cluster-nomadVersion = Nomad { $version }، المنطقة { $region }
+core-cluster-nomadRegion = Nomad، المنطقة { $region }
+core-cluster-credentialsLostDetail = لا يمكن فك تشفير بيانات الاعتماد المخزنة. حدّث العنقود من ملف kubeconfig الخاص به.
+core-cluster-reconnectFailed = تعذّر على Homeport إعادة الاتصال بالعنقود
+core-cluster-gate-none = لم يتم تحديد عنقود
+core-cluster-gate-noneDescription = اختر عنقودًا في الشريط الجانبي، أو أضف واحدًا من ملف kubeconfig.
+core-cluster-gate-add = إضافة عنقود
+core-cluster-gate-openSettings = فتح إعدادات العنقود
+core-localClusters-title = العناقيد على هذا الجهاز
+core-localClusters-description = Kubernetes يعمل محليًا، كما يصل إليه ملف kubeconfig.
+core-localClusters-add = إضافة
+core-localClusters-added = تمت الإضافة
+core-localClusters-notRunning = لا يعمل
+core-localClusters-addFailed = تعذّر على Homeport إضافة العنقود
+core-localClusters-missing = عنقود { $tool } { $name } يعمل، لكن ملف kubeconfig لا يصل إليه. أضفه باستخدام:
+core-localClusters-tool-dockerDesktop = Docker Desktop
+core-localClusters-tool-orbstack = OrbStack
+core-localClusters-tool-rancherDesktop = Rancher Desktop
+core-localClusters-tool-kind = kind
+core-localClusters-tool-k3d = k3d
+core-localClusters-tool-minikube = minikube
+core-namespace-label = Namespace
+core-namespace-all = كل Namespaces
+core-namespace-type = Namespace
+core-namespace-cantList = لا تسمح بيانات اعتمادك بسرد Namespaces. اكتب اسم الـ Namespace المسموح لك باستخدامه.
+core-namespace-rememberFailed = تعذّر على Homeport تذكّر الـ Namespace
+core-health-ready = جاهز
+core-health-progressing = قيد التقدم
+core-health-degraded = متدهور
+core-health-failed = فشل
+core-health-paused = متوقف مؤقتًا
+core-events-type = النوع
+core-events-reason = السبب
+core-events-message = الرسالة
+core-events-count = العدد
+core-events-lastSeen = آخر ظهور
+core-events-none = لا توجد أحداث. يحتفظ بها Kubernetes لمدة ساعة تقريبًا.
+core-conditions-type = الشرط
+core-conditions-status = الحالة
+core-conditions-reason = السبب
+core-conditions-message = الرسالة
+core-conditions-since = منذ
+core-conditions-none = لم يُبلَّغ عن أي شروط.
+core-labels-none = لا شيء
+core-yaml-label = YAML
+core-list-empty = لا شيء هنا.
+core-yaml-copy = نسخ YAML
+core-gate-welcome-title = مرحبًا بك في Homeport
+core-gate-welcome-description = أضف محرك Docker للبدء — محرك هذا الجهاز، أو محركًا بعيدًا عبر SSH أو TLS — أو عنقود Kubernetes من ملف kubeconfig.
+core-gate-addAnother = إضافة مضيف آخر
+core-gate-addCluster = إضافة عنقود
+core-gate-connecting = جارٍ الاتصال بـ { $name }…
+core-gate-statusTitle = { $name }: { $status }
+core-gate-retryingOnItsOwn = سيعيد Homeport المحاولة تلقائيًا خلال { $secs } ث.
+core-gate-retryNow = إعادة المحاولة الآن
+core-gate-openSettings = فتح إعدادات المضيف
+core-localEngines-title = تم العثور عليها على هذا الجهاز
+core-localEngines-description = محركات تستجيب على مقابس محلية.
+core-localEngines-add = إضافة
+core-freshness-check = التحقق من وجود صور أحدث
+core-freshness-checking = جارٍ التحقق…
+core-freshness-allUpToDate = كل الصور محدّثة
+core-freshness-newerCount = { $count ->
+        [zero] لا توجد صور لها
+        [one] صورة واحدة لها
+        [two] صورتان لهما
+        [few] { NUM($count) } صور لها
+        [many] { NUM($count) } صورة لها
+       *[other] { NUM($count) } صورة لها
+    } إصدار أحدث
+core-freshness-newerOne = نُشر إصدار أحدث من { $reference }
+core-freshness-newerMany = نُشرت صور أحدث: { $references }
+core-delete-title = هل تريد حذف { $kind } { $name }؟
+core-delete-titleMany = هل تريد حذف { $count } من كائنات { $kind }؟
+core-delete-titleObjects = هل تريد حذف { $count } من الكائنات؟
+core-delete-one = سيُحذف { $kind } { $name } من { $cluster }.
+core-delete-oneIn = سيُحذف { $kind } { $name } من الـ Namespace { $namespace } على { $cluster }.
+core-delete-many = ستُحذف هذه من { $cluster }: { $names }.
+core-delete-manyIn = ستُحذف هذه من الـ Namespace { $namespace } على { $cluster }: { $names }.
+core-delete-namespace = يُحذف معها كل ما فيها: أحمال العمل وPods وServices وConfigMaps وSecrets.
+core-delete-recreated = يتحكم فيه { $kind } { $name }، لذا سيبدأ Pod جديدًا مكانه.
+core-delete-pods = تُحذف الـ Pods التابعة له معه.
+core-delete-cronJob = لن يبدأ أي Jobs أخرى؛ وتُحذف الـ Jobs التي بدأها معه.
+core-delete-node = لا يفرّغه Homeport أولًا: تبقى الـ Pods الخاصة به حتى يُسجَّل الـ Node مجددًا أو تُعاد جدولتها.
+core-delete-confirm = حذف
+core-delete-failed = تعذّر على Homeport حذف { $name }
+core-delete-done = { $count ->
+        [zero] لم يُحذف أي كائن
+        [one] تم حذف { $name }
+        [two] تم حذف كائنين
+        [few] تم حذف { NUM($count) } كائنات
+        [many] تم حذف { NUM($count) } كائنًا
+       *[other] تم حذف { NUM($count) } كائن
+    }
+core-delete-action = حذف
+core-delete-selected = حذف { $count }
+core-apply-preview = معاينة التغييرات
+core-apply-apply = تطبيق
+core-apply-force = التطبيق على أي حال
+core-apply-stale = تغيّر YAML منذ هذه المعاينة.
+core-apply-noChanges = لا تغييرات: العنقود يحتوي على هذا بالفعل.
+core-apply-confirmTitle = هل تريد تطبيق { $count ->
+        [zero] لا تغييرات
+        [one] تغيير واحد
+        [two] تغييرين
+        [few] { NUM($count) } تغييرات
+        [many] { NUM($count) } تغييرًا
+       *[other] { NUM($count) } تغيير
+    } على { $cluster }؟
+core-apply-confirmDescription = يطبّقه Homeport باستخدام server-side apply بصفته مدير الحقول homeport، كما تعرض المعاينة.
+core-apply-forceTitle = هل تريد تولّي إدارة الحقول المتعارضة؟
+core-apply-forceDescription = قد تعيدها الأدوات التي تديرها على { $cluster } إلى قيمها، أو تتوقف عن إدارتها. يصبح Homeport مديرها.
+core-apply-done = تم التطبيق على { $cluster }
+core-apply-diffOf = التغييرات على { $kind } { $name }
+core-apply-action-created = أُنشئ
+core-apply-action-changed = تغيّر
+core-apply-action-unchanged = لا تغييرات
+core-apply-action-failed = يتعذّر التطبيق
+core-yaml-edit = تحرير
+core-yaml-editTitle = تحرير { $kind } { $name }
+core-yaml-editDescription = على { $cluster }. غيّر YAML، وعاين ما يغيّره، ثم طبّقه.
+core-metrics-cpu = المعالج
+core-metrics-memory = الذاكرة
+core-metrics-used = المستخدم
+core-metrics-request = الطلب
+core-metrics-limit = الحد
+core-metrics-allocatable = القابل للتخصيص
+core-metrics-ofLimit = { $percent } من الحد
+core-metrics-ofRequest = { $percent } من الطلب
+core-metrics-ofAllocatable = { $percent } من القابل للتخصيص
+core-metrics-notInstalled-title = metrics-server غير مثبّت
+core-metrics-notInstalled-body = لا يقدّم هذا العنقود Metrics API التي تأتي منها بيانات المعالج والذاكرة. لا يثبّت Homeport أي شيء على العنقود: بعد تثبيت metrics-server تظهر هنا.
+core-metrics-notInstalled-link = كيفية تثبيت metrics-server
+core-metrics-notResponding = لا تستجيب Metrics API: ربما يكون metrics-server قيد البدء أو لا يعمل. يعيد Homeport المحاولة كل 15 ثانية.
+core-metrics-waiting = في انتظار أول عيّنة من metrics-server…
+core-metrics-kept = عيّنة كل 15 ثانية، تُحفظ ما دامت هذه الصفحة مفتوحة، 15 دقيقة على الأكثر.

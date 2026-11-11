@@ -1,0 +1,31 @@
+### The `native` namespace, in Español (es).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/es/native.json:
+### change the text there, then run it again.
+
+native-alerts-hostBack-body = { $host } vuelve a estar conectado.
+native-alerts-hostBack-title = Host recuperado
+native-alerts-hostUnreachable-body = { $host } es inaccesible: { $reason }
+native-alerts-hostUnreachable-title = Host inaccesible
+native-alerts-outOfMemory-body = { $container } se quedó sin memoria en { $host }
+native-alerts-outOfMemory-title = Contenedor sin memoria
+native-alerts-stopped-body = { $container } se detuvo en { $host } (código de salida { $code })
+native-alerts-stopped-title = Contenedor detenido
+native-alerts-unhealthy-body = { $container } no está saludable en { $host }
+native-alerts-unhealthy-title = Contenedor no saludable
+native-compose-pullingAnonymously = Descargando { $image } de forma anónima
+native-compose-pullingAs = Descargando { $image } como { $user } en { $registry }
+native-tray-addHost = Añadir host…
+native-tray-connectedOfMany = Homeport — { $connected } de { $total } hosts conectados
+native-tray-connectedOfOne = Homeport — { $connected } de 1 host conectado
+native-tray-host = { $host } — { $status }
+native-tray-noHosts = Homeport — aún no hay hosts
+native-tray-open = Abrir Homeport
+native-tray-openHost = Abrir
+native-tray-quit = Salir
+native-tray-reconnect = Volver a conectar
+native-tray-status-connected = Conectado
+native-tray-status-connecting = Conectando
+native-tray-status-disabled = Desactivado
+native-tray-status-needsAttention = Requiere atención
+native-tray-status-unreachable = Inaccesible

@@ -1,0 +1,37 @@
+### The `ui` namespace, in Deutsch (de).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/de/ui.ts:
+### change the text there, then run it again.
+
+ui-copy = Kopieren
+ui-copied = Kopiert
+ui-search = Suchen
+ui-shortcuts-focusSearch = Diese Seite durchsuchen
+ui-shortcuts-thisPage = Diese Seite
+ui-table-selectAll = Alle auswählen
+ui-table-selectRow = Zeile auswählen
+ui-table-empty = Hier ist nichts.
+ui-table-page = Seite { $page } von { $pages } · { $rows ->
+        [one] { NUM($rows) } Zeile
+       *[other] { NUM($rows) } Zeilen
+    }
+ui-table-previous = Vorherige Seite
+ui-table-next = Nächste Seite
+ui-transfer-done = Fertig.
+ui-files-column-name = Name
+ui-files-column-size = Größe
+ui-files-column-modified = Geändert
+ui-files-column-mode = Modus
+ui-files-path = Pfad
+ui-files-downloadOne = { $name } herunterladen
+ui-files-empty = Dieser Ordner ist leer.
+ui-chart-time = Zeit
+ui-errorDetails-title = Fehlerdetails
+ui-errorDetails-code = Code
+ui-errorDetails-command = Befehl
+ui-errorDetails-when = Zeitpunkt
+ui-errorDetails-app = App
+ui-errorDetails-rawDetail = Rohdetails
+ui-errorDetails-rawDetailNote = So, wie das System, die Engine oder die Bibliothek es geschrieben hat, daher nicht übersetzt.
+ui-errorDetails-openLogFolder = Protokollordner öffnen
+ui-errorDetails-copyReport = Bericht kopieren

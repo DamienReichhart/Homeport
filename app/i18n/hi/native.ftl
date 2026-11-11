@@ -1,0 +1,31 @@
+### The `native` namespace, in हिन्दी (hi).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/hi/native.json:
+### change the text there, then run it again.
+
+native-alerts-hostBack-body = { $host } फिर से कनेक्ट हो गया है।
+native-alerts-hostBack-title = होस्ट वापस आया
+native-alerts-hostUnreachable-body = { $host } पहुँच से बाहर है: { $reason }
+native-alerts-hostUnreachable-title = होस्ट पहुँच से बाहर
+native-alerts-outOfMemory-body = { $host } पर { $container } की मेमोरी खत्म हो गई
+native-alerts-outOfMemory-title = कंटेनर की मेमोरी खत्म
+native-alerts-stopped-body = { $host } पर { $container } रुक गया (एग्ज़िट कोड { $code })
+native-alerts-stopped-title = कंटेनर रुक गया
+native-alerts-unhealthy-body = { $host } पर { $container } अस्वस्थ है
+native-alerts-unhealthy-title = कंटेनर अस्वस्थ
+native-compose-pullingAnonymously = { $image } बिना लॉगिन के पुल किया जा रहा है
+native-compose-pullingAs = { $registry } से { $user } के रूप में { $image } पुल किया जा रहा है
+native-tray-addHost = होस्ट जोड़ें…
+native-tray-connectedOfMany = Homeport — { $total } में से { $connected } होस्ट कनेक्ट हैं
+native-tray-connectedOfOne = Homeport — 1 में से { $connected } होस्ट कनेक्ट है
+native-tray-host = { $host } — { $status }
+native-tray-noHosts = Homeport — अभी कोई होस्ट नहीं
+native-tray-open = Homeport खोलें
+native-tray-openHost = खोलें
+native-tray-quit = बंद करें
+native-tray-reconnect = फिर से कनेक्ट करें
+native-tray-status-connected = कनेक्ट है
+native-tray-status-connecting = कनेक्ट हो रहा है
+native-tray-status-disabled = अक्षम
+native-tray-status-needsAttention = ध्यान देने की ज़रूरत
+native-tray-status-unreachable = पहुँच से बाहर

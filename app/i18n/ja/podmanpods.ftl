@@ -1,0 +1,83 @@
+### The `podmanpods` namespace, in 日本語 (ja).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/ja/podmanpods.ts:
+### change the text there, then run it again.
+
+podmanpods-nav = Pod
+podmanpods-title = Pod
+podmanpods-summary = { $count ->
+       *[other] { NUM($count) } 個の Pod
+    }
+podmanpods-search = Pod を検索
+podmanpods-empty = Pod はありません
+podmanpods-emptyDescription = Pod は、ネットワークを共有し、一緒に起動・停止するコンテナをまとめたものです。Pod を作成してから、その中でコンテナを実行してください。
+podmanpods-new = 新しい Pod
+podmanpods-column-name = 名前
+podmanpods-column-status = ステータス
+podmanpods-column-containers = コンテナ
+podmanpods-column-networks = ネットワーク
+podmanpods-column-created = 作成日時
+podmanpods-running = { $count } 個中 { $running } 個が実行中
+podmanpods-status-running = 実行中
+podmanpods-status-degraded = 一部実行中
+podmanpods-status-paused = 一時停止
+podmanpods-status-created = 作成済み
+podmanpods-status-stopped = 停止
+podmanpods-status-failed = 失敗
+podmanpods-action-start = 起動
+podmanpods-action-stop = 停止
+podmanpods-action-restart = 再起動
+podmanpods-action-pause = 一時停止
+podmanpods-action-unpause = 再開
+podmanpods-actionOne-start = { $name } を起動
+podmanpods-actionOne-stop = { $name } を停止
+podmanpods-actionOne-restart = { $name } を再起動
+podmanpods-actionOne-pause = { $name } を一時停止
+podmanpods-actionOne-unpause = { $name } を再開
+podmanpods-removeOne = { $name } を削除
+podmanpods-done-start = { $name } を起動しました
+podmanpods-done-stop = { $name } を停止しました
+podmanpods-done-restart = { $name } を再起動しました
+podmanpods-done-pause = { $name } を一時停止しました
+podmanpods-done-unpause = { $name } を再開しました
+podmanpods-removed = { $name } を削除しました（{ $count ->
+        [0] コンテナなし
+       *[other] { NUM($count) } 個のコンテナを含む
+    }）
+podmanpods-created = { $name } を作成しました
+podmanpods-remove-title = { $name } を削除しますか？
+podmanpods-remove-stopped = { $count ->
+        [0] Pod とその infra コンテナが削除されます。
+       *[other] Pod、その infra コンテナ、および { NUM($count) } 個のコンテナが削除されます。
+    }ボリュームは残ります。
+podmanpods-remove-running = { $count ->
+        [0] Pod は実行中です。停止してから、infra コンテナと一緒に削除されます。
+       *[other] Pod は実行中です。{ NUM($count) } 個のコンテナを停止してから、Pod とその infra コンテナと一緒に削除されます。
+    }ボリュームは残ります。
+podmanpods-remove-stopAndRemove = 停止して削除
+podmanpods-detail-containers = { $count ->
+        [0] コンテナ
+       *[other] { NUM($count) } 個のコンテナ
+    }
+podmanpods-detail-noContainers = この Pod では、infra コンテナ以外にはまだ何も実行されていません。
+podmanpods-detail-infra = Infra
+podmanpods-detail-settings = 設定
+podmanpods-detail-ports = 公開ポート
+podmanpods-detail-noPorts = なし
+podmanpods-detail-shared = 共有する名前空間
+podmanpods-detail-networks = ネットワーク
+podmanpods-detail-hostname = ホスト名
+podmanpods-detail-created = 作成日時
+podmanpods-detail-labels = ラベル
+podmanpods-detail-command = 作成コマンド
+podmanpods-detail-runContainer = コンテナを実行
+podmanpods-detail-runContainerIn = { $name } でコンテナを実行
+podmanpods-newDialog-title = 新しい Pod
+podmanpods-newDialog-description = コンテナは 1 つのネットワークを共有するため、ポートはすべてのコンテナ共通で Pod に公開されます。
+podmanpods-newDialog-name = 名前
+podmanpods-newDialog-portsHint = ホストポートを空欄にすると、Podman が空いているポートを選びます。Pod 内で実行するコンテナは、独自にポートを公開できません。
+podmanpods-newDialog-labels = ラベル
+podmanpods-newDialog-create = Pod を作成
+podmanpods-form-nameInvalid = 英字または数字で始め、その後は英字、数字、_、.、- を使ってください。
+podmanpods-form-portInvalid = ポートは 1 から 65535 までの数値です。
+podmanpods-form-labelInvalid = ラベルは 1 行に 1 つ、key=value の形式で書いてください。

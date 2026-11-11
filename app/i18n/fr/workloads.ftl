@@ -1,0 +1,91 @@
+### The `workloads` namespace, in Français (fr).
+###
+### Written by `bun run i18n:fluent` from src/shared/i18n/fr/workloads.ts:
+### change the text there, then run it again.
+
+workloads-nav = Charges de travail
+workloads-title = Charges de travail
+workloads-summary = { $count ->
+        [one] { NUM($count) } charge de travail
+       *[other] { NUM($count) } charges de travail
+    }
+workloads-search = Rechercher des charges de travail
+workloads-empty = Rien ici.
+workloads-kind-deployment = Deployments
+workloads-kind-statefulSet = StatefulSets
+workloads-kind-daemonSet = DaemonSets
+workloads-kind-job = Jobs
+workloads-kind-cronJob = CronJobs
+workloads-one-deployment = Deployment
+workloads-one-statefulSet = StatefulSet
+workloads-one-daemonSet = DaemonSet
+workloads-one-job = Job
+workloads-one-cronJob = CronJob
+workloads-column-name = Nom
+workloads-column-namespace = Namespace
+workloads-column-health = Santé
+workloads-column-ready = Prêts
+workloads-column-completions = Exécutions terminées
+workloads-column-active = Actifs
+workloads-column-upToDate = À jour
+workloads-column-schedule = Planification
+workloads-column-lastSchedule = Dernière exécution
+workloads-column-images = Images
+workloads-column-age = Âge
+workloads-tab-overview = Vue d’ensemble
+workloads-tab-pods = Pods
+workloads-tab-jobs = Jobs
+workloads-tab-logs = Journaux
+workloads-tab-conditions = Conditions
+workloads-tab-events = Événements
+workloads-tab-source = YAML
+workloads-detail-namespace = Namespace
+workloads-detail-ready = Prêts
+workloads-detail-upToDate = À jour
+workloads-detail-schedule = Planification
+workloads-detail-lastSchedule = Dernière exécution
+workloads-detail-strategy = Stratégie
+workloads-detail-selector = Sélectionne les Pods par
+workloads-detail-owner = Contrôlé par
+workloads-detail-age = Âge
+workloads-detail-labels = Labels
+workloads-detail-annotations = Annotations
+workloads-detail-containers = Conteneurs
+workloads-detail-noJobs = Il n’a démarré aucun Job encore conservé.
+workloads-container-name = Conteneur
+workloads-container-image = Image
+workloads-container-ports = Ports
+workloads-action-menu = Actions pour { $name }
+workloads-action-scale = Mettre à l’échelle
+workloads-action-restart = Redémarrer
+workloads-action-trigger = Exécuter maintenant
+workloads-action-suspend = Suspendre
+workloads-action-resume = Reprendre
+workloads-scale-title = Mettre { $name } à l’échelle
+workloads-scale-description = Dans le namespace { $namespace } sur { $cluster }. Il exécute actuellement { $current ->
+        [one] { NUM($current) } Pod
+       *[other] { NUM($current) } Pods
+    }.
+workloads-scale-replicas = Pods
+workloads-scale-autoscaled = L’autoscaler { $autoscaler } gère ses Pods : il rétablira donc leur nombre à sa prochaine vérification.
+workloads-scale-toZero = Avec 0 Pod, il ne sert plus rien jusqu’à ce que vous le remettiez à l’échelle.
+workloads-scale-submit = Mettre à l’échelle
+workloads-scale-done = { $name } mis à l’échelle à { $replicas ->
+        [one] { NUM($replicas) } Pod
+       *[other] { NUM($replicas) } Pods
+    }
+workloads-scale-failed = Homeport n’a pas pu mettre { $name } à l’échelle
+workloads-restart-title = Redémarrer { $name } ?
+workloads-restart-description = Ses Pods du namespace { $namespace } sur { $cluster } sont remplacés l’un après l’autre, selon sa stratégie de déploiement, comme kubectl rollout restart.
+workloads-restart-confirm = Redémarrer
+workloads-restart-done = Redémarrage de { $name }
+workloads-restart-failed = Homeport n’a pas pu redémarrer { $name }
+workloads-suspend-title = Suspendre { $name } ?
+workloads-suspend-description = Il ne démarre plus de Jobs dans le namespace { $namespace } sur { $cluster } jusqu’à ce que vous le repreniez. Les Jobs déjà en cours continuent.
+workloads-suspend-confirm = Suspendre
+workloads-suspend-done = { $name } suspendu
+workloads-suspend-failed = Homeport n’a pas pu suspendre { $name }
+workloads-resume-done = { $name } a repris
+workloads-resume-failed = Homeport n’a pas pu reprendre { $name }
+workloads-trigger-done = Job { $job } démarré
+workloads-trigger-failed = Homeport n’a pas pu démarrer de Job depuis { $name }
