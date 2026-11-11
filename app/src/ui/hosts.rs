@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use iced::{
     widget::{column, text, Row},
-    Alignment, Element, Task,
+    Alignment, Element, Length, Task,
 };
 
 use homeport_hosts::{registry::HostStatus, service::HostView};
@@ -41,6 +41,12 @@ impl Hosts {
     }
 
     pub fn update(&mut self, _state: &Arc<AppState>, message: Message) -> Task<Message> {
+        self.apply(message);
+        Task::none()
+    }
+
+    /// What a message changes; none starts anything yet.
+    fn apply(&mut self, message: Message) {
         match message {
             Message::Loaded(Ok(list)) => {
                 // The list is only shared with this message.
@@ -49,7 +55,6 @@ impl Hosts {
             }
             Message::Loaded(Err(e)) => self.error = Some(e),
         }
-        Task::none()
     }
 
     pub fn on_event(&mut self, event: &Event) {
@@ -64,6 +69,7 @@ impl Hosts {
         let direction = i18n::direction();
         let mut rows = column![text(t!("hosts.title")).size(24)]
             .spacing(8)
+            .width(Length::Fill)
             .align_x(direction.pick(Alignment::Start, Alignment::End));
         if let Some(e) = &self.error {
             rows = rows.push(text(e.as_str()));
@@ -90,5 +96,79 @@ fn label(status: &HostStatus) -> String {
         HostStatus::Connected { .. } => t!("core.status.connected"),
         HostStatus::HostKeyUntrusted { .. } => t!("core.status.hostKeyUntrusted"),
         _ => t!("core.status.unreachable"),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use iced::Theme;
+
+    use crate::test_support::{
+        fixtures::{connected, host_view},
+        snapshot::assert_snapshot,
+    };
+
+    use super::*;
+
+    fn hosts() -> Hosts {
+        let mut hosts = Hosts::default();
+        let list = vec![
+            host_view("prod", connected()),
+            host_view("staging", HostStatus::Connecting),
+            host_view("backup", HostStatus::Disabled),
+        ];
+        hosts.apply(Message::Loaded(Ok(Arc::new(list))));
+        hosts
+    }
+
+    #[test]
+    fn loading_fills_the_list_and_a_failure_keeps_it() {
+        let mut hosts = hosts();
+        assert_eq!(hosts.list.len(), 3);
+        assert_eq!(hosts.error, None);
+        hosts.apply(Message::Loaded(Err("The database is locked.".to_owned())));
+        assert_eq!(hosts.list.len(), 3);
+        assert_eq!(hosts.error.as_deref(), Some("The database is locked."));
+    }
+
+    #[test]
+    fn a_status_event_updates_its_host_only() {
+        let mut hosts = hosts();
+        hosts.on_event(&Event::HostStatus {
+            host_id: "staging-id".to_owned(),
+            status: Arc::new(connected()),
+        });
+        assert!(matches!(hosts.list[1].status, HostStatus::Connected { .. }));
+        assert!(matches!(hosts.list[2].status, HostStatus::Disabled));
+        hosts.on_event(&Event::HostsChanged);
+        assert_eq!(hosts.list.len(), 3);
+    }
+
+    #[test]
+    fn the_page_in_english() {
+        let hosts = hosts();
+        assert_snapshot("hosts-en", "en", &Theme::Light, (360.0, 160.0), || {
+            hosts.view()
+        });
+    }
+
+    #[test]
+    fn the_page_in_arabic_is_mirrored() {
+        let hosts = hosts();
+        assert_snapshot("hosts-ar", "ar", &Theme::Light, (360.0, 160.0), || {
+            hosts.view()
+        });
+    }
+
+    #[test]
+    fn the_page_with_no_host() {
+        let hosts = Hosts::default();
+        assert_snapshot(
+            "hosts-empty-en",
+            "en",
+            &Theme::Light,
+            (360.0, 160.0),
+            || hosts.view(),
+        );
     }
 }
