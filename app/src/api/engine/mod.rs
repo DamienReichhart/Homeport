@@ -7,6 +7,7 @@ pub mod files;
 pub mod images;
 pub mod networks;
 mod registries;
+pub mod system;
 pub mod volumes;
 
 #[cfg(test)]
