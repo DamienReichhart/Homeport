@@ -74,6 +74,41 @@ jobs:
       - run: git fetch --tags --depth=1 origin
         if: runner.os == 'Linux'
       - run: cargo test --workspace
+      - name: Keep what the iced app drew where it differs from its snapshot
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: snapshots-${{ matrix.os }}
+          path: ${{ runner.temp }}/homeport-snapshots/
+          if-no-files-found: ignore
+
+  # The iced app's own binary, started on an empty data folder: it opens its
+  # window, builds its state and closes cleanly (app/tests/smoke.rs). Linux
+  # has no display on a runner, so Xvfb gives it one; no GPU either, so iced
+  # draws in software.
+  iced-smoke:
+    name: iced smoke (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install a display and the keyboard library winit loads
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libxkbcommon-x11-0
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: iced-smoke-${{ matrix.os }}
+      - run: xvfb-run -a cargo test -p homeport-app --test smoke -- --ignored
+        if: runner.os == 'Linux'
+      - run: cargo test -p homeport-app --test smoke -- --ignored
+        if: runner.os != 'Linux'
 
   # The real app (Rust backend, real webview, real IPC) driven through
   # tauri-driver and WebKitWebDriver against the runner's Docker Engine:
