@@ -26,6 +26,7 @@ impl Catalog for Theme {
 }
 
 /// A button's three colours in one state.
+#[derive(Clone, Copy)]
 struct Look {
     background: Option<Color>,
     text: Color,
@@ -153,5 +154,113 @@ pub fn small(variant: fn(&Theme, Status) -> Style) -> impl Fn(&Theme, Status) ->
         let mut style = variant(theme, status);
         style.border.radius = radius::MD.into();
         style
+    }
+}
+
+/// What the kit builds out of buttons: the items of a menu and of a list,
+/// tabs, and the toggles of a toggle group. Each is a function of whether
+/// the item is the chosen one, so a view passes `item(selected)`.
+pub mod part {
+    use super::{alpha, build, radius, Color, Look, Status, Style, Theme};
+
+    fn rounded(mut style: Style, corners: f32) -> Style {
+        style.border.radius = corners.into();
+        style
+    }
+
+    /// `DropdownMenuItem`, `SelectItem`, `CommandItem`: accent under the
+    /// pointer; `active` is the item the keyboard is on in a filtered list.
+    pub fn item(active: bool) -> impl Fn(&Theme, Status) -> Style {
+        move |theme, status| {
+            let tokens = theme.tokens();
+            let look = |on: bool| Look {
+                background: on.then_some(tokens.accent),
+                text: if on {
+                    tokens.accent_foreground
+                } else {
+                    tokens.popover_foreground
+                },
+                border: Color::TRANSPARENT,
+            };
+            rounded(build(status, look(active), look(true)), radius::MD)
+        }
+    }
+
+    /// `variant="destructive"` of a menu item: red text, a red tint under
+    /// the pointer.
+    pub fn destructive_item(theme: &Theme, status: Status) -> Style {
+        let tokens = theme.tokens();
+        let tint = if theme.is_dark() { 0.2 } else { 0.1 };
+        let look = |on: bool| Look {
+            background: on.then_some(alpha(tokens.destructive, tint)),
+            text: tokens.destructive,
+            border: Color::TRANSPARENT,
+        };
+        rounded(build(status, look(false), look(true)), radius::MD)
+    }
+
+    /// `TabsTrigger` in a `TabsList` (`bg-muted`): the chosen tab is a chip
+    /// in the page's colour, the others are text at 60 %.
+    pub fn tab(selected: bool) -> impl Fn(&Theme, Status) -> Style {
+        move |theme, status| {
+            let tokens = theme.tokens();
+            let chosen = Look {
+                background: Some(if theme.is_dark() {
+                    alpha(tokens.input, 0.3)
+                } else {
+                    tokens.background
+                }),
+                text: tokens.foreground,
+                border: if theme.is_dark() {
+                    tokens.input
+                } else {
+                    Color::TRANSPARENT
+                },
+            };
+            let other = |opacity| Look {
+                background: None,
+                text: alpha(tokens.foreground, opacity),
+                border: Color::TRANSPARENT,
+            };
+            let style = if selected {
+                build(status, chosen, chosen)
+            } else {
+                build(status, other(0.6), other(1.0))
+            };
+            rounded(style, radius::MD)
+        }
+    }
+
+    /// `TabsTrigger` of the `line` variant: text only; the line under the
+    /// chosen tab is drawn by the tabs.
+    pub fn line_tab(selected: bool) -> impl Fn(&Theme, Status) -> Style {
+        move |theme, status| {
+            let tokens = theme.tokens();
+            let look = |opacity| Look {
+                background: None,
+                text: alpha(tokens.foreground, opacity),
+                border: Color::TRANSPARENT,
+            };
+            let idle = if selected { 1.0 } else { 0.6 };
+            rounded(build(status, look(idle), look(1.0)), radius::MD)
+        }
+    }
+
+    /// `Toggle` (`variant="outline"` when `outlined`): `bg-muted` while on
+    /// and under the pointer.
+    pub fn toggle(on: bool, outlined: bool) -> impl Fn(&Theme, Status) -> Style {
+        move |theme, status| {
+            let tokens = theme.tokens();
+            let look = |filled: bool| Look {
+                background: filled.then_some(tokens.muted),
+                text: tokens.foreground,
+                border: if outlined {
+                    tokens.input
+                } else {
+                    Color::TRANSPARENT
+                },
+            };
+            build(status, look(on), look(true))
+        }
     }
 }

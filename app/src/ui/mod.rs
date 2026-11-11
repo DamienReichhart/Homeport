@@ -2,6 +2,7 @@
 
 mod hosts;
 pub mod theme;
+pub mod widgets;
 
 use std::{
     path::PathBuf,

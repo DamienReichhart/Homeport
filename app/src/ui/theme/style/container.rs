@@ -82,6 +82,27 @@ pub fn popover(theme: &Theme) -> Style {
     }
 }
 
+/// `DialogContent`: a popover with a card's corners; the scrim sets it
+/// apart, so it casts no shadow.
+pub fn dialog(theme: &Theme) -> Style {
+    let tokens = theme.tokens();
+    Style {
+        border: hairline(edge(tokens), radius::XL),
+        ..surface(tokens.popover, tokens.popover_foreground)
+    }
+}
+
+/// `DialogFooter`: `bg-muted/50` under the dialog, down to its corners.
+pub fn dialog_footer(theme: &Theme) -> Style {
+    Style {
+        border: Border {
+            radius: iced::border::Radius::default().bottom(radius::XL),
+            ..Border::default()
+        },
+        ..card_footer(theme)
+    }
+}
+
 /// A box drawn by its `--border` alone, on whatever is behind.
 pub fn bordered(theme: &Theme) -> Style {
     Style {
