@@ -6,6 +6,7 @@ pub mod exec;
 pub mod files;
 pub mod images;
 pub mod networks;
+pub mod podman;
 mod registries;
 pub mod system;
 pub mod volumes;
