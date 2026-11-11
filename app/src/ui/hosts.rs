@@ -7,6 +7,7 @@ use iced::{
     Alignment, Element, Length, Task,
 };
 
+use homeport_core::error::AppError;
 use homeport_hosts::{registry::HostStatus, service::HostView};
 
 use crate::{
@@ -17,25 +18,20 @@ use crate::{
 #[derive(Default)]
 pub struct Hosts {
     list: Vec<HostView>,
-    error: Option<String>,
+    /// Kept as the error, so it reads in the language of the moment.
+    error: Option<AppError>,
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    Loaded(Result<Arc<Vec<HostView>>, String>),
+    Loaded(Result<Arc<Vec<HostView>>, AppError>),
 }
 
 impl Hosts {
     pub fn load(&mut self, state: &Arc<AppState>) -> Task<Message> {
         let state = state.clone();
         Task::perform(
-            async move {
-                state
-                    .hosts
-                    .list()
-                    .map(Arc::new)
-                    .map_err(|e| i18n::errors::message(&e))
-            },
+            async move { state.hosts.list().map(Arc::new) },
             Message::Loaded,
         )
     }
@@ -72,7 +68,7 @@ impl Hosts {
             .width(Length::Fill)
             .align_x(direction.pick(Alignment::Start, Alignment::End));
         if let Some(e) = &self.error {
-            rows = rows.push(text(e.as_str()));
+            rows = rows.push(text(i18n::errors::message(e)));
         }
         if self.list.is_empty() && self.error.is_none() {
             rows = rows.push(text(t!("hosts.empty")));
@@ -103,6 +99,8 @@ fn label(status: &HostStatus) -> String {
 mod tests {
     use iced::Theme;
 
+    use homeport_core::error::ErrorCode;
+
     use crate::test_support::{
         fixtures::{connected, host_view},
         snapshot::assert_snapshot,
@@ -126,9 +124,10 @@ mod tests {
         let mut hosts = hosts();
         assert_eq!(hosts.list.len(), 3);
         assert_eq!(hosts.error, None);
-        hosts.apply(Message::Loaded(Err("The database is locked.".to_owned())));
+        let locked = AppError::new(ErrorCode::DbLocked, homeport_storage::messages::DB_LOCKED);
+        hosts.apply(Message::Loaded(Err(locked.clone())));
         assert_eq!(hosts.list.len(), 3);
-        assert_eq!(hosts.error.as_deref(), Some("The database is locked."));
+        assert_eq!(hosts.error, Some(locked));
     }
 
     #[test]

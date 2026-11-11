@@ -2,7 +2,10 @@
 
 mod hosts;
 
-use std::sync::{Arc, Mutex, OnceLock};
+use std::{
+    path::PathBuf,
+    sync::{Arc, Mutex, OnceLock},
+};
 
 use iced::{
     futures::{stream, Stream},
@@ -10,6 +13,9 @@ use iced::{
     Element, Length, Subscription, Task,
 };
 use tokio::sync::mpsc::{self, UnboundedReceiver};
+
+use homeport_core::error::AppError;
+use homeport_settings::SYSTEM_LANGUAGE;
 
 use crate::{
     api::app::lifecycle,
@@ -35,7 +41,7 @@ static EVENTS: OnceLock<Mutex<Option<UnboundedReceiver<Event>>>> = OnceLock::new
 
 enum Phase {
     Starting,
-    Failed(String),
+    Failed(Failure),
     Ready(Arc<AppState>),
 }
 
@@ -44,9 +50,18 @@ struct Homeport {
     hosts: hosts::Hosts,
 }
 
+/// Why the app didn't start, kept as it is so it reads in the language of
+/// the moment.
+#[derive(Debug, Clone)]
+pub enum Failure {
+    /// The database at this path couldn't be opened.
+    Database(Box<AppError>, PathBuf),
+    Other(String),
+}
+
 #[derive(Debug, Clone)]
 pub enum Message {
-    Started(Result<Arc<AppState>, String>),
+    Started(Result<Arc<AppState>, Failure>),
     Backend(Event),
     Hosts(hosts::Message),
     /// The window was asked to close.
@@ -61,6 +76,9 @@ pub enum Message {
 
 impl Homeport {
     fn boot() -> (Self, Task<Message>) {
+        // The OS's language until the Settings say otherwise, so even a
+        // failed start is told in it.
+        i18n::set_language(SYSTEM_LANGUAGE, &i18n::locale::preferred());
         let (sender, receiver) = mpsc::unbounded_channel();
         let _ = EVENTS.set(Mutex::new(Some(receiver)));
         let events = Events::new(sender);
@@ -68,12 +86,11 @@ impl Homeport {
             async move {
                 match setup::state(&events) {
                     Ok(state) => Ok(Arc::new(state)),
-                    Err(setup::Failure::Database(e, path)) => Err(format!(
-                        "{} ({})",
-                        i18n::errors::message(&e),
-                        path.display()
-                    )),
-                    Err(setup::Failure::Other(e)) => Err(e.to_string()),
+                    Err(setup::Failure::Database(e, path)) => {
+                        let error = e.logged("failed to open the database");
+                        Err(Failure::Database(Box::new(error), path))
+                    }
+                    Err(setup::Failure::Other(e)) => Err(Failure::Other(e.to_string())),
                 }
             },
             Message::Started,
@@ -143,9 +160,13 @@ impl Homeport {
     fn view(&self) -> Element<'_, Message> {
         let body: Element<'_, Message> = match &self.phase {
             Phase::Starting => text(crate::t!("common.loading")).into(),
-            Phase::Failed(e) => column![
+            Phase::Failed(failure) => column![
                 text(crate::t!("app.startup.title")).size(20),
-                text(e.as_str())
+                text(match failure {
+                    Failure::Database(error, path) =>
+                        format!("{} ({})", i18n::errors::message(error), path.display()),
+                    Failure::Other(why) => why.clone(),
+                })
             ]
             .spacing(8)
             .into(),
