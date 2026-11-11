@@ -36,6 +36,10 @@ pub fn run() -> iced::Result {
         .run()
 }
 
+/// Set by the smoke test: the app closes itself as soon as it has started,
+/// the way a user closing the window would.
+pub const EXIT_WHEN_READY: &str = "HOMEPORT_EXIT_WHEN_READY";
+
 /// The receiving half of the backend's events, taken once by the subscription.
 static EVENTS: OnceLock<Mutex<Option<UnboundedReceiver<Event>>>> = OnceLock::new();
 
@@ -111,6 +115,9 @@ impl Homeport {
                     i18n::set_language(&settings.language, &i18n::locale::preferred());
                 }
                 self.phase = Phase::Ready(state.clone());
+                if std::env::var_os(EXIT_WHEN_READY).is_some() {
+                    return Task::done(Message::CloseRequested);
+                }
                 self.hosts.load(&state).map(Message::Hosts)
             }
             Message::Started(Err(e)) => {
