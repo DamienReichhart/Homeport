@@ -95,7 +95,8 @@ impl Surfaced {
     pub fn report(&self, about: Option<&About>) -> String {
         let mut lines = vec![
             about.map_or_else(|| "Homeport".to_owned(), About::line),
-            format!("When: {}", self.at),
+            // As JavaScript's `toISOString()`: UTC, always with milliseconds.
+            format!("When: {}", self.at.strftime("%Y-%m-%dT%H:%M:%S%.3fZ")),
         ];
         lines.extend(self.command.map(|command| format!("Command: {command}")));
         lines.push(format!("Code: {}", code_name(self.error.code)));
@@ -106,7 +107,8 @@ impl Surfaced {
             lines.push(format!("What to do: {}", hint.text));
             lines.extend(command_lines(hint));
         }
-        if let Some(detail) = &self.error.detail {
+        // An empty detail says nothing: no block for it.
+        if let Some(detail) = self.error.detail.as_ref().filter(|d| !d.is_empty()) {
             lines.push(String::new());
             lines.push("Detail:".to_owned());
             lines.push(detail.clone());
@@ -129,7 +131,7 @@ mod tests {
         Surfaced::at(
             error,
             Some("containers_act"),
-            "2026-03-04T05:06:07Z".parse().unwrap(),
+            "2026-03-04T05:06:07.0891Z".parse().unwrap(),
         )
     }
 
@@ -167,21 +169,23 @@ mod tests {
         assert_eq!(
             surfaced.report(Some(&about)),
             format!(
-                "Homeport 1.2.0 on linux x86_64\nWhen: 2026-03-04T05:06:07Z\n\
+                "Homeport 1.2.0 on linux x86_64\nWhen: 2026-03-04T05:06:07.089Z\n\
                  Command: containers_act\nCode: io\n\n{}\n\nWhat to do: {hint}\n  \
                  $ ls -la\n  $ whoami\n\nDetail:\nPermission denied\n  (os error 13)",
                 surfaced.error.message
             )
         );
+        // A whole second still shows its milliseconds, and an empty detail
+        // is no detail (`if (error.detail)`).
         let plain = Surfaced::at(
-            AppError::new(ErrorCode::NotFound, msg::IO_FAILED),
+            AppError::new(ErrorCode::NotFound, msg::IO_FAILED).with_detail(""),
             None,
-            surfaced.at,
+            "2026-03-04T05:06:07Z".parse().unwrap(),
         );
         assert_eq!(
             plain.report(None),
             format!(
-                "Homeport\nWhen: 2026-03-04T05:06:07Z\nCode: not_found\n\n{}",
+                "Homeport\nWhen: 2026-03-04T05:06:07.000Z\nCode: not_found\n\n{}",
                 plain.error.message
             )
         );
