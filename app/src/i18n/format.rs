@@ -20,7 +20,7 @@ use jiff::{tz::TimeZone, Timestamp};
 use super::{number, Args};
 
 /// The size units, by power of 1024.
-const UNITS: [&str; 5] = [
+pub(super) const UNITS: [&str; 5] = [
     "format.bytes.b",
     "format.bytes.kb",
     "format.bytes.mb",
@@ -37,8 +37,9 @@ pub struct Formats {
     grouped: Option<DecimalFormatter>,
     ungrouped: Option<DecimalFormatter>,
     percent: Option<PercentFormatter<DecimalFormatter>>,
-    /// Seconds, minutes, hours, days, months, years.
-    relative: Vec<RelativeTimeFormatter>,
+    /// Seconds, minutes, hours, days, months, years; `None` for a unit the
+    /// locale has no data for, so the others keep their place.
+    relative: [Option<RelativeTimeFormatter>; 6],
     date_time: Option<DateTimeFormatter<YMDT>>,
     date: Option<DateTimeFormatter<YMD>>,
     time: Option<DateTimeFormatter<T>>,
@@ -57,9 +58,7 @@ impl Formats {
             RelativeTimeFormatter::try_new_long_month,
             RelativeTimeFormatter::try_new_long_year,
         ]
-        .into_iter()
-        .filter_map(|new| new((&locale).into(), options).ok())
-        .collect();
+        .map(|new| new((&locale).into(), options).ok());
         let seconds = TimePrecision::Second;
         Self {
             tag: tag.to_owned(),
@@ -90,8 +89,8 @@ impl Formats {
     /// `12,345`, `12 345`.
     pub fn number(&self, value: f64) -> String {
         match &self.grouped {
-            Some(formatter) => number::format(formatter, value),
-            None => value.to_string(),
+            Some(formatter) if value.is_finite() => number::at_most(formatter, value, 3),
+            _ => value.to_string(),
         }
     }
 
@@ -125,14 +124,14 @@ impl Formats {
         let digits = if value >= 100.0 { 0 } else { 1 };
         let rounded = number::rounded(value, digits);
         match &self.percent {
-            Some(formatter) => formatter.format(&rounded).to_string(),
-            None => format!("{rounded}%"),
+            Some(formatter) if value.is_finite() => formatter.format(&rounded).to_string(),
+            _ => format!("{value}%"),
         }
     }
 
     /// A Unix time in seconds as "3 minutes ago", seen from `now`.
     pub fn relative(&self, unix_seconds: i64, now: i64) -> String {
-        let mut value = now - unix_seconds;
+        let mut value = now.saturating_sub(unix_seconds);
         let mut unit = STEPS.len();
         for (index, size) in STEPS.iter().enumerate() {
             if value.abs() < *size {
@@ -141,8 +140,10 @@ impl Formats {
             }
             value = div_round(value, *size);
         }
-        match self.relative.get(unit) {
-            Some(formatter) => formatter.format(Decimal::from(-value)).to_string(),
+        match self.relative.get(unit).and_then(Option::as_ref) {
+            Some(formatter) => formatter
+                .format(Decimal::from(value.saturating_neg()))
+                .to_string(),
             None => String::new(),
         }
     }
@@ -183,7 +184,7 @@ impl Formats {
 
 /// `a / b` rounded to the nearest, halves up, as JavaScript's `Math.round`.
 fn div_round(a: i64, b: i64) -> i64 {
-    (2 * a + b).div_euclid(2 * b)
+    a.saturating_mul(2).saturating_add(b).div_euclid(2 * b)
 }
 
 /// A Unix time as the date and time a clock in `zone` shows.

@@ -98,6 +98,13 @@ pub fn set_language(language: &str, preferred: &[String]) -> &'static str {
         *CURRENT
             .write()
             .unwrap_or_else(std::sync::PoisonError::into_inner) = next;
+        // The crates render the text the OS draws (tray, notifications)
+        // themselves; English is their own.
+        homeport_core::error::set_translations(if tag == DEFAULT_LOCALE {
+            std::collections::BTreeMap::new()
+        } else {
+            catalogue::native_templates(tag)
+        });
     }
     tag
 }

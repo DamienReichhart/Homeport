@@ -82,6 +82,8 @@ mod tests {
 
     #[tokio::test]
     async fn native_text_is_replaced_and_the_ui_told() {
+        // The templates are the whole process's, as the language is.
+        let _language = crate::test_support::snapshot::in_language("en");
         let mut app = testing::app();
         let key = "native.test.onlyInThisTest";
         let templates = BTreeMap::from([(key.to_owned(), "Ouvrir {name}".to_owned())]);

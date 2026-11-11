@@ -185,6 +185,11 @@ fn every_language_has_the_english_messages_with_their_shape() {
                     translated.tags, shape.tags
                 ));
             }
+            for variable in shape.plurals.keys() {
+                if !translated.plurals.contains_key(variable) {
+                    problems.push(format!("{tag} {id} no longer counts ${variable}"));
+                }
+            }
             for (variable, given) in &translated.plurals {
                 let missing: Vec<_> = needed.difference(given).collect();
                 if !missing.is_empty() {
@@ -199,53 +204,168 @@ fn every_language_has_the_english_messages_with_their_shape() {
     assert_none(&problems);
 }
 
-/// Every key a `t!` or a `rich!` of the sources names.
-fn named_by_the_code() -> BTreeMap<String, String> {
-    fn scan(dir: &Path, found: &mut BTreeMap<String, String>) {
+/// One `t!` or `rich!` of the sources.
+struct Use {
+    key: String,
+    /// The arguments it gives, by name.
+    args: BTreeSet<String>,
+    rich: bool,
+    file: String,
+    /// In a file's tests, which show nothing to the user.
+    in_tests: bool,
+}
+
+/// The names given as `name = value` in a macro call's arguments, `rest`
+/// starting after its key, up to the call's closing parenthesis.
+fn given(rest: &str) -> BTreeSet<String> {
+    let mut names = BTreeSet::new();
+    let mut depth = 0usize;
+    let mut quoted = false;
+    let mut expects_name = false;
+    let mut chars = rest.char_indices().peekable();
+    while let Some((at, c)) = chars.next() {
+        match c {
+            '\\' if quoted => {
+                chars.next();
+            }
+            '"' => quoted = !quoted,
+            _ if quoted => {}
+            '(' | '[' | '{' => depth += 1,
+            ')' | ']' | '}' if depth == 0 => break,
+            ')' | ']' | '}' => depth -= 1,
+            ',' if depth == 0 => expects_name = true,
+            c if expects_name && !c.is_whitespace() => {
+                expects_name = false;
+                let name: String = rest[at..]
+                    .chars()
+                    .take_while(|c| c.is_alphanumeric() || *c == '_')
+                    .collect();
+                let after = rest[at + name.len()..].trim_start();
+                if !name.is_empty() && after.starts_with('=') && !after.starts_with("==") {
+                    names.insert(name);
+                }
+            }
+            _ => {}
+        }
+    }
+    names
+}
+
+/// Every `t!` and `rich!` of the sources, and every line that reaches the
+/// catalogue around them.
+fn uses() -> (Vec<Use>, Vec<String>) {
+    fn scan(dir: &Path, found: &mut Vec<Use>, direct: &mut Vec<String>) {
         for entry in fs::read_dir(dir).unwrap() {
             let path = entry.unwrap().path();
             if path.is_dir() {
-                scan(&path, found);
-            } else if path.extension().is_some_and(|e| e == "rs")
-                && !path.ends_with("i18n/check.rs")
-            {
-                let text = fs::read_to_string(&path).unwrap();
-                for marker in ["t!(", "rich!("] {
-                    for (at, _) in text.match_indices(marker) {
-                        let before = text[..at].chars().next_back();
-                        if before.is_some_and(|c| c.is_alphanumeric() || c == '_') {
-                            continue;
-                        }
-                        let rest = text[at + marker.len()..].trim_start();
-                        if let Some(key) = rest.strip_prefix('"').and_then(|r| r.split('"').next())
-                        {
-                            found.insert(key.to_owned(), path.display().to_string());
-                        }
+                scan(&path, found, direct);
+                continue;
+            }
+            if path.extension().is_none_or(|e| e != "rs") || path.ends_with("i18n/check.rs") {
+                continue;
+            }
+            let file = path.display().to_string();
+            // Comments name keys as examples, not as text to show.
+            let text: String = fs::read_to_string(&path)
+                .unwrap()
+                .lines()
+                .map(|line| {
+                    if line.trim_start().starts_with("//") {
+                        ""
+                    } else {
+                        line
                     }
+                })
+                .collect::<Vec<_>>()
+                .join("\n");
+            let tests_from = if path.ends_with("tests.rs") {
+                0
+            } else {
+                text.find("\nmod tests {").unwrap_or(usize::MAX)
+            };
+            if !file.contains("/src/i18n/") {
+                for call in ["i18n::text(", "i18n::spans("] {
+                    if text.contains(call) {
+                        direct.push(format!("{file} calls {call}…): use t! or rich!"));
+                    }
+                }
+            }
+            for (marker, rich) in [("t!(", false), ("rich!(", true)] {
+                for (at, _) in text.match_indices(marker) {
+                    let before = text[..at].chars().next_back();
+                    if before.is_some_and(|c| c.is_alphanumeric() || c == '_') {
+                        continue;
+                    }
+                    let rest = text[at + marker.len()..].trim_start();
+                    let Some(key) = rest.strip_prefix('"').and_then(|r| r.split('"').next()) else {
+                        continue;
+                    };
+                    found.push(Use {
+                        key: key.to_owned(),
+                        args: given(&rest[key.len() + 2..]),
+                        rich,
+                        file: file.clone(),
+                        in_tests: at > tests_from,
+                    });
                 }
             }
         }
     }
-    let mut found = BTreeMap::new();
+    let (mut found, mut direct) = (vec![], vec![]);
     scan(
         &Path::new(env!("CARGO_MANIFEST_DIR")).join("src"),
         &mut found,
+        &mut direct,
     );
-    found
+    (found, direct)
 }
 
 #[test]
 fn the_code_and_the_english_catalogue_name_the_same_messages() {
     let mut problems = vec![];
     let english = shapes(DEFAULT_LOCALE, &mut problems);
-    let named = named_by_the_code();
-    for (key, file) in &named {
-        if !english.contains_key(&catalogue::id(key)) {
+    let (uses, direct) = uses();
+    problems.extend(direct);
+    for Use {
+        key,
+        args,
+        rich,
+        file,
+        ..
+    } in &uses
+    {
+        let Some(shape) = english.get(&catalogue::id(key)) else {
             problems.push(format!("{file} names {key}, which no catalogue has"));
+            continue;
+        };
+        if *args != shape.variables {
+            problems.push(format!(
+                "{file} gives {key} {args:?}, and it takes {:?}",
+                shape.variables
+            ));
+        }
+        if *rich == shape.tags.is_empty() {
+            problems.push(format!(
+                "{file}: {key} {}",
+                if *rich {
+                    "has no tag: use t!"
+                } else {
+                    "has tags: use rich!"
+                }
+            ));
         }
     }
-    let used: BTreeSet<String> = named.keys().map(|key| catalogue::id(key)).collect();
-    for id in english.keys() {
+    for key in super::format::UNITS {
+        if !english.contains_key(&catalogue::id(key)) {
+            problems.push(format!("the size unit {key} is in no catalogue"));
+        }
+    }
+    let used: BTreeSet<String> = uses
+        .iter()
+        .filter(|u| !u.in_tests)
+        .map(|u| catalogue::id(&u.key))
+        .collect();
+    for (id, shape) in &english {
         let namespace = id.split('-').next().unwrap_or_default();
         if PORTED.contains(&namespace)
             && !NAMED_ELSEWHERE.contains(&namespace)
@@ -253,8 +373,30 @@ fn the_code_and_the_english_catalogue_name_the_same_messages() {
         {
             problems.push(format!("{id} is named by no code"));
         }
+        for tag in &shape.tags {
+            if !["strong", "mono", "code", "link"].contains(&tag.as_str()) {
+                problems.push(format!(
+                    "{id} has the tag <{tag}>, which the app can't draw"
+                ));
+            }
+        }
     }
     assert_none(&problems);
+}
+
+#[test]
+fn the_arguments_of_a_call_are_read_by_name() {
+    let names = |rest: &str| given(rest).into_iter().collect::<Vec<_>>();
+    assert_eq!(
+        names(", running = 3, count = list.len())"),
+        ["count", "running"]
+    );
+    assert_eq!(
+        names(", name = f(a, b == c), other = \"x, y = z\")"),
+        ["name", "other"]
+    );
+    assert_eq!(names(")  , later = 1"), Vec::<String>::new());
+    assert_eq!(names(",\n    name = host.name.as_str(),\n)"), ["name"]);
 }
 
 type Sample = (String, BTreeMap<String, serde_json::Value>, String);

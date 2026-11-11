@@ -44,6 +44,14 @@ pub fn rounded(value: f64, digits: u8) -> Decimal {
     decimal
 }
 
+/// `value` with at most `digits` decimals and no trailing zero, as
+/// `Intl.NumberFormat` writes a plain number.
+pub fn at_most(formatter: &DecimalFormatter, value: f64, digits: u8) -> String {
+    let mut decimal = rounded(value, digits);
+    decimal.absolute.trim_end();
+    formatter.format(&decimal).to_string()
+}
+
 /// `value` rounded to exactly `digits` decimals, half away from zero as
 /// `Intl.NumberFormat` does.
 pub fn fixed(formatter: &DecimalFormatter, value: f64, digits: u8) -> String {
@@ -72,5 +80,9 @@ mod tests {
         assert_eq!(fixed(&english, 3.0, 1), "3.0");
         assert_eq!(fixed(&english, 1000.4, 0), "1000");
         assert_eq!(fixed(&english, 2.25, 1), "2.3");
+        let grouped = formatter("en").unwrap();
+        assert_eq!(at_most(&grouped, 1.234_56, 3), "1.235");
+        assert_eq!(at_most(&grouped, 0.1 + 0.2, 3), "0.3");
+        assert_eq!(at_most(&grouped, 12345.0, 3), "12,345");
     }
 }

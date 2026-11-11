@@ -120,7 +120,18 @@ fn switching_the_language_changes_what_the_app_shows() {
     assert_eq!(current().formats.tag(), "de-AT");
     assert_eq!(crate::t!("containers.title"), "Container");
     assert_eq!(format::bytes(1536.0), "1,5 KB");
+    // The crates render the text the OS draws: it follows too.
+    let localize = |key: &str| homeport_core::error::localize(key, &Default::default());
+    assert_eq!(set_language("fr", &[]), "fr");
+    assert_eq!(
+        localize("native.tray.status.connected").as_deref(),
+        Some("Connecté")
+    );
+    let host = homeport_core::error::Params::from([("host".to_owned(), "prod".into())]);
+    let line = homeport_core::error::localize("native.tray.host", &host).unwrap();
+    assert!(line.starts_with("prod — "), "{line}");
     assert_eq!(set_language("en", &[]), "en");
+    assert_eq!(localize("native.tray.status.connected"), None);
     assert_eq!(direction(), Direction::Ltr);
     assert_eq!(
         crate::t!("containers.summary", running = 1, count = 2),
@@ -209,7 +220,10 @@ fn every_language_formats_numbers_dates_sizes_and_relative_times() {
         assert_eq!(formats.date(WHEN, &TimeZone::UTC), date, "{tag} date");
         let (unit, value) = formats.bytes_parts(1536.0, 1);
         let size = language.text(unit, Some(&args().with("value", value).0));
-        assert!(size.chars().count() >= 5, "{tag} size {size}");
+        assert!(
+            size.chars().count() >= 5 && !size.contains("format."),
+            "{tag} size {size}"
+        );
         assert!(!formats.percent(3.456).is_empty(), "{tag} percent");
         assert!(
             !formats.date_time(WHEN, &TimeZone::UTC).is_empty(),

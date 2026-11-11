@@ -2,9 +2,10 @@
 //! `app/i18n`, built into the binary, and the bundle that renders one
 //! language's messages.
 
-use std::{borrow::Cow, sync::LazyLock};
+use std::{borrow::Cow, collections::BTreeMap, sync::LazyLock};
 
 use fluent_bundle::{concurrent::FluentBundle, FluentArgs, FluentResource, FluentValue};
+use fluent_syntax::{ast, parser};
 use icu::decimal::DecimalFormatter;
 use include_dir::{include_dir, Dir};
 use unic_langid::LanguageIdentifier;
@@ -131,6 +132,57 @@ fn num<'a>(numbers: Option<&DecimalFormatter>, positional: &[FluentValue<'a>]) -
         Some(other) => other.clone(),
         None => FluentValue::Error,
     }
+}
+
+/// The namespaces the crates render themselves, for the text the OS draws:
+/// the tray menu and notifications, and the errors a notification quotes.
+const NATIVE: [&str; 2] = ["native", "errors"];
+
+/// The templates of `tag` the crates render (`homeport_core::error`), by
+/// dotted key, as `Text {name}`. A message with a plural or a select has no
+/// such template and stays in English there.
+pub fn native_templates(tag: &str) -> BTreeMap<String, String> {
+    let mut templates = BTreeMap::new();
+    for (_, text) in files(tag)
+        .into_iter()
+        .filter(|(name, _)| NATIVE.contains(name))
+    {
+        let resource = parser::parse(text).unwrap_or_else(|(resource, _)| resource);
+        for entry in &resource.body {
+            let ast::Entry::Message(message) = entry else {
+                continue;
+            };
+            if let Some(template) = message.value.as_ref().and_then(template) {
+                templates.insert(message.id.name.replace('-', "."), template);
+            }
+        }
+    }
+    templates
+}
+
+/// A pattern of text and plain arguments as the crates' template.
+fn template(pattern: &ast::Pattern<&str>) -> Option<String> {
+    let mut out = String::new();
+    for element in &pattern.elements {
+        match element {
+            ast::PatternElement::TextElement { value } => out.push_str(value),
+            ast::PatternElement::Placeable {
+                expression: ast::Expression::Inline(inline),
+            } => match inline {
+                ast::InlineExpression::VariableReference { id } => {
+                    out.push('{');
+                    out.push_str(id.name);
+                    out.push('}');
+                }
+                ast::InlineExpression::StringLiteral { value } => {
+                    out.push_str(&value.replace("\\u000A", "\n"));
+                }
+                _ => return None,
+            },
+            ast::PatternElement::Placeable { .. } => return None,
+        }
+    }
+    Some(out)
 }
 
 /// `containers.empty.title` as Fluent names it: its ids have no dots.
