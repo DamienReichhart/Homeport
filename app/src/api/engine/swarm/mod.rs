@@ -3,6 +3,7 @@
 
 pub mod nodes;
 pub mod objects;
+pub mod services;
 
 use homeport_core::error::AppResult;
 use homeport_engine::swarm::{
