@@ -1,5 +1,5 @@
 //! Every widget of the kit on one page, to look at and to press:
-//! `cargo run -p homeport-app --example widgets`. Its tests draw it in
+//! `cargo run -p homeport-app --example widgets --features gallery`. Its tests draw it in
 //! both themes and in Arabic (`tests/snapshots/widgets-*.png`).
 //!
 //! It is a developer's tool, not a page of the app: its own labels are

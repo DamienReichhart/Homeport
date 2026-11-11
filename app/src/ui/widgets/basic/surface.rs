@@ -26,6 +26,8 @@ pub enum BadgeVariant {
     Secondary,
     Destructive,
     Outline,
+    Ghost,
+    Link,
 }
 
 /// `Badge`: a pill that names a state or a count.
@@ -33,17 +35,19 @@ pub fn badge<'a, Message: 'a>(
     label: impl Into<String>,
     variant: BadgeVariant,
 ) -> Element<'a, Message> {
-    let style: fn(&Theme) -> container::Style = match variant {
-        BadgeVariant::Primary => theme::container::badge::primary,
-        BadgeVariant::Secondary => theme::container::badge::secondary,
-        BadgeVariant::Destructive => theme::container::badge::destructive,
-        BadgeVariant::Outline => theme::container::badge::outline,
-    };
-    container(text(label.into()).size(size::XS).font(font::medium()))
+    let pill = container(text(label.into()).size(size::XS).font(font::medium()))
         .padding([0.0, space::S2])
-        .center_y(control::BADGE)
-        .style(style)
-        .into()
+        .center_y(control::BADGE);
+    match variant {
+        BadgeVariant::Primary => pill.style(theme::container::badge::primary),
+        BadgeVariant::Secondary => pill.style(theme::container::badge::secondary),
+        BadgeVariant::Destructive => pill.style(theme::container::badge::destructive),
+        BadgeVariant::Outline => pill.style(theme::container::badge::outline),
+        // A badge that isn't pressed: the ghost at rest.
+        BadgeVariant::Ghost => pill.style(theme::container::badge::ghost),
+        BadgeVariant::Link => pill.style(theme::container::badge::link),
+    }
+    .into()
 }
 
 /// `Card`, being described.

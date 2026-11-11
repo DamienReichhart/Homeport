@@ -17,6 +17,7 @@ pub mod basic;
 pub mod feedback;
 pub mod focus;
 pub mod form;
+#[cfg(any(test, feature = "gallery"))]
 pub mod gallery;
 pub mod overlay;
 

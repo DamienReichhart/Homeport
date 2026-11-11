@@ -137,14 +137,15 @@ pub fn destructive(theme: &Theme, status: Status) -> Style {
 }
 
 /// `variant="link"`: text in the primary colour. The React one underlines on
-/// hover; iced's button style has no underline, so this one stays plain.
+/// hover; iced's button style has no underline, so under the pointer the
+/// text eases off instead (`primary` at 80 %, the primary button's hover).
 pub fn link(theme: &Theme, status: Status) -> Style {
-    let look = || Look {
+    let look = |opacity| Look {
         background: None,
-        text: theme.tokens().primary,
+        text: alpha(theme.tokens().primary, opacity),
         border: Color::TRANSPARENT,
     };
-    build(status, look(), look())
+    build(status, look(1.0), look(0.8))
 }
 
 /// `variant` with the corners of the `xs` and `sm` sizes:

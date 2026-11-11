@@ -31,6 +31,8 @@
 
 pub mod color;
 pub mod font;
+#[cfg(any(test, feature = "gallery"))]
+pub mod gallery;
 pub mod icon;
 pub mod metrics;
 pub mod mode;

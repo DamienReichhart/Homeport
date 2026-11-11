@@ -19,6 +19,20 @@ path = "src/lib.rs"
 name = "homeport-iced"
 path = "src/main.rs"
 
+# The two galleries (the theme's and the kit's) are developer's tools with
+# English literals: they are built for tests and for their examples, never
+# into the app.
+[features]
+gallery = []
+
+[[example]]
+name = "gallery"
+required-features = ["gallery"]
+
+[[example]]
+name = "widgets"
+required-features = ["gallery"]
+
 # The app only wires the crates below to iced; their own dependencies
 # (bollard, russh, SQLite…) stay theirs.
 [dependencies]

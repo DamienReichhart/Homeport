@@ -222,4 +222,56 @@ pub mod badge {
             ..Style::default()
         }
     }
+
+    /// `variant="ghost"`: text and nothing else at rest.
+    pub fn ghost(theme: &Theme) -> Style {
+        pill(Style {
+            text_color: Some(theme.tokens().foreground),
+            ..Style::default()
+        })
+    }
+
+    /// The ghost under the pointer: `hover:bg-muted
+    /// hover:text-muted-foreground`, the fill at half on dark.
+    pub fn ghost_hovered(theme: &Theme) -> Style {
+        let tokens = theme.tokens();
+        let fill = if theme.is_dark() { 0.5 } else { 1.0 };
+        pill(surface(alpha(tokens.muted, fill), tokens.muted_foreground))
+    }
+
+    /// `variant="link"`: text in the primary colour, no pill behind it.
+    pub fn link(theme: &Theme) -> Style {
+        pill(Style {
+            text_color: Some(theme.tokens().primary),
+            ..Style::default()
+        })
+    }
+}
+
+/// A sample of `colour`, edged so it shows on any page: the gallery's
+/// swatches, and wherever a colour itself is what is shown.
+pub fn swatch(colour: Color) -> impl Fn(&Theme) -> Style {
+    move |theme| Style {
+        background: Some(colour.into()),
+        border: hairline(alpha(theme.tokens().foreground, 0.2), radius::LG),
+        ..Style::default()
+    }
+}
+
+/// `TableRow`: nothing at rest, `bg-muted/50` under the pointer (and while
+/// what it opened is open), `bg-muted` when selected, which wins.
+pub fn table_row(hovered: bool, selected: bool) -> impl Fn(&Theme) -> Style {
+    move |theme| {
+        let tokens = theme.tokens();
+        let fill = match (selected, hovered) {
+            (true, _) => Some(tokens.muted),
+            (false, true) => Some(alpha(tokens.muted, 0.5)),
+            (false, false) => None,
+        };
+        Style {
+            background: fill.map(Into::into),
+            text_color: Some(tokens.foreground),
+            ..Style::default()
+        }
+    }
 }

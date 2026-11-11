@@ -2,7 +2,12 @@
 
 `app/src/ui/widgets/` is what every page is built from. It knows no Host and no container. If a page needs a control or an overlay that isn't here, add it here: a page never writes its own.
 
-Look at all of it with `cargo run -p homeport-app --example widgets` (themes, English and Arabic, everything pressable). Its tests draw it to `app/tests/snapshots/widgets-*.png` and drive it with the keyboard (`app/src/ui/widgets/gallery/tests.rs`).
+Look at all of it with `cargo run -p homeport-app --example widgets --features gallery` (themes, English and Arabic, everything pressable). Its tests draw it to `app/tests/snapshots/widgets-*.png` and drive it with the keyboard (`app/src/ui/widgets/gallery/tests.rs`).
+
+The theme has its own, `cargo run -p homeport-app --example gallery --features gallery`, held to `app/tests/snapshots/theme-*.png` in both themes and both directions. Both galleries are built for tests and with the `gallery` feature only: their English literals are not in the app.
+
+- **Icons** take the colour of the text around them (`theme::icon`), as Lucide's `currentColor`: give one a style only where it differs from that text.
+- **Weights.** Use `theme::font::medium()`, `semibold()` and `bold()` for text in the app's language, the constants only for text that is Latin whatever the language: Arabic, Hindi, Japanese, Korean, Chinese and Russian are drawn by the OS's fonts, which have Regular and Bold.
 
 ## From the React primitives
 
