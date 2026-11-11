@@ -42,6 +42,14 @@ export default {
     'Verfügbar — SSH-Schlüssel, Zertifikate, Stack-Umgebungen und Registry-Anmeldungen werden verschlüsselt gespeichert.',
   'settings.machine.keychainUnavailable':
     'Nicht verfügbar — SSH-Schlüssel, TLS-Zertifikate, Stack-Umgebungen und Registry-Anmeldungen können nicht gespeichert werden.',
+  'settings.machine.keychainEntryMissing':
+    'Eintrag fehlt — der Schlüsselbund hat keinen Eintrag für den Schlüssel, mit dem Homeports Geheimnisse versiegelt wurden. Sie können daher weder geöffnet noch gespeichert werden.',
+  'settings.machine.startOverDescription':
+    'Nutzt Homeport einen anderen Schlüsselbund als zuvor, wechseln Sie zu diesem zurück und starten Sie Homeport neu. Ist der Eintrag endgültig weg, beginnen Sie mit einem neuen Schlüssel neu.',
+  'settings.machine.startOver': 'Mit neuem Schlüssel neu beginnen',
+  'settings.machine.startOverTitle': 'Mit neuem Schlüssel neu beginnen?',
+  'settings.machine.startOverConfirmDescription':
+    'Ein neuer Schlüssel kann nicht öffnen, was mit dem fehlenden versiegelt wurde: Sie geben die Zugangsdaten jedes Hosts, Clusters, jeder Registry und jedes Repositorys sowie die Umgebung jedes Stacks erneut ein oder stellen eine Sicherung wieder her.',
   'settings.machine.compose': 'Compose-CLI',
   'settings.machine.composeMissing':
     'Stacks können gestartet und gestoppt, aber nicht bereitgestellt werden.',
@@ -88,6 +96,9 @@ export default {
     '{count, plural, one {# Registry-Anmeldung} other {# Registry-Anmeldungen}}',
   'settings.restore.repositories': '{count, plural, one {# Repository} other {# Repositorys}}',
   'settings.restore.settings': 'Ihre Einstellungen',
+  'settings.restore.withoutSecrets':
+    'Diese wurden ohne ihre Geheimnisse gesichert, die sich damals nicht öffnen ließen. Sie kommen ohne sie zurück und ersetzen die Geheimnisse, die sie hier haben; Registry-Anmeldungen darunter kommen gar nicht zurück:',
+  'settings.restore.withoutSecretsList': 'Ohne ihre Geheimnisse gesichert',
   'settings.restore.replaces':
     'Die Wiederherstellung ersetzt alle Hosts, Stacks, Registry-Anmeldungen, Repositorys und Einstellungen, die Sie jetzt haben, und vergisst die Engine-Ereignisse und den Bereitstellungsverlauf. Zuvor wird eine Kopie der aktuellen Daten im Datenordner von Homeport abgelegt.',
   'settings.restore.confirm': 'Alles ersetzen',
@@ -104,6 +115,18 @@ export default {
   'settings.about.tagline': 'Jede Docker Engine, auf einem Board.',
   'settings.about.openLogFolder': 'Protokollordner öffnen',
   'settings.about.licenses': 'Lizenzen',
+  'settings.about.exportDiagnostics': 'Diagnose exportieren…',
+  'settings.diagnostics.title': 'Diagnose exportieren',
+  'settings.diagnostics.description':
+    'Eine Zip-Datei für einen Fehlerbericht: eine Übersicht der Versionen und der Arten von Hosts und Clustern, die Sie verwenden, sowie die Protokolle von Homeport ohne Geheimnisse. Es wird nichts versendet: Sie entscheiden, ob Sie die Datei weitergeben.',
+  'settings.diagnostics.includeNames': 'Namen und Adressen einschließen',
+  'settings.diagnostics.includeNamesHelp':
+    'Wenn deaktiviert, erscheinen Hosts und Cluster in der Übersicht und in den Protokollen als host-1, cluster-1 …',
+  'settings.diagnostics.files': 'Dateien im Zip',
+  'settings.diagnostics.save': 'Speichern…',
+  'settings.diagnostics.saveTitle': 'Diagnose speichern',
+  'settings.diagnostics.fileType': 'Zip-Archiv',
+  'settings.diagnostics.done': 'Diagnose in {path} gespeichert.',
   'settings.licenses.title': 'Lizenzen',
   'settings.licenses.description':
     'Homeport ist freie Software unter der GNU Affero General Public License, Version 3, und baut auf den unten aufgeführten Open-Source-Paketen auf.',

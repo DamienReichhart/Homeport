@@ -37,6 +37,14 @@ export default {
     '可用——SSH 密钥、证书、堆栈环境变量和镜像仓库登录信息均加密保存。',
   'settings.machine.keychainUnavailable':
     '不可用——无法保存 SSH 密钥、TLS 证书、堆栈环境变量和镜像仓库登录信息。',
+  'settings.machine.keychainEntryMissing':
+    '条目缺失：钥匙串中没有用于密封 Homeport 机密信息的密钥条目，因此无法打开或保存机密信息。',
+  'settings.machine.startOverDescription':
+    '如果 Homeport 使用的钥匙串与之前不同，请切换回原来的钥匙串并重启 Homeport。如果该条目已永久丢失，请使用新密钥重新开始。',
+  'settings.machine.startOver': '使用新密钥重新开始',
+  'settings.machine.startOverTitle': '使用新密钥重新开始？',
+  'settings.machine.startOverConfirmDescription':
+    '新密钥无法打开用丢失的密钥密封的内容：你需要重新输入每个主机、集群、镜像仓库和代码仓库的凭据以及每个堆栈的环境变量，或恢复一个备份。',
   'settings.machine.compose': 'Compose CLI',
   'settings.machine.composeMissing': '堆栈可以启动和停止，但无法部署。',
   'settings.machine.stackDeploy': 'Docker CLI（用于 Swarm）',
@@ -78,6 +86,9 @@ export default {
   'settings.restore.registries': '{count, plural, other {# 个镜像仓库登录}}',
   'settings.restore.repositories': '{count, plural, other {# 个仓库}}',
   'settings.restore.settings': '你的设置',
+  'settings.restore.withoutSecrets':
+    '以下内容在备份时无法打开其机密信息，因此备份中不含机密信息。恢复后它们不带机密信息，并会替换它们在此处已有的机密信息；其中的镜像仓库登录则完全不会恢复：',
+  'settings.restore.withoutSecretsList': '备份中不含机密信息的内容',
   'settings.restore.replaces':
     '恢复会替换你当前的所有主机、堆栈、镜像仓库登录、仓库和设置，并清除引擎事件和部署历史。恢复前会先在 Homeport 的数据文件夹中保留一份当前数据的副本。',
   'settings.restore.confirm': '全部替换',
@@ -92,6 +103,18 @@ export default {
   'settings.about.tagline': '所有 Docker Engine，尽在一个看板。',
   'settings.about.openLogFolder': '打开日志文件夹',
   'settings.about.licenses': '许可证',
+  'settings.about.exportDiagnostics': '导出诊断信息…',
+  'settings.diagnostics.title': '导出诊断信息',
+  'settings.diagnostics.description':
+    '一个可附加到错误报告的 zip 文件：包含版本以及你所用主机和集群类型的摘要，以及已移除机密的 Homeport 日志。不会发送到任何地方：是否分享该文件由你决定。',
+  'settings.diagnostics.includeNames': '包含名称和地址',
+  'settings.diagnostics.includeNamesHelp':
+    '关闭时，主机和集群在摘要和日志中显示为 host-1、cluster-1…',
+  'settings.diagnostics.files': 'zip 中的文件',
+  'settings.diagnostics.save': '保存…',
+  'settings.diagnostics.saveTitle': '保存诊断信息',
+  'settings.diagnostics.fileType': 'Zip 压缩包',
+  'settings.diagnostics.done': '诊断信息已保存到 {path}。',
   'settings.licenses.title': '许可证',
   'settings.licenses.description':
     'Homeport 是依据 GNU Affero 通用公共许可证第 3 版发布的自由软件，基于以下开源软件包构建。',

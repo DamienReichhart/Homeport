@@ -13,7 +13,7 @@ A continuación, **Mod** significa <kbd>⌘</kbd> en macOS y <kbd>Ctrl</kbd> en 
 
 - **Ir a** — cada página de la barra lateral: escribe `vol` y pulsa <kbd>Enter</kbd> para abrir Volúmenes.
 - **Hosts** — cada host con su estado: escribe parte del nombre de un host para cambiar a él.
-- **Acciones** — **Ejecutar un contenedor**, **Descargar una imagen**, **Nuevo stack**, **Limpiar el host seleccionado**, **Añadir host**, **Gestionar hosts**, **Buscar actualizaciones** y **Mostrar atajos de teclado**.
+- **Acciones** — **Ejecutar un contenedor**, **Descargar una imagen**, **Nuevo stack**, **Limpiar el host seleccionado**, **Añadir host**, **Gestionar hosts**, **Añadir un clúster**, **Gestionar clústeres**, **Buscar actualizaciones** y **Mostrar atajos de teclado**. Un host de Podman añade **Nuevo pod** y **Nueva unidad**; un host de containerd, **Descargar imagen** y **Nuevo namespace**; y un host de Incus, **Nueva instancia** y **Obtener imagen**.
 - **Ajustes** — **Tema: claro**, **Tema: oscuro** y **Tema: igual que el sistema**.
 
 Las acciones que necesitan un host — ejecutar un contenedor, descargar una imagen, crear un stack, limpiar — solo aparecen mientras el host seleccionado está conectado.
@@ -35,7 +35,7 @@ Homeport solo carga las listas cuando has escrito dos caracteres, y después las
 | Teclas                                     | Hace                                                                                           |
 | ------------------------------------------ | ---------------------------------------------------------------------------------------------- |
 | <kbd>?</kbd>                               | Mostrar los atajos de teclado                                                                  |
-| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Abrir las páginas de la barra lateral en orden: Resumen, Contenedores, Imágenes…               |
+| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Abrir las páginas de la barra lateral en orden: Resumen, Tablero, Contenedores…                |
 | <kbd>Mod</kbd> <kbd>,</kbd>                | Abrir Ajustes                                                                                  |
 | <kbd>Alt</kbd> <kbd>↑</kbd> / <kbd>↓</kbd> | Seleccionar el host anterior o el siguiente, en el orden en que los lista la página Hosts      |
 | <kbd>Mod</kbd> <kbd>R</kbd>                | Actualizar las listas del host seleccionado: contenedores, imágenes, volúmenes, redes, stacks… |
@@ -44,10 +44,10 @@ Pasa el puntero sobre una página de la barra lateral para ver sus teclas.
 
 ### En una página
 
-| Teclas       | Hace                                                                                                                                                         |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| <kbd>/</kbd> | Poner el foco en el campo de búsqueda de la página. <kbd>Esc</kbd> en un campo vacío lo abandona.                                                            |
-| <kbd>N</kbd> | Iniciar la acción principal de la página: **Ejecutar contenedor**, **Descargar imagen**, **Crear volumen**, **Crear red**, **Nuevo stack** o **Añadir host** |
+| Teclas       | Hace                                                                                                                                                                                                                                                                  |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <kbd>/</kbd> | Poner el foco en el campo de búsqueda de la página. <kbd>Esc</kbd> en un campo vacío lo abandona.                                                                                                                                                                     |
+| <kbd>N</kbd> | Iniciar la acción principal de la página: **Ejecutar contenedor**, **Descargar imagen**, **Crear volumen**, **Crear red**, **Nuevo stack** o **Añadir host**; y en las páginas de Podman, containerd, Incus y Helm, la suya, como **Nuevo pod** o **Nueva instancia** |
 
 El botón de la acción principal de una página muestra <kbd>N</kbd> cuando pasas el puntero sobre él.
 

@@ -4,6 +4,8 @@
  * Pure functions only; `release.ts` feeds them from git and the repo files.
  */
 
+import { type Arch, assetName, type Kind, type Os } from './release-assets-plan';
+
 export class ReleaseError extends Error {}
 
 export interface Commit {
@@ -155,6 +157,9 @@ export interface NotesInput {
   repository?: string;
 }
 
+/** The website's download page, which offers each visitor the file for their computer. */
+const DOWNLOAD_PAGE = 'https://damienreichhart.github.io/Homeport/download/';
+
 /** Markdown for the GitHub release: what changed, then which file to download. */
 export function releaseNotes({ version, previous, commits, repository }: NotesInput): string {
   const base = repository ? `https://github.com/${repository}` : undefined;
@@ -176,23 +181,31 @@ export function releaseNotes({ version, previous, commits, repository }: NotesIn
   if (!changes.length) changes.push('Maintenance release.', '');
 
   const v = version;
+  const file = (os: Os, arch: Arch, kind: Kind) => `\`${assetName(v, { os, arch, kind })}\``;
   // WiX only takes numeric prerelease identifiers, so prereleases ship no MSI.
-  const msi = isPrerelease(v) ? '' : ` or \`Homeport_${v}_x64_en-US.msi\``;
+  const msi = isPrerelease(v)
+    ? ''
+    : `, or ${file('windows', 'x64', 'msi')} for managed and silent installs`;
+  const linux = (arch: Arch) =>
+    `${file('linux', arch, 'deb')} (Debian, Ubuntu), ${file('linux', arch, 'rpm')} (Fedora, RHEL, openSUSE) or ${file('linux', arch, 'appimage')} (any distribution)`;
   return [
     "## What's changed",
     '',
     ...changes,
     '## Download',
     '',
-    '| System | File |',
+    `**Which file do I need?** The [download page](${DOWNLOAD_PAGE}) picks the right one for your computer. Otherwise, find your system and processor here:`,
+    '',
+    '| Your computer | File |',
     '| --- | --- |',
-    `| Windows (x64) | \`Homeport_${v}_x64-setup.exe\`${msi} |`,
-    `| Windows (ARM) | \`Homeport_${v}_arm64-setup.exe\` |`,
-    `| macOS (Apple silicon) | \`Homeport_${v}_aarch64.dmg\` |`,
-    `| macOS (Intel) | \`Homeport_${v}_x64.dmg\` |`,
-    `| Debian, Ubuntu (x64 / ARM) | \`Homeport_${v}_amd64.deb\` / \`Homeport_${v}_arm64.deb\` |`,
-    `| Fedora, RHEL, openSUSE (x64 / ARM) | \`Homeport-${v}-1.x86_64.rpm\` / \`Homeport-${v}-1.aarch64.rpm\` |`,
-    `| Any Linux (x64 / ARM) | \`Homeport_${v}_amd64.AppImage\` / \`Homeport_${v}_aarch64.AppImage\` |`,
+    `| Windows (Intel/AMD, x64) | ${file('windows', 'x64', 'nsis')}${msi} |`,
+    `| Windows (ARM, arm64) | ${file('windows', 'arm64', 'nsis')} |`,
+    `| macOS (Apple silicon: M1 and later) | ${file('macos', 'arm64', 'dmg')} |`,
+    `| macOS (Intel) | ${file('macos', 'x64', 'dmg')} |`,
+    `| Linux (Intel/AMD, x64) | ${linux('x64')} |`,
+    `| Linux (ARM, arm64) | ${linux('arm64')} |`,
+    '',
+    "Files ending in `.sig` and `-update.app.tar.gz` are used by the in-app updater; you don't need them.",
     '',
     'On Debian, Ubuntu, Fedora and openSUSE, the [Homeport package repository](https://damienreichhart.github.io/Homeport/docs/installation/#linux) installs it and keeps it up to date. Windows, macOS and AppImage installs update from the app.',
     '',

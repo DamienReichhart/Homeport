@@ -40,7 +40,7 @@ export interface ErrorContext {
 
 /**
  * A failure as the user sees it: what happened (`message`), what to do
- * (`hint`) and the raw cause (`detail`). Mirrors `crates/core/src/error/mod.rs`:
+ * (`hint`) and the raw cause (`detail`). Mirrors `crates/foundation/core/src/error/mod.rs`:
  * message and hint are rendered from the catalogue by key (ADR 0011);
  * `english` keeps the backend's own words for the log and bug reports.
  */

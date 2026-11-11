@@ -20,11 +20,11 @@ Homeport には Windows、macOS、Linux 向けのインストーラーがあり�
 
 ## Windows
 
-| ファイル                             | 用途                                                     |
-| ------------------------------------ | -------------------------------------------------------- |
-| `Homeport_<version>_x64-setup.exe`   | ほとんどの PC。現在のユーザー向けにインストールします。  |
-| `Homeport_<version>_arm64-setup.exe` | Windows on ARM（Snapdragon などの ARM64 PC）。           |
-| `Homeport_<version>_x64_en-US.msi`   | x64 での管理されたインストールやサイレントインストール。 |
+| ファイル                                     | 用途                                                     |
+| -------------------------------------------- | -------------------------------------------------------- |
+| `Homeport-<version>-windows-x64-setup.exe`   | ほとんどの PC。現在のユーザー向けにインストールします。  |
+| `Homeport-<version>-windows-arm64-setup.exe` | Windows on ARM（Snapdragon などの ARM64 PC）。           |
+| `Homeport-<version>-windows-x64.msi`         | x64 での管理されたインストールやサイレントインストール。 |
 
 <Steps>
 
@@ -39,15 +39,15 @@ Homeport には Windows、macOS、Linux 向けのインストーラーがあり�
 MSI パッケージでサイレントインストールするには:
 
 ```powershell
-msiexec /i Homeport_<version>_x64_en-US.msi /quiet
+msiexec /i Homeport-<version>-windows-x64.msi /quiet
 ```
 
 ## macOS
 
-| ファイル                         | 用途                                  |
-| -------------------------------- | ------------------------------------- |
-| `Homeport_<version>_aarch64.dmg` | Apple シリコン搭載の Mac（M1 以降）。 |
-| `Homeport_<version>_x64.dmg`     | Intel プロセッサ搭載の Mac。          |
+| ファイル                             | 用途                                  |
+| ------------------------------------ | ------------------------------------- |
+| `Homeport-<version>-macos-arm64.dmg` | Apple シリコン搭載の Mac（M1 以降）。 |
+| `Homeport-<version>-macos-x64.dmg`   | Intel プロセッサ搭載の Mac。          |
 
 どちらかわからない場合は、Apple メニュー → **この Mac について** を開きます。**チップ** の行があれば Apple シリコン、**プロセッサ** の行に Intel とあれば Intel です。
 
@@ -105,27 +105,27 @@ Linux 版の Homeport には glibc 2.35 以降（Ubuntu 22.04、Debian 12、Fedo
 
 ### パッケージファイル
 
-`.deb`（x64 は `amd64`、ARM は `arm64`）や `.rpm`（`x86_64` または `aarch64`）をダウンロードして、直接インストールすることもできます:
+お使いのプロセッサ用の `.deb` や `.rpm`（Intel と AMD は `x64`、ARM は `arm64`）をダウンロードして、直接インストールすることもできます:
 
 <Tabs syncKey="linux-format">
 <TabItem label="Debian, Ubuntu">
 
 ```sh
-sudo apt install ./Homeport_<version>_amd64.deb
+sudo apt install ./Homeport-<version>-linux-x64.deb
 ```
 
 </TabItem>
 <TabItem label="Fedora, RHEL">
 
 ```sh
-sudo dnf install ./Homeport-<version>-1.x86_64.rpm
+sudo dnf install ./Homeport-<version>-linux-x64.rpm
 ```
 
 </TabItem>
 <TabItem label="openSUSE">
 
 ```sh
-sudo zypper install ./Homeport-<version>-1.x86_64.rpm
+sudo zypper install ./Homeport-<version>-linux-x64.rpm
 ```
 
 </TabItem>
@@ -138,8 +138,8 @@ sudo zypper install ./Homeport-<version>-1.x86_64.rpm
 AppImage は何もインストールせずにほとんどのディストリビューションで動作し、Homeport の中から自身をアップデートします。実行権限を付けて実行してください:
 
 ```sh
-chmod +x Homeport_<version>_amd64.AppImage
-./Homeport_<version>_amd64.AppImage
+chmod +x Homeport-<version>-linux-x64.AppImage
+./Homeport-<version>-linux-x64.AppImage
 ```
 
 実行するたびに、Homeport をアプリケーションメニューに追加します。起動せずに FUSE について表示される場合は、`libfuse2`（Ubuntu 24.04 以降では `libfuse2t64`）をインストールしてください。
@@ -153,7 +153,7 @@ chmod +x Homeport_<version>_amd64.AppImage
 sudo usermod -aG docker $USER
 ```
 
-反映させるには、いったんログアウトしてログインし直してください。グループに属していないと、ローカルのホストは _Permission denied_ とともに **到達不能** と表示されます。
+反映させるには、いったんログアウトしてログインし直してください。グループに属していないと、ローカルのホストは _Homeport には /var/run/docker.sock の Docker Engine の使用が許可されていません。_ とともに **到達不能** と表示されます。
 
 </Aside>
 

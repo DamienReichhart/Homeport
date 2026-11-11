@@ -60,4 +60,9 @@ export default {
   'pods.terminal.notRunning': 'यह कंटेनर नहीं चल रहा।',
   'pods.terminal.exited': 'प्रोसेस बंद हो गई।',
   'pods.terminal.exitedWithCode': 'प्रोसेस कोड {code} के साथ बंद हो गई।',
+  'pods.column.cpu': 'CPU',
+  'pods.column.memory': 'मेमोरी',
+  'pods.tab.metrics': 'मेट्रिक्स',
+  'pods.metrics.noSample':
+    'metrics-server के पास अभी इस Pod का कोई सैंपल नहीं है: हो सकता है यह अभी शुरू हुआ हो, या चल न रहा हो।',
 } satisfies Translation<typeof en>;

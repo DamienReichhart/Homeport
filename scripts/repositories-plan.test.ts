@@ -1,4 +1,5 @@
 import {
+  aptPoolName,
   compareVersions,
   type GitHubRelease,
   packagesOf,
@@ -74,6 +75,47 @@ describe('packagesOf', () => {
     expect(deb.map((a) => a.name)).toEqual(['Homeport_1.0.0_amd64.deb']);
     expect(rpm.map((a) => a.name)).toEqual(['Homeport-1.0.0-1.aarch64.rpm']);
   });
+
+  it('picks them under the names releases carry since they say the system and processor', () => {
+    const [r] = selectReleases([
+      release('v1.0.0', {
+        assets: [
+          asset('Homeport-1.0.0-linux-x64.deb'),
+          asset('Homeport-1.0.0-linux-arm64.deb'),
+          asset('Homeport-1.0.0-linux-x64.deb.sig'),
+          asset('Homeport-1.0.0-linux-x64.rpm'),
+          asset('Homeport-1.0.0-linux-arm64.rpm'),
+          asset('Homeport-1.0.0-linux-x64.rpm.sig'),
+          asset('Homeport-1.0.0-linux-x64.AppImage'),
+        ],
+      }),
+    ]);
+    const { deb, rpm } = packagesOf(r!);
+    expect(deb.map((a) => a.name)).toEqual([
+      'Homeport-1.0.0-linux-x64.deb',
+      'Homeport-1.0.0-linux-arm64.deb',
+    ]);
+    expect(rpm.map((a) => a.name)).toEqual([
+      'Homeport-1.0.0-linux-x64.rpm',
+      'Homeport-1.0.0-linux-arm64.rpm',
+    ]);
+  });
+});
+
+describe('aptPoolName', () => {
+  const [r] = selectReleases([release('v1.0.0')]);
+  const pooled = (name: string) => aptPoolName(r!, { name, url: '' });
+
+  // apt-ftparchive --arch amd64 only indexes *_amd64.deb.
+  it('names a .deb by its Debian architecture, as apt-ftparchive selects them', () => {
+    expect(pooled('Homeport-1.0.0-linux-x64.deb')).toBe('Homeport_1.0.0_amd64.deb');
+    expect(pooled('Homeport-1.0.0-linux-arm64.deb')).toBe('Homeport_1.0.0_arm64.deb');
+  });
+
+  it('keeps the name older releases gave it', () => {
+    expect(pooled('Homeport_1.0.0_amd64.deb')).toBe('Homeport_1.0.0_amd64.deb');
+    expect(pooled('Homeport_1.0.0_arm64.deb')).toBe('Homeport_1.0.0_arm64.deb');
+  });
 });
 
 describe('updaterTargets', () => {
@@ -105,8 +147,41 @@ describe('updaterTargets', () => {
     ]);
   });
 
+  it('maps the files named by system and processor to the same targets', () => {
+    expect(updaterTargets('Homeport-1.0.0-linux-x64.AppImage')).toEqual([
+      'linux-x86_64',
+      'linux-x86_64-appimage',
+    ]);
+    expect(updaterTargets('Homeport-1.0.0-linux-arm64.AppImage')).toEqual([
+      'linux-aarch64',
+      'linux-aarch64-appimage',
+    ]);
+    expect(updaterTargets('Homeport-1.0.0-windows-x64-setup.exe')).toEqual([
+      'windows-x86_64',
+      'windows-x86_64-nsis',
+    ]);
+    expect(updaterTargets('Homeport-1.0.0-windows-arm64-setup.exe')).toEqual([
+      'windows-aarch64',
+      'windows-aarch64-nsis',
+    ]);
+    expect(updaterTargets('Homeport-1.0.0-windows-x64.msi')).toEqual(['windows-x86_64-msi']);
+    expect(updaterTargets('Homeport-1.0.0-macos-arm64-update.app.tar.gz')).toEqual([
+      'darwin-aarch64',
+      'darwin-aarch64-app',
+    ]);
+    expect(updaterTargets('Homeport-1.0.0-macos-x64-update.app.tar.gz')).toEqual([
+      'darwin-x86_64',
+      'darwin-x86_64-app',
+    ]);
+  });
+
   it('ignores files the updater doesn’t install', () => {
     for (const name of [
+      'Homeport-1.0.0-linux-x64.deb',
+      'Homeport-1.0.0-linux-arm64.rpm',
+      'Homeport-1.0.0-macos-arm64.dmg',
+      'Homeport-1.0.0-linux-x64.AppImage.sig',
+      'Homeport-1.0.0-macos-arm64-update.app.tar.gz.sig',
       'Homeport_1.0.0_amd64.deb',
       'Homeport-1.0.0-1.x86_64.rpm',
       'Homeport_1.0.0_aarch64.dmg',
@@ -177,5 +252,77 @@ describe('updateManifest', () => {
 
   it('is undefined for a release without updater files', () => {
     expect(updateManifest(r!, new Map())).toBeUndefined();
+  });
+
+  // Installed copies of every version read the same manifest: a release named
+  // either way must fill the targets they ask for.
+  it('gives a release the same targets whichever way its files are named', () => {
+    const manifestOf = (names: string[]) => {
+      const [named] = selectReleases([release('v1.0.0', { assets: names.map(asset) })]);
+      return updateManifest(named!, new Map(names.map((name) => [name, `sig of ${name}`])))!;
+    };
+    const tauri = manifestOf([
+      'Homeport_1.0.0_x64-setup.exe',
+      'Homeport_1.0.0_arm64-setup.exe',
+      'Homeport_1.0.0_x64_en-US.msi',
+      'Homeport_1.0.0_aarch64.dmg',
+      'Homeport_1.0.0_x64.dmg',
+      'Homeport_1.0.0_amd64.deb',
+      'Homeport_1.0.0_arm64.deb',
+      'Homeport-1.0.0-1.x86_64.rpm',
+      'Homeport-1.0.0-1.aarch64.rpm',
+      'Homeport_1.0.0_amd64.AppImage',
+      'Homeport_1.0.0_aarch64.AppImage',
+      'Homeport_1.0.0_x64.app.tar.gz',
+      'Homeport_1.0.0_aarch64.app.tar.gz',
+    ]);
+    const named = manifestOf([
+      'Homeport-1.0.0-windows-x64-setup.exe',
+      'Homeport-1.0.0-windows-arm64-setup.exe',
+      'Homeport-1.0.0-windows-x64.msi',
+      'Homeport-1.0.0-macos-arm64.dmg',
+      'Homeport-1.0.0-macos-x64.dmg',
+      'Homeport-1.0.0-linux-x64.deb',
+      'Homeport-1.0.0-linux-arm64.deb',
+      'Homeport-1.0.0-linux-x64.rpm',
+      'Homeport-1.0.0-linux-arm64.rpm',
+      'Homeport-1.0.0-linux-x64.AppImage',
+      'Homeport-1.0.0-linux-arm64.AppImage',
+      'Homeport-1.0.0-macos-x64-update.app.tar.gz',
+      'Homeport-1.0.0-macos-arm64-update.app.tar.gz',
+    ]);
+    const file = (url: string) => url.slice(url.lastIndexOf('/') + 1);
+    const files = (manifest: typeof named) =>
+      Object.fromEntries(Object.entries(manifest.platforms).map(([t, p]) => [t, file(p.url)]));
+    expect(files(tauri)).toEqual({
+      'darwin-aarch64': 'Homeport_1.0.0_aarch64.app.tar.gz',
+      'darwin-aarch64-app': 'Homeport_1.0.0_aarch64.app.tar.gz',
+      'darwin-x86_64': 'Homeport_1.0.0_x64.app.tar.gz',
+      'darwin-x86_64-app': 'Homeport_1.0.0_x64.app.tar.gz',
+      'linux-aarch64': 'Homeport_1.0.0_aarch64.AppImage',
+      'linux-aarch64-appimage': 'Homeport_1.0.0_aarch64.AppImage',
+      'linux-x86_64': 'Homeport_1.0.0_amd64.AppImage',
+      'linux-x86_64-appimage': 'Homeport_1.0.0_amd64.AppImage',
+      'windows-aarch64': 'Homeport_1.0.0_arm64-setup.exe',
+      'windows-aarch64-nsis': 'Homeport_1.0.0_arm64-setup.exe',
+      'windows-x86_64': 'Homeport_1.0.0_x64-setup.exe',
+      'windows-x86_64-msi': 'Homeport_1.0.0_x64_en-US.msi',
+      'windows-x86_64-nsis': 'Homeport_1.0.0_x64-setup.exe',
+    });
+    expect(files(named)).toEqual({
+      'darwin-aarch64': 'Homeport-1.0.0-macos-arm64-update.app.tar.gz',
+      'darwin-aarch64-app': 'Homeport-1.0.0-macos-arm64-update.app.tar.gz',
+      'darwin-x86_64': 'Homeport-1.0.0-macos-x64-update.app.tar.gz',
+      'darwin-x86_64-app': 'Homeport-1.0.0-macos-x64-update.app.tar.gz',
+      'linux-aarch64': 'Homeport-1.0.0-linux-arm64.AppImage',
+      'linux-aarch64-appimage': 'Homeport-1.0.0-linux-arm64.AppImage',
+      'linux-x86_64': 'Homeport-1.0.0-linux-x64.AppImage',
+      'linux-x86_64-appimage': 'Homeport-1.0.0-linux-x64.AppImage',
+      'windows-aarch64': 'Homeport-1.0.0-windows-arm64-setup.exe',
+      'windows-aarch64-nsis': 'Homeport-1.0.0-windows-arm64-setup.exe',
+      'windows-x86_64': 'Homeport-1.0.0-windows-x64-setup.exe',
+      'windows-x86_64-msi': 'Homeport-1.0.0-windows-x64.msi',
+      'windows-x86_64-nsis': 'Homeport-1.0.0-windows-x64-setup.exe',
+    });
   });
 });

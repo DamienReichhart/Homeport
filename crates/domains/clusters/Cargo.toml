@@ -1,0 +1,30 @@
+[package]
+name = "homeport-clusters"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Homeport's Clusters: storing them with their credentials sealed and keeping a supervised connection to each"
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+homeport-core.workspace = true
+homeport-storage.workspace = true
+kube.workspace = true
+http.workspace = true
+homeport-nomad.workspace = true
+homeport-kubernetes.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+specta.workspace = true
+rusqlite.workspace = true
+uuid.workspace = true
+tempfile.workspace = true
+
+[dev-dependencies]
+# Paused time, so the metrics stream's ticks and timeouts are exact in tests.
+tokio = { workspace = true, features = ["test-util"] }

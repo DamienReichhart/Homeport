@@ -50,7 +50,7 @@ podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}'
 
 ## Права доступа в Linux
 
-Стандартный сокет `/var/run/docker.sock` принадлежит группе `docker`. Если ваш пользователь в неё не входит, хост показывает **Недоступен** с ошибкой _Permission denied_. Добавьте себя в группу и войдите снова:
+Стандартный сокет `/var/run/docker.sock` принадлежит группе `docker`. Если ваш пользователь в неё не входит, хост показывает **Недоступен** с ошибкой _Homeport не разрешено использовать Docker Engine по пути /var/run/docker.sock._ Добавьте себя в группу и войдите снова:
 
 ```sh
 sudo usermod -aG docker $USER

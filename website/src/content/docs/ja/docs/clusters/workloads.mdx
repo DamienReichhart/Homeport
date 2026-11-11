@@ -56,7 +56,7 @@ import { DocScreenshot } from '@/features/docs';
   alt="「Pod」ページ: shop Namespace の Pod とそのステータス。1 つは 7 回再起動した CrashLoopBackOff、1 つは ImagePullBackOff。準備完了のコンテナ、Node、経過時間も表示されている。"
 />
 
-**Pod** には、各 Pod が `kubectl get pods` と同じ表示のステータス（`Running`、`Pending`、`CrashLoopBackOff`、`ImagePullBackOff`、`Init:…`、`Terminating`）、準備完了のコンテナ、再起動回数、Node、経過時間とともに一覧表示されます。長い一覧は 1 ページに 100 行ずつ表示されるので、数千の Pod があるクラスターでも反応は遅くなりません。検索ボックスはすべての Pod を対象に絞り込みます。
+**Pod** には、各 Pod が `kubectl get pods` と同じ表示のステータス（`Running`、`Pending`、`CrashLoopBackOff`、`ImagePullBackOff`、`Init:…`、`Terminating`）、準備完了のコンテナ、再起動回数、Node、経過時間とともに一覧表示されます。長い一覧は 1 ページに 100 行ずつ表示されるので、数千の Pod があるクラスターでも反応は遅くなりません。検索ボックスはすべての Pod を対象に絞り込みます。 クラスターで metrics-server が動いていれば、**CPU** と **メモリ** に、各 Pod がリミットに対してどれだけ使っているかが表示されます（[CPU とメモリ](/docs/clusters/metrics/)）。
 
 <DocScreenshot
   name="cluster-pod"
@@ -64,7 +64,7 @@ import { DocScreenshot } from '@/features/docs';
   caption="api-…-xr4np が準備完了にならない理由: api コンテナがクラッシュを繰り返しています。サイドカーは問題ありません。"
 />
 
-Pod のページには、Node、IP、QoS クラス、サービスアカウント、Pod を制御しているものが表示され、続いて各コンテナ（init コンテナが先）が、イメージ、状態、待機または終了している理由、再起動回数、最後に再起動した理由とともに表示されます。各コンテナには宣言しているポートが表示され、**フォワード…** で[このコンピューターからアクセス](/docs/clusters/port-forward/)できます。その後に **ログ** と **ターミナル**（[ログとターミナル](/docs/clusters/logs-exec/)）、ワークロードと同じく **状態**、**イベント**、**YAML** が続き、ヘッダーには **削除** があります。
+Pod のページには、Node、IP、QoS クラス、サービスアカウント、Pod を制御しているものが表示され、続いて各コンテナ（init コンテナが先）が、イメージ、状態、待機または終了している理由、再起動回数、最後に再起動した理由とともに表示されます。各コンテナには宣言しているポートが表示され、**フォワード…** で[このコンピューターからアクセス](/docs/clusters/port-forward/)できます。その後に **ログ** と **ターミナル**（[ログとターミナル](/docs/clusters/logs-exec/)）、ワークロードと同じく **状態**、**イベント**、**YAML** が続き、ヘッダーには **削除** があります。 metrics-server があれば、**メトリクス** に各コンテナの CPU とメモリが、リクエストとリミットに対するグラフで表示されます（[CPU とメモリ](/docs/clusters/metrics/)）。
 
 ### Pod が準備完了にならない理由を調べる
 

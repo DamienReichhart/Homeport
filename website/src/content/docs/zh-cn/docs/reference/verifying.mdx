@@ -31,7 +31,7 @@ shasum -a 256 --ignore-missing -c SHA256SUMS.txt
 <TabItem label="Windows">
 
 ```powershell
-(Get-FileHash .\Homeport_0.2.0_x64-setup.exe -Algorithm SHA256).Hash.ToLower()
+(Get-FileHash .\Homeport-1.0.0-windows-x64-setup.exe -Algorithm SHA256).Hash.ToLower()
 ```
 
 将结果与 `SHA256SUMS.txt` 中该安装程序对应的行进行比较。
@@ -48,7 +48,7 @@ shasum -a 256 --ignore-missing -c SHA256SUMS.txt
 安装 [GitHub CLI](https://cli.github.com) 后：
 
 ```sh
-gh attestation verify Homeport_0.2.0_x64-setup.exe --repo DamienReichhart/Homeport
+gh attestation verify Homeport-1.0.0-windows-x64-setup.exe --repo DamienReichhart/Homeport
 ```
 
 检查成功时会输出构建该文件所用的工作流和提交。
@@ -65,7 +65,7 @@ Homeport 软件包仓库和每个 `.rpm` 都使用 Homeport 软件包密钥（RS
 
 ```sh
 sudo rpm --import homeport.asc   # once
-rpm -K Homeport-<version>-1.x86_64.rpm
+rpm -K Homeport-<version>-linux-x64.rpm
 ```
 
 对于已签名的软件包，`rpm -K` 会输出 `digests signatures OK`。`.deb` 文件本身没有签名：仓库的签名索引涵盖了它，单独下载的 `.deb` 则由其校验和与来源证明保证。

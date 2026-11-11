@@ -7,12 +7,12 @@ Homeport は [github.com/DamienReichhart/Homeport](https://github.com/DamienReic
 
 ## バグの報告
 
-次の内容を添えて [issue を作成](https://github.com/DamienReichhart/Homeport/issues/new)してください:
+次の内容を添えて [issue を作成](https://github.com/DamienReichhart/Homeport/issues/new/choose)してください:
 
-- **設定** に表示される Homeport のバージョンとプラットフォーム（例: `v0.2.0 · macos/aarch64`）
-- ホストの種類（ローカル、SSH、TLS、TCP）とエンジンのバージョン
 - 何をしたか、何を期待したか、何が起きたか（正確なメッセージが最も役に立ちます）
-- [ログファイル](/docs/reference/security/#ログ)の中の関連する部分
+- **設定 → Homeport について → 診断情報をエクスポート…** で作成する[診断情報のバンドル](/docs/reference/troubleshooting/#バグ報告用の診断情報のエクスポート)。Homeport のバージョンとプラットフォーム、使用しているホスト、エンジン、クラスターの種類、シークレットを取り除いたログを 1 つの zip にまとめたものです。保存する前に中身を確認でき、どこにも何も送信されません。
+
+Homeport が起動しない場合は、代わりにそのバージョンとオペレーティングシステム、そして[ログファイル](/docs/reference/security/#ログ)の中の関連する部分を添えてください。
 
 セキュリティの問題は、[GitHub の脆弱性報告](https://github.com/DamienReichhart/Homeport/security/advisories/new)を通じて非公開で報告してください。
 
@@ -33,8 +33,9 @@ Homeport は [github.com/DamienReichhart/Homeport](https://github.com/DamienReic
    bun run rust:test
    ```
 
-5. コミットメッセージは [Conventional Commits](https://www.conventionalcommits.org) の形式（`feat(stacks): …`、`fix(hosts): …`）で書いてください。リリースノートはそこから生成されます。
-6. `dev` ブランチに対してプルリクエストを作成してください。CI は Linux でフロントエンドのチェックとライセンスのチェックを、Linux、macOS、Windows で `cargo clippy` と `cargo test` を実行するため、`#[cfg(windows)]` や `#[cfg(target_os = "macos")]` の下のコードもマージ前にコンパイルされます。Docker Engine が必要なテストには `#[ignore = "needs a local Docker Engine"]` を付けます。別の Linux のジョブが、ランナーのエンジンに対してそれらを実行します。
+5. データの約束を守ってください。Homeport のどのバージョンも、0.1.0 までさかのぼるすべての以前のバージョンのデータを開き、何も失わずにアップグレードします。ホスト、スタック、クラスター、設定、シークレットのすべてです。スキーマの変更は新しいマイグレーションとして行い、リリース済みのマイグレーションを編集してはいけません。CI は、すべてのリリースのサンプルデータベースに対してこれを確認します。[データの互換性](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md#data-compatibility)を参照してください。
+6. コミットメッセージは [Conventional Commits](https://www.conventionalcommits.org) の形式（`feat(stacks): …`、`fix(hosts): …`）で書いてください。リリースノートはそこから生成されます。
+7. `dev` ブランチに対してプルリクエストを作成してください。CI は Linux でフロントエンドのチェックとライセンスのチェックを、Linux、macOS、Windows で `cargo clippy` と `cargo test` を実行するため、`#[cfg(windows)]` や `#[cfg(target_os = "macos")]` の下のコードもマージ前にコンパイルされます。Docker Engine が必要なテストには `#[ignore = "needs a local Docker Engine"]` を付けます。別の Linux のジョブが、ランナーのエンジンに対してそれらを実行します。
 
 セットアップについては[ソースからのビルド](/docs/project/building/)を参照してください。
 

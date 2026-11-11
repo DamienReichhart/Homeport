@@ -42,6 +42,14 @@ export default {
     'Disponibile — chiavi SSH, certificati, ambienti degli stack e accessi ai registri vengono memorizzati cifrati.',
   'settings.machine.keychainUnavailable':
     'Non disponibile — chiavi SSH, certificati TLS, ambienti degli stack e accessi ai registri non possono essere memorizzati.',
+  'settings.machine.keychainEntryMissing':
+    'Voce mancante: il portachiavi non ha una voce per la chiave con cui sono stati sigillati i segreti di Homeport, quindi non possono essere aperti né memorizzati.',
+  'settings.machine.startOverDescription':
+    'Se Homeport sta usando un portachiavi diverso da prima, torna a quello e riavvia Homeport. Se la voce è sparita definitivamente, ricomincia con una nuova chiave.',
+  'settings.machine.startOver': 'Ricomincia con una nuova chiave',
+  'settings.machine.startOverTitle': 'Ricominciare con una nuova chiave?',
+  'settings.machine.startOverConfirmDescription':
+    'Una nuova chiave non può aprire ciò che è stato sigillato con quella mancante: dovrai inserire di nuovo le credenziali di ogni host, cluster, registro e repository, e l’ambiente di ogni stack, oppure ripristinare un backup.',
   'settings.machine.compose': 'CLI di Compose',
   'settings.machine.composeMissing':
     'Gli stack possono essere avviati e arrestati, ma non distribuiti.',
@@ -87,6 +95,9 @@ export default {
     '{count, plural, one {# accesso al registro} other {# accessi ai registri}}',
   'settings.restore.repositories': '{count, plural, one {# repository} other {# repository}}',
   'settings.restore.settings': 'Le tue impostazioni',
+  'settings.restore.withoutSecrets':
+    'Questi sono stati salvati senza i loro segreti, che allora non è stato possibile aprire. Tornano senza di essi, al posto dei segreti che hanno qui, e gli accessi ai registri tra questi non tornano affatto:',
+  'settings.restore.withoutSecretsList': 'Salvati senza i loro segreti',
   'settings.restore.replaces':
     'Il ripristino sostituisce tutti gli host, gli stack, gli accessi ai registri, i repository e le impostazioni che hai ora, e dimentica gli eventi degli Engine e la cronologia delle distribuzioni. Prima viene conservata una copia dei dati attuali nella cartella dei dati di Homeport.',
   'settings.restore.confirm': 'Sostituisci tutto',
@@ -103,6 +114,18 @@ export default {
   'settings.about.tagline': 'Ogni Docker Engine, in un’unica bacheca.',
   'settings.about.openLogFolder': 'Apri la cartella dei log',
   'settings.about.licenses': 'Licenze',
+  'settings.about.exportDiagnostics': 'Esporta diagnostica…',
+  'settings.diagnostics.title': 'Esporta diagnostica',
+  'settings.diagnostics.description':
+    'Un file zip da allegare a una segnalazione di bug: un riepilogo delle versioni e dei tipi di host e cluster che usi, e i log di Homeport senza i segreti. Non viene inviato nulla: decidi tu se condividere il file.',
+  'settings.diagnostics.includeNames': 'Includi nomi e indirizzi',
+  'settings.diagnostics.includeNamesHelp':
+    'Se disattivato, host e cluster compaiono come host-1, cluster-1… nel riepilogo e nei log.',
+  'settings.diagnostics.files': 'File nello zip',
+  'settings.diagnostics.save': 'Salva…',
+  'settings.diagnostics.saveTitle': 'Salva diagnostica',
+  'settings.diagnostics.fileType': 'Archivio zip',
+  'settings.diagnostics.done': 'Diagnostica salvata in {path}.',
   'settings.licenses.title': 'Licenze',
   'settings.licenses.description':
     'Homeport è software libero distribuito con la GNU Affero General Public License, versione 3, e si basa sui pacchetti open source elencati qui sotto.',

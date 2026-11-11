@@ -7,7 +7,21 @@ import * as __TAURI_EVENT from "@tauri-apps/api/event";
 /** Commands */
 export const commands = {
 	getAppInfo: () => __TAURI_INVOKE<AppInfo>("get_app_info"),
+	/**
+	 *  Why Homeport couldn't start, if it couldn't: the window then shows this
+	 *  instead of the app, and no other command works.
+	 */
+	startupProblem: () => __TAURI_INVOKE<StartupProblem | null>("startup_problem"),
+	/**  Opens the folder holding Homeport's database in the file manager. */
+	openDataFolder: () => __TAURI_INVOKE<null>("open_data_folder"),
 	getCapabilities: () => __TAURI_INVOKE<Capabilities>("get_capabilities"),
+	/**
+	 *  Gives up on the key the stored secrets were sealed with, whose keychain
+	 *  entry is missing: uses the entry if it came back, or stores a new key.
+	 *  Secrets sealed under the old key then show as lost, to re-enter or
+	 *  restore from a backup. Refused while the keychain's key works.
+	 */
+	keychainStartOver: () => __TAURI_INVOKE<null>("keychain_start_over"),
 	/**
 	 *  Whether Homeport starts when the user logs in, read from the OS each
 	 *  time, so removing the entry by hand shows here.
@@ -22,6 +36,20 @@ export const commands = {
 	writeTextFile: (path: string, contents: string) => __TAURI_INVOKE<null>("write_text_file", { path, contents }),
 	/**  Opens the folder holding Homeport's log files in the file manager. */
 	openLogFolder: () => __TAURI_INVOKE<null>("open_log_folder"),
+	/**  Backs up everything Homeport holds to `path`, sealed with `passphrase`. */
+	dataBackup: (path: string, passphrase: string) => __TAURI_INVOKE<BackupOutcome>("data_backup", { path, passphrase }),
+	/**  What the backup at `path` holds, for the restore's confirmation. */
+	dataRestorePreview: (path: string, passphrase: string) => __TAURI_INVOKE<BackupContents>("data_restore_preview", { path, passphrase }),
+	/**
+	 *  Replaces everything Homeport holds with the backup at `path`, after
+	 *  copying the database to `homeport.db.before-restore-<time>` next to it,
+	 *  then reconnects to the restored Hosts and Clusters.
+	 */
+	dataRestore: (path: string, passphrase: string) => __TAURI_INVOKE<BackupContents>("data_restore", { path, passphrase }),
+	/**  What the bundle would hold: its files and `summary.json`. */
+	diagnosticsPreview: (includeNames: boolean) => __TAURI_INVOKE<DiagnosticsPreview>("diagnostics_preview", { includeNames }),
+	/**  Writes the bundle to `path`, which the user picked in a save dialog. */
+	diagnosticsExport: (path: string, includeNames: boolean) => __TAURI_INVOKE<null>("diagnostics_export", { path, includeNames }),
 	getSettings: () => __TAURI_INVOKE<Settings>("get_settings"),
 	updateSettings: (settings: Settings) => __TAURI_INVOKE<Settings>("update_settings", { settings }),
 	/**
@@ -30,37 +58,8 @@ export const commands = {
 	 *  An empty map means English (ADR 0011).
 	 */
 	setNativeText: (templates: { [key in string]: string }) => __TAURI_INVOKE<void>("set_native_text", { templates }),
-	/**  Every stored login, never with its secret. */
-	registriesList: () => __TAURI_INVOKE<Registry[]>("registries_list"),
-	/**  Adds a login (`id: null`) or changes one; `draft.secret: null` keeps the stored one. */
-	registriesSave: (id: string | null, draft: RegistryDraft) => __TAURI_INVOKE<Registry>("registries_save", { id, draft }),
-	registriesRemove: (id: string) => __TAURI_INVOKE<null>("registries_remove", { id }),
-	/**  Checks a login from this machine before or after it's saved. */
-	registriesCheck: (id: string | null, draft: RegistryDraft) => __TAURI_INVOKE<null>("registries_check", { id, draft }),
-	/**  The stored login an image reference would be pulled or pushed with, if any. */
-	registriesLoginFor: (reference: string) => __TAURI_INVOKE<Registry | null>("registries_login_for", { reference }),
-	/**
-	 *  A page of a Docker Hub repository's tags, newest first, with the stored
-	 *  Docker Hub login when there is one.
-	 */
-	registriesHubTags: (repository: string, page: number, filter: string) => __TAURI_INVOKE<HubTagPage>("registries_hub_tags", { repository, page, filter }),
-	/**  Every stored repository, never with its key or token. */
-	repositoriesList: () => __TAURI_INVOKE<Repository[]>("repositories_list"),
-	/**  Adds a repository, generating its deploy key when it uses one. */
-	repositoriesCreate: (draft: RepositoryDraft) => __TAURI_INVOKE<Repository>("repositories_create", { draft }),
-	/**  Replaces a repository's deploy key with a new one. */
-	repositoriesRotateKey: (id: string) => __TAURI_INVOKE<Repository>("repositories_rotate_key", { id }),
-	/**  Replaces a repository's user name and token. */
-	repositoriesSetToken: (id: string, username: string, token: string) => __TAURI_INVOKE<Repository>("repositories_set_token", { id, username, token }),
-	/**
-	 *  Forgets the SSH server key trusted for a repository, so the next
-	 *  command trusts the one the server presents.
-	 */
-	repositoriesResetHostKey: (id: string) => __TAURI_INVOKE<Repository>("repositories_reset_host_key", { id }),
-	/**  Removes a repository and its clone; refused while a Synced Stack uses it. */
-	repositoriesRemove: (id: string) => __TAURI_INVOKE<null>("repositories_remove", { id }),
-	/**  "Test access": the repository's branches and tags, as this computer sees them. */
-	repositoriesTest: (id: string) => __TAURI_INVOKE<RemoteRefs>("repositories_test", { id }),
+	/**  Stops a stream started by any `*_subscribe` command. */
+	streamCancel: (id: number) => __TAURI_INVOKE<void>("stream_cancel", { id }),
 	/**  Asks the update server for a newer version and remembers it for [`updates_install`]. */
 	updatesCheck: () => __TAURI_INVOKE<UpdateCheck>("updates_check"),
 	/**
@@ -86,6 +85,393 @@ export const commands = {
 	hostsEvents: (id: string, limit: number | null, before: EventCursor | null) => __TAURI_INVOKE<EngineEvent[]>("hosts_events", { id, limit, before }),
 	/**  Forgets a Host's kept Engine events. */
 	hostsEventsClear: (id: string) => __TAURI_INVOKE<null>("hosts_events_clear", { id }),
+	/**  The servers `~/.ssh/config` defines, as drafts of Hosts. */
+	hostsSshConfigPreview: () => __TAURI_INVOKE<ImportDraft[]>("hosts_ssh_config_preview"),
+	hostsSshConfigImport: (choices: ImportChoice[]) => __TAURI_INVOKE<ImportOutcome>("hosts_ssh_config_import", { choices }),
+	/**  The Docker CLI's contexts, as drafts of Hosts. */
+	hostsDockerContextsPreview: () => __TAURI_INVOKE<ImportDraft[]>("hosts_docker_contexts_preview"),
+	hostsDockerContextsImport: (choices: ImportChoice[]) => __TAURI_INVOKE<ImportOutcome>("hosts_docker_contexts_import", { choices }),
+	/**  Writes the Hosts `ids` to a file protected by `passphrase` (ADR 0013). */
+	hostsExport: (ids: string[], path: string, passphrase: string) => __TAURI_INVOKE<ExportOutcome>("hosts_export", { ids, path, passphrase }),
+	/**  The Hosts of an export file. */
+	hostsBundlePreview: (path: string, passphrase: string) => __TAURI_INVOKE<BundleHost[]>("hosts_bundle_preview", { path, passphrase }),
+	hostsBundleImport: (path: string, passphrase: string, choices: BundleChoice[]) => __TAURI_INVOKE<ImportOutcome>("hosts_bundle_import", { path, passphrase, choices }),
+	/**  Every stored login, never with its secret. */
+	registriesList: () => __TAURI_INVOKE<Registry[]>("registries_list"),
+	/**  Adds a login (`id: null`) or changes one; `draft.secret: null` keeps the stored one. */
+	registriesSave: (id: string | null, draft: RegistryDraft) => __TAURI_INVOKE<Registry>("registries_save", { id, draft }),
+	registriesRemove: (id: string) => __TAURI_INVOKE<null>("registries_remove", { id }),
+	/**  Checks a login from this machine before or after it's saved. */
+	registriesCheck: (id: string | null, draft: RegistryDraft) => __TAURI_INVOKE<null>("registries_check", { id, draft }),
+	/**  The stored login an image reference would be pulled or pushed with, if any. */
+	registriesLoginFor: (reference: string) => __TAURI_INVOKE<Registry | null>("registries_login_for", { reference }),
+	/**
+	 *  A page of a Docker Hub repository's tags, newest first, with the stored
+	 *  Docker Hub login when there is one.
+	 */
+	registriesHubTags: (repository: string, page: number, filter: string) => __TAURI_INVOKE<HubTagPage>("registries_hub_tags", { repository, page, filter }),
+	containersList: (hostId: string) => __TAURI_INVOKE<Container[]>("containers_list", { hostId }),
+	containersInspect: (hostId: string, id: string) => __TAURI_INVOKE<Value>("containers_inspect", { hostId, id }),
+	containersAct: (hostId: string, id: string, action: ContainerAction) => __TAURI_INVOKE<null>("containers_act", { hostId, id, action }),
+	containersRemove: (hostId: string, id: string, force: boolean, volumes: boolean) => __TAURI_INVOKE<null>("containers_remove", { hostId, id, force, volumes }),
+	containersRename: (hostId: string, id: string, name: string) => __TAURI_INVOKE<null>("containers_rename", { hostId, id, name }),
+	containersProcesses: (hostId: string, id: string) => __TAURI_INVOKE<Processes>("containers_processes", { hostId, id }),
+	/**  A container's healthcheck, status and last results; `None` without one. */
+	containersHealth: (hostId: string, id: string) => __TAURI_INVOKE<Health | null>("containers_health", { hostId, id }),
+	logsSubscribe: (hostId: string, sources: LogSource[], options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("logs_subscribe", { hostId, sources, options, onEvent }),
+	statsSubscribe: (hostId: string, containerId: string, onSample: Channel<StatsSample>) => __TAURI_INVOKE<number>("stats_subscribe", { hostId, containerId, onSample }),
+	/**
+	 *  Creates and starts a container, in the Podman pod `pod` when given;
+	 *  returns its id. A pod on a Host that isn't Podman is `EngineUnsupported`.
+	 */
+	containersRun: (hostId: string, spec: RunSpec, pod: string | null) => __TAURI_INVOKE<string>("containers_run", { hostId, spec, pod }),
+	/**  The Run dialog's form for an existing container, for Duplicate and Edit. */
+	containersRunSpec: (hostId: string, id: string) => __TAURI_INVOKE<RunSpec>("containers_run_spec", { hostId, id }),
+	/**  What recreating a container with a changed configuration loses, for Edit's confirmation. */
+	containersEditLosses: (hostId: string, id: string) => __TAURI_INVOKE<Loss[]>("containers_edit_losses", { hostId, id }),
+	/**  Recreates a container from `spec` under the same name (Edit); returns the new id. */
+	containersRecreate: (hostId: string, id: string, spec: RunSpec) => __TAURI_INVOKE<string>("containers_recreate", { hostId, id, spec }),
+	/**  Commits a container to a new image; returns the image's id. */
+	containersCommit: (hostId: string, id: string, spec: CommitSpec) => __TAURI_INVOKE<string>("containers_commit", { hostId, id, spec }),
+	execStart: (hostId: string, containerId: string, options: ExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("exec_start", { hostId, containerId, options, onEvent }),
+	execInput: (session: number, data: string) => __TAURI_INVOKE<null>("exec_input", { session, data }),
+	execResize: (session: number, cols: number, rows: number) => __TAURI_INVOKE<null>("exec_resize", { session, cols, rows }),
+	execClose: (session: number) => __TAURI_INVOKE<void>("exec_close", { session }),
+	filesList: (hostId: string, containerId: string, path: string) => __TAURI_INVOKE<FileEntry[]>("files_list", { hostId, containerId, path }),
+	/**
+	 *  Saves a container path to `destination`; returns `true` when it was a
+	 *  directory saved as a `.tar` archive.
+	 */
+	filesDownload: (hostId: string, containerId: string, path: string, destination: string) => __TAURI_INVOKE<boolean>("files_download", { hostId, containerId, path, destination }),
+	filesUpload: (hostId: string, containerId: string, directory: string, sources: string[]) => __TAURI_INVOKE<null>("files_upload", { hostId, containerId, directory, sources }),
+	imagesPullSubscribe: (hostId: string, reference: string, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("images_pull_subscribe", { hostId, reference, onEvent }),
+	/**  Pushes an image name to its registry with the stored login, streaming progress. */
+	imagesPushSubscribe: (hostId: string, reference: string, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("images_push_subscribe", { hostId, reference, onEvent }),
+	/**
+	 *  Builds an image on a Host from a folder on this machine, streaming the
+	 *  output. Every stored login is sent, for private `FROM` images.
+	 */
+	imagesBuildSubscribe: (hostId: string, spec: BuildSpec, onEvent: Channel<BuildEvent>) => __TAURI_INVOKE<number>("images_build_subscribe", { hostId, spec, onEvent }),
+	/**  Saves images into one tar file on this machine, streaming progress. */
+	imagesSaveSubscribe: (hostId: string, names: string[], destination: string, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("images_save_subscribe", { hostId, names, destination, onEvent }),
+	/**  Loads the images in a tar file on this machine into a Host, streaming progress. */
+	imagesLoadSubscribe: (hostId: string, source: string, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("images_load_subscribe", { hostId, source, onEvent }),
+	/**  Creates an image from a root filesystem tar on this machine (`docker import`), streaming progress. */
+	imagesImportSubscribe: (hostId: string, source: string, spec: ImportSpec, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("images_import_subscribe", { hostId, source, spec, onEvent }),
+	/**  Saves a container's filesystem to a tar on this machine (`docker export`), streaming progress. */
+	containersExportSubscribe: (hostId: string, id: string, destination: string, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("containers_export_subscribe", { hostId, id, destination, onEvent }),
+	imagesList: (hostId: string) => __TAURI_INVOKE<Image[]>("images_list", { hostId }),
+	imagesInspect: (hostId: string, id: string) => __TAURI_INVOKE<Value>("images_inspect", { hostId, id }),
+	imagesHistory: (hostId: string, id: string) => __TAURI_INVOKE<ImageLayer[]>("images_history", { hostId, id }),
+	/**  Searches Docker Hub from the Host, as its pulls would reach it. */
+	imagesSearch: (hostId: string, term: string) => __TAURI_INVOKE<SearchResult[]>("images_search", { hostId, term }),
+	/**
+	 *  Whether a newer image is published for each container's image and each
+	 *  tagged image on a Host. Registry answers are cached (`force` skips the
+	 *  cache); a registry that can't be asked leaves its images `unknown`.
+	 */
+	imagesFreshness: (hostId: string, force: boolean) => __TAURI_INVOKE<FreshnessResult[]>("images_freshness", { hostId, force }),
+	imagesTag: (hostId: string, id: string, target: string) => __TAURI_INVOKE<null>("images_tag", { hostId, id, target }),
+	imagesRemove: (hostId: string, id: string, force: boolean) => __TAURI_INVOKE<string[]>("images_remove", { hostId, id, force }),
+	imagesPrune: (hostId: string, all: boolean) => __TAURI_INVOKE<PruneReport>("images_prune", { hostId, all }),
+	networksList: (hostId: string) => __TAURI_INVOKE<NetworkView[]>("networks_list", { hostId }),
+	networksInspect: (hostId: string, id: string) => __TAURI_INVOKE<Value>("networks_inspect", { hostId, id }),
+	networksCreate: (hostId: string, input: NetworkInput) => __TAURI_INVOKE<string>("networks_create", { hostId, input }),
+	networksRemove: (hostId: string, id: string) => __TAURI_INVOKE<null>("networks_remove", { hostId, id }),
+	networksConnect: (hostId: string, network: string, container: string) => __TAURI_INVOKE<null>("networks_connect", { hostId, network, container }),
+	networksDisconnect: (hostId: string, network: string, container: string, force: boolean) => __TAURI_INVOKE<null>("networks_disconnect", { hostId, network, container, force }),
+	networksPrune: (hostId: string) => __TAURI_INVOKE<PruneReport>("networks_prune", { hostId }),
+	podsList: (hostId: string) => __TAURI_INVOKE<PodmanPod[]>("pods_list", { hostId }),
+	podsInspect: (hostId: string, id: string) => __TAURI_INVOKE<PodmanPodDetail>("pods_inspect", { hostId, id }),
+	podsAct: (hostId: string, id: string, action: PodmanPodAction) => __TAURI_INVOKE<null>("pods_act", { hostId, id, action }),
+	/**  Removes a pod and its containers; returns how many containers went with it. */
+	podsRemove: (hostId: string, id: string, force: boolean) => __TAURI_INVOKE<number>("pods_remove", { hostId, id, force }),
+	/**  Creates a pod; returns its id. */
+	podsCreate: (hostId: string, spec: PodmanPodSpec) => __TAURI_INVOKE<string>("pods_create", { hostId, spec }),
+	/**  The Host's Quadlet units, with the containers each created. */
+	quadletsList: (hostId: string) => __TAURI_INVOKE<QuadletUnits>("quadlets_list", { hostId }),
+	/**  A unit's file, as Podman reads it on the Host (Podman 5.8 and later). */
+	quadletsFile: (hostId: string, name: string) => __TAURI_INVOKE<string>("quadlets_file", { hostId, name }),
+	/**
+	 *  Installs a unit with its extra files; `replace` edits an installed one.
+	 *  `expected` is the unit file as the edit opened it: a file changed on the
+	 *  Host since is refused, unless `None` overwrites it. Returns where the
+	 *  files went on the Host.
+	 */
+	quadletsInstall: (hostId: string, install: QuadletInstall, replace: boolean, expected: string | null) => __TAURI_INVOKE<string[]>("quadlets_install", { hostId, install, replace, expected }),
+	/**  Removes a unit; `force` stops its service first. */
+	quadletsRemove: (hostId: string, name: string, force: boolean) => __TAURI_INVOKE<null>("quadlets_remove", { hostId, name, force }),
+	/**  Starts, stops or restarts a unit's service with `systemctl`. */
+	quadletsAct: (hostId: string, unit: string, scope: UnitScope, action: UnitAction) => __TAURI_INVOKE<null>("quadlets_act", { hostId, unit, scope, action }),
+	/**  Every Swarm the Hosts belong to, once each. */
+	swarmsList: () => __TAURI_INVOKE<SwarmView[]>("swarms_list"),
+	/**  What a connected manager says about the Swarm `swarm_id`. */
+	swarmInspect: (swarmId: string) => __TAURI_INVOKE<SwarmSummary>("swarm_inspect", { swarmId }),
+	/**  Makes `host_id` the first manager of a new Swarm, returning its ID. */
+	swarmInit: (hostId: string, advertiseAddr: string | null, listenAddr: string | null) => __TAURI_INVOKE<string>("swarm_init", { hostId, advertiseAddr, listenAddr }),
+	/**  Joins `host_id` to a Swarm as a worker or a manager. */
+	swarmJoin: (hostId: string, target: JoinTarget, role: JoinRole, advertiseAddr: string | null) => __TAURI_INVOKE<null>("swarm_join", { hostId, target, role, advertiseAddr }),
+	/**  Has `host_id` leave its Swarm; a manager needs `force`. */
+	swarmLeave: (hostId: string, force: boolean) => __TAURI_INVOKE<null>("swarm_leave", { hostId, force }),
+	/**
+	 *  The join tokens and manager addresses of a Swarm, for its Join commands;
+	 *  never stored or logged.
+	 */
+	swarmJoinInfo: (swarmId: string) => __TAURI_INVOKE<JoinInfo>("swarm_join_info", { swarmId }),
+	/**  A Swarm's nodes, each with the Host it is, if it's one. */
+	swarmNodesList: (swarmId: string) => __TAURI_INVOKE<SwarmNode[]>("swarm_nodes_list", { swarmId }),
+	swarmNodesInspect: (swarmId: string, id: string) => __TAURI_INVOKE<Value>("swarm_nodes_inspect", { swarmId, id }),
+	/**
+	 *  Changes a node's availability, role or labels, from the node as read at
+	 *  `version`; refuses to demote the last manager or drain every node.
+	 */
+	swarmNodesUpdate: (swarmId: string, id: string, version: number, change: NodeChange) => __TAURI_INVOKE<null>("swarm_nodes_update", { swarmId, id, version, change }),
+	swarmNodesRemove: (swarmId: string, id: string, force: boolean) => __TAURI_INVOKE<null>("swarm_nodes_remove", { swarmId, id, force }),
+	/**  The Swarm's overlay networks, which services attach to. */
+	swarmNetworksList: (swarmId: string) => __TAURI_INVOKE<NetworkView[]>("swarm_networks_list", { swarmId }),
+	/**  A Swarm's secrets, never their values. */
+	swarmSecretsList: (swarmId: string) => __TAURI_INVOKE<SwarmObject[]>("swarm_secrets_list", { swarmId }),
+	/**  Sends a new secret's value to the Swarm once; Homeport keeps none of it. */
+	swarmSecretsCreate: (swarmId: string, input: ObjectInput) => __TAURI_INVOKE<string>("swarm_secrets_create", { swarmId, input }),
+	swarmSecretsRemove: (swarmId: string, id: string) => __TAURI_INVOKE<null>("swarm_secrets_remove", { swarmId, id }),
+	swarmConfigsList: (swarmId: string) => __TAURI_INVOKE<SwarmObject[]>("swarm_configs_list", { swarmId }),
+	swarmConfigsCreate: (swarmId: string, input: ObjectInput) => __TAURI_INVOKE<string>("swarm_configs_create", { swarmId, input }),
+	/**  A config's content, as text when it is. */
+	swarmConfigsInspect: (swarmId: string, id: string) => __TAURI_INVOKE<ConfigContent>("swarm_configs_inspect", { swarmId, id }),
+	swarmConfigsRemove: (swarmId: string, id: string) => __TAURI_INVOKE<null>("swarm_configs_remove", { swarmId, id }),
+	/**  Every service of a Swarm, with its running and desired tasks. */
+	swarmServicesList: (swarmId: string) => __TAURI_INVOKE<ServiceView[]>("swarm_services_list", { swarmId }),
+	swarmServicesInspect: (swarmId: string, id: string) => __TAURI_INVOKE<Value>("swarm_services_inspect", { swarmId, id }),
+	/**  Sets a replicated service's replicas, from the service as read at `version`. */
+	swarmServicesScale: (swarmId: string, id: string, version: number, replicas: number) => __TAURI_INVOKE<null>("swarm_services_scale", { swarmId, id, version, replicas }),
+	/**  Puts back a service's previous spec. */
+	swarmServicesRollback: (swarmId: string, id: string) => __TAURI_INVOKE<null>("swarm_services_rollback", { swarmId, id }),
+	swarmServicesRemove: (swarmId: string, id: string) => __TAURI_INVOKE<null>("swarm_services_remove", { swarmId, id }),
+	/**  Creates a service from the Create service form, returning its ID. */
+	swarmServicesCreate: (swarmId: string, input: ServiceSpecInput) => __TAURI_INVOKE<string>("swarm_services_create", { swarmId, input }),
+	/**
+	 *  Changes a service's image, environment or replicas, from the service as
+	 *  read at `version`; the Swarm rolls its tasks over.
+	 */
+	swarmServicesUpdate: (swarmId: string, id: string, version: number, change: ServiceChange) => __TAURI_INVOKE<null>("swarm_services_update", { swarmId, id, version, change }),
+	/**
+	 *  Streams the logs of every task of a service, each line labelled with its
+	 *  task and node.
+	 */
+	swarmServiceLogsSubscribe: (swarmId: string, id: string, options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("swarm_service_logs_subscribe", { swarmId, id, options, onEvent }),
+	/**
+	 *  The tasks of a Swarm, of one of its services or of one of its nodes,
+	 *  newest first, each with the Host its node is, if it's one.
+	 */
+	swarmTasksList: (swarmId: string, filter: TaskFilter) => __TAURI_INVOKE<SwarmTask[]>("swarm_tasks_list", { swarmId, filter }),
+	swarmTasksInspect: (swarmId: string, id: string) => __TAURI_INVOKE<Value>("swarm_tasks_inspect", { swarmId, id }),
+	/**  The Stacks deployed to a Swarm, found by their namespace label. */
+	swarmStacksList: (swarmId: string) => __TAURI_INVOKE<Stack[]>("swarm_stacks_list", { swarmId }),
+	/**  The networks, secrets and configs of a swarm stack. */
+	swarmStacksParts: (swarmId: string, name: string) => __TAURI_INVOKE<SwarmStackParts>("swarm_stacks_parts", { swarmId, name }),
+	/**  Removes a swarm stack as `docker stack rm` does, through the Engine API. */
+	swarmStacksRemove: (swarmId: string, name: string) => __TAURI_INVOKE<RemoveReport>("swarm_stacks_remove", { swarmId, name }),
+	/**
+	 *  Links the External swarm stack `name` to a folder on this computer,
+	 *  once its compose files are checked to declare the services it runs.
+	 */
+	swarmStacksLink: (swarmId: string, name: string, workingDir: string) => __TAURI_INVOKE<LinkedStack>("swarm_stacks_link", { swarmId, name, workingDir }),
+	/**  Usage of every running container on a Host, refreshed every two seconds. */
+	usageSubscribe: (hostId: string, onUsage: Channel<ContainerUsage[]>) => __TAURI_INVOKE<number>("usage_subscribe", { hostId, onUsage }),
+	systemInfo: (hostId: string) => __TAURI_INVOKE<EngineInfo>("system_info", { hostId }),
+	systemDiskUsage: (hostId: string) => __TAURI_INVOKE<DiskUsage>("system_disk_usage", { hostId }),
+	systemPrune: (hostId: string, selection: PruneSelection) => __TAURI_INVOKE<SystemPruneReport>("system_prune", { hostId, selection }),
+	volumesList: (hostId: string) => __TAURI_INVOKE<VolumeView[]>("volumes_list", { hostId }),
+	/**
+	 *  Each volume's size in bytes, `null` when its driver doesn't report one.
+	 *  Apart from the list, because the Engine walks every volume to answer.
+	 */
+	volumesSizes: (hostId: string) => __TAURI_INVOKE<{ [key in string]: number | null }>("volumes_sizes", { hostId }),
+	volumesInspect: (hostId: string, name: string) => __TAURI_INVOKE<Value>("volumes_inspect", { hostId, name }),
+	volumesCreate: (hostId: string, input: VolumeInput) => __TAURI_INVOKE<string>("volumes_create", { hostId, input }),
+	volumesRemove: (hostId: string, name: string, force: boolean) => __TAURI_INVOKE<null>("volumes_remove", { hostId, name, force }),
+	volumesPrune: (hostId: string, all: boolean) => __TAURI_INVOKE<PruneReport>("volumes_prune", { hostId, all }),
+	/**
+	 *  The image of the helper container that opens volumes (ADR 0015), and
+	 *  whether the Host has it.
+	 */
+	volumesHelperImage: (hostId: string) => __TAURI_INVOKE<HelperImage>("volumes_helper_image", { hostId }),
+	/**
+	 *  Pulls the helper's image onto a Host, once the user agreed, streaming
+	 *  progress. A failure says how to get the image there by hand.
+	 */
+	volumesHelperPullSubscribe: (hostId: string, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("volumes_helper_pull_subscribe", { hostId, onEvent }),
+	/**
+	 *  Opens `volume` read-only in a helper; returns the session's id. With
+	 *  `pulled_image`, ending the session also removes the image Homeport pulled.
+	 */
+	volumesBrowseStart: (hostId: string, volume: string, pulledImage: boolean) => __TAURI_INVOKE<string>("volumes_browse_start", { hostId, volume, pulledImage }),
+	/**  Lists a folder of a browsed volume; paths are relative to the volume. */
+	volumesBrowseList: (hostId: string, session: string, path: string) => __TAURI_INVOKE<FileEntry[]>("volumes_browse_list", { hostId, session, path }),
+	/**  Saves a file, or a folder as a `.tar`, of a browsed volume to `destination`. */
+	volumesBrowseDownload: (hostId: string, session: string, path: string, destination: string) => __TAURI_INVOKE<boolean>("volumes_browse_download", { hostId, session, path, destination }),
+	/**  Ends a browse session, removing its helper. */
+	volumesBrowseEnd: (session: string) => __TAURI_INVOKE<null>("volumes_browse_end", { session }),
+	/**
+	 *  The running containers mounting a volume: a backup of it may be
+	 *  inconsistent, and a restore into it is refused until they stop.
+	 */
+	volumesRunningUsers: (hostId: string, volume: string) => __TAURI_INVOKE<string[]>("volumes_running_users", { hostId, volume }),
+	/**
+	 *  Backs a volume up to a `.tar` at `destination` on this machine,
+	 *  streaming progress. With `pulled_image`, the helper's image is removed
+	 *  afterwards if nothing else uses it.
+	 */
+	volumesBackupSubscribe: (hostId: string, volume: string, destination: string, pulledImage: boolean, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("volumes_backup_subscribe", { hostId, volume, destination, pulledImage, onEvent }),
+	/**
+	 *  Restores a volume, new or existing, from a `.tar` at `source` on this
+	 *  machine, streaming progress.
+	 */
+	volumesRestoreSubscribe: (hostId: string, source: string, spec: RestoreSpec, pulledImage: boolean, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("volumes_restore_subscribe", { hostId, source, spec, pulledImage, onEvent }),
+	/**
+	 *  Copies a volume into a new one on the same Host; returns its name. With
+	 *  `pulled_image`, the helper's image is removed afterwards if unused.
+	 */
+	volumesClone: (hostId: string, source: string, target: string, pulledImage: boolean) => __TAURI_INVOKE<string>("volumes_clone", { hostId, source, target, pulledImage }),
+	/**  Every namespace of the Host, with what each holds. */
+	containerdNamespaces: (hostId: string) => __TAURI_INVOKE<ContainerdNamespace[]>("containerd_namespaces", { hostId }),
+	containerdNamespaceCreate: (hostId: string, name: string) => __TAURI_INVOKE<null>("containerd_namespace_create", { hostId, name }),
+	/**  Removes an empty namespace; one that holds anything is refused. */
+	containerdNamespaceRemove: (hostId: string, name: string) => __TAURI_INVOKE<null>("containerd_namespace_remove", { hostId, name }),
+	/**  The containers of `namespace`, each with its task. */
+	containerdContainers: (hostId: string, namespace: string) => __TAURI_INVOKE<ContainerdContainer[]>("containerd_containers", { hostId, namespace }),
+	containerdContainerInspect: (hostId: string, namespace: string, id: string) => __TAURI_INVOKE<ContainerdContainerDetail>("containerd_container_inspect", { hostId, namespace, id }),
+	/**  Starts, stops (SIGKILL after 10 s), pauses or resumes a container's task. */
+	containerdContainerAct: (hostId: string, namespace: string, id: string, action: TaskAction) => __TAURI_INVOKE<null>("containerd_container_act", { hostId, namespace, id, action }),
+	/**  Sends a signal, by name or number, to a container's task. */
+	containerdContainerKill: (hostId: string, namespace: string, id: string, signal: string) => __TAURI_INVOKE<null>("containerd_container_kill", { hostId, namespace, id, signal }),
+	/**
+	 *  Removes a container and, unless `keep_snapshot`, its snapshot; `force`
+	 *  kills a running task first.
+	 */
+	containerdContainerRemove: (hostId: string, namespace: string, id: string, force: boolean, keepSnapshot: boolean) => __TAURI_INVOKE<null>("containerd_container_remove", { hostId, namespace, id, force, keepSnapshot }),
+	/**
+	 *  Where a container's output was kept, if anywhere, so the Logs tab can
+	 *  explain an empty one.
+	 */
+	containerdLogsSource: (hostId: string, namespace: string, id: string) => __TAURI_INVOKE<ContainerdLogSource>("containerd_logs_source", { hostId, namespace, id }),
+	/**
+	 *  Streams a container's logs from the file its creator wrote, read with
+	 *  `tail` on the Host's machine (ADR 0020).
+	 */
+	containerdLogsSubscribe: (hostId: string, namespace: string, id: string, options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("containerd_logs_subscribe", { hostId, namespace, id, options, onEvent }),
+	/**
+	 *  Opens a terminal in a container's running task, through FIFOs on the
+	 *  Host's machine (ADR 0020).
+	 */
+	containerdExecStart: (hostId: string, namespace: string, id: string, options: ContainerdExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("containerd_exec_start", { hostId, namespace, id, options, onEvent }),
+	containerdExecInput: (session: number, data: string) => __TAURI_INVOKE<null>("containerd_exec_input", { session, data }),
+	containerdExecResize: (session: number, cols: number, rows: number) => __TAURI_INVOKE<null>("containerd_exec_resize", { session, cols, rows }),
+	/**  Closes a terminal, killing its process; async, since that needs the runtime. */
+	containerdExecClose: (session: number) => __TAURI_INVOKE<null>("containerd_exec_close", { session }),
+	/**  The images of `namespace`, with their size for the Host's platform. */
+	containerdImages: (hostId: string, namespace: string) => __TAURI_INVOKE<ContainerdImage[]>("containerd_images", { hostId, namespace }),
+	/**  Removes an image no container of the namespace was made from. */
+	containerdImageRemove: (hostId: string, namespace: string, name: string) => __TAURI_INVOKE<null>("containerd_image_remove", { hostId, namespace, name }),
+	/**
+	 *  Pulls an image through containerd's Transfer service with the stored
+	 *  login for its registry, streaming progress.
+	 */
+	containerdImagesPullSubscribe: (hostId: string, namespace: string, reference: string, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("containerd_images_pull_subscribe", { hostId, namespace, reference, onEvent }),
+	/**
+	 *  The snapshots of a snapshotter (the Host's default when `None`) in
+	 *  `namespace`, largest first, each with what uses it.
+	 */
+	containerdSnapshots: (hostId: string, namespace: string, snapshotter: string | null) => __TAURI_INVOKE<ContainerdSnapshots>("containerd_snapshots", { hostId, namespace, snapshotter }),
+	/**  Removes a snapshot nothing uses and nothing is built on. */
+	containerdSnapshotRemove: (hostId: string, namespace: string, snapshotter: string, key: string) => __TAURI_INVOKE<null>("containerd_snapshot_remove", { hostId, namespace, snapshotter, key }),
+	/**  What a pasted trust token says, for the Host form to show before adding. */
+	incusTrustTokenRead: (token: string) => __TAURI_INVOKE<TrustTokenSummary>("incus_trust_token_read", { token }),
+	/**
+	 *  Adds an Incus Host over HTTPS with a trust token from
+	 *  `incus config trust add`: Homeport makes a client certificate, registers
+	 *  it with the token, and keeps the server's certificate pinned (ADR 0021).
+	 */
+	incusTrustAdd: (name: string, token: string) => __TAURI_INVOKE<HostView>("incus_trust_add", { name, token }),
+	/**  The projects the Host's connection may use, with what each holds. */
+	incusProjects: (hostId: string) => __TAURI_INVOKE<IncusProject[]>("incus_projects", { hostId }),
+	/**  The images of `project`, newest first. */
+	incusImages: (hostId: string, project: string) => __TAURI_INVOKE<IncusImage[]>("incus_images", { hostId, project }),
+	/**
+	 *  What `server` (a simplestreams image server) publishes for the Host's
+	 *  architecture, read from this computer and kept a few minutes.
+	 */
+	incusRemoteImages: (hostId: string, server: string) => __TAURI_INVOKE<RemoteImage[]>("incus_remote_images", { hostId, server }),
+	/**
+	 *  Copies an image from a remote server into `project`, streaming the
+	 *  download's progress.
+	 */
+	incusImageCopySubscribe: (hostId: string, project: string, copy: ImageCopy, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("incus_image_copy_subscribe", { hostId, project, copy, onEvent }),
+	/**  Fetches a newer build of an image from where it came from. */
+	incusImageRefresh: (hostId: string, project: string, fingerprint: string) => __TAURI_INVOKE<null>("incus_image_refresh", { hostId, project, fingerprint }),
+	/**  Deletes an image; Instances made from it keep their own copy. */
+	incusImageDelete: (hostId: string, project: string, fingerprint: string) => __TAURI_INVOKE<null>("incus_image_delete", { hostId, project, fingerprint }),
+	incusImageAliasAdd: (hostId: string, project: string, fingerprint: string, name: string) => __TAURI_INVOKE<null>("incus_image_alias_add", { hostId, project, fingerprint, name }),
+	incusImageAliasRemove: (hostId: string, project: string, name: string) => __TAURI_INVOKE<null>("incus_image_alias_remove", { hostId, project, name }),
+	/**  The Instances of `project`, with their state. */
+	incusInstances: (hostId: string, project: string) => __TAURI_INVOKE<IncusInstance[]>("incus_instances", { hostId, project }),
+	/**  One Instance with its configuration, devices and snapshots' names. */
+	incusInstance: (hostId: string, project: string, name: string) => __TAURI_INVOKE<IncusInstanceDetail>("incus_instance", { hostId, project, name }),
+	/**
+	 *  Starts, stops, restarts, freezes or unfreezes an Instance; `force` stops
+	 *  or restarts it without waiting for its system to shut down.
+	 */
+	incusInstanceAct: (hostId: string, project: string, name: string, action: InstanceAction, force: boolean) => __TAURI_INVOKE<null>("incus_instance_act", { hostId, project, name, action, force }),
+	/**  Deletes an Instance with its snapshots; `stop_first` stops a running one. */
+	incusInstanceDelete: (hostId: string, project: string, name: string, stopFirst: boolean) => __TAURI_INVOKE<null>("incus_instance_delete", { hostId, project, name, stopFirst }),
+	/**
+	 *  Makes an Instance from an image, streaming the image download's
+	 *  progress until it's made (and started, if asked).
+	 */
+	incusInstanceCreateSubscribe: (hostId: string, project: string, spec: InstanceSpec, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("incus_instance_create_subscribe", { hostId, project, spec, onEvent }),
+	/**  The networks `project` sees, managed ones first. */
+	incusNetworks: (hostId: string, project: string) => __TAURI_INVOKE<IncusNetwork[]>("incus_networks", { hostId, project }),
+	/**  A network's addresses on the host and its DHCP leases. */
+	incusNetworkState: (hostId: string, project: string, name: string) => __TAURI_INVOKE<IncusNetworkState>("incus_network_state", { hostId, project, name }),
+	incusBridgeCreate: (hostId: string, project: string, request: BridgeRequest) => __TAURI_INVOKE<null>("incus_bridge_create", { hostId, project, request }),
+	/**  Deletes a managed network nothing uses. */
+	incusNetworkDelete: (hostId: string, project: string, name: string) => __TAURI_INVOKE<null>("incus_network_delete", { hostId, project, name }),
+	/**  The profiles of `project`, with the Instances using each. */
+	incusProfiles: (hostId: string, project: string) => __TAURI_INVOKE<IncusProfile[]>("incus_profiles", { hostId, project }),
+	/**  One profile, with its YAML and the ETag to save it with. */
+	incusProfile: (hostId: string, project: string, name: string) => __TAURI_INVOKE<IncusProfileDetail>("incus_profile", { hostId, project, name }),
+	/**  Saves a profile's YAML; refused if it changed since `etag` was read. */
+	incusProfileUpdate: (hostId: string, project: string, name: string, yaml: string, etag: string | null) => __TAURI_INVOKE<null>("incus_profile_update", { hostId, project, name, yaml, etag }),
+	incusProfileCreate: (hostId: string, project: string, name: string, description: string) => __TAURI_INVOKE<null>("incus_profile_create", { hostId, project, name, description }),
+	/**  Deletes an unused profile other than `default`. */
+	incusProfileDelete: (hostId: string, project: string, name: string) => __TAURI_INVOKE<null>("incus_profile_delete", { hostId, project, name }),
+	/**  The snapshots of an Instance, oldest first. */
+	incusSnapshots: (hostId: string, project: string, instance: string) => __TAURI_INVOKE<IncusSnapshot[]>("incus_snapshots", { hostId, project, instance }),
+	/**  Takes a snapshot of an Instance, stateful and expiring if asked. */
+	incusSnapshotCreate: (hostId: string, project: string, instance: string, request: SnapshotRequest) => __TAURI_INVOKE<null>("incus_snapshot_create", { hostId, project, instance, request }),
+	/**  Restores an Instance to one of its snapshots; what changed since is lost. */
+	incusSnapshotRestore: (hostId: string, project: string, instance: string, snapshot: string, stateful: boolean) => __TAURI_INVOKE<null>("incus_snapshot_restore", { hostId, project, instance, snapshot, stateful }),
+	incusSnapshotDelete: (hostId: string, project: string, instance: string, snapshot: string) => __TAURI_INVOKE<null>("incus_snapshot_delete", { hostId, project, instance, snapshot }),
+	/**  Every storage pool, with how full it is. */
+	incusStoragePools: (hostId: string, project: string) => __TAURI_INVOKE<IncusStoragePool[]>("incus_storage_pools", { hostId, project }),
+	/**  The volumes of a pool in `project`, with what uses each. */
+	incusStorageVolumes: (hostId: string, project: string, pool: string) => __TAURI_INVOKE<IncusVolume[]>("incus_storage_volumes", { hostId, project, pool }),
+	incusVolumeCreate: (hostId: string, project: string, pool: string, request: VolumeRequest) => __TAURI_INVOKE<null>("incus_volume_create", { hostId, project, pool, request }),
+	/**  Deletes a custom volume nothing uses. */
+	incusVolumeDelete: (hostId: string, project: string, pool: string, name: string) => __TAURI_INVOKE<null>("incus_volume_delete", { hostId, project, pool, name }),
+	/**
+	 *  Runs a command (a shell by default) in a running Instance, with a
+	 *  terminal, through Incus's exec websockets.
+	 */
+	incusExecStart: (hostId: string, project: string, name: string, options: IncusExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("incus_exec_start", { hostId, project, name, options, onEvent }),
+	/**  Attaches to a running Instance's text console. */
+	incusConsoleStart: (hostId: string, project: string, name: string, cols: number, rows: number, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("incus_console_start", { hostId, project, name, cols, rows, onEvent }),
+	/**  What an Instance printed on its console, if Incus kept it. */
+	incusConsoleLog: (hostId: string, project: string, name: string) => __TAURI_INVOKE<string>("incus_console_log", { hostId, project, name }),
+	incusTerminalInput: (session: number, data: string) => __TAURI_INVOKE<null>("incus_terminal_input", { session, data }),
+	incusTerminalResize: (session: number, cols: number, rows: number) => __TAURI_INVOKE<null>("incus_terminal_resize", { session, cols, rows }),
+	/**  Closes a terminal: hangs up an exec's command, detaches from a console. */
+	incusTerminalClose: (session: number) => __TAURI_INVOKE<null>("incus_terminal_close", { session }),
 	/**  Every Cluster with its connection's status, by name. */
 	clustersList: () => __TAURI_INVOKE<ClusterView[]>("clusters_list"),
 	clustersGet: (id: string) => __TAURI_INVOKE<ClusterView>("clusters_get", { id }),
@@ -110,112 +496,6 @@ export const commands = {
 	 *  kind and k3d clusters running on a connected local Host that it doesn't.
 	 */
 	clustersDetectLocal: () => __TAURI_INVOKE<LocalClusters>("clusters_detect_local"),
-	/**
-	 *  Adds a Nomad Cluster, its ACL token and TLS key sealed, and starts
-	 *  connecting to it.
-	 */
-	clustersNomadAdd: (form: NomadForm) => __TAURI_INVOKE<ClusterView>("clusters_nomad_add", { form }),
-	/**
-	 *  Changes a Nomad Cluster's name, address and credentials (those left
-	 *  out are kept), then reconnects.
-	 */
-	clustersNomadUpdate: (id: string, form: NomadForm) => __TAURI_INVOKE<ClusterView>("clusters_nomad_update", { id, form }),
-	/**
-	 *  Connects once to the Nomad Cluster the form describes, without saving
-	 *  it. With `id`, the credentials left out are that Cluster's.
-	 */
-	clustersNomadTest: (form: NomadForm, id: string | null) => __TAURI_INVOKE<NomadAgent>("clusters_nomad_test", { form, id }),
-	clustersNomadJobs: (id: string, namespace: string | null) => __TAURI_INVOKE<NomadJobView[]>("clusters_nomad_jobs", { id, namespace }),
-	clustersNomadJob: (id: string, namespace: string | null, jobId: string) => __TAURI_INVOKE<NomadJobDetail>("clusters_nomad_job", { id, namespace, jobId }),
-	/**  Stops a job; with `purge`, Nomad forgets it at once. */
-	clustersNomadJobStop: (id: string, namespace: string | null, jobId: string, purge: boolean) => __TAURI_INVOKE<null>("clusters_nomad_job_stop", { id, namespace, jobId, purge }),
-	/**  Sets how many allocations a task group runs, within its scaling policy. */
-	clustersNomadJobScale: (id: string, namespace: string | null, jobId: string, group: string, count: number) => __TAURI_INVOKE<null>("clusters_nomad_job_scale", { id, namespace, jobId, group, count }),
-	/**
-	 *  Sends `true` each time what `topic` covers changes, through Nomad's
-	 *  blocking queries, until the stream is cancelled.
-	 */
-	clustersNomadWatchSubscribe: (id: string, topic: NomadWatch, onEvent: Channel<boolean>) => __TAURI_INVOKE<number>("clusters_nomad_watch_subscribe", { id, topic, onEvent }),
-	/**
-	 *  Parses `spec` (HCL2 by Nomad itself, or JSON) and asks Nomad what
-	 *  running it would change. A job naming no namespace goes to `namespace`.
-	 */
-	clustersNomadJobPlan: (id: string, namespace: string | null, spec: string) => __TAURI_INVOKE<NomadPlan>("clusters_nomad_job_plan", { id, namespace, spec }),
-	/**  Runs a planned job unless it changed since, keeping `source` with it. */
-	clustersNomadJobRun: (id: string, plan: NomadPlanToRun, source: string | null) => __TAURI_INVOKE<NomadRunResult>("clusters_nomad_job_run", { id, plan, source }),
-	/**  A job's specification to edit: as submitted when Nomad kept it, else its JSON. */
-	clustersNomadJobSource: (id: string, namespace: string | null, jobId: string) => __TAURI_INVOKE<NomadJobSource>("clusters_nomad_job_source", { id, namespace, jobId }),
-	clustersNomadAllocation: (id: string, allocId: string) => __TAURI_INVOKE<NomadAllocationDetail>("clusters_nomad_allocation", { id, allocId }),
-	/**
-	 *  Streams a task's stdout and stderr, as `options` asks, until cancelled
-	 *  or they end.
-	 */
-	clustersNomadLogsSubscribe: (id: string, allocId: string, task: string, options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("clusters_nomad_logs_subscribe", { id, allocId, task, options, onEvent }),
-	/**  Opens a terminal in a task, like `nomad alloc exec -t`. */
-	clustersNomadExecStart: (id: string, allocId: string, options: NomadExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("clusters_nomad_exec_start", { id, allocId, options, onEvent }),
-	clustersNomadExecInput: (terminal: number, data: string) => __TAURI_INVOKE<null>("clusters_nomad_exec_input", { terminal, data }),
-	clustersNomadExecResize: (terminal: number, cols: number, rows: number) => __TAURI_INVOKE<null>("clusters_nomad_exec_resize", { terminal, cols, rows }),
-	/**  Ends a terminal and its command. */
-	clustersNomadExecClose: (terminal: number) => __TAURI_INVOKE<null>("clusters_nomad_exec_close", { terminal }),
-	clustersNomadNodes: (id: string) => __TAURI_INVOKE<NomadNodeView[]>("clusters_nomad_nodes", { id }),
-	clustersNomadNode: (id: string, nodeId: string) => __TAURI_INVOKE<NomadNodeDetail>("clusters_nomad_node", { id, nodeId }),
-	/**
-	 *  Starts draining a node with `spec`; with none, cancels its drain and,
-	 *  with `mark_eligible`, makes it eligible again.
-	 */
-	clustersNomadNodeDrain: (id: string, nodeId: string, spec: NomadDrainSpec | null, markEligible: boolean) => __TAURI_INVOKE<null>("clusters_nomad_node_drain", { id, nodeId, spec, markEligible }),
-	clustersNomadNodeEligibility: (id: string, nodeId: string, eligible: boolean) => __TAURI_INVOKE<null>("clusters_nomad_node_eligibility", { id, nodeId, eligible }),
-	/**
-	 *  The namespaces the Jobs page picks from; unlistable rather than an
-	 *  error when the token can't list them.
-	 */
-	clustersNomadNamespaces: (id: string) => __TAURI_INVOKE<NomadNamespaces>("clusters_nomad_namespaces", { id }),
-	clustersNamespaces: (id: string) => __TAURI_INVOKE<NamespaceView[]>("clusters_namespaces", { id }),
-	/**  The workloads of `kind` in `namespace`, or in every Namespace without one. */
-	clustersWorkloadsList: (id: string, kind: WorkloadKind, namespace: string | null) => __TAURI_INVOKE<WorkloadView[]>("clusters_workloads_list", { id, kind, namespace }),
-	clustersWorkloadGet: (id: string, kind: WorkloadKind, namespace: string, name: string) => __TAURI_INVOKE<WorkloadDetail>("clusters_workload_get", { id, kind, namespace, name }),
-	/**  The Jobs a CronJob started, newest first. */
-	clustersCronJobJobs: (id: string, namespace: string, name: string) => __TAURI_INVOKE<WorkloadView[]>("clusters_cron_job_jobs", { id, namespace, name }),
-	/**
-	 *  The Pods in `namespace` (every one without), those matching a label
-	 *  `selector` or on a `node` when given.
-	 */
-	clustersPodsList: (id: string, namespace: string | null, selector: string | null, node: string | null) => __TAURI_INVOKE<PodView[]>("clusters_pods_list", { id, namespace, selector, node }),
-	clustersPodGet: (id: string, namespace: string, name: string) => __TAURI_INVOKE<PodDetail>("clusters_pod_get", { id, namespace, name }),
-	/**  The Events about one object, warnings first. */
-	clustersObjectEvents: (id: string, kind: ResourceKind, namespace: string | null, name: string) => __TAURI_INVOKE<EventView[]>("clusters_object_events", { id, kind, namespace, name }),
-	/**  An object as read-only YAML, without managedFields or Secret values. */
-	clustersResourceYaml: (id: string, kind: ResourceKind, namespace: string | null, name: string) => __TAURI_INVOKE<string>("clusters_resource_yaml", { id, kind, namespace, name }),
-	/**
-	 *  Watches the resources of `kind` in `namespace` (every one without) and
-	 *  says when they change, until cancelled.
-	 */
-	clustersWatchSubscribe: (id: string, kind: ResourceKind, namespace: string | null, onEvent: Channel<ResourcesChanged>) => __TAURI_INVOKE<number>("clusters_watch_subscribe", { id, kind, namespace, onEvent }),
-	clustersServicesList: (id: string, namespace: string | null) => __TAURI_INVOKE<ClusterServiceView[]>("clusters_services_list", { id, namespace }),
-	clustersServiceGet: (id: string, namespace: string, name: string) => __TAURI_INVOKE<ClusterServiceDetail>("clusters_service_get", { id, namespace, name }),
-	clustersIngressesList: (id: string, namespace: string | null) => __TAURI_INVOKE<IngressView[]>("clusters_ingresses_list", { id, namespace }),
-	clustersIngressGet: (id: string, namespace: string, name: string) => __TAURI_INVOKE<IngressDetail>("clusters_ingress_get", { id, namespace, name }),
-	clustersConfigMapsList: (id: string, namespace: string | null) => __TAURI_INVOKE<ConfigMapView[]>("clusters_config_maps_list", { id, namespace }),
-	clustersConfigMapGet: (id: string, namespace: string, name: string) => __TAURI_INVOKE<ConfigMapDetail>("clusters_config_map_get", { id, namespace, name }),
-	/**  Secrets with their keys and sizes, never their values. */
-	clustersSecretsList: (id: string, namespace: string | null) => __TAURI_INVOKE<SecretView[]>("clusters_secrets_list", { id, namespace }),
-	/**  A Secret's keys, labels and annotations, never its values. */
-	clustersSecretGet: (id: string, namespace: string, name: string) => __TAURI_INVOKE<SecretDetail>("clusters_secret_get", { id, namespace, name }),
-	/**
-	 *  One decoded value of a Secret, read when the user reveals it; neither
-	 *  cached nor logged.
-	 */
-	clustersSecretReveal: (id: string, namespace: string, name: string, key: string) => __TAURI_INVOKE<RevealedValue>("clusters_secret_reveal", { id, namespace, name, key }),
-	clustersNodesList: (id: string) => __TAURI_INVOKE<ClusterNodeView[]>("clusters_nodes_list", { id }),
-	clustersNodeGet: (id: string, name: string) => __TAURI_INVOKE<ClusterNodeDetail>("clusters_node_get", { id, name }),
-	/**  The Events in `namespace` (every one without), warnings first. */
-	clustersEventsList: (id: string, namespace: string | null) => __TAURI_INVOKE<EventView[]>("clusters_events_list", { id, namespace }),
-	/**
-	 *  The Cluster `id` at a glance (Nodes, Pods by phase, workloads short of
-	 *  Pods, the latest warnings), for the Overview; `namespace` (every one
-	 *  without) for what lives in Namespaces.
-	 */
-	clustersSummary: (id: string, namespace: string | null) => __TAURI_INVOKE<ClusterSummary>("clusters_summary", { id, namespace }),
 	/**  Sets how many Pods a Deployment or a StatefulSet runs. */
 	clustersScale: (id: string, kind: WorkloadKind, namespace: string, name: string, replicas: number) => __TAURI_INVOKE<null>("clusters_scale", { id, kind, namespace, name, replicas }),
 	/**  The HorizontalPodAutoscaler that scales a workload, if one does. */
@@ -321,351 +601,149 @@ export const commands = {
 	/**  Uninstalls a release, streaming helm's output. */
 	clustersHelmUninstallSubscribe: (id: string, request: UninstallRequest, onEvent: Channel<CliEvent>) => __TAURI_INVOKE<number>("clusters_helm_uninstall_subscribe", { id, request, onEvent }),
 	/**
+	 *  Adds a Nomad Cluster, its ACL token and TLS key sealed, and starts
+	 *  connecting to it.
+	 */
+	clustersNomadAdd: (form: NomadForm) => __TAURI_INVOKE<ClusterView>("clusters_nomad_add", { form }),
+	/**
+	 *  Changes a Nomad Cluster's name, address and credentials (those left
+	 *  out are kept), then reconnects.
+	 */
+	clustersNomadUpdate: (id: string, form: NomadForm) => __TAURI_INVOKE<ClusterView>("clusters_nomad_update", { id, form }),
+	/**
+	 *  Connects once to the Nomad Cluster the form describes, without saving
+	 *  it. With `id`, the credentials left out are that Cluster's.
+	 */
+	clustersNomadTest: (form: NomadForm, id: string | null) => __TAURI_INVOKE<NomadAgent>("clusters_nomad_test", { form, id }),
+	clustersNomadJobs: (id: string, namespace: string | null) => __TAURI_INVOKE<NomadJobView[]>("clusters_nomad_jobs", { id, namespace }),
+	clustersNomadJob: (id: string, namespace: string | null, jobId: string) => __TAURI_INVOKE<NomadJobDetail>("clusters_nomad_job", { id, namespace, jobId }),
+	/**  Stops a job; with `purge`, Nomad forgets it at once. */
+	clustersNomadJobStop: (id: string, namespace: string | null, jobId: string, purge: boolean) => __TAURI_INVOKE<null>("clusters_nomad_job_stop", { id, namespace, jobId, purge }),
+	/**  Sets how many allocations a task group runs, within its scaling policy. */
+	clustersNomadJobScale: (id: string, namespace: string | null, jobId: string, group: string, count: number) => __TAURI_INVOKE<null>("clusters_nomad_job_scale", { id, namespace, jobId, group, count }),
+	/**
+	 *  Sends `true` each time what `topic` covers changes, through Nomad's
+	 *  blocking queries, until the stream is cancelled.
+	 */
+	clustersNomadWatchSubscribe: (id: string, topic: NomadWatch, onEvent: Channel<boolean>) => __TAURI_INVOKE<number>("clusters_nomad_watch_subscribe", { id, topic, onEvent }),
+	/**
+	 *  Parses `spec` (HCL2 by Nomad itself, or JSON) and asks Nomad what
+	 *  running it would change. A job naming no namespace goes to `namespace`.
+	 */
+	clustersNomadJobPlan: (id: string, namespace: string | null, spec: string) => __TAURI_INVOKE<NomadPlan>("clusters_nomad_job_plan", { id, namespace, spec }),
+	/**  Runs a planned job unless it changed since, keeping `source` with it. */
+	clustersNomadJobRun: (id: string, plan: NomadPlanToRun, source: string | null) => __TAURI_INVOKE<NomadRunResult>("clusters_nomad_job_run", { id, plan, source }),
+	/**  A job's specification to edit: as submitted when Nomad kept it, else its JSON. */
+	clustersNomadJobSource: (id: string, namespace: string | null, jobId: string) => __TAURI_INVOKE<NomadJobSource>("clusters_nomad_job_source", { id, namespace, jobId }),
+	clustersNomadAllocation: (id: string, allocId: string) => __TAURI_INVOKE<NomadAllocationDetail>("clusters_nomad_allocation", { id, allocId }),
+	/**
+	 *  Streams a task's stdout and stderr, as `options` asks, until cancelled
+	 *  or they end.
+	 */
+	clustersNomadLogsSubscribe: (id: string, allocId: string, task: string, options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("clusters_nomad_logs_subscribe", { id, allocId, task, options, onEvent }),
+	/**  Opens a terminal in a task, like `nomad alloc exec -t`. */
+	clustersNomadExecStart: (id: string, allocId: string, options: NomadExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("clusters_nomad_exec_start", { id, allocId, options, onEvent }),
+	clustersNomadExecInput: (terminal: number, data: string) => __TAURI_INVOKE<null>("clusters_nomad_exec_input", { terminal, data }),
+	clustersNomadExecResize: (terminal: number, cols: number, rows: number) => __TAURI_INVOKE<null>("clusters_nomad_exec_resize", { terminal, cols, rows }),
+	/**  Ends a terminal and its command. */
+	clustersNomadExecClose: (terminal: number) => __TAURI_INVOKE<null>("clusters_nomad_exec_close", { terminal }),
+	clustersNomadNodes: (id: string) => __TAURI_INVOKE<NomadNodeView[]>("clusters_nomad_nodes", { id }),
+	clustersNomadNode: (id: string, nodeId: string) => __TAURI_INVOKE<NomadNodeDetail>("clusters_nomad_node", { id, nodeId }),
+	/**
+	 *  Starts draining a node with `spec`; with none, cancels its drain and,
+	 *  with `mark_eligible`, makes it eligible again.
+	 */
+	clustersNomadNodeDrain: (id: string, nodeId: string, spec: NomadDrainSpec | null, markEligible: boolean) => __TAURI_INVOKE<null>("clusters_nomad_node_drain", { id, nodeId, spec, markEligible }),
+	clustersNomadNodeEligibility: (id: string, nodeId: string, eligible: boolean) => __TAURI_INVOKE<null>("clusters_nomad_node_eligibility", { id, nodeId, eligible }),
+	/**
+	 *  The namespaces the Jobs page picks from; unlistable rather than an
+	 *  error when the token can't list them.
+	 */
+	clustersNomadNamespaces: (id: string) => __TAURI_INVOKE<NomadNamespaces>("clusters_nomad_namespaces", { id }),
+	/**
+	 *  The Roles and RoleBindings of `namespace` (every one without), the
+	 *  ClusterRoles and ClusterRoleBindings, and the subjects they name.
+	 */
+	clustersRbacIndex: (id: string, namespace: string | null) => __TAURI_INVOKE<RbacIndex>("clusters_rbac_index", { id, namespace }),
+	/**  What `subject` may do, from the bindings naming it or its groups. */
+	clustersRbacSubject: (id: string, subject: Subject, namespace: string | null) => __TAURI_INVOKE<SubjectPermissions>("clusters_rbac_subject", { id, subject, namespace }),
+	/**  What the credentials may do in `namespace` (the default one without). */
+	clustersRbacOwn: (id: string, namespace: string | null) => __TAURI_INVOKE<OwnPermissions>("clusters_rbac_own", { id, namespace }),
+	/**  Whether the credentials may do what `check` asks. */
+	clustersRbacCanI: (id: string, check: AccessCheck) => __TAURI_INVOKE<AccessAnswer>("clusters_rbac_can_i", { id, check }),
+	clustersNamespaces: (id: string) => __TAURI_INVOKE<NamespaceView[]>("clusters_namespaces", { id }),
+	/**  The workloads of `kind` in `namespace`, or in every Namespace without one. */
+	clustersWorkloadsList: (id: string, kind: WorkloadKind, namespace: string | null) => __TAURI_INVOKE<WorkloadView[]>("clusters_workloads_list", { id, kind, namespace }),
+	clustersWorkloadGet: (id: string, kind: WorkloadKind, namespace: string, name: string) => __TAURI_INVOKE<WorkloadDetail>("clusters_workload_get", { id, kind, namespace, name }),
+	/**  The Jobs a CronJob started, newest first. */
+	clustersCronJobJobs: (id: string, namespace: string, name: string) => __TAURI_INVOKE<WorkloadView[]>("clusters_cron_job_jobs", { id, namespace, name }),
+	/**
+	 *  The Pods in `namespace` (every one without), those matching a label
+	 *  `selector` or on a `node` when given.
+	 */
+	clustersPodsList: (id: string, namespace: string | null, selector: string | null, node: string | null) => __TAURI_INVOKE<PodView[]>("clusters_pods_list", { id, namespace, selector, node }),
+	clustersPodGet: (id: string, namespace: string, name: string) => __TAURI_INVOKE<PodDetail>("clusters_pod_get", { id, namespace, name }),
+	/**  The Events about one object, warnings first. */
+	clustersObjectEvents: (id: string, kind: ResourceKind, namespace: string | null, name: string) => __TAURI_INVOKE<EventView[]>("clusters_object_events", { id, kind, namespace, name }),
+	/**  An object as read-only YAML, without managedFields or Secret values. */
+	clustersResourceYaml: (id: string, kind: ResourceKind, namespace: string | null, name: string) => __TAURI_INVOKE<string>("clusters_resource_yaml", { id, kind, namespace, name }),
+	/**
+	 *  Watches the resources of `kind` in `namespace` (every one without) and
+	 *  says when they change, until cancelled.
+	 */
+	clustersWatchSubscribe: (id: string, kind: ResourceKind, namespace: string | null, onEvent: Channel<ResourcesChanged>) => __TAURI_INVOKE<number>("clusters_watch_subscribe", { id, kind, namespace, onEvent }),
+	clustersServicesList: (id: string, namespace: string | null) => __TAURI_INVOKE<ClusterServiceView[]>("clusters_services_list", { id, namespace }),
+	clustersServiceGet: (id: string, namespace: string, name: string) => __TAURI_INVOKE<ClusterServiceDetail>("clusters_service_get", { id, namespace, name }),
+	clustersIngressesList: (id: string, namespace: string | null) => __TAURI_INVOKE<IngressView[]>("clusters_ingresses_list", { id, namespace }),
+	clustersIngressGet: (id: string, namespace: string, name: string) => __TAURI_INVOKE<IngressDetail>("clusters_ingress_get", { id, namespace, name }),
+	clustersConfigMapsList: (id: string, namespace: string | null) => __TAURI_INVOKE<ConfigMapView[]>("clusters_config_maps_list", { id, namespace }),
+	clustersConfigMapGet: (id: string, namespace: string, name: string) => __TAURI_INVOKE<ConfigMapDetail>("clusters_config_map_get", { id, namespace, name }),
+	/**  Secrets with their keys and sizes, never their values. */
+	clustersSecretsList: (id: string, namespace: string | null) => __TAURI_INVOKE<SecretView[]>("clusters_secrets_list", { id, namespace }),
+	/**  A Secret's keys, labels and annotations, never its values. */
+	clustersSecretGet: (id: string, namespace: string, name: string) => __TAURI_INVOKE<SecretDetail>("clusters_secret_get", { id, namespace, name }),
+	/**
+	 *  One decoded value of a Secret, read when the user reveals it; neither
+	 *  cached nor logged.
+	 */
+	clustersSecretReveal: (id: string, namespace: string, name: string, key: string) => __TAURI_INVOKE<RevealedValue>("clusters_secret_reveal", { id, namespace, name, key }),
+	clustersNodesList: (id: string) => __TAURI_INVOKE<ClusterNodeView[]>("clusters_nodes_list", { id }),
+	clustersNodeGet: (id: string, name: string) => __TAURI_INVOKE<ClusterNodeDetail>("clusters_node_get", { id, name }),
+	/**  The Events in `namespace` (every one without), warnings first. */
+	clustersEventsList: (id: string, namespace: string | null) => __TAURI_INVOKE<EventView[]>("clusters_events_list", { id, namespace }),
+	/**
+	 *  The Cluster `id` at a glance (Nodes, Pods by phase, workloads short of
+	 *  Pods, the latest warnings), for the Overview; `namespace` (every one
+	 *  without) for what lives in Namespaces.
+	 */
+	clustersSummary: (id: string, namespace: string | null) => __TAURI_INVOKE<ClusterSummary>("clusters_summary", { id, namespace }),
+	/**
 	 *  Streams the logs of one Pod, or of several in one stream with each
 	 *  line labelled, until cancelled or they end.
 	 */
 	clustersPodLogsSubscribe: (id: string, namespace: string, sources: PodLogSource[], target: PodLogTarget, options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("clusters_pod_logs_subscribe", { id, namespace, sources, target, options, onEvent }),
+	/**
+	 *  Polls the Metrics API for `target` every 15 s while its page is open,
+	 *  until cancelled; says once and ends when metrics-server isn't there.
+	 */
+	clustersMetricsSubscribe: (id: string, target: MetricsTarget, onEvent: Channel<MetricsEvent>) => __TAURI_INVOKE<number>("clusters_metrics_subscribe", { id, target, onEvent }),
 	/**  Opens a terminal in a Pod's container, like `kubectl exec -it`. */
 	clustersExecStart: (id: string, namespace: string, pod: string, options: PodExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("clusters_exec_start", { id, namespace, pod, options, onEvent }),
 	clustersExecInput: (terminal: number, data: string) => __TAURI_INVOKE<null>("clusters_exec_input", { terminal, data }),
 	clustersExecResize: (terminal: number, cols: number, rows: number) => __TAURI_INVOKE<null>("clusters_exec_resize", { terminal, cols, rows }),
 	/**  Ends a Pod terminal and its process. */
 	clustersExecClose: (terminal: number) => __TAURI_INVOKE<void>("clusters_exec_close", { terminal }),
-	/**  Backs up everything Homeport holds to `path`, sealed with `passphrase`. */
-	dataBackup: (path: string, passphrase: string) => __TAURI_INVOKE<BackupOutcome>("data_backup", { path, passphrase }),
-	/**  What the backup at `path` holds, for the restore's confirmation. */
-	dataRestorePreview: (path: string, passphrase: string) => __TAURI_INVOKE<BackupContents>("data_restore_preview", { path, passphrase }),
-	/**
-	 *  Replaces everything Homeport holds with the backup at `path`, after
-	 *  copying the database to `homeport.db.before-restore-<time>` next to it,
-	 *  then reconnects to the restored Hosts and Clusters.
-	 */
-	dataRestore: (path: string, passphrase: string) => __TAURI_INVOKE<BackupContents>("data_restore", { path, passphrase }),
-	/**  The servers `~/.ssh/config` defines, as drafts of Hosts. */
-	hostsSshConfigPreview: () => __TAURI_INVOKE<ImportDraft[]>("hosts_ssh_config_preview"),
-	hostsSshConfigImport: (choices: ImportChoice[]) => __TAURI_INVOKE<ImportOutcome>("hosts_ssh_config_import", { choices }),
-	/**  The Docker CLI's contexts, as drafts of Hosts. */
-	hostsDockerContextsPreview: () => __TAURI_INVOKE<ImportDraft[]>("hosts_docker_contexts_preview"),
-	hostsDockerContextsImport: (choices: ImportChoice[]) => __TAURI_INVOKE<ImportOutcome>("hosts_docker_contexts_import", { choices }),
-	/**  Writes the Hosts `ids` to a file protected by `passphrase` (ADR 0013). */
-	hostsExport: (ids: string[], path: string, passphrase: string) => __TAURI_INVOKE<ExportOutcome>("hosts_export", { ids, path, passphrase }),
-	/**  The Hosts of an export file. */
-	hostsBundlePreview: (path: string, passphrase: string) => __TAURI_INVOKE<BundleHost[]>("hosts_bundle_preview", { path, passphrase }),
-	hostsBundleImport: (path: string, passphrase: string, choices: BundleChoice[]) => __TAURI_INVOKE<ImportOutcome>("hosts_bundle_import", { path, passphrase, choices }),
-	containersList: (hostId: string) => __TAURI_INVOKE<Container[]>("containers_list", { hostId }),
-	containersInspect: (hostId: string, id: string) => __TAURI_INVOKE<Value>("containers_inspect", { hostId, id }),
-	containersAct: (hostId: string, id: string, action: ContainerAction) => __TAURI_INVOKE<null>("containers_act", { hostId, id, action }),
-	containersRemove: (hostId: string, id: string, force: boolean, volumes: boolean) => __TAURI_INVOKE<null>("containers_remove", { hostId, id, force, volumes }),
-	containersRename: (hostId: string, id: string, name: string) => __TAURI_INVOKE<null>("containers_rename", { hostId, id, name }),
-	containersProcesses: (hostId: string, id: string) => __TAURI_INVOKE<Processes>("containers_processes", { hostId, id }),
-	/**  A container's healthcheck, status and last results; `None` without one. */
-	containersHealth: (hostId: string, id: string) => __TAURI_INVOKE<Health | null>("containers_health", { hostId, id }),
-	filesList: (hostId: string, containerId: string, path: string) => __TAURI_INVOKE<FileEntry[]>("files_list", { hostId, containerId, path }),
-	/**
-	 *  Saves a container path to `destination`; returns `true` when it was a
-	 *  directory saved as a `.tar` archive.
-	 */
-	filesDownload: (hostId: string, containerId: string, path: string, destination: string) => __TAURI_INVOKE<boolean>("files_download", { hostId, containerId, path, destination }),
-	filesUpload: (hostId: string, containerId: string, directory: string, sources: string[]) => __TAURI_INVOKE<null>("files_upload", { hostId, containerId, directory, sources }),
-	/**  Stops a stream started by any `*_subscribe` command. */
-	streamCancel: (id: number) => __TAURI_INVOKE<void>("stream_cancel", { id }),
-	logsSubscribe: (hostId: string, sources: LogSource[], options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("logs_subscribe", { hostId, sources, options, onEvent }),
-	statsSubscribe: (hostId: string, containerId: string, onSample: Channel<StatsSample>) => __TAURI_INVOKE<number>("stats_subscribe", { hostId, containerId, onSample }),
-	/**  Usage of every running container on a Host, refreshed every two seconds. */
-	usageSubscribe: (hostId: string, onUsage: Channel<ContainerUsage[]>) => __TAURI_INVOKE<number>("usage_subscribe", { hostId, onUsage }),
-	imagesPullSubscribe: (hostId: string, reference: string, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("images_pull_subscribe", { hostId, reference, onEvent }),
-	/**  Pushes an image name to its registry with the stored login, streaming progress. */
-	imagesPushSubscribe: (hostId: string, reference: string, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("images_push_subscribe", { hostId, reference, onEvent }),
-	/**
-	 *  Builds an image on a Host from a folder on this machine, streaming the
-	 *  output. Every stored login is sent, for private `FROM` images.
-	 */
-	imagesBuildSubscribe: (hostId: string, spec: BuildSpec, onEvent: Channel<BuildEvent>) => __TAURI_INVOKE<number>("images_build_subscribe", { hostId, spec, onEvent }),
-	/**  Saves images into one tar file on this machine, streaming progress. */
-	imagesSaveSubscribe: (hostId: string, names: string[], destination: string, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("images_save_subscribe", { hostId, names, destination, onEvent }),
-	/**  Loads the images in a tar file on this machine into a Host, streaming progress. */
-	imagesLoadSubscribe: (hostId: string, source: string, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("images_load_subscribe", { hostId, source, onEvent }),
-	/**  Creates an image from a root filesystem tar on this machine (`docker import`), streaming progress. */
-	imagesImportSubscribe: (hostId: string, source: string, spec: ImportSpec, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("images_import_subscribe", { hostId, source, spec, onEvent }),
-	/**  Saves a container's filesystem to a tar on this machine (`docker export`), streaming progress. */
-	containersExportSubscribe: (hostId: string, id: string, destination: string, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("containers_export_subscribe", { hostId, id, destination, onEvent }),
-	execStart: (hostId: string, containerId: string, options: ExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("exec_start", { hostId, containerId, options, onEvent }),
-	execInput: (session: number, data: string) => __TAURI_INVOKE<null>("exec_input", { session, data }),
-	execResize: (session: number, cols: number, rows: number) => __TAURI_INVOKE<null>("exec_resize", { session, cols, rows }),
-	execClose: (session: number) => __TAURI_INVOKE<void>("exec_close", { session }),
-	imagesList: (hostId: string) => __TAURI_INVOKE<Image[]>("images_list", { hostId }),
-	imagesInspect: (hostId: string, id: string) => __TAURI_INVOKE<Value>("images_inspect", { hostId, id }),
-	imagesHistory: (hostId: string, id: string) => __TAURI_INVOKE<ImageLayer[]>("images_history", { hostId, id }),
-	/**  Searches Docker Hub from the Host, as its pulls would reach it. */
-	imagesSearch: (hostId: string, term: string) => __TAURI_INVOKE<SearchResult[]>("images_search", { hostId, term }),
-	/**
-	 *  Whether a newer image is published for each container's image and each
-	 *  tagged image on a Host. Registry answers are cached (`force` skips the
-	 *  cache); a registry that can't be asked leaves its images `unknown`.
-	 */
-	imagesFreshness: (hostId: string, force: boolean) => __TAURI_INVOKE<FreshnessResult[]>("images_freshness", { hostId, force }),
-	imagesTag: (hostId: string, id: string, target: string) => __TAURI_INVOKE<null>("images_tag", { hostId, id, target }),
-	imagesRemove: (hostId: string, id: string, force: boolean) => __TAURI_INVOKE<string[]>("images_remove", { hostId, id, force }),
-	imagesPrune: (hostId: string, all: boolean) => __TAURI_INVOKE<PruneReport>("images_prune", { hostId, all }),
-	volumesList: (hostId: string) => __TAURI_INVOKE<VolumeView[]>("volumes_list", { hostId }),
-	/**
-	 *  Each volume's size in bytes, `null` when its driver doesn't report one.
-	 *  Apart from the list, because the Engine walks every volume to answer.
-	 */
-	volumesSizes: (hostId: string) => __TAURI_INVOKE<{ [key in string]: number | null }>("volumes_sizes", { hostId }),
-	volumesInspect: (hostId: string, name: string) => __TAURI_INVOKE<Value>("volumes_inspect", { hostId, name }),
-	volumesCreate: (hostId: string, input: VolumeInput) => __TAURI_INVOKE<string>("volumes_create", { hostId, input }),
-	volumesRemove: (hostId: string, name: string, force: boolean) => __TAURI_INVOKE<null>("volumes_remove", { hostId, name, force }),
-	volumesPrune: (hostId: string, all: boolean) => __TAURI_INVOKE<PruneReport>("volumes_prune", { hostId, all }),
-	/**
-	 *  The image of the helper container that opens volumes (ADR 0015), and
-	 *  whether the Host has it.
-	 */
-	volumesHelperImage: (hostId: string) => __TAURI_INVOKE<HelperImage>("volumes_helper_image", { hostId }),
-	/**
-	 *  Pulls the helper's image onto a Host, once the user agreed, streaming
-	 *  progress. A failure says how to get the image there by hand.
-	 */
-	volumesHelperPullSubscribe: (hostId: string, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("volumes_helper_pull_subscribe", { hostId, onEvent }),
-	/**
-	 *  Opens `volume` read-only in a helper; returns the session's id. With
-	 *  `pulled_image`, ending the session also removes the image Homeport pulled.
-	 */
-	volumesBrowseStart: (hostId: string, volume: string, pulledImage: boolean) => __TAURI_INVOKE<string>("volumes_browse_start", { hostId, volume, pulledImage }),
-	/**  Lists a folder of a browsed volume; paths are relative to the volume. */
-	volumesBrowseList: (hostId: string, session: string, path: string) => __TAURI_INVOKE<FileEntry[]>("volumes_browse_list", { hostId, session, path }),
-	/**  Saves a file, or a folder as a `.tar`, of a browsed volume to `destination`. */
-	volumesBrowseDownload: (hostId: string, session: string, path: string, destination: string) => __TAURI_INVOKE<boolean>("volumes_browse_download", { hostId, session, path, destination }),
-	/**  Ends a browse session, removing its helper. */
-	volumesBrowseEnd: (session: string) => __TAURI_INVOKE<null>("volumes_browse_end", { session }),
-	/**
-	 *  The running containers mounting a volume: a backup of it may be
-	 *  inconsistent, and a restore into it is refused until they stop.
-	 */
-	volumesRunningUsers: (hostId: string, volume: string) => __TAURI_INVOKE<string[]>("volumes_running_users", { hostId, volume }),
-	/**
-	 *  Backs a volume up to a `.tar` at `destination` on this machine,
-	 *  streaming progress. With `pulled_image`, the helper's image is removed
-	 *  afterwards if nothing else uses it.
-	 */
-	volumesBackupSubscribe: (hostId: string, volume: string, destination: string, pulledImage: boolean, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("volumes_backup_subscribe", { hostId, volume, destination, pulledImage, onEvent }),
-	/**
-	 *  Restores a volume, new or existing, from a `.tar` at `source` on this
-	 *  machine, streaming progress.
-	 */
-	volumesRestoreSubscribe: (hostId: string, source: string, spec: RestoreSpec, pulledImage: boolean, onEvent: Channel<TransferEvent>) => __TAURI_INVOKE<number>("volumes_restore_subscribe", { hostId, source, spec, pulledImage, onEvent }),
-	/**
-	 *  Copies a volume into a new one on the same Host; returns its name. With
-	 *  `pulled_image`, the helper's image is removed afterwards if unused.
-	 */
-	volumesClone: (hostId: string, source: string, target: string, pulledImage: boolean) => __TAURI_INVOKE<string>("volumes_clone", { hostId, source, target, pulledImage }),
-	networksList: (hostId: string) => __TAURI_INVOKE<NetworkView[]>("networks_list", { hostId }),
-	networksInspect: (hostId: string, id: string) => __TAURI_INVOKE<Value>("networks_inspect", { hostId, id }),
-	networksCreate: (hostId: string, input: NetworkInput) => __TAURI_INVOKE<string>("networks_create", { hostId, input }),
-	networksRemove: (hostId: string, id: string) => __TAURI_INVOKE<null>("networks_remove", { hostId, id }),
-	networksConnect: (hostId: string, network: string, container: string) => __TAURI_INVOKE<null>("networks_connect", { hostId, network, container }),
-	networksDisconnect: (hostId: string, network: string, container: string, force: boolean) => __TAURI_INVOKE<null>("networks_disconnect", { hostId, network, container, force }),
-	networksPrune: (hostId: string) => __TAURI_INVOKE<PruneReport>("networks_prune", { hostId }),
-	systemInfo: (hostId: string) => __TAURI_INVOKE<EngineInfo>("system_info", { hostId }),
-	systemDiskUsage: (hostId: string) => __TAURI_INVOKE<DiskUsage>("system_disk_usage", { hostId }),
-	systemPrune: (hostId: string, selection: PruneSelection) => __TAURI_INVOKE<SystemPruneReport>("system_prune", { hostId, selection }),
-	/**
-	 *  Creates and starts a container, in the Podman pod `pod` when given;
-	 *  returns its id. A pod on a Host that isn't Podman is `EngineUnsupported`.
-	 */
-	containersRun: (hostId: string, spec: RunSpec, pod: string | null) => __TAURI_INVOKE<string>("containers_run", { hostId, spec, pod }),
-	/**  Every namespace of the Host, with what each holds. */
-	containerdNamespaces: (hostId: string) => __TAURI_INVOKE<ContainerdNamespace[]>("containerd_namespaces", { hostId }),
-	containerdNamespaceCreate: (hostId: string, name: string) => __TAURI_INVOKE<null>("containerd_namespace_create", { hostId, name }),
-	/**  Removes an empty namespace; one that holds anything is refused. */
-	containerdNamespaceRemove: (hostId: string, name: string) => __TAURI_INVOKE<null>("containerd_namespace_remove", { hostId, name }),
-	/**  The containers of `namespace`, each with its task. */
-	containerdContainers: (hostId: string, namespace: string) => __TAURI_INVOKE<ContainerdContainer[]>("containerd_containers", { hostId, namespace }),
-	containerdContainerInspect: (hostId: string, namespace: string, id: string) => __TAURI_INVOKE<ContainerdContainerDetail>("containerd_container_inspect", { hostId, namespace, id }),
-	/**  Starts, stops (SIGKILL after 10 s), pauses or resumes a container's task. */
-	containerdContainerAct: (hostId: string, namespace: string, id: string, action: TaskAction) => __TAURI_INVOKE<null>("containerd_container_act", { hostId, namespace, id, action }),
-	/**  Sends a signal, by name or number, to a container's task. */
-	containerdContainerKill: (hostId: string, namespace: string, id: string, signal: string) => __TAURI_INVOKE<null>("containerd_container_kill", { hostId, namespace, id, signal }),
-	/**
-	 *  Removes a container and, unless `keep_snapshot`, its snapshot; `force`
-	 *  kills a running task first.
-	 */
-	containerdContainerRemove: (hostId: string, namespace: string, id: string, force: boolean, keepSnapshot: boolean) => __TAURI_INVOKE<null>("containerd_container_remove", { hostId, namespace, id, force, keepSnapshot }),
-	/**
-	 *  Where a container's output was kept, if anywhere, so the Logs tab can
-	 *  explain an empty one.
-	 */
-	containerdLogsSource: (hostId: string, namespace: string, id: string) => __TAURI_INVOKE<ContainerdLogSource>("containerd_logs_source", { hostId, namespace, id }),
-	/**
-	 *  Streams a container's logs from the file its creator wrote, read with
-	 *  `tail` on the Host's machine (ADR 0020).
-	 */
-	containerdLogsSubscribe: (hostId: string, namespace: string, id: string, options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("containerd_logs_subscribe", { hostId, namespace, id, options, onEvent }),
-	/**
-	 *  Opens a terminal in a container's running task, through FIFOs on the
-	 *  Host's machine (ADR 0020).
-	 */
-	containerdExecStart: (hostId: string, namespace: string, id: string, options: ContainerdExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("containerd_exec_start", { hostId, namespace, id, options, onEvent }),
-	containerdExecInput: (session: number, data: string) => __TAURI_INVOKE<null>("containerd_exec_input", { session, data }),
-	containerdExecResize: (session: number, cols: number, rows: number) => __TAURI_INVOKE<null>("containerd_exec_resize", { session, cols, rows }),
-	/**  Closes a terminal, killing its process; async, since that needs the runtime. */
-	containerdExecClose: (session: number) => __TAURI_INVOKE<null>("containerd_exec_close", { session }),
-	/**  The images of `namespace`, with their size for the Host's platform. */
-	containerdImages: (hostId: string, namespace: string) => __TAURI_INVOKE<ContainerdImage[]>("containerd_images", { hostId, namespace }),
-	/**  Removes an image no container of the namespace was made from. */
-	containerdImageRemove: (hostId: string, namespace: string, name: string) => __TAURI_INVOKE<null>("containerd_image_remove", { hostId, namespace, name }),
-	/**
-	 *  Pulls an image through containerd's Transfer service with the stored
-	 *  login for its registry, streaming progress.
-	 */
-	containerdImagesPullSubscribe: (hostId: string, namespace: string, reference: string, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("containerd_images_pull_subscribe", { hostId, namespace, reference, onEvent }),
-	/**
-	 *  The snapshots of a snapshotter (the Host's default when `None`) in
-	 *  `namespace`, largest first, each with what uses it.
-	 */
-	containerdSnapshots: (hostId: string, namespace: string, snapshotter: string | null) => __TAURI_INVOKE<ContainerdSnapshots>("containerd_snapshots", { hostId, namespace, snapshotter }),
-	/**  Removes a snapshot nothing uses and nothing is built on. */
-	containerdSnapshotRemove: (hostId: string, namespace: string, snapshotter: string, key: string) => __TAURI_INVOKE<null>("containerd_snapshot_remove", { hostId, namespace, snapshotter, key }),
-	/**  What a pasted trust token says, for the Host form to show before adding. */
-	incusTrustTokenRead: (token: string) => __TAURI_INVOKE<TrustTokenSummary>("incus_trust_token_read", { token }),
-	/**
-	 *  Adds an Incus Host over HTTPS with a trust token from
-	 *  `incus config trust add`: Homeport makes a client certificate, registers
-	 *  it with the token, and keeps the server's certificate pinned (ADR 0021).
-	 */
-	incusTrustAdd: (name: string, token: string) => __TAURI_INVOKE<HostView>("incus_trust_add", { name, token }),
-	/**  The projects the Host's connection may use, with what each holds. */
-	incusProjects: (hostId: string) => __TAURI_INVOKE<IncusProject[]>("incus_projects", { hostId }),
-	/**  The Instances of `project`, with their state. */
-	incusInstances: (hostId: string, project: string) => __TAURI_INVOKE<IncusInstance[]>("incus_instances", { hostId, project }),
-	/**  One Instance with its configuration, devices and snapshots' names. */
-	incusInstance: (hostId: string, project: string, name: string) => __TAURI_INVOKE<IncusInstanceDetail>("incus_instance", { hostId, project, name }),
-	/**
-	 *  Starts, stops, restarts, freezes or unfreezes an Instance; `force` stops
-	 *  or restarts it without waiting for its system to shut down.
-	 */
-	incusInstanceAct: (hostId: string, project: string, name: string, action: InstanceAction, force: boolean) => __TAURI_INVOKE<null>("incus_instance_act", { hostId, project, name, action, force }),
-	/**  Deletes an Instance with its snapshots; `stop_first` stops a running one. */
-	incusInstanceDelete: (hostId: string, project: string, name: string, stopFirst: boolean) => __TAURI_INVOKE<null>("incus_instance_delete", { hostId, project, name, stopFirst }),
-	/**
-	 *  Makes an Instance from an image, streaming the image download's
-	 *  progress until it's made (and started, if asked).
-	 */
-	incusInstanceCreateSubscribe: (hostId: string, project: string, spec: InstanceSpec, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("incus_instance_create_subscribe", { hostId, project, spec, onEvent }),
-	/**  The images of `project`, newest first. */
-	incusImages: (hostId: string, project: string) => __TAURI_INVOKE<IncusImage[]>("incus_images", { hostId, project }),
-	/**
-	 *  What `server` (a simplestreams image server) publishes for the Host's
-	 *  architecture, read from this computer and kept a few minutes.
-	 */
-	incusRemoteImages: (hostId: string, server: string) => __TAURI_INVOKE<RemoteImage[]>("incus_remote_images", { hostId, server }),
-	/**
-	 *  Copies an image from a remote server into `project`, streaming the
-	 *  download's progress.
-	 */
-	incusImageCopySubscribe: (hostId: string, project: string, copy: ImageCopy, onEvent: Channel<PullEvent>) => __TAURI_INVOKE<number>("incus_image_copy_subscribe", { hostId, project, copy, onEvent }),
-	/**  Fetches a newer build of an image from where it came from. */
-	incusImageRefresh: (hostId: string, project: string, fingerprint: string) => __TAURI_INVOKE<null>("incus_image_refresh", { hostId, project, fingerprint }),
-	/**  Deletes an image; Instances made from it keep their own copy. */
-	incusImageDelete: (hostId: string, project: string, fingerprint: string) => __TAURI_INVOKE<null>("incus_image_delete", { hostId, project, fingerprint }),
-	incusImageAliasAdd: (hostId: string, project: string, fingerprint: string, name: string) => __TAURI_INVOKE<null>("incus_image_alias_add", { hostId, project, fingerprint, name }),
-	incusImageAliasRemove: (hostId: string, project: string, name: string) => __TAURI_INVOKE<null>("incus_image_alias_remove", { hostId, project, name }),
-	/**
-	 *  Runs a command (a shell by default) in a running Instance, with a
-	 *  terminal, through Incus's exec websockets.
-	 */
-	incusExecStart: (hostId: string, project: string, name: string, options: IncusExecOptions, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("incus_exec_start", { hostId, project, name, options, onEvent }),
-	/**  Attaches to a running Instance's text console. */
-	incusConsoleStart: (hostId: string, project: string, name: string, cols: number, rows: number, onEvent: Channel<ExecEvent>) => __TAURI_INVOKE<number>("incus_console_start", { hostId, project, name, cols, rows, onEvent }),
-	/**  What an Instance printed on its console, if Incus kept it. */
-	incusConsoleLog: (hostId: string, project: string, name: string) => __TAURI_INVOKE<string>("incus_console_log", { hostId, project, name }),
-	incusTerminalInput: (session: number, data: string) => __TAURI_INVOKE<null>("incus_terminal_input", { session, data }),
-	incusTerminalResize: (session: number, cols: number, rows: number) => __TAURI_INVOKE<null>("incus_terminal_resize", { session, cols, rows }),
-	/**  Closes a terminal: hangs up an exec's command, detaches from a console. */
-	incusTerminalClose: (session: number) => __TAURI_INVOKE<null>("incus_terminal_close", { session }),
-	/**  The snapshots of an Instance, oldest first. */
-	incusSnapshots: (hostId: string, project: string, instance: string) => __TAURI_INVOKE<IncusSnapshot[]>("incus_snapshots", { hostId, project, instance }),
-	/**  Takes a snapshot of an Instance, stateful and expiring if asked. */
-	incusSnapshotCreate: (hostId: string, project: string, instance: string, request: SnapshotRequest) => __TAURI_INVOKE<null>("incus_snapshot_create", { hostId, project, instance, request }),
-	/**  Restores an Instance to one of its snapshots; what changed since is lost. */
-	incusSnapshotRestore: (hostId: string, project: string, instance: string, snapshot: string, stateful: boolean) => __TAURI_INVOKE<null>("incus_snapshot_restore", { hostId, project, instance, snapshot, stateful }),
-	incusSnapshotDelete: (hostId: string, project: string, instance: string, snapshot: string) => __TAURI_INVOKE<null>("incus_snapshot_delete", { hostId, project, instance, snapshot }),
-	/**  Every storage pool, with how full it is. */
-	incusStoragePools: (hostId: string, project: string) => __TAURI_INVOKE<IncusStoragePool[]>("incus_storage_pools", { hostId, project }),
-	/**  The volumes of a pool in `project`, with what uses each. */
-	incusStorageVolumes: (hostId: string, project: string, pool: string) => __TAURI_INVOKE<IncusVolume[]>("incus_storage_volumes", { hostId, project, pool }),
-	incusVolumeCreate: (hostId: string, project: string, pool: string, request: VolumeRequest) => __TAURI_INVOKE<null>("incus_volume_create", { hostId, project, pool, request }),
-	/**  Deletes a custom volume nothing uses. */
-	incusVolumeDelete: (hostId: string, project: string, pool: string, name: string) => __TAURI_INVOKE<null>("incus_volume_delete", { hostId, project, pool, name }),
-	/**  The networks `project` sees, managed ones first. */
-	incusNetworks: (hostId: string, project: string) => __TAURI_INVOKE<IncusNetwork[]>("incus_networks", { hostId, project }),
-	/**  A network's addresses on the host and its DHCP leases. */
-	incusNetworkState: (hostId: string, project: string, name: string) => __TAURI_INVOKE<IncusNetworkState>("incus_network_state", { hostId, project, name }),
-	incusBridgeCreate: (hostId: string, project: string, request: BridgeRequest) => __TAURI_INVOKE<null>("incus_bridge_create", { hostId, project, request }),
-	/**  Deletes a managed network nothing uses. */
-	incusNetworkDelete: (hostId: string, project: string, name: string) => __TAURI_INVOKE<null>("incus_network_delete", { hostId, project, name }),
-	/**  The profiles of `project`, with the Instances using each. */
-	incusProfiles: (hostId: string, project: string) => __TAURI_INVOKE<IncusProfile[]>("incus_profiles", { hostId, project }),
-	/**  One profile, with its YAML and the ETag to save it with. */
-	incusProfile: (hostId: string, project: string, name: string) => __TAURI_INVOKE<IncusProfileDetail>("incus_profile", { hostId, project, name }),
-	/**  Saves a profile's YAML; refused if it changed since `etag` was read. */
-	incusProfileUpdate: (hostId: string, project: string, name: string, yaml: string, etag: string | null) => __TAURI_INVOKE<null>("incus_profile_update", { hostId, project, name, yaml, etag }),
-	incusProfileCreate: (hostId: string, project: string, name: string, description: string) => __TAURI_INVOKE<null>("incus_profile_create", { hostId, project, name, description }),
-	/**  Deletes an unused profile other than `default`. */
-	incusProfileDelete: (hostId: string, project: string, name: string) => __TAURI_INVOKE<null>("incus_profile_delete", { hostId, project, name }),
-	podsList: (hostId: string) => __TAURI_INVOKE<PodmanPod[]>("pods_list", { hostId }),
-	podsInspect: (hostId: string, id: string) => __TAURI_INVOKE<PodmanPodDetail>("pods_inspect", { hostId, id }),
-	podsAct: (hostId: string, id: string, action: PodmanPodAction) => __TAURI_INVOKE<null>("pods_act", { hostId, id, action }),
-	/**  Removes a pod and its containers; returns how many containers went with it. */
-	podsRemove: (hostId: string, id: string, force: boolean) => __TAURI_INVOKE<number>("pods_remove", { hostId, id, force }),
-	/**  Creates a pod; returns its id. */
-	podsCreate: (hostId: string, spec: PodmanPodSpec) => __TAURI_INVOKE<string>("pods_create", { hostId, spec }),
-	/**  The Host's Quadlet units, with the containers each created. */
-	quadletsList: (hostId: string) => __TAURI_INVOKE<QuadletUnits>("quadlets_list", { hostId }),
-	/**  A unit's file, as Podman reads it on the Host (Podman 5.8 and later). */
-	quadletsFile: (hostId: string, name: string) => __TAURI_INVOKE<string>("quadlets_file", { hostId, name }),
-	/**
-	 *  Installs a unit with its extra files; `replace` edits an installed one.
-	 *  Returns where the files went on the Host.
-	 */
-	quadletsInstall: (hostId: string, install: QuadletInstall, replace: boolean) => __TAURI_INVOKE<string[]>("quadlets_install", { hostId, install, replace }),
-	/**  Removes a unit; `force` stops its service first. */
-	quadletsRemove: (hostId: string, name: string, force: boolean) => __TAURI_INVOKE<null>("quadlets_remove", { hostId, name, force }),
-	/**  Starts, stops or restarts a unit's service with `systemctl`. */
-	quadletsAct: (hostId: string, unit: string, scope: UnitScope, action: UnitAction) => __TAURI_INVOKE<null>("quadlets_act", { hostId, unit, scope, action }),
-	/**  The Run dialog's form for an existing container, for Duplicate and Edit. */
-	containersRunSpec: (hostId: string, id: string) => __TAURI_INVOKE<RunSpec>("containers_run_spec", { hostId, id }),
-	/**  What recreating a container with a changed configuration loses, for Edit's confirmation. */
-	containersEditLosses: (hostId: string, id: string) => __TAURI_INVOKE<Loss[]>("containers_edit_losses", { hostId, id }),
-	/**  Recreates a container from `spec` under the same name (Edit); returns the new id. */
-	containersRecreate: (hostId: string, id: string, spec: RunSpec) => __TAURI_INVOKE<string>("containers_recreate", { hostId, id, spec }),
-	/**  Commits a container to a new image; returns the image's id. */
-	containersCommit: (hostId: string, id: string, spec: CommitSpec) => __TAURI_INVOKE<string>("containers_commit", { hostId, id, spec }),
 	/**
 	 *  Every Stack on a Host: those running there plus undeployed Managed,
 	 *  Linked and Synced Stacks. Stacks started from compose files on this machine are
 	 *  recorded as Linked the first time they're seen.
 	 */
 	stacksList: (hostId: string) => __TAURI_INVOKE<Stack[]>("stacks_list", { hostId }),
-	stacksGet: (id: string) => __TAURI_INVOKE<ManagedStack>("stacks_get", { id }),
-	/**  The decrypted environment of a Managed Stack, for editing. */
-	stacksGetEnv: (id: string) => __TAURI_INVOKE<string>("stacks_get_env", { id }),
 	/**
 	 *  Checks a definition made of `files` (their YAML, merged in order) against
 	 *  the rules of its kind of Stack, and of a Swarm's when `swarm`.
 	 */
 	stacksCheck: (files: string[], kind: SourceKind, swarm: boolean) => __TAURI_INVOKE<ComposeCheck>("stacks_check", { files, kind, swarm }),
-	/**
-	 *  Creates a Managed Stack on a Host or a Swarm. Using the name of an
-	 *  External Stack adopts it.
-	 */
-	stacksCreate: (owner: StackOwner, name: string, files: ComposeFile[], env: string) => __TAURI_INVOKE<ManagedStack>("stacks_create", { owner, name, files, env }),
-	stacksUpdate: (id: string, files: ComposeFile[], env: string) => __TAURI_INVOKE<ManagedStack>("stacks_update", { id, files, env }),
-	/**
-	 *  Forgets a Managed Stack's definition; its containers keep running and it
-	 *  becomes an External Stack.
-	 */
-	stacksForget: (id: string) => __TAURI_INVOKE<null>("stacks_forget", { id }),
 	/**
 	 *  Sets the Compose profiles a Managed, Linked or Synced Stack deploys; they
 	 *  apply from its next compose command.
@@ -676,11 +754,39 @@ export const commands = {
 	 *  logins (`--with-registry-auth`).
 	 */
 	stacksSetRegistryAuth: (kind: SourceKind, id: string, on: boolean) => __TAURI_INVOKE<boolean>("stacks_set_registry_auth", { kind, id, on }),
+	stacksAct: (hostId: string, name: string, action: StackAction) => __TAURI_INVOKE<null>("stacks_act", { hostId, name, action }),
+	/**  Removes a Stack's containers and networks through the Engine API. */
+	stacksRemove: (hostId: string, name: string) => __TAURI_INVOKE<null>("stacks_remove", { hostId, name }),
+	/**
+	 *  Runs a compose command for the Managed, Linked or Synced Stack `id`,
+	 *  streaming its output. A Synced Stack's deploy that succeeds is noted as
+	 *  its deployed commit.
+	 */
+	stacksComposeSubscribe: (kind: SourceKind, id: string, action: ComposeAction, onEvent: Channel<ComposeEvent>) => __TAURI_INVOKE<number>("stacks_compose_subscribe", { kind, id, action, onEvent }),
+	/**
+	 *  What redeploying the Managed, Linked or Synced Stack `id` would change:
+	 *  its latest successful deploy against `candidate`, or against its stored
+	 *  definition (a Linked Stack's files as they are now, a Synced Stack's
+	 *  compose file at its fetched commit) when there's none. Environment values
+	 *  are compared here and never sent back.
+	 */
+	stacksDiff: (kind: SourceKind, id: string, candidate: Candidate | null) => __TAURI_INVOKE<DeployDiff>("stacks_diff", { kind, id, candidate }),
+	/**  A Stack's recorded deploys, newest first. */
+	stacksHistory: (id: string) => __TAURI_INVOKE<DeploySummary[]>("stacks_history", { id }),
+	/**  One recorded deploy, with its definition and the names of its variables. */
+	stacksDeploy: (id: string) => __TAURI_INVOKE<DeployDetail>("stacks_deploy", { id }),
+	/**
+	 *  Rolls a Managed Stack back to the recorded deploy `deploy_id`: puts its
+	 *  definition, environment and profiles back, then redeploys, streaming the
+	 *  output.
+	 */
+	stacksRollbackSubscribe: (deployId: string, onEvent: Channel<ComposeEvent>) => __TAURI_INVOKE<number>("stacks_rollback_subscribe", { deployId, onEvent }),
 	/**  What Compose would make of a folder picked for a new Linked Stack. */
 	stacksLinkedInspect: (path: string) => __TAURI_INVOKE<FolderProject>("stacks_linked_inspect", { path }),
 	/**
 	 *  Records a Linked Stack of a Host or a Swarm for the folder `working_dir`
-	 *  and its compose files. Using the name of an External Stack takes it over.
+	 *  and its compose files. It may take the name of an External Stack only
+	 *  when compose started that one from this folder: it is the same project.
 	 */
 	stacksLinkedCreate: (owner: StackOwner, name: string, workingDir: string, configFiles: string[]) => __TAURI_INVOKE<LinkedStack>("stacks_linked_create", { owner, name, workingDir, configFiles }),
 	/**
@@ -698,6 +804,38 @@ export const commands = {
 	stacksLinkedSetFiles: (id: string, configFiles: string[]) => __TAURI_INVOKE<LinkedFiles>("stacks_linked_set_files", { id, configFiles }),
 	/**  Forgets a Linked Stack: its record goes, its folder and containers stay. */
 	stacksLinkedForget: (id: string) => __TAURI_INVOKE<null>("stacks_linked_forget", { id }),
+	stacksGet: (id: string) => __TAURI_INVOKE<ManagedStack>("stacks_get", { id }),
+	/**  The decrypted environment of a Managed Stack, for editing. */
+	stacksGetEnv: (id: string) => __TAURI_INVOKE<string>("stacks_get_env", { id }),
+	/**
+	 *  Creates a Managed Stack on a Host or a Swarm. With `adopt`, it takes
+	 *  over the External Stack of that name; otherwise a name that runs there
+	 *  outside Homeport is refused, since deploying would replace it.
+	 */
+	stacksCreate: (owner: StackOwner, name: string, files: ComposeFile[], env: string, adopt: boolean) => __TAURI_INVOKE<ManagedStack>("stacks_create", { owner, name, files, env, adopt }),
+	stacksUpdate: (id: string, files: ComposeFile[], env: string) => __TAURI_INVOKE<ManagedStack>("stacks_update", { id, files, env }),
+	/**
+	 *  Forgets a Managed Stack's definition; its containers keep running and it
+	 *  becomes an External Stack.
+	 */
+	stacksForget: (id: string) => __TAURI_INVOKE<null>("stacks_forget", { id }),
+	/**  Every stored repository, never with its key or token. */
+	repositoriesList: () => __TAURI_INVOKE<Repository[]>("repositories_list"),
+	/**  Adds a repository, generating its deploy key when it uses one. */
+	repositoriesCreate: (draft: RepositoryDraft) => __TAURI_INVOKE<Repository>("repositories_create", { draft }),
+	/**  Replaces a repository's deploy key with a new one. */
+	repositoriesRotateKey: (id: string) => __TAURI_INVOKE<Repository>("repositories_rotate_key", { id }),
+	/**  Replaces a repository's user name and token. */
+	repositoriesSetToken: (id: string, username: string, token: string) => __TAURI_INVOKE<Repository>("repositories_set_token", { id, username, token }),
+	/**
+	 *  Forgets the SSH server key trusted for a repository, so the next
+	 *  command trusts the one the server presents.
+	 */
+	repositoriesResetHostKey: (id: string) => __TAURI_INVOKE<Repository>("repositories_reset_host_key", { id }),
+	/**  Removes a repository and its clone; refused while a Synced Stack uses it. */
+	repositoriesRemove: (id: string) => __TAURI_INVOKE<null>("repositories_remove", { id }),
+	/**  "Test access": the repository's branches and tags, as this computer sees them. */
+	repositoriesTest: (id: string) => __TAURI_INVOKE<RemoteRefs>("repositories_test", { id }),
 	/**
 	 *  Creates a Synced Stack on a Host or a Swarm from a repository's branch or
 	 *  tag: fetches it into the repository's clone and checks the compose file
@@ -737,106 +875,6 @@ export const commands = {
 	 *  containers are left alone and it becomes External.
 	 */
 	stacksSyncedForget: (id: string) => __TAURI_INVOKE<null>("stacks_synced_forget", { id }),
-	stacksAct: (hostId: string, name: string, action: StackAction) => __TAURI_INVOKE<null>("stacks_act", { hostId, name, action }),
-	/**  Removes a Stack's containers and networks through the Engine API. */
-	stacksRemove: (hostId: string, name: string) => __TAURI_INVOKE<null>("stacks_remove", { hostId, name }),
-	/**
-	 *  Runs a compose command for the Managed, Linked or Synced Stack `id`,
-	 *  streaming its output. A Synced Stack's deploy that succeeds is noted as
-	 *  its deployed commit.
-	 */
-	stacksComposeSubscribe: (kind: SourceKind, id: string, action: ComposeAction, onEvent: Channel<ComposeEvent>) => __TAURI_INVOKE<number>("stacks_compose_subscribe", { kind, id, action, onEvent }),
-	/**
-	 *  What redeploying the Managed, Linked or Synced Stack `id` would change:
-	 *  its latest successful deploy against `candidate`, or against its stored
-	 *  definition (a Linked Stack's files as they are now, a Synced Stack's
-	 *  compose file at its fetched commit) when there's none. Environment values
-	 *  are compared here and never sent back.
-	 */
-	stacksDiff: (kind: SourceKind, id: string, candidate: Candidate | null) => __TAURI_INVOKE<DeployDiff>("stacks_diff", { kind, id, candidate }),
-	/**  A Stack's recorded deploys, newest first. */
-	stacksHistory: (id: string) => __TAURI_INVOKE<DeploySummary[]>("stacks_history", { id }),
-	/**  One recorded deploy, with its definition and the names of its variables. */
-	stacksDeploy: (id: string) => __TAURI_INVOKE<DeployDetail>("stacks_deploy", { id }),
-	/**
-	 *  Rolls a Managed Stack back to the recorded deploy `deploy_id`: puts its
-	 *  definition, environment and profiles back, then redeploys, streaming the
-	 *  output.
-	 */
-	stacksRollbackSubscribe: (deployId: string, onEvent: Channel<ComposeEvent>) => __TAURI_INVOKE<number>("stacks_rollback_subscribe", { deployId, onEvent }),
-	/**  Every Swarm the Hosts belong to, once each. */
-	swarmsList: () => __TAURI_INVOKE<SwarmView[]>("swarms_list"),
-	/**  What a connected manager says about the Swarm `swarm_id`. */
-	swarmInspect: (swarmId: string) => __TAURI_INVOKE<SwarmSummary>("swarm_inspect", { swarmId }),
-	/**  A Swarm's nodes, each with the Host it is, if it's one. */
-	swarmNodesList: (swarmId: string) => __TAURI_INVOKE<SwarmNode[]>("swarm_nodes_list", { swarmId }),
-	swarmNodesInspect: (swarmId: string, id: string) => __TAURI_INVOKE<Value>("swarm_nodes_inspect", { swarmId, id }),
-	/**
-	 *  Changes a node's availability, role or labels, from the node as read at
-	 *  `version`; refuses to demote the last manager or drain every node.
-	 */
-	swarmNodesUpdate: (swarmId: string, id: string, version: number, change: NodeChange) => __TAURI_INVOKE<null>("swarm_nodes_update", { swarmId, id, version, change }),
-	swarmNodesRemove: (swarmId: string, id: string, force: boolean) => __TAURI_INVOKE<null>("swarm_nodes_remove", { swarmId, id, force }),
-	/**  Every service of a Swarm, with its running and desired tasks. */
-	swarmServicesList: (swarmId: string) => __TAURI_INVOKE<ServiceView[]>("swarm_services_list", { swarmId }),
-	swarmServicesInspect: (swarmId: string, id: string) => __TAURI_INVOKE<Value>("swarm_services_inspect", { swarmId, id }),
-	/**  Sets a replicated service's replicas, from the service as read at `version`. */
-	swarmServicesScale: (swarmId: string, id: string, version: number, replicas: number) => __TAURI_INVOKE<null>("swarm_services_scale", { swarmId, id, version, replicas }),
-	/**  Puts back a service's previous spec. */
-	swarmServicesRollback: (swarmId: string, id: string) => __TAURI_INVOKE<null>("swarm_services_rollback", { swarmId, id }),
-	swarmServicesRemove: (swarmId: string, id: string) => __TAURI_INVOKE<null>("swarm_services_remove", { swarmId, id }),
-	/**  Creates a service from the Create service form, returning its ID. */
-	swarmServicesCreate: (swarmId: string, input: ServiceSpecInput) => __TAURI_INVOKE<string>("swarm_services_create", { swarmId, input }),
-	/**
-	 *  Changes a service's image, environment or replicas, from the service as
-	 *  read at `version`; the Swarm rolls its tasks over.
-	 */
-	swarmServicesUpdate: (swarmId: string, id: string, version: number, change: ServiceChange) => __TAURI_INVOKE<null>("swarm_services_update", { swarmId, id, version, change }),
-	/**  The Swarm's overlay networks, which services attach to. */
-	swarmNetworksList: (swarmId: string) => __TAURI_INVOKE<NetworkView[]>("swarm_networks_list", { swarmId }),
-	/**  Makes `host_id` the first manager of a new Swarm, returning its ID. */
-	swarmInit: (hostId: string, advertiseAddr: string | null, listenAddr: string | null) => __TAURI_INVOKE<string>("swarm_init", { hostId, advertiseAddr, listenAddr }),
-	/**  Joins `host_id` to a Swarm as a worker or a manager. */
-	swarmJoin: (hostId: string, target: JoinTarget, role: JoinRole, advertiseAddr: string | null) => __TAURI_INVOKE<null>("swarm_join", { hostId, target, role, advertiseAddr }),
-	/**  Has `host_id` leave its Swarm; a manager needs `force`. */
-	swarmLeave: (hostId: string, force: boolean) => __TAURI_INVOKE<null>("swarm_leave", { hostId, force }),
-	/**
-	 *  The join tokens and manager addresses of a Swarm, for its Join commands;
-	 *  never stored or logged.
-	 */
-	swarmJoinInfo: (swarmId: string) => __TAURI_INVOKE<JoinInfo>("swarm_join_info", { swarmId }),
-	/**  The Stacks deployed to a Swarm, found by their namespace label. */
-	swarmStacksList: (swarmId: string) => __TAURI_INVOKE<Stack[]>("swarm_stacks_list", { swarmId }),
-	/**  The networks, secrets and configs of a swarm stack. */
-	swarmStacksParts: (swarmId: string, name: string) => __TAURI_INVOKE<SwarmStackParts>("swarm_stacks_parts", { swarmId, name }),
-	/**  Removes a swarm stack as `docker stack rm` does, through the Engine API. */
-	swarmStacksRemove: (swarmId: string, name: string) => __TAURI_INVOKE<RemoveReport>("swarm_stacks_remove", { swarmId, name }),
-	/**
-	 *  Links the External swarm stack `name` to a folder on this computer,
-	 *  once its compose files are checked to declare the services it runs.
-	 */
-	swarmStacksLink: (swarmId: string, name: string, workingDir: string) => __TAURI_INVOKE<LinkedStack>("swarm_stacks_link", { swarmId, name, workingDir }),
-	/**
-	 *  Streams the logs of every task of a service, each line labelled with its
-	 *  task and node.
-	 */
-	swarmServiceLogsSubscribe: (swarmId: string, id: string, options: LogOptions, onEvent: Channel<LogEvent>) => __TAURI_INVOKE<number>("swarm_service_logs_subscribe", { swarmId, id, options, onEvent }),
-	/**
-	 *  The tasks of a Swarm, of one of its services or of one of its nodes,
-	 *  newest first, each with the Host its node is, if it's one.
-	 */
-	swarmTasksList: (swarmId: string, filter: TaskFilter) => __TAURI_INVOKE<SwarmTask[]>("swarm_tasks_list", { swarmId, filter }),
-	swarmTasksInspect: (swarmId: string, id: string) => __TAURI_INVOKE<Value>("swarm_tasks_inspect", { swarmId, id }),
-	/**  A Swarm's secrets, never their values. */
-	swarmSecretsList: (swarmId: string) => __TAURI_INVOKE<SwarmObject[]>("swarm_secrets_list", { swarmId }),
-	/**  Sends a new secret's value to the Swarm once; Homeport keeps none of it. */
-	swarmSecretsCreate: (swarmId: string, input: ObjectInput) => __TAURI_INVOKE<string>("swarm_secrets_create", { swarmId, input }),
-	swarmSecretsRemove: (swarmId: string, id: string) => __TAURI_INVOKE<null>("swarm_secrets_remove", { swarmId, id }),
-	swarmConfigsList: (swarmId: string) => __TAURI_INVOKE<SwarmObject[]>("swarm_configs_list", { swarmId }),
-	swarmConfigsCreate: (swarmId: string, input: ObjectInput) => __TAURI_INVOKE<string>("swarm_configs_create", { swarmId, input }),
-	/**  A config's content, as text when it is. */
-	swarmConfigsInspect: (swarmId: string, id: string) => __TAURI_INVOKE<ConfigContent>("swarm_configs_inspect", { swarmId, id }),
-	swarmConfigsRemove: (swarmId: string, id: string) => __TAURI_INVOKE<null>("swarm_configs_remove", { swarmId, id }),
 };
 
 /** Events */
@@ -852,6 +890,36 @@ export const events = {
 };
 
 /* Types */
+/**  The API server's answer. */
+export type AccessAnswer = {
+	allowed: boolean,
+	/**  Explicitly denied, so no other authorizer was asked. */
+	denied: boolean,
+	reason: string | null,
+	evaluationError: string | null,
+	/**  The resource checked, as kubectl names it (`deployments.apps`). */
+	resource: string,
+	/**  `false` when the Cluster serves no type of that name: it was asked as typed. */
+	known: boolean,
+	/**  The same question for a terminal. */
+	command: string,
+};
+
+/**  "Can I …?": a verb on a resource, as `kubectl auth can-i` asks it. */
+export type AccessCheck = {
+	verb: string,
+	/**  `secrets`, `deploy`, `deployments.apps`, or `*`. */
+	resource: string,
+	/**  Its API group, when `resource` doesn't name it. */
+	group: string | null,
+	/**  `log`, `exec`, `scale`… */
+	subresource: string | null,
+	/**  One object, by name. */
+	name: string | null,
+	/**  Every Namespace (or none, for a cluster-wide resource) with `None`. */
+	namespace: string | null,
+};
+
 export type AddedCluster = {
 	id: string,
 	name: string,
@@ -910,6 +978,13 @@ export type AppInfo = {
 	version: string,
 	os: string,
 	arch: string,
+};
+
+/**  A binding that applies to a subject, and how. */
+export type AppliedBinding = {
+	binding: BindingView,
+	/**  The group it names, when it doesn't name the subject itself. */
+	throughGroup: string | null,
 };
 
 /**  What applying a document does, or did. */
@@ -977,6 +1052,12 @@ export type BackupContents = {
 	registries: number,
 	repositories: number,
 	settings: boolean,
+	/**
+	 *  What it holds without its secret, by name: Hosts, Clusters, Stacks,
+	 *  registry logins (left out altogether) and repositories. Restoring
+	 *  replaces the secrets they have here with none.
+	 */
+	withoutSecrets: string[],
 };
 
 /**  What a backup wrote. */
@@ -1020,6 +1101,22 @@ export type BastionKeyInput = {
 	index: number,
 	privateKey: string,
 	passphrase: string | null,
+};
+
+export type BindingKind = "RoleBinding" | "ClusterRoleBinding";
+
+/**  A RoleBinding (in its Namespace) or a ClusterRoleBinding. */
+export type BindingView = {
+	kind: BindingKind,
+	name: string,
+	namespace: string | null,
+	roleKind: RoleKind,
+	roleName: string,
+	/**  Whether that role was found among those listed. */
+	roleFound: boolean,
+	/**  ServiceAccounts' Namespaces filled in as Kubernetes reads them. */
+	subjects: Subject[],
+	created: string | null,
 };
 
 /**  What the New bridge dialog asks for. */
@@ -1090,6 +1187,11 @@ export type Candidate = {
 export type Capabilities = {
 	/**  An OS keychain is reachable, so SSH, TLS, stack `.env` and registry secrets can be stored. */
 	keychain: boolean,
+	/**
+	 *  The keychain has no entry for the key the stored secrets were sealed
+	 *  with, and Homeport made no new one over them: `keychain_start_over`.
+	 */
+	keychainEntryMissing: boolean,
 	/**  Whether Managed Stacks can be deployed here. */
 	compose: ComposeSupport,
 	/**
@@ -1186,6 +1288,9 @@ export type ClusterNodeView = {
 	/**  Allocatable CPU and memory, as Kubernetes writes them (`4`, `16302048Ki`). */
 	cpu: string | null,
 	memory: string | null,
+	/**  The same in millicores and bytes, to set what it uses against. */
+	cpuMillicores: number | null,
+	memoryBytes: number | null,
 	taints: number,
 	created: string | null,
 };
@@ -1400,6 +1505,12 @@ export type Container = {
 };
 
 export type ContainerAction = "start" | "stop" | "restart" | "pause" | "unpause" | "kill";
+
+/**  A container's samples since its Pod's page opened. */
+export type ContainerHistory = {
+	name: string,
+	samples: UsageSample[],
+};
 
 export type ContainerUsage = {
 	id: string,
@@ -1639,6 +1750,21 @@ export type DeviceSpec = {
 	permissions: string,
 };
 
+/**  One file of the bundle, as the preview lists it. */
+export type DiagnosticsFile = {
+	/**  Its path in the zip, such as `logs/Homeport.log`. */
+	name: string,
+	/**  Its size once secrets are removed, in bytes. */
+	size: number,
+};
+
+/**  What the bundle would hold, for the user to read before saving it. */
+export type DiagnosticsPreview = {
+	files: DiagnosticsFile[],
+	/**  `summary.json`, as it would be written. */
+	summary: string,
+};
+
 export type DiskUsage = {
 	images: UsageLine,
 	containers: UsageLine,
@@ -1713,7 +1839,9 @@ export type EnvKeyChange = {
 /**  Stable machine-readable identifier of a failure, one per case the user can act on. */
 export type ErrorCode = 
 /**  A failure that started in the frontend, outside any command. */
-"unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | 
+"unknown" | "io" | "json" | "db" | "db_locked" | "db_corrupt" | "db_migration" | 
+/**  The database was migrated by a newer Homeport; nothing was written to it. */
+"db_from_newer_version" | "tauri" | "validation" | "not_found" | "keychain_unavailable" | "credentials_lost" | "update_network" | "update_signature_invalid" | "update_permission_denied" | "update_failed" | 
 /**  The OS refused the entry that starts Homeport at login. */
 "autostart_failed" | 
 /**  An export file that the passphrase doesn't open, or that was damaged. */
@@ -1982,6 +2110,12 @@ export type GitSupport = { state: "available"; cli: GitCli } |
 
 /**  GPUs requested from the vendor's container toolkit (`--gpus`). */
 export type GpuSpec = { kind: "all" } | { kind: "count"; count: number } | { kind: "ids"; ids: string[] };
+
+/**  What a set of rules grants, one row per resource and per URL. */
+export type Grants = {
+	resources: ResourceGrant[],
+	urls: UrlGrant[],
+};
 
 export type Health = {
 	/**  `starting`, `healthy` or `unhealthy`. */
@@ -2738,6 +2872,42 @@ export type ManagedStack = {
 /**  How a manager node takes part in the Swarm's Raft. */
 export type ManagerStatus = "leader" | "reachable" | "unreachable";
 
+/**  What a metrics stream sends, every 15 s. */
+export type MetricsEvent = 
+/**
+ *  The Cluster serves no Metrics API: metrics-server isn't installed.
+ *  Sent once; the stream ends.
+ */
+{ type: "notInstalled" } | 
+/**  The credentials may not read metrics. Sent once; the stream ends. */
+{ type: "forbidden"; error: AppError } | 
+/**
+ *  The Metrics API is registered but doesn't answer, as while
+ *  metrics-server starts. The stream goes on.
+ */
+{ type: "notResponding"; error: AppError } | 
+/**  Any other failure, such as the Cluster being unreachable. The stream goes on. */
+{ type: "failed"; error: AppError } | 
+/**  Every Pod's latest sample. */
+{ type: "pods"; pods: PodUsage[] } | 
+/**  Every Node's latest sample. */
+{ type: "nodes"; nodes: NodeUsage[] } | 
+/**  Each container's samples since the page opened. */
+{ type: "pod"; containers: ContainerHistory[] } | 
+/**  The Node's samples since the page opened. */
+{ type: "node"; samples: UsageSample[] };
+
+/**  What a page shows metrics of. */
+export type MetricsTarget = 
+/**  The Pods of a Namespace, or of every one: for the Pods list. */
+{ type: "pods"; namespace: string | null } | 
+/**  Every Node: for the Nodes list. */
+{ type: "nodes" } | 
+/**  One Pod, its containers' samples kept while its page is open. */
+{ type: "pod"; namespace: string; name: string } | 
+/**  One Node, its samples kept while its page is open. */
+{ type: "node"; name: string };
+
 /**
  *  A kind or k3d cluster whose containers run on a local Host, but that
  *  the kubeconfig doesn't reach yet.
@@ -2824,6 +2994,13 @@ export type NodeTaint = {
 	key: string,
 	value: string | null,
 	effect: string,
+};
+
+export type NodeUsage = {
+	name: string,
+	/**  When metrics-server read it, in Unix seconds. */
+	time: number,
+	usage: ResourceUsage,
 };
 
 export type NodeView = {
@@ -3250,6 +3427,22 @@ export type ObjectValue =
  */
 { kind: "file"; path: string };
 
+/**  What the credentials may do in a Namespace, as the API server says. */
+export type OwnPermissions = {
+	/**  The Namespace asked about: the page's, or the Cluster's default one. */
+	namespace: string,
+	/**  `None` when the Cluster can't say (before Kubernetes 1.28). */
+	user: UserView | null,
+	/**  Its rules there, cluster-wide ones included, merged. */
+	grants: Grants,
+	/**
+	 *  The API server's own caveat: an authorizer (a webhook, ABAC) that
+	 *  can't list rules may allow more than this.
+	 */
+	incomplete: boolean,
+	evaluationError: string | null,
+};
+
 /**  An object it refers to as its owner. */
 export type OwnerRef = {
 	apiVersion: string,
@@ -3272,6 +3465,16 @@ export type Param = string | number;
 /**  One part of the summary, or why it couldn't be read. */
 export type Part<T> = { state: "read"; value: T } | { state: "failed"; error: AppError };
 
+/**  What a set of bindings grants in one Namespace, or cluster-wide. */
+export type PermissionScope = {
+	/**
+	 *  `None` cluster-wide: in every Namespace, on cluster-scoped resources
+	 *  and non-resource URLs.
+	 */
+	namespace: string | null,
+	grants: Grants,
+};
+
 /**  A container of a Pod and its state. */
 export type PodContainer = {
 	name: string,
@@ -3290,6 +3493,13 @@ export type PodContainer = {
 	lastReason: string | null,
 	/**  The ports it declares. */
 	ports: PodPort[],
+	cpu: ResourceBounds,
+	memory: ResourceBounds,
+};
+
+export type PodContainerUsage = {
+	name: string,
+	usage: ResourceUsage,
 };
 
 export type PodCounts = {
@@ -3351,6 +3561,16 @@ export type PodPort = {
 	name: string | null,
 };
 
+/**  A Pod's latest sample: the sum of its containers, and each of them. */
+export type PodUsage = {
+	namespace: string,
+	name: string,
+	/**  When metrics-server read it, in Unix seconds. */
+	time: number,
+	usage: ResourceUsage,
+	containers: PodContainerUsage[],
+};
+
 export type PodView = {
 	namespace: string,
 	name: string,
@@ -3371,6 +3591,9 @@ export type PodView = {
 	created: string | null,
 	owner: OwnerView | null,
 	images: string[],
+	/**  What its containers request and are limited to, summed. */
+	cpu: ResourceBounds,
+	memory: ResourceBounds,
 };
 
 /**  A pod as the Pods page lists it. */
@@ -3582,6 +3805,23 @@ export type QuadletUnits = {
 	runsSystemctl: boolean,
 };
 
+/**  The RBAC objects of a Cluster, in a Namespace (with the cluster-wide ones). */
+export type RbacIndex = {
+	/**  The Namespace whose Roles and RoleBindings these are; every one with `None`. */
+	namespace: string | null,
+	/**  ClusterRoles first, then Roles by Namespace. */
+	roles: RoleView[],
+	/**  ClusterRoleBindings first, then RoleBindings by Namespace. */
+	bindings: BindingView[],
+	/**  Everyone a binding names, Users, then Groups, then ServiceAccounts. */
+	subjects: SubjectEntry[],
+	/**
+	 *  The lists the credentials may not read, each as why: what is shown
+	 *  is computed without them.
+	 */
+	refused: AppError[],
+};
+
 /**  What a Synced Stack follows. */
 export type RefKind = "branch" | "tag";
 
@@ -3772,7 +4012,37 @@ export type RepositoryDraft = {
 	token: string | null,
 };
 
+/**
+ *  What containers request of a resource and are limited to: CPU in
+ *  millicores, memory in bytes. `None` when unset.
+ */
+export type ResourceBounds = {
+	request: number | null,
+	limit: number | null,
+};
+
+/**  What a set of rules grants on one resource (or a wildcard of them). */
+export type ResourceGrant = {
+	apiGroup: string,
+	/**  `pods`, `pods/log`, `*` or `*\/scale`. */
+	resource: string,
+	/**  Only on these objects, when not empty. */
+	resourceNames: string[],
+	/**  In the order the matrix shows them; `["*"]` for every verb. */
+	verbs: string[],
+	/**  The bindings granting it, by their index in the list given with it. */
+	bindings: number[],
+};
+
 export type ResourceKind = "namespace" | "deployment" | "statefulSet" | "daemonSet" | "job" | "cronJob" | "pod" | "service" | "ingress" | "configMap" | "secret" | "node" | "event";
+
+/**  What a container, Pod or Node uses. */
+export type ResourceUsage = {
+	/**  In millicores: 1000 is one CPU core. */
+	cpu: number | null,
+	/**  In bytes: the working set, which is what the kubelet evicts on. */
+	memory: number,
+};
 
 /**  Told when the resources a list shows changed. */
 export type ResourcesChanged = {
@@ -3802,6 +4072,27 @@ export type RevealedValue = {
 	binary: boolean,
 };
 
+export type RoleKind = "Role" | "ClusterRole";
+
+/**  A Role (in its Namespace) or a ClusterRole. */
+export type RoleView = {
+	kind: RoleKind,
+	name: string,
+	/**  A Role's; `None` for a ClusterRole. */
+	namespace: string | null,
+	/**  With aggregation resolved, for an aggregated ClusterRole. */
+	rules: Rule[],
+	/**
+	 *  The label selectors of its `aggregationRule`, as kubectl writes them;
+	 *  empty when it isn't aggregated.
+	 */
+	aggregation: string[],
+	/**  The ClusterRoles those selectors match, whose rules it holds. */
+	aggregatedFrom: string[],
+	labels: { [key in string]: string },
+	created: string | null,
+};
+
 /**  Rolling a release back to one of its revisions. */
 export type RollbackRequest = {
 	name: string,
@@ -3809,6 +4100,22 @@ export type RollbackRequest = {
 	revision: number,
 	wait: boolean,
 	timeoutSeconds: number | null,
+};
+
+/**
+ *  One rule of a Role or ClusterRole, as RBAC writes it: `*` stands for
+ *  every verb, API group, resource or URL.
+ */
+export type Rule = {
+	verbs: string[],
+	/**  `""` for the core group. */
+	apiGroups: string[],
+	/**  `pods`, `pods/log` (a subresource), `*\/scale`. */
+	resources: string[],
+	/**  Only these objects, by name, when not empty. */
+	resourceNames: string[],
+	/**  Paths that aren't resources (`/healthz`, `/api/*`). */
+	nonResourceUrls: string[],
 };
 
 export type RunSpec = {
@@ -4147,6 +4454,13 @@ export type StackState =
 /**  A Managed, Linked or Synced Stack with no containers yet. */
 "notDeployed";
 
+/**  The database couldn't be opened. */
+export type StartupProblem = {
+	error: AppError,
+	/**  Where the database is, for the user to find and keep. */
+	databasePath: string,
+};
+
 export type StatsSample = {
 	/**  Percent of one CPU; 200 means two CPUs fully used. */
 	cpuPercent: number | null,
@@ -4158,6 +4472,37 @@ export type StatsSample = {
 	blockRead: number,
 	blockWrite: number,
 	pids: number,
+};
+
+/**  Who a binding grants its role to. */
+export type Subject = {
+	kind: SubjectKind,
+	name: string,
+	/**  A ServiceAccount's; `None` for a User or Group. */
+	namespace: string | null,
+};
+
+/**  A subject named by at least one binding. */
+export type SubjectEntry = {
+	subject: Subject,
+	/**  How many bindings name it directly. */
+	bindings: number,
+};
+
+export type SubjectKind = "User" | "Group" | "ServiceAccount";
+
+/**  What a subject may do, as its bindings grant it. */
+export type SubjectPermissions = {
+	subject: Subject,
+	/**  The Namespace its RoleBindings were read in; every one with `None`. */
+	namespace: string | null,
+	/**  The groups Kubernetes puts it in by itself, whose bindings count too. */
+	groups: string[],
+	/**  The bindings that apply, which grants refer to by index. */
+	bindings: AppliedBinding[],
+	/**  Cluster-wide first, then by Namespace. */
+	scopes: PermissionScope[],
+	refused: AppError[],
 };
 
 /**  A Host's place in a Swarm. */
@@ -4503,11 +4848,30 @@ export type UpgradeRequest = {
 	timeoutSeconds: number | null,
 };
 
+/**  What a set of rules grants on one non-resource URL. */
+export type UrlGrant = {
+	url: string,
+	verbs: string[],
+	bindings: number[],
+};
+
 export type UsageLine = {
 	total: number,
 	active: number,
 	size: number,
 	reclaimable: number,
+};
+
+/**  One reading, at its Unix time in seconds. */
+export type UsageSample = {
+	time: number,
+	usage: ResourceUsage,
+};
+
+/**  Who the credentials sign in as. */
+export type UserView = {
+	username: string,
+	groups: string[],
 };
 
 export type Value = null | boolean | number | string | Value[] | { [key in string]: Value };

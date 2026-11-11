@@ -1,7 +1,7 @@
 //! Wiring the crates together once the app starts: opens the database and
 //! the keychain, then builds the [`AppState`] every command is given.
 
-use std::{error::Error, sync::Arc};
+use std::{error::Error, path::PathBuf, sync::Arc};
 
 use tauri::{App, Manager};
 
@@ -13,10 +13,10 @@ use homeport_hosts::{
 use homeport_registries::RegistryStore;
 use homeport_settings::SettingsService;
 use homeport_stacks::{
-    history::DeployHistory,
     linked::{FileCache, LinkedStore},
-    store::StackStore,
+    store::{history::DeployHistory, StackStore},
     synced::{SyncedStacks, SyncedStore},
+    Stacks,
 };
 use homeport_storage::{Db, Keychain, SecretBox};
 
@@ -25,21 +25,42 @@ use super::{
     AppState,
 };
 
+/// The OS keychain entry holding the key every secret is sealed with.
+pub const KEYCHAIN: Keychain = Keychain {
+    service: "com.homeport.app",
+    account: "secrets-key",
+};
+
+/// Why the app's state couldn't be built.
+pub enum Failure {
+    /// The database at this path couldn't be opened: shown in the window.
+    Database(Box<crate::error::AppError>, PathBuf),
+    /// Anything else, which ends the app.
+    Other(Box<dyn Error>),
+}
+
+impl<E: Into<Box<dyn Error>>> From<E> for Failure {
+    fn from(e: E) -> Self {
+        Self::Other(e.into())
+    }
+}
+
 /// Builds the app's state and starts connecting to every Host.
-pub fn state(app: &App) -> Result<AppState, Box<dyn Error>> {
+pub fn state(app: &App) -> Result<AppState, Failure> {
     let config_dir = app.path().app_config_dir()?;
     let data_dir = app.path().app_data_dir()?;
-    let db = Arc::new(Db::open(&data_dir.join("homeport.db"))?);
+    let database = data_dir.join("homeport.db");
+    let db = match Db::open(&database) {
+        Ok(db) => Arc::new(db),
+        Err(e) => return Err(Failure::Database(Box::new(e), database)),
+    };
     let settings = SettingsService::new(db.clone(), &config_dir.join("settings.json"))?;
+    // A missing keychain entry makes a new key only when nothing is sealed yet.
+    let holds_sealed = db.holds_sealed_data()?;
     // Keychain backends may block on D-Bus; keep that off the async runtime.
-    let secrets = std::thread::spawn(|| {
-        SecretBox::from_store(&Keychain {
-            service: "com.homeport.app",
-            account: "secrets-key",
-        })
-    })
-    .join()
-    .expect("keychain thread panicked");
+    let secrets = std::thread::spawn(move || SecretBox::from_store(&KEYCHAIN, holds_sealed))
+        .join()
+        .expect("keychain thread panicked");
     let secrets = Arc::new(secrets);
     let store = Arc::new(HostStore::new(db.clone(), secrets.clone()));
     let events = EventStore::new(db.clone());
@@ -75,13 +96,15 @@ pub fn state(app: &App) -> Result<AppState, Box<dyn Error>> {
         data_dir.join("synced-stacks"),
     ));
     Ok(AppState {
-        stacks: StackStore::new(db.clone(), secrets.clone()),
-        linked: LinkedStore::new(db.clone()),
-        linked_files: FileCache::new(),
-        history: Arc::new(DeployHistory::new(db.clone(), secrets.clone())),
+        stacks: Stacks {
+            managed: StackStore::new(db.clone(), secrets.clone()),
+            linked: LinkedStore::new(db.clone()),
+            linked_files: FileCache::new(),
+            history: Arc::new(DeployHistory::new(db.clone(), secrets.clone())),
+            synced,
+        },
         registries: RegistryStore::new(db.clone(), secrets.clone()),
         repositories,
-        synced,
         secrets,
         settings,
         hosts: HostService {
@@ -91,11 +114,7 @@ pub fn state(app: &App) -> Result<AppState, Box<dyn Error>> {
         },
         clusters,
         streams: Default::default(),
-        exec: Default::default(),
-        containerd_exec: Default::default(),
-        incus_terminals: Default::default(),
-        pod_terminals: Default::default(),
-        nomad_terminals: Default::default(),
+        terminals: Default::default(),
         volume_browser: Default::default(),
         freshness: Default::default(),
         update: Default::default(),

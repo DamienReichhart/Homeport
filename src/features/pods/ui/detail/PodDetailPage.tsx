@@ -10,6 +10,7 @@ import {
   Labels,
   ObjectEvents,
   ResourceYaml,
+  useMetrics,
   useResourceWatch,
 } from '@/core/cluster';
 import type { ClusterView, OwnerView, PodDetail } from '@/shared/api';
@@ -28,6 +29,7 @@ import {
 import { podQueries } from '../../api/queries';
 import { PodContainers } from './PodContainers';
 import { PodLogs } from './PodLogs';
+import { PodMetrics } from './PodMetrics';
 import { PodTerminal } from './PodTerminal';
 import { t, type MessageKey } from '@/shared/i18n';
 
@@ -88,11 +90,12 @@ function Overview({ clusterId, pod }: { clusterId: string; pod: PodDetail }) {
   );
 }
 
-const TABS = ['overview', 'logs', 'terminal', 'conditions', 'events', 'yaml'] as const;
+const TABS = ['overview', 'logs', 'terminal', 'metrics', 'conditions', 'events', 'yaml'] as const;
 const TAB_LABELS: Record<(typeof TABS)[number], MessageKey> = {
   overview: 'pods.tab.overview',
   logs: 'pods.tab.logs',
   terminal: 'pods.tab.terminal',
+  metrics: 'pods.tab.metrics',
   conditions: 'pods.tab.conditions',
   events: 'pods.tab.events',
   yaml: 'pods.tab.source',
@@ -104,6 +107,9 @@ function PodDetailView({ cluster }: { cluster: ClusterView }) {
   const id = cluster.cluster.id;
   const pod = useQuery(podQueries.detail(id, namespace, name));
   useResourceWatch(id, 'pod', namespace);
+  // Read while the page is open, whichever tab shows, so the charts have
+  // the samples since it opened.
+  const metrics = useMetrics(id, { type: 'pod', namespace, name });
   if (pod.isPending) return <Spinner />;
   if (pod.error) return <ErrorMessage error={pod.error} onRetry={() => void pod.refetch()} />;
   const base = `/pods/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}`;
@@ -155,6 +161,9 @@ function PodDetailView({ cluster }: { cluster: ClusterView }) {
         </TabsContent>
         <TabsContent value="terminal" className="pt-3">
           {tab === 'terminal' && <PodTerminal clusterId={id} pod={pod.data} />}
+        </TabsContent>
+        <TabsContent value="metrics" className="pt-3">
+          {tab === 'metrics' && <PodMetrics pod={pod.data} metrics={metrics} />}
         </TabsContent>
         <TabsContent value="conditions" className="pt-3">
           <ConditionList conditions={pod.data.conditions} />

@@ -48,15 +48,18 @@ The sidebar has a page for each kind of resource, and they all show the Host pic
 | Page           | What it shows                                                            |
 | -------------- | ------------------------------------------------------------------------ |
 | **Overview**   | A card for every Host, the selected Host's engine, disk usage and events |
+| **Board**      | The containers of every connected Host in one table                      |
 | **Containers** | Every container, grouped by Stack, with live CPU and memory              |
 | **Images**     | Local images, what uses them, pulling and cleaning up                    |
 | **Volumes**    | Volumes and the containers that use them                                 |
 | **Networks**   | Networks, their subnets and attached containers                          |
-| **Stacks**     | Compose projects, Managed and External                                   |
-| **Events**     | What the Engine reported since Homeport connected                        |
-| **Settings**   | Theme, what this machine supports, and licences                          |
+| **Stacks**     | Compose projects: Managed, Linked, Synced and External                   |
+| **Events**     | What the Engine reported, kept for 30 days                               |
+| **Settings**   | Theme and language, registry logins, backups, and what this machine has  |
 
 Homeport refreshes as the Engine reports changes, so you never need a refresh button — start a container in a terminal and it appears straight away.
+
+A containerd, Incus or Podman Host, a Swarm and a Cluster each bring pages of their own to the sidebar. At its bottom, **Documentation** and **GitHub** open these docs and the project's repository in your browser.
 
 ## 3. Run a container
 

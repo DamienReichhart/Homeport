@@ -4,8 +4,16 @@ import type { Translation } from '../types';
 
 export default {
   'app.nav.main': 'मुख्य',
+  'app.nav.docs': 'दस्तावेज़',
+  'app.nav.github': 'GitHub',
+  'app.nav.opensInBrowser': '{label} (आपके ब्राउज़र में खुलता है)',
   'app.keychainMissing':
     'कोई OS कीचेन उपलब्ध नहीं है, इसलिए SSH कुंजियाँ, TLS प्रमाणपत्र और स्टैक के परिवेश सहेजे नहीं जा सकते। लोकल, TCP और ssh-agent होस्ट फिर भी काम करते हैं।',
+  'app.keychainEntryMissing':
+    'कीचेन में उस कुंजी की एंट्री नहीं है जिससे Homeport के सीक्रेट सील किए गए थे, इसलिए उन्हें न खोला जा सकता है न सहेजा जा सकता है। सेटिंग्स → यह मशीन देखें।',
+  'app.startup.title': 'Homeport अपना डेटाबेस नहीं खोल पा रहा',
+  'app.startup.description': 'और कुछ शुरू नहीं किया गया। डेटाबेस इस फ़ाइल में है:',
+  'app.startup.openFolder': 'फ़ोल्डर खोलें',
   'app.crash.title': 'कुछ गलत हो गया',
   'app.crash.description':
     'इस पेज पर Homeport को एक अनपेक्षित समस्या आई। आम तौर पर फिर से लोड करने से मदद मिलती है; अगर यह बार-बार हो, तो विवरण से रिपोर्ट कॉपी करके एक issue में डालें।',

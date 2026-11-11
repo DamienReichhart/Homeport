@@ -5,10 +5,13 @@
 use tauri::{ipc::Channel, State};
 
 use homeport_containerd::{
-    containers::{self, ContainerdContainer, ContainerdContainerDetail, TaskAction},
-    exec::{self, ContainerdExecOptions, SessionId},
+    containers::{
+        self,
+        exec::{self, ContainerdExecOptions, SessionId},
+        logs::{self, ContainerdLogSource},
+        ContainerdContainer, ContainerdContainerDetail, TaskAction,
+    },
     images::{self, ContainerdImage, PullCredentials},
-    logs::{self, ContainerdLogSource},
     namespaces::{self, ContainerdNamespace},
     snapshots::{self, ContainerdSnapshots},
 };
@@ -171,7 +174,8 @@ pub async fn containerd_exec_start(
     let client = state.hosts.registry.containerd(&host_id)?;
     let (session, output) = exec::start(&client, &namespace, &id, options).await?;
     Ok(state
-        .containerd_exec
+        .terminals
+        .containerd
         .open(session, output, move |e| on_event.send(e).is_ok()))
 }
 
@@ -183,7 +187,8 @@ pub async fn containerd_exec_input(
     data: String,
 ) -> AppResult<()> {
     state
-        .containerd_exec
+        .terminals
+        .containerd
         .get(session)?
         .write(data.as_bytes())
         .await
@@ -197,7 +202,12 @@ pub async fn containerd_exec_resize(
     cols: u16,
     rows: u16,
 ) -> AppResult<()> {
-    state.containerd_exec.get(session)?.resize(cols, rows).await
+    state
+        .terminals
+        .containerd
+        .get(session)?
+        .resize(cols, rows)
+        .await
 }
 
 /// Closes a terminal, killing its process; async, since that needs the runtime.
@@ -207,7 +217,7 @@ pub async fn containerd_exec_close(
     state: State<'_, AppState>,
     session: SessionId,
 ) -> AppResult<()> {
-    state.containerd_exec.close(session);
+    state.terminals.containerd.close(session);
     Ok(())
 }
 
@@ -259,7 +269,7 @@ pub async fn containerd_images_pull_subscribe(
             username: c.username,
             secret: c.secret,
         });
-    let explained = super::registries::explainer(&state, &qualified);
+    let explained = super::hosts::registries::explainer(&state, &qualified);
     Ok(state.streams.spawn(images::pull(
         client,
         namespace,

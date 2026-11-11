@@ -71,7 +71,7 @@ A project folder that isn't running on the Host yet can be linked from Homeport:
 
 </Steps>
 
-If a Stack with that name already runs on the Host as an External Stack, creating the Linked Stack takes it over, as [adopting](#adopting-an-external-stack) does: redeploying recreates its containers to match the folder's files. To use files with other names, or in another order, see [several compose files](#several-compose-files).
+If a Stack with that name already runs on the Host as an External Stack that Compose started from this same folder, creating the Linked Stack takes it over, as [adopting](#adopting-an-external-stack) does: redeploying recreates its containers to match the folder's files. A Stack of that name started from anywhere else is refused: adopt it, or pick another name. To use files with other names, or in another order, see [several compose files](#several-compose-files).
 
 ### How Linked Stacks are found
 
@@ -307,17 +307,18 @@ An External Stack shows **Update available** too, but its **Update** is disabled
 
 ## Stack actions
 
-| Action                     | Stacks          | What it does                                                                                |
-| -------------------------- | --------------- | ------------------------------------------------------------------------------------------- |
-| **Deploy** / **Redeploy**  | Managed, Linked | `docker compose up` with the Stack's definition.                                            |
-| **Rebuild and deploy**     | Linked          | `docker compose up --build`: rebuilds every service with `build:` first.                    |
-| **Start** / **Stop**       | Any             | Starts the stopped containers, or stops the running ones.                                   |
-| **Restart**                | Any             | Restarts every container.                                                                   |
-| **Pull images**            | Managed, Linked | Pulls every service's image with the stored logins, to fetch newer ones before redeploying. |
-| **Take down**              | Managed, Linked | `docker compose down`: removes containers and networks, keeps volumes and the definition.   |
-| **Take down with volumes** | Managed, Linked | Also deletes the Stack's volumes **and their data**.                                        |
-| **Remove containers**      | External        | Removes its containers and networks. Volumes are kept.                                      |
-| **Adopt**                  | External        | Gives Homeport the compose file, making it Managed.                                         |
+| Action                     | Stacks                  | What it does                                                                                                                   |
+| -------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **Deploy** / **Redeploy**  | Managed, Linked, Synced | `docker compose up` with the Stack's definition.                                                                               |
+| **Sync**                   | Synced                  | Fetches its branch or tag, shows what changed, and deploys the new commit. See [Syncing](/docs/guides/synced-stacks/#syncing). |
+| **Rebuild and deploy**     | Linked, Synced          | `docker compose up --build`: rebuilds every service with `build:` first.                                                       |
+| **Start** / **Stop**       | Any                     | Starts the stopped containers, or stops the running ones.                                                                      |
+| **Restart**                | Any                     | Restarts every container.                                                                                                      |
+| **Pull images**            | Managed, Linked, Synced | Pulls every service's image with the stored logins, to fetch newer ones before redeploying.                                    |
+| **Take down**              | Managed, Linked, Synced | `docker compose down`: removes containers and networks, keeps volumes and the definition.                                      |
+| **Take down with volumes** | Managed, Linked, Synced | Also deletes the Stack's volumes **and their data**.                                                                           |
+| **Remove containers**      | External                | Removes its containers and networks. Volumes are kept.                                                                         |
+| **Adopt**                  | External                | Gives Homeport the compose file, making it Managed.                                                                            |
 
 **Forget definition**, in a Managed Stack's **Definition** tab, deletes the compose file and environment from Homeport but leaves the containers running; the Stack becomes External. **Forget**, in a Linked Stack's **Definition** tab, drops Homeport's note of the folder; the folder, its files and the containers are left alone.
 
@@ -341,4 +342,4 @@ An External Stack shows **Update available** too, but its **Update** is disabled
   differently now.
 </Aside>
 
-Creating a new Stack with the same name as an External one adopts it too.
+A new Stack can't take the name of an External one: deploying it would remove or replace that Stack's containers, so Homeport refuses the name and points you to **Adopt**.

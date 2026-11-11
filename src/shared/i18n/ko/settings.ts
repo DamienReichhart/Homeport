@@ -41,6 +41,14 @@ export default {
     '사용 가능 — SSH 키, 인증서, 스택 환경, 레지스트리 로그인이 암호화되어 저장됩니다.',
   'settings.machine.keychainUnavailable':
     '사용할 수 없음 — SSH 키, TLS 인증서, 스택 환경, 레지스트리 로그인을 저장할 수 없습니다.',
+  'settings.machine.keychainEntryMissing':
+    '항목 없음 — Homeport의 비밀 정보를 봉인한 키의 항목이 키체인에 없어 비밀 정보를 열거나 저장할 수 없습니다.',
+  'settings.machine.startOverDescription':
+    'Homeport가 이전과 다른 키체인을 쓰고 있다면 원래 키체인으로 돌아간 뒤 Homeport를 다시 시작하세요. 항목이 완전히 사라졌다면 새 키로 다시 시작하세요.',
+  'settings.machine.startOver': '새 키로 다시 시작',
+  'settings.machine.startOverTitle': '새 키로 다시 시작할까요?',
+  'settings.machine.startOverConfirmDescription':
+    '사라진 키로 봉인한 것은 새 키로 열 수 없습니다. 각 호스트, 클러스터, 레지스트리, 저장소의 자격 증명과 각 스택의 환경을 다시 입력하거나 백업을 복원해야 합니다.',
   'settings.machine.compose': 'Compose CLI',
   'settings.machine.composeMissing': '스택을 시작하고 중지할 수는 있지만 배포할 수는 없습니다.',
   'settings.machine.stackDeploy': 'Docker CLI(Swarm용)',
@@ -84,6 +92,9 @@ export default {
   'settings.restore.registries': '{count, plural, other {레지스트리 로그인 #개}}',
   'settings.restore.repositories': '{count, plural, other {저장소 #개}}',
   'settings.restore.settings': '설정',
+  'settings.restore.withoutSecrets':
+    '다음 항목은 당시 비밀 정보를 열 수 없어 비밀 정보 없이 백업되었습니다. 복원하면 비밀 정보 없이 돌아오며 여기에 있는 비밀 정보를 대체합니다. 이 중 레지스트리 로그인은 전혀 돌아오지 않습니다:',
+  'settings.restore.withoutSecretsList': '비밀 정보 없이 백업된 항목',
   'settings.restore.replaces':
     '복원하면 현재 있는 모든 호스트, 스택, 레지스트리 로그인, 저장소, 설정이 교체되고 엔진 이벤트와 배포 기록은 삭제됩니다. 먼저 현재 데이터의 사본이 Homeport 데이터 폴더에 보관됩니다.',
   'settings.restore.confirm': '모두 교체',
@@ -100,6 +111,18 @@ export default {
   'settings.about.tagline': '모든 Docker Engine을 하나의 보드에서.',
   'settings.about.openLogFolder': '로그 폴더 열기',
   'settings.about.licenses': '라이선스',
+  'settings.about.exportDiagnostics': '진단 정보 내보내기…',
+  'settings.diagnostics.title': '진단 정보 내보내기',
+  'settings.diagnostics.description':
+    '버그 보고서에 첨부할 zip 파일입니다. 버전과 사용 중인 호스트 및 클러스터 종류의 요약, 그리고 비밀 정보를 제거한 Homeport 로그가 들어 있습니다. 어디로도 전송되지 않으며, 파일을 공유할지는 직접 결정합니다.',
+  'settings.diagnostics.includeNames': '이름과 주소 포함',
+  'settings.diagnostics.includeNamesHelp':
+    '끄면 호스트와 클러스터가 요약과 로그에 host-1, cluster-1…로 표시됩니다.',
+  'settings.diagnostics.files': 'zip에 포함된 파일',
+  'settings.diagnostics.save': '저장…',
+  'settings.diagnostics.saveTitle': '진단 정보 저장',
+  'settings.diagnostics.fileType': 'Zip 압축 파일',
+  'settings.diagnostics.done': '진단 정보를 {path}에 저장했습니다.',
   'settings.licenses.title': '라이선스',
   'settings.licenses.description':
     'Homeport는 GNU Affero General Public License 버전 3에 따른 자유 소프트웨어이며, 아래의 오픈 소스 패키지를 기반으로 만들어졌습니다.',

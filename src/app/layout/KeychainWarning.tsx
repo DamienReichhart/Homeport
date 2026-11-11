@@ -12,7 +12,9 @@ export function KeychainWarning() {
       className="bg-destructive/10 text-destructive flex items-center gap-2 border-b px-6 py-2 text-sm"
     >
       <TriangleAlertIcon className="size-4" />
-      {t('app.keychainMissing')}
+      {capabilities.data.keychainEntryMissing
+        ? t('app.keychainEntryMissing')
+        : t('app.keychainMissing')}
     </div>
   );
 }

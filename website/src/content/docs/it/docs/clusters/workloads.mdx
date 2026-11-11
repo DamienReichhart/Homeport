@@ -56,7 +56,7 @@ La sua intestazione ha le sue azioni: **Ridimensiona**, **Riavvia**, **Sospendi*
   alt="La pagina Pod: i Pod del namespace shop con il loro stato, uno in CrashLoopBackOff con 7 riavvii e uno in ImagePullBackOff, i loro container pronti, il Node e l’età."
 />
 
-**Pod** elenca ogni Pod con il suo stato come lo mostra `kubectl get pods` — `Running`, `Pending`, `CrashLoopBackOff`, `ImagePullBackOff`, `Init:…`, `Terminating` — i suoi container pronti, i riavvii, il Node e l’età. Gli elenchi lunghi mostrano 100 righe per pagina, così un cluster con migliaia di Pod resta reattivo; la casella di ricerca li filtra tutti.
+**Pod** elenca ogni Pod con il suo stato come lo mostra `kubectl get pods` — `Running`, `Pending`, `CrashLoopBackOff`, `ImagePullBackOff`, `Init:…`, `Terminating` — i suoi container pronti, i riavvii, il Node e l’età. Gli elenchi lunghi mostrano 100 righe per pagina, così un cluster con migliaia di Pod resta reattivo; la casella di ricerca li filtra tutti. Quando il cluster esegue metrics-server, **CPU** e **Memoria** mostrano quanto usa ogni Pod rispetto ai suoi limiti ([CPU e memoria](/docs/clusters/metrics/)).
 
 <DocScreenshot
   name="cluster-pod"
@@ -64,7 +64,7 @@ La sua intestazione ha le sue azioni: **Ridimensiona**, **Riavvia**, **Sospendi*
   caption="Perché api-…-xr4np non è pronto: il suo container api continua ad arrestarsi in modo anomalo; il suo sidecar sta bene."
 />
 
-La pagina di un Pod mostra il suo Node, gli IP, la classe QoS, il service account e ciò che lo controlla, poi ogni container (prima gli init container) con la sua immagine, lo stato, il motivo per cui attende o è terminato, i suoi riavvii e il motivo dell’ultimo riavvio. Ogni container elenca le porte che dichiara, con **Inoltra…** per [raggiungerne una da questo computer](/docs/clusters/port-forward/). Seguono **Log** e **Terminale** ([Log e terminali](/docs/clusters/logs-exec/)), poi **Condizioni**, **Eventi** e **YAML**, come per i carichi di lavoro, ed **Elimina** nell’intestazione.
+La pagina di un Pod mostra il suo Node, gli IP, la classe QoS, il service account e ciò che lo controlla, poi ogni container (prima gli init container) con la sua immagine, lo stato, il motivo per cui attende o è terminato, i suoi riavvii e il motivo dell’ultimo riavvio. Ogni container elenca le porte che dichiara, con **Inoltra…** per [raggiungerne una da questo computer](/docs/clusters/port-forward/). Seguono **Log** e **Terminale** ([Log e terminali](/docs/clusters/logs-exec/)), poi **Condizioni**, **Eventi** e **YAML**, come per i carichi di lavoro, ed **Elimina** nell’intestazione. Con metrics-server, **Metriche** traccia CPU e memoria di ogni container rispetto alla sua richiesta e al suo limite ([CPU e memoria](/docs/clusters/metrics/)).
 
 ### Capire perché un Pod non è pronto
 

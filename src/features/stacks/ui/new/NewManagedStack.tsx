@@ -88,14 +88,14 @@ function ManagedForm({
       <div className="flex gap-2">
         <Button
           disabled={save.isPending || !canDeploy || !name}
-          onClick={() => save.mutate({ name, files, env, deploy: true })}
+          onClick={() => save.mutate({ name, files, env, deploy: true, adopt: !!adopting })}
         >
           {t('stacks.newPage.saveAndDeploy')}
         </Button>
         <Button
           variant="outline"
           disabled={save.isPending || !name}
-          onClick={() => save.mutate({ name, files, env, deploy: false })}
+          onClick={() => save.mutate({ name, files, env, deploy: false, adopt: !!adopting })}
         >
           {t('common.save')}
         </Button>

@@ -7,12 +7,12 @@ Homeport खुले में [github.com/DamienReichhart/Homeport](https://gi
 
 ## बग की रिपोर्ट करना
 
-इनके साथ [एक issue खोलें](https://github.com/DamienReichhart/Homeport/issues/new):
+इनके साथ [एक issue खोलें](https://github.com/DamienReichhart/Homeport/issues/new/choose):
 
-- आपका Homeport संस्करण और प्लैटफ़ॉर्म, **सेटिंग्स** से (जैसे `v0.2.0 · macos/aarch64`);
-- होस्ट का प्रकार (लोकल, SSH, TLS या TCP) और उसके इंजन का संस्करण;
 - आपने क्या किया, आपको क्या उम्मीद थी, और क्या हुआ — सटीक संदेश सबसे ज़्यादा मदद करता है;
-- [लॉग फ़ाइल](/docs/reference/security/#लॉग) से कुछ भी प्रासंगिक।
+- **सेटिंग्स → परिचय → डायग्नोस्टिक्स एक्सपोर्ट करें…** से [डायग्नोस्टिक्स बंडल](/docs/reference/troubleshooting/#बग-रिपोर्ट-के-लिए-डायग्नोस्टिक्स-एक्सपोर्ट-करना): एक zip, जिसमें Homeport का संस्करण और प्लैटफ़ॉर्म, आपके इस्तेमाल किए जा रहे होस्ट, इंजन और क्लस्टर के प्रकार, और सीक्रेट हटाए गए उसके लॉग होते हैं। सहेजने से पहले आप पढ़ते हैं कि इसमें क्या है, और कुछ भी कहीं नहीं भेजा जाता।
+
+अगर Homeport शुरू नहीं होता, तो इसके बजाय उसका संस्करण और अपना ऑपरेटिंग सिस्टम बताएँ, और [लॉग फ़ाइल](/docs/reference/security/#लॉग) से कुछ भी प्रासंगिक।
 
 कृपया सुरक्षा समस्याओं की रिपोर्ट निजी तौर पर, [GitHub की vulnerability reporting](https://github.com/DamienReichhart/Homeport/security/advisories/new) के ज़रिए करें।
 
@@ -33,8 +33,9 @@ Homeport खुले में [github.com/DamienReichhart/Homeport](https://gi
    bun run rust:test
    ```
 
-5. कमिट संदेश [Conventional Commits](https://www.conventionalcommits.org) के रूप में लिखें — `feat(stacks): …`, `fix(hosts): …`। रिलीज़ नोट उन्हीं से बनाए जाते हैं।
-6. `dev` ब्रांच के ख़िलाफ़ एक pull request खोलें। CI Linux पर फ़्रंटएंड जाँच और लाइसेंस जाँच चलाता है, और Linux, macOS और Windows पर `cargo clippy` और `cargo test`, ताकि `#[cfg(windows)]` या `#[cfg(target_os = "macos")]` के पीछे का कोड मर्ज होने से पहले कंपाइल हो जाए। जिस टेस्ट को Docker Engine चाहिए, वह `#[ignore = "needs a local Docker Engine"]` से चिह्नित होता है; एक अलग Linux job उन्हें runner के इंजन पर चलाता है।
+5. डेटा का वादा निभाएँ: Homeport का हर संस्करण हर पिछले संस्करण का डेटा खोलता है, 0.1.0 तक, और कुछ भी खोए बिना उसे अपग्रेड करता है: होस्ट, स्टैक, क्लस्टर, सेटिंग्स और सीक्रेट। स्कीमा में कोई भी बदलाव एक नया माइग्रेशन है, किसी रिलीज़ हो चुके माइग्रेशन में संपादन कभी नहीं, और CI इसे हर रिलीज़ के एक नमूना डेटाबेस पर जाँचता है। देखें [Data compatibility](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md#data-compatibility)।
+6. कमिट संदेश [Conventional Commits](https://www.conventionalcommits.org) के रूप में लिखें — `feat(stacks): …`, `fix(hosts): …`। रिलीज़ नोट उन्हीं से बनाए जाते हैं।
+7. `dev` ब्रांच के ख़िलाफ़ एक pull request खोलें। CI Linux पर फ़्रंटएंड जाँच और लाइसेंस जाँच चलाता है, और Linux, macOS और Windows पर `cargo clippy` और `cargo test`, ताकि `#[cfg(windows)]` या `#[cfg(target_os = "macos")]` के पीछे का कोड मर्ज होने से पहले कंपाइल हो जाए। जिस टेस्ट को Docker Engine चाहिए, वह `#[ignore = "needs a local Docker Engine"]` से चिह्नित होता है; एक अलग Linux job उन्हें runner के इंजन पर चलाता है।
 
 सेट अप करने के लिए [सोर्स से बनाना](/docs/project/building/) देखें।
 

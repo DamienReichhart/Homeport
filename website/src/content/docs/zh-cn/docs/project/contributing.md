@@ -7,12 +7,12 @@ Homeport 在 [github.com/DamienReichhart/Homeport](https://github.com/DamienReic
 
 ## 报告 bug
 
-[创建 issue](https://github.com/DamienReichhart/Homeport/issues/new)，并附上：
+[创建 issue](https://github.com/DamienReichhart/Homeport/issues/new/choose)，并附上：
 
-- 你的 Homeport 版本和平台，可在**设置**中找到（例如 `v0.2.0 · macos/aarch64`）；
-- 主机的类型（本地、SSH、TLS 或 TCP）及其引擎版本；
 - 你做了什么、预期结果是什么、实际发生了什么，确切的消息最有帮助；
-- [日志文件](/docs/reference/security/#日志)中的任何相关内容。
+- 通过**设置 → 关于 → 导出诊断信息…**得到的[诊断包](/docs/reference/troubleshooting/#为-bug-报告导出诊断信息)：一个 zip，包含 Homeport 的版本和平台、你所用的主机、引擎和集群的类型，以及已移除机密的日志。保存前你可以查看其中的内容，且不会向任何地方发送任何东西。
+
+如果 Homeport 无法启动，请改为提供它的版本和你的操作系统，以及[日志文件](/docs/reference/security/#日志)中的任何相关内容。
 
 请通过 [GitHub 的漏洞报告](https://github.com/DamienReichhart/Homeport/security/advisories/new)私下报告安全问题。
 
@@ -33,8 +33,9 @@ Homeport 在 [github.com/DamienReichhart/Homeport](https://github.com/DamienReic
    bun run rust:test
    ```
 
-5. 提交信息遵循 [Conventional Commits](https://www.conventionalcommits.org)，例如 `feat(stacks): …`、`fix(hosts): …`。发布说明由它们生成。
-6. 针对 `dev` 分支创建 pull request。CI 会在 Linux 上运行前端检查和许可证检查，并在 Linux、macOS 和 Windows 上运行 `cargo clippy` 和 `cargo test`，因此 `#[cfg(windows)]` 或 `#[cfg(target_os = "macos")]` 下的代码在合并前都会被编译。需要 Docker Engine 的测试被标记为 `#[ignore = "needs a local Docker Engine"]`；一个单独的 Linux job 会在 runner 的引擎上运行这些测试。
+5. 遵守数据承诺：Homeport 的每个版本都能打开之前每个版本（一直到 0.1.0）的数据，并在升级时不丢失任何内容：主机、堆栈、集群、设置和机密。架构变更要写成新的迁移，绝不修改已发布的迁移，CI 会用每个版本的示例数据库检查这一点。参见[数据兼容性](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md#data-compatibility)。
+6. 提交信息遵循 [Conventional Commits](https://www.conventionalcommits.org)，例如 `feat(stacks): …`、`fix(hosts): …`。发布说明由它们生成。
+7. 针对 `dev` 分支创建 pull request。CI 会在 Linux 上运行前端检查和许可证检查，并在 Linux、macOS 和 Windows 上运行 `cargo clippy` 和 `cargo test`，因此 `#[cfg(windows)]` 或 `#[cfg(target_os = "macos")]` 下的代码在合并前都会被编译。需要 Docker Engine 的测试被标记为 `#[ignore = "needs a local Docker Engine"]`；一个单独的 Linux job 会在 runner 的引擎上运行这些测试。
 
 参见[从源代码构建](/docs/project/building/)来完成环境设置。
 

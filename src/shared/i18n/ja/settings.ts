@@ -42,6 +42,14 @@ export default {
     '利用可能 — SSH キー、証明書、スタックの環境変数、レジストリのログイン情報は暗号化して保存されます。',
   'settings.machine.keychainUnavailable':
     '利用不可 — SSH キー、TLS 証明書、スタックの環境変数、レジストリのログイン情報を保存できません。',
+  'settings.machine.keychainEntryMissing':
+    'エントリーがありません — Homeport のシークレットを封印したキーのエントリーがキーチェーンにないため、シークレットを開くことも保存することもできません。',
+  'settings.machine.startOverDescription':
+    'Homeport が以前とは別のキーチェーンを使っている場合は、元のキーチェーンに戻して Homeport を再起動してください。エントリーが完全に失われた場合は、新しいキーでやり直してください。',
+  'settings.machine.startOver': '新しいキーでやり直す',
+  'settings.machine.startOverTitle': '新しいキーでやり直しますか？',
+  'settings.machine.startOverConfirmDescription':
+    '失われたキーで封印されたものは、新しいキーでは開けません。各ホスト、クラスター、レジストリー、リポジトリーの認証情報と各スタックの環境を入力し直すか、バックアップを復元してください。',
   'settings.machine.compose': 'Compose CLI',
   'settings.machine.composeMissing': 'スタックの起動と停止はできますが、デプロイはできません。',
   'settings.machine.stackDeploy': 'Docker CLI（Swarm 用）',
@@ -86,6 +94,9 @@ export default {
   'settings.restore.registries': '{count, plural, other {# 件のレジストリのログイン情報}}',
   'settings.restore.repositories': '{count, plural, other {# 個のリポジトリ}}',
   'settings.restore.settings': '設定',
+  'settings.restore.withoutSecrets':
+    '次のものは、その時点でシークレットを開けなかったため、シークレットなしでバックアップされています。復元するとシークレットなしで戻り、ここにあるシークレットは置き換えられます。このうちレジストリーのログインはまったく戻りません:',
+  'settings.restore.withoutSecretsList': 'シークレットなしでバックアップされたもの',
   'settings.restore.replaces':
     '復元すると、現在のすべてのホスト、スタック、レジストリのログイン情報、リポジトリ、設定が置き換えられ、エンジンのイベントとデプロイ履歴は破棄されます。その前に、現在のデータのコピーが Homeport のデータフォルダーに保存されます。',
   'settings.restore.confirm': 'すべて置き換え',
@@ -102,6 +113,18 @@ export default {
   'settings.about.tagline': 'すべての Docker Engine を、1 つのボードで。',
   'settings.about.openLogFolder': 'ログフォルダーを開く',
   'settings.about.licenses': 'ライセンス',
+  'settings.about.exportDiagnostics': '診断情報をエクスポート…',
+  'settings.diagnostics.title': '診断情報をエクスポート',
+  'settings.diagnostics.description':
+    'バグ報告に添付する zip ファイルです。バージョンと、使用しているホストやクラスターの種類の概要、およびシークレットを取り除いた Homeport のログが含まれます。どこにも送信されません。ファイルを共有するかどうかはあなたが決めます。',
+  'settings.diagnostics.includeNames': '名前とアドレスを含める',
+  'settings.diagnostics.includeNamesHelp':
+    'オフの場合、ホストとクラスターは概要とログの中で host-1、cluster-1… と表示されます。',
+  'settings.diagnostics.files': 'zip 内のファイル',
+  'settings.diagnostics.save': '保存…',
+  'settings.diagnostics.saveTitle': '診断情報を保存',
+  'settings.diagnostics.fileType': 'Zip アーカイブ',
+  'settings.diagnostics.done': '診断情報を {path} に保存しました。',
   'settings.licenses.title': 'ライセンス',
   'settings.licenses.description':
     'Homeport は GNU Affero General Public License バージョン 3 に基づくフリーソフトウェアで、以下のオープンソースパッケージを使って作られています。',

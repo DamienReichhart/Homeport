@@ -6,9 +6,9 @@ description: ما هو Homeport، وما الذي يفعله، وكيف تُنظ
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import { DocScreenshot } from '@/features/docs';
 
-**Homeport** تطبيق سطح مكتب لإدارة محركات Docker أينما كانت — محرك هذا الجهاز، أو محركات بعيدة عبر SSH أو TLS أو TCP — وعناقيد Kubernetes التي يصل إليها ملف kubeconfig الخاص بك، على غرار Docker Desktop. يعمل على Windows وmacOS وLinux، وهو مجاني ومفتوح المصدر بموجب [GNU Affero General Public License, version 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE).
+**Homeport** تطبيق سطح مكتب لإدارة محركات Docker وcontainerd وIncus أينما كانت — محرك هذا الجهاز، أو محركات بعيدة عبر SSH أو TLS أو TCP — والـ Swarms التي تشكّلها، وعناقيد Kubernetes التي يصل إليها ملف kubeconfig الخاص بك وعناقيد Nomad التي تحددها، على غرار Docker Desktop. يعمل على Windows وmacOS وLinux، وهو مجاني ومفتوح المصدر بموجب [GNU Affero General Public License, version 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE).
 
-لا يشغّل Homeport الحاويات بنفسه. بل يتصل بمحركات Docker الموجودة لديك، وتُسمّى **المضيفات**، ويمنحك نافذة واحدة لكل ما عليها: الحاويات والصور ووحدات التخزين والشبكات و**مكدسات** Compose. ويتصل أيضًا بـ**عناقيد** Kubernetes الموجودة في ملف kubeconfig، لتتصفح ما يعمل عليها.
+لا يشغّل Homeport الحاويات بنفسه. بل يتصل بالمحركات الموجودة لديك، وتُسمّى **المضيفات**، ويمنحك نافذة واحدة لكل ما عليها: الحاويات والصور ووحدات التخزين والشبكات و**مكدسات** Compose. ويتصل أيضًا بـ**عناقيد** Kubernetes وNomad، لترى ما يعمل عليها وتديره. لا يُثبَّت أي شيء على مضيف أو عنقود.
 
 <DocScreenshot
   name="overview"
@@ -28,7 +28,12 @@ import { DocScreenshot } from '@/features/docs';
     والعمليات، ونافذة «تشغيل».
   </Card>
   <Card title="نشر مكدسات Compose" icon="rocket">
-    احتفظ بملف compose وبيئته المشفّرة في Homeport، وانشره على أي مضيف.
+    احتفظ بملف compose وبيئته المشفّرة في Homeport، أو انشر من مجلد مشروع أو تابِع مستودع git، وانشر
+    على أي مضيف أو Swarm.
+  </Card>
+  <Card title="إدارة Swarm" icon="seti:docker">
+    اعثر على Docker Swarm عبر مضيفاته المديرة، وأدِر عقده وخدماته ومهامه وأسراره وتكويناته ومكدسات
+    Swarm فيه.
   </Card>
   <Card title="استخدام ميزات Podman الخاصة" icon="seti:config">
     على مضيف Podman، أدر الـ Pods وشغّل حاويات فيها، وثبّت وحدات Quadlet وحرّرها وشغّلها تحت
@@ -44,7 +49,12 @@ import { DocScreenshot } from '@/features/docs';
   </Card>
   <Card title="تصفح Kubernetes" icon="server">
     أضف عناقيد من ملف kubeconfig، بما فيها EKS وGKE وAKS، وشاهد أحمال العمل والـ Pods والـ Services
-    والتكوين والـ Nodes والأحداث فيها مباشرةً.
+    والتكوين والـ Nodes والأحداث فيها مباشرةً. اقرأ السجلات، وافتح طرفية، وأعد توجيه المنافذ، وغيّر
+    عدد النسخ، وطبّق YAML، وأدِر إصدارات Helm.
+  </Card>
+  <Card title="تشغيل مهام Nomad" icon="server">
+    أضف عنقود Nomad بعنوان أحد وكلائه، وخطّط لـ jobs وشغّلها، وتابع allocations الخاصة بها وسجلاتها،
+    وافتح صدفة في مهمة، وفرّغ العقد.
   </Card>
   <Card title="الحفاظ على النظام" icon="seti:folder">
     الصور ووحدات التخزين والشبكات مع استخدامها في لمحة، ونافذة تنظيف تخبرك بما ستزيله.
@@ -54,18 +64,19 @@ import { DocScreenshot } from '@/features/docs';
 ## كيف تُنظَّم هذه الوثائق
 
 - **البدء** — [ثبّت Homeport](/docs/installation/)، ثم اتبع [البدء السريع](/docs/quick-start/) لتوصيل أول مضيف لك.
-- **المضيفات** — كيف يعمل كل نوع من الاتصالات: [المحركات المحلية](/docs/hosts/local/)، و[SSH](/docs/hosts/ssh/)، و[TLS وTCP](/docs/hosts/tls-tcp/).
-- **العناقيد** — [إضافة عناقيد Kubernetes](/docs/clusters/) من ملف kubeconfig، وتصفحها.
+- **المضيفات** — كيف يعمل كل نوع من الاتصالات: [المحركات المحلية](/docs/hosts/local/)، و[SSH](/docs/hosts/ssh/)، و[TLS وTCP](/docs/hosts/tls-tcp/)؛ والمحركات التي لها صفحات خاصة بها، [containerd](/docs/hosts/containerd/) و[Incus](/docs/hosts/incus/).
+- **العناقيد** — [إضافة عناقيد Kubernetes](/docs/clusters/) من ملف kubeconfig، وتصفحها وتغييرها، و[إصدارات Helm](/docs/clusters/helm/)، و[عناقيد Nomad](/docs/clusters/nomad/).
 - **استخدام Homeport** — دليل لكل صفحة من صفحات التطبيق.
-- **المرجع** — [الأمان](/docs/reference/security/)، و[استكشاف المشكلات وحلها](/docs/reference/troubleshooting/)، و[الأسئلة الشائعة](/docs/reference/faq/)، و[المسرد](/docs/reference/glossary/).
+- **المرجع** — [الأمان](/docs/reference/security/)، و[بياناتك ونسخها الاحتياطية](/docs/reference/data-and-backups/)، و[التحديث](/docs/reference/updating/)، و[استكشاف المشكلات وحلها](/docs/reference/troubleshooting/)، و[الأسئلة الشائعة](/docs/reference/faq/)، و[المسرد](/docs/reference/glossary/).
 
 ## المصطلحات التي نستخدمها
 
 يسمّي Homeport الأشياء بدقة، وتتبعه الوثائق في ذلك:
 
-- **المضيف** محرك Docker يتصل به Homeport. تنتمي كل حاوية وصورة ووحدة تخزين وشبكة ومكدس إلى مضيف واحد بالضبط.
-- **العنقود** عنقود Kubernetes يتصل به Homeport، ويُضاف من سياق في ملف kubeconfig الخاص بك.
-- **المكدس** مشروع Compose يعمل على مضيف. **المكدس المُدار** هو المكدس الذي يحتفظ Homeport بملف compose الخاص به؛ و**المكدس المرتبط** يحتفظ بملفات compose الخاصة به في مجلد على هذا الكمبيوتر؛ و**المكدس الخارجي** نُشر بطريقة أخرى. يمكنك **تبنّي** مكدس خارجي لإدارته.
+- **المضيف** محرك يتصل به Homeport: محرك Docker أو محرك متوافق معه مثل Podman أو containerd أو Incus. تنتمي كل حاوية وصورة ووحدة تخزين وشبكة ومكدس إلى مضيف واحد بالضبط.
+- **العنقود** عنقود Kubernetes، يُضاف من سياق في ملف kubeconfig الخاص بك، أو عنقود Nomad، يُضاف بعنوان أحد وكلائه.
+- **Swarm** هو Docker Swarm، يُعثر عليه عبر المضيفات التي تنتمي إليه ولا يُضاف وحده أبدًا.
+- **المكدس** مشروع Compose يعمل على مضيف، أو مكدس swarm يعمل على Swarm. **المكدس المُدار** هو المكدس الذي يحتفظ Homeport بملف compose الخاص به؛ و**المكدس المرتبط** يحتفظ بملفات compose الخاصة به في مجلد على هذا الكمبيوتر؛ و**المكدس المتزامن** يتابع مستودع git؛ و**المكدس الخارجي** نُشر بطريقة أخرى. يمكنك **تبنّي** مكدس خارجي لإدارته.
 
 يحتوي [المسرد](/docs/reference/glossary/) على القائمة الكاملة.
 

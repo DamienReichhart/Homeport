@@ -94,6 +94,7 @@ export function clusterHandlers(): Record<string, Handler> {
     clusters_kubeconfig_contexts: () => k.kubeContexts,
     clusters_namespaces: () => k.namespaces,
     clusters_watch_subscribe: () => 1,
+    clusters_metrics_subscribe: () => 1,
     clusters_summary: (a) => (a.id === k.KIND ? k.kindSummary : k.summary),
     clusters_workloads_list: (a) => inNamespace(k.workloads[a.kind as WorkloadKind], a.namespace),
     clusters_workload_get: (a) => k.workloadDetail(a.kind as WorkloadKind, a.name as string),
@@ -130,6 +131,20 @@ export function clusterHandlers(): Record<string, Handler> {
     clusters_helm_releases: () => ({ releases: [], onlyNamespace: null }),
     clusters_forward_list: () => [],
     clusters_api_resources: () => [],
+    clusters_rbac_index: (a) => ({
+      namespace: a.namespace ?? null,
+      roles: [],
+      bindings: [],
+      subjects: [],
+      refused: [],
+    }),
+    clusters_rbac_own: (a) => ({
+      namespace: a.namespace ?? 'default',
+      user: null,
+      grants: { resources: [], urls: [] },
+      incomplete: false,
+      evaluationError: null,
+    }),
     clusters_node_get: (a) => k.nodeDetail(a.name as string),
     clusters_events_list: (a) => inNamespace(k.events, a.namespace),
   };

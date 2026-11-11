@@ -38,4 +38,7 @@ export default {
   'nodes.resource.name': '리소스',
   'nodes.resource.capacity': '용량',
   'nodes.resource.allocatable': '할당 가능',
+  'nodes.column.cpuUsed': 'CPU 사용량',
+  'nodes.column.memoryUsed': '메모리 사용량',
+  'nodes.tab.metrics': '메트릭',
 } satisfies Translation<typeof en>;

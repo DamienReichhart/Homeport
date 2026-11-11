@@ -75,6 +75,21 @@ export function RestoreDataDialog({ path, onClose }: { path: string; onClose: ()
               <li>{t('settings.restore.repositories', { count: contents.repositories })}</li>
               {contents.settings && <li>{t('settings.restore.settings')}</li>}
             </ul>
+            {contents.withoutSecrets.length > 0 && (
+              <Alert>
+                <AlertDescription>
+                  <p>{t('settings.restore.withoutSecrets')}</p>
+                  <ul
+                    className="list-disc ps-5"
+                    aria-label={t('settings.restore.withoutSecretsList')}
+                  >
+                    {contents.withoutSecrets.map((name) => (
+                      <li key={name}>{name}</li>
+                    ))}
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            )}
             <Alert variant="destructive">
               <AlertDescription>{t('settings.restore.replaces')}</AlertDescription>
             </Alert>

@@ -3,7 +3,7 @@ title: Dépannage
 description: Les solutions aux problèmes que vous rencontrerez le plus probablement, classées selon le message qu’affiche Homeport.
 ---
 
-Si votre problème n’est pas ici, consultez le [fichier journal](/docs/reference/security/#journaux) et [ouvrez une issue](https://github.com/DamienReichhart/Homeport/issues) en indiquant votre version de Homeport, visible dans **Paramètres**.
+Si votre problème n’est pas ici, [ouvrez une issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) avec l’[archive de diagnostic](#exporter-le-diagnostic-pour-un-rapport-de-bug) de **Paramètres → À propos**.
 
 ## Installation et démarrage
 
@@ -21,7 +21,7 @@ xattr -dr com.apple.quarantine /Applications/Homeport.app
 
 ### L’AppImage ne démarre pas
 
-Si elle mentionne FUSE, installez `libfuse2` (`libfuse2t64` sur Ubuntu 24.04 et ultérieur). Vérifiez que le fichier est exécutable : `chmod +x Homeport_*.AppImage`.
+Si elle mentionne FUSE, installez `libfuse2` (`libfuse2t64` sur Ubuntu 24.04 et ultérieur). Vérifiez que le fichier est exécutable : `chmod +x Homeport*.AppImage`.
 
 ### Homeport s’ouvre au mauvais endroit
 
@@ -45,11 +45,19 @@ Sous Linux, la zone de notification nécessite la bibliothèque appindicator, et
 
 Homeport n’a pas pu joindre votre trousseau. Sous Linux, cela signifie en général qu’aucun Secret Service ne s’exécute — fréquent sur les bureaux minimaux et les gestionnaires de fenêtres. Installez et démarrez GNOME Keyring (`gnome-keyring`) ou activez le Secret Service de KWallet, puis redémarrez Homeport. En attendant, utilisez des hôtes socket local, TCP ou ssh-agent.
 
+### « Cette base de données a été utilisée en dernier par Homeport … ou une version plus récente »
+
+Vous avez installé un Homeport plus ancien que celui qui a ouvert vos données en dernier, par exemple en réinstallant une version antérieure. Chaque version met la base de données à niveau vers son propre format au démarrage, et une version plus ancienne ne peut pas lire un format plus récent ; Homeport s’arrête donc avant de modifier quoi que ce soit : la fenêtre affiche ce message, le chemin de la base de données et **Ouvrir le dossier**, et rien d’autre ne démarre.
+
+Vos hôtes, vos stacks et vos secrets sont intacts. Installez la version que nomme le message, ou n’importe quelle version plus récente, depuis la [page de téléchargement](/download/), et Homeport les ouvre comme avant. Ne supprimez pas et ne déplacez pas `homeport.db` : c’est la seule façon de perdre ce qu’elle contient. Revenir à une version antérieure n’est pas pris en charge ; voir [Vos données d’une version à l’autre](/docs/reference/updating/#vos-données-dune-version-à-lautre).
+
+La même fenêtre apparaît pour tout autre échec d’ouverture de la base de données (fichier endommagé, disque plein, un autre Homeport qui la tient ouverte), avec le message propre à cet échec et ce qu’il faut faire.
+
 ## Mises à jour et dépôt de paquets
 
-### « Impossible de rechercher les mises à jour »
+### « Homeport n’a pas pu télécharger la mise à jour »
 
-Homeport n’a pas pu télécharger les informations de mise à jour depuis ce site web : vous êtes peut-être hors ligne, ou derrière un proxy ou un pare-feu qui bloque `damienreichhart.github.io`. Homeport continue de fonctionner ; il vérifie de nouveau plus tard, ou choisissez **Paramètres → Mises à jour → Vérifier maintenant**. Vous pouvez toujours télécharger la dernière version depuis la [page de téléchargement](/download/).
+Quand ce message s’affiche pendant la recherche, Homeport n’a pas pu télécharger les informations de mise à jour depuis ce site web : vous êtes peut-être hors ligne, ou derrière un proxy ou un pare-feu qui bloque `damienreichhart.github.io`. Homeport continue de fonctionner ; il vérifie de nouveau plus tard, ou choisissez **Paramètres → Mises à jour → Vérifier maintenant**. Vous pouvez toujours télécharger la dernière version depuis la [page de téléchargement](/download/).
 
 ### Une mise à jour ne s’installe pas
 
@@ -73,7 +81,7 @@ Vérifiez que le dépôt est toujours configuré : `/etc/apt/sources.list.d/hom
 
 ## Connexion
 
-### Injoignable : Permission denied
+### « Homeport n’est pas autorisé à utiliser le Docker Engine à … »
 
 Votre utilisateur ne peut pas ouvrir le socket Docker. Sous Linux, ajoutez-le au groupe `docker` et reconnectez-vous :
 
@@ -81,21 +89,21 @@ Votre utilisateur ne peut pas ouvrir le socket Docker. Sous Linux, ajoutez-le au
 sudo usermod -aG docker $USER
 ```
 
-### Injoignable : No such file or directory
+### « Aucun Docker Engine ne s’exécute à … »
 
-Rien n’écoute au chemin du socket. Démarrez votre moteur — Docker Desktop, Colima, OrbStack, Rancher Desktop — ou vérifiez le chemin. Voir [moteurs locaux](/docs/hosts/local/#ajouter-un-socket-à-la-main).
+Rien n’écoute au chemin du socket. Quand rien n’existe du tout à cet endroit, le message est plutôt _Le Docker Engine ne semble pas installé_. Démarrez votre moteur — Docker Desktop, Colima, OrbStack, Rancher Desktop — ou vérifiez le chemin. Voir [moteurs locaux](/docs/hosts/local/#ajouter-un-socket-à-la-main).
 
-### « Le Docker Engine n’a pas répondu à temps » ou « Délai de connexion SSH dépassé »
+### « Le Docker Engine n’a pas répondu à temps » ou « … n’a pas répondu à temps »
 
 Homeport attend une connexion pendant 10 secondes. Vérifiez l’adresse et le port, que le serveur est démarré, et qu’aucun pare-feu ne bloque. Homeport continue de réessayer de lui-même.
 
-### Accès refusé : « Le serveur a refusé la clé pour … »
+### Accès refusé : « Le serveur SSH a refusé la connexion de … »
 
 Le serveur n’accepte pas encore la clé de Homeport. Exécutez sur le serveur la commande **Ajouter la clé publique** de la page de l’hôte, puis choisissez **Reconnecter**. Voir [Hôtes SSH](/docs/hosts/ssh/#autoriser-la-clé-de-homeport).
 
-### « Le serveur SSH n’a pas pu ouvrir /var/run/docker.sock »
+### « … ne peut pas ouvrir le socket du Docker Engine à /var/run/docker.sock sur … »
 
-Homeport s’est connecté, mais n’a pas pu joindre Docker. Vérifiez :
+Homeport s’est connecté, mais n’a pas pu joindre Docker. Quand il peut en dire la raison, le message l’indique à la place : le moteur n’est pas installé ou ne s’exécute pas sur le serveur, l’utilisateur n’est pas autorisé à l’utiliser, ou le serveur SSH n’autorise pas la redirection vers son socket. Vérifiez :
 
 - le **Chemin du socket distant** — Docker rootless utilise `/run/user/<uid>/docker.sock` ;
 - que l’utilisateur peut utiliser Docker : `sudo usermod -aG docker <user>` sur le serveur ;
@@ -113,7 +121,7 @@ Start-Service ssh-agent
 ssh-add
 ```
 
-### Accès refusé : « Échec de la négociation TLS »
+### Accès refusé : « La connexion sécurisée à … a échoué »
 
 - Le certificat d’AC doit être celui qui a signé le certificat du serveur.
 - L’adresse que vous avez saisie doit correspondre à un nom ou une adresse IP du certificat du serveur.
@@ -125,13 +133,13 @@ Le serveur SSH a présenté une clé différente de celle que vous avez approuv�
 
 ### Identifiants perdus
 
-La clé qui chiffre vos secrets manque dans le trousseau ou a changé — après une réinitialisation du trousseau, un nouveau profil utilisateur, ou la copie des données de Homeport vers un autre ordinateur (utilisez plutôt [Exporter et Importer](/docs/reference/security/#passer-à-un-autre-ordinateur) pour cela). Homeport conserve l’hôte ; saisissez de nouveau ses identifiants sur la page de l’hôte :
+La clé qui chiffre vos secrets manque dans le trousseau ou a changé — après une réinitialisation du trousseau, un nouveau profil utilisateur, ou la copie des données de Homeport vers un autre ordinateur (utilisez plutôt une [sauvegarde](/docs/reference/data-and-backups/#sauvegarder-dans-homeport), ou [Exporter et Importer](/docs/reference/security/#passer-à-un-autre-ordinateur), pour cela). Homeport conserve l’hôte ; saisissez de nouveau ses identifiants sur la page de l’hôte :
 
 - **TLS** — chargez de nouveau les trois fichiers de certificat et choisissez **Enregistrer**.
 - **SSH avec une clé importée** — collez de nouveau la clé privée et la phrase secrète et choisissez **Enregistrer**.
 - **SSH avec une clé Homeport** — choisissez **Régénérer la clé**, puis autorisez la nouvelle clé sur le serveur.
 
-Les environnements des stacks gérées scellés avec l’ancienne clé doivent aussi être saisis de nouveau.
+Les environnements des stacks gérées et synchronisées, les identifiants de registre et les clés et jetons des dépôts chiffrés avec l’ancienne clé doivent aussi être saisis de nouveau, et les clusters actualisés depuis leur kubeconfig ; [Si les secrets sont perdus](/docs/reference/data-and-backups/#si-les-secrets-sont-perdus) liste chacun d’eux.
 
 ## Clusters
 
@@ -151,7 +159,7 @@ Le plugin exec veut un navigateur ou un code d’appareil. Exécutez une fois `k
 
 Le plugin exec s’est exécuté et a échoué. **Détails** montre la fin de ce qu’il a affiché, souvent un profil expiré ou une mauvaise région. Homeport réessaie de lui-même.
 
-### « … se connecte avec le fournisseur d’authentification gcp, que Kubernetes ne prend plus en charge »
+### « Son utilisateur se connecte avec le fournisseur d’authentification gcp, que Kubernetes ne prend plus en charge »
 
 Les fournisseurs d’authentification `gcp` et `azure` ont été retirés de Kubernetes. Récupérez de nouveau les identifiants avec `gke-gcloud-auth-plugin` installé (GKE), ou exécutez `kubelogin convert-kubeconfig` (AKS), puis ajoutez de nouveau le contexte.
 
@@ -221,7 +229,7 @@ La release est `pending-…` : une installation, une mise à niveau ou un retou
 
 ## Utiliser Homeport
 
-### Déployer est grisé : « Le CLI docker compose n’est pas installé »
+### Déployer est grisé : « Le CLI docker compose n’est pas installé sur cet ordinateur »
 
 Homeport a besoin de `docker compose` sur cet ordinateur pour déployer des stacks. Installez Docker Desktop ou le CLI Docker avec le plugin Compose, puis redémarrez Homeport. **Paramètres → Cette machine** indique s’il est trouvé.
 
@@ -325,6 +333,23 @@ Incus a besoin de KVM (`/dev/kvm`) et de QEMU pour les machines virtuelles. Acti
 
 Exec dans une machine virtuelle passe par l’`incus-agent` qu’elle contient, que les propres images d’Incus démarrent au boot. Attendez la fin du démarrage, ou utilisez l’onglet **Console**, qui n’a besoin d’aucun agent.
 
+### « Un problème est survenu »
+
+Une page de Homeport a rencontré un problème inattendu et affiche ceci à la place de son contenu ; la barre latérale fonctionne toujours. **Recharger** ramène en général la page, et **Retour à la vue d’ensemble** la quitte. Si cela se reproduit, copiez le rapport de **Détails** dans [une issue](https://github.com/DamienReichhart/Homeport/issues/new/choose), avec l’[archive de diagnostic](#exporter-le-diagnostic-pour-un-rapport-de-bug).
+
 ### « … n’est pas connecté »
 
 L’action avait besoin de l’hôte, mais il s’est déconnecté. Attendez qu’il se reconnecte, ou choisissez **Réessayer maintenant**.
+
+## Exporter le diagnostic pour un rapport de bug
+
+**Paramètres → À propos → Exporter le diagnostic…** crée un zip à joindre à une issue GitHub. Homeport ne l’envoie nulle part : il enregistre le fichier là où vous le choisissez, et c’est vous qui décidez de le partager.
+
+La boîte de dialogue liste les fichiers et montre `summary.json` avant que vous enregistriez :
+
+- `summary.json` : la version de Homeport et la façon dont il a été installé, votre système d’exploitation, la version du schéma de la base de données, si un trousseau est disponible, vos paramètres, et pour chaque hôte et chaque cluster son type de connexion, son moteur et sa version, son état et le code de sa dernière erreur, ainsi que le nombre de stacks de chaque type que vous avez.
+- `logs/` : les [fichiers journaux](/docs/reference/security/#journaux) de Homeport, où les clés privées et les certificats, les mots de passe, les jetons, les en-têtes `Authorization` et les identifiants dans les URL sont remplacés par `[redacted]`.
+
+Les hôtes et les clusters apparaissent sous la forme `host-1`, `cluster-1`… et leurs noms et adresses sont remplacés de la même façon dans les journaux, sauf si vous cochez **Inclure les noms et les adresses**. Cochez cette case quand le nom ou l’adresse compte pour le problème et que vous acceptez de le partager.
+
+Les secrets enregistrés ne sont jamais lus pour l’archive. Le retrait des secrets des journaux fonctionne en reconnaissant leurs formes habituelles : parcourez donc les fichiers avant de les joindre à une issue publique si vos journaux peuvent citer quelque chose d’inhabituel.

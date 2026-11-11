@@ -41,6 +41,14 @@ export default {
     'Disponível — chaves SSH, certificados, ambientes de stacks e logins de registro são armazenados criptografados.',
   'settings.machine.keychainUnavailable':
     'Indisponível — chaves SSH, certificados TLS, ambientes de stacks e logins de registro não podem ser armazenados.',
+  'settings.machine.keychainEntryMissing':
+    'Entrada ausente — o chaveiro não tem uma entrada para a chave com que os segredos do Homeport foram selados, então eles não podem ser abertos nem armazenados.',
+  'settings.machine.startOverDescription':
+    'Se o Homeport está usando outro chaveiro que antes, volte para aquele e reinicie o Homeport. Se a entrada sumiu de vez, recomece com uma nova chave.',
+  'settings.machine.startOver': 'Recomeçar com uma nova chave',
+  'settings.machine.startOverTitle': 'Recomeçar com uma nova chave?',
+  'settings.machine.startOverConfirmDescription':
+    'Uma nova chave não abre o que foi selado com a que está faltando: você vai digitar de novo as credenciais de cada host, cluster, registro e repositório, e o ambiente de cada stack, ou restaurar um backup.',
   'settings.machine.compose': 'CLI do Compose',
   'settings.machine.composeMissing':
     'As stacks podem ser iniciadas e paradas, mas não implantadas.',
@@ -86,6 +94,9 @@ export default {
     '{count, plural, one {# login de registro} other {# logins de registro}}',
   'settings.restore.repositories': '{count, plural, one {# repositório} other {# repositórios}}',
   'settings.restore.settings': 'Suas configurações',
+  'settings.restore.withoutSecrets':
+    'Estes foram copiados sem os segredos, que não puderam ser abertos na hora. Eles voltam sem eles, substituindo os segredos que têm aqui, e os logins de registro entre eles não voltam de forma alguma:',
+  'settings.restore.withoutSecretsList': 'Copiados sem os segredos',
   'settings.restore.replaces':
     'Restaurar substitui todos os hosts, stacks, logins de registro, repositórios e configurações que você tem agora, e esquece os eventos do Engine e o histórico de implantações. Uma cópia dos dados atuais é guardada antes na pasta de dados do Homeport.',
   'settings.restore.confirm': 'Substituir tudo',
@@ -102,6 +113,18 @@ export default {
   'settings.about.tagline': 'Todos os Docker Engines, em um só quadro.',
   'settings.about.openLogFolder': 'Abrir pasta de logs',
   'settings.about.licenses': 'Licenças',
+  'settings.about.exportDiagnostics': 'Exportar diagnóstico…',
+  'settings.diagnostics.title': 'Exportar diagnóstico',
+  'settings.diagnostics.description':
+    'Um arquivo zip para anexar a um relatório de bug: um resumo das versões e dos tipos de hosts e clusters que você usa, e os logs do Homeport sem os segredos. Nada é enviado a lugar nenhum: você decide se compartilha o arquivo.',
+  'settings.diagnostics.includeNames': 'Incluir nomes e endereços',
+  'settings.diagnostics.includeNamesHelp':
+    'Quando desativado, hosts e clusters aparecem como host-1, cluster-1… no resumo e nos logs.',
+  'settings.diagnostics.files': 'Arquivos no zip',
+  'settings.diagnostics.save': 'Salvar…',
+  'settings.diagnostics.saveTitle': 'Salvar diagnóstico',
+  'settings.diagnostics.fileType': 'Arquivo zip',
+  'settings.diagnostics.done': 'Diagnóstico salvo em {path}.',
   'settings.licenses.title': 'Licenças',
   'settings.licenses.description':
     'O Homeport é software livre sob a GNU Affero General Public License, versão 3, construído com os pacotes de código aberto abaixo.',

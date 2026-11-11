@@ -2,7 +2,7 @@
 import { satteri } from '@astrojs/markdown-satteri';
 import sitemap from '@astrojs/sitemap';
 import starlight from '@astrojs/starlight';
-import { defineConfig } from 'astro/config';
+import { defineConfig, sharpImageService } from 'astro/config';
 import starlightLinksValidator from 'starlight-links-validator';
 import { localizedBaseLinks } from './src/app/markdown/base-links.mjs';
 import { sidebar } from './src/app/config/sidebar.ts';
@@ -31,6 +31,10 @@ export default defineConfig({
   base,
   trailingSlash: 'always',
   markdown: { processor: satteri({ hastPlugins: [localizedBaseLinks(base, codes)] }) },
+  // Every screenshot becomes AVIF at five widths, which is most of a build without
+  // the image cache. At effort 3, not sharp's 4, the encoder takes about a third of
+  // the time for files up to 5% larger. Their quality is set in shared/ui/Screenshot.astro.
+  image: { service: sharpImageService({ avif: { effort: 3 } }) },
   // The brand assets live at the repo root (assets/brand); let Vite read them.
   vite: { server: { fs: { allow: ['..'] } } },
   integrations: [

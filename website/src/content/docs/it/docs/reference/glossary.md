@@ -7,7 +7,7 @@ Homeport chiama le cose con precisione. Questi termini compaiono in tutta l’ap
 
 ### Host (it. _host_)
 
-Un Docker Engine a cui Homeport si connette, definito da un nome e da un modo per raggiungerlo: un socket locale, TCP, TLS o SSH. Ogni container, immagine, volume, rete e stack appartiene esattamente a un host. Vedi [Host e connessioni](/docs/hosts/).
+Un Engine a cui Homeport si connette, definito da un nome e da un modo per raggiungerlo: un socket locale, TCP, TLS o SSH. Ogni container, immagine, volume, rete e stack appartiene esattamente a un host. Vedi [Host e connessioni](/docs/hosts/).
 
 ### Engine kind (it. _tipo di Engine_)
 
@@ -44,6 +44,10 @@ Su un host Podman, un gruppo di container che condividono una rete e si avviano 
 ### Quadlet unit (it. _unità Quadlet_)
 
 Un file su un host Podman, come `web.container`, che systemd trasforma in un servizio, `web.service`, così i container di Podman si avviano all’accensione e systemd li mantiene in esecuzione. Vedi [unità Quadlet](/docs/guides/quadlet/).
+
+### Bastion (it. _bastion_)
+
+Un server SSH attraverso cui si raggiunge un host SSH, quando il server SSH dell’host accetta connessioni solo da esso: ciò che OpenSSH chiama `ProxyJump`. Un host può averne diversi, in ordine, ciascuno con la propria chiave del server considerata attendibile. Un bastion non è un host: non esegue alcun Engine con cui Homeport comunica. Vedi [Tramite un bastion](/docs/hosts/ssh/#tramite-un-bastion).
 
 ### Cluster (it. _cluster_)
 
@@ -131,7 +135,7 @@ La casella di ricerca che si apre con <kbd>Mod</kbd> <kbd>K</kbd>: vai a una pag
 
 ### Engine (it. _Engine_)
 
-Il Docker Engine (`dockerd`), o uno compatibile come Podman, che esegue i container su un computer. Homeport comunica con esso tramite la Docker Engine API.
+Il software a cui punta un host, quello che si installa, si avvia e si arresta: il Docker Engine (`dockerd`) o uno compatibile come Docker Desktop, Podman, Colima o OrbStack, con cui Homeport comunica tramite la Docker Engine API; oppure containerd o Incus, tramite le loro API. Non è un sinonimo di host: «avvia il Docker Engine» riguarda l’Engine, «Homeport non riesce a raggiungere prod-server» riguarda l’host.
 
 ### Socket (it. _socket_)
 
@@ -147,7 +151,7 @@ Il modo in cui Homeport verifica i server SSH: confermi l’impronta della chiav
 
 ## In italiano
 
-L’app, la documentazione e il sito in italiano usano questi termini, così una schermata e una pagina dicono sempre la stessa cosa.
+L’app, la documentazione e il sito in italiano usano questi termini, così una schermata e una pagina dicono sempre la stessa cosa. Ogni altra lingua ha la propria tabella in [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n).
 
 | Inglese        | Italiano              |
 | -------------- | --------------------- |

@@ -171,4 +171,22 @@ export default {
   'core.yaml.editTitle': 'Editar {kind} {name}',
   'core.yaml.editDescription':
     'En {cluster}. Cambia el YAML, previsualiza lo que cambia y luego aplícalo.',
+  'core.metrics.cpu': 'CPU',
+  'core.metrics.memory': 'Memoria',
+  'core.metrics.used': 'Uso',
+  'core.metrics.request': 'Solicitud',
+  'core.metrics.limit': 'Límite',
+  'core.metrics.allocatable': 'Asignable',
+  'core.metrics.ofLimit': '{percent} del límite',
+  'core.metrics.ofRequest': '{percent} de la solicitud',
+  'core.metrics.ofAllocatable': '{percent} de lo asignable',
+  'core.metrics.notInstalled.title': 'metrics-server no está instalado',
+  'core.metrics.notInstalled.body':
+    'Este clúster no ofrece la Metrics API, de la que salen la CPU y la memoria. Homeport no instala nada en un clúster: cuando metrics-server esté instalado, aparecerán aquí.',
+  'core.metrics.notInstalled.link': 'Cómo instalar metrics-server',
+  'core.metrics.notResponding':
+    'La Metrics API no responde: puede que metrics-server se esté iniciando o no esté en ejecución. Homeport lo vuelve a intentar cada 15 segundos.',
+  'core.metrics.waiting': 'Esperando la primera muestra de metrics-server…',
+  'core.metrics.kept':
+    'Una muestra cada 15 segundos, guardada mientras esta página esté abierta, 15 minutos como máximo.',
 } satisfies Translation<typeof en>;

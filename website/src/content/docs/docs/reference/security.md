@@ -3,7 +3,7 @@ title: Security and your data
 description: What Homeport stores, where, how secrets are encrypted, and what it never does.
 ---
 
-Homeport holds credentials that open your servers. This page explains exactly what it keeps, and how.
+Homeport holds credentials that open your servers. This page explains exactly what it keeps, and how it's protected. [Your data and backups](/docs/reference/data-and-backups/) says what to copy to back it up, and how to restore it.
 
 ## What Homeport stores
 
@@ -80,7 +80,9 @@ Homeport shows a banner and won't store secrets. Local socket, TCP and ssh-agent
 
 ### If the keychain key is lost
 
-Resetting the keychain, or moving `homeport.db` to another computer or user, leaves secrets that can't be decrypted. Homeport doesn't delete anything: affected Hosts show **Credentials lost** until you re-enter their credentials. See [troubleshooting](/docs/reference/troubleshooting/#credentials-lost). To move your data, back it up or export your Hosts instead.
+Resetting the keychain, or moving `homeport.db` to another computer or user, leaves secrets that can't be decrypted. Homeport doesn't delete anything: affected Hosts and Clusters show **Credentials lost** until you re-enter their credentials; [If the secrets are lost](/docs/reference/data-and-backups/#if-the-secrets-are-lost) lists what to enter again, and where. To move your data, [back it up](#backups) or [export your Hosts](#moving-to-another-computer) instead.
+
+Homeport never makes a new key over secrets it already holds. When the keychain answers but has no `com.homeport.app` entry while the database holds encrypted secrets — another keychain answering this time, such as KeePassXC's Secret Service instead of GNOME Keyring — Homeport stores no secret and says that **the keychain entry Homeport's secrets were sealed with is missing**. Switch back to the keychain that holds the entry and restart Homeport. If the entry is gone for good, choose **Start over with a new key** in **Settings → This machine**: the secrets sealed with the old key then show as **Credentials lost**, to enter again or restore from a backup.
 
 ### Moving to another computer
 
@@ -103,7 +105,7 @@ Treat the file like the keys it holds: delete it once imported. The format is de
 2. replaces every Host, Cluster, Stack, login, repository and setting in one step, so a failure leaves your data as it was;
 3. encrypts every secret again with this computer's keychain key.
 
-A backup made by a newer Homeport is refused; one made by an older Homeport restores. The backup holds every secret Homeport has: keep it, and its passphrase, as safe as the keys themselves.
+A backup made by a newer Homeport is refused; one made by an older Homeport restores. The backup holds every secret Homeport has: keep it, and its passphrase, as safe as the keys themselves. [Your data and backups](/docs/reference/data-and-backups/) has the steps, what a backup includes and leaves out, and how to copy the database yourself.
 
 ## Keys never touch the disk in clear
 
@@ -152,7 +154,7 @@ They run with the SSH user's rights (or yours, on this computer) and never with 
 ## What Homeport never does
 
 - **No account.** There is nothing to sign up for.
-- **No telemetry, analytics or crash reporting.**
+- **No telemetry, analytics or crash reporting.** When you report a bug, the [diagnostics bundle](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report) is a file you export, read and attach yourself.
 - **Nothing installed on your Clusters.** Homeport only uses the Kubernetes API, with your credentials' rights, and changes nothing without you asking: whatever removes or replaces something asks first, naming the cluster.
 - **Nothing installed on your Hosts.** The only commands Homeport runs on a Host are [listed above](#what-homeport-runs-on-your-hosts). The only container Homeport ever starts of its own is a short-lived [helper container](/docs/guides/volumes-networks/#the-helper-container) when you open, back up, restore or clone a volume; it has no network and is removed when it's done. Its image is pulled only once you agree.
 - **No silent installs.** An update is installed only when you choose **Install and restart**; Linux packages are only ever updated by your package manager.
@@ -168,6 +170,8 @@ Homeport writes a small log file — a few dozen kilobytes, replaced when full �
 | Linux   | `~/.local/share/com.homeport.app/logs/` |
 | macOS   | `~/Library/Logs/com.homeport.app/`      |
 | Windows | `%LOCALAPPDATA%\com.homeport.app\logs\` |
+
+Homeport has no telemetry and no crash reporting: a log never leaves your computer unless you send it. For a bug report, **Settings → About → Export diagnostics…** saves a zip with a summary of versions and these logs, after replacing anything shaped like a secret (keys, passwords, tokens, credentials in URLs) and, unless you ask otherwise, the names and addresses of your Hosts and Clusters. See [Exporting diagnostics](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report).
 
 ## Trusting a download
 

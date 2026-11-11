@@ -48,15 +48,18 @@ A barra lateral tem uma página para cada tipo de recurso, e todas mostram o hos
 | Página            | O que mostra                                                                   |
 | ----------------- | ------------------------------------------------------------------------------ |
 | **Visão geral**   | Um cartão para cada host, o Engine do host selecionado, uso de disco e eventos |
+| **Quadro**        | Os contêineres de todos os hosts conectados em uma única tabela                |
 | **Contêineres**   | Todos os contêineres, agrupados por stack, com CPU e memória ao vivo           |
 | **Imagens**       | Imagens locais, o que as usa, download e limpeza                               |
 | **Volumes**       | Volumes e os contêineres que os usam                                           |
 | **Redes**         | Redes, as suas sub-redes e os contêineres conectados                           |
-| **Stacks**        | Projetos Compose, gerenciados e externos                                       |
-| **Eventos**       | O que o Engine informou desde que o Homeport se conectou                       |
-| **Configurações** | Tema, o que esta máquina suporta e licenças                                    |
+| **Stacks**        | Projetos Compose: gerenciados, vinculados, sincronizados e externos            |
+| **Eventos**       | O que o Engine informou, guardado por 30 dias                                  |
+| **Configurações** | Tema e idioma, logins de registro, backups e o que esta máquina tem            |
 
 O Homeport se atualiza à medida que o Engine informa mudanças, então você nunca precisa de um botão de atualizar — inicie um contêiner em um terminal e ele aparece na hora.
+
+Um host containerd, Incus ou Podman, um Swarm e um cluster trazem cada um páginas próprias para a barra lateral. No fim dela, **Documentação** e **GitHub** abrem esta documentação e o repositório do projeto no seu navegador.
 
 ## 3. Execute um contêiner
 

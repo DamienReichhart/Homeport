@@ -42,6 +42,14 @@ export default {
     'Disponible: las claves SSH, los certificados, los entornos de los stacks y los inicios de sesión de los registros se guardan cifrados.',
   'settings.machine.keychainUnavailable':
     'No disponible: no se pueden guardar claves SSH, certificados TLS, entornos de stacks ni inicios de sesión de registros.',
+  'settings.machine.keychainEntryMissing':
+    'Falta la entrada: el llavero no tiene ninguna entrada para la clave con la que se sellaron los secretos de Homeport, así que no se pueden abrir ni guardar.',
+  'settings.machine.startOverDescription':
+    'Si Homeport está usando otro llavero que antes, vuelve a ese y reinicia Homeport. Si la entrada ha desaparecido para siempre, empieza de nuevo con una clave nueva.',
+  'settings.machine.startOver': 'Empezar de nuevo con una clave nueva',
+  'settings.machine.startOverTitle': '¿Empezar de nuevo con una clave nueva?',
+  'settings.machine.startOverConfirmDescription':
+    'Una clave nueva no puede abrir lo que se selló con la que falta: tendrás que volver a introducir las credenciales de cada host, clúster, registro y repositorio, y el entorno de cada stack, o restaurar una copia de seguridad.',
   'settings.machine.compose': 'CLI de Compose',
   'settings.machine.composeMissing': 'Los stacks se pueden iniciar y detener, pero no desplegar.',
   'settings.machine.stackDeploy': 'CLI de Docker, para Swarms',
@@ -86,6 +94,9 @@ export default {
     '{count, plural, one {# inicio de sesión de registro} other {# inicios de sesión de registros}}',
   'settings.restore.repositories': '{count, plural, one {# repositorio} other {# repositorios}}',
   'settings.restore.settings': 'Tus ajustes',
+  'settings.restore.withoutSecrets':
+    'Estos se guardaron sin sus secretos, que no se pudieron abrir entonces. Vuelven sin ellos, reemplazando los secretos que tienen aquí, y los inicios de sesión de registro entre ellos no vuelven en absoluto:',
+  'settings.restore.withoutSecretsList': 'Guardados sin sus secretos',
   'settings.restore.replaces':
     'Restaurar sustituye todos los hosts, stacks, inicios de sesión de registros, repositorios y ajustes que tienes ahora, y olvida los eventos del Engine y el historial de despliegues. Antes se guarda una copia de los datos actuales en la carpeta de datos de Homeport.',
   'settings.restore.confirm': 'Sustituirlo todo',
@@ -102,6 +113,18 @@ export default {
   'settings.about.tagline': 'Todos los Docker Engines, en un solo tablero.',
   'settings.about.openLogFolder': 'Abrir carpeta de logs',
   'settings.about.licenses': 'Licencias',
+  'settings.about.exportDiagnostics': 'Exportar diagnóstico…',
+  'settings.diagnostics.title': 'Exportar diagnóstico',
+  'settings.diagnostics.description':
+    'Un archivo zip para adjuntar a un informe de error: un resumen de las versiones y de los tipos de hosts y clústeres que usas, y los logs de Homeport sin sus secretos. No se envía nada a ninguna parte: tú decides si compartes el archivo.',
+  'settings.diagnostics.includeNames': 'Incluir nombres y direcciones',
+  'settings.diagnostics.includeNamesHelp':
+    'Si está desactivado, los hosts y los clústeres aparecen como host-1, cluster-1… en el resumen y en los logs.',
+  'settings.diagnostics.files': 'Archivos del zip',
+  'settings.diagnostics.save': 'Guardar…',
+  'settings.diagnostics.saveTitle': 'Guardar diagnóstico',
+  'settings.diagnostics.fileType': 'Archivo zip',
+  'settings.diagnostics.done': 'Diagnóstico guardado en {path}.',
   'settings.licenses.title': 'Licencias',
   'settings.licenses.description':
     'Homeport es software libre bajo la GNU Affero General Public License, versión 3, creado sobre los paquetes de código abierto que aparecen a continuación.',

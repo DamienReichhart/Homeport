@@ -16,24 +16,67 @@ Once, before the first release: [create the signing keys](#signing-keys).
 
 1. Set the new version in `src-tauri/tauri.conf.json`, `package.json` and `Cargo.toml` (`[workspace.package] version`).
 2. Run `cargo check` so `Cargo.lock` picks it up.
-3. Commit and push to `main` (or merge `dev` into it).
+3. Record the migrations this release ships. For each file of `crates/foundation/storage/src/db/migrations/` that isn't in `crates/foundation/storage/src/db/migrations/RELEASED` yet, append a line with its name, its SHA-256 and the new version:
+
+   ```sh
+   sha256sum crates/foundation/storage/src/db/migrations/0018_database_info.sql
+   # 0018_database_info.sql <the hash> 1.0.0
+   ```
+
+   From then on the file is frozen; see [Data compatibility](#data-compatibility). A release without a new migration adds no line.
+
+4. Make the database fixture of the version being released, and commit it with the rest:
+
+   ```sh
+   cargo run -p homeport-storage --features test-support --example db_fixture -- 1.0.0
+   ```
+
+   It writes `crates/foundation/storage/tests/fixtures/1.0.0.db` from the working tree's migrations, since the version has no tag yet. Every release gets one, with or without a new migration, prereleases included: `every_release_has_a_fixture` fails on `dev` once the tag exists without it. A fixture is never overwritten, so if a migration changed after you made this version's, delete the file and run the command again; never touch an earlier release's.
+
+5. Run `bun run rust:test`: the new fixture and every earlier one must open with today's code.
+6. Commit and push to `main` (or merge `dev` into it).
 
 Pushing to `main` without changing the version fails the Release workflow, on purpose: that version is already out.
 
 A version with a suffix (`1.0.0-beta.1`) is published as a prerelease and isn't marked _latest_. Prereleases ship no MSI, because WiX only accepts numeric suffixes, and stay out of the package repositories and the update manifest: only people who download them get them.
 
+## Data compatibility
+
+**Every version of Homeport opens the data of every earlier version, back to 0.1.0, and upgrades it without losing anything: Hosts, Stacks, Clusters, settings and secrets.** The website makes the same promise to users ([Your data across versions](https://damienreichhart.github.io/Homeport/docs/reference/updating/#your-data-across-versions)); these rules and tests keep it:
+
+- **Migrations are append-only.** A change to the schema is a new file in `crates/foundation/storage/src/db/migrations/`, added at the end of `MIGRATION_SLICE`. A released `.sql` file is never edited, renamed, reordered or removed: a database that already ran it would end up with a different schema than a new one. `RELEASED`, next to the files, lists each released migration with its SHA-256 and the first release that shipped it, and `released_migrations_are_unchanged` (`crates/foundation/storage/src/db/mod.rs`) fails when a released file's bytes no longer match, or when a file isn't in `MIGRATION_SLICE`.
+- **A migration that reshapes a table copies every column.** Rebuilding a table (create the new one, copy, drop, rename, as `0015_swarm_stacks.sql` does) carries over every column of every row, sealed ones included. Two tests check it against a sample database of every release since 0.1.0 (`crates/foundation/storage/tests/fixtures/<version>.db`, built from that release's own migrations with rows of every kind it could store): `every_fixture_migrates_without_losing_a_row` (`crates/foundation/storage/tests/fixtures.rs`) counts the rows of each table before and after, and `src-tauri/tests/upgrade.rs` opens each fixture with today's code and reads every Host, Stack (Managed, Linked, Synced), deploy, registry login, repository, Cluster, setting and Engine event back through the stores, unsealing every secret. `every_release_has_a_fixture` compares the fixtures with `git tag`, so no release goes unchecked.
+- **Stored shapes stay readable.** What a release wrote in a column (a connection's JSON, a list of compose files, a sealed secret's layout) is read by every later release, or converted by a migration. The upgrade test fails on a shape today's stores no longer read.
+- **Secrets are never re-sealed under a new key, cipher or layout without a migration that proves it.** The keychain entry (service `com.homeport.app`, account `secrets-key`) and the sealed format (ADR 0002) stay as they are. A change to either ships with the code that opens the old form and seals the new one, and with fixtures sealed the old way that the upgrade test unseals.
+- **Downgrades are refused without touching the data.** Migrations only go forward. `Db::open` reads the schema version from the file's header before opening it for writing, and refuses a database migrated by a newer Homeport with `ErrorCode::DbFromNewerVersion` ("This database was last used by Homeport {version} or later."), naming the oldest version able to open it, which each database records in `database_info` (`0018_database_info.sql`), a table that never changes shape because older versions read it. Nothing is written: not the file, and no `-wal` or `-shm` beside it. The window then shows the message, the database's path and **Open folder** instead of exiting. Tests: `a_database_from_a_newer_homeport_is_refused_untouched`, `a_newer_database_that_names_no_version_is_refused_too`, `a_newer_database_left_open_by_a_crash_is_refused_without_losing_its_log` and `opening_records_the_oldest_homeport_that_can_read_the_file` (`crates/foundation/storage/src/db/mod.rs`).
+- **Backups follow the same rule.** A backup or a Hosts export made by an older Homeport restores in a newer one; one made by a newer Homeport is refused with `ErrorCode::BundleTooNew` (ADR 0013).
+
+### When a released migration has a bug
+
+Fix it with a new migration, never by editing the released one. The databases that already ran the faulty file keep what it did, so the new migration must leave both kinds in the same state: those that ran the bug, and new ones that run both files in a row. Write it so that it's safe on either (`UPDATE … WHERE` the bad value, `CREATE INDEX IF NOT EXISTS`, a table rebuild), and add a test in `crates/foundation/storage/src/db/mod.rs` that starts from the faulty state, as `databases_from_0_10_keep_their_stacks_and_history` and its neighbours do for past releases. The fixtures of the affected releases already hold that state, and stay as they were made.
+
+If the hash test fails because a released file changed by accident (line endings, a reformatted comment), restore the file: `git checkout v<release> -- crates/foundation/storage/src/db/migrations/<file>`. Never update the hash in `RELEASED` to make the test pass.
+
 ## Platforms
 
-| Runner             | Target                      | Installers                         |
-| ------------------ | --------------------------- | ---------------------------------- |
-| `ubuntu-22.04`     | `x86_64-unknown-linux-gnu`  | `.deb`, `.rpm`, `.AppImage`        |
-| `ubuntu-22.04-arm` | `aarch64-unknown-linux-gnu` | `.deb`, `.rpm`, `.AppImage`        |
-| `windows-latest`   | `x86_64-pc-windows-msvc`    | NSIS `-setup.exe`, `.msi`          |
-| `windows-latest`   | `aarch64-pc-windows-msvc`   | NSIS `-setup.exe` (cross-compiled) |
-| `macos-latest`     | `aarch64-apple-darwin`      | `.dmg`                             |
-| `macos-latest`     | `x86_64-apple-darwin`       | `.dmg` (cross-compiled)            |
+| Runner             | Target                      | Files in the release                                                                 |
+| ------------------ | --------------------------- | ------------------------------------------------------------------------------------ |
+| `ubuntu-22.04`     | `x86_64-unknown-linux-gnu`  | `Homeport-<version>-linux-x64.deb`, `…-linux-x64.rpm`, `…-linux-x64.AppImage`        |
+| `ubuntu-22.04-arm` | `aarch64-unknown-linux-gnu` | `Homeport-<version>-linux-arm64.deb`, `…-linux-arm64.rpm`, `…-linux-arm64.AppImage`  |
+| `windows-latest`   | `x86_64-pc-windows-msvc`    | `Homeport-<version>-windows-x64-setup.exe` (NSIS), `…-windows-x64.msi`               |
+| `windows-latest`   | `aarch64-pc-windows-msvc`   | `Homeport-<version>-windows-arm64-setup.exe` (NSIS, cross-compiled)                  |
+| `macos-latest`     | `aarch64-apple-darwin`      | `Homeport-<version>-macos-arm64.dmg`, `…-macos-arm64-update.app.tar.gz`              |
+| `macos-latest`     | `x86_64-apple-darwin`       | `Homeport-<version>-macos-x64.dmg`, `…-macos-x64-update.app.tar.gz` (cross-compiled) |
 
-Each build also uploads the in-app updater's files: a `.sig` next to each installer, and on macOS `Homeport_<version>_<arch>.app.tar.gz` (the updater installs the zipped app, not the `.dmg`) with its `.sig`.
+### File names
+
+Every file in a release is named `Homeport-<version>-<os>-<arch>[-<variant>].<ext>`, with `<os>` one of `windows`, `macos`, `linux` and `<arch>` one of `x64`, `arm64`, so a download says which system and processor it is for in the same words everywhere. Tauri names its bundles in each format's own vocabulary (`Homeport_1.0.0_amd64.deb`, `Homeport-1.0.0-1.x86_64.rpm`, `Homeport_1.0.0_aarch64.dmg`); the **Collect the installers** step of each build copies them under the release names with `bun scripts/release-assets.ts`. It fails the build when a bundle it was asked for is missing, when an updater file has no `.sig`, or when two files would get the same name. The names and those checks are in `scripts/release-assets-plan.ts`.
+
+The in-app updater's files are named so that nobody takes them for an installer: each `.sig` sits next to the file it signs (`<file>.sig`), and on macOS the zipped app the updater installs (it can't apply a `.dmg`) is `Homeport-<version>-macos-<arch>-update.app.tar.gz`, with its `.sig`. The release notes say that neither is a download, and the website never offers them.
+
+The `.deb` and `.rpm` files follow the same pattern, not `dpkg`'s or `rpm`'s (`homeport_1.0.0_amd64.deb`, `homeport-1.0.0-1.x86_64.rpm`). `apt install ./<file>`, `dnf install ./<file>` and `zypper install ./<file>` read a package's name and architecture from inside it, never from the file name, and only the file name changes: the package inside is the one Tauri built. One tool does go by the name: `apt-ftparchive --arch amd64` indexes only the files named `*_amd64.deb`, and silently leaves the others out. So `scripts/repositories.ts` stores each `.deb` in the APT repository's pool as `Homeport_<version>_<amd64|arm64>.deb` (`aptPoolName`), whatever the release calls it. `createrepo_c` indexes every `.rpm` in its folder, so the RPM repository keeps the release names.
+
+Releases up to 0.22 carry Tauri's names. Everything that reads a release reads both: the update manifest and the package repositories (`scripts/repositories-plan.ts`), and the website's download page and changelog (`website/src/core/release/model.ts`). Keep it so: installed copies of every version read the same `updates/latest.json`, and the repositories keep older releases. The Scoop manifest and the AUR package (`scripts/channels-plan.ts`) are only ever rendered for the release being published, so they use the release names alone.
 
 Linux builds on Ubuntu 22.04 so that they run on distributions with glibc 2.35 or later. These are the same targets as `about.toml > targets`. Add a platform to both.
 
@@ -73,7 +116,7 @@ The website's GitHub Pages site also serves, at a permanent URL ([ADR 0003](adr/
 | `install.sh`           | The quick install script (`packaging/linux/install.sh`)                                   |
 | `updates/latest.json`  | The in-app updater's manifest                                                             |
 
-The Pages workflow builds them on every deploy with `bun scripts/repositories.ts --out website/dist`: it downloads the `.deb` and `.rpm` files of the latest 5 stable releases from GitHub Releases (from 0.3.0, the first built for them), indexes them with `apt-ftparchive` and `createrepo_c`, signs the metadata with the package key, and writes `updates/latest.json` from the latest release's signed installers. GitHub Releases stay the only source: nothing is committed. Pull requests build everything with a throwaway key.
+The Pages workflow builds them on every deploy with `bun scripts/repositories.ts --out website/dist`: it downloads the `.deb` and `.rpm` files of the latest 5 stable releases from GitHub Releases (from 0.3.0, the first built for them), indexes them with `apt-ftparchive` and `createrepo_c`, signs the metadata with the package key, and writes `updates/latest.json` from the latest release's signed installers. It takes the packages by their extension and the updater files under [either naming](#file-names), so a repository can hold releases from before and after the rename. GitHub Releases stay the only source: nothing is committed. Pull requests build everything with a throwaway key.
 
 **The packages register the repository.** On their first install (or first upgrade from a version without this), the `.deb` and `.rpm` add `homeport.sources` or `homeport.repo` unless it's already there, so a downloaded package still gets updates. A marker in `/var/lib/homeport/` keeps a removed repository from coming back. `apt purge` and `dnf`/`zypper remove` remove it. The scripts are in `packaging/linux/`.
 
@@ -105,7 +148,7 @@ Setting them up, once:
 3. Re-run the last release's **channels** job (or wait for the next release), then check `scoop install homeport/homeport` on Windows and `yay -S homeport-bin` on Arch.
 4. Move Scoop and the AUR out of `COMING_LATER` in `website/src/core/packages/repositories.ts` and document them on the installation page.
 
-Homeport knows these installs: on a Scoop install (an NSIS installer under `scoop\apps`) and on Arch (the `.deb` repackaged), the in-app updater shows `scoop update homeport` or `yay -Syu homeport-bin` instead of installing updates itself (`crates/updates`).
+Homeport knows these installs: on a Scoop install (an NSIS installer under `scoop\apps`) and on Arch (the `.deb` repackaged), the in-app updater shows `scoop update homeport` or `yay -Syu homeport-bin` instead of installing updates itself (`crates/app/updates`).
 
 To render the files locally from a published release:
 

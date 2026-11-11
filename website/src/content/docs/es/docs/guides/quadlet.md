@@ -58,7 +58,7 @@ Podman escribe los archivos donde van las unidades de su usuario y recarga syste
 
 ## Editar y eliminar
 
-**Editar** abre el archivo de la unidad. **Guardar** lo escribe en su sitio y recarga systemd; los archivos instalados junto a ella se mantienen. Un servicio en ejecución conserva sus ajustes anteriores hasta que lo **reinicias**.
+**Editar** abre el archivo de la unidad. **Guardar** lo escribe en su sitio y recarga systemd; los archivos instalados junto a ella se mantienen. Un servicio en ejecución conserva sus ajustes anteriores hasta que lo **reinicias**. Si el archivo cambió en el host desde que lo abriste, **Guardar** se rechaza y lo dice, en lugar de sobrescribir ese cambio: abre la unidad de nuevo para verlo, o elige **Sobrescribir**.
 
 **Eliminar** borra el archivo de la unidad y recarga systemd. **Detener antes su servicio en ejecución** está activado por defecto; sin ello, Podman se niega a eliminar una unidad en ejecución. Los contenedores, volúmenes e imágenes que creó la unidad se conservan.
 

@@ -1,0 +1,29 @@
+[package]
+name = "homeport-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Homeport's shared kernel: the error model every crate reports with, and helpers for this computer"
+publish = false
+
+[lints]
+workspace = true
+
+[features]
+# Classifies the Engine's answers (`From<bollard::errors::Error> for AppError`).
+bollard = ["dep:bollard"]
+# Looks through russh's I/O errors when classifying a failure to reach an Engine.
+russh = ["dep:russh"]
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+specta.workspace = true
+thiserror.workspace = true
+log.workspace = true
+tokio.workspace = true
+bollard = { workspace = true, optional = true }
+russh = { workspace = true, optional = true }
+# Files saved over one the user picked are written beside it first.
+tempfile.workspace = true

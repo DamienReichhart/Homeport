@@ -7,12 +7,12 @@ Homeport is developed in the open at [github.com/DamienReichhart/Homeport](https
 
 ## Reporting a bug
 
-[Open an issue](https://github.com/DamienReichhart/Homeport/issues/new) with:
+[Open an issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) with:
 
-- your Homeport version and platform, from **Settings** (for example `v0.2.0 · macos/aarch64`);
-- the kind of Host (local, SSH, TLS or TCP) and its Engine version;
 - what you did, what you expected, and what happened — the exact message helps most;
-- anything relevant from the [log file](/docs/reference/security/#logs).
+- the [diagnostics bundle](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report) from **Settings → About → Export diagnostics…**: one zip with Homeport's version and platform, the kinds of Hosts, Engines and Clusters you use, and its logs with secrets removed. You read what's in it before saving it, and nothing is sent anywhere.
+
+If Homeport doesn't start, give its version and your operating system instead, and anything relevant from the [log file](/docs/reference/security/#logs).
 
 Please report security problems privately, through [GitHub's vulnerability reporting](https://github.com/DamienReichhart/Homeport/security/advisories/new).
 
@@ -33,8 +33,9 @@ Open an issue describing the problem you want solved, not only the solution. Kno
    bun run rust:test
    ```
 
-5. Write commit messages as [Conventional Commits](https://www.conventionalcommits.org) — `feat(stacks): …`, `fix(hosts): …`. Release notes are generated from them.
-6. Open a pull request against the `dev` branch. CI runs the frontend checks and the licence check on Linux, and `cargo clippy` and `cargo test` on Linux, macOS and Windows, so code behind `#[cfg(windows)]` or `#[cfg(target_os = "macos")]` is compiled before it's merged. A test that needs a Docker Engine is marked `#[ignore = "needs a local Docker Engine"]`; a separate Linux job runs those against the runner's Engine.
+5. Keep the data promise: every version of Homeport opens the data of every earlier version, back to 0.1.0, and upgrades it without losing anything: Hosts, Stacks, Clusters, settings and secrets. A schema change is a new migration, never an edit to a released one, and CI checks it against a sample database of every release. See [Data compatibility](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md#data-compatibility).
+6. Write commit messages as [Conventional Commits](https://www.conventionalcommits.org) — `feat(stacks): …`, `fix(hosts): …`. Release notes are generated from them.
+7. Open a pull request against the `dev` branch. CI runs the frontend checks and the licence check on Linux, and `cargo clippy` and `cargo test` on Linux, macOS and Windows, so code behind `#[cfg(windows)]` or `#[cfg(target_os = "macos")]` is compiled before it's merged. A test that needs a Docker Engine is marked `#[ignore = "needs a local Docker Engine"]`; a separate Linux job runs those against the runner's Engine.
 
 See [building from source](/docs/project/building/) to get set up.
 

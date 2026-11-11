@@ -38,3 +38,25 @@ export async function setTheme(client: QueryClient, theme: Theme) {
   const saved = await patchSettings(client, { theme });
   applyTheme(saved.theme ?? 'system');
 }
+
+/** Writes the diagnostics bundle to a path; the dialog shows a failure in place. */
+export function useExportDiagnostics() {
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: ({ path, includeNames }: { path: string; includeNames: boolean }) =>
+      commands.diagnosticsExport(path, includeNames),
+  });
+}
+
+/**
+ * Gives up on the key the stored secrets were sealed with, whose keychain
+ * entry is missing, then refreshes everything that depends on secrets.
+ */
+export function useKeychainStartOver() {
+  const client = useQueryClient();
+  return useMutation({
+    meta: { silent: true },
+    mutationFn: () => commands.keychainStartOver(),
+    onSuccess: () => client.invalidateQueries(),
+  });
+}

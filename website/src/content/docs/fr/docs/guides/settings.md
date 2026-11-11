@@ -3,7 +3,7 @@ title: Paramètres
 description: Thème et langue, la zone de notification, le démarrage à l’ouverture de session, les notifications, les mises à jour, les identifiants de registre, les dépôts, la fréquence de vérification des stacks synchronisées, ce que cette machine prend en charge, la version et les licences.
 ---
 
-**Paramètres** est le dernier élément de la barre latérale.
+**Paramètres** est la dernière page de la barre latérale, au-dessus des liens **Documentation** et **GitHub**, qui s’ouvrent dans votre navigateur.
 
 ## Apparence
 
@@ -93,7 +93,7 @@ Ce que Homeport conserve sur cet ordinateur.
 - Les [stacks synchronisées](/docs/guides/synced-stacks/) clonent à nouveau leur dépôt à leur prochaine synchronisation.
 - Les données actuelles sont d’abord copiées dans `homeport.db.before-restore-<date>`, dans le dossier de données de Homeport. Restaurer un mauvais fichier, celui d’un Homeport plus récent, ou un fichier qui échoue à mi-chemin ne change rien.
 
-Pour ajouter plutôt quelques hôtes à ceux que vous avez, utilisez **Exporter** et **Importer** sur la page Hôtes.
+Pour ajouter plutôt quelques hôtes à ceux que vous avez, utilisez **Exporter** et **Importer** sur la page Hôtes. [Vos données et sauvegardes](/docs/reference/data-and-backups/) indique où se trouvent les fichiers de Homeport, ce que contient une sauvegarde, et comment copier vous-même la base de données.
 
 ### Conserver les événements des moteurs
 
@@ -112,6 +112,10 @@ Homeport vérifie les CLI à chaque ouverture de cette page, si bien qu’une CL
 
 ## À propos
 
-Affiche la version de Homeport et la plateforme pour laquelle il a été compilé, par exemple `v0.2.0 · macos/aarch64`. Indiquez-la quand vous [signalez un problème](https://github.com/DamienReichhart/Homeport/issues).
+Affiche la version de Homeport et la plateforme pour laquelle il a été compilé, par exemple `v1.0.0 · macos/aarch64`.
+
+**Ouvrir le dossier des journaux** montre où Homeport écrit son [journal](/docs/reference/security/#journaux).
+
+**Exporter le diagnostic…** enregistre un zip à joindre quand vous [signalez un problème](https://github.com/DamienReichhart/Homeport/issues/new/choose) : un résumé des versions et des types d’hôtes et de clusters que vous utilisez, et les journaux sans leurs secrets. La boîte de dialogue montre d’abord ce qu’il contient, et rien n’est envoyé nulle part. Voir [Exporter le diagnostic](/docs/reference/troubleshooting/#exporter-le-diagnostic-pour-un-rapport-de-bug).
 
 **Licences** montre la licence de Homeport (la GNU AGPL, version 3), un lien vers le code source de la version que vous utilisez, et les mentions de chaque paquet open source avec lequel il est construit.

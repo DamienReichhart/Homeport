@@ -4,16 +4,14 @@ use serde::Serialize;
 use tauri::{AppHandle, Manager};
 use tauri_specta::Event;
 
-use homeport_clusters::{
-    forward::ForwardEvent,
-    registry::{ClusterNotifier, ClusterStatus},
-};
+use homeport_clusters::registry::{ClusterNotifier, ClusterStatus};
 use homeport_core::error::AppError;
 use homeport_engine::volumes::helper;
 use homeport_hosts::registry::{EngineEvent, HostStatus, Notifier};
+use homeport_kubernetes::streams::forward::ForwardEvent;
 use homeport_stacks::StackOwner;
 
-use super::{notifications::Notifications, AppState};
+use super::{desktop::notifications::Notifications, AppState};
 
 #[derive(Debug, Clone, Serialize, specta::Type, tauri_specta::Event)]
 #[serde(rename_all = "camelCase")]
@@ -104,7 +102,7 @@ impl Notifier for TauriNotifier {
         if let Err(e) = event.emit(&self.app) {
             log::warn!("failed to emit host status: {e}");
         }
-        super::tray::refresh(&self.app);
+        super::desktop::tray::refresh(&self.app);
         self.notifications.host_status(&self.app, host_id, status);
     }
 

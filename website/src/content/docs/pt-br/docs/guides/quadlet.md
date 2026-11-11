@@ -58,7 +58,7 @@ O Podman grava os arquivos onde ficam as unidades do seu usuário e recarrega o 
 
 ## Editando e removendo
 
-**Editar** abre o arquivo da unidade. **Salvar** o grava no lugar e recarrega o systemd; os arquivos instalados ao lado dele permanecem. Um serviço em execução mantém as configurações antigas até você o **Reiniciar**.
+**Editar** abre o arquivo da unidade. **Salvar** o grava no lugar e recarrega o systemd; os arquivos instalados ao lado dele permanecem. Um serviço em execução mantém as configurações antigas até você o **Reiniciar**. Se o arquivo mudou no host desde que você o abriu, **Salvar** é recusado e avisa, em vez de sobrescrever essa mudança: abra a unidade de novo para vê-la, ou escolha **Sobrescrever**.
 
 **Remover** exclui o arquivo da unidade e recarrega o systemd. **Parar o serviço em execução dela antes** vem ativado por padrão; sem isso, o Podman se recusa a remover uma unidade em execução. Os contêineres, volumes e imagens que a unidade criou são mantidos.
 

@@ -160,4 +160,21 @@ export default {
   'core.yaml.edit': '编辑',
   'core.yaml.editTitle': '编辑 {kind} {name}',
   'core.yaml.editDescription': '在 {cluster} 上。修改 YAML，预览它的更改，然后应用。',
+  'core.metrics.cpu': 'CPU',
+  'core.metrics.memory': '内存',
+  'core.metrics.used': '已用',
+  'core.metrics.request': '请求',
+  'core.metrics.limit': '限制',
+  'core.metrics.allocatable': '可分配',
+  'core.metrics.ofLimit': '限制的 {percent}',
+  'core.metrics.ofRequest': '请求的 {percent}',
+  'core.metrics.ofAllocatable': '可分配量的 {percent}',
+  'core.metrics.notInstalled.title': '未安装 metrics-server',
+  'core.metrics.notInstalled.body':
+    '此集群未提供 Metrics API，而 CPU 和内存数据都来自它。Homeport 不会在集群上安装任何东西：安装 metrics-server 后，这些数据就会显示在这里。',
+  'core.metrics.notInstalled.link': '如何安装 metrics-server',
+  'core.metrics.notResponding':
+    'Metrics API 没有响应：metrics-server 可能正在启动，或没有运行。Homeport 每 15 秒重试一次。',
+  'core.metrics.waiting': '正在等待 metrics-server 的第一个样本…',
+  'core.metrics.kept': '每 15 秒一个样本，在此页面打开期间保留，最多 15 分钟。',
 } satisfies Translation<typeof en>;

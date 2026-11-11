@@ -115,6 +115,7 @@ export { Toggle, toggleVariants } from './primitives/toggle';
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './primitives/tooltip';
 
 // layout
+export { GitHubIcon } from './layout/GitHubIcon';
 export { Logo, LogoMark } from './layout/Logo';
 export { PageHeader } from './layout/PageHeader';
 

@@ -1,6 +1,6 @@
 import { FileUpIcon, PaperclipIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
-import type { QuadletUnit } from '@/shared/api';
+import { toAppError, type QuadletUnit } from '@/shared/api';
 import {
   Button,
   Dialog,
@@ -61,6 +61,14 @@ export function UnitDialog({
     setForm(fresh());
   });
   const errors = unitFormErrors(form);
+  // The file changed on the Host since the editor opened it.
+  const changed = install.error && toAppError(install.error).key === 'errors.quadlets.changed';
+  const save = (overwrite: boolean) =>
+    install.mutate({
+      install: toInstall(form, editing?.app ?? null),
+      replace: editing !== undefined,
+      expected: editing && !overwrite ? initialContent : null,
+    });
   const extension = form.name.split('.').pop() ?? '';
   const changeKind = (next: string) => {
     const stem = form.name.includes('.')
@@ -102,11 +110,7 @@ export function UnitDialog({
           className="grid gap-4"
           onSubmit={(e) => {
             e.preventDefault();
-            if (canSaveUnit(form))
-              install.mutate({
-                install: toInstall(form, editing?.app ?? null),
-                replace: editing !== undefined,
-              });
+            if (canSaveUnit(form)) save(false);
           }}
         >
           <div className="grid grid-cols-[1fr_auto] items-end gap-3">
@@ -196,6 +200,16 @@ export function UnitDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {t('common.cancel')}
             </Button>
+            {changed && (
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={!canSaveUnit(form) || install.isPending}
+                onClick={() => save(true)}
+              >
+                {t('quadlets.form.overwrite')}
+              </Button>
+            )}
             <Button type="submit" disabled={!canSaveUnit(form) || install.isPending}>
               {editing ? t('quadlets.form.save') : t('quadlets.form.install')}
             </Button>

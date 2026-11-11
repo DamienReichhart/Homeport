@@ -58,7 +58,7 @@ Podman writes the files where its user's units go and reloads systemd, so the se
 
 ## Editing and removing
 
-**Edit** opens the unit's file. **Save** writes it in place and reloads systemd; the files installed beside it stay. A running service keeps its old settings until you **Restart** it.
+**Edit** opens the unit's file. **Save** writes it in place and reloads systemd; the files installed beside it stay. A running service keeps its old settings until you **Restart** it. If the file changed on the Host since you opened it, **Save** is refused and says so, rather than overwrite that change: open the unit again to see it, or choose **Overwrite**.
 
 **Remove** deletes the unit's file and reloads systemd. **Stop its running service first** is on by default; without it, Podman refuses to remove a running unit. Containers, volumes and images the unit created are kept.
 

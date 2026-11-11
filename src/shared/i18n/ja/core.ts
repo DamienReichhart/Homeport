@@ -171,4 +171,21 @@ export default {
   'core.yaml.editTitle': '{kind} {name} を編集',
   'core.yaml.editDescription':
     '{cluster} 上。YAML を変更し、何が変わるかをプレビューしてから適用します。',
+  'core.metrics.cpu': 'CPU',
+  'core.metrics.memory': 'メモリ',
+  'core.metrics.used': '使用量',
+  'core.metrics.request': 'リクエスト',
+  'core.metrics.limit': 'リミット',
+  'core.metrics.allocatable': '割り当て可能',
+  'core.metrics.ofLimit': 'リミットの {percent}',
+  'core.metrics.ofRequest': 'リクエストの {percent}',
+  'core.metrics.ofAllocatable': '割り当て可能量の {percent}',
+  'core.metrics.notInstalled.title': 'metrics-server がインストールされていません',
+  'core.metrics.notInstalled.body':
+    'このクラスターは、CPU とメモリの値の取得元である Metrics API を提供していません。Homeport はクラスターに何もインストールしません。metrics-server をインストールすると、ここに表示されます。',
+  'core.metrics.notInstalled.link': 'metrics-server のインストール方法',
+  'core.metrics.notResponding':
+    'Metrics API が応答しません。metrics-server が起動中か、動作していない可能性があります。Homeport は 15 秒ごとに再試行します。',
+  'core.metrics.waiting': 'metrics-server からの最初のサンプルを待っています…',
+  'core.metrics.kept': '15 秒ごとのサンプルを、このページを開いている間、最大 15 分間保持します。',
 } satisfies Translation<typeof en>;

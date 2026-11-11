@@ -6,9 +6,9 @@ description: Homeport क्या है, यह क्या करता ह�
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import { DocScreenshot } from '@/features/docs';
 
-**Homeport** कहीं भी चल रहे Docker Engine को प्रबंधित करने के लिए एक डेस्कटॉप ऐप है — इस मशीन का इंजन, या SSH, TLS या TCP पर रिमोट इंजन — और साथ ही वे Kubernetes क्लस्टर जिन तक आपका kubeconfig पहुँचता है, Docker Desktop की तर्ज़ पर। यह Windows, macOS और Linux पर चलता है, मुफ़्त है, और [GNU Affero General Public License, version 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE) के तहत ओपन सोर्स है।
+**Homeport** कहीं भी चल रहे Docker Engine, containerd और Incus को प्रबंधित करने के लिए एक डेस्कटॉप ऐप है — इस मशीन का इंजन, या SSH, TLS या TCP पर रिमोट इंजन — और उनसे बने Swarm, और साथ ही वे Kubernetes क्लस्टर जिन तक आपका kubeconfig पहुँचता है और वे Nomad क्लस्टर जिनका आप नाम देते हैं, Docker Desktop की तर्ज़ पर। यह Windows, macOS और Linux पर चलता है, मुफ़्त है, और [GNU Affero General Public License, version 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE) के तहत ओपन सोर्स है।
 
-Homeport ख़ुद कंटेनर नहीं चलाता। यह आपके पास पहले से मौजूद Docker Engine से कनेक्ट होता है, जिन्हें **होस्ट** कहा जाता है, और उन पर मौजूद हर चीज़ के लिए आपको एक ही विंडो देता है: कंटेनर, इमेज, वॉल्यूम, नेटवर्क और Compose **स्टैक**। यह आपके kubeconfig के Kubernetes **क्लस्टर** से भी कनेक्ट होता है, ताकि आप देख सकें कि उन पर क्या चल रहा है।
+Homeport ख़ुद कंटेनर नहीं चलाता। यह आपके पास पहले से मौजूद इंजन से कनेक्ट होता है, जिन्हें **होस्ट** कहा जाता है, और उन पर मौजूद हर चीज़ के लिए आपको एक ही विंडो देता है: कंटेनर, इमेज, वॉल्यूम, नेटवर्क और Compose **स्टैक**। यह Kubernetes और Nomad **क्लस्टर** से भी कनेक्ट होता है, ताकि आप देख सकें कि उन पर क्या चल रहा है और उसे प्रबंधित कर सकें। किसी होस्ट या क्लस्टर पर कुछ भी इंस्टॉल नहीं होता।
 
 <DocScreenshot
   name="overview"
@@ -28,8 +28,12 @@ Homeport ख़ुद कंटेनर नहीं चलाता। यह 
     डायलॉग।
   </Card>
   <Card title="Compose स्टैक डिप्लॉय करें" icon="rocket">
-    एक compose फ़ाइल और उसका एन्क्रिप्टेड परिवेश Homeport में रखें, और उसे किसी भी होस्ट पर डिप्लॉय
-    करें।
+    एक compose फ़ाइल और उसका एन्क्रिप्टेड परिवेश Homeport में रखें, किसी प्रोजेक्ट फ़ोल्डर से
+    डिप्लॉय करें या किसी git रिपॉज़िटरी को फ़ॉलो करें, और किसी भी होस्ट या Swarm पर डिप्लॉय करें।
+  </Card>
+  <Card title="Swarm प्रबंधित करें" icon="seti:docker">
+    किसी Docker Swarm को उसके मैनेजर होस्ट के ज़रिए खोजें, और उसके नोड, सर्विस, टास्क, सीक्रेट,
+    कॉन्फ़िग और swarm स्टैक प्रबंधित करें।
   </Card>
   <Card title="Podman की अपनी सुविधाओं का इस्तेमाल करें" icon="seti:config">
     Podman होस्ट पर पॉड प्रबंधित करें और उनमें कंटेनर चलाएँ, और systemd के तहत Quadlet यूनिट इंस्टॉल
@@ -45,7 +49,12 @@ Homeport ख़ुद कंटेनर नहीं चलाता। यह 
   </Card>
   <Card title="Kubernetes ब्राउज़ करें" icon="server">
     अपने kubeconfig से क्लस्टर जोड़ें, EKS, GKE और AKS सहित, और उनके वर्कलोड, Pod, Service,
-    कॉन्फ़िगरेशन, Node और Event लाइव देखें।
+    कॉन्फ़िगरेशन, Node और Event लाइव देखें। लॉग पढ़ें, टर्मिनल खोलें, पोर्ट फ़ॉरवर्ड करें, स्केल
+    करें, YAML लागू करें और Helm रिलीज़ प्रबंधित करें।
+  </Card>
+  <Card title="Nomad jobs चलाएँ" icon="server">
+    किसी Nomad क्लस्टर को उसके agent के पते से जोड़ें, jobs का plan देखें और उन्हें चलाएँ, उनके
+    allocations और लॉग पर नज़र रखें, किसी टास्क में शेल खोलें, और नोड ड्रेन करें।
   </Card>
   <Card title="चीज़ें व्यवस्थित रखें" icon="seti:folder">
     इमेज, वॉल्यूम और नेटवर्क, एक नज़र में उनके उपयोग के साथ, और एक सफ़ाई डायलॉग जो बताता है कि वह
@@ -56,18 +65,19 @@ Homeport ख़ुद कंटेनर नहीं चलाता। यह 
 ## यह दस्तावेज़ कैसे व्यवस्थित है
 
 - **शुरुआत** — [Homeport इंस्टॉल करें](/docs/installation/), फिर अपना पहला होस्ट कनेक्ट करने के लिए [क्विक स्टार्ट](/docs/quick-start/) का पालन करें।
-- **होस्ट** — हर तरह का कनेक्शन कैसे काम करता है: [लोकल इंजन](/docs/hosts/local/), [SSH](/docs/hosts/ssh/), और [TLS और TCP](/docs/hosts/tls-tcp/)।
-- **क्लस्टर** — kubeconfig से [Kubernetes क्लस्टर जोड़ना](/docs/clusters/), और उन्हें ब्राउज़ करना।
+- **होस्ट** — हर तरह का कनेक्शन कैसे काम करता है: [लोकल इंजन](/docs/hosts/local/), [SSH](/docs/hosts/ssh/), और [TLS और TCP](/docs/hosts/tls-tcp/); और वे इंजन जिनके अपने पेज हैं, [containerd](/docs/hosts/containerd/) और [Incus](/docs/hosts/incus/)।
+- **क्लस्टर** — kubeconfig से [Kubernetes क्लस्टर जोड़ना](/docs/clusters/), उन्हें ब्राउज़ करना और बदलना, [Helm रिलीज़](/docs/clusters/helm/), और [Nomad क्लस्टर](/docs/clusters/nomad/)।
 - **Homeport का इस्तेमाल** — ऐप के हर पेज की गाइड।
-- **संदर्भ** — [सुरक्षा](/docs/reference/security/), [समस्या निवारण](/docs/reference/troubleshooting/), [अक्सर पूछे जाने वाले प्रश्न](/docs/reference/faq/) और [शब्दावली](/docs/reference/glossary/)।
+- **संदर्भ** — [सुरक्षा](/docs/reference/security/), [आपका डेटा और बैकअप](/docs/reference/data-and-backups/), [अपडेट करना](/docs/reference/updating/), [समस्या निवारण](/docs/reference/troubleshooting/), [अक्सर पूछे जाने वाले प्रश्न](/docs/reference/faq/) और [शब्दावली](/docs/reference/glossary/)।
 
 ## हम जिन शब्दों का इस्तेमाल करते हैं
 
 Homeport चीज़ों को सटीक नाम देता है, और यह दस्तावेज़ भी उन्हीं का पालन करता है:
 
-- **होस्ट** एक Docker Engine है जिससे Homeport कनेक्ट होता है। हर कंटेनर, इमेज, वॉल्यूम, नेटवर्क और स्टैक ठीक एक होस्ट का होता है।
-- **क्लस्टर** एक Kubernetes क्लस्टर है जिससे Homeport कनेक्ट होता है, जिसे आपके kubeconfig के किसी context से जोड़ा जाता है।
-- **स्टैक** किसी होस्ट पर चल रहा एक Compose प्रोजेक्ट है। **प्रबंधित स्टैक** वह है जिसकी compose फ़ाइल Homeport रखता है; **लिंक्ड स्टैक** अपनी compose फ़ाइलें इस कंप्यूटर के एक फ़ोल्डर में रखता है; **बाहरी स्टैक** किसी और तरीक़े से डिप्लॉय किया गया था। किसी बाहरी स्टैक को प्रबंधित करने के लिए आप उसे **अपना** सकते हैं।
+- **होस्ट** एक इंजन है जिससे Homeport कनेक्ट होता है: Docker Engine या उसके साथ संगत कोई इंजन, जैसे Podman, containerd या Incus। हर कंटेनर, इमेज, वॉल्यूम, नेटवर्क और स्टैक ठीक एक होस्ट का होता है।
+- **क्लस्टर** एक Kubernetes क्लस्टर है, जिसे आपके kubeconfig के किसी context से जोड़ा जाता है, या एक Nomad क्लस्टर, जिसे उसके किसी agent के पते से जोड़ा जाता है।
+- **Swarm** एक Docker Swarm है, जिसे उन होस्ट के ज़रिए खोजा जाता है जो उसका हिस्सा हैं, और जिसे कभी अलग से नहीं जोड़ा जाता।
+- **स्टैक** किसी होस्ट पर चल रहा एक Compose प्रोजेक्ट है, या किसी Swarm पर चल रहा swarm स्टैक। **प्रबंधित स्टैक** वह है जिसकी compose फ़ाइल Homeport रखता है; **लिंक्ड स्टैक** अपनी compose फ़ाइलें इस कंप्यूटर के एक फ़ोल्डर में रखता है; **सिंक्ड स्टैक** किसी git रिपॉज़िटरी को फ़ॉलो करता है; **बाहरी स्टैक** किसी और तरीक़े से डिप्लॉय किया गया था। किसी बाहरी स्टैक को प्रबंधित करने के लिए आप उसे **अपना** सकते हैं।
 
 [शब्दावली](/docs/reference/glossary/) में पूरी सूची है।
 

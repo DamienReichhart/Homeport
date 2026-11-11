@@ -42,6 +42,14 @@ export default {
     'Disponible — les clés SSH, les certificats, les environnements des stacks et les identifiants de registre sont enregistrés chiffrés.',
   'settings.machine.keychainUnavailable':
     'Indisponible — les clés SSH, les certificats TLS, les environnements des stacks et les identifiants de registre ne peuvent pas être enregistrés.',
+  'settings.machine.keychainEntryMissing':
+    'Entrée manquante — le trousseau n’a pas d’entrée pour la clé qui a scellé les secrets de Homeport : ils ne peuvent donc être ni ouverts ni enregistrés.',
+  'settings.machine.startOverDescription':
+    'Si Homeport utilise un autre trousseau qu’avant, revenez à celui-ci et redémarrez Homeport. Si l’entrée a disparu pour de bon, repartez avec une nouvelle clé.',
+  'settings.machine.startOver': 'Repartir avec une nouvelle clé',
+  'settings.machine.startOverTitle': 'Repartir avec une nouvelle clé ?',
+  'settings.machine.startOverConfirmDescription':
+    'Une nouvelle clé ne peut pas ouvrir ce qui a été scellé avec celle qui manque : vous saisirez à nouveau les identifiants de chaque hôte, cluster, registre et dépôt, et l’environnement de chaque stack, ou vous restaurerez une sauvegarde.',
   'settings.machine.compose': 'CLI Compose',
   'settings.machine.composeMissing':
     'Les stacks peuvent être démarrées et arrêtées, mais pas déployées.',
@@ -87,6 +95,9 @@ export default {
     '{count, plural, one {# identifiant de registre} other {# identifiants de registre}}',
   'settings.restore.repositories': '{count, plural, one {# dépôt} other {# dépôts}}',
   'settings.restore.settings': 'Vos paramètres',
+  'settings.restore.withoutSecrets':
+    'Ces éléments ont été sauvegardés sans leurs secrets, qui n’ont pas pu être ouverts à ce moment-là. Ils reviennent sans eux, à la place des secrets qu’ils ont ici, et les identifiants de registre parmi eux ne reviennent pas du tout :',
+  'settings.restore.withoutSecretsList': 'Sauvegardés sans leurs secrets',
   'settings.restore.replaces':
     'La restauration remplace chaque hôte, stack, identifiant de registre, dépôt et paramètre que vous avez actuellement, et oublie les événements des moteurs et l’historique des déploiements. Une copie des données actuelles est d’abord conservée dans le dossier de données de Homeport.',
   'settings.restore.confirm': 'Tout remplacer',
@@ -103,6 +114,18 @@ export default {
   'settings.about.tagline': 'Chaque Docker Engine, sur un seul tableau.',
   'settings.about.openLogFolder': 'Ouvrir le dossier des journaux',
   'settings.about.licenses': 'Licences',
+  'settings.about.exportDiagnostics': 'Exporter le diagnostic…',
+  'settings.diagnostics.title': 'Exporter le diagnostic',
+  'settings.diagnostics.description':
+    'Un fichier zip à joindre à un rapport de bug : un résumé des versions et des types d’hôtes et de clusters que vous utilisez, et les journaux de Homeport sans leurs secrets. Rien n’est envoyé nulle part : c’est vous qui décidez de partager le fichier.',
+  'settings.diagnostics.includeNames': 'Inclure les noms et les adresses',
+  'settings.diagnostics.includeNamesHelp':
+    'Si la case est décochée, les hôtes et les clusters apparaissent sous la forme host-1, cluster-1… dans le résumé et dans les journaux.',
+  'settings.diagnostics.files': 'Fichiers du zip',
+  'settings.diagnostics.save': 'Enregistrer…',
+  'settings.diagnostics.saveTitle': 'Enregistrer le diagnostic',
+  'settings.diagnostics.fileType': 'Archive zip',
+  'settings.diagnostics.done': 'Diagnostic enregistré dans {path}.',
   'settings.licenses.title': 'Licences',
   'settings.licenses.description':
     'Homeport est un logiciel libre sous licence GNU Affero General Public License, version 3, construit sur les paquets open source ci-dessous.',

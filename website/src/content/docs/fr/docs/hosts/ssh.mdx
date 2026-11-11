@@ -13,7 +13,7 @@ SSH est la façon recommandée de joindre un Docker Engine sur un serveur. Rien 
 Homeport a son propre client SSH. Il se connecte au serveur et redirige un canal vers le socket Unix du moteur — ce que fait `docker -H ssh://…`, sans avoir besoin du programme `ssh` ni de `docker` sur votre machine.
 
 - Les clés ne sont déchiffrées qu’en mémoire et ne sont jamais écrites sur le disque, donc cela fonctionne de la même façon sous Windows, macOS et Linux.
-- Homeport ne lit pas `~/.ssh/known_hosts` : les clés de serveur sont approuvées dans Homeport, hôte par hôte. Un serveur joignable seulement via un serveur de rebond s’ajoute avec des [bastions](#via-un-bastion), le `ProxyJump` de Homeport.
+- Homeport ne lit pas `~/.ssh/known_hosts` : les clés de serveur sont approuvées dans Homeport, hôte par hôte. Un serveur joignable seulement via un autre serveur SSH s’ajoute avec des [bastions](#via-un-bastion), le `ProxyJump` de Homeport.
 - Le serveur doit autoriser la redirection vers des sockets Unix. OpenSSH l’autorise par défaut (`AllowStreamLocalForwarding yes`).
 
 ## Ajouter un hôte SSH
@@ -55,7 +55,7 @@ Si vos serveurs sont déjà dans `~/.ssh/config`, choisissez **Importer depuis ~
 
 Le **Chemin du socket distant** commence à `/var/run/docker.sock` ; modifiez-le dans l’aperçu pour Docker rootless ou Podman. Une clé chiffrée y demande sa phrase secrète.
 
-L’aperçu signale ce qui mérite un coup d’œil : une clé illisible (l’hôte utilise alors ssh-agent), un `ProxyCommand` (non pris en charge ; ajoutez ses serveurs de rebond comme bastions), et un alias qui est déjà le nom d’un hôte. Celui-là n’est pas coché : renommez-le pour l’importer, ainsi importer deux fois ne crée jamais de doublons. Les clés sont lues une fois et enregistrées chiffrées ; le fichier lui-même n’est jamais modifié, et les blocs `Match` et les certificats (`CertificateFile`) sont ignorés.
+L’aperçu signale ce qui mérite un coup d’œil : une clé illisible (l’hôte utilise alors ssh-agent), un `ProxyCommand` (non pris en charge ; ajoutez comme bastions les serveurs par lesquels il passe), et un alias qui est déjà le nom d’un hôte. Celui-là n’est pas coché : renommez-le pour l’importer, ainsi importer deux fois ne crée jamais de doublons. Les clés sont lues une fois et enregistrées chiffrées ; le fichier lui-même n’est jamais modifié, et les blocs `Match` et les certificats (`CertificateFile`) sont ignorés.
 
 ## Authentification
 
@@ -122,7 +122,7 @@ Pour une clé créée par Homeport, ou une clé que vous avez importée, la cart
 
 </Steps>
 
-Tant que la clé n’est pas autorisée, l’hôte affiche **Accès refusé** : _Le serveur a refusé la clé pour deploy@server. Ajoutez la clé publique à son authorized_keys._ Il vous attend plutôt que de réessayer.
+Tant que la clé n’est pas autorisée, l’hôte affiche **Accès refusé** : _Le serveur SSH a refusé la connexion de deploy@server._, avec la commande qui autorise la clé de Homeport. Il vous attend plutôt que de réessayer.
 
 ## Quand la clé du serveur change
 
@@ -140,7 +140,7 @@ Modifier un hôte pour qu’il pointe vers un autre serveur ou un autre port oub
 
 ## Via un bastion
 
-Certains serveurs n’acceptent SSH que depuis un serveur de rebond. Ajoutez ce serveur sous **Bastions** dans le formulaire de l’hôte, et Homeport s’y connecte d’abord, puis joint l’hôte à travers lui — ce que font `ssh -J` ou `ProxyJump`, avec le propre client SSH de Homeport. Rien n’est installé sur le bastion, et aucune clé n’est écrite sur le disque.
+Certains serveurs n’acceptent SSH que depuis un autre serveur, un bastion. Ajoutez-le sous **Bastions** dans le formulaire de l’hôte, et Homeport s’y connecte d’abord, puis joint l’hôte à travers lui — ce que font `ssh -J` ou `ProxyJump`, avec le propre client SSH de Homeport. Rien n’est installé sur le bastion, et aucune clé n’est écrite sur le disque.
 
 <Steps>
 
@@ -156,7 +156,7 @@ Certains serveurs n’acceptent SSH que depuis un serveur de rebond. Ajoutez ce 
    | **Sa propre clé** | Le bastion a besoin d’une autre clé. Collez-la ou choisissez **Charger depuis un fichier…** ; elle est enregistrée chiffrée avec les autres secrets de l’hôte. |
    | **ssh-agent**     | Votre agent détient la clé du bastion, tandis que l’hôte en utilise une autre, par exemple une clé que Homeport a créée rien que pour lui.                     |
 
-4. Pour une chaîne de serveurs de rebond (`ProxyJump a,b`), ajoutez un bastion par serveur, dans l’ordre où Homeport les traverse. Les flèches déplacent un bastion vers le haut ou vers le bas.
+4. Pour une chaîne de bastions (`ProxyJump a,b`), ajoutez-en un par serveur, dans l’ordre où Homeport les traverse. Les flèches déplacent un bastion vers le haut ou vers le bas.
 
 </Steps>
 
@@ -178,12 +178,12 @@ Supprimer l’hôte efface sa clé de Homeport, mais pas du serveur. Supprimez s
 
 ## Problèmes courants
 
-| Message                                                                                                     | Que faire                                                                                                                                                                                                        |
-| ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _Le serveur a refusé la clé pour …_                                                                         | Exécutez la commande **Ajouter la clé publique** sur le serveur, puis **Reconnecter**.                                                                                                                           |
-| _Le serveur SSH n’a pas pu ouvrir /var/run/docker.sock … Vérifiez le chemin et que … peut utiliser Docker._ | Vérifiez le **Chemin du socket distant**, et ajoutez l’utilisateur au groupe `docker`.                                                                                                                           |
-| _Délai de connexion SSH dépassé_                                                                            | Vérifiez le nom du serveur, le port et tout pare-feu entre vous.                                                                                                                                                 |
-| _Aucun ssh-agent n’est en cours d’exécution_                                                                | Démarrez votre agent, ajoutez une clé avec `ssh-add`, et assurez-vous que Homeport voit `SSH_AUTH_SOCK`. Sous Windows, ouvrez Pageant et chargez votre clé, ou démarrez le service OpenSSH Authentication Agent. |
-| _Le bastion … n’a pas pu ouvrir de connexion vers …_                                                        | Vérifiez que le bastion peut joindre l’hôte, et que son `sshd` autorise `AllowTcpForwarding`.                                                                                                                    |
+| Message                                                                        | Que faire                                                                                                                                                                                                        |
+| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _Le serveur SSH a refusé la connexion de …_                                    | Exécutez la commande **Ajouter la clé publique** sur le serveur, puis **Reconnecter**.                                                                                                                           |
+| _… ne peut pas ouvrir le socket du Docker Engine à /var/run/docker.sock sur …_ | Vérifiez le **Chemin du socket distant**, et ajoutez l’utilisateur au groupe `docker`.                                                                                                                           |
+| _… n’a pas répondu à temps._                                                   | Vérifiez le nom du serveur, le port et tout pare-feu entre vous.                                                                                                                                                 |
+| _Aucun ssh-agent n’est en cours d’exécution_                                   | Démarrez votre agent, ajoutez une clé avec `ssh-add`, et assurez-vous que Homeport voit `SSH_AUTH_SOCK`. Sous Windows, ouvrez Pageant et chargez votre clé, ou démarrez le service OpenSSH Authentication Agent. |
+| _Le bastion … n’a pas pu ouvrir de connexion vers …_                           | Vérifiez que le bastion peut joindre l’hôte, et que son `sshd` autorise `AllowTcpForwarding`.                                                                                                                    |
 
 Plus d’informations dans [Dépannage](/docs/reference/troubleshooting/).

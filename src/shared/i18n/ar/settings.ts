@@ -41,6 +41,14 @@ export default {
     'متاحة — تُخزَّن مفاتيح SSH والشهادات وبيئات المكدسات وعمليات تسجيل الدخول إلى السجلات مشفّرة.',
   'settings.machine.keychainUnavailable':
     'غير متاحة — لا يمكن تخزين مفاتيح SSH وشهادات TLS وبيئات المكدسات وعمليات تسجيل الدخول إلى السجلات.',
+  'settings.machine.keychainEntryMissing':
+    'الإدخال مفقود — لا تحتوي سلسلة المفاتيح على إدخال للمفتاح الذي خُتمت به أسرار Homeport، لذا لا يمكن فتحها ولا تخزينها.',
+  'settings.machine.startOverDescription':
+    'إذا كان Homeport يستخدم سلسلة مفاتيح غير التي كان يستخدمها، فارجع إليها وأعد تشغيل Homeport. وإذا ضاع الإدخال نهائيًا، فابدأ من جديد بمفتاح جديد.',
+  'settings.machine.startOver': 'البدء من جديد بمفتاح جديد',
+  'settings.machine.startOverTitle': 'البدء من جديد بمفتاح جديد؟',
+  'settings.machine.startOverConfirmDescription':
+    'لا يستطيع المفتاح الجديد فتح ما خُتم بالمفتاح المفقود: ستعيد إدخال بيانات اعتماد كل مضيف وعنقود وسجل ومستودع، وبيئة كل مكدس، أو تستعيد نسخة احتياطية.',
   'settings.machine.compose': 'واجهة سطر أوامر Compose',
   'settings.machine.composeMissing': 'يمكن تشغيل المكدسات وإيقافها، لكن لا يمكن نشرها.',
   'settings.machine.stackDeploy': 'Docker CLI، لـ Swarm',
@@ -88,6 +96,9 @@ export default {
   'settings.restore.repositories':
     '{count, plural, zero {لا مستودعات} one {مستودع واحد} two {مستودعان} few {# مستودعات} many {# مستودعًا} other {# مستودع}}',
   'settings.restore.settings': 'إعداداتك',
+  'settings.restore.withoutSecrets':
+    'نُسخت هذه احتياطيًا بلا أسرارها، إذ تعذّر فتحها حينها. ستعود بلا أسرار، مستبدلةً الأسرار التي لديها هنا، أما تسجيلات دخول السجلات بينها فلن تعود إطلاقًا:',
+  'settings.restore.withoutSecretsList': 'نُسخت احتياطيًا بلا أسرارها',
   'settings.restore.replaces':
     'تستبدل الاستعادة كل مضيف ومكدس وتسجيل دخول إلى سجل ومستودع وإعداد لديك الآن، وتنسى أحداث المحرك وسجل النشر. يُحتفظ أولًا بنسخة من البيانات الحالية في مجلد بيانات Homeport.',
   'settings.restore.confirm': 'استبدال كل شيء',
@@ -104,6 +115,18 @@ export default {
   'settings.about.tagline': 'كل محركات Docker، على لوحة واحدة.',
   'settings.about.openLogFolder': 'فتح مجلد السجلات',
   'settings.about.licenses': 'التراخيص',
+  'settings.about.exportDiagnostics': 'تصدير التشخيص…',
+  'settings.diagnostics.title': 'تصدير التشخيص',
+  'settings.diagnostics.description':
+    'ملف zip لإرفاقه ببلاغ عن خطأ: ملخّص للإصدارات ولأنواع المضيفات والعناقيد التي تستخدمها، وسجلات Homeport بعد إزالة الأسرار منها. لا يُرسَل شيء إلى أي مكان: أنت من يقرّر مشاركة الملف.',
+  'settings.diagnostics.includeNames': 'تضمين الأسماء والعناوين',
+  'settings.diagnostics.includeNamesHelp':
+    'عند الإيقاف، تظهر المضيفات والعناقيد بالشكل host-1 و cluster-1… في الملخّص وفي السجلات.',
+  'settings.diagnostics.files': 'الملفات في ملف zip',
+  'settings.diagnostics.save': 'حفظ…',
+  'settings.diagnostics.saveTitle': 'حفظ التشخيص',
+  'settings.diagnostics.fileType': 'أرشيف zip',
+  'settings.diagnostics.done': 'حُفظ التشخيص في {path}.',
   'settings.licenses.title': 'التراخيص',
   'settings.licenses.description':
     'Homeport برنامج حر بموجب رخصة GNU Affero العمومية العامة، الإصدار 3، مبني على الحزم مفتوحة المصدر أدناه.',

@@ -38,6 +38,14 @@ export default {
     'Available — SSH keys, certificates, stack environments and registry logins are stored encrypted.',
   'settings.machine.keychainUnavailable':
     'Unavailable — SSH keys, TLS certificates, stack environments and registry logins can’t be stored.',
+  'settings.machine.keychainEntryMissing':
+    'Entry missing — the keychain has no entry for the key Homeport’s secrets were sealed with, so they can’t be opened or stored.',
+  'settings.machine.startOverDescription':
+    'If Homeport is using another keychain than before, switch back to it and restart Homeport. If the entry is gone for good, start over with a new key.',
+  'settings.machine.startOver': 'Start over with a new key',
+  'settings.machine.startOverTitle': 'Start over with a new key?',
+  'settings.machine.startOverConfirmDescription':
+    'A new key can’t open what was sealed with the missing one: you’ll re-enter the credentials of each host, cluster, registry and repository, and each stack’s environment, or restore a backup.',
   'settings.machine.compose': 'Compose CLI',
   'settings.machine.composeMissing': 'Stacks can be started and stopped, but not deployed.',
   'settings.machine.stackDeploy': 'Docker CLI, for Swarms',
@@ -82,6 +90,9 @@ export default {
     '{count, plural, one {# registry login} other {# registry logins}}',
   'settings.restore.repositories': '{count, plural, one {# repository} other {# repositories}}',
   'settings.restore.settings': 'Your settings',
+  'settings.restore.withoutSecrets':
+    "These were backed up without their secrets, which couldn't be opened then. They come back without them, replacing the secrets they have here, and registry logins among them don't come back at all:",
+  'settings.restore.withoutSecretsList': 'Backed up without their secrets',
   'settings.restore.replaces':
     "Restoring replaces every Host, Stack, registry login, repository and setting you have now, and forgets the Engine events and deploy history. A copy of the current data is kept in Homeport's data folder first.",
   'settings.restore.confirm': 'Replace everything',
@@ -98,6 +109,18 @@ export default {
   'settings.about.tagline': 'Every Docker Engine, on one board.',
   'settings.about.openLogFolder': 'Open log folder',
   'settings.about.licenses': 'Licenses',
+  'settings.about.exportDiagnostics': 'Export diagnostics…',
+  'settings.diagnostics.title': 'Export diagnostics',
+  'settings.diagnostics.description':
+    'A zip file to attach to a bug report: a summary of versions and of the kinds of hosts and clusters you use, and Homeport’s logs with secrets removed. Nothing is sent anywhere: you decide whether to share the file.',
+  'settings.diagnostics.includeNames': 'Include names and addresses',
+  'settings.diagnostics.includeNamesHelp':
+    'When off, hosts and clusters appear as host-1, cluster-1… in the summary and in the logs.',
+  'settings.diagnostics.files': 'Files in the zip',
+  'settings.diagnostics.save': 'Save…',
+  'settings.diagnostics.saveTitle': 'Save diagnostics',
+  'settings.diagnostics.fileType': 'Zip archive',
+  'settings.diagnostics.done': 'Diagnostics saved to {path}.',
   'settings.licenses.title': 'Licenses',
   'settings.licenses.description':
     'Homeport is free software under the GNU Affero General Public License, version 3, built on the open-source packages below.',

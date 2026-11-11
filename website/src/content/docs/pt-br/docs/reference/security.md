@@ -3,7 +3,7 @@ title: Segurança e os seus dados
 description: O que o Homeport armazena, onde, como os segredos são criptografados e o que ele nunca faz.
 ---
 
-O Homeport guarda credenciais que abrem os seus servidores. Esta página explica exatamente o que ele mantém, e como.
+O Homeport guarda credenciais que abrem os seus servidores. Esta página explica exatamente o que ele mantém, e como isso é protegido. [Os seus dados e backups](/docs/reference/data-and-backups/) diz o que copiar para fazer backup e como restaurar.
 
 ## O que o Homeport armazena
 
@@ -80,7 +80,9 @@ O Homeport mostra um banner e não armazena segredos. Os hosts de socket local, 
 
 ### Se a chave do chaveiro for perdida
 
-Redefinir o chaveiro, ou mover `homeport.db` para outro computador ou usuário, deixa segredos que não podem ser descriptografados. O Homeport não exclui nada: os hosts afetados mostram **Credenciais perdidas** até que você digite as credenciais deles de novo. Veja [solução de problemas](/docs/reference/troubleshooting/#credenciais-perdidas). Para mover os seus dados, faça um backup ou exporte os seus hosts.
+Redefinir o chaveiro, ou mover `homeport.db` para outro computador ou usuário, deixa segredos que não podem ser descriptografados. O Homeport não exclui nada: os hosts e clusters afetados mostram **Credenciais perdidas** até que você digite as credenciais deles de novo; [Se os segredos forem perdidos](/docs/reference/data-and-backups/#se-os-segredos-forem-perdidos) lista o que digitar de novo, e onde. Para mover os seus dados, [faça um backup](#backups) ou [exporte os seus hosts](#mudar-para-outro-computador).
+
+O Homeport nunca cria uma chave nova por cima de segredos que já guarda. Quando o chaveiro responde mas não tem a entrada `com.homeport.app` enquanto o banco de dados tem segredos criptografados — desta vez outro chaveiro responde, como o Secret Service do KeePassXC em vez do GNOME Keyring —, o Homeport não armazena nenhum segredo e avisa que **a entrada do chaveiro com que os segredos do Homeport foram selados está faltando**. Volte para o chaveiro que tem a entrada e reinicie o Homeport. Se a entrada sumiu de vez, escolha **Recomeçar com uma nova chave** em **Configurações → Esta máquina**: os segredos selados com a chave antiga passam a aparecer como **Credenciais perdidas**, para digitar de novo ou restaurar de um backup.
 
 ### Mudar para outro computador
 
@@ -103,7 +105,7 @@ Trate o arquivo como as chaves que ele contém: exclua-o depois de importado. O 
 2. substitui todos os hosts, clusters, stacks, logins, repositórios e configurações de uma só vez, de modo que uma falha deixa os seus dados como estavam;
 3. criptografa de novo todos os segredos com a chave do chaveiro deste computador.
 
-Um backup feito por um Homeport mais recente é recusado; um feito por um Homeport mais antigo é restaurado. O backup contém todos os segredos que o Homeport tem: guarde-o, e a senha dele, com o mesmo cuidado que as próprias chaves.
+Um backup feito por um Homeport mais recente é recusado; um feito por um Homeport mais antigo é restaurado. O backup contém todos os segredos que o Homeport tem: guarde-o, e a senha dele, com o mesmo cuidado que as próprias chaves. [Os seus dados e backups](/docs/reference/data-and-backups/) tem os passos, o que um backup inclui e deixa de fora, e como copiar o banco de dados você mesmo.
 
 ## As chaves nunca tocam o disco em texto claro
 
@@ -152,7 +154,7 @@ Eles rodam com os direitos do usuário SSH (ou os seus, neste computador) e nunc
 ## O que o Homeport nunca faz
 
 - **Nenhuma conta.** Não há nada em que se cadastrar.
-- **Nenhuma telemetria, análise de uso ou relatório de falhas.**
+- **Nenhuma telemetria, análise de uso ou relatório de falhas.** Quando você relata um bug, o [pacote de diagnóstico](/docs/reference/troubleshooting/#exportando-o-diagnóstico-para-um-relatório-de-bug) é um arquivo que você mesmo exporta, lê e anexa.
 - **Nada instalado nos seus clusters.** O Homeport só usa a API do Kubernetes, com os direitos das suas credenciais, e não muda nada sem que você peça: tudo o que remove ou substitui algo pergunta antes, indicando o cluster.
 - **Nada instalado nos seus hosts.** Os únicos comandos que o Homeport executa em um host estão [listados acima](#o-que-o-homeport-executa-nos-seus-hosts). O único contêiner que o Homeport inicia por conta própria é um [contêiner auxiliar](/docs/guides/volumes-networks/#o-contêiner-auxiliar) de curta duração quando você abre, faz backup, restaura ou clona um volume; ele não tem rede e é removido quando termina. A imagem dele só é baixada depois que você concorda.
 - **Nenhuma instalação silenciosa.** Uma atualização só é instalada quando você escolhe **Instalar e reiniciar**; os pacotes Linux só são atualizados pelo seu gerenciador de pacotes.
@@ -168,6 +170,8 @@ O Homeport grava um pequeno arquivo de log — algumas dezenas de kilobytes, sub
 | Linux   | `~/.local/share/com.homeport.app/logs/` |
 | macOS   | `~/Library/Logs/com.homeport.app/`      |
 | Windows | `%LOCALAPPDATA%\com.homeport.app\logs\` |
+
+O Homeport não tem telemetria nem relatório de falhas: um log nunca sai do seu computador, a menos que você o envie. Para um relatório de bug, **Configurações → Sobre → Exportar diagnóstico…** salva um zip com um resumo das versões e estes logs, depois de substituir tudo o que tem cara de segredo (chaves, senhas, tokens, credenciais em URLs) e, a menos que você peça o contrário, os nomes e endereços dos seus hosts e clusters. Veja [Exportando o diagnóstico](/docs/reference/troubleshooting/#exportando-o-diagnóstico-para-um-relatório-de-bug).
 
 ## Confiar em um download
 

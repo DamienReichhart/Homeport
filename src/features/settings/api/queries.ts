@@ -24,3 +24,12 @@ export const startAtLoginQuery = () =>
     queryFn: () => commands.appStartAtLogin(),
     staleTime: 0,
   });
+
+/** What a diagnostics bundle would hold, gathered each time it's asked for. */
+export const diagnosticsQuery = (includeNames: boolean) =>
+  queryOptions({
+    queryKey: ['diagnostics', includeNames],
+    queryFn: () => commands.diagnosticsPreview(includeNames),
+    staleTime: 0,
+    gcTime: 0,
+  });

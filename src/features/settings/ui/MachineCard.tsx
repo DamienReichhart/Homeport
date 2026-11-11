@@ -1,13 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
 import {
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  ErrorMessage,
   KeyValue,
   StatusDot,
+  useConfirm,
 } from '@/shared/ui';
+import { useKeychainStartOver } from '../api/mutations';
 import { machineQuery } from '../api/queries';
 import { ComposeStatus } from './ComposeStatus';
 import { GitStatus } from './GitStatus';
@@ -33,7 +37,9 @@ export function MachineCard() {
                   <StatusDot tone={capabilities.data.keychain ? 'success' : 'danger'} />
                   {capabilities.data.keychain
                     ? t('settings.machine.keychainAvailable')
-                    : t('settings.machine.keychainUnavailable')}
+                    : capabilities.data.keychainEntryMissing
+                      ? t('settings.machine.keychainEntryMissing')
+                      : t('settings.machine.keychainUnavailable')}
                 </span>,
               ],
               [
@@ -52,7 +58,39 @@ export function MachineCard() {
             ]}
           />
         )}
+        {capabilities.data?.keychainEntryMissing && <StartOver />}
       </CardContent>
     </Card>
+  );
+}
+
+/**
+ * Gives up on the key the stored secrets were sealed with, whose keychain
+ * entry is missing, after saying what that costs.
+ */
+function StartOver() {
+  const [dialog, confirm] = useConfirm();
+  const startOver = useKeychainStartOver();
+  return (
+    <div className="mt-4 grid justify-items-start gap-2">
+      <p className="text-muted-foreground text-sm">{t('settings.machine.startOverDescription')}</p>
+      <Button
+        variant="destructive"
+        disabled={startOver.isPending}
+        onClick={() =>
+          confirm({
+            title: t('settings.machine.startOverTitle'),
+            description: t('settings.machine.startOverConfirmDescription'),
+            confirmLabel: t('settings.machine.startOver'),
+            destructive: true,
+            onConfirm: () => startOver.mutateAsync(),
+          })
+        }
+      >
+        {t('settings.machine.startOver')}
+      </Button>
+      {startOver.error && <ErrorMessage error={startOver.error} />}
+      {dialog}
+    </div>
   );
 }

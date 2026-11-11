@@ -45,14 +45,14 @@ bun run tauri:build
 
 ## 常用命令
 
-| 命令                  | 作用                                                               |
-| --------------------- | ------------------------------------------------------------------ |
-| `bun run check`       | 类型检查、lint、格式检查和前端测试                                 |
-| `bun run rust:lint`   | 将警告视为错误的 `cargo clippy`                                    |
-| `bun run rust:test`   | Rust 单元测试                                                      |
-| `bun run bindings`    | 重新生成 IPC 的 TypeScript 绑定                                    |
-| `bun run licenses`    | 生成第三方许可证声明                                               |
-| `bun run screenshots` | 以每种语言重新截取本网站使用的截图（`--locale fr` 只重新截取一种） |
+| 命令                  | 作用                                                                                                                                                              |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bun run check`       | 类型检查、lint、格式检查和前端测试                                                                                                                                |
+| `bun run rust:lint`   | 将警告视为错误的 `cargo clippy`                                                                                                                                   |
+| `bun run rust:test`   | Rust 单元测试                                                                                                                                                     |
+| `bun run bindings`    | 重新生成 IPC 的 TypeScript 绑定                                                                                                                                   |
+| `bun run licenses`    | 生成第三方许可证声明                                                                                                                                              |
+| `bun run screenshots` | 以每种语言重新截取本网站使用的截图（`--locale fr` 只重新截取一种），尺寸为 2880×1800，即两倍像素密度。请先安装 oxipng（`cargo install oxipng`），以便无损压缩截图 |
 
 集成测试会与本地 Docker Engine 和 Compose CLI 通信。它们被标记为 `#[ignore = "needs a local Docker Engine"]`（或 `"… and the compose CLI"`，少数为 `"… access to Docker Hub"`），只创建名为 `homeport-test-*` 的资源，并在之后删除它们。在本机上有引擎和 compose 插件时运行它们：
 
@@ -61,6 +61,23 @@ cargo test --workspace --exclude homeport -- --ignored
 ```
 
 CI 也会运行它们，位于 `.github/workflows/ci.yml` 的 `engine-tests` job 中，每次推送到 `dev`、每个 pull request 和每次发布时都会运行。该 job 随后会运行 `scripts/ci/engine-test-leftovers.sh`，如果某个测试留下了 `homeport-test-*` 容器、镜像、卷或网络，它就会失败；在本地运行测试后也可以运行它做同样的检查。
+
+### 端到端测试
+
+`e2e/` 通过 `tauri-driver`，使用 [WebdriverIO](https://webdriver.io) 驱动真实的应用（Rust 后端、webview 以及两者之间的调用），并连接本地 Docker Engine。测试场景包括：应用启动并连接到本地引擎；容器的日志以流的方式显示，并从应用中停止该容器；拉取镜像；部署一个带加密环境变量的托管堆栈；重启后主机、堆栈及其机密都会保留；以及使用已有密钥添加 SSH 主机、信任其服务器密钥并连接。它们按角色、标签和文本查找元素，从不按 CSS 类查找。
+
+这些测试只能在 Linux 上运行：macOS 没有用于其 webview 的 WebDriver。除了[前提条件](#前提条件)和 Docker Engine 之外，它们还需要 `tauri-driver`（`cargo install tauri-driver --locked`）、WebKit 的驱动、一个虚拟显示器和一个密钥环：在 Debian 和 Ubuntu 上，即 `webkit2gtk-driver`、`xvfb`、`dbus-x11` 和 `gnome-keyring`。
+
+```sh
+bun tauri build --debug --no-bundle
+cd e2e
+bun install
+./run.sh
+```
+
+该构建会像正式版本一样嵌入前端，因此 `commands::builder()` 中缺少的命令、`src-tauri/capabilities/` 中缺少的权限，或被内容安全策略（Content Security Policy）阻止的样式都会在这里失败。`run.sh` 每次运行都会使用全新的数据文件夹以及独立的密钥环和显示器，因此绝不会触及你自己的 Homeport。在它后面传入 WebdriverIO 的选项，例如 `./run.sh --spec specs/ssh.e2e.ts`。SSH 场景会从 `e2e/support/sshd/` 构建一个小型 SSH 服务器镜像；设置 `HOMEPORT_E2E_SSHD_IMAGE` 可使用预先构建好的镜像。测试启动的容器命名为 `homeport-e2e-*`，结束后会被删除。
+
+测试失败时会在 `e2e/artifacts/` 中留下截图和应用的日志。CI 在 `.github/workflows/ci.yml` 的 `e2e` job 中运行这些测试，每次推送到 `dev` 和每个 pull request 都会运行，并在失败时保留该文件夹。
 
 ## 本网站
 

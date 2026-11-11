@@ -42,6 +42,14 @@ export default {
     'Доступна — SSH-ключи, сертификаты, окружения стеков и входы в реестры хранятся в зашифрованном виде.',
   'settings.machine.keychainUnavailable':
     'Недоступна — SSH-ключи, TLS-сертификаты, окружения стеков и входы в реестры сохранить нельзя.',
+  'settings.machine.keychainEntryMissing':
+    'Запись отсутствует — в связке ключей нет записи для ключа, которым запечатаны секреты Homeport, поэтому их нельзя ни открыть, ни сохранить.',
+  'settings.machine.startOverDescription':
+    'Если Homeport использует не ту связку ключей, что раньше, вернитесь к прежней и перезапустите Homeport. Если запись пропала навсегда, начните заново с новым ключом.',
+  'settings.machine.startOver': 'Начать заново с новым ключом',
+  'settings.machine.startOverTitle': 'Начать заново с новым ключом?',
+  'settings.machine.startOverConfirmDescription':
+    'Новый ключ не откроет то, что запечатано отсутствующим: придётся заново ввести учётные данные каждого хоста, кластера, реестра и репозитория и окружение каждого стека или восстановить резервную копию.',
   'settings.machine.compose': 'Compose CLI',
   'settings.machine.composeMissing': 'Стеки можно запускать и останавливать, но не развёртывать.',
   'settings.machine.stackDeploy': 'Docker CLI, для Swarm',
@@ -90,6 +98,9 @@ export default {
   'settings.restore.repositories':
     '{count, plural, one {# репозиторий} few {# репозитория} many {# репозиториев} other {# репозитория}}',
   'settings.restore.settings': 'Ваши настройки',
+  'settings.restore.withoutSecrets':
+    'Эти элементы сохранены без секретов, которые тогда не удалось открыть. Они вернутся без них, заменив секреты, которые есть у них здесь, а входы в реестры среди них не вернутся вовсе:',
+  'settings.restore.withoutSecretsList': 'Сохранены без секретов',
   'settings.restore.replaces':
     'Восстановление заменяет все хосты, стеки, входы в реестры, репозитории и настройки, которые у вас есть сейчас, и забывает события движков и историю развёртываний. Сначала копия текущих данных сохраняется в папке данных Homeport.',
   'settings.restore.confirm': 'Заменить всё',
@@ -106,6 +117,18 @@ export default {
   'settings.about.tagline': 'Все Docker Engine на одной доске.',
   'settings.about.openLogFolder': 'Открыть папку журналов',
   'settings.about.licenses': 'Лицензии',
+  'settings.about.exportDiagnostics': 'Экспортировать диагностику…',
+  'settings.diagnostics.title': 'Экспорт диагностики',
+  'settings.diagnostics.description':
+    'Zip-файл для отчёта об ошибке: сводка версий и типов хостов и кластеров, которые вы используете, и журналы Homeport без секретов. Ничего никуда не отправляется: делиться ли файлом, решаете вы.',
+  'settings.diagnostics.includeNames': 'Включить имена и адреса',
+  'settings.diagnostics.includeNamesHelp':
+    'Если выключено, хосты и кластеры обозначаются в сводке и журналах как host-1, cluster-1…',
+  'settings.diagnostics.files': 'Файлы в архиве',
+  'settings.diagnostics.save': 'Сохранить…',
+  'settings.diagnostics.saveTitle': 'Сохранить диагностику',
+  'settings.diagnostics.fileType': 'Zip-архив',
+  'settings.diagnostics.done': 'Диагностика сохранена в {path}.',
   'settings.licenses.title': 'Лицензии',
   'settings.licenses.description':
     'Homeport — свободное программное обеспечение под лицензией GNU Affero General Public License версии 3, построенное на перечисленных ниже пакетах с открытым исходным кодом.',

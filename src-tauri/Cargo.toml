@@ -28,12 +28,16 @@ homeport-containerd.workspace = true
 homeport-incus.workspace = true
 homeport-hosts.workspace = true
 homeport-clusters.workspace = true
+homeport-kubernetes.workspace = true
 homeport-nomad.workspace = true
 homeport-stacks.workspace = true
 homeport-git.workspace = true
 homeport-registries.workspace = true
+homeport-backup.workspace = true
 homeport-settings.workspace = true
 homeport-updates.workspace = true
+homeport-diagnostics.workspace = true
+zip.workspace = true
 tauri.workspace = true
 tauri-plugin-opener.workspace = true
 tauri-plugin-log.workspace = true
@@ -53,3 +57,5 @@ tokio.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true
+# The sample databases of released versions, for tests/upgrade.rs.
+homeport-storage = { workspace = true, features = ["test-support"] }

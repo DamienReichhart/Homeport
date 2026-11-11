@@ -13,7 +13,7 @@ SSH is the recommended way to reach a Docker Engine on a server. Nothing needs t
 Homeport has its own SSH client. It logs in to the server and forwards a channel to the Engine's Unix socket — the same thing `docker -H ssh://…` does, without needing the `ssh` program or `docker` on your machine.
 
 - Keys are decrypted only in memory and never written to disk, so it works the same on Windows, macOS and Linux.
-- Homeport doesn't read `~/.ssh/known_hosts`: server keys are trusted in Homeport, per Host. A server reachable only through a jump server is added with [bastions](#through-a-bastion), Homeport's `ProxyJump`.
+- Homeport doesn't read `~/.ssh/known_hosts`: server keys are trusted in Homeport, per Host. A server reachable only through another SSH server is added with [bastions](#through-a-bastion), Homeport's `ProxyJump`.
 - The server must allow forwarding to Unix sockets. OpenSSH does by default (`AllowStreamLocalForwarding yes`).
 
 ## Adding an SSH Host
@@ -55,7 +55,7 @@ If your servers are already in `~/.ssh/config`, choose **Import from ~/.ssh/conf
 
 The **Remote socket path** starts as `/var/run/docker.sock`; change it in the preview for rootless Docker or Podman. An encrypted key asks for its passphrase there.
 
-The preview flags what needs a look: a key that can't be read (the Host uses ssh-agent instead), a `ProxyCommand` (not supported; add its jump servers as bastions), and an alias that's already a Host's name. That one isn't picked: rename it to import it, so importing twice never creates duplicates. Keys are read once and stored encrypted; the file itself is never changed, and `Match` blocks and certificates (`CertificateFile`) are ignored.
+The preview flags what needs a look: a key that can't be read (the Host uses ssh-agent instead), a `ProxyCommand` (not supported; add the servers it goes through as bastions), and an alias that's already a Host's name. That one isn't picked: rename it to import it, so importing twice never creates duplicates. Keys are read once and stored encrypted; the file itself is never changed, and `Match` blocks and certificates (`CertificateFile`) are ignored.
 
 ## Authentication
 
@@ -122,7 +122,7 @@ For a key created by Homeport, or one you imported, the card **Authorize Homepor
 
 </Steps>
 
-Until the key is authorised, the Host shows **Access refused**: _The server refused the key for deploy@server. Add the public key to its authorized_keys._ It waits for you rather than retrying.
+Until the key is authorised, the Host shows **Access refused**: _The SSH server refused to let deploy@server log in._, with the command that authorises Homeport's key. It waits for you rather than retrying.
 
 ## When the server's key changes
 
@@ -139,7 +139,7 @@ Editing a Host to point at a different server or port forgets the trusted key, a
 
 ## Through a bastion
 
-Some servers only accept SSH from a jump server. Add that server under **Bastions** in the Host's form, and Homeport logs in to it first, then reaches the Host through it — what `ssh -J` or `ProxyJump` do, with Homeport's own SSH client. Nothing is installed on the bastion, and no key is written to disk.
+Some servers only accept SSH from one other server, a bastion. Add it under **Bastions** in the Host's form, and Homeport logs in to it first, then reaches the Host through it — what `ssh -J` or `ProxyJump` do, with Homeport's own SSH client. Nothing is installed on the bastion, and no key is written to disk.
 
 <Steps>
 
@@ -155,7 +155,7 @@ Some servers only accept SSH from a jump server. Add that server under **Bastion
    | **Its own key**      | The bastion needs a different key. Paste it or choose **Load from file…**; it's stored encrypted with the Host's other secrets. |
    | **ssh-agent**        | Your agent holds the bastion's key, while the Host uses another, for example a key Homeport created just for it.                |
 
-4. For a chain of jump servers (`ProxyJump a,b`), add one bastion per server, in the order Homeport goes through them. The arrows move a bastion up or down.
+4. For a chain of bastions (`ProxyJump a,b`), add one per server, in the order Homeport goes through them. The arrows move a bastion up or down.
 
 </Steps>
 
@@ -177,12 +177,12 @@ Removing the Host deletes its key from Homeport, but not from the server. Delete
 
 ## Common problems
 
-| Message                                                                                         | What to do                                                                                                                                                                                 |
-| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| _The server refused the key for …_                                                              | Run the **Add the public key** command on the server, then **Reconnect**.                                                                                                                  |
-| _The SSH server couldn't open /var/run/docker.sock … Check the path and that … can use Docker._ | Check the **Remote socket path**, and add the user to the `docker` group.                                                                                                                  |
-| _SSH connection timed out_                                                                      | Check the server name, port and any firewall between you.                                                                                                                                  |
-| _No ssh-agent is running_                                                                       | Start your agent, add a key with `ssh-add`, and make sure Homeport can see `SSH_AUTH_SOCK`. On Windows, open Pageant and load your key, or start the OpenSSH Authentication Agent service. |
-| _Bastion … couldn't open a connection to …_                                                     | Check that the bastion can reach the Host, and that its `sshd` allows `AllowTcpForwarding`.                                                                                                |
+| Message                                                              | What to do                                                                                                                                                                                 |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| _The SSH server refused to let … log in._                            | Run the **Add the public key** command on the server, then **Reconnect**.                                                                                                                  |
+| _… can't open the Docker Engine socket at /var/run/docker.sock on …_ | Check the **Remote socket path**, and add the user to the `docker` group.                                                                                                                  |
+| _… didn't answer in time._                                           | Check the server name, port and any firewall between you.                                                                                                                                  |
+| _No ssh-agent is running_                                            | Start your agent, add a key with `ssh-add`, and make sure Homeport can see `SSH_AUTH_SOCK`. On Windows, open Pageant and load your key, or start the OpenSSH Authentication Agent service. |
+| _Bastion … couldn't open a connection to …_                          | Check that the bastion can reach the Host, and that its `sshd` allows `AllowTcpForwarding`.                                                                                                |
 
 More in [Troubleshooting](/docs/reference/troubleshooting/).

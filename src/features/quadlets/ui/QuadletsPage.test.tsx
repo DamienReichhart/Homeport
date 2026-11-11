@@ -141,6 +141,7 @@ describe('Quadlet units', () => {
     await waitFor(() => expect(calls.map((c) => c.cmd)).toContain('quadlets_install'));
     const install = calls.find((c) => c.cmd === 'quadlets_install')!.args;
     expect(install.replace).toBe(false);
+    expect(install.expected).toBeNull();
     expect(install.install).toMatchObject({
       unit: { name: 'api.container' },
       extra: [],
@@ -178,9 +179,51 @@ describe('Quadlet units', () => {
             app: 'shop',
           },
           replace: true,
+          expected: '[Container]\nImage=nginx\n',
         },
       }),
     );
+  });
+
+  it('aren’t overwritten when they changed on the Host since the editor opened them', async () => {
+    const calls: Call[] = [];
+    const user = setup(calls);
+    mockCommands({
+      ...baseCommands,
+      hosts_list: () => [podmanHost],
+      quadlets_list: () => listed(),
+      quadlets_file: () => '[Container]\nImage=nginx\n',
+      quadlets_install: (args: Record<string, unknown>) => {
+        calls.push({ cmd: 'quadlets_install', args });
+        if (args.expected !== null)
+          throw {
+            code: 'conflict',
+            key: 'errors.quadlets.changed',
+            params: { name: 'web.container' },
+            message: 'web.container changed on the Host since you opened it.',
+            hint: null,
+            detail: null,
+          };
+        return ['/home/me/x'];
+      },
+      pods_list: () => [],
+      containers_list: () => [],
+      usage_subscribe: () => 1,
+      images_list: () => [],
+      networks_list: () => [],
+    });
+    renderApp('/quadlets/web.container');
+    await user.click(await screen.findByRole('button', { name: 'Edit' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Edit web.container' });
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    expect(
+      await within(dialog).findByText('web.container changed on the Host since you opened it.'),
+    ).toBeInTheDocument();
+    expect(calls).toHaveLength(1);
+
+    await user.click(within(dialog).getByRole('button', { name: 'Overwrite' }));
+    await waitFor(() => expect(calls).toHaveLength(2));
+    expect(calls[1]?.args.expected).toBeNull();
   });
 
   it('are removed, stopping their service when asked', async () => {

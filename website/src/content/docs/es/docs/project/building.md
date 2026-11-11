@@ -45,14 +45,14 @@ Las compilaciones locales no están firmadas para el actualizador integrado y de
 
 ## Comandos útiles
 
-| Comando               | Qué hace                                                                                                            |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `bun run check`       | Comprobación de tipos, lint, comprobación de formato y pruebas del frontend                                         |
-| `bun run rust:lint`   | `cargo clippy` con los avisos tratados como errores                                                                 |
-| `bun run rust:test`   | Pruebas unitarias de Rust                                                                                           |
-| `bun run bindings`    | Vuelve a generar los bindings de TypeScript para el IPC                                                             |
-| `bun run licenses`    | Genera los avisos de licencia de terceros                                                                           |
-| `bun run screenshots` | Vuelve a capturar las capturas de pantalla de este sitio web, en todos los idiomas (`--locale fr` para rehacer uno) |
+| Comando               | Qué hace                                                                                                                                                                                                                                           |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bun run check`       | Comprobación de tipos, lint, comprobación de formato y pruebas del frontend                                                                                                                                                                        |
+| `bun run rust:lint`   | `cargo clippy` con los avisos tratados como errores                                                                                                                                                                                                |
+| `bun run rust:test`   | Pruebas unitarias de Rust                                                                                                                                                                                                                          |
+| `bun run bindings`    | Vuelve a generar los bindings de TypeScript para el IPC                                                                                                                                                                                            |
+| `bun run licenses`    | Genera los avisos de licencia de terceros                                                                                                                                                                                                          |
+| `bun run screenshots` | Vuelve a capturar las capturas de pantalla de este sitio web, en todos los idiomas (`--locale fr` para rehacer uno), a 2880×1800, el doble de densidad de píxeles. Instala antes oxipng (`cargo install oxipng`) para que se compriman sin pérdida |
 
 Las pruebas de integración hablan con el Docker Engine local y con la CLI de Compose. Están marcadas con `#[ignore = "needs a local Docker Engine"]` (o `"… and the compose CLI"`, y unas pocas con `"… access to Docker Hub"`), solo crean recursos llamados `homeport-test-*` y los eliminan después. Ejecútalas con un Engine y el plugin compose en este equipo:
 
@@ -61,6 +61,23 @@ cargo test --workspace --exclude homeport -- --ignored
 ```
 
 La CI también las ejecuta, en el job `engine-tests` de `.github/workflows/ci.yml`, en cada push a `dev`, en cada pull request y en cada release. Después, el job ejecuta `scripts/ci/engine-test-leftovers.sh`, que falla si una prueba dejó atrás un contenedor, una imagen, un volumen o una red `homeport-test-*`; ejecútalo en local después de las pruebas para comprobar lo mismo.
+
+### Pruebas de extremo a extremo
+
+`e2e/` controla la app real —el backend de Rust, la webview y las llamadas entre ambos— con [WebdriverIO](https://webdriver.io) a través de `tauri-driver`, contra el Docker Engine local. Los escenarios: la app arranca y se conecta al Engine local; los logs de un contenedor se transmiten y se detiene desde la app; se descarga una imagen; se despliega un stack gestionado con un entorno cifrado; un reinicio conserva los hosts, el stack y su secreto; y se añade un host SSH con una clave existente, se acepta la clave de su servidor y se conecta. Encuentran los elementos por su rol, su etiqueta y su texto, nunca por una clase CSS.
+
+Solo se ejecutan en Linux: macOS no tiene WebDriver para su webview. Además de los [requisitos previos](#requisitos-previos) y un Docker Engine, necesitan `tauri-driver` (`cargo install tauri-driver --locked`), el driver de WebKit, una pantalla virtual y un llavero: en Debian y Ubuntu, `webkit2gtk-driver`, `xvfb`, `dbus-x11` y `gnome-keyring`.
+
+```sh
+bun tauri build --debug --no-bundle
+cd e2e
+bun install
+./run.sh
+```
+
+La compilación incluye el frontend, como hace una release, así que un comando que falte en `commands::builder()`, un permiso que falte en `src-tauri/capabilities/` o un estilo que bloquee la Content Security Policy falla aquí. `run.sh` da a cada ejecución una carpeta de datos nueva, su propio llavero y su propia pantalla, así que nunca toca tu propio Homeport. Pasa las opciones de WebdriverIO después, por ejemplo `./run.sh --spec specs/ssh.e2e.ts`. El escenario SSH compila una pequeña imagen de servidor SSH a partir de `e2e/support/sshd/`; define `HOMEPORT_E2E_SSHD_IMAGE` para usar una compilada de antemano. Los contenedores que inician las pruebas se llaman `homeport-e2e-*` y se eliminan después.
+
+Un fallo deja una captura de pantalla y el log de la app en `e2e/artifacts/`. La CI ejecuta las pruebas en el job `e2e` de `.github/workflows/ci.yml`, en cada push a `dev` y en cada pull request, y conserva esa carpeta cuando una falla.
 
 ## Este sitio web
 

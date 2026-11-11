@@ -168,6 +168,8 @@ const pod = (name: string, node: number, overrides: Partial<PodView> = {}): PodV
   // The ReplicaSet is the Pod's name without its random suffix.
   owner: { kind: 'ReplicaSet', name: name.split('-').slice(0, -1).join('-') },
   images: [],
+  cpu: { request: 250, limit: 1000 },
+  memory: { request: 256 * 1024 ** 2, limit: 512 * 1024 ** 2 },
   ...overrides,
 });
 
@@ -290,6 +292,8 @@ export function podDetail(name: string): PodDetail {
         restarts: 0,
         lastReason: null,
         ports: [],
+        cpu: { request: null, limit: null },
+        memory: { request: null, limit: null },
       },
       {
         name: 'api',
@@ -304,6 +308,8 @@ export function podDetail(name: string): PodDetail {
         restarts: 7,
         lastReason: 'Error',
         ports: [],
+        cpu: { request: null, limit: null },
+        memory: { request: null, limit: null },
       },
       {
         name: 'envoy',
@@ -318,6 +324,8 @@ export function podDetail(name: string): PodDetail {
         restarts: 0,
         lastReason: null,
         ports: [],
+        cpu: { request: null, limit: null },
+        memory: { request: null, limit: null },
       },
     ],
     hostIp: '10.0.2.56',
@@ -497,6 +505,8 @@ export const nodes: ClusterNodeView[] = NODES.map((name, i) => ({
   internalIp: `10.0.${1 + Math.floor(i / 2)}.${[23, 87, 14, 56, 31][i]}`,
   cpu: i === 4 ? '7910m' : '3920m',
   memory: i === 4 ? '31482856Ki' : '15335132Ki',
+  cpuMillicores: i === 4 ? 7910 : 3920,
+  memoryBytes: (i === 4 ? 31482856 : 15335132) * 1024,
   taints: i === 3 ? 2 : 0,
   created: iso((30 - i * 4) * DAY),
 }));

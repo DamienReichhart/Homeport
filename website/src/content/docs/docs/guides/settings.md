@@ -3,7 +3,7 @@ title: Settings
 description: Theme and language, the system tray, starting at login, notifications, updates, registry logins, repositories, how often Synced Stacks are checked, what this machine supports, version and licences.
 ---
 
-**Settings** is the last item in the sidebar.
+**Settings** is the last page in the sidebar, above the **Documentation** and **GitHub** links, which open in your browser.
 
 ## Appearance
 
@@ -93,7 +93,7 @@ What Homeport keeps on this computer.
 - [Synced Stacks](/docs/guides/synced-stacks/) clone their repository again on their next sync.
 - The current data is copied to `homeport.db.before-restore-<date>` in Homeport's data folder first. Restoring a wrong file, a newer Homeport's, or one that fails halfway changes nothing.
 
-To add some Hosts to the ones you have instead, use **Export** and **Import** on the Hosts page.
+To add some Hosts to the ones you have instead, use **Export** and **Import** on the Hosts page. [Your data and backups](/docs/reference/data-and-backups/) says where Homeport's files are, what a backup includes, and how to copy the database yourself.
 
 ### Keeping Engine events
 
@@ -112,6 +112,10 @@ Homeport checks the CLIs each time this page opens, so one installed since launc
 
 ## About
 
-Shows Homeport's version and the platform it was built for, for example `v0.2.0 · macos/aarch64`. Include it when you [report an issue](https://github.com/DamienReichhart/Homeport/issues).
+Shows Homeport's version and the platform it was built for, for example `v1.0.0 · macos/aarch64`.
+
+**Open log folder** shows where Homeport writes its [log](/docs/reference/security/#logs).
+
+**Export diagnostics…** saves a zip to attach when you [report an issue](https://github.com/DamienReichhart/Homeport/issues/new/choose): a summary of versions and of the kinds of Hosts and Clusters you use, and the logs with secrets removed. The dialog shows what's in it first, and nothing is sent anywhere. See [Exporting diagnostics](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report).
 
 **Licenses** shows Homeport's licence (the GNU AGPL, version 3), a link to the source code of the version you run, and the notices of every open-source package it's built with.

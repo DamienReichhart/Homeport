@@ -1,6 +1,6 @@
 /**
  * Linux capabilities, for suggestions; the backend checks the names
- * (`crates/engine/src/containers/run/checks.rs` keeps the same list).
+ * (`crates/runtimes/engine/src/containers/run/checks.rs` keeps the same list).
  */
 export const CAPABILITIES = [
   'ALL',

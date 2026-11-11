@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { baseCommands } from '@/test/fixtures';
 import { mockCommands } from '@/test/ipc';
@@ -164,5 +164,44 @@ describe('settings data', () => {
     await user.type(days, '900{Enter}');
     expect(days).toHaveValue(365);
     expect(saved).toEqual([expect.objectContaining({ keepEventsDays: 365 })]);
+  });
+});
+
+describe('a keychain without the entry Homeport’s secrets were sealed with', () => {
+  it('says so, and starts over with a new key only once confirmed', async () => {
+    let missing = true;
+    let startedOver = 0;
+    const capabilities = baseCommands.get_capabilities() as Record<string, unknown>;
+    mockCommands({
+      ...baseCommands,
+      get_app_info: appInfo,
+      registries_list: () => [],
+      repositories_list: () => [],
+      get_capabilities: () => ({
+        ...capabilities,
+        keychain: !missing,
+        keychainEntryMissing: missing,
+      }),
+      keychain_start_over: () => {
+        startedOver += 1;
+        missing = false;
+        return null;
+      },
+    });
+    const user = userEvent.setup();
+    renderApp('/settings');
+    expect(
+      await screen.findByText(/Entry missing — the keychain has no entry for the key/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/See Settings → This machine\./)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Start over with a new key' }));
+    const dialog = await screen.findByRole('alertdialog');
+    expect(dialog).toHaveTextContent('restore a backup');
+    expect(startedOver).toBe(0);
+    await user.click(within(dialog).getByRole('button', { name: 'Start over with a new key' }));
+    await vi.waitFor(() => expect(startedOver).toBe(1));
+    expect(await screen.findByText(/^Available — /)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Start over with a new key' })).toBeNull();
   });
 });

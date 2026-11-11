@@ -48,15 +48,18 @@ Die Seitenleiste hat eine Seite für jede Art von Ressource, und alle zeigen den
 | Seite             | Was sie zeigt                                                                          |
 | ----------------- | -------------------------------------------------------------------------------------- |
 | **Übersicht**     | Eine Karte für jeden Host, Engine, Speicherbelegung und Ereignisse des gewählten Hosts |
+| **Board**         | Die Container aller verbundenen Hosts in einer Tabelle                                 |
 | **Container**     | Alle Container, nach Stack gruppiert, mit CPU und Arbeitsspeicher live                 |
 | **Images**        | Lokale Images, was sie verwendet, Pullen und Aufräumen                                 |
 | **Volumes**       | Volumes und die Container, die sie verwenden                                           |
 | **Netzwerke**     | Netzwerke, ihre Subnetze und angeschlossene Container                                  |
-| **Stacks**        | Compose-Projekte, verwaltete und externe                                               |
-| **Ereignisse**    | Was die Engine gemeldet hat, seit Homeport verbunden ist                               |
-| **Einstellungen** | Design, was dieser Rechner unterstützt, und Lizenzen                                   |
+| **Stacks**        | Compose-Projekte: verwaltete, verknüpfte, synchronisierte und externe                  |
+| **Ereignisse**    | Was die Engine gemeldet hat, 30 Tage lang aufbewahrt                                   |
+| **Einstellungen** | Design und Sprache, Registry-Anmeldungen, Sicherungen und was dieser Rechner hat       |
 
 Homeport aktualisiert sich, sobald die Engine Änderungen meldet, sodass Sie nie eine Schaltfläche zum Aktualisieren brauchen – starten Sie einen Container in einem Terminal, und er erscheint sofort.
+
+Ein containerd-, Incus- oder Podman-Host, ein Swarm und ein Cluster bringen jeweils eigene Seiten in die Seitenleiste. Ganz unten öffnen **Dokumentation** und **GitHub** diese Dokumentation und das Repository des Projekts in Ihrem Browser.
 
 ## 3. Einen Container ausführen
 

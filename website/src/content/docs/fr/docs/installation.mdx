@@ -19,11 +19,11 @@ Chaque installation reste à jour : Homeport se met à jour lui-même sous Wind
 
 ## Windows
 
-| Fichier                              | À utiliser pour                                        |
-| ------------------------------------ | ------------------------------------------------------ |
-| `Homeport_<version>_x64-setup.exe`   | La plupart des PC. Installe pour l’utilisateur actuel. |
-| `Homeport_<version>_arm64-setup.exe` | Windows sur ARM (Snapdragon et autres PC ARM64).       |
-| `Homeport_<version>_x64_en-US.msi`   | Installations gérées et silencieuses sur x64.          |
+| Fichier                                      | À utiliser pour                                        |
+| -------------------------------------------- | ------------------------------------------------------ |
+| `Homeport-<version>-windows-x64-setup.exe`   | La plupart des PC. Installe pour l’utilisateur actuel. |
+| `Homeport-<version>-windows-arm64-setup.exe` | Windows sur ARM (Snapdragon et autres PC ARM64).       |
+| `Homeport-<version>-windows-x64.msi`         | Installations gérées et silencieuses sur x64.          |
 
 <Steps>
 
@@ -38,15 +38,15 @@ Chaque installation reste à jour : Homeport se met à jour lui-même sous Wind
 Pour une installation silencieuse avec le paquet MSI :
 
 ```powershell
-msiexec /i Homeport_<version>_x64_en-US.msi /quiet
+msiexec /i Homeport-<version>-windows-x64.msi /quiet
 ```
 
 ## macOS
 
-| Fichier                          | À utiliser pour                              |
-| -------------------------------- | -------------------------------------------- |
-| `Homeport_<version>_aarch64.dmg` | Les Mac avec puce Apple (M1 et ultérieures). |
-| `Homeport_<version>_x64.dmg`     | Les Mac avec un processeur Intel.            |
+| Fichier                              | À utiliser pour                              |
+| ------------------------------------ | -------------------------------------------- |
+| `Homeport-<version>-macos-arm64.dmg` | Les Mac avec puce Apple (M1 et ultérieures). |
+| `Homeport-<version>-macos-x64.dmg`   | Les Mac avec un processeur Intel.            |
 
 Vous ne savez pas lequel vous avez ? Ouvrez le menu Pomme → **À propos de ce Mac** : une ligne **Puce** signifie une puce Apple, une ligne **Processeur** qui nomme Intel signifie Intel.
 
@@ -104,27 +104,27 @@ Ajoutez vous-même la clé de signature et le dépôt, puis installez le paquet 
 
 ### Fichiers de paquet
 
-Vous pouvez aussi télécharger le `.deb` (`amd64` pour x64, `arm64` pour ARM) ou le `.rpm` (`x86_64` ou `aarch64`) et l’installer directement :
+Vous pouvez aussi télécharger le `.deb` ou le `.rpm` de votre processeur (`x64` pour Intel et AMD, `arm64` pour ARM) et l’installer directement :
 
 <Tabs syncKey="linux-format">
 <TabItem label="Debian, Ubuntu">
 
 ```sh
-sudo apt install ./Homeport_<version>_amd64.deb
+sudo apt install ./Homeport-<version>-linux-x64.deb
 ```
 
 </TabItem>
 <TabItem label="Fedora, RHEL">
 
 ```sh
-sudo dnf install ./Homeport-<version>-1.x86_64.rpm
+sudo dnf install ./Homeport-<version>-linux-x64.rpm
 ```
 
 </TabItem>
 <TabItem label="openSUSE">
 
 ```sh
-sudo zypper install ./Homeport-<version>-1.x86_64.rpm
+sudo zypper install ./Homeport-<version>-linux-x64.rpm
 ```
 
 </TabItem>
@@ -137,8 +137,8 @@ La première fois que vous installez l’un de ces paquets, il ajoute aussi le d
 L’AppImage fonctionne sur la plupart des distributions sans rien installer, et se met à jour elle-même depuis Homeport. Rendez-la exécutable et lancez-la :
 
 ```sh
-chmod +x Homeport_<version>_amd64.AppImage
-./Homeport_<version>_amd64.AppImage
+chmod +x Homeport-<version>-linux-x64.AppImage
+./Homeport-<version>-linux-x64.AppImage
 ```
 
 À chaque lancement, elle ajoute Homeport au menu des applications. Si elle ne démarre pas et mentionne FUSE, installez `libfuse2` (`libfuse2t64` sur Ubuntu 24.04 et ultérieur).
@@ -153,7 +153,7 @@ sudo usermod -aG docker $USER
 ```
 
 Déconnectez-vous et reconnectez-vous pour que cela prenne effet. Sans cela, un hôte local apparaît comme **Injoignable** avec
-_Permission denied_.
+_Homeport n’est pas autorisé à utiliser le Docker Engine à /var/run/docker.sock._
 
 </Aside>
 

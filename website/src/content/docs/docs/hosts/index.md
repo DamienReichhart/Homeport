@@ -73,7 +73,7 @@ A context whose name is already a Host's is offered as `name (2)`.
 
 ## Moving to another computer
 
-**Export** on the Hosts page saves the Hosts you pick to a file protected by a passphrase; **Import** on the other computer's Hosts page opens it and adds the Hosts you pick, ready to connect. A Host whose name is taken there is proposed as `name (2)`, and you can rename or skip it. See [moving to another computer](/docs/reference/security/#moving-to-another-computer) for how the file is protected.
+**Export** on the Hosts page saves the Hosts you pick to a file protected by a passphrase; **Import** on the other computer's Hosts page opens it and adds the Hosts you pick, ready to connect. A Host whose name is taken there is proposed as `name (2)`, and you can rename or skip it. See [moving to another computer](/docs/reference/security/#moving-to-another-computer) for how the file is protected. To move everything at once, Clusters, Stacks, registry logins, repositories and settings included, use a [backup](/docs/reference/data-and-backups/#backing-up-in-homeport) instead.
 
 ## Selecting a Host
 

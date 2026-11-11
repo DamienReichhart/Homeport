@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://damienreichhart.github.io/Homeport/docs/
+    about: Guides, troubleshooting by message, and the FAQ.
+  - name: Report a security problem
+    url: https://github.com/DamienReichhart/Homeport/security/advisories/new
+    about: Privately, through GitHub's vulnerability reporting.

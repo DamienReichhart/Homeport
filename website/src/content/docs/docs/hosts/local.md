@@ -50,7 +50,7 @@ podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}'
 
 ## Permissions on Linux
 
-The default socket `/var/run/docker.sock` belongs to the `docker` group. If your user isn't in it, the Host shows **Unreachable** with _Permission denied_. Add yourself and log in again:
+The default socket `/var/run/docker.sock` belongs to the `docker` group. If your user isn't in it, the Host shows **Unreachable** with _Homeport isn't allowed to use the Docker Engine at /var/run/docker.sock._ Add yourself and log in again:
 
 ```sh
 sudo usermod -aG docker $USER

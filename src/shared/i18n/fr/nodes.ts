@@ -38,4 +38,7 @@ export default {
   'nodes.resource.name': 'Ressource',
   'nodes.resource.capacity': 'Capacité',
   'nodes.resource.allocatable': 'Allouable',
+  'nodes.column.cpuUsed': 'CPU utilisé',
+  'nodes.column.memoryUsed': 'Mémoire utilisée',
+  'nodes.tab.metrics': 'Métriques',
 } satisfies Translation<typeof en>;

@@ -4,8 +4,16 @@ import type { Translation } from '../types';
 
 export default {
   'app.nav.main': 'Основное',
+  'app.nav.docs': 'Документация',
+  'app.nav.github': 'GitHub',
+  'app.nav.opensInBrowser': '{label} (откроется в браузере)',
   'app.keychainMissing':
     'Связка ключей ОС недоступна, поэтому SSH-ключи, TLS-сертификаты и окружения стеков сохранить нельзя. Локальные хосты, хосты TCP и ssh-agent по-прежнему работают.',
+  'app.keychainEntryMissing':
+    'В связке ключей нет записи для ключа, которым запечатаны секреты Homeport, поэтому их нельзя ни открыть, ни сохранить. См. Настройки → Этот компьютер.',
+  'app.startup.title': 'Homeport не может открыть свою базу данных',
+  'app.startup.description': 'Больше ничего не запущено. База данных находится в этом файле:',
+  'app.startup.openFolder': 'Открыть папку',
   'app.crash.title': 'Что-то пошло не так',
   'app.crash.description':
     'На этой странице в Homeport возникла непредвиденная ошибка. Обычно помогает перезагрузка; если ошибка повторяется, скопируйте отчёт из раздела «Подробности» в issue.',

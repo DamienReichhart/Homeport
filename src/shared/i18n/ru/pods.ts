@@ -61,4 +61,9 @@ export default {
   'pods.terminal.notRunning': 'Этот контейнер не запущен.',
   'pods.terminal.exited': 'Процесс завершился.',
   'pods.terminal.exitedWithCode': 'Процесс завершился с кодом {code}.',
+  'pods.column.cpu': 'ЦП',
+  'pods.column.memory': 'Память',
+  'pods.tab.metrics': 'Метрики',
+  'pods.metrics.noSample':
+    'У metrics-server ещё нет замера этого Pod: возможно, он только что запустился или не работает.',
 } satisfies Translation<typeof en>;

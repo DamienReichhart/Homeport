@@ -4,8 +4,16 @@ import type { Translation } from '../types';
 
 export default {
   'app.nav.main': 'Hauptmenü',
+  'app.nav.docs': 'Dokumentation',
+  'app.nav.github': 'GitHub',
+  'app.nav.opensInBrowser': '{label} (wird im Browser geöffnet)',
   'app.keychainMissing':
     'Es ist kein Schlüsselbund des Betriebssystems verfügbar, daher können SSH-Schlüssel, TLS-Zertifikate und Stack-Umgebungen nicht gespeichert werden. Lokale, TCP- und ssh-agent-Hosts funktionieren weiterhin.',
+  'app.keychainEntryMissing':
+    'Der Schlüsselbund hat keinen Eintrag für den Schlüssel, mit dem Homeports Geheimnisse versiegelt wurden. Sie können daher weder geöffnet noch gespeichert werden. Siehe Einstellungen → Dieser Rechner.',
+  'app.startup.title': 'Homeport kann seine Datenbank nicht öffnen',
+  'app.startup.description': 'Sonst wurde nichts gestartet. Die Datenbank liegt in dieser Datei:',
+  'app.startup.openFolder': 'Ordner öffnen',
   'app.crash.title': 'Etwas ist schiefgelaufen',
   'app.crash.description':
     'Homeport ist auf dieser Seite auf ein unerwartetes Problem gestoßen. Neu laden hilft meistens; wenn es weiterhin auftritt, kopieren Sie den Bericht aus „Details“ in ein Issue.',

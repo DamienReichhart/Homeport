@@ -1,5 +1,8 @@
 import { useResolvedTheme } from '@/shared/lib/theme';
 import { Toaster as Sonner, type ToasterProps } from 'sonner';
+// Bundled as a stylesheet: the <style> Sonner adds by itself carries no CSP
+// nonce, so a built app's webview ignores it and toasts would lose their layout.
+import 'sonner/dist/styles.css';
 import {
   CircleCheckIcon,
   InfoIcon,

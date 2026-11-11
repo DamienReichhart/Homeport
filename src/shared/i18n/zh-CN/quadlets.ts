@@ -82,6 +82,7 @@ export default {
   'quadlets.form.removeExtra': '移除 {name}',
   'quadlets.form.install': '安装',
   'quadlets.form.save': '保存',
+  'quadlets.form.overwrite': '覆盖',
   'quadlets.form.nameInvalid':
     '按 web.container 的形式命名，以 .container、.pod、.volume、.network、.kube、.image、.build 或 .artifact 结尾。',
   'quadlets.form.sectionMissing': '该文件需要一个 {section} 节，Quadlet 才能读取它。',

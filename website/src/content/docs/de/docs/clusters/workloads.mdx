@@ -56,7 +56,7 @@ Seine Kopfzeile hat seine Aktionen: **Skalieren**, **Neu starten**, **Aussetzen*
   alt="Die Seite Pods: Pods des Namespace shop mit ihrem Status, einer in CrashLoopBackOff mit 7 Neustarts und einer in ImagePullBackOff, ihre bereiten Container, ihr Node und ihr Alter."
 />
 
-**Pods** listet jeden Pod mit seinem Status auf, wie `kubectl get pods` ihn zeigt – `Running`, `Pending`, `CrashLoopBackOff`, `ImagePullBackOff`, `Init:…`, `Terminating` –, seine bereiten Container, Neustarts, seinen Node und sein Alter. Lange Listen zeigen 100 Zeilen pro Seite, sodass ein Cluster mit Tausenden von Pods reaktionsschnell bleibt; das Suchfeld filtert alle.
+**Pods** listet jeden Pod mit seinem Status auf, wie `kubectl get pods` ihn zeigt – `Running`, `Pending`, `CrashLoopBackOff`, `ImagePullBackOff`, `Init:…`, `Terminating` –, seine bereiten Container, Neustarts, seinen Node und sein Alter. Lange Listen zeigen 100 Zeilen pro Seite, sodass ein Cluster mit Tausenden von Pods reaktionsschnell bleibt; das Suchfeld filtert alle. Wenn auf dem Cluster metrics-server läuft, zeigen **CPU** und **Arbeitsspeicher**, was jeder Pod gemessen an seinen Limits nutzt ([CPU und Arbeitsspeicher](/docs/clusters/metrics/)).
 
 <DocScreenshot
   name="cluster-pod"
@@ -64,7 +64,7 @@ Seine Kopfzeile hat seine Aktionen: **Skalieren**, **Neu starten**, **Aussetzen*
   caption="Warum api-…-xr4np nicht bereit ist: Sein Container api stürzt immer wieder ab; sein Sidecar ist in Ordnung."
 />
 
-Die Seite eines Pods zeigt seinen Node, seine IPs, seine QoS-Klasse, sein Service-Account und was ihn steuert, dann jeden Container (Init-Container zuerst) mit seinem Image, seinem Zustand, warum er wartet oder beendet wurde, seinen Neustarts und warum er zuletzt neu gestartet wurde. Jeder Container listet die Ports auf, die er deklariert, mit **Weiterleiten…**, um [einen davon von diesem Rechner aus zu erreichen](/docs/clusters/port-forward/). Es folgen **Logs** und **Terminal** ([Logs und Terminals](/docs/clusters/logs-exec/)), dann **Bedingungen**, **Events** und **YAML** wie bei Workloads und **Löschen** in der Kopfzeile.
+Die Seite eines Pods zeigt seinen Node, seine IPs, seine QoS-Klasse, sein Service-Account und was ihn steuert, dann jeden Container (Init-Container zuerst) mit seinem Image, seinem Zustand, warum er wartet oder beendet wurde, seinen Neustarts und warum er zuletzt neu gestartet wurde. Jeder Container listet die Ports auf, die er deklariert, mit **Weiterleiten…**, um [einen davon von diesem Rechner aus zu erreichen](/docs/clusters/port-forward/). Es folgen **Logs** und **Terminal** ([Logs und Terminals](/docs/clusters/logs-exec/)), dann **Bedingungen**, **Events** und **YAML** wie bei Workloads und **Löschen** in der Kopfzeile. Mit metrics-server zeichnet **Metriken** CPU und Arbeitsspeicher jedes Containers gegenüber seiner Anforderung und seinem Limit auf ([CPU und Arbeitsspeicher](/docs/clusters/metrics/)).
 
 ### Herausfinden, warum ein Pod nicht bereit ist
 

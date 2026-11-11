@@ -22,6 +22,7 @@
 import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 import {
+  aptPoolName,
   type GitHubRelease,
   packagesOf,
   type Release,
@@ -93,7 +94,8 @@ async function githubReleases(): Promise<GitHubRelease[]> {
 /** Treats the files in `dir` as one release, for testing. */
 function localRelease(dir: string): Release {
   const files = readdirSync(dir);
-  const version = /_(\d+\.\d+\.\d+)_/.exec(files.join(' '))?.[1] ?? '0.0.0';
+  // Tauri's own names (`Homeport_1.0.0_amd64.deb`) or a release's (`Homeport-1.0.0-linux-x64.deb`).
+  const version = /Homeport[_-](\d+\.\d+\.\d+)[_-]/.exec(files.join(' '))?.[1] ?? '0.0.0';
   return {
     tag: `v${version}`,
     version,
@@ -125,6 +127,7 @@ function buildApt(dir: string, fpr: string) {
     const binary = join(dist, `main/binary-${arch}`);
     mkdirSync(binary, { recursive: true });
     // Run from the repository root so each `Filename:` is relative to it.
+    // `--arch` takes the files named `*_<arch>.deb`: see `aptPoolName`.
     run(['apt-ftparchive', '--arch', arch, 'packages', 'pool'], {
       cwd: dir,
       stdout: join(binary, 'Packages'),
@@ -189,7 +192,7 @@ async function build(args: string[]) {
     const { deb, rpm: rpmFiles } = packagesOf(release);
     console.log(`${release.tag}: ${deb.length} .deb, ${rpmFiles.length} .rpm`);
     await Promise.all([
-      ...deb.map((a) => download(a.url, join(pool, a.name))),
+      ...deb.map((a) => download(a.url, join(pool, aptPoolName(release, a)))),
       ...rpmFiles.map((a) => download(a.url, join(rpms, a.name))),
     ]);
   }

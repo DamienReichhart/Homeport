@@ -86,6 +86,7 @@ export default {
   'quadlets.form.removeExtra': '{name} を削除',
   'quadlets.form.install': 'インストール',
   'quadlets.form.save': '保存',
+  'quadlets.form.overwrite': '上書き',
   'quadlets.form.nameInvalid':
     'web.container のように、.container、.pod、.volume、.network、.kube、.image、.build、.artifact のいずれかで終わる名前にしてください。',
   'quadlets.form.sectionMissing':

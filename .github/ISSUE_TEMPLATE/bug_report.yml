@@ -1,0 +1,44 @@
+name: Bug report
+description: Something in Homeport doesn't work as it should
+labels: [needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time. Please report security problems privately, through
+        [GitHub's vulnerability reporting](https://github.com/DamienReichhart/Homeport/security/advisories/new),
+        not here.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead. The exact message helps most.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: |
+        In Homeport, open **Settings → About → Export diagnostics…**, save the zip and drag it here.
+        It holds Homeport's version, the kinds of Hosts, Engines and Clusters you use, and its logs with
+        secrets removed. Hosts and Clusters appear as `host-1`, `cluster-1`… unless you tick
+        **Include names and addresses**; the dialog shows the contents before you save.
+        If Homeport doesn't start, give its version and your operating system instead.
+      placeholder: Drag homeport-diagnostics-….zip here
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The shortest way to make it happen again, if you know one.
+      placeholder: |
+        1. Open …
+        2. Choose …
+  - type: input
+    id: host
+    attributes:
+      label: Host or Cluster concerned
+      description: Its kind and Engine, when the problem is about one.
+      placeholder: SSH Host running Docker Engine 29.1, Kubernetes 1.33, Nomad 1.10…

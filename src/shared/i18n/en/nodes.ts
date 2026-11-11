@@ -35,4 +35,7 @@ export default {
   'nodes.resource.name': 'Resource',
   'nodes.resource.capacity': 'Capacity',
   'nodes.resource.allocatable': 'Allocatable',
+  'nodes.column.cpuUsed': 'CPU used',
+  'nodes.column.memoryUsed': 'Memory used',
+  'nodes.tab.metrics': 'Metrics',
 } as const;

@@ -39,6 +39,36 @@ describe('starting a Stack from a template', () => {
     expect(screen.getByLabelText('Name')).toHaveValue('site');
   });
 
+  it('takes over an External Stack only when adopting it', async () => {
+    const created: unknown[] = [];
+    const record = (args: unknown) => {
+      created.push(args);
+      throw { code: 'name_in_use', key: 'errors.stacks.nameRunsExternal', message: 'refused' };
+    };
+    mockCommands({
+      ...baseCommands,
+      stacks_list: () => [],
+      stacks_check: () => ({ errors: [], warnings: [], profiles: [] }),
+      stacks_create: record,
+    });
+    const page = renderApp('/stacks/new');
+    await userEvent.click(await screen.findByRole('button', { name: /Static site/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await screen.findByText(/refused|already runs/);
+    expect(created).toEqual([expect.objectContaining({ name: 'site', adopt: false })]);
+    page.unmount();
+
+    renderApp('/stacks/new?adopt=blog');
+    await screen.findByLabelText('Name');
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await vi.waitFor(() =>
+      expect(created).toEqual([
+        expect.objectContaining({ adopt: false }),
+        expect.objectContaining({ name: 'blog', adopt: true }),
+      ]),
+    );
+  });
+
   it('opens an empty editor when adopting', async () => {
     mock();
     renderApp('/stacks/new?adopt=blog');

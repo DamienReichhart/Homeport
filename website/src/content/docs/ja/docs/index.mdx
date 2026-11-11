@@ -6,9 +6,9 @@ description: Homeport とは何か、何ができるか、このドキュメン�
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import { DocScreenshot } from '@/features/docs';
 
-**Homeport** は、このマシンの Docker Engine も、SSH、TLS、TCP でつなぐリモートの Docker Engine も、どこにあっても管理できるデスクトップアプリです。kubeconfig から到達できる Kubernetes クラスターも扱えます。Docker Desktop と同じ発想で作られています。Windows、macOS、Linux で動作し、無料で、[GNU Affero General Public License バージョン 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE) のもとで公開されたオープンソースです。
+**Homeport** は、Docker Engine、containerd、Incus を、このマシンのものも、SSH、TLS、TCP でつなぐリモートのものも、どこにあっても管理できるデスクトップアプリです。それらが構成する Swarm、kubeconfig から到達できる Kubernetes クラスター、指定した Nomad クラスターも扱えます。Docker Desktop と同じ発想で作られています。Windows、macOS、Linux で動作し、無料で、[GNU Affero General Public License バージョン 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE) のもとで公開されたオープンソースです。
 
-Homeport 自体はコンテナを実行しません。すでにお使いの Docker Engine（**ホスト**と呼びます）に接続し、そこにあるコンテナ、イメージ、ボリューム、ネットワーク、Compose の**スタック**をすべて 1 つのウィンドウで扱えるようにします。kubeconfig の Kubernetes **クラスター**にも接続し、そこで動いているものを閲覧できます。
+Homeport 自体はコンテナを実行しません。すでにお使いのエンジン（**ホスト**と呼びます）に接続し、そこにあるコンテナ、イメージ、ボリューム、ネットワーク、Compose の**スタック**をすべて 1 つのウィンドウで扱えるようにします。Kubernetes と Nomad の**クラスター**にも接続し、そこで動いているものを確認・管理できます。ホストにもクラスターにも、何もインストールしません。
 
 <DocScreenshot
   name="overview"
@@ -28,7 +28,14 @@ Homeport 自体はコンテナを実行しません。すでにお使いの Dock
     とメモリ、ログ、対話型ターミナル、ファイルブラウザー、統計グラフ、プロセス、そして「実行」ダイアログ。
   </Card>
   <Card title="Compose のスタックをデプロイ" icon="rocket">
-    compose ファイルと暗号化された環境変数を Homeport に保存し、どのホストにもデプロイできます。
+    compose ファイルと暗号化された環境変数を Homeport
+    に保存したり、プロジェクトのフォルダーからデプロイしたり、git
+    リポジトリに追従したりして、どのホストや Swarm にもデプロイできます。
+  </Card>
+  <Card title="Swarm を管理" icon="seti:docker">
+    マネージャーのホストから Docker Swarm
+    を見つけ、そのノード、サービス、タスク、シークレット、コンフィグ、Swarm
+    のスタックを管理できます。
   </Card>
   <Card title="Podman 独自の機能を使う" icon="seti:config">
     Podman のホストでは、Pod を管理してその中でコンテナを実行したり、systemd の Quadlet
@@ -45,7 +52,12 @@ Homeport 自体はコンテナを実行しません。すでにお使いの Dock
   <Card title="Kubernetes を閲覧" icon="server">
     EKS、GKE、AKS を含め、kubeconfig
     からクラスターを追加し、ワークロード、Pod、Service、構成、Node、Events
-    をリアルタイムで確認できます。
+    をリアルタイムで確認できます。ログを読み、ターミナルを開き、ポートをフォワードし、スケールし、YAML
+    を適用し、Helm のリリースを管理できます。
+  </Card>
+  <Card title="Nomad のジョブを実行" icon="server">
+    エージェントのアドレスで Nomad
+    クラスターを追加し、ジョブを計画・実行し、アロケーションとログを追い、タスクでシェルを開き、ノードをドレインできます。
   </Card>
   <Card title="整理整頓" icon="seti:folder">
     イメージ、ボリューム、ネットワークの使用状況がひと目でわかり、未使用を削除するダイアログは何を削除するかを事前に示します。
@@ -55,18 +67,19 @@ Homeport 自体はコンテナを実行しません。すでにお使いの Dock
 ## このドキュメントの構成
 
 - **入門** — [Homeport をインストール](/docs/installation/)し、[クイックスタート](/docs/quick-start/)に沿って最初のホストに接続します。
-- **ホスト** — 接続の種類ごとの仕組み：[ローカルのエンジン](/docs/hosts/local/)、[SSH](/docs/hosts/ssh/)、[TLS と TCP](/docs/hosts/tls-tcp/)。
-- **クラスター** — kubeconfig からの [Kubernetes クラスターの追加](/docs/clusters/)と閲覧。
+- **ホスト** — 接続の種類ごとの仕組み：[ローカルのエンジン](/docs/hosts/local/)、[SSH](/docs/hosts/ssh/)、[TLS と TCP](/docs/hosts/tls-tcp/)。そして独自のページを持つエンジンである [containerd](/docs/hosts/containerd/) と [Incus](/docs/hosts/incus/)。
+- **クラスター** — kubeconfig からの [Kubernetes クラスターの追加](/docs/clusters/)、その閲覧と変更、[Helm のリリース](/docs/clusters/helm/)、[Nomad クラスター](/docs/clusters/nomad/)。
 - **Homeport を使う** — アプリの各ページのガイド。
-- **リファレンス** — [セキュリティ](/docs/reference/security/)、[トラブルシューティング](/docs/reference/troubleshooting/)、[よくある質問](/docs/reference/faq/)、[用語集](/docs/reference/glossary/)。
+- **リファレンス** — [セキュリティ](/docs/reference/security/)、[データとバックアップ](/docs/reference/data-and-backups/)、[アップデート](/docs/reference/updating/)、[トラブルシューティング](/docs/reference/troubleshooting/)、[よくある質問](/docs/reference/faq/)、[用語集](/docs/reference/glossary/)。
 
 ## このドキュメントで使う言葉
 
 Homeport は物事を正確に呼び分けており、このドキュメントもそれに従います。
 
-- **ホスト**は、Homeport が接続する Docker Engine です。すべてのコンテナ、イメージ、ボリューム、ネットワーク、スタックは、ちょうど 1 つのホストに属します。
-- **クラスター**は、Homeport が接続する Kubernetes クラスターで、kubeconfig のコンテキストから追加します。
-- **スタック**は、ホスト上で動いている Compose プロジェクトです。**管理スタック**は compose ファイルを Homeport が保持しているスタック、**リンクスタック**は compose ファイルをこのコンピューター上のフォルダーに置いているスタック、**外部スタック**はほかの方法でデプロイされたスタックです。外部スタックは**引き継ぐ**ことで管理できます。
+- **ホスト**は、Homeport が接続するエンジンです。Docker Engine か、Podman、containerd、Incus などの互換エンジンです。すべてのコンテナ、イメージ、ボリューム、ネットワーク、スタックは、ちょうど 1 つのホストに属します。
+- **クラスター**は、kubeconfig のコンテキストから追加する Kubernetes クラスター、またはエージェントの 1 つのアドレスで追加する Nomad クラスターです。
+- **Swarm**は Docker Swarm です。所属するホストを通じて見つかり、単独で追加することはありません。
+- **スタック**は、ホスト上で動いている Compose プロジェクト、または Swarm 上で動いている Swarm のスタックです。**管理スタック**は compose ファイルを Homeport が保持しているスタック、**リンクスタック**は compose ファイルをこのコンピューター上のフォルダーに置いているスタック、**同期スタック**は git リポジトリに追従するスタック、**外部スタック**はほかの方法でデプロイされたスタックです。外部スタックは**引き継ぐ**ことで管理できます。
 
 すべての用語は[用語集](/docs/reference/glossary/)にあります。
 

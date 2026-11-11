@@ -45,18 +45,21 @@ Cuando el estado pasa a **Conectado**, ya está.
 
 La barra lateral tiene una página para cada tipo de recurso, y todas muestran el host elegido en el **selector de hosts**, en la parte superior de la barra lateral:
 
-| Página           | Qué muestra                                                                            |
-| ---------------- | -------------------------------------------------------------------------------------- |
-| **Resumen**      | Una tarjeta por host, y el Engine, el uso de disco y los eventos del host seleccionado |
-| **Contenedores** | Todos los contenedores, agrupados por stack, con CPU y memoria en directo              |
-| **Imágenes**     | Las imágenes locales, qué las usa, su descarga y su limpieza                           |
-| **Volúmenes**    | Los volúmenes y los contenedores que los usan                                          |
-| **Redes**        | Las redes, sus subredes y los contenedores conectados                                  |
-| **Stacks**       | Los proyectos de Compose, gestionados y externos                                       |
-| **Eventos**      | Lo que el Engine ha notificado desde que Homeport se conectó                           |
-| **Ajustes**      | El tema, lo que admite este equipo y las licencias                                     |
+| Página           | Qué muestra                                                                                                 |
+| ---------------- | ----------------------------------------------------------------------------------------------------------- |
+| **Resumen**      | Una tarjeta por host, y el Engine, el uso de disco y los eventos del host seleccionado                      |
+| **Tablero**      | Los contenedores de todos los hosts conectados en una sola tabla                                            |
+| **Contenedores** | Todos los contenedores, agrupados por stack, con CPU y memoria en directo                                   |
+| **Imágenes**     | Las imágenes locales, qué las usa, su descarga y su limpieza                                                |
+| **Volúmenes**    | Los volúmenes y los contenedores que los usan                                                               |
+| **Redes**        | Las redes, sus subredes y los contenedores conectados                                                       |
+| **Stacks**       | Los proyectos de Compose: gestionados, vinculados, sincronizados y externos                                 |
+| **Eventos**      | Lo que el Engine ha notificado, guardado durante 30 días                                                    |
+| **Ajustes**      | El tema y el idioma, los inicios de sesión de registros, las copias de seguridad y lo que tiene este equipo |
 
 Homeport se actualiza a medida que el Engine notifica cambios, así que nunca necesitas un botón de actualizar: inicia un contenedor en un terminal y aparece al momento.
+
+Un host de containerd, Incus o Podman, un Swarm y un clúster añaden cada uno sus propias páginas a la barra lateral. Abajo del todo, **Documentación** y **GitHub** abren esta documentación y el repositorio del proyecto en tu navegador.
 
 ## 3. Ejecuta un contenedor
 

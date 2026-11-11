@@ -13,7 +13,7 @@ O Homeport pode ser usado pelo teclado. Pressione <kbd>Mod</kbd> <kbd>K</kbd> pa
 
 - **Ir para** — todas as páginas da barra lateral: digite `vol` e pressione <kbd>Enter</kbd> para abrir Volumes.
 - **Hosts** — todos os hosts com o seu status: digite parte do nome de um host para mudar para ele.
-- **Ações** — **Executar um contêiner**, **Baixar uma imagem**, **Nova stack**, **Limpar o host selecionado**, **Adicionar host**, **Gerenciar hosts**, **Verificar atualizações** e **Mostrar atalhos de teclado**.
+- **Ações** — **Executar um contêiner**, **Baixar uma imagem**, **Nova stack**, **Limpar o host selecionado**, **Adicionar host**, **Gerenciar hosts**, **Adicionar um cluster**, **Gerenciar clusters**, **Verificar atualizações** e **Mostrar atalhos de teclado**. Um host Podman acrescenta **Novo pod** e **Nova unidade**, um host containerd **Baixar imagem** e **Novo namespace**, e um host Incus **Nova instância** e **Obter imagem**.
 - **Configurações** — **Tema: Claro**, **Tema: Escuro** e **Tema: Igual ao sistema**.
 
 As ações que precisam de um host — executar um contêiner, baixar, criar uma stack, limpar — só aparecem enquanto o host selecionado estiver conectado.
@@ -35,7 +35,7 @@ O Homeport só carrega as listas depois que você digita dois caracteres e, a pa
 | Teclas                                     | Faz                                                                                    |
 | ------------------------------------------ | -------------------------------------------------------------------------------------- |
 | <kbd>?</kbd>                               | Mostrar os atalhos de teclado                                                          |
-| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Abrir as páginas da barra lateral em ordem: Visão geral, Contêineres, Imagens…         |
+| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Abrir as páginas da barra lateral em ordem: Visão geral, Quadro, Contêineres…          |
 | <kbd>Mod</kbd> <kbd>,</kbd>                | Abrir Configurações                                                                    |
 | <kbd>Alt</kbd> <kbd>↑</kbd> / <kbd>↓</kbd> | Selecionar o host anterior ou o próximo, na ordem em que a página Hosts os lista       |
 | <kbd>Mod</kbd> <kbd>R</kbd>                | Atualizar as listas do host selecionado: contêineres, imagens, volumes, redes, stacks… |
@@ -44,10 +44,10 @@ Passe o ponteiro sobre uma página na barra lateral para ver as teclas dela.
 
 ### Em uma página
 
-| Teclas       | Faz                                                                                                                                            |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| <kbd>/</kbd> | Focar o campo de pesquisa da página. <kbd>Esc</kbd> em um campo vazio sai dele.                                                                |
-| <kbd>N</kbd> | Iniciar a ação principal da página: **Executar contêiner**, **Baixar**, **Criar volume**, **Criar rede**, **Nova stack** ou **Adicionar host** |
+| Teclas       | Faz                                                                                                                                                                                                                                                          |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <kbd>/</kbd> | Focar o campo de pesquisa da página. <kbd>Esc</kbd> em um campo vazio sai dele.                                                                                                                                                                              |
+| <kbd>N</kbd> | Iniciar a ação principal da página: **Executar contêiner**, **Baixar**, **Criar volume**, **Criar rede**, **Nova stack** ou **Adicionar host**; e nas páginas do Podman, do containerd, do Incus e do Helm, a delas, como **Novo pod** ou **Nova instância** |
 
 O botão da ação principal de uma página mostra <kbd>N</kbd> quando você passa o ponteiro sobre ele.
 

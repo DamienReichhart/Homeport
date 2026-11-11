@@ -71,7 +71,7 @@ Ein Projektordner, der noch nicht auf dem Host läuft, kann aus Homeport verknü
 
 </Steps>
 
-Läuft ein Stack mit diesem Namen bereits als externer Stack auf dem Host, übernimmt das Erstellen des verknüpften Stacks ihn, wie es das [Übernehmen](#einen-externen-stack-übernehmen) tut: Eine erneute Bereitstellung erstellt seine Container neu, passend zu den Dateien des Ordners. Um Dateien mit anderen Namen oder in einer anderen Reihenfolge zu verwenden, siehe [mehrere Compose-Dateien](#mehrere-compose-dateien).
+Läuft ein Stack mit diesem Namen bereits als externer Stack auf dem Host, den Compose aus genau diesem Ordner gestartet hat, übernimmt das Erstellen des verknüpften Stacks ihn, wie es das [Übernehmen](#einen-externen-stack-übernehmen) tut: Eine erneute Bereitstellung erstellt seine Container neu, passend zu den Dateien des Ordners. Ein Stack dieses Namens, der anderswo gestartet wurde, wird abgelehnt: Übernehmen Sie ihn oder wählen Sie einen anderen Namen. Um Dateien mit anderen Namen oder in einer anderen Reihenfolge zu verwenden, siehe [mehrere Compose-Dateien](#mehrere-compose-dateien).
 
 ### Wie verknüpfte Stacks gefunden werden
 
@@ -309,17 +309,18 @@ Auch ein externer Stack zeigt **Update verfügbar**, aber sein **Aktualisieren**
 
 ## Stack-Aktionen
 
-| Aktion                                    | Stacks               | Was sie bewirkt                                                                                                         |
-| ----------------------------------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| **Bereitstellen** / **Neu bereitstellen** | Verwaltet, verknüpft | `docker compose up` mit der Definition des Stacks.                                                                      |
-| **Neu bauen und bereitstellen**           | Verknüpft            | `docker compose up --build`: baut zuerst jeden Service mit `build:` neu.                                                |
-| **Starten** / **Stoppen**                 | Alle                 | Startet die gestoppten Container oder stoppt die laufenden.                                                             |
-| **Neu starten**                           | Alle                 | Startet jeden Container neu.                                                                                            |
-| **Images pullen**                         | Verwaltet, verknüpft | Pullt das Image jedes Services mit den gespeicherten Anmeldungen, um vor einer erneuten Bereitstellung neuere zu holen. |
-| **Herunterfahren**                        | Verwaltet, verknüpft | `docker compose down`: entfernt Container und Netzwerke, behält Volumes und die Definition.                             |
-| **Mit Volumes herunterfahren**            | Verwaltet, verknüpft | Löscht außerdem die Volumes des Stacks **und ihre Daten**.                                                              |
-| **Container entfernen**                   | Extern               | Entfernt seine Container und Netzwerke. Volumes bleiben erhalten.                                                       |
-| **Übernehmen**                            | Extern               | Gibt Homeport die Compose-Datei und macht ihn zu einem verwalteten Stack.                                               |
+| Aktion                                    | Stacks                               | Was sie bewirkt                                                                                                                                                      |
+| ----------------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Bereitstellen** / **Neu bereitstellen** | Verwaltet, verknüpft, synchronisiert | `docker compose up` mit der Definition des Stacks.                                                                                                                   |
+| **Synchronisieren**                       | Synchronisiert                       | Holt seinen Branch oder Tag, zeigt, was sich geändert hat, und stellt den neuen Commit bereit. Siehe [Synchronisieren](/docs/guides/synced-stacks/#synchronisieren). |
+| **Neu bauen und bereitstellen**           | Verknüpft, synchronisiert            | `docker compose up --build`: baut zuerst jeden Service mit `build:` neu.                                                                                             |
+| **Starten** / **Stoppen**                 | Alle                                 | Startet die gestoppten Container oder stoppt die laufenden.                                                                                                          |
+| **Neu starten**                           | Alle                                 | Startet jeden Container neu.                                                                                                                                         |
+| **Images pullen**                         | Verwaltet, verknüpft, synchronisiert | Pullt das Image jedes Services mit den gespeicherten Anmeldungen, um vor einer erneuten Bereitstellung neuere zu holen.                                              |
+| **Herunterfahren**                        | Verwaltet, verknüpft, synchronisiert | `docker compose down`: entfernt Container und Netzwerke, behält Volumes und die Definition.                                                                          |
+| **Mit Volumes herunterfahren**            | Verwaltet, verknüpft, synchronisiert | Löscht außerdem die Volumes des Stacks **und ihre Daten**.                                                                                                           |
+| **Container entfernen**                   | Extern                               | Entfernt seine Container und Netzwerke. Volumes bleiben erhalten.                                                                                                    |
+| **Übernehmen**                            | Extern                               | Gibt Homeport die Compose-Datei und macht ihn zu einem verwalteten Stack.                                                                                            |
 
 **Definition vergessen** im Tab **Definition** eines verwalteten Stacks löscht die Compose-Datei und die Umgebung aus Homeport, lässt die Container aber weiterlaufen; der Stack wird extern. **Vergessen** im Tab **Definition** eines verknüpften Stacks verwirft Homeports Notiz über den Ordner; der Ordner, seine Dateien und die Container bleiben unberührt.
 
@@ -343,4 +344,4 @@ Auch ein externer Stack zeigt **Update verfügbar**, aber sein **Aktualisieren**
   bereitgestellt hat, relativ waren, werden jetzt möglicherweise anders aufgelöst.
 </Aside>
 
-Auch das Erstellen eines neuen Stacks mit demselben Namen wie ein externer übernimmt diesen.
+Ein neuer Stack kann nicht den Namen eines externen Stacks bekommen: Seine Bereitstellung würde dessen Container entfernen oder ersetzen. Homeport lehnt den Namen daher ab und verweist auf **Übernehmen**.

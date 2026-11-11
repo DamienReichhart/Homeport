@@ -38,4 +38,7 @@ export default {
   'nodes.resource.name': 'रिसोर्स',
   'nodes.resource.capacity': 'क्षमता',
   'nodes.resource.allocatable': 'आवंटन योग्य',
+  'nodes.column.cpuUsed': 'CPU इस्तेमाल',
+  'nodes.column.memoryUsed': 'मेमोरी इस्तेमाल',
+  'nodes.tab.metrics': 'मेट्रिक्स',
 } satisfies Translation<typeof en>;

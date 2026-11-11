@@ -60,4 +60,8 @@ export default {
   'pods.terminal.notRunning': '此容器未在运行。',
   'pods.terminal.exited': '进程已退出。',
   'pods.terminal.exitedWithCode': '进程已退出，退出码为 {code}。',
+  'pods.column.cpu': 'CPU',
+  'pods.column.memory': '内存',
+  'pods.tab.metrics': '指标',
+  'pods.metrics.noSample': 'metrics-server 还没有此 Pod 的样本：它可能刚刚启动，或没有运行。',
 } satisfies Translation<typeof en>;

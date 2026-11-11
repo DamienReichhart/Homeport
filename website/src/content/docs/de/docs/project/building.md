@@ -45,14 +45,14 @@ Lokale Builds sind nicht für den In-App-Updater signiert und lassen die `.rpm` 
 
 ## Nützliche Befehle
 
-| Befehl                | Was er tut                                                                                                             |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `bun run check`       | Typprüfung, Lint, Formatprüfung und Frontend-Tests                                                                     |
-| `bun run rust:lint`   | `cargo clippy` mit Warnungen als Fehler                                                                                |
-| `bun run rust:test`   | Rust-Unit-Tests                                                                                                        |
-| `bun run bindings`    | Die TypeScript-Bindings für die IPC neu erzeugen                                                                       |
-| `bun run licenses`    | Die Lizenzhinweise für Drittanbieter erzeugen                                                                          |
-| `bun run screenshots` | Die auf dieser Website verwendeten Screenshots in jeder Sprache neu aufnehmen (`--locale fr`, um eine neu aufzunehmen) |
+| Befehl                | Was er tut                                                                                                                                                                                                                                                     |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bun run check`       | Typprüfung, Lint, Formatprüfung und Frontend-Tests                                                                                                                                                                                                             |
+| `bun run rust:lint`   | `cargo clippy` mit Warnungen als Fehler                                                                                                                                                                                                                        |
+| `bun run rust:test`   | Rust-Unit-Tests                                                                                                                                                                                                                                                |
+| `bun run bindings`    | Die TypeScript-Bindings für die IPC neu erzeugen                                                                                                                                                                                                               |
+| `bun run licenses`    | Die Lizenzhinweise für Drittanbieter erzeugen                                                                                                                                                                                                                  |
+| `bun run screenshots` | Die auf dieser Website verwendeten Screenshots in jeder Sprache neu aufnehmen (`--locale fr`, um eine neu aufzunehmen), in 2880×1800, der doppelten Pixeldichte. Vorher oxipng installieren (`cargo install oxipng`), damit sie verlustfrei komprimiert werden |
 
 Integrationstests sprechen mit der lokalen Docker Engine und der Compose-CLI. Sie sind mit `#[ignore = "needs a local Docker Engine"]` markiert (oder `"… and the compose CLI"`, und einige mit `"… access to Docker Hub"`), erstellen nur Ressourcen namens `homeport-test-*` und entfernen sie danach. Führen Sie sie mit einer Engine und dem Compose-Plugin auf diesem Rechner aus:
 
@@ -61,6 +61,23 @@ cargo test --workspace --exclude homeport -- --ignored
 ```
 
 Die CI führt sie ebenfalls aus, im Job `engine-tests` von `.github/workflows/ci.yml`, bei jedem Push auf `dev`, jedem Pull Request und jedem Release. Der Job führt dann `scripts/ci/engine-test-leftovers.sh` aus, das fehlschlägt, wenn ein Test einen `homeport-test-*`-Container, ein Image, ein Volume oder ein Netzwerk zurückgelassen hat; führen Sie es nach den Tests lokal aus, um dasselbe zu prüfen.
+
+### End-to-End-Tests
+
+`e2e/` steuert die echte App – das Rust-Backend, die Webview und die Aufrufe zwischen beiden – mit [WebdriverIO](https://webdriver.io) über `tauri-driver`, gegen die lokale Docker Engine. Die Szenarien: Die App startet und verbindet sich mit der lokalen Engine; die Logs eines Containers werden gestreamt und er wird aus der App gestoppt; ein Image wird gepullt; ein verwalteter Stack wird mit einer verschlüsselten Umgebung bereitgestellt; ein Neustart behält die Hosts, den Stack und sein Geheimnis; und ein SSH-Host wird mit einem vorhandenen Schlüssel hinzugefügt, sein Serverschlüssel vertraut und er verbunden. Sie finden Elemente über Rolle, Beschriftung und Text, nie über CSS-Klassen.
+
+Sie laufen nur unter Linux: macOS hat keinen WebDriver für seine Webview. Neben den [Voraussetzungen](#voraussetzungen) und einer Docker Engine brauchen sie `tauri-driver` (`cargo install tauri-driver --locked`), den Treiber von WebKit, ein virtuelles Display und einen Schlüsselbund: unter Debian und Ubuntu `webkit2gtk-driver`, `xvfb`, `dbus-x11` und `gnome-keyring`.
+
+```sh
+bun tauri build --debug --no-bundle
+cd e2e
+bun install
+./run.sh
+```
+
+Der Build bettet das Frontend ein, wie es ein Release tut, sodass ein Befehl, der in `commands::builder()` fehlt, eine Berechtigung, die in `src-tauri/capabilities/` fehlt, oder ein Style, den die Content Security Policy blockiert, hier fehlschlägt. `run.sh` gibt jedem Lauf einen frischen Datenordner, einen eigenen Schlüsselbund und ein eigenes Display, sodass es Ihr eigenes Homeport nie berührt. Übergeben Sie die Optionen von WebdriverIO danach, zum Beispiel `./run.sh --spec specs/ssh.e2e.ts`. Das SSH-Szenario baut ein kleines SSH-Server-Image aus `e2e/support/sshd/`; setzen Sie `HOMEPORT_E2E_SSHD_IMAGE`, um ein vorab gebautes zu verwenden. Container, die die Tests starten, heißen `homeport-e2e-*` und werden danach entfernt.
+
+Ein Fehlschlag hinterlässt einen Screenshot und das Log der App in `e2e/artifacts/`. Die CI führt die Tests im Job `e2e` von `.github/workflows/ci.yml` aus, bei jedem Push auf `dev` und jedem Pull Request, und behält diesen Ordner, wenn einer fehlschlägt.
 
 ## Diese Website
 

@@ -5,6 +5,7 @@ import {
   DeleteSelected,
   NamespacePicker,
   stillListed,
+  useMetrics,
   useNamespace,
   useResourceWatch,
 } from '@/core/cluster';
@@ -21,6 +22,8 @@ function PodsList({ cluster }: { cluster: ClusterView }) {
   const [query, setQuery] = usePageQuery();
   const pods = useQuery(podQueries.list(id, namespace));
   useResourceWatch(id, 'pod', namespace);
+  // Without metrics-server there are no CPU and memory columns, and nothing to say.
+  const metrics = useMetrics(id, { type: 'pods', namespace });
   const [selected, setSelected] = useState<PodView[]>([]);
   const picked = stillListed(selected, pods.data, (p) => `${p.namespace}/${p.name}`);
   return (
@@ -51,6 +54,7 @@ function PodsList({ cluster }: { cluster: ClusterView }) {
           pods={pods.data}
           filter={query}
           showNamespace={namespace === null}
+          usage={metrics.pods}
           onSelectionChange={setSelected}
         />
       )}

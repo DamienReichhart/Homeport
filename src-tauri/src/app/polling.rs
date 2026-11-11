@@ -11,7 +11,7 @@ use homeport_core::error::{AppError, ErrorCode};
 use homeport_hosts::registry::HostStatus;
 use homeport_stacks::{
     compose::{ComposeAction, ComposeEvent},
-    definition,
+    model::definition,
     runtime::{self, SourceKind},
     synced::{
         poller::{AutoDeploy, PollEvents, Poller},
@@ -24,7 +24,7 @@ use super::{
     events::{SyncedAutoDeployed, SyncedUpdateAvailable},
     AppState,
 };
-use crate::{commands::stacks::recorded_job, messages as msg};
+use crate::{commands::stacks::target, messages as msg};
 
 pub struct TauriPollEvents(pub AppHandle);
 
@@ -87,6 +87,7 @@ impl PollEvents for TauriPollEvents {
 async fn deploy(state: &AppState, stack: &SyncedStack, commit: &str) -> Result<(), AppError> {
     let cli = homeport_git::cli::detect().await?;
     let compose = state
+        .stacks
         .synced
         .compose_file(&cli, &stack.repository_id, commit, &stack.compose_path)
         .await?;
@@ -95,7 +96,7 @@ async fn deploy(state: &AppState, stack: &SyncedStack, commit: &str) -> Result<(
     } else {
         ComposeAction::Up
     };
-    let (job, _) = recorded_job(
+    let (job, _) = target::job(
         state,
         SourceKind::Synced,
         &stack.id,
@@ -134,7 +135,7 @@ async fn deploy(state: &AppState, stack: &SyncedStack, commit: &str) -> Result<(
             ))
         });
     outcome?;
-    state.synced.store.set_deployed(&stack.id, commit)?;
+    state.stacks.synced.store.set_deployed(&stack.id, commit)?;
     Ok(())
 }
 
@@ -143,7 +144,7 @@ async fn deploy(state: &AppState, stack: &SyncedStack, commit: &str) -> Result<(
 pub fn start(app: &AppHandle) {
     let state = app.state::<AppState>();
     let poller = Arc::new(Poller::new(
-        state.synced.clone(),
+        state.stacks.synced.clone(),
         Arc::new(TauriPollEvents(app.clone())),
     ));
     let handle = app.clone();

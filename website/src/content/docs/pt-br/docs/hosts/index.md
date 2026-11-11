@@ -73,7 +73,7 @@ Um contexto cujo nome já é o de um host é oferecido como `name (2)`.
 
 ## Mudar para outro computador
 
-**Exportar**, na página Hosts, salva os hosts que você escolher em um arquivo protegido por uma senha; **Importar**, na página Hosts do outro computador, abre esse arquivo e adiciona os hosts que você escolher, prontos para conectar. Um host cujo nome já está em uso lá é proposto como `name (2)`, e você pode renomeá-lo ou pulá-lo. Veja [mudar para outro computador](/docs/reference/security/#mudar-para-outro-computador) para saber como o arquivo é protegido.
+**Exportar**, na página Hosts, salva os hosts que você escolher em um arquivo protegido por uma senha; **Importar**, na página Hosts do outro computador, abre esse arquivo e adiciona os hosts que você escolher, prontos para conectar. Um host cujo nome já está em uso lá é proposto como `name (2)`, e você pode renomeá-lo ou pulá-lo. Veja [mudar para outro computador](/docs/reference/security/#mudar-para-outro-computador) para saber como o arquivo é protegido. Para levar tudo de uma vez, incluindo clusters, stacks, logins de registro, repositórios e configurações, use um [backup](/docs/reference/data-and-backups/#fazendo-backup-no-homeport).
 
 ## Selecionar um host
 

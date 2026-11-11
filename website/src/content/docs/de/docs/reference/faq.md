@@ -79,10 +79,14 @@ Jede Person führt ihr eigenes Homeport mit ihren eigenen Hosts und Schlüsseln 
 
 Ja, auf zwei Arten:
 
-- **Alles**: **Einstellungen → Daten → Sichern…** speichert jeden Host, Cluster, Stack, jede Registry-Anmeldung, jedes Repository und jede Einstellung, mit ihren Geheimnissen, in eine Datei, die durch eine Passphrase mit mindestens 12 Zeichen geschützt ist. Auf dem neuen Computer öffnet **Wiederherstellen…** an derselben Stelle sie, listet auf, was sie enthält, und ersetzt, was dort ist. Alles verbindet sich und wird bereitgestellt, ohne Sie erneut nach einem Schlüssel oder Passwort zu fragen. Siehe [Sichern und Wiederherstellen](/docs/guides/settings/#sichern-und-wiederherstellen).
+- **Alles**: **Einstellungen → Daten → Sichern…** speichert jeden Host, Cluster, Stack, jede Registry-Anmeldung, jedes Repository und jede Einstellung, mit ihren Geheimnissen, in eine Datei, die durch eine Passphrase mit mindestens 12 Zeichen geschützt ist. Auf dem neuen Computer öffnet **Wiederherstellen…** an derselben Stelle sie, listet auf, was sie enthält, und ersetzt, was dort ist. Alles verbindet sich und wird bereitgestellt, ohne Sie erneut nach einem Schlüssel oder Passwort zu fragen. Siehe [Ihre Daten und Sicherungen](/docs/reference/data-and-backups/#in-homeport-sichern).
 - **Einige Hosts**: Auf der Seite **Hosts** **exportieren** Sie die gewählten Hosts und **importieren** sie auf dem anderen Computer, neben den Hosts, die er bereits hat. Siehe [Auf einen anderen Computer umziehen](/docs/reference/security/#auf-einen-anderen-computer-umziehen).
 
-Das Kopieren von `homeport.db` funktioniert für Geheimnisse nicht: Sie sind mit einem Schlüssel verschlüsselt, der im Schlüsselbund dieses Computers liegt, und erscheinen anderswo als **Zugangsdaten verloren**.
+Das Kopieren von `homeport.db` funktioniert für Geheimnisse nicht: Sie sind mit einem Schlüssel verschlüsselt, der im Schlüsselbund dieses Computers liegt, und erscheinen anderswo als **Zugangsdaten verloren**. Siehe [Die Dateien selbst kopieren](/docs/reference/data-and-backups/#die-dateien-selbst-kopieren).
+
+### Wo bewahrt Homeport seine Daten auf?
+
+In einer einzigen SQLite-Datenbank, `homeport.db`, im Anwendungsdatenordner Ihres Benutzers, und den Schlüssel, der ihre Geheimnisse verschlüsselt, im Schlüsselbund Ihres Betriebssystems. Nichts wird auf Ihren Servern oder irgendwo online aufbewahrt. [Ihre Daten und Sicherungen](/docs/reference/data-and-backups/) nennt den Ordner auf jedem System, was zu sichern ist und wie Sie es wiederherstellen.
 
 ### Enthält eine Sicherung meine Container und Volumes?
 
@@ -98,7 +102,7 @@ Ein mit `docker compose up` in einem Ordner gestarteter Stack erscheint nur auf 
 
 ### Sammelt Homeport Daten über mich?
 
-Nein. Es gibt kein Konto, keine Telemetrie und keine Analysen. Die einzige Anfrage, die Homeport von sich aus von Ihrem Computer stellt, ist die Update-Prüfung, die eine kleine Datei von dieser Website herunterlädt und nichts über Sie sendet; Sie können sie unter **Einstellungen → Updates** ausschalten. Unabhängig davon fragt die Prüfung auf neuere Images die Registrys Ihrer Images über die Engine jedes Hosts, auf welche Version ihre Tags verweisen; bei einem lokalen Host geht auch diese Anfrage von Ihrem Computer aus. Siehe [Sicherheit und Ihre Daten](/docs/reference/security/#womit-sich-homeport-verbindet).
+Nein. Es gibt kein Konto, keine Telemetrie, keine Analysen und keine Absturzberichte. Die einzige Anfrage, die Homeport von sich aus von Ihrem Computer stellt, ist die Update-Prüfung, die eine kleine Datei von dieser Website herunterlädt und nichts über Sie sendet; Sie können sie unter **Einstellungen → Updates** ausschalten. Unabhängig davon fragt die Prüfung auf neuere Images die Registrys Ihrer Images über die Engine jedes Hosts, auf welche Version ihre Tags verweisen; bei einem lokalen Host geht auch diese Anfrage von Ihrem Computer aus. Siehe [Sicherheit und Ihre Daten](/docs/reference/security/#womit-sich-homeport-verbindet).
 
 ### Kann Homeport meine privaten Registrys verwenden?
 
@@ -112,9 +116,13 @@ Es fragt die Registry des Images über die Engine des Hosts, auf welchen Digest 
 
 Unter Windows, macOS und mit dem AppImage sagt Homeport Ihnen, wenn eine neue Version erschienen ist: Wählen Sie **Installieren und neu starten**. Unter Linux werden die Pakete `.deb` und `.rpm` zusammen mit dem Rest Ihres Systems aus dem Paket-Repository von Homeport aktualisiert. Siehe [Aktualisieren](/docs/reference/updating/).
 
+### Verliere ich durch ein Update meine Hosts?
+
+Nein. Jede Version von Homeport öffnet die Daten jeder früheren Version, zurück bis 0.1.0, und aktualisiert sie, ohne etwas zu verlieren: Hosts, Stacks, Cluster, Einstellungen und Geheimnisse. Der Wechsel zurück zu einer älteren Version ist das Einzige, was nicht unterstützt wird: Das ältere Homeport hält mit einer Meldung an, statt etwas zu ändern. Siehe [Ihre Daten über Versionen hinweg](/docs/reference/updating/#ihre-daten-über-versionen-hinweg).
+
 ### Gibt es Homeport bei Homebrew, winget, Flathub oder im AUR?
 
-Noch nicht. Sie sind geplant; die [Installationsseite](/docs/installation/#später-verfügbar) verlinkt auf das Issue zu jedem davon.
+Noch nicht. Unter Linux hat Homeport eigene APT- und RPM-Repositorys, sodass `apt`, `dnf` und `zypper` es installieren und aktualisieren. Homebrew, winget, Scoop, das AUR, Flathub und Snap sind geplant; die [Installationsseite](/docs/installation/#später-verfügbar) verlinkt auf das Issue zu jedem davon.
 
 ### Ist Homeport in meiner Sprache verfügbar?
 

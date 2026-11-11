@@ -73,7 +73,7 @@ Un contexto cuyo nombre ya es el de un host se ofrece como `name (2)`.
 
 ## Pasar a otro equipo
 
-**Exportar**, en la página Hosts, guarda los hosts que elijas en un archivo protegido con una frase de contraseña; **Importar**, en la página Hosts del otro equipo, lo abre y añade los hosts que elijas, listos para conectarse. Un host cuyo nombre ya está en uso allí se propone como `name (2)`, y puedes cambiarle el nombre u omitirlo. Consulta [pasar a otro equipo](/docs/reference/security/#pasar-a-otro-equipo) para ver cómo se protege el archivo.
+**Exportar**, en la página Hosts, guarda los hosts que elijas en un archivo protegido con una frase de contraseña; **Importar**, en la página Hosts del otro equipo, lo abre y añade los hosts que elijas, listos para conectarse. Un host cuyo nombre ya está en uso allí se propone como `name (2)`, y puedes cambiarle el nombre u omitirlo. Consulta [pasar a otro equipo](/docs/reference/security/#pasar-a-otro-equipo) para ver cómo se protege el archivo. Para moverlo todo a la vez, con clústeres, stacks, inicios de sesión de registros, repositorios y ajustes incluidos, usa en su lugar una [copia de seguridad](/docs/reference/data-and-backups/#hacer-una-copia-de-seguridad-en-homeport).
 
 ## Seleccionar un host
 

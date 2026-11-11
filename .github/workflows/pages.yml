@@ -15,6 +15,7 @@ on:
       - assets/brand/**
       - packaging/linux/**
       - scripts/repositories*.ts
+      - scripts/release-assets-plan.ts # the file names repositories-plan.ts reads
       - .github/workflows/pages.yml
   pull_request:
     paths: *paths
@@ -49,6 +50,20 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v6
       - run: bun install --frozen-lockfile
+      # Astro converts every screenshot (42 in each of 12 languages, 2880×1800) to
+      # AVIF and WebP at five widths, which is most of a build's time; reusing those
+      # results leaves about a minute. Each result is named after a hash of its source
+      # image's bytes, so a screenshot whose content changes is converted again even
+      # if its name doesn't. A new set of images gives a new key, which starts from
+      # the latest cache and converts only what changed; a new lockfile (Astro or
+      # sharp) starts from nothing.
+      - name: Restore the image cache
+        id: image-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: website/node_modules/.astro/assets
+          key: astro-images-${{ runner.os }}-${{ hashFiles('website/bun.lock') }}-${{ hashFiles('website/src/assets/**', 'assets/brand/**') }}
+          restore-keys: astro-images-${{ runner.os }}-${{ hashFiles('website/bun.lock') }}-
       - name: Lint
         run: bun run lint
       - name: Test
@@ -63,6 +78,28 @@ jobs:
           RELEASES_REQUIRED: ${{ github.event_name != 'pull_request' && '1' || '' }}
           ASTRO_TELEMETRY_DISABLED: '1'
         run: bun run build
+      # Only what this build used is kept, so the cache doesn't grow with every
+      # recapture (results of a screenshot's old content are dropped).
+      - name: Prune the image cache to this build
+        if: steps.image-cache.outputs.cache-hit != 'true'
+        run: bun scripts/prune-image-cache.ts
+      - name: Save the image cache
+        if: steps.image-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: website/node_modules/.astro/assets
+          key: ${{ steps.image-cache.outputs.cache-primary-key }}
+      # In a browser, on the built site: at a pixel density of 2 every image has
+      # two pixels for each CSS pixel it is drawn at, and a phone takes the small files.
+      - name: Install the browser for the image check
+        run: bunx playwright install --with-deps chromium
+      - name: Check that the images are sharp
+        env:
+          # The base path the build used, which `astro preview` serves under.
+          SITE_URL: ${{ steps.pages.outputs.origin }}
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          ASTRO_TELEMETRY_DISABLED: '1'
+        run: bun run test:images
       - name: Install the repository tools
         run: |
           sudo apt-get update

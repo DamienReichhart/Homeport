@@ -5,6 +5,7 @@ import { type Locale, localePath } from '@/core/site';
 import { href } from '@/shared/lib/href';
 import { fillHtml } from '@/shared/lib/template';
 import { Screenshot, TextLink } from '@/shared/ui';
+import { SHOWCASE_SIZES } from '../../model/showcase';
 import Showcase from '../Showcase.astro';
 
 interface Props {
@@ -45,7 +46,7 @@ const connections = [
     folder={locale.code}
     alt={s['home.hosts.screenshot']}
     crop="960 / 820"
-    sizes="(min-width: 64rem) 760px, 100vw"
+    sizes={SHOWCASE_SIZES}
   />
 </Showcase>
 

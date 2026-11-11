@@ -50,7 +50,7 @@ podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}'
 
 ## Linux पर अनुमतियाँ
 
-डिफ़ॉल्ट सॉकेट `/var/run/docker.sock` `docker` ग्रुप का होता है। अगर आपका यूज़र उसमें नहीं है, तो होस्ट _Permission denied_ के साथ **पहुँच से बाहर** दिखाता है। ख़ुद को जोड़ें और फिर से लॉग इन करें:
+डिफ़ॉल्ट सॉकेट `/var/run/docker.sock` `docker` ग्रुप का होता है। अगर आपका यूज़र उसमें नहीं है, तो होस्ट _Homeport को /var/run/docker.sock पर Docker Engine इस्तेमाल करने की अनुमति नहीं है।_ के साथ **पहुँच से बाहर** दिखाता है। ख़ुद को जोड़ें और फिर से लॉग इन करें:
 
 ```sh
 sudo usermod -aG docker $USER

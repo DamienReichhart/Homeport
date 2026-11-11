@@ -71,7 +71,7 @@ Un dossier de projet qui ne tourne pas encore sur l’hôte peut être lié depu
 
 </Steps>
 
-Si une stack de ce nom tourne déjà sur l’hôte en tant que stack externe, créer la stack liée la reprend, comme le fait lâ[adoption](#adopter-une-stack-externe) : un redéploiement recrée ses conteneurs pour qu’ils correspondent aux fichiers du dossier. Pour utiliser des fichiers qui portent d’autres noms, ou dans un autre ordre, voir [plusieurs fichiers compose](#plusieurs-fichiers-compose).
+Si une stack de ce nom tourne déjà sur l’hôte en tant que stack externe que Compose a démarrée depuis ce même dossier, créer la stack liée la reprend, comme le fait l’[adoption](#adopter-une-stack-externe) : un redéploiement recrée ses conteneurs pour qu’ils correspondent aux fichiers du dossier. Une stack de ce nom démarrée ailleurs est refusée : adoptez-la, ou choisissez un autre nom. Pour utiliser des fichiers qui portent d’autres noms, ou dans un autre ordre, voir [plusieurs fichiers compose](#plusieurs-fichiers-compose).
 
 ### Comment les stacks liées sont trouvées
 
@@ -308,17 +308,18 @@ Une stack externe affiche aussi **Mise à jour disponible**, mais son **Mettre �
 
 ## Actions sur les stacks
 
-| Action                        | Stacks      | Ce qu’elle fait                                                                                                           |
-| ----------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------- |
-| **Déployer** / **Redéployer** | Gérée, liée | `docker compose up` avec la définition de la stack.                                                                       |
-| **Reconstruire et déployer**  | Liée        | `docker compose up --build` : reconstruit d’abord chaque service qui a `build:`.                                          |
-| **Démarrer** / **Arrêter**    | Toutes      | Démarre les conteneurs arrêtés, ou arrête ceux qui tournent.                                                              |
-| **Redémarrer**                | Toutes      | Redémarre chaque conteneur.                                                                                               |
-| **Récupérer les images**      | Gérée, liée | Récupère l’image de chaque service avec les identifiants enregistrés, pour obtenir les plus récentes avant de redéployer. |
-| **Retirer**                   | Gérée, liée | `docker compose down` : supprime les conteneurs et les réseaux, garde les volumes et la définition.                       |
-| **Retirer avec les volumes**  | Gérée, liée | Supprime aussi les volumes de la stack **et leurs données**.                                                              |
-| **Supprimer les conteneurs**  | Externe     | Supprime ses conteneurs et ses réseaux. Les volumes sont conservés.                                                       |
-| **Adopter**                   | Externe     | Donne à Homeport le fichier compose, ce qui en fait une stack gérée.                                                      |
+| Action                        | Stacks                    | Ce qu’elle fait                                                                                                                                         |
+| ----------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Déployer** / **Redéployer** | Gérée, liée, synchronisée | `docker compose up` avec la définition de la stack.                                                                                                     |
+| **Synchroniser**              | Synchronisée              | Récupère sa branche ou son tag, montre ce qui a changé, et déploie le nouveau commit. Voir [Synchroniser](/docs/guides/synced-stacks/#synchronisation). |
+| **Reconstruire et déployer**  | Liée, synchronisée        | `docker compose up --build` : reconstruit d’abord chaque service qui a `build:`.                                                                        |
+| **Démarrer** / **Arrêter**    | Toutes                    | Démarre les conteneurs arrêtés, ou arrête ceux qui tournent.                                                                                            |
+| **Redémarrer**                | Toutes                    | Redémarre chaque conteneur.                                                                                                                             |
+| **Récupérer les images**      | Gérée, liée, synchronisée | Récupère l’image de chaque service avec les identifiants enregistrés, pour obtenir les plus récentes avant de redéployer.                               |
+| **Retirer**                   | Gérée, liée, synchronisée | `docker compose down` : supprime les conteneurs et les réseaux, garde les volumes et la définition.                                                     |
+| **Retirer avec les volumes**  | Gérée, liée, synchronisée | Supprime aussi les volumes de la stack **et leurs données**.                                                                                            |
+| **Supprimer les conteneurs**  | Externe                   | Supprime ses conteneurs et ses réseaux. Les volumes sont conservés.                                                                                     |
+| **Adopter**                   | Externe                   | Donne à Homeport le fichier compose, ce qui en fait une stack gérée.                                                                                    |
 
 **Oublier la définition**, dans l’onglet **Définition** d’une stack gérée, supprime le fichier compose et l’environnement de Homeport mais laisse les conteneurs tourner ; la stack devient externe. **Oublier**, dans l’onglet **Définition** d’une stack liée, efface la note que Homeport a prise du dossier ; le dossier, ses fichiers et les conteneurs sont laissés tels quels.
 
@@ -342,4 +343,4 @@ Une stack externe affiche aussi **Mise à jour disponible**, mais son **Mettre �
   déployée la première fois peuvent se résoudre différemment maintenant.
 </Aside>
 
-Créer une nouvelle stack portant le même nom qu’une stack externe l’adopte aussi.
+Une nouvelle stack ne peut pas prendre le nom d’une stack externe : la déployer supprimerait ou remplacerait les conteneurs de celle-ci, donc Homeport refuse ce nom et vous renvoie vers **Adopter**.

@@ -47,6 +47,8 @@ interface NewStack {
   files: ComposeFile[];
   env: string;
   deploy: boolean;
+  /** Takes over the External Stack of that name; otherwise such a name is refused. */
+  adopt: boolean;
 }
 
 /**
@@ -61,7 +63,8 @@ export function useCreateStack(
   const client = useQueryClient();
   return useMutation({
     meta: { silent: true },
-    mutationFn: ({ name, files, env }: NewStack) => commands.stacksCreate(owner, name, files, env),
+    mutationFn: ({ name, files, env, adopt }: NewStack) =>
+      commands.stacksCreate(owner, name, files, env, adopt),
     onSuccess: async (stack, { deploy }) => {
       await client.invalidateQueries({ queryKey: stacksKey(owner) });
       onSaved(stack, deploy);

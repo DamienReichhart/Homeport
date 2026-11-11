@@ -18,11 +18,11 @@ Ogni installazione resta aggiornata: Homeport si aggiorna da sé su Windows, su 
 
 ## Windows
 
-| File                                 | Da usare per                                             |
-| ------------------------------------ | -------------------------------------------------------- |
-| `Homeport_<version>_x64-setup.exe`   | La maggior parte dei PC. Installa per l’utente corrente. |
-| `Homeport_<version>_arm64-setup.exe` | Windows su ARM (Snapdragon e altri PC ARM64).            |
-| `Homeport_<version>_x64_en-US.msi`   | Installazioni gestite e silenziose su x64.               |
+| File                                         | Da usare per                                             |
+| -------------------------------------------- | -------------------------------------------------------- |
+| `Homeport-<version>-windows-x64-setup.exe`   | La maggior parte dei PC. Installa per l’utente corrente. |
+| `Homeport-<version>-windows-arm64-setup.exe` | Windows su ARM (Snapdragon e altri PC ARM64).            |
+| `Homeport-<version>-windows-x64.msi`         | Installazioni gestite e silenziose su x64.               |
 
 <Steps>
 
@@ -37,15 +37,15 @@ Ogni installazione resta aggiornata: Homeport si aggiorna da sé su Windows, su 
 Per un’installazione silenziosa con il pacchetto MSI:
 
 ```powershell
-msiexec /i Homeport_<version>_x64_en-US.msi /quiet
+msiexec /i Homeport-<version>-windows-x64.msi /quiet
 ```
 
 ## macOS
 
-| File                             | Da usare per                             |
-| -------------------------------- | ---------------------------------------- |
-| `Homeport_<version>_aarch64.dmg` | Mac con Apple silicon (M1 e successivi). |
-| `Homeport_<version>_x64.dmg`     | Mac con processore Intel.                |
+| File                                 | Da usare per                             |
+| ------------------------------------ | ---------------------------------------- |
+| `Homeport-<version>-macos-arm64.dmg` | Mac con Apple silicon (M1 e successivi). |
+| `Homeport-<version>-macos-x64.dmg`   | Mac con processore Intel.                |
 
 Non sai quale hai? Apri il menu Apple → **Informazioni su questo Mac**: una riga **Chip** indica Apple silicon, una riga **Processore** che nomina Intel indica Intel.
 
@@ -103,27 +103,27 @@ Aggiungi tu la chiave di firma e il repository, poi installa il pacchetto `homep
 
 ### File dei pacchetti
 
-Puoi anche scaricare il `.deb` (`amd64` per x64, `arm64` per ARM) o l’`.rpm` (`x86_64` o `aarch64`) e installarlo direttamente:
+Puoi anche scaricare il `.deb` o l’`.rpm` per il tuo processore (`x64` per Intel e AMD, `arm64` per ARM) e installarlo direttamente:
 
 <Tabs syncKey="linux-format">
 <TabItem label="Debian, Ubuntu">
 
 ```sh
-sudo apt install ./Homeport_<version>_amd64.deb
+sudo apt install ./Homeport-<version>-linux-x64.deb
 ```
 
 </TabItem>
 <TabItem label="Fedora, RHEL">
 
 ```sh
-sudo dnf install ./Homeport-<version>-1.x86_64.rpm
+sudo dnf install ./Homeport-<version>-linux-x64.rpm
 ```
 
 </TabItem>
 <TabItem label="openSUSE">
 
 ```sh
-sudo zypper install ./Homeport-<version>-1.x86_64.rpm
+sudo zypper install ./Homeport-<version>-linux-x64.rpm
 ```
 
 </TabItem>
@@ -136,8 +136,8 @@ La prima volta che installi uno di questi pacchetti, aggiunge anche il repositor
 L’AppImage funziona sulla maggior parte delle distribuzioni senza installare nulla, e si aggiorna da sé dall’interno di Homeport. Rendila eseguibile ed eseguila:
 
 ```sh
-chmod +x Homeport_<version>_amd64.AppImage
-./Homeport_<version>_amd64.AppImage
+chmod +x Homeport-<version>-linux-x64.AppImage
+./Homeport-<version>-linux-x64.AppImage
 ```
 
 A ogni esecuzione, aggiunge Homeport al menu delle applicazioni. Se non si avvia e menziona FUSE, installa `libfuse2` (`libfuse2t64` su Ubuntu 24.04 e successivi).
@@ -152,7 +152,7 @@ sudo usermod -aG docker $USER
 ```
 
 Esci e accedi di nuovo perché abbia effetto. Senza questo, un host locale appare come **Non raggiungibile** con
-_Permission denied_.
+_Homeport non ha il permesso di usare il Docker Engine in /var/run/docker.sock._
 
 </Aside>
 

@@ -173,4 +173,22 @@ export default {
   'core.yaml.editTitle': 'Изменить {kind} {name}',
   'core.yaml.editDescription':
     'В {cluster}. Измените YAML, просмотрите, что он изменит, и примените его.',
+  'core.metrics.cpu': 'ЦП',
+  'core.metrics.memory': 'Память',
+  'core.metrics.used': 'Использовано',
+  'core.metrics.request': 'Запрос',
+  'core.metrics.limit': 'Лимит',
+  'core.metrics.allocatable': 'Доступно для размещения',
+  'core.metrics.ofLimit': '{percent} лимита',
+  'core.metrics.ofRequest': '{percent} запроса',
+  'core.metrics.ofAllocatable': '{percent} доступного для размещения',
+  'core.metrics.notInstalled.title': 'metrics-server не установлен',
+  'core.metrics.notInstalled.body':
+    'Этот кластер не предоставляет Metrics API, из которого берутся данные о ЦП и памяти. Homeport ничего не устанавливает в кластер: когда metrics-server будет установлен, они появятся здесь.',
+  'core.metrics.notInstalled.link': 'Как установить metrics-server',
+  'core.metrics.notResponding':
+    'Metrics API не отвечает: metrics-server, возможно, запускается или не работает. Homeport повторяет попытку каждые 15 секунд.',
+  'core.metrics.waiting': 'Ожидание первого замера от metrics-server…',
+  'core.metrics.kept':
+    'Замер каждые 15 секунд; замеры хранятся, пока эта страница открыта, не дольше 15 минут.',
 } satisfies Translation<typeof en>;

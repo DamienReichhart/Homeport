@@ -69,7 +69,56 @@ jobs:
       - run: cargo fmt --all --check
         if: runner.os == 'Linux'
       - run: cargo clippy --workspace --all-targets -- -D warnings
+      # every_release_has_a_fixture compares the release tags with the
+      # database fixtures; a checkout has no tags.
+      - run: git fetch --tags --depth=1 origin
+        if: runner.os == 'Linux'
       - run: cargo test --workspace
+
+  # The real app (Rust backend, real webview, real IPC) driven through
+  # tauri-driver and WebKitWebDriver against the runner's Docker Engine:
+  # e2e/specs. Linux only; macOS has no WebDriver for its webview. The app
+  # is a debug build with the frontend embedded, as releases have it, so a
+  # command missing from commands::builder(), a permission missing from
+  # src-tauri/capabilities/ or a style the CSP blocks fails here.
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - name: Install Tauri, WebDriver, display and keyring
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev librsvg2-dev \
+            libayatana-appindicator3-dev libssl-dev webkit2gtk-driver xvfb dbus-x11 gnome-keyring
+      # Ubuntu's AppArmor stops unprivileged user namespaces, which WebKit's
+      # web process sandbox uses: allow them on this throwaway runner.
+      - run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: e2e
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: tauri-driver@2.1.0
+      # The licence notices (cargo-about) are the licenses job's: build without them.
+      - run: bun tauri build --debug --no-bundle --config '{"build":{"beforeBuildCommand":"bun run build"}}'
+      - run: docker pull mirror.gcr.io/library/alpine:3.22 && docker pull mirror.gcr.io/library/busybox:1.37
+      - run: bun install --frozen-lockfile && bun run typecheck
+        working-directory: e2e
+      - run: ./run.sh
+        working-directory: e2e
+      - name: Keep the screenshots and the app's log of a failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-artifacts
+          path: e2e/artifacts/
+          if-no-files-found: ignore
 
   # The tests marked #[ignore = "needs a local Docker Engine…"] against the
   # runner's own Engine and compose plugin. The shell crate has none, so it is

@@ -56,7 +56,7 @@ Son en-tête porte ses actions : **Mettre à l’échelle**, **Redémarrer**, *
   alt="La page Pods : les Pods du namespace shop avec leur état, l’un en CrashLoopBackOff avec 7 redémarrages et l’un en ImagePullBackOff, leurs conteneurs prêts, leur Node et leur âge."
 />
 
-**Pods** liste chaque Pod avec son état tel que l’affiche `kubectl get pods` — `Running`, `Pending`, `CrashLoopBackOff`, `ImagePullBackOff`, `Init:…`, `Terminating` —, ses conteneurs prêts, ses redémarrages, son Node et son âge. Les longues listes affichent 100 lignes par page, pour qu’un cluster de milliers de Pods reste réactif ; le champ de recherche les filtre tous.
+**Pods** liste chaque Pod avec son état tel que l’affiche `kubectl get pods` — `Running`, `Pending`, `CrashLoopBackOff`, `ImagePullBackOff`, `Init:…`, `Terminating` —, ses conteneurs prêts, ses redémarrages, son Node et son âge. Les longues listes affichent 100 lignes par page, pour qu’un cluster de milliers de Pods reste réactif ; le champ de recherche les filtre tous. Quand le cluster exécute metrics-server, **CPU** et **Mémoire** montrent ce que chaque Pod utilise par rapport à ses limites ([CPU et mémoire](/docs/clusters/metrics/)).
 
 <DocScreenshot
   name="cluster-pod"
@@ -64,7 +64,7 @@ Son en-tête porte ses actions : **Mettre à l’échelle**, **Redémarrer**, *
   caption="Pourquoi api-…-xr4np n’est pas prêt : son conteneur api plante sans cesse ; son sidecar va bien."
 />
 
-La page d’un Pod affiche son Node, ses IP, sa classe QoS, son compte de service et ce qui le contrôle, puis chaque conteneur (les conteneurs d’init d’abord) avec son image, son état, pourquoi il attend ou s’est terminé, ses redémarrages et pourquoi il a redémarré la dernière fois. Chaque conteneur liste les ports qu’il déclare, avec **Rediriger…** pour [en joindre un depuis cet ordinateur](/docs/clusters/port-forward/). Viennent ensuite **Journaux** et **Terminal** ([Journaux et terminaux](/docs/clusters/logs-exec/)), puis **Conditions**, **Événements** et **YAML**, comme pour les charges de travail, et **Supprimer** dans l’en-tête.
+La page d’un Pod affiche son Node, ses IP, sa classe QoS, son compte de service et ce qui le contrôle, puis chaque conteneur (les conteneurs d’init d’abord) avec son image, son état, pourquoi il attend ou s’est terminé, ses redémarrages et pourquoi il a redémarré la dernière fois. Chaque conteneur liste les ports qu’il déclare, avec **Rediriger…** pour [en joindre un depuis cet ordinateur](/docs/clusters/port-forward/). Viennent ensuite **Journaux** et **Terminal** ([Journaux et terminaux](/docs/clusters/logs-exec/)), puis **Conditions**, **Événements** et **YAML**, comme pour les charges de travail, et **Supprimer** dans l’en-tête. Avec metrics-server, **Métriques** trace le CPU et la mémoire de chaque conteneur par rapport à sa demande et à sa limite ([CPU et mémoire](/docs/clusters/metrics/)).
 
 ### Comprendre pourquoi un Pod n’est pas prêt
 

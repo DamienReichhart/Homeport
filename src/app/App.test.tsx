@@ -1,7 +1,11 @@
+import { openUrl } from '@tauri-apps/plugin-opener';
 import { screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { connectedHost } from '@/test/fixtures';
 import { mockCommands } from '@/test/ipc';
 import { renderApp } from '@/test/render';
+
+vi.mock('@tauri-apps/plugin-opener', () => ({ openUrl: vi.fn(() => Promise.resolve()) }));
 
 describe('app', () => {
   beforeEach(() =>
@@ -59,6 +63,31 @@ describe('app', () => {
     expect(await screen.findByText('2')).toBeInTheDocument();
     expect(screen.getByText(/of 8 CPUs/)).toBeInTheDocument();
     expect(screen.getAllByText('Connected').length).toBeGreaterThan(0);
+  });
+
+  it.each([
+    ['Documentation', 'https://damienreichhart.github.io/Homeport/docs/'],
+    ['GitHub', 'https://github.com/DamienReichhart/Homeport'],
+  ])('opens %s in the browser from the bottom of the sidebar', async (label, url) => {
+    renderApp('/settings');
+    const nav = await screen.findByRole('navigation', { name: 'Main' });
+    const link = await screen.findByRole('link', { name: `${label} (opens in your browser)` });
+    expect(nav).toContainElement(link);
+    expect(link).not.toHaveAttribute('aria-current');
+
+    await userEvent.click(link);
+    expect(openUrl).toHaveBeenCalledWith(url);
+    // The app stays where it was.
+    expect(screen.getByRole('link', { name: 'Settings' })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('says so when a sidebar link can’t be opened', async () => {
+    vi.mocked(openUrl).mockRejectedValueOnce(new Error('no browser'));
+    renderApp('/');
+    await userEvent.click(await screen.findByRole('link', { name: /^GitHub/ }));
+    const message = await screen.findByText('Something unexpected went wrong.');
+    expect(message.closest('[data-sonner-toast]')).not.toBeNull();
+    expect(screen.getByRole('navigation', { name: 'Main' })).toBeInTheDocument();
   });
 
   it('warns when no keychain is available', async () => {

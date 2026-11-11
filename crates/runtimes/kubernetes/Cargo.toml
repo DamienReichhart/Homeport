@@ -1,0 +1,45 @@
+[package]
+name = "homeport-kubernetes"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "The Kubernetes API of a Cluster through kube-rs: what runs on it, changing it, RBAC, metrics, Helm"
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+homeport-core.workspace = true
+homeport-transport.workspace = true
+kube.workspace = true
+k8s-openapi.workspace = true
+http.workspace = true
+rustls.workspace = true
+rustls-pki-types.workspace = true
+secrecy.workspace = true
+jiff.workspace = true
+tokio.workspace = true
+futures-util.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml_ng.workspace = true
+specta.workspace = true
+uuid.workspace = true
+base64.workspace = true
+log.workspace = true
+shell-words.workspace = true
+# The private proxy a CLI such as helm reaches the Cluster through (ADR 0009).
+hyper = { workspace = true, features = ["server"] }
+hyper-util.workspace = true
+http-body-util.workspace = true
+bytes.workspace = true
+getrandom.workspace = true
+tempfile.workspace = true
+
+[dev-dependencies]
+# A fake API server for kube's client, in memory.
+tower.workspace = true
+# Paused time, so the metrics stream's ticks and timeouts are exact in tests.
+tokio = { workspace = true, features = ["test-util"] }

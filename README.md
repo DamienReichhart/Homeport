@@ -28,6 +28,8 @@ A desktop app for managing Docker Engines, containerd and Incus anywhere — thi
 - **Desktop**: a system tray icon with every Host's status, closing to the tray, starting at login (hidden if you like), OS notifications when a container dies or turns unhealthy and when a Host is lost or back, one running Homeport, and a window that reopens where it was.
 - **Nomad clusters**: added by an agent's address, with an ACL token and TLS material (CA, client certificate and key, TLS server name) sealed like any credential, and a live status with Nomad's version and region. List jobs with their task groups' allocations, kept current through Nomad's blocking queries; run a job from HCL2 or JSON after seeing Nomad's plan, task group by task group, with no job changed in between ever overwritten; edit and re-run one from the specification Nomad kept; stop (or purge) it and scale a task group within its scaling policy. Follow a task's stdout and stderr and open a shell in it, through the servers, with no SSH to the nodes. Drain client nodes with a deadline, cancel a drain, and switch their eligibility. Pick a namespace, or all of them, remembered per cluster. Nothing is installed on a cluster and no `nomad` CLI is needed.
 - **Backups**: everything Homeport holds — Hosts, Clusters, Stacks, registry logins, repositories, settings and their secrets — in one passphrase-protected file, restored on this or another computer without re-entering a key.
+- **Your data across versions**: every version of Homeport opens the data of every earlier version, back to 0.1.0, and upgrades it without losing anything: Hosts, Stacks, Clusters, settings and secrets. A database from a newer Homeport is refused untouched, with the version to install ([docs/RELEASING.md](docs/RELEASING.md#data-compatibility)).
+- **Diagnostics**: Settings → About exports a zip for bug reports, with a summary of the install and the logs with secrets removed, shown before it's saved and sent nowhere. No telemetry, no crash reporting, no account.
 
 Secrets (SSH keys, TLS material, kubeconfig credentials, stack environments, registry passwords and tokens) are encrypted in SQLite with a key kept in the OS keychain. See [GLOSSARY.md](GLOSSARY.md) and [docs/adr](docs/adr) for the vocabulary and the main decisions.
 
@@ -41,7 +43,7 @@ curl -fsSL https://damienreichhart.github.io/Homeport/install.sh | sh
 
 The [installation guide](https://damienreichhart.github.io/Homeport/docs/installation/#manual-setup) shows the same setup step by step, without the script.
 
-Installers for Windows, macOS and Linux (x64 and ARM) are on the [download page](https://damienreichhart.github.io/Homeport/download/) and the [releases page](https://github.com/DamienReichhart/Homeport/releases/latest). Windows, macOS and AppImage installs update themselves from inside Homeport. Homebrew, winget, Scoop, the AUR, Flathub and Snap are planned after 1.0 ([#5 to #10](https://github.com/DamienReichhart/Homeport/milestone/18)).
+Installers for Windows 10 and 11 (x64 and ARM64), macOS 10.15 or later (Apple silicon and Intel) and Linux with glibc 2.35 or later, such as Ubuntu 22.04, Debian 12 and Fedora 36 (x64 and ARM64), are on the [download page](https://damienreichhart.github.io/Homeport/download/) and the [releases page](https://github.com/DamienReichhart/Homeport/releases/latest). Windows, macOS and AppImage installs update themselves from inside Homeport. Homebrew, winget, Scoop, the AUR, Flathub and Snap are planned after 1.0 ([#5 to #10](https://github.com/DamienReichhart/Homeport/milestone/18)).
 
 Pushing a new version to `main` publishes it; see [docs/RELEASING.md](docs/RELEASING.md).
 
@@ -52,7 +54,7 @@ Pushing a new version to `main` publishes it; see [docs/RELEASING.md](docs/RELEA
 - [cargo-about](https://github.com/EmbarkStudios/cargo-about) for release builds: `cargo install cargo-about --locked --features cli`
 - Tauri system dependencies: <https://tauri.app/start/prerequisites/>
   (Linux: `libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev librsvg2-dev libayatana-appindicator3-dev libssl-dev`)
-- At runtime: an OS keychain (macOS Keychain, Windows Credential Manager or a Secret Service such as GNOME Keyring) for SSH/TLS/stack secrets, the `docker compose` CLI to deploy Managed, Linked and Synced Stacks, and `git` for Synced Stacks. All are optional; the app says what is unavailable without them.
+- At runtime: an OS keychain (macOS Keychain, Windows Credential Manager or a Secret Service such as GNOME Keyring) for SSH/TLS/stack secrets, the `docker compose` CLI to deploy Managed, Linked and Synced Stacks (the `docker` CLI to deploy them to a Swarm), `git` for Synced Stacks, and `helm` 3 for Helm releases. All are optional; the app says what is unavailable without them.
 
 ## Commands
 
@@ -69,7 +71,7 @@ Pushing a new version to `main` publishes it; see [docs/RELEASING.md](docs/RELEA
 
 `tauri:build` writes installers to `target/release/bundle/`. Each one adds Homeport to the app menu: `.deb`/`.rpm` install a desktop entry, `.msi`/NSIS add a Start Menu shortcut, and the `.app` shows in Launchpad once it is in Applications. An AppImage has no install step, so it adds its own entry to `~/.local/share/applications` each time it runs, and the entry disappears from the menu once the file is deleted.
 
-Integration tests talk to the local Docker Engine (and the compose CLI). They only create resources named `homeport-test-*` and remove them afterwards; run them with `cargo test --workspace -- --ignored`.
+Integration tests talk to the local Docker Engine (and the compose CLI). They only create resources named `homeport-test-*` and remove them afterwards; run them with `cargo test --workspace --exclude homeport -- --ignored`.
 
 ## Licenses
 
@@ -88,9 +90,11 @@ bun run dev     # http://localhost:4321/Homeport/
 bun run lint    # checks the layers (docs/ARCHITECTURE.md#website-layout) and file sizes
 bun run test    # unit tests (bun test), next to the code they test
 bun run build   # type-checks, validates links and builds into website/dist/
+bun run test:images   # after a build, in Chromium (bunx playwright install chromium):
+                      # every image is sharp at a pixel density of 2, small on a phone
 ```
 
-User docs are Markdown in `website/src/content/docs/docs/`. The app screenshots in `website/src/assets/screenshots/` come from the real UI with demo data: `bun run screenshots` (at the repo root, needs Firefox) retakes them, and `bun scripts/brand-images.ts` (in `website/`) regenerates the social card and icons.
+User docs are Markdown in `website/src/content/docs/docs/`. The app screenshots in `website/src/assets/screenshots/` come from the real UI with demo data: `bun run screenshots` (at the repo root, needs Firefox) retakes them at 2880×1800, twice the pixel density of the 1440×900 window, and compresses them without loss when oxipng is installed (`cargo install oxipng`), and `bun scripts/brand-images.ts` (in `website/`) regenerates the social card and icons.
 
 ## Layout
 
@@ -103,16 +107,13 @@ src/                 React frontend
   shared/            feature-agnostic api / ui / hooks / lib / styles
 src-tauri/           Rust app shell (Tauri)
   src/app/           bootstrap, managed state, events pushed to the webview
-  src/commands/      thin IPC handlers, one module per feature
+  src/commands/      thin IPC handlers, one folder per domain
   capabilities/      Tauri permission sets
-crates/              Rust backend logic, one crate per layer (no Tauri types)
-  core/              AppError, the Host model, helpers for this computer
-  storage/           SQLite database and sealed secrets
-  transport/         reaching a Host: local, TCP, TLS, SSH, compose proxy
-  engine/            containers, images, volumes, networks… over bollard
-  hosts/  stacks/    the two domains: Hosts and Stacks
-  git/               Synced Stacks' repositories and the git CLI
-  settings/ updates/ preferences, and how Homeport updates itself
+crates/              Rust backend logic, one crate each, by layer (no Tauri types)
+  foundation/        core (AppError, the Host model), storage, transport
+  runtimes/          engine, containerd, incus, kubernetes, nomad: each API
+  domains/           hosts, clusters, stacks, git, registries, settings
+  app/               backup, diagnostics, updates: across domains
 packaging/linux/     repository definitions, signing key, install script and
                      .deb/.rpm maintainer scripts
 scripts/             release planning, repository builder, signing-key wizard,

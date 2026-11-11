@@ -31,7 +31,7 @@ shasum -a 256 --ignore-missing -c SHA256SUMS.txt
 <TabItem label="Windows">
 
 ```powershell
-(Get-FileHash .\Homeport_0.2.0_x64-setup.exe -Algorithm SHA256).Hash.ToLower()
+(Get-FileHash .\Homeport-1.0.0-windows-x64-setup.exe -Algorithm SHA256).Hash.ToLower()
 ```
 
 Сравните результат со строкой установщика в `SHA256SUMS.txt`.
@@ -48,7 +48,7 @@ shasum -a 256 --ignore-missing -c SHA256SUMS.txt
 При установленном [GitHub CLI](https://cli.github.com):
 
 ```sh
-gh attestation verify Homeport_0.2.0_x64-setup.exe --repo DamienReichhart/Homeport
+gh attestation verify Homeport-1.0.0-windows-x64-setup.exe --repo DamienReichhart/Homeport
 ```
 
 Успешная проверка выводит процесс и коммит, из которых собран файл.
@@ -65,7 +65,7 @@ gh attestation verify Homeport_0.2.0_x64-setup.exe --repo DamienReichhart/Homepo
 
 ```sh
 sudo rpm --import homeport.asc   # once
-rpm -K Homeport-<version>-1.x86_64.rpm
+rpm -K Homeport-<version>-linux-x64.rpm
 ```
 
 Для подписанного пакета `rpm -K` выводит `digests signatures OK`. Сам файл `.deb` не подписан: его покрывает подписанный индекс репозитория, а скачанный вручную — его контрольная сумма и аттестация.

@@ -42,6 +42,14 @@ export default {
     'उपलब्ध — SSH कुंजियाँ, प्रमाणपत्र, स्टैक के परिवेश और रजिस्ट्री लॉगिन एन्क्रिप्ट करके सहेजे जाते हैं।',
   'settings.machine.keychainUnavailable':
     'उपलब्ध नहीं — SSH कुंजियाँ, TLS प्रमाणपत्र, स्टैक के परिवेश और रजिस्ट्री लॉगिन सहेजे नहीं जा सकते।',
+  'settings.machine.keychainEntryMissing':
+    'एंट्री गायब है — कीचेन में उस कुंजी की एंट्री नहीं है जिससे Homeport के सीक्रेट सील किए गए थे, इसलिए उन्हें न खोला जा सकता है न सहेजा जा सकता है।',
+  'settings.machine.startOverDescription':
+    'अगर Homeport पहले से अलग कीचेन इस्तेमाल कर रहा है, तो पहले वाले पर लौटें और Homeport फिर से शुरू करें। अगर एंट्री हमेशा के लिए चली गई है, तो नई कुंजी के साथ फिर से शुरू करें।',
+  'settings.machine.startOver': 'नई कुंजी के साथ फिर से शुरू करें',
+  'settings.machine.startOverTitle': 'नई कुंजी के साथ फिर से शुरू करें?',
+  'settings.machine.startOverConfirmDescription':
+    'नई कुंजी वह नहीं खोल सकती जो गायब कुंजी से सील किया गया था: आपको हर होस्ट, क्लस्टर, रजिस्ट्री और रिपॉज़िटरी के क्रेडेंशियल और हर स्टैक का एनवायरनमेंट फिर से डालना होगा, या कोई बैकअप रीस्टोर करना होगा।',
   'settings.machine.compose': 'Compose CLI',
   'settings.machine.composeMissing':
     'स्टैक शुरू और बंद किए जा सकते हैं, लेकिन डिप्लॉय नहीं किए जा सकते।',
@@ -87,6 +95,9 @@ export default {
     '{count, plural, one {# रजिस्ट्री लॉगिन} other {# रजिस्ट्री लॉगिन}}',
   'settings.restore.repositories': '{count, plural, one {# रिपॉज़िटरी} other {# रिपॉज़िटरी}}',
   'settings.restore.settings': 'आपकी सेटिंग्स',
+  'settings.restore.withoutSecrets':
+    'इनका बैकअप उनके सीक्रेट के बिना लिया गया था, क्योंकि तब वे खुल नहीं सके। ये उनके बिना लौटेंगे और यहाँ मौजूद उनके सीक्रेट की जगह लेंगे; इनमें से रजिस्ट्री लॉगिन बिल्कुल नहीं लौटेंगे:',
+  'settings.restore.withoutSecretsList': 'सीक्रेट के बिना बैकअप किए गए',
   'settings.restore.replaces':
     'रीस्टोर करने से आपके अभी के हर होस्ट, स्टैक, रजिस्ट्री लॉगिन, रिपॉज़िटरी और सेटिंग की जगह बैकअप वाले आ जाते हैं, और इंजन के इवेंट व डिप्लॉय इतिहास भुला दिए जाते हैं। पहले मौजूदा डेटा की एक कॉपी Homeport के डेटा फ़ोल्डर में रखी जाती है।',
   'settings.restore.confirm': 'सब कुछ बदलें',
@@ -103,6 +114,18 @@ export default {
   'settings.about.tagline': 'हर Docker Engine, एक बोर्ड पर।',
   'settings.about.openLogFolder': 'लॉग फ़ोल्डर खोलें',
   'settings.about.licenses': 'लाइसेंस',
+  'settings.about.exportDiagnostics': 'डायग्नोस्टिक्स एक्सपोर्ट करें…',
+  'settings.diagnostics.title': 'डायग्नोस्टिक्स एक्सपोर्ट करें',
+  'settings.diagnostics.description':
+    'बग रिपोर्ट के साथ जोड़ने के लिए एक zip फ़ाइल: वर्शन और आपके इस्तेमाल किए जा रहे होस्ट और क्लस्टर के प्रकारों का सारांश, और Homeport के लॉग जिनसे सीक्रेट हटा दिए गए हैं। कुछ भी कहीं नहीं भेजा जाता: फ़ाइल शेयर करनी है या नहीं, यह आप तय करते हैं।',
+  'settings.diagnostics.includeNames': 'नाम और पते शामिल करें',
+  'settings.diagnostics.includeNamesHelp':
+    'बंद होने पर, होस्ट और क्लस्टर सारांश और लॉग में host-1, cluster-1… के रूप में दिखते हैं।',
+  'settings.diagnostics.files': 'zip की फ़ाइलें',
+  'settings.diagnostics.save': 'सेव करें…',
+  'settings.diagnostics.saveTitle': 'डायग्नोस्टिक्स सेव करें',
+  'settings.diagnostics.fileType': 'Zip आर्काइव',
+  'settings.diagnostics.done': 'डायग्नोस्टिक्स {path} में सेव हो गया।',
   'settings.licenses.title': 'लाइसेंस',
   'settings.licenses.description':
     'Homeport, GNU Affero General Public License संस्करण 3 के तहत मुफ़्त सॉफ़्टवेयर है, जो नीचे दिए गए ओपन-सोर्स पैकेज पर बना है।',

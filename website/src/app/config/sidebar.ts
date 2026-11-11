@@ -80,7 +80,9 @@ export const sidebar: NonNullable<StarlightUserConfig['sidebar']> = [
       { ...entry('docs/clusters/workloads'), slug: 'docs/clusters/workloads' },
       { ...entry('docs/clusters/networking-config'), slug: 'docs/clusters/networking-config' },
       { ...entry('docs/clusters/nodes-events'), slug: 'docs/clusters/nodes-events' },
+      { ...entry('docs/clusters/metrics'), slug: 'docs/clusters/metrics' },
       { ...entry('docs/clusters/api-resources'), slug: 'docs/clusters/api-resources' },
+      { ...entry('docs/clusters/rbac'), slug: 'docs/clusters/rbac' },
       { ...entry('docs/clusters/logs-exec'), slug: 'docs/clusters/logs-exec' },
       { ...entry('docs/clusters/port-forward'), slug: 'docs/clusters/port-forward' },
       { ...entry('docs/clusters/actions'), slug: 'docs/clusters/actions' },
@@ -110,6 +112,10 @@ export const sidebar: NonNullable<StarlightUserConfig['sidebar']> = [
     ...group('group.reference'),
     items: [
       { ...entry('docs/reference/security'), slug: 'docs/reference/security' },
+      {
+        ...entry('docs/reference/data-and-backups'),
+        slug: 'docs/reference/data-and-backups',
+      },
       { ...entry('docs/reference/verifying'), slug: 'docs/reference/verifying' },
       { ...entry('docs/reference/updating'), slug: 'docs/reference/updating' },
       { ...entry('docs/reference/troubleshooting'), slug: 'docs/reference/troubleshooting' },

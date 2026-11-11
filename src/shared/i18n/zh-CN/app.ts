@@ -4,8 +4,16 @@ import type { Translation } from '../types';
 
 export default {
   'app.nav.main': '主菜单',
+  'app.nav.docs': '文档',
+  'app.nav.github': 'GitHub',
+  'app.nav.opensInBrowser': '{label}（在浏览器中打开）',
   'app.keychainMissing':
     '没有可用的系统钥匙串，因此无法保存 SSH 密钥、TLS 证书和堆栈环境变量。本地、TCP 和 ssh-agent 主机仍可使用。',
+  'app.keychainEntryMissing':
+    '钥匙串中没有用于密封 Homeport 机密信息的密钥条目，因此无法打开或保存机密信息。请参阅 设置 → 本机。',
+  'app.startup.title': 'Homeport 无法打开其数据库',
+  'app.startup.description': '未启动任何其他内容。数据库位于此文件中：',
+  'app.startup.openFolder': '打开文件夹',
   'app.crash.title': '出现问题',
   'app.crash.description':
     'Homeport 在此页面上遇到了意外问题。重新加载通常可以解决；如果问题反复出现，请从“详细信息”中复制报告并提交 issue。',

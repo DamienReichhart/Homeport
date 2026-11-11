@@ -3,7 +3,7 @@ title: Troubleshooting
 description: Fixes for the problems you're most likely to meet, by the message Homeport shows.
 ---
 
-If your problem isn't here, check the [log file](/docs/reference/security/#logs) and [open an issue](https://github.com/DamienReichhart/Homeport/issues) with your Homeport version from **Settings**.
+If your problem isn't here, [open an issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) with the [diagnostics bundle](#exporting-diagnostics-for-a-bug-report) from **Settings → About**.
 
 ## Installing and starting
 
@@ -21,7 +21,7 @@ xattr -dr com.apple.quarantine /Applications/Homeport.app
 
 ### The AppImage doesn't start
 
-If it mentions FUSE, install `libfuse2` (`libfuse2t64` on Ubuntu 24.04 and later). Check the file is executable: `chmod +x Homeport_*.AppImage`.
+If it mentions FUSE, install `libfuse2` (`libfuse2t64` on Ubuntu 24.04 and later). Check the file is executable: `chmod +x Homeport*.AppImage`.
 
 ### Homeport opens in the wrong place
 
@@ -45,11 +45,19 @@ On Linux, the tray needs the appindicator library, and some desktops hide tray i
 
 Homeport couldn't reach your keychain. On Linux this usually means no Secret Service is running — common on minimal desktops and window managers. Install and start GNOME Keyring (`gnome-keyring`) or enable KWallet's Secret Service, then restart Homeport. Until then, use local socket, TCP or ssh-agent Hosts.
 
+### "This database was last used by Homeport … or later"
+
+You installed an older Homeport than the one that last opened your data, for example by reinstalling an earlier release. Each version upgrades the database to its own format when it starts, and an older version can't read a newer format, so Homeport stops before it changes anything: the window shows this message, the path of the database and **Open folder**, and nothing else starts.
+
+Your Hosts, Stacks and secrets are intact. Install the version the message names, or any newer one, from the [download page](/download/), and Homeport opens them as before. Don't delete or move `homeport.db`: that is the only way to lose what's in it. Downgrading isn't supported; see [Your data across versions](/docs/reference/updating/#your-data-across-versions).
+
+The same window appears for any other failure to open the database (damaged file, full disk, another Homeport holding it), with that failure's own message and what to do about it.
+
 ## Updates and the package repository
 
-### "Couldn't check for updates"
+### "Homeport couldn't download the update"
 
-Homeport couldn't download the update information from this website: you may be offline, or behind a proxy or firewall that blocks `damienreichhart.github.io`. Homeport keeps working; it checks again later, or choose **Settings → Updates → Check now**. You can always download the latest version from the [download page](/download/).
+When it shows while checking, Homeport couldn't download the update information from this website: you may be offline, or behind a proxy or firewall that blocks `damienreichhart.github.io`. Homeport keeps working; it checks again later, or choose **Settings → Updates → Check now**. You can always download the latest version from the [download page](/download/).
 
 ### An update fails to install
 
@@ -73,7 +81,7 @@ Check the repository is still set up: `/etc/apt/sources.list.d/homeport.sources`
 
 ## Connecting
 
-### Unreachable: Permission denied
+### "Homeport isn't allowed to use the Docker Engine at …"
 
 Your user can't open the Docker socket. On Linux, add it to the `docker` group and log in again:
 
@@ -81,21 +89,21 @@ Your user can't open the Docker socket. On Linux, add it to the `docker` group a
 sudo usermod -aG docker $USER
 ```
 
-### Unreachable: No such file or directory
+### "No Docker Engine is running at …"
 
-Nothing is listening at the socket path. Start your Engine — Docker Desktop, Colima, OrbStack, Rancher Desktop — or check the path. See [local engines](/docs/hosts/local/#adding-a-socket-by-hand).
+Nothing is listening at the socket path. When nothing exists there at all, the message is _The Docker Engine doesn't seem to be installed_ instead. Start your Engine — Docker Desktop, Colima, OrbStack, Rancher Desktop — or check the path. See [local engines](/docs/hosts/local/#adding-a-socket-by-hand).
 
-### "The Engine did not answer in time" or "SSH connection timed out"
+### "The Docker Engine didn't answer in time" or "… didn't answer in time"
 
 Homeport waits 10 seconds for a connection. Check the address and port, that the server is up, and that no firewall is in the way. Homeport keeps retrying on its own.
 
-### Access refused: "The server refused the key for …"
+### Access refused: "The SSH server refused to let … log in"
 
 The server doesn't accept Homeport's key yet. Run the **Add the public key** command from the Host's page on the server, then choose **Reconnect**. See [SSH Hosts](/docs/hosts/ssh/#authorise-homeports-key).
 
-### "The SSH server couldn't open /var/run/docker.sock"
+### "… can't open the Docker Engine socket at /var/run/docker.sock on …"
 
-Homeport logged in, but couldn't reach Docker. Check:
+Homeport logged in, but couldn't reach Docker. When it can tell why, the message says so instead: the Engine isn't installed or isn't running on the server, the user isn't allowed to use it, or the SSH server doesn't allow forwarding to its socket. Check:
 
 - the **Remote socket path** — rootless Docker uses `/run/user/<uid>/docker.sock`;
 - that the user can use Docker: `sudo usermod -aG docker <user>` on the server;
@@ -113,7 +121,7 @@ Start-Service ssh-agent
 ssh-add
 ```
 
-### Access refused: "TLS handshake failed"
+### Access refused: "The secure connection to … failed"
 
 - The CA certificate must be the one that signed the server's certificate.
 - The address you entered must match a name or IP address in the server's certificate.
@@ -125,13 +133,13 @@ The SSH server presented a different key from the one you trusted. If you reinst
 
 ### Credentials lost
 
-The key that encrypts your secrets is missing from the keychain or has changed — after a keychain reset, a new user profile, or copying Homeport's data to another computer (use [Export and Import](/docs/reference/security/#moving-to-another-computer) for that). Homeport keeps the Host; re-enter its credentials on the Host's page:
+The key that encrypts your secrets is missing from the keychain or has changed — after a keychain reset, a new user profile, or copying Homeport's data to another computer (use a [backup](/docs/reference/data-and-backups/#backing-up-in-homeport), or [Export and Import](/docs/reference/security/#moving-to-another-computer), for that). Homeport keeps the Host; re-enter its credentials on the Host's page:
 
 - **TLS** — load the three certificate files again and choose **Save**.
 - **SSH with an imported key** — paste the private key and passphrase again and choose **Save**.
 - **SSH with a Homeport key** — choose **Regenerate key**, then authorise the new key on the server.
 
-Managed Stack environments sealed with the old key need re-entering too.
+Managed and Synced Stack environments, registry logins and repositories' keys and tokens encrypted with the old key need re-entering too, and Clusters refreshing from their kubeconfig; [If the secrets are lost](/docs/reference/data-and-backups/#if-the-secrets-are-lost) lists each one.
 
 ## Clusters
 
@@ -151,7 +159,7 @@ The exec plugin wants a browser or a device code. Run `kubectl --context <contex
 
 The exec plugin ran and failed. **Details** shows the end of what it printed, often an expired profile or a wrong region. Homeport tries again on its own.
 
-### "… signs in with the gcp auth provider, which Kubernetes no longer supports"
+### "Its user signs in with the gcp auth provider, which Kubernetes no longer supports"
 
 The `gcp` and `azure` auth providers were removed from Kubernetes. Fetch the credentials again with `gke-gcloud-auth-plugin` installed (GKE), or run `kubelogin convert-kubeconfig` (AKS), then add the context again.
 
@@ -221,7 +229,7 @@ The release is `pending-…`: an install, upgrade or rollback didn't finish, oft
 
 ## Using Homeport
 
-### Deploy is greyed out: "The docker compose CLI is not installed"
+### Deploy is greyed out: "The docker compose CLI isn't installed on this computer"
 
 Homeport needs `docker compose` on this computer to deploy Stacks. Install Docker Desktop or the Docker CLI with the Compose plugin, then restart Homeport. **Settings → This machine** shows whether it's found.
 
@@ -325,6 +333,23 @@ Incus needs KVM (`/dev/kvm`) and QEMU for virtual machines. Enable virtualizatio
 
 Exec in a virtual machine goes through `incus-agent` inside it, which Incus's own images start on boot. Wait for the boot to finish, or use the **Console** tab, which needs no agent.
 
-### "host … is not connected"
+### "Something went wrong"
+
+A page of Homeport hit a problem it didn't expect and shows this instead of its content; the sidebar still works. **Reload** usually brings the page back, and **Back to overview** leaves it. If it keeps happening, copy the report from **Details** into [an issue](https://github.com/DamienReichhart/Homeport/issues/new/choose), with the [diagnostics bundle](#exporting-diagnostics-for-a-bug-report).
+
+### "… isn't connected"
 
 The action needed the Host, but it disconnected. Wait for it to reconnect, or choose **Retry now**.
+
+## Exporting diagnostics for a bug report
+
+**Settings → About → Export diagnostics…** makes one zip to attach to a GitHub issue. Homeport sends it nowhere: it saves the file where you choose, and sharing it is up to you.
+
+The dialog lists the files and shows `summary.json` before you save:
+
+- `summary.json`: Homeport's version and how it was installed, your operating system, the database's schema version, whether a keychain is available, your settings, and for each Host and Cluster its kind of connection, its Engine and version, its status and the code of its last error, plus how many Stacks of each kind you have.
+- `logs/`: Homeport's [log files](/docs/reference/security/#logs), with private keys and certificates, passwords, tokens, `Authorization` headers and the credentials in URLs replaced by `[redacted]`.
+
+Hosts and Clusters appear as `host-1`, `cluster-1`… and their names and addresses are replaced the same way in the logs, unless you tick **Include names and addresses**. Tick it when the name or address matters to the problem and you're comfortable sharing it.
+
+Stored secrets are never read for the bundle. Removing secrets from logs works by recognising their usual shapes, so look through the files before attaching them to a public issue if your logs may quote something unusual.
