@@ -41,14 +41,14 @@ app/src/
                 dialogs, updater, logging: the former `src-tauri/src/app/desktop`
 ```
 
-Rules, enforced by `app/tests/layout.rs` once the foundation ticket lands it:
+Rules, enforced by `app/tests/layout.rs`:
 
 1. **Dependencies point inward:** `ui/features` → `ui/widgets` + `ui/shell` + `data` + `api` → `app` → the crates. A feature never imports another feature (shared domain goes to `ui/shell` or `data`). `api` never imports `ui`.
 2. **Elm architecture.** A feature has a `State`, a `Message` enum, `update(&mut State, Message, &Context) -> Task<Message>` and `view(&State, &Context) -> Element<Message>`. `view` is pure and cheap; all I/O is a `Task` or a `Subscription`.
 3. **No blocking in `update` or `view`.** Anything that touches the network, the disk, the database, the keychain or a lock held across `await` goes through `Task::perform` on the runtime iced owns.
 4. **Thin use cases, logic in crates.** An `api` function parses its arguments and calls one crate, as the former `src-tauri/src/commands/*` did (ADR 0005 still holds). Logic that needs several stores goes to the crate that owns them.
 5. **One error type.** Failures are `AppError { code, message, hint, detail }` from `homeport-core`, shown with the shared error widgets (never a bare string), logged with the command's name.
-6. **Strings are never literals.** Every user-visible string is a Fluent message (`i18n`), in English first and in all 11 languages before the ticket closes (the i18n ticket supplies the tooling and the check).
+6. **Strings are never literals.** Every user-visible string is a Fluent message read with `t!` or `rich!`, in English first and in all 11 languages before the ticket closes. State keeps what it was told (an `AppError`, a count), not text, so a language change redraws it. See `docs/i18n/README.md`.
 7. **Same files and folders rules as the backend:** a file past 600 lines before its tests is split, a folder past 14 entries gets subfolders, tests next to the code, `name/mod.rs` for a module with submodules. Clippy runs with `-D warnings`.
 
 ## Porting recipe for a feature
@@ -60,6 +60,34 @@ Rules, enforced by `app/tests/layout.rs` once the foundation ticket lands it:
 5. Register the feature in `ui/shell` (route, sidebar entry with its scope, palette commands, shortcuts), as `manifest.ts` did.
 6. Tests: `update` tests for every message that does something; a headless `iced_test` snapshot for each page state (empty, loading, error, populated) in English, and one RTL snapshot (Arabic) for each page with a table or a form.
 7. Compare against the running Tauri app on the same data. Anything different is a bug unless the PR says why.
+
+## Testing a feature
+
+`app/src/test_support/` (built for tests only) replaces vitest, Testing Library and the IPC mocks. A feature is tested in three layers:
+
+1. **Use cases** (`api/`): against `crate::app::testing::app()`, an `AppState` on a new database in a temporary folder, with the receiving half of its events. No window, no keychain.
+2. **`update`**: build the `State`, send it messages, assert on the state. `test_support::tasks::messages(task).await` runs what `update` returned and gives the messages it produced, to feed back in; `tasks::is_none` tells a `Task::none()`. `test_support::fixtures` has the sample Hosts, containers, networks, files, stats and services of the React tests.
+3. **`view`**: a snapshot per page state.
+
+   ```rust
+   #[test]
+   fn the_page_in_arabic_is_mirrored() {
+       let hosts = hosts();
+       assert_snapshot("hosts-ar", "ar", &Theme::Light, (360.0, 160.0), || hosts.view());
+   }
+   ```
+
+   `assert_snapshot(name, language, theme, size, view)` sets the app's language (holding a lock, since it belongs to the process), draws the view in software at twice the size, and compares it with `app/tests/snapshots/<name>.png`. A few pixels of anti-aliasing may differ; a moved label may not.
+
+   - **Add or change one:** run `UPDATE_SNAPSHOTS=1 cargo test -p homeport-app <test name>`, **open the PNG and look at it** (the Arabic one above showed a list that started on the wrong side), then commit it.
+   - A missing snapshot fails; it is never written silently.
+   - When one differs, what was drawn is kept as `<temp dir>/homeport-snapshots/<name>.actual.png`; CI uploads that folder.
+   - Name them `<feature>-<state>-<language>`: `containers-empty-en`, `containers-ar`.
+   - A test that reads or sets the language outside a snapshot holds `test_support::snapshot::in_language(tag)`.
+
+`app/tests/smoke.rs` starts the real binary on an empty data folder and expects it to open its window and close cleanly: `xvfb-run -a cargo test -p homeport-app --test smoke -- --ignored` (the `iced smoke` CI job, on the three systems). On Linux the app needs `libxkbcommon-x11` at run time.
+
+`app/tests/layout.rs` checks the rules of _The target architecture_; `app/src/i18n/check.rs` checks the catalogues (`docs/i18n/README.md`).
 
 ## Definition of done (every ticket)
 
