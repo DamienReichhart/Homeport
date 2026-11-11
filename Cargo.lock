@@ -2449,7 +2449,7 @@ dependencies = [
 
 [[package]]
 name = "homeport"
-version = "1.0.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "homeport-backup",
  "homeport-clusters",
@@ -2491,7 +2491,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-backup"
-version = "1.0.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "homeport-clusters",
  "homeport-core",
@@ -2511,7 +2511,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-clusters"
-version = "1.0.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "homeport-core",
  "homeport-kubernetes",
@@ -2530,7 +2530,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-containerd"
-version = "1.0.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "futures-util",
  "homeport-core",
@@ -2556,7 +2556,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-core"
-version = "1.0.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "bollard",
  "log",
@@ -2571,7 +2571,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-diagnostics"
-version = "1.0.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "homeport-core",
  "regex",
@@ -2581,7 +2581,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-engine"
-version = "1.0.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "base64 0.22.1",
  "bollard",
@@ -2603,7 +2603,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-git"
-version = "1.0.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "base64 0.22.1",
  "futures-util",
@@ -2623,7 +2623,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-hosts"
-version = "1.0.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "bollard",
  "futures-util",
@@ -2646,7 +2646,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-incus"
-version = "1.0.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "base64 0.22.1",
  "futures-util",
@@ -2672,7 +2672,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-kubernetes"
-version = "1.0.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "base64 0.22.1",
  "bytes",
@@ -2704,7 +2704,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-nomad"
-version = "1.0.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "base64 0.22.1",
  "futures-util",
@@ -2728,7 +2728,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-registries"
-version = "1.0.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "homeport-core",
  "homeport-engine",
@@ -2746,7 +2746,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-settings"
-version = "1.0.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "homeport-core",
  "homeport-storage",
@@ -2760,7 +2760,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-stacks"
-version = "1.0.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "bollard",
  "homeport-core",
@@ -2783,7 +2783,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-storage"
-version = "1.0.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "argon2",
  "chacha20poly1305",
@@ -2801,7 +2801,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-transport"
-version = "1.0.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "base64 0.22.1",
  "bollard",
@@ -2828,7 +2828,7 @@ dependencies = [
 
 [[package]]
 name = "homeport-updates"
-version = "1.0.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "serde",
  "specta",
