@@ -8,6 +8,7 @@ pub mod images;
 pub mod networks;
 pub mod podman;
 mod registries;
+pub mod swarm;
 pub mod system;
 pub mod volumes;
 
