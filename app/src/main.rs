@@ -4,16 +4,21 @@ use iced::widget::text;
 use iced::Element;
 
 fn main() -> iced::Result {
-    iced::application("Homeport", update, view).run()
+    iced::application(State::default, update, view)
+        .title("Homeport")
+        .run()
 }
+
+#[derive(Default)]
+struct State;
 
 #[derive(Debug, Clone)]
 enum Message {}
 
-fn update(_: &mut (), message: Message) {
+fn update(_: &mut State, message: Message) {
     match message {}
 }
 
-fn view(_: &()) -> Element<'_, Message> {
+fn view(_: &State) -> Element<'_, Message> {
     text("Homeport").into()
 }
