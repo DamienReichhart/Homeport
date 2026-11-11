@@ -27,10 +27,11 @@ pub async fn host_status_changed(state: &AppState, host_id: &str, status: &HostS
     }
 }
 
-/// What must happen before the app exits: a volume being browsed keeps a
-/// helper container on its Host, and the last second of Engine events may
-/// still be waiting to be written.
+/// What must happen before the app exits: no stream goes on without its
+/// window, a volume being browsed keeps a helper container on its Host, and
+/// the last second of Engine events may still be waiting to be written.
 pub async fn shutdown(state: &AppState) {
+    state.streams.cancel_all();
     state.volume_browser.end_all().await;
     state.hosts.events.flush().await;
 }
@@ -57,5 +58,15 @@ mod tests {
         let app = testing::app();
         shutdown(&app.state).await;
         assert!(app.state.volume_browser.helper_ids().is_empty());
+    }
+
+    #[tokio::test]
+    async fn shutting_down_stops_the_streams_still_running() {
+        let app = testing::app();
+        app.state.streams.spawn(std::future::pending());
+        app.state.streams.spawn(std::future::pending());
+        assert_eq!(app.state.streams.running(), 2);
+        shutdown(&app.state).await;
+        assert_eq!(app.state.streams.running(), 0);
     }
 }

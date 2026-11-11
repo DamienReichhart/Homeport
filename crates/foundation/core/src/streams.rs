@@ -50,9 +50,17 @@ impl Streams {
         }
     }
 
-    #[cfg(test)]
-    fn running(&self) -> usize {
-        self.tasks.lock().unwrap().len()
+    /// Stops every stream, as the app quits: none outlives its window.
+    pub fn cancel_all(&self) {
+        let tasks = std::mem::take(&mut *self.tasks.lock().expect("streams lock poisoned"));
+        for handle in tasks.into_values() {
+            handle.abort();
+        }
+    }
+
+    /// How many streams are running.
+    pub fn running(&self) -> usize {
+        self.tasks.lock().expect("streams lock poisoned").len()
     }
 }
 
@@ -80,6 +88,25 @@ mod tests {
         while rx.try_recv().is_ok() {}
         assert!(rx.recv().await.is_none(), "task kept running after cancel");
         assert_eq!(streams.running(), 0);
+    }
+
+    #[tokio::test]
+    async fn quitting_stops_every_stream() {
+        let streams = Streams::default();
+        let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<()>();
+        for _ in 0..3 {
+            let tx = tx.clone();
+            streams.spawn(async move {
+                let _held = tx;
+                std::future::pending::<()>().await;
+            });
+        }
+        drop(tx);
+        assert_eq!(streams.running(), 3);
+        streams.cancel_all();
+        assert_eq!(streams.running(), 0);
+        // Each task was dropped, with what it held.
+        assert!(rx.recv().await.is_none());
     }
 
     #[tokio::test]
