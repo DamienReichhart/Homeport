@@ -156,8 +156,13 @@ fn the_ratios_are_those_of_docs_brand() {
 }
 
 /// The terminal and the editor carry their own colours (docs/BRAND.md,
-/// Contrast). The six ANSI hues are 5.3:1 or more on the terminal; black and
-/// white are what programs dim with, and the bright forms only need to be
+/// Contrast). The six ANSI hues are 5.3:1 or more on the terminal, and so
+/// are the black of the light theme and the white of the dark one, which
+/// are text there. The two that fade into their terminal are bounded by
+/// what they measure: light white is a grey that must still be seen (3:1),
+/// and dark black, which is 1.26:1 on a black terminal in every palette
+/// (programs use it as a background, or with bold, which is ANSI 8 and
+/// passes 3:1), may not get any fainter. The bright forms only need to be
 /// seen. Syntax is 5:1 or more on a card.
 #[test]
 fn machine_text_is_legible() {
@@ -170,8 +175,12 @@ fn machine_text_is_legible() {
             let min = match index {
                 // 5.3:1 as docs/BRAND.md rounds it (light green is 5.297).
                 1..=6 => 5.25,
-                // Light white, dark black: faint on purpose (3.4 and 1.3).
-                0 | 7 => 1.0,
+                // Black on the dark terminal: 1.26, held where it is.
+                0 if theme.is_dark() => 1.25,
+                // White on the light terminal: a grey at 3.4.
+                7 if !theme.is_dark() => UI,
+                // Black on light and white on dark are text.
+                0 | 7 => 5.25,
                 // Bright white on white is the faintest grey (2.1).
                 15 if !theme.is_dark() => 2.0,
                 _ => UI,

@@ -30,6 +30,8 @@
 //! ```
 
 pub mod color;
+#[cfg(test)]
+mod contrast_tests;
 pub mod font;
 #[cfg(any(test, feature = "gallery"))]
 pub mod gallery;
