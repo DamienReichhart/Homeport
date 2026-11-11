@@ -218,17 +218,36 @@ fn every_language_formats_numbers_dates_sizes_and_relative_times() {
             "{tag} relative"
         );
         assert_eq!(formats.date(WHEN, &TimeZone::UTC), date, "{tag} date");
-        let (unit, value) = formats.bytes_parts(1536.0, 1);
-        let size = language.text(unit, Some(&args().with("value", value).0));
-        assert!(
-            size.chars().count() >= 5 && !size.contains("format."),
-            "{tag} size {size}"
-        );
-        assert!(!formats.percent(3.456).is_empty(), "{tag} percent");
         assert!(
             !formats.date_time(WHEN, &TimeZone::UTC).is_empty(),
             "{tag} date and time"
         );
         assert!(!formats.time(WHEN, &TimeZone::UTC).is_empty(), "{tag} time");
+    }
+}
+
+#[test]
+fn every_language_writes_sizes_and_percentages() {
+    let expected = [
+        ("en", "1.5 KB", "3.5%"),
+        ("ar", "1.5 كيلوبايت", "3.5\u{200e}%\u{200e}"),
+        ("de", "1,5 KB", "3,5\u{a0}%"),
+        ("es", "1,5 KB", "3,5\u{a0}%"),
+        ("fr", "1,5 Ko", "3,5\u{a0}%"),
+        ("hi", "1.5 KB", "3.5%"),
+        ("it", "1,5 KB", "3,5%"),
+        ("ja", "1.5 KB", "3.5%"),
+        ("ko", "1.5 KB", "3.5%"),
+        ("pt-BR", "1,5 KB", "3,5%"),
+        ("ru", "1,5 КБ", "3,5\u{a0}%"),
+        ("zh-CN", "1.5 KB", "3.5%"),
+    ];
+    assert_eq!(expected.len(), LOCALES.len());
+    for (tag, size, percent) in expected {
+        let language = language(tag);
+        let (unit, value) = language.formats.bytes_parts(1536.0, 1);
+        let written = language.text(unit, Some(&args().with("value", value).0));
+        assert_eq!(written, size, "{tag} size");
+        assert_eq!(language.formats.percent(3.456), percent, "{tag} percent");
     }
 }
