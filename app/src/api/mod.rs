@@ -4,6 +4,10 @@
 //! arguments, call one crate, map the result (ADR 0005). Nothing here knows
 //! iced, so `cargo test -p homeport-app` runs them without a window.
 //!
+//! A function keeps its command's full name (`hosts_list`, not `list`): the
+//! React page being ported names it that way (`commands.hostsList`), so one
+//! search finds the command, its use case and its callers.
+//!
 //! Where a command took a Tauri `Channel<T>`, the function takes
 //! `impl Fn(T) -> bool + Send + Sync + 'static`: it is called for each item
 //! and its answer is whether to go on.
