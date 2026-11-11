@@ -11,7 +11,7 @@
 //! ```
 
 use iced::{
-    widget::{button as iced_button, container, svg, text as label_text, Row},
+    widget::{button as iced_button, container, text as label_text, Row},
     Length,
 };
 
@@ -37,7 +37,6 @@ pub enum Variant {
 }
 
 type ButtonStyle = fn(&Theme, iced_button::Status) -> iced_button::Style;
-type IconStyle = fn(&Theme, svg::Status) -> svg::Style;
 
 impl Variant {
     pub fn style(self) -> ButtonStyle {
@@ -48,16 +47,6 @@ impl Variant {
             Self::Ghost => theme::button::ghost,
             Self::Destructive => theme::button::destructive,
             Self::Link => theme::button::link,
-        }
-    }
-
-    /// An icon takes no colour from the text around it, so each variant
-    /// names the one its label has.
-    pub fn icon(self) -> IconStyle {
-        match self {
-            Self::Primary => theme::svg::on_primary,
-            Self::Destructive => theme::svg::destructive,
-            Self::Secondary | Self::Outline | Self::Ghost | Self::Link => theme::svg::foreground,
         }
     }
 }
@@ -162,20 +151,12 @@ impl<'a, Message: Clone + 'a> Button<'a, Message> {
     /// The button, to which more can be added (`on_key`).
     pub fn build(self) -> Pressable<'a, Message> {
         let size = self.size;
-        let enabled = self.on_press.is_some();
+        // The icon is drawn in the label's colour, whatever the variant
+        // and the state: it takes the colour of the text around it.
         let glyph = self.glyph.map(|glyph| {
-            let style = self.variant.icon();
             glyph_of(glyph)
                 .width(size.icon())
                 .height(size.icon())
-                .style(move |theme, status| {
-                    let mut style = style(theme, status);
-                    if !enabled {
-                        // `disabled:opacity-50`, as the label's.
-                        style.color = style.color.map(|c| theme::color::alpha(c, 0.5));
-                    }
-                    style
-                })
                 .into()
         });
         let label = self.label.map(|label| {

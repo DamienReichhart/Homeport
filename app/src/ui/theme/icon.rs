@@ -11,9 +11,18 @@
 //! [`Icon::FileCodeCorner`], `ShieldQuestionIcon` →
 //! [`Icon::ShieldQuestionMark`].
 
-use iced::widget::svg::{Handle, Svg};
+use iced::{
+    advanced::{
+        layout, mouse, renderer,
+        svg::{Renderer as _, Svg},
+        widget::Tree,
+        Layout, Widget,
+    },
+    widget::svg::{self as svg_widget, Handle},
+    Length, Rectangle, Size,
+};
 
-use super::{metrics, style::svg, Theme};
+use super::{metrics, Element, Theme};
 
 /// Declares [`Icon`] with, for each variant, the file it embeds: a variant
 /// without its SVG does not compile.
@@ -169,23 +178,122 @@ icons! {
     Zap => "zap",
 }
 
-/// `icon` at Lucide's `size-4`, in the theme's text colour. A widget cannot
-/// see the colour of the text around it, so where that is not the page's
-/// (on a primary button, in muted or red text) say so:
-/// `icon(Icon::Trash).style(theme::svg::destructive)`; resize it with
-/// `.width(..).height(..)` and the sizes of `metrics::icon`.
-pub fn icon<'a>(icon: Icon) -> Svg<'a, Theme> {
-    Svg::new(Handle::from_memory(icon.bytes()))
-        .width(metrics::icon::MD)
-        .height(metrics::icon::MD)
-        .style(svg::foreground)
+type Style<'a> = Box<dyn Fn(&Theme, svg_widget::Status) -> svg_widget::Style + 'a>;
+
+/// An icon of the set, drawn in the colour of the text around it, as
+/// Lucide's `currentColor`: Paper on the primary button, red in a
+/// destructive one, faded in a disabled one, without being told.
+pub struct Glyph<'a> {
+    handle: Handle,
+    width: Length,
+    height: Length,
+    style: Option<Style<'a>>,
+}
+
+/// `icon` at Lucide's `size-4`, in the colour of the text around it. Give
+/// it another only where it differs from that text (a muted chevron beside
+/// a label): `icon(Icon::ChevronDown).style(theme::svg::muted)`; resize it
+/// with `.width(..).height(..)` and the sizes of `metrics::icon`.
+pub fn icon<'a>(icon: Icon) -> Glyph<'a> {
+    Glyph {
+        handle: Handle::from_memory(icon.bytes()),
+        width: Length::Fixed(metrics::icon::MD),
+        height: Length::Fixed(metrics::icon::MD),
+        style: None,
+    }
+}
+
+impl<'a> Glyph<'a> {
+    #[must_use]
+    pub fn width(mut self, width: impl Into<Length>) -> Self {
+        self.width = width.into();
+        self
+    }
+
+    #[must_use]
+    pub fn height(mut self, height: impl Into<Length>) -> Self {
+        self.height = height.into();
+        self
+    }
+
+    /// A colour of its own, from `theme::svg`. A style that names no
+    /// colour leaves it the text's.
+    #[must_use]
+    pub fn style(
+        mut self,
+        style: impl Fn(&Theme, svg_widget::Status) -> svg_widget::Style + 'a,
+    ) -> Self {
+        self.style = Some(Box::new(style));
+        self
+    }
+
+    /// The colour it is drawn in where the text around it is `text`.
+    pub fn colour(&self, theme: &Theme, text: iced::Color) -> iced::Color {
+        self.style
+            .as_ref()
+            .and_then(|style| style(theme, svg_widget::Status::Idle).color)
+            .unwrap_or(text)
+    }
+}
+
+impl<Message> Widget<Message, Theme, iced::Renderer> for Glyph<'_> {
+    fn size(&self) -> Size<Length> {
+        Size::new(self.width, self.height)
+    }
+
+    fn layout(
+        &mut self,
+        _tree: &mut Tree,
+        _renderer: &iced::Renderer,
+        limits: &layout::Limits,
+    ) -> layout::Node {
+        layout::atomic(limits, self.width, self.height)
+    }
+
+    fn draw(
+        &self,
+        _tree: &Tree,
+        renderer: &mut iced::Renderer,
+        theme: &Theme,
+        style: &renderer::Style,
+        layout: Layout<'_>,
+        _cursor: mouse::Cursor,
+        viewport: &Rectangle,
+    ) {
+        let bounds = layout.bounds();
+        if let Some(clip) = bounds.intersection(viewport) {
+            let colour = self.colour(theme, style.text_color);
+            renderer.draw_svg(Svg::new(self.handle.clone()).color(colour), bounds, clip);
+        }
+    }
+}
+
+impl<'a, Message: 'a> From<Glyph<'a>> for Element<'a, Message> {
+    fn from(glyph: Glyph<'a>) -> Self {
+        Element::new(glyph)
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use std::{collections::HashSet, fs, path::Path};
 
-    use super::Icon;
+    use super::{icon, Icon};
+    use crate::ui::theme::{self, Theme};
+
+    #[test]
+    fn an_icon_takes_the_colour_of_the_text_around_it_unless_given_one() {
+        for theme in Theme::ALL {
+            let tokens = theme.tokens();
+            // On the primary button the text is `primary_foreground`: so
+            // is the icon, which used to be drawn ink on ink.
+            let around = tokens.primary_foreground;
+            assert_eq!(icon(Icon::Play).colour(&theme, around), around);
+            assert_ne!(icon(Icon::Play).colour(&theme, around), tokens.primary);
+            let muted = icon(Icon::ChevronDown).style(theme::svg::muted);
+            assert_eq!(muted.colour(&theme, around), tokens.muted_foreground);
+        }
+    }
 
     #[test]
     fn every_icon_is_an_embedded_svg_that_parses() {
