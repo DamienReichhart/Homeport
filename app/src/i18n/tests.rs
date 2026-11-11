@@ -108,7 +108,8 @@ fn errors_read_in_the_language_or_in_english_without_a_key() {
 
 #[test]
 fn switching_the_language_changes_what_the_app_shows() {
-    // The only test that touches the process-wide language.
+    // The language is the whole process's: no other test may draw meanwhile.
+    let _language = crate::test_support::snapshot::in_language("en");
     assert_eq!(set_language("ar", &[]), "ar");
     assert_eq!(direction(), Direction::Rtl);
     assert_eq!(

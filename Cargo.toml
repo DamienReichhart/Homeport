@@ -108,6 +108,10 @@ icu = { version = "2", default-features = false, features = ["compiled_data", "s
 icu_experimental = { version = "0.7", default-features = false, features = ["compiled_data"] }
 fixed_decimal = { version = "0.7", features = ["ryu"] }
 writeable = "0.6"
+# Headless runs of the iced app in tests: simulated input and snapshots.
+iced_test = "0.14"
+iced_runtime = "0.14"
+png = "0.18"
 # The desktop shell (Tauri, until the iced app replaces it).
 tauri = { version = "2", features = ["tray-icon"] }
 tauri-build = { version = "2", features = [] }

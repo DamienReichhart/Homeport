@@ -11,6 +11,8 @@ pub mod api;
 pub mod app;
 pub mod i18n;
 pub mod messages;
+#[cfg(test)]
+pub mod test_support;
 pub mod ui;
 
 pub use ui::run;
