@@ -24,6 +24,7 @@ use crate::{
         events::{Event, Events},
         setup, AppState,
     },
+    data::{self, Data},
     i18n,
 };
 use theme::{Element, Theme};
@@ -59,6 +60,8 @@ enum Phase {
 struct Homeport {
     phase: Phase,
     hosts: hosts::Hosts,
+    /// Everything pages read from Hosts and Clusters, cached.
+    data: Data,
     /// The Settings value of the theme; `System` until they are read.
     mode: theme::Mode,
     scale: theme::Scale,
@@ -78,6 +81,8 @@ pub enum Message {
     Started(Result<Arc<AppState>, Failure>),
     Backend(Event),
     Hosts(hosts::Message),
+    /// A read of the data layer ended, or it is time for one.
+    Data(data::Message),
     /// The window was asked to close.
     CloseRequested,
     /// The Hosts were tidied up: the app may exit.
@@ -113,6 +118,7 @@ impl Homeport {
             Self {
                 phase: Phase::Starting,
                 hosts: hosts::Hosts::default(),
+                data: Data::default(),
                 mode: theme::Mode::default(),
                 scale: theme::Scale::default(),
             },
@@ -139,18 +145,28 @@ impl Homeport {
             }
             Message::Backend(event) => {
                 self.hosts.on_event(&event);
-                match (&self.phase, event) {
-                    (Phase::Ready(state), Event::HostStatus { host_id, status }) => {
-                        let state = state.clone();
-                        Task::perform(
-                            async move {
-                                lifecycle::host_status_changed(&state, &host_id, &status).await;
-                            },
-                            |()| Message::Done,
-                        )
-                    }
-                    _ => Task::none(),
-                }
+                let Phase::Ready(state) = &self.phase else {
+                    return Task::none();
+                };
+                // What is cached follows what the backend just told.
+                let refresh = self.data.on_event(state, &event).map(Message::Data);
+                let Event::HostStatus { host_id, status } = event else {
+                    return refresh;
+                };
+                let state = state.clone();
+                let tidy = Task::perform(
+                    async move {
+                        lifecycle::host_status_changed(&state, &host_id, &status).await;
+                    },
+                    |()| Message::Done,
+                );
+                Task::batch([refresh, tidy])
+            }
+            Message::Data(message) => {
+                let Phase::Ready(state) = &self.phase else {
+                    return Task::none();
+                };
+                self.data.update(state, message).map(Message::Data)
             }
             Message::CloseRequested => match &self.phase {
                 Phase::Ready(state) => {
@@ -208,6 +224,7 @@ impl Homeport {
         Subscription::batch([
             Subscription::run(backend_events).map(Message::Backend),
             iced::window::close_requests().map(|_| Message::CloseRequested),
+            self.data.subscription().map(Message::Data),
         ])
     }
 }

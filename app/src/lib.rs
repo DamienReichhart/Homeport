@@ -9,6 +9,7 @@
 
 pub mod api;
 pub mod app;
+pub mod data;
 pub mod i18n;
 pub mod messages;
 #[cfg(test)]

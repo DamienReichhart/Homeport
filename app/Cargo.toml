@@ -60,6 +60,8 @@ writeable.workspace = true
 jiff.workspace = true
 
 [dev-dependencies]
+# A clock the data layer's tests move themselves.
+tokio = { workspace = true, features = ["test-util"] }
 tempfile.workspace = true
 iced_test.workspace = true
 iced_runtime.workspace = true
