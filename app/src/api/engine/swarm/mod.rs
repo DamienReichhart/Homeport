@@ -2,6 +2,7 @@
 //! connected one (ADR 0016).
 
 pub mod nodes;
+pub mod objects;
 
 use homeport_core::error::AppResult;
 use homeport_engine::swarm::{
