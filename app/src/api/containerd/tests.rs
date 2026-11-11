@@ -1,5 +1,4 @@
 use homeport_core::error::ErrorCode;
-use homeport_registries::messages as msg;
 
 use super::*;
 use crate::app::testing;
@@ -117,20 +116,4 @@ async fn snapshots_need_a_connected_host() {
     let snapshotter = "overlayfs".to_owned();
     let key = "sha256:abc".to_owned();
     not_connected(containerd_snapshot_remove(state, host(), ns(), snapshotter, key).await);
-}
-
-#[tokio::test]
-async fn a_refused_pull_points_at_the_missing_login() {
-    let app = testing::app();
-    let explain = explainer(&app.state, "ghcr.io/acme/private:latest");
-
-    let refused = AppError::new(ErrorCode::RegistryAuthRequired, msg::LOGIN_FAILED);
-    let explained = explain(refused.clone());
-    assert_eq!(explained.code, ErrorCode::RegistryAuthRequired);
-    assert_ne!(explained.message, refused.message);
-    assert!(explained.hint.is_some());
-
-    // Anything the registry didn't refuse is left as it is.
-    let other = AppError::new(ErrorCode::NotFound, msg::HTTPS_CLIENT);
-    assert_eq!(explain(other.clone()).message, other.message);
 }

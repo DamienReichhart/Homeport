@@ -2,17 +2,14 @@
 //! Stacks' crate doesn't know Hosts, so the shell joins the two here.
 
 use homeport_core::error::AppResult;
-use homeport_engine::{
-    auth::{Logins, RegistryAuth},
-    Docker,
-};
+use homeport_engine::Docker;
 use homeport_stacks::{
     compose::ComposeAction,
     runtime::{ComposeJob, Reach, SourceKind, StackTarget},
     StackOwner,
 };
 
-use crate::app::AppState;
+use crate::{api::hosts::registries, app::AppState};
 
 /// Checks a new Stack's Host or Swarm is one Homeport knows.
 pub(crate) fn known(state: &AppState, owner: &StackOwner) -> AppResult<()> {
@@ -58,24 +55,6 @@ pub(crate) fn of(state: &AppState, owner: &StackOwner) -> AppResult<StackTarget>
     })
 }
 
-/// Every stored registry login, and the rule that matches them to image
-/// references, for a deploy that pulls several images.
-fn logins(state: &AppState) -> AppResult<Logins> {
-    Ok(Logins::new(
-        state
-            .registries
-            .all_credentials()?
-            .into_iter()
-            .map(|c| RegistryAuth {
-                address: c.address,
-                username: c.username,
-                secret: c.secret,
-            })
-            .collect(),
-        homeport_registries::registry_of,
-    ))
-}
-
 /// The compose job for `action` on the Managed, Linked or Synced Stack `id`
 /// with the registry logins Homeport holds, recorded as started by
 /// auto-deploy when `automatic`; and the commit a Synced Stack uses.
@@ -91,7 +70,7 @@ pub(crate) async fn job(
         .stacks
         .job(
             |owner| of(state, owner),
-            logins(state)?,
+            registries::logins(state)?,
             kind,
             id,
             action,

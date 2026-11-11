@@ -16,7 +16,7 @@ use homeport_engine::{
     },
 };
 
-use super::registries;
+use crate::api::hosts::registries;
 use crate::app::AppState;
 
 pub async fn volumes_list(state: &AppState, host_id: String) -> AppResult<Vec<VolumeView>> {

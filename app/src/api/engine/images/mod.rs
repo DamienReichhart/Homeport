@@ -15,7 +15,7 @@ use homeport_engine::{
     transfer::{self, ImportSpec, TransferEvent},
 };
 
-use super::registries;
+use crate::api::hosts::registries;
 use crate::app::AppState;
 
 pub async fn images_list(state: &AppState, host_id: String) -> AppResult<Vec<Image>> {

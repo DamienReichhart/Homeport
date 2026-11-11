@@ -14,15 +14,14 @@ use homeport_containerd::{
     snapshots::{self, ContainerdSnapshots},
 };
 use homeport_core::{
-    error::{AppError, AppResult},
+    error::AppResult,
     logs::{LogEvent, LogOptions},
     pull::PullEvent,
     streams::StreamId,
     terminal::ExecEvent,
 };
-use homeport_registries::hints;
 
-use crate::app::AppState;
+use crate::{api::hosts::registries, app::AppState};
 
 /// Every namespace of the Host, with what each holds.
 pub async fn containerd_namespaces(
@@ -229,7 +228,7 @@ pub async fn containerd_images_pull_subscribe(
             username: c.username,
             secret: c.secret,
         });
-    let explained = explainer(state, &qualified);
+    let explained = registries::explainer(state, &qualified);
     Ok(state.streams.spawn(images::pull(
         client,
         namespace,
@@ -245,17 +244,6 @@ pub async fn containerd_images_pull_subscribe(
             on_event(e)
         },
     )))
-}
-
-/// Rewrites a registry refusal for `reference` to point at the login that
-/// would fix it, for a stream that outlives the call and can't keep `state`.
-fn explainer(
-    state: &AppState,
-    reference: &str,
-) -> impl Fn(AppError) -> AppError + Send + Sync + 'static {
-    let login = state.registries.login_for(reference).ok().flatten();
-    let reference = reference.to_owned();
-    move |error| hints::explain(error, &reference, login.as_ref())
 }
 
 /// The snapshots of a snapshotter (the Host's default when `None`) in

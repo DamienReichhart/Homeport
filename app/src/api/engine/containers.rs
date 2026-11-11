@@ -13,7 +13,7 @@ use homeport_engine::containers::{
 };
 use homeport_engine::podman;
 
-use super::registries;
+use crate::api::hosts::registries;
 use crate::app::AppState;
 
 pub async fn containers_list(state: &AppState, host_id: String) -> AppResult<Vec<Container>> {
