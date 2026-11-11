@@ -56,7 +56,7 @@ Rules, enforced by `app/tests/layout.rs`:
 1. Read the React feature (`src/features/<name>/`: `manifest.ts`, `api/`, `model/`, `ui/`) and its tests. List every state, action, dialog, empty/error/loading state, shortcut and palette command. Put that list in the PR description as the parity checklist.
 2. Port the IPC commands it uses into `app/src/api/<domain>/` (they are in `src-tauri/src/commands/`). If the `api` ticket of that domain already did, use them.
 3. Port the pure logic in `model/` to Rust unit tests first (the TypeScript tests are the oracle: same inputs, same outputs).
-4. Build `State`/`Message`/`update`, then the `view`, with the shared widgets. If a widget is missing, stop and raise it on the widget's ticket rather than writing a private copy.
+4. Build `State`/`Message`/`update`, then the `view`, with the shared widgets (`docs/agents/widgets.md` lists them and the rules for using them). If a widget is missing, stop and raise it on the widget's ticket rather than writing a private copy.
 5. Register the feature in `ui/shell` (route, sidebar entry with its scope, palette commands, shortcuts), as `manifest.ts` did.
 6. Tests: `update` tests for every message that does something; a headless `iced_test` snapshot for each page state (empty, loading, error, populated) in English, and one RTL snapshot (Arabic) for each page with a table or a form.
 7. Compare against the running Tauri app on the same data. Anything different is a bug unless the PR says why.

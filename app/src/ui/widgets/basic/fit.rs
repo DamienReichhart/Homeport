@@ -7,9 +7,10 @@ use iced::{
     advanced::{
         layout, mouse, overlay, renderer,
         widget::{Operation, Tree},
-        Clipboard, Layout, Shell, Widget,
+        Clipboard, Layout, Renderer as _, Shell, Widget,
     },
-    Event, Length, Point, Rectangle, Size, Vector,
+    widget::container,
+    Color, Event, Length, Point, Rectangle, Size, Vector,
 };
 
 use crate::ui::theme::{Element, Theme};
@@ -18,6 +19,9 @@ use crate::ui::theme::{Element, Theme};
 pub struct Fit<'a, Message> {
     items: Vec<Element<'a, Message>>,
     min_width: f32,
+    max_item_height: f32,
+    padding: f32,
+    style: Option<fn(&Theme) -> container::Style>,
 }
 
 /// `items` in a column that fits the widest. Give each `Length::Fill` as
@@ -26,6 +30,9 @@ pub fn fit<'a, Message>(items: Vec<Element<'a, Message>>) -> Fit<'a, Message> {
     Fit {
         items,
         min_width: 0.0,
+        max_item_height: f32::INFINITY,
+        padding: 0.0,
+        style: None,
     }
 }
 
@@ -34,6 +41,29 @@ impl<Message> Fit<'_, Message> {
     #[must_use]
     pub fn min_width(mut self, width: f32) -> Self {
         self.min_width = width;
+        self
+    }
+
+    /// No item taller than this: a list inside scrolls past it.
+    #[must_use]
+    pub fn max_item_height(mut self, height: f32) -> Self {
+        self.max_item_height = height;
+        self
+    }
+
+    /// Kept free around the items.
+    #[must_use]
+    pub fn padding(mut self, padding: f32) -> Self {
+        self.padding = padding;
+        self
+    }
+
+    /// The surface behind the items (`theme::container::popover`): the
+    /// column is then the panel itself, and what the panel is told to be
+    /// at least as wide as reaches the items.
+    #[must_use]
+    pub fn style(mut self, style: fn(&Theme) -> container::Style) -> Self {
+        self.style = Some(style);
         self
     }
 }
@@ -57,9 +87,14 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for Fit<'_, Message> {
         renderer: &iced::Renderer,
         limits: &layout::Limits,
     ) -> layout::Node {
-        let max = limits.max();
+        let around = 2.0 * self.padding;
+        let max = Size::new(
+            (limits.max().width - around).max(0.0),
+            (limits.max().height - around).max(0.0),
+        );
         // Once to learn how wide each item wants to be…
         let measure = layout::Limits::with_compression(Size::ZERO, max, Size::new(true, true));
+        let least = self.min_width.max(limits.min().width) - around;
         let widest = self
             .items
             .iter_mut()
@@ -70,10 +105,11 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for Fit<'_, Message> {
                     .size()
                     .width
             })
-            .fold(self.min_width.max(limits.min().width), f32::max)
+            .fold(least.max(0.0), f32::max)
             .min(max.width);
         // … and once more at the width of the widest.
-        let mut y = 0.0;
+        let mut y = self.padding;
+        let room = self.max_item_height.min(max.height);
         let nodes = self
             .items
             .iter_mut()
@@ -81,18 +117,18 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for Fit<'_, Message> {
             .map(|(item, tree)| {
                 let limits = layout::Limits::with_compression(
                     Size::new(widest, 0.0),
-                    Size::new(widest, f32::INFINITY),
+                    Size::new(widest, room),
                     Size::new(false, true),
                 );
                 let node = item
                     .as_widget_mut()
                     .layout(tree, renderer, &limits)
-                    .move_to(Point::new(0.0, y));
+                    .move_to(Point::new(self.padding, y));
                 y += node.size().height;
                 node
             })
             .collect();
-        layout::Node::with_children(Size::new(widest, y), nodes)
+        layout::Node::with_children(Size::new(widest + around, y + self.padding), nodes)
     }
 
     fn operate(
@@ -149,6 +185,24 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for Fit<'_, Message> {
         cursor: mouse::Cursor,
         viewport: &Rectangle,
     ) {
+        if let Some(surface) = self.style.map(|style| style(theme)) {
+            renderer.fill_quad(
+                renderer::Quad {
+                    bounds: layout.bounds(),
+                    border: surface.border,
+                    shadow: surface.shadow,
+                    ..renderer::Quad::default()
+                },
+                surface
+                    .background
+                    .unwrap_or(iced::Background::Color(Color::TRANSPARENT)),
+            );
+        }
+        let coloured = self
+            .style
+            .and_then(|style| style(theme).text_color)
+            .map(|text_color| renderer::Style { text_color });
+        let style = coloured.as_ref().unwrap_or(style);
         for ((item, tree), layout) in self.items.iter().zip(&tree.children).zip(layout.children()) {
             item.as_widget()
                 .draw(tree, renderer, theme, style, layout, cursor, viewport);

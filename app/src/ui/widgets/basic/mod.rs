@@ -3,5 +3,12 @@
 
 pub mod button;
 pub mod fit;
+pub mod surface;
 
-pub use self::fit::{fit, Fit};
+pub use self::{
+    fit::{fit, Fit},
+    surface::{
+        badge, card, collapsible, progress, scroll_area, separator, separator_vertical,
+        BadgeVariant,
+    },
+};

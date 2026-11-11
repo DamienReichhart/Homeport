@@ -355,11 +355,16 @@ fn toast(toast: &Toast) -> Element<'_, Message> {
             .on_press(Message::Dismiss(toast.id))
             .into(),
     );
-    container(line(parts).spacing(space::S2).align_y(Vertical::Top))
-        .padding(space::S3)
-        .width(Length::Fill)
-        .style(theme::container::toast(colour))
-        .into()
+    container(
+        line(parts)
+            .spacing(space::S2)
+            .width(Length::Fill)
+            .align_y(Vertical::Top),
+    )
+    .padding(space::S3)
+    .width(Length::Fill)
+    .style(theme::container::toast(colour))
+    .into()
 }
 
 #[cfg(test)]

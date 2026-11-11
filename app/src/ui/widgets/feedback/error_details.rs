@@ -190,6 +190,7 @@ impl Details {
         }
         line(vec![terms.into(), values.into()])
             .spacing(space::S4)
+            .width(Length::Fill)
             .into()
     }
 }

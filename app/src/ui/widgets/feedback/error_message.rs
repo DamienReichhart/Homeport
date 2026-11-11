@@ -20,7 +20,7 @@ use crate::{
         },
         widgets::{
             basic::button::{self, Variant},
-            line, stack, start,
+            line, stack,
         },
     },
 };
@@ -47,9 +47,7 @@ pub fn error_message<'a, Message: Clone + 'a>(
         .size(size::SM)
         .line_height(size::LEADING_SM)
         .font(font::SANS_MEDIUM)
-        .style(theme::text::destructive)
-        .width(Length::Fill)
-        .align_x(start());
+        .style(theme::text::destructive);
     let mut body: Vec<Element<'a, Message>> = vec![title.into()];
     if let Some(hint) = &error.hint {
         body.push(hint_view(hint, None, |index| {
@@ -73,6 +71,7 @@ pub fn error_message<'a, Message: Clone + 'a>(
     container(
         line(vec![glyph.into(), stack(body).spacing(space::S2).into()])
             .spacing(space::S2)
+            .width(Length::Fill)
             .align_y(Vertical::Top),
     )
     .padding([space::S2, space::S2_5])

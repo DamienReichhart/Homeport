@@ -124,8 +124,22 @@ pub fn assert_snapshot<'a, Message: 'a, Theme: Base + 'a>(
     size: impl Into<Size>,
     view: impl FnOnce() -> Element<'a, Message, Theme>,
 ) {
+    assert_snapshot_after(name, tag, theme, size, view, |_| {});
+}
+
+/// The same once `act` has used the view: the pointer rests on a button,
+/// Tab gave one focus, so the picture shows them hovered and focused.
+pub fn assert_snapshot_after<'a, Message: 'a, Theme: Base + 'a>(
+    name: &str,
+    tag: &str,
+    theme: &Theme,
+    size: impl Into<Size>,
+    view: impl FnOnce() -> Element<'a, Message, Theme>,
+    act: impl FnOnce(&mut Simulator<'a, Message, Theme>),
+) {
     let _language = in_language(tag);
     let mut ui = Simulator::with_size(settings(), size, view());
+    act(&mut ui);
     let snapshot = ui.snapshot(theme).expect("the page draws without a window");
 
     // iced_test only writes a picture where none exists, and only compares

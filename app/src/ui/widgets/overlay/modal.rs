@@ -72,7 +72,17 @@ pub fn over<'a, Message: Clone + 'a>(
     }
 }
 
-impl<Message> Modal<'_, Message> {
+impl<'a, Message: 'a> Modal<'a, Message> {
+    /// The same dialog for a page whose messages wrap this one's.
+    pub fn map<Outer: 'a>(self, wrap: impl Fn(Message) -> Outer + 'a) -> Modal<'a, Outer> {
+        Modal {
+            on_close: self.on_close.map(&wrap),
+            dialog: self.dialog.map(wrap),
+            width: self.width,
+            close_on_scrim: self.close_on_scrim,
+        }
+    }
+
     /// Sent on Escape. Leave it out while the dialog must stay (it is busy).
     #[must_use]
     pub fn on_close(mut self, message: Message) -> Self {

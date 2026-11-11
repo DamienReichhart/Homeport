@@ -79,9 +79,14 @@ pub fn hint_view<'a, Message: Clone + 'a>(
         // A command is machine text: its line starts on the left in every
         // language, with its button after it.
         let row = Row::new()
-            .push(container(code).padding([space::S1, 0.0]))
+            .push(
+                container(code)
+                    .padding([space::S1, 0.0])
+                    .width(Length::Fill),
+            )
             .push(button)
             .spacing(space::S2)
+            .width(Length::Fill)
             .align_y(Vertical::Top);
         parts.push(
             container(row)

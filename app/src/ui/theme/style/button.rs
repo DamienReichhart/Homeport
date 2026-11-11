@@ -246,6 +246,25 @@ pub mod part {
         }
     }
 
+    /// `SelectTrigger`: a button that looks like the field it stands in
+    /// for; `invalid` turns its border Signal red.
+    pub fn field(invalid: bool) -> impl Fn(&Theme, Status) -> Style {
+        move |theme, status| {
+            let tokens = theme.tokens();
+            let border = if invalid {
+                tokens.destructive
+            } else {
+                tokens.input
+            };
+            let look = |fill: f32| Look {
+                background: theme.is_dark().then_some(alpha(tokens.input, fill)),
+                text: tokens.foreground,
+                border,
+            };
+            build(status, look(0.3), look(0.5))
+        }
+    }
+
     /// `Toggle` (`variant="outline"` when `outlined`): `bg-muted` while on
     /// and under the pointer.
     pub fn toggle(on: bool, outlined: bool) -> impl Fn(&Theme, Status) -> Style {

@@ -56,9 +56,7 @@ if (!only) {
   const rust = walk(join(root, 'app', 'src'), [], /\.rs$/)
     .map((source) => source.text)
     .join('\n');
-  const named = namespaces
-    .flatMap((ns) => ns.keys)
-    .filter((key) => rust.includes(`"${key}"`));
+  const named = namespaces.flatMap((ns) => ns.keys).filter((key) => rust.includes(`"${key}"`));
   sources.push({ path: 'app/src', text: named.map((key) => `'${key}'`).join('\n') });
   problems.push(...checkKeys(namespaces, sources));
 }

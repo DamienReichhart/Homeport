@@ -29,8 +29,8 @@ const TYPEAHEAD: Duration = Duration::from_secs(1);
 pub enum Axis {
     /// A menu, a list: Up and Down.
     Vertical,
-    /// Tabs, a toggle group: Left and Right, swapped in a right-to-left
-    /// language.
+    /// Tabs, a toggle group: Left and Right, towards the item on that side
+    /// in every language.
     Horizontal,
 }
 
@@ -82,22 +82,42 @@ impl<'a, Message> Roving<'a, Message> {
         self
     }
 
+    /// Whether the items are laid out last to first: a row in a
+    /// right-to-left language, which `line` draws mirrored. Focus is counted
+    /// in the order things are laid out, the page counts in its own.
+    fn mirrored(&self) -> bool {
+        self.axis == Axis::Horizontal && i18n::direction().is_rtl()
+    }
+
+    /// The page's index of the item laid out at `index` of `total`, and
+    /// back: the same sum both ways.
+    fn flipped(&self, index: usize, total: usize) -> usize {
+        if self.mirrored() {
+            total.saturating_sub(index + 1)
+        } else {
+            index
+        }
+    }
+
     fn step(&self, key: &Key) -> Option<Move> {
         let Key::Named(named) = key else {
             return None;
         };
-        let rtl = i18n::direction().is_rtl();
+        let (first, last) = if self.mirrored() {
+            (Move::Last, Move::First)
+        } else {
+            (Move::First, Move::Last)
+        };
         match (self.axis, named) {
-            (Axis::Vertical, Named::ArrowDown) => Some(Move::Next),
-            (Axis::Vertical, Named::ArrowUp) => Some(Move::Previous),
-            (Axis::Horizontal, Named::ArrowRight) => {
-                Some(if rtl { Move::Previous } else { Move::Next })
+            // Right is the item on the right, whichever way the row reads.
+            (Axis::Vertical, Named::ArrowDown) | (Axis::Horizontal, Named::ArrowRight) => {
+                Some(Move::Next)
             }
-            (Axis::Horizontal, Named::ArrowLeft) => {
-                Some(if rtl { Move::Next } else { Move::Previous })
+            (Axis::Vertical, Named::ArrowUp) | (Axis::Horizontal, Named::ArrowLeft) => {
+                Some(Move::Previous)
             }
-            (_, Named::Home) => Some(Move::First),
-            (_, Named::End) => Some(Move::Last),
+            (_, Named::Home) => Some(first),
+            (_, Named::End) => Some(last),
             _ => None,
         }
     }
@@ -118,7 +138,7 @@ pub fn typeahead(labels: &[String], typed: &str, current: usize) -> Option<usize
     if wanted.is_empty() || labels.is_empty() {
         return None;
     }
-    let repeated = wanted.chars().all(|c| Some(c) == wanted.chars().next());
+    let repeated = wanted.chars().all(|c| wanted.starts_with(c));
     let (wanted, skip) = if repeated {
         (wanted.chars().take(1).collect::<String>(), 1)
     } else {
@@ -228,7 +248,12 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for Roving<'_, Message> {
             }
             state.typed.push_str(letter);
             state.at = Some(now);
-            typeahead(&self.labels, &state.typed, current).map(Move::Index)
+            typeahead(
+                &self.labels,
+                &state.typed,
+                self.flipped(current, found.total),
+            )
+            .map(|index| Move::Index(self.flipped(index, found.total)))
         });
         let Some(to) = to else {
             return;
@@ -245,7 +270,7 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for Roving<'_, Message> {
         shell.request_redraw();
         if let (Some(index), Some(on_move)) = (landed, &self.on_move) {
             if index != current {
-                shell.publish(on_move(index));
+                shell.publish(on_move(self.flipped(index, found.total)));
             }
         }
     }

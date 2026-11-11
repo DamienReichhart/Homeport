@@ -51,13 +51,23 @@ pub fn end() -> Horizontal {
     i18n::direction().pick(Horizontal::Right, Horizontal::Left)
 }
 
-/// A paragraph of body text: as wide as it may be, starting where text
-/// starts, wrapped.
+/// A paragraph of body text, wrapped where its column ends. It is as wide
+/// as its text and the column ([`stack`]) puts it where text starts: a
+/// text told to fill and align is drawn out of place in a right-to-left
+/// script, which the shaper has already aligned.
 pub fn paragraph<'a>(body: impl Into<String>) -> iced::widget::Text<'a, Theme> {
     use crate::ui::theme::metrics::text as size;
     iced::widget::text(body.into())
         .size(size::SM)
         .line_height(size::LEADING_SM)
+}
+
+/// `label` taking the room that is left in a row, from where text starts:
+/// what pushes a chevron or a shortcut to the end of its line.
+pub fn filling<'a, Message: 'a>(
+    label: iced::widget::Text<'a, Theme>,
+) -> iced::widget::Container<'a, Message, Theme> {
+    iced::widget::container(label)
         .width(Length::Fill)
         .align_x(start())
 }

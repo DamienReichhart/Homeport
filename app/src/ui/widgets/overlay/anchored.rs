@@ -48,7 +48,7 @@ pub struct Anchored<'a, Message> {
     show: Show,
     on_dismiss: Option<Message>,
     match_width: bool,
-    take_focus: bool,
+    take_focus: Option<usize>,
 }
 
 /// `anchor`, with `panel` floating beside it while there is one. Give it
@@ -65,7 +65,7 @@ pub fn anchored<'a, Message>(
         show: Show::Open,
         on_dismiss: None,
         match_width: false,
-        take_focus: true,
+        take_focus: Some(0),
     }
 }
 
@@ -98,11 +98,12 @@ impl<Message> Anchored<'_, Message> {
         self
     }
 
-    /// Whether opening gives focus to the first thing in the panel that
-    /// takes it. It does unless told.
+    /// What takes focus as the panel opens, counted among what can in it:
+    /// the first unless told (a select starts on the chosen option), and
+    /// `None` leaves focus where it is.
     #[must_use]
-    pub fn take_focus(mut self, take: bool) -> Self {
-        self.take_focus = take;
+    pub fn focus_on_open(mut self, index: Option<usize>) -> Self {
+        self.take_focus = index;
         self
     }
 }
@@ -333,7 +334,7 @@ struct Panel<'a, 'b, Message> {
     placement: Placement,
     on_dismiss: Option<&'b Message>,
     match_width: bool,
-    take_focus: bool,
+    take_focus: Option<usize>,
     interactive: bool,
     viewport: Rectangle,
 }
@@ -353,16 +354,19 @@ impl<Message: Clone> overlay::Overlay<Message, Theme, iced::Renderer> for Panel<
             (bounds.width - margin).max(0.0),
             (bounds.height - margin).max(0.0),
         );
-        let min = if self.match_width {
-            Size::new(self.anchor.width.min(max.width), 0.0)
+        let content = self.content.as_widget_mut();
+        let limits = if self.match_width {
+            // Once to learn how wide the panel wants to be, then at that
+            // width or its anchor's, whichever is wider. A panel whose root
+            // passes the least width on (`basic::fit`) fills it.
+            let measure = layout::Limits::with_compression(Size::ZERO, max, Size::new(true, false));
+            let wanted = content.layout(self.tree, renderer, &measure).size().width;
+            let width = wanted.max(self.anchor.width).min(max.width);
+            layout::Limits::new(Size::new(width, 0.0), Size::new(width, max.height))
         } else {
-            Size::ZERO
+            layout::Limits::new(Size::ZERO, max)
         };
-        let panel = self.content.as_widget_mut().layout(
-            self.tree,
-            renderer,
-            &layout::Limits::new(min, max),
-        );
+        let panel = content.layout(self.tree, renderer, &limits);
         let (at, _) = place(self.anchor, panel.size(), bounds, self.placement);
         layout::Node::with_children(panel.size(), vec![panel]).move_to(at)
     }
@@ -386,8 +390,15 @@ impl<Message: Clone> overlay::Overlay<Message, Theme, iced::Renderer> for Panel<
         if !self.state.settled {
             self.state.settled = true;
             let found = focus::find(content, self.tree, panel, renderer);
-            if self.take_focus && found.focused.is_none() {
-                focus::move_within(content, self.tree, panel, renderer, Move::First, true);
+            if let (Some(index), None) = (self.take_focus, found.focused) {
+                focus::move_within(
+                    content,
+                    self.tree,
+                    panel,
+                    renderer,
+                    Move::Index(index),
+                    true,
+                );
                 shell.request_redraw();
             }
         }

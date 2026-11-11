@@ -48,9 +48,7 @@ impl<'a, Message: 'a> Dialog<'a, Message> {
             text(description.into())
                 .size(size::SM)
                 .line_height(size::LEADING_SM)
-                .style(theme::text::muted)
-                .width(Length::Fill)
-                .align_x(crate::ui::widgets::start()),
+                .style(theme::text::muted),
         )
     }
 
@@ -69,11 +67,7 @@ impl<'a, Message: 'a> Dialog<'a, Message> {
     }
 
     pub fn view(self) -> Element<'a, Message> {
-        let title = text(self.title)
-            .size(size::BASE)
-            .font(font::SANS_MEDIUM)
-            .width(Length::Fill)
-            .align_x(crate::ui::widgets::start());
+        let title = text(self.title).size(size::BASE).font(font::SANS_MEDIUM);
         let title = if self.destructive {
             title.style(theme::text::destructive)
         } else {

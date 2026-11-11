@@ -38,6 +38,7 @@ use crate::{
         },
         widgets::{
             basic::fit,
+            filling,
             focus::{key_area, pressable, roving, Axis},
             line, start,
         },
@@ -244,12 +245,7 @@ fn panel<'a, Message: Clone + 'a>(
         .iter()
         .filter_map(|item| item.label().map(str::to_owned))
         .collect();
-    let label_of = |label: String| {
-        text(label)
-            .size(size::SM)
-            .width(Length::Fill)
-            .align_x(start())
-    };
+    let label_of = |label: String| filling(text(label).size(size::SM));
     let mut lines: Vec<Element<'a, Message>> = vec![];
     for (index, item) in items.into_iter().enumerate() {
         let line: Element<'a, Message> = match item {
@@ -287,7 +283,7 @@ fn panel<'a, Message: Clone + 'a>(
                         gap().width(theme::metrics::icon::MD).into()
                     });
                 }
-                let row = pressable(line(parts).spacing(space::S1_5))
+                let row = pressable(line(parts).spacing(space::S1_5).width(Length::Fill))
                     .width(Length::Fill)
                     .padding([space::S1, space::S1_5])
                     .before(on_event(Event::Close))
@@ -315,7 +311,7 @@ fn panel<'a, Message: Clone + 'a>(
                 parts.push(icon(chevron).style(theme::svg::muted).into());
                 let opens = on_event(Event::OpenSub { depth, index });
                 let by_key = opens.clone();
-                let row = pressable(line(parts).spacing(space::S1_5))
+                let row = pressable(line(parts).spacing(space::S1_5).width(Length::Fill))
                     .width(Length::Fill)
                     .padding([space::S1, space::S1_5])
                     .on_press(opens)
