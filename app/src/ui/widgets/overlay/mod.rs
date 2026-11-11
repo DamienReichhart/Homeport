@@ -12,6 +12,7 @@ pub mod anchored;
 pub mod dialog;
 pub mod menu;
 pub mod modal;
+mod panel;
 pub mod position;
 
 use std::time::Duration;

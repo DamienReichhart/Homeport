@@ -6,8 +6,11 @@
 //! - open (the page says when): Escape and a press outside ask to dismiss
 //!   it, Tab stays inside, the first thing that takes focus gets it, and
 //!   the keys go no further than the panel;
+//! - open and [`Anchored::modal`] (a menu, a select's list): a press
+//!   outside only dismisses it; what was under the pointer hears nothing;
 //! - on hover (a tooltip): it shows after a delay under the pointer, at
-//!   once when what it describes takes keyboard focus, and takes no input.
+//!   once when the keyboard gives focus to what it describes, goes when
+//!   anything is pressed or Escape is, and takes no input.
 //!
 //! What opened it keeps its focus underneath, so closing the panel gives
 //! focus back without anyone asking.
@@ -24,10 +27,13 @@ use iced::{
     window, Event, Length, Rectangle, Size, Vector,
 };
 
-use super::position::{place, Placement};
+use super::{
+    panel::{flow, Panel},
+    position::Placement,
+};
 use crate::ui::{
     theme::{Element, Theme},
-    widgets::focus::{self, Move},
+    widgets::focus,
 };
 
 /// When the panel shows.
@@ -47,6 +53,8 @@ pub struct Anchored<'a, Message> {
     placement: Placement,
     show: Show,
     on_dismiss: Option<Message>,
+    on_escape: Option<Message>,
+    modal: bool,
     match_width: bool,
     take_focus: Option<usize>,
 }
@@ -64,6 +72,8 @@ pub fn anchored<'a, Message>(
         placement,
         show: Show::Open,
         on_dismiss: None,
+        on_escape: None,
+        modal: false,
         match_width: false,
         take_focus: Some(0),
     }
@@ -88,6 +98,22 @@ impl<Message> Anchored<'_, Message> {
     #[must_use]
     pub fn on_dismiss(mut self, message: Message) -> Self {
         self.on_dismiss = Some(message);
+        self
+    }
+
+    /// Sent on Escape in place of [`Anchored::on_dismiss`]'s message: a
+    /// submenu closes alone on a press outside, the whole menu on Escape.
+    #[must_use]
+    pub fn on_escape(mut self, message: Message) -> Self {
+        self.on_escape = Some(message);
+        self
+    }
+
+    /// A press outside dismisses the panel and does nothing else, as with
+    /// Radix's menus and selects: what was pressed doesn't hear it.
+    #[must_use]
+    pub fn modal(mut self) -> Self {
+        self.modal = true;
         self
     }
 
@@ -119,10 +145,19 @@ enum Hover {
 }
 
 #[derive(Debug, Default)]
-struct State {
+pub(super) struct State {
     hover: Hover,
     /// Whether the open panel was given focus already.
-    settled: bool,
+    pub(super) settled: bool,
+    /// Whether the anchor's focus ring is hidden under the open panel.
+    covering: bool,
+    /// Whether the anchor had focus at the last event, and whether the
+    /// keyboard gave it.
+    focused: bool,
+    by_keyboard: bool,
+    /// A press or Escape sent the tooltip away until the pointer leaves
+    /// and focus moves.
+    dismissed: bool,
 }
 
 impl<Message: Clone> Widget<Message, Theme, iced::Renderer> for Anchored<'_, Message> {
@@ -202,19 +237,50 @@ impl<Message: Clone> Widget<Message, Theme, iced::Renderer> for Anchored<'_, Mes
             shell,
             viewport,
         );
+        focus::modality::note(event);
         let Show::Hover { delay } = self.show else {
+            // One ring at a time: the anchor's hides while its panel is open.
+            let open = self.panel.is_some();
+            if open != tree.state.downcast_ref::<State>().covering {
+                tree.state.downcast_mut::<State>().covering = open;
+                focus::cover_within(
+                    self.anchor.as_widget_mut(),
+                    &mut tree.children[0],
+                    layout,
+                    renderer,
+                    open,
+                );
+                shell.request_redraw();
+            }
             return;
         };
-        let focused = focus::find(
-            self.anchor.as_widget_mut(),
-            &mut tree.children[0],
-            layout,
-            renderer,
-        )
-        .focused
-        .is_some();
-        let wanted = focused || cursor.is_over(layout.bounds());
+        let anchor = self.anchor.as_widget_mut();
+        let has_focus = focus::find(anchor, &mut tree.children[0], layout, renderer)
+            .focused
+            .is_some();
+        let ring = focus::is_visible_within(anchor, &mut tree.children[0], layout, renderer);
+        let over = cursor.is_over(layout.bounds());
         let state = tree.state.downcast_mut::<State>();
+        if has_focus && !state.focused {
+            // Focus just came: the tooltip is for the keyboard's.
+            state.by_keyboard = ring || focus::modality::keyboard();
+        }
+        state.focused = has_focus;
+        let escape = matches!(
+            event,
+            Event::Keyboard(keyboard::Event::KeyPressed {
+                key: Key::Named(Named::Escape),
+                ..
+            })
+        );
+        if focus::modality::is_pointer_down(event) || escape {
+            state.dismissed = true;
+            state.by_keyboard = false;
+        } else if !over && !has_focus {
+            state.dismissed = false;
+        }
+        let focused = has_focus && state.by_keyboard;
+        let wanted = focused || (over && !state.dismissed);
         let now = Instant::now();
         let next = match (state.hover, wanted) {
             (Hover::Idle, true) if focused || delay.is_zero() => Hover::Shown,
@@ -301,8 +367,10 @@ impl<Message: Clone> Widget<Message, Theme, iced::Renderer> for Anchored<'_, Mes
                 tree,
                 state,
                 anchor: layout.bounds() + translation,
-                placement: self.placement,
+                placement: self.placement.following(flow()),
                 on_dismiss: self.on_dismiss.as_ref(),
+                on_escape: self.on_escape.as_ref().or(self.on_dismiss.as_ref()),
+                modal: self.modal,
                 match_width: self.match_width,
                 take_focus: self.take_focus,
                 interactive,
@@ -322,206 +390,5 @@ impl<Message: Clone> Widget<Message, Theme, iced::Renderer> for Anchored<'_, Mes
 impl<'a, Message: Clone + 'a> From<Anchored<'a, Message>> for Element<'a, Message> {
     fn from(anchored: Anchored<'a, Message>) -> Self {
         Element::new(anchored)
-    }
-}
-
-/// The floating panel itself.
-struct Panel<'a, 'b, Message> {
-    content: &'b mut Element<'a, Message>,
-    tree: &'b mut Tree,
-    state: &'b mut State,
-    anchor: Rectangle,
-    placement: Placement,
-    on_dismiss: Option<&'b Message>,
-    match_width: bool,
-    take_focus: Option<usize>,
-    interactive: bool,
-    viewport: Rectangle,
-}
-
-impl<Message: Clone> Panel<'_, '_, Message> {
-    fn dismiss(&self, shell: &mut Shell<'_, Message>) {
-        if let Some(message) = self.on_dismiss {
-            shell.publish(message.clone());
-        }
-    }
-}
-
-impl<Message: Clone> overlay::Overlay<Message, Theme, iced::Renderer> for Panel<'_, '_, Message> {
-    fn layout(&mut self, renderer: &iced::Renderer, bounds: Size) -> layout::Node {
-        let margin = self.placement.margin * 2.0;
-        let max = Size::new(
-            (bounds.width - margin).max(0.0),
-            (bounds.height - margin).max(0.0),
-        );
-        let content = self.content.as_widget_mut();
-        let limits = if self.match_width {
-            // Once to learn how wide the panel wants to be, then at that
-            // width or its anchor's, whichever is wider. A panel whose root
-            // passes the least width on (`basic::fit`) fills it.
-            let measure = layout::Limits::with_compression(Size::ZERO, max, Size::new(true, false));
-            let wanted = content.layout(self.tree, renderer, &measure).size().width;
-            let width = wanted.max(self.anchor.width).min(max.width);
-            layout::Limits::new(Size::new(width, 0.0), Size::new(width, max.height))
-        } else {
-            layout::Limits::new(Size::ZERO, max)
-        };
-        let panel = content.layout(self.tree, renderer, &limits);
-        let (at, _) = place(self.anchor, panel.size(), bounds, self.placement);
-        layout::Node::with_children(panel.size(), vec![panel]).move_to(at)
-    }
-
-    fn update(
-        &mut self,
-        event: &Event,
-        layout: Layout<'_>,
-        cursor: mouse::Cursor,
-        renderer: &iced::Renderer,
-        clipboard: &mut dyn Clipboard,
-        shell: &mut Shell<'_, Message>,
-    ) {
-        if !self.interactive {
-            return;
-        }
-        let Some(panel) = layout.children().next() else {
-            return;
-        };
-        let content = self.content.as_widget_mut();
-        if !self.state.settled {
-            self.state.settled = true;
-            let found = focus::find(content, self.tree, panel, renderer);
-            if let (Some(index), None) = (self.take_focus, found.focused) {
-                focus::move_within(
-                    content,
-                    self.tree,
-                    panel,
-                    renderer,
-                    Move::Index(index),
-                    true,
-                );
-                shell.request_redraw();
-            }
-        }
-        let pressed = match event {
-            Event::Keyboard(keyboard::Event::KeyPressed { key, modifiers, .. }) => {
-                Some((key, modifiers))
-            }
-            _ => None,
-        };
-        match pressed {
-            Some((Key::Named(Named::Escape), _)) => {
-                self.dismiss(shell);
-                shell.capture_event();
-                return;
-            }
-            Some((Key::Named(Named::Tab), modifiers)) => {
-                let to = if modifiers.shift() {
-                    Move::Previous
-                } else {
-                    Move::Next
-                };
-                focus::move_within(content, self.tree, panel, renderer, to, true);
-                shell.capture_event();
-                shell.request_redraw();
-                return;
-            }
-            _ => {}
-        }
-        content.update(
-            self.tree,
-            event,
-            panel,
-            cursor,
-            renderer,
-            clipboard,
-            shell,
-            &self.viewport,
-        );
-        if pressed.is_some() {
-            // The panel has the keyboard: nothing under it types along.
-            shell.capture_event();
-        }
-        if let Event::Mouse(mouse::Event::ButtonPressed(_)) = event {
-            if cursor.is_over(panel.bounds()) {
-                shell.capture_event();
-            } else if !cursor.is_over(self.anchor) && !shell.is_event_captured() {
-                // Not captured: what was pressed outside gets its press.
-                self.dismiss(shell);
-            }
-        }
-    }
-
-    fn draw(
-        &self,
-        renderer: &mut iced::Renderer,
-        theme: &Theme,
-        style: &renderer::Style,
-        layout: Layout<'_>,
-        cursor: mouse::Cursor,
-    ) {
-        if let Some(panel) = layout.children().next() {
-            self.content.as_widget().draw(
-                self.tree,
-                renderer,
-                theme,
-                style,
-                panel,
-                cursor,
-                &Rectangle::with_size(Size::INFINITE),
-            );
-        }
-    }
-
-    fn operate(
-        &mut self,
-        layout: Layout<'_>,
-        renderer: &iced::Renderer,
-        operation: &mut dyn Operation,
-    ) {
-        if let Some(panel) = layout.children().next() {
-            self.content
-                .as_widget_mut()
-                .operate(self.tree, panel, renderer, operation);
-        }
-    }
-
-    fn mouse_interaction(
-        &self,
-        layout: Layout<'_>,
-        cursor: mouse::Cursor,
-        renderer: &iced::Renderer,
-    ) -> mouse::Interaction {
-        let Some(panel) = layout.children().next() else {
-            return mouse::Interaction::None;
-        };
-        if !self.interactive || !cursor.is_over(panel.bounds()) {
-            return mouse::Interaction::None;
-        }
-        // Never `None` over the panel: that is how iced knows the pointer
-        // is on it and not on the page underneath.
-        match self.content.as_widget().mouse_interaction(
-            self.tree,
-            panel,
-            cursor,
-            &self.viewport,
-            renderer,
-        ) {
-            mouse::Interaction::None => mouse::Interaction::Idle,
-            other => other,
-        }
-    }
-
-    fn overlay<'c>(
-        &'c mut self,
-        layout: Layout<'c>,
-        renderer: &iced::Renderer,
-    ) -> Option<overlay::Element<'c, Message, Theme, iced::Renderer>> {
-        self.content.as_widget_mut().overlay(
-            self.tree,
-            layout.children().next()?,
-            renderer,
-            &self.viewport,
-            Vector::ZERO,
-        )
     }
 }

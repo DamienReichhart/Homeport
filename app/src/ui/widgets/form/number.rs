@@ -122,6 +122,9 @@ pub fn number_input<'a, Message: Clone + 'a>(
         .width(16)
         .height(control::HEIGHT / 2.0 - 3.0)
         .padding(0)
+        // As a browser's spinner: no Tab stop (the field's arrows do the
+        // same) and focus stays in the field.
+        .tab_stop(false)
         .on_press(on_input(number.stepped(text, steps)))
         .style(theme::button::small(theme::button::ghost))
     };

@@ -2,7 +2,8 @@
 //! keyboard as Radix's: the arrows go through the items (round at the
 //! ends), Home and End to the first and last, typing to the item that
 //! starts with it, Enter or Space choose, the arrow towards the end opens a
-//! submenu and the one towards the start closes it, Escape closes.
+//! submenu and the one towards the start closes it, Escape closes the menu
+//! and every submenu with it.
 //!
 //! The page keeps a [`State`] and feeds it the [`Event`]s:
 //!
@@ -208,6 +209,7 @@ pub fn dropdown<'a, Message: Clone + 'a>(
     on_event: impl Fn(Event) -> Message + Clone + 'a,
 ) -> Element<'a, Message> {
     let direction = i18n::direction();
+    let first = first_focus(&items, state.sub(0));
     let menu = state
         .is_open()
         .then(|| panel(state, items, 0, on_event.clone()));
@@ -216,8 +218,23 @@ pub fn dropdown<'a, Message: Clone + 'a>(
         menu,
         Placement::new(Side::Bottom, Align::start(direction)),
     )
+    .focus_on_open(Some(first))
     .on_dismiss(on_event(Event::Close))
+    .modal()
     .into()
+}
+
+/// What has focus as a menu shows: its first item, or the item whose
+/// submenu is open (`sub`, an index among all the items), counted among
+/// the items that take focus. Focus is then on the path to the menu in
+/// front, as when the keyboard opened it.
+fn first_focus<Message>(items: &[Item<Message>], sub: Option<usize>) -> usize {
+    sub.map_or(0, |open| {
+        items[..open.min(items.len())]
+            .iter()
+            .filter(|item| item.label().is_some())
+            .count()
+    })
 }
 
 fn icon_of<'a, Message: 'a>(glyph: Icon, destructive: bool) -> Element<'a, Message> {
@@ -319,6 +336,7 @@ fn panel<'a, Message: Clone + 'a>(
                     .style(theme::button::part::item(open));
                 let closes = on_event(Event::CloseSub { depth });
                 let back = closes.clone();
+                let first = first_focus(&items, state.sub(depth + 1));
                 let submenu = open.then(|| {
                     key_area(
                         panel(state, items, depth + 1, on_event.clone()),
@@ -331,7 +349,10 @@ fn panel<'a, Message: Clone + 'a>(
                     submenu,
                     Placement::new(Side::end(i18n::direction()), Align::Near).gap(0.0),
                 )
+                .focus_on_open(Some(first))
                 .on_dismiss(closes)
+                // Escape closes the whole menu, as Radix's.
+                .on_escape(on_event(Event::Close))
                 .into()
             }
         };
@@ -366,5 +387,20 @@ mod tests {
         // A submenu can't open under a closed menu.
         state.update(Event::OpenSub { depth: 0, index: 1 });
         assert!(!state.is_open());
+    }
+
+    #[test]
+    fn a_menu_shows_with_focus_on_the_item_whose_submenu_is_open() {
+        let items = vec![
+            Item::Label("web".to_owned()),
+            Item::action("Start", ()),
+            Item::action("Stop", ()).disabled(true),
+            Item::Separator,
+            Item::sub("Copy", vec![Item::action("Name", ())]),
+            Item::action("Remove", ()),
+        ];
+        assert_eq!(first_focus(&items, None), 0);
+        // Copy is the fifth line and the second that takes focus.
+        assert_eq!(first_focus(&items, Some(4)), 1);
     }
 }

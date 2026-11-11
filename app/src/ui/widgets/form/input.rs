@@ -69,7 +69,10 @@ impl<'a, Message> Addon<'a, Message> {
 
 /// `InputGroup`: `field` with `before` where its text starts and `after`
 /// where it ends, inside its border. The field stays the field: its border
-/// shows focus and a wrong value as any other.
+/// shows focus and a wrong value as any other. A button put in it should
+/// leave focus in the field when pressed (`button::keep_focus`): a press on
+/// it never reaches the field, which would otherwise stay focused beside
+/// the button and lose its Space and Enter to it.
 pub fn input_group<'a, Message: Clone + 'a>(
     field: TextInput<'a, Message, Theme>,
     before: Option<Addon<'a, Message>>,
@@ -124,6 +127,8 @@ pub fn password<'a, Message: Clone + 'a>(
     let reveal = button::icon(glyph)
         .variant(Variant::Ghost)
         .size(ButtonSize::Xs)
+        // Focus stays in the field: what is typed next goes there.
+        .keep_focus()
         .on_press(on_reveal);
     let reveal = tooltip(reveal, says, Side::Top);
     // The button sits closer to the edge than an addon's text would.

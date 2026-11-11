@@ -176,6 +176,7 @@ pub fn confirm_dialog<'a>(ask: &Ask, state: &State) -> Modal<'a, Message> {
             .into()
     };
     modal(content.footer(vec![cancel.into(), action]))
+        .key("confirm")
         .on_close_maybe((!state.busy).then_some(Message::Cancel))
 }
 

@@ -263,6 +263,7 @@ impl<'a> Select<'a> {
         .match_width()
         .focus_on_open(Some(first))
         .on_dismiss(Message::Close)
+        .modal()
         .into()
     }
 

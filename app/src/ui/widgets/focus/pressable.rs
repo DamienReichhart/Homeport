@@ -1,6 +1,7 @@
 //! The kit's button: iced's, which also takes keyboard focus. Tab reaches
-//! it, Enter and Space press it, and it shows a ring while it has focus.
-//! Every button, menu item, tab and option of the kit is one.
+//! it, Enter and Space press it, and it shows a ring while it has focus
+//! that the keyboard gave it (`:focus-visible`): a click gives focus and no
+//! ring. Every button, menu item, tab and option of the kit is one.
 
 use std::rc::Rc;
 
@@ -15,6 +16,7 @@ use iced::{
     Border, Color, Event, Length, Padding, Rectangle, Size, Vector,
 };
 
+use super::modality;
 use crate::ui::theme::{self, color::alpha, Element, Theme};
 
 type Style = Rc<dyn Fn(&Theme, button::Status) -> button::Style>;
@@ -31,6 +33,8 @@ pub struct Pressable<'a, Message> {
     before: Option<Message>,
     on_key: Option<OnKey<'a, Message>>,
     style: Style,
+    tab_stop: bool,
+    focus_on_press: bool,
 }
 
 /// A [`Pressable`] around `content`: the primary button until
@@ -46,6 +50,8 @@ pub fn pressable<'a, Message: Clone + 'a>(
         before: None,
         on_key: None,
         style: Rc::new(theme::button::primary),
+        tab_stop: true,
+        focus_on_press: true,
     }
 }
 
@@ -99,6 +105,23 @@ impl<'a, Message: Clone + 'a> Pressable<'a, Message> {
         self
     }
 
+    /// Whether the keyboard reaches it; it does unless told. The arrows of
+    /// a number field are not stops: the field's own arrows do the same.
+    #[must_use]
+    pub fn tab_stop(mut self, tab_stop: bool) -> Self {
+        self.tab_stop = tab_stop;
+        self
+    }
+
+    /// Whether a press with the pointer gives it focus; it does unless
+    /// told. A button inside a field leaves focus in the field, so what is
+    /// typed next still goes there.
+    #[must_use]
+    pub fn focus_on_press(mut self, focus: bool) -> Self {
+        self.focus_on_press = focus;
+        self
+    }
+
     #[must_use]
     pub fn padding(mut self, padding: impl Into<Padding>) -> Self {
         self.button = self.button.padding(padding);
@@ -135,9 +158,27 @@ impl<'a, Message: Clone + 'a> Pressable<'a, Message> {
     }
 }
 
+/// A pressable's focus. Other widgets of the kit reach it through
+/// `Operation::custom`: a panel that opens covers what opened it.
 #[derive(Debug, Default)]
-struct State {
+pub struct State {
     focused: bool,
+    /// Whether the focus was given from the keyboard: it shows a ring.
+    visible: bool,
+    /// Whether a panel it opened has the keyboard for now: no ring.
+    covered: bool,
+}
+
+impl State {
+    /// Whether it has focus and shows it.
+    pub fn is_focus_visible(&self) -> bool {
+        self.focused && self.visible && !self.covered
+    }
+
+    /// Hides the ring while something this opened has the keyboard.
+    pub fn cover(&mut self, covered: bool) {
+        self.covered = covered;
+    }
 }
 
 impl Focusable for State {
@@ -146,11 +187,15 @@ impl Focusable for State {
     }
 
     fn focus(&mut self) {
+        if !self.focused {
+            self.visible = modality::keyboard();
+        }
         self.focused = true;
     }
 
     fn unfocus(&mut self) {
         self.focused = false;
+        self.visible = false;
     }
 }
 
@@ -192,9 +237,10 @@ impl<'a, Message: Clone + 'a> Widget<Message, Theme, iced::Renderer> for Pressab
         renderer: &iced::Renderer,
         operation: &mut dyn Operation,
     ) {
-        if self.on_press.is_some() {
+        if self.on_press.is_some() && self.tab_stop {
             let state = tree.state.downcast_mut::<State>();
             operation.focusable(self.id.as_ref(), layout.bounds(), state);
+            operation.custom(self.id.as_ref(), layout.bounds(), state);
         }
         self.inner_mut()
             .operate(&mut tree.children[0], layout, renderer, operation);
@@ -211,16 +257,31 @@ impl<'a, Message: Clone + 'a> Widget<Message, Theme, iced::Renderer> for Pressab
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) {
+        modality::note(event);
         let enabled = self.on_press.is_some();
-        let was = tree.state.downcast_ref::<State>().focused;
+        let (was, shown) = {
+            let state = tree.state.downcast_ref::<State>();
+            (state.focused, state.is_focus_visible())
+        };
         if !enabled && was {
-            tree.state.downcast_mut::<State>().focused = false;
+            tree.state.downcast_mut::<State>().unfocus();
         }
         // A press with the pointer is the button's own; here it only
-        // decides who has focus, as a click does everywhere.
+        // decides who has focus, as a click does everywhere, and that focus
+        // shows no ring.
         if let Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
             let over = cursor.is_over(layout.bounds());
-            tree.state.downcast_mut::<State>().focused = enabled && over;
+            let state = tree.state.downcast_mut::<State>();
+            if !over {
+                state.unfocus();
+            } else if enabled && self.tab_stop && self.focus_on_press {
+                state.focused = true;
+                state.visible = false;
+            }
+        }
+        if let (true, Event::Keyboard(keyboard::Event::KeyPressed { .. })) = (was, event) {
+            // A key while it has focus: someone is at the keyboard.
+            tree.state.downcast_mut::<State>().visible = true;
         }
         if let (true, Event::Keyboard(keyboard::Event::KeyPressed { key, modifiers, .. })) =
             (enabled && was, event)
@@ -239,7 +300,7 @@ impl<'a, Message: Clone + 'a> Widget<Message, Theme, iced::Renderer> for Pressab
                 return;
             }
         }
-        if tree.state.downcast_ref::<State>().focused != was {
+        if tree.state.downcast_ref::<State>().is_focus_visible() != shown {
             shell.request_redraw();
         }
         // The button sends the press itself; what goes before it goes first.
@@ -284,7 +345,7 @@ impl<'a, Message: Clone + 'a> Widget<Message, Theme, iced::Renderer> for Pressab
             cursor,
             viewport,
         );
-        if tree.state.downcast_ref::<State>().focused {
+        if tree.state.downcast_ref::<State>().is_focus_visible() {
             // `focus-visible:ring-[3px] ring-ring/50`, drawn outside so it
             // shows around a button of any colour.
             let corners = (self.style)(theme, button::Status::Active).border.radius;

@@ -148,6 +148,7 @@ impl Details {
             Message::Copy(Target::Report),
         );
         modal(content.footer(vec![open.into(), copy]))
+            .key("details")
             .width(WIDTH_WIDE)
             .on_close(Message::Close)
             .close_on_scrim()

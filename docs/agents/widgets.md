@@ -41,7 +41,8 @@ Look at all of it with `cargo run -p homeport-app --example widgets` (themes, En
 - **Rows.** Write a row start to end with `widgets::line` and columns with `widgets::stack`; align with `start()` and `end()`. The page then mirrors in Arabic by itself. For text that fills a row, use `widgets::filling(text)`, and `widgets::paragraph` for body text: a `text` told to fill its width _and_ align right is drawn out of place in a right-to-left script.
 - **Buttons.** Use the kit's (`basic::button`, or `focus::pressable` for an odd one), never iced's `button`: iced's takes no keyboard focus.
 - **Tab.** The window sends `focus::traverse(shift)` for a Tab key press nothing captured (`event::listen_with`, status `Ignored`); the gallery shows it. A dialog or an open panel captures Tab and keeps focus inside.
-- **Overlays.** Their state is the page's (`menu::State`, `select::State`, a `bool` for a popover, an `Option` for a dialog), fed by their messages. What opened one keeps its focus underneath, so focus is back there when it closes.
+- **Overlays.** Their state is the page's (`menu::State`, `select::State`, a `bool` for a popover, an `Option` for a dialog), fed by their messages. What opened one keeps its focus underneath, so focus is back there when it closes. Always lay a dialog over the page with `overlay::over(page, dialog)` and toasts with `toast::over(.., toasts)`, even when there is none: they build the same tree either way, and iced keeps a widget's state (what is scrolled, what has focus) only while the tree around it keeps its shape. Toasts go over the dialog (`toast::over(overlay::over(page, dialog), toasts)`), so a failure is said while the dialog is up.
+- **Focus.** A ring shows for focus the keyboard gave (Tab, an arrow, a dialog opened with a key), not for a click: `focus::modality` keeps who was last there. One ring shows at a time: a button's hides while the menu or the list it opened is up. A button inside a field (`button::keep_focus`) leaves focus in the field. A menu and a select are modal: a press outside closes them and presses nothing; a popover lets the press through.
 - **Failures.** Make a `feedback::Surfaced::new(error, "use_case_name")` where the failure reaches the page: that writes the log line. Show it with `error_message` in place or `Toasts::failure` in passing; both lead to the Details dialog. State keeps the `AppError`, never its text.
 - **Forms.** A use case's refusal goes through `form::Errors::route(error, &[(key, field)])`: under its field when its key is about one, else back to the form for `error_message`.
 
@@ -51,7 +52,8 @@ Look at all of it with `cargo run -p homeport-app --example widgets` (themes, En
 - A dialog's scrim dims more (25 %) and doesn't blur: iced has no blur.
 - `EmptyState`'s edge is a whole hairline: iced draws no dashed border.
 - `Skeleton` and a connecting `StatusDot` don't pulse; the spinner turns.
-- A tooltip waits 300 ms under the pointer (the React one showed at once) and shows at once on keyboard focus.
+- A tooltip waits 300 ms under the pointer (the React one showed at once) and shows at once on keyboard focus. A press or Escape sends it away; focus given by a click doesn't show it.
+- A submenu that had to open on the other side keeps its chevron pointing the way the language reads.
 - Every tab of a `tabs` row is a Tab stop; Radix made the chosen one the only stop.
 - In a right-to-left row, Tab goes through the buttons left to right, the order they are laid out in. Arrows, Home and End follow the language.
 - A plain `select` doesn't scroll its list to the option the arrows reach; a list long enough to scroll should be `searchable`, whose `State::reveal` does.

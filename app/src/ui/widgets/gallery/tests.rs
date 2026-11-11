@@ -97,9 +97,10 @@ fn the_controls_in_both_themes_and_mirrored_with_one_hovered_and_one_focused() {
             (1000.0, 1340.0),
             || on_page(gallery.controls()),
             |window| {
-                // A press gives "Secondary" focus; the pointer then rests on
-                // "Outline".
+                // A press gives "Secondary" focus and a key shows its ring;
+                // the pointer then rests on "Outline".
                 window.click("Secondary").unwrap();
+                window.tap_key(Named::Shift);
                 let outline = window.find("Outline").unwrap();
                 window.point_at(outline.bounds().center());
             },
@@ -418,7 +419,7 @@ fn a_dialog_keeps_the_keyboard_and_the_pointer_to_itself() {
 }
 
 #[test]
-fn a_popover_opens_closes_on_escape_and_a_tooltip_shows_on_focus() {
+fn a_popover_opens_and_closes_on_escape() {
     let _english = in_language("en");
     let mut gallery = controls();
     play(&mut gallery, WINDOW, |window| {

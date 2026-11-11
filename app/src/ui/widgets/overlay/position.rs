@@ -84,6 +84,29 @@ impl Placement {
         self.gap = gap;
         self
     }
+
+    /// The same, on `flow`'s side when both are beside their anchors: a
+    /// submenu goes the way the menu it comes from went, so one that had
+    /// to flip doesn't send the next back over the first.
+    #[must_use]
+    pub fn following(mut self, flow: Option<Side>) -> Self {
+        if let (false, Some(side)) = (self.side.is_vertical(), flow) {
+            self.side = side;
+        }
+        self
+    }
+
+    /// The side of `anchor` a panel at `panel` ended up on, when this
+    /// placement is beside the anchor; `None` above and below it.
+    pub fn side_of(self, anchor: Rectangle, panel: Rectangle) -> Option<Side> {
+        if self.side.is_vertical() {
+            None
+        } else if panel.center_x() < anchor.center_x() {
+            Some(Side::Left)
+        } else {
+            Some(Side::Right)
+        }
+    }
 }
 
 /// The room on `side` of `anchor` in a window of `window`.
@@ -217,6 +240,26 @@ mod tests {
         let huge = Size::new(1000.0, 100.0);
         let (at, _) = place(anchor(300.0, 100.0), huge, WINDOW, below());
         assert_eq!(at.x, 8.0);
+    }
+
+    #[test]
+    fn a_submenu_goes_the_way_the_menu_it_comes_from_went() {
+        let beside = Placement::new(Side::Left, Align::Near).gap(0.0);
+        // The first submenu had no room on the left and went right…
+        let first = anchor(20.0, 100.0);
+        let (at, side) = place(first, PANEL, WINDOW, beside);
+        assert_eq!(side, Side::Right);
+        let panel = Rectangle::new(at, PANEL);
+        assert_eq!(beside.side_of(first, panel), Some(Side::Right));
+        // … so the next, which would fit on the left over the first menu,
+        // goes right too.
+        let next = Rectangle::new(Point::new(at.x, 150.0), Size::new(200.0, 32.0));
+        let asked = beside.following(Some(Side::Right));
+        let (at, side) = place(next, PANEL, WINDOW, asked);
+        assert_eq!((at.x, side), (panel.x + panel.width, Side::Right));
+        // A menu under its trigger takes no side from anyone.
+        assert_eq!(below().following(Some(Side::Left)), below());
+        assert_eq!(below().side_of(first, panel), None);
     }
 
     #[test]

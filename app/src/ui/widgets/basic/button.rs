@@ -72,6 +72,7 @@ pub struct Button<'a, Message> {
     on_press: Option<Message>,
     before: Option<Message>,
     id: Option<iced::advanced::widget::Id>,
+    focus_on_press: bool,
     _lifetime: std::marker::PhantomData<&'a ()>,
 }
 
@@ -85,6 +86,7 @@ fn new<'a, Message>(glyph: Option<Icon>, label: Option<String>) -> Button<'a, Me
         on_press: None,
         before: None,
         id: None,
+        focus_on_press: true,
         _lifetime: std::marker::PhantomData,
     }
 }
@@ -149,6 +151,14 @@ impl<'a, Message: Clone + 'a> Button<'a, Message> {
         self
     }
 
+    /// A press with the pointer leaves focus where it is: a button inside
+    /// a field (see [`Pressable::focus_on_press`]).
+    #[must_use]
+    pub fn keep_focus(mut self) -> Self {
+        self.focus_on_press = false;
+        self
+    }
+
     /// The button, to which more can be added (`on_key`).
     pub fn build(self) -> Pressable<'a, Message> {
         let size = self.size;
@@ -188,6 +198,7 @@ impl<'a, Message: Clone + 'a> Button<'a, Message> {
         let button = pressable(content)
             .height(size.height())
             .padding([0.0, if square { 0.0 } else { size.padding_x() }])
+            .focus_on_press(self.focus_on_press)
             .on_press_maybe(self.on_press);
         let button = match (square, self.width) {
             (_, Some(width)) => button.width(width),

@@ -10,6 +10,8 @@
 mod controls;
 mod feedback;
 #[cfg(test)]
+mod stage_tests;
+#[cfg(test)]
 mod tests;
 
 use homeport_core::{
@@ -174,6 +176,15 @@ pub fn about() -> About {
     }
 }
 
+/// The gallery on its page of controls.
+#[cfg(test)]
+fn controls_page() -> Gallery {
+    Gallery {
+        page: Page::Controls,
+        ..Gallery::default()
+    }
+}
+
 fn labels() -> Vec<String> {
     ENGINES.map(str::to_owned).to_vec()
 }
@@ -293,7 +304,7 @@ impl Gallery {
         Task::none()
     }
 
-    /// The page, the toasts over it and the dialog over both.
+    /// The page, the dialog over it and the toasts over both.
     pub fn view(&self) -> Element<'_, Message> {
         let body = match self.page {
             Page::Feedback => self.feedback(),
@@ -307,13 +318,15 @@ impl Gallery {
         .style(theme::container::page)
         .width(Length::Fill)
         .height(Length::Fill);
-        let page = toast::over(page, self.toasts.view().map(|t| t.map(Message::Toast)));
         let dialog = match (&self.details, &self.confirm) {
             (Some(details), _) => Some(details.view(Some(&about())).map(Message::Details)),
             (None, Some((ask, state))) => Some(confirm_dialog(ask, state).map(Message::Confirm)),
             (None, None) => None,
         };
-        overlay::over(page, dialog)
+        toast::over(
+            overlay::over(page, dialog),
+            self.toasts.view().map(|t| t.map(Message::Toast)),
+        )
     }
 
     pub fn subscription(&self) -> Subscription<Message> {

@@ -13,5 +13,6 @@
 
 pub mod fixtures;
 pub mod snapshot;
+pub mod stage;
 pub mod tasks;
 pub mod window;

@@ -9,7 +9,9 @@
 //! - nothing under it hears a key or a press.
 //!
 //! What opened the dialog keeps its focus underneath, so focus is back
-//! where it was once the dialog is gone.
+//! where it was once the dialog is gone. [`over`] always builds the same
+//! shape, a stack with the page first, so the page keeps its state (what is
+//! scrolled, what has focus) when a dialog comes and goes.
 
 use iced::{
     advanced::{
@@ -19,7 +21,7 @@ use iced::{
     },
     keyboard::{self, key::Named, Key},
     widget::Stack,
-    Color, Event, Length, Point, Rectangle, Size, Vector,
+    Event, Length, Point, Rectangle, Size, Vector,
 };
 
 use crate::ui::{
@@ -35,16 +37,13 @@ pub const WIDTH_WIDE: f32 = 672.0;
 /// `max-w-[calc(100%-2rem)]`: kept free around a dialog in a small window.
 const MARGIN: f32 = 16.0;
 
-/// The page behind is dimmed. The React app dims by a tenth and blurs; iced
-/// has no blur, so it dims a little more to set the dialog apart.
-const SCRIM: Color = Color::from_rgba(0.0, 0.0, 0.0, 0.25);
-
 /// A dialog over the page.
 pub struct Modal<'a, Message> {
     dialog: Element<'a, Message>,
     on_close: Option<Message>,
     width: f32,
     close_on_scrim: bool,
+    key: u64,
 }
 
 /// `dialog` as a modal dialog. Stack it over the page with [`over`].
@@ -54,6 +53,7 @@ pub fn modal<'a, Message>(dialog: impl Into<Element<'a, Message>>) -> Modal<'a, 
         on_close: None,
         width: WIDTH,
         close_on_scrim: false,
+        key: 0,
     }
 }
 
@@ -62,14 +62,13 @@ pub fn over<'a, Message: Clone + 'a>(
     page: impl Into<Element<'a, Message>>,
     modal: Option<Modal<'a, Message>>,
 ) -> Element<'a, Message> {
-    let page = page.into();
-    match modal {
-        Some(modal) => Stack::with_children([page, modal.into()])
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .into(),
-        None => page,
-    }
+    // The same stack with or without a dialog: iced keeps the state of a
+    // widget only while the tree around it keeps its shape.
+    let layers = std::iter::once(page.into()).chain(modal.map(Into::into));
+    Stack::with_children(layers)
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .into()
 }
 
 impl<'a, Message: 'a> Modal<'a, Message> {
@@ -80,7 +79,20 @@ impl<'a, Message: 'a> Modal<'a, Message> {
             dialog: self.dialog.map(wrap),
             width: self.width,
             close_on_scrim: self.close_on_scrim,
+            key: self.key,
         }
+    }
+
+    /// Says which dialog this is. When another takes its place without the
+    /// page showing in between (a confirmation, then the Details of what it
+    /// failed with), the new one is given focus as one that just opened.
+    #[must_use]
+    pub fn key(mut self, key: &str) -> Self {
+        use std::hash::{Hash, Hasher};
+        let mut hasher = std::collections::hash_map::DefaultHasher::new();
+        key.hash(&mut hasher);
+        self.key = hasher.finish();
+        self
     }
 
     /// Sent on Escape. Leave it out while the dialog must stay (it is busy).
@@ -115,6 +127,8 @@ impl<'a, Message: 'a> Modal<'a, Message> {
 struct State {
     /// Whether the dialog was given focus already.
     settled: bool,
+    /// The dialog that was: see [`Modal::key`].
+    key: u64,
 }
 
 impl<Message: Clone> Widget<Message, Theme, iced::Renderer> for Modal<'_, Message> {
@@ -131,6 +145,14 @@ impl<Message: Clone> Widget<Message, Theme, iced::Renderer> for Modal<'_, Messag
     }
 
     fn diff(&self, tree: &mut Tree) {
+        let state = tree.state.downcast_mut::<State>();
+        if state.key != self.key {
+            // Another dialog in the same place: nothing of the last one's
+            // state is its own, and it has yet to be given focus.
+            state.key = self.key;
+            state.settled = false;
+            tree.children = self.children();
+        }
         tree.diff_children(std::slice::from_ref(&self.dialog));
     }
 
@@ -191,9 +213,11 @@ impl<Message: Clone> Widget<Message, Theme, iced::Renderer> for Modal<'_, Messag
         let Some(dialog) = layout.children().next() else {
             return;
         };
+        focus::modality::note(event);
         let content = self.dialog.as_widget_mut();
         let inner = &mut tree.children[0];
         let state = tree.state.downcast_mut::<State>();
+        state.key = self.key;
         if !state.settled {
             state.settled = true;
             if focus::find(content, inner, dialog, renderer)
@@ -264,7 +288,7 @@ impl<Message: Clone> Widget<Message, Theme, iced::Renderer> for Modal<'_, Messag
                 bounds: layout.bounds(),
                 ..renderer::Quad::default()
             },
-            SCRIM,
+            theme.tokens().scrim,
         );
         if let Some(dialog) = layout.children().next() {
             self.dialog.as_widget().draw(

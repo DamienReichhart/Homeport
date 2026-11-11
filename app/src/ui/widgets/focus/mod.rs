@@ -8,6 +8,7 @@
 //! same [`move_within`].
 
 pub mod keys;
+pub mod modality;
 pub mod pressable;
 pub mod roving;
 
@@ -141,6 +142,61 @@ pub fn clear_within<Message>(
     renderer: &iced::Renderer,
 ) {
     widget.operate(tree, layout, renderer, &mut Give { to: None, at: 0 });
+}
+
+/// Looks for a button that shows its focus ring.
+pub struct Shown(pub bool);
+
+impl Operation for Shown {
+    fn traverse(&mut self, operate: &mut dyn FnMut(&mut dyn Operation)) {
+        operate(self);
+    }
+
+    fn custom(&mut self, _id: Option<&Id>, _bounds: Rectangle, state: &mut dyn std::any::Any) {
+        if let Some(state) = state.downcast_ref::<pressable::State>() {
+            self.0 |= state.is_focus_visible();
+        }
+    }
+}
+
+/// Whether a button under `widget` has focus the keyboard gave it: what a
+/// tooltip shows for.
+pub fn is_visible_within<Message>(
+    widget: &mut dyn Widget<Message, Theme, iced::Renderer>,
+    tree: &mut Tree,
+    layout: Layout<'_>,
+    renderer: &iced::Renderer,
+) -> bool {
+    let mut shown = Shown(false);
+    widget.operate(tree, layout, renderer, &mut shown);
+    shown.0
+}
+
+struct Cover(bool);
+
+impl Operation for Cover {
+    fn traverse(&mut self, operate: &mut dyn FnMut(&mut dyn Operation)) {
+        operate(self);
+    }
+
+    fn custom(&mut self, _id: Option<&Id>, _bounds: Rectangle, state: &mut dyn std::any::Any) {
+        if let Some(state) = state.downcast_mut::<pressable::State>() {
+            state.cover(self.0);
+        }
+    }
+}
+
+/// Hides (or shows again) the focus ring of the buttons under `widget`:
+/// while the panel one of them opened has the keyboard, the ring is in the
+/// panel, and one ring shows at a time.
+pub fn cover_within<Message>(
+    widget: &mut dyn Widget<Message, Theme, iced::Renderer>,
+    tree: &mut Tree,
+    layout: Layout<'_>,
+    renderer: &iced::Renderer,
+    covered: bool,
+) {
+    widget.operate(tree, layout, renderer, &mut Cover(covered));
 }
 
 /// What Tab (and Shift+Tab, `back`) does in the window: focus goes to the
