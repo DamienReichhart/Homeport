@@ -3,13 +3,16 @@
 use std::sync::Arc;
 
 use iced::{
-    widget::{column, row, text},
-    Element, Task,
+    widget::{column, text, Row},
+    Alignment, Element, Task,
 };
 
 use homeport_hosts::{registry::HostStatus, service::HostView};
 
-use crate::app::{events::Event, AppState};
+use crate::{
+    app::{events::Event, AppState},
+    i18n, t,
+};
 
 #[derive(Default)]
 pub struct Hosts {
@@ -31,7 +34,7 @@ impl Hosts {
                     .hosts
                     .list()
                     .map(Arc::new)
-                    .map_err(|e| e.message.to_string())
+                    .map_err(|e| i18n::errors::message(&e))
             },
             Message::Loaded,
         )
@@ -58,25 +61,34 @@ impl Hosts {
     }
 
     pub fn view(&self) -> Element<'_, Message> {
-        let mut rows = column![text("Hosts").size(24)].spacing(8);
+        let direction = i18n::direction();
+        let mut rows = column![text(t!("hosts.title")).size(24)]
+            .spacing(8)
+            .align_x(direction.pick(Alignment::Start, Alignment::End));
         if let Some(e) = &self.error {
             rows = rows.push(text(e.as_str()));
         }
+        if self.list.is_empty() && self.error.is_none() {
+            rows = rows.push(text(t!("hosts.empty")));
+        }
         for view in &self.list {
-            rows = rows
-                .push(row![text(view.host.name.as_str()), text(label(&view.status))].spacing(16));
+            // Name first, then status, from the side the language starts on.
+            let cells = direction.ordered(vec![
+                text(view.host.name.as_str()).into(),
+                text(label(&view.status)).into(),
+            ]);
+            rows = rows.push(Row::with_children(cells).spacing(16));
         }
         rows.into()
     }
 }
 
-fn label(status: &HostStatus) -> &'static str {
+fn label(status: &HostStatus) -> String {
     match status {
-        HostStatus::Disabled => "Disabled",
-        HostStatus::Connecting => "Connecting",
-        HostStatus::Connected { .. } => "Connected",
-        HostStatus::Unreachable { .. } => "Unreachable",
-        HostStatus::Unauthorized { .. } => "Unauthorized",
-        _ => "Other",
+        HostStatus::Disabled => t!("core.status.disabled"),
+        HostStatus::Connecting => t!("core.status.connecting"),
+        HostStatus::Connected { .. } => t!("core.status.connected"),
+        HostStatus::HostKeyUntrusted { .. } => t!("core.status.hostKeyUntrusted"),
+        _ => t!("core.status.unreachable"),
     }
 }

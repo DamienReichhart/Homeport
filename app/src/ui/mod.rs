@@ -11,9 +11,12 @@ use iced::{
 };
 use tokio::sync::mpsc::{self, UnboundedReceiver};
 
-use crate::app::{
-    events::{Event, Events},
-    setup, AppState,
+use crate::{
+    app::{
+        events::{Event, Events},
+        setup, AppState,
+    },
+    i18n,
 };
 
 pub fn run() -> iced::Result {
@@ -43,6 +46,8 @@ pub enum Message {
     Started(Result<Arc<AppState>, String>),
     Backend(Event),
     Hosts(hosts::Message),
+    /// The Settings value of the language changed: `system` or a tag.
+    LanguageChanged(String),
 }
 
 impl Homeport {
@@ -54,9 +59,11 @@ impl Homeport {
             async move {
                 match setup::state(&events) {
                     Ok(state) => Ok(Arc::new(state)),
-                    Err(setup::Failure::Database(e, path)) => {
-                        Err(format!("{} ({})", e.message, path.display()))
-                    }
+                    Err(setup::Failure::Database(e, path)) => Err(format!(
+                        "{} ({})",
+                        i18n::errors::message(&e),
+                        path.display()
+                    )),
                     Err(setup::Failure::Other(e)) => Err(e.to_string()),
                 }
             },
@@ -74,6 +81,9 @@ impl Homeport {
     fn update(&mut self, message: Message) -> Task<Message> {
         match message {
             Message::Started(Ok(state)) => {
+                if let Ok(settings) = state.settings.get() {
+                    i18n::set_language(&settings.language, &i18n::locale::preferred());
+                }
                 self.phase = Phase::Ready(state.clone());
                 self.hosts.load(&state).map(Message::Hosts)
             }
@@ -83,6 +93,11 @@ impl Homeport {
             }
             Message::Backend(event) => {
                 self.hosts.on_event(&event);
+                Task::none()
+            }
+            Message::LanguageChanged(language) => {
+                // Every view reads the app's language, so the next draw is in it.
+                i18n::set_language(&language, &i18n::locale::preferred());
                 Task::none()
             }
             Message::Hosts(message) => {
@@ -96,8 +111,13 @@ impl Homeport {
 
     fn view(&self) -> Element<'_, Message> {
         let body: Element<'_, Message> = match &self.phase {
-            Phase::Starting => text("Starting Homeport…").into(),
-            Phase::Failed(e) => text(format!("Homeport couldn't start: {e}")).into(),
+            Phase::Starting => text(crate::t!("common.loading")).into(),
+            Phase::Failed(e) => column![
+                text(crate::t!("app.startup.title")).size(20),
+                text(e.as_str())
+            ]
+            .spacing(8)
+            .into(),
             Phase::Ready(_) => self.hosts.view().map(Message::Hosts),
         };
         container(column![body].spacing(12))
