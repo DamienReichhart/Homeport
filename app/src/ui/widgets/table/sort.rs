@@ -87,8 +87,18 @@ impl Sort {
     /// A press on the header of `column`. Alone, the column becomes the
     /// only one that sorts; `additive` (Shift held) keeps the others and
     /// sorts by this one after them.
-    pub fn toggle(&mut self, column: ColumnId, descending_first: bool, additive: bool) {
-        let next = next(self.of(column), descending_first);
+    ///
+    /// `always` leaves out "unsorted": the header goes from one way to the
+    /// other and back, as a table that is always sorted by something.
+    pub fn toggle(
+        &mut self,
+        column: ColumnId,
+        descending_first: bool,
+        additive: bool,
+        always: bool,
+    ) {
+        let after = next(self.of(column), descending_first);
+        let next = after.or_else(|| next(None, descending_first).filter(|_| always));
         if !additive {
             self.0.clear();
             self.0.extend(next.map(|order| (column, order)));

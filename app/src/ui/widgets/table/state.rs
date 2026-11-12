@@ -119,6 +119,8 @@ pub struct State<K> {
     pub(super) hidden: Vec<ColumnId>,
     pub(super) mode: Mode,
     pub(super) opens_on_press: bool,
+    /// A header goes from one way to the other, never to "unsorted".
+    pub(super) always_sorted: bool,
     /// The groups whose rows don't show.
     pub(super) collapsed: HashSet<String>,
     /// The one row the page marks (`selectedId`), and whether the table
@@ -144,6 +146,7 @@ impl<K> Default for State<K> {
             hidden: vec![],
             mode: Mode::None,
             opens_on_press: false,
+            always_sorted: false,
             collapsed: HashSet::new(),
             marked: None,
             reveal_marked: Cell::new(false),
@@ -175,6 +178,15 @@ impl<K: Hash + Eq + Clone> State<K> {
     #[must_use]
     pub fn opening_on_press(mut self) -> Self {
         self.opens_on_press = true;
+        self
+    }
+
+    /// A press on a header goes from one way to the other and back, never
+    /// to "unsorted": a table that was always sorted by one column in
+    /// React (the Board), rather than TanStack's three states.
+    #[must_use]
+    pub fn always_sorted(mut self) -> Self {
+        self.always_sorted = true;
         self
     }
 

@@ -234,7 +234,8 @@ impl<K: Hash + Eq + Clone> State<K> {
                 descending_first,
                 additive,
             } => {
-                self.sort.toggle(column, descending_first, additive);
+                self.sort
+                    .toggle(column, descending_first, additive, self.always_sorted);
                 // Another order: the view stays where it is scrolled.
                 self.derived.get_mut().top = None;
                 Some(Event::Arranged)

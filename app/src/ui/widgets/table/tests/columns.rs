@@ -79,6 +79,31 @@ fn shares_are_whole_pixels_that_add_up_to_the_table() {
 }
 
 #[test]
+fn the_pixel_of_the_rounding_goes_to_a_column_that_has_room_for_it() {
+    // 301 px: the last column keeps its least, 150, and the two others
+    // share 151, 75.5 each: rounded, a pixel too many, which the last one
+    // can't give.
+    let least = Track {
+        min: 150.0,
+        ..fill(1)
+    };
+    let widths = resolve(&[fill(1), fill(1), least], 301.0);
+    assert_eq!(widths, [76.0, 75.0, 150.0]);
+    assert_eq!(
+        widths.iter().sum::<f32>(),
+        301.0,
+        "no pixel to scroll sideways"
+    );
+    // Nor can one at its most take the pixel that is missing.
+    let most = Track {
+        max: 100.0,
+        ..fill(4)
+    };
+    let widths = resolve(&[fill(1), fill(1), most], 301.0);
+    assert_eq!(widths.iter().sum::<f32>(), 301.0, "{widths:?}");
+}
+
+#[test]
 fn a_resized_column_takes_no_more_than_the_others_least_leaves() {
     // 600 px: the checkboxes take 32 and the other column at least 48.
     let dragged = |width| Track {

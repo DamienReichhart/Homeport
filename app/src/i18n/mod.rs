@@ -199,6 +199,15 @@ macro_rules! t {
     };
 }
 
+/// `text` without the isolates a right-to-left message puts around what
+/// it is given. For a message whose values read together, as the two
+/// numbers of "1/2 running": each isolated, the fraction is laid out
+/// right to left and reads "2/1". Together they are one number, which
+/// every script writes left to right, as the React app showed it.
+pub fn joined(text: &str) -> String {
+    text.replace(['\u{2068}', '\u{2069}'], "")
+}
+
 /// The spans of a message with tags: `rich!` with its key and arguments, as [`t!`].
 #[macro_export]
 macro_rules! rich {

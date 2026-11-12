@@ -116,6 +116,24 @@ pub fn text<'a>(content: impl Into<String>) -> iced::widget::Text<'a, Theme> {
         .wrapping(Wrapping::None)
 }
 
+/// About how wide a column must be for `sample` in a cell of `text-sm`:
+/// seven and a half pixels a Latin letter or digit, five and a half for
+/// the letters of the other scripts the OS draws, and the cell's padding.
+/// For the least width of a column whose content is as long as the
+/// language makes it: a size with its unit is "128.0 MB" and
+/// "128.0 ميغابايت".
+pub fn width_for(sample: &str) -> f32 {
+    let text: f32 = sample
+        .chars()
+        .map(|c| match c {
+            '\u{2068}' | '\u{2069}' => 0.0,
+            c if c.is_ascii() => 7.5,
+            _ => 5.5,
+        })
+        .sum();
+    (text + 16.0).ceil()
+}
+
 /// Whether one of `fields` holds `query`, whatever the case: what the
 /// React table's `filter` did with every column that had a value.
 pub fn matches(query: &str, fields: &[&str]) -> bool {

@@ -306,14 +306,15 @@ pub fn resolve(tracks: &[Track], available: f32) -> Vec<f32> {
     let off = available.round() - widths.iter().sum::<f32>();
     let shares = |track: &Track| track.resized.is_none() && matches!(track.width, Width::Fill(_));
     if off != 0.0 && off.abs() <= widths.len() as f32 {
-        let last = tracks
-            .iter()
-            .rposition(|track| shares(track) && track.max > track.min);
+        // The last one that has the room: one already at its least can't
+        // give a pixel, nor one at its most take one.
+        let absorbs = |(index, track): (usize, &Track)| {
+            let fixed = widths[index] + off;
+            shares(track) && fixed >= track.min && fixed <= track.max
+        };
+        let last = tracks.iter().enumerate().rposition(absorbs);
         if let Some(last) = last {
-            let fixed = widths[last] + off;
-            if fixed >= tracks[last].min && fixed <= tracks[last].max {
-                widths[last] = fixed;
-            }
+            widths[last] += off;
         }
     }
     widths
