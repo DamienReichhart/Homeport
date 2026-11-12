@@ -218,7 +218,9 @@ fn cluster_gate(world: &World) -> Result<&ClusterView, Verdict<'_>> {
     if world.clusters.is_pending() {
         return Err(Verdict::Loading);
     }
-    if let (Some(error), None) = (world.clusters.error(), world.clusters.data()) {
+    // As React's: a list that couldn't be read is said, whatever an
+    // earlier read left on screen.
+    if let Some(error) = world.clusters.error() {
         return Err(Verdict::ClustersFailed(error));
     }
     let Some(view) = world.cluster() else {

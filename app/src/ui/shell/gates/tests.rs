@@ -281,6 +281,13 @@ fn a_cluster_page_opens_on_a_connected_cluster_with_its_namespace() {
     assert_eq!(
         decide(&Route::Pods, &none),
         Verdict::ClustersFailed(&refused())
+    ); // A read that failed after one that answered is said too.
+    let mut stale = with_cluster(cluster_view("kind-dev"));
+    let kept = stale.clusters.data().cloned();
+    stale.clusters = Resource::Failed(refused(), kept);
+    assert_eq!(
+        decide(&Route::Pods, &stale),
+        Verdict::ClustersFailed(&refused())
     );
 }
 
