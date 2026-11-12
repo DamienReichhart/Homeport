@@ -1,17 +1,20 @@
 //! The table as iced sees it: one widget that lays out the header and the
-//! rows in view, scrolls them, hears the pointer and the keyboard, and
-//! draws what belongs to rows rather than to their cells (the fill of a
-//! hovered or selected row, the lines, the focus ring, the scrollbar).
+//! lines in view, scrolls them both ways, hears the pointer and the
+//! keyboard, and draws what belongs to lines rather than to their cells
+//! (the fill of a hovered or selected row, the hairlines, the focus ring,
+//! the scrollbars).
 //!
 //! It keeps nothing the page should know: how far it is scrolled, what is
 //! selected and how wide the columns are come from the table's `State` and
 //! go back to it as messages. Its own state is what iced keeps for a
 //! widget: whether it has focus, a drag in progress, the last press.
 
+mod drags;
 mod draw;
+mod geometry;
 mod input;
 
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Instant};
 
 use iced::{
     advanced::{
@@ -23,6 +26,7 @@ use iced::{
     Event, Length, Point, Rectangle, Size, Vector,
 };
 
+use self::geometry::Geometry;
 use super::{
     column::{self, Align, Track},
     state::{Message as Action, HEADER_HEIGHT},
@@ -39,15 +43,41 @@ const BORDER: f32 = 1.0;
 const LINE: f32 = 1.0;
 /// How far from the edge of a header a press still takes the edge.
 const HANDLE: f32 = 4.0;
-/// The shortest the scrollbar's thumb gets.
+/// The shortest a scrollbar's thumb gets.
 const THUMB_MIN: f32 = 24.0;
 
-/// A row in view: who it is, and whether it is selected.
+/// What a line of the body is.
+pub enum What<K> {
+    Row(K),
+    /// The header of a group of rows.
+    Group {
+        name: String,
+        collapsed: bool,
+    },
+    /// A row that stands for one still being read.
+    Skeleton,
+}
+
+/// A line in view.
 pub struct Row<K> {
-    pub key: K,
-    /// The key, hashed: what the row's widgets are kept under.
+    pub what: What<K>,
+    /// What its widgets are kept under: its key, hashed.
     pub id: u64,
     pub selected: bool,
+    /// The columns its one wide cell runs over, from the first to before
+    /// the last: the name of a group.
+    pub span: Option<(usize, usize)>,
+}
+
+/// Where the keyboard is among the lines.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Focus {
+    /// On no line yet.
+    None,
+    /// On a line that is not in view.
+    Away,
+    /// On the line at this place.
+    At(usize),
 }
 
 type OnEvent<'a, K, Message> = Box<dyn Fn(Action<K>) -> Message + 'a>;
@@ -57,30 +87,35 @@ pub struct Grid<'a, K, Message> {
     pub tracks: Vec<Track>,
     /// The columns the user may resize, by name.
     pub ids: Vec<Option<ColumnId>>,
-    /// The header's cells, then every cell of every row in view, then
+    /// What each column's widgets are kept under.
+    pub keys: Vec<u64>,
+    /// The header's cells, then every cell of every line in view, then
     /// what stands in for the rows, if anything does.
     pub children: Vec<Element<'a, Message>>,
     /// What a header sends when it is pressed with Shift, for those that sort.
     pub additive: Vec<Option<Message>>,
     pub rows: Vec<Row<K>>,
-    /// The place of the first row in view among those that show.
+    /// The place of the first line in view among those that show.
     pub first: usize,
-    /// How many rows show, in view or not.
+    /// How many lines show, in view or not.
     pub count: usize,
     pub offset: f32,
+    /// How far the columns are scrolled sideways, from where text starts.
+    pub across: f32,
     pub row_height: f32,
     /// How much room the view assumed the rows have.
     pub viewport: f32,
-    /// Whether the last child stands in for the rows (empty, loading, failed).
+    /// Whether the last child stands in for the rows (empty, failed).
     pub placeholder: bool,
-    /// The row the keyboard is on, if it is in view.
-    pub focused: Option<usize>,
+    pub focused: Focus,
     /// A row's menu is open: it has the keyboard, and the one ring.
     pub menu_open: bool,
     pub has_menu: bool,
     pub any_selected: bool,
     /// A press opens the row: the pointer says so.
     pub pointer: bool,
+    /// Letters typed go to the row that starts with them.
+    pub types: bool,
     /// Takes all the height it is given, however few the rows.
     pub fill: bool,
     pub max_height: f32,
@@ -88,10 +123,11 @@ pub struct Grid<'a, K, Message> {
     pub on_event: OnEvent<'a, K, Message>,
 }
 
-/// A header's edge being dragged.
+/// A header's edge being dragged. The column is named, not counted: the
+/// columns may change under a drag.
 #[derive(Debug, Clone, Copy)]
 struct Drag {
-    column: usize,
+    column: ColumnId,
     from_x: f32,
     from_width: f32,
 }
@@ -100,50 +136,24 @@ struct Drag {
 #[derive(Debug, Default)]
 pub struct Internal {
     focus: pressable::State,
-    /// The rows whose widgets the tree holds, in order, and how many
-    /// columns each has.
-    ids: Vec<u64>,
-    columns: usize,
+    /// The lines and the columns whose widgets the tree holds, in order.
+    rows: Vec<u64>,
+    columns: Vec<u64>,
     placeholder: bool,
     modifiers: Modifiers,
     drag: Option<Drag>,
-    /// The thumb is held, this far from its top.
+    /// A thumb is held, this far from its start.
     grab: Option<f32>,
+    grab_across: Option<f32>,
     hovered: Option<usize>,
     over_handle: Option<usize>,
-    click: Option<mouse::Click>,
-}
-
-/// Where everything is, for bounds the table was given.
-struct Geometry {
-    inner: Rectangle,
-    header: Rectangle,
-    body: Rectangle,
-    widths: Vec<f32>,
-    /// Where each column starts.
-    xs: Vec<f32>,
-    /// The rows are taller than the body: there is a scrollbar.
-    scrolls: bool,
-}
-
-impl Geometry {
-    fn cell(&self, column: usize, y: f32, height: f32) -> Rectangle {
-        Rectangle {
-            x: self.xs[column],
-            y,
-            width: self.widths[column],
-            height,
-        }
-    }
-
-    /// The scrollbar's track.
-    fn rail(&self) -> Rectangle {
-        Rectangle {
-            x: self.body.x + self.body.width - control::SCROLLBAR,
-            width: control::SCROLLBAR,
-            ..self.body
-        }
-    }
+    /// The last press on a line, and which line it was.
+    click: Option<(u64, mouse::Click)>,
+    /// The last press on a header's edge.
+    handle_click: Option<(ColumnId, mouse::Click)>,
+    /// What was typed, and when the last letter was.
+    typed: String,
+    typed_at: Option<Instant>,
 }
 
 impl<K, Message> Grid<'_, K, Message> {
@@ -151,69 +161,59 @@ impl<K, Message> Grid<'_, K, Message> {
         window::extent(self.count, self.row_height)
     }
 
-    fn geometry(&self, bounds: Rectangle) -> Geometry {
-        let inner = bounds.shrink(BORDER);
-        let header = Rectangle {
-            height: HEADER_HEIGHT.min(inner.height),
-            ..inner
-        };
-        let body = Rectangle {
-            y: inner.y + header.height,
-            height: (inner.height - header.height).max(0.0),
-            ..inner
-        };
-        let scrolls = !self.placeholder && self.extent() > body.height + 0.5;
-        let available = inner.width - if scrolls { control::SCROLLBAR } else { 0.0 };
-        let widths = column::resolve(&self.tracks, available);
-        let xs = column::offsets(&widths, available, self.rtl)
-            .into_iter()
-            .map(|x| inner.x + x)
-            .collect();
-        Geometry {
-            inner,
-            header,
-            body,
-            widths,
-            xs,
-            scrolls,
-        }
-    }
-
-    /// Where the row at `index` among those that show is drawn.
-    fn row_top(&self, geometry: &Geometry, index: usize) -> f32 {
-        geometry.body.y + window::top_of(index, self.row_height) - self.offset
-    }
-
-    /// The row under the pointer, among those that show.
-    fn row_under(&self, geometry: &Geometry, cursor: mouse::Cursor) -> Option<usize> {
-        let at = cursor.position_in(geometry.body)?;
-        if geometry.scrolls && cursor.is_over(geometry.rail()) {
-            return None;
-        }
-        let index = window::row_at(at.y, self.offset, self.row_height, self.count)?;
-        (index >= self.first && index < self.first + self.rows.len()).then_some(index)
-    }
-
-    /// The column whose edge is under the pointer.
-    fn handle_under(&self, geometry: &Geometry, cursor: mouse::Cursor) -> Option<usize> {
-        let at = cursor.position_over(geometry.header)?;
-        (0..self.tracks.len()).find(|&column| {
-            let edge = if self.rtl {
-                geometry.xs[column]
-            } else {
-                geometry.xs[column] + geometry.widths[column]
-            };
-            self.tracks[column].resizable
-                && self.ids[column].is_some()
-                && (at.x - edge).abs() <= HANDLE
-        })
-    }
-
     fn columns(&self) -> usize {
         self.tracks.len()
     }
 
-    /// The limits and the place of a cell's content in `cell`.
+    /// Whether a line can be pressed or have the keyboard.
+    fn is_interactive(&self) -> bool {
+        self.rows
+            .iter()
+            .any(|row| !matches!(row.what, What::Skeleton))
+    }
+
+    /// Where the line at `index` among those that show is drawn.
+    fn row_top(&self, geometry: &Geometry, index: usize) -> f32 {
+        geometry.body.y + window::top_of(index, self.row_height) - self.offset
+    }
+
+    /// The line in view at `index` among those that show.
+    fn row(&self, index: usize) -> Option<&Row<K>> {
+        self.rows.get(index.checked_sub(self.first)?)
+    }
+
+    /// The line under the pointer, among those that show.
+    fn row_under(&self, geometry: &Geometry, cursor: mouse::Cursor) -> Option<usize> {
+        let at = cursor.position_in(geometry.body)?;
+        let index = window::row_at(at.y, self.offset, self.row_height, self.count)?;
+        self.row(index).map(|_| index)
+    }
+
+    /// The column whose edge is under the pointer.
+    fn handle_under(&self, geometry: &Geometry, cursor: mouse::Cursor) -> Option<usize> {
+        let at = cursor.position_over(geometry.heads())?;
+        (0..self.columns()).find(|&column| {
+            self.tracks[column].resizable
+                && self.ids[column].is_some()
+                && (at.x - geometry.edge(column, self.rtl)).abs() <= HANDLE
+        })
+    }
+
+    /// Where the cell of `column` on the line `row` goes.
+    fn cell_of(&self, geometry: &Geometry, row: usize, column: usize, height: f32) -> Rectangle {
+        let top = self.row_top(geometry, self.first + row);
+        match self.rows[row].span {
+            Some((from, to)) if column == from => geometry.span(from, to, top, height),
+            // Under the wide cell: nothing.
+            Some((from, to)) if column > from && column < to => Rectangle {
+                width: 0.0,
+                ..geometry.cell(column, top, height)
+            },
+            _ => geometry.cell(column, top, height),
+        }
+    }
+
+    /// The place of a cell's content in `cell`.
     fn place(&self, column: usize, cell: Rectangle, node: layout::Node) -> layout::Node {
         let track = &self.tracks[column];
         let room = (cell.width - 2.0 * track.padding).max(0.0);
@@ -241,48 +241,74 @@ where
     }
 
     fn state(&self) -> tree::State {
-        tree::State::new(Internal::default())
+        // What the first children are kept under is known from the start,
+        // so the next view finds them.
+        tree::State::new(Internal {
+            rows: self.rows.iter().map(|row| row.id).collect(),
+            columns: self.keys.clone(),
+            placeholder: self.placeholder,
+            ..Internal::default()
+        })
     }
 
     fn children(&self) -> Vec<Tree> {
         self.children.iter().map(Tree::new).collect()
     }
 
-    /// A row's widgets follow the row: as the rows in view change, each
-    /// keeps what it had (a menu that is open, a field with focus) and
-    /// the rows that come into view start anew.
+    /// A cell's widgets follow its line and its column: as the lines in
+    /// view change, as a column is hidden, as the rows give way to what
+    /// stands in for them and come back, each cell keeps what it had (a
+    /// header its focus, a menu that it is open) and what comes into view
+    /// starts anew.
     fn diff(&self, tree: &mut Tree) {
-        let columns = self.columns();
-        let ids: Vec<u64> = self.rows.iter().map(|row| row.id).collect();
+        let rows: Vec<u64> = self.rows.iter().map(|row| row.id).collect();
         let Tree {
             state, children, ..
         } = tree;
         let internal = state.downcast_mut::<Internal>();
-        let same_shape = internal.columns == columns
-            && internal.placeholder == self.placeholder
-            && children.len()
-                == columns * (1 + internal.ids.len()) + usize::from(internal.placeholder);
-        if !same_shape {
+        let width = internal.columns.len();
+        let held = width * (1 + internal.rows.len()) + usize::from(internal.placeholder);
+        if children.len() != held {
+            // Not what was noted: nothing to go by.
             *children = self.children();
-        } else if internal.ids != ids {
+        } else if internal.columns != self.keys
+            || internal.rows != rows
+            || internal.placeholder != self.placeholder
+        {
             let mut old = std::mem::take(children).into_iter();
-            let mut kept: Vec<Tree> = old.by_ref().take(columns).collect();
-            let mut by_row: HashMap<u64, Vec<Tree>> = HashMap::new();
-            for id in &internal.ids {
-                by_row.insert(*id, old.by_ref().take(columns).collect());
+            // The cells of the header, then of each line, by column.
+            let line = |old: &mut std::vec::IntoIter<Tree>| -> HashMap<u64, Tree> {
+                internal.columns.iter().copied().zip(old.by_ref()).collect()
+            };
+            let mut header = line(&mut old);
+            let mut by_row: HashMap<u64, HashMap<u64, Tree>> = HashMap::new();
+            for id in &internal.rows {
+                by_row.insert(*id, line(&mut old));
             }
-            let cells = self.children[columns..].chunks(columns.max(1));
-            for (row, cells) in ids.iter().zip(cells) {
-                match by_row.remove(row) {
-                    Some(trees) => kept.extend(trees),
-                    None => kept.extend(cells.iter().map(Tree::new)),
+            let stand_in = old.next();
+            let columns = self.keys.len();
+            let mut kept = Vec::with_capacity(self.children.len());
+            let mut cells = self.children.iter();
+            let mut take = |from: Option<&mut HashMap<u64, Tree>>, kept: &mut Vec<Tree>| {
+                let mut from = from;
+                for key in &self.keys {
+                    let Some(cell) = cells.next() else { return };
+                    let old = from.as_mut().and_then(|from| from.remove(key));
+                    kept.push(old.unwrap_or_else(|| Tree::new(cell)));
                 }
+            };
+            take(Some(&mut header), &mut kept);
+            for id in &rows {
+                take(by_row.get_mut(id), &mut kept);
             }
-            kept.extend(old);
+            if self.placeholder {
+                let last = &self.children[columns * (1 + rows.len())];
+                kept.push(stand_in.unwrap_or_else(|| Tree::new(last)));
+            }
             *children = kept;
         }
-        internal.ids = ids;
-        internal.columns = columns;
+        internal.rows = rows;
+        internal.columns.clone_from(&self.keys);
         internal.placeholder = self.placeholder;
         tree.diff_children(&self.children);
     }
@@ -308,6 +334,13 @@ where
         let columns = self.columns();
         let chrome = 2.0 * BORDER + HEADER_HEIGHT;
         let inner_width = (max.width - 2.0 * BORDER).max(0.0);
+        // Columns that don't fit scroll sideways, over a scrollbar.
+        let least: f32 = column::resolve(&self.tracks, inner_width).iter().sum();
+        let across = if least > inner_width + 0.5 {
+            control::SCROLLBAR
+        } else {
+            0.0
+        };
         // What stands in for the rows is as tall as it wants to be.
         let stand_in = self.placeholder.then(|| {
             let last = self.children.len() - 1;
@@ -320,7 +353,7 @@ where
             Some(node) => node.size().height,
             None => {
                 let room = if max.height.is_finite() {
-                    (max.height - chrome).max(0.0)
+                    (max.height - chrome - across).max(0.0)
                 } else {
                     f32::INFINITY
                 };
@@ -332,8 +365,8 @@ where
                 }
             }
         };
-        let size = Size::new(max.width, chrome + body_height);
-        let geometry = self.geometry(Rectangle::with_size(size));
+        let size = Size::new(max.width, chrome + body_height + across);
+        let geometry = Geometry::of(self, Rectangle::with_size(size));
         let mut nodes = Vec::with_capacity(self.children.len());
         let cells = self.children.len() - usize::from(self.placeholder);
         for index in 0..cells {
@@ -341,8 +374,12 @@ where
             let cell = if index < columns {
                 geometry.cell(column, geometry.header.y, HEADER_HEIGHT - LINE)
             } else {
-                let row = self.first + index / columns - 1;
-                geometry.cell(column, self.row_top(&geometry, row), self.row_height - LINE)
+                self.cell_of(
+                    &geometry,
+                    index / columns - 1,
+                    column,
+                    self.row_height - LINE,
+                )
             };
             let room = Size::new(
                 (cell.width - 2.0 * self.tracks[column].padding).max(0.0),
@@ -367,8 +404,8 @@ where
         operation: &mut dyn Operation,
     ) {
         let columns = self.columns();
-        let body = self.geometry(layout.bounds()).body;
-        let takes_focus = !self.rows.is_empty();
+        let body = Geometry::of(self, layout.bounds()).body;
+        let takes_focus = self.is_interactive();
         let Tree {
             state, children, ..
         } = tree;

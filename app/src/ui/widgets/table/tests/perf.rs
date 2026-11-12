@@ -3,15 +3,17 @@
 //! and for the ticket's budget (20,000 rows of 8 columns at 60 frames a
 //! second, and a changed row in under 2 ms of `view`).
 //!
-//! `cargo test -p homeport-app --lib table::perf -- --ignored --nocapture
-//! --test-threads=1` prints the numbers. A test build is not optimised,
-//! and the software renderer then takes ten times longer over the pixels
-//! than the table over everything else: add
-//! `--config profile.dev.package.homeport-app.opt-level=2` and the same
-//! with `opt-level=3` for `tiny-skia`, `iced_tiny_skia`, `iced_graphics`,
-//! `iced_core`, `iced_widget` and `cosmic-text` to read what a release
-//! build does. `docs/agents/widgets.md` has the numbers of the day it
-//! was written.
+//! `cargo test -p homeport-app --lib table::tests::perf -- --ignored
+//! --nocapture --test-threads=1` prints the numbers and holds the table's
+//! own share of a frame (not the renderer's pixels) to the budget. A test
+//! build is not optimised and is given five times the budget; for what a
+//! release build does, add `--config
+//! profile.dev.package.homeport-app.opt-level=2`, the same with
+//! `opt-level=3` for `tiny-skia`, `iced_tiny_skia`, `iced_graphics`,
+//! `iced_core`, `iced_widget` and `cosmic-text`, and set
+//! `TABLE_PERF_OPTIMISED=1`, which holds it to the budget itself.
+//! `counts.rs` is what fails on every machine when a view starts doing
+//! more.
 
 use std::time::{Duration, Instant};
 
@@ -27,19 +29,17 @@ use iced::{
 use iced_runtime::{user_interface::Cache, UserInterface};
 use iced_test::Simulator;
 
-use super::{Align, Column, Message, Mode, Order, Sort, State, Table, Width};
+use super::Page;
 use crate::{
     test_support::snapshot::{in_language, settings},
     ui::{
         theme::{self, Element, Theme},
-        widgets::gallery::{
-            self,
-            table::{columns, samples, Sample},
+        widgets::{
+            gallery::table::{columns, samples, Sample},
+            table::{self, Align, Column, Message, Mode, Order, Rows, Sort, State, Table, Width},
         },
     },
 };
-
-type Page = gallery::Message;
 
 const WINDOW: Size = Size::new(1100.0, 720.0);
 
@@ -54,7 +54,12 @@ struct Frame {
 
 impl Frame {
     fn total(self) -> Duration {
-        self.view + self.layout + self.draw + self.pixels
+        self.own() + self.pixels
+    }
+
+    /// The table's share: everything but the renderer's pixels.
+    fn own(self) -> Duration {
+        self.view + self.layout + self.draw
     }
 }
 
@@ -159,23 +164,39 @@ fn report(what: &str, frame: Frame) {
 }
 
 /// Eight columns over the same rows: the ticket's table.
-fn eight<'a>() -> Vec<Column<'a, Sample, Page>> {
+fn eight() -> Vec<Column<'static, Sample, Page>> {
     let mut all = columns();
     all.push(
         Column::new("id", "Id", |row: &Sample| {
-            super::text(row.id.to_string()).into()
+            table::text(row.id.to_string()).into()
         })
         .width(Width::Fixed(80.0))
         .align(Align::End)
         .sort_by(|a, b| a.id.cmp(&b.id)),
     );
     all.push(Column::new("again", "Name", |row: &Sample| {
-        super::text(row.name.clone()).into()
+        table::text(row.name.clone()).into()
     }));
     all.push(Column::new("tag", "Tag", |row: &Sample| {
-        super::text(row.image).into()
+        table::text(row.image).into()
     }));
     all
+}
+
+fn all(wide: bool) -> Vec<Column<'static, Sample, Page>> {
+    if wide {
+        eight()
+    } else {
+        columns()
+    }
+}
+
+fn read(rows: &[Sample], revision: Option<u64>) -> Rows<'_, Sample, u32> {
+    let rows = Rows::new(rows, |row| row.id);
+    match revision {
+        Some(revision) => rows.revision(revision),
+        None => rows,
+    }
 }
 
 fn table<'a>(
@@ -184,14 +205,30 @@ fn table<'a>(
     wide: bool,
     revision: Option<u64>,
 ) -> Element<'a, Page> {
-    let columns = if wide { eight() } else { columns() };
-    let table = Table::new(state, columns, rows, |row| row.id, Page::Table)
+    Table::new(state, all(wide), read(rows, revision), Page::Table)
         .row_menu(|_| vec![])
-        .fill();
-    match revision {
-        Some(revision) => table.revision(revision).view(),
-        None => table.view(),
+        .fill()
+        .view()
+}
+
+/// The ticket's budget for the table's own work in a frame, five times
+/// over in a build that is not optimised.
+fn budget() -> Duration {
+    let budget = Duration::from_millis(2);
+    if std::env::var_os("TABLE_PERF_OPTIMISED").is_some() {
+        budget
+    } else {
+        budget * 5
     }
+}
+
+fn within_budget(what: &str, took: Duration) {
+    assert!(
+        took <= budget(),
+        "{what}: {:.3} ms of the table's own work, over {:.0} ms",
+        ms(took),
+        ms(budget())
+    );
 }
 
 /// Frames of a table that stays put, then frames that each scroll by a
@@ -204,13 +241,12 @@ fn measure(
     revision: Option<u64>,
 ) -> (Frame, Frame) {
     const FRAMES: usize = 40;
-    let key = |row: &Sample| row.id;
     // The first frames tell the table its room and fill the caches.
     for _ in 0..3 {
         let (_, messages) = bench.frame(|| table(state, rows, wide, revision));
         for message in messages {
             if let Page::Table(message) = message {
-                state.update(message, rows, key);
+                state.update(message, &read(rows, revision), &all(wide));
             }
         }
     }
@@ -220,7 +256,8 @@ fn measure(
     let scrolling = (0..FRAMES)
         .map(|_| {
             let start = Instant::now();
-            state.update(Message::Scrolled(state.offset() + 60.0), rows, key);
+            let to = Message::Scrolled(state.offset() + 60.0);
+            state.update(to, &read(rows, revision), &all(wide));
             let update = start.elapsed();
             let (mut frame, _) = bench.frame(|| table(state, rows, wide, revision));
             frame.view += update;
@@ -264,14 +301,23 @@ fn a_frame_of_a_hundred_thousand_rows() {
         scrolling,
     );
 
+    within_budget("100,000 rows, a scroll step", scrolling.own());
+    within_budget(
+        "100,000 rows sorted with a revision, still",
+        still_fast.own(),
+    );
     // What makes it a virtual list: a thousand times the rows is not a
-    // thousand times the frame.
+    // thousand times the table's work.
     let (_, scrolling_plain) = measure(&mut bench, &mut multi(), &many, false, None);
+    within_budget(
+        "100,000 rows unsorted, a scroll step",
+        scrolling_plain.own(),
+    );
     assert!(
-        scrolling_plain.total() < still_few.total() * 3,
-        "100,000 rows cost {:?} a frame, 100 rows {:?}",
-        scrolling_plain.total(),
-        still_few.total()
+        scrolling_plain.own() < scrolling_few.own() * 4,
+        "100,000 rows cost {:?} of the table's work a frame, 100 rows {:?}",
+        scrolling_plain.own(),
+        scrolling_few.own()
     );
 }
 
@@ -281,7 +327,6 @@ fn the_budget_of_twenty_thousand_rows_of_eight_columns() {
     let _english = in_language("en");
     let mut bench = Bench::new();
     let mut rows = samples(20_000);
-    let key = |row: &Sample| row.id;
     let by_name = || {
         State::new()
             .selecting(Mode::Multi)
@@ -323,10 +368,16 @@ fn the_budget_of_twenty_thousand_rows_of_eight_columns() {
         ms(checked),
         ms(stamped)
     );
-    let _ = state.update(Message::Scrolled(0.0), &rows, key);
     println!(
-        "a scroll step is {:.1} % of a 60 fps frame (checked) and {:.1} % (with a revision)",
+        "a scroll step is {:.1} % of a 60 fps frame (checked) and {:.1} % (with a revision); \
+         the table's own work is {:.1} % and {:.1} %",
         ms(scrolling.total()) / (1000.0 / 60.0) * 100.0,
         ms(scrolling_fast.total()) / (1000.0 / 60.0) * 100.0,
+        ms(scrolling.own()) / (1000.0 / 60.0) * 100.0,
+        ms(scrolling_fast.own()) / (1000.0 / 60.0) * 100.0,
     );
+    within_budget("20,000 rows of 8 columns, a scroll step", scrolling.own());
+    within_budget("the same with a revision", scrolling_fast.own());
+    within_budget("a changed row, view alone", checked);
+    within_budget("a changed row with a new revision, view alone", stamped);
 }

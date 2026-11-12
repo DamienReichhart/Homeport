@@ -106,6 +106,58 @@ impl Sort {
     }
 }
 
+/// Text as TanStack's automatic sort compares it (`alphanumeric`, which
+/// is `text` when there is no digit): whatever the case, and a run of
+/// digits by its value, so `host-2` comes before `host-10`.
+pub fn natural(a: &str, b: &str) -> Ordering {
+    let (a, b) = (a.to_lowercase(), b.to_lowercase());
+    let (mut left, mut right) = (chunks(&a), chunks(&b));
+    loop {
+        match (left.next(), right.next()) {
+            (None, None) => return Ordering::Equal,
+            // What has more to say comes after.
+            (None, Some(_)) => return Ordering::Less,
+            (Some(_), None) => return Ordering::Greater,
+            (Some(one), Some(other)) => {
+                let ordering = match (number(one), number(other)) {
+                    (Some(one), Some(other)) => one.cmp(&other),
+                    // Text comes before a number.
+                    (None, Some(_)) => Ordering::Less,
+                    (Some(_), None) => Ordering::Greater,
+                    (None, None) => one.cmp(other),
+                };
+                if ordering != Ordering::Equal {
+                    return ordering;
+                }
+            }
+        }
+    }
+}
+
+/// `text` cut into its runs of digits and what is between them.
+fn chunks(text: &str) -> impl Iterator<Item = &str> {
+    let mut rest = text;
+    std::iter::from_fn(move || {
+        let first = rest.chars().next()?;
+        let digits = first.is_ascii_digit();
+        let end = rest
+            .find(|c: char| c.is_ascii_digit() != digits)
+            .unwrap_or(rest.len());
+        let (chunk, after) = rest.split_at(end);
+        rest = after;
+        Some(chunk)
+    })
+}
+
+/// The value of a run of digits, however long: its length without the
+/// zeros in front, then its digits.
+fn number(chunk: &str) -> Option<(usize, &str)> {
+    chunk.starts_with(|c: char| c.is_ascii_digit()).then(|| {
+        let digits = chunk.trim_start_matches('0');
+        (digits.len(), digits)
+    })
+}
+
 /// Puts the rows `order` names in the order `compare` gives, rows that
 /// compare equal by their place in `rows`. The result is the one stable
 /// sort of them, whatever `order` held before; an `order` that was already
@@ -166,6 +218,27 @@ mod tests {
             sort.keys(),
             [("name", Order::Ascending), ("size", Order::Descending)]
         );
+    }
+
+    #[test]
+    fn text_sorts_whatever_its_case_and_digits_by_their_value() {
+        let mut names = vec![
+            "host-10", "Host-2", "alpha", "host-1", "Beta", "host", "7", "host-02a",
+        ];
+        names.sort_by(|a, b| natural(a, b));
+        assert_eq!(
+            names,
+            ["alpha", "Beta", "host", "host-1", "Host-2", "host-02a", "host-10", "7"]
+        );
+        assert_eq!(natural("Prod", "prod"), Ordering::Equal);
+        assert_eq!(natural("a", "B"), Ordering::Less, "not by code point");
+        assert_eq!(natural("v9", "v10"), Ordering::Less);
+        // Longer than any integer type, and still by value.
+        assert_eq!(
+            natural("id-99999999999999999999999", "id-100000000000000000000000"),
+            Ordering::Less
+        );
+        assert_eq!(natural("10.0.0.9:2376", "10.0.0.10:2376"), Ordering::Less);
     }
 
     #[test]

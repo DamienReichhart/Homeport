@@ -86,6 +86,20 @@ impl<K: Hash + Eq + Clone> Selection<K> {
         self.keys.extend(keys);
     }
 
+    /// Select all over a filtered list: these rows too, the others as
+    /// they were.
+    pub fn extend(&mut self, keys: impl IntoIterator<Item = K>) {
+        self.keys.extend(keys);
+    }
+
+    /// Deselect all over a filtered list: these rows out, the others as
+    /// they were.
+    pub fn remove(&mut self, keys: impl IntoIterator<Item = K>) {
+        for key in keys {
+            self.keys.remove(&key);
+        }
+    }
+
     pub fn clear(&mut self) {
         self.keys.clear();
     }

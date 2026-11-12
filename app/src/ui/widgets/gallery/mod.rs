@@ -93,6 +93,8 @@ pub struct Gallery {
     pub table: table_widget::State<u32>,
     pub table_rows: Vec<table::Sample>,
     pub table_show: table::Show,
+    pub table_grouped: bool,
+    pub table_columns: menu::State,
 }
 
 #[derive(Debug, Clone)]
@@ -126,6 +128,8 @@ pub enum Message {
     Table(table_widget::Message<u32>),
     TableRows(u32),
     TableShow(table::Show),
+    TableGrouped(bool),
+    TableColumns(menu::Event),
     Nothing,
 }
 
@@ -166,6 +170,8 @@ impl Default for Gallery {
                 )),
             table_rows: table::samples(12),
             table_show: table::Show::Rows,
+            table_grouped: false,
+            table_columns: menu::State::default(),
         }
     }
 }
@@ -314,12 +320,19 @@ impl Gallery {
                 self.toasts.say(Kind::Info, move || what.to_owned());
             }
             Message::Table(message) => {
-                let opened = self.table.update(message, &self.table_rows, |row| row.id);
+                let rows = if self.table_grouped {
+                    table::grouped(&self.table_rows)
+                } else {
+                    table::source(&self.table_rows)
+                };
+                let opened = self.table.update(message, &rows, &table::columns());
                 if let Some(table_widget::Event::Opened(id)) = opened {
                     let name = self.table_rows[id as usize].name.clone();
                     self.toasts.say(Kind::Info, move || name.clone());
                 }
             }
+            Message::TableGrouped(grouped) => self.table_grouped = grouped,
+            Message::TableColumns(event) => self.table_columns.update(event),
             Message::TableRows(count) => {
                 self.table_rows = table::samples(count);
                 self.table_show = table::Show::Rows;

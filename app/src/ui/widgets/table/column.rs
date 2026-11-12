@@ -37,6 +37,7 @@ pub enum Align {
 
 type Compare<'a, T> = Box<dyn Fn(&T, &T) -> Ordering + 'a>;
 type Cell<'a, T, Message> = Box<dyn Fn(&T) -> Element<'a, Message> + 'a>;
+type Typed<'a, T> = Box<dyn Fn(&T) -> String + 'a>;
 
 /// One column of a table over rows of `T`.
 pub struct Column<'a, T, Message> {
@@ -49,6 +50,8 @@ pub struct Column<'a, T, Message> {
     pub(super) resizable: bool,
     pub(super) compare: Option<Compare<'a, T>>,
     pub(super) descending_first: bool,
+    pub(super) typed: Option<Typed<'a, T>>,
+    pub(super) hideable: bool,
     pub(super) cell: Cell<'a, T, Message>,
 }
 
@@ -72,6 +75,8 @@ impl<'a, T, Message> Column<'a, T, Message> {
             resizable: true,
             compare: None,
             descending_first: false,
+            typed: None,
+            hideable: true,
             cell: Box::new(cell),
         }
     }
@@ -126,6 +131,36 @@ impl<'a, T, Message> Column<'a, T, Message> {
         self
     }
 
+    /// Makes it the column typing looks in: letters typed while the rows
+    /// have focus go to the next row whose `text` starts with them. The
+    /// letters are then the table's, not a page shortcut's.
+    #[must_use]
+    pub fn typed(mut self, text: impl Fn(&T) -> String + 'a) -> Self {
+        self.typed = Some(Box::new(text));
+        self
+    }
+
+    /// Whether the user may hide it; they may unless told (the name of a
+    /// row stays).
+    #[must_use]
+    pub fn hideable(mut self, hideable: bool) -> Self {
+        self.hideable = hideable;
+        self
+    }
+
+    pub fn id(&self) -> ColumnId {
+        self.id
+    }
+
+    /// What its header says.
+    pub fn header(&self) -> &str {
+        &self.header
+    }
+
+    pub fn is_hideable(&self) -> bool {
+        self.hideable
+    }
+
     pub(super) fn track(&self, resized: Option<f32>) -> Track {
         Track {
             width: self.width,
@@ -172,16 +207,50 @@ impl Track {
     }
 }
 
-/// The width of every column in a table `available` pixels wide. Fixed and
-/// resized columns take theirs; the others share what is left by their
+impl Track {
+    /// The least it takes: its minimum, or its whole width when it is
+    /// fixed and nobody resized it.
+    fn floor(&self) -> f32 {
+        match (self.resized, self.width) {
+            (None, Width::Fixed(width)) => self.clamp(width),
+            _ => self.min,
+        }
+    }
+}
+
+/// The widest the column `index` may be dragged in a table `available`
+/// pixels wide: what the least of every other column leaves, so no drag
+/// pushes a column, or the edge being dragged, out of the table.
+pub fn room(tracks: &[Track], index: usize, available: f32) -> f32 {
+    let others: f32 = tracks
+        .iter()
+        .enumerate()
+        .filter(|(other, _)| *other != index)
+        .map(|(_, track)| track.floor())
+        .sum();
+    let track = &tracks[index];
+    track.clamp((available - others).max(track.min))
+}
+
+/// The width of every column in a table `available` pixels wide. Fixed
+/// columns take theirs; resized ones take what the user gave them as far
+/// as the others' least leaves room; the rest share what is left by their
 /// portions, none going under its minimum or over its maximum. When the
-/// minimums don't fit, the columns are wider than the table together and
-/// the last ones are cut.
+/// least of every column doesn't fit, each keeps its least and the table
+/// scrolls sideways.
 pub fn resolve(tracks: &[Track], available: f32) -> Vec<f32> {
+    let floors: f32 = tracks.iter().map(Track::floor).sum();
+    // What the resized columns may take over their least, the first first.
+    let mut spare = (available - floors).max(0.0);
     let mut widths: Vec<Option<f32>> = tracks
         .iter()
         .map(|track| match (track.resized, track.width) {
-            (Some(width), _) | (None, Width::Fixed(width)) => Some(track.clamp(width)),
+            (Some(width), _) => {
+                let more = (track.clamp(width) - track.min).clamp(0.0, spare);
+                spare -= more;
+                Some(track.min + more)
+            }
+            (None, Width::Fixed(width)) => Some(track.clamp(width)),
             (None, Width::Fill(_)) => None,
         })
         .collect();
@@ -227,10 +296,27 @@ pub fn resolve(tracks: &[Track], available: f32) -> Vec<f32> {
             }
         }
     }
-    widths
+    let mut widths: Vec<f32> = widths
         .into_iter()
         .map(|width| width.unwrap_or(0.0).round())
-        .collect()
+        .collect();
+    // Whole pixels each, and the pixels the rounding made or lost go to
+    // the last column that shares: together they are the table's width,
+    // not a pixel more (which would be a pixel to scroll sideways).
+    let off = available.round() - widths.iter().sum::<f32>();
+    let shares = |track: &Track| track.resized.is_none() && matches!(track.width, Width::Fill(_));
+    if off != 0.0 && off.abs() <= widths.len() as f32 {
+        let last = tracks
+            .iter()
+            .rposition(|track| shares(track) && track.max > track.min);
+        if let Some(last) = last {
+            let fixed = widths[last] + off;
+            if fixed >= tracks[last].min && fixed <= tracks[last].max {
+                widths[last] = fixed;
+            }
+        }
+    }
+    widths
 }
 
 /// Where each column starts, from the left of the table: the first column
@@ -257,95 +343,4 @@ pub fn offsets(widths: &[f32], total: f32, rtl: bool) -> Vec<f32> {
 pub fn resized(track: &Track, from: f32, dx: f32, rtl: bool) -> f32 {
     let grown = if rtl { -dx } else { dx };
     track.clamp(from + grown).round()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn fill(portion: u16) -> Track {
-        Track {
-            width: Width::Fill(portion),
-            min: MIN_WIDTH,
-            max: f32::INFINITY,
-            resized: None,
-            resizable: true,
-            align: Align::Start,
-            padding: CELL_PADDING,
-        }
-    }
-
-    fn fixed(width: f32) -> Track {
-        Track {
-            width: Width::Fixed(width),
-            ..fill(1)
-        }
-    }
-
-    #[test]
-    fn fixed_columns_take_theirs_and_the_others_share_the_rest() {
-        let tracks = [Track::exactly(32.0), fill(2), fixed(120.0), fill(1)];
-        assert_eq!(resolve(&tracks, 752.0), [32.0, 400.0, 120.0, 200.0]);
-        // Nothing to share: only what is fixed.
-        assert_eq!(resolve(&[fixed(100.0), fixed(50.0)], 800.0), [100.0, 50.0]);
-        assert_eq!(resolve(&[], 800.0), Vec::<f32>::new());
-    }
-
-    #[test]
-    fn a_share_stops_at_its_bounds_and_the_others_take_what_that_leaves() {
-        let capped = Track {
-            max: 100.0,
-            ..fill(1)
-        };
-        assert_eq!(resolve(&[capped, fill(1)], 600.0), [100.0, 500.0]);
-        let floored = Track {
-            min: 300.0,
-            ..fill(1)
-        };
-        assert_eq!(
-            resolve(&[floored, fill(1), fill(1)], 600.0),
-            [300.0, 150.0, 150.0]
-        );
-        // Too narrow for the minimums: each keeps its own, and they overflow.
-        assert_eq!(resolve(&[fill(1), fill(1)], 60.0), [48.0, 48.0]);
-    }
-
-    #[test]
-    fn a_width_the_user_gave_wins_and_stays_within_the_bounds() {
-        let dragged = Track {
-            resized: Some(250.0),
-            ..fill(1)
-        };
-        assert_eq!(resolve(&[dragged, fill(1)], 600.0), [250.0, 350.0]);
-        let too_small = Track {
-            resized: Some(10.0),
-            ..fixed(120.0)
-        };
-        assert_eq!(resolve(&[too_small], 600.0), [48.0]);
-    }
-
-    #[test]
-    fn a_drag_resizes_within_the_bounds_and_the_other_way_round_in_rtl() {
-        let track = Track {
-            max: 300.0,
-            ..fill(1)
-        };
-        assert_eq!(resized(&track, 200.0, 40.0, false), 240.0);
-        assert_eq!(resized(&track, 200.0, -40.0, false), 160.0);
-        assert_eq!(resized(&track, 200.0, -500.0, false), 48.0, "its minimum");
-        assert_eq!(resized(&track, 200.0, 500.0, false), 300.0, "its maximum");
-        // Right to left, the column ends on its left: dragging left widens.
-        assert_eq!(resized(&track, 200.0, -40.0, true), 240.0);
-        assert_eq!(resized(&track, 200.0, 40.0, true), 160.0);
-        assert_eq!(resized(&Track::exactly(32.0), 32.0, 90.0, false), 32.0);
-    }
-
-    #[test]
-    fn columns_start_on_the_left_or_on_the_right_in_rtl() {
-        let widths = [32.0, 400.0, 120.0];
-        assert_eq!(offsets(&widths, 600.0, false), [0.0, 32.0, 432.0]);
-        // Mirrored: the first column ends at the right edge, and what the
-        // columns leave is on the left.
-        assert_eq!(offsets(&widths, 600.0, true), [568.0, 168.0, 48.0]);
-    }
 }

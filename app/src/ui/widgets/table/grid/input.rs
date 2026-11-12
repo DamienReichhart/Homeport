@@ -1,18 +1,24 @@
-//! What the table hears: the pointer on its rows, its header's edges and
-//! its scrollbar, the wheel, and the keyboard while its rows have focus.
+//! What the table hears: the pointer on its lines, its header's edges and
+//! its scrollbars, the wheel, and the keyboard while its rows have focus.
 //!
 //! | Key                         | What it does                                  |
 //! | --------------------------- | --------------------------------------------- |
-//! | Up, Down                    | the row before, the row after                 |
-//! | Page Up, Page Down          | a screen of rows up or down                   |
-//! | Home, End                   | the first row, the last                       |
+//! | Up, Down                    | the line before, the line after               |
+//! | Page Up, Page Down          | a screen of lines up or down                  |
+//! | Home, End                   | the first line, the last                      |
 //! | Shift with any of those     | selects from where the selection started      |
 //! | Space                       | selects or deselects the row                  |
 //! | Enter                       | opens the row                                 |
-//! | Ctrl or Cmd + A             | selects every row                             |
+//! | Space, Enter on a group     | closes or opens the group                     |
+//! | Left, Right on a group      | closes it, opens it (mirrored right to left)  |
+//! | Left, Right elsewhere       | scroll the columns that don't fit             |
+//! | Ctrl or Cmd + A             | selects every row that shows                  |
 //! | Escape                      | deselects everything                          |
 //! | Menu, Shift + F10           | opens the row's menu                          |
+//! | Letters                     | go to the next row that starts with them      |
 //! | Tab                         | leaves the rows: they are one stop            |
+
+use std::time::{Duration, Instant};
 
 use iced::{
     advanced::{
@@ -24,11 +30,10 @@ use iced::{
     window as iced_window, Event, Rectangle,
 };
 
-use super::{Drag, Geometry, Grid, Internal, THUMB_MIN};
+use super::{drags::drags, geometry::Geometry, Focus, Grid, Internal, What};
 use crate::ui::widgets::{
     focus::modality,
     table::{
-        column,
         state::{Message as Action, Motion},
         window,
     },
@@ -36,6 +41,10 @@ use crate::ui::widgets::{
 
 /// What a notch of the wheel scrolls, as iced's scrollable.
 const LINE_STEP: f32 = 60.0;
+/// What an arrow scrolls sideways.
+const ARROW_STEP: f32 = 40.0;
+/// Typing pauses this long before it starts a new word (Radix's second).
+const TYPEAHEAD: Duration = Duration::from_secs(1);
 
 /// Gives the rows focus anew, so it shows or not by what was last used.
 fn refocus(internal: &mut Internal) {
@@ -43,7 +52,7 @@ fn refocus(internal: &mut Internal) {
     internal.focus.focus();
 }
 
-fn key_message<K>(key: &Key, modifiers: Modifiers, has_menu: bool) -> Option<Action<K>> {
+pub(super) fn key_message<K>(key: &Key, modifiers: Modifiers, has_menu: bool) -> Option<Action<K>> {
     if modifiers.alt() {
         return None;
     }
@@ -68,118 +77,64 @@ fn key_message<K>(key: &Key, modifiers: Modifiers, has_menu: bool) -> Option<Act
     })
 }
 
-/// Where the thumb is in the window, if the rows scroll.
-fn thumb<K, Message>(grid: &Grid<'_, K, Message>, geometry: &Geometry) -> Option<Rectangle> {
-    let rail = geometry.rail();
-    let (top, length) = window::thumb(
-        grid.offset,
-        rail.height,
-        grid.extent(),
-        rail.height,
-        THUMB_MIN,
-    )?;
-    Some(Rectangle {
-        y: rail.y + top,
-        height: length,
-        ..rail
-    })
-}
-
-pub(super) fn thumb_of<K, Message>(
+/// What an arrow across does: on the header of a group it closes or
+/// opens it, elsewhere it scrolls the columns that don't fit.
+fn across_message<K, Message>(
     grid: &Grid<'_, K, Message>,
     geometry: &Geometry,
-) -> Option<Rectangle> {
-    geometry.scrolls.then(|| thumb(grid, geometry)).flatten()
-}
-
-/// The edge of a header and the scrollbar: a press there is theirs, and
-/// the cells never hear it. Returns whether the event was one of those.
-fn drags<K: Clone, Message>(
-    grid: &Grid<'_, K, Message>,
-    internal: &mut Internal,
-    event: &Event,
-    geometry: &Geometry,
-    cursor: mouse::Cursor,
-    shell: &mut Shell<'_, Message>,
-) -> bool {
-    let send = |shell: &mut Shell<'_, Message>, message| shell.publish((grid.on_event)(message));
-    match event {
-        Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
-            let at = cursor.position();
-            if let (Some(column), Some(at)) = (grid.handle_under(geometry, cursor), at) {
-                internal.drag = Some(Drag {
-                    column,
-                    from_x: at.x,
-                    from_width: geometry.widths[column],
-                });
-                shell.capture_event();
-                return true;
-            }
-            let rail = geometry.rail();
-            let (Some(thumb), Some(at)) = (thumb_of(grid, geometry), cursor.position_over(rail))
-            else {
-                return false;
-            };
-            // On the thumb: it is held where it was taken. Beside it: its
-            // middle comes under the pointer.
-            let grab = if thumb.contains(at) {
-                at.y - thumb.y
-            } else {
-                thumb.height / 2.0
-            };
-            internal.grab = Some(grab);
-            let offset = window::offset_of_thumb(
-                at.y - rail.y - grab,
-                rail.height,
-                grid.extent(),
-                rail.height,
-                THUMB_MIN,
-            );
-            send(shell, Action::Scrolled(offset));
-            shell.capture_event();
-            true
-        }
-        Event::Mouse(mouse::Event::CursorMoved { position }) => {
-            if let Some(drag) = internal.drag {
-                if let Some(id) = grid.ids[drag.column] {
-                    let width = column::resized(
-                        &grid.tracks[drag.column],
-                        drag.from_width,
-                        position.x - drag.from_x,
-                        grid.rtl,
-                    );
-                    send(shell, Action::Resize { column: id, width });
-                }
-                shell.capture_event();
-                return true;
-            }
-            let Some(grab) = internal.grab else {
-                return false;
-            };
-            let rail = geometry.rail();
-            let offset = window::offset_of_thumb(
-                position.y - rail.y - grab,
-                rail.height,
-                grid.extent(),
-                rail.height,
-                THUMB_MIN,
-            );
-            send(shell, Action::Scrolled(offset));
-            shell.capture_event();
-            true
-        }
-        Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
-            let resized = internal.drag.take().is_some();
-            if resized {
-                send(shell, Action::Resized);
-            }
-            resized || internal.grab.take().is_some()
-        }
-        _ => false,
+    key: &Key,
+    modifiers: Modifiers,
+) -> Option<Action<K>> {
+    let right = match key.as_ref() {
+        Key::Named(Named::ArrowRight) => true,
+        Key::Named(Named::ArrowLeft) => false,
+        _ => return None,
+    };
+    if modifiers.alt() || modifiers.command() {
+        return None;
     }
+    // Towards where text ends: it opens a group, and shows what is further.
+    let onward = right != grid.rtl;
+    let on_group = match grid.focused {
+        Focus::At(index) => grid.row(index).and_then(|row| match &row.what {
+            What::Group { name, .. } => Some(name),
+            _ => None,
+        }),
+        _ => None,
+    };
+    if let Some(name) = on_group {
+        return Some(Action::Collapse {
+            name: name.clone(),
+            collapsed: !onward,
+        });
+    }
+    let step = if onward { ARROW_STEP } else { -ARROW_STEP };
+    let most = (geometry.content - geometry.body.width).max(0.0);
+    let across = (geometry.across + step).clamp(0.0, most);
+    ((across - geometry.across).abs() > f32::EPSILON).then_some(Action::ScrolledAcross(across))
 }
 
-/// A press on the rows: on a row, it is told to the table; anywhere, it
+/// A letter typed, added to what was typed within the last second.
+fn typed(internal: &mut Internal, key: &Key, modifiers: Modifiers) -> Option<String> {
+    let Key::Character(letter) = key else {
+        return None;
+    };
+    if modifiers.command() || modifiers.alt() || letter.chars().any(char::is_control) {
+        return None;
+    }
+    let now = Instant::now();
+    if internal
+        .typed_at
+        .is_none_or(|at| now.duration_since(at) > TYPEAHEAD)
+    {
+        internal.typed.clear();
+    }
+    internal.typed_at = Some(now);
+    internal.typed.push_str(letter);
+    Some(internal.typed.clone())
+}
+
+/// A press on the rows: on a line, it is told to the table; anywhere, it
 /// says whether the rows have focus.
 fn press<K: Clone, Message>(
     grid: &Grid<'_, K, Message>,
@@ -189,7 +144,7 @@ fn press<K: Clone, Message>(
     cursor: mouse::Cursor,
     shell: &mut Shell<'_, Message>,
 ) {
-    let over = cursor.is_over(geometry.body) && !grid.rows.is_empty();
+    let over = cursor.is_over(geometry.body) && grid.is_interactive();
     if !over {
         internal.focus.unfocus();
         return;
@@ -199,29 +154,81 @@ fn press<K: Clone, Message>(
     let (Some(index), false) = (grid.row_under(geometry, cursor), shell.is_event_captured()) else {
         return;
     };
-    let row = &grid.rows[index - grid.first];
-    let message = match button {
-        mouse::Button::Left => {
+    let Some(row) = grid.row(index) else {
+        return;
+    };
+    let message = match (&row.what, button) {
+        (What::Row(key), mouse::Button::Left) => {
             let at = cursor.position().unwrap_or_default();
-            let click = mouse::Click::new(at, mouse::Button::Left, internal.click);
-            let twice =
-                click.kind() == mouse::click::Kind::Double && internal.hovered == Some(index);
-            internal.click = Some(click);
+            // Twice on the same row, not twice at the same place: the
+            // rows may have moved under the pointer in between.
+            let previous = internal
+                .click
+                .take()
+                .filter(|(id, _)| *id == row.id)
+                .map(|(_, click)| click);
+            let click = mouse::Click::new(at, mouse::Button::Left, previous);
+            let twice = click.kind() == mouse::click::Kind::Double;
+            internal.click = Some((row.id, click));
             if twice {
-                Action::Opened(row.key.clone())
+                Action::Opened(key.clone())
             } else {
                 Action::Pressed {
-                    key: row.key.clone(),
+                    key: key.clone(),
                     index,
                     modifiers: internal.modifiers,
                 }
             }
         }
-        mouse::Button::Right if grid.has_menu => Action::MenuFor(Some((row.key.clone(), index))),
+        (What::Row(key), mouse::Button::Right) if grid.has_menu => {
+            Action::MenuFor(Some((key.clone(), index)))
+        }
+        (What::Group { name, .. }, mouse::Button::Left) => Action::GroupPressed {
+            name: name.clone(),
+            index,
+        },
         _ => return,
     };
     shell.publish((grid.on_event)(message));
     shell.capture_event();
+}
+
+/// The wheel: the rows up and down, the columns across (with Shift, or
+/// a wheel that tilts).
+fn wheel<K: Clone, Message>(
+    grid: &Grid<'_, K, Message>,
+    internal: &Internal,
+    delta: mouse::ScrollDelta,
+    geometry: &Geometry,
+    shell: &mut Shell<'_, Message>,
+) {
+    let (dx, dy) = match delta {
+        mouse::ScrollDelta::Lines { x, y } => (x * LINE_STEP, y * LINE_STEP),
+        mouse::ScrollDelta::Pixels { x, y } => (x, y),
+    };
+    let (dx, dy) = if internal.modifiers.shift() {
+        (dy, 0.0)
+    } else {
+        (dx, dy)
+    };
+    let offset = window::clamp(
+        grid.offset - dy,
+        grid.count,
+        grid.row_height,
+        geometry.body.height,
+    );
+    // At either end the wheel is the page's.
+    if (offset - grid.offset).abs() > f32::EPSILON {
+        shell.publish((grid.on_event)(Action::Scrolled(offset)));
+        shell.capture_event();
+    }
+    let most = (geometry.content - geometry.body.width).max(0.0);
+    let onward = if grid.rtl { dx } else { -dx };
+    let across = (geometry.across + onward).clamp(0.0, most);
+    if (across - geometry.across).abs() > f32::EPSILON {
+        shell.publish((grid.on_event)(Action::ScrolledAcross(across)));
+        shell.capture_event();
+    }
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -237,7 +244,7 @@ pub(super) fn update<K: Clone, Message: Clone>(
     viewport: &Rectangle,
 ) {
     modality::note(event);
-    let geometry = grid.geometry(layout.bounds());
+    let geometry = Geometry::of(grid, layout.bounds());
     let columns = grid.columns();
     let Tree {
         state, children, ..
@@ -246,7 +253,7 @@ pub(super) fn update<K: Clone, Message: Clone>(
     if let Event::Keyboard(keyboard::Event::ModifiersChanged(modifiers)) = event {
         internal.modifiers = *modifiers;
     }
-    if grid.rows.is_empty() {
+    if !grid.is_interactive() {
         // Nothing to be on: an empty list takes no focus.
         internal.focus.unfocus();
     }
@@ -255,12 +262,15 @@ pub(super) fn update<K: Clone, Message: Clone>(
     }
 
     // The cells first: a button in a row keeps its press. What is scrolled
-    // under the header is out of the pointer's reach.
-    let over_rows = if cursor.is_over(geometry.body) {
-        cursor
-    } else {
-        mouse::Cursor::Unavailable
+    // under the header or out of the table is out of the pointer's reach.
+    let within = |area: Rectangle| {
+        if cursor.is_over(area) {
+            cursor
+        } else {
+            mouse::Cursor::Unavailable
+        }
     };
+    let (over_heads, over_rows) = (within(geometry.heads()), within(geometry.body));
     let shift = internal.modifiers.shift();
     let cells = grid
         .children
@@ -269,6 +279,11 @@ pub(super) fn update<K: Clone, Message: Clone>(
         .zip(layout.children());
     for (index, ((child, tree), layout)) in cells.enumerate() {
         let widget = child.as_widget_mut();
+        let cursor = if index < columns {
+            over_heads
+        } else {
+            over_rows
+        };
         match grid.additive.get(index).filter(|_| shift) {
             // A header pressed with Shift adds its column to the sort.
             Some(Some(additive)) => {
@@ -279,12 +294,9 @@ pub(super) fn update<K: Clone, Message: Clone>(
                 );
                 shell.merge(inner, |_| additive.clone());
             }
-            _ => {
-                let cursor = if index < columns { cursor } else { over_rows };
-                widget.update(
-                    tree, event, layout, cursor, renderer, clipboard, shell, viewport,
-                );
-            }
+            _ => widget.update(
+                tree, event, layout, cursor, renderer, clipboard, shell, viewport,
+            ),
         }
     }
 
@@ -296,31 +308,25 @@ pub(super) fn update<K: Clone, Message: Clone>(
         Event::Mouse(mouse::Event::WheelScrolled { delta })
             if cursor.is_over(layout.bounds()) && !shell.is_event_captured() =>
         {
-            let dy = match delta {
-                mouse::ScrollDelta::Lines { y, .. } => y * LINE_STEP,
-                mouse::ScrollDelta::Pixels { y, .. } => *y,
-            };
-            let offset = window::clamp(
-                grid.offset - dy,
-                grid.count,
-                grid.row_height,
-                geometry.body.height,
-            );
-            // At either end the wheel is the page's.
-            if (offset - grid.offset).abs() > f32::EPSILON {
-                send(shell, Action::Scrolled(offset));
-                shell.capture_event();
-            }
+            wheel(grid, internal, *delta, &geometry, shell);
         }
         Event::Keyboard(keyboard::Event::KeyPressed { key, modifiers, .. })
             if internal.focus.is_focused() && !shell.is_event_captured() =>
         {
-            // A key while the rows have focus: someone is at the keyboard.
-            refocus(internal);
-            shell.request_redraw();
             let message = key_message(key, *modifiers, grid.has_menu)
-                .filter(|message| !matches!(message, Action::Clear) || grid.any_selected);
+                .filter(|message| !matches!(message, Action::Clear) || grid.any_selected)
+                .or_else(|| across_message(grid, &geometry, key, *modifiers))
+                .or_else(|| {
+                    grid.types
+                        .then(|| typed(internal, key, *modifiers))
+                        .flatten()
+                        .map(Action::Typed)
+                });
             if let Some(message) = message {
+                // A key of the rows: someone is at the keyboard, and the
+                // ring shows. A modifier held for a press is not one.
+                refocus(internal);
+                shell.request_redraw();
                 send(shell, message);
                 shell.capture_event();
             }
@@ -333,7 +339,7 @@ pub(super) fn update<K: Clone, Message: Clone>(
         _ => {}
     }
 
-    // The row and the edge under the pointer are drawn differently.
+    // The line and the edge under the pointer are drawn differently.
     let hovered = grid.row_under(&geometry, cursor);
     let over_handle = grid.handle_under(&geometry, cursor);
     if hovered != internal.hovered || over_handle != internal.over_handle {
@@ -352,22 +358,31 @@ pub(super) fn mouse_interaction<K: Clone, Message: Clone>(
     renderer: &iced::Renderer,
 ) -> mouse::Interaction {
     let internal = tree.state.downcast_ref::<Internal>();
-    let geometry = grid.geometry(layout.bounds());
+    let geometry = Geometry::of(grid, layout.bounds());
     if internal.drag.is_some() || grid.handle_under(&geometry, cursor).is_some() {
         return mouse::Interaction::ResizingHorizontally;
     }
-    if internal.grab.is_some() {
+    if internal.grab.is_some() || internal.grab_across.is_some() {
         return mouse::Interaction::Idle;
     }
     let columns = grid.columns();
-    let over_rows = cursor.is_over(geometry.body);
+    let (over_heads, over_rows) = (
+        cursor.is_over(geometry.heads()),
+        cursor.is_over(geometry.body),
+    );
     let of_cells = grid
         .children
         .iter()
         .zip(&tree.children)
         .zip(layout.children())
         .enumerate()
-        .filter(|(index, _)| *index < columns || over_rows)
+        .filter(|(index, _)| {
+            if *index < columns {
+                over_heads
+            } else {
+                over_rows
+            }
+        })
         .map(|(_, ((child, tree), layout))| {
             child
                 .as_widget()
@@ -375,13 +390,22 @@ pub(super) fn mouse_interaction<K: Clone, Message: Clone>(
         })
         .max()
         .unwrap_or_default();
-    if of_cells == mouse::Interaction::None
-        && grid.pointer
-        && grid.row_under(&geometry, cursor).is_some()
-    {
-        return mouse::Interaction::Pointer;
+    if of_cells != mouse::Interaction::None {
+        return of_cells;
     }
-    of_cells
+    let pressable = grid
+        .row_under(&geometry, cursor)
+        .and_then(|index| grid.row(index))
+        .is_some_and(|row| match row.what {
+            What::Row(_) => grid.pointer,
+            What::Group { .. } => true,
+            What::Skeleton => false,
+        });
+    if pressable {
+        mouse::Interaction::Pointer
+    } else {
+        of_cells
+    }
 }
 
 #[cfg(test)]
@@ -412,15 +436,15 @@ mod tests {
         assert_eq!(told(Named::Escape, none), Some(Action::Clear));
         let a = || Key::Character("a".into());
         assert_eq!(told(a(), Modifiers::COMMAND), Some(Action::SelectAll));
-        assert_eq!(told(a(), none), None, "a letter alone is not the table's");
+        assert_eq!(told(a(), none), None, "a letter alone is typing's");
         assert_eq!(told(Named::ContextMenu, none), Some(Action::MenuFor(None)));
         assert_eq!(
             told(Named::F10, Modifiers::SHIFT),
             Some(Action::MenuFor(None))
         );
         assert_eq!(told(Named::F10, none), None);
-        // Tab is the window's, and so are the arrows across.
-        for key in [Named::Tab, Named::ArrowLeft, Named::ArrowRight] {
+        // Tab is the window's; a modifier alone is nobody's.
+        for key in [Named::Tab, Named::Control, Named::Shift] {
             assert_eq!(told(key, none), None);
         }
         assert_eq!(told(Named::ArrowDown, Modifiers::ALT), None);
@@ -432,5 +456,19 @@ mod tests {
         let told = |key: Named, modifiers| key_message::<u8>(&key.into(), modifiers, false);
         assert_eq!(told(Named::ContextMenu, none), None);
         assert_eq!(told(Named::F10, Modifiers::SHIFT), None);
+    }
+
+    #[test]
+    fn letters_typed_within_a_second_make_a_word() {
+        let mut internal = Internal::default();
+        let none = Modifiers::empty();
+        let letter = |letter: &str| Key::Character(letter.into());
+        assert_eq!(typed(&mut internal, &letter("w"), none), Some("w".into()));
+        assert_eq!(typed(&mut internal, &letter("e"), none), Some("we".into()));
+        assert_eq!(typed(&mut internal, &letter("n"), Modifiers::COMMAND), None);
+        assert_eq!(typed(&mut internal, &Named::Space.into(), none), None);
+        // After the pause, a new word.
+        internal.typed_at = Instant::now().checked_sub(TYPEAHEAD * 2);
+        assert_eq!(typed(&mut internal, &letter("d"), none), Some("d".into()));
     }
 }

@@ -15,7 +15,7 @@ use crate::{
             line,
             overlay::menu,
             stack,
-            table::{self, Align, Column, Table, Width},
+            table::{self, sort, Align, Column, GroupHeader, Rows, Table, Width},
         },
     },
 };
@@ -26,6 +26,8 @@ pub struct Sample {
     pub id: u32,
     pub name: String,
     pub image: &'static str,
+    /// The Stack it belongs to, if any.
+    pub stack: Option<&'static str>,
     pub state: usize,
     /// Tenths of a percent.
     pub cpu: u32,
@@ -37,6 +39,7 @@ const NAMES: [&str; 8] = [
     "web", "db", "cache", "proxy", "worker", "queue", "api", "auth",
 ];
 const IMAGES: [&str; 4] = ["nginx:1.27", "postgres:17", "redis:7.4", "traefik:3.1"];
+const STACKS: [Option<&str>; 4] = [Some("shop"), None, Some("blog"), Some("shop")];
 const TONES: [Tone; 3] = [Tone::Success, Tone::Muted, Tone::Danger];
 
 /// What the table shows in place of its rows.
@@ -58,6 +61,7 @@ pub fn samples(count: u32) -> Vec<Sample> {
                 id,
                 name: format!("{}-{}", NAMES[at % NAMES.len()], id + 1),
                 image: IMAGES[(at / 3) % IMAGES.len()],
+                stack: STACKS[at % STACKS.len()],
                 state: (at / 2) % TONES.len(),
                 cpu: (id.wrapping_mul(37) + 11) % 1000,
                 memory: (id.wrapping_mul(53) + 64) % 2048,
@@ -82,7 +86,9 @@ pub fn columns<'a>() -> Vec<Column<'a, Sample, Message>> {
         })
         .width(Width::Fill(2))
         .min_width(120.0)
-        .sort_by(|a, b| a.name.cmp(&b.name)),
+        .hideable(false)
+        .sort_by(|a, b| sort::natural(&a.name, &b.name))
+        .typed(|row| row.name.clone()),
         Column::new("image", t!("containers.column.image"), |row: &Sample| {
             table::text(row.image).style(theme::text::muted).into()
         })
@@ -115,9 +121,63 @@ pub fn columns<'a>() -> Vec<Column<'a, Sample, Message>> {
     ]
 }
 
+/// The rows as the gallery's table reads them.
+pub fn source(rows: &[Sample]) -> Rows<'_, Sample, u32> {
+    Rows::new(rows, |row| row.id)
+}
+
+/// The same, nested under their Stacks.
+pub fn grouped(rows: &[Sample]) -> Rows<'_, Sample, u32> {
+    source(rows).group_by(|row| row.stack.map(str::to_owned))
+}
+
+/// A Stack's header: its name, how many of its rows run, and their totals.
+fn stack_header<'a>(name: &str, members: &[&Sample]) -> GroupHeader<'a, Message> {
+    let running = members.iter().filter(|row| row.state == 0).count();
+    let tone = match running {
+        0 => Tone::Muted,
+        all if all == members.len() => Tone::Success,
+        _ => Tone::Warning,
+    };
+    let cpu: u32 = members.iter().map(|row| row.cpu).sum();
+    let memory: u32 = members.iter().map(|row| row.memory).sum();
+    GroupHeader {
+        label: line(vec![
+            status_dot(tone),
+            table::text(name).font(font::medium()).into(),
+            table::text(t!(
+                "containers.stack.running",
+                running = running,
+                count = members.len()
+            ))
+            .size(theme::metrics::text::XS)
+            .style(theme::text::muted)
+            .into(),
+        ])
+        .spacing(space::S2)
+        .into(),
+        cells: vec![
+            (
+                "cpu",
+                table::text(format!("{}.{} %", cpu / 10, cpu % 10)).into(),
+            ),
+            ("memory", table::text(format!("{memory} MiB")).into()),
+        ],
+    }
+}
+
 /// The gallery's table over `rows`, as a page would build it.
-pub fn view<'a>(state: &'a table::State<u32>, rows: &[Sample], show: Show) -> Element<'a, Message> {
-    let rows = if show == Show::Rows { rows } else { &[] };
+pub fn view<'a>(
+    state: &'a table::State<u32>,
+    rows: Rows<'_, Sample, u32>,
+    show: Show,
+) -> Element<'a, Message> {
+    let nothing: &[Sample] = &[];
+    let rows = if show == Show::Rows {
+        rows
+    } else {
+        source(nothing)
+    };
     let selected = state.selection().len();
     let bar = (selected > 0).then(|| {
         line(vec![
@@ -140,7 +200,8 @@ pub fn view<'a>(state: &'a table::State<u32>, rows: &[Sample], show: Show) -> El
         .into()
     });
     let failed = (show == Show::Failed).then(|| error_message(&failure(), true, Message::Failure));
-    let table = Table::new(state, columns(), rows, |row| row.id, Message::Table)
+    let table = Table::new(state, columns(), rows, Message::Table)
+        .group_header(stack_header)
         .row_menu(|_| {
             vec![
                 menu::Item::action(t!("containers.action.start"), Message::Chosen("Start")),
@@ -205,9 +266,14 @@ impl Gallery {
             ),
         ])
         .spacing(space::S2);
+        let rows = if self.table_grouped {
+            grouped(&self.table_rows)
+        } else {
+            source(&self.table_rows)
+        };
         stack(vec![
             switches.into(),
-            view(&self.table, &self.table_rows, self.table_show),
+            view(&self.table, rows, self.table_show),
         ])
         .spacing(space::S4)
         .into()
