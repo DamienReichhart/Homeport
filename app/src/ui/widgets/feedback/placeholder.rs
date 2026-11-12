@@ -35,6 +35,7 @@ pub struct EmptyState<'a, Message> {
     media: Option<Element<'a, Message>>,
     title: String,
     description: Option<String>,
+    detail: Option<Element<'a, Message>>,
     action: Option<Element<'a, Message>>,
 }
 
@@ -45,6 +46,7 @@ pub fn empty_state<'a, Message>(title: impl Into<String>) -> EmptyState<'a, Mess
         media: None,
         title: title.into(),
         description: None,
+        detail: None,
         action: None,
     }
 }
@@ -69,6 +71,14 @@ impl<'a, Message: 'a> EmptyState<'a, Message> {
         self
     }
 
+    /// More than a line under the title, at the page's width: the failure
+    /// that explains the state, with its hint and its buttons.
+    #[must_use]
+    pub fn detail(mut self, detail: impl Into<Element<'a, Message>>) -> Self {
+        self.detail = Some(detail.into());
+        self
+    }
+
     /// The button that fills the page: "Add a Host".
     #[must_use]
     pub fn action(mut self, action: impl Into<Element<'a, Message>>) -> Self {
@@ -85,22 +95,23 @@ impl<'a, Message: 'a> EmptyState<'a, Message> {
             parts = parts.push(media);
         }
         parts = parts.push(
-            text(self.title)
-                .size(size::BASE)
-                .font(font::medium())
-                .align_x(Horizontal::Center),
+            // The column centres it: a text told to align is drawn out of
+            // place in a right-to-left script.
+            text(self.title).size(size::BASE).font(font::medium()),
         );
         if let Some(description) = self.description {
             parts = parts.push(
-                container(
+                container(centred(
                     text(description)
                         .size(size::SM)
                         .line_height(size::LEADING_SM)
-                        .style(theme::text::muted)
-                        .align_x(Horizontal::Center),
-                )
+                        .style(theme::text::muted),
+                ))
                 .max_width(DESCRIPTION_WIDTH),
             );
+        }
+        if let Some(detail) = self.detail {
+            parts = parts.push(container(detail).max_width(576));
         }
         if let Some(action) = self.action {
             parts = parts.push(container(action).padding(iced::Padding {
@@ -115,6 +126,17 @@ impl<'a, Message: 'a> EmptyState<'a, Message> {
             .width(Length::Fill)
             .style(theme::container::bordered)
             .into()
+    }
+}
+
+/// Each line of a wrapped text centred, left to right. Right to left the
+/// shaper has aligned the lines already, and a text told to align again is
+/// drawn out of place: the column centres the block.
+fn centred(body: iced::widget::Text<'_, theme::Theme>) -> iced::widget::Text<'_, theme::Theme> {
+    if crate::i18n::direction().is_rtl() {
+        body
+    } else {
+        body.align_x(Horizontal::Center)
     }
 }
 

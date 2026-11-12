@@ -168,7 +168,7 @@ impl State {
 /// A select, being described.
 pub struct Select<'a> {
     state: &'a State,
-    labels: &'a [String],
+    labels: std::borrow::Cow<'a, [String]>,
     selected: Option<usize>,
     placeholder: String,
     searchable: bool,
@@ -179,6 +179,20 @@ pub struct Select<'a> {
 
 /// A select over `labels`, showing the one at `selected`.
 pub fn select<'a>(state: &'a State, labels: &'a [String], selected: Option<usize>) -> Select<'a> {
+    with_labels(state, std::borrow::Cow::Borrowed(labels), selected)
+}
+
+/// The same over labels made for this draw: a list the view builds from
+/// what it reads.
+pub fn select_owned(state: &State, labels: Vec<String>, selected: Option<usize>) -> Select<'_> {
+    with_labels(state, std::borrow::Cow::Owned(labels), selected)
+}
+
+fn with_labels<'a>(
+    state: &'a State,
+    labels: std::borrow::Cow<'a, [String]>,
+    selected: Option<usize>,
+) -> Select<'a> {
     Select {
         state,
         labels,
@@ -228,13 +242,16 @@ impl<'a> Select<'a> {
     pub fn view(self) -> Element<'a, Message> {
         let chosen = self.selected.and_then(|index| self.labels.get(index));
         let shown = match chosen {
-            Some(label) => text(label.as_str()).size(size::SM),
+            Some(label) => text(label.clone()).size(size::SM),
             None => text(self.placeholder.clone())
                 .size(size::SM)
                 .style(theme::text::muted),
         };
+        // One line, cut where the button ends: a long label doesn't make
+        // the button taller.
+        let shown = shown.wrapping(iced::widget::text::Wrapping::None);
         let chevron = icon(Icon::ChevronDown).style(theme::svg::muted);
-        let face = line(vec![filling(shown).into(), chevron.into()])
+        let face = line(vec![filling(shown).clip(true).into(), chevron.into()])
             .spacing(space::S1_5)
             .width(Length::Fill);
         let button = pressable(container(face).center_y(Length::Fill).width(Length::Fill))
@@ -269,7 +286,7 @@ impl<'a> Select<'a> {
 
     fn option(&self, index: usize, active: bool) -> Element<'a, Message> {
         let mut parts: Vec<Element<'a, Message>> =
-            vec![filling(text(self.labels[index].as_str()).size(size::SM)).into()];
+            vec![filling(text(self.labels[index].clone()).size(size::SM)).into()];
         if self.selected == Some(index) {
             parts.push(icon(Icon::Check).into());
         }
@@ -288,7 +305,7 @@ impl<'a> Select<'a> {
 
     fn list(&self) -> Element<'a, Message> {
         let shown = if self.searchable {
-            matching(self.labels, &self.state.query)
+            matching(&self.labels, &self.state.query)
         } else {
             (0..self.labels.len()).collect()
         };
