@@ -39,6 +39,8 @@ The theme has its own, `cargo run -p homeport-app --example gallery --features g
 | `checkbox`, `switch`       | iced's `checkbox` and `toggler`, styled by the theme                            |
 | `table`                    | the table ticket                                                                |
 
+`Keys` (`src/shared/ui/data`) is `basic::keys`; `PageHeader` is the shell's `shell::layout::page_header`. A menu item takes a status dot (`menu::Item::status`), an empty state a `detail` (a failure under its title), and `select_owned` is a select over labels the view builds. `focus::key_area(..).on_captured(..)` hears the keys a field or a dialog used: only the shell uses it, for the shortcuts with Mod.
+
 `src/shared/ui/feedback` is `widgets::feedback`, name for name: `error_message`, `Details` (the Details dialog), `Toasts::failure` (`toastError`), `confirm_dialog` (`ConfirmDialog`, `useConfirmedAction`), `empty_state`, `hint_view`, `spinner`, `status_dot`.
 
 ## Rules for a page
@@ -64,3 +66,5 @@ The theme has its own, `cargo run -p homeport-app --example gallery --features g
 - In a right-to-left row, Tab goes through the buttons left to right, the order they are laid out in. Arrows, Home and End follow the language.
 - A plain `select` doesn't scroll its list to the option the arrows reach; a list long enough to scroll should be `searchable`, whose `State::reveal` does.
 - iced's `checkbox` and `toggler` keep their box before the label in Arabic.
+- An empty state's description is centred line by line left to right; right to left its block is centred and its lines start on the right.
+- A select's button keeps one line and cuts a label too long for it.

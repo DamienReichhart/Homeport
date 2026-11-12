@@ -34,9 +34,11 @@ app/src/
 │   ├── theme/      tokens from docs/BRAND.md, fonts, icons, light/dark, styles
 │   ├── widgets/    the kit: table, terminal, editor, diff, chart, log view, forms,
 │   │               dialogs, toasts… no domain knowledge
-│   └── features/<name>/   one folder per former `src/features/<name>`:
-│                      state.rs (State), message.rs (Message), update.rs, view/ (one
-│                      function or component per file), mod.rs (the public API)
+│   └── features/<group>/<name>/   one folder per former `src/features/<name>`, under
+│                      what it is about (app, docker, podman, containerd, incus,
+│                      kubernetes, nomad): state.rs (State), message.rs (Message),
+│                      update.rs, view/ (one function or component per file),
+│                      mod.rs (the public API)
 └── platform/   tray, notifications, autostart, single instance, window state,
                 dialogs, updater, logging: the former `src-tauri/src/app/desktop`
 ```
@@ -44,7 +46,7 @@ app/src/
 Rules, enforced by `app/tests/layout.rs`:
 
 1. **Dependencies point inward:** `ui/features` → `ui/widgets` + `ui/shell` + `data` + `api` → `app` → the crates. A feature never imports another feature (shared domain goes to `ui/shell` or `data`). `api` never imports `ui`.
-2. **Elm architecture.** A feature has a `State`, a `Message` enum, `update(&mut State, Message, &Context) -> Task<Message>` and `view(&State, &Context) -> Element<Message>`. `view` is pure and cheap; all I/O is a `Task` or a `Subscription`.
+2. **Elm architecture.** A feature has a `State`, a `Message` enum, `update(&mut State, Message, &Context) -> Task<Message>` and `view(&State, &Context) -> Element<Message>`, with `open` and `request` beside them (_The shell and a feature's page_). `view` is pure and cheap; all I/O is a `Task` or a `Subscription`.
 3. **No blocking in `update` or `view`.** Anything that touches the network, the disk, the database, the keychain or a lock held across `await` goes through `Task::perform` on the runtime iced owns.
 4. **Thin use cases, logic in crates.** An `api` function parses its arguments and calls one crate, as the former `src-tauri/src/commands/*` did (ADR 0005 still holds). Logic that needs several stores goes to the crate that owns them.
 5. **One error type.** Failures are `AppError { code, message, hint, detail }` from `homeport-core`, shown with the shared error widgets (never a bare string), logged with the command's name.
@@ -57,9 +59,62 @@ Rules, enforced by `app/tests/layout.rs`:
 2. Port the IPC commands it uses into `app/src/api/<domain>/` (they are in `src-tauri/src/commands/`). If the `api` ticket of that domain already did, use them.
 3. Port the pure logic in `model/` to Rust unit tests first (the TypeScript tests are the oracle: same inputs, same outputs).
 4. Build `State`/`Message`/`update`, then the `view`, with the shared widgets (`docs/agents/widgets.md` lists them and the rules for using them). If a widget is missing, stop and raise it on the widget's ticket rather than writing a private copy.
-5. Register the feature in `ui/shell` (route, sidebar entry with its scope, palette commands, shortcuts), as `manifest.ts` did.
+5. The feature is already registered in `ui/shell/registry` (routes, sidebar entry with its scope, gate, palette commands, shortcuts), as `manifest.ts` was: check its line against what you port, and replace its stub (_Replacing a stub_).
 6. Tests: `update` tests for every message that does something; a headless `iced_test` snapshot for each page state (empty, loading, error, populated) in English, and one RTL snapshot (Arabic) for each page with a table or a form.
 7. Compare against the running Tauri app on the same data. Anything different is a bug unless the PR says why.
+
+## The shell and a feature's page
+
+`app/src/ui/shell/` is what `src/app` and `src/core` were: the sidebar, the router, the selection, the gates, the pickers, the palette and the shortcuts. It knows no feature; it hosts whatever `ui::features::Page` gives it.
+
+- **Routes** (`shell::router`): `Route` has a variant for every route pattern of the manifests (`Route::Container { id, tab }` is `containers/:id/:tab?`). A navigation is a `Request`: a route, an optional action for the page to start (`ctx.open(path, action)` in React) and an optional search text (`?q=`).
+- **Registry** (`shell::registry`): `FEATURES` lists every feature in sidebar order, as data: its routes, sidebar entry (label, icon, scope), what the Host's Engine or the Cluster's kind must be, its gate, its palette commands and its page shortcuts (`n`, `/`). The sidebar, the palette, the keymap and the gates are built from it. `registry/tests.rs` pins the list and, while `src/features/*/manifest.ts` are in the tree, reads them and fails on any difference.
+- **Gates** (`shell::gates`): `decide(route, world)` says whether the page shows (`Verdict::Open(Subject)`) or what stands before it. A page is opened only once its gate lets it through, and opened anew when its `Subject` changes (another Host, another namespace), so a page never has to handle "not connected".
+- **Selection**: `ctx.world.selection`, remembered in the Settings (`last_selection`, with `last_host_id` for older versions). When it moves, the shell calls `Data::release` on the old scope and sends a page of the other kind to the Overview.
+
+A feature is four functions and two types in `ui/features/<group>/<name>/mod.rs`:
+
+```rust
+pub struct State { … }
+pub enum Message { … }
+/// The page `ctx.location` leads to (a feature may have several routes), and what it starts by doing.
+pub fn open(ctx: &Context<'_>) -> (State, Task<Message>)
+pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Message>
+pub fn view<'a>(state: &'a State, ctx: &Context<'a>) -> Element<'a, Message>
+/// Starts an action as if its button was pressed: a palette command's (`"run"`), `n`, or `/` (`registry::SEARCH`).
+pub fn request(state: &mut State, action: &str, ctx: &Context<'_>) -> Task<Message>
+```
+
+`Context` (`shell::Context`) is what the page is given, borrowed for one call:
+
+| Field or method                                                | What it is                                                                                                                                   |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ctx.state`                                                    | the `Arc<AppState>` the use cases take                                                                                                       |
+| `ctx.data`                                                     | the data layer, to `read` in `view`                                                                                                          |
+| `ctx.world`, `ctx.host()`, `ctx.cluster()`                     | the Hosts, the Clusters, the selection, the remembered Settings                                                                              |
+| `ctx.subject`                                                  | what the gate let through: the Host's id, with the containerd namespace or the Incus project; the Cluster's id and Namespace; the Swarm's id |
+| `ctx.location`                                                 | the route, the action and the search text of the navigation, and its `key`                                                                   |
+| `ctx.direction`                                                | the direction the language reads in                                                                                                          |
+| `ctx.watch(query)`                                             | `Data::watch`, let go of by the shell when the page closes: never call `unwatch` yourself                                                    |
+| `ctx.invalidate(key)`                                          | reads again what an action changed                                                                                                           |
+| `ctx.open(request)`, `ctx.back()`, `ctx.select(…)`             | navigation and selection                                                                                                                     |
+| `ctx.failed(surfaced)`, `ctx.details(surfaced)`                | a failure as a toast, or its Details dialog                                                                                                  |
+| `ctx.copy(text)`                                               | the clipboard                                                                                                                                |
+| `ctx.namespace_picker(Message::Picker)`, `ctx.picked(message)` | the Kubernetes or Nomad Namespace picker for the page's header, and its messages handed back                                                 |
+
+What `update` asks through `ctx` is done by the shell right after `update` returns. `shell::layout::page_header` is `PageHeader`.
+
+### Replacing a stub
+
+Every feature's `mod.rs` is one line today: `pub use crate::ui::shell::stub::{open, request, update, view, Message, State};`. To port a feature:
+
+1. Delete that line and define the two types and four functions above in the same folder (split into `state.rs`, `update.rs`, `view/` as it grows). Nothing else changes: `ui/features/mod.rs` already sends the feature's routes to this module, and the registry already has its sidebar entry, commands and shortcuts.
+2. In `open`, match on `ctx.location.route` if the feature has several pages, `ctx.watch` what the page shows, and start from `ctx.location.query` if it is a list.
+3. In `request`, start the actions the registry names for the feature (its commands' `Run::Open(_, Some(action))` and its shortcuts' `Run::Request(action)`).
+4. If the manifest changed since, fix the feature's line in `shell/registry/defs/`; the test says what differs.
+5. Test with `shell::page::testing::Bench`: `Bench::at(route)` gives a `Context` on an empty data layer (`bench.data.set(&key, value)`), `bench.watched()` and `bench.asked()` say what the page asked for. `ui/features/app/hosts` is the example.
+
+A feature never names another feature: go there with `ctx.open(Route::…)`.
 
 ## Reading data and following streams
 
