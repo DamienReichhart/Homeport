@@ -34,6 +34,8 @@ app/src/
 │   ├── theme/      tokens from docs/BRAND.md, fonts, icons, light/dark, styles
 │   ├── widgets/    the kit: table, terminal, editor, diff, chart, log view, forms,
 │   │               dialogs, toasts… no domain knowledge
+│   ├── domain/     what several features show of one domain: a container's tone,
+│   │               ports, menu and dialogs, the "newer image" mark, a pod's name
 │   └── features/<group>/<name>/   one folder per former `src/features/<name>`, under
 │                      what it is about (app, docker, podman, containerd, incus,
 │                      kubernetes, nomad): state.rs (State), message.rs (Message),
@@ -45,7 +47,7 @@ app/src/
 
 Rules, enforced by `app/tests/layout.rs`:
 
-1. **Dependencies point inward:** `ui/features` → `ui/widgets` + `ui/shell` + `data` + `api` → `app` → the crates. A feature never imports another feature (shared domain goes to `ui/shell` or `data`). `api` never imports `ui`.
+1. **Dependencies point inward:** `ui/features` → `ui/domain` → `ui/widgets` + `ui/shell` + `data` + `api` → `app` → the crates. A feature never imports another feature: what two of them share (what `@/features/containers` exported to the Board, what `core/host` drew) goes to `ui/domain`, and to `ui/shell` or `data` when it is the shell's or the data layer's own. `api` never imports `ui`, and the shell never imports `ui/domain`.
 2. **Elm architecture.** A feature has a `State`, a `Message` enum, `update(&mut State, Message, &Context) -> Task<Message>` and `view(&State, &Context) -> Element<Message>`, with `open`, `request`, `refresh` and `subscription` beside them (_The shell and a feature's page_). `view` is pure and cheap; all I/O is a `Task` or a `Subscription`.
 3. **No blocking in `update` or `view`.** Anything that touches the network, the disk, the database, the keychain or a lock held across `await` goes through `Task::perform` on the runtime iced owns.
 4. **Thin use cases, logic in crates.** An `api` function parses its arguments and calls one crate, as the former `src-tauri/src/commands/*` did (ADR 0005 still holds). Logic that needs several stores goes to the crate that owns them.
@@ -126,7 +128,7 @@ Every feature's `mod.rs` is one line today: `pub use crate::ui::shell::stub::{op
 5. A feature whose routes are several tickets (the Containers list and a container's page) keeps the stub for the routes it has not ported: its `State` and `Message` are enums of its own page and `shell::stub`'s (`ui/features/docker/containers`).
 6. Test with `shell::page::testing::Bench`: `Bench::at(route)` gives a `Context` on an empty data layer (`bench.data.set(&key, value)`), `bench.watched()` and `bench.asked()` say what the page asked for. `ui/features/app/hosts` is the smallest example, `ui/features/docker/containers` and `ui/features/app/board` the first whole ones.
 
-A feature never names another feature: go there with `ctx.open(Route::…)`.
+A feature never names another feature: go there with `ctx.open(Route::…)`, and build what it shares with another from `ui/domain`.
 
 ### What the shell leaves to other tickets
 

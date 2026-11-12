@@ -361,7 +361,7 @@ impl<P: Pages> Shell<P> {
                     self.events.push(Event::OpenUrl(url));
                     Task::none()
                 }
-                Effect::Put(put) => {
+                Effect::Put(_, put) => {
                     put(data);
                     Task::none()
                 }

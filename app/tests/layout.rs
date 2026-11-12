@@ -59,8 +59,13 @@ const FORBIDDEN: &[(&str, &[&str], &str)] = &[
     ),
     (
         "ui/shell",
-        &["crate::ui::features"],
+        &["crate::ui::features", "crate::ui::domain"],
         "the shell hosts whatever page it is given, and knows no feature",
+    ),
+    (
+        "ui/domain",
+        &["crate::ui::features"],
+        "what features share stands under them, and knows none",
     ),
     (
         "ui/widgets",
@@ -297,7 +302,7 @@ fn dependencies_point_inward() {
     let wrong = wrong_dependencies(&src());
     assert!(
         wrong.is_empty(),
-        "features use widgets, the shell, data and api; api uses app; app uses the crates: {wrong:#?}"
+        "features use the domain, widgets, the shell, data and api; api uses app; app uses the crates: {wrong:#?}"
     );
 }
 
@@ -310,7 +315,7 @@ fn a_feature_never_uses_another_feature() {
     let wrong = features_using_another(&src());
     assert!(
         wrong.is_empty(),
-        "what two features share goes to ui/shell or data: {wrong:#?}"
+        "what two features share goes to ui/domain, ui/shell or data: {wrong:#?}"
     );
 }
 

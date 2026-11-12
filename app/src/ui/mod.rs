@@ -1,5 +1,6 @@
 //! The window: its state, its messages and what it draws.
 
+pub mod domain;
 pub mod features;
 pub mod shell;
 #[cfg(test)]

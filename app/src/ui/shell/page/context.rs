@@ -53,8 +53,8 @@ pub(in crate::ui::shell) enum Effect {
     Said(toast::Kind, Said),
     /// A link for the system browser.
     OpenUrl(String),
-    /// A value for the data layer, in place of a read.
-    Put(Box<dyn FnOnce(&mut Data)>),
+    /// A value for the data layer under this key, in place of a read.
+    Put(Key, Box<dyn FnOnce(&mut Data)>),
     /// What the location carries from now on.
     Keep {
         query: Option<String>,
@@ -187,8 +187,11 @@ impl<'a> Context<'a> {
     /// Files `value` under `key` as if it had just been read: what an
     /// action answered is what a read would (`setQueryData`).
     pub fn put<T: Send + Sync + 'static>(&self, key: Key, value: T) {
-        self.effects
-            .push(Effect::Put(Box::new(move |data| data.set(&key, value))));
+        let filed = key.clone();
+        self.effects.push(Effect::Put(
+            filed,
+            Box::new(move |data| data.set(&key, value)),
+        ));
     }
 
     /// Keeps `query` and `params` in the page's location, so the page finds

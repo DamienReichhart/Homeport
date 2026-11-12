@@ -97,6 +97,18 @@ impl<T: Send + 'static> Action<T> {
     }
 }
 
+#[cfg(test)]
+impl<T> Action<T> {
+    /// The end of the run that is on its way, as if its use case had
+    /// answered `result`: for the tests of a page, which has no Engine.
+    pub fn ending_with(&self, result: AppResult<T>) -> Finished<T> {
+        Finished {
+            run: self.run,
+            result,
+        }
+    }
+}
+
 impl<T> Action<T> {
     pub fn status(&self) -> &Status<T> {
         &self.status
