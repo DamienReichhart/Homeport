@@ -11,37 +11,79 @@ The theme has its own, `cargo run -p homeport-app --example gallery --features g
 
 ## From the React primitives
 
-| `src/shared/ui/primitives` | In the iced app                                                                 |
-| -------------------------- | ------------------------------------------------------------------------------- |
-| `button`                   | `basic::button::{text, icon, labelled}` with `Variant` and `ButtonSize`         |
-| `badge`                    | `basic::badge`                                                                  |
-| `card`                     | `basic::card`                                                                   |
-| `separator`                | `basic::separator`, `separator_vertical` (iced's `rule`)                        |
-| `progress`                 | `basic::progress` (iced's `progress_bar`)                                       |
-| `scroll-area`              | `basic::scroll_area` (iced's `scrollable`)                                      |
-| `collapsible`              | `basic::collapsible`                                                            |
-| `skeleton`                 | `feedback::skeleton`                                                            |
-| `alert`                    | `feedback::error_message` (the only alert the app showed)                       |
-| `sonner`                   | `feedback::Toasts`                                                              |
-| `dialog`                   | `overlay::dialog` in `overlay::modal(..).close_on_scrim()`                      |
-| `alert-dialog`             | `overlay::dialog` in `overlay::modal`; `feedback::confirm_dialog` for the usual |
-| `popover`                  | `overlay::popover`                                                              |
-| `tooltip`                  | `overlay::tooltip`                                                              |
-| `dropdown-menu`            | `overlay::menu::dropdown`                                                       |
-| `select`                   | `form::select`                                                                  |
-| `command`                  | `form::select(..).searchable(true)`; the palette itself is the shell's          |
-| `tabs`                     | `form::tabs`                                                                    |
-| `toggle`, `toggle-group`   | `form::toggle_group`, `form::segmented`                                         |
-| `input`                    | `form::input` (iced's `text_input`)                                             |
-| `input-group`              | `form::input_group`; `form::password`, `form::number_input` are built on it     |
-| `textarea`                 | `form::textarea` (iced's `text_editor`, growing with its text)                  |
-| `label`                    | `form::field`, which also holds the help and the error                          |
-| `checkbox`, `switch`       | iced's `checkbox` and `toggler`, styled by the theme                            |
-| `table`                    | the table ticket                                                                |
+| `src/shared/ui/primitives` | In the iced app                                                                                                       |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `button`                   | `basic::button::{text, icon, labelled}` with `Variant` and `ButtonSize`                                               |
+| `badge`                    | `basic::badge`                                                                                                        |
+| `card`                     | `basic::card`                                                                                                         |
+| `separator`                | `basic::separator`, `separator_vertical` (iced's `rule`)                                                              |
+| `progress`                 | `basic::progress` (iced's `progress_bar`)                                                                             |
+| `scroll-area`              | `basic::scroll_area` (iced's `scrollable`)                                                                            |
+| `collapsible`              | `basic::collapsible`                                                                                                  |
+| `skeleton`                 | `feedback::skeleton`                                                                                                  |
+| `alert`                    | `feedback::error_message` (the only alert the app showed)                                                             |
+| `sonner`                   | `feedback::Toasts`                                                                                                    |
+| `dialog`                   | `overlay::dialog` in `overlay::modal(..).close_on_scrim()`                                                            |
+| `alert-dialog`             | `overlay::dialog` in `overlay::modal`; `feedback::confirm_dialog` for the usual                                       |
+| `popover`                  | `overlay::popover`                                                                                                    |
+| `tooltip`                  | `overlay::tooltip`                                                                                                    |
+| `dropdown-menu`            | `overlay::menu::dropdown`                                                                                             |
+| `select`                   | `form::select`                                                                                                        |
+| `command`                  | `form::select(..).searchable(true)`; the palette itself is the shell's                                                |
+| `tabs`                     | `form::tabs`                                                                                                          |
+| `toggle`, `toggle-group`   | `form::toggle_group`, `form::segmented`                                                                               |
+| `input`                    | `form::input` (iced's `text_input`)                                                                                   |
+| `input-group`              | `form::input_group`; `form::password`, `form::number_input` are built on it                                           |
+| `textarea`                 | `form::textarea` (iced's `text_editor`, growing with its text)                                                        |
+| `label`                    | `form::field`, which also holds the help and the error                                                                |
+| `checkbox`, `switch`       | iced's `checkbox` and `toggler`, styled by the theme; `form::checkbox` where it is `indeterminate` or must take focus |
+| `table`                    | `table::Table` (_The data table_)                                                                                     |
 
-`Keys` (`src/shared/ui/data`) is `basic::keys`; `PageHeader` is the shell's `shell::layout::page_header`. A menu item takes a status dot (`menu::Item::status`), an empty state a `detail` (a failure under its title), and `select_owned` is a select over labels the view builds. `focus::key_area(..).on_captured(..)` hears the keys a field or a dialog used: only the shell uses it, for the shortcuts with Mod.
+`Keys` (`src/shared/ui/data`) is `basic::keys`, `DataTable` is `table::Table`; `PageHeader` is the shell's `shell::layout::page_header`. A menu item takes a status dot (`menu::Item::status`), an empty state a `detail` (a failure under its title), and `select_owned` is a select over labels the view builds. `focus::key_area(..).on_captured(..)` hears the keys a field or a dialog used: only the shell uses it, for the shortcuts with Mod.
 
 `src/shared/ui/feedback` is `widgets::feedback`, name for name: `error_message`, `Details` (the Details dialog), `Toasts::failure` (`toastError`), `confirm_dialog` (`ConfirmDialog`, `useConfirmedAction`), `empty_state`, `hint_view`, `spinner`, `status_dot`.
+
+## The data table
+
+`widgets::table` is `DataTable` and the Board's virtual list in one: a table over any rows that builds only those in view (and four more on each side), so 100,000 rows cost what 20 do. Look at it on the gallery's _Table_ page; `table/mod.rs` has the example to copy, `ui/features/app/hosts` a page that uses it.
+
+- **The page keeps a `table::State<Key>`** (made once, in `open`: `State::new().selecting(Mode::Multi).sorted(Sort::by("name", Order::Ascending))`), sends it every `table::Message` with the rows and the key function the view was given (`state.update(message, &rows, key)`), and reads what comes back: `Event::Opened(key)`, `Event::Selected`, `Event::Arranged`. A page's state is one variant among fifty: box the table's (`Box<table::State<_>>`).
+- **Columns are data**, built in `view`: `Column::new(id, t!(..), |row| cell)`, then `.width(Width::Fixed(96.0))` or `Width::Fill(2)`, `.between(min, max)`, `.align(Align::End)` for numbers, `.sort_by(|a, b| ..)` to make the header a button, `.descending_first()` for numbers. A cell is any element; `table::text` is a line of `text-sm` that never wraps and is cut where its column ends.
+- **Rows are known by their key**, never by their place: the selection, the row the keyboard is on, an open menu and the scroll position survive a list that is read again, sorted or filtered. Rows added or removed above what shows don't move it. `state.prune(..)` forgets selected rows that left the list.
+- **Searching** is `.filter(|row| table::matches(&query, &[&row.name]))`: the React `filter`, with the fields to look in named.
+- **Sorting and filtering are checked on every view**, a pass over the list when it is sorted or filtered (0.3 to 0.7 ms for 20,000 rows, 2 to 3 ms for 100,000). A page that knows when its rows change says so with `.revision(n)` and pays nothing in between; it must then change `n` when the rows or the search text do.
+- **Selecting.** `Mode::Multi` adds the column of checkboxes. A press selects the row, Ctrl or Cmd adds or removes one, Shift selects from the last one; with `State::opening_on_press()` a plain press opens the row instead, as `onRowClick` did. `.selection_bar(Some(buttons))` is a line over the table for what can be done to the selected rows; pass `None` when nothing is selected, never leave the call out (its room stays, and so does the tree).
+- **Menus.** `.row_menu(|row| items)` puts a `…` button at the end of each row; the secondary button on a row, the menu key and Shift+F10 open it too. The items are asked only for the row whose menu is open.
+- **No rows.** `.loading(resource.is_pending())` shows skeletons, `.failed(Some(error_message(..)))` the failure in place of the rows, `.empty(empty_state(..).view())` or `.empty_label(t!(..))` what an empty list says ("Nothing here." unless told).
+- **Height.** The table is as tall as its rows up to `.max_height(600.0)`, then scrolls: a page is in a scroll area, which gives all the height asked for. `.fill()` takes the height a pane gives instead.
+- **What a page keeps**: `state.sort().keys()` and `state.widths()` are plain data, to store when `Event::Arranged` comes and to give back with `State::sorted` and `State::with_widths`. The table stores nothing itself.
+
+The keyboard, while the rows have focus (`table/grid/input.rs`):
+
+| Key                    | What it does                                         |
+| ---------------------- | ---------------------------------------------------- |
+| Up, Down               | the row before, the row after, scrolled into view    |
+| Page Up, Page Down     | a screen of rows                                     |
+| Home, End              | the first row, the last                              |
+| Shift with any of them | selects from where the selection started to that row |
+| Space                  | selects or deselects the row                         |
+| Enter                  | opens the row                                        |
+| Ctrl or Cmd + A        | selects every row that shows                         |
+| Escape                 | deselects everything                                 |
+| Menu, Shift + F10      | opens the row's menu; Escape there gives focus back  |
+| Tab                    | leaves the rows                                      |
+
+Tab goes through the checkbox over the rows, each header that sorts (Enter and Space sort, Shift adds the column to the sort), then the rows as one stop.
+
+What a frame costs (`cargo test -p homeport-app --lib table::perf -- --ignored --nocapture --test-threads=1`, a 1100 × 720 window, software renderer, 4 cores of a cloud VM, the app at `opt-level=2`):
+
+| Rows               | A scroll step: `view` + layout + draw                  | Software renderer, the whole window |
+| ------------------ | ------------------------------------------------------ | ----------------------------------- |
+| 100, 5 columns     | 0.25 ms                                                | 15.6 ms                             |
+| 100,000, 5 columns | 0.3 to 0.4 ms (sorted: 2 to 3, or 0.3 with a revision) | 15 to 16 ms                         |
+| 20,000, 8 columns  | 0.6 to 1.0 ms sorted (0.4 to 0.5 with a revision)      | 15 to 18 ms                         |
+
+Two runs, hence the ranges. A row that changed costs 0.5 to 1.0 ms of `view` at 20,000 rows (the ticket allows 2). The pixels are the software renderer's, the same for 100 rows as for 100,000, and by themselves about a frame at 60 a second on that machine; the window draws with wgpu, which was not measured. An unoptimised test build takes ten times longer over the pixels and three to five times longer over the rest.
 
 ## Rules for a page
 
@@ -68,3 +110,9 @@ The theme has its own, `cargo run -p homeport-app --example gallery --features g
 - iced's `checkbox` and `toggler` keep their box before the label in Arabic.
 - An empty state's description is centred line by line left to right; right to left its block is centred and its lines start on the right.
 - A select's button keeps one line and cuts a label too long for it.
+- The table. React's `DataTable` cut long lists into pages (`pageSize`) and only the Board drew a virtual list; here every table is virtual and none has pages (`ui.table.page`, `previous` and `next` are unused).
+- The rows of a table are one Tab stop, moved in with the arrows; in React each row's first cell was a button and a stop. Space selects the row the keyboard is on (in React it pressed that button, which opened the row); Enter opens it.
+- A press on a row selects it and a double press opens it, unless the page asks for `opening_on_press`, which is what React did everywhere. Ranges with Shift, Ctrl or Cmd + A, Escape, the keyboard on rows, resizable columns and the menu on the secondary button are new.
+- The checkbox over the rows, when only some are selected, is the React one as it was drawn: an empty box with the mark, not a filled one with a dash.
+- A table wider than its columns' minimums cuts the last columns: it doesn't scroll sideways (the React one did, `overflow-x-auto`).
+- No type-ahead, no column to hide or to move, no grouped or expandable rows yet: nothing in React's `DataTable` had them, the containers page drew its Stack groups by hand.
