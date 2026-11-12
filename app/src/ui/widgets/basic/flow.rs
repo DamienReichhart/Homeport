@@ -127,7 +127,18 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for Flow<'_, Message> {
             .map(|(item, tree)| item.as_widget_mut().layout(tree, renderer, &room))
             .collect();
         let sizes: Vec<Size> = nodes.iter().map(layout::Node::size).collect();
-        let (points, height) = place(&sizes, width, self.spacing, self.line_spacing, self.pushed);
+        // With no width to fill (a row that scrolls sideways), the items
+        // are one line as wide as they are, and nothing is pushed.
+        let (width, pushed) = if width.is_finite() {
+            (width, self.pushed)
+        } else {
+            let gaps = self.spacing * sizes.len().saturating_sub(1) as f32;
+            (
+                sizes.iter().map(|size| size.width).sum::<f32>() + gaps,
+                None,
+            )
+        };
+        let (points, height) = place(&sizes, width, self.spacing, self.line_spacing, pushed);
         let nodes = nodes
             .into_iter()
             .zip(points)
@@ -283,5 +294,47 @@ mod tests {
         let (points, _) = place(&sizes, 60.0, 10.0, 6.0, Some(1));
         assert_eq!(xs(&points), [(0.0, 0.0), (0.0, 31.0), (40.0, 26.0)]);
         assert!(place(&[], 60.0, 10.0, 6.0, None).0.is_empty());
+    }
+
+    /// In a row that scrolls sideways there is no width to fill: the
+    /// items were placed at infinity, mirrored.
+    #[test]
+    fn with_no_width_to_fill_the_items_are_one_line_as_wide_as_they_are() {
+        use iced::widget::{scrollable, text};
+
+        use crate::test_support::{snapshot::in_language, stage::Stage};
+        for language in ["en", "ar"] {
+            let _language = in_language(language);
+            let mut stage = Stage::new((300.0, 100.0));
+            let row = || {
+                let items = ["one", "two", "three"].map(|label| text(label).into());
+                let row: Element<'_, ()> = flow(items.into()).spacing(8.0).push_from(1).into();
+                scrollable(row).direction(scrollable::Direction::Horizontal(
+                    scrollable::Scrollbar::default(),
+                ))
+            };
+            stage.frame(row(), |frame| {
+                let found = ["one", "two", "three"].map(|label| frame.find(label));
+                let places: Vec<f32> = found
+                    .iter()
+                    .map(|bounds| {
+                        bounds
+                            .unwrap_or_else(|| panic!("{language}: not in view"))
+                            .x
+                    })
+                    .collect();
+                assert!(
+                    places.iter().all(|x| x.is_finite() && *x >= 0.0),
+                    "{places:?}"
+                );
+                // In the order the language reads, one after the other.
+                let ordered = if language == "ar" {
+                    places[0] > places[1] && places[1] > places[2]
+                } else {
+                    places[0] < places[1] && places[1] < places[2]
+                };
+                assert!(ordered, "{language}: {places:?}");
+            });
+        }
     }
 }
