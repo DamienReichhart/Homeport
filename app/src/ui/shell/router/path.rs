@@ -4,14 +4,46 @@
 
 use super::route::{ApiKind, Namespaced, Route, Tab};
 
-/// A segment as it is written in a path: `/` and `%` can't stand for
-/// themselves there.
+/// What stands for an empty value in a path, which can hold no empty
+/// segment: `-`, as React wrote an object without a Namespace.
+const NONE: &str = "-";
+/// What stands for the core API group, whose name is empty.
+const CORE: &str = "core";
+
+/// A segment as it is written in a path: what would end it (`/`), start a
+/// query or a fragment (`?`, `#`) or be taken for an escape (`%`) can't
+/// stand for itself there, and neither can an empty value or a lone `-`.
 fn encode(segment: &str) -> String {
-    segment.replace('%', "%25").replace('/', "%2F")
+    match segment {
+        "" => NONE.to_owned(),
+        NONE => "%2D".to_owned(),
+        _ => segment
+            .replace('%', "%25")
+            .replace('/', "%2F")
+            .replace('?', "%3F")
+            .replace('#', "%23"),
+    }
 }
 
 fn decode(segment: &str) -> String {
-    segment.replace("%2F", "/").replace("%25", "%")
+    match segment {
+        NONE => String::new(),
+        "%2D" => NONE.to_owned(),
+        _ => segment
+            .replace("%2F", "/")
+            .replace("%3F", "?")
+            .replace("%23", "#")
+            .replace("%25", "%"),
+    }
+}
+
+/// An API group in a path: the core one, whose name is empty, is `core`.
+fn group(name: &str) -> &str {
+    if name.is_empty() {
+        CORE
+    } else {
+        name
+    }
 }
 
 fn join(parts: &[&str], tab: Option<&Tab>) -> String {
@@ -87,13 +119,18 @@ impl Route {
             Self::ClusterEvents => fixed("/cluster-events"),
             Self::ApiResources { api: None } => fixed("/api-resources"),
             Self::ApiResources { api: Some(api) } => join(
-                &["api-resources", &api.group, &api.version, &api.plural],
+                &[
+                    "api-resources",
+                    group(&api.group),
+                    &api.version,
+                    &api.plural,
+                ],
                 None,
             ),
             Self::ApiObject { api, object, tab } => join(
                 &[
                     "api-resources",
-                    &api.group,
+                    group(&api.group),
                     &api.version,
                     &api.plural,
                     &object.namespace,
@@ -255,7 +292,11 @@ impl Route {
             ["api-resources"] => Self::ApiResources { api: None },
             ["api-resources", group, version, plural, rest @ ..] => {
                 let api = ApiKind {
-                    group: s(group),
+                    group: if *group == CORE {
+                        String::new()
+                    } else {
+                        s(group)
+                    },
                     version: s(version),
                     plural: s(plural),
                 };

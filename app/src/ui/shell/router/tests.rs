@@ -2,112 +2,189 @@
 
 use super::{ApiKind, History, Namespaced, Request, Route};
 
-fn samples() -> Vec<Route> {
-    let s = str::to_owned;
-    let tab = || Some(s("logs"));
-    let object = || Namespaced::new("shop", "web");
+/// Every route, with `v` for each of its ids and `tab` for its tab.
+fn every(v: &str, tab: Option<&str>) -> Vec<Route> {
+    let s = || v.to_owned();
+    let tab = || tab.map(str::to_owned);
+    let object = || Namespaced::new(v, v);
     let api = || ApiKind {
-        group: s("apps"),
-        version: s("v1"),
-        plural: s("deployments"),
+        group: s(),
+        version: s(),
+        plural: s(),
     };
     vec![
         Route::Overview,
+        Route::Board,
+        Route::Containers,
         Route::Container {
-            id: s("abc"),
-            tab: None,
-        },
-        Route::Container {
-            id: s("abc"),
+            id: s(),
             tab: tab(),
         },
+        Route::Images,
+        Route::Volumes,
+        Route::Networks,
+        Route::Stacks,
         Route::NewStack,
-        Route::Stack { name: s("blog") },
+        Route::Stack { name: s() },
+        Route::PodmanPods,
+        Route::PodmanPod { id: s() },
+        Route::Quadlets,
+        Route::Quadlet { name: s() },
+        Route::ContainerdContainers,
         Route::ContainerdContainer {
-            id: s("abc"),
+            id: s(),
             tab: tab(),
         },
+        Route::ContainerdImages,
+        Route::ContainerdSnapshots,
+        Route::ContainerdNamespaces,
+        Route::IncusInstances,
+        Route::IncusInstance {
+            name: s(),
+            tab: tab(),
+        },
+        Route::IncusImages,
+        Route::IncusProfiles,
+        Route::IncusProfile { name: s() },
         Route::IncusStorage { pool: None },
-        Route::IncusStorage {
-            pool: Some(s("default")),
-        },
+        Route::IncusStorage { pool: Some(s()) },
+        Route::IncusNetworks,
+        Route::IncusNetwork { name: s() },
         Route::Swarm {
-            swarm_id: s("sw1"),
-            tab: None,
-        },
-        Route::Swarm {
-            swarm_id: s("sw1"),
-            tab: Some(s("services")),
+            swarm_id: s(),
+            tab: tab(),
         },
         Route::SwarmService {
-            swarm_id: s("sw1"),
-            service_id: s("svc"),
+            swarm_id: s(),
+            service_id: s(),
             tab: tab(),
         },
         Route::SwarmStack {
-            swarm_id: s("sw1"),
-            name: s("blog"),
+            swarm_id: s(),
+            name: s(),
         },
-        Route::Workloads {
-            kind: Some(s("deployments")),
-        },
+        Route::Workloads { kind: None },
+        Route::Workloads { kind: Some(s()) },
         Route::Workload {
-            kind: s("deployments"),
+            kind: s(),
             object: object(),
             tab: tab(),
         },
+        Route::Pods,
         Route::Pod {
             object: object(),
-            tab: None,
+            tab: tab(),
         },
+        Route::Services,
+        Route::Service {
+            object: object(),
+            tab: tab(),
+        },
+        Route::Ingresses,
+        Route::Ingress {
+            object: object(),
+            tab: tab(),
+        },
+        Route::ConfigMaps,
+        Route::ConfigMap {
+            object: object(),
+            tab: tab(),
+        },
+        Route::Secrets,
         Route::Secret {
             object: object(),
             tab: tab(),
         },
+        Route::Nodes,
+        Route::Node {
+            name: s(),
+            tab: tab(),
+        },
+        Route::ClusterEvents,
+        Route::ApiResources { api: None },
         Route::ApiResources { api: Some(api()) },
         Route::ApiObject {
             api: api(),
             object: object(),
-            tab: None,
+            tab: tab(),
         },
-        Route::Rbac {
-            tab: Some(s("bindings")),
-        },
-        Route::ClusterRole { name: s("admin") },
+        Route::Rbac { tab: tab() },
+        Route::ClusterRole { name: s() },
         Route::Role { object: object() },
+        Route::RbacUser { name: s() },
+        Route::RbacGroup { name: s() },
         Route::ServiceAccount { object: object() },
+        Route::Apply,
+        Route::HelmReleases,
         Route::HelmRepositories,
         Route::HelmRelease {
             object: object(),
             tab: tab(),
         },
+        Route::PortForwards,
+        Route::NomadJobs,
         Route::NomadJob {
-            namespace: s("default"),
-            job_id: s("web"),
+            namespace: s(),
+            job_id: s(),
         },
         Route::NomadAllocation {
-            alloc_id: s("a1"),
-            tab: None,
+            alloc_id: s(),
+            tab: tab(),
         },
+        Route::NomadNodes,
+        Route::NomadNode { node_id: s() },
+        Route::Events,
+        Route::Settings,
+        Route::Hosts,
         Route::AddHost,
-        Route::Host { host_id: s("h1") },
+        Route::Host { host_id: s() },
+        Route::Clusters,
         Route::AddCluster,
-        Route::Cluster {
-            cluster_id: s("c1"),
-        },
+        Route::Cluster { cluster_id: s() },
     ]
 }
 
 #[test]
-fn a_route_is_read_back_from_its_path() {
-    for route in samples() {
-        assert_eq!(
-            Route::parse(&route.path()).as_ref(),
-            Some(&route),
-            "{}",
-            route.path()
-        );
+fn every_route_is_read_back_from_its_path_whatever_its_ids_hold() {
+    // An empty value (the core API group, no Namespace), what a path gives
+    // a meaning to, and names as Kubernetes and users write them.
+    let awkward = [
+        "abc",
+        "",
+        "-",
+        "a/b",
+        "system:serviceaccount:shop?x#y",
+        "100% done",
+        "%2F",
+        "core.example",
+        " spaced name ",
+        "Ünïcødé-名前",
+    ];
+    for value in awkward {
+        for tab in [None, Some("logs"), Some("a/b?c#d")] {
+            for route in every(value, tab) {
+                let path = route.path();
+                assert!(!path.contains('?') && !path.contains('#'), "{path}");
+                assert!(!path.contains("//"), "{path}");
+                assert_eq!(Route::parse(&path).as_ref(), Some(&route), "{path}");
+            }
+        }
     }
+}
+
+#[test]
+fn an_empty_group_is_core_and_no_namespace_is_a_dash_as_react_wrote_them() {
+    let pods = ApiKind {
+        group: String::new(),
+        version: "v1".to_owned(),
+        plural: "nodes".to_owned(),
+    };
+    let node = Route::ApiObject {
+        api: pods,
+        object: Namespaced::new("", "worker-1"),
+        tab: None,
+    };
+    assert_eq!(node.path(), "/api-resources/core/v1/nodes/-/worker-1");
     assert_eq!(Route::Overview.path(), "/");
     let logs = Route::Container {
         id: "abc".to_owned(),
@@ -152,6 +229,10 @@ fn a_name_with_a_slash_keeps_its_segment() {
         name: "team/blog 100%".to_owned(),
     };
     assert_eq!(stack.path(), "/stacks/team%2Fblog 100%25");
+    let user = Route::RbacUser {
+        name: "who?#1".to_owned(),
+    };
+    assert_eq!(user.path(), "/rbac/users/who%3F%231");
     assert_eq!(Route::parse(&stack.path()), Some(stack));
 }
 
