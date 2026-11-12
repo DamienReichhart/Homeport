@@ -63,7 +63,7 @@ Rules, enforced by `app/tests/layout.rs`:
 4. Build `State`/`Message`/`update`, then the `view`, with the shared widgets (`docs/agents/widgets.md` lists them and the rules for using them). If a widget is missing, stop and raise it on the widget's ticket rather than writing a private copy.
 5. The feature is already registered in `ui/shell/registry` (routes, sidebar entry with its scope, gate, palette commands, shortcuts), as `manifest.ts` was: check its line against what you port, and replace its stub (_Replacing a stub_).
 6. Tests: `update` tests for every message that does something; a headless `iced_test` snapshot for each page state (empty, loading, error, populated) in English, and one RTL snapshot (Arabic) for each page with a table or a form.
-7. Compare against the running Tauri app on the same data. Anything different is a bug unless the PR says why.
+7. Compare against the running Tauri app on the same data. Anything different is a bug unless the PR says why. Write each difference that is meant in the feature's module doc, under "What differs from the React page, on purpose" (`ui/features/docker/containers/list/mod.rs`), so the next reader finds it beside the code.
 
 ## The shell and a feature's page
 
