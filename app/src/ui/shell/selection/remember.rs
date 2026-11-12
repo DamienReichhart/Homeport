@@ -76,16 +76,14 @@ impl Remember {
         }
     }
 
-    /// Saves it: the stored settings are read, changed and written back,
-    /// so nothing another page saved meanwhile is undone.
+    /// Saves it: only what it is about changes in the stored settings, so
+    /// nothing saved meanwhile is undone. The shell saves one at a time,
+    /// in the order they were asked for (`Shell::remember`).
     pub fn save(self, state: &Arc<AppState>) -> Task<Saved> {
         let state = state.clone();
         Task::perform(
             async move {
-                let saved = settings::get_settings(&state).and_then(|mut stored| {
-                    self.apply(&mut stored);
-                    settings::update_settings(&state, stored)
-                });
+                let saved = settings::patch_settings(&state, |stored| self.apply(stored));
                 Saved {
                     error: saved.err().map(Box::new),
                     what: self,

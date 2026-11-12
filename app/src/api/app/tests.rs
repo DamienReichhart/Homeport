@@ -222,3 +222,37 @@ fn a_missing_text_file_is_an_error() {
 
     assert!(read_text_file(path).is_err());
 }
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn interleaved_patches_keep_each_other_s_fields() {
+    let app = std::sync::Arc::new(crate::app::testing::app());
+    let mut saves = vec![];
+    for n in 0..40u32 {
+        let app = app.clone();
+        saves.push(tokio::task::spawn_blocking(move || {
+            super::settings::patch_settings(&app.state, |settings| match n % 4 {
+                0 => settings.theme = homeport_settings::Theme::Dark,
+                1 => settings.last_host_id = Some("h1".to_owned()),
+                2 => {
+                    settings
+                        .incus_projects
+                        .insert(format!("h{n}"), "lab".to_owned());
+                }
+                _ => {
+                    settings
+                        .cluster_namespaces
+                        .insert(format!("c{n}"), "shop".to_owned());
+                }
+            })
+            .unwrap();
+        }));
+    }
+    for save in saves {
+        save.await.unwrap();
+    }
+    let stored = super::settings::get_settings(&app.state).unwrap();
+    assert_eq!(stored.theme, homeport_settings::Theme::Dark);
+    assert_eq!(stored.last_host_id.as_deref(), Some("h1"));
+    assert_eq!(stored.incus_projects.len(), 10);
+    assert_eq!(stored.cluster_namespaces.len(), 10);
+}

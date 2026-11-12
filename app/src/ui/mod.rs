@@ -340,9 +340,8 @@ impl Homeport {
         let state = state.clone();
         Task::perform(
             async move {
-                let saved = crate::api::app::settings::get_settings(&state).and_then(|stored| {
-                    let changed = homeport_settings::Settings { theme, ..stored };
-                    crate::api::app::settings::update_settings(&state, changed)
+                let saved = crate::api::app::settings::patch_settings(&state, |stored| {
+                    stored.theme = theme;
                 });
                 if let Err(error) = saved {
                     drop(error.logged("failed to save the theme"));

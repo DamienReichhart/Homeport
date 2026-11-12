@@ -20,6 +20,13 @@ pub fn update_settings(state: &AppState, settings: Settings) -> AppResult<Settin
     Ok(updated)
 }
 
+/// Changes some of the settings and leaves the rest as they are stored:
+/// what the window remembers behind the user (the selection, a namespace,
+/// the theme picked in the palette). Changes are applied one at a time.
+pub fn patch_settings(state: &AppState, change: impl FnOnce(&mut Settings)) -> AppResult<Settings> {
+    state.settings.patch(change)
+}
+
 /// Hands over the active language's templates (`native.*` and `errors.*`,
 /// by key) for the text the OS draws: the tray menu and notifications.
 /// An empty map means English (ADR 0011).

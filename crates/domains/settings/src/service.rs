@@ -1,7 +1,11 @@
 //! Reading and saving the settings in the database, and importing the file
 //! that held them before it.
 
-use std::{fs, path::Path, sync::Arc};
+use std::{
+    fs,
+    path::Path,
+    sync::{Arc, Mutex},
+};
 
 use rusqlite::OptionalExtension;
 
@@ -15,13 +19,19 @@ const SETTINGS_KEY: &str = "settings";
 /// Reads and writes [`Settings`] as one JSON document in the `settings` table.
 pub struct SettingsService {
     db: Arc<Db>,
+    /// Held while a change reads the stored settings and writes them back,
+    /// so two changes never start from the same document.
+    patching: Mutex<()>,
 }
 
 impl SettingsService {
     /// Wraps `db`, importing a pre-SQLite `settings.json` at `legacy_json` once.
     /// The imported file is renamed to `*.imported` so it is never read again.
     pub fn new(db: Arc<Db>, legacy_json: &Path) -> AppResult<Self> {
-        let service = Self { db };
+        let service = Self {
+            db,
+            patching: Mutex::new(()),
+        };
         service.import_legacy(legacy_json)?;
         Ok(service)
     }
@@ -56,6 +66,20 @@ impl SettingsService {
             )
         })?;
         Ok(settings)
+    }
+
+    /// Changes the stored settings in place: reads them, applies `change`
+    /// and writes them back, one change at a time. What changes one field
+    /// (the selection, the theme) never undoes another's, however their
+    /// saves interleave.
+    pub fn patch(&self, change: impl FnOnce(&mut Settings)) -> AppResult<Settings> {
+        let _one_at_a_time = self
+            .patching
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let mut settings = self.get()?;
+        change(&mut settings);
+        self.update(settings)
     }
 
     /// Writes `settings` in `tx`, as restoring a backup does.
