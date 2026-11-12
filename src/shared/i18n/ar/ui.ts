@@ -48,4 +48,5 @@ export default {
   'ui.log.invalidRegex': 'تعبير نمطي غير صالح',
   'ui.log.skipped':
     '{count, plural, zero {— لم يُتخطَّ أي سطر —} one {— تم تخطي سطر واحد —} two {— تم تخطي سطرين —} few {— تم تخطي # أسطر —} many {— تم تخطي # سطرًا —} other {— تم تخطي # سطر —}}',
+  'ui.log.searchFailed': 'توقف البحث قبل قراءة كل الأسطر',
 } satisfies Translation<typeof en>;

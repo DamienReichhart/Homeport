@@ -44,4 +44,5 @@ export default {
   'ui.log.noMatches': 'No matches',
   'ui.log.invalidRegex': 'Not a valid regular expression',
   'ui.log.skipped': '{count, plural, one {— # line skipped —} other {— # lines skipped —}}',
+  'ui.log.searchFailed': 'The search stopped before reading every line',
 } as const;

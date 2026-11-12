@@ -25,23 +25,27 @@ use crate::{
     },
 };
 
-type Page = gallery::Message;
+pub(super) type Page = gallery::Message;
 
 const WINDOW: (f32, f32) = (900.0, 540.0);
 const NONE: Modifiers = Modifiers::empty();
 
 /// A page with one viewer, on a window that lasts.
-struct Bench {
+pub(super) struct Bench {
     stage: Stage,
-    state: State,
+    pub(super) state: State,
     /// What the viewer told the page, in order.
     events: Vec<Event>,
     _language: InLanguage,
 }
 
 impl Bench {
-    fn new(lines: impl IntoIterator<Item = Line>) -> Self {
-        let language = in_language("en");
+    pub(super) fn new(lines: impl IntoIterator<Item = Line>) -> Self {
+        Self::in_the_language("en", lines)
+    }
+
+    pub(super) fn in_the_language(tag: &str, lines: impl IntoIterator<Item = Line>) -> Self {
+        let language = in_language(tag);
         let mut state = State::new(100_000);
         drop(state.extend(lines));
         let mut bench = Self {
@@ -58,7 +62,7 @@ impl Bench {
     /// Draws the page, lets `act` use it, and gives the viewer what that
     /// produced, running what the viewer asks for in return on the views
     /// that follow.
-    fn frame(&mut self, act: impl FnOnce(&mut Frame<'_, '_, Page>)) {
+    pub(super) fn frame(&mut self, act: impl FnOnce(&mut Frame<'_, '_, Page>)) {
         fn page(state: &State) -> iced::widget::Container<'_, Page, theme::Theme> {
             container(view(state))
                 .padding(24)
@@ -93,7 +97,7 @@ impl Bench {
     }
 
     /// What the rows in view say.
-    fn rows(&mut self) -> Vec<String> {
+    pub(super) fn rows(&mut self) -> Vec<String> {
         let mut said = vec![];
         self.frame(|frame| said = frame.texts());
         said.into_iter()
@@ -130,7 +134,7 @@ fn press_of(key: Key, modifiers: Modifiers) -> [Input; 2] {
     [Input::Keyboard(pressed), Input::Keyboard(released)]
 }
 
-fn row_of(frame: &mut Frame<'_, '_, Page>, text: &str) -> Rectangle {
+pub(super) fn row_of(frame: &mut Frame<'_, '_, Page>, text: &str) -> Rectangle {
     frame
         .find(text)
         .unwrap_or_else(|| panic!("the row {text:?} is not in view"))
@@ -175,7 +179,8 @@ fn only_what_comes_into_view_is_shaped_however_many_lines_there_are() {
     assert_eq!(during(&mut bench, &scroll(Scroll::Rows(-1))), 1);
     assert_eq!(during(&mut bench, &scroll(Scroll::Rows(-3))), 3);
     // To the middle of the lines: a screen of them, and no more.
-    assert_eq!(during(&mut bench, &scroll(Scroll::To(0.5))), rows);
+    // (Two rows fewer while the way back to the latest line shows.)
+    assert_eq!(during(&mut bench, &scroll(Scroll::To(0.5))), rows - 2);
     // Lines come while the view is paused: nothing in view changed.
     let more = |state: &mut State| drop(state.extend(numbered(300_000, 5_000)));
     assert_eq!(during(&mut bench, &more), 0);
@@ -214,6 +219,7 @@ fn the_lines_a_stream_pushes_show_as_they_come_whatever_their_stream() {
 #[test]
 fn the_wheel_pauses_and_jump_to_latest_follows_again() {
     let mut bench = Bench::new(numbered(0, 200));
+    let rows = bench.state.metrics.rows;
     bench.frame(|frame| {
         let row = row_of(frame, "line 190");
         frame.point_at(row.center());
@@ -221,7 +227,12 @@ fn the_wheel_pauses_and_jump_to_latest_follows_again() {
     });
     assert!(!bench.state.follows());
     let paused = bench.rows();
-    assert_eq!(paused.last().map(String::as_str), Some("line 196"));
+    // Three rows up; the way back takes the room of two rows under them.
+    assert_eq!(
+        paused.first().cloned(),
+        Some(format!("line {}", 197 - rows))
+    );
+    assert_eq!(paused.len(), rows - 2);
     // Lines come: the view stays, and the way back shows.
     drop(bench.state.extend(numbered(200, 300)));
     assert_eq!(bench.rows(), paused);
@@ -243,10 +254,18 @@ fn the_wheel_pauses_and_jump_to_latest_follows_again() {
 #[test]
 fn the_follow_toggle_pauses_and_follows() {
     let mut bench = Bench::new(numbered(0, 200));
+    let rows = bench.state.metrics.rows;
     bench.frame(|frame| frame.click("Follow"));
     assert!(!bench.state.follows());
-    drop(bench.state.extend(numbered(200, 50)));
+    // Paused on the latest line: there is nowhere to jump to yet.
+    bench.frame(|frame| assert!(frame.find("Jump to latest").is_none()));
     assert_eq!(bench.rows().last().map(String::as_str), Some("line 199"));
+    drop(bench.state.extend(numbered(200, 50)));
+    assert_eq!(
+        bench.rows().first().cloned(),
+        Some(format!("line {}", 200 - rows))
+    );
+    bench.frame(|frame| assert!(frame.find("Jump to latest").is_some()));
     bench.frame(|frame| frame.click("Follow"));
     assert!(bench.state.follows());
     assert_eq!(bench.rows().last().map(String::as_str), Some("line 249"));
@@ -332,11 +351,16 @@ fn the_keyboard_scrolls_selects_and_copies_once_the_rows_have_focus() {
     bench.frame(|frame| assert!(frame.shows_focus(), "the keyboard gave it: a ring"));
     bench.key(Named::ArrowUp, NONE);
     assert!(!bench.state.follows());
-    assert_eq!(bench.rows().last().map(String::as_str), Some("line 198"));
+    let first = 199 - rows;
+    assert_eq!(bench.rows().first().cloned(), Some(format!("line {first}")));
+    // A page is the rows that show, less one: two fewer show while the
+    // way back to the latest line does.
     bench.key(Named::PageUp, NONE);
-    let last = 198 - (rows - 1);
-    assert_eq!(bench.rows().last().cloned(), Some(format!("line {last}")));
+    let first = first - (rows - 3);
+    assert_eq!(bench.rows().first().cloned(), Some(format!("line {first}")));
     bench.key(Named::ArrowDown, NONE);
+    bench.key(Named::PageDown, NONE);
+    assert!(!bench.state.follows(), "a row short of the end");
     bench.key(Named::PageDown, NONE);
     assert!(bench.state.follows(), "back at the end");
     bench.key(Named::Home, NONE);
@@ -470,4 +494,17 @@ fn the_thumb_dragged_goes_through_the_lines() {
     });
     assert!(bench.state.follows());
     assert_eq!(bench.rows().last().map(String::as_str), Some("line 99999"));
+}
+
+#[test]
+fn paused_on_the_latest_line_a_notch_down_follows_again() {
+    let mut bench = Bench::new(numbered(0, 200));
+    bench.frame(|frame| frame.click("Follow"));
+    assert!(!bench.state.follows());
+    bench.frame(|frame| {
+        let row = row_of(frame, "line 190");
+        frame.point_at(row.center());
+        frame.scroll(1.0);
+    });
+    assert!(bench.state.follows(), "the wheel was not ignored");
 }

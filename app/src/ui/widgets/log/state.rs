@@ -4,13 +4,14 @@
 
 use std::{cell::RefCell, collections::HashMap, sync::Arc};
 
+use homeport_core::error::AppError;
 use iced::advanced::widget::Id;
 
 use super::{
     ansi::Parser,
     buffer::{Buffer, Snapshot},
     index::Cache,
-    search::{Hit, Query, Search},
+    search::{Compiled, Hit, Query, Search},
     selection::{Mark, Selection},
 };
 
@@ -98,10 +99,23 @@ pub enum Message {
     Next,
     Previous,
     /// What a task found in the lines up to `to`.
+    /// `None`: the task died and the lines were not read.
     Scanned {
         generation: u64,
         to: u64,
-        hits: Arc<Vec<Hit>>,
+        hits: Option<Arc<Vec<Hit>>>,
+    },
+    /// The matcher of a query that was built on another thread.
+    Compiled {
+        generation: u64,
+        matcher: Compiled,
+    },
+    /// The pointer went past the rows with the button held (`down`: under
+    /// them), over the cell `cell` of a row: the view goes a row that
+    /// way and the selection with it.
+    DragPast {
+        down: bool,
+        cell: usize,
     },
     Clear,
     Download,
@@ -154,6 +168,13 @@ impl Sources {
         self.by_label.insert(label.clone(), id);
         self.width = self.width.max(super::line::cells(label));
         id
+    }
+
+    /// Every source's terminal starts anew: no colour left open, no
+    /// sequence half read.
+    pub fn forget_styles(&mut self) {
+        self.plain = Parser::default();
+        self.parsers.fill(Parser::default());
     }
 
     pub fn parser(&mut self, source: Option<u16>) -> &mut Parser {
@@ -286,10 +307,11 @@ impl State {
         self.filter
     }
 
-    /// Why the query can't be read: a regular expression that isn't one,
-    /// in the words of the `regex` crate.
-    pub fn search_error(&self) -> Option<&str> {
-        self.search.error.as_deref()
+    /// Why the query can't be read (a regular expression that isn't one,
+    /// with the `regex` crate's words as its detail), or why the search
+    /// stopped: to show with the app's error widgets, in its language.
+    pub fn search_error(&self) -> Option<&AppError> {
+        self.search.error.as_ref()
     }
 
     /// How many matches were found so far, and which one the search
@@ -301,9 +323,10 @@ impl State {
         )
     }
 
-    /// Whether lines are still being read for the query.
+    /// Whether the query is still being read, or lines for it.
     pub fn is_searching(&self) -> bool {
-        self.search.is_active() && self.search.frontier < self.buffer.range().end
+        let unread = self.search.frontier < self.buffer.range().end;
+        self.search.compiling || (self.search.is_active() && unread && !self.search.is_stopped())
     }
 
     /// Whether some text is selected.
@@ -335,11 +358,14 @@ pub struct Download {
 impl Download {
     /// How many lines there are to save.
     pub fn len(&self) -> usize {
-        self.lines().count()
+        self.snapshot
+            .lines()
+            .filter(|(_, line)| line.marker.is_none())
+            .count()
     }
 
     pub fn is_empty(&self) -> bool {
-        self.lines().next().is_none()
+        self.len() == 0
     }
 
     /// The lines as the React viewer saved them: the text without its

@@ -94,6 +94,10 @@ use crate::{
     },
 };
 
+/// The room kept under the rows of a paused view: a small button and
+/// four pixels over and under it.
+const FOOTER: f32 = 36.0;
+
 /// A viewer being described; [`Viewer::view`] makes it an element.
 pub struct Viewer<'a, Message> {
     state: &'a State,
@@ -146,28 +150,32 @@ impl<'a, Message: Clone + 'a> Viewer<'a, Message> {
         let send = on.clone();
         let controls = toolbar::toolbar(state, self.toolbar, move |message| send(message));
         let send = on.clone();
+        // Paused away from the latest line, the way back shows: in room
+        // of its own under the rows, where it covers no text.
+        let paused = !state.follows();
+        let away = paused && !state.window(state.metrics).at_end;
         let pane = pane::Pane {
             state,
             on_event: Box::new(move |message| send(message)),
             height: Length::Fill,
             rtl: i18n::direction().is_rtl(),
+            footer: if away { FOOTER } else { 0.0 },
         };
-        // Over the last rows while the view is not on them: the way back.
-        let latest: Element<'a, Message> = if state.follows() {
-            Space::new().into()
-        } else {
+        let latest: Element<'a, Message> = if away {
             button::labelled(Icon::ArrowDown, t!("ui.log.latest"))
                 .variant(Variant::Secondary)
                 .size(ButtonSize::Sm)
                 .on_press(on(self::Message::Follow(true)))
                 .into()
+        } else {
+            Space::new().into()
         };
         let latest = container(latest)
             .width(Length::Fill)
             .height(Length::Fill)
             .align_x(end())
             .align_y(Vertical::Bottom)
-            .padding([space::S3, space::S5]);
+            .padding([space::S1 + 1.0, space::S5]);
         let lines = Stack::with_children(vec![pane.into(), latest.into()])
             .width(Length::Fill)
             .height(Length::Fill);

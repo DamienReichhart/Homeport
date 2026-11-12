@@ -50,3 +50,4 @@ ui-log-invalidRegex = 正则表达式无效
 ui-log-skipped = { $count ->
        *[other] — 已跳过 { NUM($count) } 行 —
     }
+ui-log-searchFailed = 搜索在读完所有行之前已停止

@@ -48,4 +48,5 @@ export default {
   'ui.log.invalidRegex': 'मान्य रेगुलर एक्सप्रेशन नहीं',
   'ui.log.skipped':
     '{count, plural, one {— # पंक्ति छोड़ी गई —} other {— # पंक्तियाँ छोड़ी गईं —}}',
+  'ui.log.searchFailed': 'सभी पंक्तियाँ पढ़ने से पहले खोज रुक गई',
 } satisfies Translation<typeof en>;

@@ -11,13 +11,17 @@ mod buffer;
 mod drawn;
 mod driven;
 mod follow;
+mod layout;
 mod palette;
 mod perf;
+mod scan;
 mod search;
 mod select;
 mod wide;
 
-use super::{Line, Message, Metrics, State};
+use iced::futures::executor::block_on;
+
+use super::{Event, Line, Message, Metrics, State};
 
 /// A viewer of eighty cells by ten rows, as its first layout would tell.
 fn viewer(cap: usize) -> State {
@@ -58,4 +62,17 @@ fn shown(state: &State) -> Vec<String> {
         row = 0;
     }
     lines
+}
+
+/// Sends `message` and runs what it starts to its end, answers fed back,
+/// as the window does. Returns what the viewer told the page.
+fn drive(state: &mut State, message: Message) -> Vec<Event> {
+    let mut events = vec![];
+    let mut pending = vec![message];
+    while let Some(message) = pending.pop() {
+        let (task, event) = state.update(message);
+        events.extend(event);
+        pending.extend(block_on(crate::test_support::tasks::messages(task)));
+    }
+    events
 }

@@ -131,7 +131,7 @@ pub(super) struct Geometry {
 impl Geometry {
     // A viewer is a few thousand pixels at most: its cells fit a `usize`.
     #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-    pub fn of(bounds: Rectangle, cell: f32, wrap: bool, rtl: bool) -> Self {
+    pub fn of(bounds: Rectangle, cell: f32, wrap: bool, rtl: bool, footer: f32) -> Self {
         let inner = bounds.shrink(BORDER);
         let rail = control::SCROLLBAR;
         let under = if wrap { 0.0 } else { rail };
@@ -144,18 +144,18 @@ impl Geometry {
                 inner.x + inner.width - rail
             },
             width: rail,
-            height: (inner.height - under).max(0.0),
+            height: (inner.height - under - footer).max(0.0),
             ..inner
         };
         let text = Rectangle {
             x: inner.x + PADDING + if rtl { rail } else { 0.0 },
             y: inner.y + PADDING,
             width: (inner.width - rail - 2.0 * PADDING).max(0.0),
-            height: (inner.height - under - 2.0 * PADDING).max(0.0),
+            height: (inner.height - under - footer - 2.0 * PADDING).max(0.0),
         };
         let bar = (!wrap).then_some(Rectangle {
             x: text.x - PADDING,
-            y: inner.y + inner.height - rail,
+            y: inner.y + inner.height - footer - rail,
             width: text.width + 2.0 * PADDING,
             height: rail,
         });
@@ -198,6 +198,9 @@ pub struct Pane<'a, Message> {
     pub on_event: OnEvent<'a, Message>,
     pub height: Length,
     pub rtl: bool,
+    /// Room kept free under the rows, inside the frame: where "Jump to
+    /// latest" goes while the view is paused, so it covers no line.
+    pub footer: f32,
 }
 
 /// What iced keeps for the rows between views.
@@ -223,7 +226,7 @@ pub struct Internal {
 impl<Message> Pane<'_, Message> {
     fn geometry(&self, internal: &Internal, bounds: Rectangle) -> Geometry {
         let cell = internal.cell.unwrap_or(size::XS * 0.6);
-        Geometry::of(bounds, cell, self.state.wraps(), self.rtl)
+        Geometry::of(bounds, cell, self.state.wraps(), self.rtl, self.footer)
     }
 }
 

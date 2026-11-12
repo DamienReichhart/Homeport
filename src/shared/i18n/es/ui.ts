@@ -47,4 +47,5 @@ export default {
   'ui.log.noMatches': 'Sin coincidencias',
   'ui.log.invalidRegex': 'No es una expresión regular válida',
   'ui.log.skipped': '{count, plural, one {— # línea omitida —} other {— # líneas omitidas —}}',
+  'ui.log.searchFailed': 'La búsqueda se detuvo antes de leer todas las líneas',
 } satisfies Translation<typeof en>;

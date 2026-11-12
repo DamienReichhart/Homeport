@@ -50,3 +50,4 @@ ui-log-invalidRegex = 正規表現が正しくありません
 ui-log-skipped = { $count ->
        *[other] — { NUM($count) } 行をスキップ —
     }
+ui-log-searchFailed = すべての行を読み終える前に検索が停止しました

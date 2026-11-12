@@ -46,4 +46,5 @@ export default {
   'ui.log.noMatches': '无匹配项',
   'ui.log.invalidRegex': '正则表达式无效',
   'ui.log.skipped': '{count, plural, other {— 已跳过 # 行 —}}',
+  'ui.log.searchFailed': '搜索在读完所有行之前已停止',
 } satisfies Translation<typeof en>;

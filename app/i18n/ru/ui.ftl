@@ -56,3 +56,4 @@ ui-log-skipped = { $count ->
         [many] — пропущено { NUM($count) } строк —
        *[other] — пропущено { NUM($count) } строки —
     }
+ui-log-searchFailed = Поиск остановился, не прочитав все строки

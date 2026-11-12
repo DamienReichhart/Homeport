@@ -52,3 +52,4 @@ ui-log-skipped = { $count ->
         [one] — { NUM($count) } Zeile übersprungen —
        *[other] — { NUM($count) } Zeilen übersprungen —
     }
+ui-log-searchFailed = Die Suche wurde abgebrochen, bevor alle Zeilen gelesen waren

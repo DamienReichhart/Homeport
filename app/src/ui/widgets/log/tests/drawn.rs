@@ -3,7 +3,7 @@
 
 use iced::{widget::container, Length};
 
-use super::feed;
+use super::{drive, feed};
 use crate::{
     test_support::snapshot::assert_snapshot,
     ui::{
@@ -33,7 +33,7 @@ fn on_page(part: Element<'_, Page>) -> Element<'_, Page> {
 
 fn tell(state: &mut State, messages: impl IntoIterator<Item = Message>) {
     for message in messages {
-        let _ = state.update(message);
+        drive(state, message);
     }
 }
 
@@ -265,5 +265,37 @@ fn the_gallery_shows_the_viewer_on_its_log_page() {
         &Theme::Light,
         (1100.0, 640.0),
         || gallery.view(),
+    );
+}
+
+/// Rule 6 of the migration guide: no string a user reads is a literal.
+/// The viewer's toolbar has two that are not words of any language, "Aa"
+/// and ".*", named under the pointer by the catalogue. They are the
+/// exception the rule declares, and there is no third.
+#[test]
+fn the_only_literals_the_toolbar_draws_are_the_two_the_rule_names() {
+    let source = include_str!("../toolbar.rs");
+    let code: String = source
+        .lines()
+        .filter(|line| !line.trim_start().starts_with("//"))
+        .collect::<Vec<_>>()
+        .join("\n");
+    let mut literals = vec![];
+    let mut rest = code.as_str();
+    while let Some(start) = rest.find('"') {
+        let before = &rest[..start];
+        let after = &rest[start + 1..];
+        let end = after.find('"').expect("a closed literal");
+        // A key of the catalogue is not text: `t!("…")`.
+        if !before.trim_end().ends_with("t!(") {
+            literals.push(&after[..end]);
+        }
+        rest = &after[end + 1..];
+    }
+    assert_eq!(literals, ["Aa", ".*"]);
+    let guide = include_str!("../../../../../../docs/agents/iced-migration.md");
+    assert!(
+        guide.contains("`Aa`") && guide.contains("`.*`"),
+        "the rule names its exception"
     );
 }

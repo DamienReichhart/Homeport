@@ -52,3 +52,4 @@ ui-log-skipped = { $count ->
         [one] — { NUM($count) } line skipped —
        *[other] — { NUM($count) } lines skipped —
     }
+ui-log-searchFailed = The search stopped before reading every line

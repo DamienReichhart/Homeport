@@ -50,3 +50,4 @@ ui-log-invalidRegex = 올바른 정규식이 아닙니다
 ui-log-skipped = { $count ->
        *[other] — { NUM($count) }줄 건너뜀 —
     }
+ui-log-searchFailed = 모든 줄을 읽기 전에 검색이 중단되었습니다

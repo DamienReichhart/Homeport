@@ -60,3 +60,4 @@ ui-log-skipped = { $count ->
         [many] — تم تخطي { NUM($count) } سطرًا —
        *[other] — تم تخطي { NUM($count) } سطر —
     }
+ui-log-searchFailed = توقف البحث قبل قراءة كل الأسطر

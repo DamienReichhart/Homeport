@@ -52,3 +52,4 @@ ui-log-skipped = { $count ->
         [one] — { NUM($count) } पंक्ति छोड़ी गई —
        *[other] — { NUM($count) } पंक्तियाँ छोड़ी गईं —
     }
+ui-log-searchFailed = सभी पंक्तियाँ पढ़ने से पहले खोज रुक गई

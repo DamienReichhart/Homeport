@@ -152,10 +152,12 @@ fn wheel<Message>(
     let rows = internal.wheel.trunc();
     internal.wheel -= rows;
     let laid = &internal.laid;
+    // Down from the latest line there is nowhere to go, unless the view
+    // is paused on it: one notch then follows again.
     let can_move = if rows < 0.0 {
         laid.top != crate::ui::widgets::log::display::Pos::default()
     } else {
-        !laid.at_end
+        !laid.at_end || !pane.state.follows()
     };
     if rows != 0.0 && can_move {
         shell.publish((pane.on_event)(Action::Scroll(Scroll::Rows(rows as i64))));
@@ -297,13 +299,23 @@ pub(super) fn update<Message>(
             }
         }
         Event::Mouse(mouse::Event::CursorMoved { position }) if internal.selecting => {
-            // Past the rows, the view goes with the pointer.
-            if position.y < geometry.text.y {
-                send(shell, Action::Scroll(Scroll::Rows(-1)));
+            // Past the rows, the view goes with the pointer and the
+            // selection with the view, in one step.
+            let past = if position.y < geometry.text.y {
+                Some(false)
             } else if position.y > geometry.text.y + geometry.text.height {
-                send(shell, Action::Scroll(Scroll::Rows(1)));
-            }
-            if let Some(mark) = mark_at(internal, &geometry, *position) {
+                Some(true)
+            } else {
+                None
+            };
+            // A viewer is a few hundred cells wide.
+            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+            let cell = ((position.x - geometry.text.x) / geometry.cell)
+                .round()
+                .max(0.0) as usize;
+            if let Some(down) = past {
+                send(shell, Action::DragPast { down, cell });
+            } else if let Some(mark) = mark_at(internal, &geometry, *position) {
                 send(shell, Action::Drag(mark));
             }
         }

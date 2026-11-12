@@ -10,14 +10,16 @@ use iced::Task;
 use super::{
     display::Pos,
     line::{split_stamp, Line, Marker},
-    search::{self, Hit, Query, AT_ONCE, SLICE},
+    search::{self, Hit, Query, AT_ONCE, AT_ONCE_BYTES, SLICE},
     selection::{word_at, Mark, Selection},
-    state::{Anchor, Download, Event, Message, Scroll, State},
+    state::{Anchor, Download, Event, Message, Scroll, Sources, State},
 };
 use crate::ui::widgets::form;
 
-/// A selection over up to this many lines is copied where it is.
+/// A selection over up to this many lines, of up to this many bytes
+/// together, is copied where it is.
 const COPY_AT_ONCE: usize = 4_096;
+const COPY_AT_ONCE_BYTES: usize = 1024 * 1024;
 
 /// What [`State::update`] gives back: what to run, mapped to the page's
 /// message, and what the page acts on.
@@ -87,10 +89,15 @@ impl State {
             .buffer
             .append([marker], |chunk, marker| chunk.push_marker(marker));
         self.dropped(dropped);
-        // Nothing to find in it: a search that had read everything still has.
+        // Nothing to find in it, but it shows while only what matches
+        // does: a search that had read everything takes it as read.
         let end = self.buffer.range().end;
-        if self.search.frontier + 1 == end {
-            self.search.frontier = end;
+        if self.search.frontier + 1 == end && !self.search.busy {
+            let shown = self.search.is_active().then_some(Hit {
+                seq: end - 1,
+                count: 0,
+            });
+            self.search.found(shown, end);
         }
     }
 
@@ -100,15 +107,39 @@ impl State {
         self.dropped(dropped);
     }
 
-    /// Drops every line, as the Clear button does.
+    /// Drops every line, as the Clear button does. The stream goes on:
+    /// its sources keep their colours and their place before the lines,
+    /// but what a program left open (a colour, half a sequence) is
+    /// forgotten with the lines it was in.
     pub fn clear(&mut self) {
         self.buffer.clear();
+        self.sources.forget_styles();
         self.search.rescan(self.buffer.range().end);
+        self.index.borrow_mut().clear();
         self.selection = None;
         self.follow = true;
         self.anchor = Anchor::default();
         self.across = 0;
         self.widest = 0;
+        self.revision += 1;
+    }
+
+    /// Starts over for a stream that is opened again (other options,
+    /// another container): no line, no source, nothing left of what the
+    /// last stream wrote. What is searched and how the lines show stay.
+    /// React reset its terminal the same way each time it opened one.
+    pub fn reset(&mut self) {
+        self.clear();
+        self.sources = Sources::default();
+    }
+
+    /// The sources in the order their colours are given, for a stream
+    /// that names them before its first line: [`State::with_sources`]
+    /// after a [`State::reset`].
+    pub fn set_sources<S: Into<Arc<str>>>(&mut self, labels: impl IntoIterator<Item = S>) {
+        for label in labels {
+            self.sources.id(&label.into());
+        }
         self.revision += 1;
     }
 
@@ -120,6 +151,7 @@ impl State {
         }
         let first = self.buffer.range().start;
         self.search.evict(first);
+        self.index.borrow_mut().evict(first);
         if !self.follow && self.anchor.seq < first {
             // What the view was on is gone: it stays on the oldest line.
             self.anchor = Anchor { seq: first, row: 0 };
@@ -139,12 +171,12 @@ impl State {
     }
 
     /// Reads for the search the lines it has not read yet: at once when
-    /// they are few, else a slice of them on another thread.
+    /// they are few and short, else a slice of them on another thread.
     fn pump(&mut self) -> Task<Message> {
         let Some(matcher) = self.search.matcher.clone() else {
             return Task::none();
         };
-        if self.search.busy {
+        if self.search.busy || self.search.is_stopped() {
             return Task::none();
         }
         let range = self.buffer.range();
@@ -153,18 +185,15 @@ impl State {
             return Task::none();
         }
         let timestamps = self.timestamps;
-        if range.end - from <= AT_ONCE {
-            let found = (from..range.end).filter_map(|seq| {
-                let line = self.buffer.line(seq)?;
-                let count = search::matches(&matcher, &line, timestamps).count();
-                // A line holds fewer matches than it has bytes.
-                #[allow(clippy::cast_possible_truncation)]
-                (count > 0).then_some(Hit {
-                    seq,
-                    count: count as u32,
+        let few =
+            range.end - from <= AT_ONCE && self.buffer.bytes(from..range.end) <= AT_ONCE_BYTES;
+        if few {
+            let found: Vec<Hit> = (from..range.end)
+                .filter_map(|seq| {
+                    let line = self.buffer.line(seq)?;
+                    search::hit(&matcher, seq, &line, timestamps)
                 })
-            });
-            let found: Vec<Hit> = found.collect();
+                .collect();
             self.search.found(found, range.end);
             return Task::none();
         }
@@ -177,7 +206,7 @@ impl State {
             move |hits| Message::Scanned {
                 generation,
                 to,
-                hits: Arc::new(hits),
+                hits: hits.map(Arc::new),
             },
         )
     }
@@ -281,14 +310,37 @@ impl State {
                 to,
                 hits,
             } => {
-                if generation == self.search.generation {
-                    let first = self.buffer.range().start;
-                    self.search.busy = false;
-                    let kept = hits.iter().copied().filter(|hit| hit.seq >= first);
-                    self.search.found(kept, to);
+                // Of another query, or of another viewer: not this one's.
+                if generation != self.search.generation {
+                    return quiet();
+                }
+                match hits {
+                    Some(hits) => {
+                        let first = self.buffer.range().start;
+                        self.search.busy = false;
+                        let kept = hits.iter().copied().filter(|hit| hit.seq >= first);
+                        self.search.found(kept, to);
+                    }
+                    // The lines were not read: again, or the search
+                    // says it stopped. The frontier stays before them.
+                    None => {
+                        if !self.search.lost() {
+                            return quiet();
+                        }
+                    }
+                }
+                return (self.pump(), None);
+            }
+            Message::Compiled {
+                generation,
+                matcher,
+            } => {
+                if generation == self.search.generation && self.search.compiling {
+                    self.search.compiled(matcher);
                     return (self.pump(), None);
                 }
             }
+            Message::DragPast { down, cell } => self.drag_past(down, cell),
             Message::Clear => {
                 self.clear();
                 return (Task::none(), Some(Event::Cleared));
@@ -310,8 +362,53 @@ impl State {
         if self.filtered() {
             self.anchor = self.anchored(self.window(self.metrics).top);
         }
-        self.search.restart(query, self.buffer.range().start);
-        (self.pump(), None)
+        let first = self.buffer.range().start;
+        if !self.search.restart(query, first) {
+            return (self.pump(), None);
+        }
+        // A regular expression, or a long text: built on another thread.
+        let generation = self.search.generation;
+        let build = search::compile_elsewhere(self.search.query.clone());
+        let task = Task::perform(build, move |matcher| Message::Compiled {
+            generation,
+            matcher,
+        });
+        (task, None)
+    }
+
+    /// The pointer is past the rows with the button held: the view goes
+    /// a row that way, and the selection ends on the row that came in,
+    /// in the same step.
+    fn drag_past(&mut self, down: bool, cell: usize) {
+        self.scroll(Scroll::Rows(if down { 1 } else { -1 }));
+        let metrics = self.metrics;
+        let top = self.window(metrics).top;
+        let rows = i64::try_from(metrics.rows.saturating_sub(1)).unwrap_or(0);
+        let at = if down {
+            self.moved(top, rows, metrics.cols)
+        } else {
+            top
+        };
+        let last = self.count().saturating_sub(1);
+        let at = Pos {
+            index: at.index.min(last),
+            ..at
+        };
+        let Some((seq, line)) = self
+            .seq_at(at.index)
+            .and_then(|seq| Some((seq, self.buffer.line(seq)?)))
+        else {
+            return;
+        };
+        let (from, to) = if self.wrap {
+            self.starts(seq, &line, self.shape(), metrics.cols)
+                .range(at.row)
+        } else {
+            (self.across, self.across + metrics.cols)
+        };
+        if let Some(selection) = &mut self.selection {
+            selection.head = Mark::new(seq, (from + cell).min(to));
+        }
     }
 
     fn scroll(&mut self, scroll: Scroll) {
@@ -336,17 +433,16 @@ impl State {
                 self.follow = true;
                 return;
             }
-            Scroll::To(share) if share >= 0.999 => {
+            Scroll::To(share) if share >= 1.0 => {
                 self.follow = true;
                 return;
             }
-            Scroll::To(share) => {
-                let most = self.count().saturating_sub(metrics.rows);
-                Pos {
-                    index: (share.clamp(0.0, 1.0) * most as f32).round() as usize,
-                    row: 0,
-                }
-            }
+            // Every line can be the first in view: the thumb's travel is
+            // the lines down to where a view of the latest starts.
+            Scroll::To(share) => Pos {
+                index: (share.clamp(0.0, 1.0) * self.bottom(metrics).index as f32).round() as usize,
+                row: 0,
+            },
             Scroll::Across(by) => {
                 let by_cells = usize::try_from(by.unsigned_abs()).unwrap_or(usize::MAX);
                 self.across = if by < 0 {
@@ -382,7 +478,7 @@ impl State {
         let Some(copyable) = self.copyable() else {
             return quiet();
         };
-        if copyable.len() <= COPY_AT_ONCE {
+        if copyable.len() <= COPY_AT_ONCE && copyable.bytes() <= COPY_AT_ONCE_BYTES {
             return (Task::none(), Some(Event::Copy(copyable.text())));
         }
         let read = async move {

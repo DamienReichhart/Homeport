@@ -47,4 +47,5 @@ export default {
   'ui.log.noMatches': '一致なし',
   'ui.log.invalidRegex': '正規表現が正しくありません',
   'ui.log.skipped': '{count, plural, other {— # 行をスキップ —}}',
+  'ui.log.searchFailed': 'すべての行を読み終える前に検索が停止しました',
 } satisfies Translation<typeof en>;

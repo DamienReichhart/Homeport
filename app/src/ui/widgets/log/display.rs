@@ -298,6 +298,11 @@ pub struct Copyable {
 }
 
 impl Copyable {
+    /// The bytes of the lines it is over: what reading it costs.
+    pub fn bytes(&self) -> usize {
+        self.snapshot.bytes()
+    }
+
     /// How many lines it reads.
     pub fn len(&self) -> usize {
         self.only.as_ref().map_or(self.snapshot.len(), Vec::len)

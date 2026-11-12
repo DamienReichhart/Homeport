@@ -10,7 +10,7 @@ use iced::{
 
 use super::state::{Message, State};
 use crate::{
-    i18n::format,
+    i18n::{self, format},
     t,
     ui::{
         theme::{
@@ -55,8 +55,8 @@ fn action<'a, M: Clone + 'a>(glyph: Icon, says: String, message: Option<M>) -> E
 /// the query can't be read. Nothing while nothing is looked for.
 fn found<'a, M: 'a>(state: &State) -> Element<'a, M> {
     let label = |says: String| text(says).size(size::XS);
-    if state.search_error().is_some() {
-        return label(t!("ui.log.invalidRegex"))
+    if let Some(error) = state.search_error() {
+        return label(i18n::errors::message(error))
             .style(theme::text::destructive)
             .into();
     }

@@ -2,21 +2,25 @@
 //! regular expression, among lines that come and go, and without `update`
 //! waiting for a large buffer.
 
-use std::sync::Arc;
-
-use super::{feed, numbered, shown, viewer};
+use super::{drive, feed, numbered, shown, viewer};
 use crate::{
-    test_support::tasks::{is_none, messages},
-    ui::widgets::log::{search::AT_ONCE, Line, Message, Scroll, State},
+    test_support::tasks::is_none,
+    ui::widgets::log::{Line, Message, Scroll, State},
 };
 
+/// Types a query. Plain text over a few lines is read at once; a regular
+/// expression is built by a task, run here to its end.
 fn type_in(state: &mut State, text: &str) {
+    if state.query().regex {
+        drive(state, Message::Query(text.to_owned()));
+        return;
+    }
     let (task, _) = state.update(Message::Query(text.to_owned()));
     assert!(is_none(task), "few lines are read at once");
 }
 
 fn tell(state: &mut State, message: Message) {
-    let _ = state.update(message);
+    drive(state, message);
 }
 
 /// Six lines, three of which say "error" one way or another.
@@ -280,86 +284,46 @@ fn timestamps_are_searched_only_while_they_show() {
     assert_eq!(state.matches().1, 2);
 }
 
-#[tokio::test]
-async fn a_large_buffer_is_read_in_slices_on_another_thread() {
-    let mut state = viewer(1_000_000);
-    let lines = 300_000;
-    feed(&mut state, numbered(0, lines));
-    // Typing returns at once with a task: nothing was read yet.
-    let (mut task, _) = state.update(Message::Query("line 1234".to_owned()));
-    assert_eq!(state.matches().1, 0);
-    assert!(state.is_searching());
-    let mut slices = 0;
-    loop {
-        let found = messages(task).await;
-        if found.is_empty() {
-            break;
-        }
-        assert_eq!(found.len(), 1);
-        slices += 1;
-        // Lines keep coming while the search reads.
-        feed_quietly(&mut state, numbered(lines + slices * 10, 10));
-        task = state.update(found.into_iter().next().expect("one")).0;
+#[test]
+fn what_the_viewer_says_between_the_lines_still_shows_when_filtered() {
+    let mut state = viewer(1000);
+    feed(&mut state, numbered(0, 30));
+    state.skipped(1234);
+    feed(&mut state, numbered(30, 30));
+    state.end();
+    type_in(&mut state, "line 5");
+    tell(&mut state, Message::Filter(true));
+    // "line 5" and 50 to 59, with the two things the viewer says.
+    assert_eq!(state.matches().1, 11);
+    assert_eq!(state.count(), 13);
+    let markers: Vec<u64> = (0..state.count())
+        .filter_map(|index| state.seq_at(index))
+        .filter(|seq| {
+            state
+                .buffer
+                .line(*seq)
+                .is_some_and(|line| line.marker.is_some())
+        })
+        .collect();
+    assert_eq!(markers, [30, 61]);
+    // They are no match: stepping goes past them, round and back.
+    tell(&mut state, Message::Scroll(Scroll::Start));
+    for expected in [1, 2, 3] {
+        tell(&mut state, Message::Next);
+        assert_eq!(state.matches().0, Some(expected));
     }
-    assert!(slices >= 4, "{slices} slices for {lines} lines");
-    assert!(!state.is_searching());
-    // 1234, 12340..12349, 123400..123499: 111 lines.
-    assert_eq!(state.matches().1, 111);
-}
-
-/// Appends lines whatever task that returns: while a search reads, the
-/// lines wait for it.
-fn feed_quietly(state: &mut State, lines: impl IntoIterator<Item = Line>) {
-    drop(state.extend(lines));
-}
-
-#[tokio::test]
-async fn what_a_task_found_for_another_query_is_dropped() {
-    let mut state = viewer(100_000);
-    feed(&mut state, numbered(0, 3 * AT_ONCE as usize));
-    let (stale, _) = state.update(Message::Query("line 1".to_owned()));
-    // Before it answers, the query changes.
-    let (fresh, _) = state.update(Message::Query("line 22".to_owned()));
-    for message in messages(stale).await {
-        let (task, _) = state.update(message);
-        assert!(is_none(task), "an old answer starts nothing");
+    for _ in 0..9 {
+        tell(&mut state, Message::Next);
     }
-    assert_eq!(state.matches().1, 0, "nothing of the old query is kept");
-    let mut task = fresh;
-    loop {
-        let found = messages(task).await;
-        let Some(message) = found.into_iter().next() else {
-            break;
-        };
-        task = state.update(message).0;
-    }
-    // 22, 220..229, 2200..2299: 111 lines of the 6144.
-    assert_eq!(state.matches().1, 111);
-}
-
-#[tokio::test]
-async fn hits_of_lines_dropped_while_a_task_read_them_are_not_kept() {
-    let mut state = viewer(10_000);
-    feed(&mut state, numbered(0, 10_000));
-    let (task, _) = state.update(Message::Query("line".to_owned()));
-    // The buffer moves on by half while the task reads the old lines.
-    feed_quietly(&mut state, numbered(10_000, 5_000));
-    let mut task = task;
-    loop {
-        let found = messages(task).await;
-        let Some(message) = found.into_iter().next() else {
-            break;
-        };
-        task = state.update(message).0;
-    }
-    assert_eq!(state.matches().1, 10_000, "one a line kept, and no more");
-    assert_eq!(state.search.hits.front().map(|hit| hit.seq), Some(5_000));
-    let hits = Arc::new(vec![]);
-    let (task, _) = state.update(Message::Scanned {
-        generation: 0,
-        to: 99_999,
-        hits,
-    });
-    assert!(is_none(task));
-    assert!(!state.is_searching());
+    assert_eq!(state.matches().0, Some(1), "round past the end of logs");
+    tell(&mut state, Message::Previous);
+    assert_eq!(state.matches().0, Some(11));
+    // One said after the search read everything shows too.
+    state.skipped(7);
+    assert_eq!(state.count(), 14);
+    // With only what the viewer says and no match, there is nothing to step to.
+    type_in(&mut state, "no such text");
+    tell(&mut state, Message::Next);
+    assert_eq!(state.matches(), (None, 0));
+    assert_eq!(state.count(), 3);
 }

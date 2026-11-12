@@ -49,4 +49,5 @@ export default {
   'ui.log.invalidRegex': 'Недопустимое регулярное выражение',
   'ui.log.skipped':
     '{count, plural, one {— пропущена # строка —} few {— пропущено # строки —} many {— пропущено # строк —} other {— пропущено # строки —}}',
+  'ui.log.searchFailed': 'Поиск остановился, не прочитав все строки',
 } satisfies Translation<typeof en>;

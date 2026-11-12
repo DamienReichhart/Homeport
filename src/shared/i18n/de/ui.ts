@@ -48,4 +48,5 @@ export default {
   'ui.log.invalidRegex': 'Kein gültiger regulärer Ausdruck',
   'ui.log.skipped':
     '{count, plural, one {— # Zeile übersprungen —} other {— # Zeilen übersprungen —}}',
+  'ui.log.searchFailed': 'Die Suche wurde abgebrochen, bevor alle Zeilen gelesen waren',
 } satisfies Translation<typeof en>;
