@@ -118,16 +118,31 @@ impl Parser {
     /// not plain to `runs`, counted from `line_start` in `text`.
     pub fn feed(&mut self, input: &str, text: &mut String, line_start: usize, runs: &mut Vec<Run>) {
         let first_run = runs.len();
-        // Most lines hold nothing but text: no character to look at.
-        if self.phase == Phase::Ground && input.bytes().all(is_text) {
-            self.print(input, text, line_start, runs, first_run);
-            return;
-        }
         // A carriage return takes the line back to its start: what comes
         // after it overwrites, so only that is kept. One at the very end
         // (`\r\n`) changes nothing.
         let mut returned = false;
-        for c in input.chars() {
+        let bytes = input.as_bytes();
+        let mut at = 0;
+        while at < input.len() {
+            if self.phase == Phase::Ground {
+                // Most of a line is nothing but text: taken whole, up to
+                // the next byte that may be something else.
+                let plain = bytes[at..]
+                    .iter()
+                    .take_while(|byte| is_text(**byte))
+                    .count();
+                if plain > 0 {
+                    self.overwrite(&mut returned, text, line_start, runs, first_run);
+                    self.print(&input[at..at + plain], text, line_start, runs, first_run);
+                    at += plain;
+                    continue;
+                }
+            }
+            let Some(c) = input[at..].chars().next() else {
+                break;
+            };
+            at += c.len_utf8();
             match self.phase {
                 Phase::Ground => match c {
                     '\u{1b}' => self.phase = Phase::Escape,
