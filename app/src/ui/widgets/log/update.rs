@@ -97,7 +97,7 @@ impl State {
                 seq: end - 1,
                 count: 0,
             });
-            self.search.found(shown, end);
+            self.search.found(shown.into_iter().collect(), end);
         }
     }
 
@@ -318,8 +318,13 @@ impl State {
                     Some(hits) => {
                         let first = self.buffer.range().start;
                         self.search.busy = false;
-                        let kept = hits.iter().copied().filter(|hit| hit.seq >= first);
-                        self.search.found(kept, to);
+                        // Taken as they came, whole: nothing is copied
+                        // but what was dropped since they were read.
+                        let mut hits = Arc::unwrap_or_clone(hits);
+                        if hits.first().is_some_and(|hit| hit.seq < first) {
+                            hits.retain(|hit| hit.seq >= first);
+                        }
+                        self.search.found(hits, to);
                     }
                     // The lines were not read: again, or the search
                     // says it stopped. The frontier stays before them.

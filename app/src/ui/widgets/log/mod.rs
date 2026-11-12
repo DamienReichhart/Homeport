@@ -49,8 +49,11 @@
 //! - **Wrapping.** Lines wrap at the viewer's width as in a terminal, or
 //!   scroll sideways ([`State::wrapping`]).
 //! - **Searching** as it is typed: the matches are marked, counted, and
-//!   stepped through; the lines are read off the window's thread
-//!   (`search.rs`). [`Message::Filter`] shows only the lines that match.
+//!   stepped through; the lines are read off the window's thread and a
+//!   regular expression is built there (`search/`).
+//!   [`Message::Filter`] shows only the lines that match.
+//! - **A stream opened again** starts from [`State::reset`]: nothing of
+//!   the last one is left, but what is searched and how lines show.
 //! - **Selecting** with the pointer, as text; Ctrl or Cmd + A and C.
 //!   The keys are listed in `pane/input.rs`.
 

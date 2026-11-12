@@ -15,17 +15,17 @@
 //! whose cost is its author's, is built on another thread, within
 //! [`SIZE_LIMIT`].
 
-use std::{
-    collections::VecDeque,
-    sync::{
-        atomic::{AtomicU64, Ordering},
-        Arc,
-    },
+use std::sync::{
+    atomic::{AtomicU64, Ordering},
+    Arc,
 };
 
 use homeport_core::error::{AppError, ErrorCode, Message as Text};
 use regex::{Regex, RegexBuilder};
 
+pub mod hits;
+
+use self::hits::Hits;
 use super::buffer::{LineRef, Snapshot};
 
 /// The lines a task reads in one go.
@@ -230,7 +230,7 @@ pub struct Search {
     pub error: Option<AppError>,
     /// The lines that show while only what matches does, among those
     /// read so far.
-    pub hits: VecDeque<Hit>,
+    pub hits: Hits,
     /// How many matches they hold together.
     pub total: u64,
     /// Every line before this one was read.
@@ -253,7 +253,7 @@ impl Default for Search {
             query: Query::default(),
             matcher: None,
             error: None,
-            hits: VecDeque::new(),
+            hits: Hits::default(),
             total: 0,
             frontier: 0,
             generation: next_generation(),
@@ -326,12 +326,9 @@ impl Search {
 
     /// Adds what was found in the lines up to `to`, which follow those
     /// read before.
-    pub fn found(&mut self, hits: impl IntoIterator<Item = Hit>, to: u64) {
-        for hit in hits {
-            debug_assert!(self.hits.back().is_none_or(|last| last.seq < hit.seq));
-            self.total += u64::from(hit.count);
-            self.hits.push_back(hit);
-        }
+    pub fn found(&mut self, hits: Vec<Hit>, to: u64) {
+        self.hits.push(hits);
+        self.total = self.hits.matches();
         self.frontier = self.frontier.max(to);
         self.failures = 0;
     }
@@ -351,12 +348,8 @@ impl Search {
 
     /// Lets go of the lines before `first`, which the buffer dropped.
     pub fn evict(&mut self, first: u64) {
-        let mut gone = 0;
-        while let Some(hit) = self.hits.front().filter(|hit| hit.seq < first) {
-            gone += u64::from(hit.count);
-            self.hits.pop_front();
-        }
-        self.total -= gone;
+        let gone = self.hits.evict(first);
+        self.total = self.hits.matches();
         self.frontier = self.frontier.max(first);
         self.current = match self.current {
             Some(current) if current.seq >= first => Some(Current {
@@ -370,16 +363,17 @@ impl Search {
     /// Where the line `seq` is among the lines that show filtered, or
     /// where it would be.
     pub fn position(&self, seq: u64) -> Result<usize, usize> {
-        self.hits.binary_search_by_key(&seq, |hit| hit.seq)
+        self.hits.position(seq)
     }
 
     /// How many matches the lines before the one at `index` hold.
     fn before(&self, index: usize) -> u64 {
-        self.hits
-            .iter()
-            .take(index)
-            .map(|hit| u64::from(hit.count))
-            .sum()
+        self.hits.matches_before(index)
+    }
+
+    /// How many matches the line at `index` holds.
+    fn count(&self, index: usize) -> u32 {
+        self.hits.get(index).map_or(0, |hit| hit.count)
     }
 
     /// The line that holds matches nearest to the one at `index`, itself
@@ -394,7 +388,7 @@ impl Search {
                     (index + step) % len
                 }
             })
-            .find(|at| self.hits[*at].count > 0)
+            .find(|at| self.count(*at) > 0)
     }
 
     /// Moves to the match after the current one (or before it, `back`),
@@ -407,7 +401,7 @@ impl Search {
         }
         let len = self.hits.len();
         let at = |index: usize, nth: u32, ordinal: u64| Current {
-            seq: self.hits[index].seq,
+            seq: self.hits.get(index).map_or(0, |hit| hit.seq),
             nth,
             ordinal,
         };
@@ -421,13 +415,11 @@ impl Search {
                 ordinal: current.ordinal - 1,
                 ..current
             },
-            Some((current, index)) if !back && current.nth + 1 < self.hits[index].count => {
-                Current {
-                    nth: current.nth + 1,
-                    ordinal: current.ordinal + 1,
-                    ..current
-                }
-            }
+            Some((current, index)) if !back && current.nth + 1 < self.count(index) => Current {
+                nth: current.nth + 1,
+                ordinal: current.ordinal + 1,
+                ..current
+            },
             Some((current, index)) if back => {
                 let to = self.matching((index + len - 1) % len, true)?;
                 let ordinal = if to < index {
@@ -435,7 +427,7 @@ impl Search {
                 } else {
                     self.total
                 };
-                at(to, self.hits[to].count - 1, ordinal)
+                at(to, self.count(to) - 1, ordinal)
             }
             Some((current, index)) => {
                 let to = self.matching((index + 1) % len, false)?;
@@ -450,7 +442,7 @@ impl Search {
                     Err(after) => after - 1,
                 };
                 let to = self.matching(start, true)?;
-                let count = self.hits[to].count;
+                let count = self.count(to);
                 at(to, count - 1, self.before(to) + u64::from(count))
             }
             None => {

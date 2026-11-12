@@ -271,7 +271,7 @@ impl State {
         let range = from.seq..to.seq.saturating_add(1);
         let only = self.filtered().then(|| {
             let first = self.search.position(range.start).unwrap_or_else(|at| at);
-            let hits = self.search.hits.iter().skip(first);
+            let hits = self.search.hits.from(first);
             hits.map(|hit| hit.seq)
                 .take_while(|seq| *seq < range.end)
                 .collect()
