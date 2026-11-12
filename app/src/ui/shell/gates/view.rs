@@ -2,12 +2,13 @@
 
 use iced::{widget::text, Length};
 
-use super::{cluster_down, host_down, Down, Verdict};
+use super::{cluster_down, host_down, welcome, Down, Verdict};
 use crate::{
     t,
     ui::{
         shell::{
             layout::logo,
+            page::World,
             registry::Capability,
             router::Route,
             status::{cluster::kind_label, engine},
@@ -36,6 +37,12 @@ pub enum Action {
     Details,
     /// A command of the failure's hint, for the clipboard.
     Copy(String),
+    /// Add the Engine found on this socket of this machine as a Host.
+    AddEngine(String),
+    /// Add the local cluster this kubeconfig context reaches.
+    AddCluster(String),
+    /// The Details of why the Engine on this socket can't be added.
+    WhyNot(String),
 }
 
 fn failure(event: Event) -> Action {
@@ -46,14 +53,14 @@ fn failure(event: Event) -> Action {
     }
 }
 
-fn go<'a>(label: String, route: Route, variant: Variant) -> Element<'a, Action> {
+pub(super) fn go<'a>(label: String, route: Route, variant: Variant) -> Element<'a, Action> {
     button::text(label)
         .variant(variant)
         .on_press(Action::Go(route))
         .into()
 }
 
-fn buttons(items: Vec<Element<'_, Action>>) -> Element<'_, Action> {
+pub(super) fn buttons(items: Vec<Element<'_, Action>>) -> Element<'_, Action> {
     line(items).spacing(space::S2).into()
 }
 
@@ -122,7 +129,7 @@ fn unsupported<'a>(
 
 /// What shows in place of the page for a verdict that isn't `Open`; `None`
 /// for one that is.
-pub fn gate<'a>(verdict: &Verdict<'_>, busy: bool) -> Option<Element<'a, Action>> {
+pub fn gate<'a>(verdict: &Verdict<'_>, world: &World, busy: bool) -> Option<Element<'a, Action>> {
     Some(match verdict {
         Verdict::Open(_) => return None,
         Verdict::Loading => spinner(),
@@ -130,14 +137,7 @@ pub fn gate<'a>(verdict: &Verdict<'_>, busy: bool) -> Option<Element<'a, Action>
         Verdict::Welcome => empty_state(t!("core.gate.welcome.title"))
             .media(logo::mark(56.0))
             .description(t!("core.gate.welcome.description"))
-            .action(buttons(vec![
-                go(t!("core.gate.addAnother"), Route::AddHost, Variant::Primary),
-                go(
-                    t!("core.gate.addCluster"),
-                    Route::AddCluster,
-                    Variant::Outline,
-                ),
-            ]))
+            .action(welcome::actions(world, busy))
             .view(),
         Verdict::Unsupported { host, requires } => unsupported(
             &host.host.name,

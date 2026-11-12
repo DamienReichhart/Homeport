@@ -867,3 +867,118 @@ fn alt_and_an_arrow_pressed_in_a_field_stay_the_field_s() {
     rig.frame(&mut stage, |frame| frame.send(alt_down()));
     assert_eq!(rig.shell.world().host_id(), Some("prod-id"));
 }
+
+fn found_here() -> (
+    Vec<homeport_hosts::detect::DetectedEngine>,
+    homeport_kubernetes::kubeconfig::detect::LocalClusters,
+) {
+    use homeport_hosts::detect::DetectedEngine;
+    use homeport_kubernetes::kubeconfig::detect::{
+        LocalCluster, LocalClusters, LocalTool, MissingLocalCluster,
+    };
+    let engine = |label: &str, socket: &str, problem| DetectedEngine {
+        label: label.to_owned(),
+        socket_path: socket.to_owned(),
+        engine: EngineKind::Docker,
+        engine_version: if problem {
+            String::new()
+        } else {
+            "29.1".to_owned()
+        },
+        problem: problem.then(refused),
+    };
+    let cluster = |tool, context: &str, version: Option<&str>| LocalCluster {
+        tool,
+        context: context.to_owned(),
+        suggested_name: context.to_owned(),
+        server: "https://127.0.0.1:6443".to_owned(),
+        server_version: version.map(str::to_owned),
+        added: None,
+    };
+    let engines = vec![
+        engine("Docker Engine", "/var/run/docker.sock", false),
+        engine("Podman", "/run/user/1000/podman/podman.sock", true),
+    ];
+    let clusters = LocalClusters {
+        found: vec![
+            cluster(LocalTool::Kind, "kind-dev", Some("v1.33.1")),
+            cluster(LocalTool::Minikube, "minikube", None),
+        ],
+        missing: vec![MissingLocalCluster {
+            tool: LocalTool::K3d,
+            name: "lab".to_owned(),
+            command: "k3d kubeconfig merge lab --kubeconfig-merge-default".to_owned(),
+        }],
+    };
+    (engines, clusters)
+}
+
+fn welcome() -> Rig {
+    let mut rig = Rig::with_hosts(vec![]);
+    let (engines, clusters) = found_here();
+    rig.data.set(&keys::host::local_engines(), engines);
+    rig.data.set(&keys::cluster::local_clusters(), clusters);
+    rig.send(Message::Changed);
+    rig
+}
+
+#[test]
+fn the_welcome_offers_what_runs_on_this_machine() {
+    let rig = welcome();
+    rig.snapshot("shell-welcome-local-en", "en", Theme::Light);
+}
+
+#[test]
+fn the_welcome_looks_for_local_engines_and_clusters_only_while_it_shows() {
+    let rig = Rig::with_hosts(vec![]);
+    assert!(rig.shell.held.contains(&keys::host::local_engines()));
+    assert!(rig.shell.held.contains(&keys::cluster::local_clusters()));
+    let rig = docker_and_prod();
+    assert!(!rig.shell.held.contains(&keys::host::local_engines()));
+}
+
+#[test]
+fn an_engine_found_here_is_added_in_one_click_and_selected() {
+    use super::gates::welcome;
+    let mut rig = welcome();
+    assert_eq!(welcome::engines(rig.shell.world()).len(), 2);
+    // One that can't be added as it is says why, and adds nothing.
+    let podman = "/run/user/1000/podman/podman.sock".to_owned();
+    rig.send(Message::Gate(GateAction::AddEngine(podman.clone())));
+    assert!(!rig.shell.adding.is_pending());
+    rig.send(Message::Gate(GateAction::WhyNot(podman)));
+    assert!(matches!(
+        rig.shell.take_events().as_slice(),
+        [Event::Details(_)]
+    ));
+    // A cluster that isn't running can't be added either.
+    rig.send(Message::Gate(GateAction::AddCluster("minikube".to_owned())));
+    assert!(!rig.shell.adding.is_pending());
+    assert!(welcome::context_choice(rig.shell.world(), "kind-dev").is_some());
+    let docker = "/var/run/docker.sock".to_owned();
+    let task = rig.shell.update(
+        Message::Gate(GateAction::AddEngine(docker.clone())),
+        &mut rig.data,
+    );
+    assert!(rig.shell.adding.is_pending());
+    let added = rig.app.runtime.block_on(tasks::messages(task));
+    for message in added {
+        rig.send(message);
+    }
+    let stored = rig.app.state.hosts.store.list().unwrap();
+    assert_eq!(stored.len(), 1);
+    assert_eq!(stored[0].name, "Docker Engine");
+    assert_eq!(
+        rig.shell.chosen,
+        Some(Selection::Host {
+            id: stored[0].id.clone()
+        })
+    );
+    // Once it is a Host, its socket is no longer offered.
+    let views = crate::api::hosts::hosts_list(&rig.app.state).unwrap();
+    rig.data.set(&keys::host::list(), views);
+    let (engines, _) = found_here();
+    rig.data.set(&keys::host::local_engines(), engines);
+    rig.send(Message::Changed);
+    assert!(welcome::host_input(rig.shell.world(), &docker).is_none());
+}

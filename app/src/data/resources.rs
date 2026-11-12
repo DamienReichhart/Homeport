@@ -18,12 +18,16 @@ use homeport_engine::{
     volumes::VolumeView,
 };
 use homeport_hosts::{
+    detect::DetectedEngine,
     events::PAGE,
     registry::{EngineEvent, SwarmView},
     service::HostView,
 };
 use homeport_incus::projects::IncusProject;
-use homeport_kubernetes::resources::{kinds::pods::NamespaceView, ResourceKind};
+use homeport_kubernetes::{
+    kubeconfig::detect::LocalClusters,
+    resources::{kinds::pods::NamespaceView, ResourceKind},
+};
 use homeport_nomad::namespaces::NomadNamespaces;
 use homeport_stacks::Stack;
 
@@ -205,6 +209,22 @@ pub fn nomad_namespaces(cluster_id: &str) -> Query<NomadNamespaces> {
         let id = id.clone();
         async move { api::clusters::nomad::clusters_nomad_namespaces(&state, id).await }
     })
+}
+
+/// The Engines answering on this machine's sockets.
+pub fn local_engines() -> Query<Vec<DetectedEngine>> {
+    Query::new(host::local_engines(), |_state| async move {
+        Ok(api::hosts::hosts_detect_local().await)
+    })
+}
+
+/// The Kubernetes clusters running on this machine. Asked once: a
+/// kubeconfig that can't be read is an answer.
+pub fn local_clusters() -> Query<LocalClusters> {
+    Query::new(cluster::local_clusters(), |state| async move {
+        api::clusters::clusters_detect_local(&state).await
+    })
+    .no_retry()
 }
 
 /// What this machine has that Homeport uses; it doesn't change while the

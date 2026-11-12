@@ -7,9 +7,11 @@ use std::sync::Arc;
 use homeport_clusters::service::ClusterView;
 use homeport_containerd::namespaces::ContainerdNamespace;
 use homeport_engine::swarm::SwarmSummary;
-use homeport_hosts::{registry::SwarmView, service::HostView};
+use homeport_hosts::{detect::DetectedEngine, registry::SwarmView, service::HostView};
 use homeport_incus::projects::IncusProject;
-use homeport_kubernetes::resources::kinds::pods::NamespaceView;
+use homeport_kubernetes::{
+    kubeconfig::detect::LocalClusters, resources::kinds::pods::NamespaceView,
+};
 use homeport_nomad::namespaces::NomadNamespaces;
 use homeport_settings::Settings;
 
@@ -51,6 +53,10 @@ pub struct World {
     pub swarm: Resource<Arc<SwarmSummary>>,
     pub capabilities: Option<Arc<Capabilities>>,
     pub update: Option<Update>,
+    /// The Engines found on this machine, while the welcome shows.
+    pub local_engines: Listed<DetectedEngine>,
+    /// The Kubernetes clusters found on this machine, while it shows.
+    pub local_clusters: Resource<Arc<LocalClusters>>,
 }
 
 impl World {
@@ -68,6 +74,8 @@ impl World {
             swarm: Resource::Idle,
             capabilities: None,
             update: None,
+            local_engines: Resource::Idle,
+            local_clusters: Resource::Idle,
         }
     }
 

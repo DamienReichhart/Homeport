@@ -128,6 +128,8 @@ pub enum Message<M> {
     CloseHelp,
     Sidebar(sidebar::Message),
     Gate(gates::view::Action),
+    /// What was found on this machine was added, or couldn't be.
+    Added(Finished<Option<Selection>>),
     /// A reconnection asked for at a gate ended.
     Reconnected(Finished<()>),
     /// What was to be remembered is saved, or couldn't be.
@@ -165,6 +167,8 @@ pub struct Shell<P: Pages> {
     /// The version whose notice was dismissed.
     dismissed: Option<String>,
     reconnect: Action,
+    /// A Host or a Cluster found on this machine is being added.
+    adding: Action<Option<Selection>>,
     /// How many pages were opened: the next one's number.
     opened: u64,
     /// A save of what is remembered is on its way; the others wait.
@@ -193,6 +197,7 @@ impl<P: Pages> Shell<P> {
             pickers: pickers::State::default(),
             dismissed: None,
             reconnect: Action::default(),
+            adding: Action::default(),
             opened: 0,
             saving: false,
             to_save: std::collections::VecDeque::new(),
@@ -277,10 +282,8 @@ impl<P: Pages> Shell<P> {
         })
         .map(Message::Sidebar);
         let verdict = gates::decide(route, &self.world);
-        let content = match (
-            gates::view::gate(&verdict, self.reconnect.is_pending()),
-            &self.page,
-        ) {
+        let busy = self.reconnect.is_pending() || self.adding.is_pending();
+        let content = match (gates::view::gate(&verdict, &self.world, busy), &self.page) {
             (Some(gate), _) => gate.map(Message::Gate),
             (None, Some(open)) => {
                 let ctx = Context {

@@ -1,14 +1,14 @@
 //! What a message changes in the shell, and how the shell keeps in step
 //! with the data layer: the selection, the gate and the page that shows.
 
-use std::sync::Arc;
+mod gate;
 
 use iced::Task;
 
 use homeport_clusters::model::ClusterKind;
 
 use super::{
-    gates::{self, view::Action as GateAction, Verdict},
+    gates::{self, Verdict},
     page::{
         context::{Effect, Start},
         Context, Pages,
@@ -30,7 +30,6 @@ use super::{
 };
 use crate::{
     api,
-    app::AppState,
     data::{self, keys, resources, Data, Key},
     i18n, t,
     ui::widgets::feedback::Surfaced,
@@ -149,6 +148,7 @@ impl<P: Pages> Shell<P> {
                 }
                 Task::none()
             }
+            Message::Added(finished) => self.added(finished, data),
             Message::Saved(Saved { what, error }) => {
                 if let Some(error) = error {
                     let title: fn() -> String = match what {
@@ -326,61 +326,6 @@ impl<P: Pages> Shell<P> {
         }
     }
 
-    fn gate(&mut self, action: GateAction, data: &mut Data) -> Task<Message<P::Message>> {
-        let route = self.location().route.clone();
-        let verdict = gates::decide(&route, &self.world);
-        let error = match &verdict {
-            Verdict::HostDown(view) => status::host::error(&view.status),
-            Verdict::ClusterDown(view) => view.status.error(),
-            Verdict::ClustersFailed(error) | Verdict::SwarmFailed(error) => Some(*error),
-            _ => None,
-        };
-        match action {
-            GateAction::Go(route) => self.go(route.into(), data),
-            GateAction::Details => {
-                if let Some(error) = error {
-                    let surfaced = Surfaced::at(error.clone(), None, jiff::Timestamp::now());
-                    self.events.push(Event::Details(surfaced));
-                }
-                Task::none()
-            }
-            GateAction::Copy(command) => {
-                self.events.push(Event::Copy(command));
-                Task::none()
-            }
-            GateAction::Retry => match verdict {
-                Verdict::HostDown(view) => {
-                    let id = view.host.id.clone();
-                    let reconnect = |state: Arc<AppState>| async move {
-                        api::hosts::hosts_reconnect(&state, id).await.map(|_| ())
-                    };
-                    self.reconnect
-                        .start(&self.state, reconnect)
-                        .map(Message::Reconnected)
-                }
-                Verdict::ClusterDown(view) => {
-                    let id = view.cluster.id.clone();
-                    let reconnect = |state: Arc<AppState>| async move {
-                        api::clusters::clusters_reconnect(&state, id)
-                            .await
-                            .map(|_| ())
-                    };
-                    self.reconnect
-                        .start(&self.state, reconnect)
-                        .map(Message::Reconnected)
-                }
-                Verdict::ClustersFailed(_) => data
-                    .invalidate(&self.state, &keys::cluster::list())
-                    .map(Message::Data),
-                Verdict::SwarmFailed(_) => {
-                    let key = keys::swarm::summary(route.swarm_id().unwrap_or_default());
-                    data.invalidate(&self.state, &key).map(Message::Data)
-                }
-                _ => Task::none(),
-            },
-        }
-    }
-
     /// Does what the page asked for during its last call.
     fn run_effects(&mut self, data: &mut Data) -> Task<Message<P::Message>> {
         let mut tasks = vec![];
@@ -450,6 +395,11 @@ impl<P: Pages> Shell<P> {
                 ClusterKind::Nomad => wanted(resources::nomad_namespaces(id)),
             });
         }
+        // What this machine runs is looked for while the welcome shows.
+        if gates::decide(&self.location().route, &self.world) == Verdict::Welcome {
+            wants.push(wanted(resources::local_engines()));
+            wants.push(wanted(resources::local_clusters()));
+        }
         if let Some(id) = self.location().route.swarm_id() {
             if self.world.swarm_list().iter().any(|swarm| swarm.id == id) {
                 wants.push(wanted(resources::swarm_summary(id)));
@@ -486,6 +436,8 @@ impl<P: Pages> Shell<P> {
         world.namespaces = data.read(&resources::cluster_namespaces(&cluster).key().clone());
         world.nomad = data.read(&keys::nomad::namespaces(&cluster));
         world.swarm = data.read(&keys::swarm::summary(&swarm));
+        world.local_engines = data.read(&keys::host::local_engines());
+        world.local_clusters = data.read(&keys::cluster::local_clusters());
     }
 
     /// Lets go of a page's reads.

@@ -9,6 +9,7 @@
 #[cfg(test)]
 mod tests;
 pub mod view;
+pub mod welcome;
 
 use homeport_clusters::{model::ClusterKind, registry::ClusterStatus, service::ClusterView};
 use homeport_core::error::AppError;
