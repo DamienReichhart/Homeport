@@ -186,15 +186,55 @@ fn features(src: &Path) -> Vec<(String, PathBuf)> {
     features
 }
 
-/// The lines of a feature that name another feature.
+/// Whether `line` names something of `ui::features` that isn't under
+/// `own` (`<group>::<name>`): the name must end there, so `images_extra`
+/// is not `images`.
+fn names_another_feature(line: &str, own: &str) -> bool {
+    const FEATURES: &str = "crate::ui::features::";
+    line.match_indices(FEATURES).any(|(at, _)| {
+        let rest = &line[at + FEATURES.len()..];
+        let inside = rest
+            .strip_prefix(own)
+            .is_some_and(|after| !after.starts_with(|c: char| c.is_alphanumeric() || c == '_'));
+        !inside
+    })
+}
+
+/// The most `super::` a line chains.
+fn supers(line: &str) -> usize {
+    let mut most = 0;
+    let mut rest = line;
+    while let Some(at) = rest.find("super::") {
+        let mut chain = 0;
+        rest = &rest[at..];
+        while let Some(after) = rest.strip_prefix("super::") {
+            chain += 1;
+            rest = after;
+        }
+        most = most.max(chain);
+    }
+    most
+}
+
+/// How many modules deep `file` is inside the feature at `feature`: 0 for
+/// its `mod.rs`, 1 for `view.rs` or `view/mod.rs`, 2 for `view/row.rs`.
+/// That many `super` stay in the feature; one more leaves it.
+fn depth(feature: &Path, file: &Path) -> usize {
+    let inside = file.strip_prefix(feature).unwrap();
+    let folders = inside.components().count() - 1;
+    folders + usize::from(inside.file_name().is_some_and(|name| name != "mod.rs"))
+}
+
+/// The lines of a feature that reach another feature, by its path in the
+/// crate or by climbing out of their own with `super`.
 fn features_using_another(src: &Path) -> Vec<String> {
     let mut wrong = vec![];
     for (own, feature) in features(src) {
+        let own = own.trim_start_matches("crate::ui::features::").to_owned();
         for path in rust_files(&feature) {
+            let allowed = depth(&feature, &path);
             for line in code(&path) {
-                let other = line.contains("crate::ui::features::") && !line.contains(&own);
-                // Out of its folder by `super`: its group, then the others.
-                if other || line.contains("super::super::super::") {
+                if names_another_feature(&line, &own) || supers(&line) > allowed {
                     wrong.push(format!("{}: {line}", shown(src, &path)));
                 }
             }
@@ -383,19 +423,58 @@ fn each_rule_fails_on_a_tree_that_breaks_it() {
         .any(|w| w.starts_with("api/hosts.rs uses crate::ui")));
     assert!(wrong.iter().any(|w| w.starts_with("ui/shell/pages.rs")));
 
+    // What stays inside a feature passes, however deep.
     write(
         src,
-        "ui/features/docker/containers/mod.rs",
-        "use crate::ui::features::docker::containers::view;\nuse crate::ui::features::docker::images::State;\n",
+        "ui/features/docker/images/view/row.rs",
+        "use super::super::State;\nuse crate::ui::features::docker::images::State;\n",
     );
     write(
         src,
-        "ui/features/docker/volumes/view.rs",
-        "use super::super::super::podman::quadlets;\n",
+        "ui/features/docker/images/view/mod.rs",
+        "use super::State;\n",
     );
+    assert!(features_using_another(src).is_empty());
+    let breaks = [
+        // By its path in the crate, a sibling's and one whose name starts
+        // with this feature's.
+        (
+            "docker/containers/mod.rs",
+            "use crate::ui::features::docker::images::State;",
+        ),
+        (
+            "docker/images/update.rs",
+            "use crate::ui::features::docker::images_extra::State;",
+        ),
+        (
+            "docker/images/state.rs",
+            "use crate::ui::features::docker::{containers, images};",
+        ),
+        // By climbing out of its own folder.
+        (
+            "docker/containers/list.rs",
+            "use super::super::images::State;",
+        ),
+        ("docker/containers/view/mod.rs", "use super::super::images;"),
+        (
+            "docker/containers/view/row.rs",
+            "use super::super::super::images;",
+        ),
+        (
+            "docker/volumes/view.rs",
+            "use super::super::super::podman::quadlets;",
+        ),
+        ("podman/quadlets/mod.rs", "use super::podman_pods::State;"),
+    ];
+    for (file, line) in breaks {
+        write(src, &format!("ui/features/{file}"), &format!("{line}\n"));
+    }
     let wrong = features_using_another(src);
-    assert_eq!(wrong.len(), 2, "{wrong:#?}");
-    assert!(wrong[0].contains("images::State") || wrong[1].contains("images::State"));
+    assert_eq!(wrong.len(), breaks.len(), "{wrong:#?}");
+    for (file, line) in breaks {
+        let said = format!("ui/features/{file}: {line}");
+        assert!(wrong.contains(&said), "{said} passed");
+    }
 
     let long = "fn f() {}\n".repeat(MAX_LINES + 1);
     write(src, "data/long.rs", &long);
