@@ -24,6 +24,8 @@ pub enum Message {
     Usage((String, Usage)),
     /// "Run container": the button, `n` or the palette.
     Run,
+    /// The stand-in of the Run dialog was closed.
+    CloseRun,
     /// A published port was pressed.
     OpenPort(u16),
     /// A link of a row: its Stack, its pod, its Quadlet unit.

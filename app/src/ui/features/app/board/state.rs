@@ -72,6 +72,8 @@ impl State {
                     .selecting(Mode::Multi)
                     // A press opens the container on its Host.
                     .opening_on_press()
+                    // By one column or another, never by none, as React's.
+                    .always_sorted()
                     .sorted(Sort::by("host", Order::Ascending))
                     .row_height(ROW_HEIGHT),
             ),

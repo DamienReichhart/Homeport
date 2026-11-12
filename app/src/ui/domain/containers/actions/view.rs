@@ -90,11 +90,17 @@ pub(super) fn removal_by_host(targets: &[Target]) -> (String, String) {
 
 /// The bar of a selection: how many are selected, and Start, Stop,
 /// Restart and Remove for them (`SelectionActions`, `BoardSelection`).
-/// The page collects the selected containers when a button is pressed.
+/// The page collects the selected containers when a button is pressed,
+/// and puts the bar where it costs no room while nothing is selected: at
+/// the end of its filters, or in its header.
 pub fn selection_bar<'a, Message: Clone + 'a>(
     count: usize,
     on_press: impl Fn(Bulk) -> Message,
 ) -> Element<'a, Message> {
+    // Nothing selected: nothing shows, in the same place of the tree.
+    if count == 0 {
+        return iced::widget::Space::new().into();
+    }
     let small = |glyph, label: String, variant, bulk| -> Element<'a, Message> {
         button::labelled(glyph, label)
             .variant(variant)

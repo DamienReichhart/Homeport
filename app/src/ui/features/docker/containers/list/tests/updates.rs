@@ -272,3 +272,92 @@ fn a_selected_container_the_search_hides_is_still_acted_on() {
     rig.frame(|_| {});
     assert!(rig.state.table.selection().is_empty());
 }
+
+#[test]
+fn no_band_stands_over_the_table_and_selecting_moves_no_row() {
+    let _english = in_language("en");
+    let mut rig = Rig::populated();
+    // The header of the table comes right under the line of the filters.
+    // Under the summary: the line of the filters, then the table at once.
+    let gap = rig.top("Name") - rig.top("3 running of 5");
+    assert!(gap < 100.0, "{gap} px between the header and the table");
+    let before = rig.top("redis");
+    let redis = "redis-0123456789abcdef".to_owned();
+    rig.send(Message::Table(table::Message::Toggle {
+        key: redis,
+        index: 0,
+    }));
+    // The selection's buttons end the line of the filters, as in React.
+    let bar = rig.top("1 selected");
+    assert!(bar > rig.top("3 running of 5") && bar < rig.top("Name") - 30.0);
+    assert!(
+        (rig.top("redis") - before).abs() < f32::EPSILON,
+        "{} {before}",
+        rig.top("redis")
+    );
+}
+
+#[test]
+fn every_column_shows_without_scrolling_at_the_window_s_first_size() {
+    for language in ["en", "ar"] {
+        let _language = in_language(language);
+        let mut rig = Rig::populated();
+        // The last column ends before the start and stop button and the
+        // menu of a row, which are in the window: nothing to scroll to.
+        let (created, starts) = match language {
+            "en" => ("Created", false),
+            _ => ("تاريخ الإنشاء", true),
+        };
+        rig.frame(|frame| {
+            let header = frame.find(created).expect("the last header");
+            let buttons = 36.0 + 44.0;
+            if starts {
+                assert!(header.x >= buttons, "{language}: {header:?}");
+            } else {
+                assert!(
+                    header.x + header.width <= SIZE.0 - buttons,
+                    "{language}: {header:?}"
+                );
+            }
+            assert!(frame.scrolled().is_empty(), "nothing scrolls on the page");
+        });
+        // And the wheel, turned sideways over the rows, moves nothing.
+        rig.frame(|frame| {
+            let header = frame.find(created).expect("the last header");
+            frame.point_at(iced::Point::new(header.center_x(), header.y + 80.0));
+            frame.send([iced::Event::Mouse(iced::mouse::Event::WheelScrolled {
+                delta: iced::mouse::ScrollDelta::Lines { x: -4.0, y: 0.0 },
+            })]);
+            frame.send([iced::Event::Mouse(iced::mouse::Event::WheelScrolled {
+                delta: iced::mouse::ScrollDelta::Lines { x: 4.0, y: 0.0 },
+            })]);
+        });
+        assert!(
+            rig.state.table.across().abs() < f32::EPSILON,
+            "{language}: the columns scroll sideways by {}",
+            rig.state.table.across()
+        );
+    }
+}
+
+#[test]
+fn a_stack_s_fraction_reads_the_same_way_in_arabic() {
+    let _arabic = in_language("ar");
+    let rig = Rig::populated();
+    // One number, left to right: not two, each on its own.
+    assert!(rig.shows("1/2 قيد التشغيل"));
+}
+
+#[test]
+fn run_container_says_it_is_not_there_yet_and_closes() {
+    let _english = in_language("en");
+    let mut rig = Rig::populated();
+    let _ = super::super::request(&mut rig.state, "run", &rig.bench.ctx());
+    // The stand-in of the Run dialog (#259): its title, and nothing in it.
+    assert!(rig.shows("Nothing here.") && rig.shows("Close"));
+    rig.frame(|frame| frame.click("Close"));
+    assert!(!rig.state.run_asked && !rig.shows("Nothing here."));
+    rig.send(Message::Run);
+    rig.frame(|frame| frame.tap_key(iced::keyboard::key::Named::Escape));
+    assert!(!rig.state.run_asked);
+}

@@ -120,16 +120,89 @@ fn it_keeps_its_filters_after_opening_a_container_and_coming_back() {
 }
 
 #[test]
-fn a_header_sorts_and_ties_keep_the_host_then_the_name() {
+fn a_header_sorts_both_ways_and_ties_keep_the_host_then_the_name() {
     let _english = in_language("en");
     let mut rig = Rig::populated();
     rig.frame(|frame| frame.click("Name"));
     assert_eq!(rig.order(&NAMES), ["api", "cache", "db", "web"]);
+    // db and web are both of the Stack shop, on one Host: whichever way
+    // the Stacks go, the two read by name.
+    rig.frame(|frame| frame.click("Stack"));
+    assert_eq!(rig.order(&NAMES), ["api", "cache", "db", "web"]);
+    rig.frame(|frame| frame.click("Stack"));
+    assert_eq!(rig.order(&NAMES), ["db", "web", "cache", "api"]);
+    // Three run, on two Hosts: by Host, then by name, under the one that
+    // exited; and over it the other way, in the same order.
+    rig.frame(|frame| frame.click("Status"));
+    assert_eq!(rig.order(&NAMES), ["db", "web", "api", "cache"]);
+    rig.frame(|frame| frame.click("Status"));
+    assert_eq!(rig.order(&NAMES), ["web", "api", "cache", "db"]);
+    // A third press goes back to the first way, never to no order.
+    rig.frame(|frame| frame.click("Status"));
+    assert_eq!(rig.order(&NAMES), ["db", "web", "api", "cache"]);
+    // Ascending first for a number too: what reports nothing, then by use.
     rig.frame(|frame| frame.click("CPU"));
-    // Ascending first: the one that reports nothing, then by its use.
-    assert_eq!(rig.order(&NAMES)[0], "db");
+    assert_eq!(rig.order(&NAMES), ["db", "web", "api", "cache"]);
     rig.frame(|frame| frame.click("CPU"));
-    assert_eq!(rig.order(&NAMES)[3], "db");
+    assert_eq!(rig.order(&NAMES), ["cache", "web", "api", "db"]);
+}
+
+#[test]
+fn no_band_stands_over_the_table_and_its_columns_fit_the_window() {
+    for language in ["en", "ar"] {
+        let _language = in_language(language);
+        let mut rig = Rig::populated();
+        let (filters, header) = match language {
+            "en" => ("Any state", "Host"),
+            _ => ("أي حالة", "المضيف"),
+        };
+        let gap = rig.top(header) - rig.top(filters);
+        assert!(
+            gap < 56.0,
+            "{language}: {gap} px between the filters and the table"
+        );
+        // The last column ends before the start and stop button and the
+        // menu of a row, which are in the window: nothing to scroll to.
+        let created = match language {
+            "en" => "Created",
+            _ => "تاريخ الإنشاء",
+        };
+        rig.frame(|frame| {
+            let header = frame.find(created).expect("the last header");
+            let buttons = 36.0 + 44.0;
+            if language == "en" {
+                assert!(header.x + header.width <= SIZE.0 - buttons, "{header:?}");
+            } else {
+                assert!(header.x >= buttons, "{language}: {header:?}");
+            }
+        });
+        // And the wheel, turned sideways over the rows, moves nothing.
+        rig.frame(|frame| {
+            let header = frame.find(created).expect("the last header");
+            frame.point_at(iced::Point::new(header.center_x(), header.y + 80.0));
+            frame.send([iced::Event::Mouse(iced::mouse::Event::WheelScrolled {
+                delta: iced::mouse::ScrollDelta::Lines { x: -4.0, y: 0.0 },
+            })]);
+            frame.send([iced::Event::Mouse(iced::mouse::Event::WheelScrolled {
+                delta: iced::mouse::ScrollDelta::Lines { x: 4.0, y: 0.0 },
+            })]);
+        });
+        assert!(
+            rig.state.table.across().abs() < f32::EPSILON,
+            "{language}: the columns scroll sideways by {}",
+            rig.state.table.across()
+        );
+    }
+}
+
+#[test]
+fn selecting_shows_the_bar_in_the_header_and_moves_no_row() {
+    let _english = in_language("en");
+    let mut rig = Rig::populated();
+    let before = rig.top("cache");
+    tick(&mut rig, &["h1/web-0123456789abcdef"]);
+    assert!(rig.top("1 selected") < rig.top("Any state"));
+    assert!((rig.top("cache") - before).abs() < f32::EPSILON);
 }
 
 #[test]

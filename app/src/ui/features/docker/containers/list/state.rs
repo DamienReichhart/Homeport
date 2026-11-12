@@ -51,8 +51,8 @@ pub struct State {
     pub(super) usage: Usage,
     pub(super) actions: Actions,
     pub(super) check: freshness::Check,
-    /// The Run dialog was asked for. Nothing shows for it yet: the dialog
-    /// is the run ticket's (#259), which draws it from here.
+    /// The Run dialog was asked for. The dialog is the run ticket's
+    /// (#259), which draws it from here; until then a stand-in shows.
     pub(super) run_asked: bool,
     /// What the three below were made from.
     seen: (Read<Container>, Read<FreshnessResult>, Read<Pod>),

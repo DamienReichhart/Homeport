@@ -50,7 +50,14 @@ pub fn view<'a>(state: &'a State, ctx: &Context<'a>) -> Element<'a, Message> {
         count = count,
         hosts = connected
     );
-    let mut parts = vec![page_header(t!("board.title"), Some(summary), vec![])];
+    // The selection's buttons stand in the header, which has room for
+    // them at any width: the rows don't move when the first is selected.
+    let selected = state.table.selection().len();
+    let mut parts = vec![page_header(
+        t!("board.title"),
+        Some(summary),
+        vec![selection_bar(selected, Message::Bulk)],
+    )];
     parts.extend(failed);
     if connected == 0 {
         parts.push(
@@ -68,8 +75,6 @@ pub fn view<'a>(state: &'a State, ctx: &Context<'a>) -> Element<'a, Message> {
         );
     } else {
         let look = state.look();
-        let selected = state.table.selection().len();
-        let bar = (selected > 0).then(|| selection_bar(selected, Message::Bulk));
         parts.push(filters::filters(state, ctx));
         parts.push(
             Table::new(&state.table, columns(look), rows(look), Message::Table)
@@ -79,7 +84,6 @@ pub fn view<'a>(state: &'a State, ctx: &Context<'a>) -> Element<'a, Message> {
                         .map(|item| item.map(&Message::Actions))
                         .collect()
                 })
-                .selection_bar(bar)
                 .empty_label(t!("board.noMatch"))
                 .view(),
         );

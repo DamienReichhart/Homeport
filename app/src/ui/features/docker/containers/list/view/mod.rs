@@ -2,7 +2,10 @@
 
 mod columns;
 
-use iced::widget::toggler;
+use iced::{
+    widget::{toggler, Space},
+    Length,
+};
 
 pub(super) use self::columns::columns;
 use super::{update::SEARCH, Message, State};
@@ -21,10 +24,10 @@ use crate::{
             Element, Icon,
         },
         widgets::{
-            basic::button,
+            basic::button::{self, Variant},
             feedback::{empty_state, error_message, spinner},
             form, line,
-            overlay::{tooltip_with_keys, Modal, Side},
+            overlay::{dialog as dialog_of, modal, tooltip_with_keys, Modal, Side},
             stack,
             table::Table,
         },
@@ -60,6 +63,9 @@ pub fn view<'a>(state: &'a State, ctx: &Context<'a>) -> Element<'a, Message> {
         .size(control::SWITCH_HEIGHT)
         .text_size(size::SM)
         .on_toggle(Message::OnlyRunning);
+    // The selection's buttons end the line of the filters, as in React:
+    // the rows don't move when the first one is selected.
+    let selected = state.table.selection().len();
     let filters = line(vec![
         form::search(
             SEARCH,
@@ -68,8 +74,13 @@ pub fn view<'a>(state: &'a State, ctx: &Context<'a>) -> Element<'a, Message> {
             Message::Search,
         ),
         only_running.into(),
+        Space::new().width(Length::Fill).into(),
+        selection_bar(selected, Message::Bulk),
     ])
-    .spacing(space::S3);
+    .spacing(space::S3)
+    .width(Length::Fill)
+    // As tall as its field, with the buttons or without.
+    .height(control::HEIGHT);
     let body = if list.is_empty() {
         let run = button::text(t!("containers.runContainer")).on_press(Message::Run);
         empty_state(t!("containers.empty.title"))
@@ -79,8 +90,6 @@ pub fn view<'a>(state: &'a State, ctx: &Context<'a>) -> Element<'a, Message> {
             .view()
     } else {
         let look = state.look(ctx);
-        let selected = state.table.selection().len();
-        let bar = (selected > 0).then(|| selection_bar(selected, Message::Bulk));
         Table::new(&state.table, columns(look), look.rows(list), Message::Table)
             .group_header(move |group, members| columns::stack_header(look, group, members))
             .row_menu(move |container| {
@@ -89,7 +98,6 @@ pub fn view<'a>(state: &'a State, ctx: &Context<'a>) -> Element<'a, Message> {
                     .map(|item| item.map(&Message::Actions))
                     .collect()
             })
-            .selection_bar(bar)
             .empty_label(t!("containers.noMatch"))
             .view()
     };
@@ -98,10 +106,24 @@ pub fn view<'a>(state: &'a State, ctx: &Context<'a>) -> Element<'a, Message> {
         .into()
 }
 
-/// The confirmation or the Rename dialog a container's menu opened.
+/// The confirmation or the Rename dialog a container's menu opened, or
+/// what stands for the Run dialog until its ticket (#259): its title over
+/// "Nothing here.", as the stub of a page that isn't ported, so the
+/// button, `n` and the palette command don't silently do nothing.
 pub fn dialog<'a>(state: &'a State, _ctx: &Context<'a>) -> Option<Modal<'a, Message>> {
-    state
-        .actions
-        .dialog()
-        .map(|modal| modal.map(Message::Actions))
+    if let Some(modal) = state.actions.dialog() {
+        return Some(modal.map(Message::Actions));
+    }
+    state.run_asked.then(|| {
+        let close = button::text(t!("common.close"))
+            .variant(Variant::Outline)
+            .on_press(Message::CloseRun);
+        let stub = dialog_of(t!("containers.runContainer"))
+            .description(t!("ui.table.empty"))
+            .footer(vec![close.into()]);
+        modal(stub)
+            .key("run")
+            .on_close(Message::CloseRun)
+            .close_on_scrim()
+    })
 }

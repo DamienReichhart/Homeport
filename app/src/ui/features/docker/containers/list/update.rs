@@ -111,6 +111,7 @@ pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Me
             }
         }
         Message::Run => state.run_asked = true,
+        Message::CloseRun => state.run_asked = false,
         Message::OpenPort(port) => {
             if let Some(view) = ctx.host() {
                 let address = status::host::address(&view.host.connection);

@@ -9,7 +9,7 @@ use homeport_engine::containers::Container;
 
 use super::super::{Message, State};
 use crate::{
-    i18n::format,
+    i18n::{self, format},
     t,
     ui::{
         domain::{
@@ -26,9 +26,8 @@ use crate::{
             Element, Tone,
         },
         widgets::{
-            basic::{badge, BadgeVariant},
+            basic::{badge, truncated, BadgeVariant},
             feedback::status_dot,
-            filling,
             focus::pressable,
             line,
             overlay::{tooltip, Side},
@@ -170,10 +169,18 @@ fn shown_name(container: &Container) -> &str {
     }
 }
 
+/// `text` taking the room its row leaves, and cut with an ellipsis where
+/// that ends: what stands beside it (a badge, a mark) keeps its place.
+fn fill<'a>(text: impl Into<Element<'a, Message>>) -> Element<'a, Message> {
+    iced::widget::container(text)
+        .width(Length::Fill)
+        .align_x(crate::ui::widgets::start())
+        .into()
+}
+
 fn name_cell<'a>(look: Look<'a>, container: &Container) -> Element<'a, Message> {
-    let mut title: Vec<Element<'a, Message>> = vec![table::text(shown_name(container))
-        .font(font::medium())
-        .into()];
+    let name = truncated(shown_name(container)).font(font::medium());
+    let mut title: Vec<Element<'a, Message>> = vec![fill(name)];
     let unit = container.labels.get(QUADLET_UNIT).filter(|u| !u.is_empty());
     if let Some(unit) = unit {
         title.push(link_badge(
@@ -191,30 +198,39 @@ fn name_cell<'a>(look: Look<'a>, container: &Container) -> Element<'a, Message> 
             Route::PodmanPod { id: id.clone() },
         ));
     }
-    let id = table::text(format::short_id(&container.id))
+    let id = truncated(format::short_id(&container.id))
         .font(font::MONO)
         .size(size::XS)
         .style(theme::text::muted);
+    // The row fills its cell, so the dot keeps its place whichever side
+    // it is on and the name and the id are cut, not the dot.
     line(vec![
         status_dot(model::tone(&container.state, container.health.as_deref())),
-        stack(vec![line(title).spacing(space::S1_5).into(), id.into()]).into(),
+        stack(vec![
+            line(title).spacing(space::S1_5).width(Length::Fill).into(),
+            id.into(),
+        ])
+        .into(),
     ])
     .spacing(space::S2)
+    .width(Length::Fill)
     .into()
 }
 
 fn image_cell<'a>(look: Look<'a>, container: &Container) -> Element<'a, Message> {
-    let image = filling(table::text(container.image.clone())).clip(true);
-    if !look.newer.contains(&container.id) {
-        return image.into();
+    // The whole reference under the pointer, as the React cell's `title`.
+    let image = tooltip(
+        truncated(container.image.clone()),
+        container.image.clone(),
+        Side::Top,
+    );
+    let mut parts = vec![fill(image)];
+    if look.newer.contains(&container.id) {
+        parts.push(freshness::newer_mark(freshness::newer_label(&[
+            &container.image
+        ])));
     }
-    let mark = freshness::newer_mark(freshness::newer_label(&[&container.image]));
-    // A row that fills its cell: the mark keeps its place and the
-    // reference is cut before it.
-    line(vec![image.into(), mark])
-        .spacing(space::S1_5)
-        .width(Length::Fill)
-        .into()
+    line(parts).spacing(space::S1_5).width(Length::Fill).into()
 }
 
 fn status_cell<'a>(container: &Container) -> Element<'a, Message> {
@@ -223,9 +239,8 @@ fn status_cell<'a>(container: &Container) -> Element<'a, Message> {
     } else {
         &container.status
     };
-    // The health keeps its place when the column is too narrow for both.
-    let mut parts: Vec<Element<'a, Message>> =
-        vec![filling(table::text(status.clone())).clip(true).into()];
+    // The health keeps its room; the status is cut before it.
+    let mut parts: Vec<Element<'a, Message>> = vec![fill(truncated(status.clone()))];
     if let Some(health) = &container.health {
         let variant = if health == "unhealthy" {
             BadgeVariant::Destructive
@@ -240,10 +255,12 @@ fn status_cell<'a>(container: &Container) -> Element<'a, Message> {
 /// How many ports a row shows.
 const PORTS: usize = 3;
 
+/// Up to three ports, wrapped onto the lines the row has
+/// (`flex flex-wrap`); the published ones, which come first, open.
 fn ports_cell<'a>(container: &Container) -> Element<'a, Message> {
     let ports = model::port_labels(container).into_iter().take(PORTS);
     let labels = ports.map(|port| -> Element<'a, Message> {
-        let label = table::text(port.label).font(font::MONO).size(size::XS);
+        let label = truncated(port.label).font(font::MONO).size(size::XS);
         match port.public_port.filter(|public| *public != 0) {
             // Where it is published is a link to it.
             Some(public) => pressable(label)
@@ -254,21 +271,19 @@ fn ports_cell<'a>(container: &Container) -> Element<'a, Message> {
             None => label.style(theme::text::muted).into(),
         }
     });
-    // Left to right whatever the language, as the mappings read, and cut
-    // where the column ends: the published ones, which come first, show.
-    let ports = iced::widget::Row::from_vec(labels.collect())
+    // Left to right whatever the language, as the mappings read.
+    iced::widget::Row::from_vec(labels.collect())
         .spacing(space::S1)
-        .align_y(iced::alignment::Vertical::Center);
-    iced::widget::container(ports)
-        .width(Length::Fill)
-        .align_x(crate::ui::widgets::start())
-        .clip(true)
+        .wrap()
+        .vertical_spacing(1.0)
         .into()
 }
 
 /// The columns of the Containers page. React's table had no sort; here
 /// every column but the ports sorts the containers under their Stack.
 pub fn columns<'a>(look: Look<'a>) -> Vec<Column<'a, Container, Message>> {
+    // As wide as the language writes a size: "1023.9 MB", "1023.9 ميغابايت".
+    let memory = table::width_for(&format::bytes(1023.9 * 1024.0 * 1024.0));
     let number = |value: Option<String>| -> Element<'a, Message> {
         table::text(value.unwrap_or_else(|| NONE.to_owned())).into()
     };
@@ -279,7 +294,7 @@ pub fn columns<'a>(look: Look<'a>) -> Vec<Column<'a, Container, Message>> {
             move |c: &Container| name_cell(look, c),
         )
         .width(Width::Fill(4))
-        .min_width(118.0)
+        .min_width(108.0)
         .hideable(false)
         .sort_by(|a, b| sort::natural(&a.name, &b.name))
         .typed(|c| shown_name(c).to_owned()),
@@ -289,15 +304,15 @@ pub fn columns<'a>(look: Look<'a>) -> Vec<Column<'a, Container, Message>> {
             move |c: &Container| image_cell(look, c),
         )
         .width(Width::Fill(3))
-        .min_width(110.0)
+        .min_width(100.0)
         .sort_by(|a, b| sort::natural(&a.image, &b.image)),
         Column::new("status", t!("containers.column.status"), status_cell)
             .width(Width::Fill(3))
-            .min_width(124.0)
+            .min_width(112.0)
             .sort_by(|a, b| sort::natural(&a.state, &b.state)),
         Column::new("ports", t!("containers.column.ports"), ports_cell)
             .width(Width::Fill(3))
-            .min_width(82.0),
+            .min_width(96.0),
         Column::new("cpu", t!("containers.column.cpu"), move |c: &Container| {
             number(look.cpu(c).map(format::percent))
         })
@@ -319,7 +334,7 @@ pub fn columns<'a>(look: Look<'a>) -> Vec<Column<'a, Container, Message>> {
             },
         )
         .width(Width::Fill(2))
-        .between(100.0, 124.0)
+        .between(memory, memory + 24.0)
         .align(Align::End)
         .sort_by(move |a, b| look.memory(a).cmp(&look.memory(b)))
         .descending_first(),
@@ -327,13 +342,13 @@ pub fn columns<'a>(look: Look<'a>) -> Vec<Column<'a, Container, Message>> {
             "created",
             t!("containers.column.created"),
             |c: &Container| {
-                table::text(format::relative(c.created))
+                truncated(format::relative(c.created))
                     .style(theme::text::muted)
                     .into()
             },
         )
         .width(Width::Fill(2))
-        .between(100.0, 140.0)
+        .between(96.0, 140.0)
         .sort_by(|a, b| a.created.cmp(&b.created))
         .descending_first(),
         // The start and stop button, before the menu.
@@ -369,11 +384,12 @@ pub fn stack_header<'a>(
         label.push(badge(t!("containers.stack.swarm"), BadgeVariant::Outline));
     }
     label.push(
-        table::text(t!(
+        // The two numbers are one fraction: "1/2", in Arabic too.
+        table::text(i18n::joined(&t!(
             "containers.stack.running",
             running = running,
             count = members.len()
-        ))
+        )))
         .size(size::XS)
         .style(theme::text::muted)
         .into(),

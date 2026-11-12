@@ -22,7 +22,9 @@ fn the_board_in_arabic_is_mirrored() {
 #[test]
 fn the_board_filtered_with_a_selection_in_the_dark() {
     let mut rig = Rig::populated();
-    rig.send(Message::Search("a".to_owned()));
+    // Two of the four: those of the server.
+    rig.send(Message::Search("prod".to_owned()));
+    assert!(rig.shows("api") && rig.shows("cache") && !rig.shows("web"));
     let key = "prod-server-id/api-0123456789abcdef".to_owned();
     rig.send(Message::Table(crate::ui::widgets::table::Message::Toggle {
         key,

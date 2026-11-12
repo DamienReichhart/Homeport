@@ -53,28 +53,37 @@ fn twenty_thousand_containers_are_rows_made_once() {
 }
 
 /// `cargo test -p homeport-app --lib board::tests::perf -- --ignored --nocapture`
+///
+/// It holds a scroll step and a usage report to the table's budget for a
+/// frame: 2 ms, eight times that in a build that is not optimised. For
+/// what a release build does, optimise the crate and the crates that
+/// shape and draw text as `widgets/table/tests/perf.rs` says, and set
+/// `TABLE_PERF_OPTIMISED=1`: 1.7 ms a scroll step then, of which about
+/// half is fitting the texts of the row that came into view.
 #[test]
-#[ignore = "a measure, not a check: it prints what the Board costs"]
+#[ignore = "a measurement: run it alone, as its timings need the machine to itself"]
 fn what_twenty_thousand_containers_cost() {
     let mut rig = fleet();
     rig.frame(|_| {});
-    let time = |label: &str, rig: &mut Rig, act: &mut dyn FnMut(&mut Rig)| {
+    let time = |label: &str, rig: &mut Rig, act: &mut dyn FnMut(&mut Rig)| -> f64 {
         const RUNS: u32 = 30;
         let started = Instant::now();
         for _ in 0..RUNS {
             act(rig);
         }
-        println!(
-            "{label}: {:.2} ms",
-            started.elapsed().as_secs_f64() * 1000.0 / f64::from(RUNS)
-        );
+        let each = started.elapsed().as_secs_f64() * 1000.0 / f64::from(RUNS);
+        println!("{label}: {each:.2} ms");
+        each
     };
     time("refresh, nothing changed", &mut rig, &mut |rig| {
         rig.refresh()
     });
     time("view", &mut rig, &mut |rig| drop(rig.view()));
+    let fits =
+        || crate::ui::widgets::basic::truncate::FITS.load(std::sync::atomic::Ordering::Relaxed);
+    let before = fits();
     let mut offset = 0.0;
-    time(
+    let scroll = time(
         "a scroll step: update, view, layout, draw",
         &mut rig,
         &mut |rig| {
@@ -83,7 +92,8 @@ fn what_twenty_thousand_containers_cost() {
             rig.frame(|_| {});
         },
     );
-    time(
+    println!("texts fitted in 30 scroll steps: {}", fits() - before);
+    let report = time(
         "a usage report: update, view, layout, draw",
         &mut rig,
         &mut |rig| {
@@ -107,4 +117,14 @@ fn what_twenty_thousand_containers_cost() {
             drop(rig.view());
         },
     );
+    // The table's budget for a frame, which the Board's own work rides
+    // on: 2 ms, eight times that in a build that is not optimised
+    // (`TABLE_PERF_OPTIMISED=1` with the crate optimised holds it to 2).
+    let budget = if std::env::var_os("TABLE_PERF_OPTIMISED").is_some() {
+        2.0
+    } else {
+        16.0
+    };
+    assert!(scroll < budget, "a scroll step took {scroll:.2} ms");
+    assert!(report < budget, "a usage report took {report:.2} ms");
 }
