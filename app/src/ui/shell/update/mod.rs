@@ -15,7 +15,7 @@ use super::{
     },
     palette::{self, items::Act},
     pickers::{self, Picked},
-    registry::{self, Capability, Run},
+    registry::{self, Capability, Run, Scope},
     router::{Request, Route},
     selection::{
         self,
@@ -473,25 +473,24 @@ impl<P: Pages> Shell<P> {
         self.read(data);
         let resolved = self.world.resolve(self.chosen.as_ref());
         if resolved != self.world.selection {
-            let mut stale = false;
-            if let Some(old) = &self.world.selection {
+            // A page about the selection lets go of all the old one held:
+            // it is closed below, its subject being another. A page about
+            // the app (the Board, which reads every Host) stays as it is,
+            // with what it reads: only what the shell itself read of the
+            // old selection is let go of, as it stops wanting it.
+            let about_selection = self.page.is_some()
+                && registry::feature(self.location().route.feature()).scope() != Scope::App;
+            if let Some(old) = self.world.selection.as_ref().filter(|_| about_selection) {
                 for scope in selection::scopes(old) {
                     data.release(&scope);
                     // Released with the rest: nothing more to let go of.
                     self.held.retain(|key| !key.is_in(&scope));
                     if let Some(open) = &mut self.page {
-                        let before = open.watched.len();
                         open.watched.retain(|key| !key.is_in(&scope));
-                        stale |= open.watched.len() != before;
                     }
                 }
             }
             self.world.selection = resolved;
-            // A page that stays (the Board, a Swarm) and read something of
-            // the old selection is opened anew, to read the new one's.
-            if stale {
-                self.close_page(data);
-            }
         }
         let scope = registry::feature(self.location().route.feature()).scope();
         if !self.allows(scope) {

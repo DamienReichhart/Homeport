@@ -346,18 +346,40 @@ fn selecting_a_cluster_sends_a_host_page_to_the_overview_and_lets_go_of_the_host
 }
 
 #[test]
-fn a_page_that_stays_reads_the_new_selection_and_lets_go_of_the_old() {
+fn a_page_about_the_app_keeps_its_state_and_its_reads_when_the_selection_moves() {
     let mut rig = docker_and_prod();
     rig.go(Route::Board);
+    let first = open_page(&rig).id;
+    assert_eq!(open_page(&rig).watched, [keys::host::containers("h1")]);
+    rig.data.set(&keys::host::containers("h1"), vec![7_u8]);
+    rig.send(Message::Select(Selection::Host {
+        id: "prod-id".to_owned(),
+    }));
+    // The Board reads every Host and is about none: it is the same page,
+    // with its selection, its sort and its scroll, and what it read of
+    // the Host that was selected is still there and still watched.
+    assert_eq!(rig.route(), &Route::Board);
+    assert_eq!(open_page(&rig).id, first);
+    assert_eq!(open_page(&rig).watched, [keys::host::containers("h1")]);
+    let kept = rig.data.read::<Vec<u8>>(&keys::host::containers("h1"));
+    assert_eq!(kept.data().map(|list| list.as_slice()), Some(&[7_u8][..]));
+    rig.send(Message::Data(crate::data::Message::Tick));
+    assert!(kept.data().is_some());
+}
+
+#[test]
+fn a_page_about_the_host_lets_go_of_the_old_selection_and_reads_the_new() {
+    let mut rig = docker_and_prod();
+    rig.go(Route::Containers);
     let first = open_page(&rig).id;
     assert_eq!(open_page(&rig).watched, [keys::host::containers("h1")]);
     let reading = rig.data.in_flight();
     rig.send(Message::Select(Selection::Host {
         id: "prod-id".to_owned(),
     }));
-    // The Board is still the page, opened anew on the Host now selected:
-    // the first Host's read was released, not left running beside it.
-    assert_eq!(rig.route(), &Route::Board);
+    // Opened anew on the Host now selected: the first Host's read was
+    // released, not left running beside it.
+    assert_eq!(rig.route(), &Route::Containers);
     assert_ne!(open_page(&rig).id, first);
     assert_eq!(open_page(&rig).watched, [keys::host::containers("prod-id")]);
     assert_eq!(rig.data.in_flight(), reading);
