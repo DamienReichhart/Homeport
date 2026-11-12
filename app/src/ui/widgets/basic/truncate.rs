@@ -17,6 +17,10 @@ use iced::{
 
 use crate::ui::theme::{metrics::text as size, Element, Theme};
 
+/// How many times a text was fitted: what a frame costs, for the tests.
+#[cfg(test)]
+pub static FITS: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+
 /// What ends a text that is cut.
 const ELLIPSIS: char = '…';
 
@@ -80,6 +84,8 @@ fn line(content: &str, size: f32, font: Font) -> text::Text<&str, Font> {
         font,
         align_x: text::Alignment::Default,
         align_y: alignment::Vertical::Top,
+        // Shaped as every other text is, so a text that is cut is set
+        // as the one beside it that isn't.
         shaping: Shaping::Advanced,
         wrapping: Wrapping::None,
     }
@@ -87,8 +93,13 @@ fn line(content: &str, size: f32, font: Font) -> text::Text<&str, Font> {
 
 /// The longest start of `content` that fits in `room` with an ellipsis
 /// after it, given how wide a text is. `content` itself when it fits.
+///
+/// Measuring is shaping, which is what a cell costs: the cut is first
+/// guessed from how wide the whole text is, then moved a character at a
+/// time until it is the longest that fits, a measure or two for most.
 pub fn fit(content: &str, room: f32, width: impl Fn(&str) -> f32) -> String {
-    if width(content) <= room {
+    let whole = width(content);
+    if whole <= room {
         return content.to_owned();
     }
     let ends: Vec<usize> = content.char_indices().map(|(at, _)| at).collect();
@@ -99,17 +110,28 @@ pub fn fit(content: &str, room: f32, width: impl Fn(&str) -> f32) -> String {
         shown.push(ELLIPSIS);
         shown
     };
-    // The most characters whose cut still fits: fewer always do.
-    let (mut fits, mut too_many) = (0, ends.len());
-    while fits + 1 < too_many {
-        let middle = usize::midpoint(fits, too_many);
-        if width(&cut(middle)) <= room {
-            fits = middle;
-        } else {
-            too_many = middle;
+    #[allow(
+        clippy::cast_precision_loss,
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss
+    )]
+    let guess = ((ends.len() as f32 * room / whole).floor().max(0.0) as usize).min(ends.len() - 1);
+    let mut count = guess;
+    if width(&cut(count)) <= room {
+        // It fits: as many more as still do.
+        while count + 1 < ends.len() && width(&cut(count + 1)) <= room {
+            count += 1;
+        }
+    } else {
+        // Too long: fewer, until it fits or nothing is left but the sign.
+        while count > 0 {
+            count -= 1;
+            if width(&cut(count)) <= room {
+                break;
+            }
         }
     }
-    cut(fits)
+    cut(count)
 }
 
 impl<Message> Widget<Message, Theme, iced::Renderer> for Truncated<'_> {
@@ -137,11 +159,23 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for Truncated<'_> {
         let room = limits.max().width;
         let wanted = (self.content.clone(), self.size, font, room);
         if state.fitted.as_ref() != Some(&wanted) {
+            #[cfg(test)]
+            FITS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
             let size = self.size;
-            let shown = fit(&self.content, room, |content| {
-                Raw::with_text(line(content, size, font)).min_width()
-            });
-            let _ = state.paragraph.update(line(&shown, size, font));
+            // The whole text first, as any text is laid out: most fit,
+            // and cost no more than a text that is never cut.
+            let _ = state.paragraph.update(line(&self.content, size, font));
+            let whole = state.paragraph.min_width();
+            if whole > room {
+                let shown = fit(&self.content, room, |content| {
+                    if content == self.content {
+                        whole
+                    } else {
+                        Raw::with_text(line(content, size, font)).min_width()
+                    }
+                });
+                let _ = state.paragraph.update(line(&shown, size, font));
+            }
             state.fitted = Some(wanted);
         }
         let bounds = state.paragraph.min_bounds();
