@@ -37,7 +37,9 @@ macro_rules! pages {
         /// The page that shows: the state of one feature.
         #[derive(Debug)]
         pub enum Page {
-            $($id($($module)::+::State),)+
+            // Boxed: a page with a table, its filters and its dialogs is
+            // hundreds of bytes, a stub none.
+            $($id(Box<$($module)::+::State>),)+
         }
 
         /// A message of the page that shows.
@@ -57,12 +59,12 @@ macro_rules! pages {
                 match ctx.location.route.feature() {
                     $(FeatureId::$id => {
                         let (state, task) = $($module)::+::open(ctx);
-                        (Self::$id(state), task.map(Message::$id))
+                        (Self::$id(Box::new(state)), task.map(Message::$id))
                     })+
                     // It has no page: its commands open the Settings.
                     FeatureId::Updates => {
                         let (state, task) = app::settings::open(ctx);
-                        (Self::Settings(state), task.map(Message::Settings))
+                        (Self::Settings(Box::new(state)), task.map(Message::Settings))
                     }
                 }
             }
