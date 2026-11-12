@@ -44,6 +44,8 @@ use crate::{
 struct Blank {
     state: stub::State,
     asked: Vec<String>,
+    /// How many of its messages reached it.
+    heard: usize,
 }
 
 impl Pages for Blank {
@@ -51,11 +53,22 @@ impl Pages for Blank {
 
     fn open(ctx: &Context<'_>) -> (Self, Task<stub::Message>) {
         let (state, task) = stub::open(ctx);
-        let asked = vec![];
-        (Self { state, asked }, task)
+        // As a real page: Containers reads its Host's containers, and the
+        // Board, which shows whatever is selected, the selected Host's.
+        let reads = matches!(ctx.location.route, Route::Containers | Route::Board);
+        if let (true, Some(host)) = (reads, ctx.world.host_id()) {
+            ctx.watch(resources::containers(host));
+        }
+        let page = Self {
+            state,
+            asked: vec![],
+            heard: 0,
+        };
+        (page, task)
     }
 
     fn update(&mut self, message: stub::Message, ctx: &Context<'_>) -> Task<stub::Message> {
+        self.heard += 1;
         stub::update(&mut self.state, message, ctx)
     }
 
@@ -248,6 +261,17 @@ fn a_navigation_s_action_is_started_once_on_the_page_it_opens() {
     assert_eq!(asked(&rig), ["run", "run", "run", "search"]);
 }
 
+fn open_page(rig: &Rig) -> &super::Open<Blank> {
+    rig.shell.page.as_ref().expect("a page is open")
+}
+
+/// A message of the namespace picker, from the page numbered `id`.
+fn picked(id: u64, index: usize) -> Msg {
+    use crate::ui::widgets::form::select;
+    let message = super::pickers::Message::Namespace(select::Message::Choose(index));
+    Message::Page(id, stub::Message::Picker(message))
+}
+
 #[test]
 fn selecting_a_cluster_sends_a_host_page_to_the_overview_and_lets_go_of_the_host() {
     let mut rig = Rig::new(
@@ -255,22 +279,24 @@ fn selecting_a_cluster_sends_a_host_page_to_the_overview_and_lets_go_of_the_host
         vec![cluster_view("kind-dev")],
         Settings::default(),
     );
+    // Nothing of the Cluster is left to read: only the Host's reads move.
+    let namespaces = resources::cluster_namespaces("c1").key().clone();
+    rig.data.set(
+        &namespaces,
+        Vec::<homeport_kubernetes::resources::kinds::pods::NamespaceView>::new(),
+    );
+    let idle = rig.data.in_flight();
     rig.go(Route::Containers);
-    // What a Host page would hold of its Host.
-    let before = rig.data.in_flight();
-    drop(rig.data.watch(&rig.app.state, &resources::containers("h1")));
-    assert_eq!(rig.data.in_flight(), before + 1);
+    // The page asked for its Host's containers through its context.
+    assert_eq!(open_page(&rig).watched, [keys::host::containers("h1")]);
+    assert_eq!(rig.data.in_flight(), idle + 1);
     rig.send(Message::Select(Selection::Cluster {
         id: "c1".to_owned(),
     }));
     assert_eq!(rig.route(), &Route::Overview);
     assert_eq!(rig.shell.world().cluster_id(), Some("c1"));
-    // The Host's read is let go of; the Cluster's namespaces are read.
-    assert_eq!(rig.data.in_flight(), before + 1);
-    assert!(rig
-        .data
-        .read::<Vec<()>>(&keys::host::containers("h1"))
-        .is_pending());
+    assert!(open_page(&rig).watched.is_empty());
+    assert_eq!(rig.data.in_flight(), idle, "the Host's read is let go of");
     let shown: Vec<FeatureId> = rig.shell.entries.iter().map(|e| e.feature).collect();
     assert!(shown.contains(&FeatureId::Pods) && !shown.contains(&FeatureId::Containers));
     // A page about the app stays where it is.
@@ -279,6 +305,90 @@ fn selecting_a_cluster_sends_a_host_page_to_the_overview_and_lets_go_of_the_host
         id: "h1".to_owned(),
     }));
     assert_eq!(rig.route(), &Route::Settings);
+}
+
+#[test]
+fn a_page_that_stays_reads_the_new_selection_and_lets_go_of_the_old() {
+    let mut rig = docker_and_prod();
+    rig.go(Route::Board);
+    let first = open_page(&rig).id;
+    assert_eq!(open_page(&rig).watched, [keys::host::containers("h1")]);
+    let reading = rig.data.in_flight();
+    rig.send(Message::Select(Selection::Host {
+        id: "prod-id".to_owned(),
+    }));
+    // The Board is still the page, opened anew on the Host now selected:
+    // the first Host's read was released, not left running beside it.
+    assert_eq!(rig.route(), &Route::Board);
+    assert_ne!(open_page(&rig).id, first);
+    assert_eq!(open_page(&rig).watched, [keys::host::containers("prod-id")]);
+    assert_eq!(rig.data.in_flight(), reading);
+}
+
+#[test]
+fn a_message_of_a_page_that_was_left_does_not_reach_the_page_in_its_place() {
+    let mut rig = Rig::with_cluster(cluster_view("kind-dev"));
+    rig.go(Route::Pods);
+    let first = open_page(&rig).id;
+    rig.send(picked(first, 99));
+    assert_eq!(open_page(&rig).page.heard, 1, "its own message reaches it");
+    // Another page of the same feature takes its place.
+    rig.go(Route::Pod {
+        object: super::router::Namespaced::new("shop", "web"),
+        tab: None,
+    });
+    assert_ne!(open_page(&rig).id, first);
+    rig.send(picked(first, 99));
+    assert_eq!(
+        open_page(&rig).page.heard,
+        0,
+        "a late answer of the first is dropped"
+    );
+    // And once a gate closes the page, nothing hears it.
+    let mut down = cluster_view("kind-dev");
+    down.status = ClusterStatus::Connecting;
+    rig.data.set(&keys::cluster::list(), vec![down]);
+    let last = open_page(&rig).id;
+    rig.send(Message::Changed);
+    assert!(rig.shell.page.is_none());
+    rig.send(picked(last, 99));
+    assert!(rig.shell.page.is_none() && rig.shell.take_events().is_empty());
+}
+
+#[test]
+fn an_action_asked_of_a_page_behind_its_gate_starts_when_the_gate_opens() {
+    let mut rig = Rig::with_hosts(vec![host_view("prod", HostStatus::Connecting)]);
+    rig.go(Route::Containers);
+    assert!(rig.shell.page.is_none());
+    // `n`, or the palette's Run a container, while the Host connects.
+    rig.send(Message::Go(Request::to(Route::Containers).starting("run")));
+    rig.send(key(Press::of("n")));
+    assert!(rig.shell.page.is_none());
+    rig.data
+        .set(&keys::host::list(), vec![host_view("prod", connected())]);
+    rig.send(Message::Changed);
+    assert_eq!(open_page(&rig).page.asked, ["run"], "once, when it opens");
+    rig.send(Message::Changed);
+    assert_eq!(open_page(&rig).page.asked, ["run"]);
+}
+
+#[test]
+fn what_is_remembered_is_saved_in_the_order_it_was_picked() {
+    let mut rig = docker_and_prod();
+    let select = |id: &str| Message::Select(Selection::Host { id: id.to_owned() });
+    // Two Hosts picked before the first save is written.
+    let first = rig.shell.update(select("prod-id"), &mut rig.data);
+    let second = rig.shell.update(select("h1"), &mut rig.data);
+    // Whichever task the runtime runs first, the last pick is stored last.
+    for answer in rig.app.runtime.block_on(tasks::messages(second)) {
+        rig.run(answer);
+    }
+    for answer in rig.app.runtime.block_on(tasks::messages(first)) {
+        rig.run(answer);
+    }
+    let stored = rig.app.state.settings.get().unwrap();
+    assert_eq!(stored.last_host_id.as_deref(), Some("h1"));
+    assert!(!rig.shell.saving && rig.shell.to_save.is_empty());
 }
 
 #[test]
@@ -453,7 +563,6 @@ fn a_page_opens_when_its_host_connects() {
 
 #[test]
 fn a_picked_namespace_shows_at_once_and_is_remembered_for_its_cluster() {
-    use crate::ui::widgets::form::select;
     let mut rig = Rig::with_cluster(cluster_view("kind-dev"));
     rig.go(Route::Pods);
     let namespaces = ["default", "kube-system", "shop"].map(|name| {
@@ -467,15 +576,11 @@ fn a_picked_namespace_shows_at_once_and_is_remembered_for_its_cluster() {
     let key = resources::cluster_namespaces("c1").key().clone();
     rig.data.set(&key, namespaces.to_vec());
     rig.send(Message::Changed);
-    let subject = |rig: &Rig| rig.shell.page.as_ref().unwrap().key.1.clone();
+    let subject = |rig: &Rig| open_page(rig).key.1.clone();
     let before = subject(&rig);
     // The page hands the picker's messages back to the shell.
-    let pick = |index| {
-        Message::Page(stub::Message::Picker(super::pickers::Message::Namespace(
-            select::Message::Choose(index),
-        )))
-    };
-    rig.run(pick(3));
+    let id = open_page(&rig).id;
+    rig.run(picked(id, 3));
     assert_ne!(
         subject(&rig),
         before,
@@ -484,7 +589,8 @@ fn a_picked_namespace_shows_at_once_and_is_remembered_for_its_cluster() {
     let stored = rig.app.state.settings.get().unwrap();
     assert_eq!(stored.cluster_namespaces["c1"], "shop");
     // The first line is every Namespace, stored as "".
-    rig.run(pick(0));
+    let id = open_page(&rig).id;
+    rig.run(picked(id, 0));
     assert_eq!(
         rig.app.state.settings.get().unwrap().cluster_namespaces["c1"],
         ""

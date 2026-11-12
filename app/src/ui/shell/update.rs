@@ -92,9 +92,14 @@ impl<P: Pages> Shell<P> {
         data: &mut Data,
     ) -> Task<Message<P::Message>> {
         match message {
-            Message::Page(message) => self
+            // A page that was closed meanwhile no longer hears its messages:
+            // the page in its place is another one.
+            Message::Page(id, _) if self.page.as_ref().map(|open| open.id) != Some(id) => {
+                Task::none()
+            }
+            Message::Page(id, message) => self
                 .with_page(data, |page, ctx| page.update(message, ctx))
-                .map_or_else(Task::none, |task| task.map(Message::Page)),
+                .map_or_else(Task::none, |task| task.map(move |m| Message::Page(id, m))),
             Message::Go(request) => self.go(request, data),
             Message::Back => {
                 self.history.back();
@@ -157,7 +162,14 @@ impl<P: Pages> Shell<P> {
                     let surfaced = Surfaced::new(*error, "update_settings");
                     self.events.push(Event::Failed(Some(title), surfaced));
                 }
-                Task::none()
+                // The next one waiting, now that this one is written.
+                match self.to_save.pop_front() {
+                    Some(next) => next.save(&self.state).map(Message::Saved),
+                    None => {
+                        self.saving = false;
+                        Task::none()
+                    }
+                }
             }
             Message::DismissUpdate => {
                 self.dismissed = self.world.update.as_ref().map(|u| u.version.clone());
@@ -177,7 +189,10 @@ impl<P: Pages> Shell<P> {
     fn go(&mut self, request: Request, data: &mut Data) -> Task<Message<P::Message>> {
         self.palette.update(palette::Message::Close, &[]);
         self.help = false;
-        if !self.at(&request.route) || request.query.is_some() {
+        // An action asked of a page its gate still hides is a navigation
+        // of its own: the page starts it when the gate opens.
+        let waits = request.action.is_some() && self.page.is_none();
+        if !self.at(&request.route) || request.query.is_some() || waits {
             self.history.push(request);
             return Task::none();
         }
@@ -188,8 +203,11 @@ impl<P: Pages> Shell<P> {
 
     /// Asks the page that shows to start `action`.
     fn request(&mut self, action: &str, data: &Data) -> Task<Message<P::Message>> {
+        let Some(id) = self.page.as_ref().map(|open| open.id) else {
+            return Task::none();
+        };
         self.with_page(data, |page, ctx| page.request(action, ctx))
-            .map_or_else(Task::none, |task| task.map(Message::Page))
+            .map_or_else(Task::none, |task| task.map(move |m| Message::Page(id, m)))
     }
 
     /// Shows another Host or Cluster, and remembers it.
@@ -199,8 +217,16 @@ impl<P: Pages> Shell<P> {
     }
 
     /// Shows what is remembered at once, and saves it behind.
+    /// Saves go one at a time, in the order they were asked for: the last
+    /// Host picked is the one a new launch opens on, however long a save
+    /// takes.
     fn remember(&mut self, what: Remember) -> Task<Message<P::Message>> {
         what.apply(&mut self.world.settings);
+        if self.saving {
+            self.to_save.push_back(what);
+            return Task::none();
+        }
+        self.saving = true;
         what.save(&self.state).map(Message::Saved)
     }
 
@@ -480,17 +506,25 @@ impl<P: Pages> Shell<P> {
         self.read(data);
         let resolved = self.world.resolve(self.chosen.as_ref());
         if resolved != self.world.selection {
+            let mut stale = false;
             if let Some(old) = &self.world.selection {
                 for scope in selection::scopes(old) {
                     data.release(&scope);
                     // Released with the rest: nothing more to let go of.
                     self.held.retain(|key| !key.is_in(&scope));
                     if let Some(open) = &mut self.page {
+                        let before = open.watched.len();
                         open.watched.retain(|key| !key.is_in(&scope));
+                        stale |= open.watched.len() != before;
                     }
                 }
             }
             self.world.selection = resolved;
+            // A page that stays (the Board, a Swarm) and read something of
+            // the old selection is opened anew, to read the new one's.
+            if stale {
+                self.close_page(data);
+            }
         }
         let scope = registry::feature(self.location().route.feature()).scope();
         if !self.allows(scope) {
@@ -529,14 +563,20 @@ impl<P: Pages> Shell<P> {
                     pickers: &self.pickers,
                     effects: &self.effects,
                 };
+                self.opened += 1;
+                let id = self.opened;
                 let (mut page, opened) = P::open(&ctx);
-                tasks.push(opened.map(Message::Page));
+                tasks.push(opened.map(move |m| Message::Page(id, m)));
                 // The action a navigation carries is started once.
                 if let Some(action) = location.action.filter(|_| self.acted != Some(location.key)) {
-                    tasks.push(page.request(action, &ctx).map(Message::Page));
+                    tasks.push(
+                        page.request(action, &ctx)
+                            .map(move |m| Message::Page(id, m)),
+                    );
                     self.acted = Some(location.key);
                 }
                 self.page = Some(Open {
+                    id,
                     key,
                     page,
                     watched: vec![],

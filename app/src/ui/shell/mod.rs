@@ -82,6 +82,9 @@ static APP_COMMANDS: &[Command] = &[Command::new(
 
 /// The page that shows, and what it holds.
 struct Open<P> {
+    /// Its own among the pages opened in this session: a message carries
+    /// it, so one that comes back late doesn't reach another page.
+    id: u64,
     /// The navigation it answers and what its gate let through: when
     /// either changes, the page is opened anew.
     key: (u64, Subject),
@@ -109,8 +112,9 @@ pub enum Event {
 
 #[derive(Debug, Clone)]
 pub enum Message<M> {
-    /// A message of the page that shows.
-    Page(M),
+    /// A message of the page opened under this number; dropped once
+    /// another page shows.
+    Page(u64, M),
     Go(Request),
     Back,
     Forward,
@@ -161,6 +165,11 @@ pub struct Shell<P: Pages> {
     /// The version whose notice was dismissed.
     dismissed: Option<String>,
     reconnect: Action,
+    /// How many pages were opened: the next one's number.
+    opened: u64,
+    /// A save of what is remembered is on its way; the others wait.
+    saving: bool,
+    to_save: std::collections::VecDeque<selection::remember::Remember>,
     events: Vec<Event>,
     mac: bool,
 }
@@ -184,6 +193,9 @@ impl<P: Pages> Shell<P> {
             pickers: pickers::State::default(),
             dismissed: None,
             reconnect: Action::default(),
+            opened: 0,
+            saving: false,
+            to_save: std::collections::VecDeque::new(),
             events: vec![],
             mac: keys::is_mac(),
         }
@@ -281,7 +293,8 @@ impl<P: Pages> Shell<P> {
                     pickers: &self.pickers,
                     effects: &self.effects,
                 };
-                open.page.view(&ctx).map(Message::Page)
+                let id = open.id;
+                open.page.view(&ctx).map(move |m| Message::Page(id, m))
             }
             // Between a gate that opens and the page it opens.
             (None, None) => crate::ui::widgets::feedback::spinner(),
