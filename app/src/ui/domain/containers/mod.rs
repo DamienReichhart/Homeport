@@ -7,6 +7,7 @@
 //!   and confirmations they open (`ContainerRowMenu`).
 
 pub mod actions;
+pub mod cells;
 pub mod model;
 
 pub use self::actions::{Actions, Bulk, Target};

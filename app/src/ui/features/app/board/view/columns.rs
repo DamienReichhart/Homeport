@@ -16,7 +16,8 @@ use crate::{
     t,
     ui::{
         domain::containers::{
-            model::{port_labels, status_without_health, tone, Usage},
+            cells,
+            model::{port_labels, tone, Usage},
             Actions,
         },
         theme::{
@@ -25,7 +26,7 @@ use crate::{
             Element,
         },
         widgets::{
-            basic::{badge, truncated, BadgeVariant},
+            basic::truncated,
             feedback::status_dot,
             line,
             overlay::{tooltip, Side},
@@ -102,37 +103,18 @@ fn name_cell<'a>(row: &Row) -> Element<'a, Message> {
     let id = truncated(format::short_id(&container.id))
         .font(font::MONO)
         .size(size::XS)
-        .style(theme::text::muted);
+        .style(theme::text::muted)
+        .with_tip();
+    let name = truncated(container.name.clone())
+        .font(font::medium())
+        .with_tip();
     line(vec![
         status_dot(tone(&container.state, container.health.as_deref())),
-        stack(vec![
-            truncated(container.name.clone())
-                .font(font::medium())
-                .into(),
-            id.into(),
-        ])
-        .into(),
+        stack(vec![name.into(), id.into()]).into(),
     ])
     .spacing(space::S2)
     .width(Length::Fill)
     .into()
-}
-
-fn status_cell<'a>(row: &Row) -> Element<'a, Message> {
-    let container = row.container();
-    // The health shows as a badge, not repeated in the status, and keeps
-    // its room: the status is cut before it.
-    let mut parts: Vec<Element<'a, Message>> =
-        vec![fill(truncated(status_without_health(container)))];
-    if let Some(health) = &container.health {
-        let variant = if health == "unhealthy" {
-            BadgeVariant::Destructive
-        } else {
-            BadgeVariant::Outline
-        };
-        parts.push(badge(health.clone(), variant));
-    }
-    line(parts).spacing(space::S1_5).width(Length::Fill).into()
 }
 
 /// The first port and how many more there are; all of them under the
@@ -164,34 +146,43 @@ pub fn columns<'a>(look: Look<'a>) -> Vec<Column<'a, Row, Message>> {
         table::text(value.unwrap_or_else(|| NONE.to_owned())).into()
     };
     let muted = |value: String| -> Element<'a, Message> {
-        truncated(value).style(theme::text::muted).into()
+        truncated(value)
+            .style(theme::text::muted)
+            .lines(2)
+            .with_tip()
+            .into()
     };
     // As wide as the language writes a size: "1023.9 MB", "1023.9 ميغابايت".
     let memory = table::width_for(&format::bytes(1023.9 * 1024.0 * 1024.0));
     vec![
         Column::new("host", t!("board.column.host"), |row: &Row| {
-            truncated(row.host_name.to_string()).into()
+            truncated(row.host_name.to_string())
+                .lines(2)
+                .with_tip()
+                .into()
         })
         .width(Width::Fill(2))
         .min_width(64.0)
         .sort_by(by(SortKey::Host)),
         Column::new("name", t!("containers.column.name"), name_cell)
             .width(Width::Fill(4))
-            .min_width(96.0)
+            .min_width(88.0)
             .hideable(false)
             .sort_by(by(SortKey::Name))
             .typed(|row| row.container().name.clone()),
         Column::new("image", t!("containers.column.image"), |row: &Row| {
             let image = row.container().image.clone();
-            tooltip(truncated(image.clone()), image, Side::Top).into()
+            truncated(image).with_tip().into()
         })
         .width(Width::Fill(3))
-        .min_width(66.0)
+        .min_width(60.0)
         .sort_by(by(SortKey::Image)),
-        Column::new("status", t!("containers.column.status"), status_cell)
-            .width(Width::Fill(3))
-            .min_width(100.0)
-            .sort_by(by(SortKey::Status)),
+        Column::new("status", t!("containers.column.status"), |row: &Row| {
+            cells::status(row.container())
+        })
+        .width(Width::Fill(3))
+        .min_width(112.0)
+        .sort_by(by(SortKey::Status)),
         Column::new("stack", t!("board.column.stack"), move |row: &Row| {
             muted(
                 row.container()
@@ -205,7 +196,7 @@ pub fn columns<'a>(look: Look<'a>) -> Vec<Column<'a, Row, Message>> {
         .sort_by(by(SortKey::Stack)),
         Column::new("ports", t!("containers.column.ports"), ports_cell)
             .width(Width::Fill(2))
-            .min_width(56.0),
+            .min_width(54.0),
         Column::new("cpu", t!("containers.column.cpu"), move |row: &Row| {
             number(
                 look.usage_of(row)
@@ -237,7 +228,7 @@ pub fn columns<'a>(look: Look<'a>) -> Vec<Column<'a, Row, Message>> {
             move |row: &Row| muted(format::relative(row.container().created)),
         )
         .width(Width::Fill(2))
-        .between(76.0, 140.0)
+        .between(80.0, 140.0)
         .sort_by(by(SortKey::Created)),
         // The start and stop button, before the menu.
         Column::new("toggle", String::new(), move |row: &Row| {

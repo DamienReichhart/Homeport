@@ -21,8 +21,12 @@
 //!   hides stays selected and is acted on, as in React;
 //! - a failed action is one toast, as React's, whose Details list every
 //!   container that failed, where React's showed the first one's only;
-//! - the health badge keeps its room and the status is cut before it;
-//!   React let the cell grow.
+//! - the health is a badge under the status and is not said in the status
+//!   too (`Up 3 hours`, not `Up 3 hours (healthy)`), as on the Board, so
+//!   the status reads whole in its column; React put the badge beside it
+//!   and let the cell grow;
+//! - what lacks room wraps onto the row's second line, then ends with an
+//!   ellipsis and is whole under the pointer.
 
 mod message;
 mod state;

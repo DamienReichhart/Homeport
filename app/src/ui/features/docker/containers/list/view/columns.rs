@@ -14,6 +14,7 @@ use crate::{
     ui::{
         domain::{
             containers::{
+                cells,
                 model::{self, Usage},
                 Actions, Target,
             },
@@ -180,7 +181,7 @@ fn fill<'a>(text: impl Into<Element<'a, Message>>) -> Element<'a, Message> {
 
 fn name_cell<'a>(look: Look<'a>, container: &Container) -> Element<'a, Message> {
     let name = truncated(shown_name(container)).font(font::medium());
-    let mut title: Vec<Element<'a, Message>> = vec![fill(name)];
+    let mut title: Vec<Element<'a, Message>> = vec![fill(name.with_tip())];
     let unit = container.labels.get(QUADLET_UNIT).filter(|u| !u.is_empty());
     if let Some(unit) = unit {
         title.push(link_badge(
@@ -201,7 +202,8 @@ fn name_cell<'a>(look: Look<'a>, container: &Container) -> Element<'a, Message> 
     let id = truncated(format::short_id(&container.id))
         .font(font::MONO)
         .size(size::XS)
-        .style(theme::text::muted);
+        .style(theme::text::muted)
+        .with_tip();
     // The row fills its cell, so the dot keeps its place whichever side
     // it is on and the name and the id are cut, not the dot.
     line(vec![
@@ -218,36 +220,12 @@ fn name_cell<'a>(look: Look<'a>, container: &Container) -> Element<'a, Message> 
 }
 
 fn image_cell<'a>(look: Look<'a>, container: &Container) -> Element<'a, Message> {
-    // The whole reference under the pointer, as the React cell's `title`.
-    let image = tooltip(
-        truncated(container.image.clone()),
-        container.image.clone(),
-        Side::Top,
-    );
+    let image = truncated(container.image.clone()).with_tip();
     let mut parts = vec![fill(image)];
     if look.newer.contains(&container.id) {
         parts.push(freshness::newer_mark(freshness::newer_label(&[
             &container.image
         ])));
-    }
-    line(parts).spacing(space::S1_5).width(Length::Fill).into()
-}
-
-fn status_cell<'a>(container: &Container) -> Element<'a, Message> {
-    let status = if container.status.is_empty() {
-        &container.state
-    } else {
-        &container.status
-    };
-    // The health keeps its room; the status is cut before it.
-    let mut parts: Vec<Element<'a, Message>> = vec![fill(truncated(status.clone()))];
-    if let Some(health) = &container.health {
-        let variant = if health == "unhealthy" {
-            BadgeVariant::Destructive
-        } else {
-            BadgeVariant::Outline
-        };
-        parts.push(badge(health.clone(), variant));
     }
     line(parts).spacing(space::S1_5).width(Length::Fill).into()
 }
@@ -263,12 +241,12 @@ fn ports_cell<'a>(container: &Container) -> Element<'a, Message> {
         let label = truncated(port.label).font(font::MONO).size(size::XS);
         match port.public_port.filter(|public| *public != 0) {
             // Where it is published is a link to it.
-            Some(public) => pressable(label)
+            Some(public) => pressable(label.with_tip())
                 .padding(0.0)
                 .style(theme::button::link)
                 .on_press(Message::OpenPort(public))
                 .into(),
-            None => label.style(theme::text::muted).into(),
+            None => label.style(theme::text::muted).with_tip().into(),
         }
     });
     // Left to right whatever the language, as the mappings read.
@@ -306,10 +284,12 @@ pub fn columns<'a>(look: Look<'a>) -> Vec<Column<'a, Container, Message>> {
         .width(Width::Fill(3))
         .min_width(100.0)
         .sort_by(|a, b| sort::natural(&a.image, &b.image)),
-        Column::new("status", t!("containers.column.status"), status_cell)
-            .width(Width::Fill(3))
-            .min_width(112.0)
-            .sort_by(|a, b| sort::natural(&a.state, &b.state)),
+        Column::new("status", t!("containers.column.status"), |c: &Container| {
+            cells::status(c)
+        })
+        .width(Width::Fill(3))
+        .min_width(112.0)
+        .sort_by(|a, b| sort::natural(&a.state, &b.state)),
         Column::new("ports", t!("containers.column.ports"), ports_cell)
             .width(Width::Fill(3))
             .min_width(96.0),
@@ -344,6 +324,8 @@ pub fn columns<'a>(look: Look<'a>) -> Vec<Column<'a, Container, Message>> {
             |c: &Container| {
                 truncated(format::relative(c.created))
                     .style(theme::text::muted)
+                    .lines(2)
+                    .with_tip()
                     .into()
             },
         )

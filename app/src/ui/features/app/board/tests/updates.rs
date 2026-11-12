@@ -370,3 +370,58 @@ fn a_bulk_action_that_half_worked_says_both_and_keeps_the_page_as_it_is() {
     // Every one stays selected, for another try at those that failed.
     assert_eq!(rig.state.table.selection().len(), 4);
 }
+
+#[test]
+fn every_status_is_whole_at_the_window_s_first_size() {
+    for language in ["en", "ar"] {
+        let _language = in_language(language);
+        let mut rig = Rig::over(hosts());
+        // The statuses Docker writes every day.
+        let (mut here, mut there) = (local(), prod());
+        "Up 3 hours (healthy)".clone_into(&mut here[0].status);
+        "Exited (0) 2 days ago".clone_into(&mut here[1].status);
+        "Up 12 minutes (unhealthy)".clone_into(&mut there[0].status);
+        rig.read("h1", here.clone());
+        rig.read(PROD, there.clone());
+        rig.send(Message::Usage(("h1".to_owned(), usage(&here))));
+        rig.send(Message::Usage((PROD.to_owned(), usage(&there))));
+        rig.frame(|frame| {
+            let fitted = frame.fitted();
+            let statuses = [
+                "Up 3 hours",
+                "Exited (0) 2 days ago",
+                "Up 12 minutes",
+                "Up 1 minute",
+            ];
+            for status in statuses {
+                let shown: Vec<_> = fitted.iter().filter(|text| text.whole == status).collect();
+                assert_eq!(shown.len(), 1, "{language}: one row says {status}");
+                assert_eq!(shown[0].shown, status, "{language}: a status is cut");
+            }
+            assert!(frame.find("healthy").is_some() && frame.find("unhealthy").is_some());
+        });
+    }
+}
+
+#[test]
+fn a_host_and_a_date_wrap_onto_the_row_s_second_line_before_they_are_cut() {
+    for language in ["en", "ar"] {
+        let _language = in_language(language);
+        let mut rig = Rig::populated();
+        let created = crate::i18n::format::relative(local()[0].created);
+        rig.frame(|frame| {
+            let fitted = frame.fitted();
+            for whole in ["prod-server", created.as_str()] {
+                let shown: Vec<_> = fitted.iter().filter(|text| text.whole == whole).collect();
+                assert!(!shown.is_empty(), "{language}: nothing says {whole}");
+                assert!(
+                    shown.iter().all(|text| !text.is_cut()),
+                    "{language}: {shown:?}"
+                );
+            }
+            // The Host's name is longer than its column: two lines.
+            let host = frame.find("prod-server").expect("the Host of a row");
+            assert!(host.height > 30.0, "{language}: on one line: {host:?}");
+        });
+    }
+}

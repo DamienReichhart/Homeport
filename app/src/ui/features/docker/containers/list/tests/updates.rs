@@ -361,3 +361,62 @@ fn run_container_says_it_is_not_there_yet_and_closes() {
     rig.frame(|frame| frame.tap_key(iced::keyboard::key::Named::Escape));
     assert!(!rig.state.run_asked);
 }
+
+/// The statuses Docker writes every day, on the sample's containers.
+fn ordinary() -> Vec<Container> {
+    let mut list = sample();
+    "Up 3 hours (healthy)".clone_into(&mut list[0].status);
+    "Exited (0) 2 days ago".clone_into(&mut list[1].status);
+    "Up 12 minutes".clone_into(&mut list[2].status);
+    list
+}
+
+#[test]
+fn every_status_is_whole_at_the_window_s_first_size() {
+    for language in ["en", "ar"] {
+        let _language = in_language(language);
+        let list = ordinary();
+        let mut rig = Rig::with(list.clone());
+        rig.send(Message::Usage(("h1".to_owned(), usage(&list))));
+        rig.frame(|frame| {
+            let fitted = frame.fitted();
+            // The health is the badge under it, not said twice.
+            let statuses = [
+                "Up 3 hours",
+                "Exited (0) 2 days ago",
+                "Up 12 minutes",
+                "Up 1 minute",
+                "Exited (0)",
+            ];
+            for status in statuses {
+                let shown: Vec<_> = fitted.iter().filter(|text| text.whole == status).collect();
+                assert!(!shown.is_empty(), "{language}: no row says {status}");
+                for text in shown {
+                    assert_eq!(text.shown, text.whole, "{language}: a status is cut");
+                }
+            }
+            assert!(frame.find("healthy").is_some());
+        });
+    }
+}
+
+#[test]
+fn what_lacks_room_wraps_onto_the_row_s_second_line_before_it_is_cut() {
+    let _arabic = in_language("ar");
+    let list = ordinary();
+    let mut rig = Rig::with(list.clone());
+    rig.send(Message::Usage(("h1".to_owned(), usage(&list))));
+    rig.frame(|frame| {
+        // "A minute ago" is longer in Arabic than its column: two lines.
+        let created = crate::i18n::format::relative(list[3].created);
+        let fitted = frame.fitted();
+        let shown: Vec<_> = fitted.iter().filter(|text| text.whole == created).collect();
+        assert_eq!(shown.len(), list.len());
+        assert!(shown.iter().all(|text| !text.is_cut()), "{shown:?}");
+        let cell = frame.find(&created).expect("a created cell");
+        assert!(cell.height > 30.0, "on one line: {cell:?}");
+        // And the status of a container with no health check has both.
+        let exited = frame.find("Exited (0) 2 days ago").expect("its status");
+        assert!(exited.height > 30.0, "on one line: {exited:?}");
+    });
+}

@@ -58,7 +58,7 @@ fn twenty_thousand_containers_are_rows_made_once() {
 /// frame: 2 ms, eight times that in a build that is not optimised. For
 /// what a release build does, optimise the crate and the crates that
 /// shape and draw text as `widgets/table/tests/perf.rs` says, and set
-/// `TABLE_PERF_OPTIMISED=1`: 1.7 ms a scroll step then, of which about
+/// `TABLE_PERF_OPTIMISED=1`: 1.8 ms a scroll step then, of which about
 /// half is fitting the texts of the row that came into view.
 #[test]
 #[ignore = "a measurement: run it alone, as its timings need the machine to itself"]
