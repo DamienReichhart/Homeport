@@ -47,3 +47,14 @@ pub fn area(theme: &Theme, _status: Status) -> Style {
         },
     }
 }
+
+/// How much of the muted text's colour a table's thumb takes: the least
+/// that is seen on a selected row (3:1) in both themes.
+const THUMB: f32 = 0.7;
+
+/// The thumb of a table's scrollbars. It lies on the rows, selected ones
+/// included (`bg-muted`), where `--border` cannot be told from the fill:
+/// the muted text's colour is seen on both.
+pub fn table_thumb(theme: &Theme) -> iced::Color {
+    super::alpha(theme.tokens().muted_foreground, THUMB)
+}

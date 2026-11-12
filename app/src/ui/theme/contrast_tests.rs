@@ -281,6 +281,33 @@ fn pairs(theme: Theme) -> Vec<Pair> {
             TEXT,
         );
     }
+    // The thumb of a table's scrollbars, on the rows it lies over: what
+    // `--border` was not (1.2:1 on the page, the very fill of a selected
+    // row on light).
+    let thumb = style::scrollable::table_thumb(&theme);
+    let rows = [
+        ("a row", style::container::table_row(false, false)(&theme)),
+        (
+            "a hovered row",
+            style::container::table_row(true, false)(&theme),
+        ),
+        (
+            "a selected row",
+            style::container::table_row(false, true)(&theme),
+        ),
+        (
+            "a group's header",
+            style::container::table_group(false)(&theme),
+        ),
+    ];
+    for (name, look) in rows {
+        let fill = look.background.map_or(Color::TRANSPARENT, colour);
+        add(
+            format!("table thumb on {name}"),
+            on(thumb, fill, tokens.background),
+            UI,
+        );
+    }
     add(
         "terminal selection against the terminal".to_owned(),
         contrast(

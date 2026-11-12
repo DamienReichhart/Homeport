@@ -318,3 +318,16 @@ pub fn table_row(hovered: bool, selected: bool) -> impl Fn(&Theme) -> Style {
         }
     }
 }
+
+/// The header of a group of rows (a Stack over its containers):
+/// `bg-muted/30`, a little more under the pointer.
+pub fn table_group(hovered: bool) -> impl Fn(&Theme) -> Style {
+    move |theme| {
+        let tokens = theme.tokens();
+        Style {
+            background: Some(alpha(tokens.muted, if hovered { 0.5 } else { 0.3 }).into()),
+            text_color: Some(tokens.foreground),
+            ..Style::default()
+        }
+    }
+}
