@@ -57,6 +57,8 @@ fn a_drag_selects_from_where_it_started_to_where_it_is() {
         },
     );
     assert!(tell(&mut state, Message::Copy).is_none());
+    assert!(!state.has_selection());
+    drag(&mut state, Mark::new(1, 2), Mark::new(3, 4));
     assert!(state.has_selection());
     tell(&mut state, Message::Deselect);
     assert!(!state.has_selection());

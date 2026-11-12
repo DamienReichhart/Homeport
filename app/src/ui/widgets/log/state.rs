@@ -302,8 +302,10 @@ impl State {
         self.search.is_active() && self.search.frontier < self.buffer.range().end
     }
 
+    /// Whether some text is selected.
     pub fn has_selection(&self) -> bool {
-        self.selection.is_some()
+        self.selection
+            .is_some_and(|selection| !selection.is_empty())
     }
 
     /// The search field, for `/` to give focus to (`form::focus_search`).
