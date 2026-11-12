@@ -12,6 +12,7 @@ mod drawn;
 mod driven;
 mod follow;
 mod palette;
+mod perf;
 mod search;
 mod select;
 
