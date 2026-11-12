@@ -72,6 +72,8 @@ icu_experimental.workspace = true
 fixed_decimal.workspace = true
 writeable.workspace = true
 jiff.workspace = true
+# The log viewer's search: literal or regular expression, in linear time.
+regex.workspace = true
 
 [dev-dependencies]
 # A clock the data layer's tests move themselves.

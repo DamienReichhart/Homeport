@@ -39,3 +39,16 @@ ui-confirm-typeName = Type { $name } to confirm
 ui-select-noMatch = Nothing matches.
 ui-password-show = Show password
 ui-password-hide = Hide password
+ui-log-wrap = Wrap lines
+ui-log-latest = Jump to latest
+ui-log-matchCase = Match case
+ui-log-regex = Regular expression
+ui-log-filter = Filter
+ui-log-filterHint = Show only the lines that match
+ui-log-matches = { $current } of { $count }
+ui-log-noMatches = No matches
+ui-log-invalidRegex = Not a valid regular expression
+ui-log-skipped = { $count ->
+        [one] — { NUM($count) } line skipped —
+       *[other] — { NUM($count) } lines skipped —
+    }

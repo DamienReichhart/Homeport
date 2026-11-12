@@ -3332,6 +3332,7 @@ dependencies = [
  "jiff",
  "log",
  "png 0.18.1",
+ "regex",
  "serde",
  "serde_json",
  "sys-locale",

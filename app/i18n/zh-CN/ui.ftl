@@ -38,3 +38,15 @@ ui-confirm-typeName = 输入 { $name } 以确认
 ui-select-noMatch = 没有匹配项。
 ui-password-show = 显示密码
 ui-password-hide = 隐藏密码
+ui-log-wrap = 自动换行
+ui-log-latest = 跳到最新
+ui-log-matchCase = 区分大小写
+ui-log-regex = 正则表达式
+ui-log-filter = 筛选
+ui-log-filterHint = 仅显示匹配的行
+ui-log-matches = { $current } / { $count }
+ui-log-noMatches = 无匹配项
+ui-log-invalidRegex = 正则表达式无效
+ui-log-skipped = { $count ->
+       *[other] — 已跳过 { NUM($count) } 行 —
+    }

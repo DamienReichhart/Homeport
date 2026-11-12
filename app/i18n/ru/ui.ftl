@@ -41,3 +41,18 @@ ui-confirm-typeName = Введите { $name } для подтверждения
 ui-select-noMatch = Ничего не найдено.
 ui-password-show = Показать пароль
 ui-password-hide = Скрыть пароль
+ui-log-wrap = Переносить строки
+ui-log-latest = К последним строкам
+ui-log-matchCase = Учитывать регистр
+ui-log-regex = Регулярное выражение
+ui-log-filter = Фильтр
+ui-log-filterHint = Показывать только подходящие строки
+ui-log-matches = { $current } из { $count }
+ui-log-noMatches = Нет совпадений
+ui-log-invalidRegex = Недопустимое регулярное выражение
+ui-log-skipped = { $count ->
+        [one] — пропущена { NUM($count) } строка —
+        [few] — пропущено { NUM($count) } строки —
+        [many] — пропущено { NUM($count) } строк —
+       *[other] — пропущено { NUM($count) } строки —
+    }

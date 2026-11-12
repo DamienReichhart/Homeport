@@ -145,6 +145,19 @@ impl Operation for Cut {
     }
 }
 
+/// Collects what every text of the view says.
+struct Said(Vec<String>);
+
+impl Operation for Said {
+    fn traverse(&mut self, operate: &mut dyn FnMut(&mut dyn Operation)) {
+        operate(self);
+    }
+
+    fn text(&mut self, _id: Option<&Id>, _bounds: Rectangle, text: &str) {
+        self.0.push(text.to_owned());
+    }
+}
+
 struct Scrolled(Vec<Vector>);
 
 impl Operation for Scrolled {
@@ -356,6 +369,14 @@ impl<Message> Frame<'_, '_, Message> {
         let mut cut = Cut(vec![]);
         self.ui.operate(self.renderer, &mut cut);
         cut.0
+    }
+
+    /// What every text of the view says, in layout order: the rows of a
+    /// widget that draws its own text among them.
+    pub fn texts(&mut self) -> Vec<String> {
+        let mut said = Said(vec![]);
+        self.ui.operate(self.renderer, &mut said);
+        said.0
     }
 
     /// How far each scrollable of the view is scrolled, in layout order.

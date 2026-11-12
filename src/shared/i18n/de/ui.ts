@@ -37,4 +37,15 @@ export default {
   'ui.select.noMatch': 'Keine Treffer.',
   'ui.password.show': 'Passwort anzeigen',
   'ui.password.hide': 'Passwort verbergen',
+  'ui.log.wrap': 'Zeilen umbrechen',
+  'ui.log.latest': 'Zum Neuesten springen',
+  'ui.log.matchCase': 'Groß-/Kleinschreibung beachten',
+  'ui.log.regex': 'Regulärer Ausdruck',
+  'ui.log.filter': 'Filtern',
+  'ui.log.filterHint': 'Nur passende Zeilen anzeigen',
+  'ui.log.matches': '{current} von {count}',
+  'ui.log.noMatches': 'Keine Treffer',
+  'ui.log.invalidRegex': 'Kein gültiger regulärer Ausdruck',
+  'ui.log.skipped':
+    '{count, plural, one {— # Zeile übersprungen —} other {— # Zeilen übersprungen —}}',
 } satisfies Translation<typeof en>;

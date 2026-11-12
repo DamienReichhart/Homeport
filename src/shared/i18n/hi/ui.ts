@@ -37,4 +37,15 @@ export default {
   'ui.select.noMatch': 'कुछ भी मेल नहीं खाता।',
   'ui.password.show': 'पासवर्ड दिखाएँ',
   'ui.password.hide': 'पासवर्ड छिपाएँ',
+  'ui.log.wrap': 'पंक्तियाँ लपेटें',
+  'ui.log.latest': 'नवीनतम पर जाएँ',
+  'ui.log.matchCase': 'केस मिलाएँ',
+  'ui.log.regex': 'रेगुलर एक्सप्रेशन',
+  'ui.log.filter': 'फ़िल्टर',
+  'ui.log.filterHint': 'केवल मेल खाने वाली पंक्तियाँ दिखाएँ',
+  'ui.log.matches': '{count} में से {current}',
+  'ui.log.noMatches': 'कोई मिलान नहीं',
+  'ui.log.invalidRegex': 'मान्य रेगुलर एक्सप्रेशन नहीं',
+  'ui.log.skipped':
+    '{count, plural, one {— # पंक्ति छोड़ी गई —} other {— # पंक्तियाँ छोड़ी गईं —}}',
 } satisfies Translation<typeof en>;

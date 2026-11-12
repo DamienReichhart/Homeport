@@ -39,3 +39,16 @@ ui-confirm-typeName = Digita { $name } per confermare
 ui-select-noMatch = Nessun risultato.
 ui-password-show = Mostra la password
 ui-password-hide = Nascondi la password
+ui-log-wrap = A capo automatico
+ui-log-latest = Vai alle ultime righe
+ui-log-matchCase = Maiuscole/minuscole
+ui-log-regex = Espressione regolare
+ui-log-filter = Filtra
+ui-log-filterHint = Mostra solo le righe corrispondenti
+ui-log-matches = { $current } di { $count }
+ui-log-noMatches = Nessun risultato
+ui-log-invalidRegex = Espressione regolare non valida
+ui-log-skipped = { $count ->
+        [one] — { NUM($count) } riga saltata —
+       *[other] — { NUM($count) } righe saltate —
+    }

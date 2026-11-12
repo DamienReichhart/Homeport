@@ -43,3 +43,20 @@ ui-confirm-typeName = اكتب { $name } للتأكيد
 ui-select-noMatch = لا توجد نتائج مطابقة.
 ui-password-show = إظهار كلمة المرور
 ui-password-hide = إخفاء كلمة المرور
+ui-log-wrap = التفاف الأسطر
+ui-log-latest = الانتقال إلى الأحدث
+ui-log-matchCase = مطابقة حالة الأحرف
+ui-log-regex = تعبير نمطي
+ui-log-filter = تصفية
+ui-log-filterHint = إظهار الأسطر المطابقة فقط
+ui-log-matches = { $current } من { $count }
+ui-log-noMatches = لا توجد نتائج مطابقة
+ui-log-invalidRegex = تعبير نمطي غير صالح
+ui-log-skipped = { $count ->
+        [zero] — لم يُتخطَّ أي سطر —
+        [one] — تم تخطي سطر واحد —
+        [two] — تم تخطي سطرين —
+        [few] — تم تخطي { NUM($count) } أسطر —
+        [many] — تم تخطي { NUM($count) } سطرًا —
+       *[other] — تم تخطي { NUM($count) } سطر —
+    }

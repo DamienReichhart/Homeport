@@ -38,3 +38,15 @@ ui-confirm-typeName = 確認のため { $name } と入力してください
 ui-select-noMatch = 一致するものはありません。
 ui-password-show = パスワードを表示
 ui-password-hide = パスワードを非表示
+ui-log-wrap = 行を折り返す
+ui-log-latest = 最新へ移動
+ui-log-matchCase = 大文字と小文字を区別
+ui-log-regex = 正規表現
+ui-log-filter = フィルター
+ui-log-filterHint = 一致する行のみ表示
+ui-log-matches = { $current } / { $count }
+ui-log-noMatches = 一致なし
+ui-log-invalidRegex = 正規表現が正しくありません
+ui-log-skipped = { $count ->
+       *[other] — { NUM($count) } 行をスキップ —
+    }

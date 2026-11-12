@@ -39,3 +39,16 @@ ui-confirm-typeName = Saisissez { $name } pour confirmer
 ui-select-noMatch = Aucun résultat.
 ui-password-show = Afficher le mot de passe
 ui-password-hide = Masquer le mot de passe
+ui-log-wrap = Retour à la ligne
+ui-log-latest = Aller aux dernières lignes
+ui-log-matchCase = Respecter la casse
+ui-log-regex = Expression régulière
+ui-log-filter = Filtrer
+ui-log-filterHint = N’afficher que les lignes correspondantes
+ui-log-matches = { $current } sur { $count }
+ui-log-noMatches = Aucun résultat
+ui-log-invalidRegex = Expression régulière non valide
+ui-log-skipped = { $count ->
+        [one] — { NUM($count) } ligne ignorée —
+       *[other] — { NUM($count) } lignes ignorées —
+    }

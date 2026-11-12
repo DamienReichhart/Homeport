@@ -38,4 +38,15 @@ export default {
   'ui.select.noMatch': 'Ничего не найдено.',
   'ui.password.show': 'Показать пароль',
   'ui.password.hide': 'Скрыть пароль',
+  'ui.log.wrap': 'Переносить строки',
+  'ui.log.latest': 'К последним строкам',
+  'ui.log.matchCase': 'Учитывать регистр',
+  'ui.log.regex': 'Регулярное выражение',
+  'ui.log.filter': 'Фильтр',
+  'ui.log.filterHint': 'Показывать только подходящие строки',
+  'ui.log.matches': '{current} из {count}',
+  'ui.log.noMatches': 'Нет совпадений',
+  'ui.log.invalidRegex': 'Недопустимое регулярное выражение',
+  'ui.log.skipped':
+    '{count, plural, one {— пропущена # строка —} few {— пропущено # строки —} many {— пропущено # строк —} other {— пропущено # строки —}}',
 } satisfies Translation<typeof en>;

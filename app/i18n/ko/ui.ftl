@@ -38,3 +38,15 @@ ui-confirm-typeName = 확인하려면 { $name } 이름을 입력하세요
 ui-select-noMatch = 일치하는 항목이 없습니다.
 ui-password-show = 비밀번호 표시
 ui-password-hide = 비밀번호 숨기기
+ui-log-wrap = 줄 바꿈
+ui-log-latest = 최신으로 이동
+ui-log-matchCase = 대소문자 구분
+ui-log-regex = 정규식
+ui-log-filter = 필터
+ui-log-filterHint = 일치하는 줄만 표시
+ui-log-matches = { $current } / { $count }
+ui-log-noMatches = 일치 항목 없음
+ui-log-invalidRegex = 올바른 정규식이 아닙니다
+ui-log-skipped = { $count ->
+       *[other] — { NUM($count) }줄 건너뜀 —
+    }

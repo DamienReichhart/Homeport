@@ -9,6 +9,7 @@
 
 mod controls;
 mod feedback;
+pub mod log;
 #[cfg(test)]
 mod stage_tests;
 pub mod table;
@@ -36,7 +37,7 @@ use super::{
     },
     focus,
     form::{select, Errors},
-    line,
+    line, log as log_widget,
     overlay::{self, menu},
     stack, table as table_widget,
 };
@@ -66,6 +67,7 @@ pub enum Page {
     Feedback,
     Controls,
     Table,
+    Log,
 }
 
 pub struct Gallery {
@@ -95,6 +97,10 @@ pub struct Gallery {
     pub table_show: table::Show,
     pub table_grouped: bool,
     pub table_columns: menu::State,
+    pub log: log_widget::State,
+    pub log_streaming: bool,
+    /// How many lines the gallery's stream has written.
+    pub log_written: usize,
 }
 
 #[derive(Debug, Clone)]
@@ -130,6 +136,9 @@ pub enum Message {
     TableShow(table::Show),
     TableGrouped(bool),
     TableColumns(menu::Event),
+    Log(log_widget::Message),
+    LogFill(log::Fill),
+    LogTick,
     Nothing,
 }
 
@@ -172,6 +181,9 @@ impl Default for Gallery {
             table_show: table::Show::Rows,
             table_grouped: false,
             table_columns: menu::State::default(),
+            log: log::filled(log::CAP, log::sample()),
+            log_streaming: false,
+            log_written: 0,
         }
     }
 }
@@ -338,6 +350,9 @@ impl Gallery {
                 self.table_show = table::Show::Rows;
             }
             Message::TableShow(show) => self.table_show = show,
+            Message::Log(message) => return self.log_message(message),
+            Message::LogFill(fill) => return self.log_fill(fill),
+            Message::LogTick => return self.log_tick(),
             Message::Nothing => {}
         }
         Task::none()
@@ -349,6 +364,7 @@ impl Gallery {
             Page::Feedback => self.feedback(),
             Page::Controls => self.controls(),
             Page::Table => self.tables(),
+            Page::Log => self.logs(),
         };
         let page =
             stack(vec![self.switches(), rule::horizontal(1).into(), body]).spacing(space::S6);
@@ -372,7 +388,11 @@ impl Gallery {
     pub fn subscription(&self) -> Subscription<Message> {
         // Tab moves focus when nothing (a dialog, a panel) kept it.
         let tab = focus::tab_presses().map(Message::Tab);
-        Subscription::batch([tab, self.toasts.subscription().map(Message::Toast)])
+        Subscription::batch([
+            tab,
+            self.toasts.subscription().map(Message::Toast),
+            self.log_subscription(),
+        ])
     }
 
     fn switches(&self) -> Element<'_, Message> {
@@ -407,6 +427,7 @@ impl Gallery {
                 Message::Page(Page::Table),
                 self.page == Page::Table,
             ),
+            choice("Log", Message::Page(Page::Log), self.page == Page::Log),
             choice("Light", Message::Theme(Theme::Light), !self.theme.is_dark()),
             choice("Dark", Message::Theme(Theme::Dark), self.theme.is_dark()),
             choice("English", Message::Language("en"), !rtl),

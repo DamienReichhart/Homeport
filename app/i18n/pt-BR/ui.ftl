@@ -39,3 +39,16 @@ ui-confirm-typeName = Digite { $name } para confirmar
 ui-select-noMatch = Nada corresponde.
 ui-password-show = Mostrar a senha
 ui-password-hide = Ocultar a senha
+ui-log-wrap = Quebrar linhas
+ui-log-latest = Ir para o mais recente
+ui-log-matchCase = Diferenciar maiúsculas
+ui-log-regex = Expressão regular
+ui-log-filter = Filtrar
+ui-log-filterHint = Mostrar só as linhas correspondentes
+ui-log-matches = { $current } de { $count }
+ui-log-noMatches = Nenhum resultado
+ui-log-invalidRegex = Expressão regular inválida
+ui-log-skipped = { $count ->
+        [one] — { NUM($count) } linha ignorada —
+       *[other] — { NUM($count) } linhas ignoradas —
+    }
