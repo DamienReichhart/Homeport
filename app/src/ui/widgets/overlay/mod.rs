@@ -62,6 +62,30 @@ pub fn popover<'a, Message: Clone + 'a>(
     anchored(anchor, panel, placement).on_dismiss(on_dismiss)
 }
 
+/// `WithShortcut`: a tooltip that says what `anchor` does and the keys
+/// that do the same (`["N"]`, `["Ctrl", "K"]`).
+pub fn tooltip_with_keys<'a, Message: Clone + 'a>(
+    anchor: impl Into<Element<'a, Message>>,
+    label: impl Into<String>,
+    keys: &[String],
+    side: Side,
+) -> Anchored<'a, Message> {
+    let says = crate::ui::widgets::line(vec![
+        text(label.into()).size(size::XS).into(),
+        crate::ui::widgets::basic::keys(keys),
+    ])
+    .spacing(space::S2);
+    let panel = container(says)
+        .padding([space::S1_5, space::S3])
+        .style(theme::container::tooltip);
+    hovered(
+        anchor,
+        panel,
+        Placement::new(side, Align::Center),
+        TOOLTIP_DELAY,
+    )
+}
+
 /// `Tooltip`: `label` over `anchor` while the pointer rests on it or it has
 /// keyboard focus.
 pub fn tooltip<'a, Message: Clone + 'a>(

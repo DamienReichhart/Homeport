@@ -112,6 +112,15 @@ pub enum Message {
     Checked(Finished<Vec<FreshnessResult>>),
 }
 
+#[cfg(test)]
+impl Check {
+    /// The end of the check that is on its way, as if the registries had
+    /// answered `results`: for the tests of a page, which has no Engine.
+    pub fn answered(&self, results: Vec<FreshnessResult>) -> Message {
+        Message::Checked(self.0.ending_with(Ok(results)))
+    }
+}
+
 impl Check {
     pub fn is_pending(&self) -> bool {
         self.0.is_pending()

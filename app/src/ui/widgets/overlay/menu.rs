@@ -130,6 +130,41 @@ pub enum Item<Message> {
 }
 
 impl<Message> Item<Message> {
+    /// The same item for a page whose messages wrap this one's: the items
+    /// of a menu something shared builds (a container's).
+    pub fn map<Outer>(self, wrap: &impl Fn(Message) -> Outer) -> Item<Outer> {
+        match self {
+            Self::Action {
+                label,
+                glyph,
+                shortcut,
+                message,
+                destructive,
+                checked,
+                tone,
+            } => Item::Action {
+                label,
+                glyph,
+                shortcut,
+                message: message.map(wrap),
+                destructive,
+                checked,
+                tone,
+            },
+            Self::Label(label) => Item::Label(label),
+            Self::Separator => Item::Separator,
+            Self::Sub {
+                label,
+                glyph,
+                items,
+            } => Item::Sub {
+                label,
+                glyph,
+                items: items.into_iter().map(|item| item.map(wrap)).collect(),
+            },
+        }
+    }
+
     pub fn action(label: impl Into<String>, message: Message) -> Self {
         Self::Action {
             label: label.into(),

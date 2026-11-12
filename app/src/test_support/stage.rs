@@ -208,6 +208,77 @@ impl<Message> Frame<'_, '_, Message> {
         self.redraw();
     }
 
+    /// Shift+Tab, as the window does it.
+    pub fn tab_back(&mut self) {
+        let shift = keyboard::Modifiers::SHIFT;
+        let events: Vec<Event> = simulator::tap_key(keyboard::key::Named::Tab, None)
+            .map(|event| match event {
+                Event::Keyboard(keyboard::Event::KeyPressed {
+                    key,
+                    modified_key,
+                    physical_key,
+                    location,
+                    text,
+                    repeat,
+                    ..
+                }) => Event::Keyboard(keyboard::Event::KeyPressed {
+                    key,
+                    modified_key,
+                    physical_key,
+                    location,
+                    modifiers: shift,
+                    text,
+                    repeat,
+                }),
+                other => other,
+            })
+            .collect();
+        let (_, statuses) = self.ui.update(
+            &events,
+            *self.cursor,
+            self.renderer,
+            &mut clipboard::Null,
+            &mut self.messages,
+        );
+        if statuses.first() == Some(&iced::event::Status::Ignored) {
+            self.operate(Box::new(operation::focusable::focus_previous()));
+        }
+        self.redraw();
+    }
+
+    /// Runs a widget operation to its end, as the window does one a task
+    /// asked for.
+    fn operate(&mut self, mut operation: Box<dyn Operation<()>>) {
+        loop {
+            self.ui
+                .operate(self.renderer, &mut operation::black_box(&mut operation));
+            match operation.finish() {
+                operation::Outcome::Chain(then) => operation = then,
+                _ => break,
+            }
+        }
+    }
+
+    /// Runs what an `update` returned on this view: what it asks of the
+    /// widgets (focus this field, select its text) is done here, and the
+    /// messages it produced are returned.
+    pub fn perform<T: Send + 'static>(&mut self, task: iced::Task<T>) -> Vec<T> {
+        use iced::futures::StreamExt;
+        let Some(mut actions) = iced_runtime::task::into_stream(task) else {
+            return vec![];
+        };
+        let mut produced = vec![];
+        while let Some(action) = block_on(actions.next()) {
+            match action {
+                iced_runtime::Action::Output(message) => produced.push(message),
+                iced_runtime::Action::Widget(operation) => self.operate(operation),
+                _ => {}
+            }
+        }
+        self.redraw();
+        produced
+    }
+
     /// Whether a button shows a focus ring.
     pub fn shows_focus(&mut self) -> bool {
         let mut shown = crate::ui::widgets::focus::Shown(false);

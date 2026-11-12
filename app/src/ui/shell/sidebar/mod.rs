@@ -23,11 +23,11 @@ use crate::{
             Element, Icon,
         },
         widgets::{
-            basic::{self, scroll_area},
+            basic::scroll_area,
             filling,
             focus::pressable,
             line,
-            overlay::{self, hovered, menu, Align, Placement, Side},
+            overlay::{self, menu, Side},
             stack,
         },
     },
@@ -104,19 +104,7 @@ fn with_keys<'a>(
     label: String,
     keys: &[String],
 ) -> Element<'a, Message> {
-    let tip = container(
-        line(vec![text(label).size(size::XS).into(), basic::keys(keys)]).spacing(space::S2),
-    )
-    .padding([space::S1_5, space::S3])
-    .style(theme::container::tooltip);
-    let side = Side::end(i18n::direction());
-    hovered(
-        entry,
-        tip,
-        Placement::new(side, Align::Center),
-        overlay::TOOLTIP_DELAY,
-    )
-    .into()
+    overlay::tooltip_with_keys(entry, label, keys, Side::end(i18n::direction())).into()
 }
 
 pub fn view<'a>(sidebar: &Sidebar<'a>) -> Element<'a, Message> {

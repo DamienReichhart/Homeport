@@ -46,6 +46,18 @@ pub enum Subject {
     Swarm { swarm_id: String },
 }
 
+impl Subject {
+    /// The Host a Host's page is about, whatever its Engine.
+    pub fn host_id(&self) -> Option<&str> {
+        match self {
+            Self::Host { host_id }
+            | Self::Containerd { host_id, .. }
+            | Self::Incus { host_id, .. } => Some(host_id),
+            Self::App | Self::Cluster { .. } | Self::Swarm { .. } => None,
+        }
+    }
+}
+
 /// What a gate decided.
 #[derive(Debug, Clone)]
 pub enum Verdict<'a> {

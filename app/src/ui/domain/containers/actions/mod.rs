@@ -12,7 +12,7 @@
 //! Edit, Duplicate, Commit and Export are in the menu and can't be chosen:
 //! their dialogs are the detail and run tickets' (#258, #259).
 
-mod view;
+pub mod view;
 
 #[cfg(test)]
 mod tests;
