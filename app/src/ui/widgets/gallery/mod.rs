@@ -11,6 +11,7 @@ mod controls;
 mod feedback;
 #[cfg(test)]
 mod stage_tests;
+pub mod table;
 #[cfg(test)]
 mod tests;
 
@@ -37,7 +38,7 @@ use super::{
     form::{select, Errors},
     line,
     overlay::{self, menu},
-    stack,
+    stack, table as table_widget,
 };
 use crate::{
     i18n,
@@ -64,6 +65,7 @@ pub enum Page {
     #[default]
     Feedback,
     Controls,
+    Table,
 }
 
 pub struct Gallery {
@@ -88,6 +90,9 @@ pub struct Gallery {
     pub notes: text_editor::Content,
     pub errors: Errors,
     pub checked: bool,
+    pub table: table_widget::State<u32>,
+    pub table_rows: Vec<table::Sample>,
+    pub table_show: table::Show,
 }
 
 #[derive(Debug, Clone)]
@@ -118,6 +123,9 @@ pub enum Message {
     Notes(text_editor::Action),
     Checked(bool),
     Chosen(&'static str),
+    Table(table_widget::Message<u32>),
+    TableRows(u32),
+    TableShow(table::Show),
     Nothing,
 }
 
@@ -150,6 +158,14 @@ impl Default for Gallery {
             notes: text_editor::Content::with_text("Two lines\nof notes."),
             errors,
             checked: true,
+            table: table_widget::State::new()
+                .selecting(table_widget::Mode::Multi)
+                .sorted(table_widget::Sort::by(
+                    "name",
+                    table_widget::Order::Ascending,
+                )),
+            table_rows: table::samples(12),
+            table_show: table::Show::Rows,
         }
     }
 }
@@ -297,6 +313,18 @@ impl Gallery {
             Message::Chosen(what) => {
                 self.toasts.say(Kind::Info, move || what.to_owned());
             }
+            Message::Table(message) => {
+                let opened = self.table.update(message, &self.table_rows, |row| row.id);
+                if let Some(table_widget::Event::Opened(id)) = opened {
+                    let name = self.table_rows[id as usize].name.clone();
+                    self.toasts.say(Kind::Info, move || name.clone());
+                }
+            }
+            Message::TableRows(count) => {
+                self.table_rows = table::samples(count);
+                self.table_show = table::Show::Rows;
+            }
+            Message::TableShow(show) => self.table_show = show,
             Message::Nothing => {}
         }
         Task::none()
@@ -307,6 +335,7 @@ impl Gallery {
         let body = match self.page {
             Page::Feedback => self.feedback(),
             Page::Controls => self.controls(),
+            Page::Table => self.tables(),
         };
         let page =
             stack(vec![self.switches(), rule::horizontal(1).into(), body]).spacing(space::S6);
@@ -359,6 +388,11 @@ impl Gallery {
                 "Controls",
                 Message::Page(Page::Controls),
                 self.page == Page::Controls,
+            ),
+            choice(
+                "Table",
+                Message::Page(Page::Table),
+                self.page == Page::Table,
             ),
             choice("Light", Message::Theme(Theme::Light), !self.theme.is_dark()),
             choice("Dark", Message::Theme(Theme::Dark), self.theme.is_dark()),

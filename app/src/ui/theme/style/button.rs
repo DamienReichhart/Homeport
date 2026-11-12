@@ -10,7 +10,7 @@ use iced::{
     Background, Color,
 };
 
-use super::{alpha, hairline, radius, Theme, DISABLED};
+use super::{alpha, field, hairline, radius, Theme, DISABLED};
 use crate::ui::theme::color::mix;
 
 impl Catalog for Theme {
@@ -225,6 +225,39 @@ pub mod part {
             border: Color::TRANSPARENT,
         };
         rounded(build(status, look(false), look(true)), radius::MD)
+    }
+
+    /// A button that is its text and nothing else, in the colour around
+    /// it: the header of a column that sorts (`rounded-sm`, for its ring).
+    pub fn bare(theme: &Theme, status: Status) -> Style {
+        let look = Look {
+            background: None,
+            text: theme.tokens().foreground,
+            border: Color::TRANSPARENT,
+        };
+        rounded(build(status, look, look), radius::SM)
+    }
+
+    /// `Checkbox`: a box with the field's border; `checked`, it fills
+    /// with the primary colour. Its mark takes the text's colour.
+    pub fn checkbox(checked: bool) -> impl Fn(&Theme, Status) -> Style {
+        move |theme, status| {
+            let tokens = theme.tokens();
+            let look = if checked {
+                Look {
+                    background: Some(tokens.primary),
+                    text: tokens.primary_foreground,
+                    border: tokens.primary,
+                }
+            } else {
+                Look {
+                    background: Some(super::field(theme)),
+                    text: tokens.foreground,
+                    border: tokens.input,
+                }
+            };
+            build(status, look, look)
+        }
     }
 
     /// `TabsTrigger` in a `TabsList` (`bg-muted`): the chosen tab is a chip

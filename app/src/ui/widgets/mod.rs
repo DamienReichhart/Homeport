@@ -7,7 +7,8 @@
 //!   and kept inside the window in one place;
 //! - [`basic`]: buttons, badges, cards, separators, progress, scroll areas;
 //! - [`form`]: fields and the controls that go in them;
-//! - [`feedback`]: failures, toasts, confirmations, loading and empty states.
+//! - [`feedback`]: failures, toasts, confirmations, loading and empty states;
+//! - [`table`]: the data table, which builds only the rows in view.
 //!
 //! A row is written start to end and drawn in the language's direction:
 //! build rows with [`line`] and align with [`start`] and [`end`], and a
@@ -20,6 +21,7 @@ pub mod form;
 #[cfg(any(test, feature = "gallery"))]
 pub mod gallery;
 pub mod overlay;
+pub mod table;
 
 use iced::{
     alignment::{Horizontal, Vertical},
