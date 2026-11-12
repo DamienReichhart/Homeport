@@ -116,6 +116,17 @@ Every feature's `mod.rs` is one line today: `pub use crate::ui::shell::stub::{op
 
 A feature never names another feature: go there with `ctx.open(Route::…)`.
 
+### What the shell leaves to other tickets
+
+The shell has the hook for each of these and nothing behind it yet. None is done until its ticket lands:
+
+- **Links out of the app** (Documentation, GitHub): the shell sends `shell::Event::OpenUrl`, and the window only logs it. The opener comes with the dialogs and opener layer (#253).
+- **The update bar**: it shows when the window sends `shell::Message::UpdateFound`, which nothing sends, and has no install or restart button. "Check for updates" in the palette opens the Settings and sends `shell::Event::CheckForUpdates`, which is only logged. Both are the updater's (#255).
+- **Global search in the palette** (`src/features/search`, the containers, images and volumes found as you type): not ported; the palette lists pages, Hosts and commands only.
+- **The crash page** (`CrashPage.tsx`): iced has no boundary that catches a page's panic; nothing stands in for it.
+- **Tray choices** (`TrayChoices.tsx`: a Host picked in the tray, Add host): the tray is the platform layer's (#252), which will send `shell::Message::Select` and `shell::Message::Go`. `Data::set_hidden` is its to call too.
+- **The terminal's keys**: nothing fires in a terminal in React. The terminal widget's ticket must make its keys reach no shortcut: today a key a widget uses still lets the shortcuts with Mod fire (`shortcuts::keys::Target::Terminal` exists and nothing gives it).
+
 ## Reading data and following streams
 
 `app/src/data/` is to the iced app what TanStack Query and `subscribe()` were to React; a feature never loads, caches or refreshes by itself.
