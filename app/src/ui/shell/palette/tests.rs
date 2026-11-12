@@ -200,3 +200,21 @@ fn the_arrows_move_the_highlight_and_enter_runs_the_row() {
     palette.update(Message::Step(99), &items);
     assert_eq!(palette.active(), palette.listed(&items).len() - 1);
 }
+
+#[test]
+fn the_highlight_stays_on_a_row_when_the_list_gets_shorter() {
+    let _english = in_language("en");
+    let hosts = [connected_host(), unreachable()];
+    let all = items(&source(&hosts, hosts.first()));
+    let mut palette = State::default();
+    palette.update(Message::Toggle, &all);
+    palette.update(Message::Step(99), &all);
+    assert_eq!(palette.active(), all.len() - 1);
+    // The second Host is removed and the selected one goes down: fewer
+    // rows than where the highlight was.
+    let fewer = items(&source(&hosts[..1], None));
+    assert!(fewer.len() < all.len());
+    assert_eq!(palette.highlighted(fewer.len()), fewer.len() - 1);
+    let last = fewer.last().unwrap().act.clone();
+    assert_eq!(palette.update(Message::Submit, &fewer), Some(last));
+}

@@ -71,6 +71,12 @@ impl State {
         self.active
     }
 
+    /// The row the highlight is on among `count` rows: the last one when
+    /// the list got shorter than where it was.
+    pub fn highlighted(&self, count: usize) -> usize {
+        self.active.min(count.saturating_sub(1))
+    }
+
     pub fn recent(&self) -> &[String] {
         &self.recent
     }
@@ -94,6 +100,9 @@ impl State {
     /// the row remembered.
     pub fn update(&mut self, message: Message, items: &[Item]) -> Option<Act> {
         let listed = self.listed(items);
+        // The list may have shrunk under the highlight: a Host removed, a
+        // command hidden as its Host went down.
+        self.active = self.highlighted(listed.len());
         let chosen = match message {
             Message::Toggle if self.open => {
                 self.close();
@@ -135,7 +144,7 @@ impl State {
         'sections: for section in sections(items, &self.query, &self.recent) {
             top += HEADING;
             for _ in section.items {
-                if at == self.active {
+                if at == self.highlighted(self.listed(items).len()) {
                     break 'sections;
                 }
                 top += ROW;

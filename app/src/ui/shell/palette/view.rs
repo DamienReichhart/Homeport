@@ -78,6 +78,7 @@ pub fn palette<'a>(state: &'a State, items: &[Item], mac: bool) -> Option<Modal<
         return None;
     }
     let mut rows: Vec<Element<'a, Message>> = vec![];
+    let active = state.highlighted(state.listed(items).len());
     let mut index = 0;
     for section in sections(items, state.query(), state.recent()) {
         rows.push(
@@ -94,7 +95,7 @@ pub fn palette<'a>(state: &'a State, items: &[Item], mac: bool) -> Option<Modal<
             .into(),
         );
         for item in section.items {
-            rows.push(row(item, index, index == state.active(), mac));
+            rows.push(row(item, index, index == active, mac));
             index += 1;
         }
     }
