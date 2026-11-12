@@ -39,6 +39,8 @@ The theme has its own, `cargo run -p homeport-app --example gallery --features g
 | `checkbox`, `switch`       | iced's `checkbox` and `toggler`, styled by the theme; `form::checkbox` where it is `indeterminate` or must take focus |
 | `table`                    | `table::Table` (_The data table_)                                                                                     |
 
+`LogViewer` (`src/features/containers/ui/logs`, the read-only `XTerm` every log view drew) is `log::Viewer` (_The log viewer_). A row of controls that goes on a second line when it lacks room (`flex flex-wrap`, with `ms-auto` on what goes to the end) is `basic::flow(items).push_from(index)`: it wraps the way the language reads, which iced's own wrapping row doesn't.
+
 `Keys` (`src/shared/ui/data`) is `basic::keys`, `DataTable` is `table::Table`, `SearchInput` is `form::search` (with `form::focus_search` for `/`); `PageHeader` is the shell's `shell::layout::page_header`. `WithShortcut` is `overlay::tooltip_with_keys`. A menu item is mapped to a page's message with `menu::Item::map`, takes a status dot (`menu::Item::status`), an empty state a `detail` (a failure under its title), and `select_owned` is a select over labels the view builds. `focus::key_area(..).on_captured(..)` hears the keys a field or a dialog used: only the shell uses it, for the shortcuts with Mod.
 
 `src/shared/ui/feedback` is `widgets::feedback`, name for name: `error_message`, `Details` (the Details dialog), `Toasts::failure` (`toastError`), `confirm_dialog` (`ConfirmDialog`, `useConfirmedAction`), `empty_state`, `hint_view`, `spinner`, `status_dot`.
@@ -94,6 +96,73 @@ What a view costs is held two ways (`table/tests/`). `counts.rs` runs with every
 
 A row that changed costs 0.65 to 0.72 ms of `view` at 20,000 rows. The pixels are the software renderer's, the same for 100 rows as for 100,000, and by themselves about a frame at 60 a second on that machine; the window draws with wgpu, which was not measured.
 
+## The log viewer
+
+`widgets::log` is `LogViewer`: the lines of one or several sources as they come, followed, searched, selected and saved. It is not a terminal: it keeps lines, not a screen. Look at it on the gallery's _Log_ page (a sample, a million lines, or a stream of 50,000 lines a second); `log/mod.rs` has the example to copy.
+
+- **The page keeps a `log::State`**, made once in `open` with how many lines to keep: `log::State::new(cap)` (the cap is a setting upstream; `.wrapping(false)`, `.with_timestamps(true)` and `.with_sources(labels)` say how it starts). `log::Viewer::new(&state, Message::Log).toolbar(controls).failed(failure).height(..).view()` draws it: `toolbar` is what the page adds before the viewer's own controls (which container, how far back, stdout and stderr apart), `failed` an `error_message` shown over the lines when the stream broke. It takes the height it is given; in a page that scrolls, give it one (`.height(420.0)`).
+- **`state.update(message)` takes every `log::Message`** and returns `(Task<log::Message>, Option<log::Event>)`. Map the task to the page's message and return it: it is how a search reads a large buffer, how a large selection is copied, and how Ctrl + F reaches the search field. Act on the event: `Event::Copy(text)` is for `ctx.copy`; `Event::Download(lines)` is what to save (below); `Event::Timestamps(on)` tells a page whose stream is asked for timestamps only while they show to open it again, as the React viewer did; `Event::Cleared` says the Clear button was pressed.
+- **A stream feeds it** through the page's `subscription` (`streams::subscription(.., shapes::logs)`, or `shapes::lines` over another `*_subscribe`). For each `Update::Batch { items, dropped }`: `let batch = shapes::log_lines(items)`, then `state.skipped(dropped)`, `state.extend(batch.lines.into_iter().map(log::Line::from))` (return its task, mapped), `state.end()` if `batch.ended`, and keep `batch.error` as a `Surfaced` for `.failed(..)`. Batches come at most 60 times a second, so a stream of 50,000 lines a second is 60 calls of about 833 lines; `extend` looks at the new lines only. `Update::Failed` is a failure too; `Update::Ended` needs nothing more.
+- **Timestamps.** A line that starts with the time it was written says so: `log::Line::from(line).timestamped(true)`. The Timestamps toggle then shows and hides them without the stream being opened again, so ask the Engine for timestamps from the start (`LogOptions::timestamps`) and leave them hidden (`with_timestamps(false)`). What stands before the first space of such a line is taken for its timestamp (up to 64 ASCII bytes), as `renderLine` did.
+- **Several sources** (`Line::source`, which `From<LogLine>` fills): each line starts with its source's label, padded to the longest and in one of six colours, in the order the sources were first seen; `with_sources` gives that order before any line came. Each source has its own terminal state, so a colour one of them left open does not run into the others' lines.
+- **Following.** The view stays on the latest line. A scroll up (the wheel, a key, the thumb) pauses it: it then stays on its line whatever comes after and whatever is dropped before, until that line is itself dropped (it is then on the oldest line kept). It follows again when scrolled back to the end, with End, the Follow toggle, or "Jump to latest", which shows over the last rows while the view is paused.
+- **Colours.** SGR sequences are read (the 16 colours and their bright forms, the 256, 24-bit colours with `;` or `:`, bold, dim, italic, underline, inverse, strike, and every reset); every other escape sequence is taken out and never drawn; a sequence cut by the end of a line is finished by the start of the next. The 16 are the theme's terminal palette; any colour that would not read on what is behind it (3:1) is moved towards the text's colour until it does, so both themes stay readable. Bold is the bright colour: the monospaced face has one weight. A tab goes to the next multiple of eight cells, and a carriage return starts the line over (a progress bar keeps its last state).
+- **Wrapping.** A line longer than the viewer goes on the next row at the viewer's last cell, as in a terminal (not at a word); the Wrap toggle turns that off, and long lines then scroll sideways (Shift with the wheel, Left and Right, the thumb under the rows). A wrapped line is as many rows as its cells divided by the viewer's: the font is monospaced, so no line is ever measured, and the view is anchored to a line and a row of it, never to a distance in pixels. Whatever the width, only the lines in view are looked at, and a row that stays in view is not shaped again.
+- **Searching** is done as the query is typed, whatever the case unless "Aa" is on, as text unless ".\*" makes it a regular expression (the `regex` crate's: linear time, no look-around). Matches are marked and counted ("3 of 17"), Enter in the field or F3 goes to the next and Shift with either to the one before, round at the ends, bringing the match into view (which pauses the view). A regular expression that can't be read marks the field and says so; nothing is searched until it is mended. `Filter` shows only the lines that match. Up to 2,048 unread lines are read in `update`; more are read 65,536 at a time by a task on a blocking thread, so typing a letter over a million lines returns at once and the count grows as slices come back.
+- **Selecting** is by text, as in a terminal: a drag, a press with Shift from where the selection started, two presses for a word, three for a line, Ctrl or Cmd + A for everything. Ctrl or Cmd + C and the Copy button give `Event::Copy` with what shows (labels and timestamps included, colours not), a wrapped line as one line. A selection over more than 4,096 lines is read by a task.
+- **Saving.** `Event::Download(lines)` carries the lines as they were when the button was pressed (`lines.lines()`, `lines.write_to(file)`, `lines.len()`): `source | text` without colours, with timestamps while they show. It is cheap to hold and can be written on another thread. The file dialog is #253's: until then a page can only drop it.
+- **In Arabic** the controls, the scrollbar and "Jump to latest" mirror; the log's text starts on the left and Left and Right scroll it the same way.
+- **Accessibility**: nothing is wired, as for the table (#228).
+
+The keyboard, while the rows have focus (`log/pane/input.rs`); they are one Tab stop, after the controls:
+
+| Key                | What it does                                     |
+| ------------------ | ------------------------------------------------ |
+| Up, Down           | a row up, a row down                             |
+| Page Up, Page Down | a screen of rows                                 |
+| Home               | the oldest line                                  |
+| End                | the latest line, which is followed again         |
+| Left, Right        | scroll long lines sideways, when they don't wrap |
+| Ctrl or Cmd + A    | selects every line that shows                    |
+| Ctrl or Cmd + C    | copies the selection                             |
+| Ctrl or Cmd + F    | goes to the search field                         |
+| F3, Shift + F3     | the next match, the one before                   |
+| Escape             | deselects                                        |
+
+`/` on a page is `form::focus_search(state.search_id())`.
+
+Its limits:
+
+- **Memory** is the text, sixteen bytes a line, sixteen a coloured run and sixteen a line that matches the search: about 130 MB for a million lines of a hundred bytes. The cap is the only bound; nothing is written to disk.
+- **Cells are counted, not measured.** A character is one cell, two for East Asian wide characters and emoji, none for combining marks. Text the monospaced face draws (Latin, Cyrillic, Greek, box drawing) is exact. For scripts the OS's fonts draw, the marks of a search, a selection's edges and where a wrapped row ends are placed by that count and may be off by a fraction of a character; right-to-left text inside a line is laid out by the shaper within its run, and a selection across it follows cells, not letters.
+- **Stepping to the first match** of a search counts the matches before it: 2 ms at a million matching lines, once per query.
+- **A line of megabytes** (minified JSON) is searched whole on every layout while it is in view.
+- **A batch of 50,000 lines at once** (the stream's whole backlog, when the window was behind) is one `extend` of 13 to 15 ms: a frame is late once.
+- **The selection has no caret**: the keyboard selects everything or nothing. A drag past the rows scrolls only while the pointer moves.
+- **The scrollbar counts lines**, not rows: among wrapped lines of very different lengths the thumb moves unevenly.
+- **Sources**: 65,534 at most; the widest line counted for the sideways scroll is never forgotten until the lines are cleared.
+
+What a frame costs is held by `log/tests/perf.rs` (`cargo test -p homeport-app --lib log::tests::perf -- --ignored --nocapture --test-threads=1`; its rustdoc gives the flags for an optimised build and `LOG_PERF_OPTIMISED=1`), which fails when the viewer's own share of a frame (`update`, `view`, layout, draw) goes over its budget, eight times that when not optimised. A million lines of about a hundred bytes with a colour in each, timestamps showing, a 1100 × 720 window (38 rows of three runs each), 4 cores of a cloud VM:
+
+| What, with 1,000,000 lines kept                                | Budget | Optimised, two runs               | Not optimised  |
+| -------------------------------------------------------------- | ------ | --------------------------------- | -------------- |
+| A frame that changes nothing                                   |        | 0.09 to 0.14 ms                   | 0.8 ms         |
+| A scroll step of three rows, wrapped                           | 2 ms   | 0.23 to 0.31 ms                   | 1.8 ms         |
+| The same, not wrapped                                          | 2 ms   | 0.25 to 0.32 ms                   | 1.8 ms         |
+| The same among 1,000 lines                                     |        | 0.22 to 0.28 ms                   | 1.7 ms         |
+| A page down, or the thumb dragged: every row new               | 4 ms   | 1.5 to 1.6 ms                     | 10.4 ms        |
+| 833 lines appended (a sixtieth of a second at 50,000 a second) | 1 ms   | 0.22 to 0.23 ms                   | 2.4 ms         |
+| The same with a search on                                      | 2 ms   | 0.23 to 0.24 ms                   | 2.4 ms         |
+| The same into a buffer of 1,000 lines                          |        | 0.21 to 0.22 ms                   | 2.4 ms         |
+| 50,000 lines appended at once                                  |        | 13 to 15 ms                       | 146 ms         |
+| A frame following 50,000 lines a second                        | 4 ms   | 1.8 ms (the worst: 1.9 to 2.6 ms) | 12.9 ms (22.4) |
+| The same with a search on                                      | 4 ms   | 1.7 to 1.8 ms                     | 13.4 ms        |
+| The same, paused 200 rows up                                   | 4 ms   | 0.37 to 0.42 ms                   | 3.2 ms         |
+| The longest `update` of a search (typing, a slice coming back) | 2 ms   | 1.4 ms                            | 2.6 ms         |
+| The first step to a match of 4,750,004, then each step         | 4 ms   | 2.0 to 2.3 ms, then 0.0005 ms     | 10.5 ms        |
+
+Following the stream takes the viewer 11 % of the time in an optimised build (214 ms of work for two seconds of lines), 80 % when not optimised: a debug build follows, without room to spare. A search of the million lines is read in 16 slices on another thread in 0.1 to 0.2 s (2 to 3 s not optimised); the longest `update` is the one that reads the query (`regex` builds its matcher there). The software renderer's pixels, 12 to 15 ms for the whole window, are not the viewer's and are the same for 1,000 lines as for 1,000,000; the window draws with wgpu, which was not measured. "Optimised" is the app at `opt-level=2` and the text and search crates at 3: with the table's shorter list of crates the shaper stays unoptimised and a screen of new rows costs 6.7 ms.
+
 ## Rules for a page
 
 - **Rows.** Write a row start to end with `widgets::line` and columns with `widgets::stack`; align with `start()` and `end()`. The page then mirrors in Arabic by itself. For text that fills a row, use `widgets::filling(text)`, and `widgets::paragraph` for body text: a `text` told to fill its width _and_ align right is drawn out of place in a right-to-left script.
@@ -127,3 +196,12 @@ A row that changed costs 0.65 to 0.72 ms of `view` at 20,000 rows. The pixels ar
 - A table's scrollbar is its own (it scrolls rows it has not built): its thumb is darker than a scroll area's `--border`, which could not be seen on a selected row, and it is on the left in Arabic. It has no kinetic or touch scrolling.
 - The filter is given the fields to look in; React's looked in every column that had a value.
 - No expandable rows (no React table had any), no columns to move, no row heights measured from their content (one height per table, `State::row_height`), no pinned column when the columns scroll sideways.
+- The log viewer is a list of lines, not a terminal (React drew logs in a read-only xterm.js): sequences that move the cursor or clear the screen are taken out rather than obeyed, and a carriage return only starts its line over.
+- The log view pauses by itself when scrolled up and follows again at the end; in React it followed until the Follow toggle was turned off, and scrolling up while lines came was undone by the next line. "Jump to latest" is new.
+- The log's Timestamps toggle hides and shows what the lines carry; React opened the stream again each time (a page can still do that: `Event::Timestamps`).
+- The log's search is done as it is typed, counts its matches, and has the case and regular expression toggles and the filter; React searched on Enter, whatever the case, as text. The match the search is on is amber seen through in the dark theme, so the light text on it reads; xterm drew a solid amber.
+- A program's colours are moved until they read on the viewer (3:1); xterm drew them as asked, black on the dark theme's black included. A line of stderr is tinted and marked; React drew both streams alike.
+- The labels of a multi-source log are padded to the longest label there is now; React padded each line to the longest known when it was written. Each source has its own colour state; React's sources shared one terminal's.
+- A log's wrap toggle, its text selection across the scrollback with Ctrl or Cmd + A and C, the lines skipped said between the lines, and a cap the page gives are new: xterm always wrapped, kept 50,000 rows, and the viewer kept 100,000 lines to save.
+- The lines a log saves have no escape sequences; React saved the text as the program wrote it, colours' sequences included.
+- A log stream that breaks is said over the lines with `error_message` (`Viewer::failed`), with its Details; React wrote the message in red among the lines.
