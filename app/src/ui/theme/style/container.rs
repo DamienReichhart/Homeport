@@ -73,6 +73,28 @@ pub fn sidebar_accent(theme: &Theme) -> Style {
     }
 }
 
+/// The bar over every page that says something is wrong with this
+/// machine (`bg-destructive/10 text-destructive`).
+pub fn banner_destructive(theme: &Theme) -> Style {
+    let tokens = theme.tokens();
+    surface(alpha(tokens.destructive, 0.1), tokens.destructive)
+}
+
+/// The bar over every page that tells of something new (`bg-primary/10`).
+pub fn banner(theme: &Theme) -> Style {
+    let tokens = theme.tokens();
+    surface(alpha(tokens.primary, 0.1), tokens.foreground)
+}
+
+/// `<kbd>`: one key of a shortcut.
+pub fn kbd(theme: &Theme) -> Style {
+    let tokens = theme.tokens();
+    Style {
+        border: hairline(tokens.border, radius::LG),
+        ..surface(tokens.muted, tokens.muted_foreground)
+    }
+}
+
 /// `PopoverContent`, a menu, a dialog: what floats over the page.
 pub fn popover(theme: &Theme) -> Style {
     let tokens = theme.tokens();

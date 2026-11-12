@@ -8,7 +8,7 @@ pub mod surface;
 pub use self::{
     fit::{fit, Fit},
     surface::{
-        badge, card, collapsible, progress, scroll_area, separator, separator_vertical,
+        badge, card, collapsible, keys, progress, scroll_area, separator, separator_vertical,
         BadgeVariant,
     },
 };

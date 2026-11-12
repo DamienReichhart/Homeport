@@ -20,6 +20,7 @@ type OnKey<'a, Message> = Box<dyn Fn(&Key, Modifiers) -> Option<Message> + 'a>;
 pub struct KeyArea<'a, Message> {
     content: Element<'a, Message>,
     on_key: OnKey<'a, Message>,
+    on_captured: Option<OnKey<'a, Message>>,
     always: bool,
 }
 
@@ -32,11 +33,21 @@ pub fn key_area<'a, Message>(
     KeyArea {
         content: content.into(),
         on_key: Box::new(on_key),
+        on_captured: None,
         always: false,
     }
 }
 
-impl<Message> KeyArea<'_, Message> {
+impl<'a, Message> KeyArea<'a, Message> {
+    /// A handler for the keys something inside did use (a field that has
+    /// focus, a dialog that keeps the keyboard): the shortcuts that work
+    /// everywhere, as Mod+K. It is told of them; it doesn't take them away.
+    #[must_use]
+    pub fn on_captured(mut self, on_key: impl Fn(&Key, Modifiers) -> Option<Message> + 'a) -> Self {
+        self.on_captured = Some(Box::new(on_key));
+        self
+    }
+
     /// Also when nothing inside has focus: the keys of a whole page.
     #[must_use]
     pub fn always(mut self) -> Self {
@@ -110,6 +121,9 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for KeyArea<'_, Message> {
             return;
         };
         if shell.is_event_captured() {
+            if let Some(message) = self.on_captured.as_ref().and_then(|on| on(key, *modifiers)) {
+                shell.publish(message);
+            }
             return;
         }
         let inside = self.always

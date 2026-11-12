@@ -30,6 +30,23 @@ pub enum BadgeVariant {
     Link,
 }
 
+/// `Keys`: a shortcut's keys, each in its `<kbd>`, in the order they are
+/// pressed (`["Ctrl", "K"]`). Keys read left to right in every language.
+pub fn keys<'a, Message: 'a>(keys: &[String]) -> Element<'a, Message> {
+    let caps = keys.iter().map(|key| {
+        container(text(key.clone()).size(11).font(font::MONO))
+            .padding([0.0, space::S1])
+            .center_x(iced::Length::Shrink)
+            .center_y(16)
+            .style(theme::container::kbd)
+            .into()
+    });
+    iced::widget::Row::with_children(caps)
+        .spacing(space::S0_5)
+        .align_y(iced::alignment::Vertical::Center)
+        .into()
+}
+
 /// `Badge`: a pill that names a state or a count.
 pub fn badge<'a, Message: 'a>(
     label: impl Into<String>,

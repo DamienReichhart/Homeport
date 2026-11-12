@@ -35,10 +35,12 @@ use crate::{
         theme::{
             self, icon,
             metrics::{space, text as size},
+            tokens::Tone,
             Element, Icon,
         },
         widgets::{
             basic::fit,
+            feedback::status_dot,
             filling,
             focus::{key_area, pressable, roving, Axis},
             line, start,
@@ -114,6 +116,8 @@ pub enum Item<Message> {
         destructive: bool,
         /// A check at the end: `DropdownMenuCheckboxItem`.
         checked: Option<bool>,
+        /// A status dot before the label: a Host in a switcher.
+        tone: Option<Tone>,
     },
     /// `DropdownMenuLabel`: names the items under it.
     Label(String),
@@ -134,7 +138,17 @@ impl<Message> Item<Message> {
             message: Some(message),
             destructive: false,
             checked: None,
+            tone: None,
         }
+    }
+
+    /// A dot of `tone` before the label, where an icon would be.
+    #[must_use]
+    pub fn status(mut self, dot: Tone) -> Self {
+        if let Self::Action { tone, .. } = &mut self {
+            *tone = Some(dot);
+        }
+        self
     }
 
     pub fn sub(label: impl Into<String>, items: Vec<Self>) -> Self {
@@ -286,8 +300,10 @@ fn panel<'a, Message: Clone + 'a>(
                 message,
                 destructive,
                 checked,
+                tone,
             } => {
                 let mut parts: Vec<Element<'a, Message>> = vec![];
+                parts.extend(tone.map(status_dot));
                 parts.extend(glyph.map(|glyph| icon_of(glyph, destructive)));
                 parts.push(label_of(label).into());
                 parts.extend(

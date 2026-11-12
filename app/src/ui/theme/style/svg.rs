@@ -24,6 +24,20 @@ pub fn foreground(theme: &Theme, _status: Status) -> Style {
     }
 }
 
+/// The icon of the sidebar entry whose page shows (`text-sidebar-primary`).
+pub fn sidebar_primary(theme: &Theme, _status: Status) -> Style {
+    Style {
+        color: Some(theme.tokens().sidebar.primary),
+    }
+}
+
+/// `text-primary`: the icon of a notice.
+pub fn primary(theme: &Theme, _status: Status) -> Style {
+    Style {
+        color: Some(theme.tokens().primary),
+    }
+}
+
 /// `text-muted-foreground`: a select's chevron, an icon beside a hint.
 pub fn muted(theme: &Theme, _status: Status) -> Style {
     Style {

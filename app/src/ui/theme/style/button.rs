@@ -187,6 +187,33 @@ pub mod part {
         }
     }
 
+    /// An entry of the sidebar: the accent of the sidebar when it is the
+    /// page that shows, a fainter one under the pointer.
+    pub fn nav(current: bool) -> impl Fn(&Theme, Status) -> Style {
+        move |theme, status| {
+            let sidebar = &theme.tokens().sidebar;
+            let idle = Look {
+                background: current.then_some(sidebar.accent),
+                text: if current {
+                    sidebar.accent_foreground
+                } else {
+                    alpha(sidebar.foreground, 0.8)
+                },
+                border: Color::TRANSPARENT,
+            };
+            let hover = Look {
+                background: Some(if current {
+                    sidebar.accent
+                } else {
+                    alpha(sidebar.accent, 0.6)
+                }),
+                text: sidebar.accent_foreground,
+                border: Color::TRANSPARENT,
+            };
+            rounded(build(status, idle, hover), radius::MD)
+        }
+    }
+
     /// `variant="destructive"` of a menu item: red text, a red tint under
     /// the pointer.
     pub fn destructive_item(theme: &Theme, status: Status) -> Style {

@@ -10,6 +10,9 @@
 //! `ArchiveRestoreIcon` → [`Icon::ArchiveArrowUp`], `FileCode2Icon` →
 //! [`Icon::FileCodeCorner`], `ShieldQuestionIcon` →
 //! [`Icon::ShieldQuestionMark`].
+//!
+//! [`Icon::Github`] is the one that isn't Lucide's, which has no brand
+//! icons: GitHub's mark, as `GitHubIcon` drew it.
 
 use iced::{
     advanced::{
@@ -111,6 +114,7 @@ icons! {
     FolderTree => "folder-tree",
     Gauge => "gauge",
     GitCommitHorizontal => "git-commit-horizontal",
+    Github => "github",
     Group => "group",
     Hammer => "hammer",
     HardDrive => "hard-drive",
