@@ -57,6 +57,8 @@ pub struct Anchored<'a, Message> {
     modal: bool,
     match_width: bool,
     take_focus: Option<usize>,
+    /// Asked of the anchor's own state before a hovered panel shows.
+    only_while: Option<fn(&Tree) -> bool>,
 }
 
 /// `anchor`, with `panel` floating beside it while there is one. Give it
@@ -76,6 +78,7 @@ pub fn anchored<'a, Message>(
         modal: false,
         match_width: false,
         take_focus: Some(0),
+        only_while: None,
     }
 }
 
@@ -114,6 +117,14 @@ impl<Message> Anchored<'_, Message> {
     #[must_use]
     pub fn modal(mut self) -> Self {
         self.modal = true;
+        self
+    }
+
+    /// A hovered panel shows only while `shows` says so of the anchor's
+    /// own state: the tooltip of a text only while the text is cut.
+    #[must_use]
+    pub fn only_while(mut self, shows: fn(&Tree) -> bool) -> Self {
+        self.only_while = Some(shows);
         self
     }
 
@@ -260,6 +271,7 @@ impl<Message: Clone> Widget<Message, Theme, iced::Renderer> for Anchored<'_, Mes
             .is_some();
         let ring = focus::is_visible_within(anchor, &mut tree.children[0], layout, renderer);
         let over = cursor.is_over(layout.bounds());
+        let allowed = self.only_while.is_none_or(|shows| shows(&tree.children[0]));
         let state = tree.state.downcast_mut::<State>();
         if has_focus && !state.focused {
             // Focus just came: the tooltip is for the keyboard's.
@@ -280,7 +292,7 @@ impl<Message: Clone> Widget<Message, Theme, iced::Renderer> for Anchored<'_, Mes
             state.dismissed = false;
         }
         let focused = has_focus && state.by_keyboard;
-        let wanted = focused || (over && !state.dismissed);
+        let wanted = allowed && (focused || (over && !state.dismissed));
         let now = Instant::now();
         let next = match (state.hover, wanted) {
             (Hover::Idle, true) if focused || delay.is_zero() => Hover::Shown,

@@ -129,6 +129,22 @@ impl Operation for Focused {
     }
 }
 
+/// Collects what each text that may be cut shows of what it says.
+struct Cut(Vec<crate::ui::widgets::basic::truncate::Fitted>);
+
+impl Operation for Cut {
+    fn traverse(&mut self, operate: &mut dyn FnMut(&mut dyn Operation)) {
+        operate(self);
+    }
+
+    fn custom(&mut self, _id: Option<&Id>, _bounds: Rectangle, state: &mut dyn std::any::Any) {
+        use crate::ui::widgets::basic::truncate::Fitted;
+        if let Some(fitted) = state.downcast_ref::<Fitted>() {
+            self.0.push(fitted.clone());
+        }
+    }
+}
+
 struct Scrolled(Vec<Vector>);
 
 impl Operation for Scrolled {
@@ -332,6 +348,14 @@ impl<Message> Frame<'_, '_, Message> {
             (Some(focused), Some(text)) => focused.contains(text.center()),
             _ => false,
         }
+    }
+
+    /// Every text of the view that ends with an ellipsis when it lacks
+    /// room (`basic::truncated`): what it says and what it shows of it.
+    pub fn fitted(&mut self) -> Vec<crate::ui::widgets::basic::truncate::Fitted> {
+        let mut cut = Cut(vec![]);
+        self.ui.operate(self.renderer, &mut cut);
+        cut.0
     }
 
     /// How far each scrollable of the view is scrolled, in layout order.
