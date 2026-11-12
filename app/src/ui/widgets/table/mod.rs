@@ -165,8 +165,9 @@ pub struct Table<'a, 's, T, K, Message> {
     revision: Option<u64>,
     loading: bool,
     empty: Option<Element<'a, Message>>,
+    empty_label: Option<String>,
     failed: Option<Element<'a, Message>>,
-    bulk: Option<Element<'a, Message>>,
+    bulk: Option<Option<Element<'a, Message>>>,
     fill: bool,
     max_height: f32,
 }
@@ -197,6 +198,7 @@ where
             revision: None,
             loading: false,
             empty: None,
+            empty_label: None,
             failed: None,
             bulk: None,
             fill: false,
@@ -245,6 +247,14 @@ where
         self
     }
 
+    /// What an empty list says in place of "Nothing here.": the React
+    /// table's `empty` when it was a line of text.
+    #[must_use]
+    pub fn empty_label(mut self, label: impl Into<String>) -> Self {
+        self.empty_label = Some(label.into());
+        self
+    }
+
     /// The list could not be read: an `error_message`, in place of the rows.
     #[must_use]
     pub fn failed(mut self, failure: Option<Element<'a, Message>>) -> Self {
@@ -252,11 +262,13 @@ where
         self
     }
 
-    /// What can be done to the selected rows, shown over the table while
-    /// the page gives it: how many are selected, and the buttons.
+    /// A line over the table for what can be done to the selected rows
+    /// (how many there are, and the buttons), shown while the page gives
+    /// one. Its room is kept when it is empty, so the rows don't move
+    /// under the pointer as the first one is selected.
     #[must_use]
     pub fn selection_bar(mut self, bar: Option<Element<'a, Message>>) -> Self {
-        self.bulk = bar;
+        self.bulk = Some(bar);
         self
     }
 
@@ -306,10 +318,16 @@ where
                 .center_x(Length::Fill)
                 .padding(space::S4)
                 .into(),
-            None => container(text(t!("ui.table.empty")).style(theme::text::muted))
-                .center_x(Length::Fill)
-                .center_y(EMPTY_HEIGHT)
-                .into(),
+            None => {
+                let label = self
+                    .empty_label
+                    .take()
+                    .unwrap_or_else(|| t!("ui.table.empty"));
+                container(text(label).style(theme::text::muted))
+                    .center_x(Length::Fill)
+                    .center_y(EMPTY_HEIGHT)
+                    .into()
+            }
         })
     }
 
@@ -479,7 +497,16 @@ where
             on_event: Box::new(move |message| on_event(message)),
         };
         match self.bulk {
-            Some(bar) => stack(vec![bar, grid.into()]).spacing(space::S2).into(),
+            // The same tree with a bar or without: the rows keep their
+            // focus when the first one is selected.
+            Some(bar) => stack(vec![
+                container(bar.unwrap_or_else(|| Space::new().into()))
+                    .center_y(control::HEIGHT_SM)
+                    .into(),
+                grid.into(),
+            ])
+            .spacing(space::S2)
+            .into(),
             None => grid.into(),
         }
     }

@@ -99,6 +99,7 @@ pub enum Event<K> {
 pub(super) type Place<K> = (K, usize);
 
 /// A table's state: the page keeps one per table.
+#[derive(Debug)]
 pub struct State<K> {
     pub(super) sort: Sort,
     pub(super) widths: Vec<(ColumnId, f32)>,

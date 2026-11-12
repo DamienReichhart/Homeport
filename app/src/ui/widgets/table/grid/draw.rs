@@ -221,9 +221,16 @@ fn rows<K, Message>(
             );
         }
         if shows_focus && grid.focused == Some(index) {
+            // Beside the scrollbar, not under it.
+            let rail = if geometry.scrolls {
+                control::SCROLLBAR
+            } else {
+                0.0
+            };
             ring(
                 renderer,
                 Rectangle {
+                    width: bounds.width - rail,
                     height: bounds.height - LINE,
                     ..bounds
                 },

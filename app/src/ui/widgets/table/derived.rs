@@ -12,6 +12,7 @@ use super::{
 };
 
 /// What a view works out from the rows it is given.
+#[derive(Debug)]
 pub struct Derived<K> {
     /// The rows that show, in the order they show, by their place in the
     /// slice the page gave.

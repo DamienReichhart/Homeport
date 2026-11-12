@@ -1,11 +1,15 @@
 //! The table drawn in each of its states, and what its state does with
 //! the messages it is sent.
 
-use iced::{keyboard::Modifiers, widget::container, Length};
+use iced::{
+    keyboard::{key::Named, Modifiers},
+    widget::container,
+    Length,
+};
 
 use super::{state::Motion, Event, Message, Mode, Order, Sort, State, ROW_HEIGHT};
 use crate::{
-    test_support::snapshot::assert_snapshot,
+    test_support::snapshot::{assert_snapshot, assert_snapshot_after},
     ui::{
         theme::{self, Element, Theme},
         widgets::gallery::{
@@ -90,6 +94,36 @@ fn populated_in_arabic_is_mirrored() {
     assert_snapshot("table-populated-ar", "ar", &Theme::Light, SIZE, || {
         on_page(view(&state, &rows, Show::Rows))
     });
+}
+
+#[test]
+fn the_row_the_keyboard_is_on_shows_a_ring_and_the_one_under_the_pointer_a_fill() {
+    let rows = samples(12);
+    let mut state = arranged(&rows);
+    seen(&state, &rows);
+    for _ in 0..4 {
+        let down = Message::Move {
+            to: Motion::Down,
+            extend: false,
+        };
+        state.update(down, &rows, key);
+    }
+    assert_eq!(state.focused(), Some(&8));
+    assert_snapshot_after(
+        "table-focused-en",
+        "en",
+        &Theme::Light,
+        SIZE,
+        || on_page(view(&state, &rows, Show::Rows)),
+        |window| {
+            // A press gives the rows focus and a key shows the ring on
+            // the row the state says; the pointer then rests two rows down.
+            window.click("web-9").unwrap();
+            window.tap_key(Named::Shift);
+            let below = window.find("api-7").unwrap();
+            window.point_at(below.bounds().center());
+        },
+    );
 }
 
 #[test]
