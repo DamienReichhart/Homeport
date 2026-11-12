@@ -54,7 +54,11 @@ const FORBIDDEN: &[(&str, &[&str], &str)] = &[
     ),
     (
         "data",
-        &["crate::ui::features", "crate::ui::shell"],
+        &[
+            "crate::ui::features",
+            "crate::ui::shell",
+            "crate::ui::domain",
+        ],
         "the data layer serves every page, so it knows none",
     ),
     (
@@ -71,6 +75,7 @@ const FORBIDDEN: &[(&str, &[&str], &str)] = &[
         "ui/widgets",
         &[
             "crate::ui::features",
+            "crate::ui::domain",
             "crate::ui::shell",
             "crate::api",
             "crate::data",
@@ -81,6 +86,7 @@ const FORBIDDEN: &[(&str, &[&str], &str)] = &[
         "ui/theme",
         &[
             "crate::ui::features",
+            "crate::ui::domain",
             "crate::ui::shell",
             "crate::api",
             "crate::data",
@@ -138,19 +144,101 @@ fn tests_start(text: &str) -> Option<usize> {
     })
 }
 
-/// The lines of code of a file: no comment, and nothing of its tests.
-fn code(path: &Path) -> Vec<String> {
+/// The paths a use-tree names, each written out whole: `a::{b, c::{d, e}}`
+/// is `a::b`, `a::c::d` and `a::c::e`.
+fn expand(tree: &str) -> Vec<String> {
+    let tree = tree.trim();
+    let Some(open) = tree.find('{') else {
+        return vec![tree.to_owned()];
+    };
+    // The group that opens here closes at its matching brace.
+    let mut depth = 0;
+    let mut close = tree.len();
+    for (at, c) in tree.char_indices().skip(open) {
+        match c {
+            '{' => depth += 1,
+            '}' => {
+                depth -= 1;
+                if depth == 0 {
+                    close = at;
+                    break;
+                }
+            }
+            _ => {}
+        }
+    }
+    let (prefix, inside) = (&tree[..open], &tree[open + 1..close]);
+    let mut parts = vec![];
+    let (mut depth, mut from) = (0, 0);
+    for (at, c) in inside.char_indices() {
+        match c {
+            '{' => depth += 1,
+            '}' => depth -= 1,
+            ',' if depth == 0 => {
+                parts.push(&inside[from..at]);
+                from = at + 1;
+            }
+            _ => {}
+        }
+    }
+    parts.push(&inside[from..]);
+    parts
+        .into_iter()
+        .filter(|part| !part.trim().is_empty())
+        .flat_map(expand)
+        .map(|rest| format!("{prefix}{rest}"))
+        .collect()
+}
+
+/// A statement of a file: as it is written, on one line, and the paths
+/// it names. A `use` names each path of its tree whole, however its
+/// braces nest and wherever its lines break, so `use crate::{ui::{domain}}`
+/// names `crate::ui::domain`.
+struct Statement {
+    text: String,
+    paths: Vec<String>,
+}
+
+/// The statements of a file: no comment, and nothing of its tests.
+fn code(path: &Path) -> Vec<Statement> {
     if path.file_name().is_some_and(|n| n == "tests.rs") {
         return vec![];
     }
     let text = fs::read_to_string(path).unwrap();
     let end = tests_start(&text).unwrap_or(usize::MAX);
-    text.lines()
+    let lines = text
+        .lines()
         .take(end)
-        .map(str::trim_start)
-        .filter(|line| !line.starts_with("//"))
-        .map(str::to_owned)
-        .collect()
+        .map(str::trim)
+        .filter(|line| !line.starts_with("//"));
+    let mut statements = vec![];
+    let mut pending: Option<String> = None;
+    for line in lines {
+        let is_use =
+            line.starts_with("use ") || (line.starts_with("pub") && line.contains(" use "));
+        let whole = match pending.take() {
+            Some(started) => format!("{started} {line}"),
+            None if is_use => line.to_owned(),
+            None => {
+                statements.push(Statement {
+                    text: line.to_owned(),
+                    paths: vec![line.to_owned()],
+                });
+                continue;
+            }
+        };
+        if !whole.ends_with(';') {
+            pending = Some(whole);
+            continue;
+        }
+        let tree = &whole[whole.find("use ").map_or(0, |at| at + 4)..whole.len() - 1];
+        let squeezed: String = tree.split_whitespace().collect();
+        statements.push(Statement {
+            paths: expand(&squeezed),
+            text: whole,
+        });
+    }
+    statements
 }
 
 /// What uses a part it must not, under `src`.
@@ -158,8 +246,9 @@ fn wrong_dependencies(src: &Path) -> Vec<String> {
     let mut wrong = vec![];
     for (part, forbidden, why) in FORBIDDEN {
         for path in rust_files(&src.join(part)) {
-            for line in code(&path) {
-                if let Some(used) = forbidden.iter().find(|f| line.contains(**f)) {
+            for statement in code(&path) {
+                let names = |f: &&&str| statement.paths.iter().any(|path| path.contains(**f));
+                if let Some(used) = forbidden.iter().find(names) {
                     wrong.push(format!("{} uses {used} ({why})", shown(src, &path)));
                 }
             }
@@ -238,9 +327,11 @@ fn features_using_another(src: &Path) -> Vec<String> {
         let own = own.trim_start_matches("crate::ui::features::").to_owned();
         for path in rust_files(&feature) {
             let allowed = depth(&feature, &path);
-            for line in code(&path) {
-                if names_another_feature(&line, &own) || supers(&line) > allowed {
-                    wrong.push(format!("{}: {line}", shown(src, &path)));
+            for statement in code(&path) {
+                let leaves =
+                    |path: &String| names_another_feature(path, &own) || supers(path) > allowed;
+                if statement.paths.iter().any(leaves) {
+                    wrong.push(format!("{}: {}", shown(src, &path), statement.text));
                 }
             }
         }
@@ -329,7 +420,7 @@ fn nothing_of_tauri_comes_back() {
         .map(str::to_owned)
         .collect();
     for path in rust_files(&src()) {
-        for line in code(&path) {
+        for line in code(&path).into_iter().map(|statement| statement.text) {
             let names = TAURI
                 .iter()
                 .any(|t| line.contains(&format!("{t}::")) || line.contains(&format!("use {t}")));
@@ -470,6 +561,11 @@ fn each_rule_fails_on_a_tree_that_breaks_it() {
             "use super::super::super::podman::quadlets;",
         ),
         ("podman/quadlets/mod.rs", "use super::podman_pods::State;"),
+        // Through a nested use-tree.
+        (
+            "docker/networks/mod.rs",
+            "use crate::{data, ui::{features::docker::volumes, theme}};",
+        ),
     ];
     for (file, line) in breaks {
         write(src, &format!("ui/features/{file}"), &format!("{line}\n"));
@@ -507,4 +603,61 @@ fn each_rule_fails_on_a_tree_that_breaks_it() {
     write(src, "app/setup/steps.rs", "");
     assert_eq!(modules_beside_their_folder(src), ["app/setup.rs"]);
     assert!(!clean(src));
+}
+
+/// The same for what features share, and for a use-tree that nests: the
+/// check reads whole paths, not lines.
+#[test]
+fn the_domain_s_rules_fail_and_a_nested_use_is_seen() {
+    let dir = tempfile::tempdir().unwrap();
+    let src = dir.path();
+    // What features share stands under them and over the shell: it names
+    // no feature, and nothing below it names it.
+    write(
+        src,
+        "ui/domain/containers.rs",
+        "use crate::ui::features::docker::images::State;\n",
+    );
+    write(
+        src,
+        "ui/shell/menu.rs",
+        "use crate::ui::domain::containers;\n",
+    );
+    write(
+        src,
+        "ui/theme/tone.rs",
+        "use crate::ui::domain::containers;\n",
+    );
+    write(src, "data/usage.rs", "use crate::ui::domain::containers;\n");
+    // However the use-tree nests and wherever its lines break.
+    write(
+        src,
+        "ui/widgets/menu.rs",
+        "use crate::{\n    i18n,\n    ui::{\n        domain::containers::{model, Target},\n        theme,\n    },\n};\n",
+    );
+    write(
+        src,
+        "ui/widgets/fine.rs",
+        "pub use crate::{\n    i18n,\n    ui::{theme, widgets::line},\n};\n",
+    );
+    let wrong = wrong_dependencies(src);
+    assert_eq!(wrong.len(), 5, "{wrong:#?}");
+    for said in [
+        "ui/domain/containers.rs uses crate::ui::features",
+        "ui/shell/menu.rs uses crate::ui::domain",
+        "ui/theme/tone.rs uses crate::ui::domain",
+        "data/usage.rs uses crate::ui::domain",
+        "ui/widgets/menu.rs uses crate::ui::domain",
+    ] {
+        assert!(wrong.iter().any(|w| w.starts_with(said)), "{said} passed");
+    }
+    assert_eq!(
+        expand("crate::{a,ui::{b::{c,d},e}}"),
+        [
+            "crate::a",
+            "crate::ui::b::c",
+            "crate::ui::b::d",
+            "crate::ui::e"
+        ]
+    );
 }
