@@ -253,3 +253,46 @@ fn a_colour_holds_from_one_line_to_the_next_until_it_is_reset() {
     assert_eq!(run.style, fg(Colour::Indexed(1)));
     assert!(parser.style().is_plain());
 }
+
+#[test]
+fn a_code_too_large_to_be_one_changes_nothing() {
+    // It was read as 0, a reset of everything before it.
+    assert_eq!(style_of("\x1b[31m\x1b[99999mx"), fg(Colour::Indexed(1)));
+    assert_eq!(
+        style_of("\x1b[31;99999999999999999999;4mx").fg,
+        Colour::Indexed(1)
+    );
+    // Left out, a code is still 0.
+    assert_eq!(read("\x1b[31m\x1b[;mx").1, vec![]);
+}
+
+#[test]
+fn the_colour_of_an_underline_is_read_and_not_taken_for_codes() {
+    // `58;5;1` is an underline in red: its 5 is not a blink nor its 1 bold.
+    assert_eq!(read("\x1b[58;5;1mx").1, vec![]);
+    assert_eq!(read("\x1b[58:5:1mx").1, vec![]);
+    // `58;2;1;2;3` takes five parameters: 1, 2 and 3 are not bold, dim, italic.
+    assert_eq!(style_of("\x1b[58;2;1;2;3;31mx"), fg(Colour::Indexed(1)));
+    assert_eq!(style_of("\x1b[58:2::1:2:3;31mx"), fg(Colour::Indexed(1)));
+}
+
+#[test]
+fn a_tab_goes_to_the_next_stop_in_cells() {
+    // Two wide characters are four cells: four more to the stop.
+    assert_eq!(strip("日本\tb"), "日本    b");
+    assert_eq!(strip("e\u{301}\tb"), "e\u{301}       b");
+    // Every tab of a line of nothing else is eight cells, however many.
+    let tabs = "\t".repeat(20_000);
+    assert_eq!(strip(&tabs).len(), 160_000);
+    // After a carriage return the stops start over.
+    assert_eq!(strip("abc\r\tb"), "        b");
+}
+
+#[test]
+fn a_title_that_never_ends_takes_at_most_its_limit() {
+    let input = format!("\x1b]{}tail", "x".repeat(10_000));
+    let kept = strip(&input);
+    let taken = 10_000 + 4 - kept.len();
+    assert!(taken <= STRING_MAX + 1, "{taken} bytes taken");
+    assert!(kept.ends_with("tail"));
+}

@@ -8,9 +8,8 @@ use std::sync::Arc;
 use iced::Task;
 
 use super::{
-    buffer::LineRef,
     display::Pos,
-    line::{byte_at_cell, cells, Line, Marker},
+    line::{split_stamp, Line, Marker},
     search::{self, Hit, Query, AT_ONCE, SLICE},
     selection::{word_at, Mark, Selection},
     state::{Anchor, Download, Event, Message, Scroll, State},
@@ -39,11 +38,20 @@ impl State {
         let dropped = self.buffer.append(lines, |chunk, line: Line| {
             let source = line.source.as_ref().map(|label| sources.id(label));
             let parser = sources.parser(source);
+            // The timestamp is the stream's, not the program's: it is
+            // taken off before the program's text is read, so nothing the
+            // program writes (a carriage return) can reach it.
+            let (stamp, message) = match split_stamp(&line.text).filter(|_| line.timestamped) {
+                Some((stamp, message)) => (Some(stamp), message),
+                None => (None, line.text.as_str()),
+            };
             chunk.push(
                 line.stream,
                 source,
-                line.timestamped,
-                |text, start, runs| parser.feed(&line.text, text, start, runs),
+                stamp,
+                |text, start, message_start, runs| {
+                    parser.feed_message(message, text, start, message_start, runs);
+                },
             );
             widest = widest.max(chunk.last_width());
         });
@@ -411,9 +419,15 @@ impl State {
         else {
             return;
         };
-        let cell = self.cell_of_match(&line, current.nth as usize);
+        let shape = self.shape();
+        let start = self
+            .matches_of(current.seq, &line)
+            .get(current.nth as usize)
+            .map_or(0, |(start, _)| *start as usize);
+        let cell = self.shown_cell(current.seq, &line, shape, start);
         let row = if self.wrap {
-            cell / metrics.cols.max(1)
+            self.starts(current.seq, &line, shape, metrics.cols)
+                .row_of(cell)
         } else {
             0
         };
@@ -433,36 +447,5 @@ impl State {
         if !self.wrap && (cell < self.across || cell >= self.across + metrics.cols) {
             self.across = cell.saturating_sub(metrics.cols / 4).min(self.across_max());
         }
-    }
-
-    /// The cell at which the `nth` match of a line starts, among what
-    /// the line shows.
-    fn cell_of_match(&self, line: &LineRef<'_>, nth: usize) -> usize {
-        let Some(matcher) = &self.search.matcher else {
-            return 0;
-        };
-        let start = search::matches(matcher, line, self.timestamps)
-            .nth(nth)
-            .map_or(0, |(start, _)| start);
-        self.shape().cell_of_byte(line, start)
-    }
-}
-
-impl super::display::Shape {
-    /// The cell, among what the line shows, at which the byte `byte` of
-    /// its text is.
-    pub fn cell_of_byte(&self, line: &LineRef<'_>, byte: usize) -> usize {
-        let message = line.message_start();
-        if byte < message {
-            // In the timestamp, which is ASCII and shows from the start.
-            return byte;
-        }
-        self.prefix(line) + cells(&line.text[message..byte.min(line.text.len())])
-    }
-
-    /// The byte of the line's text at which the cell `cell` of its
-    /// message starts.
-    pub fn byte_of_message_cell(line: &LineRef<'_>, cell: usize) -> usize {
-        line.message_start() + byte_at_cell(line.message(), cell)
     }
 }

@@ -250,3 +250,28 @@ fn the_lines_to_save_are_the_text_after_its_source() {
         ["2026-05-01T10:00:00Z up"]
     );
 }
+
+#[test]
+fn a_progress_line_is_copied_and_saved_whole_with_or_without_its_timestamp() {
+    for timestamps in [false, true] {
+        let mut state = State::new(100).with_timestamps(timestamps);
+        feed(
+            &mut state,
+            [
+                Line::new("2026-05-01T10:00:00Z pulling 10%\rpulling layer 2 of 5")
+                    .timestamped(true),
+            ],
+        );
+        let whole = if timestamps {
+            "2026-05-01T10:00:00Z pulling layer 2 of 5"
+        } else {
+            "pulling layer 2 of 5"
+        };
+        tell(&mut state, Message::SelectAll);
+        assert_eq!(copied(&mut state), format!("{whole}\n"));
+        let Some(Event::Download(lines)) = tell(&mut state, Message::Download) else {
+            panic!("nothing to save");
+        };
+        assert_eq!(lines.lines().collect::<Vec<_>>(), [whole]);
+    }
+}

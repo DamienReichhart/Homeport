@@ -140,10 +140,13 @@ impl State {
         if !self.wrap {
             return 1;
         }
-        let Some(line) = self.seq_at(index).and_then(|seq| self.buffer.line(seq)) else {
+        let Some((seq, line)) = self
+            .seq_at(index)
+            .and_then(|seq| Some((seq, self.buffer.line(seq)?)))
+        else {
             return 1;
         };
-        self.shape().cells(&line).max(1).div_ceil(cols.max(1))
+        self.row_count(seq, &line, self.shape(), cols)
     }
 
     /// Where a view that shows the latest line starts.

@@ -2,13 +2,14 @@
 //! they are shown, where the view is among them, what is searched and
 //! what is selected. The page keeps one per viewer.
 
-use std::{collections::HashMap, sync::Arc};
+use std::{cell::RefCell, collections::HashMap, sync::Arc};
 
 use iced::advanced::widget::Id;
 
 use super::{
     ansi::Parser,
     buffer::{Buffer, Snapshot},
+    index::Cache,
     search::{Hit, Query, Search},
     selection::{Mark, Selection},
 };
@@ -188,6 +189,8 @@ pub struct State {
     /// width of the labels, the lines themselves when cleared.
     pub(super) revision: u64,
     pub(super) search_id: Id,
+    /// What is remembered of the long lines in view.
+    pub(super) index: RefCell<Cache>,
 }
 
 impl Default for State {
@@ -214,6 +217,7 @@ impl State {
             metrics: Metrics::default(),
             revision: 0,
             search_id: Id::unique(),
+            index: RefCell::new(Cache::default()),
         }
     }
 

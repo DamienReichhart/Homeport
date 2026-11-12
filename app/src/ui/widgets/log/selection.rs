@@ -60,16 +60,14 @@ impl Selection {
 /// letters, digits and what holds a path or an address together. On
 /// anything else, that one character.
 pub fn word_at(text: &str, cell: usize) -> (usize, usize) {
-    use super::line::cell_width;
     let is_word = |c: char| c.is_alphanumeric() || "_-./:@".contains(c);
     // Each character with the cell it starts at.
     let mut at = 0;
-    let placed: Vec<(usize, char)> = text
-        .chars()
-        .map(|c| {
+    let placed: Vec<(usize, char)> = super::line::widths(text)
+        .map(|placed| {
             let start = at;
-            at += cell_width(c);
-            (start, c)
+            at += placed.width;
+            (start, placed.c)
         })
         .collect();
     let end_of = |index: usize| placed.get(index + 1).map_or(at, |(start, _)| *start);

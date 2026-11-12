@@ -10,7 +10,9 @@ use crate::ui::widgets::log::{
 
 fn push(buffer: &mut Buffer, texts: impl IntoIterator<Item = String>) -> u64 {
     buffer.append(texts, |chunk, text| {
-        chunk.push(Stream::Stdout, None, false, |out, _, _| out.push_str(&text));
+        chunk.push(Stream::Stdout, None, None, |out, _, _, _| {
+            out.push_str(&text)
+        });
     })
 }
 
@@ -134,11 +136,10 @@ fn a_line_keeps_its_stream_its_source_its_timestamp_and_its_colours() {
     assert_eq!(first.runs.len(), 1);
     let run = first.runs[0];
     assert_eq!(&first.text[run.start as usize..run.end as usize], "failed");
-    // The first word of a line that has no timestamp is only a word when
-    // it is too long, or not ASCII, to be one; here "no" is taken for it,
-    // as the React viewer did with whatever came before the first space.
+    // A line that does not start with a timestamp keeps its first word.
     let second = state.buffer.line(1).expect("kept");
-    assert_eq!(second.timestamp(), Some("no"));
+    assert_eq!(second.timestamp(), None);
+    assert_eq!(second.message(), "no stamp here");
     assert_eq!(second.source, Some(1));
     let third = state.buffer.line(2).expect("kept");
     assert_eq!((third.cells, third.ascii, third.stamp), (9, false, 0));
@@ -176,4 +177,72 @@ fn the_cap_is_the_pages_and_can_change() {
         Some(crate::ui::widgets::log::Event::Cleared)
     ));
     assert!(state.is_empty());
+}
+
+#[test]
+fn a_batch_larger_than_the_cap_is_never_held_whole() {
+    let mut buffer = Buffer::new(10);
+    let dropped = push(&mut buffer, (0..200 * CHUNK).map(|n| format!("l{n}")));
+    assert_eq!(dropped, (200 * CHUNK - 10) as u64);
+    assert_eq!(buffer.len(), 10);
+    assert!(
+        buffer.most_chunks <= 2,
+        "{} chunks at once",
+        buffer.most_chunks
+    );
+}
+
+#[test]
+fn the_bytes_of_a_range_are_its_lines_text() {
+    let mut buffer = Buffer::new(10 * CHUNK);
+    push(&mut buffer, (0..3 * CHUNK).map(|_| "12345678".to_owned()));
+    assert_eq!(buffer.bytes(0..1), 8);
+    assert_eq!(buffer.bytes(5..15), 80);
+    let across = (CHUNK - 2) as u64..(2 * CHUNK + 3) as u64;
+    assert_eq!(buffer.bytes(across.clone()), (CHUNK + 5) * 8);
+    assert_eq!(buffer.snapshot(across).bytes(), (CHUNK + 5) * 8);
+    assert_eq!(buffer.bytes(7..7), 0);
+    assert_eq!(buffer.bytes(0..u64::MAX), 3 * CHUNK * 8);
+}
+
+#[test]
+fn a_sequence_cut_by_the_end_of_a_line_is_finished_by_the_next() {
+    let mut state = viewer(100);
+    feed(
+        &mut state,
+        [Line::new("before \x1b[3"), Line::new("1mred\x1b[0m after")],
+    );
+    let (first, second) = (
+        state.buffer.line(0).expect("kept"),
+        state.buffer.line(1).expect("kept"),
+    );
+    assert_eq!((first.text, second.text), ("before ", "red after"));
+    assert_eq!(second.runs.len(), 1);
+    let run = second.runs[0];
+    assert_eq!(&second.text[run.start as usize..run.end as usize], "red");
+}
+
+#[test]
+fn a_carriage_return_restarts_the_message_and_never_the_timestamp() {
+    let mut state = viewer(100);
+    feed(
+        &mut state,
+        [
+            Line::new("2026-05-01T10:00:00Z pulling 10%\rpulling layer 2 of 5").timestamped(true),
+            Line::new("2026-05-01T10:00:01Z \x1b[32mdone\x1b[0m\r").timestamped(true),
+            Line::new("2026-05-01T10:00:02Z").timestamped(true),
+            Line::new("2026-05-01T10:00:03Z a\tb").timestamped(true),
+        ],
+    );
+    let line = |seq| state.buffer.line(seq).expect("kept");
+    assert_eq!(line(0).timestamp(), Some("2026-05-01T10:00:00Z"));
+    assert_eq!(line(0).message(), "pulling layer 2 of 5");
+    assert_eq!(line(1).message(), "done");
+    let run = line(1).runs[0];
+    assert_eq!(&line(1).text[run.start as usize..run.end as usize], "done");
+    // Nothing after its timestamp: an empty message, not the timestamp.
+    assert_eq!(line(2).timestamp(), Some("2026-05-01T10:00:02Z"));
+    assert_eq!(line(2).message(), "");
+    // Tab stops are counted from the message, not from the timestamp.
+    assert_eq!(line(3).message(), "a       b");
 }

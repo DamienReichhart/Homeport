@@ -16,7 +16,7 @@ use std::{collections::VecDeque, ops::Range, sync::Arc};
 
 use super::{
     ansi::Run,
-    line::{cells, Marker, Stream},
+    line::{cells, has_wide, Marker, Stream},
 };
 
 /// The lines of a chunk.
@@ -26,8 +26,8 @@ const NO_SOURCE: u16 = u16::MAX;
 const MARKER: u8 = 1 << 2;
 /// The line's text is ASCII: a cell is a byte.
 const ASCII: u8 = 1 << 3;
-/// The longest timestamp a line may start with, in bytes.
-const STAMP_MAX: usize = 64;
+/// A character of the line takes two cells: its rows are not a division.
+const WIDE: u8 = 1 << 4;
 
 /// What is kept of a line beside its text.
 #[derive(Debug, Clone, Copy)]
@@ -71,6 +71,8 @@ pub struct LineRef<'a> {
     pub marker: Option<Marker>,
     /// Its text is ASCII: a cell is a byte.
     pub ascii: bool,
+    /// One of its characters takes two cells.
+    pub wide: bool,
 }
 
 impl<'a> LineRef<'a> {
@@ -121,32 +123,46 @@ impl Chunk {
             stream: Stream::from_bits(meta.flags),
             marker,
             ascii: meta.flags & ASCII != 0,
+            wide: meta.flags & WIDE != 0,
         }
     }
 
-    /// Adds a line: `write` puts its text at the end of the string it is
-    /// given (which starts at the byte it is told) and its runs in the
-    /// list.
+    /// Adds a line: its timestamp as it came, when it has one, then its
+    /// message, which `write` puts at the end of the string it is given.
+    /// It is told where the line and the message start in that string,
+    /// and puts the line's runs in the list.
     pub fn push(
         &mut self,
         stream: Stream,
         source: Option<u16>,
-        timestamped: bool,
-        write: impl FnOnce(&mut String, usize, &mut Vec<Run>),
+        stamp: Option<&str>,
+        write: impl FnOnce(&mut String, usize, usize, &mut Vec<Run>),
     ) {
         let start = self.text.len();
-        write(&mut self.text, start, &mut self.runs);
-        let line = &self.text[start..];
-        let stamp = if timestamped {
-            line.find(' ')
-                .filter(|at| (1..=STAMP_MAX).contains(at) && line[..*at].is_ascii())
-                .unwrap_or(0)
-        } else {
-            0
-        };
-        let message = if stamp == 0 { line } else { &line[stamp + 1..] };
-        let ascii = if line.is_ascii() { ASCII } else { 0 };
-        self.end_line(cells(message), source, stamp, stream.bits() | ascii);
+        if let Some(stamp) = stamp {
+            self.text.push_str(stamp);
+            self.text.push(' ');
+        }
+        let message_start = self.text.len();
+        write(&mut self.text, start, message_start, &mut self.runs);
+        let message = &self.text[message_start..];
+        let mut flags = stream.bits();
+        if message.is_ascii() {
+            flags |= ASCII;
+        } else if has_wide(message) {
+            flags |= WIDE;
+        }
+        let taken = cells(message);
+        self.end_line(taken, source, stamp.map_or(0, str::len), flags);
+    }
+
+    /// The bytes of text of its lines `from..to`.
+    fn span(&self, from: usize, to: usize) -> usize {
+        let start = from
+            .checked_sub(1)
+            .map_or(0, |before| self.meta[before].end);
+        let end = to.checked_sub(1).map_or(0, |last| self.meta[last].end);
+        end.saturating_sub(start) as usize
     }
 
     /// The cells of the line added last, its timestamp included.
@@ -189,6 +205,9 @@ pub struct Buffer {
     first: u64,
     end: u64,
     cap: usize,
+    /// The most chunks it ever held at once.
+    #[cfg(test)]
+    pub(super) most_chunks: usize,
 }
 
 impl Buffer {
@@ -200,6 +219,8 @@ impl Buffer {
             first: 0,
             end: 0,
             cap: cap.max(1),
+            #[cfg(test)]
+            most_chunks: 0,
         }
     }
 
@@ -266,6 +287,7 @@ impl Buffer {
         mut write: impl FnMut(&mut Chunk, T),
     ) -> u64 {
         let mut items = items.into_iter().peekable();
+        let mut dropped = 0;
         while items.peek().is_some() {
             let chunk = self.open();
             let before = chunk.len();
@@ -277,8 +299,14 @@ impl Buffer {
             }
             let added = chunk.len() - before;
             self.end += added as u64;
+            // As it goes: a batch larger than the cap is never held whole.
+            dropped += self.trim();
+            #[cfg(test)]
+            {
+                self.most_chunks = self.most_chunks.max(self.chunks.len());
+            }
         }
-        self.trim()
+        dropped
     }
 
     /// Drops the oldest lines past the cap.
@@ -290,6 +318,33 @@ impl Buffer {
             self.base += CHUNK as u64;
         }
         dropped
+    }
+
+    /// How many bytes of text the lines `range` hold: what reading them
+    /// costs, without reading them.
+    pub fn bytes(&self, range: Range<u64>) -> usize {
+        let from = range.start.max(self.first);
+        let to = range.end.min(self.end);
+        if from >= to {
+            return 0;
+        }
+        let (Some((first, first_line)), Some((last, last_line))) =
+            (self.place(from), self.place(to - 1))
+        else {
+            return 0;
+        };
+        (first..=last)
+            .map(|at| {
+                let chunk = &self.chunks[at];
+                let start = if at == first { first_line } else { 0 };
+                let end = if at == last {
+                    last_line + 1
+                } else {
+                    chunk.len()
+                };
+                chunk.span(start, end)
+            })
+            .sum()
     }
 
     /// Drops every line. The numbering goes on: a line appended next is
@@ -352,6 +407,31 @@ impl Snapshot {
         }
         let offset = (seq - self.base) as usize;
         Some(self.chunks[offset / CHUNK].line(offset % CHUNK))
+    }
+
+    /// The bytes of text of its lines: what reading it costs.
+    #[allow(clippy::cast_possible_truncation)]
+    pub fn bytes(&self) -> usize {
+        if self.is_empty() {
+            return 0;
+        }
+        let place = |seq: u64| {
+            let offset = (seq - self.base) as usize;
+            (offset / CHUNK, offset % CHUNK)
+        };
+        let ((first, first_line), (last, last_line)) = (place(self.from), place(self.to - 1));
+        (first..=last)
+            .map(|at| {
+                let chunk = &self.chunks[at];
+                let start = if at == first { first_line } else { 0 };
+                let end = if at == last {
+                    last_line + 1
+                } else {
+                    chunk.len()
+                };
+                chunk.span(start, end)
+            })
+            .sum()
     }
 
     /// Its lines, the oldest first, each with its sequence number.

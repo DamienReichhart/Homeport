@@ -90,6 +90,8 @@ gethostname = "1"
 tar = "0.4"
 # The diagnostics bundle: redaction rules, and the archive itself.
 regex = "1"
+# The cells a character takes in a terminal, for the log viewer.
+unicode-width = "0.2"
 zip = { version = "2", default-features = false, features = ["deflate"] }
 shell-words = "1"
 tempfile = "3"

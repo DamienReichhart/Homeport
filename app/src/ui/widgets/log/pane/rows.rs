@@ -12,8 +12,8 @@ use crate::{
         ansi::{Attrs, Style},
         buffer::LineRef,
         display::{Pos, Shape},
+        index::{walked, Starts},
         line::{byte_at_cell, cells, Marker, Stream},
-        search,
         state::{Metrics, State},
     },
 };
@@ -94,15 +94,49 @@ fn within(from: usize, to: usize, start: usize, end: usize) -> Option<(usize, us
     (a < b).then_some((a, b))
 }
 
-/// The pieces of the cells `from..to` of what `line` shows.
-fn pieces(state: &State, line: &LineRef<'_>, shape: Shape, from: usize, to: usize) -> Vec<Piece> {
+/// Some text of one look, at a cell of its row.
+struct Segment {
+    col: usize,
+    cells: usize,
+    text: String,
+    paint: Paint,
+}
+
+/// `slice` cut where ASCII gives way to another script and back: each
+/// piece is then placed at its own cell, so text after a character the
+/// monospaced face lacks starts where its cell says, whatever a
+/// fallback font made of that character's width.
+fn by_script(slice: &str) -> impl Iterator<Item = &str> {
+    let mut rest = slice;
+    std::iter::from_fn(move || {
+        let first = rest.chars().next()?;
+        let ascii = first.is_ascii();
+        let end = rest
+            .char_indices()
+            .find(|(_, c)| c.is_ascii() != ascii)
+            .map_or(rest.len(), |(at, _)| at);
+        let (piece, after) = rest.split_at(end);
+        rest = after;
+        Some(piece)
+    })
+}
+
+/// What the cells `from..to` of the line `seq` show, look by look.
+fn segments(
+    state: &State,
+    seq: u64,
+    line: &LineRef<'_>,
+    shape: Shape,
+    from: usize,
+    to: usize,
+) -> Vec<Segment> {
     let mut all = vec![];
     if let Some(marker) = line.marker {
         let text = marker_text(marker);
-        all.push(Piece {
+        all.push(Segment {
             col: 0,
             cells: cells(&text),
-            paragraph: shaped(&text, false),
+            text,
             paint: Paint::Marker,
         });
         return all;
@@ -113,10 +147,10 @@ fn pieces(state: &State, line: &LineRef<'_>, shape: Shape, from: usize, to: usiz
         line.timestamp().filter(|_| stamp > 0),
         within(from, to, 0, stamp.saturating_sub(1)),
     ) {
-        all.push(Piece {
+        all.push(Segment {
             col: a - from,
             cells: b - a,
-            paragraph: shaped(&time[a..b], false),
+            text: time[a..b].to_owned(),
             paint: Paint::Stamp,
         });
     }
@@ -129,10 +163,10 @@ fn pieces(state: &State, line: &LineRef<'_>, shape: Shape, from: usize, to: usiz
             byte_at_cell(&text, a - stamp),
             byte_at_cell(&text, b - stamp),
         );
-        all.push(Piece {
+        all.push(Segment {
             col: a - from,
             cells: b - a,
-            paragraph: shaped(&text[start..end], false),
+            text: text[start..end].to_owned(),
             paint: Paint::Label(source),
         });
     }
@@ -140,34 +174,22 @@ fn pieces(state: &State, line: &LineRef<'_>, shape: Shape, from: usize, to: usiz
     let Some((a, b)) = within(from, to, prefix, prefix + line.cells) else {
         return all;
     };
-    let message = line.message();
-    let at = |cell: usize| {
-        line.message_start()
-            + if line.ascii {
-                cell.min(message.len())
-            } else {
-                byte_at_cell(message, cell)
-            }
-    };
-    let (first, end) = (at(a - prefix), at(b - prefix));
-    let mut col = a - from;
+    let message = line.message_start();
+    let (first, first_cell) = state.byte_of_cell(seq, line, a - prefix);
+    let (end, _) = state.byte_of_cell(seq, line, b - prefix);
+    let (first, end) = (message + first, message + end);
+    let mut col = prefix + first_cell - from.min(prefix + first_cell);
     let mut emit = |start: usize, end: usize, style: Style| {
-        let slice = &line.text[start..end];
-        if slice.is_empty() {
-            return;
+        for piece in by_script(&line.text[start..end]) {
+            let taken = cells(piece);
+            all.push(Segment {
+                col,
+                cells: taken,
+                text: piece.to_owned(),
+                paint: Paint::Text(style),
+            });
+            col += taken;
         }
-        let taken = if line.ascii {
-            slice.len()
-        } else {
-            cells(slice)
-        };
-        all.push(Piece {
-            col,
-            cells: taken,
-            paragraph: shaped(slice, style.attrs.has(Attrs::ITALIC)),
-            paint: Paint::Text(style),
-        });
-        col += taken;
     };
     let mut done = first;
     let skipped = line.runs.partition_point(|run| run.end as usize <= first);
@@ -188,8 +210,33 @@ fn pieces(state: &State, line: &LineRef<'_>, shape: Shape, from: usize, to: usiz
     all
 }
 
+/// The pieces of the cells `from..to` of what the line `seq` shows.
+fn pieces(
+    state: &State,
+    seq: u64,
+    line: &LineRef<'_>,
+    shape: Shape,
+    from: usize,
+    to: usize,
+) -> Vec<Piece> {
+    segments(state, seq, line, shape, from, to)
+        .into_iter()
+        .map(|segment| {
+            let italic =
+                matches!(segment.paint, Paint::Text(style) if style.attrs.has(Attrs::ITALIC));
+            Piece {
+                col: segment.col,
+                cells: segment.cells,
+                paragraph: shaped(&segment.text, italic),
+                paint: segment.paint,
+            }
+        })
+        .collect()
+}
+
 /// The matches of the search between the cells `low` and `high` of what
-/// `line` shows, as cells.
+/// the line `seq` shows, as cells. Only what is between them is walked,
+/// once: the matches come in order.
 fn hits(
     state: &State,
     seq: u64,
@@ -198,9 +245,10 @@ fn hits(
     low: usize,
     high: usize,
 ) -> Vec<(usize, usize, bool)> {
-    let Some(matcher) = &state.search.matcher else {
+    let all = state.matches_of(seq, line);
+    if all.is_empty() {
         return vec![];
-    };
+    }
     let current = state
         .search
         .current
@@ -208,24 +256,41 @@ fn hits(
         .map(|current| current.nth as usize);
     let prefix = shape.prefix(line);
     let message = line.message_start();
-    let cell_of = |byte: usize| {
-        if byte < message {
-            byte
-        } else if line.ascii {
-            prefix + byte - message
-        } else {
-            shape.cell_of_byte(line, byte)
-        }
+    // The bytes of the line's text that are in view.
+    let (low_byte, low_cell) = if low < prefix {
+        (0, 0)
+    } else {
+        let (byte, cell) = state.byte_of_cell(seq, line, low - prefix);
+        (message + byte, prefix + cell)
     };
+    let high_byte = message + state.byte_of_cell(seq, line, high.saturating_sub(prefix)).0;
+    let high_byte = if high <= prefix { high } else { high_byte };
+    // Where the walk is: a byte of the message and the cell it shows at.
+    let mut cursor = (low_byte.max(message), low_cell.max(prefix));
+    let mut cell_of = |byte: usize| {
+        if byte < message {
+            return byte;
+        }
+        if line.ascii {
+            return prefix + byte - message;
+        }
+        if byte > cursor.0 {
+            walked(byte - cursor.0);
+            cursor.1 += cells(&line.text[cursor.0..byte]);
+            cursor.0 = byte;
+        }
+        cursor.1
+    };
+    let first = all.partition_point(|(_, end)| *end as usize <= low_byte);
     let mut found = vec![];
-    for (nth, (start, end)) in search::matches(matcher, line, state.timestamps).enumerate() {
-        let (from, to) = (cell_of(start), cell_of(end));
-        if from >= high {
+    for (nth, (start, end)) in all.iter().enumerate().skip(first) {
+        let (start, end) = (*start as usize, *end as usize);
+        if start >= high_byte {
             break;
         }
-        if to > low {
-            found.push((from, to, current == Some(nth)));
-        }
+        let from = cell_of(start);
+        let to = cell_of(end.min(high_byte.max(start)));
+        found.push((from, to.max(from), current == Some(nth)));
     }
     found
 }
@@ -253,22 +318,21 @@ pub fn lay(state: &State, old: Laid, geometry: &Geometry) -> Laid {
             break;
         };
         let total = shape.cells(&line);
-        let parts = state.rows_of(pos.index, metrics.cols);
-        let first = pos.row.min(parts - 1);
-        let end = (first + metrics.rows - rows.len()).min(parts);
         // The cells a row of the line shows: a screen's worth of a
         // wrapped line, or what is scrolled into view of a long one.
-        let range = |part: usize| {
-            if state.wrap {
-                (
-                    (part * metrics.cols).min(total),
-                    ((part + 1) * metrics.cols).min(total),
-                )
-            } else {
+        let starts = state
+            .wrap
+            .then(|| state.starts(seq, &line, shape, metrics.cols));
+        let parts = starts.as_ref().map_or(1, Starts::len);
+        let range = |part: usize| match &starts {
+            Some(starts) => starts.range(part),
+            None => {
                 let from = state.across.min(total);
                 (from, (from + metrics.cols + 1).min(total))
             }
         };
+        let first = pos.row.min(parts - 1);
+        let end = (first + metrics.rows - rows.len()).min(parts);
         let found = hits(state, seq, &line, shape, range(first).0, range(end - 1).1);
         for part in first..end {
             let (from, to) = range(part);
@@ -282,7 +346,7 @@ pub fn lay(state: &State, old: Laid, geometry: &Geometry) -> Laid {
                 from,
                 to,
                 revision: state.revision,
-                pieces: pieces(state, &line, shape, from, to),
+                pieces: pieces(state, seq, &line, shape, from, to),
                 hits: vec![],
                 stream: line.stream,
                 marker: line.marker.is_some(),
@@ -312,18 +376,15 @@ pub fn lay(state: &State, old: Laid, geometry: &Geometry) -> Laid {
     }
 }
 
-/// What `row` says, as text.
+/// What `row` says, as text: its pieces, each at its cell.
 pub fn say(state: &State, row: &Row, out: &mut String) {
     let Some(line) = state.buffer.line(row.seq) else {
         return;
     };
-    if let Some(marker) = line.marker {
-        out.push_str(&marker_text(marker));
-        return;
+    let mut at = 0;
+    for segment in segments(state, row.seq, &line, state.shape(), row.from, row.to) {
+        out.extend(std::iter::repeat_n(' ', segment.col.saturating_sub(at)));
+        out.push_str(&segment.text);
+        at = segment.col + segment.cells;
     }
-    let mut shown = String::new();
-    let label = line.source.map_or("", |id| state.sources.label(id));
-    state.shape().write(&line, label, &mut shown);
-    let (start, end) = (byte_at_cell(&shown, row.from), byte_at_cell(&shown, row.to));
-    out.push_str(&shown[start..end]);
 }

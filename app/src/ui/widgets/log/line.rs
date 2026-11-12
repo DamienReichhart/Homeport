@@ -102,40 +102,49 @@ pub enum Marker {
     Skipped(u64),
 }
 
-/// How many cells of a terminal `text` takes: two for the wide characters
-/// of East Asian scripts and emoji, none for what combines with the
-/// character before, one for the rest.
+/// A character of a text, the byte it starts at and the cells it takes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Placed {
+    pub byte: usize,
+    pub c: char,
+    pub width: usize,
+}
+
+/// The characters of `text` with the cells each takes in a terminal, by
+/// Unicode's own tables (`unicode-width`): two for East Asian wide
+/// characters and emoji, none for what combines with the character
+/// before (accents, Arabic and Indic vowel signs, joiners), one for the
+/// rest. A character followed by the emoji selector takes two, and what a
+/// joiner joins to the character before takes none.
+pub fn widths(text: &str) -> impl Iterator<Item = Placed> + '_ {
+    let mut chars = text.char_indices().peekable();
+    let mut joined = false;
+    std::iter::from_fn(move || {
+        let (byte, c) = chars.next()?;
+        let own = unicode_width::UnicodeWidthChar::width(c).unwrap_or(0);
+        let width = if std::mem::replace(&mut joined, c == '\u{200d}') {
+            0
+        } else if own == 1 && chars.peek().is_some_and(|(_, next)| *next == '\u{fe0f}') {
+            2
+        } else {
+            own
+        };
+        Some(Placed { byte, c, width })
+    })
+}
+
+/// How many cells of a terminal `text` takes (see [`widths`]).
 pub fn cells(text: &str) -> usize {
     if text.is_ascii() {
         return text.len();
     }
-    text.chars().map(cell_width).sum()
+    widths(text).map(|placed| placed.width).sum()
 }
 
-/// The cells of one character (see [`cells`]).
-pub fn cell_width(c: char) -> usize {
-    match c as u32 {
-        0..=0x7e => 1,
-        // Combining marks, zero-width spaces and joiners, variation selectors.
-        0x0300..=0x036f | 0x200b..=0x200f | 0x2060 | 0xfe00..=0xfe0f | 0xfeff => 0,
-        // Hangul Jamo, CJK and its punctuation, kana, Hangul, full-width
-        // forms, emoji.
-        0x1100..=0x115f
-        | 0x2e80..=0x303e
-        | 0x3041..=0x33ff
-        | 0x3400..=0x4dbf
-        | 0x4e00..=0x9fff
-        | 0xa000..=0xa4cf
-        | 0xac00..=0xd7a3
-        | 0xf900..=0xfaff
-        | 0xfe30..=0xfe4f
-        | 0xff00..=0xff60
-        | 0xffe0..=0xffe6
-        | 0x1f300..=0x1f64f
-        | 0x1f900..=0x1f9ff
-        | 0x20000..=0x3fffd => 2,
-        _ => 1,
-    }
+/// Whether a character of `text` takes two cells: such a line can't be
+/// cut into rows by a division.
+pub fn has_wide(text: &str) -> bool {
+    !text.is_ascii() && widths(text).any(|placed| placed.width > 1)
 }
 
 /// The byte of `text` at which its cell `cell` starts, or its length when
@@ -145,14 +154,29 @@ pub fn byte_at_cell(text: &str, cell: usize) -> usize {
         return cell.min(text.len());
     }
     let mut at = 0;
-    for (index, c) in text.char_indices() {
-        let width = cell_width(c);
-        if at + width > cell && width > 0 {
-            return index;
+    for placed in widths(text) {
+        if at + placed.width > cell && placed.width > 0 {
+            return placed.byte;
         }
-        at += width;
+        at += placed.width;
     }
     text.len()
+}
+
+/// The longest timestamp a line may start with, in bytes.
+const STAMP_MAX: usize = 64;
+
+/// The timestamp a line of a stream asked for timestamps starts with,
+/// and the rest: what stands before the first space, when it starts with
+/// a digit and is printable ASCII of a timestamp's length. A line that is
+/// nothing but its timestamp has an empty message.
+pub fn split_stamp(text: &str) -> Option<(&str, &str)> {
+    let end = text.find(' ').unwrap_or(text.len());
+    let stamp = &text[..end];
+    let is_stamp = (1..=STAMP_MAX).contains(&end)
+        && stamp.as_bytes()[0].is_ascii_digit()
+        && stamp.bytes().all(|byte| byte.is_ascii_graphic());
+    is_stamp.then(|| (stamp, text.get(end + 1..).unwrap_or("")))
 }
 
 #[cfg(test)]
@@ -181,11 +205,48 @@ mod tests {
         assert_eq!(cells("日本語"), 6);
         assert_eq!(cells("e\u{301}"), 1, "an accent combines");
         assert_eq!(cells("مرحبا"), 5);
+        // Emoji past the first blocks, and the dingbats that are emoji.
+        for wide in ["🚀", "✅", "🟠", "🫠", "⏳"] {
+            assert_eq!(cells(wide), 2, "{wide}");
+        }
+        // Signs that combine in other scripts: Arabic, Devanagari, Thai.
+        assert_eq!(cells("مَرْحَبًا"), 5);
+        assert_eq!(cells("क\u{94d}"), 1, "a virama joins");
+        assert_eq!(cells("ที่"), 1);
+        // A character made of several joined ones is the first; one told
+        // to show as an emoji is wide; a flag is two.
+        assert_eq!(cells("👨\u{200d}👩\u{200d}👧"), 2);
+        assert_eq!(cells("☀"), 1);
+        assert_eq!(cells("☀\u{fe0f}"), 2);
+        assert_eq!(cells("🇫🇷"), 2);
+        assert!(has_wide("a🚀") && !has_wide("été") && !has_wide("abc"));
         assert_eq!(byte_at_cell("abc", 2), 2);
         assert_eq!(byte_at_cell("abc", 9), 3);
         // The second cell of a wide character is still that character.
         assert_eq!(byte_at_cell("日本", 1), 0);
         assert_eq!(byte_at_cell("日本", 2), 3);
         assert_eq!(byte_at_cell("e\u{301}x", 1), 3);
+    }
+
+    #[test]
+    fn a_timestamp_is_what_starts_with_a_digit_before_the_first_space() {
+        assert_eq!(
+            split_stamp("2026-05-01T10:00:00.123456789Z started"),
+            Some(("2026-05-01T10:00:00.123456789Z", "started"))
+        );
+        // Nothing after it, with or without the space.
+        assert_eq!(
+            split_stamp("2026-05-01T10:00:00Z "),
+            Some(("2026-05-01T10:00:00Z", ""))
+        );
+        assert_eq!(
+            split_stamp("2026-05-01T10:00:00Z"),
+            Some(("2026-05-01T10:00:00Z", ""))
+        );
+        // A word is not a timestamp, nor is what holds an escape sequence.
+        assert_eq!(split_stamp("no stamp here"), None);
+        assert_eq!(split_stamp("1\x1b[31m red"), None);
+        assert_eq!(split_stamp(""), None);
+        assert_eq!(split_stamp(&format!("{} x", "1".repeat(65))), None);
     }
 }

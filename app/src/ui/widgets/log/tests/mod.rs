@@ -15,6 +15,7 @@ mod palette;
 mod perf;
 mod search;
 mod select;
+mod wide;
 
 use super::{Line, Message, Metrics, State};
 

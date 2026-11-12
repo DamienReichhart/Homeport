@@ -57,6 +57,7 @@
 pub mod ansi;
 pub mod buffer;
 mod display;
+mod index;
 pub mod line;
 pub mod palette;
 mod pane;

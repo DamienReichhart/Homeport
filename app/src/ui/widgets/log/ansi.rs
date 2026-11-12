@@ -11,6 +11,8 @@
 //! never ends is given up after [`CSI_MAX`] parameter bytes, a title or a
 //! hyperlink after [`STRING_MAX`].
 
+use super::line::cells;
+
 /// A colour a program asked for.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Hash)]
 pub enum Colour {
@@ -76,7 +78,7 @@ pub const CSI_MAX: usize = 64;
 /// The most bytes of a string sequence (a title, a hyperlink) that never
 /// ends: past it, text is text again.
 pub const STRING_MAX: usize = 4096;
-/// Where a tab goes: the next multiple of this many columns.
+/// Where a tab goes: the next multiple of this many cells.
 const TAB: usize = 8;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -107,21 +109,87 @@ pub struct Parser {
     style: Style,
 }
 
+/// Where a line being read goes.
+struct Out<'a> {
+    text: &'a mut String,
+    runs: &'a mut Vec<Run>,
+    /// Where the line starts in `text`: its runs are counted from there.
+    line_start: usize,
+    /// Where its message starts, after its timestamp: what a carriage
+    /// return goes back to, and what tab stops are counted from.
+    message_start: usize,
+    /// The first run of this line in `runs`.
+    first_run: usize,
+    /// The cell of the message the next character goes to.
+    column: usize,
+    /// A carriage return was read and no text since. It takes the line
+    /// back to its start: what comes after it overwrites, so only that is
+    /// kept. One at the very end (`\r\n`) changes nothing.
+    returned: bool,
+}
+
+impl Out<'_> {
+    fn print(&mut self, printed: &str, style: Style) {
+        if std::mem::take(&mut self.returned) {
+            self.text.truncate(self.message_start);
+            self.runs.truncate(self.first_run);
+            self.column = 0;
+        }
+        // A line of a log is far below 4 GiB.
+        #[allow(clippy::cast_possible_truncation)]
+        let at = (self.text.len() - self.line_start) as u32;
+        self.text.push_str(printed);
+        self.column += cells(printed);
+        if style.is_plain() || printed.is_empty() {
+            return;
+        }
+        #[allow(clippy::cast_possible_truncation)]
+        let end = (self.text.len() - self.line_start) as u32;
+        match self.runs[self.first_run..].last_mut() {
+            Some(last) if last.end == at && last.style == style => last.end = end,
+            _ => self.runs.push(Run {
+                start: at,
+                end,
+                style,
+            }),
+        }
+    }
+}
+
 impl Parser {
     /// The style text is in now: what the next line starts with.
     pub fn style(&self) -> Style {
         self.style
     }
 
-    /// Reads one line (or a piece of one): its text is added to `text`
-    /// without its escape sequences, tabs as spaces, and the runs that are
-    /// not plain to `runs`, counted from `line_start` in `text`.
+    /// Reads one line (or a piece of one) that starts at `line_start` in
+    /// `text`: [`Parser::feed_message`] for a line that is all message.
     pub fn feed(&mut self, input: &str, text: &mut String, line_start: usize, runs: &mut Vec<Run>) {
-        let first_run = runs.len();
-        // A carriage return takes the line back to its start: what comes
-        // after it overwrites, so only that is kept. One at the very end
-        // (`\r\n`) changes nothing.
-        let mut returned = false;
+        self.feed_message(input, text, line_start, line_start, runs);
+    }
+
+    /// Reads the message of a line: its text is added to `text` without
+    /// its escape sequences, tabs as spaces, and the runs that are not
+    /// plain to `runs`, counted from `line_start` in `text`. The message
+    /// starts at `message_start`, after the line's timestamp when it has
+    /// one: a carriage return goes back there, never further.
+    pub fn feed_message(
+        &mut self,
+        input: &str,
+        text: &mut String,
+        line_start: usize,
+        message_start: usize,
+        runs: &mut Vec<Run>,
+    ) {
+        let mut out = Out {
+            column: cells(&text[message_start..]),
+            first_run: runs.len(),
+            text,
+            runs,
+            line_start,
+            message_start,
+            returned: false,
+        };
         let bytes = input.as_bytes();
         let mut at = 0;
         while at < input.len() {
@@ -133,8 +201,7 @@ impl Parser {
                     .take_while(|byte| is_text(**byte))
                     .count();
                 if plain > 0 {
-                    self.overwrite(&mut returned, text, line_start, runs, first_run);
-                    self.print(&input[at..at + plain], text, line_start, runs, first_run);
+                    out.print(&input[at..at + plain], self.style);
                     at += plain;
                     continue;
                 }
@@ -147,18 +214,17 @@ impl Parser {
                 Phase::Ground => match c {
                     '\u{1b}' => self.phase = Phase::Escape,
                     '\u{9b}' => self.start_csi(),
-                    '\r' => returned = true,
+                    '\r' => out.returned = true,
                     '\t' => {
-                        self.overwrite(&mut returned, text, line_start, runs, first_run);
-                        let column = text[line_start..].chars().count();
-                        let spaces = TAB - column % TAB;
-                        self.print(&" ".repeat(spaces), text, line_start, runs, first_run);
+                        // To the next stop, counted in cells of the message.
+                        let column = if out.returned { 0 } else { out.column };
+                        const SPACES: &str = "        ";
+                        out.print(&SPACES[..TAB - column % TAB], self.style);
                     }
                     c if c.is_control() => {}
                     c => {
-                        self.overwrite(&mut returned, text, line_start, runs, first_run);
                         let mut bytes = [0; 4];
-                        self.print(c.encode_utf8(&mut bytes), text, line_start, runs, first_run);
+                        out.print(c.encode_utf8(&mut bytes), self.style);
                     }
                 },
                 Phase::Escape => self.escape(c),
@@ -183,48 +249,6 @@ impl Parser {
                     }
                 }
             }
-        }
-    }
-
-    /// What a carriage return left to do, now that text follows it.
-    fn overwrite(
-        &self,
-        returned: &mut bool,
-        text: &mut String,
-        line_start: usize,
-        runs: &mut Vec<Run>,
-        first_run: usize,
-    ) {
-        if std::mem::take(returned) {
-            text.truncate(line_start);
-            runs.truncate(first_run);
-        }
-    }
-
-    fn print(
-        &self,
-        printed: &str,
-        text: &mut String,
-        line_start: usize,
-        runs: &mut Vec<Run>,
-        first_run: usize,
-    ) {
-        // A line of a log is far below 4 GiB.
-        #[allow(clippy::cast_possible_truncation)]
-        let at = (text.len() - line_start) as u32;
-        text.push_str(printed);
-        if self.style.is_plain() || printed.is_empty() {
-            return;
-        }
-        #[allow(clippy::cast_possible_truncation)]
-        let end = (text.len() - line_start) as u32;
-        match runs[first_run..].last_mut() {
-            Some(last) if last.end == at && last.style == self.style => last.end = end,
-            _ => runs.push(Run {
-                start: at,
-                end,
-                style: self.style,
-            }),
         }
     }
 
@@ -295,19 +319,27 @@ impl Parser {
         while let Some(group) = groups.next() {
             // `38:2::r:g:b` keeps its values to itself; `38;2;r;g;b`
             // takes them from the parameters that follow.
-            let mut own = group.split(':').map(number);
-            let code = own.next().flatten().unwrap_or(0);
-            let own: Vec<Option<u16>> = own.collect();
+            let mut own = group.split(':');
+            let code = match own.next().map_or(Number::Empty, number) {
+                Number::Empty => 0,
+                Number::Is(code) => code,
+                // Not a code any terminal knows: it changes nothing.
+                Number::Unreadable => continue,
+            };
+            let own: Vec<Option<u16>> = own.map(|text| number(text).value()).collect();
             match code {
-                38 | 48 => {
+                // The text's colour, its background's, its underline's.
+                38 | 48 | 58 => {
                     let colour = if own.is_empty() {
-                        extended(&mut groups.by_ref().map(number))
+                        extended(&mut groups.by_ref().map(|text| number(text).value()))
                     } else {
                         colon_colour(&own)
                     };
                     match (colour, code) {
                         (Some(colour), 38) => self.style.fg = colour,
-                        (Some(colour), _) => self.style.bg = colour,
+                        (Some(colour), 48) => self.style.bg = colour,
+                        // An underline is drawn in the text's colour.
+                        (Some(_), _) => {}
                         // Not a colour: what follows can't be trusted.
                         (None, _) => break,
                     }
@@ -362,9 +394,30 @@ fn is_text(byte: u8) -> bool {
     byte >= 0x20 && byte != 0x7f && byte != 0xc2
 }
 
-/// A parameter: empty is absent, and what is not a number is too.
-fn number(text: &str) -> Option<u16> {
-    text.parse().ok()
+/// A parameter of a sequence.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Number {
+    /// Left out: it stands for 0.
+    Empty,
+    Is(u16),
+    /// Not a number, or one too large to be a code or a colour.
+    Unreadable,
+}
+
+impl Number {
+    fn value(self) -> Option<u16> {
+        match self {
+            Self::Is(value) => Some(value),
+            Self::Empty | Self::Unreadable => None,
+        }
+    }
+}
+
+fn number(text: &str) -> Number {
+    if text.is_empty() {
+        return Number::Empty;
+    }
+    text.parse().map_or(Number::Unreadable, Number::Is)
 }
 
 fn byte(value: Option<u16>) -> Option<u8> {

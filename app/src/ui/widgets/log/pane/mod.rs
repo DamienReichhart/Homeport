@@ -60,9 +60,19 @@ thread_local! {
 fn shaped(content: &str, italic: bool) -> Raw {
     #[cfg(test)]
     SHAPED.with(|count| count.set(count.get() + 1));
-    Raw::with_text(text::Text {
+    let ascii = content.is_ascii();
+    // A piece is a row of a viewer at most: a few hundred characters.
+    #[allow(clippy::cast_precision_loss)]
+    let room = if ascii {
+        f32::INFINITY
+    } else {
+        (content.chars().count() + 1) as f32 * 2.0 * ROW
+    };
+    let mut paragraph = Raw::with_text(text::Text {
         content,
-        bounds: Size::new(f32::INFINITY, ROW),
+        // Room for any glyph of its cells, and finite: text that reads
+        // right to left is placed against the end of what it is given.
+        bounds: Size::new(room, ROW),
         size: Pixels(size::XS),
         line_height: text::LineHeight::Absolute(Pixels(ROW)),
         font: if italic {
@@ -75,13 +85,20 @@ fn shaped(content: &str, italic: bool) -> Raw {
         align_y: iced::alignment::Vertical::Top,
         // Text the monospaced face has needs no shaping; any other script
         // does, and fonts of the system.
-        shaping: if content.is_ascii() {
+        shaping: if ascii {
             text::Shaping::Basic
         } else {
             text::Shaping::Advanced
         },
         wrapping: text::Wrapping::None,
-    })
+    });
+    if !ascii {
+        // As wide as its text and no wider: a piece that reads right to
+        // left then starts at its cell like any other.
+        let width = paragraph.min_width().ceil();
+        paragraph.resize(Size::new(width, ROW));
+    }
+    paragraph
 }
 
 /// The width of a cell: what the monospaced face advances by.
