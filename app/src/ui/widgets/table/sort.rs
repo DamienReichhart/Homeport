@@ -110,8 +110,17 @@ impl Sort {
 /// is `text` when there is no digit): whatever the case, and a run of
 /// digits by its value, so `host-2` comes before `host-10`.
 pub fn natural(a: &str, b: &str) -> Ordering {
-    let (a, b) = (a.to_lowercase(), b.to_lowercase());
-    let (mut left, mut right) = (chunks(&a), chunks(&b));
+    // A comparison is made a hundred thousand times a view: nothing is
+    // allocated, and plain ASCII (most names) is walked byte by byte.
+    if a.is_ascii() && b.is_ascii() {
+        return natural_ascii(a.as_bytes(), b.as_bytes());
+    }
+    natural_chunks(a, b)
+}
+
+/// [`natural`] for any text: chunk by chunk, as TanStack wrote it.
+pub(super) fn natural_chunks(a: &str, b: &str) -> Ordering {
+    let (mut left, mut right) = (chunks(a), chunks(b));
     loop {
         match (left.next(), right.next()) {
             (None, None) => return Ordering::Equal,
@@ -124,7 +133,7 @@ pub fn natural(a: &str, b: &str) -> Ordering {
                     // Text comes before a number.
                     (None, Some(_)) => Ordering::Less,
                     (Some(_), None) => Ordering::Greater,
-                    (None, None) => one.cmp(other),
+                    (None, None) => lowered(one).cmp(lowered(other)),
                 };
                 if ordering != Ordering::Equal {
                     return ordering;
@@ -132,6 +141,60 @@ pub fn natural(a: &str, b: &str) -> Ordering {
             }
         }
     }
+}
+
+/// [`natural`] over ASCII: the same order, without cutting into chunks.
+fn natural_ascii(a: &[u8], b: &[u8]) -> Ordering {
+    let (mut i, mut j) = (0, 0);
+    // Whether both sides are at the start of a chunk.
+    let mut fresh = true;
+    loop {
+        let (Some(&one), Some(&other)) = (a.get(i), b.get(j)) else {
+            // What has more to say comes after.
+            return (a.len() - i).cmp(&(b.len() - j));
+        };
+        match (one.is_ascii_digit(), other.is_ascii_digit()) {
+            (true, true) => {
+                let run = |text: &[u8], from: usize| {
+                    let end = text[from..]
+                        .iter()
+                        .position(|byte| !byte.is_ascii_digit())
+                        .map_or(text.len(), |length| from + length);
+                    let zeros = text[from..end].iter().take_while(|byte| **byte == b'0');
+                    (from + zeros.count(), end)
+                };
+                let ((from_a, end_a), (from_b, end_b)) = (run(a, i), run(b, j));
+                let (digits_a, digits_b) = (&a[from_a..end_a], &b[from_b..end_b]);
+                let ordering = digits_a
+                    .len()
+                    .cmp(&digits_b.len())
+                    .then_with(|| digits_a.cmp(digits_b));
+                if ordering != Ordering::Equal {
+                    return ordering;
+                }
+                (i, j, fresh) = (end_a, end_b, true);
+            }
+            // A chunk of text against a number: the text first. In the
+            // middle of two chunks of text, the one that ends is the
+            // shorter, and comes first.
+            (false, true) if fresh => return Ordering::Less,
+            (true, false) if fresh => return Ordering::Greater,
+            (true, false) => return Ordering::Less,
+            (false, true) => return Ordering::Greater,
+            (false, false) => {
+                let ordering = one.to_ascii_lowercase().cmp(&other.to_ascii_lowercase());
+                if ordering != Ordering::Equal {
+                    return ordering;
+                }
+                (i, j, fresh) = (i + 1, j + 1, false);
+            }
+        }
+    }
+}
+
+/// The letters of `text`, in lower case.
+fn lowered(text: &str) -> impl Iterator<Item = char> + '_ {
+    text.chars().flat_map(char::to_lowercase)
 }
 
 /// `text` cut into its runs of digits and what is between them.
@@ -164,106 +227,4 @@ fn number(chunk: &str) -> Option<(usize, &str)> {
 /// sorted (the usual case from one view to the next) costs one pass.
 pub fn arrange<T>(order: &mut [u32], rows: &[T], compare: impl Fn(&T, &T) -> Ordering) {
     order.sort_by(|&a, &b| compare(&rows[a as usize], &rows[b as usize]).then(a.cmp(&b)));
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn a_header_cycles_through_both_ways_and_back_to_none() {
-        assert_eq!(next(None, false), Some(Order::Ascending));
-        assert_eq!(next(Some(Order::Ascending), false), Some(Order::Descending));
-        assert_eq!(next(Some(Order::Descending), false), None);
-        // A column of numbers starts with the largest.
-        assert_eq!(next(None, true), Some(Order::Descending));
-        assert_eq!(next(Some(Order::Descending), true), Some(Order::Ascending));
-        assert_eq!(next(Some(Order::Ascending), true), None);
-    }
-
-    #[test]
-    fn a_press_alone_sorts_by_that_column_only() {
-        let mut sort = Sort::by("name", Order::Ascending);
-        sort.toggle("size", true, false);
-        assert_eq!(sort.keys(), [("size", Order::Descending)]);
-        sort.toggle("size", true, false);
-        assert_eq!(sort.keys(), [("size", Order::Ascending)]);
-        sort.toggle("size", true, false);
-        assert!(sort.is_empty());
-    }
-
-    #[test]
-    fn a_press_with_shift_adds_the_column_after_the_others() {
-        let mut sort = Sort::by("status", Order::Ascending);
-        sort.toggle("name", false, true);
-        assert_eq!(
-            sort.keys(),
-            [("status", Order::Ascending), ("name", Order::Ascending)]
-        );
-        sort.toggle("status", false, true);
-        assert_eq!(sort.of("status"), Some(Order::Descending));
-        assert_eq!(sort.keys()[0].0, "status", "it keeps its place");
-        sort.toggle("status", false, true);
-        assert_eq!(sort.keys(), [("name", Order::Ascending)]);
-    }
-
-    #[test]
-    fn what_was_kept_names_a_column_once() {
-        let sort = Sort::from_keys([
-            ("name", Order::Ascending),
-            ("name", Order::Descending),
-            ("size", Order::Descending),
-        ]);
-        assert_eq!(
-            sort.keys(),
-            [("name", Order::Ascending), ("size", Order::Descending)]
-        );
-    }
-
-    #[test]
-    fn text_sorts_whatever_its_case_and_digits_by_their_value() {
-        let mut names = vec![
-            "host-10", "Host-2", "alpha", "host-1", "Beta", "host", "7", "host-02a",
-        ];
-        names.sort_by(|a, b| natural(a, b));
-        assert_eq!(
-            names,
-            ["alpha", "Beta", "host", "host-1", "Host-2", "host-02a", "host-10", "7"]
-        );
-        assert_eq!(natural("Prod", "prod"), Ordering::Equal);
-        assert_eq!(natural("a", "B"), Ordering::Less, "not by code point");
-        assert_eq!(natural("v9", "v10"), Ordering::Less);
-        // Longer than any integer type, and still by value.
-        assert_eq!(
-            natural("id-99999999999999999999999", "id-100000000000000000000000"),
-            Ordering::Less
-        );
-        assert_eq!(natural("10.0.0.9:2376", "10.0.0.10:2376"), Ordering::Less);
-    }
-
-    #[test]
-    fn rows_that_compare_equal_keep_their_order() {
-        let rows = [("b", 1), ("a", 2), ("b", 3), ("a", 4), ("c", 5)];
-        let mut order: Vec<u32> = (0..5).collect();
-        arrange(&mut order, &rows, |a, b| a.0.cmp(b.0));
-        let sorted: Vec<i32> = order.iter().map(|&i| rows[i as usize].1).collect();
-        assert_eq!(sorted, [2, 4, 1, 3, 5]);
-        // Descending reverses the keys, not the rows that share one.
-        arrange(&mut order, &rows, |a, b| {
-            Order::Descending.apply(a.0.cmp(b.0))
-        });
-        let sorted: Vec<i32> = order.iter().map(|&i| rows[i as usize].1).collect();
-        assert_eq!(sorted, [5, 1, 3, 2, 4]);
-    }
-
-    #[test]
-    fn the_arrangement_does_not_depend_on_where_it_started() {
-        let rows = [3, 1, 2, 1, 3, 2];
-        let mut from_start: Vec<u32> = (0..6).collect();
-        let mut from_end: Vec<u32> = (0..6).rev().collect();
-        arrange(&mut from_start, &rows, Ord::cmp);
-        arrange(&mut from_end, &rows, Ord::cmp);
-        assert_eq!(from_start, from_end);
-        assert_eq!(from_start, [1, 3, 2, 5, 0, 4]);
-    }
 }

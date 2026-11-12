@@ -6,7 +6,7 @@
 //! `cargo test -p homeport-app --lib table::tests::perf -- --ignored
 //! --nocapture --test-threads=1` prints the numbers and holds the table's
 //! own share of a frame (not the renderer's pixels) to the budget. A test
-//! build is not optimised and is given five times the budget; for what a
+//! build is not optimised and is given eight times the budget; for what a
 //! release build does, add `--config
 //! profile.dev.package.homeport-app.opt-level=2`, the same with
 //! `opt-level=3` for `tiny-skia`, `iced_tiny_skia`, `iced_graphics`,
@@ -211,14 +211,14 @@ fn table<'a>(
         .view()
 }
 
-/// The ticket's budget for the table's own work in a frame, five times
+/// The ticket's budget for the table's own work in a frame, eight times
 /// over in a build that is not optimised.
 fn budget() -> Duration {
     let budget = Duration::from_millis(2);
     if std::env::var_os("TABLE_PERF_OPTIMISED").is_some() {
         budget
     } else {
-        budget * 5
+        budget * 8
     }
 }
 

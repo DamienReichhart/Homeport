@@ -10,6 +10,7 @@ mod drawn;
 mod keyboard;
 mod perf;
 mod pointer;
+mod sorting;
 mod state;
 
 use iced::{keyboard::Modifiers, widget::container, Length};
