@@ -1,53 +1,72 @@
-//! The Hosts page: every Host with its connection status. A placeholder
-//! for `src/features/hosts`, which its ticket ports whole (the list's
-//! actions, Add host, a Host's settings); it already stands on what a real
-//! feature does: the shell's interface, and the Hosts read through the
-//! data layer.
+//! The Hosts page: every Host with its connection, its address and its
+//! status, in the kit's table. A placeholder for `src/features/hosts`,
+//! which its ticket ports whole (Add host, the bundles, a Host's
+//! settings); it already stands on what a real feature does: the shell's
+//! interface, the Hosts read through the data layer, and the table.
 
 use std::sync::Arc;
 
-use iced::{widget::text, Length, Task};
+use iced::Task;
 
+use homeport_core::host::HostConnection;
 use homeport_hosts::service::HostView;
 
 use crate::{
     data::{keys, resources, Resource},
     t,
     ui::{
-        shell::{layout::page_header, status, Context},
+        shell::{layout::page_header, router::Route, status, Context},
         theme::{
-            self,
+            font,
             metrics::{space, text as size},
-            Element, Icon,
+            Element,
         },
         widgets::{
-            feedback::{
-                empty_state, error_message, error_message::Event, spinner, status_dot, Surfaced,
-            },
-            filling, line, stack,
+            basic::{badge, BadgeVariant},
+            feedback::{error_message, error_message::Event, status_dot, Surfaced},
+            line, stack,
+            table::{self, Column, Table, Width},
         },
     },
 };
 
-#[derive(Debug, Default)]
-pub struct State;
+#[derive(Debug)]
+pub struct State {
+    /// The table's sort, its columns' widths and the row the keyboard is
+    /// on. Boxed: a page's state is one variant among fifty.
+    table: Box<table::State<String>>,
+}
+
+impl State {
+    fn new() -> Self {
+        Self {
+            // A press opens the Host, as `onRowClick` did.
+            table: Box::new(table::State::new().opening_on_press()),
+        }
+    }
+}
 
 #[derive(Debug, Clone)]
 pub enum Message {
     /// What was asked of the failure the page shows.
     Failure(Event),
+    Table(table::Message<String>),
 }
 
 pub fn open(ctx: &Context<'_>) -> (State, Task<Message>) {
     ctx.watch(resources::hosts());
-    (State, Task::none())
+    (State::new(), Task::none())
 }
 
 fn hosts(ctx: &Context<'_>) -> Resource<Arc<Vec<HostView>>> {
     ctx.data.read(&keys::host::list())
 }
 
-pub fn update(_state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Message> {
+fn id(view: &HostView) -> String {
+    view.host.id.clone()
+}
+
+pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Message> {
     match message {
         Message::Failure(Event::Retry) => ctx.invalidate(keys::host::list()),
         Message::Failure(Event::Details) => {
@@ -56,6 +75,13 @@ pub fn update(_state: &mut State, message: Message, ctx: &Context<'_>) -> Task<M
             }
         }
         Message::Failure(Event::Copy(command)) => ctx.copy(command),
+        Message::Table(message) => {
+            let hosts = hosts(ctx);
+            let rows = hosts.data().map_or(&[][..], |list| list.as_slice());
+            if let Some(table::Event::Opened(host_id)) = state.table.update(message, rows, id) {
+                ctx.open(Route::Host { host_id });
+            }
+        }
     }
     Task::none()
 }
@@ -64,118 +90,97 @@ pub fn request(_state: &mut State, _action: &str, _ctx: &Context<'_>) -> Task<Me
     Task::none()
 }
 
-fn row<'a>(view: &HostView) -> Element<'a, Message> {
-    let summary = status::host::describe(&view.status);
-    line(vec![
-        status_dot(summary.tone),
-        filling(text(view.host.name.clone()).size(size::SM)).into(),
-        text(summary.label)
-            .size(size::SM)
-            .style(theme::text::muted)
-            .into(),
-    ])
-    .spacing(space::S2)
-    .width(Length::Fill)
-    .into()
+/// What a connection is called (`connectionLabel`).
+fn kind(connection: &HostConnection) -> String {
+    match connection {
+        HostConnection::Local { .. } => t!("core.connection.local"),
+        HostConnection::Tcp { .. } => t!("hosts.kind.tcp"),
+        HostConnection::Tls { .. } => t!("hosts.kind.tls"),
+        HostConnection::Ssh { .. } => t!("hosts.kind.ssh"),
+    }
 }
 
-pub fn view<'a>(_state: &'a State, ctx: &Context<'a>) -> Element<'a, Message> {
+/// Where a Host lives, in one line: a socket path, an address or
+/// `user@server` (`describeAddress`).
+fn address(connection: &HostConnection) -> String {
+    match connection {
+        HostConnection::Local { socket_path } => socket_path.clone(),
+        HostConnection::Tcp { address } | HostConnection::Tls { address } => address.clone(),
+        HostConnection::Ssh {
+            host, port, user, ..
+        } => {
+            if *port == 22 {
+                format!("{user}@{host}")
+            } else {
+                format!("{user}@{host}:{port}")
+            }
+        }
+    }
+}
+
+/// The Hosts table's columns (`hostColumns`).
+fn columns<'a>() -> Vec<Column<'a, HostView, Message>> {
+    vec![
+        Column::new("name", t!("hosts.column.name"), |view: &HostView| {
+            table::text(view.host.name.clone())
+                .font(font::medium())
+                .into()
+        })
+        .width(Width::Fill(2))
+        .sort_by(|a, b| a.host.name.cmp(&b.host.name)),
+        Column::new("kind", t!("hosts.column.type"), |view: &HostView| {
+            badge(kind(&view.host.connection), BadgeVariant::Outline)
+        })
+        .width(Width::Fixed(120.0))
+        .sort_by(|a, b| kind(&a.host.connection).cmp(&kind(&b.host.connection))),
+        Column::new("address", t!("hosts.column.address"), |view: &HostView| {
+            table::text(address(&view.host.connection))
+                .font(font::MONO)
+                .size(size::XS)
+                .into()
+        })
+        .width(Width::Fill(3))
+        .sort_by(|a, b| address(&a.host.connection).cmp(&address(&b.host.connection))),
+        Column::new("status", t!("hosts.column.status"), |view: &HostView| {
+            let summary = status::host::describe(&view.status);
+            line(vec![
+                status_dot(summary.tone),
+                table::text(summary.label).into(),
+            ])
+            .spacing(space::S1_5)
+            .into()
+        })
+        .width(Width::Fixed(150.0))
+        .sort_by(|a, b| {
+            let label = |view: &HostView| status::host::describe(&view.status).label;
+            label(a).cmp(&label(b))
+        }),
+    ]
+}
+
+pub fn view<'a>(state: &'a State, ctx: &Context<'a>) -> Element<'a, Message> {
     let hosts = hosts(ctx);
-    let mut parts = vec![page_header(t!("hosts.title"), None, vec![])];
+    let mut parts = vec![page_header(
+        t!("hosts.title"),
+        Some(t!("hosts.description")),
+        vec![],
+    )];
     if let Some(error) = hosts.error() {
         parts.push(error_message(error, true, Message::Failure));
     }
-    match hosts.data() {
-        None if hosts.is_pending() => parts.push(spinner()),
-        Some(list) if !list.is_empty() => {
-            parts.push(
-                stack(list.iter().map(row).collect())
-                    .spacing(space::S2)
-                    .into(),
-            );
-        }
-        _ if hosts.error().is_none() => {
-            parts.push(empty_state(t!("hosts.empty")).icon(Icon::Server).view());
-        }
-        _ => {}
+    // A list that could not be read and was never read shows its failure
+    // alone, as the React page did.
+    if hosts.data().is_some() || hosts.error().is_none() {
+        let rows = hosts.data().map_or(&[][..], |list| list.as_slice());
+        parts.push(
+            Table::new(&state.table, columns(), rows, id, Message::Table)
+                .loading(hosts.is_pending())
+                .empty_label(t!("hosts.empty"))
+                .view(),
+        );
     }
     stack(parts).spacing(space::S4).into()
 }
 
 #[cfg(test)]
-mod tests {
-    use homeport_core::error::{AppError, ErrorCode};
-    use homeport_hosts::registry::HostStatus;
-
-    use super::*;
-    use crate::{
-        test_support::{
-            fixtures::{connected, host_view},
-            snapshot::assert_snapshot,
-        },
-        ui::{
-            shell::{page::testing::Bench, router::Route},
-            theme::Theme,
-        },
-    };
-
-    fn bench(list: Vec<HostView>) -> Bench {
-        let mut bench = Bench::at(Route::Hosts);
-        bench.data.set(&keys::host::list(), list);
-        bench
-    }
-
-    fn three() -> Vec<HostView> {
-        vec![
-            host_view("prod", connected()),
-            host_view("staging", HostStatus::Connecting),
-            host_view("backup", HostStatus::Disabled),
-        ]
-    }
-
-    #[test]
-    fn opening_reads_the_hosts_through_the_data_layer() {
-        let bench = Bench::at(Route::Hosts);
-        let _ = open(&bench.ctx());
-        assert_eq!(bench.watched(), [keys::host::list()]);
-    }
-
-    #[test]
-    fn a_failure_leads_to_its_details_and_retry_reads_again() {
-        let mut bench = bench(three());
-        let locked = AppError::new(ErrorCode::DbLocked, homeport_storage::messages::DB_LOCKED);
-        bench.data.fail(&keys::host::list(), &locked);
-        let mut state = State;
-        let _ = update(&mut state, Message::Failure(Event::Details), &bench.ctx());
-        let _ = update(&mut state, Message::Failure(Event::Retry), &bench.ctx());
-        assert_eq!(bench.asked(), ["details", "invalidate"]);
-    }
-
-    #[test]
-    fn the_page_in_english() {
-        let bench = bench(three());
-        assert_snapshot("hosts-en", "en", &Theme::Light, (360.0, 160.0), || {
-            view(&State, &bench.ctx())
-        });
-    }
-
-    #[test]
-    fn the_page_in_arabic_is_mirrored() {
-        let bench = bench(three());
-        assert_snapshot("hosts-ar", "ar", &Theme::Light, (360.0, 160.0), || {
-            view(&State, &bench.ctx())
-        });
-    }
-
-    #[test]
-    fn the_page_with_no_host() {
-        let bench = bench(vec![]);
-        assert_snapshot(
-            "hosts-empty-en",
-            "en",
-            &Theme::Light,
-            (360.0, 220.0),
-            || view(&State, &bench.ctx()),
-        );
-    }
-}
+mod tests;
