@@ -282,8 +282,7 @@ fn pairs(theme: Theme) -> Vec<Pair> {
         );
     }
     // The thumb of a table's scrollbars, on the rows it lies over: what
-    // `--border` was not (1.2:1 on the page, the very fill of a selected
-    // row on light).
+    // `--border` was not (1.3:1 on a row, 1.2:1 on a selected one).
     let thumb = style::scrollable::table_thumb(&theme);
     let rows = [
         ("a row", style::container::table_row(false, false)(&theme)),

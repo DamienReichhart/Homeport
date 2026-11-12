@@ -53,8 +53,8 @@ pub fn area(theme: &Theme, _status: Status) -> Style {
 const THUMB: f32 = 0.7;
 
 /// The thumb of a table's scrollbars. It lies on the rows, selected ones
-/// included (`bg-muted`), where `--border` cannot be told from the fill:
-/// the muted text's colour is seen on both.
+/// included (`bg-muted`), where `--border` is 1.2:1 and cannot be seen:
+/// the muted text's colour is seen on all of them.
 pub fn table_thumb(theme: &Theme) -> iced::Color {
     super::alpha(theme.tokens().muted_foreground, THUMB)
 }
