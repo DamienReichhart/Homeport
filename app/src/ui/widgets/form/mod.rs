@@ -2,7 +2,7 @@
 //! value is refused; the controls are iced's own where it has one (the
 //! checkbox, the radio, the switch and the slider, which the theme styles)
 //! and the kit's for the rest: [`input`] and its group, [`password`],
-//! [`number_input`], [`textarea`], [`select`], [`tabs`], [`toggle_group`]
+//! [`search`], [`number_input`], [`textarea`], [`select`], [`tabs`], [`toggle_group`]
 //! and [`segmented`]; [`checkbox`] is the one with three values, for the
 //! rows of a table.
 //!
@@ -19,7 +19,7 @@ pub mod tabs;
 pub use self::{
     checkbox::{checkbox, Check},
     field::{field, Errors, Field},
-    input::{input, input_group, password, textarea, Addon},
+    input::{focus_search, input, input_group, password, search, textarea, Addon},
     number::{number_input, Number},
     select::select,
     tabs::{segmented, tabs, toggle_group, TabsVariant, Toggle},

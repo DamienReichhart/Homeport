@@ -8,7 +8,7 @@ pub mod stub;
 pub mod testing;
 pub mod world;
 
-use iced::Task;
+use iced::{Subscription, Task};
 
 use crate::ui::theme::Element;
 
@@ -34,4 +34,15 @@ pub trait Pages: Sized {
     /// Starts one of the page's actions, as if its button was pressed: what
     /// a palette command or a page shortcut asks for (`useActionRequest`).
     fn request(&mut self, action: &str, ctx: &Context<'_>) -> Task<Self::Message>;
+
+    /// What the page reads or the Hosts may have changed: the page watches
+    /// what is there now and takes what its view needs from it. Called
+    /// after every message of the window while the page stays, so it does
+    /// nothing unless something it reads is another value than last time.
+    fn refresh(&mut self, ctx: &Context<'_>) -> Task<Self::Message>;
+
+    /// The streams the page follows while it shows (`data::streams`): each
+    /// runs while this returns it and is dropped, so stopped, when it no
+    /// longer does. What React's `subscribe()` in an effect was.
+    fn subscription(&self, ctx: &Context<'_>) -> Subscription<Self::Message>;
 }

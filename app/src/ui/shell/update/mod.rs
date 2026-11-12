@@ -32,7 +32,7 @@ use crate::{
     api,
     data::{self, keys, resources, Data, Key},
     i18n, t,
-    ui::widgets::feedback::Surfaced,
+    ui::widgets::feedback::{toast::Said, Surfaced},
 };
 
 /// A read the shell wants kept fresh: its key and how to start it.
@@ -160,7 +160,8 @@ impl<P: Pages> Shell<P> {
                         Remember::IncusProject { .. } => || t!("core.incus.rememberFailed"),
                     };
                     let surfaced = Surfaced::new(*error, "update_settings");
-                    self.events.push(Event::Failed(Some(title), surfaced));
+                    self.events
+                        .push(Event::Failed(Some(Said::new(title)), surfaced));
                 }
                 // The next one waiting, now that this one is written.
                 match self.to_save.pop_front() {
@@ -192,7 +193,8 @@ impl<P: Pages> Shell<P> {
         // An action asked of a page its gate still hides is a navigation
         // of its own: the page starts it when the gate opens.
         let waits = request.action.is_some() && self.page.is_none();
-        if !self.at(&request.route) || request.query.is_some() || waits {
+        let carries = request.query.is_some() || !request.params.is_empty();
+        if !self.at(&request.route) || carries || waits {
             self.history.push(request);
             return Task::none();
         }
@@ -267,11 +269,8 @@ impl<P: Pages> Shell<P> {
     fn run(&mut self, run: Run, data: &mut Data) -> Task<Message<P::Message>> {
         match run {
             Run::Open(route, action) => {
-                let request = Request {
-                    route,
-                    action,
-                    query: None,
-                };
+                let mut request = Request::to(route);
+                request.action = action;
                 self.go(request, data)
             }
             Run::Request(action) => self.request(action, data),
@@ -310,7 +309,7 @@ impl<P: Pages> Shell<P> {
                 Task::none()
             }
             sidebar::Message::External(url) => {
-                self.events.push(Event::OpenUrl(url));
+                self.events.push(Event::OpenUrl(url.to_owned()));
                 Task::none()
             }
         }
@@ -350,8 +349,24 @@ impl<P: Pages> Shell<P> {
                 Effect::Invalidate(scope) => {
                     data.invalidate(&self.state, &scope).map(Message::Data)
                 }
-                Effect::Failed(surfaced) => {
-                    self.events.push(Event::Failed(None, surfaced));
+                Effect::Failed(title, surfaced) => {
+                    self.events.push(Event::Failed(title, surfaced));
+                    Task::none()
+                }
+                Effect::Said(kind, said) => {
+                    self.events.push(Event::Said(kind, said));
+                    Task::none()
+                }
+                Effect::OpenUrl(url) => {
+                    self.events.push(Event::OpenUrl(url));
+                    Task::none()
+                }
+                Effect::Put(put) => {
+                    put(data);
+                    Task::none()
+                }
+                Effect::Keep { query, params } => {
+                    self.history.amend(query, params);
                     Task::none()
                 }
                 Effect::Details(surfaced) => {
@@ -502,7 +517,13 @@ impl<P: Pages> Shell<P> {
             _ => None,
         };
         let key = subject.map(|subject| (location.key, subject));
-        if self.page.as_ref().map(|open| &open.key) != key.as_ref() {
+        if self.page.as_ref().map(|open| &open.key) == key.as_ref() {
+            // The page stays: it is told that what it reads may have changed.
+            if let Some(id) = self.page.as_ref().map(|open| open.id) {
+                let refreshed = self.with_page(data, |page, ctx| page.refresh(ctx));
+                tasks.extend(refreshed.map(|task| task.map(move |m| Message::Page(id, m))));
+            }
+        } else {
             self.close_page(data);
             if let Some(key) = key {
                 let ctx = Context {

@@ -170,3 +170,43 @@ fn a_swarm_is_named_after_its_first_manager_host() {
     assert_eq!(swarm::label(&swarm, &[connected_host()]), "Swarm of local");
     assert_eq!(swarm::label(&swarm, &[]), "Swarm swarm1234567");
 }
+
+#[test]
+fn a_host_is_found_in_the_swarm_it_manages_or_works_for() {
+    let swarm = SwarmView {
+        id: "swarm1".to_owned(),
+        managers: vec!["h1".to_owned()],
+        workers: vec!["h2".to_owned()],
+        reachable: true,
+    };
+    let swarms = [swarm];
+    assert_eq!(
+        swarm::of_host(&swarms, "h1").map(|s| &*s.id),
+        Some("swarm1")
+    );
+    assert_eq!(
+        swarm::of_host(&swarms, "h2").map(|s| &*s.id),
+        Some("swarm1")
+    );
+    assert_eq!(swarm::of_host(&swarms, "h3"), None);
+}
+
+#[test]
+fn a_host_s_published_ports_are_reached_at_its_server() {
+    use homeport_core::host::HostConnection;
+    let tcp = |address: &str| HostConnection::Tcp {
+        address: address.to_owned(),
+    };
+    assert_eq!(
+        host::address(&connected_host().host.connection),
+        "localhost"
+    );
+    assert_eq!(host::address(&tcp("10.0.0.4:2376")), "10.0.0.4");
+    assert_eq!(host::address(&tcp("[::1]:2376")), "::1");
+    assert_eq!(
+        host::address(&tcp("docker.example.com")),
+        "docker.example.com"
+    );
+    let prod = host_view("prod", connected());
+    assert_eq!(host::address(&prod.host.connection), "prod.example.com");
+}

@@ -3,9 +3,10 @@
 //! which grows with what is typed.
 
 use iced::{
+    advanced::widget::Id,
     alignment::Vertical,
-    widget::{container, text_editor, text_input, Stack, TextEditor, TextInput},
-    Length, Padding,
+    widget::{container, operation, text_editor, text_input, Stack, TextEditor, TextInput},
+    Length, Padding, Task,
 };
 
 use crate::{
@@ -38,6 +39,30 @@ pub fn input<'a, Message: Clone + 'a>(
         .size(size::SM)
         .padding([space::S1, control::PADDING_X])
         .align_x(start())
+}
+
+/// `w-64`: how wide a page's search field is.
+pub const SEARCH_WIDTH: f32 = 256.0;
+
+/// `SearchInput`: a page's search field, the magnifier where its text
+/// starts. `id` is what `/` gives focus to ([`focus_search`]); Escape
+/// leaves it.
+pub fn search<'a, Message: Clone + 'a>(
+    id: impl Into<Id>,
+    placeholder: &str,
+    value: &str,
+    on_input: impl Fn(String) -> Message + 'a,
+) -> Element<'a, Message> {
+    let field = input(placeholder, value).id(id).on_input(on_input);
+    container(input_group(field, Some(Addon::icon(Icon::Search)), None))
+        .width(SEARCH_WIDTH)
+        .into()
+}
+
+/// Gives focus to the search field `id` and selects what it holds, so
+/// typing replaces it: what `/` does on a page with a list.
+pub fn focus_search<Message: Send + 'static>(id: impl Into<Id> + Clone) -> Task<Message> {
+    operation::focus(id.clone()).chain(operation::select_all(id))
 }
 
 /// Something that sits in a field, before or after its text, and how wide

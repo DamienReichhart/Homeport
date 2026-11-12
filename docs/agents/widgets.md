@@ -39,7 +39,7 @@ The theme has its own, `cargo run -p homeport-app --example gallery --features g
 | `checkbox`, `switch`       | iced's `checkbox` and `toggler`, styled by the theme; `form::checkbox` where it is `indeterminate` or must take focus |
 | `table`                    | `table::Table` (_The data table_)                                                                                     |
 
-`Keys` (`src/shared/ui/data`) is `basic::keys`, `DataTable` is `table::Table`; `PageHeader` is the shell's `shell::layout::page_header`. A menu item takes a status dot (`menu::Item::status`), an empty state a `detail` (a failure under its title), and `select_owned` is a select over labels the view builds. `focus::key_area(..).on_captured(..)` hears the keys a field or a dialog used: only the shell uses it, for the shortcuts with Mod.
+`Keys` (`src/shared/ui/data`) is `basic::keys`, `DataTable` is `table::Table`, `SearchInput` is `form::search` (with `form::focus_search` for `/`); `PageHeader` is the shell's `shell::layout::page_header`. A menu item takes a status dot (`menu::Item::status`), an empty state a `detail` (a failure under its title), and `select_owned` is a select over labels the view builds. `focus::key_area(..).on_captured(..)` hears the keys a field or a dialog used: only the shell uses it, for the shortcuts with Mod.
 
 `src/shared/ui/feedback` is `widgets::feedback`, name for name: `error_message`, `Details` (the Details dialog), `Toasts::failure` (`toastError`), `confirm_dialog` (`ConfirmDialog`, `useConfirmedAction`), `empty_state`, `hint_view`, `spinner`, `status_dot`.
 

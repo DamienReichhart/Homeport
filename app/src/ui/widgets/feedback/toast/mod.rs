@@ -91,7 +91,8 @@ impl Said {
         Self(Arc::new(say))
     }
 
-    fn now(&self) -> String {
+    /// What it says in the language of the moment.
+    pub fn now(&self) -> String {
         (self.0)()
     }
 }

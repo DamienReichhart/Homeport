@@ -56,6 +56,16 @@ impl History {
         self.current()
     }
 
+    /// Changes what the current location carries (its search text and its
+    /// parameters) without leaving it: the page that shows stays as it is,
+    /// and finds them again when the window comes back to it. React's
+    /// `setSearchParams(.., { replace: true })`.
+    pub fn amend(&mut self, query: Option<String>, params: Vec<(String, String)>) {
+        let location = &mut self.entries[self.at];
+        location.query = query;
+        location.params = params;
+    }
+
     pub fn can_go_back(&self) -> bool {
         self.at > 0
     }

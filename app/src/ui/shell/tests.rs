@@ -46,6 +46,8 @@ struct Blank {
     asked: Vec<String>,
     /// How many of its messages reached it.
     heard: usize,
+    /// How many times it was told that something may have changed.
+    refreshed: usize,
 }
 
 impl Pages for Blank {
@@ -63,6 +65,7 @@ impl Pages for Blank {
             state,
             asked: vec![],
             heard: 0,
+            refreshed: 0,
         };
         (page, task)
     }
@@ -78,7 +81,35 @@ impl Pages for Blank {
 
     fn request(&mut self, action: &str, ctx: &Context<'_>) -> Task<stub::Message> {
         self.asked.push(action.to_owned());
+        // What a page asks of the shell through its context.
+        match action {
+            "say" => ctx.done(|| "done".to_owned()),
+            "blame" => ctx.failed_of(
+                || "web".to_owned(),
+                crate::ui::widgets::feedback::Surfaced::at(
+                    refused(),
+                    None,
+                    jiff::Timestamp::UNIX_EPOCH,
+                ),
+            ),
+            "link" => ctx.open_url("http://localhost:8080"),
+            "put" => ctx.put(keys::host::freshness("h1"), vec![7_u8]),
+            "keep" => ctx.keep(
+                Some("api".to_owned()),
+                vec![("host".to_owned(), "h1".to_owned())],
+            ),
+            _ => {}
+        }
         stub::request(&mut self.state, action, ctx)
+    }
+
+    fn refresh(&mut self, ctx: &Context<'_>) -> Task<stub::Message> {
+        self.refreshed += 1;
+        stub::refresh(&mut self.state, ctx)
+    }
+
+    fn subscription(&self, ctx: &Context<'_>) -> iced::Subscription<stub::Message> {
+        stub::subscription(&self.state, ctx)
     }
 }
 
@@ -981,4 +1012,83 @@ fn an_engine_found_here_is_added_in_one_click_and_selected() {
     rig.data.set(&keys::host::local_engines(), engines);
     rig.send(Message::Changed);
     assert!(welcome::host_input(rig.shell.world(), &docker).is_none());
+}
+
+#[test]
+fn a_page_that_stays_is_told_of_every_change() {
+    let mut rig = docker_and_prod();
+    rig.go(Route::Containers);
+    let opened = open_page(&rig).id;
+    let before = open_page(&rig).page.refreshed;
+    // A read ended, a status came: the page hears of it once each.
+    rig.send(Message::Changed);
+    rig.send(Message::Changed);
+    assert_eq!(open_page(&rig).id, opened);
+    assert_eq!(open_page(&rig).page.refreshed, before + 2);
+    // Another page is opened, not refreshed: it reads all there is.
+    rig.go(Route::Images);
+    assert_eq!(open_page(&rig).page.refreshed, 0);
+}
+
+#[test]
+fn a_page_says_what_it_did_names_what_failed_and_opens_a_link() {
+    let mut rig = docker_and_prod();
+    rig.go(Route::Containers);
+    for action in ["say", "blame", "link"] {
+        rig.send(Message::Go(Request::to(Route::Containers).starting(action)));
+    }
+    let events = rig.shell.take_events();
+    let [Event::Said(kind, said), Event::Failed(Some(title), surfaced), Event::OpenUrl(url)] =
+        events.as_slice()
+    else {
+        panic!("{events:?}");
+    };
+    assert_eq!(
+        (*kind, said.now()),
+        (
+            crate::ui::widgets::feedback::toast::Kind::Success,
+            "done".to_owned()
+        )
+    );
+    assert_eq!(
+        (title.now(), &surfaced.error),
+        ("web".to_owned(), &refused())
+    );
+    assert_eq!(url, "http://localhost:8080");
+}
+
+#[test]
+fn what_a_page_keeps_in_its_location_is_there_when_the_window_comes_back() {
+    let mut rig = docker_and_prod();
+    rig.go(Route::Board);
+    let page = open_page(&rig).id;
+    rig.send(Message::Go(Request::to(Route::Board).starting("keep")));
+    // The page stays as it is: its location carries more, under the same key.
+    assert_eq!(open_page(&rig).id, page);
+    rig.go(Route::Containers);
+    rig.send(Message::Back);
+    let location = rig.shell.location();
+    assert_eq!(location.query.as_deref(), Some("api"));
+    assert_eq!(location.params_of("host").collect::<Vec<_>>(), ["h1"]);
+    assert_eq!(location.param("state"), None);
+}
+
+#[test]
+fn a_page_files_what_an_action_answered_and_a_request_carries_parameters() {
+    let mut rig = docker_and_prod();
+    rig.go(Route::Containers);
+    rig.send(Message::Go(Request::to(Route::Containers).starting("put")));
+    let filed = rig.data.read::<Vec<u8>>(&keys::host::freshness("h1"));
+    assert_eq!(filed.data().map(|list| list.as_slice()), Some(&[7_u8][..]));
+    // `/board?host=h1`, as the Overview's card of a Host opens the Board.
+    rig.send(Message::Go(
+        Request::to(Route::Board).with_param("host", "h1"),
+    ));
+    assert_eq!(rig.shell.location().param("host"), Some("h1"));
+    // Asked again with another Host, it is another navigation.
+    let key = rig.shell.location().key;
+    rig.send(Message::Go(
+        Request::to(Route::Board).with_param("host", "prod-id"),
+    ));
+    assert_ne!(rig.shell.location().key, key);
 }

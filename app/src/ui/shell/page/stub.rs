@@ -3,7 +3,7 @@
 //! own `State`, `Message`, `open`, `update`, `view` and `request`
 //! (`docs/agents/iced-migration.md`, Replacing a stub).
 
-use iced::Task;
+use iced::{Subscription, Task};
 
 use super::Context;
 use crate::{
@@ -37,6 +37,14 @@ pub fn update(_state: &mut State, message: Message, ctx: &Context<'_>) -> Task<M
 
 pub fn request(_state: &mut State, _action: &str, _ctx: &Context<'_>) -> Task<Message> {
     Task::none()
+}
+
+pub fn refresh(_state: &mut State, _ctx: &Context<'_>) -> Task<Message> {
+    Task::none()
+}
+
+pub fn subscription(_state: &State, _ctx: &Context<'_>) -> Subscription<Message> {
+    Subscription::none()
 }
 
 /// What the page is called: its sidebar entry, or what the switcher or

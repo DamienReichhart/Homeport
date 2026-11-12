@@ -24,7 +24,10 @@ use crate::{
             selection::Selection,
         },
         theme::Element,
-        widgets::feedback::Surfaced,
+        widgets::feedback::{
+            toast::{self, Said},
+            Surfaced,
+        },
     },
 };
 
@@ -44,8 +47,19 @@ pub(in crate::ui::shell) enum Effect {
     Watch(Key, Start),
     /// Everything under a key is out of date.
     Invalidate(Key),
-    /// A failure, said in passing.
-    Failed(Surfaced),
+    /// A failure, said in passing, under what failed when it has a name.
+    Failed(Option<Said>, Surfaced),
+    /// What an action did, said in passing.
+    Said(toast::Kind, Said),
+    /// A link for the system browser.
+    OpenUrl(String),
+    /// A value for the data layer, in place of a read.
+    Put(Box<dyn FnOnce(&mut Data)>),
+    /// What the location carries from now on.
+    Keep {
+        query: Option<String>,
+        params: Vec<(String, String)>,
+    },
     /// The Details of a failure, asked for.
     Details(Surfaced),
     /// Text for the clipboard.
@@ -142,7 +156,46 @@ impl<'a> Context<'a> {
 
     /// Says a failure in a toast, which leads to its Details.
     pub fn failed(&self, surfaced: Surfaced) {
-        self.effects.push(Effect::Failed(surfaced));
+        self.effects.push(Effect::Failed(None, surfaced));
+    }
+
+    /// The same under a title that names what failed, when the message
+    /// alone wouldn't say: one container among those an action was asked
+    /// for (`toastError(error, title)`).
+    pub fn failed_of(
+        &self,
+        title: impl Fn() -> String + Send + Sync + 'static,
+        surfaced: Surfaced,
+    ) {
+        self.effects
+            .push(Effect::Failed(Some(Said::new(title)), surfaced));
+    }
+
+    /// Says what an action did in a toast (`toast.success`). `say` is asked
+    /// each time the toast is drawn, so it reads in the language of the
+    /// moment: `ctx.done(move || t!("containers.done.stop", count = count))`.
+    pub fn done(&self, say: impl Fn() -> String + Send + Sync + 'static) {
+        self.effects
+            .push(Effect::Said(toast::Kind::Success, Said::new(say)));
+    }
+
+    /// Opens `url` in the system browser.
+    pub fn open_url(&self, url: impl Into<String>) {
+        self.effects.push(Effect::OpenUrl(url.into()));
+    }
+
+    /// Files `value` under `key` as if it had just been read: what an
+    /// action answered is what a read would (`setQueryData`).
+    pub fn put<T: Send + Sync + 'static>(&self, key: Key, value: T) {
+        self.effects
+            .push(Effect::Put(Box::new(move |data| data.set(&key, value))));
+    }
+
+    /// Keeps `query` and `params` in the page's location, so the page finds
+    /// them when the window comes back to it: a list's filters
+    /// (`setSearchParams(.., { replace: true })`). The page stays as it is.
+    pub fn keep(&self, query: Option<String>, params: Vec<(String, String)>) {
+        self.effects.push(Effect::Keep { query, params });
     }
 
     /// Opens the Details dialog of a failure shown in place.

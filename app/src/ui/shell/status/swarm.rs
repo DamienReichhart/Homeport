@@ -22,3 +22,12 @@ pub fn label(swarm: &SwarmView, hosts: &[HostView]) -> String {
         None => t!("core.swarm.labelUnknown", id = short_id(&swarm.id)),
     }
 }
+
+/// The Swarm a Host belongs to among `swarms`, as a manager or a worker
+/// (`swarmOfHost`).
+pub fn of_host<'a>(swarms: &'a [SwarmView], host_id: &str) -> Option<&'a SwarmView> {
+    swarms.iter().find(|swarm| {
+        let member = |id: &String| id == host_id;
+        swarm.managers.iter().any(member) || swarm.workers.iter().any(member)
+    })
+}

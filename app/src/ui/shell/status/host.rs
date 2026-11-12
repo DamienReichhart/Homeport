@@ -1,6 +1,6 @@
 //! A Host's status, described (`describeStatus`, `statusError`).
 
-use homeport_core::error::AppError;
+use homeport_core::{error::AppError, host::HostConnection};
 use homeport_hosts::registry::HostStatus;
 
 use super::Summary;
@@ -84,4 +84,22 @@ pub fn describe(status: &HostStatus) -> Summary {
 
 pub fn is_connected(status: &HostStatus) -> bool {
     matches!(status, HostStatus::Connected { .. })
+}
+
+/// Where a Host's published ports are reachable, for links
+/// (`hostAddress`): this machine, or the server without its port.
+pub fn address(connection: &HostConnection) -> String {
+    match connection {
+        HostConnection::Local { .. } => "localhost".to_owned(),
+        HostConnection::Tcp { address } | HostConnection::Tls { address } => {
+            let digits = address.bytes().rev().take_while(u8::is_ascii_digit).count();
+            let server = match address.len().checked_sub(digits + 1) {
+                Some(colon) if digits > 0 && address.as_bytes()[colon] == b':' => &address[..colon],
+                _ => address,
+            };
+            let server = server.strip_prefix('[').unwrap_or(server);
+            server.strip_suffix(']').unwrap_or(server).to_owned()
+        }
+        HostConnection::Ssh { host, .. } => host.clone(),
+    }
 }

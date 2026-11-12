@@ -46,7 +46,7 @@ app/src/
 Rules, enforced by `app/tests/layout.rs`:
 
 1. **Dependencies point inward:** `ui/features` → `ui/widgets` + `ui/shell` + `data` + `api` → `app` → the crates. A feature never imports another feature (shared domain goes to `ui/shell` or `data`). `api` never imports `ui`.
-2. **Elm architecture.** A feature has a `State`, a `Message` enum, `update(&mut State, Message, &Context) -> Task<Message>` and `view(&State, &Context) -> Element<Message>`, with `open` and `request` beside them (_The shell and a feature's page_). `view` is pure and cheap; all I/O is a `Task` or a `Subscription`.
+2. **Elm architecture.** A feature has a `State`, a `Message` enum, `update(&mut State, Message, &Context) -> Task<Message>` and `view(&State, &Context) -> Element<Message>`, with `open`, `request`, `refresh` and `subscription` beside them (_The shell and a feature's page_). `view` is pure and cheap; all I/O is a `Task` or a `Subscription`.
 3. **No blocking in `update` or `view`.** Anything that touches the network, the disk, the database, the keychain or a lock held across `await` goes through `Task::perform` on the runtime iced owns.
 4. **Thin use cases, logic in crates.** An `api` function parses its arguments and calls one crate, as the former `src-tauri/src/commands/*` did (ADR 0005 still holds). Logic that needs several stores goes to the crate that owns them.
 5. **One error type.** Failures are `AppError { code, message, hint, detail }` from `homeport-core`, shown with the shared error widgets (never a bare string), logged with the command's name.
@@ -67,12 +67,12 @@ Rules, enforced by `app/tests/layout.rs`:
 
 `app/src/ui/shell/` is what `src/app` and `src/core` were: the sidebar, the router, the selection, the gates, the pickers, the palette and the shortcuts. It knows no feature; it hosts whatever `ui::features::Page` gives it.
 
-- **Routes** (`shell::router`): `Route` has a variant for every route pattern of the manifests (`Route::Container { id, tab }` is `containers/:id/:tab?`). A navigation is a `Request`: a route, an optional action for the page to start (`ctx.open(path, action)` in React) and an optional search text (`?q=`).
+- **Routes** (`shell::router`): `Route` has a variant for every route pattern of the manifests (`Route::Container { id, tab }` is `containers/:id/:tab?`). A navigation is a `Request`: a route, an optional action for the page to start (`ctx.open(path, action)` in React), an optional search text (`?q=`) and the other search parameters of the address (`Request::with_param("host", id)` is `/board?host=…`). A page that kept its filters in the address keeps them with `ctx.keep(query, params)`: its location carries them, the page stays as it is, and `open` reads them from `ctx.location` when the window comes back.
 - **Registry** (`shell::registry`): `FEATURES` lists every feature in sidebar order, as data: its routes, sidebar entry (label, icon, scope), what the Host's Engine or the Cluster's kind must be, its gate, its palette commands and its page shortcuts (`n`, `/`). The sidebar, the palette, the keymap and the gates are built from it. `registry/tests.rs` pins the list and, while `src/features/*/manifest.ts` are in the tree, reads them and fails on any difference.
 - **Gates** (`shell::gates`): `decide(route, world)` says whether the page shows (`Verdict::Open(Subject)`) or what stands before it. A page is opened only once its gate lets it through, and opened anew when its `Subject` changes (another Host, another namespace), so a page never has to handle "not connected".
 - **Selection**: `ctx.world.selection`, remembered in the Settings (`last_selection`, with `last_host_id` for older versions). When it moves, the shell calls `Data::release` on the old scope and sends a page of the other kind to the Overview.
 
-A feature is four functions and two types in `ui/features/<group>/<name>/mod.rs`:
+A feature is six functions and two types in `ui/features/<group>/<name>/mod.rs`:
 
 ```rust
 pub struct State { … }
@@ -83,7 +83,14 @@ pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Me
 pub fn view<'a>(state: &'a State, ctx: &Context<'a>) -> Element<'a, Message>
 /// Starts an action as if its button was pressed: a palette command's (`"run"`), `n`, or `/` (`registry::SEARCH`).
 pub fn request(state: &mut State, action: &str, ctx: &Context<'_>) -> Task<Message>
+/// What the page reads, or the Hosts, may have changed: watch what is there now, take what the view needs.
+pub fn refresh(state: &mut State, ctx: &Context<'_>) -> Task<Message>
+/// The streams the page follows while it shows.
+pub fn subscription(state: &State, ctx: &Context<'_>) -> Subscription<Message>
 ```
+
+- **`refresh`** is called after every message of the window while the page stays (a read ended, a status came, the page's own message): the page has no message of its own for "the data changed". Most pages need nothing there (`Task::none()`): `view` reads the data layer. A page over many Hosts (the Board) watches the Hosts that connected since and rebuilds what its view would otherwise work out on every draw. It must do nothing when what it reads is the same value as last time (compare the `Arc`s).
+- **`subscription`** is where a view's stream goes (`streams::subscription`): it runs while the function returns it and is stopped when it no longer does, or when the page closes. The page's number is part of its identity, so a page opened anew starts its own.
 
 `Context` (`shell::Context`) is what the page is given, borrowed for one call:
 
@@ -99,20 +106,25 @@ pub fn request(state: &mut State, action: &str, ctx: &Context<'_>) -> Task<Messa
 | `ctx.invalidate(key)`                                          | reads again what an action changed                                                                                                           |
 | `ctx.open(request)`, `ctx.back()`, `ctx.select(…)`             | navigation and selection                                                                                                                     |
 | `ctx.failed(surfaced)`, `ctx.details(surfaced)`                | a failure as a toast, or its Details dialog                                                                                                  |
-| `ctx.copy(text)`                                               | the clipboard                                                                                                                                |
+| `ctx.failed_of(title, surfaced)`                               | the same under a title that names what failed: one container among those an action was asked for                                             |
+| `ctx.done(\|\| t!(..))`                                        | what an action did, as a toast (`toast.success`); the closure is asked at each draw, so it reads in the language of the moment               |
+| `ctx.put(key, value)`                                          | files what an action answered as if it had been read (`setQueryData`)                                                                        |
+| `ctx.keep(query, params)`                                      | keeps the page's filters in its location (`setSearchParams(.., { replace: true })`)                                                          |
+| `ctx.copy(text)`, `ctx.open_url(url)`                          | the clipboard; a link for the system browser (only logged until #253)                                                                        |
 | `ctx.namespace_picker(Message::Picker)`, `ctx.picked(message)` | the Kubernetes or Nomad Namespace picker for the page's header, and its messages handed back                                                 |
 
 What `update` asks through `ctx` is done by the shell right after `update` returns. `shell::layout::page_header` is `PageHeader`.
 
 ### Replacing a stub
 
-Every feature's `mod.rs` is one line today: `pub use crate::ui::shell::stub::{open, request, update, view, Message, State};`. To port a feature:
+Every feature's `mod.rs` is one line today: `pub use crate::ui::shell::stub::{open, refresh, request, subscription, update, view, Message, State};`. To port a feature:
 
-1. Delete that line and define the two types and four functions above in the same folder (split into `state.rs`, `update.rs`, `view/` as it grows). Nothing else changes: `ui/features/mod.rs` already sends the feature's routes to this module, and the registry already has its sidebar entry, commands and shortcuts.
+1. Delete that line and define the two types and six functions above in the same folder (split into `state.rs`, `update.rs`, `view/` as it grows). Nothing else changes: `ui/features/mod.rs` already sends the feature's routes to this module, and the registry already has its sidebar entry, commands and shortcuts.
 2. In `open`, match on `ctx.location.route` if the feature has several pages, `ctx.watch` what the page shows, and start from `ctx.location.query` if it is a list.
 3. In `request`, start the actions the registry names for the feature (its commands' `Run::Open(_, Some(action))` and its shortcuts' `Run::Request(action)`).
 4. If the manifest changed since, fix the feature's line in `shell/registry/defs/`; the test says what differs.
-5. Test with `shell::page::testing::Bench`: `Bench::at(route)` gives a `Context` on an empty data layer (`bench.data.set(&key, value)`), `bench.watched()` and `bench.asked()` say what the page asked for. `ui/features/app/hosts` is the example.
+5. A feature whose routes are several tickets (the Containers list and a container's page) keeps the stub for the routes it has not ported: its `State` and `Message` are enums of its own page and `shell::stub`'s (`ui/features/docker/containers`).
+6. Test with `shell::page::testing::Bench`: `Bench::at(route)` gives a `Context` on an empty data layer (`bench.data.set(&key, value)`), `bench.watched()` and `bench.asked()` say what the page asked for. `ui/features/app/hosts` is the smallest example, `ui/features/docker/containers` and `ui/features/app/board` the first whole ones.
 
 A feature never names another feature: go there with `ctx.open(Route::…)`.
 
@@ -120,7 +132,7 @@ A feature never names another feature: go there with `ctx.open(Route::…)`.
 
 The shell has the hook for each of these and nothing behind it yet. None is done until its ticket lands:
 
-- **Links out of the app** (Documentation, GitHub): the shell sends `shell::Event::OpenUrl`, and the window only logs it. The opener comes with the dialogs and opener layer (#253).
+- **Links out of the app** (Documentation, GitHub, a container's published port: `ctx.open_url`): the shell sends `shell::Event::OpenUrl`, and the window only logs it. The opener comes with the dialogs and opener layer (#253).
 - **The update bar**: it shows when the window sends `shell::Message::UpdateFound`, which nothing sends, and has no install or restart button. "Check for updates" in the palette opens the Settings and sends `shell::Event::CheckForUpdates`, which is only logged. Both are the updater's (#255).
 - **Global search in the palette** (`src/features/search`, the containers, images and volumes found as you type): not ported; the palette lists pages, Hosts and commands only.
 - **The crash page** (`CrashPage.tsx`): iced has no boundary that catches a page's panic; nothing stands in for it.
@@ -135,8 +147,8 @@ The shell has the hook for each of these and nothing behind it yet. None is done
 - **Queries** (`data::Query`): a key, the use case that reads it, and its policy (`stale_after`, `no_retry`, `poll`, `keep`: React Query's `staleTime`, `retry`, `refetchInterval`, `gcTime`, with the same defaults). The lists several features read are in `data::resources`.
 - **`Data`**, in the window's state: `data.watch(state, &query)` when the page opens (a cached read is shown at once and read again only if stale; two pages share one read), `data.read::<T>(&key)` in the view (a `Resource`: `Idle`, `Loading`, `Loaded`, `Refreshing`, `Failed` with the previous data), `data.unwatch(&key)` when it closes and `data.release(&scope)` when the selection moves, which abort the reads nobody waits for. Map its `Task<data::Message>` into your message and give them back to `Data::update`.
 - **Live updates**: `Data::on_event` already puts statuses in the cached lists, marks what a Host or Cluster that went down holds as `Failed` (data kept), reads it again when it comes back, and makes Engine lists stale from Engine events, 250 ms after the last of a burst. A feature adds nothing for that; polling (`.poll(interval)`) is for what no event tells, and pauses while the window is minimised or hidden.
-- **Actions** (`data::Action`): `action.start(state, |state| use_case(...))`, then `data.settle(state, &mut action, finished, [keys…])`, which invalidates on success. The view reads `is_pending()` and `error()`.
-- **Streams** (`data::streams`): `shapes::lines`, `view`, `job` and `terminal` turn a `*_subscribe` use case into a stream of `Update`s (`Started`, `Batch`, `Ended`, `Failed`) for `Task::run`, or for `streams::subscription`. Batches come at most 60 times a second; a view's stream is cancelled when dropped, a terminal's session closed, and a job goes on until `stream_cancel`. A job is always started with `Task::run`, never as a subscription: a subscription that comes back would start it again.
+- **Actions** (`data::Action`): `action.start(state, |state| use_case(...))`, then `data.settle(state, &mut action, finished, [keys…])`, which invalidates on success. A page has no `&mut Data`: it calls `action.finish(finished)` and `ctx.invalidate(key)`. The view reads `is_pending()` and `error()`.
+- **Streams** (`data::streams`): `shapes::lines`, `view`, `job` and `terminal` turn a `*_subscribe` use case into a stream of `Update`s (`Started`, `Batch`, `Ended`, `Failed`) for `Task::run`, or for `streams::subscription`. Batches come at most 60 times a second; a view's stream is cancelled when dropped, a terminal's session closed, and a job goes on until `stream_cancel`. A job is always started with `Task::run`, never as a subscription: a subscription that comes back would start it again. A view's stream is returned by the page's `subscription`.
 
 Their tests need no window: a paused tokio clock (`#[tokio::test(start_paused = true)]`) and loaders that count their calls (`app/src/data/tests.rs`).
 

@@ -56,7 +56,10 @@ use crate::{
         theme::{self, metrics::space, Element},
         widgets::{
             basic::scroll_area,
-            feedback::Surfaced,
+            feedback::{
+                toast::{self, Said},
+                Surfaced,
+            },
             focus::key_area,
             line,
             overlay::{self, menu},
@@ -97,7 +100,9 @@ struct Open<P> {
 #[derive(Debug, Clone)]
 pub enum Event {
     /// A failure to say in a toast, under what was being done.
-    Failed(Option<fn() -> String>, Surfaced),
+    Failed(Option<Said>, Surfaced),
+    /// Something to say in a toast: what an action did.
+    Said(toast::Kind, Said),
     /// The Details of a failure, asked for.
     Details(Surfaced),
     /// The theme was chosen in the palette.
@@ -105,7 +110,7 @@ pub enum Event {
     /// Text for the clipboard.
     Copy(String),
     /// A link for the system browser.
-    OpenUrl(&'static str),
+    OpenUrl(String),
     /// Look for a new version now.
     CheckForUpdates,
 }
@@ -350,14 +355,41 @@ impl<P: Pages> Shell<P> {
             .into()
     }
 
-    /// The mouse's back and forward buttons.
-    pub fn subscription(&self) -> Subscription<Message<P::Message>> {
+    /// The mouse's back and forward buttons, and what the page that shows
+    /// follows: a stream runs while its page returns it.
+    pub fn subscription(&self, data: &Data) -> Subscription<Message<P::Message>> {
         use iced::mouse::{Button, Event};
-        iced::event::listen_with(|event, _status, _window| match event {
+        let buttons = iced::event::listen_with(|event, _status, _window| match event {
             iced::Event::Mouse(Event::ButtonPressed(Button::Back)) => Some(Message::Back),
             iced::Event::Mouse(Event::ButtonPressed(Button::Forward)) => Some(Message::Forward),
             _ => None,
-        })
+        });
+        // Behind its gate a page reads nothing, so it follows nothing.
+        let gated = !matches!(
+            gates::decide(&self.location().route, &self.world),
+            gates::Verdict::Open(_)
+        );
+        let Some(open) = self.page.as_ref().filter(|_| !gated) else {
+            return buttons;
+        };
+        let ctx = Context {
+            state: &self.state,
+            data,
+            world: &self.world,
+            location: self.history.current(),
+            subject: &open.key.1,
+            direction: i18n::direction(),
+            pickers: &self.pickers,
+            effects: &self.effects,
+        };
+        // The page's number is part of what tells its streams apart: a
+        // page opened anew starts its own.
+        let page = open
+            .page
+            .subscription(&ctx)
+            .with(open.id)
+            .map(|(id, message)| Message::Page(id, message));
+        Subscription::batch([buttons, page])
     }
 
     /// Whether the page of `scope` may show for what is selected.

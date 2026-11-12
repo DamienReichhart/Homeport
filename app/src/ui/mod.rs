@@ -313,7 +313,10 @@ impl Homeport {
         for event in shell.take_events() {
             match event {
                 shell::Event::Failed(Some(title), surfaced) => {
-                    self.toasts.failure_of(title, surfaced);
+                    self.toasts.failure_of(move || title.now(), surfaced);
+                }
+                shell::Event::Said(kind, said) => {
+                    self.toasts.say(kind, move || said.now());
                 }
                 shell::Event::Failed(None, surfaced) => {
                     self.toasts.failure(surfaced);
@@ -440,7 +443,7 @@ impl Homeport {
             self.shell
                 .as_ref()
                 .map_or_else(Subscription::none, |shell| {
-                    shell.subscription().map(Message::Shell)
+                    shell.subscription(&self.data).map(Message::Shell)
                 }),
         ])
     }

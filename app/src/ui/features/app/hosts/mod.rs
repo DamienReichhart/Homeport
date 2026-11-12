@@ -6,7 +6,7 @@
 
 use std::sync::Arc;
 
-use iced::Task;
+use iced::{Subscription, Task};
 
 use homeport_core::host::HostConnection;
 use homeport_hosts::{registry::HostStatus, service::HostView};
@@ -90,6 +90,14 @@ pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Me
 
 pub fn request(_state: &mut State, _action: &str, _ctx: &Context<'_>) -> Task<Message> {
     Task::none()
+}
+
+pub fn refresh(_state: &mut State, _ctx: &Context<'_>) -> Task<Message> {
+    Task::none()
+}
+
+pub fn subscription(_state: &State, _ctx: &Context<'_>) -> Subscription<Message> {
+    Subscription::none()
 }
 
 /// What a connection is called (`connectionLabel`).

@@ -1,7 +1,8 @@
 //! The features: one folder per former `src/features/<name>`, grouped by
 //! what they are about (`app`, `docker`, `podman`, `containerd`, `incus`,
 //! `kubernetes`, `nomad`). Each is a `State`, a `Message` and four
-//! functions (`open`, `update`, `view`, `request`), and never uses another
+//! functions (`open`, `update`, `view`, `request`, with `refresh` and
+//! `subscription` for what changes around it), and never uses another
 //! feature.
 //!
 //! [`Page`] is all of them behind the one type the shell hosts: the table
@@ -18,7 +19,7 @@ pub mod podman;
 #[cfg(test)]
 mod tests;
 
-use iced::Task;
+use iced::{Subscription, Task};
 
 use super::{
     shell::{
@@ -85,6 +86,22 @@ macro_rules! pages {
                 match self {
                     $(Self::$id(state) => {
                         $($module)::+::request(state, action, ctx).map(Message::$id)
+                    })+
+                }
+            }
+
+            fn refresh(&mut self, ctx: &Context<'_>) -> Task<Message> {
+                match self {
+                    $(Self::$id(state) => {
+                        $($module)::+::refresh(state, ctx).map(Message::$id)
+                    })+
+                }
+            }
+
+            fn subscription(&self, ctx: &Context<'_>) -> Subscription<Message> {
+                match self {
+                    $(Self::$id(state) => {
+                        $($module)::+::subscription(state, ctx).map(Message::$id)
                     })+
                 }
             }
