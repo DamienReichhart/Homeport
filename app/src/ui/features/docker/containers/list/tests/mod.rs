@@ -2,6 +2,7 @@
 //! looks in each state and that the keyboard alone drives it.
 
 mod drawn;
+mod keyboard;
 mod updates;
 
 use std::collections::HashMap;
