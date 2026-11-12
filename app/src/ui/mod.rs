@@ -1,6 +1,6 @@
 //! The window: its state, its messages and what it draws.
 
-mod hosts;
+pub mod features;
 pub mod shell;
 #[cfg(test)]
 mod tests;
@@ -56,10 +56,23 @@ pub fn run() -> iced::Result {
         .theme(Homeport::theme)
         .scale_factor(|app| app.scale.factor())
         .default_font(theme::font::DEFAULT)
-        .window_size((1100.0, 720.0));
+        .window(window());
     theme::font::files()
         .fold(app, |app, font| app.font(font))
         .run()
+}
+
+/// The window as it opens: 1100×720, never under 800×520, with the app's
+/// icon. Where it was and how big, the tray and what closing does are the
+/// platform layer's (#252).
+fn window() -> iced::window::Settings {
+    iced::window::Settings {
+        size: iced::Size::new(1100.0, 720.0),
+        min_size: Some(iced::Size::new(800.0, 520.0)),
+        icon: iced::window::icon::from_file_data(include_bytes!("../../assets/icon.png"), None)
+            .ok(),
+        ..iced::window::Settings::default()
+    }
 }
 
 /// Set by the smoke test: the app closes itself as soon as it has started,
@@ -75,9 +88,15 @@ enum Phase {
     Ready(Arc<AppState>),
 }
 
+/// The shell over the app's features.
+type Shell = shell::Shell<features::Page>;
+
+// `Data::set_hidden` is for the platform layer (#252) to call when the
+// window goes to the tray and comes back: nothing here hides it yet.
 struct Homeport {
     phase: Phase,
-    hosts: hosts::Hosts,
+    /// What shows once the app has started.
+    shell: Option<Shell>,
     /// Everything pages read from Hosts and Clusters, cached.
     data: Data,
     /// The Settings value of the theme; `System` until they are read.
@@ -115,7 +134,7 @@ impl Failure {
 pub enum Message {
     Started(Result<Arc<AppState>, Failure>),
     Backend(Event),
-    Hosts(hosts::Message),
+    Shell(shell::Message<features::Message>),
     /// A read of the data layer ended, or it is time for one.
     Data(data::Message),
     /// The window was asked to close.
@@ -172,7 +191,7 @@ impl Homeport {
         let app = crate::api::app::get_app_info();
         Self {
             phase: Phase::Starting,
-            hosts: hosts::Hosts::default(),
+            shell: None,
             data: Data::default(),
             mode: theme::Mode::default(),
             system: iced::theme::Mode::None,
@@ -197,31 +216,35 @@ impl Homeport {
     fn update(&mut self, message: Message) -> Task<Message> {
         match message {
             Message::Started(Ok(state)) => {
-                if let Ok(settings) = state.settings.get() {
-                    i18n::set_language(&settings.language, &i18n::locale::preferred());
-                    self.mode = settings.theme.into();
-                }
+                let settings = state.settings.get().unwrap_or_default();
+                i18n::set_language(&settings.language, &i18n::locale::preferred());
+                self.mode = settings.theme.into();
                 self.phase = Phase::Ready(state.clone());
+                self.shell = Some(Shell::new(state, settings));
                 if std::env::var_os(EXIT_WHEN_READY).is_some() {
                     return Task::done(Message::CloseRequested);
                 }
-                self.hosts.load(&state).map(Message::Hosts)
+                // The shell starts reading the Hosts and the Clusters.
+                self.hand_shell(shell::Message::Changed)
             }
             Message::Started(Err(e)) => {
                 self.phase = Phase::Failed(e);
                 Task::none()
             }
             Message::Backend(event) => {
-                self.hosts.on_event(&event);
                 let Phase::Ready(state) = &self.phase else {
                     return Task::none();
                 };
-                // What is cached follows what the backend just told.
-                let refresh = self.data.on_event(state, &event).map(Message::Data);
+                let state = state.clone();
+                // What is cached follows what the backend just told, and
+                // the shell follows what is cached.
+                let refresh = Task::batch([
+                    self.data.on_event(&state, &event).map(Message::Data),
+                    self.hand_shell(shell::Message::Changed),
+                ]);
                 let Event::HostStatus { host_id, status } = event else {
                     return refresh;
                 };
-                let state = state.clone();
                 let tidy = Task::perform(
                     async move {
                         lifecycle::host_status_changed(&state, &host_id, &status).await;
@@ -230,12 +253,7 @@ impl Homeport {
                 );
                 Task::batch([refresh, tidy])
             }
-            Message::Data(message) => {
-                let Phase::Ready(state) = &self.phase else {
-                    return Task::none();
-                };
-                self.data.update(state, message).map(Message::Data)
-            }
+            Message::Data(message) => self.hand_shell(shell::Message::Data(message)),
             Message::CloseRequested => match &self.phase {
                 Phase::Ready(state) => {
                     let state = state.clone();
@@ -281,13 +299,57 @@ impl Homeport {
             // Starting again is starting the app again.
             Message::Failure(FailureEvent::Retry) => Task::none(),
             Message::Details(message) => self.details_asked(message),
-            Message::Hosts(message) => {
-                let Phase::Ready(state) = &self.phase else {
-                    return Task::none();
-                };
-                self.hosts.update(state, message).map(Message::Hosts)
+            Message::Shell(message) => self.hand_shell(message),
+        }
+    }
+
+    /// Hands the shell a message, then does what the shell asks of the
+    /// window: a toast, the Details dialog, the theme, the clipboard.
+    fn hand_shell(&mut self, message: shell::Message<features::Message>) -> Task<Message> {
+        let Some(shell) = &mut self.shell else {
+            return Task::none();
+        };
+        let mut tasks = vec![shell.update(message, &mut self.data).map(Message::Shell)];
+        for event in shell.take_events() {
+            match event {
+                shell::Event::Failed(Some(title), surfaced) => {
+                    self.toasts.failure_of(title, surfaced);
+                }
+                shell::Event::Failed(None, surfaced) => {
+                    self.toasts.failure(surfaced);
+                }
+                shell::Event::Details(surfaced) => self.details = Some(Details::new(surfaced)),
+                shell::Event::Theme(theme) => tasks.push(self.set_theme(theme)),
+                shell::Event::Copy(text) => tasks.push(iced::clipboard::write(text)),
+                // What opens a link in the system browser comes with the
+                // dialogs and opener layer (#253), and the updater with its
+                // own ticket: until then the request is only logged.
+                shell::Event::OpenUrl(url) => log::info!("asked to open {url}"),
+                shell::Event::CheckForUpdates => log::info!("asked to check for updates"),
             }
         }
+        Task::batch(tasks)
+    }
+
+    /// The theme chosen in the palette: shown at once, saved behind.
+    fn set_theme(&mut self, theme: homeport_settings::Theme) -> Task<Message> {
+        self.mode = theme.into();
+        let Phase::Ready(state) = &self.phase else {
+            return Task::none();
+        };
+        let state = state.clone();
+        Task::perform(
+            async move {
+                let saved = crate::api::app::settings::get_settings(&state).and_then(|stored| {
+                    let changed = homeport_settings::Settings { theme, ..stored };
+                    crate::api::app::settings::update_settings(&state, changed)
+                });
+                if let Err(error) = saved {
+                    drop(error.logged("failed to save the theme"));
+                }
+            },
+            |()| Message::Done,
+        )
     }
 
     fn details_asked(&mut self, message: error_details::Message) -> Task<Message> {
@@ -320,16 +382,19 @@ impl Homeport {
 
     /// The page, the Details dialog over it and the toasts over both.
     fn view(&self) -> Element<'_, Message> {
-        let body: Element<'_, Message> = match &self.phase {
-            Phase::Starting => text(crate::t!("common.loading")).size(size::SM).into(),
-            Phase::Failed(failure) => Self::failed(failure),
-            Phase::Ready(_) => self.hosts.view().map(Message::Hosts),
+        fn padded(body: Element<'_, Message>) -> Element<'_, Message> {
+            container(body)
+                .padding(space::S4)
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .style(theme::container::page)
+                .into()
+        }
+        let page: Element<'_, Message> = match (&self.phase, &self.shell) {
+            (Phase::Failed(failure), _) => padded(Self::failed(failure)),
+            (Phase::Ready(_), Some(shell)) => shell.view(&self.data).map(Message::Shell),
+            _ => padded(text(crate::t!("common.loading")).size(size::SM).into()),
         };
-        let page = container(body)
-            .padding(space::S4)
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .style(theme::container::page);
         let dialog = self
             .details
             .as_ref()
@@ -373,6 +438,11 @@ impl Homeport {
             focus::tab_presses().map(Message::Tab),
             self.toasts.subscription().map(Message::Toast),
             theme::mode::system_changes().map(Message::SystemTheme),
+            self.shell
+                .as_ref()
+                .map_or_else(Subscription::none, |shell| {
+                    shell.subscription().map(Message::Shell)
+                }),
         ])
     }
 }

@@ -21,7 +21,7 @@ use crate::{
             Element, Icon,
         },
         widgets::{
-            basic::{self, fit},
+            basic,
             feedback::status_dot,
             filling,
             focus::{key_area, pressable},
@@ -104,7 +104,7 @@ pub fn palette<'a>(state: &'a State, items: &[Item], mac: bool) -> Option<Modal<
             .center_x(Length::Fill)
             .into()
     } else {
-        container(scrollable(fit(rows).padding(space::S1)).id(state.list.clone()))
+        container(scrollable(container(stack(rows)).padding(space::S1)).id(state.list.clone()))
             .max_height(LIST_HEIGHT)
             .into()
     };

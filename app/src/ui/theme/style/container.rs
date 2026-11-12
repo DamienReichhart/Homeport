@@ -86,6 +86,27 @@ pub fn banner(theme: &Theme) -> Style {
     surface(alpha(tokens.primary, 0.1), tokens.foreground)
 }
 
+/// The square and the line of the mark beside the name: they take the
+/// text's colour, so they follow the theme.
+pub fn mark_ink(theme: &Theme) -> Style {
+    Style {
+        background: Some(theme.tokens().sidebar.foreground.into()),
+        ..Style::default()
+    }
+}
+
+/// The mark's ring, in Signal red on both themes.
+pub fn mark_ring(_theme: &Theme) -> Style {
+    Style {
+        border: Border {
+            color: super::super::tokens::MARK,
+            width: 4.2,
+            radius: radius::FULL.into(),
+        },
+        ..Style::default()
+    }
+}
+
 /// `<kbd>`: one key of a shortcut.
 pub fn kbd(theme: &Theme) -> Style {
     let tokens = theme.tokens();
