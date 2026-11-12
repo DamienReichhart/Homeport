@@ -156,6 +156,37 @@ fn the_first_view_tells_the_viewer_its_room_and_shows_the_latest_lines() {
     assert_eq!(rows.last().map(String::as_str), Some("line 199"));
 }
 
+/// How much text a layout shapes, counted: numbers no machine changes.
+#[test]
+fn only_what_comes_into_view_is_shaped_however_many_lines_there_are() {
+    use crate::ui::widgets::log::{shaped, Message, Scroll};
+    let mut bench = Bench::new(numbered(0, 300_000));
+    let rows = bench.state.metrics.rows;
+    let during = |bench: &mut Bench, act: &dyn Fn(&mut State)| {
+        act(&mut bench.state);
+        let before = shaped();
+        bench.frame(|_| {});
+        shaped() - before
+    };
+    let scroll = |by: Scroll| move |state: &mut State| drop(state.update(Message::Scroll(by)));
+    // Nothing changed: nothing is shaped, of 300,000 lines.
+    assert_eq!(during(&mut bench, &|_| {}), 0);
+    // A row up: one line of one piece comes in.
+    assert_eq!(during(&mut bench, &scroll(Scroll::Rows(-1))), 1);
+    assert_eq!(during(&mut bench, &scroll(Scroll::Rows(-3))), 3);
+    // To the middle of the lines: a screen of them, and no more.
+    assert_eq!(during(&mut bench, &scroll(Scroll::To(0.5))), rows);
+    // Lines come while the view is paused: nothing in view changed.
+    let more = |state: &mut State| drop(state.extend(numbered(300_000, 5_000)));
+    assert_eq!(during(&mut bench, &more), 0);
+    // A search marks its matches behind the text: the text is as it was.
+    let search = |state: &mut State| drop(state.update(Message::Query("line 15".to_owned())));
+    assert_eq!(during(&mut bench, &search), 0);
+    // Following again, a batch replaces every row in view.
+    assert_eq!(during(&mut bench, &scroll(Scroll::End)), rows);
+    assert_eq!(during(&mut bench, &more), rows);
+}
+
 #[test]
 fn the_lines_a_stream_pushes_show_as_they_come_whatever_their_stream() {
     use homeport_core::logs::LogLine;

@@ -49,8 +49,17 @@ const THUMB_MIN: f32 = 24.0;
 /// scrolls gives all the height asked for).
 const UNBOUNDED_HEIGHT: f32 = 480.0;
 
+#[cfg(test)]
+thread_local! {
+    /// How many pieces of text this thread shaped: what a test counts to
+    /// hold a layout to the rows that came into view.
+    pub(super) static SHAPED: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
 /// A line of machine text that never wraps by itself.
 fn shaped(content: &str, italic: bool) -> Raw {
+    #[cfg(test)]
+    SHAPED.with(|count| count.set(count.get() + 1));
     Raw::with_text(text::Text {
         content,
         bounds: Size::new(f32::INFINITY, ROW),

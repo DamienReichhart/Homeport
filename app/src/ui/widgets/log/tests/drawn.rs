@@ -251,3 +251,19 @@ fn a_stream_that_breaks_is_explained_over_the_lines_that_came() {
         )
     });
 }
+
+/// The gallery's own page, where the viewer is in a page that scrolls.
+#[test]
+fn the_gallery_shows_the_viewer_on_its_log_page() {
+    let gallery = gallery::Gallery {
+        page: gallery::Page::Log,
+        ..gallery::Gallery::default()
+    };
+    assert_snapshot(
+        "widgets-log-light-en",
+        "en",
+        &Theme::Light,
+        (1100.0, 640.0),
+        || gallery.view(),
+    );
+}

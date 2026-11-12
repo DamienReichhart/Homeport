@@ -190,5 +190,11 @@ impl<'a, Message: Clone + 'a> Viewer<'a, Message> {
     }
 }
 
+/// How many pieces of text the viewers of this thread have shaped so far.
+#[cfg(test)]
+pub(crate) fn shaped() -> usize {
+    pane::SHAPED.with(std::cell::Cell::get)
+}
+
 #[cfg(test)]
 mod tests;
