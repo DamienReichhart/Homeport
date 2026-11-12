@@ -2,7 +2,7 @@ use jiff::tz::TimeZone;
 
 use homeport_core::error::{AppError, ErrorCode, Message};
 
-use super::*;
+use super::{format::Formats, *};
 
 /// 2026-11-04T14:05:09Z.
 const WHEN: i64 = 1_793_801_109;
@@ -258,4 +258,22 @@ fn every_language_writes_sizes_and_percentages() {
         assert_eq!(written, size, "{tag} size");
         assert_eq!(language.formats.percent(3.456), percent, "{tag} percent");
     }
+}
+
+#[test]
+fn names_are_listed_as_the_language_lists_them() {
+    let english = Formats::new("en");
+    assert_eq!(english.list(&["web", "db", "cache"]), "web, db, and cache");
+    assert_eq!(english.list(&["web", "db"]), "web and db");
+    assert_eq!(english.list(&["web"]), "web");
+    assert_eq!(english.list(&[]), "");
+    // Each language's own.
+    assert_eq!(
+        Formats::new("fr").list(&["web", "db", "cache"]),
+        "web, db et cache"
+    );
+    assert_eq!(
+        Formats::new("ja").list(&["web", "db", "cache"]),
+        "web、db、cache"
+    );
 }

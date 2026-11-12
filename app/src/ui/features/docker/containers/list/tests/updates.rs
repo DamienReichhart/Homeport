@@ -6,11 +6,7 @@ use super::*;
 use crate::{
     data::resources,
     t,
-    test_support::{
-        fixtures::{podman_host, stats_sample},
-        snapshot::in_language,
-        tasks,
-    },
+    test_support::{fixtures::podman_host, snapshot::in_language, tasks},
     ui::{
         domain::{
             containers::{actions, Bulk},
@@ -100,11 +96,12 @@ fn a_selection_s_action_asks_for_each_selected_container_and_names_each_failure(
     // No Engine answers in a test: both are refused, for the same reason.
     rig.send(Message::Bulk(Bulk::Stop));
     let asked = rig.bench.took();
-    let [Asked::Failed(Some(names), error), Asked::Invalidate(key)] = asked.as_slice() else {
+    let [Asked::Failed(None, error), Asked::Invalidate(key)] = asked.as_slice() else {
         panic!("{asked:?}");
     };
-    assert_eq!(names, "redis, backup-job");
     assert_eq!(error.code, ErrorCode::HostNotConnected);
+    let named = error.detail.as_deref().unwrap_or_default();
+    assert!(named.contains("local/redis: ") && named.contains("local/backup-job: "));
     assert_eq!(*key, keys::host::containers("h1"));
     // Remove asks first, naming how many go and how many run.
     rig.send(Message::Bulk(Bulk::Remove));
@@ -152,7 +149,6 @@ fn a_usage_report_is_shown_for_its_host_only() {
     rig.send(Message::Usage(("h1".to_owned(), usage(&list))));
     // The containers' own, and their Stack's total.
     assert!(rig.shows("1.5%") && rig.shows("64.0 MB"));
-    let _ = stats_sample(1);
 }
 
 #[test]
@@ -171,16 +167,16 @@ fn checking_for_newer_images_files_the_answer_and_marks_the_containers() {
         image_id: "sha256:abc".to_owned(),
         freshness: Freshness::Newer,
     };
-    let answered = rig
-        .state
-        .check
-        .answered(vec![newer("web:latest"), newer("db:latest")]);
-    rig.send(Message::Check(answered));
+    // The registries answered: the shell files it and says it, and the
+    // page's button stops waiting.
+    let found = Ok(vec![newer("web:latest"), newer("db:latest")]);
+    rig.bench.told(freshness::checked("h1", &found));
+    rig.send(Message::Check(freshness::Message::Checked));
     assert_eq!(
         rig.bench.took(),
         [
-            Asked::Put(keys::host::freshness("h1")),
             Asked::Said("2 images have a newer version".to_owned()),
+            Asked::Put(keys::host::freshness("h1")),
         ]
     );
     rig.refresh();
@@ -243,4 +239,36 @@ fn a_list_that_could_not_be_read_shows_why_and_reads_again() {
             Asked::Invalidate(keys::host::containers("h1")),
         ]
     );
+}
+
+#[test]
+fn a_selected_container_the_search_hides_is_still_acted_on() {
+    let _english = in_language("en");
+    let mut rig = Rig::populated();
+    let redis = "redis-0123456789abcdef".to_owned();
+    rig.send(Message::Table(table::Message::Toggle {
+        key: redis,
+        index: 0,
+    }));
+    // React sent every selected id; here a row that left the list is let
+    // go of by the table, and one the search only hides stays selected.
+    rig.send(Message::Search("shop".to_owned()));
+    assert!(!rig.shows("redis") && rig.shows("1 selected"));
+    rig.send(Message::Bulk(Bulk::Restart));
+    let asked = rig.bench.took();
+    let Some(Asked::Failed(None, error)) = asked.first() else {
+        panic!("{asked:?}");
+    };
+    assert!(error
+        .detail
+        .as_deref()
+        .is_some_and(|d| d.starts_with("local/redis: ")));
+    // The one that is gone from the list is no longer selected.
+    rig.bench
+        .data
+        .set(&keys::host::containers("h1"), sample()[..3].to_vec());
+    rig.refresh();
+    rig.send(Message::Search(String::new()));
+    rig.frame(|_| {});
+    assert!(rig.state.table.selection().is_empty());
 }

@@ -3,14 +3,14 @@
 //! can't do itself (go somewhere, watch a resource, say that something
 //! failed).
 
-use std::{cell::RefCell, sync::Arc};
+use std::{cell::RefCell, future::Future, sync::Arc};
 
 use iced::Task;
 
 use homeport_clusters::service::ClusterView;
 use homeport_hosts::service::HostView;
 
-use super::World;
+use super::{Outcome, Outcomes, World};
 use crate::{
     app::AppState,
     data::{self, Data, Key, Query},
@@ -105,6 +105,7 @@ pub struct Context<'a> {
     pub direction: Direction,
     pub(in crate::ui::shell) pickers: &'a pickers::State,
     pub(in crate::ui::shell) effects: &'a Effects,
+    pub(in crate::ui::shell) outcomes: &'a Outcomes,
 }
 
 impl<'a> Context<'a> {
@@ -121,6 +122,36 @@ impl<'a> Context<'a> {
     /// The selected Cluster, `None` when a Host or nothing is selected.
     pub fn cluster(&self) -> Option<&'a ClusterView> {
         self.world.cluster()
+    }
+
+    /// Starts an action whose outcome outlives the page: `work` runs the
+    /// use cases, `report` says what the shell tells of their answer (a
+    /// toast, what is out of date) whether or not the page still shows,
+    /// and `then` is the message the page gets if it does (its dialog
+    /// closes, its button stops waiting). This is how a feature runs a
+    /// mutation: what `useMutation`'s `onSuccess` and `onError` did goes
+    /// in `report`, never in the page's `update`, whose messages are
+    /// dropped once the page is left.
+    pub fn act<T, Message>(
+        &self,
+        work: impl Future<Output = T> + Send + 'static,
+        report: impl FnOnce(&T) -> Outcome + Send + 'static,
+        then: impl Fn(T) -> Message + Send + 'static,
+    ) -> Task<Message>
+    where
+        T: Send + 'static,
+        Message: Send + 'static,
+    {
+        let outcomes = self.outcomes.sender();
+        Task::perform(
+            async move {
+                let answer = work.await;
+                // The shell is gone only when the window is.
+                let _ = outcomes.send(report(&answer));
+                answer
+            },
+            then,
+        )
     }
 
     /// Opens a page (`navigate(path)`, `ctx.open(path, action)`).

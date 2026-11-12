@@ -1,10 +1,12 @@
 //! What the Board reads and what each message changes.
 
+use homeport_engine::containers::ContainerAction;
+
 use super::*;
 use crate::{
     test_support::{snapshot::in_language, tasks},
     ui::{
-        domain::containers::Bulk,
+        domain::containers::{actions, Bulk},
         shell::{page::testing::Asked, registry, selection::Selection},
         widgets::{feedback::error_message::Event, form::select, table},
     },
@@ -171,16 +173,15 @@ fn a_selection_that_spans_two_hosts_asks_each_host_and_names_each_failure() {
     assert!(rig.shows("2 selected"));
     // No Engine answers in a test: each Host refuses its own.
     rig.send(Message::Bulk(Bulk::Stop));
-    let mut asked = rig.bench.took();
-    asked.sort_by_key(|asked| format!("{asked:?}"));
-    let not_connected = |asked: &Asked, title: &str| {
-        matches!(asked, Asked::Failed(Some(says), error)
-            if says == title && error.code == ErrorCode::HostNotConnected)
+    let asked = rig.bench.took();
+    let Asked::Failed(None, error) = &asked[0] else {
+        panic!("{asked:?}");
     };
-    assert!(not_connected(&asked[0], "On local: web"), "{asked:?}");
-    assert!(not_connected(&asked[1], "On prod-server: api"), "{asked:?}");
+    assert_eq!(error.code, ErrorCode::HostNotConnected);
+    let named = error.detail.as_deref().unwrap_or_default();
+    assert!(named.contains("local/web: ") && named.contains("prod-server/api: "));
     assert_eq!(
-        asked[2..],
+        asked[1..],
         [
             Asked::Invalidate(keys::host::containers("h1")),
             Asked::Invalidate(keys::host::containers(PROD)),
@@ -250,4 +251,49 @@ fn the_search_shortcut_gives_the_field_focus() {
     assert!(!tasks::is_none(task));
     let other = super::super::request(&mut rig.state, "run", &rig.bench.ctx());
     assert!(tasks::is_none(other));
+}
+
+#[test]
+fn a_bulk_action_that_half_worked_says_both_and_keeps_the_page_as_it_is() {
+    let _english = in_language("en");
+    let mut rig = Rig::populated();
+    let keys = [
+        "h1/db-0123456789abcdef",
+        "h1/web-0123456789abcdef",
+        "prod-server-id/api-0123456789abcdef",
+        "prod-server-id/cache-0123456789abcdef",
+    ];
+    tick(&mut rig, &keys);
+    // Two Hosts, four containers: one of each Host is stopped, the other
+    // refused. The Engine's answer, as the shell and the page get it.
+    let targets: Vec<_> = rig.state.rows.iter().map(|row| row.target()).collect();
+    let results: actions::Results = targets
+        .into_iter()
+        .enumerate()
+        .map(|(at, target)| (target, if at % 2 == 0 { Ok(()) } else { Err(refused()) }))
+        .collect();
+    rig.bench
+        .told(actions::acted(ContainerAction::Stop, &results));
+    rig.send(Message::Actions(actions::Message::Acted(
+        ContainerAction::Stop,
+        results,
+    )));
+    let asked = rig.bench.took();
+    assert_eq!(asked[0], Asked::Said("Stopped 2 containers".to_owned()));
+    let Asked::Failed(None, error) = &asked[1] else {
+        panic!("{asked:?}");
+    };
+    assert_eq!(
+        error.detail.as_deref(),
+        Some("local/web: connection refused\nprod-server/cache: connection refused")
+    );
+    assert_eq!(
+        asked[2..],
+        [
+            Asked::Invalidate(keys::host::containers("h1")),
+            Asked::Invalidate(keys::host::containers(PROD)),
+        ]
+    );
+    // Every one stays selected, for another try at those that failed.
+    assert_eq!(rig.state.table.selection().len(), 4);
 }

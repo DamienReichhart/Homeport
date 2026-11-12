@@ -10,6 +10,10 @@ use icu::{
         DateTimeFormatter,
     },
     decimal::DecimalFormatter,
+    list::{
+        options::{ListFormatterOptions, ListLength},
+        ListFormatter,
+    },
 };
 use icu_experimental::{
     dimension::percent::formatter::PercentFormatter,
@@ -43,6 +47,8 @@ pub struct Formats {
     date_time: Option<DateTimeFormatter<YMDT>>,
     date: Option<DateTimeFormatter<YMD>>,
     time: Option<DateTimeFormatter<T>>,
+    /// Names one after the other: `a, b, and c`.
+    list: Option<ListFormatter>,
 }
 
 impl Formats {
@@ -77,6 +83,21 @@ impl Formats {
                 T::medium().with_time_precision(seconds),
             )
             .ok(),
+            list: ListFormatter::try_new_and(
+                (&locale).into(),
+                ListFormatterOptions::default().with_length(ListLength::Wide),
+            )
+            .ok(),
+        }
+    }
+
+    /// `items` one after the other as the language lists them
+    /// (`Intl.ListFormat`): `web, db, and cache`, `web、db、cache` in
+    /// Japanese.
+    pub fn list(&self, items: &[&str]) -> String {
+        match &self.list {
+            Some(list) => list.format_to_string(items.iter().copied()),
+            None => items.join(", "),
         }
     }
 
@@ -232,6 +253,11 @@ pub fn percent(value: f64) -> String {
 /// `12345` → `12,345`, in the app's language.
 pub fn number(value: f64) -> String {
     formats().formats.number(value)
+}
+
+/// Names one after the other, as the app's language lists them.
+pub fn list(items: &[&str]) -> String {
+    formats().formats.list(items)
 }
 
 /// A Unix time in seconds as "3 minutes ago".

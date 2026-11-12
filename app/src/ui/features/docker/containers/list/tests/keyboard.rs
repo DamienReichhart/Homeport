@@ -110,8 +110,8 @@ fn the_keyboard_selects_rows_and_acts_on_them_from_the_bar() {
     });
     let asked = rig.bench.took();
     assert!(
-        matches!(asked.as_slice(), [Asked::Failed(Some(names), _), Asked::Invalidate(_)]
-            if names == "redis, backup-job"),
+        matches!(asked.as_slice(), [Asked::Failed(None, error), Asked::Invalidate(_)]
+            if error.detail.as_deref().is_some_and(|d| d.contains("local/backup-job"))),
         "{asked:?}"
     );
     // What failed stays selected, for another try; Escape on the rows

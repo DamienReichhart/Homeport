@@ -71,16 +71,12 @@ fn the_keyboard_selects_across_hosts_and_stops_the_selection() {
         }
         panic!("Shift+Tab never reached Stop");
     });
-    let failed: Vec<String> = rig
-        .bench
-        .took()
-        .into_iter()
-        .filter_map(|asked| match asked {
-            Asked::Failed(title, _) => title,
-            _ => None,
-        })
-        .collect();
-    assert_eq!(failed, ["On local: web", "On prod-server: api"]);
+    let asked = rig.bench.took();
+    let Some(Asked::Failed(None, error)) = asked.first() else {
+        panic!("{asked:?}");
+    };
+    let named = error.detail.as_deref().unwrap_or_default();
+    assert!(named.contains("local/web: ") && named.contains("prod-server/api: "));
 }
 
 #[test]

@@ -3,6 +3,7 @@
 //! updates and draws whatever feature the route names.
 
 pub mod context;
+pub mod outcome;
 pub mod stub;
 #[cfg(test)]
 pub mod testing;
@@ -14,6 +15,7 @@ use crate::ui::{theme::Element, widgets::overlay::Modal};
 
 pub use self::{
     context::{Context, Effects},
+    outcome::{Outcome, Outcomes},
     world::{Update, World},
 };
 

@@ -6,8 +6,13 @@
 //!
 //! An action asked for several containers asks each one's Host, all at
 //! once; every one is tried whatever the others do. What worked is said
-//! in one toast with its count; what failed is named in a toast per
-//! failure, the containers a Host refused for the same reason together.
+//! in one toast with its count; what failed is said in one toast, as the
+//! React app's one `toastError` for the action: the first failure's
+//! message, whose Details list every container that failed and why.
+//!
+//! The actions run through `Context::act`: the toast and the lists to
+//! read again are the shell's to report, so they are whether or not the
+//! page is still there when the Engine answers.
 //!
 //! Edit, Duplicate, Commit and Export are in the menu and can't be chosen:
 //! their dialogs are the detail and run tickets' (#258, #259).
@@ -17,7 +22,11 @@ pub mod view;
 #[cfg(test)]
 mod tests;
 
-use std::collections::{BTreeMap, HashSet};
+use std::{
+    collections::{BTreeSet, HashSet},
+    future::Future,
+    sync::Arc,
+};
 
 use iced::{futures::future::join_all, Task};
 
@@ -26,10 +35,11 @@ use homeport_engine::containers::{Container, ContainerAction};
 
 use crate::{
     api::engine::containers::{containers_act, containers_remove, containers_rename},
-    data::{action::Finished, keys, Action},
+    app::AppState,
+    data::keys,
     t,
     ui::{
-        shell::{router::Route, selection::Selection, Context},
+        shell::{router::Route, selection::Selection, Context, Outcome as Told},
         widgets::feedback::{
             confirm::{self, Ask, Outcome},
             error_message, Surfaced,
@@ -102,7 +112,8 @@ pub enum Message {
     AskRename(Target),
     RenameInput(String),
     RenameSubmit,
-    Renamed(Finished<()>),
+    /// The Engine answered the rename of this container (by its id).
+    Renamed(String, AppResult<()>),
     RenameFailure(error_message::Event),
     /// Escape, Cancel or the scrim of the Rename dialog.
     CloseDialog,
@@ -126,7 +137,8 @@ enum Dialog {
     Rename {
         target: Target,
         name: String,
-        action: Action<()>,
+        /// The Engine was asked and has not answered.
+        pending: bool,
         /// Why the last try failed, shown in place.
         failure: Option<Box<Surfaced>>,
     },
@@ -143,20 +155,72 @@ pub struct Actions {
     dialog: Option<Dialog>,
 }
 
-/// The names of `targets`, the first few and how many more.
-fn names(targets: &[&Target]) -> String {
-    const SHOWN: usize = 3;
-    let mut names: Vec<&str> = targets
+/// The failure of an action asked for several containers, as one: the
+/// first one's code, message and hint, and in its detail every container
+/// that failed with its Host and why, for the Details dialog and the log.
+fn failure(results: &Results, command: &'static str) -> Option<Surfaced> {
+    let failed: Vec<(&Target, &AppError)> = results
         .iter()
-        .take(SHOWN)
-        .map(|t| t.name.as_str())
+        .filter_map(|(target, result)| Some((target, result.as_ref().err()?)))
         .collect();
-    let more = targets.len().saturating_sub(SHOWN);
-    let more = format!("+{more}");
-    if targets.len() > SHOWN {
-        names.push(&more);
+    let (_, first) = failed.first()?;
+    let lines: Vec<String> = failed
+        .iter()
+        .map(|(target, error)| {
+            let why = error
+                .detail
+                .as_deref()
+                .map_or_else(String::new, |detail| format!(" ({detail})"));
+            format!(
+                "{}/{}: {}{why}",
+                target.host_name, target.name, error.message
+            )
+        })
+        .collect();
+    let mut error = (*first).clone();
+    error.detail = Some(lines.join("\n"));
+    Some(Surfaced::new(error, command))
+}
+
+/// What the shell reports of an action asked for several containers:
+/// what worked in one toast, what failed in one, and every Host that was
+/// asked reads its containers again.
+fn told(
+    results: &Results,
+    command: &'static str,
+    done: impl Fn(usize) -> String + Send + Sync + 'static,
+) -> Told {
+    let worked = results.iter().filter(|(_, result)| result.is_ok()).count();
+    let mut told = Told::quiet();
+    if worked > 0 {
+        told = told.saying(move || done(worked));
     }
-    names.join(", ")
+    if let Some(failure) = failure(results, command) {
+        told = told.failing(failure);
+    }
+    let hosts: BTreeSet<&str> = results.iter().map(|(t, _)| t.host_id.as_str()).collect();
+    hosts.into_iter().fold(told, |told, host| {
+        told.invalidating(keys::host::containers(host))
+    })
+}
+
+/// What the shell reports of a lifecycle action.
+pub(crate) fn acted(action: ContainerAction, results: &Results) -> Told {
+    told(results, "containers_act", move |count| {
+        view::done(action, count)
+    })
+}
+
+/// What the shell reports of a removal.
+pub(crate) fn removed(results: &Results) -> Told {
+    told(results, "containers_remove", |count| {
+        t!("containers.done.remove", count = count)
+    })
+}
+
+/// How many of `results` failed.
+fn failures(results: &Results) -> usize {
+    results.iter().filter(|(_, result)| result.is_err()).count()
 }
 
 impl Actions {
@@ -206,22 +270,16 @@ impl Actions {
 
     /// Asks each container's Host to `run` on it, all at once, and gives
     /// how each fared.
-    fn each<F, Fut>(ctx: &Context<'_>, targets: Vec<Target>, run: F) -> Task<Results>
+    async fn each<F, Fut>(state: Arc<AppState>, targets: Vec<Target>, run: F) -> Results
     where
-        F: Fn(std::sync::Arc<crate::app::AppState>, Target) -> Fut + Send + 'static,
-        Fut: std::future::Future<Output = AppResult<()>> + Send + 'static,
+        F: Fn(Arc<AppState>, Target) -> Fut,
+        Fut: Future<Output = AppResult<()>>,
     {
-        let state = ctx.state.clone();
-        Task::perform(
-            async move {
-                let all = targets.into_iter().map(|target| {
-                    let result = run(state.clone(), target.clone());
-                    async move { (target, result.await) }
-                });
-                join_all(all).await
-            },
-            |results| results,
-        )
+        let all = targets.into_iter().map(|target| {
+            let result = run(state.clone(), target.clone());
+            async move { (target, result.await) }
+        });
+        join_all(all).await
     }
 
     fn act(
@@ -234,61 +292,18 @@ impl Actions {
             return Task::none();
         }
         self.pending.extend(targets.iter().map(Target::key));
-        Self::each(ctx, targets, move |state, target| async move {
-            containers_act(&state, target.host_id, target.id, action).await
-        })
-        .map(move |results| Message::Acted(action, results))
-    }
-
-    /// Says what worked in one toast and what failed in one per failure,
-    /// and has every Host that was asked read its containers again.
-    /// Returns how many failed.
-    fn report(
-        &self,
-        results: &Results,
-        command: &'static str,
-        done: impl Fn(usize) -> String + Send + Sync + 'static,
-        ctx: &Context<'_>,
-    ) -> usize {
-        let worked = results.iter().filter(|(_, result)| result.is_ok()).count();
-        if worked > 0 {
-            ctx.done(move || done(worked));
-        }
-        // Those a Host refused for the same reason are said together.
-        let mut failures: BTreeMap<(String, String), (&AppError, Vec<&Target>)> = BTreeMap::new();
-        for (target, result) in results {
-            if let Err(error) = result {
-                let reason = format!("{:?}{}{:?}", error.code, error.message, error.detail);
-                failures
-                    .entry((target.host_name.clone(), reason))
-                    .or_insert((error, vec![]))
-                    .1
-                    .push(target);
-            }
-        }
-        for ((host, _), (error, targets)) in failures {
-            let names = names(&targets);
-            let surfaced = Surfaced::new(error.clone(), command);
-            if self.across_hosts {
-                ctx.failed_of(
-                    move || {
-                        t!(
-                            "board.remove.onHost",
-                            host = host.as_str(),
-                            names = names.as_str()
-                        )
-                    },
-                    surfaced,
-                );
-            } else {
-                ctx.failed_of(move || names.clone(), surfaced);
-            }
-        }
-        let hosts: HashSet<&str> = results.iter().map(|(t, _)| t.host_id.as_str()).collect();
-        for host in hosts {
-            ctx.invalidate(keys::host::containers(host));
-        }
-        results.len() - worked
+        let work = Self::each(
+            ctx.state.clone(),
+            targets,
+            move |state, target| async move {
+                containers_act(&state, target.host_id, target.id, action).await
+            },
+        );
+        ctx.act(
+            work,
+            move |results| acted(action, results),
+            move |results| Message::Acted(action, results),
+        )
     }
 
     pub fn update(&mut self, message: Message, ctx: &Context<'_>) -> Task<Message> {
@@ -298,12 +313,7 @@ impl Actions {
                 for (target, _) in &results {
                     self.pending.remove(&target.key());
                 }
-                let failed = self.report(
-                    &results,
-                    "containers_act",
-                    move |count| view::done(action, count),
-                    ctx,
-                );
+                let failed = failures(&results);
                 // Kill was confirmed: its dialog waited for this.
                 if let Some(Dialog::Confirm {
                     what: What::Kill(_),
@@ -334,12 +344,7 @@ impl Actions {
             Message::AskRemove { .. } => {}
             Message::Confirm(message) => return self.confirm(message, ctx),
             Message::Removed(results) => {
-                let failed = self.report(
-                    &results,
-                    "containers_remove",
-                    |count| t!("containers.done.remove", count = count),
-                    ctx,
-                );
+                let failed = failures(&results);
                 match &mut self.dialog {
                     // Nothing went: the dialog offers it again.
                     Some(Dialog::Confirm { state, .. }) if failed == results.len() => {
@@ -353,7 +358,7 @@ impl Actions {
                 self.dialog = Some(Dialog::Rename {
                     name: target.name.clone(),
                     target,
-                    action: Action::default(),
+                    pending: false,
                     failure: None,
                 });
             }
@@ -391,10 +396,11 @@ impl Actions {
                 // Forced, so a running one is stopped first, and with the
                 // anonymous volumes, as the dialog says.
                 What::Remove { targets, .. } => {
-                    Self::each(ctx, targets, |state, target| async move {
+                    let remove = |state: Arc<AppState>, target: Target| async move {
                         containers_remove(&state, target.host_id, target.id, true, true).await
-                    })
-                    .map(Message::Removed)
+                    };
+                    let work = Self::each(ctx.state.clone(), targets, remove);
+                    ctx.act(work, removed, Message::Removed)
                 }
             },
         }
@@ -404,7 +410,7 @@ impl Actions {
         let Some(Dialog::Rename {
             target,
             name,
-            action,
+            pending,
             failure,
         }) = &mut self.dialog
         else {
@@ -412,21 +418,32 @@ impl Actions {
         };
         match message {
             Message::RenameInput(typed) => *name = typed,
-            Message::RenameSubmit if !action.is_pending() => {
+            Message::RenameSubmit if !*pending => {
                 let (host, id, name) = (target.host_id.clone(), target.id.clone(), name.clone());
+                *pending = true;
                 *failure = None;
-                return action
-                    .start(ctx.state, move |state| async move {
-                        containers_rename(&state, host, id, name).await
-                    })
-                    .map(Message::Renamed);
+                let (renamed, scope) = (id.clone(), keys::host::containers(&host));
+                let state = ctx.state.clone();
+                // The list is read again once the Engine took the name,
+                // whether or not the dialog is still open by then.
+                return ctx.act(
+                    async move { containers_rename(&state, host, id, name).await },
+                    move |result| match result {
+                        Ok(()) => Told::quiet().invalidating(scope),
+                        Err(_) => Told::quiet(),
+                    },
+                    move |result| Message::Renamed(renamed.clone(), result),
+                );
             }
-            Message::Renamed(finished) => {
-                if action.finish(finished) {
-                    ctx.invalidate(keys::host::containers(&target.host_id));
-                    self.dialog = None;
-                } else if let Some(error) = action.error() {
-                    *failure = Some(Box::new(Surfaced::new(error.clone(), "containers_rename")));
+            // The answer of a rename whose dialog was closed, and another
+            // opened since, is not this dialog's.
+            Message::Renamed(id, result) if id == target.id && *pending => {
+                *pending = false;
+                match result {
+                    Ok(()) => self.dialog = None,
+                    Err(error) => {
+                        *failure = Some(Box::new(Surfaced::new(error, "containers_rename")));
+                    }
                 }
             }
             Message::RenameFailure(error_message::Event::Details) => {

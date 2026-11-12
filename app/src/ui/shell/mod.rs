@@ -37,7 +37,7 @@ use homeport_settings::Settings;
 
 use self::{
     gates::Subject,
-    page::{Effects, Pages, Update, World},
+    page::{Effects, Outcomes, Pages, Update, World},
     palette::items::{self, Item},
     registry::{nav, Command, Run, Scope, FEATURES},
     router::{History, Request, Route},
@@ -69,7 +69,7 @@ use crate::{
 };
 
 pub use self::{
-    page::{stub, Context},
+    page::{stub, Context, Outcome},
     router::Location,
 };
 
@@ -165,6 +165,8 @@ pub struct Shell<P: Pages> {
     /// The sidebar's entries for the selection.
     entries: Vec<nav::Entry>,
     effects: Effects,
+    /// Where the actions pages started tell what they did.
+    outcomes: Outcomes,
     palette: palette::State,
     help: bool,
     switcher: menu::State,
@@ -196,6 +198,7 @@ impl<P: Pages> Shell<P> {
             held: vec![],
             entries: vec![],
             effects: Effects::default(),
+            outcomes: Outcomes::default(),
             palette: palette::State::default(),
             help: false,
             switcher: menu::State::default(),
@@ -301,6 +304,7 @@ impl<P: Pages> Shell<P> {
                     direction: i18n::direction(),
                     pickers: &self.pickers,
                     effects: &self.effects,
+                    outcomes: &self.outcomes,
                 };
                 let id = open.id;
                 page_dialog = open
@@ -390,6 +394,7 @@ impl<P: Pages> Shell<P> {
             direction: i18n::direction(),
             pickers: &self.pickers,
             effects: &self.effects,
+            outcomes: &self.outcomes,
         };
         // The page's number is part of what tells its streams apart: a
         // page opened anew starts its own.

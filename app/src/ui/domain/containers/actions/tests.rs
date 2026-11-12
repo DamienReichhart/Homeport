@@ -80,68 +80,80 @@ fn the_menu_offers_what_the_container_s_state_allows() {
 }
 
 #[test]
-fn an_action_asks_the_host_and_names_the_container_it_failed_for() {
+fn an_action_asks_the_host_and_its_failure_is_the_shell_s_to_report() {
     let _english = in_language("en");
     let mut bench = bench();
     let mut actions = Actions::of_host();
     let web = target("web", "exited");
     // No Engine answers in a test: the Host refuses.
-    let task = actions.update(
-        Message::Act(ContainerAction::Start, vec![web.clone()]),
-        &bench.ctx(),
-    );
+    let start = Message::Act(ContainerAction::Start, vec![web.clone()]);
+    let task = actions.update(start, &bench.ctx());
     assert!(actions.is_pending("h1", &web.id));
-    for message in bench.run(task) {
+    let answers = bench.run(task);
+    // The outcome is told before the page hears of it, and without it.
+    let asked = bench.took();
+    let [Asked::Failed(None, error), Asked::Invalidate(key)] = asked.as_slice() else {
+        panic!("{asked:?}");
+    };
+    assert_eq!(error.code, ErrorCode::HostNotConnected);
+    assert!(error
+        .detail
+        .as_deref()
+        .is_some_and(|d| d.starts_with("local/web: ")));
+    assert_eq!(*key, keys::host::containers("h1"));
+    for message in answers {
         let _ = actions.update(message, &bench.ctx());
     }
     assert!(!actions.is_pending("h1", &web.id));
-    let asked = bench.took();
-    let [Asked::Failed(Some(title), error), Asked::Invalidate(key)] = asked.as_slice() else {
-        panic!("{asked:?}");
-    };
-    assert_eq!(title, "web");
-    assert_eq!(error.code, ErrorCode::HostNotConnected);
-    assert_eq!(*key, keys::host::containers("h1"));
+    assert!(bench.took().is_empty(), "the page itself reports nothing");
 }
 
 #[test]
-fn what_worked_is_counted_and_each_failure_is_said_host_by_host() {
+fn what_worked_is_counted_and_what_failed_is_one_toast_that_lists_each() {
     let _english = in_language("en");
     let mut bench = bench();
-    let mut actions = Actions::across_hosts();
+    let mut gone = refused();
+    gone.detail = Some("No such container: queue".to_owned());
     let results: Results = vec![
         (target("web", "running"), Ok(())),
         (target("db", "running"), Err(refused())),
-        (target("cache", "running"), Err(refused())),
         (on_prod("api"), Ok(())),
-        (on_prod("queue"), Err(refused())),
+        (on_prod("queue"), Err(gone)),
     ];
-    let _ = actions.update(Message::Acted(ContainerAction::Stop, results), &bench.ctx());
+    bench.told(acted(ContainerAction::Stop, &results));
     let asked = bench.took();
     assert_eq!(asked[0], Asked::Said("Stopped 2 containers".to_owned()));
-    // The two the same Host refused for the same reason share a toast.
+    // One toast, as React's one toastError: the first failure's message,
+    // and every container that failed in its Details.
+    let Asked::Failed(None, error) = &asked[1] else {
+        panic!("{asked:?}");
+    };
+    assert_eq!(error.message, refused().message);
     assert_eq!(
-        asked[1..3],
-        [
-            Asked::Failed(Some("On local: db, cache".to_owned()), refused()),
-            Asked::Failed(Some("On prod: queue".to_owned()), refused()),
-        ]
+        error.detail.as_deref(),
+        Some(
+            "local/db: the container is being removed\n\
+             prod/queue: the container is being removed (No such container: queue)"
+        )
     );
-    let mut read_again: Vec<_> = asked[3..].to_vec();
-    read_again.sort_by_key(|asked| format!("{asked:?}"));
     assert_eq!(
-        read_again,
+        asked[2..],
         [
             Asked::Invalidate(keys::host::containers("h1")),
             Asked::Invalidate(keys::host::containers("prod-id")),
         ]
     );
+    // Nothing failed: nothing but the count. Nothing worked: no count.
+    bench.told(removed(&results[..1].to_vec()));
+    assert_eq!(bench.took()[0], Asked::Said("Removed container".to_owned()));
+    bench.told(acted(ContainerAction::Kill, &results[1..2].to_vec()));
+    assert!(matches!(bench.took()[0], Asked::Failed(..)));
 }
 
 #[test]
 fn killing_is_confirmed_and_its_dialog_waits_for_the_answer() {
     let _english = in_language("en");
-    let mut bench = bench();
+    let bench = bench();
     let mut actions = Actions::of_host();
     let web = target("web", "running");
     let _ = actions.update(Message::AskKill(web.clone()), &bench.ctx());
@@ -167,9 +179,6 @@ fn killing_is_confirmed_and_its_dialog_waits_for_the_answer() {
     let killed = Message::Acted(ContainerAction::Kill, vec![(web, Ok(()))]);
     let _ = actions.update(killed, &bench.ctx());
     assert!(!actions.has_dialog());
-    assert!(bench
-        .took()
-        .contains(&Asked::Said("Killed container".to_owned())));
 }
 
 #[test]
@@ -198,7 +207,7 @@ fn removing_says_what_goes_and_keeps_its_dialog_only_when_nothing_went() {
         let _ = actions.update(message, &bench.ctx());
     }
     assert!(actions.has_dialog());
-    // The two a Host refused for one reason are one toast.
+    // Both failed, in one toast.
     let failures = |asked: &[Asked]| {
         asked
             .iter()
@@ -206,18 +215,12 @@ fn removing_says_what_goes_and_keeps_its_dialog_only_when_nothing_went() {
             .count()
     };
     assert_eq!(failures(&bench.took()), 1);
-    // One went, one didn't: the dialog goes, and both are said.
+    // One went, one didn't: the dialog goes.
     let _ = actions.update(Message::Confirm(confirm::Message::Confirm), &bench.ctx());
+    let _ = bench.took();
     let results = vec![(web, Ok(())), (db, Err(refused()))];
     let _ = actions.update(Message::Removed(results), &bench.ctx());
     assert!(!actions.has_dialog());
-    assert_eq!(
-        bench.took()[..2],
-        [
-            Asked::Said("Removed container".to_owned()),
-            Asked::Failed(Some("db".to_owned()), refused()),
-        ]
-    );
     // Nothing selected, nothing asked.
     let _ = actions.update(remove(vec![], true), &bench.ctx());
     assert!(!actions.has_dialog());
@@ -234,7 +237,7 @@ fn a_selection_across_hosts_is_summed_up_host_by_host() {
     assert_eq!(lines.len(), 3);
     assert_eq!(
         lines[1],
-        "On local: web, job-0, job-1, job-2, job-3, job-4, job-5, job-6 +3"
+        "On local: web, job-0, job-1, job-2, job-3, job-4, job-5, and job-6…"
     );
     assert_eq!(lines[2], "On prod: api");
 }
@@ -265,14 +268,39 @@ fn renaming_shows_its_failure_in_place_and_closes_once_it_worked() {
     let details = Message::RenameFailure(error_message::Event::Details);
     let _ = actions.update(details, &bench.ctx());
     assert_eq!(bench.asked(), ["details"]);
-    // Another try, which the Engine takes.
-    let _ = actions.update(Message::RenameSubmit, &bench.ctx());
-    let Some(Dialog::Rename { action, .. }) = &actions.dialog else {
-        panic!("no dialog");
-    };
-    let renamed = Message::Renamed(action.ending_with(Ok(())));
-    let _ = actions.update(renamed, &bench.ctx());
+    // Another try, which the Engine takes: the list is read again and
+    // the dialog closes.
+    let again = actions.update(Message::RenameSubmit, &bench.ctx());
+    drop(again);
+    let web_id = target("web", "running").id;
+    let _ = actions.update(Message::Renamed(web_id, Ok(())), &bench.ctx());
     assert!(!actions.has_dialog());
+}
+
+#[test]
+fn a_rename_whose_dialog_was_closed_still_has_the_list_read_again() {
+    let mut bench = bench();
+    let mut actions = Actions::of_host();
+    let web = target("web", "running");
+    let _ = actions.update(Message::AskRename(web.clone()), &bench.ctx());
+    let task = actions.update(Message::RenameSubmit, &bench.ctx());
+    // Escape while the Engine is asked, then the dialog of another one.
+    let _ = actions.update(Message::CloseDialog, &bench.ctx());
+    let _ = actions.update(Message::AskRename(target("db", "running")), &bench.ctx());
+    let answers = bench.run(task);
+    // No Engine here: it fails, and a failure invalidates nothing.
+    assert!(bench.took().is_empty());
+    for message in answers {
+        let _ = actions.update(message, &bench.ctx());
+    }
+    // The answer was the first dialog's: the second shows no failure.
+    assert!(matches!(
+        &actions.dialog,
+        Some(Dialog::Rename { failure: None, .. })
+    ));
+    // What a rename that worked tells the shell needs no dialog.
+    let renamed = Told::quiet().invalidating(keys::host::containers("h1"));
+    bench.told(renamed);
     assert_eq!(
         bench.took(),
         [Asked::Invalidate(keys::host::containers("h1"))]

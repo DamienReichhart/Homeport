@@ -6,6 +6,7 @@ use std::collections::HashMap;
 
 use iced::Task;
 
+use homeport_core::error::AppResult;
 use homeport_engine::{
     containers::Container,
     images::freshness::{Freshness, FreshnessResult},
@@ -13,10 +14,10 @@ use homeport_engine::{
 
 use crate::{
     api::engine::images::images_freshness,
-    data::{action::Finished, keys, Action},
+    data::keys,
     t,
     ui::{
-        shell::Context,
+        shell::{Context, Outcome},
         theme::{icon, Element, Icon},
         widgets::{
             basic::button::{self, Variant},
@@ -101,56 +102,59 @@ fn newer_count(results: &[FreshnessResult]) -> usize {
     newer.len()
 }
 
+/// What the shell reports of a check: what it found, filed as a read's
+/// answer would be, and how many images moved on; or why it failed.
+pub(crate) fn checked(host_id: &str, result: &AppResult<Vec<FreshnessResult>>) -> Outcome {
+    match result {
+        Ok(results) => {
+            let newer = newer_count(results);
+            Outcome::quiet()
+                .putting(keys::host::freshness(host_id), results.clone())
+                .saying(move || match newer {
+                    0 => t!("core.freshness.allUpToDate"),
+                    newer => t!("core.freshness.newerCount", count = newer),
+                })
+        }
+        Err(error) => Outcome::quiet().failing(Surfaced::new(error.clone(), "images_freshness")),
+    }
+}
+
 /// "Check for newer images": asks every registry again, skipping the
-/// cache, and says what it found.
+/// cache, and says what it found. The answer is the shell's to report
+/// (`Context::act`): it is filed and said even if the page was left.
 #[derive(Debug, Default)]
-pub struct Check(Action<Vec<FreshnessResult>>);
+pub struct Check {
+    pending: bool,
+}
 
 #[derive(Debug, Clone)]
 pub enum Message {
     Pressed,
-    Checked(Finished<Vec<FreshnessResult>>),
-}
-
-#[cfg(test)]
-impl Check {
-    /// The end of the check that is on its way, as if the registries had
-    /// answered `results`: for the tests of a page, which has no Engine.
-    pub fn answered(&self, results: Vec<FreshnessResult>) -> Message {
-        Message::Checked(self.0.ending_with(Ok(results)))
-    }
+    /// The registries answered, or couldn't be asked.
+    Checked,
 }
 
 impl Check {
     pub fn is_pending(&self) -> bool {
-        self.0.is_pending()
+        self.pending
     }
 
     /// `host_id` is the Host whose images are checked.
     pub fn update(&mut self, host_id: &str, message: Message, ctx: &Context<'_>) -> Task<Message> {
         match message {
-            Message::Pressed => {
-                let host = host_id.to_owned();
-                self.0
-                    .start(ctx.state, move |state| async move {
-                        images_freshness(&state, host, true).await
-                    })
-                    .map(Message::Checked)
+            Message::Pressed if !self.pending => {
+                self.pending = true;
+                let (host, state) = (host_id.to_owned(), ctx.state.clone());
+                let of = host.clone();
+                ctx.act(
+                    async move { images_freshness(&state, host, true).await },
+                    move |result| checked(&of, result),
+                    |_| Message::Checked,
+                )
             }
-            Message::Checked(finished) => {
-                self.0.finish(finished);
-                if let Some(results) = self.0.done() {
-                    let newer = newer_count(results);
-                    // What it answered is what a read would.
-                    ctx.put(keys::host::freshness(host_id), results.clone());
-                    ctx.done(move || match newer {
-                        0 => t!("core.freshness.allUpToDate"),
-                        newer => t!("core.freshness.newerCount", count = newer),
-                    });
-                } else if let Some(error) = self.0.error() {
-                    ctx.failed(Surfaced::new(error.clone(), "images_freshness"));
-                }
-                self.0.reset();
+            Message::Pressed => Task::none(),
+            Message::Checked => {
+                self.pending = false;
                 Task::none()
             }
         }

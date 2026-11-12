@@ -9,6 +9,7 @@ use homeport_engine::containers::ContainerAction;
 
 use super::{Actions, Bulk, Dialog, Message, Target};
 use crate::{
+    i18n::format,
     t,
     ui::{
         theme::{
@@ -58,6 +59,9 @@ pub(super) fn removal(targets: &[Target]) -> (String, String) {
 /// How many names of a Host's containers a confirmation spells out.
 const NAMED: usize = 8;
 
+/// What ends a list that is cut.
+const ELLIPSIS: char = '…';
+
 /// The same for a selection that may span Hosts: what is removed, Host by
 /// Host (`BoardSelection`'s `RemoveSummary`).
 pub(super) fn removal_by_host(targets: &[Target]) -> (String, String) {
@@ -70,17 +74,15 @@ pub(super) fn removal_by_host(targets: &[Target]) -> (String, String) {
     }
     let mut lines = vec![t!("board.remove.description")];
     for (host, names) in hosts {
-        let mut shown = names
-            .iter()
-            .take(NAMED)
-            .copied()
-            .collect::<Vec<_>>()
-            .join(", ");
+        let shown: Vec<&str> = names.iter().take(NAMED).copied().collect();
+        let mut names_shown = format::list(&shown);
         if names.len() > NAMED {
-            // A Host with a thousand selected is not read name by name.
-            shown = format!("{shown} +{}", names.len() - NAMED);
+            // A Host with a thousand selected is not read name by name:
+            // the list goes on.
+            names_shown.push(ELLIPSIS);
         }
-        lines.push(t!("board.remove.onHost", host = host, names = shown));
+        let names = names_shown;
+        lines.push(t!("board.remove.onHost", host = host, names = names));
     }
     let title = t!("board.remove.title", count = targets.len());
     (title, lines.join("\n"))
@@ -243,10 +245,10 @@ impl Actions {
             Dialog::Rename {
                 target,
                 name,
-                action,
+                pending,
                 failure,
             } => {
-                let waits = action.is_pending();
+                let waits = *pending;
                 let field = input(&t!("containers.rename.newName"), name)
                     .on_input_maybe((!waits).then_some(Message::RenameInput))
                     .on_submit(Message::RenameSubmit);

@@ -83,6 +83,28 @@ impl Pages for Blank {
         self.asked.push(action.to_owned());
         // What a page asks of the shell through its context.
         match action {
+            // An action whose outcome is the shell's to report.
+            "act" | "act-and-fail" => {
+                let key = keys::host::containers("h1");
+                let failed = (action == "act-and-fail").then(|| {
+                    crate::ui::widgets::feedback::Surfaced::at(
+                        refused(),
+                        Some("containers_act"),
+                        jiff::Timestamp::UNIX_EPOCH,
+                    )
+                });
+                return ctx.act(
+                    async {},
+                    move |()| {
+                        let told = super::Outcome::quiet().invalidating(key);
+                        match failed {
+                            Some(failure) => told.failing(failure),
+                            None => told.saying(|| "stopped".to_owned()),
+                        }
+                    },
+                    |()| stub::Message::Picker(super::pickers::Message::TypedSubmit),
+                );
+            }
             "say" => ctx.done(|| "done".to_owned()),
             "blame" => ctx.failed_of(
                 || "web".to_owned(),
@@ -1120,4 +1142,50 @@ fn a_page_files_what_an_action_answered_and_a_request_carries_parameters() {
         Request::to(Route::Board).with_param("host", "prod-id"),
     ));
     assert_ne!(rig.shell.location().key, key);
+}
+
+/// Starts `action` on the Containers page, leaves for the Board before
+/// it ends, and gives what the shell told the window once it did.
+fn outcome_after_leaving(action: &'static str) -> (Rig, Vec<Event>) {
+    let mut rig = docker_and_prod();
+    rig.go(Route::Containers);
+    let started = Message::Go(Request::to(Route::Containers).starting(action));
+    let on_its_way = rig.shell.update(started, &mut rig.data);
+    // The page is left before the Engine answers. The Board shows what
+    // the action is about, read and at rest.
+    rig.go(Route::Board);
+    rig.data
+        .set(&keys::host::containers("h1"), Vec::<u8>::new());
+    let _ = rig.shell.take_events();
+    let board = open_page(&rig).id;
+    for answer in rig.app.runtime.block_on(tasks::messages(on_its_way)) {
+        rig.send(answer);
+    }
+    // The answer was the Containers page's: the Board never hears it.
+    assert_eq!(open_page(&rig).id, board);
+    assert_eq!(open_page(&rig).page.heard, 0);
+    let events = rig.shell.take_events();
+    (rig, events)
+}
+
+#[test]
+fn an_action_s_outcome_is_said_and_read_again_after_its_page_was_left() {
+    let (rig, events) = outcome_after_leaving("act");
+    let [Event::Said(_, said)] = events.as_slice() else {
+        panic!("{events:?}");
+    };
+    assert_eq!(said.now(), "stopped");
+    let list = rig.data.read::<Vec<u8>>(&keys::host::containers("h1"));
+    assert!(list.is_fetching(), "what it made out of date is read again");
+}
+
+#[test]
+fn an_action_s_failure_is_reported_and_read_again_after_its_page_was_left() {
+    let (rig, events) = outcome_after_leaving("act-and-fail");
+    let [Event::Failed(None, surfaced)] = events.as_slice() else {
+        panic!("{events:?}");
+    };
+    assert_eq!(surfaced.error, refused());
+    let list = rig.data.read::<Vec<u8>>(&keys::host::containers("h1"));
+    assert!(list.is_fetching());
 }

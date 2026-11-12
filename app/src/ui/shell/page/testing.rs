@@ -8,7 +8,7 @@ use homeport_hosts::service::HostView;
 use homeport_settings::Settings;
 use tokio::runtime::Runtime;
 
-use super::{context::Effect, Context, Effects, World};
+use super::{context::Effect, Context, Effects, Outcomes, World};
 use crate::{
     app::{testing, AppState},
     data::{keys, Data, Key},
@@ -50,6 +50,7 @@ pub struct Bench {
     pub subject: Subject,
     pickers: pickers::State,
     effects: Effects,
+    outcomes: Outcomes,
 }
 
 impl Bench {
@@ -63,6 +64,7 @@ impl Bench {
             subject: Subject::App,
             pickers: pickers::State::default(),
             effects: Effects::default(),
+            outcomes: Outcomes::default(),
         }
     }
 
@@ -95,6 +97,7 @@ impl Bench {
             direction: i18n::direction(),
             pickers: &self.pickers,
             effects: &self.effects,
+            outcomes: &self.outcomes,
         }
     }
 
@@ -105,9 +108,18 @@ impl Bench {
             .block_on(crate::test_support::tasks::messages(task))
     }
 
-    /// What the page asked of the shell since the last call, in order.
-    /// What it filed (`ctx.put`) is in the data layer, and what it kept
-    /// (`ctx.keep`) in its location, as the shell would have done.
+    /// An action the page started ended with `outcome`, as if its use
+    /// case had answered: a page has no Engine in its tests.
+    pub fn told(&self, outcome: super::Outcome) {
+        let _ = self.outcomes.sender().send(outcome);
+    }
+
+    /// What the page asked of the shell since the last call, in order,
+    /// then what the actions it started (`ctx.act`) told the shell once
+    /// they ended: what they said, how they failed, what they filed and
+    /// what they made out of date. What was filed is in the data layer,
+    /// and what was kept (`ctx.keep`) in the location, as the shell would
+    /// have done.
     pub fn took(&mut self) -> Vec<Asked> {
         let mut asked = vec![];
         for effect in self.effects.take() {
@@ -134,6 +146,17 @@ impl Bench {
                     Asked::Keep
                 }
             });
+        }
+        for outcome in self.outcomes.take() {
+            asked.extend(outcome.said.map(|said| Asked::Said(said.now())));
+            asked.extend(outcome.failed.map(|(title, surfaced)| {
+                Asked::Failed(title.map(|title| title.now()), surfaced.error)
+            }));
+            for (key, put) in outcome.puts {
+                put(&mut self.data);
+                asked.push(Asked::Put(key));
+            }
+            asked.extend(outcome.invalidates.into_iter().map(Asked::Invalidate));
         }
         asked
     }

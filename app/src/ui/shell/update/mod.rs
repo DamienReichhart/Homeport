@@ -32,7 +32,10 @@ use crate::{
     api,
     data::{self, keys, resources, Data, Key},
     i18n, t,
-    ui::widgets::feedback::{toast::Said, Surfaced},
+    ui::widgets::feedback::{
+        toast::{self, Said},
+        Surfaced,
+    },
 };
 
 /// A read the shell wants kept fresh: its key and how to start it.
@@ -53,13 +56,37 @@ impl<P: Pages> Shell<P> {
         message: Message<P::Message>,
         data: &mut Data,
     ) -> Task<Message<P::Message>> {
-        let mut tasks = vec![self.apply(message, data)];
+        // What the actions on their way did is told first: the message
+        // may be the answer of one, for a page that is no longer there.
+        let mut tasks = vec![self.report(data), self.apply(message, data)];
         // What a page asked for may open another page, which asks in turn.
         for _ in 0..ROUNDS {
             tasks.push(self.run_effects(data));
             tasks.push(self.sync(data));
             if self.effects.is_empty() {
                 break;
+            }
+        }
+        Task::batch(tasks)
+    }
+
+    /// Reports the outcomes of the actions that ended: a toast for what
+    /// was done, one for what failed, and what they made out of date is
+    /// read again, whether or not the page that started them still shows.
+    fn report(&mut self, data: &mut Data) -> Task<Message<P::Message>> {
+        let mut tasks = vec![];
+        for outcome in self.outcomes.take() {
+            if let Some(said) = outcome.said {
+                self.events.push(Event::Said(toast::Kind::Success, said));
+            }
+            if let Some((title, surfaced)) = outcome.failed {
+                self.events.push(Event::Failed(title, surfaced));
+            }
+            for (_, put) in outcome.puts {
+                put(data);
+            }
+            for scope in outcome.invalidates {
+                tasks.push(data.invalidate(&self.state, &scope).map(Message::Data));
             }
         }
         Task::batch(tasks)
@@ -81,6 +108,7 @@ impl<P: Pages> Shell<P> {
             direction: i18n::direction(),
             pickers: &self.pickers,
             effects: &self.effects,
+            outcomes: &self.outcomes,
         };
         Some(call(page, &ctx))
     }
@@ -534,6 +562,7 @@ impl<P: Pages> Shell<P> {
                     direction: i18n::direction(),
                     pickers: &self.pickers,
                     effects: &self.effects,
+                    outcomes: &self.outcomes,
                 };
                 self.opened += 1;
                 let id = self.opened;
