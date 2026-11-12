@@ -246,6 +246,10 @@ pub(super) fn update<K: Clone, Message: Clone>(
     if let Event::Keyboard(keyboard::Event::ModifiersChanged(modifiers)) = event {
         internal.modifiers = *modifiers;
     }
+    if grid.rows.is_empty() {
+        // Nothing to be on: an empty list takes no focus.
+        internal.focus.unfocus();
+    }
     if drags(grid, internal, event, &geometry, cursor, shell) {
         return;
     }
@@ -378,4 +382,55 @@ pub(super) fn mouse_interaction<K: Clone, Message: Clone>(
         return mouse::Interaction::Pointer;
     }
     of_cells
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn told(key: impl Into<Key>, modifiers: Modifiers) -> Option<Action<u8>> {
+        key_message(&key.into(), modifiers, true)
+    }
+
+    #[test]
+    fn every_key_of_the_rows_says_what_it_does() {
+        let none = Modifiers::empty();
+        let to = |to, extend| Some(Action::Move { to, extend });
+        for (key, motion) in [
+            (Named::ArrowUp, Motion::Up),
+            (Named::ArrowDown, Motion::Down),
+            (Named::PageUp, Motion::PageUp),
+            (Named::PageDown, Motion::PageDown),
+            (Named::Home, Motion::Home),
+            (Named::End, Motion::End),
+        ] {
+            assert_eq!(told(key, none), to(motion, false));
+            assert_eq!(told(key, Modifiers::SHIFT), to(motion, true));
+        }
+        assert_eq!(told(Named::Space, none), Some(Action::ToggleFocused));
+        assert_eq!(told(Named::Enter, none), Some(Action::OpenFocused));
+        assert_eq!(told(Named::Escape, none), Some(Action::Clear));
+        let a = || Key::Character("a".into());
+        assert_eq!(told(a(), Modifiers::COMMAND), Some(Action::SelectAll));
+        assert_eq!(told(a(), none), None, "a letter alone is not the table's");
+        assert_eq!(told(Named::ContextMenu, none), Some(Action::MenuFor(None)));
+        assert_eq!(
+            told(Named::F10, Modifiers::SHIFT),
+            Some(Action::MenuFor(None))
+        );
+        assert_eq!(told(Named::F10, none), None);
+        // Tab is the window's, and so are the arrows across.
+        for key in [Named::Tab, Named::ArrowLeft, Named::ArrowRight] {
+            assert_eq!(told(key, none), None);
+        }
+        assert_eq!(told(Named::ArrowDown, Modifiers::ALT), None);
+    }
+
+    #[test]
+    fn a_table_without_menus_leaves_the_menu_keys_alone() {
+        let none = Modifiers::empty();
+        let told = |key: Named, modifiers| key_message::<u8>(&key.into(), modifiers, false);
+        assert_eq!(told(Named::ContextMenu, none), None);
+        assert_eq!(told(Named::F10, Modifiers::SHIFT), None);
+    }
 }

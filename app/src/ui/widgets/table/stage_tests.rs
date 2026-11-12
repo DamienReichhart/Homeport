@@ -11,6 +11,7 @@ use iced::{
 
 use super::{Event as Outcome, Mode, Order, Sort, State, HEADER_HEIGHT, ROW_HEIGHT};
 use crate::{
+    t,
     test_support::{
         snapshot::{in_language, InLanguage},
         stage::{Frame, Stage},
@@ -36,17 +37,21 @@ struct Bench {
     stage: Stage,
     state: State<u32>,
     rows: Vec<Sample>,
-    _english: InLanguage,
+    _language: InLanguage,
 }
 
 impl Bench {
     fn new(rows: u32) -> Self {
-        let english = in_language("en");
+        Self::in_the_language("en", rows)
+    }
+
+    fn in_the_language(tag: &str, rows: u32) -> Self {
+        let english = in_language(tag);
         let mut bench = Self {
             stage: Stage::new(WINDOW),
             state: State::new().selecting(Mode::Multi),
             rows: samples(rows),
-            _english: english,
+            _language: english,
         };
         // The first view tells the table how much room its rows have.
         bench.frame(|_| {});
@@ -353,6 +358,38 @@ fn dragging_the_edge_of_a_header_resizes_its_column() {
     });
     assert_eq!(bench.state.widths(), [("name", 120.0)]);
     assert!(width > 120.0);
+}
+
+#[test]
+fn right_to_left_a_column_ends_on_its_left_and_dragging_left_widens_it() {
+    let mut bench = Bench::in_the_language("ar", 40);
+    let (name, image) = (t!("containers.column.name"), t!("containers.column.image"));
+    let mut before = Rectangle::default();
+    bench.frame(|frame| {
+        let first = frame.find(&name).expect("the Name header");
+        before = frame.find(&image).expect("the Image header");
+        assert!(first.x > before.x, "the first column is on the right");
+        // The Name column ends where the Image column starts: on the
+        // right of its header, a cell's padding after its text.
+        let edge = Point::new(before.x + before.width + 8.0, before.center_y());
+        frame.point_at(edge);
+        frame.send([Event::Mouse(mouse::Event::ButtonPressed(
+            mouse::Button::Left,
+        ))]);
+        frame.point_at(Point::new(edge.x - 60.0, edge.y));
+        frame.send([Event::Mouse(mouse::Event::ButtonReleased(
+            mouse::Button::Left,
+        ))]);
+    });
+    assert!(matches!(bench.state.widths(), [("name", _)]));
+    bench.frame(|frame| {
+        let after = frame.find(&image).expect("the Image header");
+        assert_eq!(
+            after.x + after.width,
+            before.x + before.width - 60.0,
+            "the Name column took 60 px from its left"
+        );
+    });
 }
 
 #[test]

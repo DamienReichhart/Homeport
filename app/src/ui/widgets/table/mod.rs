@@ -441,6 +441,9 @@ where
 
         let mut rows = Vec::with_capacity(view.len());
         let mut focused = None;
+        // The menu of a row that scrolled out of view is not there to
+        // have the keyboard.
+        let mut menu_open = false;
         for index in view.first..view.end {
             let row = &self.rows[derived.order[index] as usize];
             let key = (self.key)(row);
@@ -458,7 +461,9 @@ where
             }
             children.extend(self.columns.iter().map(|column| (column.cell)(row)));
             if let Some(items) = &self.menu {
-                children.push(self.menu_of(&key, state.menu_of(&key), || items(row)));
+                let open = state.menu_of(&key);
+                menu_open |= open.is_some();
+                children.push(self.menu_of(&key, open, || items(row)));
             }
             let mut hasher = DefaultHasher::new();
             key.hash(&mut hasher);
@@ -487,7 +492,7 @@ where
             viewport: state.viewport,
             placeholder,
             focused,
-            menu_open: state.menu.is_some(),
+            menu_open,
             has_menu: self.menu.is_some(),
             any_selected,
             pointer: state.opens_on_press,

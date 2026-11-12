@@ -243,8 +243,9 @@ fn a_frame_of_a_hundred_thousand_rows() {
     );
 
     let few = samples(100);
-    let (still_few, _) = measure(&mut bench, &mut multi(), &few, false, None);
+    let (still_few, scrolling_few) = measure(&mut bench, &mut multi(), &few, false, None);
     report("100 rows, 5 columns, still", still_few);
+    report("100 rows, 5 columns, a scroll step", scrolling_few);
 
     let many = samples(100_000);
     let (still, scrolling) = measure(&mut bench, &mut multi(), &many, false, None);
