@@ -157,6 +157,30 @@ fn the_first_view_tells_the_viewer_its_room_and_shows_the_latest_lines() {
 }
 
 #[test]
+fn the_lines_a_stream_pushes_show_as_they_come_whatever_their_stream() {
+    use homeport_core::logs::LogLine;
+    let mut bench = Bench::new([]);
+    let line = |stream: &str, text: &str| LogLine {
+        source: None,
+        stream: stream.to_owned(),
+        text: text.to_owned(),
+    };
+    // What the React test pushed through its channel.
+    let batch = [
+        line("stdout", "listening on :80"),
+        line("stderr", "warning: slow"),
+    ];
+    drop(bench.state.extend(batch.map(Line::from)));
+    bench.frame(|frame| {
+        assert!(frame.find("listening on :80").is_some());
+        assert!(frame.find("warning: slow").is_some());
+    });
+    // The source said it has no more.
+    bench.state.end();
+    bench.frame(|frame| assert!(frame.find("\u{2014} end of logs \u{2014}").is_some()));
+}
+
+#[test]
 fn the_wheel_pauses_and_jump_to_latest_follows_again() {
     let mut bench = Bench::new(numbered(0, 200));
     bench.frame(|frame| {

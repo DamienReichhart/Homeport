@@ -230,3 +230,24 @@ fn the_end_of_a_log_and_lines_never_shown_are_said_between_the_lines() {
         || on_page(view(&state)),
     );
 }
+
+#[test]
+fn a_stream_that_breaks_is_explained_over_the_lines_that_came() {
+    use crate::ui::widgets::{feedback::error_message, log::Viewer};
+    let mut state = State::new(100);
+    feed(
+        &mut state,
+        [
+            Line::new("listening on :80"),
+            Line::new("warning: slow").stream(Stream::Stderr),
+        ],
+    );
+    let failure = gallery::failure();
+    assert_snapshot("log-failed-en", "en", &Theme::Light, (800.0, 380.0), || {
+        on_page(
+            Viewer::new(&state, Page::Log)
+                .failed(Some(error_message(&failure, true, Page::Failure)))
+                .view(),
+        )
+    });
+}
