@@ -40,8 +40,9 @@ pub fn key_area<'a, Message>(
 
 impl<'a, Message> KeyArea<'a, Message> {
     /// A handler for the keys something inside did use (a field that has
-    /// focus, a dialog that keeps the keyboard): the shortcuts that work
-    /// everywhere, as Mod+K. It is told of them; it doesn't take them away.
+    /// focus, a dialog that keeps the keyboard) and for every key pressed
+    /// while a text field has focus, used or not: the shortcuts that work
+    /// everywhere, as Mod+K. A key that was used is only told of.
     #[must_use]
     pub fn on_captured(mut self, on_key: impl Fn(&Key, Modifiers) -> Option<Message> + 'a) -> Self {
         self.on_captured = Some(Box::new(on_key));
@@ -125,6 +126,23 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for KeyArea<'_, Message> {
                 shell.publish(message);
             }
             return;
+        }
+        // A key pressed while a field types is the field's, used or not:
+        // only what may fire from a field is told of it.
+        if let Some(on_captured) = &self.on_captured {
+            let typing = super::is_typing_within(
+                self.content.as_widget_mut(),
+                &mut tree.children[0],
+                layout,
+                renderer,
+            );
+            if typing {
+                if let Some(message) = on_captured(key, *modifiers) {
+                    shell.publish(message);
+                    shell.capture_event();
+                }
+                return;
+            }
         }
         let inside = self.always
             || super::find(

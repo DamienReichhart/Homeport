@@ -172,6 +172,50 @@ pub fn is_visible_within<Message>(
     shown.0
 }
 
+/// Looks for a text field that has focus: a field reports itself both as
+/// something that takes focus and as a text input, at the same place.
+#[derive(Default)]
+struct Typing {
+    focused: Option<Rectangle>,
+    fields: Vec<Rectangle>,
+}
+
+impl Operation for Typing {
+    fn traverse(&mut self, operate: &mut dyn FnMut(&mut dyn Operation)) {
+        operate(self);
+    }
+
+    fn focusable(&mut self, _id: Option<&Id>, bounds: Rectangle, state: &mut dyn Focusable) {
+        if state.is_focused() {
+            self.focused = Some(bounds);
+        }
+    }
+
+    fn text_input(
+        &mut self,
+        _id: Option<&Id>,
+        bounds: Rectangle,
+        _state: &mut dyn iced::advanced::widget::operation::TextInput,
+    ) {
+        self.fields.push(bounds);
+    }
+}
+
+/// Whether a text field under `widget` has focus: what is typed belongs to
+/// it, and so do the keys it leaves alone (an arrow with Alt).
+pub fn is_typing_within<Message>(
+    widget: &mut dyn Widget<Message, Theme, iced::Renderer>,
+    tree: &mut Tree,
+    layout: Layout<'_>,
+    renderer: &iced::Renderer,
+) -> bool {
+    let mut typing = Typing::default();
+    widget.operate(tree, layout, renderer, &mut typing);
+    typing
+        .focused
+        .is_some_and(|focused| typing.fields.contains(&focused))
+}
+
 struct Cover(bool);
 
 impl Operation for Cover {

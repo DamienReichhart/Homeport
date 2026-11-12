@@ -828,3 +828,42 @@ fn the_sidebar_is_on_the_right_in_arabic() {
     let logo = logo.expect("the mark's name");
     assert!(logo.x > SIZE.0 - sidebar::WIDTH, "it starts on the right");
 }
+
+#[test]
+fn alt_and_an_arrow_pressed_in_a_field_stay_the_field_s() {
+    let _english = in_language("en");
+    // A Cluster whose Namespaces can't be listed: its page has a field.
+    let mut rig = Rig::new(
+        vec![connected_host(), second_host()],
+        vec![cluster_view("kind-dev")],
+        Settings::default(),
+    );
+    rig.send(Message::Select(Selection::Cluster {
+        id: "c1".to_owned(),
+    }));
+    let namespaces = resources::cluster_namespaces("c1").key().clone();
+    rig.data.fail(&namespaces, &refused());
+    rig.go(Route::Pods);
+    let alt_down = || pressed(Key::Named(Named::ArrowDown), Modifiers::ALT);
+    let mut stage = Stage::new(SIZE);
+    rig.frame(&mut stage, |frame| {
+        // The field is at the end of the page's header.
+        frame.point_at((SIZE.0 - 80.0, 40.0));
+        frame.press();
+        assert!(frame.focused().is_some(), "the field has focus");
+    });
+    rig.frame(&mut stage, |frame| frame.typewrite("s"));
+    rig.frame(&mut stage, |frame| frame.send(alt_down()));
+    assert_eq!(
+        rig.shell.world().cluster_id(),
+        Some("c1"),
+        "no Host was stepped to"
+    );
+    // Mod+K still opens the palette from the field; outside it, Alt steps.
+    rig.frame(&mut stage, |frame| frame.send(ctrl("k")));
+    assert!(rig.shell.palette.is_open());
+    let mut rig = docker_and_prod();
+    let mut stage = Stage::new(SIZE);
+    rig.frame(&mut stage, |frame| frame.send(alt_down()));
+    assert_eq!(rig.shell.world().host_id(), Some("prod-id"));
+}
