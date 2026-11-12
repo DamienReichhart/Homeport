@@ -9,7 +9,7 @@ use std::sync::Arc;
 use iced::Task;
 
 use homeport_core::host::HostConnection;
-use homeport_hosts::service::HostView;
+use homeport_hosts::{registry::HostStatus, service::HostView};
 
 use crate::{
     data::{keys, resources, Resource},
@@ -25,7 +25,7 @@ use crate::{
             basic::{badge, BadgeVariant},
             feedback::{error_message, error_message::Event, status_dot, Surfaced},
             line, stack,
-            table::{self, Column, Table, Width},
+            table::{self, sort, Column, Rows, Table, Width},
         },
     },
 };
@@ -62,8 +62,10 @@ fn hosts(ctx: &Context<'_>) -> Resource<Arc<Vec<HostView>>> {
     ctx.data.read(&keys::host::list())
 }
 
-fn id(view: &HostView) -> String {
-    view.host.id.clone()
+/// The Hosts as the table reads them: by id, in the order they were read.
+fn rows(hosts: &Resource<Arc<Vec<HostView>>>) -> Rows<'_, HostView, String> {
+    let list = hosts.data().map_or(&[][..], |list| list.as_slice());
+    Rows::new(list, |view| view.host.id.clone())
 }
 
 pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Message> {
@@ -77,8 +79,8 @@ pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Me
         Message::Failure(Event::Copy(command)) => ctx.copy(command),
         Message::Table(message) => {
             let hosts = hosts(ctx);
-            let rows = hosts.data().map_or(&[][..], |list| list.as_slice());
-            if let Some(table::Event::Opened(host_id)) = state.table.update(message, rows, id) {
+            let opened = state.table.update(message, &rows(&hosts), &columns());
+            if let Some(table::Event::Opened(host_id)) = opened {
                 ctx.open(Route::Host { host_id });
             }
         }
@@ -118,7 +120,35 @@ fn address(connection: &HostConnection) -> String {
     }
 }
 
-/// The Hosts table's columns (`hostColumns`).
+/// A connection's `kind`, as the React table sorted by it.
+fn kind_of(connection: &HostConnection) -> &'static str {
+    match connection {
+        HostConnection::Local { .. } => "local",
+        HostConnection::Tcp { .. } => "tcp",
+        HostConnection::Tls { .. } => "tls",
+        HostConnection::Ssh { .. } => "ssh",
+    }
+}
+
+/// A status's `state`, as the React table sorted by it.
+fn state_of(status: &HostStatus) -> &'static str {
+    match status {
+        HostStatus::Disabled => "disabled",
+        HostStatus::Connecting => "connecting",
+        HostStatus::Connected { .. } => "connected",
+        HostStatus::Unreachable { .. } => "unreachable",
+        HostStatus::Unauthorized { .. } => "unauthorized",
+        HostStatus::HostKeyUntrusted { .. } => "hostKeyUntrusted",
+        HostStatus::HostKeyMismatch { .. } => "hostKeyMismatch",
+        HostStatus::CredentialsLost => "credentialsLost",
+        HostStatus::KeychainUnavailable { .. } => "keychainUnavailable",
+        HostStatus::Invalid { .. } => "invalid",
+    }
+}
+
+/// The Hosts table's columns (`hostColumns`). Each sorts by the value the
+/// React column had (`accessorFn`), as TanStack sorts text: not by what
+/// the cell says in the language of the moment.
 fn columns<'a>() -> Vec<Column<'a, HostView, Message>> {
     vec![
         Column::new("name", t!("hosts.column.name"), |view: &HostView| {
@@ -126,21 +156,23 @@ fn columns<'a>() -> Vec<Column<'a, HostView, Message>> {
                 .font(font::medium())
                 .into()
         })
-        .width(Width::Fill(2))
-        .sort_by(|a, b| a.host.name.cmp(&b.host.name)),
+        .width(Width::Fill(3))
+        .hideable(false)
+        .sort_by(|a, b| sort::natural(&a.host.name, &b.host.name))
+        .typed(|view| view.host.name.clone()),
         Column::new("kind", t!("hosts.column.type"), |view: &HostView| {
             badge(kind(&view.host.connection), BadgeVariant::Outline)
         })
-        .width(Width::Fixed(120.0))
-        .sort_by(|a, b| kind(&a.host.connection).cmp(&kind(&b.host.connection))),
+        .width(Width::Fill(2))
+        .sort_by(|a, b| sort::natural(kind_of(&a.host.connection), kind_of(&b.host.connection))),
         Column::new("address", t!("hosts.column.address"), |view: &HostView| {
             table::text(address(&view.host.connection))
                 .font(font::MONO)
                 .size(size::XS)
                 .into()
         })
-        .width(Width::Fill(3))
-        .sort_by(|a, b| address(&a.host.connection).cmp(&address(&b.host.connection))),
+        .width(Width::Fill(5))
+        .sort_by(|a, b| sort::natural(&address(&a.host.connection), &address(&b.host.connection))),
         Column::new("status", t!("hosts.column.status"), |view: &HostView| {
             let summary = status::host::describe(&view.status);
             line(vec![
@@ -150,11 +182,8 @@ fn columns<'a>() -> Vec<Column<'a, HostView, Message>> {
             .spacing(space::S1_5)
             .into()
         })
-        .width(Width::Fixed(150.0))
-        .sort_by(|a, b| {
-            let label = |view: &HostView| status::host::describe(&view.status).label;
-            label(a).cmp(&label(b))
-        }),
+        .width(Width::Fill(2))
+        .sort_by(|a, b| sort::natural(state_of(&a.status), state_of(&b.status))),
     ]
 }
 
@@ -165,19 +194,16 @@ pub fn view<'a>(state: &'a State, ctx: &Context<'a>) -> Element<'a, Message> {
         Some(t!("hosts.description")),
         vec![],
     )];
-    if let Some(error) = hosts.error() {
-        parts.push(error_message(error, true, Message::Failure));
-    }
-    // A list that could not be read and was never read shows its failure
-    // alone, as the React page did.
-    if hosts.data().is_some() || hosts.error().is_none() {
-        let rows = hosts.data().map_or(&[][..], |list| list.as_slice());
-        parts.push(
-            Table::new(&state.table, columns(), rows, id, Message::Table)
+    // A list that could not be read shows its failure and nothing else,
+    // whatever was read before: `hosts.error ? <ErrorMessage> : <DataTable>`.
+    match hosts.error() {
+        Some(error) => parts.push(error_message(error, true, Message::Failure)),
+        None => parts.push(
+            Table::new(&state.table, columns(), rows(&hosts), Message::Table)
                 .loading(hosts.is_pending())
                 .empty_label(t!("hosts.empty"))
                 .view(),
-        );
+        ),
     }
     stack(parts).spacing(space::S4).into()
 }
