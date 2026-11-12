@@ -10,7 +10,7 @@ pub mod world;
 
 use iced::{Subscription, Task};
 
-use crate::ui::theme::Element;
+use crate::ui::{theme::Element, widgets::overlay::Modal};
 
 pub use self::{
     context::{Context, Effects},
@@ -30,6 +30,12 @@ pub trait Pages: Sized {
     fn update(&mut self, message: Self::Message, ctx: &Context<'_>) -> Task<Self::Message>;
 
     fn view<'a>(&'a self, ctx: &Context<'a>) -> Element<'a, Self::Message>;
+
+    /// The dialog the page has open, if any: a confirmation, a form. The
+    /// shell lays it over the whole window (the page itself is in a scroll
+    /// area beside the sidebar, where a dialog can't be), so a page never
+    /// calls `overlay::over` itself.
+    fn dialog<'a>(&'a self, ctx: &Context<'a>) -> Option<Modal<'a, Self::Message>>;
 
     /// Starts one of the page's actions, as if its button was pressed: what
     /// a palette command or a page shortcut asks for (`useActionRequest`).

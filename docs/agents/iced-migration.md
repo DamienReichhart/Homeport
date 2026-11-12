@@ -48,7 +48,7 @@ app/src/
 Rules, enforced by `app/tests/layout.rs`:
 
 1. **Dependencies point inward:** `ui/features` → `ui/domain` → `ui/widgets` + `ui/shell` + `data` + `api` → `app` → the crates. A feature never imports another feature: what two of them share (what `@/features/containers` exported to the Board, what `core/host` drew) goes to `ui/domain`, and to `ui/shell` or `data` when it is the shell's or the data layer's own. `api` never imports `ui`, and the shell never imports `ui/domain`.
-2. **Elm architecture.** A feature has a `State`, a `Message` enum, `update(&mut State, Message, &Context) -> Task<Message>` and `view(&State, &Context) -> Element<Message>`, with `open`, `request`, `refresh` and `subscription` beside them (_The shell and a feature's page_). `view` is pure and cheap; all I/O is a `Task` or a `Subscription`.
+2. **Elm architecture.** A feature has a `State`, a `Message` enum, `update(&mut State, Message, &Context) -> Task<Message>` and `view(&State, &Context) -> Element<Message>`, with `open`, `request`, `dialog`, `refresh` and `subscription` beside them (_The shell and a feature's page_). `view` is pure and cheap; all I/O is a `Task` or a `Subscription`.
 3. **No blocking in `update` or `view`.** Anything that touches the network, the disk, the database, the keychain or a lock held across `await` goes through `Task::perform` on the runtime iced owns.
 4. **Thin use cases, logic in crates.** An `api` function parses its arguments and calls one crate, as the former `src-tauri/src/commands/*` did (ADR 0005 still holds). Logic that needs several stores goes to the crate that owns them.
 5. **One error type.** Failures are `AppError { code, message, hint, detail }` from `homeport-core`, shown with the shared error widgets (never a bare string), logged with the command's name.
@@ -74,7 +74,7 @@ Rules, enforced by `app/tests/layout.rs`:
 - **Gates** (`shell::gates`): `decide(route, world)` says whether the page shows (`Verdict::Open(Subject)`) or what stands before it. A page is opened only once its gate lets it through, and opened anew when its `Subject` changes (another Host, another namespace), so a page never has to handle "not connected".
 - **Selection**: `ctx.world.selection`, remembered in the Settings (`last_selection`, with `last_host_id` for older versions). When it moves, the shell calls `Data::release` on the old scope and sends a page of the other kind to the Overview.
 
-A feature is six functions and two types in `ui/features/<group>/<name>/mod.rs`:
+A feature is seven functions and two types in `ui/features/<group>/<name>/mod.rs`:
 
 ```rust
 pub struct State { … }
@@ -85,12 +85,15 @@ pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Me
 pub fn view<'a>(state: &'a State, ctx: &Context<'a>) -> Element<'a, Message>
 /// Starts an action as if its button was pressed: a palette command's (`"run"`), `n`, or `/` (`registry::SEARCH`).
 pub fn request(state: &mut State, action: &str, ctx: &Context<'_>) -> Task<Message>
+/// The dialog the page has open: the shell lays it over the whole window.
+pub fn dialog<'a>(state: &'a State, ctx: &Context<'a>) -> Option<Modal<'a, Message>>
 /// What the page reads, or the Hosts, may have changed: watch what is there now, take what the view needs.
 pub fn refresh(state: &mut State, ctx: &Context<'_>) -> Task<Message>
 /// The streams the page follows while it shows.
 pub fn subscription(state: &State, ctx: &Context<'_>) -> Subscription<Message>
 ```
 
+- **`dialog`**: a page is drawn in a scroll area beside the sidebar, where a dialog can't be laid (`overlay::over` fills what it is given). The page keeps the dialog's state and returns it here; the shell lays it over the sidebar and the page, under the palette. A page never calls `overlay::over` itself.
 - **`refresh`** is called after every message of the window while the page stays (a read ended, a status came, the page's own message): the page has no message of its own for "the data changed". Most pages need nothing there (`Task::none()`): `view` reads the data layer. A page over many Hosts (the Board) watches the Hosts that connected since and rebuilds what its view would otherwise work out on every draw. It must do nothing when what it reads is the same value as last time (compare the `Arc`s).
 - **`subscription`** is where a view's stream goes (`streams::subscription`): it runs while the function returns it and is stopped when it no longer does, or when the page closes. The page's number is part of its identity, so a page opened anew starts its own.
 
@@ -119,9 +122,9 @@ What `update` asks through `ctx` is done by the shell right after `update` retur
 
 ### Replacing a stub
 
-Every feature's `mod.rs` is one line today: `pub use crate::ui::shell::stub::{open, refresh, request, subscription, update, view, Message, State};`. To port a feature:
+Every feature's `mod.rs` is one line today: `pub use crate::ui::shell::stub::{dialog, open, refresh, request, subscription, update, view, Message, State};`. To port a feature:
 
-1. Delete that line and define the two types and six functions above in the same folder (split into `state.rs`, `update.rs`, `view/` as it grows). Nothing else changes: `ui/features/mod.rs` already sends the feature's routes to this module, and the registry already has its sidebar entry, commands and shortcuts.
+1. Delete that line and define the two types and seven functions above in the same folder (split into `state.rs`, `update.rs`, `view/` as it grows). Nothing else changes: `ui/features/mod.rs` already sends the feature's routes to this module, and the registry already has its sidebar entry, commands and shortcuts.
 2. In `open`, match on `ctx.location.route` if the feature has several pages, `ctx.watch` what the page shows, and start from `ctx.location.query` if it is a list.
 3. In `request`, start the actions the registry names for the feature (its commands' `Run::Open(_, Some(action))` and its shortcuts' `Run::Request(action)`).
 4. If the manifest changed since, fix the feature's line in `shell/registry/defs/`; the test says what differs.

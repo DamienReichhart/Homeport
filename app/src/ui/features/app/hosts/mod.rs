@@ -24,7 +24,9 @@ use crate::{
         widgets::{
             basic::{badge, BadgeVariant},
             feedback::{error_message, error_message::Event, status_dot, Surfaced},
-            line, stack,
+            line,
+            overlay::Modal,
+            stack,
             table::{self, sort, Column, Rows, Table, Width},
         },
     },
@@ -90,6 +92,10 @@ pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Me
 
 pub fn request(_state: &mut State, _action: &str, _ctx: &Context<'_>) -> Task<Message> {
     Task::none()
+}
+
+pub fn dialog<'a>(_state: &'a State, _ctx: &Context<'a>) -> Option<Modal<'a, Message>> {
+    None
 }
 
 pub fn refresh(_state: &mut State, _ctx: &Context<'_>) -> Task<Message> {

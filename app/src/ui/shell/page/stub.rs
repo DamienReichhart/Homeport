@@ -11,7 +11,7 @@ use crate::{
     ui::{
         shell::{layout::page_header, pickers, registry::FeatureId, router::Route},
         theme::{metrics::space, Element, Icon},
-        widgets::{feedback::empty_state, stack},
+        widgets::{feedback::empty_state, overlay::Modal, stack},
     },
 };
 
@@ -37,6 +37,10 @@ pub fn update(_state: &mut State, message: Message, ctx: &Context<'_>) -> Task<M
 
 pub fn request(_state: &mut State, _action: &str, _ctx: &Context<'_>) -> Task<Message> {
     Task::none()
+}
+
+pub fn dialog<'a>(_state: &'a State, _ctx: &Context<'a>) -> Option<Modal<'a, Message>> {
+    None
 }
 
 pub fn refresh(_state: &mut State, _ctx: &Context<'_>) -> Task<Message> {

@@ -103,6 +103,13 @@ impl Pages for Blank {
         stub::request(&mut self.state, action, ctx)
     }
 
+    fn dialog<'a>(
+        &'a self,
+        ctx: &Context<'a>,
+    ) -> Option<crate::ui::widgets::overlay::Modal<'a, stub::Message>> {
+        stub::dialog(&self.state, ctx)
+    }
+
     fn refresh(&mut self, ctx: &Context<'_>) -> Task<stub::Message> {
         self.refreshed += 1;
         stub::refresh(&mut self.state, ctx)

@@ -288,6 +288,7 @@ impl<P: Pages> Shell<P> {
         .map(Message::Sidebar);
         let verdict = gates::decide(route, &self.world);
         let busy = self.reconnect.is_pending() || self.adding.is_pending();
+        let mut page_dialog = None;
         let content = match (gates::view::gate(&verdict, &self.world, busy), &self.page) {
             (Some(gate), _) => gate.map(Message::Gate),
             (None, Some(open)) => {
@@ -302,6 +303,10 @@ impl<P: Pages> Shell<P> {
                     effects: &self.effects,
                 };
                 let id = open.id;
+                page_dialog = open
+                    .page
+                    .dialog(&ctx)
+                    .map(|modal| modal.map(move |m| Message::Page(id, m)));
                 open.page.view(&ctx).map(move |m| Message::Page(id, m))
             }
             // Between a gate that opens and the page it opens.
@@ -349,7 +354,11 @@ impl<P: Pages> Shell<P> {
                 Some(Message::Key { press, captured })
             }
         };
-        key_area(overlay::over(body, dialog), pressed(false))
+        // The page's dialog over the sidebar and the page, and the palette
+        // or the shortcuts' sheet over that: the same layers whether there
+        // is one or not, so what is under keeps its state and its focus.
+        let layers = overlay::over(overlay::over(body, page_dialog), dialog);
+        key_area(layers, pressed(false))
             .always()
             .on_captured(pressed(true))
             .into()

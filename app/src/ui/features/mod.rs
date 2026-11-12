@@ -1,9 +1,9 @@
 //! The features: one folder per former `src/features/<name>`, grouped by
 //! what they are about (`app`, `docker`, `podman`, `containerd`, `incus`,
 //! `kubernetes`, `nomad`). Each is a `State`, a `Message` and four
-//! functions (`open`, `update`, `view`, `request`, with `refresh` and
-//! `subscription` for what changes around it), and never uses another
-//! feature.
+//! functions (`open`, `update`, `view`, `request`, with `dialog` for
+//! what it lays over the window, and `refresh` and `subscription` for
+//! what changes around it), and never uses another feature.
 //!
 //! [`Page`] is all of them behind the one type the shell hosts: the table
 //! below says which module answers for which feature of the registry, one
@@ -27,6 +27,7 @@ use super::{
         registry::FeatureId,
     },
     theme::Element,
+    widgets::overlay::Modal,
 };
 
 /// Declares [`Page`] and its [`Message`] with a variant per feature, and
@@ -79,6 +80,14 @@ macro_rules! pages {
             fn view<'a>(&'a self, ctx: &Context<'a>) -> Element<'a, Message> {
                 match self {
                     $(Self::$id(state) => $($module)::+::view(state, ctx).map(Message::$id),)+
+                }
+            }
+
+            fn dialog<'a>(&'a self, ctx: &Context<'a>) -> Option<Modal<'a, Message>> {
+                match self {
+                    $(Self::$id(state) => {
+                        $($module)::+::dialog(state, ctx).map(|modal| modal.map(Message::$id))
+                    })+
                 }
             }
 

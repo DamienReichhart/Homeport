@@ -3,5 +3,5 @@
 //! `view` and `request` (`docs/agents/iced-migration.md`, Replacing a stub).
 
 pub use crate::ui::shell::stub::{
-    open, refresh, request, subscription, update, view, Message, State,
+    dialog, open, refresh, request, subscription, update, view, Message, State,
 };
