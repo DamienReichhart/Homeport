@@ -42,7 +42,7 @@ use iced::{
 };
 
 pub use self::{
-    document::{Document, Kind, Name, Node},
+    document::{Document, Invalid, Kind, Name, Node, Why},
     state::{Copy, Event, Message, State},
 };
 use crate::{
@@ -56,7 +56,7 @@ use crate::{
         widgets::{
             basic::{
                 button::{self, Variant},
-                flow, truncated,
+                flow, technical, truncated,
             },
             feedback::copy_button,
             focus::key_area,
@@ -69,8 +69,11 @@ use crate::{
     },
 };
 
-/// How far a node is set in for each object or array that holds it.
+/// How far a node is set in for each object or array that holds it,
+/// and the deepest that still sets it further in: a document nested a
+/// thousand deep keeps its names in view.
 const INDENT: f32 = 16.0;
+const DEEPEST_INDENT: u32 = 24;
 /// How many characters of a value a row shows: a string of megabytes
 /// is cut here, and whole on the clipboard.
 pub const SHOWN: usize = 400;
@@ -82,20 +85,54 @@ pub(super) fn rows(visible: &[u32], revision: u64) -> Rows<'_, u32, u32> {
 /// The start of `text` a row shows: all of it, or its first [`SHOWN`]
 /// characters and an ellipsis.
 pub fn shown(text: &str) -> String {
-    match text.char_indices().nth(SHOWN) {
-        Some((cut, _)) => format!("{}…", &text[..cut]),
-        None => text.to_owned(),
+    let cut = text.char_indices().nth(SHOWN).map(|(cut, _)| cut);
+    let mut shown = String::with_capacity(cut.unwrap_or(text.len()) + 3);
+    for c in text[..cut.unwrap_or(text.len())].chars() {
+        if is_unseen(c) {
+            // As JSON would escape it: what cannot be seen, or turns
+            // the text around it the other way, is shown for what it
+            // is, so one value cannot be made to look like another.
+            for unit in c.encode_utf16(&mut [0; 2]) {
+                shown.push_str(&format!("\\u{unit:04x}"));
+            }
+        } else {
+            shown.push(c);
+        }
     }
+    if cut.is_some() {
+        shown.push('…');
+    }
+    shown
+}
+
+/// Whether `c` draws nothing and may change how what is around it is
+/// read: a control character, a mark of direction, a joiner or a space
+/// of no width, a byte order mark.
+fn is_unseen(c: char) -> bool {
+    c.is_control()
+        || matches!(
+            c,
+            '\u{061c}'
+                | '\u{200b}'..='\u{200f}'
+                | '\u{202a}'..='\u{202e}'
+                | '\u{2060}'..='\u{2069}'
+                | '\u{feff}'
+        )
 }
 
 fn mono<'a>(content: String) -> crate::ui::widgets::basic::Truncated<'a> {
-    truncated(content).size(size::XS).font(font::MONO)
+    // A name or a value is the document's: left to right, whatever
+    // its letters.
+    truncated(technical(&content))
+        .size(size::XS)
+        .font(font::MONO)
 }
 
 /// What a node is called in its row.
 fn name_of(node: &Node) -> String {
     match &node.name {
-        Name::Root => String::new(),
+        // Where the document is, as the paths write it.
+        Name::Root => ".".to_owned(),
         Name::Member(name) => shown(name),
         Name::Item(index) => index.to_string(),
     }
@@ -157,7 +194,11 @@ pub(super) fn columns<'a, M: Clone + 'a>(
             // The tree is set in from where text starts, so it mirrors
             // with its column; a name itself reads as it is written.
             line(vec![
-                Space::new().width(INDENT * f32::from(node.depth)).into(),
+                // Depths that count are small.
+                #[allow(clippy::cast_precision_loss)]
+                Space::new()
+                    .width(INDENT * node.depth.min(DEEPEST_INDENT) as f32)
+                    .into(),
                 chevron,
                 Space::new().width(space::S1).into(),
                 container(mono(name_of(node)).with_tip())

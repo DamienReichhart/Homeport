@@ -55,7 +55,13 @@ impl<'a, Message: 'a> Item<'a, Message> {
 
     /// The same in the monospaced face: an id, a path, a digest.
     pub fn mono(label: impl Into<String>, value: impl Into<String>) -> Self {
-        Self::new(label, said(value.into(), font::MONO))
+        Self::new(
+            label,
+            said(
+                crate::ui::widgets::basic::technical(&value.into()),
+                font::MONO,
+            ),
+        )
     }
 
     /// `label` and a text if there is one; a dash if not.

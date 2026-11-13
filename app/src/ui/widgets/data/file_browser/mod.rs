@@ -49,7 +49,7 @@ use crate::{
         widgets::{
             basic::{
                 button::{self, Variant},
-                flow, truncated,
+                flow, technical, truncated,
             },
             feedback::{error_message, error_message::Event as Failure},
             focus::pressable,
@@ -130,7 +130,7 @@ fn columns<'a, M: Clone + 'a>() -> Vec<Column<'a, Entry, M>> {
                     .into(),
                 // A name is a path's: it reads left to right, cut with
                 // an ellipsis and whole under the pointer.
-                container(truncated(entry.name.clone()).with_tip())
+                container(truncated(technical(&entry.name)).with_tip())
                     .width(Length::Fill)
                     .align_x(start())
                     .into(),
@@ -279,7 +279,7 @@ impl<'a, M: Clone + 'a> FileBrowser<'a, M> {
                         .style(theme::text::muted)
                         .into()
                 });
-                let part = pressable(text(label).size(size::SM).font(font::MONO))
+                let part = pressable(text(technical(&label)).size(size::SM).font(font::MONO))
                     .padding([0.0, space::S1])
                     .style(theme::button::part::bare)
                     .on_press((self.on_event)(Message::Navigate(to)));

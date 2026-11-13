@@ -1,9 +1,11 @@
 //! What a page keeps of a JSON view: which objects and arrays are open,
 //! the rows that show, what is searched and which button says "Copied".
 
+use std::{collections::HashMap, sync::Arc};
+
 use iced::{advanced::widget::Id, Task};
 
-use super::document::Document;
+use super::document::{unquoted, Document, Kind, Name};
 use crate::ui::widgets::{feedback::Copied, form::Debounce, table};
 
 /// A document of more nodes than this starts with only its root open
@@ -36,6 +38,8 @@ pub enum Message {
     Next,
     Previous,
     Copy(Copy),
+    /// What was asked for is written out: the text for the clipboard.
+    Written(String),
     /// A button has said "Copied" long enough.
     CopyShown(u64),
 }
@@ -64,7 +68,8 @@ pub(super) struct Search {
 }
 
 pub struct State {
-    pub(super) document: Document,
+    /// Shared with the task that writes it out for the clipboard.
+    pub(super) document: Arc<Document>,
     /// Whether each node shows what it holds.
     pub(super) open: Vec<bool>,
     /// The nodes that show, in order: those no closed node holds.
@@ -88,7 +93,7 @@ impl State {
             .map(|node| whole || node.depth == 0)
             .collect();
         let mut state = Self {
-            document,
+            document: Arc::new(document),
             open,
             visible: vec![],
             revision: 0,
@@ -204,7 +209,8 @@ impl State {
     /// Starts looking for `query`.
     fn search_for(&mut self, query: &str) -> Task<Message> {
         let search = &mut self.search;
-        search.query = query.trim().to_lowercase();
+        // As it was typed, spaces included: they are part of a value.
+        search.query = query.to_lowercase();
         search.matches.clear();
         search.read = 0;
         search.current = None;
@@ -224,10 +230,19 @@ impl State {
         let end = (search.read + SLICE).min(nodes.len());
         for (at, node) in nodes[search.read..end].iter().enumerate() {
             let named = match &node.name {
-                super::document::Name::Member(name) => name.to_lowercase().contains(&search.query),
+                Name::Member(name) => name.to_lowercase().contains(&search.query),
                 _ => false,
             };
-            if named || node.text.to_lowercase().contains(&search.query) {
+            // What a string says, not how JSON writes it: a backslash
+            // or a quote in it is one character, and its own quotes
+            // are no part of it.
+            let valued = match node.kind {
+                Kind::String => unquoted(&node.text)
+                    .is_some_and(|said| said.to_lowercase().contains(&search.query)),
+                Kind::Object(_) | Kind::Array(_) => false,
+                _ => node.text.to_lowercase().contains(&search.query),
+            };
+            if named || valued {
                 #[allow(clippy::cast_possible_truncation)]
                 search.matches.push((search.read + at) as u32);
             }
@@ -259,13 +274,57 @@ impl State {
         self.go_to(next);
     }
 
-    /// What `what` puts on the clipboard.
-    pub fn text_of(&self, what: Copy) -> String {
-        match what {
-            Copy::Document => self.document.pretty(0),
-            Copy::Path(node) => self.document.path(node as usize),
-            Copy::Value(node) => self.document.pretty(node as usize),
-        }
+    /// Writes out what `what` puts on the clipboard, off the window's
+    /// thread: a whole document may be megabytes.
+    fn write(&self, what: Copy) -> Task<Message> {
+        let document = self.document.clone();
+        Task::perform(
+            async move {
+                match what {
+                    Copy::Document => document.pretty(0),
+                    Copy::Path(node) => document.path(node as usize).unwrap_or_default(),
+                    Copy::Value(node) => document.pretty(node as usize),
+                }
+            },
+            Message::Written,
+        )
+    }
+
+    /// Shows another document in the same view: an inspect read again.
+    /// What the reader did stays where it still applies: an object or
+    /// an array that was closed or opened is, if the new document has
+    /// one at the same path; the table keeps its scroll; and the search
+    /// runs again for what is typed (return the task, mapped).
+    pub fn set_document(&mut self, document: Document) -> Task<Message> {
+        let whole = document.len() <= OPEN_WHOLE;
+        // How each object and array of the old document stood, by path.
+        let stood: HashMap<String, bool> = self
+            .document
+            .nodes()
+            .iter()
+            .enumerate()
+            .filter(|(_, node)| node.kind.holds().is_some())
+            .filter_map(|(at, _)| Some((self.document.path(at)?, self.open[at])))
+            .collect();
+        self.open = document
+            .nodes()
+            .iter()
+            .enumerate()
+            .map(|(at, node)| {
+                let default = whole || node.depth == 0;
+                if node.kind.holds().is_none() {
+                    return default;
+                }
+                document
+                    .path(at)
+                    .and_then(|path| stood.get(&path).copied())
+                    .unwrap_or(default)
+            })
+            .collect();
+        self.document = Arc::new(document);
+        self.lay_out();
+        let query = self.search.field.text().to_owned();
+        self.search_for(&query)
     }
 
     pub fn update(&mut self, message: Message) -> (Task<Message>, Option<Event>) {
@@ -300,10 +359,10 @@ impl State {
                 Task::none()
             }
             Message::Copy(what) => {
-                let text = self.text_of(what);
                 let shown = self.copied.start(what).map(Message::CopyShown);
-                return (shown, Some(Event::Copy(text)));
+                Task::batch([self.write(what), shown])
             }
+            Message::Written(text) => return (Task::none(), Some(Event::Copy(text))),
             Message::CopyShown(ticket) => {
                 self.copied.finish(ticket);
                 Task::none()

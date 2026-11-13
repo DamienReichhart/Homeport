@@ -4,7 +4,9 @@
 use crate::{
     test_support::tasks::messages,
     ui::widgets::{
-        data::json::{shown, Copy, Document, Event, Kind, Message, Name, State, SHOWN},
+        data::json::{
+            shown, Copy, Document, Event, Invalid, Kind, Message, Name, State, Why, SHOWN,
+        },
         gallery::data::{large, INSPECT},
     },
 };
@@ -16,7 +18,7 @@ fn document(text: &str) -> Document {
 /// The node at `path`, found by its path: the two must agree.
 fn at(document: &Document, path: &str) -> usize {
     (0..document.len())
-        .find(|index| document.path(*index) == path)
+        .find(|index| document.path(*index).as_deref() == Some(path))
         .unwrap_or_else(|| panic!("nothing is at {path}"))
 }
 
@@ -73,16 +75,127 @@ fn scalars_are_documents_and_what_is_no_json_is_refused() {
         let document = document(text);
         assert_eq!((document.len(), document.node(0).unwrap().kind), (1, kind));
     }
-    assert_eq!(document("-1.5e3").node(0).unwrap().text, "-1500.0");
-    assert_eq!(
-        document("18446744073709551615").node(0).unwrap().text,
-        "18446744073709551615"
-    );
-    for wrong in ["", "{", "[1,]", "{\"a\":1} trailing", "{'a':1}"] {
+    for wrong in [
+        "",
+        "{",
+        "[1,]",
+        "{\"a\":1} trailing",
+        "{'a':1}",
+        "01",
+        "1.",
+        ".5",
+        "1e",
+        "-",
+        "+1",
+        "tru",
+        "nul",
+        "[1 2]",
+        "{\"a\" 1}",
+        "{\"a\":}",
+        "{,}",
+        "\"a",
+        "\"\\x\"",
+        "\"line\nbreak\"",
+        "[1,,2]",
+        "NaN",
+    ] {
         assert!(Document::parse(wrong).is_err(), "{wrong:?} was read");
     }
-    // Deeper than any document nests is an error, not a crash.
-    assert!(Document::parse(&"[".repeat(100_000)).is_err());
+    // Where it stopped, and whether the text just ended there.
+    assert_eq!(
+        Document::parse("[1, x]"),
+        Err(Invalid {
+            offset: 4,
+            why: Why::Unexpected
+        })
+    );
+    assert_eq!(
+        Document::parse("{\"a\": [1").unwrap_err().why,
+        Why::Unfinished
+    );
+}
+
+/// A number is what the document wrote, digit for digit: none is read
+/// as a float and written back as another.
+#[test]
+fn a_number_is_shown_and_copied_as_it_was_written() {
+    for written in [
+        "18446744073709551616",
+        "123456789012345678901234567890",
+        "1e400",
+        "-1e-400",
+        "1e2",
+        "1E+2",
+        "-0",
+        "-0.0",
+        "0.1",
+        "1.50",
+        "-1.5e3",
+        "0",
+        "9007199254740993",
+    ] {
+        let document = document(written);
+        assert_eq!(document.node(0).unwrap().text, written);
+        assert_eq!(document.pretty(0), written);
+        let inside = Document::parse(&format!("{{\"n\": [{written}]}}")).unwrap();
+        assert_eq!(inside.node(2).unwrap().text, written);
+        assert_eq!(inside.pretty(1), format!("[\n  {written}\n]"));
+    }
+}
+
+/// Nothing recurses: a document nests as deep as its text goes.
+#[test]
+fn a_document_nests_as_deep_as_it_is_written() {
+    for deep in [127, 128, 1000, 200_000] {
+        let text = format!("{}1{}", "[".repeat(deep), "]".repeat(deep));
+        let document =
+            Document::parse(&text).unwrap_or_else(|error| panic!("{deep} deep: {error}"));
+        assert_eq!(document.len(), deep + 1);
+        let innermost = document.node(deep).unwrap();
+        assert_eq!(
+            (innermost.depth as usize, innermost.text.as_str()),
+            (deep, "1")
+        );
+        assert_eq!(document.node(0).unwrap().end as usize, deep + 1);
+    }
+    // Written back and read again, it is itself; its path is as long.
+    let text = format!("{}null{}", "{\"a\":".repeat(300), "}".repeat(300));
+    let document = document(&text);
+    assert_eq!(Document::parse(&document.pretty(0)).unwrap(), document);
+    assert_eq!(document.path(300).unwrap(), ".a".repeat(300));
+    // A text that opens and never closes is unfinished, not a crash.
+    assert_eq!(
+        Document::parse(&"[".repeat(100_000)).unwrap_err().why,
+        Why::Unfinished
+    );
+}
+
+/// A name written twice is there twice, in order, as the document has it.
+#[test]
+fn a_name_written_twice_is_shown_twice() {
+    let document = document(r#"{"a": 1, "a": 2}"#);
+    assert_eq!(document.len(), 3);
+    let text = |at: usize| document.node(at).unwrap().text.clone();
+    assert_eq!((text(1), text(2)), ("1".to_owned(), "2".to_owned()));
+    assert_eq!(document.path(1), document.path(2));
+    assert_eq!(document.pretty(0), "{\n  \"a\": 1,\n  \"a\": 2\n}");
+}
+
+/// A character that draws nothing, or turns the text after it around,
+/// is shown as its escape: a value cannot be made to read as another.
+#[test]
+fn what_cannot_be_seen_is_shown_as_its_escape() {
+    // Drawn as it stands, "user" + U+202E + "nimda" would read "useradmin".
+    assert_eq!(shown("\"user\u{202e}nimda\""), "\"user\\u202enimda\"");
+    assert_eq!(
+        shown("a\u{200b}b\u{feff}c\u{2066}d\u{7f}"),
+        "a\\u200bb\\ufeffc\\u2066d\\u007f"
+    );
+    // What is seen stays: other scripts, an emoji, a space.
+    assert_eq!(shown("مرحبا 🚀 é"), "مرحبا 🚀 é");
+    // And the document keeps the character itself, for the clipboard.
+    let document = document("[\"a\u{202e}b\"]");
+    assert_eq!(document.pretty(1), "\"a\u{202e}b\"");
 }
 
 #[test]
@@ -91,7 +204,7 @@ fn a_path_says_where_a_node_is_as_jq_writes_it() {
         r#"{"ports": [{"name": "http"}], "labels": {"a.b": 1, "with \"quote\"": 2, "": 3, "9lives": 4, "ключ": 5}, "ok_1": null}"#,
     );
     let paths: Vec<_> = (0..document.len())
-        .map(|index| document.path(index))
+        .filter_map(|index| document.path(index))
         .collect();
     assert_eq!(
         paths,
@@ -112,13 +225,14 @@ fn a_path_says_where_a_node_is_as_jq_writes_it() {
     // An array at the root, and a member of the root that needs quotes.
     assert_eq!(document_paths("[[1]]"), [".", ".[0]", ".[0][0]"]);
     assert_eq!(document_paths(r#"{"a b": 1}"#), [".", r#".["a b"]"#]);
-    assert_eq!(document.path(999), ".");
+    // A node that is not there is nowhere, not at the root.
+    assert_eq!(document.path(999), None);
 }
 
 fn document_paths(text: &str) -> Vec<String> {
     let document = document(text);
     (0..document.len())
-        .map(|index| document.path(index))
+        .filter_map(|index| document.path(index))
         .collect()
 }
 
@@ -259,24 +373,93 @@ async fn a_query_typed_over_another_drops_what_the_first_was_reading() {
 
 #[tokio::test(start_paused = true)]
 async fn the_menu_copies_where_a_node_is_or_what_it_holds() {
-    let mut state = State::new(document(r#"{"ports": [{"name": "http"}]}"#));
+    let mut state = State::new(document(
+        r#"{"ports": [{"name": "http"}], "big": 18446744073709551616}"#,
+    ));
     let node = u32::try_from(at(state.document(), ".ports[0]")).unwrap();
-    let (_, event) = state.update(Message::Copy(Copy::Path(node)));
-    assert_eq!(event, Some(Event::Copy(".ports[0]".to_owned())));
-    let (_, event) = state.update(Message::Copy(Copy::Value(node)));
+    let copied = settle(&mut state, Message::Copy(Copy::Path(node))).await;
+    assert_eq!(copied, [Event::Copy(".ports[0]".to_owned())]);
+    let copied = settle(&mut state, Message::Copy(Copy::Value(node))).await;
     assert_eq!(
-        event,
-        Some(Event::Copy("{\n  \"name\": \"http\"\n}".to_owned()))
+        copied,
+        [Event::Copy("{\n  \"name\": \"http\"\n}".to_owned())]
     );
-    // The button copies the whole document and says so for a while.
-    let events = {
-        let (task, event) = state.update(Message::Copy(Copy::Document));
-        assert!(state.is_copied(Copy::Document));
-        for message in messages(task).await {
-            let _ = state.update(message);
-        }
-        event
-    };
-    assert_eq!(events, Some(Event::Copy(state.document().pretty(0))));
+    // A number goes to the clipboard as the document wrote it.
+    let big = u32::try_from(at(state.document(), ".big")).unwrap();
+    let copied = settle(&mut state, Message::Copy(Copy::Value(big))).await;
+    assert_eq!(copied, [Event::Copy("18446744073709551616".to_owned())]);
+}
+
+/// The whole document is written out by a task, not in `update`: the
+/// update that is told to copy gives back no text, only work to run.
+#[tokio::test(start_paused = true)]
+async fn the_document_is_written_out_for_the_clipboard_off_the_update() {
+    let mut state = State::new(document(&large(1000)));
+    let (task, event) = state.update(Message::Copy(Copy::Document));
+    assert_eq!(event, None, "the text was made in the update");
+    assert!(state.is_copied(Copy::Document));
+    let mut written = vec![];
+    for message in messages(task).await {
+        written.extend(state.update(message).1);
+    }
+    assert_eq!(written, [Event::Copy(state.document().pretty(0))]);
     assert!(!state.is_copied(Copy::Document));
+}
+
+/// What a string says is what is searched, not how JSON writes it.
+#[tokio::test(start_paused = true)]
+async fn a_search_looks_in_what_a_string_says() {
+    let text = r#"{"path": "C:\\Users\\me", "quote": "a\"b", "plain": "ab", "spaced": "a  b", "n": 12, "tab": "x\ty"}"#;
+    let mut state = State::new(document(text));
+    let found = |state: &State| state.matches().1;
+    settle(&mut state, Message::Typed(r"C:\Users".to_owned())).await;
+    assert_eq!(found(&state), 1, "a backslash is one character");
+    settle(&mut state, Message::Typed("a\"b".to_owned())).await;
+    assert_eq!(found(&state), 1, "a quote in a value is found");
+    // A quote alone is in one value, not around every string.
+    settle(&mut state, Message::Typed("\"".to_owned())).await;
+    assert_eq!(found(&state), 1);
+    // Spaces are part of what is typed: two of them are in one value.
+    settle(&mut state, Message::Typed("  ".to_owned())).await;
+    assert_eq!(found(&state), 1);
+    settle(&mut state, Message::Typed("x\ty".to_owned())).await;
+    assert_eq!(found(&state), 1);
+    // Numbers as they are written; an object's brackets are no value.
+    settle(&mut state, Message::Typed("12".to_owned())).await;
+    assert_eq!(found(&state), 1);
+    settle(&mut state, Message::Typed("{".to_owned())).await;
+    assert_eq!(found(&state), 0);
+}
+
+/// An inspect read again: what the reader closed and opened, and what
+/// is searched, stay where the new document still has them.
+#[tokio::test(start_paused = true)]
+async fn another_document_keeps_what_was_closed_opened_and_searched() {
+    let before = r#"{"State": {"Status": "running", "Pid": 1}, "Config": {"Env": ["A=1"]}, "Gone": {"x": 1}}"#;
+    let after = r#"{"State": {"Status": "exited", "Pid": 0, "ExitCode": 137}, "Config": {"Env": ["A=1", "B=2"]}, "New": {"y": 2}}"#;
+    let mut state = State::new(document(before));
+    let node = |state: &State, path: &str| u32::try_from(at(state.document(), path)).unwrap();
+    state.toggle(node(&state, ".Config"));
+    settle(&mut state, Message::Typed("status".to_owned())).await;
+    assert_eq!(state.matches(), (Some(0), 1));
+    let closed = state.rows();
+
+    let task = state.set_document(document(after));
+    for message in messages(task).await {
+        let _ = state.update(message);
+    }
+    // Config is still closed, State still open with its new member,
+    // and what is new is open as a new document's would be.
+    assert!(!state.is_open(node(&state, ".Config") as usize));
+    assert!(state.is_open(node(&state, ".State") as usize));
+    assert!(state.is_open(node(&state, ".New") as usize));
+    assert_eq!(state.rows(), closed + 1, "one more member of State");
+    // The search ran again, on the new document.
+    assert_eq!(state.matches(), (Some(0), 1));
+    assert_eq!(state.marked(), Some(node(&state, ".State.Status")));
+    assert_eq!(state.document().node(2).unwrap().text, "\"exited\"");
+    // A large document that was never touched stays as it started.
+    let mut large_one = State::new(document(&large(1000)));
+    let _ = large_one.set_document(document(&large(1001)));
+    assert_eq!(large_one.rows(), 1002);
 }

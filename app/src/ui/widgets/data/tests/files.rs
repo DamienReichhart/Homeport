@@ -6,6 +6,7 @@ use iced::keyboard::key::Named;
 use crate::{
     test_support::{snapshot::in_language, stage::Stage},
     ui::widgets::{
+        basic::technical,
         data::file_browser::{crumbs, Event, Kind, Message, State},
         feedback::error_message::Event as Failure,
         gallery::{
@@ -146,25 +147,34 @@ fn the_pointer_goes_into_a_folder_and_back_by_the_path() {
     let _english = in_language("en");
     let mut data = Data::default();
     let mut stage = Stage::new((900.0, 500.0));
-    let messages = stage.frame(sample::files_view(&data), |frame| frame.click("etc"));
+    let messages = stage.frame(sample::files_view(&data), |frame| {
+        frame.click(&technical("etc"))
+    });
     feed(&mut data, messages);
     assert_eq!(data.path, "/etc");
     stage.frame(sample::files_view(&data), |frame| {
-        assert!(frame.find("hosts").is_some() && frame.find("hello.txt").is_none());
+        assert!(
+            frame.find(&technical("hosts")).is_some()
+                && frame.find(&technical("hello.txt")).is_none()
+        );
     });
     // The first part of the path is the root.
-    let messages = stage.frame(sample::files_view(&data), |frame| frame.click("/"));
+    let messages = stage.frame(sample::files_view(&data), |frame| {
+        frame.click(&technical("/"))
+    });
     feed(&mut data, messages);
     assert_eq!(data.path, "/");
     let messages = stage.frame(sample::files_view(&data), |frame| frame.click("Upload"));
     assert_eq!(feed(&mut data, messages), ["Upload to /"]);
     // A folder that can't be read says so in place of its entries,
     // and Retry reads it again.
-    let messages = stage.frame(sample::files_view(&data), |frame| frame.click("root"));
+    let messages = stage.frame(sample::files_view(&data), |frame| {
+        frame.click(&technical("root"))
+    });
     feed(&mut data, messages);
     assert!(data.listing.is_err());
     let messages = stage.frame(sample::files_view(&data), |frame| {
-        assert!(frame.find("hello.txt").is_none());
+        assert!(frame.find(&technical("hello.txt")).is_none());
         frame.click("Retry");
     });
     assert!(matches!(
@@ -184,7 +194,7 @@ fn the_keyboard_reaches_the_path_the_buttons_and_the_rows() {
     let mut stage = Stage::new((900.0, 500.0));
     let messages = stage.frame(sample::files_view(&data), |frame| {
         frame.tab();
-        assert!(frame.is_focused("/"));
+        assert!(frame.is_focused(&technical("/")));
         frame.tab();
         assert!(frame.is_focused("Refresh"));
         frame.tab();

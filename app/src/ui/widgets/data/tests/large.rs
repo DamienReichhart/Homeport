@@ -4,6 +4,7 @@
 use crate::{
     test_support::{snapshot::in_language, stage::Stage, tasks::messages},
     ui::widgets::{
+        basic::technical,
         data::json::{self, state::SLICE, Document, Message, State},
         gallery::data::large,
     },
@@ -93,8 +94,11 @@ async fn the_match_the_search_is_on_is_scrolled_into_view() {
     assert_eq!(state.matches(), (Some(0), 1));
     let mut seen = false;
     stage.frame(view(&state), |frame| {
-        assert!(frame.find("\"container-1\"").is_none(), "still at the top");
-        seen = frame.find("\"container-777\"").is_some();
+        assert!(
+            frame.find(&technical("\"container-1\"")).is_none(),
+            "still at the top"
+        );
+        seen = frame.find(&technical("\"container-777\"")).is_some();
     });
     assert!(seen, "the 778th object's name is not in view");
 }
