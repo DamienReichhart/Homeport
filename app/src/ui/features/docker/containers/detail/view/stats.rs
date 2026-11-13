@@ -22,10 +22,6 @@ use crate::{
     },
 };
 
-/// The window's width from which the charts stand two a row
-/// (`lg:grid-cols-2`).
-pub const TWO_COLUMNS_FROM: f32 = 1024.0;
-
 /// A chart in its card: its name, the figure of the moment, its lines.
 fn graph<'a>(
     title: String,
@@ -59,7 +55,7 @@ fn pair<'a>(first: Element<'a, Message>, second: Element<'a, Message>) -> Elemen
 }
 
 #[allow(clippy::cast_precision_loss)]
-pub fn view(stats: &Stats, running: bool, window_width: Option<f32>) -> Element<'_, Message> {
+pub fn view(stats: &Stats, running: bool, wide: bool) -> Element<'_, Message> {
     if !running {
         return paragraph(t!("containers.stats.startFirst"))
             .style(crate::ui::theme::text::muted)
@@ -121,7 +117,6 @@ pub fn view(stats: &Stats, running: bool, window_width: Option<f32>) -> Element<
         Unit::BytesPerSecond,
         Graph::Disk,
     );
-    let wide = window_width.is_none_or(|width| width >= TWO_COLUMNS_FROM);
     let mut parts: Vec<Element<'_, Message>> = vec![];
     // A stream that couldn't start is said over the charts.
     parts.extend(

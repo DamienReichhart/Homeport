@@ -2,6 +2,7 @@
 //! looks in each state.
 
 mod drawn;
+mod inspect;
 mod logs;
 mod stats;
 #[cfg(unix)]
@@ -142,6 +143,10 @@ impl Rig {
 
     /// Sends a message and what it started, until nothing more comes.
     fn send(&mut self, message: Message) {
+        // What `update` starts (a timer, a task) needs the runtime the
+        // window has.
+        let runtime = self.bench.app.runtime.handle().clone();
+        let _inside = runtime.enter();
         let task = update(&mut self.state, message, &self.bench.ctx());
         for answer in self.bench.run(task) {
             self.send(answer);
@@ -166,6 +171,12 @@ impl Rig {
 
     /// Whether the page says `label` somewhere in view.
     fn shows(&self, label: &str) -> bool {
-        window(SIZE, self.view()).find(label).is_ok()
+        self.shows_in(SIZE, label)
+    }
+
+    /// The same in a window of `size`: a page taller than the window
+    /// shows only its top.
+    fn shows_in(&self, size: (f32, f32), label: &str) -> bool {
+        window(size, self.view()).find(label).is_ok()
     }
 }

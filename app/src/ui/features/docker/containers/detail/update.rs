@@ -3,7 +3,9 @@
 use iced::Task;
 
 use super::{
+    queries,
     state::{gone, Tab},
+    tabs::inspect,
     Message, State,
 };
 use crate::{
@@ -20,11 +22,51 @@ pub fn open(ctx: &Context<'_>) -> (State, Task<Message>) {
     ctx.watch(resources::containers(&state.host_id));
     ctx.watch(resources::freshness(&state.host_id));
     state.seen_state = state.container(ctx).map(|container| container.state);
+    let read = needs(&mut state, ctx);
     // The log viewer takes the height the window leaves the page.
     let size = iced::window::latest()
         .and_then(iced::window::size)
         .map(Message::Resized);
-    (state, size)
+    (state, Task::batch([size, read]))
+}
+
+/// Asks for what the tab that shows reads of the container, and takes
+/// what was read since the last look. A tab's read starts when the tab
+/// first shows, and is another one when what it depends on changes (the
+/// container's state for its inspect document).
+fn needs(state: &mut State, ctx: &Context<'_>) -> Task<Message> {
+    let Some(container) = state.container(ctx) else {
+        return Task::none();
+    };
+    let host = state.host_id.clone();
+    match state.tab {
+        Tab::Inspect => {
+            state.watch(
+                queries::inspect(&host, &container.id, &container.state),
+                ctx,
+            );
+            let read = state.inspected(&container, ctx);
+            state.inspect.take(read.data()).map(Message::Inspect)
+        }
+        _ => Task::none(),
+    }
+}
+
+/// What the Inspect tab asked the page for.
+fn inspect(state: &mut State, message: inspect::Message, ctx: &Context<'_>) -> Task<Message> {
+    let (task, event) = state.inspect.update(message, ctx);
+    if let (Some(event), Some(container)) = (event, state.container(ctx)) {
+        let key = queries::inspect_key(&state.host_id, &container.id, &container.state);
+        match event {
+            inspect::Event::Retry => ctx.invalidate(key),
+            inspect::Event::Details => {
+                if let Some(error) = state.inspected(&container, ctx).error() {
+                    ctx.details(Surfaced::new(error.clone(), "containers_inspect"));
+                }
+            }
+        }
+    }
+    task.map(Message::Inspect)
 }
 
 /// The moment a stream is opened at, in Unix seconds.
@@ -44,7 +86,7 @@ pub fn refresh(state: &mut State, ctx: &Context<'_>) -> Task<Message> {
             state.logs.restart(now());
         }
     }
-    Task::none()
+    needs(state, ctx)
 }
 
 pub fn request(_state: &mut State, _action: &str, _ctx: &Context<'_>) -> Task<Message> {
@@ -67,7 +109,7 @@ fn show(state: &mut State, tab: Tab, ctx: &Context<'_>) -> Task<Message> {
         Tab::Stats => state.stats.restart(),
         _ => {}
     }
-    Task::none()
+    needs(state, ctx)
 }
 
 /// What the header's buttons and dialogs did. A container that was
@@ -103,6 +145,7 @@ pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Me
         Message::Failure(Event::Copy(command)) => ctx.copy(command),
         Message::Resized(size) => state.window = Some(size),
         Message::Stats(message) => state.stats.update(message, ctx),
+        Message::Inspect(message) => return inspect(state, message, ctx),
         Message::Logs(message) => return state.logs.update(message, ctx).map(Message::Logs),
     }
     Task::none()

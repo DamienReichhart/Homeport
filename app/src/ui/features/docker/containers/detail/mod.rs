@@ -2,6 +2,7 @@
 
 mod message;
 mod model;
+mod queries;
 mod state;
 mod tabs;
 mod update;

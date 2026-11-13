@@ -2,7 +2,7 @@
 
 use super::{
     state::Tab,
-    tabs::{logs, stats},
+    tabs::{inspect, logs, stats},
 };
 use crate::ui::{
     domain::containers::actions,
@@ -27,5 +27,6 @@ pub enum Message {
     /// The window's size: at first, then each time it changes.
     Resized(iced::Size),
     Logs(logs::Message),
+    Inspect(inspect::Message),
     Stats(stats::Message),
 }

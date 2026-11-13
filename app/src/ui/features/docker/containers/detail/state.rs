@@ -1,14 +1,18 @@
 //! What a container's page keeps: which container, which tab, what its
 //! header's buttons and menu are doing, and each tab's own state.
 
-use std::sync::Arc;
+use std::{collections::HashSet, sync::Arc};
 
 use homeport_core::error::{AppError, Message as Text};
 use homeport_engine::containers::Container;
 
-use super::tabs::{logs::Logs, stats::Stats};
+use super::{
+    model::inspect::Inspected,
+    queries,
+    tabs::{inspect::Inspect, logs::Logs, stats::Stats},
+};
 use crate::{
-    data::{keys, Resource},
+    data::{keys, Key, Query, Resource},
     t,
     ui::{
         domain::containers::{Actions, Target, CAME_FROM},
@@ -16,6 +20,9 @@ use crate::{
         widgets::overlay::menu,
     },
 };
+
+/// The window's width from which cards stand two a row (`lg`).
+pub(super) const TWO_COLUMNS_FROM: f32 = 1024.0;
 
 /// What stands in place of a container that is not in the Host's list.
 pub(super) fn gone() -> AppError {
@@ -111,7 +118,11 @@ pub struct State {
     pub(super) window: Option<iced::Size>,
     /// The container's state when the page last looked.
     pub(super) seen_state: Option<String>,
+    /// What the page already asked the shell to read: a resource is
+    /// asked for once, when the tab that shows it first needs it.
+    pub(super) watched: HashSet<Key>,
     pub(super) logs: Logs,
+    pub(super) inspect: Inspect,
     pub(super) stats: Stats,
 }
 
@@ -130,7 +141,9 @@ impl State {
             more: menu::State::default(),
             window: None,
             seen_state: None,
+            watched: HashSet::new(),
             logs: Logs::new(),
+            inspect: Inspect::default(),
             stats: Stats::new(),
         }
     }
@@ -158,6 +171,31 @@ impl State {
         let containers = self.containers(ctx);
         let list = containers.data().map_or(&[][..], |list| list.as_slice());
         self.find(list).cloned()
+    }
+
+    /// Asks the shell to read `query` and keep it fresh while the page
+    /// shows, once.
+    pub(super) fn watch<T: Send + Sync + 'static>(&mut self, query: Query<T>, ctx: &Context<'_>) {
+        if self.watched.insert(query.key().clone()) {
+            ctx.watch(query);
+        }
+    }
+
+    /// The inspect document of `container`, as the data layer has it.
+    pub(super) fn inspected(
+        &self,
+        container: &Container,
+        ctx: &Context<'_>,
+    ) -> Resource<Arc<Inspected>> {
+        let key = queries::inspect_key(&self.host_id, &container.id, &container.state);
+        ctx.data.read(&key)
+    }
+
+    /// Whether the window is wide enough for two cards a row
+    /// (`lg:grid-cols-2`); it is until the window said its size.
+    pub(super) fn is_wide(&self) -> bool {
+        self.window
+            .is_none_or(|size| size.width >= TWO_COLUMNS_FROM)
     }
 
     /// The container, as an action is asked for it.

@@ -1,6 +1,7 @@
 //! What a container's page draws: its header, its tabs, and the tab that
 //! shows.
 
+pub(super) mod inspect;
 mod logs;
 mod stats;
 
@@ -146,14 +147,16 @@ fn header<'a>(state: &'a State, container: &Container, ctx: &Context<'a>) -> Ele
 }
 
 /// What a tab shows of the container.
-fn body<'a>(state: &'a State, container: &Container, _ctx: &Context<'a>) -> Element<'a, Message> {
+fn body<'a>(state: &'a State, container: &Container, ctx: &Context<'a>) -> Element<'a, Message> {
     let running = container.state == "running";
     let window = state.window;
     match state.tab {
         Tab::Logs => logs::view(&state.logs, window.map(|size| size.height)).map(Message::Logs),
-        Tab::Stats => {
-            stats::view(&state.stats, running, window.map(|size| size.width)).map(Message::Stats)
+        Tab::Inspect => {
+            let read = state.inspected(container, ctx);
+            inspect::view(&state.inspect, &read, state.is_wide()).map(Message::Inspect)
         }
+        Tab::Stats => stats::view(&state.stats, running, state.is_wide()).map(Message::Stats),
         // The tabs that are not ported yet say so, as the stub of a page.
         _ => empty_state(state.tab.label())
             .description(t!("ui.table.empty"))
