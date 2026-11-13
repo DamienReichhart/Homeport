@@ -209,3 +209,79 @@ fn the_keyboard_reaches_the_path_the_buttons_and_the_rows() {
     feed(&mut data, messages);
     assert_eq!(data.path, "/etc");
 }
+
+/// What shows down the first column, top to bottom.
+fn names(
+    frame: &mut crate::test_support::stage::Frame<'_, '_, Sent>,
+    entries: &[&str],
+) -> Vec<String> {
+    let mut placed: Vec<(f32, String)> = entries
+        .iter()
+        .filter_map(|name| Some((frame.find(&technical(name))?.y, (*name).to_owned())))
+        .collect();
+    placed.sort_by(|a, b| a.0.total_cmp(&b.0));
+    placed.into_iter().map(|(_, name)| name).collect()
+}
+
+/// Each header sorts by what its column holds: names as a person reads
+/// them, sizes and dates by their value, modes as text.
+#[test]
+fn each_column_sorts_the_listing() {
+    let _english = in_language("en");
+    let mut data = Data::default();
+    // Sizes and dates that tell the orders apart.
+    if let Ok(entries) = &mut data.listing {
+        entries.truncate(5);
+        for (entry, modified) in entries.iter_mut().zip([50, 10, 40, 20, 30]) {
+            entry.modified = modified;
+        }
+    }
+    let all = ["etc", "root", "var", "hello.txt", "lib"];
+    let mut stage = Stage::new((900.0, 500.0));
+    let mut sorted = |data: &mut Data, header: &str| {
+        let messages = stage.frame(sample::files_view(data), |frame| frame.click(header));
+        feed(data, messages);
+        let mut order = vec![];
+        stage.frame(sample::files_view(data), |frame| order = names(frame, &all));
+        order
+    };
+    // As the page gave them, until a header is pressed.
+    let mut order = vec![];
+    Stage::new((900.0, 500.0)).frame(sample::files_view(&data), |frame| {
+        order = names(frame, &all)
+    });
+    assert_eq!(order, all);
+    assert_eq!(
+        sorted(&mut data, "Name"),
+        ["etc", "hello.txt", "lib", "root", "var"]
+    );
+    // The largest first: sizes are numbers.
+    assert_eq!(sorted(&mut data, "Size")[..2], ["etc", "root"]);
+    assert_eq!(sorted(&mut data, "Size")[..2], ["lib", "hello.txt"]);
+    // The newest first.
+    assert_eq!(
+        sorted(&mut data, "Modified"),
+        ["etc", "var", "lib", "hello.txt", "root"]
+    );
+    assert_eq!(
+        sorted(&mut data, "Mode"),
+        ["hello.txt", "root", "etc", "var", "lib"]
+    );
+}
+
+/// A folder's size is its entry's, which says nothing: only a file's
+/// is shown.
+#[test]
+fn only_a_file_has_a_size() {
+    let _english = in_language("en");
+    let data = Data::default();
+    let mut stage = Stage::new((900.0, 500.0));
+    stage.frame(sample::files_view(&data), |frame| {
+        let texts = frame.texts();
+        assert!(texts.contains(&"2.0 KB".to_owned()), "{texts:?}");
+        // etc is 4,096 bytes, the link 7, the socket 0.
+        for hidden in ["4.0 KB", "7 B", "0 B"] {
+            assert!(!texts.contains(&hidden.to_owned()), "{hidden} is shown");
+        }
+    });
+}

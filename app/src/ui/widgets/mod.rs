@@ -25,6 +25,7 @@ pub mod focus;
 pub mod form;
 #[cfg(any(test, feature = "gallery"))]
 pub mod gallery;
+pub mod layout;
 pub mod log;
 pub mod overlay;
 pub mod table;

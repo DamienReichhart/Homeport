@@ -64,3 +64,18 @@ fn the_board_when_a_host_s_list_failed() {
     rig.refresh();
     snapshot(&rig, "board-error-en", "en");
 }
+
+/// The search field holding a query, at 828 px: its button that
+/// empties it shows, and the header's line still fits.
+#[test]
+fn the_board_filtered_by_a_search_that_can_be_emptied() {
+    let mut rig = Rig::populated();
+    rig.send(Message::Search("prod".to_owned()));
+    assert_snapshot(
+        "board-searched-en",
+        "en",
+        &Theme::Light,
+        (828.0, 700.0),
+        || rig.view(),
+    );
+}

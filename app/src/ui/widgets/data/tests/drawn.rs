@@ -121,3 +121,15 @@ fn labelled_values_and_shortcuts() {
         on_page(sample::shortcuts())
     });
 }
+
+/// `PageHeader`, `Logo`, `LogoMark` and `GitHubIcon`, which the shell
+/// uses from the kit.
+#[test]
+fn a_page_s_header_and_the_logos() {
+    for (look, language, theme) in LOOKS {
+        let name = format!("layout-{look}");
+        assert_snapshot(&name, language, &theme, (700.0, 170.0), || {
+            on_page(sample::layout())
+        });
+    }
+}

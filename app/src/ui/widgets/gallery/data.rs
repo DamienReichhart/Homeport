@@ -263,6 +263,38 @@ pub fn small<'a>(data: &'a Data) -> Element<'a, Message> {
     .into()
 }
 
+/// A page's header with a description and two actions, the mark beside
+/// the name, the mark on its tile, and GitHub's.
+pub fn layout<'a>() -> Element<'a, Message> {
+    use crate::ui::{
+        theme::{self, Icon},
+        widgets::{
+            basic::button::{self, Variant},
+            layout::{logo, page_header},
+        },
+    };
+    let header = page_header(
+        "Containers",
+        Some("3 running of 5".to_owned()),
+        vec![
+            button::labelled(Icon::RefreshCw, "Check for newer images")
+                .variant(Variant::Outline)
+                .on_press(Message::Nothing)
+                .into(),
+            button::labelled(Icon::Plus, "Run container")
+                .on_press(Message::Nothing)
+                .into(),
+        ],
+    );
+    let marks = line(vec![
+        logo::logo(),
+        logo::mark(32.0),
+        theme::icon(Icon::Github).into(),
+    ])
+    .spacing(space::S6);
+    stack(vec![header, marks.into()]).spacing(space::S4).into()
+}
+
 impl Gallery {
     pub(super) fn data_event(&mut self, event: Event) -> Task<Message> {
         let (task, said) = self.data.update(event);
@@ -280,6 +312,7 @@ impl Gallery {
             Self::section("Key and value", facts()),
             Self::section("Copy button and a search that waits", small(&self.data)),
             Self::section("Shortcuts: here, on a Mac, elsewhere", shortcuts()),
+            Self::section("Page header and logos", layout()),
         ])
         .spacing(space::S6)
         .into()

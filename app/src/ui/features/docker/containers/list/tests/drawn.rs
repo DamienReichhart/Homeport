@@ -69,3 +69,13 @@ fn the_rename_dialog_over_the_page() {
     rig.send(Message::Actions(actions::Message::AskRename(redis)));
     snapshot(&rig, "containers-rename-en", "en");
 }
+
+/// The search field holding a query, at the page's least width: its
+/// button that empties it shows, and the line of filters still fits.
+#[test]
+fn the_page_filtered_by_a_search_that_can_be_emptied() {
+    let mut rig = Rig::populated();
+    rig.send(Message::Search("redis".to_owned()));
+    snapshot(&rig, "containers-searched-en", "en");
+    snapshot(&rig, "containers-searched-ar", "ar");
+}
