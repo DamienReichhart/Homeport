@@ -2,8 +2,10 @@
 //! looks in each state.
 
 mod drawn;
+mod health;
 mod inspect;
 mod logs;
+mod processes;
 mod stats;
 #[cfg(unix)]
 mod streams;

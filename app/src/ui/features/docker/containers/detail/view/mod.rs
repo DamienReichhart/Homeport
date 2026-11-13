@@ -1,8 +1,10 @@
 //! What a container's page draws: its header, its tabs, and the tab that
 //! shows.
 
+mod health;
 pub(super) mod inspect;
 mod logs;
+pub(super) mod processes;
 mod stats;
 
 use iced::{widget::text, Length};
@@ -157,6 +159,14 @@ fn body<'a>(state: &'a State, container: &Container, ctx: &Context<'a>) -> Eleme
             inspect::view(&state.inspect, &read, state.is_wide()).map(Message::Inspect)
         }
         Tab::Stats => stats::view(&state.stats, running, state.is_wide()).map(Message::Stats),
+        Tab::Processes => {
+            let read = state.processes_read(container, ctx);
+            processes::view(&state.processes, &read, running).map(Message::Processes)
+        }
+        Tab::Health => {
+            let read = state.health_read(container, ctx);
+            health::view(&state.health, &read, state.is_wide()).map(Message::Health)
+        }
         // The tabs that are not ported yet say so, as the stub of a page.
         _ => empty_state(state.tab.label())
             .description(t!("ui.table.empty"))

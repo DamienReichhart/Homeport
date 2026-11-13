@@ -39,6 +39,16 @@ pub fn subscription(state: &State, ctx: &Context<'_>) -> Subscription<Message> {
             .stats
             .subscription(ctx.state, &state.host_id, &container.id)
             .map(Message::Stats),
+        // Read again while the tab shows: every five seconds, and once
+        // per check.
+        Tab::Processes if container.state == "running" => iced::time::every(tabs::processes::EVERY)
+            .map(|_| Message::Processes(tabs::processes::Message::Poll)),
+        Tab::Health => {
+            let read = state.health_read(&container, ctx);
+            let health = read.data().and_then(|health| health.as_ref().as_ref());
+            iced::time::every(tabs::health::every(health))
+                .map(|_| Message::Health(tabs::health::Message::Poll))
+        }
         _ => Subscription::none(),
     };
     // The window's size lays the page out: how tall the logs are, how

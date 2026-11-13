@@ -5,15 +5,18 @@ use iced::Task;
 use super::{
     queries,
     state::{gone, Tab},
-    tabs::inspect,
-    Message, State,
+    tabs::{health, inspect, processes},
+    view, Message, State,
 };
 use crate::{
     data::{keys, resources},
     ui::{
         domain::containers::actions,
         shell::{router::Route, Context},
-        widgets::feedback::{error_message::Event, Surfaced},
+        widgets::{
+            feedback::{error_message::Event, Surfaced},
+            table::Rows,
+        },
     },
 };
 
@@ -48,6 +51,19 @@ fn needs(state: &mut State, ctx: &Context<'_>) -> Task<Message> {
             let read = state.inspected(&container, ctx);
             state.inspect.take(read.data()).map(Message::Inspect)
         }
+        // `enabled: running`: a stopped container's processes are not
+        // asked for.
+        Tab::Processes if container.state == "running" => {
+            state.watch(queries::processes(&host, &container.id), ctx);
+            let read = state.processes_read(&container, ctx);
+            state.processes.take(read.data());
+            Task::none()
+        }
+        Tab::Health => {
+            let status = container.health.as_deref();
+            state.watch(queries::health(&host, &container.id, status), ctx);
+            Task::none()
+        }
         _ => Task::none(),
     }
 }
@@ -67,6 +83,51 @@ fn inspect(state: &mut State, message: inspect::Message, ctx: &Context<'_>) -> T
         }
     }
     task.map(Message::Inspect)
+}
+
+/// What the Processes tab asked for.
+fn processes(state: &mut State, message: processes::Message, ctx: &Context<'_>) {
+    let Some(container) = state.container(ctx) else {
+        return;
+    };
+    let key = queries::processes_key(&state.host_id, &container.id);
+    match message {
+        processes::Message::Table(message) => {
+            let tab = &mut state.processes;
+            let columns = view::processes::columns(&tab.titles);
+            let rows = Rows::new(&tab.rows, |row| row.at);
+            // Rows are not opened nor selected: only widths and scroll.
+            tab.table.update(message, &rows, &columns);
+        }
+        processes::Message::Poll | processes::Message::Failure(Event::Retry) => {
+            ctx.invalidate(key);
+        }
+        processes::Message::Failure(Event::Details) => {
+            if let Some(error) = state.processes_read(&container, ctx).error() {
+                ctx.details(Surfaced::new(error.clone(), "containers_processes"));
+            }
+        }
+        processes::Message::Failure(Event::Copy(command)) => ctx.copy(command),
+    }
+}
+
+/// What the Health tab asked for.
+fn health(state: &mut State, message: health::Message, ctx: &Context<'_>) {
+    let Some(container) = state.container(ctx) else {
+        return;
+    };
+    let status = container.health.as_deref();
+    let key = queries::health_key(&state.host_id, &container.id, status);
+    match message {
+        health::Message::Fold(start) => state.health.fold(start),
+        health::Message::Poll | health::Message::Failure(Event::Retry) => ctx.invalidate(key),
+        health::Message::Failure(Event::Details) => {
+            if let Some(error) = state.health_read(&container, ctx).error() {
+                ctx.details(Surfaced::new(error.clone(), "containers_health"));
+            }
+        }
+        health::Message::Failure(Event::Copy(command)) => ctx.copy(command),
+    }
 }
 
 /// The moment a stream is opened at, in Unix seconds.
@@ -146,6 +207,8 @@ pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Me
         Message::Resized(size) => state.window = Some(size),
         Message::Stats(message) => state.stats.update(message, ctx),
         Message::Inspect(message) => return inspect(state, message, ctx),
+        Message::Processes(message) => processes(state, message, ctx),
+        Message::Health(message) => health(state, message, ctx),
         Message::Logs(message) => return state.logs.update(message, ctx).map(Message::Logs),
     }
     Task::none()

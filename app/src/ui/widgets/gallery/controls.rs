@@ -300,6 +300,13 @@ impl Gallery {
             badge("Outline", BadgeVariant::Outline),
         ])
         .spacing(space::S2);
+        // A check's outcome, on a line of its own: the card is narrow.
+        let outcomes = line(vec![
+            badge("exit 0", BadgeVariant::Passed),
+            badge("exit 1", BadgeVariant::Failed),
+        ])
+        .spacing(space::S2);
+        let badges = stack(vec![badges.into(), outcomes.into()]).spacing(space::S2);
         let bars = stack(vec![
             progress(35.0, None).length(200).into(),
             progress(82.0, Some(Tone::Warning)).length(200).into(),
@@ -308,7 +315,8 @@ impl Gallery {
         .spacing(space::S2)
         .width(200);
         let lines = (1..=12).map(|n| paragraph(format!("Layer {n} of nginx:1.27")).into());
-        let layers = scroll_area(stack(lines.collect()).spacing(space::S1)).height(96);
+        // As tall as it was before the badges took a second line.
+        let layers = scroll_area(stack(lines.collect()).spacing(space::S1)).height(68);
         let panel = card(stack(vec![badges.into(), separator(), layers.into()]).spacing(space::S3))
             .title("nginx:1.27")
             .description("Pulled 3 days ago")

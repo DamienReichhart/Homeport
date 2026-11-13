@@ -4,12 +4,12 @@
 use std::{collections::HashSet, sync::Arc};
 
 use homeport_core::error::{AppError, Message as Text};
-use homeport_engine::containers::Container;
+use homeport_engine::containers::{health::Health, Container, Processes};
 
 use super::{
     model::inspect::Inspected,
     queries,
-    tabs::{inspect::Inspect, logs::Logs, stats::Stats},
+    tabs::{health, inspect::Inspect, logs::Logs, processes, stats::Stats},
 };
 use crate::{
     data::{keys, Key, Query, Resource},
@@ -123,6 +123,8 @@ pub struct State {
     pub(super) watched: HashSet<Key>,
     pub(super) logs: Logs,
     pub(super) inspect: Inspect,
+    pub(super) processes: processes::Tab,
+    pub(super) health: health::Tab,
     pub(super) stats: Stats,
 }
 
@@ -144,6 +146,8 @@ impl State {
             watched: HashSet::new(),
             logs: Logs::new(),
             inspect: Inspect::default(),
+            processes: processes::Tab::default(),
+            health: health::Tab::default(),
             stats: Stats::new(),
         }
     }
@@ -188,6 +192,27 @@ impl State {
         ctx: &Context<'_>,
     ) -> Resource<Arc<Inspected>> {
         let key = queries::inspect_key(&self.host_id, &container.id, &container.state);
+        ctx.data.read(&key)
+    }
+
+    /// What runs in `container`, as the data layer has it.
+    pub(super) fn processes_read(
+        &self,
+        container: &Container,
+        ctx: &Context<'_>,
+    ) -> Resource<Arc<Processes>> {
+        ctx.data
+            .read(&queries::processes_key(&self.host_id, &container.id))
+    }
+
+    /// The healthcheck of `container`, read for the status the list
+    /// shows.
+    pub(super) fn health_read(
+        &self,
+        container: &Container,
+        ctx: &Context<'_>,
+    ) -> Resource<Arc<Option<Health>>> {
+        let key = queries::health_key(&self.host_id, &container.id, container.health.as_deref());
         ctx.data.read(&key)
     }
 

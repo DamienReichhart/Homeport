@@ -266,6 +266,26 @@ pub mod badge {
         }
     }
 
+    /// An outline whose text is `--success`: what passed.
+    pub fn passed(theme: &Theme) -> Style {
+        let tokens = theme.tokens();
+        Style {
+            text_color: Some(tokens.success),
+            border: hairline(tokens.border, RADIUS),
+            ..Style::default()
+        }
+    }
+
+    /// An outline in `--destructive`, border and text: what failed.
+    pub fn failed(theme: &Theme) -> Style {
+        let tokens = theme.tokens();
+        Style {
+            text_color: Some(tokens.destructive),
+            border: hairline(tokens.destructive, RADIUS),
+            ..Style::default()
+        }
+    }
+
     /// `variant="ghost"`: text and nothing else at rest.
     pub fn ghost(theme: &Theme) -> Style {
         pill(Style {

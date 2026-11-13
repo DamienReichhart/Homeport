@@ -14,7 +14,7 @@ The theme has its own, `cargo run -p homeport-app --example gallery --features g
 | `src/shared/ui/primitives` | In the iced app                                                                                                       |
 | -------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | `button`                   | `basic::button::{text, icon, labelled}` with `Variant` and `ButtonSize`                                               |
-| `badge`                    | `basic::badge`                                                                                                        |
+| `badge`                    | `basic::badge` (`BadgeVariant::Passed` and `Failed`: a check's outcome, outlined in its colour)                       |
 | `card`                     | `basic::card` (`.aside(..)` is the muted figure beside its title: `CPU · 12.5%`)                                      |
 | `separator`                | `basic::separator`, `separator_vertical` (iced's `rule`)                                                              |
 | `progress`                 | `basic::progress` (iced's `progress_bar`)                                                                             |

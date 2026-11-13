@@ -28,6 +28,12 @@ pub enum BadgeVariant {
     Outline,
     Ghost,
     Link,
+    /// An outline whose text says it went well (`variant="outline"
+    /// className="text-success"`): a check that passed.
+    Passed,
+    /// An outline in the destructive colour, border and text
+    /// (`border-destructive text-destructive`): a check that failed.
+    Failed,
 }
 
 /// `Keys`: a shortcut's keys, each in its `<kbd>`, in the order they are
@@ -63,6 +69,8 @@ pub fn badge<'a, Message: 'a>(
         // A badge that isn't pressed: the ghost at rest.
         BadgeVariant::Ghost => pill.style(theme::container::badge::ghost),
         BadgeVariant::Link => pill.style(theme::container::badge::link),
+        BadgeVariant::Passed => pill.style(theme::container::badge::passed),
+        BadgeVariant::Failed => pill.style(theme::container::badge::failed),
     }
     .into()
 }

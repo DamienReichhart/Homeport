@@ -2,7 +2,7 @@
 
 use super::{
     state::Tab,
-    tabs::{inspect, logs, stats},
+    tabs::{health, inspect, logs, processes, stats},
 };
 use crate::ui::{
     domain::containers::actions,
@@ -28,5 +28,7 @@ pub enum Message {
     Resized(iced::Size),
     Logs(logs::Message),
     Inspect(inspect::Message),
+    Processes(processes::Message),
+    Health(health::Message),
     Stats(stats::Message),
 }
