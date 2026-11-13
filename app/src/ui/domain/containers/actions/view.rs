@@ -143,6 +143,17 @@ pub fn selection_bar<'a, Message: Clone + 'a>(
     .into()
 }
 
+/// An item of a container's menu.
+fn item(label: String, glyph: Icon, message: Message) -> Item<Message> {
+    Item::action(label, message).glyph(glyph)
+}
+
+/// An item whose dialog comes with another ticket (#259): it is there and
+/// can't be chosen.
+fn later(label: String, glyph: Icon) -> Item<Message> {
+    item(label, glyph, Message::CloseDialog).disabled(true)
+}
+
 impl Actions {
     /// The button at the end of a row: Stop for a container that runs or
     /// is paused, Start for the others. It waits while an action is on its
@@ -171,14 +182,87 @@ impl Actions {
         tooltip(button, label, Side::Top).into()
     }
 
+    /// The buttons of a container's own page (`ContainerActions`): Stop
+    /// or Start, Restart, Pause or Resume, and Remove. They wait while an
+    /// action is on its way for the container.
+    pub fn header<'a>(&self, target: &Target) -> Vec<Element<'a, Message>> {
+        let (running, paused) = (target.is_running(), target.is_paused());
+        let up = running || paused;
+        let waits = self.is_pending(&target.host_id, &target.id);
+        let act = |action| Message::Act(action, vec![target.clone()]);
+        let outlined = |glyph, label: String, press: Option<Message>| -> Element<'a, Message> {
+            button::labelled(glyph, label)
+                .variant(Variant::Outline)
+                .on_press_maybe(press.filter(|_| !waits))
+                .into()
+        };
+        let toggle = if up {
+            outlined(
+                Icon::Square,
+                t!("containers.action.stop"),
+                Some(act(ContainerAction::Stop)),
+            )
+        } else {
+            outlined(
+                Icon::Play,
+                t!("containers.action.start"),
+                Some(act(ContainerAction::Start)),
+            )
+        };
+        let restart = outlined(
+            Icon::RotateCw,
+            t!("containers.action.restart"),
+            up.then(|| act(ContainerAction::Restart)),
+        );
+        let pause = if paused {
+            outlined(
+                Icon::Play,
+                t!("containers.action.resume"),
+                Some(act(ContainerAction::Unpause)),
+            )
+        } else {
+            outlined(
+                Icon::Pause,
+                t!("containers.action.pause"),
+                running.then(|| act(ContainerAction::Pause)),
+            )
+        };
+        let remove = button::labelled(Icon::Trash, t!("common.remove"))
+            .variant(Variant::Destructive)
+            .on_press(Message::AskRemove {
+                targets: vec![target.clone()],
+                by_host: false,
+            });
+        vec![toggle, restart, pause, remove.into()]
+    }
+
+    /// The items of the menu beside those buttons: Rename, and Kill, which
+    /// the React page left to the list's menu. Edit, Duplicate, Commit and
+    /// Export are there and can't be chosen, as in [`Actions::menu`].
+    pub fn more(target: &Target) -> Vec<Item<Message>> {
+        vec![
+            item(
+                t!("containers.action.rename"),
+                Icon::Pencil,
+                Message::AskRename(target.clone()),
+            ),
+            item(
+                t!("containers.action.kill"),
+                Icon::Skull,
+                Message::AskKill(target.clone()),
+            )
+            .disabled(!target.is_running()),
+            later(t!("containers.action.edit"), Icon::SlidersHorizontal),
+            later(t!("containers.action.duplicate"), Icon::Copy),
+            later(t!("containers.action.commit"), Icon::ImageDown),
+            later(t!("containers.action.export"), Icon::FileArchive),
+        ]
+    }
+
     /// The items of a container's menu (`ContainerMenu`).
     pub fn menu(target: &Target) -> Vec<Item<Message>> {
         let (running, paused) = (target.is_running(), target.is_paused());
         let act = |action| Message::Act(action, vec![target.clone()]);
-        let item =
-            |label: String, glyph, message: Message| Item::action(label, message).glyph(glyph);
-        // Their dialogs come with the container's page and the Run dialog.
-        let later = |label: String, glyph| item(label, glyph, Message::CloseDialog).disabled(true);
         let pause = if paused {
             item(
                 t!("containers.action.resume"),

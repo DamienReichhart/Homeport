@@ -21,7 +21,7 @@ use crate::{
             gates::Subject,
             pickers,
             registry::{self, Feature},
-            router::{Location, Request},
+            router::{Location, Request, Route},
             selection::Selection,
         },
         theme::Element,
@@ -61,6 +61,8 @@ pub(in crate::ui::shell) enum Effect {
         query: Option<String>,
         params: Vec<(String, String)>,
     },
+    /// The route the location has from now on, the page staying.
+    KeepRoute(Route),
     /// The Details of a failure, asked for.
     Details(Surfaced),
     /// Text for the clipboard.
@@ -234,6 +236,15 @@ impl<'a> Context<'a> {
     /// (`setSearchParams(.., { replace: true })`). The page stays as it is.
     pub fn keep(&self, query: Option<String>, params: Vec<(String, String)>) {
         self.effects.push(Effect::Keep { query, params });
+    }
+
+    /// Keeps `route` as the page's own, so the window finds the page there
+    /// when it comes back to it: the tab of a page with tabs
+    /// (`navigate(path, { replace: true })`). The page stays as it is and
+    /// nothing is added to the history. Only a route of the same feature
+    /// is kept.
+    pub fn keep_route(&self, route: Route) {
+        self.effects.push(Effect::KeepRoute(route));
     }
 
     /// Opens the Details dialog of a failure shown in place.

@@ -14,6 +14,12 @@ pub use self::actions::{Actions, Bulk, Target};
 
 use std::sync::Arc;
 
+/// The parameter a container's page is opened with from a list that is
+/// not its Host's Containers page (the Board): its Back button then goes
+/// back to where the window was, with the filters that list kept, instead
+/// of to the Containers page.
+pub const CAME_FROM: &str = "from";
+
 use iced::Subscription;
 
 use crate::{

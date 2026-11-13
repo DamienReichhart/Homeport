@@ -22,18 +22,28 @@ pub fn page_header<'a, Message: 'a>(
     description: Option<String>,
     actions: Vec<Element<'a, Message>>,
 ) -> Element<'a, Message> {
-    let mut titles: Vec<Element<'a, Message>> = vec![text(title.into())
-        .size(size::XL)
-        .font(font::semibold())
-        .into()];
-    if let Some(description) = description {
-        titles.push(
-            text(description)
-                .size(size::SM)
-                .style(theme::text::muted)
-                .into(),
-        );
-    }
+    let title = text(title.into()).size(size::XL).font(font::semibold());
+    let description = description.map(|description| {
+        text(description)
+            .size(size::SM)
+            .style(theme::text::muted)
+            .into()
+    });
+    page_header_of(title, description, actions)
+}
+
+/// The same for a title and a description that are more than text, as
+/// `PageHeader` took nodes: a page about one thing puts its Back button,
+/// its status and its name in the title (a container's page). The page
+/// gives the title its size (`size::XL`, semibold) and the description
+/// its own (`size::SM`, muted).
+pub fn page_header_of<'a, Message: 'a>(
+    title: impl Into<Element<'a, Message>>,
+    description: Option<Element<'a, Message>>,
+    actions: Vec<Element<'a, Message>>,
+) -> Element<'a, Message> {
+    let mut titles: Vec<Element<'a, Message>> = vec![title.into()];
+    titles.extend(description);
     let mut parts: Vec<Element<'a, Message>> =
         vec![filling_column(stack(titles).spacing(space::S0_5).into())];
     if !actions.is_empty() {

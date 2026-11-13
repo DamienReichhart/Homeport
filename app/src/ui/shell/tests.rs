@@ -125,6 +125,11 @@ impl Pages for Blank {
                     .save_file(SaveFile::new("Save logs", "logs.txt")),
             ),
             "put" => ctx.put(keys::host::freshness("h1"), vec![7_u8]),
+            "tab" => ctx.keep_route(Route::Container {
+                id: "c1".to_owned(),
+                tab: Some("stats".to_owned()),
+            }),
+            "elsewhere" => ctx.keep_route(Route::Images),
             "keep" => ctx.keep(
                 Some("api".to_owned()),
                 vec![("host".to_owned(), "h1".to_owned())],
@@ -1151,6 +1156,38 @@ fn what_a_page_keeps_in_its_location_is_there_when_the_window_comes_back() {
     assert_eq!(location.query.as_deref(), Some("api"));
     assert_eq!(location.params_of("host").collect::<Vec<_>>(), ["h1"]);
     assert_eq!(location.param("state"), None);
+}
+
+#[test]
+fn a_page_changes_its_tab_in_place_and_never_to_another_feature_s_route() {
+    let container = |tab: &str| Route::Container {
+        id: "c1".to_owned(),
+        tab: Some(tab.to_owned()),
+    };
+    let mut rig = docker_and_prod();
+    rig.go(Route::Containers);
+    rig.go(container("logs"));
+    let (page, key, count) = (
+        open_page(&rig).id,
+        rig.shell.location().key,
+        rig.shell.history.count(),
+    );
+    rig.send(Message::Go(Request::to(container("logs")).starting("tab")));
+    // The same page, the same location, on the other tab's route.
+    assert_eq!(open_page(&rig).id, page);
+    assert_eq!(rig.shell.location().key, key);
+    assert_eq!(rig.shell.location().route, container("stats"));
+    assert_eq!(rig.shell.history.count(), count);
+    // Back leaves the page: no tab was added to the history.
+    rig.send(Message::Back);
+    assert_eq!(rig.shell.location().route, Route::Containers);
+    rig.send(Message::Forward);
+    assert_eq!(rig.shell.location().route, container("stats"));
+    // A route of another feature is not this page's to keep.
+    rig.send(Message::Go(
+        Request::to(container("stats")).starting("elsewhere"),
+    ));
+    assert_eq!(rig.shell.location().route, container("stats"));
 }
 
 #[test]

@@ -398,6 +398,13 @@ impl<P: Pages> Shell<P> {
                     self.history.amend(query, params);
                     Task::none()
                 }
+                Effect::KeepRoute(route) => {
+                    // Another feature's route would be another page.
+                    if route.feature() == self.location().route.feature() {
+                        self.history.retarget(route);
+                    }
+                    Task::none()
+                }
                 Effect::Details(surfaced) => {
                     self.events.push(Event::Details(surfaced));
                     Task::none()

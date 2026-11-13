@@ -2,7 +2,7 @@
 //! navigation adds a location after the current one and drops what was
 //! ahead; back and forward move among them.
 
-use super::{Location, Request};
+use super::{Location, Request, Route};
 
 /// The locations visited, and which one shows.
 #[derive(Debug, Clone)]
@@ -64,6 +64,14 @@ impl History {
         let location = &mut self.entries[self.at];
         location.query = query;
         location.params = params;
+    }
+
+    /// Changes the route of the current location without leaving it: the
+    /// page that shows stays as it is, and is found on that route when the
+    /// window comes back to it. React's `navigate(path, { replace: true })`
+    /// between the tabs of one page (`containers/:id/:tab?`).
+    pub fn retarget(&mut self, route: Route) {
+        self.entries[self.at].route = route;
     }
 
     pub fn can_go_back(&self) -> bool {

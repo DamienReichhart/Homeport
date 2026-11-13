@@ -6,7 +6,7 @@ use super::*;
 use crate::{
     test_support::{snapshot::in_language, tasks},
     ui::{
-        domain::containers::{actions, Bulk},
+        domain::containers::{actions, Bulk, CAME_FROM},
         shell::{page::testing::Asked, registry, selection::Selection},
         widgets::{feedback::error_message::Event, form::select, table},
     },
@@ -220,7 +220,9 @@ fn a_press_on_a_container_selects_its_host_and_opens_its_logs() {
             Asked::Select(Selection::Host {
                 id: PROD.to_owned()
             }),
-            Asked::Open(logs.into()),
+            // The container's page goes back to the Board, not to the
+            // Containers page of its Host.
+            Asked::Open(Request::to(logs).with_param(CAME_FROM, "board")),
         ]
     );
 }

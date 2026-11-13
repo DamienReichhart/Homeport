@@ -4,6 +4,7 @@
 use homeport_core::error::{AppError, ErrorCode, Message as Text};
 
 use super::*;
+use crate::ui::domain::containers::CAME_FROM;
 use crate::{
     test_support::{
         fixtures::{connected, connected_host, container, host_view},
@@ -324,7 +325,8 @@ fn opening_a_container_of_another_host_selects_that_host_first() {
             Asked::Select(Selection::Host {
                 id: "prod-id".to_owned()
             }),
-            Asked::Open(logs.clone().into()),
+            // Its Back returns to the list it was opened from.
+            Asked::Open(Request::to(logs.clone()).with_param(CAME_FROM, "board")),
         ]
     );
     // On its own Host's list, the selection stays.

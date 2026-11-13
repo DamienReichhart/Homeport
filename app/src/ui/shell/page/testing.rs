@@ -156,6 +156,10 @@ impl Bench {
                     self.history.amend(query, params);
                     Asked::Keep
                 }
+                Effect::KeepRoute(route) => {
+                    self.history.retarget(route.clone());
+                    Asked::KeepRoute(route)
+                }
             });
         }
         for outcome in self.outcomes.take() {
@@ -170,6 +174,25 @@ impl Bench {
             asked.extend(outcome.invalidates.into_iter().map(Asked::Invalidate));
         }
         asked
+    }
+
+    /// Reads what the page asked to watch since the last call, as the
+    /// shell does, until every read settled. A page has no Engine in its
+    /// tests, so what is read of a Host fails with `HostNotConnected`: the
+    /// failure a page shows in place of what it could not read. Whatever
+    /// else the page asked for since the last call is let go of.
+    pub fn read_watched(&mut self) {
+        let mut tasks = vec![];
+        for effect in self.effects.take() {
+            if let Effect::Watch(_, start) = effect {
+                tasks.push(start(&mut self.data, &self.app.state));
+            }
+        }
+        while let Some(task) = tasks.pop() {
+            for message in self.run(task) {
+                tasks.push(self.data.update(&self.app.state, message));
+            }
+        }
     }
 
     /// The keys the page asked to watch since the last call.
@@ -203,6 +226,7 @@ impl Bench {
                 Effect::OpenUrl(_) => "open_url",
                 Effect::Put(..) => "put",
                 Effect::Keep { .. } => "keep",
+                Effect::KeepRoute(_) => "keep_route",
             })
             .collect()
     }
@@ -226,6 +250,8 @@ pub enum Asked {
     OpenUrl(String),
     Put(Key),
     Keep,
+    /// The route the page's location has from now on.
+    KeepRoute(Route),
 }
 
 #[cfg(test)]

@@ -15,7 +15,8 @@
 //! page is still there when the Engine answers.
 //!
 //! Edit, Duplicate, Commit and Export are in the menu and can't be chosen:
-//! their dialogs are the detail and run tickets' (#258, #259).
+//! their dialogs are the run ticket's (#259), and Export waits for the
+//! dialog of a transfer with its progress, which the kit doesn't have yet.
 
 pub mod view;
 
@@ -39,7 +40,11 @@ use crate::{
     data::keys,
     t,
     ui::{
-        shell::{router::Route, selection::Selection, Context, Outcome as Told},
+        shell::{
+            router::{Request, Route},
+            selection::Selection,
+            Context, Outcome as Told,
+        },
         widgets::feedback::{
             confirm::{self, Ask, Outcome},
             error_message, Surfaced,
@@ -371,9 +376,16 @@ impl Actions {
                 if self.across_hosts {
                     ctx.select(Selection::Host { id: target.host_id });
                 }
-                ctx.open(Route::Container {
+                let page = Request::to(Route::Container {
                     id: target.id,
                     tab: Some(tab.to_owned()),
+                });
+                // Opened from a list of every Host's containers, the
+                // page's Back returns there (`navigate(.., { state: { from } })`).
+                ctx.open(if self.across_hosts {
+                    page.with_param(super::CAME_FROM, "board")
+                } else {
+                    page
                 });
             }
             rename => return self.rename(rename, ctx),

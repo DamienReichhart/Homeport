@@ -5,4 +5,4 @@
 
 pub mod banners;
 
-pub use crate::ui::widgets::layout::{logo, page_header};
+pub use crate::ui::widgets::layout::{logo, page_header, page_header_of};
