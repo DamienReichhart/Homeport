@@ -61,7 +61,8 @@ pub fn startup_problem(startup: &Startup) -> Option<StartupProblem> {
 }
 
 /// Opens the folder holding Homeport's database in the file manager. `open`
-/// shows a folder there; the dialogs and opener layer (#253) supplies it.
+/// shows a folder there: the platform layer supplies it
+/// (`Platform::open_data_folder`).
 pub fn open_data_folder(
     state: &AppState,
     open: impl FnOnce(&Path) -> io::Result<()>,
@@ -251,7 +252,8 @@ pub fn read_text_file(path: String) -> AppResult<String> {
 
 /// Opens the folder holding Homeport's log files in the file manager.
 /// `log_dir` is where the logging layer (#254) writes them; `open` shows a
-/// folder in the file manager (#253).
+/// folder in the file manager. The platform layer supplies both
+/// (`Platform::open_log_folder`).
 pub fn open_log_folder(
     log_dir: &Path,
     open: impl FnOnce(&Path) -> io::Result<()>,
@@ -261,6 +263,8 @@ pub fn open_log_folder(
 }
 
 /// Writes text to a path the user picked in a save dialog (e.g. downloaded logs).
+/// A page writes through `platform::files` instead, which is off the
+/// window's thread and leaves the file that was there if the write fails.
 pub fn write_text_file(path: String, contents: String) -> AppResult<()> {
     local_files::write_text(Path::new(&path), &contents)
 }
