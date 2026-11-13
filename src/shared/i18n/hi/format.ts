@@ -8,4 +8,10 @@ export default {
   'format.bytes.mb': '{value} MB',
   'format.bytes.gb': '{value} GB',
   'format.bytes.tb': '{value} TB',
+  'format.perSecond': '{value}/से',
+  'format.bits.b': '{value} bit/s',
+  'format.bits.kb': '{value} kbit/s',
+  'format.bits.mb': '{value} Mbit/s',
+  'format.bits.gb': '{value} Gbit/s',
+  'format.bits.tb': '{value} Tbit/s',
 } satisfies Translation<typeof en>;

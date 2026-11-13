@@ -32,6 +32,15 @@ pub(super) const UNITS: [&str; 5] = [
     "format.bytes.tb",
 ];
 
+/// The units of a bit rate, by power of 1000, as networks count.
+pub(super) const BIT_RATES: [&str; 5] = [
+    "format.bits.b",
+    "format.bits.kb",
+    "format.bits.mb",
+    "format.bits.gb",
+    "format.bits.tb",
+];
+
 /// The steps of a relative time: how many of one unit make the next.
 const STEPS: [i64; 5] = [60, 60, 24, 30, 12];
 
@@ -136,6 +145,23 @@ impl Formats {
         let value = bytes / 1024f64.powi(exp as i32);
         (
             UNITS[exp],
+            self.decimals(value, if exp == 0 { 0 } else { digits }),
+        )
+    }
+
+    /// `1500` bits a second → the unit's key and `1.5`: powers of 1000,
+    /// never grouped, whole under a thousand.
+    pub(super) fn bit_rate_parts(&self, bits: f64, digits: u8) -> (&'static str, String) {
+        if !bits.is_finite() || bits <= 0.0 {
+            return (BIT_RATES[0], self.decimals(0.0, 0));
+        }
+        // The exponent is a small whole number by construction.
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+        let exp = ((bits.log10() / 3.0).floor().max(0.0) as usize).min(BIT_RATES.len() - 1);
+        #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
+        let value = bits / 1000f64.powi(exp as i32);
+        (
+            BIT_RATES[exp],
             self.decimals(value, if exp == 0 { 0 } else { digits }),
         )
     }
@@ -245,6 +271,19 @@ pub fn bytes_with(bytes: f64, digits: u8) -> String {
     language.text(unit, Some(&Args::new().with("value", value).0))
 }
 
+/// Bytes a second: `1536` → `1.5 KB/s`, in the app's language.
+pub fn rate(bytes_per_second: f64) -> String {
+    crate::t!("format.perSecond", value = bytes(bytes_per_second))
+}
+
+/// Bits a second: `1500` → `1.5 kbit/s`, in the app's language. Powers
+/// of 1000, as networks count.
+pub fn bit_rate(bits_per_second: f64) -> String {
+    let language = formats();
+    let (unit, value) = language.formats.bit_rate_parts(bits_per_second, 1);
+    language.text(unit, Some(&Args::new().with("value", value).0))
+}
+
 /// `3.456` → `3.5%`, in the app's language.
 pub fn percent(value: f64) -> String {
     formats().formats.percent(value)
@@ -282,6 +321,12 @@ pub fn date(unix_seconds: i64) -> String {
 /// The time alone, on this computer's clock.
 pub fn time(unix_seconds: i64) -> String {
     formats().formats.time(unix_seconds, &TimeZone::system())
+}
+
+/// The time alone, on a clock in `zone`: an axis that must read the same
+/// wherever it is drawn.
+pub fn time_in(unix_seconds: i64, zone: &TimeZone) -> String {
+    formats().formats.time(unix_seconds, zone)
 }
 
 /// First 12 hex characters of an id, without any `sha256:` prefix.

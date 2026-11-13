@@ -277,3 +277,29 @@ fn names_are_listed_as_the_language_lists_them() {
         "web、db、cache"
     );
 }
+
+#[test]
+fn rates_are_said_in_the_language_and_bits_count_in_thousands() {
+    let _language = crate::test_support::snapshot::in_language("en");
+    assert_eq!(format::rate(1536.0), "1.5 KB/s");
+    assert_eq!(format::rate(0.0), "0 B/s");
+    assert_eq!(format::bit_rate(999.0), "999 bit/s");
+    assert_eq!(format::bit_rate(1000.0), "1.0 kbit/s");
+    assert_eq!(format::bit_rate(1_500_000.0), "1.5 Mbit/s");
+    assert_eq!(format::bit_rate(2.5e12), "2.5 Tbit/s");
+    // Past the last unit there is no other: thousands of it.
+    assert_eq!(format::bit_rate(3e15), "3000.0 Tbit/s");
+    assert_eq!(format::bit_rate(-5.0), "0 bit/s");
+    assert_eq!(format::bit_rate(f64::INFINITY), "0 bit/s");
+    assert_eq!(set_language("ru", &[]), "ru");
+    assert_eq!(format::rate(1536.0), "1,5 КБ/с");
+    assert_eq!(format::bit_rate(1500.0), "1,5 кбит/с");
+    assert_eq!(set_language("ja", &[]), "ja");
+    assert_eq!(format::bit_rate(1500.0), "1.5 kbps");
+    // A clock named by the caller, whatever this computer's is.
+    assert_eq!(set_language("en", &[]), "en");
+    assert_eq!(
+        format::time_in(1_777_629_600, &jiff::tz::TimeZone::UTC),
+        "10:00:00\u{202f}AM"
+    );
+}
