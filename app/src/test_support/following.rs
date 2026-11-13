@@ -13,7 +13,10 @@ use iced::{
 
 /// The streams of the subscriptions a page returned last.
 pub struct Following<Message> {
-    running: Vec<(u64, BoxStream<'static, Message>)>,
+    /// Each subscription by its identity, and its stream until it ended:
+    /// an ended stream is never polled again, and not started again
+    /// while it is returned, as the runtime does.
+    running: Vec<(u64, Option<BoxStream<'static, Message>>)>,
 }
 
 impl<Message> Default for Following<Message> {
@@ -38,13 +41,13 @@ impl<Message: 'static> Following<Message> {
             next.push(match running {
                 Some(at) => self.running.swap_remove(at),
                 // No window sends events: what listens to them hears none.
-                None => (id, recipe.stream(stream::pending().boxed())),
+                None => (id, Some(recipe.stream(stream::pending().boxed()))),
             });
         }
         self.running = next;
     }
 
-    /// How many streams run.
+    /// How many subscriptions are followed, ended or not.
     pub fn count(&self) -> usize {
         self.running.len()
     }
@@ -52,9 +55,12 @@ impl<Message: 'static> Following<Message> {
     /// The next message of any stream; `None` when none comes in `wait`.
     pub async fn next(&mut self, wait: Duration) -> Option<Message> {
         let next = poll_fn(|context| {
-            for (_, stream) in &mut self.running {
-                if let Poll::Ready(Some(message)) = stream.poll_next_unpin(context) {
-                    return Poll::Ready(message);
+            for (_, running) in &mut self.running {
+                let Some(stream) = running else { continue };
+                match stream.poll_next_unpin(context) {
+                    Poll::Ready(Some(message)) => return Poll::Ready(message),
+                    Poll::Ready(None) => *running = None,
+                    Poll::Pending => {}
                 }
             }
             Poll::Pending
