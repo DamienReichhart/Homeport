@@ -13,6 +13,7 @@ use crate::{
     app::{testing, AppState},
     data::{keys, Data, Key},
     i18n,
+    platform::{fake::Fake, Platform},
     ui::shell::{
         gates::Subject,
         pickers,
@@ -48,6 +49,12 @@ pub struct Bench {
     pub world: World,
     pub history: History,
     pub subject: Subject,
+    /// The system the page is given: `os` answers its dialogs.
+    pub platform: Platform,
+    /// What stands for the OS: `bench.os.answer(path)` is what the next
+    /// dialog answers (none is a cancel), `bench.os.took()` what was
+    /// asked of it. No dialog of the OS ever opens.
+    pub os: Arc<Fake>,
     pickers: pickers::State,
     effects: Effects,
     outcomes: Outcomes,
@@ -56,7 +63,10 @@ pub struct Bench {
 impl Bench {
     /// A page of `route`, about the app, with nothing read yet.
     pub fn at(route: Route) -> Self {
+        let os = Fake::new();
         Self {
+            platform: os.platform(),
+            os,
             app: TestApp::start(),
             data: Data::default(),
             world: World::new(Settings::default()),
@@ -95,6 +105,7 @@ impl Bench {
             location: self.history.current(),
             subject: &self.subject,
             direction: i18n::direction(),
+            platform: &self.platform,
             pickers: &self.pickers,
             effects: &self.effects,
             outcomes: &self.outcomes,
@@ -215,4 +226,63 @@ pub enum Asked {
     OpenUrl(String),
     Put(Key),
     Keep,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        platform::{dialogs::SaveFile, fake::Asked as AskedOfOs, files},
+        ui::{shell::Outcome, widgets::feedback::Surfaced},
+    };
+
+    /// What a page does of a download, as `crate::platform` documents it:
+    /// the dialog, the write off the window's thread, the toast by the shell.
+    fn save(bench: &Bench, contents: &'static str) -> Vec<Result<(), AppError>> {
+        let ctx = bench.ctx();
+        let request = SaveFile::new("Save logs", "logs.txt");
+        let Some(Some(path)) = bench.run(ctx.platform.save_file(request)).pop() else {
+            return vec![];
+        };
+        let saving = files::save(path, move |out, _| out.write_all(contents.as_bytes()));
+        bench.run(ctx.act(
+            saving.done,
+            |saved| match saved {
+                Ok(()) => Outcome::quiet().saying(|| "Logs saved".to_owned()),
+                Err(e) => Outcome::quiet().failing(Surfaced::at(
+                    e.clone(),
+                    Some("write_text_file"),
+                    jiff::Timestamp::UNIX_EPOCH,
+                )),
+            },
+            |saved| saved,
+        ))
+    }
+
+    #[test]
+    fn a_page_s_dialog_is_answered_by_the_bench_and_its_save_is_said_by_the_shell() {
+        let mut bench = Bench::at(Route::Hosts);
+        // Nothing was answered: the dialog is cancelled, and nothing follows.
+        assert!(save(&bench, "one\n").is_empty());
+        assert_eq!(
+            bench.os.took(),
+            [AskedOfOs::Save(SaveFile::new("Save logs", "logs.txt"))]
+        );
+        assert!(bench.took().is_empty());
+
+        let path = bench.os.dir().join("logs.txt");
+        bench.os.answer(&path);
+        assert_eq!(save(&bench, "one\n"), [Ok(())]);
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), "one\n");
+        assert_eq!(bench.took(), [Asked::Said("Logs saved".to_owned())]);
+
+        // A path that can't be written: the failure is the shell's to say.
+        bench.os.answer(bench.os.dir().join("missing/logs.txt"));
+        let failed = save(&bench, "two\n");
+        let [Err(error)] = failed.as_slice() else {
+            panic!("{failed:?}");
+        };
+        assert_eq!(bench.took(), [Asked::Failed(None, error.clone())]);
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), "one\n");
+    }
 }

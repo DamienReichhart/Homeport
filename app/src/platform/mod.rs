@@ -86,6 +86,18 @@ impl std::fmt::Debug for Platform {
     }
 }
 
+/// The system a window starts on: the OS's, and under `cargo test` a
+/// [`fake::Fake`] of its own, so that no test opens a dialog of the OS or
+/// a folder of the user's by forgetting to bring one.
+impl Default for Platform {
+    fn default() -> Self {
+        #[cfg(test)]
+        return fake::Fake::new().platform();
+        #[cfg(not(test))]
+        Self::native()
+    }
+}
+
 impl Platform {
     /// The real one: the OS's dialogs and handlers, the app's log folder.
     pub fn native() -> Self {

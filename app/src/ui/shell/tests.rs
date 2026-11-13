@@ -30,6 +30,10 @@ use super::{
 use crate::{
     api::app::Capabilities,
     data::{keys, resources, Data},
+    platform::{
+        dialogs::SaveFile,
+        fake::{Asked, Fake},
+    },
     test_support::{
         fixtures::{cluster_view, connected, connected_host, host_view, nomad_cluster_view},
         snapshot::{assert_snapshot, in_language},
@@ -115,6 +119,11 @@ impl Pages for Blank {
                 ),
             ),
             "link" => ctx.open_url("http://localhost:8080"),
+            // A dialog is asked of the platform the shell lends the page.
+            "save" => drop(
+                ctx.platform
+                    .save_file(SaveFile::new("Save logs", "logs.txt")),
+            ),
             "put" => ctx.put(keys::host::freshness("h1"), vec![7_u8]),
             "keep" => ctx.keep(
                 Some("api".to_owned()),
@@ -146,6 +155,8 @@ type Msg = Message<stub::Message>;
 
 struct Rig {
     app: TestApp,
+    /// What stands for the OS: the dialogs a page asks for are answered here.
+    os: std::sync::Arc<Fake>,
     data: Data,
     shell: Shell<Blank>,
 }
@@ -174,9 +185,15 @@ impl Rig {
         data.set(&keys::host::list(), hosts);
         data.set(&keys::cluster::list(), clusters);
         data.set(&keys::swarm::list(), Vec::<SwarmView>::new());
-        let mut shell = Shell::new(app.state.clone(), settings);
+        let os = Fake::new();
+        let mut shell = Shell::new(app.state.clone(), settings, os.platform());
         shell.mac = false;
-        let mut rig = Self { app, data, shell };
+        let mut rig = Self {
+            app,
+            os,
+            data,
+            shell,
+        };
         rig.send(Message::Changed);
         rig
     }
@@ -490,7 +507,7 @@ fn the_selection_is_remembered_across_a_restart() {
     let stored = rig.app.state.settings.get().unwrap();
     assert_eq!(stored.last_host_id.as_deref(), Some("prod-id"));
     // A new launch reads the settings and opens on the same Host.
-    let mut again: Shell<Blank> = Shell::new(rig.app.state.clone(), stored);
+    let mut again: Shell<Blank> = Shell::new(rig.app.state.clone(), stored, rig.os.platform());
     drop(again.update(Message::Changed, &mut rig.data));
     assert_eq!(again.world().host_id(), Some("prod-id"));
     rig.run(Message::Select(Selection::Cluster {
@@ -519,7 +536,7 @@ fn a_remembered_host_that_is_gone_falls_back_and_one_still_loading_is_kept() {
     let rig = Rig::new(vec![connected_host()], vec![], settings.clone());
     assert_eq!(rig.shell.world().host_id(), Some("h1"));
     let app = TestApp::start();
-    let mut shell: Shell<Blank> = Shell::new(app.state.clone(), settings);
+    let mut shell: Shell<Blank> = Shell::new(app.state.clone(), settings, Fake::new().platform());
     drop(shell.update(Message::Changed, &mut Data::default()));
     assert_eq!(
         shell.world().host_id(),
@@ -1106,6 +1123,18 @@ fn a_page_says_what_it_did_names_what_failed_and_opens_a_link() {
         ("web".to_owned(), &refused())
     );
     assert_eq!(url, "http://localhost:8080");
+}
+
+#[test]
+fn a_page_asks_its_dialogs_of_the_platform_the_shell_was_given() {
+    let mut rig = docker_and_prod();
+    rig.go(Route::Containers);
+    assert!(rig.os.took().is_empty());
+    rig.send(Message::Go(Request::to(Route::Containers).starting("save")));
+    assert_eq!(
+        rig.os.took(),
+        [Asked::Save(SaveFile::new("Save logs", "logs.txt"))]
+    );
 }
 
 #[test]

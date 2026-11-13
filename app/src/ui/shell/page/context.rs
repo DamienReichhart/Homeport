@@ -15,6 +15,7 @@ use crate::{
     app::AppState,
     data::{self, Data, Key, Query},
     i18n::Direction,
+    platform::Platform,
     ui::{
         shell::{
             gates::Subject,
@@ -103,6 +104,9 @@ pub struct Context<'a> {
     pub subject: &'a Subject,
     /// The direction the language reads in.
     pub direction: Direction,
+    /// The system the app runs on: its file dialogs, the files the user
+    /// picked, its file manager (`crate::platform`).
+    pub platform: &'a Platform,
     pub(in crate::ui::shell) pickers: &'a pickers::State,
     pub(in crate::ui::shell) effects: &'a Effects,
     pub(in crate::ui::shell) outcomes: &'a Outcomes,
@@ -210,7 +214,7 @@ impl<'a> Context<'a> {
             .push(Effect::Said(toast::Kind::Success, Said::new(say)));
     }
 
-    /// Opens `url` in the system browser.
+    /// Opens `url` in the system browser; a failure is said in a toast.
     pub fn open_url(&self, url: impl Into<String>) {
         self.effects.push(Effect::OpenUrl(url.into()));
     }

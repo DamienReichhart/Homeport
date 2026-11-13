@@ -34,13 +34,16 @@ use crate::{
     },
     data::{self, Data},
     i18n,
+    platform::Platform,
 };
 use theme::{
     font,
+    icon::Icon,
     metrics::{space, text as size},
     Element, Theme,
 };
 use widgets::{
+    basic::button,
     feedback::{
         copy, error_details, error_message, error_message::Event as FailureEvent, toast, About,
         Details, Surfaced, Toasts,
@@ -111,6 +114,9 @@ struct Homeport {
     /// The Details of a failure, when asked for.
     details: Option<Details>,
     about: About,
+    /// The system the app runs on: its dialogs, its browser, its file
+    /// manager. The shell lends it to every page.
+    platform: Platform,
 }
 
 /// Why the app didn't start, kept as it is so it reads in the language of
@@ -156,6 +162,11 @@ pub enum Message {
     Details(error_details::Message),
     /// What was asked of the failure the window shows in place.
     Failure(FailureEvent),
+    /// Show the folder the database is in, from the failed start.
+    OpenDataFolder,
+    /// The OS was asked to open a link or a folder, under this use
+    /// case's name: only a failure is told.
+    Opened(&'static str, Result<(), AppError>),
 }
 
 impl Homeport {
@@ -205,6 +216,7 @@ impl Homeport {
                 os: app.os.to_owned(),
                 arch: app.arch.to_owned(),
             },
+            platform: Platform::default(),
         }
     }
 
@@ -221,7 +233,7 @@ impl Homeport {
                 i18n::set_language(&settings.language, &i18n::locale::preferred());
                 self.mode = settings.theme.into();
                 self.phase = Phase::Ready(state.clone());
-                self.shell = Some(Shell::new(state, settings));
+                self.shell = Some(Shell::new(state, settings, self.platform.clone()));
                 if std::env::var_os(EXIT_WHEN_READY).is_some() {
                     return Task::done(Message::CloseRequested);
                 }
@@ -301,6 +313,25 @@ impl Homeport {
             Message::Failure(FailureEvent::Retry) => Task::none(),
             Message::Details(message) => self.details_asked(message),
             Message::Shell(message) => self.hand_shell(message),
+            Message::OpenDataFolder => {
+                // The app has no state when its database didn't open:
+                // the folder is the one the file was looked for in.
+                let Phase::Failed(Failure::Database(_, database)) = &self.phase else {
+                    return Task::none();
+                };
+                let Some(folder) = database.parent() else {
+                    return Task::none();
+                };
+                Task::perform(self.platform.open_folder(folder.to_owned()), |opened| {
+                    Message::Opened("open_data_folder", opened)
+                })
+            }
+            Message::Opened(command, opened) => {
+                if let Err(error) = opened {
+                    self.toasts.failure(Surfaced::new(error, command));
+                }
+                Task::none()
+            }
         }
     }
 
@@ -312,27 +343,37 @@ impl Homeport {
         };
         let mut tasks = vec![shell.update(message, &mut self.data).map(Message::Shell)];
         for event in shell.take_events() {
-            match event {
-                shell::Event::Failed(Some(title), surfaced) => {
-                    self.toasts.failure_of(move || title.now(), surfaced);
-                }
-                shell::Event::Said(kind, said) => {
-                    self.toasts.say(kind, move || said.now());
-                }
-                shell::Event::Failed(None, surfaced) => {
-                    self.toasts.failure(surfaced);
-                }
-                shell::Event::Details(surfaced) => self.details = Some(Details::new(surfaced)),
-                shell::Event::Theme(theme) => tasks.push(self.set_theme(theme)),
-                shell::Event::Copy(text) => tasks.push(iced::clipboard::write(text)),
-                // What opens a link in the system browser comes with the
-                // dialogs and opener layer (#253), and the updater with its
-                // own ticket: until then the request is only logged.
-                shell::Event::OpenUrl(url) => log::info!("asked to open {url}"),
-                shell::Event::CheckForUpdates => log::info!("asked to check for updates"),
-            }
+            tasks.push(self.asked(event));
         }
         Task::batch(tasks)
+    }
+
+    /// Does what the shell asked of the window.
+    fn asked(&mut self, event: shell::Event) -> Task<Message> {
+        match event {
+            shell::Event::Failed(Some(title), surfaced) => {
+                self.toasts.failure_of(move || title.now(), surfaced);
+            }
+            shell::Event::Said(kind, said) => {
+                self.toasts.say(kind, move || said.now());
+            }
+            shell::Event::Failed(None, surfaced) => {
+                self.toasts.failure(surfaced);
+            }
+            shell::Event::Details(surfaced) => self.details = Some(Details::new(surfaced)),
+            shell::Event::Theme(theme) => return self.set_theme(theme),
+            shell::Event::Copy(text) => return iced::clipboard::write(text),
+            // The browser is the OS's to start, off the window's thread.
+            shell::Event::OpenUrl(url) => {
+                return Task::perform(self.platform.open_url(url), |opened| {
+                    Message::Opened("open_url", opened)
+                });
+            }
+            // The updater comes with its own ticket (#255): until then
+            // the request is only logged.
+            shell::Event::CheckForUpdates => log::info!("asked to check for updates"),
+        }
+        Task::none()
     }
 
     /// The theme chosen in the palette: shown at once, saved behind.
@@ -368,17 +409,11 @@ impl Homeport {
             error_details::Effect::Copy(report) => {
                 copy(report, Message::Details(error_details::Message::CopyShown))
             }
+            // The dialog says a failure itself, under its button.
             error_details::Effect::OpenLogFolder => {
-                // The log folder and what opens a folder come with the
-                // platform layer (#253, #254); until then the use case says
-                // it cannot, in the dialog.
-                let logs = dirs::data_dir().unwrap_or_default().join("homeport/logs");
-                let opened = crate::api::app::open_log_folder(&logs, |_| {
-                    Err(std::io::Error::from(std::io::ErrorKind::Unsupported))
-                });
-                Task::done(Message::Details(error_details::Message::LogFolderOpened(
-                    opened,
-                )))
+                Task::perform(self.platform.open_log_folder(), |opened| {
+                    Message::Details(error_details::Message::LogFolderOpened(opened))
+                })
             }
         }
     }
@@ -425,6 +460,11 @@ impl Homeport {
             );
         }
         parts.push(error_message(failure.error(), false, Message::Failure));
+        if matches!(failure, Failure::Database(..)) {
+            let open = button::labelled(Icon::FolderOpen, crate::t!("app.startup.openFolder"))
+                .on_press(Message::OpenDataFolder);
+            parts.push(open.into());
+        }
         stack(parts).spacing(space::S3).into()
     }
 

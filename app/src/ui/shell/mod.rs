@@ -52,6 +52,7 @@ use crate::{
     app::AppState,
     data::{self, action::Finished, Action, Data, Key},
     i18n,
+    platform::Platform,
     ui::{
         theme::{self, metrics::space, Element},
         widgets::{
@@ -152,6 +153,8 @@ pub enum Message<M> {
 /// The shell's state.
 pub struct Shell<P: Pages> {
     state: Arc<AppState>,
+    /// The system the app runs on, lent to every page.
+    platform: Platform,
     world: World,
     /// What the user chose, or what was remembered; the selection is what
     /// it resolves to among the Hosts and Clusters that exist.
@@ -187,9 +190,10 @@ pub struct Shell<P: Pages> {
 
 impl<P: Pages> Shell<P> {
     /// The shell of a started app, opening on what `settings` remember.
-    pub fn new(state: Arc<AppState>, settings: Settings) -> Self {
+    pub fn new(state: Arc<AppState>, settings: Settings, platform: Platform) -> Self {
         Self {
             state,
+            platform,
             chosen: selection::remembered(&settings),
             world: World::new(settings),
             history: History::default(),
@@ -302,6 +306,7 @@ impl<P: Pages> Shell<P> {
                     location: self.history.current(),
                     subject: &open.key.1,
                     direction: i18n::direction(),
+                    platform: &self.platform,
                     pickers: &self.pickers,
                     effects: &self.effects,
                     outcomes: &self.outcomes,
@@ -392,6 +397,7 @@ impl<P: Pages> Shell<P> {
             location: self.history.current(),
             subject: &open.key.1,
             direction: i18n::direction(),
+            platform: &self.platform,
             pickers: &self.pickers,
             effects: &self.effects,
             outcomes: &self.outcomes,

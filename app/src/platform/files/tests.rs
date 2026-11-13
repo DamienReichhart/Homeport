@@ -155,7 +155,7 @@ fn files_that_are_not_text_or_too_large_are_refused_by_name() {
 #[test]
 fn progress_is_a_percent_that_never_overshoots() {
     let at = |done, total| Progress { done, total }.percent();
-    assert_eq!(at(0, 0), 100);
+    assert_eq!(at(0, 0), 0);
     assert_eq!(at(0, 10), 0);
     assert_eq!(at(5, 10), 50);
     assert_eq!(at(10, 10), 100);
@@ -179,8 +179,8 @@ async fn a_large_save_tells_how_far_it_is_and_lands_whole() {
     let steps = tokio::spawn(saving.progress.collect::<Vec<_>>());
     saving.done.await.unwrap();
     let steps = steps.await.unwrap();
-    // The window is told a hundred times at most, however many lines.
-    assert!(!steps.is_empty() && steps.len() <= 100, "{}", steps.len());
+    // The window is told once a percent at most, however many lines.
+    assert!(!steps.is_empty() && steps.len() <= 101, "{}", steps.len());
     assert!(steps.windows(2).all(|pair| pair[0].done < pair[1].done));
     assert_eq!(steps.last().unwrap().percent(), 100);
     let written = fs::read_to_string(&path).unwrap();

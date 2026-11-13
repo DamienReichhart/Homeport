@@ -139,10 +139,10 @@ pub struct Progress {
 }
 
 impl Progress {
-    /// From 0 to 100; 100 when there was nothing to write.
+    /// From 0 to 100; 0 until the writer has said how much there is.
     pub fn percent(self) -> u8 {
         if self.total == 0 {
-            return 100;
+            return 0;
         }
         let percent = u128::from(self.done.min(self.total)) * 100 / u128::from(self.total);
         u8::try_from(percent).unwrap_or(100)
@@ -171,7 +171,7 @@ pub struct Saving<Done, Steps> {
     /// Ends when the file is in place, or says why it is not. This is the
     /// work to hand `ctx.act`, so its toast outlives the page.
     pub done: Done,
-    /// The progress, a hundred steps at most, ending with the write. For
+    /// The progress, a step a percent at most, ending with the write. For
     /// `Task::run`; dropping it changes nothing to the write.
     pub progress: Steps,
 }

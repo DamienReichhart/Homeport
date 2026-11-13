@@ -1,7 +1,7 @@
 //! The window itself: what it shows when the app didn't start, and the
 //! messages that reach it from outside a page.
 
-use std::path::PathBuf;
+use std::{io, path::PathBuf, sync::Arc};
 
 use homeport_core::{
     error::{AppError, ErrorCode},
@@ -11,6 +11,7 @@ use homeport_settings::Theme as Setting;
 
 use super::{theme::Theme, Failure, Homeport, Message, Phase};
 use crate::{
+    platform::fake::{Asked, Fake},
     t,
     test_support::{
         snapshot::{assert_snapshot, in_language},
@@ -18,7 +19,10 @@ use crate::{
         tasks,
         window::drive,
     },
-    ui::widgets::feedback::{error_message::Event, toast::Kind},
+    ui::{
+        shell,
+        widgets::feedback::{error_details, error_message::Event, toast::Kind, Surfaced},
+    },
 };
 
 fn failed() -> Homeport {
@@ -112,4 +116,149 @@ fn tab_moves_focus_and_a_failure_s_toast_opens_its_details() {
     ));
     assert!(window.details.is_some());
     assert_eq!(window.toasts.visible().len(), 1);
+}
+
+/// A window on a system that only notes what it is asked: no browser,
+/// no file manager, and folders that go with the test.
+fn on_a_fake(mut window: Homeport) -> (Homeport, Arc<Fake>) {
+    let os = Fake::new();
+    window.platform = os.platform();
+    (window, os)
+}
+
+/// Runs what an `update` returned and hands its messages back to the window.
+fn settle(window: &mut Homeport, task: iced::Task<Message>) {
+    let runtime = tokio::runtime::Runtime::new().unwrap();
+    for message in runtime.block_on(tasks::messages(task)) {
+        let _ = window.update(message);
+    }
+}
+
+#[test]
+fn a_link_a_page_asked_for_goes_to_the_os_and_a_failure_is_said() {
+    let _english = in_language("en");
+    let (mut window, os) = on_a_fake(Homeport::new());
+    let task = window.asked(shell::Event::OpenUrl("http://localhost:8080".to_owned()));
+    assert!(
+        os.took().is_empty(),
+        "nothing is opened on the window's thread"
+    );
+    settle(&mut window, task);
+    assert_eq!(os.took(), [Asked::Opened("http://localhost:8080".into())]);
+    assert!(window.toasts.is_empty(), "a link that opened says nothing");
+
+    // No browser answers: the toast names the link and what to do.
+    os.refuse(io::ErrorKind::NotFound);
+    let task = window.asked(shell::Event::OpenUrl("https://example.com".to_owned()));
+    settle(&mut window, task);
+    let [toast] = window.toasts.visible() else {
+        panic!("one toast");
+    };
+    assert_eq!(toast.kind, Kind::Error);
+    assert_eq!(
+        toast.text(),
+        (
+            "https://example.com can't be opened.".to_owned(),
+            Some("Copy the address and open it in your browser instead.".to_owned())
+        )
+    );
+}
+
+#[test]
+fn the_failed_start_opens_the_folder_its_database_is_in() {
+    let _english = in_language("en");
+    let (mut window, os) = on_a_fake(failed());
+    let database = os.dir().join("data/homeport.db");
+    let Phase::Failed(Failure::Database(_, path)) = &mut window.phase else {
+        panic!("a database that didn't open");
+    };
+    path.clone_from(&database);
+    let open = t!("app.startup.openFolder");
+    let messages = drive(
+        (640.0, 400.0),
+        || window.view(),
+        |page| {
+            page.click(open.as_str()).expect("an Open folder button");
+        },
+    );
+    assert!(matches!(messages.as_slice(), [Message::OpenDataFolder]));
+    for message in messages {
+        let task = window.update(message);
+        settle(&mut window, task);
+    }
+    let folder = database.parent().unwrap();
+    assert_eq!(os.took(), [Asked::Opened(folder.into())]);
+    assert!(folder.is_dir(), "a folder that isn't there yet is made");
+    assert!(window.toasts.is_empty());
+
+    os.refuse(io::ErrorKind::NotFound);
+    let task = window.update(Message::OpenDataFolder);
+    settle(&mut window, task);
+    let [toast] = window.toasts.visible() else {
+        panic!("one toast");
+    };
+    assert_eq!(
+        toast.text().0,
+        format!("{} can't be opened.", folder.display())
+    );
+}
+
+#[test]
+fn a_start_that_failed_otherwise_offers_no_folder() {
+    let _english = in_language("en");
+    let error = AppError::new(ErrorCode::Io, msg::IO_FAILED);
+    let (mut window, os) = on_a_fake(Homeport::new());
+    window.phase = Phase::Failed(Failure::Other(Box::new(error)));
+    let open = t!("app.startup.openFolder");
+    let mut found = true;
+    let _ = drive(
+        (640.0, 400.0),
+        || window.view(),
+        |page| found = page.click(open.as_str()).is_ok(),
+    );
+    assert!(!found, "there is no database to show the folder of");
+    assert!(tasks::is_none(window.update(Message::OpenDataFolder)));
+    assert!(os.took().is_empty());
+}
+
+#[test]
+fn the_details_dialog_opens_the_log_folder_and_says_when_it_cannot() {
+    let _english = in_language("en");
+    let (mut window, os) = on_a_fake(Homeport::new());
+    let error = AppError::new(ErrorCode::Io, msg::IO_FAILED);
+    let surfaced = Surfaced::at(error, Some("hosts_list"), jiff::Timestamp::UNIX_EPOCH);
+    window.details = Some(error_details::Details::new(surfaced));
+    let open = t!("ui.errorDetails.openLogFolder");
+    let press = |window: &Homeport| {
+        drive(
+            (900.0, 700.0),
+            || window.view(),
+            |page| {
+                page.click(open.as_str())
+                    .expect("an Open log folder button");
+            },
+        )
+    };
+    for message in press(&window) {
+        let task = window.update(message);
+        settle(&mut window, task);
+    }
+    let logs = os.dir().join("logs");
+    assert_eq!(os.took(), [Asked::Opened(logs.clone().into())]);
+    assert!(logs.is_dir());
+
+    // The file manager doesn't answer: the dialog says so, in place.
+    os.refuse(io::ErrorKind::NotFound);
+    for message in press(&window) {
+        let task = window.update(message);
+        settle(&mut window, task);
+    }
+    let refused = format!("{} can't be opened.", logs.display());
+    let mut shown = false;
+    let _ = drive(
+        (900.0, 700.0),
+        || window.view(),
+        |page| shown = page.find(refused.as_str()).is_ok(),
+    );
+    assert!(shown, "the failure shows under the button");
 }
