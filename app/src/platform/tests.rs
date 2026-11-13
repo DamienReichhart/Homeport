@@ -115,7 +115,7 @@ async fn a_link_goes_to_the_os_and_anything_else_never_does() {
 async fn folders_are_made_then_opened_and_a_failure_names_the_folder() {
     let fake = Fake::new();
     let platform = fake.platform();
-    let logs = platform.log_dir().to_owned();
+    let logs = platform.log_dir().unwrap().to_owned();
     assert!(logs.starts_with(fake.dir()) && !logs.exists());
     platform.open_log_folder().await.unwrap();
     assert!(logs.is_dir(), "the folder is made so it can be shown");
@@ -298,4 +298,15 @@ async fn a_dialog_asked_for_while_one_is_open_answers_as_cancelled() {
 fn pathdiff(path: &std::path::Path, here: &std::path::Path) -> PathBuf {
     let up: PathBuf = here.components().skip(1).map(|_| "..").collect();
     up.join(path.strip_prefix("/").unwrap_or(path))
+}
+
+#[tokio::test]
+async fn a_computer_with_no_place_for_logs_says_so_and_opens_nothing() {
+    let fake = Fake::new();
+    let nowhere = super::folders::log_dir_on(super::opener::Os::Linux, None, None);
+    let platform = super::Platform::of(fake.clone(), fake.clone(), nowhere);
+    let failed = platform.open_log_folder().await.unwrap_err();
+    assert_eq!(failed.key, "errors.file.noAppFolder");
+    assert_eq!(platform.log_dir().unwrap_err(), failed);
+    assert!(fake.took().is_empty(), "no folder was made up to be opened");
 }

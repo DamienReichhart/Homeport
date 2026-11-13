@@ -82,8 +82,9 @@ use crate::app::AppState;
 pub struct Platform {
     dialogs: Arc<dyn Dialogs>,
     opener: Arc<dyn Opener>,
-    /// Where the app's log files are.
-    log_dir: PathBuf,
+    /// Where the app's log files are, or why this computer has no place
+    /// for them.
+    log_dir: AppResult<PathBuf>,
     /// Whether a dialog is open: the app's window has one at a time.
     dialog_open: Arc<AtomicBool>,
 }
@@ -128,7 +129,11 @@ impl Platform {
     }
 
     /// One whose dialogs, opener and log folder are given: a test's.
-    pub fn of(dialogs: Arc<dyn Dialogs>, opener: Arc<dyn Opener>, log_dir: PathBuf) -> Self {
+    pub fn of(
+        dialogs: Arc<dyn Dialogs>,
+        opener: Arc<dyn Opener>,
+        log_dir: AppResult<PathBuf>,
+    ) -> Self {
         Self {
             dialogs,
             opener,
@@ -250,13 +255,13 @@ impl Platform {
     pub fn open_log_folder(&self) -> impl Future<Output = AppResult<()>> + Send + 'static {
         let (opener, dir) = (self.opener.clone(), self.log_dir.clone());
         off_thread(move || {
-            crate::api::app::open_log_folder(&dir, |dir| opener.open(dir.as_os_str()))
+            crate::api::app::open_log_folder(&dir?, |dir| opener.open(dir.as_os_str()))
         })
     }
 
-    /// Where the app's log files are.
-    pub fn log_dir(&self) -> &Path {
-        &self.log_dir
+    /// Where the app's log files are, if this computer has a place for them.
+    pub fn log_dir(&self) -> AppResult<&Path> {
+        self.log_dir.as_deref().map_err(Clone::clone)
     }
 }
 

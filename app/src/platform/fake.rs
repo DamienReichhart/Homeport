@@ -61,7 +61,7 @@ impl Fake {
 
     /// The platform a page is given, on this fake.
     pub fn platform(self: &Arc<Self>) -> Platform {
-        Platform::of(self.clone(), self.clone(), self.dir.path().join("logs"))
+        Platform::of(self.clone(), self.clone(), Ok(self.dir.path().join("logs")))
     }
 
     fn script(&self) -> std::sync::MutexGuard<'_, Script> {
