@@ -32,8 +32,8 @@
 //! - **Samples** are kept in rings (`samples.rs`): appending one moves
 //!   none of the others. A value that is missing, `NaN` or infinite is a
 //!   gap in the line, never a zero; a counter is drawn as its rate, with
-//!   a gap where it went down; a clock that went back drops what it
-//!   overtakes.
+//!   a gap where it went down; a sample that comes late is left out and
+//!   the rest kept.
 //! - **The axes** (`scale.rs`, `scene.rs`): time runs left to right in
 //!   every language; the values go from zero to a tenth over the
 //!   highest in view, in the chart's [`Unit`], said by `i18n::format`.
