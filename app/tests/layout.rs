@@ -62,6 +62,11 @@ const FORBIDDEN: &[(&str, &[&str], &str)] = &[
         "the data layer serves every page, so it knows none",
     ),
     (
+        "platform",
+        &["crate::ui", "crate::data"],
+        "the platform serves the window and every page, so it knows none",
+    ),
+    (
         "ui/shell",
         &["crate::ui::features", "crate::ui::domain"],
         "the shell hosts whatever page it is given, and knows no feature",
@@ -90,6 +95,7 @@ const FORBIDDEN: &[(&str, &[&str], &str)] = &[
             "crate::ui::shell",
             "crate::api",
             "crate::data",
+            "crate::platform",
         ],
         "the theme styles widgets, whatever they show",
     ),
@@ -257,6 +263,26 @@ fn wrong_dependencies(src: &Path) -> Vec<String> {
     wrong
 }
 
+/// The widgets under `src` that name the platform layer. A widget opens no
+/// dialog and writes no file: it tells its page, which asks the platform.
+/// The kit's gallery stands for a page, so it may.
+fn widgets_using_the_platform(src: &Path) -> Vec<String> {
+    let kit = src.join("ui/widgets");
+    rust_files(&kit)
+        .into_iter()
+        .filter(|path| !path.starts_with(kit.join("gallery")))
+        .filter(|path| {
+            code(path).iter().any(|statement| {
+                statement
+                    .paths
+                    .iter()
+                    .any(|p| p.contains("crate::platform"))
+            })
+        })
+        .map(|path| shown(src, &path))
+        .collect()
+}
+
 /// The features under `src`: `ui/features/<group>/<name>`, as its path in
 /// the crate and its folder.
 fn features(src: &Path) -> Vec<(String, PathBuf)> {
@@ -398,6 +424,15 @@ fn dependencies_point_inward() {
 }
 
 #[test]
+fn only_a_page_asks_the_platform() {
+    let wrong = widgets_using_the_platform(&src());
+    assert!(
+        wrong.is_empty(),
+        "a widget tells its page, which asks `crate::platform`: {wrong:#?}"
+    );
+}
+
+#[test]
 fn a_feature_never_uses_another_feature() {
     assert!(
         features(&src()).len() > 30,
@@ -512,8 +547,36 @@ fn each_rule_fails_on_a_tree_that_breaks_it() {
         "use crate::ui::features::docker::images;\n",
     );
     write(src, "ui/widgets/table.rs", "use crate::data::Data;\n");
+    write(
+        src,
+        "platform/dialogs.rs",
+        "use crate::{api::app, ui::shell::Context};\n",
+    );
+    write(src, "ui/theme/mod.rs", "use crate::platform::Platform;\n");
     let wrong = wrong_dependencies(src);
-    assert_eq!(wrong.len(), 3, "{wrong:#?}");
+    assert_eq!(wrong.len(), 5, "{wrong:#?}");
+    assert!(wrong
+        .iter()
+        .any(|w| w.starts_with("platform/dialogs.rs uses crate::ui")));
+    assert!(wrong.iter().any(|w| w.starts_with("ui/theme/mod.rs")));
+
+    // A widget never asks the platform itself; the gallery, as a page, may.
+    assert!(widgets_using_the_platform(src).is_empty());
+    write(
+        src,
+        "ui/widgets/gallery/log.rs",
+        "use crate::platform::files;\n",
+    );
+    assert!(widgets_using_the_platform(src).is_empty());
+    write(
+        src,
+        "ui/widgets/log/mod.rs",
+        "// crate::platform in a comment is fine\nuse crate::platform::{dialogs::SaveFile, files};\n",
+    );
+    assert_eq!(
+        widgets_using_the_platform(src),
+        ["ui/widgets/log/mod.rs".to_owned()]
+    );
     assert!(wrong
         .iter()
         .any(|w| w.starts_with("api/hosts.rs uses crate::ui")));

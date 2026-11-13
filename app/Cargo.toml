@@ -76,6 +76,9 @@ jiff.workspace = true
 regex.workspace = true
 # How many cells a character of a log takes: wide, narrow, or none.
 unicode-width.workspace = true
+# The platform layer: the OS's file dialogs, and its handler for a link or a folder.
+rfd.workspace = true
+open.workspace = true
 
 [dev-dependencies]
 # A clock the data layer's tests move themselves.

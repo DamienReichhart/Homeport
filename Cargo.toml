@@ -116,13 +116,21 @@ fixed_decimal = { version = "0.7", features = ["ryu"] }
 writeable = "0.6"
 # Headless runs of the iced app in tests: simulated input and snapshots.
 iced_runtime = "0.14"
+# The iced app's file dialogs and what opens a link or a folder. On Linux the
+# dialogs go through the XDG portal (libdbus loaded at run time, zenity when
+# there is none), so the app links no GTK.
+rfd = { version = "0.17", default-features = false, features = ["xdg-portal", "wayland"] }
+open = "5"
 png = "0.18"
 # The desktop shell (Tauri, until the iced app replaces it).
 tauri = { version = "2", features = ["tray-icon"] }
 tauri-build = { version = "2", features = [] }
 tauri-plugin-opener = "2"
 tauri-plugin-log = "2"
-tauri-plugin-dialog = "2"
+# The portal backend, not the plugin's default GTK one: `rfd` builds with one
+# Linux backend only, features are shared by the whole workspace, and the iced
+# app asks for the portal (see `rfd` above).
+tauri-plugin-dialog = { version = "2", default-features = false, features = ["xdg-portal"] }
 tauri-plugin-updater = "2"
 tauri-plugin-single-instance = "2"
 tauri-plugin-window-state = "2"

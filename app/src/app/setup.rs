@@ -28,7 +28,7 @@ pub const KEYCHAIN: Keychain = Keychain {
 };
 
 /// The folder name the app keeps its files under, as before.
-const IDENTIFIER: &str = "com.homeport.app";
+pub const IDENTIFIER: &str = "com.homeport.app";
 
 /// Why the app's state couldn't be built.
 pub enum Failure {

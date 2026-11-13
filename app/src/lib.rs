@@ -12,6 +12,7 @@ pub mod app;
 pub mod data;
 pub mod i18n;
 pub mod messages;
+pub mod platform;
 #[cfg(test)]
 pub mod test_support;
 pub mod ui;
