@@ -230,3 +230,49 @@ fn a_stopped_container_s_logs_and_a_stream_that_failed_drawn() {
         rig.view()
     });
 }
+
+fn end(rig: &mut Rig) {
+    let generation = rig.state.logs.generation();
+    let ended = Update::Batch {
+        items: vec![LogEvent::End],
+        dropped: 0,
+    };
+    rig.send(logs(logs::Message::Lines(generation, ended)));
+}
+
+#[test]
+fn a_restart_opens_the_logs_again_once_the_list_says_the_container_runs() {
+    let mut rig = filled();
+    let generation = rig.state.logs.generation();
+    // Restart: the stream ends while the list still says it runs.
+    end(&mut rig);
+    assert!(rig.state.logs.has_ended());
+    // The end asks for the list again, to know whether it runs.
+    assert!(rig
+        .bench
+        .took()
+        .contains(&Asked::Invalidate(keys::host::containers("h1"))));
+    // Nothing read since: the end stays.
+    rig.refresh();
+    assert_eq!(rig.state.logs.generation(), generation);
+    // The list read again says it runs (running to running): another
+    // stream, on an empty viewer.
+    rig.list(sample());
+    assert_eq!(rig.state.logs.generation(), generation + 1);
+    assert!(!rig.state.logs.has_ended() && rig.state.logs.view.is_empty());
+    // A list read again once more opens nothing more.
+    rig.list(sample());
+    assert_eq!(rig.state.logs.generation(), generation + 1);
+}
+
+#[test]
+fn a_container_that_stopped_keeps_its_end_of_logs() {
+    let mut rig = filled();
+    let generation = rig.state.logs.generation();
+    end(&mut rig);
+    let mut stopped = sample();
+    "exited".clone_into(&mut stopped[0].state);
+    rig.list(stopped);
+    assert_eq!(rig.state.logs.generation(), generation);
+    assert!(rig.state.logs.has_ended());
+}

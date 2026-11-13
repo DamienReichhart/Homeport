@@ -120,6 +120,10 @@ pub struct State {
     pub(super) window: Option<iced::Size>,
     /// The container's state when the page last looked.
     pub(super) seen_state: Option<String>,
+    /// The log stream of this number ended while the Host's list was the
+    /// one kept here: a list read since that says the container runs
+    /// means it started again (a restart is running to running).
+    pub(super) logs_ended: Option<(u64, Option<Arc<Vec<Container>>>)>,
     /// What the page already asked the shell to read: a resource is
     /// asked for once, when the tab that shows it first needs it.
     pub(super) watched: HashSet<Key>,
@@ -147,6 +151,7 @@ impl State {
             more: menu::State::default(),
             window: None,
             seen_state: None,
+            logs_ended: None,
             watched: HashSet::new(),
             logs: Logs::new(),
             inspect: Inspect::default(),

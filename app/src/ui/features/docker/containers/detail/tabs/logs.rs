@@ -190,6 +190,12 @@ impl Logs {
         self.ended || self.failure.is_some()
     }
 
+    /// Whether the Engine said the stream has no more: the container
+    /// stopped, or was restarted.
+    pub fn has_ended(&self) -> bool {
+        self.ended
+    }
+
     /// How far a save is, while a file is written.
     pub fn saving(&self) -> Option<Progress> {
         self.saving.wrote.as_ref().map(|(wrote, _)| *wrote)

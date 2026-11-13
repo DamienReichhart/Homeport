@@ -1,6 +1,6 @@
 //! What a message changes on a container's page.
 
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::Arc};
 
 use iced::Task;
 
@@ -213,18 +213,39 @@ fn now() -> i64 {
 }
 
 pub fn refresh(state: &mut State, ctx: &Context<'_>) -> Task<Message> {
-    let now_state = state.container(ctx).map(|container| container.state);
-    if now_state != state.seen_state {
-        let started = now_state.as_deref() == Some("running");
-        state.seen_state = now_state;
-        // A container that starts again writes again: its stream ended
-        // with it, so the logs that show are opened anew. React's stayed
-        // on "end of logs" until an option of the viewer changed.
-        if started && state.tab == Tab::Logs && state.logs.is_over() {
-            state.logs.restart(now());
+    state.seen_state = state.container(ctx).map(|container| container.state);
+    reopen_logs(state, ctx);
+    needs(state, ctx)
+}
+
+/// A container that starts again writes again: its log stream ended with
+/// it, so the logs that show are opened anew once a list read since the
+/// end says it runs. A restart goes from running to running faster than
+/// the list is read, so the end itself asks for the list again. React's
+/// stayed on "end of logs" until an option of the viewer changed.
+fn reopen_logs(state: &mut State, ctx: &Context<'_>) {
+    if state.tab != Tab::Logs || !state.logs.has_ended() {
+        return;
+    }
+    let list = state.containers(ctx).data().cloned();
+    let generation = state.logs.generation();
+    match &state.logs_ended {
+        Some((ended, at_end)) if *ended == generation => {
+            let read_since = match (at_end, &list) {
+                (Some(at_end), Some(list)) => !Arc::ptr_eq(at_end, list),
+                (None, Some(_)) => true,
+                _ => false,
+            };
+            let running = state.seen_state.as_deref() == Some("running");
+            if read_since && running {
+                state.logs.restart(now());
+            }
+        }
+        _ => {
+            state.logs_ended = Some((generation, list));
+            ctx.invalidate(keys::host::containers(&state.host_id));
         }
     }
-    needs(state, ctx)
 }
 
 pub fn request(_state: &mut State, _action: &str, _ctx: &Context<'_>) -> Task<Message> {
@@ -287,7 +308,11 @@ pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Me
         Message::Processes(message) => processes(state, message, ctx),
         Message::Health(message) => health(state, message, ctx),
         Message::Files(message) => return files(state, message, ctx),
-        Message::Logs(message) => return state.logs.update(message, ctx).map(Message::Logs),
+        Message::Logs(message) => {
+            let task = state.logs.update(message, ctx).map(Message::Logs);
+            reopen_logs(state, ctx);
+            return task;
+        }
     }
     Task::none()
 }
