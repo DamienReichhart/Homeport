@@ -233,9 +233,16 @@ fn the_lines_to_save_are_the_text_after_its_source() {
     let mut file = vec![];
     lines.write_to(&mut file).expect("written");
     assert_eq!(
-        String::from_utf8(file).expect("text"),
+        String::from_utf8(file.clone()).expect("text"),
         "web.1 | listening on :80\ndb.1 | warning: slow\nno source\n"
     );
+    // A long save says how far it is: each line is counted once written.
+    let (mut counted, mut steps) = (vec![], vec![]);
+    lines
+        .write_counted(&mut counted, |written| steps.push(written))
+        .expect("written");
+    assert_eq!(steps, [1, 2, 3]);
+    assert_eq!(counted, file);
     // With timestamps showing, they are saved too.
     let mut stamped = State::new(10).with_timestamps(true);
     feed(

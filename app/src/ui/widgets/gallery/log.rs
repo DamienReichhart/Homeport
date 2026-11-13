@@ -4,22 +4,53 @@
 
 use std::time::Duration;
 
-use iced::{Subscription, Task};
+use std::path::PathBuf;
+
+use homeport_core::error::AppError;
+use iced::{widget::text, Subscription, Task};
 
 use super::{Gallery, Message};
-use crate::ui::{
-    theme::{
-        metrics::{space, ButtonSize},
-        Element,
+use crate::{
+    platform::{
+        dialogs::{Filter, SaveFile},
+        files::{self, Progress},
     },
-    widgets::{
-        basic::button::{self, Variant},
-        feedback::toast::Kind,
-        line,
-        log::{self, Line, Stream},
-        stack,
+    t,
+    ui::{
+        theme::{
+            metrics::{space, text as size, ButtonSize},
+            Element,
+        },
+        widgets::{
+            basic::button::{self, Variant},
+            feedback::{toast::Kind, Surfaced},
+            line,
+            log::{self, Line, Stream},
+            stack,
+        },
     },
 };
+
+/// The gallery's messages about saving its viewer's lines: what a page
+/// with a log viewer does of `log::Event::Download`.
+#[derive(Debug, Clone)]
+pub enum Save {
+    /// The save dialog answered: a path, or `None` when it was cancelled.
+    To(Option<PathBuf>),
+    /// How far the file being written is.
+    Wrote(Progress),
+    /// The file is in place, or why it is not.
+    Done(Result<(), AppError>),
+}
+
+/// The lines the gallery is saving, from the dialog to the file.
+#[derive(Debug, Default)]
+pub struct Saving {
+    /// The lines the save dialog is open for.
+    asked: Option<log::Download>,
+    /// How far the file is, while it is written.
+    pub wrote: Option<Progress>,
+}
 
 /// How tall the gallery's viewer is: the gallery's page scrolls.
 pub const HEIGHT: f32 = 420.0;
@@ -152,14 +183,63 @@ impl Gallery {
                 Task::batch([task, iced::clipboard::write(text)])
             }
             Some(log::Event::Download(lines)) => {
-                // The file dialog is the platform's; the gallery counts.
-                let count = lines.len();
-                self.toasts
-                    .say(Kind::Info, move || format!("{count} lines to save"));
-                task
+                // The lines are kept as they were when the button was
+                // pressed, while the dialog is open.
+                self.log_saving.asked = Some(lines);
+                let request = SaveFile::new(t!("containers.logs.saveTitle"), "logs.txt")
+                    .filter(Filter::new("Text", &["txt", "log"]));
+                let asked = self.platform.save_file(request);
+                Task::batch([task, asked.map(|path| Message::LogSave(Save::To(path)))])
             }
             Some(log::Event::Timestamps(_) | log::Event::Cleared) | None => task,
         }
+    }
+
+    /// The save dialog answered, the file moves on, or it ended.
+    pub(super) fn log_save(&mut self, save: Save) -> Task<Message> {
+        match save {
+            // Cancelled: an answer, not a failure. Nothing is said.
+            Save::To(None) => self.log_saving.asked = None,
+            Save::To(Some(path)) => {
+                let Some(lines) = self.log_saving.asked.take() else {
+                    return Task::none();
+                };
+                self.log_saving.wrote = Some(Progress::default());
+                // Counting a million lines and writing them are both
+                // done off the window's thread.
+                let saving = files::save(path, move |out, meter| {
+                    let total = lines.len() as u64;
+                    lines.write_counted(out, |written| meter.at(written as u64, total))
+                });
+                // A page hands `saving.done` to `ctx.act`, so the toast
+                // is said even when the page was left meanwhile.
+                return Task::batch([
+                    Task::perform(saving.done, |saved| Message::LogSave(Save::Done(saved))),
+                    Task::run(saving.progress, |wrote| {
+                        Message::LogSave(Save::Wrote(wrote))
+                    }),
+                ]);
+            }
+            Save::Wrote(wrote) => {
+                // A step that comes after the end changes nothing.
+                if let Some(shown) = &mut self.log_saving.wrote {
+                    *shown = wrote;
+                }
+            }
+            Save::Done(saved) => {
+                self.log_saving.wrote = None;
+                match saved {
+                    Ok(()) => {
+                        self.toasts
+                            .say(Kind::Success, || t!("containers.logs.saved"));
+                    }
+                    Err(error) => {
+                        self.toasts.failure(Surfaced::new(error, "write_text_file"));
+                    }
+                }
+            }
+        }
+        Task::none()
     }
 
     pub(super) fn log_fill(&mut self, fill: Fill) -> Task<Message> {
@@ -202,7 +282,7 @@ impl Gallery {
                 .on_press(Message::LogFill(fill))
                 .into()
         };
-        let switches = line(vec![
+        let mut switches = vec![
             choice("A sample", Fill::Sample, false),
             choice("1,000,000 lines", Fill::Million, false),
             choice(
@@ -210,8 +290,12 @@ impl Gallery {
                 Fill::Stream(!self.log_streaming),
                 self.log_streaming,
             ),
-        ])
-        .spacing(space::S2);
+        ];
+        if let Some(wrote) = self.log_saving.wrote {
+            let percent = wrote.percent();
+            switches.push(text(format!("Saving… {percent} %")).size(size::SM).into());
+        }
+        let switches = line(switches).spacing(space::S2);
         stack(vec![switches.into(), view(&self.log)])
             .spacing(space::S4)
             .into()

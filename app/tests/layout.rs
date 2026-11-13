@@ -265,12 +265,14 @@ fn wrong_dependencies(src: &Path) -> Vec<String> {
 
 /// The widgets under `src` that name the platform layer. A widget opens no
 /// dialog and writes no file: it tells its page, which asks the platform.
-/// The kit's gallery stands for a page, so it may.
+/// The kit's gallery stands for a page, so it may, and so may the tests
+/// that play that page on a fake system.
 fn widgets_using_the_platform(src: &Path) -> Vec<String> {
     let kit = src.join("ui/widgets");
     rust_files(&kit)
         .into_iter()
         .filter(|path| !path.starts_with(kit.join("gallery")))
+        .filter(|path| !path.components().any(|part| part.as_os_str() == "tests"))
         .filter(|path| {
             code(path).iter().any(|statement| {
                 statement
@@ -566,6 +568,11 @@ fn each_rule_fails_on_a_tree_that_breaks_it() {
         src,
         "ui/widgets/gallery/log.rs",
         "use crate::platform::files;\n",
+    );
+    write(
+        src,
+        "ui/widgets/data/tests/transfers.rs",
+        "use crate::platform::fake::Fake;\n",
     );
     assert!(widgets_using_the_platform(src).is_empty());
     write(

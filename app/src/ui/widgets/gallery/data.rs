@@ -2,23 +2,32 @@
 //! values, a copy button, shortcuts as each system names them, and a
 //! search that waits for the typing to pause.
 
+use std::path::PathBuf;
+
 use iced::{widget::text, Task};
 
 use super::{failure, Gallery, Message};
-use crate::ui::{
-    theme::{
-        metrics::{space, text as size},
-        Element,
+use crate::{
+    platform::{
+        dialogs::{OpenFile, SaveFile},
+        names, Platform,
     },
-    widgets::{
-        basic::{self, shortcut},
-        data::{
-            file_browser::{self, Entry, FileBrowser, Kind},
-            json, key_value, Item,
+    t,
+    ui::{
+        theme::{
+            metrics::{space, text as size},
+            Element,
         },
-        feedback::{copy_button, Copied},
-        form::{search, Debounce},
-        line, stack,
+        widgets::{
+            basic::{self, shortcut},
+            data::{
+                file_browser::{self, Entry, FileBrowser, Kind},
+                json, key_value, Item,
+            },
+            feedback::{copy_button, Copied},
+            form::{search, Debounce},
+            line, stack,
+        },
     },
 };
 
@@ -103,6 +112,8 @@ pub struct Data {
     pub files: file_browser::State,
     pub path: String,
     pub listing: Result<Vec<Entry>, homeport_core::error::AppError>,
+    /// The entry the save dialog is open for.
+    pub downloading: Option<Entry>,
     pub json: json::State,
     pub search: Debounce,
     /// What the search last ran for, once the typing paused.
@@ -113,6 +124,10 @@ pub struct Data {
 #[derive(Debug, Clone)]
 pub enum Event {
     Files(file_browser::Message),
+    /// The save dialog of a download answered; `None` when cancelled.
+    SaveTo(Option<PathBuf>),
+    /// The open dialog of an upload answered; no file when cancelled.
+    UploadFrom(Vec<PathBuf>),
     Json(json::Message),
     Typed(String),
     Paused(u64),
@@ -126,6 +141,7 @@ impl Default for Data {
             files: file_browser::State::default(),
             path: "/".to_owned(),
             listing: listing("/"),
+            downloading: None,
             json: json::State::new(json::Document::parse(INSPECT).expect("the sample is JSON")),
             search: Debounce::default(),
             searched: String::new(),
@@ -136,29 +152,48 @@ impl Default for Data {
 
 impl Data {
     /// What the gallery's page does with a data widget's message, and
-    /// what it says of it in passing.
-    pub fn update(&mut self, event: Event) -> (Task<Event>, Option<String>) {
+    /// what it says of it in passing. The dialogs are asked of
+    /// `platform`, as a page asks them of `ctx.platform`.
+    pub fn update(&mut self, event: Event, platform: &Platform) -> (Task<Event>, Option<String>) {
         match event {
             Event::Files(message) => {
                 let entries = self.listing.as_deref().ok();
-                let said = match self.files.update(message, entries) {
+                match self.files.update(message, entries) {
                     Some(file_browser::Event::Navigate(path)) => {
                         self.listing = listing(&path);
                         self.path = path;
-                        None
                     }
                     Some(file_browser::Event::Refresh) => {
                         self.listing = listing(&self.path);
-                        None
                     }
-                    // The dialogs are the platform's; the gallery says
-                    // what it was asked.
                     Some(file_browser::Event::Download(entry)) => {
-                        Some(format!("Download {}", entry.path))
+                        let asked = platform.save_file(save_request(&entry));
+                        self.downloading = Some(entry);
+                        return (asked.map(Event::SaveTo), None);
                     }
-                    Some(file_browser::Event::Upload) => Some(format!("Upload to {}", self.path)),
-                    Some(file_browser::Event::Failure(_)) | None => None,
-                };
+                    Some(file_browser::Event::Upload) => {
+                        let title = t!("containers.files.uploadTo", path = self.path.as_str());
+                        let asked = platform.pick_files(OpenFile::new(title));
+                        return (asked.map(Event::UploadFrom), None);
+                    }
+                    Some(file_browser::Event::Failure(_)) | None => {}
+                }
+                (Task::none(), None)
+            }
+            // Where the file goes is known: moving it out of the
+            // container is the Engine's transfer (#258), which a page
+            // starts here with `ctx.act`. The gallery has no Engine and
+            // says what it would ask.
+            Event::SaveTo(target) => {
+                let said = self.downloading.take().zip(target).map(|(entry, target)| {
+                    format!("Would save {} as {}", entry.path, target.display())
+                });
+                (Task::none(), said)
+            }
+            // No file picked is a cancel: nothing is said.
+            Event::UploadFrom(sources) => {
+                let said = (!sources.is_empty())
+                    .then(|| format!("Would upload {} files to {}", sources.len(), self.path));
                 (Task::none(), said)
             }
             Event::Json(message) => {
@@ -187,6 +222,18 @@ impl Data {
             }
         }
     }
+}
+
+/// The save dialog of an entry's download, as the container's Files tab
+/// asked it: the entry's name, or `name.tar` for a folder, which comes
+/// as an archive. The name is a container's: it is made safe to suggest.
+pub fn save_request(entry: &Entry) -> SaveFile {
+    let name = match entry.kind {
+        Kind::Directory => names::with_extension(&entry.name, "tar", "folder"),
+        _ => names::suggested(&entry.name, "file"),
+    };
+    let title = t!("containers.files.saveOne", name = entry.name.as_str());
+    SaveFile::new(title, &name)
 }
 
 fn send(event: Event) -> Message {
@@ -297,7 +344,7 @@ pub fn layout<'a>() -> Element<'a, Message> {
 
 impl Gallery {
     pub(super) fn data_event(&mut self, event: Event) -> Task<Message> {
-        let (task, said) = self.data.update(event);
+        let (task, said) = self.data.update(event, &self.platform);
         if let Some(said) = said {
             self.toasts
                 .say(super::toast::Kind::Info, move || said.clone());

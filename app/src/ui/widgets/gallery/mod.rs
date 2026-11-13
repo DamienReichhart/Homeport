@@ -13,6 +13,8 @@ pub mod data;
 mod feedback;
 pub mod log;
 #[cfg(test)]
+mod platform_tests;
+#[cfg(test)]
 mod stage_tests;
 pub mod table;
 #[cfg(test)]
@@ -45,6 +47,7 @@ use super::{
 };
 use crate::{
     i18n,
+    platform::Platform,
     ui::theme::{
         self, font,
         metrics::{space, text as size},
@@ -107,6 +110,10 @@ pub struct Gallery {
     pub log_written: usize,
     pub charts: chart::Charts,
     pub data: data::Data,
+    /// The system the gallery runs on, as a page is lent it by the
+    /// shell (`ctx.platform`): the OS's, or a test's.
+    pub platform: Platform,
+    pub log_saving: log::Saving,
 }
 
 #[derive(Debug, Clone)]
@@ -145,6 +152,7 @@ pub enum Message {
     Log(log_widget::Message),
     LogFill(log::Fill),
     LogTick,
+    LogSave(log::Save),
     Chart(chart::Event),
     Data(data::Event),
     Nothing,
@@ -194,6 +202,8 @@ impl Default for Gallery {
             log_written: 0,
             charts: chart::Charts::default(),
             data: data::Data::default(),
+            platform: Platform::default(),
+            log_saving: log::Saving::default(),
         }
     }
 }
@@ -299,13 +309,9 @@ impl Gallery {
                         return copy(report, Message::Details(error_details::Message::CopyShown));
                     }
                     Effect::OpenLogFolder => {
-                        // The gallery has no log folder: it shows the failure.
-                        let refused = AppError::new(
-                            ErrorCode::Io,
-                            msg::FOLDER_NOT_OPENED.with("path", "~/.local/share/homeport/logs"),
-                        );
-                        let opened = error_details::Message::LogFolderOpened(Err(refused));
-                        return Task::done(Message::Details(opened));
+                        return Task::perform(self.platform.open_log_folder(), |opened| {
+                            Message::Details(error_details::Message::LogFolderOpened(opened))
+                        });
                     }
                 }
             }
@@ -363,6 +369,7 @@ impl Gallery {
             Message::Log(message) => return self.log_message(message),
             Message::LogFill(fill) => return self.log_fill(fill),
             Message::LogTick => return self.log_tick(),
+            Message::LogSave(save) => return self.log_save(save),
             Message::Chart(event) => self.charts.update(event),
             Message::Data(event) => return self.data_event(event),
             Message::Nothing => {}

@@ -28,7 +28,9 @@
 //!     let (task, event) = self.log.update(message);
 //!     match event {
 //!         Some(log::Event::Copy(text)) => ctx.copy(text),
-//!         Some(log::Event::Download(lines)) => { /* the file dialog, then lines.write_to(file) */ }
+//!         // The save dialog, then the file, off the window's thread:
+//!         // `crate::platform` shows how, `gallery/log.rs` does it.
+//!         Some(log::Event::Download(lines)) => return self.save(lines, ctx),
 //!         Some(log::Event::Timestamps(_) | log::Event::Cleared) | None => {}
 //!     }
 //!     task.map(Message::Log)

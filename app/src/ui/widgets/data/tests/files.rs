@@ -130,11 +130,14 @@ fn the_browser_asks_its_page_and_does_nothing_itself() {
 
 type Sent = gallery::Message;
 
+/// Hands the gallery's page what the widgets sent. The dialogs a
+/// message opens are `transfers.rs`'s to answer: here none is run.
 fn feed(data: &mut Data, messages: Vec<Sent>) -> Vec<String> {
+    let platform = crate::platform::Platform::default();
     let mut said = vec![];
     for message in messages {
         if let Sent::Data(event) = message {
-            said.extend(data.update(event).1);
+            said.extend(data.update(event, &platform).1);
         }
     }
     said
@@ -165,7 +168,9 @@ fn the_pointer_goes_into_a_folder_and_back_by_the_path() {
     feed(&mut data, messages);
     assert_eq!(data.path, "/");
     let messages = stage.frame(sample::files_view(&data), |frame| frame.click("Upload"));
-    assert_eq!(feed(&mut data, messages), ["Upload to /"]);
+    let asked =
+        |message: &Sent| matches!(message, Sent::Data(sample::Event::Files(Message::Upload)));
+    assert!(messages.iter().any(asked), "{messages:?}");
     // A folder that can't be read says so in place of its entries,
     // and Retry reads it again.
     let messages = stage.frame(sample::files_view(&data), |frame| {

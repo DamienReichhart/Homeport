@@ -389,10 +389,21 @@ impl Download {
     }
 
     /// Writes the lines, each ended by a line feed.
-    pub fn write_to(&self, mut out: impl std::io::Write) -> std::io::Result<()> {
-        for line in self.lines() {
+    pub fn write_to(&self, out: impl std::io::Write) -> std::io::Result<()> {
+        self.write_counted(out, |_| {})
+    }
+
+    /// [`Download::write_to`], telling `wrote` how many lines are written
+    /// after each: what a page shows of a long save.
+    pub fn write_counted(
+        &self,
+        mut out: impl std::io::Write,
+        mut wrote: impl FnMut(usize),
+    ) -> std::io::Result<()> {
+        for (written, line) in self.lines().enumerate() {
             out.write_all(line.as_bytes())?;
             out.write_all(b"\n")?;
+            wrote(written + 1);
         }
         out.flush()
     }
