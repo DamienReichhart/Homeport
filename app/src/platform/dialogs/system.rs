@@ -8,7 +8,8 @@ use homeport_core::error::AppResult;
 use iced::Task;
 use rfd::{AsyncFileDialog, FileHandle};
 
-use super::{window::with_window, Dialogs, Filter, OpenFile, OpenFolder, SaveFile};
+use super::{for_system, window::with_window, Dialogs, Filter, OpenFile, OpenFolder, SaveFile};
+use crate::platform::opener::Os;
 
 /// The dialogs of the system the app runs on.
 #[derive(Debug, Clone, Copy, Default)]
@@ -17,8 +18,8 @@ pub struct Native;
 /// A dialog titled `title`, showing `filters`, starting in `folder`.
 fn dialog(title: &str, filters: &[Filter], folder: Option<PathBuf>) -> AsyncFileDialog {
     let mut dialog = AsyncFileDialog::new().set_title(title);
-    for filter in filters {
-        dialog = dialog.add_filter(&filter.name, &filter.extensions);
+    for (name, extensions) in for_system(filters, Os::current()) {
+        dialog = dialog.add_filter(name, &extensions);
     }
     match folder {
         Some(folder) => dialog.set_directory(folder),

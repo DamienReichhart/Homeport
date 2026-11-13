@@ -31,7 +31,7 @@ use iced::Task;
 pub use self::portal::Native;
 #[cfg(not(target_os = "linux"))]
 pub use self::system::Native;
-use super::names;
+use super::{names, opener::Os};
 
 /// The kind of files a dialog shows: a name and the extensions it stands
 /// for (`Compose files`, `yml` and `yaml`).
@@ -67,6 +67,41 @@ impl Filter {
     pub fn is_empty(&self) -> bool {
         self.extensions.is_empty()
     }
+}
+
+/// `filters` as the dialog of `os` takes them: a name and its extensions.
+///
+/// Windows matches a file's name against a pattern, so `*` and `tar.gz`
+/// mean there what they say. macOS knows a file by its type, which it
+/// reads off the last part of its name: `tar.gz` is given as `gz`
+/// (written whole, it matches no file and every archive is greyed out),
+/// and since a filter for every file can't be said, one among `filters`
+/// means no filter at all rather than a dialog where nothing can be
+/// picked. A Linux portal takes globs and needs neither.
+pub(super) fn for_system(filters: &[Filter], os: Os) -> Vec<(String, Vec<String>)> {
+    if os != Os::Macos {
+        return filters
+            .iter()
+            .map(|filter| (filter.name.clone(), filter.extensions.clone()))
+            .collect();
+    }
+    let every_file = |filter: &Filter| filter.extensions.iter().any(|extension| extension == "*");
+    if filters.iter().any(every_file) {
+        return vec![];
+    }
+    filters
+        .iter()
+        .map(|filter| {
+            let mut last_parts: Vec<String> = vec![];
+            for extension in &filter.extensions {
+                let last = extension.rsplit('.').next().unwrap_or(extension).to_owned();
+                if !last_parts.contains(&last) {
+                    last_parts.push(last);
+                }
+            }
+            (filter.name.clone(), last_parts)
+        })
+        .collect()
 }
 
 /// A file, or several, to open.
@@ -196,6 +231,35 @@ mod tests {
         assert_eq!(filter.name, "Archives");
         assert_eq!(filter.extensions, ["tar", "tar.gz", "tgz"]);
         assert_eq!(Filter::new("All files", &["*"]).extensions, ["*"]);
+    }
+
+    #[test]
+    fn each_system_s_dialog_is_given_filters_it_can_match() {
+        let archives = Filter::new("Archives", &["tar", "tar.gz", "tgz", "gz"]);
+        let all = Filter::new("All files", &["*"]);
+        let named = |name: &str, extensions: &[&str]| {
+            let extensions = extensions.iter().map(|e| (*e).to_owned()).collect();
+            (name.to_owned(), extensions)
+        };
+        // Windows and a portal match the name: nothing is changed.
+        for os in [Os::Windows, Os::Linux] {
+            assert_eq!(
+                for_system(&[archives.clone(), all.clone()], os),
+                [
+                    named("Archives", &["tar", "tar.gz", "tgz", "gz"]),
+                    named("All files", &["*"])
+                ]
+            );
+        }
+        // macOS reads a type off the last part, once.
+        assert_eq!(
+            for_system(std::slice::from_ref(&archives), Os::Macos),
+            [named("Archives", &["tar", "gz", "tgz"])]
+        );
+        // "Every file" there is no filter at all, whatever comes with it.
+        assert!(for_system(&[archives, all.clone()], Os::Macos).is_empty());
+        assert!(for_system(&[all], Os::Macos).is_empty());
+        assert!(for_system(&[], Os::Macos).is_empty());
     }
 
     #[test]
