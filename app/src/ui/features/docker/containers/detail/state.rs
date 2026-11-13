@@ -6,6 +6,7 @@ use std::sync::Arc;
 use homeport_core::error::{AppError, Message as Text};
 use homeport_engine::containers::Container;
 
+use super::tabs::logs::Logs;
 use crate::{
     data::{keys, Resource},
     t,
@@ -105,6 +106,12 @@ pub struct State {
     pub(super) actions: Actions,
     /// The menu beside them.
     pub(super) more: menu::State,
+    /// How tall the window is, once it said: the log viewer takes what
+    /// the page leaves of it.
+    pub(super) window_height: Option<f32>,
+    /// The container's state when the page last looked.
+    pub(super) seen_state: Option<String>,
+    pub(super) logs: Logs,
 }
 
 impl State {
@@ -120,6 +127,9 @@ impl State {
             came_from_elsewhere: ctx.location.param(CAME_FROM).is_some(),
             actions: Actions::of_host(),
             more: menu::State::default(),
+            window_height: None,
+            seen_state: None,
+            logs: Logs::new(),
         }
     }
 
@@ -139,6 +149,13 @@ impl State {
                     .then(|| list.iter().find(|c| c.id.starts_with(&self.id)))
                     .flatten()
             })
+    }
+
+    /// The container the page is about, as the data layer has it now.
+    pub(super) fn container(&self, ctx: &Context<'_>) -> Option<Container> {
+        let containers = self.containers(ctx);
+        let list = containers.data().map_or(&[][..], |list| list.as_slice());
+        self.find(list).cloned()
     }
 
     /// The container, as an action is asked for it.

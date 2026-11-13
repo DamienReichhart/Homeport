@@ -91,6 +91,9 @@ export default {
   'containers.logs.download': '로그 다운로드',
   'containers.logs.saveTitle': '로그 저장',
   'containers.logs.saved': '로그를 저장했습니다',
+  'containers.logs.saving': '로그 저장 중… {percent}',
+  'containers.logs.stdout': 'stdout',
+  'containers.logs.stderr': 'stderr',
   'containers.logs.end': '— 로그 끝 —',
 
   'containers.inspect.raw': '원본 JSON',

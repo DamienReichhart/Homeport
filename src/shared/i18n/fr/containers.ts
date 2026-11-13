@@ -98,6 +98,9 @@ export default {
   'containers.logs.download': 'Télécharger les journaux',
   'containers.logs.saveTitle': 'Enregistrer les journaux',
   'containers.logs.saved': 'Journaux enregistrés',
+  'containers.logs.saving': 'Enregistrement des journaux… {percent}',
+  'containers.logs.stdout': 'stdout',
+  'containers.logs.stderr': 'stderr',
   'containers.logs.end': '— fin des journaux —',
 
   // Inspect

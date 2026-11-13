@@ -16,13 +16,34 @@ use crate::{
 };
 
 pub fn open(ctx: &Context<'_>) -> (State, Task<Message>) {
-    let state = State::new(ctx);
+    let mut state = State::new(ctx);
     ctx.watch(resources::containers(&state.host_id));
     ctx.watch(resources::freshness(&state.host_id));
-    (state, Task::none())
+    state.seen_state = state.container(ctx).map(|container| container.state);
+    // The log viewer takes the height the window leaves the page.
+    let size = iced::window::latest()
+        .and_then(iced::window::size)
+        .map(Message::Resized);
+    (state, size)
 }
 
-pub fn refresh(_state: &mut State, _ctx: &Context<'_>) -> Task<Message> {
+/// The moment a stream is opened at, in Unix seconds.
+fn now() -> i64 {
+    jiff::Timestamp::now().as_second()
+}
+
+pub fn refresh(state: &mut State, ctx: &Context<'_>) -> Task<Message> {
+    let now_state = state.container(ctx).map(|container| container.state);
+    if now_state != state.seen_state {
+        let started = now_state.as_deref() == Some("running");
+        state.seen_state = now_state;
+        // A container that starts again writes again: its stream ended
+        // with it, so the logs that show are opened anew. React's stayed
+        // on "end of logs" until an option of the viewer changed.
+        if started && state.tab == Tab::Logs && state.logs.is_over() {
+            state.logs.restart(now());
+        }
+    }
     Task::none()
 }
 
@@ -39,6 +60,11 @@ fn show(state: &mut State, tab: Tab, ctx: &Context<'_>) -> Task<Message> {
     }
     state.tab = tab;
     ctx.keep_route(state.route(tab));
+    // A tab that comes back starts over, as a React tab mounted again:
+    // its stream was let go of when it was left.
+    if tab == Tab::Logs {
+        state.logs.restart(now());
+    }
     Task::none()
 }
 
@@ -73,6 +99,8 @@ pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Me
             }
         }
         Message::Failure(Event::Copy(command)) => ctx.copy(command),
+        Message::Resized(size) => state.window_height = Some(size.height),
+        Message::Logs(message) => return state.logs.update(message, ctx).map(Message::Logs),
     }
     Task::none()
 }

@@ -99,6 +99,10 @@ iced_test.workspace = true
 iced_runtime.workspace = true
 png.workspace = true
 usvg.workspace = true
+# The fake Engine of the tests (`test_support::engine`): the archives it
+# sends and receives, and the stat header of one.
+tar.workspace = true
+base64.workspace = true
 # Throwaway Engine resources and sample databases, for the use cases' tests.
 homeport-storage = { workspace = true, features = ["test-support"] }
 homeport-engine = { workspace = true, features = ["test-support"] }

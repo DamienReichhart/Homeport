@@ -3320,6 +3320,7 @@ name = "homeport-app"
 version = "1.0.0-rc.1"
 dependencies = [
  "ashpd",
+ "base64 0.22.1",
  "dirs 6.0.0",
  "fixed_decimal",
  "fluent-bundle",
@@ -3358,6 +3359,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sys-locale",
+ "tar",
  "tempfile",
  "tokio",
  "unic-langid",

@@ -88,6 +88,9 @@ export default {
   'containers.logs.download': '下载日志',
   'containers.logs.saveTitle': '保存日志',
   'containers.logs.saved': '日志已保存',
+  'containers.logs.saving': '正在保存日志… {percent}',
+  'containers.logs.stdout': 'stdout',
+  'containers.logs.stderr': 'stderr',
   'containers.logs.end': '— 日志结束 —',
 
   'containers.inspect.raw': '原始 JSON',

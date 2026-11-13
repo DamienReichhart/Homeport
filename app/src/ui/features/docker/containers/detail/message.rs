@@ -1,6 +1,6 @@
 //! What happens on a container's page.
 
-use super::state::Tab;
+use super::{state::Tab, tabs::logs};
 use crate::ui::{
     domain::containers::actions,
     widgets::{feedback::error_message, overlay::menu},
@@ -21,4 +21,7 @@ pub enum Message {
     More(menu::Event),
     /// What was asked of the failure shown in place of the page.
     Failure(error_message::Event),
+    /// The window's size: at first, then each time it changes.
+    Resized(iced::Size),
+    Logs(logs::Message),
 }

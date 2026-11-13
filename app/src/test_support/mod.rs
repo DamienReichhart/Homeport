@@ -10,8 +10,16 @@
 //!    with [`tasks::messages`];
 //! 3. its `view`, with [`snapshot::assert_snapshot`], in English and Arabic,
 //!    and with [`window::drive`] where the test presses and types.
+//!
+//! A page's streams and transfers are run against [`engine::Engine`], a
+//! socket that speaks the Engine's API and counts what is open on it,
+//! with [`following::Following`] standing for the runtime that starts
+//! and drops a page's subscriptions.
 
+#[cfg(unix)]
+pub mod engine;
 pub mod fixtures;
+pub mod following;
 pub mod snapshot;
 pub mod stage;
 pub mod tasks;

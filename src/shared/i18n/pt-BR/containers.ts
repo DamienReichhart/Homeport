@@ -100,6 +100,9 @@ export default {
   'containers.logs.download': 'Baixar logs',
   'containers.logs.saveTitle': 'Salvar logs',
   'containers.logs.saved': 'Logs salvos',
+  'containers.logs.saving': 'Salvando logs… {percent}',
+  'containers.logs.stdout': 'stdout',
+  'containers.logs.stderr': 'stderr',
   'containers.logs.end': '— fim dos logs —',
 
   // Inspect

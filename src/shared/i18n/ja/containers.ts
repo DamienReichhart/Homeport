@@ -101,6 +101,9 @@ export default {
   'containers.logs.download': 'ログをダウンロード',
   'containers.logs.saveTitle': 'ログを保存',
   'containers.logs.saved': 'ログを保存しました',
+  'containers.logs.saving': 'ログを保存しています… {percent}',
+  'containers.logs.stdout': 'stdout',
+  'containers.logs.stderr': 'stderr',
   'containers.logs.end': '— ログの終わり —',
 
   // Inspect

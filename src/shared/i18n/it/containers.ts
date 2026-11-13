@@ -97,6 +97,9 @@ export default {
   'containers.logs.download': 'Scarica i log',
   'containers.logs.saveTitle': 'Salva i log',
   'containers.logs.saved': 'Log salvati',
+  'containers.logs.saving': 'Salvataggio dei log… {percent}',
+  'containers.logs.stdout': 'stdout',
+  'containers.logs.stderr': 'stderr',
   'containers.logs.end': '— fine dei log —',
 
   // Inspect

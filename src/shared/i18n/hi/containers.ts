@@ -97,6 +97,9 @@ export default {
   'containers.logs.download': 'लॉग डाउनलोड करें',
   'containers.logs.saveTitle': 'लॉग सहेजें',
   'containers.logs.saved': 'लॉग सहेजे गए',
+  'containers.logs.saving': 'लॉग सहेजे जा रहे हैं… {percent}',
+  'containers.logs.stdout': 'stdout',
+  'containers.logs.stderr': 'stderr',
   'containers.logs.end': '— लॉग का अंत —',
 
   // Inspect

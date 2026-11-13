@@ -2,6 +2,9 @@
 //! looks in each state.
 
 mod drawn;
+mod logs;
+#[cfg(unix)]
+mod streams;
 mod updates;
 
 use homeport_engine::containers::Container;
@@ -62,11 +65,17 @@ struct Rig {
 
 impl Rig {
     fn on(host: HostView, request: Request, list: Option<Vec<Container>>) -> Self {
+        let id = host.host.id.clone();
         let mut bench = Bench::on_host(Route::Containers, host);
         bench.history.push(request);
         if let Some(list) = list {
-            bench.data.set(&keys::host::containers("h1"), list);
+            bench.data.set(&keys::host::containers(&id), list);
         }
+        Self::open_on(bench)
+    }
+
+    /// The page of where `bench` is, opened.
+    fn open_on(bench: Bench) -> Self {
         let (state, task) = open(&bench.ctx());
         let mut rig = Self {
             bench,
@@ -76,6 +85,9 @@ impl Rig {
         for message in rig.bench.run(task) {
             rig.send(message);
         }
+        // The window says its size once it is asked: no window is there
+        // in a test, so the test says it.
+        rig.send(Message::Resized(SIZE.into()));
         let _ = rig.bench.took();
         rig
     }
@@ -112,7 +124,8 @@ impl Rig {
 
     /// The Host's containers were read again.
     fn list(&mut self, list: Vec<Container>) {
-        self.bench.data.set(&keys::host::containers("h1"), list);
+        let key = keys::host::containers(&self.state.host_id);
+        self.bench.data.set(&key, list);
         self.refresh();
     }
 

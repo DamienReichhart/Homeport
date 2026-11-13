@@ -90,6 +90,9 @@ export default {
   'containers.logs.download': 'Download logs',
   'containers.logs.saveTitle': 'Save logs',
   'containers.logs.saved': 'Logs saved',
+  'containers.logs.saving': 'Saving logs… {percent}',
+  'containers.logs.stdout': 'stdout',
+  'containers.logs.stderr': 'stderr',
   'containers.logs.end': '— end of logs —',
 
   // Inspect

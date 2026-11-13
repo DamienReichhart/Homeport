@@ -1,6 +1,8 @@
 //! What a container's page draws: its header, its tabs, and the tab that
 //! shows.
 
+mod logs;
+
 use iced::{widget::text, Length};
 
 use homeport_engine::containers::Container;
@@ -138,10 +140,13 @@ fn header<'a>(state: &'a State, container: &Container, ctx: &Context<'a>) -> Ele
 
 /// What a tab shows of the container.
 fn body<'a>(state: &'a State, _container: &Container, _ctx: &Context<'a>) -> Element<'a, Message> {
-    // The tabs that are not ported yet say so, as the stub of a page.
-    empty_state(state.tab.label())
-        .description(t!("ui.table.empty"))
-        .view()
+    match state.tab {
+        Tab::Logs => logs::view(&state.logs, state.window_height).map(Message::Logs),
+        // The tabs that are not ported yet say so, as the stub of a page.
+        _ => empty_state(state.tab.label())
+            .description(t!("ui.table.empty"))
+            .view(),
+    }
 }
 
 pub fn view<'a>(state: &'a State, ctx: &Context<'a>) -> Element<'a, Message> {

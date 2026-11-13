@@ -97,6 +97,9 @@ export default {
   'containers.logs.download': 'Скачать журналы',
   'containers.logs.saveTitle': 'Сохранить журналы',
   'containers.logs.saved': 'Журналы сохранены',
+  'containers.logs.saving': 'Сохранение журналов… {percent}',
+  'containers.logs.stdout': 'stdout',
+  'containers.logs.stderr': 'stderr',
   'containers.logs.end': '— конец журнала —',
 
   'containers.inspect.raw': 'Исходный JSON',
