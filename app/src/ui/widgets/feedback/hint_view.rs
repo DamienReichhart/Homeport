@@ -57,6 +57,58 @@ pub fn copy<Message: Send + 'static>(text: String, done: Message) -> Task<Messag
         }))
 }
 
+/// Which copy button says "Copied", if any: for a view with several, or
+/// one that may be pressed again before it has finished saying so.
+///
+/// ```ignore
+/// Message::Copy(what) => {
+///     ctx.copy(text_of(what));
+///     self.copied.start(what).map(Message::CopyShown)
+/// }
+/// Message::CopyShown(ticket) => self.copied.finish(ticket),
+/// // in view: copy_button(None, self.copied.is(&what), Message::Copy(what))
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Copied<T = ()> {
+    shown: Option<T>,
+    /// Counts the copies: only the last one's timer ends what shows.
+    copies: u64,
+}
+
+impl<T> Default for Copied<T> {
+    fn default() -> Self {
+        Self {
+            shown: None,
+            copies: 0,
+        }
+    }
+}
+
+impl<T: PartialEq> Copied<T> {
+    /// `what` was copied: its button says so from now, until the task's
+    /// ticket is given to [`Copied::finish`]. The clipboard is the
+    /// caller's to write.
+    pub fn start(&mut self, what: T) -> Task<u64> {
+        self.shown = Some(what);
+        self.copies += 1;
+        let ticket = self.copies;
+        Task::perform(tokio::time::sleep(COPIED_FOR), move |()| ticket)
+    }
+
+    /// The time of the copy `ticket` is over. A button pressed again
+    /// since goes on saying "Copied" until its own time is.
+    pub fn finish(&mut self, ticket: u64) {
+        if ticket == self.copies {
+            self.shown = None;
+        }
+    }
+
+    /// Whether the button of `what` says "Copied".
+    pub fn is(&self, what: &T) -> bool {
+        self.shown.as_ref() == Some(what)
+    }
+}
+
 /// The hint's advice and its commands; `copied` is the command whose button
 /// says so, and `on_copy` gets the index of the command to copy.
 pub fn hint_view<'a, Message: Clone + 'a>(
@@ -102,4 +154,38 @@ pub fn hint_view<'a, Message: Clone + 'a>(
         );
     }
     stack(parts).spacing(space::S2).into()
+}
+
+#[cfg(test)]
+mod copied {
+    use super::{Copied, COPIED_FOR};
+    use crate::test_support::tasks::messages;
+
+    /// A button pressed again while it says "Copied" goes on saying so
+    /// until its own time is over, not the first press's.
+    #[tokio::test(start_paused = true)]
+    async fn the_last_copy_s_timer_is_the_one_that_ends_it() {
+        let mut copied = Copied::default();
+        assert!(!copied.is(&"path"));
+        let first = copied.start("path");
+        assert!(copied.is(&"path") && !copied.is(&"value"));
+        let second = copied.start("value");
+        assert!(copied.is(&"value") && !copied.is(&"path"));
+
+        let started = tokio::time::Instant::now();
+        let first = messages(first).await;
+        assert_eq!(
+            started.elapsed(),
+            COPIED_FOR,
+            "it says so for a second and a half"
+        );
+        copied.finish(first[0]);
+        assert!(copied.is(&"value"), "the first press's timer ends nothing");
+        copied.finish(messages(second).await[0]);
+        assert!(!copied.is(&"value"));
+        // A ticket that was never given ends nothing either.
+        let _ = copied.start("path");
+        copied.finish(99);
+        assert!(copied.is(&"path"));
+    }
 }

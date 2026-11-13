@@ -23,7 +23,7 @@ pub use self::{
     confirm::{confirm_dialog, Ask},
     error_details::Details,
     error_message::error_message,
-    hint_view::{copy, copy_button, hint_view},
+    hint_view::{copy, copy_button, hint_view, Copied},
     placeholder::{empty_state, skeleton, status_dot},
     spinner::{spinner, spinner_saying, turning},
     surfaced::{About, Surfaced},
