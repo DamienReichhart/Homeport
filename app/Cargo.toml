@@ -76,9 +76,20 @@ jiff.workspace = true
 regex.workspace = true
 # How many cells a character of a log takes: wide, narrow, or none.
 unicode-width.workspace = true
-# The platform layer: the OS's file dialogs, and its handler for a link or a folder.
-rfd.workspace = true
+# The platform layer: what the OS has to open a link or a folder with.
 open.workspace = true
+
+# The platform layer's file dialogs: the system's own on Windows and macOS,
+# the XDG desktop portal on Linux (see the workspace's `Cargo.toml`).
+[target.'cfg(not(target_os = "linux"))'.dependencies]
+rfd.workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+ashpd.workspace = true
+
+# A portal that answers the dialogs' tests, on a bus of their own.
+[target.'cfg(target_os = "linux")'.dev-dependencies]
+zbus = "5"
 
 [dev-dependencies]
 # A clock the data layer's tests move themselves.

@@ -6,13 +6,24 @@
 //! cancelled, which is an answer and never a failure. The dialogs
 //! themselves are behind [`Dialogs`], so a test answers in their place.
 
-mod native;
+#[cfg(target_os = "linux")]
+mod portal;
+#[cfg(all(test, target_os = "linux"))]
+mod portal_tests;
+#[cfg(not(target_os = "linux"))]
+mod system;
+#[cfg(target_os = "linux")]
+mod uri;
+mod window;
 
 use std::path::PathBuf;
 
 use iced::Task;
 
-pub use self::native::Native;
+#[cfg(target_os = "linux")]
+pub use self::portal::Native;
+#[cfg(not(target_os = "linux"))]
+pub use self::system::Native;
 use super::names;
 
 /// The kind of files a dialog shows: a name and the extensions it stands
