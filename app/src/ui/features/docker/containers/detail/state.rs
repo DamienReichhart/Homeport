@@ -105,6 +105,8 @@ pub struct State {
     /// The container's id as the route has it: whole, or its start.
     pub(super) id: String,
     pub(super) tab: Tab,
+    /// The container's whole id, as it was last found in the list.
+    pub(super) found: Option<String>,
     /// The page was opened from a list that is not its Host's Containers
     /// page: Back returns there.
     pub(super) came_from_elsewhere: bool,
@@ -139,6 +141,7 @@ impl State {
             host_id: ctx.subject.host_id().unwrap_or_default().to_owned(),
             id,
             tab,
+            found: None,
             came_from_elsewhere: ctx.location.param(CAME_FROM).is_some(),
             actions: Actions::of_host(),
             more: menu::State::default(),

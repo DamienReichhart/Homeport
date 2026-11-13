@@ -198,8 +198,8 @@ containers-files-uploadTo = Envoyer vers { $path }
 containers-files-uploadHere = Envoyer ici
 containers-files-saved = { $name } enregistré
 containers-files-savedArchive = { $name } enregistré en archive .tar
-containers-files-downloading = Enregistrement de { $name }…
-containers-files-uploading = Envoi de { $done } sur { $count } vers { $path }…
+containers-files-downloading = Enregistrement de { $name }
+containers-files-uploading = Envoi vers { $path } : { $done } sur { $count }
 containers-files-uploaded = { $count ->
         [one] { NUM($count) } fichier envoyé
        *[other] { NUM($count) } fichiers envoyés

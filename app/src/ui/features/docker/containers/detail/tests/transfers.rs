@@ -10,7 +10,7 @@ use crate::{
     ui::{
         features::docker::containers::detail::tabs::files::{self, Doing},
         shell::page::testing::Asked,
-        widgets::data::file_browser,
+        widgets::{basic::technical, data::file_browser},
     },
 };
 
@@ -57,9 +57,10 @@ fn a_file_is_saved_as_itself_and_a_folder_as_an_archive() {
         "/note.txt".to_owned(),
     )));
     assert_eq!(std::fs::read(&saved).unwrap(), b"hello\n");
-    assert_eq!(
-        live.rig.bench.took(),
-        [Asked::Said("Saved note.txt".to_owned())]
+    let told = live.rig.bench.took();
+    assert!(
+        told.contains(&Asked::Said("Saved note.txt".to_owned())),
+        "{told:?}"
     );
     let archive = live.rig.bench.os.dir().join("etc.tar");
     live.rig.bench.os.answer(&archive);
@@ -123,67 +124,24 @@ fn files_are_put_one_at_a_time_and_a_failure_is_said_with_the_file() {
     assert!(live.rig.state.files.transfer.is_none());
 }
 
-#[test]
-fn a_transfer_shows_how_far_it_is_and_cancel_stops_it_where_it_is() {
-    let english = crate::test_support::snapshot::in_language("en");
-    let mut live = live(vec![]);
-    let picked = sources(&live);
-    live.engine.hold_transfers();
-    live.rig.bench.os.answers(picked);
-    // The dialog's answer, then the transfer, which waits on the Engine.
+/// Answers the dialog `ask` opens and starts the transfer it leads to,
+/// which runs on the side while the test goes on.
+fn begin(live: &mut Live, ask: Message) -> tokio::task::JoinHandle<Vec<Message>> {
+    let runtime = live.rig.bench.app.runtime.handle().clone();
+    let _inside = runtime.enter();
     let ctx = live.rig.bench.ctx();
-    let asked = update(
-        &mut live.rig.state,
-        Message::Files(files::Message::Upload),
-        &ctx,
-    );
+    let asked = update(&mut live.rig.state, ask, &ctx);
     let answer = live.rig.bench.run(asked);
     let ctx = live.rig.bench.ctx();
-    let mut running = vec![];
-    for message in answer {
-        running.push(update(&mut live.rig.state, message, &ctx));
-    }
-    let transfer = live
-        .rig
-        .bench
-        .app
-        .runtime
-        .spawn(messages(iced::Task::batch(running)));
-    assert!(matches!(
-        live.rig.state.files.transfer.as_ref().map(|t| &t.doing),
-        Some(Doing::Upload {
-            done: 0,
-            count: 3,
-            ..
-        })
-    ));
-    assert!(live.rig.shows("Uploading 0 of 3 to \u{2066}/\u{2069}…"));
-    drop(english);
-    let theme = crate::ui::theme::Theme::Light;
-    crate::test_support::snapshot::assert_snapshot(
-        "container-files-uploading-en",
-        "en",
-        &theme,
-        SIZE,
-        || live.rig.view(),
-    );
-    crate::test_support::snapshot::assert_snapshot(
-        "container-files-uploading-ar",
-        "ar",
-        &theme,
-        SIZE,
-        || live.rig.view(),
-    );
-    let _english = crate::test_support::snapshot::in_language("en");
-    let engine = &live.engine;
-    assert!(live
-        .rig
-        .bench
-        .app
-        .runtime
-        .block_on(engine.settles_at(Stream::Transfer, 1)));
-    // Cancel: the request that waits is dropped, nothing more is put.
-    live.rig.frame(|frame| frame.click("Cancel"));
+    let running: Vec<_> = answer
+        .into_iter()
+        .map(|message| update(&mut live.rig.state, message, &ctx))
+        .collect();
+    runtime.spawn(messages(iced::Task::batch(running)))
+}
+
+/// Waits for the transfer to end, and gives the page what it sent.
+fn finish(live: &mut Live, transfer: tokio::task::JoinHandle<Vec<Message>>) {
     let ended = live
         .rig
         .bench
@@ -195,12 +153,205 @@ fn a_transfer_shows_how_far_it_is_and_cancel_stops_it_where_it_is() {
     for message in ended {
         live.send(message);
     }
-    assert!(live.rig.state.files.transfer.is_none());
-    assert_eq!(live.engine.abandoned(), 1);
+}
+
+/// Waits until the Engine holds `count` transfers.
+fn holds(live: &Live, count: usize) {
+    let engine = &live.engine;
+    let settled = live
+        .rig
+        .bench
+        .app
+        .runtime
+        .block_on(engine.settles_at(Stream::Transfer, count));
+    assert!(settled, "{count} transfers held");
+}
+
+#[test]
+fn an_upload_shows_how_far_it_is_and_cancel_stops_before_the_next_file() {
+    let english = crate::test_support::snapshot::in_language("en");
+    let mut live = live(vec![]);
+    let picked = sources(&live);
+    live.engine.hold_transfers();
+    live.rig.bench.os.answers(picked);
+    let transfer = begin(&mut live, Message::Files(files::Message::Upload));
+    assert!(matches!(
+        live.rig.state.files.transfer.as_ref().map(|t| &t.doing),
+        Some(Doing::Upload {
+            done: 0,
+            count: 3,
+            ..
+        })
+    ));
+    assert!(live.rig.shows("Uploading to \u{2066}/\u{2069}: 0 of 3"));
+    drop(english);
+    let theme = crate::ui::theme::Theme::Light;
+    for language in ["en", "ar"] {
+        let name = format!("container-files-uploading-{language}");
+        crate::test_support::snapshot::assert_snapshot(&name, language, &theme, SIZE, || {
+            live.rig.view()
+        });
+    }
+    let _english = crate::test_support::snapshot::in_language("en");
+    holds(&live, 1);
+    // Cancel: the file being put goes in whole, and none after it.
+    live.rig.frame(|frame| frame.click("Cancel"));
+    assert!(live
+        .rig
+        .state
+        .files
+        .transfer
+        .as_ref()
+        .is_some_and(|t| t.stopping));
     live.engine.release();
-    assert!(live.engine.uploaded().is_empty());
-    // Nothing was put: nothing is said, nothing is read again.
-    assert!(live.rig.bench.took().is_empty());
+    finish(&mut live, transfer);
+    assert!(live.rig.state.files.transfer.is_none());
+    let names: Vec<Vec<String>> = live.engine.uploaded().into_iter().map(|(_, n)| n).collect();
+    assert_eq!(names, [vec!["a.txt".to_owned()]]);
+    assert_eq!(live.engine.abandoned(), 0, "no file is cut short");
+    // What went in is said, and the folder read again.
+    let told = live.rig.bench.took();
+    assert!(
+        told.contains(&Asked::Said("Uploaded 1 file to /".to_owned())),
+        "{told:?}"
+    );
+    let listing = files_key(&live, "/");
+    assert!(told.contains(&Asked::Invalidate(listing)), "{told:?}");
+}
+
+#[test]
+fn cancel_drops_a_download_and_leaves_no_file() {
+    let _english = crate::test_support::snapshot::in_language("en");
+    let mut live = live(vec![entry("note.txt", false)]);
+    live.engine.file("/note.txt", b"hello\n");
+    live.engine.hold_transfers();
+    let saved = live.rig.bench.os.dir().join("note.txt");
+    live.rig.bench.os.answer(&saved);
+    let download = browse(file_browser::Message::Download("/note.txt".to_owned()));
+    let transfer = begin(&mut live, download);
+    holds(&live, 1);
+    // How far it is comes as the bytes do (a test runs the transfer's
+    // messages at its end): its name and the bytes so far show at once.
+    let saving = format!("Saving {} · 0 B", technical("note.txt"));
+    assert!(live.rig.shows(&saving));
+    live.rig.frame(|frame| frame.click("Cancel"));
+    finish(&mut live, transfer);
+    assert!(live
+        .rig
+        .bench
+        .app
+        .runtime
+        .block_on(live.engine.settles_at(Stream::Transfer, 0)));
+    assert_eq!(live.engine.abandoned(), 1);
+    assert!(!saved.exists());
+    assert!(no_part_left(&live), "nothing unfinished beside it");
+    assert!(live.rig.bench.took().is_empty(), "a cancel says nothing");
+    assert!(live.rig.state.files.transfer.is_none());
+}
+
+#[test]
+fn a_download_that_breaks_part_way_leaves_no_file_and_says_why() {
+    let _english = crate::test_support::snapshot::in_language("en");
+    let mut live = live(vec![entry("note.txt", false)]);
+    live.engine.file("/note.txt", &[b'x'; 64 * 1024]);
+    live.engine.cut_downloads();
+    let saved = live.rig.bench.os.dir().join("note.txt");
+    std::fs::write(&saved, b"last week's").unwrap();
+    live.rig.bench.os.answer(&saved);
+    live.send(browse(file_browser::Message::Download(
+        "/note.txt".to_owned(),
+    )));
+    let told = live.rig.bench.took();
+    assert!(
+        matches!(told.as_slice(), [Asked::Failed(None, _)]),
+        "{told:?}"
+    );
+    // What was there stays as it was; nothing half written beside it.
+    assert_eq!(std::fs::read(&saved).unwrap(), b"last week's");
+    assert!(no_part_left(&live));
+}
+
+/// Leaves the page while a transfer runs: what holds its Cancel goes.
+fn leave(live: &mut Live) {
+    let (other, _) = open(&live.rig.bench.ctx());
+    drop(std::mem::replace(&mut live.rig.state, other));
+}
+
+#[test]
+fn leaving_the_page_lets_a_download_end_and_the_shell_say_it() {
+    let _english = crate::test_support::snapshot::in_language("en");
+    let mut live = live(vec![entry("note.txt", false)]);
+    live.engine.file("/note.txt", b"hello\n");
+    live.engine.hold_transfers();
+    let saved = live.rig.bench.os.dir().join("note.txt");
+    live.rig.bench.os.answer(&saved);
+    let download = browse(file_browser::Message::Download("/note.txt".to_owned()));
+    let transfer = begin(&mut live, download);
+    holds(&live, 1);
+    leave(&mut live);
+    live.engine.release();
+    finish(&mut live, transfer);
+    assert_eq!(std::fs::read(&saved).unwrap(), b"hello\n");
+    let told = live.rig.bench.took();
+    let said = Asked::Said("Saved note.txt".to_owned());
+    assert!(told.contains(&said), "{told:?}");
+}
+
+#[test]
+fn leaving_the_page_lets_an_upload_end_and_the_shell_say_it() {
+    let _english = crate::test_support::snapshot::in_language("en");
+    let mut live = live(vec![]);
+    let picked = sources(&live);
+    live.engine.hold_transfers();
+    live.rig.bench.os.answers(picked);
+    let transfer = begin(&mut live, Message::Files(files::Message::Upload));
+    holds(&live, 1);
+    leave(&mut live);
+    live.engine.release();
+    finish(&mut live, transfer);
+    assert_eq!(live.engine.uploaded().len(), 3, "every file went in");
+    let told = live.rig.bench.took();
+    assert!(
+        told.contains(&Asked::Said("Uploaded 3 files to /".to_owned())),
+        "{told:?}"
+    );
+}
+
+#[test]
+fn a_transfer_s_messages_are_heard_while_the_container_is_not_in_the_list() {
+    let mut live = live(vec![entry("note.txt", false)]);
+    live.engine.file("/note.txt", b"hello\n");
+    live.engine.hold_transfers();
+    live.rig
+        .bench
+        .os
+        .answer(live.rig.bench.os.dir().join("note.txt"));
+    let download = browse(file_browser::Message::Download("/note.txt".to_owned()));
+    let transfer = begin(&mut live, download);
+    holds(&live, 1);
+    // The list is read again without it, for a moment.
+    live.rig.list(vec![]);
+    live.engine.release();
+    finish(&mut live, transfer);
+    assert!(live.rig.state.files.transfer.is_none(), "its end was heard");
+    live.rig.list(sample());
+    assert!(
+        !live.rig.state.files.is_busy(),
+        "Upload can be pressed again"
+    );
+}
+
+/// Whether the folder files are saved in holds nothing unfinished.
+fn no_part_left(live: &Live) -> bool {
+    std::fs::read_dir(live.rig.bench.os.dir())
+        .unwrap()
+        .filter_map(Result::ok)
+        .all(|entry| !entry.file_name().to_string_lossy().ends_with(".part"))
+}
+
+fn files_key(live: &Live, path: &str) -> crate::data::Key {
+    let host = live.rig.state.host_id.clone();
+    crate::ui::features::docker::containers::detail::queries::files_key(&host, WEB, path)
 }
 
 #[test]
@@ -226,7 +377,7 @@ fn the_count_moves_as_each_file_is_put() {
     let steps: Vec<usize> = produced
         .iter()
         .filter_map(|message| match message {
-            Message::Files(files::Message::Progress(_, done)) => Some(*done),
+            Message::Files(files::Message::Progress(_, files::Step::Files(done))) => Some(*done),
             _ => None,
         })
         .collect();
@@ -239,6 +390,6 @@ fn the_count_moves_as_each_file_is_put() {
     for message in produced {
         live.send(message);
     }
-    live.rig.state.files.progress(99, 1);
+    live.rig.state.files.progress(99, files::Step::Files(1));
     assert!(live.rig.state.files.transfer.is_none());
 }

@@ -185,8 +185,8 @@ export default {
   'containers.files.uploadHere': 'Загрузить сюда',
   'containers.files.saved': '{name} сохранён',
   'containers.files.savedArchive': '{name} сохранён как архив .tar',
-  'containers.files.downloading': 'Сохранение {name}…',
-  'containers.files.uploading': 'Загрузка в {path}: {done} из {count}…',
+  'containers.files.downloading': 'Сохранение {name}',
+  'containers.files.uploading': 'Загрузка в {path}: {done} из {count}',
   'containers.files.uploaded':
     'Загружено в {path}: {count, plural, one {# файл} few {# файла} many {# файлов} other {# файла}}',
 

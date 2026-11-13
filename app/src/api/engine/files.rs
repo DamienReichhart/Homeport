@@ -34,6 +34,21 @@ pub async fn files_download(
     files::download(&docker, &container_id, &path, Path::new(&destination)).await
 }
 
+/// [`files_download`], telling `progress` how many bytes came, of how
+/// many when the Engine says (a file's size).
+pub async fn files_download_counted(
+    state: &AppState,
+    host_id: String,
+    container_id: String,
+    path: String,
+    destination: String,
+    progress: impl Fn(u64, Option<u64>),
+) -> AppResult<bool> {
+    let docker = state.hosts.registry.docker(&host_id)?;
+    let destination = Path::new(&destination);
+    files::download_counted(&docker, &container_id, &path, destination, progress).await
+}
+
 pub async fn files_upload(
     state: &AppState,
     host_id: String,
@@ -66,6 +81,13 @@ mod tests {
             (
                 "download",
                 code(files_download(s, host(), c(), "/etc".into(), saved.clone()).await),
+            ),
+            (
+                "download_counted",
+                code(
+                    files_download_counted(s, host(), c(), "/etc".into(), saved.clone(), |_, _| {})
+                        .await,
+                ),
             ),
             (
                 "upload",

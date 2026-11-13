@@ -4,10 +4,16 @@
 //!
 //! A transfer is the Engine's (`files_download`, `files_upload`, the use
 //! cases the Tauri commands called), run by `ctx.act`: its toast and the
-//! folder read again are the shell's to say, page left or not. Files are
-//! put one at a time, so each one's failure is its own and the count
-//! moves; a transfer can be stopped between two files, or in the middle
-//! of one, whose request is then dropped.
+//! folder read again are the shell's to say, page left or not, and it
+//! goes on to its end when the page is left. Only Cancel stops it.
+//!
+//! - A download says how many bytes came, of how many for a file; Cancel
+//!   drops the Engine's request at once, and no file is left (the file
+//!   is written beside its place and put there only once whole).
+//! - Files are put one at a time, so each one's failure is its own and
+//!   the count moves. Cancel stops before the next file: the one being
+//!   put goes in whole, so no file is left cut short in the container,
+//!   and what went in is said and the folder read again.
 
 use std::{
     path::{Path, PathBuf},
@@ -22,7 +28,7 @@ use homeport_core::error::{AppError, AppResult};
 use homeport_engine::containers::files::{FileEntry, FileKind};
 
 use crate::{
-    api::engine::files::{files_download, files_upload},
+    api::engine::files::{files_download_counted, files_upload},
     data::Resource,
     platform::{
         dialogs::{OpenFile, SaveFile},
@@ -48,13 +54,22 @@ pub enum Message {
     SaveTo(AppResult<Option<PathBuf>>),
     /// The open dialog of an upload answered.
     UploadFrom(AppResult<Vec<PathBuf>>),
-    /// How many files of the transfer of this number are put.
-    Progress(u64, usize),
+    /// How far the transfer of this number is: files put, or bytes come.
+    Progress(u64, Step),
     /// The transfer of this number ended, was stopped, or failed: the
     /// shell said which.
     Ended(u64),
     /// The Cancel button of the transfer that runs.
     Cancel,
+}
+
+/// How far a transfer is.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Step {
+    /// Files put in the folder.
+    Files(usize),
+    /// Bytes of the archive that came, of how many if known.
+    Bytes(u64, Option<u64>),
 }
 
 /// A dialog that is open: what its answer is about.
@@ -68,8 +83,12 @@ pub enum Asking {
 /// What a transfer that runs is doing.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Doing {
-    /// Saving this entry.
-    Download(String),
+    /// Saving this entry: how many bytes came, of how many if known.
+    Download {
+        name: String,
+        bytes: u64,
+        total: Option<u64>,
+    },
     /// Putting files in a folder: how many are put, of how many.
     Upload {
         folder: String,
@@ -83,6 +102,8 @@ pub enum Doing {
 pub struct Transfer {
     pub number: u64,
     pub doing: Doing,
+    /// Cancel was pressed: an upload ends after the file being put.
+    pub stopping: bool,
     stop: watch::Sender<bool>,
 }
 
@@ -239,6 +260,7 @@ impl Files {
         self.transfer = Some(Transfer {
             number: self.started,
             doing,
+            stopping: false,
             stop,
         });
         (self.started, stopped)
@@ -305,7 +327,13 @@ impl Files {
                 return Task::none();
             }
         };
-        let (number, mut stopped) = self.start(Doing::Download(entry.name.clone()));
+        let doing = Doing::Download {
+            name: entry.name.clone(),
+            bytes: 0,
+            total: None,
+        };
+        let (number, stopped) = self.start(doing);
+        let (wrote, steps) = watch::channel((0_u64, None));
         let (state, host, id) = (
             ctx.state.clone(),
             host_id.to_owned(),
@@ -313,20 +341,27 @@ impl Files {
         );
         let destination = target.to_string_lossy().into_owned();
         let work = async move {
-            let download = files_download(&state, host, id, entry.path, destination);
+            let progress = move |bytes, total| {
+                let _ = wrote.send((bytes, total));
+            };
+            let path = entry.path;
+            let download = files_download_counted(&state, host, id, path, destination, progress);
             tokio::select! {
                 result = download => (result, false),
-                // The request is dropped: nothing was written yet, the
-                // file is written once the whole archive came.
-                _ = stopped.wait_for(|stop| *stop) => (Ok(false), true),
+                // The request is dropped: the file was being written
+                // beside its place, and goes.
+                () = cancelled(stopped) => (Ok(false), true),
             }
         };
         let name = entry.name;
-        ctx.act(
+        let done = ctx.act(
             work,
             move |result| downloaded(name, result),
             move |_| Message::Ended(number),
-        )
+        );
+        let steps = changes(steps)
+            .map(move |(bytes, total)| Message::Progress(number, Step::Bytes(bytes, total)));
+        Task::batch([done, Task::run(steps, |message| message)])
     }
 
     /// The open dialog answered: each file goes into the folder in turn.
@@ -354,7 +389,7 @@ impl Files {
             done: 0,
             count: sources.len(),
         };
-        let (number, mut stopped) = self.start(doing);
+        let (number, stopped) = self.start(doing);
         let (progress, steps) = watch::channel(0_usize);
         let (state, host, id) = (
             ctx.state.clone(),
@@ -365,12 +400,14 @@ impl Files {
         let work = async move {
             let mut results = vec![];
             for source in sources {
+                // Cancel stops before the next file, never in one: the
+                // container is never left with a file cut short.
+                if *stopped.borrow() {
+                    return (results, true);
+                }
                 let path = source.to_string_lossy().into_owned();
                 let put = files_upload(&state, host.clone(), id.clone(), to.clone(), vec![path]);
-                tokio::select! {
-                    result = put => results.push((source, result)),
-                    _ = stopped.wait_for(|stop| *stop) => return (results, true),
-                }
+                results.push((source, put.await));
                 let _ = progress.send(results.len());
             }
             (results, false)
@@ -381,20 +418,21 @@ impl Files {
             move |result| uploaded(folder, listing, result),
             move |_| Message::Ended(number),
         );
-        let steps = tokio_stream_of(steps).map(move |done| Message::Progress(number, done));
+        let steps = changes(steps).map(move |done| Message::Progress(number, Step::Files(done)));
         Task::batch([done, Task::run(steps, |message| message)])
     }
 
-    pub fn progress(&mut self, number: u64, files: usize) {
-        if let Some(Transfer {
-            number: running,
-            doing: Doing::Upload { done, .. },
-            ..
-        }) = &mut self.transfer
-        {
-            if *running == number {
-                *done = files;
+    pub fn progress(&mut self, number: u64, step: Step) {
+        let Some(transfer) = self.transfer.as_mut().filter(|t| t.number == number) else {
+            return;
+        };
+        match (&mut transfer.doing, step) {
+            (Doing::Upload { done, .. }, Step::Files(files)) => *done = files,
+            (Doing::Download { bytes, total, .. }, Step::Bytes(came, of)) => {
+                *bytes = came;
+                *total = of;
             }
+            _ => {}
         }
     }
 
@@ -407,20 +445,29 @@ impl Files {
     }
 
     /// Stops the transfer that runs; its end says what it did.
-    pub fn cancel(&self) {
-        if let Some(transfer) = &self.transfer {
+    pub fn cancel(&mut self) {
+        if let Some(transfer) = &mut self.transfer {
+            transfer.stopping = true;
             let _ = transfer.stop.send(true);
         }
     }
 }
 
+/// Ends when Cancel was pressed, and only then: a page that goes away
+/// drops what would have pressed it, which stops nothing.
+async fn cancelled(mut stopped: watch::Receiver<bool>) {
+    if stopped.wait_for(|stop| *stop).await.is_err() {
+        std::future::pending::<()>().await;
+    }
+}
+
 /// The values a watch takes after its first, until its sender goes.
-fn tokio_stream_of(
-    receiver: watch::Receiver<usize>,
-) -> impl iced::futures::Stream<Item = usize> + Send + 'static {
+fn changes<T: Clone + Send + Sync + 'static>(
+    receiver: watch::Receiver<T>,
+) -> impl iced::futures::Stream<Item = T> + Send + 'static {
     iced::futures::stream::unfold(receiver, |mut receiver| async move {
         receiver.changed().await.ok()?;
-        let value = *receiver.borrow_and_update();
+        let value = receiver.borrow_and_update().clone();
         Some((value, receiver))
     })
 }

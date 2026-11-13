@@ -194,8 +194,8 @@ containers-files-uploadTo = { $path }에 업로드
 containers-files-uploadHere = 여기에 업로드
 containers-files-saved = { $name } 저장됨
 containers-files-savedArchive = { $name } 항목을 .tar 아카이브로 저장했습니다
-containers-files-downloading = { $name } 저장 중…
-containers-files-uploading = { $path }에 { $count }개 중 { $done }개 업로드 중…
+containers-files-downloading = { $name } 저장 중
+containers-files-uploading = { $path }에 업로드 중: { $count }개 중 { $done }개
 containers-files-uploaded = { $path }에 { $count ->
        *[other] 파일 { NUM($count) }개
     }를 업로드했습니다

@@ -181,8 +181,8 @@ export default {
   'containers.files.uploadHere': 'Upload here',
   'containers.files.saved': 'Saved {name}',
   'containers.files.savedArchive': 'Saved {name} as a .tar archive',
-  'containers.files.downloading': 'Saving {name}…',
-  'containers.files.uploading': 'Uploading {done} of {count} to {path}…',
+  'containers.files.downloading': 'Saving {name}',
+  'containers.files.uploading': 'Uploading to {path}: {done} of {count}',
   'containers.files.uploaded': 'Uploaded {count, plural, one {# file} other {# files}} to {path}',
 
   // Stats

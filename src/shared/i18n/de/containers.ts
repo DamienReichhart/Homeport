@@ -180,8 +180,8 @@ export default {
   'containers.files.uploadHere': 'Hierher hochladen',
   'containers.files.saved': '{name} gespeichert',
   'containers.files.savedArchive': '{name} als .tar-Archiv gespeichert',
-  'containers.files.downloading': '{name} wird gespeichert…',
-  'containers.files.uploading': '{done} von {count} wird nach {path} hochgeladen…',
+  'containers.files.downloading': '{name} wird gespeichert',
+  'containers.files.uploading': 'Hochladen nach {path}: {done} von {count}',
   'containers.files.uploaded':
     '{count, plural, one {# Datei} other {# Dateien}} nach {path} hochgeladen',
 

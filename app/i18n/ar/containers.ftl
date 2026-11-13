@@ -242,8 +242,8 @@ containers-files-uploadTo = الرفع إلى { $path }
 containers-files-uploadHere = الرفع هنا
 containers-files-saved = تم حفظ { $name }
 containers-files-savedArchive = تم حفظ { $name } كأرشيف .tar
-containers-files-downloading = جارٍ حفظ { $name }…
-containers-files-uploading = جارٍ رفع { $done } من { $count } إلى { $path }…
+containers-files-downloading = جارٍ حفظ { $name }
+containers-files-uploading = جارٍ الرفع إلى { $path }: { $done } من { $count }
 containers-files-uploaded = { $count ->
         [zero] لم يُرفع أي ملف
         [one] تم رفع ملف واحد

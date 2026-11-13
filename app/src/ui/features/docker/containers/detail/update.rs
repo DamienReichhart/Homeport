@@ -54,6 +54,7 @@ fn reads(state: &mut State, wanted: &mut HashSet<Key>, ctx: &Context<'_>) -> Tas
     let Some(container) = state.container(ctx) else {
         return Task::none();
     };
+    state.found = Some(container.id.clone());
     let host = state.host_id.clone();
     match state.tab {
         Tab::Inspect => {
@@ -153,33 +154,13 @@ fn health(state: &mut State, message: health::Message, ctx: &Context<'_>) {
 }
 
 /// What the Files tab asked for. A transfer is about the container the
-/// page shows: the page is opened anew for another one.
+/// page shows: the page is opened anew for another one. Its messages are
+/// handled whether or not the list has the container at the moment (it
+/// may be read again): by its id as it was last found.
 fn files(state: &mut State, message: files::Message, ctx: &Context<'_>) -> Task<Message> {
-    let Some(container) = state.container(ctx) else {
-        return Task::none();
-    };
-    let (host, id) = (state.host_id.clone(), container.id.clone());
-    let key = queries::files_key(&host, &id, &state.files.path);
     let task = match message {
-        files::Message::Browser(message) => {
-            let (task, event) = state.files.browse(message, ctx);
-            match event {
-                Some(file_browser::Event::Refresh) => ctx.invalidate(key),
-                Some(file_browser::Event::Failure(Event::Details)) => {
-                    if let Some(error) = state.files_read(&container, ctx).error() {
-                        ctx.details(Surfaced::new(error.clone(), "files_list"));
-                    }
-                }
-                Some(file_browser::Event::Failure(Event::Copy(command))) => ctx.copy(command),
-                _ => {}
-            }
-            task
-        }
-        files::Message::Upload => state.files.ask_upload(ctx).0,
-        files::Message::SaveTo(target) => state.files.save_to(target, &host, &id, ctx),
-        files::Message::UploadFrom(sources) => state.files.upload_from(sources, &host, &id, ctx),
-        files::Message::Progress(number, done) => {
-            state.files.progress(number, done);
+        files::Message::Progress(number, step) => {
+            state.files.progress(number, step);
             Task::none()
         }
         files::Message::Ended(number) => {
@@ -189,6 +170,37 @@ fn files(state: &mut State, message: files::Message, ctx: &Context<'_>) -> Task<
         files::Message::Cancel => {
             state.files.cancel();
             Task::none()
+        }
+        message => {
+            let Some(id) = state.found.clone() else {
+                return Task::none();
+            };
+            let host = state.host_id.clone();
+            let key = queries::files_key(&host, &id, &state.files.path);
+            match message {
+                files::Message::Browser(message) => {
+                    let (task, event) = state.files.browse(message, ctx);
+                    match event {
+                        Some(file_browser::Event::Refresh) => ctx.invalidate(key.clone()),
+                        Some(file_browser::Event::Failure(Event::Details)) => {
+                            if let Some(error) = &state.files.failure {
+                                ctx.details(Surfaced::new(error.clone(), "files_list"));
+                            }
+                        }
+                        Some(file_browser::Event::Failure(Event::Copy(command))) => {
+                            ctx.copy(command);
+                        }
+                        _ => {}
+                    }
+                    task
+                }
+                files::Message::Upload => state.files.ask_upload(ctx).0,
+                files::Message::SaveTo(target) => state.files.save_to(target, &host, &id, ctx),
+                files::Message::UploadFrom(sources) => {
+                    state.files.upload_from(sources, &host, &id, ctx)
+                }
+                _ => Task::none(),
+            }
         }
     };
     // Another folder may show now: it is read.

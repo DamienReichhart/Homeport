@@ -198,8 +198,8 @@ containers-files-uploadTo = Subir a { $path }
 containers-files-uploadHere = Subir aquí
 containers-files-saved = Se guardó { $name }
 containers-files-savedArchive = Se guardó { $name } como archivo .tar
-containers-files-downloading = Guardando { $name }…
-containers-files-uploading = Subiendo { $done } de { $count } a { $path }…
+containers-files-downloading = Guardando { $name }
+containers-files-uploading = Subiendo a { $path }: { $done } de { $count }
 containers-files-uploaded = { $count ->
         [one] Se subió { NUM($count) } archivo
        *[other] Se subieron { NUM($count) } archivos

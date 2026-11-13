@@ -185,8 +185,8 @@ export default {
   'containers.files.uploadHere': 'الرفع هنا',
   'containers.files.saved': 'تم حفظ {name}',
   'containers.files.savedArchive': 'تم حفظ {name} كأرشيف .tar',
-  'containers.files.downloading': 'جارٍ حفظ {name}…',
-  'containers.files.uploading': 'جارٍ رفع {done} من {count} إلى {path}…',
+  'containers.files.downloading': 'جارٍ حفظ {name}',
+  'containers.files.uploading': 'جارٍ الرفع إلى {path}: {done} من {count}',
   'containers.files.uploaded':
     '{count, plural, zero {لم يُرفع أي ملف} one {تم رفع ملف واحد} two {تم رفع ملفين} few {تم رفع # ملفات} many {تم رفع # ملفًا} other {تم رفع # ملف}} إلى {path}',
 

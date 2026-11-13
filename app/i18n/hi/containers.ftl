@@ -198,8 +198,8 @@ containers-files-uploadTo = { $path } में अपलोड करें
 containers-files-uploadHere = यहाँ अपलोड करें
 containers-files-saved = { $name } सहेजा गया
 containers-files-savedArchive = { $name } को .tar आर्काइव के रूप में सहेजा गया
-containers-files-downloading = { $name } सहेजा जा रहा है…
-containers-files-uploading = { $path } में { $count } में से { $done } अपलोड हो रहा है…
+containers-files-downloading = { $name } सहेजा जा रहा है
+containers-files-uploading = { $path } में अपलोड हो रहा है: { $count } में से { $done }
 containers-files-uploaded = { $path } में { $count ->
         [one] { NUM($count) } फ़ाइल
        *[other] { NUM($count) } फ़ाइलें

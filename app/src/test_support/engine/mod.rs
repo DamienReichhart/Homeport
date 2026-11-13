@@ -26,6 +26,8 @@ use std::{
     time::Duration,
 };
 
+mod wire;
+
 use base64::Engine as _;
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
@@ -35,6 +37,7 @@ use tokio::{
 
 use homeport_hosts::{service::HostInput, EngineKind, HostConnection};
 
+use self::wire::{archive_of, entry_names, query_value};
 use crate::{api::hosts::hosts_create, app::AppState};
 
 /// A stream the fake keeps open.
@@ -67,6 +70,8 @@ struct Shared {
     refused: Mutex<Option<String>>,
     /// How many transfers were let go of before their answer.
     abandoned: AtomicUsize,
+    /// A download's answer breaks off half way.
+    cut: std::sync::atomic::AtomicBool,
 }
 
 /// Counts a stream as open until dropped.
@@ -231,6 +236,12 @@ impl Engine {
 
     pub fn release(&self) {
         let _ = self.held.send(false);
+    }
+
+    /// A download's answer breaks off half way from now on, as a
+    /// connection that drops.
+    pub fn cut_downloads(&self) {
+        self.shared.cut.store(true, Ordering::SeqCst);
     }
 
     /// How many transfers were let go of before they were answered.
@@ -477,6 +488,17 @@ impl Connection {
             return false;
         }
         let archive = archive_of(&name, held.as_deref());
+        if self.shared.cut.load(Ordering::SeqCst) {
+            // Says the whole length, sends half, and hangs up.
+            let head = format!(
+                "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nContent-Type: application/x-tar\r\n\r\n",
+                archive.len()
+            );
+            let _ = self.socket.write_all(head.as_bytes()).await;
+            let _ = self.socket.write_all(&archive[..archive.len() / 2]).await;
+            let _ = self.socket.shutdown().await;
+            return false;
+        }
         self.answer("200 OK", &headers, &archive).await
     }
 
@@ -535,63 +557,3 @@ impl Connection {
 pub const EXPORTED: usize = 3 * 1024 * 1024;
 
 const VERSION: &str = r#"{"Version":"27.0.0","ApiVersion":"1.47","MinAPIVersion":"1.24","Os":"linux","Arch":"amd64"}"#;
-
-/// The value of `name` in a query, percent-decoded.
-fn query_value(query: &str, name: &str) -> Option<String> {
-    let value = query
-        .split('&')
-        .filter_map(|pair| pair.split_once('='))
-        .find(|(key, _)| *key == name)?
-        .1;
-    let mut bytes = vec![];
-    let mut rest = value.as_bytes();
-    while let Some((first, tail)) = rest.split_first() {
-        match (first, tail) {
-            (b'%', [high, low, tail @ ..]) => {
-                let hex = [*high, *low];
-                let hex = std::str::from_utf8(&hex).ok()?;
-                bytes.push(u8::from_str_radix(hex, 16).ok()?);
-                rest = tail;
-            }
-            (b'+', _) => {
-                bytes.push(b' ');
-                rest = tail;
-            }
-            _ => {
-                bytes.push(*first);
-                rest = tail;
-            }
-        }
-    }
-    String::from_utf8(bytes).ok()
-}
-
-/// The names of the entries at the top of a tar archive.
-fn entry_names(archive: &[u8]) -> Vec<String> {
-    let mut archive = tar::Archive::new(archive);
-    let Ok(entries) = archive.entries() else {
-        return vec![];
-    };
-    entries
-        .filter_map(Result::ok)
-        .filter_map(|entry| Some(entry.path().ok()?.display().to_string()))
-        .collect()
-}
-
-/// What the Engine sends for a path: a tar of the file, or of a folder
-/// that holds one file.
-fn archive_of(name: &str, file: Option<&[u8]>) -> Vec<u8> {
-    let mut builder = tar::Builder::new(Vec::new());
-    let mut put = |path: String, bytes: &[u8]| {
-        let mut header = tar::Header::new_gnu();
-        header.set_size(bytes.len() as u64);
-        header.set_mode(0o644);
-        header.set_cksum();
-        let _ = builder.append_data(&mut header, path, bytes);
-    };
-    match file {
-        Some(bytes) => put(name.to_owned(), bytes),
-        None => put(format!("{name}/inside.txt"), b"inside\n"),
-    }
-    builder.into_inner().unwrap_or_default()
-}

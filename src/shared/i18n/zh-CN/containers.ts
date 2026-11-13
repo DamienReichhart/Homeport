@@ -175,8 +175,8 @@ export default {
   'containers.files.uploadHere': '上传到此处',
   'containers.files.saved': '已保存 {name}',
   'containers.files.savedArchive': '已将 {name} 保存为 .tar 归档',
-  'containers.files.downloading': '正在保存 {name}…',
-  'containers.files.uploading': '正在上传到 {path}：第 {done} 个，共 {count} 个…',
+  'containers.files.downloading': '正在保存 {name}',
+  'containers.files.uploading': '正在上传到 {path}：{done}/{count}',
   'containers.files.uploaded': '已将 {count, plural, other {# 个文件}}上传到 {path}',
 
   'containers.stats.startFirst': '启动容器后才能查看其资源使用情况。',

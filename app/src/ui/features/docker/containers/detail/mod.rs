@@ -34,7 +34,7 @@
 //! | Exec: a terminal with several shells | stand-in: "Nothing here." (running), "Start the container…" (stopped) | not done (#259) |
 //! | Files: browse, refresh, download (save dialog, name or name.tar), "Upload here" (open dialog), toasts | kit file browser, `ctx.platform`, `ctx.act` | done |
 //! | Files: a stopped container | "Start the container to browse its files." | done |
-//! | — | Files: transfer's progress (files put of how many) and Cancel; a failure per file | added |
+//! | — | Files: transfer's progress (files put, bytes come) and Cancel; a failure per file; a download written whole or not at all | added |
 //! | Stats: CPU, memory, network, disk charts of the last 5 minutes, the figure of the moment | kit charts (`chart::State::counter` for the rates) | done |
 //! | Stats: a stopped container | "Start the container to see its resource usage." | done |
 //! | Processes: top under the Engine's titles, every 5 s; stopped; failure with Retry | kit table, a timer while the tab shows | done |
@@ -54,10 +54,12 @@
 //!   subscription of the tab); React's `refetchInterval` did the same by
 //!   unmounting.
 //! - Files go one at a time, so each failure is its own (one toast, every
-//!   file that failed in its Details) and the transfer shows its count and
-//!   can be stopped; React sent them in one archive, with no progress and
-//!   no Cancel. A download shows that it runs, not how far: the Engine's
-//!   use case gives no progress.
+//!   file that failed in its Details), and the transfer shows its count
+//!   and can be stopped: Cancel stops before the next file, never in one,
+//!   so no file is left cut short in the container, and what went in is
+//!   said. A download shows its bytes (of how many, for a file) and Cancel
+//!   drops it at once, leaving no file. React sent the files in one
+//!   archive and had neither progress nor Cancel.
 //! - A transfer or an export goes on to its end when the page is left,
 //!   and the shell says how it ended; React's export stopped when its
 //!   dialog went with the page.
