@@ -120,7 +120,8 @@ iced_runtime = "0.14"
 # dialogs go through the XDG portal (libdbus loaded at run time, zenity when
 # there is none), so the app links no GTK.
 rfd = { version = "0.17", default-features = false, features = ["xdg-portal", "wayland"] }
-open = "5"
+# `ShellExecuteW` on Windows, as `tauri-plugin-opener` asked for: no PowerShell is started.
+open = { version = "5", features = ["shellexecute-on-windows"] }
 png = "0.18"
 # The desktop shell (Tauri, until the iced app replaces it).
 tauri = { version = "2", features = ["tray-icon"] }
