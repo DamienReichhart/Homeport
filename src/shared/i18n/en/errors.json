@@ -320,6 +320,8 @@
   "errors.file.forbidden.hint": "Check the file's permissions, or pick another location.",
   "errors.file.inaccessible": "Homeport couldn't access {path}.",
   "errors.file.isFolder": "{path} is a folder, not a file.",
+  "errors.file.linkNotOpened": "{url} can't be opened.",
+  "errors.file.linkNotOpened.hint": "Copy the address and open it in your browser instead.",
   "errors.file.missing": "{path} doesn't exist.",
   "errors.file.notText": "{path} isn't a text file.",
   "errors.file.tooLarge": "{path} is too large to be a key, certificate or compose file.",

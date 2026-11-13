@@ -320,6 +320,8 @@
   "errors.file.forbidden.hint": "تحقق من أذونات الملف، أو اختر موقعًا آخر.",
   "errors.file.inaccessible": "تعذّر على Homeport الوصول إلى {path}.",
   "errors.file.isFolder": "{path} مجلد، وليس ملفًا.",
+  "errors.file.linkNotOpened": "لا يمكن فتح {url}.",
+  "errors.file.linkNotOpened.hint": "انسخ العنوان وافتحه في متصفحك بدلًا من ذلك.",
   "errors.file.missing": "{path} غير موجود.",
   "errors.file.notText": "{path} ليس ملفًا نصيًا.",
   "errors.file.tooLarge": "{path} أكبر من أن يكون مفتاحًا أو شهادة أو ملف compose.",

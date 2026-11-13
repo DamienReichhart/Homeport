@@ -55,6 +55,9 @@ crate::messages! {
     /// The file manager couldn't show a folder.
     FOLDER_NOT_OPENED = "errors.file.folderNotOpened" => "{path} can't be opened.";
     FOLDER_NOT_OPENED_HINT = "errors.file.folderNotOpened.hint" => "Open it in your file manager instead.";
+    /// The OS found nothing to open a link with, or the link is of a kind Homeport doesn't open.
+    LINK_NOT_OPENED = "errors.file.linkNotOpened" => "{url} can't be opened.";
+    LINK_NOT_OPENED_HINT = "errors.file.linkNotOpened.hint" => "Copy the address and open it in your browser instead.";
 
     // Secrets in the OS keychain.
 
