@@ -91,7 +91,8 @@ async fn a_link_goes_to_the_os_and_anything_else_never_does() {
         .open_url("file:///etc/passwd".to_owned())
         .await
         .unwrap_err();
-    assert_eq!(refused.message, "file:///etc/passwd can't be opened.");
+    assert_eq!(refused.key, "errors.file.linkRefused");
+    assert!(refused.hint.is_none(), "there is nowhere else to open it");
     assert!(fake.took().is_empty(), "the OS was never asked");
 
     // The OS has no browser: the failure names the link and keeps why.
@@ -162,6 +163,21 @@ async fn only_what_exists_is_shown_in_its_folder() {
     std::fs::write(&file, "one\n").unwrap();
     platform.reveal(file.clone()).await.unwrap();
     assert_eq!(fake.took(), [Asked::Revealed(file.clone())]);
+
+    // A path from here is handed over whole.
+    let here = std::env::current_dir().unwrap();
+    let relative = pathdiff(&file, &here);
+    assert!(relative.is_relative());
+    platform.reveal(relative).await.unwrap();
+    let asked = fake.took();
+    let [Asked::Revealed(whole)] = asked.as_slice() else {
+        panic!("{asked:?}");
+    };
+    assert!(whole.is_absolute(), "{}", whole.display());
+    assert_eq!(
+        std::fs::canonicalize(whole).unwrap(),
+        std::fs::canonicalize(&file).unwrap()
+    );
 
     fake.refuse(io::ErrorKind::PermissionDenied);
     let failed = platform.reveal(file.clone()).await.unwrap_err();
@@ -276,4 +292,10 @@ async fn a_dialog_asked_for_while_one_is_open_answers_as_cancelled() {
     fake.answer("/srv");
     let folder = messages(platform.pick_folder(OpenFolder::new("Pick"))).await;
     assert_eq!(folder, [Ok(Some(PathBuf::from("/srv")))]);
+}
+
+/// `path` as it is written from `here`: up to the root, then down.
+fn pathdiff(path: &std::path::Path, here: &std::path::Path) -> PathBuf {
+    let up: PathBuf = here.components().skip(1).map(|_| "..").collect();
+    up.join(path.strip_prefix("/").unwrap_or(path))
 }

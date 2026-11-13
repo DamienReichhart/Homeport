@@ -198,6 +198,8 @@ impl Platform {
         let opener = self.opener.clone();
         off_thread(move || {
             exists(&path)?;
+            // Whole, from the root: a file manager has no "here".
+            let path = std::path::absolute(&path).map_err(|e| local_file(&path, e))?;
             opener
                 .reveal(&path)
                 .map_err(|e| local_files::folder_not_opened(&path, &e))
