@@ -241,3 +241,39 @@ async fn a_desktop_that_can_show_no_dialog_is_a_failure_and_never_a_cancel() {
         assert_eq!(asked, Some(true));
     }
 }
+
+#[tokio::test]
+async fn a_dialog_asked_for_while_one_is_open_answers_as_cancelled() {
+    let fake = Fake::new();
+    let platform = fake.platform();
+    fake.answer("/home/ada/first.txt");
+    fake.answer("/home/ada/second.txt");
+    // The first dialog is open: its task has not answered yet.
+    let first = platform.save_file(SaveFile::new("Save", "first.txt"));
+    // A second press, on any dialog of the window, even from a copy of
+    // the platform another page holds.
+    let again = messages(
+        platform
+            .clone()
+            .save_file(SaveFile::new("Save", "again.txt")),
+    )
+    .await;
+    assert_eq!(again, [Ok(None)]);
+    let files = messages(platform.pick_files(OpenFile::new("Open"))).await;
+    assert_eq!(files, [Ok(vec![])]);
+    assert_eq!(fake.took().len(), 1, "the OS was asked for one dialog");
+    // The first answers what the user picked in it.
+    assert_eq!(
+        messages(first).await,
+        [Ok(Some(PathBuf::from("/home/ada/first.txt")))]
+    );
+    // It is closed: the next one opens.
+    let next = messages(platform.save_file(SaveFile::new("Save", "next.txt"))).await;
+    assert_eq!(next, [Ok(Some(PathBuf::from("/home/ada/second.txt")))]);
+
+    // A dialog whose task is dropped without having run holds nothing.
+    drop(platform.pick_folder(OpenFolder::new("Pick")));
+    fake.answer("/srv");
+    let folder = messages(platform.pick_folder(OpenFolder::new("Pick"))).await;
+    assert_eq!(folder, [Ok(Some(PathBuf::from("/srv")))]);
+}

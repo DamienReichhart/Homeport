@@ -135,3 +135,34 @@ fn a_desktop_with_no_dialog_to_show_fails_both_and_keeps_nothing_waiting() {
     }
     assert!(data.downloading.is_none());
 }
+
+#[test]
+fn a_second_download_while_the_dialog_is_open_changes_nothing_of_the_first() {
+    let _english = in_language("en");
+    let (mut data, os) = (Data::default(), Fake::new());
+    let platform = os.platform();
+    os.answer("/home/ada/hello.txt");
+    let download = |path: &str| Event::Files(Message::Download(path.to_owned()));
+    // The dialog for hello.txt is open; another entry's menu is used,
+    // then Upload. Both are asked of the same platform, as on a page.
+    let runtime = tokio::runtime::Runtime::new().unwrap();
+    let (first, _) = data.update(download("/hello.txt"), &platform);
+    for pressed in [download("/etc"), Event::Files(Message::Upload)] {
+        let (task, said) = data.update(pressed, &platform);
+        assert!(said.is_none());
+        for answer in runtime.block_on(messages(task)) {
+            let (_, said) = data.update(answer, &platform);
+            assert!(said.is_none(), "{said:?}");
+        }
+    }
+    assert_eq!(os.took().len(), 1, "one dialog was asked for");
+    // The first answers, about the entry it was opened for.
+    let mut said = vec![];
+    for answer in runtime.block_on(messages(first)) {
+        said.extend(data.update(answer, &platform).1);
+    }
+    assert_eq!(
+        said,
+        [Ok("Would save /hello.txt as /home/ada/hello.txt".to_owned())]
+    );
+}

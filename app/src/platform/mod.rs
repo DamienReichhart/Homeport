@@ -56,7 +56,10 @@ pub mod opener;
 use std::{
     future::Future,
     path::{Path, PathBuf},
-    sync::Arc,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
 };
 
 use iced::Task;
@@ -81,6 +84,17 @@ pub struct Platform {
     opener: Arc<dyn Opener>,
     /// Where the app's log files are.
     log_dir: PathBuf,
+    /// Whether a dialog is open: the app's window has one at a time.
+    dialog_open: Arc<AtomicBool>,
+}
+
+/// A dialog that is open, until it answers or is given up on.
+struct OpenDialog(Arc<AtomicBool>);
+
+impl Drop for OpenDialog {
+    fn drop(&mut self) {
+        self.0.store(false, Ordering::SeqCst);
+    }
 }
 
 impl std::fmt::Debug for Platform {
@@ -119,29 +133,50 @@ impl Platform {
             dialogs,
             opener,
             log_dir,
+            dialog_open: Arc::default(),
         }
+    }
+
+    /// Asks for a dialog unless one is open already. The OS's dialogs
+    /// are modal to the window, and a page keeps what it will do with
+    /// the answer: a second dialog asked for meanwhile (a button pressed
+    /// twice, a shortcut) answers as cancelled at once, and the first is
+    /// the one the user sees and answers.
+    fn one_at_a_time<T: Default + Send + 'static>(
+        &self,
+        ask: impl FnOnce() -> Task<AppResult<T>>,
+    ) -> Task<AppResult<T>> {
+        if self.dialog_open.swap(true, Ordering::SeqCst) {
+            return Task::done(Ok(T::default()));
+        }
+        // Let go of when the dialog answers, and when its task is
+        // dropped without having run.
+        let open = OpenDialog(self.dialog_open.clone());
+        ask().map(move |answer| {
+            open.0.store(false, Ordering::SeqCst);
+            answer
+        })
     }
 
     /// Asks for one file to open; `None` when cancelled (`pickFile`).
     pub fn pick_file(&self, request: OpenFile) -> Task<AppResult<Option<PathBuf>>> {
-        self.dialogs
-            .open(request, false)
+        self.one_at_a_time(|| self.dialogs.open(request, false))
             .map(|picked| picked.map(|picked| picked.into_iter().next()))
     }
 
     /// Asks for files to open; none when cancelled (`pickFiles`).
     pub fn pick_files(&self, request: OpenFile) -> Task<AppResult<Vec<PathBuf>>> {
-        self.dialogs.open(request, true)
+        self.one_at_a_time(|| self.dialogs.open(request, true))
     }
 
     /// Asks for a folder; `None` when cancelled (`pickFolder`).
     pub fn pick_folder(&self, request: OpenFolder) -> Task<AppResult<Option<PathBuf>>> {
-        self.dialogs.folder(request)
+        self.one_at_a_time(|| self.dialogs.folder(request))
     }
 
     /// Asks where to save a file; `None` when cancelled (`pickSavePath`).
     pub fn save_file(&self, request: SaveFile) -> Task<AppResult<Option<PathBuf>>> {
-        self.dialogs.save(request)
+        self.one_at_a_time(|| self.dialogs.save(request))
     }
 
     /// Opens a web, mail or phone link with what the OS has for it

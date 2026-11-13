@@ -183,6 +183,9 @@ impl Gallery {
                     .say(Kind::Info, move || format!("Copied {lines} lines"));
                 Task::batch([task, iced::clipboard::write(text)])
             }
+            // Pressed again while its dialog is open: the lines of the
+            // first press are the ones the dialog is about.
+            Some(log::Event::Download(_)) if self.log_saving.asked.is_some() => task,
             Some(log::Event::Download(lines)) => {
                 // The lines are kept as they were when the button was
                 // pressed, while the dialog is open.

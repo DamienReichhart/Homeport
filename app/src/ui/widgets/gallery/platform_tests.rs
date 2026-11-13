@@ -227,3 +227,25 @@ fn a_desktop_with_no_dialog_to_show_is_said_and_not_taken_for_a_cancel() {
     assert!(gallery.log_saving.wrote.is_none());
     assert_eq!(files_in(os.dir()), 0);
 }
+
+#[test]
+fn download_pressed_twice_opens_one_dialog_and_saves_what_it_answers() {
+    let _english = in_language("en");
+    let (mut gallery, os) = gallery();
+    let path = os.dir().join("logs.txt");
+    os.answer(&path);
+    // Two presses before the dialog answers.
+    let first = gallery.update(download());
+    let second = gallery.update(download());
+    let runtime = tokio::runtime::Runtime::new().unwrap();
+    assert!(runtime.block_on(tasks::messages(second)).is_empty());
+    for message in runtime.block_on(tasks::messages(first)) {
+        play(&mut gallery, message);
+    }
+    assert_eq!(os.took(), [save_logs()]);
+    assert_eq!(
+        fs::read_to_string(&path).unwrap().lines().count(),
+        log::sample().len()
+    );
+    assert_eq!(toasts(&gallery), [(Kind::Success, "Logs saved".to_owned())]);
+}

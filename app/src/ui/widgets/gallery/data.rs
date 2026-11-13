@@ -170,6 +170,9 @@ impl Data {
                     Some(file_browser::Event::Refresh) => {
                         self.listing = listing(&self.path);
                     }
+                    // A dialog is open for an entry already: it is the
+                    // one the answer will be about.
+                    Some(file_browser::Event::Download(_)) if self.downloading.is_some() => {}
                     Some(file_browser::Event::Download(entry)) => {
                         let asked = platform.save_file(save_request(&entry));
                         self.downloading = Some(entry);
