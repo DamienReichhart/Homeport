@@ -123,7 +123,23 @@ impl<Message: Clone> overlay::Overlay<Message, Theme, iced::Renderer> for Panel<
         };
         match pressed {
             Some((Key::Named(Named::Escape), _)) => {
-                if let Some(message) = self.on_escape {
+                // What is inside has the first word, as in a dialog: a
+                // search field that holds something empties itself.
+                let mut sent = vec![];
+                let mut inside = iced::advanced::Shell::new(&mut sent);
+                content.update(
+                    self.tree,
+                    event,
+                    panel,
+                    cursor,
+                    renderer,
+                    clipboard,
+                    &mut inside,
+                    &panel.bounds(),
+                );
+                let used = !inside.is_empty();
+                shell.merge(inside, std::convert::identity);
+                if let (false, Some(message)) = (used, self.on_escape) {
                     shell.publish(message.clone());
                 }
                 shell.capture_event();

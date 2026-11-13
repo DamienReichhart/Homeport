@@ -92,10 +92,15 @@ pub fn focus_search<Message: Send + 'static>(id: impl Into<Id> + Clone) -> Task<
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Debounce {
     text: String,
-    /// Counts the changes: the ticket of the last one is the only one
-    /// that still stands when its pause ends.
-    changes: u64,
+    /// The ticket of the last change: the only one that still stands
+    /// when its pause ends.
+    latest: u64,
 }
+
+/// Tickets are numbered across every field of the app: one given by a
+/// field that is gone (a page left while its pause ran) is never the
+/// ticket a new field gives.
+static TICKETS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
 
 impl Debounce {
     /// What the field shows: every letter, at once.
@@ -108,8 +113,8 @@ impl Debounce {
     /// everything again and has nothing to wait for.
     pub fn input(&mut self, text: String) -> Task<u64> {
         self.text = text;
-        self.changes += 1;
-        let ticket = self.changes;
+        let ticket = TICKETS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        self.latest = ticket;
         if self.text.is_empty() {
             return Task::done(ticket);
         }
@@ -119,7 +124,8 @@ impl Debounce {
     /// The text to search for, if nothing was typed since `ticket` was
     /// given.
     pub fn settled(&self, ticket: u64) -> Option<&str> {
-        (ticket == self.changes).then_some(self.text.as_str())
+        // No ticket is zero: a field nothing was typed in has none out.
+        (ticket != 0 && ticket == self.latest).then_some(self.text.as_str())
     }
 }
 
@@ -151,6 +157,15 @@ mod tests {
         let emptied = messages(search.input(String::new())).await[0];
         assert_eq!(started.elapsed(), std::time::Duration::ZERO);
         assert_eq!(search.settled(emptied), Some(""));
+        // A ticket of a field that is gone settles nothing in a new one,
+        // though both have seen as many changes.
+        let mut gone = Debounce::default();
+        let stale = messages(gone.input("old".to_owned())).await[0];
+        let mut fresh = Debounce::default();
+        let own = messages(fresh.input("new".to_owned())).await[0];
+        assert_eq!(fresh.settled(stale), None);
+        assert_eq!(fresh.settled(own), Some("new"));
+        assert_eq!(Debounce::default().settled(0), None);
     }
 
     #[test]

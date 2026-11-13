@@ -270,3 +270,50 @@ fn escape_in_a_submenu_closes_the_whole_menu() {
     assert!(!gallery.menu.is_open());
     // One ring at a time while it was open: see the menu's snapshot.
 }
+
+/// A search field in a dialog or a panel: Escape empties a field that
+/// holds something and leaves the dialog open; the next one closes it.
+/// The dialog took the key before the field ever saw it.
+#[test]
+fn a_filled_search_field_takes_the_first_escape_in_a_dialog_and_in_a_panel() {
+    use iced::widget::text;
+
+    use crate::ui::{theme::Element, widgets::form::search};
+
+    #[derive(Debug, Clone, PartialEq)]
+    enum Sent {
+        Typed(String),
+        Closed,
+    }
+    let _english = in_language("en");
+    let field = |value: &'static str| -> Element<'static, Sent> {
+        search("search-in-a-dialog", "Search", value, Sent::Typed)
+    };
+    let dialog = |value: &'static str| -> Element<'static, Sent> {
+        overlay::over(
+            text("page"),
+            Some(overlay::modal(field(value)).on_close(Sent::Closed)),
+        )
+    };
+    let mut stage = Stage::new((600.0, 400.0));
+    // The dialog gives its first control focus: the field.
+    let sent = stage.frame(dialog("web"), |frame| {
+        frame.tap_key(Named::Escape);
+        assert!(frame.focused().is_some(), "focus stays in the field");
+    });
+    assert_eq!(sent, [Sent::Typed(String::new())]);
+    let sent = stage.frame(dialog(""), |frame| frame.tap_key(Named::Escape));
+    assert_eq!(sent, [Sent::Closed]);
+
+    let panel = |value: &'static str| -> Element<'static, Sent> {
+        overlay::popover(text("anchor"), true, move || field(value), Sent::Closed).into()
+    };
+    let mut stage = Stage::new((600.0, 400.0));
+    let sent = stage.frame(panel("web"), |frame| {
+        frame.tab();
+        frame.tap_key(Named::Escape);
+    });
+    assert_eq!(sent, [Sent::Typed(String::new())]);
+    let sent = stage.frame(panel(""), |frame| frame.tap_key(Named::Escape));
+    assert_eq!(sent, [Sent::Closed]);
+}

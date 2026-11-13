@@ -71,15 +71,19 @@ pub fn copy<Message: Send + 'static>(text: String, done: Message) -> Task<Messag
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Copied<T = ()> {
     shown: Option<T>,
-    /// Counts the copies: only the last one's timer ends what shows.
-    copies: u64,
+    /// The ticket of the last copy: only its timer ends what shows.
+    latest: u64,
 }
+
+/// Tickets are numbered across every button of the app, so one from a
+/// view that is gone never ends what a new one shows.
+static TICKETS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(1);
 
 impl<T> Default for Copied<T> {
     fn default() -> Self {
         Self {
             shown: None,
-            copies: 0,
+            latest: 0,
         }
     }
 }
@@ -90,15 +94,15 @@ impl<T: PartialEq> Copied<T> {
     /// caller's to write.
     pub fn start(&mut self, what: T) -> Task<u64> {
         self.shown = Some(what);
-        self.copies += 1;
-        let ticket = self.copies;
+        let ticket = TICKETS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        self.latest = ticket;
         Task::perform(tokio::time::sleep(COPIED_FOR), move |()| ticket)
     }
 
     /// The time of the copy `ticket` is over. A button pressed again
     /// since goes on saying "Copied" until its own time is.
     pub fn finish(&mut self, ticket: u64) {
-        if ticket == self.copies {
+        if ticket == self.latest {
             self.shown = None;
         }
     }
@@ -185,7 +189,14 @@ mod copied {
         assert!(!copied.is(&"value"));
         // A ticket that was never given ends nothing either.
         let _ = copied.start("path");
-        copied.finish(99);
+        copied.finish(0);
         assert!(copied.is(&"path"));
+        // Nor does one of a view that is gone.
+        let mut gone = Copied::default();
+        let stale = messages(gone.start("path")).await[0];
+        let mut fresh = Copied::default();
+        let _ = fresh.start("path");
+        fresh.finish(stale);
+        assert!(fresh.is(&"path"));
     }
 }

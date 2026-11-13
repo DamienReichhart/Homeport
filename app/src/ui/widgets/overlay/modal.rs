@@ -231,7 +231,25 @@ impl<Message: Clone> Widget<Message, Theme, iced::Renderer> for Modal<'_, Messag
         if let Event::Keyboard(keyboard::Event::KeyPressed { key, modifiers, .. }) = event {
             match key {
                 Key::Named(Named::Escape) => {
-                    if let Some(message) = &self.on_close {
+                    // What is inside has the first word: a search field
+                    // that holds something empties itself, and only the
+                    // next Escape closes the dialog. It is known to have
+                    // used the key by what it sent.
+                    let mut sent = vec![];
+                    let mut inside = iced::advanced::Shell::new(&mut sent);
+                    content.update(
+                        inner,
+                        event,
+                        dialog,
+                        cursor,
+                        renderer,
+                        clipboard,
+                        &mut inside,
+                        viewport,
+                    );
+                    let used = !inside.is_empty();
+                    shell.merge(inside, std::convert::identity);
+                    if let (false, Some(message)) = (used, &self.on_close) {
                         shell.publish(message.clone());
                     }
                     shell.capture_event();
