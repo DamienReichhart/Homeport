@@ -52,3 +52,13 @@ fn the_exec_tab_stands_in_for_the_terminal_of_its_ticket() {
     snapshot(&rig, "container-exec-ar", "ar");
     dark(&rig, "container-exec-dark-en");
 }
+
+#[test]
+fn a_stopped_container_has_no_shell() {
+    let rig = Rig::at("shop-db-1-0123456789abcdef", "exec");
+    {
+        let _english = crate::test_support::snapshot::in_language("en");
+        assert!(rig.shows("Start the container to open a terminal."));
+    }
+    snapshot(&rig, "container-exec-stopped-en", "en");
+}

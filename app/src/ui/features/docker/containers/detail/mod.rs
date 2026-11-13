@@ -1,4 +1,74 @@
-//! A container's page (`ui/detail/ContainerDetailPage.tsx`).
+//! A container's page (`ui/detail/ContainerDetailPage.tsx`): its header
+//! with what can be done to it, and its tabs (`tabs/`, drawn by `view/`).
+//! What only this page reads is in `queries`; what the tabs work out of
+//! the Engine's answers, in `model`.
+//!
+//! # Parity with the React page
+//!
+//! | React | Here | |
+//! | --- | --- | --- |
+//! | Route `containers/:id/:tab?`, the logs when no tab or an unknown one | `Route::Container`, `Tab::of` | done |
+//! | A tab change replaces the address (`navigate(.., { replace: true })`) | `ctx.keep_route`: the route changes, the history doesn't | done |
+//! | The id may be the start of one (`id.startsWith`) | `State::find`; an empty id finds none | done |
+//! | Back: to the Board when opened from it (`state.from`), else to the list | `CAME_FROM` parameter; Back is `ctx.back()` then | done |
+//! | Loading: a spinner while the list is read | `spinner` | done |
+//! | Gone: "This container no longer exists." and "Back to containers" | the same, Details too | done |
+//! | List that could not be read | React said the container was gone; here the failure, with Retry | differs |
+//! | Header: Back, status dot, name, Stack badge; image, "newer image" mark, status | `view::header` | done |
+//! | Stop or Start, Restart, Pause or Resume, Remove (confirmed, then the list) | `Actions::header` (shared actions, `ctx.act`) | done |
+//! | More: Rename | the shared Rename dialog | done |
+//! | More: Edit, Duplicate, Commit | in the menu, disabled: the Run dialog's ticket (#259) | not done (#259) |
+//! | More: Export (save dialog, then progress, Cancel, Close, toast) | `actions::export` | done |
+//! | — | More: Kill (confirmed), as in the list's menu | added |
+//! | Tabs Logs, Inspect, Health (only with a healthcheck), Exec, Files, Stats, Processes | `Tab::shown` | done |
+//! | Logs: history (100, 1 000, 10 000, all), since (any, 5 min, 1 h, 24 h), timestamps, stdout, stderr, follow | kit log viewer, options asked of the Engine | done |
+//! | Logs: an option the Engine applies opens the stream again on an empty view | `Logs::restart`; a late chunk of the stream before is ignored | done |
+//! | Logs: find, previous, next, clear, download (save dialog, "Logs saved") | the viewer's own; the save through `ctx.platform` and `ctx.act` | done |
+//! | Logs: end of the stream; an error written among the lines | "end of logs"; the error over the lines with Retry | differs (kit) |
+//! | Logs: a stopped container's logs | shown, with their end | done |
+//! | Inspect: Details (container, health and its last 5 runs, environment, mounts, ports, networks, labels) and Raw JSON | `model::inspect`, kit `key_value`, tables and JSON tree | done |
+//! | Inspect: read again when the state changes; failure with Retry; spinner | state in the key; `error_message`; `spinner` | done |
+//! | Health: status, command, timing, failing streak; last results with exit, time, duration, folded output | `view::health` | done |
+//! | Health: read again when the list's status changes, and once per check interval | status in the key; a timer while the tab shows | done |
+//! | Health: "no healthcheck", "no check has run", failure with Retry | the same | done |
+//! | Exec: a terminal with several shells | stand-in: "Nothing here." (running), "Start the container…" (stopped) | not done (#259) |
+//! | Files: browse, refresh, download (save dialog, name or name.tar), "Upload here" (open dialog), toasts | kit file browser, `ctx.platform`, `ctx.act` | done |
+//! | Files: a stopped container | "Start the container to browse its files." | done |
+//! | — | Files: transfer's progress (files put of how many) and Cancel; a failure per file | added |
+//! | Stats: CPU, memory, network, disk charts of the last 5 minutes, the figure of the moment | kit charts (`chart::State::counter` for the rates) | done |
+//! | Stats: a stopped container | "Start the container to see its resource usage." | done |
+//! | Processes: top under the Engine's titles, every 5 s; stopped; failure with Retry | kit table, a timer while the tab shows | done |
+//! | Palette commands, shortcuts | none of the page's own in React; the feature's (`containers:run`, `n`, `/`) are the list's | done |
+//!
+//! # What differs from the React page, on purpose
+//!
+//! - A list that could not be read is said, with Retry, where React said
+//!   the container no longer existed.
+//! - Kill is in the header's menu, as in the list's; React's page had it
+//!   only in the list.
+//! - A tab that is left lets go of its stream and its timers, and starts
+//!   over when it comes back, as a React tab was unmounted and mounted.
+//!   A log stream that ended because the container stopped is opened
+//!   again when it runs again; React's stayed ended.
+//! - The health and processes timers run only while their tab shows (a
+//!   subscription of the tab); React's `refetchInterval` did the same by
+//!   unmounting.
+//! - Files go one at a time, so each failure is its own (one toast, every
+//!   file that failed in its Details) and the transfer shows its count and
+//!   can be stopped; React sent them in one archive, with no progress and
+//!   no Cancel. A download shows that it runs, not how far: the Engine's
+//!   use case gives no progress.
+//! - A transfer or an export goes on to its end when the page is left,
+//!   and the shell says how it ended; React's export stopped when its
+//!   dialog went with the page.
+//! - Two cards a row from a window 1 024 wide (`lg`), taken from the
+//!   window's size, as the layout has no breakpoints.
+//! - The charts of the Stats tab say a stream that could not start; React
+//!   showed empty charts.
+//! - Technical text (names, images, paths, ids, values, labels, outputs)
+//!   is laid out left to right in both directions (`basic::technical`).
+//! - Environment values are shown as React showed them, unmasked: the
+//!   React page had no masking, and the raw view showed them too.
 
 mod message;
 mod model;
