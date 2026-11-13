@@ -241,8 +241,19 @@ mod tests {
     fn save(bench: &Bench, contents: &'static str) -> Vec<Result<(), AppError>> {
         let ctx = bench.ctx();
         let request = SaveFile::new("Save logs", "logs.txt");
-        let Some(Some(path)) = bench.run(ctx.platform.save_file(request)).pop() else {
-            return vec![];
+        let path = match bench.run(ctx.platform.save_file(request)).pop() {
+            Some(Ok(Some(path))) => path,
+            // Cancelled: nothing follows.
+            Some(Ok(None)) | None => return vec![],
+            // No dialog could be shown: the page says so.
+            Some(Err(error)) => {
+                ctx.failed(Surfaced::at(
+                    error,
+                    Some("save_file"),
+                    jiff::Timestamp::UNIX_EPOCH,
+                ));
+                return vec![];
+            }
         };
         let saving = files::save(path, move |out, _| out.write_all(contents.as_bytes()));
         bench.run(ctx.act(
@@ -284,5 +295,15 @@ mod tests {
         };
         assert_eq!(bench.took(), [Asked::Failed(None, error.clone())]);
         assert_eq!(std::fs::read_to_string(&path).unwrap(), "one\n");
+
+        // A desktop with nothing to show a dialog with: said, not taken
+        // for a cancel.
+        bench.os.without_dialogs();
+        assert!(save(&bench, "three\n").is_empty());
+        let said = bench.took();
+        let [Asked::Failed(None, error)] = said.as_slice() else {
+            panic!("{said:?}");
+        };
+        assert_eq!(error.key, "errors.file.dialogUnavailable");
     }
 }

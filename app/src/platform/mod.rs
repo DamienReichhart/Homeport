@@ -13,8 +13,10 @@
 //!     .save_file(SaveFile::new(t!("containers.logs.saveTitle"), "logs.txt"))
 //!     .map(move |path| Message::SaveTo(path, lines.clone())),
 //! // Cancelling is an answer, not a failure: nothing happens.
-//! Message::SaveTo(None, _) => Task::none(),
-//! Message::SaveTo(Some(path), lines) => {
+//! Message::SaveTo(Ok(None), _) => Task::none(),
+//! // No dialog could be shown (a Linux desktop with no portal): said.
+//! Message::SaveTo(Err(error), _) => { ctx.failed(Surfaced::new(error, "save_file")); Task::none() }
+//! Message::SaveTo(Ok(Some(path)), lines) => {
 //!     let saving = files::save(path, move |out, meter| lines.write_counted(out, |n| meter.at(n, total)));
 //!     Task::batch([
 //!         // The toast outlives the page: it is the shell's to say.
@@ -28,7 +30,8 @@
 //! ```
 //!
 //! - **Dialogs** ([`dialogs`]) answer with a `Task`: they open over the
-//!   app's window. A cancelled dialog answers `None`, or no file.
+//!   app's window. A cancelled dialog answers `Ok(None)`, or no file; a
+//!   desktop that can show none answers an `AppError`.
 //! - **Files** ([`files`]) are read and written off the window's thread,
 //!   and a file is replaced whole or not at all.
 //! - **The opener** ([`opener`]) hands a link to the browser and a folder
@@ -118,24 +121,24 @@ impl Platform {
     }
 
     /// Asks for one file to open; `None` when cancelled (`pickFile`).
-    pub fn pick_file(&self, request: OpenFile) -> Task<Option<PathBuf>> {
+    pub fn pick_file(&self, request: OpenFile) -> Task<AppResult<Option<PathBuf>>> {
         self.dialogs
             .open(request, false)
-            .map(|picked| picked.into_iter().next())
+            .map(|picked| picked.map(|picked| picked.into_iter().next()))
     }
 
     /// Asks for files to open; none when cancelled (`pickFiles`).
-    pub fn pick_files(&self, request: OpenFile) -> Task<Vec<PathBuf>> {
+    pub fn pick_files(&self, request: OpenFile) -> Task<AppResult<Vec<PathBuf>>> {
         self.dialogs.open(request, true)
     }
 
     /// Asks for a folder; `None` when cancelled (`pickFolder`).
-    pub fn pick_folder(&self, request: OpenFolder) -> Task<Option<PathBuf>> {
+    pub fn pick_folder(&self, request: OpenFolder) -> Task<AppResult<Option<PathBuf>>> {
         self.dialogs.folder(request)
     }
 
     /// Asks where to save a file; `None` when cancelled (`pickSavePath`).
-    pub fn save_file(&self, request: SaveFile) -> Task<Option<PathBuf>> {
+    pub fn save_file(&self, request: SaveFile) -> Task<AppResult<Option<PathBuf>>> {
         self.dialogs.save(request)
     }
 

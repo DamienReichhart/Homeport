@@ -4,6 +4,7 @@
 
 use std::{future::Future, path::PathBuf};
 
+use homeport_core::error::AppResult;
 use iced::Task;
 use rfd::{AsyncFileDialog, FileHandle};
 
@@ -43,12 +44,13 @@ fn path(handle: Option<FileHandle>) -> Option<PathBuf> {
     handle.map(|handle| handle.path().to_owned())
 }
 
+// The system always has its dialogs: these never fail.
 impl Dialogs for Native {
     // Each dialog is started where `ask` calls, on the window's thread,
     // and only awaited elsewhere.
-    fn open(&self, request: OpenFile, many: bool) -> Task<Vec<PathBuf>> {
+    fn open(&self, request: OpenFile, many: bool) -> Task<AppResult<Vec<PathBuf>>> {
         let dialog = dialog(&request.title, &request.filters, request.folder);
-        if many {
+        let picked: Task<Vec<PathBuf>> = if many {
             ask(dialog, |dialog| {
                 let asked = dialog.pick_files();
                 async move {
@@ -61,24 +63,27 @@ impl Dialogs for Native {
                 let asked = dialog.pick_file();
                 async move { path(asked.await).into_iter().collect() }
             })
-        }
+        };
+        picked.map(Ok)
     }
 
-    fn folder(&self, request: OpenFolder) -> Task<Option<PathBuf>> {
+    fn folder(&self, request: OpenFolder) -> Task<AppResult<Option<PathBuf>>> {
         let dialog = dialog(&request.title, &[], request.folder).set_can_create_directories(true);
-        ask(dialog, |dialog| {
+        let picked: Task<Option<PathBuf>> = ask(dialog, |dialog| {
             let asked = dialog.pick_folder();
             async move { path(asked.await) }
-        })
+        });
+        picked.map(Ok)
     }
 
-    fn save(&self, request: SaveFile) -> Task<Option<PathBuf>> {
+    fn save(&self, request: SaveFile) -> Task<AppResult<Option<PathBuf>>> {
         let dialog = dialog(&request.title, &request.filters, request.folder)
             .set_file_name(request.name)
             .set_can_create_directories(true);
-        ask(dialog, |dialog| {
+        let picked: Task<Option<PathBuf>> = ask(dialog, |dialog| {
             let asked = dialog.save_file();
             async move { path(asked.await) }
-        })
+        });
+        picked.map(Ok)
     }
 }

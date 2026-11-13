@@ -12,13 +12,21 @@ use crate::{
     test_support::{snapshot::in_language, tasks::messages},
     ui::widgets::{
         data::file_browser::Message,
-        gallery::data::{save_request, Data, Event},
+        gallery::data::{save_request, Data, Event, Said},
     },
 };
 
 /// Hands `event` to the page, then every message its tasks produce,
 /// and gives what the page said on the way.
 fn play(data: &mut Data, os: &std::sync::Arc<Fake>, event: Event) -> Vec<String> {
+    play_all(data, os, event)
+        .into_iter()
+        .map(|said| said.expect("no failure"))
+        .collect()
+}
+
+/// [`play`], with the failures the page said.
+fn play_all(data: &mut Data, os: &std::sync::Arc<Fake>, event: Event) -> Vec<Said> {
     let runtime = tokio::runtime::Runtime::new().unwrap();
     let platform = os.platform();
     let (mut pending, mut said) = (vec![event], vec![]);
@@ -80,7 +88,11 @@ fn a_download_asks_where_to_save_under_the_entry_s_name() {
     assert!(data.downloading.is_none());
 
     // An answer that comes when nothing was asked changes nothing.
-    let said = play(&mut data, &os, Event::SaveTo(Some(PathBuf::from("/tmp/x"))));
+    let said = play(
+        &mut data,
+        &os,
+        Event::SaveTo(Ok(Some(PathBuf::from("/tmp/x")))),
+    );
     assert!(said.is_empty(), "{said:?}");
 }
 
@@ -104,4 +116,22 @@ fn a_name_from_a_container_is_made_safe_before_it_is_suggested() {
     assert_eq!(file.name, "hello.txt");
     file.name = "NUL.txt".to_owned();
     assert_eq!(save_request(&file).name, "_NUL.txt");
+}
+
+#[test]
+fn a_desktop_with_no_dialog_to_show_fails_both_and_keeps_nothing_waiting() {
+    let _english = in_language("en");
+    let (mut data, os) = (Data::default(), Fake::new());
+    os.without_dialogs();
+    for event in [
+        Event::Files(Message::Upload),
+        Event::Files(Message::Download("/hello.txt".to_owned())),
+    ] {
+        let said = play_all(&mut data, &os, event);
+        let [Err(failed)] = said.as_slice() else {
+            panic!("a failure: {said:?}");
+        };
+        assert_eq!(failed.key, "errors.file.dialogUnavailable");
+    }
+    assert!(data.downloading.is_none());
 }

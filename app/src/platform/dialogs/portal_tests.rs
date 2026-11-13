@@ -19,7 +19,7 @@ use zbus::{
 };
 
 use super::{
-    portal::{ask, folder_path, Ask},
+    portal::{ask, folder_path, over, Ask},
     Filter, OpenFile, OpenFolder, SaveFile,
 };
 
@@ -35,9 +35,21 @@ impl Bus {
         let dir = tempfile::tempdir().expect("a temporary folder");
         let socket = dir.path().join("bus");
         let address = format!("unix:path={}", socket.display());
+        // A bus with nothing to start on demand: whatever portal this
+        // machine has installed stays out of the tests.
+        let config = dir.path().join("bus.conf");
+        let policy = r#"<allow send_destination="*" eavesdrop="true"/><allow eavesdrop="true"/><allow own="*"/>"#;
+        std::fs::write(
+            &config,
+            format!(
+                "<busconfig><type>session</type><listen>{address}</listen><auth>EXTERNAL</auth>\
+                 <policy context=\"default\">{policy}</policy></busconfig>"
+            ),
+        )
+        .expect("the bus's configuration");
         let daemon = Command::new("dbus-daemon")
-            .args(["--session", "--nofork", "--nopidfile"])
-            .arg(format!("--address={address}"))
+            .args(["--nofork", "--nopidfile"])
+            .arg(format!("--config-file={}", config.display()))
             .stdin(Stdio::null())
             .stdout(Stdio::null())
             .stderr(Stdio::null())
@@ -61,6 +73,8 @@ impl Bus {
     pub(super) async fn connect(&self) -> Connection {
         zbus::connection::Builder::address(self.address.as_str())
             .expect("an address")
+            // As the app's, but for a test: see `portal::CALL_TIMEOUT`.
+            .method_timeout(Duration::from_secs(2))
             .build()
             .await
             .expect("a connection to the test's bus")
@@ -367,4 +381,151 @@ fn a_starting_folder_is_handed_over_as_its_bytes() {
     assert_eq!(folder.as_ref(), Path::new("/srv/My stacks/日本"));
     // A path the portal's wire can't carry is left out, not cut.
     assert!(folder_path(Path::new("/srv/a\0b")).is_none());
+}
+
+/// A dialog that must end by itself: a test that waits is a test that failed.
+async fn soon<T>(asked: impl std::future::Future<Output = T>) -> T {
+    tokio::time::timeout(Duration::from_secs(20), asked)
+        .await
+        .expect("the dialog never ended")
+}
+
+fn open() -> Ask {
+    Ask::Open(OpenFile::new("Open"), false)
+}
+
+fn unavailable(failed: &homeport_core::error::AppError) {
+    assert_eq!(failed.key, "errors.file.dialogUnavailable");
+    assert_eq!(failed.message, "Homeport couldn't open a file dialog.");
+    let hint = failed.hint.as_ref().expect("what to install");
+    assert!(hint.text.contains("xdg-desktop-portal"), "{}", hint.text);
+    assert!(
+        failed.detail.is_some(),
+        "what the bus said is kept for the Details"
+    );
+}
+
+#[tokio::test]
+async fn a_desktop_with_no_portal_is_a_failure_and_not_a_cancel() {
+    // A bus, and nothing on it that answers for the portal.
+    let bus = Bus::start();
+    let failed = soon(ask(bus.connect().await, None, open()))
+        .await
+        .unwrap_err();
+    unavailable(&failed);
+    let detail = failed.detail.unwrap();
+    assert!(detail.contains("ServiceUnknown"), "{detail}");
+}
+
+/// Something on the portal's object that is no file chooser.
+struct Settings;
+
+#[interface(name = "org.freedesktop.portal.Settings")]
+impl Settings {
+    #[zbus(property, name = "version")]
+    fn version(&self) -> u32 {
+        2
+    }
+}
+
+#[tokio::test]
+async fn a_portal_without_a_file_chooser_is_a_failure() {
+    // The portal is installed, and no backend gives it a file chooser.
+    let bus = Bus::start();
+    let _portal = zbus::connection::Builder::address(bus.address.as_str())
+        .unwrap()
+        .name("org.freedesktop.portal.Desktop")
+        .unwrap()
+        .serve_at("/org/freedesktop/portal/desktop", Settings)
+        .unwrap()
+        .build()
+        .await
+        .unwrap();
+    let failed = soon(ask(bus.connect().await, None, open()))
+        .await
+        .unwrap_err();
+    unavailable(&failed);
+}
+
+#[tokio::test]
+async fn a_portal_that_never_takes_the_request_is_given_up_on() {
+    // Something owns the portal's name and answers nothing at all.
+    let bus = Bus::start();
+    let _mute = zbus::connection::Builder::address(bus.address.as_str())
+        .unwrap()
+        .name("org.freedesktop.portal.Desktop")
+        .unwrap()
+        .build()
+        .await
+        .unwrap();
+    let failed = soon(ask(bus.connect().await, None, open()))
+        .await
+        .unwrap_err();
+    unavailable(&failed);
+}
+
+#[tokio::test]
+async fn a_session_with_no_bus_is_a_failure() {
+    let nowhere = tempfile::tempdir().unwrap();
+    let address = format!("unix:path={}", nowhere.path().join("no-bus").display());
+    let connect = async {
+        zbus::connection::Builder::address(address.as_str())?
+            .build()
+            .await
+    };
+    let failed = soon(over(connect, None, open())).await.unwrap_err();
+    unavailable(&failed);
+}
+
+#[tokio::test]
+async fn a_portal_that_says_it_failed_is_a_failure() {
+    let desktop = desktop(Answer::Failed).await;
+    let failed = soon(ask(desktop.app.clone(), None, open()))
+        .await
+        .unwrap_err();
+    unavailable(&failed);
+}
+
+#[tokio::test]
+async fn a_portal_that_dies_with_its_dialog_open_ends_the_dialog_with_a_failure() {
+    let mut desktop = desktop(Answer::Silent).await;
+    let asked = tokio::spawn(ask(desktop.app.clone(), None, open()));
+    // The dialog is open: the portal took the request and says nothing.
+    let started = Instant::now();
+    while desktop.asked.lock().unwrap().is_empty() {
+        assert!(
+            started.elapsed() < Duration::from_secs(10),
+            "the portal was never asked"
+        );
+        tokio::time::sleep(Duration::from_millis(10)).await;
+    }
+    tokio::time::sleep(Duration::from_millis(100)).await;
+    assert!(
+        !asked.is_finished(),
+        "a portal that is thinking is waited for"
+    );
+    // It crashes: its name leaves the bus.
+    drop(desktop.portal.take());
+    let failed = soon(asked).await.unwrap().unwrap_err();
+    unavailable(&failed);
+}
+
+#[tokio::test]
+async fn a_bus_that_goes_away_with_a_dialog_open_ends_the_dialog_with_a_failure() {
+    let desktop = desktop(Answer::Silent).await;
+    let asked = tokio::spawn(ask(desktop.app.clone(), None, open()));
+    let started = Instant::now();
+    while desktop.asked.lock().unwrap().is_empty() {
+        assert!(
+            started.elapsed() < Duration::from_secs(10),
+            "the portal was never asked"
+        );
+        tokio::time::sleep(Duration::from_millis(10)).await;
+    }
+    // The session ends under the app.
+    let Desktop { bus, portal, .. } = desktop;
+    drop(bus);
+    let failed = soon(asked).await.unwrap().unwrap_err();
+    unavailable(&failed);
+    drop(portal);
 }

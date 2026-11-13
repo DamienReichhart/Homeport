@@ -148,7 +148,7 @@ fn a_large_save_is_written_off_the_window_s_thread_and_shows_how_far_it_is() {
     let runtime = tokio::runtime::Runtime::new().unwrap();
     let mut answered = runtime.block_on(tasks::messages(asked));
     let to = answered.pop().expect("the dialog's answer");
-    assert!(matches!(&to, Message::LogSave(log::Save::To(Some(_)))));
+    assert!(matches!(&to, Message::LogSave(log::Save::To(Ok(Some(_))))));
     assert!(answered.is_empty());
     let writing = gallery.update(to);
     assert!(!path.exists(), "nothing was written during `update`");
@@ -207,4 +207,21 @@ fn the_details_dialog_opens_the_log_folder_of_the_platform() {
     stage.frame(gallery.view(), |frame| {
         assert!(frame.find(&refused).is_some(), "{refused}");
     });
+}
+
+#[test]
+fn a_desktop_with_no_dialog_to_show_is_said_and_not_taken_for_a_cancel() {
+    let _english = in_language("en");
+    let (mut gallery, os) = gallery();
+    os.without_dialogs();
+    play(&mut gallery, download());
+    assert_eq!(
+        toasts(&gallery),
+        [(
+            Kind::Error,
+            "Homeport couldn't open a file dialog.".to_owned()
+        )]
+    );
+    assert!(gallery.log_saving.wrote.is_none());
+    assert_eq!(files_in(os.dir()), 0);
 }

@@ -137,7 +137,7 @@ fn feed(data: &mut Data, messages: Vec<Sent>) -> Vec<String> {
     let mut said = vec![];
     for message in messages {
         if let Sent::Data(event) = message {
-            said.extend(data.update(event, &platform).1);
+            said.extend(data.update(event, &platform).1.and_then(Result::ok));
         }
     }
     said

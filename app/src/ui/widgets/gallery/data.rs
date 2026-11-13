@@ -4,6 +4,7 @@
 
 use std::path::PathBuf;
 
+use homeport_core::error::AppResult;
 use iced::{widget::text, Task};
 
 use super::{failure, Gallery, Message};
@@ -24,7 +25,7 @@ use crate::{
                 file_browser::{self, Entry, FileBrowser, Kind},
                 json, key_value, Item,
             },
-            feedback::{copy_button, Copied},
+            feedback::{copy_button, Copied, Surfaced},
             form::{search, Debounce},
             line, stack,
         },
@@ -108,6 +109,9 @@ pub fn listing(path: &str) -> Result<Vec<Entry>, homeport_core::error::AppError>
     }
 }
 
+/// What the gallery says of an event: in passing, or as a failure.
+pub type Said = AppResult<String>;
+
 pub struct Data {
     pub files: file_browser::State,
     pub path: String,
@@ -125,9 +129,9 @@ pub struct Data {
 pub enum Event {
     Files(file_browser::Message),
     /// The save dialog of a download answered; `None` when cancelled.
-    SaveTo(Option<PathBuf>),
+    SaveTo(AppResult<Option<PathBuf>>),
     /// The open dialog of an upload answered; no file when cancelled.
-    UploadFrom(Vec<PathBuf>),
+    UploadFrom(AppResult<Vec<PathBuf>>),
     Json(json::Message),
     Typed(String),
     Paused(u64),
@@ -152,9 +156,9 @@ impl Default for Data {
 
 impl Data {
     /// What the gallery's page does with a data widget's message, and
-    /// what it says of it in passing. The dialogs are asked of
-    /// `platform`, as a page asks them of `ctx.platform`.
-    pub fn update(&mut self, event: Event, platform: &Platform) -> (Task<Event>, Option<String>) {
+    /// what it says of it in passing, or the failure it says. The dialogs
+    /// are asked of `platform`, as a page asks them of `ctx.platform`.
+    pub fn update(&mut self, event: Event, platform: &Platform) -> (Task<Event>, Option<Said>) {
         match event {
             Event::Files(message) => {
                 let entries = self.listing.as_deref().ok();
@@ -185,17 +189,28 @@ impl Data {
             // starts here with `ctx.act`. The gallery has no Engine and
             // says what it would ask.
             Event::SaveTo(target) => {
-                let said = self.downloading.take().zip(target).map(|(entry, target)| {
-                    format!("Would save {} as {}", entry.path, target.display())
-                });
+                let entry = self.downloading.take();
+                let said = match target {
+                    Ok(target) => entry.zip(target).map(|(entry, target)| {
+                        Ok(format!("Would save {} as {}", entry.path, target.display()))
+                    }),
+                    // No dialog could be shown: a failure, not a cancel.
+                    Err(error) => Some(Err(error)),
+                };
                 (Task::none(), said)
             }
             // No file picked is a cancel: nothing is said.
-            Event::UploadFrom(sources) => {
-                let said = (!sources.is_empty())
-                    .then(|| format!("Would upload {} files to {}", sources.len(), self.path));
+            Event::UploadFrom(Ok(sources)) => {
+                let said = (!sources.is_empty()).then(|| {
+                    Ok(format!(
+                        "Would upload {} files to {}",
+                        sources.len(),
+                        self.path
+                    ))
+                });
                 (Task::none(), said)
             }
+            Event::UploadFrom(Err(error)) => (Task::none(), Some(Err(error))),
             Event::Json(message) => {
                 let (task, event) = self.json.update(message);
                 let copy = match event {
@@ -345,9 +360,15 @@ pub fn layout<'a>() -> Element<'a, Message> {
 impl Gallery {
     pub(super) fn data_event(&mut self, event: Event) -> Task<Message> {
         let (task, said) = self.data.update(event, &self.platform);
-        if let Some(said) = said {
-            self.toasts
-                .say(super::toast::Kind::Info, move || said.clone());
+        match said {
+            Some(Ok(said)) => {
+                self.toasts
+                    .say(super::toast::Kind::Info, move || said.clone());
+            }
+            Some(Err(error)) => {
+                self.toasts.failure(Surfaced::new(error, "save_file"));
+            }
+            None => {}
         }
         task.map(Message::Data)
     }

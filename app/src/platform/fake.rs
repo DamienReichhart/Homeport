@@ -12,8 +12,10 @@ use std::{
 
 use iced::Task;
 
+use homeport_core::error::AppResult;
+
 use super::{
-    dialogs::{Dialogs, OpenFile, OpenFolder, SaveFile},
+    dialogs::{self, Dialogs, OpenFile, OpenFolder, SaveFile},
     opener::Opener,
     Platform,
 };
@@ -38,6 +40,8 @@ struct Script {
     answers: VecDeque<Vec<PathBuf>>,
     /// Why the opener fails, when it must.
     refusal: Option<io::ErrorKind>,
+    /// The desktop has nothing to show a dialog with.
+    no_dialogs: bool,
 }
 
 /// The system a test stands on.
@@ -89,10 +93,19 @@ impl Fake {
         std::mem::take(&mut self.script().asked)
     }
 
-    fn answered(&self, asked: Asked) -> Vec<PathBuf> {
+    /// From now on no dialog can be shown, as on a Linux desktop with
+    /// no portal.
+    pub fn without_dialogs(&self) {
+        self.script().no_dialogs = true;
+    }
+
+    fn answered(&self, asked: Asked) -> AppResult<Vec<PathBuf>> {
         let mut script = self.script();
         script.asked.push(asked);
-        script.answers.pop_front().unwrap_or_default()
+        if script.no_dialogs {
+            return Err(dialogs::unavailable("no portal"));
+        }
+        Ok(script.answers.pop_front().unwrap_or_default())
     }
 
     fn noted(&self, asked: Asked) -> io::Result<()> {
@@ -103,20 +116,24 @@ impl Fake {
 }
 
 impl Dialogs for Fake {
-    fn open(&self, request: OpenFile, many: bool) -> Task<Vec<PathBuf>> {
-        let mut picked = self.answered(Asked::Open(request, many));
-        if !many {
-            picked.truncate(1);
-        }
-        Task::done(picked)
+    fn open(&self, request: OpenFile, many: bool) -> Task<AppResult<Vec<PathBuf>>> {
+        let picked = self.answered(Asked::Open(request, many));
+        Task::done(picked.map(|mut picked| {
+            if !many {
+                picked.truncate(1);
+            }
+            picked
+        }))
     }
 
-    fn folder(&self, request: OpenFolder) -> Task<Option<PathBuf>> {
-        Task::done(self.answered(Asked::Folder(request)).into_iter().next())
+    fn folder(&self, request: OpenFolder) -> Task<AppResult<Option<PathBuf>>> {
+        let picked = self.answered(Asked::Folder(request));
+        Task::done(picked.map(|picked| picked.into_iter().next()))
     }
 
-    fn save(&self, request: SaveFile) -> Task<Option<PathBuf>> {
-        Task::done(self.answered(Asked::Save(request)).into_iter().next())
+    fn save(&self, request: SaveFile) -> Task<AppResult<Option<PathBuf>>> {
+        let picked = self.answered(Asked::Save(request));
+        Task::done(picked.map(|picked| picked.into_iter().next()))
     }
 }
 

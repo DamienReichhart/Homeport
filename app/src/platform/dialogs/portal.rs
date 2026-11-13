@@ -3,16 +3,31 @@
 //! desktop shows its own chooser (GNOME's, KDE's, GTK's), and the app
 //! links no toolkit for it.
 
-use std::path::{Path, PathBuf};
+use std::{
+    future::Future,
+    path::{Path, PathBuf},
+    pin::pin,
+    time::Duration,
+};
 
 use ashpd::{
     desktop::file_chooser::{FileChooserProxy, FileFilter, OpenFileOptions, SaveFileOptions},
     zbus, FilePath, WindowIdentifier,
 };
-use iced::{futures::executor::block_on, Task};
+use homeport_core::error::AppResult;
+use iced::{
+    futures::{
+        executor::block_on,
+        future::{select, Either},
+        StreamExt,
+    },
+    Task,
+};
 use serde::{de::value::SeqDeserializer, Deserialize};
 
-use super::{uri, window::with_window, Dialogs, Filter, OpenFile, OpenFolder, SaveFile};
+use super::{
+    unavailable, uri, window::with_window, Dialogs, Filter, OpenFile, OpenFolder, SaveFile,
+};
 
 /// The dialogs of the desktop the app runs on.
 #[derive(Debug, Clone, Copy, Default)]
@@ -59,9 +74,62 @@ fn globs(filters: &[Filter]) -> Vec<FileFilter> {
         .collect()
 }
 
+/// The name the desktop's portal answers to on the session's bus.
+const PORTAL: &str = "org.freedesktop.portal.Desktop";
+
 /// Asks the portal reached by `connection` for a dialog over `parent`,
-/// and gives the files picked: none when the dialog was cancelled.
+/// and gives the files picked: none when the dialog was cancelled. No
+/// portal, a portal without a file chooser, one that fails, and one that
+/// leaves the bus while its dialog is open are all failures, never a
+/// cancel and never a wait without end.
 pub(super) async fn ask(
+    connection: zbus::Connection,
+    parent: Option<&WindowIdentifier>,
+    ask: Ask,
+) -> AppResult<Vec<PathBuf>> {
+    // Told when the portal's name changes hands: with no new owner, it
+    // died, and its answer will never come.
+    let bus = zbus::fdo::DBusProxy::new(&connection)
+        .await
+        .map_err(unavailable)?;
+    let mut owners = bus
+        .receive_name_owner_changed_with_args(&[(0, PORTAL)])
+        .await
+        .map_err(unavailable)?;
+    let gone = async {
+        while let Some(change) = owners.next().await {
+            if change
+                .args()
+                .is_ok_and(|change| change.new_owner().is_none())
+            {
+                break;
+            }
+        }
+        // The stream ends with the bus itself.
+    };
+    // Is anything there, and awake? A session with no portal says so at
+    // once (and one that starts on demand is started); a portal that
+    // hangs is given up on after the connection's own timeout.
+    connection
+        .call_method(
+            Some(PORTAL),
+            "/org/freedesktop/portal/desktop",
+            Some("org.freedesktop.DBus.Peer"),
+            "Ping",
+            &(),
+        )
+        .await
+        .map_err(unavailable)?;
+    let answered = answer(connection.clone(), parent, ask);
+    match select(pin!(answered), pin!(gone)).await {
+        Either::Left((Ok(picked), _)) => Ok(picked),
+        Either::Left((Err(e), _)) => Err(unavailable(e)),
+        Either::Right(((), _)) => Err(unavailable(PORTAL)),
+    }
+}
+
+/// The portal's answer to a dialog: the files picked, none for a cancel.
+async fn answer(
     connection: zbus::Connection,
     parent: Option<&WindowIdentifier>,
     ask: Ask,
@@ -103,8 +171,32 @@ pub(super) async fn ask(
     }
 }
 
+/// [`ask`] on the bus `connect` reaches: the session's, for the app. A
+/// session with no bus has no portal either.
+pub(super) async fn over(
+    connect: impl Future<Output = zbus::Result<zbus::Connection>>,
+    parent: Option<&WindowIdentifier>,
+    ask: Ask,
+) -> AppResult<Vec<PathBuf>> {
+    let connection = connect.await.map_err(unavailable)?;
+    self::ask(connection, parent, ask).await
+}
+
+/// How long the portal has to say it is there. The dialog itself may
+/// stay open as long as the user likes: this is only for the call made
+/// before it, which a portal that hangs would otherwise never answer.
+pub(super) const CALL_TIMEOUT: Duration = Duration::from_secs(25);
+
+/// A connection to the session's bus.
+async fn session() -> zbus::Result<zbus::Connection> {
+    zbus::connection::Builder::session()?
+        .method_timeout(CALL_TIMEOUT)
+        .build()
+        .await
+}
+
 /// Opens the dialog over the app's window and gives the files picked.
-fn show(ask: Ask) -> Task<Vec<PathBuf>> {
+fn show(ask: Ask) -> Task<AppResult<Vec<PathBuf>>> {
     // The window is named to the portal on its own thread: its handle
     // can't leave it. On Wayland that asks the compositor for a name to
     // give the portal, which is kept until the dialog closes.
@@ -118,30 +210,27 @@ fn show(ask: Ask) -> Task<Vec<PathBuf>> {
         Task::future(async move {
             // No window any more: nothing to open a dialog over.
             let Some(parent) = parent else {
-                return vec![];
+                return Ok(vec![]);
             };
-            let asked = async {
-                let connection = zbus::Connection::session().await?;
-                self::ask(connection, parent.as_ref(), ask).await
-            };
-            asked.await.unwrap_or_else(|e| {
-                log::error!("the desktop's file dialog couldn't be opened: {e}");
-                vec![]
-            })
+            over(session(), parent.as_ref(), ask).await
         })
     })
 }
 
+fn first(picked: AppResult<Vec<PathBuf>>) -> AppResult<Option<PathBuf>> {
+    picked.map(|picked| picked.into_iter().next())
+}
+
 impl Dialogs for Native {
-    fn open(&self, request: OpenFile, many: bool) -> Task<Vec<PathBuf>> {
+    fn open(&self, request: OpenFile, many: bool) -> Task<AppResult<Vec<PathBuf>>> {
         show(Ask::Open(request, many))
     }
 
-    fn folder(&self, request: OpenFolder) -> Task<Option<PathBuf>> {
-        show(Ask::Folder(request)).map(|picked| picked.into_iter().next())
+    fn folder(&self, request: OpenFolder) -> Task<AppResult<Option<PathBuf>>> {
+        show(Ask::Folder(request)).map(first)
     }
 
-    fn save(&self, request: SaveFile) -> Task<Option<PathBuf>> {
-        show(Ask::Save(request)).map(|picked| picked.into_iter().next())
+    fn save(&self, request: SaveFile) -> Task<AppResult<Option<PathBuf>>> {
+        show(Ask::Save(request)).map(first)
     }
 }

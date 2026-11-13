@@ -3,8 +3,11 @@
 //!
 //! A dialog is asked for with a request (its title, its filters, where it
 //! starts) and answers with the paths picked: `None`, or none, when it is
-//! cancelled, which is an answer and never a failure. The dialogs
-//! themselves are behind [`Dialogs`], so a test answers in their place.
+//! cancelled, which is an answer and never a failure. A dialog that
+//! couldn't be shown at all is one ([`unavailable`]): on a Linux desktop
+//! with no portal, pressing Download must not look like a cancel. The
+//! dialogs themselves are behind [`Dialogs`], so a test answers in their
+//! place.
 
 #[cfg(target_os = "linux")]
 mod portal;
@@ -16,8 +19,12 @@ mod system;
 mod uri;
 mod window;
 
-use std::path::PathBuf;
+use std::{fmt::Display, path::PathBuf};
 
+use homeport_core::{
+    error::{AppError, AppResult, ErrorCode},
+    messages as msg,
+};
 use iced::Task;
 
 #[cfg(target_os = "linux")]
@@ -153,18 +160,28 @@ impl SaveFile {
     }
 }
 
+/// The desktop has nothing to show a file dialog with, or what it has
+/// failed: `cause` is what it said, for the Details.
+pub fn unavailable(cause: impl Display) -> AppError {
+    AppError::new(ErrorCode::Io, msg::DIALOG_UNAVAILABLE)
+        .with_hint(msg::DIALOG_UNAVAILABLE_HINT)
+        .with_detail(cause)
+}
+
 /// What shows the dialogs: the OS ([`Native`]), or a test's answers.
 ///
 /// Each returns a [`Task`], not a future: the OS's dialog is opened over
-/// the app's window, which only the window's own thread can name.
+/// the app's window, which only the window's own thread can name. The
+/// task always ends with one answer: what was picked, nothing when the
+/// dialog was cancelled or the window went away, or why no dialog showed.
 pub trait Dialogs: Send + Sync {
     /// The files picked, one at most unless `many`; none when cancelled.
-    fn open(&self, request: OpenFile, many: bool) -> Task<Vec<PathBuf>>;
+    fn open(&self, request: OpenFile, many: bool) -> Task<AppResult<Vec<PathBuf>>>;
     /// The folder picked; `None` when cancelled.
-    fn folder(&self, request: OpenFolder) -> Task<Option<PathBuf>>;
+    fn folder(&self, request: OpenFolder) -> Task<AppResult<Option<PathBuf>>>;
     /// Where to save; `None` when cancelled. The OS has already asked
     /// before a file that exists is given.
-    fn save(&self, request: SaveFile) -> Task<Option<PathBuf>>;
+    fn save(&self, request: SaveFile) -> Task<AppResult<Option<PathBuf>>>;
 }
 
 #[cfg(test)]

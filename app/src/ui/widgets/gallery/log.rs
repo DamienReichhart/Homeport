@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use std::path::PathBuf;
 
-use homeport_core::error::AppError;
+use homeport_core::error::{AppError, AppResult};
 use iced::{widget::text, Subscription, Task};
 
 use super::{Gallery, Message};
@@ -35,8 +35,9 @@ use crate::{
 /// with a log viewer does of `log::Event::Download`.
 #[derive(Debug, Clone)]
 pub enum Save {
-    /// The save dialog answered: a path, or `None` when it was cancelled.
-    To(Option<PathBuf>),
+    /// The save dialog answered: a path, `None` when it was cancelled, or
+    /// why no dialog could be shown.
+    To(AppResult<Option<PathBuf>>),
     /// How far the file being written is.
     Wrote(Progress),
     /// The file is in place, or why it is not.
@@ -199,8 +200,13 @@ impl Gallery {
     pub(super) fn log_save(&mut self, save: Save) -> Task<Message> {
         match save {
             // Cancelled: an answer, not a failure. Nothing is said.
-            Save::To(None) => self.log_saving.asked = None,
-            Save::To(Some(path)) => {
+            Save::To(Ok(None)) => self.log_saving.asked = None,
+            // No dialog could be shown: that is said, as any failure.
+            Save::To(Err(error)) => {
+                self.log_saving.asked = None;
+                self.toasts.failure(Surfaced::new(error, "save_file"));
+            }
+            Save::To(Ok(Some(path))) => {
                 let Some(lines) = self.log_saving.asked.take() else {
                     return Task::none();
                 };

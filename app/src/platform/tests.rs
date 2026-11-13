@@ -15,19 +15,19 @@ async fn a_cancelled_dialog_answers_nothing_and_is_no_failure() {
     // No answer was given to the fake: every dialog is cancelled.
     assert_eq!(
         messages(platform.pick_file(OpenFile::new("Open"))).await,
-        [None]
+        [Ok(None)]
     );
     assert_eq!(
         messages(platform.pick_files(OpenFile::new("Open"))).await,
-        [Vec::<PathBuf>::new()]
+        [Ok(Vec::<PathBuf>::new())]
     );
     assert_eq!(
         messages(platform.pick_folder(OpenFolder::new("Pick"))).await,
-        [None]
+        [Ok(None)]
     );
     assert_eq!(
         messages(platform.save_file(SaveFile::new("Save", "logs.txt"))).await,
-        [None]
+        [Ok(None)]
     );
     assert_eq!(fake.took().len(), 4);
 }
@@ -48,22 +48,22 @@ async fn a_dialog_is_asked_as_requested_and_answers_what_was_picked() {
     let one = messages(platform.pick_file(open.clone())).await;
     assert_eq!(
         one,
-        [Some(PathBuf::from("/srv/shop/compose.yml"))],
+        [Ok(Some(PathBuf::from("/srv/shop/compose.yml")))],
         "one file was asked for"
     );
 
     fake.answers(vec!["/a".into(), "/b".into()]);
     let many = messages(platform.pick_files(open.clone())).await;
-    assert_eq!(many, [vec![PathBuf::from("/a"), PathBuf::from("/b")]]);
+    assert_eq!(many, [Ok(vec![PathBuf::from("/a"), PathBuf::from("/b")])]);
 
     fake.answer("/srv");
     let folder = messages(platform.pick_folder(OpenFolder::new("Pick a folder"))).await;
-    assert_eq!(folder, [Some(PathBuf::from("/srv"))]);
+    assert_eq!(folder, [Ok(Some(PathBuf::from("/srv")))]);
 
     fake.answer("/home/ada/web.tar");
     let save = SaveFile::new("Export", "web/1.tar").filter(Filter::new("Archives", &["tar"]));
     let saved = messages(platform.save_file(save.clone())).await;
-    assert_eq!(saved, [Some(PathBuf::from("/home/ada/web.tar"))]);
+    assert_eq!(saved, [Ok(Some(PathBuf::from("/home/ada/web.tar")))]);
     assert_eq!(save.name, "web_1.tar");
 
     assert_eq!(
@@ -177,4 +177,37 @@ async fn only_what_exists_is_opened_or_shown_in_its_folder() {
         failed.message,
         format!("{} can't be opened.", file.display())
     );
+}
+
+#[tokio::test]
+async fn a_desktop_that_can_show_no_dialog_is_a_failure_and_never_a_cancel() {
+    let fake = Fake::new();
+    let platform = fake.platform();
+    fake.without_dialogs();
+    // An answer is waiting: it must not be what comes back.
+    fake.answer("/home/ada/logs.txt");
+    let saved = messages(platform.save_file(SaveFile::new("Save", "logs.txt"))).await;
+    let [Err(failed)] = saved.as_slice() else {
+        panic!("a failure: {saved:?}");
+    };
+    assert_eq!(failed.key, "errors.file.dialogUnavailable");
+    assert_eq!(failed.message, "Homeport couldn't open a file dialog.");
+    let hint = failed.hint.as_ref().expect("what to install");
+    assert!(hint.text.contains("xdg-desktop-portal"), "{}", hint.text);
+    for asked in [
+        messages(platform.pick_file(OpenFile::new("Open")))
+            .await
+            .pop()
+            .map(|r| r.is_err()),
+        messages(platform.pick_folder(OpenFolder::new("Pick")))
+            .await
+            .pop()
+            .map(|r| r.is_err()),
+        messages(platform.pick_files(OpenFile::new("Open")))
+            .await
+            .pop()
+            .map(|r| r.is_err()),
+    ] {
+        assert_eq!(asked, Some(true));
+    }
 }
