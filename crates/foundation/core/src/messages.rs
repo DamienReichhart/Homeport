@@ -58,6 +58,15 @@ crate::messages! {
     /// The OS found nothing to open a link with, or the link is of a kind Homeport doesn't open.
     LINK_NOT_OPENED = "errors.file.linkNotOpened" => "{url} can't be opened.";
     LINK_NOT_OPENED_HINT = "errors.file.linkNotOpened.hint" => "Copy the address and open it in your browser instead.";
+    /// A link of a kind Homeport hands to nothing: a `file:` address, a program's own scheme.
+    LINK_REFUSED = "errors.file.linkRefused" => "{url} isn't a web, mail or phone link, so Homeport didn't open it.";
+    /// A pipe, a device or a socket where a file to read or to replace was expected.
+    FILE_NOT_REGULAR = "errors.file.notRegular" => "{path} isn't a regular file.";
+    /// The desktop has nothing that shows a file dialog (Linux: no portal answers).
+    DIALOG_UNAVAILABLE = "errors.file.dialogUnavailable" => "Homeport couldn't open a file dialog.";
+    DIALOG_UNAVAILABLE_HINT = "errors.file.dialogUnavailable.hint" => "File dialogs come from your desktop's portal. Install xdg-desktop-portal and the backend for your desktop (xdg-desktop-portal-gtk, -gnome or -kde), then log in again.";
+    /// The OS doesn't say where this user's files are (no home folder).
+    NO_APP_FOLDER = "errors.file.noAppFolder" => "Homeport couldn't find the folder this computer keeps its files in.";
 
     // Secrets in the OS keychain.
 
