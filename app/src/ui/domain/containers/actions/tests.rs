@@ -66,16 +66,27 @@ fn the_menu_offers_what_the_container_s_state_allows() {
             "Pause",
             "Kill",
             "Rename",
+            "Export filesystem…",
             "Remove"
         ]
     );
     let paused = Actions::menu(&target("web", "paused"));
     assert_eq!(
         offered(&paused),
-        ["Logs", "Restart", "Resume", "Rename", "Remove"]
+        [
+            "Logs",
+            "Restart",
+            "Resume",
+            "Rename",
+            "Export filesystem…",
+            "Remove"
+        ]
     );
     let exited = Actions::menu(&target("web", "exited"));
-    assert_eq!(offered(&exited), ["Logs", "Rename", "Remove"]);
+    assert_eq!(
+        offered(&exited),
+        ["Logs", "Rename", "Export filesystem…", "Remove"]
+    );
     // Every item of the React menu is there, those of other tickets too.
     assert_eq!(running.len(), 13);
 }
@@ -238,9 +249,9 @@ fn a_selection_across_hosts_is_summed_up_host_by_host() {
     assert_eq!(lines.len(), 3);
     assert_eq!(
         lines[1],
-        "On local: web, job-0, job-1, job-2, job-3, job-4, job-5, and job-6…"
+        "On \u{2066}local\u{2069}: web, job-0, job-1, job-2, job-3, job-4, job-5, and job-6…"
     );
-    assert_eq!(lines[2], "On prod: api");
+    assert_eq!(lines[2], "On \u{2066}prod\u{2069}: api");
 }
 
 #[test]

@@ -8,7 +8,7 @@ use crate::{
     ui::{
         domain::containers::{actions, Bulk, CAME_FROM},
         shell::{page::testing::Asked, registry, selection::Selection},
-        widgets::{feedback::error_message::Event, form::select, table},
+        widgets::{basic::technical, feedback::error_message::Event, form::select, table},
     },
 };
 
@@ -22,8 +22,9 @@ fn it_lists_the_containers_of_every_connected_host_each_with_its_host() {
     // shown, and doesn't keep the others waiting.
     assert_eq!(rig.order(&NAMES), ["db", "web", "api", "cache"]);
     assert!(rig.shows("3 of 4 containers running on 2 hosts"));
-    assert!(rig.shows("nas (Unreachable) isn’t shown."));
-    assert!(rig.top("local") < rig.top("prod-server"));
+    // A Host's name is laid out as it was typed, apart from the words.
+    assert!(rig.shows(&format!("{} (Unreachable) isn’t shown.", technical("nas"))));
+    assert!(rig.top(&technical("local")) < rig.top(&technical("prod-server")));
 }
 
 #[test]
@@ -301,7 +302,10 @@ fn a_host_whose_list_failed_is_named_and_read_again() {
         .data
         .fail(&keys::host::containers(PROD), &refused());
     rig.refresh();
-    assert!(rig.shows("Couldn’t list the containers of prod-server."));
+    assert!(rig.shows(&format!(
+        "Couldn’t list the containers of {}.",
+        technical("prod-server")
+    )));
     assert!(rig.shows("web"), "the other Host's are still listed");
     rig.send(Message::Failure(PROD.to_owned(), Event::Details));
     rig.send(Message::Failure(PROD.to_owned(), Event::Retry));
@@ -413,7 +417,8 @@ fn a_host_and_a_date_wrap_onto_the_row_s_second_line_before_they_are_cut() {
         let created = crate::i18n::format::relative(local()[0].created);
         rig.frame(|frame| {
             let fitted = frame.fitted();
-            for whole in ["prod-server", created.as_str()] {
+            let host = technical("prod-server");
+            for whole in [host.as_str(), created.as_str()] {
                 let shown: Vec<_> = fitted.iter().filter(|text| text.whole == whole).collect();
                 assert!(!shown.is_empty(), "{language}: nothing says {whole}");
                 assert!(
@@ -422,7 +427,7 @@ fn a_host_and_a_date_wrap_onto_the_row_s_second_line_before_they_are_cut() {
                 );
             }
             // The Host's name is longer than its column: two lines.
-            let host = frame.find("prod-server").expect("the Host of a row");
+            let host = frame.find(&host).expect("the Host of a row");
             assert!(host.height > 30.0, "{language}: on one line: {host:?}");
         });
     }

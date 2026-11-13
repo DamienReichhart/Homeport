@@ -26,7 +26,7 @@ use crate::{
             Element,
         },
         widgets::{
-            basic::truncated,
+            basic::{technical, truncated},
             feedback::status_dot,
             line,
             overlay::{tooltip, Side},
@@ -156,7 +156,8 @@ pub fn columns<'a>(look: Look<'a>) -> Vec<Column<'a, Row, Message>> {
     let memory = table::width_for(&format::bytes(1023.9 * 1024.0 * 1024.0));
     vec![
         Column::new("host", t!("board.column.host"), |row: &Row| {
-            truncated(row.host_name.to_string())
+            // A name the user gave: any letters, laid out as it was typed.
+            truncated(technical(&row.host_name))
                 .lines(2)
                 .with_tip()
                 .into()

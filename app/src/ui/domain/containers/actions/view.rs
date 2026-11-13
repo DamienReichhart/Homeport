@@ -18,7 +18,10 @@ use crate::{
             Element, Icon,
         },
         widgets::{
-            basic::button::{self, Variant},
+            basic::{
+                button::{self, Variant},
+                technical,
+            },
             feedback::{confirm_dialog, error_message},
             form::input,
             line,
@@ -82,7 +85,11 @@ pub(super) fn removal_by_host(targets: &[Target]) -> (String, String) {
             names_shown.push(ELLIPSIS);
         }
         let names = names_shown;
-        lines.push(t!("board.remove.onHost", host = host, names = names));
+        lines.push(t!(
+            "board.remove.onHost",
+            host = technical(host),
+            names = names
+        ));
     }
     let title = t!("board.remove.title", count = targets.len());
     (title, lines.join("\n"))
@@ -255,7 +262,11 @@ impl Actions {
             later(t!("containers.action.edit"), Icon::SlidersHorizontal),
             later(t!("containers.action.duplicate"), Icon::Copy),
             later(t!("containers.action.commit"), Icon::ImageDown),
-            later(t!("containers.action.export"), Icon::FileArchive),
+            item(
+                t!("containers.action.export"),
+                Icon::FileArchive,
+                Message::AskExport(target.clone()),
+            ),
         ]
     }
 
@@ -311,7 +322,11 @@ impl Actions {
             later(t!("containers.action.edit"), Icon::SlidersHorizontal),
             later(t!("containers.action.duplicate"), Icon::Copy),
             later(t!("containers.action.commit"), Icon::ImageDown),
-            later(t!("containers.action.export"), Icon::FileArchive),
+            item(
+                t!("containers.action.export"),
+                Icon::FileArchive,
+                Message::AskExport(target.clone()),
+            ),
             Item::Separator,
             item(
                 t!("common.remove"),
@@ -328,6 +343,9 @@ impl Actions {
     /// The confirmation or the Rename dialog that is open, to lay over
     /// the page with `overlay::over`.
     pub fn dialog(&self) -> Option<Modal<'_, Message>> {
+        if let Some(export) = self.exports.dialog() {
+            return Some(export.map(Message::Export));
+        }
         match self.dialog.as_ref()? {
             Dialog::Confirm { what, state } => {
                 Some(confirm_dialog(&Self::ask(what), state).map(Message::Confirm))

@@ -14,10 +14,11 @@
 //! read again are the shell's to report, so they are whether or not the
 //! page is still there when the Engine answers.
 //!
-//! Edit, Duplicate, Commit and Export are in the menu and can't be chosen:
-//! their dialogs are the run ticket's (#259), and Export waits for the
-//! dialog of a transfer with its progress, which the kit doesn't have yet.
+//! Export saves a container's filesystem to a tar ([`export`]). Edit,
+//! Duplicate and Commit are in the menu and can't be chosen: their
+//! dialogs are the run ticket's (#259).
 
+pub mod export;
 pub mod view;
 
 #[cfg(test)]
@@ -122,6 +123,10 @@ pub enum Message {
     RenameFailure(error_message::Event),
     /// Escape, Cancel or the scrim of the Rename dialog.
     CloseDialog,
+    /// Export this container's filesystem: the save dialog first.
+    AskExport(Target),
+    /// The save dialog of an export, or the dialog that shows it.
+    Export(export::Message),
     /// Go to a tab of the container's page: its logs, its terminal.
     Open(Target, &'static str),
 }
@@ -158,6 +163,8 @@ pub struct Actions {
     /// The containers an action is on its way for: their button waits.
     pending: HashSet<(String, String)>,
     dialog: Option<Dialog>,
+    /// The export the dialog shows, and its save dialog.
+    exports: export::Exports,
 }
 
 /// The failure of an action asked for several containers, as one: the
@@ -248,9 +255,9 @@ impl Actions {
         self.pending.contains(&(host_id.to_owned(), id.to_owned()))
     }
 
-    /// Whether a confirmation or the Rename dialog is open.
+    /// Whether a confirmation, the Rename dialog or an export is open.
     pub fn has_dialog(&self) -> bool {
-        self.dialog.is_some()
+        self.dialog.is_some() || self.exports.shown.is_some()
     }
 
     /// What the confirmation asks, in the language of the moment.
@@ -371,6 +378,12 @@ impl Actions {
                 if matches!(self.dialog, Some(Dialog::Rename { .. })) {
                     self.dialog = None;
                 }
+            }
+            Message::AskExport(target) => {
+                return self.exports.ask(target, ctx).map(Message::Export);
+            }
+            Message::Export(message) => {
+                return self.exports.update(message, ctx).map(Message::Export);
             }
             Message::Open(target, tab) => {
                 if self.across_hosts {

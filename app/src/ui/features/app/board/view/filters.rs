@@ -23,7 +23,10 @@ use crate::{
             Element, Icon,
         },
         widgets::{
-            basic::button::{self, Variant},
+            basic::{
+                button::{self, Variant},
+                technical,
+            },
             feedback::error_message,
             focus::pressable,
             form::{self, select::select_owned},
@@ -69,7 +72,7 @@ pub fn filters<'a>(state: &'a State, ctx: &Context<'a>) -> Element<'a, Message> 
         .map(|view| {
             let id = view.host.id.clone();
             let shown = filter.hosts.contains(&id);
-            Item::action(view.host.name.clone(), Message::ToggleHost(id)).checked(shown)
+            Item::action(technical(&view.host.name), Message::ToggleHost(id)).checked(shown)
         })
         .collect();
     let chosen_state = StateFilter::ALL.iter().position(|s| *s == filter.state);
@@ -121,7 +124,7 @@ pub fn notices<'a>(state: &'a State, ctx: &Context<'a>) -> Option<Element<'a, Me
         }
         let says = t!(
             "board.skipped",
-            name = view.host.name.as_str(),
+            name = technical(&view.host.name),
             status = status::host::describe(&view.status).label
         );
         let open = pressable(text(t!("board.openHost")).size(size::SM))
@@ -151,7 +154,7 @@ pub fn notices<'a>(state: &'a State, ctx: &Context<'a>) -> Option<Element<'a, Me
         let Some(error) = list.error() else {
             continue;
         };
-        let title = text(t!("board.listFailed", name = view.host.name.as_str()))
+        let title = text(t!("board.listFailed", name = technical(&view.host.name)))
             .size(size::SM)
             .font(font::medium());
         let failure = error_message(error, true, move |event| {

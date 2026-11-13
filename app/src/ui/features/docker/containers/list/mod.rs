@@ -3,10 +3,14 @@
 //! the "newer image" marks, the search, the lifecycle of one container or
 //! of a selection, Rename and Remove.
 //!
+//! A press on a row, Enter on it, or Logs and Open terminal in its menu
+//! lead to the container's page (`../detail`). Export in its menu saves
+//! the container's filesystem (`ui/domain/containers::actions::export`).
+//!
 //! What it leaves to other tickets: the Run dialog (#259), for which a
 //! stand-in shows its title over "Nothing here.", and, in a container's
-//! menu, Edit, Duplicate, Commit and Export (#258, #259), which are there
-//! and can't be chosen.
+//! menu, Edit, Duplicate and Commit (#259), which are there and can't be
+//! chosen.
 //!
 //! What differs from the React page, on purpose:
 //!

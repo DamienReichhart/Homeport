@@ -191,7 +191,7 @@ fn the_header_s_buttons_are_the_shared_actions_and_tell_the_shell() {
 }
 
 #[test]
-fn the_menu_renames_and_kills_and_leaves_the_run_ticket_s_items_disabled() {
+fn the_menu_renames_kills_exports_and_leaves_the_run_ticket_s_items_disabled() {
     let _english = in_language("en");
     let mut rig = Rig::at(WEB, "logs");
     rig.send(Message::More(menu::Event::Toggle));
@@ -199,10 +199,16 @@ fn the_menu_renames_and_kills_and_leaves_the_run_ticket_s_items_disabled() {
     for label in ["Rename", "Kill", "Edit", "Duplicate", commit, export] {
         assert!(rig.shows(label), "{label}");
     }
-    // What waits for its ticket can't be chosen.
+    // What waits for its ticket can't be chosen: the menu stays.
     rig.frame(|frame| frame.click("Edit"));
+    assert!(rig.shows("Rename") && dialog(&rig.state, &rig.bench.ctx()).is_none());
+    // Export asks where to save, through the system's dialog.
     rig.frame(|frame| frame.click(export));
-    assert!(dialog(&rig.state, &rig.bench.ctx()).is_none());
+    assert!(matches!(
+        rig.bench.os.took().as_slice(),
+        [crate::platform::fake::Asked::Save(request)] if request.name == "shop-web-1.tar"
+    ));
+    rig.send(Message::More(menu::Event::Toggle));
     rig.frame(|frame| frame.click("Rename"));
     assert!(rig.state.actions.has_dialog());
     assert!(rig.shows("Rename shop-web-1"));

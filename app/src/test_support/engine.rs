@@ -13,8 +13,8 @@
 //! ```
 //!
 //! What it answers: `_ping`, `version`, `info`, `events` (held open),
-//! a container's `logs` and `stats` (streamed), and its `archive` (stat,
-//! download, upload). Anything else is `404`.
+//! a container's `logs` and `stats` (streamed), its `archive` (stat,
+//! download, upload) and its `export`. Anything else is `404`.
 
 use std::{
     collections::HashMap,
@@ -480,6 +480,18 @@ impl Connection {
         self.answer("200 OK", &headers, &archive).await
     }
 
+    /// A container's filesystem, as `docker export` streams it: three
+    /// megabytes, so the export reports its progress on the way.
+    async fn export(&mut self) -> bool {
+        let _open = Open::new(&self.shared, Stream::Transfer);
+        if !self.held().await {
+            return false;
+        }
+        let body = vec![b'x'; EXPORTED];
+        let tar = [("Content-Type", "application/x-tar".to_owned())];
+        self.answer("200 OK", &tar, &body).await
+    }
+
     async fn run(mut self) {
         while let Some(request) = self.request().await {
             let line = format!("{} {}?{}", request.method, request.path, request.query);
@@ -506,6 +518,7 @@ impl Connection {
                     false
                 }
                 (_, ["containers", _, "archive"]) => self.archive(&request).await,
+                ("GET", ["containers", _, "export"]) => self.export().await,
                 _ => {
                     self.json("404 Not Found", r#"{"message":"not found"}"#)
                         .await
@@ -517,6 +530,9 @@ impl Connection {
         }
     }
 }
+
+/// How many bytes an export sends.
+pub const EXPORTED: usize = 3 * 1024 * 1024;
 
 const VERSION: &str = r#"{"Version":"27.0.0","ApiVersion":"1.47","MinAPIVersion":"1.24","Os":"linux","Arch":"amd64"}"#;
 

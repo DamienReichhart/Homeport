@@ -27,7 +27,7 @@ use crate::{
             Element, Tone,
         },
         widgets::{
-            basic::{badge, truncated, BadgeVariant},
+            basic::{badge, technical, truncated, BadgeVariant},
             feedback::status_dot,
             focus::pressable,
             line,
@@ -153,7 +153,8 @@ fn link_badge<'a>(
     says: String,
     route: Route,
 ) -> Element<'a, Message> {
-    let badge = pressable(badge(label, variant))
+    // A label of the Engine's: laid out left to right in every language.
+    let badge = pressable(badge(technical(label), variant))
         .padding(0.0)
         .style(theme::button::part::bare)
         .on_press(Message::Go(route));
