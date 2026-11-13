@@ -9,6 +9,7 @@
 //! - [`form`]: fields and the controls that go in them;
 //! - [`feedback`]: failures, toasts, confirmations, loading and empty states;
 //! - [`chart`]: lines of live values over a time axis that moves with them;
+//! - [`data`]: a folder's listing, a JSON document, labelled values;
 //! - [`table`]: the data table, which builds only the rows in view;
 //! - [`log`]: the log viewer, which lays out only the lines in view.
 //!
@@ -18,6 +19,7 @@
 
 pub mod basic;
 pub mod chart;
+pub mod data;
 pub mod feedback;
 pub mod focus;
 pub mod form;

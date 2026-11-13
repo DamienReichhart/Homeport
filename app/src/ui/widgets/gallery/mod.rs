@@ -9,6 +9,7 @@
 
 pub mod chart;
 mod controls;
+pub mod data;
 mod feedback;
 pub mod log;
 #[cfg(test)]
@@ -70,6 +71,7 @@ pub enum Page {
     Table,
     Log,
     Chart,
+    Data,
 }
 
 pub struct Gallery {
@@ -104,6 +106,7 @@ pub struct Gallery {
     /// How many lines the gallery's stream has written.
     pub log_written: usize,
     pub charts: chart::Charts,
+    pub data: data::Data,
 }
 
 #[derive(Debug, Clone)]
@@ -143,6 +146,7 @@ pub enum Message {
     LogFill(log::Fill),
     LogTick,
     Chart(chart::Event),
+    Data(data::Event),
     Nothing,
 }
 
@@ -189,6 +193,7 @@ impl Default for Gallery {
             log_streaming: false,
             log_written: 0,
             charts: chart::Charts::default(),
+            data: data::Data::default(),
         }
     }
 }
@@ -359,6 +364,7 @@ impl Gallery {
             Message::LogFill(fill) => return self.log_fill(fill),
             Message::LogTick => return self.log_tick(),
             Message::Chart(event) => self.charts.update(event),
+            Message::Data(event) => return self.data_event(event),
             Message::Nothing => {}
         }
         Task::none()
@@ -372,6 +378,7 @@ impl Gallery {
             Page::Table => self.tables(),
             Page::Log => self.logs(),
             Page::Chart => self.charts(),
+            Page::Data => self.data(),
         };
         let page =
             stack(vec![self.switches(), rule::horizontal(1).into(), body]).spacing(space::S6);
@@ -441,6 +448,7 @@ impl Gallery {
                 Message::Page(Page::Chart),
                 self.page == Page::Chart,
             ),
+            choice("Data", Message::Page(Page::Data), self.page == Page::Data),
             choice("Light", Message::Theme(Theme::Light), !self.theme.is_dark()),
             choice("Dark", Message::Theme(Theme::Dark), self.theme.is_dark()),
             choice("English", Message::Language("en"), !rtl),
