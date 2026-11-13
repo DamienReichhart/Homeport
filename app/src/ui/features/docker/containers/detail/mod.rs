@@ -9,7 +9,7 @@
 //! | --- | --- | --- |
 //! | Route `containers/:id/:tab?`, the logs when no tab or an unknown one | `Route::Container`, `Tab::of` | done |
 //! | A tab change replaces the address (`navigate(.., { replace: true })`) | `ctx.keep_route`: the route changes, the history doesn't | done |
-//! | The id may be the start of one (`id.startsWith`) | `State::find`; an empty id finds none | done |
+//! | The id may be the start of one (`id.startsWith`) | `State::find`: the id, else the name, else a start no other id shares; a tab's route then names the whole id | differs: an ambiguous start finds none (React took the first), a name is found too |
 //! | Back: to the Board when opened from it (`state.from`), else to the list | `CAME_FROM` parameter; Back is `ctx.back()` then | done |
 //! | Loading: a spinner while the list is read | `spinner` | done |
 //! | Gone: "This container no longer exists." and "Back to containers" | the same, Details too | done |

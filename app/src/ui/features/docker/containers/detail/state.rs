@@ -168,16 +168,23 @@ impl State {
     }
 
     /// The container the page is about, among `list`: the one whose id is
-    /// the route's, or starts with it.
+    /// the route's, else the one of that name, else the one whose id starts
+    /// with it if no other does. A start several ids share names none:
+    /// the page would otherwise be about whichever came first.
     pub(super) fn find<'a>(&self, list: &'a [Container]) -> Option<&'a Container> {
-        list.iter()
-            .find(|container| container.id == self.id)
-            .or_else(|| {
-                // An empty id is the start of every id, and names none.
-                (!self.id.is_empty())
-                    .then(|| list.iter().find(|c| c.id.starts_with(&self.id)))
-                    .flatten()
-            })
+        let exact = list.iter().find(|container| container.id == self.id);
+        let named = || list.iter().find(|container| container.name == self.id);
+        exact.or_else(named).or_else(|| {
+            // An empty id is the start of every id, and names none.
+            if self.id.is_empty() {
+                return None;
+            }
+            let mut starting = list.iter().filter(|c| c.id.starts_with(&self.id));
+            match (starting.next(), starting.next()) {
+                (Some(only), None) => Some(only),
+                _ => None,
+            }
+        })
     }
 
     /// The container the page is about, as the data layer has it now.
@@ -272,9 +279,11 @@ impl State {
     }
 
     /// The route of a tab of this page.
+    /// It names the container by its whole id once it was found, so the
+    /// route stays about it whatever the list holds later.
     pub(super) fn route(&self, tab: Tab) -> Route {
         Route::Container {
-            id: self.id.clone(),
+            id: self.found.clone().unwrap_or_else(|| self.id.clone()),
             tab: Some(tab.slug().to_owned()),
         }
     }

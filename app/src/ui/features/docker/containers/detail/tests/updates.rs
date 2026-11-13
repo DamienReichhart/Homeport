@@ -100,11 +100,59 @@ fn back_goes_to_the_list_or_to_where_the_page_was_opened_from() {
     let mut rig = Rig::on(connected_host(), from_board, Some(sample()));
     rig.send(Message::Back);
     assert_eq!(rig.bench.took(), [Asked::Back]);
-    // The tab changing in between doesn't forget where it came from.
+}
+
+#[test]
+fn the_board_the_page_came_from_survives_a_tab_and_a_reopen() {
+    let from_board = Request::to(route(WEB, Some("logs"))).with_param(CAME_FROM, "board");
+    let mut rig = Rig::on(connected_host(), from_board, Some(sample()));
+    let key = rig.bench.history.current().key;
     rig.send(Message::Tab(Tab::Stats));
+    // The shell keeps the tab in the location, and the location keeps
+    // where it came from.
     let _ = rig.bench.took();
+    let location = rig.bench.history.current();
+    assert_eq!(location.route, route(WEB, Some("stats")));
+    assert_eq!(location.param(CAME_FROM), Some("board"));
+    assert_eq!(location.key, key);
+    // The window comes back to the page (back from another, a Host
+    // selected again): opened anew from that location, Back still goes
+    // back to the Board, not to the list.
+    let (reopened, _) = open(&rig.bench.ctx());
+    rig.state = reopened;
+    let _ = rig.bench.took();
+    assert_eq!(rig.state.tab, Tab::Stats);
     rig.send(Message::Back);
     assert_eq!(rig.bench.took(), [Asked::Back]);
+}
+
+#[test]
+fn an_id_a_name_or_a_start_no_other_id_shares_finds_the_container() {
+    let mut list = sample();
+    let mut twin = list[0].clone();
+    "shop-web-1-0123999".clone_into(&mut twin.id);
+    "twin".clone_into(&mut twin.name);
+    list.push(twin);
+    let found = |id: &str| {
+        let rig = Rig::on(connected_host(), route(id, None).into(), Some(list.clone()));
+        rig.state.find(&list).map(|c| c.id.clone())
+    };
+    assert_eq!(found(WEB).as_deref(), Some(WEB));
+    assert_eq!(found("redis").as_deref(), Some("redis-0123456789abcdef"));
+    assert_eq!(
+        found("shop-db").as_deref(),
+        Some("shop-db-1-0123456789abcdef")
+    );
+    // Two ids start so: neither is the page's.
+    assert_eq!(found("shop-web-1-0123"), None);
+    // Once found, a tab's route names it whole.
+    let mut rig = Rig::at("shop-db", "logs");
+    rig.send(Message::Tab(Tab::Stats));
+    let _ = rig.bench.took();
+    assert_eq!(
+        rig.bench.history.current().route,
+        route("shop-db-1-0123456789abcdef", Some("stats"))
+    );
 }
 
 #[test]
