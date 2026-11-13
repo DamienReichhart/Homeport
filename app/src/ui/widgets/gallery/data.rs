@@ -188,9 +188,9 @@ impl Data {
                 (Task::none(), None)
             }
             // Where the file goes is known: moving it out of the
-            // container is the Engine's transfer (#258), which a page
-            // starts here with `ctx.act`. The gallery has no Engine and
-            // says what it would ask.
+            // container is the Engine's transfer, which a page (the
+            // container's Files tab) starts here with `ctx.act`. The
+            // gallery has no Engine and says what it would ask.
             Event::SaveTo(target) => {
                 let entry = self.downloading.take();
                 let said = match target {

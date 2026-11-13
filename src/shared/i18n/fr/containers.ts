@@ -190,6 +190,8 @@ export default {
   'containers.files.uploadHere': 'Envoyer ici',
   'containers.files.saved': '{name} enregistré',
   'containers.files.savedArchive': '{name} enregistré en archive .tar',
+  'containers.files.downloading': 'Enregistrement de {name}…',
+  'containers.files.uploading': 'Envoi de {done} sur {count} vers {path}…',
   'containers.files.uploaded':
     '{count, plural, one {# fichier envoyé} other {# fichiers envoyés}} vers {path}',
 

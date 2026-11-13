@@ -4,12 +4,12 @@
 use std::{collections::HashSet, sync::Arc};
 
 use homeport_core::error::{AppError, Message as Text};
-use homeport_engine::containers::{health::Health, Container, Processes};
+use homeport_engine::containers::{files::FileEntry, health::Health, Container, Processes};
 
 use super::{
     model::inspect::Inspected,
     queries,
-    tabs::{health, inspect::Inspect, logs::Logs, processes, stats::Stats},
+    tabs::{files::Files, health, inspect::Inspect, logs::Logs, processes, stats::Stats},
 };
 use crate::{
     data::{keys, Key, Query, Resource},
@@ -125,6 +125,7 @@ pub struct State {
     pub(super) inspect: Inspect,
     pub(super) processes: processes::Tab,
     pub(super) health: health::Tab,
+    pub(super) files: Files,
     pub(super) stats: Stats,
 }
 
@@ -148,6 +149,7 @@ impl State {
             inspect: Inspect::default(),
             processes: processes::Tab::default(),
             health: health::Tab::default(),
+            files: Files::new(),
             stats: Stats::new(),
         }
     }
@@ -203,6 +205,16 @@ impl State {
     ) -> Resource<Arc<Processes>> {
         ctx.data
             .read(&queries::processes_key(&self.host_id, &container.id))
+    }
+
+    /// What the folder the Files tab shows holds.
+    pub(super) fn files_read(
+        &self,
+        container: &Container,
+        ctx: &Context<'_>,
+    ) -> Resource<Arc<Vec<FileEntry>>> {
+        let key = queries::files_key(&self.host_id, &container.id, &self.files.path);
+        ctx.data.read(&key)
     }
 
     /// The healthcheck of `container`, read for the status the list

@@ -198,6 +198,8 @@ containers-files-uploadTo = Nach { $path } hochladen
 containers-files-uploadHere = Hierher hochladen
 containers-files-saved = { $name } gespeichert
 containers-files-savedArchive = { $name } als .tar-Archiv gespeichert
+containers-files-downloading = { $name } wird gespeichert…
+containers-files-uploading = { $done } von { $count } wird nach { $path } hochgeladen…
 containers-files-uploaded = { $count ->
         [one] { NUM($count) } Datei
        *[other] { NUM($count) } Dateien

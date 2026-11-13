@@ -188,6 +188,8 @@ export default {
   'containers.files.uploadHere': 'Carica qui',
   'containers.files.saved': '{name} salvato',
   'containers.files.savedArchive': '{name} salvato come archivio .tar',
+  'containers.files.downloading': 'Salvataggio di {name}…',
+  'containers.files.uploading': 'Caricamento di {done} di {count} in {path}…',
   'containers.files.uploaded':
     '{count, plural, one {# file caricato} other {# file caricati}} in {path}',
 

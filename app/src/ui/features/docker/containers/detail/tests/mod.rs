@@ -2,6 +2,7 @@
 //! looks in each state.
 
 mod drawn;
+mod files;
 mod health;
 mod inspect;
 mod logs;
@@ -9,6 +10,8 @@ mod processes;
 mod stats;
 #[cfg(unix)]
 mod streams;
+#[cfg(unix)]
+mod transfers;
 mod updates;
 
 use homeport_engine::containers::Container;

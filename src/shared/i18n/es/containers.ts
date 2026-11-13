@@ -176,6 +176,8 @@ export default {
   'containers.files.uploadHere': 'Subir aquí',
   'containers.files.saved': 'Se guardó {name}',
   'containers.files.savedArchive': 'Se guardó {name} como archivo .tar',
+  'containers.files.downloading': 'Guardando {name}…',
+  'containers.files.uploading': 'Subiendo {done} de {count} a {path}…',
   'containers.files.uploaded':
     '{count, plural, one {Se subió # archivo} other {Se subieron # archivos}} a {path}',
   'containers.stats.startFirst': 'Inicia el contenedor para ver su uso de recursos.',

@@ -198,6 +198,8 @@ containers-files-uploadTo = Carica in { $path }
 containers-files-uploadHere = Carica qui
 containers-files-saved = { $name } salvato
 containers-files-savedArchive = { $name } salvato come archivio .tar
+containers-files-downloading = Salvataggio di { $name }…
+containers-files-uploading = Caricamento di { $done } di { $count } in { $path }…
 containers-files-uploaded = { $count ->
         [one] { NUM($count) } file caricato
        *[other] { NUM($count) } file caricati

@@ -1,6 +1,7 @@
 //! What a container's page draws: its header, its tabs, and the tab that
 //! shows.
 
+mod files;
 mod health;
 pub(super) mod inspect;
 mod logs;
@@ -163,6 +164,7 @@ fn body<'a>(state: &'a State, container: &Container, ctx: &Context<'a>) -> Eleme
             let read = state.processes_read(container, ctx);
             processes::view(&state.processes, &read, running).map(Message::Processes)
         }
+        Tab::Files => files::view(&state.files, running).map(Message::Files),
         Tab::Health => {
             let read = state.health_read(container, ctx);
             health::view(&state.health, &read, state.is_wide()).map(Message::Health)

@@ -24,14 +24,14 @@ use crate::{
 };
 
 /// A container's page on a Host whose Engine is the fake.
-struct Live {
-    rig: Rig,
-    engine: Engine,
+pub(super) struct Live {
+    pub(super) rig: Rig,
+    pub(super) engine: Engine,
     following: Following<Message>,
 }
 
 impl Live {
-    fn at(tab: &str) -> Self {
+    pub(super) fn at(tab: &str) -> Self {
         let mut bench = Bench::at(Route::Containers);
         let (engine, id) = bench.app.runtime.block_on(async {
             let engine = Engine::start();
@@ -64,7 +64,7 @@ impl Live {
         self.following.sync(follows);
     }
 
-    fn send(&mut self, message: Message) {
+    pub(super) fn send(&mut self, message: Message) {
         self.rig.send(message);
         self.sync();
     }

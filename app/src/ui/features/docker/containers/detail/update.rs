@@ -5,7 +5,7 @@ use iced::Task;
 use super::{
     queries,
     state::{gone, Tab},
-    tabs::{health, inspect, processes},
+    tabs::{files, health, inspect, processes},
     view, Message, State,
 };
 use crate::{
@@ -14,6 +14,7 @@ use crate::{
         domain::containers::actions,
         shell::{router::Route, Context},
         widgets::{
+            data::file_browser,
             feedback::{error_message::Event, Surfaced},
             table::Rows,
         },
@@ -62,6 +63,14 @@ fn needs(state: &mut State, ctx: &Context<'_>) -> Task<Message> {
         Tab::Health => {
             let status = container.health.as_deref();
             state.watch(queries::health(&host, &container.id, status), ctx);
+            Task::none()
+        }
+        // `enabled: running`.
+        Tab::Files if container.state == "running" => {
+            let path = state.files.path.clone();
+            state.watch(queries::files(&host, &container.id, &path), ctx);
+            let read = state.files_read(&container, ctx);
+            state.files.take(&read);
             Task::none()
         }
         _ => Task::none(),
@@ -128,6 +137,49 @@ fn health(state: &mut State, message: health::Message, ctx: &Context<'_>) {
         }
         health::Message::Failure(Event::Copy(command)) => ctx.copy(command),
     }
+}
+
+/// What the Files tab asked for. A transfer is about the container the
+/// page shows: the page is opened anew for another one.
+fn files(state: &mut State, message: files::Message, ctx: &Context<'_>) -> Task<Message> {
+    let Some(container) = state.container(ctx) else {
+        return Task::none();
+    };
+    let (host, id) = (state.host_id.clone(), container.id.clone());
+    let key = queries::files_key(&host, &id, &state.files.path);
+    let task = match message {
+        files::Message::Browser(message) => {
+            let (task, event) = state.files.browse(message, ctx);
+            match event {
+                Some(file_browser::Event::Refresh) => ctx.invalidate(key),
+                Some(file_browser::Event::Failure(Event::Details)) => {
+                    if let Some(error) = state.files_read(&container, ctx).error() {
+                        ctx.details(Surfaced::new(error.clone(), "files_list"));
+                    }
+                }
+                Some(file_browser::Event::Failure(Event::Copy(command))) => ctx.copy(command),
+                _ => {}
+            }
+            task
+        }
+        files::Message::Upload => state.files.ask_upload(ctx).0,
+        files::Message::SaveTo(target) => state.files.save_to(target, &host, &id, ctx),
+        files::Message::UploadFrom(sources) => state.files.upload_from(sources, &host, &id, ctx),
+        files::Message::Progress(number, done) => {
+            state.files.progress(number, done);
+            Task::none()
+        }
+        files::Message::Ended(number) => {
+            state.files.ended(number);
+            Task::none()
+        }
+        files::Message::Cancel => {
+            state.files.cancel();
+            Task::none()
+        }
+    };
+    // Another folder may show now: it is read.
+    Task::batch([task.map(Message::Files), needs(state, ctx)])
 }
 
 /// The moment a stream is opened at, in Unix seconds.
@@ -209,6 +261,7 @@ pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Me
         Message::Inspect(message) => return inspect(state, message, ctx),
         Message::Processes(message) => processes(state, message, ctx),
         Message::Health(message) => health(state, message, ctx),
+        Message::Files(message) => return files(state, message, ctx),
         Message::Logs(message) => return state.logs.update(message, ctx).map(Message::Logs),
     }
     Task::none()

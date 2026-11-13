@@ -189,6 +189,8 @@ export default {
   'containers.files.uploadHere': 'यहाँ अपलोड करें',
   'containers.files.saved': '{name} सहेजा गया',
   'containers.files.savedArchive': '{name} को .tar आर्काइव के रूप में सहेजा गया',
+  'containers.files.downloading': '{name} सहेजा जा रहा है…',
+  'containers.files.uploading': '{path} में {count} में से {done} अपलोड हो रहा है…',
   'containers.files.uploaded':
     '{path} में {count, plural, one {# फ़ाइल} other {# फ़ाइलें}} अपलोड की गईं',
 

@@ -192,6 +192,8 @@ export default {
   'containers.files.uploadHere': 'ここにアップロード',
   'containers.files.saved': '{name} を保存しました',
   'containers.files.savedArchive': '{name} を .tar アーカイブとして保存しました',
+  'containers.files.downloading': '{name} を保存しています…',
+  'containers.files.uploading': '{count} 個中 {done} 個を {path} にアップロードしています…',
   'containers.files.uploaded':
     '{count, plural, other {# 個のファイル}}を {path} にアップロードしました',
 
