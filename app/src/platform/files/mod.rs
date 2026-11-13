@@ -11,6 +11,10 @@ use std::{
     future::Future,
     io::{self, BufWriter, Seek, SeekFrom, Write},
     path::{Path, PathBuf},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
     time::Duration,
 };
 
@@ -140,15 +144,37 @@ fn in_place(unfinished: &Replacement, target: &Path) -> io::Result<()> {
 /// `docs/agents/iced-migration.md` for what that keeps of the file that
 /// was there, and what it doesn't.
 pub fn replace(path: &Path, write: impl FnOnce(&mut dyn Write) -> io::Result<()>) -> AppResult<()> {
-    replace_by(path, write, Replacement::try_commit)
+    replace_by(path, &Stop::default(), write, Replacement::try_commit).map(|_| ())
 }
 
-/// [`replace`], with what puts the finished file in place given.
+/// What a save writes through: it refuses the next chunk once the save
+/// is stopped, which is how a write that can't be interrupted ends.
+struct Stoppable<'a, W> {
+    out: W,
+    stop: &'a Stop,
+}
+
+impl<W: Write> Write for Stoppable<'_, W> {
+    fn write(&mut self, chunk: &[u8]) -> io::Result<usize> {
+        if self.stop.0.load(Ordering::Relaxed) {
+            return Err(io::ErrorKind::Other.into());
+        }
+        self.out.write(chunk)
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        self.out.flush()
+    }
+}
+
+/// [`replace`], with what stops it and what puts the finished file in
+/// place given.
 fn replace_by(
     path: &Path,
+    stop: &Stop,
     write: impl FnOnce(&mut dyn Write) -> io::Result<()>,
     put: impl FnOnce(Replacement) -> Result<(), (io::Error, Replacement)>,
-) -> AppResult<()> {
+) -> AppResult<Saved> {
     let failed = |e: io::Error| local_file(path, e);
     let target = target(path).map_err(failed)?;
     let replaced = replaced(path, &target)?;
@@ -158,10 +184,18 @@ fn replace_by(
     if let Some(replaced) = &replaced {
         unfinished.keep_mode_of(replaced).map_err(failed)?;
     }
-    let mut out = BufWriter::new(unfinished.file());
-    write(&mut out).map_err(failed)?;
-    out.flush().map_err(failed)?;
+    let mut out = Stoppable {
+        out: BufWriter::new(unfinished.file()),
+        stop,
+    };
+    let written = write(&mut out).and_then(|()| out.flush());
     drop(out);
+    // Stopped, whatever the writer made of it: the unfinished file goes
+    // as it is dropped, and what was at `path` is as it was.
+    if stop.0.load(Ordering::Relaxed) {
+        return Ok(Saved::Stopped);
+    }
+    written.map_err(failed)?;
     if replaced.is_none() {
         unfinished.take_default_mode().map_err(failed)?;
     }
@@ -178,7 +212,7 @@ fn replace_by(
     // The rename itself is on disk once its folder is.
     #[cfg(unix)]
     let _ = File::open(folder_of(&target)).and_then(|folder| folder.sync_all());
-    Ok(())
+    Ok(Saved::Whole)
 }
 
 /// How far a file being saved is: `done` of `total`, in whatever the
@@ -217,32 +251,81 @@ impl Meter {
     }
 }
 
+/// How a save ended, when it did not fail.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Saved {
+    /// The file is in place, whole.
+    Whole,
+    /// It was stopped before its end: nothing was written where it was
+    /// going, and nothing is left beside it.
+    Stopped,
+}
+
+/// Stops a save that is under way: [`Saving::stop`].
+#[derive(Debug, Clone, Default)]
+pub struct Stop(Arc<AtomicBool>);
+
+impl Stop {
+    /// Asks the write to end. It does at its next chunk, as
+    /// [`Saved::Stopped`].
+    pub fn now(&self) {
+        self.0.store(true, Ordering::Relaxed);
+    }
+}
+
+/// Stops the write when whoever waited for it no longer does.
+struct StopWhenDropped(Stop);
+
+impl Drop for StopWhenDropped {
+    fn drop(&mut self) {
+        self.0.now();
+    }
+}
+
 /// A file being saved: its end, and how far it is meanwhile.
 pub struct Saving<Done, Steps> {
     /// Ends when the file is in place, or says why it is not. This is the
-    /// work to hand `ctx.act`, so its toast outlives the page.
+    /// work to hand `ctx.act`, so its toast outlives the page. Dropped
+    /// before its end (the app closes), it stops the write as
+    /// [`Saving::stop`] does: the thread that writes ends at its next
+    /// chunk, which is what closing the app then waits for.
     pub done: Done,
     /// The progress, a step a percent at most, ending with the write. For
     /// `Task::run`; dropping it changes nothing to the write.
     pub progress: Steps,
+    /// Stops the write: for a Cancel button.
+    pub stop: Stop,
 }
 
 /// Saves a file at `path` off the window's thread, as [`replace`] does,
-/// with `write` saying how far it is on the [`Meter`] it is given.
+/// with `write` saying how far it is on the [`Meter`] it is given. The
+/// write is on a thread of its own and can't be interrupted: it is
+/// stopped between two chunks of what it writes.
 pub fn save(
     path: PathBuf,
     write: impl FnOnce(&mut dyn Write, &Meter) -> io::Result<()> + Send + 'static,
-) -> Saving<impl Future<Output = AppResult<()>> + Send, impl Stream<Item = Progress> + Send> {
+) -> Saving<impl Future<Output = AppResult<Saved>> + Send, impl Stream<Item = Progress> + Send> {
     let (sender, receiver) = watch::channel(Progress::default());
     let meter = Meter { sender };
-    let done = off_thread(move || replace(&path, |out| write(out, &meter)));
+    let stop = Stop::default();
+    let (asked, waited) = (stop.clone(), StopWhenDropped(stop.clone()));
+    let done = async move {
+        // Held until the write has ended: letting go earlier stops it.
+        let _waited = waited;
+        let put = Replacement::try_commit;
+        off_thread(move || replace_by(&path, &asked, |out| write(out, &meter), put)).await
+    };
     let progress = stream::unfold(receiver, |mut receiver| async move {
         // The meter is dropped with the write: the steps end there.
         receiver.changed().await.ok()?;
         let progress = *receiver.borrow_and_update();
         Some((progress, receiver))
     });
-    Saving { done, progress }
+    Saving {
+        done,
+        progress,
+        stop,
+    }
 }
 
 #[cfg(test)]

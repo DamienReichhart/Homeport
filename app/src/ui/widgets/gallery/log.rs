@@ -13,7 +13,7 @@ use super::{Gallery, Message};
 use crate::{
     platform::{
         dialogs::{Filter, SaveFile},
-        files::{self, Progress},
+        files::{self, Progress, Saved},
     },
     t,
     ui::{
@@ -40,8 +40,8 @@ pub enum Save {
     To(AppResult<Option<PathBuf>>),
     /// How far the file being written is.
     Wrote(Progress),
-    /// The file is in place, or why it is not.
-    Done(Result<(), AppError>),
+    /// The file is in place, the save was stopped, or why it failed.
+    Done(Result<Saved, AppError>),
 }
 
 /// The lines the gallery is saving, from the dialog to the file.
@@ -235,10 +235,12 @@ impl Gallery {
             Save::Done(saved) => {
                 self.log_saving.wrote = None;
                 match saved {
-                    Ok(()) => {
+                    Ok(Saved::Whole) => {
                         self.toasts
                             .say(Kind::Success, || t!("containers.logs.saved"));
                     }
+                    // Stopped on the way: nothing was saved, nothing to say.
+                    Ok(Saved::Stopped) => {}
                     Err(error) => {
                         self.toasts.failure(Surfaced::new(error, "write_text_file"));
                     }

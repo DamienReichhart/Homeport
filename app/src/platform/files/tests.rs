@@ -228,7 +228,7 @@ fn a_file_that_cannot_be_renamed_over_is_written_into() {
     let busy = |unfinished: Replacement| -> Refused {
         Err((io::ErrorKind::ResourceBusy.into(), unfinished))
     };
-    replace_by(&path, |out| out.write_all(b"new"), busy).unwrap();
+    replace_by(&path, &Stop::default(), |out| out.write_all(b"new"), busy).unwrap();
     assert_eq!(fs::read_to_string(&path).unwrap(), "new");
     assert_eq!(names(dir.path()), ["mounted.txt"]);
 
@@ -237,10 +237,22 @@ fn a_file_that_cannot_be_renamed_over_is_written_into() {
     let denied = |unfinished: Replacement| -> Refused {
         Err((io::ErrorKind::PermissionDenied.into(), unfinished))
     };
-    let failed = replace_by(&path, |out| out.write_all(b"never"), denied).unwrap_err();
+    let failed = replace_by(
+        &path,
+        &Stop::default(),
+        |out| out.write_all(b"never"),
+        denied,
+    )
+    .unwrap_err();
     assert_eq!(failed.code, ErrorCode::PermissionDenied);
     let fresh = dir.path().join("fresh.txt");
-    replace_by(&fresh, |out| out.write_all(b"never"), busy).unwrap_err();
+    replace_by(
+        &fresh,
+        &Stop::default(),
+        |out| out.write_all(b"never"),
+        busy,
+    )
+    .unwrap_err();
     assert_eq!(fs::read_to_string(&path).unwrap(), "new");
     assert_eq!(names(dir.path()), ["mounted.txt"]);
 }
@@ -288,7 +300,7 @@ async fn a_large_save_tells_how_far_it_is_and_lands_whole() {
         Ok(())
     });
     let steps = tokio::spawn(saving.progress.collect::<Vec<_>>());
-    saving.done.await.unwrap();
+    assert_eq!(saving.done.await.unwrap(), Saved::Whole);
     let steps = steps.await.unwrap();
     // The window is told once a percent at most, however many lines.
     assert!(!steps.is_empty() && steps.len() <= 101, "{}", steps.len());
@@ -317,4 +329,102 @@ async fn a_save_that_fails_says_why_and_its_progress_ends() {
     let steps: Vec<Progress> = saving.progress.collect().await;
     assert!(steps.len() <= 1);
     assert_eq!(fs::read_to_string(&path).unwrap(), "kept");
+}
+
+/// A writer that writes a chunk at a time for as long as it is let to,
+/// and tells when it started and how it ended.
+fn endless(
+    started: std::sync::mpsc::Sender<std::thread::ThreadId>,
+    ended: std::sync::mpsc::Sender<io::Result<()>>,
+) -> impl FnOnce(&mut dyn Write, &Meter) -> io::Result<()> + Send + 'static {
+    move |out, _| {
+        let _ = started.send(std::thread::current().id());
+        let written: io::Result<()> = (|| loop {
+            out.write_all(&[b'x'; 4096])?;
+            std::thread::sleep(Duration::from_millis(1));
+        })();
+        let _ = ended.send(match &written {
+            Ok(()) => Ok(()),
+            Err(e) => Err(e.kind().into()),
+        });
+        written
+    }
+}
+
+#[tokio::test]
+async fn a_save_nobody_waits_for_any_more_stops_and_leaves_the_file_that_was_there() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("logs.txt");
+    fs::write(&path, "kept").unwrap();
+    let (started, starts) = std::sync::mpsc::channel();
+    let (ended, ends) = std::sync::mpsc::channel();
+    let saving = save(path.clone(), endless(started, ended));
+    let waiting = tokio::spawn(saving.done);
+    // The write is under way, on a thread that is not the one that waits.
+    let writer = tokio::task::spawn_blocking(move || starts.recv_timeout(Duration::from_secs(10)))
+        .await
+        .unwrap()
+        .expect("the write started");
+    assert_ne!(
+        writer,
+        std::thread::current().id(),
+        "the write is off the executor"
+    );
+    assert_eq!(parts(dir.path()).len(), 1);
+    // The app closes: whoever waited is gone.
+    waiting.abort();
+    let ended = tokio::task::spawn_blocking(move || ends.recv_timeout(Duration::from_secs(10)))
+        .await
+        .unwrap()
+        .expect("the write stopped by itself");
+    assert!(ended.is_err(), "its next chunk was refused");
+    // The thread ends just after: the unfinished file goes with it.
+    let gone = std::time::Instant::now();
+    while !parts(dir.path()).is_empty() {
+        assert!(
+            gone.elapsed() < Duration::from_secs(10),
+            "the unfinished file stayed"
+        );
+        tokio::time::sleep(Duration::from_millis(5)).await;
+    }
+    assert_eq!(fs::read_to_string(&path).unwrap(), "kept");
+    assert_eq!(names(dir.path()), ["logs.txt"]);
+}
+
+#[tokio::test]
+async fn a_save_that_is_stopped_says_so_and_is_no_failure() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("logs.txt");
+    let (started, starts) = std::sync::mpsc::channel();
+    let (ended, _ends) = std::sync::mpsc::channel();
+    let saving = save(path.clone(), endless(started, ended));
+    let waiting = tokio::spawn(saving.done);
+    tokio::task::spawn_blocking(move || starts.recv_timeout(Duration::from_secs(10)))
+        .await
+        .unwrap()
+        .expect("the write started");
+    saving.stop.now();
+    let saved = tokio::time::timeout(Duration::from_secs(10), waiting)
+        .await
+        .expect("the write stopped")
+        .unwrap();
+    assert_eq!(saved, Ok(Saved::Stopped));
+    assert!(
+        names(dir.path()).is_empty(),
+        "no file was made, and none is left"
+    );
+    // A writer that hides the refusal still writes nothing.
+    let stop = Stop::default();
+    stop.now();
+    let hidden = replace_by(
+        &path,
+        &stop,
+        |out| {
+            let _ = out.write_all(b"never");
+            Ok(())
+        },
+        Replacement::try_commit,
+    );
+    assert_eq!(hidden, Ok(Saved::Stopped));
+    assert!(names(dir.path()).is_empty());
 }

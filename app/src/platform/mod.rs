@@ -21,7 +21,9 @@
 //!     Task::batch([
 //!         // The toast outlives the page: it is the shell's to say.
 //!         ctx.act(saving.done, |saved| match saved {
-//!             Ok(()) => Outcome::quiet().saying(|| t!("containers.logs.saved")),
+//!             Ok(Saved::Whole) => Outcome::quiet().saying(|| t!("containers.logs.saved")),
+//!             // Stopped on the way (`saving.stop.now()`, or the app closing).
+//!             Ok(Saved::Stopped) => Outcome::quiet(),
 //!             Err(e) => Outcome::quiet().failing(Surfaced::new(e.clone(), "write_text_file")),
 //!         }, Message::Saved),
 //!         Task::run(saving.progress, Message::Saving),

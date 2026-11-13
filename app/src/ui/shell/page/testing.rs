@@ -232,13 +232,17 @@ pub enum Asked {
 mod tests {
     use super::*;
     use crate::{
-        platform::{dialogs::SaveFile, fake::Asked as AskedOfOs, files},
+        platform::{
+            dialogs::SaveFile,
+            fake::Asked as AskedOfOs,
+            files::{self, Saved},
+        },
         ui::{shell::Outcome, widgets::feedback::Surfaced},
     };
 
     /// What a page does of a download, as `crate::platform` documents it:
     /// the dialog, the write off the window's thread, the toast by the shell.
-    fn save(bench: &Bench, contents: &'static str) -> Vec<Result<(), AppError>> {
+    fn save(bench: &Bench, contents: &'static str) -> Vec<Result<Saved, AppError>> {
         let ctx = bench.ctx();
         let request = SaveFile::new("Save logs", "logs.txt");
         let path = match bench.run(ctx.platform.save_file(request)).pop() {
@@ -259,7 +263,8 @@ mod tests {
         bench.run(ctx.act(
             saving.done,
             |saved| match saved {
-                Ok(()) => Outcome::quiet().saying(|| "Logs saved".to_owned()),
+                Ok(Saved::Whole) => Outcome::quiet().saying(|| "Logs saved".to_owned()),
+                Ok(Saved::Stopped) => Outcome::quiet(),
                 Err(e) => Outcome::quiet().failing(Surfaced::at(
                     e.clone(),
                     Some("write_text_file"),
@@ -283,7 +288,7 @@ mod tests {
 
         let path = bench.os.dir().join("logs.txt");
         bench.os.answer(&path);
-        assert_eq!(save(&bench, "one\n"), [Ok(())]);
+        assert_eq!(save(&bench, "one\n"), [Ok(Saved::Whole)]);
         assert_eq!(std::fs::read_to_string(&path).unwrap(), "one\n");
         assert_eq!(bench.took(), [Asked::Said("Logs saved".to_owned())]);
 

@@ -135,7 +135,9 @@ fn a_save_that_fails_is_said_and_leaves_the_file_that_was_there() {
 }
 
 #[test]
-fn a_large_save_is_written_off_the_window_s_thread_and_shows_how_far_it_is() {
+// That the write runs off the thread that waits for it is the platform's
+// to prove: `files::tests::a_save_nobody_waits_for_any_more_stops_…`.
+fn a_large_save_is_only_started_by_update_and_shows_how_far_it_is() {
     let _english = in_language("en");
     const LINES: usize = 300_000;
     let (mut gallery, os) = gallery();
