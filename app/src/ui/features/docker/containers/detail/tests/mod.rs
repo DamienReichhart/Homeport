@@ -3,6 +3,7 @@
 
 mod drawn;
 mod logs;
+mod stats;
 #[cfg(unix)]
 mod streams;
 mod updates;
@@ -30,6 +31,9 @@ use crate::{
 
 /// The page as it shows in the window: 1100 wide less the sidebar.
 const SIZE: (f32, f32) = (828.0, 700.0);
+
+/// The window that page is in: what the page lays itself out by.
+const WINDOW: (f32, f32) = (1100.0, 748.0);
 
 /// The id of the sample's `web` container.
 const WEB: &str = "shop-web-1-0123456789abcdef";
@@ -87,7 +91,7 @@ impl Rig {
         }
         // The window says its size once it is asked: no window is there
         // in a test, so the test says it.
-        rig.send(Message::Resized(SIZE.into()));
+        rig.send(Message::Resized(WINDOW.into()));
         let _ = rig.bench.took();
         rig
     }

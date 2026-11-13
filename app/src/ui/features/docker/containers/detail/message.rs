@@ -1,6 +1,9 @@
 //! What happens on a container's page.
 
-use super::{state::Tab, tabs::logs};
+use super::{
+    state::Tab,
+    tabs::{logs, stats},
+};
 use crate::ui::{
     domain::containers::actions,
     widgets::{feedback::error_message, overlay::menu},
@@ -24,4 +27,5 @@ pub enum Message {
     /// The window's size: at first, then each time it changes.
     Resized(iced::Size),
     Logs(logs::Message),
+    Stats(stats::Message),
 }

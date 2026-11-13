@@ -2,3 +2,4 @@
 //! change. What they draw is in `view/`.
 
 pub mod logs;
+pub mod stats;

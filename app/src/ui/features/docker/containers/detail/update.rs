@@ -62,8 +62,10 @@ fn show(state: &mut State, tab: Tab, ctx: &Context<'_>) -> Task<Message> {
     ctx.keep_route(state.route(tab));
     // A tab that comes back starts over, as a React tab mounted again:
     // its stream was let go of when it was left.
-    if tab == Tab::Logs {
-        state.logs.restart(now());
+    match tab {
+        Tab::Logs => state.logs.restart(now()),
+        Tab::Stats => state.stats.restart(),
+        _ => {}
     }
     Task::none()
 }
@@ -99,7 +101,8 @@ pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Me
             }
         }
         Message::Failure(Event::Copy(command)) => ctx.copy(command),
-        Message::Resized(size) => state.window_height = Some(size.height),
+        Message::Resized(size) => state.window = Some(size),
+        Message::Stats(message) => state.stats.update(message, ctx),
         Message::Logs(message) => return state.logs.update(message, ctx).map(Message::Logs),
     }
     Task::none()

@@ -70,6 +70,7 @@ pub fn badge<'a, Message: 'a>(
 /// `Card`, being described.
 pub struct Card<'a, Message> {
     title: Option<String>,
+    aside: Option<String>,
     description: Option<String>,
     body: Vec<Element<'a, Message>>,
     footer: Option<Element<'a, Message>>,
@@ -79,6 +80,7 @@ pub struct Card<'a, Message> {
 pub fn card<'a, Message>(body: impl Into<Element<'a, Message>>) -> Card<'a, Message> {
     Card {
         title: None,
+        aside: None,
         description: None,
         body: vec![body.into()],
         footer: None,
@@ -90,6 +92,15 @@ impl<'a, Message: 'a> Card<'a, Message> {
     #[must_use]
     pub fn title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
+        self
+    }
+
+    /// What is said beside the title, muted: the figure of the moment
+    /// after a chart's name (`CPU · 12.5%`). It goes on a line of its own
+    /// when the title leaves it no room.
+    #[must_use]
+    pub fn aside(mut self, aside: impl Into<String>) -> Self {
+        self.aside = Some(aside.into());
         self
     }
 
@@ -110,12 +121,24 @@ impl<'a, Message: 'a> Card<'a, Message> {
     pub fn view(self) -> Container<'a, Message, Theme> {
         let mut parts: Vec<Element<'a, Message>> = vec![];
         let mut header: Vec<Element<'a, Message>> = vec![];
-        header.extend(self.title.map(|title| {
+        let title = self.title.map(|title| -> Element<'a, Message> {
             paragraph(title)
                 .size(size::BASE)
                 .font(font::medium())
                 .into()
-        }));
+        });
+        let aside = self.aside.map(|aside| -> Element<'a, Message> {
+            paragraph(aside)
+                .size(size::BASE)
+                .style(theme::text::muted)
+                .into()
+        });
+        header.extend(match (title, aside) {
+            (Some(title), Some(aside)) => {
+                Some(super::flow(vec![title, aside]).spacing(space::S1_5).into())
+            }
+            (title, aside) => title.or(aside),
+        });
         header.extend(
             self.description
                 .map(|words| paragraph(words).style(theme::text::muted).into()),

@@ -15,7 +15,7 @@ The theme has its own, `cargo run -p homeport-app --example gallery --features g
 | -------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | `button`                   | `basic::button::{text, icon, labelled}` with `Variant` and `ButtonSize`                                               |
 | `badge`                    | `basic::badge`                                                                                                        |
-| `card`                     | `basic::card`                                                                                                         |
+| `card`                     | `basic::card` (`.aside(..)` is the muted figure beside its title: `CPU · 12.5%`)                                      |
 | `separator`                | `basic::separator`, `separator_vertical` (iced's `rule`)                                                              |
 | `progress`                 | `basic::progress` (iced's `progress_bar`)                                                                             |
 | `scroll-area`              | `basic::scroll_area` (iced's `scrollable`)                                                                            |
@@ -235,6 +235,7 @@ Their limits:
 
 ## Rules for a page
 
+- **A line that starts with a sign.** A line takes its direction from its first letter; one that starts with a dot, a number or a `technical` string has none and reads left to right, so `· 3 عمليات` after a title would put its dot at the far end. `basic::in_reading_order(text)` makes it read the way the language does.
 - **Rows.** Write a row start to end with `widgets::line` and columns with `widgets::stack`; align with `start()` and `end()`. The page then mirrors in Arabic by itself. For text that fills a row, use `widgets::filling(text)`, and `widgets::paragraph` for body text: a `text` told to fill its width _and_ align right is drawn out of place in a right-to-left script.
 - **A row that must keep its last item.** A `line` is as wide as what it holds, and then gives a filling item all the room before the items after it: a badge after a long text is pushed out of its cell. Tell the row to fill (`line(..).width(Length::Fill)`) and cut the text (`filling(text).clip(true)`): the badge keeps its place (a container's status and its health, an image and its "newer" mark).
 - **Buttons.** Use the kit's (`basic::button`, or `focus::pressable` for an odd one), never iced's `button`: iced's takes no keyboard focus.

@@ -2,6 +2,7 @@
 //! shows.
 
 mod logs;
+mod stats;
 
 use iced::{widget::text, Length};
 
@@ -29,7 +30,7 @@ use crate::{
             basic::{
                 badge,
                 button::{self, Variant},
-                flow, technical, truncated, BadgeVariant,
+                flow, in_reading_order, technical, truncated, BadgeVariant,
             },
             feedback::{empty_state, error_message, spinner, status_dot},
             form::{tabs, TabsVariant},
@@ -42,7 +43,13 @@ use crate::{
 
 /// What React wrote between two facts on one line (`· Up 3 hours`): a
 /// sign, of no language.
-pub(super) const MIDDLE_DOT: char = '\u{b7}';
+const MIDDLE_DOT: char = '\u{b7}';
+
+/// `fact` after the dot that parts it from what stands before it on its
+/// line, in the order the language reads.
+pub(super) fn after_dot(fact: &str) -> String {
+    in_reading_order(&format!("{MIDDLE_DOT} {fact}"))
+}
 
 /// Text that takes the room its row leaves and is cut where that ends:
 /// what stands after it keeps its place.
@@ -105,7 +112,7 @@ fn header<'a>(state: &'a State, container: &Container, ctx: &Context<'a>) -> Ele
         &container.status
     };
     about.push(
-        text(format!("{MIDDLE_DOT} {}", technical(status)))
+        text(after_dot(&technical(status)))
             .size(size::SM)
             .style(theme::text::muted)
             .into(),
@@ -139,9 +146,14 @@ fn header<'a>(state: &'a State, container: &Container, ctx: &Context<'a>) -> Ele
 }
 
 /// What a tab shows of the container.
-fn body<'a>(state: &'a State, _container: &Container, _ctx: &Context<'a>) -> Element<'a, Message> {
+fn body<'a>(state: &'a State, container: &Container, _ctx: &Context<'a>) -> Element<'a, Message> {
+    let running = container.state == "running";
+    let window = state.window;
     match state.tab {
-        Tab::Logs => logs::view(&state.logs, state.window_height).map(Message::Logs),
+        Tab::Logs => logs::view(&state.logs, window.map(|size| size.height)).map(Message::Logs),
+        Tab::Stats => {
+            stats::view(&state.stats, running, window.map(|size| size.width)).map(Message::Stats)
+        }
         // The tabs that are not ported yet say so, as the stub of a page.
         _ => empty_state(state.tab.label())
             .description(t!("ui.table.empty"))

@@ -247,3 +247,51 @@ fn what_the_engine_applies_opens_the_stream_again_and_a_late_chunk_is_ignored() 
     live.send(logs(logs::Message::Tail(select::Message::Choose(0))));
     assert_eq!(live.engine.asked("/logs").len(), asked);
 }
+
+#[test]
+fn the_stats_stream_while_their_tab_shows_a_running_container() {
+    let mut live = Live::at("logs");
+    assert!(live.settles(Stream::Logs, 1));
+    assert!(live.engine.asked("/stats").is_empty());
+
+    // The tab changes: the logs are let go of, the stats are followed.
+    live.send(Message::Tab(Tab::Stats));
+    assert!(live.settles(Stream::Stats, 1) && live.settles(Stream::Logs, 0));
+    live.engine.sample(64 * 1024 * 1024, 1000);
+    assert!(live.until(|live| live.rig.state.stats.last.is_some()));
+    let last = live.rig.state.stats.last.clone().expect("a sample");
+    assert_eq!((last.memory_usage, last.net_rx), (64 * 1024 * 1024, 1000));
+
+    // The container stops: nothing is left to follow.
+    let mut stopped = sample();
+    "exited".clone_into(&mut stopped[0].state);
+    live.rig.list(stopped);
+    live.sync();
+    assert!(live.settles(Stream::Stats, 0));
+    // It runs again: the same charts go on.
+    live.rig.list(sample());
+    live.sync();
+    assert!(live.settles(Stream::Stats, 1));
+    assert!(live.rig.state.stats.last.is_some());
+
+    // The tab is left, then the page.
+    live.send(Message::Tab(Tab::Processes));
+    assert!(live.settles(Stream::Stats, 0));
+    live.send(Message::Tab(Tab::Stats));
+    assert!(live.settles(Stream::Stats, 1));
+    live.following.sync(iced::Subscription::none());
+    assert!(live.settles(Stream::Stats, 0));
+    assert_eq!(live.engine.asked("/stats").len(), 3);
+}
+
+#[test]
+fn a_stopped_container_s_stats_are_never_asked_for() {
+    let mut bench_page = Live::at("stats");
+    let mut stopped = sample();
+    "exited".clone_into(&mut stopped[0].state);
+    bench_page.rig.list(stopped);
+    bench_page.sync();
+    assert!(bench_page.settles(Stream::Stats, 0));
+    // Only the window's size is listened to.
+    assert_eq!(bench_page.following.count(), 1);
+}

@@ -6,7 +6,7 @@ use std::sync::Arc;
 use homeport_core::error::{AppError, Message as Text};
 use homeport_engine::containers::Container;
 
-use super::tabs::logs::Logs;
+use super::tabs::{logs::Logs, stats::Stats};
 use crate::{
     data::{keys, Resource},
     t,
@@ -106,12 +106,13 @@ pub struct State {
     pub(super) actions: Actions,
     /// The menu beside them.
     pub(super) more: menu::State,
-    /// How tall the window is, once it said: the log viewer takes what
-    /// the page leaves of it.
-    pub(super) window_height: Option<f32>,
+    /// The window's size, once it said: the log viewer takes the height
+    /// the page leaves, and the charts stand two a row when it is wide.
+    pub(super) window: Option<iced::Size>,
     /// The container's state when the page last looked.
     pub(super) seen_state: Option<String>,
     pub(super) logs: Logs,
+    pub(super) stats: Stats,
 }
 
 impl State {
@@ -127,9 +128,10 @@ impl State {
             came_from_elsewhere: ctx.location.param(CAME_FROM).is_some(),
             actions: Actions::of_host(),
             more: menu::State::default(),
-            window_height: None,
+            window: None,
             seen_state: None,
             logs: Logs::new(),
+            stats: Stats::new(),
         }
     }
 

@@ -1,6 +1,7 @@
 //! A container's page (`ui/detail/ContainerDetailPage.tsx`).
 
 mod message;
+mod model;
 mod state;
 mod tabs;
 mod update;
@@ -27,14 +28,20 @@ pub fn subscription(state: &State, ctx: &Context<'_>) -> Subscription<Message> {
     let Some(container) = state.container(ctx) else {
         return Subscription::none();
     };
-    match state.tab {
-        Tab::Logs => Subscription::batch([
-            state
-                .logs
-                .subscription(ctx.state, &state.host_id, &container.id)
-                .map(Message::Logs),
-            iced::window::resize_events().map(|(_, size)| Message::Resized(size)),
-        ]),
+    let stream = match state.tab {
+        Tab::Logs => state
+            .logs
+            .subscription(ctx.state, &state.host_id, &container.id)
+            .map(Message::Logs),
+        // Only a running container has stats (`useStats`'s `running`).
+        Tab::Stats if container.state == "running" => state
+            .stats
+            .subscription(ctx.state, &state.host_id, &container.id)
+            .map(Message::Stats),
         _ => Subscription::none(),
-    }
+    };
+    // The window's size lays the page out: how tall the logs are, how
+    // many charts a row holds.
+    let resized = iced::window::resize_events().map(|(_, size)| Message::Resized(size));
+    Subscription::batch([stream, resized])
 }

@@ -323,6 +323,12 @@ pub fn date_time(unix_seconds: i64) -> String {
         .date_time(unix_seconds, &TimeZone::system())
 }
 
+/// Date and time on a clock in `zone`: what must read the same wherever
+/// it is drawn.
+pub fn date_time_in(unix_seconds: i64, zone: &TimeZone) -> String {
+    formats().formats.date_time(unix_seconds, zone)
+}
+
 /// The date alone, on this computer's clock.
 pub fn date(unix_seconds: i64) -> String {
     formats().formats.date(unix_seconds, &TimeZone::system())
