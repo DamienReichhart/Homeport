@@ -52,7 +52,10 @@ use widgets::{
 };
 
 pub fn run() -> iced::Result {
-    let app = iced::application(Homeport::boot, Homeport::update, Homeport::view)
+    // The one place the app asks for the OS's own dialogs and handlers.
+    let platform = Platform::native();
+    let boot = move || Homeport::boot(platform.clone());
+    let app = iced::application(boot, Homeport::update, Homeport::view)
         .title("Homeport")
         .subscription(Homeport::subscription)
         // The window asks first, so the app can tidy up its Hosts.
@@ -170,7 +173,7 @@ pub enum Message {
 }
 
 impl Homeport {
-    fn boot() -> (Self, Task<Message>) {
+    fn boot(platform: Platform) -> (Self, Task<Message>) {
         // The OS's language until the Settings say otherwise, so even a
         // failed start is told in it.
         i18n::set_language(SYSTEM_LANGUAGE, &i18n::locale::preferred());
@@ -196,10 +199,11 @@ impl Homeport {
             Message::Started,
         );
         let system = theme::mode::system().map(Message::SystemTheme);
-        (Self::new(), Task::batch([start, system]))
+        (Self::new(platform), Task::batch([start, system]))
     }
 
-    fn new() -> Self {
+    /// A window on `platform`: the OS's for the app, a fake for a test.
+    fn new(platform: Platform) -> Self {
         let app = crate::api::app::get_app_info();
         Self {
             phase: Phase::Starting,
@@ -216,7 +220,7 @@ impl Homeport {
                 os: app.os.to_owned(),
                 arch: app.arch.to_owned(),
             },
-            platform: Platform::default(),
+            platform,
         }
     }
 

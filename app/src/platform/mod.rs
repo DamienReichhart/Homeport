@@ -43,7 +43,8 @@
 //!
 //! Nothing here knows a page (`tests/layout.rs`). In tests the dialogs
 //! and the opener are a [`fake::Fake`]: no dialog of the OS ever opens,
-//! and the folders are temporary ones.
+//! and the folders are temporary ones. The OS's own are only reached
+//! through [`Platform::native`], which only a program's `run` names.
 
 pub mod dialogs;
 #[cfg(test)]
@@ -106,20 +107,15 @@ impl std::fmt::Debug for Platform {
     }
 }
 
-/// The system a window starts on: the OS's, and under `cargo test` a
-/// [`fake::Fake`] of its own, so that no test opens a dialog of the OS or
-/// a folder of the user's by forgetting to bring one.
-impl Default for Platform {
-    fn default() -> Self {
-        #[cfg(test)]
-        return fake::Fake::new().platform();
-        #[cfg(not(test))]
-        Self::native()
-    }
-}
-
 impl Platform {
     /// The real one: the OS's dialogs and handlers, the app's log folder.
+    ///
+    /// Asked for by name, and only where a program starts: `ui::run` for
+    /// the app and `gallery::run` for the gallery (`tests/layout.rs`
+    /// holds the rest of the crate, its tests, its examples and its
+    /// benches to that). There is no default platform: whatever builds a
+    /// window is given one, so a test can only have brought a
+    /// [`fake::Fake`] and can't reach the OS's dialogs by forgetting to.
     pub fn native() -> Self {
         Self::of(
             Arc::new(dialogs::Native),

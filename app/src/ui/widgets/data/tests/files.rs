@@ -133,7 +133,7 @@ type Sent = gallery::Message;
 /// Hands the gallery's page what the widgets sent. The dialogs a
 /// message opens are `transfers.rs`'s to answer: here none is run.
 fn feed(data: &mut Data, messages: Vec<Sent>) -> Vec<String> {
-    let platform = crate::platform::Platform::default();
+    let platform = crate::platform::fake::Fake::new().platform();
     let mut said = vec![];
     for message in messages {
         if let Sent::Data(event) = message {

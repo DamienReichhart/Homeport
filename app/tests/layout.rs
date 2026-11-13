@@ -285,6 +285,39 @@ fn widgets_using_the_platform(src: &Path) -> Vec<String> {
         .collect()
 }
 
+/// The two files that start a program in a window, under `src`: the only
+/// ones that may ask for the OS's own platform.
+const STARTS_A_PROGRAM: &[&str] = &["ui/mod.rs", "ui/widgets/gallery/mod.rs"];
+
+/// What names the OS's own platform (its dialogs, its browser, its file
+/// manager) without starting a program: under `root`, any file of `src`
+/// but the two above, tests included, and anything in `tests`,
+/// `examples` or `benches`. Whatever builds a window is given its
+/// platform, so a test, an example or a bench can't open a dialog on the
+/// machine it runs on unless it says so here.
+fn asking_for_the_os(root: &Path) -> Vec<String> {
+    // Written in two parts so this file doesn't name it.
+    let native = concat!("Platform::", "native");
+    let src = root.join("src");
+    let mut asking = vec![];
+    for part in ["src", "tests", "examples", "benches"] {
+        for path in rust_files(&root.join(part)) {
+            let starts = STARTS_A_PROGRAM.iter().any(|file| path == src.join(file));
+            let text = fs::read_to_string(&path).unwrap();
+            let names = text
+                .lines()
+                .map(str::trim)
+                .any(|line| !line.starts_with("//") && line.contains(native));
+            // A file that starts a program asks once, in its `run`.
+            let too_often = starts && text.matches(native).count() > 2;
+            if (names && !starts) || too_often {
+                asking.push(shown(root, &path));
+            }
+        }
+    }
+    asking
+}
+
 /// The features under `src`: `ui/features/<group>/<name>`, as its path in
 /// the crate and its folder.
 fn features(src: &Path) -> Vec<(String, PathBuf)> {
@@ -432,6 +465,69 @@ fn only_a_page_asks_the_platform() {
         wrong.is_empty(),
         "a widget tells its page, which asks `crate::platform`: {wrong:#?}"
     );
+}
+
+#[test]
+fn only_a_program_s_start_asks_for_the_os() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let asking = asking_for_the_os(root);
+    assert!(
+        asking.is_empty(),
+        "a window is given its platform; only `run` asks for the OS's: {asking:#?}"
+    );
+}
+
+#[test]
+fn asking_for_the_os_anywhere_else_is_caught() {
+    let native = concat!("Platform::", "native");
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    let run = format!("// {native}() is asked for here only\nlet platform = {native}();\n");
+    write(root, "src/ui/mod.rs", &run);
+    write(root, "src/ui/widgets/gallery/mod.rs", &run);
+    write(
+        root,
+        "src/ui/tests.rs",
+        "let window = Homeport::new(fake.platform());\n",
+    );
+    write(
+        root,
+        "examples/widgets.rs",
+        "fn main() { gallery::run() }\n",
+    );
+    assert!(asking_for_the_os(root).is_empty());
+
+    // A test of the crate, an integration test, an example and a bench
+    // that build a window on the OS's platform, and a page that asks.
+    let asks = format!("let window = Gallery::new({native}());\n");
+    for file in [
+        "src/ui/tests.rs",
+        "src/ui/features/app/hosts/mod.rs",
+        "tests/smoke.rs",
+        "examples/widgets.rs",
+        "benches/table.rs",
+    ] {
+        write(root, file, &asks);
+    }
+    let mut asking = asking_for_the_os(root);
+    asking.sort();
+    assert_eq!(
+        asking,
+        [
+            "benches/table.rs",
+            "examples/widgets.rs",
+            "src/ui/features/app/hosts/mod.rs",
+            "src/ui/tests.rs",
+            "tests/smoke.rs"
+        ]
+    );
+    // And a second window built on it in a file that starts a program.
+    write(
+        root,
+        "src/ui/mod.rs",
+        &format!("{run}let other = {native}();\n"),
+    );
+    assert!(asking_for_the_os(root).contains(&"src/ui/mod.rs".to_owned()));
 }
 
 #[test]

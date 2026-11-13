@@ -158,8 +158,18 @@ pub enum Message {
     Nothing,
 }
 
+/// The gallery on a system that only notes what it is asked: what every
+/// test starts from. Outside tests a gallery is given its platform.
+#[cfg(test)]
 impl Default for Gallery {
     fn default() -> Self {
+        Self::new(crate::platform::fake::Fake::new().platform())
+    }
+}
+
+impl Gallery {
+    /// The gallery on `platform`: the OS's when it runs in a window.
+    pub fn new(platform: Platform) -> Self {
         let mut errors = Errors::default();
         errors.set(
             "argument",
@@ -202,7 +212,7 @@ impl Default for Gallery {
             log_written: 0,
             charts: chart::Charts::default(),
             data: data::Data::default(),
-            platform: Platform::default(),
+            platform,
             log_saving: log::Saving::default(),
         }
     }
@@ -474,7 +484,10 @@ impl Gallery {
 
 /// Opens the gallery in a window.
 pub fn run() -> iced::Result {
-    let app = iced::application(Gallery::default, Gallery::update, Gallery::view)
+    // The one place the gallery asks for the OS's own dialogs and handlers.
+    let platform = Platform::native();
+    let boot = move || Gallery::new(platform.clone());
+    let app = iced::application(boot, Gallery::update, Gallery::view)
         .title("Homeport widgets")
         .theme(|gallery: &Gallery| gallery.theme)
         .subscription(Gallery::subscription)

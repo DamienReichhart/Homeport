@@ -29,7 +29,7 @@ fn failed() -> Homeport {
     let error = AppError::new(ErrorCode::Io, msg::IO_FAILED)
         .with_hint(msg::UNREADABLE_DATA)
         .with_detail("unable to open database file (code 14)");
-    let mut window = Homeport::new();
+    let mut window = Homeport::new(Fake::new().platform());
     let path = PathBuf::from("/home/ada/.local/share/homeport/homeport.db");
     window.phase = Phase::Failed(Failure::Database(Box::new(error), path));
     window
@@ -37,7 +37,7 @@ fn failed() -> Homeport {
 
 #[test]
 fn the_theme_follows_the_settings_live_and_the_os_while_it_is_followed() {
-    let mut window = Homeport::new();
+    let mut window = Homeport::new(Fake::new().platform());
     assert_eq!(window.theme(), None, "iced follows the OS until told");
     let _ = window.update(Message::ThemeChanged(Setting::Dark));
     assert_eq!(window.theme(), Some(Theme::Dark));
@@ -99,7 +99,7 @@ fn the_failed_start_leads_to_its_details_which_escape_closes() {
 
 #[test]
 fn tab_moves_focus_and_a_failure_s_toast_opens_its_details() {
-    let mut window = Homeport::new();
+    let mut window = Homeport::new(Fake::new().platform());
     assert!(!tasks::is_none(window.update(Message::Tab(false))));
     assert!(!tasks::is_none(window.update(Message::Tab(true))));
     let error = AppError::new(ErrorCode::Io, msg::IO_FAILED);
@@ -137,7 +137,7 @@ fn settle(window: &mut Homeport, task: iced::Task<Message>) {
 #[test]
 fn a_link_a_page_asked_for_goes_to_the_os_and_a_failure_is_said() {
     let _english = in_language("en");
-    let (mut window, os) = on_a_fake(Homeport::new());
+    let (mut window, os) = on_a_fake(Homeport::new(Fake::new().platform()));
     let task = window.asked(shell::Event::OpenUrl("http://localhost:8080".to_owned()));
     assert!(
         os.took().is_empty(),
@@ -207,7 +207,7 @@ fn the_failed_start_opens_the_folder_its_database_is_in() {
 fn a_start_that_failed_otherwise_offers_no_folder() {
     let _english = in_language("en");
     let error = AppError::new(ErrorCode::Io, msg::IO_FAILED);
-    let (mut window, os) = on_a_fake(Homeport::new());
+    let (mut window, os) = on_a_fake(Homeport::new(Fake::new().platform()));
     window.phase = Phase::Failed(Failure::Other(Box::new(error)));
     let open = t!("app.startup.openFolder");
     let mut found = true;
@@ -224,7 +224,7 @@ fn a_start_that_failed_otherwise_offers_no_folder() {
 #[test]
 fn the_details_dialog_opens_the_log_folder_and_says_when_it_cannot() {
     let _english = in_language("en");
-    let (mut window, os) = on_a_fake(Homeport::new());
+    let (mut window, os) = on_a_fake(Homeport::new(Fake::new().platform()));
     let error = AppError::new(ErrorCode::Io, msg::IO_FAILED);
     let surfaced = Surfaced::at(error, Some("hosts_list"), jiff::Timestamp::UNIX_EPOCH);
     window.details = Some(error_details::Details::new(surfaced));

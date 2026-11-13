@@ -93,7 +93,7 @@ async fn a_document_with_a_search_on_it() {
     let mut data = Data::default();
     let mut pending = vec![Event::Json(json::Message::Typed("RUNNING".to_owned()))];
     while let Some(event) = pending.pop() {
-        let (task, _) = data.update(event, &crate::platform::Platform::default());
+        let (task, _) = data.update(event, &crate::platform::fake::Fake::new().platform());
         pending.extend(messages(task).await);
     }
     // The state's status, whatever the case, and the member named Running.
