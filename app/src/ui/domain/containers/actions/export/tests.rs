@@ -164,3 +164,76 @@ fn a_host_that_is_down_and_a_desktop_with_no_dialog_are_said() {
     );
     assert!(!actions.has_dialog());
 }
+
+/// Starts an export that waits on the Engine, on the side.
+fn begin(
+    actions: &mut Actions,
+    bench: &Bench,
+    web: Target,
+) -> tokio::task::JoinHandle<Vec<Action>> {
+    let runtime = bench.app.runtime.handle().clone();
+    let _inside = runtime.enter();
+    let asked = actions.update(Action::AskExport(web), &bench.ctx());
+    let answer = bench.run(asked);
+    let ctx = bench.ctx();
+    let running: Vec<_> = answer
+        .into_iter()
+        .map(|message| actions.update(message, &ctx))
+        .collect();
+    runtime.spawn(messages(iced::Task::batch(running)))
+}
+
+#[test]
+fn leaving_the_page_lets_the_export_end_and_the_shell_say_it() {
+    let _english = in_language("en");
+    let (mut bench, engine, web) = bench();
+    let mut actions = Actions::of_host();
+    let path = bench.os.dir().join("web.tar");
+    bench.os.answer(&path);
+    engine.hold_transfers();
+    let export = begin(&mut actions, &bench, web);
+    assert!(bench
+        .app
+        .runtime
+        .block_on(engine.settles_at(Stream::Transfer, 1)));
+    // The page goes, and what it held with it.
+    drop(actions);
+    engine.release();
+    bench
+        .app
+        .runtime
+        .block_on(async { tokio::time::timeout(Duration::from_secs(5), export).await })
+        .expect("the export ends")
+        .expect("it ran");
+    assert_eq!(std::fs::metadata(&path).unwrap().len(), EXPORTED as u64);
+    let said = format!("Exported to \u{2066}{}\u{2069}", path.display());
+    assert!(bench.took().contains(&Asked::Said(said)));
+}
+
+#[test]
+fn escape_and_the_scrim_never_stop_an_export_that_runs() {
+    use iced::keyboard::key::Named;
+
+    let (bench, engine, web) = bench();
+    let mut actions = Actions::of_host();
+    bench.os.answer(bench.os.dir().join("web.tar"));
+    engine.hold_transfers();
+    let export = begin(&mut actions, &bench, web);
+    let mut stage = crate::test_support::stage::Stage::new((828.0, 420.0));
+    let sent = stage.frame(
+        overlay::over(iced::widget::Space::new(), actions.dialog()),
+        |frame| {
+            frame.tap_key(Named::Escape);
+            frame.point_at((10.0, 10.0));
+            frame.press();
+        },
+    );
+    assert!(sent.is_empty(), "{sent:?}");
+    assert!(actions.has_dialog());
+    send(&mut actions, &bench, Action::Export(Message::Close));
+    engine.release();
+    let _ = bench
+        .app
+        .runtime
+        .block_on(async { tokio::time::timeout(Duration::from_secs(5), export).await });
+}

@@ -1,7 +1,8 @@
 //! Export: a container's whole filesystem saved to a tar on this
 //! computer (`ExportDialog`, `exportContainer`, `TransferDialog`). The
 //! save dialog asks where, then a dialog shows how far the Engine's
-//! export is, with Cancel, then Close.
+//! export is, with Cancel, then Close. While it runs only Cancel stops
+//! it: Escape and the scrim close the dialog once it ended.
 //!
 //! The export runs by `ctx.act`: its toast is the shell's, so it is said
 //! even when the page was left meanwhile, and the export goes on to its
@@ -29,7 +30,7 @@ use crate::{
     ui::{
         shell::{Context, Outcome},
         theme::{
-            self, font,
+            self,
             metrics::{space, text as size},
             Element,
         },
@@ -118,7 +119,7 @@ async fn run(
     target: Target,
     destination: String,
     wrote: watch::Sender<Written>,
-    mut stopped: watch::Receiver<bool>,
+    stopped: watch::Receiver<bool>,
 ) -> AppResult<Exported> {
     let (host, id) = (target.host_id, target.id);
     let job = shapes::job(state.clone(), move |state, sink| async move {
@@ -147,7 +148,7 @@ async fn run(
                 // Over without saying it was done: it was cancelled.
                 Some(Update::Ended) | None => return Ok(Exported::Stopped),
             },
-            _ = stopped.wait_for(|stop| *stop) => {
+            () = cancelled(stopped.clone()) => {
                 // A job goes on until it is told: the Engine's export
                 // ends, and its unfinished file goes.
                 if let Some(id) = started {
@@ -156,6 +157,14 @@ async fn run(
                 return Ok(Exported::Stopped);
             }
         }
+    }
+}
+
+/// Ends when Cancel was pressed, and only then: a page that goes away
+/// drops what would have pressed it, which stops nothing.
+async fn cancelled(mut stopped: watch::Receiver<bool>) {
+    if stopped.wait_for(|stop| *stop).await.is_err() {
+        std::future::pending::<()>().await;
     }
 }
 
@@ -297,9 +306,9 @@ impl Exports {
             .width(iced::Length::Fill)
             .align_x(crate::ui::widgets::start())
             .into(),
+            // A size in the app's face, figures and unit alike.
             iced::widget::text(count)
                 .size(size::XS)
-                .font(font::MONO)
                 .style(theme::text::muted)
                 .into(),
         ])
@@ -330,7 +339,13 @@ impl Exports {
         .description(t!("containers.export.to", path = path))
         .push(stack(body).spacing(space::S2))
         .footer(vec![close.into()]);
-        Some(modal(content).key("export").on_close(Message::Close))
+        // Escape and the scrim close it once it ended; while it runs only
+        // Cancel stops it, so a key pressed by mistake loses nothing.
+        Some(
+            modal(content)
+                .key("export")
+                .on_close_maybe((!busy).then_some(Message::Close)),
+        )
     }
 }
 
