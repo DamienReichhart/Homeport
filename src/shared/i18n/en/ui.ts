@@ -28,6 +28,7 @@ export default {
   'ui.chart.time': 'Time',
   'ui.chart.hide': 'Hide {name}',
   'ui.chart.show': 'Show {name}',
+  'ui.chart.more': '+{count}',
   'ui.errorDetails.title': 'Error details',
   'ui.errorDetails.code': 'Code',
   'ui.errorDetails.command': 'Command',

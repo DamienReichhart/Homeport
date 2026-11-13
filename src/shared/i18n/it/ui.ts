@@ -31,6 +31,7 @@ export default {
   'ui.chart.time': 'Ora',
   'ui.chart.hide': 'Nascondi {name}',
   'ui.chart.show': 'Mostra {name}',
+  'ui.chart.more': '+{count}',
   'ui.errorDetails.title': 'Dettagli dell’errore',
   'ui.errorDetails.code': 'Codice',
   'ui.errorDetails.command': 'Comando',

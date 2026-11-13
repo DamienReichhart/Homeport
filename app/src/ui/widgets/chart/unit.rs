@@ -35,6 +35,32 @@ impl Unit {
         }
     }
 
+    /// What a tick of an axis that steps by `step` says: as
+    /// [`Unit::format`], but with one precision for the whole axis. A
+    /// percentage is written with the decimals its step needs and no
+    /// more (`0%`, `50%`, `100%`), where `format` alone drops them
+    /// from 100 up.
+    pub fn tick(self, value: f64, step: f64) -> String {
+        match self {
+            Self::Percent => {
+                // The decimals of a step of 1, 2 or 5 times a power of ten.
+                #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+                let digits = (-step.log10().floor()).clamp(0.0, 6.0) as u8;
+                format::percent_with(value, digits)
+            }
+            _ => self.format(value),
+        }
+    }
+
+    /// The least step its axis takes: a byte and a bit are written
+    /// whole, so two ticks less than one apart would say the same.
+    pub(super) fn least_step(self) -> f64 {
+        match self {
+            Self::Bytes | Self::BytesPerSecond | Self::BitsPerSecond => 1.0,
+            Self::Number | Self::Percent | Self::Custom(_) => 0.0,
+        }
+    }
+
     /// Whether the unit's multiples are powers of 1024: its axis then
     /// steps by 512 MB rather than by 500.
     pub(super) fn is_binary(self) -> bool {

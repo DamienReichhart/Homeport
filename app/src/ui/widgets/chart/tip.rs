@@ -13,7 +13,7 @@ pub const NONE: &str = "—";
 pub const PAD: f32 = 8.0;
 pub const ROW: f32 = 18.0;
 /// The sample of a series' line before its label, and the room after.
-pub const SWATCH: f32 = 18.0;
+pub const SWATCH: f32 = 28.0;
 pub const AFTER_SWATCH: f32 = 6.0;
 /// Between a label and its value, and between two columns.
 const BEFORE_VALUE: f32 = 12.0;
@@ -24,7 +24,8 @@ const LEAST_LABEL: f32 = 24.0;
 #[derive(Debug, Clone, PartialEq)]
 pub struct Row {
     pub series: usize,
-    pub look: Look,
+    /// The series' line; none for the row that counts those left out.
+    pub look: Option<Look>,
     /// The series' name, cut with an ellipsis if the chart is narrower
     /// than it: the legend has it whole.
     pub label: String,
@@ -93,7 +94,7 @@ impl Tip {
                     .map_or_else(|| NONE.to_owned(), |value| ask.unit.format(value));
                 Row {
                     series: index,
-                    look: *look,
+                    look: Some(*look),
                     label_width: (ask.measure)(label),
                     value_width: (ask.measure)(&value),
                     label: label.clone(),
@@ -107,11 +108,31 @@ impl Tip {
         let fit = (((ask.room.height - 2.0 * PAD) / ROW).floor() as usize)
             .saturating_sub(1)
             .max(1);
+        let widest = |rows: &[Row], of: fn(&Row) -> f32| rows.iter().map(of).fold(0.0, f32::max);
+        let value_width = widest(&rows, |row| row.value_width);
+        // As many columns as the chart is wide, each with the least a
+        // name keeps; the series past that are counted in a last row,
+        // so the tooltip is never larger than the plot. The legend
+        // names them all.
+        let least = SWATCH + AFTER_SWATCH + LEAST_LABEL + BEFORE_VALUE + value_width + BETWEEN;
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+        let room = (((ask.room.width - 2.0 * PAD + BETWEEN) / least).floor() as usize).max(1) * fit;
+        if rows.len() > room {
+            let left_out = rows.len() - (room - 1);
+            rows.truncate(room - 1);
+            let label = crate::t!("ui.chart.more", count = left_out);
+            rows.push(Row {
+                series: usize::MAX,
+                look: None,
+                label_width: (ask.measure)(&label),
+                value_width: 0.0,
+                label,
+                value: String::new(),
+            });
+        }
         let columns = rows.len().div_ceil(fit).max(1);
         let per_column = rows.len().div_ceil(columns).max(1);
-        let widest = |of: fn(&Row) -> f32| rows.iter().map(of).fold(0.0, f32::max);
-        let value_width = widest(|row| row.value_width);
-        let mut label_width = widest(|row| row.label_width);
+        let mut label_width = widest(&rows, |row| row.label_width);
         // Columns are counted on one hand.
         #[allow(clippy::cast_precision_loss)]
         let count = columns as f32;

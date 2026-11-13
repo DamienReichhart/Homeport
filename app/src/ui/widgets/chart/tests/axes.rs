@@ -2,13 +2,13 @@
 //! what they say in the app's language, the plot in the room it has in
 //! either direction, the runs of a line, and the tooltip.
 
-use iced::{Point, Size};
+use iced::Size;
 use jiff::tz::TimeZone;
 
 use crate::{
     test_support::snapshot::in_language,
     ui::widgets::chart::{
-        plot::{enter, runs},
+        plot::runs,
         scale::{range, step, ticks, time_step, time_ticks},
         scene::{Ask, Scene},
         tip::{self, Tip},
@@ -31,6 +31,7 @@ fn ask(size: (f32, f32), hidden: &[bool], unit: Unit, rtl: bool) -> Ask<'_> {
         size: Size::new(size.0, size.1),
         hidden,
         window: None,
+        break_after: None,
         unit,
         rtl,
         zone: &UTC,
@@ -298,30 +299,48 @@ fn a_line_stops_at_a_gap_and_where_the_stream_stopped() {
     assert!(runs(&State::new(1, 4), 0, 0).is_empty());
 }
 
+/// A window of ten seconds whose last sample before it is a minute
+/// old: the line comes in at the edge where the two samples put it,
+/// the old sample is neither pointed at nor counted in the range.
 #[test]
-fn a_line_that_comes_into_the_plot_starts_at_its_edge() {
-    let mut line = vec![
-        Point::new(0.0, 10.0),
-        Point::new(20.0, 30.0),
-        Point::new(40.0, 30.0),
-    ];
-    enter(&mut line, 10.0);
+fn the_sample_before_a_window_only_gives_the_line_its_start() {
+    let _english = in_language("en");
+    let mut state = State::new(1, 100).window(10.0);
+    // 1,000 a minute before the window's first sample, then low values.
+    state.push(940.0, &[Some(1000.0)]);
+    for (time, value) in [(1000.0, 10.0), (1005.0, 20.0), (1008.0, 30.0)] {
+        state.push(time, &[Some(value)]);
+    }
+    let mut asked = ask((600.0, 160.0), &[], Unit::Number, false);
+    asked.window = Some(10.0);
+    let scene = Scene::build(state.samples(), &asked);
+    assert_eq!(scene.x, (998.0, 1008.0));
+    // The first sample in view is the one at 1000: the one at 940 is
+    // never the nearest to the pointer, wherever it is.
+    assert_eq!(scene.from, 1);
     assert_eq!(
-        line,
-        [
-            Point::new(10.0, 20.0),
-            Point::new(20.0, 30.0),
-            Point::new(40.0, 30.0)
-        ]
+        state
+            .samples()
+            .nearest(scene.time_at(scene.plot.x), scene.from),
+        Some(1)
     );
-    // Already inside: as it is.
-    let mut inside = vec![Point::new(10.0, 1.0), Point::new(20.0, 2.0)];
-    enter(&mut inside, 10.0);
-    assert_eq!(inside.len(), 2);
-    // A sample alone before the edge shows nothing.
-    let mut alone = vec![Point::new(5.0, 1.0)];
-    enter(&mut alone, 10.0);
-    assert!(alone.is_empty());
+    // On the line from (940, 1000) to (1000, 10), at 998: 43.
+    let edge = scene.entering[0].unwrap();
+    assert!((edge - 43.0).abs() < 1e-9, "{edge}");
+    // The range holds what shows, the edge included, not the 1,000.
+    assert!((scene.y.1 - 43.0 * 1.1).abs() < 1e-9, "{:?}", scene.y);
+    assert!(scene.py(edge) >= scene.plot.y);
+    // A stream that stopped for longer than the chart joins: nothing comes in.
+    asked.break_after = Some(30.0);
+    let scene = Scene::build(state.samples(), &asked);
+    assert_eq!(scene.entering, [None]);
+    assert!((scene.y.1 - 33.0).abs() < 1e-9);
+    // Without a window every sample is in view and nothing comes in.
+    let all = Scene::build(
+        state.samples(),
+        &ask((600.0, 160.0), &[], Unit::Number, false),
+    );
+    assert_eq!((all.from, all.entering.clone()), (0, vec![None]));
 }
 
 fn tip_of(state: &State, labels: &[(String, Look)], index: usize, room: (f32, f32)) -> Tip {
@@ -430,4 +449,145 @@ fn the_tooltip_stands_beside_the_crosshair_inside_the_chart() {
     let x = tip::place(100.0, 150.0, 200.0, false);
     assert!((0.0..=50.0).contains(&x));
     assert_eq!(tip::place(10.0, 300.0, 200.0, false), 0.0);
+}
+
+/// An idle chart, and one of a few bytes: every tick says something
+/// else. The labels are what is held, in two languages, not the steps.
+#[test]
+fn no_two_ticks_of_an_axis_say_the_same() {
+    let most = [
+        0.0, 0.3, 0.9, 1.0, 1.4, 2.0, 3.3, 3.9, 7.0, 100.0, 1000.0, 1023.0, 1025.0, 5e6, 3e9,
+    ];
+    for language in ["en", "fr", "ar"] {
+        let _language = in_language(language);
+        for unit in [
+            Unit::Bytes,
+            Unit::BytesPerSecond,
+            Unit::BitsPerSecond,
+            Unit::Percent,
+            Unit::Number,
+        ] {
+            for value in most {
+                let state = gauge(&[Some(0.0), Some(value)]);
+                for height in [80.0, 160.0, 320.0] {
+                    let scene =
+                        Scene::build(state.samples(), &ask((600.0, height), &[], unit, false));
+                    let said = labels(&scene.y_ticks);
+                    assert!(said.len() >= 2, "{unit:?} to {value}: {said:?}");
+                    for (index, label) in said.iter().enumerate() {
+                        assert!(
+                            !said[..index].contains(label),
+                            "{unit:?} to {value} at {height} in {language}: {said:?}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+    let _english = in_language("en");
+    let idle = gauge(&[Some(0.0), Some(0.0)]);
+    let said = |unit| {
+        let scene = Scene::build(idle.samples(), &ask((600.0, 160.0), &[], unit, false));
+        scene
+            .y_ticks
+            .iter()
+            .map(|tick| tick.label.clone())
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(said(Unit::BytesPerSecond), ["0 B/s", "1 B/s"]);
+    assert_eq!(said(Unit::Bytes), ["0 B", "1 B"]);
+    assert_eq!(said(Unit::BitsPerSecond), ["0 bit/s", "1 bit/s"]);
+}
+
+/// One precision for an axis, the one its step needs.
+#[test]
+fn the_ticks_of_a_percent_axis_are_written_alike() {
+    let _english = in_language("en");
+    let said = |most: f64| {
+        let state = gauge(&[Some(0.0), Some(most)]);
+        let scene = Scene::build(
+            state.samples(),
+            &ask((600.0, 160.0), &[], Unit::Percent, false),
+        );
+        scene
+            .y_ticks
+            .iter()
+            .map(|tick| tick.label.clone())
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(said(180.0), ["0%", "50%", "100%", "150%"]);
+    assert_eq!(said(1.5), ["0.0%", "0.5%", "1.0%", "1.5%"]);
+    assert_eq!(said(0.03), ["0.00%", "0.01%", "0.02%", "0.03%"]);
+    // The tooltip says a value as the rest of the app does.
+    assert_eq!(Unit::Percent.format(3.456), "3.5%");
+}
+
+/// However many series and however small the plot, the tooltip is no
+/// larger than the plot: the series that have no room are counted.
+#[test]
+fn a_tooltip_of_many_series_in_a_small_plot_counts_those_it_leaves_out() {
+    let _english = in_language("en");
+    let mut state = State::new(40, 4);
+    state.push(1.0, &[Some(1.0); 40]);
+    for series in [1, 3, 10, 40] {
+        let labels = named(series);
+        for room in [
+            (200.0, 60.0),
+            (320.0, 100.0),
+            (700.0, 150.0),
+            (160.0, 300.0),
+        ] {
+            let tip = tip_of(&state, &labels[..], 0, room);
+            assert!(
+                tip.size.width <= room.0 && tip.size.height <= room.1,
+                "{series} series in {room:?}: {:?}",
+                tip.size
+            );
+            // Every series is either shown or counted.
+            let shown = tip.rows.iter().filter(|row| row.look.is_some()).count();
+            let counted = tip.rows.iter().find(|row| row.look.is_none());
+            match counted {
+                Some(row) => assert_eq!(row.label, format!("+{}", series - shown)),
+                None => assert_eq!(shown, series),
+            }
+        }
+    }
+}
+
+/// A week that holds the day the clocks go forward: each tick is a
+/// date, at that date's midnight on the chart's clock, so each says
+/// its own day. One offset for all would put the ticks before the
+/// change at eleven at night, under the date of the day before.
+#[test]
+fn day_ticks_stand_on_midnight_on_either_side_of_a_clock_change() {
+    let _english = in_language("en");
+    // New York's rule: clocks go forward on the second Sunday of March.
+    let zone = TimeZone::posix("EST5EDT,M3.2.0,M11.1.0").unwrap();
+    // 2026-03-05 12:00 to 2026-03-12 12:00 there; the change is on the 8th.
+    let (from, to) = (1_772_730_000.0, 1_773_331_200.0);
+    let mut state = State::new(1, 10);
+    state.push(from, &[Some(1.0)]);
+    state.push(to, &[Some(2.0)]);
+    let mut asked = ask((900.0, 160.0), &[], Unit::Number, false);
+    asked.zone = &zone;
+    let scene = Scene::build(state.samples(), &asked);
+    assert_eq!(
+        labels(&scene.x_ticks),
+        [
+            "Mar 6, 2026",
+            "Mar 7, 2026",
+            "Mar 8, 2026",
+            "Mar 9, 2026",
+            "Mar 10, 2026",
+            "Mar 11, 2026",
+            "Mar 12, 2026"
+        ]
+    );
+    // Six days apart on the calendar, an hour less on the clock.
+    let (first, last) = (scene.x_ticks[0].at, scene.x_ticks[6].at);
+    let a_day = scene.plot.width * 86_400.0 / (to - from) as f32;
+    assert!(
+        ((last - first) - (6.0 * a_day - a_day / 24.0)).abs() <= 1.5,
+        "{first} to {last}"
+    );
 }

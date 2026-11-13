@@ -119,6 +119,24 @@ fn snapshots() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/snapshots")
 }
 
+/// What `view` draws at `size` with `theme`, as its pixels: the width
+/// and height of the picture (twice the size) and its RGBA bytes. For a
+/// test that measures what is drawn rather than keeping a picture of it.
+pub fn pixels<'a, Message: 'a, Theme: Base + 'a>(
+    theme: &Theme,
+    size: impl Into<Size>,
+    view: Element<'a, Message, Theme>,
+) -> (u32, u32, Vec<u8>) {
+    let mut ui = Simulator::with_size(settings(), size, view);
+    let snapshot = ui.snapshot(theme).expect("the view draws without a window");
+    let scratch = tempfile::tempdir().expect("a temporary folder");
+    snapshot
+        .matches_image(scratch.path().join("pixels"))
+        .expect("the picture is written");
+    let picture = read(&scratch.path().join("pixels-tiny-skia.png"));
+    (picture.width, picture.height, picture.rgba)
+}
+
 /// Draws what `view` builds at `size` in the language `tag` with `theme`,
 /// and holds it to `tests/snapshots/<name>.png`.
 ///

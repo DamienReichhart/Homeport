@@ -32,6 +32,7 @@ export default {
   'ui.chart.time': 'الوقت',
   'ui.chart.hide': 'إخفاء {name}',
   'ui.chart.show': 'إظهار {name}',
+  'ui.chart.more': '+{count}',
   'ui.errorDetails.title': 'تفاصيل الخطأ',
   'ui.errorDetails.code': 'الرمز',
   'ui.errorDetails.command': 'الأمر',

@@ -47,6 +47,8 @@ pub struct Ask<'a> {
     pub hidden: &'a [bool],
     /// How many seconds the time axis shows, ending at the newest sample.
     pub window: Option<f64>,
+    /// How far apart two samples may be and still be joined.
+    pub break_after: Option<f64>,
     pub unit: Unit,
     pub rtl: bool,
     /// The clock the times are said on.
@@ -63,8 +65,12 @@ pub struct Scene {
     /// right in every language, as on the React chart.
     pub x: (f64, f64),
     pub y: (f64, f64),
-    /// The first sample in view.
+    /// The first sample in view: none before it is drawn or pointed at.
     pub from: usize,
+    /// For each series, what it is at the plot's left edge when its
+    /// line comes in from a sample before the window: where that line
+    /// starts.
+    pub entering: Vec<Option<f64>>,
     pub x_ticks: Vec<Tick>,
     pub y_ticks: Vec<Tick>,
     /// Whether the y axis is on the right: where text starts in Arabic.
@@ -75,23 +81,43 @@ impl Scene {
     pub fn build(samples: &Samples, ask: &Ask<'_>) -> Self {
         scans::count();
         let (x, from) = time_range(samples, ask.window);
-        let y = scale::range(extent(samples, ask.hidden, from));
+        let entering = entering(samples, ask, x.0, from);
+        let y = scale::range(extent(samples, ask.hidden, from, &entering));
+        // A unit written whole has room for one of it: an axis of a
+        // third of a byte would have nothing to say but zero.
+        let y = (y.0, y.1.max(y.0 + ask.unit.least_step()));
         let height = (ask.size.height - TOP - BOTTOM).max(0.0);
         // A tick every 28 px at most: a handful.
         #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-        let rows = ((height / ROW).floor() as usize).clamp(1, 8);
+        let rows = ((height / ROW).floor() as usize).clamp(2, 8);
         // Each tick's value, what it says and how wide that is drawn.
         let mut labels: Vec<(f64, String, f32)> = if samples.is_empty() {
             vec![]
         } else {
-            scale::ticks(y, rows, ask.unit.is_binary())
-                .into_iter()
-                .map(|value| {
-                    let label = ask.unit.format(value);
-                    let width = (ask.measure)(&label);
-                    (value, label, width)
+            // The step that gives as many ticks as there are rows, or a
+            // finer one if that leaves the axis with zero alone.
+            let step = (rows..rows + 4)
+                .map(|count| {
+                    scale::step_from(
+                        y.1 - y.0,
+                        count,
+                        ask.unit.is_binary(),
+                        ask.unit.least_step(),
+                    )
                 })
-                .collect()
+                .find(|step| scale::ticks_by(y, *step).len() >= 2)
+                .unwrap_or(y.1 - y.0);
+            let mut said: Vec<(f64, String, f32)> = vec![];
+            for value in scale::ticks_by(y, step) {
+                let label = ask.unit.tick(value, step);
+                // No two ticks say the same: whatever a unit rounds
+                // to, the second of two equal labels is left out.
+                if said.iter().all(|(_, other, _)| *other != label) {
+                    let width = (ask.measure)(&label);
+                    said.push((value, label, width));
+                }
+            }
+            said
         };
         let widest = labels.iter().map(|tick| tick.2).fold(0.0, f32::max);
         let mut axis = widest + GAP + TICK;
@@ -110,6 +136,7 @@ impl Scene {
             x,
             y,
             from,
+            entering,
             x_ticks: vec![],
             y_ticks: vec![],
             rtl: ask.rtl,
@@ -172,8 +199,7 @@ fn time_range(samples: &Samples, window: Option<f64>) -> ((f64, f64), usize) {
     match window {
         Some(window) if window > 0.0 => {
             let start = last - window;
-            // The sample before the edge too: its line comes into view.
-            ((start, last), samples.index_from(start).saturating_sub(1))
+            ((start, last), samples.index_from(start))
         }
         // One sample is a point at the right edge of a second.
         _ if first >= last => ((last - 1.0, last), 0),
@@ -183,14 +209,23 @@ fn time_range(samples: &Samples, window: Option<f64>) -> ((f64, f64), usize) {
 
 /// The least and the greatest value of the series that show, from the
 /// sample `from` on: the one pass over the samples a scene makes.
-fn extent(samples: &Samples, hidden: &[bool], from: usize) -> Option<(f64, f64)> {
+fn extent(
+    samples: &Samples,
+    hidden: &[bool],
+    from: usize,
+    entering: &[Option<f64>],
+) -> Option<(f64, f64)> {
     let mut extent: Option<(f64, f64)> = None;
     for series in 0..samples.series() {
         if hidden.get(series).copied().unwrap_or(false) {
             continue;
         }
-        for index in from..samples.len() {
-            if let Some(value) = samples.value(series, index) {
+        // What shows of the series: where its line comes in, and its
+        // samples in view. The sample before the window does not.
+        let edge = entering.get(series).copied().flatten();
+        let inside = (from..samples.len()).filter_map(|index| samples.value(series, index));
+        for value in edge.into_iter().chain(inside) {
+            {
                 extent = Some(match extent {
                     Some((least, most)) => (least.min(value), most.max(value)),
                     None => (value, value),
@@ -199,6 +234,26 @@ fn extent(samples: &Samples, hidden: &[bool], from: usize) -> Option<(f64, f64)>
         }
     }
     extent
+}
+
+/// What each series is at `start`, the plot's left edge, on the line
+/// from the last sample before it to the first in view: worked out
+/// from the samples themselves, however old the one before is.
+fn entering(samples: &Samples, ask: &Ask<'_>, start: f64, from: usize) -> Vec<Option<f64>> {
+    let ends = from
+        .checked_sub(1)
+        .and_then(|before| Some((before, samples.time(before)?, samples.time(from)?)));
+    (0..samples.series())
+        .map(|series| {
+            let (before, then, first) = ends?;
+            // The stream stopped in between: nothing comes in.
+            if ask.break_after.is_some_and(|most| first - then > most) || first <= then {
+                return None;
+            }
+            let (was, is) = (samples.value(series, before)?, samples.value(series, from)?);
+            Some(was + (is - was) * ((start - then) / (first - then)))
+        })
+        .collect()
 }
 
 fn time_ticks(scene: &Scene, ask: &Ask<'_>) -> Vec<Tick> {
@@ -224,6 +279,14 @@ fn time_ticks(scene: &Scene, ask: &Ask<'_>) -> Vec<Tick> {
         return vec![];
     }
     let (step, times) = scale::time_ticks(scene.x, count, offset);
+    // A tick that is a date stands on that day's midnight, which is
+    // not a whole number of days from the last one when the clocks
+    // changed in between.
+    let times = if step >= DAY {
+        midnights(scene.x, step, ask.zone)
+    } else {
+        times
+    };
     // Where the label before ends: one at the chart's edge is moved
     // inside it, and the next is left out if that puts it in its way.
     let mut taken = f32::NEG_INFINITY;
@@ -246,6 +309,33 @@ fn time_ticks(scene: &Scene, ask: &Ask<'_>) -> Vec<Tick> {
                 width,
                 start,
             }
+        })
+        .collect()
+}
+
+/// The midnights, on the clock of `zone`, of every `step / DAY`-th day
+/// between `from` and `to`: each with the offset its own day has.
+fn midnights((from, to): (f64, f64), step: f64, zone: &jiff::tz::TimeZone) -> Vec<f64> {
+    use jiff::{civil::date, Span, Timestamp};
+    // Seconds since 1970 fit an i64, and a step is days.
+    #[allow(clippy::cast_possible_truncation)]
+    let (every, start) = ((step / DAY).round().max(1.0) as i64, from.floor() as i64);
+    let Ok(start) = Timestamp::from_second(start) else {
+        return vec![];
+    };
+    let epoch = date(1970, 1, 1);
+    let first = i64::from((start.to_zoned(zone.clone()).date() - epoch).get_days());
+    // Whole multiples of the step, counted in days of the calendar.
+    let first = first.div_euclid(every) * every;
+    (0..66)
+        .filter_map(|n| {
+            let day = epoch
+                .checked_add(Span::new().days(first + n * every))
+                .ok()?;
+            // A second count is far below 2^53.
+            #[allow(clippy::cast_precision_loss)]
+            let at = day.to_zoned(zone.clone()).ok()?.timestamp().as_second() as f64;
+            (at >= from && at <= to).then_some(at)
         })
         .collect()
 }

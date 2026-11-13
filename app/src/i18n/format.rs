@@ -168,7 +168,12 @@ impl Formats {
 
     /// `3.456` → `3.5%` (`3,5 %` in French); no decimals from 100 up.
     pub fn percent(&self, value: f64) -> String {
-        let digits = if value >= 100.0 { 0 } else { 1 };
+        self.percent_with(value, if value >= 100.0 { 0 } else { 1 })
+    }
+
+    /// A percentage with `digits` decimals, whatever its size: the
+    /// ticks of one axis are all written alike.
+    pub fn percent_with(&self, value: f64, digits: u8) -> String {
         let rounded = number::rounded(value, digits);
         match &self.percent {
             Some(formatter) if value.is_finite() => formatter.format(&rounded).to_string(),
@@ -287,6 +292,11 @@ pub fn bit_rate(bits_per_second: f64) -> String {
 /// `3.456` → `3.5%`, in the app's language.
 pub fn percent(value: f64) -> String {
     formats().formats.percent(value)
+}
+
+/// A percentage with `digits` decimals: `50` → `50%`, `0.5` → `0.5%`.
+pub fn percent_with(value: f64, digits: u8) -> String {
+    formats().formats.percent_with(value, digits)
 }
 
 /// `12345` → `12,345`, in the app's language.

@@ -21,7 +21,7 @@ use iced::{
 
 use super::{
     lttb,
-    scale::DAY,
+    scale::{self, DAY},
     scene::{self, Scene, FONT, TICK},
     series::Look,
     state::State,
@@ -117,6 +117,7 @@ impl Plot<'_> {
                 size,
                 hidden: &self.state.hidden,
                 window: self.state.window,
+                break_after: self.state.break_after,
                 unit: self.unit,
                 rtl: self.rtl,
                 zone: &self.zone,
@@ -343,6 +344,14 @@ impl Plot<'_> {
         // The plot's width in points, a thousand or two.
         #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
         let budget = ((plot.width * POINTS_PER_PIXEL).ceil() as usize).max(3);
+        // How long a bucket is: about a pixel of the plot, on a round
+        // number of seconds, and from a time that does not move, so a
+        // sample is in the same bucket whatever came since.
+        let width = scale::step(scene.x.1 - scene.x.0, budget, false);
+        #[allow(clippy::cast_possible_truncation)]
+        let bucket =
+            |index: usize| (samples.time(index).unwrap_or_default() / width).floor() as i64;
+        let thins = in_view > budget;
         let place = |index: usize, value: f64| {
             let time = samples.time(index).unwrap_or_default();
             Point::new(scene.px(time), scene.py(value))
@@ -355,26 +364,42 @@ impl Plot<'_> {
                 }
                 decimated::count();
                 let colour = look.tone.colour(theme);
+                // The bucket the last run drawn ended in: a run that
+                // starts and ends there too would be drawn on the same
+                // pixel, so it is not. However a series is cut up by
+                // gaps, it draws a run a pixel at the most.
+                let mut drawn_in: Option<i64> = None;
                 for (from, to) in runs(self.state, series, scene.from) {
                     let count = to - from;
-                    // The run's share of the points the series may draw.
-                    let keep = if in_view <= budget {
-                        count
-                    } else {
-                        (budget * count / in_view).max(3)
-                    };
+                    let (first, last) = (bucket(from), bucket(to - 1));
+                    if thins && first == last && drawn_in == Some(last) {
+                        continue;
+                    }
+                    drawn_in = Some(last);
                     let value = |index: usize| samples.value(series, index).unwrap_or_default();
                     let at = |offset: usize| {
                         let index = from + offset;
                         (samples.time(index).unwrap_or_default(), value(index))
                     };
-                    let kept = lttb::pick(count, keep, at);
+                    let kept = if thins {
+                        lttb::pick(count, |offset| bucket(from + offset), at)
+                    } else {
+                        (0..count).collect()
+                    };
                     let mut points: Vec<Point> = kept
                         .iter()
                         .map(|offset| place(from + offset, value(from + offset)))
                         .collect();
-                    enter(&mut points, plot.x);
+                    // The line that comes in from before the window
+                    // starts at the plot's edge, where the scene worked
+                    // out it is.
+                    if let Some(edge) = scene.entering.get(series).copied().flatten() {
+                        if from == scene.from {
+                            points.insert(0, Point::new(plot.x, scene.py(edge)));
+                        }
+                    }
                     decimated::points(points.len());
+                    decimated::path();
                     match points.as_slice() {
                         [] => {}
                         // A sample alone has no line: a dot says it is there.
@@ -430,6 +455,11 @@ impl Plot<'_> {
                 frame.fill(&Path::circle(at, 2.5), look.tone.colour(theme));
             }
         }
+        // A plot too small for the time and one row has the crosshair
+        // and no tooltip, rather than one that covers its axes.
+        if tip.size.width > plot.width || tip.size.height > plot.height {
+            return;
+        }
         let left = plot.x + tip::place(x - plot.x, tip.size.width, plot.width, scene.rtl);
         let top = plot.y;
         frame.with_save(|frame| {
@@ -482,8 +512,10 @@ fn panel(frame: &mut Frame, tip: &Tip, rtl: bool, theme: Theme) {
                 start + from_start
             }
         };
-        let from = Point::new(across(0.0, tip::SWATCH), y);
-        swatch(frame, row.look, theme, from, tip::SWATCH);
+        if let Some(look) = row.look {
+            let from = Point::new(across(0.0, tip::SWATCH), y);
+            swatch(frame, look, theme, from, tip::SWATCH);
+        }
         let named = row.label_width;
         let name = tip::SWATCH + tip::AFTER_SWATCH;
         frame.fill_text(label(
@@ -499,26 +531,6 @@ fn panel(frame: &mut Frame, tip: &Tip, rtl: bool, theme: Theme) {
             Point::new(across(tip.column_width() - valued, valued), y),
             tokens.popover_foreground,
         ));
-    }
-}
-
-/// Cuts a line where it comes into the plot: the sample before the
-/// window is to the left of it, and the line from it starts at the
-/// plot's edge. (A frame's own clipping is not the same in the two
-/// renderers, so nothing is drawn that would need it.)
-pub(super) fn enter(points: &mut Vec<Point>, left: f32) {
-    let Some(first) = points.first().copied().filter(|first| first.x < left) else {
-        return;
-    };
-    match points.get(1).copied() {
-        Some(next) if next.x > left => {
-            let share = (left - first.x) / (next.x - first.x);
-            points[0] = Point::new(left, first.y + (next.y - first.y) * share);
-        }
-        // Nothing of it is in the plot.
-        _ => {
-            points.remove(0);
-        }
     }
 }
 
@@ -558,11 +570,18 @@ pub(super) mod decimated {
     thread_local! {
         pub static SERIES: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
         pub static POINTS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+        pub static PATHS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
     }
 
     pub fn count() {
         #[cfg(test)]
         SERIES.with(|series| series.set(series.get() + 1));
+    }
+
+    /// And how many lines and dots it drew.
+    pub fn path() {
+        #[cfg(test)]
+        PATHS.with(|paths| paths.set(paths.get() + 1));
     }
 
     /// And how many points it drew of them.

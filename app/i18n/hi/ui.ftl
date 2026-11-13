@@ -34,6 +34,7 @@ ui-json-copyValue = मान कॉपी करें
 ui-chart-time = समय
 ui-chart-hide = { $name } छिपाएँ
 ui-chart-show = { $name } दिखाएँ
+ui-chart-more = +{ $count }
 ui-errorDetails-title = त्रुटि का विवरण
 ui-errorDetails-code = कोड
 ui-errorDetails-command = कमांड

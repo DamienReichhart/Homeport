@@ -191,3 +191,63 @@ fn a_page_that_names_its_colours_names_its_dashes() {
     assert_eq!(Series::new("worker-2").look(1), Look::of(1));
     assert!(Series::new("Used").filled().look(0).area);
 }
+
+/// The legend's sample of each dash pattern, drawn: which pixels of its
+/// middle row are inked.
+fn inked(dash: Dash) -> Vec<bool> {
+    use iced::widget::canvas::Canvas;
+
+    use crate::{
+        test_support::snapshot::pixels,
+        ui::{theme::Element, widgets::chart::Swatch},
+    };
+    let look = Look {
+        tone: Tone::Ink,
+        dash,
+        area: false,
+    };
+    let sample: Element<'_, ()> = Canvas::new(Swatch {
+        look,
+        hidden: false,
+    })
+    .width(crate::ui::widgets::chart::SWATCH)
+    .height(12.0)
+    .into();
+    let (width, height, rgba) = pixels(
+        &Theme::Light,
+        (crate::ui::widgets::chart::SWATCH, 12.0),
+        sample,
+    );
+    let row = (height / 2) as usize * width as usize * 4;
+    rgba[row..row + width as usize * 4]
+        .chunks_exact(4)
+        .map(|pixel| pixel[0] < 128)
+        .collect()
+}
+
+/// Colour is never the only cue only if the other cue can be seen: the
+/// five patterns as the legend draws them differ, each from each, in
+/// at least a seventh of the sample's pixels, and none is blank.
+#[test]
+fn the_dash_patterns_differ_where_the_legend_draws_them() {
+    let drawn: Vec<(Dash, Vec<bool>)> =
+        Dash::ALL.iter().map(|dash| (*dash, inked(*dash))).collect();
+    for (dash, row) in &drawn {
+        let ink = row.iter().filter(|on| **on).count();
+        assert!(
+            ink * 5 >= row.len(),
+            "{dash:?}: {ink} of {} pixels",
+            row.len()
+        );
+    }
+    for (index, (a, row_a)) in drawn.iter().enumerate() {
+        for (b, row_b) in &drawn[index + 1..] {
+            let differ = row_a.iter().zip(row_b).filter(|(a, b)| a != b).count();
+            assert!(
+                differ * 7 >= row_a.len(),
+                "{a:?} and {b:?} differ in {differ} of {} pixels",
+                row_a.len()
+            );
+        }
+    }
+}

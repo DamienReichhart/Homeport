@@ -32,6 +32,7 @@ export default {
   'ui.chart.time': 'Время',
   'ui.chart.hide': 'Скрыть {name}',
   'ui.chart.show': 'Показать {name}',
+  'ui.chart.more': '+{count}',
   'ui.errorDetails.title': 'Подробности ошибки',
   'ui.errorDetails.code': 'Код',
   'ui.errorDetails.command': 'Команда',

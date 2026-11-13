@@ -69,6 +69,20 @@ fn round_up(at_least: f64, base: f64, steps: &[f64]) -> f64 {
 /// (`binary`) a round number of the unit they are said in (256 MB,
 /// never 250).
 pub fn step(span: f64, count: usize, binary: bool) -> f64 {
+    step_from(span, count, binary, 0.0)
+}
+
+/// The same, never under `least`: the step of a unit written whole.
+pub fn step_from(span: f64, count: usize, binary: bool, least: f64) -> f64 {
+    let step = plain_step(span, count, binary);
+    if step < least {
+        least
+    } else {
+        step
+    }
+}
+
+fn plain_step(span: f64, count: usize, binary: bool) -> f64 {
     // Tick counts are single digits.
     #[allow(clippy::cast_precision_loss)]
     let at_least = span / count.max(1) as f64;
@@ -87,8 +101,12 @@ pub fn step(span: f64, count: usize, binary: bool) -> f64 {
 }
 
 /// The values of the ticks between `low` and `high`, `count` at most.
-pub fn ticks((low, high): (f64, f64), count: usize, binary: bool) -> Vec<f64> {
-    let step = step(high - low, count, binary);
+pub fn ticks(range: (f64, f64), count: usize, binary: bool) -> Vec<f64> {
+    ticks_by(range, step(range.1 - range.0, count, binary))
+}
+
+/// The multiples of `step` between `low` and `high`.
+pub fn ticks_by((low, high): (f64, f64), step: f64) -> Vec<f64> {
     let first = (low / step).ceil();
     let last = (high / step).floor();
     if !(first.is_finite() && last.is_finite()) || last - first > 64.0 {

@@ -31,6 +31,7 @@ export default {
   'ui.chart.time': '시간',
   'ui.chart.hide': '{name} 숨기기',
   'ui.chart.show': '{name} 표시',
+  'ui.chart.more': '+{count}',
   'ui.errorDetails.title': '오류 세부 정보',
   'ui.errorDetails.code': '코드',
   'ui.errorDetails.command': '명령',

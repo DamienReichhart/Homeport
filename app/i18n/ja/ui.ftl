@@ -33,6 +33,7 @@ ui-json-copyValue = 値をコピー
 ui-chart-time = 時刻
 ui-chart-hide = { $name } を非表示
 ui-chart-show = { $name } を表示
+ui-chart-more = +{ $count }
 ui-errorDetails-title = エラーの詳細
 ui-errorDetails-code = コード
 ui-errorDetails-command = コマンド

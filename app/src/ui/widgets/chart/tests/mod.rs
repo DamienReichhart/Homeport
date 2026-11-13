@@ -43,6 +43,11 @@ fn worked() -> (usize, usize, usize) {
     )
 }
 
+/// How many lines and dots this thread has drawn.
+fn paths() -> usize {
+    plot::decimated::PATHS.with(std::cell::Cell::get)
+}
+
 /// What each part of a frame took.
 #[derive(Debug, Clone, Copy, Default)]
 struct Took {

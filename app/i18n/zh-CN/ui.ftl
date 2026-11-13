@@ -33,6 +33,7 @@ ui-json-copyValue = 复制值
 ui-chart-time = 时间
 ui-chart-hide = 隐藏 { $name }
 ui-chart-show = 显示 { $name }
+ui-chart-more = +{ $count }
 ui-errorDetails-title = 错误详细信息
 ui-errorDetails-code = 代码
 ui-errorDetails-command = 命令

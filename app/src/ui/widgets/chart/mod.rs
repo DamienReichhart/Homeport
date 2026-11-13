@@ -98,8 +98,10 @@ use crate::{
 /// How tall the plot is unless told: the React chart's.
 pub const HEIGHT: f32 = 160.0;
 
-/// How long the sample of a line is in the legend.
-const SWATCH: f32 = 18.0;
+/// How long the sample of a line is in the legend: long enough for
+/// the longest dash pattern to show twice over, so each of the five
+/// reads as itself (`chart/tests/palette.rs` draws them and compares).
+pub(super) const SWATCH: f32 = 28.0;
 
 /// A chart being described; [`Chart::view`] makes it an element.
 pub struct Chart<'a, Message> {

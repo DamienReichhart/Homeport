@@ -31,6 +31,7 @@ export default {
   'ui.chart.time': 'Zeit',
   'ui.chart.hide': '{name} ausblenden',
   'ui.chart.show': '{name} einblenden',
+  'ui.chart.more': '+{count}',
   'ui.errorDetails.title': 'Fehlerdetails',
   'ui.errorDetails.code': 'Code',
   'ui.errorDetails.command': 'Befehl',

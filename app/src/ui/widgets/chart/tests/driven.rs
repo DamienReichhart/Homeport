@@ -7,7 +7,7 @@
 
 use iced::{keyboard::key::Named, Point};
 
-use super::{worked, Bench};
+use super::{paths, worked, Bench};
 use crate::{
     test_support::{snapshot::in_language, stage::Stage},
     ui::{
@@ -86,6 +86,75 @@ fn what_changes_how_the_chart_looks_draws_it_again() {
     let mut wider = Bench::new((1200.0, 360.0));
     wider.cache = bench.cache.take();
     assert_eq!(frame(&mut wider, &state, None).1, MANY);
+}
+
+/// The ticket's "10 series × 3,600 points at 60 fps", as what a frame
+/// is given to do: numbers no machine changes, held on every
+/// `cargo test`. (How long that takes is `perf.rs`, which is timed and
+/// ignored.) After a sample: one pass over the samples, ten series
+/// thinned, a line each of no more points than the plot has pixels.
+/// Between two samples: nothing.
+#[test]
+fn a_frame_of_ten_series_of_an_hour_is_given_a_bounded_amount_to_draw() {
+    let _english = in_language("en");
+    let mut state = sample::many(HOUR);
+    let mut bench = Bench::new(WINDOW);
+    frame(&mut bench, &state, None);
+    // The plot of a 900 px window is under 852 px wide.
+    let most = MANY * 856;
+    for n in 0..20 {
+        // Counts are small.
+        #[allow(clippy::cast_precision_loss)]
+        state.push(sample::START + (HOUR + n) as f64, &[Some(50.0); MANY]);
+        let lines = paths();
+        let (scenes, series, points) = frame(&mut bench, &state, Some(ON_PLOT));
+        assert_eq!(
+            (scenes, series, paths() - lines),
+            (1, MANY, MANY),
+            "frame {n}"
+        );
+        assert!(points <= most, "{points} points after a sample");
+        // The frames until the next sample, pointer moving or not.
+        let lines = paths();
+        assert_eq!(frame(&mut bench, &state, Some(ON_PLOT)), (0, 0, 0));
+        assert_eq!(frame(&mut bench, &state, None), (0, 0, 0));
+        assert_eq!(paths(), lines);
+    }
+}
+
+/// Gaps do not undo the bound: a series whose every other sample is
+/// missing is 1,800 samples each alone, which were 1,800 dots. They are
+/// a dot a pixel at the most.
+#[test]
+fn a_series_cut_up_by_gaps_draws_a_mark_a_pixel_at_the_most() {
+    let _english = in_language("en");
+    let mut state = State::new(MANY, HOUR);
+    for n in 0..HOUR {
+        let value = (n % 2 == 0).then_some(50.0);
+        #[allow(clippy::cast_precision_loss)]
+        state.push(sample::START + n as f64, &[value; MANY]);
+    }
+    let mut bench = Bench::new(WINDOW);
+    let lines = paths();
+    let (_, series, points) = frame(&mut bench, &state, None);
+    let marks = paths() - lines;
+    assert_eq!(series, MANY);
+    assert!(marks <= MANY * 856, "{marks} marks");
+    assert!(points <= MANY * 856, "{points} points");
+    // And they are drawn: a series of dots is still there to see.
+    assert!(marks >= MANY * 400, "{marks} marks");
+    // Short runs between gaps too: three samples, then one missing.
+    let mut state = State::new(1, HOUR);
+    for n in 0..HOUR {
+        #[allow(clippy::cast_precision_loss)]
+        state.push(sample::START + n as f64, &[(n % 4 != 3).then_some(50.0)]);
+    }
+    let lines = paths();
+    let (_, _, points) = frame(&mut bench, &state, None);
+    assert!(
+        paths() - lines <= 856 && points <= 3 * 856,
+        "{points} points"
+    );
 }
 
 /// Few enough samples are all drawn: nothing is thinned that fits.
