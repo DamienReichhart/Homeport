@@ -247,8 +247,8 @@ impl Data {
 /// as an archive. The name is a container's: it is made safe to suggest.
 pub fn save_request(entry: &Entry) -> SaveFile {
     let name = match entry.kind {
-        Kind::Directory => names::with_extension(&entry.name, "tar", "folder"),
-        _ => names::suggested(&entry.name, "file"),
+        Kind::Directory => names::with_extension(&entry.name, "tar", ""),
+        _ => names::suggested(&entry.name, ""),
     };
     let title = t!("containers.files.saveOne", name = entry.name.as_str());
     SaveFile::new(title, &name)

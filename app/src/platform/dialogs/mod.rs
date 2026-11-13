@@ -127,7 +127,8 @@ impl OpenFolder {
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct SaveFile {
     pub title: String,
-    /// The name the dialog suggests, already safe on every system.
+    /// The name the dialog suggests, already safe on every system; empty
+    /// when there is none to suggest.
     pub name: String,
     pub filters: Vec<Filter>,
     pub folder: Option<PathBuf>,
@@ -136,11 +137,12 @@ pub struct SaveFile {
 impl SaveFile {
     /// A save dialog that suggests `name`, made safe first
     /// ([`names::suggested`]): a container's name or a path inside a
-    /// volume can be handed as it is.
+    /// volume can be handed as it is. A name with nothing left of it
+    /// (`/`, `..`) suggests none: the field is left for the user.
     pub fn new(title: impl Into<String>, name: &str) -> Self {
         Self {
             title: title.into(),
-            name: names::suggested(name, "file"),
+            name: names::suggested(name, ""),
             ..Self::default()
         }
     }
@@ -219,7 +221,9 @@ mod tests {
             "etc_nginx_conf"
         );
         assert_eq!(SaveFile::new("Save", "con.tar").name, "_con.tar");
-        assert_eq!(SaveFile::new("Save", "").name, "file");
+        // Nothing left of the name: no word of the app's own is put there.
+        assert_eq!(SaveFile::new("Save", "").name, "");
+        assert_eq!(SaveFile::new("Save", "../..").name, "");
     }
 
     #[test]

@@ -78,8 +78,12 @@ impl Dialogs for Native {
 
     fn save(&self, request: SaveFile) -> Task<AppResult<Option<PathBuf>>> {
         let dialog = dialog(&request.title, &request.filters, request.folder)
-            .set_file_name(request.name)
             .set_can_create_directories(true);
+        let dialog = if request.name.is_empty() {
+            dialog
+        } else {
+            dialog.set_file_name(request.name)
+        };
         let picked: Task<Option<PathBuf>> = ask(dialog, |dialog| {
             let asked = dialog.save_file();
             async move { path(asked.await) }

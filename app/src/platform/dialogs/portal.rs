@@ -154,7 +154,7 @@ async fn answer(
         Ask::Save(request) => {
             let options = SaveFileOptions::default()
                 .set_modal(true)
-                .set_current_name(request.name.as_str())
+                .set_current_name(Some(request.name.as_str()).filter(|name| !name.is_empty()))
                 .set_filters(globs(&request.filters))
                 .set_current_folder(request.folder.as_deref().and_then(folder_path));
             chooser.save_file(parent, &request.title, options).await
