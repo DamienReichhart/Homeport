@@ -3,7 +3,7 @@
 //! Listing runs `find … -exec stat` in the container (the archive API would
 //! return whole directory trees); transfers use the archive API.
 
-use std::{io::Read, path::Path};
+use std::path::Path;
 
 use bollard::{
     body_full,
@@ -17,8 +17,12 @@ use bollard::{
 };
 use futures_util::StreamExt;
 use serde::Serialize;
+use tokio::io::AsyncWriteExt;
 
-use homeport_core::error::{local_file, AppError, AppResult, ErrorCode};
+use homeport_core::{
+    error::{local_file, AppError, AppResult, ErrorCode},
+    local_files::Replacement,
+};
 
 use crate::messages as msg;
 
@@ -183,6 +187,22 @@ pub async fn download(
     path: &str,
     destination: &Path,
 ) -> AppResult<bool> {
+    download_counted(docker, container_id, path, destination, |_, _| {}).await
+}
+
+/// [`download`], telling `progress` how many bytes of the Engine's archive
+/// came, of how many if the Engine said (a file's size; a folder's is not
+/// known). The archive goes to disk as it comes, so memory stays bounded,
+/// and the file is written beside `destination` and put in its place only
+/// once whole: a failure, or the future dropped part way, leaves no file
+/// and whatever was at `destination` as it was.
+pub async fn download_counted(
+    docker: &Docker,
+    container_id: &str,
+    path: &str,
+    destination: &Path,
+    progress: impl Fn(u64, Option<u64>),
+) -> AppResult<bool> {
     let path = absolute(path)?;
     let stat = docker
         .get_container_archive_info(
@@ -195,8 +215,12 @@ pub async fn download(
         )
         .await?;
     let is_dir = stat.file_mode & GO_MODE_DIR != 0;
+    let total = (!is_dir).then(|| u64::try_from(stat.size).unwrap_or(0));
+    progress(0, total);
 
-    let mut archive = Vec::new();
+    // The archive, as it comes: the folder's own file, or a file of its
+    // own beside the destination for a file, read back once whole.
+    let archive = Replacement::new(destination)?;
     let mut stream = docker.download_from_container(
         container_id,
         Some(
@@ -205,22 +229,74 @@ pub async fn download(
                 .build(),
         ),
     );
+    let file = archive
+        .file()
+        .try_clone()
+        .map_err(|e| local_file(destination, e))?;
+    let mut out = tokio::io::BufWriter::new(tokio::fs::File::from_std(file));
+    let mut received = 0_u64;
     while let Some(chunk) = stream.next().await {
-        archive.extend_from_slice(&chunk?);
+        let chunk = chunk?;
+        out.write_all(&chunk)
+            .await
+            .map_err(|e| local_file(destination, e))?;
+        received += chunk.len() as u64;
+        // A file's archive is a little more than the file: its header.
+        progress(total.map_or(received, |total| received.min(total)), total);
+    }
+    out.flush().await.map_err(|e| local_file(destination, e))?;
+    drop(out);
+    if received == 0 {
+        return Err(AppError::new(
+            ErrorCode::EngineError,
+            msg::FILES_EMPTY_ARCHIVE,
+        ));
     }
     if is_dir {
-        std::fs::write(destination, &archive).map_err(|e| local_file(destination, e))?;
+        mode_of(&archive, destination);
+        archive.commit()?;
         return Ok(true);
     }
-    let mut tar = tar::Archive::new(archive.as_slice());
+    let destination = destination.to_owned();
+    tokio::task::spawn_blocking(move || extract_first(&archive, &destination))
+        .await
+        .map_err(|e| AppError::from(std::io::Error::other(e)))??;
+    Ok(false)
+}
+
+/// Writes the first entry of the tar in `archive` to `destination`, whole
+/// or not at all. `archive` goes when it is dropped.
+fn extract_first(archive: &Replacement, destination: &Path) -> AppResult<()> {
+    use std::io::{Seek, SeekFrom};
+    let mut file = archive
+        .file()
+        .try_clone()
+        .map_err(|e| local_file(destination, e))?;
+    file.seek(SeekFrom::Start(0))
+        .map_err(|e| local_file(destination, e))?;
+    let mut tar = tar::Archive::new(file);
     let mut entry = tar
         .entries()?
         .next()
         .ok_or_else(|| AppError::new(ErrorCode::EngineError, msg::FILES_EMPTY_ARCHIVE))??;
-    let mut contents = Vec::new();
-    entry.read_to_end(&mut contents)?;
-    std::fs::write(destination, contents).map_err(|e| local_file(destination, e))?;
-    Ok(false)
+    let saved = Replacement::new(destination)?;
+    let mut out = saved.file();
+    std::io::copy(&mut entry, &mut out).map_err(|e| local_file(destination, e))?;
+    mode_of(&saved, destination);
+    saved.commit()
+}
+
+/// The permissions a saved file gets: those of the file it replaces, or
+/// what any new file gets (the umask): it was private while written.
+/// A file whose permissions can't be set stays private.
+fn mode_of(saved: &Replacement, destination: &Path) {
+    let set = match std::fs::metadata(destination) {
+        Ok(replaced) => saved.keep_mode_of(&replaced),
+        Err(_) => saved.take_default_mode(),
+    };
+    if let Err(e) = set {
+        log::debug!("a downloaded file keeps its private mode: {e}");
+    }
 }
 
 /// Copies local files into the container directory `directory`.
