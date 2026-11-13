@@ -151,25 +151,17 @@ async fn the_data_folder_opened_is_the_one_the_database_is_in() {
 }
 
 #[tokio::test]
-async fn only_what_exists_is_opened_or_shown_in_its_folder() {
+async fn only_what_exists_is_shown_in_its_folder() {
     let fake = Fake::new();
     let platform = fake.platform();
     let file = fake.dir().join("logs.txt");
     let gone = platform.reveal(file.clone()).await.unwrap_err();
     assert_eq!(gone.message, format!("{} doesn't exist.", file.display()));
-    assert!(platform.open_path(file.clone()).await.is_err());
     assert!(fake.took().is_empty());
 
     std::fs::write(&file, "one\n").unwrap();
     platform.reveal(file.clone()).await.unwrap();
-    platform.open_path(file.clone()).await.unwrap();
-    assert_eq!(
-        fake.took(),
-        [
-            Asked::Revealed(file.clone()),
-            Asked::Opened(file.clone().into())
-        ]
-    );
+    assert_eq!(fake.took(), [Asked::Revealed(file.clone())]);
 
     fake.refuse(io::ErrorKind::PermissionDenied);
     let failed = platform.reveal(file.clone()).await.unwrap_err();
@@ -177,6 +169,44 @@ async fn only_what_exists_is_opened_or_shown_in_its_folder() {
         failed.message,
         format!("{} can't be opened.", file.display())
     );
+}
+
+/// The OS runs a file handed to it when it is a program, a script or a
+/// shortcut: nothing of the platform hands it one.
+#[tokio::test]
+async fn a_file_is_never_handed_to_the_os_to_open() {
+    let fake = Fake::new();
+    let platform = fake.platform();
+    for name in [
+        "run.sh",
+        "setup.exe",
+        "Homeport.desktop",
+        "link.url",
+        "notes.txt",
+    ] {
+        let file = fake.dir().join(name);
+        std::fs::write(&file, "#!/bin/sh\ntouch /tmp/ran\n").unwrap();
+        let refused = platform.open_folder(file.clone()).await.unwrap_err();
+        assert!(refused.message.contains(name), "{}", refused.message);
+        assert!(file.is_file(), "left as it was");
+    }
+    // A link that leads to a file is a file too.
+    #[cfg(unix)]
+    {
+        let link = fake.dir().join("folder");
+        std::os::unix::fs::symlink(fake.dir().join("run.sh"), &link).unwrap();
+        platform.open_folder(link).await.unwrap_err();
+    }
+    assert!(fake.took().is_empty(), "the OS was never asked");
+
+    // And a link is only ever a web, mail or phone one: never a path.
+    for path in [
+        fake.dir().join("run.sh").display().to_string(),
+        "run.sh".to_owned(),
+    ] {
+        platform.open_url(path).await.unwrap_err();
+    }
+    assert!(fake.took().is_empty(), "the OS was never asked");
 }
 
 #[tokio::test]

@@ -164,17 +164,18 @@ Their tests need no window: a paused tokio clock (`#[tokio::test(start_paused = 
 
 A page reaches it through `ctx.platform` (a `Platform`, which the window keeps and the shell lends):
 
-| React                                           | iced                                                                                                   |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `pickFile(title, filters, defaultPath)`         | `ctx.platform.pick_file(OpenFile::new(title).filter(Filter::new(name, &["yml"])).starting_in(folder))` |
-| `pickFiles(title)`                              | `ctx.platform.pick_files(OpenFile::new(title))`                                                        |
-| `pickFolder(title)`                             | `ctx.platform.pick_folder(OpenFolder::new(title))`                                                     |
-| `pickSavePath(title, defaultPath, filters)`     | `ctx.platform.save_file(SaveFile::new(title, name).filter(..))`                                        |
-| `openUrl(url)`                                  | `ctx.open_url(url)`                                                                                    |
-| `commands.readTextFile(path)`                   | `platform::files::read_text(path)`                                                                     |
-| `commands.writeTextFile(path, text)`            | `platform::files::write_text(path, text)`, or `files::save(path, write)` when it is long               |
-| `commands.openLogFolder()`, `openDataFolder()`  | `ctx.platform.open_log_folder()`, `ctx.platform.open_data_folder(ctx.state)`                           |
-| `openPath`, `revealItemInDir` (unused in React) | `ctx.platform.open_path(path)`, `ctx.platform.reveal(path)`                                            |
+| React                                                             | iced                                                                                                                                                                        |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pickFile(title, filters, defaultPath)`                           | `ctx.platform.pick_file(OpenFile::new(title).filter(Filter::new(name, &["yml"])).starting_in(folder))`                                                                      |
+| `pickFiles(title)`                                                | `ctx.platform.pick_files(OpenFile::new(title))`                                                                                                                             |
+| `pickFolder(title)`                                               | `ctx.platform.pick_folder(OpenFolder::new(title))`                                                                                                                          |
+| `pickSavePath(title, defaultPath, filters)`                       | `ctx.platform.save_file(SaveFile::new(title, name).filter(..))`                                                                                                             |
+| `openUrl(url)`                                                    | `ctx.open_url(url)`                                                                                                                                                         |
+| `commands.readTextFile(path)`                                     | `platform::files::read_text(path)`                                                                                                                                          |
+| `commands.writeTextFile(path, text)`                              | `platform::files::write_text(path, text)`, or `files::save(path, write)` when it is long                                                                                    |
+| `commands.openLogFolder()`, `openDataFolder()`                    | `ctx.platform.open_log_folder()`, `ctx.platform.open_data_folder(ctx.state)`                                                                                                |
+| `revealItemInDir` (unused in React)                               | `ctx.platform.reveal(path)`                                                                                                                                                 |
+| `openPath` (unused in React, and not allowed by `opener:default`) | none, on purpose: the OS runs a file handed to it when it is a program, a script or a shortcut. `ctx.platform.open_folder(folder)` opens a folder and refuses anything else |
 
 - **A dialog is a `Task`**, mapped into the page's message: `ctx.platform.save_file(request).map(Message::SaveTo)`. It opens over the app's window (asked for on the window's own thread, where macOS wants a sheet started), so `update` returns at once. **A cancelled dialog answers `None`** (no file for `pick_files`): it is an answer, never an `AppError`, and the page does nothing of it. What the page needs once the dialog answers (the lines to save) stays in its state meanwhile.
 - **Everything else is a future** for `Task::perform` or `ctx.act`: reading, writing, opening. None blocks `update`. A mutation's rule holds here too: what must be said when the page is gone (the "Logs saved" toast, the failure) goes through `ctx.act`'s `report`.

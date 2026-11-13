@@ -19,11 +19,13 @@ use homeport_core::{
 /// what a container or a repository names can't start a program here.
 const SCHEMES: &[&str] = &["http://", "https://", "mailto:", "tel:"];
 
-/// What hands a link or a path to the OS: the OS ([`Native`]), or a
+/// What hands a link or a folder to the OS: the OS ([`Native`]), or a
 /// test's record of what was asked. Both may block for a moment, so they
 /// are called off the window's thread.
 pub trait Opener: Send + Sync {
-    /// Opens a link or a path with what the OS has for it.
+    /// Opens a link or a folder with what the OS has for it. The OS runs
+    /// a file that is a program: [`Platform`](super::Platform) only ever
+    /// gives this a link it checked or a folder.
     fn open(&self, target: &OsStr) -> io::Result<()>;
     /// Shows `path` selected in its folder, in the file manager.
     fn reveal(&self, path: &Path) -> io::Result<()>;
@@ -139,10 +141,11 @@ impl Opener for Native {
         if shown {
             return Ok(());
         }
-        // No file manager took it (no D-Bus, no `gdbus`): its folder at least.
+        // No file manager took it (no D-Bus, no `gdbus`): its folder at
+        // least. Never the file itself, which the OS would run.
         match path.parent() {
-            Some(folder) if !folder.as_os_str().is_empty() => self.open(folder.as_os_str()),
-            _ => self.open(path.as_os_str()),
+            Some(folder) if folder.is_dir() => self.open(folder.as_os_str()),
+            _ => Err(io::ErrorKind::NotFound.into()),
         }
     }
 }

@@ -155,18 +155,6 @@ impl Platform {
         })
     }
 
-    /// Opens a file or a folder that exists with what the OS has for it:
-    /// a folder in the file manager (`openPath`).
-    pub fn open_path(&self, path: PathBuf) -> impl Future<Output = AppResult<()>> + Send + 'static {
-        let opener = self.opener.clone();
-        off_thread(move || {
-            exists(&path)?;
-            opener
-                .open(path.as_os_str())
-                .map_err(|e| local_files::folder_not_opened(&path, &e))
-        })
-    }
-
     /// Shows a file that exists, selected in its folder, in the file
     /// manager (`revealItemInDir`).
     pub fn reveal(&self, path: PathBuf) -> impl Future<Output = AppResult<()>> + Send + 'static {
@@ -180,6 +168,12 @@ impl Platform {
     }
 
     /// Opens `folder` in the file manager, made first if it isn't there.
+    ///
+    /// Only ever a folder: handing a file to the OS runs it when it is a
+    /// program, a script or a shortcut, which the Tauri app never allowed
+    /// (`opener:default` has no `open-path`). There is no way to open a
+    /// file through the platform; [`Platform::reveal`] shows one where it
+    /// lies instead.
     pub fn open_folder(
         &self,
         folder: PathBuf,
@@ -187,6 +181,15 @@ impl Platform {
         let opener = self.opener.clone();
         off_thread(move || {
             local_files::ensure_folder(&folder)?;
+            // What is there is looked at, not trusted: a link to a file
+            // is a file.
+            let is_folder = std::fs::metadata(&folder).map_err(|e| local_file(&folder, e))?;
+            if !is_folder.is_dir() {
+                return Err(local_file(
+                    &folder,
+                    std::io::ErrorKind::NotADirectory.into(),
+                ));
+            }
             opener
                 .open(folder.as_os_str())
                 .map_err(|e| local_files::folder_not_opened(&folder, &e))
