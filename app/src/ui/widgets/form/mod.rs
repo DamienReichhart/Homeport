@@ -13,14 +13,16 @@ pub mod checkbox;
 pub mod field;
 pub mod input;
 pub mod number;
+pub mod search;
 pub mod select;
 pub mod tabs;
 
 pub use self::{
     checkbox::{checkbox, Check},
     field::{field, Errors, Field},
-    input::{focus_search, input, input_group, password, search, textarea, Addon},
+    input::{input, input_group, password, textarea, Addon},
     number::{number_input, Number},
+    search::{focus_search, search, Debounce},
     select::select,
     tabs::{segmented, tabs, toggle_group, TabsVariant, Toggle},
 };

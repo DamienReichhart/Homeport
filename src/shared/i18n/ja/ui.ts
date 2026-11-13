@@ -6,6 +6,7 @@ export default {
   'ui.copy': 'コピー',
   'ui.copied': 'コピーしました',
   'ui.search': '検索',
+  'ui.search.clear': '検索をクリア',
   'ui.shortcuts.focusSearch': 'このページを検索',
   'ui.shortcuts.thisPage': 'このページ',
   'ui.table.selectAll': 'すべて選択',

@@ -6,6 +6,7 @@
 ui-copy = 复制
 ui-copied = 已复制
 ui-search = 搜索
+ui-search-clear = 清除搜索
 ui-shortcuts-focusSearch = 搜索此页面
 ui-shortcuts-thisPage = 此页面
 ui-table-selectAll = 全选

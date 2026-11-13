@@ -21,6 +21,7 @@ pub struct KeyArea<'a, Message> {
     content: Element<'a, Message>,
     on_key: OnKey<'a, Message>,
     on_captured: Option<OnKey<'a, Message>>,
+    before: Option<OnKey<'a, Message>>,
     always: bool,
 }
 
@@ -34,6 +35,7 @@ pub fn key_area<'a, Message>(
         content: content.into(),
         on_key: Box::new(on_key),
         on_captured: None,
+        before: None,
         always: false,
     }
 }
@@ -46,6 +48,16 @@ impl<'a, Message> KeyArea<'a, Message> {
     #[must_use]
     pub fn on_captured(mut self, on_key: impl Fn(&Key, Modifiers) -> Option<Message> + 'a) -> Self {
         self.on_captured = Some(Box::new(on_key));
+        self
+    }
+
+    /// A handler asked before what is inside, while something inside has
+    /// focus: a key it answers never reaches the content. A search field's
+    /// Escape empties it this way, where the field alone would let go of
+    /// focus.
+    #[must_use]
+    pub fn before(mut self, on_key: impl Fn(&Key, Modifiers) -> Option<Message> + 'a) -> Self {
+        self.before = Some(Box::new(on_key));
         self
     }
 
@@ -108,6 +120,25 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for KeyArea<'_, Message> {
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) {
+        if let (Some(before), Event::Keyboard(keyboard::Event::KeyPressed { key, modifiers, .. })) =
+            (&self.before, event)
+        {
+            let inside = super::find(
+                self.content.as_widget_mut(),
+                &mut tree.children[0],
+                layout,
+                renderer,
+            )
+            .focused
+            .is_some();
+            if let (true, false, Some(message)) =
+                (inside, shell.is_event_captured(), before(key, *modifiers))
+            {
+                shell.publish(message);
+                shell.capture_event();
+                return;
+            }
+        }
         self.content.as_widget_mut().update(
             &mut tree.children[0],
             event,

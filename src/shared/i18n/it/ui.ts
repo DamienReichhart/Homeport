@@ -6,6 +6,7 @@ export default {
   'ui.copy': 'Copia',
   'ui.copied': 'Copiato',
   'ui.search': 'Cerca',
+  'ui.search.clear': 'Cancella ricerca',
   'ui.shortcuts.focusSearch': 'Cerca in questa pagina',
   'ui.shortcuts.thisPage': 'Questa pagina',
   'ui.table.selectAll': 'Seleziona tutto',

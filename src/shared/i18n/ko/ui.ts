@@ -6,6 +6,7 @@ export default {
   'ui.copy': '복사',
   'ui.copied': '복사됨',
   'ui.search': '검색',
+  'ui.search.clear': '검색 지우기',
   'ui.shortcuts.focusSearch': '이 페이지 검색',
   'ui.shortcuts.thisPage': '이 페이지',
   'ui.table.selectAll': '모두 선택',

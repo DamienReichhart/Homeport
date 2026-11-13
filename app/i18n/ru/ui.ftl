@@ -6,6 +6,7 @@
 ui-copy = Копировать
 ui-copied = Скопировано
 ui-search = Поиск
+ui-search-clear = Очистить поиск
 ui-shortcuts-focusSearch = Искать на этой странице
 ui-shortcuts-thisPage = Эта страница
 ui-table-selectAll = Выбрать все
