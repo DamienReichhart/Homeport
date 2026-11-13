@@ -9,9 +9,9 @@
 use std::{
     fs::{self, File, OpenOptions},
     future::Future,
-    io::{self, BufWriter, Write},
+    io::{self, BufWriter, Seek, SeekFrom, Write},
     path::{Path, PathBuf},
-    sync::atomic::{AtomicU64, Ordering},
+    time::Duration,
 };
 
 use iced::futures::{stream, Stream};
@@ -19,7 +19,8 @@ use tokio::sync::watch;
 
 use homeport_core::{
     error::{local_file, AppError, AppResult, ErrorCode},
-    local_files, messages as msg,
+    local_files::{self, Replacement},
+    messages as msg,
 };
 
 /// Runs `work` where blocking is allowed, and waits for it.
@@ -44,90 +45,140 @@ pub async fn write_text(path: PathBuf, contents: String) -> AppResult<()> {
     off_thread(move || replace(&path, |out| out.write_all(contents.as_bytes()))).await
 }
 
-/// Tells one unfinished file of this process from another.
-static PARTS: AtomicU64 = AtomicU64::new(0);
+/// How many links are followed from the path picked to the file it
+/// stands for, as the OS itself allows.
+const MAX_LINKS: usize = 40;
 
-/// A file being written beside the one it will replace. Dropped before
-/// [`Part::commit`], it is removed and the target is as it was.
-struct Part {
-    file: Option<File>,
-    temp: PathBuf,
-    target: PathBuf,
-}
+/// How old a file this app left unfinished must be to be taken away: no
+/// write lasts a day, and one killed half way leaves its file behind.
+const STALE: Duration = Duration::from_secs(24 * 60 * 60);
 
-impl Part {
-    fn create(path: &Path) -> io::Result<Self> {
-        // A link is written through, as a plain write would: what it
-        // points at is replaced, not the link.
-        let target = if path.is_symlink() {
-            fs::canonicalize(path).unwrap_or_else(|_| path.to_owned())
-        } else {
-            path.to_owned()
-        };
-        let folder = match target.parent() {
-            Some(folder) if !folder.as_os_str().is_empty() => folder.to_owned(),
-            _ => PathBuf::from("."),
-        };
-        // Another instance of the app, or a file left by one that was
-        // killed, may hold a name: `create_new` never takes over a file.
-        for _ in 0..64 {
-            let n = PARTS.fetch_add(1, Ordering::Relaxed);
-            let temp = folder.join(format!(".homeport-{}-{n}.part", std::process::id()));
-            match OpenOptions::new().write(true).create_new(true).open(&temp) {
-                Ok(file) => {
-                    return Ok(Self {
-                        file: Some(file),
-                        temp,
-                        target,
-                    })
-                }
-                Err(e) if e.kind() == io::ErrorKind::AlreadyExists => {}
-                Err(e) => return Err(e),
-            }
-        }
-        Err(io::ErrorKind::AlreadyExists.into())
-    }
-
-    /// Flushes the file to disk and puts it where it goes, with the
-    /// permissions of the file it replaces when there was one.
-    fn commit(mut self) -> io::Result<()> {
-        if let Some(file) = self.file.take() {
-            file.sync_all()?;
-            if let Ok(replaced) = fs::metadata(&self.target) {
-                if replaced.is_file() {
-                    file.set_permissions(replaced.permissions())?;
-                }
-            }
-        }
-        // `self` is dropped on the way out: a rename that failed leaves
-        // nothing behind, and one that worked has nothing left to remove.
-        fs::rename(&self.temp, &self.target)
+/// The folder a file is in.
+fn folder_of(path: &Path) -> &Path {
+    match path.parent() {
+        Some(folder) if !folder.as_os_str().is_empty() => folder,
+        _ => Path::new("."),
     }
 }
 
-impl Drop for Part {
-    fn drop(&mut self) {
-        drop(self.file.take());
-        // Gone already when the rename worked.
-        let _ = fs::remove_file(&self.temp);
+/// The file `path` stands for: itself, or what the links it is lead to,
+/// there or not. A link is written through, as a plain write does, so
+/// the link stays and a link to nothing gets its file. Links that lead
+/// back to themselves are the OS's failure to tell.
+fn target(path: &Path) -> io::Result<PathBuf> {
+    let mut target = path.to_owned();
+    for _ in 0..MAX_LINKS {
+        let is_link = fs::symlink_metadata(&target).is_ok_and(|found| found.is_symlink());
+        if !is_link {
+            return Ok(target);
+        }
+        let leads_to = fs::read_link(&target)?;
+        target = folder_of(&target).join(leads_to);
     }
+    // Too many to follow: the OS says why (a loop).
+    Err(fs::metadata(path)
+        .err()
+        .unwrap_or_else(|| io::ErrorKind::InvalidInput.into()))
+}
+
+/// What is at `target` now, if a file is: a folder, a pipe, a device or
+/// a socket is never replaced by a file.
+fn replaced(path: &Path, target: &Path) -> AppResult<Option<fs::Metadata>> {
+    match fs::metadata(target) {
+        Ok(found) if found.is_file() => Ok(Some(found)),
+        Ok(found) if found.is_dir() => Err(local_file(path, io::ErrorKind::IsADirectory.into())),
+        Ok(_) => Err(AppError::validation(
+            msg::FILE_NOT_REGULAR.with("path", path),
+        )),
+        Err(e) if e.kind() == io::ErrorKind::NotFound => Ok(None),
+        Err(e) => Err(local_file(path, e)),
+    }
+}
+
+/// Takes away the files this app left unfinished in `folder` long ago
+/// (`.homeport-….part`: a write that was killed). Whatever fails is left.
+fn sweep(folder: &Path) {
+    let Ok(entries) = fs::read_dir(folder) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let name = entry.file_name();
+        let ours = name
+            .to_str()
+            .is_some_and(|name| name.starts_with(".homeport-") && name.ends_with(".part"));
+        let stale = entry.metadata().is_ok_and(|found| {
+            found.is_file()
+                && found
+                    .modified()
+                    .ok()
+                    .and_then(|at| at.elapsed().ok())
+                    .is_some_and(|age| age > STALE)
+        });
+        if ours && stale {
+            let _ = fs::remove_file(entry.path());
+        }
+    }
+}
+
+/// Writes what `unfinished` holds into the file at `target`, which
+/// stays the file it was: for a file that can't be renamed over.
+fn in_place(unfinished: &Replacement, target: &Path) -> io::Result<()> {
+    let mut from = unfinished.file();
+    from.seek(SeekFrom::Start(0))?;
+    let mut to = OpenOptions::new().write(true).truncate(true).open(target)?;
+    io::copy(&mut from, &mut to)?;
+    to.sync_all()
 }
 
 /// Writes a file at `path` with what `write` puts in it, whole or not at
 /// all: a failure part way leaves what was there untouched and nothing
 /// beside it. Blocks; call it off the window's thread ([`write_text`],
 /// [`save`]).
+///
+/// The file is written beside its target, private to the user until it
+/// is whole (the workspace's [`Replacement`]), then renamed over it. See
+/// `docs/agents/iced-migration.md` for what that keeps of the file that
+/// was there, and what it doesn't.
 pub fn replace(path: &Path, write: impl FnOnce(&mut dyn Write) -> io::Result<()>) -> AppResult<()> {
-    let written = (|| {
-        let part = Part::create(path)?;
-        if let Some(file) = &part.file {
-            let mut out = BufWriter::new(file);
-            write(&mut out)?;
-            out.flush()?;
+    replace_by(path, write, Replacement::try_commit)
+}
+
+/// [`replace`], with what puts the finished file in place given.
+fn replace_by(
+    path: &Path,
+    write: impl FnOnce(&mut dyn Write) -> io::Result<()>,
+    put: impl FnOnce(Replacement) -> Result<(), (io::Error, Replacement)>,
+) -> AppResult<()> {
+    let failed = |e: io::Error| local_file(path, e);
+    let target = target(path).map_err(failed)?;
+    let replaced = replaced(path, &target)?;
+    sweep(folder_of(&target));
+    // Private from its first byte: the file may replace a key.
+    let unfinished = Replacement::new(&target)?;
+    if let Some(replaced) = &replaced {
+        unfinished.keep_mode_of(replaced).map_err(failed)?;
+    }
+    let mut out = BufWriter::new(unfinished.file());
+    write(&mut out).map_err(failed)?;
+    out.flush().map_err(failed)?;
+    drop(out);
+    if replaced.is_none() {
+        unfinished.take_default_mode().map_err(failed)?;
+    }
+    match put(unfinished) {
+        Ok(()) => {}
+        // A file that is a mount of its own (a single file bound into a
+        // container, a sandbox) can't be renamed over: it is written
+        // into, which is all a plain write ever did.
+        Err((e, unfinished)) if e.kind() == io::ErrorKind::ResourceBusy && replaced.is_some() => {
+            in_place(&unfinished, &target).map_err(failed)?;
         }
-        part.commit()
-    })();
-    written.map_err(|e| local_file(path, e))
+        Err((e, _)) => return Err(failed(e)),
+    }
+    // The rename itself is on disk once its folder is.
+    #[cfg(unix)]
+    let _ = File::open(folder_of(&target)).and_then(|folder| folder.sync_all());
+    Ok(())
 }
 
 /// How far a file being saved is: `done` of `total`, in whatever the

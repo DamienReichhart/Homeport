@@ -73,65 +73,176 @@ fn a_file_that_cannot_be_put_in_place_leaves_what_was_there() {
     assert_eq!(names(dir.path()), ["taken"]);
 }
 
+/// The unfinished files of `dir`, by path.
+fn parts(dir: &Path) -> Vec<PathBuf> {
+    names(dir)
+        .into_iter()
+        .filter(|name| name.starts_with(".homeport-") && name.ends_with(".part"))
+        .map(|name| dir.join(name))
+        .collect()
+}
+
 #[test]
-fn unfinished_files_of_two_writers_never_collide() {
-    /// More names than the tests beside this one take meanwhile, and
-    /// fewer than a writer tries.
-    const HELD: u64 = 48;
+fn files_left_unfinished_never_stand_in_the_way_and_old_ones_are_taken_away() {
     let dir = tempfile::tempdir().unwrap();
-    // Files left by an instance that was killed hold the next names.
-    let next = PARTS.load(Ordering::Relaxed);
-    let pid = std::process::id();
-    let held = |n: u64| dir.path().join(format!(".homeport-{pid}-{n}.part"));
-    for n in next..next + HELD {
-        fs::write(held(n), "theirs").unwrap();
+    // An instance that was killed left a hundred of them, just now.
+    for n in 0..100 {
+        fs::write(dir.path().join(format!(".homeport-{n:06}.part")), "theirs").unwrap();
+    }
+    // And one a week ago, beside files of the user's that look alike.
+    let week = std::time::SystemTime::now() - Duration::from_secs(7 * 24 * 60 * 60);
+    for old in [".homeport-killed.part", "notes.part", ".homeport-notes.txt"] {
+        let path = dir.path().join(old);
+        fs::write(&path, "old").unwrap();
+        let file = File::options().write(true).open(&path).unwrap();
+        file.set_modified(week).unwrap();
     }
     let path = dir.path().join("logs.txt");
-    let first = Part::create(&path).unwrap();
-    let second = Part::create(&path).unwrap();
-    assert_ne!(first.temp, second.temp);
-    for part in [&first, &second] {
-        assert!((next..next + HELD).all(|n| held(n) != part.temp));
-    }
-    drop((first, second));
-    // None was taken over, written to or removed.
+    replace(&path, |out| out.write_all(b"new")).unwrap();
+    assert_eq!(fs::read_to_string(&path).unwrap(), "new");
     let left = names(dir.path());
-    assert_eq!(left.len(), 48, "{left:?}");
-    for n in next..next + HELD {
-        assert_eq!(fs::read_to_string(held(n)).unwrap(), "theirs");
+    assert_eq!(
+        parts(dir.path()).len(),
+        100,
+        "what may still be written is left"
+    );
+    assert!(!left.contains(&".homeport-killed.part".to_owned()));
+    assert!(left.contains(&"notes.part".to_owned()));
+    assert!(left.contains(&".homeport-notes.txt".to_owned()));
+    for part in parts(dir.path()) {
+        assert_eq!(fs::read_to_string(part).unwrap(), "theirs");
     }
 }
 
 #[cfg(unix)]
 #[test]
-fn a_replaced_file_keeps_its_permissions_and_a_link_its_target() {
+fn the_unfinished_file_is_never_more_readable_than_the_file_it_becomes() {
     use std::os::unix::fs::PermissionsExt;
-
+    let mode = |path: &Path| fs::metadata(path).unwrap().permissions().mode() & 0o777;
     let dir = tempfile::tempdir().unwrap();
-    let path = dir.path().join("key.pem");
-    fs::write(&path, "old").unwrap();
-    fs::set_permissions(&path, fs::Permissions::from_mode(0o600)).unwrap();
-    replace(&path, |out| out.write_all(b"new")).unwrap();
-    assert_eq!(
-        fs::metadata(&path).unwrap().permissions().mode() & 0o777,
-        0o600
-    );
+    // The one unfinished file of the folder, seen from inside the write.
+    let unfinished = |dir: &Path| {
+        let parts = parts(dir);
+        assert_eq!(parts.len(), 1, "{parts:?}");
+        mode(&parts[0])
+    };
 
-    // A new file gets what any new file gets, not a private mode.
-    let fresh = dir.path().join("fresh.txt");
+    // A private file is replaced by a file that was private all along.
+    let key = dir.path().join("key.pem");
+    fs::write(&key, "old").unwrap();
+    fs::set_permissions(&key, fs::Permissions::from_mode(0o600)).unwrap();
+    replace(&key, |out| {
+        out.write_all(b"new secret")?;
+        assert_eq!(unfinished(dir.path()), 0o600);
+        Ok(())
+    })
+    .unwrap();
+    assert_eq!(mode(&key), 0o600);
+
+    // A new file is private while it is written, then what any new file is.
     let plain = dir.path().join("plain.txt");
-    replace(&fresh, |out| out.write_all(b"new")).unwrap();
-    fs::write(&plain, "new").unwrap();
+    fs::write(&plain, "").unwrap();
+    let fresh = dir.path().join("fresh.txt");
+    replace(&fresh, |out| {
+        out.write_all(b"logs")?;
+        assert_eq!(unfinished(dir.path()), 0o600);
+        Ok(())
+    })
+    .unwrap();
+    assert_eq!(mode(&fresh), mode(&plain));
+
+    // A file others may read keeps being one, and a read-only one is
+    // replaced and stays read-only.
+    fs::set_permissions(&plain, fs::Permissions::from_mode(0o444)).unwrap();
+    replace(&plain, |out| {
+        out.write_all(b"again")?;
+        assert_eq!(unfinished(dir.path()), 0o444);
+        Ok(())
+    })
+    .unwrap();
+    assert_eq!(mode(&plain), 0o444);
+    assert_eq!(fs::read_to_string(&plain).unwrap(), "again");
+}
+
+#[cfg(unix)]
+#[test]
+fn a_link_is_written_through_whatever_it_leads_to() {
+    use std::os::unix::fs::symlink;
+    let dir = tempfile::tempdir().unwrap();
+    let real = dir.path().join("real.txt");
+    fs::write(&real, "old").unwrap();
+
+    // A link to a link to the file, the second one relative.
+    let near = dir.path().join("near");
+    symlink("real.txt", &near).unwrap();
+    let far = dir.path().join("far");
+    symlink(&near, &far).unwrap();
+    replace(&far, |out| out.write_all(b"through")).unwrap();
+    assert!(
+        far.is_symlink() && near.is_symlink(),
+        "the links are still links"
+    );
+    assert_eq!(fs::read_to_string(&real).unwrap(), "through");
+
+    // A link to a file that isn't there yet makes it, as a plain write does.
+    let dangling = dir.path().join("dangling");
+    symlink(dir.path().join("made.txt"), &dangling).unwrap();
+    replace(&dangling, |out| out.write_all(b"made")).unwrap();
+    assert!(dangling.is_symlink());
     assert_eq!(
-        fs::metadata(&fresh).unwrap().permissions().mode(),
-        fs::metadata(&plain).unwrap().permissions().mode()
+        fs::read_to_string(dir.path().join("made.txt")).unwrap(),
+        "made"
     );
 
-    let link = dir.path().join("link.pem");
-    std::os::unix::fs::symlink(&path, &link).unwrap();
-    replace(&link, |out| out.write_all(b"through")).unwrap();
-    assert!(link.is_symlink(), "the link is still a link");
-    assert_eq!(fs::read_to_string(&path).unwrap(), "through");
+    // Links that lead back to themselves are refused, and stay.
+    let (a, b) = (dir.path().join("a"), dir.path().join("b"));
+    symlink(&b, &a).unwrap();
+    symlink(&a, &b).unwrap();
+    replace(&a, |out| out.write_all(b"never")).unwrap_err();
+    assert!(a.is_symlink() && b.is_symlink());
+    assert!(parts(dir.path()).is_empty());
+}
+
+#[cfg(unix)]
+#[test]
+fn what_is_no_file_is_never_replaced_by_one() {
+    let dir = tempfile::tempdir().unwrap();
+    let pipe = dir.path().join("pipe");
+    let made = std::process::Command::new("mkfifo").arg(&pipe).status();
+    assert!(made.is_ok_and(|status| status.success()), "mkfifo");
+    let refused = replace(&pipe, |out| out.write_all(b"never")).unwrap_err();
+    assert_eq!(refused.key, "errors.file.notRegular");
+    assert!(fs::symlink_metadata(&pipe).is_ok_and(|found| !found.is_file()));
+    let device = replace(Path::new("/dev/null"), |out| out.write_all(b"never")).unwrap_err();
+    assert_eq!(device.message, "/dev/null isn't a regular file.");
+    assert!(parts(dir.path()).is_empty());
+}
+
+#[test]
+fn a_file_that_cannot_be_renamed_over_is_written_into() {
+    type Refused = Result<(), (io::Error, Replacement)>;
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("mounted.txt");
+    fs::write(&path, "a much longer text than the new one").unwrap();
+    // A file bound alone into a container answers a rename with "busy".
+    let busy = |unfinished: Replacement| -> Refused {
+        Err((io::ErrorKind::ResourceBusy.into(), unfinished))
+    };
+    replace_by(&path, |out| out.write_all(b"new"), busy).unwrap();
+    assert_eq!(fs::read_to_string(&path).unwrap(), "new");
+    assert_eq!(names(dir.path()), ["mounted.txt"]);
+
+    // Any other refusal is a failure that leaves the file alone, and a
+    // file that isn't there yet is not made by other means.
+    let denied = |unfinished: Replacement| -> Refused {
+        Err((io::ErrorKind::PermissionDenied.into(), unfinished))
+    };
+    let failed = replace_by(&path, |out| out.write_all(b"never"), denied).unwrap_err();
+    assert_eq!(failed.code, ErrorCode::PermissionDenied);
+    let fresh = dir.path().join("fresh.txt");
+    replace_by(&fresh, |out| out.write_all(b"never"), busy).unwrap_err();
+    assert_eq!(fs::read_to_string(&path).unwrap(), "new");
+    assert_eq!(names(dir.path()), ["mounted.txt"]);
 }
 
 #[test]
