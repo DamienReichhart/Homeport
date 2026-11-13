@@ -139,6 +139,7 @@ impl Bench {
                 Effect::Back => Asked::Back,
                 Effect::Select(selection) => Asked::Select(selection),
                 Effect::Watch(key, _) => Asked::Watch(key),
+                Effect::Unwatch(key) => Asked::Unwatch(key),
                 Effect::Invalidate(key) => Asked::Invalidate(key),
                 Effect::Failed(title, surfaced) => {
                     Asked::Failed(title.map(|title| title.now()), surfaced.error)
@@ -195,6 +196,19 @@ impl Bench {
         }
     }
 
+    /// The keys the page let go of since the last call, the other
+    /// effects being let go of too.
+    pub fn unwatched(&self) -> Vec<Key> {
+        self.effects
+            .take()
+            .into_iter()
+            .filter_map(|effect| match effect {
+                Effect::Unwatch(key) => Some(key),
+                _ => None,
+            })
+            .collect()
+    }
+
     /// The keys the page asked to watch since the last call.
     pub fn watched(&self) -> Vec<Key> {
         self.effects
@@ -217,6 +231,7 @@ impl Bench {
                 Effect::Back => "back",
                 Effect::Select(_) => "select",
                 Effect::Watch(..) => "watch",
+                Effect::Unwatch(_) => "unwatch",
                 Effect::Invalidate(_) => "invalidate",
                 Effect::Failed(..) => "failed",
                 Effect::Details(_) => "details",
@@ -239,6 +254,7 @@ pub enum Asked {
     Back,
     Select(Selection),
     Watch(Key),
+    Unwatch(Key),
     Invalidate(Key),
     /// A failure's toast: its title, if it names what failed, and why.
     Failed(Option<String>, AppError),

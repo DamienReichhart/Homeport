@@ -47,8 +47,25 @@ fn engine(host_id: &str, kind: &str, time_nano: i64) -> Event {
 }
 
 #[test]
+fn a_command_run_in_a_container_makes_nothing_out_of_date() {
+    // As the Engine names them: `exec_start: sh -c find …`.
+    for action in [
+        "exec_create: find / -mindepth 1",
+        "exec_start: find / -mindepth 1",
+        "exec_die",
+        "exec_detach",
+    ] {
+        assert!(stale_keys("h1", "container", action).is_empty(), "{action}");
+    }
+    // A healthcheck's result is a status the lists show.
+    assert!(
+        stale_keys("h1", "container", "health_status: unhealthy").contains(&host::containers("h1"))
+    );
+}
+
+#[test]
 fn a_container_event_makes_what_containers_change_out_of_date() {
-    let stale = stale_keys("h1", "container");
+    let stale = stale_keys("h1", "container", "start");
     for key in [
         host::containers("h1"),
         host::stacks("h1"),
@@ -69,7 +86,7 @@ fn a_container_event_makes_what_containers_change_out_of_date() {
 #[test]
 fn each_kind_of_event_names_its_lists() {
     assert_eq!(
-        stale_keys("h1", "volume"),
+        stale_keys("h1", "volume", "start"),
         [
             host::volumes("h1"),
             host::volume_sizes("h1"),
@@ -77,25 +94,28 @@ fn each_kind_of_event_names_its_lists() {
         ]
     );
     assert_eq!(
-        stale_keys("h1", "network"),
+        stale_keys("h1", "network", "start"),
         [
             host::networks("h1"),
             host::incus("h1", IncusResource::Networks, None)
         ]
     );
-    assert!(stale_keys("h1", "image").contains(&host::images("h1")));
-    assert_eq!(stale_keys("h1", "pod"), [host::pods("h1")]);
+    assert!(stale_keys("h1", "image", "start").contains(&host::images("h1")));
+    assert_eq!(stale_keys("h1", "pod", "start"), [host::pods("h1")]);
     assert_eq!(
-        stale_keys("h1", "task"),
+        stale_keys("h1", "task", "start"),
         [host::containerd_containers("h1", None)]
     );
     assert_eq!(
-        stale_keys("h1", "storage-volume"),
+        stale_keys("h1", "storage-volume", "start"),
         [host::incus("h1", IncusResource::Storage, None)]
     );
-    assert_eq!(stale_keys("h1", "instance").len(), 5);
-    assert_eq!(stale_keys("h1", "project"), [host::incus_projects("h1")]);
-    assert!(stale_keys("h1", "daemon").is_empty());
+    assert_eq!(stale_keys("h1", "instance", "start").len(), 5);
+    assert_eq!(
+        stale_keys("h1", "project", "start"),
+        [host::incus_projects("h1")]
+    );
+    assert!(stale_keys("h1", "daemon", "start").is_empty());
 }
 
 #[test]
@@ -144,6 +164,24 @@ fn an_event_is_appended_once_and_the_page_stays_a_page() {
     assert_eq!(page.len(), 1000);
     assert_eq!(page[0].time_nano, 1);
     assert_eq!(page[999], latest);
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_command_run_in_a_container_reads_nothing_again() {
+    let (state, _app) = state();
+    let mut data = Data::default();
+    let exec = Event::Engine {
+        host_id: "h1".to_owned(),
+        event: Arc::new(engine_event("container", "exec_die", 1)),
+    };
+    // Nothing waits to be read again: no flush is planned.
+    assert!(crate::test_support::tasks::is_none(
+        data.on_event(&state, &exec)
+    ));
+    let start = engine("h1", "container", 2);
+    assert!(!crate::test_support::tasks::is_none(
+        data.on_event(&state, &start)
+    ));
 }
 
 #[tokio::test(start_paused = true)]

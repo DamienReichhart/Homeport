@@ -180,10 +180,32 @@ impl State {
     }
 
     /// Asks the shell to read `query` and keep it fresh while the page
-    /// shows, once.
-    pub(super) fn watch<T: Send + Sync + 'static>(&mut self, query: Query<T>, ctx: &Context<'_>) {
+    /// shows it, once, and counts it among what is `wanted` now.
+    pub(super) fn watch<T: Send + Sync + 'static>(
+        &mut self,
+        query: Query<T>,
+        wanted: &mut HashSet<Key>,
+        ctx: &Context<'_>,
+    ) {
+        wanted.insert(query.key().clone());
         if self.watched.insert(query.key().clone()) {
             ctx.watch(query);
+        }
+    }
+
+    /// Lets go of what the page watched and no longer shows: a tab that
+    /// was left, a folder it moved on from, the document of a state the
+    /// container is no longer in.
+    pub(super) fn unwatch_all_but(&mut self, wanted: &HashSet<Key>, ctx: &Context<'_>) {
+        let gone: Vec<Key> = self
+            .watched
+            .iter()
+            .filter(|key| !wanted.contains(*key))
+            .cloned()
+            .collect();
+        for key in gone {
+            self.watched.remove(&key);
+            ctx.unwatch(key);
         }
     }
 

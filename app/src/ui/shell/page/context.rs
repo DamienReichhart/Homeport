@@ -46,6 +46,8 @@ pub(in crate::ui::shell) enum Effect {
     Select(Selection),
     /// Read a resource, and keep it fresh while the page shows.
     Watch(Key, Start),
+    /// The page no longer shows what is filed under this key.
+    Unwatch(Key),
     /// Everything under a key is out of date.
     Invalidate(Key),
     /// A failure, said in passing, under what failed when it has a name.
@@ -184,6 +186,17 @@ impl<'a> Context<'a> {
             key,
             Box::new(move |data, state| data.watch(state, &query)),
         ));
+    }
+
+    /// Lets go of what the page watched under `key` and no longer shows:
+    /// a tab that was left, a folder the page moved on from. It is no
+    /// longer kept fresh (an event or a poll reads it no more), what is
+    /// read is aborted, and what was read stays cached for a while, so
+    /// coming back shows it at once. What the page still shows when it
+    /// closes is let go of by the shell: a page calls this only for a
+    /// part of itself.
+    pub fn unwatch(&self, key: Key) {
+        self.effects.push(Effect::Unwatch(key));
     }
 
     /// Everything under `scope` is read again: what an action changed.

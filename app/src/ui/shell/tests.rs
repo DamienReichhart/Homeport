@@ -125,6 +125,10 @@ impl Pages for Blank {
                     .save_file(SaveFile::new("Save logs", "logs.txt")),
             ),
             "put" => ctx.put(keys::host::freshness("h1"), vec![7_u8]),
+            "watch-images" => ctx.watch(resources::images("h1")),
+            "unwatch-images" => ctx.unwatch(keys::host::images("h1")),
+            // Not this page's: nothing is let go of.
+            "unwatch-other" => ctx.unwatch(keys::host::volumes("h1")),
             "tab" => ctx.keep_route(Route::Container {
                 id: "c1".to_owned(),
                 tab: Some("stats".to_owned()),
@@ -1156,6 +1160,32 @@ fn what_a_page_keeps_in_its_location_is_there_when_the_window_comes_back() {
     assert_eq!(location.query.as_deref(), Some("api"));
     assert_eq!(location.params_of("host").collect::<Vec<_>>(), ["h1"]);
     assert_eq!(location.param("state"), None);
+}
+
+#[test]
+fn a_page_lets_go_of_what_a_part_of_it_no_longer_shows() {
+    let mut rig = docker_and_prod();
+    rig.go(Route::Containers);
+    let idle = rig.data.in_flight();
+    rig.send(Message::Go(
+        Request::to(Route::Containers).starting("watch-images"),
+    ));
+    let images = keys::host::images("h1");
+    assert!(open_page(&rig).watched.contains(&images));
+    assert_eq!(rig.data.in_flight(), idle + 1);
+    rig.send(Message::Go(
+        Request::to(Route::Containers).starting("unwatch-other"),
+    ));
+    assert!(open_page(&rig).watched.contains(&images));
+    rig.send(Message::Go(
+        Request::to(Route::Containers).starting("unwatch-images"),
+    ));
+    assert!(!open_page(&rig).watched.contains(&images));
+    // Its read is aborted: nobody waits for it.
+    assert_eq!(rig.data.in_flight(), idle);
+    assert!(open_page(&rig)
+        .watched
+        .contains(&keys::host::containers("h1")));
 }
 
 #[test]

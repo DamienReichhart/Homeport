@@ -182,3 +182,22 @@ fn the_files_tab_drawn() {
         || rig.view(),
     );
 }
+
+#[test]
+fn a_folder_left_and_a_tab_left_are_no_longer_kept_fresh() {
+    let mut rig = listed();
+    let _ = rig.bench.took();
+    rig.send(browse(file_browser::Message::Navigate("/etc".to_owned())));
+    let asked = rig.bench.took();
+    assert!(asked.contains(&Asked::Watch(key("/etc"))), "{asked:?}");
+    assert!(asked.contains(&Asked::Unwatch(key("/"))), "{asked:?}");
+    // Another tab: the folder is let go of; the list of the Host is not
+    // the tab's and stays.
+    rig.send(Message::Tab(Tab::Logs));
+    let asked = rig.bench.took();
+    assert!(asked.contains(&Asked::Unwatch(key("/etc"))), "{asked:?}");
+    assert!(!asked.contains(&Asked::Unwatch(keys::host::containers("h1"))));
+    // Coming back reads the folder that showed again.
+    rig.send(Message::Tab(Tab::Files));
+    assert!(rig.bench.took().contains(&Asked::Watch(key("/etc"))));
+}

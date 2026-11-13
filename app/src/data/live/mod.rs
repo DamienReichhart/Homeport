@@ -44,8 +44,10 @@ impl Data {
                 self.change(&host::events(host_id), |list: &Vec<EngineEvent>| {
                     append_event(list, event)
                 });
-                let mut stale = stale_keys(host_id, &event.kind);
-                if let Some(swarm_id) = managed_swarm(&state.hosts.registry.status(host_id)) {
+                let mut stale = stale_keys(host_id, &event.kind, &event.action);
+                let exec = is_exec(&event.kind, &event.action);
+                let swarm = managed_swarm(&state.hosts.registry.status(host_id));
+                if let Some(swarm_id) = swarm.filter(|_| !exec) {
                     stale.extend(stale_swarm_keys(&swarm_id, &event.kind));
                 }
                 self.invalidate_later(stale)
@@ -231,12 +233,27 @@ pub fn append_event(list: &[EngineEvent], event: &EngineEvent) -> Option<Vec<Eng
     Some(appended)
 }
 
-/// Which cached lists an Engine event of `kind` makes out of date.
+/// Whether an Engine event is about a command run in a container.
+fn is_exec(kind: &str, action: &str) -> bool {
+    kind == "container" && action.starts_with("exec_")
+}
+
+/// Which cached lists an Engine event of `kind` and `action` makes out of
+/// date.
+///
+/// A command run in a container (`exec_create`, `exec_start`, `exec_die`,
+/// `exec_detach`: a healthcheck's, a terminal's, the `find` that lists a
+/// folder) changes none of them, and makes none out of date: it would
+/// read the lists again on every check, and a folder's listing, which is
+/// such a command, again and again.
 /// containerd's events (`task`, `snapshot`, `namespace`, `content`, and its
 /// own `container` and `image`) refresh its pages in every namespace, and
 /// Incus's lifecycle events (named after the object: `instance`, `image`,
 /// `profile`…) its pages in every project.
-pub fn stale_keys(host_id: &str, kind: &str) -> Vec<Key> {
+pub fn stale_keys(host_id: &str, kind: &str, action: &str) -> Vec<Key> {
+    if is_exec(kind, action) {
+        return vec![];
+    }
     let incus = |resource| host::incus(host_id, resource, None);
     match kind {
         "instance" | "instance-snapshot" | "instance-backup" => vec![

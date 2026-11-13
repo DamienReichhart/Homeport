@@ -1,5 +1,7 @@
 //! What a message changes on a container's page.
 
+use std::collections::HashSet;
+
 use iced::Task;
 
 use super::{
@@ -9,7 +11,7 @@ use super::{
     view, Message, State,
 };
 use crate::{
-    data::{keys, resources},
+    data::{keys, resources, Key},
     ui::{
         domain::containers::actions,
         shell::{router::Route, Context},
@@ -39,6 +41,16 @@ pub fn open(ctx: &Context<'_>) -> (State, Task<Message>) {
 /// first shows, and is another one when what it depends on changes (the
 /// container's state for its inspect document).
 fn needs(state: &mut State, ctx: &Context<'_>) -> Task<Message> {
+    let mut wanted = HashSet::new();
+    let task = reads(state, &mut wanted, ctx);
+    // What another tab, another folder or another state read is not
+    // kept fresh any more: an Engine event no longer reads it again.
+    state.unwatch_all_but(&wanted, ctx);
+    task
+}
+
+/// What the tab that shows reads, watched and counted in `wanted`.
+fn reads(state: &mut State, wanted: &mut HashSet<Key>, ctx: &Context<'_>) -> Task<Message> {
     let Some(container) = state.container(ctx) else {
         return Task::none();
     };
@@ -47,6 +59,7 @@ fn needs(state: &mut State, ctx: &Context<'_>) -> Task<Message> {
         Tab::Inspect => {
             state.watch(
                 queries::inspect(&host, &container.id, &container.state),
+                wanted,
                 ctx,
             );
             let read = state.inspected(&container, ctx);
@@ -55,20 +68,20 @@ fn needs(state: &mut State, ctx: &Context<'_>) -> Task<Message> {
         // `enabled: running`: a stopped container's processes are not
         // asked for.
         Tab::Processes if container.state == "running" => {
-            state.watch(queries::processes(&host, &container.id), ctx);
+            state.watch(queries::processes(&host, &container.id), wanted, ctx);
             let read = state.processes_read(&container, ctx);
             state.processes.take(read.data());
             Task::none()
         }
         Tab::Health => {
             let status = container.health.as_deref();
-            state.watch(queries::health(&host, &container.id, status), ctx);
+            state.watch(queries::health(&host, &container.id, status), wanted, ctx);
             Task::none()
         }
         // `enabled: running`.
         Tab::Files if container.state == "running" => {
             let path = state.files.path.clone();
-            state.watch(queries::files(&host, &container.id, &path), ctx);
+            state.watch(queries::files(&host, &container.id, &path), wanted, ctx);
             let read = state.files_read(&container, ctx);
             state.files.take(&read);
             Task::none()

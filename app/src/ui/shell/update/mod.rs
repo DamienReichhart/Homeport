@@ -1,6 +1,7 @@
 //! What a message changes in the shell, and how the shell keeps in step
 //! with the data layer: the selection, the gate and the page that shows.
 
+mod effects;
 mod gate;
 
 use iced::Task;
@@ -9,10 +10,7 @@ use homeport_clusters::model::ClusterKind;
 
 use super::{
     gates::{self, Verdict},
-    page::{
-        context::{Effect, Start},
-        Context, Pages,
-    },
+    page::{context::Start, Context, Pages},
     palette::{self, items::Act},
     pickers::{self, Picked},
     registry::{self, Capability, Run, Scope},
@@ -352,71 +350,6 @@ impl<P: Pages> Shell<P> {
             Some(Picked::Go(route)) => self.go(route.into(), data),
             None => Task::none(),
         }
-    }
-
-    /// Does what the page asked for during its last call.
-    fn run_effects(&mut self, data: &mut Data) -> Task<Message<P::Message>> {
-        let mut tasks = vec![];
-        for effect in self.effects.take() {
-            tasks.push(match effect {
-                Effect::Open(request) => self.go(request, data),
-                Effect::Back => {
-                    self.history.back();
-                    Task::none()
-                }
-                Effect::Select(selection) => self.select(selection),
-                Effect::Watch(key, start) => {
-                    let Some(open) = &mut self.page else {
-                        continue;
-                    };
-                    if open.watched.contains(&key) {
-                        continue;
-                    }
-                    open.watched.push(key);
-                    start(data, &self.state).map(Message::Data)
-                }
-                Effect::Invalidate(scope) => {
-                    data.invalidate(&self.state, &scope).map(Message::Data)
-                }
-                Effect::Failed(title, surfaced) => {
-                    self.events.push(Event::Failed(title, surfaced));
-                    Task::none()
-                }
-                Effect::Said(kind, said) => {
-                    self.events.push(Event::Said(kind, said));
-                    Task::none()
-                }
-                Effect::OpenUrl(url) => {
-                    self.events.push(Event::OpenUrl(url));
-                    Task::none()
-                }
-                Effect::Put(_, put) => {
-                    put(data);
-                    Task::none()
-                }
-                Effect::Keep { query, params } => {
-                    self.history.amend(query, params);
-                    Task::none()
-                }
-                Effect::KeepRoute(route) => {
-                    // Another feature's route would be another page.
-                    if route.feature() == self.location().route.feature() {
-                        self.history.retarget(route);
-                    }
-                    Task::none()
-                }
-                Effect::Details(surfaced) => {
-                    self.events.push(Event::Details(surfaced));
-                    Task::none()
-                }
-                Effect::Copy(text) => {
-                    self.events.push(Event::Copy(text));
-                    Task::none()
-                }
-                Effect::Picker(message) => self.pick(message, data),
-            });
-        }
-        Task::batch(tasks)
     }
 
     /// What the shell itself reads, given what is selected and where the

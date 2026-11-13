@@ -34,7 +34,7 @@ fn read() -> Rig {
 }
 
 #[test]
-fn the_document_is_read_when_its_tab_shows_and_once() {
+fn the_document_is_read_when_its_tab_shows_and_let_go_of_when_it_is_left() {
     let mut bench = Bench::on_host(Route::Containers, connected_host());
     bench.data.set(&keys::host::containers("h1"), sample());
     bench.history.push(route(WEB, Some("logs")).into());
@@ -44,9 +44,13 @@ fn the_document_is_read_when_its_tab_shows_and_once() {
     assert_eq!(bench.watched(), [key("running")]);
     // Looking again asks for nothing more.
     let _ = refresh(&mut state, &bench.ctx());
-    let _ = update(&mut state, Message::Tab(Tab::Logs), &bench.ctx());
-    let _ = update(&mut state, Message::Tab(Tab::Inspect), &bench.ctx());
     assert!(bench.watched().is_empty());
+    // Left, it is let go of; back, it is watched again, once.
+    let _ = update(&mut state, Message::Tab(Tab::Logs), &bench.ctx());
+    assert_eq!(bench.unwatched(), [key("running")]);
+    let _ = update(&mut state, Message::Tab(Tab::Inspect), &bench.ctx());
+    let _ = refresh(&mut state, &bench.ctx());
+    assert_eq!(bench.watched(), [key("running")]);
 }
 
 #[test]
@@ -257,4 +261,16 @@ fn a_container_with_nothing_to_list_and_a_narrow_window_drawn() {
         narrow,
         || rig.view(),
     );
+}
+
+#[test]
+fn the_document_of_a_state_the_container_left_is_let_go_of() {
+    let mut rig = read();
+    let _ = rig.bench.took();
+    let mut stopped = sample();
+    "exited".clone_into(&mut stopped[0].state);
+    rig.list(stopped);
+    let asked = rig.bench.took();
+    assert!(asked.contains(&Asked::Unwatch(key("running"))), "{asked:?}");
+    assert!(asked.contains(&Asked::Watch(key("exited"))), "{asked:?}");
 }
