@@ -8,6 +8,7 @@
 //! - [`basic`]: buttons, badges, cards, separators, progress, scroll areas;
 //! - [`form`]: fields and the controls that go in them;
 //! - [`feedback`]: failures, toasts, confirmations, loading and empty states;
+//! - [`chart`]: lines of live values over a time axis that moves with them;
 //! - [`table`]: the data table, which builds only the rows in view;
 //! - [`log`]: the log viewer, which lays out only the lines in view.
 //!
@@ -16,6 +17,7 @@
 //! page mirrors in Arabic without knowing it.
 
 pub mod basic;
+pub mod chart;
 pub mod feedback;
 pub mod focus;
 pub mod form;

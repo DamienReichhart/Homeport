@@ -7,6 +7,7 @@
 //! as everywhere. It also shows how a page wires the kit: the state each
 //! widget asks for, its messages, and Tab.
 
+pub mod chart;
 mod controls;
 mod feedback;
 pub mod log;
@@ -68,6 +69,7 @@ pub enum Page {
     Controls,
     Table,
     Log,
+    Chart,
 }
 
 pub struct Gallery {
@@ -101,6 +103,7 @@ pub struct Gallery {
     pub log_streaming: bool,
     /// How many lines the gallery's stream has written.
     pub log_written: usize,
+    pub charts: chart::Charts,
 }
 
 #[derive(Debug, Clone)]
@@ -139,6 +142,7 @@ pub enum Message {
     Log(log_widget::Message),
     LogFill(log::Fill),
     LogTick,
+    Chart(chart::Event),
     Nothing,
 }
 
@@ -184,6 +188,7 @@ impl Default for Gallery {
             log: log::filled(log::CAP, log::sample()),
             log_streaming: false,
             log_written: 0,
+            charts: chart::Charts::default(),
         }
     }
 }
@@ -353,6 +358,7 @@ impl Gallery {
             Message::Log(message) => return self.log_message(message),
             Message::LogFill(fill) => return self.log_fill(fill),
             Message::LogTick => return self.log_tick(),
+            Message::Chart(event) => self.charts.update(event),
             Message::Nothing => {}
         }
         Task::none()
@@ -365,6 +371,7 @@ impl Gallery {
             Page::Controls => self.controls(),
             Page::Table => self.tables(),
             Page::Log => self.logs(),
+            Page::Chart => self.charts(),
         };
         let page =
             stack(vec![self.switches(), rule::horizontal(1).into(), body]).spacing(space::S6);
@@ -392,6 +399,7 @@ impl Gallery {
             tab,
             self.toasts.subscription().map(Message::Toast),
             self.log_subscription(),
+            self.chart_subscription(),
         ])
     }
 
@@ -428,6 +436,11 @@ impl Gallery {
                 self.page == Page::Table,
             ),
             choice("Log", Message::Page(Page::Log), self.page == Page::Log),
+            choice(
+                "Chart",
+                Message::Page(Page::Chart),
+                self.page == Page::Chart,
+            ),
             choice("Light", Message::Theme(Theme::Light), !self.theme.is_dark()),
             choice("Dark", Message::Theme(Theme::Dark), self.theme.is_dark()),
             choice("English", Message::Language("en"), !rtl),

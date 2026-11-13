@@ -20,6 +20,8 @@ export default {
   'ui.files.downloadOne': 'Download {name}',
   'ui.files.empty': 'This folder is empty.',
   'ui.chart.time': 'Time',
+  'ui.chart.hide': 'Hide {name}',
+  'ui.chart.show': 'Show {name}',
   'ui.errorDetails.title': 'Error details',
   'ui.errorDetails.code': 'Code',
   'ui.errorDetails.command': 'Command',

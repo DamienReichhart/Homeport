@@ -24,6 +24,8 @@ export default {
   'ui.files.downloadOne': 'Скачать {name}',
   'ui.files.empty': 'Эта папка пуста.',
   'ui.chart.time': 'Время',
+  'ui.chart.hide': 'Скрыть {name}',
+  'ui.chart.show': 'Показать {name}',
   'ui.errorDetails.title': 'Подробности ошибки',
   'ui.errorDetails.code': 'Код',
   'ui.errorDetails.command': 'Команда',

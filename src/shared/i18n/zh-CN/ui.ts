@@ -23,6 +23,8 @@ export default {
   'ui.files.downloadOne': '下载 {name}',
   'ui.files.empty': '此文件夹为空。',
   'ui.chart.time': '时间',
+  'ui.chart.hide': '隐藏 {name}',
+  'ui.chart.show': '显示 {name}',
   'ui.errorDetails.title': '错误详细信息',
   'ui.errorDetails.code': '代码',
   'ui.errorDetails.command': '命令',

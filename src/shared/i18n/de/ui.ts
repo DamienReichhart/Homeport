@@ -23,6 +23,8 @@ export default {
   'ui.files.downloadOne': '{name} herunterladen',
   'ui.files.empty': 'Dieser Ordner ist leer.',
   'ui.chart.time': 'Zeit',
+  'ui.chart.hide': '{name} ausblenden',
+  'ui.chart.show': '{name} einblenden',
   'ui.errorDetails.title': 'Fehlerdetails',
   'ui.errorDetails.code': 'Code',
   'ui.errorDetails.command': 'Befehl',

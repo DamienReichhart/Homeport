@@ -23,6 +23,8 @@ export default {
   'ui.files.downloadOne': '{name} डाउनलोड करें',
   'ui.files.empty': 'यह फ़ोल्डर खाली है।',
   'ui.chart.time': 'समय',
+  'ui.chart.hide': '{name} छिपाएँ',
+  'ui.chart.show': '{name} दिखाएँ',
   'ui.errorDetails.title': 'त्रुटि का विवरण',
   'ui.errorDetails.code': 'कोड',
   'ui.errorDetails.command': 'कमांड',

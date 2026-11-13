@@ -51,6 +51,11 @@ pub struct Tokens {
     /// Charts stay neutral: a series is ink or grey (dashed), never a status
     /// colour. `chart[0]` is `--chart-1`.
     pub chart: [Color; 5],
+    /// The two hues a chart of many series adds to ink and grey: a blue
+    /// and an olive, the iced app's own (React's charts never had more
+    /// than three series). Neither is a status colour, and the four stay
+    /// apart without one of the three cones (`widgets/chart`).
+    pub series: [Color; 2],
     pub sidebar: Sidebar,
     pub terminal: Terminal,
     pub syntax: Syntax,
@@ -135,6 +140,7 @@ pub const LIGHT: Tokens = Tokens {
     scrim: hex_alpha(BLACK, 0.25),
     shadow: hex_alpha(BLACK, 0.1),
     chart: [INK, INK, INK, GREY, GREY],
+    series: [hex(0x1a_4f_8f), hex(0x6e_6a_00)],
     sidebar: Sidebar {
         background: hex(0xef_ef_ea),
         foreground: INK,
@@ -209,6 +215,7 @@ pub const DARK: Tokens = Tokens {
     scrim: hex_alpha(BLACK, 0.25),
     shadow: hex_alpha(BLACK, 0.1),
     chart: [PAPER, PAPER, PAPER, GREY, GREY],
+    series: [hex(0x7a_a7_e0), hex(0xb8_d4_6a)],
     sidebar: Sidebar {
         background: hex(0x0f_0f_0f),
         foreground: PAPER,
