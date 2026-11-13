@@ -80,7 +80,8 @@ fn a_counter_that_misses_a_reading_takes_no_rate_across_it() {
     samples.push(2.0, &[None, Some(2.0)]);
     samples.push(3.0, &[Some(400.0), Some(3.0)]);
     samples.push(4.0, &[Some(450.0), Some(4.0)]);
-    assert_eq!(values(&samples, 0), [None, None, None, Some(50.0)]);
+    // 300 bytes in the two seconds since the last reading.
+    assert_eq!(values(&samples, 0), [None, None, Some(150.0), Some(50.0)]);
     // The gauge beside it is untouched.
     assert_eq!(
         values(&samples, 1),
@@ -88,33 +89,24 @@ fn a_counter_that_misses_a_reading_takes_no_rate_across_it() {
     );
 }
 
+/// One sample that comes late, or is stamped zero, costs nothing of
+/// what is kept: React's `rates` left that one point out.
 #[test]
-fn a_clock_that_goes_back_drops_what_it_overtakes() {
+fn a_sample_that_does_not_move_time_forward_is_left_out() {
     let mut samples = Samples::new(1, 10);
     samples.set_kind(0, Kind::Counter);
-    for (time, count) in [(10.0, 100.0), (11.0, 200.0), (12.0, 300.0), (13.0, 400.0)] {
-        samples.push(time, &[Some(count)]);
+    for (time, count) in [(10.0, 100.0), (11.0, 200.0), (12.0, 300.0)] {
+        assert!(samples.push(time, &[Some(count)]));
     }
-    // The clock steps back a second and a half.
-    samples.push(11.5, &[Some(500.0)]);
-    assert_eq!(times(&samples), [10.0, 11.0, 11.5]);
-    // No rate across the step: 100 bytes in half a second would be a lie.
-    assert_eq!(values(&samples, 0), [None, Some(100.0), None]);
-    samples.push(12.5, &[Some(520.0)]);
-    assert_eq!(samples.value(0, 3), Some(20.0));
-    // Far back: nothing kept is before it.
-    samples.push(1.0, &[Some(600.0)]);
-    assert_eq!(times(&samples), [1.0]);
-}
-
-#[test]
-fn a_sample_at_the_newest_time_takes_its_place() {
-    let mut samples = Samples::new(1, 10);
-    samples.push(1.0, &[Some(1.0)]);
-    samples.push(2.0, &[Some(2.0)]);
-    samples.push(2.0, &[Some(9.0)]);
-    assert_eq!(times(&samples), [1.0, 2.0]);
-    assert_eq!(values(&samples, 0), [Some(1.0), Some(9.0)]);
+    for late in [0.0, 11.5, 12.0, -5.0] {
+        assert!(!samples.push(late, &[Some(999.0)]), "{late} was taken");
+    }
+    assert_eq!(times(&samples), [10.0, 11.0, 12.0]);
+    assert_eq!(values(&samples, 0), [None, Some(100.0), Some(100.0)]);
+    // The next sample in time takes its rate from the last one kept,
+    // not from what was left out.
+    samples.push(13.0, &[Some(350.0)]);
+    assert_eq!(samples.value(0, 3), Some(50.0));
 }
 
 #[test]

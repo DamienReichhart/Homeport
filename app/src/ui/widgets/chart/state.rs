@@ -94,8 +94,8 @@ impl State {
 
     /// Appends a sample: when it was taken, in seconds since 1970, and
     /// one value per series (`None`, `NaN` or an infinite value is a
-    /// gap). `samples.rs` says what becomes of a counter, of a clock
-    /// that went back and of a time that is no number.
+    /// gap). `samples.rs` says what becomes of a counter, of a sample
+    /// that comes late and of a time that is no number.
     pub fn push(&mut self, time: f64, values: &[Option<f64>]) {
         if !self.samples.push(time, values) {
             return;

@@ -8,13 +8,15 @@
 //! - a value that is missing, `NaN` or infinite is a **gap**: nothing is
 //!   drawn there, and the line stops before it and starts again after;
 //! - a **counter** (bytes received since the container started) is kept
-//!   as its rate between two samples; the first sample has none, and
-//!   neither has one after the counter went down (the container
-//!   restarted): a gap, never a negative rate;
-//! - a sample whose **time is not after** the newest one means the clock
-//!   went back: the samples at or after it are dropped (they are in the
-//!   new clock's future) and the counters start over, so time only ever
-//!   runs forward in what is kept;
+//!   as its rate since its last reading; the first reading has none,
+//!   and neither has one after the counter went down (the container
+//!   restarted): a gap, never a negative rate. A sample without a
+//!   reading is a gap, and the next rate is taken across it;
+//! - a sample whose **time is not after** the newest one is left out,
+//!   as React's `rates` left out a point that did not move time
+//!   forward: one late sample, or one stamped zero, costs nothing of
+//!   what is kept. A clock set back for good stops the chart until it
+//!   has caught up; a page that knows it was calls `State::reset`;
 //! - a sample whose time is not a number is left out.
 
 use std::collections::VecDeque;
@@ -124,11 +126,8 @@ impl Samples {
     /// series that has none there, or was given none, has a gap). Returns
     /// whether anything changed.
     pub fn push(&mut self, time: f64, values: &[Option<f64>]) -> bool {
-        if !time.is_finite() {
+        if !time.is_finite() || self.last_time().is_some_and(|newest| time <= newest) {
             return false;
-        }
-        if self.last_time().is_some_and(|newest| time <= newest) {
-            self.rewind(time);
         }
         if self.times.len() == self.cap {
             self.pop_front();
@@ -149,9 +148,11 @@ impl Samples {
                         }
                         _ => None,
                     };
-                    // A reading that is missing breaks the rate after it
-                    // too: there is nothing to take it from.
-                    self.last[series] = read.map(|now| (time, now));
+                    // A reading that is missing leaves the last one
+                    // standing: the next rate is taken from it.
+                    if let Some(now) = read {
+                        self.last[series] = Some((time, now));
+                    }
                     rate
                 }
             };
@@ -183,17 +184,5 @@ impl Samples {
         for ring in &mut self.values {
             ring.pop_front();
         }
-    }
-
-    /// The clock went back to `time`: what was sampled at or after it is
-    /// dropped, and no rate is taken across the step.
-    fn rewind(&mut self, time: f64) {
-        while self.last_time().is_some_and(|newest| newest >= time) {
-            self.times.pop_back();
-            for ring in &mut self.values {
-                ring.pop_back();
-            }
-        }
-        self.last.fill(None);
     }
 }
