@@ -428,3 +428,17 @@ async fn a_save_that_is_stopped_says_so_and_is_no_failure() {
     assert_eq!(hidden, Ok(Saved::Stopped));
     assert!(names(dir.path()).is_empty());
 }
+
+/// What replacing a file does not keep, said in
+/// `docs/agents/iced-migration.md`: its other names.
+#[test]
+fn another_name_of_a_replaced_file_keeps_what_it_held() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("logs.txt");
+    let other = dir.path().join("same-file.txt");
+    fs::write(&path, "old").unwrap();
+    fs::hard_link(&path, &other).unwrap();
+    replace(&path, |out| out.write_all(b"new")).unwrap();
+    assert_eq!(fs::read_to_string(&path).unwrap(), "new");
+    assert_eq!(fs::read_to_string(&other).unwrap(), "old");
+}
