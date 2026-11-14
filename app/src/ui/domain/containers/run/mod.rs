@@ -46,9 +46,18 @@
 //! - A port that is not a number from 1 to 65 535 is said under its row
 //!   and Run waits; React sent it, and Tauri refused the request (or, for
 //!   a host port, let the Engine pick one).
-//! - Closed while the Engine creates the container, the dialog is gone:
-//!   "Container started" is said and the list read again, but the window
-//!   stays where it is; React's callback still went to the logs.
+//! - The Containers page keeps its Run dialog when it closes, with what
+//!   was typed and its failure, and the next one starts afresh once a run
+//!   started, as React's stayed mounted. A run that fails while it is
+//!   closed (or after its page was left) is also said in a toast; React
+//!   said it only in the dialog, when opened again.
+//! - A port read back from a container keeps the Host address it is
+//!   published on (Edit, Duplicate); React dropped it, publishing the
+//!   copy on every address. No field shows it, as in React.
+//! - A capability left in its field is added when the form is sent or
+//!   the Security section left, as React's field added it on blur.
+//! - The dialog opens with focus on its first field as the language
+//!   reads (the image, on the right in Arabic).
 //! - The dialog scrolls inside the window with its buttons; React's
 //!   scrolled within 90 % of it.
 
