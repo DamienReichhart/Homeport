@@ -388,6 +388,36 @@ fn the_loss_confirmation_starts_on_cancel_whenever_the_losses_come() {
 }
 
 #[test]
+fn an_older_edit_s_losses_never_show_on_a_newer_confirmation() {
+    let _english = in_language("en");
+    let (bench, engine, web) = bench();
+    engine.inspects_as(document(true, false, false));
+    engine.changed_paths(2);
+    let runtime = bench.app.runtime.handle().clone();
+    let _inside = runtime.enter();
+    let submit = || Action::Forms(Message::Edit(edit::Message::Submit));
+    // The first Edit asks what is lost, and is closed before it hears.
+    let mut actions = Actions::of_host();
+    send(&mut actions, &bench, Action::AskEdit(web.clone()));
+    let first = bench.run(actions.update(submit(), &bench.ctx()));
+    edit(&mut actions, &bench, edit::Message::Close);
+    // A second one asks again; the first's answer comes now.
+    send(&mut actions, &bench, Action::AskEdit(web.clone()));
+    let second = actions.update(submit(), &bench.ctx());
+    for answer in first {
+        send(&mut actions, &bench, answer);
+    }
+    assert!(
+        !says_part(&actions, &bench, "changed inside the container"),
+        "the first Edit's answer"
+    );
+    for answer in bench.run(second) {
+        send(&mut actions, &bench, answer);
+    }
+    assert!(says_part(&actions, &bench, "changed inside the container"));
+}
+
+#[test]
 fn edit_says_which_login_a_pull_of_the_image_would_use() {
     let _english = in_language("en");
     let (mut bench, engine, web) = bench();

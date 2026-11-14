@@ -86,7 +86,6 @@ pub struct Edit {
     pending: bool,
     failure: Option<Surfaced>,
     confirming: Option<Confirming>,
-    number: u64,
     presence: Presence,
 }
 
@@ -122,7 +121,6 @@ impl Edit {
             pending: false,
             failure: None,
             confirming: None,
-            number: 0,
             presence: Presence::new(),
         }
     }
@@ -176,8 +174,8 @@ impl Edit {
 
     /// Reads what recreating the container loses.
     fn read_losses(&mut self, ctx: &Context<'_>) -> Task<Message> {
-        self.number += 1;
-        let number = self.number;
+        // Numbered across dialogs: a closed Edit's answer is never this one's.
+        let number = run::dialog::fresh();
         self.confirming = Some(Confirming {
             state: confirm::State::default(),
             number,
