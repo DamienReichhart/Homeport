@@ -71,6 +71,30 @@ fn a_notice_shows_even_while_a_synchronised_update_holds_the_screen() {
 }
 
 #[test]
+fn a_notice_after_output_that_waits_waits_behind_it_and_reads_none_of_it_at_once() {
+    let mut state = sized(30, 5);
+    // A program printed 3 MB and exited: most of it waits.
+    let lines: String = (0..400_000).map(|i| format!("{i:07}\r\n")).collect();
+    let _ = state.feed(&lines);
+    let waiting = state.unread();
+    assert!(waiting > 0);
+    state.notice("The process exited.");
+    assert_eq!(state.unread(), waiting, "nothing more is read at once");
+    assert!(state.is_behind(), "the notice waits too");
+    let mut frames = 0;
+    while state.is_behind() {
+        let _ = told(&mut state, Message::Read);
+        frames += 1;
+        assert!(frames <= 4, "a megabyte a frame");
+    }
+    let rows: Vec<String> = screen(&state)
+        .into_iter()
+        .filter(|row| !row.is_empty())
+        .collect();
+    assert_eq!(rows[rows.len() - 2..], ["0399999", "The process exited."]);
+}
+
+#[test]
 fn a_synchronised_update_that_never_ends_is_shown_once_its_time_is_up() {
     let mut state = sized(30, 5);
     let _ = state.feed("\x1b[?2026hhalf a frame");

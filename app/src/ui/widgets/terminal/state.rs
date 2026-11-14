@@ -12,12 +12,13 @@ use alacritty_terminal::{
     vte::ansi::{NamedColor, Rgb},
     Term,
 };
-use std::{collections::VecDeque, time::Instant};
+use std::time::Instant;
 
 use iced::{advanced::widget::Id, widget::operation, Task};
 
 pub use super::message::{Click, Event, Message, Scroll, Viewport};
 use super::{
+    backlog::Backlog,
     emulator::{Emulator, Listener, Size},
     search::{self, Search},
 };
@@ -74,9 +75,7 @@ pub struct State {
     blinking: bool,
     title: Option<String>,
     /// Output not read yet: past [`READ_AT_ONCE`] of a batch.
-    unread: VecDeque<u8>,
-    /// How many bytes of it were dropped past [`UNREAD_MAX`].
-    dropped: u64,
+    backlog: Backlog,
 }
 
 impl Default for State {
@@ -120,8 +119,7 @@ impl State {
             focused: false,
             blinking: true,
             title: None,
-            unread: VecDeque::new(),
-            dropped: 0,
+            backlog: Backlog::default(),
         }
     }
 
@@ -168,7 +166,7 @@ impl State {
     pub fn reset(&mut self) {
         self.emulator = Emulator::new(self.emulator.size(), self.scrollback);
         self.title = None;
-        self.unread.clear();
+        self.backlog.clear();
         self.search.refresh(&self.emulator.term);
     }
 
@@ -182,58 +180,27 @@ impl State {
     /// for the next frames ([`State::is_behind`]), and no more than
     /// [`UNREAD_MAX`] of it.
     pub fn feed_bytes(&mut self, output: &[u8]) -> Vec<Event> {
-        if self.unread.is_empty() && output.len() <= READ_AT_ONCE {
+        if self.backlog.is_empty() && output.len() <= READ_AT_ONCE {
             self.emulator.advance(output);
         } else {
-            self.unread.extend(output);
-            self.bound_unread();
-            self.read_unread();
+            self.backlog.push(output, &mut self.emulator);
         }
         self.search.output_came(&self.emulator.term);
         self.events()
     }
 
-    /// Drops the oldest unread output past [`UNREAD_MAX`], up to the start
-    /// of a line, so what is read next starts where a line does.
-    fn bound_unread(&mut self) {
-        let Some(over) = self.unread.len().checked_sub(UNREAD_MAX) else {
-            return;
-        };
-        let line = self
-            .unread
-            .range(over..)
-            .position(|byte| *byte == b'\n')
-            .map_or(over, |at| over + at + 1);
-        self.unread.drain(..line);
-        self.dropped += line as u64;
-    }
-
-    fn read_unread(&mut self) {
-        let take = self.unread.len().min(READ_AT_ONCE);
-        let (front, back) = self.unread.as_slices();
-        if front.len() >= take {
-            self.emulator.advance(&front[..take]);
-        } else {
-            let mut part = Vec::with_capacity(take);
-            part.extend_from_slice(front);
-            part.extend_from_slice(&back[..take - front.len()]);
-            self.emulator.advance(&part);
-        }
-        self.unread.drain(..take);
-    }
-
     /// Whether output came faster than it was read, and waits.
     pub fn is_behind(&self) -> bool {
-        !self.unread.is_empty()
+        !self.backlog.is_empty()
     }
 
     /// How many bytes wait to be read, and how many were dropped.
     pub fn unread(&self) -> usize {
-        self.unread.len()
+        self.backlog.len()
     }
 
     pub fn dropped(&self) -> u64 {
-        self.dropped
+        self.backlog.dropped()
     }
 
     /// When the grid should ask for [`Message::Read`]: at the next frame
@@ -254,15 +221,13 @@ impl State {
     /// session ended (React's `\x1b[2m…\x1b[22m`). The text is the page's,
     /// in the user's language. What the program left unfinished (a string
     /// it was writing, a synchronised update, its colours) doesn't hide or
-    /// colour it.
+    /// colour it. Behind output that waits to be read, it waits too, and
+    /// is written in its turn: nothing more is read at once for it.
     pub fn notice(&mut self, text: &str) {
-        while self.is_behind() {
-            self.read_unread();
-        }
-        self.emulator.release();
         let text: String = text.chars().filter(|c| !c.is_control()).collect();
         let line = format!("\x18\x1b[0m\r\n\x1b[2m{text}\x1b[22m\r\n");
-        drop(self.feed(&line));
+        self.backlog.notice(line, &mut self.emulator);
+        self.search.output_came(&self.emulator.term);
     }
 
     fn events(&mut self) -> Vec<Event> {
@@ -471,7 +436,7 @@ impl State {
             Message::Read => {
                 self.emulator.settle_sync();
                 if self.is_behind() {
-                    self.read_unread();
+                    self.backlog.read(&mut self.emulator);
                     self.search.output_came(&self.emulator.term);
                 }
                 self.search.catch_up(&self.emulator.term);

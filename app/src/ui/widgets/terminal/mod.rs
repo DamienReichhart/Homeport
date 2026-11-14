@@ -69,6 +69,7 @@
 //! - **Searching** is the log viewer's search bar, over the scrollback and
 //!   the screen (`search.rs`, `toolbar.rs`).
 
+mod backlog;
 mod colors;
 mod emulator;
 pub mod keys;
