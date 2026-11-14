@@ -4,8 +4,13 @@
 //! another image has is said: the tag moves to the new one.
 //!
 //! The commit goes through `ctx.act`: "Committed to …", its "Open images"
-//! button and the images read again are the shell's. A failure is said in the dialog, which
-//! stays; while it runs the dialog can't be closed.
+//! button and the images read again are the shell's. A failure is said in
+//! the dialog, which stays; while it runs the dialog can't be closed.
+//!
+//! "Open images" goes to the Images page of the Host that is selected
+//! then, as React's `navigate('/images')` did: `Route::Images` names no
+//! Host (the page shows the selection's), so a selection changed between
+//! the commit and the press shows the other Host's images.
 
 use iced::{
     widget::{text_editor, toggler},
