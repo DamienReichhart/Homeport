@@ -22,7 +22,8 @@ use crate::{
 
 type Page = gallery::Message;
 
-const SIZE: (f32, f32) = (760.0, 380.0);
+/// Room for the gallery's shell, around it.
+const SIZE: (f32, f32) = (760.0, 390.0);
 /// Room for 80 cells by 24 rows, around the gallery's terminal.
 const APP_SIZE: (f32, f32) = (674.0, 450.0);
 
@@ -63,6 +64,10 @@ fn shell() -> State {
     let _ = state.update(Message::Query("日本".to_owned()));
     fit(&mut state, Which::Shell, SIZE);
     let rows = screen(&state);
+    assert!(
+        rows[0].ends_with("./colours.sh"),
+        "every line shows, from the first: {rows:?}"
+    );
     let listing = rows
         .iter()
         .position(|row| row.contains("deploy.sh"))

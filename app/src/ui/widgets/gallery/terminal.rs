@@ -22,9 +22,10 @@ use crate::ui::{
     },
 };
 
-/// How tall the gallery's shell is (the gallery's page scrolls), and its
-/// full-screen program: 24 rows, the size its frame was recorded at.
-pub const HEIGHT: f32 = 300.0;
+/// How tall the gallery's shell is (the gallery's page scrolls): its
+/// sample's 17 rows with the search bar open, and its full-screen
+/// program: 24 rows, the size its frame was recorded at.
+pub const HEIGHT: f32 = 17.0 * 16.0 + 18.0 + 44.0;
 pub const APP_HEIGHT: f32 = 24.0 * 16.0 + 18.0;
 /// How many times a second a pour comes, as a stream's batches do.
 const FRAMES: u64 = 60;
