@@ -96,8 +96,9 @@ const UTF8_SAMPLE: &[u8] = include_bytes!("../../../../tests/fixtures/terminal/u
 pub fn shell_sample() -> String {
     let mut sample = format!("{PROMPT}./colours.sh\r\n");
     sample.push_str(&String::from_utf8_lossy(UTF8_SAMPLE));
-    sample.push_str("Lines: ╭─╮ ┏━┓ ╔═╗ ├─┼─┤ Blocks: █▓▒░ ▀▄▌▐ ▖▗▘▝\r\n");
-    sample.push_str("       ╰─╯ ┗━┛ ╚═╝ └─┴─┘         ▁▂▃▄▅▆▇█\r\n");
+    sample.push_str("Lines: ╭─╮ ┏━┓ ╔═╦═╗ ├─┼─┤ ╌╌ ┄┄┄ ┈┈┈┈  Blocks: █▓▒░ ▀▄▌▐ ▖▗▘▝\r\n");
+    sample.push_str("       │ │ ┃ ┃ ╠═╬═╣ │ │ │ ╎  ┆   ┊             ▁▂▃▄▅▆▇█\r\n");
+    sample.push_str("       ╰─╯ ┗━┛ ╚═╩═╝ └─┴─┘\r\n");
     sample.push_str(&format!(
         "{PROMPT}cat NOTES\r\nDocs at https://homeport.dev/docs (see \x1b]8;;https://example.com/runbook\x1b\\the runbook\x1b]8;;\x1b\\).\r\n"
     ));
