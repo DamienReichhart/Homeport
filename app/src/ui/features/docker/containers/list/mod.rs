@@ -7,10 +7,9 @@
 //! lead to the container's page (`../detail`). Export in its menu saves
 //! the container's filesystem (`ui/domain/containers::actions::export`).
 //!
-//! What it leaves to other tickets: the Run dialog (#259), for which a
-//! stand-in shows its title over "Nothing here.", and, in a container's
-//! menu, Edit, Duplicate and Commit (#259), which are there and can't be
-//! chosen.
+//! "Run container", `n` and the palette's "Run a container" open the
+//! Run dialog (`ui/domain/containers::run`); a container it started is
+//! shown on its page, at its logs.
 //!
 //! What differs from the React page, on purpose:
 //!

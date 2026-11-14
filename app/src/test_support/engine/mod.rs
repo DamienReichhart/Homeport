@@ -44,7 +44,11 @@ use tokio::{
 use homeport_hosts::{service::HostInput, EngineKind, HostConnection};
 
 use self::wire::{inspected, Held};
-pub use self::{create::Created, transfer::EXPORTED, wire::Stall};
+pub use self::{
+    create::{Created, IMAGE_INSPECTED},
+    transfer::EXPORTED,
+    wire::Stall,
+};
 use crate::{api::hosts::hosts_create, app::AppState};
 
 /// A stream the fake keeps open.

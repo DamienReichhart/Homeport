@@ -256,6 +256,7 @@ export default {
   'containers.run.error.gpuCount': 'Укажите, сколько GPU, например 1.',
   'containers.run.error.duration': 'Укажите длительность, например 30s или 1m30s.',
   'containers.run.error.retries': 'Укажите целое число, например 3.',
+  'containers.run.error.port': 'Укажите порт от 1 до 65535.',
 
   'containers.advanced.title': 'Дополнительные параметры',
   'containers.advanced.hasErrors': 'Есть ошибки',

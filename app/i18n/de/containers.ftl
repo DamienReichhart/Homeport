@@ -269,6 +269,7 @@ containers-run-error-memorySwap = Geben Sie eine Größe wie 1g an, oder -1 für
 containers-run-error-gpuCount = Geben Sie an, wie viele GPUs, etwa 1.
 containers-run-error-duration = Geben Sie eine Dauer wie 30s oder 1m30s an.
 containers-run-error-retries = Geben Sie eine ganze Zahl wie 3 an.
+containers-run-error-port = Geben Sie einen Port von 1 bis 65535 an.
 containers-advanced-title = Erweiterte Optionen
 containers-advanced-hasErrors = Enthält Fehler
 containers-advanced-resources = Ressourcen

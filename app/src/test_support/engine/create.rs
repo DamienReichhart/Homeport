@@ -47,11 +47,13 @@ impl Engine {
     }
 }
 
+/// What an image's inspect says, whichever image is asked for.
+pub const IMAGE_INSPECTED: &str = r#"{"Id":"sha256:1111","RepoTags":["nginx:latest"],"Config":{}}"#;
+
 impl Connection {
     /// `GET /images/{name}/json`: every image is there.
     pub(super) async fn inspect_image(&mut self) -> bool {
-        let image = r#"{"Id":"sha256:1111","RepoTags":["nginx:latest"],"Config":{}}"#;
-        self.json("200 OK", image).await
+        self.json("200 OK", IMAGE_INSPECTED).await
     }
 
     /// `POST /containers/create`: kept, and answered with a new id.

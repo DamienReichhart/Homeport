@@ -2,7 +2,7 @@
 
 use crate::ui::{
     domain::{
-        containers::{actions, model::Usage, Bulk},
+        containers::{actions, model::Usage, run, Bulk},
         freshness,
     },
     shell::router::Route,
@@ -24,8 +24,8 @@ pub enum Message {
     Usage((String, Usage)),
     /// "Run container": the button, `n` or the palette.
     Run,
-    /// The stand-in of the Run dialog was closed.
-    CloseRun,
+    /// What happens in the Run dialog.
+    RunDialog(run::dialog::Message),
     /// A published port was pressed.
     OpenPort(u16),
     /// A link of a row: its Stack, its pod, its Quadlet unit.

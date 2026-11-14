@@ -255,6 +255,7 @@ export default {
   'containers.run.error.gpuCount': 'اكتب عدد وحدات GPU، مثل 1.',
   'containers.run.error.duration': 'اكتب مدة مثل 30s أو 1m30s.',
   'containers.run.error.retries': 'اكتب عددًا صحيحًا مثل 3.',
+  'containers.run.error.port': 'اكتب منفذًا من 1 إلى 65535.',
 
   'containers.advanced.title': 'خيارات متقدمة',
   'containers.advanced.hasErrors': 'توجد أخطاء',

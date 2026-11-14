@@ -12,6 +12,7 @@ use crate::{
     i18n::format,
     t,
     ui::{
+        shell::Context,
         theme::{
             self,
             metrics::{space, text as size, ButtonSize},
@@ -341,9 +342,9 @@ impl Actions {
         ]
     }
 
-    /// The confirmation or the Rename dialog that is open, to lay over
-    /// the page with `overlay::over`.
-    pub fn dialog(&self) -> Option<Modal<'_, Message>> {
+    /// The confirmation or the dialog that is open, for the page's
+    /// `dialog`.
+    pub fn dialog<'a>(&'a self, _ctx: &Context<'a>) -> Option<Modal<'a, Message>> {
         if let Some(export) = self.exports.dialog() {
             return Some(export.map(Message::Export));
         }

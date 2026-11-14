@@ -263,6 +263,7 @@ containers-run-error-memorySwap = 1g 같은 크기를 입력하거나, 스왑을
 containers-run-error-gpuCount = 1처럼 GPU 개수를 입력하세요.
 containers-run-error-duration = 30s 또는 1m30s 같은 기간을 입력하세요.
 containers-run-error-retries = 3 같은 정수를 입력하세요.
+containers-run-error-port = 1부터 65535까지의 포트를 입력하세요.
 containers-advanced-title = 고급 옵션
 containers-advanced-hasErrors = 오류 있음
 containers-advanced-resources = 리소스

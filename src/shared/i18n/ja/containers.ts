@@ -264,6 +264,7 @@ export default {
   'containers.run.error.gpuCount': '1 のように GPU の数を書いてください。',
   'containers.run.error.duration': '30s や 1m30s のように期間を書いてください。',
   'containers.run.error.retries': '3 のように整数を書いてください。',
+  'containers.run.error.port': '1 から 65535 までのポートを書いてください。',
 
   // The Run dialog's advanced options
   'containers.advanced.title': '詳細オプション',

@@ -269,6 +269,7 @@ containers-run-error-memorySwap = 1g जैसा आकार लिखें, 
 containers-run-error-gpuCount = कितने GPU, यह लिखें, जैसे 1।
 containers-run-error-duration = 30s या 1m30s जैसी अवधि लिखें।
 containers-run-error-retries = 3 जैसी पूर्ण संख्या लिखें।
+containers-run-error-port = 1 से 65535 तक का पोर्ट लिखें।
 containers-advanced-title = उन्नत विकल्प
 containers-advanced-hasErrors = त्रुटियाँ हैं
 containers-advanced-resources = रिसोर्स

@@ -213,9 +213,17 @@ fn the_page_s_actions_start_from_the_keyboard_and_the_palette() {
     let mut rig = Rig::populated();
     let task = super::super::request(&mut rig.state, registry::SEARCH, &rig.bench.ctx());
     assert!(!tasks::is_none(task), "/ gives the search field focus");
-    assert!(!rig.state.run_asked);
+    assert!(rig.state.run.is_none());
     let _ = super::super::request(&mut rig.state, "run", &rig.bench.ctx());
-    assert!(rig.state.run_asked);
+    assert!(rig.state.run.is_some());
+    // The Run dialog reads the Host's images and networks for its fields.
+    let host = rig.state.host_id.clone();
+    let watched = rig.bench.watched();
+    assert!(watched.contains(&keys::host::images(&host)), "{watched:?}");
+    assert!(
+        watched.contains(&keys::host::networks(&host)),
+        "{watched:?}"
+    );
     rig.send(Message::Actions(actions::Message::CloseDialog));
     assert!(rig.bench.took().is_empty());
 }
@@ -349,17 +357,18 @@ fn a_stack_s_fraction_reads_the_same_way_in_arabic() {
 }
 
 #[test]
-fn run_container_says_it_is_not_there_yet_and_closes() {
+fn run_container_opens_the_run_dialog_which_cancel_and_escape_close() {
     let _english = in_language("en");
     let mut rig = Rig::populated();
     let _ = super::super::request(&mut rig.state, "run", &rig.bench.ctx());
-    // The stand-in of the Run dialog (#259): its title, and nothing in it.
-    assert!(rig.shows("Nothing here.") && rig.shows("Close"));
-    rig.frame(|frame| frame.click("Close"));
-    assert!(!rig.state.run_asked && !rig.shows("Nothing here."));
+    assert!(rig.shows("Run a container") && rig.shows("Cancel"));
+    // Run waits for an image.
+    assert!(rig.shows("Run"));
+    rig.frame(|frame| frame.click("Cancel"));
+    assert!(rig.state.run.is_none() && !rig.shows("Run a container"));
     rig.send(Message::Run);
     rig.frame(|frame| frame.tap_key(iced::keyboard::key::Named::Escape));
-    assert!(!rig.state.run_asked);
+    assert!(rig.state.run.is_none());
 }
 
 /// The statuses Docker writes every day, on the sample's containers.

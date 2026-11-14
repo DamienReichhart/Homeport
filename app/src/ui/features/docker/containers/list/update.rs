@@ -8,7 +8,7 @@ use super::{view::columns, Message, State};
 use crate::{
     data::{keys, resources},
     ui::{
-        domain::containers::{actions, Bulk, Target},
+        domain::containers::{actions, run, Bulk, Target},
         shell::{
             registry::{self, Capability},
             router::Route,
@@ -110,8 +110,32 @@ pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Me
                 state.usage = usage;
             }
         }
-        Message::Run => state.run_asked = true,
-        Message::CloseRun => state.run_asked = false,
+        Message::Run => {
+            // Opened once: `n` again leaves what was typed.
+            if state.run.is_none() {
+                let podman = status::engine::supports(ctx.host(), Capability::Podman);
+                let dialog = run::Dialog::run(&state.host_id, "", "", podman, ctx);
+                state.run = Some(Box::new(dialog));
+            }
+        }
+        Message::RunDialog(message) => {
+            let Some(dialog) = state.run.as_mut() else {
+                return Task::none();
+            };
+            let (task, step) = dialog.update(message, ctx);
+            match step {
+                run::Step::Stay => {}
+                run::Step::Closed => state.run = None,
+                run::Step::Started(id) => {
+                    state.run = None;
+                    ctx.open(Route::Container {
+                        id,
+                        tab: Some("logs".to_owned()),
+                    });
+                }
+            }
+            return task.map(Message::RunDialog);
+        }
         Message::OpenPort(port) => {
             if let Some(view) = ctx.host() {
                 let address = status::host::address(&view.host.connection);

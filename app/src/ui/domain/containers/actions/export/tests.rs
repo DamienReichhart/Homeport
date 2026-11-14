@@ -113,7 +113,7 @@ fn cancel_stops_the_export_and_leaves_no_file() {
     for language in ["en", "ar"] {
         let name = format!("container-export-{language}");
         assert_snapshot(&name, language, &theme, (828.0, 420.0), || {
-            overlay::over(iced::widget::Space::new(), actions.dialog())
+            overlay::over(iced::widget::Space::new(), actions.dialog(&bench.ctx()))
         });
     }
     send(&mut actions, &bench, Action::Export(Message::Close));
@@ -221,7 +221,7 @@ fn escape_and_the_scrim_never_stop_an_export_that_runs() {
     let export = begin(&mut actions, &bench, web);
     let mut stage = crate::test_support::stage::Stage::new((828.0, 420.0));
     let sent = stage.frame(
-        overlay::over(iced::widget::Space::new(), actions.dialog()),
+        overlay::over(iced::widget::Space::new(), actions.dialog(&bench.ctx())),
         |frame| {
             frame.tap_key(Named::Escape);
             frame.point_at((10.0, 10.0));

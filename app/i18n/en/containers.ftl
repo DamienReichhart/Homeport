@@ -269,6 +269,7 @@ containers-run-error-memorySwap = Write a size like 1g, or -1 for unlimited swap
 containers-run-error-gpuCount = Write how many GPUs, like 1.
 containers-run-error-duration = Write a duration like 30s or 1m30s.
 containers-run-error-retries = Write a whole number like 3.
+containers-run-error-port = Write a port from 1 to 65535.
 containers-advanced-title = Advanced options
 containers-advanced-hasErrors = Has errors
 containers-advanced-resources = Resources

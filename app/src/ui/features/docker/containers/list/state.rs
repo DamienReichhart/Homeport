@@ -16,7 +16,7 @@ use crate::{
     data::{keys, Resource},
     ui::{
         domain::{
-            containers::{model::Usage, Actions},
+            containers::{model::Usage, run, Actions},
             freshness, pods,
         },
         shell::Context,
@@ -51,9 +51,8 @@ pub struct State {
     pub(super) usage: Usage,
     pub(super) actions: Actions,
     pub(super) check: freshness::Check,
-    /// The Run dialog was asked for. The dialog is the run ticket's
-    /// (#259), which draws it from here; until then a stand-in shows.
-    pub(super) run_asked: bool,
+    /// The Run dialog, while it is open.
+    pub(super) run: Option<Box<run::Dialog>>,
     /// What the three below were made from.
     seen: (Read<Container>, Read<FreshnessResult>, Read<Pod>),
     /// The containers whose tag has a newer image in its registry, by id.
@@ -82,7 +81,7 @@ impl State {
             usage: Usage::new(),
             actions: Actions::of_host(),
             check: freshness::Check::default(),
-            run_asked: false,
+            run: None,
             seen: (None, None, None),
             newer: HashSet::new(),
             pods: HashMap::new(),

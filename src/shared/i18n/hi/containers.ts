@@ -260,6 +260,7 @@ export default {
   'containers.run.error.gpuCount': 'कितने GPU, यह लिखें, जैसे 1।',
   'containers.run.error.duration': '30s या 1m30s जैसी अवधि लिखें।',
   'containers.run.error.retries': '3 जैसी पूर्ण संख्या लिखें।',
+  'containers.run.error.port': '1 से 65535 तक का पोर्ट लिखें।',
 
   // The Run dialog's advanced options
   'containers.advanced.title': 'उन्नत विकल्प',

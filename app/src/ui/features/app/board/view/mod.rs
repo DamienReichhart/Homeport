@@ -92,9 +92,9 @@ pub fn view<'a>(state: &'a State, ctx: &Context<'a>) -> Element<'a, Message> {
 }
 
 /// The confirmation or the Rename dialog a container's menu opened.
-pub fn dialog<'a>(state: &'a State, _ctx: &Context<'a>) -> Option<Modal<'a, Message>> {
+pub fn dialog<'a>(state: &'a State, ctx: &Context<'a>) -> Option<Modal<'a, Message>> {
     state
         .actions
-        .dialog()
+        .dialog(ctx)
         .map(|modal| modal.map(Message::Actions))
 }

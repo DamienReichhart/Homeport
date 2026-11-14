@@ -247,6 +247,7 @@ export default {
   'containers.run.error.gpuCount': '1처럼 GPU 개수를 입력하세요.',
   'containers.run.error.duration': '30s 또는 1m30s 같은 기간을 입력하세요.',
   'containers.run.error.retries': '3 같은 정수를 입력하세요.',
+  'containers.run.error.port': '1부터 65535까지의 포트를 입력하세요.',
 
   'containers.advanced.title': '고급 옵션',
   'containers.advanced.hasErrors': '오류 있음',

@@ -243,6 +243,7 @@ export default {
   'containers.run.error.gpuCount': '请填写 GPU 数量，例如 1。',
   'containers.run.error.duration': '请填写时长，例如 30s 或 1m30s。',
   'containers.run.error.retries': '请填写整数，例如 3。',
+  'containers.run.error.port': '请填写 1 到 65535 之间的端口。',
 
   'containers.advanced.title': '高级选项',
   'containers.advanced.hasErrors': '有错误',

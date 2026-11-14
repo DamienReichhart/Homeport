@@ -259,6 +259,7 @@ export default {
   'containers.run.error.gpuCount': 'Scrivi quante GPU, come 1.',
   'containers.run.error.duration': 'Scrivi una durata come 30s o 1m30s.',
   'containers.run.error.retries': 'Scrivi un numero intero come 3.',
+  'containers.run.error.port': 'Scrivi una porta da 1 a 65535.',
 
   // The Run dialog's advanced options
   'containers.advanced.title': 'Opzioni avanzate',

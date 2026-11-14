@@ -24,10 +24,10 @@ use crate::{
             Element, Icon,
         },
         widgets::{
-            basic::button::{self, Variant},
+            basic::button,
             feedback::{empty_state, error_message, spinner},
             form, line,
-            overlay::{dialog as dialog_of, modal, tooltip_with_keys, Modal, Side},
+            overlay::{tooltip_with_keys, Modal, Side},
             stack,
             table::Table,
         },
@@ -107,23 +107,11 @@ pub fn view<'a>(state: &'a State, ctx: &Context<'a>) -> Element<'a, Message> {
 }
 
 /// The confirmation or the Rename dialog a container's menu opened, or
-/// what stands for the Run dialog until its ticket (#259): its title over
-/// "Nothing here.", as the stub of a page that isn't ported, so the
-/// button, `n` and the palette command don't silently do nothing.
-pub fn dialog<'a>(state: &'a State, _ctx: &Context<'a>) -> Option<Modal<'a, Message>> {
-    if let Some(modal) = state.actions.dialog() {
+/// the Run dialog.
+pub fn dialog<'a>(state: &'a State, ctx: &Context<'a>) -> Option<Modal<'a, Message>> {
+    if let Some(modal) = state.actions.dialog(ctx) {
         return Some(modal.map(Message::Actions));
     }
-    state.run_asked.then(|| {
-        let close = button::text(t!("common.close"))
-            .variant(Variant::Outline)
-            .on_press(Message::CloseRun);
-        let stub = dialog_of(t!("containers.runContainer"))
-            .description(t!("ui.table.empty"))
-            .footer(vec![close.into()]);
-        modal(stub)
-            .key("run")
-            .on_close(Message::CloseRun)
-            .close_on_scrim()
-    })
+    let run = state.run.as_deref()?;
+    Some(run.view(ctx).map(Message::RunDialog))
 }
