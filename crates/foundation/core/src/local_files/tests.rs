@@ -119,3 +119,29 @@ fn text_round_trips() {
     write_text(&path, "hello").unwrap();
     assert_eq!(read_text(&path).unwrap(), "hello");
 }
+
+#[test]
+fn only_the_names_a_replacement_makes_are_its_own() {
+    let dir = tempfile::tempdir().unwrap();
+    let unfinished = Replacement::new(&dir.path().join("logs.txt")).unwrap();
+    let made = std::fs::read_dir(dir.path())
+        .unwrap()
+        .next()
+        .unwrap()
+        .unwrap();
+    assert!(is_unfinished(made.file_name().to_str().unwrap()));
+    drop(unfinished);
+    // Files of the user's that look alike: none is a Replacement's.
+    for theirs in [
+        ".homeport-notes.part",
+        ".homeport-backup.part",
+        ".homeport-0123456789ab.txt",
+        ".homeport-0123456789a.part",
+        ".homeport-0123456789abc.part",
+        ".homeport-0123456789-b.part",
+        "homeport-0123456789ab.part",
+    ] {
+        assert!(!is_unfinished(theirs), "{theirs}");
+    }
+    assert!(is_unfinished(".homeport-0123456789ab.part"));
+}

@@ -82,8 +82,9 @@ impl Replacement {
             _ => Path::new("."),
         };
         let temp = tempfile::Builder::new()
-            .prefix(".homeport-")
-            .suffix(".part")
+            .prefix(UNFINISHED_PREFIX)
+            .rand_bytes(UNFINISHED_RANDOM)
+            .suffix(UNFINISHED_SUFFIX)
             .tempfile_in(dir)
             .map_err(|e| local_file(path, e))?;
         Ok(Self {
@@ -136,8 +137,9 @@ impl Replacement {
             // A file asked for with every permission gets what the umask
             // leaves: that is read off one made for it, and gone at once.
             let probe = tempfile::Builder::new()
-                .prefix(".homeport-")
-                .suffix(".part")
+                .prefix(UNFINISHED_PREFIX)
+                .rand_bytes(UNFINISHED_RANDOM)
+                .suffix(UNFINISHED_SUFFIX)
                 .permissions(std::fs::Permissions::from_mode(0o666))
                 .tempfile_in(dir)?;
             let mode = probe.as_file().metadata()?.permissions();
@@ -147,6 +149,23 @@ impl Replacement {
     }
 }
 
+/// What the name of a [`Replacement`]'s file starts with, before its
+/// [`UNFINISHED_RANDOM`] random letters and digits, and ends with.
+const UNFINISHED_PREFIX: &str = ".homeport-";
+const UNFINISHED_SUFFIX: &str = ".part";
+/// As many as no file of the user's is likely to have there.
+const UNFINISHED_RANDOM: usize = 12;
+
+/// Whether a file named `name` is one a [`Replacement`] makes:
+/// `.homeport-`, twelve ASCII letters or digits, `.part`, and nothing else.
+pub fn is_unfinished(name: &str) -> bool {
+    name.strip_prefix(UNFINISHED_PREFIX)
+        .and_then(|name| name.strip_suffix(UNFINISHED_SUFFIX))
+        .is_some_and(|random| {
+            random.len() == UNFINISHED_RANDOM && random.bytes().all(|b| b.is_ascii_alphanumeric())
+        })
+}
+
 /// How old an unfinished [`Replacement`] must be for [`sweep_unfinished`]
 /// to take it away: no write that still runs is that slow.
 pub const UNFINISHED_AFTER: std::time::Duration = std::time::Duration::from_secs(24 * 60 * 60);
@@ -154,17 +173,15 @@ pub const UNFINISHED_AFTER: std::time::Duration = std::time::Duration::from_secs
 /// Takes away the files a [`Replacement`] left unfinished in `folder` more
 /// than [`UNFINISHED_AFTER`] ago: a write the app was killed in, or that a
 /// panic aborted, whose file could not be taken away then. Only names the
-/// Replacement makes (`.homeport-….part`) and regular files are touched;
-/// whatever fails is left.
+/// Replacement makes ([`is_unfinished`]) and regular files are touched, so
+/// a `.homeport-notes.part` of the user's stays; whatever fails is left.
 pub fn sweep_unfinished(folder: &Path) {
     let Ok(entries) = std::fs::read_dir(folder) else {
         return;
     };
     for entry in entries.flatten() {
         let name = entry.file_name();
-        let ours = name
-            .to_str()
-            .is_some_and(|name| name.starts_with(".homeport-") && name.ends_with(".part"));
+        let ours = name.to_str().is_some_and(is_unfinished);
         let stale = entry.metadata().is_ok_and(|found| {
             found.is_file()
                 && found

@@ -79,21 +79,25 @@ fn a_file_that_cannot_be_put_in_place_leaves_what_was_there() {
 fn parts(dir: &Path) -> Vec<PathBuf> {
     names(dir)
         .into_iter()
-        .filter(|name| name.starts_with(".homeport-") && name.ends_with(".part"))
+        .filter(|name| homeport_core::local_files::is_unfinished(name))
         .map(|name| dir.join(name))
         .collect()
 }
+
+/// A file a killed write left: named as a Replacement names them.
+const KILLED: &str = ".homeport-killedByAnOS.part";
 
 #[test]
 fn files_left_unfinished_never_stand_in_the_way_and_old_ones_are_taken_away() {
     let dir = tempfile::tempdir().unwrap();
     // An instance that was killed left a hundred of them, just now.
     for n in 0..100 {
-        fs::write(dir.path().join(format!(".homeport-{n:06}.part")), "theirs").unwrap();
+        fs::write(dir.path().join(format!(".homeport-{n:012}.part")), "theirs").unwrap();
     }
     // And one a week ago, beside files of the user's that look alike.
     let week = std::time::SystemTime::now() - Duration::from_secs(7 * 24 * 60 * 60);
-    for old in [".homeport-killed.part", "notes.part", ".homeport-notes.txt"] {
+    let theirs = ["notes.part", ".homeport-notes.txt", ".homeport-notes.part"];
+    for old in [KILLED].iter().chain(&theirs) {
         let path = dir.path().join(old);
         fs::write(&path, "old").unwrap();
         let file = File::options().write(true).open(&path).unwrap();
@@ -108,9 +112,10 @@ fn files_left_unfinished_never_stand_in_the_way_and_old_ones_are_taken_away() {
         100,
         "what may still be written is left"
     );
-    assert!(!left.contains(&".homeport-killed.part".to_owned()));
-    assert!(left.contains(&"notes.part".to_owned()));
-    assert!(left.contains(&".homeport-notes.txt".to_owned()));
+    assert!(!left.contains(&KILLED.to_owned()));
+    for theirs in theirs {
+        assert!(left.contains(&theirs.to_owned()), "{theirs} was taken");
+    }
     for part in parts(dir.path()) {
         assert_eq!(fs::read_to_string(part).unwrap(), "theirs");
     }

@@ -335,9 +335,10 @@ fn a_download_takes_away_what_a_killed_one_left_a_day_ago() {
     let dir = live.rig.bench.os.dir().to_owned();
     let week = std::time::SystemTime::now() - Duration::from_secs(7 * 24 * 60 * 60);
     for (name, old) in [
-        (".homeport-killed.part", true),
-        (".homeport-running.part", false),
+        (".homeport-killedByAnOS.part", true),
+        (".homeport-runningNow00.part", false),
         ("notes.part", true),
+        (".homeport-notes.part", true),
     ] {
         let path = dir.join(name);
         std::fs::write(&path, "left").unwrap();
@@ -350,10 +351,11 @@ fn a_download_takes_away_what_a_killed_one_left_a_day_ago() {
     live.send(browse(file_browser::Message::Download(
         "/note.txt".to_owned(),
     )));
-    assert!(!dir.join(".homeport-killed.part").exists());
-    // One of now may be a write that still runs; one not ours stays.
-    assert!(dir.join(".homeport-running.part").exists());
+    assert!(!dir.join(".homeport-killedByAnOS.part").exists());
+    // One of now may be a write that still runs; those not ours stay.
+    assert!(dir.join(".homeport-runningNow00.part").exists());
     assert!(dir.join("notes.part").exists());
+    assert!(dir.join(".homeport-notes.part").exists());
 }
 
 #[test]
