@@ -5,8 +5,8 @@ use std::collections::HashSet;
 use iced::Task;
 
 use super::{
-    queries,
-    state::{LogsEnded, Tab},
+    queries, restarts,
+    state::Tab,
     tabs::{files, health, inspect, processes},
     view, Message, State,
 };
@@ -46,7 +46,7 @@ fn needs(state: &mut State, ctx: &Context<'_>) -> Task<Message> {
     // What another tab, another folder or another state read is not
     // kept fresh any more: an Engine event no longer reads it again.
     state.unwatch_all_but(&wanted, ctx);
-    task
+    Task::batch([task, restarts::follow(state, ctx)])
 }
 
 /// What the tab that shows reads, watched and counted in `wanted`.
@@ -214,47 +214,7 @@ fn now() -> i64 {
 
 pub fn refresh(state: &mut State, ctx: &Context<'_>) -> Task<Message> {
     state.seen_state = state.container(ctx).map(|container| container.state);
-    reopen_logs(state, ctx);
     needs(state, ctx)
-}
-
-/// A container that starts again writes again: its log stream ended with
-/// it, so the logs that show are opened anew once a list read since the
-/// end says it started again: it went through another state, or its
-/// status says it is up anew (`Up Less than a second` after `Up 3
-/// hours`). A restart goes from running to running faster than the list
-/// is read, so the end itself asks for the list again, once. React's
-/// stayed on "end of logs" until an option of the viewer changed.
-///
-/// A stream that failed is never opened again by itself: its failure
-/// stays, with its Retry. A log driver that serves no logs (`none`, or a
-/// remote one without its cache) fails each time, and opening it again
-/// as soon as the list says the container runs would never end.
-fn reopen_logs(state: &mut State, ctx: &Context<'_>) {
-    if state.tab != Tab::Logs || !state.logs.has_ended() || state.logs.failure.is_some() {
-        return;
-    }
-    let generation = state.logs.generation();
-    let container = state.container(ctx);
-    let running = container.as_ref().is_some_and(|c| c.state == "running");
-    let status = container.map(|c| c.status);
-    match &mut state.logs_ended {
-        Some(end) if end.generation == generation => {
-            if !running {
-                end.stopped_since = true;
-            } else if end.stopped_since || status != end.status {
-                state.logs.restart(now());
-            }
-        }
-        _ => {
-            state.logs_ended = Some(LogsEnded {
-                generation,
-                status,
-                stopped_since: !running,
-            });
-            ctx.invalidate(keys::host::containers(&state.host_id));
-        }
-    }
 }
 
 pub fn request(_state: &mut State, _action: &str, _ctx: &Context<'_>) -> Task<Message> {
@@ -323,8 +283,10 @@ pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Me
         Message::Files(message) => return files(state, message, ctx),
         Message::Logs(message) => {
             let task = state.logs.update(message, ctx).map(Message::Logs);
-            reopen_logs(state, ctx);
-            return task;
+            return Task::batch([task, restarts::follow(state, ctx)]);
+        }
+        Message::Started(generation, started) => {
+            return restarts::answered(state, generation, started, ctx);
         }
     }
     Task::none()

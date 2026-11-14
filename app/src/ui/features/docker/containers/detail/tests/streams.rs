@@ -166,6 +166,56 @@ fn a_stream_that_ends_says_so_and_a_container_that_starts_again_is_followed_agai
     assert_eq!(live.engine.asked("/logs").len(), 2);
 }
 
+/// How many times the page read the container's inspect document.
+fn inspected(live: &Live) -> usize {
+    live.engine.asked("/json").len()
+}
+
+#[test]
+fn a_restart_before_the_end_opens_the_logs_again_by_when_it_started() {
+    let mut live = Live::at("logs");
+    assert!(live.settles(Stream::Logs, 1));
+    // The start the stream follows is read as it opens.
+    assert_eq!(inspected(&live), 1);
+    // Restarted, running to running, and seen so before the end.
+    live.engine.started_at("2026-05-01T13:00:00.5Z");
+    let mut restarted = sample();
+    "Up Less than a second (healthy)".clone_into(&mut restarted[0].status);
+    live.rig.list(restarted);
+    live.sync();
+    live.engine.end_logs();
+    // The end reads the start again: another one, so the logs open anew.
+    assert!(live.until(|live| live.engine.asked("/logs").len() == 2));
+    assert!(live.settles(Stream::Logs, 1));
+    assert!(inspected(&live) >= 3, "{}", inspected(&live));
+}
+
+#[test]
+fn after_the_end_the_start_is_read_when_the_entry_changes_and_two_seconds_apart() {
+    let mut live = Live::at("logs");
+    assert!(live.settles(Stream::Logs, 1));
+    live.engine.end_logs();
+    assert!(live.until(|live| live.rig.state.logs.is_over()));
+    assert!(live.until(|live| inspected(live) == 2));
+    let mut up = sample();
+    // The same entry again reads nothing.
+    for _ in 0..3 {
+        live.rig.list(up.clone());
+    }
+    assert_eq!(inspected(&live), 2);
+    // Two changes at once: each waits for the read before to be two
+    // seconds old.
+    let begun = std::time::Instant::now();
+    for status in ["Up 4 hours (healthy)", "Up 4 hours (unhealthy)"] {
+        status.clone_into(&mut up[0].status);
+        live.rig.list(up.clone());
+    }
+    assert_eq!(inspected(&live), 4);
+    assert!(begun.elapsed() >= std::time::Duration::from_millis(3500));
+    // Its start never changed: the logs stay ended.
+    assert_eq!(live.engine.asked("/logs").len(), 1);
+}
+
 fn chunk(text: &str) -> Update<LogEvent> {
     let line = LogLine {
         source: None,

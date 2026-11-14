@@ -240,56 +240,85 @@ fn end(rig: &mut Rig) {
     rig.send(logs(logs::Message::Lines(generation, ended)));
 }
 
-#[test]
-fn a_restart_opens_the_logs_again_once_the_list_says_the_container_runs() {
-    let mut rig = filled();
+/// When the container started, as its inspect says.
+const STARTED: &str = "2026-05-01T10:00:00.000000001Z";
+/// When it started again.
+const RESTARTED: &str = "2026-05-01T13:00:00.5Z";
+
+/// The container's start, read for the stream that shows now.
+fn started(rig: &mut Rig, at: &str) {
     let generation = rig.state.logs.generation();
-    // Restart: the stream ends while the list still says it runs.
-    end(&mut rig);
-    assert!(rig.state.logs.has_ended());
-    // The end asks for the list again, to know whether it runs.
-    assert!(rig
-        .bench
-        .took()
-        .contains(&Asked::Invalidate(keys::host::containers("h1"))));
-    // Nothing read since: the end stays.
-    rig.refresh();
-    assert_eq!(rig.state.logs.generation(), generation);
-    // The list read again says it is up anew (running to running):
-    // another stream, on an empty viewer.
-    rig.list(restarted());
-    assert_eq!(rig.state.logs.generation(), generation + 1);
-    assert!(!rig.state.logs.has_ended() && rig.state.logs.view.is_empty());
-    // A list read again once more opens nothing more.
-    rig.list(restarted());
-    assert_eq!(rig.state.logs.generation(), generation + 1);
+    rig.send(Message::Started(generation, Some(at.to_owned())));
 }
 
-/// The sample, `web` just started again.
-fn restarted() -> Vec<homeport_engine::containers::Container> {
+/// The sample, `web` up for `status`.
+fn up(status: &str) -> Vec<homeport_engine::containers::Container> {
     let mut list = sample();
-    "Up Less than a second (healthy)".clone_into(&mut list[0].status);
+    status.clone_into(&mut list[0].status);
     list
 }
 
 #[test]
-fn a_stream_that_ended_with_the_container_still_up_is_not_opened_again() {
+fn a_restart_seen_before_the_end_opens_the_logs_again() {
     let mut rig = filled();
     let generation = rig.state.logs.generation();
+    started(&mut rig, STARTED);
+    // Restart: the list says it is up anew before the stream's end comes.
+    rig.list(up("Up Less than a second (healthy)"));
+    assert_eq!(rig.state.logs.generation(), generation);
     end(&mut rig);
+    assert!(rig.state.logs.has_ended());
+    // The start read at the end is another one: another stream, on an
+    // empty viewer.
+    started(&mut rig, RESTARTED);
+    assert_eq!(rig.state.logs.generation(), generation + 1);
+    assert!(!rig.state.logs.has_ended() && rig.state.logs.view.is_empty());
+    // Read for the new stream, the new start opens nothing more.
+    started(&mut rig, RESTARTED);
+    rig.list(up("Up 1 second (healthy)"));
+    started(&mut rig, RESTARTED);
+    assert_eq!(rig.state.logs.generation(), generation + 1);
+}
+
+#[test]
+fn a_running_container_whose_status_changes_is_never_opened_again() {
+    let mut rig = filled();
+    let generation = rig.state.logs.generation();
+    started(&mut rig, STARTED);
+    end(&mut rig);
+    started(&mut rig, STARTED);
     let _ = rig.bench.took();
-    // Read again, the same container, up as before: no restart.
-    for _ in 0..3 {
-        rig.list(sample());
-        assert_eq!(rig.state.logs.generation(), generation);
-        assert!(rig.bench.took().is_empty(), "the list is asked once");
+    // Its status changes as the list is read again; its start does not.
+    // (Each read waits for the last to be two seconds old.)
+    for status in ["Up 4 hours (healthy)", "Up 4 hours (unhealthy)"] {
+        rig.list(up(status));
+        started(&mut rig, STARTED);
+        assert_eq!(rig.state.logs.generation(), generation, "{status}");
+        assert!(rig.state.logs.has_ended());
     }
+    assert!(rig.bench.took().is_empty(), "the list is not asked for");
+}
+
+#[test]
+fn a_start_that_could_not_be_read_opens_nothing() {
+    let mut rig = filled();
+    let generation = rig.state.logs.generation();
+    started(&mut rig, STARTED);
+    end(&mut rig);
+    rig.send(Message::Started(generation, None));
+    rig.list(up("Up 4 hours (healthy)"));
+    rig.send(Message::Started(generation, None));
+    assert_eq!(rig.state.logs.generation(), generation);
+    // An answer for a stream before this one is not this one's.
+    rig.send(Message::Started(generation - 1, Some(RESTARTED.to_owned())));
+    assert_eq!(rig.state.logs.generation(), generation);
 }
 
 #[test]
 fn a_stream_that_failed_on_a_running_container_is_never_opened_again_by_itself() {
     let mut rig = filled();
     let generation = rig.state.logs.generation();
+    started(&mut rig, STARTED);
     // A log driver that serves no logs: the Engine's error, then the end.
     let refused = homeport_core::error::AppError::new(
         ErrorCode::EngineError,
@@ -305,8 +334,10 @@ fn a_stream_that_failed_on_a_running_container_is_never_opened_again_by_itself()
         !asked.contains(&Asked::Invalidate(keys::host::containers("h1"))),
         "{asked:?}"
     );
-    for list in [sample(), restarted(), restarted()] {
+    // Even a start that is another one once it failed.
+    for list in [sample(), up("Up 1 second"), up("Up 2 seconds")] {
         rig.list(list);
+        started(&mut rig, RESTARTED);
         assert_eq!(rig.state.logs.generation(), generation);
         assert!(rig.state.logs.failure.is_some(), "the failure stays");
     }

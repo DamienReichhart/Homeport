@@ -97,3 +97,12 @@ pub enum Stall {
     /// The file's bytes have gone, not the archive's end.
     AfterData,
 }
+
+/// A running container's inspect document, started at `started` (the
+/// sample's creation if not said).
+pub(super) fn inspected(started: Option<&str>) -> String {
+    let started = started.unwrap_or("2026-05-01T10:00:00.000000001Z");
+    format!(
+        r#"{{"Id":"c1","Name":"/web","State":{{"Status":"running","Running":true,"StartedAt":"{started}"}}}}"#
+    )
+}

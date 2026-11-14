@@ -13,8 +13,9 @@
 //! ```
 //!
 //! What it answers: `_ping`, `version`, `info`, `events` (held open),
-//! a container's `logs` and `stats` (streamed), its `archive` (stat,
-//! download, upload) and its `export`. Anything else is `404`.
+//! a container's inspect document (`json`, when it started as told),
+//! `logs` and `stats` (streamed), its `archive` (stat, download, upload)
+//! and its `export`. Anything else is `404`.
 
 use std::{
     collections::HashMap,
@@ -38,7 +39,7 @@ use tokio::{
 use homeport_hosts::{service::HostInput, EngineKind, HostConnection};
 
 pub use self::wire::Stall;
-use self::wire::{archive_of, entry_names, query_value, stat_of, Held};
+use self::wire::{archive_of, entry_names, inspected, query_value, stat_of, Held};
 use crate::{api::hosts::hosts_create, app::AppState};
 
 /// A stream the fake keeps open.
@@ -75,6 +76,8 @@ struct Shared {
     cut: std::sync::atomic::AtomicBool,
     /// Where a download's answer waits for [`Engine::release`].
     stall: Mutex<Option<Stall>>,
+    /// When the container last started, if it was said.
+    started: Mutex<Option<String>>,
 }
 
 /// Counts a stream as open until dropped.
@@ -197,6 +200,11 @@ impl Engine {
     /// Ends every open log stream, as a container that stopped.
     pub fn end_logs(&self) {
         let _ = self.pushes.send(Push::EndLogs);
+    }
+
+    /// The container started (again) at `at`, as its inspect says.
+    pub fn started_at(&self, at: &str) {
+        *self.shared.started.lock().unwrap() = Some(at.to_owned());
     }
 
     /// Sends a stats report to every open stats stream.
@@ -563,6 +571,10 @@ impl Connection {
                 ("GET", ["containers", _, "stats"]) => {
                     self.stream(Some(Stream::Stats), "application/json").await;
                     false
+                }
+                ("GET", ["containers", _, "json"]) => {
+                    let started = self.shared.started.lock().unwrap().clone();
+                    self.json("200 OK", &inspected(started.as_deref())).await
                 }
                 (_, ["containers", _, "archive"]) => self.archive(&request).await,
                 ("GET", ["containers", _, "export"]) => self.export().await,

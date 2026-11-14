@@ -9,6 +9,7 @@ use homeport_engine::containers::{files::FileEntry, health::Health, Container, P
 use super::{
     model::inspect::Inspected,
     queries,
+    restarts::Restarts,
     tabs::{files::Files, health, inspect::Inspect, logs::Logs, processes, stats::Stats},
 };
 use crate::{
@@ -20,17 +21,6 @@ use crate::{
         widgets::{basic::technical, overlay::menu},
     },
 };
-
-/// How a container was when the log stream of this number ended: what
-/// tells, once the list is read again, whether it started again.
-#[derive(Debug)]
-pub(super) struct LogsEnded {
-    pub(super) generation: u64,
-    /// Its status then (`Up 3 hours`).
-    pub(super) status: Option<String>,
-    /// It was seen not running since.
-    pub(super) stopped_since: bool,
-}
 
 /// The window's width from which cards stand two a row (`lg`).
 pub(super) const TWO_COLUMNS_FROM: f32 = 1024.0;
@@ -143,8 +133,8 @@ pub struct State {
     pub(super) window: Option<iced::Size>,
     /// The container's state when the page last looked.
     pub(super) seen_state: Option<String>,
-    /// How the container was when its log stream ended.
-    pub(super) logs_ended: Option<LogsEnded>,
+    /// Whether the container started again since its log stream ended.
+    pub(super) restarts: Restarts,
     /// What the page already asked the shell to read: a resource is
     /// asked for once, when the tab that shows it first needs it.
     pub(super) watched: HashSet<Key>,
@@ -172,7 +162,7 @@ impl State {
             more: menu::State::default(),
             window: None,
             seen_state: None,
-            logs_ended: None,
+            restarts: Restarts::default(),
             watched: HashSet::new(),
             logs: Logs::new(),
             inspect: Inspect::default(),
