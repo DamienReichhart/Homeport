@@ -352,77 +352,41 @@ async fn a_replaced_supervisor_s_late_word_is_let_go_of() {
     assert!(!reg.lock().contains_key(&id));
 }
 
-/// Tells what it is told, and when told `Disabled` (the live supervisor's
-/// word) lets another thread restart the Cluster first, as a restart
-/// racing it would: the last status told must be the one the entry holds.
-struct Racing {
-    told: Mutex<Vec<ClusterStatus>>,
-    registry: Mutex<Option<(Weak<ClusterRegistry>, String, tokio::runtime::Handle)>>,
+/// Notes, for each status told, whether the registry held its entries
+/// then.
+#[derive(Default)]
+struct Held {
+    registry: Mutex<Weak<ClusterRegistry>>,
+    told: Mutex<Vec<(ClusterStatus, bool)>>,
 }
 
-impl ClusterNotifier for Racing {
+impl ClusterNotifier for Held {
     fn cluster_status(&self, _: &str, status: &ClusterStatus) {
-        if *status == ClusterStatus::Disabled {
-            let racing = self.registry.lock().unwrap().clone();
-            if let Some((registry, id, runtime)) = racing {
-                let restart = std::thread::spawn(move || {
-                    let _runtime = runtime.enter();
-                    if let Some(registry) = registry.upgrade() {
-                        registry.restart(&id);
-                    }
-                });
-                // The restarted supervisor tells its first status before
-                // this one if nothing keeps it from it: a second at most.
-                let before = self.told.lock().unwrap().len();
-                for _ in 0..100 {
-                    if self.told.lock().unwrap().len() > before {
-                        break;
-                    }
-                    std::thread::sleep(Duration::from_millis(10));
-                }
-                drop(restart);
-            }
-        }
-        self.told.lock().unwrap().push(status.clone());
+        let registry = self.registry.lock().unwrap().upgrade();
+        let held = registry.is_some_and(|reg| reg.entries.try_lock().is_err());
+        self.told.lock().unwrap().push((status.clone(), held));
     }
 }
 
-/// An API server that takes connections and never answers: a supervisor
-/// stays "connecting" on it.
-async fn silent_api() -> String {
-    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
-    let addr = listener.local_addr().unwrap();
-    tokio::spawn(async move {
-        let mut held = vec![];
-        while let Ok((socket, _)) = listener.accept().await {
-            held.push(socket);
-        }
-    });
-    format!("http://{addr}")
-}
-
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn what_is_told_last_is_what_the_entry_holds_when_a_restart_races_it() {
-    let (plain, _, id) = registry(&silent_api().await);
-    let racing = Arc::new(Racing {
-        told: Mutex::new(vec![]),
-        registry: Mutex::new(None),
-    });
-    let reg = ClusterRegistry::new(plain.store.clone(), racing.clone());
-    reg.restart(&id);
-    *racing.registry.lock().unwrap() = Some((
-        Arc::downgrade(&reg),
+/// What is told while the entry is held is told in the order the entry
+/// took it: a restart racing a supervisor waits for the lock, and its
+/// supervisor's first word comes after.
+#[test]
+fn a_status_is_told_while_the_entry_is_held() {
+    let (plain, _, id) = registry("http://127.0.0.1:9");
+    let held = Arc::new(Held::default());
+    let reg = ClusterRegistry::new(plain.store.clone(), held.clone());
+    *held.registry.lock().unwrap() = Arc::downgrade(&reg);
+    reg.lock().insert(
         id.clone(),
-        tokio::runtime::Handle::current(),
-    ));
-    // The live supervisor's word, with a restart racing it.
-    let live = reg.lock()[&id].generation;
-    reg.set_status(&id, live, ClusterStatus::Disabled, None);
-    *racing.registry.lock().unwrap() = None;
-    // The restarted supervisor says "connecting", and then nothing for a
-    // while: the server never answers.
-    tokio::time::sleep(Duration::from_millis(300)).await;
-    assert_eq!(reg.status(&id), ClusterStatus::Connecting);
-    let told = racing.told.lock().unwrap().clone();
-    assert_eq!(told.last(), Some(&ClusterStatus::Connecting), "{told:?}");
+        Entry {
+            status: ClusterStatus::Connecting,
+            client: None,
+            task: None,
+            generation: 1,
+        },
+    );
+    reg.set_status(&id, 1, ClusterStatus::Disabled, None);
+    let told = held.told.lock().unwrap().clone();
+    assert_eq!(told, [(ClusterStatus::Disabled, true)]);
 }

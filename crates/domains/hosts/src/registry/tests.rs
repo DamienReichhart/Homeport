@@ -458,92 +458,62 @@ async fn a_replaced_supervisor_s_late_word_is_let_go_of() {
     assert!(!reg.lock().contains_key(&id));
 }
 
-/// Tells what it is told, and when told `Disabled` (the live supervisor's
-/// word, standing for "connected") lets another thread restart the Host
-/// first, as a restart racing it would: whatever the order, the last
-/// status told must be the one the entry holds.
-struct Racing {
-    told: Mutex<Vec<HostStatus>>,
-    registry: Mutex<Option<(Weak<HostRegistry>, HostId, tokio::runtime::Handle)>>,
+/// Notes, for each status told, whether the registry held its entries
+/// then.
+#[derive(Default)]
+struct Held {
+    registry: Mutex<Weak<HostRegistry>>,
+    told: Mutex<Vec<(HostStatus, bool)>>,
 }
 
-impl Notifier for Racing {
+impl Notifier for Held {
     fn host_status(&self, _: &str, status: &HostStatus) {
-        if *status == HostStatus::Disabled {
-            let racing = self.registry.lock().unwrap().clone();
-            if let Some((registry, id, runtime)) = racing {
-                let restart = std::thread::spawn(move || {
-                    let _runtime = runtime.enter();
-                    if let Some(registry) = registry.upgrade() {
-                        registry.restart(&id);
-                    }
-                });
-                // The restart goes first if it can; it may wait for us.
-                // The restarted supervisor tells its first status before
-                // this one if nothing keeps it from it: a second at most.
-                let before = self.told.lock().unwrap().len();
-                for _ in 0..100 {
-                    if self.told.lock().unwrap().len() > before {
-                        break;
-                    }
-                    std::thread::sleep(Duration::from_millis(10));
-                }
-                drop(restart);
-            }
-        }
-        self.told.lock().unwrap().push(status.clone());
+        let registry = self.registry.lock().unwrap().upgrade();
+        let held = registry.is_some_and(|reg| reg.entries.try_lock().is_err());
+        self.told.lock().unwrap().push((status.clone(), held));
     }
     fn engine_event(&self, _: &str, _: &EngineEvent) {}
 }
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn what_is_told_last_is_what_the_entry_holds_when_a_restart_races_it() {
-    // An Engine that takes connections and never answers: a supervisor
-    // stays "connecting" on it.
-    let dir = tempfile::tempdir().unwrap();
-    let socket = dir.path().join("silent.sock");
-    let listener = tokio::net::UnixListener::bind(&socket).unwrap();
-    tokio::spawn(async move {
-        let mut held = vec![];
-        while let Ok((socket, _)) = listener.accept().await {
-            held.push(socket);
-        }
-    });
-    let db = Arc::new(Db::open_in_memory().unwrap());
-    let store = Arc::new(HostStore::new(
-        db.clone(),
-        Arc::new(SecretBox::from_key(&[3; 32])),
-    ));
-    let id = store
-        .create(HostDraft {
-            name: "local".into(),
-            connection: HostConnection::Local {
-                socket_path: socket.display().to_string(),
-            },
-            engine: crate::EngineKind::Docker,
-            secrets: None,
-        })
-        .unwrap()
-        .id;
-    let racing = Arc::new(Racing {
-        told: Mutex::new(vec![]),
-        registry: Mutex::new(None),
-    });
-    let reg = HostRegistry::new(store, EventStore::new(db), racing.clone());
-    reg.restart(&id);
-    *racing.registry.lock().unwrap() = Some((
-        Arc::downgrade(&reg),
-        id.clone(),
-        tokio::runtime::Handle::current(),
-    ));
-    // The live supervisor's word, with a restart racing it.
-    let live = reg.lock()[&id].generation;
-    reg.set_status(&id, live, HostStatus::Disabled, None);
-    *racing.registry.lock().unwrap() = None;
-    // The restarted supervisor says "connecting", and then nothing for a
-    // while: the Engine never answers.
-    tokio::time::sleep(Duration::from_millis(300)).await;
-    assert_eq!(reg.status(&id), HostStatus::Connecting);
-    let told = racing.told.lock().unwrap().clone();
-    assert_eq!(told.last(), Some(&HostStatus::Connecting), "{told:?}");
+/// A Host's entry, as its supervisor `generation` left it.
+fn entry(status: HostStatus, generation: u64) -> Entry {
+    Entry {
+        status,
+        client: None,
+        task: None,
+        helpers: HashSet::new(),
+        swarm: None,
+        generation,
+    }
+}
+
+fn connected() -> HostStatus {
+    HostStatus::Connected {
+        engine_version: "27.0".into(),
+        api_version: "1.46".into(),
+        os: "linux".into(),
+        arch: "x86_64".into(),
+        podman_version: None,
+        containerd_version: None,
+        incus_version: None,
+        swarm: None,
+    }
+}
+
+/// What is told while the entry is held is told in the order the entry
+/// took it: a restart racing a supervisor waits for the lock, and its
+/// supervisor's first word comes after.
+#[test]
+fn a_status_is_told_while_the_entry_is_held() {
+    let (plain, _, id) = setup("/nonexistent/homeport-test.sock");
+    let held = Arc::new(Held::default());
+    let reg = HostRegistry::new(plain.store.clone(), plain.events.clone(), held.clone());
+    *held.registry.lock().unwrap() = Arc::downgrade(&reg);
+    reg.lock()
+        .insert(id.clone(), entry(HostStatus::Connecting, 1));
+    reg.set_status(&id, 1, connected(), None);
+    reg.set_swarm(&id, Some(member(Some("s1"), "n1", SwarmRole::Manager, &[])));
+    let told = held.told.lock().unwrap().clone();
+    assert_eq!(told.len(), 2, "{told:?}");
+    assert!(told.iter().all(|(_, held)| *held), "{told:?}");
 }
