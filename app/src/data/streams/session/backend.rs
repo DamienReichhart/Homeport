@@ -65,11 +65,10 @@ pub enum Kind {
 }
 
 impl Backend {
-    /// The backend with the terminal's size, as the session starts with it
-    /// (`terminal::State::size`): options left at their default would ask
-    /// for a terminal of no cells.
+    /// The backend with the terminal's size, as the session opens it:
+    /// options left at their default would ask for a terminal of no cells.
     #[must_use]
-    pub fn sized(mut self, cols: u16, rows: u16) -> Self {
+    pub(super) fn sized(mut self, cols: u16, rows: u16) -> Self {
         let (cols, rows) = (cols.max(1), rows.max(1));
         match &mut self {
             Self::Engine { options, .. } => (options.cols, options.rows) = (cols, rows),
@@ -85,7 +84,8 @@ impl Backend {
     }
 
     /// The size the terminal is asked for.
-    pub fn size(&self) -> (u16, u16) {
+    #[cfg(test)]
+    pub(super) fn size(&self) -> (u16, u16) {
         let size = match self {
             Self::Engine { options, .. } => (options.cols, options.rows),
             Self::Containerd { options, .. } => (options.cols, options.rows),

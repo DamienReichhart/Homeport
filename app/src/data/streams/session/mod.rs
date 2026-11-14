@@ -14,12 +14,18 @@
 //!
 //! The output is a [`shapes::terminal`] stream: batched to a frame, its
 //! backlog bounded, and the session closed when the stream is dropped
-//! (the page closed or let go of it). A page follows it with
-//! [`subscription`] and keeps a [`TerminalSession`] for what it sends:
+//! (the page closed or let go of it). A page keeps a [`TerminalSession`]
+//! per terminal, made with the backend and the terminal's size, follows
+//! its output with [`TerminalSession::subscription`] and sends it what is
+//! typed:
 //!
 //! ```ignore
+//! // made once, at the terminal's size:
+//! let (cols, rows) = terminal.size();
+//! let session = TerminalSession::new(backend, cols, rows);
+//!
 //! // in subscription:
-//! session::subscription(ctx.state, self.number, self.backend.clone()).map(Message::Session)
+//! self.session.subscription(ctx.state, self.number).map(Message::Session)
 //!
 //! // in update:
 //! Message::Session(Update::Started(id)) => {
@@ -43,10 +49,10 @@
 //! reordered and `update` never waits on the backend: [`input`] and
 //! [`resize`] only queue. Keys typed before the session started are sent
 //! once it does; a size asked for meanwhile replaces the one before it.
-//! A backend is opened at the terminal's size ([`Backend::sized`]), and
-//! that size is told again when the session starts, so a terminal opened
-//! again on a new session is the program's size even though its own did
-//! not change. A write that failed ends the writer: the page is told by
+//! A session has a size from the start ([`TerminalSession::new`] takes
+//! it): its backend is opened at the size it has then, and that size is
+//! told again when the session starts, so a terminal opened again on a
+//! new session is the program's size even though its own did not change. A write that failed ends the writer: the page is told by
 //! its task, [`TerminalSession::written`] keeps the failure, and [`input`]
 //! and [`resize`] say it again rather than dropping what they were given.
 //!
@@ -124,13 +130,11 @@ fn close_nomad(state: &AppState, id: u32) {
     on_runtime(|| closed(clusters_nomad_exec_close(state, id)));
 }
 
-/// Opens the terminal `backend` says: [`Update::Started`] with the
-/// session's id (for [`TerminalSession::started`]), then its output.
-/// Dropping the stream closes the session.
-pub fn open(
-    state: Arc<AppState>,
-    backend: Backend,
-) -> impl Stream<Item = Update<ExecEvent>> + Send {
+/// Opens the terminal `backend` says, at the size it was given
+/// ([`Backend::sized`]): [`Update::Started`] with the session's id (for
+/// [`TerminalSession::started`]), then its output. Dropping the stream
+/// closes the session.
+fn open(state: Arc<AppState>, backend: Backend) -> impl Stream<Item = Update<ExecEvent>> + Send {
     use iced::futures::StreamExt;
     match backend {
         Backend::Engine {
@@ -208,7 +212,9 @@ pub fn open(
 }
 
 /// What a page follows a terminal by: its own number for it (two
-/// terminals on the same container are two sessions) and the backend.
+/// terminals on the same container are two sessions) and the backend,
+/// sized (its size is not part of what tells two apart: a terminal
+/// resized goes on with its session).
 #[derive(Debug, Clone)]
 pub struct Opened {
     pub number: u64,
@@ -221,20 +227,6 @@ impl Hash for Opened {
         self.backend.kind().hash(hasher);
         self.backend.identity().hash(hasher);
     }
-}
-
-/// The terminal as a subscription: it runs while the page returns it, and
-/// its session is closed when the page no longer does.
-pub fn subscription(
-    state: &Arc<AppState>,
-    number: u64,
-    backend: Backend,
-) -> Subscription<Update<ExecEvent>> {
-    super::subscription(
-        state,
-        Opened { number, backend },
-        |source: &Source<Opened>| open(source.state.clone(), source.params.backend.clone()),
-    )
 }
 
 /// How a session ended, as its last item said.
@@ -279,10 +271,10 @@ enum Op {
 /// order, from `update`, without waiting.
 #[derive(Debug)]
 pub struct TerminalSession {
-    kind: Kind,
+    backend: Backend,
     id: Option<u32>,
-    /// The size the program's terminal is to be: told first when the
-    /// session starts, whatever it was asked with.
+    /// The size the program's terminal is to be: what it is opened at,
+    /// and told first when the session starts.
     size: (u16, u16),
     /// What was asked for before the session started.
     pending: Vec<Op>,
@@ -300,15 +292,48 @@ fn ended() -> AppError {
 }
 
 impl TerminalSession {
-    pub fn new(backend: &Backend) -> Self {
+    /// A session of `backend` for a terminal of `cols` by `rows` cells
+    /// (`terminal::State::size`; 1 by 1 at least). Whatever size the
+    /// backend's options say is not used.
+    pub fn new(backend: Backend, cols: u16, rows: u16) -> Self {
         Self {
-            kind: backend.kind(),
+            backend,
             id: None,
-            size: backend.size(),
+            size: (cols.max(1), rows.max(1)),
             pending: vec![],
             sender: None,
             failure: None,
         }
+    }
+
+    /// The terminal as a subscription, opened at the size the session has
+    /// then: it runs while the page returns it, and its session is closed
+    /// when the page no longer does.
+    pub fn subscription(
+        &self,
+        state: &Arc<AppState>,
+        number: u64,
+    ) -> Subscription<Update<ExecEvent>> {
+        super::subscription(
+            state,
+            Opened {
+                number,
+                backend: self.sized(),
+            },
+            |source: &Source<Opened>| open(source.state.clone(), source.params.backend.clone()),
+        )
+    }
+
+    /// The backend at the session's size.
+    fn sized(&self) -> Backend {
+        let (cols, rows) = self.size;
+        self.backend.clone().sized(cols, rows)
+    }
+
+    /// The terminal's output, opened at the session's size: what the
+    /// subscription follows.
+    fn opened(&self, state: Arc<AppState>) -> impl Stream<Item = Update<ExecEvent>> + Send {
+        open(state, self.sized())
     }
 
     /// The session's id, once it started.
@@ -338,7 +363,7 @@ impl TerminalSession {
         self.id = Some(id);
         self.sender = Some(sender);
         self.failure = None;
-        write(state, self.kind, id, receiver)
+        write(state, self.backend.kind(), id, receiver)
     }
 
     /// What the writer of [`TerminalSession::started`] ended with: a

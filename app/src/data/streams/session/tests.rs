@@ -17,7 +17,7 @@ use homeport_incus::instances::terminal::IncusExecOptions;
 use homeport_kubernetes::streams::terminal::PodExecOptions;
 use homeport_nomad::allocations::exec::NomadExecOptions;
 
-use super::{open, output, Backend, Exit, Kind, Opened, Output, TerminalSession};
+use super::{output, Backend, Exit, Kind, Opened, Output, TerminalSession};
 use crate::{
     app::{testing, AppState},
     data::streams::Update,
@@ -29,14 +29,18 @@ fn state() -> (Arc<AppState>, impl Sized) {
     (Arc::new(state), (events, dir))
 }
 
-/// A shell in the container, at the size of a terminal of 100 by 30.
+/// A shell in the container.
 fn shell(host_id: &str) -> Backend {
     Backend::Engine {
         host_id: host_id.to_owned(),
         container_id: "c1".to_owned(),
         options: ExecOptions::default(),
     }
-    .sized(100, 30)
+}
+
+/// A session of `backend` for a terminal of 100 by 30.
+fn session(backend: Backend) -> TerminalSession {
+    TerminalSession::new(backend, 100, 30)
 }
 
 /// The sizes the fake's terminal was told, in order.
@@ -77,13 +81,12 @@ async fn a_shell_in_a_container_takes_keys_in_order_is_resized_and_says_its_end(
     let (state, _app) = state();
     let engine = Engine::start();
     let host_id = engine.host(&state).await;
-    let backend = shell(&host_id);
-    let mut session = TerminalSession::new(&backend);
+    let mut session = session(shell(&host_id));
+    let mut stream = Box::pin(session.opened(state.clone()));
     // Typed and resized before the session started: kept, the last size only.
     session.input("ec".to_owned()).unwrap();
     session.resize(90, 20).unwrap();
     session.resize(120, 40).unwrap();
-    let mut stream = Box::pin(open(state.clone(), backend));
     let Some(Update::Started(id)) = stream.next().await else {
         panic!("the terminal started");
     };
@@ -142,7 +145,7 @@ async fn letting_go_of_the_stream_closes_the_session_and_what_is_sent_after_says
     let (state, _app) = state();
     let engine = Engine::start();
     let host_id = engine.host(&state).await;
-    let mut stream = Box::pin(open(state.clone(), shell(&host_id)));
+    let mut stream = Box::pin(session(shell(&host_id)).opened(state.clone()));
     let Some(Update::Started(id)) = stream.next().await else {
         panic!("the terminal started");
     };
@@ -153,7 +156,7 @@ async fn letting_go_of_the_stream_closes_the_session_and_what_is_sent_after_says
         "the Engine's side is let go of"
     );
     // What is typed after goes nowhere, and says so: the writer's end...
-    let mut session = TerminalSession::new(&shell(&host_id));
+    let mut session = session(shell(&host_id));
     session.input("ls\r".to_owned()).unwrap();
     let refused = session.started(state.clone(), id).await;
     assert_eq!(
@@ -177,9 +180,8 @@ async fn a_session_is_told_its_size_when_it_starts_and_says_how_its_program_ende
     engine.exit_with(127);
     // A terminal that kept its size from a session before: nothing new is
     // resized, yet the program is told it.
-    let backend = shell(&host_id);
-    let mut session = TerminalSession::new(&backend);
-    let mut stream = Box::pin(open(state.clone(), backend));
+    let mut session = session(shell(&host_id));
+    let mut stream = Box::pin(session.opened(state.clone()));
     let Some(Update::Started(id)) = stream.next().await else {
         panic!("the terminal started");
     };
@@ -207,6 +209,35 @@ async fn a_session_is_told_its_size_when_it_starts_and_says_how_its_program_ende
     let exit = ended.exit.expect("an end");
     assert_eq!(exit.code, Some(127));
     assert!(exit.error.is_some(), "127 says the command could not run");
+    session.ended();
+    let _ = tokio::time::timeout(Duration::from_secs(2), writer).await;
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn a_session_opens_its_terminal_at_the_size_it_was_made_with() {
+    let (state, _app) = state();
+    let engine = Engine::start();
+    let host_id = engine.host(&state).await;
+    // Options left at their default: no size of their own.
+    let backend = Backend::Engine {
+        host_id,
+        container_id: "c1".to_owned(),
+        options: ExecOptions::default(),
+    };
+    let mut session = TerminalSession::new(backend, 132, 43);
+    let mut stream = Box::pin(session.opened(state.clone()));
+    let Some(Update::Started(id)) = stream.next().await else {
+        panic!("the terminal started");
+    };
+    let writer = tokio::spawn(session.started(state.clone(), id));
+    let created = engine.execs();
+    assert!(
+        created[0].contains(r#""ConsoleSize":[43,132]"#),
+        "{}",
+        created[0]
+    );
+    engine.exit();
+    let _ = read_until(&mut stream, |out| out.exit.is_some()).await;
     session.ended();
     let _ = tokio::time::timeout(Duration::from_secs(2), writer).await;
 }
@@ -291,13 +322,13 @@ async fn every_backend_without_its_host_or_cluster_fails_to_start() {
         ]
     );
     for backend in backends {
-        let updates: Vec<_> = open(state.clone(), backend.clone()).collect().await;
+        let mut session = session(backend.clone());
+        let updates: Vec<_> = session.opened(state.clone()).collect().await;
         assert!(
             matches!(updates.as_slice(), [Update::Failed(_)]),
             "{backend:?}: {updates:?}"
         );
         // A session of that kind that ended takes no input.
-        let mut session = TerminalSession::new(&backend);
         session.input("x".to_owned()).unwrap();
         let refused = session.started(state.clone(), 7).await;
         assert!(refused.is_err(), "{backend:?}");
