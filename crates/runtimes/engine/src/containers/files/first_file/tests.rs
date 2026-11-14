@@ -83,6 +83,8 @@ fn failure(archive: &[u8], expected: Option<u64>) -> String {
 
 const CUT: &str = "The Docker Engine's archive of this file ended before the file did.";
 const BAD: &str = "The Docker Engine's archive of this file can't be read.";
+const LONG: &str =
+    "The headers before this file in the Docker Engine's archive are too long to be read.";
 const EMPTY: &str = "The Docker Engine sent an empty archive for this file.";
 const NOT_REGULAR: &str = "/note.txt is a link or not a regular file, so it can't be downloaded.";
 
@@ -121,6 +123,9 @@ fn a_pax_size_is_the_file_s_and_must_be_the_one_the_engine_gave() {
         failure(&tar, Some(10)),
         "/note.txt changed while it was being downloaded. Download it again."
     );
+    // Its detail is bare data: the two sizes.
+    let error = read(&tar, 64, Some(10)).unwrap_err();
+    assert_eq!(error.detail.as_deref(), Some("10 → 4"));
     // A `size=` inside another record's value is that value, not a size.
     let tar = archive(
         "note.txt",
@@ -184,7 +189,10 @@ fn global_headers_or_a_long_name_past_the_bound_are_refused() {
     // Twelve thousand empty global headers: six megabytes of nothing.
     let mut tar = header("g", tar::EntryType::XGlobalHeader, 0).repeat(12_000);
     tar.extend(archive("note.txt", b"hi\n", None));
-    assert_eq!(failure(&tar, None), BAD);
+    assert_eq!(failure(&tar, None), LONG);
+    // Said by its message alone: no English of this crate's as detail.
+    let error = read(&tar, 512, None).unwrap_err();
+    assert_eq!(error.detail, None);
     // A long name of two megabytes, which the crate would read whole.
     let name = vec![b'a'; 2 * 1024 * 1024];
     let mut tar = header(
@@ -194,7 +202,7 @@ fn global_headers_or_a_long_name_past_the_bound_are_refused() {
     );
     tar.extend(padded(&name));
     tar.extend(archive("note.txt", b"hi\n", None));
-    assert_eq!(failure(&tar, None), BAD);
+    assert_eq!(failure(&tar, None), LONG);
 }
 
 #[test]

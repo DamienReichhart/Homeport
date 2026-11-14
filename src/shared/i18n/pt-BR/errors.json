@@ -334,6 +334,7 @@
   "errors.files.badArchive": "Não é possível ler o arquivo compactado que o Docker Engine enviou para este arquivo.",
   "errors.files.cutArchive": "O arquivo compactado que o Docker Engine enviou para este arquivo terminou antes do arquivo.",
   "errors.files.emptyArchive": "O Docker Engine enviou um arquivo vazio para este arquivo.",
+  "errors.files.longHeaders": "Os cabeçalhos antes deste arquivo no arquivo compactado do Docker Engine são longos demais para serem lidos.",
   "errors.files.noTools": "Este contêiner não tem as ferramentas find e stat, então os arquivos dele não podem ser listados.",
   "errors.files.noTools.hint": "Imagens mínimas (distroless, scratch) as deixam de fora. Copie arquivos com docker cp a partir de um terminal em vez disso.",
   "errors.files.notAFile": "{path} não é um arquivo.",

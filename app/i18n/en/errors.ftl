@@ -338,6 +338,7 @@ errors-file-tooLarge-hint = Pick a file under 1 MB.
 errors-files-badArchive = The Docker Engine's archive of this file can't be read.
 errors-files-cutArchive = The Docker Engine's archive of this file ended before the file did.
 errors-files-emptyArchive = The Docker Engine sent an empty archive for this file.
+errors-files-longHeaders = The headers before this file in the Docker Engine's archive are too long to be read.
 errors-files-noTools = This container has no find and stat tools, so its files can't be listed.
 errors-files-noTools-hint = Minimal images (distroless, scratch) leave them out. Copy files with docker cp from a terminal instead.
 errors-files-notAFile = { $path } is not a file.

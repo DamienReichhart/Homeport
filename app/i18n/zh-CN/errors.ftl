@@ -338,6 +338,7 @@ errors-file-tooLarge-hint = 请选择小于 1 MB 的文件。
 errors-files-badArchive = 无法读取 Docker Engine 发送的此文件的归档。
 errors-files-cutArchive = Docker Engine 发送的此文件的归档在文件结束前就结束了。
 errors-files-emptyArchive = Docker Engine 为此文件发送了空归档。
+errors-files-longHeaders = Docker Engine 归档中此文件之前的标头过长，无法读取。
 errors-files-noTools = 此容器中没有 find 和 stat 工具，因此无法列出其文件。
 errors-files-noTools-hint = 精简镜像（distroless、scratch）不包含这些工具。请改为在终端中使用 docker cp 复制文件。
 errors-files-notAFile = { $path } 不是文件。

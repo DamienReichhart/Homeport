@@ -334,6 +334,7 @@
   "errors.files.badArchive": "このファイルの Docker Engine のアーカイブを読み取れません。",
   "errors.files.cutArchive": "このファイルの Docker Engine のアーカイブは、ファイルの途中で終わりました。",
   "errors.files.emptyArchive": "Docker Engine はこのファイルについて空のアーカイブを送ってきました。",
+  "errors.files.longHeaders": "Docker Engine のアーカイブ内でこのファイルの前にあるヘッダーが長すぎて読み取れません。",
   "errors.files.noTools": "このコンテナには find と stat のツールがないため、ファイルを一覧表示できません。",
   "errors.files.noTools.hint": "最小限のイメージ（distroless、scratch）にはこれらが含まれていません。代わりにターミナルから docker cp でファイルをコピーしてください。",
   "errors.files.notAFile": "{path} はファイルではありません。",

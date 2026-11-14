@@ -59,7 +59,7 @@ impl<I: Iterator<Item = Bytes>> Read for Incoming<I> {
         }
         let room = self.gauge.limit.get().saturating_sub(self.read);
         if room == 0 {
-            return Err(io::Error::other("the headers before the file are too long"));
+            return Err(io::Error::other(HeadersTooLong));
         }
         while self.current.is_empty() {
             match self.chunks.next() {
@@ -81,9 +81,29 @@ impl<I: Iterator<Item = Bytes>> Read for Incoming<I> {
     }
 }
 
+/// The headers before the file passed [`HEADERS_MAX`]: said by its own
+/// message, never by this text, which only the log may show.
+#[derive(Debug)]
+struct HeadersTooLong;
+
+impl std::fmt::Display for HeadersTooLong {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "headers past {HEADERS_MAX} bytes")
+    }
+}
+
+impl std::error::Error for HeadersTooLong {}
+
 /// Why the archive couldn't be read: cut short if its chunks ended,
-/// otherwise not an archive the file can be read out of.
+/// headers too long, otherwise not an archive the file can be read out
+/// of. The `tar` crate's own error is its detail, raw as an OS error is.
 fn unreadable(error: &io::Error, gauge: &Gauge) -> AppError {
+    if error
+        .get_ref()
+        .is_some_and(|inner| inner.is::<HeadersTooLong>())
+    {
+        return AppError::new(ErrorCode::EngineError, msg::FILES_LONG_HEADERS);
+    }
     let message = if gauge.ended.get() {
         msg::FILES_CUT_ARCHIVE
     } else {
@@ -143,7 +163,8 @@ pub(super) fn copy_out(
             ErrorCode::EngineError,
             msg::FILES_SIZE_CHANGED.with("path", path),
         )
-        .with_detail(format!("{} bytes, then {size}", expected.unwrap_or(0))));
+        // Bare numbers: the sizes in bytes, the Engine's then the archive's.
+        .with_detail(format!("{} → {size}", expected.unwrap_or(0))));
     }
     // The file's own bytes are read a chunk at a time, however many.
     gauge.limit.set(u64::MAX);

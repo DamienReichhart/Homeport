@@ -338,6 +338,7 @@ errors-file-tooLarge-hint = اختر ملفًا أصغر من 1 MB.
 errors-files-badArchive = تتعذّر قراءة أرشيف Docker Engine لهذا الملف.
 errors-files-cutArchive = انتهى أرشيف Docker Engine لهذا الملف قبل أن ينتهي الملف.
 errors-files-emptyArchive = أرسل محرك Docker أرشيفًا فارغًا لهذا الملف.
+errors-files-longHeaders = الترويسات التي تسبق هذا الملف في أرشيف Docker Engine أطول من أن تُقرأ.
 errors-files-noTools = لا تحتوي هذه الحاوية على أداتي find وstat، لذا لا يمكن سرد ملفاتها.
 errors-files-noTools-hint = تستبعدهما الصور المصغّرة (distroless، scratch). انسخ الملفات باستخدام docker cp من الطرفية بدلًا من ذلك.
 errors-files-notAFile = { $path } ليس ملفًا.

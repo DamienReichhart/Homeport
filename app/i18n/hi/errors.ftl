@@ -338,6 +338,7 @@ errors-file-tooLarge-hint = 1 MB से छोटी फ़ाइल चुन�
 errors-files-badArchive = इस फ़ाइल के लिए Docker Engine का आर्काइव पढ़ा नहीं जा सकता।
 errors-files-cutArchive = इस फ़ाइल के लिए Docker Engine का आर्काइव फ़ाइल से पहले ही समाप्त हो गया।
 errors-files-emptyArchive = Docker Engine ने इस फ़ाइल के लिए एक खाली आर्काइव भेजा।
+errors-files-longHeaders = Docker Engine के आर्काइव में इस फ़ाइल से पहले के हेडर पढ़ने के लिए बहुत लंबे हैं।
 errors-files-noTools = इस कंटेनर में find और stat टूल नहीं हैं, इसलिए इसकी फ़ाइलों की सूची नहीं बन सकती।
 errors-files-noTools-hint = न्यूनतम इमेज (distroless, scratch) इन्हें शामिल नहीं करतीं। इसकी बजाय टर्मिनल से docker cp से फ़ाइलें कॉपी करें।
 errors-files-notAFile = { $path } फ़ाइल नहीं है।
