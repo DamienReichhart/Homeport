@@ -55,7 +55,8 @@ fn send(actions: &mut Actions, bench: &Bench, message: Action) {
 /// What the shell was asked but the reads let go of as a form closed.
 fn settled(bench: &mut Bench) -> Vec<Asked> {
     let took = bench.took().into_iter();
-    took.filter(|asked| !matches!(asked, Asked::Unwatch(_))).collect()
+    took.filter(|asked| !matches!(asked, Asked::Unwatch(_)))
+        .collect()
 }
 
 fn edit(actions: &mut Actions, bench: &Bench, message: edit::Message) {
