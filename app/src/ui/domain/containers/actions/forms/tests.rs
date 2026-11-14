@@ -52,6 +52,12 @@ fn send(actions: &mut Actions, bench: &Bench, message: Action) {
     }
 }
 
+/// What the shell was asked but the reads let go of as a form closed.
+fn settled(bench: &mut Bench) -> Vec<Asked> {
+    let took = bench.took().into_iter();
+    took.filter(|asked| !matches!(asked, Asked::Unwatch(_))).collect()
+}
+
 fn edit(actions: &mut Actions, bench: &Bench, message: edit::Message) {
     send(actions, bench, Action::Forms(Message::Edit(message)));
 }
@@ -207,7 +213,7 @@ fn edit_recreates_the_container_and_shows_the_new_one() {
         tab: Some("logs".to_owned()),
     };
     assert_eq!(
-        bench.took(),
+        settled(&mut bench),
         [
             Asked::Open(Request::to(logs)),
             Asked::Said("Container recreated".to_owned()),
@@ -291,7 +297,7 @@ fn commit_keeps_the_container_as_an_image_and_the_images_are_read_again() {
     let commits = engine.commits();
     assert!(commits[0].contains("repo=web") && commits[0].contains("pause=false"));
     assert_eq!(
-        bench.took(),
+        settled(&mut bench),
         [
             Asked::Said("Committed to \u{2066}web:backup\u{2069}".to_owned()),
             Asked::Going("Open images".to_owned(), Request::to(Route::Images)),
@@ -378,4 +384,88 @@ fn the_loss_confirmation_starts_on_cancel_whenever_the_losses_come() {
             assert!(frame.is_focused("Cancel"));
         },
     );
+}
+
+#[test]
+fn edit_says_which_login_a_pull_of_the_image_would_use() {
+    let _english = in_language("en");
+    let (mut bench, engine, web) = bench();
+    engine.inspects_as(document(true, false, false));
+    let mut actions = Actions::of_host();
+    send(&mut actions, &bench, Action::AskEdit(web.clone()));
+    let runtime = bench.app.runtime.handle().clone();
+    {
+        let _inside = runtime.enter();
+        bench.read_watched();
+    }
+    // The Host has other images than nginx:1.27: it would be pulled.
+    let other = homeport_engine::images::Image {
+        id: "sha256:b".to_owned(),
+        tags: vec!["redis:7".to_owned()],
+        digests: vec![],
+        created: 0,
+        size: 0,
+        containers: 0,
+        labels: Default::default(),
+    };
+    bench
+        .data
+        .set(&keys::host::images(&web.host_id), vec![other]);
+    assert!(says(&actions, &bench, "Pulled anonymously"));
+}
+
+#[test]
+fn a_form_that_closes_lets_go_of_what_it_read() {
+    let (mut bench, engine, web) = bench();
+    engine.inspects_as(document(true, false, false));
+    let host = web.host_id.clone();
+    let unwatched = |bench: &mut Bench| -> Vec<crate::data::Key> {
+        bench
+            .took()
+            .into_iter()
+            .filter_map(|asked| match asked {
+                Asked::Unwatch(key) => Some(key),
+                _ => None,
+            })
+            .collect()
+    };
+    let login = keys::stacks::registry_login_for("nginx:1.27");
+    // Edit.
+    let mut actions = Actions::of_host();
+    send(&mut actions, &bench, Action::AskEdit(web.clone()));
+    let _ = bench.took();
+    edit(&mut actions, &bench, edit::Message::Close);
+    let gone = unwatched(&mut bench);
+    for key in [
+        keys::host::images(&host),
+        keys::host::networks(&host),
+        login.clone(),
+    ] {
+        assert!(gone.contains(&key), "{key:?} in {gone:?}");
+    }
+    // Duplicate.
+    send(&mut actions, &bench, Action::AskDuplicate(web.clone()));
+    let _ = bench.took();
+    send(
+        &mut actions,
+        &bench,
+        Action::Forms(Message::Run(run::dialog::Message::Close)),
+    );
+    let gone = unwatched(&mut bench);
+    for key in [
+        keys::host::images(&host),
+        keys::host::networks(&host),
+        login,
+    ] {
+        assert!(gone.contains(&key), "{key:?} in {gone:?}");
+    }
+    // Commit.
+    send(&mut actions, &bench, Action::AskCommit(web));
+    let _ = bench.took();
+    send(
+        &mut actions,
+        &bench,
+        Action::Forms(Message::Commit(commit::Message::Close)),
+    );
+    assert_eq!(unwatched(&mut bench), [keys::host::images(&host)]);
 }

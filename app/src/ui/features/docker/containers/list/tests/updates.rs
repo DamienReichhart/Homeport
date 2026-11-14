@@ -365,10 +365,14 @@ fn run_container_opens_the_run_dialog_which_cancel_and_escape_close() {
     // Run waits for an image.
     assert!(rig.shows("Run"));
     rig.frame(|frame| frame.click("Cancel"));
-    assert!(rig.state.run.is_none() && !rig.shows("Run a container"));
+    assert!(!rig.shows("Run a container"));
+    assert!(
+        rig.state.run.as_ref().is_some_and(|run| !run.is_shown()),
+        "kept, closed"
+    );
     rig.send(Message::Run);
     rig.frame(|frame| frame.tap_key(iced::keyboard::key::Named::Escape));
-    assert!(rig.state.run.is_none());
+    assert!(rig.state.run.as_ref().is_some_and(|run| !run.is_shown()));
 }
 
 /// The statuses Docker writes every day, on the sample's containers.
@@ -451,8 +455,33 @@ fn escape_in_the_image_s_suggestions_closes_them_and_not_the_run_dialog() {
     });
     assert!(rig.shows("nginx:1.27"), "the suggestion shows");
     rig.frame(|frame| frame.tap_key(iced::keyboard::key::Named::Escape));
-    assert!(rig.state.run.is_some(), "the dialog stays");
+    assert!(
+        rig.state.run.as_ref().is_some_and(|run| run.is_shown()),
+        "the dialog stays"
+    );
     assert!(!rig.shows("nginx:1.27"));
     rig.frame(|frame| frame.tap_key(iced::keyboard::key::Named::Escape));
-    assert!(rig.state.run.is_none(), "the next Escape is the dialog's");
+    assert!(
+        rig.state.run.as_ref().is_some_and(|run| !run.is_shown()),
+        "the next Escape is the dialog's"
+    );
+}
+
+#[test]
+fn the_run_dialog_keeps_what_was_typed_when_closed() {
+    let mut rig = Rig::populated();
+    rig.send(Message::Run);
+    use crate::ui::domain::containers::run;
+    let typed = run::form::Message::Typed(run::form::Line::Image, "nginx".to_owned());
+    rig.send(Message::RunDialog(run::dialog::Message::Form(typed)));
+    rig.send(Message::RunDialog(run::dialog::Message::Close));
+    assert!(dialog(&rig.state, &rig.bench.ctx()).is_none(), "closed");
+    rig.send(Message::Run);
+    let shown = rig.state.run.as_ref().map(|d| d.fields.form.image.clone());
+    assert_eq!(
+        shown.as_deref(),
+        Some("nginx"),
+        "what was typed is there again"
+    );
+    assert!(dialog(&rig.state, &rig.bench.ctx()).is_some());
 }

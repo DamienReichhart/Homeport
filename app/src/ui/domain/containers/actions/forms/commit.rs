@@ -21,7 +21,10 @@ use crate::{
     data::{keys, resources},
     t,
     ui::{
-        domain::containers::run::model::{image_named, today, CommitForm},
+        domain::containers::run::{
+            dialog::Presence,
+            model::{image_named, today, CommitForm},
+        },
         shell::{router::Route, Context, Outcome},
         theme::{
             self,
@@ -68,6 +71,7 @@ pub struct Commit {
     changes: text_editor::Content,
     pending: bool,
     failure: Option<Surfaced>,
+    presence: Presence,
 }
 
 impl Commit {
@@ -79,7 +83,15 @@ impl Commit {
             changes: text_editor::Content::new(),
             pending: false,
             failure: None,
+            presence: Presence::new(),
         }
+    }
+
+    /// Closed: the images it read are let go of, and an answer that comes
+    /// after is said in a toast.
+    pub fn let_go(&mut self, ctx: &Context<'_>) {
+        self.presence.set(false);
+        ctx.unwatch(keys::host::images(&self.target.host_id));
     }
 
     /// The image whose tag the commit would move, as the Host's images say.
@@ -120,6 +132,7 @@ impl Commit {
                     self.target.id.clone(),
                 );
                 let images = keys::host::images(&host);
+                let shown = self.presence.handle();
                 // The toast and the images read again are the shell's.
                 let task = ctx.act(
                     async move { containers_commit(&state, host, id, spec).await },
@@ -132,6 +145,11 @@ impl Commit {
                                 })
                                 .going(|| t!("containers.commit.openImages"), Route::Images)
                                 .invalidating(images.clone())
+                        }
+                        // Said in the dialog, or in a toast once it is gone.
+                        Err(error) if !shown.load(std::sync::atomic::Ordering::SeqCst) => {
+                            Outcome::quiet()
+                                .failing(Surfaced::new(error.clone(), "containers_commit"))
                         }
                         Err(_) => Outcome::quiet(),
                     },

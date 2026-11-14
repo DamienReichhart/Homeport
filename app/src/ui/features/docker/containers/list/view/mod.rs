@@ -112,6 +112,6 @@ pub fn dialog<'a>(state: &'a State, ctx: &Context<'a>) -> Option<Modal<'a, Messa
     if let Some(modal) = state.actions.dialog(ctx) {
         return Some(modal.map(Message::Actions));
     }
-    let run = state.run.as_deref()?;
+    let run = state.run.as_deref().filter(|run| run.is_shown())?;
     Some(run.view(ctx).map(Message::RunDialog))
 }

@@ -145,8 +145,12 @@ impl Forms {
                 let (task, step) = dialog.update(message, ctx);
                 match step {
                     run::Step::Stay => {}
-                    run::Step::Closed => self.shown = None,
+                    run::Step::Closed => {
+                        dialog.hide(ctx);
+                        self.shown = None;
+                    }
                     run::Step::Started(id) => {
+                        dialog.hide(ctx);
                         self.shown = None;
                         show_new(&host, id, across, ctx);
                     }
@@ -158,6 +162,9 @@ impl Forms {
                     return Task::none();
                 };
                 let (task, step) = edit.update(message, ctx);
+                if step != edit::Step::Stay {
+                    edit.let_go(ctx);
+                }
                 match step {
                     edit::Step::Stay => {}
                     edit::Step::Closed => self.shown = None,
@@ -175,6 +182,7 @@ impl Forms {
                 };
                 let (task, closes) = commit.update(message, ctx);
                 if closes {
+                    commit.let_go(ctx);
                     self.shown = None;
                 }
                 return task.map(Message::Commit);

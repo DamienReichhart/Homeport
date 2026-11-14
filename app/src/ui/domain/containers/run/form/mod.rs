@@ -10,6 +10,11 @@ use iced::widget::text_editor::{Action, Content};
 
 use homeport_engine::{images::Image, networks::NetworkView, podman::pods::Pod};
 
+mod hints;
+mod login;
+
+use self::hints::Hints;
+pub use self::hints::DRIVERS;
 use super::model::{
     advanced::{self, DeviceRow, GpuMode, HealthMode},
     restart_label, Errors, MountRow, PortRow, RunForm, RESTART,
@@ -43,19 +48,6 @@ pub enum Message {
     Submit,
     /// A field with suggestions.
     Suggest(Hint, suggest::Message),
-}
-
-/// The log drivers most Hosts have (`LoggingField`'s `DRIVERS`); any
-/// other name can be typed.
-pub const DRIVERS: [&str; 5] = ["json-file", "local", "journald", "syslog", "none"];
-
-/// The lists of the fields with suggestions.
-#[derive(Debug, Default)]
-struct Hints {
-    image: suggest::State,
-    cap_add: suggest::State,
-    cap_drop: suggest::State,
-    driver: suggest::State,
 }
 
 /// What the fields of several lines hold.
@@ -113,6 +105,8 @@ pub struct Form {
     /// What is being typed into the lists of capabilities.
     pub drafts: [String; 2],
     hints: Hints,
+    /// The login read for the image the form names.
+    login: Option<crate::data::Key>,
 }
 
 /// What a draw needs of the Host's lists.
@@ -141,81 +135,8 @@ impl Form {
             section: Section::Resources,
             drafts: Default::default(),
             hints: Hints::default(),
+            login: None,
         }
-    }
-
-    /// What a field with suggestions offers (React's `<datalist>`): the
-    /// Host's image tags, the capabilities not chosen, the usual drivers.
-    pub fn suggestions(&self, hint: Hint, lists: &Lists) -> Vec<String> {
-        match hint {
-            Hint::Image => lists
-                .images
-                .data()
-                .map(|images| images.iter().flat_map(|i| i.tags.iter().cloned()).collect())
-                .unwrap_or_default(),
-            Hint::Capability(caps) => {
-                let security = &self.form.advanced.security;
-                let chosen = match caps {
-                    Caps::Add => &security.cap_add,
-                    Caps::Drop => &security.cap_drop,
-                };
-                homeport_engine::containers::run::CAPABILITIES
-                    .iter()
-                    .filter(|name| !chosen.iter().any(|c| c == *name))
-                    .map(|name| (*name).to_owned())
-                    .collect()
-            }
-            Hint::LogDriver => DRIVERS.map(str::to_owned).to_vec(),
-        }
-    }
-
-    /// The list of a field with suggestions.
-    pub fn hint(&self, hint: Hint) -> &suggest::State {
-        let h = &self.hints;
-        match hint {
-            Hint::Image => &h.image,
-            Hint::Capability(Caps::Add) => &h.cap_add,
-            Hint::Capability(Caps::Drop) => &h.cap_drop,
-            Hint::LogDriver => &h.driver,
-        }
-    }
-
-    /// The field a hint is of, and what it holds.
-    fn hinted(&self, hint: Hint) -> (Line, String) {
-        match hint {
-            Hint::Image => (Line::Image, self.form.image.clone()),
-            Hint::Capability(caps) => (Line::Capability(caps), self.drafts[caps as usize].clone()),
-            Hint::LogDriver => (Line::LogDriver, self.form.advanced.logging.driver.clone()),
-        }
-    }
-
-    fn suggested(
-        &mut self,
-        hint: Hint,
-        message: suggest::Message,
-        ctx: &Context<'_>,
-    ) -> (iced::Task<Message>, bool) {
-        let options = self.suggestions(hint, &self.lists(ctx));
-        let (line, value) = self.hinted(hint);
-        let h = &mut self.hints;
-        let state = match hint {
-            Hint::Image => &mut h.image,
-            Hint::Capability(Caps::Add) => &mut h.cap_add,
-            Hint::Capability(Caps::Drop) => &mut h.cap_drop,
-            Hint::LogDriver => &mut h.driver,
-        };
-        let (task, event) = state.update(message, &value, &options);
-        match event {
-            Some(suggest::Event::Input(text)) => self.typed(line, text),
-            // Enter adds the capability typed (`TokenInput`); elsewhere it
-            // sends the form.
-            Some(suggest::Event::Submit) => match hint {
-                Hint::Capability(caps) => self.add_capability(caps),
-                Hint::Image | Hint::LogDriver => return (task, true),
-            },
-            None => {}
-        }
-        (task, false)
     }
 
     /// The Host's images, networks and pods, as the data layer has them.
@@ -328,6 +249,12 @@ impl Form {
     /// What `message` changes; what it started (focus that leaves a
     /// field), and whether it sends the form (Enter).
     pub fn update(&mut self, message: Message, ctx: &Context<'_>) -> (iced::Task<Message>, bool) {
+        let done = self.apply(message, ctx);
+        self.read_login(ctx);
+        done
+    }
+
+    fn apply(&mut self, message: Message, ctx: &Context<'_>) -> (iced::Task<Message>, bool) {
         match message {
             Message::Suggest(hint, message) => return self.suggested(hint, message, ctx),
             Message::Submit => return (iced::Task::none(), true),

@@ -22,7 +22,7 @@ use crate::{
     data::keys,
     t,
     ui::{
-        domain::containers::run::{self, model::RunForm},
+        domain::containers::run::{self, dialog::Presence, model::RunForm},
         shell::{Context, Outcome},
         theme::{metrics::space, Element},
         widgets::{
@@ -87,6 +87,7 @@ pub struct Edit {
     failure: Option<Surfaced>,
     confirming: Option<Confirming>,
     number: u64,
+    presence: Presence,
 }
 
 /// One line of the confirmation per thing the new container won't have.
@@ -113,9 +114,8 @@ impl Edit {
         };
         let mut fields = run::Form::new(&target.host_id, form);
         fields.lock_name = true;
-        // Its lists, for the selects.
-        ctx.watch(crate::data::resources::images(&target.host_id));
-        ctx.watch(crate::data::resources::networks(&target.host_id));
+        // Its lists, for the selects, and the image's login.
+        fields.read(ctx);
         Self {
             target,
             fields,
@@ -123,7 +123,15 @@ impl Edit {
             failure: None,
             confirming: None,
             number: 0,
+            presence: Presence::new(),
         }
+    }
+
+    /// Closed: what its fields read is let go of, and an answer that comes
+    /// after is said in a toast.
+    pub fn let_go(&mut self, ctx: &Context<'_>) {
+        self.presence.set(false);
+        self.fields.let_go(ctx);
     }
 
     pub fn fields(&self) -> &run::Form {
@@ -277,12 +285,18 @@ impl Edit {
                     self.target.id.clone(),
                 );
                 let scope = keys::host::containers(&host);
+                let shown = self.presence.handle();
                 ctx.act(
                     async move { containers_recreate(&state, host, id, spec).await },
                     move |result| match result {
                         Ok(_) => Outcome::quiet()
                             .saying(|| t!("containers.edit.recreated"))
                             .invalidating(scope.clone()),
+                        // Said in the form, or in a toast once it is gone.
+                        Err(error) if !shown.load(std::sync::atomic::Ordering::SeqCst) => {
+                            Outcome::quiet()
+                                .failing(Surfaced::new(error.clone(), "containers_recreate"))
+                        }
                         Err(_) => Outcome::quiet(),
                     },
                     Message::Recreated,
@@ -334,7 +348,8 @@ impl Edit {
             .key("edit-confirm");
         }
         let lists = self.fields.lists(ctx);
-        let fields = run::fields(&self.fields, &lists, None).map(Message::Form);
+        let login = self.fields.login(ctx);
+        let fields = run::fields(&self.fields, &lists, login.as_ref()).map(Message::Form);
         let mut content = dialog(t!(
             "containers.edit.title",
             name = self.target.name.as_str()

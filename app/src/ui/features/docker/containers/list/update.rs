@@ -110,14 +110,16 @@ pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Me
                 state.usage = usage;
             }
         }
-        Message::Run => {
-            // Opened once: `n` again leaves what was typed.
-            if state.run.is_none() {
+        Message::Run => match state.run.as_mut() {
+            // Kept since it was closed, with what was typed in it.
+            Some(dialog) if !dialog.is_shown() => dialog.show(ctx),
+            Some(_) => {}
+            None => {
                 let podman = status::engine::supports(ctx.host(), Capability::Podman);
                 let dialog = run::Dialog::run(&state.host_id, "", "", podman, ctx);
                 state.run = Some(Box::new(dialog));
             }
-        }
+        },
         Message::RunDialog(message) => {
             let Some(dialog) = state.run.as_mut() else {
                 return Task::none();
@@ -125,8 +127,12 @@ pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Me
             let (task, step) = dialog.update(message, ctx);
             match step {
                 run::Step::Stay => {}
-                run::Step::Closed => state.run = None,
+                // Kept, as React's stayed mounted: what was typed and the
+                // failure are there when it opens again.
+                run::Step::Closed => dialog.hide(ctx),
+                // Started: the next one starts afresh.
                 run::Step::Started(id) => {
+                    dialog.hide(ctx);
                     state.run = None;
                     ctx.open(Route::Container {
                         id,

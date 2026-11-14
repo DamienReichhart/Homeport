@@ -449,3 +449,39 @@ fn a_comma_typed_anywhere_ends_the_name_and_is_not_part_of_it() {
     type_in(&mut dialog, &bench, add, "CHOWN,KILL");
     assert_eq!(dialog.fields.drafts[0], "CHOWN,KILL");
 }
+
+#[test]
+fn an_older_dialog_s_answer_is_not_a_newer_one_s() {
+    let (bench, _engine, host) = bench();
+    let runtime = bench.app.runtime.handle().clone();
+    let _inside = runtime.enter();
+    let mut older = Dialog::run(&host, "nginx", "", false, &bench.ctx());
+    let (ran, _) = older.update(Message::Submit, &bench.ctx());
+    drop(older);
+    let mut newer = Dialog::run(&host, "redis", "", false, &bench.ctx());
+    let (_pending, _) = newer.update(Message::Submit, &bench.ctx());
+    // The older run ends: its answer goes to the newer dialog's page.
+    for answer in bench.run(ran) {
+        let (_, step) = newer.update(answer, &bench.ctx());
+        assert_eq!(step, Step::Stay, "the newer dialog stays");
+    }
+}
+
+#[test]
+fn a_run_that_failed_after_its_dialog_went_is_said_in_a_toast() {
+    let _english = in_language("en");
+    let (mut bench, engine, host) = bench();
+    engine.refuse_create("conflict: the name web is already in use");
+    let runtime = bench.app.runtime.handle().clone();
+    let _inside = runtime.enter();
+    let mut dialog = Dialog::run(&host, "nginx", "", false, &bench.ctx());
+    let _ = bench.took();
+    let (ran, _) = dialog.update(Message::Submit, &bench.ctx());
+    drop(dialog);
+    let _ = bench.run(ran);
+    let took = bench.took();
+    assert!(
+        matches!(took.as_slice(), [Asked::Failed(None, error)] if error.detail.as_deref().is_some_and(|d| d.contains("conflict"))),
+        "{took:?}"
+    );
+}
