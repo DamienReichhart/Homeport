@@ -233,17 +233,20 @@ pub fn append_event(list: &[EngineEvent], event: &EngineEvent) -> Option<Vec<Eng
     Some(appended)
 }
 
-/// Whether an Engine event is about a command run in a container.
+/// Whether an Engine event is about a command run in a container:
+/// Docker's `exec_create: sh -c …`, `exec_start: …`, `exec_die`,
+/// `exec_detach`, and Podman's `exec` and `exec_died`.
 fn is_exec(kind: &str, action: &str) -> bool {
-    kind == "container" && action.starts_with("exec_")
+    let verb = action.split(':').next().unwrap_or_default().trim();
+    kind == "container" && (verb == "exec" || verb.starts_with("exec_"))
 }
 
 /// Which cached lists an Engine event of `kind` and `action` makes out of
 /// date.
 ///
 /// A command run in a container (`exec_create`, `exec_start`, `exec_die`,
-/// `exec_detach`: a healthcheck's, a terminal's, the `find` that lists a
-/// folder) changes none of them, and makes none out of date: it would
+/// `exec_detach`, Podman's `exec` and `exec_died`: a healthcheck's, a
+/// terminal's, the `find` that lists a folder) changes none of them, and makes none out of date: it would
 /// read the lists again on every check, and a folder's listing, which is
 /// such a command, again and again.
 /// containerd's events (`task`, `snapshot`, `namespace`, `content`, and its

@@ -54,9 +54,15 @@ fn a_command_run_in_a_container_makes_nothing_out_of_date() {
         "exec_start: find / -mindepth 1",
         "exec_die",
         "exec_detach",
+        // Podman's, on its compatible events.
+        "exec",
+        "exec_died",
+        "exec: find / -mindepth 1",
     ] {
         assert!(stale_keys("h1", "container", action).is_empty(), "{action}");
     }
+    // An action whose name only starts with the word is not one.
+    assert!(!stale_keys("h1", "container", "executed").is_empty());
     // A healthcheck's result is a status the lists show.
     assert!(
         stale_keys("h1", "container", "health_status: unhealthy").contains(&host::containers("h1"))
