@@ -457,3 +457,83 @@ async fn a_replaced_supervisor_s_late_word_is_let_go_of() {
     reg.removed(&id, current);
     assert!(!reg.lock().contains_key(&id));
 }
+
+/// Tells what it is told, and when told `Disabled` (the live supervisor's
+/// word, standing for "connected") lets another thread restart the Host
+/// first, as a restart racing it would: whatever the order, the last
+/// status told must be the one the entry holds.
+struct Racing {
+    told: Mutex<Vec<HostStatus>>,
+    registry: Mutex<Option<(Weak<HostRegistry>, HostId, tokio::runtime::Handle)>>,
+}
+
+impl Notifier for Racing {
+    fn host_status(&self, _: &str, status: &HostStatus) {
+        if *status == HostStatus::Disabled {
+            let racing = self.registry.lock().unwrap().clone();
+            if let Some((registry, id, runtime)) = racing {
+                let restart = std::thread::spawn(move || {
+                    let _runtime = runtime.enter();
+                    if let Some(registry) = registry.upgrade() {
+                        registry.restart(&id);
+                    }
+                });
+                // The restart goes first if it can; it may wait for us.
+                for _ in 0..20 {
+                    if restart.is_finished() {
+                        break;
+                    }
+                    std::thread::sleep(Duration::from_millis(10));
+                }
+            }
+        }
+        self.told.lock().unwrap().push(status.clone());
+    }
+    fn engine_event(&self, _: &str, _: &EngineEvent) {}
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn what_is_told_last_is_what_the_entry_holds_when_a_restart_races_it() {
+    let db = Arc::new(Db::open_in_memory().unwrap());
+    let store = Arc::new(HostStore::new(
+        db.clone(),
+        Arc::new(SecretBox::from_key(&[3; 32])),
+    ));
+    let id = store
+        .create(HostDraft {
+            name: "local".into(),
+            connection: HostConnection::Local {
+                socket_path: "/nonexistent/homeport-race.sock".into(),
+            },
+            engine: crate::EngineKind::Docker,
+            secrets: None,
+        })
+        .unwrap()
+        .id;
+    let racing = Arc::new(Racing {
+        told: Mutex::new(vec![]),
+        registry: Mutex::new(None),
+    });
+    let reg = HostRegistry::new(store, EventStore::new(db), racing.clone());
+    reg.restart(&id);
+    // Let the first supervisor say its first words and sleep on its retry.
+    wait_for(&reg, &id, |s| matches!(s, HostStatus::Unreachable { .. })).await;
+    *racing.registry.lock().unwrap() = Some((
+        Arc::downgrade(&reg),
+        id.clone(),
+        tokio::runtime::Handle::current(),
+    ));
+    let live = reg.lock()[&id].generation;
+    reg.set_status(&id, live, HostStatus::Disabled, None);
+    *racing.registry.lock().unwrap() = None;
+    // The restarted supervisor says its own words: connecting, unreachable.
+    wait_for(&reg, &id, |s| matches!(s, HostStatus::Unreachable { .. })).await;
+    tokio::time::sleep(Duration::from_millis(200)).await;
+    let last = racing.told.lock().unwrap().last().cloned();
+    assert_eq!(
+        last.as_ref(),
+        Some(&reg.status(&id)),
+        "{:?}",
+        racing.told.lock().unwrap()
+    );
+}

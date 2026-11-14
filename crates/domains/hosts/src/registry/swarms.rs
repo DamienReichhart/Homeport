@@ -16,22 +16,17 @@ use crate::HostId;
 impl HostRegistry {
     /// Updates a connected Host's place in a Swarm, telling the app when it changed.
     pub(super) fn set_swarm(&self, id: &str, membership: Option<SwarmMembership>) {
-        let changed = {
-            let mut entries = self.lock();
-            let Some(entry) = entries.get_mut(id) else {
-                return;
-            };
-            match &mut entry.status {
-                HostStatus::Connected { swarm, .. } if *swarm != membership => {
-                    swarm.clone_from(&membership);
-                    entry.swarm = membership;
-                    Some(entry.status.clone())
-                }
-                _ => None,
-            }
+        let mut entries = self.lock();
+        let Some(entry) = entries.get_mut(id) else {
+            return;
         };
-        if let Some(status) = changed {
-            self.notifier.host_status(id, &status);
+        if let HostStatus::Connected { swarm, .. } = &mut entry.status {
+            if *swarm != membership {
+                swarm.clone_from(&membership);
+                entry.swarm = membership;
+                // Told while the entry is held, as every status is.
+                self.notifier.host_status(id, &entry.status);
+            }
         }
     }
 

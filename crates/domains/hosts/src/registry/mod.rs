@@ -173,15 +173,24 @@ impl HostRegistry {
             entry.status = status.clone();
             entry.client = client;
         }
-        drop(entries);
+        // Told while the entry is held: what is told last is what it holds,
+        // even when a restart races the supervisor that is telling it.
         self.notifier.host_status(id, &status);
     }
 
     /// The supervisor `generation` found its Host gone from the store.
+    /// Compared and removed under one lock: a restart in between would
+    /// otherwise have its new entry removed and its supervisor aborted.
     fn removed(&self, id: &str, generation: u64) {
-        let current = self.lock().get(id).map(|entry| entry.generation);
-        if current == Some(generation) {
-            self.remove(id);
+        let entry = {
+            let mut entries = self.lock();
+            match entries.get(id) {
+                Some(entry) if entry.generation == generation => entries.remove(id),
+                _ => None,
+            }
+        };
+        if let Some(task) = entry.and_then(|entry| entry.task) {
+            task.abort();
         }
     }
 
