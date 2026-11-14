@@ -1,12 +1,12 @@
 //! What a message changes on a container's page.
 
-use std::{collections::HashSet, sync::Arc};
+use std::collections::HashSet;
 
 use iced::Task;
 
 use super::{
     queries,
-    state::{gone, Tab},
+    state::{gone, LogsEnded, Tab},
     tabs::{files, health, inspect, processes},
     view, Message, State,
 };
@@ -220,29 +220,38 @@ pub fn refresh(state: &mut State, ctx: &Context<'_>) -> Task<Message> {
 
 /// A container that starts again writes again: its log stream ended with
 /// it, so the logs that show are opened anew once a list read since the
-/// end says it runs. A restart goes from running to running faster than
-/// the list is read, so the end itself asks for the list again. React's
+/// end says it started again: it went through another state, or its
+/// status says it is up anew (`Up Less than a second` after `Up 3
+/// hours`). A restart goes from running to running faster than the list
+/// is read, so the end itself asks for the list again, once. React's
 /// stayed on "end of logs" until an option of the viewer changed.
+///
+/// A stream that failed is never opened again by itself: its failure
+/// stays, with its Retry. A log driver that serves no logs (`none`, or a
+/// remote one without its cache) fails each time, and opening it again
+/// as soon as the list says the container runs would never end.
 fn reopen_logs(state: &mut State, ctx: &Context<'_>) {
-    if state.tab != Tab::Logs || !state.logs.has_ended() {
+    if state.tab != Tab::Logs || !state.logs.has_ended() || state.logs.failure.is_some() {
         return;
     }
-    let list = state.containers(ctx).data().cloned();
     let generation = state.logs.generation();
-    match &state.logs_ended {
-        Some((ended, at_end)) if *ended == generation => {
-            let read_since = match (at_end, &list) {
-                (Some(at_end), Some(list)) => !Arc::ptr_eq(at_end, list),
-                (None, Some(_)) => true,
-                _ => false,
-            };
-            let running = state.seen_state.as_deref() == Some("running");
-            if read_since && running {
+    let container = state.container(ctx);
+    let running = container.as_ref().is_some_and(|c| c.state == "running");
+    let status = container.map(|c| c.status);
+    match &mut state.logs_ended {
+        Some(end) if end.generation == generation => {
+            if !running {
+                end.stopped_since = true;
+            } else if end.stopped_since || status != end.status {
                 state.logs.restart(now());
             }
         }
         _ => {
-            state.logs_ended = Some((generation, list));
+            state.logs_ended = Some(LogsEnded {
+                generation,
+                status,
+                stopped_since: !running,
+            });
             ctx.invalidate(keys::host::containers(&state.host_id));
         }
     }

@@ -49,9 +49,11 @@
 //! - A tab that is left lets go of its stream and its timers, and starts
 //!   over when it comes back, as a React tab was unmounted and mounted.
 //!   A log stream that ended (the container stopped, or was restarted) is
-//!   opened again once a list read since says the container runs; the
-//!   end itself asks for that list, since a restart is running to
-//!   running. React's stayed on "end of logs".
+//!   opened again once a list read since says the container started
+//!   again (it went through another state, or its status says it is up
+//!   anew); the end itself asks for that list, once, since a restart is
+//!   running to running. A stream that failed is never opened again by
+//!   itself: its failure and Retry stay. React's stayed on "end of logs".
 //! - The health and processes timers run only while their tab shows (a
 //!   subscription of the tab); React's `refetchInterval` did the same by
 //!   unmounting.

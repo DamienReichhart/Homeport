@@ -255,13 +255,63 @@ fn a_restart_opens_the_logs_again_once_the_list_says_the_container_runs() {
     // Nothing read since: the end stays.
     rig.refresh();
     assert_eq!(rig.state.logs.generation(), generation);
-    // The list read again says it runs (running to running): another
-    // stream, on an empty viewer.
-    rig.list(sample());
+    // The list read again says it is up anew (running to running):
+    // another stream, on an empty viewer.
+    rig.list(restarted());
     assert_eq!(rig.state.logs.generation(), generation + 1);
     assert!(!rig.state.logs.has_ended() && rig.state.logs.view.is_empty());
     // A list read again once more opens nothing more.
-    rig.list(sample());
+    rig.list(restarted());
+    assert_eq!(rig.state.logs.generation(), generation + 1);
+}
+
+/// The sample, `web` just started again.
+fn restarted() -> Vec<homeport_engine::containers::Container> {
+    let mut list = sample();
+    "Up Less than a second (healthy)".clone_into(&mut list[0].status);
+    list
+}
+
+#[test]
+fn a_stream_that_ended_with_the_container_still_up_is_not_opened_again() {
+    let mut rig = filled();
+    let generation = rig.state.logs.generation();
+    end(&mut rig);
+    let _ = rig.bench.took();
+    // Read again, the same container, up as before: no restart.
+    for _ in 0..3 {
+        rig.list(sample());
+        assert_eq!(rig.state.logs.generation(), generation);
+        assert!(rig.bench.took().is_empty(), "the list is asked once");
+    }
+}
+
+#[test]
+fn a_stream_that_failed_on_a_running_container_is_never_opened_again_by_itself() {
+    let mut rig = filled();
+    let generation = rig.state.logs.generation();
+    // A log driver that serves no logs: the Engine's error, then the end.
+    let refused = homeport_core::error::AppError::new(
+        ErrorCode::EngineError,
+        homeport_hosts::messages::NOT_CONNECTED_UNKNOWN,
+    );
+    let failed = Update::Batch {
+        items: vec![LogEvent::Error { error: refused }, LogEvent::End],
+        dropped: 0,
+    };
+    rig.send(logs(logs::Message::Lines(generation, failed)));
+    let asked = rig.bench.took();
+    assert!(
+        !asked.contains(&Asked::Invalidate(keys::host::containers("h1"))),
+        "{asked:?}"
+    );
+    for list in [sample(), restarted(), restarted()] {
+        rig.list(list);
+        assert_eq!(rig.state.logs.generation(), generation);
+        assert!(rig.state.logs.failure.is_some(), "the failure stays");
+    }
+    // Its Retry is the user's.
+    rig.send(logs(logs::Message::Failure(Event::Retry)));
     assert_eq!(rig.state.logs.generation(), generation + 1);
 }
 

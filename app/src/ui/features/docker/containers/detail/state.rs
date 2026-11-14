@@ -21,6 +21,17 @@ use crate::{
     },
 };
 
+/// How a container was when the log stream of this number ended: what
+/// tells, once the list is read again, whether it started again.
+#[derive(Debug)]
+pub(super) struct LogsEnded {
+    pub(super) generation: u64,
+    /// Its status then (`Up 3 hours`).
+    pub(super) status: Option<String>,
+    /// It was seen not running since.
+    pub(super) stopped_since: bool,
+}
+
 /// The window's width from which cards stand two a row (`lg`).
 pub(super) const TWO_COLUMNS_FROM: f32 = 1024.0;
 
@@ -120,10 +131,8 @@ pub struct State {
     pub(super) window: Option<iced::Size>,
     /// The container's state when the page last looked.
     pub(super) seen_state: Option<String>,
-    /// The log stream of this number ended while the Host's list was the
-    /// one kept here: a list read since that says the container runs
-    /// means it started again (a restart is running to running).
-    pub(super) logs_ended: Option<(u64, Option<Arc<Vec<Container>>>)>,
+    /// How the container was when its log stream ended.
+    pub(super) logs_ended: Option<LogsEnded>,
     /// What the page already asked the shell to read: a resource is
     /// asked for once, when the tab that shows it first needs it.
     pub(super) watched: HashSet<Key>,
