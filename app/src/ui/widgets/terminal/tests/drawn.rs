@@ -115,6 +115,29 @@ fn a_full_screen_program_s_frame_in_both_themes() {
     }
 }
 
+/// What real programs drew, recorded under a pty at 80 by 24, on a
+/// terminal of that size: the closest these tests come to a container.
+#[test]
+fn recorded_programs_as_they_drew_themselves() {
+    for (name, theme) in [
+        ("vim", Theme::Light),
+        ("less", Theme::Light),
+        ("top", Theme::Light),
+        ("tmux", Theme::Light),
+        ("vim", Theme::Dark),
+    ] {
+        let mut state = State::new();
+        fit(&mut state, Which::App, APP_SIZE);
+        assert_eq!(state.size(), (80, 24));
+        let _ = state.feed_bytes(&super::fixture(&format!("{name}.bin")));
+        let look = if theme.is_dark() { "dark" } else { "light" };
+        let snapshot = format!("terminal-{name}-{look}-en");
+        assert_snapshot(&snapshot, "en", &theme, APP_SIZE, || {
+            on_page(view(&state, Which::App))
+        });
+    }
+}
+
 /// Rule 6 of the migration guide: the search bar draws no literal. Its
 /// "Aa" and ".*" are the log viewer's, the exception the rule names.
 #[test]
