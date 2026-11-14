@@ -21,11 +21,15 @@ pub struct EngineEvent {
     pub attributes: HashMap<String, String>,
 }
 
-/// Receives what the registry observes; the app forwards it to the frontend.
-/// A status is told while the registry holds its entries, so statuses are
-/// told in the order the entries took them: a notifier must not call the
-/// registry back (the app's sends on a channel).
+/// Receives what the registry observes; the app's (`app::events::Events`)
+/// sends it on the window's event channel, and nothing else is one.
 pub trait Notifier: Send + Sync + 'static {
+    /// A Host's status changed. **Runs with the registry's lock held**, so
+    /// statuses are told in the order the entries took them: it must not
+    /// block, wait on anything or call the registry back. A call back
+    /// would wait on the lock for ever; a build with debug assertions
+    /// panics instead. Hand the status on (a channel) and return.
     fn host_status(&self, host_id: &str, status: &HostStatus);
+    /// An Engine event, told without the lock.
     fn engine_event(&self, host_id: &str, event: &EngineEvent);
 }

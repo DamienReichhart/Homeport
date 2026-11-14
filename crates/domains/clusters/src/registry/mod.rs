@@ -10,6 +10,7 @@ mod status;
 mod supervisor;
 
 use std::{
+    cell::Cell,
     collections::HashMap,
     sync::{
         atomic::{AtomicU64, Ordering},
@@ -55,6 +56,11 @@ struct Entry {
     /// Which supervisor the entry is: what one started before it says is
     /// let go of.
     generation: u64,
+}
+
+thread_local! {
+    /// This thread is telling a notifier a status, the entries held.
+    static TELLING: Cell<bool> = const { Cell::new(false) };
 }
 
 pub struct ClusterRegistry {
@@ -342,7 +348,28 @@ impl ClusterRegistry {
     }
 
     fn lock(&self) -> std::sync::MutexGuard<'_, HashMap<ClusterId, Entry>> {
+        debug_assert!(
+            !TELLING.with(Cell::get),
+            "a notifier called the Clusters registry back while it is told a status: \
+             it runs with the registry's entries held, and would wait on them for ever"
+        );
         self.entries.lock().expect("cluster registry lock poisoned")
+    }
+
+    /// Tells the notifier `id`'s status, with the entries held (see
+    /// [`ClusterNotifier`]). A notifier that calls the registry back would
+    /// wait on itself for ever: a build with debug assertions panics
+    /// instead.
+    fn tell(&self, id: &str, status: &ClusterStatus) {
+        struct Telling;
+        impl Drop for Telling {
+            fn drop(&mut self) {
+                TELLING.with(|telling| telling.set(false));
+            }
+        }
+        TELLING.with(|telling| telling.set(true));
+        let _telling = Telling;
+        self.notifier.cluster_status(id, status);
     }
 
     /// What the supervisor `generation` found: let go of when another has
@@ -364,7 +391,7 @@ impl ClusterRegistry {
         }
         entry.status = status.clone();
         entry.client = client;
-        self.notifier.cluster_status(id, &status);
+        self.tell(id, &status);
     }
 
     /// The supervisor `generation` found its Cluster gone from the store:

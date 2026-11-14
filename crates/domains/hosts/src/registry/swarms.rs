@@ -25,7 +25,7 @@ impl HostRegistry {
                 swarm.clone_from(&membership);
                 entry.swarm = membership;
                 // Told while the entry is held, as every status is.
-                self.notifier.host_status(id, &entry.status);
+                self.tell(id, &entry.status);
             }
         }
     }

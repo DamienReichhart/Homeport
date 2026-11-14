@@ -517,3 +517,35 @@ fn a_status_is_told_while_the_entry_is_held() {
     assert_eq!(told.len(), 2, "{told:?}");
     assert!(told.iter().all(|(_, held)| *held), "{told:?}");
 }
+
+/// Asks the registry for the status it is told: a notifier must not.
+#[derive(Default)]
+struct CallsBack(Mutex<Weak<HostRegistry>>);
+
+impl Notifier for CallsBack {
+    fn host_status(&self, id: &str, _: &HostStatus) {
+        if let Some(reg) = self.0.lock().unwrap().upgrade() {
+            let _ = reg.status(id);
+        }
+    }
+    fn engine_event(&self, _: &str, _: &EngineEvent) {}
+}
+
+/// It would wait on the lock it is told under for ever; a build with debug
+/// assertions says why instead.
+#[test]
+#[cfg(debug_assertions)]
+#[should_panic(expected = "called the Hosts registry back")]
+fn a_notifier_that_calls_the_registry_back_is_caught() {
+    let (plain, _, id) = setup("/nonexistent/homeport-test.sock");
+    let calls_back = Arc::new(CallsBack::default());
+    let reg = HostRegistry::new(
+        plain.store.clone(),
+        plain.events.clone(),
+        calls_back.clone(),
+    );
+    *calls_back.0.lock().unwrap() = Arc::downgrade(&reg);
+    reg.lock()
+        .insert(id.clone(), entry(HostStatus::Connecting, 1));
+    reg.set_status(&id, 1, HostStatus::Disabled, None);
+}

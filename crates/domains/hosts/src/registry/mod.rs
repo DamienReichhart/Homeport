@@ -12,6 +12,7 @@ mod supervisor;
 mod swarms;
 
 use std::{
+    cell::Cell,
     collections::{HashMap, HashSet},
     sync::{
         atomic::{AtomicU64, Ordering},
@@ -62,6 +63,11 @@ struct Entry {
     /// Which supervisor the entry is: what one started before it says is
     /// let go of.
     generation: u64,
+}
+
+thread_local! {
+    /// This thread is telling a notifier a status, the entries held.
+    static TELLING: Cell<bool> = const { Cell::new(false) };
 }
 
 pub struct HostRegistry {
@@ -153,7 +159,27 @@ impl HostRegistry {
     }
 
     fn lock(&self) -> std::sync::MutexGuard<'_, HashMap<HostId, Entry>> {
+        debug_assert!(
+            !TELLING.with(Cell::get),
+            "a notifier called the Hosts registry back while it is told a status: \
+             it runs with the registry's entries held, and would wait on them for ever"
+        );
         self.entries.lock().expect("registry lock poisoned")
+    }
+
+    /// Tells the notifier `id`'s status, with the entries held (see
+    /// [`Notifier`]). A notifier that calls the registry back would wait on
+    /// itself for ever: a build with debug assertions panics instead.
+    fn tell(&self, id: &str, status: &HostStatus) {
+        struct Telling;
+        impl Drop for Telling {
+            fn drop(&mut self) {
+                TELLING.with(|telling| telling.set(false));
+            }
+        }
+        TELLING.with(|telling| telling.set(true));
+        let _telling = Telling;
+        self.notifier.host_status(id, status);
     }
 
     /// What the supervisor `generation` found: let go of when another has
@@ -175,7 +201,7 @@ impl HostRegistry {
         }
         // Told while the entry is held: what is told last is what it holds,
         // even when a restart races the supervisor that is telling it.
-        self.notifier.host_status(id, &status);
+        self.tell(id, &status);
     }
 
     /// The supervisor `generation` found its Host gone from the store.

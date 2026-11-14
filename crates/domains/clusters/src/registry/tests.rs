@@ -390,3 +390,37 @@ fn a_status_is_told_while_the_entry_is_held() {
     let told = held.told.lock().unwrap().clone();
     assert_eq!(told, [(ClusterStatus::Disabled, true)]);
 }
+
+/// Asks the registry for the status it is told: a notifier must not.
+#[derive(Default)]
+struct CallsBack(Mutex<Weak<ClusterRegistry>>);
+
+impl ClusterNotifier for CallsBack {
+    fn cluster_status(&self, id: &str, _: &ClusterStatus) {
+        if let Some(reg) = self.0.lock().unwrap().upgrade() {
+            let _ = reg.status(id);
+        }
+    }
+}
+
+/// It would wait on the lock it is told under for ever; a build with debug
+/// assertions says why instead.
+#[test]
+#[cfg(debug_assertions)]
+#[should_panic(expected = "called the Clusters registry back")]
+fn a_notifier_that_calls_the_registry_back_is_caught() {
+    let (plain, _, id) = registry("http://127.0.0.1:9");
+    let calls_back = Arc::new(CallsBack::default());
+    let reg = ClusterRegistry::new(plain.store.clone(), calls_back.clone());
+    *calls_back.0.lock().unwrap() = Arc::downgrade(&reg);
+    reg.lock().insert(
+        id.clone(),
+        Entry {
+            status: ClusterStatus::Connecting,
+            client: None,
+            task: None,
+            generation: 1,
+        },
+    );
+    reg.set_status(&id, 1, ClusterStatus::Disabled, None);
+}
