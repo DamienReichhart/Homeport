@@ -13,7 +13,10 @@ mod swarms;
 
 use std::{
     collections::{HashMap, HashSet},
-    sync::{Arc, Mutex, Weak},
+    sync::{
+        atomic::{AtomicU64, Ordering},
+        Arc, Mutex, Weak,
+    },
 };
 
 use tokio::task::JoinHandle;
@@ -56,6 +59,9 @@ struct Entry {
     /// whose managers are all disconnected can still name them. Kept in
     /// memory only: nothing about a Swarm is stored (ADR 0016).
     swarm: Option<SwarmMembership>,
+    /// Which supervisor the entry is: what one started before it says is
+    /// let go of.
+    generation: u64,
 }
 
 pub struct HostRegistry {
@@ -63,6 +69,8 @@ pub struct HostRegistry {
     events: Arc<EventStore>,
     notifier: Arc<dyn Notifier>,
     entries: Mutex<HashMap<HostId, Entry>>,
+    /// The last supervisor's number, across every Host.
+    generations: AtomicU64,
     me: Weak<HostRegistry>,
 }
 
@@ -77,6 +85,7 @@ impl HostRegistry {
             events,
             notifier,
             entries: Mutex::new(HashMap::new()),
+            generations: AtomicU64::new(0),
             me: me.clone(),
         })
     }
@@ -101,9 +110,12 @@ impl HostRegistry {
 
     /// (Re)starts a Host's supervisor, e.g. after it was edited or trusted.
     pub fn restart(&self, id: &str) {
-        // The entry is there before the task that fills it starts: spawned
-        // first, a task that connected before the entry was made had its
-        // status dropped, and the Host stayed "connecting" while connected.
+        // The entry is there before the task that fills it starts, and the
+        // task is numbered: one that was replaced (restarted again: a
+        // Host created while every stored Host is started) may still be
+        // running when it is aborted, until its next await, and what it
+        // says then is let go of instead of overwriting the new one's.
+        let generation = self.generations.fetch_add(1, Ordering::Relaxed) + 1;
         let mut entries = self.lock();
         let entry = entries.entry(id.to_owned()).or_insert_with(|| Entry {
             status: HostStatus::Connecting,
@@ -111,13 +123,19 @@ impl HostRegistry {
             task: None,
             helpers: HashSet::new(),
             swarm: None,
+            generation,
         });
         if let Some(old) = entry.task.take() {
             old.abort();
         }
         entry.client = None;
+        entry.generation = generation;
         // The task waits for the lock before it tells its first status.
-        entry.task = Some(tokio::spawn(supervise(self.me.clone(), id.to_owned())));
+        entry.task = Some(tokio::spawn(supervise(
+            self.me.clone(),
+            id.to_owned(),
+            generation,
+        )));
     }
 
     pub fn remove(&self, id: &str) {
@@ -138,15 +156,33 @@ impl HostRegistry {
         self.entries.lock().expect("registry lock poisoned")
     }
 
-    fn set_status(&self, id: &str, status: HostStatus, client: Option<Client>) {
-        if let Some(entry) = self.lock().get_mut(id) {
+    /// What the supervisor `generation` found: let go of when another has
+    /// replaced it since.
+    fn set_status(&self, id: &str, generation: u64, status: HostStatus, client: Option<Client>) {
+        let mut entries = self.lock();
+        let Some(entry) = entries.get_mut(id) else {
+            return;
+        };
+        if entry.generation != generation {
+            return;
+        }
+        {
             if let HostStatus::Connected { swarm, .. } = &status {
                 entry.swarm.clone_from(swarm);
             }
             entry.status = status.clone();
             entry.client = client;
         }
+        drop(entries);
         self.notifier.host_status(id, &status);
+    }
+
+    /// The supervisor `generation` found its Host gone from the store.
+    fn removed(&self, id: &str, generation: u64) {
+        let current = self.lock().get(id).map(|entry| entry.generation);
+        if current == Some(generation) {
+            self.remove(id);
+        }
     }
 
     fn record_event(&self, id: &str, event: EngineEvent) {

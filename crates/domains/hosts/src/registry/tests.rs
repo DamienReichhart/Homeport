@@ -432,3 +432,28 @@ async fn incus_live_hosts_connect_and_hand_out_their_api() {
     assert!(reg.docker(&id).is_err());
     assert!(reg.containerd(&id).is_err());
 }
+
+/// A supervisor that was replaced (its Host restarted again, as when a
+/// Host is created while every stored one is being started) can still be
+/// running until its next await. What it says then must not overwrite
+/// what the supervisor that replaced it found: under load, that left a
+/// connected Host "connecting" for good.
+#[tokio::test]
+async fn a_replaced_supervisor_s_late_word_is_let_go_of() {
+    let (reg, _recorder, id) = setup("/nonexistent/homeport-test.sock");
+    reg.restart(&id);
+    let replaced = reg.lock()[&id].generation;
+    reg.restart(&id);
+    let current = reg.lock()[&id].generation;
+    assert_ne!(replaced, current);
+    let disabled = HostStatus::Disabled;
+    reg.set_status(&id, current, disabled.clone(), None);
+    // The replaced one wakes up late and says it is connecting.
+    reg.set_status(&id, replaced, HostStatus::Connecting, None);
+    assert_eq!(reg.status(&id), disabled);
+    // Nor does it take the entry away when it can't read the Host.
+    reg.removed(&id, replaced);
+    assert_eq!(reg.status(&id), disabled);
+    reg.removed(&id, current);
+    assert!(!reg.lock().contains_key(&id));
+}

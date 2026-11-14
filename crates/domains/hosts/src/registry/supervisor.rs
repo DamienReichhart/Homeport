@@ -29,7 +29,7 @@ const PING_INTERVAL: Duration = Duration::from_secs(15);
 
 pub use homeport_core::backoff::next_backoff;
 
-pub(super) async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
+pub(super) async fn supervise(registry: Weak<HostRegistry>, id: HostId, generation: u64) {
     let mut backoff = 1;
     loop {
         let Some(reg) = registry.upgrade() else {
@@ -37,23 +37,30 @@ pub(super) async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
         };
         let host = match reg.store.get(&id) {
             Ok(host) => host,
-            Err(_) => return reg.remove(&id),
+            Err(_) => return reg.removed(&id, generation),
         };
         if !host.enabled {
-            return reg.set_status(&id, HostStatus::Disabled, None);
+            return reg.set_status(&id, generation, HostStatus::Disabled, None);
         }
-        reg.set_status(&id, HostStatus::Connecting, None);
+        reg.set_status(&id, generation, HostStatus::Connecting, None);
 
         let secrets = if host.connection.needs_secrets() {
             match reg.store.secrets(&id) {
                 Ok(secrets) => secrets,
                 Err(e) if e.is(ErrorCode::CredentialsLost) => {
-                    return reg.set_status(&id, HostStatus::CredentialsLost, None)
+                    return reg.set_status(&id, generation, HostStatus::CredentialsLost, None)
                 }
                 Err(error) if error.is(ErrorCode::KeychainUnavailable) => {
-                    return reg.set_status(&id, HostStatus::KeychainUnavailable { error }, None)
+                    return reg.set_status(
+                        &id,
+                        generation,
+                        HostStatus::KeychainUnavailable { error },
+                        None,
+                    )
                 }
-                Err(error) => return reg.set_status(&id, HostStatus::Invalid { error }, None),
+                Err(error) => {
+                    return reg.set_status(&id, generation, HostStatus::Invalid { error }, None)
+                }
             }
         } else {
             None
@@ -71,7 +78,7 @@ pub(super) async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
             let error = match connected {
                 Ok((client, status)) => {
                     backoff = 1;
-                    reg.set_status(&id, status, Some(client.clone()));
+                    reg.set_status(&id, generation, status, Some(client.clone()));
                     drop(reg);
                     let hint = match client {
                         Client::Incus(client) => {
@@ -91,13 +98,14 @@ pub(super) async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
                     .with_hint(hint)
                 }
                 Err(ConnectError::Unreachable(error)) => error,
-                Err(other) => return reg.set_status(&id, other.into(), None),
+                Err(other) => return reg.set_status(&id, generation, other.into(), None),
             };
             let Some(reg) = registry.upgrade() else {
                 return;
             };
             reg.set_status(
                 &id,
+                generation,
                 HostStatus::Unreachable {
                     error,
                     retry_in_secs: backoff,
@@ -127,7 +135,7 @@ pub(super) async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
                         .podman_version()
                         .is_some()
                         .then(|| connected.dialer.clone());
-                    reg.set_status(&id, status, Some(Client::Docker(connected)));
+                    reg.set_status(&id, generation, status, Some(Client::Docker(connected)));
                     drop(reg);
                     watch(&registry, &id, docker, podman).await;
                     AppError::new(
@@ -139,7 +147,7 @@ pub(super) async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
                 Err(error) => error,
             },
             Err(ConnectError::Unreachable(error)) => error,
-            Err(other) => return reg.set_status(&id, other.into(), None),
+            Err(other) => return reg.set_status(&id, generation, other.into(), None),
         };
 
         let Some(reg) = registry.upgrade() else {
@@ -147,6 +155,7 @@ pub(super) async fn supervise(registry: Weak<HostRegistry>, id: HostId) {
         };
         reg.set_status(
             &id,
+            generation,
             HostStatus::Unreachable {
                 error,
                 retry_in_secs: backoff,
