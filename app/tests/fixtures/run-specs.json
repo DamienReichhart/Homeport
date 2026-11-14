@@ -1,0 +1,1672 @@
+[
+  {
+    "name": "an image alone",
+    "via": "run",
+    "form": {
+      "image": "nginx:1.27",
+      "name": "",
+      "command": "",
+      "env": "",
+      "ports": [],
+      "mounts": [],
+      "network": "",
+      "restart": "no",
+      "autoRemove": false,
+      "advanced": {
+        "resources": {
+          "cpus": "",
+          "cpuShares": "",
+          "memory": "",
+          "memoryReservation": "",
+          "memorySwap": ""
+        },
+        "labels": "",
+        "security": {
+          "capAdd": [],
+          "capDrop": [],
+          "privileged": false,
+          "devices": [],
+          "gpus": {
+            "mode": "none",
+            "count": "1",
+            "ids": ""
+          }
+        },
+        "healthcheck": {
+          "mode": "image",
+          "command": "",
+          "interval": "",
+          "timeout": "",
+          "retries": "",
+          "startPeriod": ""
+        },
+        "identity": {
+          "hostname": "",
+          "domainname": "",
+          "dns": "",
+          "dnsSearch": "",
+          "extraHosts": ""
+        },
+        "logging": {
+          "driver": "",
+          "options": ""
+        }
+      },
+      "basedOn": null,
+      "pod": ""
+    },
+    "spec": {
+      "image": "nginx:1.27",
+      "name": null,
+      "command": null,
+      "env": [],
+      "ports": [],
+      "mounts": [],
+      "network": null,
+      "restart": "no",
+      "autoRemove": false,
+      "cpus": null,
+      "cpuShares": null,
+      "memory": null,
+      "memoryReservation": null,
+      "memorySwap": null,
+      "labels": [],
+      "capAdd": [],
+      "capDrop": [],
+      "privileged": false,
+      "devices": [],
+      "gpus": null,
+      "healthcheck": null,
+      "hostname": null,
+      "domainname": null,
+      "dns": [],
+      "dnsSearch": [],
+      "extraHosts": [],
+      "log": null,
+      "basedOn": null
+    },
+    "pod": null
+  },
+  {
+    "name": "environment values holding = and empty ones",
+    "via": "run",
+    "form": {
+      "image": "nginx:1.27",
+      "name": "web",
+      "command": "sh -c 'echo $A'",
+      "env": "A=b=c\nEMPTY=\n\n# a comment\nURL=postgres://u:p@h/db?x=1\n  SPACED = kept  \n",
+      "ports": [],
+      "mounts": [],
+      "network": "",
+      "restart": "no",
+      "autoRemove": false,
+      "advanced": {
+        "resources": {
+          "cpus": "",
+          "cpuShares": "",
+          "memory": "",
+          "memoryReservation": "",
+          "memorySwap": ""
+        },
+        "labels": "",
+        "security": {
+          "capAdd": [],
+          "capDrop": [],
+          "privileged": false,
+          "devices": [],
+          "gpus": {
+            "mode": "none",
+            "count": "1",
+            "ids": ""
+          }
+        },
+        "healthcheck": {
+          "mode": "image",
+          "command": "",
+          "interval": "",
+          "timeout": "",
+          "retries": "",
+          "startPeriod": ""
+        },
+        "identity": {
+          "hostname": "",
+          "domainname": "",
+          "dns": "",
+          "dnsSearch": "",
+          "extraHosts": ""
+        },
+        "logging": {
+          "driver": "",
+          "options": ""
+        }
+      },
+      "basedOn": null,
+      "pod": ""
+    },
+    "spec": {
+      "image": "nginx:1.27",
+      "name": "web",
+      "command": "sh -c 'echo $A'",
+      "env": [
+        "A=b=c",
+        "EMPTY=",
+        "URL=postgres://u:p@h/db?x=1",
+        "SPACED = kept"
+      ],
+      "ports": [],
+      "mounts": [],
+      "network": null,
+      "restart": "no",
+      "autoRemove": false,
+      "cpus": null,
+      "cpuShares": null,
+      "memory": null,
+      "memoryReservation": null,
+      "memorySwap": null,
+      "labels": [],
+      "capAdd": [],
+      "capDrop": [],
+      "privileged": false,
+      "devices": [],
+      "gpus": null,
+      "healthcheck": null,
+      "hostname": null,
+      "domainname": null,
+      "dns": [],
+      "dnsSearch": [],
+      "extraHosts": [],
+      "log": null,
+      "basedOn": null
+    },
+    "pod": null
+  },
+  {
+    "name": "ports over tcp and udp, with and without a host port",
+    "via": "run",
+    "form": {
+      "image": "nginx:1.27",
+      "name": "",
+      "command": "",
+      "env": "",
+      "ports": [
+        {
+          "hostPort": "8080",
+          "containerPort": "80",
+          "protocol": "tcp"
+        },
+        {
+          "hostPort": "",
+          "containerPort": "53",
+          "protocol": "udp"
+        },
+        {
+          "hostPort": "5353",
+          "containerPort": "5353",
+          "protocol": "udp"
+        },
+        {
+          "hostPort": "",
+          "containerPort": "",
+          "protocol": "tcp"
+        }
+      ],
+      "mounts": [],
+      "network": "",
+      "restart": "no",
+      "autoRemove": false,
+      "advanced": {
+        "resources": {
+          "cpus": "",
+          "cpuShares": "",
+          "memory": "",
+          "memoryReservation": "",
+          "memorySwap": ""
+        },
+        "labels": "",
+        "security": {
+          "capAdd": [],
+          "capDrop": [],
+          "privileged": false,
+          "devices": [],
+          "gpus": {
+            "mode": "none",
+            "count": "1",
+            "ids": ""
+          }
+        },
+        "healthcheck": {
+          "mode": "image",
+          "command": "",
+          "interval": "",
+          "timeout": "",
+          "retries": "",
+          "startPeriod": ""
+        },
+        "identity": {
+          "hostname": "",
+          "domainname": "",
+          "dns": "",
+          "dnsSearch": "",
+          "extraHosts": ""
+        },
+        "logging": {
+          "driver": "",
+          "options": ""
+        }
+      },
+      "basedOn": null,
+      "pod": ""
+    },
+    "spec": {
+      "image": "nginx:1.27",
+      "name": null,
+      "command": null,
+      "env": [],
+      "ports": [
+        {
+          "hostIp": null,
+          "hostPort": 8080,
+          "containerPort": 80,
+          "protocol": "tcp"
+        },
+        {
+          "hostIp": null,
+          "hostPort": null,
+          "containerPort": 53,
+          "protocol": "udp"
+        },
+        {
+          "hostIp": null,
+          "hostPort": 5353,
+          "containerPort": 5353,
+          "protocol": "udp"
+        }
+      ],
+      "mounts": [],
+      "network": null,
+      "restart": "no",
+      "autoRemove": false,
+      "cpus": null,
+      "cpuShares": null,
+      "memory": null,
+      "memoryReservation": null,
+      "memorySwap": null,
+      "labels": [],
+      "capAdd": [],
+      "capDrop": [],
+      "privileged": false,
+      "devices": [],
+      "gpus": null,
+      "healthcheck": null,
+      "hostname": null,
+      "domainname": null,
+      "dns": [],
+      "dnsSearch": [],
+      "extraHosts": [],
+      "log": null,
+      "basedOn": null
+    },
+    "pod": null
+  },
+  {
+    "name": "a port range and an IPv6 address are no ports",
+    "via": "run",
+    "form": {
+      "image": "nginx:1.27",
+      "name": "",
+      "command": "",
+      "env": "",
+      "ports": [
+        {
+          "hostPort": "8000-8010",
+          "containerPort": "8000-8010",
+          "protocol": "tcp"
+        },
+        {
+          "hostPort": "[::1]:8080",
+          "containerPort": "80",
+          "protocol": "tcp"
+        }
+      ],
+      "mounts": [],
+      "network": "",
+      "restart": "no",
+      "autoRemove": false,
+      "advanced": {
+        "resources": {
+          "cpus": "",
+          "cpuShares": "",
+          "memory": "",
+          "memoryReservation": "",
+          "memorySwap": ""
+        },
+        "labels": "",
+        "security": {
+          "capAdd": [],
+          "capDrop": [],
+          "privileged": false,
+          "devices": [],
+          "gpus": {
+            "mode": "none",
+            "count": "1",
+            "ids": ""
+          }
+        },
+        "healthcheck": {
+          "mode": "image",
+          "command": "",
+          "interval": "",
+          "timeout": "",
+          "retries": "",
+          "startPeriod": ""
+        },
+        "identity": {
+          "hostname": "",
+          "domainname": "",
+          "dns": "",
+          "dnsSearch": "",
+          "extraHosts": ""
+        },
+        "logging": {
+          "driver": "",
+          "options": ""
+        }
+      },
+      "basedOn": null,
+      "pod": ""
+    },
+    "spec": null,
+    "pod": null
+  },
+  {
+    "name": "named volumes and bind mounts, read-only or not",
+    "via": "run",
+    "form": {
+      "image": "nginx:1.27",
+      "name": "",
+      "command": "",
+      "env": "",
+      "ports": [],
+      "mounts": [
+        {
+          "source": "site",
+          "target": "/srv",
+          "readOnly": true
+        },
+        {
+          "source": " /srv/data ",
+          "target": "/data",
+          "readOnly": false
+        },
+        {
+          "source": "",
+          "target": "",
+          "readOnly": false
+        }
+      ],
+      "network": "",
+      "restart": "no",
+      "autoRemove": false,
+      "advanced": {
+        "resources": {
+          "cpus": "",
+          "cpuShares": "",
+          "memory": "",
+          "memoryReservation": "",
+          "memorySwap": ""
+        },
+        "labels": "",
+        "security": {
+          "capAdd": [],
+          "capDrop": [],
+          "privileged": false,
+          "devices": [],
+          "gpus": {
+            "mode": "none",
+            "count": "1",
+            "ids": ""
+          }
+        },
+        "healthcheck": {
+          "mode": "image",
+          "command": "",
+          "interval": "",
+          "timeout": "",
+          "retries": "",
+          "startPeriod": ""
+        },
+        "identity": {
+          "hostname": "",
+          "domainname": "",
+          "dns": "",
+          "dnsSearch": "",
+          "extraHosts": ""
+        },
+        "logging": {
+          "driver": "",
+          "options": ""
+        }
+      },
+      "basedOn": null,
+      "pod": ""
+    },
+    "spec": {
+      "image": "nginx:1.27",
+      "name": null,
+      "command": null,
+      "env": [],
+      "ports": [],
+      "mounts": [
+        {
+          "source": "site",
+          "target": "/srv",
+          "readOnly": true
+        },
+        {
+          "source": "/srv/data",
+          "target": "/data",
+          "readOnly": false
+        }
+      ],
+      "network": null,
+      "restart": "no",
+      "autoRemove": false,
+      "cpus": null,
+      "cpuShares": null,
+      "memory": null,
+      "memoryReservation": null,
+      "memorySwap": null,
+      "labels": [],
+      "capAdd": [],
+      "capDrop": [],
+      "privileged": false,
+      "devices": [],
+      "gpus": null,
+      "healthcheck": null,
+      "hostname": null,
+      "domainname": null,
+      "dns": [],
+      "dnsSearch": [],
+      "extraHosts": [],
+      "log": null,
+      "basedOn": null
+    },
+    "pod": null
+  },
+  {
+    "name": "a network, a restart policy",
+    "via": "run",
+    "form": {
+      "image": "nginx:1.27",
+      "name": "",
+      "command": "",
+      "env": "",
+      "ports": [],
+      "mounts": [],
+      "network": "proxy",
+      "restart": "on-failure",
+      "autoRemove": false,
+      "advanced": {
+        "resources": {
+          "cpus": "",
+          "cpuShares": "",
+          "memory": "",
+          "memoryReservation": "",
+          "memorySwap": ""
+        },
+        "labels": "",
+        "security": {
+          "capAdd": [],
+          "capDrop": [],
+          "privileged": false,
+          "devices": [],
+          "gpus": {
+            "mode": "none",
+            "count": "1",
+            "ids": ""
+          }
+        },
+        "healthcheck": {
+          "mode": "image",
+          "command": "",
+          "interval": "",
+          "timeout": "",
+          "retries": "",
+          "startPeriod": ""
+        },
+        "identity": {
+          "hostname": "",
+          "domainname": "",
+          "dns": "",
+          "dnsSearch": "",
+          "extraHosts": ""
+        },
+        "logging": {
+          "driver": "",
+          "options": ""
+        }
+      },
+      "basedOn": null,
+      "pod": ""
+    },
+    "spec": {
+      "image": "nginx:1.27",
+      "name": null,
+      "command": null,
+      "env": [],
+      "ports": [],
+      "mounts": [],
+      "network": "proxy",
+      "restart": "on-failure",
+      "autoRemove": false,
+      "cpus": null,
+      "cpuShares": null,
+      "memory": null,
+      "memoryReservation": null,
+      "memorySwap": null,
+      "labels": [],
+      "capAdd": [],
+      "capDrop": [],
+      "privileged": false,
+      "devices": [],
+      "gpus": null,
+      "healthcheck": null,
+      "hostname": null,
+      "domainname": null,
+      "dns": [],
+      "dnsSearch": [],
+      "extraHosts": [],
+      "log": null,
+      "basedOn": null
+    },
+    "pod": null
+  },
+  {
+    "name": "removed when it exits",
+    "via": "run",
+    "form": {
+      "image": "nginx:1.27",
+      "name": "",
+      "command": "",
+      "env": "",
+      "ports": [],
+      "mounts": [],
+      "network": "",
+      "restart": "no",
+      "autoRemove": true,
+      "advanced": {
+        "resources": {
+          "cpus": "",
+          "cpuShares": "",
+          "memory": "",
+          "memoryReservation": "",
+          "memorySwap": ""
+        },
+        "labels": "",
+        "security": {
+          "capAdd": [],
+          "capDrop": [],
+          "privileged": false,
+          "devices": [],
+          "gpus": {
+            "mode": "none",
+            "count": "1",
+            "ids": ""
+          }
+        },
+        "healthcheck": {
+          "mode": "image",
+          "command": "",
+          "interval": "",
+          "timeout": "",
+          "retries": "",
+          "startPeriod": ""
+        },
+        "identity": {
+          "hostname": "",
+          "domainname": "",
+          "dns": "",
+          "dnsSearch": "",
+          "extraHosts": ""
+        },
+        "logging": {
+          "driver": "",
+          "options": ""
+        }
+      },
+      "basedOn": null,
+      "pod": ""
+    },
+    "spec": {
+      "image": "nginx:1.27",
+      "name": null,
+      "command": null,
+      "env": [],
+      "ports": [],
+      "mounts": [],
+      "network": null,
+      "restart": "no",
+      "autoRemove": true,
+      "cpus": null,
+      "cpuShares": null,
+      "memory": null,
+      "memoryReservation": null,
+      "memorySwap": null,
+      "labels": [],
+      "capAdd": [],
+      "capDrop": [],
+      "privileged": false,
+      "devices": [],
+      "gpus": null,
+      "healthcheck": null,
+      "hostname": null,
+      "domainname": null,
+      "dns": [],
+      "dnsSearch": [],
+      "extraHosts": [],
+      "log": null,
+      "basedOn": null
+    },
+    "pod": null
+  },
+  {
+    "name": "resources and labels",
+    "via": "run",
+    "form": {
+      "image": "nginx:1.27",
+      "name": "",
+      "command": "",
+      "env": "",
+      "ports": [],
+      "mounts": [],
+      "network": "",
+      "restart": "no",
+      "autoRemove": false,
+      "advanced": {
+        "resources": {
+          "cpus": "0.5",
+          "cpuShares": "512",
+          "memory": "1.5g",
+          "memoryReservation": "256MiB",
+          "memorySwap": "-1"
+        },
+        "labels": "traefik.enable=true\n\ntraefik.http.routers.web.rule=Host(`web.home.arpa`)",
+        "security": {
+          "capAdd": [],
+          "capDrop": [],
+          "privileged": false,
+          "devices": [],
+          "gpus": {
+            "mode": "none",
+            "count": "1",
+            "ids": ""
+          }
+        },
+        "healthcheck": {
+          "mode": "image",
+          "command": "",
+          "interval": "",
+          "timeout": "",
+          "retries": "",
+          "startPeriod": ""
+        },
+        "identity": {
+          "hostname": "",
+          "domainname": "",
+          "dns": "",
+          "dnsSearch": "",
+          "extraHosts": ""
+        },
+        "logging": {
+          "driver": "",
+          "options": ""
+        }
+      },
+      "basedOn": null,
+      "pod": ""
+    },
+    "spec": {
+      "image": "nginx:1.27",
+      "name": null,
+      "command": null,
+      "env": [],
+      "ports": [],
+      "mounts": [],
+      "network": null,
+      "restart": "no",
+      "autoRemove": false,
+      "cpus": 0.5,
+      "cpuShares": 512,
+      "memory": 1610612736,
+      "memoryReservation": 268435456,
+      "memorySwap": -1,
+      "labels": [
+        "traefik.enable=true",
+        "traefik.http.routers.web.rule=Host(`web.home.arpa`)"
+      ],
+      "capAdd": [],
+      "capDrop": [],
+      "privileged": false,
+      "devices": [],
+      "gpus": null,
+      "healthcheck": null,
+      "hostname": null,
+      "domainname": null,
+      "dns": [],
+      "dnsSearch": [],
+      "extraHosts": [],
+      "log": null,
+      "basedOn": null
+    },
+    "pod": null
+  },
+  {
+    "name": "security, devices and a number of GPUs",
+    "via": "run",
+    "form": {
+      "image": "nginx:1.27",
+      "name": "",
+      "command": "",
+      "env": "",
+      "ports": [],
+      "mounts": [],
+      "network": "",
+      "restart": "no",
+      "autoRemove": false,
+      "advanced": {
+        "resources": {
+          "cpus": "",
+          "cpuShares": "",
+          "memory": "",
+          "memoryReservation": "",
+          "memorySwap": ""
+        },
+        "labels": "",
+        "security": {
+          "capAdd": [
+            "NET_ADMIN",
+            "SYS_MODULE"
+          ],
+          "capDrop": [
+            "ALL"
+          ],
+          "privileged": true,
+          "devices": [
+            {
+              "hostPath": "/dev/dri",
+              "containerPath": "",
+              "permissions": ""
+            },
+            {
+              "hostPath": "/dev/ttyUSB0",
+              "containerPath": "/dev/zigbee",
+              "permissions": "rw"
+            },
+            {
+              "hostPath": "",
+              "containerPath": "",
+              "permissions": "rwm"
+            }
+          ],
+          "gpus": {
+            "mode": "count",
+            "count": "2",
+            "ids": ""
+          }
+        },
+        "healthcheck": {
+          "mode": "image",
+          "command": "",
+          "interval": "",
+          "timeout": "",
+          "retries": "",
+          "startPeriod": ""
+        },
+        "identity": {
+          "hostname": "",
+          "domainname": "",
+          "dns": "",
+          "dnsSearch": "",
+          "extraHosts": ""
+        },
+        "logging": {
+          "driver": "",
+          "options": ""
+        }
+      },
+      "basedOn": null,
+      "pod": ""
+    },
+    "spec": {
+      "image": "nginx:1.27",
+      "name": null,
+      "command": null,
+      "env": [],
+      "ports": [],
+      "mounts": [],
+      "network": null,
+      "restart": "no",
+      "autoRemove": false,
+      "cpus": null,
+      "cpuShares": null,
+      "memory": null,
+      "memoryReservation": null,
+      "memorySwap": null,
+      "labels": [],
+      "capAdd": [
+        "NET_ADMIN",
+        "SYS_MODULE"
+      ],
+      "capDrop": [
+        "ALL"
+      ],
+      "privileged": true,
+      "devices": [
+        {
+          "hostPath": "/dev/dri",
+          "containerPath": null,
+          "permissions": "rwm"
+        },
+        {
+          "hostPath": "/dev/ttyUSB0",
+          "containerPath": "/dev/zigbee",
+          "permissions": "rw"
+        }
+      ],
+      "gpus": {
+        "kind": "count",
+        "count": 2
+      },
+      "healthcheck": null,
+      "hostname": null,
+      "domainname": null,
+      "dns": [],
+      "dnsSearch": [],
+      "extraHosts": [],
+      "log": null,
+      "basedOn": null
+    },
+    "pod": null
+  },
+  {
+    "name": "chosen GPUs, a healthcheck, the network identity and logging",
+    "via": "run",
+    "form": {
+      "image": "nginx:1.27",
+      "name": "",
+      "command": "",
+      "env": "",
+      "ports": [],
+      "mounts": [],
+      "network": "",
+      "restart": "no",
+      "autoRemove": false,
+      "advanced": {
+        "resources": {
+          "cpus": "",
+          "cpuShares": "",
+          "memory": "",
+          "memoryReservation": "",
+          "memorySwap": ""
+        },
+        "labels": "",
+        "security": {
+          "capAdd": [],
+          "capDrop": [],
+          "privileged": false,
+          "devices": [],
+          "gpus": {
+            "mode": "ids",
+            "count": "1",
+            "ids": "0, GPU-abc"
+          }
+        },
+        "healthcheck": {
+          "mode": "custom",
+          "command": " curl -f localhost ",
+          "interval": "30s",
+          "timeout": "5",
+          "retries": "3",
+          "startPeriod": "1m30s"
+        },
+        "identity": {
+          "hostname": "web",
+          "domainname": "home.arpa",
+          "dns": "1.1.1.1\n9.9.9.9",
+          "dnsSearch": "home.arpa",
+          "extraHosts": "nas:192.168.1.10\n# the NAS\nhost.docker.internal:host-gateway"
+        },
+        "logging": {
+          "driver": "json-file",
+          "options": "max-size=10m\nmax-file=3"
+        }
+      },
+      "basedOn": null,
+      "pod": ""
+    },
+    "spec": {
+      "image": "nginx:1.27",
+      "name": null,
+      "command": null,
+      "env": [],
+      "ports": [],
+      "mounts": [],
+      "network": null,
+      "restart": "no",
+      "autoRemove": false,
+      "cpus": null,
+      "cpuShares": null,
+      "memory": null,
+      "memoryReservation": null,
+      "memorySwap": null,
+      "labels": [],
+      "capAdd": [],
+      "capDrop": [],
+      "privileged": false,
+      "devices": [],
+      "gpus": {
+        "kind": "ids",
+        "ids": [
+          "0",
+          "GPU-abc"
+        ]
+      },
+      "healthcheck": {
+        "command": "curl -f localhost",
+        "intervalS": 30,
+        "timeoutS": 5,
+        "retries": 3,
+        "startPeriodS": 90,
+        "disabled": false
+      },
+      "hostname": "web",
+      "domainname": "home.arpa",
+      "dns": [
+        "1.1.1.1",
+        "9.9.9.9"
+      ],
+      "dnsSearch": [
+        "home.arpa"
+      ],
+      "extraHosts": [
+        "nas:192.168.1.10",
+        "host.docker.internal:host-gateway"
+      ],
+      "log": {
+        "driver": "json-file",
+        "options": [
+          "max-size=10m",
+          "max-file=3"
+        ]
+      },
+      "basedOn": null
+    },
+    "pod": null
+  },
+  {
+    "name": "the image's healthcheck turned off",
+    "via": "run",
+    "form": {
+      "image": "nginx:1.27",
+      "name": "",
+      "command": "",
+      "env": "",
+      "ports": [],
+      "mounts": [],
+      "network": "",
+      "restart": "no",
+      "autoRemove": false,
+      "advanced": {
+        "resources": {
+          "cpus": "",
+          "cpuShares": "",
+          "memory": "",
+          "memoryReservation": "",
+          "memorySwap": ""
+        },
+        "labels": "",
+        "security": {
+          "capAdd": [],
+          "capDrop": [],
+          "privileged": false,
+          "devices": [],
+          "gpus": {
+            "mode": "none",
+            "count": "1",
+            "ids": ""
+          }
+        },
+        "healthcheck": {
+          "mode": "disabled",
+          "command": "",
+          "interval": "",
+          "timeout": "",
+          "retries": "",
+          "startPeriod": ""
+        },
+        "identity": {
+          "hostname": "",
+          "domainname": "",
+          "dns": "",
+          "dnsSearch": "",
+          "extraHosts": ""
+        },
+        "logging": {
+          "driver": "",
+          "options": ""
+        }
+      },
+      "basedOn": null,
+      "pod": ""
+    },
+    "spec": {
+      "image": "nginx:1.27",
+      "name": null,
+      "command": null,
+      "env": [],
+      "ports": [],
+      "mounts": [],
+      "network": null,
+      "restart": "no",
+      "autoRemove": false,
+      "cpus": null,
+      "cpuShares": null,
+      "memory": null,
+      "memoryReservation": null,
+      "memorySwap": null,
+      "labels": [],
+      "capAdd": [],
+      "capDrop": [],
+      "privileged": false,
+      "devices": [],
+      "gpus": null,
+      "healthcheck": {
+        "command": "",
+        "intervalS": null,
+        "timeoutS": null,
+        "retries": null,
+        "startPeriodS": null,
+        "disabled": true
+      },
+      "hostname": null,
+      "domainname": null,
+      "dns": [],
+      "dnsSearch": [],
+      "extraHosts": [],
+      "log": null,
+      "basedOn": null
+    },
+    "pod": null
+  },
+  {
+    "name": "run into a pod, whose ports and network it takes",
+    "via": "run",
+    "form": {
+      "image": "nginx:1.27",
+      "name": "",
+      "command": "",
+      "env": "",
+      "ports": [
+        {
+          "hostPort": "8080",
+          "containerPort": "80",
+          "protocol": "tcp"
+        }
+      ],
+      "mounts": [],
+      "network": "proxy",
+      "restart": "no",
+      "autoRemove": false,
+      "advanced": {
+        "resources": {
+          "cpus": "",
+          "cpuShares": "",
+          "memory": "",
+          "memoryReservation": "",
+          "memorySwap": ""
+        },
+        "labels": "",
+        "security": {
+          "capAdd": [],
+          "capDrop": [],
+          "privileged": false,
+          "devices": [],
+          "gpus": {
+            "mode": "none",
+            "count": "1",
+            "ids": ""
+          }
+        },
+        "healthcheck": {
+          "mode": "image",
+          "command": "",
+          "interval": "",
+          "timeout": "",
+          "retries": "",
+          "startPeriod": ""
+        },
+        "identity": {
+          "hostname": "",
+          "domainname": "",
+          "dns": "",
+          "dnsSearch": "",
+          "extraHosts": ""
+        },
+        "logging": {
+          "driver": "",
+          "options": ""
+        }
+      },
+      "basedOn": null,
+      "pod": "shop"
+    },
+    "spec": {
+      "image": "nginx:1.27",
+      "name": null,
+      "command": null,
+      "env": [],
+      "ports": [],
+      "mounts": [],
+      "network": null,
+      "restart": "no",
+      "autoRemove": false,
+      "cpus": null,
+      "cpuShares": null,
+      "memory": null,
+      "memoryReservation": null,
+      "memorySwap": null,
+      "labels": [],
+      "capAdd": [],
+      "capDrop": [],
+      "privileged": false,
+      "devices": [],
+      "gpus": null,
+      "healthcheck": null,
+      "hostname": null,
+      "domainname": null,
+      "dns": [],
+      "dnsSearch": [],
+      "extraHosts": [],
+      "log": null,
+      "basedOn": null
+    },
+    "pod": "shop"
+  },
+  {
+    "name": "a capability typed and not added",
+    "via": "run",
+    "form": {
+      "image": "nginx:1.27",
+      "name": "",
+      "command": "",
+      "env": "",
+      "ports": [],
+      "mounts": [],
+      "network": "",
+      "restart": "no",
+      "autoRemove": false,
+      "advanced": {
+        "resources": {
+          "cpus": "",
+          "cpuShares": "",
+          "memory": "",
+          "memoryReservation": "",
+          "memorySwap": ""
+        },
+        "labels": "",
+        "security": {
+          "capAdd": [
+            "NET_ADMIN"
+          ],
+          "capDrop": [],
+          "privileged": false,
+          "devices": [],
+          "gpus": {
+            "mode": "none",
+            "count": "1",
+            "ids": ""
+          }
+        },
+        "healthcheck": {
+          "mode": "image",
+          "command": "",
+          "interval": "",
+          "timeout": "",
+          "retries": "",
+          "startPeriod": ""
+        },
+        "identity": {
+          "hostname": "",
+          "domainname": "",
+          "dns": "",
+          "dnsSearch": "",
+          "extraHosts": ""
+        },
+        "logging": {
+          "driver": "",
+          "options": ""
+        }
+      },
+      "basedOn": null,
+      "pod": ""
+    },
+    "typedNotAdded": {
+      "capDrop": "all"
+    },
+    "spec": {
+      "image": "nginx:1.27",
+      "name": null,
+      "command": null,
+      "env": [],
+      "ports": [],
+      "mounts": [],
+      "network": null,
+      "restart": "no",
+      "autoRemove": false,
+      "cpus": null,
+      "cpuShares": null,
+      "memory": null,
+      "memoryReservation": null,
+      "memorySwap": null,
+      "labels": [],
+      "capAdd": [
+        "NET_ADMIN"
+      ],
+      "capDrop": [
+        "ALL"
+      ],
+      "privileged": false,
+      "devices": [],
+      "gpus": null,
+      "healthcheck": null,
+      "hostname": null,
+      "domainname": null,
+      "dns": [],
+      "dnsSearch": [],
+      "extraHosts": [],
+      "log": null,
+      "basedOn": null
+    },
+    "pod": null
+  },
+  {
+    "name": "a copy, with what each section holds",
+    "via": "duplicate",
+    "from": {
+      "image": "nginx:1.27",
+      "name": null,
+      "command": "nginx -c '/etc/nginx/alt conf'",
+      "env": [
+        "MODE=prod",
+        "URL=postgres://app:pw@db/app?ssl=1"
+      ],
+      "ports": [
+        {
+          "hostIp": null,
+          "hostPort": 8080,
+          "containerPort": 80,
+          "protocol": "tcp"
+        },
+        {
+          "hostIp": null,
+          "hostPort": null,
+          "containerPort": 53,
+          "protocol": "udp"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "site",
+          "target": "/srv",
+          "readOnly": true
+        },
+        {
+          "source": "/etc/nginx/conf.d",
+          "target": "/etc/nginx/conf.d",
+          "readOnly": false
+        }
+      ],
+      "network": "proxy",
+      "restart": "unless-stopped",
+      "autoRemove": false,
+      "cpus": 1.5,
+      "cpuShares": 512,
+      "memory": 536870912,
+      "memoryReservation": 268435456,
+      "memorySwap": -1,
+      "labels": [
+        "team=web",
+        "traefik.enable=true"
+      ],
+      "capAdd": [
+        "NET_ADMIN"
+      ],
+      "capDrop": [
+        "ALL"
+      ],
+      "privileged": false,
+      "devices": [
+        {
+          "hostPath": "/dev/ttyUSB0",
+          "containerPath": "/dev/zigbee",
+          "permissions": "rw"
+        }
+      ],
+      "gpus": {
+        "kind": "count",
+        "count": 2
+      },
+      "healthcheck": {
+        "command": "curl -f localhost",
+        "intervalS": 90,
+        "timeoutS": 5,
+        "retries": 3,
+        "startPeriodS": null,
+        "disabled": false
+      },
+      "hostname": "web",
+      "domainname": null,
+      "dns": [
+        "1.1.1.1"
+      ],
+      "dnsSearch": [
+        "home.arpa"
+      ],
+      "extraHosts": [
+        "nas:192.168.1.10"
+      ],
+      "log": {
+        "driver": "local",
+        "options": [
+          "max-size=10m"
+        ]
+      },
+      "basedOn": "c1"
+    },
+    "taken": [
+      "web",
+      "web-copy"
+    ],
+    "container": "web",
+    "spec": {
+      "image": "nginx:1.27",
+      "name": "web-copy-2",
+      "command": "nginx -c '/etc/nginx/alt conf'",
+      "env": [
+        "MODE=prod",
+        "URL=postgres://app:pw@db/app?ssl=1"
+      ],
+      "ports": [
+        {
+          "hostIp": null,
+          "hostPort": 8080,
+          "containerPort": 80,
+          "protocol": "tcp"
+        },
+        {
+          "hostIp": null,
+          "hostPort": null,
+          "containerPort": 53,
+          "protocol": "udp"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "site",
+          "target": "/srv",
+          "readOnly": true
+        },
+        {
+          "source": "/etc/nginx/conf.d",
+          "target": "/etc/nginx/conf.d",
+          "readOnly": false
+        }
+      ],
+      "network": "proxy",
+      "restart": "unless-stopped",
+      "autoRemove": false,
+      "cpus": 1.5,
+      "cpuShares": 512,
+      "memory": 536870912,
+      "memoryReservation": 268435456,
+      "memorySwap": -1,
+      "labels": [
+        "team=web",
+        "traefik.enable=true"
+      ],
+      "capAdd": [
+        "NET_ADMIN"
+      ],
+      "capDrop": [
+        "ALL"
+      ],
+      "privileged": false,
+      "devices": [
+        {
+          "hostPath": "/dev/ttyUSB0",
+          "containerPath": "/dev/zigbee",
+          "permissions": "rw"
+        }
+      ],
+      "gpus": {
+        "kind": "count",
+        "count": 2
+      },
+      "healthcheck": {
+        "command": "curl -f localhost",
+        "intervalS": 90,
+        "timeoutS": 5,
+        "retries": 3,
+        "startPeriodS": null,
+        "disabled": false
+      },
+      "hostname": "web",
+      "domainname": null,
+      "dns": [
+        "1.1.1.1"
+      ],
+      "dnsSearch": [
+        "home.arpa"
+      ],
+      "extraHosts": [
+        "nas:192.168.1.10"
+      ],
+      "log": {
+        "driver": "local",
+        "options": [
+          "max-size=10m"
+        ]
+      },
+      "basedOn": "c1"
+    },
+    "pod": null
+  },
+  {
+    "name": "Edit's form, read back",
+    "via": "edit",
+    "from": {
+      "image": "nginx:1.27",
+      "name": null,
+      "command": "nginx -c '/etc/nginx/alt conf'",
+      "env": [
+        "MODE=prod",
+        "URL=postgres://app:pw@db/app?ssl=1"
+      ],
+      "ports": [
+        {
+          "hostIp": null,
+          "hostPort": 8080,
+          "containerPort": 80,
+          "protocol": "tcp"
+        },
+        {
+          "hostIp": null,
+          "hostPort": null,
+          "containerPort": 53,
+          "protocol": "udp"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "site",
+          "target": "/srv",
+          "readOnly": true
+        },
+        {
+          "source": "/etc/nginx/conf.d",
+          "target": "/etc/nginx/conf.d",
+          "readOnly": false
+        }
+      ],
+      "network": "proxy",
+      "restart": "unless-stopped",
+      "autoRemove": false,
+      "cpus": 1.5,
+      "cpuShares": 512,
+      "memory": 536870912,
+      "memoryReservation": 268435456,
+      "memorySwap": -1,
+      "labels": [
+        "team=web",
+        "traefik.enable=true"
+      ],
+      "capAdd": [
+        "NET_ADMIN"
+      ],
+      "capDrop": [
+        "ALL"
+      ],
+      "privileged": false,
+      "devices": [
+        {
+          "hostPath": "/dev/ttyUSB0",
+          "containerPath": "/dev/zigbee",
+          "permissions": "rw"
+        }
+      ],
+      "gpus": {
+        "kind": "count",
+        "count": 2
+      },
+      "healthcheck": {
+        "command": "curl -f localhost",
+        "intervalS": 90,
+        "timeoutS": 5,
+        "retries": 3,
+        "startPeriodS": null,
+        "disabled": false
+      },
+      "hostname": "web",
+      "domainname": null,
+      "dns": [
+        "1.1.1.1"
+      ],
+      "dnsSearch": [
+        "home.arpa"
+      ],
+      "extraHosts": [
+        "nas:192.168.1.10"
+      ],
+      "log": {
+        "driver": "local",
+        "options": [
+          "max-size=10m"
+        ]
+      },
+      "basedOn": "c1"
+    },
+    "container": "web",
+    "spec": {
+      "image": "nginx:1.27",
+      "name": "web",
+      "command": "nginx -c '/etc/nginx/alt conf'",
+      "env": [
+        "MODE=prod",
+        "URL=postgres://app:pw@db/app?ssl=1"
+      ],
+      "ports": [
+        {
+          "hostIp": null,
+          "hostPort": 8080,
+          "containerPort": 80,
+          "protocol": "tcp"
+        },
+        {
+          "hostIp": null,
+          "hostPort": null,
+          "containerPort": 53,
+          "protocol": "udp"
+        }
+      ],
+      "mounts": [
+        {
+          "source": "site",
+          "target": "/srv",
+          "readOnly": true
+        },
+        {
+          "source": "/etc/nginx/conf.d",
+          "target": "/etc/nginx/conf.d",
+          "readOnly": false
+        }
+      ],
+      "network": "proxy",
+      "restart": "unless-stopped",
+      "autoRemove": false,
+      "cpus": 1.5,
+      "cpuShares": 512,
+      "memory": 536870912,
+      "memoryReservation": 268435456,
+      "memorySwap": -1,
+      "labels": [
+        "team=web",
+        "traefik.enable=true"
+      ],
+      "capAdd": [
+        "NET_ADMIN"
+      ],
+      "capDrop": [
+        "ALL"
+      ],
+      "privileged": false,
+      "devices": [
+        {
+          "hostPath": "/dev/ttyUSB0",
+          "containerPath": "/dev/zigbee",
+          "permissions": "rw"
+        }
+      ],
+      "gpus": {
+        "kind": "count",
+        "count": 2
+      },
+      "healthcheck": {
+        "command": "curl -f localhost",
+        "intervalS": 90,
+        "timeoutS": 5,
+        "retries": 3,
+        "startPeriodS": null,
+        "disabled": false
+      },
+      "hostname": "web",
+      "domainname": null,
+      "dns": [
+        "1.1.1.1"
+      ],
+      "dnsSearch": [
+        "home.arpa"
+      ],
+      "extraHosts": [
+        "nas:192.168.1.10"
+      ],
+      "log": {
+        "driver": "local",
+        "options": [
+          "max-size=10m"
+        ]
+      },
+      "basedOn": "c1"
+    },
+    "pod": null
+  }
+]

@@ -1,10 +1,10 @@
 //! The Run dialog: what its fields change, what it asks the Engine, what
-//! it says when the Engine refuses, and how it looks (`drawn`). `parity`
-//! holds the dialog to building the request the Tauri app built from the
-//! same form.
+//! it says when the Engine refuses, and how it looks (`drawn`). `fixture`
+//! holds the dialog to building the request React built from the same
+//! form, as React itself wrote it down.
 
 mod drawn;
-mod parity;
+mod fixture;
 
 use homeport_core::error::ErrorCode;
 use homeport_engine::{containers::run::RestartPolicy, networks::NetworkView, podman::pods::Pod};
