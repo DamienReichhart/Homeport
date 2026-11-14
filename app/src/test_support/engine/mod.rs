@@ -108,6 +108,8 @@ struct Shared {
     changes: AtomicUsize,
     /// Why a create is refused, when it is.
     refused_create: Mutex<Option<String>>,
+    /// Requests refused (`POST /containers/new-1/start`), and why.
+    refused_requests: Mutex<Vec<(String, String)>>,
 }
 
 /// Counts a stream as open until dropped.
@@ -518,6 +520,9 @@ impl Connection {
         while let Some(request) = self.request().await {
             let line = format!("{} {}?{}", request.method, request.path, request.query);
             self.shared.asked.lock().unwrap().push(line);
+            if self.refuses(&request).await {
+                continue;
+            }
             let parts: Vec<&str> = request.path.split('/').skip(1).collect();
             let goes_on = match (request.method.as_str(), parts.as_slice()) {
                 (_, ["_ping"]) => {

@@ -470,3 +470,84 @@ fn a_form_that_closes_lets_go_of_what_it_read() {
     );
     assert_eq!(unwatched(&mut bench), [keys::host::images(&host)]);
 }
+
+#[test]
+fn a_recreate_the_engine_refuses_is_said_in_the_form_which_stays() {
+    let _english = in_language("en");
+    let (mut bench, engine, web) = bench();
+    engine.inspects_as(document(true, false, false));
+    engine.refuse("POST /containers/c1/stop", "cannot stop container");
+    let mut actions = Actions::of_host();
+    confirming(&mut actions, &bench, &web);
+    let _ = bench.took();
+    edit(
+        &mut actions,
+        &bench,
+        edit::Message::Confirm(confirm::Message::Confirm),
+    );
+    // The confirmation closed, the form is there with why.
+    assert!(says(&actions, &bench, "Edit web"));
+    assert!(!says(&actions, &bench, "Recreate web?"));
+    assert!(says(&actions, &bench, "Details"));
+    // Said in the form, not in a toast; nothing is read again.
+    assert!(settled(&mut bench).is_empty());
+}
+
+#[test]
+fn a_copy_says_the_host_ports_its_original_publishes_too() {
+    let _english = in_language("en");
+    let (bench, engine, web) = bench();
+    let mut document = document(true, false, false);
+    document["HostConfig"] = json!({
+        "PortBindings": { "80/tcp": [{ "HostIp": "", "HostPort": "8080" }] }
+    });
+    engine.inspects_as(document);
+    let mut actions = Actions::of_host();
+    send(&mut actions, &bench, Action::AskDuplicate(web));
+    let notice = "web already publishes host port 8080.";
+    assert!(says_part(&actions, &bench, notice), "the notice shows");
+    let freed = run::form::Message::Typed(Line::HostPort(0), String::new());
+    let freed = Message::Run(run::dialog::Message::Form(freed));
+    send(&mut actions, &bench, Action::Forms(freed));
+    assert!(
+        !says_part(&actions, &bench, notice),
+        "and goes once the port is freed"
+    );
+}
+
+#[test]
+fn a_commit_the_engine_refuses_is_said_in_the_dialog_which_stays() {
+    let _english = in_language("en");
+    let (mut bench, engine, web) = bench();
+    engine.refuse("POST /commit", "invalid reference format");
+    let mut actions = Actions::of_host();
+    send(&mut actions, &bench, Action::AskCommit(web));
+    let _ = bench.took();
+    send(
+        &mut actions,
+        &bench,
+        Action::Forms(Message::Commit(commit::Message::Submit)),
+    );
+    assert!(actions.has_dialog());
+    assert!(says(&actions, &bench, "Details"));
+    assert!(
+        says(&actions, &bench, "Commit"),
+        "Commit can be pressed again"
+    );
+    assert!(
+        settled(&mut bench).is_empty(),
+        "no toast, nothing read again"
+    );
+}
+
+/// Whether some text of the open dialog holds `part`.
+fn says_part(actions: &Actions, bench: &Bench, part: &str) -> bool {
+    let ctx = bench.ctx();
+    let dialog = actions.dialog(&ctx);
+    window(SIZE, overlay::over(iced::widget::Space::new(), dialog))
+        .find(|candidate: Candidate<'_>| match candidate {
+            Candidate::Text { content, .. } if content.contains(part) => Some(()),
+            _ => None,
+        })
+        .is_ok()
+}

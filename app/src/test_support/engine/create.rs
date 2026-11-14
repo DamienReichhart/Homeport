@@ -40,6 +40,13 @@ impl Engine {
         self.shared.changes.store(count, Ordering::SeqCst);
     }
 
+    /// A request that starts with `request` (`POST /containers/c1/stop`)
+    /// is refused with `message` from now on: a step of a recreate fails.
+    pub fn refuse(&self, request: &str, message: &str) {
+        let refused = (request.to_owned(), message.to_owned());
+        self.shared.refused_requests.lock().unwrap().push(refused);
+    }
+
     /// Creating a container is refused with `message` from now on, as
     /// the Engine refuses an option it can't apply.
     pub fn refuse_create(&self, message: &str) {
@@ -51,6 +58,17 @@ impl Engine {
 pub const IMAGE_INSPECTED: &str = r#"{"Id":"sha256:1111","RepoTags":["nginx:latest"],"Config":{}}"#;
 
 impl Connection {
+    /// Answers a request a test refuses; `false` for any other.
+    pub(super) async fn refuses(&mut self, request: &Request) -> bool {
+        let line = format!("{} {}", request.method, request.path);
+        let refused = self.shared.refused_requests.lock().unwrap().clone();
+        let Some((_, message)) = refused.iter().find(|(r, _)| line.starts_with(r.as_str())) else {
+            return false;
+        };
+        let body = serde_json::json!({ "message": message }).to_string();
+        self.json("500 Internal Server Error", &body).await
+    }
+
     /// `GET /images/{name}/json`: every image is there.
     pub(super) async fn inspect_image(&mut self) -> bool {
         self.json("200 OK", IMAGE_INSPECTED).await

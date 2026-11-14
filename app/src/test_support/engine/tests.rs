@@ -158,3 +158,36 @@ async fn a_commit_names_the_image_and_pauses_the_container() {
         assert!(commits[0].contains(part), "{part} in {}", commits[0]);
     }
 }
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn a_recreate_that_fails_half_way_puts_the_original_back_as_it_was() {
+    let (state, _app) = state();
+    let engine = Engine::start();
+    let host = engine.host(&state).await;
+    // The new container won't start, once the two were swapped.
+    engine.refuse("POST /containers/new-1/start", "port is already allocated");
+    let spec = RunSpec {
+        based_on: Some("c1".to_owned()),
+        ..spec()
+    };
+    let refused = containers_recreate(&state, host, "c1".to_owned(), spec)
+        .await
+        .unwrap_err();
+    assert!(
+        refused
+            .detail
+            .as_deref()
+            .is_some_and(|d| d.contains("port is already allocated")),
+        "{refused:?}"
+    );
+    // The new one went; the original has its name back and runs again.
+    assert_eq!(engine.asked("DELETE /containers/new-1").len(), 1);
+    let renamed = engine.asked("POST /containers/c1/rename");
+    assert_eq!(renamed.len(), 2, "aside, then back: {renamed:?}");
+    assert!(renamed[1].contains("name=web"), "{renamed:?}");
+    assert_eq!(engine.asked("POST /containers/c1/start").len(), 1);
+    assert!(
+        engine.asked("DELETE /containers/c1").is_empty(),
+        "the original stays"
+    );
+}
