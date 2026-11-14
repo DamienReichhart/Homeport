@@ -84,7 +84,8 @@ pub(super) fn pick(dialog: &mut Dialog, bench: &Bench, choice: Choice, label: &s
     send(dialog, bench, chosen);
 }
 
-/// The Host's networks, `bridge` among them, as the data layer has them.
+/// The Host's networks, the Engine's own (`bridge`, `host`, `none`) among
+/// them, as the data layer has them.
 fn networks(bench: &mut Bench, host: &str) {
     let network = |name: &str| NetworkView {
         id: name.to_owned(),
@@ -97,10 +98,15 @@ fn networks(bench: &mut Bench, host: &str) {
         created: None,
         labels: Default::default(),
         stack: None,
-        built_in: name == "bridge" || name == "host",
+        built_in: ["bridge", "host", "none"].contains(&name),
         containers: vec![],
     };
-    let list = vec![network("bridge"), network("host"), network("proxy")];
+    let list = vec![
+        network("bridge"),
+        network("host"),
+        network("none"),
+        network("proxy"),
+    ];
     bench.data.set(&keys::host::networks(host), list);
 }
 
@@ -217,7 +223,7 @@ fn the_networks_offered_are_the_host_s_but_bridge_and_the_one_named() {
     let mut dialog = Dialog::run(&host, "nginx", "", false, &bench.ctx());
     let lists = dialog.fields.lists(&bench.ctx());
     let (labels, chosen) = dialog.fields.options(Choice::Network, &lists);
-    assert_eq!(labels, ["Default (bridge)", "host", "proxy"]);
+    assert_eq!(labels, ["Default (bridge)", "host", "none", "proxy"]);
     assert_eq!(chosen, Some(0));
     pick(&mut dialog, &bench, Choice::Network, "proxy");
     assert_eq!(dialog.fields.form.network, "proxy");
@@ -227,7 +233,7 @@ fn the_networks_offered_are_the_host_s_but_bridge_and_the_one_named() {
     dialog.fields.form.network = "gone".to_owned();
     let (labels, chosen) = dialog.fields.options(Choice::Network, &lists);
     assert_eq!(labels.last().map(String::as_str), Some("gone"));
-    assert_eq!(chosen, Some(3));
+    assert_eq!(chosen, Some(4));
 }
 
 #[test]

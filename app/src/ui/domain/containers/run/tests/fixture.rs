@@ -14,7 +14,10 @@
 //! - a form React sent with a port that is no number (Tauri refused it,
 //!   or published on any port) is refused in the dialog and creates
 //!   nothing;
-//! - a container run into a pod is asked of that pod.
+//! - a container run into a pod is asked of that pod;
+//! - Edit's form, Apply pressed and the loss confirmed, has the Engine
+//!   create the replacement Tauri's `containers_recreate` created from
+//!   React's request, the original's identity kept.
 //!
 //! What this can't show without an Engine: that the Engine makes of the
 //! two requests the same container (`docker inspect`). The request is the
@@ -33,7 +36,10 @@ use crate::{
     test_support::{engine::IMAGE_INSPECTED, snapshot::in_language},
     ui::{
         domain::containers::{
-            actions::{forms::edit::Edit as EditForm, Target},
+            actions::{
+                forms::edit::{Edit as EditForm, Message as EditMessage, Step as EditStep},
+                Target,
+            },
             run::{
                 dialog::{Dialog, Message, Step},
                 form::{Caps, Choice, Line, Message as Field, Rows, Switch, Text},
@@ -44,6 +50,7 @@ use crate::{
             },
         },
         shell::page::testing::Bench,
+        widgets::feedback::confirm,
     },
 };
 
@@ -285,15 +292,25 @@ fn fill(d: &mut Dialog, b: &Bench, form: &Form, not_added: &NotAdded) {
     paste(d, b, Text::LogOptions, &a.logging.options);
 }
 
-/// The fake Engine's container, which a copy is based on.
+/// The fake Engine's container, which a copy is based on and Edit
+/// replaces: a Compose service, known on its network by other names too,
+/// which a copy leaves to the original and a replacement keeps.
 fn original() -> serde_json::Value {
+    let labels = serde_json::json!({
+        "team": "web",
+        "com.docker.compose.project": "shop",
+        "com.docker.compose.service": "web",
+    });
     serde_json::json!({
         "Id": "c1",
         "Name": "/web",
         "Image": "sha256:1111",
         "State": { "Status": "running", "Running": true },
-        "Config": { "Image": "nginx:1.27", "Labels": { "team": "web" } },
+        "Config": { "Image": "nginx:1.27", "Labels": labels },
         "HostConfig": { "NetworkMode": "proxy" },
+        "NetworkSettings": {
+            "Networks": { "proxy": { "Aliases": ["web", "www", "c1"] } },
+        },
     })
 }
 
@@ -372,17 +389,55 @@ fn runs(case: &Case) {
     assert_eq!(created[0].name, react.name, "{name}");
 }
 
-/// Edit's form: the request it recreates the container from.
+/// Sends `message` to Edit and what it started, to their end; the last
+/// step that was not [`EditStep::Stay`].
+fn edit_send(edit: &mut EditForm, bench: &Bench, message: EditMessage) -> EditStep {
+    let runtime = bench.app.runtime.handle().clone();
+    let _inside = runtime.enter();
+    let (task, mut step) = edit.update(message, &bench.ctx());
+    for answer in bench.run(task) {
+        let next = edit_send(edit, bench, answer);
+        if next != EditStep::Stay {
+            step = next;
+        }
+    }
+    step
+}
+
+/// Edit's form: the request it recreates the container from, and, Apply
+/// pressed and the loss confirmed, the container the Engine is asked to
+/// create in its place: what Tauri's `containers_recreate` asked with
+/// React's request, the original's identity kept.
 fn edits(case: &Case) {
-    let (bench, _engine, host) = bench();
+    let (bench, engine, host) = bench();
+    let document = original();
+    engine.inspects_as(document.clone());
     let from = case.from.as_ref().expect("what was read back");
     let container = case.container.as_deref().unwrap_or_default();
     let mut web = crate::test_support::fixtures::container(container, None, "running", 0);
     "c1".clone_into(&mut web.id);
     let target = Target::of(&host, "fake", &web);
-    let edit = EditForm::new(target, RunForm::of_spec(from), &bench.ctx());
+    let mut edit = EditForm::new(target, RunForm::of_spec(from), &bench.ctx());
     let react = case.spec.as_ref().expect("Edit's request");
-    assert_eq!(&edit.fields().form.to_spec(), react, "{}", case.name);
+    let name = &case.name;
+    assert_eq!(&edit.fields().form.to_spec(), react, "{name}");
+    edit_send(&mut edit, &bench, EditMessage::Submit);
+    let confirmed = EditMessage::Confirm(confirm::Message::Confirm);
+    let step = edit_send(&mut edit, &bench, confirmed);
+    assert!(matches!(step, EditStep::Recreated(..)), "{name}: {step:?}");
+    let inspect = serde_json::from_value(document).unwrap();
+    let image = serde_json::from_str(IMAGE_INSPECTED).unwrap();
+    let base = Base {
+        inspect: &inspect,
+        image: Some(&image),
+        same_identity: true,
+    };
+    let tauri = serde_json::to_value(create_body(react, Some(&base)).unwrap()).unwrap();
+    let created = engine.created();
+    assert_eq!(created.len(), 1, "{name}");
+    assert_eq!(created[0].body, tauri, "{name}");
+    let swapped = created[0].name.as_deref().unwrap_or_default();
+    assert!(swapped.starts_with("web-new-"), "{name}: {swapped}");
 }
 
 #[test]

@@ -232,6 +232,19 @@ const inputs: Omit<Case, 'spec' | 'pod'>[] = [
     }),
   },
   {
+    name: 'every GPU, always restarted, swap as a size, on the host network',
+    via: 'run',
+    form: form({
+      network: 'host',
+      restart: 'always',
+      advanced: {
+        resources: { ...emptyAdvanced().resources, memory: '1g', memorySwap: '2g' },
+        security: { ...emptyAdvanced().security, gpus: { mode: 'all', count: '1', ids: '' } },
+      },
+    }),
+  },
+  { name: 'no network', via: 'run', form: form({ network: 'none' }) },
+  {
     name: 'a capability typed and not added',
     via: 'run',
     form: form({
@@ -244,6 +257,13 @@ const inputs: Omit<Case, 'spec' | 'pod'>[] = [
     via: 'duplicate',
     from: full,
     taken: ['web', 'web-copy'],
+    container: 'web',
+  },
+  {
+    name: 'a copy of a container whose network is gone',
+    via: 'duplicate',
+    from: { ...full, network: 'gone' },
+    taken: ['web'],
     container: 'web',
   },
   { name: "Edit's form, read back", via: 'edit', from: full, container: 'web' },
