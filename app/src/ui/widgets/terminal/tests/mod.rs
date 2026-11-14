@@ -7,6 +7,7 @@ mod drawn;
 mod driven;
 mod emulation;
 mod fixes;
+mod frames;
 mod keys;
 mod mouse;
 mod perf;

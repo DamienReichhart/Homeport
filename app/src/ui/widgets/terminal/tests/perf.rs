@@ -71,6 +71,8 @@ fn ms(duration: Duration) -> f64 {
 pub(super) struct Bench {
     renderer: iced::Renderer,
     cache: Option<Cache>,
+    /// When the last frame asked to be drawn again.
+    pub(super) redraw: Option<iced::window::RedrawRequest>,
 }
 
 impl Bench {
@@ -90,6 +92,7 @@ impl Bench {
         Self {
             renderer,
             cache: Some(Cache::default()),
+            redraw: None,
         }
     }
 
@@ -114,7 +117,7 @@ impl Bench {
         let mut ui = UserInterface::build(page, WINDOW, cache, &mut self.renderer);
         took.layout = start.elapsed();
         let mut messages = vec![];
-        let _ = ui.update(
+        let (updated, _) = ui.update(
             &[Event::Window(iced_window::Event::RedrawRequested(
                 Instant::now(),
             ))],
@@ -123,6 +126,12 @@ impl Bench {
             &mut clipboard::Null,
             &mut messages,
         );
+        self.redraw = match updated {
+            iced_runtime::user_interface::State::Updated { redraw_request, .. } => {
+                Some(redraw_request)
+            }
+            iced_runtime::user_interface::State::Outdated => None,
+        };
         let start = Instant::now();
         ui.draw(
             &mut self.renderer,

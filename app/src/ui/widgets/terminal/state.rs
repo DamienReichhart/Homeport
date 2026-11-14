@@ -50,6 +50,15 @@ pub const UNREAD_MAX: usize = 8 * READ_AT_ONCE;
 /// The longest title kept and told, in characters.
 pub const TITLE_MAX: usize = 256;
 
+/// When the grid is to ask for what waits ([`State::due`]).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Due {
+    /// At the next frame: output waits.
+    Now,
+    /// Once this time has come.
+    At(Instant),
+}
+
 /// A terminal's state.
 #[derive(Debug)]
 pub struct State {
@@ -226,15 +235,18 @@ impl State {
         self.dropped
     }
 
-    /// When the grid should ask for [`Message::Read`]: at once while output
-    /// waits, when a synchronised update that never ended runs out of time,
-    /// or when the search's matches are due to be listed again.
-    pub fn due(&self) -> Option<Instant> {
-        let now = self.is_behind().then(Instant::now);
-        [now, self.emulator.holding_until(), self.search.due()]
+    /// When the grid should ask for [`Message::Read`]: at the next frame
+    /// while output waits, or at the time a synchronised update that never
+    /// ended runs out, or the search's matches are due to be listed again.
+    pub fn due(&self) -> Option<Due> {
+        if self.is_behind() {
+            return Some(Due::Now);
+        }
+        [self.emulator.holding_until(), self.search.due()]
             .into_iter()
             .flatten()
             .min()
+            .map(Due::At)
     }
 
     /// A line of the app's, dimmed, after what the program printed: how a

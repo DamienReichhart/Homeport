@@ -85,7 +85,7 @@ pub use self::{
     emulator::{MAX_CELLS, MIN_CELLS},
     pane::row_height,
     state::{
-        Click, Event, Message, Scroll, State, Viewport, DEFAULT_FONT_SIZE, DEFAULT_SCROLLBACK,
+        Click, Due, Event, Message, Scroll, State, Viewport, DEFAULT_FONT_SIZE, DEFAULT_SCROLLBACK,
         MAX_FONT_SIZE, MIN_FONT_SIZE,
     },
 };

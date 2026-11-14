@@ -33,7 +33,7 @@ use crate::ui::widgets::{
     terminal::{
         keys::{self, Action as KeyAction},
         mouse::{self as pointer, Button, Pointer},
-        state::{Click, Message as Action, Scroll},
+        state::{Click, Due, Message as Action, Scroll},
     },
 };
 
@@ -332,12 +332,18 @@ fn frame<Message>(
     }
     // What waits (output, a synchronised update out of time, matches to
     // list again) is read when it is due.
+    // Output that waits is asked for at each frame until none does; a
+    // deadline when its time (the frame's) has come.
     match state.due() {
-        Some(due) if due <= now => {
+        Some(Due::Now) => {
             send(shell, Action::Read);
             shell.request_redraw();
         }
-        Some(due) => shell.request_redraw_at(due),
+        Some(Due::At(due)) if due <= now => {
+            send(shell, Action::Read);
+            shell.request_redraw();
+        }
+        Some(Due::At(due)) => shell.request_redraw_at(due),
         None => {}
     }
     let drawn = *internal.dark.borrow();
