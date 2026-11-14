@@ -8,6 +8,19 @@
 //! `Task::perform`: React read them with `staleTime: 0` and `gcTime: 0`,
 //! once a dialog opened, and kept nothing; a read answered after its
 //! dialog closed, or after another opened, is let go of by its number.
+//!
+//! # What differs from the React dialogs, on purpose
+//!
+//! - Edit's confirmation takes the place of its form while it shows,
+//!   which comes back as it was when it is cancelled; React laid it over
+//!   the form.
+//! - After Edit, the new container's page is opened as a new step of the
+//!   history; React replaced the old one's (`replace: true`), whose page
+//!   no longer exists. Back from a container's page goes to the list.
+//! - Commit's toast has no "Open images" button: the kit's toasts carry
+//!   no action yet. The images are read again, as React did.
+//! - A loss's path and Stack are laid out left to right in every language
+//!   (`technical`).
 
 pub mod commit;
 pub mod edit;
