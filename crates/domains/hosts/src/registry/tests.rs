@@ -512,7 +512,11 @@ fn a_status_is_told_while_the_entry_is_held() {
     reg.lock()
         .insert(id.clone(), entry(HostStatus::Connecting, 1));
     reg.set_status(&id, 1, connected(), None);
-    reg.set_swarm(&id, Some(member(Some("s1"), "n1", SwarmRole::Manager, &[])));
+    reg.set_swarm(
+        &id,
+        1,
+        Some(member(Some("s1"), "n1", SwarmRole::Manager, &[])),
+    );
     let told = held.told.lock().unwrap().clone();
     assert_eq!(told.len(), 2, "{told:?}");
     assert!(told.iter().all(|(_, held)| *held), "{told:?}");
@@ -548,4 +552,19 @@ fn a_notifier_that_calls_the_registry_back_is_caught() {
     reg.lock()
         .insert(id.clone(), entry(HostStatus::Connecting, 1));
     reg.set_status(&id, 1, HostStatus::Disabled, None);
+}
+
+/// A replaced supervisor reads the Swarm through its old client, and says
+/// so late: let go of, as its status is.
+#[test]
+fn a_replaced_supervisor_s_swarm_is_let_go_of() {
+    let (reg, recorder, id) = setup("/nonexistent/homeport-test.sock");
+    reg.lock().insert(id.clone(), entry(connected(), 2));
+    let left = member(Some("old"), "n1", SwarmRole::Manager, &[]);
+    reg.set_swarm(&id, 1, Some(left));
+    assert_eq!(reg.lock()[&id].swarm, None);
+    assert!(recorder.0.lock().unwrap().is_empty(), "nothing told");
+    let joined = member(Some("s1"), "n1", SwarmRole::Manager, &[]);
+    reg.set_swarm(&id, 2, Some(joined.clone()));
+    assert_eq!(reg.lock()[&id].swarm, Some(joined));
 }

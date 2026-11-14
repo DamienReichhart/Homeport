@@ -14,10 +14,12 @@ use crate::messages as msg;
 use crate::HostId;
 
 impl HostRegistry {
-    /// Updates a connected Host's place in a Swarm, telling the app when it changed.
-    pub(super) fn set_swarm(&self, id: &str, membership: Option<SwarmMembership>) {
+    /// Updates a connected Host's place in a Swarm, telling the app when
+    /// it changed: what was read through the client of the supervisor
+    /// `generation`, let go of when another has replaced it since.
+    pub(super) fn set_swarm(&self, id: &str, generation: u64, membership: Option<SwarmMembership>) {
         let mut entries = self.lock();
-        let Some(entry) = entries.get_mut(id) else {
+        let Some(entry) = entries.get_mut(id).filter(|e| e.generation == generation) else {
             return;
         };
         if let HostStatus::Connected { swarm, .. } = &mut entry.status {
@@ -32,9 +34,14 @@ impl HostRegistry {
 
     /// Reads a Host's place in a Swarm again, after Homeport changed it.
     pub async fn refresh_swarm(&self, id: &str) {
+        // The supervisor first, then its client: a restart in between makes
+        // the read let go of, never an old client's read kept.
+        let Some(generation) = self.lock().get(id).map(|entry| entry.generation) else {
+            return;
+        };
         if let Ok(docker) = self.docker(id) {
             match swarm::membership(&docker).await {
-                Ok(membership) => self.set_swarm(id, membership),
+                Ok(membership) => self.set_swarm(id, generation, membership),
                 Err(e) => log::debug!("couldn't read the swarm membership of {id}: {e}"),
             }
         }

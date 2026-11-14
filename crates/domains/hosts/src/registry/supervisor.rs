@@ -137,7 +137,7 @@ pub(super) async fn supervise(registry: Weak<HostRegistry>, id: HostId, generati
                         .then(|| connected.dialer.clone());
                     reg.set_status(&id, generation, status, Some(Client::Docker(connected)));
                     drop(reg);
-                    watch(&registry, &id, docker, podman).await;
+                    watch(&registry, &id, generation, docker, podman).await;
                     AppError::new(
                         ErrorCode::ConnectionLost,
                         msg::CONNECTION_LOST.with("name", &host.name),
@@ -401,6 +401,7 @@ fn parse_event(line: &[u8]) -> Option<EngineEvent> {
 async fn watch(
     registry: &Weak<HostRegistry>,
     id: &str,
+    generation: u64,
     docker: Docker,
     podman: Option<Arc<dyn Dialer>>,
 ) {
@@ -448,7 +449,7 @@ async fn watch(
             let actor = msg.actor.unwrap_or_default();
             let kind = msg.typ.map(|t| t.to_string()).unwrap_or_default();
             if kind == "node" {
-                reg.set_swarm(id, membership(&docker).await);
+                reg.set_swarm(id, generation, membership(&docker).await);
             }
             reg.record_event(
                 id,
@@ -475,7 +476,7 @@ async fn watch(
             // A Swarm joined or left from a terminal sends no event on a worker.
             let swarm = membership(&docker).await;
             match registry.upgrade() {
-                Some(reg) => reg.set_swarm(id, swarm),
+                Some(reg) => reg.set_swarm(id, generation, swarm),
                 None => return,
             }
         }
