@@ -294,6 +294,7 @@ fn commit_keeps_the_container_as_an_image_and_the_images_are_read_again() {
         bench.took(),
         [
             Asked::Said("Committed to \u{2066}web:backup\u{2069}".to_owned()),
+            Asked::Going("Open images".to_owned(), Request::to(Route::Images)),
             Asked::Invalidate(keys::host::images(&web.host_id)),
         ]
     );

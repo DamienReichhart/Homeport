@@ -17,8 +17,6 @@
 //! - After Edit, the new container's page is opened as a new step of the
 //!   history; React replaced the old one's (`replace: true`), whose page
 //!   no longer exists. Back from a container's page goes to the list.
-//! - Commit's toast has no "Open images" button: the kit's toasts carry
-//!   no action yet. The images are read again, as React did.
 //! - A loss's path and Stack are laid out left to right in every language
 //!   (`technical`).
 

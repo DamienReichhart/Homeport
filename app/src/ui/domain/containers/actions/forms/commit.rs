@@ -3,8 +3,8 @@
 //! author, Dockerfile instructions and whether it pauses meanwhile. A name
 //! another image has is said: the tag moves to the new one.
 //!
-//! The commit goes through `ctx.act`: "Committed to …" and the images
-//! read again are the shell's. A failure is said in the dialog, which
+//! The commit goes through `ctx.act`: "Committed to …", its "Open images"
+//! button and the images read again are the shell's. A failure is said in the dialog, which
 //! stays; while it runs the dialog can't be closed.
 
 use iced::{
@@ -22,7 +22,7 @@ use crate::{
     t,
     ui::{
         domain::containers::run::model::{image_named, today, CommitForm},
-        shell::{Context, Outcome},
+        shell::{router::Route, Context, Outcome},
         theme::{
             self,
             metrics::{control, space, text as size},
@@ -130,6 +130,7 @@ impl Commit {
                                 .saying(move || {
                                     t!("containers.commit.done", reference = technical(&reference))
                                 })
+                                .going(|| t!("containers.commit.openImages"), Route::Images)
                                 .invalidating(images.clone())
                         }
                         Err(_) => Outcome::quiet(),
