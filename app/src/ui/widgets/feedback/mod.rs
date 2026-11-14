@@ -4,12 +4,14 @@
 //!
 //! - a failure that reaches the user becomes a [`Surfaced`], which logs it
 //!   with the name of the use case that failed;
-//! - in place: [`error_message`] (with Details and Retry); in passing:
+//! - in place: [`error_message`] (with Details and Retry), and [`alert`]
+//!   for a notice that is no failure; in passing:
 //!   [`Toasts::failure`]; in full: the Details dialog ([`Details`]);
 //! - before what can't be undone: [`confirm_dialog`];
 //! - while it loads: [`spinner`] and [`skeleton`]; when there is nothing:
 //!   [`empty_state`]; what state it is in: [`status_dot`].
 
+pub mod alert;
 pub mod confirm;
 pub mod error_details;
 pub mod error_message;
@@ -20,7 +22,8 @@ pub mod surfaced;
 pub mod toast;
 
 pub use self::{
-    confirm::{confirm_dialog, Ask},
+    alert::alert,
+    confirm::{confirm_dialog, confirm_dialog_with, Ask},
     error_details::Details,
     error_message::error_message,
     hint_view::{copy, copy_button, hint_view, Copied},

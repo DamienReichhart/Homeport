@@ -133,15 +133,37 @@ impl State {
 
 /// The dialog for `ask`.
 pub fn confirm_dialog<'a>(ask: &Ask, state: &State) -> Modal<'a, Message> {
-    let mut content = dialog(ask.title.clone())
-        .destructive(ask.destructive)
-        .description(ask.description.clone());
+    confirm_dialog_with(ask, state, None, |message| message)
+}
+
+/// The dialog for `ask` with `more` under what it says: what the action
+/// will cost, read as the dialog opened, with its own buttons, whose
+/// messages are the page's (`ConfirmDialog`'s `description` as an
+/// element). The dialog's own messages become the page's by `wrap`. An
+/// empty description is left out.
+pub fn confirm_dialog_with<'a, Page: Clone + 'a>(
+    ask: &Ask,
+    state: &State,
+    more: Option<Element<'a, Page>>,
+    wrap: impl Fn(Message) -> Page + 'a,
+) -> Modal<'a, Page> {
+    let wrap = std::rc::Rc::new(wrap);
+    let mut content = dialog(ask.title.clone()).destructive(ask.destructive);
+    if !ask.description.is_empty() {
+        content = content.description(ask.description.clone());
+    }
+    if let Some(more) = more {
+        content = content.push(more);
+    }
     if let Some(name) = &ask.typed {
         let field = text_input(name, &state.input)
             .size(size::SM)
             .padding([space::S1, control::PADDING_X])
-            .on_input_maybe((!state.busy).then_some(Message::Input))
-            .on_submit(Message::Confirm);
+            .on_input_maybe((!state.busy).then(|| {
+                let wrap = wrap.clone();
+                move |input| wrap(Message::Input(input))
+            }))
+            .on_submit(wrap(Message::Confirm));
         content = content.push(
             stack(vec![
                 paragraph(t!("ui.confirm.typeName", name = name.as_str()))
@@ -154,9 +176,9 @@ pub fn confirm_dialog<'a>(ask: &Ask, state: &State) -> Modal<'a, Message> {
     }
     let cancel = button::text(t!("common.cancel"))
         .variant(Variant::Outline)
-        .on_press_maybe((!state.busy).then_some(Message::Cancel));
-    let confirm = (state.allowed(ask)).then_some(Message::Confirm);
-    let action: Element<'a, Message> = if ask.destructive {
+        .on_press_maybe((!state.busy).then(|| wrap(Message::Cancel)));
+    let confirm = (state.allowed(ask)).then(|| wrap(Message::Confirm));
+    let action: Element<'a, Page> = if ask.destructive {
         // The one red slab of the app: the button that destroys.
         pressable(
             text(ask.confirm_label.clone())
@@ -177,7 +199,7 @@ pub fn confirm_dialog<'a>(ask: &Ask, state: &State) -> Modal<'a, Message> {
     };
     modal(content.footer(vec![cancel.into(), action]))
         .key("confirm")
-        .on_close_maybe((!state.busy).then_some(Message::Cancel))
+        .on_close_maybe((!state.busy).then(|| wrap(Message::Cancel)))
 }
 
 #[cfg(test)]
