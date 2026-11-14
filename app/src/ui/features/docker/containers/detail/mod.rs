@@ -107,7 +107,7 @@
 //!   The terminal): a failure (no shell, a session that broke, a write
 //!   that failed) is said over the grid with its Details, where React
 //!   wrote it in red among the output; a terminal is told the theme as it
-//!   is made (the OS's, asked, when the Settings follow it), so a program
+//!   is made (the one on screen, `ctx.world.theme`), so a program
 //!   that asks the colours first is answered in them. A terminal's tab is
 //!   two buttons, its title and its ×; React's was a tab with an underline.
 

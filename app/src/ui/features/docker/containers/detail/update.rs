@@ -7,10 +7,7 @@ use iced::Task;
 use super::{
     queries, restarts,
     state::Tab,
-    tabs::{
-        exec::{self, Exec},
-        files, health, inspect, processes,
-    },
+    tabs::{exec::Exec, files, health, inspect, processes},
     view, Message, State,
 };
 use crate::{
@@ -18,7 +15,6 @@ use crate::{
     ui::{
         domain::containers::actions,
         shell::{router::Route, Context},
-        theme::mode::{self, Mode},
         widgets::{
             data::file_browser,
             feedback::{error_message::Event, Surfaced},
@@ -100,16 +96,10 @@ fn reads(state: &mut State, wanted: &mut HashSet<Key>, ctx: &Context<'_>) -> Tas
             if !state.exec.is_stale() {
                 return Task::none();
             }
-            // As React's tab mounted: a shell, told the theme now.
-            let mode = Mode::from(ctx.world.settings.theme);
-            let dark = mode == Mode::Dark;
+            // As React's tab mounted: a shell, told the theme on screen.
+            let dark = ctx.world.theme.is_dark();
             state.exec = Exec::new(&host, &container.id, dark);
-            match mode {
-                Mode::System => mode::system().map(|system| {
-                    Message::Exec(exec::Message::Theme(system == iced::theme::Mode::Dark))
-                }),
-                Mode::Light | Mode::Dark => Task::none(),
-            }
+            Task::none()
         }
         _ => Task::none(),
     }
@@ -305,7 +295,7 @@ pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Me
             let Some(id) = state.found.clone() else {
                 return Task::none();
             };
-            let dark = Mode::from(ctx.world.settings.theme) == Mode::Dark;
+            let dark = ctx.world.theme.is_dark();
             let host = state.host_id.clone();
             let task = state.exec.update(message, (&host, &id), dark, ctx);
             return task.map(Message::Exec);

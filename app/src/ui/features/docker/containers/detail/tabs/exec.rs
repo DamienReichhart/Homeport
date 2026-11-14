@@ -57,8 +57,6 @@ pub enum Message {
     /// "Open" in the popover.
     Open,
     Failure(u32, error_message::Event),
-    /// The OS's theme, for terminals that follow it: whether it is dark.
-    Theme(bool),
 }
 
 /// What a terminal runs, as "New terminal" was filled in.
@@ -246,11 +244,6 @@ impl Exec {
                 self.shells.push(shell);
                 self.active = key;
                 self.asking = false;
-            }
-            Message::Theme(dark) => {
-                for shell in &mut self.shells {
-                    let _ = shell.terminal.update(terminal::Message::Dark(dark));
-                }
             }
             Message::Failure(key, event) => {
                 let Some(shell) = self.shell(key) else {

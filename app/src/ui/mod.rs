@@ -231,6 +231,17 @@ impl Homeport {
     }
 
     fn update(&mut self, message: Message) -> Task<Message> {
+        let task = self.handle(message);
+        // What a page made next knows the theme on screen, which a
+        // message may just have changed.
+        let shown = self.shown();
+        if let Some(shell) = &mut self.shell {
+            shell.show_theme(shown);
+        }
+        task
+    }
+
+    fn handle(&mut self, message: Message) -> Task<Message> {
         match message {
             Message::Started(Ok(state)) => {
                 let settings = state.settings.get().unwrap_or_default();

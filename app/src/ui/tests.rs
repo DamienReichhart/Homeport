@@ -262,3 +262,22 @@ fn the_details_dialog_opens_the_log_folder_and_says_when_it_cannot() {
     );
     assert!(shown, "the failure shows under the button");
 }
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn the_pages_know_the_theme_on_screen_whoever_chose_it() {
+    let crate::app::testing::TestApp {
+        state,
+        events: _events,
+        dir: _dir,
+    } = crate::app::testing::app();
+    let mut window = Homeport::new(Fake::new().platform());
+    let _ = window.update(Message::Started(Ok(Arc::new(state))));
+    let shown = |window: &Homeport| window.shell.as_ref().map(|shell| shell.world().theme);
+    // The Settings follow the OS, which is dark.
+    let _ = window.update(Message::SystemTheme(iced::theme::Mode::Dark));
+    assert_eq!(shown(&window), Some(Theme::Dark));
+    let _ = window.update(Message::ThemeChanged(Setting::Light));
+    assert_eq!(shown(&window), Some(Theme::Light));
+    let _ = window.update(Message::ThemeChanged(Setting::System));
+    assert_eq!(shown(&window), Some(Theme::Dark));
+}

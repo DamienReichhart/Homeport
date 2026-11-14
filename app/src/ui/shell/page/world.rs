@@ -18,7 +18,10 @@ use homeport_settings::Settings;
 use crate::{
     api::app::Capabilities,
     data::Resource,
-    ui::shell::selection::{self, Candidate, Selection},
+    ui::{
+        shell::selection::{self, Candidate, Selection},
+        theme::Theme,
+    },
 };
 
 /// A list read through the data layer.
@@ -57,6 +60,10 @@ pub struct World {
     pub local_engines: Listed<DetectedEngine>,
     /// The Kubernetes clusters found on this machine, while it shows.
     pub local_clusters: Resource<Arc<LocalClusters>>,
+    /// The theme on screen, resolved: the Settings' choice, or the OS's
+    /// when they follow it. For what draws its own colours and must know
+    /// them before it draws (a terminal a program asks them of).
+    pub theme: Theme,
 }
 
 impl World {
@@ -76,6 +83,7 @@ impl World {
             update: None,
             local_engines: Resource::Idle,
             local_clusters: Resource::Idle,
+            theme: Theme::Light,
         }
     }
 

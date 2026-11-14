@@ -228,6 +228,12 @@ impl<P: Pages> Shell<P> {
         self.history.current()
     }
 
+    /// The window shows `theme` now: what the pages read as
+    /// `ctx.world.theme`.
+    pub fn show_theme(&mut self, theme: crate::ui::theme::Theme) {
+        self.world.theme = theme;
+    }
+
     pub fn world(&self) -> &World {
         &self.world
     }

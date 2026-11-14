@@ -352,3 +352,25 @@ fn the_exec_tab_looks_as_react_s() {
         view(&live.rig.state, &ctx)
     });
 }
+
+#[test]
+fn a_terminal_is_made_in_the_theme_on_screen_when_the_settings_follow_the_os() {
+    // The Settings follow the OS, which the window found dark: a terminal
+    // knows it as it is made, before any program asks its colours.
+    let mut bench = Bench::on_host(Route::Containers, connected_host());
+    assert_eq!(bench.world.settings.theme, homeport_settings::Theme::System);
+    bench.world.theme = Theme::Dark;
+    bench.data.set(&keys::host::containers("h1"), sample());
+    bench.history.push(route(WEB, Some("exec")).into());
+    let rig = Rig::open_on(bench);
+    let shells = &rig.state.exec.shells;
+    assert_eq!(shells.len(), 1);
+    assert!(shells[0].terminal.is_dark());
+    // And light when that is what shows.
+    let mut bench = Bench::on_host(Route::Containers, connected_host());
+    bench.world.theme = Theme::Light;
+    bench.data.set(&keys::host::containers("h1"), sample());
+    bench.history.push(route(WEB, Some("exec")).into());
+    let rig = Rig::open_on(bench);
+    assert!(!rig.state.exec.shells[0].terminal.is_dark());
+}
