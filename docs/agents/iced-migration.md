@@ -73,6 +73,7 @@ Rules, enforced by `app/tests/layout.rs`:
 - **Registry** (`shell::registry`): `FEATURES` lists every feature in sidebar order, as data: its routes, sidebar entry (label, icon, scope), what the Host's Engine or the Cluster's kind must be, its gate, its palette commands and its page shortcuts (`n`, `/`). The sidebar, the palette, the keymap and the gates are built from it. `registry/tests.rs` pins the list and, while `src/features/*/manifest.ts` are in the tree, reads them and fails on any difference.
 - **Gates** (`shell::gates`): `decide(route, world)` says whether the page shows (`Verdict::Open(Subject)`) or what stands before it. A page is opened only once its gate lets it through, and opened anew when its `Subject` changes (another Host, another namespace), so a page never has to handle "not connected".
 - **Selection**: `ctx.world.selection`, remembered in the Settings (`last_selection`, with `last_host_id` for older versions). When it moves, the shell calls `Data::release` on the old scope and sends a page of the other kind to the Overview.
+- **Over the page**: `ctx.world.overlaid` says the palette, the shortcuts' sheet or a failure's details keep the keyboard (the shell keeps it after each message, the window tells it of the details): a terminal whose session starts then leaves the keyboard there.
 
 A feature is seven functions and two types in `ui/features/<group>/<name>/mod.rs`:
 
@@ -103,7 +104,7 @@ pub fn subscription(state: &State, ctx: &Context<'_>) -> Subscription<Message>
 | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ctx.state`                                                    | the `Arc<AppState>` the use cases take                                                                                                       |
 | `ctx.data`                                                     | the data layer, to `read` in `view`                                                                                                          |
-| `ctx.world`, `ctx.host()`, `ctx.cluster()`                     | the Hosts, the Clusters, the selection, the remembered Settings, `ctx.world.theme`, the theme on screen (the OS's when they follow it), and `ctx.world.overlaid`, whether the palette, the shortcuts' sheet or a failure's details keep the keyboard (a terminal whose session starts then leaves it there) |
+| `ctx.world`, `ctx.host()`, `ctx.cluster()`                     | the Hosts, the Clusters, the selection, the remembered Settings, and `ctx.world.theme`, the theme on screen (the OS's when they follow it)   |
 | `ctx.subject`                                                  | what the gate let through: the Host's id, with the containerd namespace or the Incus project; the Cluster's id and Namespace; the Swarm's id |
 | `ctx.location`                                                 | the route, the action and the search text of the navigation, and its `key`                                                                   |
 | `ctx.direction`                                                | the direction the language reads in                                                                                                          |
