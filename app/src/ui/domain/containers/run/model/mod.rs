@@ -24,6 +24,10 @@ use crate::t;
 /// A published port, as its row says.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PortRow {
+    /// The Host's address it is published on, as read back from a
+    /// container (`127.0.0.1:8080:80`); the dialog has no field for it,
+    /// and none for a new row. React dropped it.
+    pub host_ip: Option<String>,
     pub host_port: String,
     pub container_port: String,
     /// `tcp` or `udp`.
@@ -33,6 +37,7 @@ pub struct PortRow {
 impl Default for PortRow {
     fn default() -> Self {
         Self {
+            host_ip: None,
             host_port: String::new(),
             container_port: String::new(),
             protocol: "tcp".to_owned(),
@@ -174,7 +179,7 @@ impl RunForm {
                 .sent_ports()
                 .filter_map(|(_, row)| {
                     Some(PortSpec {
-                        host_ip: None,
+                        host_ip: row.host_ip.clone(),
                         host_port: port(&row.host_port),
                         container_port: port(&row.container_port)?,
                         protocol: row.protocol.clone(),
@@ -218,6 +223,7 @@ impl RunForm {
                 .ports
                 .iter()
                 .map(|p| PortRow {
+                    host_ip: p.host_ip.clone(),
                     host_port: p.host_port.map(|p| p.to_string()).unwrap_or_default(),
                     container_port: p.container_port.to_string(),
                     protocol: p.protocol.clone(),

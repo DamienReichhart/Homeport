@@ -22,6 +22,7 @@ const MIB: i64 = 1024 * 1024;
 
 fn port(host: &str, container: &str, protocol: &str) -> PortRow {
     PortRow {
+        host_ip: None,
         host_port: host.to_owned(),
         container_port: container.to_owned(),
         protocol: protocol.to_owned(),
@@ -456,4 +457,20 @@ fn positive_numbers_are_read() {
 fn a_capability_is_written_as_the_list_writes_it() {
     assert_eq!(advanced::capability("cap_net_admin"), "NET_ADMIN");
     assert_eq!(advanced::capability("sys_time"), "SYS_TIME");
+}
+
+#[test]
+fn a_port_bound_to_an_address_keeps_it_when_read_back() {
+    let spec = RunSpec {
+        image: "nginx".to_owned(),
+        ports: vec![PortSpec {
+            host_ip: Some("127.0.0.1".to_owned()),
+            host_port: Some(8080),
+            container_port: 80,
+            protocol: "tcp".to_owned(),
+        }],
+        ..RunSpec::default()
+    };
+    // React dropped it, publishing the copy on every address.
+    assert_eq!(RunForm::of_spec(&spec).to_spec().ports, spec.ports);
 }
