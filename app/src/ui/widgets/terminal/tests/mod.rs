@@ -8,6 +8,7 @@ mod emulation;
 mod keys;
 mod perf;
 mod search;
+mod mouse;
 mod select;
 mod transcripts;
 

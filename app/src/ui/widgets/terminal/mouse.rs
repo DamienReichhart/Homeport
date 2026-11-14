@@ -2,7 +2,8 @@
 //! its kin): presses, releases, moves and the wheel, in SGR's encoding
 //! (`CSI ? 1006 h`), UTF-8's (`1005`) or xterm's first one.
 //!
-//! Shift with the pointer is never reported: it selects, as in xterm.
+//! Shift with the pointer is not reported: it selects, as in xterm. A
+//! release is, whatever is held, so a press the program was told of ends.
 
 use alacritty_terminal::term::TermMode;
 use iced::keyboard::Modifiers;
@@ -61,7 +62,10 @@ pub fn report(
     modifiers: Modifiers,
     mode: TermMode,
 ) -> Option<String> {
-    if !reported(mode, modifiers) {
+    // A release is told whatever is held: the press was, and a drag the
+    // program follows must end.
+    let release = matches!(pointer, Pointer::Release(_));
+    if !mode.intersects(TermMode::MOUSE_MODE) || (modifiers.shift() && !release) {
         return None;
     }
     let (mut code, release) = match pointer {
@@ -78,6 +82,9 @@ pub fn report(
         }
         Pointer::Wheel { up } => (if up { 64 } else { 65 }, false),
     };
+    if modifiers.shift() {
+        code += 4;
+    }
     if modifiers.alt() {
         code += 8;
     }
