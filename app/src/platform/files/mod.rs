@@ -15,7 +15,6 @@ use std::{
         atomic::{AtomicBool, Ordering},
         Arc,
     },
-    time::Duration,
 };
 
 use iced::futures::{stream, Stream};
@@ -52,10 +51,6 @@ pub async fn write_text(path: PathBuf, contents: String) -> AppResult<()> {
 /// How many links are followed from the path picked to the file it
 /// stands for, as the OS itself allows.
 const MAX_LINKS: usize = 40;
-
-/// How old a file this app left unfinished must be to be taken away: no
-/// write lasts a day, and one killed half way leaves its file behind.
-const STALE: Duration = Duration::from_secs(24 * 60 * 60);
 
 /// The folder a file is in.
 fn folder_of(path: &Path) -> &Path {
@@ -102,26 +97,7 @@ fn replaced(path: &Path, target: &Path) -> AppResult<Option<fs::Metadata>> {
 /// Takes away the files this app left unfinished in `folder` long ago
 /// (`.homeport-….part`: a write that was killed). Whatever fails is left.
 fn sweep(folder: &Path) {
-    let Ok(entries) = fs::read_dir(folder) else {
-        return;
-    };
-    for entry in entries.flatten() {
-        let name = entry.file_name();
-        let ours = name
-            .to_str()
-            .is_some_and(|name| name.starts_with(".homeport-") && name.ends_with(".part"));
-        let stale = entry.metadata().is_ok_and(|found| {
-            found.is_file()
-                && found
-                    .modified()
-                    .ok()
-                    .and_then(|at| at.elapsed().ok())
-                    .is_some_and(|age| age > STALE)
-        });
-        if ours && stale {
-            let _ = fs::remove_file(entry.path());
-        }
-    }
+    homeport_core::local_files::sweep_unfinished(folder);
 }
 
 /// Writes what `unfinished` holds into the file at `target`, which

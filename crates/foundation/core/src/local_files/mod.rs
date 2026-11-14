@@ -147,6 +147,46 @@ impl Replacement {
     }
 }
 
+/// How old an unfinished [`Replacement`] must be for [`sweep_unfinished`]
+/// to take it away: no write that still runs is that slow.
+pub const UNFINISHED_AFTER: std::time::Duration = std::time::Duration::from_secs(24 * 60 * 60);
+
+/// Takes away the files a [`Replacement`] left unfinished in `folder` more
+/// than [`UNFINISHED_AFTER`] ago: a write the app was killed in, or that a
+/// panic aborted, whose file could not be taken away then. Only names the
+/// Replacement makes (`.homeport-….part`) and regular files are touched;
+/// whatever fails is left.
+pub fn sweep_unfinished(folder: &Path) {
+    let Ok(entries) = std::fs::read_dir(folder) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let name = entry.file_name();
+        let ours = name
+            .to_str()
+            .is_some_and(|name| name.starts_with(".homeport-") && name.ends_with(".part"));
+        let stale = entry.metadata().is_ok_and(|found| {
+            found.is_file()
+                && found
+                    .modified()
+                    .ok()
+                    .and_then(|at| at.elapsed().ok())
+                    .is_some_and(|age| age > UNFINISHED_AFTER)
+        });
+        if ours && stale {
+            let _ = std::fs::remove_file(entry.path());
+        }
+    }
+}
+
+/// The folder a file at `path` is written in.
+pub fn folder_of(path: &Path) -> &Path {
+    match path.parent() {
+        Some(dir) if !dir.as_os_str().is_empty() => dir,
+        _ => Path::new("."),
+    }
+}
+
 /// Writes `contents` to `path` so that a failure part way leaves the file
 /// that was there untouched (see [`Replacement`]).
 pub fn write_replacing(path: &Path, contents: &[u8]) -> AppResult<()> {
