@@ -39,16 +39,13 @@ fn shell(host_id: &str) -> Backend {
     .sized(100, 30)
 }
 
-/// What reached the fake's terminal, inputs that came in pieces joined.
-fn reached(engine: &Engine) -> Vec<String> {
-    let mut all: Vec<String> = vec![];
-    for told in engine.terminal() {
-        match (all.last_mut(), told.strip_prefix("input ")) {
-            (Some(last), Some(more)) if last.starts_with("input ") => last.push_str(more),
-            _ => all.push(told),
-        }
-    }
-    all
+/// The sizes the fake's terminal was told, in order.
+fn sizes(engine: &Engine) -> Vec<String> {
+    engine
+        .terminal()
+        .into_iter()
+        .filter(|told| !told.starts_with("input "))
+        .collect()
 }
 
 /// Reads the stream until `done` says what came is enough, for two
@@ -108,17 +105,17 @@ async fn a_shell_in_a_container_takes_keys_in_order_is_resized_and_says_its_end(
     // The fake's line discipline echoes what came, in the order it came.
     let echoed = read_until(&mut stream, |out| out.text.contains("echo hi\r")).await;
     assert!(echoed.text.contains("echo hi\r"), "{echoed:?}");
+    // Every key, in the order typed, however many writes they took.
     assert_eq!(engine.typed(), "echo hi\r");
-    // In the order it was asked: the keys before the new size, then the
-    // size, then the keys after.
-    let reached = reached(&engine);
-    assert_eq!(reached.len(), 3, "{reached:?}");
-    assert_eq!(reached[0], "input ec");
+    // Of the sizes asked for before the start, the last only. (The keys
+    // and the sizes go to the Engine by two ways, its stream and its API,
+    // so the fake may hear them in either order.)
+    let sizes = sizes(&engine);
+    assert_eq!(sizes.len(), 1, "{sizes:?}");
     assert!(
-        reached[1].contains("h=40") && reached[1].contains("w=120"),
-        "{reached:?}"
+        sizes[0].contains("h=40") && sizes[0].contains("w=120"),
+        "{sizes:?}"
     );
-    assert_eq!(reached[2], "input ho hi\r");
     engine.print("hi\r\n$ ");
     let printed = read_until(&mut stream, |out| out.text.contains("hi\r\n$ ")).await;
     assert!(printed.text.contains("hi\r\n$ "));
