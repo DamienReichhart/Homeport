@@ -17,7 +17,7 @@ use crate::{
 
 const CHECK_INTERVAL: Duration = Duration::from_secs(15);
 
-pub(super) async fn supervise(registry: Weak<ClusterRegistry>, id: ClusterId) {
+pub(super) async fn supervise(registry: Weak<ClusterRegistry>, id: ClusterId, generation: u64) {
     let mut backoff = 1;
     loop {
         let Some(reg) = registry.upgrade() else {
@@ -25,30 +25,40 @@ pub(super) async fn supervise(registry: Weak<ClusterRegistry>, id: ClusterId) {
         };
         let cluster = match reg.store.get(&id) {
             Ok(cluster) => cluster,
-            Err(_) => return reg.remove(&id),
+            Err(_) => return reg.removed(&id, generation),
         };
         if !cluster.enabled {
-            return reg.set_status(&id, ClusterStatus::Disabled, None);
+            return reg.set_status(&id, generation, ClusterStatus::Disabled, None);
         }
-        reg.set_status(&id, ClusterStatus::Connecting, None);
+        reg.set_status(&id, generation, ClusterStatus::Connecting, None);
 
         let secrets = match reg.store.secrets(&id) {
             Ok(secrets) => secrets,
             Err(e) if e.is(ErrorCode::CredentialsLost) => {
-                return reg.set_status(&id, ClusterStatus::CredentialsLost, None)
+                return reg.set_status(&id, generation, ClusterStatus::CredentialsLost, None)
             }
             Err(error) if error.is(ErrorCode::KeychainUnavailable) => {
-                return reg.set_status(&id, ClusterStatus::KeychainUnavailable { error }, None)
+                return reg.set_status(
+                    &id,
+                    generation,
+                    ClusterStatus::KeychainUnavailable { error },
+                    None,
+                )
             }
-            Err(error) => return reg.set_status(&id, ClusterStatus::Invalid { error }, None),
+            Err(error) => {
+                return reg.set_status(&id, generation, ClusterStatus::Invalid { error }, None)
+            }
         };
 
         let (error, was_connected) = match reg.connect(&cluster, &secrets).await {
             Ok((client, status)) => {
                 backoff = 1;
-                reg.set_status(&id, status, Some(client.clone()));
+                reg.set_status(&id, generation, status, Some(client.clone()));
                 drop(reg);
-                (check(&registry, &cluster, &secrets, client).await, true)
+                (
+                    check(&registry, &cluster, &secrets, client, generation).await,
+                    true,
+                )
             }
             Err(error) => (error, false),
         };
@@ -74,10 +84,11 @@ pub(super) async fn supervise(registry: Weak<ClusterRegistry>, id: ClusterId) {
             } else {
                 ClusterStatus::Invalid { error }
             };
-            return reg.set_status(&id, status, None);
+            return reg.set_status(&id, generation, status, None);
         }
         reg.set_status(
             &id,
+            generation,
             ClusterStatus::Unreachable {
                 error,
                 retry_in_secs: backoff,
@@ -102,13 +113,14 @@ async fn check(
     cluster: &Cluster,
     secrets: &ClusterSecrets,
     mut client: ClusterClient,
+    generation: u64,
 ) -> AppError {
     loop {
         tokio::time::sleep(CHECK_INTERVAL).await;
         let Some(reg) = registry.upgrade() else {
             return lost(&cluster.name);
         };
-        match reg.check(cluster, secrets, &client).await {
+        match reg.check(cluster, secrets, &client, generation).await {
             Ok(Some(renewed)) => client = renewed,
             Ok(None) => {}
             Err(error) => return error,

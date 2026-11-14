@@ -251,8 +251,9 @@ mod exec_plugins {
             .credentials(&cluster, &secrets, false)
             .await
             .unwrap();
+        let generation = registry.lock()[&id].generation;
         assert!(registry
-            .renewed(&cluster, &secrets)
+            .renewed(&cluster, &secrets, generation)
             .await
             .unwrap()
             .is_none());
@@ -277,7 +278,7 @@ mod exec_plugins {
             .unwrap();
         assert_eq!(runs(dir.path()), 2, "an expired token is asked for again");
         assert!(registry
-            .renewed(&cluster, &secrets)
+            .renewed(&cluster, &secrets, 0)
             .await
             .unwrap()
             .is_some());
@@ -328,4 +329,100 @@ fn kubernetes_secrets(registry: &ClusterRegistry, id: &str) -> KubernetesSecrets
         ClusterSecrets::Kubernetes(s) => s,
         ClusterSecrets::Nomad(_) => panic!("not a Kubernetes Cluster"),
     }
+}
+
+/// A supervisor that was replaced (its Cluster restarted again, as when a
+/// Cluster is added while every stored one is being started) can still be
+/// running until its next await: what it says then, and its finding the
+/// Cluster gone, change nothing of the one that replaced it.
+#[tokio::test]
+async fn a_replaced_supervisor_s_late_word_is_let_go_of() {
+    let (reg, _recorder, id) = registry("http://127.0.0.1:9");
+    reg.restart(&id);
+    let replaced = reg.lock()[&id].generation;
+    reg.restart(&id);
+    let current = reg.lock()[&id].generation;
+    assert_ne!(replaced, current);
+    reg.set_status(&id, current, ClusterStatus::Disabled, None);
+    reg.set_status(&id, replaced, ClusterStatus::Connecting, None);
+    assert_eq!(reg.status(&id), ClusterStatus::Disabled);
+    reg.removed(&id, replaced);
+    assert_eq!(reg.status(&id), ClusterStatus::Disabled);
+    reg.removed(&id, current);
+    assert!(!reg.lock().contains_key(&id));
+}
+
+/// Tells what it is told, and when told `Disabled` (the live supervisor's
+/// word) lets another thread restart the Cluster first, as a restart
+/// racing it would: the last status told must be the one the entry holds.
+struct Racing {
+    told: Mutex<Vec<ClusterStatus>>,
+    registry: Mutex<Option<(Weak<ClusterRegistry>, String, tokio::runtime::Handle)>>,
+}
+
+impl ClusterNotifier for Racing {
+    fn cluster_status(&self, _: &str, status: &ClusterStatus) {
+        if *status == ClusterStatus::Disabled {
+            let racing = self.registry.lock().unwrap().clone();
+            if let Some((registry, id, runtime)) = racing {
+                let restart = std::thread::spawn(move || {
+                    let _runtime = runtime.enter();
+                    if let Some(registry) = registry.upgrade() {
+                        registry.restart(&id);
+                    }
+                });
+                // The restarted supervisor tells its first status before
+                // this one if nothing keeps it from it: a second at most.
+                let before = self.told.lock().unwrap().len();
+                for _ in 0..100 {
+                    if self.told.lock().unwrap().len() > before {
+                        break;
+                    }
+                    std::thread::sleep(Duration::from_millis(10));
+                }
+                drop(restart);
+            }
+        }
+        self.told.lock().unwrap().push(status.clone());
+    }
+}
+
+/// An API server that takes connections and never answers: a supervisor
+/// stays "connecting" on it.
+async fn silent_api() -> String {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    tokio::spawn(async move {
+        let mut held = vec![];
+        while let Ok((socket, _)) = listener.accept().await {
+            held.push(socket);
+        }
+    });
+    format!("http://{addr}")
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn what_is_told_last_is_what_the_entry_holds_when_a_restart_races_it() {
+    let (plain, _, id) = registry(&silent_api().await);
+    let racing = Arc::new(Racing {
+        told: Mutex::new(vec![]),
+        registry: Mutex::new(None),
+    });
+    let reg = ClusterRegistry::new(plain.store.clone(), racing.clone());
+    reg.restart(&id);
+    *racing.registry.lock().unwrap() = Some((
+        Arc::downgrade(&reg),
+        id.clone(),
+        tokio::runtime::Handle::current(),
+    ));
+    // The live supervisor's word, with a restart racing it.
+    let live = reg.lock()[&id].generation;
+    reg.set_status(&id, live, ClusterStatus::Disabled, None);
+    *racing.registry.lock().unwrap() = None;
+    // The restarted supervisor says "connecting", and then nothing for a
+    // while: the server never answers.
+    tokio::time::sleep(Duration::from_millis(300)).await;
+    assert_eq!(reg.status(&id), ClusterStatus::Connecting);
+    let told = racing.told.lock().unwrap().clone();
+    assert_eq!(told.last(), Some(&ClusterStatus::Connecting), "{told:?}");
 }

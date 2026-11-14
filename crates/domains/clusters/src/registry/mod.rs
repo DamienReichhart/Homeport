@@ -11,7 +11,10 @@ mod supervisor;
 
 use std::{
     collections::HashMap,
-    sync::{Arc, Mutex, Weak},
+    sync::{
+        atomic::{AtomicU64, Ordering},
+        Arc, Mutex, Weak,
+    },
     time::SystemTime,
 };
 
@@ -49,6 +52,9 @@ struct Entry {
     status: ClusterStatus,
     client: Option<ClusterClient>,
     task: Option<JoinHandle<()>>,
+    /// Which supervisor the entry is: what one started before it says is
+    /// let go of.
+    generation: u64,
 }
 
 pub struct ClusterRegistry {
@@ -58,6 +64,8 @@ pub struct ClusterRegistry {
     /// What each Cluster's exec plugin last issued, in memory only, until it
     /// is about to expire.
     issued: Mutex<HashMap<ClusterId, Issued>>,
+    /// The last supervisor's number, across every Cluster.
+    generations: AtomicU64,
     me: Weak<ClusterRegistry>,
 }
 
@@ -68,6 +76,7 @@ impl ClusterRegistry {
             notifier,
             entries: Mutex::new(HashMap::new()),
             issued: Mutex::new(HashMap::new()),
+            generations: AtomicU64::new(0),
             me: me.clone(),
         })
     }
@@ -95,14 +104,17 @@ impl ClusterRegistry {
     /// refreshed; its exec plugin runs again.
     pub fn restart(&self, id: &str) {
         self.forget_issued(id);
-        // The entry is reset before the task that fills it starts: spawned
-        // first, a task that connected at once had its status dropped or
-        // overwritten with "connecting" (as the Hosts' registry did).
+        // The entry is reset before the task that fills it starts, and the
+        // task is numbered: one that was replaced may still be running when
+        // it is aborted, until its next await, and what it says then is
+        // let go of instead of overwriting the new one's (as for Hosts).
+        let generation = self.generations.fetch_add(1, Ordering::Relaxed) + 1;
         let mut entries = self.lock();
         let entry = entries.entry(id.to_owned()).or_insert_with(|| Entry {
             status: ClusterStatus::Connecting,
             client: None,
             task: None,
+            generation,
         });
         if let Some(old) = entry.task.take() {
             old.abort();
@@ -110,8 +122,13 @@ impl ClusterRegistry {
         // Not the old status, which the edit that restarted it may have fixed.
         entry.status = ClusterStatus::Connecting;
         entry.client = None;
+        entry.generation = generation;
         // The task waits for the lock before it tells its first status.
-        entry.task = Some(tokio::spawn(supervise(self.me.clone(), id.to_owned())));
+        entry.task = Some(tokio::spawn(supervise(
+            self.me.clone(),
+            id.to_owned(),
+            generation,
+        )));
     }
 
     pub fn remove(&self, id: &str) {
@@ -215,10 +232,11 @@ impl ClusterRegistry {
         cluster: &Cluster,
         secrets: &ClusterSecrets,
         client: &ClusterClient,
+        generation: u64,
     ) -> AppResult<Option<ClusterClient>> {
         match (secrets, client) {
             (ClusterSecrets::Kubernetes(secrets), ClusterClient::Kubernetes(client)) => {
-                let renewed = self.renewed(cluster, secrets).await?;
+                let renewed = self.renewed(cluster, secrets, generation).await?;
                 version(cluster, renewed.as_ref().unwrap_or(client)).await?;
                 Ok(renewed.map(ClusterClient::Kubernetes))
             }
@@ -257,6 +275,7 @@ impl ClusterRegistry {
         &self,
         cluster: &Cluster,
         secrets: &KubernetesSecrets,
+        generation: u64,
     ) -> AppResult<Option<kube::Client>> {
         if secrets.exec.is_none() {
             return Ok(None);
@@ -270,7 +289,11 @@ impl ClusterRegistry {
         }
         let issued = self.credentials(cluster, secrets, true).await?;
         let client = client::client(&cluster.kube()?, secrets, issued.as_ref())?;
-        if let Some(entry) = self.lock().get_mut(&cluster.id) {
+        if let Some(entry) = self
+            .lock()
+            .get_mut(&cluster.id)
+            .filter(|entry| entry.generation == generation)
+        {
             entry.client = Some(ClusterClient::Kubernetes(client.clone()));
         }
         Ok(Some(client))
@@ -322,12 +345,41 @@ impl ClusterRegistry {
         self.entries.lock().expect("cluster registry lock poisoned")
     }
 
-    fn set_status(&self, id: &str, status: ClusterStatus, client: Option<ClusterClient>) {
-        if let Some(entry) = self.lock().get_mut(id) {
-            entry.status = status.clone();
-            entry.client = client;
+    /// What the supervisor `generation` found: let go of when another has
+    /// replaced it since. Told while the entry is held, so what is told
+    /// last is what it holds.
+    fn set_status(
+        &self,
+        id: &str,
+        generation: u64,
+        status: ClusterStatus,
+        client: Option<ClusterClient>,
+    ) {
+        let mut entries = self.lock();
+        let Some(entry) = entries.get_mut(id) else {
+            return;
+        };
+        if entry.generation != generation {
+            return;
         }
+        entry.status = status.clone();
+        entry.client = client;
         self.notifier.cluster_status(id, &status);
+    }
+
+    /// The supervisor `generation` found its Cluster gone from the store:
+    /// compared and removed under one lock.
+    fn removed(&self, id: &str, generation: u64) {
+        let entry = {
+            let mut entries = self.lock();
+            match entries.get(id) {
+                Some(entry) if entry.generation == generation => entries.remove(id),
+                _ => None,
+            }
+        };
+        if let Some(task) = entry.and_then(|entry| entry.task) {
+            task.abort();
+        }
     }
 }
 
